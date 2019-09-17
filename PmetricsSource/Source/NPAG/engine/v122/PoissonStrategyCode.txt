@@ -1,0 +1,617 @@
+
+C --------------------- npagranfix6_b10.f
+!
+! main inspects the error polynomial for indication that measure is a
+! Poisson r.v. If Poisson, IPAR(110+J) is set and ObsError(J,)=1.D0.
+! ObsError will be calculated in idm1x*.f::SUBROUTINE FUNC()
+! 4110             PYJGX(JSUB,IG) = RPAR(129) ! Poisson component
+! 4111      1 * DEXP(-.5D0*RPAR(128))/RPAR(126)/RPAR(127) ! Normal component
+!
+
+ 2396       SUBROUTINE NPAG(MAXSUB,MAXGRD,MAXDIM,MAXACT,
+ 2397      1  NUMEQT,MAXOBS,WORK,WORKK,SPXGYJ,DXI,PYJGX,PYJGXX,
+ 2398      2  DENSTOR,EXX,CORDEN,CORHOLD,YPREDPOP,YPREDPOPT,YPREDBAY,CORDLAST)
+
+ 2494 C wmy2018Apr17 (Tax Day) DO 140 Variables
+ 2495        integer MISVAL, NNORMALOBS,NPOISSONOBS
+ 2496        real*8  SIGFAC, OFAC
+
+ 2830         gamma = 1.d0
+ 2831         flat = 1.d0
+ 2832         if(ierrmod .eq. 2) gamma = gamlam0
+ 2833         if(ierrmod .eq. 3) gamma = gamlam0
+ 2834         if(ierrmod .eq. 4) flat = gamlam0
+ 2835 
+ 2836           RPAR(96) = gamma
+ 2837           RPAR(97) = flat
+ 2838 
+ 2839         igamma = 0
+ 2840         gamdel=0.1
+ 2841         if(ierrmod.eq.1) gamdel=0.d0
+
+ 3518 cgam3
+ 3519 10001 continue
+
+ 3585       DO 1000 JSUB=1,NSUB
+
+ 3604         CALL FILRED(NOBSER,YO,C0,C1,C2,C3,NUMEQT,RSCOPY,BSCOPY,
+ 3605      1    INTLIST)
+
+ 3611         RPAR(96) = gamma
+ 3612 
+ 3613 C C0 -> RPAR(98,99,100,101,102,103,104)
+ 3614 C C1 -> RPAR(105:111)
+ 3615 C C2 -> RPAR(112:118)
+ 3616 C C3 -> RPAR(119:125)
+ 3617         do III=1,7
+ 3618            RPAR(97 + III) = C0(III)
+ 3619            RPAR(104 + III) = C1(III)
+ 3620            RPAR(111 + III) = C2(III)
+ 3621            RPAR(118 + III) = C3(III)
+ 3622         end do
+
+ 3664         MISVAL = 0
+ 3665         NNORMALOBS = 0
+ 3666         NPOISSONOBS = 0
+ 3667         SIGFAC=1.D0
+ 3668         OFAC=0.D0
+ 3669 
+ 3670         DO 140 I=1,NOBSER
+ 3671          DO 140 J=1,NUMEQT
+ 3672 
+ 3673           Y = YO(I,J)
+ 3674 
+ 3675 C  IF Y = -99, IT MEANS THAT OUTPUT EQ. J HAD NO VALUE AT OBSERVATION
+ 3676 C  TIME I. IN THIS CASE, IGNORE THIS Y AND INCREASE MISVAL BY 1.
+ 3677 
+ 3678 
+ 3679           IF(Y .EQ. -99) THEN
+ 3680            MISVAL = MISVAL+1
+ 3681            GO TO 140
+ 3682           ENDIF
+ 3683 
+ 3684           if (C0(J).eq.-299.and.C2(J).eq.-299
+ 3685      1   .and.C3(J).eq.-299) then
+ 3686 C--------------------------------- Start Poisson
+ 3687 
+ 3688              write (*,*) "Poisson analysis req. for OUTEQ",J
+ 3689              NPOISSONOBS=NPOISSONOBS+1
+ 3690              ObsError(I,J)=1.D0
+ 3691              SIG(I,J)=1.D0
+ 3692       
+ 3693 C--------------------------------- End Poisson
+ 3694           else
+ 3695 C--------------------------------- Start NORMAL
+ 3696 
+ 3697 C  NOTE: FOR EACH SUBJECT, MUST ENSURE THAT ALL THE STD DEV'S ARE NON-
+ 3698 C        ZERO. OTHERWISE, THE PROGRAM WILL BLOW UP! THIS IS BECAUSE
+ 3699 C        P(YJ|X) INVOLVES SQUARED DIFFERNCES BETWEEN OBSERVED Y'S AND
+ 3700 C        EXPECTED Y'S (FOR EACH X GRID POINT)...EACH DIFFERENCE
+ 3701 C        NORMALIZED (I.E., DIVIDED) BY THE VARIANCE OF THE RESPECTED
+ 3702 C        OBSERSATION.
+ 3703 
+ 3704 C        SEE M2_17CAL.F CODE FOR COMMENTS ON HOW A STD. DEV. COULD = 0.
+ 3705 
+ 3706 C  ALSO TEST TO MAKE SURE NO STD. DEV. < 0, SINCE SIGFAC BEING NEGATIVE
+ 3707 C  WOULD RESULT IN A NEGATIVE PROBABILITY (SEE PYJGX CALCULATION BELOW).
+ 3708 
+ 3709       SIG(I,J) = C0(J)+C1(J)*Y+C2(J)*Y*Y+C3(J)*Y**3
+ 3710 cgam4
+ 3711       if(ierrmod.eq.2) sig(i,j) = sig(i,j)*gamma
+ 3712       if(ierrmod.eq.3) sig(i,j)=dsqrt(sig(i,j)**2 + gamma**2)
+ 3713       if(ierrmod.eq.4) sig(i,j) = gamma*flat
+ 3714 
+ 3715 
+ 3716       IF(SIG(I,J) .EQ. 0) THEN
+ 3717                 WRITE(*,2345) JSUB
+ 3718                 WRITE(25,2345) JSUB
+ 3719 2345            FORMAT(//' A S.D. IS 0 FOR JSUB = ',I5,'. RERUN THE '/
+ 3720      1' PROGRAM WITH C0 NOT = 0  FOR THIS SUBJECT, OR WITH THIS'/
+ 3721      2' SUBJECT ELIMINATED.')
+ 3722                 CLOSE(27)
+ 3723                 CLOSE(25)
+ 3724 
+ 3725 C  SINCE THE PROGRAM IS TERMINATING ABNORMALLY, WRITE THE ERROR MESSAGE
+ 3726 C  TO ERRFIL ALSO.
+ 3727 
+ 3728         OPEN(42,FILE=ERRFIL)
+ 3729          WRITE(42,2345) JSUB
+ 3730         CLOSE(42)
+ 3731 
+ 3732                 CALL PAUSE
+ 3733         STOP
+ 3734       ENDIF
+ 3735 
+ 3736       IF(SIG(I,J) .LT. 0) THEN
+ 3737                 WRITE(*,2346) JSUB
+ 3738                 WRITE(25,2346) JSUB
+ 3739 2346            FORMAT(//' A S.D. < 0 FOR JSUB = ',I5,'. RERUN THE '/
+ 3740      1' PROGRAM WITH A BETTER CHOICE FOR THE ASSAY ERROR POLYNOMIAL'/
+ 3741      2' COEFFICIENTS.')
+ 3742                 CLOSE(27)
+ 3743                 CLOSE(25)
+ 3744 
+ 3745 C  SINCE THE PROGRAM IS TERMINATING ABNORMALLY, WRITE THE ERROR MESSAGE
+ 3746 C  TO ERRFIL ALSO.
+ 3747 
+ 3748         OPEN(42,FILE=ERRFIL)
+ 3749          WRITE(42,2346) JSUB
+ 3750         CLOSE(42)
+ 3751 
+ 3752                 CALL PAUSE
+ 3753                 STOP
+ 3754       ENDIF
+ 3755 
+ 3756 
+ 3757 C wmy2017Dec28 SIG is in the un-named COMMON; This can cause issues
+ 3758 c  inside the DO 800 loop; so I'm copying the stdev to ObsError
+ 3759 c
+ 3760       ObsError(I,J) = SIG(I,J)
+ 3761 
+ 3762       SIGFAC=SIGFAC*SIG(I,J)
+ 3763 
+ 3764 C--------------------------------- END NORMAL
+ 3765        endif
+ 3766 
+ 3767   140 CONTINUE
+
+ 3775 C wmy -- eqns updated to include Poisson  measures; and note that
+ 3776 C  there is no error checking on Poisson measures! But I think we
+ 3777 C  can use C1(J) for that, so I left it out. Maybe this can be
+ 3778 C  the allowable %difference between predicted and observed? else
+ 3779 C  set IPAR(100) to 0.
+ 3780 
+ 3781         OFAC=2.506628274631**(NOBSER*NUMEQT - MISVAL - NPOISSONOBS)
+ 3782 
+ 3783         NOBTOT = NOBTOT + NOBSER*NUMEQT - MISVAL
+ 3784 
+ 3785         RPAR(126) = SIGFAC
+ 3786         RPAR(127) = OFAC
+ 3787 
+ 3788 C  NOTE THAT 2.5066... = SQRT(2*PI).
+
+ 3918         DO 800 IG=IterFirst,IterLast
+
+ 4040           W = 0.0
+ 4041 
+ 4042         CALL IDPC(JSUB,IG,NPX,PCOPY,W,NOBSER,NUMEQT,
+ 4043      1    NDIM,MF,RTOL,ATOL,RSCOPY,BSCOPY,INTLIST,IPAR,ObsError,RPAR)
+
+ 4093         if (IPAR(100).eq.1) then
+ 4094 
+ 4095           IF(IG .LE. MAXACT) PYJGX(JSUB,IG)=0.D0
+ 4096 
+ 4097           WORKK(IG) = 0.D0
+ 4098 C
+ 4099 C Old Code, Assumes all observations are ~ Normal
+ 4100 C
+ 4101           IF(W .LE. 22708.D0) THEN
+ 4102            IF(IG .LE. MAXACT) PYJGX(JSUB,IG) = DEXP(-.5D0*W)/SIGFAC/OFAC
+ 4103            WORKK(IG) = DEXP(-.5D0*W)/SIGFAC/OFAC
+ 4104           ENDIF
+ 4105 
+ 4106 C New Code, Assumes Mix of ~ Poisson and ~ Normal
+ 4107 
+ 4108           IF(RPAR(128) .LE. 22708.D0) THEN
+ 4109            IF(IG .LE. MAXACT) THEN
+ 4110             PYJGX(JSUB,IG) = RPAR(129)
+ 4111      1        * DEXP(-.5D0*RPAR(128))/RPAR(126)/RPAR(127)
+ 4112            ENDIF
+ 4113            WORKK(IG) = RPAR(129)
+ 4114      1        * DEXP(-.5D0*RPAR(128))/RPAR(126)/RPAR(127)
+ 4115           ENDIF
+ 4116 
+ 4117 C End New Code
+
+ 4145         else
+ 4146 
+ 4147           PYJGX(JSUB,IG)=0.D0
+ 4148           WORKK(IG) = 0.D0
+ 4149           WORK(IG) = 0.D0
+ 4150 
+ 4151           write (*,*) "Cycling past (JSUB,IG) ==", JSUB, IG
+ 4152 
+ 4153 C          GO TO 800 ! we'll get there next anyways
+ 4154         endif
+
+ 4158   800   CONTINUE
+
+ 4183       CALL NOTINT(VOLSPA,NGRID,NACTVE,WORK,MAXGRD,PYJ)
+
+ 4240  1000   CONTINUE
+
+! Note: if gamma is optimized, the PYJGX is calculated using the above DO 1000
+!   loop, which should already be set up to operate on Poisson r.v.s
+
+ 4344 c begin optimization
+
+ 4349       igamma = igamma + 1
+ 4350       if(ierrmod.eq.1) igamma=1
+ 4351 csdsc - added April 2, 2000
+ 4352 c con first iteration, call hte interior point method
+ 4353 
+ 4354       if(mod(igamma,3).eq.1) then
+ 4355       IF(ISUPRES .EQ. 0) write(6,*)
+ 4356       IF(ISUPRES .EQ. 0) write(6,*) 'icycle,igamma =',icycle,igamma
+ 4357       IF(ISUPRES .EQ. 0)
+ 4358      1 write(6,*) 'condensing current ', nactve, ' point grid'
+ 4359       IF(ISUPRES .EQ. 0) write(6,*) 'base gamma =',gamma
+ 4360 
+ 4361       gammab = gamma
+ 4362       gammap = gamma * (1.d0+gamdel)
+ 4363       gammam = gamma / (1.d0+gamdel)
+ 4364       call emint(pyjgx,maxsub,corden,maxgrd,nactve,nsub,1,
+ 4365      &corden(1,nvar+1),denstor(1,1),denstor(1,2),denstor(1,3),
+ 4366      &fobj,gap,nvar,keep,IHESS)
+
+ 4385       fobj1 = fobj
+ 4386       nactve1 = nactve
+ 
+ 4395       nactve = keep
+ 4396       call emint(pyjgx,maxsub,corden,maxgrd,nactve,nsub,0,
+ 4397      &corden(1,nvar+1),denstor(1,1),denstor(1,2),denstor(1,3),
+ 4398      &fobj,gap,nvar,keep,IHESS)
+
+ 4413       fobjbase = fobj
+ 
+ 4429       fobjbest = fobjbase
+ 
+ 4433       if(ierrmod.eq.1) go to 14001
+ 4434       gamma = gammap
+ 4435       RPAR(96) = gamma
+ 4436       go to 10001
+ 4437 
+ 4438       endif
+ 4439 cgamma above endif is for mod(igamma,3).eq.1 case
+ 4440       if(mod(igamma,3).eq.2) then
+
+ 4445       call emint(pyjgx,maxsub,corden,maxgrd,nactve,nsub,0,
+ 4446      &corden(1,nvar+1),denstor(1,1),denstor(1,2),denstor(1,3),
+ 4447      &fobj,gap,nvar,keep,IHESS)
+
+ 4460       fobjplus = fobj
+
+ 4469       if(fobjplus.gt.fobjbest) then
+ 4470       fobjbest = fobjplus
+
+ 4476       gamma = gammam
+ 4477       RPAR(96) = gamma
+
+ 4483          go to 10001
+ 4484       endif
+ 4485       if(mod(igamma,3).eq.0) then
+
+ 4489       call emint(pyjgx,maxsub,corden,maxgrd,nactve,nsub,0,
+ 4490      &corden(1,nvar+1),denstor(1,1),denstor(1,2),denstor(1,3),
+ 4491      &fobj,gap,nvar,keep,IHESS)
+
+ 4506       fobjminu = fobj
+
+ 4511       if(fobjminu.gt.fobjbest) then
+ 4512       fobjbest = fobjminu
+
+ 4516       endif
+
+ 4520       endif
+
+ 4525       gamma = gammab
+ 4526       RPAR(96) = gammab
+ 4527       fobj = fobjbase
+ 4528       if(fobjplus.gt.fobjbase) then
+ 4529       gamma = gammap
+ 4530       RPAR(96) = gammap
+ 4531 
+ 4532       fobj = fobjplus
+ 4533       gamdel = 4.*gamdel
+ 4534       endif
+ 4535       if(fobjminu.gt.fobjbase) then
+ 4536       gamma = gammam
+ 4537       RPAR(96) = gammam
+ 4538       fobj = fobjminu
+ 4539       gamdel = 4.*gamdel
+ 4540       endif
+ 4541 
+ 4542       gamdel = gamdel*0.5
+ 4543       if(gamdel.lt.0.01) gamdel=0.01
+ 4544 14001 continue
+ 4545 cgam5 above label is entry point for ierrmod = 1 (no  gamma) case
+
+ 4559 cend optimization
+
+C------- SUBROUTINE SUBRES()
+ 8183             CALL IDPC(JSUB,IG,NPX,PX,W,NOBSER,NUMEQT,NDIM,MF,
+ 8184      1        RTOL,ATOL,RSCOPY,BSCOPY,INTLIST,IPAR,ObsError,RPAR)
+
+! Code following CALL IDPC() at 8183 is similar to PYJGX code for DO 800 loop
+
+C------
+10891         SUBROUTINE CALCRF(NTOTPAR,VEC,FNTVAL,NUMEQT,YO,C0,C1,C2,C3,
+10892      1    NDIM,MF,RTOL,ATOL,PCOPY,RSCOPY,BSCOPY,INTLIST,IPAR,ObsError,
+10893      2    RPAR)
+
+10934        integer NNORMALOBS, NPOISSONOBS, MISVAL
+
+11019        DO 140 I=1,NOBSER
+11020         DO 140 J=1,NUMEQT
+11021 
+11022          Y = YO(I,J)
+11023 
+11024 C  IF YO(I,J) = -99, IT MEANS THAT OUTPUT EQ. J HAD NO VALUE AT
+11025 C  OBSERVATION TIME I. IN THIS CASE, SIG(I,J) WILL NOT BE SET, AND IT
+11026 C  OF COURSE WILL NOT BE NEEDED IN SUBROUTINE FUNC.
+11027 
+11028          IF(Y .EQ. -99) GO TO 140
+11029 
+11030          if (C0(J).eq.-299.and.C2(J).eq.-299
+11031      1     .and.C3(J).eq.-299) then
+11032 C--------------------------------- Start Poisson
+11033 
+11034              write (*,*) "Poisson analysis req. for OUTEQ",J
+11035              NPOISSONOBS=NPOISSONOBS+1
+11036              ObsError(I,J)=1.D0
+11037              SIG(I,J)=1.D0
+11038              IPAR(110+J)=229
+11039 
+11040 C--------------------------------- End Poisson
+11041          else
+11042 C--------------------------------- Start NORMAL
+11043 
+11044 
+11045          SIG(I,J) = C0(J)+C1(J)*Y+C2(J)*Y*Y+C3(J)*Y**3
+11046          if(ierrmod.eq.2) sig(i,j) = sig(i,j)*gamma
+11047          if(ierrmod.eq.3) sig(i,j)=dsqrt(sig(i,j)**2 + gamma**2)
+11048          if(ierrmod.eq.4) sig(i,j) = gamma*flat
+11049 
+11050          ObsError(I,J) = sig(I,J)
+11051 
+11052 C--------------------------------- End NORMAL
+11053          endif
+11054 
+11055   140    CONTINUE
+
+11073         CALL IDPC(JSUB,IG,NPX,PX,W,NOBSER,NUMEQT,
+11074      1    NDIM,MF,RTOL,ATOL,RSCOPY,BSCOPY,INTLIST,IPAR,ObsError,RPAR)
+
+11085        SUMTOT = SUMTOT + W
+
+11094       FNTVAL = SUMTOT  ! Nelder Mead simplex vertex
+
+11097         RETURN
+
+C----------------------------------------------------------------------
+
+ 589 C wmy2017Sep12 Receiving /TOUSER/ varbs
+ 590       SUBROUTINE FUNC(JSUB,IG,M,F,NPX,PX,
+ 591      1   NDIM,MF,RTOL,ATOL,P,RSCOPY,BSCOPY,
+ 592      2   INTLIST,IPAR,ObsError,RPAR)
+
+ 723        integer NNORMALOBS, NPOISSONOBS, MISVAL
+ 724        real*8 SIGFAC,OFAC
+
+! Calling USERANAL or ANAL3 for each event time
+
+1764 C wmy2017Dec29 Replaced COMMON STDEV with ObsError; note COMMON STDEV is
+1765 c  commented out above; uncomment if you need to use it!
+1766 c          IF(YO(I,J) .NE. -99) F((J-1)*M+I) =(Y(I,J)-YO(I,J))/STDEV(I,J)
+1767 
+1768 C C       DO J=1,NOS
+1769 C C         DO I=1,M
+1770 C C           IF(YO(I,J) .EQ. -99) F((J-1)*M+I) = 0.D0
+1771 C C           IF(YO(I,J) .NE. -99) F((J-1)*M+I) =(Y(I,J)-YO(I,J))
+1772 C C    1                                         /ObsError(I,J)
+1773 C        DO J=1,INTLIST(9)
+1774 C         DO I=1,INTLIST(10)
+1775 C         IF(YO(I,J) .EQ. -99) F((J-1)*INTLIST(10)+I) = 0.D0
+1776 C         IF(YO(I,J) .NE. -99) F((J-1)*INTLIST(10)+I) =(Y(I,J)-YO(I,J))
+1777 C     1                                         /ObsError(I,J)
+1778 C        END DO
+1779 C        END DO
+1780 
+1781 C ------ Above is old code, that assumed ObsError filled in main and ---
+1782 C ------ all measures are Normally distributed r.v.s -------------------
+1783 C ------ Below assumes some measures are Poisson. ----------------------
+1784 
+1785 C Poisson or Normally distributed measurements
+1786 C
+1787 C Strategy: In model.txt, for each of the 7 output equation set IPAR to
+1788 C indicate: Log10 or absolute measurement is reported, Poisson or Normal
+1789 C as flagged. Also, uses RPAR(>94,257) if real values, such as assay
+1790 C error coefficients are reqd.
+1791 C
+1792 C Computation:
+1793 
+1794         NNORMALOBS =0
+1795         NPOISSONOBS = 0
+1796         MISVAL = 0
+1797         SIGFAC=1.D0
+1798         OFAC=0.D0
+1799         RPAR(128) = 1.D0
+1800         RPAR(129) = 0.D0
+1801 
+1802 C-----------------------------------------------------------------------
+1803 C DO 140 loop was done in main. Moved DO 140 here because some YOBSERVED
+1804 C are not Normally distributed.  Note that SIGFAC and OFAC were
+1805 C calculated prior to doing anything (by assuming it's OK to use
+1806 C YOBSERVED as a surrogate to the true mean: YMEAN.  Note: Useful to
+1807 C calculate DO 140 prior to any other calculation b/c (1) if a problem
+1808 C arises you can immediatley exit code and so not waste a lot of user
+1809 C time, and (2) saves a lot of computation! The first point is still
+1810 C valid -- so we should calculate DO 140 prior to the DO 800 loop for
+1811 C (at least) the first few cycles, using YOBSERVED as surrogate for
+1812 C YMEAN. This also allows us to have a more stable estimate of ObsError
+1813 C in the event that YMEAN is absurd. Or to have a "relaxation" toward
+1814 C YMEAN from YOBSERVED. For example, use the res parameter to control
+1815 C use of YMEAN or YOBSERVED or even use the average of these two values.
+1816 C wmy will just go ahead and program the average
+1817 
+1818 C M Is a verbatim copy of code from Main that is NOT merged w/idm1*
+1819 C   Is a comment
+1820 
+1821 C  ******* DO 140 loop from main *******
+1822 C
+1823 C  FIND THE ASSAY STANDARD DEVIATIONS FOR THIS SUBJECT. FOR EACH
+1824 C  OF THE NOBSER*NUMEQT OBSERVED VALUES (EXCEPT THAT YO(I,J) = -99 -->
+1825 C  OUTPUT EQ. J HAS NO OBSERVED LEVEL FOR OBSERVATION TIME I),
+1826 C  Y, SIG = C0 + C1*Y + C2*Y**2 + C3*Y**3.
+1827 C  NOTE THAT, THEORETICALLY, SIG SHOULD BE A CUBIC FNT. OF
+1828 C  THE 'TRUE' OBSERVED VALUES, NOT THE 'NOISY' OBSERVED VALUES (BUT THE
+1829 C  'TRUE' VALUES ARE UNKNOWN).
+1830 
+1831 C  ALSO, CALCULATE SIGFAC, THE PRODUCT OF THE NON-MISSING STD. DEV.'S
+1832 
+1833 C  (A NON-MISSING S.D. IS ONE FOR WHICH THE CORRESPONDING YO(I,J) IS
+1834 C  .NE. -99, THE MISSING VALUE CODE).
+1835 C  INITIALIZE SIGFAC=1, AND THEN UPDATE IT FOR EACH NON-MISSING
+1836 C  OBSERVATION.
+1837 
+1838 C  MISVAL WILL BE THE RUNNING TOTAL OF MISSING VALUES AMONG ALL THE
+1839 C  NUMEQT x NOBSER POTENTIAL OBSERVED LEVELS.
+1840 
+1841 C M      DO 140 I=1,NOBSER
+1842 C M       DO 140 J=1,NUMEQT
+1843 C
+1844         DO J=1,INTLIST(9)     ! NUMEQT or number of output equations
+1845          DO I=1,INTLIST(10)   ! Number of measurements
+1846 
+1847 C  IF Y = -99, IT MEANS THAT OUTPUT EQ. J HAD NO VALUE AT OBSERVATION
+1848 C  TIME I. IN THIS CASE, IGNORE THIS Y AND INCREASE MISVAL BY 1.
+1849 
+1850 C M        Y = YO(I,J) ! replaced by YMEAN, below
+1851 C M        IF(Y .EQ. -99) THEN    ! This is moved above
+1852 C M         MISVAL = MISVAL+1
+1853 C M         GO TO 140          ! Not necessary anymore, logic changed
+1854 C M        ENDIF
+1855 C M        IF(YO(I,J) .NE. -99) then { Assume obs ~ Normal }
+1856 
+1857           if(YO(I,J) .EQ. -99) then
+1858            F((J-1)*INTLIST(10)+I) = 0.D0
+1859            MISVAL = MISVAL+1
+1860 
+1861           else
+1862 
+1863 C ASSIGN YOBSERVED and YMEAN (predicted) for this measurement
+1864 
+1865            IF (IPAR(120 + J) == 10) THEN  ! Y is log10(X) and YO(I,J) are log10(obs)
+1866             YOBSERVED = 10^(YO(I,J))     ! log10(obs) enterred in data.csv
+1867             YMEAN = 10^Y(I,J)            ! log10(X) happenned in call to OUTPUT
+1868            ELSE
+1869             YOBSERVED = YO(I,J)
+1870             YMEAN = Y(I,J)
+1871            ENDIF
+1872 
+1873 C YOBSERVED ~ POISSON
+1874 ! 229 == extended ASCII code for lower case lambda; USE Poisson
+1875            IF (IPAR(110 + J) == 229) THEN
+1876 
+1877 C            Poisson: p( YO(i,J) | Y(I,J) ) =  exp( -1 * Y(I,J) )
+1878 C                              * ( Y(I,J)^YO(I,J) / fact(YO(I,J)) ))
+1879 
+1880               P_thresh = 30.0
+1881 
+1882 ! fact reqs nint(); but fact(N) = Gamma(N + 1)
+1883               YOBSERVED = nint(YOBSERVED)
+1884 ! Poisson w/mean Y; OK to be a REAL value
+1885               ObsError(I,J) = sqrt( YMEAN )
+1886 
+1887 !  Normal approx. is used for P_thresh = 60
+1888               IF (YMEAN > P_thresh) THEN
+1889                  SIGFAC = SIGFAC * ObsError(I,J)
+1890                  NNORMALOBS = NNORMALOBS+1
+1891                  RPAR(128) = RPAR(128)
+1892      1                 + ((YOBSERVED - YMEAN)/ObsError(I,J))**2
+1893 ! F equals the Poisson probability, not (y - yo)/sigma
+1894               ELSE
+1895                  NPOISSONOBS = NPOISSONOBS + 1
+1896                  RPAR(129) = RPAR(129) * exp( -1 * YMEAN )
+1897      1           * ( YMEAN^YOBSERVED ) / gamma( YOBSERVED + 1.0D )
+1898               ENDIF
+1899 
+1900 C YOBSERVED ~ NORMAL
+1901            ELSE
+1902 C              // CODE for Normal is unchanged from previous program
+1903 C
+1904 C M NOTE: FOR EACH SUBJECT, MUST ENSURE THAT ALL THE STD DEV'S ARE NON-
+1905 C        ZERO. OTHERWISE, THE PROGRAM WILL BLOW UP! THIS IS BECAUSE
+1906 C        P(YJ|X) INVOLVES SQUARED DIFFERNCES BETWEEN OBSERVED Y'S AND
+1907 C        EXPECTED Y'S (FOR EACH X GRID POINT)...EACH DIFFERENCE
+1908 C        NORMALIZED (I.E., DIVIDED) BY THE VARIANCE OF THE RESPECTED
+1909 C        OBSERSATION.
+1910 
+1911 C M  SEE M2_17CAL.F CODE FOR COMMENTS ON HOW A STD. DEV. COULD = 0.
+1912 
+1913 C M  ALSO TEST TO MAKE SURE NO STD. DEV. < 0, SINCE SIGFAC BEING NEGATIVE
+1914 C  WOULD RESULT IN A NEGATIVE PROBABILITY (SEE PYJGX CALCULATION BELOW).
+1915 
+1916 C note: in main:
+1917 C ierrmod -> IPAR(38)
+1918 C gamma -> RPAR(96)
+1919 C flat -> RPAR(97)
+1920 C C0 -> RPAR(98,99,100,101,102,103,104)
+1921 C C1 -> RPAR(105:111)
+1922 C C2 -> RPAR(112:118)
+1923 C C3 -> RPAR(119:125)
+1924 
+1925 C M            SIG(I,J) = C0(J)+C1(J)*Y+C2(J)*Y*Y+C3(J)*Y**3
+1926 C M            ObsError(I,J) = SIG(I,J) ! at end of DO 140
+1927               ObsError(I,J) = RPAR(J+97) + RPAR(J+104)*YMEAN
+1928      1            + RPAR(J+111)*YMEAN*YMEAN + RPAR(J+118)*YMEAN**3
+1929 
+1930 C M cgam4
+1931 C M       if(ierrmod.eq.2) sig(i,j) = sig(i,j)*gamma
+1932 C M       if(ierrmod.eq.3) sig(i,j) = dsqrt(sig(i,j)**2 + gamma**2)
+1933 C M       if(ierrmod.eq.4) sig(i,j) = gamma*flat
+1934 
+1935               if(IPAR(38).eq.2) ObsError(i,j) = ObsError(i,j)*RPAR(96)
+1936               if(IPAR(38).eq.4) ObsError(i,j) = RPAR(96)*RPAR(97)
+1937               if(IPAR(38).eq.3) ObsError(i,j) = dsqrt(ObsError(i,j)**2
+1938      1               + RPAR(96)**2)
+1939
+
+! Check that ObsError > 0.D0; else EXIT program
+
+1982 C--------------  SIGFAC and NNORMALOBS
+1983 
+1984 C In main, COMMON SIG is used, and values are copied from SIG into
+1985 C ObsError. ObsError is used inside of the parallel region. Here, we
+1986 C only have access to ObsError, not SIG. So fill ObsError, and copy
+1987 C ObsError to SIG when you return to main. Note that the analytic
+1988 C routines use COMMON SIG (the primary reason we have to still
+1989 C calculate SIG in main).  ObsError may be calculated differently
+1990 C here, than in main.
+1991 
+1992 C M      ObsError(I,J) = SIG(I,J)
+1993 
+1994               SIGFAC=SIGFAC*ObsError(I,J)
+1995               NNORMALOBS=NNORMALOBS+1
+1996 
+1997               RPAR(128) = RPAR(128)
+1998      1           + ((YOBSERVED(I,J)-YMEAN(I,J))/ObsError(I,J))**2
+1999 
+2000            endif ! if(Poisson){...} else {Normal}
+2001 
+2002           ENDIF ! if(YO(I,J) .EQ. -99){...} else {YO ~ {Normal,Poisson}}
+2003 C
+2004 C wmy2018Apr18 -- F is always the z-score
+2005 C
+2006        F((J-1)*INTLIST(10)+I)=(YOBSERVED(I,J)-YMEAN(I,J))/ObsError(I,J)
+2007 
+2008          END DO ! number of measurements
+2009         END DO ! number of output equations
+2010 C M  140 CONTINUE ! is replaced by the two END DO above
+
+2022         OFAC=2.506628274631**NNORMALOBS
+2023 
+2024 C Final checks on NNORMALOBS, NPOISSONOBS, MISVAL, SIGFAC, and OFAC
+2025 C Copy values into appropriate IPAR and RPAR bins for communication
+2026 C back up to main.
+2027 C
+2028 C RPAR(129) = \prod Poisson Probs
+2029 C RPAR(128) = summsq Normalized deviations for Y_obs ~ Normal
+2030         RPAR(126) = SIGFAC
+2031         RPAR(127) = OFAC
+2032         IPAR(39) = MISVAL
+2033         IPAR(40) = NNORMALOBS
+2034         IPAR(41) = NPOISSONOBS
+
+2079       RETURN
+2080       END
