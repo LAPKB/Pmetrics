@@ -1,0 +1,13 @@
+Following files were downloaded w/package
+
+total 1560
+-rwxr-xr-x@ 1 mas  staff   14638 Aug 23  2013 ChangeRecord.txt
+-rwxr-xr-x@ 1 mas  staff    1034 Aug 24  2013 Save_example1.dat
+-rwxr-xr-x@ 1 mas  staff    1159 Aug 24  2013 Save_example2.dat
+-rw-r--r--  1 mas  staff       0 Sep  5 16:11 contents.txt
+-rwxr-xr-x@ 1 mas  staff  733279 Aug 24  2013 dvode_f90_m.f90
+-rwxr-xr-x@ 1 mas  staff    3891 Aug 22  2013 example1.f90
+-rwxr-xr-x@ 1 mas  staff    3919 Aug 22  2013 example2.f90
+-rwxr-xr-x@ 1 mas  staff   16942 Aug 24  2013 quickstart.pdf
+-rwxr-xr-x@ 1 mas  staff    2958 Aug 23  2013 quickstart.tex
+-rwxr-xr-x@ 1 mas  staff    1868 Jun 11  2009 vode_f90_license.txt

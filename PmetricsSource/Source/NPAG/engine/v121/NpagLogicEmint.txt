@@ -1,0 +1,577 @@
+ 
+ 2765                 DO IEQ=1,NUMEQT
+ 2766                  READ(23,*) C0P(IEQ),C1P(IEQ),C2P(IEQ),C3P(IEQ)
+ 2767                 END DO
+ 2768 
+ 2769                 READ(23,*) ierrmod,gamlam0
+ 2770 
+ 2771 C  NOTE THAT IN npag102.inp FROM NPBIG15.FOR, ierrmod AND gamlam0
+ 2772 C  (INITIAL EST. FOR gamma or lambda) WILL BE READ IN. AND NOTE THAT FOR
+ 2773 C  ierrmod = 4, THIS VALUE SHOULD BE READ IN AS flat, RATHER THAN AS
+ 2774 
+ 2775 
+ 2776 C  gamma, TO BE COMPATIBLE WITH THE CODE BELOW.
+ 2777 
+ 2778 
+ 2779         gamma = 1.d0
+ 2780         flat = 1.d0
+ 2781         if(ierrmod .eq. 2) gamma = gamlam0
+ 2782         if(ierrmod .eq. 3) gamma = gamlam0
+ 2783         if(ierrmod .eq. 4) flat = gamlam0
+ 2784 
+ 2785 
+ 2786         igamma = 0
+ 2787         gamdel=0.1
+ 2788         if(ierrmod.eq.1) gamdel=0.d0
+
+
+
+ 3152 C  AS OF npageng19.f, PRESET NACTLAST TO BE NACTVE. THIS WAY, IN THE
+ 3153 C  UNLIKELY EVENT THAT THE FIRST CYCLE OF A RUN HAS A HESSIAN ERROR
+ 3154 C  (WHICH MEANS THAT WHEN CONTROL COMES BACK TO MAIN FROM SUBROUTINE
+ 3155 C  emint, IT IS TRANSFERRED TO LABEL 900 AND THEREFORE SKIPS THE
+ 3156 C  cbegin statistics  SECTION WHERE NACTLAST = NACTVE IS SET), THERE
+ 3157 C  WON'T BE A PROBLEM WHEN NACTVE IS SET = NACTLAST JUST BELOW LABEL
+ 3158 C  900. IN PREVIOUS PROGRAMS, IN THE ABOVE SITUATION, BELOW LABEL 900,
+ 3159 C  NACTVE = NACTLAST WOULD RESULT IN NACTVE BEING SET = 0 SINCE
+ 3160 C  NACTLAST WAS UNITIALIZED.
+ 3161 
+ 3162       NACTLAST = NACTVE
+ 3163 
+ 3164 
+ 3165         prefobj=-1.d30
+ 3166         prebig=-1.d30
+ 3167 
+
+ 3441 
+ 3442  1001 ICYCLE=ICYCLE+1
+ 3443 
+
+ 3464 cgam3
+ 3465 10001 continue
+ 3466 
+ 3467 c above is new entry point for gammaplus/minus eps tries
+ 3468       itest = 0
+ 3469 
+ 3470 
+ 3471 cadapt  reset number of stored points to that before expansion
+ 3472 c     nstore=nstoresv
+ 3473 
+
+
+ 3529 
+ 3530       DO 1000 JSUB=1,NSUB
+ 3531 
+
+ 3611       SIG(I,J) = C0(J)+C1(J)*Y+C2(J)*Y*Y+C3(J)*Y**3
+ 3612 cgam4
+ 3613       if(ierrmod.eq.2) sig(i,j) = sig(i,j)*gamma
+ 3614       if(ierrmod.eq.3) sig(i,j)=dsqrt(sig(i,j)**2 + gamma**2)
+ 3615       if(ierrmod.eq.4) sig(i,j) = gamma*flat
+ 3616 
+
+
+      NOTE :: DO 800 calculates PYJGX = P(JSUB|IG) = "Psi matrix"
+
+
+ 3996 
+ 3997  1000   CONTINUE
+ 3998 
+ 3999
+
+
+ 4101 c begin optimization
+ 4102 cgam5
+ 4103 cgam5 - from here (immediately after 1000   CONTINUE to
+ 4104 cgam5 - immediately before c end optimization was lifted
+ 4105 cgam5 - from gamadapt1.f, replacing old material beteen these limits
+
+ 4106       igamma = igamma + 1
+
+ 4107       if(ierrmod.eq.1) igamma=1
+
+ 4108 csdsc - added April 2, 2000
+ 4109 c con first iteration, call hte interior point method
+ 4110 
+ 4111       if(mod(igamma,3).eq.1) then
+
+  NOTE :: igamma initialized to 0; thus ALL error models will make these
+          first two calls to emint; 1st to determine the active points,
+          2nd to determine fobj.
+
+ 4112         IF(ISUPRES .EQ. 0) write(6,*)
+ 4113         IF(ISUPRES .EQ. 0) write(6,*) 'icycle,igamma =',icycle,igamma
+ 4114         IF(ISUPRES .EQ. 0)
+ 4115      1    write(6,*) 'condensing current ', nactve, ' point grid'
+ 4116         IF(ISUPRES .EQ. 0) write(6,*) 'base gamma =',gamma
+ 4117 
+ 4118         gammab = gamma
+ 4119         gammap = gamma * (1.d0+gamdel)
+ 4120         gammam = gamma / (1.d0+gamdel)
+
+ 4121         call emint(pyjgx,maxsub,corden,maxgrd,nactve,nsub,1,
+ 4122      &    corden(1,nvar+1),denstor(1,1),denstor(1,2),denstor(1,3),
+ 4123      &    fobj,gap,nvar,keep,IHESS)
+ 4124 
+
+
+ 4133         IF(IHESS .EQ. -1) GO TO 900
+ 4134 
+ 4135 
+ 4136         fobj1 = fobj
+
+ 4137         nactve1 = nactve
+ 4138 
+ 4139         IF(ISUPRES .EQ. 0)
+ 4140 
+ 4141 
+ 4142      1    write(6,*) 'base job 1, fobj,keep,icycle=',fobj,keep,icycle
+ 4143 C      CALL PAUSE
+ 4144 
+ 4145 
+ 4146         nactve = keep
+
+ 4147         call emint(pyjgx,maxsub,corden,maxgrd,nactve,nsub,0,
+ 4148      &    corden(1,nvar+1),denstor(1,1),denstor(1,2),denstor(1,3),
+ 4149      &    fobj,gap,nvar,keep,IHESS)
+ 4150 
+ 4151 C  AS OF npageng18.f, IHESS IS ADDED TO ARGUMENT LIST OF emint.
+ 4152 
+ 4153 C  IF IHESS RETURNS AS -1, IT MEANS THE HESSIAN MATRIX IN THE INTERIOR
+ 4154 C  POINTS ALGORITHM WAS SINGULAR. IN THIS CASE, GO TO LABEL 900 TO
+ 4155 C  CREATE THE OUTPUT FILES BASED ON THE VALUES FROM THE PREVIOUS CYCLE.
+ 4156 C  NOTE THAT BY GOING TO LABEL 900, NOTHING FROM THIS CYCLE WILL BE
+ 4157 C  WRITTEN TO FILE 25, AND THE CORDEN(.,.) MATRIX WILL REMAIN WHAT IT
+ 4158 C  WAS FROM THE PREVIOUS CYCLE.
+ 4159 
+ 4160 
+ 4161         IF(IHESS .EQ. -1) GO TO 900
+ 4162 
+ 4163 
+ 4164         fobjbase = fobj
+ 4165 
+
+
+ 4171 
+ 4172         nactve0 = nactve
+ 
+ 4173 c new on Jan 2, 2002 - save otpimal solution in denstor(1,4)
+ 4174 c so that stat program can work on best of base, up, and down
+ 4175 c solutions
+ 4176         do i=1,nactve
+ 4177           denstor(i,4)=corden(i,nvar+1)
+ 4178         enddo
+ 4179         nstore = 0
+
+ 4180         fobjbest = fobjbase
+ 4181 
+ 4182         IF(ISUPRES .EQ. 0) write(6,*) 'finished base case'
+ 4183 
+ 4184         if(ierrmod.eq.1) go to 14001
+
+ 4185         gamma = gammap
+ 
+ 4186         go to 10001 # line 3465 above: start a new cycle; i.e
+                          # we need to calculate gamma, gammap, and
+                          # and gammab; then compare fobj for each.
+ 4187 
+ 4188       endif
+ 4189 cgamma above endif is for mod(igamma,3).eq.1 case
+
+ NOTE :: If error includes ONLY the error polynomial, thus there
+         is no calculation of gamma/lambda, then the above
+         returns to the start of a new cycle (after doing the
+         control code at label 14001)); otherwise igamma is
+         incremented to 2 prior to start of previous block, and
+         will now skip that block, and continue calculation here.
+
+ 4190       if(mod(igamma,3).eq.2) then
+ 4191 
+ 4192 
+ 4193       IF(ISUPRES .EQ. 0) write(6,*) 'gamma plus =',gamma
+ 4194 
+ 4195       call emint(pyjgx,maxsub,corden,maxgrd,nactve,nsub,0,
+ 4196      &corden(1,nvar+1),denstor(1,1),denstor(1,2),denstor(1,3),
+ 4197      &fobj,gap,nvar,keep,IHESS)
+ 4198 
+
+ 4207       IF(IHESS .EQ. -1) GO TO 900
+ 4208 
+ 4209 
+ 4210       fobjplus = fobj
+ 4211 
+ 4212 
+ 4213 
+ 4214       IF(ISUPRES .EQ. 0)
+ 4215 
+ 4216      1 write(6,*) 'fobjplus,gamma,icycle=',fobjplus,gamma,icycle
+ 4217 
+ 4218 c new  Jan 2, 2002 - save solution if fobjplus is better than fobjbase
+ 4219       if(fobjplus.gt.fobjbest) then
+ 4220       fobjbest = fobjplus
+ 4221       do i=1,nactve
+ 4222 
+ 4223       denstor(i,4) = corden(i,nvar+1)
+ 4224       enddo
+ 4225       endif
+ 4226       gamma = gammam
+ 4227 
+ 4228 
+ 4229       IF(ISUPRES .EQ. 0) write(6,*) 'finished plus case'
+
+
+ 4232          go to 10001
+ 4233       endif
+ 4234       if(mod(igamma,3).eq.0) then
+ 4235 
+ 4236       IF(ISUPRES .EQ. 0) write(6,*) 'gamma minus=',gamma
+ 4237 
+ 4238       call emint(pyjgx,maxsub,corden,maxgrd,nactve,nsub,0,
+ 4239      &corden(1,nvar+1),denstor(1,1),denstor(1,2),denstor(1,3),
+ 4240      &fobj,gap,nvar,keep,IHESS)
+ 4241 
+
+
+ 4252       IF(IHESS .EQ. -1) GO TO 900
+ 4253 
+ 4254 
+ 4255       fobjminu = fobj
+ 4256 
+ 4257       IF(ISUPRES .EQ. 0)
+ 4258      1 write(6,*) 'fobjminu,gamma,icycle=',fobjminu,gamma,icycle
+ 4259 
+ 4260       if(fobjminu.gt.fobjbest) then
+ 4261       fobjbest = fobjminu
+ 4262       do i=1,nactve
+ 4263       denstor(i,4) = corden(i,nvar+1)
+ 4264       enddo
+ 4265       endif
+ 4266 
+ 4267       IF(ISUPRES .EQ. 0) write(6,*) 'finished gamma minus case'
+ 4268 
+ 4269       endif
+ 4270 cgamma - above statement changed from "nstore = nactve" to force
+ 4271 c reevaluation of all points.
+ 4272      
+
+    
+ 4273 c now temporairily reset to gamma
+ 4274       gamma = gammab
+ 4275       fobj = fobjbase
+ 4276       if(fobjplus.gt.fobjbase) then
+ 4277       gamma = gammap
+ 4278 
+ 4279       fobj = fobjplus
+ 4280       gamdel = 4.*gamdel
+ 4281       endif
+ 4282       if(fobjminu.gt.fobjbase) then
+ 4283       gamma = gammam
+ 4284       fobj = fobjminu
+ 4285       gamdel = 4.*gamdel
+ 4286       endif
+ 4287 
+ 4288       gamdel = gamdel*0.5
+ 4289       if(gamdel.lt.0.01) gamdel=0.01
+ 4290 14001 continue
+ 4291 cgam5 above label is entry point for ierrmod = 1 (no  gamma) case
+ 4292 
+ 4293       IF(ISUPRES .EQ. 0) write(6,*) 'fobjbest=',fobj
+ 4294 
+ 4295 c corden(*,nvar+1) sums to 1 when it comes out of emint
+ 4296 c Now reset forden(i,nvar+1) to best of three solutions
+ 4297 c and normalize to funny BIGNPEM factor
+ 4298       fact=ngrid/volspa
+ 4299 
+ 4300       do i=1,nactve
+ 4301       corden(i,nvar+1)=fact*denstor(i,4)
+ 4302       enddo
+ 4303 
+ 4304 
+ 4305 cend optimization
+
+ 4311 
+ 4312 c now we compute all hte statistical stuff using this distribution
+ 4313 c and the full nactve (before condensation) points.
+ 4314 c Later, in the condensation performed just before the grid refienment
+ 4315 c and subsequent expansion, we will condense by just using the
+ 4316 c 'keep' flags in DENSTOR(i,1) that emint left there.  The density will
+ 4317 
+ 4318 c not be updated to refelct this cahnge (there is no need)
+ 4319 c until the next call to emint
+ 4320 
+ 4321 
+
+
+ 5076 cend statistics
+ 5077 
+ 5078         write (*,*) "Begin control"
+ 5079 
+ 5080 cbegin control
+ 5081 c we are now done wtih statistics - this is the best place to
+ 5082 c check for whether we can exit - if so , last printed statistic
+ 5083 c will agree with current density corden, and corden is still
+ 5084 c correct (e.g. after condensation-expansion, it is no longer
+ 5085 c correct until we call emint again)
+ 5086 cint.9 control section to check for exit criteria, resolution
+ 5087 c  refinement, and end of major cycles
+ 5088 
+
+ 5132 cint9.b  second, we check improvement from last cycle
+ 5133 
+ 5134 
+ 5135 
+ 5136 
+ 5137       ximprove=fobj-prefobj
+ 5138 
+ 5139        XVERIFY(1) = fobj1
+ 5140        XVERIFY(2) = gamma*flat
+ 5141        XVERIFY(3) = resolve
+ 5142        CALL VERIFYVAL(3,XVERIFY)
+ 5143 
+ 5144 
+
+ 
+ 5163       prefobj = fobj
+ 5164 
+ 5165 cint9.c if ximprove is too low, refine the resolve criterion
+ 5166 
+ 5167       if(dabs(ximprove) .le. tol .and. resolve .gt. 0.0001) then
+ 5168         resolve=resolve*0.5
+ 5169       endif
+ 5170 
+ 5171 cint9.d check to see if resolve bottoms out - if so, start a new
+ 5172 c major cycle by resetting it to its highest allowable value, or
+ 5173 
+ 5174 
+ 5175 c exit if the improvment from the last major cycle is too small ...
+ 5176 
+ 5177 C  AND EXIT IF IMAXCYC = 1 (SEE ABOVE; THIS MEANS THAT THE MAX. NO.
+ 5178 C  OF CYCLES HAS ALREADY BEEN RUN AND THE ONLY REASON THIS PART OF THE
+ 5179 C  CODE IS BEING RUN IS TO SEE IF CONVERGENCE WAS ACHIEVED IN THE FINAL
+ 5180 C  CYCLE.
+ 5181 
+ 5182 
+ 5183       write (*,*) "Checking resolve"
+ 5184 
+ 5185       if(resolve.le.0.0001) then
+ 5186 
+ 5187 
+ 
+ 5187 
+ 5188 c      saveres = resolve
+ 5189         resolve=0.2
+ 5190         checkbig = fobj - prebig
+ 5191       write(91,*) 'res set to .2 ',' checkbig=',checkbig
+ 5192         prebig =fobj
+ 5193 
+
+ 
+ 5233 c  As of npageng23.f, the tolerance value against which checkbig is
+ 5234 c  compared is now longer hardcoded to be .01. Instead it is input
+ 5235 c  from npag102.inp (now npag103.inp) as TOLC.
+ 5236 
+ 5237         if(dabs(checkbig) .le. TOLC) then
+ 5238 
+ 5239 C  SET ICONVERG = 1 --> CONVERGENCE WAS ACHIEVED.
+ 5240 
+ 5241         ICONVERG = 1
+ 5242 
+ 5243           go to 900
+ 5244 
+ 5245         endif
+ 5246 
+ 5247       endif
+ 5248 
+ 5249 c  above endif is for the  if(resolve .le. .0001)  condition.
+ 5250 
+
+
+ 5262 cend control
+ 5263 cbegin expansion
+ 5264 
+ 5265           write (*,*) "Begin expansion"
+ 5266 
+ 5267 
+ 5268       IF(ISUPRES .EQ. 0) write(6,*) 'Number of active points =', nactve
+ 5269 c now add more points near the current solution
+ 5270 
+ 5271       IF(ISUPRES .EQ. 0) write(6,*)
+ 5272       IF(ISUPRES .EQ. 0)
+ 5273      1 write(6,*) 'expanding current grid with new points'
+ 5274       IF(ISUPRES .EQ. 0) write(6,5200) 100.*resolve
+ 5275 
+ 5276  5200 format(' current grid resolution = ',f8.3, '%')
+ 5277          new=2*nvar+1
+ 5278 
+ 5279          nactveold=nactve
+ 5280 
+ 5281          do ipoint=1,nactveold
+ 5282 c first, divide current probability into 2*nvar+1 pieces
+ 5283 
+ 5284            pcur=corden(ipoint,nvar+1)/(2*nvar+1)
+ 5285 c update original point
+ 5286            corden(ipoint,nvar+1)=pcur
+ 5287 
+ 5288              do ivar=1,nvar
+ 5289                del=(ab(ivar,2)-ab(ivar,1))*resolve
+ 5290 c create first new trial point at -eps in coordinate ivar
+ 5291                do i=1,nvar
+ 5292                   corden(nactve+1,i)=corden(ipoint,i)
+ 5293                enddo
+ 5294                corden(nactve+1,ivar)=corden(nactve+1,ivar)-del
+ 5295                corden(nactve+1,nvar+1)=pcur
+ 5296                ntry=nactve+1
+ 5297 c icheck that new point is at least minimally distant from old points
+ 5298 
+
+ 5299                call checkd(corden,ntry,nactve,ab,maxgrd,nvar,iclose)
+ 5300 c only keep trial lower point if it lies above lower bound and satisfies
+ 5301 c minimal distance requirement
+ 5302                if(corden(nactve+1,ivar).ge.ab(ivar,1)) then
+ 5303 
+ 5304                 if(iclose.eq.0) nactve=nactve+1
+ 5305                endif
+ 5306 c now create second trail point at +eps in coordinate ivar
+ 5307                do i=1,nvar
+ 5308                  corden(nactve+1,i)=corden(ipoint,i)
+ 5309                enddo
+ 5310                corden(nactve+1,ivar)=corden(nactve+1,ivar)+del
+ 5311                corden(nactve+1,nvar+1)=pcur
+ 5312 c only keep upper point if it lies below upper bound and
+ 5313 c satisfies distance requirement
+ 5314                ntry=nactve+1
+ 5315                call checkd(corden,ntry,nactve,ab,maxgrd,nvar,iclose)
+ 5316                if(corden(nactve+1,ivar).le.ab(ivar,2)) then
+ 5317 
+ 5318                  if(iclose.eq.0) nactve=nactve+1
+ 5319 
+ 5320                endif
+ 5321              enddo
+ 5322 c    above enddo for loop over ivar=1,nvar
+ 5323 
+ 5324            enddo
+ 5325 c    above enddo for loop over ipoint=1,nactveold
+ 5326 
+ 5327 
+ 5328       IF(ISUPRES .EQ. 0)
+ 5329      1 write(6,*) 'Number of actve grid points after expansion =',nactve
+ 5330       ngridn=nactve
+ 5331       IF(ISUPRES .EQ. 0) write(6,*)
+ 5332 
+ 5333 cend expansion
+ 5334 c go to begin new cycle
+ 5335 
+ 5336         prefobj=fobj
+ 5337 
+ 5338 
+ 5339         GO TO 1001
+ 5340 
+
+ 5341   900 continue
+ 5342 
+ 5343        write (*,*) "Passed 900"
+
+
+
+12990       subroutine emint(psi,ldpsi,theta,ldtheta,npoint,nsub,ijob,
+12991      &                 x,dx,y,dy,fobj,gap,nvar,keep,IHESS)
+12992 
+ 
+13004 c This subroutine solves the 'EM' problem of maximizing the function
+13005 
+13006 c   fobj(x) = sum_i (log[sum_j ( psi(i,j) * x(j)) ]  ),
+13007 c             j=1,..,npoint and i=1,...,nsub
+13008 c   subject to: x(j) >= 0, sum_j x(j) = 1 (i.e. x is a probability
+13009 c             vector of length npoint)
+13010 c   where psi(i,j) is a fixed non-negative data array representing the
+13011 c   likelihood of point j for subject i
+13012 
+13013 c inputs: psi,ldpsi,npoint,nsub,nvar
+13014 c psi contains the likelihood vectors for each subject - the i-th
+13015 c row of psi is likelikhood vector for subject i.  Thus psi(i,j) is
+13016 c likelihood of the j-th point for c the i-th subject.  The input value
+13017 c ldpsi is the 'leading dimension of psi' - i.e. the first dimension of the
+13018 c array psi as dimensioned in the calling program.
+13019 c
+13020 c input work arrays: dx(*), y(*), dy(*) - should be at least large enough to
+13021 c contain npoint points, as should the probabiltiy array x(*)
+13022 
+13023 c
+13024 c outputs: x(*), fobj
+13025 c x(i) is  final probability for point i
+13026 c fobj - optimal value of the objective function
+13027 
+
+
+
+13457 c following is exit point
+13458 9000  continue
+
+13459 c finish by normalizing x to sum to 1.
+13460 c fobj has already been computed
+13461       sumx=0.
+13462       do i=1,npoint
+13463         sumx=sumx+x(i)
+13464       enddo
+13465       do i=1,npoint
+13466         x(i)=x(i)/sumx
+13467       enddo
+13468 c finished if ijob=0
+13469       if(ijob.eq.0) return
+
+13470       isum=0
+13471       xlim=0.
+13472       do i=1,npoint
+13473         if(x(i).gt.xlim) xlim=x(i)
+13474       enddo
+13475       xlim=xlim*1.d-3
+13476       isum = 0
+13477       do i=1,npoint
+13478         if(x(i).gt.xlim) then
+13479           isum = isum + 1
+13480           list(isum) = i
+13481           do j=1,nsub
+13482             psi(j,isum) = psi(j,i)
+13483           enddo
+13484 cpull
+13485 c now condense the original density grid
+13486           do j=1,nvar
+13487             theta(isum,j)=theta(i,j)
+13488           enddo
+13489           x(isum)=x(i)
+13490         endif
+13491       enddo
+
+13492       job=1
+13493       do k=1,npoint
+13494         ipivot(k)=0
+13495       enddo
+13496 c save a copy of psi after current end of psi
+13497       do i=1,isum
+13498 
+13499         do j=1,nsub
+13500           psi(j,i+isum)=psi(j,i)
+13501         enddo
+13502       enddo
+13503       do i=1,isum
+13504         do j=1,nsub
+13505           psi(j,i) = psi(j,i)/psisum(j)
+13506         enddo
+13507       enddo
+
+13508       call dqrdc(psi,ldpsi,nsub,isum,y,ipivot,dy,job)
+13509 
+13510       keep = 0
+13511       limloop = nsub
+13512       if(isum.lt.nsub) limloop = isum
+13513       do i=1,limloop
+13514         test=dnrm2(i,psi(1,i),1)
+13515 cdebug  write(6,*) i,psi(i,i),test,psi(i,i)/test
+13516         write(6,*) i,psi(i,i),test,psi(i,i)/test
+13517 
+13518       if(dabs(psi(i,i)/test).ge.1.d-8) keep=keep+1
+13519       enddo
+
+
+13531 c sort ipivot to avoid collisions during condensing
+

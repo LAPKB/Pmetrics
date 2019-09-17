@@ -1,0 +1,213 @@
+
+
+
+
+npagranfix6b.f ::
+
+#02403 -----------------------------------------------------------------
+      SUBROUTINE NPAG(MAXSUB,MAXGRD,MAXDIM,MAXACT,
+     1  NUMEQT,MAXOBS,WORK,WORKK,SPXGYJ,DXI,PYJGX,PYJGXX,
+     2  DENSTOR,EXX,CORDEN,CORHOLD,YPREDPOP,YPREDPOPT,YPREDBAY,CORDLAST)
+
+#03428  1001 ICYCLE=ICYCLE+1
+
+#03516      DO 1000 JSUB=1,NSUB
+
+!$omp Do
+
+#03665        DO 800 IG=1,NACTVE
+                IgIsGoodPoint = 1
+
+#03728         CALL IDPC(PX,W,IgIsGoodPoint,JSUB,IG,LengthOfPX)
+
+#03786i       800   CONTINUE
+
+!$omp   End Do
+!$omp   End Parallel
+
+#03864      1000   CONTINUE
+
+#03999      call emint(pyjgx,maxsub,corden,maxgrd,nactve,nsub,1,
+           & corden(1,nvar+1),denstor(1,1),denstor(1,2),denstor(1,3),
+           & fobj,gap,nvar,keep,IHESS)
+
+#04158    14001 continue
+       cgam5 above label is entry point for ierrmod = 1 (no  gamma) case
+
+ *** Optimization for this step is done ***
+
+ *** Compute Statistics ***
+
+#04792      IF(NRANFIX .GT. 0 .AND. ICYCLE .EQ. 1) THEN
+
+
+#04860       CALL ELDERY(NRANFIX+NVAR,START,OPTVAR,VALMIN,1.D-10,STEP,1000,
+            1  CALCRF,0,ICONV,NITER,ICNT,NUMEQT,YO,C0,C1,C2,C3)
+
+#04944      ENDIF -- population fixed parameters are done.
+
+ ***  End Statistics -- Begin Control ***
+
+#05050      cint9.d check to see if resolve bottoms out - if so, start a new
+            c major cycle by resetting it to its highest allowable value, or
+
+#05137      cend control
+            cbegin expansion
+
+cend expansion
+c go to begin new cycle
+
+        prefobj=fobj
+
+#05243
+        GO TO 1001 # 1001 is beginning of a major cycle
+
+  900 continue # This marks the end of major cycling; and start of end stats.
+
+
+#05353        REWIND(27) ... Main loop is FINALLY DONE!!! Last sets of statistics come next.
+
+             DO 6000 JSUB=1,NSUB
+
+
+#05408           CALL IDCALCY( ... IG = 0 - ICENTER ... )
+
+#05497           CALL IDCALCYY(NVAR+NOFIX+NRANFIX,NDIM,PX,TPRED,NUMT(JSUB),
+           1  YYPRED,NUMEQT,
+           2  IgIsGoodPoint,JSUB,0-ICENTER,LengthOfPX)
+
+#05512       6000
+           C NEXT CALCULATE YPREDBAY AND PREDICTED VALUES AT SPECIFIED TIMES.
+               REWIND(27)
+
+#05550       DO 7000 JSUB=1,NSUB
+
+#05659      CALL SUBRES(MAXSUB,MAXACT,JSUB,CORDEN,WORK,MAXGRD,MAXDIM,NVAR,
+           1  NOFIX,VALFIX,SIGFAC,OFAC,AB,PAR,NACTVE,NGRID,VOLSPA,IRAN,CENTER,
+           2  PYJGXX,NRANFIX,RANFIXEST)
+
+#05704           CALL IDCALCY(NVAR+NOFIX+NRANFIX,NDIM,PX,YPRED,NUMEQT,
+           1    IgIsGoodPoint,JSUB,0-ICENTER,LengthOfPX)
+
+#05786           CALL IDCALCYY(NVAR+NOFIX+NRANFIX,NDIM,PX,TPRED,NUMT(JSUB),
+           1  YYPRED,NUMEQT,
+           2  IgIsGoodPoint,JSUB,0-ICENTER,LengthOfPX)
+
+
+#06164       7000
+
+#06465        STOP and END // SUBROUTINE NPAG(...)
+
+#06469 -----------------------------------------------------------------
+        SUBROUTINE FILRED(NOBSER,YO,C0,C1,C2,C3,NUMEQT)
+
+C  FILRED IS CALLED BY MAIN TO READ THE PORTION OF
+C  SCRATCH FILE 27 WHICH APPLIES TO THE SUBJECT UNDER CONSIDERATION. THE
+C  'POINTER' FOR FILE 27 IS IN THE PROPER POSITION TO BEGIN READING THE
+C  INFO FOR THE DESIRED SUBJECT.
+
+#06717 -----------------------------------------------------------------
+        SUBROUTINE CALGRD(NVAR,NGRID,AB,X)
+
+C  THIS SUBROUTINE, CALLED BY MAIN, DETERMINES THE COORDINATES OF
+C  THE IGTH GRID POINT, AND STORES THEM INTO X.
+
+#06815 -----------------------------------------------------------------
+        SUBROUTINE INFAUR(FLAG,DIMEN,ATMOST)
+
+#06957 -----------------------------------------------------------------
+        SUBROUTINE GOFAUR(QUASI)
+
+#07073 -----------------------------------------------------------------
+        SUBROUTINE NOTINT(VOLSPA,NGRID,NACTVE,FUNC,MAXGRD,ESTINT)
+
+C  THIS SUBROUTINE, CALLED BY MAIN, IS A MULTI-DIMENSIONAL INTEGRATOR.
+
+#07107 -----------------------------------------------------------------
+       SUBROUTINE STAZ(VOLSPA,NGRID,NACTVE,NVAR,IND,CORDEN,PROD,MAXGRD,
+     1  NINT,X1,X2,XMODE,X025,X25,X50,X75,X975,SCALINFO,NSUB,MAXDIM)
+
+C  THIS SUBROUTINE, CALLED BY MAIN, CALCULATES THE MODE AND 5 %-TILE
+C  VALUES OF THE APPROXIMATE MARGINAL DENSITY OF R.V. IND, WHOSE
+
+#07328 -----------------------------------------------------------------
+        SUBROUTINE EQUIV(INUM,NAME)
+
+#07399 -----------------------------------------------------------------
+      SUBROUTINE MAKEVEC(NVAR,NOFIX,NRANFIX,IRAN,X,VALFIX,RANFIXEST,PX)
+
+#07437 -----------------------------------------------------------------
+        SUBROUTINE SUBRES(MAXSUB,MAXACT,JSUB,CORDEN,WORK,MAXGRD,MAXDIM,
+     1  NVAR,NOFIX,VALFIX,SIGFAC,OFAC,AB,PAR,NACTVE,NGRID,VOLSPA,IRAN,
+     2  CENTER,PYJGXX,NRANFIX,RANFIXEST)
+
+             DO 800 IG=1,NACTVE 
+
+#07563         CALL IDPC(PX,W,IgIsGoodPoint,JSUB,IG,LengthOfPX)
+
+             CONTINUE // Note: SUBRES is called from the DO 7000 JSUB
+                                 =1,NSUB in main
+
+#08079 -----------------------------------------------------------------
+      subroutine checkd(corden,new,nactveold,ab,maxgrd,nvar,iclose)
+
+#08100 -----------------------------------------------------------------
+        SUBROUTINE GETIPATF(IFILE,NSUBTOT,NSUB,IPATVEC,IERRR,ERRFIL)
+
+C  SUBROUTINE GETIPATF IS CALLED BY MAIN TO OBTAIN THE INDICES OF
+C  THE "ACTIVE" SUBJECTS, IPATVEC(I),I=1,NSUB, FOR THIS RUN. THESE
+C  INDICES ARE OBTAINED FROM FILE IFILE.
+
+#08212 -----------------------------------------------------------------
+        SUBROUTINE GETNUMSF(IINCLUDE,READLINE,NSUBB,NSUBTOT,NUMCUR,
+     1    ISTOP,IPATVECC)
+
+C  SUBROUTINE GETNUMSF IS CALLED BY GETIPATF (OVER AND OVER)
+C  TO ESTABLISH NSUBB AND IPATVECC, WHERE NSUBB IS THE NO. OF SUBJECTS
+C  TO BE INCLUDED (IF IINCLUDE = 1) OR EXCLUDED (IF IINCLUDE = 2) IN THE
+
+#08605 -----------------------------------------------------------------
+        SUBROUTINE WRITEPT2(IFILE,NSUB,IPATVEC)
+
+C  THIS ROUTINE WRITES THE PATIENT NOS. TO FILE IFILE.
+
+#08685 -----------------------------------------------------------------
+        SUBROUTINE GETSUB(READLINE,ISTART,IEND,ISUB,IERROR)
+
+C  THIS ROUTINE, CALLED BY GETNUMSF, OBTAINS THE SUBJECT NO., ISUB,
+C  FROM THE CHARACTERS IN READLINE(ISTART:IEND).
+
+#08727 -----------------------------------------------------------------
+      SUBROUTINE CALCTPRED(JSUB,IDELTA,NOBSER,NUMTSUB,TPRED,TPREDREL,
+     1   NOMAXTIMS,TEND,TBEGG)
+
+#08956 -----------------------------------------------------------------
+        SUBROUTINE CONDENSE(READLINE)
+
+C  SUBROUTINE CONDENSE IS CALLED BY MAIN TO WRITE READLINE WITH AS
+C  SMALL A FORMAT AS POSSIBLE (WITHIN 25 CHARACTERS) TO FILE 26
+
+
+#09257 -----------------------------------------------------------------
+      SUBROUTINE NEWWORK1(MAXSUB,JSUB,TIMOBREL)
+
+#10078 -----------------------------------------------------------------
+      SUBROUTINE ORDERDELTA(NDRUG,DELTAIV,NDELTA,ORDELT)
+
+#10232 -----------------------------------------------------------------
+        SUBROUTINE CALCRF(NTOTPAR,VEC,FNTVAL,NUMEQT,YO,C0,C1,C2,C3)
+
+#10362         CALL IDPC(PX,W,IgIsGoodPoint,JSUB,IsNMPoint,LengthOfPX)
+
+#10387 -----------------------------------------------------------------
+
+        SUBROUTINE ELDERY(N,START,XMIN,YNEWLO,REQMIN,STEP,
+     X  ITMAX,FUNC,IPRINT,ICONV,NITER,ICOUNT,NUMEQT,YO,C0,C1,C2,C3)
+
+
+        Calls FUNC() == CALCRF() many times.
+
+
+#10387 -----------------------------------------------------------------
+         EOF
+

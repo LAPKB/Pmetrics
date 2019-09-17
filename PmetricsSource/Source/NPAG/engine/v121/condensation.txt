@@ -1,0 +1,259 @@
+############################### condensation algorithm
+
+# NOTE:
+# little c are Bob's comments
+# hashtag # are my comments
+
+
+      call emint(pyjgx,maxsub,corden,maxgrd,nactve,nsub,ijob,
+     &corden(1,nvar+1),denstor(1,1),denstor(1,2),denstor(1,3),
+     &fobj,gap,nvar,keep,IHESS)
+
+  
+      subroutine emint(psi,ldpsi,theta,ldtheta,npoint,nsub,ijob,
+     &  x,dx,y,dy,
+     &  fobj,gap,nvar,keep,IHESS)
+
+      implicit real*8 (a-h,o-z)
+      real*8 mu
+      dimension psi(ldpsi,*),theta(ldtheta,*),x(*),dx(*),y(*),dy(*)
+
+         Do IPM() 
+#        If IPM() converged; go to 9000; else repeat
+
+9000  continue
+
+c finish by normalizing x to sum to 1.
+c fobj has already been computed
+      sumx=0.
+      do i=1,npoint
+        sumx=sumx+x(i)
+      enddo
+      do i=1,npoint
+        x(i)=x(i)/sumx
+      enddo
+
+# x are the primal variables, i.e. \lambda
+
+c finished if ijob=0
+      if(ijob.eq.0) return
+#
+# if ijob == 0 condensation code will be skipped
+#
+#   for example the gamma optimization is carried out on the
+#   already condensed grid, and it requires calculation of
+#   pr(support point), which is done by subroutine emint.
+#
+#
+------------------------------------------------------------------------
+# if ijob == 1; then the following condensation code will be run
+#
+      isum=0
+      xlim=0.
+      do i=1,npoint
+        if(x(i).gt.xlim) xlim=x(i)
+      enddo
+      xlim=xlim*1.d-3
+
+# xlim = max(x) / 1000
+
+      isum = 0
+      do i=1,npoint
+        if(x(i).gt.xlim) then
+          isum = isum + 1           # count how many x(i) > xlim
+          list(isum) = i            # keep track of their increments
+          do j=1,nsub
+            psi(j,isum) = psi(j,i)  # psi(j,i) <- psi(j,list)
+          enddo
+# 
+# At this point, psi(SUBJ,1:isum) contains the values from the
+# original psi(SUBJ,SUPPORT) that correspond to SUPPORTS with
+# "high" likelihood = 1/1000 of max likelihood.
+#
+
+cpull
+c now condense the original density grid
+          do j=1,nvar
+            theta(isum,j)=theta(i,j)
+          enddo
+# Do the same condensation with x = lambda/sum(lambda)
+#
+          x(isum)=x(i)
+#
+#   theta = CORDEN[:,NP]
+#   x = &CORDEN[1,NP+1]
+#
+        endif
+      enddo
+#
+# At the end of the above DO loop, we have rearranged the
+# elements in CORDEN so that we can calculate a new likelihood
+# based on only the high probability points.
+#
+# New Likelihood = PYJGX(1:NSUB,1:ISUM) * PX(1:ISUM)
+#
+# !!! BUT we will alter CORDEN again, below !!!
+#
+------------------------------------------------------------------------
+      job=1
+      do k=1,npoint
+        ipivot(k)=0
+      enddo
+c save a copy of psi after current end of psi
+      do i=1,isum
+        do j=1,nsub
+          psi(j,i+isum)=psi(j,i)
+        enddo
+      enddo
+#
+# Normalize the first copy of psi by the ROW sums
+# of the input psi, that included ALL (low and high prob)
+# supports
+#
+      do i=1,isum
+        do j=1,nsub
+          psi(j,i) = psi(j,i)/psisum(j)
+        enddo
+      enddo
+# Above means \foral Y P(Y|G) = 1
+#
+# Assuming the variable PYJGX stores Pr(Y|G) = sum(PRYJGX | J),
+# then this normalization reshapes PYJGX so that it
+# appears to describe the case \forall Y, Pr(Y | G) = 1.
+#
+# Compute qr factorization:
+#
+      call dqrdc(psi,ldpsi,nsub,isum,y,ipivot,dy,job)
+#
+# psi returns as a square matrix describing the qr
+# factorization. The description below comes from the
+# subroutine header for dqrdc.
+#
+c psi	contains in its upper triangle the upper
+c	triangular matrix r of the qr factorization.
+c	below its diagonal x contains information from
+c	which the orthogonal part of the decomposition
+c	can be recovered.  note that if pivoting has
+c	been requested, the decomposition is not that
+c	of the original matrix x but that of x
+c	with its columns permuted as described by jpvt.
+#
+# Note that we set job = 1 above.
+#  therefore, psi returned _WITH_ rearrangement.
+#
+#   I think this implies that P(Y=1|X=1) = Q(1,1)^2*R(1,1);
+# AND since we reorderred (pivoted) during QR factorization,
+# R(1,1) happens to be the most significant element on the
+# diagonal.
+#   Thus, we must keep this point. Furthermore, we will decide
+# to keep or not keep points based on their relative
+# significance to this point.
+# 
+# NOTE: A sample R matrix returned by dqrdc(...) is copied at the 
+# end of this document. The diagonal of R (first column in the
+# printed  R below) is ordered from most to least significant
+
+# We assume the number of high probability points is less
+# than or equal to the number of subjects.  So, we will
+# only keep the best NSUB or less support points:
+#
+      keep = 0
+      limloop = nsub
+      if(isum.lt.nsub) limloop = isum
+      do i=1,limloop
+        test=dnrm2(i,psi(1,i),1)
+c       debugwrite(6,*) i,psi(i,i),test,psi(i,i)/test
+        if(dabs(psi(i,i)/test).ge.1.d-8) keep=keep+1
+      enddo
+
+# I used this write statement to figure out how
+# the QR factorization is used
+#      write (*,*) "R :: "
+#      do i=1,limloop
+#         do j=1,limloop
+#            write(*, '(D12.6,X)', advance='no') psi(j,i)
+#         end do
+#         write(*, *) ipivot(i)
+#      end do
+
+c sort ipivot to avoid collisions during condensing
+      if(isum.gt.1) then
+        do i=1,keep-1
+          do j=i,keep
+            if(ipivot(i)*ipivot(j).ne.0.and.ipivot(i).gt.ipivot(j)) then
+              itemp=ipivot(i)
+              ipivot(i)=ipivot(j)
+              ipivot(j)=itemp
+            endif
+          enddo
+        enddo
+      endif
+#
+# ipivot(i) contains the reordering returned from dqrdc()
+#
+
+c restore psi
+      do i=1,isum
+        do j=1,nsub
+          psi(j,i)=psi(j,i+isum)
+        enddo
+      enddo
+
+#
+# Condensation is HERE:
+#
+      do k=1,npoint
+        dx(k)=0
+      enddo
+      sumkeep = 0.
+      do k=1,keep      ! We keep 'keep' points of the input grid
+        j=ipivot(k)    ! These are the specific points kept
+
+        if(j.ne.0) then   ! rewrite PYJGX and CORDEN
+          do jj=1,nsub
+            psi(jj,k)=psi(jj,j)
+          enddo
+          do jvar=1,nvar
+            theta(k,jvar) = theta(j,jvar)
+          enddo
+        endif
+        if(j.gt.0) dx(list(j))=1.
+        if(j.gt.0) sumkeep = sumkeep + x(list(j))
+        if(j.gt.0) w(k)=x(list(j))
+      enddo
+
+      return
+      end
+
+(***) Sample matrix R, returned from dqrdc()
+
+Cycle = 11 of a Greco Model and HCV data
+Each row, i, is = R(i,i:isum) followed by ipivot(i); The very last row prints isum and keep
+C wmy2017Sep15 debug
+      write (*,*) "R :: "
+      do i=1,limloop
+         do j=i,limloop
+            write(*, '(D12.6,X)', advance='no') psi(j,i)
+         end do
+         write(*, *) ipivot(i)
+      end do
+
+R :: 
+-.237251D+00 0.151118-112 0.225001-122 0.100504D-39 0.697951-111 0.346170-131 0.171685-149 0.144140-243 0.627729-170 0.100000D+01 0.530712-192 0.121767-177 0.277261-151 0.331678D-59 0.387368-131 0.000000D+00            1
+0.128006D+00 0.148615-187 0.663834-105 -.411931D-37 -.427500D-56 -.274256-101 -.225547D+00 -.246160D-31 0.660508D-65 -.252657D-01 -.184354D-08 -.127345D-87 -.136482D-17 -.973905D+00 -.961928D-16            6
+-.111758D+00 0.611491D-04 -.186941D-94 0.188320D-61 -.159128-153 -.102357D-57 0.876638D-67 0.299750-122 -.114660D-58 -.836627D-66 0.100000D+01 -.307417D-63 -.441974D-57 0.471778D-41           27
+-.108661D+00 0.106261D-26 0.370880D-25 0.666849D-64 -.307831D-18 -.335965D-49 -.331679D-59 -.344832D-19 -.251610D-26 0.307417D-63 0.100000D+01 -.132921D-17 -.131286D-33            4
+-.103086D+00 0.187255D-29 0.231603D-38 0.266503D-05 0.129648D-13 0.421716D-71 0.104864D-06 0.100000D+01 0.981723D-23 0.160546D-18 -.621810D-06 0.258138D-06            3
+-.985345D-01 -.300269D-52 -.345516D-19 0.100000D+01 -.546745D-85 -.135953D-20 -.129648D-13 -.127278D-36 -.208144D-32 0.806163D-20 -.334670D-20            8
+0.917322D-01 -.368786D+00 0.143521D-34 0.847530D-65 -.923060D+00 0.114762D-05 0.113858D-28 0.186198D-24 0.109354D+00 0.299393D-12            7
+0.899329D-01 0.209133D-35 0.362542D-77 -.249286D-12 0.258138D-06 0.253420D-29 0.414429D-25 -.127679D-12 -.100000D+01           28
+0.672191D-01 0.686608D+00 -.446419D+00 0.176053D-05 0.173399D-28 0.283568D-24 0.140433D+00 -.556379D+00           26
+-.527843D-01 -.315758D+00 -.704400D+00 -.691525D-23 -.113088D-18 0.996446D-01 -.394891D+00            5
+-.408755D-01 0.160546D-18 -.611491D-04 -.100000D+01 0.132921D-17 0.307832D-18           24
+-.393845D-01 -.100000D+01 0.611491D-04 -.812798D-22 -.188236D-22           12
+-.362187D-01 0.252657D-01 0.973905D+00 0.225547D+00           25
+-.108707D-16 0.570442D+00 0.280432D+00           11
+-.534114D-17 0.156563D+00           15
+0.000000D+00           16
+ isum,keep          28          13
+

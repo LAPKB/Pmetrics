@@ -1,0 +1,33 @@
+
+C Interface for SUBROUTINE SHIFT()
+
+       interface
+        SUBROUTINE SHIFT(TAU,ND,SIG,NDRUG,NADD,RS,INTLIST)
+
+        USE npag_utils, only: max_doses,max_RS_J
+
+        IMPLICIT NONE
+
+C - arguments and intent
+C        integer, intent(INOUT) :: NTAU
+        double precision, intent(INOUT) :: tau(:)
+        integer, intent(INOUT) :: ND
+        double precision, dimension(max_doses), intent(INOUT) :: SIG
+        integer, intent(IN) :: NDRUG,NADD
+        double precision, dimension(max_doses,max_RS_J),                &  ! f90 continuation
+     1    intent(INOUT) :: RS
+        integer, dimension(128),intent(INOUT) :: INTLIST
+
+C - local to shift - don't include in interface
+c        integer, dimension(7) :: INDIV, INDBOL
+c        integer, dimension(20) :: INDCOV
+c        double precision, dimension(34) :: TIMCAN
+c        integer I,IDOSE,IND,ISAME1,ISAME2,ISAME3,NI
+c        double precision RR,VALAST
+
+c        double precision, dimension(7,max_doses,2), save :: XIV, BOL
+c        double precision, dimension(20,max_doses,2), save :: COV
+c!$omp   Threadprivate(XIV,BOL,COV)
+
+        end SUBROUTINE SHIFT
+       end interface
