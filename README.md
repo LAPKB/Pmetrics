@@ -1,2 +1,2 @@
-# pm_bets
+# pm_beta
 The next release
