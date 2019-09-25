@@ -147,7 +147,9 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
     if (file.exists("./Pmetrics/src/Pmetrics.so")) {
       file.remove("./Pmetrics/src/Pmetrics.so")
     }
-    document("Pmetrics") # will re-create the two files just deleted.
+    devtools::load_all(path = "./Pmetrics") # 1st half of document(), below
+    devtools::document(pkg = "Pmetrics") # will re-create the two files just deleted.
+    # roxygen2::roxygenise() # should do second half of document(), above.
     if(pdf){
       file.remove("./Pmetrics/inst/doc/Pmetrics-manual.pdf")
       system("R CMD Rd2pdf --output=./Pmetrics/inst/doc/Pmetrics-manual.pdf --no-preview ./Pmetrics/man")

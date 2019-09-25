@@ -31,6 +31,10 @@ Suggests:
     shiny,
     openxlsx,
     Matrix,
-    rjson
+    rjson,
+    stringi,
+    ggplot2,
+    mclust
 Roxygen: list(wrap = FALSE)
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
+Encoding: UTF-8
