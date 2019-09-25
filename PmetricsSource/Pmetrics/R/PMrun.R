@@ -105,7 +105,8 @@
     oldmod <- paste("../",data,"/inputs/",gsub("\\..*","", oldmod ),".txt",sep="")
 # compare old and new model error block
 #
-#The following objects are masked _by_ ‘.GlobalEnv’:
+#
+# The following objects are masked _by_ .GlobalEnv:
 #
 #    compareTwoModelERRs, getNPinstr
 #
