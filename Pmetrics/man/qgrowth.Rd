@@ -4,8 +4,8 @@
 \alias{qgrowth}
 \title{Extract CDC pediatric growth charts}
 \usage{
-qgrowth(sex = c("M", "F", "B"), percentile = c("5", "10", "25", "50", "75",
-  "90", "95"), agemos = (seq(0, 18) * 12))
+qgrowth(sex = c("M", "F", "B"), percentile = c("5", "10", "25", "50",
+  "75", "90", "95"), agemos = (seq(0, 18) * 12))
 }
 \arguments{
 \item{sex}{A single quoted character: \dQuote{M} for males, \dQuote{F} for females, or \dQuote{B} for both, in which case an average

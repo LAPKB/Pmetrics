@@ -1,15 +1,20 @@
 
 makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,buildData=NULL,parallel=T,
                          ITver,NPver,SIMver,DOPTver,MBver){
-  wd <- getwd()
+  wd <- paste(getwd(), "/", sep="")
+  setpmwd <- function(path){
+    setwd(paste(wd, path, sep=""))
+  }
+  print(wd)
   require(devtools)
   OS <- switch(.Platform$OS.type,unix=1,windows=2)
   if(OS==1){
     #do this only if fortran files have changed
     if(fortranChange==T){
       #remove old files
-      system("rm ~/LAPK/PmetricsSource/Pmetrics/inst/code/*.f")
-      setwd("~/LAPK/PmetricsSource/Source")
+      #system("rm ~/LAPK/PmetricsSource/Pmetrics/inst/code/*.f")
+      system(paste(paste("rm ", wd), "/Pmetrics/inst/code/*.f"))
+      setpmwd("Source")
       
       #copy source files to inst/code
       system(paste("cat ./IT2B/prep/*.* > ../Pmetrics/inst/code/ITprep_",ITver,".f",sep=""))
@@ -30,7 +35,8 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,buildData=NULL,pa
       #remove comment lines and clean up
       rmComm <- function(files){
         for (i in files){
-          system(paste("~/LAPK/PmetricsSource/Source/win2mac.sa",i))
+          
+          system(paste(paste(wd, "Source/win2mac.sa", sep=""),i))
           file.remove(i)
           file.rename("newfile.txt",i)
           code <- readLines(i)
@@ -46,21 +52,23 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,buildData=NULL,pa
           writeLines(code,i,sep="\r\n")
         }
       }
-      
-      setwd("~/LAPK/PmetricsSource/Pmetrics/inst/code")
+      setpmwd("Pmetrics/inst/code")
+      #setwd("~/LAPK/PmetricsSource/Pmetrics/inst/code")
       rmComm(files=list.files())
-      setwd("~/LAPK/PmetricsSource/Pmetrics/inst/config")
+      setpmwd("Pmetrics/inst/config")
+      #setwd("~/LAPK/PmetricsSource/Pmetrics/inst/config")
       writeLines("1","newFort.txt")
       
       
       
       
     } else {
-      setwd("~/LAPK/PmetricsSource/Pmetrics/inst/config")
+      setwd("Pmetrics/inst/config")
       writeLines("0","newFort.txt")
     }
     #do this for all changes    
-    setwd("~/LAPK/PmetricsSource")
+    setwd(wd)
+    print(getwd())
     document("Pmetrics")
     if(pdf){
       file.remove("./Pmetrics/inst/doc/Pmetrics-manual.pdf")
@@ -86,7 +94,8 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,buildData=NULL,pa
     #build example datasets
     #NPAG
     if(buildData$npag){
-      setwd("~/LAPK/PmetricsSource/Test/NPAG")
+      setpmwd("Test/NPAG")
+      #setwd("~/LAPK/PmetricsSource/Test/NPAG")
       file.copy(from=c("../src/model.txt","../src/ex.csv"),to=getwd(),overwrite=T)
       NPrun(data="ex.csv",cycles=100,run=1,overwrite=T,intern=T)
       PMload(1)
@@ -94,19 +103,23 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,buildData=NULL,pa
     }
     if(buildData$it2b){
       #IT2B
-      setwd("~/LAPK/PmetricsSource/Test/IT2B")
+      setpmwd("Test/IT2B")
+      #setwd("~/LAPK/PmetricsSource/Test/IT2B")
       file.copy(from=c("../src/model.txt","../src/ex.csv"),to=getwd(),overwrite=T)
       ITrun(data="ex.csv",cycles=100,run=1,overwrite=T,intern=T)
       PMload(1)
-      save(ITdata.1,final.1,cycle.1,op.1,cov.1,mdata.1,file="~/LAPK/PmetricsSource/Pmetrics/data/PMex2.rda")
+      # save(ITdata.1,final.1,cycle.1,op.1,cov.1,mdata.1,file="~/LAPK/PmetricsSource/Pmetrics/data/PMex2.rda")
+      save(ITdata.1,final.1,cycle.1,op.1,cov.1,mdata.1,file=paste(wd,"Pmetrics/data/PMex2.rda"))
     }
     if(buildData$baddata){
-      setwd("~/LAPK/PmetricsSource/Test")
+      setpmwd("Test")
+      #setwd("~/LAPK/PmetricsSource/Test")
       badData <- PMreadMatrix("src/ex_bad.csv")
-      save(badData,file="~/LAPK/PmetricsSource/Pmetrics/data/PMex3.rda")
+      save(badData,file=paste(wd, "Pmetrics/data/PMex3.rda"))
+      # save(badData,file="~/LAPK/PmetricsSource/Pmetrics/data/PMex3.rda")
     }
-    
-    setwd("~/LAPK/PmetricsSource")
+    setpmwd("PmetricsSource")
+    # setwd("~/LAPK/PmetricsSource")
     
     if(check) check("Pmetrics")
     if(build){
@@ -116,7 +129,8 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,buildData=NULL,pa
     install("Pmetrics")
     
     #copy to repository
-    setwd("~/LAPK/PmetricsSource")
+    setpmwd("PmetricsSource")
+    # setwd("~/LAPK/PmetricsSource")
     Rvers <- paste(version$major,substr(version$minor,1,1),sep=".")
     
     #tar.gz

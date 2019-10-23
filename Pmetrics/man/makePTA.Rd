@@ -5,14 +5,15 @@
 \title{Calculation of PTAs}
 \usage{
 makePTA(simdata, simlabels, targets, target.type, success, outeq = 1,
-  free.fraction = 1, start, end)
+  free.fraction = 1, start, end, icen = "median", block = 1)
 }
 \arguments{
-\item{simdata}{A vector of simulator output filenames, e.g. c(\dQuote{simout1.txt},\dQuote{simout2.txt}),
+\item{simdata}{Can be one of multiple inputs.  Typically it is a vector of simulator output filenames, e.g. c(\dQuote{simout1.txt},\dQuote{simout2.txt}),
 with wildcard support, e.g. \dQuote{simout*} or \dQuote{simout?}, or
 a list of PMsim objects made by \code{\link{SIMparse}} with suitable simulated regimens and observations.  The number and times of simulated
-observations does not have to be the same in all objects.  Alternatively a \emph{PMpta} object previously made with
-\code{makePTA} can be passed for recalculation with a new success value or simlabels.}
+observations does not have to be the same in all objects.  It can also be a \emph{PMpta} object previously made with
+\code{makePTA} can be passed for recalculation with a new success value or simlabels.  Finally, \emph{PMpost} and \emph{PMmatrix} objects are 
+also allowed.}
 
 \item{simlabels}{Optional character vector of labels for each simulation.  Default is \code{c(\dQuote{Regimen 1}, \dQuote{Regimen 2},...)}.}
 
@@ -61,7 +62,8 @@ Calculates the Percent Target Attainment (PTA)
 }
 \details{
 \code{makePTA} will calculate the PTA for any number of simulations, targets and definitions of success.
-Simulations typically differ by dose, but may differ by other features such as children vs. adults.
+Simulations typically differ by dose, but may differ by other features such as children vs. adults. This function will also
+accept data from real subjects either in the form of a \emph{PMpost} or a \emph{PMmatrix} object.
 If a \emph{PMpta} object is passed to the function as the \code{simdata}, the only other parameter required is success. 
 If desired, a new set of simlabels can be specified; all other parameters will be ignored.
 }
