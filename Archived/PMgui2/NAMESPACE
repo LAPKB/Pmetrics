@@ -1,0 +1,43 @@
+# last modified 25 July 2011 by J. Fox
+
+import(tcltk)
+
+export(activateMenus, activeDataSet, ActiveDataSet, activeDataSetP, activeModel,
+ActiveModel, activeModelP, aicP, assignCluster, bin.var, buttonPMgui,
+checkActiveDataSet,
+checkActiveModel, checkBoxes, checkClass, checkFactors, checkMethod, 
+checkNumeric, checkReplace,
+checkTwoLevelFactors, checkVariables, closePmetrics,
+closeDialog, colPercents, Pmetrics,
+PmetricsPosition, PmetricsWindow, Confint, dataSetsP, defmacro,
+dialogSuffix, doItAndPrint, errorCondition, exists.method,
+Factors, factorsP, formulaFields, flushDialogMemory, 
+getDialog, getFrame, getPMgui, getSelection, gettextPMgui,
+glmP, GrabFocus, groupsBox, groupsLabel, hclustSolutionsP, Hist, initializeDialog, 
+is.valid.name, is.SciViews, justDoIt, KMeans, labelPMgui, Library,
+listAllModels, listAOVModels, listDataSets, listFactors, listGeneralizedLinearModels, 
+listLinearModels, listMultinomialLogitModels, listNumeric, listPlugins, 
+listProportionalOddsModels, listTwoLevelFactors, listVariables, 
+lmP, logger, LogWindow, MacOSXP, mergeRows,
+Message, MessagesWindow, modelFormula, modelsP, multinomP, Numeric,
+numericP, numSummary, OKCancelHelp, OutputWindow, packageAvailable, partial.cor,
+plotMeans, polrP, popCommand, popOutput, putDialog, putPMgui, 
+radioButtons, rglLoaded, PMguiPager, PMguiTclSet, 
+PMguiTkmessageBox, rcorr.adjust,
+reliability, RExcelSupported, rowPercents, sortVarNames, stepwise, subOKCancelHelp,
+subsetBox, tclvalue, totPercents, trim.blanks, ttkentry, ttkframe, ttkradiobutton,
+ttkscrollbar, TwoLevelFactors, twoLevelFactorsP, 
+UpdateModelNumber, variableListBox, Variables, varPosn)
+
+S3method(Confint, glm)
+S3method(Confint, default)
+S3method(Confint, multinom)
+S3method(confint, multinom)
+S3method(confint, polr)
+S3method(mergeRows, data.frame)
+S3method(print, numSummary)
+S3method(print, reliability)
+S3method(print, rcorr.adjust)
+S3method(getFrame, listbox)
+S3method(getSelection, listbox)
+

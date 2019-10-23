@@ -1,0 +1,44 @@
+Remote Computer has registered but is not reachable, trying through forwarder 128.125.96.64:33333
+===== 2012-03-19 21:38:13: Job 'Source': SYNC started by User on computer 'Neely MacBook Pro' =====
+Source: /Users/neely/LAPK/R_NPAG/Source =forced-PropDels=> gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source, SavePrevVers, CleanupPrevVers=30d, CleanupOldGens=12m, TmpDest, EstReq, CopyLocked, DetectMovesAndRenames, DetectFolderMoves, FileLinksDrill, Reconnect=3, ChangeLimit=10
+Delete File 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/32/SimGF_101E.o'
+Delete File 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/64/SimGF_101E.o'
+Delete File 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/Simulator/engine/MONT101E.FOR'
+Delete File 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/Simulator/engine/SimMacGF_101E.o'
+Upload: 18 out of 18 common blocks (100%) are the same. New blocks: 0
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/catenated/ITeng_18.f' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/catenated/ITeng_18.f'
+Upload: 13 out of 13 common blocks (100%) are the same. New blocks: 0
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/catenated/ITerr_18.f' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/catenated/ITerr_18.f'
+Upload: 16 out of 16 common blocks (100%) are the same. New blocks: 0
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/catenated/ITprep_18.f' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/catenated/ITprep_18.f'
+Upload: 25 out of 25 common blocks (100%) are the same. New blocks: 0
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/catenated/NPeng_16.f' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/catenated/NPeng_16.f'
+Upload: 19 out of 19 common blocks (100%) are the same. New blocks: 0
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/catenated/NPprep_16.f' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/catenated/NPprep_16.f'
+Upload: 0 out of 10 common blocks (00%) are the same. New blocks: 2
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/compiled/32/ITengGF_18.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/32/ITengGF_18.o'
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/compiled/32/ITerrGF_18.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/32/ITerrGF_18.o'
+Upload: 0 out of 13 common blocks (00%) are the same. New blocks: 1
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/compiled/32/ITprepGF_18.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/32/ITprepGF_18.o'
+Upload: 0 out of 12 common blocks (00%) are the same. New blocks: 2
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/compiled/32/NPengGF_16.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/32/NPengGF_16.o'
+Upload: 0 out of 15 common blocks (00%) are the same. New blocks: 1
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/compiled/32/NPprepGF_16.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/32/NPprepGF_16.o'
+Copy New '/Users/neely/LAPK/R_NPAG/Source/compiled/32/SIMengGF_101F.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/32/SIMengGF_101F.o'
+Upload: 0 out of 9 common blocks (00%) are the same. New blocks: 0
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/compiled/64/ITengGF_18.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/64/ITengGF_18.o'
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/compiled/64/ITerrGF_18.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/64/ITerrGF_18.o'
+Upload: 0 out of 13 common blocks (00%) are the same. New blocks: 0
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/compiled/64/ITprepGF_18.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/64/ITprepGF_18.o'
+Upload: 0 out of 12 common blocks (00%) are the same. New blocks: 0
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/compiled/64/NPengGF_16.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/64/NPengGF_16.o'
+Upload: 0 out of 15 common blocks (00%) are the same. New blocks: 0
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/compiled/64/NPprepGF_16.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/64/NPprepGF_16.o'
+Copy New '/Users/neely/LAPK/R_NPAG/Source/compiled/64/SIMengGF_101F.o' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/compiled/64/SIMengGF_101F.o'
+Copy Over '/Users/neely/LAPK/R_NPAG/Source/makePmetrics.R' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/makePmetrics.R'
+Copy New '/Users/neely/LAPK/R_NPAG/Source/Simulator/engine/MONT101F.FOR' -> 'gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/Simulator/engine/MONT101F.FOR'
+Save State File /Users/neely/LAPK/R_NPAG/Source/_gsdata_/_file_state_v4._gs
+Save State File gstp://lapk-vista4x.mnneely.goodsync/file:///C:/LAPK/R_NPAG/Source/_gsdata_/_file_state_v4._gs
+Items Synced OK: 23, Errors: 0
+===== 2012-03-19 21:40:45: Sync Completed. Time: 00:02:35, Speed: 53K/s =====
+

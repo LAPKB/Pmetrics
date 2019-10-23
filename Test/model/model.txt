@@ -1,0 +1,48 @@
+#Primary Ka
+Vc0
+CLmcy
+Qm
+Vp0
+Tlag1
+A2
+FAcyp
+CLfcy
+CLmnocy
+CLfnocy
+Qf#Covar
+WT
+TXT
+HCT
+SSCONC
+BILI
+NIF
+CRP
+ALAT
+ASAT
+ALB
+ALP
+AGEy
+CYP
+SEX
+BMI
+FFM
+MP
+STREQ
+#Secondary FFMc = FFM/59
+CL = CLmcy*FFMc**0.75
++IF(SEX.GT.0.D0.AND.CYP.GT.0.D0) CL = CLfcy*FFMc**0.75
++IF(SEX.LT.1.D0.AND.CYP.LT.1.D0) CL = CLmnocy*FFMc**0.75
++IF(SEX.GT.0.D0.AND.CYP.LT.1.D0) CL = CLfnocy*FFMc**0.75
+Q = (Qm*(1-SEX)+Qf*SEX)*FFMc**0.75
+VP = Vp0*FFMc
+V = Vc0*FFMc
+KE = CL/V
+KCP = Q/V
+KPC = Q/VP#Initial X(2) = SSCONC* Vc0*FFMc
+X(3) = A2#FFA(1) = FAcyp
+IF(CYP.LT.1.D0) FA(1)=1.D0
+
+#Lag
+TLAG(1)=Tlag1*FFMc
+#OutY(1)=X(2)/V
+

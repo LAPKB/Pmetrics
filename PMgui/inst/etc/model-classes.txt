@@ -1,0 +1,8 @@
+# the following classes define statistical models recognized by the PMgui
+
+# last modified 21 November 04 by J. Fox
+
+lm
+glm
+multinom
+polr
