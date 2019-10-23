@@ -1,0 +1,33 @@
+\name{skewness}
+\alias{skewness}
+\title{Skewness}
+\usage{
+  skewness(x)
+}
+\arguments{
+  \item{x}{a numeric vector containing the values whose
+  skewness is to be computed. NA values are removed in the
+  computation.}
+}
+\value{
+  The skewness of \code{x}.
+}
+\description{
+  Computes the skewness.
+}
+\details{
+  If \eqn{N = \mathrm{length}(x)}{N = length(x)}, then the
+  skewness of \eqn{x} is defined as \deqn{N^{-1}
+  \mathrm{sd}(x)^{-3} \sum_i (x_i - \mathrm{mean}(x))^3.}{
+  N^(-1) sd(x)^(-3) sum_i (x_i - mean(x))^3.}
+}
+\examples{
+x <- rnorm(100)
+skewness(x)
+}
+\references{
+  G. Snedecor, W. Cochran. \emph{Statistical Methods},
+  Wiley-Blackwell, 1989
+}
+\keyword{univar}
+

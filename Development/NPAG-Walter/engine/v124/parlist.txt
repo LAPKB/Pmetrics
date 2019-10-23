@@ -1,0 +1,33 @@
+RPAR ::
+
+1:22   Reserved
+23 + 1:32 = P(1:32)
+55 + 1:37 = R(1:37)
+93 = JSUB
+94 = IG
+96 = gamma
+97 = flat
+98:125 = (C0,C1,C2,C3)
+126 = SIGFAC
+127 = OFAC
+128 = \sum ((obs - pred)/sigma)^2 -- for obs ~ Normal
+129 = \Prod pr(obs) -- for obs ~ Poisson
+
+F(:) = (y - mu)/sigma -- for all observations
+
+
+IPAR(23 + I) = INTLIST(I)
+IPAR(23 + 11) = JSUB
+IPAR(23 + 12) = IG
+IPAR(36) = DO# in 1000, 6000, 7000
+IPAR(37) = CYCLE# in Do loop DO#
+IPAR(38) = ierrmod
+IPAR(39) = MISVAL
+IPAR(40) = NNORMALOBS
+IPAR(41) = NPOISSONOBS
+
+IPAR(100) = logical, if 0 then P(JSUB|IG) <- 0
+
+IPAR(110 + J) in {229, ~229} = flag for Poisson
+(note: set to 229 if C0 = C2 = C3 = 229 in model.txt)
+IPAR(120 + J) in {10, ~10} obs = log10(measurement)

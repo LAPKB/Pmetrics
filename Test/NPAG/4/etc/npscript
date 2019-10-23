@@ -1,0 +1,45 @@
+cd '/Users/Neely/LAPK/PmetricsSource/Test/NPAG'
+echo Unix>time.txt
+date +%s>>time.txt
+./np_prep MacOSX < PMcontrol
+echo 1 > extnum
+echo go > go
+gfortran -O3 -w -fopenmp -fmax-stack-var-size=32768 -o np_run '/Users/Neely/.config/Pmetrics/compiledFortran/pNPeng.o' npagdriv.f
+./np_run < go
+echo;echo Cleaning up....;echo
+stty -echo
+mkdir 4
+mkdir 4/inputs
+mkdir 4/outputs
+mkdir 4/wrkcopy
+mkdir 4/etc
+echo ex.csv >> NP_RF0001.TXT
+if [ ! -f NP_RF0001.TXT ]; then error=true; else error=false; fi
+if [ -f DEN* ]; then mv DEN* 4/outputs; fi
+if [ -f OUT0* ]; then mv OUT0* 4/outputs; fi
+if [ -f OUTT* ]; then mv OUTT* 4/outputs; fi
+if [ -f PRTB* ]; then mv PRTB* 4/outputs; fi
+if [ -f ILOG* ]; then mv ILOG* 4/outputs; fi
+if [ -f NP_RF* ]; then mv NP_RF* 4/outputs; fi
+if [ -f ERROR* ]; then mv ERROR* 4/outputs; fi
+mv instr.inx 4/etc
+mv log.txt 4/outputs
+mv PMcontrol 4/etc
+mv model.for 4/etc/model.for
+mv model.txt 4/inputs/model.txt
+mv XQZPJ*.ZMQ 4/wrkcopy
+mv extnum 4/etc
+mv npag*.* 4/etc
+rm CHMAX*.*
+if [ -f FROM0001 ]; then mv FROM0001 4/inputs; fi
+rm fort.*
+rm go
+mv np_prep* 4/etc
+mv np_run* 4/etc
+mv ex.csv 4/inputs
+date +%s >> time.txt
+mv time.txt 4/outputs
+if ! $error ; then 
+/Library/Frameworks/R.framework/Versions/3.2/Resources/bin/Rscript '/Library/Frameworks/R.framework/Versions/3.2/Resources/library/Pmetrics/report/NPrepScript.R' '/Users/Neely/LAPK/PmetricsSource/Test/NPAG/4/outputs' median TRUE
+open '/Users/Neely/LAPK/PmetricsSource/Test/NPAG/4/outputs/NPAGreport.html' ; fi
+mv npscript 4/etc
