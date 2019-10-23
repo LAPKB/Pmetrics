@@ -6,9 +6,10 @@
 \usage{
 SIMrun(poppar, limits = NULL, model = "model.txt", data = "data.csv",
   split, include, exclude, nsim = 1000, predInt = 0, covariate,
-  usePost = F, seed = -17, ode = -4, obsNoise, doseTimeNoise = rep(0,
-  4), doseNoise = rep(0, 4), obsTimeNoise = rep(0, 4), makecsv, outname,
-  clean = T, silent = F, nocheck = F, overwrite = F)
+  usePost = F, seed = -17, ode = -4, obsNoise,
+  doseTimeNoise = rep(0, 4), doseNoise = rep(0, 4),
+  obsTimeNoise = rep(0, 4), makecsv, outname, clean = T, silent = F,
+  nocheck = F, overwrite = F)
 }
 \arguments{
 \item{poppar}{Either an object of class \emph{PMfinal} (see \code{\link{makeFinal}})
