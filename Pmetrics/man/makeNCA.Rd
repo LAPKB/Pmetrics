@@ -4,9 +4,9 @@
 \alias{makeNCA}
 \title{Non-compartmental analysis}
 \usage{
-makeNCA(x, postPred = F, include, exclude, input = 1, icen = "median",
-  outeq = 1, block = 1, start = 0, end = Inf, first = NA, last = NA,
-  terminal = 3)
+makeNCA(x, postPred = F, include, exclude, input = 1,
+  icen = "median", outeq = 1, block = 1, start = 0, end = Inf,
+  first = NA, last = NA, terminal = 3)
 }
 \arguments{
 \item{x}{Data to analyze.  This can be specified in a number of ways.
