@@ -1,0 +1,5 @@
+ NPAG  run initiated at 13:05 on 2015 Jul 20. 
+PREP FILES: /Users/Neely/.config/Pmetrics/compiledFortran/sNPprep.o 
+ENGINE FILES: /Users/Neely/.config/Pmetrics/compiledFortran/sNPeng.o 
+
+

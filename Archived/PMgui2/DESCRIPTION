@@ -1,0 +1,54 @@
+Package: PMgui
+Maintainer: Michael Neely <contact@lapk.org>
+License: GPL (>= 2)
+Title: PMgui is a package based on Rcommander that provides a
+    graphical user interface to Pmetrics, a parametric and non-parametric
+    pharmacometric modeling and simulation software package
+Type: Package
+LazyLoad: yes
+Author: Michael Neely <contact@lapk.org>
+Description: This package contains menus to run and
+    analyze the output from all three components of the
+    Pmetrics software suite for population pharmacometric
+    data analysis: 1) IT2B (Iterative Two-Stage Bayesian)
+    for parametric models; 2) NPAG (Non-parametric Adaptive
+    Grid) for non-paramametric models; 3) Simulator for
+    semi-parametric Monte-Carlo simulations.
+Author@R: person("Michael", "Neely",
+    email="contact@lapk.org", role="aut")
+Version: 0.1
+URL: http://www.lapk.org
+Date: 2012-04-26
+Depends:
+    R (>= 2.14.0),
+    tcltk,
+    grDevices,
+    utils,
+    car (>= 2.0-0)
+Suggests:
+ByteCompile: yes
+Description: A platform-independent basic-statistics GUI (graphical
+    user interface) for R, based on the tcltk package.
+License: GPL (>= 2)
+Collate:
+    'Rexcel-specific.R'
+    'cluster.R'
+    'data-menu.R'
+    'distributions-menu.R'
+    'distributions-plotDistributions-menu.R'
+    'distributions-sample.R'
+    'file-menu.R'
+    'graphs-menu.R'
+    'model-menu.R'
+    'pmetrics.R'
+    'sciviews-specific.R'
+    'startup.R'
+    'statistics-dimensional-menu.R'
+    'statistics-means-menu.R'
+    'statistics-models-menu.R'
+    'statistics-nonparametric-menu.R'
+    'statistics-proportions-menu.R'
+    'statistics-summaries-menu.R'
+    'statistics-tables-menu.R'
+    'statistics-variances-menu.R'
+    'utilities.R'

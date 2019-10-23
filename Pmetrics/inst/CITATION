@@ -1,0 +1,23 @@
+
+    
+citHeader("To cite package 'Pmetrics' in publications use:")
+     
+## R >= 2.8.0 passes package metadata to citation().
+if(!exists("meta") || is.null(meta)) meta <- packageDescription("Pmetrics")
+year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
+vers <- paste("R package version", meta$Version)
+
+bibentry(bibtype="Article",
+         title = "Accurate Detection of outliers and subpopulations with Pmetrics: a non-parametric and parametric pharmacometric modeling and simulation package for R",
+         author = c(as.person("Michael Neely"),
+                             person(given="Michael",family="van Guilder"),
+                             as.person("Walter Yamada"),
+                             as.person("Alan Schumitzky"),
+                             as.person("Roger Jelliffe")),
+         year = "2012",
+         journal = "Therapeutic Drug Monitoring",
+	 volume = "34",
+	 number = "4",
+	 pages = "467-476",
+         textVersion = "Neely MN, van Guilder MG, Yamada WM, Schumitzky A, Jelliffe RW. Accurate detection of outliers and subpopulations with Pmetrics, a nonparametric and parametric pharmacometric modeling and simulation package for R. Therapeutic Drug Monitoring. 2012; 34(4): 467-476.")
+

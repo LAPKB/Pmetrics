@@ -1,0 +1,2 @@
+useDynLib(MTSKNN, knn)
+export(mtsknn, mtsknn.eq, mtsknn.neq, mtsknn.discard)

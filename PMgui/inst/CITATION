@@ -1,0 +1,14 @@
+ citHeader("To cite the 'Rcmdr' package in publications use:")
+ 
+  bibentry(
+     bibtype = "Article",
+     title = "The {R} {C}ommander: A Basic Statistics Graphical User Interface to {R}",
+     author = as.person("John Fox [aut]"),
+     year = "2005",
+     journal = "Journal of Statistical Software",
+     volume = "14",
+     number = "9",
+     pages = "1--42",
+     url = "http://www.jstatsoft.org/v14/i09",
+     textVersion="Fox, J. (2005). The R Commander: A Basic Statistics Graphical User Interface to R. Journal of Statistical Software, 14(9): 1--42."
+  )
