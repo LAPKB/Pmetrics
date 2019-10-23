@@ -12,7 +12,7 @@ plot.PMvalid <- function(x,type="vpc",lower=0.025,upper=0.975,
   ggplot2.installed <- require(ggplot2,quietly=T,warn.conflicts=F)
   if(!ggplot2.installed) stop("Package ggplot2 not installed.")
   
-  #calculate lower, 50th and upper percentiles for pcYij by time bin
+  #calculate lower, 50th and upper percentiles for pcYij by time bins
   quant_pcObs <- tapply(x$opDF$pcObs,x$opDF$nbin,quantile,probs=c(lower,0.5,upper),na.rm=T)
   #calculate lower, 50th and upper percentiles for Yij by time bin
   quant_Obs <- tapply(x$opDF$obs,x$opDF$nbin,quantile,probs=c(lower,0.5,upper),na.rm=T)
