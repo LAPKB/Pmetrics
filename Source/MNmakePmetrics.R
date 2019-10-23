@@ -99,7 +99,7 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,buildData=NULL,pa
       file.copy(from=c("../src/model.txt","../src/ex.csv"),to=getwd(),overwrite=T)
       NPrun(data="ex.csv",cycles=100,run=1,overwrite=T,intern=T)
       PMload(1)
-      save(NPdata.1,final.1,cycle.1,op.1,cov.1,pop.1,post.1,mdata.1,file="~/LAPK/PmetricsSource/Pmetrics/data/PMex1.rda")
+      save(NPdata.1,final.1,cycle.1,op.1,cov.1,pop.1,post.1,mdata.1,file=paste(wd, "Pmetrics/data/PMex1.rda"))
     }
     if(buildData$it2b){
       #IT2B
