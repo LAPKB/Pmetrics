@@ -399,7 +399,7 @@
                  paste(workdir,"\\outputs",sep=""),
                  paste(workdir,"/outputs",sep=""))[OS]
     
-    #end timer and move file to outputs
+    #end  timer and move file to outputs
     PMscript[getNext(PMscript)] <- c("date +%s >> time.txt","echo %time% >> time.txt","date +%s >> time.txt")[OS]
     PMscript[getNext(PMscript)] <- paste(c("mv ","move ","mv ")[OS],"time.txt outputs",sep="")
     
@@ -451,7 +451,6 @@
     
     
   } else { #run internally, also for servers
-    workdir <- getwd()
     if (!auto){  #allow users to see questions
       if(OS==1 | OS==3){system(paste("./",prepFileName," MacOSX",sep=""))} 
     } else { #we do have instructions for prep
@@ -503,11 +502,11 @@
     }
     
     #CLEAN UP
-    dir.create(newdir)
-    dir.create(paste(newdir,"/inputs",sep=""))
-    dir.create(paste(newdir,"/outputs",sep=""))
-    dir.create(paste(newdir,"/wrkcopy",sep=""))
-    dir.create(paste(newdir,"/etc",sep=""))
+    # dir.create(newdir) already done above
+    dir.create("inputs")
+    dir.create("outputs")
+    dir.create("wrkcopy")
+    dir.create("etc")
     
     #write data file name to end of NPAG/IT2B output
     if(type=="NPAG" | type=="IT2B"){
@@ -519,30 +518,30 @@
     }
     
     #move output files
-    file.copy(from=Sys.glob(outlist),to=paste(newdir,"/outputs",sep=""))    
+    file.copy(from=Sys.glob(outlist),to="outputs")    
     file.remove(Sys.glob(outlist))
     
     if(auto){
-      file.copy(from=instr,to=paste(newdir,"/etc",sep=""))
-      file.copy(from="log.txt",to=paste(newdir,"/outputs",sep=""))
-      file.copy(from="PMcontrol",to=paste(newdir,"/etc",sep="")) 
-      file.copy(from=data,to=paste(newdir,"/inputs",sep=""))
+      file.copy(from=instr,to="etc")
+      file.copy(from="log.txt",to="outputs")
+      file.copy(from="PMcontrol",to="etc") 
+      file.copy(from=data,to="inputs")
       file.remove(instr)
       file.remove("log.txt")
       file.remove("PMcontrol")
       file.remove(data)
     }
     if(type=="NPAG" && prior[1]==0){
-      file.copy(from=prior[2],to=paste(newdir,"/inputs",sep=""))
+      file.copy(from=prior[2],to="inputs")
       file.remove(prior[2])
     }
     
     if(!useOldFortran){  #we are using the new model template
-      file.copy(from=modelFor,to=paste(newdir,"/etc/",modelFor,sep=""))  #move fortran file to etc
-      file.copy(from=model,to=paste(newdir,"/inputs/",model,sep="")) #move template file to inputs
+      file.copy(from=modelFor,to=paste("etc/",modelFor,sep=""))  #move fortran file to etc
+      file.copy(from=model,to=paste("inputs/",model,sep="")) #move template file to inputs
       file.remove(modelFor)         
     } else {
-      file.copy(from=model,to=paste(newdir,"/inputs",sep="")) #using fortran file directly, so move to inputs
+      file.copy(from=model,to="inputs") #using fortran file directly, so move to inputs
       file.remove(model)   
     }  
     
@@ -551,11 +550,11 @@
     }
     
     if(length(Sys.glob("FROM*"))>0) {
-      file.copy(from=Sys.glob("FROM*"),to=paste(newdir,"/inputs",sep=""))
+      file.copy(from=Sys.glob("FROM*"),to="inputs")
       file.remove(Sys.glob("FROM*"))
     }
     if(length(Sys.glob("ERROR*"))>0) {
-      file.copy(from=Sys.glob("ERROR*"),to=paste(newdir,"/outputs",sep=""))
+      file.copy(from=Sys.glob("ERROR*"),to="outputs")
       file.remove(Sys.glob("ERROR*"))
     }
     
@@ -563,27 +562,27 @@
     file.remove("go")
     
     if(type=="NPAG"){
-      file.copy(from=Sys.glob("npag*"),to=paste(newdir,"/etc",sep=""))
+      file.copy(from=Sys.glob("npag*"),to="etc")
       file.remove(Sys.glob("npag*"))
     }
     
     if(type=="IT2B" | type=="ERR"){
-      file.copy(from=Sys.glob("it2b*"),to=paste(newdir,"/etc",sep=""))
-      file.copy(from=Sys.glob("itas*"),to=paste(newdir,"/etc",sep=""))
+      file.copy(from=Sys.glob("it2b*"),to="etc")
+      file.copy(from=Sys.glob("itas*"),to="etc")
       file.remove(Sys.glob("it2b*"))
       file.remove(Sys.glob("itas*"))
     }
     
     if(type=="ERR"){
-      file.copy(from="assdriv.f",to=paste(newdir,"/etc",sep=""))   
+      file.copy(from="assdriv.f",to="etc")   
       file.remove("assdriv.f")
     }
     
     
-    file.copy(from=Sys.glob("XQZPJ*.ZMQ"),to=paste(newdir,"/wrkcopy",sep=""))
-    file.copy(from="extnum",to=paste(newdir,"/etc",sep=""))
-    file.copy(from=Sys.glob("*_prep*"),to=paste(newdir,"/etc",sep=""))
-    file.copy(from=Sys.glob("*_run*"),to=paste(newdir,"/etc",sep=""))
+    file.copy(from=Sys.glob("XQZPJ*.ZMQ"),to="wrkcopy")
+    file.copy(from="extnum",to="etc")
+    file.copy(from=Sys.glob("*_prep*"),to="etc")
+    file.copy(from=Sys.glob("*_run*"),to="etc")
     file.remove(Sys.glob("XQZPJ*.ZMQ"))
     file.remove("extnum")
     file.remove(Sys.glob("*_prep*"))
@@ -592,18 +591,18 @@
     #end time
     writeLines(as.character(proc.time()[3]),timeFile)
     close(timeFile)
-    file.copy(from="time.txt",to=paste(newdir,"/outputs",sep=""))
+    file.copy(from="time.txt",to="outputs")
     file.remove("time.txt")
     
     #make report
-    if(type=="NPAG" | type=="IT2B") {PMreport(paste(workdir,newdir,"outputs",sep="/"),icen=icen,type=type,parallel=parallel)}
-    if(type=="ERR") {ERRreport(paste(workdir,newdir,"outputs",sep="/"),icen=icen,type=type)}
+    if(type=="NPAG" | type=="IT2B") {PMreport(paste(currwd,newdir,"outputs",sep="/"),icen=icen,type=type,parallel=parallel)}
+    if(type=="ERR") {ERRreport(paste(currwd,newdir,"outputs",sep="/"),icen=icen,type=type)}
     
     #final clean up
-    setwd(workdir)
-    file.copy(from=Sys.glob("*.*"),to=paste(newdir,"/inputs",sep=""))
+    setwd(currwd)
+    file.copy(from=Sys.glob("*.*"),to="inputs")
     file.remove(Sys.glob("*.*"))
-    outpath <- paste(workdir,newdir,"outputs",sep="/")
+    outpath <- paste(currwd,newdir,"outputs",sep="/")
     
     
     return(outpath)    
