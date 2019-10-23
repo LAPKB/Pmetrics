@@ -118,7 +118,7 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,buildData=NULL,pa
       save(badData,file=paste(wd, "Pmetrics/data/PMex3.rda"))
       # save(badData,file="~/LAPK/PmetricsSource/Pmetrics/data/PMex3.rda")
     }
-    setpmwd("PmetricsSource")
+    setwd(wd)
     # setwd("~/LAPK/PmetricsSource")
     
     if(check) check("Pmetrics")
@@ -129,7 +129,7 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,buildData=NULL,pa
     install("Pmetrics")
     
     #copy to repository
-    setpmwd("PmetricsSource")
+    setwd(wd)
     # setwd("~/LAPK/PmetricsSource")
     Rvers <- paste(version$major,substr(version$minor,1,1),sep=".")
     
