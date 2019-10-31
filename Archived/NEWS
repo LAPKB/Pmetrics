@@ -1,0 +1,169 @@
+Version 0.20
+------------
+
+
+NEW FEATURES
+
+* Cleaned up bivariate plots in plot.PMfinal function.
+* Added target attainment function, summary and plot
+
+BUG FIXES
+
+* Fixed bug in simulator which caused it to crash when only one random variable simulated
+* Fixed minor bug in plot.PMcycle which did not allow full customization of gamma/lambda plot
+
+
+Version 0.19
+------------
+
+
+NEW FEATURES
+
+* Added ADDL and II items to data matrix to support additional and steady state dosing.  Old format matrix files without ADDL and II will be automatically updated.  This change is propagated through NPAG, IT2B and the Simulator
+* Added the ability to specify ranges to truncate simulator output and avoid extreme, i.e. non-phyisologic, parameters
+* Added progress bar to PMdiag and cleaned display for SIMrun
+
+BUG FIXES
+
+* Fixed bug in PMmatrix plot that did not permit customization of X-axis label
+* Corrected a bug in makeErrorPoly that prevented reporting of 3rd degree polynomial coefficients
+* Fixed handling of .csv file creation during a simulation using SIMrun with multiple subjects as templates
+* Fixed bug in ERRrun that prevented completion on Windows machines
+* Corrected the PMcheckMatrix function to properly look for missing covariate data at time=0 for each subject
+* Suppressed confidence intervals in plot.PMsim if nsim <100 and enabled it to handle missing confidence intervals properly
+
+
+Version 0.18
+------------
+
+
+NEW FEATURES
+
+* Cov objects are now loaded by default after NPAG and IT2B runs.
+* Added non-compartmental analysis to NPAG objects
+
+BUG FIXES
+
+* Fixed matrix orientation of population means in simulator with multi-modal distributions
+* plot.PMcycle now works correctly if there are fewer than 10 cycles
+* Stopped makeErrorPoly from trying to open new graphics window
+* Updated makeErrorPoly to handle situations with too few points to fit 2nd and/or 3rd degree polynomials
+* Fixed errors in reading instruction files in ERRrun
+* Corrected mistake in IT2B runs with instruction files that caused end of file error
+* Took out AUC extraction with makeCov as it was too subject to error.  This function is better implemented in the existing makeAUC command.
+
+
+
+Version 0.17
+------------
+
+
+NEW FEATURES
+
+* Pmetrics will now check for updates silently when it is first loaded into R with the library(Pmetrics) or require(Pmetrics) commands.  If an update is found, the user will be notified with a simple, unobtrusive message.
+* The scripts will now handle security features associated with Windows Vista and later which restrict installation of packages into certain folders.  Pmetrics now scans for the installation folder and sets this as an environment variable (which can be retrieved by Sys.getenv("PmetricsPath") for the remainder of the session.  This is invisible to the user.
+* 32 and 64 bit versions are now included.
+
+BUG FIXES
+
+* None
+
+
+Version 0.16
+------------
+
+
+NEW FEATURES
+
+* Changed to compiled IT2B, NPAG, and Simulator objects.  Initial roll out to support gfortran.  More compilers added as needed by users.
+* Added an include argument to plot.PMmatrix to only plot a subset of the population.  This can be used to match the same subset specified in an instruction file (which will be the only one modeled out of all subjects in the .csv file) or to simply focus on a subset of the total modeled population.
+
+BUG FIXES
+
+* Fixed improper handling of block calculation by plot.PMmatrix and NPpostPred
+* Fixed bug in ITrun script that tried to use the tee logging command in Windows, which does not exist
+* Fixed another bug in ITrun which did not write correctly formatted integer to extnum file for run numbering purposes
+
+
+Version 0.15
+------------
+
+
+NEW FEATURES
+
+* Added override flag to PMwriteMatrix to write .csv file even with errors.  Default is false.  This now allows a .csv file to be written by PMwrk2csv even if there are errors.  The errors will be reported, however.
+
+BUG FIXES
+
+* Fixed improper handling of .csv files with comments by PMreadMatrix
+* Fixed improper handling of 0 cycle runs
+* Corrected path in Windows version to Rscript on some machines
+* Corrected logic in checking data files for missing covariate data at time 0 when there is only one covariate
+* Restored ability to control line characteristics in PMmatrix plot
+
+
+
+Version 0.14
+------------
+
+
+BUG FIXES
+
+* Normalized .Library path to account for path truncation in Windows.
+* Fixed cycle plot of gamma from IT2B run to allow for one gamma for each output equation
+
+
+Version 0.13
+------------
+
+NEW FEATURES
+
+* Added npde, standardized visual predictive check with PMdiag command and object, which has a print method as well
+
+BUG FIXES
+
+* Corrected plotting of output equations >1 in PMmatrix objects
+* Changed .libpaths() to .Library in NPrun, ITrun, ERRrun, SIMrun to avoid multiple library paths
+
+
+Version 0.12
+------------
+
+NEW FEATURES
+
+* Added additional items to ITparse and NPparse: tests for convergence, reporting of assay error model used, prior density used
+* Added support for different delimiters in PMreadMatrix
+* Added checking for column order and missing covariate data at time=0 to PMcheckMatrix
+
+BUG FIXES
+
+* Fixed a bug in plot.PMmatrix that suppressed posterior plots from simulated data
+* Made Rscript work in NPrun and ITrun even if R not in user environment
+
+
+Version 0.11
+------------
+
+NEW FEATURES
+
+* Summary and print methods for PMop objects
+* Plotting summary of PMop as weighted residual vs. pred and vs. time
+* Greater control over grids in plots
+
+BUG FIXES
+
+* Formula parsing in plot PMfinal 
+* Column name checking in PMcheckMatrix 
+* Regenerating seed file for simulations before each subject
+* Fixed axis ticks in log plots
+
+
+Version 0.10
+------------
+
+So it begins.
+
+
+
+
+
