@@ -11,7 +11,7 @@ PMbuild <- function() {
   is_brew <- system("which -s brew")
   if (is_brew != 0) {
     cat("Brew not found - Installing... \n")
-    system("ruby -e '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)'")
+    system("ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"")
   } else {
     cat("Brew found - Updating... \n")
     system("brew update")
