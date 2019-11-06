@@ -543,10 +543,17 @@ SIMrun <- function(poppar,limits=NULL,model="model.txt",data="data.csv",split,
   }
   if(is.null(compiler)) {cat("\nExecute SIMrun after fortran is installed.\n");return(invisible(NULL))}
   
-  enginefiles <- shQuote(normalizePath(list.files(fortSource,pattern="sSIMeng",full.names=T)))
+  utils_are_at <- system.file("code",package = "Pmetrics")
+  utilsfile <- shQuote(normalizePath(paste(utils_are_at,"/npag_utils.f90",sep="")))
+  emintfile <- shQuote(normalizePath(paste(utils_are_at,"/emint_b01.f",sep="")))
+  blasfile <- shQuote(normalizePath(paste(utils_are_at,"/0blasnpag.f",sep="")))
+  dvodefile <- shQuote(normalizePath(paste(utils_are_at,"/dvode_v1.f90",sep="")))
+  computefile <- shQuote(normalizePath(list.files(fortSource,pattern="sSIMeng",full.names=T)))
+  enginefiles <- paste(utilsfile, emintfile, blasfile, dvodefile, computefile,sep=" ")
+
   enginecompile <- sub("<exec>","montbig.exe",compiler)
   enginecompile <- sub("<files>",enginefiles,enginecompile,fixed=T)
-  
+ 
   if(missing(makecsv)){
     makecsv <- 0
   } else {
