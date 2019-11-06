@@ -10,17 +10,17 @@ PMbuild <- function(auto = FALSE) {
   OS <- getOS()
 
   #load necessary packages
-  packages <- packageDescription("Pmetrics")$Suggests
-  packages <- gsub("\n", "", packages)
-  packages <- unlist(strsplit(packages, ","))
-  cat("\nChecking for required packages...\n")
-  for (i in packages) {
-    if (system.file(package = i) == "") {
-      if (getOption("repos")[1] == "") { setRepositories() }
-      install.packages(i, repos = getOption("repos"), dependencies = T)
-    }
+  # packages <- packageDescription("Pmetrics")$Suggests
+  # packages <- gsub("\n", "", packages)
+  # packages <- unlist(strsplit(packages, ","))
+  # cat("\nChecking for required packages...\n")
+  # for (i in packages) {
+  #   if (system.file(package = i) == "") {
+  #     if (getOption("repos")[1] == "") { setRepositories() }
+  #     install.packages(i, repos = getOption("repos"), dependencies = T)
+  #   }
 
-  }
+  # }
 
   compiler <- PMFortranConfig()
   #try again just in case redefined
@@ -91,4 +91,3 @@ PMbuild <- function(auto = FALSE) {
   writeLines("0", fort) #reset to zero
   setwd(currwd)
 }
-
