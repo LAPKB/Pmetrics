@@ -90,7 +90,8 @@ NPrun <- function(model="model.txt",data="data.csv",run,
                   include,exclude,ode=-4,tol=0.01,salt,cycles=100,
                   indpts,icen="median",aucint,
                   idelta=12,prior,
-                  auto=T,intern=F,silent=F,overwrite=F,nocheck=F,parallel=NA,batch=F){
+                  auto=T,intern=F,silent=F,overwrite=F,nocheck=F,parallel=NA,batch=F,
+                  remoterun,remoteuser,remoteproject,remotecontact){
   
   if(missing(run)) run <- NULL
   if(missing(include)) include <- NULL
@@ -99,12 +100,17 @@ NPrun <- function(model="model.txt",data="data.csv",run,
   if(missing(indpts)) indpts <- NULL
   if(missing(aucint)) aucint <- NULL
   if(missing(prior)) prior <- NULL
+  if(missing(remoterun)) remoterun <- F
+  if(missing(remoteuser)) remoteuser <- "you@your.server"
+  if(missing(remoteproject)) remoteproject <- "shortNameOfProjectWithNoSpecialCharacters"
+  if(missing(remotecontact)) remotecontact <- "yourEmailAddress"
 
   outpath <- .PMrun(type="NPAG",model=model,data=data,run=run,
                    include=include,exclude=exclude,ode=ode,tol=tol,salt=salt,cycles=cycles,
                    indpts=indpts,icen=icen,aucint=aucint,
                    idelta=idelta,prior=prior,
-                   auto=auto,intern=intern,silent=silent,overwrite=overwrite,nocheck=nocheck,parallel=parallel,batch=batch)
+                   auto=auto,intern=intern,silent=silent,overwrite=overwrite,nocheck=nocheck,parallel=parallel,batch=batch,
+                   remoterun=remoterun,remoteuser=remoteuser,remoteproject=remoteproject,remotecontact=remotecontact)
   return(outpath)
   
 }
