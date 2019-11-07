@@ -1,6 +1,6 @@
-c  idm2x16a.f                                               3/20/16
+c  idm3x19.f                                               10/9/15
 
-c  idm2x16a has the following change from idm2x15a:
+c  idm3x19 has the following change from idm3x18:
 
 c  Comments regarding NPP now indicate that it = NVAR+NOFIX+NRANFIX,
 c  rather than just NVAR+NOFIX. There are no functional changes to
@@ -8,9 +8,9 @@ c  this new module.
 
 c-----------------------------------------------------------------------
 
-c  idm2x15a.f                                              3/26/15
+c  idm3x18.f                                               3/11/15
 
-c  idm2x15a has the following change from idm2x15:
+c  idm3x18 has the following change from idm3x17:
 
 c  All numbers written out in F or G format are now tested to see if
 c  they are inside [-1.D-99, 1.D-99]. If so, they are changed to be
@@ -21,45 +21,56 @@ c  Note that this module is linked with npageng30.f initially.
 
 c-----------------------------------------------------------------------
 
-c  idm2x15.f                                               7/21/14
+c  idm3x17.f                                               11/21/14
 
-c  idm2x15 has the following change to idm2x14:
+c  idm3x17 has the following changes from idm3x16:
 
-c  If the program stops unexpectedly with the writing of format 111
-c  in Subroutine FUNC2, this same comment will now be written to
-c  the file, ERRFIL, which is passed to FUNC2 in COMMON/ERR.
+c  It has the Threadprivate statements to make it compatible
+c  with the new npageng28.f program. These statements allow the 
+c  program to be run in parallel. 
 
 c-----------------------------------------------------------------------
 
-c  idm2x14.f                                               3/6/14
+c  idm3x16.f                                               7/21/14
 
-c  idm2x14 has the following changes from idm2x13:
+c  idm3x16 has the following change to idm3x15:
 
-c  1. In Subroutine FUNC2, the dimensions related to the no. of output
+c  If the program stops unexpectedly with the writing of format 111
+c  in Subroutine FUNC3, this same comment will now be written to
+c  the file, ERRFIL, which is passed to FUNC3 in COMMON/ERR.
+
+c-----------------------------------------------------------------------
+
+c  idm3x15.f                                               3/6/14
+
+c  idm3x15 has the following changes from idm3x14:
+
+c  1. In Subroutine FUNC3, the dimensions related to the no. of output
 c  equations have been changed from 6 to NUMEQT OR MAXNUMEQ (see 
 c  comments in that routine).
 
-c  2. In Subroutine FUNC2, the dimensions of 6 in XSTORE and XPRED have
-c  been changed to 20, as they should have been all along (i.e., this
+c  2. In Subroutine FUNC3, the dimensions of 6 in XSTORE and XPRED have
+c  been changed to max_ODE_comps, as they should have been all along (i.e., this
 c  represents the maximum no. of compartments allowed).
 
-c  3. For clarity, the argument in EVAL2 has been changed from Y to
-c  YPRED. For the same reason, the 2nd argument in FUNC2 has been
-c  changed from F to YPRED.
+c. 3. YPRED has been renamed to be YYPRED (to be consistent with 
+c  the calling argument in the calling module, npageng25.f). Also,
+c  this will avoid confusion with the YPRED used in the module
+c  idm2x14.f.
 
-c  4. The argument list to IDCALCY has the additional argument,
-c  NUMEQT, so that YPRED can now be variably dimensioned. For the
+c  4. The argument list to IDCALCYY has the additional argument,
+c  NUMEQT, so that YYPRED can now be variably dimensioned. For the
 c  same reason, NUMEQT has been added to the argument list of 
-c  Subroutines EVAL2 and FUNC2.
+c  Subroutines EVAL3 and FUNC3.
 
 c-----------------------------------------------------------------------
 
-c  idm2x13.f                                               10/11/12
+c  idm3x14.f                                               10/11/12
 
-c  idm2x13 has one correction from idm2x12:
+c  idm3x14 has one correction from idm3x13:
 
 c  THE R(.) ARE SET = RS(.,.) BEFORE GETIX IS CALLED IN THE TIME RESET
-c  SECTION OF SUBROUTINE FUNC2. NOT DOING THIS WOULD MEAN THAT IF THE 
+c  SECTION OF SUBROUTINE FUNC3. NOT DOING THIS WOULD MEAN THAT IF THE 
 C  INITIAL CONDITIONS FOR THE X(.) ARE FUNCTIONS OF THE COVARIATES
 C  (ESTABLISHED IN GETIX FROM THE R(.) VALUES), THEY WOULD BE ASSIGNED
 C  VALUES BASED ON COVARIATES FROM A PREVIOUS DOSAGE LINE IN THE
@@ -68,11 +79,11 @@ C  LINE.
 
 c-----------------------------------------------------------------------
 
-c  idm2x12.f                                               9/27/12
+c  idm3x13.f                                               9/27/12
 
-c  idm2x12 has the following bug correction to idm2x11:
+c  idm3x13 has the following bug correction to idm3x12:
 
-C  IN SUBROUTINE FUNC2, BEFORE
+C  IN SUBROUTINE FUNC3, BEFORE
 C  THE FIRST CALL TO GETFA, THE R(.) ARE SET = RS(.,.) IN CASE ANY OF
 C  THE FA(.) ARE FUNCTIONS OF THE COVARIATES WHICH ARE ESTABLISHED FROM
 C  THE R(.) VALUES IN  GETFA. IN ADDITION, PRIOR TO THE 2 SECTIONS WHERE
@@ -92,33 +103,45 @@ C  AS FUNCTIONS OF THE COVARIATES IN THE PATIENT DATA FILE.
 
 c-----------------------------------------------------------------------
 
-c  idm2x11.f                                               7/25/12
+c  idm3x12.f                                               7/25/12
 
-c  idm2x11 has the following change to idm2x10:
+c  idm3x12 has the following change to idm1x11:
 
-c  In SUBROUTINE FUNC2, the code to save ND0, SIGO, RSO, is moved to
+c  In SUBROUTINE FUNC3, the code to save ND0, SIGO, RSO, is moved to
 c  before the IF(N .EQ. 0) GO TO 75  statement. The reason is that 
 c  before this  routine returns, ND, SIG, and RS are reset back to these
 c  values, even if N = 0, and so they must be established at this time.
 
 c-----------------------------------------------------------------------
 
-c  idm2x10.f                                               4/14/12
+c  idm3x11.f                                               4/14/12
 
-c  idm2x10 has the following changes to idm2x9.f:
+c  idm3x11 has the following changes to idm2x10.f:
 
 c  It is to be used with npageng17.f, which allows steady state doses
 c  to be boluses as well as IVs. As a result, an additional parameter,
-
 c  ISKIPBOL, is used so, in Subroutine FUNC, when convergence occurs in
 c  a steady state dose set, the last bolus from that set will not be
 c  reapplied below label 83.
 
 c-----------------------------------------------------------------------
 
-c  idm2x9.f                                               3/2/12
+c  idm3x10.f                                               4/10/12
 
-c  idm2x9 has the following bug fix to idm2x8.f. In Subroutine FUNC2, 
+c  idm3x10 has one small 'bug' fix to idm3x9:
+
+c  In Subroutine FUNC3, at label 40, and just below it in the do loop,
+c  NUMT+1 is replaced by NUMT. Also, all comment references to NUMT+1 
+c  are replaced by NUMT. The reason is that the no. of times at which
+c  predicted values are required is NUMT, not NUMT+1. This can, in
+c  rare situations, mean that TPRED(NUMT+1) = 0 can cause the program
+c  to stop with an error message (see code around format 111). 
+
+c-----------------------------------------------------------------------
+
+c  idm3x9.f                                               3/2/12
+
+c  idm3x9 has the following bug fix to idm3x8.f. In Subroutine FUNC3, 
 c  the code to save ND, SIG, and RS before altering them if there are 
 c  time lag parameters (in the call to GETTLAG) is now executed whether
 c  or not there are time lag parameters. The reason is that, with steady
@@ -130,9 +153,9 @@ c  program will again know when a steady state dose is coming.
 
 c-----------------------------------------------------------------------
 
-c  idm2x8.f                                                1/15/12
+c  idm3x8.f                                                1/15/12
 
-c  Corrects bug in Subroutine FUNC2 - now time resets are identified
+c  Corrects bug in Subroutine FUNC3 - now time resets are identified
 c  by just the observation time = 0 (i.e., the dose time = 0 is
 c  no longer required). This is because it is possible for a dose
 c  time (especially if there are timelags) to be after the last
@@ -142,10 +165,9 @@ c  identify the observation time of 0 as a time reset.
 
 c-----------------------------------------------------------------------
 
+c  idm3x7.f                                                11/11/11
 
-c  idm2x7.f                                                11/11/11
-
-c  idm2x7 has the same changes to idm2x6 that idm1x7 has from idm1x6
+c  idm3x7 has the same changes to idm3x6 that idm1x7 has from idm1x6
 c  (see all the comments in idm1x7.f for explanations). In particular:
 
 c  1. It can accommodate steady state dose regimens.
@@ -173,11 +195,11 @@ c  time period.
 
 c-----------------------------------------------------------------------
 
-c  idm2x6.f                                                12/20/10
+c  idm3x6.f                                                12/20/10
 
-c  idm2x6 has the following change to idm2x5:
+c  idm3x6 has the following change to idm3x5:
 
-c  In Subroutine FUNC2, it has code that calls Subroutine ANAL3, rather
+c  In Subroutine FUNC3, it has code that calls Subroutine ANAL3, rather
 c  than USERANAL if N .EQ. -1. Also, the code to reset X(I),I=1,N to 0
 c  where there is a time reset now includes extra code to set 
 c  X(I),I=1,3 to 0 if N .EQ. -1.
@@ -194,33 +216,28 @@ c  model).
 
 c-----------------------------------------------------------------------
 
+c  idm3x5.f							4/03/10
 
-
-c  idm2x5.f							4/03/10
-
-c  idm2x5 has a bug correction to idm2x4. In Subroutine FUNC2, in the
-c  IF(TIM(KNT) .EQ. 0.D0 .AND. SIG(KNS) .EQ. 0.D0) block, the time,
+c  idm3x5 has a bug correction to idm3x4. In Subroutine FUNC3, in the
+c  IF(TPRED(KNT) .EQ. 0.D0 .AND. SIG(KNS) .EQ. 0.D0) block, the time,
 c  T, is also reset = 0 since the integration will again start from
-c  time 0. When this wasn't done (in idm2x4.f), the results were
+c  time 0. When this wasn't done (in idm3x4.f), the results were
 c  unpredictable (depending on how the DVODE integration routines
 c  treated a (T,TOUT) pair which decreased rather than increased.
 
 c-----------------------------------------------------------------------
 
+c  idm3x4.f							11/23/09
 
-
-
-c  idm2x4.f							11/23/09
-
-c  idm2x4 fixes a bug in the idm2x3 code. Label 75 is moved to in
+c  idm3x4 fixes a bug in the idm3x3 code. Label 75 is moved to in
 c  front of the  CALL GETTLAG(TLAG)  statement (see the reason in
 c  that part of the code).
 
 c-----------------------------------------------------------------------
 
-c  idm2x3.f							9/18/09
+c  idm3x3.f							9/18/09
 
-c  idm2x3 has the following changes from idm2x2:
+c  idm3x3 has the following changes from idm3x2:
 
 c  1. The TLAG and FA vectors, and the initial values for the X array 
 c  will be set by calling new routines (GETTLAG, GETFA, and GETIX, 
@@ -232,14 +249,14 @@ c  IVOL have been removed.
 c  2. The shift subroutine will now be from the module, shift5.f, 
 c  rather than shift4.f.
 
-c  Note that this module, along with idm1x3.f, id3x3.f, and shift5.f
+c  Note that this module, along with idm1x3.f, id2x3.f, and shift5.f
 c  are part of the new "engine", whose main module is bigmlt4.f.
 
 c-----------------------------------------------------------------------
 
-c  idm2x2.f							8/14/09
+c  idm3x2.f							8/14/09
 
-c  idm2x2 has the following changes from idm2x1:
+c  idm3x2 has the following changes from idm3x1:
 
 c  1. The code for setting initial compartment amounts from initial
 c  compartment concentrations is changed to reflect the fact that
@@ -258,19 +275,20 @@ c  parameter will now be the exponent of the indicated parameter
 c  (rather than the parameter itself).
 
 
-c  idm2x2.f (along with other new modules idm1x2.f and idm3x2.f) are
+c  idm3x2.f (along with other new modules idm1x2.f and idm2x2.f) are
 c  still called by bigmlt2.f, but are part of the "engine" for the
 c  new NPBIG15B.FOR program.
 
 c-----------------------------------------------------------------------
 
-c  idm2x1.f							5/27/09
 
-c  idm2x1.f has the following changes from idcy_53f.f:
+c  idm3x1.f							5/27/09
+
+c  idm3x1.f has the following changes from idcy_63f.f:
 
 c  1. It allows the extra option of setting initial compartment 
 c  amounts from their initial concentrations - see code in Subroutine 
-c  FUNC2.
+c  FUNC3.
 
 c  2. It is part of the new Big NPAG "engine", bigmlt2.f, which allows 
 c  patient data files to have "reset" values of 0 in the dosage and 
@@ -283,14 +301,17 @@ c  from this point.
 c  3. The first argument to Subroutine OUTPUT is changed from 0.0 to 
 c  0.D0 in two places.
 
-c  This module, along with idm1x1.f and idm3x1.f are first used in the 
+
+c  This module, along with idm1x1.f and idm2x1.f are first used in the 
 c  bigmlt2.f program.
 
 c-----------------------------------------------------------------------
 
-c  idcy_53g.f							5-28-02
 
-c  idcy_53g has the following changes from idcy_53f:
+
+c  idcy_63g.f							5-28-02
+
+c  idcy_63g has the following changes from idcy_63f:
 
 c  It allows multiple drug inputs (rather than just one drug input).
 c  The changes required for this are:
@@ -310,7 +331,7 @@ C                BY PARAMETER K.
 C  5. THE BOLUS COMPARTMENT NOS., NBCOMP(I), NOW COME VIA 
 C     COMMON/BOLUSCOMP FROM SUBROUTINE SYMBOL, AND THE DIMENSION OF
 C     NBCOMP HAS BEEN CHANGED TO 7 (MAXIMUM OF 1 PER DRUG) FROM 20.
-C  6. ALL OF THE CODE IN SUBROUTINE FUNC2 RELATED TO NRI AND NBI HAS 
+C  6. ALL OF THE CODE IN SUBROUTINE FUNC3 RELATED TO NRI AND NBI HAS 
 C     BEEN CHANGED TO BE IN TERMS OF NI AND NDRUG. 
 C  7. THE CODE RELATED TO CALLING SUBROUTINE SHIFT, INCLUDING THE 
 C     CALLING ARGUMENTS, HAS BEEN CHANGED TO REFLECT THE ABOVE CHANGES
@@ -320,9 +341,10 @@ C     THIS MODULE.
 
 C-----------------------------------------------------------------------
 
-c  idcy_53f.f							4-23-02
+c  idcy_63f.f							4-23-02
 
-c  idcy_53f has the following changes to idcy_53e:
+
+c  idcy_63f has the following changes to idcy_63e:
 
 c  1. To enable FA to be a parameter value (either fixed or random), 
 c  rather than always be hardcoded = 1.0, the following changes are
@@ -330,11 +352,11 @@ c  implemented ...
 
 c  The hardcoding of FA = 1.0 and the code for NBCOMP are removed
 c  from main. In addition, COMMON/BCOMP is removed from the entire 
-c  module. Instead, in SUBROUTINE FUNC2, a new COMMON/FRABS/IFA provides 
+c  module. Instead, in SUBROUTINE FUNC3, a new COMMON/FRABS/IFA provides 
 c  the value IFA which is the parameter index of the FA value (passed
 c  from SUBROUTINE SYMBOL) unless it = 0, in which case FA is
 c  set = 1.0. Also the NBCOMP compartment nos. are now set in 
-c  SUBROUTINE FUNC2.
+c  SUBROUTINE FUNC3.
 
 c  2. COMMONS /OBSER AND /SUM2 (and the arrays in them) are deleted from 
 c  main. They were not needed. Also, COMMON CNST2 is deleted from main
@@ -343,16 +365,16 @@ c  see no. 1. above).
 
 c-----------------------------------------------------------------------
 
-c  idcy_53e.f							1-22-00
+c  idcy_63e.f							1-22-00
 
-c  idcy_53e has the following changes to idcy_53d:
+c  idcy_63e has the following changes to idcy_63d:
 
 c  It allows the initial conditions of the amounts in the compartments
 c  to be paramater values, rather than fixed at 0.0. These parameter
 c  values may be either fixed or random.
 
 c  To affect this enhancement, the primary change is the code in 
-c  subroutine FUNC2 which sets the initial conditions based on the 
+c  subroutine FUNC3 which sets the initial conditions based on the 
 c  values in IC which are provided by COMMON/INITCOND from 
 c  SUBROUTINE SYMBOL of the Fortran model file.
 
@@ -364,36 +386,44 @@ c    deleted. Variables ISW, IP, and C are deleted.
 c  - COMMON/PARAMD/P is now in MAIN, FUNC, and JACOB of idfix5e.f; 
 c    MAIN and FUNCx of idcy_53e.f and idcy_63e.f; and DIFFEQ and OUTPUT 
 c    of the Fortran model file.
-c  - P is redimensioned 32. It will hold only the parameters of the
+c  - P is redimensioned max_ODE_params. It will hold only the parameters of the
 c    model (although some of those parameters may be initial conditions)
-c    and there are 20 allowable random paramaters and 12 allowable
+c    and there are max_pop_rand_varbs allowable random paramaters and max_pop_params allowable
 c    fixed paramaters now.
 c  - All the code to reverse the paramater order (using PD) and to do
-c    and undo square root transformations in MAIN and FUNC2 is removed
+c    and undo square root transformations in MAIN and FUNC3 is removed
 c    (it was unneeded, and therefore confusing). In particular, all
 c    references to NPT, NUMYES, NUIC, NUP, NPNL, and NBOT are removed.
 c  - COMMON ANALYT/IDIFF is removed. IDIFF is unneeded since IDIFF = 0
-c    is equivalent to N = 0, and so IDIFF code in FUNC2 is replaced by
+c    is equivalent to N = 0, and so IDIFF code in FUNC3 is replaced by
 c    the equivalent code for N. NEQN is replaced by N.
-c  - In SUBROUTINE EVAL2, COMMON/PARAM is removed, along with PP and P.
+c  - In SUBROUTINE EVAL3, COMMON/PARAM is removed, along with PP and P.
 c    Setting PP(I) = P(I), I=1,NPNL made no sense since PP wasn't used
 c    and NPNL was always = 0 anyway.
-c  - In FUNC2, the If statment at label 83 is changed to include 
+c  - In FUNC3, the If statment at label 83 is changed to include 
 c    N .EQ. 0 since if N = 0, setting compartment values is unnecessary.
 
-c  idcy_53e is part of the big npem program, npbig4.f.
+c  idcy_63e is part of the big npem program, npbig4.f.
 
+C 5785         CALL IDCALCYY(JSUB,IG,NVAR+NOFIX+NRANFIX,NDIM,PX,TPRED,
+C 5786      1      NUMT(JSUB), YYPRED,NUMEQT,
+C 5787      2      NOBSER,MF,RTOL,ATOL,RSCOPY,BSCOPY,INTLIST,IPAR,ObsError)
 
-	SUBROUTINE IDCALCY(JSUB,IG,NPP,NDIM,ESTML,YPRED,NUMEQT,
-     1    INTLIST,RPAR,IPAR)
-
+	SUBROUTINE IDCALCYY(JSUB,IG,NPP,NDIM,ESTML,TPRED,NUMT,YYPRED,
+     1      NUMEQT,NOBSER,MF,NBCOMP,RTOL,ATOL,
+     2      TIMCOPY,SIGCOPY,RSCOPY,BSCOPY,
+     3      INTLIST,IPAR,ObsError,RPAR,ERRFIL)
 
 C  INPUT ARE:
 
-C  NPP = NO. OF PARAMETERS (RANDOM AND FIXED) IN THE PARAMATER 
-C       VECTOR, ESTML.
-C  NDIM = NO. OF COMPARTMENTS IN THE MODEL.
-C  ESTML = VECTOR OF PARAMETER ESTIMATES (RANDOM AND FIXED).
+C  NPP = NO. OF PARAMETERS (RANDOM, FIXED, AND RANFIX) IN THE PARAMETER
+C        VECTOR, ESTML.
+C  NDIM = NO. OF STATES FOR THE O.D.E.
+C  ESTML = VECTOR OF PARAMETER ESTIMATES.
+C  TPRED = VECTOR OF TIMES AT WHICH PREDICTED CONCENTRATIONS WILL
+C	   BE FOUND.
+C  NUMT = OF TIMES IN TPRED.
+
 
 C  INFORMATION FROM A SUBJECT DATA FILE WHOSE INFO IS PASSED TO THE 
 C  ROUTINES IN THIS MODULE VIA COMMONS /OBSER/, /CNST/, /CNST2/, AND 
@@ -402,123 +432,218 @@ C  /SUM2/.
 
 C  OUTPUT IS:
 
-C  YPRED(I,J), I=1,M; J=1,NOS = THE PREDICTED VALUE FOR THE ITH 
-C	OBSERVATION OF THE JTH OUTPUT EQUATION, GIVEN THE INPUT VECTOR
+
+C  YYPRED(I,J), I=1,NUMT; J=1,NOS = THE PREDICTED VALUE AT TIME 
+C  	TPRED(I) OF THE JTH OUTPUT EQUATION, GIVEN THE INPUT VECTOR
 C	ESTML. M AND NOS ARE INPUT TO THIS MODULE VIA COMMONS SUM2 AND
 C	CNST2, RESPECTIVELY.
 
 c-----------------------------------------------------------------------
 
+c  See other comments at the top of idcy_63d.f code.
+
+C-----------------------------------------------------------------------
+
+         use npag_utils, only : maxnumeq,max_m_per_obs,max_RS_J
+     1     ,max_ODE_comps, max_input_dim, max_doses, max_ODE_params
+
         IMPLICIT REAL*8(A-H,O-Z)
-        DIMENSION ESTML(32),YPRED(594,NUMEQT),P(32)
+        DIMENSION ESTML(max_ODE_params),YYPRED(71281,NUMEQT),
+     1    TPRED(71281)
 
-        COMMON/CNST/ N,ND,NI,NUP,NUIC,NP
-        COMMON/PARAMD/ P
-        COMMON/BOLUSCOMP/NBCOMP
-        integer, dimension(7) :: NBCOMP
 
-        integer JSUB,IG,JSUBmain,IGmain
-        integer, dimension(128)::INTLIST
-        double precision, dimension(257)::RPAR
-        integer, dimension(257)::IPAR
+C        parameter(MAXNUMEQ=7)
 
+C        COMMON/CNST/ N,ND,NI,NUP,NUIC,NP
+C        COMMON/PARAMD/ P
+
+! NEW PARALLEL CODE BELOW AS OF npageng28.f.
+C !$omp Threadprivate(/PARAMD/,/CNST/)
+
+C wmy2017Sep14 ... temporarily move these here
+C  note that NOBSER is replaced by NUMT
+        integer NUMT,NDIM,MF
+        integer, dimension(max_input_dim) :: NBCOMP
+        real*8  RTOL
+        real*8, dimension(max_ODE_comps) :: ATOL
+        real*8, dimension(max_RS_J) :: RCOPY
+        real*8, dimension(max_ODE_comps) :: BCOPY
+        real*8, dimension(max_m_per_obs) :: TIMCOPY
+        real*8, dimension(max_doses) :: SIGCOPY
+        real*8, dimension(max_doses,max_RS_J) :: RSCOPY
+        real*8, dimension(max_doses,max_input_dim) :: BSCOPY
+        integer, dimension(128) :: INTLIST
+        integer, dimension(257) :: IPAR
+        double precision, dimension(max_m_per_obs,MAXNUMEQ) :: ObsError
+        double precision, dimension(257) :: RPAR
+        CHARACTER ERRFIL*20
+
+C  !$omp Threadprivate( IPAR, ObsError )
 
 C*****INITIALIZE PROGRAM*****
 
-        JSUBmain = JSUB
-        IGmain = IG
-	CALL SYMBOL(NBCOMP)
+C wmy2018.10.16 moved CALL SYMBOL to main
+C      CALL SYMBOL(NBCOMP)
 
 C  THE ABOVE CALL OBTAINS INFO FROM COMMONS.
 
 C  NOTE THAT THIS PROGRAM NOW GETS N = NDIM AND NPP = NVAR+NOFIX+NRANFIX
 C  AS CALLING ARGUMENTS.
 
-	N = NDIM
-	NP = NPP
+C	N = NDIM
+C	NP = NPP
 
 C  CALCULATE THE OUTPUT CONCENTRATION VECTOR, Y, FOR THE PARAMETER
 C  VECTOR, ESTML.
 
-C  PUT MODEL PARAMETER VALUES INTO P.
 
-        DO I=1,NP
-	  P(I) = ESTML(I)
-	END DO
+C  THIS SUBROUTINE, CALLED BY MAIN, FINDS THE OUTPUT CONC. 
+C  ARRAY, YYPRED, EVALUATED AT PARAMETER VALUES IN VECTOR P, PASSED
+C  DIRECTLY TO SUBROUTINE FUNC3 VIA COMMON/PARAMD ... AT THE NUMT 
+C  TIMES IN TPRED.
 
+        CALL FUNC3(JSUB,IG,NUMT,YYPRED,TPRED,NUMEQT,NBCOMP,
+     1      NPP,ESTML,NDIM,MF,RTOL,ATOL,
+     2      TIMCOPY,SIGCOPY,RSCOPY,BSCOPY,
+     3      INTLIST,IPAR,ObsError,RPAR,ERRFIL)
 
-C  CALL SUBROUTINE EVAL2 TO GET Y, EVALUATED
-C  AT ESTML(I) AS DEFINED ABOVE.
-
-	CALL EVAL2(JSUB,IG,YPRED,NUMEQT,INTLIST,RPAR,IPAR)
-
-        JSUB = JSUBmain
-        IG = IGmain
 
         RETURN
 	END
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-	SUBROUTINE FUNC2(JSUB,IG,M,YPRED,NUMEQT,INTLIST,RPAR,IPAR)
+      SUBROUTINE FUNC3(JSUB,IG,NUMT,YYPRED,TPRED,NUMEQT,NBCOMP,
+     1      NPP,ESTML,NDIM,MF,RTOL,ATOL,
+     2      TIM,SIG,RS,BS,INTLIST,IPAR,ObsError,RPAR,ERRFIL)
 
-C  THIS SUBROUTINE, CALLED BY EVAL2, FINDS YPRED(I) = OUTPUT CONC. AT
-C  TIME I, I=1,M, GIVEN PARAMETER VALUES IN P.
+C  THIS SUBROUTINE, CALLED BY IDCALCYY, FINDS YYPRED(I) = OUTPUT CONC. AT
+C  THE NUMT TIMES IN TPRED, GIVEN PARAMETER VALUES IN ESTML.
+C  NOTE THAT YYPRED IS FOUND AT THE NUMT TIMES IN TPRED BELOW.
 
-C wmy20190513
-       use npag_utils, only: thesame, shift,
-     1  max_ODE_params, k_dvode_reserved,
-     2  max_RS_J,k_p_end,k_jsub,k_ig,i_dvode_reserved,
-     3  i_jsub,i_ig
+         use npag_utils, only : shift, thesame, predlast3
+     1    ,maxnumeq,max_m_per_obs,max_RS_J
+     2    ,verifyval, max_SS_doses
+     3    ,max_ODE_params, max_doses, max_ODE_comps, max_input_dim
+     4    ,k_dvode_reserved, k_ig, k_jsub, k_p_end, i_jsub, i_ig
+     5    ,i_dvode_reserved
 
-      IMPLICIT REAL*8(A-H,O-Z)
-      COMMON/BOLUSCOMP/NBCOMP
-      COMMON/OBSER/ TIM,SIG,RS,YO,BS
-      COMMON/CNST/ N,ND,NI,NUP,NUIC,NP
-      COMMON/INPUT/ R,B
-      COMMON/PARAMD/ P
-      COMMON/CNST2/ NPL,NOS,NDRUG,NADD
-      COMMON/STATE/ X
-      COMMON/ERR/ERRFIL
+C------- DECLARATIONS -------C
 
-      PARAMETER(MAXNUMEQ=7)  
 
-      DIMENSION X(20),P(32),TIM(594),SIG(5000),SIGO(5000),R(37),
-     1 RS(5000,34),RSO(5000,34),YT(MAXNUMEQ),YO(594,MAXNUMEQ),
-     2 YPRED(594,NUMEQT), BS(5000,7),Y(594,MAXNUMEQ),B(20),NBCOMP(7),
-     3 TLAG(7),FA(7),XSTORE(100,20),XPRED(20),XVERIFY(100)
+C      IMPLICIT REAL*8(A-H,O-Z)
+      implicit none
 
+C wmy2019.03.12 SR SHIFT moved into npag_utils.f90
+C      include "interface_0SHIFT.txt"
+
+C      integer MAXNUMEQ
+C      PARAMETER(MAXNUMEQ=7) 
+
+C Arguments
+
+      integer JSUB, IG, NUMT
+      double precision, dimension(71281,NUMEQT) :: YYPRED
+      real*8, dimension(71281) :: TPRED
+      integer NUMEQT
+
+C      COMMON/BOLUSCOMP/NBCOMP
+      integer, dimension(max_input_dim) :: NBCOMP
+
+      integer NPP
+
+C      COMMON/PARAMD/ P   ! Not used -- replaced by ESTML
+      real*8, dimension(max_ODE_params) :: ESTML
+
+      integer NDIM,MF
+      real*8 RTOL
+      real*8, dimension(max_ODE_comps) :: ATOL
+
+C      COMMON/OBSER/ TIM,SIG,RS,YO,BS
+      real*8, dimension(max_m_per_obs) :: TIM
+      real*8, dimension(max_doses) :: SIG
+C      real*8,dimension(max_m_per_obs,MAXNUMEQ) :: YO ! Not used anymore
+      real*8, dimension(max_doses,max_RS_J) :: RS
+      real*8, dimension(max_doses,max_input_dim) :: BS
+      integer, dimension(128) :: INTLIST
+      integer, dimension(257) :: IPAR
+      double precision, dimension(max_m_per_obs,MAXNUMEQ) :: ObsError
+      double precision, dimension(257) :: RPAR
+
+
+C      COMMON/ERR/ERRFIL
       CHARACTER ERRFIL*20
 
-C wmy20190513
-       double precision, dimension(257) :: RPAR
-       integer, dimension(257) :: IPAR
-       integer, dimension(128) :: INTLIST
-       integer III,JSUB,IG,JSUBmain,IGmain
+C Local variables
 
-C  NOTE THAT AS OF idm2x14.f, THE DIMENSIONS OF 6 IN XSTORE AND XPRED
-C  HAVE BEEN CHANGED TO 20, WHICH IS WHAT THEY SHOULD HAVE BEEN ALL
+C      COMMON/CNST/ N,ND,NI,NUP,NUIC,NP
+       integer N,ND,NI,NP
+
+C      COMMON/CNST2/ NPL,NOS,NDRUG,NADD
+       integer NOS,NDRUG,NADD
+
+C      COMMON/INPUT/ R,B
+      double precision, dimension(max_RS_J) :: R
+      double precision, dimension(max_ODE_comps) :: B
+
+C      COMMON/STATE/ X
+      double precision, dimension(max_ODE_comps) :: X
+
+      integer KNT,KNS,ID,NTL,ISKIPBOL,ISTEADY,IKNS,ICONV
+      integer I,J,III,KNSNEW,KNTM1,NDO,ISAME
+      double precision T,TOUT,DOSEINT
+
+      double precision, dimension(100) :: XVERIFY
+
+C  NOTE THAT AS OF idm3x15.f, THE DIMENSIONS OF 6 IN XSTORE AND XPRED
+C  HAVE BEEN CHANGED TO max_ODE_comps, WHICH IS WHAT THEY SHOULD HAVE BEEN ALL
 C  ALONG (I.E., THE SAME AS FOR X).
+
+      integer NN, NSET
+      double precision, dimension(max_SS_doses,max_ODE_comps) :: XSTORE
+      double precision, dimension(max_ODE_comps) :: XPRED
 
 C  NOTE THAT THE DIMENSIONS RELATED TO THE NO. OF OUTPUT EQS. IN
 C  YO, YT AND Y ARE CHANGED TO MAXNUMEQ (FROM 6). NUMEQT COULD NOT
 C  BE USED BECAUSE THESE ARRAYS WERE NOT PASSED TO THIS ROUTINE AS
 C  DUMMY ARGUMENTS.
 
-C  THE 2ND DIMENSION OF YPRED IS CHANGED TO NUMEQT, SINCE IT IS PASSED
-C  IN THE ARGUMENT LIST, AND CAN THEREFORE BE VARIABLY DIMENSIONED BY
-C  NUMEQT.
+      double precision, dimension(MAXNUMEQ) :: YT
+      double precision, dimension(71281,MAXNUMEQ) :: Y
 
+C  THE 2ND DIMENSION OF YYPRED IS CHANGED TO NUMEQT, SINCE IT IS PASSED
+C  IN THE ARGUMENT LIST, AND CAN THEREFORE BE VARIABLY DIMENSIONED.
 
 C  NOTE THAT "7" IN THE ABOVE ARRAYS INDICATE THE NO. OF DRUGS ALLOWED.
 
-C*****ODE CONSTANTS AND INITIALIZATION*****
+      double precision, dimension(7) :: TLAG,FA
 
-      JSUBmain = JSUB
-      IGmain = IG
+C  INTERMEDIATE and BUFFER variables
 
-      KNS=1
-      KNT=1
+      double precision, dimension(max_doses) :: SIGO
+      double precision, dimension(max_doses,max_RS_J) :: RSO
+
+      double precision constant001
+
+C------- INITIALIZATIONS -------
+
+C      COMMON/CNST/ N,ND,NI,NUP,NUIC,NP
+      N = NDIM
+      ND = intlist(8)
+      NI = intlist(7)
+C       NUP = not used
+C       NUIC = not used
+      NP = NPP
+
+C      COMMON/CNST2/ NPL,NOS,NDRUG,NADD ! Note NOS=NUMEQT
+      NOS = intlist(9)
+      NDRUG = intlist(5)
+      NADD = intlist(6)
+
+C*****ODE CONSTANTS AND (more) INITIALIZATION*****
+
+        KNS=1
+        KNT=1
 
 C  NOTE THAT KNT IS THE RUNNING INDEX OF THE NEXT OBSERVATION TIME,
 C  AND       KNS IS THE RUNNING INDEX OF THE NEXT DOSAGE TIME.
@@ -535,7 +660,7 @@ C  STEADY STATE DOSE SET WHICH HAS BOLUS DOSES.
        R(2*I-1) = 0.D0
       END DO
 
-c  AS OF idm2x7.f, instead of R(1) = 0, the code has been changed to 
+c  AS OF idm3x7.f, instead of R(1) = 0, the code has been changed to 
 c  set R(2*I-1) = 0, for I = 1,NDRUG. I.E., All IV rates for all NDRUG
 c  drugs are initialized to be 0 ... in case the 1st obs. time is 0,
 c  which means that OUTPUT is called before the R(I) are set below.
@@ -544,7 +669,7 @@ C  CALL SUBROUTINE GETFA IN npemdriv.f (THE FIRST TEMPLATE FILE TO
 C  INCLUDE GETFA IS TSTMULTG.FOR) TO OBTAIN THE VALUE OF FA FOR EACH
 C  OF THE NDRUG DRUGS.
 
-C  AS OF idm2x12.f, BEFORE CALLING GETFA, MUST SET
+C  AS OF idm3x13.f, BEFORE CALLING GETFA, MUST SET
 C  THE R(.) IN CASE ANY OF THE FA(.) ARE FUNCTIONS OF THE 
 C  COVARIATES WHICH ARE ESTABLISHED FROM THE R(.) VALUES IN
 C  GETFA.
@@ -554,19 +679,20 @@ C  GETFA.
       END DO
 
 
-	 CALL GETFA(FA,X,P,R,B,INTLIST)
+c         CALL GETFA(FA,X)
+         CALL GETFA(FA,X,ESTML,R,B,INTLIST)
 
 
 C  NOTE THAT NBCOMP(I),I=1,NDRUG WAS SET IN SUBROUTINE SYMBOL AND
 C  PASSED TO THIS ROUTINE VIA COMMON/BOLUSCOMP.
 
 
-C  As of idm2x11.f, the code to save ND0, SIGO, RSO, is moved to before
+C  As of idm3x12.f, the code to save ND0, SIGO, RSO, is moved to before
 c  the IF(N .EQ. 0) GO TO 75  statement. The reason is that before this
 c  routine returns, ND, SIG, and RS are reset back to these values,
 c  even if N = 0, and so they must be established at this time.
 
-C  AS OF idm2x9.f, SAVE ND, SIG, AND RS WHETHER OR NOT NTL = 1, SINCE
+C  AS OF idm3x9.f, SAVE ND, SIG, AND RS WHETHER OR NOT NTL = 1, SINCE
 C  IF THERE ARE STEADY STATE DOSE SETS, THE FIRST SIG(.) VALUE IN EACH
 C  SET WILL BE CHANGED TO BE 0 BELOW.
 
@@ -577,6 +703,7 @@ C  SET WILL BE CHANGED TO BE 0 BELOW.
 	   RSO(I,J) = RS(I,J)
 	  END DO
 	 END DO
+
 
 
 C  IF N = 0, THE OUTPUT EQUATION(S) FOR Y ARE CODED EXPLICITLY INTO
@@ -596,7 +723,7 @@ C  CALL SUBROUTINE GETIX IN npemdriv.f (THE FIRST TEMPLATE FILE TO
 C  INCLUDE GETIX IS TSTMULTG.FOR) TO OBTAIN THE VALUE OF X (THE INITIAL
 C  COMPARTMENT AMOUNT) FOR EACH OF THE N COMPARTMENTS.
 
-	 CALL GETIX(N,X,P,R,B,INTLIST)
+	 CALL GETIX(N,X,ESTML,R,B,INTLIST)
 
 
 
@@ -604,7 +731,8 @@ C  CALL SUBROUTINE GETTLAG IN npemdriv.f (THE FIRST TEMPLATE FILE TO
 C  INCLUDE GETTLAG IS TSTMULTG.FOR) TO OBTAIN THE VALUE OF THE TIMELAG
 C  FOR EACH OF THE NDRUG DRUGS.
 
-   75	 CALL GETTLAG(TLAG,X,P,R,B,INTLIST)
+C   75	 CALL GETTLAG(TLAG,X)
+   75	 CALL GETTLAG(TLAG,X,ESTML,R,B,INTLIST)
 
 C  IF ANY TLAG(.) VALUES RETURN AS .NE. 0, THEN, CALL SUBROUTINE SHIFT
 C  TO ADJUST THE DOSAGE REGIMEN APPROPRIATELY.
@@ -624,18 +752,17 @@ C  SIG, AND RS WILL BE RESET TO THEIR INCOMING VALUES - TO BE READY FOR
 C  THE NEXT CALL TO THIS ROUTINE WITH POSSIBLY DIFFERENT VALUES FOR 
 C  TLAG(I).
 
-
 	 CALL SHIFT(TLAG,ND,SIG,NDRUG,NADD,RS,INTLIST)
 
 
 C  ESTABLISH THE VALUES IN EACH DRUG'S PO COLUMN TO THE CORRESPONDING
 C  COLUMN IN ARRAY BS.
 
-      DO I=1,ND
-       DO J=1,NDRUG
-        BS(I,J)=RS(I,2*J)
-       END DO
-      END DO
+         DO I=1,ND
+          DO J=1,NDRUG
+           BS(I,J)=RS(I,2*J)
+	  END DO
+	 END DO
 
 
 	ENDIF
@@ -643,30 +770,30 @@ C  COLUMN IN ARRAY BS.
 C  THE ABOVE ENDIF IS FOR THE  IF(NTL .EQ. 1)  CONDITION.
 
 
-      IF(TIM(KNT).GE.SIG(KNS)) GO TO 12
-      IF(TIM(KNT).NE.0.0D0) GO TO 45
+      IF(TPRED(KNT).GE.SIG(KNS)) GO TO 12
+      IF(TPRED(KNT).NE.0.0D0) GO TO 45
 
-C  THE ONLY WAY THE FOLLOWING CALL TO OUTPUT CAN OCCUR IS IF TIM(KNT)
+C  THE ONLY WAY THE FOLLOWING CALL TO OUTPUT CAN OCCUR IS IF TPRED(KNT)
 C  = 0 --> OBTAIN YT = OUTPUT VALUE(S) AT TIME 0.0.
 
-      CALL OUTPUT(0.D0,YT,X,RPAR,IPAR)
+        CALL OUTPUT(0.D0,YT,X,RPAR,IPAR)
 	DO 2000 I=1,NOS
 2000    Y(KNT,I)=YT(I)
         KNT=KNT+1
         GO TO 45
 
-12      IF(TIM(KNT).GT.SIG(KNS)) GO TO 13
-        IF(TIM(KNT).NE.0.0D0) GO TO 45
+12    IF(TPRED(KNT) .GT. SIG(KNS)) GO TO 13
+      IF(TPRED(KNT) .NE. 0.0D0) GO TO 45
 
-C  THE ONLY WAY THE FOLLOWING CALL TO OUTPUT CAN OCCUR IS IF TIM(KNT)
+C  THE ONLY WAY THE FOLLOWING CALL TO OUTPUT CAN OCCUR IS IF TPRED(KNT)
 C  = 0 --> OBTAIN YT = OUTPUT VALUE(S) AT TIME 0.0.
 
-        CALL OUTPUT(0.D0,YT,X,RPAR,IPAR)
-	  DO 2005 I=1,NOS
-2005    Y(KNT,I)=YT(I)
-        KNT=KNT+1
+      CALL OUTPUT(0.D0,YT,X,RPAR,IPAR)
+	DO 2005 I=1,NOS
+2005  Y(KNT,I)=YT(I)
+	KNT=KNT+1
 
-13      IF(SIG(KNS) .GT. 0.0D0) GO TO 45
+13    IF(SIG(KNS) .GT. 0.0D0) GO TO 45
 
 C  CHECK TO SEE IF SIG(KNS) < 0. IF SO, IT MEANS THAT 100 STEADY STATE
 C  DOSES SHOULD NOW BE APPLIED WITH AN INTERDOSE INTERVAL EQUAL TO
@@ -700,12 +827,16 @@ C  PREDLAST3 UNTIL IT IS ACHIEVED, OR UNTIL THE 100 DOSE SETS ARE ALL
 C  INTEGRATED THROUGH, WHICHEVER COMES FIRST.
 
        DOSEINT = -SIG(KNS)
+	
+
 
 C  RESET SIG(KNS) TO BE 0 SINCE THIS DOSE EVENT REPRESENTS THE START
 C  OF 100 DOSE SETS THAT BEGIN AT TIME 0.
 
 
        SIG(KNS) = 0
+
+
 
       ENDIF
 
@@ -718,15 +849,15 @@ C  THE ABOVE ENDIF IS FOR THE  IF(SIG(KNS) .LT. 0.D0)  CONDITION.
 
 	IF(NDRUG .EQ. 0) GO TO 81
 
-C  AS OF idm2x11.f: MUST CALL GETFA BEFORE EVERY TIME THAT
+C  AS OF idm3x13.f: MUST CALL GETFA BEFORE EVERY TIME THAT
 C  FA(.) ARE USED IN CASE THE EQUATION(S) FOR THE FA(.) ARE BASED
 C  ON THE COVARIATES, WHICH CAN CHANGE DOSE TO DOSE.
 
-	 CALL GETFA(FA,X,P,R,B,INTLIST)
+c         CALL GETFA(FA,X)
+         CALL GETFA(FA,X,ESTML,R,B,INTLIST)
 
 
         IF(N .EQ. 0) GO TO 120
-
         DO I=1,NDRUG
 	 X(NBCOMP(I))=X(NBCOMP(I))+BS(KNS,I)*FA(I)
 	END DO
@@ -750,18 +881,18 @@ C  DETERMINE IF, OBSER(ID=0), OR DOSE(ID=1), OR BOTH(ID=2).
 45    IF(KNS.GT.ND) GO TO 15
 
 
-C CODE CHANGE BELOW FOR idm2x8.f.
+C CODE CHANGE BELOW FOR idm3x8.f.
 
-      IF(TIM(KNT) .EQ. 0.D0 .AND. KNT .GT. 1) THEN
+	IF(TPRED(KNT) .EQ. 0.D0 .AND. KNT .GT. 1) THEN
 
 
-C  AS OF idm2x7.f, A TIME RESET NO LONGER REQUIRES ALL INITIAL
+C  AS OF idm3x7.f, A TIME RESET NO LONGER REQUIRES ALL INITIAL
 C  COMPARTMENT AMOUNTS TO BE RESET TO 0. THIS IS BECAUSE A TIME RESET
 C  NO LONGER HAS TO MEAN THAT AN "INFINITE" AMOUNT OF TIME HAS OCCURRED
 C  WITH NO DOSING; IT CAN ALSO NOW MEAN THAT AN "INFINITE" AMOUNT OF 
 C  TIME HAS OCCURRED WITH UNKNOWN DOSING (IN THIS CASE, SUBROUTINE
 C  GETIX WILL BE CALLED BELOW TO ESTABLISH INITIAL CONDITIONS FOR THIS
-C  TIME PERIOD). 
+C  TIME PERIOD).
 
 C  ADVANCE KNS TO THE NEXT VALUE THAT HAS SIG(KNS) .LE. 0. I.E., ONCE
 C  TIMN(KNT) = 0, IT MEANS THAT WE ARE DONE WITH THE OUTPUT OBS.
@@ -784,11 +915,12 @@ C  VERIFYVAL.
        XVERIFY(1) = SIG(KNS)
        CALL VERIFYVAL(1,XVERIFY)
 
-C      WRITE(*,111) ND,KNS,SIG(KNS)
-       WRITE(*,111) ND,KNS,XVERIFY(1)
+C     WRITE(*,111) ND,KNS,SIG(KNS)
+      WRITE(*,111) ND,KNS,XVERIFY(1)
 
-C      WRITE(25,111) ND,KNS,SIG(KNS)
-       WRITE(25,111) ND,KNS,XVERIFY(1)
+C     WRITE(25,111) ND,KNS,SIG(KNS)
+      WRITE(25,111) ND,KNS,XVERIFY(1)
+
 
  111  FORMAT(//' THE CURRENT SUBJECT HAS AN OBSERVATION TIME RESET'/
      1' ROW WITHOUT AN ACCOMPANYING DOSE RESET ROW. THE PROGRAM NOW'/
@@ -799,9 +931,8 @@ C      WRITE(25,111) ND,KNS,SIG(KNS)
      6' NO. ',I4,' WHICH HAS CORRESPONDING TIME ',F15.4,'):')
 
        OPEN(42,FILE=ERRFIL)
-
-C       WRITE(42,111) ND,KNS,SIG(KNS) 
-        WRITE(42,111) ND,KNS,XVERIFY(1)
+C       WRITE(42,111) ND,KNS,SIG(KNS)
+        WRITE(42,111) ND,KNS,XVERIFY(1) 
 
 
       DO I = 1,ND
@@ -810,7 +941,7 @@ C       WRITE(42,111) ND,KNS,SIG(KNS)
        WRITE(42,*) SIG(I)
       END DO
 
-       CLOSE(42)
+        CLOSE(42)
 
       CALL PAUSE
       STOP
@@ -818,6 +949,7 @@ C       WRITE(42,111) ND,KNS,SIG(KNS)
 
   110 KNS = IKNS
 
+ 
 
 C  THERE ARE TWO POSSIBILITES AT THIS POINT, EITHER SIG(KNS) = 0
 C  OR SIG(KNS) < 0. 
@@ -846,7 +978,7 @@ C  MAKE SURE THAT ANY RESIDUAL COMPARTMENT AMOUNTS FROM A PREVIOUS
 C  SET OF DOSES IS ZEROED OUT (OR SET = VALUES AS DETERMINED BY
 C  SUBROUTINE GETIX).
 
-C  AS OF idm2x13.f, BEFORE CALLING GETIX, MUST SET
+C  AS OF idm3x14.f, BEFORE CALLING GETIX, MUST SET
 C  THE R(.) IN CASE ANY OF THE INITIAL CONDITIONS FOR THE X(.)
 C  ARE FUNCTIONS OF THE COVARIATES WHICH ARE ESTABLISHED FROM THE 
 C  R(.) VALUES IN GETFA.
@@ -856,8 +988,7 @@ C  R(.) VALUES IN GETFA.
       END DO
 
 
-
-       CALL GETIX(N,X,P,R,B,INTLIST)
+       CALL GETIX(N,X,ESTML,R,B,INTLIST)
 		
 C  MUST ALSO RESET T = 0 SINCE THE INTEGRATION WILL AGAIN START FROM 
 C  TIME 0.
@@ -901,6 +1032,8 @@ C  INTEGRATED THROUGH, WHICHEVER COMES FIRST.
 C  RESET SIG(KNS) TO BE 0 SINCE THIS DOSE EVENT REPRESENTS THE START
 C  OF 100 DOSE SETS THAT BEGIN AT TIME 0.
 
+
+
        SIG(KNS) = 0
 
       ENDIF
@@ -911,54 +1044,69 @@ C  THE ABOVE ENDIF IS FOR THE  IF(SIG(KNS) .LT. 0.D0)  CONDITION.
 
 	ENDIF
 
-C  THE ABOVE ENDIF IS FOR THE 
-C   IF(TIM(KNT) .EQ. 0.D0 .AND. KNT .GT. 1)  CONDITION.
+C  THE ABOVE ENDIF IS FOR THE
+C   IF(TPRED(KNT) .EQ. 0.D0 .AND. KNT .GT. 1)  CONDITION.
 
 
-
-
-      IF(TIM(KNT) .NE .SIG(KNS)) GO TO 20
+      IF(TPRED(KNT) .NE. SIG(KNS)) GO TO 20
       ID=2
-      TOUT=TIM(KNT)
+      TOUT=TPRED(KNT)
+
       KNT=KNT+1
       KNS=KNS+1
 
       IF(N .EQ. 0) GO TO 31
       GO TO 30
 
-20    IF(TIM(KNT) .GT. SIG(KNS) .AND. SIG(KNS) .GT. 0) GO TO 25
+20    IF(TPRED(KNT) .GT. SIG(KNS) .AND. SIG(KNS) .GT. 0) GO TO 25
 
 15    ID=0
-      TOUT=TIM(KNT)
+      TOUT=TPRED(KNT)
+
       KNT=KNT+1
+
       IF(N .EQ. 0) GO TO 31
       GO TO 30
 
 25    ID=1
       TOUT=SIG(KNS)
+
       KNS=KNS+1
       IF(N .EQ. 0) GO TO 31
 
 30      CONTINUE
+C--------------------------------------------------------------- 30 / 32
 
-C wmy20190513 Start Copied from NPAG -----------------------------------
+C --- wmy2018.06.15 These lines are lifted from USERANAL; they have to
+C --- be here to make ANAL3() work.
+C --- When you get a chance, go back to useranal and erase these lines
+C --- there as those lines are now redundant.  Also, remove INTLIST
+C --- from the USERANAL() arglist
+c        constant001 = 0.d0
         do III=1,max_ODE_params
-          RPAR(k_dvode_reserved + III) = P(III)
+          RPAR(k_dvode_reserved + III) = ESTML(III)
+c          RPAR(23 + III) = P(III)
+c          constant001 = constant001 + P(III) - ESTML(III) + 1.d0
         end do
+c        write (*,*) "Calling PK update routine w/",constant001
         do III = 1,max_RS_J
           RPAR(k_p_end + III) = R(III)
+C          RPAR(55 + III) = R(III)
         end do
         RPAR(k_jsub) = dble(JSUB)
         RPAR(k_ig) = dble(IG)
         do III = 1,10
           IPAR(i_dvode_reserved + III) = INTLIST(III)
         end do
+C        IPAR(23 + 11) = JSUB
         IPAR(i_jsub) = JSUB
+C        IPAR(23 + 12) = IG
         IPAR(i_ig) = IG
-C 32      IF(NDIM .NE. -1) then
-C wmy20190513 End Copied from NPAG -------------------------------------
-
-32      IF(N .NE. -1) CALL USERANAL(X,T,TOUT)
+C        write (*,*) "DEBUG 2018.06.15: RPAR",RPAR(24),RPAR(25),RPAR(26)
+C     1     ,RPAR(27),RPAR(28)
+C---------------------------------------------------------------
+32      IF(N .NE. -1) CALL USERANAL(JSUB,IG,X,T,TOUT,
+     1      NDIM,MF,RTOL,ATOL,ESTML,R,INTLIST,IPAR,RPAR)
         IF(N .EQ. -1) CALL ANAL3(X,T,TOUT,RPAR,IPAR)
 
 C  IF ISTEADY = 1, THIS IS INSIDE A STEADY STATE DOSE SET. CHECK TO SEE
@@ -1000,6 +1148,7 @@ C  PROCEED AS INDICATED ABOVE.
         IF(NSET .GE. 5) THEN
 
          CALL PREDLAST3(NN,NSET,XSTORE,XPRED,ICONV)
+
   
          IF(ICONV .EQ. 1) THEN
 
@@ -1011,7 +1160,6 @@ C  FIRST DOSE EVENT AFTER THE END OF THE STEADY STATE DOSE SET. ALSO,
 C  SET T = THE ENDING TIME OF THE STEADY STATE DOSE SET = 100*DOSEINT,
 C  SINCE THAT IS WHAT IT WOULD HAVE BEEN HAD ALL 100 DOSE SETS BEEN
 C  RUN.
-
 
           ISTEADY = 0
 
@@ -1035,8 +1183,7 @@ C  ANOTHER STEADY STATE SET).
           END DO
 
 C  TO GET HERE MEANS THAT THERE ARE NO DOSE TIMES PAST THE END OF THIS
-C  STEADY STATE DOSE SET. IN THIS CASE, SET KNS TO ND+1.
-
+C  STEADY STATE DOSE SET. IN THIS CASE, SET KNS TO ND+1
 
           KNS = ND+1
           GO TO 200
@@ -1044,13 +1191,11 @@ C  STEADY STATE DOSE SET. IN THIS CASE, SET KNS TO ND+1.
   100     KNS = KNSNEW
   200     CONTINUE
 
-
 C  SET ISKIPBOL = 1 WHENEVER CONVERGENCE OCCURS IN
 C  THE STEADY STATE DOSES SINCE IN THIS CASE, WE DON'T WANT TO
 C  REAPPLY THE LAST BOLUS FROM THE STEADY STATE SET BELOW LABEL 83.
 
           ISKIPBOL = 1
-
 
          ENDIF
 
@@ -1081,16 +1226,17 @@ C  THE ABOVE ENDIF IS FOR THE  IF(ISTEADY .EQ. 1)  CONDITION.
 
 31      CONTINUE
 
+
 C  RECORD OBSERVATION AND SUPPLY NEW DOSE
 
       IF(ID.EQ.1) GO TO 35
 	KNTM1=KNT-1
 
-C  NOTE THAT THE TIME AT WHICH THE OUTPUT IS DESIRED IS TIM(KNTM1); THIS
-C  IS CLEAR SINCE THE RETURNING VALUE(S) IN YT ARE PUT INTO ROW NO.
+C  NOTE THAT THE TIME AT WHICH THE OUTPUT IS DESIRED IS TPRED(KNTM1); 
+C  THIS IS CLEAR SINCE THE RETURNING VALUE(S) IN YT ARE PUT INTO ROW NO.
 C  KNTM1 OF Y.
 
-        CALL OUTPUT(TIM(KNTM1),YT,X,RPAR,IPAR)
+        CALL OUTPUT(TPRED(KNTM1),YT,X,RPAR,IPAR)
 
         DO 2010 I=1,NOS
 2010    Y(KNTM1,I)=YT(I)
@@ -1105,11 +1251,12 @@ C  KNTM1 OF Y.
          R(I)=RS(KNS-1,I)
         END DO
 
-C  AS OF idm2x12.f: MUST CALL GETFA BEFORE EVERY TIME THAT
+C  AS OF idm3x13.f: MUST CALL GETFA BEFORE EVERY TIME THAT
 C  FA(.) ARE USED IN CASE THE EQUATION(S) FOR THE FA(.) ARE BASED
 C  ON THE COVARIATES, WHICH CAN CHANGE DOSE TO DOSE.
 
-	 CALL GETFA(FA,X,P,B,INTLIST)
+c         CALL GETFA(FA,X)
+         CALL GETFA(FA,X,ESTML,R,B,INTLIST)
 
 
 83      IF(NDRUG .EQ. 0 .OR. N .EQ. 0) GO TO 82
@@ -1145,18 +1292,18 @@ C  OCCUR WHENEVER THERE IS A NEW BOLUS TO BE APPLIED.
 
 C  CHECK STOPPING TIME.
 
-40      IF(KNT .LE. M) GO TO 45
+40    IF(KNT  .LE. NUMT) GO TO 45
 
-C*****DETERMINE YPRED(I)*****
+C*****DETERMINE YYPRED(I)*****
 
 	DO J=1,NOS
-         DO I=1,M
-	  YPRED(I,J) = Y(I,J)
+         DO I=1,NUMT
+	  YYPRED(I,J)=Y(I,J)
 	 END DO
 	END DO
 
 
-C  AS OF idm2x9.f, RESTORE THE VALUES FOR ND, SIG, AND RS, IN CASE
+C  AS OF idm3x9.f, RESTORE THE VALUES FOR ND, SIG, AND RS, IN CASE
 C  THIS MODEL HAS TIME LAGS OR STEADY STATE DOSES - TO BE READY FOR THE
 C  NEXT CALL TO THIS ROUTINE.
 
@@ -1178,39 +1325,6 @@ C  COLUMN IN ARRAY BS.
 	  END DO
 	 END DO
 
-      JSUB = JSUBmain
-      IG = IGmain
 
       RETURN
       END
-C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C
-	SUBROUTINE EVAL2(JSUB,IG,YPRED,NUMEQT,INTLIST,RPAR,IPAR)
-
-C  THIS SUBROUTINE, CALLED BY MAIN, FINDS THE OUTPUT CONC. 
-C  VECTOR, YPRED, EVALUATED AT PARAMETER VALUES IN VECTOR P, PASSED 
-C  DIRECTLY TO SUBROUTINE FUNC2 VIA COMMON/PARAMD.
-
-	IMPLICIT REAL*8(A-H,O-Z)
-	COMMON/SUM2/ M,NPNL
-        COMMON/CNST2/ NPL,NOS,NDRUG,NADD
-	DIMENSION YPRED(594,NUMEQT)
-
-        integer jsub,ig,JSUBmain,IGmain
-        integer, dimension(128)::INTLIST
-        double precision, dimension(257)::RPAR
-        integer, dimension(257)::IPAR
-
-        JSUBmain = JSUB
-        IGmain = IG
-
-	CALL FUNC2(JSUB,IG,M,YPRED,NUMEQT,INTLIST,RPAR,IPAR)
-
-        JSUB = JSUBmain
-        IG = IGmain
-
-	RETURN
-	END
-
-
