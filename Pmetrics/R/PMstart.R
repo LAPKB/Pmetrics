@@ -33,7 +33,26 @@
 
   #restore user defaults - deprecated
   #if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
-  PMbuild(auto = TRUE)
+
+  if (!.is_fortran_installed()) {
+    cat("Compiled binaries not found \n")
+    if (system("which -s gfortran") != 0) {
+      cat("Gfortran not found \n Starting automatic installation\n")
+      if (.getGfortran()) {
+        cat("Gfortran installed \n Building Pmetrics\n")
+        PMbuild()
+      } else {
+        cat("ERROR: Could not install gfortran automatically, please install Gfortran manually and then run PMbuild() \n")
+      }
+    } else {
+      cat("Gfortran found \n Building Pmetrics\n")
+      PMbuild()
+    }
+
+  } else {
+    cat("Previously compiled binaries found!\n")
+  }
+
 }
 
 .onAttach <- function(...) {
@@ -74,9 +93,8 @@
     if (readLines(newfort) == "1") needToBuild <- T
   }
   #never compiled before
-  destdir <- switch(OS, "~/.config/Pmetrics/compiledFortran",
-                    paste(Sys.getenv("APPDATA"), "\\Pmetrics\\compiledFortran", sep = ""),
-                    "~/.config/Pmetrics/compiledFortran")
+  destdir <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
+  #TODO: change this
   if (!file.exists(destdir)) {
     needToBuild <- T
   }
@@ -89,4 +107,15 @@
   setPMoptions()
 }
 
-
+.is_fortran_installed <- function() {
+  library(purrr)
+  exists <- function(name) {
+    paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/") %>%
+    paste(name, sep = "/") %>%
+    file.exists()
+  }
+  c("DOprep.exe", "mb2csv.exe", "pNPeng.o",
+    "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
+    "sNPeng.o", "sNPprep.o", "sSIMeng.o") %>%
+  map(exists) %>% all() %>% return()
+}
