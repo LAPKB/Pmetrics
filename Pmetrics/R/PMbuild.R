@@ -4,7 +4,26 @@
 #' @title Build Pmetrics
 #' @author Michael Neely
 
+.is_fortran_installed <- function() {
+  library(purrr)
+  exists <- function(name) {
+    paste(path.package("Pmetrics"), "compiledFortran", sep = "/") %>%
+    paste(name, sep = "/") %>%
+    file.exists()
+  }
+  c("DOprep.exe", "mb2csv.exe", "pNPeng.o",
+    "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
+    "sNPeng.o", "sNPprep.o", "sSIMeng.o") %>%
+  map(exists) %>% all() %>% return()
+}
+
 PMbuild <- function(auto = FALSE) {
+
+  if (auto && !.is_fortran_installed()) {
+    if (.getGfortran() = -1) {
+      return()
+    }
+  }
 
   currwd <- getwd()
   OS <- getOS()
@@ -25,7 +44,7 @@ PMbuild <- function(auto = FALSE) {
   compiler <- PMFortranConfig()
   #try again just in case redefined
   compiler <- PMFortranConfig()
-  #check if parallel is possible  
+  #check if parallel is possible
   if (length(compiler) == 2 & get("PmetricsBit", envir = PMenv) == "64") {
     parallel <- T
   } else { parallel <- F }
