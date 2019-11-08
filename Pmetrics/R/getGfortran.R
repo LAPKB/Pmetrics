@@ -37,10 +37,11 @@
 
     cat("Checking for gfortran \n")
     if (system("which -s gfortran") != 0) {
-      cat("ERROR: Could not install gfortran automatically, please run PMbuild(auto = FALSE) \n")
-      return(0)
+      cat("ERROR: Could not install gfortran automatically, please install Gfortran manually and then run PMbuild() \n")
+      return(-1)
     } else {
       cat("Gfortran Installed \n")
+      return(0)
     }
   }
 

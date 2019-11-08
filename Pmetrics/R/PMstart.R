@@ -33,8 +33,7 @@
 
   #restore user defaults - deprecated
   #if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
-  .getGfortran()
-  PMbuild()
+  PMbuild(auto = TRUE)
 }
 
 .onAttach <- function(...) {
