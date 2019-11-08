@@ -21,10 +21,9 @@
 
     cat("Checking for gfortran \n")
     if (system("which -s gfortran") != 0) {
-      cat("ERROR: Could not install gfortran automatically, please run PMbuild(auto = FALSE) \n")
-      return(0)
+      return(FALSE)
     } else {
-      cat("Gfortran Installed \n")
+      return(TRUE)
     }
   } else if (OS == 3) {
     cat("Checking for build essentials \n")
@@ -37,11 +36,9 @@
 
     cat("Checking for gfortran \n")
     if (system("which -s gfortran") != 0) {
-      cat("ERROR: Could not install gfortran automatically, please install Gfortran manually and then run PMbuild() \n")
-      return(-1)
+      return(FALSE)
     } else {
-      cat("Gfortran Installed \n")
-      return(0)
+      return(TRUE)
     }
   }
 

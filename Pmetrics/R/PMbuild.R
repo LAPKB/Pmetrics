@@ -4,26 +4,9 @@
 #' @title Build Pmetrics
 #' @author Michael Neely
 
-.is_fortran_installed <- function() {
-  library(purrr)
-  exists <- function(name) {
-    paste(path.package("Pmetrics"), "compiledFortran", sep = "/") %>%
-    paste(name, sep = "/") %>%
-    file.exists()
-  }
-  c("DOprep.exe", "mb2csv.exe", "pNPeng.o",
-    "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
-    "sNPeng.o", "sNPprep.o", "sSIMeng.o") %>%
-  map(exists) %>% all() %>% return()
-}
 
-PMbuild <- function(auto = FALSE) {
 
-  if (auto && !.is_fortran_installed()) {
-    if (.getGfortran() = -1) {
-      return()
-    }
-  }
+PMbuild <- function() {
 
   currwd <- getwd()
   OS <- getOS()
@@ -49,9 +32,7 @@ PMbuild <- function(auto = FALSE) {
     parallel <- T
   } else { parallel <- F }
   sourcedir <- system.file("code", package = "Pmetrics")
-  destdir <- switch(OS, "~/.config/Pmetrics/compiledFortran",
-                    paste(Sys.getenv("APPDATA"), "\\Pmetrics\\compiledFortran", sep = ""),
-                    "~/.config/Pmetrics/compiledFortran")
+  destdir <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
   #remove old files if present
   oldfiles <- c(Sys.glob(paste(destdir, "*.o", sep = "/")), Sys.glob(paste(destdir, "*.exe", sep = "/")))
 
