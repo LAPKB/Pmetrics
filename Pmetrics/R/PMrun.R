@@ -393,7 +393,7 @@
     if(type=="NPAG" && prior[1]==0) PMscript[getNext(PMscript)] <- paste(c("mv ","move ","mv ")[OS],basename(prior[2])," inputs",sep="")
     
     #make report
-    reportscript <- paste(normalizePath(getPMpath(),winslash="/"),"/Pmetrics/report/",
+    reportscript <- paste(normalizePath(getPMpath(),winslash="/"),"/report/",
                           switch(type,NPAG="NP",IT2B="IT",ERR="ERR"),"repScript.R",sep="")
     outpath <- c(paste(workdir,"/outputs",sep=""),
                  paste(workdir,"\\outputs",sep=""),
