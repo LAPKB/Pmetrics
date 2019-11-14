@@ -107,7 +107,7 @@ makeValid <- function(run,outeq=1,input=1,icen="median",tad=F,binCov,doseC,timeC
   #if tad=T calculate time after dose 
   #warn that dosing should be homogenous
   if(tad==T){
-    cat("WARNING: You have chosen to use time after dose. This is only valid if dosing does not change within a subject and observations are at steady state.\n")
+    cat("WARNING: You have chosen to use time after dose.\nThis is only valid if dosing does not change within a subject and observations are at steady state.\n")
     
     for(i in 1:nrow(mdata)){
       if(mdata$evid[i]!=0){
