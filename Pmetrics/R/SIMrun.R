@@ -396,9 +396,9 @@ SIMrun <- function(poppar,limits=NULL,model="model.txt",data="data.csv",split,
     #remove simulated covariates from data file non-destructively
     if(length(covariate$fix)>0){
       keepCov <- which(names(dataFile) %in% covariate$fix)
-      dataFile <- dataFile[,c(1:get("nfixed",PMenv),keepCov)] 
+      dataFile <- dataFile[,c(1:getFixedColNum(),keepCov)] 
     } else {
-      dataFile <- dataFile[,1:get("nfixed",PMenv)]
+      dataFile <- dataFile[,1:getFixedColNum()]
     }
     #re-assign data
     data <- paste("c_",data,sep="")
@@ -888,7 +888,7 @@ SIMrun <- function(poppar,limits=NULL,model="model.txt",data="data.csv",split,
         covSimPos <- which(covOrig %in% covSim)
         covNotSimPos <- which(!covOrig %in% covSim)
         if(length(covSimPos)>0){
-          nfixed <- get(x="nfixed",envir=PMenv)
+          nfixed <- getFixedColNum()
           covDF <- cbind(parValues[,1+npar+covSimPos])
           if(length(covNotSimPos)>0){
             covDF <- cbind(covDF,temp[,nfixed+covNotSimPos])
