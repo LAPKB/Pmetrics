@@ -212,7 +212,7 @@ getFinal <- function(outfile="NP_RF0001.TXT"){
 
 #read and set defaults
 PMreadDefaults <- function(){
-  optFile <- paste(get("PmetricsPath",envir=PMenv),"/Pmetrics/config/PMopt.Rdata",sep="")
+  optFile <- paste(getPMpath(),"/Pmetrics/config/PMopt.Rdata",sep="")
   if(file.exists(optFile)) {
     load(optFile)
     if(!is.null(PMopt)) {
@@ -235,8 +235,8 @@ gfortranCheck <- function(gfortran=Sys.which("gfortran")){
       if(compareVersion(OSversion,"10.9")>=0) OSindex <- 6
       if(compareVersion(OSversion,"10.8")>=0) OSindex <- 0
       if(compareVersion(OSversion,"10.7")==0) OSindex <- 1
-      if(compareVersion(OSversion,"10.7")==-1 & compareVersion(OSversion,"10.6")>=0 & get("PmetricsBit",envir=PMenv)=="64") OSindex <- 2
-      if(compareVersion(OSversion,"10.7")==-1 & compareVersion(OSversion,"10.6")>=0 & get("PmetricsBit",envir=PMenv)=="32") OSindex <- 3
+      if(compareVersion(OSversion,"10.7")==-1 & compareVersion(OSversion,"10.6")>=0 & getBits()=="64") OSindex <- 2
+      if(compareVersion(OSversion,"10.7")==-1 & compareVersion(OSversion,"10.6")>=0 & getBits()=="32") OSindex <- 3
       cat(paste("Opening http://www.lapk.org/gfortran/gfortran.php?OS=",OSindex,sep=""))
       system(paste("open http://www.lapk.org/gfortran/gfortran.php?OS=",OSindex,sep=""))
       
@@ -246,8 +246,8 @@ gfortranCheck <- function(gfortran=Sys.which("gfortran")){
     #gfortran is absent
     if(gfortran!=""){
       #cat("\nPmetrics requires gfortran to run. You do not appear to have a working installation of gfortran.  Launching LAPK website...\n")
-      if(get("PmetricsBit",envir=PMenv)=="64") OSindex <- 4
-      if(get("PmetricsBit",envir=PMenv)=="32") OSindex <- 5
+      if(getBits()=="64") OSindex <- 4
+      if(getBits()=="32") OSindex <- 5
       cat(paste("Opening http://www.lapk.org/gfortran/gfortran.php?OS=",OSindex,sep=""))
       shell(paste("start http://www.lapk.org/gfortran/gfortran.php?OS=",OSindex,sep=""))
     }   
@@ -261,7 +261,7 @@ gfortranCheck <- function(gfortran=Sys.which("gfortran")){
       
     } 
   }
-  return(paste("gfortran -m",get("PmetricsBit",envir=PMenv)," -w -O3 -o <exec> <files>",sep=""))
+  return(paste("gfortran -m",getBits()," -w -O3 -o <exec> <files>",sep=""))
 }
 
 
@@ -1917,7 +1917,7 @@ makePMmatrixBlock <- function(mdata){
 
 #function to get covariate information from PMmatrix object
 getCov <- function(mdata){
-  nfixed <- get("nfixed",envir=PMenv)
+  nfixed <- getFixedColNum()
   ncolData <- ncol(mdata)
   ncov <- ncolData - nfixed
   if(ncov>0){

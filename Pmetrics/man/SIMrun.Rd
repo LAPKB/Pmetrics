@@ -192,7 +192,7 @@ cov <- matrix(rep(0,length(mean)**2),ncol=length(mean))
 diag(cov) <- (c(0.15,0.15,0.15)*mean)**2
 #make the prior for the simulation
 poppar <- list(weights,mean,cov)
-setwd(paste(normalizePath(get("PmetricsPath",envir=PMenv),winslash="/"),"/Pmetrics/example/Sim",sep=""))
+setwd(paste(normalizePath(getPMpath(),winslash="/"),"/Pmetrics/example/Sim",sep=""))
 #run simulation
 SIMrun(poppar,"temp1.csv",nsim=15,model="model1.for",obsNoise=c(0.02,0.1,0,0),makecsv="PMex1.csv",outname="example",clean=T)
 #extract results of simulation

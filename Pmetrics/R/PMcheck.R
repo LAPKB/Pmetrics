@@ -139,11 +139,11 @@ PMcheck <- function(data,model,fix=F,quiet=F){
     attr(err,"error") <- 0
     
     #define fixed column names
-    fixedColNames <- get("fixedColNames",envir=PMenv)
+    fixedColNames <- getFixedColNames()
     
     #define number of columns and number of covariates
     numcol <- ncol(data2)
-    numfix <- get("nfixed",envir=PMenv)
+    numfix <- getFixedColNum()
     numcov <- getCov(data2)$ncov
     
     # check to make sure first 14 columns are correct
@@ -457,7 +457,7 @@ PMcheck <- function(data,model,fix=F,quiet=F){
     err <- errcheck(data=data2,model=model,quiet=quiet)
     #Fix first fixed columns
     if(length(grep("FAIL",err$colorder$msg))>0){
-      fixedColNames <- get("fixedColNames",envir=PMenv)
+      fixedColNames <- getFixedColNames()
       t <- tolower(names(data2))
       PMcols <- match(fixedColNames,t)
       if(any(is.na(PMcols))) {
