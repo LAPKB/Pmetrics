@@ -267,7 +267,7 @@
   }
   
   #if parallel is true and in 32-bit, choose serial and warn
-  if(parallel & get("PmetricsBit",envir=PMenv)=="32"){
+  if(parallel & getBits()=="32"){
     parallel <- F
     cat("\nNote: Parallel processing is not available for 32-bit systems.\n")
   }
@@ -484,7 +484,7 @@ enginefiles <- shQuote(normalizePath(list.files(fortSource,
     if(type=="NPAG" && prior[1]==0) PMscript[getNext(PMscript)] <- paste(c("mv ","move ","mv ")[OS],basename(prior[2])," inputs",sep="")
     
     #make report
-    reportscript <- paste(normalizePath(get("PmetricsPath",envir=PMenv),winslash="/"),"/Pmetrics/report/",
+    reportscript <- paste(normalizePath(getPMpath(),winslash="/"),"/Pmetrics/report/",
                           switch(type,NPAG="NP",IT2B="IT",ERR="ERR"),"repScript.R",sep="")
     outpath <- c(paste(workdir,"/outputs",sep=""),
                  paste(workdir,"\\outputs",sep=""),

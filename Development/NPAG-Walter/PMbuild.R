@@ -27,7 +27,7 @@ PMbuild <- function(){
   #try again just in case redefined (i.e. \n was inserted above, get rid of it w/another call)
   compiler <- PMFortranConfig()
   #check if parallel is possible  
-  if(length(compiler)==2 & get("PmetricsBit",envir=PMenv)=="64"){
+  if(length(compiler)==2 & getBits()=="64"){
     parallel <- T
   } else {parallel <- F}
   sourcedir <- system.file("code",package="Pmetrics")

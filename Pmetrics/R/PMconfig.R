@@ -2,12 +2,11 @@
 
 getPMpath <- function(){
   require(purrr)
+  
   #return Pmetrics installation folder 
-  unlist(
-    .libPaths() %>%
-    map(~paste(.,"Pmetrics",sep="/")) %>%
-    map(~.[file.exists(.)]) 
-    )
+  paste(.libPaths(),"Pmetrics",sep="/") %>%
+    keep(file.exists) %>%
+    map_chr(1) #ensure only one path returned (should be unnecessary)
 }
 
 getBits <- function(){
@@ -26,5 +25,4 @@ getFixedColNum <- function(){
   #set current number of fixed columns in data file
   length(getFixedColNames())
 }
-  
- 
+
