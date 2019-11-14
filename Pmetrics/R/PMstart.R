@@ -7,34 +7,9 @@
     installedVersion <- packageVersion("Pmetrics")
     
     if(currentVersion > installedVersion){
-      packageStartupMessage(paste("\nPmetrics version ",currentVersion," is available from www.lapk.org/software.  You have version ",installedVersion,".\nUse PMupdate() to get the new version.\n",sep=""))
+      packageStartupMessage(paste("\nPmetrics version ",currentVersion," is available from www.lapk.org/software.  You have version ",installedVersion,".\n",sep=""))
     }
   }
-  
-  #create a global variable/options environment
-  PMenv <<- new.env()
-  
-  #find Pmetrics installation folder and set environmental variable
-  for(path in .libPaths()){
-    if(file.exists(paste(path,"Pmetrics",sep="/"))){
-      assign("PmetricsPath",path,envir=PMenv)
-    }
-  }
-  #figure out 32 or 64 bit
-  if(length(grep("64-bit",utils::sessionInfo()))>0) {assign("PmetricsBit","64",envir=PMenv)} else {assign("PmetricsBit","32",envir=PMenv)}
-  
-  #set current number of fixed columns and their names in data file
-  assign("fixedColNames",
-         c("id","evid","time","dur","dose","addl",
-           "ii","input","out","outeq","c0","c1","c2","c3"),
-         envir=PMenv
-  )
-  assign("nfixed",14,envir=PMenv)
-  
-  #restore user defaults - deprecated
-  #if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
-
-  
 }
 
 .onAttach <- function(...){
