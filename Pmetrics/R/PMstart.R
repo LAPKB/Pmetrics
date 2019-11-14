@@ -31,11 +31,16 @@
   )
   assign("nfixed", 14, envir = PMenv)
 
+  assign("fortranBinaries",
+  c("DOprep.exe", "mb2csv.exe", "pNPeng.o",
+    "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
+    "sNPeng.o", "sNPprep.o", "sSIMeng.o"), envir = PMenv)
+
   #restore user defaults - deprecated
   #if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
 
   if (!.is_fortran_installed()) {
-    cat("Compiled binaries not found \n")
+    cat("Compiled binaries not found\n")
     if (system("which -s gfortran") != 0) {
       cat("Gfortran not found \n Starting automatic installation\n")
       if (.getGfortran()) {
@@ -117,5 +122,5 @@
   c("DOprep.exe", "mb2csv.exe", "pNPeng.o",
     "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
     "sNPeng.o", "sNPprep.o", "sSIMeng.o") %>%
-  map(exists) %>% all() %>% return()
+  map(exists) %>% unlist() %>% all() %>% return()
 }
