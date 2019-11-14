@@ -30,7 +30,7 @@ PMcode <- function(func){
   run <- grep("run",tolower(func))
   if(length(run)>0) {func <- "run"}
   
-  ShinyAppDir <- paste(normalizePath(get("PmetricsPath",envir=PMenv),winslash="/"),"/Pmetrics/PMcode/",func,sep="")
+  ShinyAppDir <- paste(normalizePath(getPMpath(),winslash="/"),"/Pmetrics/PMcode/",func,sep="")
   
   if(func=="run"){
     file.copy(from=list.files(ShinyAppDir,pattern="\\.R$",full.names=T),to=getwd(),overwrite=T)
