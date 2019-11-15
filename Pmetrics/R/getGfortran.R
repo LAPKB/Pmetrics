@@ -25,7 +25,10 @@
     } else {
       return(TRUE)
     }
-  } else if (OS == 3) {
+  } else if (OS == 2) {
+    system2("powershell", args = c("-file", paste(system.file("", package = "Pmetrics"), "win/exec.ps1", sep = "/")))
+  }
+  else if (OS == 3) {
     cat("Checking for build essentials \n")
     if (system("which -s gcc") != 0) {
       cat("Build essentials not found - Installing... \n")
