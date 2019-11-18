@@ -42,42 +42,44 @@ function Is-Gfortran-Installed {
 
 
 function Main {
-    
-  Pause
-}
-# Main
-If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-  Write-Output "Not elevated"
-  # Relaunch as an elevated process:
-  Start-Process powershell.exe "-File", ('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
-  exit
-}
-else {
-    
-  Write-Output "elevated"
-  if (Is-Gfortran-Installed) {
-    Write-Output "Gfortran found, nothing to do..."
+  If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Output "Not elevated"
+    # Relaunch as an elevated process:
+    Start-Process powershell.exe "-File", ('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
+    exit
   }
   else {
-    If (Is-Choco-Installed) {
-      Write-Output "Choco installed"
-      # Uninstall-Choco
-    }
-    Else {
-      Write-Output "Choco is not installed"
-      # if (-NOT(Is-Elevated)) {
-      #     Elevate-Rights
-      # }
-      Install-Choco
-    }
-    Install-Gfortran
-    
+      
+    Write-Output "elevated"
     if (Is-Gfortran-Installed) {
-      Write-Output "Gfortran Installed successfully"
+      Write-Output "Gfortran found, nothing to do..."
+      return 1
     }
     else {
-      Write-Output "There were and error installing gfortran, please install it manually to continue"
-    } 
+      If (Is-Choco-Installed) {
+        Write-Output "Choco installed"
+        # Uninstall-Choco
+      }
+      Else {
+        Write-Output "Choco is not installed"
+        # if (-NOT(Is-Elevated)) {
+        #     Elevate-Rights
+        # }
+        Install-Choco
+      }
+      Install-Gfortran
+      
+      if (Is-Gfortran-Installed) {
+        Write-Output "Gfortran Installed successfully"
+        return 1
+      }
+      else {
+        Write-Output "There were and error installing gfortran, please install it manually to continue"
+        return 0
+      } 
+    }
   }
+  Pause
 }
-Pause
+
+Main
