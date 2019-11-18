@@ -26,7 +26,8 @@
       return(TRUE)
     }
   } else if (OS == 2) {
-    system2("powershell", args = c("-file", paste(system.file("", package = "Pmetrics"), "win/exec.ps1", sep = "/")))
+    val = system2("powershell", args = c("-file", paste(system.file("", package = "Pmetrics"), "win/exec.ps1", sep = "/")))
+    cat(val)
   }
   else if (OS == 3) {
     cat("Checking for build essentials \n")
