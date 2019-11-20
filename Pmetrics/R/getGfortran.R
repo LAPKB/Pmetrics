@@ -1,6 +1,5 @@
 .getGfortran <- function() {
   OS <- getOS()
-
   if (OS == 1) {
     cat("Checking for brew \n")
     if (system("which -s brew") != 0) {
@@ -26,8 +25,11 @@
       return(TRUE)
     }
   } else if (OS == 2) {
-    val = system2("powershell", args = c("-file", paste(system.file("", package = "Pmetrics"), "win/exec.ps1", sep = "/")))
-    cat(val)
+    return = system2("C:/Windows/System32/WindowsPowerShell/v1.0/powershell", args = c("-file", paste(system.file("", package = "Pmetrics"), "win/exec.ps1", sep = "/")), wait = T)
+    cat("Return \n")
+    cat(return)
+    cat("End Return \n")
+    # return(TRUE)
   }
   else if (OS == 3) {
     cat("Checking for build essentials \n")

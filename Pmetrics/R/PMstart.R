@@ -38,24 +38,30 @@
 
   #restore user defaults - deprecated
   #if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
-
-  if (!.is_fortran_installed()) {
-    cat("Compiled binaries not found\n")
-    if (system("which -s gfortran") != 0) {
-      cat("Gfortran not found \n Starting automatic installation\n")
-      if (.getGfortran()) {
-        cat("Gfortran installed \n Building Pmetrics\n")
-        PMbuild()
+  sch_str <- c("which -s gfortran", "where gfortran", "which -s gfortran")
+  OS <- getOS()
+  env = Sys.getenv("env")
+  if (env != "Development") {
+    if (!.is_fortran_installed()) {
+      cat("Compiled binaries not found\n")
+      if (system(sch_str[OS]) != 0) {
+        cat("Gfortran not found \n Starting automatic installation\n")
+        if (.getGfortran()) {
+          if (OS != 2) {
+            cat("Gfortran installed \n Building Pmetrics\n")
+            PMbuild()
+          }
+        } else {
+          cat("ERROR: Could not install gfortran automatically, please install Gfortran manually and then run PMbuild() \n")
+        }
       } else {
-        cat("ERROR: Could not install gfortran automatically, please install Gfortran manually and then run PMbuild() \n")
+        cat("Gfortran found \n Building Pmetrics\n")
+        PMbuild()
       }
-    } else {
-      cat("Gfortran found \n Building Pmetrics\n")
-      PMbuild()
-    }
 
-  } else {
-    cat("Previously compiled binaries found!\n")
+    } else {
+      cat("Previously compiled binaries found!\n")
+    }
   }
 
 }

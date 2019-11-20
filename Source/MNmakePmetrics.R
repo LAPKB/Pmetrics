@@ -170,7 +170,11 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,buildData=NULL,pa
     #do this for all changes
     print(wd)
     setwd(wd)
-    if(build) build("Pmetrics",binary=T,args="--no-multiarch")
+    # writeLines(commandArgs(), paste("C:/Users/julia/Desktop", "makePmetrics.txt", sep = "/"))
+    if(build) {
+      build("Pmetrics",binary=T,args="--no-multiarch")
+      install("Pmetrics")
+      }
     #copy to repository
     setwd(wd)
     Rvers <- paste(version$major,substr(version$minor,1,1),sep=".")
