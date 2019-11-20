@@ -35,9 +35,6 @@ function Install-Gfortran {
   choco install mingw -y
 }
 
-function Run-PMbuild {
-  Rscript -e "library(Pmetrics);PMbuild()"
-}
 
 function Is-Gfortran-Installed {
   return Get-Command gfortran.exe -ErrorAction SilentlyContinue
@@ -78,8 +75,8 @@ else {
     
     if (Is-Gfortran-Installed) {
       Write-Output "Gfortran Installed successfully"
-      Write-Output "Running PMbuild()"
-      Run-PMbuild
+      Write-Output "You can now close this window and continue Pmetrics setup on R's terminal"
+      # Rscript -e "library(Pmetrics);PMbuild()"
       Pause
       return 1
     }
