@@ -9,7 +9,6 @@ function Install-Choco {
   }
   Else {
     Write-Output "Chocolatey Cannot be installed automatically, go to https://chocolatey.org/install/ install it and re-run this script"
-    Pause
     exit
   }
 }
@@ -36,50 +35,61 @@ function Install-Gfortran {
   choco install mingw -y
 }
 
+function Run-PMbuild {
+  Rscript -e "library(Pmetrics);PMbuild()"
+}
+
 function Is-Gfortran-Installed {
   return Get-Command gfortran.exe -ErrorAction SilentlyContinue
 }
 
 
-function Main {
-  If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Output "Not elevated"
-    # Relaunch as an elevated process:
-    Start-Process powershell.exe "-File", ('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
-    exit
+# function Main {
+  
+# }
+
+If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+  Write-Output "Not elevated"
+  # Relaunch as an elevated process:
+  Start-Process powershell.exe "-File", ('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
+  exit
+}
+else {
+    
+  Write-Output "elevated"
+  if (Is-Gfortran-Installed) {
+    Write-Output "Gfortran found, nothing to do..."
+    Pause
+    return 1
   }
   else {
-      
-    Write-Output "elevated"
+    If (Is-Choco-Installed) {
+      Write-Output "Choco installed"
+      # Uninstall-Choco
+    }
+    Else {
+      Write-Output "Choco is not installed"
+      # if (-NOT(Is-Elevated)) {
+      #     Elevate-Rights
+      # }
+      Install-Choco
+    }
+    Install-Gfortran
+    
     if (Is-Gfortran-Installed) {
-      Write-Output "Gfortran found, nothing to do..."
+      Write-Output "Gfortran Installed successfully"
+      Write-Output "Running PMbuild()"
+      Run-PMbuild
+      Pause
       return 1
     }
     else {
-      If (Is-Choco-Installed) {
-        Write-Output "Choco installed"
-        # Uninstall-Choco
-      }
-      Else {
-        Write-Output "Choco is not installed"
-        # if (-NOT(Is-Elevated)) {
-        #     Elevate-Rights
-        # }
-        Install-Choco
-      }
-      Install-Gfortran
-      
-      if (Is-Gfortran-Installed) {
-        Write-Output "Gfortran Installed successfully"
-        return 1
-      }
-      else {
-        Write-Output "There were and error installing gfortran, please install it manually to continue"
-        return 0
-      } 
-    }
+      Write-Output "There were and error installing gfortran, please install it manually to continue"
+      Pause
+      return 0
+    } 
   }
-  Pause
 }
 
-Main
+
+# Main
