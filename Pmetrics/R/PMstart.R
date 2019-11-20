@@ -46,11 +46,16 @@
       cat("Compiled binaries not found\n")
       if (system(sch_str[OS]) != 0) {
         cat("Gfortran not found \n Starting automatic installation\n")
-        if (.getGfortran()) {
-          cat("Gfortran installed \n Building Pmetrics\n")
-          PMbuild()
+        input <- readline(prompt = "Do you want Pmetrics to perform an automatic installation of Gfortran \n This might install Gfortran and its dependencys onto your computer \n Do you Agree? (Y/N)")
+        if (input == "Y" || input == "YES" || input == "Yes" || input == "y" || input == "yes") {
+          if (.getGfortran()) {
+            cat("Gfortran installed \n Building Pmetrics\n")
+            PMbuild()
+          } else {
+            cat("ERROR: Could not install gfortran automatically, please install Gfortran manually and then run PMbuild() \n")
+          }
         } else {
-          cat("ERROR: Could not install gfortran automatically, please install Gfortran manually and then run PMbuild() \n")
+          cat("Please install Gfortran manually and then run PMbuild() \n")
         }
       } else {
         cat("Gfortran found \n Building Pmetrics\n")
