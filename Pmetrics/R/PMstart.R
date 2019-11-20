@@ -47,10 +47,8 @@
       if (system(sch_str[OS]) != 0) {
         cat("Gfortran not found \n Starting automatic installation\n")
         if (.getGfortran()) {
-          if (OS != 2) {
-            cat("Gfortran installed \n Building Pmetrics\n")
-            PMbuild()
-          }
+          cat("Gfortran installed \n Building Pmetrics\n")
+          PMbuild()
         } else {
           cat("ERROR: Could not install gfortran automatically, please install Gfortran manually and then run PMbuild() \n")
         }
