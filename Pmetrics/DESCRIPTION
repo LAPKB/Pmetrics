@@ -37,3 +37,4 @@ Suggests:
     mclust
 Roxygen: list(wrap = FALSE)
 RoxygenNote: 6.1.1
+Encoding: UTF-8
