@@ -542,7 +542,14 @@ SIMrun <- function(poppar,limits=NULL,model="model.txt",data="data.csv",split,
     compiler <- compiler[1]
   }
   if(is.null(compiler)) {cat("\nExecute SIMrun after fortran is installed.\n");return(invisible(NULL))}
-  
+ 
+
+
+# Original code:
+#  enginefiles <- shQuote(normalizePath(list.files(fortSource,pattern="sSIMeng",full.names=T)))
+#  enginecompile <- sub("<exec>","montbig.exe",compiler)
+#  enginecompile <- sub("<files>",enginefiles,enginecompile,fixed=T)
+# Is replaced by: 
   utils_are_at <- system.file("code",package = "Pmetrics")
   utilsfile <- shQuote(normalizePath(paste(utils_are_at,"/npag_utils.f90",sep="")))
   emintfile <- shQuote(normalizePath(paste(utils_are_at,"/emint_b01.f",sep="")))
