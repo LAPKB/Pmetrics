@@ -11,7 +11,7 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
       npagEngineDir <- c("./NPAG/engine/") # NPAG parent directory
       # create list of files to cat into the distribution source
       { # NPver = 123
-        npagEngineDir120 <- paste("./NPAG/engine/","v124/",sep="")
+        npagEngineDir120 <- paste("./NPAG/engine/","v126/",sep="")
         np120 <-c("")
         npag120_original <- c("NPeng_120_1_5_0.f")
         # MvG's files on 9/4/2017
@@ -37,7 +37,9 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
         npag120betafiles <- c("0blasnpag.f", "0read23.f", "0shift10.f90",
                               "idm1x18_b06.f", "idm2x18_b01.f", "idm3x19_b01.f",
                               "npagranfix6_b10.f", "emint_b01.f")
-        npagSupplementaryFiles <- c("interface_0SHIFT.txt", "npag_utils.f90")
+        npagSupplementaryFiles <- c("interface_0SHIFT.txt", # shift is now in npag_utils
+                                    "npag_utils.f90",
+                                    "0blasnpag.f", "emint_b01.f") # these two used by simulator
         # dvode_file <- c("dvode_v0.f90") # PMbuild() has dvode_v0.f90 hardcoded!
         # dvode_v0.f90 -- minimal changes to original f90 code
         dvode_file <- c("dvode_v1.f90") # PMbuild() has dvode_v1.f90 hardcoded
@@ -59,12 +61,12 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
         }
         # NPver = 121 -- Contains original and hardenned 120 source
         # NPver = 122 -- Contains *.f and *.f90 modules -- will be MPI ready
-        # NPver = 123 -- 
-        # NPver = 124 -- Contains MPI directives to calculate pyjgx for ea. y
+        # NPver = 123 ... 126 Increasingly harder code
+        # NPver = 127 -- Contains MPI directives to calculate pyjgx for ea. y
         #   i.e. OpenMPI over y containing OpenMP over points; roughly speaking,
         #       y over available machines, x over available cores per machine
         #       but allow compiler to make the call what happens where.
-        # NPver = 124 -- Contains MPI directives to calculate pyjgx for ea. y and ea. x
+        # NPver = 128 -- Contains MPI directives to calculate pyjgx for ea. y and ea. x
         #   i.e. OpenMP is now gone.
       }
       
@@ -75,8 +77,7 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
       #copy source files to inst/code
       system(paste("cat ./IT2B/prep/*.* > ../Pmetrics/inst/code/ITprep_",ITver,".f",sep=""))
       system(paste("cat ./IT2B/error/*.* > ../Pmetrics/inst/code/ITerr_",ITver,".f",sep=""))
-      system(paste("cat ./IT2B/engine/*.* > ../Pmetrics/inst/code/ITeng_",ITver,".f",sep=""))
-      
+      system(paste("cat ./IT2B/engine/*.* ./NPAG/engine/v126/0blasnpag.f ./NPAG/engine/v126/emint_b01.f > ../Pmetrics/inst/code/ITeng_",ITver,".f",sep=""))
       system(paste("cat ./NPAG/prep/*.* > ../Pmetrics/inst/code/NPprep_",NPver,".f",sep=""))
       if (NPver == 120)
         {
@@ -90,7 +91,9 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
           list.files(path = "../Pmetrics/inst/code")
         }
       
-      file.copy(from=paste("./Simulator/engine/MONT",SIMver,".FOR",sep=""),to=paste("../Pmetrics/inst/code/SIMeng_",SIMver,".f",sep=""),overwrite=T)
+      file.copy(from=paste("./Simulator/engine/MONT",SIMver,".FOR",sep=""),
+                to=paste("../Pmetrics/inst/code/SIMeng_",SIMver,".f",sep=""),
+                overwrite=T)
       
       system(paste("cat ./DOPT/prep/*.* > ../Pmetrics/inst/code/DOprep_",DOPTver,".f",sep=""))  
       system(paste("cat ./DOPT/engine/*.* > ../Pmetrics/inst/code/DOeng_",DOPTver,".f",sep=""))
@@ -144,7 +147,9 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
     if (file.exists("./Pmetrics/src/Pmetrics.so")) {
       file.remove("./Pmetrics/src/Pmetrics.so")
     }
-    document("Pmetrics") # will re-create the two files just deleted.
+    devtools::load_all(path = "./Pmetrics")
+    devtools::document(pkg = "Pmetrics") # will re-create the two files just deleted.
+    # roxygen2::roxygenise(path = "./Pmetrics") # same as document(), above.
     if(pdf){
       file.remove("./Pmetrics/inst/doc/Pmetrics-manual.pdf")
       system("R CMD Rd2pdf --output=./Pmetrics/inst/doc/Pmetrics-manual.pdf --no-preview ./Pmetrics/man")
@@ -273,10 +278,10 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
 # but it really is missing! So don't try to install the
 # test data or you get an early exit and error
 
-# fortranChange=T; build=T; pdf=F; check=T; buildData=NULL 
-# ITver=114; NPver=120; SIMver="114"; DOPTver=7; MBver=1; parallel=T
+fortranChange=T; build=T; pdf=F; check=T; buildData=NULL 
+ITver=114; NPver=120; SIMver="114"; DOPTver=7; MBver=1; parallel=T
 
-makePmetrics(fortranChange=T,build=T,pdf=F,check=F,
+makePmetrics(fortranChange=T,build=T,pdf=T,check=T,
              buildData=list(npag=F,it2b=F,baddata=F),
              ITver=114,NPver=120,SIMver="114",DOPTver=7,MBver=1)
 
