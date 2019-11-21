@@ -16,7 +16,7 @@ private
 
 public shift, makevec, check_input_array_size, cp_lrcs_to_rpar, expand_grid, &
   verifyval, orderdelta,thesame, predlast3, do140, obs_is_BLQ, obs_is_missing, & 
-  i_cycle, i_do, i_jsub, i_ig, max_ODE_comps, max_ODE_params, &
+  print_matrix, i_cycle, i_do, i_jsub, i_ig, max_ODE_comps, max_ODE_params, &
   max_pop_rand_varbs, max_pop_varbs, max_pop_params, max_SS_doses, &
   max_covs, maxnumeq, max_meas_per_eqn, max_m_per_obs, max_obs, max_obs_dim, &
   max_doses, max_input_dim, max_RS_J, k_ig, k_jsub, &
@@ -106,12 +106,23 @@ integer, parameter :: i_is_log10 = 120         ! 120 + eqno = 10, then obs recor
 ! the following line must be " contains", w/leading white-space
  contains
 !
+! subroutine print_matrix
 ! subroutine do140
 ! subroutine cp_lrcs_to_rpar
 ! function check_input_array_size
 ! subroutine makevec
 !
 ! #################################################################### ! 
+
+      subroutine print_matrix(b,n,m)
+        integer::n,m
+        double precision::b(n,m) !n = # rows, m = # columns
+        integer i,j
+        do i=1,n; print '(11g20.12)',b(i,1:m); enddo
+        ! do i=1,n ! works, too:
+        !   write (*,*)(b(i,j),j=1,m)
+        ! end do
+      endsubroutine !2 decimal reals printed in fields of 6 spaces
 
 ! subroutine DO140
 
