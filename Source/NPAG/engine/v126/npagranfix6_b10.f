@@ -2405,7 +2405,7 @@ C wmy2017Sep08 ... to get thead num in DO 800
      3   ,max_pop_varbs,max_pop_params,max_RS_J,k_gamma,k_flat
      4   ,k_sfac,k_ofac,k_sum_z_sq,k_prod_pr,i_skip_ig,i_do,i_cycle
      5   ,i_errmod,i_is_poisson_obs,i_is_log10,i_Npoissonobs,i_Jsub,i_IG
-     6   ,k_resolve
+     6   ,k_resolve, print_matrix
 
       IMPLICIT REAL*8(A-H,O-Z)
 
@@ -4303,7 +4303,7 @@ C          GO TO 800 ! we'll get there next anyways
 c !$omp end critical
 
 
-!        write (*,*) "At 800 ::",JSUB,IG,PYJGX(JSUB,IG)
+c        write (*,*) "At 800 ::",JSUB,IG,PYJGX(JSUB,IG)
 
   800   CONTINUE
 
@@ -4521,7 +4521,27 @@ C wmy2017Jan05
 c      subroutine emint(psi,ldpsi,theta,ldtheta,npoint,nsub,ijob,
 c     &                 x,dx,y,dy,fobj,gap,nvar,keep,IHESS)
 
-
+CCCCCCC HERE HERE HERE ---- Learned that I don't really know
+C  exactly how data is encoded in the algorithm. PYJGX is
+C diagonally symmetric here ...but at least the diagonals are
+C the correct probability PYJGX(i,i)*RPAR(k_SFAC)
+C *RPAR(k_OFAC) = 1.0; For first cycle of simulated data, N=10
+C corden(,NVAR+1) returns as 0.1, as it ought to. BUT some
+C non-zero off diagonals HINT that some off diag probs could
+C be significant.
+C       write (*,*) "lambda"
+C      do jjj = 1,nactve
+C         write (*,*) corden(jjj,nvar+1)
+C        pretty much all exactly equal to 0.1
+C      end do
+C       write (*,*) "corden:"
+C      call print_matrix(corden,10,11)
+C      MYSTERY!~ corden(,1) OK, all other colums are 0 ???
+C       write (*,*) "pyjgx:"
+C      call print_matrix(pyjgx,10,10)
+C       write (*,*) "SFAC, OFAC:"
+C      write (*,*) RPAR(k_sfac), RPAR(k_ofac)
+CCCCCCC HERE HERE HERE
 
 C  AS OF npageng18.f, IHESS IS ADDED TO ARGUMENT LIST OF emint.
 C  IF IHESS RETURNS AS -1, IT MEANS THE HESSIAN MATRIX IN THE INTERIOR
@@ -4938,8 +4958,6 @@ C     WRITE(25,131) ENT
 C  Starting with bigmlt1.f, this is an entry point to pick up needed
 c  values.
 
-C        write (*,*) "DO 1100 :: Calculate expected values"
-
 C  CALCULATE EXPECTED VALUES FOR THIS CYCLE'S UPDATED DENSITY.
  
         DO 1100 I=1,NVAR
@@ -4967,7 +4985,8 @@ C  DENSITY (IN COLUMN NVAR+1 OF CORDEN).
  
         JJ=J
  1100   CALL NOTINT(VOLSPA,NGRID,NACTVE,WORK,MAXGRD,E(II,JJ))
- 
+
+        write (*,*) "Passed 1100"
  
 C  STORE THE MEANS INTO CENTER(1,.). CENTER(2,.) AND CENTER(3,.)
 C  THE MEDIANS AND MODES WILL BE STORED JUST BELOW THE CALL TO STAT.
@@ -6356,7 +6375,7 @@ C     4  INTLIST,IPAR,ObsError,RPAR,ERRFILNAME)
         DO IG = 1,NACTVE
           PYJGX(JSUB,IG) = PYJGXX(IG)
         END DO
- 
+
 C  FOR THIS SUBJECT, FIND THE PREDICTED VALUES (VIA SUBROUTINE IDCALCY),
 C  FOR EACH OF THE MEANS, MEDIANS, AND MODES (ICENTER = 1,2,3,
 C  RESPECTIVELY).
@@ -6916,8 +6935,6 @@ C  THE ABOVE END DO IS FOR THE  DO IMAXTIM = 1,NOMAXTIM(JSUB)  LOOP.
 
  7000   CONTINUE
 
-C       write (*,*) "Passed 7000; writing DENSITY" 
-	
 C  RESTORE THE CORRECT CORDEN AND NACTVE (THEY WERE CHANGED IN
 C  THE CALLS TO SUBRES). THEY MUST BE RESTORED BEFORE BEING WRITTEN
 C  TO THE DENSITY FILE.
@@ -8530,6 +8547,11 @@ C
 C
 C End New Code
 
+
+C DEBUG:
+C            write (*,*) JSUB,IG,"PYJGX=",PYJGX
+C true PYJGX = PYJGX * RPAR(k_sfac) * RPAR(k_ofac)
+C
             PYJGXX(IG) = PYJGX 
             WORK(IG)=PYJGX*CORDEN(IG,NVAR+1)
 
@@ -8594,12 +8616,14 @@ C  THE BAYESIAN POSTERIOR DENSITY OF THIS SUBJECT IS, FOR GRID PT. IG,
 
 C  P(XIG|YJ) = P(YJ,XIG)/P(YJ). PUT THESE VALUES INTO CORDEN(IG,NVAR+1).
 
+C        write (*,*) "SIGFAC,OFAC:",RPAR(k_sfac),RPAR(k_ofac)
+C        write (*,*) "Bayes Post Density: P(XIG|YJ) = P(YJ,XIG)/P(YJ):"
 	DO IG=1,NACTVE
 	  CORDEN(IG,NVAR+1) = WORK(IG)/PYJ
+C          write (*,*) JSUB,IG, "PJGX", CORDEN(IG,NVAR+1)
 	END DO
 
 C  NEW CODE FOR bigmlt10.f - BELOW
-
 
 C  CALCULATE HOW MANY OF THE NACTVE GRID POINTS FROM THE FINAL CYCLE
 C  ARE "ACTIVE" (WITHIN 1.D-10 OF THE MAXIMUM DENSITY FOR THIS SUBJECT).
