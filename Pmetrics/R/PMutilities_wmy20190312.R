@@ -2391,7 +2391,7 @@ makePMmatrixBlock <- function(mdata){
 
 #function to get covariate information from PMmatrix object
 getCov <- function(mdata){
-  nfixed <- get("nfixed",envir=PMenv)
+  nfixed <- getFixedColNum() #  get("nfixed",envir=PMenv)
   ncolData <- ncol(mdata)
   ncov <- ncolData - nfixed
   if(ncov>0){
