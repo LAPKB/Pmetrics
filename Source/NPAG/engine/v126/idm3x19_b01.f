@@ -1109,6 +1109,11 @@ C---------------------------------------------------------------
      1      NDIM,MF,RTOL,ATOL,ESTML,R,INTLIST,IPAR,RPAR)
         IF(N .EQ. -1) CALL ANAL3(X,T,TOUT,RPAR,IPAR)
 
+C--- PK restriction that X(.)>=0
+        DO III=1,max_ODE_comps
+          if (X(III)<0.D0) X(III)=0.D0
+        END DO
+
 C  IF ISTEADY = 1, THIS IS INSIDE A STEADY STATE DOSE SET. CHECK TO SEE
 C  IF TOUT IS A MULTIPLE OF DOSEINT. IF SO, RECORD THE COMPARTMENT
 C  AMOUNTS. THEN, AFTER COMPARTMENT AMOUNTS HAVE BEEN STORED FOR AT 

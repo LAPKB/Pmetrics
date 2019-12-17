@@ -139,22 +139,28 @@
     
     #gridpts
     if(is.null(indpts)) indpts <- -99
-    
+
+#
+# TODO wmy2019.12.17 prior==name_of_file was not working. Added ".."
+#    
     #check if prior and if so, get name for instruction file
     if(is.null(prior)) {  #prior not specified
       prior <- -99
       priorString <- 1
     } else { #prior specified, so choose how
       if(inherits(prior,"NPAG")){priorString <- c(0,"prior.txt")} #prior is an NPdata object
-      if(is.character(prior)) {priorString <- c(0,prior)}  #prior is the name of a file
+      if(is.character(prior)) { #prior is the name of a file
+        priorString <- c(0,prior)
+        priorDEN <- Sys.glob(paste("..",prior,sep="/"))[1]
+        }
       if(is.numeric(prior)){  #prior is a run number
         priorDEN <- Sys.glob(paste("..",prior,"outputs/DEN*",sep="/"))[1]
-        if(length(priorDEN)>0){
+        }
+      if(length(priorDEN)>0){
           file.copy(from=priorDEN,to=paste(getwd(),"/prior.txt",sep=""))
           prior <- "prior.txt"
           priorString <- c(0,prior)
         }
-      }
     }
     #MIC
     xmic <- 1
