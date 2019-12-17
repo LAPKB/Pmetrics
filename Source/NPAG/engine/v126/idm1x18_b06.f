@@ -1282,6 +1282,11 @@ C--------------------------------------------------------------
 C          CALL USERANAL(JSUB,IG,X,T,TOUT,
 C     1      NDIM,MF,RTOL,ATOL,P,R,INTLIST,IPAR,RPAR)
 
+C-- PK restriction that X(:) >= 0
+          do III = 1,max_ODE_comps
+            if (X(III)<0.D0) X(III) = 0.D0
+          end do
+
 C-- Cycle past point
           if (IPAR(i_skip_ig).eq.0) return
         endif
