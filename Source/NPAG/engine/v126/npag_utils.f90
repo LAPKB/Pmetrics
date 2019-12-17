@@ -211,6 +211,9 @@ integer, parameter :: i_is_log10 = 120         ! 120 + eqno = 10, then obs recor
         IPAR(i_Npoissonobs) = NPOISSONOBS
 
 ! -----------------------------------------------------------------------
+        if (DEBUG /= 0) then
+            write (*,*) DEBUG, JSUB, IG, "In DO140:"
+        endif
 
 !       DO 140 I=1,NOBSER
 !         DO 140 J=1,NUMEQT
@@ -232,14 +235,16 @@ integer, parameter :: i_is_log10 = 120         ! 120 + eqno = 10, then obs recor
             endif ! DEBUG
 
 ! YOBSERVED ~ BLQ -----------------------------------------------------
-            if(int(YO(I,J)) .EQ. obs_is_BLQ) then
+            write (*,*) JSUB,IG,J,I,YO(I,J),Y(I,J)
+
+            if(int(YO(I,J)) == int(obs_is_BLQ)) then
 
 ! 2018Sep01 :: MN wants -99 to indicate BLQ, and -88 to indicate missing.
 !    RPAR(130) is available, I think, to use for the Pr(obs<LQ). But we
 !    also need a space for the LOQ -- maybe use RPAR(131) ?
 
-               if (DEBUG==109) then
-                  write (*,*) JSUB,IG,I,J,"is BLQ"
+               if (DEBUG == 199) then
+                  write (*,*) JSUB,IG,J,I,"(JSUB,IG,EqnNo,m) is BLQ"
                endif
 ! Poisson
           ! Missing Poisson varbs < small# are automatically set to count = 0.
@@ -267,7 +272,9 @@ integer, parameter :: i_is_log10 = 120         ! 120 + eqno = 10, then obs recor
           !  end if
 
               if (IPAR(i_is_poisson_obs + J) == 229) then
-                 YO(I,J) = 0.D0
+                 if (ipar(i_is_log10 + J) /= 10) then 
+                     YO(I,J) = 0.D0
+                 end if
               end if
 
 ! Normal -- need to carry the -88 forward.
@@ -279,7 +286,7 @@ integer, parameter :: i_is_log10 = 120         ! 120 + eqno = 10, then obs recor
             end if
 
 ! YOBSERVED ~ MISSING --------------------------------------------------
-            if (int(YO(I,J)) .eq. obs_is_missing) then
+            if (int(YO(I,J)) == obs_is_missing) then
 
               F(k) = 0.D0
               MISVAL = MISVAL+1
@@ -288,7 +295,7 @@ integer, parameter :: i_is_log10 = 120         ! 120 + eqno = 10, then obs recor
               ObsError(I,J) = 0.D0
               ZSCORE = 0.D0
 
-              if (DEBUG == 102) write (*,*) JSUB,IG,I,J,"is missing obs."
+              if (DEBUG == 102) write (*,*) JSUB,IG,J,I,"is missing"
 
 ! YOBSERVED is an acceptible measurement
             else
@@ -350,6 +357,11 @@ integer, parameter :: i_is_log10 = 120         ! 120 + eqno = 10, then obs recor
 
               ObsError(I,J) = sqrt( YMEAN )
 
+               if (DEBUG == 109) then
+                  write (*,*) JSUB,IG,J,I,"(JSUB,IG,EqnNo,m,YO,mu,s)"   &
+                     , YOBSERVED, YMEAN, ObsError(I,J)
+               endif
+
 !           Use Normal approx. to Poisson
               IF (YMEAN > P_thresh) THEN
 
@@ -369,8 +381,13 @@ integer, parameter :: i_is_log10 = 120         ! 120 + eqno = 10, then obs recor
 !           Use Poisson
               ELSE
 
-                poissonprob = exp( -1.D0 * YMEAN ) &
+! wmy2019.12.16 if obs is true Poisson, then prob > 0.01 (always)
+! wmy2019.12.16 if obs is true Poisson, then \sum prob <= 12
+
+                poissonprob = 0.00999 + 0.99 * exp( -1.D0 * YMEAN ) &
                   * ( YMEAN**YOBSERVED ) / gamma( YOBSERVED + 1)
+
+
 
 ! wmy2019.01.29 -- if Pr -> 0, then don't count probability in product.
 !   i.e. ignore this observation.
@@ -1091,8 +1108,8 @@ integer, parameter :: i_is_log10 = 120         ! 120 + eqno = 10, then obs recor
         IDOSE = size(cov,3)
         IND = size(rs,2)
 
-        if (I.ne.max_input_dim) then
-          write (*,*) "ERR: In SR SHIFT(), size(tlag).ne.max_input_dim"
+        if (I /= max_input_dim) then
+          write (*,*) "ERR: In SR SHIFT(), size(tlag) \= max_input_dim"
           write (*,*) "size: tau,IDOSE_3, rs_2 =", I, IDOSE, IND
         endif
 
