@@ -58,7 +58,8 @@ PMFortranConfig <- function(reconfig=F){
     choice <- NA
     #ensure valid input
     while (is.na(choice)){
-      choice <- readline("\nEnter the number of your compiler: ")
+      # choice <- readline("\nEnter the number of your compiler: ")
+      choice <- "1" #make gfortran only choice for now
       if (length(grep("[[:digit:]]",choice))==0) {choice <- NA;next}
       if((OS==1 | OS==3) & (choice=="2" | choice=="4")){
         cat("\n g95 and Lahey compilers are not available in the Mac/Unix/Linux environment.\n")

@@ -168,20 +168,26 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,buildData=NULL,pa
   } else {  #this is for Windows
 
     #do this for all changes
-    setwd("C:/LAPK/PmetricsSource")
-    if(build) build("Pmetrics",binary=T,args="--no-multiarch")
+    print(wd)
+    setwd(wd)
+    # writeLines(commandArgs(), paste("C:/Users/julia/Desktop", "makePmetrics.txt", sep = "/"))
+    if(build) {
+      build("Pmetrics",binary=T,args="--no-multiarch")
+      install("Pmetrics")
+      }
     #copy to repository
-    setwd("C:/LAPK/PmetricsSource")
+    setwd(wd)
     Rvers <- paste(version$major,substr(version$minor,1,1),sep=".")
     #zip
     tools::write_PACKAGES(type="win.binary")
-    winBinDir <- paste("Y:/LAPK/PmetricsSource/Repos/bin/windows/contrib/",Rvers,sep="")
+    winBinDir <- paste(wd, paste("Repos/bin/windows/contrib/",Rvers,sep=""), sep = "")
+    print(winBinDir)
     if(!file.exists(winBinDir)){
       dir.create(winBinDir)
     }
     file.remove(Sys.glob(paste(winBinDir,"Pmetrics*.zip",sep="/")))
     file.copy(from=Sys.glob("Pmetrics*.zip"),to=winBinDir)
-    file.copy(from=Sys.glob("Pmetrics*.zip"),to="Y:/LAPK/PmetricsSource/Archived")
+    # file.copy(from=Sys.glob("Pmetrics*.zip"),to="Y:/LAPK/PmetricsSource/Archived")
     file.copy(from="PACKAGES",to=winBinDir,overwrite=T)
     file.remove(Sys.glob("Pmetrics*.zip"))
     
