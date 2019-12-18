@@ -12,37 +12,38 @@
 #'  an extension of \dQuote{csv}.
 #' @author Michael Neely
 
-PMmb2csv <- function(oldFiles,newFile="data"){
+PMmb2csv <- function(oldFiles, newFile = "data") {
   OS <- getOS()
   #read or define the Fortran compiler
-  fortSource <- switch(OS,"~/.config/Pmetrics/compiledFortran",
-                       paste(Sys.getenv("APPDATA"),"\\Pmetrics\\compiledFortran",sep=""),
-                       "~/.config/Pmetrics/compiledFortran")
-  if(!file.exists(fortSource)){
+  fortSource <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
+  #TODO: change this
+  if (!file.exists(fortSource)) {
     PMbuild()
   }
   convertFile <- "mb2csv.exe"
   #copy the OS-specific conversion file to the current wd
-  file.copy(file.path(fortSource,convertFile),getwd())
+  file.copy(file.path(fortSource, convertFile), getwd())
   new <- data.frame()
-  fmtStr <- paste("%0",4,"d",sep="")
+  fmtStr <- paste("%0", 4, "d", sep = "")
   nsub <- length(oldFiles)
-  for (i in 1:nsub){
+  for (i in 1:nsub) {
     #make the filename of the .wrk file
-    tempFilename <- paste("temp",sprintf(fmtStr,i),".wrk",sep="")
-    writeLines(paste(oldFiles[i],tempFilename,sep="\n"),"tempCtrl")
+    tempFilename <- paste("temp", sprintf(fmtStr, i), ".wrk", sep = "")
+    writeLines(paste(oldFiles[i], tempFilename, sep = "\n"), "tempCtrl")
     #execute the conversion to working copy
-    if(OS==1 | OS==3){ #Unix/Linux
-      system(paste("./",convertFile," < tempCtrl",sep=""),ignore.stdout=T)
-    } else { #Windows
-      shell(paste(convertFile,"< tempCtrl"),show.output.on.console=F)
+    if (OS == 1 | OS == 3) {
+      #Unix/Linux
+      system(paste("./", convertFile, " < tempCtrl", sep = ""), ignore.stdout = T)
+    } else {
+      #Windows
+      shell(paste(convertFile, "< tempCtrl"), show.output.on.console = F)
     }
-  
+
   }
   #now convert from .wrk to .csv
-  PMwrk2csv(prefix="temp",nsub=nsub,ext="wrk")
+  PMwrk2csv(prefix = "temp", nsub = nsub, ext = "wrk")
   #clean up
-  file.rename("temp.csv",paste(newFile,".csv",sep=""))
+  file.rename("temp.csv", paste(newFile, ".csv", sep = ""))
   file.remove(Sys.glob("temp*.wrk"))
   file.remove(convertFile)
   file.remove("tempCtrl")
