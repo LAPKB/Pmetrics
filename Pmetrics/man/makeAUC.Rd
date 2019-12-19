@@ -4,8 +4,18 @@
 \alias{makeAUC}
 \title{Calculation of AUCs}
 \usage{
-makeAUC(data, formula, include, exclude, start = 0, end = Inf,
-  icen = "median", outeq = 1, block = 1, method = "linear")
+makeAUC(
+  data,
+  formula,
+  include,
+  exclude,
+  start = 0,
+  end = Inf,
+  icen = "median",
+  outeq = 1,
+  block = 1,
+  method = "linear"
+)
 }
 \arguments{
 \item{data}{A suitable data object of the \emph{PMpop} class (see \code{\link{makePop}}),

@@ -4,12 +4,38 @@
 \alias{plot.PMmatrix}
 \title{Plot PMmatrix Time-Output Data}
 \usage{
-\method{plot}{PMmatrix}(x, include, exclude, pred = NULL,
-  icen = "median", mult = 1, outeq, group, block = 1, layout = c(3,
-  3), log = F, pch = NA, errbar = F, doses = F, tad = F,
-  join = T, grid, ident = F, overlay = T, main, xlim, ylim,
-  xlab = "Time (h)", ylab = "Observation", col, col.pred, cex = 1,
-  legend, out = NA, ...)
+\method{plot}{PMmatrix}(
+  x,
+  include,
+  exclude,
+  pred = NULL,
+  icen = "median",
+  mult = 1,
+  outeq,
+  group,
+  block = 1,
+  layout = c(3, 3),
+  log = F,
+  pch = NA,
+  errbar = F,
+  doses = F,
+  tad = F,
+  join = T,
+  grid,
+  ident = F,
+  overlay = T,
+  main,
+  xlim,
+  ylim,
+  xlab = "Time (h)",
+  ylab = "Observation",
+  col,
+  col.pred,
+  cex = 1,
+  legend,
+  out = NA,
+  ...
+)
 }
 \arguments{
 \item{x}{The name of an \emph{PMmatrix} data object read by \code{\link{PMreadMatrix}}}
