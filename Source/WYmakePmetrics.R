@@ -1,21 +1,28 @@
 
-makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
-                         buildData=NULL,parallel=T,
-                         ITver,NPver,SIMver,DOPTver,MBver){
-  wd <- getwd()
+makePmetrics <- function(fortranChange = F, build = T, pdf = F, check = F,
+                         buildData = NULL, parallel = T,
+                         ITver, NPver, SIMver, DOPTver, MBver) {
+  wd <- paste(getwd(), "/", sep = "")
+  setpmwd <- function(path) {
+    setwd(paste(wd, path, sep = ""))
+  }
+  print(wd)
   require(devtools)
-  OS <- switch(.Platform$OS.type,unix=1,windows=2)
-  if(OS==1){
+  OS <- switch(.Platform$OS.type, unix = 1, windows = 2)
+  if (OS == 1) {
     #do this only if fortran files have changed
-    if(fortranChange==T){
-      npagEngineDir <- c("./NPAG/engine/") # NPAG parent directory
+    if (fortranChange == T) {
+      #npagEngineDir <- c("./NPAG/engine/") # NPAG parent directory
+      npagEngineDir <- c(paste(wd, "Source/NPAG/engine/", sep = "")) # NPAG parent directory
       # create list of files to cat into the distribution source
-      { # NPver = 123
-        npagEngineDir120 <- paste("./NPAG/engine/","v126/",sep="")
-        np120 <-c("")
+      {
+        # NPver = 123
+        #npagEngineDir120 <- paste("./NPAG/engine/", "v126/", sep = "")
+        npagEngineDir120 <- paste(npagEngineDir, "v126/", sep = "")
+        np120 <- c("")
         npag120_original <- c("NPeng_120_1_5_0.f")
         # MvG's files on 9/4/2017
-        npag120_o<- c("0blasnpag.f", "0read23.f", "0shift10.f",
+        npag120_o <- c("0blasnpag.f", "0read23.f", "0shift10.f",
                       "0idm1x18.f", "0idm2x18.f", "0idm3x19.f",
                       "0npagranfix6.f")
         npag120files <- c("npagranfix6.f", "read23.f", "shift10.f",
@@ -53,11 +60,10 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
         # reserves ipar(1) <- IgIsGoodPoint, if 0 then set pyjgx = 0 and cycle to next x
         # reserves ipar(23) <- First enry to dvode(jsub,ig), to skip initialization code in diffeq
         npag_files <- npag120betafiles
-        dvode_ver <- paste(npagEngineDir120,dvode_file,sep="")
-        for (ii in seq(1,length(npag_files)))
-          {
-             newfile <- paste(npagEngineDir120,npag_files[ii],sep="")
-             np120 <- paste(np120,newfile,sep = " ")
+        dvode_ver <- paste(npagEngineDir120, dvode_file, sep = "")
+        for (ii in seq(1, length(npag_files))) {
+          newfile <- paste(npagEngineDir120, npag_files[ii], sep = "")
+          np120 <- paste(np120, newfile, sep = " ")
         }
         # NPver = 121 -- Contains original and hardenned 120 source
         # NPver = 122 -- Contains *.f and *.f90 modules -- will be MPI ready
@@ -69,199 +75,213 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
         # NPver = 128 -- Contains MPI directives to calculate pyjgx for ea. y and ea. x
         #   i.e. OpenMP is now gone.
       }
-      
+
       #remove old files
-      system("rm ~/LAPK/PmetricsSource/Pmetrics/inst/code/*.f")
-      setwd("~/LAPK/PmetricsSource/Source")
-      
+      #system("rm ~/LAPK/PmetricsSource/Pmetrics/inst/code/*.f")
+      system(paste(paste("rm", wd), "Pmetrics/inst/code/*.f", sep = ""))
+      setpmwd("Source")
+      print(getwd())
       #copy source files to inst/code
-      system(paste("cat ./IT2B/prep/*.* > ../Pmetrics/inst/code/ITprep_",ITver,".f",sep=""))
-      system(paste("cat ./IT2B/error/*.* > ../Pmetrics/inst/code/ITerr_",ITver,".f",sep=""))
-      system(paste("cat ./IT2B/engine/*.* ./NPAG/engine/v126/0blasnpag.f ./NPAG/engine/v126/emint_b01.f > ../Pmetrics/inst/code/ITeng_",ITver,".f",sep=""))
-      system(paste("cat ./NPAG/prep/*.* > ../Pmetrics/inst/code/NPprep_",NPver,".f",sep=""))
-      if (NPver == 120)
-        {
-          system(paste("cat ",np120," > ../Pmetrics/inst/code/NPeng_",NPver,".f",sep=""))
-          system(paste("cp", dvode_ver , "../Pmetrics/inst/code/", sep = " " ))
-          for (ii in seq(1,length(npagSupplementaryFiles)))
-          {
-            ftocopy <- paste(npagEngineDir120,npagSupplementaryFiles[ii],sep = "")
-            system(paste("cp", ftocopy , "../Pmetrics/inst/code/", sep = " " ))
-          }
-          list.files(path = "../Pmetrics/inst/code")
+      system(paste("cat ./IT2B/prep/*.* > ../Pmetrics/inst/code/ITprep_", ITver, ".f", sep = ""))
+      system(paste("cat ./IT2B/error/*.* > ../Pmetrics/inst/code/ITerr_", ITver, ".f", sep = ""))
+      system(paste("cat ./IT2B/engine/*.* ./NPAG/engine/v126/0blasnpag.f ./NPAG/engine/v126/emint_b01.f > ../Pmetrics/inst/code/ITeng_", ITver, ".f", sep = ""))
+      system(paste("cat ./NPAG/prep/*.* > ../Pmetrics/inst/code/NPprep_", NPver, ".f", sep = ""))
+      if (NPver == 120) {
+        system(paste("cat ", np120, " > ../Pmetrics/inst/code/NPeng_", NPver, ".f", sep = ""))
+        system(paste("cp", dvode_ver, "../Pmetrics/inst/code/", sep = " "))
+        for (ii in seq(1, length(npagSupplementaryFiles))) {
+          ftocopy <- paste(npagEngineDir120, npagSupplementaryFiles[ii], sep = "")
+          system(paste("cp", ftocopy, "../Pmetrics/inst/code/", sep = " "))
         }
-      
-      file.copy(from=paste("./Simulator/engine/MONT",SIMver,".FOR",sep=""),
-                to=paste("../Pmetrics/inst/code/SIMeng_",SIMver,".f",sep=""),
-                overwrite=T)
-      
-      system(paste("cat ./DOPT/prep/*.* > ../Pmetrics/inst/code/DOprep_",DOPTver,".f",sep=""))  
-      system(paste("cat ./DOPT/engine/*.* > ../Pmetrics/inst/code/DOeng_",DOPTver,".f",sep=""))
-      
-      system(paste("cat ./MB2CSV/*.* > ../Pmetrics/inst/code/mb2csv_",MBver,".f",sep=""))  
-      
-      system("cp ./remoteNPrun.sh ~/LAPK/PmetricsSource/Pmetrics/inst/code/")     
+        list.files(path = "../Pmetrics/inst/code")
+      }
+      file.copy(from = paste("./Simulator/engine/MONT", SIMver, ".FOR", sep = ""),
+                to = paste("../Pmetrics/inst/code/SIMeng_", SIMver, ".f", sep = ""),
+                overwrite = T)
+
+      system(paste("cat ./DOPT/prep/*.* > ../Pmetrics/inst/code/DOprep_", DOPTver, ".f", sep = ""))
+      system(paste("cat ./DOPT/engine/*.* > ../Pmetrics/inst/code/DOeng_", DOPTver, ".f", sep = ""))
+
+      system(paste("cat ./MB2CSV/*.* > ../Pmetrics/inst/code/mb2csv_", MBver, ".f", sep = ""))
+
+      system("cp ./remoteNPrun.sh ../Pmetrics/inst/code/")
       #system("wc -l ./remoteNPrun.sh")
-      #system("wc -l ~/LAPK/PmetricsSource/Pmetrics/inst/code/remoteNPrun.sh")
-      system("cp ./win2mac.sa     ~/LAPK/PmetricsSource/Pmetrics/inst/code/")   
-      system("chmod 555 ~/LAPK/PmetricsSource/Pmetrics/inst/code/win2mac.sa")
-      system("cp ./win2mac.sa     ~/LAPK/PmetricsSource/Pmetrics/inst/code/") 
-      
+      #system("wc -l ../Pmetrics/inst/code/remoteNPrun.sh")
+      system("cp ./win2mac.sa     ../Pmetrics/inst/code/")
+      system("chmod 555 ../Pmetrics/inst/code/win2mac.sa")
+      system("cp ./win2mac.sa     ../Pmetrics/inst/code/")
+
       #remove comment lines and clean up
-      rmComm <- function(files){
-        for (i in files){
-          system(paste("~/LAPK/PmetricsSource/Source/win2mac.sa",i))
+      rmComm <- function(files) {
+        for (i in files) {
+          #system(paste("../Source/win2mac.sa", i))
+          system(paste(paste(wd, "Source/win2mac.sa", sep = ""), i))
           file.remove(i)
-          file.rename("newfile.txt",i)
+          file.rename("newfile.txt", i)
           code <- readLines(i)
-          commLines <- grep("^C",code,ignore.case=T)
-          commLines2 <- grep("^\\*",code)
+          commLines <- grep("^C", code, ignore.case = T)
+          commLines2 <- grep("^\\*", code)
           #these are for parallel coding
-          commLines3 <- grep("^![^\\$]",code)
-          if(length(commLines3)>0 & parallel==F){
-            allcomments <- c(commLines,commLines2,commLines3)
-          }else{allcomments <- c(commLines,commLines2)}
-          if(length(allcomments)>0) code <- code[-allcomments]
-          code <- code[code!=""]
-          writeLines(code,i,sep="\r\n")
+          commLines3 <- grep("^![^\\$]", code)
+          if (length(commLines3) > 0 & parallel == F) {
+            allcomments <- c(commLines, commLines2, commLines3)
+          } else { allcomments <- c(commLines, commLines2) }
+          if (length(allcomments) > 0) code <- code[-allcomments]
+          code <- code[code != ""]
+          writeLines(code, i, sep = "\r\n")
         }
       }
-      
-      setwd("~/LAPK/PmetricsSource/Pmetrics/inst/code")
-      rmComm(files=list.files())
-      setwd("~/LAPK/PmetricsSource/Pmetrics/inst/config")
-      writeLines("1","newFort.txt")
-      
-      
-      
-      
-    } else { # FortranChange = F
-      setwd("~/LAPK/PmetricsSource/Pmetrics/inst/config")
-      writeLines("0","newFort.txt")
+
+      setpmwd("Pmetrics/inst/code")
+      #setwd("~/LAPK/PmetricsSource/Pmetrics/inst/code")
+      rmComm(files = list.files())
+      setpmwd("Pmetrics/inst/config")
+      #setwd("~/LAPK/PmetricsSource/Pmetrics/inst/config")
+      writeLines("1", "newFort.txt")
+
+
+
+
+    } else {
+      # FortranChange = F
+      setwd("Pmetrics/inst/config")
+      writeLines("0", "newFort.txt")
     }
     #do this for all changes    
-    setwd("~/LAPK/PmetricsSource")
+    setwd(wd)
     if (file.exists("./Pmetrics/src/knn.o")) {
       file.remove("./Pmetrics/src/knn.o")
     }
     if (file.exists("./Pmetrics/src/Pmetrics.so")) {
       file.remove("./Pmetrics/src/Pmetrics.so")
     }
-    devtools::load_all(path = "./Pmetrics")
-    devtools::document(pkg = "Pmetrics") # will re-create the two files just deleted.
+    #devtools::load_all(path = "./Pmetrics")
+    document("Pmetrics") # will re-create the two files just deleted.
     # roxygen2::roxygenise(path = "./Pmetrics") # same as document(), above.
-    if(pdf){
+    if (pdf) {
       file.remove("./Pmetrics/inst/doc/Pmetrics-manual.pdf")
       system("R CMD Rd2pdf --output=./Pmetrics/inst/doc/Pmetrics-manual.pdf --no-preview ./Pmetrics/man")
     }
-    
+
     #write html changelog file
     chlog <- readLines("Pmetrics/inst/NEWS.Rd")
-    delLines <- which(chlog=="")
+    delLines <- which(chlog == "")
     chlog <- chlog[-delLines]
     chlog <- chlog[-1]
-    chlog <- gsub("\\\\subsection\\{NEW FEATURES\\}\\{" ,"<h3>NEW FEATURES</h3>",chlog)
-    chlog <- gsub("\\\\subsection\\{BUG FIXES\\}\\{" ,"<h3>BUG FIXES</h3>",chlog)
-    chlog <- gsub("\\\\itemize\\{","<ul>",chlog)
-    items <- grep("\\\\item",chlog)
-    chlog[items] <- lapply(chlog[items],function(x) paste("<li>",substr(x,7,nchar(x)),"</li>",sep=""))
-    chlog <- gsub("\\\\section\\{Changes in version" ,"<h2 style='color:#222222'>Changes in version",chlog)
-    chlog <- gsub("\\}\\{" ,"</h2>",chlog)
-    chlog <- sub("^\\}","</ul>",chlog)
-    
-    writeLines(chlog,"PMchangelog.html")
-    
+    chlog <- gsub("\\\\subsection\\{NEW FEATURES\\}\\{", "<h3>NEW FEATURES</h3>", chlog)
+    chlog <- gsub("\\\\subsection\\{BUG FIXES\\}\\{", "<h3>BUG FIXES</h3>", chlog)
+    chlog <- gsub("\\\\itemize\\{", "<ul>", chlog)
+    items <- grep("\\\\item", chlog)
+    chlog[items] <- lapply(chlog[items], function(x) paste("<li>", substr(x, 7, nchar(x)), "</li>", sep = ""))
+    chlog <- gsub("\\\\section\\{Changes in version", "<h2 style='color:#222222'>Changes in version", chlog)
+    chlog <- gsub("\\}\\{", "</h2>", chlog)
+    chlog <- sub("^\\}", "</ul>", chlog)
+
+    writeLines(chlog, "PMchangelog.html")
+
     #build example datasets
     #NPAG
-    if(buildData$npag){
-      setwd("~/LAPK/PmetricsSource/Test/NPAG")
-      file.copy(from=c("../src/model.txt","../src/ex.csv"),to=getwd(),overwrite=T)
-      NPrun(data="ex.csv",cycles=100,run=1,overwrite=T,intern=T)
+    if (buildData$npag) {
+      setpmwd("Test/NPAG")
+      #setwd("~/LAPK/PmetricsSource/Test/NPAG")
+      file.copy(from = c("../src/model.txt", "../src/ex.csv"), to = getwd(), overwrite = T)
+      NPrun(data = "ex.csv", cycles = 100, run = 1, overwrite = T, intern = T)
       PMload(1)
-      save(NPdata.1,final.1,cycle.1,op.1,cov.1,pop.1,post.1,mdata.1,file="~/LAPK/PmetricsSource/Pmetrics/data/PMex1.rda")
+      save(NPdata.1, final.1, cycle.1, op.1, cov.1, pop.1, post.1, mdata.1, file = "~/LAPK/PmetricsSource/Pmetrics/data/PMex1.rda")
     }
-    if(buildData$it2b){
+    if (buildData$it2b) {
       #IT2B
-      setwd("~/LAPK/PmetricsSource/Test/IT2B")
-      file.copy(from=c("../src/model.txt","../src/ex.csv"),to=getwd(),overwrite=T)
-      ITrun(data="ex.csv",cycles=100,run=1,overwrite=T,intern=T)
+      setpmwd("Test/IT2B")
+      #setwd("~/LAPK/PmetricsSource/Test/IT2B")
+      file.copy(from = c("../src/model.txt", "../src/ex.csv"), to = getwd(), overwrite = T)
+      ITrun(data = "ex.csv", cycles = 100, run = 1, overwrite = T, intern = T)
       PMload(1)
-      save(ITdata.1,final.1,cycle.1,op.1,cov.1,mdata.1,file="~/LAPK/PmetricsSource/Pmetrics/data/PMex2.rda")
+      save(ITdata.1, final.1, cycle.1, op.1, cov.1, mdata.1, file = "~/LAPK/PmetricsSource/Pmetrics/data/PMex2.rda")
     }
-    if(buildData$baddata){
-      setwd("~/LAPK/PmetricsSource/Test")
+    if (buildData$baddata) {
+      setpmwd("Test")
+      #setwd("~/LAPK/PmetricsSource/Test")
       badData <- PMreadMatrix("src/ex_bad.csv")
-      save(badData,file="~/LAPK/PmetricsSource/Pmetrics/data/PMex3.rda")
+      #save(badData, file = "~/LAPK/PmetricsSource/Pmetrics/data/PMex3.rda")
+      save(badData, file = paste(wd, "Pmetrics/data/PMex3.rda"))
+
     }
-    
-    setwd("~/LAPK/PmetricsSource")
-    
-    if(check) check("Pmetrics")
-    if(build){
-      build("Pmetrics",binary=T)
-      build("Pmetrics",binary=F)
-    } 
+    setwd(wd)
+    #setwd("~/LAPK/PmetricsSource")
+
+    if (check) check("Pmetrics")
+    if (build) {
+      build("Pmetrics", binary = T)
+      build("Pmetrics", binary = F)
+    }
     install("Pmetrics")
-    
+
     #copy to repository
-    setwd("~/LAPK/PmetricsSource")
-    Rvers <- paste(version$major,substr(version$minor,1,1),sep=".")
-    
+    setwd(wd)
+    # setwd("~/LAPK/PmetricsSource")
+    Rvers <- paste(version$major, substr(version$minor, 1, 1), sep = ".")
+
     #tar.gz
-    tools::write_PACKAGES(type="source")
+    tools::write_PACKAGES(type = "source")
     file.remove(Sys.glob("Repos/src/contrib/Pmetrics*.tar.gz"))
-    file.copy(from=Sys.glob("Pmetrics*.tar.gz"),to="Repos/src/contrib")
-    file.copy(from=Sys.glob("Pmetrics*.tar.gz"),to="Archived")
-    file.copy(from="PACKAGES",to="Repos/src/contrib",overwrite=T)
+    file.copy(from = Sys.glob("Pmetrics*.tar.gz"), to = "Repos/src/contrib")
+    file.copy(from = Sys.glob("Pmetrics*.tar.gz"), to = "Archived")
+    file.copy(from = "PACKAGES", to = "Repos/src/contrib", overwrite = T)
     file.remove(Sys.glob("Pmetrics*.tar.gz"))
-    
-    
+
+
     #tgz
-    tools::write_PACKAGES(type="mac.binary")
-    macBinDir <- paste("Repos/bin/macosx/contrib/",Rvers,sep="")
-    if(!file.exists(macBinDir)){
+    tools::write_PACKAGES(type = "mac.binary")
+    macBinDir <- paste("Repos/bin/macosx/contrib/", Rvers, sep = "")
+    if (!file.exists(macBinDir)) {
       dir.create(macBinDir)
     }
-    file.remove(Sys.glob(paste(macBinDir,"Pmetrics*.tgz",sep="/")))
-    file.copy(from=Sys.glob("Pmetrics*.tgz"),to=macBinDir)
-    file.copy(from=Sys.glob("Pmetrics*.tgz"),to="Archived")
-    file.copy(from="PACKAGES",to=macBinDir,overwrite=T)
-    
-    
-    mavBinDir <- paste("Repos/bin/macosx/mavericks/contrib/",Rvers,sep="")
-    if(!file.exists(mavBinDir)){
+    file.remove(Sys.glob(paste(macBinDir, "Pmetrics*.tgz", sep = "/")))
+    file.copy(from = Sys.glob("Pmetrics*.tgz"), to = macBinDir)
+    file.copy(from = Sys.glob("Pmetrics*.tgz"), to = "Archived")
+    file.copy(from = "PACKAGES", to = macBinDir, overwrite = T)
+
+
+    mavBinDir <- paste("Repos/bin/macosx/mavericks/contrib/", Rvers, sep = "")
+    if (!file.exists(mavBinDir)) {
       dir.create(mavBinDir)
     }
-    file.remove(Sys.glob(paste(mavBinDir,"Pmetrics*.tgz",sep="/")))
-    file.copy(from=Sys.glob("Pmetrics*.tgz"),to=mavBinDir)
-    file.copy(from="PACKAGES",to=mavBinDir,overwrite=T)
+    file.remove(Sys.glob(paste(mavBinDir, "Pmetrics*.tgz", sep = "/")))
+    file.copy(from = Sys.glob("Pmetrics*.tgz"), to = mavBinDir)
+    file.copy(from = "PACKAGES", to = mavBinDir, overwrite = T)
     file.remove(Sys.glob("Pmetrics*.tgz"))
-    
-    
-    # END if (OS==1)
-  } else {  #this is for Windows
 
+
+    # END if (OS==1)
+  } else {
+    #this is for Windows
     #do this for all changes
-    setwd("C:/LAPK/PmetricsSource")
-    if(build) build("Pmetrics",binary=T)
+    print(wd)
+    setwd(wd)
+    # writeLines(commandArgs(), paste("C:/Users/julia/Desktop", "makePmetrics.txt", sep = "/"))
+    if (build) {
+      build("Pmetrics", binary = T, args = "--no-multiarch")
+      install("Pmetrics")
+    }
     #copy to repository
-    setwd("C:/LAPK/PmetricsSource")
-    Rvers <- paste(version$major,substr(version$minor,1,1),sep=".")
+    setwd(wd)
+    Rvers <- paste(version$major, substr(version$minor, 1, 1), sep = ".")
     #zip
-    tools::write_PACKAGES(type="win.binary")
-    winBinDir <- paste("Y:/LAPK/PmetricsSource/Repos/bin/windows/contrib/",Rvers,sep="")
-    if(!file.exists(winBinDir)){
+    tools::write_PACKAGES(type = "win.binary")
+    winBinDir <- paste(wd, paste("Repos/bin/windows/contrib/", Rvers, sep = ""), sep = "")
+    print(winBinDir)
+    if (!file.exists(winBinDir)) {
       dir.create(winBinDir)
     }
-    file.remove(Sys.glob(paste(winBinDir,"Pmetrics*.zip",sep="/")))
-    file.copy(from=Sys.glob("Pmetrics*.zip"),to=winBinDir)
-    file.copy(from=Sys.glob("Pmetrics*.zip"),to="Y:/LAPK/PmetricsSource/Archived")
-    file.copy(from="PACKAGES",to=winBinDir,overwrite=T)
+    file.remove(Sys.glob(paste(winBinDir, "Pmetrics*.zip", sep = "/")))
+    file.copy(from = Sys.glob("Pmetrics*.zip"), to = winBinDir)
+    # file.copy(from=Sys.glob("Pmetrics*.zip"),to="Y:/LAPK/PmetricsSource/Archived")
+    file.copy(from = "PACKAGES", to = winBinDir, overwrite = T)
     file.remove(Sys.glob("Pmetrics*.zip"))
-    
+
   }
   setwd(wd)
-  
+
 }
 
 # -------------------------------------------------------------------
@@ -278,22 +298,31 @@ makePmetrics <- function(fortranChange=F,build=T,pdf=F,check=F,
 # but it really is missing! So don't try to install the
 # test data or you get an early exit and error
 
-fortranChange=T; build=T; pdf=F; check=T; buildData=NULL 
-ITver=114; NPver=120; SIMver="114"; DOPTver=7; MBver=1; parallel=T
+fortranChange = T;
+build = T;
+pdf = F;
+check = T;
+buildData = NULL
+ITver = 114;
+NPver = 120;
+SIMver = "114";
+DOPTver = 7;
+MBver = 1;
+parallel = T
 
-makePmetrics(fortranChange=T,build=T,pdf=T,check=T,
-             buildData=list(npag=F,it2b=F,baddata=F),
-             ITver=114,NPver=120,SIMver="114",DOPTver=7,MBver=1)
+makePmetrics(fortranChange = T, build = T, pdf = T, check = F,
+             buildData = list(npag = F, it2b = F, baddata = F),
+             ITver = 114, NPver = 120, SIMver = "114", DOPTver = 7, MBver = 1)
 
 # Last build was npag120files -- and running 281
 # Last build was npag120_original -- and running 283
 # Last build was npag120_o -- and running 285
 # Last build was npag120betafiles -- and running 284, 286
 getwd()
-con <- file("pmbuildout.txt","w") # this does NOT work ! compiler output still to Rconsole
+con <- file("pmbuildout.txt", "w") # this does NOT work ! compiler output still to Rconsole
 # best bet is to go to terminal and do manual compile
-sink(con, append=TRUE)
-sink(con, append=TRUE, type="message")
+sink(con, append = TRUE)
+sink(con, append = TRUE, type = "message")
 PMbuild()
 sink() # Remember to do this last sink() or you will lose subsequent work
 
