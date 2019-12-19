@@ -1,4 +1,0 @@
-S3method(getFrame, listbox)
-S3method(getSelection, listbox)
-import(tcltk)
-exportPattern("^[^\\.]")
