@@ -4,11 +4,33 @@
 \alias{NPrun}
 \title{Execute an NPAG run.}
 \usage{
-NPrun(model = "model.txt", data = "data.csv", run, include, exclude,
-  ode = -4, tol = 0.01, salt, cycles = 100, indpts,
-  icen = "median", aucint, idelta = 12, prior, auto = T,
-  intern = F, silent = F, overwrite = F, nocheck = F,
-  parallel = NA, batch = F)
+NPrun(
+  model = "model.txt",
+  data = "data.csv",
+  run,
+  include,
+  exclude,
+  ode = -4,
+  tol = 0.01,
+  salt,
+  cycles = 100,
+  indpts,
+  icen = "median",
+  aucint,
+  idelta = 12,
+  prior,
+  auto = T,
+  intern = F,
+  silent = F,
+  overwrite = F,
+  nocheck = F,
+  parallel = NA,
+  batch = F,
+  remoterun,
+  remoteuser,
+  remoteproject,
+  remotecontact
+)
 }
 \arguments{
 \item{model}{Name of a suitable model file template in the working directory or

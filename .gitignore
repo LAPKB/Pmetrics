@@ -2,3 +2,12 @@
 .Rhistory
 .RData
 .Ruserdata
+
+#Pmetrics build
+
+PACKAGES
+PACKAGES.gz
+PACKAGES.rds
+Pmetrics/DESCRIPTION
+Pmetrics/man/*
+Repos/*

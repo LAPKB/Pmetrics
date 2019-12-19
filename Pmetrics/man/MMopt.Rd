@@ -4,8 +4,16 @@
 \alias{MMopt}
 \title{Compute MM-optimal Sample Times}
 \usage{
-MMopt(poppar, model = "model.txt", data = "data.csv", nsamp = 1,
-  weight = list(none = 1), predInt = 0.5, outeq = 1, ...)
+MMopt(
+  poppar,
+  model = "model.txt",
+  data = "data.csv",
+  nsamp = 1,
+  weight = list(none = 1),
+  predInt = 0.5,
+  outeq = 1,
+  ...
+)
 }
 \arguments{
 \item{poppar}{An object of class \emph{PMfinal} (see \code{\link{makeFinal}})}
