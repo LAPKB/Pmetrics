@@ -5,9 +5,10 @@
 
 #Pmetrics build
 
+PMchangelog.html
 PACKAGES
 PACKAGES.gz
 PACKAGES.rds
 Pmetrics/DESCRIPTION
 Pmetrics/man/*
-Repos/*
+
