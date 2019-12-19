@@ -1,4 +1,0 @@
-#PrimaryKa
-Ke
-V
-Tlag1#Lag TLAG(1) = Tlag1#OutY(1) = X(2)/V
