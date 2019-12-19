@@ -4,8 +4,17 @@
 \alias{makeValid}
 \title{Create a Pmetrics validation object}
 \usage{
-makeValid(run, outeq = 1, input = 1, icen = "median", tad = F,
-  binCov, doseC, timeC, ...)
+makeValid(
+  run,
+  outeq = 1,
+  input = 1,
+  icen = "median",
+  tad = F,
+  binCov,
+  doseC,
+  timeC,
+  ...
+)
 }
 \arguments{
 \item{outeq}{An integer specifying the number of the simulated output equation to use. Default is 1.}

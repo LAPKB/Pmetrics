@@ -4,8 +4,14 @@
 \alias{summary.PMop}
 \title{Summarize Observations and Predictions}
 \usage{
-\method{summary}{PMop}(x, digits = max(3, getOption("digits") - 3),
-  pred.type = "post", icen = "median", outeq = 1, ...)
+\method{summary}{PMop}(
+  x,
+  digits = max(3, getOption("digits") - 3),
+  pred.type = "post",
+  icen = "median",
+  outeq = 1,
+  ...
+)
 }
 \arguments{
 \item{x}{A PMop object made by \code{\link{makeOP}}.}

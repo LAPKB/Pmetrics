@@ -4,9 +4,24 @@
 \alias{plot.PMpta}
 \title{Plot PMpta Percent Target Attainment objects}
 \usage{
-\method{plot}{PMpta}(x, include, exclude, plot.type = "pta", log = T,
-  pch, grid, xlab, ylab, col, lty, lwd = 4, legend = T, ci = 0.9,
-  out = NA, ...)
+\method{plot}{PMpta}(
+  x,
+  include,
+  exclude,
+  plot.type = "pta",
+  log = T,
+  pch,
+  grid,
+  xlab,
+  ylab,
+  col,
+  lty,
+  lwd = 4,
+  legend = T,
+  ci = 0.9,
+  out = NA,
+  ...
+)
 }
 \arguments{
 \item{x}{The name of an \emph{PMpta} data object read by \code{\link{makePTA}}}

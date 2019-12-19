@@ -23,7 +23,7 @@ Any objects that are made during the course of analysis in R can be added to the
 that are automatically generated at the end of an NPAG or IT2B run and loaded with \code{\link{PMload}}.
 Objects with the same run number will be saved as a group.  So if a user has made a new object called
 lm.1 that contains regressions related to run 1, it will be saved with any other object
-that also has .1 at the end.
+that also has .1 at the end. 
 
 Additionally, other objects can be saved via the \dots argument.  For exmaple PMsave(1,lm) will
 save any object with .1 at the end, plus an object named "lm".  All objects will be suffixed

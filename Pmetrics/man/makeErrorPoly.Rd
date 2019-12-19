@@ -4,8 +4,20 @@
 \alias{makeErrorPoly}
 \title{Assay error polynomial coefficients}
 \usage{
-makeErrorPoly(obs, sd, data, outeq = 1, col = "red", cex = 3,
-  pch = "+", lcol = "blue", lwd = 2, ref = T, legend = T, ...)
+makeErrorPoly(
+  obs,
+  sd,
+  data,
+  outeq = 1,
+  col = "red",
+  cex = 3,
+  pch = "+",
+  lcol = "blue",
+  lwd = 2,
+  ref = T,
+  legend = T,
+  ...
+)
 }
 \arguments{
 \item{obs}{A vector of observations}

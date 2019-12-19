@@ -4,10 +4,24 @@
 \alias{ERRrun}
 \title{Execute an Assay Error Estimation run.}
 \usage{
-ERRrun(model = "model.txt", data = "data.csv", run, include, exclude,
-  ode = -4, tol = 0.001, salt, cycles = 100, search = "cursory",
-  xdev = 5, auto = T, intern = F, silent = F, overwrite = F,
-  nocheck = F)
+ERRrun(
+  model = "model.txt",
+  data = "data.csv",
+  run,
+  include,
+  exclude,
+  ode = -4,
+  tol = 0.001,
+  salt,
+  cycles = 100,
+  search = "cursory",
+  xdev = 5,
+  auto = T,
+  intern = F,
+  silent = F,
+  overwrite = F,
+  nocheck = F
+)
 }
 \arguments{
 \item{model}{Name of a suitable model file template in the working directory or
