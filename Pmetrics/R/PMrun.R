@@ -3,7 +3,7 @@
                    include, exclude, ode, tol, salt, cycles,
                    indpts, icen, aucint,
                    idelta, prior, xdev, search,
-                   auto, intern, silent, overwrite, nocheck, parallel, batch,
+                   auto, intern, silent, overwrite, nocheck, parallel, batch, server,
                    remoterun, remoteuser, remoteproject, remotecontact) {
 
   # TODO
@@ -446,6 +446,7 @@
     #make report
     reportscript <- paste(normalizePath(getPMpath(), winslash = "/"), "/report/",
                           switch(type, NPAG = "NP", IT2B = "IT", ERR = "ERR"), "repScript.R", sep = "")
+    alquimia_data_script <- paste(normalizePath(getPMpath(), winslash = "/"), "/report/genAlquimiaData.R", sep = "")
     outpath <- c(paste(workdir, "/outputs", sep = ""),
                  paste(workdir, "\\outputs", sep = ""),
                  paste(workdir, "/outputs", sep = ""))[OS]
@@ -460,13 +461,16 @@
 
 
     #call report script and then open HTML file
-    PMscript[getNext(PMscript)] <- c(paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
+    if (server) {
+      PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
+    } else {
+      PMscript[getNext(PMscript)] <- c(paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
                                      paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript", sep = "")), " ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
                                      paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""))[OS]
-    PMscript[getNext(PMscript)] <- c(paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
+      PMscript[getNext(PMscript)] <- c(paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
                                      paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
                                      paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""))[OS]
-
+    }
     #final clean up
     if (OS == 1 | OS == 3) {
       #for Mac or Linux
@@ -559,6 +563,11 @@
       if (OS == 2) { shell(paste(prepFileName, " DOS < PMcontrol", sep = "")) }
 
     }
+    #Julian's code
+
+    json_data <- file("jdata.txt", open = "w")
+    write("prueba", data_file)
+    close(json_data)
 
     # RUN  engine
 
