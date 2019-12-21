@@ -30,3 +30,5 @@ Pmetrics/inst/code/SIMeng_114.f
 Pmetrics/inst/config/newFort.txt
 Pmetrics/src/Pmetrics.so
 Pmetrics/src/knn.o
+Pmetrics/inst/config/newFort.txt
+*.Rd
