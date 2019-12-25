@@ -5,7 +5,7 @@ getPMpath <- function() {
   #return Pmetrics installation folder 
   paste(.libPaths(), "Pmetrics", sep = "/") %>%
     keep(file.exists) %>%
-    map_chr(1) #ensure only one path returned (should be unnecessary)
+    pluck(1) #ensure only one path returned (should be unnecessary)
 }
 
 getBits <- function() {
