@@ -2,3 +2,12 @@
 .Rhistory
 .RData
 .Ruserdata
+.DS_Store
+
+
+#build
+Archived
+PACKAGES
+PACKAGES.gz
+PACKAGES.rds
+PMchangelog.html
