@@ -2033,3 +2033,43 @@ getOSname <- function(){
   }
   tolower(os)
 }
+
+
+# check for installed packages --------------------------------------------
+
+checkRequiredPackages <- function(pkg){
+  #pkg is a character vector
+  require(purrr)
+  managePkgs <- function(thisPkg){
+    if(length(grep(thisPkg,installed.packages()[,1]))==0){
+      install.packages(thisPkg,dependencies=T)
+    }
+    if(require(thisPkg,character.only = T, quietly = T)){
+      return("ok")
+    } else {return(thisPkg)}
+    
+  }
+  
+  pkg %>%
+    map_chr(managePkgs) %>%
+    keep(~.!="ok") %>%
+    map_chr(~if(length(.)>0){
+      stop(paste("The following required packages did not successfully install: ",.,sep="",collapse=", "))
+    })
+  return(invisible())
+}
+
+
+# Time after dose ---------------------------------------------------------
+
+#calculate time after dose 
+calcTAD <- function(rawData){
+  for(i in 1:nrow(rawData)){
+    if(rawData$evid[i]!=0){
+      doseTime <- rawData$time[i]
+      prevDose <- rawData$dose[i]
+    }
+    rawData$tad[i] <- rawData$time[i] - doseTime
+  }
+  return(rawData$tad)
+}
