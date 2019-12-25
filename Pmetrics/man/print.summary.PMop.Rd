@@ -4,8 +4,7 @@
 \alias{print.summary.PMop}
 \title{Print Summary of Observations and Predictions}
 \usage{
-\method{print}{summary.PMop}(x, digits = max(3, getOption("digits") - 3),
-  ...)
+\method{print}{summary.PMop}(x, digits = max(3, getOption("digits") - 3), ...)
 }
 \arguments{
 \item{x}{A summary.PMop object made by \code{\link{summary.PMop}}.}

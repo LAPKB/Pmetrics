@@ -4,8 +4,19 @@
 \alias{makePTA}
 \title{Calculation of PTAs}
 \usage{
-makePTA(simdata, simlabels, targets, target.type, success, outeq = 1,
-  free.fraction = 1, start, end, icen = "median", block = 1)
+makePTA(
+  simdata,
+  simlabels,
+  targets,
+  target.type,
+  success,
+  outeq = 1,
+  free.fraction = 1,
+  start,
+  end,
+  icen = "median",
+  block = 1
+)
 }
 \arguments{
 \item{simdata}{Can be one of multiple inputs.  Typically it is a vector of simulator output filenames, e.g. c(\dQuote{simout1.txt},\dQuote{simout2.txt}),

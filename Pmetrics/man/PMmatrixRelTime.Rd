@@ -4,9 +4,15 @@
 \alias{PMmatrixRelTime}
 \title{Convert Absolute Dates and Times to Relative Hours}
 \usage{
-PMmatrixRelTime(data, idCol = "id", dateCol = "date",
-  timeCol = "time", evidCol = "evid", format = c("m/d/y", "h:m"),
-  split = F)
+PMmatrixRelTime(
+  data,
+  idCol = "id",
+  dateCol = "date",
+  timeCol = "time",
+  evidCol = "evid",
+  format = c("m/d/y", "h:m"),
+  split = F
+)
 }
 \arguments{
 \item{data}{The name of an R data object.}
