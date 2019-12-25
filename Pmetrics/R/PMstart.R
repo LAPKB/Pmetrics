@@ -7,7 +7,7 @@
     installedVersion <- packageVersion("Pmetrics")
 
     if (currentVersion > installedVersion) {
-      packageStartupMessage(paste("\nPmetrics version ", currentVersion, " is available from www.lapk.org/software.  You have version ", installedVersion, ".\nUse PMupdate() to get the new version.\n", sep = ""))
+      packageStartupMessage(paste("\nPmetrics version ", currentVersion, " is available from www.lapk.org/software.  You have version ", installedVersion, ".\n", sep = ""))
     }
   }
 
