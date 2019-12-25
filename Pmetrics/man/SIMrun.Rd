@@ -4,12 +4,31 @@
 \alias{SIMrun}
 \title{Run the Pmetrics Simulator}
 \usage{
-SIMrun(poppar, limits = NULL, model = "model.txt", data = "data.csv",
-  split, include, exclude, nsim = 1000, predInt = 0, covariate,
-  usePost = F, seed = -17, ode = -4, obsNoise,
-  doseTimeNoise = rep(0, 4), doseNoise = rep(0, 4),
-  obsTimeNoise = rep(0, 4), makecsv, outname, clean = T, silent = F,
-  nocheck = F, overwrite = F)
+SIMrun(
+  poppar,
+  limits = NULL,
+  model = "model.txt",
+  data = "data.csv",
+  split,
+  include,
+  exclude,
+  nsim = 1000,
+  predInt = 0,
+  covariate,
+  usePost = F,
+  seed = -17,
+  ode = -4,
+  obsNoise,
+  doseTimeNoise = rep(0, 4),
+  doseNoise = rep(0, 4),
+  obsTimeNoise = rep(0, 4),
+  makecsv,
+  outname,
+  clean = T,
+  silent = F,
+  nocheck = F,
+  overwrite = F
+)
 }
 \arguments{
 \item{poppar}{Either an object of class \emph{PMfinal} (see \code{\link{makeFinal}})
@@ -151,7 +170,7 @@ The Monte Carlo simulator in Pmetrics is a powerful tool for parametric or semi-
 sampling.  NPAG or IT2B final objects can easily be used as the prior distributions for 
 sampling, or prior distributions may be manually specified.  Prior distributions may be
 unimodal-multivariate (parametric sampling), or multimodal-multivariate (semi-parametric sampling).
-For priors from NPAG, this can easily be accomplished with the \code{split} argument.
+For priors from NPAG, this can easily be accomplished with the \code{split} argument. 
 
 It is also possible to simulate with covariates if they are included as part of the model.
 By specifying a covariate list argument, Pmetrics will first calculate the correlation matrix
@@ -159,14 +178,14 @@ between the covariates and the Bayesian posterior parameter values for each subj
 model.  Using either the mean and standard deviation of each covariate in the population, 
 or a user-specified mean and/or standard deviation, Pmetrics will then calculate an augmented 
 covariance matrix to be used in simulations.  Pmetrics will make a copy of the model file with all
-covariates moved into the primary block as parameters to be simulated.
+covariates moved into the primary block as parameters to be simulated.  
 
 Noise can be applied to the simulated observations. Noise may also be applied to
-the observation times, to the dose times, or to the dose amounts.
+the observation times, to the dose times, or to the dose amounts.  
 
 Limits on the simulated parameter sets can also be specified using the limits on primary parameters in 
 the model file or by specifying them manually as an argument. Limits can also be applied to simulated 
-covariates.
+covariates. 
 
 It is permissible to fix a parameter for simulation that was a random parameter in the model prior by 
 changing the range in the model file to a single value for that parameter.
@@ -176,7 +195,7 @@ Pmetrics functions.  In this case, the data file will serve as the template for 
 regarding dosing, covariate values, and observations.  Template data files may have more than one
 subject in them, in which case the simulator will use each subject specified by the \code{include}
 argument (default is all subjects) to generate \code{nsim} parameter sets and corresponding
-observations.
+observations.  
 
 Simulator output is directed to text files, one for each template subject, which can be 
 read back into R by \code{link{SIMparse}}.  Output may also be directed to a new Pmetrics
@@ -192,7 +211,7 @@ cov <- matrix(rep(0,length(mean)**2),ncol=length(mean))
 diag(cov) <- (c(0.15,0.15,0.15)*mean)**2
 #make the prior for the simulation
 poppar <- list(weights,mean,cov)
-setwd(paste(normalizePath(getPMpath(),winslash="/"),"/Pmetrics/example/Sim",sep=""))
+setwd(paste(normalizePath(get("PmetricsPath",envir=PMenv),winslash="/"),"/Pmetrics/example/Sim",sep=""))
 #run simulation
 SIMrun(poppar,"temp1.csv",nsim=15,model="model1.for",obsNoise=c(0.02,0.1,0,0),makecsv="PMex1.csv",outname="example",clean=T)
 #extract results of simulation

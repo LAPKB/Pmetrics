@@ -4,10 +4,25 @@
 \alias{ITrun}
 \title{Execute an IT2B run.}
 \usage{
-ITrun(model = "model.txt", data = "data.csv", run, include, exclude,
-  ode = -4, tol = 0.001, salt, cycles = 100, xdev = 5,
-  icen = "median", auto = T, intern = F, silent = F,
-  overwrite = F, nocheck = F, batch = F)
+ITrun(
+  model = "model.txt",
+  data = "data.csv",
+  run,
+  include,
+  exclude,
+  ode = -4,
+  tol = 0.001,
+  salt,
+  cycles = 100,
+  xdev = 5,
+  icen = "median",
+  auto = T,
+  intern = F,
+  silent = F,
+  overwrite = F,
+  nocheck = F,
+  batch = F
+)
 }
 \arguments{
 \item{model}{Name of a suitable model file template in the working directory or

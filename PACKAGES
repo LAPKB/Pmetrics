@@ -4,4 +4,4 @@ Depends: R (>= 3.5.0), utils, stats
 Suggests: chron, reshape2, plyr, npde, Rcpp, shiny, openxlsx, Matrix,
         rjson, stringi, ggplot2, mclust
 License: GPL (>= 1)
-Archs: x64
+MD5sum: 9b435209f41886c28b3d9d4652f6068b
