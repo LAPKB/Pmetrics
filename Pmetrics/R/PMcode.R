@@ -17,26 +17,26 @@
 #' 
 #' @author Michael Neely
 
-PMcode <- function(func){
-  if(!suppressWarnings(require(shiny,quietly=T))){
+PMcode <- function(func) {
+  if (!suppressWarnings(require(shiny, quietly = T))) {
     resp <- readline("\nYou do not have the required 'shiny' package. Download? ")
-    if(grepl("^y",tolower(resp))) {
+    if (grepl("^y", tolower(resp))) {
       install.packages("shiny")
       cat("\nNow execute PMcode again.\n")
       return(invisible(NULL))
     }
   }
-  
-  run <- grep("run",tolower(func))
-  if(length(run)>0) {func <- "run"}
-  
-  ShinyAppDir <- paste(normalizePath(get("PmetricsPath",envir=PMenv),winslash="/"),"/Pmetrics/PMcode/",func,sep="")
-  
-  if(func=="run"){
-    file.copy(from=list.files(ShinyAppDir,pattern="\\.R$",full.names=T),to=getwd(),overwrite=T)
+
+  run <- grep("run", tolower(func))
+  if (length(run) > 0) { func <- "run" }
+
+  ShinyAppDir <- paste(normalizePath(getPMpath(), winslash = "/"), "/Pmetrics/PMcode/", func, sep = "")
+
+  if (func == "run") {
+    file.copy(from = list.files(ShinyAppDir, pattern = "\\.R$", full.names = T), to = getwd(), overwrite = T)
     runApp()
   } else {
     runApp(ShinyAppDir)
   }
-  
+
 }
