@@ -131,7 +131,7 @@ Dopt <- function(run, data, clean = T) {
   } else {
     #get the number of covariates
     datafile <- PMreadMatrix(paste(run, "/dopt/", data, sep = ""), quiet = T)
-    ncov <- ncol(datafile) - get("nfixed", PMenv)
+    ncov <- ncol(datafile) - getFixedColNum()
     if (ncov > 0) {
       covstring <- rep("1", ncov)
     } else { covstring <- NULL }

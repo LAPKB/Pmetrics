@@ -123,7 +123,7 @@ makeValid <- function(run, outeq = 1, input = 1, icen = "median", tad = F, binCo
   nsub <- length(unique(mdata$id))
 
   if (missing(binCov)) {
-    cat(paste("Covariates in your data file: ", paste(names(mdata)[-c(1:get("nfixed", envir = PMenv))], collapse = ", ")))
+    cat(paste("Covariates in your data file: ", paste(names(mdata)[-c(1:getFixedColNum())] , collapse = ", ")))
     binCov <- readline("Enter any covariates to be binned, separated by commas (<Return> for none): ")
     binCov <- unlist(strsplit(binCov, ","))
     #remove leading/trailing spaces
