@@ -1,7 +1,0 @@
-Package: Pmetrics
-Version: 1.5.3
-Depends: R (>= 3.5.0), utils, stats
-Suggests: chron, reshape2, plyr, npde, Rcpp, shiny, openxlsx, Matrix,
-        rjson, stringi, ggplot2, mclust
-License: GPL (>= 1)
-MD5sum: 6a5199bcbc94e4f92aebe8b34bb955b8
