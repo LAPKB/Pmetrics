@@ -1,1 +1,0 @@
-#PrimaryCl0Vc0Q0Vp0ICPF#SecondaryV = Vc0 * CV(1)CL = Cl0 * CV(1)**0.75Vp = Vp0 * CV(1)Q = Vp0 * CV(1)**0.75KE = CL/VcKCP = Q/VcKPC = Q/Vp#Initial X(1) = CV(2) * VX(2) = ICP#FFA(1) = F#OutputsY(1) = X(1)/V
