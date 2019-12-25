@@ -4,8 +4,15 @@
 \alias{PMgetCRCL}
 \title{Add Jelliffe Creatinine Clearance}
 \usage{
-PMgetCRCL(mdata, idCol = "id", wtCol = "wt", maleCol = "male",
-  ageCol = "age", scrCol = "scr", SI = F)
+PMgetCRCL(
+  mdata,
+  idCol = "id",
+  wtCol = "wt",
+  maleCol = "male",
+  ageCol = "age",
+  scrCol = "scr",
+  SI = F
+)
 }
 \arguments{
 \item{mdata}{A Pmetrics matrix data object}

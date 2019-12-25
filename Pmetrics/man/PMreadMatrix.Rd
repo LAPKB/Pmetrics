@@ -4,8 +4,14 @@
 \alias{PMreadMatrix}
 \title{Read a Pmetrics .csv Matrix Input File}
 \usage{
-PMreadMatrix(file, skip = 1, sep = getPMoptions("sep"),
-  dec = getPMoptions("dec"), quiet = F, ...)
+PMreadMatrix(
+  file,
+  skip = 1,
+  sep = getPMoptions("sep"),
+  dec = getPMoptions("dec"),
+  quiet = F,
+  ...
+)
 }
 \arguments{
 \item{file}{The name of the file to be loaded, including the full path if not
