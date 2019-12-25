@@ -86,26 +86,28 @@
 #' @seealso \code{\link{NPparse}}, \code{\link{ITrun}}
 
 
-NPrun <- function(model="model.txt",data="data.csv",run,
-                  include,exclude,ode=-4,tol=0.01,salt,cycles=100,
-                  indpts,icen="median",aucint,
-                  idelta=12,prior,
-                  auto=T,intern=F,silent=F,overwrite=F,nocheck=F,parallel=NA,batch=F){
-  
-  if(missing(run)) run <- NULL
-  if(missing(include)) include <- NULL
-  if(missing(exclude)) exclude <- NULL
-  if(missing(salt)) salt <- NULL
-  if(missing(indpts)) indpts <- NULL
-  if(missing(aucint)) aucint <- NULL
-  if(missing(prior)) prior <- NULL
+NPrun <- function(model = "model.txt", data = "data.csv", run,
+                  include, exclude, ode = -4, tol = 0.01, salt, cycles = 100,
+                  indpts, icen = "median", aucint,
+                  idelta = 12, prior,
+                  auto = T, intern = F, silent = F, overwrite = F, nocheck = F, parallel = NA, batch = F,
+                  server = F) {
 
-  outpath <- .PMrun(type="NPAG",model=model,data=data,run=run,
-                   include=include,exclude=exclude,ode=ode,tol=tol,salt=salt,cycles=cycles,
-                   indpts=indpts,icen=icen,aucint=aucint,
-                   idelta=idelta,prior=prior,
-                   auto=auto,intern=intern,silent=silent,overwrite=overwrite,nocheck=nocheck,parallel=parallel,batch=batch)
+  if (missing(run)) run <- NULL
+  if (missing(include)) include <- NULL
+  if (missing(exclude)) exclude <- NULL
+  if (missing(salt)) salt <- NULL
+  if (missing(indpts)) indpts <- NULL
+  if (missing(aucint)) aucint <- NULL
+  if (missing(prior)) prior <- NULL
+
+  outpath <- .PMrun(type = "NPAG", model = model, data = data, run = run,
+                   include = include, exclude = exclude, ode = ode, tol = tol, salt = salt, cycles = cycles,
+                   indpts = indpts, icen = icen, aucint = aucint,
+                   idelta = idelta, prior = prior,
+                   auto = auto, intern = intern, silent = silent, overwrite = overwrite, nocheck = nocheck, parallel = parallel, batch = batch,
+                   server = server)
   return(outpath)
-  
+
 }
 
