@@ -60,6 +60,7 @@
 #' in the first cycle, with a speed-up of approximately 80\% of the number of available cores on your machine, e.g. an 8-core machine
 #' will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\%, e.g. 4-fold increase on an 8-core
 #' machine.  Overall speed up for a run will therefore depend on the number of cycles ru and the number of cores.
+#' @param alq Alquimia's internal flag, not for regular users
 #' @return A successful NPAG run will result in creation of a new folder in the working
 #' directory.  This folder will be named with a date-time stamp in the format "out-YYYYMMMDD-hhmm",
 #' e.g. out-2011Apr10-1015.  Under this folder will be four subfolders: etc, inputs, outputs, and
@@ -91,7 +92,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
                   indpts, icen = "median", aucint,
                   idelta = 12, prior,
                   auto = T, intern = F, silent = F, overwrite = F, nocheck = F, parallel = NA, batch = F,
-                  server = F) {
+                  alq = F, remote = F, server_address = "http://localhost:5000", rcheck = F, rid = "") {
 
   if (missing(run)) run <- NULL
   if (missing(include)) include <- NULL
@@ -100,14 +101,21 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
   if (missing(indpts)) indpts <- NULL
   if (missing(aucint)) aucint <- NULL
   if (missing(prior)) prior <- NULL
+  if (remote == T) {
+    if (rcheck) {
+      return(.PMremote_run(rid = rid, server_address = server_address))
+    }
+    return(.PMremote_run(model = model, data = data, server_address = server_address))
 
-  outpath <- .PMrun(type = "NPAG", model = model, data = data, run = run,
-                   include = include, exclude = exclude, ode = ode, tol = tol, salt = salt, cycles = cycles,
-                   indpts = indpts, icen = icen, aucint = aucint,
-                   idelta = idelta, prior = prior,
-                   auto = auto, intern = intern, silent = silent, overwrite = overwrite, nocheck = nocheck, parallel = parallel, batch = batch,
-                   server = server)
-  return(outpath)
+  } else {
+    return(.PMrun(type = "NPAG", model = model, data = data, run = run,
+          include = include, exclude = exclude, ode = ode, tol = tol, salt = salt, cycles = cycles,
+          indpts = indpts, icen = icen, aucint = aucint,
+          idelta = idelta, prior = prior,
+          auto = auto, intern = intern, silent = silent, overwrite = overwrite, nocheck = nocheck, parallel = parallel, batch = batch,
+          alq = alq))
+
+  }
 
 }
 

@@ -4,7 +4,7 @@
                    indpts, icen, aucint,
                    idelta, prior, xdev, search,
                    auto, intern, silent, overwrite, nocheck, parallel, batch,
-                   server) {
+                   alq) {
 
   currwd <- getwd() #set the current working directory to go back to it at the end
 
@@ -426,7 +426,7 @@
 
 
     #call report script and then open HTML file
-    if (server) {
+    if (alq) {
       PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
     } else {
       PMscript[getNext(PMscript)] <- c(
