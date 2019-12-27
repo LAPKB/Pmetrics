@@ -92,7 +92,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
                   indpts, icen = "median", aucint,
                   idelta = 12, prior,
                   auto = T, intern = F, silent = F, overwrite = F, nocheck = F, parallel = NA, batch = F,
-                  alq = F, remote = F, server_address = "http://localhost:5000", rcheck = F, rid = "") {
+                  alq = F, remote = F, server_address = "http://localhost:5000", rcheck) {
 
   if (missing(run)) run <- NULL
   if (missing(include)) include <- NULL
@@ -102,11 +102,21 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
   if (missing(aucint)) aucint <- NULL
   if (missing(prior)) prior <- NULL
   if (remote == T) {
-    if (rcheck) {
-      return(.PMremote_run(rid = rid, server_address = server_address))
+    if (!missing(rcheck)) {
+      if (!is.numeric(rcheck)) {
+        return(PMremote_check(rid = rcheck, server_address = server_address))
+      } else {
+        if (!exists("remoteRuns")) {
+          cat("Object remoteRuns was not found, please use the full id.\n")
+        } else if (length(remoteRuns) < rcheck || rcheck <= 0) {
+          cat("Run number out of bounds.\n")
+        } else {
+          return(PMremote_check(rid = remoteRuns[rcheck], server_address = server_address))
+        }
+      }
+    } else {
+      return(.PMremote_run(model = model, data = data, server_address = server_address))
     }
-    return(.PMremote_run(model = model, data = data, server_address = server_address))
-
   } else {
     return(.PMrun(type = "NPAG", model = model, data = data, run = run,
           include = include, exclude = exclude, ode = ode, tol = tol, salt = salt, cycles = cycles,
