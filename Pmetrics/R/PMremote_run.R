@@ -1,6 +1,7 @@
 .PMremote_run <- function(model, data, server_address) {
 
   library(httr)
+  library(purrr)
   api_url <- paste(server_address, "/api", sep = "")
   model_txt <- readChar(model, file.info(model)$size)
   data_txt <- readChar(data, file.info(data)$size)
@@ -12,10 +13,16 @@
         name = "prueba"),
     encode = "json"
     )
-  return(content(r, "parsed")$id)
+  if (!exists("remoteRuns")) { remoteRuns <<- c() }
+  remoteRuns <<- c(remoteRuns, content(r, "parsed")$id)
+  nRuns <- length(remoteRuns)
+  sprintf("Remote run #%d started successfuly, You can access this run's id using: remoteRuns(%d).\n", nRuns, nRuns) %>%
+  cat()
+  remoteRuns[nRuns] %>%
+  return()
 }
 
-.PMremote_check <- function(rid, server_address) {
+PMremote_check <- function(rid, server_address) {
   library(httr)
   api_url <- paste(server_address, "/api", sep = "")
   r <- GET(paste(api_url, paste0("/analysis/", rid, "/status"), sep = ""))
