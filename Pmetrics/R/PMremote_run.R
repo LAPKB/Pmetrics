@@ -24,7 +24,21 @@
 
 PMremote_check <- function(rid, server_address) {
   library(httr)
-  api_url <- paste(server_address, "/api", sep = "")
-  r <- GET(paste(api_url, paste0("/analysis/", rid, "/status"), sep = ""))
+  api_url <- paste0(server_address, "/api")
+  r <- GET(paste0(api_url, "/analysis/", rid, "/status"))
   return(content(r, "parsed")$status)
+}
+
+PMremote_outdata <- function(rid, server_address) {
+  library(httr)
+  wd <- getwd()
+  setwd(tempdir())
+  api_url <- paste0(server_address, "/api")
+  r <- GET(paste0(api_url, "/analysis/", rid, "/outdata"))
+  fileConn <- file("enc_outdata.txt")
+  writeLines(content(r, "parsed")$outdata, fileConn)
+  close(fileConn)
+  system("base64 --decode -i enc_outdata.txt -o outdata.Rdata")
+  load("outdata.Rdata", .GlobalEnv)
+  setwd(wd)
 }
