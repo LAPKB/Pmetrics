@@ -22,7 +22,7 @@
   return()
 }
 
-PMremote_check <- function(rid, server_address) {
+.PMremote_check <- function(rid, server_address) {
   library(httr)
   api_url <- paste0(server_address, "/api")
   r <- GET(paste0(api_url, "/analysis/", rid, "/status"))
