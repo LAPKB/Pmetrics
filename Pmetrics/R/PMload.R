@@ -28,39 +28,54 @@
 #' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}}, 
 #' \code{\link{makePop}}, \code{\link{makePost}}
 
-PMload <- function(run=1,...){
-  addlruns <- list(...)
-  if(length(addlruns)>0){
-    allruns <- c(run,unlist(addlruns))
-  } else {allruns <- run}
-  for(thisrun in allruns){
-    #check for NPAG output file
-    filename <- "NPAGout.Rdata"
-    outfile <- paste(thisrun,"outputs",filename,sep="/")
-    if(file.exists(outfile)) filename <- outfile
-    if(file.exists(filename)){
-      load(filename)
-      newNames <- paste(names(NPAGout),".",as.character(thisrun),sep="")
-      for (i in 1:length(newNames)){
-        assign(newNames[i],NPAGout[[i]],pos=parent.frame())
-      }
+PMload <- function(run = 1, remote = F, server_address = "http://localhost:5000", ...) {
+  if (remote != F) {
+    if (!is.numeric(remote)) {
+      return(PMremote_check(rid = remote, server_address = server_address))
     } else {
-      #check for IT2B output file
-      filename <- "IT2Bout.Rdata"
-      outfile <- paste(thisrun,"outputs",filename,sep="/")
-      if(file.exists(outfile)) filename <- outfile
-      if(file.exists(filename)){
+      if (!exists("remoteRuns")) {
+        cat("Object remoteRuns was not found, please use the full id.\n")
+      } else if (length(remoteRuns) < remote || remote <= 0) {
+        cat("Run number out of bounds.\n")
+      } else {
+        return(.PMremote_check(rid = remoteRuns[remote], server_address = server_address))
+      }
+    }
+  } else {
+    addlruns <- list(...)
+    if (length(addlruns) > 0) {
+      allruns <- c(run, unlist(addlruns))
+    } else { allruns <- run }
+    for (thisrun in allruns) {
+      #check for NPAG output file
+      filename <- "NPAGout.Rdata"
+      outfile <- paste(thisrun, "outputs", filename, sep = "/")
+      if (file.exists(outfile)) filename <- outfile
+      if (file.exists(filename)) {
         load(filename)
-        newNames <- paste(names(IT2Bout),".",as.character(thisrun),sep="")
-        for (i in 1:length(newNames)){
-          assign(newNames[i],IT2Bout[[i]],pos=parent.frame())
+        newNames <- paste(names(NPAGout), ".", as.character(thisrun), sep = "")
+        for (i in 1:length(newNames)) {
+          assign(newNames[i], NPAGout[[i]], pos = parent.frame())
         }
       } else {
-        cat(paste(filename," not found in ",getwd(),"/",thisrun,"/outputs or ",getwd(),".\n",sep=""))
-        return(invisible(F)) #error, abort
+        #check for IT2B output file
+        filename <- "IT2Bout.Rdata"
+        outfile <- paste(thisrun, "outputs", filename, sep = "/")
+        if (file.exists(outfile)) filename <- outfile
+        if (file.exists(filename)) {
+          load(filename)
+          newNames <- paste(names(IT2Bout), ".", as.character(thisrun), sep = "")
+          for (i in 1:length(newNames)) {
+            assign(newNames[i], IT2Bout[[i]], pos = parent.frame())
+          }
+        } else {
+          cat(paste(filename, " not found in ", getwd(), "/", thisrun, "/outputs or ", getwd(), ".\n", sep = ""))
+          return(invisible(F)) #error, abort
+        }
       }
-    }  
-  } #end thisrun loop
-  return(invisible(T)) #no errors
+    }
+    #end thisrun loop
+    return(invisible(T)) #no errors
+  }
 }
 
