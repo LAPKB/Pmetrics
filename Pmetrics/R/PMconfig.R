@@ -25,3 +25,7 @@ getFixedColNum <- function() {
   length(getFixedColNames())
 }
 
+.getApiKey <- function() {
+  return("qoc+7YRUCCK7BmOJrkzNRY6gKzXIGzPPR6IoefaZpOtPkEsKwO48vkCPM18G97Y9")
+}
+
