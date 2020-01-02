@@ -11,7 +11,8 @@
         model_txt = model_txt,
         data_txt = data_txt,
         name = "prueba"),
-    encode = "json"
+    encode = "json",
+    add_headers(api_key = .getApiKey())
     )
   if (!exists("remoteRuns")) { remoteRuns <<- c() }
   remoteRuns <<- c(remoteRuns, content(r, "parsed")$id)
@@ -25,7 +26,7 @@
 .PMremote_check <- function(rid, server_address) {
   library(httr)
   api_url <- paste0(server_address, "/api")
-  r <- GET(paste0(api_url, "/analysis/", rid, "/status"))
+  r <- GET(paste0(api_url, "/analysis/", rid, "/status"), add_headers(api_key = .getApiKey()))
   return(content(r, "parsed")$status)
 }
 
@@ -34,7 +35,7 @@ PMremote_outdata <- function(rid, server_address) {
   wd <- getwd()
   setwd(tempdir())
   api_url <- paste0(server_address, "/api")
-  r <- GET(paste0(api_url, "/analysis/", rid, "/outdata"))
+  r <- GET(paste0(api_url, "/analysis/", rid, "/outdata"), add_headers(api_key = .getApiKey()))
   fileConn <- file("enc_outdata.txt")
   writeLines(content(r, "parsed")$outdata, fileConn)
   close(fileConn)
