@@ -7,6 +7,7 @@ register_user <- function(email, password, server_address = "http://localhost:50
       body = list(
         email = email,
         password = password),
-    encode = "json"
+    encode = "json",
+    add_headers(api_key = "qoc+7YRUCCK7BmOJrkzNRY6gKzXIGzPPR6IoefaZpOtPkEsKwO48vkCPM18G97Y9")
     )
 }
