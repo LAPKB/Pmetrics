@@ -33,12 +33,12 @@ PMload <- function(run = 1, remote = F, server_address = "http://localhost:5000"
     if (!is.numeric(remote)) {
       return(PMremote_check(rid = remote, server_address = server_address))
     } else {
-      if (!exists("remoteRuns")) {
-        cat("Object remoteRuns was not found, please use the full id.\n")
-      } else if (length(remoteRuns) < remote || remote <= 0) {
+      if (!exists("PMremote")) {
+        cat("Object PMremote was not found, please use the full id.\n")
+      } else if (length(PMremote$runs) < remote || remote <= 0) {
         cat("Run number out of bounds.\n")
       } else {
-        return(.PMremote_check(rid = remoteRuns[remote], server_address = server_address))
+        return(.PMremote_check(rid = PMremote$runs[remote], server_address = server_address))
       }
     }
   } else {
