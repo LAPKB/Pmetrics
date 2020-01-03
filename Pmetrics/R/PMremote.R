@@ -35,7 +35,7 @@ login_user <- function(email, password, server_address = "http://localhost:5000"
   }
   r
 }
-r <- login_user("juliandavid347@gmail.com", "prueba1234")
+# r <- login_user("juliandavid347@gmail.com", "prueba1234")
 
 .PMremote_run <- function(model, data, server_address) {
 
@@ -54,6 +54,7 @@ r <- login_user("juliandavid347@gmail.com", "prueba1234")
     add_headers(api_key = .getApiKey())
     )
   .setupPMremote()
+  #TODO: Check r, is it possible to the user is not logged in, return the right message
   PMremote$runs <<- c(PMremote$runs, content(r, "parsed")$id)
   nRuns <- length(PMremote$runs)
   sprintf("Remote run #%d started successfuly, You can access this run's id using: PMremote$runs(%d).\n", nRuns, nRuns) %>%
