@@ -4,7 +4,15 @@
     cat("Checking for brew \n")
     if (system("which -s brew") != 0) {
       cat("Brew not found - Installing... \n")
-      system("ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"")
+      script = paste(system.file("", package = "Pmetrics"), "mac/install_homebrew.sh", sep = "/")
+      system(paste("chmod +x ", script))
+      system(paste0("open -a Terminal.app '", script, "'"))
+      #system("ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"")
+      input <- readline(prompt = "Pmetrics will install Homebrew Package manager in order to get all its dependencies.\n A new terminal will prompt asking for your password. \n Type [Y] WHEN the Homebrew installation finishes, anything else to abort. \n")
+        if (!(input == "Y" || input == "YES" || input == "Yes" || input == "y" || input == "yes")) {
+          cat("Installation aborted by the user.\n")
+          return(False)
+        }
     } else {
       cat("Brew found - Updating... \n")
       system("brew update")
