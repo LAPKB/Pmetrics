@@ -31,7 +31,7 @@
 PMload <- function(run = 1, remote = F, server_address = "http://localhost:5000", ...) {
   if (remote != F) {
     if (!is.numeric(remote)) {
-      return(PMremote_check(rid = remote, server_address = server_address))
+      return(.PMremote_check(rid = remote, server_address = server_address))
     } else {
       if (!exists("PMremote")) {
         cat("Object PMremote was not found, please use the full id.\n")
