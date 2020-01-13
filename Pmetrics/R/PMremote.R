@@ -27,13 +27,12 @@ login_user <- function(email, password, server_address = "http://localhost:5000"
     add_headers(api_key = .getApiKey())
     )
   if (r$status == 200) {
-    print("authorized")
+    cat("Authorized\n")
     .setupPMremote()
     PMremote$session_info <<- cookies(r)$value
   } else {
-    print("unauthorized")
+    cat("Unauthorized\n")
   }
-  r
 }
 # r <- login_user("juliandavid347@gmail.com", "prueba1234")
 
@@ -53,33 +52,68 @@ login_user <- function(email, password, server_address = "http://localhost:5000"
     encode = "json",
     add_headers(api_key = .getApiKey())
     )
-  .setupPMremote()
-  #TODO: Check r, is it possible to the user is not logged in, return the right message
-  PMremote$runs <<- c(PMremote$runs, content(r, "parsed")$id)
-  nRuns <- length(PMremote$runs)
-  sprintf("Remote run #%d started successfuly, You can access this run's id using: PMremote$runs(%d).\n", nRuns, nRuns) %>%
-  cat()
-  PMremote$runs[nRuns] %>%
-  return()
+  if (r$status == 200) {
+    .setupPMremote()
+    #TODO: Check r, is it possible to the user is not logged in, return the right message
+    PMremote$runs <<- c(PMremote$runs, content(r, "parsed")$id)
+    nRuns <- length(PMremote$runs)
+    sprintf("Remote run #%d started successfuly, You can access this run's id using: PMremote$runs(%d).\n", nRuns, nRuns) %>%
+    cat()
+    PMremote$runs[nRuns] %>%
+    return()
+  } else {
+    cat("You need to be logged in to perform this operation.\n")
+    return("Authentication error")
+  }
+
 }
 
 .PMremote_check <- function(rid, server_address) {
   library(httr)
   api_url <- paste0(server_address, "/api")
   r <- GET(paste0(api_url, "/analysis/", rid, "/status"), add_headers(api_key = .getApiKey()))
-  return(content(r, "parsed")$status)
+  if (r$status == 200) {
+    status <- content(r, "parsed")$status
+    if (status == "finished") {
+      cat("The run finished, fetching results from server...\n")
+      .PMremote_outdata(rid, server_address)
+    } else {
+      status
+    }
+  } else {
+    cat("You need to be logged in to perform this operation.\n")
+    return("Authentication error")
+  }
+
 }
 
-PMremote_outdata <- function(rid, server_address) {
+.PMremote_outdata <- function(rid, server_address) {
+  if (length(grep("base64enc", installed.packages()[, 1])) == 0) {
+    install.packages("base64enc", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
+  }
+  base64enc.installed <- require(base64enc)
   library(httr)
   wd <- getwd()
   setwd(tempdir())
   api_url <- paste0(server_address, "/api")
   r <- GET(paste0(api_url, "/analysis/", rid, "/outdata"), add_headers(api_key = .getApiKey()))
-  fileConn <- file("enc_outdata.txt")
-  writeLines(content(r, "parsed")$outdata, fileConn)
-  close(fileConn)
-  system("base64 --decode -i enc_outdata.txt -o outdata.Rdata")
-  load("outdata.Rdata", .GlobalEnv)
-  setwd(wd)
+  if (r$status == 200) {
+    cat("Results fetched, parsing...\n")
+    #fileConn <- file("enc_outdata.txt")
+    #writeLines(content(r, "parsed")$outdata, fileConn)
+    #close(fileConn)
+    #system("base64 --decode -i enc_outdata.txt -o outdata.Rdata")
+    #Windows : https://stackoverflow.com/questions/16945780/decoding-base64-in-batch
+    # Works!
+    out <- file("outdata.Rdata", "wb")
+    content(r, "parsed")$outdata %>%
+    base64decode(output = out)
+    close(out)
+
+    load("outdata.Rdata", .GlobalEnv)
+    setwd(wd)
+    cat("Parsed! NPAGout object created.\n")
+  } else {
+    cat("You need to be logged in to perform this operation.\n")
+  }
 }
