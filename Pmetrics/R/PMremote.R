@@ -1,4 +1,10 @@
-register_user <- function(email, password, password_confirmation, server_address = "http://localhost:5000") {
+PMregister <- function(email, server_address = "http://localhost:5000") {
+  if (length(grep("askpass", installed.packages()[, 1])) == 0) {
+    install.packages("askpass", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
+  }
+  askpass.installed <- require(askpass)
+  password <- askpass("Password: ")
+  password_confirmation <- askpass("Password Confirmation: ")
   library(httr)
   library(purrr)
   api_url <- paste0(server_address, "/api")
@@ -14,9 +20,14 @@ register_user <- function(email, password, password_confirmation, server_address
   content(r)
 }
 
-login_user <- function(email, password, server_address = "http://localhost:5000") {
+PMlogin <- function(email, server_address = "http://localhost:5000") {
+  if (length(grep("askpass", installed.packages()[, 1])) == 0) {
+    install.packages("askpass", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
+  }
+  askpass.installed <- require(askpass)
   library(httr)
   library(purrr)
+  password <- askpass("Password: ")
   api_url <- paste0(server_address, "/api")
   r <- POST(
       paste0(api_url, "/session/new"),
@@ -28,10 +39,23 @@ login_user <- function(email, password, server_address = "http://localhost:5000"
     )
   if (r$status == 200) {
     cat("Authorized\n")
-    .setupPMremote()
-    PMremote$session_info <<- cookies(r)$value
   } else {
     cat("Unauthorized\n")
+  }
+}
+
+PMlogout <- function(server_address = "http://localhost:5000") {
+  library(httr)
+  library(purrr)
+  api_url <- paste(server_address, "/api", sep = "")
+  r <- DELETE(
+    paste0(api_url, "/session")
+  )
+  if (r$status == 200) {
+    cat("Logged out.\n")
+  } else {
+    cat("Error.\n")
+    print(str(content(r)))
   }
 }
 # r <- login_user("juliandavid347@gmail.com", "prueba1234")

@@ -3,7 +3,7 @@
 .RData
 .Ruserdata
 .DS_Store
-
+Pmetrics.Rcheck/
 Pmetrics/man/*
 
 
