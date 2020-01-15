@@ -9,10 +9,10 @@
       system(paste0("open -a Terminal.app '", script, "'"))
       #system("ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"")
       input <- readline(prompt = "Pmetrics will install Homebrew Package manager in order to get all its dependencies.\n A new terminal will prompt asking for your password. \n Type [Y] WHEN the Homebrew installation finishes, anything else to abort. \n")
-        if (!(input == "Y" || input == "YES" || input == "Yes" || input == "y" || input == "yes")) {
-          cat("Installation aborted by the user.\n")
-          return(False)
-        }
+      if (!(input == "Y" || input == "YES" || input == "Yes" || input == "y" || input == "yes")) {
+        cat("Installation aborted by the user.\n")
+        return(False)
+      }
     } else {
       cat("Brew found - Updating... \n")
       system("brew update")
@@ -39,15 +39,15 @@
   }
   else if (OS == 3) {
     cat("Checking for build essentials \n")
-    if (system("which -s gcc") != 0) {
+    if (system("which gcc") != 0) {
       cat("Build essentials not found - Installing... \n")
-      system("sudo apt get install build-essentials")
+      system("sudo apt-get install build-essential")
     } else {
       cat("Build essentials found\n")
     }
 
     cat("Checking for gfortran \n")
-    if (system("which -s gfortran") != 0) {
+    if (system("which gfortran") != 0) {
       return(FALSE)
     } else {
       return(TRUE)
