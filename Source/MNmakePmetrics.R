@@ -75,7 +75,8 @@ makePmetrics <- function(fortranChange = F, build = T, pdf = F, check = F, build
     if (file.exists("Pmetrics/src/Pmetrics.so")) {
       file.remove("Pmetrics/src/Pmetrics.so")
     }
-    document("Pmetrics")
+    devtools::load_all("Pmetrics")
+    roxygen2::roxygenise("Pmetrics")
     if (pdf) {
       file.remove("./Pmetrics/inst/doc/Pmetrics-manual.pdf")
       system("R CMD Rd2pdf --output=./Pmetrics/inst/doc/Pmetrics-manual.pdf --no-preview ./Pmetrics/man")
