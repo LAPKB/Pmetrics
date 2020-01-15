@@ -51,6 +51,7 @@ PMlogout <- function(server_address = "http://localhost:5000") {
   r <- DELETE(
     paste0(api_url, "/session")
   )
+  handle_reset(server_address)
   if (r$status == 200) {
     cat("Logged out.\n")
   } else {
