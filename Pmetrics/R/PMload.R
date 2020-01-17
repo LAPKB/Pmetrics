@@ -92,7 +92,8 @@ PMload <- function(run = 1, ..., remote = F, server_address = "http://localhost:
     }
   }
   if (status == "finished") {
-    cat("The run finished, fetching results from server...\n")
+    sprintf("Remote run #%d finished successfuly.\n", run) %>%
+    cat()
     .PMremote_outdata(rid, server_address)
   }
   return(status)
