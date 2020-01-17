@@ -13,3 +13,5 @@ PACKAGES
 PACKAGES.gz
 PACKAGES.rds
 PMchangelog.html
+Pmetrics/src/Pmetrics.so
+Pmetrics/src/knn.o
