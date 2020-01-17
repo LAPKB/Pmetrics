@@ -28,54 +28,73 @@
 #' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}}, 
 #' \code{\link{makePop}}, \code{\link{makePost}}
 
-PMload <- function(run = 1, remote = F, server_address = "http://localhost:5000", ...) {
-  if (remote != F) {
-    if (!is.numeric(remote)) {
-      return(.PMremote_check(rid = remote, server_address = server_address))
-    } else {
-      if (!exists("PMremote")) {
-        cat("Object PMremote was not found, please use the full id.\n")
-      } else if (length(PMremote$runs) < remote || remote <= 0) {
-        cat("Run number out of bounds.\n")
+PMload <- function(run = 1, ..., remote = F, server_address = "http://localhost:5000") {
+  addlruns <- list(...)
+  if (length(addlruns) > 0) {
+    allruns <- c(run, unlist(addlruns))
+  } else { allruns <- run }
+  for (thisrun in allruns) {
+    #check for NPAG output file
+    filename <- "NPAGout.Rdata"
+    outfile <- paste(thisrun, "outputs", filename, sep = "/")
+    if (file.exists(outfile)) filename <- outfile
+    if (remote) {
+      status = .remoteLoad(thisrun)
+      if (status == "finished") {
+        .splitNPAGout(thisrun)
       } else {
-        return(.PMremote_check(rid = PMremote$runs[remote], server_address = server_address))
+        sprintf("Warning: Remote run #%d have not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
+        cat()
       }
-    }
-  } else {
-    addlruns <- list(...)
-    if (length(addlruns) > 0) {
-      allruns <- c(run, unlist(addlruns))
-    } else { allruns <- run }
-    for (thisrun in allruns) {
-      #check for NPAG output file
-      filename <- "NPAGout.Rdata"
+    } else if (file.exists(filename)) {
+      load(filename)
+      .splitNPAGout(thisrun)
+    } else {
+      #check for IT2B output file
+      filename <- "IT2Bout.Rdata"
       outfile <- paste(thisrun, "outputs", filename, sep = "/")
       if (file.exists(outfile)) filename <- outfile
       if (file.exists(filename)) {
         load(filename)
-        newNames <- paste(names(NPAGout), ".", as.character(thisrun), sep = "")
+        newNames <- paste(names(IT2Bout), ".", as.character(thisrun), sep = "")
         for (i in 1:length(newNames)) {
-          assign(newNames[i], NPAGout[[i]], pos = parent.frame())
+          assign(newNames[i], IT2Bout[[i]], pos = parent.frame())
         }
       } else {
-        #check for IT2B output file
-        filename <- "IT2Bout.Rdata"
-        outfile <- paste(thisrun, "outputs", filename, sep = "/")
-        if (file.exists(outfile)) filename <- outfile
-        if (file.exists(filename)) {
-          load(filename)
-          newNames <- paste(names(IT2Bout), ".", as.character(thisrun), sep = "")
-          for (i in 1:length(newNames)) {
-            assign(newNames[i], IT2Bout[[i]], pos = parent.frame())
-          }
-        } else {
-          cat(paste(filename, " not found in ", getwd(), "/", thisrun, "/outputs or ", getwd(), ".\n", sep = ""))
-          return(invisible(F)) #error, abort
-        }
+        cat(paste(filename, " not found in ", getwd(), "/", thisrun, "/outputs or ", getwd(), ".\n", sep = ""))
+        return(invisible(F)) #error, abort
       }
     }
-    #end thisrun loop
-    return(invisible(T)) #no errors
   }
+  #end thisrun loop
+  return(invisible(T)) #no errors
+
+}
+
+.splitNPAGout <- function(run) {
+  newNames <- paste(names(NPAGout), ".", as.character(run), sep = "")
+  for (i in 1:length(newNames)) {
+    assign(newNames[i], NPAGout[[i]], pos = parent.frame())
+  }
+}
+
+.remoteLoad <- function(run, server_address) {
+  status == ""
+  if (!is.numeric(run)) {
+    status = .PMremote_check(rid = run, server_address = server_address)
+  } else {
+    if (!exists("PMremote")) {
+      stop("Object PMremote was not found, please use the full id.\n")
+    } else if (length(PMremote$runs) < run || run <= 0) {
+      stop("Run number out of bounds.\n")
+    } else {
+      status = .PMremote_check(rid = PMremote$runs[run], server_address = server_address)
+    }
+  }
+  if (status == "finished") {
+    cat("The run finished, fetching results from server...\n")
+    .PMremote_outdata(rid, server_address)
+  }
+  return(status)
 }
 

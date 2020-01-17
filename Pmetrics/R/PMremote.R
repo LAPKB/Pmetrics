@@ -99,15 +99,10 @@ PMlogout <- function(server_address = "http://localhost:5000") {
   r <- GET(paste0(api_url, "/analysis/", rid, "/status"), add_headers(api_key = .getApiKey()))
   if (r$status == 200) {
     status <- content(r, "parsed")$status
-    if (status == "finished") {
-      cat("The run finished, fetching results from server...\n")
-      .PMremote_outdata(rid, server_address)
-    } else {
-      status
-    }
+    return(status)
   } else {
     cat("You need to be logged in to perform this operation.\n")
-    return("Authentication error")
+    stop("Authentication error")
   }
 
 }
@@ -127,16 +122,16 @@ PMlogout <- function(server_address = "http://localhost:5000") {
     #fileConn <- file("enc_outdata.txt")
     #writeLines(content(r, "parsed")$outdata, fileConn)
     #close(fileConn)
-    #system("base64 --decode -i enc_outdata.txt -o outdata.Rdata")
+    #system("base64 --decode -i enc_outdata.txt -o NPAGout.Rdata")
     #Windows : https://stackoverflow.com/questions/16945780/decoding-base64-in-batch
     # Works!
-    out <- file("outdata.Rdata", "wb")
+    system("rm NPAGout.Rdata")
+    out <- file("NPAGout.Rdata", "wb")
     content(r, "parsed")$outdata %>%
     base64decode(output = out)
     close(out)
-
-    load("outdata.Rdata", .GlobalEnv)
     setwd(wd)
+    load("NPAGout.Rdata", .GlobalEnv)
     cat("Parsed! NPAGout object created.\n")
   } else {
     cat("You need to be logged in to perform this operation.\n")
