@@ -115,6 +115,7 @@ PMlogout <- function(server_address = "http://localhost:5000") {
   library(httr)
   wd <- getwd()
   setwd(tempdir())
+  print(getwd())
   api_url <- paste0(server_address, "/api")
   r <- GET(paste0(api_url, "/analysis/", rid, "/outdata"), add_headers(api_key = .getApiKey()))
   if (r$status == 200) {
@@ -125,15 +126,15 @@ PMlogout <- function(server_address = "http://localhost:5000") {
     #system("base64 --decode -i enc_outdata.txt -o NPAGout.Rdata")
     #Windows : https://stackoverflow.com/questions/16945780/decoding-base64-in-batch
     # Works!
-    system("rm NPAGout.Rdata")
+    if (file.exists("NPAGout.Rdata")) { system("rm NPAGout.Rdata") }
     out <- file("NPAGout.Rdata", "wb")
     content(r, "parsed")$outdata %>%
     base64decode(output = out)
     close(out)
-    setwd(wd)
     load("NPAGout.Rdata", .GlobalEnv)
     cat("Parsed! NPAGout object created.\n")
   } else {
     cat("You need to be logged in to perform this operation.\n")
   }
+  setwd(wd)
 }
