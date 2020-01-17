@@ -10,3 +10,8 @@ Rscript -e '
 library(Rserve)
 Rserve()'
 
+cd
+
+Rscript -e '
+library(Pmetrics)'
+
