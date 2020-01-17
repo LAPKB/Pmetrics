@@ -39,7 +39,7 @@ PMload <- function(run = 1, ..., remote = F, server_address = "http://localhost:
     outfile <- paste(thisrun, "outputs", filename, sep = "/")
     if (file.exists(outfile)) filename <- outfile
     if (remote) {
-      status = .remoteLoad(thisrun)
+      status = .remoteLoad(thisrun, server_address)
       if (status == "finished") {
         .splitNPAGout(thisrun)
       } else {
@@ -58,7 +58,7 @@ PMload <- function(run = 1, ..., remote = F, server_address = "http://localhost:
         load(filename)
         newNames <- paste(names(IT2Bout), ".", as.character(thisrun), sep = "")
         for (i in 1:length(newNames)) {
-          assign(newNames[i], IT2Bout[[i]], pos = parent.frame())
+          assign(newNames[i], IT2Bout[[i]], pos = parent.frame(), envir = .GlobalEnv)
         }
       } else {
         cat(paste(filename, " not found in ", getwd(), "/", thisrun, "/outputs or ", getwd(), ".\n", sep = ""))
@@ -72,16 +72,22 @@ PMload <- function(run = 1, ..., remote = F, server_address = "http://localhost:
 }
 
 .splitNPAGout <- function(run) {
+  print(run)
   newNames <- paste(names(NPAGout), ".", as.character(run), sep = "")
   for (i in 1:length(newNames)) {
-    assign(newNames[i], NPAGout[[i]], pos = parent.frame())
+    assign(newNames[i], NPAGout[[i]], pos = parent.frame(), envir = .GlobalEnv)
   }
 }
 
 .remoteLoad <- function(run, server_address) {
-  status == ""
+  status = ""
   if (!is.numeric(run)) {
     status = .PMremote_check(rid = run, server_address = server_address)
+    if (status == "finished") {
+      sprintf("Remote run #%d finished successfuly.\n", run) %>%
+    cat()
+      .PMremote_outdata(run, server_address)
+    }
   } else {
     if (!exists("PMremote")) {
       stop("Object PMremote was not found, please use the full id.\n")
@@ -89,13 +95,14 @@ PMload <- function(run = 1, ..., remote = F, server_address = "http://localhost:
       stop("Run number out of bounds.\n")
     } else {
       status = .PMremote_check(rid = PMremote$runs[run], server_address = server_address)
+      if (status == "finished") {
+        sprintf("Remote run #%d finished successfuly.\n", run) %>%
+        cat()
+        .PMremote_outdata(PMremote$runs[run], server_address)
+      }
     }
   }
-  if (status == "finished") {
-    sprintf("Remote run #%d finished successfuly.\n", run) %>%
-    cat()
-    .PMremote_outdata(rid, server_address)
-  }
+
   return(status)
 }
 
