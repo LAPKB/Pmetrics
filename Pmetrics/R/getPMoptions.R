@@ -14,23 +14,24 @@
 
 
 
-getPMoptions <- function(opt){
+getPMoptions <- function(opt) {
   require(rjson)
   #options file name
-  PMoptionsFile <- paste(path.package("Pmetrics"),"/PMoptions.json",sep="")
+  PMoptionsFile <- paste(path.package("Pmetrics"), "/PMoptions.json", sep = "")
   #if it doesn't exist, create it with defaults
-  if(!file.exists(PMoptionsFile)){
-    PMopts <- list(sep=",",
-                   dec=".")
+  if (!file.exists(PMoptionsFile)) {
+    PMopts <- list(sep = ",",
+                   dec = ".",
+                   server_address = "http://localhost:5000")
     options(PMopts)
-    writeLines(toJSON(PMopts),PMoptionsFile) 
+    writeLines(toJSON(PMopts), PMoptionsFile)
   }
   #read the options file
-  PMopts <- fromJSON(file=PMoptionsFile)
-  if(missing(opt)){
+  PMopts <- fromJSON(file = PMoptionsFile)
+  if (missing(opt)) {
     return(PMopts)
   } else {
-    index <- which(names(PMopts)==opt)
-    if(length(index)==0){return(NULL)} else {return(PMopts[[index]])}
+    index <- which(names(PMopts) == opt)
+    if (length(index) == 0) { return(NULL) } else { return(PMopts[[index]]) }
   }
 }

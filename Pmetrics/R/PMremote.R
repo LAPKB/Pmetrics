@@ -1,7 +1,8 @@
-PMregister <- function(email, server_address = "http://localhost:5000") {
+PMregister <- function(email, server_address) {
   if (length(grep("askpass", installed.packages()[, 1])) == 0) {
     install.packages("askpass", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
   }
+  if (missing(server_address)) server_address <- getPMoptions("server_address")
   askpass.installed <- require(askpass)
   password <- askpass("Password: ")
   password_confirmation <- askpass("Password Confirmation: ")
@@ -20,10 +21,11 @@ PMregister <- function(email, server_address = "http://localhost:5000") {
   content(r)
 }
 
-PMlogin <- function(email, server_address = "http://localhost:5000") {
+PMlogin <- function(email, server_address) {
   if (length(grep("askpass", installed.packages()[, 1])) == 0) {
     install.packages("askpass", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
   }
+  if (missing(server_address)) server_address <- getPMoptions("server_address")
   askpass.installed <- require(askpass)
   library(httr)
   library(purrr)
@@ -44,9 +46,10 @@ PMlogin <- function(email, server_address = "http://localhost:5000") {
   }
 }
 
-PMlogout <- function(server_address = "http://localhost:5000") {
+PMlogout <- function() {
   library(httr)
   library(purrr)
+  if (missing(server_address)) server_address <- getPMoptions("server_address")
   api_url <- paste(server_address, "/api", sep = "")
   r <- DELETE(
     paste0(api_url, "/session")
@@ -62,7 +65,7 @@ PMlogout <- function(server_address = "http://localhost:5000") {
 # r <- login_user("juliandavid347@gmail.com", "prueba1234")
 
 .PMremote_run <- function(model, data, server_address) {
-
+  if (missing(server_address)) server_address <- getPMoptions("server_address")
   library(httr)
   library(purrr)
   api_url <- paste(server_address, "/api", sep = "")
