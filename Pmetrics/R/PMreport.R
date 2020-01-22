@@ -94,7 +94,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   # success <- file.info(c("NP_RF0001.TXT", "IT_RF0001.TXT")[reportType])$size >= 1000
 
   if (success) {
-    PMdata <- rdata$PMdata
+    PMdata <- rdata$NPdata
     #run completed
     #open and parse the output
     if (reportType == 1) {
@@ -471,12 +471,12 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
 
     #make the covariate object but not included in report
     # cov <- suppressWarnings(tryCatch(makeCov(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of covariate-parameter data; 'PMcov' object not saved.\n\n") }))
-    # if (!all(is.null(final))) {
-    #   write.csv(report.table, "popparam.csv", row.names = T)
-    #   if (reportType == 1) { write.csv(final$popPoints, "poppoints.csv", row.names = T) }
-    #   write.csv(final$popCov, "popcov.csv", row.names = T)
-    #   write.csv(final$popCor, "popcor.csv", row.names = T)
-    # }
+    if (!all(is.null(final))) {
+      write.csv(report.table, "popparam.csv", row.names = T)
+      if (reportType == 1) { write.csv(final$popPoints, "poppoints.csv", row.names = T) }
+      write.csv(final$popCov, "popcov.csv", row.names = T)
+      write.csv(final$popCor, "popcor.csv", row.names = T)
+    }
     # if (PMdata$mdata != "NA") { mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T) } else { mdata <- NA }
 
     #summary of saved objects
@@ -540,19 +540,11 @@ makeRdata <- function(wd, reportType = 1) {
     cat("\n\n")
     flush.console()
     if (is.null(PMdata$nranfix)) PMdata$nranfix <- 0
-
     op <- suppressWarnings(tryCatch(makeOP(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of observed vs. population predicted data; 'PMop' object not saved.\n\n") }))
     cycle <- suppressWarnings(tryCatch(makeCycle(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of cycle information; 'PMcycle' object not saved.\n\n") }))
     final <- suppressWarnings(tryCatch(makeFinal(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of final cycle parameter values; 'PMfinal' object not saved.\n\n") }))
-
     if (PMdata$mdata != "NA") { mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T) } else { mdata <- NA }
     cov <- suppressWarnings(tryCatch(makeCov(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of covariate-parameter data; 'PMcov' object not saved.\n\n") }))
-    if (!all(is.null(final))) {
-      write.csv(report.table, "popparam.csv", row.names = T)
-      if (reportType == 1) { write.csv(final$popPoints, "poppoints.csv", row.names = T) }
-      write.csv(final$popCov, "popcov.csv", row.names = T)
-      write.csv(final$popCor, "popcor.csv", row.names = T)
-    }
     if (PMdata$mdata != "NA") { mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T) } else { mdata <- NA }
 
     cat(paste("\n\n\nSaving R data objects to ", wd, "......\n\n", sep = ""))
