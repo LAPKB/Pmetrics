@@ -40,9 +40,9 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   xtable.installed <- require(xtable)
 
   setwd(wd)
-  if (missing(rdata)) rdata <- .makeRdata(reportType)
-  
-  
+  if (missing(rdata)) rdata <- makeRdata(wd, reportType)
+
+
   #get elapsed time if available
   if (file.exists("time.txt")) {
     execTime <- readLines("time.txt")
@@ -86,27 +86,32 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   writeHTML("</div>") #end header wrap
 
   #check for error file
-  errfile <- list.files(pattern = "^ERROR")
+  errfile <- rdata$errfile
+  # errfile <- list.files(pattern = "^ERROR")
   error <- length(errfile) > 0
-  #see if NP_RF or IT_RF made anyway (i.e. is >1MB in size)
-  success <- file.info(c("NP_RF0001.TXT", "IT_RF0001.TXT")[reportType])$size >= 1000
+  # #see if NP_RF or IT_RF made anyway (i.e. is >1MB in size)
+  success <- rdata$success
+  # success <- file.info(c("NP_RF0001.TXT", "IT_RF0001.TXT")[reportType])$size >= 1000
 
   if (success) {
+    PMdata <- rdata$PMdata
     #run completed
     #open and parse the output
     if (reportType == 1) {
-      #only for NPAG
-      PMdata <- suppressWarnings(tryCatch(NPparse(), error = function(e) { e <- NULL; cat("\nWARNING: The run did not complete successfully.\n") }))
-      #make the posterior predictions
-      post <- suppressWarnings(tryCatch(makePost(NPdata = PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of posterior Bayesian predictions at time ttpred; 'PMpost' object not saved.\n\n") }))
-      #make the population predictions
-      pop <- suppressWarnings(tryCatch(makePop(NPdata = PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of population predictions at time tpred; 'PMpop' object not saved.\n\n") }))
-    } else {
-      PMdata <- suppressWarnings(tryCatch(ITparse(), error = function(e) { e <- NULL; cat("\nWARNING: The run did not complete successfully.\n") }))
+      post <- rdata$post
+      pop <- rdata$pop
+      #   #only for NPAG
+      #   PMdata <- suppressWarnings(tryCatch(NPparse(), error = function(e) { e <- NULL; cat("\nWARNING: The run did not complete successfully.\n") }))
+      #   #make the posterior predictions
+      #   post <- suppressWarnings(tryCatch(makePost(NPdata = PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of posterior Bayesian predictions at time ttpred; 'PMpost' object not saved.\n\n") }))
+      #   #make the population predictions
+      #   pop <- suppressWarnings(tryCatch(makePop(NPdata = PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of population predictions at time tpred; 'PMpop' object not saved.\n\n") }))
+      # } else {
+      #   PMdata <- suppressWarnings(tryCatch(ITparse(), error = function(e) { e <- NULL; cat("\nWARNING: The run did not complete successfully.\n") }))
     }
-    cat("\n\n")
-    flush.console()
-    if (is.null(PMdata$nranfix)) PMdata$nranfix <- 0
+    # cat("\n\n")
+    # flush.console()
+    # if (is.null(PMdata$nranfix)) PMdata$nranfix <- 0
 
 
     #HTML body
@@ -118,7 +123,8 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
     writeHTML("<label for=\"tab1\">Obs-Pred Plots</label>")
     writeHTML("<div id=\"tab-content1\" class=\"tab-content\">")
     #Plot
-    op <- suppressWarnings(tryCatch(makeOP(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of observed vs. population predicted data; 'PMop' object not saved.\n\n") }))
+    op <- rdata$op
+    #op <- suppressWarnings(tryCatch(makeOP(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of observed vs. population predicted data; 'PMop' object not saved.\n\n") }))
     for (i in 1:PMdata$numeqt) {
       if (!all(is.null(op))) {
         OPpng <- paste("op", i, ".png", sep = "")
@@ -153,7 +159,8 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
     writeHTML("<div id=\"tab-content2\" class=\"tab-content\">")
     #icycle plot
     if (PMdata$icyctot > 0) {
-      cycle <- suppressWarnings(tryCatch(makeCycle(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of cycle information; 'PMcycle' object not saved.\n\n") }))
+      cycle <- rdata$cycle
+      #cycle <- suppressWarnings(tryCatch(makeCycle(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of cycle information; 'PMcycle' object not saved.\n\n") }))
       if (!all(is.null(cycle))) {
         pdf(file = "cycle.pdf", width = 12, height = 10);
         plot(cycle, cex.lab = 1.5, cex.axis = 1.5, cex.main = 2);
@@ -176,7 +183,8 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
     writeHTML("<label for=\"tab3\">Marginal Plots</label>")
     writeHTML("<div id=\"tab-content3\" class=\"tab-content\">")
     #marginals
-    final <- suppressWarnings(tryCatch(makeFinal(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of final cycle parameter values; 'PMfinal' object not saved.\n\n") }))
+    final <- rdata$final
+    #final <- suppressWarnings(tryCatch(makeFinal(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of final cycle parameter values; 'PMfinal' object not saved.\n\n") }))
     if (!all(is.null(final))) {
       pdf(file = "final.pdf", width = 12, height = 4 * ceiling(PMdata$nvar / 3));
       plot(final, cex.lab = 1.5, cex.main = 2, cex.axis = 1.5);
@@ -462,36 +470,36 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
 
 
     #make the covariate object but not included in report
-    cov <- suppressWarnings(tryCatch(makeCov(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of covariate-parameter data; 'PMcov' object not saved.\n\n") }))
-    if (!all(is.null(final))) {
-      write.csv(report.table, "popparam.csv", row.names = T)
-      if (reportType == 1) { write.csv(final$popPoints, "poppoints.csv", row.names = T) }
-      write.csv(final$popCov, "popcov.csv", row.names = T)
-      write.csv(final$popCor, "popcor.csv", row.names = T)
-    }
-    if (PMdata$mdata != "NA") { mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T) } else { mdata <- NA }
+    # cov <- suppressWarnings(tryCatch(makeCov(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of covariate-parameter data; 'PMcov' object not saved.\n\n") }))
+    # if (!all(is.null(final))) {
+    #   write.csv(report.table, "popparam.csv", row.names = T)
+    #   if (reportType == 1) { write.csv(final$popPoints, "poppoints.csv", row.names = T) }
+    #   write.csv(final$popCov, "popcov.csv", row.names = T)
+    #   write.csv(final$popCor, "popcor.csv", row.names = T)
+    # }
+    # if (PMdata$mdata != "NA") { mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T) } else { mdata <- NA }
 
     #summary of saved objects
-    cat(paste("\n\n\nSaving R data objects to ", wd, "......\n\n", sep = ""))
-    cat("\nUse PMload() to load them.\n")
-    cat("\nThe following objects have been saved:\n")
-    cat(c("\nNPdata: All output from NPAG\n", "\nITdata: All output from IT2B\n")[reportType])
-    if (reportType == 1 && !all(is.null(pop))) cat("pop: Population predictions at regular, frequent intervals\n")
-    if (reportType == 1 && !all(is.null(post))) cat("post: Posterior predictions at regular, frequent inteverals\n")
-    if (!all(is.null(final))) cat("final: Final cycle parameters and summary statistics\n")
-    if (!all(is.null(cycle))) cat("cycle: Cycle information\n")
-    if (!all(is.null(op))) cat("op: Observed vs. population and posterior predicted\n")
-    if (!all(is.null(cov))) cat("cov: Individual covariates and Bayesian posterior parameters\n")
-    if (length(mdata) > 1) cat("mdata: The data file used for the run\n")
+    # cat(paste("\n\n\nSaving R data objects to ", wd, "......\n\n", sep = ""))
+    # cat("\nUse PMload() to load them.\n")
+    # cat("\nThe following objects have been saved:\n")
+    # cat(c("\nNPdata: All output from NPAG\n", "\nITdata: All output from IT2B\n")[reportType])
+    # if (reportType == 1 && !all(is.null(pop))) cat("pop: Population predictions at regular, frequent intervals\n")
+    # if (reportType == 1 && !all(is.null(post))) cat("post: Posterior predictions at regular, frequent inteverals\n")
+    # if (!all(is.null(final))) cat("final: Final cycle parameters and summary statistics\n")
+    # if (!all(is.null(cycle))) cat("cycle: Cycle information\n")
+    # if (!all(is.null(op))) cat("op: Observed vs. population and posterior predicted\n")
+    # if (!all(is.null(cov))) cat("cov: Individual covariates and Bayesian posterior parameters\n")
+    # if (length(mdata) > 1) cat("mdata: The data file used for the run\n")
 
-    if (reportType == 1) {
-      NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata)
-      save(NPAGout, file = "NPAGout.Rdata")
-    }
-    if (reportType == 2) {
-      IT2Bout <- list(ITdata = PMdata, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata)
-      save(IT2Bout, file = "IT2Bout.Rdata")
-    }
+    # if (reportType == 1) {
+    #   NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata)
+    #   save(NPAGout, file = "NPAGout.Rdata")
+    # }
+    # if (reportType == 2) {
+    #   IT2Bout <- list(ITdata = PMdata, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata)
+    #   save(IT2Bout, file = "IT2Bout.Rdata")
+    # }
 
     return(invisible(NULL))
   } else {
@@ -509,8 +517,67 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
 }
 #end function
 
-.makeRdata <- function(reportType = 1){
+makeRdata <- function(wd, reportType = 1) {
+  setwd(wd)
+  errfile <- list.files(pattern = "^ERROR")
+  #error <- length(errfile) > 0
+  #see if NP_RF or IT_RF made anyway (i.e. is >1MB in size)
+  success <- file.info(c("NP_RF0001.TXT", "IT_RF0001.TXT")[reportType])$size >= 1000
 
+  if (success) {
+    #run completed
+    #open and parse the output
+    if (reportType == 1) {
+      #only for NPAG
+      PMdata <- suppressWarnings(tryCatch(NPparse(), error = function(e) { e <- NULL; cat("\nWARNING: The run did not complete successfully.\n") }))
+      #make the posterior predictions
+      post <- suppressWarnings(tryCatch(makePost(NPdata = PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of posterior Bayesian predictions at time ttpred; 'PMpost' object not saved.\n\n") }))
+      #make the population predictions
+      pop <- suppressWarnings(tryCatch(makePop(NPdata = PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of population predictions at time tpred; 'PMpop' object not saved.\n\n") }))
+    } else {
+      PMdata <- suppressWarnings(tryCatch(ITparse(), error = function(e) { e <- NULL; cat("\nWARNING: The run did not complete successfully.\n") }))
+    }
+    cat("\n\n")
+    flush.console()
+    if (is.null(PMdata$nranfix)) PMdata$nranfix <- 0
+
+    op <- suppressWarnings(tryCatch(makeOP(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of observed vs. population predicted data; 'PMop' object not saved.\n\n") }))
+    cycle <- suppressWarnings(tryCatch(makeCycle(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of cycle information; 'PMcycle' object not saved.\n\n") }))
+    final <- suppressWarnings(tryCatch(makeFinal(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of final cycle parameter values; 'PMfinal' object not saved.\n\n") }))
+
+    if (PMdata$mdata != "NA") { mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T) } else { mdata <- NA }
+    cov <- suppressWarnings(tryCatch(makeCov(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of covariate-parameter data; 'PMcov' object not saved.\n\n") }))
+    if (!all(is.null(final))) {
+      write.csv(report.table, "popparam.csv", row.names = T)
+      if (reportType == 1) { write.csv(final$popPoints, "poppoints.csv", row.names = T) }
+      write.csv(final$popCov, "popcov.csv", row.names = T)
+      write.csv(final$popCor, "popcor.csv", row.names = T)
+    }
+    if (PMdata$mdata != "NA") { mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T) } else { mdata <- NA }
+
+    cat(paste("\n\n\nSaving R data objects to ", wd, "......\n\n", sep = ""))
+    cat("\nUse PMload() to load them.\n")
+    cat("\nThe following objects have been saved:\n")
+    cat(c("\nNPdata: All output from NPAG\n", "\nITdata: All output from IT2B\n")[reportType])
+    if (reportType == 1 && !all(is.null(pop))) cat("pop: Population predictions at regular, frequent intervals\n")
+    if (reportType == 1 && !all(is.null(post))) cat("post: Posterior predictions at regular, frequent inteverals\n")
+    if (!all(is.null(final))) cat("final: Final cycle parameters and summary statistics\n")
+    if (!all(is.null(cycle))) cat("cycle: Cycle information\n")
+    if (!all(is.null(op))) cat("op: Observed vs. population and posterior predicted\n")
+    if (!all(is.null(cov))) cat("cov: Individual covariates and Bayesian posterior parameters\n")
+    if (length(mdata) > 1) cat("mdata: The data file used for the run\n")
+
+    if (reportType == 1) {
+      NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata, errfile = errfile, success = success)
+      save(NPAGout, file = "NPAGout.Rdata")
+      return(NPAGout)
+    }
+    if (reportType == 2) {
+      IT2Bout <- list(ITdata = PMdata, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata, errfile = errfile, success = success)
+      save(IT2Bout, file = "IT2Bout.Rdata")
+      return(IT2Bout)
+    }
+  }
 }
 
 
