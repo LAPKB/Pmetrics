@@ -97,7 +97,11 @@
 }
 
 .is_fortran_installed <- function() {
-  library(purrr)
+  if (length(grep("purrr", installed.packages()[, 1])) == 0) {
+    install.packages("purrr", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
+  }
+  purrr.installed <- require(purrr)
+  #library(purrr)
   exists <- function(name) {
     paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/") %>%
     paste(name, sep = "/") %>%
