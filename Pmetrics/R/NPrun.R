@@ -92,7 +92,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
                   indpts, icen = "median", aucint,
                   idelta = 12, prior,
                   auto = T, intern = F, silent = F, overwrite = F, nocheck = F, parallel = NA, batch = F,
-                  alq = F, remote = F, server_address = "http://localhost:5000") {
+                  alq = F, remote = F, server_address) {
 
   if (missing(run)) run <- NULL
   if (missing(include)) include <- NULL
@@ -101,6 +101,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
   if (missing(indpts)) indpts <- NULL
   if (missing(aucint)) aucint <- NULL
   if (missing(prior)) prior <- NULL
+  if (missing(server_address)) server_address <- getPMoptions("server_address")
   if (remote == T) {
     return(.PMremote_run(model = model, data = data, server_address = server_address, run))
   } else {
