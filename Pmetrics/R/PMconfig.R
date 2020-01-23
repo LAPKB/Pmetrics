@@ -29,10 +29,4 @@ getFixedColNum <- function() {
   return("qoc+7YRUCCK7BmOJrkzNRY6gKzXIGzPPR6IoefaZpOtPkEsKwO48vkCPM18G97Y9")
 }
 
-# .setupPMremote <- function() {
-#   if (!exists("PMremote")) {
-#     PMremote <<- { }
-#     PMremote$remoteRuns <<- c()
-#   }
-# }
 
