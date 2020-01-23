@@ -103,6 +103,7 @@ PMlogout <- function() {
     dir.create(paste(newdir, "outputs", sep = "/"))
     inputFiles <- c(model, data) #list.files(getwd(), "txt|csv")
     file.copy(inputFiles, paste(newdir, "inputs", sep = "/"))
+    file.remove(inputFiles)
     setwd(paste(newdir, "inputs", sep = "/"))
     #END same code PMrun
     sprintf("Remote run #%s started successfuly, You can access this run's id using: PMload(id).\n Id can be the full id string or the run number.\n", newdir, newdir) %>%
