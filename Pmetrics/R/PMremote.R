@@ -68,7 +68,6 @@ PMlogout <- function() {
 # r <- login_user("juliandavid347@gmail.com", "prueba1234")
 
 .PMremote_run <- function(model, data, server_address, run) {
-  if (missing(server_address)) server_address <- getPMoptions("server_address")
   library(httr)
   library(purrr)
   api_url <- paste(server_address, "/api", sep = "")
