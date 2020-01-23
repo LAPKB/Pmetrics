@@ -28,7 +28,8 @@
 #' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}}, 
 #' \code{\link{makePop}}, \code{\link{makePost}}
 
-PMload <- function(run = 1, ..., remote = F, server_address = "http://localhost:5000") {
+PMload <- function(run = 1, ..., remote = F, server_address) {
+  if (missing(server_address)) server_address <- getPMoptions("server_address")
   addlruns <- list(...)
   if (length(addlruns) > 0) {
     allruns <- c(run, unlist(addlruns))
@@ -85,7 +86,7 @@ PMload <- function(run = 1, ..., remote = F, server_address = "http://localhost:
     status = .PMremote_check(rid = run, server_address = server_address)
     if (status == "finished") {
       sprintf("Remote run #%d finished successfuly.\n", run) %>%
-    cat()
+      cat()
       .PMremote_outdata(run, server_address)
     }
   } else {
@@ -104,5 +105,11 @@ PMload <- function(run = 1, ..., remote = F, server_address = "http://localhost:
   }
 
   return(status)
+}
+
+.getRemoteId <- function(id) {
+  id <- toString(id)
+  fileName <- 'id.txt'
+  return(readChar(fileName, file.info(fileName)$size))
 }
 

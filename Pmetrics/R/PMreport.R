@@ -517,7 +517,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
 }
 #end function
 
-makeRdata <- function(wd, reportType = 1) {
+makeRdata <- function(wd, alq, reportType = 1) {
   setwd(wd)
   errfile <- list.files(pattern = "^ERROR")
   #error <- length(errfile) > 0
@@ -559,14 +559,22 @@ makeRdata <- function(wd, reportType = 1) {
     if (!all(is.null(cov))) cat("cov: Individual covariates and Bayesian posterior parameters\n")
     if (length(mdata) > 1) cat("mdata: The data file used for the run\n")
 
+
     if (reportType == 1) {
       NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata, errfile = errfile, success = success)
       save(NPAGout, file = "NPAGout.Rdata")
+      #Hacky return to deal with Rservex bug T.T
+      if (alq) {
+        return("ok")
+      }
       return(NPAGout)
     }
     if (reportType == 2) {
       IT2Bout <- list(ITdata = PMdata, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata, errfile = errfile, success = success)
       save(IT2Bout, file = "IT2Bout.Rdata")
+      if (alq) {
+        return("ok")
+      }
       return(IT2Bout)
     }
   }
