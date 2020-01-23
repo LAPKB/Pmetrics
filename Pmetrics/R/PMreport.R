@@ -41,6 +41,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
 
   setwd(wd)
   if (missing(rdata)) rdata <- makeRdata(wd, reportType)
+  print(str(rdata))
 
 
   #get elapsed time if available
