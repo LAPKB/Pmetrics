@@ -25,6 +25,7 @@ PMlogin <- function(email, server_address) {
   if (length(grep("askpass", installed.packages()[, 1])) == 0) {
     install.packages("askpass", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
   }
+  if (missing(email)) email <- readline("please type your email: ")
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   askpass.installed <- require(askpass)
   library(httr)
@@ -41,8 +42,10 @@ PMlogin <- function(email, server_address) {
     )
   if (r$status == 200) {
     cat("Authorized\n")
+    return(T)
   } else {
     cat("Unauthorized\n")
+    return(F)
   }
 }
 
@@ -81,22 +84,52 @@ PMlogout <- function() {
     add_headers(api_key = .getApiKey())
     )
   if (r$status == 200) {
-    .setupPMremote()
-    #TODO: Check r, is it possible to the user is not logged in, return the right message
-    PMremote$runs <<- c(PMremote$runs, content(r, "parsed")$id)
-    nRuns <- length(PMremote$runs)
-    sprintf("Remote run #%d started successfuly, You can access this run's id using: PMremote$runs(%d).\n", nRuns, nRuns) %>%
+    inputFiles <- list.files(getwd(), "txt|csv")
+    #The same code in PMrun
+    currwd <- getwd()
+    if (is.null(run)) {
+      olddir <- list.dirs(recursive = F)
+      olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
+      olddir <- sub("^\\./", "", olddir)
+      if (length(olddir) > 0) {
+        newdir <- as.character(max(as.numeric(olddir)) + 1)
+      } else { newdir <- "1" }
+    } else {
+      if (!is.numeric(run)) { endNicely("'run' must be numeric.\n") } else { newdir <- as.character(run) }
+    }
+    if (file.exists(newdir)) {
+      if (overwrite) { unlink(newdir, recursive = T) } else { endNicely(paste("\n", newdir, " exists already.  Set overwrite=T to overwrite.\n")) }
+    }
+    dir.create(newdir)
+    setwd(newdir)
+    #END same code PMrun
+    sprintf("Remote run #%d started successfuly, You can access this run's id using: PMload(id).\n Id can be the full id string or the run number.\n", newdir, newdir) %>%
     cat()
-    PMremote$runs[nRuns] %>%
+    dir.create("inputs")
+    dir.create("outputs")
+    file.copy(inputFiles, "inputs")
+    setwd("inputs")
+    fileConn <- file("id.txt")
+    writeLines(content(r, "parsed")$id, fileConn)
+    close(fileConn)
+    setwd(currwd)
+    content(r, "parsed")$id %>%
     return()
   } else {
     cat("You need to be logged in to perform this operation.\n")
-    return("Authentication error")
+
+    if (PMlogin()) {
+      .PMremote_run(model, data, server_address)
+    } else {
+      cat("Authentication error\n")
+    }
+
   }
 
 }
 
 .PMremote_check <- function(rid, server_address) {
+  if (missing(server_address)) server_address <- getPMoptions("server_address")
   library(httr)
   api_url <- paste0(server_address, "/api")
   r <- GET(paste0(api_url, "/analysis/", rid, "/status"), add_headers(api_key = .getApiKey()))
@@ -114,6 +147,7 @@ PMlogout <- function() {
   if (length(grep("base64enc", installed.packages()[, 1])) == 0) {
     install.packages("base64enc", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
   }
+  if (missing(server_address)) server_address <- getPMoptions("server_address")
   base64enc.installed <- require(base64enc)
   library(httr)
   wd <- getwd()
@@ -137,7 +171,7 @@ PMlogout <- function() {
     load("NPAGout.Rdata", .GlobalEnv)
     cat("Parsed! NPAGout object created.\n")
   } else {
-    cat("You need to be logged in to perform this operation.\n")
+    cat("You need to be logged in to perform this operation.\nUse PMlogin() and try again.")
   }
   setwd(wd)
 }
