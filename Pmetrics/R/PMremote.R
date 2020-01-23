@@ -109,7 +109,7 @@ PMlogout <- function() {
     sprintf("Remote run #%s started successfuly, You can access this run's id using: PMload(id).\n Id can be the full id string or the run number.\n", newdir, newdir) %>%
     cat()
     fileConn <- file("id.txt")
-    writeLines(content(r, "parsed")$id, fileConn)
+    write(content(r, "parsed")$id, fileConn)
     close(fileConn)
     setwd(currwd)
     content(r, "parsed")$id %>%
@@ -131,7 +131,8 @@ PMlogout <- function() {
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   library(httr)
   api_url <- paste0(server_address, "/api")
-  r <- GET(paste0(api_url, "/analysis/", rid, "/status"), add_headers(api_key = .getApiKey()))
+  request_url <- paste0(api_url, "/analysis/", rid, "/status")
+  r <- GET(request_url, add_headers(api_key = .getApiKey()))
   if (r$status == 200) {
     status <- content(r, "parsed")$status
     return(status)
@@ -142,16 +143,16 @@ PMlogout <- function() {
 
 }
 
-.PMremote_outdata <- function(rid, server_address) {
+.PMremote_outdata <- function(run, server_address) {
   if (length(grep("base64enc", installed.packages()[, 1])) == 0) {
     install.packages("base64enc", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
   }
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   base64enc.installed <- require(base64enc)
   library(httr)
+  rid <- .getRemoteId(run)
   wd <- getwd()
-  setwd(tempdir())
-  print(getwd())
+  setwd(paste(run, "outputs", sep = "/"))
   api_url <- paste0(server_address, "/api")
   r <- GET(paste0(api_url, "/analysis/", rid, "/outdata"), add_headers(api_key = .getApiKey()))
   if (r$status == 200) {
@@ -168,6 +169,10 @@ PMlogout <- function() {
     base64decode(output = out)
     close(out)
     load("NPAGout.Rdata", .GlobalEnv)
+    PMreport(getwd(), rdata = NPAGout) #TODO: check if this works with multiple PMload inputs
+    OS <- getOS() #1 Mac, 2 Windows, 3 Linux
+    command <- c("open", "start", "xdg-open")[OS]
+    system(paste(command, "NPAGreport.html"))
     cat("Parsed! NPAGout object created.\n")
   } else {
     cat("You need to be logged in to perform this operation.\nUse PMlogin() and try again.")
