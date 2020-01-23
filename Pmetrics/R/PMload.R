@@ -90,26 +90,27 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
       .PMremote_outdata(run, server_address)
     }
   } else {
-    if (!exists("PMremote")) {
-      stop("Object PMremote was not found, please use the full id.\n")
-    } else if (length(PMremote$runs) < run || run <= 0) {
-      stop("Run number out of bounds.\n")
-    } else {
-      status = .PMremote_check(rid = PMremote$runs[run], server_address = server_address)
-      if (status == "finished") {
-        sprintf("Remote run #%d finished successfuly.\n", run) %>%
+    rid <- getRemoteId(run)
+    status = .PMremote_check(rid = rid, server_address = server_address)
+    if (status == "finished") {
+      sprintf("Remote run #%d finished successfuly.\n", run) %>%
         cat()
-        .PMremote_outdata(PMremote$runs[run], server_address)
-      }
+      .PMremote_outdata(rid, server_address)
+
     }
   }
 
   return(status)
 }
 
-.getRemoteId <- function(id) {
-  id <- toString(id)
-  fileName <- 'id.txt'
-  return(readChar(fileName, file.info(fileName)$size))
+.getRemoteId <- function(run) {
+  run <- toString(run)
+  fileName <- paste(run, "outputs", "id.txt", sep = "/")
+  if (file.exists(fileName)) {
+    return(readChar(fileName, file.info(fileName)$size))
+  } else {
+    stop(sprintf("File id.txt not found in /%d/outputs.\n", id))
+    return(NULL)
+  }
 }
 
