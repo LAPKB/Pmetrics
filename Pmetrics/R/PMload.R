@@ -82,34 +82,24 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
 
 .remoteLoad <- function(run, server_address) {
   status = ""
-  if (!is.numeric(run)) {
-    status = .PMremote_check(rid = run, server_address = server_address)
-    if (status == "finished") {
-      sprintf("Remote run #%d finished successfuly.\n", run) %>%
-      cat()
-      .PMremote_outdata(run, server_address)
-    }
-  } else {
-    rid <- getRemoteId(run)
-    status = .PMremote_check(rid = rid, server_address = server_address)
-    if (status == "finished") {
-      sprintf("Remote run #%d finished successfuly.\n", run) %>%
+  rid <- .getRemoteId(run)
+  status = .PMremote_check(rid = rid, server_address = server_address)
+  if (status == "finished") {
+    sprintf("Remote run #%d finished successfuly.\n", run) %>%
         cat()
-      .PMremote_outdata(rid, server_address)
+    .PMremote_outdata(run, server_address)
 
-    }
   }
-
   return(status)
 }
 
 .getRemoteId <- function(run) {
   run <- toString(run)
-  fileName <- paste(run, "outputs", "id.txt", sep = "/")
+  fileName <- paste(run, "inputs", "id.txt", sep = "/")
   if (file.exists(fileName)) {
-    return(readChar(fileName, file.info(fileName)$size))
+    return(readChar(fileName, file.info(fileName)$size) %>% gsub("\n", "", .))
   } else {
-    stop(sprintf("File id.txt not found in /%d/outputs.\n", id))
+    stop(sprintf("File id.txt not found in /%s/outputs.\n", run))
     return(NULL)
   }
 }
