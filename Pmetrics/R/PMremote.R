@@ -67,7 +67,7 @@ PMlogout <- function() {
 }
 # r <- login_user("juliandavid347@gmail.com", "prueba1234")
 
-.PMremote_run <- function(model, data, server_address) {
+.PMremote_run <- function(model, data, server_address, run) {
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   library(httr)
   library(purrr)
@@ -84,7 +84,6 @@ PMlogout <- function() {
     add_headers(api_key = .getApiKey())
     )
   if (r$status == 200) {
-    inputFiles <- list.files(getwd(), "txt|csv")
     #The same code in PMrun
     currwd <- getwd()
     if (is.null(run)) {
@@ -101,14 +100,14 @@ PMlogout <- function() {
       if (overwrite) { unlink(newdir, recursive = T) } else { endNicely(paste("\n", newdir, " exists already.  Set overwrite=T to overwrite.\n")) }
     }
     dir.create(newdir)
-    setwd(newdir)
+    dir.create(paste(newdir, "inputs", sep = "/"))
+    dir.create(paste(newdir, "outputs", sep = "/"))
+    inputFiles <- list.files(getwd(), "txt|csv")
+    file.copy(inputFiles, paste(newdir, "inputs", sep = "/"))
+    setwd(paste(newdir, "inputs", sep = "/"))
     #END same code PMrun
-    sprintf("Remote run #%d started successfuly, You can access this run's id using: PMload(id).\n Id can be the full id string or the run number.\n", newdir, newdir) %>%
+    sprintf("Remote run #%s started successfuly, You can access this run's id using: PMload(id).\n Id can be the full id string or the run number.\n", newdir, newdir) %>%
     cat()
-    dir.create("inputs")
-    dir.create("outputs")
-    file.copy(inputFiles, "inputs")
-    setwd("inputs")
     fileConn <- file("id.txt")
     writeLines(content(r, "parsed")$id, fileConn)
     close(fileConn)
@@ -119,7 +118,7 @@ PMlogout <- function() {
     cat("You need to be logged in to perform this operation.\n")
 
     if (PMlogin()) {
-      .PMremote_run(model, data, server_address)
+      .PMremote_run(model, data, server_address, run)
     } else {
       cat("Authentication error\n")
     }
