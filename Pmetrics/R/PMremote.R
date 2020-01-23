@@ -102,7 +102,7 @@ PMlogout <- function() {
     dir.create(newdir)
     dir.create(paste(newdir, "inputs", sep = "/"))
     dir.create(paste(newdir, "outputs", sep = "/"))
-    inputFiles <- list.files(getwd(), "txt|csv")
+    inputFiles <- c(model, data) #list.files(getwd(), "txt|csv")
     file.copy(inputFiles, paste(newdir, "inputs", sep = "/"))
     setwd(paste(newdir, "inputs", sep = "/"))
     #END same code PMrun
