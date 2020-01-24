@@ -10,11 +10,26 @@
 #' which will typically be a number, e.g. 1.
 #' @param input The input number.  Default is 1.
 #' @param outeq The number of the output equation to simulate/test.  Default is 1.
-#' @param nsim The number of simulations per subject in the data file.  We recommend 1000 (the default)
-#' to return valid npde results.  More may result in excessive simulation times.
+#' @param tad Boolean argument, default \code{FALSE}.  If \code{TRUE}, will include 
+#' time after dose (TAD) in binning as well as standard relative time.  \emph{NOTE:} Including TAD is only 
+#' valid if steady state conditions exist for each patient.  This means that dosing is stable and regular
+#' for each patient, without changes in amount or timing, and that sampling occurs after the average concentrations
+#' are the same from dose to dose.  Otherwise observations are \emph{NOT} superimposable and \code{tad} should 
+#' \emph{NOT} be used, i.e. should be set to \code{FALSE}.
+#' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
+#' model equations and which need to be binned.  For example \code{binCov=\dQuote{wt}} if \dQuote{wt} is included in a
+#' model equation like V=V0*wt, or \code{binCov=c( \dQuote{wt}, \dQuote{crcl})} if both \dQuote{wt} and \dQuote{crcl} 
+#' are included in model equations.
+#' @param doseC An integer with the number of dose/covariate bins to cluster, if known from a previous run of 
+#' this function.  Including this value will skip the clustering portion for doses/covariates.
+#' @param timeC An integer with the number of observation time bins to cluster, if known from a previous run of 
+#' this function.  Including this value will skip the clustering portion for observation times.
+#' #' @param tadC An integer with the number of time after dose bins to cluster, if known from a previous run of 
+#' this function.  Including this value will skip the clustering portion for time after dose..This argument
+#' will be ignored if \code{tad=FALSE}.
 #' @param \dots Other parameters to be passed to \code{\link{SIMrun}}. 
-#' @return The output of \code{makeNPDE} is a list of class \code{PMnpde} with objects
-#' of \code{NpdeObject} class.  Additionally, two objects with run numbers appended will be saved to the output directory of the run for subsequent
+#' @return The output of \code{makeValid} is a list of class \code{PMvalid}.  
+#' Additionally, two objects with run numbers appended will be saved to the output directory of the run for subsequent
 #' loading with \code{\link{PMload}}: npde and sim.  \emph{npde} is the PMnpde object, and \emph{sim} is a 
 #' PMsim object of all simulations combined which can be used for visual predictive checks
 #' (see \code{\link{plot.PMsim}}).
@@ -99,25 +114,26 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   if(tad){dataSub$tad <- valTAD} else {dataSub$tad <- NA}
   dataSub <- dataSub[,c("id","evid","time","tad","out","dose",binCov)]
   
+ 
+  
+  #restrict to doses for dose/covariate clustering (since covariates applied on doses)
+  dataSubDC <- dataSub[dataSub$evid>0,-c(2:5)]
   #set zero doses (covariate changes) as missing
-  dataSub$dose[dataSub$dose==0] <- NA
-  for(i in 1:nrow(dataSub)){
-    missingVal <- which(is.na(dataSub[i,-c(1:6)]))
-    if(4 %in% missingVal){ #dose is missing
-      if(i==1 | (dataSub$id[i-1]!=dataSub$id[i])){ #first record for patient has zero dose
+  dataSubDC$dose[dataSubDC$dose==0] <- NA
+  for(i in 1:nrow(dataSubDC)){
+    missingVal <- which(is.na(dataSubDC[i,]))
+    if(2 %in% missingVal){ #dose is missing
+      if(i==1 | (dataSubDC$id[i-1]!=dataSubDC$id[i])){ #first record for patient has zero dose
         j <- 0
-        while(is.na(dataSub$dose[i+j])){ #increment until non-zero dose is found
+        while(is.na(dataSubDC$dose[i+j])){ #increment until non-zero dose is found
           j <- j+1
         }
-        dataSub$dose[i] <- dataSub$dose[i+j] #set dose equal to first non-zero dose
+        dataSubDC$dose[i] <- dataSubDC$dose[i+j] #set dose equal to first non-zero dose
         missingVal <- missingVal[-which(missingVal==3)] #take out missing flag for dose as it has been dealt with
       }
     }
-    dataSub[i,missingVal] <- dataSub[i-1,missingVal]
+    dataSubDC[i,missingVal] <- dataSubDC[i-1,missingVal]
   }
-  
-  #restrict to doses for dose/covariate clustering (since covariates applied on doses)
-  dataSubDC <- dataSub[dataSub$evid>0,-c(1:5)]
   #restrict to observations for time clustering
   dataSubTime <- dataSub$time[dataSub$evid==0]
   #restrict to observations for tad clustering
@@ -270,6 +286,8 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   RFfile <- suppressWarnings(tryCatch(readLines(Sys.glob(paste(run,"outputs/??_RF0001.TXT",sep="/"))),error=function(e) NULL))
   if(length(RFfile)>0){
     datafileName <- tail(RFfile,1)
+    #remove trailing spaces
+    datafileName <- sub(" +$","",datafileName)
     file.copy(from=paste(run,"inputs",datafileName,sep="/"),to=paste(run,"/vpc",sep=""))
     datafile <- datafileName
   } else {stop("Data file not found\n")}
@@ -301,7 +319,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   if(length(covCols)>0) mdataMedian[,covCols] <- dcMedian[match(mdataMedian$dcBin,dcMedian$bin),-c(1:2)]
   
   #write median file
-  MedianDataFileName <- paste(substr(paste("m_",datafileName,sep=""),0,8),sep="")
+  MedianDataFileName <- paste(substr(paste("m_",strsplit(datafileName,"\\.")[[1]][1],sep=""),0,8),".csv",sep="")
   PMwriteMatrix(mdataMedian[,1:(ncol(mdataMedian)-2)],MedianDataFileName,override=T)
   
   #remove old files
@@ -344,7 +362,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   
   
   #add PRED_bin to tempDF
-  tempDF$PRED_bin <- rep(PRED_bin$obs$out,each=2) #one for icen="median" and icen="mean"
+  tempDF$PRED_bin <- rep(PRED_bin$obs$out,times=2) #one for icen="median" and icen="mean"
   
   #add pcYij column to tempDF as obs * PREDbin/PREDij
   tempDF$pcObs <- tempDF$obs * tempDF$PRED_bin/tempDF$pred
@@ -352,10 +370,10 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   #take out observations at time 0 (from evid=4 events)
   #tempDF <- tempDF[tempDF$time>0,]
   #bin pcYij by time and add to tempDF
-  tempDF$timeBinNum<- dataSub$timeBin[dataSub$evid==0] 
+  tempDF$timeBinNum<- rep(dataSub$timeBin[dataSub$evid==0],times=2) #one for each icen 
   tempDF$timeBinMedian <- timeMedian$time[match(tempDF$timeBinNum,timeMedian$bin)]
   if(tad){
-    tempDF$tadBinNum <- dataSub$tadBin[dataSub$evid==0]  
+    tempDF$tadBinNum <- rep(dataSub$tadBin[dataSub$evid==0],times=2) 
     tempDF$tadBinMedian <- tadMedian$time[match(tempDF$tadBinNum,tadMedian$bin)]
   } else {
     tempDF$tadBinNum <- NA
@@ -383,56 +401,59 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   simFull$obs <- simFull$obs[simFull$obs$outeq==outeq,]
   #take out observations at time 0
   #simFull$obs <- simFull$obs[simFull$obs$time>0,]
-  #pull in time bins from tempDF
-  simFull$obs$timeBinNum <- unlist(tapply(tempDF$timeBinNum,tempDF$id,function(x) rep(x,nsim)))
+  #pull in time bins from tempDF; only need median as tempDF contains median and mean,
+  #but simulation is only from pop means
+  simFull$obs$timeBinNum <- unlist(tapply(tempDF$timeBinNum[tempDF$icen=="median"],tempDF$id[tempDF$icen=="median"],function(x) rep(x,nsim)))
   #pull in tad bins from tempDF
-  simFull$obs$tadBinNum <- unlist(tapply(tempDF$tadBinNum,tempDF$id,function(x) rep(x,nsim)))
+  simFull$obs$tadBinNum <- unlist(tapply(tempDF$tadBinNum[tempDF$icen=="median"],tempDF$id[tempDF$icen=="median"],function(x) rep(x,nsim)))
   #make simulation number 1:nsim
   simFull$obs$simnum <- as.numeric(sapply(strsplit(simFull$obs$id,"\\."), function(x) x[1]))
   
   
   # NPDE --------------------------------------------------------------------
   
-  #prepare data for npde
-  obs <- tempDF[,c("id","time","obs")]
-  #remove missing obs
-  obs <- obs[obs$obs!=-99,]
-  names(obs)[3] <- "out"
-  
-  simobs <- simFull$obs
-  #remove missing simulations
-  simobs <- simobs[simobs$out!=-99,]
-  simobs$id <- rep(obs$id,each=nsim)
-  
-  #get NPDE
-  assign("thisobs",obs,pos=1)
-  assign("thissim",simobs,pos=1)
-  npdeRes <- tryCatch(autonpde(namobs=thisobs,namsim=thissim,1,2,3,verbose=T),error=function(e) e)
-  
-  class(simFull) <- c("PMsim","list")
-  class(npdeRes) <- c("PMnpde","list")
-  
-  NPAGout <- list(NPdata=getName("NPdata"),
-                  pop=getName("pop"),
-                  post=getName("post"),
-                  final=getName("final"),
-                  cycle=getName("cycle"),
-                  op=getName("op"),
-                  cov=getName("cov"),
-                  mdata=getName("mdata"),
-                  npde=npdeRes,
-                  sim=simFull)
-  save(NPAGout,file="../outputs/NPAGout.Rdata")
-  
-  #put sim in global environment
-  assign(paste("sim",as.character(run),sep="."),simFull,pos=1)
+  # #prepare data for npde
+  # obs <- tempDF[,c("id","time","obs")]
+  # #remove missing obs
+  # obs <- obs[obs$obs!=-99,]
+  # names(obs)[3] <- "out"
+  # 
+  # simobs <- simFull$obs
+  # #remove missing simulations
+  # simobs <- simobs[simobs$out!=-99,]
+  # simobs$id <- rep(obs$id,each=nsim)
+  # 
+  # #get NPDE
+  # assign("thisobs",obs,pos=1)
+  # assign("thissim",simobs,pos=1)
+  # npdeRes <- tryCatch(autonpde(namobs=thisobs,namsim=thissim,1,2,3,verbose=T),error=function(e) e)
+  # 
+  # class(simFull) <- c("PMsim","list")
+  # class(npdeRes) <- c("PMnpde","list")
+  # 
+  # NPAGout <- list(NPdata=getName("NPdata"),
+  #                 pop=getName("pop"),
+  #                 post=getName("post"),
+  #                 final=getName("final"),
+  #                 cycle=getName("cycle"),
+  #                 op=getName("op"),
+  #                 cov=getName("cov"),
+  #                 mdata=getName("mdata"),
+  #                 npde=npdeRes,
+  #                 sim=simFull)
+  # save(NPAGout,file="../outputs/NPAGout.Rdata")
+  # 
+  # #put sim in global environment
+  # assign(paste("sim",as.character(run),sep="."),simFull,pos=1)
   
   
   # Clean Up ----------------------------------------------------------------
   
   setwd(currwd)
   
-  valRes <- list(simdata=simFull,timeBinMedian=timeMedian,tadBinMedian=tadMedian,opDF=tempDF,npde=npdeRes)
+  valRes <- list(simdata=simFull,timeBinMedian=timeMedian,tadBinMedian=tadMedian,opDF=tempDF)
+  # valRes <- list(simdata=simFull,timeBinMedian=timeMedian,tadBinMedian=tadMedian,opDF=tempDF,npde=npdeRes)
+  
   class(valRes) <- c("PMvalid","list")
   
   return(valRes)
