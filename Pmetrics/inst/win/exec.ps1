@@ -1,14 +1,14 @@
 #Julian Otalvaro Nov 2019
 
 function Install-Choco {
-  Write-Output "Trying to install Chocolatey"
+  Write-Output "Pmetrics is trying to install Chocolatey..."
   Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-  Write-Output "Checking installation"
+  Write-Output "Checking installation..."
   If (Is-Choco-Installed) {
-    Write-Output "Chocolatey Installed successfully"
+    Write-Output "Chocolatey installed successfully"
   }
   Else {
-    Write-Output "Chocolatey Cannot be installed automatically, go to https://chocolatey.org/install/ install it and re-run this script"
+    Write-Output "Pmetrics cannot install Chocolatey automatically. Go to https://chocolatey.org/install/ to install it and re-run this script."
     exit
   }
 }
@@ -55,17 +55,17 @@ else {
     
   Write-Output "elevated"
   if (Is-Gfortran-Installed) {
-    Write-Output "Gfortran found, nothing to do..."
+    Write-Output "Gfortran found."
     Pause
     return 1
   }
   else {
     If (Is-Choco-Installed) {
-      Write-Output "Choco installed"
+      Write-Output "Chocolatey installed"
       # Uninstall-Choco
     }
     Else {
-      Write-Output "Choco is not installed"
+      Write-Output "Chocolatey is not installed"
       # if (-NOT(Is-Elevated)) {
       #     Elevate-Rights
       # }
@@ -74,14 +74,14 @@ else {
     Install-Gfortran
     
     if (Is-Gfortran-Installed) {
-      Write-Output "Gfortran Installed successfully"
-      Write-Output "You can now close this window and continue Pmetrics setup on R's terminal"
+      Write-Output "Pmetrics installed gfortran successfully."
+      Write-Output "You can now close this window and continue Pmetrics setup in R."
       # Rscript -e "library(Pmetrics);PMbuild()"
       Pause
       return 1
     }
     else {
-      Write-Output "There were and error installing gfortran, please install it manually to continue"
+      Write-Output "Pmetrics could not automatically install gfortran. Please install it manually to continue.  For help, visit http://www.lapk.org/Pmetrics_install.php."
       Pause
       return 0
     } 

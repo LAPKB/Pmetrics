@@ -18,27 +18,27 @@
   env = Sys.getenv("env")
   if (env != "Development") {
     if (!.is_fortran_installed()) {
-      cat("Compiled binaries not found\n")
+      cat("Pmetrics cannot find required compiled binary files.\n")
       if (system(sch_str[OS]) != 0) {
-        cat("Gfortran not found \n Starting automatic installation\n")
-        input <- readline(prompt = "Do you want Pmetrics to perform an automatic installation of Gfortran \n This might install Gfortran and its dependencys onto your computer \n Do you Agree? (Y/N)")
-        if (input == "Y" || input == "YES" || input == "Yes" || input == "y" || input == "yes") {
+        cat("Pmetrics cannot detect gfortran and will attempt to download and install all components.\n")
+        input <- tolower(readline(prompt = "Do you agree? (Y/N)"))
+        if (substr(input,1,1) == "y") {
           if (.getGfortran()) {
-            cat("Gfortran installed \n Building Pmetrics\n")
+            cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
             PMbuild()
           } else {
-            cat("ERROR: Could not install gfortran automatically, please install Gfortran manually and then run PMbuild() \n")
+            cat("ERROR: Pmetrics did not install gfortran automatically.\nPlease install gfortran manually and then run PMbuild().\nGo to http://www.lapk.org/Pmetrics_install.php for help.\n")
           }
         } else {
-          cat("Please install Gfortran manually and then run PMbuild() \n")
+          cat("You must have gfortran to run Pmetrics.\nPlease install gfortran manually and then run PMbuild().\nGo to http://www.lapk.org/Pmetrics_install.php for help.\n")
         }
       } else {
-        cat("Gfortran found \n Building Pmetrics\n")
+        cat("Pmetrics has detected gfortran and will compile required binary files.\n")
         PMbuild()
       }
 
     } else {
-      cat("Previously compiled binaries found!\n")
+      cat("Pmetrics has found required compiled binary files.\n")
     }
   }
 
