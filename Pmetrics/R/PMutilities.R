@@ -2073,3 +2073,14 @@ calcTAD <- function(rawData){
   }
   return(rawData$tad)
 }
+
+
+# obsStatus -----------------------------------------------------------
+
+#classify observations 
+#data should be a vector
+obsStatus <- function(data){
+  present <- which(data!=-99)
+  missing <- which(data==-99)
+  return(list(present=present,missing=missing))
+}

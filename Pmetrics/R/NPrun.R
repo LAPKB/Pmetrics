@@ -59,12 +59,14 @@
 #' differential equations, and \code{FALSE} for algebraic/explicit models.  The majority of the benefit for parallelization comes
 #' in the first cycle, with a speed-up of approximately 80\% of the number of available cores on your machine, e.g. an 8-core machine
 #' will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\%, e.g. 4-fold increase on an 8-core
-#' machine.  Overall speed up for a run will therefore depend on the number of cycles ru and the number of cores.
-#' @param alq Alquimia's internal flag, not for regular users
+#' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
+#' @param alq For internal developer use only.  Should be set to \code{FALSE}.
+#' @param remote Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
+#' @param server_address If missing, will use the default server address returned by getPMoptions(). 
+#' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}.
 #' @return A successful NPAG run will result in creation of a new folder in the working
-#' directory.  This folder will be named with a date-time stamp in the format "out-YYYYMMMDD-hhmm",
-#' e.g. out-2011Apr10-1015.  Under this folder will be four subfolders: etc, inputs, outputs, and
-#' wrkcopy, described below.
+#' directory.  This folder will be named numerically and sequentially with respect to previous runs.  
+#' Within this folder will be four subfolders: etc, inputs, outputs, and wrkcopy, described below.
 #' \itemize{
 #'  \item \bold{etc}   Control files for NPAG generally not needed by the user after a completed run.
 #'  \item \bold{inputs}   This folder will contain the .csv data file and the model file.
