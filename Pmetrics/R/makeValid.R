@@ -122,12 +122,10 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   #add time after dose
   if(tad){dataSub$tad <- valTAD} else {dataSub$tad <- NA}
   dataSub <- dataSub[,c("id","evid","time","tad","out","dose",binCov)]
-  #take out missing observations
-  missObs <- which(dataSub$out==-99)
-  if(length(missObs>0)){
-    dataSub <- dataSub[-missObs,]
-  }
-  
+  #remove missing observations
+  missObs <- obsStatus(dataSub$out)$missing
+  if(length(missObs)>0) dataSub <- dataSub[-missObs,]
+
   #restrict to doses for dose/covariate clustering (since covariates applied on doses)
   dataSubDC <- dataSub[dataSub$evid>0,-c(2:5)]
   #set zero doses (covariate changes) as missing
@@ -209,7 +207,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
     readline("Press <Return> to see cluster plot: ")
     
     timeClusterPlot <- function(){
-      plot(timePlot,dataSub[dataSub$out>-99,],xlab=timeLabel,ylab="Observation",xlim=c(min(use.data),max(use.data)))
+      plot(timePlot,dataSub,xlab=timeLabel,ylab="Observation",xlim=c(min(use.data),max(use.data)))
     }
     
     #plot for user to see
@@ -362,7 +360,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   
   #make tempDF subset of PMop for subject, time, non-missing obs, outeq, pop predictions (PREDij)
   tempDF <- getName("op")
-  tempDF <- tempDF[tempDF$pred.type=="pop" & !missingObs(tempDF$obs),]
+  tempDF <- tempDF[tempDF$pred.type=="pop" & obsStatus(tempDF$obs)$present,]
   if(!is.na(includeID[1])){
     tempDF <- tempDF[tempDF$id %in% includeID,]
   }

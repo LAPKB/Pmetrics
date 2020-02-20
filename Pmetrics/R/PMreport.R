@@ -6,6 +6,7 @@
 #' @title Summarize NPAG or IT2B Run
 #'
 #' @param wd The working directory containing the NP_RFxxxx.TXT or IT_RFxxxx.TXT file
+#' @param rdata The processed output of an IT2B or NPAG run, depending on local or server runs.
 #' @param icen Median (default), mean or mode of Bayesian posterior to be used to calculate predictions.
 #' @param type \dQuote{NPAG} (default) or \dQuote{IT2B} report type
 #' @param parallel Boolean parameter which indicates the type of run done.  Default is \code{FALSE} for serial.
@@ -40,7 +41,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   xtable.installed <- require(xtable)
 
   setwd(wd)
-  if (missing(rdata)) rdata <- makeRdata(wd, reportType)
+  if (missing(rdata)) rdata <- makeRdata(wd, remote=F, reportType)
 
   #get elapsed time if available
   if (file.exists("time.txt")) {
@@ -93,25 +94,18 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   # success <- file.info(c("NP_RF0001.TXT", "IT_RF0001.TXT")[reportType])$size >= 1000
 
   if (success) {
-    PMdata <- rdata$NPdata
+
     #run completed
     #open and parse the output
     if (reportType == 1) {
+      PMdata <- rdata$NPdata
       post <- rdata$post
       pop <- rdata$pop
-      #   #only for NPAG
-      #   PMdata <- suppressWarnings(tryCatch(NPparse(), error = function(e) { e <- NULL; cat("\nWARNING: The run did not complete successfully.\n") }))
-      #   #make the posterior predictions
-      #   post <- suppressWarnings(tryCatch(makePost(NPdata = PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of posterior Bayesian predictions at time ttpred; 'PMpost' object not saved.\n\n") }))
-      #   #make the population predictions
-      #   pop <- suppressWarnings(tryCatch(makePop(NPdata = PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of population predictions at time tpred; 'PMpop' object not saved.\n\n") }))
-      # } else {
-      #   PMdata <- suppressWarnings(tryCatch(ITparse(), error = function(e) { e <- NULL; cat("\nWARNING: The run did not complete successfully.\n") }))
     }
-    # cat("\n\n")
-    # flush.console()
-    # if (is.null(PMdata$nranfix)) PMdata$nranfix <- 0
-
+    if (reportType == 2) {
+      PMdata <- rdata$ITdata
+    }
+ 
 
     #HTML body
     writeHTML("<ul class=\"tabs\">")
@@ -148,8 +142,6 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
 
     writeHTML("</div>") #end tab content
     writeHTML("</li>")
-
-
 
     #Tab 2 - Convergence plots
     writeHTML("<li>")
@@ -516,7 +508,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
 }
 #end function
 
-makeRdata <- function(wd, alq, reportType = 1) {
+makeRdata <- function(wd, remote, reportType = 1) {
   setwd(wd)
   errfile <- list.files(pattern = "^ERROR")
   #error <- length(errfile) > 0
@@ -563,7 +555,7 @@ makeRdata <- function(wd, alq, reportType = 1) {
       NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata, errfile = errfile, success = success)
       save(NPAGout, file = "NPAGout.Rdata")
       #Hacky return to deal with Rservex bug T.T
-      if (alq) {
+      if (remote) {
         return("ok")
       }
       return(NPAGout)
@@ -571,7 +563,7 @@ makeRdata <- function(wd, alq, reportType = 1) {
     if (reportType == 2) {
       IT2Bout <- list(ITdata = PMdata, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata, errfile = errfile, success = success)
       save(IT2Bout, file = "IT2Bout.Rdata")
-      if (alq) {
+      if (remote) {
         return("ok")
       }
       return(IT2Bout)
