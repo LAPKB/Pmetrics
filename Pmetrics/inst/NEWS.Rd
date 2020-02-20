@@ -1,6 +1,22 @@
 \name{NEWS}
 \title{NEWS file for the Pmetrics package}
 
+\section{Changes in version 1.9}{
+
+\subsection{NEW FEATURES}{
+\itemize{
+\item This version is a pre-release beta for version 2.0
+\item makeValid and plot.PMvalid added to replace makeNPDE and add pcVPC capacity
+\item Added remote server run capabilities, currently only on LAPKB server
+\item Restructured start up and installation to be self contained for all modules, including gfortran
+}
+}
+\subsection{BUG FIXES}{
+\itemize{
+\item None
+}
+}
+}
 
 \section{Changes in version 1.5.3}{
 

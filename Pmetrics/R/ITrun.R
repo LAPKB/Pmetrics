@@ -43,6 +43,7 @@
 #' @param overwrite Overwrite existing run result folders.  Default is \code{FALSE}.
 #' @param nocheck Suppress the automatic checking of the data file with \code{\link{PMcheck}}.  Default is \code{FALSE}.
 #' @param batch Set to true when \code{\link{PMbatch}} is used.
+#' @param alq For internal developer use only.  Should be set to \code{FALSE}.
 #' @return A successful IT2B run will result in creation of a new folder in the working
 #' directory.  This folder will be named with a date-time stamp in the format "out-YYYYMMMDD-hhmm",
 #' e.g. out-2011Apr10-1015.  Under this folder will be four subfolders: etc, inputs, outputs, and
@@ -70,7 +71,7 @@
 ITrun <- function(model="model.txt",data="data.csv",run,
                   include,exclude,ode=-4,tol=0.001,salt,cycles=100,
                   xdev=5,icen="median",
-                  auto=T,intern=F,silent=F,overwrite=F,nocheck=F,batch=F){
+                  auto=T,intern=F,silent=F,overwrite=F,nocheck=F,batch=F,alq=F){
   
   if(missing(run)) run <- NULL
   if(missing(include)) include <- NULL
@@ -81,7 +82,7 @@ ITrun <- function(model="model.txt",data="data.csv",run,
   outpath <- .PMrun(type="IT2B",model=model,data=data,run=run,
                    include=include,exclude=exclude,ode=ode,tol=tol,salt=salt,cycles=cycles,icen=icen,
                    xdev=xdev,
-                   auto=auto,intern=intern,silent=silent,overwrite=overwrite,nocheck=nocheck,parallel=F,batch=batch)
+                   auto=auto,intern=intern,silent=silent,overwrite=overwrite,nocheck=nocheck,parallel=F,batch=batch,alq=alq)
   return(outpath)
   
 }

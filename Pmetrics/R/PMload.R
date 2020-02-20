@@ -7,6 +7,11 @@
 #' number will also be used to name objects uniquely by appending \dQuote{.\code{run}}, 
 #' e.g. NPdata.1 or ITdata.1 if run=1. This parameter is \code{1} by default.
 #' @param \dots Additional runs to load if desired.
+#' @param remote Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
+#' See \code{\link{NPrun}}. Currently remote runs are not configured for IT2B or the Simulator.
+#' @param server_address If missing, will use the default server address returned by getPMoptions(). 
+#' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
+#' in \code{\link{NPrun}}. 
 #' @return The following objects are loaded into R.
 #' \item{NPdata/ITdata }{List with all output from NPAG/IT2B}
 #' \item{pop }{ NPAG only: Population predictions for each output equation}
@@ -48,7 +53,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
         cat()
       }
     } else if (file.exists(filename)) {
-      load(filename)
+      load(filename, .GlobalEnv)
       .splitNPAGout(thisrun)
     } else {
       #check for IT2B output file
@@ -56,7 +61,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
       outfile <- paste(thisrun, "outputs", filename, sep = "/")
       if (file.exists(outfile)) filename <- outfile
       if (file.exists(filename)) {
-        load(filename)
+        load(filename, .GlobalEnv)
         newNames <- paste(names(IT2Bout), ".", as.character(thisrun), sep = "")
         for (i in 1:length(newNames)) {
           assign(newNames[i], IT2Bout[[i]], pos = parent.frame(), envir = .GlobalEnv)
@@ -66,18 +71,21 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
         return(invisible(F)) #error, abort
       }
     }
+
   }
   #end thisrun loop
+
+
   return(invisible(T)) #no errors
 
 }
 
 .splitNPAGout <- function(run) {
-  print(run)
   newNames <- paste(names(NPAGout), ".", as.character(run), sep = "")
   for (i in 1:length(newNames)) {
     assign(newNames[i], NPAGout[[i]], pos = parent.frame(), envir = .GlobalEnv)
   }
+  rm(NPAGout,envir=.GlobalEnv)
 }
 
 .remoteLoad <- function(run, server_address) {
