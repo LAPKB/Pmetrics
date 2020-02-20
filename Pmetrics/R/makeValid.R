@@ -1,9 +1,8 @@
 #' Creates a Pmetrics validation object
 #'
-#' \code{makeValid} will create an object suitable for plotting visual predictive checks (VPCs), prediction-corrected visual
-#' predictive checks (pcVPCs) and normalized prediction distribution errors (NPDEs). The function will guide the user
-#' through appropriate clustering of doses, covariates and sample times for prediction correction using the methods of
-#' 
+#' \code{makeValid} will create an object suitable for plotting visual predictive checks (VPCs) and prediction-corrected visual
+#' predictive checks (pcVPCs). The function will guide the user
+#' through appropriate clustering of doses, covariates and sample times for prediction correction using the methods of Bergstrand et al (2011).
 #'
 #' @title Create a Pmetrics validation object
 #'@param run When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
@@ -25,17 +24,20 @@
 #' @param timeC An integer with the number of observation time bins to cluster, if known from a previous run of 
 #' this function.  Including this value will skip the clustering portion for observation times.
 #' #' @param tadC An integer with the number of time after dose bins to cluster, if known from a previous run of 
-#' this function.  Including this value will skip the clustering portion for time after dose..This argument
+#' this function.  Including this value will skip the clustering portion for time after dose. This argument
 #' will be ignored if \code{tad=FALSE}.
-#' @param \dots Other parameters to be passed to \code{\link{SIMrun}}. 
-#' @return The output of \code{makeValid} is a list of class \code{PMvalid}.  
-#' Additionally, two objects with run numbers appended will be saved to the output directory of the run for subsequent
-#' loading with \code{\link{PMload}}: npde and sim.  \emph{npde} is the PMnpde object, and \emph{sim} is a 
-#' PMsim object of all simulations combined which can be used for visual predictive checks
-#' (see \code{\link{plot.PMsim}}).
+#' @param \dots Other parameters to be passed to \code{\link{SIMrun}}, especially \code{limits}. 
+#' @return The output of \code{makeValid} is a list of class \code{PMvalid}, which is a list with the following.  
+#' \item{simdata}{The combined, simulated files for all subjects using the population mean values and each subject
+#' as a template. See \code{\link{SIMparse}}.}
+#' \item{timeBinMedian}{A data frame with the median times for each cluster bin.}
+#' \item{tadBinMedian}{A data frame with the median time after dose (tad) for each cluster bin.  This will be \code{NA} if 
+#' \code{tad = FALSE}.}
+#' \item{opDF}{A data frame with observations, predicitons, and bin-corrected predictions for each subject.}
 #' @author Michael Neely
-#' @seealso \code{\link{SIMrun}}, \code{\link{autonpde}}, \code{\link{plot.PMnpde}}
+#' @seealso \code{\link{SIMrun}}, \code{\link{plot.PMvalid}}
 #' @references 
+#' @export
 
 makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   
@@ -93,19 +95,26 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   nsub <- length(unique(mdata$id))
   
   #define covariates in model to be binned
-  if(missing(binCov)){
-    cat(paste("Covariates in your data file: ",paste(names(mdata)[-c(1:getFixedColNum())],collapse=", ")))
-    binCov <- readline("Enter any covariates to be binned, separated by commas (<Return> for none): ")
-    binCov <- unlist(strsplit(binCov,","))
-    #remove leading/trailing spaces
-    binCov <- gsub("^[[:space:]]|[[:space:]]$","",binCov)
+  covData <- getCov(mdata)
+  if(covData$ncov>0){ #if there are any covariates...
+    if(missing(binCov)){
+      covInData <- getCov(mdata)$covnames
+      cat(paste("Covariates in your data file: ",paste( getCov(mdata)$covnames,collapse=", ")))
+      binCov <- readline("Enter any covariates to be binned, separated by commas (<Return> for none): ")
+      binCov <- unlist(strsplit(binCov,","))
+      #remove leading/trailing spaces
+      binCov <- gsub("^[[:space:]]|[[:space:]]$","",binCov)
+    }
+    if(!all(binCov %in% names(mdata))){
+      stop("You have entered covariates which are not valid covariates in your data.")
+    }
+    #ensure binCov has covariates in same order as data file
+    covSub <- covData$covnames[covData$covnames %in% binCov]
+    binCov <- binCov[rank(covSub)]
+    
+  } else { #there are no covariates
+    binCov <- NULL
   }
-  
-  if(!all(binCov %in% names(mdata))){
-    stop("You have entered covariates which are not valid covariates in your data.")
-  }
-  
-  
   
   #set up data for clustering
   #fill in gaps for cluster analysis only for binning variables (always dose and time)
@@ -113,8 +122,11 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   #add time after dose
   if(tad){dataSub$tad <- valTAD} else {dataSub$tad <- NA}
   dataSub <- dataSub[,c("id","evid","time","tad","out","dose",binCov)]
-  
- 
+  #take out missing observations
+  missObs <- which(dataSub$out==-99)
+  if(length(missObs>0)){
+    dataSub <- dataSub[-missObs,]
+  }
   
   #restrict to doses for dose/covariate clustering (since covariates applied on doses)
   dataSubDC <- dataSub[dataSub$evid>0,-c(2:5)]
@@ -348,9 +360,9 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   #read and format the results of the simulation
   PRED_bin <- SIMparse("simMed*",combine=T,silent=T)
   
-  #make tempDF subset of PMop for subject, time, obs, outeq, pop predictions (PREDij)
+  #make tempDF subset of PMop for subject, time, non-missing obs, outeq, pop predictions (PREDij)
   tempDF <- getName("op")
-  tempDF <- tempDF[tempDF$pred.type=="pop",]
+  tempDF <- tempDF[tempDF$pred.type=="pop" & !missingObs(tempDF$obs),]
   if(!is.na(includeID[1])){
     tempDF <- tempDF[tempDF$id %in% includeID,]
   }
@@ -379,7 +391,6 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
     tempDF$tadBinNum <- NA
     tempDF$tadBinMedian <- NA
   }
-  
   
   
   #Now, simulate using full pop model
