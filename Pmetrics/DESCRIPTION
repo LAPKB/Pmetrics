@@ -34,6 +34,9 @@ Suggests:
     rjson,
     stringi,
     ggplot2,
-    mclust
+    mclust,
+    purrr,
+    askpass,
+    base64enc
 Roxygen: list(wrap = FALSE)
 RoxygenNote: 7.0.2

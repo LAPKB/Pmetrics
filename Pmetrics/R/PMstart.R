@@ -1,5 +1,6 @@
 
 .onLoad <- function(...) {
+  checkRequiredPackages("purrr")
   if (interactive()) {
     currentVersion <- package_version(suppressWarnings(
       tryCatch(scan("http://www.lapk.org/software/Pmetrics/PmetricsVersion.txt", what = "character", quiet = T),
@@ -45,7 +46,7 @@
 }
 
 .onAttach <- function(...) {
-
+  checkRequiredPackages("purrr")
   #version and OS-specific startup messages
   OS <- getOS()
   if (interactive()) {
@@ -97,10 +98,7 @@
 }
 
 .is_fortran_installed <- function() {
-  if (length(grep("purrr", installed.packages()[, 1])) == 0) {
-    install.packages("purrr", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
-  }
-  purrr.installed <- require(purrr)
+  checkRequiredPackages("purrr")
   #library(purrr)
   exists <- function(name) {
     paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/") %>%

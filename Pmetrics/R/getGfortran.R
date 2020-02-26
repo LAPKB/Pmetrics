@@ -33,7 +33,7 @@
       return(TRUE)
     }
   } else if (OS == 2) {
-    return = system2("C:/Windows/System32/WindowsPowerShell/v1.0/powershell", args = c("-file", paste(system.file("", package = "Pmetrics"), "win/exec.ps1", sep = "/")), wait = T)
+    return = system2("C:/Windows/System32/WindowsPowerShell/v1.0/powershell", args = c("-ExecutionPolicy","ByPass","-file", paste(system.file("", package = "Pmetrics"), "win/exec.ps1", sep = "/")), wait = T)
     cat("Background installation of gfortran started.\n")
     readline(prompt = "After installation is complete, press RETURN to continue.\n")
     return(TRUE)
