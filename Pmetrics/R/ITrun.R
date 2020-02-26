@@ -45,8 +45,8 @@
 #' @param batch Set to true when \code{\link{PMbatch}} is used.
 #' @param alq For internal developer use only.  Should be set to \code{FALSE}.
 #' @return A successful IT2B run will result in creation of a new folder in the working
-#' directory.  This folder will be named with a date-time stamp in the format "out-YYYYMMMDD-hhmm",
-#' e.g. out-2011Apr10-1015.  Under this folder will be four subfolders: etc, inputs, outputs, and
+#' directory. This folder will be named numerically and sequentially with respect to previous runs.   
+#' Within this folder will be four subfolders: etc, inputs, outputs, and
 #' wrkcopy, described below.
 #' \itemize{
 #'  \item \bold{etc}   Control files for IT2B generally not needed by the user after a completed run.
