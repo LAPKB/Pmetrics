@@ -16,12 +16,7 @@
 
 makePop <- function(run,NPdata) {
   #require(utils)
-  if(length(grep("reshape2",installed.packages()[,1]))==0){
-    install.packages("reshape2",repos="http://cran.cnr.Berkeley.edu",dependencies=T)
-  }
-  reshape2.installed <- require(reshape2)
-  if(!reshape2.installed) stop("Error: connect to internet and re-run makePop to download and install reshape2 package.\n")
-    
+  checkRequiredPackages("reshape2") 
   #get data
   if (!missing(run)){ #run specified, so load corresponding objects
     PMload(run)

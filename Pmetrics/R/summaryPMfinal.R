@@ -49,10 +49,7 @@
 
 
 summary.PMfinal <- function(x,lower=0.025,upper=0.975){
-  if(length(grep("reshape2",installed.packages()[,1]))==0){
-    install.packages("reshape2",repos="http://cran.cnr.Berkeley.edu",dependencies=T)
-  }
-  reshape2.installed <- require(reshape2)
+  checkRequiredPackages("reshape2")
   if(!reshape2.installed) stop("Error: connect to internet download and install reshape2 package.\n")
   
   if(inherits(x,"IT2B")){ #IT2B object

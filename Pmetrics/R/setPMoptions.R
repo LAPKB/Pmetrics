@@ -12,16 +12,7 @@
 
 
 setPMoptions <- function(sep, dec, server_address) {
-  if (length(grep("rjson", installed.packages()[, 1])) == 0) {
-    install.packages("rjson", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
-  }
-
-  rjson.installed <- require(rjson, quietly = TRUE)
-  if (!rjson.installed) {
-    cat("rjson package not installed.  Cannot set options.  Connect to internet and re-run makePost to download and install rjson package.\n")
-    flush.console()
-    return()
-  }
+  checkRequiredPackages("rjson")
   #read old values first
   PMopts <- getPMoptions()
   #update/add options

@@ -31,12 +31,7 @@
 
 PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCol="evid",format=c("m/d/y","h:m"),split=F){
   
-  if(length(grep("chron",installed.packages()[,1]))==0){
-    install.packages("chron",repos="http://cran.cnr.Berkeley.edu",dependencies=T)
-  }
-  chron.installed <- require(chron)
-  if(!chron.installed) stop("Error: connect to internet and re-run PMmatrixRelTime to download and install chron package.\n")
-  
+  checkRequiredPackages("chron")
   dataCols <- names(data)
   #convert numeric if necessary
   if(is.numeric(idCol)) idCol <- dataCols[idCol]

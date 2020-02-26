@@ -40,12 +40,7 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.97
                          
 ){
   
-  if(length(grep("ggplot2",installed.packages()[,1]))==0){
-    install.packages("ggplot2",repos="http://cran.cnr.Berkeley.edu",dependencies=T)
-  }
-  ggplot2.installed <- require(ggplot2,quietly=T,warn.conflicts=F)
-  if(!ggplot2.installed) stop("Package ggplot2 not installed.")
-  
+  checkRequiredPackages("ggplot2")
   x$opDF <- x$opDF[x$opDF$icen==icen,] #filter to icen
   
   #select correct time

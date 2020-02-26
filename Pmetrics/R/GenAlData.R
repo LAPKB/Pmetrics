@@ -3,10 +3,7 @@
 }
 
 GenAlData <- function(wd) {
-  if (length(grep("jsonlite", installed.packages()[, 1])) == 0) {
-    install.packages("jsonlite", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
-  }
-  jsonlite.installed <- require(jsonlite)
+  checkRequiredPackages("jsonlite")
   setwd(wd)
   filename <- "alquimiaData.json"
   data <- data.frame("ver" = NA)

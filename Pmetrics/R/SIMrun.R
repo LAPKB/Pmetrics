@@ -630,10 +630,7 @@ SIMrun <- function(poppar, limits = NULL, model = "model.txt", data = "data.csv"
       ans <- readline("\nChoose one of the following:\n1) end simulation\n2) fix covariance\n3) set covariances to 0\n ")
       if (ans == 1) stop()
       if (ans == 2) {
-        if (length(grep("Matrix", installed.packages()[, 1])) == 0) {
-          install.packages("Matrix", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
-        }
-        require(Matrix)
+        checkRequiredPackages("matrix")
         pop.cov <- as.matrix(nearPD(as.matrix(pop.cov), keepDiag = T)$mat)
       }
       if (ans == 3) {

@@ -111,10 +111,7 @@
 
 PMcheck <- function(data, model, fix = F, quiet = F) {
 
-  if (length(grep("openxlsx", installed.packages()[, 1])) == 0) {
-    install.packages("openxlsx", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
-  }
-  openxlsx.installed <- require(openxlsx)
+  checkRequiredPackages("openxlsx")
   #here's the subfunction to check for errors 
   errcheck <- function(data2, model, quiet = quiet) {
     err <- list(colorder = list(msg = "OK - The first 14 columns are appropriately named and ordered.", results = NA, col = NA, code = NA),

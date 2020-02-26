@@ -43,12 +43,7 @@
 
 NM2PM <- function(data,ctl){
   
-  if(length(grep("chron",installed.packages()[,1]))==0){
-    install.packages("chron",repos="http://cran.cnr.Berkeley.edu",dependencies=T)
-  }
-  chron.installed <- require(chron)
-  if(!chron.installed) stop("Error: connect to internet and re-run NM2PM to download and install chron package.\n")
-  
+  checkRequiredPackages("chron")
   msg <- "NONMEM file conversion report:\n"
   #check data file name
   while(!file.exists(data)) {
