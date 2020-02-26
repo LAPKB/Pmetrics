@@ -2,9 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-
 #Pmetrics build
-
 PMchangelog.html
 PACKAGES
 PACKAGES.gz
@@ -32,3 +30,4 @@ Pmetrics/src/Pmetrics.so
 Pmetrics/src/knn.o
 Pmetrics/inst/config/newFort.txt
 *.Rd
+PmetricsGit.Rproj
