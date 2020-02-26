@@ -5,8 +5,6 @@
 .DS_Store
 Pmetrics.Rcheck/
 Pmetrics/man/*
-
-
 #build
 Archived
 PACKAGES
@@ -15,3 +13,4 @@ PACKAGES.rds
 PMchangelog.html
 Pmetrics/src/Pmetrics.so
 Pmetrics/src/knn.o
+PmetricsGit.Rproj
