@@ -2,6 +2,7 @@
 
 function Install-Choco {
   Write-Output "Pmetrics is trying to install Chocolatey..."
+  [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
   Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
   Write-Output "Checking installation..."
   If (Is-Choco-Installed) {
@@ -48,7 +49,7 @@ function Is-Gfortran-Installed {
 If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
   Write-Output "Not elevated"
   # Relaunch as an elevated process:
-  Start-Process powershell.exe "-File", ('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
+  Start-Process powershell.exe "-ExecutionPolicy", "ByPass", "-File", ('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
   exit
 }
 else {

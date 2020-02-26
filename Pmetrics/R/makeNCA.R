@@ -77,12 +77,7 @@ makeNCA <- function(x,postPred=F,include,exclude,input=1,icen="median",outeq=1,b
                     start=0,end=Inf,first=NA,last=NA,terminal=3){
   
   
-  if(length(grep("plyr",installed.packages()[,1]))==0){
-    install.packages("plyr",repos="http://cran.cnr.Berkeley.edu",dependencies=T)
-  }
-  plyr.installed <- require(plyr)
-  if(!plyr.installed) stop("Error: connect to internet and re-run makeOP to download and install plyr package.\n")
-  
+  checkRequiredPackages("plyr")
   
   if(!missing(x)) { #x specified, so load corresponding object
     if(is.numeric(x)){ #run number

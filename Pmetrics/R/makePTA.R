@@ -100,13 +100,7 @@ makePTA <- function(simdata,simlabels,targets,
   
   ################### begining of makePTA ######################
   # initial checks
-  if (length(grep("reshape2", installed.packages()[, 1])) == 0) {
-    install.packages("reshape2", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
-  }
-  reshape2.installed <- require(reshape2, warn.conflicts = F, quietly = T)
-  if (!reshape2.installed) 
-    stop("Error: connect to internet and re-run makePTA to download and install reshape2 package.\n")
-  
+  checkRequiredPackages("reshape2")
   if (missing(simdata) | missing(target.type)) 
     stop("Simulation output and target.type must be specified.\n")
   if (is.character(target.type) & !target.type %in% c("time", "auc", "peak", "min")) 

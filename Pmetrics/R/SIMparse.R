@@ -211,10 +211,10 @@ SIMparse <- function(file,include,exclude,combine=F,silent=F, parallel){
   
   if (parallel){
     if (length(grep("doParallel", installed.packages()[, 1])) == 0) {
-      install.packages("doParallel", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
+      install.packages("doParallel", repos = "http://cran.rstudio.com", dependencies = T)
     }
     if (length(grep("foreach", installed.packages()[, 1])) == 0) {
-      install.packages("foreach", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
+      install.packages("foreach", repos = "http://cran.rstudio.com", dependencies = T)
     }
     doParallel.installed <- require(doParallel, warn.conflicts = F, quietly = T)
     foreach.installed <- require(foreach, warn.conflicts = F, quietly = T)

@@ -1,7 +1,5 @@
 PMregister <- function(email, server_address) {
-  if (length(grep("askpass", installed.packages()[, 1])) == 0) {
-    install.packages("askpass", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
-  }
+ checkRequiredPackages("askpass")
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   askpass.installed <- require(askpass)
   password <- askpass("Password: ")
@@ -22,9 +20,7 @@ PMregister <- function(email, server_address) {
 }
 
 PMlogin <- function(email, server_address) {
-  if (length(grep("askpass", installed.packages()[, 1])) == 0) {
-    install.packages("askpass", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
-  }
+  checkRequiredPackages("askpass")
   if (missing(email)) email <- readline("please type your email: ")
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   askpass.installed <- require(askpass)
@@ -144,9 +140,7 @@ PMlogout <- function() {
 }
 
 .PMremote_outdata <- function(run, server_address) {
-  if (length(grep("base64enc", installed.packages()[, 1])) == 0) {
-    install.packages("base64enc", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
-  }
+  checkRequiredPackages("base64enc")
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   base64enc.installed <- require(base64enc)
   library(httr)

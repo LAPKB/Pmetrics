@@ -35,10 +35,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   #1 for NPAG, 2 for IT2B, 1 for anything else
   reportType <- switch(type, NPAG = 1, IT2B = 2, 1)
 
-  if (length(grep("xtable", installed.packages()[, 1])) == 0) {
-    install.packages("xtable", repos = "http://cran.cnr.Berkeley.edu", dependencies = T)
-  }
-  xtable.installed <- require(xtable)
+  checkRequiredPackages("xtable")
 
   setwd(wd)
   if (missing(rdata)) rdata <- makeRdata(wd, remote=F, reportType)

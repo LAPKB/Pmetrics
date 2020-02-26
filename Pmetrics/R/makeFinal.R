@@ -51,11 +51,7 @@
 #' names(final)
 
 makeFinal <- function(data){
-  if(length(grep("reshape2",installed.packages()[,1]))==0){
-    install.packages("reshape2",repos="http://cran.cnr.Berkeley.edu",dependencies=T)
-  }
-  reshape2.installed <- require(reshape2,warn.conflicts=F,quietly=T)
-  if(!reshape2.installed) stop("Error: connect to internet and re-run makePTA to download and install reshape2 package.\n")
+  checkRequiredPackages("reshape2")
   
   if(!inherits(data,"NPAG") & !inherits(data,"IT2B")) stop(paste("Use PMparse() to generate an Pmetrics NPAG or IT2B object.\n")) 
   if(inherits(data,"NPAG")){                                    

@@ -37,12 +37,7 @@
 
 makeOP <- function(data){
   
-  if(length(grep("reshape2",installed.packages()[,1]))==0){
-    install.packages("reshape2",repos="http://cran.cnr.Berkeley.edu",dependencies=T)
-  }
-  reshape2.installed <- require(reshape2)
-  if(!reshape2.installed) stop("Error: connect to internet and re-run makeOP to download and install reshape2 package.\n")
-  
+  checkRequiredPackages("reshape2")
   if(!inherits(data,"NPAG") & !inherits(data,"IT2B")) stop(paste("Use NPparse() or ITparse() to generate a Pmetrics NPAG or IT2B object.\n"))
   
   #subsidiary function
