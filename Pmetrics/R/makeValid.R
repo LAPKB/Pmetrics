@@ -439,36 +439,32 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   npdeRes <- tryCatch(autonpde(namobs=thisobs,namsim=thissim,1,2,3,verbose=T),error=function(e) e)
   
   class(simFull) <- c("PMsim","list")
-  class(npdeRes) <- c("PMnpde","list")
   
-  NPAGout <- list(NPdata=getName("NPdata"),
-                   pop=getName("pop"),
-                   post=getName("post"),
-                   final=getName("final"),
-                   cycle=getName("cycle"),
-                   op=getName("op"),
-                   cov=getName("cov"),
-                   mdata=getName("mdata"),
-                   npde=npdeRes,
-                   sim=simFull)
-  save(NPAGout,file="../outputs/NPAGout.Rdata")
-  
-  #put sim in global environment
-  assign(paste("sim",as.character(run),sep="."),simFull,pos=1)
+
   
   
   # Clean Up ----------------------------------------------------------------
   
-  setwd(currwd)
-  
-  valRes <- list(simdata=simFull,timeBinMedian=timeMedian,tadBinMedian=tadMedian,opDF=tempDF)
-  # valRes <- list(simdata=simFull,timeBinMedian=timeMedian,tadBinMedian=tadMedian,opDF=tempDF,npde=npdeRes)
-  
+  valRes <- list(simdata=simFull,timeBinMedian=timeMedian,tadBinMedian=tadMedian,opDF=tempDF,npde=npdeRes)
   class(valRes) <- c("PMvalid","list")
   
+  #save it back to run so it can be loaded in the future
+  NPAGout <- list(NPdata=getName("NPdata"),
+                  pop=getName("pop"),
+                  post=getName("post"),
+                  final=getName("final"),
+                  cycle=getName("cycle"),
+                  op=getName("op"),
+                  cov=getName("cov"),
+                  mdata=getName("mdata"),
+                  valid=valRes)
+  save(NPAGout,file="../outputs/NPAGout.Rdata")
+  
+  # #put sim in global environment
+  # assign(paste("sim",as.character(run),sep="."),simFull,pos=1)
+  
+  setwd(currwd)
   return(valRes)
-  
-  
   
 } #end function
 
