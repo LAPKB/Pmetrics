@@ -1,10 +1,11 @@
 Package: Pmetrics
 Maintainer: Michael Neely <mneely@usc.edu>
-License: GPL (>= 1)
+License: GPL (>= 2)
 Title: Pmetrics is a parametric and non-parametric
     pharmacometric modeling and simulation software package
 Type: Package
 LazyLoad: yes
+LazyData: yes
 Author: Michael Neely <contact@lapk.org>
 Description: This package contains functions to run and
     analyze the output from all three components of the
@@ -12,12 +13,14 @@ Description: This package contains functions to run and
     data analysis: 1) IT2B (Iterative Two-Stage Bayesian)
     for parametric models; 2) NPAG (Non-parametric Adaptive
     Grid) for non-paramametric models; 3) Simulator for
-    semi-parametric Monte-Carlo simulations.
+    semi-parametric Monte-Carlo simulations. It includes
+    source code from the NPDE package by Emanuelle Comets, et al,
+    which used to be on CRAN.
 Author@R: person("Michael", "Neely",
     email="mneely@usc.edu", role="aut")
 Version: 1.9
 URL: http://www.lapk.org
-Date: 2019-05-06
+Date: 2020-02-29
 Depends:
     R (>= 3.5.0),
     utils,
@@ -37,6 +40,7 @@ Suggests:
     mclust,
     purrr,
     askpass,
-    base64enc
+    base64enc,
+    methods
 Roxygen: list(wrap = FALSE)
 RoxygenNote: 7.0.2
