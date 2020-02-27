@@ -14,3 +14,4 @@ PMchangelog.html
 Pmetrics/src/Pmetrics.so
 Pmetrics/src/knn.o
 PmetricsGit.Rproj
+Pmetrics/inst/compiledFortran/
