@@ -423,6 +423,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
 
   #prepare data for npde
   obs <- tempDF[tempDF$icen=="mean",c("id","time","obs")]
+  
   #remove missing obs
   obs <- obs[obs$obs!=-99,]
   names(obs)[3] <- "out"
