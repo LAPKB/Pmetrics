@@ -419,41 +419,41 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   simFull$obs$simnum <- as.numeric(sapply(strsplit(simFull$obs$id,"\\."), function(x) x[1]))
   
   
-  # NPDE --------------------------------------------------------------------
+  #NPDE --------------------------------------------------------------------
+
+  #prepare data for npde
+  obs <- tempDF[tempDF$icen=="mean",c("id","time","obs")]
+  #remove missing obs
+  obs <- obs[obs$obs!=-99,]
+  names(obs)[3] <- "out"
   
-  # #prepare data for npde
-  # obs <- tempDF[,c("id","time","obs")]
-  # #remove missing obs
-  # obs <- obs[obs$obs!=-99,]
-  # names(obs)[3] <- "out"
-  # 
-  # simobs <- simFull$obs
-  # #remove missing simulations
-  # simobs <- simobs[simobs$out!=-99,]
-  # simobs$id <- rep(obs$id,each=nsim)
-  # 
-  # #get NPDE
-  # assign("thisobs",obs,pos=1)
-  # assign("thissim",simobs,pos=1)
-  # npdeRes <- tryCatch(autonpde(namobs=thisobs,namsim=thissim,1,2,3,verbose=T),error=function(e) e)
-  # 
-  # class(simFull) <- c("PMsim","list")
-  # class(npdeRes) <- c("PMnpde","list")
-  # 
-  # NPAGout <- list(NPdata=getName("NPdata"),
-  #                 pop=getName("pop"),
-  #                 post=getName("post"),
-  #                 final=getName("final"),
-  #                 cycle=getName("cycle"),
-  #                 op=getName("op"),
-  #                 cov=getName("cov"),
-  #                 mdata=getName("mdata"),
-  #                 npde=npdeRes,
-  #                 sim=simFull)
-  # save(NPAGout,file="../outputs/NPAGout.Rdata")
-  # 
-  # #put sim in global environment
-  # assign(paste("sim",as.character(run),sep="."),simFull,pos=1)
+  simobs <- simFull$obs
+  #remove missing simulations
+  simobs <- simobs[simobs$out!=-99,]
+  simobs$id <- rep(obs$id,each=nsim)
+  
+  #get NPDE
+  assign("thisobs",obs,pos=1)
+  assign("thissim",simobs,pos=1)
+  npdeRes <- tryCatch(autonpde(namobs=thisobs,namsim=thissim,1,2,3,verbose=T),error=function(e) e)
+  
+  class(simFull) <- c("PMsim","list")
+  class(npdeRes) <- c("PMnpde","list")
+  
+  NPAGout <- list(NPdata=getName("NPdata"),
+                   pop=getName("pop"),
+                   post=getName("post"),
+                   final=getName("final"),
+                   cycle=getName("cycle"),
+                   op=getName("op"),
+                   cov=getName("cov"),
+                   mdata=getName("mdata"),
+                   npde=npdeRes,
+                   sim=simFull)
+  save(NPAGout,file="../outputs/NPAGout.Rdata")
+  
+  #put sim in global environment
+  assign(paste("sim",as.character(run),sep="."),simFull,pos=1)
   
   
   # Clean Up ----------------------------------------------------------------
