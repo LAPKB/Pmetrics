@@ -42,7 +42,7 @@
 makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   
   #verify packages used in this function
-  checkRequiredPackages(c("mclust","npde"))
+  checkRequiredPackages(c("mclust"))
   
   #save current wd
   currwd <- getwd()
