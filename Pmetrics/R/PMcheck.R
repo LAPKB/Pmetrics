@@ -294,7 +294,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$noObs$msg <- "FAIL - The following rows are subjects with no observations."
       err$noObs$results <- which(data2$id %in% subjMissObs)
     }
-
+    openxlsx.installed <- require(openxlsx)
     #create the color coded Excel file using code from Patrick Nolain
     if (openxlsx.installed) {
       # Definition of a table of n types of errors, each one with 'code' and 'color' properties

@@ -466,8 +466,13 @@
       if (!batch) system(paste("open -a Terminal.app ", shQuote(paste(getwd(), "/", scriptFileName, sep = "")), sep = ""))
     }
     if (OS == 2 & !batch) {
+      #Create a wrapper script
+      f <- file("win_wrapper.ps1", "w")
+      writeLines("Start-Process npscript.bat", f)
+      close(f)
       #Windows
-      cat(paste("\n***Manually double-click the file called ", scriptFileName, ".bat in ", currwd, "/", newdir, " to execute the NPAG run.***\n\n", sep = ""))
+      system2("C:/Windows/System32/WindowsPowerShell/v1.0/powershell", args = c("-ExecutionPolicy","ByPass","-file", "win_wrapper.ps1"), wait = T)
+      #cat(paste("\n***Manually double-click the file called ", scriptFileName, ".bat in ", currwd, "/", newdir, " to execute the NPAG run.***\n\n", sep = ""))
       outpath <- gsub("\\\\", "/", outpath)
     }
     if (OS == 3) {

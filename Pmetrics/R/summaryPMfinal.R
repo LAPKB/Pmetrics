@@ -50,6 +50,7 @@
 
 summary.PMfinal <- function(x,lower=0.025,upper=0.975){
   checkRequiredPackages("reshape2")
+  reshape2.installed <- require(reshape2)
   if(!reshape2.installed) stop("Error: connect to internet download and install reshape2 package.\n")
   
   if(inherits(x,"IT2B")){ #IT2B object
