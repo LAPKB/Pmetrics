@@ -44,5 +44,5 @@ Suggests:
     methods
 Collate: 'NpdeGlobal.R' 'NpdeData.R' 'NpdeRes.R' 'NpdeObject.R'
         'NpdeFunc_methods.R' 'NpdeFunc_plots.R' 'NpdeMain.R'
-Roxygen: list(wrap = FALSE)
-RoxygenNote: 7.0.2
+
+
