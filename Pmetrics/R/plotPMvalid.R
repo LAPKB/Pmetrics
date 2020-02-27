@@ -103,6 +103,7 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.97
   lowerDF <- data.frame(time=c(polytime,rev(polytime)),value=c(lowerUpper,rev(lowerLower)))
   
   
+  #type specific options
   if(type=="vpc"){ plotData <- list(obsQuant=quant_Obs,obs=x$opDF$obs,binTime=use.timeBinMedian,
                                     obsTime=use.optimes,upperDF=upperDF,lowerDF=lowerDF,
                                     medDF=medDF)
@@ -111,34 +112,37 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.97
                                       obsTime=use.opTimeBinMedian,upperDF=upperDF,lowerDF=lowerDF,
                                       medDF=medDF)
   }
-  #set the scale for the y-axis
-  if(log){scaleY <- scale_y_log10()} else (scaleY <- scale_y_continuous())
-  #override colors to make greyscale
-  if(theme=="grey"|theme=="gray"){ #set to grayscale
-    col.obs <- "black"
-    col.obs.ci <- "grey20"
-    col.obs.med <- "grey20"
-    col.sim.ci <- "grey75"
-    col.sim.med <- "grey50"
+  
+  #common options
+  if(type=="vpc" | type=="pcvpc"){
+    #set the scale for the y-axis
+    if(log){scaleY <- scale_y_log10()} else (scaleY <- scale_y_continuous())
+    #override colors to make greyscale
+    if(theme=="grey"|theme=="gray"){ #set to grayscale
+      col.obs <- "black"
+      col.obs.ci <- "grey20"
+      col.obs.med <- "grey20"
+      col.sim.ci <- "grey75"
+      col.sim.med <- "grey50"
+    }
+    
+    #GENERATE THE PLOT
+    p <- with(plotData,
+              ggplot(mapping=aes(x=binTime,y=unlist(lapply(obsQuant,function(x) x[3])))) +
+                geom_line(col=col.obs.ci,lty=2,lwd=1) + scale_x_continuous(breaks=floor(binTime)) +
+                geom_polygon(aes(x=time,y=value),data=upperDF,fill=col.sim.ci,alpha=0.25) +
+                geom_polygon(aes(x=time,y=value),data=medDF,fill=col.sim.med,alpha=0.25) +
+                geom_polygon(aes(x=time,y=value),data=lowerDF,fill=col.sim.ci,alpha=0.25) +
+                geom_line(aes(x=binTime,
+                              y=unlist(lapply(obsQuant,function(x) x[2]))),col=col.obs.med,lty=1,lwd=1) +
+                geom_line(aes(x=binTime,
+                              y=unlist(lapply(obsQuant,function(x) x[1]))),col=col.obs.ci,lty=2,lwd=1) + 
+                geom_point(aes(x=obsTime,y=obs),col=col.obs,pch=pch.obs,cex=cex.obs) + scaleY +
+                xlab(xlab) + ylab(ylab) 
+    )
+    #SEND TO CONSOLE
+    print(p)
   }
-  
-  #GENERATE THE PLOT
-  p <- with(plotData,
-            ggplot(mapping=aes(x=binTime,y=unlist(lapply(obsQuant,function(x) x[3])))) +
-              geom_line(col=col.obs.ci,lty=2,lwd=1) + scale_x_continuous(breaks=floor(binTime)) +
-              geom_polygon(aes(x=time,y=value),data=upperDF,fill=col.sim.ci,alpha=0.25) +
-              geom_polygon(aes(x=time,y=value),data=medDF,fill=col.sim.med,alpha=0.25) +
-              geom_polygon(aes(x=time,y=value),data=lowerDF,fill=col.sim.ci,alpha=0.25) +
-              geom_line(aes(x=binTime,
-                            y=unlist(lapply(obsQuant,function(x) x[2]))),col=col.obs.med,lty=1,lwd=1) +
-              geom_line(aes(x=binTime,
-                            y=unlist(lapply(obsQuant,function(x) x[1]))),col=col.obs.ci,lty=2,lwd=1) + 
-              geom_point(aes(x=obsTime,y=obs),col=col.obs,pch=pch.obs,cex=cex.obs) + scaleY +
-              xlab(xlab) + ylab(ylab) 
-  )
-  #SEND TO CONSOLE
-  print(p)
-  
   
   if(type=="npde"){
     plot(x$npde)
