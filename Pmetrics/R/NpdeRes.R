@@ -427,8 +427,8 @@ gof.test.numeric<-function(object,which="npde",parametric=TRUE, ...) {
 	if(which=="pd") y<-ks.test(object,"punif",min=min(object,na.rm=TRUE), max=max(object,na.rm=TRUE)) else y<-shapiro.test(object)
 	myres[3]<-y$p.val
 	
-# test de variance pour 1 échantillon
-# chi=s2*(n-1)/sigma0 et test de H0={s=sigma0} vs chi2 à n-1 df
+# test de variance pour 1 sample
+# chi=s2*(n-1)/sigma0 and test of H0={s=sigma0} vs chi2 with n-1 df
 #    if(parametric) {
 	chi<-(semp**2)*(n1-1)
 	if(which=="pd") chi<-chi*12 # X~U(0,1) => var(X)=1/12
