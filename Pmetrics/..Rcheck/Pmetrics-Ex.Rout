@@ -1,0 +1,3828 @@
+
+R version 3.6.2 (2019-12-12) -- "Dark and Stormy Night"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "Pmetrics"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> base::assign(".ExTimings", "Pmetrics-Ex.timings", pos = 'CheckExEnv')
+> base::cat("name\tuser\tsystem\telapsed\n", file=base::get(".ExTimings", pos = 'CheckExEnv'))
+> base::assign(".format_ptime",
++ function(x) {
++   if(!is.na(x[4L])) x[1L] <- x[1L] + x[4L]
++   if(!is.na(x[5L])) x[2L] <- x[2L] + x[5L]
++   options(OutDec = '.')
++   format(x[1L:3L], digits = 7L)
++ },
++ pos = 'CheckExEnv')
+> 
+> ### * </HEADER>
+> library('Pmetrics')
+Loading required package: purrr
+Pmetrics has found required compiled binary files.
+Pmetrics has found required compiled binary files.
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("NpdeData-class")
+> ### * NpdeData-class
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: NpdeData-class
+> ### Title: Class "NpdeData" representing the structure of the longitudinal
+> ###   data
+> ### Aliases: NpdeData-class NpdeData show,NpdeData-method
+> ###   print,NpdeData-method summary,NpdeData-method [,NpdeData-method
+> ###   [<-,NpdeData-method
+> ### Keywords: classes
+> 
+> ### ** Examples
+> 
+> 
+> methods(class="NpdeData")
+ [1] [               [<-             initialize      plot           
+ [5] print           read.npdeData   set.plotoptions show           
+ [9] showall         subset          summary        
+see '?methods' for accessing help and source code
+> 
+> showClass("NpdeData")
+Class "NpdeData" [package "Pmetrics"]
+
+Slots:
+                                                                      
+Name:        name.data      name.group  name.predictor   name.response
+Class:       character       character       character       character
+                                                                      
+Name:        name.cens       name.miss name.covariates      name.ipred
+Class:       character       character       character       character
+                                                                      
+Name:            units            data             ind           icens
+Class:            list      data.frame         numeric         numeric
+                                                                      
+Name:         not.miss               N        ntot.obs        nind.obs
+Class:         logical         numeric         numeric         numeric
+                      
+Name:              loq
+Class:         numeric
+> 
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("NpdeData-class", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("NpdeObject-class")
+> ### * NpdeObject-class
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: NpdeObject-class
+> ### Title: Class "NpdeObject"
+> ### Aliases: NpdeObject-class NpdeObject NpdeObject-class,
+> ###   show,NpdeObject-method print,NpdeObject-method
+> ###   showall,NpdeObject-method summary,NpdeObject-method
+> ###   test,NpdeObject-method [,NpdeObject-method [<-,NpdeObject-method
+> ###   npde.main,NpdeObject npde.save,NpdeObject npde.graphs,NpdeObject
+> ###   plot,NpdeObject
+> ### Keywords: classes
+> 
+> ### ** Examples
+> 
+> 
+> methods(class="NpdeObject")
+ [1] [               [<-             gof.test        initialize     
+ [5] npde.graphs     npde.main       npde.save       plot           
+ [9] print           set.plotoptions show            showall        
+[13] subset          summary        
+see '?methods' for accessing help and source code
+> 
+> showClass("NpdeObject")
+Class "NpdeObject" [package "Pmetrics"]
+
+Slots:
+                                                                  
+Name:         data     results    sim.data     options       prefs
+Class:    NpdeData     NpdeRes NpdeSimData        list        list
+> 
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("NpdeObject-class", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("NpdeRes-class")
+> ### * NpdeRes-class
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: NpdeRes-class
+> ### Title: Class "NpdeRes"
+> ### Aliases: NpdeRes-class NpdeRes NpdeRes-class, show,NpdeRes-method
+> ###   print,NpdeRes-method showall,NpdeRes-method summary,NpdeRes-method
+> ###   test,NpdeRes-method [,NpdeRes-method [<-,NpdeRes-method
+> ### Keywords: classes internal
+> 
+> ### ** Examples
+> 
+> 
+> data(theopp)
+> 
+> methods(class="NpdeRes")
+[1] [          [<-        gof.test   initialize plot       print      show      
+[8] showall    summary   
+see '?methods' for accessing help and source code
+> 
+> showClass("NpdeRes")
+Class "NpdeRes" [package "Pmetrics"]
+
+Slots:
+                                                                        
+Name:         res      icens   not.miss       ploq       xerr     pd.sim
+Class: data.frame    numeric    logical    numeric    numeric     matrix
+                            
+Name:    npde.sim   ntot.obs
+Class:     matrix    numeric
+> 
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("NpdeRes-class", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("NpdeSimData-class")
+> ### * NpdeSimData-class
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: NpdeSimData-class
+> ### Title: Class "NpdeSimData" representing the structure of the
+> ###   longitudinal data
+> ### Aliases: NpdeSimData-class NpdeSimData show,NpdeSimData-method
+> ###   [,NpdeSimData-method [<-,NpdeSimData-method
+> ### Keywords: classes
+> 
+> ### ** Examples
+> 
+> 
+> showClass("NpdeSimData")
+Class "NpdeSimData" [package "Pmetrics"]
+
+Slots:
+                                             
+Name:  name.simdata         nrep       datsim
+Class:    character      numeric   data.frame
+> 
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("NpdeSimData-class", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("PMcheck")
+> ### * PMcheck
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: PMcheck
+> ### Title: Check Pmetrics Inputs for Errors
+> ### Aliases: PMcheck
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D data(PMex3)
+> ##D err <- PMcheck(badData)
+> ##D #look at the errors.xlsx file in the working directory
+> ##D #try to automatically fix what can be fixed
+> ##D goodData <- PMcheck(badData,fix=T)
+> ##D PMcheck(goodData)
+> ##D #you have to fix manually problems which require data entry
+> ## End(Not run)
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("PMcheck", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("PMnews")
+> ### * PMnews
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: PMnews
+> ### Title: Pmetrics changelog
+> ### Aliases: PMnews
+> 
+> ### ** Examples
+> 
+> PMnews()
+                         Changes in version 1.9                         
+
+NEW FEATURES
+
+    o   This version is a pre-release beta for version 2.0
+
+    o   makeValid and plot.PMvalid added to replace makeNPDE and add
+	pcVPC capacity
+
+    o   NPDE code folded into Pmetrics since original NPDE package no
+	longer maintained
+
+    o   Windows users will now see terminal window open automatically
+
+    o   Added remote server run capabilities, currently only on LAPKB
+	server
+
+    o   Restructured start up and installation to be self contained for
+	all modules, including gfortran
+
+BUG FIXES
+
+    o   None
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("PMnews", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("PMtree")
+> ### * PMtree
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: PMtree
+> ### Title: Create a new Pmetrics folder tree
+> ### Aliases: PMtree
+> 
+> ### ** Examples
+> 
+> PMtree("DrugX")
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("PMtree", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("PMwriteMatrix")
+> ### * PMwriteMatrix
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: PMwriteMatrix
+> ### Title: Write a Pmetrics .csv Matrix File
+> ### Aliases: PMwriteMatrix
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D data <- PMreadMatrix(paste(.libPaths(),"/Pmetrics/example/NPAG/PMex1.csv",sep=""))
+> ##D data
+> ##D #write to the current directory
+> ##D PMwriteMatrix(data,"PMex1.csv")
+> ## End(Not run)
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("PMwriteMatrix", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("SIMrun")
+> ### * SIMrun
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: SIMrun
+> ### Title: Run the Pmetrics Simulator
+> ### Aliases: SIMrun
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D wd <- getwd()
+> ##D #make 1 lognormal distribution for each parameter
+> ##D weights <- 1
+> ##D mean <- log(c(0.7,0.05,100))
+> ##D cov <- matrix(rep(0,length(mean)**2),ncol=length(mean))
+> ##D diag(cov) <- (c(0.15,0.15,0.15)*mean)**2
+> ##D #make the prior for the simulation
+> ##D poppar <- list(weights,mean,cov)
+> ##D setwd(paste(normalizePath(get("PmetricsPath",envir=PMenv),winslash="/"),"/Pmetrics/example/Sim",sep=""))
+> ##D #run simulation
+> ##D SIMrun(poppar,"temp1.csv",nsim=15,model="model1.for",obsNoise=c(0.02,0.1,0,0),makecsv="PMex1.csv",outname="example",clean=T)
+> ##D #extract results of simulation
+> ##D simout <- SIMparse("example1.txt")
+> ##D file.remove("example1.txt")
+> ##D #plot simulated profiles (use help(plot.PMsim) for more information)
+> ##D plot(simout,ci=0,probs=NA,x.qlab=0.75,log=T,col="red",lwd=2,pch=NA,join=T)
+> ##D setwd(wd)
+> ## End(Not run)
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("SIMrun", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("dist.pred.sim")
+> ### * dist.pred.sim
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: dist.pred.sim
+> ### Title: Compute distribution of pd/npde using simulations
+> ### Aliases: dist.pred.sim calcnpde.sim
+> 
+> ### ** Examples
+> 
+> 
+> data(theopp)
+> data(simtheopp)
+> x<-autonpde(theopp,simtheopp,1,3,4,boolsave=FALSE)
+---------------------------------------------
+Distribution of npde :
+      nb of obs: 120 
+           mean= 0.0668   (SE= 0.095 )
+       variance= 1.074   (SE= 0.14 )
+       skewness= 0.511 
+       kurtosis= 0.2912 
+---------------------------------------------
+
+Statistical tests
+  t-test                     : 0.481
+  Fisher variance test       : 0.55
+  SW test of normality       : 0.00273 **
+Global adjusted p-value      : 0.00819 **
+---
+Signif. codes: '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 
+---------------------------------------------
+> # Use random samples from N(0,1) to obtain a prediction interval on the empirical cdf of the npde
+> plot(x,plot.type="ecdf",bands=TRUE,approx.pi=TRUE)
+> # defaults to computing the pd and npde for 100 simulated datasets (in the theophylline example, this uses all the simulated datasets)
+> x<-dist.pred.sim(x)
+> # Use the npde from the simulated datasets to obtain a prediction interval on the empirical cdf
+> plot(x,plot.type="ecdf",bands=TRUE,approx.pi=FALSE)
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("dist.pred.sim", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("gof.test")
+> ### * gof.test
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: gof.test
+> ### Title: Test on npde or pd
+> ### Aliases: gof.test gof.test.NpdeObject gof.test.numeric gof.test.NpdeRes
+> ###   print.gof.test
+> ### Keywords: test
+> 
+> ### ** Examples
+> 
+> 
+> data(theopp)
+> 
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("gof.test", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("kurtosis")
+> ### * kurtosis
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: kurtosis
+> ### Title: Kurtosis
+> ### Aliases: kurtosis
+> ### Keywords: univar
+> 
+> ### ** Examples
+> 
+> 
+> x <- rnorm(100)
+> kurtosis(x)
+[1] 0.007653206
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("kurtosis", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("makeAUC")
+> ### * makeAUC
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: makeAUC
+> ### Title: Calculation of AUCs
+> ### Aliases: makeAUC
+> 
+> ### ** Examples
+> 
+> data(PMex1)
+> op <- makeOP(NPdata.1)
+> makeAUC(op)
+   id      tau
+1   1 988.2704
+2   2 334.6778
+3   3 364.6026
+4   4 213.1521
+5   5 251.5889
+6   6 655.7456
+7   7 525.1504
+8   8 610.3118
+9   9 319.2174
+10 10 336.6878
+11 11 246.7709
+12 12 632.4077
+13 13 632.3283
+14 14 331.9000
+15 15 511.6273
+16 16 514.2532
+17 17 263.6686
+18 18 718.9302
+19 19 658.9126
+20 20 491.7043
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("makeAUC", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+
+detaching ‘package:reshape2’
+
+> nameEx("makeCov")
+> ### * makeCov
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: makeCov
+> ### Title: Extract covariate data
+> ### Aliases: makeCov
+> 
+> ### ** Examples
+> 
+> data(PMex1)
+> cov <- makeCov(NPdata.1)
+> cov
+    id time   wt africa age gender height        Ka         Ke         V
+1    1    0 46.7      1  21      1    160 0.4403950 0.02461600  66.39240
+2    1   24 46.7      1  21      1    160 0.4403950 0.02461600  66.39240
+3    1   48 46.7      1  21      1    160 0.4403950 0.02461600  66.39240
+4    1   72 46.7      1  21      1    160 0.4403950 0.02461600  66.39240
+5    1   96 46.7      1  21      1    160 0.4403950 0.02461600  66.39240
+6    1  120 46.7      1  21      1    160 0.4403950 0.02461600  66.39240
+7    2    0 66.5      1  30      1    174 0.7405000 0.03980000 119.47600
+8    2   24 66.5      1  30      1    174 0.7405000 0.03980000 119.47600
+9    2   48 66.5      1  30      1    174 0.7405000 0.03980000 119.47600
+10   2   72 66.5      1  30      1    174 0.7405000 0.03980000 119.47600
+11   2   96 66.5      1  30      1    174 0.7405000 0.03980000 119.47600
+12   2  120 66.5      1  30      1    174 0.7405000 0.03980000 119.47600
+13   3    0 46.7      1  24      0    164 0.8999440 0.04310270 108.64900
+14   3   24 46.7      1  24      0    164 0.8999440 0.04310270 108.64900
+15   3   48 46.7      1  24      0    164 0.8999440 0.04310270 108.64900
+16   3   72 46.7      1  24      0    164 0.8999440 0.04310270 108.64900
+17   3   96 46.7      1  24      0    164 0.8999440 0.04310270 108.64900
+18   3  120 46.7      1  24      0    164 0.8999440 0.04310270 108.64900
+19   4    0 50.8      1  25      1    165 0.8975470 0.05643070 119.81900
+20   4   24 50.8      1  25      1    165 0.8975470 0.05643070 119.81900
+21   4   48 50.8      1  25      1    165 0.8975470 0.05643070 119.81900
+22   4   72 50.8      1  25      1    165 0.8975470 0.05643070 119.81900
+23   4   96 50.8      1  25      1    165 0.8975470 0.05643070 119.81900
+24   4  120 50.8      1  25      1    165 0.8975470 0.05643070 119.81900
+25   5    0 65.8      1  22      1    181 0.1053180 0.06750520 113.34400
+26   5   24 65.8      1  22      1    181 0.1053180 0.06750520 113.34400
+27   5   48 65.8      1  22      1    181 0.1053180 0.06750520 113.34400
+28   5   72 65.8      1  22      1    181 0.1053180 0.06750520 113.34400
+29   5   96 65.8      1  22      1    181 0.1053180 0.06750520 113.34400
+30   5  120 65.8      1  22      1    181 0.1053180 0.06750520 113.34400
+31   6    0 65.0      1  23      1    177 0.8952180 0.03488290  71.86260
+32   6   24 65.0      1  23      1    177 0.8952180 0.03488290  71.86260
+33   6   48 65.0      1  23      1    177 0.8952180 0.03488290  71.86260
+34   6   72 65.0      1  23      1    177 0.8952180 0.03488290  71.86260
+35   6   96 65.0      1  23      1    177 0.8952180 0.03488290  71.86260
+36   6  120 65.0      1  23      1    177 0.8952180 0.03488290  71.86260
+37   7    0 51.7      1  27      0    161 0.2151980 0.08328360  35.22430
+38   7   24 51.7      1  27      0    161 0.2151980 0.08328360  35.22430
+39   7   48 51.7      1  27      0    161 0.2151980 0.08328360  35.22430
+40   7   72 51.7      1  27      0    161 0.2151980 0.08328360  35.22430
+41   7   96 51.7      1  27      0    161 0.2151980 0.08328360  35.22430
+42   7  120 51.7      1  27      0    161 0.2151980 0.08328360  35.22430
+43   8    0 51.2      1  22      1    163 0.8954810 0.03488820  71.84700
+44   8   24 51.2      1  22      1    163 0.8954810 0.03488820  71.84700
+45   8   48 51.2      1  22      1    163 0.8954810 0.03488820  71.84700
+46   8   72 51.2      1  22      1    163 0.8954810 0.03488820  71.84700
+47   8   96 51.2      1  22      1    163 0.8954810 0.03488820  71.84700
+48   8  120 51.2      1  22      1    163 0.8954810 0.03488820  71.84700
+49   9    0 55.0      1  23      1    174 0.7899130 0.04394190 101.78300
+50   9   24 55.0      1  23      1    174 0.7899130 0.04394190 101.78300
+51   9   48 55.0      1  23      1    174 0.7899130 0.04394190 101.78300
+52   9   72 55.0      1  23      1    174 0.7899130 0.04394190 101.78300
+53   9   96 55.0      1  23      1    174 0.7899130 0.04394190 101.78300
+54   9  120 55.0      1  23      1    174 0.7899130 0.04394190 101.78300
+55  10    0 52.1      1  32      1    163 0.6557860 0.06158780  61.69270
+56  10   24 52.1      1  32      1    163 0.6557860 0.06158780  61.69270
+57  10   48 52.1      1  32      1    163 0.6557860 0.06158780  61.69270
+58  10   72 52.1      1  32      1    163 0.6557860 0.06158780  61.69270
+59  10   96 52.1      1  32      1    163 0.6557860 0.06158780  61.69270
+60  10  120 52.1      1  32      1    163 0.6557860 0.06158780  61.69270
+61  11    0 56.5      1  34      1    165 0.5832230 0.06832300  73.10820
+62  11   24 56.5      1  34      1    165 0.5832230 0.06832300  73.10820
+63  11   48 56.5      1  34      1    165 0.5832230 0.06832300  73.10820
+64  11   72 56.5      1  34      1    165 0.5832230 0.06832300  73.10820
+65  11   96 56.5      1  34      1    165 0.5832230 0.06832300  73.10820
+66  11  120 56.5      1  34      1    165 0.5832230 0.06832300  73.10820
+67  12    0 47.9      1  54      0    160 0.4703060 0.03068830  91.85950
+68  12   24 47.9      1  54      0    160 0.4703060 0.03068830  91.85950
+69  12   48 47.9      1  54      0    160 0.4703060 0.03068830  91.85950
+70  12   72 47.9      1  54      0    160 0.4703060 0.03068830  91.85950
+71  12   96 47.9      1  54      0    160 0.4703060 0.03068830  91.85950
+72  12  120 47.9      1  54      0    160 0.4703060 0.03068830  91.85950
+73  13    0 60.5      1  24      1    180 0.2151980 0.08328370  35.22430
+74  13   24 60.5      1  24      1    180 0.2151980 0.08328370  35.22430
+75  13   48 60.5      1  24      1    180 0.2151980 0.08328370  35.22430
+76  13   72 60.5      1  24      1    180 0.2151980 0.08328370  35.22430
+77  13   96 60.5      1  24      1    180 0.2151980 0.08328370  35.22430
+78  13  120 60.5      1  24      1    180 0.2151980 0.08328370  35.22430
+79  14    0 59.2      1  26      1    174 0.5799890 0.04390320 117.83700
+80  14   24 59.2      1  26      1    174 0.5799890 0.04390320 117.83700
+81  14   48 59.2      1  26      1    174 0.5799890 0.04390320 117.83700
+82  14   72 59.2      1  26      1    174 0.5799890 0.04390320 117.83700
+83  14   96 59.2      1  26      1    174 0.5799890 0.04390320 117.83700
+84  14  120 59.2      1  26      1    174 0.5799890 0.04390320 117.83700
+85  15    0 43.0      1  19      0    150 0.7956280 0.03420900  72.20380
+86  15   24 43.0      1  19      0    150 0.7956280 0.03420900  72.20380
+87  15   48 43.0      1  19      0    150 0.7956280 0.03420900  72.20380
+88  15   72 43.0      1  19      0    150 0.7956280 0.03420900  72.20380
+89  15   96 43.0      1  19      0    150 0.7956280 0.03420900  72.20380
+90  15  120 43.0      1  19      0    150 0.7956280 0.03420900  72.20380
+91  16    0 64.4      1  25      1    173 0.7529550 0.03529860  89.67040
+92  16   24 64.4      1  25      1    173 0.7529550 0.03529860  89.67040
+93  16   48 64.4      1  25      1    173 0.7529550 0.03529860  89.67040
+94  16   72 64.4      1  25      1    173 0.7529550 0.03529860  89.67040
+95  16   96 64.4      1  25      1    173 0.7529550 0.03529860  89.67040
+96  16  120 64.4      1  25      1    173 0.7529550 0.03529860  89.67040
+97  17    0 54.8      1  23      1    170 0.8912550 0.07341260  63.31960
+98  17   24 54.8      1  23      1    170 0.8912550 0.07341260  63.31960
+99  17   48 54.8      1  23      1    170 0.8912550 0.07341260  63.31960
+100 17   72 54.8      1  23      1    170 0.8912550 0.07341260  63.31960
+101 17   96 54.8      1  23      1    170 0.8912550 0.07341260  63.31960
+102 17  120 54.8      1  23      1    170 0.8912550 0.07341260  63.31960
+103 18    0 44.3      1  20      0    164 0.8946130 0.02319200  75.92730
+104 18   24 44.3      1  20      0    164 0.8946130 0.02319200  75.92730
+105 18   48 44.3      1  20      0    164 0.8946130 0.02319200  75.92730
+106 18   72 44.3      1  20      0    164 0.8946130 0.02319200  75.92730
+107 18   96 44.3      1  20      0    164 0.8946130 0.02319200  75.92730
+108 18  120 44.3      1  20      0    164 0.8946130 0.02319200  75.92730
+109 19    0 50.0      1  36      1    168 0.6625970 0.06211690  30.98520
+110 19   24 50.0      1  36      1    168 0.6625970 0.06211690  30.98520
+111 19   48 50.0      1  36      1    168 0.6625970 0.06211690  30.98520
+112 19   72 50.0      1  36      1    168 0.6625970 0.06211690  30.98520
+113 19   96 50.0      1  36      1    168 0.6625970 0.06211690  30.98520
+114 19  120 50.0      1  36      1    168 0.6625970 0.06211690  30.98520
+115 20    0 59.0      1  31      1    170 0.2151980 0.08328370  35.22430
+116 20   24 59.0      1  31      1    170 0.2151980 0.08328370  35.22430
+117 20   48 59.0      1  31      1    170 0.2151980 0.08328370  35.22430
+118 20   72 59.0      1  31      1    170 0.2151980 0.08328370  35.22430
+119 20   96 59.0      1  31      1    170 0.2151980 0.08328370  35.22430
+120 20  120 59.0      1  31      1    170 0.2151980 0.08328370  35.22430
+121  1    0 46.7      1  21      1    160 0.4320697 0.02425637  66.45784
+122  1   24 46.7      1  21      1    160 0.4320697 0.02425637  66.45784
+123  1   48 46.7      1  21      1    160 0.4320697 0.02425637  66.45784
+124  1   72 46.7      1  21      1    160 0.4320697 0.02425637  66.45784
+125  1   96 46.7      1  21      1    160 0.4320697 0.02425637  66.45784
+126  1  120 46.7      1  21      1    160 0.4320697 0.02425637  66.45784
+127  2    0 66.5      1  30      1    174 0.7438244 0.03913798 119.52911
+128  2   24 66.5      1  30      1    174 0.7438244 0.03913798 119.52911
+129  2   48 66.5      1  30      1    174 0.7438244 0.03913798 119.52911
+130  2   72 66.5      1  30      1    174 0.7438244 0.03913798 119.52911
+131  2   96 66.5      1  30      1    174 0.7438244 0.03913798 119.52911
+132  2  120 66.5      1  30      1    174 0.7438244 0.03913798 119.52911
+133  3    0 46.7      1  24      0    164 0.8960000 0.04307500 108.75000
+134  3   24 46.7      1  24      0    164 0.8960000 0.04307500 108.75000
+135  3   48 46.7      1  24      0    164 0.8960000 0.04307500 108.75000
+136  3   72 46.7      1  24      0    164 0.8960000 0.04307500 108.75000
+137  3   96 46.7      1  24      0    164 0.8960000 0.04307500 108.75000
+138  3  120 46.7      1  24      0    164 0.8960000 0.04307500 108.75000
+139  4    0 50.8      1  25      1    165 0.8959996 0.05594506 119.54995
+140  4   24 50.8      1  25      1    165 0.8959996 0.05594506 119.54995
+141  4   48 50.8      1  25      1    165 0.8959996 0.05594506 119.54995
+142  4   72 50.8      1  25      1    165 0.8959996 0.05594506 119.54995
+143  4   96 50.8      1  25      1    165 0.8959996 0.05594506 119.54995
+144  4  120 50.8      1  25      1    165 0.8959996 0.05594506 119.54995
+145  5    0 65.8      1  22      1    181 0.1040176 0.06782283 113.25198
+146  5   24 65.8      1  22      1    181 0.1040176 0.06782283 113.25198
+147  5   48 65.8      1  22      1    181 0.1040176 0.06782283 113.25198
+148  5   72 65.8      1  22      1    181 0.1040176 0.06782283 113.25198
+149  5   96 65.8      1  22      1    181 0.1040176 0.06782283 113.25198
+150  5  120 65.8      1  22      1    181 0.1040176 0.06782283 113.25198
+151  6    0 65.0      1  23      1    177 0.8959942 0.03515428  71.85065
+152  6   24 65.0      1  23      1    177 0.8959942 0.03515428  71.85065
+153  6   48 65.0      1  23      1    177 0.8959942 0.03515428  71.85065
+154  6   72 65.0      1  23      1    177 0.8959942 0.03515428  71.85065
+155  6   96 65.0      1  23      1    177 0.8959942 0.03515428  71.85065
+156  6  120 65.0      1  23      1    177 0.8959942 0.03515428  71.85065
+157  7    0 51.7      1  27      0    161 0.2160000 0.08366500  34.95000
+158  7   24 51.7      1  27      0    161 0.2160000 0.08366500  34.95000
+159  7   48 51.7      1  27      0    161 0.2160000 0.08366500  34.95000
+160  7   72 51.7      1  27      0    161 0.2160000 0.08366500  34.95000
+161  7   96 51.7      1  27      0    161 0.2160000 0.08366500  34.95000
+162  7  120 51.7      1  27      0    161 0.2160000 0.08366500  34.95000
+163  8    0 51.2      1  22      1    163 0.8959967 0.03515464  71.85032
+164  8   24 51.2      1  22      1    163 0.8959967 0.03515464  71.85032
+165  8   48 51.2      1  22      1    163 0.8959967 0.03515464  71.85032
+166  8   72 51.2      1  22      1    163 0.8959967 0.03515464  71.85032
+167  8   96 51.2      1  22      1    163 0.8959967 0.03515464  71.85032
+168  8  120 51.2      1  22      1    163 0.8959967 0.03515464  71.85032
+169  9    0 55.0      1  23      1    174 0.7919456 0.04406497 101.55609
+170  9   24 55.0      1  23      1    174 0.7919456 0.04406497 101.55609
+171  9   48 55.0      1  23      1    174 0.7919456 0.04406497 101.55609
+172  9   72 55.0      1  23      1    174 0.7919456 0.04406497 101.55609
+173  9   96 55.0      1  23      1    174 0.7919456 0.04406497 101.55609
+174  9  120 55.0      1  23      1    174 0.7919456 0.04406497 101.55609
+175 10    0 52.1      1  32      1    163 0.6560170 0.06188290  61.95191
+176 10   24 52.1      1  32      1    163 0.6560170 0.06188290  61.95191
+177 10   48 52.1      1  32      1    163 0.6560170 0.06188290  61.95191
+178 10   72 52.1      1  32      1    163 0.6560170 0.06188290  61.95191
+179 10   96 52.1      1  32      1    163 0.6560170 0.06188290  61.95191
+180 10  120 52.1      1  32      1    163 0.6560170 0.06188290  61.95191
+181 11    0 56.5      1  34      1    165 0.5840041 0.06782549  72.74956
+182 11   24 56.5      1  34      1    165 0.5840041 0.06782549  72.74956
+183 11   48 56.5      1  34      1    165 0.5840041 0.06782549  72.74956
+184 11   72 56.5      1  34      1    165 0.5840041 0.06782549  72.74956
+185 11   96 56.5      1  34      1    165 0.5840041 0.06782549  72.74956
+186 11  120 56.5      1  34      1    165 0.5840041 0.06782549  72.74956
+187 12    0 47.9      1  54      0    160 0.4641165 0.03021942  91.63689
+188 12   24 47.9      1  54      0    160 0.4641165 0.03021942  91.63689
+189 12   48 47.9      1  54      0    160 0.4641165 0.03021942  91.63689
+190 12   72 47.9      1  54      0    160 0.4641165 0.03021942  91.63689
+191 12   96 47.9      1  54      0    160 0.4641165 0.03021942  91.63689
+192 12  120 47.9      1  54      0    160 0.4641165 0.03021942  91.63689
+193 13    0 60.5      1  24      1    180 0.2160000 0.08366500  34.95000
+194 13   24 60.5      1  24      1    180 0.2160000 0.08366500  34.95000
+195 13   48 60.5      1  24      1    180 0.2160000 0.08366500  34.95000
+196 13   72 60.5      1  24      1    180 0.2160000 0.08366500  34.95000
+197 13   96 60.5      1  24      1    180 0.2160000 0.08366500  34.95000
+198 13  120 60.5      1  24      1    180 0.2160000 0.08366500  34.95000
+199 14    0 59.2      1  26      1    174 0.5760486 0.04406085 117.75211
+200 14   24 59.2      1  26      1    174 0.5760486 0.04406085 117.75211
+201 14   48 59.2      1  26      1    174 0.5760486 0.04406085 117.75211
+202 14   72 59.2      1  26      1    174 0.5760486 0.04406085 117.75211
+203 14   96 59.2      1  26      1    174 0.5760486 0.04406085 117.75211
+204 14  120 59.2      1  26      1    174 0.5760486 0.04406085 117.75211
+205 15    0 43.0      1  19      0    150 0.7999675 0.03416102  71.85839
+206 15   24 43.0      1  19      0    150 0.7999675 0.03416102  71.85839
+207 15   48 43.0      1  19      0    150 0.7999675 0.03416102  71.85839
+208 15   72 43.0      1  19      0    150 0.7999675 0.03416102  71.85839
+209 15   96 43.0      1  19      0    150 0.7999675 0.03416102  71.85839
+210 15  120 43.0      1  19      0    150 0.7999675 0.03416102  71.85839
+211 16    0 64.4      1  25      1    173 0.7519843 0.03515306  89.85176
+212 16   24 64.4      1  25      1    173 0.7519843 0.03515306  89.85176
+213 16   48 64.4      1  25      1    173 0.7519843 0.03515306  89.85176
+214 16   72 64.4      1  25      1    173 0.7519843 0.03515306  89.85176
+215 16   96 64.4      1  25      1    173 0.7519843 0.03515306  89.85176
+216 16  120 64.4      1  25      1    173 0.7519843 0.03515306  89.85176
+217 17    0 54.8      1  23      1    170 0.8959345 0.07375689  62.85737
+218 17   24 54.8      1  23      1    170 0.8959345 0.07375689  62.85737
+219 17   48 54.8      1  23      1    170 0.8959345 0.07375689  62.85737
+220 17   72 54.8      1  23      1    170 0.8959345 0.07375689  62.85737
+221 17   96 54.8      1  23      1    170 0.8959345 0.07375689  62.85737
+222 17  120 54.8      1  23      1    170 0.8959345 0.07375689  62.85737
+223 18    0 44.3      1  20      0    164 0.8959944 0.02327569  76.34937
+224 18   24 44.3      1  20      0    164 0.8959944 0.02327569  76.34937
+225 18   48 44.3      1  20      0    164 0.8959944 0.02327569  76.34937
+226 18   72 44.3      1  20      0    164 0.8959944 0.02327569  76.34937
+227 18   96 44.3      1  20      0    164 0.8959944 0.02327569  76.34937
+228 18  120 44.3      1  20      0    164 0.8959944 0.02327569  76.34937
+229 19    0 50.0      1  36      1    168 0.6640000 0.06188500  31.35000
+230 19   24 50.0      1  36      1    168 0.6640000 0.06188500  31.35000
+231 19   48 50.0      1  36      1    168 0.6640000 0.06188500  31.35000
+232 19   72 50.0      1  36      1    168 0.6640000 0.06188500  31.35000
+233 19   96 50.0      1  36      1    168 0.6640000 0.06188500  31.35000
+234 19  120 50.0      1  36      1    168 0.6640000 0.06188500  31.35000
+235 20    0 59.0      1  31      1    170 0.2160000 0.08366500  34.95000
+236 20   24 59.0      1  31      1    170 0.2160000 0.08366500  34.95000
+237 20   48 59.0      1  31      1    170 0.2160000 0.08366500  34.95000
+238 20   72 59.0      1  31      1    170 0.2160000 0.08366500  34.95000
+239 20   96 59.0      1  31      1    170 0.2160000 0.08366500  34.95000
+240 20  120 59.0      1  31      1    170 0.2160000 0.08366500  34.95000
+         Tlag1   icen
+1   0.55494100   mean
+2   0.55494100   mean
+3   0.55494100   mean
+4   0.55494100   mean
+5   0.55494100   mean
+6   0.55494100   mean
+7   0.02699640   mean
+8   0.02699640   mean
+9   0.02699640   mean
+10  0.02699640   mean
+11  0.02699640   mean
+12  0.02699640   mean
+13  2.09592000   mean
+14  2.09592000   mean
+15  2.09592000   mean
+16  2.09592000   mean
+17  2.09592000   mean
+18  2.09592000   mean
+19  0.68830100   mean
+20  0.68830100   mean
+21  0.68830100   mean
+22  0.68830100   mean
+23  0.68830100   mean
+24  0.68830100   mean
+25  0.01869710   mean
+26  0.01869710   mean
+27  0.01869710   mean
+28  0.01869710   mean
+29  0.01869710   mean
+30  0.01869710   mean
+31  1.99784000   mean
+32  1.99784000   mean
+33  1.99784000   mean
+34  1.99784000   mean
+35  1.99784000   mean
+36  1.99784000   mean
+37  1.79653000   mean
+38  1.79653000   mean
+39  1.79653000   mean
+40  1.79653000   mean
+41  1.79653000   mean
+42  1.79653000   mean
+43  1.99849000   mean
+44  1.99849000   mean
+45  1.99849000   mean
+46  1.99849000   mean
+47  1.99849000   mean
+48  1.99849000   mean
+49  0.87968800   mean
+50  0.87968800   mean
+51  0.87968800   mean
+52  0.87968800   mean
+53  0.87968800   mean
+54  0.87968800   mean
+55  0.80137600   mean
+56  0.80137600   mean
+57  0.80137600   mean
+58  0.80137600   mean
+59  0.80137600   mean
+60  0.80137600   mean
+61  1.33855000   mean
+62  1.33855000   mean
+63  1.33855000   mean
+64  1.33855000   mean
+65  1.33855000   mean
+66  1.33855000   mean
+67  1.02535000   mean
+68  1.02535000   mean
+69  1.02535000   mean
+70  1.02535000   mean
+71  1.02535000   mean
+72  1.02535000   mean
+73  1.79559000   mean
+74  1.79559000   mean
+75  1.79559000   mean
+76  1.79559000   mean
+77  1.79559000   mean
+78  1.79559000   mean
+79  0.33625700   mean
+80  0.33625700   mean
+81  0.33625700   mean
+82  0.33625700   mean
+83  0.33625700   mean
+84  0.33625700   mean
+85  1.05869000   mean
+86  1.05869000   mean
+87  1.05869000   mean
+88  1.05869000   mean
+89  1.05869000   mean
+90  1.05869000   mean
+91  0.68797600   mean
+92  0.68797600   mean
+93  0.68797600   mean
+94  0.68797600   mean
+95  0.68797600   mean
+96  0.68797600   mean
+97  1.17994000   mean
+98  1.17994000   mean
+99  1.17994000   mean
+100 1.17994000   mean
+101 1.17994000   mean
+102 1.17994000   mean
+103 1.76035000   mean
+104 1.76035000   mean
+105 1.76035000   mean
+106 1.76035000   mean
+107 1.76035000   mean
+108 1.76035000   mean
+109 1.92418000   mean
+110 1.92418000   mean
+111 1.92418000   mean
+112 1.92418000   mean
+113 1.92418000   mean
+114 1.92418000   mean
+115 1.79584000   mean
+116 1.79584000   mean
+117 1.79584000   mean
+118 1.79584000   mean
+119 1.79584000   mean
+120 1.79584000   mean
+121 0.54034862 median
+122 0.54034862 median
+123 0.54034862 median
+124 0.54034862 median
+125 0.54034862 median
+126 0.54034862 median
+127 0.02092850 median
+128 0.02092850 median
+129 0.02092850 median
+130 0.02092850 median
+131 0.02092850 median
+132 0.02092850 median
+133 2.10000000 median
+134 2.10000000 median
+135 2.10000000 median
+136 2.10000000 median
+137 2.10000000 median
+138 2.10000000 median
+139 0.69999778 median
+140 0.69999778 median
+141 0.69999778 median
+142 0.69999778 median
+143 0.69999778 median
+144 0.69999778 median
+145 0.02008786 median
+146 0.02008786 median
+147 0.02008786 median
+148 0.02008786 median
+149 0.02008786 median
+150 0.02008786 median
+151 1.97997080 median
+152 1.97997080 median
+153 1.97997080 median
+154 1.97997080 median
+155 1.97997080 median
+156 1.97997080 median
+157 1.81180820 median
+158 1.81180820 median
+159 1.81180820 median
+160 1.81180820 median
+161 1.81180820 median
+162 1.81180820 median
+163 1.97998360 median
+164 1.97998360 median
+165 1.97998360 median
+166 1.97998360 median
+167 1.97998360 median
+168 1.97998360 median
+169 0.89972841 median
+170 0.89972841 median
+171 0.89972841 median
+172 0.89972841 median
+173 0.89972841 median
+174 0.89972841 median
+175 0.82008442 median
+176 0.82008442 median
+177 0.82008442 median
+178 0.82008442 median
+179 0.82008442 median
+180 0.82008442 median
+181 1.33997960 median
+182 1.33997960 median
+183 1.33997960 median
+184 1.33997960 median
+185 1.33997960 median
+186 1.33997960 median
+187 1.01977590 median
+188 1.01977590 median
+189 1.01977590 median
+190 1.01977590 median
+191 1.01977590 median
+192 1.01977590 median
+193 1.81023910 median
+194 1.81023910 median
+195 1.81023910 median
+196 1.81023910 median
+197 1.81023910 median
+198 1.81023910 median
+199 0.33990632 median
+200 0.33990632 median
+201 0.33990632 median
+202 0.33990632 median
+203 0.33990632 median
+204 0.33990632 median
+205 1.05983770 median
+206 1.05983770 median
+207 1.05983770 median
+208 1.05983770 median
+209 1.05983770 median
+210 1.05983770 median
+211 0.70007833 median
+212 0.70007833 median
+213 0.70007833 median
+214 0.70007833 median
+215 0.70007833 median
+216 0.70007833 median
+217 1.18032770 median
+218 1.18032770 median
+219 1.18032770 median
+220 1.18032770 median
+221 1.18032770 median
+222 1.18032770 median
+223 1.77997190 median
+224 1.77997190 median
+225 1.77997190 median
+226 1.77997190 median
+227 1.77997190 median
+228 1.77997190 median
+229 1.94000010 median
+230 1.94000010 median
+231 1.94000010 median
+232 1.94000010 median
+233 1.94000010 median
+234 1.94000010 median
+235 1.81067230 median
+236 1.81067230 median
+237 1.81067230 median
+238 1.81067230 median
+239 1.81067230 median
+240 1.81067230 median
+> names(cov)
+ [1] "id"     "time"   "wt"     "africa" "age"    "gender" "height" "Ka"    
+ [9] "Ke"     "V"      "Tlag1"  "icen"  
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("makeCov", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("makeCycle")
+> ### * makeCycle
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: makeCycle
+> ### Title: Summarize Pmetrics Run Cycle Information
+> ### Aliases: makeCycle
+> 
+> ### ** Examples
+> 
+> data(PMex1)
+> cycle <- makeCycle(NPdata.1)
+> cycle
+$names
+[1] "Ka"    "Ke"    "V"     "Tlag1"
+
+$cycnum
+  [1]   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18
+ [19]  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36
+ [37]  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54
+ [55]  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72
+ [73]  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90
+ [91]  91  92  93  94  95  96  97  98  99 100
+
+$ll
+  [1] 509.1803 482.7101 460.4257 456.8121 456.6189 456.6189 454.6719 453.3762
+  [9] 453.1822 452.9468 452.9468 448.7816 448.6495 448.5715 448.5191 448.4476
+ [17] 448.4180 448.4180 446.7925 445.9593 445.6356 445.5948 445.5766 445.5722
+ [25] 445.5722 444.4380 444.0045 443.4433 443.0550 442.9265 442.9070 442.8944
+ [33] 442.8870 442.8801 442.7303 442.4863 442.3712 442.3685 442.3670 442.3666
+ [41] 442.3639 442.3593 442.3559 442.3538 442.3530 442.3485 442.3436 442.3400
+ [49] 442.3378 442.3349 442.3287 442.3239 442.3205 442.3175 442.3102 442.3045
+ [57] 442.3002 442.2955 442.2875 442.2811 442.2762 442.2723 442.2633 442.2558
+ [65] 442.2499 442.2453 442.2422 442.2405 442.2402 442.2402 441.8765 441.6468
+ [73] 441.5265 441.4658 441.3781 441.3058 441.2474 441.1888 441.0086 440.9122
+ [81] 440.8038 440.7556 440.5884 440.4904 440.4681 440.4608 440.4245 440.4058
+ [89] 440.3900 440.3550 440.3359 440.3157 440.2901 440.2815 440.2587 440.2373
+ [97] 440.2362 440.2145 440.1974 440.1974
+
+$gamlam
+           [,1]
+  [1,] 4.545455
+  [2,] 3.787879
+  [3,] 2.705628
+  [4,] 2.705628
+  [5,] 2.705628
+  [6,] 2.705628
+  [7,] 2.459662
+  [8,] 2.459662
+  [9,] 2.459662
+ [10,] 2.582645
+ [11,] 2.582645
+ [12,] 2.459662
+ [13,] 2.459662
+ [14,] 2.459662
+ [15,] 2.459662
+ [16,] 2.490407
+ [17,] 2.490407
+ [18,] 2.490407
+ [19,] 2.465750
+ [20,] 2.465750
+ [21,] 2.441336
+ [22,] 2.441336
+ [23,] 2.441336
+ [24,] 2.441336
+ [25,] 2.441336
+ [26,] 2.441336
+ [27,] 2.441336
+ [28,] 2.417165
+ [29,] 2.417165
+ [30,] 2.417165
+ [31,] 2.417165
+ [32,] 2.417165
+ [33,] 2.417165
+ [34,] 2.417165
+ [35,] 2.417165
+ [36,] 2.417165
+ [37,] 2.417165
+ [38,] 2.417165
+ [39,] 2.417165
+ [40,] 2.417165
+ [41,] 2.417165
+ [42,] 2.417165
+ [43,] 2.417165
+ [44,] 2.417165
+ [45,] 2.417165
+ [46,] 2.417165
+ [47,] 2.417165
+ [48,] 2.417165
+ [49,] 2.417165
+ [50,] 2.417165
+ [51,] 2.417165
+ [52,] 2.417165
+ [53,] 2.417165
+ [54,] 2.417165
+ [55,] 2.417165
+ [56,] 2.417165
+ [57,] 2.417165
+ [58,] 2.417165
+ [59,] 2.417165
+ [60,] 2.417165
+ [61,] 2.417165
+ [62,] 2.417165
+ [63,] 2.417165
+ [64,] 2.417165
+ [65,] 2.417165
+ [66,] 2.417165
+ [67,] 2.417165
+ [68,] 2.417165
+ [69,] 2.417165
+ [70,] 2.417165
+ [71,] 2.393232
+ [72,] 2.393232
+ [73,] 2.393232
+ [74,] 2.393232
+ [75,] 2.393232
+ [76,] 2.393232
+ [77,] 2.393232
+ [78,] 2.393232
+ [79,] 2.393232
+ [80,] 2.393232
+ [81,] 2.393232
+ [82,] 2.393232
+ [83,] 2.393232
+ [84,] 2.393232
+ [85,] 2.393232
+ [86,] 2.393232
+ [87,] 2.393232
+ [88,] 2.393232
+ [89,] 2.393232
+ [90,] 2.393232
+ [91,] 2.393232
+ [92,] 2.393232
+ [93,] 2.393232
+ [94,] 2.393232
+ [95,] 2.393232
+ [96,] 2.393232
+ [97,] 2.393232
+ [98,] 2.393232
+ [99,] 2.393232
+[100,] 2.393232
+
+$mean
+     par
+cycle        Ka        Ke         V     Tlag1
+  1   1.0000000 1.0000000 1.0000000 1.0000000
+  2   1.0151398 1.0037746 0.9921979 0.9964055
+  3   1.0315577 1.0062565 0.9883131 0.9964582
+  4   1.0198648 1.0063160 0.9947647 0.9845517
+  5   0.9941667 1.0062853 0.9940771 0.9837529
+  6   0.9941667 1.0062853 0.9940771 0.9837529
+  7   1.0033050 1.0062200 1.0048042 0.9511232
+  8   1.0233941 1.0058761 1.0000065 0.9654562
+  9   1.0295523 1.0057590 1.0000742 0.9655767
+  10  1.0367264 1.0054324 1.0008231 0.9667523
+  11  1.0367264 1.0054324 1.0008231 0.9667523
+  12  1.0381117 1.0013351 0.9986222 0.9329771
+  13  1.0474298 1.0013216 0.9990780 0.9407390
+  14  1.0540464 1.0013120 0.9991170 0.9560139
+  15  1.0574653 1.0013101 0.9991209 0.9560440
+  16  1.0609979 1.0012889 0.9992121 0.9562776
+  17  1.0611447 1.0012928 0.9992017 0.9561872
+  18  1.0611447 1.0012928 0.9992017 0.9561872
+  19  1.0560271 0.9993680 0.9981963 0.9434367
+  20  1.0595416 0.9931461 1.0006512 0.9417111
+  21  1.0576714 0.9918648 1.0019092 0.9417412
+  22  1.0574587 0.9918610 1.0019326 0.9416734
+  23  1.0596109 0.9917841 1.0033157 0.9415453
+  24  1.0611496 0.9917995 1.0033261 0.9416206
+  25  1.0611496 0.9917995 1.0033261 0.9416206
+  26  1.0596439 0.9956279 1.0025056 0.9358332
+  27  1.0585241 0.9940931 1.0022426 0.9424044
+  28  1.0573498 0.9943083 1.0033352 0.9402567
+  29  1.0575906 0.9942622 1.0038926 0.9400231
+  30  1.0569309 0.9942141 1.0046219 0.9381241
+  31  1.0569375 0.9942180 1.0046206 0.9380939
+  32  1.0577638 0.9942218 1.0046193 0.9380562
+  33  1.0594097 0.9942199 1.0046245 0.9363456
+  34  1.0594806 0.9942180 1.0052222 0.9364360
+  35  1.0589050 0.9929348 1.0058447 0.9367224
+  36  1.0591623 0.9929867 1.0062784 0.9365189
+  37  1.0593140 0.9930135 1.0068084 0.9364662
+  38  1.0584911 0.9930135 1.0068071 0.9364436
+  39  1.0576681 0.9930155 1.0068058 0.9364134
+  40  1.0568452 0.9930174 1.0068045 0.9363833
+  41  1.0568386 0.9930116 1.0068189 0.9346275
+  42  1.0560156 0.9930116 1.0068162 0.9346049
+  43  1.0551943 0.9930135 1.0068149 0.9345747
+  44  1.0543730 0.9930155 1.0068123 0.9345521
+  45  1.0535517 0.9930155 1.0068097 0.9345220
+  46  1.0535368 0.9930116 1.0068254 0.9327435
+  47  1.0527172 0.9930116 1.0068215 0.9327209
+  48  1.0518975 0.9930135 1.0068189 0.9326983
+  49  1.0510795 0.9930155 1.0068162 0.9326682
+  50  1.0510581 0.9930097 1.0068306 0.9308747
+  51  1.0502400 0.9930116 1.0068280 0.9308521
+  52  1.0494220 0.9930135 1.0068241 0.9308295
+  53  1.0486057 0.9930155 1.0068202 0.9308069
+  54  1.0485793 0.9930097 1.0068358 0.9289983
+  55  1.0477629 0.9930116 1.0068306 0.9289757
+  56  1.0469482 0.9930135 1.0068267 0.9289531
+  57  1.0461351 0.9930135 1.0068228 0.9289305
+  58  1.0461038 0.9930097 1.0068371 0.9271143
+  59  1.0452907 0.9930116 1.0068319 0.9270917
+  60  1.0444793 0.9930135 1.0068280 0.9270691
+  61  1.0436679 0.9930155 1.0068228 0.9270465
+  62  1.0436366 0.9930097 1.0068358 0.9252229
+  63  1.0438477 0.9930232 1.0074244 0.9253058
+  64  1.0430462 0.9930270 1.0074218 0.9252907
+  65  1.0422430 0.9930289 1.0074205 0.9252681
+  66  1.0414431 0.9930308 1.0074179 0.9252455
+  67  1.0406416 0.9930328 1.0074166 0.9252229
+  68  1.0398434 0.9930347 1.0074153 0.9252003
+  69  1.0390435 0.9930385 1.0074127 0.9251777
+  70  1.0390435 0.9930385 1.0074127 0.9251777
+  71  1.0395894 0.9918648 1.0079115 0.9243337
+  72  1.0400578 0.9912559 1.0085731 0.9218016
+  73  1.0407455 0.9906681 1.0092463 0.9217941
+  74  1.0410275 0.9906470 1.0092854 0.9190134
+  75  1.0410704 0.9906393 1.0092737 0.9170918
+  76  1.0419115 0.9906412 1.0092776 0.9170767
+  77  1.0419313 0.9912271 1.0096331 0.9151702
+  78  1.0413491 0.9899862 1.0099092 0.9131431
+  79  1.0415850 0.9894060 1.0105330 0.9122086
+  80  1.0418290 0.9900226 1.0115319 0.9103172
+  81  1.0418719 0.9894233 1.0113977 0.9094280
+  82  1.0418736 0.9899900 1.0111165 0.9092923
+  83  1.0418653 0.9906277 1.0107427 0.9102494
+  84  1.0418406 0.9900380 1.0100134 0.9102569
+  85  1.0418472 0.9900419 1.0103728 0.9083654
+  86  1.0418604 0.9894560 1.0103663 0.9064740
+  87  1.0422018 0.9894387 1.0107466 0.9037008
+  88  1.0418604 0.9894502 1.0110839 0.9018545
+  89  1.0415289 0.9888720 1.0110474 0.9000309
+  90  1.0410754 0.9888720 1.0107818 0.8997521
+  91  1.0407142 0.9888797 1.0110409 0.8981093
+  92  1.0403777 0.9883015 1.0110123 0.8962630
+  93  1.0402755 0.9882823 1.0114030 0.8953361
+  94  1.0398846 0.9882880 1.0117598 0.8953286
+  95  1.0394888 0.9877022 1.0117520 0.8953211
+  96  1.0390946 0.9877079 1.0121101 0.8953135
+  97  1.0387038 0.9877118 1.0124682 0.8953060
+  98  1.0386988 0.9871220 1.0124682 0.8953060
+  99  1.0386972 0.9871220 1.0128316 0.8952985
+  100 1.0386972 0.9871220 1.0128316 0.8952985
+
+$sd
+     par
+cycle       Ka        Ke         V    Tlag1
+  1   1.000000 1.0000000 1.0000000 1.000000
+  2   1.032687 1.0049500 0.9812909 1.002041
+  3   1.066927 1.0099251 0.9703375 1.005782
+  4   1.044542 1.0102862 0.9719419 1.182061
+  5   1.032777 1.0103062 0.9717233 1.181846
+  6   1.032777 1.0103062 0.9717233 1.181846
+  7   1.029125 1.0121568 1.0054174 1.098050
+  8   1.045789 1.0124026 0.9920591 1.091912
+  9   1.046147 1.0124026 0.9918627 1.091727
+  10  1.051145 1.0120916 0.9935747 1.091019
+  11  1.051145 1.0120916 0.9935747 1.091019
+  12  1.075306 0.9970962 1.0101123 1.031880
+  13  1.073070 0.9971213 1.0107793 1.041078
+  14  1.082937 0.9971263 1.0107867 1.087495
+  15  1.088383 0.9971313 1.0107867 1.087484
+  16  1.095080 0.9971112 1.0109127 1.087616
+  17  1.108815 0.9970962 1.0109164 1.087648
+  18  1.108815 0.9970962 1.0109164 1.087648
+  19  1.100320 0.9995737 1.0098381 1.071264
+  20  1.091686 0.9749441 1.0156520 1.064820
+  21  1.085544 0.9702950 1.0207879 1.064283
+  22  1.087183 0.9703000 1.0208694 1.064424
+  23  1.089020 0.9703953 1.0267018 1.065067
+  24  1.090899 0.9703752 1.0267426 1.064849
+  25  1.090899 0.9703752 1.0267426 1.064849
+  26  1.100844 0.9841771 1.0228185 1.062895
+  27  1.099520 0.9872614 1.0275356 1.079167
+  28  1.102320 0.9902103 1.0296403 1.082091
+  29  1.103507 0.9902555 1.0341907 1.082697
+  30  1.104737 0.9903257 1.0372662 1.082618
+  31  1.106260 0.9903257 1.0372625 1.082603
+  32  1.108148 0.9903307 1.0372588 1.082587
+  33  1.110428 0.9903457 1.0372440 1.082170
+  34  1.110501 0.9903508 1.0378109 1.082137
+  35  1.109998 0.9936157 1.0379258 1.081961
+  36  1.110209 0.9934853 1.0385632 1.081926
+  37  1.110342 0.9934201 1.0392820 1.081917
+  38  1.110226 0.9934150 1.0392820 1.081899
+  39  1.110183 0.9934100 1.0392820 1.081879
+  40  1.110222 0.9934100 1.0392820 1.081858
+  41  1.110239 0.9934251 1.0392820 1.081646
+  42  1.110359 0.9934201 1.0392820 1.081629
+  43  1.110557 0.9934150 1.0392820 1.081612
+  44  1.110832 0.9934150 1.0392820 1.081593
+  45  1.111189 0.9934100 1.0392820 1.081573
+  46  1.111202 0.9934251 1.0392820 1.081602
+  47  1.111641 0.9934201 1.0392820 1.081585
+  48  1.112153 0.9934150 1.0392820 1.081567
+  49  1.112742 0.9934150 1.0392857 1.081547
+  50  1.112760 0.9934251 1.0392857 1.081817
+  51  1.113431 0.9934251 1.0392857 1.081800
+  52  1.114179 0.9934201 1.0392857 1.081783
+  53  1.115005 0.9934150 1.0392857 1.081765
+  54  1.115022 0.9934301 1.0392857 1.082277
+  55  1.115925 0.9934251 1.0392857 1.082261
+  56  1.116910 0.9934201 1.0392857 1.082244
+  57  1.117969 0.9934150 1.0392857 1.082226
+  58  1.117986 0.9934251 1.0392857 1.082984
+  59  1.119126 0.9934251 1.0392857 1.082967
+  60  1.120339 0.9934201 1.0392857 1.082949
+  61  1.121625 0.9934150 1.0392857 1.082931
+  62  1.121646 0.9934251 1.0392857 1.083937
+  63  1.121659 0.9933900 1.0400861 1.083909
+  64  1.123014 0.9933850 1.0400861 1.083900
+  65  1.124447 0.9933799 1.0400861 1.083891
+  66  1.125948 0.9933749 1.0400861 1.083881
+  67  1.127527 0.9933699 1.0400861 1.083870
+  68  1.129174 0.9933649 1.0400861 1.083858
+  69  1.130895 0.9933549 1.0400861 1.083846
+  70  1.130895 0.9933549 1.0400861 1.083846
+  71  1.134499 0.9971313 1.0409236 1.086987
+  72  1.135218 0.9956368 1.0443400 1.085549
+  73  1.134474 0.9939015 1.0446179 1.077819
+  74  1.133523 0.9938614 1.0460112 1.071440
+  75  1.132757 0.9937862 1.0460223 1.065686
+  76  1.134190 0.9938012 1.0474897 1.065712
+  77  1.133321 0.9954261 1.0485124 1.060033
+  78  1.133484 0.9956418 1.0489163 1.054445
+  79  1.133454 0.9942074 1.0503911 1.048747
+  80  1.133510 0.9958524 1.0517399 1.043336
+  81  1.133377 0.9941974 1.0527515 1.042801
+  82  1.132525 0.9929737 1.0540744 1.039828
+  83  1.131695 0.9915695 1.0554899 1.042584
+  84  1.130938 0.9900799 1.0558604 1.042606
+  85  1.130202 0.9900950 1.0569758 1.037310
+  86  1.129514 0.9886356 1.0569795 1.032121
+  87  1.128701 0.9885754 1.0580689 1.026578
+  88  1.128783 0.9885754 1.0592102 1.021625
+  89  1.128894 0.9871410 1.0592102 1.016821
+  90  1.128981 0.9871711 1.0607406 1.016195
+  91  1.129114 0.9871761 1.0619671 1.011983
+  92  1.129282 0.9857869 1.0619634 1.007343
+  93  1.129170 0.9857318 1.0631380 1.006881
+  94  1.129329 0.9857468 1.0643609 1.006879
+  95  1.129510 0.9844228 1.0643683 1.006881
+  96  1.129712 0.9844378 1.0656059 1.006882
+  97  1.129923 0.9844529 1.0668658 1.006879
+  98  1.129927 0.9831540 1.0668658 1.006884
+  99  1.129931 0.9831540 1.0681368 1.006885
+  100 1.129931 0.9831540 1.0681368 1.006885
+
+$median
+     par
+cycle       Ka        Ke         V     Tlag1
+  1   1.000000 1.0000000 1.0000000 1.0000000
+  2   1.039047 1.0007720 1.0001639 1.0376045
+  3   1.056522 1.0012110 1.0006168 1.0455039
+  4   1.041281 1.0012092 1.0029699 0.8028270
+  5   1.041381 1.0012092 1.0026968 0.8017187
+  6   1.041381 1.0012092 1.0026968 0.8017187
+  7   1.059451 1.0012742 1.0028476 0.7988674
+  8   1.059410 1.0012002 1.0029904 0.8246588
+  9   1.059409 1.0011634 1.0030200 0.8246576
+  10  1.070662 1.0011124 1.0030894 0.8249295
+  11  1.070662 1.0011124 1.0030894 0.8249295
+  12  1.070362 1.0011680 1.0009211 0.8238174
+  13  1.095138 1.0011657 1.0010891 0.8240431
+  14  1.095156 1.0011631 1.0011109 0.8241181
+  15  1.095166 1.0011631 1.0011156 0.8241426
+  16  1.095153 1.0011601 1.0011454 0.8242459
+  17  1.095126 1.0011601 1.0011329 0.8241801
+  18  1.095126 1.0011601 1.0011329 0.8241801
+  19  1.095514 0.9984188 1.0011891 1.0315262
+  20  1.089127 0.9980386 1.0011969 1.0322376
+  21  1.058355 0.9976999 1.0011726 1.0321508
+  22  1.058347 0.9976917 1.0011725 1.0321508
+  23  1.145422 0.9975160 1.0011727 1.0321508
+  24  1.182480 0.9975527 1.0011727 1.0321508
+  25  1.182480 0.9975527 1.0011727 1.0321508
+  26  1.057976 0.9976759 1.0010430 1.0320564
+  27  1.057626 0.9975808 1.0013778 1.0326093
+  28  1.057482 0.9977803 1.0011849 1.0322572
+  29  1.057801 0.9977004 1.0010918 1.0321069
+  30  1.057973 0.9976222 1.0011002 1.0033901
+  31  1.045593 0.9976223 1.0010991 1.0033700
+  32  1.033482 0.9976223 1.0010982 1.0033492
+  33  1.033558 0.9976223 1.0011090 0.9740002
+  34  1.033575 0.9976223 1.0010416 0.9739067
+  35  1.033367 0.9976223 1.0014119 0.9752297
+  36  1.033464 0.9976223 1.0012277 0.9745811
+  37  1.033517 0.9976223 1.0011163 0.9742301
+  38  1.033411 0.9976223 1.0011146 0.9742087
+  39  1.033414 0.9976223 1.0011130 0.9741868
+  40  1.033416 0.9976223 1.0011114 0.9741645
+  41  1.033403 0.9976223 1.0011229 0.9153316
+  42  1.033406 0.9976223 1.0011208 0.9153093
+  43  1.033409 0.9976223 1.0011188 0.9152864
+  44  1.033412 0.9976223 1.0011169 0.9152632
+  45  1.033414 0.9976223 1.0011150 0.9152394
+  46  1.033402 0.9976223 1.0011260 0.8858695
+  47  1.033405 0.9976223 1.0011236 0.8858456
+  48  1.033408 0.9976223 1.0011214 0.8858212
+  49  1.033411 0.9976223 1.0011191 0.8857963
+  50  1.033399 0.9976223 1.0011298 0.8564193
+  51  1.033403 0.9976223 1.0011272 0.8563943
+  52  1.033406 0.9976223 1.0011246 0.8563688
+  53  1.033410 0.9976223 1.0011220 0.8563427
+  54  1.033398 0.9976223 1.0011322 0.8269590
+  55  1.033402 0.9976223 1.0011293 0.8269328
+  56  1.033406 0.9976223 1.0011264 0.8269062
+  57  1.033409 0.9976223 1.0011235 0.8268788
+  58  1.033398 0.9976223 1.0011331 0.7965659
+  59  1.033402 0.9976223 1.0011299 0.7965564
+  60  1.033406 0.9976223 1.0011267 0.7965464
+  61  1.033410 0.9976223 1.0011235 0.7965358
+  62  1.033400 0.9976223 1.0011324 0.7965647
+  63  1.033447 0.9976223 1.0010601 0.7965801
+  64  1.033451 0.9976223 1.0010585 0.7965725
+  65  1.033456 0.9976223 1.0010569 0.7965645
+  66  1.033460 0.9976223 1.0010554 0.7965562
+  67  1.033465 0.9976223 1.0010539 0.7965476
+  68  1.033469 0.9976223 1.0010524 0.7965387
+  69  1.033473 0.9976223 1.0010509 0.7965296
+  70  1.033473 0.9976223 1.0010509 0.7965296
+  71  1.033429 0.9976306 0.9890850 0.7965554
+  72  1.033448 0.9976359 0.9890316 0.7965033
+  73  1.033504 0.9976335 0.9890000 0.8259823
+  74  1.033464 0.9976310 0.9890006 0.8259919
+  75  1.033481 0.9976284 0.9890013 0.8259933
+  76  1.033235 0.9976259 0.9890025 0.8259960
+  77  1.033255 0.9976259 0.9890030 0.8259980
+  78  1.033040 0.9976259 0.9891402 0.8259709
+  79  1.033133 0.9976259 0.9890848 0.8259734
+  80  1.033241 0.9976259 0.9890409 0.8259758
+  81  1.033237 0.9976259 0.9890079 0.8259879
+  82  1.033251 0.9976258 0.9890069 0.8554302
+  83  1.033258 0.9976258 0.9788754 0.8553991
+  84  1.033254 0.9976258 0.9788789 0.8554102
+  85  1.033263 0.9976258 0.9788781 0.8554114
+  86  1.033274 0.9976258 0.9788769 0.8554187
+  87  1.033227 0.9976258 0.9788801 0.8554567
+  88  1.033260 0.9976258 0.9788743 0.8554968
+  89  1.033297 0.9976258 0.9788477 0.8555470
+  90  1.033288 0.9976258 0.9734044 0.8555230
+  91  1.033312 0.9976258 0.9712309 0.8555513
+  92  1.033345 0.9976258 0.9711993 0.8556016
+  93  1.033294 0.9976258 0.9712456 0.8556056
+  94  1.033309 0.9976258 0.9712324 0.8556045
+  95  1.033322 0.9976258 0.9712198 0.8556034
+  96  1.033335 0.9976258 0.9712076 0.8556023
+  97  1.033348 0.9976258 0.9711959 0.8556013
+  98  1.033347 0.9976258 0.9711959 0.8556013
+  99  1.033347 0.9976258 0.9711959 0.8556013
+  100 1.033347 0.9976258 0.9711959 0.8556013
+
+$aic
+       1        2        3        4        5        6        7        8 
+519.1803 492.7101 470.4257 466.8121 466.6189 466.6189 464.6719 463.3762 
+       9       10       11       12       13       14       15       16 
+463.1822 462.9468 462.9468 458.7816 458.6495 458.5715 458.5191 458.4476 
+      17       18       19       20       21       22       23       24 
+458.4180 458.4180 456.7925 455.9593 455.6356 455.5948 455.5766 455.5722 
+      25       26       27       28       29       30       31       32 
+455.5722 454.4380 454.0045 453.4433 453.0550 452.9265 452.9070 452.8944 
+      33       34       35       36       37       38       39       40 
+452.8870 452.8801 452.7303 452.4863 452.3712 452.3685 452.3670 452.3666 
+      41       42       43       44       45       46       47       48 
+452.3639 452.3593 452.3559 452.3538 452.3530 452.3485 452.3436 452.3400 
+      49       50       51       52       53       54       55       56 
+452.3378 452.3349 452.3287 452.3239 452.3205 452.3175 452.3102 452.3045 
+      57       58       59       60       61       62       63       64 
+452.3002 452.2955 452.2875 452.2811 452.2762 452.2723 452.2633 452.2558 
+      65       66       67       68       69       70       71       72 
+452.2499 452.2453 452.2422 452.2405 452.2402 452.2402 451.8765 451.6468 
+      73       74       75       76       77       78       79       80 
+451.5265 451.4658 451.3781 451.3058 451.2474 451.1888 451.0086 450.9122 
+      81       82       83       84       85       86       87       88 
+450.8038 450.7556 450.5884 450.4904 450.4681 450.4608 450.4245 450.4058 
+      89       90       91       92       93       94       95       96 
+450.3900 450.3550 450.3359 450.3157 450.2901 450.2815 450.2587 450.2373 
+      97       98       99      100 
+450.2362 450.2145 450.1974 450.1974 
+
+$bic
+       1        2        3        4        5        6        7        8 
+533.8527 507.3825 485.0980 481.4845 481.2913 481.2913 479.3443 478.0486 
+       9       10       11       12       13       14       15       16 
+477.8545 477.6192 477.6192 473.4540 473.3219 473.2438 473.1914 473.1199 
+      17       18       19       20       21       22       23       24 
+473.0904 473.0904 471.4649 470.6317 470.3080 470.2671 470.2490 470.2446 
+      25       26       27       28       29       30       31       32 
+470.2446 469.1104 468.6769 468.1157 467.7273 467.5989 467.5793 467.5668 
+      33       34       35       36       37       38       39       40 
+467.5594 467.5525 467.4027 467.1587 467.0436 467.0409 467.0393 467.0390 
+      41       42       43       44       45       46       47       48 
+467.0363 467.0316 467.0283 467.0262 467.0254 467.0209 467.0159 467.0124 
+      49       50       51       52       53       54       55       56 
+467.0101 467.0073 467.0010 466.9962 466.9929 466.9898 466.9826 466.9768 
+      57       58       59       60       61       62       63       64 
+466.9726 466.9679 466.9599 466.9534 466.9486 466.9446 466.9356 466.9282 
+      65       66       67       68       69       70       71       72 
+466.9222 466.9177 466.9146 466.9129 466.9125 466.9125 466.5489 466.3192 
+      73       74       75       76       77       78       79       80 
+466.1989 466.1382 466.0505 465.9781 465.9197 465.8612 465.6810 465.5846 
+      81       82       83       84       85       86       87       88 
+465.4761 465.4280 465.2608 465.1628 465.1404 465.1332 465.0969 465.0781 
+      89       90       91       92       93       94       95       96 
+465.0623 465.0273 465.0082 464.9880 464.9624 464.9539 464.9311 464.9097 
+      97       98       99      100 
+464.9086 464.8869 464.8698 464.8698 
+
+attr(,"class")
+[1] "PMcycle" "list"   
+> names(cycle)
+[1] "names"  "cycnum" "ll"     "gamlam" "mean"   "sd"     "median" "aic"   
+[9] "bic"   
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("makeCycle", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("makeErrorPoly")
+> ### * makeErrorPoly
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: makeErrorPoly
+> ### Title: Assay error polynomial coefficients
+> ### Aliases: makeErrorPoly
+> 
+> ### ** Examples
+> 
+> makeErrorPoly(obs=c(0,5,50,100,250,500,1000),sd=c(1,0.4,4.5,12,34,60,190))
+$first
+        C0         C1 
+-6.7277503  0.1831991 
+
+$second
+          C0           C1           C2 
+2.0608389240 0.0685990444 0.0001183321 
+
+$third
+           C0            C1            C2            C3 
+-9.004376e-01  1.636062e-01 -1.886027e-04  2.158411e-07 
+
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("makeErrorPoly", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("makeFinal")
+> ### * makeFinal
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: makeFinal
+> ### Title: Summarize NPAG or IT2B Final Cycle Population Values
+> ### Aliases: makeFinal
+> 
+> ### ** Examples
+> 
+> data(PMex1)
+> final <- makeFinal(NPdata.1)
+> final
+$popPoints
+          Ka         Ke         V      Tlag1       prob
+1  0.6625952 0.06211706  30.98496 1.92417603 0.04999967
+2  0.8999440 0.04310272 108.64920 2.09592004 0.05000803
+3  0.2151984 0.08328365  35.22432 1.80379203 0.10317165
+4  0.7927824 0.04393907 101.57052 0.88691202 0.04976913
+5  0.5777824 0.04393907 117.88302 0.33691201 0.05222207
+6  0.6552048 0.06166284  61.52304 0.80102401 0.04979709
+7  0.7540983 0.03531704  89.66107 0.68665921 0.05078646
+8  0.8952615 0.02318994  75.94093 1.76207524 0.05078656
+9  0.2151984 0.08328365  35.22432 1.77879203 0.04683098
+10 0.4324662 0.02464088  66.22597 0.53389922 0.04921343
+11 0.8976352 0.05642951 119.81946 0.68837602 0.05021412
+12 0.8008512 0.03427034  71.83326 1.04925602 0.04860494
+13 0.7477824 0.03960782 119.57052 0.01191201 0.04820288
+14 0.8963072 0.07349612  63.15906 1.17733602 0.04924410
+15 0.4608512 0.03055784  92.08326 1.02425602 0.04980451
+16 0.8958512 0.03488909  71.83326 1.99925603 0.10080165
+17 0.5829040 0.06831802  73.11720 1.33872003 0.05075588
+18 0.1018374 0.06755382 113.31523 0.01575520 0.04978687
+
+$popMean
+         Ka          Ke           V       Tlag1 
+ 0.62981315  0.05138749 77.77244975  1.18807470 
+
+$popSD
+         Ka          Ke           V       Tlag1 
+ 0.26268285  0.01960354 28.82568109  0.66448203 
+
+$popCV
+      Ka       Ke        V    Tlag1 
+41.70806 38.14847 37.06413 55.92931 
+
+$popVar
+          Ka           Ke            V        Tlag1 
+6.900228e-02 3.842989e-04 8.309199e+02 4.415364e-01 
+
+$popCov
+                Ka            Ke           V         Tlag1
+Ka     0.069002281 -0.0029108054   2.5717043   0.024855597
+Ke    -0.002910805  0.0003842989  -0.2705032   0.002272246
+V      2.571704313 -0.2705032200 830.9198905 -12.100366730
+Tlag1  0.024855597  0.0022722460 -12.1003667   0.441536366
+
+$popCor
+              Ka         Ke          V      Tlag1
+Ka     1.0000000 -0.5652582  0.3396329  0.1423998
+Ke    -0.5652582  1.0000000 -0.4786944  0.1744366
+V      0.3396329 -0.4786944  1.0000000 -0.6317361
+Tlag1  0.1423998  0.1744366 -0.6317361  1.0000000
+
+$popMedian
+         Ka          Ke           V       Tlag1 
+ 0.70518881  0.04393907 72.47523076  1.11329602 
+
+$popRanFix
+NULL
+
+$postPoints
+    id point        Ka         Ke         V      Tlag1         prob
+1    1     1 0.8952615 0.02318994  75.94093 1.76207524 2.442399e-01
+2    1     2 0.4324662 0.02464088  66.22597 0.53389922 1.401176e+01
+10   2     1 0.8999440 0.04310272 108.64920 2.09592004 4.748179e-07
+11   2     2 0.7927824 0.04393907 101.57052 0.88691202 6.899966e-03
+12   2     3 0.5777824 0.04393907 117.88302 0.33691201 2.460893e-01
+13   2     4 0.7477824 0.03960782 119.57052 0.01191201 5.449410e+00
+14   2     5 0.5829040 0.06831802  73.11720 1.33872003 1.331871e-09
+19   3     1 0.8999440 0.04310272 108.64920 2.09592004 1.425600e+01
+20   3     2 0.5829040 0.06831802  73.11720 1.33872003 1.162529e-07
+28   4     1 0.8976352 0.05642951 119.81946 0.68837602 1.425441e+01
+29   4     2 0.1018374 0.06755382 113.31523 0.01575520 1.585676e-03
+37   5     1 0.8976352 0.05642951 119.81946 0.68837602 6.235190e-02
+38   5     2 0.1018374 0.06755382 113.31523 0.01575520 1.419365e+01
+46   6     1 0.6625952 0.06211706  30.98496 1.92417603 3.661146e-08
+47   6     2 0.2151984 0.08328365  35.22432 1.80379203 4.162963e-06
+48   6     3 0.7540983 0.03531704  89.66107 0.68665921 1.157231e-06
+49   6     4 0.2151984 0.08328365  35.22432 1.77879203 2.168041e-06
+50   6     5 0.8008512 0.03427034  71.83326 1.04925602 5.594102e-06
+51   6     6 0.4608512 0.03055784  92.08326 1.02425602 5.917111e-03
+52   6     7 0.8958512 0.03488909  71.83326 1.99925603 4.067213e+00
+55   7     1 0.2151984 0.08328365  35.22432 1.80379203 6.742389e+00
+56   7     2 0.2151984 0.08328365  35.22432 1.77879203 2.761610e+00
+57   7     3 0.8958512 0.03488909  71.83326 1.99925603 9.904952e-07
+64   8     1 0.6625952 0.06211706  30.98496 1.92417603 9.231059e-10
+65   8     2 0.2151984 0.08328365  35.22432 1.80379203 1.382327e-04
+66   8     3 0.7540983 0.03531704  89.66107 0.68665921 2.764329e-07
+67   8     4 0.2151984 0.08328365  35.22432 1.77879203 6.945028e-05
+68   8     5 0.8008512 0.03427034  71.83326 1.04925602 5.266451e-08
+69   8     6 0.4608512 0.03055784  92.08326 1.02425602 3.138516e-03
+70   8     7 0.8958512 0.03488909  71.83326 1.99925603 4.069796e+00
+73   9     1 0.8999440 0.04310272 108.64920 2.09592004 5.958594e-04
+74   9     2 0.7927824 0.04393907 101.57052 0.88691202 4.017301e+00
+75   9     3 0.5777824 0.04393907 117.88302 0.33691201 5.410932e-02
+76   9     4 0.6552048 0.06166284  61.52304 0.80102401 6.922749e-04
+77   9     5 0.7477824 0.03960782 119.57052 0.01191201 3.953619e-04
+78   9     6 0.8963072 0.07349612  63.15906 1.17733602 1.541492e-05
+79   9     7 0.5829040 0.06831802  73.11720 1.33872003 3.320363e-05
+82  10     1 0.8999440 0.04310272 108.64920 2.09592004 9.070852e-08
+83  10     2 0.7927824 0.04393907 101.57052 0.88691202 1.717515e-02
+84  10     3 0.5777824 0.04393907 117.88302 0.33691201 1.092268e-05
+85  10     4 0.6552048 0.06166284  61.52304 0.80102401 4.055909e+00
+86  10     5 0.7477824 0.03960782 119.57052 0.01191201 4.653745e-05
+87  10     6 0.8963072 0.07349612  63.15906 1.17733602 1.270564e-06
+88  10     7 0.5829040 0.06831802  73.11720 1.33872003 1.416896e-08
+91  11     1 0.8999440 0.04310272 108.64920 2.09592004 2.303842e-07
+92  11     2 0.7927824 0.04393907 101.57052 0.88691202 1.344500e-09
+93  11     3 0.5777824 0.04393907 117.88302 0.33691201 4.065617e-08
+94  11     4 0.8976352 0.05642951 119.81946 0.68837602 7.775324e-05
+95  11     5 0.8963072 0.07349612  63.15906 1.17733602 4.065547e-03
+96  11     6 0.5829040 0.06831802  73.11720 1.33872003 4.068999e+00
+97  11     7 0.1018374 0.06755382 113.31523 0.01575520 3.150812e-09
+100 12     1 0.2151984 0.08328365  35.22432 1.80379203 6.835854e-08
+101 12     2 0.6552048 0.06166284  61.52304 0.80102401 1.182683e-09
+102 12     3 0.7540983 0.03531704  89.66107 0.68665921 7.980642e-02
+103 12     4 0.2151984 0.08328365  35.22432 1.77879203 3.714168e-08
+104 12     5 0.8008512 0.03427034  71.83326 1.04925602 3.358910e-03
+105 12     6 0.4608512 0.03055784  92.08326 1.02425602 3.957876e+00
+106 12     7 0.8958512 0.03488909  71.83326 1.99925603 3.210144e-02
+109 13     1 0.2151984 0.08328365  35.22432 1.80379203 9.580366e+00
+110 13     2 0.2151984 0.08328365  35.22432 1.77879203 4.675634e+00
+118 14     1 0.8999440 0.04310272 108.64920 2.09592004 5.736062e-05
+119 14     2 0.7927824 0.04393907 101.57052 0.88691202 1.493004e-02
+120 14     3 0.5777824 0.04393907 117.88302 0.33691201 4.024260e+00
+121 14     4 0.8976352 0.05642951 119.81946 0.68837602 2.915706e-06
+122 14     5 0.7477824 0.03960782 119.57052 0.01191201 3.386616e-02
+123 14     6 0.8963072 0.07349612  63.15906 1.17733602 1.808125e-07
+124 14     7 0.5829040 0.06831802  73.11720 1.33872003 2.585111e-05
+127 15     1 0.2151984 0.08328365  35.22432 1.80379203 5.685935e-09
+128 15     2 0.7540983 0.03531704  89.66107 0.68665921 1.744904e-04
+129 15     3 0.2151984 0.08328365  35.22432 1.77879203 3.143058e-09
+130 15     4 0.8008512 0.03427034  71.83326 1.04925602 4.615488e+00
+131 15     5 0.4608512 0.03055784  92.08326 1.02425602 8.681050e-02
+132 15     6 0.8958512 0.03488909  71.83326 1.99925603 4.952731e-02
+136 16     1 0.2151984 0.08328365  35.22432 1.80379203 4.402797e-07
+137 16     2 0.7927824 0.04393907 101.57052 0.88691202 6.289503e-10
+138 16     3 0.6552048 0.06166284  61.52304 0.80102401 9.292121e-06
+139 16     4 0.7540983 0.03531704  89.66107 0.68665921 3.155641e+00
+140 16     5 0.2151984 0.08328365  35.22432 1.77879203 2.592616e-07
+141 16     6 0.8008512 0.03427034  71.83326 1.04925602 2.124669e-07
+142 16     7 0.7477824 0.03960782 119.57052 0.01191201 5.143763e-10
+143 16     8 0.4608512 0.03055784  92.08326 1.02425602 1.234880e-02
+144 16     9 0.8958512 0.03488909  71.83326 1.99925603 7.171778e-08
+145 17     1 0.8963072 0.07349612  63.15906 1.17733602 1.402619e+01
+146 17     2 0.5829040 0.06831802  73.11720 1.33872003 2.298112e-01
+154 18     1 0.6625952 0.06211706  30.98496 1.92417603 3.287981e-07
+155 18     2 0.8952615 0.02318994  75.94093 1.76207524 5.694410e+00
+156 18     3 0.4324662 0.02464088  66.22597 0.53389922 7.989743e-03
+157 18     4 0.8008512 0.03427034  71.83326 1.04925602 1.071304e-07
+158 18     5 0.8958512 0.03488909  71.83326 1.99925603 8.822223e-10
+163 19     1 0.6625952 0.06211706  30.98496 1.92417603 7.127952e+00
+164 19     2 0.8008512 0.03427034  71.83326 1.04925602 6.207646e-09
+165 19     3 0.4608512 0.03055784  92.08326 1.02425602 2.662212e-09
+166 19     4 0.8958512 0.03488909  71.83326 1.99925603 4.749960e-05
+172 20     1 0.8999440 0.04310272 108.64920 2.09592004 4.612116e-08
+173 20     2 0.2151984 0.08328365  35.22432 1.80379203 6.481234e+00
+174 20     3 0.2151984 0.08328365  35.22432 1.77879203 3.022766e+00
+
+$postMean
+   id       Ka        Ke        V     Tlag1
+1   1 0.440395 0.0246160  66.3924 0.5549410
+2   2 0.740500 0.0398000 119.4760 0.0269964
+3   3 0.899944 0.0431027 108.6490 2.0959200
+4   4 0.897547 0.0564307 119.8190 0.6883010
+5   5 0.105318 0.0675052 113.3440 0.0186971
+6   6 0.895218 0.0348829  71.8626 1.9978400
+7   7 0.215198 0.0832836  35.2243 1.7965300
+8   8 0.895481 0.0348882  71.8470 1.9984900
+9   9 0.789913 0.0439419 101.7830 0.8796880
+10 10 0.655786 0.0615878  61.6927 0.8013760
+11 11 0.583223 0.0683230  73.1082 1.3385500
+12 12 0.470306 0.0306883  91.8595 1.0253500
+13 13 0.215198 0.0832837  35.2243 1.7955900
+14 14 0.579989 0.0439032 117.8370 0.3362570
+15 15 0.795628 0.0342090  72.2038 1.0586900
+16 16 0.752955 0.0352986  89.6704 0.6879760
+17 17 0.891255 0.0734126  63.3196 1.1799400
+18 18 0.894613 0.0231920  75.9273 1.7603500
+19 19 0.662597 0.0621169  30.9852 1.9241800
+20 20 0.215198 0.0832837  35.2243 1.7958400
+
+$postSD
+   id          Ka          Ke          V       Tlag1
+1   1 6.00545e-02 1.88282e-04 1.26066000 1.59374e-01
+2   2 3.45921e-02 8.91829e-04 0.71133400 7.25088e-02
+3   3 2.86297e-05 2.27702e-06 0.00320865 6.83776e-05
+4   4 8.39241e-03 1.17316e-04 0.06859300 7.09340e-03
+5   5 5.25142e-02 7.34087e-04 0.42921000 4.43858e-02
+6   6 1.65900e-02 1.75674e-04 0.77267700 3.71587e-02
+7   7 2.19735e-04 1.56232e-05 0.01181840 1.13509e-02
+8   8 1.30112e-02 3.65884e-04 0.61978900 2.70955e-02
+9   9 2.47251e-02 2.51906e-04 1.95280000 6.52513e-02
+10 10 8.92230e-03 1.15127e-03 2.60403000 6.22545e-03
+11 11 9.99167e-03 1.71693e-04 0.37500200 5.83813e-03
+12 12 5.64108e-02 7.65547e-04 1.90655000 9.86131e-02
+13 13 0.00000e+00 0.00000e+00 0.00000000 0.00000e+00
+14 14 2.01593e-02 3.98277e-04 1.00547000 4.51294e-02
+15 15 4.66762e-02 5.02053e-04 2.71394000 9.66102e-02
+16 16 1.82753e-02 3.00820e-04 0.16058500 2.10448e-02
+17 17 3.94695e-02 6.52120e-04 1.25411000 2.03244e-02
+18 18 1.73111e-02 5.50931e-05 0.36355200 4.59404e-02
+19 19 6.02160e-04 7.02944e-05 0.10546000 1.96298e-04
+20 20 4.77009e-05 2.79909e-06 0.00511494 1.16430e-02
+
+$postVar
+   id           Ka           Ke            V        Tlag1
+1   1 3.606543e-03 3.545011e-08 1.589264e+00 2.540007e-02
+2   2 1.196613e-03 7.953590e-07 5.059961e-01 5.257526e-03
+3   3 8.196597e-10 5.184820e-12 1.029543e-05 4.675496e-09
+4   4 7.043255e-05 1.376304e-08 4.705000e-03 5.031632e-05
+5   5 2.757741e-03 5.388837e-07 1.842212e-01 1.970099e-03
+6   6 2.752281e-04 3.086135e-08 5.970297e-01 1.380769e-03
+7   7 4.828347e-08 2.440844e-10 1.396746e-04 1.288429e-04
+8   8 1.692913e-04 1.338711e-07 3.841384e-01 7.341661e-04
+9   9 6.113306e-04 6.345663e-08 3.813428e+00 4.257732e-03
+10 10 7.960744e-05 1.325423e-06 6.780972e+00 3.875623e-05
+11 11 9.983347e-05 2.947849e-08 1.406265e-01 3.408376e-05
+12 12 3.182178e-03 5.860622e-07 3.634933e+00 9.724543e-03
+13 13 0.000000e+00 0.000000e+00 0.000000e+00 0.000000e+00
+14 14 4.063974e-04 1.586246e-07 1.010970e+00 2.036663e-03
+15 15 2.178668e-03 2.520572e-07 7.365470e+00 9.333531e-03
+16 16 3.339866e-04 9.049267e-08 2.578754e-02 4.428836e-04
+17 17 1.557841e-03 4.252605e-07 1.572792e+00 4.130812e-04
+18 18 2.996742e-04 3.035250e-09 1.321701e-01 2.110520e-03
+19 19 3.625967e-07 4.941303e-09 1.112181e-02 3.853290e-08
+20 20 2.275376e-09 7.834905e-12 2.616261e-05 1.355594e-04
+
+$postCov
+, , subj = 1
+
+       par2
+par1               Ka            Ke            V         Tlag1
+  Ka     3.606548e-03 -1.130716e-05  0.075708363  9.571135e-03
+  Ke    -1.130716e-05  3.544993e-08 -0.000237359 -3.000719e-05
+  V      7.570836e-02 -2.373590e-04  1.589263947  2.009165e-01
+  Tlag1  9.571135e-03 -3.000719e-05  0.200916506  2.540009e-02
+
+, , subj = 2
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     1.196616e-03 -3.014069e-05  0.0107110434 -2.226821e-03
+  Ke    -3.014069e-05  7.953594e-07 -0.0003915818  6.243574e-05
+  V      1.071104e-02 -3.915818e-04  0.5059954596 -4.130054e-02
+  Tlag1 -2.226821e-03  6.243574e-05 -0.0413005441  5.257525e-03
+
+, , subj = 3
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     8.196609e-10 -6.519050e-11  9.186283e-08  1.957631e-09
+  Ke    -6.519050e-11  5.184828e-12 -7.306172e-09 -1.556972e-10
+  V      9.186283e-08 -7.306172e-09  1.029545e-05  2.193999e-07
+  Tlag1  1.957631e-09 -1.556972e-10  2.193999e-07  4.675492e-09
+
+, , subj = 4
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     7.043262e-05 -9.845649e-07  5.756611e-04  5.953076e-05
+  Ke    -9.845649e-07  1.376306e-08 -8.047063e-06 -8.321698e-07
+  V      5.756611e-04 -8.047063e-06  4.705004e-03  4.865579e-04
+  Tlag1  5.953076e-05 -8.321698e-07  4.865579e-04  5.031634e-05
+
+, , subj = 5
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     2.757743e-03 -3.854999e-05  0.0225396332  2.330888e-03
+  Ke    -3.854999e-05  5.388834e-07 -0.0003150775 -3.258306e-05
+  V      2.253963e-02 -3.150775e-04  0.1842213235  1.905085e-02
+  Tlag1  2.330888e-03 -3.258306e-05  0.0190508532  1.970103e-03
+
+, , subj = 6
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     2.752276e-04  2.681919e-06 -0.0127399016  6.156270e-04
+  Ke     2.681919e-06  3.086139e-08 -0.0001299934  6.111229e-06
+  V     -1.273990e-02 -1.299934e-04  0.5970295786 -2.863538e-02
+  Tlag1  6.156270e-04  6.111229e-06 -0.0286353786  1.380768e-03
+
+, , subj = 7
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     4.828333e-08 -3.432955e-09  2.596921e-06  1.438090e-08
+  Ke    -3.432955e-09  2.440839e-10 -1.846416e-07 -1.022485e-09
+  V      2.596921e-06 -1.846416e-07  1.396755e-04  7.734772e-07
+  Tlag1  1.438090e-08 -1.022485e-09  7.734772e-07  1.288421e-04
+
+, , subj = 8
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     1.692923e-04 -2.281109e-07 -0.0055120474  3.336108e-04
+  Ke    -2.281109e-07  1.338711e-07 -0.0001579049  2.750321e-06
+  V     -5.512047e-03 -1.579049e-04  0.3841378487 -1.482399e-02
+  Tlag1  3.336108e-04  2.750321e-06 -0.0148239918  7.341675e-04
+
+, , subj = 9
+
+       par2
+par1               Ka            Ke            V         Tlag1
+  Ka     6.113309e-04 -4.307759e-07 -0.044979331  1.574276e-03
+  Ke    -4.307759e-07  6.345683e-08 -0.000139612  1.035778e-07
+  V     -4.497933e-02 -1.396120e-04  3.813426665 -1.174916e-01
+  Tlag1  1.574276e-03  1.035778e-07 -0.117491618  4.257730e-03
+
+, , subj = 10
+
+       par2
+par1               Ka            Ke            V         Tlag1
+  Ka     7.960752e-05 -1.025720e-05  0.023183866  4.891779e-05
+  Ke    -1.025720e-05  1.325417e-06 -0.002997557 -6.170698e-06
+  V      2.318387e-02 -2.997557e-03  6.780992532  1.385203e-02
+  Tlag1  4.891779e-05 -6.170698e-06  0.013852031  3.875621e-05
+
+, , subj = 11
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     9.983351e-05  1.546352e-06 -2.831000e-03 -5.432180e-05
+  Ke     1.546352e-06  2.947838e-08 -6.208393e-05 -6.864874e-07
+  V     -2.831000e-03 -6.208393e-05  1.406263e-01  1.023758e-03
+  Tlag1 -5.432180e-05 -6.864874e-07  1.023758e-03  3.408375e-05
+
+, , subj = 12
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     3.182179e-03  4.200119e-05 -0.0869029242  1.399605e-03
+  Ke     4.200119e-05  5.860616e-07 -0.0009499979  1.737158e-06
+  V     -8.690292e-02 -9.499979e-04  3.6349321430 -1.397581e-01
+  Tlag1  1.399605e-03  1.737158e-06 -0.1397580881  9.724534e-03
+
+, , subj = 13
+
+       par2
+par1              Ka Ke V        Tlag1
+  Ka    7.703720e-34  0 0 2.479635e-33
+  Ke    0.000000e+00  0 0 0.000000e+00
+  V     0.000000e+00  0 0 0.000000e+00
+  Tlag1 2.479635e-33  0 0 1.377550e-04
+
+, , subj = 14
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     4.063977e-04 -6.042680e-06 -1.041211e-02 -1.638284e-05
+  Ke    -6.042680e-06  1.586243e-07 -6.929865e-05  1.181902e-05
+  V     -1.041211e-02 -6.929865e-05  1.010976e+00 -3.799141e-02
+  Tlag1 -1.638284e-05  1.181902e-05 -3.799141e-02  2.036662e-03
+
+, , subj = 15
+
+       par2
+par1               Ka            Ke            V         Tlag1
+  Ka     0.0021786701  2.334950e-05 -0.123871659  1.145782e-03
+  Ke     0.0000233495  2.520575e-07 -0.001349958  8.386526e-06
+  V     -0.1238716585 -1.349958e-03  7.365444383 -1.298079e-02
+  Tlag1  0.0011457817  8.386526e-06 -0.012980789  9.333526e-03
+
+, , subj = 16
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     3.339881e-04  5.405645e-06 -2.743520e-03 -3.845513e-04
+  Ke     5.405645e-06  9.049257e-08 -4.751166e-05 -6.218015e-06
+  V     -2.743520e-03 -4.751166e-05  2.578742e-02  3.151441e-03
+  Tlag1 -3.845513e-04 -6.218015e-06  3.151441e-03  4.428829e-04
+
+, , subj = 17
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     1.557838e-03  2.573884e-05 -0.0494990832 -8.021940e-04
+  Ke     2.573884e-05  4.252611e-07 -0.0008178315 -1.325397e-05
+  V     -4.949908e-02 -8.178315e-04  1.5727944044  2.548908e-02
+  Tlag1 -8.021940e-04 -1.325397e-05  0.0254890834  4.130822e-04
+
+, , subj = 18
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     2.996737e-04 -9.400597e-07  6.291267e-03  7.952711e-04
+  Ke    -9.400597e-07  3.035249e-09 -1.982405e-05 -2.493097e-06
+  V      6.291267e-03 -1.982405e-05  1.321698e-01  1.669392e-02
+  Tlag1  7.952711e-04 -2.493097e-06  1.669392e-02  2.110521e-03
+
+, , subj = 19
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     3.625962e-07 -4.232310e-08  6.349337e-05  1.166640e-07
+  Ke    -4.232310e-08  4.941309e-09 -7.413254e-06 -1.359074e-08
+  V      6.349337e-05 -7.413254e-06  1.112189e-02  2.038536e-05
+  Tlag1  1.166640e-07 -1.359074e-08  2.038536e-05  3.853278e-08
+
+, , subj = 20
+
+       par2
+par1               Ka            Ke             V         Tlag1
+  Ka     2.275371e-09 -1.335190e-10  2.439868e-07  9.971468e-10
+  Ke    -1.335190e-10  7.834907e-12 -1.431717e-08 -5.851266e-11
+  V      2.439868e-07 -1.431717e-08  2.616256e-05  1.069235e-07
+  Tlag1  9.971468e-10 -5.851266e-11  1.069235e-07  1.355598e-04
+
+
+$postCor
+, , subj = 1
+
+       par2
+par1    Ka Ke  V Tlag1
+  Ka     1 -1  1     1
+  Ke    -1  1 -1    -1
+  V      1 -1  1     1
+  Tlag1  1 -1  1     1
+
+, , subj = 2
+
+       par2
+par1            Ka         Ke          V      Tlag1
+  Ka     1.0000000 -0.9769988  0.4352923 -0.8878041
+  Ke    -0.9769988  1.0000000 -0.6172591  0.9655190
+  V      0.4352923 -0.6172591  1.0000000 -0.8007405
+  Tlag1 -0.8878041  0.9655190 -0.8007405  1.0000000
+
+, , subj = 3
+
+       par2
+par1    Ka Ke  V Tlag1
+  Ka     1 -1  1     1
+  Ke    -1  1 -1    -1
+  V      1 -1  1     1
+  Tlag1  1 -1  1     1
+
+, , subj = 4
+
+       par2
+par1    Ka Ke  V Tlag1
+  Ka     1 -1  1     1
+  Ke    -1  1 -1    -1
+  V      1 -1  1     1
+  Tlag1  1 -1  1     1
+
+, , subj = 5
+
+       par2
+par1    Ka Ke  V Tlag1
+  Ka     1 -1  1     1
+  Ke    -1  1 -1    -1
+  V      1 -1  1     1
+  Tlag1  1 -1  1     1
+
+, , subj = 6
+
+       par2
+par1            Ka         Ke          V      Tlag1
+  Ka     1.0000000  0.9202207 -0.9938531  0.9986454
+  Ke     0.9202207  1.0000000 -0.9576692  0.9361822
+  V     -0.9938531 -0.9576692  1.0000000 -0.9973432
+  Tlag1  0.9986454  0.9361822 -0.9973432  1.0000000
+
+, , subj = 7
+
+       par2
+par1              Ka           Ke            V        Tlag1
+  Ka     1.000000000 -1.000000000  1.000000000  0.005765786
+  Ke    -1.000000000  1.000000000 -1.000000000 -0.005765786
+  V      1.000000000 -1.000000000  1.000000000  0.005765786
+  Tlag1  0.005765786 -0.005765786  0.005765786  1.000000000
+
+, , subj = 8
+
+       par2
+par1             Ka          Ke          V      Tlag1
+  Ka     1.00000000 -0.04791639 -0.6835194  0.9462892
+  Ke    -0.04791639  1.00000000 -0.6963197  0.2774230
+  V     -0.68351936 -0.69631965  1.0000000 -0.8827222
+  Tlag1  0.94628924  0.27742295 -0.8827222  1.0000000
+
+, , subj = 9
+
+       par2
+par1             Ka           Ke          V        Tlag1
+  Ka     1.00000000 -0.069163026 -0.9315734  0.975783848
+  Ke    -0.06916303  1.000000000 -0.2838089  0.006301419
+  V     -0.93157345 -0.283808853  1.0000000 -0.922062012
+  Tlag1  0.97578385  0.006301419 -0.9220620  1.000000000
+
+, , subj = 10
+
+       par2
+par1            Ka         Ke          V      Tlag1
+  Ka     1.0000000 -0.9985628  0.9978429  0.8806820
+  Ke    -0.9985628  1.0000000 -0.9998722 -0.8609687
+  V      0.9978429 -0.9998722  1.0000000  0.8544687
+  Tlag1  0.8806820 -0.8609687  0.8544687  1.0000000
+
+, , subj = 11
+
+       par2
+par1            Ka         Ke          V      Tlag1
+  Ka     1.0000000  0.9014018 -0.7555592 -0.9312414
+  Ke     0.9014018  1.0000000 -0.9642598 -0.6848683
+  V     -0.7555592 -0.9642598  1.0000000  0.4676172
+  Tlag1 -0.9312414 -0.6848683  0.4676172  1.0000000
+
+, , subj = 12
+
+       par2
+par1            Ka          Ke          V       Tlag1
+  Ka     1.0000000  0.97258522 -0.8080234  0.25159898
+  Ke     0.9725852  1.00000000 -0.6508829  0.02301089
+  V     -0.8080234 -0.65088292  1.0000000 -0.74335181
+  Tlag1  0.2515990  0.02301089 -0.7433518  1.00000000
+
+, , subj = 13
+
+       par2
+par1              Ka  Ke   V        Tlag1
+  Ka    1.000000e+00 NaN NaN 7.611738e-15
+  Ke             NaN NaN NaN          NaN
+  V              NaN NaN NaN          NaN
+  Tlag1 7.611738e-15 NaN NaN 1.000000e+00
+
+, , subj = 14
+
+       par2
+par1             Ka         Ke          V       Tlag1
+  Ka     1.00000000 -0.7526084 -0.5136800 -0.01800752
+  Ke    -0.75260841  1.0000000 -0.1730491  0.65756237
+  V     -0.51368004 -0.1730491  1.0000000 -0.83725042
+  Tlag1 -0.01800752  0.6575624 -0.8372504  1.00000000
+
+, , subj = 15
+
+       par2
+par1            Ka         Ke           V       Tlag1
+  Ka     1.0000000  0.9963962 -0.97786014  0.25408748
+  Ke     0.9963962  1.0000000 -0.99076578  0.17290573
+  V     -0.9778601 -0.9907658  1.00000000 -0.04950838
+  Tlag1  0.2540875  0.1729057 -0.04950838  1.00000000
+
+, , subj = 16
+
+       par2
+par1            Ka         Ke          V      Tlag1
+  Ka     1.0000000  0.9832763 -0.9348430 -0.9998718
+  Ke     0.9832763  1.0000000 -0.9835349 -0.9822020
+  V     -0.9348430 -0.9835349  1.0000000  0.9325257
+  Tlag1 -0.9998718 -0.9822020  0.9325257  1.0000000
+
+, , subj = 17
+
+       par2
+par1    Ka Ke  V Tlag1
+  Ka     1  1 -1    -1
+  Ke     1  1 -1    -1
+  V     -1 -1  1     1
+  Tlag1 -1 -1  1     1
+
+, , subj = 18
+
+       par2
+par1            Ka         Ke          V      Tlag1
+  Ka     1.0000000 -0.9856755  0.9996494  0.9999907
+  Ke    -0.9856755  1.0000000 -0.9897581 -0.9850248
+  V      0.9996494 -0.9897581  1.0000000  0.9995334
+  Tlag1  0.9999907 -0.9850248  0.9995334  1.0000000
+
+, , subj = 19
+
+       par2
+par1            Ka         Ke          V      Tlag1
+  Ka     1.0000000 -0.9998731  0.9998330  0.9869838
+  Ke    -0.9998731  1.0000000 -0.9999968 -0.9849337
+  V      0.9998330 -0.9999968  1.0000000  0.9847228
+  Tlag1  0.9869838 -0.9849337  0.9847228  1.0000000
+
+, , subj = 20
+
+       par2
+par1              Ka           Ke            V        Tlag1
+  Ka     1.000000000 -1.000000000  1.000000000  0.001795426
+  Ke    -1.000000000  1.000000000 -1.000000000 -0.001795426
+  V      1.000000000 -1.000000000  1.000000000  0.001795426
+  Tlag1  0.001795426 -0.001795426  0.001795426  1.000000000
+
+
+$postMed
+   id        Ka         Ke         V      Tlag1
+1   1 0.4320697 0.02425637  66.45784 0.54034862
+2   2 0.7438244 0.03913798 119.52911 0.02092850
+3   3 0.8960000 0.04307500 108.75000 2.10000000
+4   4 0.8959996 0.05594506 119.54995 0.69999778
+5   5 0.1040176 0.06782283 113.25198 0.02008786
+6   6 0.8959942 0.03515428  71.85065 1.97997080
+7   7 0.2160000 0.08366500  34.95000 1.81180820
+8   8 0.8959967 0.03515464  71.85032 1.97998360
+9   9 0.7919456 0.04406497 101.55609 0.89972841
+10 10 0.6560170 0.06188290  61.95191 0.82008442
+11 11 0.5840041 0.06782549  72.74956 1.33997960
+12 12 0.4641165 0.03021942  91.63689 1.01977590
+13 13 0.2160000 0.08366500  34.95000 1.81023910
+14 14 0.5760486 0.04406085 117.75211 0.33990632
+15 15 0.7999675 0.03416102  71.85839 1.05983770
+16 16 0.7519843 0.03515306  89.85176 0.70007833
+17 17 0.8959345 0.07375689  62.85737 1.18032770
+18 18 0.8959944 0.02327569  76.34937 1.77997190
+19 19 0.6640000 0.06188500  31.35000 1.94000010
+20 20 0.2160000 0.08366500  34.95000 1.81067230
+
+$shrinkage
+        par    shrinkage
+Ka       Ka 0.0121921915
+Ke       Ke 0.0005838264
+V         V 0.0016700648
+Tlag1 Tlag1 0.0071850467
+
+$gridpts
+[1] 20011
+
+$nsub
+[1] 20
+
+$ab
+      [,1]  [,2]
+[1,] 1e-01   0.9
+[2,] 1e-03   0.1
+[3,] 3e+01 120.0
+[4,] 0e+00   4.0
+
+attr(,"class")
+[1] "PMfinal" "NPAG"    "list"   
+> names(final)
+ [1] "popPoints"  "popMean"    "popSD"      "popCV"      "popVar"    
+ [6] "popCov"     "popCor"     "popMedian"  "popRanFix"  "postPoints"
+[11] "postMean"   "postSD"     "postVar"    "postCov"    "postCor"   
+[16] "postMed"    "shrinkage"  "gridpts"    "nsub"       "ab"        
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("makeFinal", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+
+detaching ‘package:reshape2’
+
+> nameEx("makeOP")
+> ### * makeOP
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: makeOP
+> ### Title: Generated observed vs. predicted data
+> ### Aliases: makeOP
+> 
+> ### ** Examples
+> 
+> data(PMex1)
+> op <- makeOP(NPdata.1)
+> op
+    id   time   obs      pred pred.type   icen outeq block     obsSD
+1    1 120.00 10.44  3.662956       pop   mean     1     1 1.2599538
+2    1 121.00 12.89  3.479483       pop   mean     1     1 1.5292841
+3    1 122.00 14.98  6.324708       pop   mean     1     1 1.7544977
+4    1 125.99 16.69  8.847621       pop   mean     1     1 1.9356531
+5    1 129.00 20.15  7.868059       pop   mean     1     1 2.2936393
+6    1 132.00 14.97  6.787255       pop   mean     1     1 1.7534301
+7    1 143.98 12.57  3.672188       pop   mean     1     1 1.4944325
+8    2 120.00  3.56  3.662956       pop   mean     1     1 0.4729058
+9    2 120.98  5.84  3.483061       pop   mean     1     1 0.7387499
+10   2 121.98  6.54  6.272538       pop   mean     1     1 0.8193702
+11   2 126.00  6.14  8.845428       pop   mean     1     1 0.7733589
+12   2 129.02  6.56  7.860681       pop   mean     1     1 0.8216668
+13   2 132.02  4.44  6.780389       pop   mean     1     1 0.5761020
+14   2 144.00  3.76  3.668415       pop   mean     1     1 0.4964246
+15   3 120.08  4.06  3.647929       pop   mean     1     1 0.5316309
+16   3 121.07  3.24  3.466989       pop   mean     1     1 0.4351961
+17   3 122.08  3.09  6.525617       pop   mean     1     1 0.4174860
+18   3 126.08  7.98  8.827406       pop   mean     1     1 0.9837428
+19   3 129.05  7.23  7.849612       pop   mean     1     1 0.8983798
+20   3 132.10  4.71  6.752984       pop   mean     1     1 0.6076158
+21   3 144.08  3.82  3.653366       pop   mean     1     1 0.5034727
+22   4 120.00  2.10  3.662956       pop   mean     1     1 0.3000587
+23   4 121.00  3.05  3.479483       pop   mean     1     1 0.4127596
+24   4 122.02  5.21  6.376092       pop   mean     1     1 0.6657905
+25   4 126.00  5.09  8.845428       pop   mean     1     1 0.6518504
+26   4 129.03  4.24  7.856992       pop   mean     1     1 0.5527134
+27   4 132.00  3.69  6.787255       pop   mean     1     1 0.4881974
+28   4 144.02  1.96  3.664647       pop   mean     1     1 0.2833771
+29   5 120.00  2.93  3.662956       pop   mean     1     1 0.3985714
+30   5 121.00  2.64  3.479483       pop   mean     1     1 0.3642262
+31   5 122.00  4.80  6.324708       pop   mean     1     1 0.6181049
+32   5 126.00  3.70  8.845428       pop   mean     1     1 0.4893730
+33   5 129.02  4.13  7.860681       pop   mean     1     1 0.5398334
+34   5 132.00  2.81  6.787255       pop   mean     1     1 0.3843694
+35   5 144.00  2.21  3.668415       pop   mean     1     1 0.3131525
+36   6 120.00  6.92  3.662956       pop   mean     1     1 0.8629391
+37   6 121.00  6.89  3.479483       pop   mean     1     1 0.8595045
+38   6 121.98  6.64  6.272538       pop   mean     1     1 0.8308491
+39   6 126.00 13.72  8.845428       pop   mean     1     1 1.6192236
+40   6 129.00 12.69  7.868059       pop   mean     1     1 1.5075134
+41   6 131.98 10.58  6.794126       pop   mean     1     1 1.2754989
+42   6 144.98  6.62  3.488252       pop   mean     1     1 0.8285541
+43   7 120.00  5.41  3.662956       pop   mean     1     1 0.6889934
+44   7 121.03  4.46  3.474123       pop   mean     1     1 0.5784387
+45   7 122.03  4.54  6.401491       pop   mean     1     1 0.5877819
+46   7 126.02 12.19  8.841003       pop   mean     1     1 1.4529189
+47   7 129.08 12.10  7.838541       pop   mean     1     1 1.4430665
+48   7 132.03  8.61  6.776959       pop   mean     1     1 1.0550316
+49   7 144.03  6.37  3.662765       pop   mean     1     1 0.7998341
+50   8 120.00  6.19  3.662956       pop   mean     1     1 0.7791187
+51   8 121.03  6.33  3.474123       pop   mean     1     1 0.7952334
+52   8 122.00  6.24  6.324708       pop   mean     1     1 0.7848761
+53   8 125.98 13.03  8.849799       pop   mean     1     1 1.5445009
+54   8 128.98 11.86  7.875435       pop   mean     1     1 1.4167555
+55   8 132.00 11.45  6.787255       pop   mean     1     1 1.3716800
+56   8 143.98  7.83  3.672188       pop   mean     1     1 0.9667133
+57   9 120.00  2.85  3.662956       pop   mean     1     1 0.3891049
+58   9 120.97  3.70  3.484851       pop   mean     1     1 0.4893730
+59   9 122.00  6.65  6.324708       pop   mean     1     1 0.8319965
+60   9 125.98  6.81  8.849799       pop   mean     1     1 0.8503413
+61   9 128.98  6.51  7.875435       pop   mean     1     1 0.8159247
+62   9 132.00  7.48  6.787255       pop   mean     1     1 0.9268940
+63   9 143.98  4.51  3.672188       pop   mean     1     1 0.5842789
+64  10 120.00  2.93  3.662956       pop   mean     1     1 0.3985714
+65  10 121.00  4.36  3.479483       pop   mean     1     1 0.5667511
+66  10 122.02  7.79  6.376092       pop   mean     1     1 0.9621684
+67  10 126.00 11.02  8.845428       pop   mean     1     1 1.3242328
+68  10 129.00  8.86  7.868059       pop   mean     1     1 1.0832155
+69  10 131.97  6.09  6.797564       pop   mean     1     1 0.7675967
+70  10 144.00  4.15  3.668415       pop   mean     1     1 0.5421760
+71  11 120.00  2.09  3.662956       pop   mean     1     1 0.2988678
+72  11 121.03  2.68  3.474123       pop   mean     1     1 0.3689683
+73  11 122.00  4.71  6.324708       pop   mean     1     1 0.6076158
+74  11 125.98  7.71  8.849799       pop   mean     1     1 0.9530741
+75  11 129.00  6.31  7.868059       pop   mean     1     1 0.7929324
+76  11 132.00  5.82  6.787255       pop   mean     1     1 0.7364396
+77  11 144.13  2.63  3.643991       pop   mean     1     1 0.3630405
+78  12 120.00  7.09  3.662956       pop   mean     1     1 0.8823857
+79  12 121.03  6.18  3.474123       pop   mean     1     1 0.7779669
+80  12 122.13  8.66  6.645068       pop   mean     1     1 1.0606732
+81  12 126.00 11.16  8.845428       pop   mean     1     1 1.3397001
+82  12 129.00  9.51  7.868059       pop   mean     1     1 1.1562136
+83  12 132.00  8.14  6.787255       pop   mean     1     1 1.0018839
+84  12 144.00  7.89  3.668415       pop   mean     1     1 0.9735277
+85  13 120.00  6.62  3.662956       pop   mean     1     1 0.8285541
+86  13 121.00  3.18  3.479483       pop   mean     1     1 0.4281146
+87  13 122.00  5.41  6.324708       pop   mean     1     1 0.6889934
+88  13 126.00 10.18  8.845428       pop   mean     1     1 1.2310346
+89  13 129.02 12.84  7.860681       pop   mean     1     1 1.5238450
+90  13 132.00 12.35  6.787255       pop   mean     1     1 1.4704152
+91  13 144.00  8.06  3.668415       pop   mean     1     1 0.9928164
+92  14 120.00  3.63  3.662956       pop   mean     1     1 0.4811417
+93  14 121.00  4.49  3.479483       pop   mean     1     1 0.5819431
+94  14 122.00  5.50  6.324708       pop   mean     1     1 0.6994222
+95  14 126.00  7.28  8.845428       pop   mean     1     1 0.9040874
+96  14 129.00  5.27  7.868059       pop   mean     1     1 0.6727554
+97  14 132.00  4.89  6.787255       pop   mean     1     1 0.6285863
+98  14 144.00  2.68  3.668415       pop   mean     1     1 0.3689683
+99  15 120.00  5.53  2.747217       pop   mean     1     1 0.7028967
+100 15 121.00  4.81  2.609612       pop   mean     1     1 0.6192699
+101 15 122.00  8.14  4.743531       pop   mean     1     1 1.0018839
+102 15 126.00  9.96  6.634071       pop   mean     1     1 1.2065139
+103 15 129.00  8.55  5.901044       pop   mean     1     1 1.0482586
+104 15 132.05  7.54  5.077576       pop   mean     1     1 0.9337285
+105 15 144.05  5.74  2.744252       pop   mean     1     1 0.7271944
+106 16 120.00  5.48  3.662956       pop   mean     1     1 0.6971053
+107 16 121.00  6.59  3.479483       pop   mean     1     1 0.8251109
+108 16 122.00  8.91  6.324708       pop   mean     1     1 1.0888451
+109 16 126.00 10.57  8.845428       pop   mean     1     1 1.2743892
+110 16 129.00  9.52  7.868059       pop   mean     1     1 1.1573335
+111 16 132.00  7.83  6.787255       pop   mean     1     1 0.9667133
+112 16 143.97  4.96  3.674075       pop   mean     1     1 0.6367331
+113 17 120.00  2.11  3.662956       pop   mean     1     1 0.3012495
+114 17 121.02  1.86  3.475909       pop   mean     1     1 0.2714502
+115 17 122.02  6.92  6.376092       pop   mean     1     1 0.8629391
+116 17 126.00  9.11  8.845428       pop   mean     1     1 1.1113396
+117 17 129.00  6.96  7.868059       pop   mean     1     1 0.8675173
+118 17 132.00  5.64  6.787255       pop   mean     1     1 0.7156293
+119 17 144.08  3.59  3.653366       pop   mean     1     1 0.4764361
+120 18 120.00  7.95  2.747217       pop   mean     1     1 0.9803386
+121 18 120.98  7.47  2.612296       pop   mean     1     1 0.9257545
+122 18 121.98  8.67  4.704403       pop   mean     1     1 1.0618012
+123 18 126.00 13.83  6.634071       pop   mean     1     1 1.6310938
+124 18 129.17 14.01  5.853987       pop   mean     1     1 1.6504927
+125 18 132.17  8.97  5.046811       pop   mean     1     1 1.0955975
+126 18 143.97  8.40  2.755556       pop   mean     1     1 1.0313109
+127 19 120.00  5.42  3.662956       pop   mean     1     1 0.6901525
+128 19 121.00  7.08  3.479483       pop   mean     1     1 0.8812426
+129 19 122.00  7.27  6.324708       pop   mean     1     1 0.9029461
+130 19 125.98 20.07  8.849799       pop   mean     1     1 2.2854916
+131 19 128.98 18.24  7.875435       pop   mean     1     1 2.0974397
+132 19 132.00 15.36  6.787255       pop   mean     1     1 1.7949963
+133 19 144.00 10.92  3.668415       pop   mean     1     1 1.3131732
+134 20 120.00  4.71  3.662956       pop   mean     1     1 0.6076158
+135 20 120.77  4.50  3.520851       pop   mean     1     1 0.5831111
+136 20 121.75  3.35  5.612606       pop   mean     1     1 0.4481699
+137 20 125.67 12.35  8.909942       pop   mean     1     1 1.4704152
+138 20 128.67 11.56  7.989507       pop   mean     1     1 1.3837892
+139 20 143.67  6.45  3.731153       pop   mean     1     1 0.8090310
+140  1 120.00 10.44 11.419996      post   mean     1     1 1.2599538
+141  1 121.00 12.89 12.741873      post   mean     1     1 1.5292841
+142  1 122.00 14.98 15.043678      post   mean     1     1 1.7544977
+143  1 125.99 16.69 17.354186      post   mean     1     1 1.9356531
+144  1 129.00 20.15 16.694226      post   mean     1     1 2.2936393
+145  1 132.00 14.97 15.659508      post   mean     1     1 1.7534301
+146  1 143.98 12.57 11.705975      post   mean     1     1 1.4944325
+147  2 120.00  3.56  3.294231      post   mean     1     1 0.4729058
+148  2 120.98  5.84  5.657378      post   mean     1     1 0.7387499
+149  2 121.98  6.54  6.705232      post   mean     1     1 0.8193702
+150  2 126.00  6.14  6.715052      post   mean     1     1 0.7733589
+151  2 129.02  6.56  6.004211      post   mean     1     1 0.8216668
+152  2 132.02  4.44  5.333754      post   mean     1     1 0.5761020
+153  2 144.00  3.76  3.311462      post   mean     1     1 0.4964246
+154  3 120.08  4.06  3.468682      post   mean     1     1 0.5316309
+155  3 121.07  3.24  3.323781      post   mean     1     1 0.4351961
+156  3 122.08  3.09  3.182189      post   mean     1     1 0.4174860
+157  3 126.08  7.98  7.402388      post   mean     1     1 0.9837428
+158  3 129.05  7.23  6.643296      post   mean     1     1 0.8983798
+159  3 132.10  4.71  5.833941      post   mean     1     1 0.6076158
+160  3 144.08  3.82  3.481435      post   mean     1     1 0.5034727
+161  4 120.00  2.10  1.930555      post   mean     1     1 0.3000587
+162  4 121.00  3.05  3.035485      post   mean     1     1 0.4127596
+163  4 122.02  5.21  5.062169      post   mean     1     1 0.6657905
+164  4 126.00  5.09  5.290226      post   mean     1     1 0.6518504
+165  4 129.03  4.24  4.494078      post   mean     1     1 0.5527134
+166  4 132.00  3.69  3.802932      post   mean     1     1 0.4881974
+167  4 144.02  1.96  1.930018      post   mean     1     1 0.2833771
+168  5 120.00  2.93  2.358700      post   mean     1     1 0.3985714
+169  5 121.00  2.64  2.751837      post   mean     1     1 0.3642262
+170  5 122.00  4.80  3.073405      post   mean     1     1 0.6181049
+171  5 126.00  3.70  3.739717      post   mean     1     1 0.4893730
+172  5 129.02  4.13  3.801157      post   mean     1     1 0.5398334
+173  5 132.00  2.81  3.649626      post   mean     1     1 0.3843694
+174  5 144.00  2.21  2.359582      post   mean     1     1 0.3131525
+175  6 120.00  6.92  7.003153      post   mean     1     1 0.8629391
+176  6 121.00  6.89  6.763075      post   mean     1     1 0.8595045
+177  6 121.98  6.64  6.535785      post   mean     1     1 0.8308491
+178  6 126.00 13.72 12.994909      post   mean     1     1 1.6192236
+179  6 129.00 12.69 11.904786      post   mean     1     1 1.5075134
+180  6 131.98 10.58 10.743117      post   mean     1     1 1.2754989
+181  6 144.98  6.62  6.827062      post   mean     1     1 0.8285541
+182  7 120.00  5.41  4.822890      post   mean     1     1 0.6889934
+183  7 121.03  4.46  4.453831      post   mean     1     1 0.5784387
+184  7 122.03  4.54  4.945890      post   mean     1     1 0.5877819
+185  7 126.02 12.19 11.349090      post   mean     1     1 1.4529189
+186  7 129.08 12.10 11.694922      post   mean     1     1 1.4430665
+187  7 132.03  8.61 10.617268      post   mean     1     1 1.0550316
+188  7 144.03  6.37  4.811981      post   mean     1     1 0.7998341
+189  8 120.00  6.19  7.003356      post   mean     1     1 0.7791187
+190  8 121.03  6.33  6.756160      post   mean     1     1 0.7952334
+191  8 122.00  6.24  6.542599      post   mean     1     1 0.7848761
+192  8 125.98 13.03 13.001441      post   mean     1     1 1.5445009
+193  8 128.98 11.86 11.914073      post   mean     1     1 1.4167555
+194  8 132.00 11.45 10.736595      post   mean     1     1 1.3716800
+195  8 143.98  7.83  7.069583      post   mean     1     1 0.9667133
+196  9 120.00  2.85  3.450264      post   mean     1     1 0.3891049
+197  9 120.97  3.70  3.711364      post   mean     1     1 0.4893730
+198  9 122.00  6.65  6.525927      post   mean     1     1 0.8319965
+199  9 125.98  6.81  7.530742      post   mean     1     1 0.8503413
+200  9 128.98  6.51  6.687626      post   mean     1     1 0.8159247
+201  9 132.00  7.48  5.864654      post   mean     1     1 0.9268940
+202  9 143.98  4.51  3.464897      post   mean     1     1 0.5842789
+203 10 120.00  2.93  3.329675      post   mean     1     1 0.3985714
+204 10 121.00  4.36  4.311177      post   mean     1     1 0.5667511
+205 10 122.02  7.79  8.070721      post   mean     1     1 0.9621684
+206 10 126.00 11.02  9.738971      post   mean     1     1 1.3242328
+207 10 129.00  8.86  8.341450      post   mean     1     1 1.0832155
+208 10 131.97  6.09  6.981335      post   mean     1     1 0.7675967
+209 10 144.00  4.15  3.331262      post   mean     1     1 0.5421760
+210 11 120.00  2.09  2.451534      post   mean     1     1 0.2988678
+211 11 121.03  2.68  2.284950      post   mean     1     1 0.3689683
+212 11 122.00  4.71  4.703109      post   mean     1     1 0.6076158
+213 11 125.98  7.71  7.778694      post   mean     1     1 0.9530741
+214 11 129.00  6.31  6.726565      post   mean     1     1 0.7929324
+215 11 132.00  5.82  5.548257      post   mean     1     1 0.7364396
+216 11 144.13  2.63  2.430395      post   mean     1     1 0.3630405
+217 12 120.00  7.09  6.457046      post   mean     1     1 0.8823857
+218 12 121.03  6.18  6.270467      post   mean     1     1 0.7779669
+219 12 122.13  8.66  8.647026      post   mean     1     1 1.0606732
+220 12 126.00 11.16 10.696237      post   mean     1     1 1.3397001
+221 12 129.00  9.51 10.205362      post   mean     1     1 1.1562136
+222 12 132.00  8.14  9.417500      post   mean     1     1 1.0018839
+223 12 144.00  7.89  6.543903      post   mean     1     1 0.9735277
+224 13 120.00  6.62  4.822544      post   mean     1     1 0.8285541
+225 13 121.00  3.18  4.463901      post   mean     1     1 0.4281146
+226 13 122.00  5.41  4.855532      post   mean     1     1 0.6889934
+227 13 126.00 10.18 11.338720      post   mean     1     1 1.2310346
+228 13 129.02 12.84 11.706770      post   mean     1     1 1.5238450
+229 13 132.00 12.35 10.631102      post   mean     1     1 1.4704152
+230 13 144.00  8.06  4.822744      post   mean     1     1 0.9928164
+231 14 120.00  3.63  2.977176      post   mean     1     1 0.4811417
+232 14 121.00  4.49  4.451277      post   mean     1     1 0.5819431
+233 14 122.00  5.50  5.748804      post   mean     1     1 0.6994222
+234 14 126.00  7.28  6.377466      post   mean     1     1 0.9040874
+235 14 129.00  5.27  5.735068      post   mean     1     1 0.6727554
+236 14 132.00  4.89  5.052718      post   mean     1     1 0.6285863
+237 14 144.00  2.68  2.987219      post   mean     1     1 0.3689683
+238 15 120.00  5.53  5.217755      post   mean     1     1 0.7028967
+239 15 121.00  4.81  5.042279      post   mean     1     1 0.6192699
+240 15 122.00  8.14  8.099201      post   mean     1     1 1.0018839
+241 15 126.00  9.96  9.621351      post   mean     1     1 1.2065139
+242 15 129.00  8.55  8.786459      post   mean     1     1 1.0482586
+243 15 132.05  7.54  7.925448      post   mean     1     1 0.9337285
+244 15 144.05  5.74  5.257742      post   mean     1     1 0.7271944
+245 16 120.00  5.48  5.317818      post   mean     1     1 0.6971053
+246 16 121.00  6.59  6.526403      post   mean     1     1 0.8251109
+247 16 122.00  8.91  9.043839      post   mean     1     1 1.0888451
+248 16 126.00 10.57  9.994184      post   mean     1     1 1.2743892
+249 16 129.00  9.52  9.092210      post   mean     1     1 1.1573335
+250 16 132.00  7.83  8.189293      post   mean     1     1 0.9667133
+251 16 143.97  4.96  5.368105      post   mean     1     1 0.6367331
+252 17 120.00  2.11  2.334194      post   mean     1     1 0.3012495
+253 17 121.02  1.86  2.165791      post   mean     1     1 0.2714502
+254 17 122.02  6.92  6.837108      post   mean     1     1 0.8629391
+255 17 126.00  9.11  8.610749      post   mean     1     1 1.1113396
+256 17 129.00  6.96  7.011816      post   mean     1     1 0.8675173
+257 17 132.00  5.64  5.632893      post   mean     1     1 0.7156293
+258 17 144.08  3.59  2.320812      post   mean     1     1 0.4764361
+259 18 120.00  7.95  7.983948      post   mean     1     1 0.9803386
+260 18 120.98  7.47  7.804535      post   mean     1     1 0.9257545
+261 18 121.98  8.67  8.680147      post   mean     1     1 1.0618012
+262 18 126.00 13.83 12.324376      post   mean     1     1 1.6310938
+263 18 129.17 14.01 11.570143      post   mean     1     1 1.6504927
+264 18 132.17  8.97 10.799458      post   mean     1     1 1.0955975
+265 18 143.97  8.40  8.214341      post   mean     1     1 1.0313109
+266 19 120.00  5.42  6.994567      post   mean     1     1 0.6901525
+267 19 121.00  7.08  6.573310      post   mean     1     1 0.8812426
+268 19 122.00  7.27  7.123995      post   mean     1     1 0.9029461
+269 19 125.98 20.07 19.978726      post   mean     1     1 2.2854916
+270 19 128.98 18.24 17.589757      post   mean     1     1 2.0974397
+271 19 132.00 15.36 14.719280      post   mean     1     1 1.7949963
+272 19 144.00 10.92  6.997707      post   mean     1     1 1.3131732
+273 20 120.00  4.71  4.822636      post   mean     1     1 0.6076158
+274 20 120.77  4.50  4.544368      post   mean     1     1 0.5831111
+275 20 121.75  3.35  4.210457      post   mean     1     1 0.4481699
+276 20 125.67 12.35 11.137335      post   mean     1     1 1.4704152
+277 20 128.67 11.56 11.765834      post   mean     1     1 1.3837892
+278 20 143.67  6.45  4.946474      post   mean     1     1 0.8090310
+279  1 120.00 10.44  4.946751       pop median     1     1 1.2599538
+280  1 121.00 12.89  4.733469       pop median     1     1 1.5292841
+281  1 122.00 14.98  8.015047       pop median     1     1 1.7544977
+282  1 125.99 16.69 10.623576       pop median     1     1 1.9356531
+283  1 129.00 20.15  9.565782       pop median     1     1 2.2936393
+284  1 132.00 14.97  8.416147       pop median     1     1 1.7534301
+285  1 143.98 12.57  4.967511       pop median     1     1 1.4944325
+286  2 120.00  3.56  4.946751       pop median     1     1 0.4729058
+287  2 120.98  5.84  4.737644       pop median     1     1 0.7387499
+288  2 121.98  6.54  7.958395       pop median     1     1 0.8193702
+289  2 126.00  6.14 10.621090       pop median     1     1 0.7733589
+290  2 129.02  6.56  9.557940       pop median     1     1 0.8216668
+291  2 132.02  4.44  8.408811       pop median     1     1 0.5761020
+292  2 144.00  3.76  4.963134       pop median     1     1 0.4964246
+293  3 120.08  4.06  4.929340       pop median     1     1 0.5316309
+294  3 121.07  3.24  4.718889       pop median     1     1 0.4351961
+295  3 122.08  3.09  8.232831       pop median     1     1 0.4174860
+296  3 126.08  7.98 10.600727       pop median     1     1 0.9837428
+297  3 129.05  7.23  9.546176       pop median     1     1 0.8983798
+298  3 132.10  4.71  8.379521       pop median     1     1 0.6076158
+299  3 144.08  3.82  4.945666       pop median     1     1 0.5034727
+300  4 120.00  2.10  4.946751       pop median     1     1 0.3000587
+301  4 121.00  3.05  4.733469       pop median     1     1 0.4127596
+302  4 122.02  5.21  8.070805       pop median     1     1 0.6657905
+303  4 126.00  5.09 10.621090       pop median     1     1 0.6518504
+304  4 129.03  4.24  9.554019       pop median     1     1 0.5527134
+305  4 132.00  3.69  8.416147       pop median     1     1 0.4881974
+306  4 144.02  1.96  4.958761       pop median     1     1 0.2833771
+307  5 120.00  2.93  4.946751       pop median     1     1 0.3985714
+308  5 121.00  2.64  4.733469       pop median     1     1 0.3642262
+309  5 122.00  4.80  8.015047       pop median     1     1 0.6181049
+310  5 126.00  3.70 10.621090       pop median     1     1 0.4893730
+311  5 129.02  4.13  9.557940       pop median     1     1 0.5398334
+312  5 132.00  2.81  8.416147       pop median     1     1 0.3843694
+313  5 144.00  2.21  4.963134       pop median     1     1 0.3131525
+314  6 120.00  6.92  4.946751       pop median     1     1 0.8629391
+315  6 121.00  6.89  4.733469       pop median     1     1 0.8595045
+316  6 121.98  6.64  7.958395       pop median     1     1 0.8308491
+317  6 126.00 13.72 10.621090       pop median     1     1 1.6192236
+318  6 129.00 12.69  9.565782       pop median     1     1 1.5075134
+319  6 131.98 10.58  8.423489       pop median     1     1 1.2754989
+320  6 144.98  6.62  4.753335       pop median     1     1 0.8285541
+321  7 120.00  5.41  4.946751       pop median     1     1 0.6889934
+322  7 121.03  4.46  4.727215       pop median     1     1 0.5784387
+323  7 122.03  4.54  8.098352       pop median     1     1 0.5877819
+324  7 126.02 12.19 10.616078       pop median     1     1 1.4529189
+325  7 129.08 12.10  9.534410       pop median     1     1 1.4430665
+326  7 132.03  8.61  8.405145       pop median     1     1 1.0550316
+327  7 144.03  6.37  4.956577       pop median     1     1 0.7998341
+328  8 120.00  6.19  4.946751       pop median     1     1 0.7791187
+329  8 121.03  6.33  4.727215       pop median     1     1 0.7952334
+330  8 122.00  6.24  8.015047       pop median     1     1 0.7848761
+331  8 125.98 13.03 10.626048       pop median     1     1 1.5445009
+332  8 128.98 11.86  9.573623       pop median     1     1 1.4167555
+333  8 132.00 11.45  8.416147       pop median     1     1 1.3716800
+334  8 143.98  7.83  4.967511       pop median     1     1 0.9667133
+335  9 120.00  2.85  4.946751       pop median     1     1 0.3891049
+336  9 120.97  3.70  4.739732       pop median     1     1 0.4893730
+337  9 122.00  6.65  8.015047       pop median     1     1 0.8319965
+338  9 125.98  6.81 10.626048       pop median     1     1 0.8503413
+339  9 128.98  6.51  9.573623       pop median     1     1 0.8159247
+340  9 132.00  7.48  8.416147       pop median     1     1 0.9268940
+341  9 143.98  4.51  4.967511       pop median     1     1 0.5842789
+342 10 120.00  2.93  4.946751       pop median     1     1 0.3985714
+343 10 121.00  4.36  4.733469       pop median     1     1 0.5667511
+344 10 122.02  7.79  8.070805       pop median     1     1 0.9621684
+345 10 126.00 11.02 10.621090       pop median     1     1 1.3242328
+346 10 129.00  8.86  9.565782       pop median     1     1 1.0832155
+347 10 131.97  6.09  8.427161       pop median     1     1 0.7675967
+348 10 144.00  4.15  4.963134       pop median     1     1 0.5421760
+349 11 120.00  2.09  4.946751       pop median     1     1 0.2988678
+350 11 121.03  2.68  4.727215       pop median     1     1 0.3689683
+351 11 122.00  4.71  8.015047       pop median     1     1 0.6076158
+352 11 125.98  7.71 10.626048       pop median     1     1 0.9530741
+353 11 129.00  6.31  9.565782       pop median     1     1 0.7929324
+354 11 132.00  5.82  8.416147       pop median     1     1 0.7364396
+355 11 144.13  2.63  4.934780       pop median     1     1 0.3630405
+356 12 120.00  7.09  4.946751       pop median     1     1 0.8823857
+357 12 121.03  6.18  4.727215       pop median     1     1 0.7779669
+358 12 122.13  8.66  8.362012       pop median     1     1 1.0606732
+359 12 126.00 11.16 10.621090       pop median     1     1 1.3397001
+360 12 129.00  9.51  9.565782       pop median     1     1 1.1562136
+361 12 132.00  8.14  8.416147       pop median     1     1 1.0018839
+362 12 144.00  7.89  4.963134       pop median     1     1 0.9735277
+363 13 120.00  6.62  4.946751       pop median     1     1 0.8285541
+364 13 121.00  3.18  4.733469       pop median     1     1 0.4281146
+365 13 122.00  5.41  8.015047       pop median     1     1 0.6889934
+366 13 126.00 10.18 10.621090       pop median     1     1 1.2310346
+367 13 129.02 12.84  9.557940       pop median     1     1 1.5238450
+368 13 132.00 12.35  8.416147       pop median     1     1 1.4704152
+369 13 144.00  8.06  4.963134       pop median     1     1 0.9928164
+370 14 120.00  3.63  4.946751       pop median     1     1 0.4811417
+371 14 121.00  4.49  4.733469       pop median     1     1 0.5819431
+372 14 122.00  5.50  8.015047       pop median     1     1 0.6994222
+373 14 126.00  7.28 10.621090       pop median     1     1 0.9040874
+374 14 129.00  5.27  9.565782       pop median     1     1 0.6727554
+375 14 132.00  4.89  8.416147       pop median     1     1 0.6285863
+376 14 144.00  2.68  4.963134       pop median     1     1 0.3689683
+377 15 120.00  5.53  3.710063       pop median     1     1 0.7028967
+378 15 121.00  4.81  3.550102       pop median     1     1 0.6192699
+379 15 122.00  8.14  6.011286       pop median     1     1 1.0018839
+380 15 126.00  9.96  7.965818       pop median     1     1 1.2065139
+381 15 129.00  8.55  7.174337       pop median     1     1 1.0482586
+382 15 132.05  7.54  6.298363       pop median     1     1 0.9337285
+383 15 144.05  5.74  3.714157       pop median     1     1 0.7271944
+384 16 120.00  5.48  4.946751       pop median     1     1 0.6971053
+385 16 121.00  6.59  4.733469       pop median     1     1 0.8251109
+386 16 122.00  8.91  8.015047       pop median     1     1 1.0888451
+387 16 126.00 10.57 10.621090       pop median     1     1 1.2743892
+388 16 129.00  9.52  9.565782       pop median     1     1 1.1573335
+389 16 132.00  7.83  8.416147       pop median     1     1 0.9667133
+390 16 143.97  4.96  4.969701       pop median     1     1 0.6367331
+391 17 120.00  2.11  4.946751       pop median     1     1 0.3012495
+392 17 121.02  1.86  4.729299       pop median     1     1 0.2714502
+393 17 122.02  6.92  8.070805       pop median     1     1 0.8629391
+394 17 126.00  9.11 10.621090       pop median     1     1 1.1113396
+395 17 129.00  6.96  9.565782       pop median     1     1 0.8675173
+396 17 132.00  5.64  8.416147       pop median     1     1 0.7156293
+397 17 144.08  3.59  4.945666       pop median     1     1 0.4764361
+398 18 120.00  7.95  3.710063       pop median     1     1 0.9803386
+399 18 120.98  7.47  3.553233       pop median     1     1 0.9257545
+400 18 121.98  8.67  5.968796       pop median     1     1 1.0618012
+401 18 126.00 13.83  7.965818       pop median     1     1 1.6310938
+402 18 129.17 14.01  7.124330       pop median     1     1 1.6504927
+403 18 132.17  8.97  6.265473       pop median     1     1 1.0955975
+404 18 143.97  8.40  3.727276       pop median     1     1 1.0313109
+405 19 120.00  5.42  4.946751       pop median     1     1 0.6901525
+406 19 121.00  7.08  4.733469       pop median     1     1 0.8812426
+407 19 122.00  7.27  8.015047       pop median     1     1 0.9029461
+408 19 125.98 20.07 10.626048       pop median     1     1 2.2854916
+409 19 128.98 18.24  9.573623       pop median     1     1 2.0974397
+410 19 132.00 15.36  8.416147       pop median     1     1 1.7949963
+411 19 144.00 10.92  4.963134       pop median     1     1 1.3131732
+412 20 120.00  4.71  4.946751       pop median     1     1 0.6076158
+413 20 120.77  4.50  4.781695       pop median     1     1 0.5831111
+414 20 121.75  3.35  7.238529       pop median     1     1 0.4481699
+415 20 125.67 12.35 10.695325       pop median     1     1 1.4704152
+416 20 128.67 11.56  9.694947       pop median     1     1 1.3837892
+417 20 143.67  6.45  5.035845       pop median     1     1 0.8090310
+418  1 120.00 10.44 11.601172      post median     1     1 1.2599538
+419  1 121.00 12.89 12.940154      post median     1     1 1.5292841
+420  1 122.00 14.98 15.193566      post median     1     1 1.7544977
+421  1 125.99 16.69 17.505446      post median     1     1 1.9356531
+422  1 129.00 20.15 16.869658      post median     1     1 2.2936393
+423  1 132.00 14.97 15.847986      post median     1     1 1.7534301
+424  1 143.98 12.57 11.901679      post median     1     1 1.4944325
+425  2 120.00  3.56  3.372076      post median     1     1 0.4729058
+426  2 120.98  5.84  5.752300      post median     1     1 0.7387499
+427  2 121.98  6.54  6.794103      post median     1     1 0.8193702
+428  2 126.00  6.14  6.797268      post median     1     1 0.7733589
+429  2 129.02  6.56  6.088079      post median     1     1 0.8216668
+430  2 132.02  4.44  5.418755      post median     1     1 0.5761020
+431  2 144.00  3.76  3.390994      post median     1     1 0.4964246
+432  3 120.08  4.06  3.470052      post median     1     1 0.5316309
+433  3 121.07  3.24  3.325185      post median     1     1 0.4351961
+434  3 122.08  3.09  3.183622      post median     1     1 0.4174860
+435  3 126.08  7.98  7.398659      post median     1     1 0.9837428
+436  3 129.05  7.23  6.642881      post median     1     1 0.8983798
+437  3 132.10  4.71  5.834340      post median     1     1 0.6076158
+438  3 144.08  3.82  3.482847      post median     1     1 0.5034727
+439  4 120.00  2.10  1.965185      post median     1     1 0.3000587
+440  4 121.00  3.05  3.030912      post median     1     1 0.4127596
+441  4 122.02  5.21  5.086773      post median     1     1 0.6657905
+442  4 126.00  5.09  5.337974      post median     1     1 0.6518504
+443  4 129.03  4.24  4.541721      post median     1     1 0.5527134
+444  4 132.00  3.69  3.848830      post median     1     1 0.4881974
+445  4 144.02  1.96  1.964751      post median     1     1 0.2833771
+446  5 120.00  2.93  2.354677      post median     1     1 0.3985714
+447  5 121.00  2.64  2.742197      post median     1     1 0.3642262
+448  5 122.00  4.80  3.060107      post median     1     1 0.6181049
+449  5 126.00  3.70  3.720685      post median     1     1 0.4893730
+450  5 129.02  4.13  3.783102      post median     1     1 0.5398334
+451  5 132.00  2.81  3.634325      post median     1     1 0.3843694
+452  5 144.00  2.21  2.355546      post median     1     1 0.3131525
+453  6 120.00  6.92  6.929293      post median     1     1 0.8629391
+454  6 121.00  6.89  6.689931      post median     1     1 0.8595045
+455  6 121.98  6.64  6.463597      post median     1     1 0.8308491
+456  6 126.00 13.72 12.920746      post median     1     1 1.6192236
+457  6 129.00 12.69 11.824666      post median     1     1 1.5075134
+458  6 131.98 10.58 10.661998      post median     1     1 1.2754989
+459  6 144.98  6.62  6.751636      post median     1     1 0.8285541
+460  7 120.00  5.41  4.823051      post median     1     1 0.6889934
+461  7 121.03  4.46  4.452140      post median     1     1 0.5784387
+462  7 122.03  4.54  4.899222      post median     1     1 0.5877819
+463  7 126.02 12.19 11.406458      post median     1     1 1.4529189
+464  7 129.08 12.10 11.756966      post median     1     1 1.4430665
+465  7 132.03  8.61 10.666055      post median     1     1 1.0550316
+466  7 144.03  6.37  4.812074      post median     1     1 0.7998341
+467  8 120.00  6.19  6.929233      post median     1     1 0.7791187
+468  8 121.03  6.33  6.682819      post median     1     1 0.7952334
+469  8 122.00  6.24  6.607156      post median     1     1 0.7848761
+470  8 125.98 13.03 12.925682      post median     1     1 1.5445009
+471  8 128.98 11.86 11.832662      post median     1     1 1.4167555
+472  8 132.00 11.45 10.654475      post median     1     1 1.3716800
+473  8 143.98  7.83  6.993144      post median     1     1 0.9667133
+474  9 120.00  2.85  3.446057      post median     1     1 0.3891049
+475  9 120.97  3.70  3.621176      post median     1     1 0.4893730
+476  9 122.00  6.65  6.497955      post median     1     1 0.8319965
+477  9 125.98  6.81  7.537174      post median     1     1 0.8503413
+478  9 128.98  6.51  6.691528      post median     1     1 0.8159247
+479  9 132.00  7.48  5.865908      post median     1     1 0.9268940
+480  9 143.98  4.51  3.460528      post median     1     1 0.5842789
+481 10 120.00  2.93  3.291664      post median     1     1 0.3985714
+482 10 121.00  4.36  4.166254      post median     1     1 0.5667511
+483 10 122.02  7.79  7.966218      post median     1     1 0.9621684
+484 10 126.00 11.02  9.674111      post median     1     1 1.3242328
+485 10 129.00  8.86  8.281995      post median     1     1 1.0832155
+486 10 131.97  6.09  6.925973      post median     1     1 0.7675967
+487 10 144.00  4.15  3.293181      post median     1     1 0.5421760
+488 11 120.00  2.09  2.496123      post median     1     1 0.2988678
+489 11 121.03  2.68  2.327702      post median     1     1 0.3689683
+490 11 122.00  4.71  4.755643      post median     1     1 0.6076158
+491 11 125.98  7.71  7.854636      post median     1     1 0.9530741
+492 11 129.00  6.31  6.799360      post median     1     1 0.7929324
+493 11 132.00  5.82  5.615913      post median     1     1 0.7364396
+494 11 144.13  2.63  2.474793      post median     1     1 0.3630405
+495 12 120.00  7.09  6.599566      post median     1     1 0.8823857
+496 12 121.03  6.18  6.428360      post median     1     1 0.7779669
+497 12 122.13  8.66  8.777257      post median     1     1 1.0606732
+498 12 126.00 11.16 10.836127      post median     1     1 1.3397001
+499 12 129.00  9.51 10.358502      post median     1     1 1.1562136
+500 12 132.00  8.14  9.575418      post median     1     1 1.0018839
+501 12 144.00  7.89  6.692641      post median     1     1 0.9735277
+502 13 120.00  6.62  4.822466      post median     1     1 0.8285541
+503 13 121.00  3.18  4.462036      post median     1     1 0.4281146
+504 13 122.00  5.41  4.809318      post median     1     1 0.6889934
+505 13 126.00 10.18 11.396290      post median     1     1 1.2310346
+506 13 129.02 12.84 11.768848      post median     1     1 1.5238450
+507 13 132.00 12.35 10.679743      post median     1     1 1.4704152
+508 13 144.00  8.06  4.822657      post median     1     1 0.9928164
+509 14 120.00  3.63  2.965541      post median     1     1 0.4811417
+510 14 121.00  4.49  4.424769      post median     1     1 0.5819431
+511 14 122.00  5.50  5.723258      post median     1     1 0.6994222
+512 14 126.00  7.28  6.364566      post median     1     1 0.9040874
+513 14 129.00  5.27  5.724402      post median     1     1 0.6727554
+514 14 132.00  4.89  5.041879      post median     1     1 0.6285863
+515 14 144.00  2.68  2.975375      post median     1     1 0.3689683
+516 15 120.00  5.53  5.251458      post median     1     1 0.7028967
+517 15 121.00  4.81  5.075092      post median     1     1 0.6192699
+518 15 122.00  8.14  8.155972      post median     1     1 1.0018839
+519 15 126.00  9.96  9.678337      post median     1     1 1.2065139
+520 15 129.00  8.55  8.837663      post median     1     1 1.0482586
+521 15 132.05  7.54  7.972486      post median     1     1 0.9337285
+522 15 144.05  5.74  5.291960      post median     1     1 0.7271944
+523 16 120.00  5.48  5.339278      post median     1     1 0.6971053
+524 16 121.00  6.59  6.495799      post median     1     1 0.8251109
+525 16 122.00  8.91  9.033385      post median     1     1 1.0888451
+526 16 126.00 10.57 10.008163      post median     1     1 1.2743892
+527 16 129.00  9.52  9.109972      post median     1     1 1.1573335
+528 16 132.00  7.83  8.209011      post median     1     1 0.9667133
+529 16 143.97  4.96  5.390425      post median     1     1 0.6367331
+530 17 120.00  2.11  2.328951      post median     1     1 0.3012495
+531 17 121.02  1.86  2.160168      post median     1     1 0.2714502
+532 17 122.02  6.92  6.881468      post median     1     1 0.8629391
+533 17 126.00  9.11  8.647407      post median     1     1 1.1113396
+534 17 129.00  6.96  7.032556      post median     1     1 0.8675173
+535 17 132.00  5.64  5.643507      post median     1     1 0.7156293
+536 17 144.08  3.59  2.315524      post median     1     1 0.4764361
+537 18 120.00  7.95  7.912997      post median     1     1 0.9803386
+538 18 120.98  7.47  7.734544      post median     1     1 0.9257545
+539 18 121.98  8.67  8.521370      post median     1     1 1.0618012
+540 18 126.00 13.83 12.228701      post median     1     1 1.6310938
+541 18 129.17 14.01 11.478982      post median     1     1 1.6504927
+542 18 132.17  8.97 10.711749      post median     1     1 1.0955975
+543 18 143.97  8.40  8.139584      post median     1     1 1.0313109
+544 19 120.00  5.42  6.962450      post median     1     1 0.6901525
+545 19 121.00  7.08  6.544644      post median     1     1 0.8812426
+546 19 122.00  7.27  6.898010      post median     1     1 0.9029461
+547 19 125.98 20.07 19.802458      post median     1     1 2.2854916
+548 19 128.98 18.24 17.449038      post median     1     1 2.0974397
+549 19 132.00 15.36 14.611383      post median     1     1 1.7949963
+550 19 144.00 10.92  6.965659      post median     1     1 1.3131732
+551 20 120.00  4.71  4.822628      post median     1     1 0.6076158
+552 20 120.77  4.50  4.542955      post median     1     1 0.5831111
+553 20 121.75  3.35  4.207493      post median     1     1 0.4481699
+554 20 125.67 12.35 11.191917      post median     1     1 1.4704152
+555 20 128.67 11.56 11.828795      post median     1     1 1.3837892
+556 20 143.67  6.45  4.947112      post median     1     1 0.8090310
+                d           ds           wd          wds
+1    -6.777043550 4.592832e+01 -5.378803218 2.893152e+01
+2    -9.410517136 8.855783e+01 -6.153544040 3.786610e+01
+3    -8.655291683 7.491407e+01 -4.933202142 2.433648e+01
+4    -7.842379266 6.150291e+01 -4.051541770 1.641499e+01
+5   -12.281941297 1.508461e+02 -5.354783266 2.867370e+01
+6    -8.182745232 6.695732e+01 -4.666707530 2.177816e+01
+7    -8.897812465 7.917107e+01 -5.953974060 3.544981e+01
+8     0.102956450 1.060003e-02  0.217710272 4.739776e-02
+9    -2.356939289 5.555163e+00 -3.190442832 1.017893e+01
+10   -0.267462271 7.153607e-02 -0.326424198 1.065528e-01
+11    2.705428295 7.319342e+00  3.498282990 1.223798e+01
+12    1.300680925 1.691771e+00  1.582978598 2.505821e+00
+13    2.340389236 5.477422e+00  4.062456490 1.650355e+01
+14   -0.091584560 8.387732e-03 -0.184488369 3.403596e-02
+15   -0.412070834 1.698024e-01 -0.775106951 6.007908e-01
+16    0.226989317 5.152415e-02  0.521579376 2.720450e-01
+17    3.435617206 1.180347e+01  8.229300119 6.772138e+01
+18    0.847405810 7.180966e-01  0.861409924 7.420271e-01
+19    0.619611970 3.839190e-01  0.689699367 4.756852e-01
+20    2.042984408 4.173785e+00  3.362296232 1.130504e+01
+21   -0.166634240 2.776697e-02 -0.330969737 1.095410e-01
+22    1.562956450 2.442833e+00  5.208835639 2.713197e+01
+23    0.429482864 1.844555e-01  1.040515732 1.082673e+00
+24    1.166091628 1.359770e+00  1.751439212 3.067539e+00
+25    3.755428295 1.410324e+01  5.761181043 3.319121e+01
+26    3.616991565 1.308263e+01  6.544063461 4.282477e+01
+27    3.097254768 9.592987e+00  6.344267791 4.024973e+01
+28    1.704647219 2.905822e+00  6.015472656 3.618591e+01
+29    0.732956450 5.372252e-01  1.838959079 3.381770e+00
+30    0.839482864 7.047315e-01  2.304839058 5.312283e+00
+31    1.524708317 2.324735e+00  2.466746713 6.084839e+00
+32    5.145428295 2.647543e+01 10.514328963 1.105511e+02
+33    3.730680925 1.391798e+01  6.910801030 4.775917e+01
+34    3.977254768 1.581856e+01 10.347481313 1.070704e+02
+35    1.458415440 2.126976e+00  4.657205083 2.168956e+01
+36   -3.257043550 1.060833e+01 -3.774360732 1.424580e+01
+37   -3.410517136 1.163163e+01 -3.968003807 1.574505e+01
+38   -0.367462271 1.350285e-01 -0.442273159 1.956055e-01
+39   -4.874571705 2.376145e+01 -3.010437735 9.062735e+00
+40   -4.821941297 2.325112e+01 -3.198606022 1.023108e+01
+41   -3.785873991 1.433284e+01 -2.968151520 8.809923e+00
+42   -3.131748405 9.807848e+00 -3.779775314 1.428670e+01
+43   -1.747043550 3.052161e+00 -2.535646315 6.429502e+00
+44   -0.985877016 9.719535e-01 -1.704375861 2.904897e+00
+45    1.861491183 3.465149e+00  3.166975946 1.002974e+01
+46   -3.348997424 1.121578e+01 -2.305013267 5.313086e+00
+47   -4.261459398 1.816004e+01 -2.953058175 8.720553e+00
+48   -1.833041386 3.360041e+00 -1.737427956 3.018656e+00
+49   -2.707235440 7.329124e+00 -3.384746073 1.145651e+01
+50   -2.527043550 6.385949e+00 -3.243464141 1.052006e+01
+51   -2.855877016 8.156034e+00 -3.591243877 1.289703e+01
+52    0.084708317 7.175499e-03  0.107925719 1.164796e-02
+53   -4.180200573 1.747408e+01 -2.706505826 7.325174e+00
+54   -3.984564872 1.587676e+01 -2.812457633 7.909918e+00
+55   -4.662745232 2.174119e+01 -3.399295218 1.155521e+01
+56   -4.157812465 1.728740e+01 -4.300977934 1.849841e+01
+57    0.812956450 6.608982e-01  2.089298943 4.365170e+00
+58   -0.215148987 4.628909e-02 -0.439642163 1.932852e-01
+59   -0.325291683 1.058147e-01 -0.390977227 1.528632e-01
+60    2.039799427 4.160782e+00  2.398800861 5.754246e+00
+61    1.365435128 1.864413e+00  1.673481799 2.800541e+00
+62   -0.692745232 4.798960e-01 -0.747383482 5.585821e-01
+63   -0.837812465 7.019297e-01 -1.433925490 2.056142e+00
+64    0.732956450 5.372252e-01  1.838959079 3.381770e+00
+65   -0.880517136 7.753104e-01 -1.553622158 2.413742e+00
+66   -1.413908372 1.999137e+00 -1.469501936 2.159436e+00
+67   -2.174571705 4.728762e+00 -1.642137060 2.696614e+00
+68   -0.991941297 9.839475e-01 -0.915737727 8.385756e-01
+69    0.707563767 5.006465e-01  0.921791028 8.496987e-01
+70   -0.481584560 2.319237e-01 -0.888243891 7.889772e-01
+71    1.572956450 2.474192e+00  5.263051280 2.769971e+01
+72    0.794122984 6.306313e-01  2.152279783 4.632308e+00
+73    1.614708317 2.607283e+00  2.657449399 7.062037e+00
+74    1.139799427 1.299143e+00  1.195918943 1.430222e+00
+75    1.558058703 2.427547e+00  1.964932493 3.860960e+00
+76    0.967254768 9.355818e-01  1.313420439 1.725073e+00
+77    1.013991074 1.028178e+00  2.793052302 7.801141e+00
+78   -3.427043550 1.174463e+01 -3.883838413 1.508420e+01
+79   -2.705877016 7.321770e+00 -3.478138874 1.209745e+01
+80   -2.014932421 4.059953e+00 -1.899673240 3.608758e+00
+81   -2.314571705 5.357242e+00 -1.727678938 2.984875e+00
+82   -1.641941297 2.695971e+00 -1.420102003 2.016690e+00
+83   -1.352745232 1.829920e+00 -1.350201608 1.823044e+00
+84   -4.221584560 1.782178e+01 -4.336378607 1.880418e+01
+85   -2.957043550 8.744107e+00 -3.568920222 1.273719e+01
+86    0.299482864 8.968999e-02  0.699538957 4.893548e-01
+87    0.914708317 8.366913e-01  1.327601004 1.762524e+00
+88   -1.334571705 1.781082e+00 -1.084105805 1.175285e+00
+89   -4.979319075 2.479362e+01 -3.267602041 1.067722e+01
+90   -5.562745232 3.094413e+01 -3.783111922 1.431194e+01
+91   -4.391584560 1.928601e+01 -4.423360187 1.956612e+01
+92    0.032956450 1.086128e-03  0.068496345 4.691749e-03
+93   -1.010517136 1.021145e+00 -1.736453372 3.015270e+00
+94    0.824708317 6.801438e-01  1.179128045 1.390343e+00
+95    1.565428295 2.450566e+00  1.731501050 2.998096e+00
+96    2.598058703 6.749909e+00  3.861817667 1.491364e+01
+97    1.897254768 3.599576e+00  3.018288506 9.110066e+00
+98    0.988415440 9.769651e-01  2.678862861 7.176306e+00
+99   -2.782782663 7.743879e+00 -3.959020639 1.567384e+01
+100  -2.200387852 4.841707e+00 -3.553196767 1.262521e+01
+101  -3.396468763 1.153600e+01 -3.390082240 1.149266e+01
+102  -3.325928779 1.106180e+01 -2.756643621 7.599084e+00
+103  -2.648955973 7.016968e+00 -2.527006300 6.385761e+00
+104  -2.462423751 6.063531e+00 -2.637194726 6.954796e+00
+105  -2.995748393 8.974508e+00 -4.119597688 1.697109e+01
+106  -1.817043550 3.301647e+00 -2.606555175 6.794130e+00
+107  -3.110517136 9.675317e+00 -3.769817139 1.421152e+01
+108  -2.585291683 6.683733e+00 -2.374342953 5.637504e+00
+109  -1.724571705 2.974148e+00 -1.353253594 1.831295e+00
+110  -1.651941297 2.728910e+00 -1.427368398 2.037381e+00
+111  -1.042745232 1.087318e+00 -1.078649956 1.163486e+00
+112  -1.285924963 1.653603e+00 -2.019566725 4.078650e+00
+113   1.552956450 2.411674e+00  5.155050294 2.657454e+01
+114   1.615908693 2.611161e+00  5.952873674 3.543670e+01
+115  -0.543908372 2.958363e-01 -0.630297498 3.972749e-01
+116  -0.264571705 6.999819e-02 -0.238065586 5.667522e-02
+117   0.908058703 8.245706e-01  1.046732694 1.095649e+00
+118   1.147254768 1.316194e+00  1.603141025 2.570061e+00
+119   0.063365760 4.015220e-03  0.132999506 1.768887e-02
+120  -5.202782663 2.706895e+01 -5.307128138 2.816561e+01
+121  -4.857704467 2.359729e+01 -5.247292096 2.753407e+01
+122  -3.965596703 1.572596e+01 -3.734782698 1.394860e+01
+123  -7.195928779 5.178139e+01 -4.411719906 1.946327e+01
+124  -8.156013255 6.652055e+01 -4.941562693 2.441904e+01
+125  -3.923189416 1.539142e+01 -3.580867575 1.282261e+01
+126  -5.644443722 3.185974e+01 -5.473076873 2.995457e+01
+127  -1.757043550 3.087202e+00 -2.545877148 6.481490e+00
+128  -3.600517136 1.296372e+01 -4.085727663 1.669317e+01
+129  -0.945291683 8.935764e-01 -1.046897162 1.095994e+00
+130 -11.220200573 1.258929e+02 -4.909316084 2.410138e+01
+131 -10.364564872 1.074242e+02 -4.941531860 2.441874e+01
+132  -8.572745232 7.349196e+01 -4.775912383 2.280934e+01
+133  -7.251584560 5.258548e+01 -5.522184557 3.049452e+01
+134  -1.047043550 1.096300e+00 -1.723199927 2.969418e+00
+135  -0.979149081 9.587329e-01 -1.679181031 2.819649e+00
+136   2.262605866 5.119385e+00  5.048545199 2.548781e+01
+137  -3.440058162 1.183400e+01 -2.339514845 5.473330e+00
+138  -3.570493148 1.274842e+01 -2.580229052 6.657582e+00
+139  -2.718846615 7.392127e+00 -3.360620900 1.129377e+01
+140   0.979995976 9.603921e-01  0.777803104 6.049777e-01
+141  -0.148127434 2.194174e-02 -0.096860638 9.381983e-03
+142   0.063677732 4.054854e-03  0.036293996 1.317254e-03
+143   0.664185836 4.411428e-01  0.343132685 1.177400e-01
+144  -3.455774248 1.194238e+01 -1.506677297 2.270076e+00
+145   0.689507690 4.754209e-01  0.393233644 1.546327e-01
+146  -0.864025495 7.465401e-01 -0.578162937 3.342724e-01
+147  -0.265768586 7.063294e-02 -0.561990542 3.158334e-01
+148  -0.182621587 3.335064e-02 -0.247203539 6.110959e-02
+149   0.165232460 2.730177e-02  0.201657875 4.066590e-02
+150   0.575052435 3.306853e-01  0.743577702 5.529078e-01
+151  -0.555789225 3.089017e-01 -0.676416814 4.575397e-01
+152   0.893753931 7.987961e-01  1.551381455 2.406784e+00
+153  -0.448537879 2.011862e-01 -0.903536818 8.163788e-01
+154  -0.591318048 3.496570e-01 -1.112271705 1.237148e+00
+155   0.083780998 7.019256e-03  0.192513203 3.706133e-02
+156   0.092188738 8.498763e-03  0.220818779 4.876093e-02
+157  -0.577611999 3.336356e-01 -0.587157537 3.447540e-01
+158  -0.586704152 3.442218e-01 -0.653069181 4.264994e-01
+159   1.123940948 1.263243e+00  1.849755876 3.421597e+00
+160  -0.338565383 1.146265e-01 -0.672460211 4.522027e-01
+161  -0.169444982 2.871160e-02 -0.564706113 3.188930e-01
+162  -0.014515439 2.106980e-04 -0.035166810 1.236705e-03
+163  -0.147830580 2.185388e-02 -0.222037676 4.930073e-02
+164   0.200225912 4.009042e-02  0.307165424 9.435060e-02
+165   0.254077623 6.455544e-02  0.459691448 2.113162e-01
+166   0.112932002 1.275364e-02  0.231324484 5.351102e-02
+167  -0.029981573 8.988947e-04 -0.105800972 1.119385e-02
+168  -0.571299989 3.263837e-01 -1.433369338 2.054548e+00
+169   0.111836677 1.250744e-02  0.307052773 9.428141e-02
+170  -1.726595485 2.981132e+00 -2.793369518 7.802913e+00
+171   0.039717321 1.577466e-03  0.081159614 6.586883e-03
+172  -0.328842635 1.081375e-01 -0.609155825 3.710708e-01
+173   0.839625504 7.049710e-01  2.184423607 4.771706e+00
+174   0.149582317 2.237487e-02  0.477666039 2.281648e-01
+175   0.083153426 6.914492e-03  0.096360709 9.285386e-03
+176  -0.126924991 1.610995e-02 -0.147672282 2.180710e-02
+177  -0.104215025 1.086077e-02 -0.125431948 1.573317e-02
+178  -0.725091091 5.257571e-01 -0.447801718 2.005264e-01
+179  -0.785213541 6.165603e-01 -0.520866723 2.713021e-01
+180   0.163117224 2.660723e-02  0.127885037 1.635458e-02
+181   0.207061556 4.287449e-02  0.249907099 6.245356e-02
+182  -0.587109758 3.446979e-01 -0.852126837 7.261201e-01
+183  -0.006168684 3.805266e-05 -0.010664369 1.137288e-04
+184   0.405890283 1.647469e-01  0.690545717 4.768534e-01
+185  -0.840909513 7.071288e-01 -0.578772492 3.349776e-01
+186  -0.405077844 1.640881e-01 -0.280706286 7.879602e-02
+187   2.007267532 4.029123e+00  1.902566277 3.619758e+00
+188  -1.558019374 2.427424e+00 -1.947928090 3.794424e+00
+189   0.813356286 6.615484e-01  1.043943999 1.089819e+00
+190   0.426159736 1.816121e-01  0.535892664 2.871809e-01
+191   0.302598526 9.156587e-02  0.385536683 1.486385e-01
+192  -0.028558597 8.155935e-04 -0.018490503 3.418987e-04
+193   0.054072747 2.923862e-03  0.038166604 1.456690e-03
+194  -0.713405198 5.089470e-01 -0.520095943 2.704998e-01
+195  -0.760417039 5.782341e-01 -0.786600390 6.187402e-01
+196   0.600264140 3.603170e-01  1.542679481 2.379860e+00
+197   0.011363555 1.291304e-04  0.023220642 5.391982e-04
+198  -0.124073179 1.539415e-02 -0.149127045 2.223888e-02
+199   0.720741818 5.194688e-01  0.847591225 7.184109e-01
+200   0.177625797 3.155092e-02  0.217698763 4.739275e-02
+201  -1.615346116 2.609343e+00 -1.742751807 3.037184e+00
+202  -1.045102522 1.092239e+00 -1.788704764 3.199465e+00
+203   0.399674975 1.597401e-01  1.002768887 1.005545e+00
+204  -0.048823224 2.383707e-03 -0.086145789 7.421097e-03
+205   0.280721478 7.880455e-02  0.291759185 8.512342e-02
+206  -1.281029085 1.641036e+00 -0.967374555 9.358135e-01
+207  -0.518550487 2.688946e-01 -0.478714059 2.291672e-01
+208   0.891334862 7.944778e-01  1.161202024 1.348390e+00
+209  -0.818738017 6.703319e-01 -1.510096258 2.280391e+00
+210   0.361533537 1.307065e-01  1.209677193 1.463319e+00
+211  -0.395050433 1.560648e-01 -1.070689398 1.146376e+00
+212  -0.006890973 4.748550e-05 -0.011341003 1.286183e-04
+213   0.068693857 4.718846e-03  0.072076089 5.194963e-03
+214   0.416564783 1.735262e-01  0.525347137 2.759896e-01
+215  -0.271743029 7.384427e-02 -0.368995699 1.361578e-01
+216  -0.199604745 3.984205e-02 -0.549814004 3.022954e-01
+217  -0.632953673 4.006304e-01 -0.717320848 5.145492e-01
+218   0.090467289 8.184330e-03  0.116286805 1.352262e-02
+219  -0.012974035 1.683256e-04 -0.012231888 1.496191e-04
+220  -0.463762792 2.150759e-01 -0.346169102 1.198330e-01
+221   0.695362387 4.835288e-01  0.601413413 3.616981e-01
+222   1.277499843 1.632006e+00  1.275097706 1.625874e+00
+223  -1.346097293 1.811978e+00 -1.382700600 1.911861e+00
+224  -1.797455673 3.230847e+00 -2.169388374 4.706246e+00
+225   1.283900822 1.648401e+00  2.998965045 8.993791e+00
+226  -0.554468243 3.074350e-01 -0.804751179 6.476245e-01
+227   1.158720202 1.342633e+00  0.941257253 8.859652e-01
+228  -1.133230291 1.284211e+00 -0.743665059 5.530377e-01
+229  -1.718898337 2.954611e+00 -1.168988426 1.366534e+00
+230  -3.237255975 1.047983e+01 -3.260679374 1.063203e+01
+231  -0.652823691 4.261788e-01 -1.356822029 1.840966e+00
+232  -0.038722607 1.499440e-03 -0.066540190 4.427597e-03
+233   0.248804185 6.190352e-02  0.355728184 1.265425e-01
+234  -0.902534055 8.145677e-01 -0.998281856 9.965667e-01
+235   0.465068356 2.162886e-01  0.691288919 4.778804e-01
+236   0.162717977 2.647714e-02  0.258863390 6.701025e-02
+237   0.307218536 9.438323e-02  0.832642118 6.932929e-01
+238  -0.312245371 9.749717e-02 -0.444226523 1.973372e-01
+239   0.232279019 5.395354e-02  0.375085264 1.406890e-01
+240  -0.040799318 1.664584e-03 -0.040722601 1.658330e-03
+241  -0.338649301 1.146833e-01 -0.280684133 7.878358e-02
+242   0.236458627 5.591268e-02  0.225572809 5.088309e-02
+243   0.385448004 1.485702e-01  0.412805247 1.704082e-01
+244  -0.482258059 2.325728e-01 -0.663176250 4.398027e-01
+245  -0.162181602 2.630287e-02 -0.232650061 5.412605e-02
+246  -0.063596660 4.044535e-03 -0.077076501 5.940787e-03
+247   0.133838780 1.791282e-02  0.122918109 1.510886e-02
+248  -0.575815825 3.315639e-01 -0.451836727 2.041564e-01
+249  -0.427789751 1.830041e-01 -0.369633941 1.366293e-01
+250   0.359293387 1.290917e-01  0.371664894 1.381348e-01
+251   0.408105051 1.665497e-01  0.640935828 4.107987e-01
+252   0.224194034 5.026296e-02  0.744213735 5.538541e-01
+253   0.305791254 9.350829e-02  1.126509632 1.269024e+00
+254  -0.082891788 6.871049e-03 -0.096057515 9.227046e-03
+255  -0.499250881 2.492514e-01 -0.449233426 2.018107e-01
+256   0.051815751 2.684872e-03  0.059728783 3.567527e-03
+257  -0.007106755 5.050597e-05 -0.009930777 9.862032e-05
+258  -1.269187522 1.610837e+00 -2.663919968 7.096470e+00
+259   0.033948202 1.152480e-03  0.034629057 1.199172e-03
+260   0.334534545 1.119134e-01  0.361364197 1.305841e-01
+261   0.010146775 1.029570e-04  0.009556191 9.132078e-05
+262  -1.505624193 2.266904e+00 -0.923076427 8.520701e-01
+263  -2.439857386 5.952904e+00 -1.478260010 2.185253e+00
+264   1.829457891 3.346916e+00  1.669826701 2.788321e+00
+265  -0.185659296 3.446937e-02 -0.180022629 3.240815e-02
+266   1.574567036 2.479261e+00  2.281476879 5.205137e+00
+267  -0.506690420 2.567352e-01 -0.574972702 3.305936e-01
+268  -0.146004618 2.131735e-02 -0.161698048 2.614626e-02
+269  -0.091274481 8.331031e-03 -0.039936476 1.594922e-03
+270  -0.650243181 4.228162e-01 -0.310017587 9.611090e-02
+271  -0.640719561 4.105216e-01 -0.356947559 1.274116e-01
+272  -3.922292705 1.538438e+01 -2.986881560 8.921461e+00
+273   0.112636229 1.268692e-02  0.185374086 3.436355e-02
+274   0.044368089 1.968527e-03  0.076088569 5.789470e-03
+275   0.860456949 7.403862e-01  1.919934826 3.686150e+00
+276  -1.212664554 1.470555e+00 -0.824708942 6.801448e-01
+277   0.205834468 4.236783e-02  0.148746980 2.212566e-02
+278  -1.503526290 2.260591e+00 -1.858428440 3.453756e+00
+279  -5.493249259 3.017579e+01 -4.359881499 1.900857e+01
+280  -8.156530622 6.652899e+01 -5.333561341 2.844688e+01
+281  -6.964952644 4.851057e+01 -3.969770235 1.575908e+01
+282  -6.066424270 3.680150e+01 -3.134045229 9.822239e+00
+283 -10.584217975 1.120257e+02 -4.614595683 2.129449e+01
+284  -6.553852858 4.295299e+01 -3.737732707 1.397065e+01
+285  -7.602489024 5.779784e+01 -5.087207965 2.587968e+01
+286   1.386750741 1.923078e+00  2.932403760 8.598992e+00
+287  -1.102356458 1.215190e+00 -1.492191706 2.226636e+00
+288   1.418395067 2.011845e+00  1.731079566 2.996636e+00
+289   4.481090061 2.008017e+01  5.794321427 3.357416e+01
+290   2.997940216 8.987646e+00  3.648608285 1.331234e+01
+291   3.968811047 1.575146e+01  6.889077230 4.745939e+01
+292   1.203134296 1.447532e+00  2.423599402 5.873834e+00
+293   0.869340212 7.557524e-01  1.635232550 2.673985e+00
+294   1.478888744 2.187112e+00  3.398212209 1.154785e+01
+295   5.142830713 2.644871e+01 12.318571848 1.517472e+02
+296   2.620726733 6.868209e+00  2.664036509 7.097091e+00
+297   2.316175907 5.364671e+00  2.578170102 6.646961e+00
+298   3.669520901 1.346538e+01  6.039212168 3.647208e+01
+299   1.125666103 1.267124e+00  2.235803489 4.998817e+00
+300   2.846750741 8.103990e+00  9.487312790 9.000910e+01
+301   1.683469378 2.834069e+00  4.078571042 1.663474e+01
+302   2.860805153 8.184206e+00  4.296854724 1.846296e+01
+303   5.531090061 3.059296e+01  8.485213591 7.199885e+01
+304   5.314018980 2.823880e+01  9.614420387 9.243708e+01
+305   4.726147142 2.233647e+01  9.680812633 9.371813e+01
+306   2.998761473 8.992570e+00 10.582229238 1.119836e+02
+307   2.016750741 4.067284e+00  5.059948768 2.560308e+01
+308   2.093469378 4.382614e+00  5.747717070 3.303625e+01
+309   3.215047356 1.033653e+01  5.201458805 2.705517e+01
+310   6.921090061 4.790149e+01 14.142771703 2.000180e+02
+311   5.427940216 2.946253e+01 10.054844033 1.010999e+02
+312   5.606147142 3.142889e+01 14.585312273 2.127313e+02
+313   2.753134296 7.579748e+00  8.791672582 7.729351e+01
+314  -1.973249259 3.893713e+00 -2.286661017 5.228819e+00
+315  -2.156530622 4.650624e+00 -2.509039356 6.295278e+00
+316   1.318395067 1.738166e+00  1.586804408 2.517948e+00
+317  -3.098909939 9.603243e+00 -1.913824636 3.662725e+00
+318  -3.124217975 9.760738e+00 -2.072431374 4.294972e+00
+319  -2.156511358 4.650541e+00 -1.690719892 2.858534e+00
+320  -1.866665465 3.484440e+00 -2.252919179 5.075645e+00
+321  -0.463249259 2.145999e-01 -0.672356608 4.520634e-01
+322   0.267215027 7.140387e-02  0.461959082 2.134062e-01
+323   3.558352370 1.266187e+01  6.053865023 3.664928e+01
+324  -1.573921719 2.477230e+00 -1.083282542 1.173501e+00
+325  -2.565590006 6.582252e+00 -1.777873689 3.160835e+00
+326  -0.204854971 4.196556e-02 -0.194169513 3.770180e-02
+327  -1.413423494 1.997766e+00 -1.767145757 3.122804e+00
+328  -1.243249259 1.545669e+00 -1.595712266 2.546298e+00
+329  -1.602784973 2.568920e+00 -2.015490054 4.062200e+00
+330   1.775047356 3.150793e+00  2.261563791 5.114671e+00
+331  -2.403952221 5.778986e+00 -1.556458973 2.422565e+00
+332  -2.286377140 5.227520e+00 -1.613812059 2.604389e+00
+333  -3.033852858 9.204263e+00 -2.211778899 4.891966e+00
+334  -2.862489024 8.193843e+00 -2.961052773 8.767834e+00
+335   2.096750741 4.396364e+00  5.388651642 2.903757e+01
+336   1.039732004 1.081043e+00  2.124620866 4.514014e+00
+337   1.365047356 1.863354e+00  1.640688827 2.691860e+00
+338   3.816047779 1.456222e+01  4.487666079 2.013915e+01
+339   3.063622860 9.385785e+00  3.754786287 1.409842e+01
+340   0.936147142 8.763715e-01  1.009983004 1.020066e+00
+341   0.457510976 2.093163e-01  0.783035199 6.131441e-01
+342   2.016750741 4.067284e+00  5.059948768 2.560308e+01
+343   0.373469378 1.394794e-01  0.658965371 4.342354e-01
+344   0.280805153 7.885153e-02  0.291846150 8.517418e-02
+345  -0.398909939 1.591291e-01 -0.301238535 9.074465e-02
+346   0.705782025 4.981283e-01  0.651561972 4.245330e-01
+347   2.337161416 5.462323e+00  3.044777764 9.270672e+00
+348   0.813134296 6.611874e-01  1.499760647 2.249282e+00
+349   2.856750741 8.161025e+00  9.558577192 9.136640e+01
+350   2.047215027 4.191089e+00  5.548485061 3.078569e+01
+351   3.305047356 1.092334e+01  5.439370083 2.958675e+01
+352   2.916047779 8.503335e+00  3.059623206 9.361294e+00
+353   3.255782025 1.060012e+01  4.106001834 1.685925e+01
+354   2.596147142 6.739980e+00  3.525268451 1.242752e+01
+355   2.304779715 5.312010e+00  6.348547292 4.030405e+01
+356  -2.143249259 4.593517e+00 -2.428925597 5.899680e+00
+357  -1.452784973 2.110584e+00 -1.867412251 3.487229e+00
+358  -0.297988051 8.879688e-02 -0.280942388 7.892863e-02
+359  -0.538909939 2.904239e-01 -0.402261614 1.618144e-01
+360   0.055782025 3.111634e-03  0.048245431 2.327622e-03
+361   0.276147142 7.625724e-02  0.275627891 7.597073e-02
+362  -2.926865704 8.566543e+00 -3.006453535 9.038763e+00
+363  -1.673249259 2.799763e+00 -2.019480950 4.078303e+00
+364   1.553469378 2.413267e+00  3.628629473 1.316695e+01
+365   2.605047356 6.786272e+00  3.780946805 1.429556e+01
+366   0.441090061 1.945604e-01  0.358308433 1.283849e-01
+367  -3.282059784 1.077192e+01 -2.153801571 4.638861e+00
+368  -3.933852858 1.547520e+01 -2.675334755 7.157416e+00
+369  -3.096865704 9.590577e+00 -3.119273299 9.729866e+00
+370   1.316750741 1.733833e+00  2.736721164 7.489643e+00
+371   0.243469378 5.927734e-02  0.418373136 1.750361e-01
+372   2.515047356 6.325463e+00  3.595893011 1.293045e+01
+373   3.341090061 1.116288e+01  3.695538766 1.365701e+01
+374   4.295782025 1.845374e+01  6.385354920 4.077276e+01
+375   3.526147142 1.243371e+01  5.609646932 3.146814e+01
+376   2.283134296 5.212702e+00  6.187887628 3.828995e+01
+377  -1.819936944 3.312170e+00 -2.589195347 6.703933e+00
+378  -1.259897966 1.587343e+00 -2.034489228 4.139146e+00
+379  -2.128714483 4.531425e+00 -2.124711771 4.514400e+00
+380  -1.994182454 3.976764e+00 -1.652846680 2.731902e+00
+381  -1.375663481 1.892450e+00 -1.312332224 1.722216e+00
+382  -1.241637206 1.541663e+00 -1.329762632 1.768269e+00
+383  -2.025842905 4.104039e+00 -2.785834006 7.760871e+00
+384  -0.533249259 2.843548e-01 -0.764947882 5.851453e-01
+385  -1.856530622 3.446706e+00 -2.250037744 5.062670e+00
+386  -0.894952644 8.009402e-01 -0.821928340 6.755662e-01
+387   0.051090061 2.610194e-03  0.040089843 1.607196e-03
+388   0.045782025 2.095994e-03  0.039558195 1.564851e-03
+389   0.586147142 3.435685e-01  0.606329878 3.676359e-01
+390   0.009700762 9.410479e-05  0.015235210 2.321116e-04
+391   2.836750741 8.047155e+00  9.416614834 8.867263e+01
+392   2.869298892 8.232876e+00 10.570259269 1.117304e+02
+393   1.150805153 1.324352e+00  1.333587872 1.778457e+00
+394   1.511090061 2.283393e+00  1.359701486 1.848788e+00
+395   2.605782025 6.790100e+00  3.003723470 9.022355e+00
+396   2.776147142 7.706993e+00  3.879308673 1.504904e+01
+397   1.355666103 1.837831e+00  2.845431381 8.096480e+00
+398  -4.239936944 1.797707e+01 -4.324971870 1.870538e+01
+399  -3.916767344 1.534107e+01 -4.230891867 1.790045e+01
+400  -2.701203700 7.296501e+00 -2.543982557 6.471847e+00
+401  -5.864182454 3.438864e+01 -3.595245487 1.292579e+01
+402  -6.885670493 4.741246e+01 -4.171887828 1.740465e+01
+403  -2.704527351 7.314468e+00 -2.468541095 6.093695e+00
+404  -4.672724428 2.183435e+01 -4.530859241 2.052869e+01
+405  -0.473249259 2.239649e-01 -0.685716910 4.702077e-01
+406  -2.346530622 5.506206e+00 -2.662752241 7.090249e+00
+407   0.745047356 5.550956e-01  0.825129404 6.808385e-01
+408  -9.443952221 8.918823e+01 -4.132131706 1.707451e+01
+409  -8.666377140 7.510609e+01 -4.131883903 1.707246e+01
+410  -6.943852858 4.821709e+01 -3.868449599 1.496490e+01
+411  -5.956865704 3.548425e+01 -4.536237773 2.057745e+01
+412   0.236750741 5.605091e-02  0.389638864 1.518184e-01
+413   0.281695109 7.935213e-02  0.483089954 2.333759e-01
+414   3.888528625 1.512065e+01  8.676461427 7.528098e+01
+415  -1.654674714 2.737948e+00 -1.125311223 1.266325e+00
+416  -1.865052766 3.478422e+00 -1.347786743 1.816529e+00
+417  -1.414154896 1.999834e+00 -1.747961239 3.055368e+00
+418   1.161172346 1.348321e+00  0.921599146 8.493450e-01
+419   0.050153556 2.515379e-03  0.032795447 1.075541e-03
+420   0.213566467 4.561064e-02  0.121725135 1.481701e-02
+421   0.815445656 6.649516e-01  0.421276761 1.774741e-01
+422  -3.280342223 1.076065e+01 -1.430190979 2.045446e+00
+423   0.877986013 7.708594e-01  0.500724857 2.507254e-01
+424  -0.668321199 4.466532e-01 -0.447207344 1.999944e-01
+425  -0.187924369 3.531557e-02 -0.397382248 1.579127e-01
+426  -0.087700429 7.691365e-03 -0.118714642 1.409317e-02
+427   0.254102768 6.456822e-02  0.310119599 9.617417e-02
+428   0.657268046 4.320013e-01  0.849887477 7.223087e-01
+429  -0.471920946 2.227094e-01 -0.574345901 3.298732e-01
+430   0.978754856 9.579611e-01  1.698926382 2.886351e+00
+431  -0.369006121 1.361655e-01 -0.743327670 5.525360e-01
+432  -0.589948264 3.480390e-01 -1.109695135 1.231423e+00
+433   0.085184815 7.256453e-03  0.195738915 3.831372e-02
+434   0.093621888 8.765058e-03  0.224251588 5.028877e-02
+435  -0.581341023 3.379574e-01 -0.590948186 3.492198e-01
+436  -0.587118781 3.447085e-01 -0.653530711 4.271024e-01
+437   1.124339817 1.264140e+00  1.850412326 3.424026e+00
+438  -0.337152508 1.136718e-01 -0.669653951 4.484364e-01
+439  -0.134815189 1.817514e-02 -0.449296052 2.018669e-01
+440  -0.019087909 3.643483e-04 -0.046244616 2.138564e-03
+441  -0.123227384 1.518499e-02 -0.185084316 3.425620e-02
+442   0.247974487 6.149135e-02  0.380416240 1.447165e-01
+443   0.301721106 9.103563e-02  0.545890702 2.979967e-01
+444   0.158830223 2.522704e-02  0.325340195 1.058462e-01
+445   0.004750831 2.257039e-05  0.016765047 2.810668e-04
+446  -0.575323315 3.309969e-01 -1.443463707 2.083587e+00
+447   0.102196839 1.044419e-02  0.280586152 7.872859e-02
+448  -1.739893115 3.027228e+00 -2.814883067 7.923567e+00
+449   0.020684996 4.278691e-04  0.042268367 1.786615e-03
+450  -0.346898063 1.203383e-01 -0.642602126 4.129375e-01
+451   0.824324630 6.795111e-01  2.144615873 4.599377e+00
+452   0.145546149 2.118368e-02  0.464777213 2.160179e-01
+453   0.009292837 8.635682e-05  0.010768821 1.159675e-04
+454  -0.200069495 4.002780e-02 -0.232773062 5.418330e-02
+455  -0.176402514 3.111785e-02 -0.212315939 4.507806e-02
+456  -0.799254253 6.388074e-01 -0.493603399 2.436443e-01
+457  -0.865333594 7.488022e-01 -0.574013882 3.294919e-01
+458   0.081997625 6.723610e-03  0.064286708 4.132781e-03
+459   0.131636110 1.732807e-02  0.158874487 2.524110e-02
+460  -0.586949164 3.445093e-01 -0.851893752 7.257230e-01
+461  -0.007860189 6.178257e-05 -0.013588628 1.846508e-04
+462   0.359221560 1.290401e-01  0.611147692 3.735015e-01
+463  -0.783542208 6.139384e-01 -0.539288317 2.908319e-01
+464  -0.343034272 1.176725e-01 -0.237712030 5.650701e-02
+465   2.056055179 4.227363e+00  1.948809107 3.797857e+00
+466  -1.557925768 2.427133e+00 -1.947811057 3.793968e+00
+467   0.739233292 5.464659e-01  0.948807025 9.002348e-01
+468   0.352818904 1.244812e-01  0.443667119 1.968405e-01
+469   0.367155926 1.348035e-01  0.467788392 2.188260e-01
+470  -0.104318390 1.088233e-02 -0.067541814 4.561897e-03
+471  -0.027337958 7.473639e-04 -0.019296172 3.723422e-04
+472  -0.795525452 6.328607e-01 -0.579964320 3.363586e-01
+473  -0.836856032 7.003280e-01 -0.865671397 7.493870e-01
+474   0.596056990 3.552839e-01  1.531867100 2.346617e+00
+475  -0.078823625 6.213164e-03 -0.161070659 2.594376e-02
+476  -0.152044647 2.311757e-02 -0.182746740 3.339637e-02
+477   0.727174001 5.287820e-01  0.855155461 7.312909e-01
+478   0.181527816 3.295235e-02  0.222481091 4.949784e-02
+479  -1.614091508 2.605291e+00 -1.741398246 3.032468e+00
+480  -1.049471764 1.101391e+00 -1.796182771 3.226273e+00
+481   0.361663516 1.308005e-01  0.907399623 8.233741e-01
+482  -0.193746483 3.753770e-02 -0.341854596 1.168646e-01
+483   0.176217752 3.105270e-02  0.183146470 3.354263e-02
+484  -1.345889163 1.811418e+00 -1.016353918 1.032975e+00
+485  -0.578005336 3.340902e-01 -0.533601429 2.847305e-01
+486   0.835973075 6.988510e-01  1.089078492 1.186092e+00
+487  -0.856819051 7.341389e-01 -1.580333655 2.497454e+00
+488   0.406123258 1.649361e-01  1.358872672 1.846535e+00
+489  -0.352298405 1.241142e-01 -0.954820287 9.116818e-01
+490   0.045642739 2.083260e-03  0.075117758 5.642678e-03
+491   0.144635839 2.091953e-02  0.151757174 2.303024e-02
+492   0.489359779 2.394730e-01  0.617151927 3.808765e-01
+493  -0.204086722 4.165139e-02 -0.277126234 7.679895e-02
+494  -0.155207417 2.408934e-02 -0.427520956 1.827742e-01
+495  -0.490433730 2.405252e-01 -0.555804246 3.089184e-01
+496   0.248360275 6.168283e-02  0.319242716 1.019159e-01
+497   0.117257252 1.374926e-02  0.110549844 1.222127e-02
+498  -0.323873330 1.048939e-01 -0.241750614 5.844336e-02
+499   0.848502131 7.199559e-01  0.733862763 5.385546e-01
+500   1.435418216 2.060425e+00  1.432719139 2.052684e+00
+501  -1.197359224 1.433669e+00 -1.229918020 1.512698e+00
+502  -1.797533778 3.231128e+00 -2.169482641 4.706655e+00
+503   1.282035965 1.643616e+00  2.994609069 8.967683e+00
+504  -0.600682498 3.608195e-01 -0.871826213 7.600809e-01
+505   1.216289793 1.479361e+00  0.988022465 9.761884e-01
+506  -1.071151571 1.147366e+00 -0.702926848 4.941062e-01
+507  -1.670257317 2.789760e+00 -1.135908640 1.290288e+00
+508  -3.237342800 1.048039e+01 -3.260766828 1.063260e+01
+509  -0.664459026 4.415058e-01 -1.381004788 1.907174e+00
+510  -0.065230754 4.255051e-03 -0.112091284 1.256446e-02
+511   0.223258239 4.984424e-02  0.319203827 1.018911e-01
+512  -0.915433743 8.380189e-01 -1.012550042 1.025258e+00
+513   0.454401536 2.064808e-01  0.675433498 4.562104e-01
+514   0.151879226 2.306730e-02  0.241620330 5.838038e-02
+515   0.295375405 8.724663e-02  0.800544154 6.408709e-01
+516  -0.278542001 7.758565e-02 -0.396277275 1.570357e-01
+517   0.265092438 7.027400e-02  0.428072530 1.832461e-01
+518   0.015971686 2.550948e-04  0.015941654 2.541363e-04
+519  -0.281663488 7.933432e-02 -0.233452340 5.450000e-02
+520   0.287662787 8.274988e-02  0.274419689 7.530617e-02
+521   0.432485825 1.870440e-01  0.463181585 2.145372e-01
+522  -0.448039501 2.007394e-01 -0.616120665 3.796047e-01
+523  -0.140722500 1.980282e-02 -0.201866906 4.075025e-02
+524  -0.094201294 8.873884e-03 -0.114168042 1.303434e-02
+525   0.123384962 1.522385e-02  0.113317278 1.284081e-02
+526  -0.561836707 3.156605e-01 -0.440867457 1.943641e-01
+527  -0.410028474 1.681233e-01 -0.354287218 1.255194e-01
+528   0.379010827 1.436492e-01  0.392061263 1.537120e-01
+529   0.430425316 1.852660e-01  0.675990179 4.569627e-01
+530   0.218950781 4.793944e-02  0.726808720 5.282509e-01
+531   0.300167648 9.010062e-02  1.105792733 1.222778e+00
+532  -0.038532195 1.484730e-03 -0.044652275 1.993826e-03
+533  -0.462592850 2.139921e-01 -0.416247980 1.732624e-01
+534   0.072555730 5.264334e-03  0.083636063 6.994991e-03
+535   0.003507423 1.230202e-05  0.004901173 2.402150e-05
+536  -1.274475607 1.624288e+00 -2.675019223 7.155728e+00
+537  -0.037002591 1.369192e-03 -0.037744704 1.424663e-03
+538   0.264543536 6.998328e-02  0.285759913 8.165873e-02
+539  -0.148630369 2.209099e-02 -0.139979472 1.959425e-02
+540  -1.601298599 2.564157e+00 -0.981733022 9.637997e-01
+541  -2.531017849 6.406051e+00 -1.533492282 2.351599e+00
+542   1.741748735 3.033689e+00  1.589770696 2.527371e+00
+543  -0.260415654 6.781631e-02 -0.252509364 6.376098e-02
+544   1.542449864 2.379152e+00  2.234940540 4.994959e+00
+545  -0.535356006 2.866061e-01 -0.607501301 3.690578e-01
+546  -0.371989575 1.383762e-01 -0.411973190 1.697219e-01
+547  -0.267541535 7.157847e-02 -0.117060827 1.370324e-02
+548  -0.790962065 6.256210e-01 -0.377108378 1.422107e-01
+549  -0.748617180 5.604277e-01 -0.417057776 1.739372e-01
+550  -3.954341257 1.563681e+01 -3.011286987 9.067849e+00
+551   0.112627590 1.268497e-02  0.185359869 3.435828e-02
+552   0.042955082 1.845139e-03  0.073665348 5.426584e-03
+553   0.857493402 7.352949e-01  1.913322273 3.660802e+00
+554  -1.158083205 1.341157e+00 -0.787589256 6.202968e-01
+555   0.268794821 7.225066e-02  0.194245494 3.773131e-02
+556  -1.502888346 2.258673e+00 -1.857639913 3.450826e+00
+> names(op)
+ [1] "id"        "time"      "obs"       "pred"      "pred.type" "icen"     
+ [7] "outeq"     "block"     "obsSD"     "d"         "ds"        "wd"       
+[13] "wds"      
+> summary(op)
+
+
+           Time     Obs    Pred
+Min    120.0000  1.8600  1.9648
+25%    121.0250  4.4950  4.5019
+Median 126.0000  6.5600  6.5996
+75%    132.0000  8.8850  8.9355
+Max    144.9800 20.1500 19.8025
+Mean   127.6899  7.2407  7.0689
+SD       7.8600  3.7992  3.6420
+
+
+Mean prediction error: -0.1718 
+Mean weighted prediction error (bias): -0.103 (P=0.9718 different than 0)
+Mean squared prediction error: 0.795 
+Root mean squared error (RMSE): 0.8916 
+Percent root mean squared error (%RMSE): 12.3141 
+Mean weighed squared prediction error: 0.992 
+Bias-adjusted mean squared prediction error: 0.7655 
+Bias-adjusted mean weighted squared prediction error (imprecision): 0.9813 
+
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("makeOP", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+
+detaching ‘package:reshape2’
+
+> nameEx("npde")
+> ### * npde
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: npde
+> ### Title: Compute normalised prediction distribution errors
+> ### Aliases: npde autonpde
+> ### Keywords: models
+> 
+> ### ** Examples
+> 
+> 
+> data(theopp)
+> data(simtheopp)
+> 
+> # Calling autonpde with dataframes
+> 
+> x<-autonpde(theopp,simtheopp,1,3,4,boolsave=FALSE)
+---------------------------------------------
+Distribution of npde :
+      nb of obs: 120 
+           mean= 0.0668   (SE= 0.095 )
+       variance= 1.074   (SE= 0.14 )
+       skewness= 0.511 
+       kurtosis= 0.2912 
+---------------------------------------------
+
+Statistical tests
+  t-test                     : 0.481
+  Fisher variance test       : 0.55
+  SW test of normality       : 0.00273 **
+Global adjusted p-value      : 0.00819 **
+---
+Signif. codes: '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 
+---------------------------------------------
+> x
+Object of class NpdeObject
+-----------------------------------------
+----        Component data           ----
+-----------------------------------------
+Object of class NpdeData
+Dataset theopp 
+    Structured data: Conc ~ Time | ID 
+This object has the following components:
+     data: data
+     with 12 subjects
+      120 observations
+The data has the following components
+     X: Time 
+     Y: Conc 
+     missing data: mdv  (1=missing)
+-----------------------------------------
+----        Component results        ----
+-----------------------------------------
+Object of class NpdeRes
+  containing the following elements:
+    predictions (ypred)
+    prediction discrepancies (pd)
+    normalised prediction distribution errors (npde)
+    completed responses (ycomp) for censored data
+    decorrelated responses (ydobs)
+  the dataframe has  120 non-missing observations and 132 lines.
+> 
+> # Calling autonpde with names of files to be read from disk
+> 
+> write.table(theopp,"theopp.tab",quote=FALSE,row.names=FALSE)
+> write.table(simtheopp,"simtheopp.tab",quote=FALSE,row.names=FALSE)
+> x<-autonpde(namobs="theopp.tab", namsim="simtheopp.tab", iid = 1,
++ ix = 3, iy = 4, imdv=0, boolsave = FALSE)
+---------------------------------------------
+Distribution of npde :
+      nb of obs: 120 
+           mean= 0.0668   (SE= 0.095 )
+       variance= 1.074   (SE= 0.14 )
+       skewness= 0.511 
+       kurtosis= 0.2912 
+---------------------------------------------
+
+Statistical tests
+  t-test                     : 0.481
+  Fisher variance test       : 0.55
+  SW test of normality       : 0.00273 **
+Global adjusted p-value      : 0.00819 **
+---
+Signif. codes: '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 
+---------------------------------------------
+> 
+> head(x["results"]["res"])
+     ypred ycomp   pd       ydobs      npde
+1      NaN   NaN  NaN          NA        NA
+2 2.923864  2.84 0.55 -0.05124648 0.1256613
+3 4.682299  6.57 0.85  1.96398150 2.0537489
+4 6.264357 10.50 0.99  2.56602650 2.3263479
+5 6.986255  9.66 0.98  0.41616411 0.5244005
+6 6.511039  8.58 0.93  0.28430866 0.2533471
+> 
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("npde", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("npdeData")
+> ### * npdeData
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: npdeData
+> ### Title: Creates a NpdeData object
+> ### Aliases: npdeData
+> ### Keywords: models
+> 
+> ### ** Examples
+> 
+> 
+> data(theopp)
+> 
+> x<-npdeData(theopp) # Automatic detection
+> print(x)
+Object of class NpdeData
+    longitudinal data
+Dataset theopp 
+    Structured data: Conc ~ Time | ID 
+    predictor: Time () 
+Dataset characteristics:
+    number of subjects:     12 
+    number of non-missing observations: 120 
+    average/min/max nb obs: 10.00  /  10  /  10 
+First 10 lines of data:
+   index ID  Time  Conc mdv
+1      1  1  0.00    NA   1
+2      1  1  0.25  2.84   0
+3      1  1  0.57  6.57   0
+4      1  1  1.12 10.50   0
+5      1  1  2.02  9.66   0
+6      1  1  3.82  8.58   0
+7      1  1  5.10  8.36   0
+8      1  1  7.03  7.47   0
+9      1  1  9.05  6.89   0
+10     1  1 12.12  5.94   0
+> x<-npdeData(theopp,name.group="ID",name.predictor="Time",name.response="Conc", 
++ name.covariates=c("Wt"),units=list(x="hr",y="mg/L",covariates="kg")) # Explicit
+> print(x)
+Object of class NpdeData
+    longitudinal data
+Dataset theopp 
+    Structured data: Conc ~ Time | ID 
+    predictor: Time (hr) 
+    covariates: Wt (kg) 
+Dataset characteristics:
+    number of subjects:     12 
+    number of non-missing observations: 120 
+    average/min/max nb obs: 10.00  /  10  /  10 
+First 10 lines of data:
+   index ID  Time  Conc   Wt mdv
+1      1  1  0.00    NA 79.6   1
+2      1  1  0.25  2.84 79.6   0
+3      1  1  0.57  6.57 79.6   0
+4      1  1  1.12 10.50 79.6   0
+5      1  1  2.02  9.66 79.6   0
+6      1  1  3.82  8.58 79.6   0
+7      1  1  5.10  8.36 79.6   0
+8      1  1  7.03  7.47 79.6   0
+9      1  1  9.05  6.89 79.6   0
+10     1  1 12.12  5.94 79.6   0
+> plot(x)
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("npdeData", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("plot.NpdeData")
+> ### * plot.NpdeData
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: plot.NpdeData
+> ### Title: Plots a NpdeData object
+> ### Aliases: plot.NpdeData
+> ### Keywords: plot
+> 
+> ### ** Examples
+> 
+> 
+> data(theopp)
+> 
+> x<-npdeData(theopp,name.group="ID",name.predictor="Time",name.response="Conc", 
++ name.covariates=c("Wt"),units=list(x="hr",y="mg/L",covariates="kg"))
+> plot(x)
+> 
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("plot.NpdeData", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("plot.NpdeObject")
+> ### * plot.NpdeObject
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: plot.NpdeObject
+> ### Title: Plots a NpdeObject object
+> ### Aliases: plot.NpdeObject
+> ### Keywords: plot
+> 
+> ### ** Examples
+> 
+> 
+> data(theopp)
+> data(simtheopp)
+> 
+> x<-autonpde(theopp,simtheopp,iid="ID",ix="Time", iy="Conc", boolsave=FALSE)
+---------------------------------------------
+Distribution of npde :
+      nb of obs: 120 
+           mean= 0.0668   (SE= 0.095 )
+       variance= 1.074   (SE= 0.14 )
+       skewness= 0.511 
+       kurtosis= 0.2912 
+---------------------------------------------
+
+Statistical tests
+  t-test                     : 0.481
+  Fisher variance test       : 0.55
+  SW test of normality       : 0.00273 **
+Global adjusted p-value      : 0.00819 **
+---
+Signif. codes: '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 
+---------------------------------------------
+> plot(x)
+> 
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("plot.NpdeObject", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("plot.NpdeRes")
+> ### * plot.NpdeRes
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: plot.NpdeRes
+> ### Title: Plots a NpdeRes object
+> ### Aliases: plot.NpdeRes
+> ### Keywords: internal plot
+> 
+> ### ** Examples
+> 
+> 
+> data(theopp)
+> 
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("plot.NpdeRes", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("plot.PMcov")
+> ### * plot.PMcov
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: plot.PMcov
+> ### Title: Plot Pmetrics Covariate objects
+> ### Aliases: plot.PMcov
+> 
+> ### ** Examples
+> 
+> data(PMex1)
+> plot(cov.1,V~wt)
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("plot.PMcov", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("plot.PMcycle")
+> ### * plot.PMcycle
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: plot.PMcycle
+> ### Title: Plot NPAG Cycle Information
+> ### Aliases: plot.PMcycle
+> 
+> ### ** Examples
+> 
+> data(PMex1)
+> plot(cycle.1)
+> plot(cycle.1,omit=0)
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("plot.PMcycle", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("plot.PMfinal")
+> ### * plot.PMfinal
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: plot.PMfinal
+> ### Title: Plot Pmetrics Final Cycle Parameter Value Distributions
+> ### Aliases: plot.PMfinal
+> 
+> ### ** Examples
+> 
+> data(PMex1)
+> plot(final.1)
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("plot.PMfinal", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("plot.PMmatrix")
+> ### * plot.PMmatrix
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: plot.PMmatrix
+> ### Title: Plot PMmatrix Time-Output Data
+> ### Aliases: plot.PMmatrix
+> 
+> ### ** Examples
+> 
+> data(PMex1)
+> plot(mdata.1)
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("plot.PMmatrix", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("plot.PMop")
+> ### * plot.PMop
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: plot.PMop
+> ### Title: Plot Pmetrics Observed vs. Predicted Objects
+> ### Aliases: plot.PMop
+> 
+> ### ** Examples
+> 
+> data(PMex1)
+> plot(op.1)
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("plot.PMop", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("skewness")
+> ### * skewness
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: skewness
+> ### Title: Skewness
+> ### Aliases: skewness
+> ### Keywords: univar
+> 
+> ### ** Examples
+> 
+> 
+> x <- rnorm(100)
+> skewness(x)
+[1] -0.0722319
+> 
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("skewness", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("summary.PMfinal")
+> ### * summary.PMfinal
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: summary.PMfinal
+> ### Title: Summary Statistics for PMfinal Objects
+> ### Aliases: summary.PMfinal
+> 
+> ### ** Examples
+> 
+> data(PMex1)
+> final <- makeFinal(NPdata.1)
+> summary(final)
+     par  type quantile        value
+1     Ka WtMed    0.025 5.190260e-01
+2     Ka WtMed    0.500 7.051888e-01
+3     Ka WtMed    0.975 8.480563e-01
+4     Ka  MAWD    0.025 5.188031e-02
+5     Ka  MAWD    0.500 1.587395e-01
+6     Ka  MAWD    0.975 3.068212e-01
+7     Ke WtMed    0.025 3.510307e-02
+8     Ke WtMed    0.500 4.393907e-02
+9     Ke WtMed    0.975 6.483544e-02
+10    Ke  MAWD    0.025 4.938401e-03
+11    Ke  MAWD    0.500 1.477852e-02
+12    Ke  MAWD    0.975 2.179772e-02
+13     V WtMed    0.025 6.469252e+01
+14     V WtMed    0.500 7.247523e+01
+15     V WtMed    0.975 1.003963e+02
+16     V  MAWD    0.025 6.249258e+00
+17     V  MAWD    0.500 2.074099e+01
+18     V  MAWD    0.975 3.725091e+01
+19 Tlag1 WtMed    0.025 6.883760e-01
+20 Tlag1 WtMed    0.500 1.113296e+00
+21 Tlag1 WtMed    0.975 1.791292e+00
+22 Tlag1  MAWD    0.025 1.704240e-01
+23 Tlag1  MAWD    0.500 5.017712e-01
+24 Tlag1  MAWD    0.975 7.891245e-01
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("summary.PMfinal", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> ### * <FOOTER>
+> ###
+> cleanEx()
+
+detaching ‘package:reshape2’
+
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  3.086 0.209 3.331 0.002 0.003 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')
