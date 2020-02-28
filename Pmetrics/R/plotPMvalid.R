@@ -1,4 +1,4 @@
-#' Plot PMop objects
+#' Plot PMvalid objects
 #'
 #' @title Plot Pmetrics Validation Objects
 #' @method plot PMvalid
