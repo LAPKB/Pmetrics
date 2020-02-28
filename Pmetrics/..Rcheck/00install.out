@@ -1,0 +1,37 @@
+* installing *source* package ‘Pmetrics’ ...
+** using staged installation
+** libs
+make: Nothing to be done for `all'.
+installing to /Users/Neely/LAPK/PmetricsGit/Pmetrics/..Rcheck/00LOCK-Pmetrics/00new/Pmetrics/libs
+** R
+** data
+*** moving datasets to lazyload DB
+** demo
+** inst
+** byte-compile and prepare package for lazy loading
+Note: break used in wrong context: no loop is visible 
+Note: break used in wrong context: no loop is visible 
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+Pmetrics cannot find required compiled binary files.
+Pmetrics has detected gfortran and will compile required binary files.
+
+Compiling 1 of 9: NPprep...
+Compiling 2 of 9: NPeng...
+Compiling 3 of 9: ITprep...
+Compiling 4 of 9: ITeng...
+Compiling 5 of 9: ITerr...
+Compiling 6 of 9: SIMeng...
+Compiling 7 of 9: DOprep...
+Compiling 8 of 9: DOeng...
+Compiling 9 of 9: mb2csv...
+All packages installed and permanent Fortran modules compiled.
+Pmetrics has found required compiled binary files.
+** checking absolute paths in shared objects and dynamic libraries
+** testing if installed package can be loaded from final location
+Pmetrics has found required compiled binary files.
+Pmetrics has found required compiled binary files.
+** testing if installed package keeps a record of temporary installation path
+* DONE (Pmetrics)
