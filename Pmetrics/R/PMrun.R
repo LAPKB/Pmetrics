@@ -468,7 +468,7 @@
     if (OS == 2 & !batch) {
       #Create a wrapper script
       f <- file("win_wrapper.ps1", "w")
-      writeLines("Start-Process npscript.bat", f)
+      writeLines(paste("Start-Process",scriptFileName), f)
       close(f)
       #Windows
       system2("C:/Windows/System32/WindowsPowerShell/v1.0/powershell", args = c("-ExecutionPolicy","ByPass","-file", "win_wrapper.ps1"), wait = T)
