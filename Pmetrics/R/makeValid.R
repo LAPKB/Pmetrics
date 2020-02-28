@@ -16,8 +16,8 @@
 #' are the same from dose to dose.  Otherwise observations are \emph{NOT} superimposable and \code{tad} should 
 #' \emph{NOT} be used, i.e. should be set to \code{FALSE}.
 #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
-#' model equations and which need to be binned.  For example \code{binCov=\dQuote{wt}} if \dQuote{wt} is included in a
-#' model equation like V=V0*wt, or \code{binCov=c( \dQuote{wt}, \dQuote{crcl})} if both \dQuote{wt} and \dQuote{crcl} 
+#' model equations and which need to be binned.  For example \code{binCov='wt'} if \dQuote{wt} is included in a
+#' model equation like V=V0*wt, or \code{binCov=c( 'wt', 'crcl')} if both \dQuote{wt} and \dQuote{crcl} 
 #' are included in model equations.
 #' @param doseC An integer with the number of dose/covariate bins to cluster, if known from a previous run of 
 #' this function.  Including this value will skip the clustering portion for doses/covariates.
@@ -36,7 +36,6 @@
 #' \item{opDF}{A data frame with observations, predicitons, and bin-corrected predictions for each subject.}
 #' @author Michael Neely
 #' @seealso \code{\link{SIMrun}}, \code{\link{plot.PMvalid}}
-#' @references 
 #' @export
 
 makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
