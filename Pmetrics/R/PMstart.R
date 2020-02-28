@@ -1,6 +1,6 @@
 
 .onLoad <- function(...) {
-  checkRequiredPackages("purrr")
+  #checkRequiredPackages("purrr")
   if (interactive()) {
     currentVersion <- package_version(suppressWarnings(
       tryCatch(scan("http://www.lapk.org/software/Pmetrics/PmetricsVersion.txt", what = "character", quiet = T),
@@ -41,7 +41,7 @@
     }
     packageStartupMessage(msg)
   }
-  .check_and_install_gfortran()
+
   #check for need to compile fortran objects
   #new fortran 
   newfort <- paste(system.file("config", package = "Pmetrics"), "newFort.txt", sep = "/")
@@ -67,17 +67,18 @@
 }
 
 .is_fortran_installed <- function() {
-  checkRequiredPackages("purrr")
+  #checkRequiredPackages("purrr")
+
   #library(purrr)
   exists <- function(name) {
-    paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/") %>%
-    paste(name, sep = "/") %>%
+    paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/") purrr::%>%
+    paste(name, sep = "/") purrr::%>%
     file.exists()
   }
   c("DOprep.exe", "mb2csv.exe", "pNPeng.o",
     "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
     "sNPeng.o", "sNPprep.o", "sSIMeng.o") %>%
-  map(exists) %>% unlist() %>% all() %>% return()
+  purrr::map(exists) purrr::%>% unlist() purrr::%>% all() purrr::%>% return()
 }
 
 .check_and_install_gfortran <- function() {

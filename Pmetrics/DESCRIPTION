@@ -1,13 +1,14 @@
 Package: Pmetrics
 Maintainer: Michael Neely <mneely@usc.edu>
 License: GPL (>= 2)
-Title: Pmetrics is a parametric and non-parametric
-    pharmacometric modeling and simulation software package
+Title: Pmetrics 
 Type: Package
 LazyLoad: yes
 LazyData: yes
 Author: Michael Neely <contact@lapk.org>
-Description: This package contains functions to run and
+Description: Parametric and non-parametric
+    pharmacometric modeling and simulation software package.
+    This package contains functions to run and
     analyze the output from all three components of the
     Pmetrics software suite for population pharmacometric
     data analysis: 1) IT2B (Iterative Two-Stage Bayesian)
@@ -15,7 +16,7 @@ Description: This package contains functions to run and
     Grid) for non-paramametric models; 3) Simulator for
     semi-parametric Monte-Carlo simulations. It includes
     source code from the NPDE package by Emanuelle Comets, et al,
-    which used to be on CRAN.
+    which used to be available on CRAN.
 Authors@R: person("Michael", "Neely",
     email="mneely@usc.edu", role="aut")
 Version: 1.9
