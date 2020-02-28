@@ -24,17 +24,6 @@
 #' @references Schilling, M. F. (1986). Multivariate two-sample tests based on nearest neighbors. \emph{J. Amer. Statist. Assoc.}, 81 799-806.
 #' Henze, N. (1988). A multivariate two-sample test based on the number of nearest neighbor type coincidences.\emph{Ann. Statist.}, 16 772-783.
 #' Chen, L. and Dou W. (2009). Robust multivariate two-sample tests based on k nearest neighbors for unbalanced designs. \emph{manuscripts}.  
-#' @examples
-#'  ## Example of two samples from the same multivariate t distribution:
-#'  n <- 100
-#'  x <- matrix(rt(2*n, df=5),n,2) 
-#'  y <- matrix(rt(2*n, df=5),n,2)
-#'  mtsknn.eq(x,y,3)
-#'  ## Example of two samples from different distributions:
-#'  n <- 100
-#'  x <- matrix(rt(2*n, df=10),n,2) 
-#'  y <- matrix(rnorm(2*n),n,2) 
-#'  mtsknn.eq(x,y,3)
 #'  @export
 #'  @useDynLib Pmetrics knn
 

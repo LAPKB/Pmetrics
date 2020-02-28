@@ -2039,7 +2039,7 @@ getOSname <- function(){
 
 checkRequiredPackages <- function(pkg){
   #pkg is a character vector
-  if (length(grep("purrr", installed.packages()[, 1])) == 0) {
+  if (length(grep("purrr", utils::installed.packages()[, 1])) == 0) {
     install.packages("purrr", repos = "http://cran.rstudio.com", dependencies = T)
   }
   purrr.installed <- require(purrr)
