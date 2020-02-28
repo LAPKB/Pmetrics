@@ -11,7 +11,7 @@
       packageStartupMessage(paste("\nPmetrics version ", currentVersion, " is available from www.lapk.org/software.  You have version ", installedVersion, ".\n", sep = ""))
     }
   }
-  .check_and_install_gfortran()
+
 }
 
 .onAttach <- function(...) {
@@ -66,53 +66,6 @@
   setPMoptions()
 }
 
-.is_fortran_installed <- function() {
-  #checkRequiredPackages("purrr")
 
-  #library(purrr)
-  exists <- function(name) {
-    paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/") purrr::%>%
-    paste(name, sep = "/") purrr::%>%
-    file.exists()
-  }
-  c("DOprep.exe", "mb2csv.exe", "pNPeng.o",
-    "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
-    "sNPeng.o", "sNPprep.o", "sSIMeng.o") %>%
-  purrr::map(exists) purrr::%>% unlist() purrr::%>% all() purrr::%>% return()
-}
 
-.check_and_install_gfortran <- function() {
-  #restore user defaults - deprecated
-  #if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
-  sch_str <- c("which -s gfortran", "where gfortran", "which -s gfortran")
-  OS <- getOS()
-  env = Sys.getenv("env")
-  if (env != "Development") {
-    if (!.is_fortran_installed()) {
-      cat("Pmetrics cannot find required compiled binary files.\n")
-      if (system(sch_str[OS]) != 0) {
-        cat("Pmetrics cannot detect gfortran and will attempt to download and install all components.\n")
-        input <- tolower(readline(prompt = "Do you agree? (Y/N)"))
-        if (substr(input,1,1) == "y") {
-          if (.getGfortran()) {
-            cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
-            PMbuild()
-          } else {
-            cat("ERROR: Pmetrics did not install gfortran automatically.\nPlease install gfortran manually and then run PMbuild().\nGo to http://www.lapk.org/Pmetrics_install.php for help.\n")
-          }
-        } else {
-          cat("You must have gfortran to run Pmetrics.\nPlease install gfortran manually and then run PMbuild().\nGo to http://www.lapk.org/Pmetrics_install.php for help.\n")
-        }
-      } else {
-        cat("Pmetrics has detected gfortran and will compile required binary files.\n")
-        PMbuild()
-      }
 
-    } else {
-      cat("Pmetrics has found required compiled binary files.\n")
-    }
-  }
-  else{
-    print("You are inside the development folder, skipping gfortran installation")
-  }
-}
