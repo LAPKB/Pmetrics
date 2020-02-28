@@ -7,6 +7,8 @@
 \itemize{
 \item This version is a pre-release beta for version 2.0
 \item makeValid and plot.PMvalid added to replace makeNPDE and add pcVPC capacity
+\item NPDE code folded into Pmetrics since original NPDE package no longer maintained
+\item Windows users will now see terminal window open automatically
 \item Added remote server run capabilities, currently only on LAPKB server
 \item Restructured start up and installation to be self contained for all modules, including gfortran
 }
