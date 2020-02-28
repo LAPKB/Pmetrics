@@ -1,43 +1,43 @@
 ##################################################################################
 
-##' Class "NpdeObject"
-##' 
-##' An object of class NpdeObject
-##' 
-##' @name NpdeObject-class
-##' @aliases NpdeObject NpdeObject-class, show,NpdeObject-method print,NpdeObject-method 
-##' showall,NpdeObject-method summary,NpdeObject-method test,NpdeObject-method
-##' [,NpdeObject-method [<-,NpdeObject-method
-##' npde.main,NpdeObject npde.save,NpdeObject npde.graphs,NpdeObject plot,NpdeObject
-##' @docType class
-##' @section Objects from the Class: NpdeObject objects are typically created by calls to \code{\link{npde}} or \code{\link{autonpde}}. They contain the following slots:
-##' 
-##' \describe{
-##' \item{data}{an object of class NpdeData, containing the observed data}
-##' \item{sim.data}{an object of class NpdeSimData, containing the simulated data}
-##' \item{res}{an object of class NpdeRes, containing the results}
-##' \item{options}{a list of options}
-##' \item{prefs}{a list of graphical preferences for the plots}
-##' }
-##' @section Methods:
-##' \describe{
-##'   \item{print(x):}{Prints a summary of object}
-##'   \item{show(x):}{Prints a short summary of object}
-##'   \item{showall(x):}{Prints a detailed summary of object}
-##'   \item{plot(x):}{Diagnostic and other plots. More details can be found in \code{\link{plot.NpdeObject}}}
-##'   \item{summary(x):}{Returns a summary of object x in list format}
-##'   \item{gof.test(x, which="npde", parametric=TRUE, ...):}{Returns goodness-of-fit tests}
-##'   \item{set.plotoptions(x):}{Sets options for graphs (internal method used in plots)}
-##' }
-##' @seealso \code{\link{npde}}, \code{\link{autonpde}}, \code{\link{NpdeData}}, \code{\link{NpdeSimData}}, \code{\link{NpdeRes}}, \code{\link{gof.test}}
-##' @keywords classes
-##' @examples
-##' 
-##' methods(class="NpdeObject")
-##' 
-##' showClass("NpdeObject")
-##' 
-##' @exportClass NpdeObject
+#' Class "NpdeObject"
+#'
+#' An object of class NpdeObject
+#'
+#' @name NpdeObject-class
+#' @aliases NpdeObject NpdeObject-class, show,NpdeObject-method print,NpdeObject-method
+#' showall,NpdeObject-method summary,NpdeObject-method test,NpdeObject-method
+#' [,NpdeObject-method [<-,NpdeObject-method
+#' npde.main,NpdeObject npde.save,NpdeObject npde.graphs,NpdeObject plot,NpdeObject
+#' @docType class
+#' @section Objects from the Class: NpdeObject objects are typically created by calls to \code{\link{npde}} or \code{\link{autonpde}}. They contain the following slots:
+#'
+#' \describe{
+#' \item{data}{an object of class NpdeData, containing the observed data}
+#' \item{sim.data}{an object of class NpdeSimData, containing the simulated data}
+#' \item{res}{an object of class NpdeRes, containing the results}
+#' \item{options}{a list of options}
+#' \item{prefs}{a list of graphical preferences for the plots}
+#' }
+#' @section Methods:
+#' \describe{
+#'   \item{print(x):}{Prints a summary of object}
+#'   \item{show(x):}{Prints a short summary of object}
+#'   \item{showall(x):}{Prints a detailed summary of object}
+#'   \item{plot(x):}{Diagnostic and other plots. More details can be found in \code{\link{plot.NpdeObject}}}
+#'   \item{summary(x):}{Returns a summary of object x in list format}
+#'   \item{gof.test(x, which="npde", parametric=TRUE, ...):}{Returns goodness-of-fit tests}
+#'   \item{set.plotoptions(x):}{Sets options for graphs (internal method used in plots)}
+#' }
+#' @seealso \code{\link{npde}}, \code{\link{autonpde}}, \code{\link{NpdeData}}, \code{\link{NpdeSimData}}, \code{\link{NpdeRes}}, \code{\link{gof.test}}
+#' @keywords classes
+#' @examples
+#'
+#' methods(class="NpdeObject")
+#'
+#' showClass("NpdeObject")
+#'
+#' @exportClass NpdeObject
 
 setClass(Class="NpdeObject",
   representation=representation(
@@ -178,12 +178,12 @@ check.control.options<-function(opt) {
 
 ##################################################################################
 
-##' Get/set methods for NpdeData object
-##' 
-##' Access slots of a NpdeData using the object["slot"] format
-##' 
-##' @keywords methods
-##' @exportMethod [
+#' Get/set methods for NpdeData object
+#'
+#' Access slots of a NpdeData using the object["slot"] format
+#'
+#' @keywords methods
+#' @exportMethod [
 
 # Getteur
 setMethod(
@@ -271,7 +271,8 @@ setMethod("summary","NpdeObject",
 # print/show/showall
 # alias in class documentation
 
-##' @S3method print NpdeObject
+#' @method print NpdeObject
+#' @export
 
 #setMethod("print","NpdeObject",
 print.NpdeObject<-
@@ -334,7 +335,8 @@ setMethod("show","NpdeObject",
   }
 )
 
-##' @S3method showall NpdeObject
+#' @method showall NpdeObject
+#' @export
 # Could be print, with only head of data
 #setMethod("showall","NpdeObject",
 showall.NpdeObject<-function(object) {
@@ -377,7 +379,8 @@ showall.NpdeObject<-function(object) {
 ####################################################################################
 ####			subset method for NpdeObject				####
 ####################################################################################
-##' @S3method subset NpdeObject
+#' @method subset NpdeObject
+#' @export
 
 subset.NpdeObject<-function (x, subset, ...) {
     if (missing(subset)) 
@@ -460,11 +463,11 @@ subset.NpdeObject<-function (x, subset, ...) {
 #' @keywords test
 #' @examples
 #' 
-##' data(theopp)
-##' 
-##' @S3method gof.test NpdeObject
-##' @export gof.test
-##' @export gof.test.NpdeObject
+#' data(theopp)
+#'
+#' @method gof.test NpdeObject
+#' @export gof.test
+#' @export gof.test.NpdeObject
 
 gof.test.NpdeObject<-function(object,which="npde",parametric=TRUE, ...) {
 	# Performs test on the selected variable (one of npde, pd or npd)
@@ -600,8 +603,9 @@ gof.test.NpdeObject<-function(object,which="npde",parametric=TRUE, ...) {
 #' @param object A NpdeObject object
 #' @return A NpdeObject object updated with the results
 #' 
-##' @keywords model internal
-##' @S3method npde.main NpdeObject
+#' @keywords model internal
+#' @method npde.main NpdeObject
+#' @export
 
 #setMethod("npde.main","NpdeObject",
 npde.main.NpdeObject<-
@@ -623,7 +627,7 @@ npde.main.NpdeObject<-
 #' 
 #' Save the results to a table on disk
 #' 
-##' @aliases npde.save,NpdeObject-method
+#' @aliases npde.save,NpdeObject-method
 #' @usage npde.save(object, ...)
 #' @param object a NpdeObject object
 #' @param \dots optional arguments to replace options in object
@@ -664,7 +668,7 @@ setMethod("npde.save","NpdeObject",
 #' 
 #' Save the graphs to a file on disk
 #' 
-##' @aliases npde.graphs,NpdeObject-method
+#' @aliases npde.graphs,NpdeObject-method
 #' @usage npde.graphs(object, ...)
 #' @param object a NpdeObject object
 #' @param \dots optional arguments to replace options in object
@@ -726,7 +730,7 @@ setMethod("npde.graphs","NpdeObject",
 #' This function is used to set options for graphs
 #' 
 #' @name set.plotoptions
-##' @aliases set.plotoptions set.plotoptions,NpdeData-method set.plotoptions,NpdeObject-method set.plotoptions.NpdeData
+#' @aliases set.plotoptions set.plotoptions,NpdeData-method set.plotoptions,NpdeObject-method set.plotoptions.NpdeData
 #' @usage set.plotoptions(object, ...)
 #' @param object an object of class NpdeData or NpdeObject
 #' @param \dots arguments to replace default arguments (currently ignored)
@@ -736,8 +740,8 @@ setMethod("npde.graphs","NpdeObject",
 #' @seealso \code{\link{npde}}, \code{\link{autonpde}}
 #' @keywords plot 
 
-##' @S3method set.plotoptions NpdeObject
-##' @export
+#' @method set.plotoptions NpdeObject
+#' @export
 
 set.plotoptions.NpdeObject<-function(object) {
 	# setting default plot options
@@ -835,7 +839,7 @@ set.plotoptions.NpdeObject<-function(object) {
 #' @param \dots additional graphical parameters, which when given will supersede graphical preferences stored in the object
 #' @details The default plot 
 #' @references K. Brendel, E. Comets, C. Laffont, C. Laveille, and F.Mentre. Metrics for external model evaluation with an application to the population pharmacokinetics of gliclazide. \emph{Pharmaceutical Research}, 23:2036--49, 2006.
-##' @seealso \code{\link{set.plotoptions}}
+#' @seealso \code{\link{set.plotoptions}}
 #' @keywords plot
 #' @examples
 #' 
@@ -845,8 +849,8 @@ set.plotoptions.NpdeObject<-function(object) {
 #' x<-autonpde(theopp,simtheopp,iid="ID",ix="Time", iy="Conc", boolsave=FALSE)
 #' plot(x)
 #' 
-##' @importFrom graphics plot
-##' @method plot NpdeObject
+#' @importFrom graphics plot
+#' @method plot NpdeObject
 #' @export
 
 #	setMethod(f="plot",signature="NpdeObject", def=function(x,y,...) {
