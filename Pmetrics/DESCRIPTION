@@ -16,7 +16,7 @@ Description: This package contains functions to run and
     semi-parametric Monte-Carlo simulations. It includes
     source code from the NPDE package by Emanuelle Comets, et al,
     which used to be on CRAN.
-Author@R: person("Michael", "Neely",
+Authors@R: person("Michael", "Neely",
     email="mneely@usc.edu", role="aut")
 Version: 1.9
 URL: http://www.lapk.org
