@@ -1,0 +1,464 @@
+* using log directory ‘/Users/Neely/LAPK/PmetricsGit/Pmetrics/..Rcheck’
+* using R version 3.6.2 (2019-12-12)
+* using platform: x86_64-apple-darwin15.6.0 (64-bit)
+* using session charset: UTF-8
+* using option ‘--as-cran’
+* checking for file ‘./DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘Pmetrics’ version ‘1.9’
+* checking CRAN incoming feasibility ... NOTE
+Maintainer: ‘Michael Neely <mneely@usc.edu>’
+
+New submission
+
+Unknown, possibly mis-spelled, fields in DESCRIPTION:
+  ‘Author@R’
+
+The Title field starts with the package name.
+The Title field should be in title case. Current version is:
+‘Pmetrics is a parametric and non-parametric pharmacometric modeling and simulation software package’
+In title case that is:
+‘Pmetrics is a Parametric and Non-Parametric Pharmacometric Modeling and Simulation Software Package’
+
+The Description field should not start with the package name,
+  'This package' or similar.
+
+The build time stamp is missing.
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... WARNING
+Subdirectory ‘Pmetrics/src’ contains apparent object files/libraries
+  Pmetrics.dll Pmetrics.so Pmetrics_old.so knn.o
+Object files/libraries should not be included in a source package.
+
+In addition to the above warning(s), found the following notes:
+
+Found the following apparent object files/libraries:
+  inst/compiledFortran/pNPeng.o inst/compiledFortran/sDOeng.o
+  inst/compiledFortran/sITeng.o inst/compiledFortran/sITerr.o
+  inst/compiledFortran/sITprep.o inst/compiledFortran/sNPeng.o
+  inst/compiledFortran/sNPprep.o inst/compiledFortran/sSIMeng.o
+Object files/libraries should not be included in a source package.
+* checking if there is a namespace ... OK
+* checking for executable files ... WARNING
+Found the following executable file:
+  src/Pmetrics.dll
+Source packages should not contain undeclared executable files.
+See section ‘Package structure’ in the ‘Writing R Extensions’ manual.
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  .DS_Store
+  .gitignore
+  R/.DS_Store
+  R/.Rhistory
+  data/.DS_Store
+  data/.Rhistory
+  inst/.DS_Store
+  inst/.Rapp.history
+  inst/.Rhistory
+  inst/PMcode/.DS_Store
+  inst/PMcode/plot/.DS_Store
+  inst/PMcode/plot/.Rhistory
+  inst/PMcode/run/.DS_Store
+  inst/PMcode/run/.Rhistory
+  inst/code/.DS_Store
+  inst/code/.Rhistory
+  inst/compiledFortran/.DS_Store
+  inst/config/.DS_Store
+  inst/report/.DS_Store
+  src/.DS_Store
+  tests/.DS_Store
+  ..Rcheck
+These were most likely included in error. See section ‘Package
+structure’ in the ‘Writing R Extensions’ manual.
+
+CRAN-pack does not know about
+  .DS_Store
+  R/.DS_Store
+  data/.DS_Store
+  inst/.DS_Store
+  inst/PMcode/.DS_Store
+  inst/PMcode/plot/.DS_Store
+  inst/PMcode/run/.DS_Store
+  inst/code/.DS_Store
+  inst/compiledFortran/.DS_Store
+  inst/config/.DS_Store
+  inst/report/.DS_Store
+  src/.DS_Store
+  tests/.DS_Store
+  ..Rcheck
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘Pmetrics’ can be installed ... WARNING
+Found the following significant warnings:
+  Note: break used in wrong context: no loop is visible 
+See ‘/Users/Neely/LAPK/PmetricsGit/Pmetrics/..Rcheck/00install.out’ for details.
+Information on the location(s) of code generating the ‘Note’s can be
+obtained by re-running with environment variable R_KEEP_PKG_SOURCE set
+to ‘yes’.
+* checking installed package size ... NOTE
+  installed size is 10.8Mb
+  sub-directories of 1Mb or more:
+    R                 2.1Mb
+    code              1.8Mb
+    compiledFortran   3.2Mb
+    data              2.8Mb
+* checking package directory ... OK
+* checking for future file timestamps ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Checking should be performed on sources prepared by ‘R CMD build’.
+* checking top-level files ... NOTE
+Non-standard files/directories found at top level:
+  ‘PMoptions.json’ ‘doc’
+* checking for left-over files ... OK
+* checking index information ... WARNING
+Demos with missing or empty index information:
+  npag
+See sections ‘The INDEX file’ and ‘Package subdirectories’ in the
+‘Writing R Extensions’ manual.
+* checking package subdirectories ... WARNING
+Found the following directory with the name of a check directory:
+  ./..Rcheck
+Most likely, these were included erroneously.
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... WARNING
+Error: .onLoad failed in loadNamespace() for 'Pmetrics', details:
+  call: installed.packages()
+  error: could not find function "installed.packages"
+Execution halted
+
+A namespace must be able to be loaded with just the base namespace
+loaded: otherwise if the namespace gets loaded by a saved object, the
+session will be unable to start.
+
+Probably some imports need to be declared in the NAMESPACE file.
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking use of S3 registration ... OK
+* checking dependencies in R code ... WARNING
+'library' or 'require' calls not declared from:
+  ‘doParallel’ ‘foreach’ ‘httr’ ‘thisPkg’ ‘xtable’
+'library' or 'require' calls in package code:
+  ‘askpass’ ‘base64enc’ ‘doParallel’ ‘foreach’ ‘httr’ ‘openxlsx’
+  ‘purrr’ ‘reshape2’ ‘rjson’ ‘shiny’ ‘thisPkg’ ‘xtable’
+  Please use :: or requireNamespace() instead.
+  See section 'Suggested packages' in the 'Writing R Extensions' manual.
+* checking S3 generic/method consistency ... WARNING
+print:
+  function(x, ...)
+print.MMopt:
+  function(x)
+
+print:
+  function(x, ...)
+print.gof.test:
+  function(object, which, ...)
+
+print:
+  function(x, ...)
+print.summary.PMmatrix:
+  function(x)
+
+print:
+  function(x, ...)
+print.MMopt:
+  function(x)
+
+print:
+  function(x, ...)
+print.summary.PMmatrix:
+  function(x)
+
+summary:
+  function(object, ...)
+summary.PMcov:
+  function(x, icen)
+
+summary:
+  function(object, ...)
+summary.PMdopt:
+  function(x)
+
+summary:
+  function(object, ...)
+summary.PMfinal:
+  function(x, lower, upper)
+
+summary:
+  function(object, ...)
+summary.PMmatrix:
+  function(x, formula, FUN, ..., include, exclude)
+
+summary:
+  function(object, ...)
+summary.PMop:
+  function(x, digits, pred.type, icen, outeq, ...)
+
+summary:
+  function(object, ...)
+summary.PMpta:
+  function(x, ci, ...)
+
+summary:
+  function(object, ...)
+summary.PMcov:
+  function(x, icen)
+
+summary:
+  function(object, ...)
+summary.PMdopt:
+  function(x)
+
+summary:
+  function(object, ...)
+summary.PMfinal:
+  function(x, lower, upper)
+
+summary:
+  function(object, ...)
+summary.PMmatrix:
+  function(x, formula, FUN, ..., include, exclude)
+
+summary:
+  function(object, ...)
+summary.PMop:
+  function(x, digits, pred.type, icen, outeq, ...)
+
+summary:
+  function(object, ...)
+summary.PMpta:
+  function(x, ci, ...)
+
+plot:
+  function(x, ...)
+plot.PMvalid:
+  function(x, type, tad, icen, lower, upper, log, pch.obs, col.obs,
+           cex.obs, theme, col.obs.ci, col.obs.med, col.sim.ci,
+           col.sim.med, xlab, ylab)
+
+plot:
+  function(x, ...)
+plot.PMvalid:
+  function(x, type, tad, icen, lower, upper, log, pch.obs, col.obs,
+           cex.obs, theme, col.obs.ci, col.obs.med, col.sim.ci,
+           col.sim.med, xlab, ylab)
+
+See section ‘Generic functions and methods’ in the ‘Writing R
+Extensions’ manual.
+
+Found the following apparent S3 methods exported but not registered:
+  print.gof.test
+See section ‘Registering S3 methods’ in the ‘Writing R Extensions’
+manual.
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+File ‘Pmetrics/R/PMstart.R’:
+  .onLoad calls:
+    packageStartupMessage(paste("\nPmetrics version ", currentVersion,     " is available from www.lapk.org/software.  You have version ",     installedVersion, ".\n", sep = ""))
+
+See section ‘Good practice’ in '?.onAttach'.
+
+Error: .onLoad failed in loadNamespace() for 'Pmetrics', details:
+  call: installed.packages()
+  error: could not find function "installed.packages"
+Execution halted
+
+Found the following assignments to the global environment:
+File ‘Pmetrics/R/PMload.R’:
+  assign(newNames[i], IT2Bout[[i]], pos = parent.frame(), envir = .GlobalEnv)
+  assign(newNames[i], NPAGout[[i]], pos = parent.frame(), envir = .GlobalEnv)
+File ‘Pmetrics/R/makeValid.R’:
+  assign("thisobs", obs, pos = 1)
+  assign("thissim", simobs, pos = 1)
+
+Found the following calls to data() loading into the global environment:
+File ‘Pmetrics/R/PMtest.R’:
+  data(PMex1)
+File ‘Pmetrics/R/qgrowth.R’:
+  data(growth)
+See section ‘Good practice’ in ‘?data’.
+* checking Rd files ... WARNING
+checkRd: (7) makePTA.Rd:29: Tag \dQuote is invalid in a \code block
+prepare_Rd: makeValid.Rd:57-59: Dropping empty section \references
+checkRd: (7) makeValid.Rd:25: Tag \dQuote is invalid in a \code block
+checkRd: (7) makeValid.Rd:26: Tag \dQuote is invalid in a \code block
+* checking Rd metadata ... WARNING
+Rd files with duplicated alias '[,NpdeData-method':
+  ‘NpdeData-class.Rd’ ‘sub-NpdeData-method.Rd’
+Rd files with duplicated alias '[,NpdeObject-method':
+  ‘NpdeObject-class.Rd’ ‘sub-NpdeObject-method.Rd’
+Rd files with duplicated alias '[,NpdeRes-method':
+  ‘NpdeRes-class.Rd’ ‘sub-NpdeRes-method.Rd’
+Rd files with duplicated alias 'print.gof.test':
+  ‘gof.test.Rd’ ‘print.gof.test.Rd’
+* checking Rd line widths ... NOTE
+Rd file 'SIMrun.Rd':
+  \examples lines wider than 100 characters:
+     setwd(paste(normalizePath(get("PmetricsPath",envir=PMenv),winslash="/"),"/Pmetrics/example/Sim",sep=""))
+     SIMrun(poppar,"temp1.csv",nsim=15,model="model1.for",obsNoise=c(0.02,0.1,0,0),makecsv="PMex1.csv",outname="example",clean=T)
+
+Rd file 'dist.pred.sim.Rd':
+  \examples lines wider than 100 characters:
+     # defaults to computing the pd and npde for 100 simulated datasets (in the theophylline example, this uses all the simulated datasets)
+
+Rd file 'npde.plot.select.Rd':
+  \usage lines wider than 90 characters:
+     npde.plot.select(npdeObject,data=FALSE,ecdf=FALSE,qqplot=FALSE, histogram=FALSE,x.scatter=FALSE,pred.scatter=FALSE,x.box=FALSE,pred.box ... [TRUNCATED]
+
+Rd file 'npdeControl.Rd':
+  \usage lines wider than 90 characters:
+     npdeControl(boolsave = TRUE, namsav = "output", type.graph = "eps", verbose = FALSE, calc.npde = TRUE, calc.pd = TRUE, decorr.method =  ... [TRUNCATED]
+
+Rd file 'npdeData.Rd':
+  \usage lines wider than 90 characters:
+     npdeData(name.data,header=TRUE,sep="",na.strings=c(".","NA"),name.group, name.predictor,name.response, name.covariates,name.cens,name.m ... [TRUNCATED]
+
+These lines will be truncated in the PDF manual.
+* checking Rd cross-references ... WARNING
+Missing link or links in documentation object 'ITrun.Rd':
+  ‘PMbatch’
+
+Missing link or links in documentation object 'NPrun.Rd':
+  ‘PMbatch’
+
+Missing link or links in documentation object 'PMload.Rd':
+  ‘makeNPDE’
+
+Missing link or links in documentation object 'makePTAtarget.Rd':
+  ‘http://mic.eucast.org/Eucast2/regShow.jsp?Id=1214’ ‘makePTA command’
+
+Missing link or links in documentation object 'npde.Rd':
+  ‘npde.cens.method’ ‘npde.decorr.method’ ‘npde.graphs’
+
+Missing link or links in documentation object 'npdeControl.Rd':
+  ‘npde.decorr.method’ ‘npde.cens.method’
+
+Missing link or links in documentation object 'pdemenu.Rd':
+  ‘npde.graphs’
+
+Missing link or links in documentation object 'plot.PMsim.Rd':
+  ‘makeNPDE’
+
+See section 'Cross-references' in the 'Writing R Extensions' manual.
+
+* checking for missing documentation entries ... WARNING
+Undocumented code objects:
+  ‘FileNameOK’ ‘GenAlData’ ‘ITdata.2’ ‘ITload’ ‘ITreport’ ‘NPdata.1’
+  ‘NPload’ ‘NPreport’ ‘PMbatch’ ‘PMfixMatrix’ ‘PMlogin’ ‘PMlogout’
+  ‘PMreadDefaults’ ‘PMregister’ ‘PMtest’ ‘PMwriteDefaults’ ‘TEX’
+  ‘TEXend’ ‘TEXstart’ ‘aux.plot.dist’ ‘aux.plot.hist’ ‘badData’
+  ‘calcTAD’ ‘calcnpde’ ‘cbar_make1’ ‘checkID’ ‘checkRequiredPackages’
+  ‘chunks’ ‘colsort’ ‘compareTwoModelERRs’ ‘compute.vpc.pi’
+  ‘computenpde.loq’ ‘computenpde.omit’ ‘computepd.cdf’ ‘computepd.omit’
+  ‘computepd.replace’ ‘cov.1’ ‘cov.2’ ‘cycle.1’ ‘cycle.2’ ‘decorr.chol’
+  ‘decorr.inverse’ ‘decorr.polar’ ‘endNicely’ ‘final.1’ ‘final.2’ ‘fun’
+  ‘getBits’ ‘getCov’ ‘getFinal’ ‘getFixedColNames’ ‘getFixedColNum’
+  ‘getNPinstr’ ‘getNext’ ‘getOS’ ‘getOSname’ ‘getPMpath’
+  ‘gfortranCheck’ ‘kall_ijn’ ‘kmat_ijn’ ‘knn’ ‘linesort’ ‘logAxis’
+  ‘makeDen’ ‘makeHTMLdf’ ‘makeModel’ ‘makeNPDE’ ‘makePMmatrixBlock’
+  ‘makeRdata’ ‘mdata.1’ ‘mdata.2’ ‘mtsknn’ ‘npde.binning’ ‘npde.graphs’
+  ‘npde.main’ ‘npde.save’ ‘npdeSimData’ ‘obsStatus’ ‘op.1’ ‘op.2’
+  ‘parseBlocks’ ‘perrorc1’ ‘pop.1’ ‘post.1’ ‘print.NpdeData’
+  ‘print.NpdeObject’ ‘print.NpdeSimData’ ‘read.npdeData’
+  ‘read.npdeSimData’ ‘rmnorm’ ‘simtheopp’ ‘simvirload’ ‘strparse’
+  ‘subset.NpdeData’ ‘subset.NpdeObject’ ‘summary.NpdeData’ ‘theopp’
+  ‘var.wt’ ‘virload’ ‘virload20’ ‘virload50’ ‘weighted.t.test’
+  ‘wmmopt1’ ‘writeHTML’
+Undocumented data sets:
+  ‘NPdata.1’ ‘cov.1’ ‘cycle.1’ ‘final.1’ ‘mdata.1’ ‘op.1’ ‘pop.1’
+  ‘post.1’ ‘ITdata.2’ ‘cov.2’ ‘cycle.2’ ‘final.2’ ‘mdata.2’ ‘op.2’
+  ‘badData’ ‘simtheopp’ ‘simvirload’ ‘theopp’ ‘virload’ ‘virload20’
+  ‘virload50’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'PMcompare'
+  ‘outeq’
+
+Undocumented arguments in documentation object 'makePTA'
+  ‘icen’ ‘block’
+
+Undocumented arguments in documentation object 'makeValid'
+  ‘tadC’
+
+Objects in \usage without \alias in documentation object 'npde.graphs,NpdeObject-method':
+  ‘npde.graphs’
+
+Objects in \usage without \alias in documentation object 'npde.save,NpdeObject-method':
+  ‘npde.save’
+
+Undocumented arguments in documentation object 'plot.PMfinal'
+  ‘layout’ ‘add’
+
+Undocumented arguments in documentation object 'plot.PMmatrix'
+  ‘overlay’
+
+Undocumented arguments in documentation object 'print.gof.test'
+  ‘object’ ‘which’ ‘...’
+
+Undocumented arguments in documentation object 'setPMoptions'
+  ‘server_address’
+
+Undocumented arguments in documentation object '[,NpdeData-method'
+  ‘x’ ‘i’ ‘j’ ‘drop’
+
+Undocumented arguments in documentation object '[,NpdeObject-method'
+  ‘x’ ‘i’ ‘j’ ‘drop’
+
+Undocumented arguments in documentation object '[,NpdeRes-method'
+  ‘x’ ‘i’ ‘j’ ‘drop’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+S3 methods shown with full name in documentation object 'print.gof.test':
+  ‘print.gof.test’
+
+The \usage entries for S3 methods should use the \method markup and not
+their full name.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... WARNING
+  
+  Note: significantly better compression could be obtained
+        by using R CMD build --resave-data
+            old_size new_size compress
+  PMex1.rda    456Kb    202Kb       xz
+  PMex2.rda     38Kb     32Kb       xz
+* checking line endings in C/C++/Fortran sources/headers ... OK
+* checking pragmas in C/C++ headers and code ... OK
+* checking compilation flags used ... OK
+* checking compiled code ... NOTE
+File ‘Pmetrics/libs/Pmetrics.so’:
+  Found no calls to: ‘R_registerRoutines’, ‘R_useDynamicSymbols’
+File ‘Pmetrics/libs/Pmetrics_old.so’:
+  Found no calls to: ‘R_registerRoutines’, ‘R_useDynamicSymbols’
+
+It is good practice to register native routines and to disable symbol
+search.
+
+See ‘Writing portable packages’ in the ‘Writing R Extensions’ manual.
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... OK
+  Running ‘testthat.R’
+* checking PDF version of manual ... WARNING
+LaTeX errors when creating PDF version.
+This typically indicates Rd problems.
+* checking PDF version of manual without hyperrefs or index ... ERROR
+Re-running with no redirection of stdout/stderr.
+* checking for detritus in the temp directory ... OK
+* DONE
+Status: 1 ERROR, 15 WARNINGs, 8 NOTEs
