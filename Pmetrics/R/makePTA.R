@@ -13,7 +13,7 @@
 #' observations does not have to be the same in all objects.  It can also be a \emph{PMpta} object previously made with
 #' \code{makePTA} can be passed for recalculation with a new success value or simlabels.  Finally, \emph{PMpost} and \emph{PMmatrix} objects are 
 #' also allowed.
-#' @param simlabels Optional character vector of labels for each simulation.  Default is \code{c(\dQuote{Regimen 1}, \dQuote{Regimen 2},...)}.
+#' @param simlabels Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.
 #' @param targets A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. c(0.25, 0.5,1,2,4,8,16,32).
 #' This can also be a sampled distribution using  \code{\link{makePTAtarget}}.
 #' @param target.type A numeric or character vector, length 1.  If numeric, must correspond to an observation time common to all PMsim objects in
