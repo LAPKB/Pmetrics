@@ -430,7 +430,7 @@ computenpde.omit<-function(npdeObject) {
 		cat("whether the simulations are reasonable, and to consider prediction\n")
 		cat("discrepancies (obtained without the decorrelation step).\n")
 		cat("Prediction discrepancies will now be computed.\n")
-		break
+		# break
 	}
 	
 	# saving pde
@@ -528,7 +528,7 @@ computenpde.loq<-function(npdeObject) {
 		cat("whether the simulations are reasonable, and to consider prediction\n")
 		cat("discrepancies.\n")
 		cat("Prediction discrepancies will now be computed.\n")
-		break
+		# break
 	}
 	
 	# saving pde

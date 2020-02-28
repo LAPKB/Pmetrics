@@ -17,7 +17,7 @@
 getPMoptions <- function(opt) {
   require(rjson)
   #options file name
-  PMoptionsFile <- paste(path.package("Pmetrics"), "/PMoptions.json", sep = "")
+  PMoptionsFile <- paste(path.package("Pmetrics"), "/options/PMoptions.json", sep = "")
   #if it doesn't exist, create it with defaults
   if (!file.exists(PMoptionsFile)) {
     PMopts <- list(sep = ",",
