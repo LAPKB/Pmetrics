@@ -298,7 +298,8 @@ setReplaceMethod(
 # print/show/showall
 # alias in class documentation
 
-##' @S3method print NpdeData
+#' @method print NpdeData
+#' @export
 print.NpdeData <- function(x,nlines=10,...) {
     digits<-2;nsmall<-2
     cat("Object of class NpdeData\n")
@@ -332,7 +333,8 @@ print.NpdeData <- function(x,nlines=10,...) {
   } else cat("Empty object\n")
 }
 
-##' @S3method print NpdeSimData
+#' @method print NpdeSimData
+#' @export
 
 print.NpdeSimData<-function(x,nlines=10,...) {
     cat("Object of class NpdeSimData\n")
@@ -395,8 +397,8 @@ setMethod("show","NpdeSimData",
 #' @aliases showall showall.NpdeData showall,NpdeData-method showall.NpdeSimData showall,NpdeSimData-method  showall.NpdeRes  showall.NpdeObject
 #' @param object an object
 #' @keywords print
-##' @S3method showall NpdeData
-##' @export
+#' @method showall NpdeData
+#' @export
 # Could be print, with only head of data
 
 #setMethod("show","NpdeSimData",
@@ -443,7 +445,8 @@ showall.NpdeData <- function(object) {
     }
 #)
 
-##' @S3method showall NpdeSimData
+#' @method showall NpdeSimData
+#' @export
 
 #setMethod("showall","NpdeSimData",
 showall.NpdeSimData<-
@@ -454,7 +457,8 @@ showall.NpdeSimData<-
 					}
 #)
 
-##' @S3method summary NpdeData
+#' @method summary NpdeData
+#' @export
 
 summary.NpdeData <- function(object, print=TRUE, ...) {
 	  if(length(object@data)==0) {
@@ -466,7 +470,8 @@ summary.NpdeData <- function(object, print=TRUE, ...) {
 	  invisible(res)
 }
 
-##' @S3method subset NpdeData
+#' @method subset NpdeData
+#' @export
 
 subset.NpdeData<-function (x, subset, ...) {
     if (missing(subset)) 
@@ -497,7 +502,8 @@ subset.NpdeData<-function (x, subset, ...) {
 
 ##################################################################################
 
-##' @S3method set.plotoptions NpdeData
+#' @method set.plotoptions NpdeData
+#' @export
 
 set.plotoptions.NpdeData<-function(object, ...) {
 # setting default plot options
