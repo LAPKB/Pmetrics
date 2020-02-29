@@ -16,3 +16,4 @@ Pmetrics/src/knn.o
 PmetricsGit.Rproj
 Pmetrics/inst/compiledFortran/
 ..Rcheck/
+.DS_Store
