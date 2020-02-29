@@ -21,13 +21,9 @@
 #' \item{op }{List of observed vs. population and posterior predicted plots for each output equation}
 #' \item{cov }{Data frame of subject ID, covariate values, and Bayesian posterior parameter estimates}
 #' \item{mdata }{The original .csv data file used in the run}
-#' \item{npde }{If \code{\link{makeNPDE}} has been run after a run, this object will be added to 
-#' the save data.  It contains the information required to plot and analzye normalized prediction
-#' error discrepancies via the npde package of Comets et al}
-#' \item{sim }{If \code{\link{makeNPDE}} has been run after a run, this list object will be added to 
-#' the save data.  It contains the results of each subject in the dataset simulated n times (default 1000)
-#' using the final model population parameters.  To plot the results of subject 3 from run 2, for example, use the form
-#' \code{plot(sim.2[[3]])}}.
+#' \item{valid }{If \code{\link{makeValid}} has been executed after a run, this object will be added to 
+#' the save data.  It contains the information required to plot visual predictive checks and normalized prediction
+#' error discrepancies via the npde code developed by Comets et al}
 #' @author Michael Neely
 #' @seealso \code{\link{PMreport}}, \code{\link{NPparse}}, \code{\link{ITparse}}, 
 #' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}}, 

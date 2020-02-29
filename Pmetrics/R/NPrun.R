@@ -54,7 +54,6 @@
 #' @param silent Boolean operator controlling whether a model summary report is given.  Default is \code{TRUE}.
 #' @param overwrite Overwrite existing run result folders.  Default is \code{FALSE}.
 #' @param nocheck Suppress the automatic checking of the data file with \code{\link{PMcheck}}.  Default is \code{FALSE}.
-#' @param batch Set to true when \code{\link{PMbatch}} is used.
 #' @param parallel Run NPAG in parallel.  Default is \code{NA}, which will be set to \code{TRUE} for models that use
 #' differential equations, and \code{FALSE} for algebraic/explicit models.  The majority of the benefit for parallelization comes
 #' in the first cycle, with a speed-up of approximately 80\% of the number of available cores on your machine, e.g. an 8-core machine
@@ -93,7 +92,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
                   include, exclude, ode = -4, tol = 0.01, salt, cycles = 100,
                   indpts, icen = "median", aucint,
                   idelta = 12, prior,
-                  auto = T, intern = F, silent = F, overwrite = F, nocheck = F, parallel = NA, batch = F,
+                  auto = T, intern = F, silent = F, overwrite = F, nocheck = F, parallel = NA, 
                   alq = F, remote = F, server_address) {
 
   if (missing(run)) run <- NULL
@@ -104,6 +103,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
   if (missing(aucint)) aucint <- NULL
   if (missing(prior)) prior <- NULL
   if (missing(server_address)) server_address <- getPMoptions("server_address")
+  batch <- F
   if (remote == T) {
     return(.PMremote_run(model = model, data = data, server_address = server_address, run))
   } else {
