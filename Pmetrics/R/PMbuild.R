@@ -101,7 +101,7 @@ PMbuild <- function() {
   OS <- getOS()
   env = Sys.getenv("env")
   if (env != "Development") {
-    if (!.is_fortran_installed()) {
+    if (!binaries.installed()) {
       cat("Pmetrics cannot find required compiled binary files.\n")
       if (system(sch_str[OS]) != 0) {
         cat("Pmetrics cannot detect gfortran and will attempt to download and install all components.\n")
@@ -128,19 +128,4 @@ PMbuild <- function() {
   else {
     print("You are inside the development folder, skipping gfortran installation")
   }
-}
-
-.is_fortran_installed <- function() {
-  checkRequiredPackages("purrr")
-
-  #library(purrr)
-  exists <- function(name) {
-    paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/") %>%
-    paste(name, sep = "/") %>%
-    file.exists()
-  }
-  c("DOprep.exe", "mb2csv.exe", "pNPeng.o",
-    "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
-    "sNPeng.o", "sNPprep.o", "sSIMeng.o") %>%
-  map(exists) %>% unlist() %>% all() %>% return()
 }
