@@ -131,7 +131,7 @@ PMbuild <- function() {
 }
 
 .is_fortran_installed <- function() {
-  #checkRequiredPackages("purrr")
+  checkRequiredPackages("purrr")
 
   #library(purrr)
   exists <- function(name) {
