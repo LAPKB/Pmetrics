@@ -2136,7 +2136,7 @@ binaries.installed <- function() {
   # map(exists) %>% unlist() %>% all() %>% return()
 
   exists <- function(name) {
-    file.exists(paste(paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/"), name, sep = "/"))
+    file.exists(paste(system.file("", package = "Pmetrics"), "compiledFortran/", name, sep = ""))
   }
   installed = T
   for (binary in c("DOprep.exe", "mb2csv.exe", "pNPeng.o",
