@@ -1,11 +1,11 @@
 Package: Pmetrics
 Maintainer: Michael Neely <mneely@usc.edu>
 License: GPL (>= 2)
-Title: Pmetrics 
+Title: Pmetrics for Population Modeling and Simulation
 Type: Package
 LazyLoad: yes
 LazyData: yes
-Author: Michael Neely <contact@lapk.org>
+Author: Michael Neely <mneely@usc.edu>
 Description: Parametric and non-parametric
     pharmacometric modeling and simulation software package.
     This package contains functions to run and
