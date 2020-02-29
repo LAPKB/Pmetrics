@@ -50,7 +50,8 @@
 #' each of which is a vector specifying the native coordinates to plot grid lines; the default is \code{False}.
 #' For example, grid=list(x=seq(0,24,2),y=1:10).  Defaults for missing x or y will be calculated by \code{\link{axTicks}}.
 #' @param ident Boolean operator to plot points as ID numbers in overlay plots; the default is \code{False}.  Ignored if \code{overlay} is false.
-#' This option is useful to identify outliers.#' @param overlay Boolean operator to overlay all time concentration profiles in a single plot.
+#' This option is useful to identify outliers.
+#' @param overlay Boolean operator to overlay all time concentration profiles in a single plot.
 #' The default is \code{True}.
 #' @param main An optional parameter to specify the title for plot(s).  If \code{overlay} is \code{False},
 #' the default will be the subject identification. If \code{overlay} is \code{True}, the default is blank.
