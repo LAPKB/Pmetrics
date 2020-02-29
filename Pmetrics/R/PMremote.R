@@ -46,8 +46,8 @@ PMlogin <- function(email, server_address) {
 }
 
 PMlogout <- function() {
-  library(httr)
-  library(purrr)
+  checkRequiredPackages("httr")
+  checkRequiredPackages("purrr")
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   api_url <- paste(server_address, "/api", sep = "")
   r <- DELETE(
@@ -64,8 +64,8 @@ PMlogout <- function() {
 # r <- login_user("juliandavid347@gmail.com", "prueba1234")
 
 .PMremote_run <- function(model, data, server_address, run) {
-  library(httr)
-  library(purrr)
+  checkRequiredPackages("httr")
+  checkRequiredPackages("purrr")
   api_url <- paste(server_address, "/api", sep = "")
   model_txt <- readChar(model, file.info(model)$size)
   data_txt <- readChar(data, file.info(data)$size)
@@ -125,7 +125,7 @@ PMlogout <- function() {
 
 .PMremote_check <- function(rid, server_address) {
   if (missing(server_address)) server_address <- getPMoptions("server_address")
-  library(httr)
+  checkRequiredPackages("httr")
   api_url <- paste0(server_address, "/api")
   request_url <- paste0(api_url, "/analysis/", rid, "/status")
   r <- GET(request_url, add_headers(api_key = .getApiKey()))
