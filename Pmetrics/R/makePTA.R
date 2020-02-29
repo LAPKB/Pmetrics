@@ -33,6 +33,9 @@
 #' time for subjects in each element of \code{simdata}, e.g. dose regimen.  If specified as a vector, values will be recycled
 #' as necessary. Subjects with insufficient data (fewer than 5 simulated observations) for a specified interval will trigger a warning.
 #' Ideally then, the simulated datset should contain sufficient observations within the interval specified by \code{start} and \code{end}.
+#' @param icen Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
+#' distributions, or "mean".  Default is "median".
+#' @param block Which block to plot, where a new block is defined by dose resets (evid=4); default is 1.
 #' @return The output of \code{makePTA} is a list of class \emph{PMpta},
 #' which has 2 objects:
 #' \item{results }{A data frame with the following columns: simnum, id, target, pdi.  

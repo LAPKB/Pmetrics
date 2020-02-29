@@ -12,7 +12,7 @@
 #' and numerical predictive checking will be suppressed
 #' @param binSize Width of binning interval for simulated concentrations, in time units, e.g. hours.  For example,
 #' a \code{binSize} of 0.5 will pull all simulated concentrations +/- 0.5 hours into the same time.  This is useful
-#' for plotting PMsim objects made during \code{\link{makeNPDE}}. The default is 0, i.e. no binning.
+#' for plotting PMsim objects made during \code{\link{makeValid}}. The default is 0, i.e. no binning.
 #' @param outeq Which output equation to plot if more than 1
 #' @param pch Controls the plotting symbol for observations; default is NA which results in no symbol.
 #' Use 0 for open square, 1 for open circle, 2 for open triangle, 3 for cross, 4 for X, or 5 for a diamond.

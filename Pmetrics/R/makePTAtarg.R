@@ -1,7 +1,7 @@
 #' Make a Percent Target Attainment (PTA) Target
 #'
 #' \code{makePTAtarget} generates an object of class \emph{PMpta.targ} which can
-#' be used in the \code{\link{makePTA command}} for targets sampled from a distribution.
+#' be used in the \code{\link{makePTA}} command for targets sampled from a distribution.
 #'
 #' @title Make PTA target object
 #' @param x A data.frame or name of .csv file in working directory whose first two
