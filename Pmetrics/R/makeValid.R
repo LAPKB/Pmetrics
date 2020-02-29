@@ -23,13 +23,14 @@
 #' this function.  Including this value will skip the clustering portion for doses/covariates.
 #' @param timeC An integer with the number of observation time bins to cluster, if known from a previous run of 
 #' this function.  Including this value will skip the clustering portion for observation times.
-#' #' @param tadC An integer with the number of time after dose bins to cluster, if known from a previous run of 
+#' @param tadC An integer with the number of time after dose bins to cluster, if known from a previous run of 
 #' this function.  Including this value will skip the clustering portion for time after dose. This argument
 #' will be ignored if \code{tad=FALSE}.
 #' @param \dots Other parameters to be passed to \code{\link{SIMrun}}, especially \code{limits}. 
 #' @return The output of \code{makeValid} is a list of class \code{PMvalid}, which is a list with the following.  
 #' \item{simdata}{The combined, simulated files for all subjects using the population mean values and each subject
-#' as a template. See \code{\link{SIMparse}}.}
+#' as a template. See \code{\link{SIMparse}}.} This object will be automatically saved to the run, to be loaded with
+#' \code{\link{PMload}} next time.
 #' \item{timeBinMedian}{A data frame with the median times for each cluster bin.}
 #' \item{tadBinMedian}{A data frame with the median time after dose (tad) for each cluster bin.  This will be \code{NA} if 
 #' \code{tad = FALSE}.}

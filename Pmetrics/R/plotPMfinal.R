@@ -54,6 +54,7 @@
 #' @param legend Boolean operator for default if \code{True} or list of parameters to be supplied to legend function to plot 
 #' quantile legend on bivariate IT2B plot.  Ignored for NPAG plot.
 #' @param grid Boolean operator to plot a grid on either a bivariate NPAG or IT2B plot.
+#' @param layout Specify the layout for the plot as \code{c(row,col)}.  Default is as many as needed for all parameters.
 #' @param xlab Define x-axis label for bivariate NPAG or IT2B plot.  Default is the name of the plotted x-variable.
 #' @param ylab Define y-axis label for bivariate NPAG or IT2B plot.  Default is the name of the plotted y-variable.
 #' @param xlim Limits for the x-axis in a bivariate NPAG or IT2B plot.  Default is the range of the x-variable.
@@ -66,6 +67,7 @@
 #' large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the 
 #' output will go to the current graphic device (usually the monitor). For example, to output an eps file,
 #' out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.
+#' @param add If \code{TRUE}, add plot to existing plot. Default is \code{FALSE}.
 #' @param \dots Other parameters as found in \code{\link{plot.default}}.
 #' @return Plots the object.
 #' @author Michael Neely
