@@ -15,7 +15,6 @@
 }
 
 .onAttach <- function(...) {
-  checkRequiredPackages("purrr")
   #version and OS-specific startup messages
   OS <- getOS()
   if (interactive()) {
@@ -42,25 +41,12 @@
     packageStartupMessage(msg)
   }
 
+  #check for binary fortran files
+  if(!binaries.installed()){
+    packageStartupMessage("\nCRITICAL: Execute PMbuild() in R to complete Pmetrics installation.\n")
+    
+  }
   #check for need to compile fortran objects
-  #new fortran 
-  newfort <- paste(system.file("config", package = "Pmetrics"), "newFort.txt", sep = "/")
-  needToBuild <- F
-  if (!file.exists(newfort)) {
-    needToBuild <- T
-  } else {
-    if (readLines(newfort) == "1") needToBuild <- T
-  }
-  #never compiled before
-  destdir <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
-  #TODO: change this
-  if (!file.exists(destdir)) {
-    needToBuild <- T
-  }
-
-  if (needToBuild) {
-    packageStartupMessage("\nCRITICAL: Pmetrics needs to compile fortran modules.  You must run PMbuild().\n")
-  }
 
   #set user options for the session
   setPMoptions()
