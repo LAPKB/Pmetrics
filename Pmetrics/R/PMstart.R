@@ -1,6 +1,5 @@
 
 .onLoad <- function(...) {
-  #checkRequiredPackages("purrr")
   if (interactive()) {
     currentVersion <- package_version(suppressWarnings(
       tryCatch(scan("http://www.lapk.org/software/Pmetrics/PmetricsVersion.txt", what = "character", quiet = T),
@@ -46,7 +45,6 @@
     packageStartupMessage("\nCRITICAL: Execute PMbuild() in R to complete Pmetrics installation.\n")
     
   }
-  #check for need to compile fortran objects
 
   #set user options for the session
   setPMoptions()
