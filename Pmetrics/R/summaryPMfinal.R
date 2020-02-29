@@ -73,7 +73,7 @@ summary.PMfinal <- function(x,lower=0.025,upper=0.975){
     
     mcsim <- function(x,prob){
       set.seed(17)
-      sim <- apply(matrix(sample(x,rep=T,10^3*length(x),prob=prob),nrow=10^3),1,medMAD)
+      sim <- apply(matrix(sample(x,replace=T,10^3*length(x),prob=prob),nrow=10^3),1,medMAD)
       ciMed <- quantile(sapply(sim,function(x) x[[1]]),c(lower,0.5,upper))
       ciMAD <- quantile(sapply(sim,function(x) x[[2]]),c(lower,0.5,upper))
       return(list(ciMed,ciMAD))

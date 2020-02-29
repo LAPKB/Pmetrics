@@ -36,7 +36,7 @@
     if (length(modelfile) > 0) {
       if (length(modelfile) > 1) {
         for (thisfile in modelfile) {
-          firstline <- scan(thisfile, nline = 1, what = "character", quiet = T)
+          firstline <- scan(thisfile, nlines = 1, what = "character", quiet = T)
           if (firstline[1] != "POPDATA") {
             modelfile <- thisfile
             break
