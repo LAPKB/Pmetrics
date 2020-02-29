@@ -18,7 +18,8 @@
 #' @param \dots Additional run numbers to compare.  See details.  Also, parameters to be passed to \code{\link{plot.PMop}} 
 #' if \code{plot} is true as well as to \code{\link{mtsknn.eq}}.  Order does not matter.
 #' @param icen Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
-#' distributions, or "mean".  Default is "median".#' @param outeq Number of the output equation to compare; default is 1
+#' distributions, or "mean".  Default is "median".
+#' @param outeq Number of the output equation to compare; default is 1
 #' @param plot Boolean operator selecting whether to generate observed vs. predicted plots for each data object
 #' as in \code{\link{plot.PMop}}
 #' @return A data frame with the following objects for each model to analyze:
