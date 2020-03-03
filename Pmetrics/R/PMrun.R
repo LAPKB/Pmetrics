@@ -526,11 +526,13 @@
     }
 
     # RUN  engine
+    
+    #timestamp
+    timeFile <- file("time.txt", open = "a")
+    writeLines(c("Unix", "Windows", "Linux")[OS], timeFile)
+    writeLines(as.character(proc.time()[3]), timeFile)
 
     if (OS == 1 | OS == 3) {
-      timeFile <- file("time.txt", open = "a")
-      writeLines(c("Unix", "", "Linux")[OS], timeFile)
-      writeLines(as.character(proc.time()[3]), timeFile)
       system("echo 1 > extnum")
       system("echo go > go")
       system(paste(enginecompile, drivFileName, sep = " "))
