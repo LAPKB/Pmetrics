@@ -24,8 +24,8 @@
 #' @references Schilling, M. F. (1986). Multivariate two-sample tests based on nearest neighbors. \emph{J. Amer. Statist. Assoc.}, 81 799-806.
 #' Henze, N. (1988). A multivariate two-sample test based on the number of nearest neighbor type coincidences.\emph{Ann. Statist.}, 16 772-783.
 #' Chen, L. and Dou W. (2009). Robust multivariate two-sample tests based on k nearest neighbors for unbalanced designs. \emph{manuscripts}.  
-#'  @export
-#'  @useDynLib Pmetrics knn
+#' @export
+#' @useDynLib Pmetrics knn
 
 mtsknn.eq <- function(x,y,k,clevel=0.05,getpval=TRUE, print=TRUE)
 {
