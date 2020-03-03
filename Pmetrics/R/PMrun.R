@@ -566,7 +566,7 @@
 
     if (auto) {
       file.copy(from = instr, to = "etc")
-      file.copy(from = "log.txt", to = "outputs")
+      if(OS!=2) {file.copy(from = "log.txt", to = "outputs")}
       file.copy(from = "PMcontrol", to = "etc")
       file.copy(from = data, to = "inputs")
       file.remove(instr)
