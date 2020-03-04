@@ -31,7 +31,7 @@
 
 PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCol="evid",format=c("m/d/y","h:m"),split=F){
   
-  checkRequiredPackages("chron")
+  # checkRequiredPackages("chron")
   dataCols <- names(data)
   #convert numeric if necessary
   if(is.numeric(idCol)) idCol <- dataCols[idCol]
@@ -45,7 +45,7 @@ PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCo
   temp$time <- as.character(temp$time)
   temp$time <- unlist(lapply(temp$time,function(x) ifelse(length(gregexpr(":",x)[[1]])==1,paste(x,":00",sep=""),x)))
   if(format[2]=="h:m") format[2] <- "h:m:s"
-  temp$dt <- chron(dates.=temp$date,times.=temp$time,format=format)
+  temp$dt <- chron::chron(dates.=temp$date,times.=temp$time,format=format)
   
   if(split){
     #calculate PK event numbers for each patient

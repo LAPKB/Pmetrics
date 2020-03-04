@@ -630,8 +630,8 @@ SIMrun <- function(poppar, limits = NULL, model = "model.txt", data = "data.csv"
       ans <- readline("\nChoose one of the following:\n1) end simulation\n2) fix covariance\n3) set covariances to 0\n ")
       if (ans == 1) stop()
       if (ans == 2) {
-        checkRequiredPackages("matrix")
-        pop.cov <- as.matrix(nearPD(as.matrix(pop.cov), keepDiag = T)$mat)
+        #checkRequiredPackages("matrix")
+        pop.cov <- as.matrix(Matrix::nearPD(as.matrix(pop.cov), keepDiag = T)$mat)
       }
       if (ans == 3) {
         pop.cov2 <- diag(0, nrow(pop.cov))

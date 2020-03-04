@@ -35,8 +35,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   #1 for NPAG, 2 for IT2B, 1 for anything else
   reportType <- switch(type, NPAG = 1, IT2B = 2, 1)
 
-  checkRequiredPackages("xtable")
-  xtable.installed <- require(xtable)
+  #checkRequiredPackages("xtable")
 
   setwd(wd)
   if (missing(rdata)) rdata <- makeRdata(wd, remote=F, reportType)
@@ -389,7 +388,8 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
           TEX(" $\\cdot$ \\hyperlink{tableofcontents}{Back to Contents} $\\cdot$ \\hyperlink{ppe}{Next Section} \\newline
           \\newline")
           s1 <- final$popPoints
-          if (xtable.installed) { tab1 <- xtable(s1) } else { tab1 <- "Package xtable not installed" }
+          tab1 <- xtable::xtable(s1)
+          # if (xtable.installed) { tab1 <- xtable(s1) } else { tab1 <- "Package xtable not installed" }
           print(tab1, file = CurrentTEXfile, append = T, floating = FALSE)
         }
 
@@ -401,7 +401,8 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
         TEX(" \\hyperlink{tableofcontents}{Back to Contents} $\\cdot$ \\hyperlink{covforppe}{Next Section} \\newline
           \\newline")
         s2 <- report.table
-        if (xtable.installed) { tab2 <- xtable(s2) } else { tab2 <- "Package xtable not installed." }
+        tab2 <- xtable::xtable(2)
+        # if (xtable.installed) { tab2 <- xtable(s2) } else { tab2 <- "Package xtable not installed." }
         print(tab2, file = CurrentTEXfile, append = T, floating = FALSE)
 
         TEX("\\newpage
@@ -412,7 +413,8 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
         TEX(" \\hyperlink{tableofcontents}{Back to Contents} $\\cdot$ \\hyperlink{corforppe}{Next Section} \\newline
           \\newline")
         s3 <- final$popCov
-        if (xtable.installed) { tab3 <- xtable(s3) } else { tab3 <- "Package xtable not installed." }
+        tab3 <- xtable::xtable(3)
+        # if (xtable.installed) { tab3 <- xtable(s3) } else { tab3 <- "Package xtable not installed." }
         print(tab3, file = CurrentTEXfile, append = T, floating = FALSE)
         #correlation matrix
         TEX("
@@ -422,6 +424,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
         TEX(" \\hyperlink{tableofcontents}{Back to Contents} $\\cdot$ \\hyperlink{opp}{Next Section} \\newline
           \\newline")
         s4 <- final$popCor
+        tab4 <- xtable::xtable(s4)
         if (xtable.installed) { tab4 <- xtable(s4) } else { tab4 <- "Package xtable not installed." }
         print(tab4, file = CurrentTEXfile, append = T, floating = FALSE)
       }

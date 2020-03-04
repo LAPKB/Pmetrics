@@ -51,7 +51,7 @@
 #' names(final)
 
 makeFinal <- function(data){
-  checkRequiredPackages("reshape2")
+  #checkRequiredPackages("reshape2")
   
   if(!inherits(data,"NPAG") & !inherits(data,"IT2B")) stop(paste("Use PMparse() to generate an Pmetrics NPAG or IT2B object.\n")) 
   if(inherits(data,"NPAG")){                                    
@@ -90,10 +90,19 @@ makeFinal <- function(data){
     if (all(!is.na(popCor))) dimnames(popCor) <- list(data$par,data$par)
     
     if(length(data$postden)>0){
-      temp1 <- melt(data$postden)
-      postPoints <- dcast(temp1,subj+nactvepost~density,value.var="value")
-      postPoints <- postPoints[!is.na(postPoints$prob),]
-      postPoints$prob <- postPoints$prob*wParVol
+      # temp1 <- melt(data$postden)
+      # postPoints <- dcast(temp1,subj+nactvepost~density,value.var="value")
+      
+      postPoints <- data$postden %>%
+        dplyr::as.tbl_cube(met_name = "value") %>%
+        tibble::as_tibble() %>%
+        tidyr::pivot_wider(names_from = density) %>%
+        dplyr::arrange(subj,nactvepost) %>%
+        dplyr::filter(!is.na(prob)) %>%
+        dplyr::mutate(prob=prob*wParVol) 
+      
+      # postPoints <- postPoints[!is.na(postPoints$prob),]
+      # postPoints$prob <- postPoints$prob*wParVol
       names(postPoints)[1:2] <- c("id","point")
       postPoints$id <- data$sdata$id[postPoints$id]
     } else { postPoints <- NA}

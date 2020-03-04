@@ -1,7 +1,7 @@
 #Returns environment variables used throughout Pmetrics
 
 getPMpath <- function() {
-  checkRequiredPackages("purrr")
+  #checkRequiredPackages("purrr")
   #return Pmetrics installation folder 
   paste(.libPaths(), "Pmetrics", sep = "/") %>%
     keep(file.exists) %>%

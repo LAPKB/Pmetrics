@@ -2070,26 +2070,25 @@ getOSname <- function() {
 # check for installed packages --------------------------------------------
 
 checkRequiredPackages <- function(pkg) {
-  #pkg is a character vector
-  if (length(grep("purrr", utils::installed.packages()[, 1])) == 0) {
-    install.packages("purrr", repos = "http://cran.rstudio.com", dependencies = T)
-  }
-  purrr.installed <- require(purrr)
-  require(purrr)
-  managePkgs <- function(thisPkg) {
-    if (length(grep(thisPkg, installed.packages()[, 1])) == 0) {
-      install.packages(thisPkg, dependencies = T)
-    }
-    if (require(thisPkg, character.only = T, quietly = T)) {
-      return("ok")
-    } else { return(thisPkg) }
 
+  managePkgs <- function(thisPkg) {
+    # if (length(grep(thisPkg, installed.packages()[, 1])) == 0) {
+    #   install.packages(thisPkg, dependencies = T)
+    # }
+    if (requireNamespace(thisPkg, quietly = T)) {
+      return("ok") #package is installed
+    } else { #package is not installed
+      install.packages(thisPkg, dependencies = T, quiet = T) #try to install
+      if (requireNamespace(thisPkg, quietly = T)){ #check again
+        return("ok") #now it is installed and ok
+      } else {return(thisPkg) } #nope, still didn't install
+    }
   }
 
   pkg %>%
-    map_chr(managePkgs) %>%
-    keep(~. != "ok") %>%
-    map_chr(~if (length(.) > 0) {
+    purrr::map_chr(managePkgs) %>%
+    purrr::keep(~. != "ok") %>%
+    purrr::map_chr(~if (length(.) > 0) {
       stop(paste("The following required packages did not successfully install: ", ., sep = "", collapse = ", "))
     })
   return(invisible())
