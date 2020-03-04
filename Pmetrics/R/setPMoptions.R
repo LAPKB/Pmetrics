@@ -24,5 +24,5 @@ setPMoptions <- function(sep, dec, server_address) {
   options(PMopts)
   #store the options
   PMoptionsFile <- paste(system.file("options", package = "Pmetrics"),"PMoptions.json", sep = "/")
-  writeLines(jsonlite::toJSON(PMopts), PMoptionsFile)
+  jsonlite::write_json(PMopts, path = PMoptionsFile, auto_unbox=T)
 }
