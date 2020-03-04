@@ -11,6 +11,8 @@
 \item Windows users will now see terminal window open automatically
 \item Added remote server run capabilities, currently only on LAPKB server
 \item Restructured start up and installation to be self contained for all modules, including gfortran
+\item Cleaned printing of summary.PMfinal object
+\item Upated package NAMESPACE
 }
 }
 \subsection{BUG FIXES}{
