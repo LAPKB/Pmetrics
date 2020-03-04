@@ -77,7 +77,7 @@ makeNCA <- function(x,postPred=F,include,exclude,input=1,icen="median",outeq=1,b
                     start=0,end=Inf,first=NA,last=NA,terminal=3){
   
   
-  checkRequiredPackages("plyr")
+  #checkRequiredPackages("plyr")
   
   if(!missing(x)) { #x specified, so load corresponding object
     if(is.numeric(x)){ #run number
@@ -166,7 +166,7 @@ makeNCA <- function(x,postPred=F,include,exclude,input=1,icen="median",outeq=1,b
     }
     
     whichtime <<- 0
-    mdata2 <- ddply(mdata,.(id),timeFilter,startTimes,endTimes)
+    mdata2 <- plyr::ddply(mdata,.(id),timeFilter,startTimes,endTimes)
     return(list(mdata2,startTimes,endTimes))
   }
   

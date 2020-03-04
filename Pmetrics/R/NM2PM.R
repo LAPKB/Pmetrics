@@ -43,7 +43,7 @@
 
 NM2PM <- function(data,ctl){
   
-  checkRequiredPackages("chron")
+  #checkRequiredPackages("chron")
   msg <- "NONMEM file conversion report:\n"
   #check data file name
   while(!file.exists(data)) {
@@ -182,9 +182,9 @@ NM2PM <- function(data,ctl){
       } else { #there was a date format, so convert all h.h to hh:mm
         #dataDF[,TIMEcol] <- sapply(dataDF[,TIMEcol],decimal2Clock)  
         dataDF[,TIMEcol] <- as.numeric(dataDF[,TIMEcol])/24
-        dt <- chron(dataDF[,DATEcol],dataDF[,TIMEcol])
+        dt <- chron::chron(dataDF[,DATEcol],dataDF[,TIMEcol])
         dataDF[,TIMEcol] <- paste(sprintf("%02i",hours(dt)),":",sprintf("%02i",minutes(dt)),sep="")
-        dataDF[,DATEcol] <- dates(dt)
+        dataDF[,DATEcol] <- chron::dates(dt)
         clockTime <- T
       }
     }
