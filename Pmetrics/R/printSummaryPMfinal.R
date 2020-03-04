@@ -21,7 +21,7 @@ print.summary.PMfinal <- function(x, digits=max(3,getOption("digits")-3),...){
     cat(paste(colnames(x[,i]),": ",round(x[2,i],digits)," (",round(x[1,i],digits)," - ",round(x[3,i],digits),")\n",sep=""))
   }
   
-  cat(paste("\nMedian Absolute Weighed Differences (similar to variance) (", 100*(max(x$percentile)-min(x$percentile)),
+  cat(paste("\nMedian Absolute Weighed Differences (dispersion measure) (", 100*(max(x$percentile)-min(x$percentile)),
             "% credibility interval)\n",sep=""))
   
   for(i in 1:(ncol(x)-2)){

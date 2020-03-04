@@ -66,7 +66,7 @@ summary.PMfinal <- function(x,lower=0.025,upper=0.975){
     medMAD <- function(x){
       med <- median(x)
       MAD <- median(abs(x-med))
-      #MAD <- sqrt(median((x-med)^2))
+      #MAD <- sqrt(sum((x-med)^2)/length(x))
       return(list(med,MAD))
     }
     

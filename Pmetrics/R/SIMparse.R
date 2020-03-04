@@ -210,20 +210,20 @@ SIMparse <- function(file,include,exclude,combine=F,silent=F, parallel){
   } 
   
   if (parallel){
-    if (length(grep("doParallel", installed.packages()[, 1])) == 0) {
-      install.packages("doParallel", repos = "http://cran.rstudio.com", dependencies = T)
-    }
-    if (length(grep("foreach", installed.packages()[, 1])) == 0) {
-      install.packages("foreach", repos = "http://cran.rstudio.com", dependencies = T)
-    }
-    doParallel.installed <- require(doParallel, warn.conflicts = F, quietly = T)
-    foreach.installed <- require(foreach, warn.conflicts = F, quietly = T)
-    if (!doParallel.installed | !foreach.installed) {
-      warning("Required package failed to be installed. SIMparse will run in serial mode.\n", call. = F, immediate. = !silent)
-      parallel <- F
-    } else {
-      no_cores <- detectCores()
-    }
+    # if (length(grep("doParallel", installed.packages()[, 1])) == 0) {
+    #   install.packages("doParallel", repos = "http://cran.rstudio.com", dependencies = T)
+    # }
+    # if (length(grep("foreach", installed.packages()[, 1])) == 0) {
+    #   install.packages("foreach", repos = "http://cran.rstudio.com", dependencies = T)
+    # }
+    # doParallel.installed <- require(doParallel, warn.conflicts = F, quietly = T)
+    # foreach.installed <- require(foreach, warn.conflicts = F, quietly = T)
+    # if (!doParallel.installed | !foreach.installed) {
+    #   warning("Required package failed to be installed. SIMparse will run in serial mode.\n", call. = F, immediate. = !silent)
+    #   parallel <- F
+    # } else {
+      no_cores <- parallel::detectCores()
+    # }
   }
 
   #initialize return objects
@@ -237,10 +237,10 @@ SIMparse <- function(file,include,exclude,combine=F,silent=F, parallel){
   if(!silent & !parallel) {pb <- txtProgressBar(min = 0, max = nfiles, style = 3)}
   
   if (parallel) {
-    cl <- makeCluster(no_cores)
-    registerDoParallel(cl)
-    simlist <- foreach(n = 1:nfiles, .verbose = F) %dopar% {processfile(n)}
-    stopCluster(cl)
+    cl <- parallel::makeCluster(no_cores)
+    doParallel::registerDoParallel(cl)
+    simlist <- foreach::foreach(n = 1:nfiles, .verbose = F) %dopar% {processfile(n)}
+    parallel::stopCluster(cl)
   } else {
     for (n in 1:nfiles) {
       simlist[[n]] <- processfile(n)
@@ -283,7 +283,7 @@ SIMparse <- function(file,include,exclude,combine=F,silent=F, parallel){
     message <- paste(paste("\nThe following file was successfully parsed: ",paste(allfiles,collapse=", "),"\n",sep=""))
   } 
   
-  Rprof(NULL)
+  utils::Rprof(NULL)
   #  runningtime <- proc.time()-starttime
   if(!silent) cat(message)
   #  if(!silent) cat(message,"Running time: ", runningtime[3], sep="")
