@@ -22,19 +22,24 @@ Authors@R: person("Michael", "Neely",
 Version: 1.9
 URL: http://www.lapk.org
 Date: 2020-02-29
-Depends:
-    R (>= 3.5.0),
-    utils,
-    stats
+Depends: R (>= 3.5.0),
+    ggplot2
+Imports:
+    chron,
+    dplyr,
+    openxlsx,
+    plyr,
+    jsonlite,
+    stats,
+    tidyr,
+    utils
 Suggests:
     chron,
     reshape2,
     plyr,
     Rcpp,
     shiny,
-    openxlsx,
     Matrix,
-    rjson,
     stringi,
     ggplot2,
     mclust,

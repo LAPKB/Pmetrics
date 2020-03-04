@@ -3,7 +3,7 @@
 }
 
 GenAlData <- function(wd) {
-  checkRequiredPackages("jsonlite")
+  #checkRequiredPackages("jsonlite")
   setwd(wd)
   filename <- "alquimiaData.json"
   data <- data.frame("ver" = NA)
@@ -25,6 +25,6 @@ GenAlData <- function(wd) {
   data$par <- I(list(PMdata$par))
   data$corden <- I(list(PMdata$corden))
 
-  exportJSON <- toJSON(data)
+  exportJSON <- jsonlite::toJSON(data)
   write(exportJSON, filename)
 }
