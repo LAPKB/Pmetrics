@@ -16,7 +16,7 @@
 
 makePop <- function(run,NPdata) {
   #require(utils)
-  checkRequiredPackages("reshape2") 
+  #checkRequiredPackages("reshape2") 
   #get data
   if (!missing(run)){ #run specified, so load corresponding objects
     PMload(run)
@@ -27,13 +27,22 @@ makePop <- function(run,NPdata) {
   if(is.null(dimnames(NPdata$ypredpopt))){
     dimnames(NPdata$ypredpopt) <- list(id=1:NPdata$nsub,outeq=1:NPdata$numeqt,time=NPdata$ttpred[which(NPdata$numt==max(NPdata$numt))[1],],icen=c("mean","median","mode")) 
   }
-  pop <- melt(NPdata$ypredpopt,value.name="pred")
-  pop <- pop[!is.na(pop$pred),]
-
-  pop <- pop[,c("id","time","icen","pred","outeq")]
-  #sort by icen, id, outeq
-  pop <- pop[order(pop$icen,pop$id,pop$outeq),]
+  #pop <- melt(NPdata$ypredpopt,value.name="pred")
   
+  pop <- NPdata$ypredpopt %>% 
+    dplyr::as.tbl_cube(met_name="pred") %>%
+    tibble::as_tibble() %>%
+    dplyr::filter(!is.na(pred)) %>%
+    dplyr::select(id,time,icen,pred,outeq) %>%
+    dplyr::arrange(icen,id,outeq)
+  
+
+  # pop <- pop[!is.na(pop$pred),]
+  # 
+  # pop <- pop[,c("id","time","icen","pred","outeq")]
+  # #sort by icen, id, outeq
+  # pop <- pop[order(pop$icen,pop$id,pop$outeq),]
+  # 
 
   pop$id <- rep(unlist(lapply(1:NPdata$nsub,function(x) rep(NPdata$sdata$id[x],times=NPdata$numeqt*NPdata$numt[x]))),3)
   

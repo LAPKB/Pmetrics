@@ -42,7 +42,7 @@
 makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   
   #verify packages used in this function
-  checkRequiredPackages(c("mclust"))
+  #checkRequiredPackages("mclust")
   
   #save current wd
   currwd <- getwd()
@@ -178,7 +178,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
     readline(paste("Press <Return> to start cluster analysis for ",
                    paste(c("dose",binCov),collapse=", ",sep=""),": ",sep=""))
     cat("Now performing Gaussian mixture model analysis.")
-    mod1 <- Mclust(dataSubDC)
+    mod1 <- mclust::Mclust(dataSubDC)
     cat(paste("Most likely number of clusters is ",mod1$G,".",sep=""))
     readline("Press <Return> to see classification plot: ")
     plot(mod1,"classification")   
@@ -200,7 +200,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
       timePlot <- as.formula(out~tad)
     }
     readline("Press <Return> to start cluster analysis for sample times: ")
-    mod <- Mclust(use.data)
+    mod <- mclust::Mclust(use.data)
     cat(paste("Most likely number of clusters is ",mod$G,".\n",sep=""))
     readline("Press <Return> to see classification plot: ")
     plot(mod,"classification")  
@@ -212,7 +212,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
     
     #plot for user to see
     timeClusterPlot()
-    timeClusters <- kmeans(use.data,centers=mod$G,nstart=50)
+    timeClusters <- stats::kmeans(use.data,centers=mod$G,nstart=50)
     abline(v=timeClusters$centers,col="red")
     
     #allow user to override
@@ -224,7 +224,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
       confirm <- 2
       while(confirm!=1){
         TclustNum <- readline("Specify your sample time cluster number \n")
-        mod <- Mclust(use.data,G=TclustNum)
+        mod <- mclust::Mclust(use.data,G=TclustNum)
         timeClusterPlot()
         timeClusters <- kmeans(use.data,centers=mod$G,nstart=50)
         abline(v=timeClusters$centers,col="red")
@@ -258,14 +258,14 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   }
   
   #now set the cluster bins
-  dcClusters <- kmeans(dataSubDC,centers=doseC,nstart=50)
+  dcClusters <- stats::kmeans(dataSubDC,centers=doseC,nstart=50)
   dataSub$dcBin[dataSub$evid>0] <- dcClusters$cluster  #m=dose,covariate bins
   
-  timeClusters <- kmeans(dataSubTime,centers=timeC,nstart=50)
+  timeClusters <- stats::kmeans(dataSubTime,centers=timeC,nstart=50)
   dataSub$timeBin[dataSub$evid==0] <- sapply(timeClusters$cluster,function(x) which(order(timeClusters$centers)==x))  #n=ordered time bins
   
   if(tad){
-    tadClusters <- kmeans(dataSubTad,centers=tadC,nstart=50)
+    tadClusters <- stats::kmeans(dataSubTad,centers=tadC,nstart=50)
     dataSub$tadBin[dataSub$evid==0] <- sapply(tadClusters$cluster,function(x) which(order(tadClusters$centers)==x))  #n=ordered time bins
   } else {dataSub$tadBin <- NA}
   

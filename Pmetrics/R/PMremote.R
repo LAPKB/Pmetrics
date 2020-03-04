@@ -1,13 +1,9 @@
 PMregister <- function(email, server_address) {
- checkRequiredPackages("askpass")
   if (missing(server_address)) server_address <- getPMoptions("server_address")
-  askpass.installed <- require(askpass)
-  password <- askpass("Password: ")
-  password_confirmation <- askpass("Password Confirmation: ")
-  library(httr)
-  library(purrr)
+  password <- askpass::askpass("Password: ")
+  password_confirmation <-askpass::askpass("Password Confirmation: ")
   api_url <- paste0(server_address, "/api")
-  r <- POST(
+  r <- httr::POST(
       paste0(api_url, "/user/new"),
       body = list(
         email = email,
@@ -16,19 +12,15 @@ PMregister <- function(email, server_address) {
     encode = "json",
     add_headers(api_key = .getApiKey())
     )
-  content(r)
+  httr::content(r)
 }
 
 PMlogin <- function(email, server_address) {
-  checkRequiredPackages("askpass")
   if (missing(email)) email <- readline("please type your email: ")
   if (missing(server_address)) server_address <- getPMoptions("server_address")
-  askpass.installed <- require(askpass)
-  library(httr)
-  library(purrr)
-  password <- askpass("Password: ")
+  password <- askpass::askpass("Password: ")
   api_url <- paste0(server_address, "/api")
-  r <- POST(
+  r <- httr::POST(
       paste0(api_url, "/session/new"),
       body = list(
         email = email,
@@ -46,14 +38,12 @@ PMlogin <- function(email, server_address) {
 }
 
 PMlogout <- function() {
-  checkRequiredPackages("httr")
-  checkRequiredPackages("purrr")
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   api_url <- paste(server_address, "/api", sep = "")
-  r <- DELETE(
+  r <- httr::DELETE(
     paste0(api_url, "/session")
   )
-  handle_reset(server_address)
+  httr::handle_reset(server_address)
   if (r$status == 200) {
     cat("Logged out.\n")
   } else {
@@ -64,12 +54,10 @@ PMlogout <- function() {
 # r <- login_user("juliandavid347@gmail.com", "prueba1234")
 
 .PMremote_run <- function(model, data, server_address, run) {
-  checkRequiredPackages("httr")
-  checkRequiredPackages("purrr")
   api_url <- paste(server_address, "/api", sep = "")
   model_txt <- readChar(model, file.info(model)$size)
   data_txt <- readChar(data, file.info(data)$size)
-  r <- POST(
+  r <- htrr::POST(
       paste(api_url, "/analysis/new", sep = ""),
       body = list(
         model_txt = model_txt,
@@ -108,7 +96,7 @@ PMlogout <- function() {
     write(content(r, "parsed")$id, fileConn)
     close(fileConn)
     setwd(currwd)
-    content(r, "parsed")$id %>%
+    httr::content(r, "parsed")$id %>%
     return()
   } else {
     cat("You need to be logged in to perform this operation.\n")
@@ -125,12 +113,11 @@ PMlogout <- function() {
 
 .PMremote_check <- function(rid, server_address) {
   if (missing(server_address)) server_address <- getPMoptions("server_address")
-  checkRequiredPackages("httr")
   api_url <- paste0(server_address, "/api")
   request_url <- paste0(api_url, "/analysis/", rid, "/status")
-  r <- GET(request_url, add_headers(api_key = .getApiKey()))
+  r <- httr::GET(request_url, add_headers(api_key = .getApiKey()))
   if (r$status == 200) {
-    status <- content(r, "parsed")$status
+    status <- httr::content(r, "parsed")$status
     return(status)
   } else {
     cat("You need to be logged in to perform this operation.\n")
@@ -140,15 +127,14 @@ PMlogout <- function() {
 }
 
 .PMremote_outdata <- function(run, server_address) {
-  checkRequiredPackages("base64enc")
+  #checkRequiredPackages("base64enc")
   if (missing(server_address)) server_address <- getPMoptions("server_address")
-  base64enc.installed <- require(base64enc)
-  library(httr)
+
   rid <- .getRemoteId(run)
   wd <- getwd()
   setwd(paste(run, "outputs", sep = "/"))
   api_url <- paste0(server_address, "/api")
-  r <- GET(paste0(api_url, "/analysis/", rid, "/outdata"), add_headers(api_key = .getApiKey()))
+  r <- httr::GET(paste0(api_url, "/analysis/", rid, "/outdata"), add_headers(api_key = .getApiKey()))
   if (r$status == 200) {
     cat("Results fetched, parsing...\n")
     #fileConn <- file("enc_outdata.txt")
@@ -159,9 +145,9 @@ PMlogout <- function() {
     # Works!
     if (file.exists("NPAGout.Rdata")) { system("rm NPAGout.Rdata") }
     out <- file("NPAGout.Rdata", "wb")
-    content(r, "parsed")$outdata %>%
-    base64decode(output = out)
-    close(out)
+    httr::content(r, "parsed")$outdata %>%
+    base64encode::base64decode(output = out)
+    httr::close(out)
     load("NPAGout.Rdata", .GlobalEnv)
     PMreport(getwd(), rdata = NPAGout) #TODO: check if this works with multiple PMload inputs
     OS <- getOS() #1 Mac, 2 Windows, 3 Linux

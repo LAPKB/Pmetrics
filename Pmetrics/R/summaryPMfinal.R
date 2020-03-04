@@ -49,10 +49,8 @@
 
 
 summary.PMfinal <- function(x,lower=0.025,upper=0.975){
-  checkRequiredPackages("reshape2")
-  reshape2.installed <- require(reshape2)
-  if(!reshape2.installed) stop("Error: connect to internet download and install reshape2 package.\n")
-  
+  # checkRequiredPackages("reshape2")
+
   if(inherits(x,"IT2B")){ #IT2B object
     if(is.null(x$nsub)){
       nsub <- as.numeric(readline("Update your IT2B PMfinal object with makeFinal() or PMreport() (see help).\nFor now, enter the number of subjects. "))
@@ -68,6 +66,7 @@ summary.PMfinal <- function(x,lower=0.025,upper=0.975){
     medMAD <- function(x){
       med <- median(x)
       MAD <- median(abs(x-med))
+      #MAD <- sqrt(median((x-med)^2))
       return(list(med,MAD))
     }
     
@@ -91,12 +90,19 @@ summary.PMfinal <- function(x,lower=0.025,upper=0.975){
     }
     
     sumstat <- apply(popPoints[,1:nvar],2,function(x) mcsim(x,popPoints[,nvar+1]))
+ 
     
-    sumstat2 <- melt(sumstat)[,c(1,3)]
-    names(sumstat2) <- c("value","par")
-    sumstat2$type <- rep(c("WtMed","MAWD"),each=3,times=nvar)
-    sumstat2$quantile <- rep(c(lower,0.5,upper),times=2*nvar)
-    sumstat2 <- sumstat2[,c("par","type","quantile","value")]
+    sumstat2 <- sumstat %>% as_tibble() %>% unnest(cols=everything()) 
+    sumstat2$percentile <- rep(c(lower,0.5,upper),2)
+    sumstat2$parameter <- rep(c("WtMed","MAWD"),each=3)
+ 
+    
+    # sumstat2 <- melt(sumstat)[,c(1,3)]
+    # names(sumstat2) <- c("value","par")
+    # sumstat2$type <- rep(c("WtMed","MAWD"),each=3,times=nvar)
+    # sumstat2$quantile <- rep(c(lower,0.5,upper),times=2*nvar)
+    # sumstat2 <- sumstat2[,c("par","type","quantile","value")]
+    class(sumstat2) <- c("summary.PMfinal","tbl_df","tbl","data.frame")
     return(sumstat2)
   }
   
