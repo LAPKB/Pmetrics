@@ -24,13 +24,13 @@ URL: http://www.lapk.org
 Date: 2020-02-29
 Depends: R (>= 3.5.0),
     ggplot2,
-    purrr
+    purrr,
+    dplyr
 Imports:
     askpass,
     base64enc,
     chron,
     doParallel,
-    dplyr,  
     foreach,
     httr,
     jsonlite,

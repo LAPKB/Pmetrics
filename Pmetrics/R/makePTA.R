@@ -173,20 +173,21 @@ makePTA <- function(simdata,simlabels,targets,
       stop("There are no simulated outputs for output equation ", outeq, ". Aborting.", call. = F)
     }
 
-    nsim <- length(simdata) # number of regimens
+    n_sim <- length(simdata) # number of regimens
+    n_id <- nrow(simdata[[1]]$parValues) #number of simulated id per regimen (usually 1000)
     
-    sim.labels <- paste("Regimen", 1:nsim)
+    sim.labels <- paste("Regimen", 1:n_sim)
     
-    if (!missing(simlabels)) {
-      nsimlabels <- length(simlabels)
-      if (nsimlabels < nsim) warning("There are more simulations (n=",nsim,") than labels (n=",nsimlabels,").", call.=F, immediate. = T)
-      if (nsimlabels > nsim) warning("There are fewer simulations (n=",nsim,") than labels (n=",nsimlabels,"); some labels will be ignored.", call.=F, immediate. = T)
-      sim.labels[1:min(nsimlabels, nsim)] <- simlabels[1:min(nsimlabels, nsim)]
+    if (!missing(simlabels)) { #replace generic labels with user labels
+      n_simlabels <- length(simlabels)
+      if (n_simlabels < n_sim) warning("There are more simulations (n=",n_sim,") than labels (n=",n_simlabels,").", call.=F, immediate. = T)
+      if (n_simlabels > n_sim) warning("There are fewer simulations (n=",n_sim,") than labels (n=",n_simlabels,"); some labels will be ignored.", call.=F, immediate. = T)
+      sim.labels[1:min(n_simlabels, n_sim)] <- simlabels[1:min(n_simlabels, n_sim)]
     }
     
     # if START and END are specified, fill in start and end times for each regimen
-    if (!missing(start)) {start <- rep(start, nsim)}
-    if (!missing(end)) {end <- rep(end, nsim)}
+    if (!missing(start)) {start <- rep(start, n_sim)}
+    if (!missing(end)) {end <- rep(end, n_sim)}
     if (missing(targets)) 
       stop("You must supply at least one target.\n")
     if (inherits(targets, "PMpta.targ")) {
@@ -194,9 +195,11 @@ makePTA <- function(simdata,simlabels,targets,
     }
     else {
       simTarg <- F
-      ntarg <- length(targets)
+      n_targ <- length(targets)
     }
-    results <- list()
+    #results <- list()
+    results <- array(NA,dim = c(n_sim,n_targ,n_id),dimnames = list(simnum=1:n_sim,target=1:n_targ,id=1:n_id))
+    
     if (!simTarg) {
       cat("\nCalculating PTA for each simulation and target...\n")
     } else {
@@ -206,15 +209,15 @@ makePTA <- function(simdata,simlabels,targets,
     
     
     # if free.fraction not 1, multiply by free.fraction
-    if (free.fraction != 1) {simdata <- lapply(1:nsim, function(x) {simdata[[x]]$obs$out <- simdata[[x]]$obs$out * free.fraction ; simdata[[x]]})} 
+    if (free.fraction != 1) {simdata <- lapply(1:n_sim, function(x) {simdata[[x]]$obs$out <- simdata[[x]]$obs$out * free.fraction ; simdata[[x]]})} 
 
-    if (!simTarg & target.type == "time") maxpb <- nsim * ntarg else maxpb <- nsim
+    if (!simTarg & target.type == "time") maxpb <- n_sim * n_targ else maxpb <- n_sim
     
     pb <- txtProgressBar(min = 0, max = maxpb, style = 3)
     flush.console()
     
     # Master FOR cycle - from 1 to number of DOSING REGIMES  
-    for (simnum in 1:nsim) {
+    for (simnum in 1:n_sim) {
       
       # create a working SIM object to pass to PTA function
       wrk.sim <- simdata[[simnum]]$obs # copy observations from simdata
@@ -255,19 +258,19 @@ makePTA <- function(simdata,simlabels,targets,
       if (simTarg) { # if sampled targets, generate a list of nprofile random targets
         set.seed(-17)
         randTarg <- sample(x = targets$target, size = wrk.nprofile, replace = T, prob = targets$n)
-        ntarg <- length(randTarg)
+        n_targ <- length(randTarg)
       }
       
       ##################    calculation for TIME ABOVE MIC ##################    
       if (target.type == "time") {
         
-        ptaM <- vector("list", ntarg)
+        ptaM <- vector("list", n_targ)
         
         allpairs <- by(wrk.sim, wrk.sim$id, function(x) pairUp(x))
         
         if (!simTarg) { # if not simulated targets
           # secondary FOR cycle, cycles TARGETS from 1 to number of targets 
-          for (t in 1:ntarg) {
+          for (t in 1:n_targ) {
             targ <- targets[t] #get current target
             if (min(wrk.sim$out)>=targ) {
               # all succeeded 100% for this target (possible at very hight MICs)
@@ -279,7 +282,7 @@ makePTA <- function(simdata,simlabels,targets,
               # get cumulative time above MIC for each profile and current target MIC
               ptaM[[t]] <- unlist(lapply(1:wrk.nprofile, function(x) cumTime(x, targ = rep(targ, wrk.nprofile))))
             }
-            setTxtProgressBar(pb, (simnum - 1) * ntarg + t)
+            setTxtProgressBar(pb, (simnum - 1) * n_targ + t)
             flush.console()
           }
         }
@@ -288,20 +291,20 @@ makePTA <- function(simdata,simlabels,targets,
           setTxtProgressBar(pb, simnum)
           flush.console()
         }
-        results[[simnum]] <- do.call(rbind, ptaM)
-        if (ntarg == 1) results[[simnum]] <- matrix(results[[simnum]], nrow = 1)
+        results[simnum,,] <- do.call(rbind, ptaM)
+        if (n_targ == 1) results[simnum,,] <- matrix(results[simnum,,], nrow = 1)
       }
       
       ##################    calculation for AUC  ##################    
       if (target.type == "auc") {
         auc <- by(wrk.sim, wrk.sim$id, function(x) makeAUC(x, out ~ time, start = wrk.start, end = wrk.end)[,2])
         if (simTarg) {
-          results[[simnum]] <- matrix(c(randTarg, auc/randTarg), ncol = 2)
+          results[simnum,,] <- matrix(c(randTarg, auc/randTarg), ncol = 2)
         }
         else {
-          results[[simnum]] <- sapply(auc, function(x) x/targets)
+          results[simnum,,] <- sapply(auc, function(x) x/targets)
         }
-        if (ntarg == 1) results[[simnum]] <- matrix(results[[simnum]], nrow = 1)
+        if (n_targ == 1) results[simnum,,] <- matrix(results[simnum,,], nrow = 1)
         setTxtProgressBar(pb, simnum)
         flush.console()
       }
@@ -310,12 +313,12 @@ makePTA <- function(simdata,simlabels,targets,
       if (target.type == "peak") {
         peak <- tapply(wrk.sim$out, wrk.sim$id, max)
         if (simTarg) {
-          results[[simnum]] <- matrix(c(randTarg, peak/randTarg), ncol = 2)
+          results[simnum,,] <- matrix(c(randTarg, peak/randTarg), ncol = 2)
         }
         else {
-          results[[simnum]] <- sapply(peak, function(x) x/targets)
+          results[simnum,,] <- sapply(peak, function(x) x/targets)
         }
-        if (ntarg == 1) results[[simnum]] <- matrix(results[[simnum]], nrow = 1)
+        if (n_targ == 1) results[simnum,,] <- matrix(results[simnum,,], nrow = 1)
         setTxtProgressBar(pb, simnum)
         flush.console()
       }
@@ -324,12 +327,12 @@ makePTA <- function(simdata,simlabels,targets,
       if (target.type == "min") {
         minobs <- tapply(wrk.sim$out, wrk.sim$id, min)
         if (simTarg) {
-          results[[simnum]] <- matrix(c(randTarg, minobs/randTarg),ncol = 2)
+          results[simnum,,] <- matrix(c(randTarg, minobs/randTarg),ncol = 2)
         }
         else {
-          results[[simnum]] <- sapply(minobs, function(x) x/targets)
+          results[simnum,,] <- sapply(minobs, function(x) x/targets)
         }
-        if (ntarg == 1) results[[simnum]] <- matrix(results[[simnum]], nrow = 1)
+        if (n_targ == 1) results[simnum,,] <- matrix(results[simnum,,], nrow = 1)
         setTxtProgressBar(pb, simnum)
         flush.console()
       }
@@ -338,35 +341,38 @@ makePTA <- function(simdata,simlabels,targets,
       if (is.numeric(target.type)) {
         timed <- by(wrk.sim, wrk.sim$id, function(x) x$out[round(x$time,2) == target.type])
         if (simTarg) {
-          results[[simnum]] <- matrix(c(randTarg, timed/randTarg),ncol = 2)
+          results[simnum,,] <- matrix(c(randTarg, timed/randTarg),ncol = 2)
         }
         else {
-          results[[simnum]] <- sapply(timed, function(x) x/targets)
+          results[simnum,,] <- sapply(timed, function(x) x/targets)
         }
-        if (ntarg == 1) results[[simnum]] <- matrix(results[[simnum]],nrow = 1)
+        if (n_targ == 1) results[simnum,,] <- matrix(results[simnum,,],nrow = 1)
         setTxtProgressBar(pb, simnum)
         flush.console()
       }
-      dimnames(results[[simnum]]) <- list(target=1:ntarg,rep=1:dim(results[[simnum]])[2])
-      names(results[[simnum]]) <- simnum
-    
+      dimnames(results[simnum,,]) <- list(target=1:n_targ,id=1:dim(results[simnum,,])[2])
+
     } #end of master For loop
     close(pb)
     cat("\nProcessing results...")
     
-    results2 <- results
-    
-    names(results2) <- 1:nsim
 
-    resultDF2 <- results %>% flatten_dfr()
-    names(resultDF) <- c("target", "id", "pdi", "simnum")
+    resultDF <- results %>%  
+      as.tbl_cube(met_name="pdi") %>%
+      as_tibble() %>%
+      select(simnum,id,target,pdi)
+    
+
+    #resultsDF <- melt(results,value.name="pdi")
+    #names(resultDF) <- c("target", "id", "pdi", "simnum")
     
     if (!simTarg) {
       resultDF$target <- targets[resultDF$target] # replace target numbers with values
     } else {
-      resultDF$target <- rep(randTarg, nsim) # fill in generated targets for each simulation
+      resultDF$target <- rep(randTarg, n_sim) # fill in generated targets for each simulation
     }
-    resultDF <- resultDF[, c("simnum", "id", "target", "pdi")]
+    
+    #resultDF <- resultDF[, c("simnum", "id", "target", "pdi")]
     
   } ########### END OF NEW PTA CALCULATION #########
   else {
@@ -380,22 +386,22 @@ makePTA <- function(simdata,simlabels,targets,
     if (!missing(free.fraction)) warning(paste("Free fraction was specified but was ignored; using values from the PMpta object."), call. = F)
     
     resultDF <- simdata$results               # get results from the PMpta object
-    nsim <- max(resultDF$simnum)              # get number of simulations
-    ntarg <- length(unique(resultDF$target))  # get number of targets
+    n_sim <- max(resultDF$simnum)              # get number of simulations
+    n_targ <- length(unique(resultDF$target))  # get number of targets
     targets <- c(unique(resultDF$target))     # get list of targets
     
     if (!missing(simlabels)) {
       cat("You have specified a new set of simulation labels.\n", sep="")
       ans <- readline(cat("What would you like to do?\n1) use labels from the original PMpta object\n2) use new labels\n3) press any other key to end", sep=""))
       if (ans == 2) {
-        sim.labels <- paste("Regimen", 1:nsim) # prefill labels with generic names
-        nsimlabels <- length(simlabels) # check if there is enough labels
-        if (nsimlabels < nsim) warning("There are more simulations (n=",nsim,") than labels (n=",nsimlabels,").", call.=F)
-        if (nsimlabels > nsim) warning("There are fewer simulations (n=",nsim,") than labels (n=",nsimlabels,"); some labels will be ignored.", call.=F, immediate. = T)
-        sim.labels[1:min(nsimlabels, nsim)] <- simlabels[1:min(nsimlabels, nsim)]    # get labels for all simulations, or as many as there are
+        sim.labels <- paste("Regimen", 1:n_sim) # prefill labels with generic names
+        n_simlabels <- length(simlabels) # check if there is enough labels
+        if (n_simlabels < n_sim) warning("There are more simulations (n=",n_sim,") than labels (n=",n_simlabels,").", call.=F)
+        if (n_simlabels > n_sim) warning("There are fewer simulations (n=",n_sim,") than labels (n=",n_simlabels,"); some labels will be ignored.", call.=F, immediate. = T)
+        sim.labels[1:min(n_simlabels, n_sim)] <- simlabels[1:min(n_simlabels, n_sim)]    # get labels for all simulations, or as many as there are
       }
       else if (ans== 1){
-        warning("Simlabels were specified but were ignored; using labels from the original PMpta object.", call. = F)
+        warning("simlabels were specified but were ignored; using labels from the original PMpta object.", call. = F)
       }
       else {
         stop("Function aborted", call.=F)
@@ -420,15 +426,15 @@ makePTA <- function(simdata,simlabels,targets,
     succSimXtarg <- tapply(resultDF$pdi, list(resultDF$target,resultDF$simnum), function(x) sum(x >= success)/sum(!is.na(x)))
     meanpdi <- tapply(resultDF$pdi, list(resultDF$target, resultDF$simnum), mean, na.rm = T)
     sdpdi <- tapply(resultDF$pdi, list(resultDF$target, resultDF$simnum), sd, na.rm = T)
-    pta.outcome <- data.frame(simnum = rep(1:nsim, each = ntarg), 
-                              target = rep(targets, nsim), prop.success = c(succSimXtarg), 
+    pta.outcome <- data.frame(simnum = rep(1:n_sim, each = n_targ), 
+                              target = rep(targets, n_sim), prop.success = c(succSimXtarg), 
                               pdi.mean = c(meanpdi), pdi.sd = c(sdpdi))
   }
   else {
     succSim <- tapply(resultDF$pdi, resultDF$simnum, function(x) sum(x >= success)/sum(!is.na(x)))
     meanpdi <- tapply(resultDF$pdi, resultDF$simnum, mean, na.rm = T)
     sdpdi <- tapply(resultDF$pdi, resultDF$simnum, sd, na.rm = T)
-    pta.outcome <- data.frame(simnum = 1:nsim, prop.success = c(succSim), pdi.mean = c(meanpdi), pdi.sd = c(sdpdi))
+    pta.outcome <- data.frame(simnum = 1:n_sim, prop.success = c(succSim), pdi.mean = c(meanpdi), pdi.sd = c(sdpdi))
   }
   rval <- list(results = resultDF, outcome = pta.outcome)
   attr(rval, "simlabels") <- sim.labels
