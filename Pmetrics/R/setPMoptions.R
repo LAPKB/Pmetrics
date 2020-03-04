@@ -14,7 +14,6 @@
 
 
 setPMoptions <- function(sep, dec, server_address) {
-  checkRequiredPackages("rjson")
   #read old values first
   PMopts <- getPMoptions()
   #update/add options
@@ -25,5 +24,5 @@ setPMoptions <- function(sep, dec, server_address) {
   options(PMopts)
   #store the options
   PMoptionsFile <- paste(system.file("options", package = "Pmetrics"),"PMoptions.json", sep = "/")
-  writeLines(toJSON(PMopts), PMoptionsFile)
+  writeLines(jsonlite::toJSON(PMopts), PMoptionsFile)
 }

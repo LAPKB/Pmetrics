@@ -12,5 +12,7 @@
 #' @author Michael Neely, MD
 #' \url{http://www.lapk.org}
 #' @keywords package
+#' @importFrom tidyr %>%
+
 NULL
 
