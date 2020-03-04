@@ -12,7 +12,7 @@
 #' @author Michael Neely, MD
 #' \url{http://www.lapk.org}
 #' @keywords package
-
+#' @importFrom foreach %dopar%
 
 NULL
 

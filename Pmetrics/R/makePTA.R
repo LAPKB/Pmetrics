@@ -347,16 +347,23 @@ makePTA <- function(simdata,simlabels,targets,
         setTxtProgressBar(pb, simnum)
         flush.console()
       }
-    }
+      dimnames(results[[simnum]]) <- list(target=1:ntarg,rep=1:dim(results[[simnum]])[2])
+      names(results[[simnum]]) <- simnum
+    
+    } #end of master For loop
     close(pb)
     cat("\nProcessing results...")
-    resultDF <- melt(results)
+    
+    results2 <- results
+    
+    names(results2) <- 1:nsim
+
+    resultDF2 <- results %>% flatten_dfr()
     names(resultDF) <- c("target", "id", "pdi", "simnum")
     
     if (!simTarg) {
       resultDF$target <- targets[resultDF$target] # replace target numbers with values
-    }
-    else {
+    } else {
       resultDF$target <- rep(randTarg, nsim) # fill in generated targets for each simulation
     }
     resultDF <- resultDF[, c("simnum", "id", "target", "pdi")]
