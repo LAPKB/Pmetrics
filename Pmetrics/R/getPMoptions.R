@@ -15,7 +15,7 @@
 
 
 getPMoptions <- function(opt) {
-  require(rjson)
+
   #options file name
   PMoptionsFile <- paste(system.file("options", package = "Pmetrics"),"PMoptions.json", sep = "/")
   #if it doesn't exist, create it with defaults
@@ -24,10 +24,10 @@ getPMoptions <- function(opt) {
                    dec = ".",
                    server_address = "http://localhost:5000")
     options(PMopts)
-    writeLines(toJSON(PMopts), PMoptionsFile)
+    jsonlite::write_json(PMopts, path = PMoptionsFile, auto_unbox=T)
   }
   #read the options file
-  PMopts <- fromJSON(file = PMoptionsFile)
+  PMopts <- jsonlite::read_json(path = PMoptionsFile)
   if (missing(opt)) {
     return(PMopts)
   } else {
