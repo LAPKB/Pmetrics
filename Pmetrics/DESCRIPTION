@@ -42,7 +42,6 @@ Imports:
     utils,
     xtable
 Suggests:
-
     Rcpp,
     shiny,
     stringi,
