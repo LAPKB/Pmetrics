@@ -111,7 +111,7 @@
 
 PMcheck <- function(data, model, fix = F, quiet = F) {
 
-  checkRequiredPackages("openxlsx")
+  #checkRequiredPackages("openxlsx")
   #here's the subfunction to check for errors 
   errcheck <- function(data2, model, quiet = quiet) {
     err <- list(colorder = list(msg = "OK - The first 14 columns are appropriately named and ordered.", results = NA, col = NA, code = NA),
@@ -294,9 +294,9 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$noObs$msg <- "FAIL - The following rows are subjects with no observations."
       err$noObs$results <- which(data2$id %in% subjMissObs)
     }
-    openxlsx.installed <- require(openxlsx)
+    #openxlsx.installed <- require(openxlsx)
     #create the color coded Excel file using code from Patrick Nolain
-    if (openxlsx.installed) {
+    #if (openxlsx.installed) {
       # Definition of a table of n types of errors, each one with 'code' and 'color' properties
       errorsTable <- data.frame(comment = c("ID > 11 characters",
                                           "Missing EVID",
@@ -331,29 +331,29 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
 
       if (nrow(errors) > 0) {
         # Initializing a new Excel Workbook
-        wb <- createWorkbook()
+        wb <- openxlsx::createWorkbook()
         pmVersion <- "POPDATA DEC_11"
         formattedCols <- toupper(names(data2))
         formattedCols[1] <- "#ID"
         errColor <- "#FFFF00" #yellow
         errColor2 <- "#00FF00" #green
 
-        errStyle1 <- createStyle(fgFill = errColor)
-        errStyle2 <- createStyle(fgFill = errColor2)
+        errStyle1 <- openxlsx::createStyle(fgFill = errColor)
+        errStyle2 <- openxlsx::createStyle(fgFill = errColor2)
 
 
         # Adding a new Worksheet
-        sheet <- addWorksheet(wb, sheetName = "errors")
+        sheet <- openxlsx::addWorksheet(wb, sheetName = "errors")
 
         # Writing out the header of the Pmetrics data file : version line and data frame column names
-        writeData(wb, sheet, pmVersion, xy = c(1, 1)) # POPDATA...
-        writeData(wb, sheet, t(formattedCols), xy = c(1, 2), colNames = F) # #ID,EVID,...
+        openxlsx::writeData(wb, sheet, pmVersion, xy = c(1, 1)) # POPDATA...
+        openxlsx::writeData(wb, sheet, t(formattedCols), xy = c(1, 2), colNames = F) # #ID,EVID,...
 
 
         # Highlight the cells with errors
         for (i in 1:nrow(errors)) {
           thisErr <- errors[i,]
-          comment <- createComment(errorsTable[errorsTable$code == thisErr$code,]$comment, author = "Pmetrics", visible = F)
+          comment <- openxlsx::createComment(errorsTable[errorsTable$code == thisErr$code,]$comment, author = "Pmetrics", visible = F)
           colIndex <- thisErr$column
           rowIndex <- thisErr$row
 
@@ -377,7 +377,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
             #find the non-numeric cells in a column
             rowIndex2 <- which(sapply(data2[, colIndex], is.char.num)) + 2
             #highlight them
-            addStyle(wb, sheet, errStyle2, rowIndex2, colIndex)
+            openxlsx::addStyle(wb, sheet, errStyle2, rowIndex2, colIndex)
 
           } else {
             #not non-numeric column error
@@ -386,15 +386,15 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
           }
 
           #add the highlighting and comments
-          addStyle(wb, sheet, errStyle1, rowIndex, colIndex)
-          writeComment(wb, sheet, col = colIndex, row = rowIndex, comment = comment)
+          openxlsx::addStyle(wb, sheet, errStyle1, rowIndex, colIndex)
+          openxlsx::writeComment(wb, sheet, col = colIndex, row = rowIndex, comment = comment)
         }
 
         # Check for NA values and set '.' as cells content 
         data2[is.na(data2)] <- "."
 
         #Add the data
-        writeData(wb, sheet, data2, rowNames = F, colNames = F, xy = c(1, 3))
+        openxlsx::writeData(wb, sheet, data2, rowNames = F, colNames = F, xy = c(1, 3))
 
         # # Check for NA values and set '.' as cells content 
         # for(i in 1:nrow(data2))
@@ -410,11 +410,11 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
 
 
         # Save the workbook ...
-        saveWorkbook(wb, file = "errors.xlsx", overwrite = T)
+        openxlsx::saveWorkbook(wb, file = "errors.xlsx", overwrite = T)
       }
       #end writing of datafile with highlighted errors
 
-    } else { cat("Unable to write errors.xlsx;\n connect to internet to download and install xlsx package.\n") }
+   # } else { cat("Unable to write errors.xlsx;\n connect to internet to download and install xlsx package.\n") }
 
     #if no errors in data, and model is specified, check it for errors too
     if (all(unlist(sapply(err, function(x) is.na(x$results)))) & !is.na(model)) {

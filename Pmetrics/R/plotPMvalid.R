@@ -40,7 +40,7 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.97
                          
 ){
   
-  checkRequiredPackages("ggplot2")
+  #checkRequiredPackages("ggplot2")
   x$opDF <- x$opDF[x$opDF$icen==icen,] #filter to icen
   
   #select correct time
