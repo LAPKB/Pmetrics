@@ -94,12 +94,12 @@ makeFinal <- function(data){
       # postPoints <- dcast(temp1,subj+nactvepost~density,value.var="value")
       
       postPoints <- data$postden %>%
-        dplyr::as.tbl_cube(met_name = "value") %>%
-        tibble::as_tibble() %>%
-        tidyr::pivot_wider(names_from = density) %>%
-        dplyr::arrange(subj,nactvepost) %>%
-        dplyr::filter(!is.na(prob)) %>%
-        dplyr::mutate(prob=prob*wParVol) 
+        as.tbl_cube(met_name = "value") %>%
+        as_tibble() %>%
+        pivot_wider(names_from = density) %>%
+        arrange(subj,nactvepost) %>%
+        filter(!is.na(prob)) %>%
+        mutate(prob=prob*wParVol) 
       
       # postPoints <- postPoints[!is.na(postPoints$prob),]
       # postPoints$prob <- postPoints$prob*wParVol
