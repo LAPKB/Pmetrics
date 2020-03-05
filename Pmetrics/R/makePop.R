@@ -30,11 +30,11 @@ makePop <- function(run,NPdata) {
   #pop <- melt(NPdata$ypredpopt,value.name="pred")
   
   pop <- NPdata$ypredpopt %>% 
-    dplyr::as.tbl_cube(met_name="pred") %>%
-    tibble::as_tibble() %>%
-    dplyr::filter(!is.na(pred)) %>%
-    dplyr::select(id,time,icen,pred,outeq) %>%
-    dplyr::arrange(icen,id,outeq)
+    as.tbl_cube(met_name="pred") %>%
+    as_tibble() %>%
+    filter(!is.na(pred)) %>%
+    select(id,time,icen,pred,outeq) %>%
+    arrange(icen,id,outeq)
   
 
   # pop <- pop[!is.na(pop$pred),]
