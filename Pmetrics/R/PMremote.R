@@ -147,7 +147,7 @@ PMlogout <- function() {
     out <- file("NPAGout.Rdata", "wb")
     httr::content(r, "parsed")$outdata %>%
     base64encode::base64decode(output = out)
-    httr::close(out)
+    close(out)
     load("NPAGout.Rdata", .GlobalEnv)
     PMreport(getwd(), rdata = NPAGout) #TODO: check if this works with multiple PMload inputs
     OS <- getOS() #1 Mac, 2 Windows, 3 Linux
