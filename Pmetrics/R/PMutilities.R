@@ -2086,9 +2086,9 @@ checkRequiredPackages <- function(pkg) {
   }
 
   pkg %>%
-    purrr::map_chr(managePkgs) %>%
-    purrr::keep(~. != "ok") %>%
-    purrr::map_chr(~if (length(.) > 0) {
+    map_chr(managePkgs) %>%
+    keep(~. != "ok") %>%
+    map_chr(~if (length(.) > 0) {
       stop(paste("The following required packages did not successfully install: ", ., sep = "", collapse = ", "))
     })
   return(invisible())

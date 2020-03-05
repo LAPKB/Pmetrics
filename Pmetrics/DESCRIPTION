@@ -23,15 +23,15 @@ Version: 1.9
 URL: http://www.lapk.org
 Date: 2020-02-29
 Depends: R (>= 3.5.0),
-    ggplot2,
     purrr,
-    dplyr
 Imports:
     askpass,
     base64enc,
     chron,
     doParallel,
+    dplyr,
     foreach,
+    ggplot2,
     httr,
     jsonlite,
     Matrix,
@@ -50,6 +50,6 @@ Suggests:
     stringi,
     methods,
     testthat
-Collate: 'Deprecated.R' 'dopt.R' 'ERRreport.R' 'ERRrun.R' 'GenAlData.R' 'getGfortran.R' 'getPMoptions.R' 'growth.R' 'ITparse.R' 'ITrun.R' 'makeAUC.R' 'makeCov.R' 'makeCycle.R' 'makeErrorPoly.R' 'makeFinal.R' 'makeNCA.R' 'makeOP.R' 'makePop.R' 'makePost.R' 'makePTA.R' 'makePTAtarg.R' 'makeValid.R' 'mic1.R' 'MMopt.R' 'mtsknn.eq.R' 'mtsknn.R' 'Namespace.R' 'NM2PM.R' 'NpdeGlobal.R' 'NpdeData.R' 'NpdeRes.R' 'NpdeObject.R' 'NpdeFunc_methods.R' 'NpdeFunc_plots.R' 'NpdeMain.R' 'NPparse.R' 'NPrun.R' 'plotMMopt.R' 'plotPMcov.R' 'plotPMcycle.R' 'plotPMdopt.R' 'plotPMfinal.R' 'plotPMmatrix.R' 'plotPMop.R' 'plotPMpta.R' 'plotPMsim.R' 'plotPMvalid.R' 'PMaddCRCL.R' 'PMbatch.R' 'PMbuild.R' 'PMcheck.R' 'PMcode.R' 'PMcompare.R' 'PMconfig.R' 'Pmetrics-package.R' 'PMex1.R' 'PMex2.R' 'PMex3.R' 'PMFortranConfig.R' 'PMload.R' 'PMmanual.R' 'PMmatrixRelTime.R' 'PMmb2csv.R' 'PMnews.R' 'PMpatch.R' 'PMreadMatrix.R' 'PMremote.R' 'PMreport.R' 'PMrun.R' 'PMsave.R' 'PMstart.R' 'PMstep.R' 'PMtest.R' 'PMtree.R' 'PMupdate.R' 'PMutilities.R' 'PMwriteMatrix.R' 'PMwrk2csv.R' 'printMMopt.R' 'printPMdopt.R' 'printPMerr.R' 'printPMnpc.R' 'printSummaryPMfinal.R' 'printSummaryPMmatrix.R' 'printSummaryPMop.R' 'qgrowth.R' 'setPMoptions.R' 'SIMparse.R' 'SIMrun.R' 'ssPK.R' 'summaryPMcov.R' 'summaryPMdopt.R' 'summaryPMfinal.R' 'summaryPMmatrix.R' 'summaryPMop.R' 'summaryPMpta.R'
+Collate: 'Deprecated.R' 'dopt.R' 'ERRreport.R' 'ERRrun.R' 'GenAlData.R' 'getGfortran.R' 'getPMoptions.R' 'growth.R' 'ITparse.R' 'ITrun.R' 'makeAUC.R' 'makeCov.R' 'makeCycle.R' 'makeErrorPoly.R' 'makeFinal.R' 'makeNCA.R' 'makeOP.R' 'makePop.R' 'makePost.R' 'makePTA.R' 'makePTAtarg.R' 'makeValid.R' 'mic1.R' 'MMopt.R' 'mtsknn.eq.R' 'mtsknn.R' 'NM2PM.R' 'NpdeGlobal.R' 'NpdeData.R' 'NpdeRes.R' 'NpdeObject.R' 'NpdeFunc_methods.R' 'NpdeFunc_plots.R' 'NpdeMain.R' 'NPparse.R' 'NPrun.R' 'plotMMopt.R' 'plotPMcov.R' 'plotPMcycle.R' 'plotPMdopt.R' 'plotPMfinal.R' 'plotPMmatrix.R' 'plotPMop.R' 'plotPMpta.R' 'plotPMsim.R' 'plotPMvalid.R' 'PMaddCRCL.R' 'PMbatch.R' 'PMbuild.R' 'PMcheck.R' 'PMcode.R' 'PMcompare.R' 'PMconfig.R' 'Pmetrics-package.R' 'PMex1.R' 'PMex2.R' 'PMex3.R' 'PMFortranConfig.R' 'PMload.R' 'PMmanual.R' 'PMmatrixRelTime.R' 'PMmb2csv.R' 'PMnews.R' 'PMpatch.R' 'PMreadMatrix.R' 'PMremote.R' 'PMreport.R' 'PMrun.R' 'PMsave.R' 'PMstart.R' 'PMstep.R' 'PMtest.R' 'PMtree.R' 'PMupdate.R' 'PMutilities.R' 'PMwriteMatrix.R' 'PMwrk2csv.R' 'printMMopt.R' 'printPMdopt.R' 'printPMerr.R' 'printPMnpc.R' 'printSummaryPMfinal.R' 'printSummaryPMmatrix.R' 'printSummaryPMop.R' 'qgrowth.R' 'setPMoptions.R' 'SIMparse.R' 'SIMrun.R' 'ssPK.R' 'summaryPMcov.R' 'summaryPMdopt.R' 'summaryPMfinal.R' 'summaryPMmatrix.R' 'summaryPMop.R' 'summaryPMpta.R'
 RoxygenNote: 7.0.2
 Encoding: UTF-8

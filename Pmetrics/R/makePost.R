@@ -111,9 +111,9 @@ makePost <- function(run,NPdata) {
     
     #post <- melt(totalRaw,id.vars=c("id","time"),variable.name="icen",value.name="pred")
     post <- totalRaw %>% 
-      tidyr::pivot_longer(cols = c("mean1","median1","mode1"),names_to="icen",values_to="pred") %>%
-      dplyr::select(id,time,icen,pred) %>%
-      dplyr::arrange(id,icen,time)
+      pivot_longer(cols = c("mean1","median1","mode1"),names_to="icen",values_to="pred") %>%
+      select(id,time,icen,pred) %>%
+      arrange(id,icen,time)
     
     post$outeq <- rep(1:NPdata$numeq,each=3*sum(NPdata$numt))
     levels(post$icen) <- rep(c("mean","median","mode"),NPdata$numeqt)
