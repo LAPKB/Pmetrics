@@ -17,3 +17,5 @@ PmetricsGit.Rproj
 Pmetrics/inst/compiledFortran/
 ..Rcheck/
 .DS_Store
+Pmetrics/src/symbols.rds
+Pmetrics/tests/testthat/Runs/
