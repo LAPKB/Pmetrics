@@ -18,6 +18,7 @@
 #' @param ci Confidence for the desired width of the SEM.  Default is 0.95.
 #' @return The missing argument: \code{n}, \code{sd} or \code{precision}.
 #' @author Michael Neely
+#' @export
 
 ss.PK <- function(n,mean,sd,precision,ci=0.95){
   

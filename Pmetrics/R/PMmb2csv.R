@@ -11,6 +11,7 @@
 #' @return A new file will be created with the name equal to \code{newFile} and
 #'  an extension of \dQuote{csv}.
 #' @author Michael Neely
+#' @export
 
 PMmb2csv <- function(oldFiles, newFile = "data") {
   OS <- getOS()

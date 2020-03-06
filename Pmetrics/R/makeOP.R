@@ -31,6 +31,7 @@
 #' op
 #' names(op)
 #' summary(op)
+#' @export
 
 
 

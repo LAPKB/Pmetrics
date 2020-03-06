@@ -13,6 +13,7 @@
 #' \item{outeq}{ Output equation number}
 #' \item{block}{ Observation blocks within subjects as defined by EVID=4 dosing events}
 #' @author Michael Neely
+#' @export
 
 makePop <- function(run,NPdata) {
   #require(utils)

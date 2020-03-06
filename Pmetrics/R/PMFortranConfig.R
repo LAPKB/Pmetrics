@@ -16,6 +16,7 @@
 #' @author Michael Neely
 #' @seealso \code{\link{NPrun}}, \code{\link{ITrun}},\code{\link{ERRrun}}, and
 #' \code{\link{SIMrun}}
+#' @export
 
 PMFortranConfig <- function(reconfig = F) {
   #figure out the OS

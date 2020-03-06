@@ -15,6 +15,7 @@
 #' @return A new file will be created with the name equal to \code{prefix} and
 #'  an extension of \dQuote{csv}.
 #' @author Michael Neely
+#' @export
 
 PMwrk2csv <- function(prefix,ext=NULL,nsub){
   if(!is.null(ext)){ext <- paste(".",ext,sep="")}

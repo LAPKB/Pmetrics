@@ -15,6 +15,7 @@
 #' A value of \code{NA} indicates that the variable was not retained in the final model.
 #' @author Michael Neely
 #' @seealso \code{\link{step}}
+#' @export
 
 PMstep <- function(x,icen="median",direction="backward"){
   if(!inherits(x,"PMcov")) stop("Please supply a PMcov object made by makeCov or loaded with NPload or ITload.\n")

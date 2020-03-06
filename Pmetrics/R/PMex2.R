@@ -24,5 +24,6 @@
 #' } 
 #' @author Michael Neely
 #' @keywords datasets
+#' @export
 NULL
 

@@ -29,6 +29,7 @@
 #' the data file for the run read by \code{\link{PMreadMatrix}}.  
 #' This file can be loaded using \code{\link{PMload}}.}
 #' @author Michael Neely
+#' @export
 
 
 PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {

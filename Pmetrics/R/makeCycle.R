@@ -25,6 +25,7 @@
 #' cycle <- makeCycle(NPdata.1)
 #' cycle
 #' names(cycle)
+#' @export
 
 makeCycle <- function(data){
 

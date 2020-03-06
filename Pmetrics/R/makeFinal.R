@@ -49,6 +49,7 @@
 #' final <- makeFinal(NPdata.1)
 #' final
 #' names(final)
+#' @export
 
 makeFinal <- function(data){
   #checkRequiredPackages("reshape2")

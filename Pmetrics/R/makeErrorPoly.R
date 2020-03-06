@@ -25,6 +25,7 @@
 #' @author Michael Neely
 #' @examples
 #' makeErrorPoly(obs=c(0,5,50,100,250,500,1000),sd=c(1,0.4,4.5,12,34,60,190))
+#' @export
 
 makeErrorPoly <- function(obs,sd,data,outeq=1,col="red",cex=3,pch="+",lcol="blue",lwd=2,ref=T,legend=T,...){
   

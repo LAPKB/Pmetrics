@@ -18,6 +18,7 @@
 #' @seealso \code{\link{PMmanual}}
 #' @examples
 #' PMtree("DrugX")
+#' @export
 
 PMtree <- function(project="NewProject",folder=getwd()){
   newFolder <- paste(folder,project,sep="/")

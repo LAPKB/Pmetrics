@@ -12,5 +12,6 @@
 #' percentiles), SEX, AGE, PERCENTILE, and CHART (length x age, wt x age, wt x length, hc x age, or ht x age).
 #' @author Michael Neely
 #' @keywords datasets
+#' @export
 NULL
 
