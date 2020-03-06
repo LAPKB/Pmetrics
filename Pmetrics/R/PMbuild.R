@@ -3,6 +3,7 @@
 #'
 #' @title Build Pmetrics
 #' @author Michael Neely
+#' @export
 
 
 
