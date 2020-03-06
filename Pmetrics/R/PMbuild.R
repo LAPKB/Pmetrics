@@ -127,7 +127,7 @@ PMbuild <- function() {
 
     } else {
       cat("Pmetrics has found required compiled binary files.\n")
-      return(T)
+      return(F)
     }
   }
   else {
