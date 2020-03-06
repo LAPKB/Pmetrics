@@ -44,6 +44,7 @@
 #' \item{simdata }{A \emph{PMsim} object with the simulated profiles}
 #' @author Michael Neely
 #' @seealso \code{\link{SIMrun}}, \code{\link{plot.MMopt}}, \code{\link{print.MMopt}}
+#' @export
 
 
 MMopt <- function(poppar,model="model.txt",data="data.csv",nsamp=1,weight=list(none=1),predInt=0.5,outeq=1,...){

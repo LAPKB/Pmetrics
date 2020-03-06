@@ -18,6 +18,7 @@
 #' @param quiet Suppress written report.  Default is \code{FALSE}.
 #' @author Michael Neely
 #' @seealso \code{\link{PMload}}
+#' @export
 
 
 PMsave <- function(run,...,quiet=F){

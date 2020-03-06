@@ -3,6 +3,7 @@
 #' Help for Pmetrics.
 #'
 #' @title Open user and function manuals.
+#' @export
 #
 PMmanual <- function() {
   OS <- getOS()

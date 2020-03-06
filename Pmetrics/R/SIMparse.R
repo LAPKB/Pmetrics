@@ -49,6 +49,7 @@
 #' A plot method exists in \code{\link{plot.PMsim}} for \emph{PMsim} objects.
 #' @author Michael Neely
 #' @seealso \code{\link{SIMrun}}
+#' @export
 
 SIMparse <- function(file,include,exclude,combine=F,silent=F, parallel){
   processfile <- function(n) {

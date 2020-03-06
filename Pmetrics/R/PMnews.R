@@ -7,6 +7,7 @@
 #' @author Michael Neely
 #' @examples
 #' PMnews()
+#' @export
 
 PMnews <- function(version=packageVersion("Pmetrics")){
   if(as.character(version)=="all"){

@@ -11,5 +11,6 @@
 #' @format badData is a PMmatrix object as read by \code{\link{PMreadMatrix}}
 #' @author Michael Neely
 #' @keywords datasets
+#' @export
 NULL
 

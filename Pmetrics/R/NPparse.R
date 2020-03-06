@@ -83,6 +83,7 @@
 #'  This means that the model may be misspecified.}
 #'  \item{mdata }{The filename of the data used in the run.}
 #' @author Michael Neely
+#' @export
 
 
 

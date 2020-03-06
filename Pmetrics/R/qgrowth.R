@@ -14,6 +14,8 @@
 #'  \item{sex }{The selected \code{sex}}
 #'  \item{percentile }{The selected \code{percentile}}
 #' @author Michael Neely
+#' @export
+
 qgrowth <- function(sex=c("M","F","B"),percentile=c("5","10","25","50","75","90","95"),agemos=(seq(0,18)*12)){
   data(growth)
   percentile <- as.numeric(match.arg(percentile))

@@ -165,6 +165,7 @@
 #' plot(simout,ci=0,probs=NA,x.qlab=0.75,log=T,col="red",lwd=2,pch=NA,join=T)
 #' setwd(wd)
 #' }
+#' @export
 
 SIMrun <- function(poppar, limits = NULL, model = "model.txt", data = "data.csv", split,
                    include, exclude, nsim = 1000, predInt = 0, covariate, usePost = F,

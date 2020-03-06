@@ -35,6 +35,7 @@
 #' data(PMex1)
 #' op <- makeOP(NPdata.1)
 #' makeAUC(op)
+#' @export
 
 makeAUC <- function(data,formula,include,exclude,start=0,end=Inf,icen="median",outeq=1,block=1,method="linear"){
   

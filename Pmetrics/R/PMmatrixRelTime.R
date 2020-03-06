@@ -28,6 +28,7 @@
 #'  If \code{split}=T all evid values that were previously 4 will be converted to 1.
 #' @author Michael Neely
 #' @seealso \code{\link{PMreadMatrix}}
+#' @export
 
 PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCol="evid",format=c("m/d/y","h:m"),split=F){
   

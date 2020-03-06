@@ -65,6 +65,7 @@
 #' 
 #' @author Michael Neely
 #' @seealso \code{\link{ITparse}}, \code{\link{NPrun}}
+#' @export
 
 
 ITrun <- function(model="model.txt",data="data.csv",run,

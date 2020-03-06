@@ -40,6 +40,7 @@
 #' @return A Pmetrics style PMmatrix data.frame.
 #' @author Michael Neely
 #' @seealso \code{\link{PMcheck}}, \code{\link{PMwriteMatrix}}, \code{\link{PMwrk2csv}}
+#' @export
 
 NM2PM <- function(data,ctl){
   
