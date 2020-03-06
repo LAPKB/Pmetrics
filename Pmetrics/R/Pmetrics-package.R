@@ -20,6 +20,6 @@
 #' @importFrom purrr map map_chr keep pluck %>% 
 #' @importFrom tibble as_tibble
 #' @importFrom tidyr pivot_longer pivot_wider unnest
-#' @importFrom mclust MClust
+#' @importFrom mclust Mclust
 NULL
 
