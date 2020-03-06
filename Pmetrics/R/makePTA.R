@@ -175,7 +175,7 @@ makePTA <- function(simdata,simlabels,targets,
     }
 
     n_sim <- length(simdata) # number of regimens
-    n_id <- nrow(simdata[[1]]$parValues) #number of simulated id per regimen (usually 1000)
+    n_id <- max(sapply(simdata,function(x) nrow(x$parValues))) #number of simulated id per regimen (usually 1000)
     
     sim.labels <- paste("Regimen", 1:n_sim)
     
@@ -189,15 +189,13 @@ makePTA <- function(simdata,simlabels,targets,
     # if START and END are specified, fill in start and end times for each regimen
     if (!missing(start)) {start <- rep(start, n_sim)}
     if (!missing(end)) {end <- rep(end, n_sim)}
-    if (missing(targets)) 
-      stop("You must supply at least one target.\n")
+    if (missing(targets)) {stop("You must supply at least one target.\n")}
     if (inherits(targets, "PMpta.targ")) {
       simTarg <- T
-      n_targ <- length(targets) #number of targets
-    }
-    else {
+      n_targ <- n_id #one target per simulated subject
+    } else {
       simTarg <- F
-
+      n_targ <- length(targets) #number of targets
     }
     
 
@@ -215,7 +213,7 @@ makePTA <- function(simdata,simlabels,targets,
     # if free.fraction not 1, multiply by free.fraction
     if (free.fraction != 1) {simdata <- lapply(1:n_sim, function(x) {simdata[[x]]$obs$out <- simdata[[x]]$obs$out * free.fraction ; simdata[[x]]})} 
 
-    if (!simTarg & target.type == "time") maxpb <- n_sim * n_targ else maxpb <- n_sim
+    if (!simTarg & target.type == "time") {maxpb <- n_sim * n_targ} else {maxpb <- n_sim}
     
     pb <- txtProgressBar(min = 0, max = maxpb, style = 3)
     flush.console()
@@ -354,7 +352,7 @@ makePTA <- function(simdata,simlabels,targets,
         setTxtProgressBar(pb, simnum)
         flush.console()
       }
-      dimnames(results[simnum,,]) <- list(target=1:n_targ,id=1:dim(results[simnum,,])[2])
+      if(n_targ >1) {dimnames(results[simnum,,]) <- list(target=1:n_targ,id=1:n_id)}
 
     } #end of master For loop
     close(pb)
