@@ -21,6 +21,7 @@
 #' cov <- makeCov(NPdata.1)
 #' cov
 #' names(cov)
+#' @export
 
 makeCov <- function(data){
   if(!inherits(data,"NPAG") & !inherits(data,"IT2B")) stop(paste("Use NPparse() or ITparse() to generate an Pmetrics NPAG or IT2B object.\n"))

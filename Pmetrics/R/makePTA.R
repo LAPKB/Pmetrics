@@ -50,6 +50,7 @@
 #' mean and standard deviation of the target pharmacodynamic index (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.}  
 #' @author Michael Neely and Jan Strojil
 #' @seealso \code{\link{plot.PMpta}}, \code{\link{SIMparse}}
+#' @export
 
 makePTA <- function(simdata,simlabels,targets,
                     target.type,success,outeq=1,

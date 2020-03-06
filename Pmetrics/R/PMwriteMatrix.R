@@ -20,6 +20,7 @@
 #' #write to the current directory
 #' PMwriteMatrix(data,"PMex1.csv")
 #' }
+#' @export
 
 PMwriteMatrix <- function(data,filename,override=F,version="DEC_11"){
   

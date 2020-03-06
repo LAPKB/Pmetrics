@@ -42,6 +42,7 @@
 #'  \item{pval }{P-value for each model compared to the first. See details.}
 #' @author Michael Neely
 #' @seealso \code{\link{PMload}}, \code{\link{plot.PMop}}, \code{\link{mtsknn.eq}}
+#' @export
 
 
 PMcompare <- function (x,y,...,icen="median",outeq=1,plot=F){

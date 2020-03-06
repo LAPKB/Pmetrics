@@ -106,6 +106,7 @@
 #' PMcheck(goodData)
 #' #you have to fix manually problems which require data entry
 #' }
+#' @export
 
 
 

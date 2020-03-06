@@ -37,6 +37,8 @@
 #'  the column headers of the scanned file will be reported to the console as a validation check.
 #' @author Michael Neely 
 #' @seealso \code{\link{PMwriteMatrix}}, \code{\link{PMcheckMatrix}}, and \code{\link{plot.PMmatrix}}
+#' @export
+
 PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("dec"),quiet=F,...){
 #get data
   if (missing(file)){

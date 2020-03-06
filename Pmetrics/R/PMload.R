@@ -28,6 +28,7 @@
 #' @seealso \code{\link{PMreport}}, \code{\link{NPparse}}, \code{\link{ITparse}}, 
 #' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}}, 
 #' \code{\link{makePop}}, \code{\link{makePost}}
+#' @export
 
 PMload <- function(run = 1, ..., remote = F, server_address) {
   if (missing(server_address)) server_address <- getPMoptions("server_address")

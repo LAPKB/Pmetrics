@@ -16,6 +16,7 @@
 #' directly in the browser.
 #' 
 #' @author Michael Neely
+#' @export
 
 PMcode <- function(func) {
   if (!suppressWarnings(require(shiny, quietly = T))) {
@@ -34,9 +35,9 @@ PMcode <- function(func) {
 
   if (func == "run") {
     file.copy(from = list.files(ShinyAppDir, pattern = "\\.R$", full.names = T), to = getwd(), overwrite = T)
-    runApp()
+    shiny::runApp()
   } else {
-    runApp(ShinyAppDir)
+    shiny::runApp(ShinyAppDir)
   }
 
 }

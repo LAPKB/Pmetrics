@@ -72,6 +72,7 @@
 #'  \item{thalf }{Half life of elimination, calculated as ln(2)/k}
 #'  \item{dose }{Dose for each subject}
 #' @author Michael Neely
+#' @export
 
 makeNCA <- function(x,postPred=F,include,exclude,input=1,icen="median",outeq=1,block=1,
                     start=0,end=Inf,first=NA,last=NA,terminal=3){
