@@ -15,6 +15,7 @@
 #' \item{means }{A data frame with the weighted mean optimal sample times for each of the two runs.}
 #' @author Michael Neely
 #' @seealso \code{\link{SIMrun}}, \code{\link{plot.MMopt}}, \code{\link{print.MMopt}}
+#' @export
 
 Dopt <- function(run, data, clean = T) {
 

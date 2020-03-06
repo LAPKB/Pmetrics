@@ -12,6 +12,7 @@
 #' \item{ASS0001 }{A text file of the results}
 #' \item{errlog }{A text file with a log of the session},
 #' @author Michael Neely
+#' @export
 
 ERRreport <- function(wd,icen,type){
   setwd(wd)

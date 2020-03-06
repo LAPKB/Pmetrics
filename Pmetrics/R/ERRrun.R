@@ -58,6 +58,7 @@
 #' 
 #' @author Michael Neely
 #' @seealso \code{\link{ITrun}}, \code{\link{NPrun}}
+#' @export
 
 
 ERRrun <- function(model="model.txt",data="data.csv",run,include,exclude,
