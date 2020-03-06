@@ -178,7 +178,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
     readline(paste("Press <Return> to start cluster analysis for ",
                    paste(c("dose",binCov),collapse=", ",sep=""),": ",sep=""))
     cat("Now performing Gaussian mixture model analysis.")
-    mod1 <- mclust::Mclust(dataSubDC)
+    mod1 <- Mclust(dataSubDC)
     cat(paste("Most likely number of clusters is ",mod1$G,".",sep=""))
     readline("Press <Return> to see classification plot: ")
     plot(mod1,"classification")   
@@ -200,7 +200,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
       timePlot <- as.formula(out~tad)
     }
     readline("Press <Return> to start cluster analysis for sample times: ")
-    mod <- mclust::Mclust(use.data)
+    mod <- Mclust(use.data)
     cat(paste("Most likely number of clusters is ",mod$G,".\n",sep=""))
     readline("Press <Return> to see classification plot: ")
     plot(mod,"classification")  
@@ -224,7 +224,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
       confirm <- 2
       while(confirm!=1){
         TclustNum <- readline("Specify your sample time cluster number \n")
-        mod <- mclust::Mclust(use.data,G=TclustNum)
+        mod <- Mclust(use.data,G=TclustNum)
         timeClusterPlot()
         timeClusters <- kmeans(use.data,centers=mod$G,nstart=50)
         abline(v=timeClusters$centers,col="red")
