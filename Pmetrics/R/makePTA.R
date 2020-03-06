@@ -104,7 +104,7 @@ makePTA <- function(simdata,simlabels,targets,
   
   ################### begining of makePTA ######################
   # initial checks
-  checkRequiredPackages("reshape2")
+  #checkRequiredPackages("reshape2")
   if (missing(simdata) | missing(target.type)) 
     stop("Simulation output and target.type must be specified.\n")
   if (is.character(target.type) & !target.type %in% c("time", "auc", "peak", "min")) 
@@ -193,11 +193,14 @@ makePTA <- function(simdata,simlabels,targets,
       stop("You must supply at least one target.\n")
     if (inherits(targets, "PMpta.targ")) {
       simTarg <- T
+      n_targ <- length(targets) #number of targets
     }
     else {
       simTarg <- F
-      n_targ <- length(targets)
+
     }
+    
+
     #results <- list()
     results <- array(NA,dim = c(n_sim,n_targ,n_id),dimnames = list(simnum=1:n_sim,target=1:n_targ,id=1:n_id))
     
