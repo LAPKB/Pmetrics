@@ -21,19 +21,19 @@
 #' @importFrom tibble as_tibble
 #' @importFrom tidyr pivot_longer pivot_wider unnest
 #' @importFrom mclust Mclust mclustBIC
-#' @importFrom(grDevices col2rgb dev.off devAskNewPage gray.colors jpeg 
+#' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg 
 #' pdf png postscript rgb setEPS
-#' @importFrom(graphics abline arrows axTicks axis boxplot hist legend lines 
+#' @importFrom graphics abline arrows axTicks axis boxplot hist legend lines 
 #' par points polygon rect rug segments text
-#' @importFrom(methods new show validObject
-#' @importFrom(stats aggregate anova approx as.formula binom.test coef 
+#' @importFrom methods new show validObject
+#' @importFrom stats aggregate anova approx as.formula binom.test coef 
 #' complete.cases confint cor cor.test cov cov.wt cov2cor density dnorm 
 #' get_all_vars glm kmeans kruskal.test ks.test
 #' lm median model.frame pchisq pnorm predict
 #' pt qchisq qnorm qqline qqnorm qqplot qt
 #' quantile rnorm runif sd shapiro.test step
 #' t.test terms time var weighted.mean wilcox.test
-#' @importFrom(utils compareVersion data flush.console glob2rx head 
+#' @importFrom utils compareVersion data flush.console glob2rx head 
 #' install.packages news packageVersion read.table setTxtProgressBar str
 #' tail txtProgressBar write.csv write.table
 
