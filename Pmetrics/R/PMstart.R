@@ -17,9 +17,12 @@
 .onAttach <- function(...) {
   print("onattach - inicio")
   #TODO: remove this
+  env = Sys.getenv("env")
+  # if (env != "Development") {
   checkRequiredPackages("dplyr")
   checkRequiredPackages("foreach")
   checkRequiredPackages("mclust")
+  # }
 
   #version and OS-specific startup messages
   OS <- getOS()
