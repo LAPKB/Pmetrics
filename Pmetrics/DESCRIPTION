@@ -25,26 +25,17 @@ Date: 2020-02-29
 Depends: R (>= 3.5.0)
 Imports:
     askpass,
-    base64enc,
-    chron,
-    doParallel,
-    dplyr,
-    foreach,
     ggplot2,
     httr,
     jsonlite,
     Matrix,
-    mclust,
     methods,
-    openxlsx,
     parallel,
-    plyr,
     purrr,
     Rcpp,
     shiny,
     stats,
     tibble,
-    tidyr,
     utils,
     xtable
 Suggests:
