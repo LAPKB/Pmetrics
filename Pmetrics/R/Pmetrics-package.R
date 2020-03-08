@@ -13,7 +13,6 @@
 #' \url{http://www.lapk.org}
 #' @keywords package
 #'
-#' @importFrom dplyr select arrange as.tbl_cube filter mutate
 #' @importFrom foreach %dopar%
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon 
 #' scale_x_log10 scale_x_continuous scale_y_log10 scale_y_continuous xlab ylab

@@ -1,5 +1,6 @@
 
 .onLoad <- function(...) {
+  print("onload - inicio")
   if (interactive()) {
     currentVersion <- package_version(suppressWarnings(
       tryCatch(scan("http://www.lapk.org/software/Pmetrics/PmetricsVersion.txt", what = "character", quiet = T),
@@ -10,10 +11,16 @@
       packageStartupMessage(paste("\nPmetrics version ", currentVersion, " is available from www.lapk.org/software.  You have version ", installedVersion, ".\n", sep = ""))
     }
   }
-
+  print("onload - final")
 }
 
 .onAttach <- function(...) {
+  print("onattach - inicio")
+  #TODO: remove this
+  checkRequiredPackages("dplyr")
+  checkRequiredPackages("foreach")
+  checkRequiredPackages("mclust")
+
   #version and OS-specific startup messages
   OS <- getOS()
   if (interactive()) {
@@ -38,26 +45,26 @@
       }
     }
     packageStartupMessage(msg)
+
   }
 
   #check for binary fortran files
   if (!binaries.installed()) {
-    #TODO: remove this
-    checkRequiredPackages(base64enc)
-    checkRequiredPackages(chron)
-    checkRequiredPackages(doParallel)
-    checkRequiredPackages(dplyr)
-    checkRequiredPackages(foreach)
-    checkRequiredPackages(mclust)
-    checkRequiredPackages(openxlsx)
-    checkRequiredPackages(plyr)
-    checkRequiredPackages(tidyr)
+    # checkRequiredPackages("base64enc")
+    # checkRequiredPackages("chron")
+    # checkRequiredPackages("doParallel")
+    # checkRequiredPackages("dplyr")
+    # checkRequiredPackages("foreach")
+    # checkRequiredPackages("mclust")
+    # checkRequiredPackages("openxlsx")
+    # checkRequiredPackages("plyr")
+    # checkRequiredPackages("tidyr")
     packageStartupMessage("\nCRITICAL: Execute PMbuild() in R to complete Pmetrics installation.\n")
-
   }
 
   #set user options for the session
   setPMoptions()
+  print("onattach - final")
 }
 
 
