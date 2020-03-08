@@ -13,13 +13,11 @@
 #' \url{http://www.lapk.org}
 #' @keywords package
 #'
-#' @importFrom foreach %dopar%
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon 
 #' scale_x_log10 scale_x_continuous scale_y_log10 scale_y_continuous xlab ylab
 #' @importFrom purrr map map_chr keep pluck %>% 
 #' @importFrom tibble as_tibble
 #' @importFrom tidyr pivot_longer pivot_wider unnest
-#' @importFrom mclust Mclust mclustBIC
 #' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg 
 #' pdf png postscript rgb setEPS
 #' @importFrom graphics abline arrows axTicks axis boxplot hist legend lines 
