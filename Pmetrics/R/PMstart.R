@@ -41,9 +41,19 @@
   }
 
   #check for binary fortran files
-  if(!binaries.installed()){
+  if (!binaries.installed()) {
+    #TODO: remove this
+    checkRequiredPackages(base64enc)
+    checkRequiredPackages(chron)
+    checkRequiredPackages(doParallel)
+    checkRequiredPackages(dplyr)
+    checkRequiredPackages(foreach)
+    checkRequiredPackages(mclust)
+    checkRequiredPackages(openxlsx)
+    checkRequiredPackages(plyr)
+    checkRequiredPackages(tidyr)
     packageStartupMessage("\nCRITICAL: Execute PMbuild() in R to complete Pmetrics installation.\n")
-    
+
   }
 
   #set user options for the session
