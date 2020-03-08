@@ -2077,11 +2077,14 @@ checkRequiredPackages <- function(pkg) {
     # }
     if (requireNamespace(thisPkg, quietly = T)) {
       return("ok") #package is installed
-    } else { #package is not installed
-      install.packages(thisPkg, dependencies = T, quiet = T) #try to install
-      if (requireNamespace(thisPkg, quietly = T)){ #check again
+    } else {
+      #package is not installed
+      install.packages(thisPkg, dependencies = T, quiet = T, repos = "http://cran.us.r-project.org") #try to install
+      if (requireNamespace(thisPkg, quietly = T)) {
+        #check again
         return("ok") #now it is installed and ok
-      } else {return(thisPkg) } #nope, still didn't install
+      } else { return(thisPkg) }
+      #nope, still didn't install
     }
   }
 
