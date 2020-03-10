@@ -24,10 +24,10 @@
 #'
 #' @title Summary Statistics for PMfinal Objects
 #' @method summary PMfinal
-#' @param x The PMfinal object made after an NPAG or IT2B, e.g. final.1 after run 1.
+#' @param object The PMfinal object made after an NPAG or IT2B, e.g. final.1 after run 1.
+#' @param \dots Other parameters which are not necessary.
 #' @param lower Desired lower confidence interval boundary.  Default is 0.025. Ignored for IT2B objects.
 #' @param upper Desired upper confidence interval boundary.  Default is 0.975. Ignored for IT2B objects.
-#' @param \dots Other parameters which are not necessary.
 #' @return The output is a data frame.
 #' For NPAG this has 4 columns:
 #' \item{value }{The value of the summary statistic}
@@ -49,18 +49,18 @@
 #' summary(final)
 
 
-summary.PMfinal <- function(x,lower=0.025,upper=0.975,...){
+summary.PMfinal <- function(object,...,lower=0.025,upper=0.975){
   # checkRequiredPackages("reshape2")
 
-  if(inherits(x,"IT2B")){ #IT2B object
-    if(is.null(x$nsub)){
+  if(inherits(object,"IT2B")){ #IT2B object
+    if(is.null(object$nsub)){
       nsub <- as.numeric(readline("Update your IT2B PMfinal object with makeFinal() or PMreport() (see help).\nFor now, enter the number of subjects. "))
-    }else{nsub <- x$nsub}
-    mean=x$popMean
-    se.mean=x$popSD/sqrt(nsub)
+    }else{nsub <- object$nsub}
+    mean=object$popMean
+    se.mean=object$popSD/sqrt(nsub)
     cv.mean=se.mean/mean
-    var=x$popVar
-    se.var=x$popVar*sqrt(2/(nsub-1))
+    var=object$popVar
+    se.var=object$popVar*sqrt(2/(nsub-1))
     sumstat <- data.frame(mean,se.mean,cv.mean,var,se.var)
     return(sumstat)
   }else{ #NPAG object
@@ -78,9 +78,9 @@ summary.PMfinal <- function(x,lower=0.025,upper=0.975,...){
       ciMAD <- quantile(sapply(sim,function(x) x[[2]]),c(lower,0.5,upper))
       return(list(ciMed,ciMAD))
     }
-    if(inherits(x,"NPAG")){
-      popPoints <- x$popPoints
-    } else {popPoints <- x}
+    if(inherits(object,"NPAG")){
+      popPoints <- object$popPoints
+    } else {popPoints <- object}
     
     nvar <- ncol(popPoints) - 1
     
@@ -93,7 +93,7 @@ summary.PMfinal <- function(x,lower=0.025,upper=0.975,...){
     sumstat <- apply(popPoints[,1:nvar],2,function(x) mcsim(x,popPoints[,nvar+1]))
  
     
-    sumstat2 <- sumstat %>% as_tibble() %>% unnest(cols=everything()) 
+    sumstat2 <- sumstat %>% as_tibble() %>% unnest(cols=names(sumstat)) 
     sumstat2$percentile <- rep(c(lower,0.5,upper),2)
     sumstat2$parameter <- rep(c("WtMed","MAWD"),each=3)
  

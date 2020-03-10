@@ -4,13 +4,13 @@
 #'
 #' @title Summarize PMmatrix objects
 #' @method summary PMmatrix
-#' @param x A PMmatrix object loaded by \code{\link{PMreadMatrix}} or \code{\link{PMload}}.
+#' @param object A PMmatrix object loaded by \code{\link{PMreadMatrix}} or \code{\link{PMload}}.
+#' @param \dots Additional arguments to \code{FUN}, e.g. \code{na.rm=T} 
 #' @param formula Optional formula for specifying custom summaries.  See \code{\link{aggregate}}
 #' and \code{\link{formula}} for details on how to specify formulae in R. If, for example, the data contain
 #' a covariate for weight named 'wt', then to summarize the mean dose in mg/kg per subject specify 
 #' \code{formula=dose/wt~id, FUN=mean}.
 #' @param FUN The summary function to apply to \code{formula}, if specified.
-#' @param \dots Additional arguments to \code{FUN}, e.g. \code{na.rm=T} 
 #' @param include A vector of subject IDs to include in the summary, e.g. c(1:3,5,15)
 #' @param exclude A vector of subject IDs to exclude in the summary, e.g. c(4,6:14,16:20)
 #' @return A list of class \emph{summary.PMmatrix} with the summary of the PMmatrix object, 
@@ -31,41 +31,41 @@
 #' @seealso \code{\link{print.summary.PMmatrix}}, \code{\link{aggregate}}
 #' @export
 
-summary.PMmatrix <- function(x,formula,FUN,...,include,exclude){
+summary.PMmatrix <- function(object,...,formula,FUN,include,exclude){
   
   #filter data if needed
   if(!missing(include)){
-    x <- subset(x,sub("[[:space:]]+","",as.character(x$id)) %in% as.character(include))
+    object <- subset(object,sub("[[:space:]]+","",as.character(object$id)) %in% as.character(include))
   } 
   if(!missing(exclude)){
-    x <- subset(x,!sub("[[:space:]]+","",as.character(x$id)) %in% as.character(exclude))
+    object <- subset(object,!sub("[[:space:]]+","",as.character(object$id)) %in% as.character(exclude))
   } 
   
   #make results list
   results <- list()
-  idOrder <- rank(unique(x$id))
+  idOrder <- rank(unique(object$id))
   
-  results$nsub <- length(unique(x$id))
-  results$ndrug <- max(x$input,na.rm=T)
-  results$numeqt <- max(x$outeq,na.rm=T)
-  results$nobsXouteq <- tapply(x$evid,x$outeq,function(x) length(x==0))
-  results$missObsXouteq <- by(x,x$outeq,function(x) length(x$out[x$evid==0 & x$out==-99] ))
+  results$nsub <- length(unique(object$id))
+  results$ndrug <- max(object$input,na.rm=T)
+  results$numeqt <- max(object$outeq,na.rm=T)
+  results$nobsXouteq <- tapply(object$evid,object$outeq,function(x) length(x==0))
+  results$missObsXouteq <- by(x,object$outeq,function(x) length(object$out[object$evid==0 & object$out==-99] ))
   covinfo <- getCov(x)
   ncov <- covinfo$ncov
   results$ncov <- ncov
   results$covnames <- covinfo$covnames
-  results$ndoseXid <- tapply(x$evid,list(x$id,x$input),function(x) length(x!=0))[idOrder,]
-  results$nobsXid <- tapply(x$evid,list(x$id,x$outeq),function(x) length(x==0))[idOrder,]
-  results$doseXid <- tapply(x$dose,list(x$id,x$input),function(x) x[!is.na(x)])[idOrder,]
-  results$obsXid <- tapply(x$out,list(x$id,x$outeq),function(x) x[!is.na(x)])[idOrder,]
+  results$ndoseXid <- tapply(object$evid,list(object$id,object$input),function(x) length(x!=0))[idOrder,]
+  results$nobsXid <- tapply(object$evid,list(object$id,object$outeq),function(x) length(x==0))[idOrder,]
+  results$doseXid <- tapply(object$dose,list(object$id,object$input),function(x) x[!is.na(x)])[idOrder,]
+  results$obsXid <- tapply(object$out,list(object$id,object$outeq),function(x) x[!is.na(x)])[idOrder,]
   if(ncov>0){
     #get each subject's covariate values
-    results$cov <- lapply(1:ncov,function(y) tapply(x[[covinfo$covstart+y-1]],x$id,
+    results$cov <- lapply(1:ncov,function(y) tapply(x[[covinfo$covstart+y-1]],object$id,
                                                     function(z) z[!is.na(z)])[idOrder])
     names(results$cov) <- covinfo$covnames
   }
   if(!missing(formula)){
-    results$formula <- aggregate(formula,x,FUN,...)
+    results$formula <- aggregate(formula,object,FUN,...)
   }
   
   class(results) <- c("summary.PMmatrix","list")

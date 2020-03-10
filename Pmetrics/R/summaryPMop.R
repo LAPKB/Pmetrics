@@ -4,13 +4,14 @@
 #'
 #' @title Summarize Observations and Predictions
 #' @method summary PMop
-#' @param x A PMop object made by \code{\link{makeOP}}.
+#' @param object A PMop object made by \code{\link{makeOP}}.
+#' @param \dots Other parameters which can be passed to \code{summary}.
 #' @param digits Integer, used for number of digits to print.
 #' @param pred.type Either 'post' for a posterior object or 'pop' for a population object.  Default is 'post'.
 #' @param icen Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
 #' distributions, or "mean".  Default is "median".
 #' @param outeq Output equation number.  Default is 1.
-#' @param \dots Other parameters which can be passed to \code{summary}.
+
 #' @return A list with two xs.  The first component of the list is a
 #' matrix with the minimum, first quartile, median, third quartile, maximum,
 #' mean and standard deviation for times, observations and predictions in \code{x}.
@@ -23,7 +24,7 @@
 #' @seealso \code{\link{makeOP}}
 #' @export
 
-summary.PMop <- function(x,digits=max(3,getOption("digits")-3),pred.type="post",icen="median",outeq=1,...){
+summary.PMop <- function(object,...,digits=max(3,getOption("digits")-3),pred.type="post",icen="median",outeq=1){
   
   argList <- list(...)
   if("type" %in% names(argList)){
@@ -76,7 +77,6 @@ summary.PMop <- function(x,digits=max(3,getOption("digits")-3),pred.type="post",
   } #end sumPMopWrk
   
   #function to make summary
-  object <- x
   if(inherits(object,"list")){ #we are dealing with the old list PMop
     if(missing(outeq)) {outeq <- 1:length(object)} else {outeq <- c(sapply(outeq,function(x) c(2*x-1,2*x)))}
     sumresult <- list()

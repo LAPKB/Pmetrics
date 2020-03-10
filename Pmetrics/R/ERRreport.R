@@ -24,7 +24,7 @@ ERRreport <- function(wd,icen,type){
     HTMLfileName <- paste(getwd(),"/ERRreport.html",sep="")
     if(file.exists(HTMLfileName)) file.remove(HTMLfileName)
     #open HTML file as global object
-    .HTMLfile <<- file(HTMLfileName,open="a+")
+    .HTMLfile <- file(HTMLfileName,open="a+")
 
     #HTML header
     writeHTML(c("<html>",
