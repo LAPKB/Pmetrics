@@ -17,7 +17,7 @@
 #' @author Michael Neely
 #' @seealso \code{\link{NPparse}}, \code{\link{ITparse}}, \code{\link{plot.PMcov}}, \code{\link{summary.PMcov}}
 #' @examples
-#' data(PMex1)
+#' data(NPdata.1)
 #' cov <- makeCov(NPdata.1)
 #' cov
 #' names(cov)

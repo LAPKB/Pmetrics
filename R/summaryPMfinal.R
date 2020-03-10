@@ -44,9 +44,12 @@
 #' @seealso \code{\link{makeFinal}}, \code{\link{ITparse}},  \code{\link{plot.PMfinal}}
 #' @export
 #' @examples
-#' data(PMex1)
+#' data(NPdata.1)
 #' final <- makeFinal(NPdata.1)
 #' summary(final)
+#' data(ITdata.2)
+#' final2 <- makeFinal(ITdata.2)
+#' summary(final2)
 
 
 summary.PMfinal <- function(object,...,lower=0.025,upper=0.975){

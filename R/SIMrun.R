@@ -225,16 +225,21 @@
 #' diag(cov) <- (c(0.15,0.15,0.15)*mean)**2
 #' #make the prior for the simulation
 #' poppar <- list(weights,mean,cov)
-#' setwd(paste(normalizePath(get("PmetricsPath",envir=PMenv),winslash="/"),
-#' "/Pmetrics/example/Sim",sep=""))
+#' #create temp folder and make data/model files
+#' tempDir <- tempdir()
+#' data(mdata.1)
+#' data(model)
+#' setwd(tempDir)
+#' PMwriteMatrix(mdata.1,"temp1.csv")
+#' writeLines(model, "model.txt")
 #' #run simulation
-#' SIMrun(poppar,"temp1.csv",nsim=15,model="model1.for",
-#' obsNoise=c(0.02,0.1,0,0),makecsv="PMex1.csv",outname="example",clean=T)
+#' SIMrun(poppar,"temp1.csv",nsim=15,model="model.txt",include=1:4,
+#' obsNoise=c(0.02,0.1,0,0))
 #' #extract results of simulation
-#' simout <- SIMparse("example1.txt")
-#' file.remove("example1.txt")
+#' simout <- SIMparse("simout.txt")
+#' unlink(tempDir)
 #' #plot simulated profiles (use help(plot.PMsim) for more information)
-#' plot(simout,ci=0,probs=NA,x.qlab=0.75,log=T,col="red",lwd=2,pch=NA,join=T)
+#' plot(simout)
 #' setwd(wd)
 #' }
 #' @export
