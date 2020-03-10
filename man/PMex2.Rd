@@ -17,7 +17,7 @@
 PMex2
 }
 \description{
-Exmaple dataset from an IT2B run.
+Example dataset from an IT2B run.
 }
 \details{
 The run consisted of a model with an absorptive compartment and a central compartment.

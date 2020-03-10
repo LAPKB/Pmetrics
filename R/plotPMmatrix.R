@@ -83,7 +83,7 @@
 #' @seealso \code{\link{PMreadMatrix}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 #' @examples
-#' data(PMex1)
+#' data(mdata.1)
 #' plot(mdata.1)
 
 plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq,group,block=1,

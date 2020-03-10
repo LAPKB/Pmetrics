@@ -3,7 +3,7 @@ PMtest <- function() {
   currwd <- getwd()
   tempwd <- tempdir()
   setwd(tempwd)
-  data(PMex1, env = environment())
+  data(mdata.1, env = environment())
   PMwriteMatrix(mdata.1[mdata.1$id == 1,], "data.csv", override = T)
   msg <- "Congratulations; you have successfully installed all components of Pmetrics.\n"
   modeltxt <- c("#Primary",

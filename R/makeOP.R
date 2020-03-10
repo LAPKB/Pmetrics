@@ -26,11 +26,12 @@
 #' @author Michael Neely
 #' @seealso \code{\link{NPparse}}, \code{\link{ITparse}}, \code{\link{plot.PMop}}, \code{\link{summary.PMop}}
 #' @examples
-#' data(PMex1)
+#' data(NPdata.1)
 #' op <- makeOP(NPdata.1)
 #' op
 #' names(op)
 #' summary(op)
+#' plot(op)
 #' @export
 
 

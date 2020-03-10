@@ -61,7 +61,7 @@
 #' @seealso \code{\link{makeOP}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 #' @examples
-#' data(PMex1)
+#' data(op.1)
 #' plot(op.1)
 
 

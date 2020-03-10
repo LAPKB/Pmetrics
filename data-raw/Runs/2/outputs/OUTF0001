@@ -1,0 +1,3814 @@
+ THIS IS A COMBINED OUTPUT FILE FROM BIG IT2B ENGINE.
+
+  REM_FRN MAR_16 ... made by it2branfix1.f         
+                          
+ THE NEXT FEW LINES GIVE INPUT INFO FOR THIS RUN:  
+                          
+                          
+ THE SUBJ. FILENAMES (IN "Adapt-Like" FORMAT) HAVE 
+ PREFIX XQZPJ AND EXT. ZMQ
+                          
+ THE SUBJECT INFORMATION IS STORED IN THE .CSV FILE,                        
+                          
+QMZJPZQX.CSV              
+                          
+ THE TOTAL NO. OF SUBJECTS IN THE DATA SET IS   20 
+                          
+ THE NO. OF SUBJECTS IS           20               
+     1   -    20          
+     0                    
+                          
+ THE NO. OF RANDOM VARIABLES IS  4                 
+ THE RANDOM VARIABLES AND THEIR BOUNDARIES, AND IF THE EST. MUST BE .GE. 0  
+                          
+ Ka         :  0.1000000000       TO    0.9000000000         YES            
+                          
+ Ke         :  0.1000000000E-02   TO    0.1000000000         YES            
+                          
+ V          :   30.00000000       TO     120.0000000         YES            
+                          
+ Tlag1      :   0.000000000       TO     4.000000000         YES            
+                          
+                          
+ NO FIXED PARAMETER VALUES.                        
+                          
+ NO "RANFIX" PARAMETER ESTIMATES.                  
+                          
+ THE INITIAL STD. DEVS. ARE 0.500000     x  THE RANGES.                     
+                          
+ GAMMA FOR OUTPUT EQ.  1 WILL BE ESTIMATED.        
+                          
+ THE POPULATION VALUES FOR [C0,C1,C2,C3] FOR EACH OF                        
+ THE  1 OUTPUT EQUATION(S), ARE SHOWN BELOW:       
+                          
+ EQ.  1: 0.2000000000E-01 0.5000000000E-01 -.2000000000E-03  0.000000000    
+                          
+ THE NO. OF DRUGS IS      
+  1                       
+                          
+ THE ACTIVE (SALT) FRACTION(S) FOR THE  1 DRUG(S)  
+ FOLLOW, IN ORDER:        
+   1.0000000000000000     
+                          
+ THE STOPPING TOLERANCE IS
+   1.0000000000000000E-003
+                          
+ THE MAXIMUM NO. OF ITERATIONS IS                  
+         100              
+                          
+ EACH PARAMETER RANGE FOR NPAG WILL BE, NOMINALLY, 
+ THE ASSOCIATED MEAN +/- XDEV x THE ASSOCIATED STD. DEVIATION,              
+ WHERE XDEV IS            
+   5.0000000000000000     
+                          
+ THE TOLERANCE PARAMETER USED BY THE DIFFERENTIAL  
+ EQUATION SOLVER (VODE), IS:                       
+   1.0000000000000000E-004
+                          
+ THE VALUE OF QVAL IS   1.0                        
+                          
+                          
+                          
+                          
+ THE FOLLOWING IS THE OUTPUT FROM THE RUNNING OF   
+ THE PROGRAM.             
+                          
+                          
+                          
+                          
+                          
+ THE INITIAL POPULATION ESTIMATES ARE SHOWN BELOW  
+ (THE 1ST ROW GIVES THE MEANS; THE NEXT 4 ROWS GIVE THE                     
+ COVARIANCE MATRIX):      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.500000     0.505000E-01  75.0000      2.00000   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.160000                 
+  0.00000     0.245025E-02
+  0.00000      0.00000      2025.00                
+  0.00000      0.00000      0.00000      4.00000   
+                          
+                          
+ ALL  20 SUBJECTS GIVE ADEQUATE INFORMATION ON     
+ ALL  4 PARAMETERS.       
+                          
+                          
+                          
+ ITERATION NUMBER     1.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -20.7225                 
+                          
+ THE CONVERGENCE INDEX IS      0.100000E+34   (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.679322     0.505596E-01  84.9329      1.21514   
+ 0.702646     0.425868E-01  69.6684      1.17360   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.172619                 
+ -.480212E-02 0.771999E-03
+  11.3905     -.718877      2392.50                
+ 0.371513E-01 0.313725E-02 -12.6704      1.01621   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.415474     0.277849E-01  48.9132      1.00807   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.415988      1.00000    
+ 0.560496     -.528957      1.00000                
+ 0.887032E-01 0.112008     -.256964      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  61.1601      54.9547      57.5904      82.9595   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.1859849771242907     
+                          
+                          
+ ITERATION NUMBER     2.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -11.1828                 
+                          
+ THE CONVERGENCE INDEX IS       9539.67       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.710170     0.478447E-01  84.2729      1.24456   
+ 0.694682     0.430827E-01  71.5340      1.18341   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.142502                 
+ -.324692E-02 0.377976E-03
+  9.64309     -.426114      1778.13                
+ 0.231846E-01 0.169037E-02 -11.4354     0.566495   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.377495     0.194416E-01  42.1678     0.752658   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.442413      1.00000    
+ 0.605792     -.519772      1.00000                
+ 0.816003E-01 0.115519     -.360307      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  53.1556      40.6348      50.0372      60.4758   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.2277615517325442     
+                          
+                          
+ ITERATION NUMBER     3.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -10.5584                 
+                          
+ THE CONVERGENCE INDEX IS       624.401       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.737379     0.471104E-01  83.8466      1.26501   
+ 0.710661     0.434918E-01  71.2751      1.23075   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.126614                 
+ -.267021E-02 0.292947E-03
+  8.98783     -.329391      1579.03                
+ 0.135270E-01 0.132011E-02 -11.2399     0.453072   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.355829     0.171157E-01  39.7370     0.673106   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.438439      1.00000    
+ 0.635651     -.484308      1.00000                
+ 0.564775E-01 0.114586     -.420226      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  48.2559      36.3311      47.3925      53.2096   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.2569668362813857     
+                          
+                          
+ ITERATION NUMBER     4.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -10.3840                 
+                          
+ THE CONVERGENCE INDEX IS       174.367       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.772616     0.465679E-01  84.1356      1.32055   
+ 0.739530     0.437102E-01  72.7252      1.34821   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.119267                 
+ -.266277E-02 0.271194E-03
+  8.66366     -.296356      1496.19                
+ 0.454507E-02 0.608013E-03 -11.8709     0.400234   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.345351     0.164680E-01  38.6806     0.632641   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.468202      1.00000    
+ 0.648557     -.465243      1.00000                
+ 0.208029E-01 0.583601E-01 -.485105      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  44.6989      35.3634      45.9741      47.9074   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3097063485073037     
+                          
+                          
+ ITERATION NUMBER     5.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -10.2216                 
+                          
+ THE CONVERGENCE INDEX IS       162.449       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.797988     0.462964E-01  84.2838      1.34314   
+ 0.775153     0.437148E-01  73.6208      1.40333   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.115955                 
+ -.271916E-02 0.261130E-03
+  8.55793     -.278202      1440.98                
+ 0.347321E-03 0.258813E-03 -11.8196     0.368695   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.340521     0.161595E-01  37.9603     0.607202   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.494153      1.00000    
+ 0.662056     -.453525      1.00000                
+ 0.167978E-02 0.263769E-01 -.512793      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  42.6725      34.9045      45.0386      45.2076   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3232011631685174     
+                          
+                          
+ ITERATION NUMBER     6.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -10.1255                 
+                          
+ THE CONVERGENCE INDEX IS       96.0207       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.818065     0.461557E-01  84.3977      1.35548   
+ 0.809599     0.435324E-01  74.2500      1.43033   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.115312                 
+ -.282481E-02 0.257504E-03
+  8.62624     -.270562      1414.89                
+ -.217042E-02 0.798830E-04 -11.7563     0.351690   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.339577     0.160469E-01  37.6150     0.593034   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.518392      1.00000    
+ 0.675340     -.448243      1.00000                
+ -.107777E-01 0.839426E-02 -.527021      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  41.5098      34.7670      44.5688      43.7508   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3305290489359907     
+                          
+                          
+ ITERATION NUMBER     7.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -10.0700                 
+                          
+ THE CONVERGENCE INDEX IS       55.5288       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.838648     0.460185E-01  84.5799      1.37232   
+ 0.835493     0.435094E-01  74.7022      1.44293   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.116857                 
+ -.296354E-02 0.256963E-03
+  8.85038     -.269401      1407.77                
+ -.515899E-02 -.316274E-04 -11.5883     0.330368   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.341843     0.160301E-01  37.5202     0.574777   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.540814      1.00000    
+ 0.690032     -.447918      1.00000                
+ -.262566E-01 -.343265E-02 -.537345      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  40.7613      34.8340      44.3607      41.8835   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3390078983829126     
+                          
+                          
+ ITERATION NUMBER     8.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -10.0186                 
+                          
+ THE CONVERGENCE INDEX IS       51.4183       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.855838     0.459483E-01  84.7324      1.38214   
+ 0.856963     0.434430E-01  75.1964      1.45462   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.119206                 
+ -.310838E-02 0.257586E-03
+  9.09942     -.270369      1408.77                
+ -.753892E-02 -.958462E-04 -11.5509     0.318942   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.345262     0.160495E-01  37.5336     0.564750   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.560950      1.00000    
+ 0.702174     -.448824      1.00000                
+ -.386638E-01 -.105745E-01 -.544930      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  40.3420      34.9294      44.2966      40.8606   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3419327991051864     
+                          
+                          
+ ITERATION NUMBER     9.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.98203                 
+                          
+ THE CONVERGENCE INDEX IS       36.5675       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.871070     0.458875E-01  84.8632      1.38892   
+ 0.875511     0.433822E-01  75.5622      1.46399   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.121837                 
+ -.324144E-02 0.258210E-03
+  9.33371     -.271256      1410.95                
+ -.915469E-02 -.146246E-03 -11.5212     0.311731   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.349052     0.160689E-01  37.5627     0.558329   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.577910      1.00000    
+ 0.711881     -.449402      1.00000                
+ -.469746E-01 -.163008E-01 -.549355      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  40.0717      35.0181      44.2626      40.1987   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3435059667530327     
+                          
+                          
+ ITERATION NUMBER    10.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.95426                 
+                          
+ THE CONVERGENCE INDEX IS       27.7760       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.884501     0.458512E-01  84.9572      1.39413   
+ 0.892090     0.433293E-01  75.8164      1.47227   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.124711                 
+ -.337016E-02 0.259047E-03
+  9.56113     -.272494      1413.89                
+ -.103389E-01 -.184951E-03 -11.4903     0.306650   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.353145     0.160949E-01  37.6018     0.553760   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.592937      1.00000    
+ 0.720025     -.450256      1.00000                
+ -.528691E-01 -.207513E-01 -.551827      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  39.9259      35.1025      44.2597      39.7207   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3442062037548586     
+                          
+                          
+ ITERATION NUMBER    11.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.97657                 
+                          
+ THE CONVERGENCE INDEX IS       22.3155       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.903591     0.456618E-01  85.1733      1.41673   
+ 0.907066     0.432821E-01  76.0019      1.47962   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.126481                 
+ -.339206E-02 0.256540E-03
+  9.65808     -.270479      1416.09                
+ -.155511E-01 0.551672E-04 -11.8575     0.293705   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.355642     0.160169E-01  37.6309     0.541945   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.595489      1.00000    
+ 0.721661     -.448757      1.00000                
+ -.806850E-01 0.635547E-02 -.581422      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  39.3587      35.0771      44.1816      38.2532   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3751094114412110     
+                          
+                          
+ ITERATION NUMBER    12.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.94120                 
+                          
+ THE CONVERGENCE INDEX IS       35.3703       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.918798     0.455686E-01  85.3249      1.42673   
+ 0.924667     0.431929E-01  76.4690      1.48736   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.129085                 
+ -.343877E-02 0.254340E-03
+  9.75828     -.268306      1414.07                
+ -.180779E-01 0.131156E-03 -12.0148     0.284111   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.359284     0.159480E-01  37.6042     0.533021   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.600147      1.00000    
+ 0.722270     -.447390      1.00000                
+ -.943986E-01 0.154290E-01 -.599426      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  39.1037      34.9979      44.0717      37.3597   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3809368976915293     
+                          
+                          
+ ITERATION NUMBER    13.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.91724                 
+                          
+ THE CONVERGENCE INDEX IS       23.9631       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.932592     0.455113E-01  85.4365      1.43334   
+ 0.941026     0.431267E-01  76.8037      1.49294   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.132508                 
+ -.350987E-02 0.253589E-03
+  9.89522     -.267781      1415.00                
+ -.192543E-01 0.158474E-03 -12.1043     0.277751   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.364017     0.159245E-01  37.6165     0.527021   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.605486      1.00000    
+ 0.722645     -.447029      1.00000                
+ -.100364     0.188827E-01 -.610565      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  39.0329      34.9902      44.0286      36.7688   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3840619812446722     
+                          
+                          
+ ITERATION NUMBER    14.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.90177                 
+                          
+ THE CONVERGENCE INDEX IS       15.4713       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.945582     0.454704E-01  85.5255      1.43855   
+ 0.956561     0.430740E-01  77.0727      1.49851   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.136390                 
+ -.359071E-02 0.253504E-03
+  10.0462     -.268012      1416.94                
+ -.196148E-01 0.165990E-03 -12.1519     0.273226   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.369311     0.159218E-01  37.6423     0.522711   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.610655      1.00000    
+ 0.722659     -.447183      1.00000                
+ -.101609     0.199447E-01 -.617599      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  39.0564      35.0158      44.0130      36.3358   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3859342553041922     
+                          
+                          
+ ITERATION NUMBER    15.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.89165                 
+                          
+ THE CONVERGENCE INDEX IS       10.1177       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.957938     0.454394E-01  85.5995      1.44298   
+ 0.971420     0.430287E-01  77.2922      1.50425   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.140584                 
+ -.367573E-02 0.253727E-03
+  10.2044     -.268612      1419.45                
+ -.194888E-01 0.164543E-03 -12.1759     0.269799   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.374946     0.159288E-01  37.6755     0.519422   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.615449      1.00000    
+ 0.722368     -.447592      1.00000                
+ -.100069     0.198873E-01 -.622189      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  39.1409      35.0551      44.0137      35.9966   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3870461188174246     
+                          
+                          
+ ITERATION NUMBER    16.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.88502                 
+                          
+ THE CONVERGENCE INDEX IS       6.63229       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.969939     0.454102E-01  85.6673      1.44686   
+ 0.985680     0.429877E-01  77.4719      1.51001   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.144893                 
+ -.375795E-02 0.253949E-03
+  10.3585     -.269170      1422.02                
+ -.190097E-01 0.157869E-03 -12.1856     0.267067   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.380648     0.159358E-01  37.7097     0.516785   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.619517      1.00000    
+ 0.721642     -.447921      1.00000                
+ -.966366E-01 0.191696E-01 -.625295      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  39.2445      35.0930      44.0187      35.7176   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3877634994817480     
+                          
+                          
+ ITERATION NUMBER    17.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.88070                 
+                          
+ THE CONVERGENCE INDEX IS       4.31885       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.981540     0.453851E-01  85.7262      1.45039   
+ 0.999497     0.429501E-01  77.6163      1.51578   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.149324                 
+ -.383840E-02 0.254172E-03
+  10.5104     -.269739      1424.71                
+ -.183090E-01 0.149309E-03 -12.1878     0.264793   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.386425     0.159428E-01  37.7453     0.514581   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.623047      1.00000    
+ 0.720596     -.448245      1.00000                
+ -.920761E-01 0.181999E-01 -.627490      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  39.3692      35.1277      44.0301      35.4788   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3882013253455470     
+                          
+                          
+ ITERATION NUMBER    18.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.87805                 
+                          
+ THE CONVERGENCE INDEX IS       2.64367       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.992814     0.453623E-01  85.7792      1.45364   
+  1.01290     0.429150E-01  77.7344      1.52145   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.153837                 
+ -.391614E-02 0.254358E-03
+  10.6582     -.270256      1427.43                
+ -.174465E-01 0.139934E-03 -12.1858     0.262841   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.392220     0.159486E-01  37.7813     0.512681   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.626045      1.00000    
+ 0.719248     -.448514      1.00000                
+ -.867626E-01 0.171142E-01 -.629115      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  39.5059      35.1582      44.0448      35.2687   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3884788562349542     
+                          
+                          
+ ITERATION NUMBER    19.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.87664                 
+                          
+ THE CONVERGENCE INDEX IS       1.41732       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.00380     0.453410E-01  85.8274      1.45668   
+  1.02592     0.428823E-01  77.8318      1.52703   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.158412                 
+ -.399089E-02 0.254488E-03
+  10.8012     -.270701      1430.09                
+ -.164608E-01 0.130487E-03 -12.1816     0.261123   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.398010     0.159527E-01  37.8165     0.511002   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.628555      1.00000    
+ 0.717622     -.448720      1.00000                
+ -.809349E-01 0.160071E-01 -.630378      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  39.6503      35.1837      44.0611      35.0800   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3886641203915118     
+                          
+                          
+ ITERATION NUMBER    20.  
+                          
+                          
+                          
+ THE AVERAGE LOG-LIKELIHOOD OF THE PATIENT DATA FILES                       
+ GIVEN THE PARAMETER ESTIMATES FOR THIS CYCLE, AND THE PRIOR                
+ POPULATION ESTIMATES (MEAN AND COVARIANCE), IS    -9.87616                 
+                          
+ THE CONVERGENCE INDEX IS      0.475598       (1.0 = CONVERGENCE).          
+                          
+                          
+                          
+                          
+ THE TRUE (NUMERICAL) LOG-LIKELIHOOD OF THE  20    
+ SUBJECT VECTORS IS    -223.905                    
+                          
+                          
+ THE AKAIKE INFO. CRITERION (AIC) IS     477.810   
+                          
+ THE SCHWARTZ (BAYESIAN) INFO. CRITERION (BIC) IS     521.827               
+                          
+                          
+                          
+ THE NEW BAYESIAN POSTERIOR POPULATION ESTIMATES (AT                        
+ THE END OF THIS ITERATION) ARE SHOWN BELOW (THE 1ST ROW GIVES              
+ THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
+ GIVE THE COVARIANCE MATRIX):                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.01470     0.453199E-01  85.8713      1.45954   
+  1.03863     0.428517E-01  77.9142      1.53247   
+                          
+     Ka           Ke           V            Tlag1  
+ 0.162934                 
+ -.405977E-02 0.254522E-03
+  10.9328     -.271024      1432.66                
+ -.153268E-01 0.121238E-03 -12.1767     0.259587   
+                          
+ THE STANDARD DEVIATION ESTIMATES ARE:             
+                          
+     Ka           Ke           V            Tlag1  
+ 0.403650     0.159537E-01  37.8505     0.509496   
+                          
+ THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
+ IS, IN LOWER-TRI FORM:   
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.630426      1.00000    
+ 0.715576     -.448821      1.00000                
+ -.745256E-01 0.149155E-01 -.631419      1.00000   
+                          
+ THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
+ FOR THE VARIABLES ARE:   
+                          
+     Ka           Ke           V            Tlag1  
+  39.7804      35.2025      44.0781      34.9079   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3888237766405398     
+                          
+                          
+ THE RANGES TO BE CONSIDERED FOR THE NPAG          
+ POPULATION PROGRAM ARE AS FOLLOWS:                
+                          
+                          
+ Ka         :  0.1000000000E-07  TO    3.032949944 
+                          
+ Ke         :  0.1000000000E-07  TO   0.1250885220 
+                          
+ V          :  0.1000000000E-07  TO    275.1237245 
+                          
+ Tlag1      :  0.1000000000E-07  TO    4.007025175 
+                          
+                          
+ THIS RUN STOPPED BECAUSE ...                      
+ THE CONVERGENCE CRITERION WAS MET AT ITERATION NO.
+     20                   
+
+***************** END OF THE OUTPUT FILE *****************
+
+************ LAST CYCLE PARAMETER INFORMATION FILE **********
+
+ REM_FRN MAR_16 ... made by it2branfix1.f          
+  THIS FILE CONTAINS, FOR THE LAST ITERATION ONLY, 
+ FOR EACH SUBJECT, THE PARAMETER ESTIMATES, THE ESTIMATE OF THE             
+ COVARIANCE MATRIX OF THESE ESTIMATES, AND THE CORRESPONDING                
+ CORRELATION MATRIX, STANDARD DEVIATIONS, AND % COEFFICIENTS OF             
+ OF VARIATIONS. ALSO INCLUDED ARE GAMMA UPDATE(S)  
+ (IF APPLICABLE) AND PREDICTED VALUES BASED FIRST ON FINAL                  
+ CYCLE POPULATION VALUES, AND THEN ON MAP BAYESIAN PARAMETER                
+ ESTIMATES (THE MAP BAYESIANS ESTIMATES THEMSELVES ARE ALSO                 
+ WRITTEN TO THIS FILE.    
+                          
+ ALL MATRICES ARE WRITTEN IN LOWER TRIANGULAR FORM.
+                          
+                          
+                          
+                          
+ ITERATION NUMBER    20.  
+                          
+                          
+                          
+                          
+                          
+ SUBJECT NO.    1         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.12499     0.205527E-01  76.5330      1.62523   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.877821E-01             
+ -.107405E-02 0.320679E-04
+  3.49688     -.103722      347.731                
+ 0.256895E-01 0.241007E-03 -.991439     0.732146E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.296280     0.566286E-02  18.6476     0.270582   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.640154      1.00000    
+ 0.632930     -.982231      1.00000                
+ 0.320445     0.157288     -.196492      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  26.3363      27.5529      24.3654      16.6488   
+                          
+                          
+                          
+ SUBJECT NO.    2         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.35398     0.325123E-01  147.622     0.542316   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.100254                 
+ -.109186E-02 0.249978E-04
+  5.07681     -.107643      517.169                
+ 0.196876E-01 0.170551E-03 -1.17605     0.586889E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.316629     0.499978E-02  22.7414     0.242258   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.689709      1.00000    
+ 0.705056     -.946710      1.00000                
+ 0.256663     0.140808     -.213467      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  23.3851      15.3781      15.4051      44.6710   
+                          
+                          
+                          
+ SUBJECT NO.    3         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.40466     0.450744E-01  99.9369      2.07434   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.708797E-01             
+ -.110292E-02 0.355981E-04
+  2.75862     -.845630E-01  225.689                
+ 0.442320E-02 -.131199E-03 0.219261     0.333531E-02                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.266232     0.596641E-02  15.0230     0.577522E-01                        
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.694337      1.00000    
+ 0.689726     -.943434      1.00000                
+ 0.287678     -.380757     0.252719      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  18.9536      13.2368      15.0324      2.78413   
+                          
+                          
+                          
+ SUBJECT NO.    4         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.14782     0.518874E-01  130.213     0.765421   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.855702E-01             
+ -.130968E-02 0.396012E-04
+  3.75455     -.102840      312.907                
+ 0.170327E-01 -.198218E-03 0.314411     0.151439E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.292524     0.629294E-02  17.6892     0.123061   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.711459      1.00000    
+ 0.725586     -.923843      1.00000                
+ 0.473153     -.255958     0.144434      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  25.4852      12.1281      13.5848      16.0775   
+                          
+                          
+                          
+ SUBJECT NO.    5         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.58351     0.438706E-01  167.304     0.849413   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.100374                 
+ -.133582E-02 0.317439E-04
+  5.27583     -.110283      455.338                
+ 0.109547E-01 -.157692E-03 0.327910     0.881618E-02                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.316819     0.563417E-02  21.3387     0.938945E-01                        
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.748351      1.00000    
+ 0.780391     -.917300      1.00000                
+ 0.368255     -.298085     0.163662      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  20.0074      12.8427      12.7544      11.0541   
+                          
+                          
+                          
+ SUBJECT NO.    6         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.999345     0.389838E-01  62.8067      1.93853   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.611375E-01             
+ -.926708E-03 0.356380E-04
+  1.58937     -.616212E-01  115.737                
+ 0.902848E-02 -.192088E-03 0.233994     0.103206E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.247260     0.596976E-02  10.7581     0.101590   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.627816      1.00000    
+ 0.597496     -.959482      1.00000                
+ 0.359425     -.316731     0.214099      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  24.7422      15.3134      17.1289      5.24059   
+                          
+                          
+                          
+ SUBJECT NO.    7         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.955621     0.488947E-01  59.6265      2.03000   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.719086E-01             
+ -.690348E-03 0.336807E-04
+  1.03252     -.481746E-01  76.6833                
+ 0.531057E-01 0.964535E-04 -.388531E-02 0.130395   
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.268158     0.580351E-02  8.75690     0.361103   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.443595      1.00000    
+ 0.439703     -.947931      1.00000                
+ 0.548428     0.460253E-01 -.122870E-02  1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  28.0611      11.8694      14.6863      17.7883   
+                          
+                          
+                          
+ SUBJECT NO.    8         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.02451     0.392049E-01  63.9605      1.98210   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.610399E-01             
+ -.947553E-03 0.362054E-04
+  1.64369     -.630074E-01  119.247                
+ 0.773729E-02 -.194949E-03 0.246256     0.879340E-02                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.247063     0.601709E-02  10.9200     0.937731E-01                        
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.637397      1.00000    
+ 0.609241     -.958917      1.00000                
+ 0.333967     -.345507     0.240483      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  24.1152      15.3478      17.0731      4.73101   
+                          
+                          
+                          
+ SUBJECT NO.    9         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.14044     0.417806E-01  105.962      1.22989   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.827711E-01             
+ -.914974E-03 0.338269E-04
+  2.66314     -.926871E-01  280.351                
+ 0.370852E-01 0.344928E-03 -1.15165     0.922046E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.287700     0.581609E-02  16.7437     0.303652   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.546812      1.00000    
+ 0.552844     -.951780      1.00000                
+ 0.424507     0.195308     -.226513      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  25.2271      13.9205      15.8016      24.6894   
+                          
+                          
+                          
+ SUBJECT NO.   10         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.855089     0.537271E-01  70.6811      1.30749   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.754386E-01             
+ -.895776E-03 0.431478E-04
+  1.36166     -.660659E-01  112.931                
+ 0.516732E-01 -.315400E-04 -.984850E-01 0.846530E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.274661     0.656869E-02  10.6269     0.290952   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.496505      1.00000    
+ 0.466514     -.946435      1.00000                
+ 0.646617     -.165029E-01 -.318523E-01  1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  32.1207      12.2260      15.0350      22.2527   
+                          
+                          
+                          
+ SUBJECT NO.   11         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.844349     0.624271E-01  80.8233      1.47258   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.756959E-01             
+ -.990075E-03 0.428938E-04
+  1.47997     -.657056E-01  117.044                
+ 0.426493E-01 -.224496E-03 0.140948     0.493470E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.275129     0.654934E-02  10.8187     0.222142   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.549458      1.00000    
+ 0.497212     -.927322      1.00000                
+ 0.697823     -.154305     0.586480E-01  1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  32.5847      10.4912      13.3856      15.0852   
+                          
+                          
+                          
+ SUBJECT NO.   12         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.34637     0.262393E-01  106.344      1.59236   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.924484E-01             
+ -.106494E-02 0.291624E-04
+  4.18302     -.111347      450.405                
+ 0.218086E-01 0.356734E-03 -1.67795     0.767249E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.304053     0.540022E-02  21.2228     0.276993   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.648580      1.00000    
+ 0.648245     -.971549      1.00000                
+ 0.258947     0.238487     -.285436      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  22.5832      20.5807      19.9566      17.3951   
+                          
+                          
+                          
+ SUBJECT NO.   13         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.257818     0.744539E-01  39.2619      1.61204   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.102456E-01             
+ -.112140E-02 0.167393E-03
+ 0.601955     -.943516E-01  57.2787                
+ 0.708323E-02 -.618255E-03 0.226315     0.367496E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.101221     0.129380E-01  7.56827     0.191702   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.856294      1.00000    
+ 0.785775     -.963572      1.00000                
+ 0.365036     -.249271     0.155988      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  39.2605      17.3772      19.2764      11.8919   
+                          
+                          
+                          
+ SUBJECT NO.   14         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.05977     0.418328E-01  123.787     0.716850   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.902669E-01             
+ -.126869E-02 0.352432E-04
+  4.13320     -.106390      361.956                
+ 0.227588E-01 -.156795E-03 0.185043     0.300099E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.300444     0.593660E-02  19.0251     0.173234   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.711303      1.00000    
+ 0.723093     -.941963      1.00000                
+ 0.437272     -.152463     0.561453E-01  1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  28.3500      14.1913      15.3693      24.1660   
+                          
+                          
+                          
+ SUBJECT NO.   15         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.05274     0.311939E-01  79.2953      1.45707   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.821816E-01             
+ -.988030E-03 0.358046E-04
+  2.60489     -.928886E-01  255.349                
+ 0.343769E-01 0.213475E-03 -.742581     0.789616E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.286673     0.598370E-02  15.9796     0.281001   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.575988      1.00000    
+ 0.568636     -.971462      1.00000                
+ 0.426749     0.126961     -.165375      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  27.2311      19.1822      20.1521      19.2853   
+                          
+                          
+                          
+ SUBJECT NO.   16         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.10344     0.344139E-01  90.2210      1.37722   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.829239E-01             
+ -.963887E-03 0.344335E-04
+  2.71389     -.942082E-01  276.009                
+ 0.344960E-01 0.267912E-03 -.932752     0.820253E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.287965     0.586801E-02  16.6135     0.286401   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.570421      1.00000    
+ 0.567271     -.966354      1.00000                
+ 0.418268     0.159414     -.196034      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  26.0971      17.0513      18.4143      20.7956   
+                          
+                          
+                          
+ SUBJECT NO.   17         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.751304     0.701193E-01  67.5545      1.17593   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.722481E-01             
+ -.917748E-03 0.461432E-04
+  1.04171     -.547672E-01  76.3281                
+ 0.629659E-01 -.214399E-03 0.101608     0.103258   
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.268790     0.679288E-02  8.73659     0.321337   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.502639      1.00000    
+ 0.443601     -.922835      1.00000                
+ 0.729005     -.982217E-01 0.361931E-01  1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  35.7764      9.68760      12.9327      27.3261   
+                          
+                          
+                          
+ SUBJECT NO.   18         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+  1.00833     0.282739E-01  62.9634      1.79078   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.764635E-01             
+ -.110987E-02 0.384604E-04
+  2.42553     -.845292E-01  194.898                
+ 0.219928E-01 -.150638E-03 0.169713     0.343792E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.276520     0.620165E-02  13.9606     0.185416   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.647201      1.00000    
+ 0.628314     -.976330      1.00000                
+ 0.428948     -.131002     0.655637E-01  1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  27.4236      21.9341      22.1725      10.3540   
+                          
+                          
+                          
+ SUBJECT NO.   19         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.567305     0.628833E-01  30.6185      1.90131   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.502761E-01             
+ -.116615E-02 0.585310E-04
+ 0.556982     -.317217E-01  19.5618                
+ 0.127586E-01 -.370957E-03 0.147410     0.113701E-01                        
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.224223     0.765056E-02  4.42287     0.106631   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.679802      1.00000    
+ 0.561638     -.937473      1.00000                
+ 0.533629     -.454724     0.312564      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  39.5243      12.1663      14.4451      5.60826   
+                          
+                          
+                          
+ SUBJECT NO.   20         
+                          
+ THE PARAMETER ESTIMATES ARE:                      
+                          
+     Ka           Ke           V            Tlag1  
+ 0.712569     0.580713E-01  51.9118      1.75000   
+                          
+  THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.789435E-01             
+ -.114145E-02 0.467744E-04
+  1.27075     -.526960E-01  66.4883                
+ 0.565955E-01 -.224478E-03 0.324501     0.129657   
+                          
+ THE CORRESPONDING STANDARD DEVIATIONS ARE:        
+                          
+     Ka           Ke           V            Tlag1  
+ 0.280969     0.683918E-02  8.15404     0.360079   
+                          
+ THE CORRESPONDING CORRELATION MATRIX IS:          
+                          
+     Ka           Ke           V            Tlag1  
+  1.00000                 
+ -.594009      1.00000    
+ 0.554663     -.944933      1.00000                
+ 0.559404     -.911531E-01 0.110521      1.00000   
+                          
+ THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
+                          
+     Ka           Ke           V            Tlag1  
+  39.4304      11.7772      15.7075      20.5760   
+                          
+                          
+ EACH OF THE 1 OUTPUT EQUATION(S) HAS ASSOCIATED   
+ A UNIQUE GAMMA, WHERE THE ASSAY ERROR S.D. FOR THAT OUTPUT IS              
+ S.D. = GAMMA*(C0+C1*Y+C2*Y^2+C3*Y^3). THE UPDATED 
+ ESTIMATE(S) FOR THE 1 GAMMA(S) FOLLOW(S):         
+   2.3888237766405398     
+                          
+                          
+ SUMMARY INFORMATION FOR THE RUN FOLLOWS:          
+                          
+                          
+ THE NUMBER OF SUBJECTS IS  20                     
+                          
+ THE NUMBER OF PARAMETERS IS  4                    
+                          
+ THE PARAMETERS ARE:      
+Ka          Ke          V           Tlag1          
+                          
+ THE CORRESPONDING BOUNDARIES ARE:                 
+   1.0000000000000000E-008   3.0329499444978993    
+   1.0000000000000000E-008  0.12508852201309079    
+   1.0000000000000000E-008   275.12372445413143    
+   1.0000000000000000E-008   4.0070251748330916    
+                          
+ THE POPULATION VALUES FOR [C0,C1,C2,C3] FOR EACH OF                        
+ THE  1 OUTPUT EQUATION(S), ARE SHOWN BELOW:       
+                          
+ EQ.  1: 0.2000000000E-01 0.5000000000E-01 -.2000000000E-03  0.000000000    
+                          
+ THE ACTIVE (SALT) FRACTION(S) FOR THE  1 DRUG(S)  
+ FOLLOW, IN ORDER:        
+   1.0000000000000000     
+                          
+ THE NUMBER OF FIXED VARIABLE VALUES IS  0         
+                          
+ THE NUMBER OF RANFIX PARAMETERS IS  0             
+                          
+                          
+ THE PREDICTED VALUES FOR EACH SUBJECT, BASED FIRST
+ ON THE FINAL CYCLE POPULATION MEANS, AND THEN ON THE FINAL                 
+ CYCLE POPULATION MEDIANS, FOLLOW:                 
+                          
+   3.9545344799131725        4.7460404733106349    
+   3.7793159410799362        4.5469606195256000    
+   6.5222700779800027        7.2866083999432556    
+   8.8969654151346553        10.228789100984208    
+   7.8233013025612914        9.0564387006145566    
+   6.8316563772593435        7.9667886797517795    
+   3.9695765425247465        4.7680508617228456    
+   3.9545344799131725        4.7460404733106349    
+   3.7827430557637087        4.5508591871753215    
+   6.4453687712571686        7.1933520588676485    
+   8.8936452344897905        10.225183063616628    
+   7.8162802016656974        9.0487481124213875    
+   6.8254701656394872        7.9599668047880554    
+   3.9659801592077821        4.7639662332948349    
+   3.9402229220843030        4.7297982679581008    
+   3.7673454724776958        4.5333419146815936    
+   6.8129025797570861        7.6388300058985870    
+   8.8668857457071315        10.196108729518313    
+   7.8057579716110723        9.0372219788821742    
+   6.8007806895205221        7.9327370910455821    
+   3.9516271791830313        4.7476626812518914    
+   3.9545344799131725        4.7460404733106349    
+   3.7793159410799362        4.5469606195256000    
+   6.5974395000809150        7.3777409761234143    
+   8.8936452344897905        10.225183063616628    
+   7.8127715326614044        9.0449047650323688    
+   6.8316563772593426        7.9667886797517813    
+   3.9623870341657375        4.7598851040300616    
+   3.9545344799131725        4.7460404733106349    
+   3.7793159410799362        4.5469606195256000    
+   6.5222700779800027        7.2866083999432556    
+   8.8936452344897905        10.225183063616628    
+   7.8162802016656991        9.0487481124213875    
+   6.8316563772593435        7.9667886797517777    
+   3.9659801592077821        4.7639662332948340    
+   3.9545344799131725        4.7460404733106349    
+   3.7793159410799362        4.5469606195256000    
+   6.4453687712571686        7.1933520588676485    
+   8.8936452344897905        10.225183063616628    
+   7.8233013025612914        9.0564387006145584    
+   6.8378481333781620        7.9736163406821419    
+   3.7936915160905529        4.5680477488750482    
+   3.9545344799131725        4.7460404733106349    
+   3.7741810899001318        4.5411190292282040    
+   6.6343857076191757        7.4225245871505212    
+   8.8869879272978967        10.217951648026096    
+   7.7952471135886450        9.0257076157172449    
+   6.8223791378568208        7.9565580359007937    
+   3.9605916925752265        4.7578458506470378    
+   3.9545344799131725        4.7460404733106349    
+   3.7741810899001318        4.5411190292282040    
+   6.5222700779800027        7.2866083999432556    
+   8.9002798463220465        10.232388576303912    
+   7.8303274014585558        9.0641344592885389    
+   6.8316563772593435        7.9667886797517795    
+   3.9695765425247465        4.7680508617228456    
+   3.9545344799131725        4.7460404733106349    
+   3.7844577783303657        4.5528097243092116    
+   6.5222700779800027        7.2866083999432538    
+   8.9002798463220465        10.232388576303908    
+   7.8303274014585558        9.0641344592885371    
+   6.8316563772593435        7.9667886797517777    
+   3.9695765425247465        4.7680508617228448    
+   3.9545344799131725        4.7460404733106349    
+   3.7793159410799362        4.5469606195256000    
+   6.5974395000809150        7.3777409761234143    
+   8.8936452344897905        10.225183063616628    
+   7.8233013025612914        9.0564387006145584    
+   6.8409460917790321        7.9770323420220564    
+   3.9659801592077830        4.7639662332948349    
+   3.9545344799131725        4.7460404733106349    
+   3.7741810899001318        4.5411190292282040    
+   6.5222700779800027        7.2866083999432556    
+   8.9002798463220465        10.232388576303912    
+   7.8233013025612923        9.0564387006145584    
+   6.8316563772593453        7.9667886797517813    
+   3.9426829563179377        4.7375013067899658    
+   3.9545344799131725        4.7460404733106349    
+   3.7741810899001318        4.5411190292282040    
+   6.9814414210329581        7.8429221846749799    
+   8.8936452344897905        10.225183063616628    
+   7.8233013025612914        9.0564387006145584    
+   6.8316563772593435        7.9667886797517813    
+   3.9659801592077821        4.7639662332948358    
+   3.9545344799131725        4.7460404733106349    
+   3.7793159410799362        4.5469606195256000    
+   6.5222700779800027        7.2866083999432556    
+   8.8936452344897905        10.225183063616628    
+   7.8162802016656991        9.0487481124213875    
+   6.8316563772593435        7.9667886797517777    
+   3.9659801592077821        4.7639662332948340    
+   3.9545344799131725        4.7460404733106349    
+   3.7793159410799362        4.5469606195256000    
+   6.5222700779800027        7.2866083999432556    
+   8.8936452344897905        10.225183063616628    
+   7.8233013025612923        9.0564387006145584    
+   6.8316563772593453        7.9667886797517813    
+   3.9659801592077835        4.7639662332948358    
+   2.9659008599348797        3.5595303549829760    
+   2.8344869558099521        3.4102204646441998    
+   4.8917025584850018        5.4649562999574410    
+   6.6702339258673424        7.6688872977124714    
+   5.8674759769209688        6.7923290254609183    
+   5.1121509270102541        5.9623086247625396    
+   2.9677525870586230        3.5653274733805480    
+   3.9545344799131725        4.7460404733106349    
+   3.7793159410799362        4.5469606195256000    
+   6.5222700779800027        7.2866083999432556    
+   8.8936452344897905        10.225183063616628    
+   7.8233013025612923        9.0564387006145584    
+   6.8316563772593453        7.9667886797517813    
+   3.9713759569595370        4.7700944890605177    
+   3.9545344799131725        4.7460404733106349    
+   3.7758919313161754        4.5430653916472750    
+   6.5974395000809150        7.3777409761234161    
+   8.8936452344897905        10.225183063616630    
+   7.8233013025612914        9.0564387006145601    
+   6.8316563772593435        7.9667886797517822    
+   3.9516271791830309        4.7476626812518932    
+   2.9659008599348797        3.5595303549829760    
+   2.8370572918227817        3.4131443903814911    
+   4.8340265784428773        5.3950140441507362    
+   6.6702339258673442        7.6688872977124714    
+   5.8228376103033472        6.7434269358085688    
+   5.0844374481050885        5.9317400977768608    
+   2.9785319677196522        3.5775708667953872    
+   3.9545344799131725        4.7460404733106349    
+   3.7793159410799362        4.5469606195256000    
+   6.5222700779800027        7.2866083999432556    
+   8.9002798463220465        10.232388576303912    
+   7.8303274014585558        9.0641344592885389    
+   6.8316563772593435        7.9667886797517795    
+   3.9659801592077821        4.7639662332948349    
+   3.9545344799131725        4.7460404733106349    
+   3.8189159293072716        4.5919965080189371    
+   5.4243385723686046        5.9529515112058338    
+   8.9997232919656813        10.340200261105410    
+   7.9398517947528582        9.1840590545611835    
+   4.0257393470697069        4.8318123027742077    
+                          
+                          
+ THE PREDICTED VALUES FOR EACH SUBJECT, BASED ON   
+ THE MAP BAYESIAN POSTERIOR PARAMETER ESTIMATES OF THAT SUBJECT             
+ (WHICH ARE THEMSELVES BASED FIRST ON THE FINAL CYCLE                       
+ POPULATION MEANS, AND THEN ON THE FINAL CYCLE POPULATION                   
+ MEDIANS), FOLLOW:        
+                          
+   11.850552524335869        11.809080749110631    
+   11.609837356526405        11.560120107928153    
+   14.060099239482241        14.172118939911831    
+   17.715222834872719        17.865598552379314    
+   16.704512944722019        16.801881113036679    
+   15.708752651323996        15.762846151431333    
+   12.284911240062488        12.211697135833363    
+   3.5142482635403014        3.4939922312062106    
+   5.2043653263554264        5.2380445782083536    
+   6.6763722472487279        6.7462234055341286    
+   6.3718073134321118        6.4147761423592193    
+   5.7789925257095467        5.8048517263691011    
+   5.2428161701547120        5.2546274338934218    
+   3.5537353209972236        3.5303957371611254    
+   3.4652478162109857        3.4701231605525860    
+   3.3140490235992903        3.3182060357250265    
+   3.2123665551279696        3.2124708582993025    
+   7.8012407661238754        7.8374216779828592    
+   6.8416233047383095        6.8668705824681284    
+   5.9632900568386402        5.9824086212667495    
+   3.4755590001486056        3.4802782420208476    
+   2.0259510952208477        2.0224104112426082    
+   3.0028737952990401        3.0138513651658090    
+   5.2089873988043260        5.2837794255313266    
+   5.1478093997520817        5.1753989834143299    
+   4.4087486968246186        4.4257292225624667    
+   3.7797852744233085        3.7900332702755040    
+   2.0267167697424662        2.0230429954848335    
+   2.0412984675244754        2.0361731904634732    
+   2.7108105444985631        2.7127057109618895    
+   4.7882589279342556        4.8386249846999361    
+   4.5088191351504721        4.5323777620748480    
+   3.9504348702299303        3.9657184253556306    
+   3.4665446443761554        3.4754367665260624    
+   2.0482244259296127        2.0427645045080163    
+   6.8587744099224262        6.8695453016522956    
+   6.5967163585331043        6.6076233626619088    
+   6.7347115754840328        6.7504983618626300    
+   13.745104185601065        13.783427380868567    
+   12.366011916160845        12.373455713059412    
+   11.017190733824682        11.024233849276275    
+   6.6396123029348084        6.6509116428700521    
+   5.2296641829036377        5.2425957084526962    
+   4.9729646829102245        4.9866095147831784    
+   4.7358027026689413        4.7500435168120632    
+   12.392970127507942        12.417417229903952    
+   10.851682093655841        10.840880399751480    
+   9.4041895295743156        9.3987243239466345    
+   5.2322744545096080        5.2455541038257776    
+   6.6877270104013702        6.7003741721761916    
+   6.4232869689923575        6.4361973383741313    
+   6.3513133824575618        6.3625649509895874    
+   13.468686149630985        13.501920932987128    
+   12.104876641143026        12.110100600082989    
+   10.760167679857192        10.766503701080762    
+   6.7303944704321550        6.7435659134882364    
+   3.5614306922019834        3.5566226045558755    
+   3.4200013202520956        3.4143566326595258    
+   6.5310780557687904        6.6275749582204018    
+   7.5677775123614035        7.6031845433023948    
+   6.6974761768077347        6.7189559456453365    
+   5.9043180258982408        5.9175301631718851    
+   3.5795166120596504        3.5742138591027071    
+   3.6881655207253936        3.6866904158375395    
+   3.4953201882627321        3.4935535576476680    
+   7.0983988695447842        7.2354197970175527    
+   9.5482876272498167        9.5872386144347885    
+   8.2514102587017373        8.2639729358816183    
+   7.0442425269414697        7.0505712271798391    
+   3.6924183963540345        3.6908920560361005    
+   2.5281052748465989        2.5337517738152902    
+   2.3706811230320635        2.3764217932806022    
+   4.8559233784303792        4.9010157395367413    
+   7.6170105211754553        7.6508815842178537    
+   6.4377354175413499        6.4395717107447403    
+   5.3481845344945702        5.3489767078450585    
+   2.5087615129505938        2.5144470437749287    
+   6.5456598813764213        6.5264831599557702    
+   6.3710206702211112        6.3483942084839340    
+   9.0787247315469646        9.1360014373597220    
+   10.705566654274170        10.780078530265476    
+   9.9075976852910923        9.9569721109625373    
+   9.1573861797081264        9.1862730423803889    
+   6.6825699048993812        6.6551063542780140    
+   4.8057974449744183        4.7913119765710492    
+   4.4711023791917528        4.4586004756650137    
+   5.5980216970188614        5.6910647178736120    
+   11.665831647501770        11.707720033234709    
+   11.677811252683714        11.678023845549333    
+   10.431428774450854        10.409999147559580    
+   4.8063256663757032        4.7918634031906748    
+   2.9874520632878658        2.9758524602848100    
+   4.1130702519176277        4.1401271909276032    
+   6.2399002479593104        6.3211058530278290    
+   6.3480299768182631        6.3776193258235612    
+   5.6150974409871690        5.6311450010924409    
+   4.9539931758267723        4.9611389769073000    
+   3.0000858685713037        2.9878314385523872    
+   5.3632447569268029        5.3487748596082785    
+   5.1986071472422761        5.1819615521137976    
+   7.4876710736437309        7.5871885480069317    
+   9.4741435927978515        9.5358054041231384    
+   8.6689011422286946        8.7062576296340737    
+   7.8841995485313641        7.9055882395372281    
+   5.4234338058177478        5.4052458176862936    
+   5.5152115022101995        5.5023287371673568    
+   5.3286803155478095        5.3138503397992913    
+   8.4177932516799672        8.5298791106857053    
+   10.299728865839828        10.360773359621652    
+   9.3241920686295927        9.3616584087414818    
+   8.4109811019698206        8.4331341393673593    
+   5.5716962106005399        5.5564610745388574    
+   2.4282835792073345        2.4299662677830183    
+   2.2607826502219068        2.2625291891799688    
+   6.1380203824313142        6.2772221353601418    
+   8.3171589910691761        8.3444560669502952    
+   6.9214436549125145        6.9234323114603500    
+   5.6279494149408320        5.6273117928855756    
+   2.4151475096641848        2.4168401032657845    
+   7.6981798482195627        7.6872700764028465    
+   7.4879099470710653        7.4749337489964960    
+   8.5154253927738992        8.5732308155389720    
+   12.921718141095248        12.989658423563277    
+   11.902540490184400        11.937494759208162    
+   10.938514457231037        10.959017275150375    
+   7.8369221560692282        7.8217169985235833    
+   7.0456372627525177        7.0655249589888554    
+   6.6165568621550674        6.6426446067897515    
+   7.2767335404320761        7.3071663515829375    
+   19.728547995435115        19.876284683425261    
+   17.727301958910314        17.620606865130704    
+   14.913717030543085        14.789357300440894    
+   7.0485527253323736        7.0688433046421730    
+   4.5915392847741465        4.6027995008581435    
+   4.3908723942030967        4.4043931208026512    
+   4.1481107686318888        4.1641961959618632    
+   12.555329933232896        12.596107718202793    
+   11.097193511124242        11.023397914286285    
+   4.6836502855723374        4.6941964639057483    
+                          
+                          
+ THE MAP BAYESIAN PARAMATER ESTIMATES FOR EACH     
+ SUBJECT, BASED FIRST ON THE FINAL CYCLE POPULATION MEANS,                  
+ AND THEN ON THE FINAL CYCLE POPULATION MEDIANS, FOLLOW:                    
+                          
+   1.1387549319218677        1.1663709026588920    
+   2.0521706325083308E-002   2.1307537378136003E-002                        
+   76.629419855556520        74.031889048323862    
+   1.6291672779141435        1.6255492374317710    
+   1.3659242276279289        1.3841180338744610    
+   3.2459070233949595E-002   3.3196931207214286E-002                        
+   147.87747137259737        144.33451323792372    
+  0.54615918616446535       0.54810431259910453    
+   1.4259692174189937        1.4794773173564106    
+   4.5064078930351040E-002   4.5217979881244971E-002                        
+   99.905759100739175        99.144953013973321    
+   2.0746338286115877        2.0752472652829939    
+   1.1560624085804929        1.1949209438052957    
+   5.1851330897316902E-002   5.2227446426082902E-002                        
+   130.31676632300406        128.84414938057250    
+  0.76726707806970285       0.77422724407790788    
+   1.6004613829427679        1.6364922591763704    
+   4.3848754409616511E-002   4.4284677706002896E-002                        
+   167.38414810934574        165.21279287409533    
+  0.85119216986145074       0.85496986974403133    
+   1.0124762418158442        1.0752587925903823    
+   3.8956764717423521E-002   3.8873880595215057E-002                        
+   62.829338126560316        62.773712907728957    
+   1.9393129913288980        1.9412405132049457    
+  0.96851416187828243        1.0339181966371420    
+   4.8864940793757500E-002   4.8602443874295867E-002                        
+   59.638584055460001        59.783150243554061    
+   2.0299999998873708        2.0299999998272416    
+   1.0388582662024646        1.1031519310292908    
+   3.9169011277503329E-002   3.9053865193320256E-002                        
+   63.997641033773874        63.994515720994755    
+   1.9826413953169169        1.9838383837811924    
+   1.1524432236631970        1.1940552973516749    
+   4.1774646242493385E-002   4.2084852819678741E-002                        
+   105.97657913454476        104.84588542641747    
+   1.2357646134823153        1.2374259164302415    
+  0.86128118637699158       0.89724083971219326    
+   5.3704205291654525E-002   5.3809721789290395E-002                        
+   70.710184955039296        70.319988179557043    
+   1.3131741219830437        1.3120301438232638    
+  0.85306783026299560       0.92028016393258838    
+   6.2420213007552960E-002   6.2238070466185978E-002                        
+   80.806350798362018        80.728918351824575    
+   1.4774044689136374        1.5076400377395320    
+   1.3640341283790605        1.3986121348850193    
+   2.6254882465126181E-002   2.6860515743356551E-002                        
+   106.27803297230653        103.79948107170127    
+   1.5983724593966744        1.6077697470394763    
+  0.25699725190578876       0.26097065310698120    
+   7.4560936629028490E-002   7.4149091383203317E-002                        
+   39.205547698625018        39.414292382722302    
+   1.6094781777035529        1.5834611611776737    
+   1.0666502391696298        1.1011703682274110    
+   4.1796590636046349E-002   4.2257637498276379E-002                        
+   123.91634278559744        122.24912724202754    
+  0.71856772026652971       0.72172108469517049    
+   1.0635009189260158        1.1004433514784326    
+   3.1178423640859189E-002   3.1683873886882236E-002                        
+   79.330612576952177        77.864342428580528    
+   1.4620793946786113        1.4594740886156570    
+   1.1148528280624161        1.1529324323308243    
+   3.4406390395862720E-002   3.4854725827673134E-002                        
+   90.236848184580623        88.814360729893750    
+   1.3826774046261343        1.3829269820561798    
+  0.75600640199711577       0.78366876250190265    
+   7.0072223894111899E-002   6.9994228776705678E-002                        
+   67.611735441842072        67.431827315432002    
+   1.1825947596942863        1.1758949470991875    
+   1.0199487977118178        1.0685300469497907    
+   2.8259392705412174E-002   2.8582109926939991E-002                        
+   62.982365908029671        62.147768246821627    
+   1.7931891968329003        1.7928257543226740    
+  0.57120311884938968       0.63372025747336969    
+   6.2837578348889089E-002   6.1718245361028316E-002                        
+   30.633841109796556        31.129527694518369    
+   1.9019836526364757        1.9103015194787534    
+  0.71653089858859520       0.79115013333052986    
+   5.8035744561211987E-002   5.7223704250113999E-002                        
+   51.958285305121407        52.620305528164636    
+   1.7500000005187082        1.7500000003243423    
+
+********* END OF LAST CYCLE PARAMETER INFO FILE ***********
+
+***************** START OF THE PATIENT DATA INFO FILE *****************
+
+  LAST AND FIRST NAMES ARE: 1                      
+ CHART NUMBER IS: 1       
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        10.440000000000000    
+   121.00000000000000        12.890000000000001    
+   122.00000000000000        14.980000000000000    
+   125.98999999999999        16.690000000000001    
+   129.00000000000000        20.149999999999999    
+   132.00000000000000        14.970000000000001    
+   143.97999999999999        12.570000000000000    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   46.70000        46.70000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  21.00000        21.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             160.00000       160.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 2                      
+ CHART NUMBER IS: 2       
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        3.5600000000000001    
+   120.98000000000000        5.8399999999999999    
+   121.98000000000000        6.5400000000000000    
+   126.00000000000000        6.1399999999999997    
+   129.02000000000001        6.5599999999999996    
+   132.02000000000001        4.4400000000000004    
+   144.00000000000000        3.7599999999999998    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   66.50000        66.50000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  30.00000        30.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             174.00000       174.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 3                      
+ CHART NUMBER IS: 3       
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.08000000000000        4.0599999999999996    
+   121.06999999999999        3.2400000000000002    
+   122.08000000000000        3.0899999999999999    
+   126.08000000000000        7.9800000000000004    
+   129.05000000000001        7.2300000000000004    
+   132.09999999999999        4.7100000000000000    
+   144.08000000000001        3.8199999999999998    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   46.70000        46.70000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  24.00000        24.00000       -99.00000               
+GENDER                0.00000         0.00000       -99.00000               
+ HEIGHT             164.00000       164.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 4                      
+ CHART NUMBER IS: 4       
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        2.1000000000000001    
+   121.00000000000000        3.0499999999999998    
+   122.02000000000000        5.2100000000000000    
+   126.00000000000000        5.0899999999999999    
+   129.03000000000000        4.2400000000000002    
+   132.00000000000000        3.6899999999999999    
+   144.02000000000001        1.9600000000000000    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   50.80000        50.80000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  25.00000        25.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             165.00000       165.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 5                      
+ CHART NUMBER IS: 5       
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        2.9300000000000002    
+   121.00000000000000        2.6400000000000001    
+   122.00000000000000        4.7999999999999998    
+   126.00000000000000        3.7000000000000002    
+   129.02000000000001        4.1299999999999999    
+   132.00000000000000        2.8100000000000001    
+   144.00000000000000        2.2100000000000000    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   65.80000        65.80000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  22.00000        22.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             181.00000       181.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 6                      
+ CHART NUMBER IS: 6       
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        6.9199999999999999    
+   121.00000000000000        6.8899999999999997    
+   121.98000000000000        6.6399999999999997    
+   126.00000000000000        13.720000000000001    
+   129.00000000000000        12.690000000000000    
+   131.97999999999999        10.580000000000000    
+   144.97999999999999        6.6200000000000001    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   65.00000        65.00000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  23.00000        23.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             177.00000       177.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 7                      
+ CHART NUMBER IS: 7       
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        5.4100000000000001    
+   121.03000000000000        4.4600000000000000    
+   122.03000000000000        4.5400000000000000    
+   126.02000000000000        12.190000000000000    
+   129.08000000000001        12.100000000000000    
+   132.03000000000000        8.6099999999999994    
+   144.03000000000000        6.3700000000000001    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   51.70000        51.70000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  27.00000        27.00000       -99.00000               
+GENDER                0.00000         0.00000       -99.00000               
+ HEIGHT             161.00000       161.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 8                      
+ CHART NUMBER IS: 8       
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        6.1900000000000004    
+   121.03000000000000        6.3300000000000001    
+   122.00000000000000        6.2400000000000002    
+   125.98000000000000        13.029999999999999    
+   128.97999999999999        11.859999999999999    
+   132.00000000000000        11.449999999999999    
+   143.97999999999999        7.8300000000000001    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   51.20000        51.20000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  22.00000        22.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             163.00000       163.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 9                      
+ CHART NUMBER IS: 9       
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        2.8500000000000001    
+   120.97000000000000        3.7000000000000002    
+   122.00000000000000        6.6500000000000004    
+   125.98000000000000        6.8099999999999996    
+   128.97999999999999        6.5099999999999998    
+   132.00000000000000        7.4800000000000004    
+   143.97999999999999        4.5099999999999998    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   55.00000        55.00000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  23.00000        23.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             174.00000       174.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 10                     
+ CHART NUMBER IS: 10      
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        2.9300000000000002    
+   121.00000000000000        4.3600000000000003    
+   122.02000000000000        7.7900000000000000    
+   126.00000000000000        11.020000000000000    
+   129.00000000000000        8.8599999999999994    
+   131.97000000000000        6.0899999999999999    
+   144.00000000000000        4.1500000000000004    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   52.10000        52.10000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  32.00000        32.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             163.00000       163.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 11                     
+ CHART NUMBER IS: 11      
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        2.0899999999999999    
+   121.03000000000000        2.6800000000000002    
+   122.00000000000000        4.7100000000000000    
+   125.98000000000000        7.7100000000000000    
+   129.00000000000000        6.3099999999999996    
+   132.00000000000000        5.8200000000000003    
+   144.13000000000000        2.6299999999999999    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   56.50000        56.50000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  34.00000        34.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             165.00000       165.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 12                     
+ CHART NUMBER IS: 12      
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        7.0899999999999999    
+   121.03000000000000        6.1799999999999997    
+   122.13000000000000        8.6600000000000001    
+   126.00000000000000        11.160000000000000    
+   129.00000000000000        9.5099999999999998    
+   132.00000000000000        8.1400000000000006    
+   144.00000000000000        7.8899999999999997    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   47.90000        47.90000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  54.00000        54.00000       -99.00000               
+GENDER                0.00000         0.00000       -99.00000               
+ HEIGHT             160.00000       160.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 13                     
+ CHART NUMBER IS: 13      
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        6.6200000000000001    
+   121.00000000000000        3.1800000000000002    
+   122.00000000000000        5.4100000000000001    
+   126.00000000000000        10.180000000000000    
+   129.02000000000001        12.840000000000000    
+   132.00000000000000        12.350000000000000    
+   144.00000000000000        8.0600000000000005    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   60.50000        60.50000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  24.00000        24.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             180.00000       180.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 14                     
+ CHART NUMBER IS: 14      
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        3.6299999999999999    
+   121.00000000000000        4.4900000000000002    
+   122.00000000000000        5.5000000000000000    
+   126.00000000000000        7.2800000000000002    
+   129.00000000000000        5.2699999999999996    
+   132.00000000000000        4.8899999999999997    
+   144.00000000000000        2.6800000000000002    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   59.20000        59.20000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  26.00000        26.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             174.00000       174.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 15                     
+ CHART NUMBER IS: 15      
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
+   24.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
+   48.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
+   72.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
+   96.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
+   120.00000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        5.5300000000000002    
+   121.00000000000000        4.8099999999999996    
+   122.00000000000000        8.1400000000000006    
+   126.00000000000000        9.9600000000000009    
+   129.00000000000000        8.5500000000000007    
+   132.05000000000001        7.5400000000000000    
+   144.05000000000001        5.7400000000000002    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   43.00000        43.00000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  19.00000        19.00000       -99.00000               
+GENDER                0.00000         0.00000       -99.00000               
+ HEIGHT             150.00000       150.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 16                     
+ CHART NUMBER IS: 16      
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        5.4800000000000004    
+   121.00000000000000        6.5899999999999999    
+   122.00000000000000        8.9100000000000001    
+   126.00000000000000        10.570000000000000    
+   129.00000000000000        9.5199999999999996    
+   132.00000000000000        7.8300000000000001    
+   143.97000000000000        4.9600000000000000    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   64.40000        64.40000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  25.00000        25.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             173.00000       173.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 17                     
+ CHART NUMBER IS: 17      
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        2.1099999999999999    
+   121.02000000000000        1.8600000000000001    
+   122.02000000000000        6.9199999999999999    
+   126.00000000000000        9.1099999999999994    
+   129.00000000000000        6.9600000000000000    
+   132.00000000000000        5.6399999999999997    
+   144.08000000000001        3.5899999999999999    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   54.80000        54.80000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  23.00000        23.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             170.00000       170.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 18                     
+ CHART NUMBER IS: 18      
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
+   24.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
+   48.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
+   72.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
+   96.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
+   120.00000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        7.9500000000000002    
+   120.98000000000000        7.4699999999999998    
+   121.98000000000000        8.6699999999999999    
+   126.00000000000000        13.830000000000000    
+   129.16999999999999        14.010000000000000    
+   132.16999999999999        8.9700000000000006    
+   143.97000000000000        8.4000000000000004    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   44.30000        44.30000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  20.00000        20.00000       -99.00000               
+GENDER                0.00000         0.00000       -99.00000               
+ HEIGHT             164.00000       164.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 19                     
+ CHART NUMBER IS: 19      
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     7 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        5.4199999999999999    
+   121.00000000000000        7.0800000000000001    
+   122.00000000000000        7.2699999999999996    
+   125.98000000000000        20.070000000000000    
+   128.97999999999999        18.239999999999998    
+   132.00000000000000        15.359999999999999    
+   144.00000000000000        10.920000000000000    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   50.00000        50.00000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  36.00000        36.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             168.00000       168.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+  LAST AND FIRST NAMES ARE: 20                     
+ CHART NUMBER IS: 20      
+                          
+ WARD NO, PATIENT AGE (YEARS), SEX, HEIGHT (INCHES),                        
+ ETHNICITY FLAG, AND ETHNICITY DESCRIPTION (IF ANY)   FOLLOW ON             
+ THE NEXT 6 LINES:        
+-99                       
+-99                       
+M                         
+-99                       
+1                         
+Ethnicity Description     
+                          
+ DATE OF FIRST THERAPY IS   1   1   08             
+CCR ML/MIN/    0.00 150.00
+HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
+                          
+     1 ... NO. OF DRUGS   
+     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF DOSE EVENTS                      
+                          
+    TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
+   0.0000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
+   24.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
+   48.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
+   72.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
+   96.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
+   120.00000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
+                          
+     1 ... NO. OF TOTAL OUTPUT EQUATIONS           
+     6 ... NO. OF OBSERVED VALUE TIMES             
+   120.00000000000000        4.7100000000000000    
+   120.77000000000000        4.5000000000000000    
+   121.75000000000000        3.3500000000000001    
+   125.67000000000000        12.350000000000000    
+   128.66999999999999        11.560000000000000    
+   143.66999999999999        6.4500000000000002    
+                          
+ COVARIATE NAMES AND VALUES (1ST, LAST, AND MEAN) FOLLOW:                   
+WT                   59.00000        59.00000       -99.00000               
+AFRICA                1.00000         1.00000       -99.00000               
+AGE                  31.00000        31.00000       -99.00000               
+GENDER                1.00000         1.00000       -99.00000               
+ HEIGHT             170.00000       170.00000       -99.00000               
+                          
+ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
+      0.02000000        0.05060000       -0.00020000        0.00000000      
+
+***************** END OF THE PATIENT DATA INFO FILE *****************
+
+***************** START OF THE it2bdriv.f FILE *****************
+                          
+      IMPLICIT REAL*8(A-H,O-Z)                     
+                          
+      PARAMETER(MAXSUB =   20, MAXDIM =  4,        
+     1  MAXGRD =     99999,NUMEQT =  1, MAXOBDIM =   150)                   
+                          
+      DIMENSION PAREST(MAXSUB,MAXDIM),             
+     1  IESTIJ(MAXSUB,MAXDIM),IREPRT(MAXSUB),WORK(MAXGRD),                  
+     2  CORDEN(MAXGRD,MAXDIM+1),VEC(MAXSUB),PXGEE(MAXGRD),                  
+     2  SPXGYJ(MAXGRD),YPREDPOP(MAXSUB,NUMEQT,MAXOBDIM,2),                  
+     3  YPREDBAY(MAXSUB,NUMEQT,MAXOBDIM,2),        
+     4  PARBAY(MAXSUB,2,MAXDIM)                    
+                          
+      CALL IT2B(MAXSUB,MAXDIM,MAXGRD,NUMEQT,       
+     1  MAXOBDIM,PAREST,IESTIJ,IREPRT,WORK,CORDEN,PXGEE,SPXGYJ,             
+     2  YPREDPOP,YPREDBAY,PARBAY,VEC)              
+                          
+      STOP                
+      END                 
+C                         
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC              
+C                         
+                          
+C  TSTMULTN.FOR                          NOV, 2014 
+                          
+                          
+      SUBROUTINE DIFFEQ(NDIM,T,X,XP,RPAR,IPAR)     
+      IMPLICIT REAL*8(A-H,O-Z)                     
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      COMMON /PARAMD/ P   
+      COMMON /INPUT/ R,B  
+      COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG       
+      COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD         
+      DIMENSION X(NDIM),XP(NDIM),P(32),R(37),B(20),CV(26),RATEIV(7)         
+!$omp Threadprivate(/PARAMD/,/INPUT/)              
+                          
+                          
+                          
+         DO I = 1,NDRUG   
+           RATEIV(I) = R(2*I - 1)                  
+         END DO           
+                          
+         DO I = 1, NADD   
+           CV(I) = R(2*NDRUG + I)                  
+         END DO           
+                          
+         Ka=P(1)          
+         Ke=P(2)          
+         V=P(3)           
+         Tlag1=P(4)       
+         WT=CV(1)         
+         AFRICA=CV(2)     
+         AGE=CV(3)        
+         GENDER=CV(4)     
+         HEIGHT=CV(5)     
+         KCP=0            
+         KPC=0            
+                          
+                          
+                          
+      RETURN              
+      END                 
+                          
+                          
+                          
+      SUBROUTINE OUTPUT(T,Y)                       
+      IMPLICIT REAL*8(A-H,O-Z)                     
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      COMMON /PARAMD/ P   
+      COMMON /STATE/ X    
+      COMMON /INPUT/ R,B  
+      COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG       
+      COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD         
+      PARAMETER(MAXNUMEQ=7)                        
+      DIMENSION X(20),P(32),Y(MAXNUMEQ),R(37),B(20),CV(26)                  
+!$omp Threadprivate(/PARAMD/,/INPUT/,/STATE/)      
+                          
+                          
+         DO I = 1, NADD   
+           CV(I) = R(2*NDRUG + I)                  
+         END DO           
+                          
+         Ka=P(1)          
+         Ke=P(2)          
+         V=P(3)           
+         Tlag1=P(4)       
+         WT=CV(1)         
+         AFRICA=CV(2)     
+         AGE=CV(3)        
+         GENDER=CV(4)     
+         HEIGHT=CV(5)     
+         KCP=0            
+         KPC=0            
+                          
+         Y(1) = X(2)/V    
+                          
+      RETURN              
+      END                 
+                          
+                          
+                          
+      SUBROUTINE SYMBOL   
+      IMPLICIT REAL*8(A-H,O-Z)                     
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      CHARACTER PSYM(32)*11                        
+      COMMON /CNST/ N,ND,NI,NUP,NUIC,NP            
+      COMMON/BOLUSCOMP/NBCOMP                      
+      DIMENSION NBCOMP(7) 
+                          
+                          
+         DO I = 1,7       
+           NBCOMP(I) = I  
+         END DO           
+                          
+                          
+       N=-1               
+       NP=4               
+       PSYM(1)='Ka'       
+       PSYM(2)='Ke'       
+       PSYM(3)='V'        
+       PSYM(4)='Tlag1'    
+                          
+      RETURN              
+      END                 
+                          
+                          
+                          
+      SUBROUTINE GETFA(FA)
+      IMPLICIT REAL*8(A-H,O-Z)                     
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      COMMON /PARAMD/ P   
+      COMMON /INPUT/ R,B  
+      COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG       
+      COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD         
+      COMMON /STATE/ X    
+      DIMENSION P(32),R(37),B(20),CV(26),FA(7),X(20)                        
+!$omp Threadprivate(/PARAMD/,/INPUT/)              
+                          
+                          
+         DO I = 1, NADD   
+           CV(I) = R(2*NDRUG + I)                  
+         END DO           
+                          
+         DO I = 1,NDRUG   
+           FA(I) = 1.D0   
+         END DO           
+                          
+         Ka=P(1)          
+         Ke=P(2)          
+         V=P(3)           
+         Tlag1=P(4)       
+         WT=CV(1)         
+         AFRICA=CV(2)     
+         AGE=CV(3)        
+         GENDER=CV(4)     
+         HEIGHT=CV(5)     
+         KCP=0            
+         KPC=0            
+                          
+                          
+                          
+      RETURN              
+      END                 
+                          
+                          
+                          
+      SUBROUTINE GETIX(N,X)                        
+      IMPLICIT REAL*8(A-H,O-Z)                     
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      COMMON /PARAMD/ P   
+      COMMON /INPUT/ R,B  
+      COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG       
+      COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD         
+      DIMENSION P(32),R(37),B(20),CV(26),X(20)     
+!$omp Threadprivate(/PARAMD/,/INPUT/)              
+                          
+                          
+         DO I = 1, NADD   
+           CV(I) = R(2*NDRUG + I)                  
+         END DO           
+                          
+         IF(N .GT. 0) THEN
+           DO I = 1,N     
+             X(I) = 0.D0  
+           END DO         
+         ENDIF            
+                          
+         IF(N .EQ. -1) THEN                        
+           DO I = 1,3     
+             X(I) = 0.D0  
+           END DO         
+         ENDIF            
+                          
+         Ka=P(1)          
+         Ke=P(2)          
+         V=P(3)           
+         Tlag1=P(4)       
+         WT=CV(1)         
+         AFRICA=CV(2)     
+         AGE=CV(3)        
+         GENDER=CV(4)     
+         HEIGHT=CV(5)     
+         KCP=0            
+         KPC=0            
+                          
+                          
+                          
+      RETURN              
+      END                 
+                          
+                          
+                          
+      SUBROUTINE GETTLAG(TLAG)                     
+      IMPLICIT REAL*8(A-H,O-Z)                     
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      COMMON /PARAMD/ P   
+      COMMON /INPUT/ R,B  
+      COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG       
+      COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD         
+      COMMON /STATE/ X    
+      DIMENSION P(32),R(37),B(20),CV(26),TLAG(7),X(20)                      
+!$omp Threadprivate(/PARAMD/,/INPUT/)              
+                          
+                          
+         DO I = 1, NADD   
+           CV(I) = R(2*NDRUG + I)                  
+         END DO           
+                          
+         DO I = 1,NDRUG   
+           TLAG(I) = 0.D0 
+         END DO           
+                          
+         Ka=P(1)          
+         Ke=P(2)          
+         V=P(3)           
+         Tlag1=P(4)       
+         WT=CV(1)         
+         AFRICA=CV(2)     
+         AGE=CV(3)        
+         GENDER=CV(4)     
+         HEIGHT=CV(5)     
+         KCP=0            
+         KPC=0            
+                          
+         TLAG(1) = Tlag1  
+                          
+      RETURN              
+      END                 
+                          
+                          
+                          
+      SUBROUTINE ANAL3(X,TIN,TOUT)                 
+      IMPLICIT REAL*8(A-H,O-Z)                     
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+                          
+      COMMON /PARAMD/ P   
+      COMMON /INPUT/ R,B  
+      COMMON /RATESV/ KE,KA,KCP,KPC,V              
+      COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD         
+      DIMENSION X(20),P(32),R(37),B(20),CV(26)     
+!$omp Threadprivate(/PARAMD/,/INPUT/,/RATESV/)     
+                          
+                          
+         DO I = 1, NADD   
+           CV(I) = R(2*NDRUG + I)                  
+         END DO           
+                          
+         Ka=P(1)          
+         Ke=P(2)          
+         V=P(3)           
+         Tlag1=P(4)       
+         WT=CV(1)         
+         AFRICA=CV(2)     
+         AGE=CV(3)        
+         GENDER=CV(4)     
+         HEIGHT=CV(5)     
+         KCP=0            
+         KPC=0            
+                          
+         T=TOUT-TIN       
+         IF(KCP.EQ.0.0D0.AND.KPC.EQ.0.0D0) THEN    
+           IF(KA.EQ.0.0D0) ICASE=1                 
+           IF(KA.NE.0.0D0) ICASE=2                 
+         ELSE             
+           IF(KA.EQ.0.0D0) ICASE=3                 
+           IF(KA.NE.0.0D0) ICASE=4                 
+         ENDIF            
+         GO TO (100,200,300,400), ICASE            
+C  CASE 1 SOLUTION - 1 COMP. NO 1ST ORDER INPUT    
+100     CALL CASE1(X(1),T)
+         TIN=TOUT         
+         RETURN           
+C  CASE 2 SOLUTION - 1 COMP. + 1ST ORDER INPUT     
+200     CALL CASE2(X(1),X(2),T)                    
+         TIN=TOUT         
+         RETURN           
+C  CASE 3 SOLUTION - 2 COMPARTMENT NO 1ST ORDER INPUT                       
+300     CALL CASE3(X(1),X(2),T)                    
+         TIN=TOUT         
+         RETURN           
+C CASE 4 SOLUTION - 2 COMP. + 1ST ORDER INPUT      
+400     CALL CASE4(X,T)   
+         TIN=TOUT         
+         RETURN           
+         END              
+                          
+         SUBROUTINE CASE1(X2,T)                    
+         IMPLICIT REAL*8(A-H,O-Z)                  
+         REAL*8 KE,KA,KCP,KPC                      
+         DIMENSION R(37),B(20)                     
+         COMMON /RATESV/ KE,KA,KCP,KPC,V           
+         COMMON /INPUT/ R,B                        
+!$omp Threadprivate(/RATESV/,/INPUT/)              
+         IF(KE.NE.0.0D0) GO TO 10                  
+         X2=T*R(1)+X2     
+         RETURN           
+10      EKET=DEXP(-KE*T)  
+         X2=R(1)*(1.0D0-EKET)/KE+X2*EKET           
+         RETURN           
+         END              
+                          
+         SUBROUTINE CASE2(X1,X2,T)                 
+         IMPLICIT REAL*8(A-H,O-Z)                  
+         REAL*8 KE,KA,KCP,KPC                      
+         COMMON /RATESV/ KE,KA,KCP,KPC,V           
+         COMMON /INPUT/ R,B                        
+         DIMENSION R(37),B(20)                     
+!$omp Threadprivate(/RATESV/,/INPUT/)              
+         IF(KA.NE.KE) GO TO 30                     
+         EKT=DEXP(-KE*T)  
+         X2=(X2-R(1)/KE)*EKT+R(1)/KE+KE*X1*T*EKT   
+         X1=X1*DEXP(-KA*T)
+         RETURN           
+30      IF(KE.NE.0.0D0) GO TO 50                   
+         EKAT=DEXP(-KA*T) 
+         X2=X2+T*R(1)+X1*(1.0D0-EKAT)              
+         X1=X1*EKAT       
+         RETURN           
+50      EKET=DEXP(-KE*T)  
+         EKAT=DEXP(-KA*T) 
+         X2=X2*EKET+R(1)*(1.0D0-EKET)/KE+          
+     X    KA*X1*(EKET-EKAT)/(KA-KE)                
+         X1=X1*EKAT       
+         RETURN           
+         END              
+                          
+         SUBROUTINE CASE3(X2,X3,T)                 
+         IMPLICIT REAL*8(A-H,O-Z)                  
+         REAL*8 KE,KA,KCP,KPC,L1,L2                
+         COMMON /RATESV/ KE,KA,KCP,KPC,V           
+         COMMON /INPUT/ R,B                        
+         DIMENSION EA(2,2),R(37),B(20)             
+!$omp Threadprivate(/RATESV/,/INPUT/)              
+         T1=KE+KCP+KPC    
+         T2=DSQRT(T1*T1-4.0D0*KE*KPC)              
+         L1=0.5D0*(T1+T2) 
+         L2=0.5D0*(T1-T2) 
+         IF(L2.NE.0.0D0) GO TO 200                 
+         EL1T=DEXP(-L1*T) 
+         OEL1T=1.0D0-EL1T 
+         EA(1,1)=(L1-KPC)*EL1T+KPC                 
+         EA(1,2)=KPC*OEL1T
+         EA(2,1)=KCP*OEL1T
+         EA(2,2)=(L1-KE-KCP)*EL1T+KE+KCP           
+         P1=R(1)*((1.0D0-KPC/L1)*OEL1T+KPC*T)      
+         P2=R(1)*((-KCP/L1)*OEL1T+KCP*T)           
+         C1=EA(1,1)*X2+EA(1,2)*X3+P1               
+         C2=EA(2,1)*X2+EA(2,2)*X3+P2               
+         X2=C1/L1         
+         X3=C2/L1         
+         RETURN           
+200     CONTINUE          
+         EL1T=DEXP(-L1*T) 
+         EL2T=DEXP(-L2*T) 
+         OEL1T=1.0D0-EL1T 
+         OEL2T=1.0D0-EL2T 
+         DEL2L1=EL2T-EL1T 
+         EA(1,1)=(L1-KPC)*EL1T+(KPC-L2)*EL2T       
+         EA(1,2)=KPC*DEL2L1                        
+         EA(2,1)=KCP*DEL2L1                        
+         EA(2,2)=(L1-KE-KCP)*EL1T+(KE+KCP-L2)*EL2T 
+         P1=R(1)*((1.0D0-KPC/L1)*OEL1T+(KPC/L2-1.0D0)*OEL2T)                
+         P2=R(1)*((-KCP/L1)*OEL1T+(KCP/L2)*OEL2T)  
+         D=L1-L2          
+         C1=EA(1,1)*X2+EA(1,2)*X3+P1               
+         C2=EA(2,1)*X2+EA(2,2)*X3+P2               
+         X2=C1/D          
+         X3=C2/D          
+         RETURN           
+         END              
+                          
+         SUBROUTINE CASE4(X,T)                     
+         IMPLICIT REAL*8(A-H,O-Z)                  
+         REAL*8 KE,KA,KCP,KPC,L1,L2                
+         COMMON /RATESV/ KE,KA,KCP,KPC,V           
+         COMMON /INPUT/ R,B                        
+         DIMENSION EA(2,2),R(37),B(20),X(20)       
+!$omp Threadprivate(/RATESV/,/INPUT/)              
+         T1=KE+KCP+KPC    
+         T2=DSQRT(T1*T1-4.0D0*KE*KPC)              
+         L1=0.5D0*(T1+T2) 
+         L2=0.5D0*(T1-T2) 
+         IF(L2.NE.0.0D0) GO TO 200                 
+         EL1T=DEXP(-L1*T) 
+         OEL1T=1.0D0-EL1T 
+         EA(1,1)=(L1-KPC)*EL1T+KPC                 
+         EA(1,2)=KPC*OEL1T
+         EA(2,1)=KCP*OEL1T
+         EA(2,2)=(L1-KE-KCP)*EL1T+KE+KCP           
+         P1A=R(1)*((1.0D0-KPC/L1)*OEL1T+KPC*T)     
+         P2A=R(1)*((-KCP/L1)*OEL1T+KCP*T)          
+         EKAT=DEXP(-KA*T) 
+         RL1=(EL1T-EKAT)/(KA-L1)                   
+         RKA=(1.0D0-EKAT)/KA                       
+         P1B=KA*X(1)*((L1-KPC)*RL1+KPC*RKA)        
+         P2B=KA*X(1)*(-KCP*RL1+KCP*RKA)            
+         C1=EA(1,1)*X(2)+EA(1,2)*X(3)+P1A+P1B      
+         C2=EA(2,1)*X(2)+EA(2,2)*X(3)+P2A+P2B      
+         X(1)=X(1)*EKAT   
+         X(2)=C1/L1       
+         X(3)=C2/L1       
+         RETURN           
+200     CONTINUE          
+         EL1T=DEXP(-L1*T) 
+         EL2T=DEXP(-L2*T) 
+         EKAT=DEXP(-KA*T) 
+         OEL1T=1.0D0-EL1T 
+         OEL2T=1.0D0-EL2T 
+         DEL2L1=EL2T-EL1T 
+         EA(1,1)=(L1-KPC)*EL1T+(KPC-L2)*EL2T       
+         EA(1,2)=KPC*DEL2L1                        
+         EA(2,1)=KCP*DEL2L1                        
+         EA(2,2)=(L1-KE-KCP)*EL1T+(KE+KCP-L2)*EL2T 
+         P1A=R(1)*((1.0D0-KPC/L1)*OEL1T+(KPC/L2-1.0D0)*OEL2T)               
+         P2A=R(1)*((-KCP/L1)*OEL1T+(KCP/L2)*OEL2T) 
+         IF(KA.NE.L1) GO TO 240                    
+         RL=DEL2L1/(L1-L2)
+         P1B=L1*X(1)*(T*(L1-KPC)*EL1T+(KPC-L2)*RL) 
+         P2B=L1*X(1)*(-T*KCP*EL1T+KCP*RL)          
+         GO TO 300        
+240     IF(KA.NE.L2) GO TO 280                     
+         RL=DEL2L1/(L1-L2)
+         P1B=L2*X(1)*((L1-KPC)*RL+T*(KPC-L2)*EL2T) 
+         P2B=L2*X(1)*(-KCP*RL+T*KCP*EL2T)          
+         GO TO 300        
+280     RL1KA=(EL1T-EKAT)/(KA-L1)                  
+         RL2KA=(EL2T-EKAT)/(KA-L2)                 
+         P1B=KA*X(1)*((L1-KPC)*RL1KA+(KPC-L2)*RL2KA)                        
+         P2B=KA*X(1)*(-KCP*RL1KA+KCP*RL2KA)        
+300     D=L1-L2           
+         C1=EA(1,1)*X(2)+EA(1,2)*X(3)+P1A+P1B      
+         C2=EA(2,1)*X(2)+EA(2,2)*X(3)+P2A+P2B      
+         X(1)=X(1)*EKAT   
+         X(2)=C1/D        
+         X(3)=C2/D        
+         RETURN           
+         END              
+                          
+                          
+                          
+
+***************** END OF THE it2bdriv.f FILE *****************
+
