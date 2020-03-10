@@ -62,7 +62,7 @@ Dopt <- function(run, data, clean = T) {
           if (useID == "") {
             mdata <- mdata[mdata$id == unique(mdata$id)[1],]
           } else {
-            if (!useID %in% unqiue(mdata$id)) {
+            if (!useID %in% unique(mdata$id)) {
               stop(paste(useID, "is not in your data file."))
             } else { mdata <- mdata[mdata$id == useID,] }
           }
