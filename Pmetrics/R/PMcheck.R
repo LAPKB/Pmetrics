@@ -459,6 +459,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
   errfix <- function(data2, model, quiet) {
     report <- NA
     err <- errcheck(data = data2, model = model, quiet = quiet)
+    numcol <- ncol(data2)
     #Fix first fixed columns
     if (length(grep("FAIL", err$colorder$msg)) > 0) {
       fixedColNames <- getFixedColNames()

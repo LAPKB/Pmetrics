@@ -37,6 +37,7 @@
 #' install.packages news packageVersion read.table setTxtProgressBar str
 #' tail txtProgressBar write.csv write.table
 #' @importFrom httr add_headers content
+#' @importFrom rlang .data
 
 NULL
 
