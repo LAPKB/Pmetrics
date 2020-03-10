@@ -36,7 +36,7 @@
 plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.975,
                          log=F,pch.obs = 1,col.obs="black",cex.obs=1,theme="color",
                          col.obs.ci="blue",col.obs.med="red",col.sim.ci="dodgerblue",col.sim.med="lightpink",
-                         xlab="Time",ylab="Observation"
+                         xlab="Time",ylab="Observation",xlim,ylim
                          
 ){
   
@@ -115,8 +115,12 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.97
   
   #common options
   if(type=="vpc" | type=="pcvpc"){
+    #set limits
+    if(missing(xlim)){xlim <- c(range(plotData$obsTime))}
+    if(missing(ylim)){ylim <- c(min(plotData$obs,plotData$lower$value),
+                                max(plotData$obs,plotData$upperDF$value))}
     #set the scale for the y-axis
-    if(log){scaleY <- scale_y_log10()} else (scaleY <- scale_y_continuous())
+    if(log){scaleY <- scale_y_log10(limits=ylim)} else (scaleY <- scale_y_continuous(limits=ylim))
     #override colors to make greyscale
     if(theme=="grey"|theme=="gray"){ #set to grayscale
       col.obs <- "black"
@@ -125,11 +129,12 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.97
       col.sim.ci <- "grey75"
       col.sim.med <- "grey50"
     }
+
     
     #GENERATE THE PLOT
     p <- with(plotData,
               ggplot(mapping=aes(x=binTime,y=unlist(lapply(obsQuant,function(x) x[3])))) +
-                geom_line(col=col.obs.ci,lty=2,lwd=1) + scale_x_continuous(breaks=floor(binTime)) +
+                geom_line(col=col.obs.ci,lty=2,lwd=1) + 
                 geom_polygon(aes(x=time,y=value),data=upperDF,fill=col.sim.ci,alpha=0.25) +
                 geom_polygon(aes(x=time,y=value),data=medDF,fill=col.sim.med,alpha=0.25) +
                 geom_polygon(aes(x=time,y=value),data=lowerDF,fill=col.sim.ci,alpha=0.25) +
@@ -137,7 +142,8 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.97
                               y=unlist(lapply(obsQuant,function(x) x[2]))),col=col.obs.med,lty=1,lwd=1) +
                 geom_line(aes(x=binTime,
                               y=unlist(lapply(obsQuant,function(x) x[1]))),col=col.obs.ci,lty=2,lwd=1) + 
-                geom_point(aes(x=obsTime,y=obs),col=col.obs,pch=pch.obs,cex=cex.obs) + scaleY +
+                geom_point(aes(x=obsTime,y=obs),col=col.obs,pch=pch.obs,cex=cex.obs) + 
+                scale_x_continuous(limits=xlim) + scaleY +
                 xlab(xlab) + ylab(ylab) 
     )
     #SEND TO CONSOLE
@@ -145,8 +151,9 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.97
   }
   
   if(type=="npde"){
-    plot(x$npde)
-    par(mfrow=c(1,1))
+    cat("NPDE temporarily disabled pending code cleaning.\n")
+    # plot(x$npde)
+    # par(mfrow=c(1,1))
   }
   
 }

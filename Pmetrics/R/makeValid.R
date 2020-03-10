@@ -307,8 +307,8 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   
   #simulate PRED_bin from pop icen parameter values and median of each bin for each subject
   #first, calculate median of each bin
-  dcMedian <- aggregate(dataSub[,6:(ncol(dataSub)-3)],by=list(dataSub$dcBin),FUN=median)
-  names(dcMedian) <- c("bin","dose",binCov)
+  dcMedian <- aggregate(dataSub[,c("dose",binCov)],by=list(dataSub$dcBin),FUN=median,na.rm=T)
+  names(dcMedian)[1] <- "bin"
   timeMedian <- aggregate(dataSub$time,by=list(dataSub$timeBin),FUN=median)
   names(timeMedian) <- c("bin","time")
   
@@ -326,8 +326,13 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   mdataMedian$dose <- dcMedian$dose[match(mdataMedian$dcBin,dcMedian$bin)]
   mdataMedian$time[mdataMedian$evid==0] <- timeMedian$time[match(mdataMedian$timeBin[mdataMedian$evid==0],timeMedian$bin)]
   covCols <- which(names(mdataMedian) %in% binCov)
-  if(length(covCols)>0) mdataMedian[,covCols] <- dcMedian[match(mdataMedian$dcBin,dcMedian$bin),-c(1:2)]
-  
+  if(length(covCols)>0) {
+    for(i in covCols){
+      dcMedianCol <- which(names(dcMedian)==names(mdataMedian[i]))
+      mdataMedian[,i] <- dcMedian[match(mdataMedian$dcBin,dcMedian$bin),dcMedianCol]
+    }
+    
+  }
   #write median file
   MedianDataFileName <- paste(substr(paste("m_",strsplit(datafileName,"\\.")[[1]][1],sep=""),0,8),".csv",sep="")
   PMwriteMatrix(mdataMedian[,1:(ncol(mdataMedian)-2)],MedianDataFileName,override=T)
@@ -417,28 +422,31 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   simFull$obs$tadBinNum <- unlist(tapply(tempDF$tadBinNum[tempDF$icen=="median"],tempDF$id[tempDF$icen=="median"],function(x) rep(x,nsim)))
   #make simulation number 1:nsim
   simFull$obs$simnum <- as.numeric(sapply(strsplit(simFull$obs$id,"\\."), function(x) x[1]))
-  
+  class(simFull) <- c("PMsim","list")
   
   #NPDE --------------------------------------------------------------------
 
-  #prepare data for npde
-  obs <- tempDF[tempDF$icen=="mean",c("id","time","obs")]
+  #temporarily disable NPDE until we can clean code 3/9/2020
+  npdeRes <- NA
   
-  #remove missing obs
-  obs <- obs[obs$obs!=-99,]
-  names(obs)[3] <- "out"
+  # #prepare data for npde
+  # obs <- tempDF[tempDF$icen=="mean",c("id","time","obs")]
+  # 
+  # #remove missing obs
+  # obs <- obs[obs$obs!=-99,]
+  # names(obs)[3] <- "out"
+  # 
+  # simobs <- simFull$obs
+  # #remove missing simulations
+  # simobs <- simobs[simobs$out!=-99,]
+  # simobs$id <- rep(obs$id,each=nsim)
+  # 
+  # #get NPDE
+  # assign("thisobs",obs,pos=1)
+  # assign("thissim",simobs,pos=1)
+  # npdeRes <- tryCatch(autonpde(namobs=thisobs,namsim=thissim,1,2,3,verbose=T),error=function(e) e)
+  # 
   
-  simobs <- simFull$obs
-  #remove missing simulations
-  simobs <- simobs[simobs$out!=-99,]
-  simobs$id <- rep(obs$id,each=nsim)
-  
-  #get NPDE
-  assign("thisobs",obs,pos=1)
-  assign("thissim",simobs,pos=1)
-  npdeRes <- tryCatch(autonpde(namobs=thisobs,namsim=thissim,1,2,3,verbose=T),error=function(e) e)
-  
-  class(simFull) <- c("PMsim","list")
   
 
   
