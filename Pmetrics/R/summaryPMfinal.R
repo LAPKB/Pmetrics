@@ -27,6 +27,7 @@
 #' @param x The PMfinal object made after an NPAG or IT2B, e.g. final.1 after run 1.
 #' @param lower Desired lower confidence interval boundary.  Default is 0.025. Ignored for IT2B objects.
 #' @param upper Desired upper confidence interval boundary.  Default is 0.975. Ignored for IT2B objects.
+#' @param \dots Other parameters which are not necessary.
 #' @return The output is a data frame.
 #' For NPAG this has 4 columns:
 #' \item{value }{The value of the summary statistic}
@@ -48,7 +49,7 @@
 #' summary(final)
 
 
-summary.PMfinal <- function(x,lower=0.025,upper=0.975){
+summary.PMfinal <- function(x,lower=0.025,upper=0.975,...){
   # checkRequiredPackages("reshape2")
 
   if(inherits(x,"IT2B")){ #IT2B object

@@ -10,7 +10,7 @@
 #' @param \dots Other parameters which are not necessary.
 #' @return A printed object.
 #' @author Michael Neely
-#' @seealso \code{\link{summary.PMfial}}
+#' @seealso \code{\link{summary.PMfinal}}
 #' @export
 
 print.summary.PMfinal <- function(x, digits=max(3,getOption("digits")-3),...){
