@@ -22,7 +22,7 @@
 #' @export
 
 summary.PMpta <- function(x,ci=0.95,...){
-  require(reshape2)
+  #require(reshape2)
   simTarg <- 1+as.numeric(attr(x,"simTarg")) #1 if missing or set, 2 if random
   if(length(simTarg)==0) simTarg <- 1
   nsim <- length(unique(x$results$simnum))
