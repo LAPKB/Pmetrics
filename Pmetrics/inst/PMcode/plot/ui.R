@@ -1,5 +1,3 @@
-library(shiny)
-
 ClassFilter <- function(x) any(grepl("^PMcov|^PMfinal|^PMop|^PMcycle|^PMmatrix|^PMsim|^PMpta",class(get(x))))
 choices <- Filter(ClassFilter,ls(globalenv()))
 if(length(choices)==0) stop("No Pmetrics objects loaded\n")
