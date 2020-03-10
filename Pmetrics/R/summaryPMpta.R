@@ -4,9 +4,9 @@
 #'
 #' @title Summarize Percent Target Attainment
 #' @method summary PMpta
-#' @param x A PMpta object made by \code{\link{makePTA}}.
-#' @param ci Confidence interval for pharmacodynamic index reporting.  Default is 0.95.
+#' @param object A PMpta object made by \code{\link{makePTA}}.
 #' @param \dots Other parameters which can be passed to \code{summary}.
+#' @param ci Confidence interval for pharmacodynamic index reporting.  Default is 0.95.
 #' @return A list with two named objects: pta (probability of target attainment)
 #' and pti (pharmacodynamic index).
 #' \item{pta }{A data frame with the following columns: simnum, target, prop.success, pdi.mean, and pdi.sd  
@@ -21,32 +21,32 @@
 #' @seealso \code{\link{makePTA}}
 #' @export
 
-summary.PMpta <- function(x,ci=0.95,...){
+summary.PMpta <- function(object,...,ci=0.95){
   #require(reshape2)
-  simTarg <- 1+as.numeric(attr(x,"simTarg")) #1 if missing or set, 2 if random
+  simTarg <- 1+as.numeric(attr(object,"simTarg")) #1 if missing or set, 2 if random
   if(length(simTarg)==0) simTarg <- 1
-  nsim <- length(unique(x$results$simnum))
+  nsim <- length(unique(object$results$simnum))
   
   if(simTarg==1){ #set targets
-    ntarg <- length(unique(x$results$target))
-    pdi.median <- tapply(x$results$pdi,list(x$results$target,x$results$simnum),median,na.rm=T)
-    pdi.lower <- tapply(x$results$pdi,list(x$results$target,x$results$simnum),quantile,probs=0.5-ci/2,na.rm=T)
-    pdi.upper <- tapply(x$results$pdi,list(x$results$target,x$results$simnum),quantile,probs=0.5+ci/2,na.rm=T)
+    ntarg <- length(unique(object$results$target))
+    pdi.median <- tapply(object$results$pdi,list(object$results$target,object$results$simnum),median,na.rm=T)
+    pdi.lower <- tapply(object$results$pdi,list(object$results$target,object$results$simnum),quantile,probs=0.5-ci/2,na.rm=T)
+    pdi.upper <- tapply(object$results$pdi,list(object$results$target,object$results$simnum),quantile,probs=0.5+ci/2,na.rm=T)
     pdi <- rbind(pdi.median,pdi.lower,pdi.upper)
     pdi2 <- melt(pdi,value.name="pdi",varnames=c("target","simnum"))
     pdi2$quantile <- rep(c("median","lowerCI","upperCI"),each=ntarg,times=nsim)
     pdi3 <- dcast(pdi2,target+simnum~quantile,value.var="pdi") 
   } else { #random targets
-    pdi.median <- unlist(tapply(x$results$pdi,x$results$simnum,median,na.rm=T,simplify=F))
-    pdi.lower <- tapply(x$results$pdi,x$results$simnum,quantile,probs=0.5-ci/2,na.rm=T)
-    pdi.upper <- tapply(x$results$pdi,x$results$simnum,quantile,probs=0.5+ci/2,na.rm=T)
+    pdi.median <- unlist(tapply(object$results$pdi,object$results$simnum,median,na.rm=T,simplify=F))
+    pdi.lower <- tapply(object$results$pdi,object$results$simnum,quantile,probs=0.5-ci/2,na.rm=T)
+    pdi.upper <- tapply(object$results$pdi,object$results$simnum,quantile,probs=0.5+ci/2,na.rm=T)
     pdi <- rbind(pdi.median,pdi.lower,pdi.upper)
     pdi2 <- melt(pdi,value.name="pdi",varnames=c("sumstat","simnum"))
     pdi2$quantile <- rep(c("median","lowerCI","upperCI"),times=nsim)
     pdi3 <- dcast(pdi2,simnum~quantile,value.var="pdi") 
   } 
 
-  sumres <- list(pta=x$outcome,pdi=pdi3)
+  sumres <- list(pta=object$outcome,pdi=pdi3)
   return(sumres)
   
 }

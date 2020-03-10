@@ -298,17 +298,17 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
 
 
 #read and set defaults
-PMreadDefaults <- function() {
-  optFile <- paste(getPMpath(), "/Pmetrics/config/PMopt.Rdata", sep = "")
-  if (file.exists(optFile)) {
-    load(optFile)
-    if (!is.null(PMopt)) {
-      options(PMopt)
-      cat("\nYou have set custom Pmetrics defaults. Use getDefaults() to see them.\n")
-      flush.console()
-    }
-  }
-}
+# PMreadDefaults <- function() {
+#   optFile <- paste(getPMpath(), "/Pmetrics/config/PMopt.Rdata", sep = "")
+#   if (file.exists(optFile)) {
+#     load(optFile)
+#     if (!is.null(PMopt)) {
+#       options(PMopt)
+#       cat("\nYou have set custom Pmetrics defaults. Use getDefaults() to see them.\n")
+#       flush.console()
+#     }
+#   }
+# }
 
 #check whether gfortran is installed
 gfortranCheck <- function(gfortran = Sys.which("gfortran")) {
@@ -1545,6 +1545,7 @@ makeHTMLdf <- function(df, ndigit) {
 #end makeHTMLdf function
 
 writeHTML <- function(x) {
+  .HTMLfile <- get(".HTMLfile",pos=1)
   cat(c(paste(x, collapse = "\n"), "\n"), file = .HTMLfile, append = T)
 }
 
@@ -1552,30 +1553,30 @@ writeHTML <- function(x) {
 # Tex functions -----------------------------------------------------------
 #written by Alona Kryschenko
 
-TEX <- function(s, file = CurrentTEXfile) {
-
-  cat(paste(s, collapse = ''), '\n', file = file, append = TRUE)
+TEX <- function(x) {
+  .TEXfile <- get(".TEXfile",pos=1)
+  cat(paste(x, collapse = ''), '\n', file = .TEXfile, append = T)
 }
 
-TEXstart <- function(outdir, filename) {
-  file <- file.path(outdir, paste(filename, ".tex",
-                                  sep = ""))
-  CurrentTEXfile <<- file
-  s <- paste('\\documentclass{article}
-             \\usepackage{graphicx}
-             \\usepackage[colorlinks]{hyperref} 
-             \\usepackage{url}
-             \\usepackage{float}
-             \\usepackage[landscape]{geometry}')
-  #\\begin{document}')
-  cat(s, '\n', file = file, append = FALSE)
+# TEXstart <- function(outdir, filename) {
+#   file <- file.path(outdir, paste(filename, ".tex",
+#                                   sep = ""))
+#   CurrentTEXfile <<- file
+#   s <- paste('\\documentclass{article}
+#              \\usepackage{graphicx}
+#              \\usepackage[colorlinks]{hyperref} 
+#              \\usepackage{url}
+#              \\usepackage{float}
+#              \\usepackage[landscape]{geometry}')
+#   #\\begin{document}')
+#   cat(s, '\n', file = file, append = FALSE)
+# 
+#   CurrentTEXfile
+# }
 
-  CurrentTEXfile
-}
-
-TEXend <- function() {
-  cat('\\end{document}', '\n', file = CurrentTEXfile, append = TRUE)
-}
+# TEXend <- function() {
+#   cat('\\end{document}', '\n', file = CurrentTEXfile, append = TRUE)
+# }
 
 
 # Get OS version ----------------------------------------------------------

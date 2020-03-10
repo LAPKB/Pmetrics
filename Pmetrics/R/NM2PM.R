@@ -184,7 +184,7 @@ NM2PM <- function(data,ctl){
         #dataDF[,TIMEcol] <- sapply(dataDF[,TIMEcol],decimal2Clock)  
         dataDF[,TIMEcol] <- as.numeric(dataDF[,TIMEcol])/24
         dt <- chron::chron(dataDF[,DATEcol],dataDF[,TIMEcol])
-        dataDF[,TIMEcol] <- paste(sprintf("%02i",hours(dt)),":",sprintf("%02i",minutes(dt)),sep="")
+        dataDF[,TIMEcol] <- paste(sprintf("%02i",chron::hours(dt)),":",sprintf("%02i",chron::minutes(dt)),sep="")
         dataDF[,DATEcol] <- chron::dates(dt)
         clockTime <- T
       }

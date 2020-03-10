@@ -98,8 +98,8 @@ makeFinal <- function(data){
         as.tbl_cube(met_name = "value") %>%
         as_tibble() %>%
         pivot_wider(names_from = density) %>%
-        arrange(subj,nactvepost) %>%
-        filter(!is.na(prob)) %>%
+        arrange(.data$subj,.data$nactvepost) %>%
+        filter(!is.na(.data$prob)) %>%
         mutate(prob=prob*wParVol) 
       
       # postPoints <- postPoints[!is.na(postPoints$prob),]

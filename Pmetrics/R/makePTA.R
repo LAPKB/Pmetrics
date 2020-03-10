@@ -362,7 +362,7 @@ makePTA <- function(simdata,simlabels,targets,
     resultDF <- results %>%  
       as.tbl_cube(met_name="pdi") %>%
       as_tibble() %>%
-      select(simnum,id,target,pdi)
+      select(.data$simnum,.data$id,.data$target,.data$pdi)
     
 
     #resultsDF <- melt(results,value.name="pdi")

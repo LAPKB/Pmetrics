@@ -12,7 +12,7 @@
 #' @export
 
 print.summary.PMmatrix <- function(x,...){
-  # order of objects
+  #   order of objects
   #   nsub
   #   ndrug
   #   numeqt
@@ -23,6 +23,7 @@ print.summary.PMmatrix <- function(x,...){
   #   nobsXid
   #   doseXid 
   #   obsXid 
+  #   cov
   #   formula 
 
   cat(paste("\nNumber of subjects:",x$nsub,"\n"))
@@ -40,7 +41,7 @@ print.summary.PMmatrix <- function(x,...){
       cat(paste("Number of doses per subject (input ",i,"): ",sprintf("%.3f",mean(x$ndoseXid,na.rm=T))," (",sprintf("%.3f",sd(x$ndoseXid,na.rm=T)),"), ",sprintf("%.3f",min(x$ndoseXid,na.rm=T))," to ",sprintf("%.3f",max(x$ndoseXid,na.rm=T)),"\n",sep=""))
       cat(paste("Dose per subject (input ",i,"): ",sprintf("%.3f",mean(unlist(x$doseXid),na.rm=T))," (",sprintf("%.3f",sd(unlist(x$doseXid),na.rm=T)),"), ",sprintf("%.3f",min(unlist(x$doseXid),na.rm=T))," to ",sprintf("%.3f",max(unlist(x$doseXid),na.rm=T)),"\n",sep=""))
     } else {
-      cat(paste("Number of doses per subject (input ",i,"): ",sprintf("%.3f",mean(x$ndoseXid[,i],na.rm=T))," (",sprintf("%.3f",sd(x$ndoseXid[,i],na.rm=T)),"), ",sprintf("%.3f",min(ndoseXid[,i],na.rm=T))," to ",sprintf("%.3f",max(x$ndoseXid[,i],na.rm=T)),"\n",sep=""))
+      cat(paste("Number of doses per subject (input ",i,"): ",sprintf("%.3f",mean(x$ndoseXid[,i],na.rm=T))," (",sprintf("%.3f",sd(x$ndoseXid[,i],na.rm=T)),"), ",sprintf("%.3f",min(x$ndoseXid[,i],na.rm=T))," to ",sprintf("%.3f",max(x$ndoseXid[,i],na.rm=T)),"\n",sep=""))
       cat(paste("Dose (input ",i,"): ",sprintf("%.3f",mean(unlist(x$doseXid[,i]),na.rm=T))," (",sprintf("%.3f",sd(unlist(x$doseXid[,i]),na.rm=T)),"), ",sprintf("%.3f",min(unlist(x$doseXid[,i]),na.rm=T))," to ",sprintf("%.3f",max(unlist(x$doseXid[,i]),na.rm=T)),"\n",sep=""))
     }
   }

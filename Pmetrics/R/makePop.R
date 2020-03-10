@@ -33,9 +33,9 @@ makePop <- function(run,NPdata) {
   pop <- NPdata$ypredpopt %>% 
     as.tbl_cube(met_name="pred") %>%
     as_tibble() %>%
-    filter(!is.na(pred)) %>%
-    select(id,time,icen,pred,outeq) %>%
-    arrange(icen,id,outeq)
+    filter(!is.na(.data$pred)) %>%
+    select(.data$id,.data$time,.data$icen,.data$pred,.data$outeq) %>%
+    arrange(.data$icen,.data$id,.data$outeq)
   
 
   # pop <- pop[!is.na(pop$pred),]
