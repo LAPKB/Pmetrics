@@ -2,3 +2,4 @@
 ^other$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+compile.*
