@@ -45,10 +45,16 @@
 #' @author Michael Neely
 #' @seealso \code{\link{NPparse}}, \code{\link{ITparse}},  \code{\link{plot.PMfinal}}
 #' @examples
-#' data(PMex1)
+#' data(NPdata.1)
 #' final <- makeFinal(NPdata.1)
 #' final
 #' names(final)
+#' plot(final)
+#' data(ITdata.2)
+#' final2 <- makeFinal(ITdata.2)
+#' final2
+#' names(final2)
+#' plot(final2)
 #' @export
 
 makeFinal <- function(data){

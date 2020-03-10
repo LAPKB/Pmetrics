@@ -32,7 +32,7 @@
 #' @author Michael Neely
 #' @seealso \code{\link{makeOP}}, \code{\link{SIMparse}}
 #' @examples
-#' data(PMex1)
+#' data(NPdata.1)
 #' op <- makeOP(NPdata.1)
 #' makeAUC(op)
 #' @export

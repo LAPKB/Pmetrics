@@ -1,0 +1,5 @@
+ IT2B  run initiated at 15:37 on 2020 Mar 10. 
+PREP FILES: /Library/Frameworks/R.framework/Versions/3.6/Resources/library/Pmetrics/compiledFortran/sITprep.o 
+ENGINE FILES: /Library/Frameworks/R.framework/Versions/3.6/Resources/library/Pmetrics/compiledFortran/sITeng.o 
+
+
