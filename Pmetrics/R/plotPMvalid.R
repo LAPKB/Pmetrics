@@ -28,6 +28,9 @@
 #' Default is lightpink.
 #' @param xlab Label for x axis.  Default is \dQuote{Time}.
 #' @param ylab Label for y axis.  Default is \dQuote{Observation}.
+#' @param xlim Limits for x axis
+#' @param ylim Limits for y axis
+#' @param \dots Not currently used
 #' @return Plots the object using ggplot2.
 #' @author Michael Neely
 #' @seealso \code{\link{makeValid}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{points}}
@@ -36,7 +39,7 @@
 plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.975,
                          log=F,pch.obs = 1,col.obs="black",cex.obs=1,theme="color",
                          col.obs.ci="blue",col.obs.med="red",col.sim.ci="dodgerblue",col.sim.med="lightpink",
-                         xlab="Time",ylab="Observation",xlim,ylim
+                         xlab="Time",ylab="Observation",xlim,ylim,...
                          
 ){
   

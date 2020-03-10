@@ -7,10 +7,11 @@
 #' @param x A summary.PMmatrix object made by \code{\link{summary.PMmatrix}} 
 #' @return A formatted printing of a \emph{summary.PMmatrix} object
 #' @author Michael Neely
+#' @param \dots Other parameters which are not necessary.
 #' @seealso \code{\link{summary.PMmatrix}}
 #' @export
 
-print.summary.PMmatrix <- function(x){
+print.summary.PMmatrix <- function(x,...){
   # order of objects
   #   nsub
   #   ndrug

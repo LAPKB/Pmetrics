@@ -19,14 +19,14 @@
 #' @export
 
 PMcode <- function(func) {
-  if (!suppressWarnings(require(shiny, quietly = T))) {
-    resp <- readline("\nYou do not have the required 'shiny' package. Download? ")
-    if (grepl("^y", tolower(resp))) {
-      install.packages("shiny")
-      cat("\nNow execute PMcode again.\n")
-      return(invisible(NULL))
-    }
-  }
+  # if (!suppressWarnings(require(shiny, quietly = T))) {
+  #   resp <- readline("\nYou do not have the required 'shiny' package. Download? ")
+  #   if (grepl("^y", tolower(resp))) {
+  #     install.packages("shiny")
+  #     cat("\nNow execute PMcode again.\n")
+  #     return(invisible(NULL))
+  #   }
+  # }
 
   run <- grep("run", tolower(func))
   if (length(run) > 0) { func <- "run" }
