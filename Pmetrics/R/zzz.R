@@ -10,7 +10,15 @@
       packageStartupMessage(paste("\nPmetrics version ", currentVersion, " is available from www.lapk.org/software.  You have version ", installedVersion, ".\n", sep = ""))
     }
   }
+  
+  #check for binary fortran files
+  if(!binaries.installed()){
+    packageStartupMessage("\nCRITICAL: Execute PMbuild() in R to complete Pmetrics installation.\n")
 
+  }
+
+  #set user options for the session
+  setPMoptions()
 }
 
 .onAttach <- function(...) {
@@ -40,14 +48,6 @@
     packageStartupMessage(msg)
   }
 
-  #check for binary fortran files
-  if(!binaries.installed()){
-    packageStartupMessage("\nCRITICAL: Execute PMbuild() in R to complete Pmetrics installation.\n")
-    
-  }
-
-  #set user options for the session
-  setPMoptions()
 }
 
 
