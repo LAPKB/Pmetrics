@@ -92,17 +92,15 @@
 #'  \item{nonNum}{Ensure that all columns except ID are numeric.}
 #'  \item{noObs}{Ensure that all subjects have at least one observation, which could be missing, i.e. -99.}
 
-
-
 #' @author Michael Neely and Patrick Nolain
 #' @seealso \code{\link{PMwriteMatrix}}, \code{\link{PMreadMatrix}}
 #' @examples
 #' \dontrun{
-#' data(PMex3)
-#' err <- PMcheck(badData)
+#' data(badCSV)
+#' err <- PMcheck(badCSV)
 #' #look at the errors.xlsx file in the working directory
 #' #try to automatically fix what can be fixed
-#' goodData <- PMcheck(badData,fix=T)
+#' goodData <- PMcheck(badCSV,fix=T)
 #' PMcheck(goodData)
 #' #you have to fix manually problems which require data entry
 #' }

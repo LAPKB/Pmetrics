@@ -27,7 +27,7 @@
 #' @seealso \code{\link{makeCycle}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 #' @examples
-#' data(PMex1)
+#' data(cycle.1)
 #' plot(cycle.1)
 #' plot(cycle.1,omit=0)
 

@@ -58,8 +58,9 @@
 #' @seealso \code{\link{makeCov}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 #' @examples
-#' data(PMex1)
+#' data(cov.1)
 #' plot(cov.1,V~wt)
+
 
 
 plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,square=F,ref=F,lowess=F,grid=F,ident=F,reg=F,ci=0.95,cex=1,

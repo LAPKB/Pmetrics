@@ -74,8 +74,12 @@
 #' @seealso \code{\link{makeFinal}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 #' @examples
-#' data(PMex1)
+#' #NPAG
+#' data(final.1)
 #' plot(final.1)
+#' #IT2B
+#' data(final.2)
+#' plot(final.2)
 
 
 
