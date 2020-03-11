@@ -29,24 +29,42 @@ summary.PMpta <- function(object,...,ci=0.95){
   
   if(simTarg==1){ #set targets
     ntarg <- length(unique(object$results$target))
-    pdi.median <- tapply(object$results$pdi,list(object$results$target,object$results$simnum),median,na.rm=T)
-    pdi.lower <- tapply(object$results$pdi,list(object$results$target,object$results$simnum),quantile,probs=0.5-ci/2,na.rm=T)
-    pdi.upper <- tapply(object$results$pdi,list(object$results$target,object$results$simnum),quantile,probs=0.5+ci/2,na.rm=T)
-    pdi <- rbind(pdi.median,pdi.lower,pdi.upper)
-    pdi2 <- melt(pdi,value.name="pdi",varnames=c("target","simnum"))
-    pdi2$quantile <- rep(c("median","lowerCI","upperCI"),each=ntarg,times=nsim)
-    pdi3 <- dcast(pdi2,target+simnum~quantile,value.var="pdi") 
+    targets <- unique(object$results$target)
+    pdi.median <- data.frame(tapply(object$results$pdi,list(object$results$target,object$results$simnum),median,na.rm=T))
+    pdi.median$quantile <- "median"
+    pdi.lower <- data.frame(tapply(object$results$pdi,list(object$results$target,object$results$simnum),quantile,probs=0.5-ci/2,na.rm=T))
+    pdi.lower$quantile <- "lowerCI"
+    pdi.upper <- data.frame(tapply(object$results$pdi,list(object$results$target,object$results$simnum),quantile,probs=0.5+ci/2,na.rm=T))
+    pdi.upper$quantile <- "upperCI"
+    pdi <- data.frame(rbind(pdi.median,pdi.lower,pdi.upper))
+    pdi$target <- rep(targets,3)
+    
+    pdi2 <- pdi %>% 
+      pivot_longer(cols=1:4,values_to="pdi",names_to="simnum",names_prefix = "X") %>%
+      pivot_wider(id_cols=c("target","simnum"),values_from="pdi",names_from="quantile") %>%
+      select(.data$target,.data$simnum,.data$lowerCI,.data$median,.data$upperCI)
+  
+    # pdi2 <- melt(pdi,value.name="pdi",varnames=c("target","simnum"))
+    # pdi2$quantile <- rep(c("median","lowerCI","upperCI"),each=ntarg,times=nsim)
+    # pdi3 <- dcast(pdi2,target+simnum~quantile,value.var="pdi") 
   } else { #random targets
     pdi.median <- unlist(tapply(object$results$pdi,object$results$simnum,median,na.rm=T,simplify=F))
     pdi.lower <- tapply(object$results$pdi,object$results$simnum,quantile,probs=0.5-ci/2,na.rm=T)
     pdi.upper <- tapply(object$results$pdi,object$results$simnum,quantile,probs=0.5+ci/2,na.rm=T)
-    pdi <- rbind(pdi.median,pdi.lower,pdi.upper)
-    pdi2 <- melt(pdi,value.name="pdi",varnames=c("sumstat","simnum"))
-    pdi2$quantile <- rep(c("median","lowerCI","upperCI"),times=nsim)
-    pdi3 <- dcast(pdi2,simnum~quantile,value.var="pdi") 
+    pdi <- data.frame(rbind(pdi.median,pdi.lower,pdi.upper))
+    pdi$quantile <- c("median","lowerCI","upperCI")
+    
+    pdi2 <- pdi %>% 
+      pivot_longer(cols=1:4,values_to="pdi",names_to="simnum",names_prefix = "X") %>%
+      pivot_wider(id_cols="simnum",values_from="pdi",names_from="quantile") %>%
+      select(.data$simnum,.data$lowerCI,.data$median,.data$upperCI)
+    
+    # pdi2 <- melt(pdi,value.name="pdi",varnames=c("sumstat","simnum"))
+    # pdi2$quantile <- rep(c("median","lowerCI","upperCI"),times=nsim)
+    # pdi3 <- dcast(pdi2,simnum~quantile,value.var="pdi") 
   } 
 
-  sumres <- list(pta=object$outcome,pdi=pdi3)
+  sumres <- list(pta=object$outcome,pdi=pdi2)
   return(sumres)
   
 }
