@@ -202,6 +202,8 @@ makePmetrics <- function(fortranChange = F, build = T, pdf = F, check = F, build
 
   }
   setwd(wd)
+  #final cleanup
+  file.remove("PMchangelog.html")
 
 }
 
