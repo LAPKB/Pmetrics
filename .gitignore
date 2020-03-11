@@ -11,11 +11,12 @@ PACKAGES
 PACKAGES.gz
 PACKAGES.rds
 PMchangelog.html
-Pmetrics/src/Pmetrics.so
-Pmetrics/src/knn.o
+src/Pmetrics.so
+src/knn.o
 PmetricsGit.Rproj
-Pmetrics/inst/compiledFortran/
+inst/compiledFortran/
 .DS_Store
-Pmetrics/src/symbols.rds
-Pmetrics/tests/testthat/Runs/
+src/symbols.rds
+tests/testthat/Runs/
 ..Rcheck/
+.vscode/
