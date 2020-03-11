@@ -31,40 +31,44 @@
 #' @export
 
 PMload <- function(run = 1, ..., remote = F, server_address) {
+  
+
+  
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   addlruns <- list(...)
   if (length(addlruns) > 0) {
     allruns <- c(run, unlist(addlruns))
   } else { allruns <- run }
+  
   for (thisrun in allruns) {
     #check for NPAG output file
     filename <- "NPAGout.Rdata"
     outfile <- paste(thisrun, "outputs", filename, sep = "/")
-    if (file.exists(outfile)) filename <- outfile
-    if (remote) {
+    
+    if (remote) { #only look on server
       status = .remoteLoad(thisrun, server_address)
       if (status == "finished") {
-        .splitNPAGout(thisrun)
+        .splitOut(thisrun,NPAGout)
       } else {
-        sprintf("Warning: Remote run #%d have not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
+        sprintf("Warning: Remote run #%d has not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
         cat()
       }
-    } else if (file.exists(filename)) {
-      load(filename, .GlobalEnv)
-      .splitNPAGout(thisrun)
+    } else if (file.exists(outfile)) { #remote F, so look locally
+      #declare variable to avoid R CMD Check flag
+      assign("NPAGout",NULL,envir=.GlobalEnv) 
+      load(outfile, .GlobalEnv)
+      .splitOut(thisrun,NPAGout)
     } else {
       #check for IT2B output file
       filename <- "IT2Bout.Rdata"
       outfile <- paste(thisrun, "outputs", filename, sep = "/")
-      if (file.exists(outfile)) filename <- outfile
-      if (file.exists(filename)) {
-        load(filename, .GlobalEnv)
-        newNames <- paste(names(IT2Bout), ".", as.character(thisrun), sep = "")
-        for (i in 1:length(newNames)) {
-          assign(newNames[i], IT2Bout[[i]], pos = parent.frame(), envir = .GlobalEnv)
-        }
+      if (file.exists(outfile)) {
+        #declare variable to avoid R CMD Check flag
+        assign("IT2Bout",NULL,envir=.GlobalEnv) 
+        load(outfile, .GlobalEnv)
+        .splitOut(thisrun,IT2Bout)
       } else {
-        cat(paste(filename, " not found in ", getwd(), "/", thisrun, "/outputs or ", getwd(), ".\n", sep = ""))
+        cat(paste(outfile, " not found in ", getwd(), "/", thisrun, "/outputs or ", getwd(), ".\n", sep = ""))
         return(invisible(F)) #error, abort
       }
     }
@@ -77,12 +81,12 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
 
 }
 
-.splitNPAGout <- function(run) {
-  newNames <- paste(names(NPAGout), ".", as.character(run), sep = "")
+.splitOut <- function(run,Out) {
+  newNames <- paste(names(Out), ".", as.character(run), sep = "")
   for (i in 1:length(newNames)) {
-    assign(newNames[i], NPAGout[[i]], pos = parent.frame(), envir = .GlobalEnv)
+    assign(newNames[i], Out[[i]], pos = parent.frame(), envir = .GlobalEnv)
   }
-  rm(NPAGout,envir=.GlobalEnv)
+  rm(Out,envir=.GlobalEnv)
 }
 
 .remoteLoad <- function(run, server_address) {
@@ -102,7 +106,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
   run <- toString(run)
   fileName <- paste(run, "inputs", "id.txt", sep = "/")
   if (file.exists(fileName)) {
-    return(readChar(fileName, file.info(fileName)$size) %>% gsub("\n", "", .))
+    return(readChar(fileName, file.info(fileName)$size) %>% gsub("\n", "", .data))
   } else {
     stop(sprintf("File id.txt not found in /%s/outputs.\n", run))
     return(NULL)

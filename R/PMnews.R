@@ -10,9 +10,13 @@
 #' @export
 
 PMnews <- function(PMversion=packageVersion("Pmetrics")){
+  Version <- NULL #dummy declare to avoid R CMD check flag
   if(as.character(PMversion)=="all"){
     chlog <- news(package="Pmetrics")
-  } else {chlog <- news(query = Version>=PMversion,package="Pmetrics")}
+  } else {
+    chlog <- news(query = Version>=PMversion,package="Pmetrics")
+    }
   chlog
 }
 
+news(Version>PMversion,package="Pmetrics")
