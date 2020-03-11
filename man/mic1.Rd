@@ -16,7 +16,7 @@ mic1
 Example MIC data
 }
 \details{
-This data frame contains MIC data for cefepime against E. coli.  It was obtained 
+This data frame contains MIC data for vancomycin against S. aureus.  It was obtained 
 from the EUCAST website at \url{http://mic.eucast.org}.  Select the organism
 or drug, and then select the desired row of the resulting table to see
 a histogram (top) and table (bottom) of MIC distributions.

@@ -56,9 +56,12 @@ and the standard errors of these terms, using SE (mean) = SD/sqrt(nsub) and
 SE (var) = var * sqrt(2/(nsub-1)).
 }
 \examples{
-data(PMex1)
+data(NPdata.1)
 final <- makeFinal(NPdata.1)
 summary(final)
+data(ITdata.2)
+final2 <- makeFinal(ITdata.2)
+summary(final2)
 }
 \seealso{
 \code{\link{makeFinal}}, \code{\link{ITparse}},  \code{\link{plot.PMfinal}}

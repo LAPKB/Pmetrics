@@ -63,7 +63,7 @@ trapezoidal approximation from a variety of inputs.  If a PMpost, PMop, or PMsim
 For AUCs based on predictions, use a PMpost object.
 }
 \examples{
-data(PMex1)
+data(NPdata.1)
 op <- makeOP(NPdata.1)
 makeAUC(op)
 }
