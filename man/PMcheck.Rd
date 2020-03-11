@@ -109,11 +109,11 @@ Pmetrics handles each of the errors in the following ways.
 }
 \examples{
 \dontrun{
-data(PMex3)
-err <- PMcheck(badData)
+data(badCSV)
+err <- PMcheck(badCSV)
 #look at the errors.xlsx file in the working directory
 #try to automatically fix what can be fixed
-goodData <- PMcheck(badData,fix=T)
+goodData <- PMcheck(badCSV,fix=T)
 PMcheck(goodData)
 #you have to fix manually problems which require data entry
 }

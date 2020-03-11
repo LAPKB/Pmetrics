@@ -152,7 +152,7 @@ For the legend, defaults that are different that the standard are:
 }
 }
 \examples{
-data(PMex1)
+data(mdata.1)
 plot(mdata.1)
 }
 \seealso{

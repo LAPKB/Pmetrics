@@ -399,7 +399,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
           s1 <- final$popPoints
           tab1 <- xtable::xtable(s1)
           # if (xtable.installed) { tab1 <- xtable(s1) } else { tab1 <- "Package xtable not installed" }
-          print(tab1, file = CurrentTEXfile, append = T, floating = FALSE)
+          print(tab1, file = .TEXfile, append = T, floating = FALSE)
         }
 
         #popparam
@@ -412,7 +412,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
         s2 <- report.table
         tab2 <- xtable::xtable(2)
         # if (xtable.installed) { tab2 <- xtable(s2) } else { tab2 <- "Package xtable not installed." }
-        print(tab2, file = CurrentTEXfile, append = T, floating = FALSE)
+        print(tab2, file = .TEXfile, append = T, floating = FALSE)
 
         TEX("\\newpage
           
@@ -424,7 +424,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
         s3 <- final$popCov
         tab3 <- xtable::xtable(3)
         # if (xtable.installed) { tab3 <- xtable(s3) } else { tab3 <- "Package xtable not installed." }
-        print(tab3, file = CurrentTEXfile, append = T, floating = FALSE)
+        print(tab3, file = .TEXfile, append = T, floating = FALSE)
         #correlation matrix
         TEX("
           \\hypertarget{corforppe}{}
@@ -434,8 +434,8 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
           \\newline")
         s4 <- final$popCor
         tab4 <- xtable::xtable(s4)
-        if (xtable.installed) { tab4 <- xtable(s4) } else { tab4 <- "Package xtable not installed." }
-        print(tab4, file = CurrentTEXfile, append = T, floating = FALSE)
+        #if (xtable.installed) { tab4 <- xtable(s4) } else { tab4 <- "Package xtable not installed." }
+        print(tab4, file = .TEXfile, append = T, floating = FALSE)
       }
 
       #OP

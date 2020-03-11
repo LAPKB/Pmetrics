@@ -9,7 +9,7 @@ PMregister(email, server_address)
 \arguments{
 \item{email}{User's email.}
 
-\item{server_address}{remote server address. If omitted,  Pmetrics will use the the default one. see  \code{setPMoptions}}
+\item{server_address}{remote server address. If omitted,  Pmetrics will use the the default one. See \code{\link{setPMoptions}}.}
 }
 \value{
 A message that specifies if the user was registered or if some error happened.
@@ -18,8 +18,7 @@ A message that specifies if the user was registered or if some error happened.
 Creates a new user in the remote server
 }
 \details{
-This functions receives an unused email and optionally the server adress.  
-If no server_address is provided Pmetrics will use the the default one. see  \code{setPMoptions}
+This function receives an unused email and optionally the server adress.
 }
 \author{
 Michael Neely
