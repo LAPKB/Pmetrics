@@ -129,12 +129,12 @@ makePmetrics <- function(fortranChange = F, build = T, pdf = F, check = F, build
     setwd(wd)
     # setwd("~/LAPK/PmetricsSource")
 
-    if (check) check("Pmetrics")
+    if (check) check(".")
     if (build) {
-      build("Pmetrics", binary = T)
-      build("Pmetrics", binary = F)
+      build(".", binary = T)
+      build(".", binary = F)
     }
-    install("Pmetrics")
+    install(".")
 
     #copy to repository
     setwd(wd)
@@ -181,8 +181,8 @@ makePmetrics <- function(fortranChange = F, build = T, pdf = F, check = F, build
     setwd(wd)
     # writeLines(commandArgs(), paste("C:/Users/julia/Desktop", "makePmetrics.txt", sep = "/"))
     if (build) {
-      build("Pmetrics", binary = T, args = "--no-multiarch")
-      install("Pmetrics")
+      build(".", binary = T, args = "--no-multiarch")
+      install(".")
     }
     #copy to repository
     setwd(wd)
