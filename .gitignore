@@ -4,10 +4,9 @@
 .Ruserdata
 .DS_Store
 Pmetrics.Rcheck/
-Pmetrics/man/*
+man/*
 #build
 Archived
-PACKAGES
 PACKAGES.gz
 PACKAGES.rds
 PMchangelog.html
