@@ -29,10 +29,11 @@ Returns the error report (see \code{\link{PMcheck}} for details).
 }
 \examples{
 \dontrun{
-data <- PMreadMatrix(paste(.libPaths(),"/Pmetrics/example/NPAG/PMex1.csv",sep=""))
-data
+data(mdata.1)
 #write to the current directory
-PMwriteMatrix(data,"PMex1.csv")
+PMwriteMatrix(mdata.1,"PMex1.csv")
+#read it back
+mdata <- PMreadMatrix("PMex1.csv")
 }
 }
 \seealso{

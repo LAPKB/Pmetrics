@@ -129,7 +129,7 @@ Plots the object.
 Plot PMop objects
 }
 \examples{
-data(PMex1)
+data(op.1)
 plot(op.1)
 }
 \seealso{

@@ -56,10 +56,16 @@ This function will parse the output of \code{\link{NPparse}} or \code{\link{ITpa
 list suitable for analysis and plotting of NPAG  or IT2B final cycle population values.
 }
 \examples{
-data(PMex1)
+data(NPdata.1)
 final <- makeFinal(NPdata.1)
 final
 names(final)
+plot(final)
+data(ITdata.2)
+final2 <- makeFinal(ITdata.2)
+final2
+names(final2)
+plot(final2)
 }
 \seealso{
 \code{\link{NPparse}}, \code{\link{ITparse}},  \code{\link{plot.PMfinal}}

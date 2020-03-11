@@ -1,11 +1,10 @@
 #' Creates a new user in the remote server
 #'
-#' This functions receives an unused email and optionally the server adress.  
-#' If no server_address is provided Pmetrics will use the the default one. see  \code{setPMoptions}
+#' This function receives an unused email and optionally the server adress.  
 #'
 #' @title Register a new user in the remote server
 #' @param email User's email. 
-#' @param server_address remote server address. If omitted,  Pmetrics will use the the default one. see  \code{setPMoptions}
+#' @param server_address remote server address. If omitted,  Pmetrics will use the the default one. See \code{\link{setPMoptions}}.
 #' @return A message that specifies if the user was registered or if some error happened.
 #' @author Michael Neely
 #' @export
@@ -29,14 +28,13 @@ PMregister <- function(email, server_address) {
 
 #' Login a existent user onto the server.
 #'
-#' This functions receives an email of a registered user and optionally the server adress.  
-#' If no server_address is provided Pmetrics will use the the default one. see  \code{setPMoptions}.
+#' This function receives an email of a registered user and optionally the server adress.  
 #' The function will prompt the user for the password.
 #' The server session will last until the R session finishes or by using \code{PMlogout}.
 #'
 #' @title Login a user in the remote server
 #' @param email User's email. 
-#' @param server_address remote server address. If omitted,  Pmetrics will use the the default one. see  \code{setPMoptions}
+#' @param server_address remote server address. If omitted,  Pmetrics will use the the default one. See \code{\link{setPMoptions}}.
 #' @return A message that specifies if the user was successfuly logged in, or an explanation of the error.
 #' @author Michael Neely
 #' @export
@@ -65,10 +63,10 @@ PMlogin <- function(email, server_address) {
 
 #' Logout a logged in user onto the server.
 #'
-#' If no server_address is provided Pmetrics will use the the default one. see \code{setPMoptions}.
+#' If no server_address is provided Pmetrics will use the the default one. See \code{\link{setPMoptions}}.
 #'
 #' @title Login a user in the remote server
-#' @param server_address remote server address. If omitted,  Pmetrics will use the the default one. see  \code{setPMoptions}
+#' @param server_address remote server address. If omitted,  Pmetrics will use the the default one. See \code{\link{setPMoptions}}.
 #' @return A message that specifies if the user was successfuly logged out, or an explanation of the error.
 #' @author Michael Neely
 #' @export
@@ -84,7 +82,7 @@ PMlogout <- function(server_address) {
     cat("Logged out.\n")
   } else {
     cat("Error.\n")
-    print(str(content(r)))
+    print(str(httr::content(r)))
   }
 }
 
@@ -128,7 +126,7 @@ PMlogout <- function(server_address) {
     sprintf("Remote run #%s started successfuly, You can access this run's id using: PMload(id).\n Id can be the full id string or the run number.\n", newdir, newdir) %>%
     cat()
     fileConn <- file("id.txt")
-    write(content(r, "parsed")$id, fileConn)
+    write(httr::content(r, "parsed")$id, fileConn)
     close(fileConn)
     setwd(currwd)
     httr::content(r, "parsed")$id %>%

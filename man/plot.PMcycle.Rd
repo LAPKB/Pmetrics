@@ -42,7 +42,7 @@ the normalized median parameter values at each cycle.
 \code{plot.PMcycle} plots \emph{PMcycle} objects
 }
 \examples{
-data(PMex1)
+data(cycle.1)
 plot(cycle.1)
 plot(cycle.1,omit=0)
 }

@@ -32,10 +32,11 @@ This function will parse the output of \code{\link{NPparse}} or \code{\link{ITpa
 list suitable for analysis and plotting of NPAG or IT2B cycle information.
 }
 \examples{
-data(PMex1)
+data(NPdata.1)
 cycle <- makeCycle(NPdata.1)
 cycle
 names(cycle)
+plot(cycle)
 }
 \seealso{
 \code{\link{NPparse}}, \code{\link{ITparse}},  \code{\link{plot.PMcycle}}

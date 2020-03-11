@@ -7,7 +7,7 @@
 PMlogout(server_address)
 }
 \arguments{
-\item{server_address}{remote server address. If omitted,  Pmetrics will use the the default one. see  \code{setPMoptions}}
+\item{server_address}{remote server address. If omitted,  Pmetrics will use the the default one. See \code{\link{setPMoptions}}.}
 }
 \value{
 A message that specifies if the user was successfuly logged out, or an explanation of the error.
@@ -16,7 +16,7 @@ A message that specifies if the user was successfuly logged out, or an explanati
 Logout a logged in user onto the server.
 }
 \details{
-If no server_address is provided Pmetrics will use the the default one. see \code{setPMoptions}.
+If no server_address is provided Pmetrics will use the the default one. See \code{\link{setPMoptions}}.
 }
 \author{
 Michael Neely
