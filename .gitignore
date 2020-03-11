@@ -18,3 +18,4 @@ Pmetrics/inst/compiledFortran/
 .DS_Store
 Pmetrics/src/symbols.rds
 Pmetrics/tests/testthat/Runs/
+..Rcheck/
