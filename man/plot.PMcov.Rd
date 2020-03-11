@@ -123,7 +123,7 @@ although a formula within formula approach may be required, e.g. plot(cov.1,I(cl
 the change in wt over time, even though cl_0 is constant for a given subject.
 }
 \examples{
-data(PMex1)
+data(cov.1)
 plot(cov.1,V~wt)
 }
 \seealso{

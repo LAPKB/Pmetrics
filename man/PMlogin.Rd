@@ -9,7 +9,7 @@ PMlogin(email, server_address)
 \arguments{
 \item{email}{User's email.}
 
-\item{server_address}{remote server address. If omitted,  Pmetrics will use the the default one. see  \code{setPMoptions}}
+\item{server_address}{remote server address. If omitted,  Pmetrics will use the the default one. See \code{\link{setPMoptions}}.}
 }
 \value{
 A message that specifies if the user was successfuly logged in, or an explanation of the error.
@@ -18,8 +18,7 @@ A message that specifies if the user was successfuly logged in, or an explanatio
 Login a existent user onto the server.
 }
 \details{
-This functions receives an email of a registered user and optionally the server adress.  
-If no server_address is provided Pmetrics will use the the default one. see  \code{setPMoptions}.
+This function receives an email of a registered user and optionally the server adress.  
 The function will prompt the user for the password.
 The server session will last until the R session finishes or by using \code{PMlogout}.
 }

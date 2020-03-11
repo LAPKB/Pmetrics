@@ -303,7 +303,7 @@
 #' @docType data
 #' @title Pmetrics data file with errors
 #' @usage badCSV
-#' @format badData is a PMmatrix object as read by \code{\link{PMreadMatrix}}
+#' @format badCSV is a PMmatrix object as read by \code{\link{PMreadMatrix}}
 #' @author Michael Neely
 #' @keywords datasets
 
