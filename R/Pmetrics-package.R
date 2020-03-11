@@ -36,7 +36,8 @@
 #' @importFrom utils compareVersion data flush.console glob2rx head 
 #' install.packages news packageVersion read.table setTxtProgressBar str
 #' tail txtProgressBar write.csv write.table
-#' @importFrom httr add_headers content
+#' @importFrom httr add_headers content GET POST DELETE
+#' @importFrom base64enc base64decode
 #' @importFrom rlang .data
 
 NULL
