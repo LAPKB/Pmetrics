@@ -90,7 +90,7 @@ PMlogout <- function(server_address) {
   api_url <- paste(server_address, "/api", sep = "")
   model_txt <- readChar(model, file.info(model)$size)
   data_txt <- readChar(data, file.info(data)$size)
-  r <- htrr::POST(
+  r <- httr::POST(
       paste(api_url, "/analysis/new", sep = ""),
       body = list(
         model_txt = model_txt,
@@ -179,7 +179,7 @@ PMlogout <- function(server_address) {
     if (file.exists("NPAGout.Rdata")) { system("rm NPAGout.Rdata") }
     out <- file("NPAGout.Rdata", "wb")
     httr::content(r, "parsed")$outdata %>%
-    base64encode::base64decode(output = out)
+    base64enc::base64decode(output = out)
     close(out)
     load("NPAGout.Rdata", .GlobalEnv)
     PMreport(getwd(), rdata = NPAGout) #TODO: check if this works with multiple PMload inputs
