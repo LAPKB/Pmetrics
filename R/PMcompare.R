@@ -71,6 +71,10 @@ PMcompare <- function (x,y,...,icen="median",outeq=1,plot=F){
   if(length(argsPM)==0) obj <- list(x,y)
   if(length(argsPM)>=1) obj <- c(list(x,y),arglist[argsPM])
   
+  #declare global variables to avoid problems with R CMD Check
+  NPAGout <- NULL
+  IT2bout <- NULL
+  
   #get each obj
   nobj <- length(obj)
   allObj <- list()

@@ -106,7 +106,7 @@ makeFinal <- function(data){
         pivot_wider(names_from = density) %>%
         arrange(.data$subj,.data$nactvepost) %>%
         filter(!is.na(.data$prob)) %>%
-        mutate(prob=prob*wParVol) 
+        mutate(.data$prob=.data$prob*wParVol) 
       
       # postPoints <- postPoints[!is.na(postPoints$prob),]
       # postPoints$prob <- postPoints$prob*wParVol

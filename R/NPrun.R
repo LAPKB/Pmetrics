@@ -106,7 +106,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   batch <- F
   if (remote == T) {
-    return(.PMremote_run(model = model, data = data, server_address = server_address, run))
+    return(.PMremote_run(model = model, data = data, server_address = server_address, run, overwrite))
   } else {
     return(.PMrun(type = "NPAG", model = model, data = data, run = run,
           include = include, exclude = exclude, ode = ode, tol = tol, salt = salt, cycles = cycles,

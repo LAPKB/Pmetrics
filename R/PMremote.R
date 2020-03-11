@@ -86,7 +86,7 @@ PMlogout <- function(server_address) {
   }
 }
 
-.PMremote_run <- function(model, data, server_address, run) {
+.PMremote_run <- function(model, data, server_address, run, overwrite) {
   api_url <- paste(server_address, "/api", sep = "")
   model_txt <- readChar(model, file.info(model)$size)
   data_txt <- readChar(data, file.info(data)$size)
@@ -181,6 +181,8 @@ PMlogout <- function(server_address) {
     httr::content(r, "parsed")$outdata %>%
     base64enc::base64decode(output = out)
     close(out)
+    #declare variable to avoid R CMD Check flag
+    assign("NPAGout",NULL,envir=.GlobalEnv) 
     load("NPAGout.Rdata", .GlobalEnv)
     PMreport(getwd(), rdata = NPAGout) #TODO: check if this works with multiple PMload inputs
     OS <- getOS() #1 Mac, 2 Windows, 3 Linux
