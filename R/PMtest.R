@@ -6,7 +6,7 @@ PMtest <- function() {
   #define global variable to avoid R CMD check flag
   mdata.1 <- NULL
   #replace with value
-  data(mdata.1, env = environment())
+  data(mdata.1, envir = environment())
   PMwriteMatrix(mdata.1[mdata.1$id == 1,], "data.csv", override = T)
   msg <- "Congratulations; you have successfully installed all components of Pmetrics.\n"
   modeltxt <- c("#Primary",

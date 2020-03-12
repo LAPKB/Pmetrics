@@ -86,7 +86,7 @@ PMlogout <- function(server_address) {
   }
 }
 
-.PMremote_run <- function(model, data, server_address, run, overwrited) {
+.PMremote_run <- function(model, data, server_address, run, overwrite) {
   api_url <- paste(server_address, "/api", sep = "")
   model_txt <- readChar(model, file.info(model)$size)
   data_txt <- readChar(data, file.info(data)$size)

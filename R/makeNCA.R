@@ -177,7 +177,7 @@ makeNCA <- function(x,postPred=F,include,exclude,input=1,icen="median",outeq=1,b
     }
     
     mdata2 <- mapply(timeFilter,id=unique(mdata$id),thisStartTime=startTimes,thisEndTime=endTimes,SIMPLIFY=F)
-    mdata2 <- bind_rows(mdata2)
+    mdata2 <- dplyr::bind_rows(mdata2)
    
     # whichtime <<- 0
     # mdata3 <- plyr::ddply(mdata,.(id),timeFilter,startTimes,endTimes)
@@ -239,8 +239,12 @@ makeNCA <- function(x,postPred=F,include,exclude,input=1,icen="median",outeq=1,b
     endTimes <- filterResults[[3]]
     
     #now filter post by time
-    whichtime <<- 0
-    post2 <- ddply(post,.(id),timeFilter,startTimes,endTimes)
+    
+    post2 <- mapply(timeFilter,id=unique(post$id),thisStartTime=startTimes,thisEndTime=endTimes,SIMPLIFY=F)
+    post2 <- dplyr::bind_rows(post2)
+    
+    # whichtime <<- 0
+    # post2 <- ddply(post,.(id),timeFilter,startTimes,endTimes)
     #then, filter by outeq, block, and icen
     otherOuteq <- which(post2$outeq!=outeq)
     if(length(otherOuteq)>0) {post2 <- post2[-otherOuteq,]}

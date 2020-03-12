@@ -49,7 +49,7 @@ summary.PMmatrix <- function(object,...,formula,FUN,include,exclude){
   results$ndrug <- max(object$input,na.rm=T)
   results$numeqt <- max(object$outeq,na.rm=T)
   results$nobsXouteq <- tapply(object$evid,object$outeq,function(x) length(x==0))
-  results$missObsXouteq <- by(object,object$outeq,function(x) length(x$out[x$evid==0 & xout==-99] ))
+  results$missObsXouteq <- by(object,object$outeq,function(x) length(x$out[x$evid==0 & x$out==-99] ))
   covinfo <- getCov(object)
   ncov <- covinfo$ncov
   results$ncov <- ncov
