@@ -79,6 +79,9 @@ makeNCA <- function(x,postPred=F,include,exclude,input=1,icen="median",outeq=1,b
   
   
   #checkRequiredPackages("plyr")
+  #declare global variables
+  whichtime <- NULL
+  id <- NULL
   
   if(!missing(x)) { #x specified, so load corresponding object
     if(is.numeric(x)){ #run number
@@ -118,16 +121,23 @@ makeNCA <- function(x,postPred=F,include,exclude,input=1,icen="median",outeq=1,b
   } #end x is missing
   
   #filter by time for each subject
-  timeFilter <- function(x,startTimes,endTimes){
-    whichtime <<- whichtime + 1
-    x <- x[x$time>=startTimes[whichtime] & x$time <=endTimes[whichtime],]
-    return(x)
+  # timeFilter <- function(x,startTimes,endTimes){
+  #   whichtime <<- whichtime + 1
+  #   x <- x[x$time>=startTimes[whichtime] & x$time <=endTimes[whichtime],]
+  #   return(x)
+  # }
+  
+  timeFilter <- function(id,thisStartTime,thisEndTime){
+    mdataSub <- mdata[mdata$id==id & mdata$time>=thisStartTime & mdata$time<= thisEndTime,]
+    return(mdataSub)
   }
   
   #function to filter mdata by time interval
   mdataFilter <- function(mdata,start,end,first,last){
     
+
     nsub <- length(unique(mdata$id))
+    #get dose times for each subject
     doseTimes <- by(mdata$time[mdata$evid!=0],mdata$id[mdata$evid!=0],function(x) x)
     
     
@@ -166,9 +176,17 @@ makeNCA <- function(x,postPred=F,include,exclude,input=1,icen="median",outeq=1,b
       cat(paste("The following subjects had no concentrations within the time interval: ",paste(missingStart,collapse=", "),"\n",sep=""))
     }
     
-    whichtime <<- 0
-    mdata2 <- plyr::ddply(mdata,.(id),timeFilter,startTimes,endTimes)
-    return(list(mdata2,startTimes,endTimes))
+    mdata2 <- mapply(timeFilter,id=unique(mdata$id),thisStartTime=startTimes,thisEndTime=endTimes,SIMPLIFY=F)
+    mdata2 <- bind_rows(mdata2)
+   
+    # whichtime <<- 0
+    # mdata3 <- plyr::ddply(mdata,.(id),timeFilter,startTimes,endTimes)
+    # 
+    # test <- mdata %>%
+    #   group_by(id) %>%
+    #   group_modify(timeFilter,startTimes=startTimes,endTimes=endTimes)
+    
+      return(list(mdata2,startTimes,endTimes))
   }
   
   #function to convert mdata into data frame of of ID, time, conc, prev dose
