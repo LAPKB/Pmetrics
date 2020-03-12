@@ -105,11 +105,11 @@ makeFinal <- function(data){
         as_tibble() %>%
         pivot_wider(names_from = density) %>%
         arrange(.data$subj,.data$nactvepost) %>%
-        filter(!is.na(.data$prob)) %>%
-        mutate(.data$prob=.data$prob*wParVol) 
+        filter(!is.na(.data$prob)) 
+      
+      postPoints$prob <- postPoints$prob*wParVol
       
       # postPoints <- postPoints[!is.na(postPoints$prob),]
-      # postPoints$prob <- postPoints$prob*wParVol
       names(postPoints)[1:2] <- c("id","point")
       postPoints$id <- data$sdata$id[postPoints$id]
     } else { postPoints <- NA}

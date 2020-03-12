@@ -18,5 +18,3 @@ PMnews <- function(PMversion=packageVersion("Pmetrics")){
     }
   chlog
 }
-
-news(Version>PMversion,package="Pmetrics")
