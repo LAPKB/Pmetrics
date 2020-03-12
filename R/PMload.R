@@ -55,7 +55,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
       }
     } else if (file.exists(outfile)) { #remote F, so look locally
       #declare variable to avoid R CMD Check flag
-      assign("NPAGout",NULL,envir=.GlobalEnv) 
+      NPAGout <- NULL
       load(outfile, .GlobalEnv)
       .splitOut(thisrun,NPAGout)
     } else {
@@ -64,7 +64,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
       outfile <- paste(thisrun, "outputs", filename, sep = "/")
       if (file.exists(outfile)) {
         #declare variable to avoid R CMD Check flag
-        assign("IT2Bout",NULL,envir=.GlobalEnv) 
+        IT2Bout < - NULL
         load(outfile, .GlobalEnv)
         .splitOut(thisrun,IT2Bout)
       } else {
