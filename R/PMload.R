@@ -32,7 +32,9 @@
 
 PMload <- function(run = 1, ..., remote = F, server_address) {
   
-
+  #declare variables to avoid R CMD Check flag
+  NPAGout <- NULL
+  IT2Bout < - NULL
   
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   addlruns <- list(...)
@@ -54,17 +56,14 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
         cat()
       }
     } else if (file.exists(outfile)) { #remote F, so look locally
-      #declare variable to avoid R CMD Check flag
-      NPAGout <- NULL
-      load(outfile, .GlobalEnv)
+      # load(outfile, .GlobalEnv)
+      load(outfile)
       .splitOut(thisrun,NPAGout)
     } else {
       #check for IT2B output file
       filename <- "IT2Bout.Rdata"
       outfile <- paste(thisrun, "outputs", filename, sep = "/")
       if (file.exists(outfile)) {
-        #declare variable to avoid R CMD Check flag
-        IT2Bout < - NULL
         load(outfile, .GlobalEnv)
         .splitOut(thisrun,IT2Bout)
       } else {
@@ -84,9 +83,10 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
 .splitOut <- function(run,Out) {
   newNames <- paste(names(Out), ".", as.character(run), sep = "")
   for (i in 1:length(newNames)) {
-    assign(newNames[i], Out[[i]], pos = parent.frame(), envir = .GlobalEnv)
+    assign(newNames[i], Out[[i]], pos = 0)
+
   }
-  rm(Out,envir=.GlobalEnv)
+  rm(Out, pos = 0)
 }
 
 .remoteLoad <- function(run, server_address) {

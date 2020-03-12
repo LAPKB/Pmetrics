@@ -17,7 +17,9 @@
 #' @export
 
 qgrowth <- function(sex=c("M","F","B"),percentile=c("5","10","25","50","75","90","95"),agemos=(seq(0,18)*12)){
-  growth <- get(data(growth))
+  
+  growth <- NULL
+  data(growth,envir = environment())
   percentile <- as.numeric(match.arg(percentile))
   sex <- match.arg(sex)
   if(sex=="b" | sex=="B") {sex <- c("M","F")} else{sex <- toupper(sex)}
