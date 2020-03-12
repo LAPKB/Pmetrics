@@ -73,7 +73,7 @@ PMcompare <- function (x,y,...,icen="median",outeq=1,plot=F){
   
   #declare global variables to avoid problems with R CMD Check
   NPAGout <- NULL
-  IT2bout <- NULL
+  IT2Bout <- NULL
   
   #get each obj
   nobj <- length(obj)
