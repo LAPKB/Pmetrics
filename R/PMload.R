@@ -34,7 +34,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
   
   #declare variables to avoid R CMD Check flag
   NPAGout <- NULL
-  IT2Bout < - NULL
+  IT2Bout <- NULL
   
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   addlruns <- list(...)
