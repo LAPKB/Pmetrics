@@ -12,6 +12,8 @@ PACKAGES.rds
 PMchangelog.html
 src/Pmetrics.so
 src/knn.o
+src/registerDynamicSymbol.o
+src/Pmetrics.dll
 PmetricsGit.Rproj
 inst/compiledFortran/
 .DS_Store
