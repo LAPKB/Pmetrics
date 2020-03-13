@@ -58,14 +58,14 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
     } else if (file.exists(outfile)) { #remote F, so look locally
       # load(outfile, .GlobalEnv)
       load(outfile)
-      .splitOut(thisrun,NPAGout)
+      .splitOut(thisrun,get("NPAGout"))
     } else {
       #check for IT2B output file
       filename <- "IT2Bout.Rdata"
       outfile <- paste(thisrun, "outputs", filename, sep = "/")
       if (file.exists(outfile)) {
         load(outfile, .GlobalEnv)
-        .splitOut(thisrun,IT2Bout)
+        .splitOut(thisrun,get("IT2Bout"))
       } else {
         cat(paste(outfile, " not found in ", getwd(), "/", thisrun, "/outputs or ", getwd(), ".\n", sep = ""))
         return(invisible(F)) #error, abort
@@ -83,10 +83,9 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
 .splitOut <- function(run,Out) {
   newNames <- paste(names(Out), ".", as.character(run), sep = "")
   for (i in 1:length(newNames)) {
-    assign(newNames[i], Out[[i]], pos = 0)
+    assign(newNames[i], Out[[i]], pos = .GlobalEnv)
 
   }
-  rm(Out, pos = 0)
 }
 
 .remoteLoad <- function(run, server_address) {

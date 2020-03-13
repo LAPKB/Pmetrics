@@ -60,7 +60,7 @@ summary.PMmatrix <- function(object,...,formula,FUN,include,exclude){
   results$obsXid <- tapply(object$out,list(object$id,object$outeq),function(x) x[!is.na(x)])[idOrder,]
   if(ncov>0){
     #get each subject's covariate values
-    results$cov <- lapply(1:ncov,function(y) tapply(y[[covinfo$covstart+y-1]],y$id,
+    results$cov <- lapply(1:ncov,function(y) tapply(object[[covinfo$covstart+y-1]],object$id,
                                                     function(z) z[!is.na(z)])[idOrder])
     names(results$cov) <- covinfo$covnames
   }
