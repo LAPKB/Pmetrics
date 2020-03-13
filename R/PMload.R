@@ -64,7 +64,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
       filename <- "IT2Bout.Rdata"
       outfile <- paste(thisrun, "outputs", filename, sep = "/")
       if (file.exists(outfile)) {
-        load(outfile, .GlobalEnv)
+        load(outfile)
         .splitOut(thisrun,get("IT2Bout"))
       } else {
         cat(paste(outfile, " not found in ", getwd(), "/", thisrun, "/outputs or ", getwd(), ".\n", sep = ""))
