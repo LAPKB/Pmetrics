@@ -21,3 +21,5 @@ src/symbols.rds
 tests/testthat/Runs/
 ..Rcheck/
 .vscode/
+.Rd2pdf65996/
+other/
