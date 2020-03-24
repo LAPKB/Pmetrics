@@ -1,1 +1,1 @@
-Rscript Source/MNmakePmetrics.R
+Rscript other/Source/MNmakePmetrics.R
