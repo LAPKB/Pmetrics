@@ -1,0 +1,53 @@
+Package: Pmetrics
+License: GPL (>= 2)
+Title: Pmetrics for Population Modeling and Simulation
+Type: Package
+LazyLoad: yes
+LazyData: yes
+Description: Parametric and non-parametric
+    pharmacometric modeling and simulation software package.
+    This package contains functions to run and
+    analyze the output from all three components of the
+    Pmetrics software suite for population pharmacometric
+    data analysis: 1) IT2B (Iterative Two-Stage Bayesian)
+    for parametric models; 2) NPAG (Non-parametric Adaptive
+    Grid) for non-paramametric models; 3) Simulator for
+    semi-parametric Monte-Carlo simulations. It includes
+    source code from the NPDE package by Emanuelle Comets, et al,
+    which used to be available on CRAN.
+Authors@R: person("Michael", "Neely",
+    email = "mneely@usc.edu", role = c("aut", "cre"))
+Version: 1.9
+URL: http://www.lapk.org
+Date: 2020-02-29
+Depends: 
+    R (>= 3.5.0)
+Imports:
+    askpass,
+    base64enc,
+    chron,
+    doParallel,
+    dplyr,
+    foreach,
+    ggplot2,
+    httr,
+    jsonlite,
+    Matrix,
+    mclust,
+    methods,
+    openxlsx,
+    parallel,
+    plyr,
+    purrr,
+    Rcpp,
+    rlang,
+    shiny,
+    stats,
+    tibble,
+    tidyr,
+    utils,
+    xtable
+Suggests:
+    testthat
+RoxygenNote: 7.0.2
+Encoding: UTF-8

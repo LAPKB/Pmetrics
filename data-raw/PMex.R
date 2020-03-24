@@ -1,0 +1,27 @@
+## code to prepare `PMex` dataset goes here
+library(Pmetrics)
+library(usethis)
+setwd("data-raw")
+#file.copy(from = c("ex.csv","model.txt"),to="Runs")
+setwd("Runs")
+#NPrun(data="ex.csv")
+PMload(1)
+
+
+use_data(NPdata.1)
+use_data(final.1)
+use_data(op.1)
+use_data(cycle.1)
+use_data(pop.1)
+use_data(post.1)
+use_data(cov.1)
+use_data(mdata.1)
+
+#ITrun(data=1,model=1)
+PMload(2)
+use_data(ITdata.2)
+use_data(final.2)
+use_data(op.2)
+use_data(cycle.2)
+use_data(cov.2)
+use_data(mdata.2)

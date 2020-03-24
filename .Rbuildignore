@@ -1,0 +1,6 @@
+^data-raw$
+^other$
+^.*\.Rproj$
+^\.Rproj\.user$
+compile.*
+.vscode
