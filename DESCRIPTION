@@ -39,7 +39,6 @@ Imports:
     parallel,
     plyr,
     purrr,
-    Rcpp,
     rlang,
     shiny,
     stats,
