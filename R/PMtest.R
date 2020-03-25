@@ -1,4 +1,9 @@
-
+#' \code{PMtest} will check Pmetrics installation
+#'
+#' @title Test Pmetrics
+#' @author Michael Neely
+#' @export
+#' 
 PMtest <- function() {
   currwd <- getwd()
   tempwd <- tempdir()
