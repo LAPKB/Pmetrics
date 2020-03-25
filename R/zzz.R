@@ -15,7 +15,7 @@
                error = function(e) e <- "0.1")))
 
     if (currentVersion > installedVersion) {
-      packageStartupMessage(paste("\nPmetrics version ", currentVersion, " is available from www.lapk.org/software.  You have version ", installedVersion, ".\n", sep = ""))
+      packageStartupMessage(paste("\nPmetrics version ", currentVersion, " is available from www.lapk.org/Pmetrics_install.php.  You have version ", installedVersion, ".\n", sep = ""))
     }
     
     messages <- suppressWarnings(
