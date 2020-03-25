@@ -1,5 +1,5 @@
-#include <R.h>             //specific R library
-#include <Rdefines.h>      //specific R library
+#include <R.h>		  //specific R library
+#include <Rdefines.h> //specific R library
 #include <Rmath.h>
 
 #include <Rinternals.h>
@@ -28,18 +28,16 @@ typedef int Index;
 
 //typedef int Count;
 
-
 struct DIPair
 {
 	Elem e;
 	Index i;
 	DIPair() : e(0), i(0) {}
-	DIPair(const DIPair& di0) : e(di0.e), i(di0.i) {}
+	DIPair(const DIPair &di0) : e(di0.e), i(di0.i) {}
 	DIPair(Elem e0, Index i0) : e(e0), i(i0) {}
-	inline bool operator< (const DIPair& p2) const { return (e < p2.e); }
+	inline bool operator<(const DIPair &p2) const { return (e < p2.e); }
 	~DIPair() {}
 };
-
 
 //typedef vector<Elem> OnePoint;
 
@@ -53,79 +51,77 @@ typedef priority_queue<DIPair> OneClosestPoints;
 
 //int n=100, n1=50, n2=50,d=10,k=11;
 
-
-extern "C"{
-
-Elem dist(Elem * v1, Elem * v2, Index d)
+extern "C"
 {
-	Elem sum=0;
-	for (int i=0; i!=d; ++i)
-	{
-		sum+=( v1[i] - v2[i] ) * ( v1[i] - v2[i] );
-	}
-	//	return sqrt(sum);
-	return sum;
-}
 
-void knn(double * points, int * n, int * d, int * k, int * counts)
-{
-	int * closest = new int[n[0]*k[0]];
-	for (int i=0; i!=n[0]; ++i)
+	Elem dist(Elem *v1, Elem *v2, Index d)
 	{
-		OneClosestPoints * q = new OneClosestPoints;
-		for (int j=0; j!=n[0]; ++j)
+		Elem sum = 0;
+		for (int i = 0; i != d; ++i)
 		{
-			if (i!=j)
+			sum += (v1[i] - v2[i]) * (v1[i] - v2[i]);
+		}
+		//	return sqrt(sum);
+		return sum;
+	}
+
+	void knn(double *points, int *n, int *d, int *k, int *counts)
+	{
+		int *closest = new int[n[0] * k[0]];
+		for (int i = 0; i != n[0]; ++i)
+		{
+			OneClosestPoints *q = new OneClosestPoints;
+			for (int j = 0; j != n[0]; ++j)
 			{
-				DIPair dis = DIPair ( dist ( points+i*(d[0]+1), points+j*(d[0]+1), d[0] ) , j );
-				if ( q->size() == k[0] )
+				if (i != j)
 				{
-					if (dis.e < q->top().e)
+					DIPair dis = DIPair(dist(points + i * (d[0] + 1), points + j * (d[0] + 1), d[0]), j);
+					if (q->size() == (unsigned int)k[0])
+					{
+						if (dis.e < q->top().e)
+						{
+							q->push(dis);
+							q->pop();
+						}
+					}
+					else
 					{
 						q->push(dis);
-						q->pop();
 					}
 				}
-				else
+			}
+			for (int j = 0; j != k[0]; ++j)
+			{
+				closest[i * k[0] + j] = q->top().i;
+				q->pop();
+			}
+			delete q;
+		}
+
+		for (int i = 0; i != n[0]; ++i)
+		{
+			for (int j = 0; j != k[0]; ++j)
+			{
+				if (points[closest[i * k[0] + j] * (d[0] + 1) + d[0]] == points[i * (d[0] + 1) + d[0]])
 				{
-					q->push(dis);
+					counts[i] += 1;
 				}
 			}
 		}
-		for (int j=0; j!=k[0]; ++j)
-		{
-			closest[i*k[0]+j] = q->top().i;
-			q->pop();
-		}
-		delete q;
+		delete[] closest;
+		// time_t t0 = time(0);
+		//Elem s[n][d];
+		//input(s);
+		//cout << "Time = " << time(0) - t0 << " sec \n";
+		//ClosestPoints * cl = closest(s);
+		//cout << "Time = " << time(0) - t0 << " sec \n";
+		//Counts * ct = count(cl);
+		//cout << "Time = " << time(0) - t0 << " sec \n";
+		//delete cl;
+		//output(ct);
+		//delete ct;
+		//cout << "Time = " << time(0) - t0 << " sec \n";
+		//int pp;
+		//cin >> pp;
 	}
-	
-	for (int i=0; i!=n[0]; ++i)
-	{
-		for (int j=0; j!=k[0]; ++j)
-		{
-			if ( points[closest[i*k[0]+j]*(d[0]+1)+d[0]] == points[i*(d[0]+1)+d[0]] )
-			{
-				counts[i]+=1;
-			}
-		}
-	}
-	delete [] closest;
-	// time_t t0 = time(0);
-	//Elem s[n][d];
-	//input(s);
-	//cout << "Time = " << time(0) - t0 << " sec \n";
-	//ClosestPoints * cl = closest(s);
-	//cout << "Time = " << time(0) - t0 << " sec \n";
-	//Counts * ct = count(cl);
-	//cout << "Time = " << time(0) - t0 << " sec \n";
-	//delete cl;
-	//output(ct);
-	//delete ct;
-	//cout << "Time = " << time(0) - t0 << " sec \n";
-	//int pp;
-	//cin >> pp;
-	
-}
-
 }
