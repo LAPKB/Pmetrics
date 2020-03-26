@@ -74,7 +74,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
     stop("You entered a drug input number greater than the number of drug inputs.\n")
   }
   #filter mdata to appropriate input and outeq
-  mdata <- mdata[(mdata$evid>0 & mdata$input==input) | (mdata$evid==0 & mdata$outeq==outeq),]
+  #mdata <- mdata[(mdata$evid>0 & mdata$input==input) | (mdata$evid==0 & mdata$outeq==outeq),]
   
   #filter to include/exclude subjects
   if("include" %in% names(argsSIM)){
@@ -110,7 +110,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
     }
     #ensure binCov has covariates in same order as data file
     covSub <- covData$covnames[covData$covnames %in% binCov]
-    binCov <- binCov[rank(covSub)]
+    binCov <- covSub
     
   } else { #there are no covariates
     binCov <- NULL
@@ -355,7 +355,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
     argsSIM[[which(names(argsSIM)=="nsim")]] <- NULL
   } else {nsim <- 1000}
   argsSIM1 <- c(list(poppar=popparZero,data=MedianDataFileName,model=modelfile,nsim=1,
-                     seed=runif(nsub,-100,100),obsNoise=rep(0,4),outname="simMed"),argsSIM)
+                     seed=runif(nsub,-100,100),outname="simMed"),argsSIM)
   cat("Simulating outputs for each subject using population means...\n")
   flush.console()
   do.call("SIMrun",argsSIM1)
@@ -399,7 +399,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   #Now, simulate using full pop model
   set.seed(seed.start)
   argsSIM2 <- c(list(poppar=poppar,data=datafileName,model=modelfile,nsim=nsim,
-                     seed=runif(nsub,-100,100),obsNoise=rep(0,4),outname="full"),argsSIM)
+                     seed=runif(nsub,-100,100),outname="full"),argsSIM)
   if(!is.na(includeID[1])){
     argsSIM2$include <- includeID
   }
@@ -412,7 +412,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   #add TAD for plotting options
   if(tad){simFull$obs$tad <- unlist(tapply(dataSub$tad[dataSub$evid==0],dataSub$id[dataSub$evid==0],function(x) rep(x,nsim)))}
   #filter outeq
-  simFull$obs <- simFull$obs[simFull$obs$outeq==outeq,]
+  #simFull$obs <- simFull$obs[simFull$obs$outeq==outeq,]
   #take out observations at time 0
   #simFull$obs <- simFull$obs[simFull$obs$time>0,]
   #pull in time bins from tempDF; only need median as tempDF contains median and mean,
