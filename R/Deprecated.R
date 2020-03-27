@@ -4,6 +4,7 @@
 #' @title Deprecated functions.
 #' @aliases PMcheckMatrix, PMfixMatrix, NPload, ITload, NPreport, ITreport, PMdiag
 #' @author Michael Neely
+#' @export
 
 
 
@@ -45,4 +46,8 @@ PMwriteDefaults <- function(){
 
 makeNPDE <- function(){
   cat("\nmakeNPDE is deprecated.  Use makeValid() instead.\n")
+}
+
+PMupdate <- function(){
+  cat("\nPMupdate is deprecated. Please restart Rstudio and do not load Pmetrics.  Then use the command devtools::install_github(\"LAPKB/Pmetrics\")")
 }
