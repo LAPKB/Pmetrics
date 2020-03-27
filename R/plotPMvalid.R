@@ -45,6 +45,9 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
 ){
   
   #checkRequiredPackages("ggplot2")
+  if(outeq > max(x$opDF$outeq)){stop(paste("Your data do not contain",outeq,"output equations.\n"))}
+  if(icen!="mean" & icen!="median"){stop(paste("Use \"mean\" or \"median\" for icen.\n",sep=""))}
+  
   x$opDF <- x$opDF[x$opDF$icen==icen & x$opDF$outeq==outeq,] #filter to icen & outeq
   x$simdata$obs <- x$simdata$obs[x$simdat$obs$outeq==outeq,] #filter to outeq
   
