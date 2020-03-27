@@ -1,6 +1,20 @@
 \name{NEWS}
 \title{NEWS file for the Pmetrics package}
 
+\section{Changes in version 1.9.1}{
+
+\subsection{NEW FEATURES}{
+\itemize{
+\item makeValid and plot.PMvalid now handle all output equations
+}
+}
+\subsection{BUG FIXES}{
+\itemize{
+\item Time after dose calculations account for addl
+}
+}
+}
+
 \section{Changes in version 1.9}{
 
 \subsection{NEW FEATURES}{
