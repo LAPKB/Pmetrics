@@ -5,12 +5,15 @@
 
 \subsection{NEW FEATURES}{
 \itemize{
-\item makeValid and plot.PMvalid now handle all output equations
+\item Now the local version number is compared with the version number in github after suggest to update Pmetrics.
+\item Updated plot.PMvalid with error checking for icen and outEq.
+\item PMupdate is deprecated.
 }
 }
 \subsection{BUG FIXES}{
 \itemize{
-\item Time after dose calculations account for addl
+\item Fix makeValid and plot.PMvalid to handle multiple outEq. 
+\item Depecrated functions were exported.
 }
 }
 }
