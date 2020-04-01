@@ -9,6 +9,7 @@
   type = "vpc",
   tad = F,
   icen = "median",
+  outeq = 1,
   lower = 0.025,
   upper = 0.975,
   log = F,
@@ -39,6 +40,8 @@ PMvalid object.}
 
 \item{icen}{Can be either \dQuote{median} for the predictions based on medians of the population parameter value
 distributions, or \dQuote{mean}.  Default is \dQuote{median}.}
+
+\item{outeq}{The number of the output equation to simulate/test.  Default is 1.}
 
 \item{lower}{The lower quantile displayed for the observed and simulated profiles. Default is 0.025.}
 

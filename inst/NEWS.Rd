@@ -1,6 +1,23 @@
 \name{NEWS}
 \title{NEWS file for the Pmetrics package}
 
+\section{Changes in version 1.9.1}{
+
+\subsection{NEW FEATURES}{
+\itemize{
+\item Now the local version number is compared with the version number in github after suggest to update Pmetrics.
+\item Updated plot.PMvalid with error checking for icen and outEq.
+\item PMupdate is deprecated.
+}
+}
+\subsection{BUG FIXES}{
+\itemize{
+\item Fix makeValid and plot.PMvalid to handle multiple outEq. 
+\item Depecrated functions were exported.
+}
+}
+}
+
 \section{Changes in version 1.9}{
 
 \subsection{NEW FEATURES}{
