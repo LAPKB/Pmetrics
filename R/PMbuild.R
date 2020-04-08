@@ -111,7 +111,7 @@ PMbuild <- function() {
         if (substr(input, 1, 1) == "y") {
           if (.getGfortran()) {
             cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
-            cat("Pmetrics will register this installation, thank you!\n")
+            cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
             .PMremote_registerNewInstallation()
             return(T)
           } else {
@@ -124,7 +124,7 @@ PMbuild <- function() {
         }
       } else {
         cat("Pmetrics has detected gfortran and will compile required binary files.\n")
-        cat("Pmetrics will register this installation, thank you!\n")
+        cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
         .PMremote_registerNewInstallation()
         return(T)
       }
