@@ -45,7 +45,7 @@ PMbuild <- function() {
     if (!file.exists(destdir)) dir.create(destdir, showWarnings = F)
     PMfiles <- data.frame(filename = as.character(c("NPprep", "NPeng", "ITprep", "ITeng", "ITerr", "SIMeng", "DOprep", "DOeng", "mb2csv")))
     PMfiles$path <- sapply(PMfiles$filename,
-  function(x) shQuote(
+   function(x) shQuote(
     list.files(
       getwd(), pattern = as.character(paste(x, "_[[:digit:]]+\\.f", sep = ""))
     )
@@ -111,6 +111,8 @@ PMbuild <- function() {
         if (substr(input, 1, 1) == "y") {
           if (.getGfortran()) {
             cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
+            cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
+            .PMremote_registerNewInstallation()
             return(T)
           } else {
             cat("ERROR: Pmetrics did not install gfortran automatically.\nPlease install gfortran manually and then run PMbuild().\nGo to http://www.lapk.org/Pmetrics_install.php for help.\n")
@@ -122,9 +124,10 @@ PMbuild <- function() {
         }
       } else {
         cat("Pmetrics has detected gfortran and will compile required binary files.\n")
+        cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
+        .PMremote_registerNewInstallation()
         return(T)
       }
-
     } else {
       cat("Pmetrics has found required compiled binary files.\n")
       return(F)
