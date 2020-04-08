@@ -1,6 +1,15 @@
 \name{NEWS}
 \title{NEWS file for the Pmetrics package}
 
+\section{Changes in version 1.9.2}{
+
+\subsection{NEW FEATURES}{
+\itemize{
+\item Pmetrics will register each new installation.
+}
+}
+}
+
 \section{Changes in version 1.9.1}{
 
 \subsection{NEW FEATURES}{
