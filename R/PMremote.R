@@ -194,3 +194,15 @@ PMlogout <- function(server_address) {
   }
   setwd(wd)
 }
+
+.PMremote_registerNewInstallation <- function() {
+  current_version <- packageVersion("Pmetrics")
+  api_url <-"http://50.18.143.118:4000/api/v0/count"
+  r <- httr::POST(
+      api_url,
+      body = list(version = paste0("v", current_version)),
+    encode = "json",
+    httr::content_type_json()
+    )
+  httr::content(r)
+}
