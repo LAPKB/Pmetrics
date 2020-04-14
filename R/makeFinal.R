@@ -169,6 +169,11 @@ makeFinal <- function(data){
       popRanFix <- data$valranfix
       names(popRanFix) <- data$parranfix
     } else {popRanFix <- NULL}
+
+    popCov <- data.frame(popCov, row.names = data$par)
+    popCor <- data.frame(popCor, row.names = data$par)
+    names(popCov) <- data$par
+    if (all(!is.na(popCor))) names(popCor) <- data$par
     
     
     outlist <- list(popPoints=popPoints,popMean=popMean,popSD=popSD,popCV=popCV,popVar=popVar,
@@ -211,7 +216,7 @@ makeFinal <- function(data){
     #shrinkage
     varEBD <- apply(postVar[,-1],2,mean)
     sh <- varEBD/popVar
-    sh.DF <- data.frame(par=data$par,shrinkage=sh)
+    sh.DF <- data.frame(sh)
 
     popCov <- data.frame(popCov, row.names = data$par)
     popCor <- data.frame(popCor, row.names = data$par)
