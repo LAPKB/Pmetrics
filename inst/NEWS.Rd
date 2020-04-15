@@ -1,6 +1,15 @@
 \name{NEWS}
 \title{NEWS file for the Pmetrics package}
 
+\section{Changes in version 1.9.3}{
+
+\subsection{BUG FIXES}{
+\itemize{
+\item A bug that made some tables in the report have wrong headers was fixed.
+}
+}
+}
+
 \section{Changes in version 1.9.2}{
 
 \subsection{NEW FEATURES}{
