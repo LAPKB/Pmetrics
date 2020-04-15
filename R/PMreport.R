@@ -193,8 +193,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
     writeHTML("<label for=\"tab4\">Parameter Values</label>")
     writeHTML("<div id=\"tab-content4\" class=\"tab-content\">")
     if (!all(is.null(final))) {
-      report.table <- data.frame(mean = final$popMean, sd = final$popSD, CV = final$popCV, var = final$popVar,
-                                 median = final$popMedian, shrink = 100 * final$shrinkage$shrinkage)
+      report.table <- data.frame(mean = t(final$popMean), sd = t(final$popSD), CV = t(final$popCV), var = t(final$popVar), median = t(final$popMedian), shrink = t(100 * final$shrinkage))
       names(report.table) <- c("Mean", "SD", "CV%", "Var", "Median", "Shrink%")
       if (reportType == 1) {
         #only for NPAG

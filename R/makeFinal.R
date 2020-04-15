@@ -69,9 +69,13 @@ makeFinal <- function(data){
     }
     #summarize weighted corden
     wParVol <- prod(data$ab[,2]-data$ab[,1]) / gridpts
-    if (nrow(data$corden)>1) {popMean <- colSums(data$corden[,1:data$nvar] * data$corden[,data$nvar+1] )  * wParVol} else {
+    if (nrow(data$corden)>1) {
+      popMean <- colSums(data$corden[,1:data$nvar] * data$corden[,data$nvar+1] )  * wParVol
+    } else {
       popMean <- data$corden[1:data$nvar] * data$corden[data$nvar+1]  * wParVol
     }
+    
+    names(popMean) <- data$par
     
     if(nrow(data$corden)>1){
       popCov <- matrix(NA,ncol=data$nvar,nrow=data$nvar)
@@ -86,15 +90,17 @@ makeFinal <- function(data){
       popCor <- matrix(rep(NA,data$nvar**2),nrow=data$nvar)
       diag(popCor) <- rep(1,data$nvar)
     }
+    popMean <- data.frame(t(popMean))
+
+    
     
     popPoints <- data.frame(data$corden)
     names(popPoints) <- c(data$par,"prob")
     popPoints$prob <- popPoints$prob*wParVol
     class(popPoints) <- c("popPoints","data.frame")
     
-    names(popMean) <- data$par
-    dimnames(popCov) <- list(data$par,data$par)
-    if (all(!is.na(popCor))) dimnames(popCor) <- list(data$par,data$par)
+    
+    
     
     if(length(data$postden)>0){
       # temp1 <- melt(data$postden)
@@ -121,7 +127,7 @@ makeFinal <- function(data){
     popMedian <- pointSum[pointSum$parameter=="WtMed" & pointSum$percentile==0.5,1:length(data$par)]
     names(popMedian) <- data$par
     
-    popVar <- diag(popCov)
+    popVar <- data.frame(t(diag(popCov)))
     names(popVar) <- data$par
     
     popSD <- sqrt(popVar)
@@ -156,13 +162,18 @@ makeFinal <- function(data){
     #shrinkage
     varEBD <- apply(postVar[,-1],2,mean)
     sh <- varEBD/popVar
-    sh.DF <- data.frame(par=data$par,shrinkage=sh)
+    sh.DF <- data.frame(sh)
     
     if(is.null(data$nranfix)) data$nranfix <- 0
     if(data$nranfix>0){
       popRanFix <- data$valranfix
       names(popRanFix) <- data$parranfix
     } else {popRanFix <- NULL}
+
+    popCov <- data.frame(popCov, row.names = data$par)
+    popCor <- data.frame(popCor, row.names = data$par)
+    names(popCov) <- data$par
+    if (all(!is.na(popCor))) names(popCor) <- data$par
     
     
     outlist <- list(popPoints=popPoints,popMean=popMean,popSD=popSD,popCV=popCV,popVar=popVar,
@@ -205,7 +216,12 @@ makeFinal <- function(data){
     #shrinkage
     varEBD <- apply(postVar[,-1],2,mean)
     sh <- varEBD/popVar
-    sh.DF <- data.frame(par=data$par,shrinkage=sh)
+    sh.DF <- data.frame(sh)
+
+    popCov <- data.frame(popCov, row.names = data$par)
+    popCor <- data.frame(popCor, row.names = data$par)
+    names(popCov) <- data$par
+    if (all(!is.na(popCor))) names(popCor) <- data$par
     
     
     outlist <- list(popMean=popMean,popSD=popSD,popCV=popCV,popVar=popVar,
