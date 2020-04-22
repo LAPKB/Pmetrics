@@ -1,4 +1,20 @@
-.getOrUpdateGfortran <- function() {
+#' Download and install Gfortran updates
+#'
+#' @title Download and install Gfortran updates
+#' @return A boolean that represents if the latest version of Gfortran for your OS is installed.
+#' @author Michael Neely
+#' @export
+
+updateGfortran <- function() {
+  OS <- getOS()
+  if (OS == 1) {
+    .installOrUpdateGCC()
+  } else {
+    cat("This functionality is currently only working in MacOS, if you are using another OS\nremove your current gfortran installation and run PMbuild()")
+  }
+}
+
+.installOrUpdateGfortran <- function() {
   OS <- getOS()
   if (OS == 1) {
     cat("Checking for Brew \n")
