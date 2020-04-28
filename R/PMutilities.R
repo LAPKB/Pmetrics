@@ -1236,7 +1236,14 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   fortran <- strsplit(compiler, " ")[[1]][1]
   syntaxcheck <- NA
   if (length(grep("gfortran", fortran) > 0)) { syntaxcheck <- paste(fortran, "-fsyntax-only", modelFor) }
-  if (length(grep("ifort", fortran) > 0)) { syntaxcheck <- paste(fortran, "/syntax-only", modelFor) }
+  #fortran syntax different for Windows and UNIX
+  if (length(grep("ifort", fortran) > 0)) {
+    if (OS == 1 | OS == 3) {
+      syntaxcheck <- paste(fortran, "-fsyntax-only", modelFor)
+    } else {
+      syntaxcheck <- paste(fortran, "/syntax-only", modelFor)
+    }
+  }
   if (length(grep("g95", fortran) > 0)) { syntaxcheck <- paste(fortran, "-fsyntax-only", modelFor) }
 
   if (!is.na(syntaxcheck)) {
