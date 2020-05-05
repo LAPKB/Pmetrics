@@ -1,4 +1,5 @@
 #' Download and install Gfortran updates
+#' IMPORTANT: Only use this function if you are using either brew on Mac or chocolatey on windows to install gfortran.
 #'
 #' @title Download and install Gfortran updates
 #' @return A boolean that represents if the latest version of Gfortran for your OS is installed.
@@ -7,8 +8,9 @@
 
 updateGfortran <- function() {
   OS <- getOS()
-  if (OS == 1) {
-    .installOrUpdateGCC()
+  if (OS == 1 || OS == 2) {
+    .installOrUpdateGCC(OS)
+  
   } else {
     cat("This functionality is currently only working in MacOS, if you are using another OS\nremove your current gfortran installation and run PMbuild()")
   }
@@ -77,8 +79,9 @@ updateGfortran <- function() {
   return(T)
 }
 
-.installOrUpdateGCC <- function(){
-  if (system("brew ls --versions gcc") != 0) {
+.installOrUpdateGCC <- function(OS){
+  if (OS == 1) {
+     if (system("brew ls --versions gcc") != 0) {
       cat("Pmetrics did not find GCC and will install it.\n")
       system("brew install gcc")
     } else {
@@ -89,4 +92,13 @@ updateGfortran <- function() {
         system("brew upgrade gcc")
       }
     }
+  } else if (OS == 2) {
+     if(system2("C:/Windows/System32/WindowsPowerShell/v1.0/powershell", "choco outdated | grep mingw") ==0){
+       #there is a new version of mingw
+        cat("Pmetrics found a newer version of GCC and will update it.\n")
+        system("choco upgrade mingw -y")
+
+     }
+  }
+  
 }
