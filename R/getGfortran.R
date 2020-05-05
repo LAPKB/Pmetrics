@@ -6,7 +6,7 @@
 #' @author Michael Neely
 #' @export
 
-updateGfortran <- function() {
+update_gfortran <- function() {
   OS <- getOS()
   if (OS == 1 || OS == 2) {
     .installOrUpdateGCC(OS)
@@ -97,7 +97,6 @@ updateGfortran <- function() {
        #there is a new version of mingw
         cat("Pmetrics found a newer version of GCC and will update it.\n")
         system("choco upgrade mingw -y")
-
      }
   }
   
