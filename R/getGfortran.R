@@ -85,7 +85,7 @@ updateGfortran <- function() {
       cat("Pmetrics found GCC.\n")
       if(system("brew outdated | grep gcc")==0){
         #there is a new version of GCC
-        cat("Pmetrics found a new version of GCC and will update it.\n")
+        cat("Pmetrics found a newer version of GCC and will update it.\n")
         system("brew upgrade gcc")
       }
     }
