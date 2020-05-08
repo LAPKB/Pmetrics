@@ -4,7 +4,9 @@
 \name{pop.1}
 \alias{pop.1}
 \title{Example NPAG Output}
-\format{An R data frame made by \code{\link{makePop}} at the end of a successful NPAG run.}
+\format{
+An R data frame made by \code{\link{makePop}} at the end of a successful NPAG run.
+}
 \usage{
 pop.1
 }

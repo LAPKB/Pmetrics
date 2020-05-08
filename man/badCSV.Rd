@@ -4,7 +4,9 @@
 \name{badCSV}
 \alias{badCSV}
 \title{Pmetrics data file with errors}
-\format{badCSV is a PMmatrix object as read by \code{\link{PMreadMatrix}}}
+\format{
+badCSV is a PMmatrix object as read by \code{\link{PMreadMatrix}}
+}
 \usage{
 badCSV
 }

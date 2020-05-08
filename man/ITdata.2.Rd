@@ -4,7 +4,9 @@
 \name{ITdata.2}
 \alias{ITdata.2}
 \title{Example IT2B Output}
-\format{An R data frame made by \code{\link{NPparse}} at the end of a successful IT2B run.}
+\format{
+An R data frame made by \code{\link{NPparse}} at the end of a successful IT2B run.
+}
 \usage{
 ITdata.2
 }

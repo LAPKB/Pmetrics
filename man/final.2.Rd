@@ -4,7 +4,9 @@
 \name{final.2}
 \alias{final.2}
 \title{Example IT2B Output}
-\format{An R data frame made by \code{\link{makeFinal}} at the end of a successful IT2B run.}
+\format{
+An R data frame made by \code{\link{makeFinal}} at the end of a successful IT2B run.
+}
 \usage{
 final.2
 }

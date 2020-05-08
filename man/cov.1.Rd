@@ -4,7 +4,9 @@
 \name{cov.1}
 \alias{cov.1}
 \title{Example NPAG Output}
-\format{An R data frame made by \code{\link{makeCov}} at the end of a successful NPAG run.}
+\format{
+An R data frame made by \code{\link{makeCov}} at the end of a successful NPAG run.
+}
 \usage{
 cov.1
 }
