@@ -10,6 +10,7 @@
 #' PMvalid object.
 #' @param icen Can be either \dQuote{median} for the predictions based on medians of the population parameter value
 #' distributions, or \dQuote{mean}.  Default is \dQuote{median}.
+#' @param outeq The number of the output equation to simulate/test.  Default is 1.
 #' @param lower The lower quantile displayed for the observed and simulated profiles. Default is 0.025.
 #' @param upper The upper quantile displayed for the observed and simulated profiles. Default is 0.975.
 #' @param log Boolean operator to plot in semilog space.  The default is \code{FALSE}.
@@ -36,7 +37,7 @@
 #' @seealso \code{\link{makeValid}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{points}}
 #' @export
 
-plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.975,
+plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,upper=0.975,
                          log=F,pch.obs = 1,col.obs="black",cex.obs=1,theme="color",
                          col.obs.ci="blue",col.obs.med="red",col.sim.ci="dodgerblue",col.sim.med="lightpink",
                          xlab="Time",ylab="Observation",xlim,ylim,...
@@ -44,7 +45,11 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",lower=0.025,upper=0.97
 ){
   
   #checkRequiredPackages("ggplot2")
-  x$opDF <- x$opDF[x$opDF$icen==icen,] #filter to icen
+  if(outeq > max(x$opDF$outeq)){stop(paste("Your data do not contain",outeq,"output equations.\n"))}
+  if(icen!="mean" & icen!="median"){stop(paste("Use \"mean\" or \"median\" for icen.\n",sep=""))}
+  
+  x$opDF <- x$opDF[x$opDF$icen==icen & x$opDF$outeq==outeq,] #filter to icen & outeq
+  x$simdata$obs <- x$simdata$obs[x$simdat$obs$outeq==outeq,] #filter to outeq
   
   #select correct time
   if(!tad){
