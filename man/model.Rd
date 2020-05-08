@@ -4,7 +4,9 @@
 \name{model}
 \alias{model}
 \title{Pmetrics model file}
-\format{model is a PMmatrix model.txt file.  See user manual for details on model format.}
+\format{
+model is a PMmatrix model.txt file.  See user manual for details on model format.
+}
 \usage{
 model
 }

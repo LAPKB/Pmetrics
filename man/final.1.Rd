@@ -4,7 +4,9 @@
 \name{final.1}
 \alias{final.1}
 \title{Example NPAG Output}
-\format{An R data frame made by \code{\link{makeFinal}} at the end of a successful NPAG run.}
+\format{
+An R data frame made by \code{\link{makeFinal}} at the end of a successful NPAG run.
+}
 \usage{
 final.1
 }

@@ -4,7 +4,9 @@
 \name{cycle.1}
 \alias{cycle.1}
 \title{Example NPAG Output}
-\format{An R data frame made by \code{\link{makeCycle}} at the end of a successful NPAG run.}
+\format{
+An R data frame made by \code{\link{makeCycle}} at the end of a successful NPAG run.
+}
 \usage{
 cycle.1
 }

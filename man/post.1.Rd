@@ -4,7 +4,9 @@
 \name{post.1}
 \alias{post.1}
 \title{Example NPAG Output}
-\format{An R data frame made by \code{\link{makePost}} at the end of a successful NPAG run.}
+\format{
+An R data frame made by \code{\link{makePost}} at the end of a successful NPAG run.
+}
 \usage{
 post.1
 }

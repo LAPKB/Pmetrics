@@ -238,7 +238,8 @@ SIMparse <- function(file,include,exclude,combine=F,silent=F, parallel){
   if(!silent & !parallel) {pb <- txtProgressBar(min = 0, max = nfiles, style = 3)}
   
   if (parallel) {
-    cl <- parallel::makeCluster(no_cores)
+    cl <- parallel::makeCluster(no_cores, setup_timeout = 0.5) 
+    #May 8, 2020 remove the second argument if bug fixed in Rstudio
     doParallel::registerDoParallel(cl)
     simlist <- foreach::foreach(n = 1:nfiles, .verbose = F) %dopar% {processfile(n)}
     parallel::stopCluster(cl)

@@ -4,11 +4,13 @@
 \name{mic1}
 \alias{mic1}
 \title{Example MIC data}
-\format{An R data frame containing example MIC distribution data in two columns:
+\format{
+An R data frame containing example MIC distribution data in two columns:
 \itemize{
 \item mic Minimum inhibitory concentration
 \item n Number of organisms with the given MIC
-}}
+}
+}
 \usage{
 mic1
 }

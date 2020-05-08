@@ -4,8 +4,10 @@
 \name{growth}
 \alias{growth}
 \title{CDC Pediatric and Adolescent Growth Data Table}
-\format{A data frame with the following 9 columns: KNOT (integer age in months); A, B1, B2, B3 (coefficients for calculating
-percentiles), SEX, AGE, PERCENTILE, and CHART (length x age, wt x age, wt x length, hc x age, or ht x age).}
+\format{
+A data frame with the following 9 columns: KNOT (integer age in months); A, B1, B2, B3 (coefficients for calculating
+percentiles), SEX, AGE, PERCENTILE, and CHART (length x age, wt x age, wt x length, hc x age, or ht x age).
+}
 \usage{
 growth
 }
