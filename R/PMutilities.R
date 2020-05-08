@@ -2030,10 +2030,12 @@ checkRequiredPackages <- function(pkg) {
 calcTAD <- function(rawData) {
   for (i in 1:nrow(rawData)) {
     if (rawData$evid[i] != 0) {
-      doseTime <- rawData$time[i]
+      if(!is.na(rawData$addl[i]) && rawData$addl[i]>0){
+        doseTime <- rawData$time[i] + rawData$addl[i] * rawData$ii[i]
+      } else {doseTime <- rawData$time[i]}
       prevDose <- rawData$dose[i]
-    }
-    rawData$tad[i] <- rawData$time[i] - doseTime
+      rawData$tad[i] <- 0
+    } else {rawData$tad[i] <- rawData$time[i] - doseTime}
   }
   return(rawData$tad)
 }
