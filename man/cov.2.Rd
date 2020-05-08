@@ -4,7 +4,9 @@
 \name{cov.2}
 \alias{cov.2}
 \title{Example IT2B Output}
-\format{An R data frame made by \code{\link{makeCov}} at the end of a successful IT2B run.}
+\format{
+An R data frame made by \code{\link{makeCov}} at the end of a successful IT2B run.
+}
 \usage{
 cov.2
 }

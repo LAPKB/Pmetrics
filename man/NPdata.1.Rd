@@ -4,7 +4,9 @@
 \name{NPdata.1}
 \alias{NPdata.1}
 \title{Example NPAG Output}
-\format{An R data frame made by \code{\link{NPparse}} at the end of a successful NPAG run.}
+\format{
+An R data frame made by \code{\link{NPparse}} at the end of a successful NPAG run.
+}
 \usage{
 NPdata.1
 }
