@@ -4,7 +4,9 @@
 \name{op.2}
 \alias{op.2}
 \title{Example IT2B Output}
-\format{An R data frame made by \code{\link{makeOP}} at the end of a successful IT2B run.}
+\format{
+An R data frame made by \code{\link{makeOP}} at the end of a successful IT2B run.
+}
 \usage{
 op.2
 }

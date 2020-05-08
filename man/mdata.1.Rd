@@ -4,7 +4,9 @@
 \name{mdata.1}
 \alias{mdata.1}
 \title{Example NPAG Output}
-\format{The original data file as read by \code{\link{PMreadMatrix}} at the end of a successful NPAG run.}
+\format{
+The original data file as read by \code{\link{PMreadMatrix}} at the end of a successful NPAG run.
+}
 \usage{
 mdata.1
 }

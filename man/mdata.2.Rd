@@ -4,7 +4,9 @@
 \name{mdata.2}
 \alias{mdata.2}
 \title{Example IT2B Output}
-\format{The original data file as read by \code{\link{PMreadMatrix}} at the end of a successful IT2B run.}
+\format{
+The original data file as read by \code{\link{PMreadMatrix}} at the end of a successful IT2B run.
+}
 \usage{
 mdata.2
 }
