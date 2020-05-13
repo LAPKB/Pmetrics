@@ -17,11 +17,7 @@ Description: Parametric and non-parametric
     which used to be available on CRAN.
 Authors@R: person("Michael", "Neely",
     email = "mneely@usc.edu", role = c("aut", "cre"))
-<<<<<<< HEAD
 Version: 1.9.5
-=======
-Version: 1.9.4
->>>>>>> 68d00704e744c3bb035e1cd8007aa0dc1b7f50c7
 URL: http://www.lapk.org
 Date: 2020-02-29
 Depends: 
