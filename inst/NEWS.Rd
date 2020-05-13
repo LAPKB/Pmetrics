@@ -1,6 +1,29 @@
 \name{NEWS}
 \title{NEWS file for the Pmetrics package}
 
+\section{Changes in version 1.9.5}{
+
+\subsection{NEW FEATURES}{
+\itemize{
+\item New function update_gfortran()
+}
+}
+\subsection{BUG FIXES}{
+\itemize{
+\item A flag error using iFort, thanks @sabryr.
+\item Fixed a bug when rendering the html report.
+}
+}
+}
+
+\section{Changes in version 1.9.4}{
+\subsection{BUG FIXES}{
+\itemize{
+\item Supporting R 4.0.0
+}
+}
+}
+
 \section{Changes in version 1.9.3}{
 
 \subsection{BUG FIXES}{
