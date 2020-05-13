@@ -109,7 +109,7 @@ PMbuild <- function() {
         cat("Pmetrics cannot detect gfortran and will attempt to download and install all components.\n")
         input <- tolower(readline(prompt = "Do you agree? (Y/N)"))
         if (substr(input, 1, 1) == "y") {
-          if (.getGfortran()) {
+          if (.installOrUpdateGfortran()) {
             cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
             cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
             .PMremote_registerNewInstallation()
