@@ -12,6 +12,7 @@
 \itemize{
 \item A flag error using iFort, thanks @sabryr.
 \item Fixed a bug when rendering the html report.
+\item the css is backed up at the lapk.ork server, now users can see the report /w styles also if they dont have pmetrics installed (remote execution)
 }
 }
 }
