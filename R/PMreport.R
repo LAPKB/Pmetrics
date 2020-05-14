@@ -63,6 +63,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   writeHTML(c("<html>",
               "<head>",
               "<title>Pmetrics Report</title>",
+              paste("<link rel=stylesheet href=\"http://lapk.org/software/Pmetrics/Report/Pmetrics.css\" type=text/css>", sep = ""),
               paste("<link rel=stylesheet href=\"", .CSSfile, "\" type=text/css>", sep = ""),
               "</head>",
               "<body>"))
