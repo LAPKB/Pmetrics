@@ -5,7 +5,7 @@
 #' through appropriate clustering of doses, covariates and sample times for prediction correction using the methods of Bergstrand et al (2011).
 #'
 #' @title Create a Pmetrics validation object
-#'@param run When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
+#' @param run When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
 #' which will typically be a number, e.g. 1.
 #' @param input The input number.  Default is 1.
 #' @param outeq The number of the output equation to simulate/test.  Default is 1.
@@ -133,7 +133,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   for(i in 1:nrow(dataSubDC)){
     missingVal <- which(is.na(dataSubDC[i,]))
     if(2 %in% missingVal){ #dose is missing
-      if(i==1 | (dataSubDC$id[i-1]!=dataSubDC$id[i])){ #first record for patient has zero dose
+      if(i==1 | (dataSubDC$id[i-1] != dataSubDC$id[i])){ #first record for patient has zero dose
         j <- 0
         while(is.na(dataSubDC$dose[i+j])){ #increment until non-zero dose is found
           j <- j+1
