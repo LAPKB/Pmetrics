@@ -196,6 +196,7 @@ PMlogout <- function(server_address) {
 }
 
 .PMremote_registerNewInstallation <- function() {
+  if (Sys.getenv("env") != "Development") {
   current_version <- packageVersion("Pmetrics")
   api_url <-"http://50.18.143.118:4000/api/v0/count"
   r <- httr::POST(
@@ -205,4 +206,7 @@ PMlogout <- function(server_address) {
     httr::content_type_json()
     )
   httr::content(r)
+  } else {
+    cat("You are inside the development folder, skipping the registration of the current installation. ")
+  }
 }
