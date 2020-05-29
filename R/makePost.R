@@ -112,12 +112,13 @@ makePost <- function(run,NPdata) {
     
     #post <- melt(totalRaw,id.vars=c("id","time"),variable.name="icen",value.name="pred")
     post <- totalRaw %>% 
-      pivot_longer(cols = c("mean1","median1","mode1"),names_to="icen",values_to="pred") %>%
+      pivot_longer(cols = c(-time, -id),names_to="icen",values_to="pred") %>%
       select(.data$id,.data$time,.data$icen,.data$pred) %>%
-      arrange(.data$id,.data$icen,.data$time)
+      arrange(.data$id,.data$icen,.data$time) 
     
     post$outeq <- rep(1:NPdata$numeq,each=3*sum(NPdata$numt))
-    levels(post$icen) <- rep(c("mean","median","mode"),NPdata$numeqt)
+    post$icen <- gsub("[[:digit:]]","",post$icen)
+    #levels(post$icen) <- rep(c("mean","median","mode"),NPdata$numeqt)
 
     #count 0 times per subject, icen, and outeq - should be at least 1 for each
     blocks <- tapply(post$time,list(post$id,post$icen,post$outeq),function(x) sum(x==0))
@@ -128,7 +129,7 @@ makePost <- function(run,NPdata) {
     post$block <- blocks3
     
     #suppress mode for NPAG
-    post <- post[post$icen!="mode",]
+    post <- post %>% filter(post$icen!="mode")
   }
   
   #add predictions at observed times
