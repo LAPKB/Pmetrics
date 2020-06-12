@@ -2005,7 +2005,7 @@ getOSname <- function() {
 
 # check for installed packages --------------------------------------------
 
-checkRequiredPackages <- function(pkg) {
+checkRequiredPackages <- function(pkg, repos="CRAN") {
 
   managePkgs <- function(thisPkg) {
     # if (length(grep(thisPkg, installed.packages()[, 1])) == 0) {
@@ -2014,7 +2014,12 @@ checkRequiredPackages <- function(pkg) {
     if (requireNamespace(thisPkg, quietly = T)) {
       return("ok") #package is installed
     } else { #package is not installed
-      install.packages(thisPkg, dependencies = T, quiet = T) #try to install
+      cat(paste0("The package ",thisPkg," is required and will be installed.\n"))
+      if(repos == "CRAN"){
+        install.packages(thisPkg, dependencies = T, quiet = T) #try to install
+      }else{
+        devtools::install_github(repos)
+      }
       if (requireNamespace(thisPkg, quietly = T)){ #check again
         return("ok") #now it is installed and ok
       } else {return(thisPkg) } #nope, still didn't install
