@@ -159,9 +159,10 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   }
   
   if(type=="npde"){
-    cat("NPDE temporarily disabled pending code cleaning.\n")
-    # plot(x$npde)
-    # par(mfrow=c(1,1))
+    #cat("NPDE temporarily disabled pending code cleaning.\n")
+    if(is.null(x$npde)) stop("No npde object found.  Re-run makeValid.\n")
+    plot(x$npde)
+    par(mfrow=c(1,1))
   }
   
 }

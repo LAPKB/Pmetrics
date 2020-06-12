@@ -1,5 +1,34 @@
 \name{NEWS}
 \title{NEWS file for the Pmetrics package}
+\section{Changes in version 1.9.7}{
+
+\subsection{NEW FEATURES}{
+\itemize{
+\item Restored npde function by creating new git npde repository
+}
+}
+\subsection{BUG FIXES}{
+\itemize{
+\item None
+}
+}
+}
+
+
+\section{Changes in version 1.9.6}{
+
+\subsection{NEW FEATURES}{
+\itemize{
+\item None
+}
+}
+\subsection{BUG FIXES}{
+\itemize{
+\item Fixed error in makePost associated with conversion to tidyverse handling
+}
+}
+}
+
 
 \section{Changes in version 1.9.5}{
 
