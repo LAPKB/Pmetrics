@@ -427,25 +427,28 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   #NPDE --------------------------------------------------------------------
 
   #temporarily disable NPDE until we can clean code 3/9/2020
-  npdeRes <- NA
+  #npdeRes <- NA
   
-  # #prepare data for npde
-  # obs <- tempDF[tempDF$icen=="mean",c("id","time","obs")]
-  # 
-  # #remove missing obs
-  # obs <- obs[obs$obs!=-99,]
-  # names(obs)[3] <- "out"
-  # 
-  # simobs <- simFull$obs
-  # #remove missing simulations
-  # simobs <- simobs[simobs$out!=-99,]
-  # simobs$id <- rep(obs$id,each=nsim)
-  # 
-  # #get NPDE
-  # assign("thisobs",obs,pos=1)
-  # assign("thissim",simobs,pos=1)
-  # npdeRes <- tryCatch(autonpde(namobs=thisobs,namsim=thissim,1,2,3,verbose=T),error=function(e) e)
-  # 
+  #get npde from github
+  checkRequiredPackages("npde", repos = "LAPKB/npde") 
+  
+  #prepare data for npde
+  obs <- tempDF[tempDF$icen=="mean",c("id","time","obs")]
+
+  #remove missing obs
+  obs <- obs[obs$obs!=-99,]
+  names(obs)[3] <- "out"
+
+  simobs <- simFull$obs
+  #remove missing simulations
+  simobs <- simobs[simobs$out!=-99,]
+  simobs$id <- rep(obs$id,each=nsim)
+
+  #get NPDE
+  assign("thisobs",obs,pos=1)
+  assign("thissim",simobs,pos=1)
+  npdeRes <- tryCatch(npde::autonpde(namobs=thisobs,namsim=thissim,1,2,3,verbose=T),error=function(e) e)
+
   
   
 
