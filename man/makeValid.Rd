@@ -4,15 +4,11 @@
 \alias{makeValid}
 \title{Create a Pmetrics validation object}
 \usage{
-makeValid(run, input = 1, outeq = 1, tad = F, binCov, doseC, timeC, tadC, ...)
+makeValid(run, tad = F, binCov, doseC, timeC, tadC, ...)
 }
 \arguments{
 \item{run}{When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
 which will typically be a number, e.g. 1.}
-
-\item{input}{The input number.  Default is 1.}
-
-\item{outeq}{The number of the output equation to simulate/test.  Default is 1.}
 
 \item{tad}{Boolean argument, default \code{FALSE}.  If \code{TRUE}, will include 
 time after dose (TAD) in binning as well as standard relative time.  \emph{NOTE:} Including TAD is only 

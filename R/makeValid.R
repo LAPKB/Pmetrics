@@ -7,8 +7,6 @@
 #' @title Create a Pmetrics validation object
 #' @param run When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
 #' which will typically be a number, e.g. 1.
-#' @param input The input number.  Default is 1.
-#' @param outeq The number of the output equation to simulate/test.  Default is 1.
 #' @param tad Boolean argument, default \code{FALSE}.  If \code{TRUE}, will include 
 #' time after dose (TAD) in binning as well as standard relative time.  \emph{NOTE:} Including TAD is only 
 #' valid if steady state conditions exist for each patient.  This means that dosing is stable and regular
@@ -39,7 +37,7 @@
 #' @seealso \code{\link{SIMrun}}, \code{\link{plot.PMvalid}}
 #' @export
 
-makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
+makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,...){
   
   #verify packages used in this function
   #checkRequiredPackages("mclust")
@@ -65,17 +63,20 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   
   #grab raw data file
   mdata <- getName("mdata")
-  maxInput <- max(mdata$input,na.rm=T)
-  maxOuteq <- max(mdata$outeq,na.rm=T)
-  if(outeq > maxOuteq){
-    stop("You entered an output equation number greater than the number of output equations.\n")
-  }
-  if(input > maxInput){
-    stop("You entered a drug input number greater than the number of drug inputs.\n")
-  }
-  #filter mdata to appropriate input and outeq
-  #mdata <- mdata[(mdata$evid>0 & mdata$input==input) | (mdata$evid==0 & mdata$outeq==outeq),]
+  #remove missing observations
+  missObs <- obsStatus(mdata$out)$missing
+  if(length(missObs)>0) mdata <- mdata[-missObs,]
   
+  # #get input and output max
+  # maxInput <- max(mdata$input,na.rm=T)
+  # maxOuteq <- max(mdata$outeq,na.rm=T)
+  # if(outeq > maxOuteq){
+  #   stop("You entered an output equation number greater than the number of output equations.\n")
+  # }
+  # if(input > maxInput){
+  #   stop("You entered a drug input number greater than the number of drug inputs.\n")
+  # }
+  # 
   #filter to include/exclude subjects
   if("include" %in% names(argsSIM)){
     includeID <- argsSIM$include
@@ -122,9 +123,7 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   #add time after dose
   if(tad){dataSub$tad <- valTAD} else {dataSub$tad <- NA}
   dataSub <- dataSub[,c("id","evid","time","tad","out","dose",binCov)]
-  #remove missing observations
-  missObs <- obsStatus(dataSub$out)$missing
-  if(length(missObs)>0) dataSub <- dataSub[-missObs,]
+
 
   #restrict to doses for dose/covariate clustering (since covariates applied on doses)
   dataSubDC <- dataSub[dataSub$evid>0,-c(2:5)]
@@ -365,12 +364,13 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   
   #make tempDF subset of PMop for subject, time, non-missing obs, outeq, pop predictions (PREDij)
   tempDF <- getName("op")
-  tempDF <- tempDF[tempDF$pred.type=="pop" & obsStatus(tempDF$obs)$present,]
+  tempDF <- tempDF[tempDF$pred.type=="pop",]
+  tempDF <- tempDF[obsStatus(tempDF$obs)$present,]
   if(!is.na(includeID[1])){
     tempDF <- tempDF[tempDF$id %in% includeID,]
   }
   if(!is.na(excludeID[1])){
-    mdata <- mdata[!mdata$id %in% excludeID,]
+    tempDF <- tempDF[!tempDF$id %in% excludeID,]
   }
   
   if(tad){tempDF$tad <- dataSub$tad[dataSub$evid==0]} else {tempDF$tad <- NA}
@@ -397,6 +397,9 @@ makeValid <- function(run,input=1,outeq=1,tad=F,binCov,doseC,timeC,tadC,...){
   
   
   #Now, simulate using full pop model
+  #write the adjusted mdata file first
+  PMwriteMatrix(mdata,datafileName,override=T)
+  
   set.seed(seed.start)
   argsSIM2 <- c(list(poppar=poppar,data=datafileName,model=modelfile,nsim=nsim,
                      seed=runif(nsub,-100,100),outname="full"),argsSIM)
