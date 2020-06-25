@@ -37,9 +37,9 @@ PMtest <- function() {
 
   OS <- getOS()
   fortSource <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
-  #TODO: change this
-  if (!file.exists(fortSource)) {
-    msg <- c(msg, "You must run PMbuild().\n")
+   #Ensure that gfortran is properly set up
+  if (!binaries.installed()) {
+    PMbuild()
   }
 
   compiler <- compilation_statement()
