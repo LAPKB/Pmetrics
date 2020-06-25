@@ -102,7 +102,7 @@ Dopt <- function(run, data, clean = T) {
 
 
   OS <- getOS()
-   #Ensure that gfortran is properly set up
+  #Ensure that gfortran is properly set up
   if (!binaries.installed()) {
     PMbuild()
   }

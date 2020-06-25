@@ -35,7 +35,6 @@ if ($machinePath -like "*$env:ChocolateyInstall*") {
 # Adapt for any services running in subfolders of ChocolateyInstall
 $agentService = Get-Service -Name chocolatey-agent -ErrorAction SilentlyContinue
 if ($agentService -and $agentService.Status -eq 'Running') { $agentService.Stop() }
-# TODO: add other services here
 
 # delete the contents (remove -WhatIf to actually remove)
 Remove-Item -Recurse -Force "$env:ChocolateyInstall"

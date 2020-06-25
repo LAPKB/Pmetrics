@@ -2,12 +2,12 @@
 #' 
 #' 
 #' @title Deprecated functions.
-#' @aliases PMcheckMatrix, PMfixMatrix, NPload, ITload, NPreport, ITreport, PMdiag
+#' @aliases PMFortranConfig, PMcheckMatrix, PMfixMatrix, NPload, ITload, NPreport, ITreport, PMdiag
 #' @author Michael Neely
 #' @export
 
 
-PMfortranConfig() <- function(){
+PMFortranConfig <- function(){
   cat("\nPMfortranConfig is deprecated.  An automatic installation of Gfortran is going to be performed when run PMbuild(). You can trigger it by yourself using update_gfortran()\n")
 }
 
