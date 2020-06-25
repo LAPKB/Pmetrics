@@ -622,7 +622,7 @@ SIMrun <- function(poppar, limits = NULL, model = "model.txt", data = "data.csv"
   if (!file.exists(fortSource)) {
     PMbuild()
   }
-  compiler <- PMFortranConfig()
+  compiler <- compilation_statement()
   #choose serial compiliation
   if (length(compiler) == 2) {
     compiler <- compiler[1]

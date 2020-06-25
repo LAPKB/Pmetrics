@@ -7,7 +7,11 @@
 #' @export
 
 
+PMfortranConfig() <- function(){
+  cat("\nPMfortranConfig is deprecated.  An automatic installation of Gfortran is going to be performed when run PMbuild(). You can trigger it by yourself using update_gfortran()\n")
+}
 
+#' @export
 PMcheckMatrix <- function(){
   cat("\nPMcheckMatrix is deprecated.  Use PMcheck() instead to check data and model files.\n")
 }

@@ -27,9 +27,8 @@ PMbuild <- function() {
 
     # }
 
-    compiler <- PMFortranConfig()
-    #try again just in case redefined
-    compiler <- PMFortranConfig()
+    
+    compiler <- compilation_statement()
     #check if parallel is possible
     if (length(compiler) == 2 & getBits() == "64") {
       parallel <- T

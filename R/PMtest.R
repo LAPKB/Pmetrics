@@ -42,10 +42,8 @@ PMtest <- function() {
     msg <- c(msg, "You must run PMbuild().\n")
   }
 
-  compiler <- PMFortranConfig()
-  if (is.null(compiler)) {
-    msg <- c(msg, "You need to choose a Fortran compiler.  Run PMFortranConfig().\n")
-  }
+  compiler <- compilation_statement()
+ 
 
   #substitution string for directory separator according to OS  
   rep <- c("/", "\\\\", "/")[OS]
@@ -74,7 +72,7 @@ PMtest <- function() {
     if (error != 0) {
       errormsg <- readLines("error.txt")
       if (length(grep("command not found", errormsg[1])) > 0) {
-        msg <- c(msg, "You have not installed a fortran compiler or have chosen the wrong compiler.\nRe-install, or tell Pmetrics the correct compiler with PMFortranConfig().\n")
+        msg <- c(msg, "You have not installed gfortran.\nInstall it and uptade your system path, or use update_gfortran() to try to perform an automatic installation().\n")
       }
     } else {
       #ok np_prep compiled
@@ -88,7 +86,7 @@ PMtest <- function() {
     if (error != 0) {
       errormsg <- readLines("error.txt")
       if (length(grep("is not recognized", errormsg[1])) > 0) {
-        msg <- c(msg, "You have not installed a fortran compiler or have chosen the wrong compiler.\nRe-install, or tell Pmetrics the correct compiler with PMFortranConfig().\n")
+        msg <- c(msg, "You have not installed gfortran.\nInstall it and uptade your system path, or use update_gfortran() to try to perform an automatic installation().\n")
       }
     } else {
       #ok np_prep compiled

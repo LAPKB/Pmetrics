@@ -1229,9 +1229,9 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   writeLines(unlist(fmod), modelFor)
   #check model file for errors
   OS <- getOS()
-  compiler <- PMFortranConfig()
-  if (is.null(compiler)) return(list(status = -1, msg = "Execute PMbuild or PMFortranConfig(reconfig=T) to choose your fortran compiler.\n"))
+  compiler <- compilation_statement()
 
+  #TODO: remove this checks because they are not longer possible
   #build syntax check statement and check model if possible
   fortran <- strsplit(compiler, " ")[[1]][1]
   syntaxcheck <- NA
@@ -2087,4 +2087,8 @@ binaries.installed <- function() {
     installed = installed && exists(binary)
   }
   return(installed)
+}
+
+compilation_statement <- function(){
+  paste("gfortran -m", getBits(), " -w -O3 -o <exec> <files>\ngfortran -O3 -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>", sep = "")
 }
