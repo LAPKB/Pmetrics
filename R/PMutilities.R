@@ -2090,5 +2090,5 @@ binaries.installed <- function() {
 }
 
 compilation_statement <- function(){
-  paste("gfortran -m", getBits(), " -w -O3 -o <exec> <files>\ngfortran -O3 -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>", sep = "")
+  c(paste("gfortran -m", getBits(), " -w -O3 -o <exec> <files>", sep=""), "gfortran -O3 -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>")
 }
