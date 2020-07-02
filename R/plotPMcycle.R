@@ -54,6 +54,7 @@ plot.PMcycle <- function(x,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
   nout <- ncol(data$gamlam)
   #establish windows
   par(mfrow=c(3,2))
+  # This is an example
   
   # -2 x log-likelihood
   plot(y=data$ll[omit:numcycles],x=x,type="l",xlab="Cycle",ylab="",main="-2 x Log likelihood",xaxt="n",...)
