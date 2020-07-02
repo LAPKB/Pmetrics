@@ -52,6 +52,7 @@ plot.PMcycle <- function(x,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
   if(length(data$cycnum)==0) {cycnum <- x} else {cycnum <- data$cycnum[x]}
   nvar <- ncol(data$mean)
   nout <- ncol(data$gamlam)
+  #establish windows
   par(mfrow=c(3,2))
   
   # -2 x log-likelihood
