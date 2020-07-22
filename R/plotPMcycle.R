@@ -132,9 +132,14 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
     p5 <- purrr::reduce(1:nvar, ~.x + ggplot2::geom_line(ggplot2::aes(x=x, y= sd[,.y], colour = data$names[.y])), .init=ggplot2::ggplot(data = graph_data) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ggtitle("Normalized SD") + ggplot2::xlab("Cycle") + ggplot2::ylab(""))
     
   } else {
-    plot(y=data$median[omit:numcycles,],x=rep(x,nvar),xlab="Cycle",ylab="",main="Normalized SD",type="n",xaxt="n",...)
-    axis(1,at=x,labels=cycnum)
-    text("Initial standard deviation = 0\nAssay error may be too large.",x=median(c(omit,numcycles)),y=median(data$median[omit:numcycles,]),col="gray50",cex=2)
+    #plot(y=data$median[omit:numcycles,],x=rep(x,nvar),xlab="Cycle",ylab="",main="Normalized SD",type="n",xaxt="n",...)
+    #axis(1,at=x,labels=cycnum)
+    #text("Initial standard deviation = 0\nAssay error may be too large.",x=median(c(omit,numcycles)),y=median(data$median[omit:numcycles,]),col="gray50",cex=2)
+    p5<- ggplot2::ggplot() + 
+  ggplot2::annotate("text", x = 0, y = 0, size=4, label = "Initial standard deviation = 0\nAssay error may be too large.") + 
+  ggplot2::theme_bw() +
+  ggplot2::theme(panel.grid.major=ggplot2::element_blank(),
+    panel.grid.minor=ggplot2::element_blank())
   }
   
   
