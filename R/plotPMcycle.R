@@ -81,9 +81,12 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
   
   
   #gamma/lambda
+  graph_data$gamma_lambda <- data$gamlam[omit:numcycles,]
   if(is.null(nout)){
-    plot(y=data$gamlam[omit:numcycles],x=x,type="l",xlab="Cycle",ylab="",main="Gamma/Lambda",xaxt="n",...)
-    axis(1,at=x,labels=cycnum)
+    #TODO Don't know how to check this scenario, JD-Jul/2020
+    #plot(y=data$gamlam[omit:numcycles],x=x,type="l",xlab="Cycle",ylab="",main="Gamma/Lambda",xaxt="n",...)
+    #axis(1,at=x,labels=cycnum)
+    p3 <- ggplot2::ggplot(data = graph_data) + ggplot2::geom_line(ggplot2::aes(x = x, y = gamma_lambda))  + ggplot2::ggtitle("Gamma/Lambda") + ggplot2::xlab("Cycle") + ggplot2::ylab("")
   } else {
     #plot(y=max(data$gamlam[omit:numcycles,]),x=max(x),type="n",xlab="Cycle",ylab="",main="Gamma/Lambda",
     #     xlim=range(x),ylim=range(data$gamlam[omit:numcycles,]),xaxt="n")
@@ -96,7 +99,7 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
     #         legend=paste("Output",1:nout),col=col[1:nvar],lty=lnty[1:nvar],lwd=2,bg="white",cex=cex.leg,
     #         x.intersp=0.8,y.intersp=0.8)
     #}
-    graph_data$gamma_lambda <- data$gamlam[omit:numcycles,]
+    
     p3 <- ggplot2::ggplot(data = graph_data) + ggplot2::geom_line(ggplot2::aes(x = x, y = gamma_lambda))  + ggplot2::ggtitle("Gamma/Lambda") + ggplot2::xlab("Cycle") + ggplot2::ylab("")
   }
   
