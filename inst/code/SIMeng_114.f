@@ -1114,8 +1114,8 @@
       zzz(J)=R(J)
       RETURN
       END
-       SUBROUTINE init_random_seed()
-          INTEGER :: i, n, clock
+       SUBROUTINE init_random_seed(j)
+          INTEGER :: i, j, n, clock
           INTEGER, DIMENSION(:), ALLOCATABLE :: seed
           CALL RANDOM_SEED(size = n)
           ALLOCATE(seed(n))
@@ -2865,6 +2865,7 @@
         SUBROUTINE USERANAL(X,TIN,TOUT)
         IMPLICIT REAL*8(A-H,O-Z)
         DIMENSION X(20),ATOL(20),RWORK(1002),IWORK(50)
+     1   ,RTOL(1),RPAR(256),IPAR(256)
 	EXTERNAL DIFFEQ,JACOB
 	COMMON/TOUSER/NDIM,MF,RTOL,ATOL
 	ITOL=2
