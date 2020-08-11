@@ -383,7 +383,8 @@ makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,...){
   tempDF$pcObs <- tempDF$obs * tempDF$PRED_bin/tempDF$pred
   
   #take out observations at time 0 (from evid=4 events)
-  #tempDF <- tempDF[tempDF$time>0,]
+  tempDF <- tempDF[tempDF$time>0,]
+  
   #bin pcYij by time and add to tempDF
   tempDF$timeBinNum<- rep(dataSub$timeBin[dataSub$evid==0],times=2) #one for each icen 
   tempDF$timeBinMedian <- timeMedian$time[match(tempDF$timeBinNum,timeMedian$bin)]
@@ -414,12 +415,13 @@ makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,...){
   simFull <- SIMparse("full*",combine=T,silent=T)
   #add TAD for plotting options
   if(tad){simFull$obs$tad <- unlist(tapply(dataSub$tad[dataSub$evid==0],dataSub$id[dataSub$evid==0],function(x) rep(x,nsim)))}
-  #filter outeq
-  #simFull$obs <- simFull$obs[simFull$obs$outeq==outeq,]
-  #take out observations at time 0
-  #simFull$obs <- simFull$obs[simFull$obs$time>0,]
+
+  #take out observations at time 0 from evid=4
+  simFull$obs <- simFull$obs[simFull$obs$time>0,]
+  
   #pull in time bins from tempDF; only need median as tempDF contains median and mean,
   #but simulation is only from pop means
+  
   simFull$obs$timeBinNum <- unlist(tapply(tempDF$timeBinNum[tempDF$icen=="median"],tempDF$id[tempDF$icen=="median"],function(x) rep(x,nsim)))
   #pull in tad bins from tempDF
   simFull$obs$tadBinNum <- unlist(tapply(tempDF$tadBinNum[tempDF$icen=="median"],tempDF$id[tempDF$icen=="median"],function(x) rep(x,nsim)))
@@ -429,8 +431,6 @@ makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,...){
   
   #NPDE --------------------------------------------------------------------
 
-  #temporarily disable NPDE until we can clean code 3/9/2020
-  #npdeRes <- NA
   
   #get npde from github
   checkRequiredPackages("npde", repos = "LAPKB/npde") 
