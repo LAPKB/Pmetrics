@@ -184,12 +184,20 @@ plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,squa
   )
   
   p <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=y)) + ggplot2::geom_point() + ggplot2::ggtitle(formula) + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
-  if(grepl("x", logplot, fixed=T)){
-      p <- p +  ggplot2::scale_x_log10() + ggplot2::annotation_logticks()
+  if(log){
+      xtran = "identity"
+      ytran = "identity"
+      if(grepl("xy", logplot, fixed=T)){
+          xtran = "log10"
+          ytran = "log10"
+      }else if(grepl("x", logplot, fixed=T)){
+          xtran = "log10"
+      }else if(grepl("y", logplot, fixed=T)){
+          ytran = "log10"
+      }
+      p <- p +  ggplot2::coord_trans(x = xtran, y = ytran)
   }
-  if(grepl("y", logplot, fixed=T)){
-      p <- p + ggplot2::scale_y_log10() + ggplot2::annotation_logticks()
-  }
+  
   #plot(y~x,type="n",xlab=xlab,ylab=ylab,cex.lab=cex.lab,log=logplot,xlim=xlim,ylim=ylim,xaxt=xaxt,yaxt=yaxt,...)
   if(missing(grid)){
 #     grid <- list(x=NA,y=NA)
