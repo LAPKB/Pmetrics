@@ -183,7 +183,7 @@ plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,squa
     y = y
   )
   
-  p <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=y)) + ggplot2::geom_point() + ggplot2::ggtitle(formula) + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
+  p <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=y)) + ggplot2::geom_point() + ggplot2::ggtitle(formula) + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
   if(log){
       xtran = "identity"
       ytran = "identity"
@@ -232,7 +232,10 @@ plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,squa
 #     }
 #   }
 #   if(ref & !timearg) abline(a=0,b=1,lty="dashed")
-#   if(lowess & !timearg) lines(lowess(x=x,y=y),lty="dotted",lwd=lwd)
+    if(lowess & !timearg) {
+        #lines(lowess(x=x,y=y),lty="dotted",lwd=lwd)
+        p <- p + ggplot2::geom_smooth()
+    }
   
 #   if(reg & !timearg & length(x)>2){
 #     if(!is.factor(y) & !is.factor(x)){abline(op.r,col=col.stat,lwd=lwd)}
