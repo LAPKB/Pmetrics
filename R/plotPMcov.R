@@ -180,10 +180,11 @@ plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,squa
   }
   graph_data <- data.frame(
     x = x,
-    y = y
+    y = y,
+    label = id
   )
   
-  p <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=y)) + ggplot2::geom_point() + ggplot2::ggtitle(formula) + ggplot2::xlab(xlab) + ggplot2::ylab(ylab)
+  p <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=y, label=label)) + ggplot2::geom_point() + ggplot2::ggtitle(formula) + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
   if(log){
       xtran = "identity"
       ytran = "identity"
@@ -220,6 +221,7 @@ plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,squa
 #   if(yaxt=="n") logAxis(2,grid=!all(is.na(grid$y)))
 #   # abline(v=grid$x,lty=1,col="lightgray")
 #   # abline(h=grid$y,lty=1,col="lightgray")
+    if(ident) p <- p + ggplot2::geom_text()
 #   if(!ident){            
 #     points(x=x,y=y,col=col,cex=cex,...)
 #   } else {
