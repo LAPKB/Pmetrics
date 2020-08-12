@@ -178,53 +178,78 @@ plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,squa
     hpos.text <- xlim[1]+x.stat*diff(xlim)
     vpos.text <- ylim[1]+y.stat*diff(ylim)
   }
+  graph_data <- data.frame(
+    x = x,
+    y = y,
+    label = id
+  )
   
-  
-  
-  plot(y~x,type="n",xlab=xlab,ylab=ylab,cex.lab=cex.lab,log=logplot,xlim=xlim,ylim=ylim,xaxt=xaxt,yaxt=yaxt,...)
-  if(missing(grid)){
-    grid <- list(x=NA,y=NA)
-  } else {
-    if(inherits(grid,"logical")){
-      if(grid){
-        grid <- list(x=axTicks(1),y=axTicks(2))
-      } else {
-        grid <- list(x=NA,y=NA)
+  p <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=y, label=label)) + ggplot2::geom_point() + ggplot2::ggtitle(formula) + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
+    
+  if(log){
+      xtran = "identity"
+      ytran = "identity"
+      if(grepl("xy", logplot, fixed=T)){
+          xtran = "log10"
+          ytran = "log10"
+      }else if(grepl("x", logplot, fixed=T)){
+          xtran = "log10"
+      }else if(grepl("y", logplot, fixed=T)){
+          ytran = "log10"
       }
-    }
-    if(inherits(grid,"list")){
-      if(is.null(grid$x)) grid$x <- axTicks(1)
-      if(is.null(grid$y)) grid$y <- axTicks(2)
-    }
+      p <- p +  ggplot2::coord_trans(x = xtran, y = ytran)
   }
   
-  if(xaxt=="n") logAxis(1,grid=!all(is.na(grid$x)))
-  if(yaxt=="n") logAxis(2,grid=!all(is.na(grid$y)))
-  abline(v=grid$x,lty=1,col="lightgray")
-  abline(h=grid$y,lty=1,col="lightgray")
-  if(!ident){            
-    points(x=x,y=y,col=col,cex=cex,...)
-  } else {
-    if(length(grep("SIM",id))>0) id <- as.numeric(gsub("[[:alpha:]]","",id))
-    text(x=x,y=y,labels=id,col=col,cex=cex,...)} 
-  if(timearg){  #there's a time argument, so aggregate by subject vs. time
-    nsub <- length(unique(data$id))
-    for(i in 1:nsub){
-      lines(x=x[which(id==unique(id)[i])],y=y[which(id==unique(id)[i])],col=col,...)
-    }
+  #plot(y~x,type="n",xlab=xlab,ylab=ylab,cex.lab=cex.lab,log=logplot,xlim=xlim,ylim=ylim,xaxt=xaxt,yaxt=yaxt,...)
+  if(missing(grid)){
+#     grid <- list(x=NA,y=NA)
+      p <- p + ggplot2::theme(panel.grid = ggplot2::element_blank())
+#   } else {
+#     if(inherits(grid,"logical")){
+#       if(grid){
+#         grid <- list(x=axTicks(1),y=axTicks(2))
+#       } else {
+#         grid <- list(x=NA,y=NA)
+#       }
+#     }
+#     if(inherits(grid,"list")){
+#       if(is.null(grid$x)) grid$x <- axTicks(1)
+#       if(is.null(grid$y)) grid$y <- axTicks(2)
+#     }
   }
-  if(ref & !timearg) abline(a=0,b=1,lty="dashed")
-  if(lowess & !timearg) lines(lowess(x=x,y=y),lty="dotted",lwd=lwd)
+  
+#   if(xaxt=="n") logAxis(1,grid=!all(is.na(grid$x)))
+#   if(yaxt=="n") logAxis(2,grid=!all(is.na(grid$y)))
+#   # abline(v=grid$x,lty=1,col="lightgray")
+#   # abline(h=grid$y,lty=1,col="lightgray")
+    if(ident) p <- p + ggplot2::geom_text()
+#   if(!ident){            
+#     points(x=x,y=y,col=col,cex=cex,...)
+#   } else {
+#     if(length(grep("SIM",id))>0) id <- as.numeric(gsub("[[:alpha:]]","",id))
+#     text(x=x,y=y,labels=id,col=col,cex=cex,...)} 
+#   if(timearg){  #there's a time argument, so aggregate by subject vs. time
+#     nsub <- length(unique(data$id))
+#     for(i in 1:nsub){
+#       lines(x=x[which(id==unique(id)[i])],y=y[which(id==unique(id)[i])],col=col,...)
+#     }
+#   }
+#   if(ref & !timearg) abline(a=0,b=1,lty="dashed")
+    if(lowess & !timearg) {
+        #lines(lowess(x=x,y=y),lty="dotted",lwd=lwd)
+        p <- p + ggplot2::geom_smooth()
+    }
   
   if(reg & !timearg & length(x)>2){
-    if(!is.factor(y) & !is.factor(x)){abline(op.r,col=col.stat,lwd=lwd)}
-    text(x=hpos.text,y=vpos.text,text,pos=4,col=col.stat,cex=cex.stat)
+    #if(!is.factor(y) & !is.factor(x)){abline(op.r,col=col.stat,lwd=lwd)}
+    #text(x=hpos.text,y=vpos.text,text,pos=4,col=col.stat,cex=cex.stat)
+    p <- p + ggplot2::geom_smooth(method="lm") + ggplot2::annotate("text", label =text, x=hpos.text,y=vpos.text )
   }
   
-  #close device if necessary
-  if(inherits(out,"list")) dev.off()
+#   #close device if necessary
+#   if(inherits(out,"list")) dev.off()
   
-  return(invisible(1))
+#   return(invisible(1))
+    p 
   
 }
-
