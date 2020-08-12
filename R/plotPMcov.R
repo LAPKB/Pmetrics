@@ -185,6 +185,7 @@ plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,squa
   )
   
   p <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=y, label=label)) + ggplot2::geom_point() + ggplot2::ggtitle(formula) + ggplot2::xlab(xlab) + ggplot2::ylab(ylab) 
+    
   if(log){
       xtran = "identity"
       ytran = "identity"
@@ -239,10 +240,11 @@ plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,squa
         p <- p + ggplot2::geom_smooth()
     }
   
-#   if(reg & !timearg & length(x)>2){
-#     if(!is.factor(y) & !is.factor(x)){abline(op.r,col=col.stat,lwd=lwd)}
-#     text(x=hpos.text,y=vpos.text,text,pos=4,col=col.stat,cex=cex.stat)
-#   }
+  if(reg & !timearg & length(x)>2){
+    #if(!is.factor(y) & !is.factor(x)){abline(op.r,col=col.stat,lwd=lwd)}
+    #text(x=hpos.text,y=vpos.text,text,pos=4,col=col.stat,cex=cex.stat)
+    p <- p + ggplot2::geom_smooth(method="lm") + ggplot2::annotate("text", label =text, x=hpos.text,y=vpos.text )
+  }
   
 #   #close device if necessary
 #   if(inherits(out,"list")) dev.off()
