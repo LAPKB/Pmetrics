@@ -3,14 +3,13 @@
 #'
 #' @title Build Pmetrics
 #' @author Michael Neely
-#' @param auto If true, Pmetrics will not prompt the user before downloading and installing gfortran and required components
 #' @export
 
 
 
-PMbuild <- function(auto = FALSE) {
+PMbuild <- function() {
 
-  if (.check_and_install_gfortran(auto = auto)) {
+  if (.check_and_install_gfortran()) {
 
     currwd <- getwd()
     OS <- getOS()
@@ -97,7 +96,7 @@ PMbuild <- function(auto = FALSE) {
   }
 }
 
-.check_and_install_gfortran <- function(auto = FALSE) {
+.check_and_install_gfortran <- function() {
   #restore user defaults - deprecated
   #if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
   sch_str <- c("which -s gfortran", "where gfortran", "which -s gfortran")
@@ -108,10 +107,8 @@ PMbuild <- function(auto = FALSE) {
       cat("Pmetrics cannot find required compiled binary files.\n")
       if (system(sch_str[OS]) != 0) {
         cat("Pmetrics cannot detect gfortran and will attempt to download and install all components.\n")
-        if (auto == FALSE) {
-          input <- tolower(readline(prompt = "Do you agree? (Y/N)"))
-        }
-        if (substr(input, 1, 1) == "y" || auto == TRUE) {
+        input <- tolower(readline(prompt = "Do you agree? (Y/N)"))
+        if (substr(input, 1, 1) == "y") {
           if (.installOrUpdateGfortran()) {
             cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
             cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
