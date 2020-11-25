@@ -159,7 +159,7 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
   
   #par(mfrow=c(1,1))
   graph_data$median <- data$median[omit:numcycles,]
-  p6 <- purrr::reduce(1:nvar, ~.x + ggplot2::geom_line(ggplot2::aes(x=x, y= median[,.y], colour = data$names[.y])), .init=ggplot2::ggplot(data = graph_data) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ggtitle("Normalized Mean") + ggplot2::xlab("Cycle") + ggplot2::ylab(""))
+  p6 <- purrr::reduce(1:nvar, ~.x + ggplot2::geom_line(ggplot2::aes(x=x, y= median[,.y], colour = data$names[.y])), .init=ggplot2::ggplot(data = graph_data) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ggtitle("Normalized Median") + ggplot2::xlab("Cycle") + ggplot2::ylab(""))
   
   
   #close device if necessary
