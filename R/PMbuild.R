@@ -9,7 +9,7 @@
 
 PMbuild <- function(skipRegistration = F) {
 
-  if (.check_and_install_gfortran()) {
+  if (.check_and_install_gfortran(skipRegistration)) {
 
     currwd <- getwd()
     OS <- getOS()
@@ -96,7 +96,7 @@ PMbuild <- function(skipRegistration = F) {
   }
 }
 
-.check_and_install_gfortran <- function() {
+.check_and_install_gfortran <- function(skipRegistration) {
   #restore user defaults - deprecated
   #if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
   sch_str <- c("which -s gfortran", "where gfortran", "which -s gfortran")
