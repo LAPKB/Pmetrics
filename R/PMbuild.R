@@ -128,7 +128,10 @@ PMbuild <- function(skipRegistration = F) {
       } else {
         cat("Pmetrics has detected gfortran and will compile required binary files.\n")
         cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
-        .PMremote_registerNewInstallation()
+        cat("If the registration time outs, please run PMbuild(skipRegistration=T) ")
+        if(skipRegistration == F){
+          .PMremote_registerNewInstallation()
+        }
         return(T)
       }
     } else {
