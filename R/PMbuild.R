@@ -7,7 +7,7 @@
 
 
 
-PMbuild <- function() {
+PMbuild <- function(skipRegistration = F) {
 
   if (.check_and_install_gfortran()) {
 
@@ -112,7 +112,10 @@ PMbuild <- function() {
           if (.installOrUpdateGfortran()) {
             cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
             cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
-            .PMremote_registerNewInstallation()
+            cat("If the registration time outs, please run PMbuild(skipRegistration=T) ")
+            if(skipRegistration == F){
+              .PMremote_registerNewInstallation()
+            }
             return(T)
           } else {
             cat("ERROR: Pmetrics did not install gfortran automatically.\nPlease install gfortran manually and then run PMbuild().\nGo to http://www.lapk.org/Pmetrics_install.php for help.\n")
