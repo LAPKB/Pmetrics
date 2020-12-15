@@ -734,7 +734,11 @@ SIMrun <- function(poppar, limits = NULL, model = "model.txt", data = "data.csv"
         #can't simulate from each point with covariate sim
         endNicely(paste("You cannot simulate each point with simulated covariates.\n"), model, data)
       }
-      popPoints <- poppar$popPoints
+      if (length(postToUse) == 0) {
+        popPoints <- poppar$popPoints
+      } else {
+        popPoints <- poppar$postMean
+      }
       #put it all together in the following order
       #2:                             enter values from "results of BIG NPAG run"
       #2:                             use each grid point once

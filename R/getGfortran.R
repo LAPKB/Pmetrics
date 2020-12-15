@@ -23,7 +23,7 @@ update_gfortran <- function() {
     if(!.installOrUpdateBrew()){
       return(F)
     }
-    .installOrUpdateGCC()
+    .installOrUpdateGCC(OS)
 
     if (system("which -s gfortran") != 0) {
       cat("ERROR: Pmetrics did not install gfortan automatically.\nPlease install gfortran manually and then run PMbuild().\nGo to http://www.lapk.org/Pmetrics_install.php for help.\n")
