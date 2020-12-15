@@ -392,7 +392,7 @@ SIMrun <- function(poppar, limits = NULL, model = "model.txt", data = "data.csv"
     sdVector <- c(poppar$popSD, covSD[1:nsimcov])
     for (i in 1:nrow(covMat)) {
       for (j in 1:ncol(covMat)) {
-        covMat[i, j] <- sdVector[i] * sdVector[j] * corMat[i, j]
+        covMat[i, j] <- as.numeric(sdVector[i]) * as.numeric(sdVector[j]) * as.numeric(corMat[i, j])
       }
     }
     #get means of covariates
