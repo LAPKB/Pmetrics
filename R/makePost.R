@@ -61,6 +61,7 @@ makePost <- function(run,NPdata) {
       group_by(.data$id) %>%
       filter(.data$time == 0) %>%
       transmute(blocknum = row_number())
+
     
     totalRaw$block <- NA
     totalRaw$block[totalRaw$time==0] <- blocks$blocknum
