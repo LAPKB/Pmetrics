@@ -107,7 +107,7 @@ makeFinal <- function(data){
       # postPoints <- dcast(temp1,subj+nactvepost~density,value.var="value")
       
       postPoints <- data$postden %>%
-        as.tbl_cube(met_name = "value") %>%
+        cubelyr::as.tbl_cube(met_name = "value") %>%
         as_tibble() %>%
         pivot_wider(names_from = density) %>%
         arrange(.data$subj,.data$nactvepost) %>%
@@ -171,7 +171,7 @@ makeFinal <- function(data){
     } else {popRanFix <- NULL}
 
     popCov <- data.frame(popCov, row.names = data$par)
-    popCor <- data.frame(popCor, row.names = data$par)
+    if(!is.na(popCor)){popCor <- data.frame(popCor, row.names = data$par)}
     names(popCov) <- data$par
     if (all(!is.na(popCor))) names(popCor) <- data$par
     

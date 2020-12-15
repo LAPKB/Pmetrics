@@ -38,12 +38,18 @@
 #' @export
 
 plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,upper=0.975,
-                         log=F,pch.obs = 1,col.obs="black",cex.obs=1,theme="color",
+                         log=F,pch.obs = 1,col.obs="black",cex.obs=1,data_theme="color",plot_theme=theme_grey(),
                          col.obs.ci="blue",col.obs.med="red",col.sim.ci="dodgerblue",col.sim.med="lightpink",
-                         xlab="Time",ylab="Observation",xlim,ylim,...
+                         axis.x = NULL,
+                         axis.y = NULL
                          
 ){
   
+  #parse dots
+  #arglist <- list(...)
+  #names_theme <- names(formals(ggplot2::theme)) #check for elements of ggplot2::theme
+  #argsTheme <- arglist[which(names(arglist) %in% names_theme)]
+
   #checkRequiredPackages("ggplot2")
   if(outeq > max(x$opDF$outeq)){stop(paste("Your data do not contain",outeq,"output equations.\n"))}
   if(icen!="mean" & icen!="median"){stop(paste("Use \"mean\" or \"median\" for icen.\n",sep=""))}
@@ -66,7 +72,7 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
       use.opTimeBinMedian <- x$opDF$tadBinMedian
       use.opTimeBinNum <- x$opDF$tadBinNum
       use.simBinNum <- x$simdata$obs$tadBinNum
-      if(xlab=="Time") {xlab <- "Time after dose"}
+      if(axis.x$name=="Time") {axis.y$name <- "Time after dose"}
       
     } else {stop("Rerun makePMvalid and set tad argument to TRUE.\n")}
   }
@@ -123,22 +129,26 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   
   #common options
   if(type=="vpc" | type=="pcvpc"){
-    #set limits
-    if(missing(xlim)){xlim <- c(range(plotData$obsTime))}
-    if(missing(ylim)){ylim <- c(min(plotData$obs,plotData$lower$value),
+    
+    #set names if not specified
+    if(!"name" %in% names(axis.x)){axis.x$name <- "Time"}
+    if(!"name" %in% names(axis.y)){axis.y$name <- "Observation"}
+    
+    
+    #set limits if not specified
+    if(!"limits" %in% names(axis.x)){axis.x$limits <- c(range(plotData$obsTime))}
+    if(!"limits" %in% names(axis.y)){axis.y$limits <- c(min(plotData$obs,plotData$lower$value),
                                 max(plotData$obs,plotData$upperDF$value))}
-    #set the scale for the y-axis
-    if(log){scaleY <- scale_y_log10(limits=ylim)} else (scaleY <- scale_y_continuous(limits=ylim))
+    
+    
     #override colors to make greyscale
-    if(theme=="grey"|theme=="gray"){ #set to grayscale
+    if(data_theme=="grey"|data_theme=="gray"){ #set to grayscale
       col.obs <- "black"
       col.obs.ci <- "grey20"
       col.obs.med <- "grey20"
       col.sim.ci <- "grey75"
       col.sim.med <- "grey50"
     }
-
-    
     #GENERATE THE PLOT
     p <- with(plotData,
               ggplot(mapping=aes(x=binTime,y=unlist(lapply(obsQuant,function(x) x[3])))) +
@@ -151,8 +161,9 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
                 geom_line(aes(x=binTime,
                               y=unlist(lapply(obsQuant,function(x) x[1]))),col=col.obs.ci,lty=2,lwd=1) + 
                 geom_point(aes(x=obsTime,y=obs),col=col.obs,pch=pch.obs,cex=cex.obs) + 
-                scale_x_continuous(limits=xlim) + scaleY +
-                xlab(xlab) + ylab(ylab) 
+                do.call(scale_x_continuous,axis.x) + 
+                do.call(scale_y_continuous,axis.y) +
+                do.call(theme,plot_theme)
     )
     #SEND TO CONSOLE
     print(p)
@@ -163,6 +174,7 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
     if(is.null(x$npde)) stop("No npde object found.  Re-run makeValid.\n")
     plot(x$npde)
     par(mfrow=c(1,1))
+    p <- NULL
   }
-  
+  return(p)
 }
