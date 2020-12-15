@@ -118,7 +118,7 @@ makePost <- function(run,NPdata) {
     
     # post$outeq <- rep(1:NPdata$numeq,each=3*sum(NPdata$numt))
     # post$icen <- gsub("[[:digit:]]","",post$icen)
-    post <- post %>% extract(col='icen', into=c('icen', 'outeq'), regex='(.+)(\\d+)$')
+    post <- post %>% tidyr::extract(col='icen', into=c('icen', 'outeq'), regex='(.+)(\\d+)$')
     #levels(post$icen) <- rep(c("mean","median","mode"),NPdata$numeqt)
 
     #count 0 times per subject, icen, and outeq - should be at least 1 for each

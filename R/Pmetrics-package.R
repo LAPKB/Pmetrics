@@ -22,7 +22,7 @@
 #' @importFrom purrr map reduce map_chr keep pluck %>% 
 #' @importFrom tibble as_tibble
 #' @importFrom gridExtra grid.arrange
-#' @importFrom tidyr pivot_longer pivot_wider unnest
+#' @importFrom tidyr pivot_longer pivot_wider unnest extract
 #' @importFrom mclust Mclust mclustBIC
 #' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg 
 #' pdf png postscript rgb setEPS
