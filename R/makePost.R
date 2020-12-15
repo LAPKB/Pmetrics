@@ -123,7 +123,7 @@ makePost <- function(run,NPdata) {
     #count 0 times per subject, icen, and outeq - should be at least 1 for each
     blocks <- tapply(post$time,list(post$id,post$icen,post$outeq),function(x) sum(x==0))
     
-    blocks2 <- unlist(mapply(function(x) 1:x,blocks))
+    blocks2 <- unlist(mapply(function(x) seq_along(x),blocks))
     time0 <- c(which(post$time==0),1+nrow(post))
     blocks3 <- rep(blocks2,times=diff(time0))
     post$block <- blocks3
