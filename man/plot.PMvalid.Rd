@@ -16,16 +16,14 @@
   pch.obs = 1,
   col.obs = "black",
   cex.obs = 1,
-  theme = "color",
+  data_theme = "color",
+  plot_theme = theme_grey(),
   col.obs.ci = "blue",
   col.obs.med = "red",
   col.sim.ci = "dodgerblue",
   col.sim.med = "lightpink",
-  xlab = "Time",
-  ylab = "Observation",
-  xlim,
-  ylim,
-  ...
+  axis.x = NULL,
+  axis.y = NULL
 )
 }
 \arguments{
@@ -56,8 +54,6 @@ See \code{\link{points}} for other values of \code{pch}.}
 
 \item{cex.obs}{Size for observatins.  Default is 1.}
 
-\item{theme}{Default is \dQuote{color}, but could be \dQuote{grey} or \dQuote{gray}.}
-
 \item{col.obs.ci}{Color of the observation confidence interval (set by \code{lower} and \code{upper}).
 Default is blue.}
 
@@ -69,6 +65,8 @@ Default is dodgerblue.}
 
 \item{col.sim.med}{Color of the simulation median.
 Default is lightpink.}
+
+\item{theme}{Default is \dQuote{color}, but could be \dQuote{grey} or \dQuote{gray}.}
 
 \item{xlab}{Label for x axis.  Default is \dQuote{Time}.}
 
