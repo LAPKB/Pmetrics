@@ -21,12 +21,9 @@
 #' theme ggtitle element_blank
 #' @importFrom purrr map reduce map_chr keep pluck %>% 
 #' @importFrom tibble as_tibble
-<<<<<<< HEAD
 #' @importFrom tidyr pivot_longer pivot_wider unnest extract separate fill
-=======
 #' @importFrom gridExtra grid.arrange
 #' @importFrom tidyr pivot_longer pivot_wider unnest
->>>>>>> b36858336379edefd32793c14955ed9d127969c5
 #' @importFrom mclust Mclust mclustBIC
 #' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg 
 #' pdf png postscript rgb setEPS

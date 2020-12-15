@@ -4,7 +4,7 @@
 \alias{PMbuild}
 \title{Build Pmetrics}
 \usage{
-PMbuild()
+PMbuild(skipRegistration = F)
 }
 \description{
 \code{PMBuild} will ensure all dependent packages are installed and compile
