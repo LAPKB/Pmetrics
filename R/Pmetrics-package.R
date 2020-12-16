@@ -13,7 +13,7 @@
 #' \url{http://www.lapk.org}
 #' @keywords package
 #'
-#' @importFrom dplyr select arrange filter mutate
+#' @importFrom dplyr select arrange filter mutate transmute group_by row_number
 #' @importFrom cubelyr as.tbl_cube
 #' @importFrom foreach %dopar%
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon 
@@ -22,7 +22,7 @@
 #' @importFrom purrr map reduce map_chr keep pluck %>% 
 #' @importFrom tibble as_tibble
 #' @importFrom gridExtra grid.arrange
-#' @importFrom tidyr pivot_longer pivot_wider unnest extract
+#' @importFrom tidyr pivot_longer pivot_wider unnest extract separate fill
 #' @importFrom mclust Mclust mclustBIC
 #' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg 
 #' pdf png postscript rgb setEPS
