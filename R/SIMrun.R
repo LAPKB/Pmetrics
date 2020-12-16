@@ -389,7 +389,7 @@ SIMrun <- function(poppar, limits = NULL, model = "model.txt", data = "data.csv"
     }
     #multiply augmented correlation matrix by pairwise SD to get covariance
     covMat <- corMat
-    sdVector <- c(poppar$popSD, covSD[1:nsimcov])
+    sdVector <- unlist(c(poppar$popSD, covSD[1:nsimcov]))
     for (i in 1:nrow(covMat)) {
       for (j in 1:ncol(covMat)) {
         covMat[i, j] <- sdVector[i] * sdVector[j] * corMat[i, j]
