@@ -7,6 +7,7 @@
                    alq) {
 
   currwd <- getwd() #set the current working directory to go back to it at the end
+  if (missing(alq)) alq <- F
 
   #make new output directory
   if (is.null(run)) {
