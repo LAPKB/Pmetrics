@@ -102,13 +102,11 @@ Dopt <- function(run, data, clean = T) {
 
 
   OS <- getOS()
-  #read or define the Fortran compiler
-  fortSource <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
-  #TODO: change this
-  if (!file.exists(fortSource)) {
+  #Ensure that gfortran is properly set up
+  if (!binaries.installed()) {
     PMbuild()
   }
-  compiler <- PMFortranConfig()
+  compiler <- compilation_statement()
   #choose serial compiliation
   if (length(compiler) == 2) {
     compiler <- compiler[1]

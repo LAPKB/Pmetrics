@@ -214,12 +214,11 @@
 
   OS <- getOS() #1 Mac, 2 Windows, 3 Linux
 
-  fortSource <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
-  #TODO: change this
-  if (!file.exists(fortSource)) {
+   #Ensure that gfortran is properly set up
+  if (!binaries.installed()) {
     PMbuild()
   }
-  compiler <- PMFortranConfig()
+  compiler <- compilation_statement()
   #check if gfortran and choose serial if not
   if (length(compiler) == 1) {
     parallel <- F
