@@ -1,7 +1,8 @@
 require(Pmetrics)
-wd <- commandArgs()[6]
-icen <- commandArgs()[7]
-parallel <- as.logical(commandArgs()[8])
+args <- commandArgs(trailingOnly=TRUE)
+wd <- args[1]
+icen <- args[2]
+parallel <- as.logical(args[3])
 setwd(wd)
 PMreport(wd,icen=icen,type="NPAG",parallel=parallel)
 
