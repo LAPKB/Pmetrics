@@ -14,6 +14,7 @@
 #' @keywords package
 #'
 #' @importFrom dplyr select arrange filter mutate transmute group_by row_number
+#' group_map
 #' @importFrom cubelyr as.tbl_cube
 #' @importFrom foreach %dopar%
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon 
