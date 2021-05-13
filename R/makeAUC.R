@@ -107,7 +107,7 @@ makeAUC <- function(data,formula,include,exclude,start=0,end=Inf,icen="median",
   if(missing(exclude)) exclude <- NA
 
   #make object to pass to auc calculation
-  data3 <- tibble(data2) %>%
+  data3 <- tibble::tibble(data2) %>%
     filter(outeq==outeq,
            block==block,
            id %in% include,
