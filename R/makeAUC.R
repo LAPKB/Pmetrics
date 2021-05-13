@@ -120,7 +120,7 @@ makeAUC <- function(data,formula,include,exclude,start=0,end=Inf,icen="median",
     group_by(id)
 
   #calculate AUC
-  AUCdf <- tibble(id=unique(data3$id),
+  AUCdf <- tibble::tibble(id=unique(data3$id),
                   tau = group_map(data3, ~get_auc(.x,addZero,method)) %>% unlist())
   class(AUCdf) <- c("PMauc",class(AUCdf))
   return(AUCdf)
