@@ -14,6 +14,7 @@
 #' @keywords package
 #'
 #' @importFrom dplyr select arrange filter mutate transmute group_by row_number
+#' group_map
 #' @importFrom cubelyr as.tbl_cube
 #' @importFrom foreach %dopar%
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon 
@@ -21,8 +22,9 @@
 #' theme ggtitle element_blank
 #' @importFrom purrr map reduce map_chr keep pluck %>% 
 #' @importFrom tibble as_tibble
-#' @importFrom gridExtra grid.arrange
 #' @importFrom tidyr pivot_longer pivot_wider unnest extract separate fill
+#' @importFrom gridExtra grid.arrange
+#' @importFrom tidyr pivot_longer pivot_wider unnest
 #' @importFrom mclust Mclust mclustBIC
 #' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg 
 #' pdf png postscript rgb setEPS
