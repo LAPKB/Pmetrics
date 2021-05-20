@@ -76,6 +76,7 @@ makePost <- function(run,NPdata) {
       select(.data$id,.data$time,.data$icen,.data$outeq,.data$pred,.data$block) %>% 
       filter(.data$icen!="mode") #suppress mode
     
+
   }
   
   #add predictions at observed times
