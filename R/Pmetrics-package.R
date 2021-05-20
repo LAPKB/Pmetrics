@@ -22,14 +22,9 @@
 #' theme ggtitle element_blank
 #' @importFrom purrr map reduce map_chr keep pluck %>% 
 #' @importFrom tibble as_tibble
-<<<<<<< HEAD
-#' @importFrom gridExtra grid.arrange
-#' @importFrom tidyr pivot_longer pivot_wider unnest extract separate fill
-=======
 #' @importFrom tidyr pivot_longer pivot_wider unnest extract separate fill
 #' @importFrom gridExtra grid.arrange
 #' @importFrom tidyr pivot_longer pivot_wider unnest
->>>>>>> f6d0e72 (Removed extraneous characters from Pmetrics-pacakge)
 #' @importFrom mclust Mclust mclustBIC
 #' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg 
 #' pdf png postscript rgb setEPS
