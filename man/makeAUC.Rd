@@ -14,7 +14,8 @@ makeAUC(
   icen = "median",
   outeq = 1,
   block = 1,
-  method = "linear"
+  method = "linear",
+  addZero = F
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ subject's Bayesian posterior parameter distribution.  Default is "median", but c
 
 \item{method}{Default is "linear" for AUC trapezoidal calculation.  Any other value will result in
 linear up, log down.}
+
+\item{addZero}{Boolean to add a zero concentration at time 0. Default is \code{FALSE}.}
 }
 \value{
 The output of \code{makeAUC} is a dataframe of class \emph{PMauc},

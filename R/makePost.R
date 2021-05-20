@@ -61,6 +61,7 @@ makePost <- function(run,NPdata) {
       group_by(.data$id) %>%
       filter(.data$time == 0) %>%
       transmute(blocknum = row_number())
+
     
     totalRaw$block <- NA
     totalRaw$block[totalRaw$time==0] <- blocks$blocknum
@@ -75,6 +76,7 @@ makePost <- function(run,NPdata) {
       select(.data$id,.data$time,.data$icen,.data$outeq,.data$pred,.data$block) %>% 
       filter(.data$icen!="mode") #suppress mode
     
+
   }
   
   #add predictions at observed times
