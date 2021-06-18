@@ -1,22 +1,24 @@
 library(R6)
 library(JuliaCall)
-j<-julia_setup()
+j <- julia_setup()
 # julia_library("npag")
 j$library("npag")
 #public classes
-PM.fit <- R6Class("PM.fit", 
+
+#may need to separate out error model as separate, e.g. need data, model, error to run
+PM_fit <- R6Class("PM_fit", 
     public = list(
         initialize = function(data, model, ...){
             stopifnot(is.character(data), length(data) == 1)
             private$data = data
-            private$model <- if(inherits(model, "PM._model")) model else PM.model(model, ...)
-            stopifnot(inherits(private$model, "PM._model"))
+            private$model <- if(inherits(model, "PM_Vmodel")) model else PM_model(model, ...)
+            stopifnot(inherits(private$model, "PM_Vmodel"))
         },
         run = function(){
-            if (inherits(private$model, "PM.model_legacy")) {
+            if (inherits(private$model, "PM_model_legacy")) {
                 cat(sprintf("Runing Legacy: %s-%s\n", private$data, private$model$name))
                 Pmetrics::NPrun(private$model$legacy_file_path, private$data)
-            } else if(inherits(private$model, "PM.model_julia")){
+            } else if(inherits(private$model, "PM_model_julia")){
                 cat(sprintf("Runing Julia: %s-%s\n", private$data, private$model$name))
                 return(
                     julia_call("npag.run",
@@ -35,23 +37,23 @@ PM.fit <- R6Class("PM.fit",
     private = list(
         data = NULL,
         model = NULL,
-        method = "NPAG"
+        engine = "NPAG" #eventually should be public
     )
 )
 
 #Factory pattern
-PM.model <- function(model,...,julia=F){
+PM_model <- function(model, ..., julia = F){
     #Now we have multiple options for the model:
     #The model can be a String -> legacy run
     #The model can be a Function -> julia run
-    #The model can be a String holding a julia function -> julia run
+    #The model can be a String holding a julia function (julia = T) -> julia run
     if (is.function(model)) {
-        return(PM.model_julia$new(model,...))
+        return(PM_model_julia$new(model,...))
     } else if(is.character(model) && length(model) == 1){
         if(julia){
-            return(PM.model_julia$new(model,...))
+            return(PM_model_julia$new(model,...))
         } else {
-            return(PM.model_legacy$new(model))
+            return(PM_model_legacy$new(model))
         }
         
     } else{
@@ -65,7 +67,7 @@ PM.model <- function(model,...,julia=F){
 
 #Virtual Class
 #it seems that protected does not exist in R
-PM._model <- R6Class("PM._model", 
+PM_Vmodel <- R6Class("PM_Vmodel", 
     public = list(
         name = NULL,
         error = NULL,
@@ -81,8 +83,8 @@ PM._model <- R6Class("PM._model",
         output = NULL        
     )
 )
-PM.model_legacy <- R6Class("PM.model_legacy", 
-    inherit = PM._model,
+PM_model_legacy <- R6Class("PM_model_legacy", 
+    inherit = PM_Vmodel,
     public = list(
         legacy_file_path = NULL,
         initialize = function(model_path){
@@ -92,22 +94,24 @@ PM.model_legacy <- R6Class("PM.model_legacy",
         print = function(){}
     )
 )
-PM.model_julia <- R6Class("PM.model_julia", 
-    inherit = PM._model,
+PM_model_julia <- R6Class("PM_model_julia", 
+    inherit = PM_Vmodel,
     public = list(
         model_function = NULL,
-        min = NULL,
-        max = NULL,
-        n_theta0 = NULL,
+        #prior:  created based on user input that needs to include possible values
+        #for means, SDs, mins, maxes, and initial support points (which could be a function)
+        min = NULL, #this will be folded into prior bin
+        max = NULL, #this will be folded into prior bin
+        n_points0 = NULL, #this will be folded into prior bin
         initialize = function(model, ...){
             dots = list(...)
-            if(!exists("max", where=dots) || !exists("min", where=dots)){
-                stop("Error: Running using the Julia solver requires at least the following arguments: max, min.")
+            if(!exists("max", where = dots) || !exists("min", where = sdots)){
+                stop("Error: Running using the Julia solver requires sufficient information to create a prior, e.g. min, max or mean/SD.")
             }
             self$min <- dots$min
             self$max <- dots$max
-            self$error <- if(is.null(dots$error)) c(0.1, 0.01, 0) else dots$error
-            self$n_theta0 <- if(is.null(dots$n_theta0)) 100 else dots$n_theta0
+            self$error <- if(is.null(dots$error)) c(0.1, 0.01, 0) else dots$error #will need dynamic function to detect poisson, etc.
+            self$n_points0 <- if(is.null(dots$n_points0)) 100 else dots$n_points0
             if(is.function(model)){
                 private$julia_type <- "function"
                 self$name <- "Dyn function(...){...}"
