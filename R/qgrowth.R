@@ -106,4 +106,3 @@ zBMI <- function(agemos, sex, bmi){
  
 }
 
-zBMI(24,"M",30)
