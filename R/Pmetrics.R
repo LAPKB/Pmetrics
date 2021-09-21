@@ -2,7 +2,7 @@ library(R6)
 library(JuliaCall)
 j <- julia_setup()
 # julia_library("npag")
-j$library("npag")
+# j$library("npag")
 #public classes
 
 #may need to separate out error model as separate, e.g. need data, model, error to run
@@ -132,34 +132,34 @@ PM_model_julia <- R6Class("PM_model_julia",
 
 
 
-setwd("~/Desktop/simulaciones")
-#examples
+# setwd("~/Desktop/simulaciones")
+# #examples
 
 
-run1 <- PM.fit$new("data.csv","model.txt")
-run1$run()
-#run1$load()
+# run1 <- PM.fit$new("data.csv","model.txt")
+# run1$run()
+# #run1$load()
 
 
 
 
 
-f_model<-function(theta){
-    k =theta[1]
-    v= theta[2]
-    f<-function(u,p,t){-k * u}
-    u0 = 20/v
-    return(c(f,u0))
-}
-a = c(0.4, 0.4)
-b = c(2, 2)
-n_theta0 = 2130
-c0 = 0
-c1 = 0
-c2 = 0.5
-run2 <- PM.fit$new("/Users/julianotalvaro/Dev/NPAGjl/data/example_data.csv",
-                    f_model, min=a, max=b, error=c(c0,c1,c2), n_theta0=n_theta0)
-run2$run()
+# f_model<-function(theta){
+#     k =theta[1]
+#     v= theta[2]
+#     f<-function(u,p,t){-k * u}
+#     u0 = 20/v
+#     return(c(f,u0))
+# }
+# a = c(0.4, 0.4)
+# b = c(2, 2)
+# n_theta0 = 2130
+# c0 = 0
+# c1 = 0
+# c2 = 0.5
+# run2 <- PM.fit$new("/Users/julianotalvaro/Dev/NPAGjl/data/example_data.csv",
+#                     f_model, min=a, max=b, error=c(c0,c1,c2), n_theta0=n_theta0)
+# run2$run()
 
 
 # run3 <- PM.fit$new("data.csv",function(a){a+2})
