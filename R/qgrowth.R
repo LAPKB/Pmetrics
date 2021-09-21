@@ -54,6 +54,55 @@ qgrowth <- function(sex=c("M","F","B"),percentile=c("5","10","25","50","75","90"
     final.3 <- data.frame(age=final.1$age,wt=(final.1$wt+final.2$wt)/2,ht=(final.1$ht+final.2$ht)/2,sex="B",percentile=percentile)
     final <- final.3
   }
-
+  
   return(final)  
 }
+
+#' Extract CDC pediatric BMI z-scores
+#'
+#' Will extract BMI z-scores based on age in months and sex. Overweight is 
+#' a z-score of >1.04, and obese is a z-score > 1.64. Calculations are based on
+#' CDC data/formulae as found here: \link{https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf}
+#'
+#' @param agemos The age in months.  Should be between 24 and 240.5.
+#' @param sex A single quoted character: \dQuote{M} for males, \dQuote{F} for females.  Default is \dQuote{M}.
+#' @param bmi The individual's BMI.
+#' @return A list with objects calculated for \code{agemos} and \code{sex}.
+#'  \item{z }{Z-score}
+#'  \item{mod_z }{Modified Z-score for extreme BMI}
+#'  \item{per }{BMI percentile}
+#'  \item{mod_per }{Modifed BMI percentile}}
+#' @author Michael Neely
+#' @export
+
+zBMI <- function(agemos, sex, bmi){
+  if(agemos < 24 | agemos > 240.5){
+    stop("Agemos should be >=24 or <=240.5.")
+  }
+  
+  if(agemos >= 24.5){
+    agemos <- floor(agemos) + 0.5
+  } else {agemos <- floor(agemos)}
+  
+  #all_bmi <- NULL
+  #data(all_bmi,envir = environment())
+  if(is.character(sex)){
+    sex_var <- 1 + as.numeric(tolower(sex) == "f")
+  } else {stop("Use 'M' for male and 'F' for female (case insensitive).")}
+  
+  this_bmi <- all_bmi %>% filter(Agemos == agemos & Sex == sex_var)
+  z_bmi <- ((bmi/this_bmi$M)^this_bmi$L -1) / (this_bmi$L * this_bmi$S) #z score
+  
+  #find values for modified z score to correct for extremes
+  z0 <- this_bmi$M #median
+  z2 <- this_bmi$M * (1 + this_bmi$L * this_bmi$S * 2)**(1 / this_bmi$L)
+  z_dist <- (z2 - z0)/2
+  mod_z_bmi <- (bmi - z0) / z_dist
+  
+  #return
+  return(list(z = z_bmi, mod_z = mod_z_bmi, 
+              per = pnorm(z_bmi,0,1), mod_per = pnorm(mod_z_bmi,0,1)))
+  
+ 
+}
+
