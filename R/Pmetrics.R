@@ -2,7 +2,7 @@ library(R6)
 library(JuliaCall)
 j <- julia_setup()
 # julia_library("npag")
-# j$library("npag")
+j$library("npag")
 #public classes
 
 #may need to separate out error model as separate, e.g. need data, model, error to run
