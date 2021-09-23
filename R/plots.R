@@ -95,4 +95,4 @@ plot.PMfit <- function(x, icen = "median", outeq = 1, pred.type = "post", block 
 }
 
 
-g <- plot.PMfit(op.1, mult = 1)
+# g <- plot.PMfit(op.1, mult = 1)
