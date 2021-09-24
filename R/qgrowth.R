@@ -71,7 +71,7 @@ qgrowth <- function(sex=c("M","F","B"),percentile=c("5","10","25","50","75","90"
 #'  \item{z }{Z-score}
 #'  \item{mod_z }{Modified Z-score for extreme BMI}
 #'  \item{per }{BMI percentile}
-#'  \item{mod_per }{Modifed BMI percentile}}
+#'  \item{mod_per }{Modifed BMI percentile}
 #' @author Michael Neely
 #' @export
 
@@ -84,8 +84,8 @@ zBMI <- function(agemos, sex, bmi){
     agemos <- floor(agemos) + 0.5
   } else {agemos <- floor(agemos)}
   
-  #all_bmi <- NULL
-  #data(all_bmi,envir = environment())
+  all_bmi <- NULL
+  data(all_bmi,envir = environment())
   if(is.character(sex)){
     sex_var <- 1 + as.numeric(tolower(sex) == "f")
   } else {stop("Use 'M' for male and 'F' for female (case insensitive).")}
