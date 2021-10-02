@@ -15,6 +15,23 @@
 
 "growth"
 
+#' Centers for Disease Control Pediatric and Adolescent BMI Table
+#'
+#' Coefficients to calculate sex-specific BMI z-scores and percentiles.  
+#' Downloaded from https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf.
+#' 
+#' @name all_bmi
+#' @docType data
+#' @title CDC Pediatric and Adolescent BMI Table
+#' @usage all_bmi
+#' @format A data frame with the following 9 columns: Sex (1 = male), Agemos; 
+#' L, M, S (coefficients for calculating z-scores), P3, P5, P10, P25, P50, P75, 
+#' P85, P90, P95, P97: age and sex specific BMI percentiles
+#' @author Michael Neely
+#' @keywords datasets
+
+"all_bmi"
+
 #' Example MIC data
 #'
 #' This data frame contains MIC data for vancomycin against S. aureus.  It was obtained 
