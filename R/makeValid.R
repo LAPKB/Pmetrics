@@ -37,7 +37,7 @@
 #' @seealso \code{\link{SIMrun}}, \code{\link{plot.PMvalid}}
 #' @export
 
-makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,...){
+makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,limits,...){
   
   #verify packages used in this function
   #checkRequiredPackages("mclust")
@@ -122,11 +122,12 @@ makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,...){
   dataSub <- mdata[,c("id","evid","time","out","dose","out",binCov)]
   #add time after dose
   if(tad){dataSub$tad <- valTAD} else {dataSub$tad <- NA}
-  dataSub <- dataSub[,c("id","evid","time","tad","out","dose",binCov)]
+  dataSub <- dataSub %>% select(c("id","evid","time","tad","out","dose",binCov))
 
 
   #restrict to doses for dose/covariate clustering (since covariates applied on doses)
-  dataSubDC <- dataSub[dataSub$evid>0,-c(2:5)]
+  dataSubDC <- dataSub %>% filter(evid > 0) %>% select(c("id","dose",binCov))
+  
   #set zero doses (covariate changes) as missing
   dataSubDC$dose[dataSubDC$dose==0] <- NA
   for(i in 1:nrow(dataSubDC)){
@@ -353,8 +354,12 @@ makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,...){
     nsim <- argsSIM$nsim
     argsSIM[[which(names(argsSIM)=="nsim")]] <- NULL
   } else {nsim <- 1000}
+  if("limits" %in% names(argsSIM)){
+    limits <- argsSIM$limits
+    argsSIM[[which(names(argsSIM)=="limits")]] <- NULL
+  } else{limits <- NA}
   argsSIM1 <- c(list(poppar=popparZero,data=MedianDataFileName,model=modelfile,nsim=1,
-                     seed=runif(nsub,-100,100),outname="simMed"),argsSIM)
+                     seed=runif(nsub,-100,100),outname="simMed"),limits=limits,argsSIM)
   cat("Simulating outputs for each subject using population means...\n")
   flush.console()
   do.call("SIMrun",argsSIM1)
@@ -365,7 +370,7 @@ makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,...){
   #make tempDF subset of PMop for subject, time, non-missing obs, outeq, pop predictions (PREDij)
   tempDF <- getName("op")
   tempDF <- tempDF[tempDF$pred.type=="pop",]
-  tempDF <- tempDF[obsStatus(tempDF$obs)$present,]
+  tempDF <- tempDF[obsStatus(tempDF$obs)$present,] %>% filter(time > 0)
   if(!is.na(includeID[1])){
     tempDF <- tempDF[tempDF$id %in% includeID,]
   }
@@ -373,17 +378,17 @@ makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,...){
     tempDF <- tempDF[!tempDF$id %in% excludeID,]
   }
   
-  if(tad){tempDF$tad <- dataSub$tad[dataSub$evid==0]} else {tempDF$tad <- NA}
+  if(tad){tempDF$tad <- rep(dataSub$tad[dataSub$evid==0],2)} else {tempDF$tad <- NA}
   
   
   #add PRED_bin to tempDF
-  tempDF$PRED_bin <- rep(PRED_bin$obs$out,times=2) #one for icen="median" and icen="mean"
+  tempDF$PRED_bin <- rep(PRED_bin$obs$out[!is.na(PRED_bin$obs$out)],times=2) #one for icen="median" and icen="mean"
   
   #add pcYij column to tempDF as obs * PREDbin/PREDij
   tempDF$pcObs <- tempDF$obs * tempDF$PRED_bin/tempDF$pred
   
-  #take out observations at time 0 (from evid=4 events)
-  tempDF <- tempDF[tempDF$time>0,]
+  # #take out observations at time 0 (from evid=4 events)
+  # tempDF <- tempDF[tempDF$time>0,]
   
   #bin pcYij by time and add to tempDF
   tempDF$timeBinNum<- rep(dataSub$timeBin[dataSub$evid==0],times=2) #one for each icen 
@@ -403,7 +408,7 @@ makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,...){
   
   set.seed(seed.start)
   argsSIM2 <- c(list(poppar=poppar,data=datafileName,model=modelfile,nsim=nsim,
-                     seed=runif(nsub,-100,100),outname="full"),argsSIM)
+                     seed=runif(nsub,-100,100),outname="full"),limits=limits,argsSIM)
   if(!is.na(includeID[1])){
     argsSIM2$include <- includeID
   }
@@ -413,11 +418,12 @@ makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,...){
   do.call("SIMrun",argsSIM2)
   #read and format the results of the simulation
   simFull <- SIMparse("full*",combine=T,silent=T)
+  #take out observations at time 0 from evid=4
+  simFull$obs <- simFull$obs[simFull$obs$time>0,]
   #add TAD for plotting options
   if(tad){simFull$obs$tad <- unlist(tapply(dataSub$tad[dataSub$evid==0],dataSub$id[dataSub$evid==0],function(x) rep(x,nsim)))}
 
-  #take out observations at time 0 from evid=4
-  simFull$obs <- simFull$obs[simFull$obs$time>0,]
+
   
   #pull in time bins from tempDF; only need median as tempDF contains median and mean,
   #but simulation is only from pop means
