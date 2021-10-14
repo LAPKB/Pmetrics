@@ -41,7 +41,7 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
                          log=F,pch.obs = 1,col.obs="black",cex.obs=1,data_theme="color",plot_theme=theme_grey(),
                          col.obs.ci="blue",col.obs.med="red",col.sim.ci="dodgerblue",col.sim.med="lightpink",
                          axis.x = NULL,
-                         axis.y = NULL
+                         axis.y = NULL,xlab, ylab
                          
 ){
   
