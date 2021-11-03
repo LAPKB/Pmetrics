@@ -1,11 +1,12 @@
-library(R6)
-library(JuliaCall)
-j <- julia_setup()
+# library(R6)
+# library(JuliaCall)
+# j <- julia_setup()
 # julia_library("npag")
-j$library("npag")
+# j$library("npag")
 #public classes
 
 #may need to separate out error model as separate, e.g. need data, model, error to run
+#' @export
 PM_fit <- R6Class("PM_fit", 
     public = list(
         initialize = function(data, model, ...){
@@ -18,6 +19,10 @@ PM_fit <- R6Class("PM_fit",
             if (inherits(private$model, "PM_model_legacy")) {
                 cat(sprintf("Runing Legacy: %s-%s\n", private$data, private$model$name))
                 Pmetrics::NPrun(private$model$legacy_file_path, private$data)
+            } else if(inherits(private$model, "PM_model_list")) {
+                model_path <-private$model$write_model_file()
+                cat(sprintf("Creating model file at: %s\n", model_path))
+                Pmetrics::NPrun(model_path, private$data)
             } else if(inherits(private$model, "PM_model_julia")){
                 cat(sprintf("Runing Julia: %s-%s\n", private$data, private$model$name))
                 return(
@@ -42,6 +47,7 @@ PM_fit <- R6Class("PM_fit",
 )
 
 #Factory pattern
+#' @export
 PM_model <- function(model, ..., julia = F){
     #Now we have multiple options for the model:
     #The model can be a String -> legacy run
@@ -55,7 +61,9 @@ PM_model <- function(model, ..., julia = F){
         } else {
             return(PM_model_legacy$new(model))
         }
-        
+    
+    } else if(is.list(model)){
+        return(PM_model_list$new(model))
     } else{
         stop(sprintf("Non supported model type: %s", typeof(model)))
     }
@@ -81,6 +89,61 @@ PM_Vmodel <- R6Class("PM_Vmodel",
         library_model = NULL,
         equations = NULL,
         output = NULL        
+    )
+)
+PM_model_list <- R6Class("PM_model_list",
+    inherit = PM_Vmodel,
+    public = list(
+        model_list = NULL,
+        initialize = function(model_list){
+            names(model_list) = lapply(names(model_list), tolower)
+            #Should I guarantee that all the keys are only 3 characters long?
+            stopifnot(
+                "pri" %in% names(model_list),
+                "out" %in% names(model_list),
+                "err" %in% names(model_list),
+                "L" %in% names(model_list$err) || "G" %in% names(model_list$err)
+            )
+
+            self$model_list = model_list
+        }, 
+        write_model_file = function(){
+            model_path<-"genmodel.txt"#paste(tempdir(),"model.txt", sep="/")
+            keys <- names(self$model_list)
+            lines <- c()
+            for(i in 1:length(keys)){
+                lines<-private$write_block(lines,keys[i],self$model_list[[i]])
+            }
+            fileConn<-file(model_path)
+            writeLines(lines, fileConn)
+            close(fileConn)
+
+            return(model_path)
+        }
+        
+    ),
+    private = list(
+        write_block = function(lines, key, block){
+            lines<-append(lines,sprintf("#%s", key))
+            if(key == "pri"){
+                i<-1
+                for(param in names(block)){
+                    lines<-append(lines,sprintf("%s, %f, %f", param, block[[i]][1], block[[i]][2]))
+                    i<-i+1
+                }
+            } else if(key == "out"){
+                for(out in block){
+                    lines<-append(lines,out)
+                }
+            } else if(key == "err"){
+                lines<-append(lines,sprintf("%s=%f",names(block)[1], block[[1]]))
+                lines<-append(lines,sprintf("%f,%f,%f,%f",block[[2]][1],block[[2]][2],block[[2]][3],block[[2]][4]))
+            } else {
+                stop(sprintf("Error: Unsupported block name: %s", key))
+            }
+            lines<-append(lines,"")
+            return(lines)
+        }
     )
 )
 PM_model_legacy <- R6Class("PM_model_legacy", 
@@ -127,6 +190,61 @@ PM_model_julia <- R6Class("PM_model_julia",
         julia_type = NULL
     )
 )
+
+# #Examples
+# model <- list(
+#     pri=list(
+#         ke=c(0.001,2),
+#         V=c(50, 250)
+#     ),
+#     out=c("Y(1)=x(1)/V"),
+#     err=list(
+#         L=0,
+#         coeff=c(0,0.1,0,0)
+#     )
+
+# )
+# bimodal_ke <- PM_fit$new("data.csv", model)
+
+# bimodal_ke$run()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
