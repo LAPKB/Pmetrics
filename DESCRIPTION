@@ -48,8 +48,9 @@ Imports:
     tidyr,
     utils,
     plotly,
-    xtable
+    xtable,
+    R6
 Suggests:
     testthat
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Encoding: UTF-8

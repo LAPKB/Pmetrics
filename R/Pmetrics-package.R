@@ -44,6 +44,7 @@
 #' @importFrom httr add_headers content GET POST DELETE
 #' @importFrom base64enc base64decode
 #' @importFrom rlang .data
+#' @importFrom R6 R6Class
 
 NULL
 
