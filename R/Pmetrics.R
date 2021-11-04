@@ -131,7 +131,7 @@ PM_model_list <- R6Class("PM_model_list",
                     lines<-append(lines,sprintf("%s, %f, %f", param, block[[i]][1], block[[i]][2]))
                     i<-i+1
                 }
-            } else if(key == "out"){
+            } else if(key %in% c("out", "cov", "sec", "bol", "ini", "f", "lag", "dif", "extra")){
                 for(out in block){
                     lines<-append(lines,out)
                 }
@@ -139,7 +139,7 @@ PM_model_list <- R6Class("PM_model_list",
                 lines<-append(lines,sprintf("%s=%f",names(block)[1], block[[1]]))
                 lines<-append(lines,sprintf("%f,%f,%f,%f",block[[2]][1],block[[2]][2],block[[2]][3],block[[2]][4]))
             } else {
-                stop(sprintf("Error: Unsupported block name: %s", key))
+                stop(sprintf("Error: Unsupported block named: %s", key))
             }
             lines<-append(lines,"")
             return(lines)
@@ -197,6 +197,7 @@ PM_model_julia <- R6Class("PM_model_julia",
 #         ke=c(0.001,2),
 #         V=c(50, 250)
 #     ),
+#     # dif=c("XP(1)=-ke*X(1)"),
 #     out=c("Y(1)=x(1)/V"),
 #     err=list(
 #         L=0,
