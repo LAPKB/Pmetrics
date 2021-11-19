@@ -15,14 +15,14 @@ PM_fit <- R6Class("PM_fit",
             private$model <- if(inherits(model, "PM_Vmodel")) model else PM_model(model, ...)
             stopifnot(inherits(private$model, "PM_Vmodel"))
         },
-        run = function(){
+        run = function(...){
             if (inherits(private$model, "PM_model_legacy")) {
                 cat(sprintf("Runing Legacy: %s-%s\n", private$data, private$model$name))
-                Pmetrics::NPrun(private$model$legacy_file_path, private$data)
+                Pmetrics::NPrun(private$model$legacy_file_path, private$data, ...)
             } else if(inherits(private$model, "PM_model_list")) {
                 model_path <-private$model$write_model_file()
                 cat(sprintf("Creating model file at: %s\n", model_path))
-                Pmetrics::NPrun(model_path, private$data)
+                Pmetrics::NPrun(model_path, private$data, ...)
             } else if(inherits(private$model, "PM_model_julia")){
                 cat(sprintf("Runing Julia: %s-%s\n", private$data, private$model$name))
                 return(
@@ -71,7 +71,63 @@ PM_model <- function(model, ..., julia = F){
             
 }
 
+#' @export
+range <- function(min,max,gtz = T){
+    PM_input$new(min,max,"range",gtz)
+}
+
+#' @export
+msd <- function(mean,sd,gtz = T){
+    PM_input$new(mean,sd,"msd",gtz)
+}
+
+#' @export
+fixed <- function(fixed,gtz = T){
+    PM_input$new(fixed,fixed,"fixed",gtz)
+}
+
 #private classes
+#TODO: Should I make these fields private?
+PM_input <- R6Class("PM_Vinput",
+    public <- list(
+        mode=NULL,
+        min=NULL,
+        max=NULL,
+        mean=NULL,
+        sd=NULL,
+        fixed=NULL,
+        param=NULL,
+        gtz=T,
+        initialize = function(a,b,mode,gtz){
+            stopifnot(mode %in% c("range", "msd", "fixed"))
+            self$gtz<-gtz
+            self$mode <- mode
+            if(mode %in% c("range")){
+                self$min <- a
+                self$max <- b
+            } else if(mode %in% c("msd")){
+                self$mean <- a
+                self$sd <- b
+            } else if(mode == "fixed"){
+                self$fixed<-a
+            }
+        },
+        print_to = function(mode){
+            #TODO:use mode and self$mode to translate to the right set of outputs
+            if(self$mode == "range"){
+                return(sprintf("%f, %f", self$min, self$max))
+            } else if(self$mode == "msd"){
+                if(self$gtz){
+                    return(sprintf("+%f, %f", self$mean, self$sd))
+                } else {
+                    return(sprintf("%f, %f", self$mean, self$sd))
+                }
+            } else if(self$mode == "fixed"){
+                return(sprintf("%f!", self$fixed))
+            }
+        }
+    )
+)
 
 #Virtual Class
 #it seems that protected does not exist in R
@@ -101,14 +157,16 @@ PM_model_list <- R6Class("PM_model_list",
             stopifnot(
                 "pri" %in% names(model_list),
                 "out" %in% names(model_list),
-                "err" %in% names(model_list),
-                "L" %in% names(model_list$err) || "G" %in% names(model_list$err)
+                "err" %in% names(model_list$out[[1]]),
+                "model" %in% names(model_list$out[[1]]$err),
+                "assay" %in% names(model_list$out[[1]]$err),
+                "proportional" %in% names(model_list$out[[1]]$err$model) || "additive" %in% names(model_list$out[[1]]$err$model)
             )
 
             self$model_list = model_list
         }, 
         write_model_file = function(){
-            model_path<-"genmodel.txt"#paste(tempdir(),"model.txt", sep="/")
+            model_path<-"genmodel.txt"
             keys <- names(self$model_list)
             lines <- c()
             for(i in 1:length(keys)){
@@ -128,17 +186,55 @@ PM_model_list <- R6Class("PM_model_list",
             if(key == "pri"){
                 i<-1
                 for(param in names(block)){
-                    lines<-append(lines,sprintf("%s, %f, %f", param, block[[i]][1], block[[i]][2]))
+                    lines<-append(lines,if(is.numeric(block[[i]])){sprintf("%s, %f", param, block[[i]])}else{sprintf("%s, %s", param, block[[i]]$print_to("ranges"))})
                     i<-i+1
                 }
-            } else if(key %in% c("out", "cov", "sec", "bol", "ini", "f", "lag", "dif", "extra")){
+            } else if(key %in% c("cov", "sec", "bol", "f", "lag", "extra")){
                 for(out in block){
                     lines<-append(lines,out)
                 }
-            } else if(key == "err"){
-                lines<-append(lines,sprintf("%s=%f",names(block)[1], block[[1]]))
-                lines<-append(lines,sprintf("%f,%f,%f,%f",block[[2]][1],block[[2]][2],block[[2]][3],block[[2]][4]))
-            } else {
+            } else if(key == "ini"){
+                i <- 1
+                for(param in names(block)){
+                    stopifnot(nchar(param)==2 || nchar(param) == 0)
+                    key<-toupper(names(block)[i])
+                    lines<-append(lines,if(nchar(param) == 2){sprintf("%s(%s)=%s",substr(key,1,1),substr(key,2,2),block[[i]][1])}else{sprintf("%s",block[[i]][1])})
+                    i<-i+1
+                }
+            } else if(key == "dif"){
+                i <- 1
+                for(param in names(block)){
+                    stopifnot(nchar(param)==3 || nchar(param) == 0)
+                    key<-toupper(names(block)[i])
+                    lines<-append(lines,if(nchar(param) == 3){sprintf("%s(%s)=%s",substr(key,1,2),substr(key,3,3),block[[i]][1])}else{sprintf("%s",block[[i]][1])})
+                    i<-i+1
+                }
+            } else if (key == "out"){
+                i <- 1 # keep track of the first outeq
+                err_lines = c("#err")
+                for(param in names(block)){
+                    stopifnot(nchar(param)==2 || nchar(param) == 0)
+                    key<-toupper(names(block)[i])
+                    lines<-append(lines,if(nchar(param) == 2){sprintf("%s(%s)=%s",substr(key,1,1),substr(key,2,2),block[[i]][1])}else{sprintf("%s",block[[i]][1])})
+                    if(i==1){
+                        err_block <- block[[1]]$err
+                        if(names(err_block$model)=="proportional"){
+                            err_lines<-append(err_lines,sprintf("G=%s",if(is.numeric(err_block$model$proportional)){err_block$model$proportional}else{err_block$model$proportional$print_to("ranges")}))
+                        } else if(names(err_block$model)=="additive"){
+                            err_lines<-append(err_lines,sprintf("L=%s",if(is.numeric(err_block$model$additive)){err_block$model$additive}else{err_block$model$additive$print_to("ranges")}))
+                        }
+                        err_lines<-append(err_lines,sprintf("%f,%f,%f,%f",err_block$assay[1],err_block$assay[2],err_block$assay[3],err_block$assay[4]))
+                    }  
+                    i<-i+1
+                }
+                lines<-append(lines,"")
+                lines<-append(lines,err_lines)
+            }
+            # } else if(key == "err"){
+            #     lines<-append(lines,sprintf("%s=%f",names(block)[1], block[[1]]))
+            #     lines<-append(lines,sprintf("%f,%f,%f,%f",block[[2]][1],block[[2]][2],block[[2]][3],block[[2]][4]))
+            # } 
+            else {
                 stop(sprintf("Error: Unsupported block named: %s", key))
             }
             lines<-append(lines,"")
@@ -192,19 +288,62 @@ PM_model_julia <- R6Class("PM_model_julia",
 )
 
 # #Examples
-# model <- list(
-#     pri=list(
-#         ke=c(0.001,2),
-#         V=c(50, 250)
-#     ),
-#     # dif=c("XP(1)=-ke*X(1)"),
-#     out=c("Y(1)=x(1)/V"),
-#     err=list(
-#         L=0,
-#         coeff=c(0,0.1,0,0)
-#     )
 
-# )
+simple_model <- PM_model(list(
+  pri=list(
+    ke=range(0.001,2),
+    V=range(50, 250)
+  ),
+  out=list(
+    y1=list(
+      "X(1)/V",
+      err=list(
+        model=list(
+          additive=0
+        ),
+        assay=c(0,0.1,0,0)
+      )
+    )
+  )
+))
+
+
+full_model <- PM_model(list(
+    pri=list(
+        ke=range(0.001,2),
+        V=range(50, 250),
+        ka=fixed(5),
+        Kcp=range(0.01, 10, gtz=F),
+        Kpc=5
+        # alpha = msd(0,0.3, gtz=F)
+    ),
+    ini= list("X(1)=0",x2="0"),
+    #default gtz=T
+    dif=list(
+        xp1="-ke*X(1)",
+        "XP(2)=ke*X(1)"
+    ),
+    out=list(
+        y1=list(
+            "X(1)/V",
+            err=list(
+                model=list(
+                    additive=0#Y=Y+ASSAY   SD=?  Yobs=Ypred+E1+ASSAY(Yobs)
+                    # proportional=fixed(1)#Y=Y+Y*ASSAY     Yobs=Ypred*(1+E2)+ASSAY(Yobs)
+                    #Combination: Y=Y+ASSAY+Y*ASSAY Yobs=Ypred*(1+E2)+E1+ASSAY(Yobs)
+                ),
+                assay=c(0,0.1,0,0)
+            )
+        ),
+        y2=list(
+            "X(2)/V"
+        ),
+        "Y(3)=X(3)/V"
+    )
+))
+
+# # # ke=ranges(0.001,2),
+# # # V=meansd(50, 250)
 # bimodal_ke <- PM_fit$new("data.csv", model)
 
 # bimodal_ke$run()
