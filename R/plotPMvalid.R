@@ -136,7 +136,7 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
     
     
     #set limits if not specified
-    if(!"limits" %in% names(axis.x)){axis.x$limits <- c(range(plotData$obsTime))}
+    if(!"limits" %in% names(axis.x)){axis.x$limits <- c(base::range(plotData$obsTime))}
     if(!"limits" %in% names(axis.y)){axis.y$limits <- c(min(plotData$obs,plotData$lower$value),
                                 max(plotData$obs,plotData$upperDF$value))}
     

@@ -133,8 +133,8 @@ plot.PMop <- function(x,include,exclude,pred.type="post",icen="median",outeq=1,m
   if(!resid){
     #this is not a residual plot
     
-    if (missing(xlim)){xlim <- range(data$pred,na.rm=T)}
-    if (missing(ylim)){ylim <- range(data$obs,na.rm=T)}
+    if (missing(xlim)){xlim <- base::range(data$pred,na.rm=T)}
+    if (missing(ylim)){ylim <- base::range(data$obs,na.rm=T)}
     
     if (missing(xlab)) xlab <- "Predicted"
     if (missing(ylab)) ylab <- "Observed"
@@ -202,7 +202,7 @@ plot.PMop <- function(x,include,exclude,pred.type="post",icen="median",outeq=1,m
     #this is a residual plot
     par(mfrow=c(1,3))
     if(missing(ylim)){
-      ylim <- range(pretty(range(data$wd,na.rm=T)))
+      ylim <- base::range(pretty(base::range(data$wd,na.rm=T)))
     }
     par(mar=c(5,5,4,2)+0.1)
     plot(wd~pred,data,xlab="Predicted",ylab="Weighted residual error (pred - obs)",type="n",ylim=ylim,...)
@@ -230,7 +230,7 @@ plot.PMop <- function(x,include,exclude,pred.type="post",icen="median",outeq=1,m
     if(ref) abline(h=0,lty="dashed",lwd=lwd)
     p.val <- t.test(data$wd)$p.value
     p.txt <- ifelse(p.val<0.001,"<0.001",paste("=",round(p.val,3),sep=""))
-    if(reg){text(x=min(data$pred)+x.stat*diff(range(data$pred)),y=min(data$wd)+y.stat*diff(range(data$wd)),
+    if(reg){text(x=min(data$pred)+x.stat*diff(base::range(data$pred)),y=min(data$wd)+y.stat*diff(base::range(data$wd)),
                  labels=paste("Mean: ",round(mean(data$wd),2)," (P",p.txt,"), SD: ",round(sd(data$wd),2),sep=""),adj=0,cex=cex.stat,col=col.stat)}
     
     
@@ -248,7 +248,7 @@ plot.PMop <- function(x,include,exclude,pred.type="post",icen="median",outeq=1,m
     if(ref) abline(h=0,lty="dashed",lwd=lwd)
     p.val <- t.test(data$wd)$p.value
     p.txt <- ifelse(p.val<0.001,"<0.001",paste("=",round(p.val,3),sep=""))
-    if(reg) {text(x=min(data$time)+x.stat*diff(range(data$time)),y=min(data$wd)+y.stat*diff(range(data$wd)),
+    if(reg) {text(x=min(data$time)+x.stat*diff(base::range(data$time)),y=min(data$wd)+y.stat*diff(base::range(data$wd)),
                   labels=paste("Mean: ",round(mean(data$wd),2)," (P",p.txt,"), SD: ",round(sd(data$wd),2),sep=""),adj=0,cex=cex.stat,col=col.stat)}
     
     resid.hist <- hist(data$wd,breaks=30,plot=F)

@@ -89,21 +89,40 @@
 #' @export
 
 
-NPrun <- function(model = "model.txt", data = "data.csv", run,
-                  include, exclude, ode = -4, tol = 0.01, salt, cycles = 100,
-                  indpts, icen = "median", aucint,
-                  idelta = 12, prior,
-                  auto = T, intern = F, silent = F, overwrite = F, nocheck = F, parallel = NA, 
-                  alq = F, remote = F, server_address) {
+NPrun <- function(model = "model.txt", data = "data.csv", ...){
+  dots = list(...)
+  if(exists("run", where=dots)){run<-dots$run}else{run<-NULL}
+  if(exists("include", where=dots)){include<-dots$include}else{include<-NULL}
+  if(exists("exclude", where=dots)){exclude<-dots$exclude}else{exclude<-NULL}
+  if(exists("ode", where=dots)){ode<-dots$ode}else{ode<- -4}
+  if(exists("tol", where=dots)){tol<-dots$tol}else{tol<-0.01}
+  if(exists("salt", where=dots)){salt<-dots$salt}else{salt<-NULL}
+  if(exists("cycles", where=dots)){cycles<-dots$cycles}else{cycles<-100}
+  if(exists("indpts", where=dots)){indpts<-dots$indpts}else{indpts<-NULL}
+  if(exists("icen", where=dots)){icen<-dots$icen}else{icen<-"median"}
+  if(exists("aucint", where=dots)){aucint<-dots$aucint}else{aucint<-NULL}
+  if(exists("idelta", where=dots)){idelta<-dots$idelta}else{idelta<-12}
+  if(exists("prior", where=dots)){prior<-dots$prior}else{prior<-NULL}
+  if(exists("auto", where=dots)){auto<-dots$auto}else{auto<-T}
+  if(exists("intern", where=dots)){intern<-dots$intern}else{intern<-F}
+  if(exists("silent", where=dots)){silent<-dots$silent}else{silent<-F}
+  if(exists("overwrite", where=dots)){overwrite<-dots$overwrite}else{overwrite<-F}
+  if(exists("nocheck", where=dots)){nocheck<-dots$nocheck}else{nocheck<-F}
+  if(exists("parallel", where=dots)){parallel<-dots$parallel}else{parallel<-NA}
+  if(exists("alq", where=dots)){alq<-dots$alq}else{alq<-F}
+  if(exists("remote", where=dots)){remote<-dots$remote}else{remote<-F}
+  if(exists("server_address", where=dots)){server_address<-dots$server_address}else{server_address<-NULL}
 
-  if (missing(run)) run <- NULL
-  if (missing(include)) include <- NULL
-  if (missing(exclude)) exclude <- NULL
-  if (missing(salt)) salt <- NULL
-  if (missing(indpts)) indpts <- NULL
-  if (missing(aucint)) aucint <- NULL
-  if (missing(prior)) prior <- NULL
-  if (missing(server_address)) server_address <- getPMoptions("server_address")
+
+
+  # if (missing(run)) run <- NULL
+  # if (missing(include)) include <- NULL
+  # if (missing(exclude)) exclude <- NULL
+  # if (missing(salt)) salt <- NULL
+  # if (missing(indpts)) indpts <- NULL
+  # if (missing(aucint)) aucint <- NULL
+  # if (missing(prior)) prior <- NULL
+  # if (missing(server_address)) server_address <- getPMoptions("server_address")
   batch <- F
   if (remote == T) {
     return(.PMremote_run(model = model, data = data, server_address = server_address, run, overwrite))

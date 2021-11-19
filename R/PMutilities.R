@@ -271,7 +271,7 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
       xmedindex <- min(which(xsum > 0.5))
       xmed <- x[xmedindex, 1]
       xnint <- max(c(100, 2 * nsub))
-      xint <- diff(range(x[, 1])) / xnint
+      xint <- diff(base::range(x[, 1])) / xnint
       xmed <- xmed - (xsum[xmedindex] - 0.5) / xnint * xint
       return(xmed)
     }

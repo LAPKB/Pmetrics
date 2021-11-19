@@ -62,7 +62,7 @@ makeErrorPoly <- function(obs,sd,data,outeq=1,col="red",cex=3,pch="+",lcol="blue
     if(!"ylim" %in% names(arglist)) {arglist <- list(arglist,ylim)}
   } else {arglist <- list(ylim=ylim)}
   par(mar=c(5,5,4,2)+0.1)
-  do.call(plot,args=c(list(y=sd,x=obs,type="n",xlim=range(newConc),
+  do.call(plot,args=c(list(y=sd,x=obs,type="n",xlim=base::range(newConc),
                            xlab="Concentration",ylab="Standard Deviation",
                            cex.lab=1.5,font=2),arglist))
   points(sd~obs,col=col,pch=pch,cex=cex)

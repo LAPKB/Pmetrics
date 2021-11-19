@@ -126,7 +126,7 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
       for (i in 1:(length(data$popMean))){
         x <- seq(data$ab[i,1],data$ab[i,2],(data$ab[i,2]-data$ab[i,1])/1000)
         y <- dnorm(x,mean=data$popMean[i],sd=data$popSD[i])
-        if (standard){xlim <- range(data$ab)} else {xlim <- data$ab[i,]}
+        if (standard){xlim <- base::range(data$ab)} else {xlim <- data$ab[i,]}
         if(!add){
           plot(x=x,y=y,type="l",lwd=lwd,col=col,xlab=names(data$popMean)[i],xlim=xlim,
                ,ylab="Probability",cex.lab=cex.lab,...)
@@ -190,7 +190,7 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
           col.ref.rgb <- col2rgb(col.ref,T)/255
           col.ref.trans <- rgb(col.ref.rgb[1,],col.ref.rgb[2,],col.ref.rgb[3,],alpha.ref)
           if(missing(lwd.ref)) lwd.ref <- 3
-          if(missing(xlim)) xlim <- range(x.pop)
+          if(missing(xlim)) xlim <- base::range(x.pop)
         }
         
         this.x <- seq(data$ab[i,1],data$ab[i,2],(data$ab[i,2]-data$ab[i,1])/1000)
@@ -202,8 +202,8 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
         } 
         
         if(standard){
-          xlim <- range(this.x)
-          ylim <- range(this.y)
+          xlim <- base::range(this.x)
+          ylim <- base::range(this.y)
         }
         if(missing(xlim)){xlim <- NULL}
         if(missing(ylim)){ylim <- NULL}
@@ -237,8 +237,8 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
           ell[i,,] <- ellipse(mu=c(data$popMean[xCol],data$popMean[yCol]),sigma=data$popCov[c(xCol,yCol),c(xCol,yCol)],type="l",alpha=probs[i],draw=F)
         }
         graycols <- rev(gray.colors(n=length(probs),start=0,end=0.9))
-        if(missing(xlim)) xlim <- range(ell[,,1])
-        if(missing(ylim)) ylim <- range(ell[,,2])
+        if(missing(xlim)) xlim <- base::range(ell[,,1])
+        if(missing(ylim)) ylim <- base::range(ell[,,2])
         if(missing(col)) col="white"
         if(missing(lwd)) lwd <- 1
         if(!missing(legend)){        
@@ -299,9 +299,9 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
           col.ref.rgb <- col2rgb(col.ref,T)/255
           col.ref.trans <- rgb(col.ref.rgb[1,],col.ref.rgb[2,],col.ref.rgb[3,],alpha.ref)
           if(missing(lwd.ref)) lwd.ref <- 3
-          if(missing(xlim)) xlim <- range(x.pop)
+          if(missing(xlim)) xlim <- base::range(x.pop)
         }
-        if(missing(xlim)) xlim <- range(model.frame(formula=formula,data=data$postPoints)[,2])
+        if(missing(xlim)) xlim <- base::range(model.frame(formula=formula,data=data$postPoints)[,2])
         #cycle through subjects
         for (i in 1:nsub){
           temp <- subset(data$postPoints, data$postPoints$id==subjID[i])
