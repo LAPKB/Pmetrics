@@ -341,7 +341,7 @@ full_model <- PM_model(list(
         "Y(3)=X(3)/V"
     )
 ))
-
+#600
 # # # ke=ranges(0.001,2),
 # # # V=meansd(50, 250)
 # bimodal_ke <- PM_fit$new("data.csv", model)
