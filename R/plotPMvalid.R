@@ -113,12 +113,8 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   }
   timeBinNum <- length(minBin)
   
-  #polytime <- c(mitimeBinNum[1],rep(sapply(1:(timeBinNum-1),function(x) mean(c(mitimeBinNum[x+1],maxBin[x]))),each=2),maxBin[timeBinNum])
   polytime <- use.timeBinMedian
   
-  # upperDF <- data.frame(time=c(polytime,rev(polytime)),value=c(rep(upperUpper,each=2),rev(rep(upperLower,each=2))))
-  # medDF <- data.frame(time=c(polytime,rev(polytime)),value=c(rep(medianUpper,each=2),rev(rep(medianLower,each=2))))
-  # lowerDF <- data.frame(time=c(polytime,rev(polytime)),value=c(rep(lowerUpper,each=2),rev(rep(lowerLower,each=2))))
   upperDF <- data.frame(time=c(polytime,rev(polytime)),value=c(upperUpper,rev(upperLower)))
   medDF <- data.frame(time=c(polytime,rev(polytime)),value=c(medianUpper,rev(medianLower)))
   lowerDF <- data.frame(time=c(polytime,rev(polytime)),value=c(lowerUpper,rev(lowerLower)))
