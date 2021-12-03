@@ -4,7 +4,7 @@
 \alias{makeValid}
 \title{Create a Pmetrics validation object}
 \usage{
-makeValid(run, tad = F, binCov, doseC, timeC, tadC, ...)
+makeValid(run, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 }
 \arguments{
 \item{run}{When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
