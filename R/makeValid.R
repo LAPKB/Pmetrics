@@ -243,7 +243,7 @@ makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,limits,...){
       }
       TclustNum <- timeVec
     }    
-    if(is.na(TclustNum)) TclustNum <- mod$G
+    if(all(is.na(TclustNum))) TclustNum <- mod$G
     return(as.numeric(TclustNum))
   } #end timeCluster function
   
@@ -456,7 +456,7 @@ makeValid <- function(run,tad=F,binCov,doseC,timeC,tadC,limits,...){
   #get NPDE
   assign("thisobs",obs,pos=1)
   assign("thissim",simobs,pos=1)
-  npdeRes <- tryCatch(npde::autonpde(namobs=thisobs,namsim=thissim,1,2,3,verbose=T),error=function(e) e)
+  npdeRes <- tryCatch(npde::autonpde(namobs=thisobs,namsim=thissim,1,2,3,verbose=T),error=function(e) {e; return(NA)})
 
   
   
