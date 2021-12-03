@@ -57,6 +57,13 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   x$opDF <- x$opDF[x$opDF$icen==icen & x$opDF$outeq==outeq,] #filter to icen & outeq
   x$simdata$obs <- x$simdata$obs[x$simdat$obs$outeq==outeq,] #filter to outeq
   
+  #set names if not specified
+  if(!"name" %in% names(axis.x)){axis.x$name <- "Time"}
+  if(!"name" %in% names(axis.y)){axis.y$name <- "Observation"}
+  
+  #set scale
+  if(log){yscale <- "scale_y_log10"} else {yscale <- "scale_y_continuous"}
+  
   #select correct time
   if(!tad){
     use.timeBinMedian <- x$timeBinMedian$time
@@ -72,7 +79,7 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
       use.opTimeBinMedian <- x$opDF$tadBinMedian
       use.opTimeBinNum <- x$opDF$tadBinNum
       use.simBinNum <- x$simdata$obs$tadBinNum
-      if(axis.x$name=="Time") {axis.y$name <- "Time after dose"}
+      if(axis.x$name=="Time") {axis.x$name <- "Time after dose"}
       
     } else {stop("Rerun makePMvalid and set tad argument to TRUE.\n")}
   }
@@ -106,12 +113,8 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   }
   timeBinNum <- length(minBin)
   
-  #polytime <- c(mitimeBinNum[1],rep(sapply(1:(timeBinNum-1),function(x) mean(c(mitimeBinNum[x+1],maxBin[x]))),each=2),maxBin[timeBinNum])
   polytime <- use.timeBinMedian
   
-  # upperDF <- data.frame(time=c(polytime,rev(polytime)),value=c(rep(upperUpper,each=2),rev(rep(upperLower,each=2))))
-  # medDF <- data.frame(time=c(polytime,rev(polytime)),value=c(rep(medianUpper,each=2),rev(rep(medianLower,each=2))))
-  # lowerDF <- data.frame(time=c(polytime,rev(polytime)),value=c(rep(lowerUpper,each=2),rev(rep(lowerLower,each=2))))
   upperDF <- data.frame(time=c(polytime,rev(polytime)),value=c(upperUpper,rev(upperLower)))
   medDF <- data.frame(time=c(polytime,rev(polytime)),value=c(medianUpper,rev(medianLower)))
   lowerDF <- data.frame(time=c(polytime,rev(polytime)),value=c(lowerUpper,rev(lowerLower)))
@@ -130,9 +133,6 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   #common options
   if(type=="vpc" | type=="pcvpc"){
     
-    #set names if not specified
-    if(!"name" %in% names(axis.x)){axis.x$name <- "Time"}
-    if(!"name" %in% names(axis.y)){axis.y$name <- "Observation"}
     
     
     #set limits if not specified
@@ -162,7 +162,7 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
                               y=unlist(lapply(obsQuant,function(x) x[1]))),col=col.obs.ci,lty=2,lwd=1) + 
                 geom_point(aes(x=obsTime,y=obs),col=col.obs,pch=pch.obs,cex=cex.obs) + 
                 do.call(scale_x_continuous,axis.x) + 
-                do.call(scale_y_continuous,axis.y) +
+                do.call(yscale,axis.y) +
                 do.call(theme,plot_theme)
     )
     #SEND TO CONSOLE
