@@ -9,7 +9,7 @@
 #' @export
 PM_fit <- R6Class("PM_fit", 
     public = list(
-        initialize = function(data, model, ...){
+        initialize = function(data=data, model=model, ...){
             stopifnot(is.character(data), length(data) == 1)
             private$data = data
             private$model <- if(inherits(model, "PM_Vmodel")) model else PM_model(model, ...)
