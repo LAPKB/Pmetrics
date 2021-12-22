@@ -353,7 +353,7 @@ gfortranCheck <- function(gfortran = Sys.which("gfortran")) {
   }
   # -w == no warnings; -Wall == all warnings (except extra ones; use -Wextra for those)
   # return(paste("gfortran -m",get("PmetricsBit",envir=PMenv)," -w -O3 -o <exec> <files>",sep=""))
-  return(paste("gfortran -m", getBits(), " -march=native -o <exec> <files>", sep = ""))
+  return(paste("gfortran -march=native -o <exec> <files>", sep = ""))
 }
 
 
