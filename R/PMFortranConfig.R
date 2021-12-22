@@ -30,7 +30,7 @@ PMFortranConfig <- function(reconfig = F) {
     compiler <- readLines(configFilename)
     #check for non-parallel gfortran, and if present, update for 64 bit only (doesn't work in 32 bit)
     if (getBits() == "64" & length(compiler) == 1 & length(grep("^gfortran", compiler) > 0)) {
-      compiler <- c(compiler, "gfortran -O3 -w -fopenmp -march=native -fmax-stack-var-size=32768 -o <exec> <files>")
+      compiler <- c(compiler, "gfortran -fopenmp -march=native -fmax-stack-var-size=32768 -o <exec> <files>")
       writeLines(compiler, configFilename)
       cat("Your gfortran compiler statement has been updated to include parallel processing.\nYou can use PMFortranConfig() to see the new statement.\n\n")
       flush.console()
@@ -70,7 +70,7 @@ PMFortranConfig <- function(reconfig = F) {
 
       if (as.numeric(choice) < 5) {
         compiler <- switch(as.numeric(choice),
-                           paste("gfortran -m", getBits(), " -w -O3 -march=native -o <exec> <files>\ngfortran -O3 -w -fopenmp -march=native -fmax-stack-var-size=32768 -o <exec> <files>", sep = ""),
+                           paste("gfortran -m", getBits(), "  -march=native -o <exec> <files>\ngfortran -fopenmp -march=native -fmax-stack-var-size=32768 -o <exec> <files>", sep = ""),
                            "g95 -o -fstatic <exec> <files> ",
                            "ifort -o <exec> <files>",
                            "lf90  <files> -fix -out <exec>")
