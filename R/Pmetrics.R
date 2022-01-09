@@ -15,14 +15,16 @@ PM_fit <- R6Class("PM_fit",
             private$model <- if(inherits(model, "PM_Vmodel")) model else PM_model(model, ...)
             stopifnot(inherits(private$model, "PM_Vmodel"))
         },
-        run = function(...){
+        run = function(..., engine="npag"){
             if (inherits(private$model, "PM_model_legacy")) {
                 cat(sprintf("Runing Legacy: %s-%s\n", private$data, private$model$name))
                 Pmetrics::NPrun(private$model$legacy_file_path, private$data, ...)
             } else if(inherits(private$model, "PM_model_list")) {
-                model_path <-private$model$write_model_file()
+                engine = tolower(engine)
+                model_path <-private$model$write_model_file(engine)
                 cat(sprintf("Creating model file at: %s\n", model_path))
                 Pmetrics::NPrun(model_path, private$data, ...)
+                
             } else if(inherits(private$model, "PM_model_julia")){
                 cat(sprintf("Runing Julia: %s-%s\n", private$data, private$model$name))
                 return(
@@ -112,18 +114,36 @@ PM_input <- R6Class("PM_Vinput",
                 self$fixed<-a
             }
         },
-        print_to = function(mode){
+        print_to = function(mode,engine){
             #TODO:use mode and self$mode to translate to the right set of outputs
-            if(self$mode == "range"){
-                return(sprintf("%f, %f", self$min, self$max))
-            } else if(self$mode == "msd"){
-                if(self$gtz){
-                    return(sprintf("+%f, %f", self$mean, self$sd))
-                } else {
-                    return(sprintf("%f, %f", self$mean, self$sd))
+            if(engine=="npag"){
+                if(self$mode == "range"){
+                    return(sprintf("%f, %f", self$min, self$max))
+                } else if(self$mode == "msd"){
+                    if(self$gtz){
+                        return(sprintf("+%f, %f", self$mean, self$sd))
+                    } else {
+                        return(sprintf("%f, %f", self$mean, self$sd))
+                    }
+                } else if(self$mode == "fixed"){
+                    return(sprintf("%f!", self$fixed))
                 }
-            } else if(self$mode == "fixed"){
-                return(sprintf("%f!", self$fixed))
+            } else if(engine=="rpem"){
+                if(self$mode == "range"){
+                    if(self$gtz){
+                        return(sprintf("+%f, %f", self$min, self$max))
+                    } else {
+                        return(sprintf("%f, %f", self$min, self$max))
+                    }
+                } else if(self$mode == "msd"){
+                    if(self$gtz){
+                        return(sprintf("+%%%f, %f", self$mean, self$sd))
+                    } else {
+                        return(sprintf("%%%f, %f", self$mean, self$sd))
+                    }
+                } else if(self$mode == "fixed"){
+                    return(sprintf("%f!", self$fixed))
+                }
             }
         }
     )
@@ -165,12 +185,13 @@ PM_model_list <- R6Class("PM_model_list",
 
             self$model_list = model_list
         }, 
-        write_model_file = function(){
+        write_model_file = function(engine="npag"){
+            engine <- tolower(engine)
             model_path<-"genmodel.txt"
             keys <- names(self$model_list)
             lines <- c()
             for(i in 1:length(keys)){
-                lines<-private$write_block(lines,keys[i],self$model_list[[i]])
+                lines<-private$write_block(lines,keys[i],self$model_list[[i]],engine)
             }
             fileConn<-file(model_path)
             writeLines(lines, fileConn)
@@ -181,12 +202,12 @@ PM_model_list <- R6Class("PM_model_list",
         
     ),
     private = list(
-        write_block = function(lines, key, block){
+        write_block = function(lines, key, block, engine){
             lines<-append(lines,sprintf("#%s", key))
             if(key == "pri"){
                 i<-1
                 for(param in names(block)){
-                    lines<-append(lines,if(is.numeric(block[[i]])){sprintf("%s, %f", param, block[[i]])}else{sprintf("%s, %s", param, block[[i]]$print_to("ranges"))})
+                    lines<-append(lines,if(is.numeric(block[[i]])){sprintf("%s, %f", param, block[[i]])}else{sprintf("%s, %s", param, block[[i]]$print_to("ranges",engine))})
                     i<-i+1
                 }
             } else if(key %in% c("cov", "sec", "bol", "f", "lag", "extra")){
@@ -219,9 +240,9 @@ PM_model_list <- R6Class("PM_model_list",
                     if(i==1){
                         err_block <- block[[1]]$err
                         if(names(err_block$model)=="proportional"){
-                            err_lines<-append(err_lines,sprintf("G=%s",if(is.numeric(err_block$model$proportional)){err_block$model$proportional}else{err_block$model$proportional$print_to("ranges")}))
+                            err_lines<-append(err_lines,sprintf("G=%s",if(is.numeric(err_block$model$proportional)){err_block$model$proportional}else{err_block$model$proportional$print_to("ranges",engine)}))
                         } else if(names(err_block$model)=="additive"){
-                            err_lines<-append(err_lines,sprintf("L=%s",if(is.numeric(err_block$model$additive)){err_block$model$additive}else{err_block$model$additive$print_to("ranges")}))
+                            err_lines<-append(err_lines,sprintf("L=%s",if(is.numeric(err_block$model$additive)){err_block$model$additive}else{err_block$model$additive$print_to("ranges",engine)}))
                         }
                         err_lines<-append(err_lines,sprintf("%f,%f,%f,%f",err_block$assay[1],err_block$assay[2],err_block$assay[3],err_block$assay[4]))
                     }  
@@ -291,8 +312,8 @@ PM_model_julia <- R6Class("PM_model_julia",
 
 simple_model <- PM_model(list(
   pri=list(
-    ke=range(0.001,2),
-    V=range(50, 250)
+    ke=range(0.001,2,gtz=F),
+    V=msd(50, 250)
   ),
   out=list(
     y1=list(
