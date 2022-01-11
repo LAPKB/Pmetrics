@@ -187,7 +187,7 @@ PM_model_list <- R6Class("PM_model_list",
         }, 
         write_model_file = function(engine="npag"){
             engine <- tolower(engine)
-            model_path<-"genmodel.txt"
+            model_path <- "genmodel.txt"
             keys <- names(self$model_list)
             lines <- c()
             for(i in 1:length(keys)){
@@ -198,6 +198,11 @@ PM_model_list <- R6Class("PM_model_list",
             close(fileConn)
 
             return(model_path)
+        },
+        update = function(changes_list) {
+            keys <- names(changes_list)
+            stopifnot(keys %in% c("pri"))#TODO: add all supported blocks
+            self$model_list <- modifyList(self$model_list,changes_list)
         }
         
     ),
@@ -312,7 +317,7 @@ PM_model_julia <- R6Class("PM_model_julia",
 
 simple_model <- PM_model(list(
   pri=list(
-    ke=range(0.001,2,gtz=F),
+    Ke=range(0.001,2,gtz=F),
     V=msd(50, 250)
   ),
   out=list(
@@ -325,6 +330,12 @@ simple_model <- PM_model(list(
         assay=c(0,0.1,0,0)
       )
     )
+  )
+))
+
+simple_model$update(list(
+  pri = list(
+    Ke = range(0,1)
   )
 ))
 
