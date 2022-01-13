@@ -50,7 +50,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
     if (remote) { #only look on server
       status = .remoteLoad(thisrun, server_address)
       if (status == "finished") {
-        .splitOut(thisrun,NPAGout)
+        result<-.splitOut(NPAGout)
       } else {
         sprintf("Warning: Remote run #%d has not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
         cat()
@@ -58,14 +58,14 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
     } else if (file.exists(outfile)) { #remote F, so look locally
       # load(outfile, .GlobalEnv)
       load(outfile)
-      .splitOut(thisrun,get("NPAGout"))
+      result<-.splitOut(get("NPAGout"))
     } else {
       #check for IT2B output file
       filename <- "IT2Bout.Rdata"
       outfile <- paste(thisrun, "outputs", filename, sep = "/")
       if (file.exists(outfile)) {
         load(outfile)
-        .splitOut(thisrun,get("IT2Bout"))
+        result<-.splitOut(get("IT2Bout"))
       } else {
         cat(paste(outfile, " not found in ", getwd(), "/", thisrun, "/outputs or ", getwd(), ".\n", sep = ""))
         return(invisible(F)) #error, abort
@@ -76,16 +76,18 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
   #end thisrun loop
 
 
-  return(invisible(T)) #no errors
+  return(PM_result$new(result)) #no errors
 
 }
 
-.splitOut <- function(run,Out) {
-  newNames <- paste(names(Out), ".", as.character(run), sep = "")
-  for (i in 1:length(newNames)) {
-    assign(newNames[i], Out[[i]], pos = .GlobalEnv)
-
+.splitOut <- function(Out) {
+  result<-list()
+  for (i in 1:length(names(Out))) {
+    aux_list <- list(Out[[i]])
+    names(aux_list)<-names(Out)[i]
+    result <- append(result,aux_list)
   }
+  result
 }
 
 .remoteLoad <- function(run, server_address) {
