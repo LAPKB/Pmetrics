@@ -45,6 +45,7 @@
 #' @importFrom base64enc base64decode
 #' @importFrom rlang .data
 #' @importFrom R6 R6Class
+#' @importFrom plotly filter mutate plot_ly add_markers add_lines layout
 
 NULL
 
