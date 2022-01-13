@@ -87,6 +87,37 @@ msd <- function(mean,sd,gtz = T){
 fixed <- function(fixed,gtz = T){
     PM_input$new(fixed,fixed,"fixed",gtz)
 }
+PM_result <- R6Class("PM_result",
+    public <- list(
+        npdata = NULL,
+        pop = NULL,
+        post = NULL,
+        final = NULL,
+        cycle = NULL,
+        op = NULL,
+        cov = NULL,
+        mdata = NULL,
+        errfile = NULL,
+        success = NULL,
+        initialize = function(out){
+            self$npdata <- out$NPdata
+            self$pop <- out$pop
+            self$post <- out$post
+            self$final <- out$final
+            self$cycle <- out$cycle
+            self$op <- out$op
+            self$cov <- out$cov
+            self$mdata <- out$mdata
+            self$errfile <- out$errfile
+            self$success <- out$success
+
+        },
+        plot = function(...){
+            plot.PMfit(self$op,...)
+        }
+    )
+    
+)
 
 #private classes
 #TODO: Should I make these fields private?
@@ -315,64 +346,64 @@ PM_model_julia <- R6Class("PM_model_julia",
 
 # #Examples
 
-simple_model <- PM_model(list(
-  pri=list(
-    Ke=range(0.001,2,gtz=F),
-    V=msd(50, 250)
-  ),
-  out=list(
-    y1=list(
-      "X(1)/V",
-      err=list(
-        model=list(
-          additive=0
-        ),
-        assay=c(0,0.1,0,0)
-      )
-    )
-  )
-))
+# simple_model <- PM_model(list(
+#   pri=list(
+#     Ke=range(0.001,2,gtz=F),
+#     V=msd(50, 250)
+#   ),
+#   out=list(
+#     y1=list(
+#       "X(1)/V",
+#       err=list(
+#         model=list(
+#           additive=0
+#         ),
+#         assay=c(0,0.1,0,0)
+#       )
+#     )
+#   )
+# ))
 
-simple_model$update(list(
-  pri = list(
-    Ke = range(0,1)
-  )
-))
+# simple_model$update(list(
+#   pri = list(
+#     Ke = range(0,1)
+#   )
+# ))
 
 
-full_model <- PM_model(list(
-    pri=list(
-        ke=range(0.001,2),
-        V=range(50, 250),
-        ka=fixed(5),
-        Kcp=range(0.01, 10, gtz=F),
-        Kpc=5
-        # alpha = msd(0,0.3, gtz=F)
-    ),
-    ini= list("X(1)=0",x2="0"),
-    #default gtz=T
-    dif=list(
-        xp1="-ke*X(1)",
-        "XP(2)=ke*X(1)"
-    ),
-    out=list(
-        y1=list(
-            "X(1)/V",
-            err=list(
-                model=list(
-                    additive=0#Y=Y+ASSAY   SD=?  Yobs=Ypred+E1+ASSAY(Yobs)
-                    # proportional=fixed(1)#Y=Y+Y*ASSAY     Yobs=Ypred*(1+E2)+ASSAY(Yobs)
-                    #Combination: Y=Y+ASSAY+Y*ASSAY Yobs=Ypred*(1+E2)+E1+ASSAY(Yobs)
-                ),
-                assay=c(0,0.1,0,0)
-            )
-        ),
-        y2=list(
-            "X(2)/V"
-        ),
-        "Y(3)=X(3)/V"
-    )
-))
+# full_model <- PM_model(list(
+#     pri=list(
+#         ke=range(0.001,2),
+#         V=range(50, 250),
+#         ka=fixed(5),
+#         Kcp=range(0.01, 10, gtz=F),
+#         Kpc=5
+#         # alpha = msd(0,0.3, gtz=F)
+#     ),
+#     ini= list("X(1)=0",x2="0"),
+#     #default gtz=T
+#     dif=list(
+#         xp1="-ke*X(1)",
+#         "XP(2)=ke*X(1)"
+#     ),
+#     out=list(
+#         y1=list(
+#             "X(1)/V",
+#             err=list(
+#                 model=list(
+#                     additive=0#Y=Y+ASSAY   SD=?  Yobs=Ypred+E1+ASSAY(Yobs)
+#                     # proportional=fixed(1)#Y=Y+Y*ASSAY     Yobs=Ypred*(1+E2)+ASSAY(Yobs)
+#                     #Combination: Y=Y+ASSAY+Y*ASSAY Yobs=Ypred*(1+E2)+E1+ASSAY(Yobs)
+#                 ),
+#                 assay=c(0,0.1,0,0)
+#             )
+#         ),
+#         y2=list(
+#             "X(2)/V"
+#         ),
+#         "Y(3)=X(3)/V"
+#     )
+# ))
 #600
 # # # ke=ranges(0.001,2),
 # # # V=meansd(50, 250)
