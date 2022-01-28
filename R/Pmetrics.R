@@ -74,6 +74,21 @@ PM_model <- function(model, ..., julia = F){
 }
 
 #' @export
+additive <- function(add, fixed=F){
+    PM_input$new(add,add,"additive",fixed)
+}
+
+#' @export
+proportional <- function(prop, fixed=F){
+    PM_input$new(prop,prop,"proportional",fixed)
+}
+
+#' @export
+combination <- function(add,prop,fixed=F){
+    PM_input$new(add,prop,"combination",fixed)
+}
+
+#' @export
 range <- function(min,max,gtz = T){
     PM_input$new(min,max,"range",gtz)
 }
@@ -129,10 +144,13 @@ PM_input <- R6Class("PM_Vinput",
         mean=NULL,
         sd=NULL,
         fixed=NULL,
+        fix=NULL,
         param=NULL,
+        additive=NULL,
+        proportional=NULL,
         gtz=T,
         initialize = function(a,b,mode,gtz){
-            stopifnot(mode %in% c("range", "msd", "fixed"))
+            stopifnot(mode %in% c("range", "msd", "fixed", "additive", "proportional", "combination"))
             self$gtz<-gtz
             self$mode <- mode
             if(mode %in% c("range")){
@@ -143,6 +161,17 @@ PM_input <- R6Class("PM_Vinput",
                 self$sd <- b
             } else if(mode == "fixed"){
                 self$fixed<-a
+            } else if(mode == "additive"){
+                self$fix<-gtz
+                self$additive<-a
+            } else if(mode == "proportional"){
+                self$fix<-gtz
+                self$proportional<-a
+            } else if(mode == "combination"){
+                stop(sprintf("Combination error models are not supported yet"))
+                self$fix<-gtz
+                self$additive<-a
+                self$proportional<-b
             }
         },
         print_to = function(mode,engine){
@@ -158,6 +187,18 @@ PM_input <- R6Class("PM_Vinput",
                     }
                 } else if(self$mode == "fixed"){
                     return(sprintf("%f!", self$fixed))
+                } else if(self$mode == "additive"){
+                    if(self$fix){
+                        return(sprintf("L=%f!", self$additive))
+                    } else {
+                        return(sprintf("L=%f", self$additive))
+                    }
+                } else if(self$mode == "proportional"){
+                    if(self$fix){
+                        return(sprintf("G=%f!", self$proportional))
+                    } else {
+                        return(sprintf("G=%f", self$proportional))
+                    }
                 }
             } else if(engine=="rpem"){
                 if(self$mode == "range"){
@@ -174,6 +215,18 @@ PM_input <- R6Class("PM_Vinput",
                     }
                 } else if(self$mode == "fixed"){
                     return(sprintf("%f!", self$fixed))
+                } else if(self$mode == "additive"){
+                    if(self$fix){
+                        return(sprintf("L=%f!", self$additive))
+                    } else {
+                        return(sprintf("L=%f", self$additive))
+                    }
+                } else if(self$mode == "proportional"){
+                    if(self$fix){
+                        return(sprintf("G=%f!", self$proportional))
+                    } else {
+                        return(sprintf("G=%f", self$proportional))
+                    }
                 }
             }
         }
@@ -275,11 +328,12 @@ PM_model_list <- R6Class("PM_model_list",
                     lines<-append(lines,if(nchar(param) == 2){sprintf("%s(%s)=%s",substr(key,1,1),substr(key,2,2),block[[i]][1])}else{sprintf("%s",block[[i]][1])})
                     if(i==1){
                         err_block <- block[[1]]$err
-                        if(names(err_block$model)=="proportional"){
-                            err_lines<-append(err_lines,sprintf("G=%s",if(is.numeric(err_block$model$proportional)){err_block$model$proportional}else{err_block$model$proportional$print_to("ranges",engine)}))
-                        } else if(names(err_block$model)=="additive"){
-                            err_lines<-append(err_lines,sprintf("L=%s",if(is.numeric(err_block$model$additive)){err_block$model$additive}else{err_block$model$additive$print_to("ranges",engine)}))
-                        }
+                        err_lines<-append(err_lines,err_block$model$print_to("ranges",engine))
+                        # if(names(err_block$model)=="proportional"){
+                        #     err_lines<-append(err_lines,sprintf("G=%s",if(is.numeric(err_block$model$proportional)){err_block$model$proportional}else{err_block$model$proportional$print_to("ranges",engine)}))
+                        # } else if(names(err_block$model)=="additive"){
+                        #     err_lines<-append(err_lines,sprintf("L=%s",if(is.numeric(err_block$model$additive)){err_block$model$additive}else{err_block$model$additive$print_to("ranges",engine)}))
+                        # }
                         err_lines<-append(err_lines,sprintf("%f,%f,%f,%f",err_block$assay[1],err_block$assay[2],err_block$assay[3],err_block$assay[4]))
                     }  
                     i<-i+1
@@ -346,23 +400,22 @@ PM_model_julia <- R6Class("PM_model_julia",
 
 # #Examples
 
-# simple_model <- PM_model(list(
-#   pri=list(
-#     Ke=range(0.001,2,gtz=F),
-#     V=msd(50, 250)
-#   ),
-#   out=list(
-#     y1=list(
-#       "X(1)/V",
-#       err=list(
-#         model=list(
-#           additive=0
-#         ),
-#         assay=c(0,0.1,0,0)
-#       )
-#     )
-#   )
-# ))
+
+simple_model <- PM_model(list(
+  pri=list(
+    Ke=range(0.001,2,gtz=F),
+    V=msd(50, 250)
+  ),
+  out=list(
+    y1=list(
+      "X(1)/V",
+      err=list(
+        model= proportional(1,fixed=T),
+        assay=c(0,0.1,0,0)
+      )
+    )
+  )
+))
 
 # simple_model$update(list(
 #   pri = list(
