@@ -1,6 +1,3 @@
-
-library(plotly)
-
 plot.PMfit <- function(x, icen = "median", outeq = 1, pred.type = "post", block = 1, log = F, 
                    marker, linear, loess, reference, include, exclude, mult = 1){
   
