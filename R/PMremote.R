@@ -198,7 +198,7 @@ PMlogout <- function(server_address) {
 .PMremote_registerNewInstallation <- function() {
   if (Sys.getenv("env") != "Development") {
   current_version <- packageVersion("Pmetrics")
-  api_url <-"http://50.18.143.118:4000/api/v0/count"
+  api_url <-"http://34.69.166.25:9000/api/v0/count"
   r <- httr::POST(
       api_url,
       body = list(version = paste0("v", current_version)),
