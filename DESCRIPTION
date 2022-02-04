@@ -49,6 +49,7 @@ Imports:
     utils,
     plotly,
     xtable,
+    readr,
     R6
 Suggests:
     testthat
