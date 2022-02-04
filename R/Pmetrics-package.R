@@ -17,6 +17,7 @@
 #' group_map
 #' @importFrom cubelyr as.tbl_cube
 #' @importFrom foreach %dopar%
+#' @importFrom readr read_file write_file
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon geom_hline
 #' scale_x_log10 scale_x_continuous scale_y_log10 scale_y_continuous xlab ylab
 #' theme ggtitle element_blank geom_segment aes_string aes_string theme_bw
