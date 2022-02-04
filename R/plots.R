@@ -1,17 +1,11 @@
 plot.PMfit <- function(x, icen = "median", outeq = 1, pred.type = "post", block = 1, log = F, 
-                   marker, linear, loess, reference, include, exclude, mult = 1){
+                   marker = list(), linear, loess, reference, include, exclude, mult = 1){
   
   type <- which(inherits(x,c("PMop"))==1)
   
   if(type == 1){ #PMop
-    if(missing(marker)){
-      marker <- list(symbol = "circle", color = "dodgerblue", size = 30, opacity = 0.5)
-    } else {
-      if(is.null(marker$symbol)) marker$symbol = "circle"
-      if(is.null(marker$color)) marker$color = "dodgerblue"
-      if(is.null(marker$size)) marker$size = 30
-      if(is.null(marker$alpha)) marker$opacity = 0.5
-    }
+    default_marker <- list(symbol = "circle", color = "dodgerblue", size = 30, opacity = 0.5)
+    marker <- modifyList(default_marker,marker)
     if(missing(linear)){
       linearMod <- list(plot = F)
     } else {

@@ -17,9 +17,9 @@
 #' group_map
 #' @importFrom cubelyr as.tbl_cube
 #' @importFrom foreach %dopar%
-#' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon 
+#' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon geom_hline
 #' scale_x_log10 scale_x_continuous scale_y_log10 scale_y_continuous xlab ylab
-#' theme ggtitle element_blank
+#' theme ggtitle element_blank geom_segment aes_string aes_string theme_bw
 #' @importFrom purrr map reduce map_chr keep pluck %>% 
 #' @importFrom tibble as_tibble
 #' @importFrom tidyr pivot_longer pivot_wider unnest extract separate fill
@@ -45,7 +45,7 @@
 #' @importFrom base64enc base64decode
 #' @importFrom rlang .data
 #' @importFrom R6 R6Class
-#' @importFrom plotly filter mutate plot_ly add_markers add_lines layout
+#' @importFrom plotly filter mutate plot_ly add_markers add_lines layout ggplotly subplot
 
 NULL
 
