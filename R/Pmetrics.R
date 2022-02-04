@@ -118,20 +118,43 @@ PM_result <- R6Class("PM_result",
             self$npdata <- out$NPdata
             self$pop <- out$pop
             self$post <- out$post
-            self$final <- out$final
-            self$cycle <- out$cycle
-            self$op <- out$op
-            self$cov <- out$cov
+            self$final <- result_block$new(out$final,"final")
+            self$cycle <- result_block$new(out$cycle,"cycle")
+            self$op <- result_block$new(out$op,"op")
+            self$cov <- result_block$new(out$cov,"cov")
             self$mdata <- out$mdata
             self$errfile <- out$errfile
             self$success <- out$success
 
         },
-        plot = function(...){
-            plot.PMfit(self$op,...)
+        plot = function(type,...){
+            self[[type]]$plot(...)
         }
     )
     
+)
+
+result_block <- R6Class("result_block",
+    public <- list(
+        data=NULL,
+        type=NULL,
+        initialize = function(data, type){
+            stopifnot(type %in% c("op", "cov", "cycle", "final"))
+            self$type <- type
+            self$data <- data
+        },
+        plot = function(...){
+            if(self$type == "op"){
+                plot.PMfit(self$data,...)
+            } else if(self$type == "cov"){
+                plot.PMcov(self$data,...)
+            } else if(self$type == "cycle"){
+                plot.PMcycle(self$data,...)
+            } else if(self$type == "final"){
+                plot.PMfinal(self$data, ...)
+            }
+        }
+    )
 )
 
 #private classes
@@ -329,11 +352,6 @@ PM_model_list <- R6Class("PM_model_list",
                     if(i==1){
                         err_block <- block[[1]]$err
                         err_lines<-append(err_lines,err_block$model$print_to("ranges",engine))
-                        # if(names(err_block$model)=="proportional"){
-                        #     err_lines<-append(err_lines,sprintf("G=%s",if(is.numeric(err_block$model$proportional)){err_block$model$proportional}else{err_block$model$proportional$print_to("ranges",engine)}))
-                        # } else if(names(err_block$model)=="additive"){
-                        #     err_lines<-append(err_lines,sprintf("L=%s",if(is.numeric(err_block$model$additive)){err_block$model$additive}else{err_block$model$additive$print_to("ranges",engine)}))
-                        # }
                         err_lines<-append(err_lines,sprintf("%f,%f,%f,%f",err_block$assay[1],err_block$assay[2],err_block$assay[3],err_block$assay[4]))
                     }  
                     i<-i+1

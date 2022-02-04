@@ -31,8 +31,71 @@
 #' @author Michael Neely
 #' @export
 
+PMreport<-function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
+  setwd(wd)
+  if (missing(rdata)) rdata <- makeRdata(wd, remote=F, 1)
+  #get elapsed time if available
+  if (file.exists("time.txt")) {
+    execTime <- readLines("time.txt")
+    OS <- switch(gsub("[[:blank:]]", "", execTime[1]), Unix = 1, Windows = 2, Linux = 3)
+    if (OS == 1 | OS == 3) {
+      elapsed <- difftime(as.POSIXct(execTime[3], format = "%s"), as.POSIXct(execTime[2], format = "%s"))
+    }
+    if (OS == 2) {
+      elapsed <- difftime(as.POSIXct(execTime[3], format = "%T"), as.POSIXct(execTime[2], format = "%T"))
+    }
+  } else { elapsed <- NA }
+  #check for error file
+  errfile <- rdata$errfile
+  # errfile <- list.files(pattern = "^ERROR")
+  error <- length(errfile) > 0
+  # #see if NP_RF or IT_RF made anyway (i.e. is >1MB in size)
+  success <- rdata$success
+  # success <- file.info(c("NP_RF0001.TXT", "IT_RF0001.TXT")[reportType])$size >= 1000
+  if(success){
+    #TODO:create r6 object
+    #Generate plots
+    plot.PMfit(rdata$op, pred.type="pop") %>%
+    plotly::as_widget() %>%
+    htmlwidgets::saveWidget("op_pop.html", libdir = "deps", selfcontained = F)
 
-PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
+    plot.PMfit(rdata$op) %>%
+    plotly::as_widget() %>%
+    htmlwidgets::saveWidget("op_ind.html", libdir = "deps", selfcontained = F)
+
+    plot.PMcycle(rdata$cycle) %>%
+    plotly::as_widget(height="1060px", width="500px") %>%
+    htmlwidgets::saveWidget("cycle.html", libdir = "deps", selfcontained = F)
+
+    plot.PMfinal(rdata$final) %>%
+    plotly::as_widget(final, height="500px", width="1420px") %>%
+    htmlwidgets::saveWidget("final.html", libdir = "deps", selfcontained = F)
+
+    #Edit HTML
+
+    report_file<- paste(path.package("Pmetrics"), "/report/report.html", sep = "")
+    html<-readr::read_file(report_file)
+
+    # html<-gsub("</summary>",paste0("<h2>ERROR REPORT<h2>",errmessage),html)
+    # system(paste0("cp ",report_file," /NPAGreport.html"))
+    readr::write_file(html, "NPAGreport.html")
+
+  } else{
+    error_file<- paste(path.package("Pmetrics"), "/report/error.html", sep = "")
+    html<-readr::read_file(error_file)
+    
+    errmessage <- readLines(errfile)
+    errmessage <- paste(errmessage, collapse = "")
+    errmessage <- gsub("  ", " ", errmessage)
+    errmessage <- sub("^ *", "", errmessage)
+
+    html<-gsub("</summary>",paste0("<h2>ERROR REPORT<h2>",errmessage),html)
+    readr::write_file(html, "NPAGreport.html")
+  }
+
+}
+
+PMreport_old <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   #1 for NPAG, 2 for IT2B, 1 for anything else
   reportType <- switch(type, NPAG = 1, IT2B = 2, 1)
 
@@ -333,7 +396,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
         \\newpage")
 
       TEX("\\section{Summary} \\hyperlink{tableofcontents}{Back to Contents} $\\cdot$ \\hyperlink{cycleinfo}{Next Section}\\newline
- \\newline")
+      \\newline")
 
       TEX(paste("Engine: ", c("NPAG", "IT2B")[reportType], "\\newline", sep = ""))
       TEX(paste("Output file: ", file.path(wd), c("/NP\\_RF0001.TXT", "/IT\\_RF0001.TXT")[reportType], "\\newline", sep = ""))
