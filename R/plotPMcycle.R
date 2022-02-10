@@ -62,7 +62,7 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
     x = x,
     m_two_ll = data$ll[omit:numcycles]
   )
-  p1 <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=m_two_ll)) + ggplot2::geom_line() + ggplot2::geom_point() + ggplot2::ylab("-2 x Log likelihood") + ggplot2::xlab("Cycle") 
+  p1 <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=m_two_ll)) + ggplot2::geom_line() + ggplot2::ylab("-2 x Log likelihood") + ggplot2::xlab("Cycle") 
     #qplot(y=data$ll[omit:numcycles], x=x, geom=c("point", "line"), xlab = "Cycle", ylab = "") + ylab("-2 x Log likelihood")
   
   #axis(1,at=x,labels=cycnum)
@@ -77,7 +77,7 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
   #       x.intersp=0.8,y.intersp=0.8)   
   graph_data$aic <- data$aic[omit:numcycles]
   graph_data$bic <- data$bic[omit:numcycles]
-  p2 <- ggplot2::ggplot(data = graph_data) + ggplot2::geom_line(aes(x = x, y = aic, colour = "aic")) + ggplot2::geom_line(ggplot2::aes(x = x, y = bic, colour = "bic")) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ylab("AIC/BIC") + ggplot2::xlab("Cycle") 
+  p2 <- ggplot2::ggplot(data = graph_data) + ggplot2::geom_line(ggplot2::aes(x = x, y = aic, colour = "aic")) + ggplot2::geom_line(ggplot2::aes(x = x, y = bic, colour = "bic")) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ylab("AIC/BIC") + ggplot2::xlab("Cycle") 
   
   
   #gamma/lambda
@@ -162,12 +162,16 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
   p6 <- purrr::reduce(1:nvar, ~.x + ggplot2::geom_line(ggplot2::aes(x=x, y= median[,.y], colour = data$names[.y])), .init=ggplot2::ggplot(data = graph_data) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ylab("Normalized Median") + ggplot2::xlab("Cycle") )
   
   
-  #close device if necessary
-  if(inherits(out,"list")) dev.off()
-  
-  grid<-plotly::subplot(plotly::ggplotly(p1), plotly::ggplotly(p2), plotly::ggplotly(p3), plotly::ggplotly(p4), plotly::ggplotly(p5), plotly::ggplotly(p6),nrows=3, titleX=T,titleY=T)
-  grid
-  return(grid)
+  # #close device if necessary
+  # if(inherits(out,"list")) dev.off()
+  p<-plotly::subplot(p1, p2, p3, p4, p5, p6,nrows=3, titleX=T,titleY=T, margin=c(0.05,0.05,0,0.05))
+  p$x$layout$showlegend=F
+  p$x$layout$xaxis$title$text=""
+  p$x$layout$xaxis2$title$text=""
+  p$x$layout$xaxis3$title$text=""
+  p$x$layout$xaxis4$title$text=""
+  print(p)
+  return(p)
 }
 
 
