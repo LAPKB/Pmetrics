@@ -90,14 +90,14 @@ plot.PMfinal <- function(x,formula,include,exclude, marker=list(), density=F){
     plots<-list()
     for(param in names(df)[-length(df)]){
       p<-ggplot2::ggplot(data=df)+
-        ggplot2::geom_hline(aes(yintercept=0),color="#00BFC4") +
-        ggplot2::geom_segment(size=0.3,ggplot2::aes_string(param,"prob",xend=param,yend=0),color="#00BFC4")+
-        ggplot2::geom_point(ggplot2::aes_string(param,"prob"),color="#00BFC4") + ggplot2::theme_bw()
+        ggplot2::geom_hline(aes(yintercept=0),color="black") +
+        ggplot2::geom_segment(size=0.3,ggplot2::aes_string(param,"prob",xend=param,yend=0),color="red")+
+        ggplot2::geom_point(ggplot2::aes_string(param,"prob"),color="red") + ggplot2::theme_bw()
 
       if(density){p<-p+ggplot2::geom_density(ggplot2::aes_string(x=param,y="..scaled..*max(df$prob)"))}
       plots<-append(plots,list(plotly::ggplotly(p)))
     }
-    grid<-plotly::subplot(plots, margin=0.05, titleX = T, titleY = T)
+    grid<-plotly::subplot(plots, margin=0.05, titleX = T, titleY = T, nrows=(length(names(df))-1)%/%2)
     grid
     return(grid)
   } 
