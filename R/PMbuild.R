@@ -63,6 +63,7 @@ PMbuild <- function(skipRegistration = F) {
         serialCommand <- sub("<exec>", paste("s", PMfiles$filename[i], ".o -c", sep = ""), compiler[1])
         serialCommand <- sub("<files>", PMfiles$path[i], serialCommand)
       }
+      print(serialCommand)
       serialFortstatus <- suppressWarnings(system(serialCommand, intern = T, ignore.stderr = F))
       if (!is.null(attr(serialFortstatus, "status"))) {
         unlink(switch(OS, "~/.config/Pmetrics",
@@ -74,6 +75,7 @@ PMbuild <- function(skipRegistration = F) {
         # parallel compilation for NPAG only
         parallelCommand <- sub("<exec>", paste("p", PMfiles$filename[i], ".o -c", sep = ""), compiler[2])
         parallelCommand <- sub("<files>", PMfiles$path[i], parallelCommand)
+        print(parallelCommand)
         parallelFortstatus <- suppressWarnings(system(parallelCommand, intern = T, ignore.stderr = F))
         if (!is.null(attr(parallelFortstatus, "status"))) {
           unlink(switch(OS, "~/.config/Pmetrics",
@@ -111,7 +113,7 @@ PMbuild <- function(skipRegistration = F) {
         if (substr(input, 1, 1) == "y") {
           if (.installOrUpdateGfortran()) {
             cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
-            cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
+            cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.\n")
             cat("If the registration time outs, please run PMbuild(skipRegistration=T) ")
             if(skipRegistration == F){
               .PMremote_registerNewInstallation()
@@ -127,7 +129,7 @@ PMbuild <- function(skipRegistration = F) {
         }
       } else {
         cat("Pmetrics has detected gfortran and will compile required binary files.\n")
-        cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
+        cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.\n")
         cat("If the registration time outs, please run PMbuild(skipRegistration=T) ")
         if(skipRegistration == F){
           .PMremote_registerNewInstallation()
