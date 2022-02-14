@@ -40,7 +40,7 @@ summary.PMpta <- function(object,...,ci=0.95){
     pdi$target <- rep(targets,3)
     
     pdi2 <- pdi %>% 
-      pivot_longer(cols=1:4,values_to="pdi",names_to="simnum",names_prefix = "X") %>%
+      pivot_longer(cols=1:2,values_to="pdi",names_to="simnum",names_prefix = "X") %>%
       pivot_wider(id_cols=c("target","simnum"),values_from="pdi",names_from="quantile") %>%
       select(.data$target,.data$simnum,.data$lowerCI,.data$median,.data$upperCI)
   
