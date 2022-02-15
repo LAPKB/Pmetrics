@@ -149,12 +149,13 @@ PMreport<-function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
         coninterp <- " *The run did not converge before the last cycle."
         confor1 <- "<span class=\"alert\">"
         confor2 <- "</span>"
+        html<-gsub("</red>","red",html)
       }
     } else {
       coninterp <- switch(1 + rdata$NPdata$converge, " *The run did not converge before the last cycle.", " - The run converged.", "", " *The run ended with a Hessian Error.")
       confor1 <- switch(1 + rdata$NPdata$converge, "<span class=\"alert\">", "", "", "<span class=\"alert\">")
       confor2 <- switch(1 + rdata$NPdata$converge, "</span>", "", "", "</span>")
-
+      html<-gsub("</red>","red",html)
     }
     if (reportType == 1 && !is.null(rdata$NPdata$prior)) {
       #this will only be for NPAG
@@ -181,8 +182,8 @@ PMreport<-function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
                     "Additional covariates: ", paste(rdata$NPdata$covnames, collapse = ", "), "<br>", extra,"</summary>", sep = ""),html) 
     
 
-    if (rdata$NPdata$negflag) { html<-gsub("</red>","WARNING: There were negative pop/post predictions.<br></summary>",html) }
-    if (!is.na(elapsed)) { html<-gsub("</red>",paste("Elapsed time for this run was", elapsed, attr(elapsed, "units"), "<br></summary>"),html) }
+    if (rdata$NPdata$negflag) { html<-gsub("</summary>","WARNING: There were negative pop/post predictions.<br></summary>",html) }
+    if (!is.na(elapsed)) { html<-gsub("</summary>",paste("Elapsed time for this run was", elapsed, attr(elapsed, "units"), "<br></summary>"),html) }
     
     # system(paste0("cp ",report_file," /NPAGreport.html"))
     readr::write_file(html, "NPAGreport.html")
