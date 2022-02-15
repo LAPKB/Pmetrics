@@ -102,24 +102,27 @@ plot.PMfinal <- function(x,formula,include,exclude,xlab,ylab, marker=list(), den
     return(fig)
   } 
   else { #Bivariate plot
-  data <- x
-  df<-model.frame(formula=formula,data=data$popPoints)
-  df$prob <- data$popPoints[,"prob"]
-  yCol <- as.character(attr(terms(formula),"variables")[2])
-  xCol <- as.character(attr(terms(formula),"variables")[3])
-  if(missing(xlab)) xlab <- xCol
-  if(missing(ylab)) ylab <- yCol
-  fig <- plot_ly(df,
-              x = ~get(xCol),
-              y = ~get(yCol),
-              type = 'scatter',
-              mode = 'markers',
-              marker = list(size = ~get("prob"),
+
+    default_marker <- list(size = ~get("prob"),
                             opacity = 0.5,
-                            sizeref=min(df$prob)/10)) %>% 
-  layout(title = sprintf("%s - %s",ylab,xlab),
-         xaxis=list(title=xlab, showgrid=grid),
-         yaxis=list(title=ylab, showgrid=grid))
+                            sizeref=min(df$prob)/10)
+    marker <- modifyList(default_marker,marker)
+
+    df<-model.frame(formula=formula,data=x$popPoints)
+    df$prob <- x$popPoints[,"prob"]
+    yCol <- as.character(attr(terms(formula),"variables")[2])
+    xCol <- as.character(attr(terms(formula),"variables")[3])
+    if(missing(xlab)) xlab <- xCol
+    if(missing(ylab)) ylab <- yCol
+    fig <- plot_ly(df,
+                x = ~get(xCol),
+                y = ~get(yCol),
+                type = 'scatter',
+                mode = 'markers',
+                marker = marker)  %>% 
+    layout(title = sprintf("%s - %s",ylab,xlab),
+          xaxis=list(title=xlab, showgrid=grid),
+          yaxis=list(title=ylab, showgrid=grid))
     print(fig)
     return(fig)
   }
