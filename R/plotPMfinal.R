@@ -103,10 +103,6 @@ plot.PMfinal <- function(x,formula,include,exclude,xlab,ylab, marker=list(), den
   } 
   else { #Bivariate plot
 
-    default_marker <- list(size = ~get("prob"),
-                            opacity = 0.5,
-                            sizeref=min(df$prob)/10)
-    marker <- modifyList(default_marker,marker)
 
     df<-model.frame(formula=formula,data=x$popPoints)
     df$prob <- x$popPoints[,"prob"]
@@ -119,7 +115,10 @@ plot.PMfinal <- function(x,formula,include,exclude,xlab,ylab, marker=list(), den
                 y = ~get(yCol),
                 type = 'scatter',
                 mode = 'markers',
-                marker = marker)  %>% 
+                text = ~paste("prob: ", prob,"<br>",xCol,get(xCol),"<br>",yCol,get(yCol)),
+                marker = modifyList(list(size = ~get("prob"),
+                            opacity = 0.5,
+                            sizeref=min(df$prob)/10),marker))  %>% 
     layout(title = sprintf("%s - %s",ylab,xlab),
           xaxis=list(title=xlab, showgrid=grid),
           yaxis=list(title=ylab, showgrid=grid))
