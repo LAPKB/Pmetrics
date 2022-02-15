@@ -83,7 +83,7 @@
 
 
 
-plot.PMfinal <- function(x,formula,include,exclude, marker=list(), density=F){
+plot.PMfinal <- function(x,formula,include,exclude,xlab,ylab, marker=list(), density=F, grid=T){
 
   if(missing(formula)){ #Univariate plot
     df <- data.frame(x$popPoints)
@@ -97,13 +97,32 @@ plot.PMfinal <- function(x,formula,include,exclude, marker=list(), density=F){
       if(density){p<-p+ggplot2::geom_density(ggplot2::aes_string(x=param,y="..scaled..*max(df$prob)"))}
       plots<-append(plots,list(plotly::ggplotly(p)))
     }
-    grid<-plotly::subplot(plots, margin=0.05, titleX = T, titleY = T, nrows=(length(names(df))-1)%/%2)
-    grid
-    return(grid)
+    fig<-plotly::subplot(plots, margin=0.05, titleX = T, titleY = T, nrows=(length(names(df))-1)%/%2)
+    fig
+    return(fig)
   } 
-  # else { #Bivariate plot
-
-  # }
+  else { #Bivariate plot
+  data <- r11$final$data
+  df<-model.frame(formula=formula,data=data$popPoints)
+  df$prob <- data$popPoints[,"prob"]
+    yCol <- as.character(attr(terms(formula),"variables")[2])
+    xCol <- as.character(attr(terms(formula),"variables")[3])
+    if(missing(xlab)) xlab <- xCol
+    if(missing(ylab)) ylab <- yCol
+    fig <- plot_ly(df,
+               x = ~get(xCol),
+               y = ~get(yCol),
+               type = 'scatter',
+               mode = 'markers',
+               marker = list(size = ~get("prob"),
+                             opacity = 0.5,
+                             sizeref=min(df$prob)/nrow(df))) %>% 
+  layout(title = sprintf("%s - %s",yCol,xCol),
+         xaxis=list(title=xCol, showgrid=grid),
+         yaxis=list(title=yCol, showgrid=grid))
+    print(fig)
+    return(fig)
+  }
 }
 
 # plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref,alpha.ref=0.5,pch,cex,lwd,lwd.ref,density=F,scale=20,bg,standard=F,
