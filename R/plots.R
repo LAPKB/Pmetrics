@@ -28,6 +28,7 @@ plot.PMfit <- function(x, icen = "median", outeq = 1, pred.type = "post", block 
     sub1 <- x %>%
       plotly::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block,
              id %in% include, !id %in% exclude) %>%
+             filter(!is.na(obs)) %>%
       plotly::mutate(pred = pred* mult, obs = obs * mult)
     
     
