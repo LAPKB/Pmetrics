@@ -63,6 +63,7 @@ PMbuild <- function(skipRegistration = F) {
         serialCommand <- sub("<exec>", paste("s", PMfiles$filename[i], ".o -c", sep = ""), compiler[1])
         serialCommand <- sub("<files>", PMfiles$path[i], serialCommand)
       }
+      print(serialCommand)
       serialFortstatus <- suppressWarnings(system(serialCommand, intern = T, ignore.stderr = F))
       if (!is.null(attr(serialFortstatus, "status"))) {
         unlink(switch(OS, "~/.config/Pmetrics",
