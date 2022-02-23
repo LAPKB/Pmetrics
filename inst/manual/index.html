@@ -5,29 +5,29 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Pmetrics User Manual</title>
-  <meta name="description" content="<p>This is the manual for the Pmetrics population modeling and simulation
-package for R.</p>" />
+  <meta name="description" content="This is the manual for the Pmetrics population modeling and simulation
+package for R." />
   <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Pmetrics User Manual" />
   <meta property="og:type" content="book" />
   
   
-  <meta property="og:description" content="<p>This is the manual for the Pmetrics population modeling and simulation
-package for R.</p>" />
+  <meta property="og:description" content="This is the manual for the Pmetrics population modeling and simulation
+package for R." />
   
 
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Pmetrics User Manual" />
   
-  <meta name="twitter:description" content="<p>This is the manual for the Pmetrics population modeling and simulation
-package for R.</p>" />
+  <meta name="twitter:description" content="This is the manual for the Pmetrics population modeling and simulation
+package for R." />
   
 
 <meta name="author" content="LAPKB" />
 
 
-<meta name="date" content="2022-02-11" />
+<meta name="date" content="2022-02-23" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -36,7 +36,6 @@ package for R.</p>" />
   
 
 <link rel="next" href="introduction.html"/>
-<script src="libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -59,27 +58,25 @@ package for R.</p>" />
 
 
 <style type="text/css">
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode { white-space: pre; position: relative; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
 }
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
+    border: none; pointer-events: all; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -88,9 +85,9 @@ pre.numberSource code > span > a:first-child::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {   }
+  {  }
 @media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+a.sourceLine::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -140,15 +137,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><a href="./">A Minimal Book Example</a></li>
 
 <li class="divider"></li>
-<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Preface</a>
-<ul>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Preface</a><ul>
 <li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#a-brief-history"><i class="fa fa-check"></i><b>1.1</b> A brief history</a></li>
 <li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#people"><i class="fa fa-check"></i><b>1.2</b> People</a></li>
 <li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#citing-pmetrics"><i class="fa fa-check"></i><b>1.3</b> Citing Pmetrics</a></li>
 <li class="chapter" data-level="1.4" data-path="index.html"><a href="index.html#donate"><i class="fa fa-check"></i><b>1.4</b> Donate</a></li>
 </ul></li>
-<li class="chapter" data-level="2" data-path="introduction.html"><a href="introduction.html"><i class="fa fa-check"></i><b>2</b> Introduction</a>
-<ul>
+<li class="chapter" data-level="2" data-path="introduction.html"><a href="introduction.html"><i class="fa fa-check"></i><b>2</b> Introduction</a><ul>
 <li class="chapter" data-level="2.1" data-path="introduction.html"><a href="introduction.html#r6-architecture"><i class="fa fa-check"></i><b>2.1</b> R6 architecture</a></li>
 <li class="chapter" data-level="2.2" data-path="introduction.html"><a href="introduction.html#disclaimer"><i class="fa fa-check"></i><b>2.2</b> Disclaimer</a></li>
 <li class="chapter" data-level="2.3" data-path="introduction.html"><a href="introduction.html#system-requirements-and-installation"><i class="fa fa-check"></i><b>2.3</b> System Requirements and Installation</a></li>
@@ -156,11 +151,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="2.5" data-path="introduction.html"><a href="introduction.html#getting-help-and-updates"><i class="fa fa-check"></i><b>2.5</b> Getting Help and Updates</a></li>
 <li class="chapter" data-level="2.6" data-path="introduction.html"><a href="introduction.html#customizing-pmetrics-options"><i class="fa fa-check"></i><b>2.6</b> Customizing Pmetrics Options</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html"><i class="fa fa-check"></i><b>3</b> Pmetrics Overview</a>
-<ul>
+<li class="chapter" data-level="3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html"><i class="fa fa-check"></i><b>3</b> Pmetrics Overview</a><ul>
 <li class="chapter" data-level="3.1" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#software-engines"><i class="fa fa-check"></i><b>3.1</b> Software engines</a></li>
-<li class="chapter" data-level="3.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#pmetrics-control-functions"><i class="fa fa-check"></i><b>3.2</b> Pmetrics control functions</a>
-<ul>
+<li class="chapter" data-level="3.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#pmetrics-control-functions"><i class="fa fa-check"></i><b>3.2</b> Pmetrics control functions</a><ul>
 <li class="chapter" data-level="3.2.1" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#run-functions"><i class="fa fa-check"></i><b>3.2.1</b> Run functions</a></li>
 <li class="chapter" data-level="3.2.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#parse-functions"><i class="fa fa-check"></i><b>3.2.2</b> Parse functions</a></li>
 <li class="chapter" data-level="3.2.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#saving-and-loading-functions"><i class="fa fa-check"></i><b>3.2.3</b> Saving and loading functions</a></li>
@@ -169,15 +162,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="3.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#data-manipulation-functions"><i class="fa fa-check"></i><b>3.3</b> Data manipulation functions</a></li>
 </ul></li>
 <li class="chapter" data-level="4" data-path="general-workflow.html"><a href="general-workflow.html"><i class="fa fa-check"></i><b>4</b> General Workflow</a></li>
-<li class="chapter" data-level="5" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html"><i class="fa fa-check"></i><b>5</b> Pmetrics Input Files</a>
-<ul>
-<li class="chapter" data-level="5.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#data.csv-files"><i class="fa fa-check"></i><b>5.1</b> Data.csv Files</a>
-<ul>
+<li class="chapter" data-level="5" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html"><i class="fa fa-check"></i><b>5</b> Pmetrics Input Files</a><ul>
+<li class="chapter" data-level="5.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#data.csv-files"><i class="fa fa-check"></i><b>5.1</b> Data.csv Files</a><ul>
 <li class="chapter" data-level="5.1.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#data-file-format"><i class="fa fa-check"></i><b>5.1.1</b> Data file format</a></li>
 <li class="chapter" data-level="5.1.2" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#manipulation-of-csv-files"><i class="fa fa-check"></i><b>5.1.2</b> Manipulation of CSV files</a></li>
 </ul></li>
-<li class="chapter" data-level="5.2" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#specifying-models-in-r6"><i class="fa fa-check"></i><b>5.2</b> Specifying Models in R6</a>
-<ul>
+<li class="chapter" data-level="5.2" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#specifying-models-in-r6"><i class="fa fa-check"></i><b>5.2</b> Specifying Models in R6</a><ul>
 <li class="chapter" data-level="5.2.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#priR6"><i class="fa fa-check"></i><b>5.2.1</b> PRImary variables</a></li>
 <li class="chapter" data-level="5.2.2" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#covR6"><i class="fa fa-check"></i><b>5.2.2</b> COVariates</a></li>
 <li class="chapter" data-level="5.2.3" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#secR6"><i class="fa fa-check"></i><b>5.2.3</b> SECondary variables</a></li>
@@ -187,8 +177,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.2.7" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#lagR6"><i class="fa fa-check"></i><b>5.2.7</b> LAG time</a></li>
 <li class="chapter" data-level="5.2.8" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#outR6"><i class="fa fa-check"></i><b>5.2.8</b> OUTputs</a></li>
 </ul></li>
-<li class="chapter" data-level="5.3" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#specifying-models-in-legacy"><i class="fa fa-check"></i><b>5.3</b> Specifying Models in Legacy</a>
-<ul>
+<li class="chapter" data-level="5.3" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#specifying-models-in-legacy"><i class="fa fa-check"></i><b>5.3</b> Specifying Models in Legacy</a><ul>
 <li class="chapter" data-level="5.3.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#pri"><i class="fa fa-check"></i><b>5.3.1</b> Primary variables</a></li>
 <li class="chapter" data-level="5.3.2" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#cov"><i class="fa fa-check"></i><b>5.3.2</b> Covariates</a></li>
 <li class="chapter" data-level="5.3.3" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#sec"><i class="fa fa-check"></i><b>5.3.3</b> Secondary variables</a></li>
@@ -205,11 +194,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.3.14" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#brief-fortran-tutorial"><i class="fa fa-check"></i><b>5.3.14</b> Brief Fortran Tutorial</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="6" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html"><i class="fa fa-check"></i><b>6</b> How to use R and Pmetrics</a>
-<ul>
+<li class="chapter" data-level="6" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html"><i class="fa fa-check"></i><b>6</b> How to use R and Pmetrics</a><ul>
 <li class="chapter" data-level="6.1" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#setting-up-a-pmetrics-project"><i class="fa fa-check"></i><b>6.1</b> Setting up a Pmetrics project</a></li>
-<li class="chapter" data-level="6.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#getting-the-required-inputs-to-run-pmetrics"><i class="fa fa-check"></i><b>6.2</b> Getting the required inputs to run Pmetrics</a>
-<ul>
+<li class="chapter" data-level="6.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#getting-the-required-inputs-to-run-pmetrics"><i class="fa fa-check"></i><b>6.2</b> Getting the required inputs to run Pmetrics</a><ul>
 <li class="chapter" data-level="6.2.1" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#r6"><i class="fa fa-check"></i><b>6.2.1</b> R6</a></li>
 <li class="chapter" data-level="6.2.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#legacy"><i class="fa fa-check"></i><b>6.2.2</b> Legacy</a></li>
 </ul></li>
@@ -240,20 +227,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="header">
 <h1 class="title">Pmetrics User Manual</h1>
 <p class="author"><em>LAPKB</em></p>
-<p class="date"><em>2022-02-11</em></p>
+<p class="date"><em>2022-02-23</em></p>
 </div>
-<div id="preface" class="section level1" number="1">
+<div id="preface" class="section level1">
 <h1><span class="header-section-number">Chapter 1</span> Preface</h1>
 <p>This is the manual for Pmetrics, a population modeling and simulation package for R.</p>
 <p>Pmetrics is the result of years of labor from many people. It was created by the Laboratory of Applied Pharmacokinetics and Bioinformatics (LAPKB).</p>
-<div id="a-brief-history" class="section level2" number="1.1">
+<div id="a-brief-history" class="section level2">
 <h2><span class="header-section-number">1.1</span> A brief history</h2>
 <p>LAPKB, established in 1973 as LAPK by Roger Jelliffe, MD, has been continually associated with the University of Southern California and the USC Keck School of Medicine. Since 2012, it has been housed under the Saban Research Institute at Children’s Hospital Los Angeles (CHLA).</p>
 <p>Since its inception, LAPKB has been a pharmacometric resource for optimal study and control of pharmacokinetic/pharmacodynamic systems and for individualized drug therapy and personalized medicine. It has been continually supported by grants, including from The National Institute for General Medical Studies (NIGMS), National Institute of Biomedical Imagining and Bioengineering (NIBIB), the Eunice Kennedy Shriver National Institute of Child Health and Human Development (NICHD), the US Food and Drug Administration (FDA), and by the Stella Slutzky Kunin Memorial Research Fund.</p>
 <p>The laboratory has employed physicians, pharmacists, engineers, statisticians, and mathematicians. LAPKB has special strengths in nonparametric statistical methods, optimal stochastic control, optimal design of pharmacokinetic experiments and clinical trials, and practical application of tools for optimal clinical therapy.</p>
 <p>The laboratory also seeks collaborative relationships to further the understanding and development of this field of Clinical Pharmacology. These collaborations may take the form of clinical trials and evaluations of therapeutic methods or of development and software implementation of new concepts. Educational opportunities in the form of workshops and visiting scholars are available to physicians, pharmacists, engineers, mathematicians, and other investigators.</p>
 </div>
-<div id="people" class="section level2" number="1.2">
+<div id="people" class="section level2">
 <h2><span class="header-section-number">1.2</span> People</h2>
 <p>This is not an exhaustive list by any means, but highlights some individuals who have made exceptional contributions to the lab.</p>
 <ul>
@@ -269,12 +256,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>Michael Neely, MD - current leader of the lab, physician and dabbler in statistics. He wrote all of the original Pmetrics package and continues to write to this day, in addition to all the other jobs associate with Principle Investigator and Chief of the Division of Infectious Diseases at CHLA.</li>
 </ul>
 </div>
-<div id="citing-pmetrics" class="section level2" number="1.3">
+<div id="citing-pmetrics" class="section level2">
 <h2><span class="header-section-number">1.3</span> Citing Pmetrics</h2>
 <p>Please help us maintain our funding to provide Pmetrics as a free
 research tool to the pharmacometric community. If you use Pmetrics in a
 publication, you can cite it as below.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="index.html#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">citation</span>(<span class="st">&quot;Pmetrics&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">citation</span>(<span class="st">&quot;Pmetrics&quot;</span>)</a></code></pre></div>
 <pre><code>## 
 ## To cite package &#39;Pmetrics&#39; in publications use:
 ## 
@@ -295,10 +282,18 @@ publication, you can cite it as below.</p>
 ##     pages = {467-476},
 ##   }</code></pre>
 </div>
-<div id="donate" class="section level2" number="1.4">
+<div id="donate" class="section level2">
 <h2><span class="header-section-number">1.4</span> Donate</h2>
 <p>If you appreciate the enormous work to develop and maintain Pmetrics,
-please consider a <a href="https://www.paypal.com/donate?token=3aF-w2c7Dw35BWYefFIX1QUD9j7Uu2J3KGkmh7vWF_A8ifjKc8E1Bp05NmDCH__6GwB49bXYOp_tKNpw">donation</a>.</p>
+please consider a donation.</p>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="5QPCGE2M68SGL">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0"
+  name="submit" title="PayPal - The safer, easier way to pay online!"
+  alt="Donate with PayPal button">
+<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
 
 </div>
 </div>
