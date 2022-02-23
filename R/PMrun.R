@@ -77,7 +77,7 @@
       file.copy(from = paste("..", data, "inputs", datafileName, sep = "/"), to = getwd())
       data <- datafileName
     } else { endNicely(paste("\nNo RF file found in ", data, "/outputs folder to extract matrix data filename.\n", sep = ""), model, data = -99) }
-  } else {
+  } else if (is.character(data)) {
     #data name was a file
     #make sure data file name is <=8 characters
     if (!FileNameOK(data)) { endNicely(paste("Data file name must be 8 characters or fewer.\n"), model, data = -99) }
@@ -89,12 +89,19 @@
     }
     file.copy(from = paste("../", data, sep = ""), to = getwd()) #copy found file to new folder
     file.remove(paste("../", data, sep = "")) #erase the found file in parent folder
+  } else if(is.data.frame(data)){
+    dataFile <- data
+    data<-"gendata.csv"
+    PMwriteMatrix(dataFile,data)
+  } else {
+    endNicely(sprintf("%s not recognized as a valid data type", typeof(data)))
   }
 
 
 
   #get information from datafile
-  dataFile <- PMreadMatrix(data, quiet = T)
+  if(!is.data.frame(data)){dataFile <- PMreadMatrix(data, quiet = T)}
+  
 
   #check for errors in data if nocheck=F
   if (!nocheck) {
