@@ -396,6 +396,7 @@ PM_model_list <- R6Class("PM_model_list",
                          ),
                          private = list(
                            write_block = function(lines, key, block, engine){
+                             if(key=="fa"){key<-"f"}
                              lines<-append(lines,sprintf("#%s", key))
                              if(key == "pri"){
                                i<-1
