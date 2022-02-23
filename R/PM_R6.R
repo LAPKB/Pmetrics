@@ -23,10 +23,13 @@ PM_fit <- R6Class("PM_fit",
                     #' in the current working directory
                     
                     initialize = function(data=data, model=model, ...){
-                      stopifnot(is.character(data), length(data) == 1)
-                      private$data = data
-                      private$model <- if(inherits(model, "PM_Vmodel")) model else PM_model(model, ...)
-                      stopifnot(inherits(private$model, "PM_Vmodel"))
+                      if(is.character(data)){data = PM_data$new(data)}
+                      if(is.character(model)){model = PM_model(model, ...)}
+                      stopifnot(inherits(data,"PM_data"))
+                      stopifnot(inherits(model, "PM_Vmodel"))
+                      private$data <- data
+                      private$model <- model 
+                      
                     },
                     
                     #' @description Fit the model to the data
@@ -35,13 +38,13 @@ PM_fit <- R6Class("PM_fit",
                   
                     run = function(..., engine="npag"){
                       if (inherits(private$model, "PM_model_legacy")) {
-                        cat(sprintf("Runing Legacy: %s-%s\n", private$data, private$model$name))
-                        Pmetrics::NPrun(private$model$legacy_file_path, private$data, ...)
+                        cat(sprintf("Runing Legacy"))
+                        Pmetrics::NPrun(private$model$legacy_file_path, private$data$data, ...)
                       } else if(inherits(private$model, "PM_model_list")) {
                         engine = tolower(engine)
                         model_path <-private$model$write_model_file(engine)
                         cat(sprintf("Creating model file at: %s\n", model_path))
-                        Pmetrics::NPrun(model_path, private$data, ...)
+                        Pmetrics::NPrun(model_path, private$data$data, ...)
                         
                       } else if(inherits(private$model, "PM_model_julia")){
                         cat(sprintf("Runing Julia: %s-%s\n", private$data, private$model$name))
@@ -56,6 +59,12 @@ PM_fit <- R6Class("PM_fit",
                                      private$model$error[3],
                                      private$model$n_theta0)
                         )
+                      }
+                    },
+                    check = function(){
+                      if (inherits(private$model, "PM_model_legacy")) {
+                        cat(sprintf("Runing Legacy\n"))
+                        Pmetrics::PMcheck(private$data$data,private$model$legacy_file_path)
                       }
                     }
                   ),
@@ -120,6 +129,26 @@ msd <- function(mean,sd,gtz = T){
 fixed <- function(fixed,gtz = T){
   PM_input$new(fixed,fixed,"fixed",gtz)
 }
+#' @export
+PM_data <- R6Class("PM_data",
+                    public <- list(
+                      #' @field dataframe representing the data to be modeled
+                      data = NULL,
+
+                      initialize = function(file_path="data.csv"){
+                        self$data <- PMreadMatrix(file_path, quiet=T)
+                      },
+
+                      check = function(){
+                        PMcheck(data=self$data)
+                      },
+
+                      write = function(file_name){
+                        PMwriteMatrix(self$data, file_name)
+                      }
+                    )
+)
+
 
 #' R6 object containing the results of a Pmetrics run
 #' 
