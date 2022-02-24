@@ -408,7 +408,7 @@ PM_model_list <- R6Class("PM_model_list",
                                         })
                                  i<-i+1
                                }
-                             } else if(key %in% c("cov", "sec", "bol", "f", "lag", "extra")){
+                             } else if(key %in% c("cov", "sec", "bol", "lag", "extra")){
                                for(out in block){
                                  lines<-append(lines,out)
                                }
@@ -424,7 +424,7 @@ PM_model_list <- R6Class("PM_model_list",
                                               }else{
                                                 stop(sprintf("Error: Unsupported key named: %s", key))
                                               })                               }
-                             } else if(key == "dif"){
+                             } else if(key %in% c("dif","f")){
                                names<-names(block)
                                for(i in 1:length(block)){
                                  key<-toupper(names[i])
@@ -437,8 +437,6 @@ PM_model_list <- R6Class("PM_model_list",
                                                 stop(sprintf("Error: Unsupported key named: %s", key))
                                               })
                                }
-                             } else if(key == "f"){
-                               
                              } else if (key == "out"){
                                i <- 1 # keep track of the first outeq
                                err_lines = c("#err")
