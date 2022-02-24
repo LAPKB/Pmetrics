@@ -42,7 +42,7 @@ PM_fit <- R6Class("PM_fit",
                         Pmetrics::NPrun(private$model$legacy_file_path, private$data$data, ...)
                       } else if(inherits(private$model, "PM_model_list")) {
                         engine = tolower(engine)
-                        model_path <-private$model$write_model_file(engine)
+                        model_path <-private$model$write_model_file(engine=engine)
                         cat(sprintf("Creating model file at: %s\n", model_path))
                         Pmetrics::NPrun(model_path, private$data$data, ...)
                         
@@ -373,9 +373,8 @@ PM_model_list <- R6Class("PM_model_list",
                              
                              self$model_list = model_list
                            }, 
-                           write_model_file = function(engine="npag"){
-                             engine <- tolower(engine)
-                             model_path <- "genmodel.txt"
+                           write_model_file = function(model_path="genmodel.txt",engine="npag"){
+                             engine <- tolower(engine) 
                              keys <- names(self$model_list)
                              lines <- c()
                              for(i in 1:length(keys)){
@@ -401,7 +400,12 @@ PM_model_list <- R6Class("PM_model_list",
                              if(key == "pri"){
                                i<-1
                                for(param in names(block)){
-                                 lines<-append(lines,if(is.numeric(block[[i]])){sprintf("%s, %f", param, block[[i]])}else{sprintf("%s, %s", param, block[[i]]$print_to("ranges",engine))})
+                                 lines<-append(lines,
+                                        if(is.numeric(block[[i]])){
+                                          sprintf("%s, %f", param, block[[i]])  
+                                        }else{
+                                          sprintf("%s, %s", param, block[[i]]$print_to("ranges",engine))
+                                        })
                                  i<-i+1
                                }
                              } else if(key %in% c("cov", "sec", "bol", "f", "lag", "extra")){
@@ -409,28 +413,44 @@ PM_model_list <- R6Class("PM_model_list",
                                  lines<-append(lines,out)
                                }
                              } else if(key == "ini"){
-                               i <- 1
-                               for(param in names(block)){
-                                 stopifnot(nchar(param)==2 || nchar(param) == 0)
-                                 key<-toupper(names(block)[i])
-                                 lines<-append(lines,if(nchar(param) == 2){sprintf("%s(%s)=%s",substr(key,1,1),substr(key,2,2),block[[i]][1])}else{sprintf("%s",block[[i]][1])})
-                                 i<-i+1
-                               }
+                               names<-names(block)
+                               for(i in 1:length(block)){
+                                 key<-toupper(names[i])
+                                 lines<-append(lines,
+                                              if(is.null(names[i]) || nchar(names[i])==0){
+                                                sprintf("%s",block[[i]][1])
+                                              }else if(nchar(names[i]) == 2){
+                                                sprintf("%s(%s)=%s",substr(key,1,1),substr(key,2,2),block[[i]][1])
+                                              }else{
+                                                stop(sprintf("Error: Unsupported key named: %s", key))
+                                              })                               }
                              } else if(key == "dif"){
-                               i <- 1
-                               for(param in names(block)){
-                                 stopifnot(nchar(param)==3 || nchar(param) == 0)
-                                 key<-toupper(names(block)[i])
-                                 lines<-append(lines,if(nchar(param) == 3){sprintf("%s(%s)=%s",substr(key,1,2),substr(key,3,3),block[[i]][1])}else{sprintf("%s",block[[i]][1])})
-                                 i<-i+1
+                               names<-names(block)
+                               for(i in 1:length(block)){
+                                 key<-toupper(names[i])
+                                 lines<-append(lines,
+                                              if(is.null(names[i]) || nchar(names[i])==0){
+                                                sprintf("%s",block[[i]][1])
+                                              }else if(nchar(names[i]) == 3){
+                                                sprintf("%s(%s)=%s",substr(key,1,2),substr(key,3,3),block[[i]][1])
+                                              }else{
+                                                stop(sprintf("Error: Unsupported key named: %s", key))
+                                              })
                                }
+                             } else if(key == "f"){
+                               
                              } else if (key == "out"){
                                i <- 1 # keep track of the first outeq
                                err_lines = c("#err")
                                for(param in names(block)){
                                  stopifnot(nchar(param)==2 || nchar(param) == 0)
                                  key<-toupper(names(block)[i])
-                                 lines<-append(lines,if(nchar(param) == 2){sprintf("%s(%s)=%s",substr(key,1,1),substr(key,2,2),block[[i]][1])}else{sprintf("%s",block[[i]][1])})
+                                 lines<-append(lines,
+                                              if(nchar(param) == 2){
+                                                sprintf("%s(%s)=%s",substr(key,1,1),substr(key,2,2),block[[i]][1])
+                                              }else{
+                                                sprintf("%s",block[[i]][1])
+                                              })
                                  if(i==1){
                                    err_block <- block[[1]]$err
                                    err_lines<-append(err_lines,err_block$model$print_to("ranges",engine))
