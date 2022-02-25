@@ -408,9 +408,22 @@ PM_model_list <- R6Class("PM_model_list",
                                         })
                                  i<-i+1
                                }
-                             } else if(key %in% c("cov", "sec", "bol", "lag", "extra")){
-                               for(out in block){
-                                 lines<-append(lines,out)
+                             } else if(key %in% c("cov","bol", "lag", "extra")){
+                               stopifnot(is.null(names(block)))
+                               for(i in 1:length(block)){
+                                 lines<-append(lines,sprintf("%s",block[[i]]))
+                               }
+                             } else if(key %in% c("sec")){
+                               names<-names(block)
+                               for(i in 1:length(block)){
+                                 key<-toupper(names[i])
+                                 lines<-append(lines,
+                                              if(is.null(names[i]) || nchar(names[i])==0){
+                                                sprintf("%s",block[[i]])
+                                              } else {
+                                                sprintf("%s=%s",key,block[[i]][1])
+                                              }     
+                                 )
                                }
                              } else if(key == "ini"){
                                names<-names(block)
