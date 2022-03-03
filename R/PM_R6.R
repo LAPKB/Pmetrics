@@ -174,7 +174,7 @@ PM_result <- R6Class("PM_result",
                        errfile = NULL,
                        #' @field success Boolean if successful run
                        success = NULL,
-                       #' @field valid If \code \link makeValid has been executed after a run, this object will be added to 
+                       #' @field valid If \code{\link{makeValid}} has been executed after a run, this object will be added to 
                        #' the save data.  It contains the information required to plot visual predictive checks and normalized prediction
                        #' error discrepancies via the npde code developed by Comets et al
                        valid = NULL,
