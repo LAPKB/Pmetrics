@@ -145,6 +145,10 @@ PM_data <- R6Class("PM_data",
 
                       write = function(file_name){
                         PMwriteMatrix(self$data, file_name)
+                      },
+                      
+                      print = function(){
+                        View(self$data)
                       }
                     )
 )
