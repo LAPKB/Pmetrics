@@ -148,7 +148,7 @@ PM_data <- R6Class("PM_data",
                       },
                       
                       print = function(){
-                        View(self$data)
+                        View(self$data) #self$getinstancename?
                       },
                       
                       summary = function(formula,FUN,include,exclude){
@@ -237,7 +237,7 @@ PM_data <- R6Class("PM_data",
                         }
                         cat(paste(paste(rep("-",75),collapse=""),"\nNote: See help(summary.PMmatrix) for accessing specific items by name.\n",sep=""))
                         
-                        #return(results)
+                        return(results)
                         
                         
                         
@@ -308,9 +308,11 @@ PM_result <- R6Class("PM_result",
                        plot = function(type,...){
                          self[[type]]$plot(...)
                        }
-                     )
+                       
+                      
+                     ) #end public
                      
-)
+) #end PM_result
 
 result_block <- R6Class("result_block",
                         public <- list(
@@ -330,6 +332,15 @@ result_block <- R6Class("result_block",
                               plot.PMcycle(self$data,...)
                             } else if(self$type == "final"){
                               plot.PMfinal(self$data, ...)
+                            }
+                          },
+                          summary = function(...){
+                            if(self$type == "op"){
+                              summary.PMop(self$data,...)
+                            } else if(self$type == "cov"){
+                              summary.PMcov(self$data,...)
+                            } else if(self$type == "final"){
+                              summary.PMfinal(self$data, ...)
                             }
                           }
                         )
