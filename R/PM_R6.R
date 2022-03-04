@@ -7,6 +7,9 @@
 
 #may need to separate out error model as separate, e.g. need data, model, error to run
 
+# PM_fit ------------------------------------------------------------------
+
+
 #' Object to define and run models/data in Pmetrics
 #' 
 #' @export
@@ -75,6 +78,10 @@ PM_fit <- R6Class("PM_fit",
                   )
 )
 
+
+# PM_model ----------------------------------------------------------------
+
+
 #Factory pattern
 #' @export
 PM_model <- function(model, ..., julia = F){
@@ -129,6 +136,11 @@ msd <- function(mean,sd,gtz = T){
 fixed <- function(fixed,gtz = T){
   PM_input$new(fixed,fixed,"fixed",gtz)
 }
+
+
+# PM_data -----------------------------------------------------------------
+
+
 #' @export
 PM_data <- R6Class("PM_data",
                     public <- list(
@@ -190,53 +202,7 @@ PM_data <- R6Class("PM_data",
                           results$formula <- aggregate(formula,object,FUN,...)
                         }
                         
-                        #print results
-                        
-                        cat(paste("\nNumber of subjects:",results$nsub,"\n"))
-                        cat(paste("Number of inputs:",results$ndrug,"\n"))
-                        cat(paste("Number of outputs:",results$numeqt,"\n"))
-                        for(i in 1:results$numeqt){
-                          cat(paste("Total number of observations (outeq ",i,"): ",results$nobsXouteq[i],", with ",results$missObsXouteq[i]," (",sprintf("%.3f",results$missObsXouteq[i]/results$nobsXouteq[i]),"%) missing\n",sep=""))
-                          
-                        }
-                        cat(paste("Number of covariates:",results$ncov,"\n"))
-                        cat(paste("\nTHE FOLLOWING ARE MEAN (SD), MIN TO MAX\n",paste(rep("-",75),collapse=""),"\n",sep=""))
-                        cat("\nINPUTS\n")
-                        for(i in 1:results$ndrug){
-                          if(results$ndrug==1){
-                            cat(paste("Number of doses per subject (input ",i,"): ",sprintf("%.3f",mean(results$ndoseXid,na.rm=T))," (",sprintf("%.3f",sd(results$ndoseXid,na.rm=T)),"), ",sprintf("%.3f",min(results$ndoseXid,na.rm=T))," to ",sprintf("%.3f",max(results$ndoseXid,na.rm=T)),"\n",sep=""))
-                            cat(paste("Dose per subject (input ",i,"): ",sprintf("%.3f",mean(unlist(results$doseXid),na.rm=T))," (",sprintf("%.3f",sd(unlist(results$doseXid),na.rm=T)),"), ",sprintf("%.3f",min(unlist(results$doseXid),na.rm=T))," to ",sprintf("%.3f",max(unlist(results$doseXid),na.rm=T)),"\n",sep=""))
-                          } else {
-                            cat(paste("Number of doses per subject (input ",i,"): ",sprintf("%.3f",mean(results$ndoseXid[,i],na.rm=T))," (",sprintf("%.3f",sd(results$ndoseXid[,i],na.rm=T)),"), ",sprintf("%.3f",min(results$ndoseXid[,i],na.rm=T))," to ",sprintf("%.3f",max(results$ndoseXid[,i],na.rm=T)),"\n",sep=""))
-                            cat(paste("Dose (input ",i,"): ",sprintf("%.3f",mean(unlist(results$doseXid[,i]),na.rm=T))," (",sprintf("%.3f",sd(unlist(results$doseXid[,i]),na.rm=T)),"), ",sprintf("%.3f",min(unlist(results$doseXid[,i]),na.rm=T))," to ",sprintf("%.3f",max(unlist(results$doseXid[,i]),na.rm=T)),"\n",sep=""))
-                          }
-                        }
-                        cat("\nOUTPUTS\n")
-                        for(i in 1:results$numeqt){
-                          if(results$numeqt==1){
-                            nobs <- unlist(results$nobsXid)
-                            obs <- unlist(results$obsXid)
-                          } else {
-                            nobs <- unlist(results$nobsXid[,i])
-                            obs <- unlist(results$obsXid[,i])
-                          }
-                          obs <- obs[obs!=-99]
-                          cat(paste("Number of obs per subject (outeq ",i,"): ",sprintf("%.3f",mean(nobs,na.rm=T))," (",sprintf("%.3f",sd(nobs,na.rm=T)),"), ",sprintf("%.3f",min(nobs,na.rm=T))," to ",sprintf("%.3f",max(nobs,na.rm=T)),"\n",sep=""))
-                          cat(paste("Observation per subject (outeq ",i,"): ",sprintf("%.3f",mean(obs,na.rm=T))," (",sprintf("%.3f",sd(obs,na.rm=T)),"), ",sprintf("%.3f",min(obs,na.rm=T))," to ",sprintf("%.3f",max(obs,na.rm=T)),"\n",sep=""))
-                        }
-                        if(results$ncov>0){
-                          cat("\nCOVARIATES\n")
-                          for(i in 1:results$ncov){
-                            cat(paste(results$covnames[i],": ",sprintf("%.3f",mean(unlist(results$cov[[i]]),na.rm=T))," (",sprintf("%.3f",sd(unlist(results$cov[[i]]),na.rm=T)),"), ",sprintf("%.3f",min(unlist(results$cov[[i]]),na.rm=T))," to ",sprintf("%.3f",max(unlist(results$cov[[i]]),na.rm=T)),"\n",sep=""))
-                          }
-                        }
-                        
-                        if(!is.null(results$formula)){
-                          cat(paste("\nFormula\n",paste(rep("-",75),collapse=""),"\n",sep=""))
-                          print(results$formula)
-                        }
-                        cat(paste(paste(rep("-",75),collapse=""),"\nNote: See help(summary.PMmatrix) for accessing specific items by name.\n",sep=""))
-                        
+                        class(results) <- c("summary.PMmatrix","list")
                         return(results)
                         
                         
