@@ -63,7 +63,3 @@ PMupdate <- function(...){
   cat("\nPMupdate is deprecated. Please restart Rstudio and do not load Pmetrics.  Then use the command devtools::install_github(\"LAPKB/Pmetrics\")")
 }
 
-#' @export
-PMload <- function(...){
-  cat("\nPMload is deprecated. Use PM_load, which creates a PM_result R6 object.\n")
-}
