@@ -135,8 +135,8 @@ PM_data <- R6Class("PM_data",
                       #' @field dataframe representing the data to be modeled
                       data = NULL,
 
-                      initialize = function(file_path="data.csv"){
-                        self$data <- PMreadMatrix(file_path, quiet=T)
+                      initialize = function(file_path="data.csv", data=NULL){
+                        self$data <- if(is.null(data)){PMreadMatrix(file_path, quiet=T)}else{data}
                       },
 
                       check = function(){
