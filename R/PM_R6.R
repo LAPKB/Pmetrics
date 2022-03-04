@@ -307,6 +307,15 @@ PM_result <- R6Class("PM_result",
                        
                        plot = function(type,...){
                          self[[type]]$plot(...)
+                       },
+                       
+                       #' @description 
+                       #' Summary generic function based on type
+                       #' @param type Type of summary based on class of object
+                       #' @param \dots Summary-specific arguments
+                       
+                       summary = function(type,...){
+                         self[[type]]$summary(...)
                        }
                        
                       
