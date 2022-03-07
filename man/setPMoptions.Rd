@@ -21,7 +21,9 @@ The user preferences file will be updated.  This will persist from session to se
 Set user options for Pmetrics
 }
 \details{
-This function will set user options for Pmetrics.
+This function will set user options for Pmetrics. When the package is first installed,
+it will obtain the user's locale from system information and set the appropriate
+language.
 }
 \author{
 Michael Neely
