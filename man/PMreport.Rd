@@ -33,8 +33,8 @@ mean, standard deviation, coefficient of variation, variance, and median}
 two observed vs. predicted plots: population and individual Bayesian posterior predictions (see \code{\link{plot.PMop}})}
 \item{opx.png }{One or more thumnails of the observed vs. predicted plots for the .html file}
 \item{NPAGout.Rdata or IT2Bout.Rdata }{An R data file containing the output of \code{\link{NPparse}} or \code{\link{ITparse}}, \code{\link{makeFinal}},
-\code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}}, \code{\link{makePop}}, \code{\link{makePost}}, and 
-the data file for the run read by \code{\link{PMreadMatrix}}.  
+\code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}}, \code{\link{makePop}}, \code{\link{makePost}}, and
+the data file for the run read by \code{\link{PMreadMatrix}}.
 This file can be loaded using \code{\link{PMload}}.}
 }
 \description{
