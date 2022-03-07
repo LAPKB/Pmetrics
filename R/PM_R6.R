@@ -325,10 +325,10 @@ PM_result <- R6Class(
     op = NULL,
     #' @field cov Data frame of subject ID, covariate values, and Bayesian posterior parameter estimates
     cov = NULL,
-    #' @field mdata \link{PM_data} object representing the original .csv data file used in the run
-    mdata = NULL,
-    #' @field mmodel text string representing the original model file used in the run
-    mmodel = NULL,
+    #' @field data \link{PM_data} object representing the original .csv data file used in the run
+    data = NULL,
+    #' @field model text string representing the original model file used in the run
+    model = NULL,
     #' @field errfile Name of error file if it exists
     errfile = NULL,
     #' @field success Boolean if successful run
@@ -354,8 +354,8 @@ PM_result <- R6Class(
       self$cycle <- result_block$new(out$cycle, "cycle")
       self$op <- result_block$new(out$op, "op")
       self$cov <- result_block$new(out$cov, "cov")
-      self$mdata <- PM_data$new(data = out$mdata)
-      self$mmodel <- out$mmodel
+      self$data <- PM_data$new(data = out$data)
+      self$model <- out$model
       self$errfile <- out$errfile
       self$success <- out$success
     },
@@ -675,9 +675,12 @@ PM_model_legacy <- R6Class("PM_model_legacy",
   inherit = PM_Vmodel,
   public = list(
     legacy_file_path = NULL,
+    content = NULL,
+    name = NULL,
     initialize = function(model_path) {
       self$name <- basename(model_path)[1]
       self$legacy_file_path <- model_path
+      self$content <- readChar(model_path, file.info(model_path)$size)
     },
     print = function() {}
   )
