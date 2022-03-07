@@ -38,7 +38,7 @@ PM_load <- function(run = 1, ..., remote = F, server_address) {
     if (remote) { #only look on server
       status = .remoteLoad(thisrun, server_address)
       if (status == "finished") {
-        result <- .splitOut(NPAGout)
+        result <- output2List(NPAGout)
       } else {
         sprintf("Warning: Remote run #%d has not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
         cat()
@@ -46,14 +46,14 @@ PM_load <- function(run = 1, ..., remote = F, server_address) {
     } else if (file.exists(outfile)) { #remote F, so look locally
       # load(outfile, .GlobalEnv)
       load(outfile)
-      result <-.splitOut(get("NPAGout"))
+      result <-output2List(get("NPAGout"))
     } else {
       #check for IT2B output file
       filename <- "IT2Bout.Rdata"
       outfile <- paste(thisrun, "outputs", filename, sep = "/")
       if (file.exists(outfile)) {
         load(outfile)
-        result<-.splitOut(get("IT2Bout"))
+        result<-output2List(get("IT2Bout"))
       } else {
         cat(paste(outfile, " not found in ", getwd(), "/", thisrun, "/outputs or ", getwd(), ".\n", sep = ""))
         return(invisible(F)) #error, abort
@@ -68,7 +68,7 @@ PM_load <- function(run = 1, ..., remote = F, server_address) {
 
 }
 
-.splitOut <- function(Out) {
+output2List <- function(Out) {
   result<-list()
   for (i in 1:length(names(Out))) {
     aux_list <- list(Out[[i]])
@@ -76,30 +76,6 @@ PM_load <- function(run = 1, ..., remote = F, server_address) {
     result <- append(result,aux_list)
   }
   result
-}
-
-.remoteLoad <- function(run, server_address) {
-  status = ""
-  rid <- .getRemoteId(run)
-  status = .PMremote_check(rid = rid, server_address = server_address)
-  if (status == "finished") {
-    sprintf("Remote run #%d finished successfuly.\n", run) %>%
-        cat()
-    .PMremote_outdata(run, server_address)
-
-  }
-  return(status)
-}
-
-.getRemoteId <- function(run) {
-  run <- toString(run)
-  fileName <- paste(run, "inputs", "id.txt", sep = "/")
-  if (file.exists(fileName)) {
-    return(readChar(fileName, file.info(fileName)$size) %>% gsub("\n", "", .data))
-  } else {
-    stop(sprintf("File id.txt not found in /%s/outputs.\n", run))
-    return(NULL)
-  }
 }
 
 #' Loads all the data from an \emph{NPAG} or \emph{IT2B} run

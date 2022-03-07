@@ -144,58 +144,36 @@ fixed <- function(fixed,gtz = T){
 #' @export
 PM_data <- R6Class("PM_data",
                    public <- list(
-                     #' @field data frame containing the data to be modeled
+                     #' @field dataframe representing the data to be modeled
                      data = NULL,
-                     #' @field data frame containing standardized version of the data
-                     standard_data = NULL,
                      
-                     #' @description 
-                     #' Create new data object 
-                     #' @details 
-                     #' Creation of a new \code{PM_data} objects from a file or
-                     #' a data frame. Data will be standardized and checked
-                     #' automatically to a fully specified, valid data object.
-                     #' @param data A quoted name of a file with full path if not
-                     #' in the working directory, or an unquoted name of a data frame
-                     #' in the current R environment.
-                     initialize = function(data){
-                       self$data <- if(is.character(data)){
-                         PMreadMatrix(file, quiet=T)
-                       } else {
-                         data
-                         }
-                       self$standard_data <- private$validate(self$data)
-
+                     initialize = function(file_path="data.csv", data=NULL){
+                       self$data <- if(is.null(data)){PMreadMatrix(file_path, quiet=T)}else{data}
+                     },
+                     
+                     check = function(){
+                       PMcheck(data=self$data)
                      },
                      
                      write = function(file_name){
                        PMwriteMatrix(self$data, file_name)
                      },
                      
-                     print = function(standard = F, viewer = T){
-                       if(standard) {
-                         what <- self$standard_data 
-                         title <- "Standardized Data" 
-                       } else {
-                         what <- self$data
-                         title <- "Data"
-                       }
-                       if(viewer) {
-                         View(what, title = title)
-                       } else {
-                         print(what)
-                       } 
+                     print = function(){
+                       View(self$data) #self$getinstancename?
                      },
                      
                      summary = function(formula,FUN,include,exclude){
+                       
                        object <- self$data
+                       
                        #filter data if needed
                        if(!missing(include)){
                          object <- subset(object,sub("[[:space:]]+","",as.character(object$id)) %in% as.character(include))
-                       }
+                       } 
                        if(!missing(exclude)){
                          object <- subset(object,!sub("[[:space:]]+","",as.character(object$id)) %in% as.character(exclude))
-                       }
+                       } 
                        
                        #make results list
                        results <- list()
@@ -227,92 +205,12 @@ PM_data <- R6Class("PM_data",
                        class(results) <- c("summary.PMmatrix","list")
                        return(results)
                        
+                       
+                       
                      } #end summary function
                      
-                   ), #end public
-                   
-                   private = list(
-                     
-                     dataObj = NULL,
-                     
-                     validate = function(dataObj = NULL){
-                       
-                       dataNames <- names(dataObj)
-                       standardNames <- getFixedColNames()
-                       
-                       covNames <- dataNames[!dataNames %in% standardNames]
-                       if("date" %in% covNames){
-                         covNames <- covNames[-which(covNames == "date")]
-                       }
-                       
-                       mandatory <- c("id", "time", "dose", "out")
-                       missingMandatory <- sapply(mandatory, function(x) !x %in% dataNames)
-                       if(any(missingMandatory)){stop(paste0("Your data are missing these mandatory columns: ",mandatory[missingMandatory]))}
-                       
-                       msg <- c("DATA STANDARDIZATION REPORT:\n\n","Data are in full format already.\n")
-                       
-                       if(!"evid" %in% dataNames){
-                         dataObj$evid <- ifelse(is.na(dataObj$dose),0,1)
-                         msg <- c(msg, "EVID inferred as 0 for observations, 1 for doses.\n")
-                       }
-                       
-                       if("date" %in% dataNames){
-                         
-                         relTime <- PMmatrixRelTime(dataObj)
-                         dataObj$time <- relTime$relTime
-                         dataObj <- dataObj %>% select(-date)
-                         msg <- c(msg, "Dates and clock times converted to relative decimal times.\n")
-                       }
-                       
-                       if(!"dur" %in% dataNames){
-                         dataObj$dur <- ifelse(is.na(dataObj$dose),NA,0)
-                         msg <- c(msg, "All doses assumed to be oral (DUR = 0).\n")
-                       }
-                       
-                       if(!"addl" %in% dataNames){
-                         dataObj$addl <- NA
-                         msg <- c(msg, "ADDL set to missing for all records.\n")
-                       }
-                       
-                       if(!"ii" %in% dataNames){
-                         dataObj$ii <- NA
-                         msg <- c(msg, "II set to missing for all records.\n")
-                       }
-                       
-                       if(!"input" %in% dataNames){
-                         dataObj$input <- ifelse(is.na(dataObj$dose),NA,1)
-                         msg <- c(msg, "All doses assumed to be INPUT = 1.\n")
-                       }
-                       
-                       if(!"outeq" %in% dataNames){
-                         dataObj$outeq <- ifelse(is.na(dataObj$out),NA,1)
-                         msg <- c(msg, "All observations assumed to be OUTEQ = 1.\n")
-                       }
-                       
-                       errorCoef <- c("c0", "c1", "c2", "c3")
-                       missingError <- sapply(errorCoef, function(x) !x %in% dataNames)
-                       if(any(missingError)){
-                         dataObj$c0 <- dataObj$c1 <- dataObj$c2 <- dataObj$c3 <- NA
-                         msg <- c(msg, "One or more error coefficients not specified. Error in model object will be used.\n")
-                       }
-                       
-                       dataObj <- dataObj %>% select(standardNames, all_of(covNames))
-                       if(length(msg)>2){msg <- msg[-2]} #data were not in standard format, so remove that message
-                       cat(msg)
-                       
-                       validData <- PMcheck(data = dataObj, fix = T)
-                       return(validData)
-
-                       
-                     } #end validate function
-                   ) #end private 
-                   
-                   
-) #end PM_data
-
-
-# PM_result ---------------------------------------------------------------
-
+                   )
+)
 
 
 #' R6 object containing the results of a Pmetrics run
@@ -333,8 +231,10 @@ PM_result <- R6Class("PM_result",
                        op = NULL,
                        #' @field cov Data frame of subject ID, covariate values, and Bayesian posterior parameter estimates
                        cov = NULL,
-                       #' @field mdata The original .csv data file used in the run
+                       #' @field mdata \link{PM_data} object representing the original .csv data file used in the run
                        mdata = NULL,
+                       #' @field mmodel text string representing the original model file used in the run
+                       mmodel = NULL,
                        #' @field errfile Name of error file if it exists
                        errfile = NULL,
                        #' @field success Boolean if successful run
@@ -360,9 +260,12 @@ PM_result <- R6Class("PM_result",
                          self$cycle <- result_block$new(out$cycle,"cycle")
                          self$op <- result_block$new(out$op,"op")
                          self$cov <- result_block$new(out$cov,"cov")
-                         self$mdata <- out$mdata
+                         self$mdata <- PM_data$new(data=out$mdata)
+                         self$mmodel <- out$mmodel
                          self$errfile <- out$errfile
                          self$success <- out$success
+                         
+                         
                          
                        },
                        
@@ -385,8 +288,7 @@ PM_result <- R6Class("PM_result",
                        }
                        
                        
-                     ) #end public
-                     
+                     ) #end public                  
 ) #end PM_result
 
 result_block <- R6Class("result_block",
@@ -715,21 +617,21 @@ PM_model_julia <- R6Class("PM_model_julia",
 # #Examples
 
 
-simple_model <- PM_model(list(
-  pri=list(
-    Ke=range(0.001,2,gtz=F),
-    V=msd(50, 250)
-  ),
-  out=list(
-    y1=list(
-      "X(1)/V",
-      err=list(
-        model= proportional(1,fixed=T),
-        assay=c(0,0.1,0,0)
-      )
-    )
-  )
-))
+# simple_model <- PM_model(list(
+#   pri=list(
+#     Ke=range(0.001,2,gtz=F),
+#     V=msd(50, 250)
+#   ),
+#   out=list(
+#     y1=list(
+#       "X(1)/V",
+#       err=list(
+#         model= proportional(1,fixed=T),
+#         assay=c(0,0.1,0,0)
+#       )
+#     )
+#   )
+# ))
 
 # simple_model$update(list(
 #   pri = list(
@@ -894,7 +796,4 @@ simple_model <- PM_model(list(
 # #         u0 = 20 / v
 # #         return((f, u0))
 # #     end")
-
-
-
 
