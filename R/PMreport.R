@@ -233,7 +233,10 @@ makeRdata <- function(wd, remote, reportType = 1) {
     if (PMdata$mdata != "NA") { mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T) } else { mdata <- NA }
     cov <- suppressWarnings(tryCatch(makeCov(PMdata), error = function(e) { e <- NULL; cat("\nWARNING: error in extraction of covariate-parameter data; 'PMcov' object not saved.\n\n") }))
     if (PMdata$mdata != "NA") { mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T) } else { mdata <- NA }
-
+    mmodel <-list.files("../inputs") %>%
+      .[grepl(".txt", ., fixed = TRUE)] %>%
+      paste0("../inputs/",.)%>%
+      readChar(., file.info(.)$size)
     cat(paste("\n\n\nSaving R data objects to ", wd, "......\n\n", sep = ""))
     cat("\nUse PMload() to load them.\n")
     cat("\nThe following objects have been saved:\n")
@@ -248,7 +251,7 @@ makeRdata <- function(wd, remote, reportType = 1) {
 
 
     if (reportType == 1) {
-      NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata, errfile = errfile, success = success)
+      NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, mdata = mdata, mmodel=mmodel, errfile = errfile, success = success)
       save(NPAGout, file = "NPAGout.Rdata")
       #Hacky return to deal with Rservex bug T.T
       if (remote) {
