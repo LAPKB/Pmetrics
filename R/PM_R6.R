@@ -375,148 +375,9 @@ PM_data <- R6Class("PM_data",
 
 # PM_result ---------------------------------------------------------------
 
-public <- list(
-  #' @field dataframe representing the data to be modeled
-  data = NULL,
-  
-  initialize = function(file_path="data.csv", data=NULL){
-    self$data <- if(is.null(data)){PMreadMatrix(file_path, quiet=T)}else{data}
-  },
-  
-  check = function(){
-    PMcheck(data=self$data)
-  },
-  
-  write = function(file_name){
-    PMwriteMatrix(self$data, file_name)
-  },
-  
-  print = function(){
-    View(self$data) #self$getinstancename?
-  },
-  
-  summary = function(formula,FUN,include,exclude){
-    
-    object <- self$data
-    
-    #filter data if needed
-    if(!missing(include)){
-      object <- subset(object,sub("[[:space:]]+","",as.character(object$id)) %in% as.character(include))
-    } 
-    if(!missing(exclude)){
-      object <- subset(object,!sub("[[:space:]]+","",as.character(object$id)) %in% as.character(exclude))
-    } 
-    
-    #make results list
-    results <- list()
-    idOrder <- rank(unique(object$id))
-    
-    results$nsub <- length(unique(object$id))
-    results$ndrug <- max(object$input,na.rm=T)
-    results$numeqt <- max(object$outeq,na.rm=T)
-    results$nobsXouteq <- tapply(object$evid,object$outeq,function(x) length(x==0))
-    results$missObsXouteq <- by(object,object$outeq,function(x) length(x$out[x$evid==0 & x$out==-99] ))
-    covinfo <- getCov(object)
-    ncov <- covinfo$ncov
-    results$ncov <- ncov
-    results$covnames <- covinfo$covnames
-    results$ndoseXid <- tapply(object$evid,list(object$id,object$input),function(x) length(x!=0))[idOrder,]
-    results$nobsXid <- tapply(object$evid,list(object$id,object$outeq),function(x) length(x==0))[idOrder,]
-    results$doseXid <- tapply(object$dose,list(object$id,object$input),function(x) x[!is.na(x)])[idOrder,]
-    results$obsXid <- tapply(object$out,list(object$id,object$outeq),function(x) x[!is.na(x)])[idOrder,]
-    if(ncov>0){
-      #get each subject's covariate values
-      results$cov <- lapply(1:ncov,function(y) tapply(object[[covinfo$covstart+y-1]],object$id,
-                                                      function(z) z[!is.na(z)])[idOrder])
-      names(results$cov) <- covinfo$covnames
-    }
-    if(!missing(formula)){
-      results$formula <- aggregate(formula,object,FUN,...)
-    }
-    
-    class(results) <- c("summary.PMmatrix","list")
-    return(results)
-    
-    
-    
-  } #end summary function
-  
-)
-)
-
-
 #' R6 object containing the results of a Pmetrics run
 #' 
 PM_result <- R6Class("PM_result",
-                     public <- list(
-                       #' @field npdata List with all output from NPAG
-                       npdata = NULL,
-                       #' @field pop  NPAG only: Population predictions for each output equation
-                       pop = NULL,
-                       #' @field post  NPAG only: Individual posterior predictions for each output equation
-                       post = NULL,
-                       #' @field final Final cycle population support points and parameter summary statistics
-                       final = NULL,
-                       #' @field cycle Cycle log-likelihood, AIC, BIC, Gamma/lambda, and normalized parameter means, medians and SDs
-                       cycle = NULL,
-                       #' @field op List of observed vs. population and posterior predicted plots for each output equation
-                       op = NULL,
-                       #' @field cov Data frame of subject ID, covariate values, and Bayesian posterior parameter estimates
-                       cov = NULL,
-                       #' @field mdata The original .csv data file used in the run
-                       mdata = NULL,
-                       #' @field errfile Name of error file if it exists
-                       errfile = NULL,
-                       #' @field success Boolean if successful run
-                       success = NULL,
-                       #' @field valid If \code{\link{makeValid}} has been executed after a run, this object will be added to 
-                       #' the save data.  It contains the information required to plot visual predictive checks and normalized prediction
-                       #' error discrepancies via the npde code developed by Comets et al
-                       valid = NULL,
-                       
-                       #' @description 
-                       #' Create new object populated with data from previous run
-                       #' @details 
-                       #' Creation of new \code{PM_result} objects is via  
-                       #' \code{\link{PM_load}} 
-                       #' @param out The parsed output from \code{\link{PM_load}}
-                       
-                       
-                       initialize = function(out){
-                         self$npdata <- out$NPdata
-                         self$pop <- out$pop
-                         self$post <- out$post
-                         self$final <- result_block$new(out$final,"final")
-                         self$cycle <- result_block$new(out$cycle,"cycle")
-                         self$op <- result_block$new(out$op,"op")
-                         self$cov <- result_block$new(out$cov,"cov")
-                         self$mdata <- out$mdata
-                         self$errfile <- out$errfile
-                         self$success <- out$success
-                         
-                       },
-                       
-                       #' @description 
-                       #' Plot generic function based on type
-                       #' @param type Type of plot based on class of object
-                       #' @param \dots Plot-specific arguments
-                       
-                       plot = function(type,...){
-                         self[[type]]$plot(...)
-                       },
-                       
-                       #' @description 
-                       #' Summary generic function based on type
-                       #' @param type Type of summary based on class of object
-                       #' @param \dots Summary-specific arguments
-                       
-                       summary = function(type,...){
-                         self[[type]]$summary(...)
-                       }
-                       
-                       
-                     ) #end public
-                     
                      public <- list(
                        #' @field npdata List with all output from NPAG
                        npdata = NULL,
@@ -565,9 +426,7 @@ PM_result <- R6Class("PM_result",
                          self$mmodel <- out$mmodel
                          self$errfile <- out$errfile
                          self$success <- out$success
-                         
-                         
-                         
+
                        },
                        
                        #' @description 
