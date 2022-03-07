@@ -38,7 +38,7 @@ PM_fit <- R6Class("PM_fit",
                     #' @description Fit the model to the data
                     #' @param engine Currently only npag.
                     #' @param \dots Other arguments passed to \code{\link{NPrun}}
-                  
+                    
                     run = function(..., engine="npag"){
                       if (inherits(private$model, "PM_model_legacy")) {
                         cat(sprintf("Runing Legacy"))
@@ -143,74 +143,176 @@ fixed <- function(fixed,gtz = T){
 
 #' @export
 PM_data <- R6Class("PM_data",
-                    public <- list(
-                      #' @field dataframe representing the data to be modeled
-                      data = NULL,
+                   public <- list(
+                     #' @field data frame containing the data to be modeled
+                     data = NULL,
+                     #' @field data frame containing standardized version of the data
+                     standard_data = NULL,
+                     
+                     #' @description 
+                     #' Create new data object 
+                     #' @details 
+                     #' Creation of a new \code{PM_data} objects from a file or
+                     #' a data frame. Data will be standardized and checked
+                     #' automatically to a fully specified, valid data object.
+                     #' @param data A quoted name of a file with full path if not
+                     #' in the working directory, or an unquoted name of a data frame
+                     #' in the current R environment.
+                     initialize = function(data){
+                       self$data <- if(is.character(data)){
+                         PMreadMatrix(file, quiet=T)
+                       } else {
+                         data
+                         }
+                       self$standard_data <- private$validate(self$data)
 
-                      initialize = function(file_path="data.csv", data=NULL){
-                        self$data <- if(is.null(data)){PMreadMatrix(file_path, quiet=T)}else{data}
-                      },
+                     },
+                     
+                     write = function(file_name){
+                       PMwriteMatrix(self$data, file_name)
+                     },
+                     
+                     print = function(standard = F, viewer = T){
+                       if(standard) {
+                         what <- self$standard_data 
+                         title <- "Standardized Data" 
+                       } else {
+                         what <- self$data
+                         title <- "Data"
+                       }
+                       if(viewer) {
+                         View(what, title = title)
+                       } else {
+                         print(what)
+                       } 
+                     },
+                     
+                     summary = function(formula,FUN,include,exclude){
+                       object <- self$data
+                       #filter data if needed
+                       if(!missing(include)){
+                         object <- subset(object,sub("[[:space:]]+","",as.character(object$id)) %in% as.character(include))
+                       }
+                       if(!missing(exclude)){
+                         object <- subset(object,!sub("[[:space:]]+","",as.character(object$id)) %in% as.character(exclude))
+                       }
+                       
+                       #make results list
+                       results <- list()
+                       idOrder <- rank(unique(object$id))
+                       
+                       results$nsub <- length(unique(object$id))
+                       results$ndrug <- max(object$input,na.rm=T)
+                       results$numeqt <- max(object$outeq,na.rm=T)
+                       results$nobsXouteq <- tapply(object$evid,object$outeq,function(x) length(x==0))
+                       results$missObsXouteq <- by(object,object$outeq,function(x) length(x$out[x$evid==0 & x$out==-99] ))
+                       covinfo <- getCov(object)
+                       ncov <- covinfo$ncov
+                       results$ncov <- ncov
+                       results$covnames <- covinfo$covnames
+                       results$ndoseXid <- tapply(object$evid,list(object$id,object$input),function(x) length(x!=0))[idOrder,]
+                       results$nobsXid <- tapply(object$evid,list(object$id,object$outeq),function(x) length(x==0))[idOrder,]
+                       results$doseXid <- tapply(object$dose,list(object$id,object$input),function(x) x[!is.na(x)])[idOrder,]
+                       results$obsXid <- tapply(object$out,list(object$id,object$outeq),function(x) x[!is.na(x)])[idOrder,]
+                       if(ncov>0){
+                         #get each subject's covariate values
+                         results$cov <- lapply(1:ncov,function(y) tapply(object[[covinfo$covstart+y-1]],object$id,
+                                                                         function(z) z[!is.na(z)])[idOrder])
+                         names(results$cov) <- covinfo$covnames
+                       }
+                       if(!missing(formula)){
+                         results$formula <- aggregate(formula,object,FUN,...)
+                       }
+                       
+                       class(results) <- c("summary.PMmatrix","list")
+                       return(results)
+                       
+                     } #end summary function
+                     
+                   ), #end public
+                   
+                   private = list(
+                     
+                     dataObj = NULL,
+                     
+                     validate = function(dataObj = NULL){
+                       
+                       dataNames <- names(dataObj)
+                       standardNames <- getFixedColNames()
+                       
+                       covNames <- dataNames[!dataNames %in% standardNames]
+                       if("date" %in% covNames){
+                         covNames <- covNames[-which(covNames == "date")]
+                       }
+                       
+                       mandatory <- c("id", "time", "dose", "out")
+                       missingMandatory <- sapply(mandatory, function(x) !x %in% dataNames)
+                       if(any(missingMandatory)){stop(paste0("Your data are missing these mandatory columns: ",mandatory[missingMandatory]))}
+                       
+                       msg <- c("DATA STANDARDIZATION REPORT:\n\n","Data are in full format already.\n")
+                       
+                       if(!"evid" %in% dataNames){
+                         dataObj$evid <- ifelse(is.na(dataObj$dose),0,1)
+                         msg <- c(msg, "EVID inferred as 0 for observations, 1 for doses.\n")
+                       }
+                       
+                       if("date" %in% dataNames){
+                         
+                         relTime <- PMmatrixRelTime(dataObj)
+                         dataObj$time <- relTime$relTime
+                         dataObj <- dataObj %>% select(-date)
+                         msg <- c(msg, "Dates and clock times converted to relative decimal times.\n")
+                       }
+                       
+                       if(!"dur" %in% dataNames){
+                         dataObj$dur <- ifelse(is.na(dataObj$dose),NA,0)
+                         msg <- c(msg, "All doses assumed to be oral (DUR = 0).\n")
+                       }
+                       
+                       if(!"addl" %in% dataNames){
+                         dataObj$addl <- NA
+                         msg <- c(msg, "ADDL set to missing for all records.\n")
+                       }
+                       
+                       if(!"ii" %in% dataNames){
+                         dataObj$ii <- NA
+                         msg <- c(msg, "II set to missing for all records.\n")
+                       }
+                       
+                       if(!"input" %in% dataNames){
+                         dataObj$input <- ifelse(is.na(dataObj$dose),NA,1)
+                         msg <- c(msg, "All doses assumed to be INPUT = 1.\n")
+                       }
+                       
+                       if(!"outeq" %in% dataNames){
+                         dataObj$outeq <- ifelse(is.na(dataObj$out),NA,1)
+                         msg <- c(msg, "All observations assumed to be OUTEQ = 1.\n")
+                       }
+                       
+                       errorCoef <- c("c0", "c1", "c2", "c3")
+                       missingError <- sapply(errorCoef, function(x) !x %in% dataNames)
+                       if(any(missingError)){
+                         dataObj$c0 <- dataObj$c1 <- dataObj$c2 <- dataObj$c3 <- NA
+                         msg <- c(msg, "One or more error coefficients not specified. Error in model object will be used.\n")
+                       }
+                       
+                       dataObj <- dataObj %>% select(standardNames, all_of(covNames))
+                       if(length(msg)>2){msg <- msg[-2]} #data were not in standard format, so remove that message
+                       cat(msg)
+                       
+                       validData <- PMcheck(data = dataObj, fix = T)
+                       return(validData)
 
-                      check = function(){
-                        PMcheck(data=self$data)
-                      },
+                       
+                     } #end validate function
+                   ) #end private 
+                   
+                   
+) #end PM_data
 
-                      write = function(file_name){
-                        PMwriteMatrix(self$data, file_name)
-                      },
-                      
-                      print = function(){
-                        View(self$data) #self$getinstancename?
-                      },
-                      
-                      summary = function(formula,FUN,include,exclude){
-                        
-                        object <- self$data
-                        
-                        #filter data if needed
-                        if(!missing(include)){
-                          object <- subset(object,sub("[[:space:]]+","",as.character(object$id)) %in% as.character(include))
-                        } 
-                        if(!missing(exclude)){
-                          object <- subset(object,!sub("[[:space:]]+","",as.character(object$id)) %in% as.character(exclude))
-                        } 
-                        
-                        #make results list
-                        results <- list()
-                        idOrder <- rank(unique(object$id))
-                        
-                        results$nsub <- length(unique(object$id))
-                        results$ndrug <- max(object$input,na.rm=T)
-                        results$numeqt <- max(object$outeq,na.rm=T)
-                        results$nobsXouteq <- tapply(object$evid,object$outeq,function(x) length(x==0))
-                        results$missObsXouteq <- by(object,object$outeq,function(x) length(x$out[x$evid==0 & x$out==-99] ))
-                        covinfo <- getCov(object)
-                        ncov <- covinfo$ncov
-                        results$ncov <- ncov
-                        results$covnames <- covinfo$covnames
-                        results$ndoseXid <- tapply(object$evid,list(object$id,object$input),function(x) length(x!=0))[idOrder,]
-                        results$nobsXid <- tapply(object$evid,list(object$id,object$outeq),function(x) length(x==0))[idOrder,]
-                        results$doseXid <- tapply(object$dose,list(object$id,object$input),function(x) x[!is.na(x)])[idOrder,]
-                        results$obsXid <- tapply(object$out,list(object$id,object$outeq),function(x) x[!is.na(x)])[idOrder,]
-                        if(ncov>0){
-                          #get each subject's covariate values
-                          results$cov <- lapply(1:ncov,function(y) tapply(object[[covinfo$covstart+y-1]],object$id,
-                                                                          function(z) z[!is.na(z)])[idOrder])
-                          names(results$cov) <- covinfo$covnames
-                        }
-                        if(!missing(formula)){
-                          results$formula <- aggregate(formula,object,FUN,...)
-                        }
-                        
-                        class(results) <- c("summary.PMmatrix","list")
-                        return(results)
-                        
-                        
-                        
-                      } #end summary function
-                        
-                    )
-)
+
+# PM_result ---------------------------------------------------------------
+
 
 
 #' R6 object containing the results of a Pmetrics run
@@ -248,7 +350,7 @@ PM_result <- R6Class("PM_result",
                        #' Creation of new \code{PM_result} objects is via  
                        #' \code{\link{PM_load}} 
                        #' @param out The parsed output from \code{\link{PM_load}}
-
+                       
                        
                        initialize = function(out){
                          self$npdata <- out$NPdata
@@ -261,8 +363,6 @@ PM_result <- R6Class("PM_result",
                          self$mdata <- out$mdata
                          self$errfile <- out$errfile
                          self$success <- out$success
-                         
-                         
                          
                        },
                        
@@ -284,7 +384,7 @@ PM_result <- R6Class("PM_result",
                          self[[type]]$summary(...)
                        }
                        
-                      
+                       
                      ) #end public
                      
 ) #end PM_result
@@ -484,11 +584,11 @@ PM_model_list <- R6Class("PM_model_list",
                                i<-1
                                for(param in names(block)){
                                  lines<-append(lines,
-                                        if(is.numeric(block[[i]])){
-                                          sprintf("%s, %f", param, block[[i]])  
-                                        }else{
-                                          sprintf("%s, %s", param, block[[i]]$print_to("ranges",engine))
-                                        })
+                                               if(is.numeric(block[[i]])){
+                                                 sprintf("%s, %f", param, block[[i]])  
+                                               }else{
+                                                 sprintf("%s, %s", param, block[[i]]$print_to("ranges",engine))
+                                               })
                                  i<-i+1
                                }
                              } else if(key %in% c("cov","bol", "lag", "extra")){
@@ -501,11 +601,11 @@ PM_model_list <- R6Class("PM_model_list",
                                for(i in 1:length(block)){
                                  key<-toupper(names[i])
                                  lines<-append(lines,
-                                              if(is.null(names[i]) || nchar(names[i])==0){
-                                                sprintf("%s",block[[i]])
-                                              } else {
-                                                sprintf("%s=%s",key,block[[i]][1])
-                                              }     
+                                               if(is.null(names[i]) || nchar(names[i])==0){
+                                                 sprintf("%s",block[[i]])
+                                               } else {
+                                                 sprintf("%s=%s",key,block[[i]][1])
+                                               }     
                                  )
                                }
                              } else if(key == "ini"){
@@ -513,25 +613,25 @@ PM_model_list <- R6Class("PM_model_list",
                                for(i in 1:length(block)){
                                  key<-toupper(names[i])
                                  lines<-append(lines,
-                                              if(is.null(names[i]) || nchar(names[i])==0){
-                                                sprintf("%s",block[[i]][1])
-                                              }else if(nchar(names[i]) == 2){
-                                                sprintf("%s(%s)=%s",substr(key,1,1),substr(key,2,2),block[[i]][1])
-                                              }else{
-                                                stop(sprintf("Error: Unsupported key named: %s", key))
-                                              })                               }
+                                               if(is.null(names[i]) || nchar(names[i])==0){
+                                                 sprintf("%s",block[[i]][1])
+                                               }else if(nchar(names[i]) == 2){
+                                                 sprintf("%s(%s)=%s",substr(key,1,1),substr(key,2,2),block[[i]][1])
+                                               }else{
+                                                 stop(sprintf("Error: Unsupported key named: %s", key))
+                                               })                               }
                              } else if(key %in% c("dif","f")){
                                names<-names(block)
                                for(i in 1:length(block)){
                                  key<-toupper(names[i])
                                  lines<-append(lines,
-                                              if(is.null(names[i]) || nchar(names[i])==0){
-                                                sprintf("%s",block[[i]][1])
-                                              }else if(nchar(names[i]) == 3){
-                                                sprintf("%s(%s)=%s",substr(key,1,2),substr(key,3,3),block[[i]][1])
-                                              }else{
-                                                stop(sprintf("Error: Unsupported key named: %s", key))
-                                              })
+                                               if(is.null(names[i]) || nchar(names[i])==0){
+                                                 sprintf("%s",block[[i]][1])
+                                               }else if(nchar(names[i]) == 3){
+                                                 sprintf("%s(%s)=%s",substr(key,1,2),substr(key,3,3),block[[i]][1])
+                                               }else{
+                                                 stop(sprintf("Error: Unsupported key named: %s", key))
+                                               })
                                }
                              } else if (key == "out"){
                                i <- 1 # keep track of the first outeq
@@ -540,11 +640,11 @@ PM_model_list <- R6Class("PM_model_list",
                                  stopifnot(nchar(param)==2 || nchar(param) == 0)
                                  key<-toupper(names(block)[i])
                                  lines<-append(lines,
-                                              if(nchar(param) == 2){
-                                                sprintf("%s(%s)=%s",substr(key,1,1),substr(key,2,2),block[[i]][1])
-                                              }else{
-                                                sprintf("%s",block[[i]][1])
-                                              })
+                                               if(nchar(param) == 2){
+                                                 sprintf("%s(%s)=%s",substr(key,1,1),substr(key,2,2),block[[i]][1])
+                                               }else{
+                                                 sprintf("%s",block[[i]][1])
+                                               })
                                  if(i==1){
                                    err_block <- block[[1]]$err
                                    err_lines<-append(err_lines,err_block$model$print_to("ranges",engine))
@@ -794,5 +894,7 @@ simple_model <- PM_model(list(
 # #         u0 = 20 / v
 # #         return((f, u0))
 # #     end")
+
+
 
 

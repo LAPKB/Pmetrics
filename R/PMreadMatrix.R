@@ -7,11 +7,15 @@
 #' @title Read a Pmetrics .csv Matrix Input File
 #' @param file The name of the file to be loaded, including the full path if not
 #'  in the current working directory (check with \code{\link{getwd}}).
-#' @param skip Skip \emph{n} lines, with default set to 1.
+#' @param skip Skip \emph{n} lines, with default set to 0.
 #' @param sep Delimiter between columns, which is a comma by default, but can be changed with
 #' \code{\link{setPMoptions}}.
 #' @param dec Decimal separator, which is a period by default, but can be changed with
 #' \code{\link{setPMoptions}}.
+#' @param date_format Format for any dates. Default is set as year month day, with flexible separator.
+#' See \code{\link{parse_date}} in the readr package for more information on formatting dates.
+#' #' @param time_format Format for any clock times. Default is set as hours:minutes.
+#' See \code{\link{parse_date}} in the readr package for more information on formatting times.
 #' @param quiet Default is \emph{false}.  If \emph{true}, there will be no report to
 #'  the console on the contents of file.
 #' @param \dots Other parameters to be passed to \code{\link{read.table}}
@@ -39,7 +43,9 @@
 #' @seealso \code{\link{PMwriteMatrix}}, \code{\link{PMcheckMatrix}}, and \code{\link{plot.PMmatrix}}
 
 
-PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("dec"),quiet=F,...){
+PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("dec"),
+                         date_format = "%AD",
+                         time_format = "%AT", quiet=F,...){
 #get data
   if (missing(file)){
     warning("Please provide filename of Pmetrics block input file.\n")
@@ -50,11 +56,30 @@ PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("d
     return(invisible())
   }
   
-  parnames <- scan(file,skip=skip,what="character",quiet=T,nlines=1,sep=sep,dec=dec,strip.white=T)
-  parnames[1] <- "id"
-  data <- read.table(file,skip=skip+1,header=F,na.strings=".",comment.char="#",sep=sep,dec=dec,stringsAsFactors=F,...)
-  names(data) <- tolower(parnames)
+  headers <- scan(file, what = "character", quiet = T, nlines = 1, 
+                  sep = sep, dec = dec, strip.white = T) 
+  headers <- headers[headers !=""]
+  popdata_format <- grep("POPDATA .*", headers)
+  
+  if(length( popdata_format > 0)){
+    #format with POPDATA header
+    skip <- 1
+  } else {
+    #without POPDATA header
+    skip <- 0
+  }
+  
+  data <- readr::read_delim(file, delim = sep, col_names = T, na=".", 
+                            locale = locale(decimal_mark = dec, date_format = date_format, time_format = time_format),
+                            skip = skip, show_col_types = F)
+  names(data)[1] <- "id"
+  names(data) <- tolower(names(data))
 
+  #remove commented lines
+  comments <- grep(data$id,"#")
+  if(length(comments) > 0){
+    data <- data[-comments, ]
+  }
   
   if(!quiet){
     cat(paste("The file",sQuote(file),"contains these columns:\n",sep=" "))
