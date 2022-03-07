@@ -231,8 +231,10 @@ PM_result <- R6Class("PM_result",
     op = NULL,
     #' @field cov Data frame of subject ID, covariate values, and Bayesian posterior parameter estimates
     cov = NULL,
-    #' @field mdata The original .csv data file used in the run
+    #' @field mdata \link{PM_data} object representing the original .csv data file used in the run
     mdata = NULL,
+    #' @field mmodel text string representing the original model file used in the run
+    mmodel = NULL,
     #' @field errfile Name of error file if it exists
     errfile = NULL,
     #' @field success Boolean if successful run
@@ -258,7 +260,8 @@ PM_result <- R6Class("PM_result",
       self$cycle <- result_block$new(out$cycle,"cycle")
       self$op <- result_block$new(out$op,"op")
       self$cov <- result_block$new(out$cov,"cov")
-      self$mdata <- out$mdata
+      self$mdata <- PM_data$new(data=out$mdata)
+      self$mmodel <- out$mmodel
       self$errfile <- out$errfile
       self$success <- out$success
       
