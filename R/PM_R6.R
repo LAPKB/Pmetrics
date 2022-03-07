@@ -160,7 +160,7 @@ PM_data <- R6Class("PM_data",
     #' in the current R environment.
     initialize = function(data) {
       self$data <- if (is.character(data)) {
-        PMreadMatrix(file, quiet = T)
+        PMreadMatrix(data, quiet = T)
       } else {
         data
       }
