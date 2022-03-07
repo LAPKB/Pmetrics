@@ -87,7 +87,8 @@ PM_fit <- R6Class("PM_fit",
 
 # Factory pattern
 #' @export
-PM_model <- function(model, ..., julia = F) {
+PM_model <- R6Class("PM_model", list())
+PM_model$new <- function(model, ..., julia = F) {
   # Now we have multiple options for the model:
   # The model can be a String -> legacy run
   # The model can be a Function -> julia run
@@ -652,7 +653,16 @@ PM_model_list <- R6Class("PM_model_list",
           if (i == 1) {
             err_block <- block[[1]]$err
             err_lines <- append(err_lines, err_block$model$print_to("ranges", engine))
-            err_lines <- append(err_lines, sprintf("%f,%f,%f,%f", err_block$assay[1], err_block$assay[2], err_block$assay[3], err_block$assay[4]))
+            err_lines <- append(
+              err_lines,
+              sprintf(
+                "%f,%f,%f,%f",
+                err_block$assay[1],
+                err_block$assay[2],
+                err_block$assay[3],
+                err_block$assay[4]
+              )
+            )
           }
           i <- i + 1
         }
