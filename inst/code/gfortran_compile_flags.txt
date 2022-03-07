@@ -1,0 +1,2 @@
+gfortran -o run.exe -O3 -std=legacy -w droplet.f90 DOeng_7.f
+gfortran -O3 -fallow-argument-mismatch -w droplet.f90 DOeng_7.f -o run.exe
