@@ -76,7 +76,7 @@ PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("d
   names(data) <- tolower(names(data))
 
   #remove commented lines
-  comments <- grep(data$id,"#")
+  comments <- grep("#",data$id)
   if(length(comments) > 0){
     data <- data[-comments, ]
   }
