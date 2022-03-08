@@ -1132,8 +1132,9 @@
         RETURN
         END
       SUBROUTINE USERANAL(X,TIN,TOUT)
-        IMPLICIT REAL*8(A-H,O-Z)
-        DIMENSION X(20),ATOL(20),RWORK(1002),IWORK(50)
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION X(20),ATOL(20),RWORK(1002),IWORK(50)
+     &,XOLD(20)
 	EXTERNAL DIFFEQ,JACOB
 	COMMON/TOUSER/NDIM,MF,RTOL,ATOL
 	ITOL=2
@@ -1142,8 +1143,34 @@
 	IOPT=0
 	LRW=1002
 	LIW=50
-      CALL DVODE(DIFFEQ,NDIM,X,TIN,TOUT,ITOL,RTOL,ATOL,ITASK,ISTATE,
-     1            IOPT,RWORK,LRW,IWORK,LIW,JACOB,MF,RPAR,IPAR)
+      
+      XOLD = X
+      TINOLD = TIN
+      TOUTOLD = TOUT
+      
+      call dlsoda(DIFFEQ,NDIM,X,TIN,TOUT,ITOL,RTOL,ATOL,ITASK,ISTATE
+     &            ,IOPT,RWORK,LRW,IWORK,LIW,JACOB,2)
+      if (ISTATE<0) then
+        !write (6,*) 'ISTATE = ', ISTATE
+        !write (6,*) 'NDIM = ', NDIM
+        !write (6,*) 'X = ', X
+        !write (6,*) 'TIN = ', TIN
+        !write (6,*) 'TOUT = ', TOUT
+        !write (6,*) 'XOLD = ', XOLD
+        !write (6,*) 'TINOLD = ', TINOLD
+        !write (6,*) 'TOUTOLD = ', TOUTOLD        
+        !write (6,*) 'ITOL = ', ITOL
+        !write (6,*) 'RTOL = ', RTOL
+        !write (6,*) 'ATOL = ', ATOL
+        !write (6,*) 'ITASK = ', ITASK
+        !write (6,*) 'ISTATE = ', ISTATE
+        !write (6,*) 'IOPT = ', IOPT
+        ISTATE = 1
+        CALL DVODE(DIFFEQ,NDIM,XOLD,TINOLD,TOUTOLD
+     &           ,ITOL,RTOL,ATOL,ITASK,ISTATE
+     1           ,IOPT,RWORK,LRW,IWORK,LIW,JACOB,MF,RPAR,IPAR)
+        TOUT=TOUTOLD
+      endif
 	TIN=TOUT
       RETURN
       END
@@ -3891,8 +3918,7 @@
       DOUBLE PRECISION Y, T, TOUT, RTOL, ATOL, RWORK, RPAR
       INTEGER NEQ, ITOL, ITASK, ISTATE, IOPT, LRW, IWORK, LIW,
      1        MF, IPAR
-      DIMENSION Y(*), RTOL(*), ATOL(*), RWORK(LRW), IWORK(LIW),
-     1          RPAR(*), IPAR(*)
+      DIMENSION Y(*), ATOL(*), RWORK(LRW), IWORK(LIW)
       DOUBLE PRECISION ACNRM, CCMXJ, CONP, CRATE, DRC, EL,
      1     ETA, ETAMAX, H, HMIN, HMXI, HNEW, HSCAL, PRL1,
      2     RC, RL1, TAU, TQ, TN, UROUND
@@ -3923,6 +3949,9 @@
      6                N, NEWH, NEWQ, NHNIL, NQ, NQNYH, NQWAIT, NSLJ,
      7                NSLP, NYH
       COMMON /DVOD02/ HU, NCFN, NETF, NFE, NJE, NLU, NNI, NQU, NST
+! NEW PARALLEL CODE BELOW AS OF npageng28.f.
+!$omp Threadprivate(/DVOD01/,/DVOD02/,MORD,MXHNL0,MXSTP0,ZERO,ONE,TWO,
+!$omp&FOUR,PT2,HUN)
       DATA  MORD(1) /12/, MORD(2) /5/, MXSTP0 /500/, MXHNL0 /10/
       DATA ZERO /0.0D0/, ONE /1.0D0/, TWO /2.0D0/, FOUR /4.0D0/,
      1     PT2 /0.2D0/, HUN /100.0D0/
@@ -4007,10 +4036,10 @@
       IWORK(18) = LENIW
       IF (LENRW .GT. LRW) GO TO 617
       IF (LENIW .GT. LIW) GO TO 618
-      RTOLI = RTOL(1)
+      RTOLI = RTOL
       ATOLI = ATOL(1)
       DO 70 I = 1,N
-        IF (ITOL .GE. 3) RTOLI = RTOL(I)
+        IF (ITOL .GE. 3) RTOLI = RTOL
         IF (ITOL .EQ. 2 .OR. ITOL .EQ. 4) ATOLI = ATOL(I)
         IF (RTOLI .LT. ZERO) GO TO 619
         IF (ATOLI .LT. ZERO) GO TO 620
@@ -4280,7 +4309,7 @@
       MSG='DVODE--  IWORK length needed, LENIW (=I1), exceeds LIW (=I2)'
       CALL XERRWD (MSG, 60, 18, 1, 2, LENIW, LIW, 0, ZERO, ZERO)
       GO TO 700
- 619  MSG = 'DVODE--  RTOL(I1) is R1 .lt. 0.0        '
+ 619  MSG = 'DVODE--  RTOL is R1 .lt. 0.0        '
       CALL XERRWD (MSG, 40, 19, 1, 1, I, 0, 1, RTOLI, ZERO)
       GO TO 700
  620  MSG = 'DVODE--  ATOL(I1) is R1 .lt. 0.0        '
@@ -4320,8 +4349,7 @@
  800  MSG = 'DVODE--  Run aborted.. apparent infinite loop     '
       CALL XERRWD (MSG, 50, 303, 2, 0, 0, 0, 0, ZERO, ZERO)
       RETURN
-      END     
-      
+      END    
       SUBROUTINE DVHIN (N, T0, Y0, YDOT, F, RPAR, IPAR, TOUT, UROUND,
      1   EWT, ITOL, ATOL, Y, TEMP, H0, NITER, IER)
       EXTERNAL F
