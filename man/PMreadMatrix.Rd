@@ -9,6 +9,8 @@ PMreadMatrix(
   skip = 1,
   sep = getPMoptions("sep"),
   dec = getPMoptions("dec"),
+  date_format = "\%AD",
+  time_format = "\%AT",
   quiet = F,
   ...
 )
@@ -17,13 +19,18 @@ PMreadMatrix(
 \item{file}{The name of the file to be loaded, including the full path if not
 in the current working directory (check with \code{\link{getwd}}).}
 
-\item{skip}{Skip \emph{n} lines, with default set to 1.}
+\item{skip}{Skip \emph{n} lines, with default set to 0.}
 
 \item{sep}{Delimiter between columns, which is a comma by default, but can be changed with
 \code{\link{setPMoptions}}.}
 
 \item{dec}{Decimal separator, which is a period by default, but can be changed with
 \code{\link{setPMoptions}}.}
+
+\item{date_format}{Format for any dates. Default is set as year month day, with flexible separator.
+See \code{\link{parse_date}} in the readr package for more information on formatting dates.
+#' @param time_format Format for any clock times. Default is set as hours:minutes.
+See \code{\link{parse_date}} in the readr package for more information on formatting times.}
 
 \item{quiet}{Default is \emph{false}.  If \emph{true}, there will be no report to
 the console on the contents of file.}
