@@ -518,20 +518,24 @@ PM_input <- R6Class(
 # it seems that protected does not exist in R
 PM_Vmodel <- R6Class("PM_Vmodel",
   public = list(
-    name = NULL,
-    error = NULL,
-    initialize = function() stop("Unable to initialize abstract class")
+    name = NULL, #used by PM_model_legacy
+    #error = NULL,
+    initialize = function() stop("Unable to initialize abstract class"),
+    
+    print = function(){}
+    
   ),
   private = list(
-    random = NULL,
-    fixed = NULL,
-    constant = NULL,
-    covariates = NULL,
-    library_model = NULL,
-    equations = NULL,
-    output = NULL
+    # random = NULL,
+    # fixed = NULL,
+    # constant = NULL,
+    # covariates = NULL,
+    # library_model = NULL,
+    # equations = NULL,
+    # output = NULL
   )
 )
+
 PM_model_list <- R6Class("PM_model_list",
   inherit = PM_Vmodel,
   public = list(
