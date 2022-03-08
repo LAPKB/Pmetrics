@@ -70,7 +70,7 @@ PMFortranConfig <- function(reconfig = F) {
 
       if (as.numeric(choice) < 5) {
         compiler <- switch(as.numeric(choice),
-                           paste("gfortran -m", getBits(), " -w -O3 -o <exec> <files>\ngfortran -O3 -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>", sep = ""),
+                           paste("gfortran -m", getBits(), " -w -O3 -march=native -std=legacy -o <exec> <files>\ngfortran -O3 -w -march=native -std=legacy -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>", sep = ""),
                            "g95 -o -fstatic <exec> <files> ",
                            "ifort -o <exec> <files>",
                            "lf90  <files> -fix -out <exec>")
