@@ -1134,7 +1134,7 @@
       SUBROUTINE USERANAL(X,TIN,TOUT)
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION X(20),ATOL(20),RWORK(1002),IWORK(50)
-     &,XOLD(20)
+    !&,XOLD(20)
 	EXTERNAL DIFFEQ,JACOB
 	COMMON/TOUSER/NDIM,MF,RTOL,ATOL
 	ITOL=2
@@ -1143,34 +1143,34 @@
 	IOPT=0
 	LRW=1002
 	LIW=50
-      
-      XOLD = X
-      TINOLD = TIN
-      TOUTOLD = TOUT
-      
-      call dlsoda(DIFFEQ,NDIM,X,TIN,TOUT,ITOL,RTOL,ATOL,ITASK,ISTATE
-     &            ,IOPT,RWORK,LRW,IWORK,LIW,JACOB,2)
-      if (ISTATE<0) then
-        !write (6,*) 'ISTATE = ', ISTATE
-        !write (6,*) 'NDIM = ', NDIM
-        !write (6,*) 'X = ', X
-        !write (6,*) 'TIN = ', TIN
-        !write (6,*) 'TOUT = ', TOUT
-        !write (6,*) 'XOLD = ', XOLD
-        !write (6,*) 'TINOLD = ', TINOLD
-        !write (6,*) 'TOUTOLD = ', TOUTOLD        
-        !write (6,*) 'ITOL = ', ITOL
-        !write (6,*) 'RTOL = ', RTOL
-        !write (6,*) 'ATOL = ', ATOL
-        !write (6,*) 'ITASK = ', ITASK
-        !write (6,*) 'ISTATE = ', ISTATE
-        !write (6,*) 'IOPT = ', IOPT
-        ISTATE = 1
-        CALL DVODE(DIFFEQ,NDIM,XOLD,TINOLD,TOUTOLD
-     &           ,ITOL,RTOL,ATOL,ITASK,ISTATE
-     1           ,IOPT,RWORK,LRW,IWORK,LIW,JACOB,MF,RPAR,IPAR)
-        TOUT=TOUTOLD
-      endif
+      CALL DVODE(DIFFEQ,NDIM,X,TIN,TOUT,ITOL,RTOL,ATOL,ITASK,ISTATE,
+     1            IOPT,RWORK,LRW,IWORK,LIW,JACOB,MF,RPAR,IPAR)
+    ! XOLD = X
+    ! TINOLD = TIN
+    ! TOUTOLD = TOUT   
+    ! call dlsoda(DIFFEQ,NDIM,X,TIN,TOUT,ITOL,RTOL,ATOL,ITASK,ISTATE
+    !&            ,IOPT,RWORK,LRW,IWORK,LIW,JACOB,2)
+    ! if (ISTATE<0) then
+    !   !write (6,*) 'ISTATE = ', ISTATE
+    !   !write (6,*) 'NDIM = ', NDIM
+    !   !write (6,*) 'X = ', X
+    !   !write (6,*) 'TIN = ', TIN
+    !   !write (6,*) 'TOUT = ', TOUT
+    !   !write (6,*) 'XOLD = ', XOLD
+    !   !write (6,*) 'TINOLD = ', TINOLD
+    !   !write (6,*) 'TOUTOLD = ', TOUTOLD        
+    !   !write (6,*) 'ITOL = ', ITOL
+    !   !write (6,*) 'RTOL = ', RTOL
+    !   !write (6,*) 'ATOL = ', ATOL
+    !   !write (6,*) 'ITASK = ', ITASK
+    !   !write (6,*) 'ISTATE = ', ISTATE
+    !   !write (6,*) 'IOPT = ', IOPT
+    !   ISTATE = 1
+    !   CALL DVODE(DIFFEQ,NDIM,XOLD,TINOLD,TOUTOLD
+    !&           ,ITOL,RTOL,ATOL,ITASK,ISTATE
+    !1           ,IOPT,RWORK,LRW,IWORK,LIW,JACOB,MF,RPAR,IPAR)
+    !   TOUT=TOUTOLD
+    ! endif
 	TIN=TOUT
       RETURN
       END
