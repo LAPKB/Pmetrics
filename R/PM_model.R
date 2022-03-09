@@ -15,7 +15,7 @@ PM_model$new <- function(model, ..., julia = F) {
     if (julia) {
       return(PM_model_julia$new(model, ...))
     } else {
-      return(PM_model_legacy$new(model))
+      return(PM_model_file$new(model))
     }
   } else if (is.list(model)) {
     return(PM_model_list$new(model))
@@ -25,34 +25,61 @@ PM_model$new <- function(model, ..., julia = F) {
 }
 
 #' @export
-additive <- function(add, fixed = F) {
-  PM_input$new(add, add, "additive", fixed)
+additive <- function(add, constant = F) {
+  PM_Vinput$new(add, add, "additive", constant)
 }
 
 #' @export
-proportional <- function(prop, fixed = F) {
-  PM_input$new(prop, prop, "proportional", fixed)
+proportional <- function(prop, constant = F) {
+  PM_Vinput$new(prop, prop, "proportional", constant)
 }
 
 #' @export
-combination <- function(add, prop, fixed = F) {
-  PM_input$new(add, prop, "combination", fixed)
+combination <- function(add, prop, constant = F) {
+  PM_Vinput$new(add, prop, "combination", constant)
 }
 
 #' @export
-range <- function(min, max, gtz = T) {
-  PM_input$new(min, max, "range", gtz)
+range <- function(min, max, gtz = F) {
+  PM_Vinput$new(min, max, "range", constant = F, gtz)
 }
 
 #' @export
-msd <- function(mean, sd, gtz = T) {
-  PM_input$new(mean, sd, "msd", gtz)
+msd <- function(mean, sd, gtz = F) {
+  PM_Vinput$new(mean, sd, "msd", constant = F, gtz)
 }
 
 #' @export
-fixed <- function(fixed, gtz = T) {
-  PM_input$new(fixed, fixed, "fixed", gtz)
+fixed <- function(fixed, constant = F, gtz = F) {
+  PM_Vinput$new(fixed, fixed, "fixed", constant, gtz)
 }
+
+# PM_Vmodel ---------------------------------------------------------------
+
+
+# Virtual Class
+# it seems that protected does not exist in R
+PM_Vmodel <- R6Class("PM_Vmodel",
+                     public = list(
+                       name = NULL, #used by PM_model_legacy
+                       #error = NULL,
+                       initialize = function() stop("Unable to initialize abstract class")
+                       
+                       # print = function(){
+                       # #   cat("This is a test.\n")
+                       # #   invisible(self)
+                       # }
+                       
+                     ),
+                     private = list(
+                       
+                       validate = function(){
+                         #add checks here 
+                       }
+                       
+                       
+                     )
+)
 
 
 # PM_input ----------------------------------------------------------------
@@ -60,7 +87,7 @@ fixed <- function(fixed, gtz = T) {
 
 # private classes
 # TODO: Should I make these fields private?
-PM_input <- R6Class(
+PM_Vinput <- R6Class(
   "PM_Vinput",
   public <- list(
     mode = NULL,
@@ -69,35 +96,38 @@ PM_input <- R6Class(
     mean = NULL,
     sd = NULL,
     fixed = NULL,
-    fix = NULL,
-    param = NULL,
+    constant = NULL,
+    param = NULL, #is this used?
     additive = NULL,
     proportional = NULL,
-    gtz = T,
-    initialize = function(a, b, mode, gtz) {
+    gtz = NULL,
+    initialize = function(a, b, mode, constant = F, gtz = F) {
       stopifnot(mode %in% c("range", "msd", "fixed", "additive", "proportional", "combination"))
       self$gtz <- gtz
+      self$constant <- constant
       self$mode <- mode
       if (mode %in% c("range")) {
         self$min <- a
         self$max <- b
+        self$mean <- round((b-a)/2,3)
+        self$sd <- round((b-a)/6,3)
       } else if (mode %in% c("msd")) {
         self$mean <- a
         self$sd <- b
+        self$min <- a - 3*b
+        self$max <- a + 3*b
       } else if (mode == "fixed") {
         self$fixed <- a
+        #note that a fixed input with constant=T becomes a constant
       } else if (mode == "additive") {
-        self$fix <- gtz
         self$additive <- a
       } else if (mode == "proportional") {
-        self$fix <- gtz
         self$proportional <- a
       } else if (mode == "combination") {
         stop(sprintf("Combination error models are not supported yet"))
-        self$fix <- gtz
         self$additive <- a
         self$proportional <- b
-      }
+      } 
     },
     print_to = function(mode, engine) {
       # TODO:use mode and self$mode to translate to the right set of outputs
@@ -111,7 +141,11 @@ PM_input <- R6Class(
             return(sprintf("%f, %f", self$mean, self$sd))
           }
         } else if (self$mode == "fixed") {
-          return(sprintf("%f!", self$fixed))
+          if(self$fix){
+            return(sprintf("%f!", self$fixed))
+          } else{
+            return(sprintf("%f", self$fixed))
+          }
         } else if (self$mode == "additive") {
           if (self$fix) {
             return(sprintf("L=%f!", self$additive))
@@ -139,7 +173,11 @@ PM_input <- R6Class(
             return(sprintf("%%%f, %f", self$mean, self$sd))
           }
         } else if (self$mode == "fixed") {
-          return(sprintf("%f!", self$fixed))
+          if(self$fix){
+            return(sprintf("%f!", self$fixed))
+          } else{
+            return(sprintf("%f", self$fixed))
+          }
         } else if (self$mode == "additive") {
           if (self$fix) {
             return(sprintf("L=%f!", self$additive))
@@ -159,30 +197,6 @@ PM_input <- R6Class(
 )
 
 
-# PM_Vmodel ---------------------------------------------------------------
-
-
-# Virtual Class
-# it seems that protected does not exist in R
-PM_Vmodel <- R6Class("PM_Vmodel",
-                     public = list(
-                       name = NULL, #used by PM_model_legacy
-                       #error = NULL,
-                       initialize = function() stop("Unable to initialize abstract class"),
-                       
-                       print = function(){}
-                       
-                     ),
-                     private = list(
-                       # random = NULL,
-                       # fixed = NULL,
-                       # constant = NULL,
-                       # covariates = NULL,
-                       # library_model = NULL,
-                       # equations = NULL,
-                       # output = NULL
-                     )
-)
 
 
 # PM_model_list -----------------------------------------------------------
@@ -232,17 +246,17 @@ PM_model_list <- R6Class("PM_model_list",
                              }
                              lines <- append(lines, sprintf("#%s", key))
                              if (key == "pri") {
-                               i <- 1
+                               i <- 1 
                                for (param in names(block)) {
                                  lines <- append(
                                    lines,
                                    if (is.numeric(block[[i]])) {
                                      sprintf("%s, %f", param, block[[i]])
                                    } else {
-                                     sprintf("%s, %s", param, block[[i]]$print_to("ranges", engine))
+                                     sprintf("%s, %s", param, block[[i]]$print_to("range", engine))
                                    }
                                  )
-                                 i <- i + 1
+                                 i <- i + 1 
                                }
                              } else if (key %in% c("cov", "bol", "lag", "extra")) {
                                stopifnot(is.null(names(block)))
@@ -355,6 +369,122 @@ PM_model_legacy <- R6Class("PM_model_legacy",
                              },
                              print = function() {}
                            )
+)
+
+PM_model_file <- R6Class("PM_model_file",
+                         inherit = PM_model_list,
+                         public = list(
+                           initialize = function(model_filename){
+                             self <- private$makeR6model(model_filename)
+                           }
+                         ),
+                         private = list(
+                           makeR6model = function(file){
+                             msg <- ""
+                             
+                             blocks <- parseBlocks(model) #this function is in PMutilities
+                             
+                             #check for reserved variable names
+                             reserved <- c("ndim", "t", "x", "xp", "rpar", "ipar", "p", "r", "b", "npl", "numeqt", "ndrug", "nadd", "rateiv", "cv",
+                                           "n", "nd", "ni", "nup", "nuic", "np", "nbcomp", "psym", "fa", "lag", "tin", "tout")
+                             conflict <- c(match(tolower(blocks$primVar), reserved, nomatch = -99), match(tolower(blocks$secVar), reserved, nomatch = -99), match(tolower(blocks$covar), reserved, nomatch = -99))
+                             nconflict <- sum(conflict != -99)
+                             if (nconflict > 0) {
+                               msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
+                               return(list(status = -1, msg = msg))
+                             }
+                             
+                             if (length(grep(";", blocks$primVar)) > 0) {
+                               #using ';' as separator
+                               sep <- ";"
+                             } else {
+                               if (length(grep(",", blocks$primVar)) > 0) {
+                                 #using ',' as separator
+                                 sep <- ","
+                               } else { return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n")) }
+                             }
+                             
+                             
+                             model_list <- list()
+                             #this function makes pri for PM_model 
+                             model_list$pri <- sapply(strsplit(blocks$primVar, sep), function(x){
+                               #find out if constrained to be positive 
+                               const_pos <- any(grepl("\\+", x))
+                               if(const_pos){
+                                 x <- gsub("\\+", "", x)
+                                 gtz <- T
+                                 msg <- c(msg,"Truncating variables to positive ranges is not recommended.\n
+               Consider log transformation instead.\n")
+                               } else {gtz <- F}
+                               
+                               #find out if constant 
+                               const_var <- any(grepl("!", x))
+                               if(const_var){
+                                 x <- gsub("!", "", x)
+                               } 
+                               
+                               values <- as.numeric(x[-1])
+                               
+                               if(length(x[-1]) == 1){ #fixed
+                                 thisItem <- list(fixed(values[2], constant = const_var, gtz = gtz))
+                               } else { #range
+                                 thisItem <- list(range(values[1], values[2], gtz = gtz ))
+                               }
+                               names(thisItem) <- x[1]
+                               thisItem
+                             }) #end sapply
+
+                             #covariates
+                             blocks$covar <- gsub("!", "", blocks$covar) #for now remove "!" indicating step, default interpolate
+                             if (blocks$covar[1] != "") {model_list$cov <- blocks$covar}
+                             
+                             #secondary variables 
+                             if (blocks$secVar[1] != "") {model_list$sec <- blocks$secVar}
+                             
+                             #bioavailability 
+                             if (blocks$f[1] != "") {model_list$fa <- blocks$f}
+                             
+                             #bolus 
+                             if (blocks$bol[1] != "") {model_list$bol <- blocks$bol}
+                             
+                             #initial conditions
+                             if (blocks$ini[1] != "") {model_list$ini <- blocks$ini}
+                             
+                             #lag time
+                             if (blocks$lag[1] != "") {model_list$lag <- blocks$lag}
+                             
+                             #differential equations
+                             if (blocks$diffeq[1] != "") {model_list$dif <- blocks$diffeq}
+                             
+                             #out/err
+                             output <- blocks$output
+                             remParen <- stringr::str_replace(output, "Y\\((\\d+)\\)", "Y\\1")
+                             diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
+                             diffList <- sapply(diffeq,function(x) x[2])
+                             num_out <- length(diffList)
+                             
+                             err <- tolower(gsub("[[:space:]]", "", blocks$error))
+                             gamma <- grepl("^g", err[1])
+                             const_gamlam <- grepl("!", err[1])
+                             gamlam_value <- as.numeric(stringr::str_match(err[1], "\\d+"))
+                             
+                             out <- list()
+                             for(i in 1:num_out){
+                               out[[i]] <- list(diffList[i], 
+                                                err = list(model = c(additive(gamlam_value, constant = const_gamlam), 
+                                                                     proportional(gamlam_value, constant = const_gamlam))[1+as.numeric(gamma)],
+                                                           assay = err[i+1])
+                               )
+                             }
+                             names(out) <- sapply(diffeq,function(x) x[1])
+                             model_list$out <- out
+                             
+                             cat(msg)
+                             flush.console()
+                             
+                             return(model_list)
+                           }
+                         ) #end private list
 )
 
 
