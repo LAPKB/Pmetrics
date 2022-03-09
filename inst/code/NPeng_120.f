@@ -16937,7 +16937,7 @@
 *
 *     End of LSAME
 *
-END
+      END
 *> \brief \b XERBLA
 *
 *  =========== DOCUMENTATION ===========
