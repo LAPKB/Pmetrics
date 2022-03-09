@@ -374,15 +374,16 @@ PM_model_legacy <- R6Class("PM_model_legacy",
 PM_model_file <- R6Class("PM_model_file",
                          inherit = PM_model_list,
                          public = list(
+                           model_list <- NULL,
                            initialize = function(model_filename){
-                             self <- private$makeR6model(model_filename)
+                             self$model_list <- private$makeR6model(model_filename)
                            }
                          ),
                          private = list(
                            makeR6model = function(file){
                              msg <- ""
                              
-                             blocks <- parseBlocks(model) #this function is in PMutilities
+                             blocks <- parseBlocks(file) #this function is in PMutilities
                              
                              #check for reserved variable names
                              reserved <- c("ndim", "t", "x", "xp", "rpar", "ipar", "p", "r", "b", "npl", "numeqt", "ndrug", "nadd", "rateiv", "cv",
