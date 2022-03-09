@@ -449,7 +449,6 @@ chunks <- function(x, maxwidth = 60) {
 
 
 #convert new model template to model fortran file
-#convert new model template to model fortran file
 makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T, silent = F) {
 
   blocks <- parseBlocks(model)
@@ -502,12 +501,6 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   ptype <- c(1, 2)[1 + as.numeric(is.na(b))]
   #if any fixed constant variables are present, set ptype to 0
   if (nofix > 0) ptype[fixcon] <- 0
-
-  # #for now, make all fixed constants for IT2B and SIM
-  # if(engine$alg=="IT" | engine$alg=="SIM"){
-  #   ptype[ptype==2] <- 0
-  #   nofix <- sum(as.numeric(is.na(b)))
-  # }
 
   #npvar is total number of parameters
   #nvar is number of random (estimated) parameters
