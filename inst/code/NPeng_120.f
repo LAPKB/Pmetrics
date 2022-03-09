@@ -4605,44 +4605,6 @@
       IF (ISET) LUNIT = IVALUE
       RETURN
       END
-      subroutine dgefa(a,lda,n,ipvt,info)
-      integer lda,n,ipvt(1),info
-      double precision a(lda,1)
-      double precision t
-      integer idamax,j,k,kp1,l,nm1
-      info = 0
-      nm1 = n - 1
-      if (nm1 .lt. 1) go to 70
-      do 60 k = 1, nm1
-         kp1 = k + 1
-         l = idamax(n-k+1,a(k,k),1) + k - 1
-         ipvt(k) = l
-         if (a(l,k) .eq. 0.0d0) go to 40
-            if (l .eq. k) go to 10
-               t = a(l,k)
-               a(l,k) = a(k,k)
-               a(k,k) = t
-   10       continue
-            t = -1.0d0/a(k,k)
-            call dscal(n-k,t,a(k+1,k),1)
-            do 30 j = kp1, n
-               t = a(l,j)
-               if (l .eq. k) go to 20
-                  a(l,j) = a(k,j)
-                  a(k,j) = t
-   20          continue
-               call daxpy(n-k,t,a(k+1,k),1,a(k+1,j),1)
-   30       continue
-         go to 50
-   40    continue
-            info = k
-   50    continue
-   60 continue
-   70 continue
-      ipvt(n) = n
-      if (a(n,n) .eq. 0.0d0) info = n
-      return
-      end
       subroutine dgesl(a,lda,n,ipvt,b,job)
       integer lda,n,ipvt(1),job
       double precision a(lda,1),b(1)
@@ -4688,6 +4650,45 @@
   100 continue
       return
       end
+      subroutine dgefa(a,lda,n,ipvt,info)
+      integer lda,n,ipvt(1),info
+      double precision a(lda,1)
+      double precision t
+      integer idamax,j,k,kp1,l,nm1
+      info = 0
+      nm1 = n - 1
+      if (nm1 .lt. 1) go to 70
+      do 60 k = 1, nm1
+         kp1 = k + 1
+         l = idamax(n-k+1,a(k,k),1) + k - 1
+         ipvt(k) = l
+         if (a(l,k) .eq. 0.0d0) go to 40
+            if (l .eq. k) go to 10
+               t = a(l,k)
+               a(l,k) = a(k,k)
+               a(k,k) = t
+   10       continue
+            t = -1.0d0/a(k,k)
+            call dscal(n-k,t,a(k+1,k),1)
+            do 30 j = kp1, n
+               t = a(l,j)
+               if (l .eq. k) go to 20
+                  a(l,j) = a(k,j)
+                  a(k,j) = t
+   20          continue
+               call daxpy(n-k,t,a(k+1,k),1,a(k+1,j),1)
+   30       continue
+         go to 50
+   40    continue
+            info = k
+   50    continue
+   60 continue
+   70 continue
+      ipvt(n) = n
+      if (a(n,n) .eq. 0.0d0) info = n
+      return
+      end
+      
       subroutine dgbfa(abd,lda,n,ml,mu,ipvt,info)
       integer lda,n,ml,mu,ipvt(1),info
       double precision abd(lda,1)
@@ -4808,2558 +4809,7 @@
    90    continue
   100 continue
       return
-      end
-*> \brief \b DGBTRF
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*> \htmlonly
-*> Download DGBTRF + dependencies
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgbtrf.f">
-*> [TGZ]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgbtrf.f">
-*> [ZIP]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgbtrf.f">
-*> [TXT]</a>
-*> \endhtmlonly
-*
-*  Definition:
-*  ===========
-*
-*       SUBROUTINE DGBTRF( M, N, KL, KU, AB, LDAB, IPIV, INFO )
-*
-*       .. Scalar Arguments ..
-*       INTEGER            INFO, KL, KU, LDAB, M, N
-*       ..
-*       .. Array Arguments ..
-*       INTEGER            IPIV( * )
-*       DOUBLE PRECISION   AB( LDAB, * )
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> DGBTRF computes an LU factorization of a real m-by-n band matrix A
-*> using partial pivoting with row interchanges.
-*>
-*> This is the blocked version of the algorithm, calling Level 3 BLAS.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] M
-*> \verbatim
-*>          M is INTEGER
-*>          The number of rows of the matrix A.  M >= 0.
-*> \endverbatim
-*>
-*> \param[in] N
-*> \verbatim
-*>          N is INTEGER
-*>          The number of columns of the matrix A.  N >= 0.
-*> \endverbatim
-*>
-*> \param[in] KL
-*> \verbatim
-*>          KL is INTEGER
-*>          The number of subdiagonals within the band of A.  KL >= 0.
-*> \endverbatim
-*>
-*> \param[in] KU
-*> \verbatim
-*>          KU is INTEGER
-*>          The number of superdiagonals within the band of A.  KU >= 0.
-*> \endverbatim
-*>
-*> \param[in,out] AB
-*> \verbatim
-*>          AB is DOUBLE PRECISION array, dimension (LDAB,N)
-*>          On entry, the matrix A in band storage, in rows KL+1 to
-*>          2*KL+KU+1; rows 1 to KL of the array need not be set.
-*>          The j-th column of A is stored in the j-th column of the
-*>          array AB as follows:
-*>          AB(kl+ku+1+i-j,j) = A(i,j) for max(1,j-ku)<=i<=min(m,j+kl)
-*>
-*>          On exit, details of the factorization: U is stored as an
-*>          upper triangular band matrix with KL+KU superdiagonals in
-*>          rows 1 to KL+KU+1, and the multipliers used during the
-*>          factorization are stored in rows KL+KU+2 to 2*KL+KU+1.
-*>          See below for further details.
-*> \endverbatim
-*>
-*> \param[in] LDAB
-*> \verbatim
-*>          LDAB is INTEGER
-*>          The leading dimension of the array AB.  LDAB >= 2*KL+KU+1.
-*> \endverbatim
-*>
-*> \param[out] IPIV
-*> \verbatim
-*>          IPIV is INTEGER array, dimension (min(M,N))
-*>          The pivot indices; for 1 <= i <= min(M,N), row i of the
-*>          matrix was interchanged with row IPIV(i).
-*> \endverbatim
-*>
-*> \param[out] INFO
-*> \verbatim
-*>          INFO is INTEGER
-*>          = 0: successful exit
-*>          < 0: if INFO = -i, the i-th argument had an illegal value
-*>          > 0: if INFO = +i, U(i,i) is exactly zero. The factorization
-*>               has been completed, but the factor U is exactly
-*>               singular, and division by zero will occur if it is used
-*>               to solve a system of equations.
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup doubleGBcomputational
-*
-*> \par Further Details:
-*  =====================
-*>
-*> \verbatim
-*>
-*>  The band storage scheme is illustrated by the following example, when
-*>  M = N = 6, KL = 2, KU = 1:
-*>
-*>  On entry:                       On exit:
-*>
-*>      *    *    *    +    +    +       *    *    *   u14  u25  u36
-*>      *    *    +    +    +    +       *    *   u13  u24  u35  u46
-*>      *   a12  a23  a34  a45  a56      *   u12  u23  u34  u45  u56
-*>     a11  a22  a33  a44  a55  a66     u11  u22  u33  u44  u55  u66
-*>     a21  a32  a43  a54  a65   *      m21  m32  m43  m54  m65   *
-*>     a31  a42  a53  a64   *    *      m31  m42  m53  m64   *    *
-*>
-*>  Array elements marked * are not used by the routine; elements marked
-*>  + need not be set on entry, but are required by the routine to store
-*>  elements of U because of fill-in resulting from the row interchanges.
-*> \endverbatim
-*>
-*  =====================================================================
-      SUBROUTINE DGBTRF( M, N, KL, KU, AB, LDAB, IPIV, INFO )
-*
-*  -- LAPACK computational routine --
-*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      INTEGER            INFO, KL, KU, LDAB, M, N
-*     ..
-*     .. Array Arguments ..
-      INTEGER            IPIV( * )
-      DOUBLE PRECISION   AB( LDAB, * )
-*     ..
-*
-*  =====================================================================
-*
-*     .. Parameters ..
-      DOUBLE PRECISION   ONE, ZERO
-      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
-      INTEGER            NBMAX, LDWORK
-      PARAMETER          ( NBMAX = 64, LDWORK = NBMAX+1 )
-*     ..
-*     .. Local Scalars ..
-      INTEGER            I, I2, I3, II, IP, J, J2, J3, JB, JJ, JM, JP,
-     $                   JU, K2, KM, KV, NB, NW
-      DOUBLE PRECISION   TEMP
-*     ..
-*     .. Local Arrays ..
-      DOUBLE PRECISION   WORK13( LDWORK, NBMAX ),
-     $                   WORK31( LDWORK, NBMAX )
-*     ..
-*     .. External Functions ..
-      INTEGER            IDAMAX, ILAENV
-      EXTERNAL           IDAMAX, ILAENV
-*     ..
-*     .. External Subroutines ..
-      EXTERNAL           DCOPY, DGBTF2, DGEMM, DGER, DLASWP, DSCAL,
-     $                   DSWAP, DTRSM, XERBLA
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC          MAX, MIN
-*     ..
-*     .. Executable Statements ..
-*
-*     KV is the number of superdiagonals in the factor U, allowing for
-*     fill-in
-*
-      KV = KU + KL
-*
-*     Test the input parameters.
-*
-      INFO = 0
-      IF( M.LT.0 ) THEN
-         INFO = -1
-      ELSE IF( N.LT.0 ) THEN
-         INFO = -2
-      ELSE IF( KL.LT.0 ) THEN
-         INFO = -3
-      ELSE IF( KU.LT.0 ) THEN
-         INFO = -4
-      ELSE IF( LDAB.LT.KL+KV+1 ) THEN
-         INFO = -6
-      END IF
-      IF( INFO.NE.0 ) THEN
-         CALL XERBLA( 'DGBTRF', -INFO )
-         RETURN
-      END IF
-*
-*     Quick return if possible
-*
-      IF( M.EQ.0 .OR. N.EQ.0 )
-     $   RETURN
-*
-*     Determine the block size for this environment
-*
-      NB = ILAENV( 1, 'DGBTRF', ' ', M, N, KL, KU )
-*
-*     The block size must not exceed the limit set by the size of the
-*     local arrays WORK13 and WORK31.
-*
-      NB = MIN( NB, NBMAX )
-*
-      IF( NB.LE.1 .OR. NB.GT.KL ) THEN
-*
-*        Use unblocked code
-*
-         CALL DGBTF2( M, N, KL, KU, AB, LDAB, IPIV, INFO )
-      ELSE
-*
-*        Use blocked code
-*
-*        Zero the superdiagonal elements of the work array WORK13
-*
-         DO 20 J = 1, NB
-            DO 10 I = 1, J - 1
-               WORK13( I, J ) = ZERO
-   10       CONTINUE
-   20    CONTINUE
-*
-*        Zero the subdiagonal elements of the work array WORK31
-*
-         DO 40 J = 1, NB
-            DO 30 I = J + 1, NB
-               WORK31( I, J ) = ZERO
-   30       CONTINUE
-   40    CONTINUE
-*
-*        Gaussian elimination with partial pivoting
-*
-*        Set fill-in elements in columns KU+2 to KV to zero
-*
-         DO 60 J = KU + 2, MIN( KV, N )
-            DO 50 I = KV - J + 2, KL
-               AB( I, J ) = ZERO
-   50       CONTINUE
-   60    CONTINUE
-*
-*        JU is the index of the last column affected by the current
-*        stage of the factorization
-*
-         JU = 1
-*
-         DO 180 J = 1, MIN( M, N ), NB
-            JB = MIN( NB, MIN( M, N )-J+1 )
-*
-*           The active part of the matrix is partitioned
-*
-*              A11   A12   A13
-*              A21   A22   A23
-*              A31   A32   A33
-*
-*           Here A11, A21 and A31 denote the current block of JB columns
-*           which is about to be factorized. The number of rows in the
-*           partitioning are JB, I2, I3 respectively, and the numbers
-*           of columns are JB, J2, J3. The superdiagonal elements of A13
-*           and the subdiagonal elements of A31 lie outside the band.
-*
-            I2 = MIN( KL-JB, M-J-JB+1 )
-            I3 = MIN( JB, M-J-KL+1 )
-*
-*           J2 and J3 are computed after JU has been updated.
-*
-*           Factorize the current block of JB columns
-*
-            DO 80 JJ = J, J + JB - 1
-*
-*              Set fill-in elements in column JJ+KV to zero
-*
-               IF( JJ+KV.LE.N ) THEN
-                  DO 70 I = 1, KL
-                     AB( I, JJ+KV ) = ZERO
-   70             CONTINUE
-               END IF
-*
-*              Find pivot and test for singularity. KM is the number of
-*              subdiagonal elements in the current column.
-*
-               KM = MIN( KL, M-JJ )
-               JP = IDAMAX( KM+1, AB( KV+1, JJ ), 1 )
-               IPIV( JJ ) = JP + JJ - J
-               IF( AB( KV+JP, JJ ).NE.ZERO ) THEN
-                  JU = MAX( JU, MIN( JJ+KU+JP-1, N ) )
-                  IF( JP.NE.1 ) THEN
-*
-*                    Apply interchange to columns J to J+JB-1
-*
-                     IF( JP+JJ-1.LT.J+KL ) THEN
-*
-                        CALL DSWAP( JB, AB( KV+1+JJ-J, J ), LDAB-1,
-     $                              AB( KV+JP+JJ-J, J ), LDAB-1 )
-                     ELSE
-*
-*                       The interchange affects columns J to JJ-1 of A31
-*                       which are stored in the work array WORK31
-*
-                        CALL DSWAP( JJ-J, AB( KV+1+JJ-J, J ), LDAB-1,
-     $                              WORK31( JP+JJ-J-KL, 1 ), LDWORK )
-                        CALL DSWAP( J+JB-JJ, AB( KV+1, JJ ), LDAB-1,
-     $                              AB( KV+JP, JJ ), LDAB-1 )
-                     END IF
-                  END IF
-*
-*                 Compute multipliers
-*
-                  CALL DSCAL( KM, ONE / AB( KV+1, JJ ), AB( KV+2, JJ ),
-     $                        1 )
-*
-*                 Update trailing submatrix within the band and within
-*                 the current block. JM is the index of the last column
-*                 which needs to be updated.
-*
-                  JM = MIN( JU, J+JB-1 )
-                  IF( JM.GT.JJ )
-     $               CALL DGER( KM, JM-JJ, -ONE, AB( KV+2, JJ ), 1,
-     $                          AB( KV, JJ+1 ), LDAB-1,
-     $                          AB( KV+1, JJ+1 ), LDAB-1 )
-               ELSE
-*
-*                 If pivot is zero, set INFO to the index of the pivot
-*                 unless a zero pivot has already been found.
-*
-                  IF( INFO.EQ.0 )
-     $               INFO = JJ
-               END IF
-*
-*              Copy current column of A31 into the work array WORK31
-*
-               NW = MIN( JJ-J+1, I3 )
-               IF( NW.GT.0 )
-     $            CALL DCOPY( NW, AB( KV+KL+1-JJ+J, JJ ), 1,
-     $                        WORK31( 1, JJ-J+1 ), 1 )
-   80       CONTINUE
-            IF( J+JB.LE.N ) THEN
-*
-*              Apply the row interchanges to the other blocks.
-*
-               J2 = MIN( JU-J+1, KV ) - JB
-               J3 = MAX( 0, JU-J-KV+1 )
-*
-*              Use DLASWP to apply the row interchanges to A12, A22, and
-*              A32.
-*
-               CALL DLASWP( J2, AB( KV+1-JB, J+JB ), LDAB-1, 1, JB,
-     $                      IPIV( J ), 1 )
-*
-*              Adjust the pivot indices.
-*
-               DO 90 I = J, J + JB - 1
-                  IPIV( I ) = IPIV( I ) + J - 1
-   90          CONTINUE
-*
-*              Apply the row interchanges to A13, A23, and A33
-*              columnwise.
-*
-               K2 = J - 1 + JB + J2
-               DO 110 I = 1, J3
-                  JJ = K2 + I
-                  DO 100 II = J + I - 1, J + JB - 1
-                     IP = IPIV( II )
-                     IF( IP.NE.II ) THEN
-                        TEMP = AB( KV+1+II-JJ, JJ )
-                        AB( KV+1+II-JJ, JJ ) = AB( KV+1+IP-JJ, JJ )
-                        AB( KV+1+IP-JJ, JJ ) = TEMP
-                     END IF
-  100             CONTINUE
-  110          CONTINUE
-*
-*              Update the relevant part of the trailing submatrix
-*
-               IF( J2.GT.0 ) THEN
-*
-*                 Update A12
-*
-                  CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Unit',
-     $                        JB, J2, ONE, AB( KV+1, J ), LDAB-1,
-     $                        AB( KV+1-JB, J+JB ), LDAB-1 )
-*
-                  IF( I2.GT.0 ) THEN
-*
-*                    Update A22
-*
-                     CALL DGEMM( 'No transpose', 'No transpose', I2, J2,
-     $                           JB, -ONE, AB( KV+1+JB, J ), LDAB-1,
-     $                           AB( KV+1-JB, J+JB ), LDAB-1, ONE,
-     $                           AB( KV+1, J+JB ), LDAB-1 )
-                  END IF
-*
-                  IF( I3.GT.0 ) THEN
-*
-*                    Update A32
-*
-                     CALL DGEMM( 'No transpose', 'No transpose', I3, J2,
-     $                           JB, -ONE, WORK31, LDWORK,
-     $                           AB( KV+1-JB, J+JB ), LDAB-1, ONE,
-     $                           AB( KV+KL+1-JB, J+JB ), LDAB-1 )
-                  END IF
-               END IF
-*
-               IF( J3.GT.0 ) THEN
-*
-*                 Copy the lower triangle of A13 into the work array
-*                 WORK13
-*
-                  DO 130 JJ = 1, J3
-                     DO 120 II = JJ, JB
-                        WORK13( II, JJ ) = AB( II-JJ+1, JJ+J+KV-1 )
-  120                CONTINUE
-  130             CONTINUE
-*
-*                 Update A13 in the work array
-*
-                  CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Unit',
-     $                        JB, J3, ONE, AB( KV+1, J ), LDAB-1,
-     $                        WORK13, LDWORK )
-*
-                  IF( I2.GT.0 ) THEN
-*
-*                    Update A23
-*
-                     CALL DGEMM( 'No transpose', 'No transpose', I2, J3,
-     $                           JB, -ONE, AB( KV+1+JB, J ), LDAB-1,
-     $                           WORK13, LDWORK, ONE, AB( 1+JB, J+KV ),
-     $                           LDAB-1 )
-                  END IF
-*
-                  IF( I3.GT.0 ) THEN
-*
-*                    Update A33
-*
-                     CALL DGEMM( 'No transpose', 'No transpose', I3, J3,
-     $                           JB, -ONE, WORK31, LDWORK, WORK13,
-     $                           LDWORK, ONE, AB( 1+KL, J+KV ), LDAB-1 )
-                  END IF
-*
-*                 Copy the lower triangle of A13 back into place
-*
-                  DO 150 JJ = 1, J3
-                     DO 140 II = JJ, JB
-                        AB( II-JJ+1, JJ+J+KV-1 ) = WORK13( II, JJ )
-  140                CONTINUE
-  150             CONTINUE
-               END IF
-            ELSE
-*
-*              Adjust the pivot indices.
-*
-               DO 160 I = J, J + JB - 1
-                  IPIV( I ) = IPIV( I ) + J - 1
-  160          CONTINUE
-            END IF
-*
-*           Partially undo the interchanges in the current block to
-*           restore the upper triangular form of A31 and copy the upper
-*           triangle of A31 back into place
-*
-            DO 170 JJ = J + JB - 1, J, -1
-               JP = IPIV( JJ ) - JJ + 1
-               IF( JP.NE.1 ) THEN
-*
-*                 Apply interchange to columns J to JJ-1
-*
-                  IF( JP+JJ-1.LT.J+KL ) THEN
-*
-*                    The interchange does not affect A31
-*
-                     CALL DSWAP( JJ-J, AB( KV+1+JJ-J, J ), LDAB-1,
-     $                           AB( KV+JP+JJ-J, J ), LDAB-1 )
-                  ELSE
-*
-*                    The interchange does affect A31
-*
-                     CALL DSWAP( JJ-J, AB( KV+1+JJ-J, J ), LDAB-1,
-     $                           WORK31( JP+JJ-J-KL, 1 ), LDWORK )
-                  END IF
-               END IF
-*
-*              Copy the current column of A31 back into place
-*
-               NW = MIN( I3, JJ-J+1 )
-               IF( NW.GT.0 )
-     $            CALL DCOPY( NW, WORK31( 1, JJ-J+1 ), 1,
-     $                        AB( KV+KL+1-JJ+J, JJ ), 1 )
-  170       CONTINUE
-  180    CONTINUE
-      END IF
-*
-      RETURN
-*
-*     End of DGBTRF
-*
-      END
-      SUBROUTINE DGETRF( M, N, A, LDA, IPIV, INFO )
-*
-*  -- LAPACK routine (version 1.1) --
-*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-*     Courant Institute, Argonne National Lab, and Rice University
-*     March 31, 1993
-*
-*     .. Scalar Arguments ..
-      INTEGER            INFO, LDA, M, N
-*     ..
-*     .. Array Arguments ..
-      INTEGER            IPIV( * )
-      DOUBLE PRECISION   A( LDA, * )
-*     ..
-*
-*  Purpose
-*  =======
-*
-*  DGETRF computes an LU factorization of a general M-by-N matrix A
-*  using partial pivoting with row interchanges.
-*
-*  The factorization has the form
-*     A = P * L * U
-*  where P is a permutation matrix, L is lower triangular with unit
-*  diagonal elements (lower trapezoidal if m > n), and U is upper
-*  triangular (upper trapezoidal if m < n).
-*
-*  This is the right-looking Level 3 BLAS version of the algorithm.
-*
-*  Arguments
-*  =========
-*
-*  M       (input) INTEGER
-*          The number of rows of the matrix A.  M >= 0.
-*
-*  N       (input) INTEGER
-*          The number of columns of the matrix A.  N >= 0.
-*
-*  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
-*          On entry, the M-by-N matrix to be factored.
-*          On exit, the factors L and U from the factorization
-*          A = P*L*U; the unit diagonal elements of L are not stored.
-*
-*  LDA     (input) INTEGER
-*          The leading dimension of the array A.  LDA >= max(1,M).
-*
-*  IPIV    (output) INTEGER array, dimension (min(M,N))
-*          The pivot indices; for 1 <= i <= min(M,N), row i of the
-*          matrix was interchanged with row IPIV(i).
-*
-*  INFO    (output) INTEGER
-*          = 0:  successful exit
-*          < 0:  if INFO = -i, the i-th argument had an illegal value
-*          > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
-*                has been completed, but the factor U is exactly
-*                singular, and division by zero will occur if it is used
-*                to solve a system of equations.
-*
-*  =====================================================================
-*
-*     .. Parameters ..
-      DOUBLE PRECISION   ONE
-      PARAMETER          ( ONE = 1.0D+0 )
-*     ..
-*     .. Local Scalars ..
-      INTEGER            I, IINFO, J, JB, NB
-*     ..
-*     .. External Subroutines ..
-      EXTERNAL           DGEMM, DGETF2, DLASWP, DTRSM, XERBLA
-*     ..
-*     .. External Functions ..
-      INTEGER            ILAENV
-      EXTERNAL           ILAENV
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC          MAX, MIN
-*     ..
-*     .. Executable Statements ..
-*
-*     Test the input parameters.
-*
-      INFO = 0
-      IF( M.LT.0 ) THEN
-         INFO = -1
-      ELSE IF( N.LT.0 ) THEN
-         INFO = -2
-      ELSE IF( LDA.LT.MAX( 1, M ) ) THEN
-         INFO = -4
-      END IF
-      IF( INFO.NE.0 ) THEN
-         CALL XERBLA( 'DGETRF', -INFO )
-         RETURN
-      END IF
-*
-*     Quick return if possible
-*
-      IF( M.EQ.0 .OR. N.EQ.0 )
-     $   RETURN
-*
-*     Determine the block size for this environment.
-*
-      NB = ILAENV( 1, 'DGETRF', ' ', M, N, -1, -1 )
-      IF( NB.LE.1 .OR. NB.GE.MIN( M, N ) ) THEN
-*
-*        Use unblocked code.
-*
-         CALL DGETF2( M, N, A, LDA, IPIV, INFO )
-      ELSE
-*
-*        Use blocked code.
-*
-         DO 20 J = 1, MIN( M, N ), NB
-            JB = MIN( MIN( M, N )-J+1, NB )
-*
-*           Factor diagonal and subdiagonal blocks and test for exact
-*           singularity.
-*
-            CALL DGETF2( M-J+1, JB, A( J, J ), LDA, IPIV( J ), IINFO )
-*
-*           Adjust INFO and the pivot indices.
-*
-            IF( INFO.EQ.0 .AND. IINFO.GT.0 )
-     $         INFO = IINFO + J - 1
-            DO 10 I = J, MIN( M, J+JB-1 )
-               IPIV( I ) = J - 1 + IPIV( I )
-   10       CONTINUE
-*
-*           Apply interchanges to columns 1:J-1.
-*
-            CALL DLASWP( J-1, A, LDA, J, J+JB-1, IPIV, 1 )
-*
-            IF( J+JB.LE.N ) THEN
-*
-*              Apply interchanges to columns J+JB:N.
-*
-               CALL DLASWP( N-J-JB+1, A( 1, J+JB ), LDA, J, J+JB-1,
-     $                      IPIV, 1 )
-*
-*              Compute block row of U.
-*
-               CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Unit', JB,
-     $                     N-J-JB+1, ONE, A( J, J ), LDA, A( J, J+JB ),
-     $                     LDA )
-               IF( J+JB.LE.M ) THEN
-*
-*                 Update trailing submatrix.
-*
-                  CALL DGEMM( 'No transpose', 'No transpose', M-J-JB+1,
-     $                        N-J-JB+1, JB, -ONE, A( J+JB, J ), LDA,
-     $                        A( J, J+JB ), LDA, ONE, A( J+JB, J+JB ),
-     $                        LDA )
-               END IF
-            END IF
-   20    CONTINUE
-      END IF
-      RETURN
-*
-*     End of DGETRF
-*
-      END
-*> \brief \b DGBTRS
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*> \htmlonly
-*> Download DGBTRS + dependencies
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgbtrs.f">
-*> [TGZ]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgbtrs.f">
-*> [ZIP]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgbtrs.f">
-*> [TXT]</a>
-*> \endhtmlonly
-*
-*  Definition:
-*  ===========
-*
-*       SUBROUTINE DGBTRS( TRANS, N, KL, KU, NRHS, AB, LDAB, IPIV, B, LDB,
-*                          INFO )
-*
-*       .. Scalar Arguments ..
-*       CHARACTER          TRANS
-*       INTEGER            INFO, KL, KU, LDAB, LDB, N, NRHS
-*       ..
-*       .. Array Arguments ..
-*       INTEGER            IPIV( * )
-*       DOUBLE PRECISION   AB( LDAB, * ), B( LDB, * )
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> DGBTRS solves a system of linear equations
-*>    A * X = B  or  A**T * X = B
-*> with a general band matrix A using the LU factorization computed
-*> by DGBTRF.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] TRANS
-*> \verbatim
-*>          TRANS is CHARACTER*1
-*>          Specifies the form of the system of equations.
-*>          = 'N':  A * X = B  (No transpose)
-*>          = 'T':  A**T* X = B  (Transpose)
-*>          = 'C':  A**T* X = B  (Conjugate transpose = Transpose)
-*> \endverbatim
-*>
-*> \param[in] N
-*> \verbatim
-*>          N is INTEGER
-*>          The order of the matrix A.  N >= 0.
-*> \endverbatim
-*>
-*> \param[in] KL
-*> \verbatim
-*>          KL is INTEGER
-*>          The number of subdiagonals within the band of A.  KL >= 0.
-*> \endverbatim
-*>
-*> \param[in] KU
-*> \verbatim
-*>          KU is INTEGER
-*>          The number of superdiagonals within the band of A.  KU >= 0.
-*> \endverbatim
-*>
-*> \param[in] NRHS
-*> \verbatim
-*>          NRHS is INTEGER
-*>          The number of right hand sides, i.e., the number of columns
-*>          of the matrix B.  NRHS >= 0.
-*> \endverbatim
-*>
-*> \param[in] AB
-*> \verbatim
-*>          AB is DOUBLE PRECISION array, dimension (LDAB,N)
-*>          Details of the LU factorization of the band matrix A, as
-*>          computed by DGBTRF.  U is stored as an upper triangular band
-*>          matrix with KL+KU superdiagonals in rows 1 to KL+KU+1, and
-*>          the multipliers used during the factorization are stored in
-*>          rows KL+KU+2 to 2*KL+KU+1.
-*> \endverbatim
-*>
-*> \param[in] LDAB
-*> \verbatim
-*>          LDAB is INTEGER
-*>          The leading dimension of the array AB.  LDAB >= 2*KL+KU+1.
-*> \endverbatim
-*>
-*> \param[in] IPIV
-*> \verbatim
-*>          IPIV is INTEGER array, dimension (N)
-*>          The pivot indices; for 1 <= i <= N, row i of the matrix was
-*>          interchanged with row IPIV(i).
-*> \endverbatim
-*>
-*> \param[in,out] B
-*> \verbatim
-*>          B is DOUBLE PRECISION array, dimension (LDB,NRHS)
-*>          On entry, the right hand side matrix B.
-*>          On exit, the solution matrix X.
-*> \endverbatim
-*>
-*> \param[in] LDB
-*> \verbatim
-*>          LDB is INTEGER
-*>          The leading dimension of the array B.  LDB >= max(1,N).
-*> \endverbatim
-*>
-*> \param[out] INFO
-*> \verbatim
-*>          INFO is INTEGER
-*>          = 0:  successful exit
-*>          < 0: if INFO = -i, the i-th argument had an illegal value
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup doubleGBcomputational
-*
-*  =====================================================================
-      SUBROUTINE DGBTRS( TRANS, N, KL, KU, NRHS, AB, LDAB, IPIV, B, LDB,
-     $                   INFO )
-*
-*  -- LAPACK computational routine --
-*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      CHARACTER          TRANS
-      INTEGER            INFO, KL, KU, LDAB, LDB, N, NRHS
-*     ..
-*     .. Array Arguments ..
-      INTEGER            IPIV( * )
-      DOUBLE PRECISION   AB( LDAB, * ), B( LDB, * )
-*     ..
-*
-*  =====================================================================
-*
-*     .. Parameters ..
-      DOUBLE PRECISION   ONE
-      PARAMETER          ( ONE = 1.0D+0 )
-*     ..
-*     .. Local Scalars ..
-      LOGICAL            LNOTI, NOTRAN
-      INTEGER            I, J, KD, L, LM
-*     ..
-*     .. External Functions ..
-      LOGICAL            LSAME
-      EXTERNAL           LSAME
-*     ..
-*     .. External Subroutines ..
-      EXTERNAL           DGEMV, DGER, DSWAP, DTBSV, XERBLA
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC          MAX, MIN
-*     ..
-*     .. Executable Statements ..
-*
-*     Test the input parameters.
-*
-      INFO = 0
-      NOTRAN = LSAME( TRANS, 'N' )
-      IF( .NOT.NOTRAN .AND. .NOT.LSAME( TRANS, 'T' ) .AND. .NOT.
-     $    LSAME( TRANS, 'C' ) ) THEN
-         INFO = -1
-      ELSE IF( N.LT.0 ) THEN
-         INFO = -2
-      ELSE IF( KL.LT.0 ) THEN
-         INFO = -3
-      ELSE IF( KU.LT.0 ) THEN
-         INFO = -4
-      ELSE IF( NRHS.LT.0 ) THEN
-         INFO = -5
-      ELSE IF( LDAB.LT.( 2*KL+KU+1 ) ) THEN
-         INFO = -7
-      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
-         INFO = -10
-      END IF
-      IF( INFO.NE.0 ) THEN
-         CALL XERBLA( 'DGBTRS', -INFO )
-         RETURN
-      END IF
-*
-*     Quick return if possible
-*
-      IF( N.EQ.0 .OR. NRHS.EQ.0 )
-     $   RETURN
-*
-      KD = KU + KL + 1
-      LNOTI = KL.GT.0
-*
-      IF( NOTRAN ) THEN
-*
-*        Solve  A*X = B.
-*
-*        Solve L*X = B, overwriting B with X.
-*
-*        L is represented as a product of permutations and unit lower
-*        triangular matrices L = P(1) * L(1) * ... * P(n-1) * L(n-1),
-*        where each transformation L(i) is a rank-one modification of
-*        the identity matrix.
-*
-         IF( LNOTI ) THEN
-            DO 10 J = 1, N - 1
-               LM = MIN( KL, N-J )
-               L = IPIV( J )
-               IF( L.NE.J )
-     $            CALL DSWAP( NRHS, B( L, 1 ), LDB, B( J, 1 ), LDB )
-               CALL DGER( LM, NRHS, -ONE, AB( KD+1, J ), 1, B( J, 1 ),
-     $                    LDB, B( J+1, 1 ), LDB )
-   10       CONTINUE
-         END IF
-*
-         DO 20 I = 1, NRHS
-*
-*           Solve U*X = B, overwriting B with X.
-*
-            CALL DTBSV( 'Upper', 'No transpose', 'Non-unit', N, KL+KU,
-     $                  AB, LDAB, B( 1, I ), 1 )
-   20    CONTINUE
-*
-      ELSE
-*
-*        Solve A**T*X = B.
-*
-         DO 30 I = 1, NRHS
-*
-*           Solve U**T*X = B, overwriting B with X.
-*
-            CALL DTBSV( 'Upper', 'Transpose', 'Non-unit', N, KL+KU, AB,
-     $                  LDAB, B( 1, I ), 1 )
-   30    CONTINUE
-*
-*        Solve L**T*X = B, overwriting B with X.
-*
-         IF( LNOTI ) THEN
-            DO 40 J = N - 1, 1, -1
-               LM = MIN( KL, N-J )
-               CALL DGEMV( 'Transpose', LM, NRHS, -ONE, B( J+1, 1 ),
-     $                     LDB, AB( KD+1, J ), 1, ONE, B( J, 1 ), LDB )
-               L = IPIV( J )
-               IF( L.NE.J )
-     $            CALL DSWAP( NRHS, B( L, 1 ), LDB, B( J, 1 ), LDB )
-   40       CONTINUE
-         END IF
-      END IF
-      RETURN
-*
-*     End of DGBTRS
-*
-      END
-      INTEGER FUNCTION ILAENV( ISPEC, NAME, OPTS, N1, N2, N3,
-     $                 N4 )
-*
-*  -- LAPACK auxiliary routine (preliminary version) --
-*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-*     Courant Institute, Argonne National Lab, and Rice University
-*     February 20, 1992
-*
-*     .. Scalar Arguments ..
-      CHARACTER*( * )    NAME, OPTS
-      INTEGER            ISPEC, N1, N2, N3, N4
-*     ..
-*
-*  Purpose
-*  =======
-*
-*  ILAENV is called from the LAPACK routines to choose problem-dependent
-*  parameters for the local environment.  See ISPEC for a description of
-*  the parameters.
-*
-*  This version provides a set of parameters which should give good,
-*  but not optimal, performance on many of the currently available
-*  computers.  Users are encouraged to modify this subroutine to set
-*  the tuning parameters for their particular machine using the option
-*  and problem size information in the arguments.
-*
-*  This routine will not function correctly if it is converted to all
-*  lower case.  Converting it to all upper case is allowed.
-*
-*  Arguments
-*  =========
-*
-*  ISPEC   (input) INTEGER
-*          Specifies the parameter to be returned as the value of
-*          ILAENV.
-*          = 1: the optimal blocksize; if this value is 1, an unblocked
-*               algorithm will give the best performance.
-*          = 2: the minimum block size for which the block routine
-*               should be used; if the usable block size is less than
-*               this value, an unblocked routine should be used.
-*          = 3: the crossover point (in a block routine, for N less
-*               than this value, an unblocked routine should be used)
-*          = 4: the number of shifts, used in the nonsymmetric
-*               eigenvalue routines
-*          = 5: the minimum column dimension for blocking to be used;
-*               rectangular blocks must have dimension at least k by m,
-*               where k is given by ILAENV(2,...) and m by ILAENV(5,...)
-*          = 6: the crossover point for the SVD (when reducing an m by n
-*               matrix to bidiagonal form, if max(m,n)/min(m,n) exceeds
-*               this value, a QR factorization is used first to reduce
-*               the matrix to a triangular form.)
-*          = 7: the number of processors
-*          = 8: the crossover point for the multishift QR and QZ methods
-*               for nonsymmetric eigenvalue problems.
-*
-*  NAME    (input) CHARACTER*(*)
-*          The name of the calling subroutine, in either upper case or
-*          lower case.
-*
-*  OPTS    (input) CHARACTER*(*)
-*          The character options to the subroutine NAME, concatenated
-*          into a single character string.  For example, UPLO = 'U',
-*          TRANS = 'T', and DIAG = 'N' for a triangular routine would
-*          be specified as OPTS = 'UTN'.
-*
-*  N1      (input) INTEGER
-*  N2      (input) INTEGER
-*  N3      (input) INTEGER
-*  N4      (input) INTEGER
-*          Problem dimensions for the subroutine NAME; these may not all
-*          be required.
-*
-* (ILAENV) (output) INTEGER
-*          >= 0: the value of the parameter specified by ISPEC
-*          < 0:  if ILAENV = -k, the k-th argument had an illegal value.
-*
-*  Further Details
-*  ===============
-*
-*  The following conventions have been used when calling ILAENV from the
-*  LAPACK routines:
-*  1)  OPTS is a concatenation of all of the character options to
-*      subroutine NAME, in the same order that they appear in the
-*      argument list for NAME, even if they are not used in determining
-*      the value of the parameter specified by ISPEC.
-*  2)  The problem dimensions N1, N2, N3, N4 are specified in the order
-*      that they appear in the argument list for NAME.  N1 is used
-*      first, N2 second, and so on, and unused problem dimensions are
-*      passed a value of -1.
-*  3)  The parameter value returned by ILAENV is checked for validity in
-*      the calling subroutine.  For example, ILAENV is used to retrieve
-*      the optimal blocksize for STRTRI as follows:
-*
-*      NB = ILAENV( 1, 'STRTRI', UPLO // DIAG, N, -1, -1, -1 )
-*      IF( NB.LE.1 ) NB = MAX( 1, N )
-*
-*  =====================================================================
-*
-*     .. Local Scalars ..
-      LOGICAL            CNAME, SNAME
-      CHARACTER*1        C1
-      CHARACTER*2        C2, C4
-      CHARACTER*3        C3
-      CHARACTER*6        SUBNAM
-      INTEGER            I, IC, IZ, NB, NBMIN, NX
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC          CHAR, ICHAR, INT, MIN, REAL
-*     ..
-*     .. Executable Statements ..
-*
-      GO TO ( 100, 100, 100, 400, 500, 600, 700, 800 ) ISPEC
-*
-*     Invalid value for ISPEC
-*
-      ILAENV = -1
-      RETURN
-*
-  100 CONTINUE
-*
-*     Convert NAME to upper case if the first character is lower case.
-*
-      ILAENV = 1
-      SUBNAM = NAME
-      IC = ICHAR( SUBNAM( 1:1 ) )
-      IZ = ICHAR( 'Z' )
-      IF( IZ.EQ.90 .OR. IZ.EQ.122 ) THEN
-*
-*        ASCII character set
-*
-         IF( IC.GE.97 .AND. IC.LE.122 ) THEN
-            SUBNAM( 1:1 ) = CHAR( IC-32 )
-            DO 10 I = 2, 6
-               IC = ICHAR( SUBNAM( I:I ) )
-               IF( IC.GE.97 .AND. IC.LE.122 )
-     $            SUBNAM( I:I ) = CHAR( IC-32 )
-   10       CONTINUE
-         END IF
-*
-      ELSE IF( IZ.EQ.233 .OR. IZ.EQ.169 ) THEN
-*
-*        EBCDIC character set
-*
-         IF( ( IC.GE.129 .AND. IC.LE.137 ) .OR.
-     $       ( IC.GE.145 .AND. IC.LE.153 ) .OR.
-     $       ( IC.GE.162 .AND. IC.LE.169 ) ) THEN
-            SUBNAM( 1:1 ) = CHAR( IC+64 )
-            DO 20 I = 2, 6
-               IC = ICHAR( SUBNAM( I:I ) )
-               IF( ( IC.GE.129 .AND. IC.LE.137 ) .OR.
-     $             ( IC.GE.145 .AND. IC.LE.153 ) .OR.
-     $             ( IC.GE.162 .AND. IC.LE.169 ) )
-     $            SUBNAM( I:I ) = CHAR( IC+64 )
-   20       CONTINUE
-         END IF
-*
-      ELSE IF( IZ.EQ.218 .OR. IZ.EQ.250 ) THEN
-*
-*        Prime machines:  ASCII+128
-*
-         IF( IC.GE.225 .AND. IC.LE.250 ) THEN
-            SUBNAM( 1:1 ) = CHAR( IC-32 )
-            DO 30 I = 2, 6
-               IC = ICHAR( SUBNAM( I:I ) )
-               IF( IC.GE.225 .AND. IC.LE.250 )
-     $            SUBNAM( I:I ) = CHAR( IC-32 )
-   30       CONTINUE
-         END IF
-      END IF
-*
-      C1 = SUBNAM( 1:1 )
-      SNAME = C1.EQ.'S' .OR. C1.EQ.'D'
-      CNAME = C1.EQ.'C' .OR. C1.EQ.'Z'
-      IF( .NOT.( CNAME .OR. SNAME ) )
-     $   RETURN
-      C2 = SUBNAM( 2:3 )
-      C3 = SUBNAM( 4:6 )
-      C4 = C3( 2:3 )
-*
-      GO TO ( 110, 200, 300 ) ISPEC
-*
-  110 CONTINUE
-*
-*     ISPEC = 1:  block size
-*
-*     In these examples, separate code is provided for setting NB for
-*     real and complex.  We assume that NB will take the same value in
-*     single or double precision.
-*
-      NB = 1
-*
-      IF( C2.EQ.'GE' ) THEN
-         IF( C3.EQ.'TRF' ) THEN
-            IF( SNAME ) THEN
-               NB = 64
-            ELSE
-               NB = 64
-            END IF
-         ELSE IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR.
-     $            C3.EQ.'QLF' ) THEN
-            IF( SNAME ) THEN
-               NB = 32
-            ELSE
-               NB = 32
-            END IF
-         ELSE IF( C3.EQ.'HRD' ) THEN
-            IF( SNAME ) THEN
-               NB = 32
-            ELSE
-               NB = 32
-            END IF
-         ELSE IF( C3.EQ.'BRD' ) THEN
-            IF( SNAME ) THEN
-               NB = 32
-            ELSE
-               NB = 32
-            END IF
-         ELSE IF( C3.EQ.'TRI' ) THEN
-            IF( SNAME ) THEN
-               NB = 64
-            ELSE
-               NB = 64
-            END IF
-         END IF
-      ELSE IF( C2.EQ.'PO' ) THEN
-         IF( C3.EQ.'TRF' ) THEN
-            IF( SNAME ) THEN
-               NB = 64
-            ELSE
-               NB = 64
-            END IF
-         END IF
-      ELSE IF( C2.EQ.'SY' ) THEN
-         IF( C3.EQ.'TRF' ) THEN
-            IF( SNAME ) THEN
-               NB = 64
-            ELSE
-               NB = 64
-            END IF
-         ELSE IF( SNAME .AND. C3.EQ.'TRD' ) THEN
-            NB = 1
-         ELSE IF( SNAME .AND. C3.EQ.'GST' ) THEN
-            NB = 64
-         END IF
-      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
-         IF( C3.EQ.'TRF' ) THEN
-            NB = 64
-         ELSE IF( C3.EQ.'TRD' ) THEN
-            NB = 1
-         ELSE IF( C3.EQ.'GST' ) THEN
-            NB = 64
-         END IF
-      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
-         IF( C3( 1:1 ).EQ.'G' ) THEN
-            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
-     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
-     $          C4.EQ.'BR' ) THEN
-               NB = 32
-            END IF
-         ELSE IF( C3( 1:1 ).EQ.'M' ) THEN
-            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
-     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
-     $          C4.EQ.'BR' ) THEN
-               NB = 32
-            END IF
-         END IF
-      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
-         IF( C3( 1:1 ).EQ.'G' ) THEN
-            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
-     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
-     $          C4.EQ.'BR' ) THEN
-               NB = 32
-            END IF
-         ELSE IF( C3( 1:1 ).EQ.'M' ) THEN
-            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
-     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
-     $          C4.EQ.'BR' ) THEN
-               NB = 32
-            END IF
-         END IF
-      ELSE IF( C2.EQ.'GB' ) THEN
-         IF( C3.EQ.'TRF' ) THEN
-            IF( SNAME ) THEN
-               IF( N4.LE.64 ) THEN
-                  NB = 1
-               ELSE
-                  NB = 32
-               END IF
-            ELSE
-               IF( N4.LE.64 ) THEN
-                  NB = 1
-               ELSE
-                  NB = 32
-               END IF
-            END IF
-         END IF
-      ELSE IF( C2.EQ.'PB' ) THEN
-         IF( C3.EQ.'TRF' ) THEN
-            IF( SNAME ) THEN
-               IF( N2.LE.64 ) THEN
-                  NB = 1
-               ELSE
-                  NB = 32
-               END IF
-            ELSE
-               IF( N2.LE.64 ) THEN
-                  NB = 1
-               ELSE
-                  NB = 32
-               END IF
-            END IF
-         END IF
-      ELSE IF( C2.EQ.'TR' ) THEN
-         IF( C3.EQ.'TRI' ) THEN
-            IF( SNAME ) THEN
-               NB = 64
-            ELSE
-               NB = 64
-            END IF
-         END IF
-      ELSE IF( C2.EQ.'LA' ) THEN
-         IF( C3.EQ.'UUM' ) THEN
-            IF( SNAME ) THEN
-               NB = 64
-            ELSE
-               NB = 64
-            END IF
-         END IF
-      ELSE IF( SNAME .AND. C2.EQ.'ST' ) THEN
-         IF( C3.EQ.'EBZ' ) THEN
-            NB = 1
-         END IF
-      END IF
-      ILAENV = NB
-      RETURN
-*
-  200 CONTINUE
-*
-*     ISPEC = 2:  minimum block size
-*
-      NBMIN = 2
-      IF( C2.EQ.'GE' ) THEN
-         IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR.
-     $       C3.EQ.'QLF' ) THEN
-            IF( SNAME ) THEN
-               NBMIN = 2
-            ELSE
-               NBMIN = 2
-            END IF
-         ELSE IF( C3.EQ.'HRD' ) THEN
-            IF( SNAME ) THEN
-               NBMIN = 2
-            ELSE
-               NBMIN = 2
-            END IF
-         ELSE IF( C3.EQ.'BRD' ) THEN
-            IF( SNAME ) THEN
-               NBMIN = 2
-            ELSE
-               NBMIN = 2
-            END IF
-         ELSE IF( C3.EQ.'TRI' ) THEN
-            IF( SNAME ) THEN
-               NBMIN = 2
-            ELSE
-               NBMIN = 2
-            END IF
-         END IF
-      ELSE IF( C2.EQ.'SY' ) THEN
-         IF( C3.EQ.'TRF' ) THEN
-            IF( SNAME ) THEN
-               NBMIN = 2
-            ELSE
-               NBMIN = 2
-            END IF
-         ELSE IF( SNAME .AND. C3.EQ.'TRD' ) THEN
-            NBMIN = 2
-         END IF
-      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
-         IF( C3.EQ.'TRD' ) THEN
-            NBMIN = 2
-         END IF
-      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
-         IF( C3( 1:1 ).EQ.'G' ) THEN
-            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
-     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
-     $          C4.EQ.'BR' ) THEN
-               NBMIN = 2
-            END IF
-         ELSE IF( C3( 1:1 ).EQ.'M' ) THEN
-            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
-     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
-     $          C4.EQ.'BR' ) THEN
-               NBMIN = 2
-            END IF
-         END IF
-      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
-         IF( C3( 1:1 ).EQ.'G' ) THEN
-            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
-     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
-     $          C4.EQ.'BR' ) THEN
-               NBMIN = 2
-            END IF
-         ELSE IF( C3( 1:1 ).EQ.'M' ) THEN
-            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
-     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
-     $          C4.EQ.'BR' ) THEN
-               NBMIN = 2
-            END IF
-         END IF
-      END IF
-      ILAENV = NBMIN
-      RETURN
-*
-  300 CONTINUE
-*
-*     ISPEC = 3:  crossover point
-*
-      NX = 0
-      IF( C2.EQ.'GE' ) THEN
-         IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR.
-     $       C3.EQ.'QLF' ) THEN
-            IF( SNAME ) THEN
-               NX = 128
-            ELSE
-               NX = 128
-            END IF
-         ELSE IF( C3.EQ.'HRD' ) THEN
-            IF( SNAME ) THEN
-               NX = 128
-            ELSE
-               NX = 128
-            END IF
-         ELSE IF( C3.EQ.'BRD' ) THEN
-            IF( SNAME ) THEN
-               NX = 128
-            ELSE
-               NX = 128
-            END IF
-         END IF
-      ELSE IF( C2.EQ.'SY' ) THEN
-         IF( SNAME .AND. C3.EQ.'TRD' ) THEN
-            NX = 1
-         END IF
-      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
-         IF( C3.EQ.'TRD' ) THEN
-            NX = 1
-         END IF
-      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
-         IF( C3( 1:1 ).EQ.'G' ) THEN
-            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
-     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
-     $          C4.EQ.'BR' ) THEN
-               NX = 128
-            END IF
-         END IF
-      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
-         IF( C3( 1:1 ).EQ.'G' ) THEN
-            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
-     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
-     $          C4.EQ.'BR' ) THEN
-               NX = 128
-            END IF
-         END IF
-      END IF
-      ILAENV = NX
-      RETURN
-*
-  400 CONTINUE
-*
-*     ISPEC = 4:  number of shifts (used by xHSEQR)
-*
-      ILAENV = 6
-      RETURN
-*
-  500 CONTINUE
-*
-*     ISPEC = 5:  minimum column dimension (not used)
-*
-      ILAENV = 2
-      RETURN
-*
-  600 CONTINUE
-*
-*     ISPEC = 6:  crossover point for SVD (used by xGELSS and xGESVD)
-*
-      ILAENV = INT( REAL( MIN( N1, N2 ) )*1.6E0 )
-      RETURN
-*
-  700 CONTINUE
-*
-*     ISPEC = 7:  number of processors (not used)
-*
-      ILAENV = 1
-      RETURN
-*
-  800 CONTINUE
-*
-*     ISPEC = 8:  crossover point for multishift (used by xHSEQR)
-*
-      ILAENV = 50
-      RETURN
-*
-*     End of ILAENV
-*
-      END
-c
-*> \brief \b DGBTF2 computes the LU factorization of a general band matrix using the unblocked version of the algorithm.
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*> \htmlonly
-*> Download DGBTF2 + dependencies
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgbtf2.f">
-*> [TGZ]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgbtf2.f">
-*> [ZIP]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgbtf2.f">
-*> [TXT]</a>
-*> \endhtmlonly
-*
-*  Definition:
-*  ===========
-*
-*       SUBROUTINE DGBTF2( M, N, KL, KU, AB, LDAB, IPIV, INFO )
-*
-*       .. Scalar Arguments ..
-*       INTEGER            INFO, KL, KU, LDAB, M, N
-*       ..
-*       .. Array Arguments ..
-*       INTEGER            IPIV( * )
-*       DOUBLE PRECISION   AB( LDAB, * )
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> DGBTF2 computes an LU factorization of a real m-by-n band matrix A
-*> using partial pivoting with row interchanges.
-*>
-*> This is the unblocked version of the algorithm, calling Level 2 BLAS.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] M
-*> \verbatim
-*>          M is INTEGER
-*>          The number of rows of the matrix A.  M >= 0.
-*> \endverbatim
-*>
-*> \param[in] N
-*> \verbatim
-*>          N is INTEGER
-*>          The number of columns of the matrix A.  N >= 0.
-*> \endverbatim
-*>
-*> \param[in] KL
-*> \verbatim
-*>          KL is INTEGER
-*>          The number of subdiagonals within the band of A.  KL >= 0.
-*> \endverbatim
-*>
-*> \param[in] KU
-*> \verbatim
-*>          KU is INTEGER
-*>          The number of superdiagonals within the band of A.  KU >= 0.
-*> \endverbatim
-*>
-*> \param[in,out] AB
-*> \verbatim
-*>          AB is DOUBLE PRECISION array, dimension (LDAB,N)
-*>          On entry, the matrix A in band storage, in rows KL+1 to
-*>          2*KL+KU+1; rows 1 to KL of the array need not be set.
-*>          The j-th column of A is stored in the j-th column of the
-*>          array AB as follows:
-*>          AB(kl+ku+1+i-j,j) = A(i,j) for max(1,j-ku)<=i<=min(m,j+kl)
-*>
-*>          On exit, details of the factorization: U is stored as an
-*>          upper triangular band matrix with KL+KU superdiagonals in
-*>          rows 1 to KL+KU+1, and the multipliers used during the
-*>          factorization are stored in rows KL+KU+2 to 2*KL+KU+1.
-*>          See below for further details.
-*> \endverbatim
-*>
-*> \param[in] LDAB
-*> \verbatim
-*>          LDAB is INTEGER
-*>          The leading dimension of the array AB.  LDAB >= 2*KL+KU+1.
-*> \endverbatim
-*>
-*> \param[out] IPIV
-*> \verbatim
-*>          IPIV is INTEGER array, dimension (min(M,N))
-*>          The pivot indices; for 1 <= i <= min(M,N), row i of the
-*>          matrix was interchanged with row IPIV(i).
-*> \endverbatim
-*>
-*> \param[out] INFO
-*> \verbatim
-*>          INFO is INTEGER
-*>          = 0: successful exit
-*>          < 0: if INFO = -i, the i-th argument had an illegal value
-*>          > 0: if INFO = +i, U(i,i) is exactly zero. The factorization
-*>               has been completed, but the factor U is exactly
-*>               singular, and division by zero will occur if it is used
-*>               to solve a system of equations.
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup doubleGBcomputational
-*
-*> \par Further Details:
-*  =====================
-*>
-*> \verbatim
-*>
-*>  The band storage scheme is illustrated by the following example, when
-*>  M = N = 6, KL = 2, KU = 1:
-*>
-*>  On entry:                       On exit:
-*>
-*>      *    *    *    +    +    +       *    *    *   u14  u25  u36
-*>      *    *    +    +    +    +       *    *   u13  u24  u35  u46
-*>      *   a12  a23  a34  a45  a56      *   u12  u23  u34  u45  u56
-*>     a11  a22  a33  a44  a55  a66     u11  u22  u33  u44  u55  u66
-*>     a21  a32  a43  a54  a65   *      m21  m32  m43  m54  m65   *
-*>     a31  a42  a53  a64   *    *      m31  m42  m53  m64   *    *
-*>
-*>  Array elements marked * are not used by the routine; elements marked
-*>  + need not be set on entry, but are required by the routine to store
-*>  elements of U, because of fill-in resulting from the row
-*>  interchanges.
-*> \endverbatim
-*>
-*  =====================================================================
-      SUBROUTINE DGBTF2( M, N, KL, KU, AB, LDAB, IPIV, INFO )
-*
-*  -- LAPACK computational routine --
-*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      INTEGER            INFO, KL, KU, LDAB, M, N
-*     ..
-*     .. Array Arguments ..
-      INTEGER            IPIV( * )
-      DOUBLE PRECISION   AB( LDAB, * )
-*     ..
-*
-*  =====================================================================
-*
-*     .. Parameters ..
-      DOUBLE PRECISION   ONE, ZERO
-      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
-*     ..
-*     .. Local Scalars ..
-      INTEGER            I, J, JP, JU, KM, KV
-*     ..
-*     .. External Functions ..
-      INTEGER            IDAMAX
-      EXTERNAL           IDAMAX
-*     ..
-*     .. External Subroutines ..
-      EXTERNAL           DGER, DSCAL, DSWAP, XERBLA
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC          MAX, MIN
-*     ..
-*     .. Executable Statements ..
-*
-*     KV is the number of superdiagonals in the factor U, allowing for
-*     fill-in.
-*
-      KV = KU + KL
-*
-*     Test the input parameters.
-*
-      INFO = 0
-      IF( M.LT.0 ) THEN
-         INFO = -1
-      ELSE IF( N.LT.0 ) THEN
-         INFO = -2
-      ELSE IF( KL.LT.0 ) THEN
-         INFO = -3
-      ELSE IF( KU.LT.0 ) THEN
-         INFO = -4
-      ELSE IF( LDAB.LT.KL+KV+1 ) THEN
-         INFO = -6
-      END IF
-      IF( INFO.NE.0 ) THEN
-         CALL XERBLA( 'DGBTF2', -INFO )
-         RETURN
-      END IF
-*
-*     Quick return if possible
-*
-      IF( M.EQ.0 .OR. N.EQ.0 )
-     $   RETURN
-*
-*     Gaussian elimination with partial pivoting
-*
-*     Set fill-in elements in columns KU+2 to KV to zero.
-*
-      DO 20 J = KU + 2, MIN( KV, N )
-         DO 10 I = KV - J + 2, KL
-            AB( I, J ) = ZERO
-   10    CONTINUE
-   20 CONTINUE
-*
-*     JU is the index of the last column affected by the current stage
-*     of the factorization.
-*
-      JU = 1
-*
-      DO 40 J = 1, MIN( M, N )
-*
-*        Set fill-in elements in column J+KV to zero.
-*
-         IF( J+KV.LE.N ) THEN
-            DO 30 I = 1, KL
-               AB( I, J+KV ) = ZERO
-   30       CONTINUE
-         END IF
-*
-*        Find pivot and test for singularity. KM is the number of
-*        subdiagonal elements in the current column.
-*
-         KM = MIN( KL, M-J )
-         JP = IDAMAX( KM+1, AB( KV+1, J ), 1 )
-         IPIV( J ) = JP + J - 1
-         IF( AB( KV+JP, J ).NE.ZERO ) THEN
-            JU = MAX( JU, MIN( J+KU+JP-1, N ) )
-*
-*           Apply interchange to columns J to JU.
-*
-            IF( JP.NE.1 )
-     $         CALL DSWAP( JU-J+1, AB( KV+JP, J ), LDAB-1,
-     $                     AB( KV+1, J ), LDAB-1 )
-*
-            IF( KM.GT.0 ) THEN
-*
-*              Compute multipliers.
-*
-               CALL DSCAL( KM, ONE / AB( KV+1, J ), AB( KV+2, J ), 1 )
-*
-*              Update trailing submatrix within the band.
-*
-               IF( JU.GT.J )
-     $            CALL DGER( KM, JU-J, -ONE, AB( KV+2, J ), 1,
-     $                       AB( KV, J+1 ), LDAB-1, AB( KV+1, J+1 ),
-     $                       LDAB-1 )
-            END IF
-         ELSE
-*
-*           If pivot is zero, set INFO to the index of the pivot
-*           unless a zero pivot has already been found.
-*
-            IF( INFO.EQ.0 )
-     $         INFO = J
-         END IF
-   40 CONTINUE
-      RETURN
-*
-*     End of DGBTF2
-*
-      END
-
-      SUBROUTINE DGER  ( M, N, ALPHA, X, INCX, Y, INCY, A, LDA )
-*     .. Scalar Arguments ..
-      DOUBLE PRECISION   ALPHA
-      INTEGER            INCX, INCY, LDA, M, N
-*     .. Array Arguments ..
-      DOUBLE PRECISION   A( LDA, * ), X( * ), Y( * )
-*     ..
-*
-*  Purpose
-*  =======
-*
-*  DGER   performs the rank 1 operation
-*
-*     A := alpha*x*y' + A,
-*
-*  where alpha is a scalar, x is an m element vector, y is an n element
-*  vector and A is an m by n matrix.
-*
-*  Parameters
-*  ==========
-*
-*  M      - INTEGER.
-*           On entry, M specifies the number of rows of the matrix A.
-*           M must be at least zero.
-*           Unchanged on exit.
-*
-*  N      - INTEGER.
-*           On entry, N specifies the number of columns of the matrix A.
-*           N must be at least zero.
-*           Unchanged on exit.
-*
-*  ALPHA  - DOUBLE PRECISION.
-*           On entry, ALPHA specifies the scalar alpha.
-*           Unchanged on exit.
-*
-*  X      - DOUBLE PRECISION array of dimension at least
-*           ( 1 + ( m - 1 )*abs( INCX ) ).
-*           Before entry, the incremented array X must contain the m
-*           element vector x.
-*           Unchanged on exit.
-*
-*  INCX   - INTEGER.
-*           On entry, INCX specifies the increment for the elements of
-*           X. INCX must not be zero.
-*           Unchanged on exit.
-*
-*  Y      - DOUBLE PRECISION array of dimension at least
-*           ( 1 + ( n - 1 )*abs( INCY ) ).
-*           Before entry, the incremented array Y must contain the n
-*           element vector y.
-*           Unchanged on exit.
-*
-*  INCY   - INTEGER.
-*           On entry, INCY specifies the increment for the elements of
-*           Y. INCY must not be zero.
-*           Unchanged on exit.
-*
-*  A      - DOUBLE PRECISION array of DIMENSION ( LDA, n ).
-*           Before entry, the leading m by n part of the array A must
-*           contain the matrix of coefficients. On exit, A is
-*           overwritten by the updated matrix.
-*
-*  LDA    - INTEGER.
-*           On entry, LDA specifies the first dimension of A as declared
-*           in the calling (sub) program. LDA must be at least
-*           max( 1, m ).
-*           Unchanged on exit.
-*
-*
-*  Level 2 Blas routine.
-*
-*  -- Written on 22-October-1986.
-*     Jack Dongarra, Argonne National Lab.
-*     Jeremy Du Croz, Nag Central Office.
-*     Sven Hammarling, Nag Central Office.
-*     Richard Hanson, Sandia National Labs.
-*
-*
-*     .. Parameters ..
-      DOUBLE PRECISION   ZERO
-      PARAMETER        ( ZERO = 0.0D+0 )
-*     .. Local Scalars ..
-      DOUBLE PRECISION   TEMP
-      INTEGER            I, INFO, IX, J, JY, KX
-*     .. External Subroutines ..
-      EXTERNAL           XERBLA
-*     .. Intrinsic Functions ..
-      INTRINSIC          MAX
-*     ..
-*     .. Executable Statements ..
-*
-*     Test the input parameters.
-*
-      INFO = 0
-      IF     ( M.LT.0 )THEN
-         INFO = 1
-      ELSE IF( N.LT.0 )THEN
-         INFO = 2
-      ELSE IF( INCX.EQ.0 )THEN
-         INFO = 5
-      ELSE IF( INCY.EQ.0 )THEN
-         INFO = 7
-      ELSE IF( LDA.LT.MAX( 1, M ) )THEN
-         INFO = 9
-      END IF
-      IF( INFO.NE.0 )THEN
-         CALL XERBLA( 'DGER  ', INFO )
-         RETURN
-      END IF
-*
-*     Quick return if possible.
-*
-      IF( ( M.EQ.0 ).OR.( N.EQ.0 ).OR.( ALPHA.EQ.ZERO ) )
-     $   RETURN
-*
-*     Start the operations. In this version the elements of A are
-*     accessed sequentially with one pass through A.
-*
-      IF( INCY.GT.0 )THEN
-         JY = 1
-      ELSE
-         JY = 1 - ( N - 1 )*INCY
-      END IF
-      IF( INCX.EQ.1 )THEN
-         DO 20, J = 1, N
-            IF( Y( JY ).NE.ZERO )THEN
-               TEMP = ALPHA*Y( JY )
-               DO 10, I = 1, M
-                  A( I, J ) = A( I, J ) + X( I )*TEMP
-   10          CONTINUE
-            END IF
-            JY = JY + INCY
-   20    CONTINUE
-      ELSE
-         IF( INCX.GT.0 )THEN
-            KX = 1
-         ELSE
-            KX = 1 - ( M - 1 )*INCX
-         END IF
-         DO 40, J = 1, N
-            IF( Y( JY ).NE.ZERO )THEN
-               TEMP = ALPHA*Y( JY )
-               IX   = KX
-               DO 30, I = 1, M
-                  A( I, J ) = A( I, J ) + X( IX )*TEMP
-                  IX        = IX        + INCX
-   30          CONTINUE
-            END IF
-            JY = JY + INCY
-   40    CONTINUE
-      END IF
-*
-      RETURN
-*
-*     End of DGER  .
-*
-      END
-*> \brief \b DLASWP performs a series of row interchanges on a general rectangular matrix.
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*> \htmlonly
-*> Download DLASWP + dependencies
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dlaswp.f">
-*> [TGZ]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dlaswp.f">
-*> [ZIP]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dlaswp.f">
-*> [TXT]</a>
-*> \endhtmlonly
-*
-*  Definition:
-*  ===========
-*
-*       SUBROUTINE DLASWP( N, A, LDA, K1, K2, IPIV, INCX )
-*
-*       .. Scalar Arguments ..
-*       INTEGER            INCX, K1, K2, LDA, N
-*       ..
-*       .. Array Arguments ..
-*       INTEGER            IPIV( * )
-*       DOUBLE PRECISION   A( LDA, * )
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> DLASWP performs a series of row interchanges on the matrix A.
-*> One row interchange is initiated for each of rows K1 through K2 of A.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] N
-*> \verbatim
-*>          N is INTEGER
-*>          The number of columns of the matrix A.
-*> \endverbatim
-*>
-*> \param[in,out] A
-*> \verbatim
-*>          A is DOUBLE PRECISION array, dimension (LDA,N)
-*>          On entry, the matrix of column dimension N to which the row
-*>          interchanges will be applied.
-*>          On exit, the permuted matrix.
-*> \endverbatim
-*>
-*> \param[in] LDA
-*> \verbatim
-*>          LDA is INTEGER
-*>          The leading dimension of the array A.
-*> \endverbatim
-*>
-*> \param[in] K1
-*> \verbatim
-*>          K1 is INTEGER
-*>          The first element of IPIV for which a row interchange will
-*>          be done.
-*> \endverbatim
-*>
-*> \param[in] K2
-*> \verbatim
-*>          K2 is INTEGER
-*>          (K2-K1+1) is the number of elements of IPIV for which a row
-*>          interchange will be done.
-*> \endverbatim
-*>
-*> \param[in] IPIV
-*> \verbatim
-*>          IPIV is INTEGER array, dimension (K1+(K2-K1)*abs(INCX))
-*>          The vector of pivot indices. Only the elements in positions
-*>          K1 through K1+(K2-K1)*abs(INCX) of IPIV are accessed.
-*>          IPIV(K1+(K-K1)*abs(INCX)) = L implies rows K and L are to be
-*>          interchanged.
-*> \endverbatim
-*>
-*> \param[in] INCX
-*> \verbatim
-*>          INCX is INTEGER
-*>          The increment between successive values of IPIV. If INCX
-*>          is negative, the pivots are applied in reverse order.
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup doubleOTHERauxiliary
-*
-*> \par Further Details:
-*  =====================
-*>
-*> \verbatim
-*>
-*>  Modified by
-*>   R. C. Whaley, Computer Science Dept., Univ. of Tenn., Knoxville, USA
-*> \endverbatim
-*>
-*  =====================================================================
-      SUBROUTINE DLASWP( N, A, LDA, K1, K2, IPIV, INCX )
-*
-*  -- LAPACK auxiliary routine --
-*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      INTEGER            INCX, K1, K2, LDA, N
-*     ..
-*     .. Array Arguments ..
-      INTEGER            IPIV( * )
-      DOUBLE PRECISION   A( LDA, * )
-*     ..
-*
-* =====================================================================
-*
-*     .. Local Scalars ..
-      INTEGER            I, I1, I2, INC, IP, IX, IX0, J, K, N32
-      DOUBLE PRECISION   TEMP
-*     ..
-*     .. Executable Statements ..
-*
-*     Interchange row I with row IPIV(K1+(I-K1)*abs(INCX)) for each of rows
-*     K1 through K2.
-*
-      IF( INCX.GT.0 ) THEN
-         IX0 = K1
-         I1 = K1
-         I2 = K2
-         INC = 1
-      ELSE IF( INCX.LT.0 ) THEN
-         IX0 = K1 + ( K1-K2 )*INCX
-         I1 = K2
-         I2 = K1
-         INC = -1
-      ELSE
-         RETURN
-      END IF
-*
-      N32 = ( N / 32 )*32
-      IF( N32.NE.0 ) THEN
-         DO 30 J = 1, N32, 32
-            IX = IX0
-            DO 20 I = I1, I2, INC
-               IP = IPIV( IX )
-               IF( IP.NE.I ) THEN
-                  DO 10 K = J, J + 31
-                     TEMP = A( I, K )
-                     A( I, K ) = A( IP, K )
-                     A( IP, K ) = TEMP
-   10             CONTINUE
-               END IF
-               IX = IX + INCX
-   20       CONTINUE
-   30    CONTINUE
-      END IF
-      IF( N32.NE.N ) THEN
-         N32 = N32 + 1
-         IX = IX0
-         DO 50 I = I1, I2, INC
-            IP = IPIV( IX )
-            IF( IP.NE.I ) THEN
-               DO 40 K = N32, N
-                  TEMP = A( I, K )
-                  A( I, K ) = A( IP, K )
-                  A( IP, K ) = TEMP
-   40          CONTINUE
-            END IF
-            IX = IX + INCX
-   50    CONTINUE
-      END IF
-*
-      RETURN
-*
-*     End of DLASWP
-*
-      END
-cat > dgetf2.f <<'CUT HERE............'
-      SUBROUTINE DGETF2( M, N, A, LDA, IPIV, INFO )
-*
-*  -- LAPACK routine (version 1.1) --
-*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
-*     Courant Institute, Argonne National Lab, and Rice University
-*     June 30, 1992
-*
-*     .. Scalar Arguments ..
-      INTEGER            INFO, LDA, M, N
-*     ..
-*     .. Array Arguments ..
-      INTEGER            IPIV( * )
-      DOUBLE PRECISION   A( LDA, * )
-*     ..
-*
-*  Purpose
-*  =======
-*
-*  DGETF2 computes an LU factorization of a general m-by-n matrix A
-*  using partial pivoting with row interchanges.
-*
-*  The factorization has the form
-*     A = P * L * U
-*  where P is a permutation matrix, L is lower triangular with unit
-*  diagonal elements (lower trapezoidal if m > n), and U is upper
-*  triangular (upper trapezoidal if m < n).
-*
-*  This is the right-looking Level 2 BLAS version of the algorithm.
-*
-*  Arguments
-*  =========
-*
-*  M       (input) INTEGER
-*          The number of rows of the matrix A.  M >= 0.
-*
-*  N       (input) INTEGER
-*          The number of columns of the matrix A.  N >= 0.
-*
-*  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
-*          On entry, the m by n matrix to be factored.
-*          On exit, the factors L and U from the factorization
-*          A = P*L*U; the unit diagonal elements of L are not stored.
-*
-*  LDA     (input) INTEGER
-*          The leading dimension of the array A.  LDA >= max(1,M).
-*
-*  IPIV    (output) INTEGER array, dimension (min(M,N))
-*          The pivot indices; for 1 <= i <= min(M,N), row i of the
-*          matrix was interchanged with row IPIV(i).
-*
-*  INFO    (output) INTEGER
-*          = 0: successful exit
-*          < 0: if INFO = -k, the k-th argument had an illegal value
-*          > 0: if INFO = k, U(k,k) is exactly zero. The factorization
-*               has been completed, but the factor U is exactly
-*               singular, and division by zero will occur if it is used
-*               to solve a system of equations.
-*
-*  =====================================================================
-*
-*     .. Parameters ..
-      DOUBLE PRECISION   ONE, ZERO
-      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
-*     ..
-*     .. Local Scalars ..
-      INTEGER            J, JP
-*     ..
-*     .. External Functions ..
-      INTEGER            IDAMAX
-      EXTERNAL           IDAMAX
-*     ..
-*     .. External Subroutines ..
-      EXTERNAL           DGER, DSCAL, DSWAP, XERBLA
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC          MAX, MIN
-*     ..
-*     .. Executable Statements ..
-*
-*     Test the input parameters.
-*
-      INFO = 0
-      IF( M.LT.0 ) THEN
-         INFO = -1
-      ELSE IF( N.LT.0 ) THEN
-         INFO = -2
-      ELSE IF( LDA.LT.MAX( 1, M ) ) THEN
-         INFO = -4
-      END IF
-      IF( INFO.NE.0 ) THEN
-         CALL XERBLA( 'DGETF2', -INFO )
-         RETURN
-      END IF
-*
-*     Quick return if possible
-*
-      IF( M.EQ.0 .OR. N.EQ.0 )
-     $   RETURN
-*
-      DO 10 J = 1, MIN( M, N )
-*
-*        Find pivot and test for singularity.
-*
-         JP = J - 1 + IDAMAX( M-J+1, A( J, J ), 1 )
-         IPIV( J ) = JP
-         IF( A( JP, J ).NE.ZERO ) THEN
-*
-*           Apply the interchange to columns 1:N.
-*
-            IF( JP.NE.J )
-     $         CALL DSWAP( N, A( J, 1 ), LDA, A( JP, 1 ), LDA )
-*
-*           Compute elements J+1:M of J-th column.
-*
-            IF( J.LT.M )
-     $         CALL DSCAL( M-J, ONE / A( J, J ), A( J+1, J ), 1 )
-*
-         ELSE IF( INFO.EQ.0 ) THEN
-*
-            INFO = J
-         END IF
-*
-         IF( J.LT.MIN( M, N ) ) THEN
-*
-*           Update trailing submatrix.
-*
-            CALL DGER( M-J, N-J, -ONE, A( J+1, J ), 1, A( J, J+1 ), LDA,
-     $                 A( J+1, J+1 ), LDA )
-         END IF
-   10 CONTINUE
-      RETURN
-*
-*     End of DGETF2
-*
-      END
-      SUBROUTINE DTBSV ( UPLO, TRANS, DIAG, N, K, A, LDA, X, INCX )
-*     .. Scalar Arguments ..
-      INTEGER            INCX, K, LDA, N
-      CHARACTER*1        DIAG, TRANS, UPLO
-*     .. Array Arguments ..
-      DOUBLE PRECISION   A( LDA, * ), X( * )
-*     ..
-*
-*  Purpose
-*  =======
-*
-*  DTBSV  solves one of the systems of equations
-*
-*     A*x = b,   or   A'*x = b,
-*
-*  where b and x are n element vectors and A is an n by n unit, or
-*  non-unit, upper or lower triangular band matrix, with ( k + 1 )
-*  diagonals.
-*
-*  No test for singularity or near-singularity is included in this
-*  routine. Such tests must be performed before calling this routine.
-*
-*  Parameters
-*  ==========
-*
-*  UPLO   - CHARACTER*1.
-*           On entry, UPLO specifies whether the matrix is an upper or
-*           lower triangular matrix as follows:
-*
-*              UPLO = 'U' or 'u'   A is an upper triangular matrix.
-*
-*              UPLO = 'L' or 'l'   A is a lower triangular matrix.
-*
-*           Unchanged on exit.
-*
-*  TRANS  - CHARACTER*1.
-*           On entry, TRANS specifies the equations to be solved as
-*           follows:
-*
-*              TRANS = 'N' or 'n'   A*x = b.
-*
-*              TRANS = 'T' or 't'   A'*x = b.
-*
-*              TRANS = 'C' or 'c'   A'*x = b.
-*
-*           Unchanged on exit.
-*
-*  DIAG   - CHARACTER*1.
-*           On entry, DIAG specifies whether or not A is unit
-*           triangular as follows:
-*
-*              DIAG = 'U' or 'u'   A is assumed to be unit triangular.
-*
-*              DIAG = 'N' or 'n'   A is not assumed to be unit
-*                                  triangular.
-*
-*           Unchanged on exit.
-*
-*  N      - INTEGER.
-*           On entry, N specifies the order of the matrix A.
-*           N must be at least zero.
-*           Unchanged on exit.
-*
-*  K      - INTEGER.
-*           On entry with UPLO = 'U' or 'u', K specifies the number of
-*           super-diagonals of the matrix A.
-*           On entry with UPLO = 'L' or 'l', K specifies the number of
-*           sub-diagonals of the matrix A.
-*           K must satisfy  0 .le. K.
-*           Unchanged on exit.
-*
-*  A      - DOUBLE PRECISION array of DIMENSION ( LDA, n ).
-*           Before entry with UPLO = 'U' or 'u', the leading ( k + 1 )
-*           by n part of the array A must contain the upper triangular
-*           band part of the matrix of coefficients, supplied column by
-*           column, with the leading diagonal of the matrix in row
-*           ( k + 1 ) of the array, the first super-diagonal starting at
-*           position 2 in row k, and so on. The top left k by k triangle
-*           of the array A is not referenced.
-*           The following program segment will transfer an upper
-*           triangular band matrix from conventional full matrix storage
-*           to band storage:
-*
-*                 DO 20, J = 1, N
-*                    M = K + 1 - J
-*                    DO 10, I = MAX( 1, J - K ), J
-*                       A( M + I, J ) = matrix( I, J )
-*              10    CONTINUE
-*              20 CONTINUE
-*
-*           Before entry with UPLO = 'L' or 'l', the leading ( k + 1 )
-*           by n part of the array A must contain the lower triangular
-*           band part of the matrix of coefficients, supplied column by
-*           column, with the leading diagonal of the matrix in row 1 of
-*           the array, the first sub-diagonal starting at position 1 in
-*           row 2, and so on. The bottom right k by k triangle of the
-*           array A is not referenced.
-*           The following program segment will transfer a lower
-*           triangular band matrix from conventional full matrix storage
-*           to band storage:
-*
-*                 DO 20, J = 1, N
-*                    M = 1 - J
-*                    DO 10, I = J, MIN( N, J + K )
-*                       A( M + I, J ) = matrix( I, J )
-*              10    CONTINUE
-*              20 CONTINUE
-*
-*           Note that when DIAG = 'U' or 'u' the elements of the array A
-*           corresponding to the diagonal elements of the matrix are not
-*           referenced, but are assumed to be unity.
-*           Unchanged on exit.
-*
-*  LDA    - INTEGER.
-*           On entry, LDA specifies the first dimension of A as declared
-*           in the calling (sub) program. LDA must be at least
-*           ( k + 1 ).
-*           Unchanged on exit.
-*
-*  X      - DOUBLE PRECISION array of dimension at least
-*           ( 1 + ( n - 1 )*abs( INCX ) ).
-*           Before entry, the incremented array X must contain the n
-*           element right-hand side vector b. On exit, X is overwritten
-*           with the solution vector x.
-*
-*  INCX   - INTEGER.
-*           On entry, INCX specifies the increment for the elements of
-*           X. INCX must not be zero.
-*           Unchanged on exit.
-*
-*
-*  Level 2 Blas routine.
-*
-*  -- Written on 22-October-1986.
-*     Jack Dongarra, Argonne National Lab.
-*     Jeremy Du Croz, Nag Central Office.
-*     Sven Hammarling, Nag Central Office.
-*     Richard Hanson, Sandia National Labs.
-*
-*
-*     .. Parameters ..
-      DOUBLE PRECISION   ZERO
-      PARAMETER        ( ZERO = 0.0D+0 )
-*     .. Local Scalars ..
-      DOUBLE PRECISION   TEMP
-      INTEGER            I, INFO, IX, J, JX, KPLUS1, KX, L
-      LOGICAL            NOUNIT
-*     .. External Functions ..
-      LOGICAL            LSAME
-      EXTERNAL           LSAME
-*     .. External Subroutines ..
-      EXTERNAL           XERBLA
-*     .. Intrinsic Functions ..
-      INTRINSIC          MAX, MIN
-*     ..
-*     .. Executable Statements ..
-*
-*     Test the input parameters.
-*
-      INFO = 0
-      IF     ( .NOT.LSAME( UPLO , 'U' ).AND.
-     $         .NOT.LSAME( UPLO , 'L' )      )THEN
-         INFO = 1
-      ELSE IF( .NOT.LSAME( TRANS, 'N' ).AND.
-     $         .NOT.LSAME( TRANS, 'T' ).AND.
-     $         .NOT.LSAME( TRANS, 'C' )      )THEN
-         INFO = 2
-      ELSE IF( .NOT.LSAME( DIAG , 'U' ).AND.
-     $         .NOT.LSAME( DIAG , 'N' )      )THEN
-         INFO = 3
-      ELSE IF( N.LT.0 )THEN
-         INFO = 4
-      ELSE IF( K.LT.0 )THEN
-         INFO = 5
-      ELSE IF( LDA.LT.( K + 1 ) )THEN
-         INFO = 7
-      ELSE IF( INCX.EQ.0 )THEN
-         INFO = 9
-      END IF
-      IF( INFO.NE.0 )THEN
-         CALL XERBLA( 'DTBSV ', INFO )
-         RETURN
-      END IF
-*
-*     Quick return if possible.
-*
-      IF( N.EQ.0 )
-     $   RETURN
-*
-      NOUNIT = LSAME( DIAG, 'N' )
-*
-*     Set up the start point in X if the increment is not unity. This
-*     will be  ( N - 1 )*INCX  too small for descending loops.
-*
-      IF( INCX.LE.0 )THEN
-         KX = 1 - ( N - 1 )*INCX
-      ELSE IF( INCX.NE.1 )THEN
-         KX = 1
-      END IF
-*
-*     Start the operations. In this version the elements of A are
-*     accessed by sequentially with one pass through A.
-*
-      IF( LSAME( TRANS, 'N' ) )THEN
-*
-*        Form  x := inv( A )*x.
-*
-         IF( LSAME( UPLO, 'U' ) )THEN
-            KPLUS1 = K + 1
-            IF( INCX.EQ.1 )THEN
-               DO 20, J = N, 1, -1
-                  IF( X( J ).NE.ZERO )THEN
-                     L = KPLUS1 - J
-                     IF( NOUNIT )
-     $                  X( J ) = X( J )/A( KPLUS1, J )
-                     TEMP = X( J )
-                     DO 10, I = J - 1, MAX( 1, J - K ), -1
-                        X( I ) = X( I ) - TEMP*A( L + I, J )
-   10                CONTINUE
-                  END IF
-   20          CONTINUE
-            ELSE
-               KX = KX + ( N - 1 )*INCX
-               JX = KX
-               DO 40, J = N, 1, -1
-                  KX = KX - INCX
-                  IF( X( JX ).NE.ZERO )THEN
-                     IX = KX
-                     L  = KPLUS1 - J
-                     IF( NOUNIT )
-     $                  X( JX ) = X( JX )/A( KPLUS1, J )
-                     TEMP = X( JX )
-                     DO 30, I = J - 1, MAX( 1, J - K ), -1
-                        X( IX ) = X( IX ) - TEMP*A( L + I, J )
-                        IX      = IX      - INCX
-   30                CONTINUE
-                  END IF
-                  JX = JX - INCX
-   40          CONTINUE
-            END IF
-         ELSE
-            IF( INCX.EQ.1 )THEN
-               DO 60, J = 1, N
-                  IF( X( J ).NE.ZERO )THEN
-                     L = 1 - J
-                     IF( NOUNIT )
-     $                  X( J ) = X( J )/A( 1, J )
-                     TEMP = X( J )
-                     DO 50, I = J + 1, MIN( N, J + K )
-                        X( I ) = X( I ) - TEMP*A( L + I, J )
-   50                CONTINUE
-                  END IF
-   60          CONTINUE
-            ELSE
-               JX = KX
-               DO 80, J = 1, N
-                  KX = KX + INCX
-                  IF( X( JX ).NE.ZERO )THEN
-                     IX = KX
-                     L  = 1  - J
-                     IF( NOUNIT )
-     $                  X( JX ) = X( JX )/A( 1, J )
-                     TEMP = X( JX )
-                     DO 70, I = J + 1, MIN( N, J + K )
-                        X( IX ) = X( IX ) - TEMP*A( L + I, J )
-                        IX      = IX      + INCX
-   70                CONTINUE
-                  END IF
-                  JX = JX + INCX
-   80          CONTINUE
-            END IF
-         END IF
-      ELSE
-*
-*        Form  x := inv( A')*x.
-*
-         IF( LSAME( UPLO, 'U' ) )THEN
-            KPLUS1 = K + 1
-            IF( INCX.EQ.1 )THEN
-               DO 100, J = 1, N
-                  TEMP = X( J )
-                  L    = KPLUS1 - J
-                  DO 90, I = MAX( 1, J - K ), J - 1
-                     TEMP = TEMP - A( L + I, J )*X( I )
-   90             CONTINUE
-                  IF( NOUNIT )
-     $               TEMP = TEMP/A( KPLUS1, J )
-                  X( J ) = TEMP
-  100          CONTINUE
-            ELSE
-               JX = KX
-               DO 120, J = 1, N
-                  TEMP = X( JX )
-                  IX   = KX
-                  L    = KPLUS1  - J
-                  DO 110, I = MAX( 1, J - K ), J - 1
-                     TEMP = TEMP - A( L + I, J )*X( IX )
-                     IX   = IX   + INCX
-  110             CONTINUE
-                  IF( NOUNIT )
-     $               TEMP = TEMP/A( KPLUS1, J )
-                  X( JX ) = TEMP
-                  JX      = JX   + INCX
-                  IF( J.GT.K )
-     $               KX = KX + INCX
-  120          CONTINUE
-            END IF
-         ELSE
-            IF( INCX.EQ.1 )THEN
-               DO 140, J = N, 1, -1
-                  TEMP = X( J )
-                  L    = 1      - J
-                  DO 130, I = MIN( N, J + K ), J + 1, -1
-                     TEMP = TEMP - A( L + I, J )*X( I )
-  130             CONTINUE
-                  IF( NOUNIT )
-     $               TEMP = TEMP/A( 1, J )
-                  X( J ) = TEMP
-  140          CONTINUE
-            ELSE
-               KX = KX + ( N - 1 )*INCX
-               JX = KX
-               DO 160, J = N, 1, -1
-                  TEMP = X( JX )
-                  IX   = KX
-                  L    = 1       - J
-                  DO 150, I = MIN( N, J + K ), J + 1, -1
-                     TEMP = TEMP - A( L + I, J )*X( IX )
-                     IX   = IX   - INCX
-  150             CONTINUE
-                  IF( NOUNIT )
-     $               TEMP = TEMP/A( 1, J )
-                  X( JX ) = TEMP
-                  JX      = JX   - INCX
-                  IF( ( N - J ).GE.K )
-     $               KX = KX - INCX
-  160          CONTINUE
-            END IF
-         END IF
-      END IF
-*
-      RETURN
-*
-*     End of DTBSV .
-*
-      END
-c         
+      end      
       subroutine checkd(corden,new,nactveold,ab,maxgrd,nvar,iclose)
       implicit real*8 (a-h,o-z)
       real*8 ab(30,2), corden(maxgrd,1)
@@ -8153,1285 +5603,9 @@ c
   200 continue
       return
       end
-*> \brief \b DPOTRF
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*> \htmlonly
-*> Download DPOTRF + dependencies
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dpotrf.f">
-*> [TGZ]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dpotrf.f">
-*> [ZIP]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dpotrf.f">
-*> [TXT]</a>
-*> \endhtmlonly
-*
-*  Definition:
-*  ===========
-*
-*       SUBROUTINE DPOTRF( UPLO, N, A, LDA, INFO )
-*
-*       .. Scalar Arguments ..
-*       CHARACTER          UPLO
-*       INTEGER            INFO, LDA, N
-*       ..
-*       .. Array Arguments ..
-*       DOUBLE PRECISION   A( LDA, * )
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> DPOTRF computes the Cholesky factorization of a real symmetric
-*> positive definite matrix A.
-*>
-*> The factorization has the form
-*>    A = U**T * U,  if UPLO = 'U', or
-*>    A = L  * L**T,  if UPLO = 'L',
-*> where U is an upper triangular matrix and L is lower triangular.
-*>
-*> This is the block version of the algorithm, calling Level 3 BLAS.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] UPLO
-*> \verbatim
-*>          UPLO is CHARACTER*1
-*>          = 'U':  Upper triangle of A is stored;
-*>          = 'L':  Lower triangle of A is stored.
-*> \endverbatim
-*>
-*> \param[in] N
-*> \verbatim
-*>          N is INTEGER
-*>          The order of the matrix A.  N >= 0.
-*> \endverbatim
-*>
-*> \param[in,out] A
-*> \verbatim
-*>          A is DOUBLE PRECISION array, dimension (LDA,N)
-*>          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
-*>          N-by-N upper triangular part of A contains the upper
-*>          triangular part of the matrix A, and the strictly lower
-*>          triangular part of A is not referenced.  If UPLO = 'L', the
-*>          leading N-by-N lower triangular part of A contains the lower
-*>          triangular part of the matrix A, and the strictly upper
-*>          triangular part of A is not referenced.
-*>
-*>          On exit, if INFO = 0, the factor U or L from the Cholesky
-*>          factorization A = U**T*U or A = L*L**T.
-*> \endverbatim
-*>
-*> \param[in] LDA
-*> \verbatim
-*>          LDA is INTEGER
-*>          The leading dimension of the array A.  LDA >= max(1,N).
-*> \endverbatim
-*>
-*> \param[out] INFO
-*> \verbatim
-*>          INFO is INTEGER
-*>          = 0:  successful exit
-*>          < 0:  if INFO = -i, the i-th argument had an illegal value
-*>          > 0:  if INFO = i, the leading minor of order i is not
-*>                positive definite, and the factorization could not be
-*>                completed.
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup doublePOcomputational
-*
-*  =====================================================================
-      SUBROUTINE DPOTRF( UPLO, N, A, LDA, INFO )
-*
-*  -- LAPACK computational routine --
-*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      CHARACTER          UPLO
-      INTEGER            INFO, LDA, N
-*     ..
-*     .. Array Arguments ..
-      DOUBLE PRECISION   A( LDA, * )
-*     ..
-*
-*  =====================================================================
-*
-*     .. Parameters ..
-      DOUBLE PRECISION   ONE
-      PARAMETER          ( ONE = 1.0D+0 )
-*     ..
-*     .. Local Scalars ..
-      LOGICAL            UPPER
-      INTEGER            J, JB, NB
-*     ..
-*     .. External Functions ..
-      LOGICAL            LSAME
-      INTEGER            ILAENV
-      EXTERNAL           LSAME, ILAENV
-*     ..
-*     .. External Subroutines ..
-      EXTERNAL           DGEMM, DPOTRF2, DSYRK, DTRSM, XERBLA
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC          MAX, MIN
-*     ..
-*     .. Executable Statements ..
-*
-*     Test the input parameters.
-*
-      INFO = 0
-      UPPER = LSAME( UPLO, 'U' )
-      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
-         INFO = -1
-      ELSE IF( N.LT.0 ) THEN
-         INFO = -2
-      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
-         INFO = -4
-      END IF
-      IF( INFO.NE.0 ) THEN
-         CALL XERBLA( 'DPOTRF', -INFO )
-         RETURN
-      END IF
-*
-*     Quick return if possible
-*
-      IF( N.EQ.0 )
-     $   RETURN
-*
-*     Determine the block size for this environment.
-*
-      NB = ILAENV( 1, 'DPOTRF', UPLO, N, -1, -1, -1 )
-      IF( NB.LE.1 .OR. NB.GE.N ) THEN
-*
-*        Use unblocked code.
-*
-         CALL DPOTRF2( UPLO, N, A, LDA, INFO )
-      ELSE
-*
-*        Use blocked code.
-*
-         IF( UPPER ) THEN
-*
-*           Compute the Cholesky factorization A = U**T*U.
-*
-            DO 10 J = 1, N, NB
-*
-*              Update and factorize the current diagonal block and test
-*              for non-positive-definiteness.
-*
-               JB = MIN( NB, N-J+1 )
-               CALL DSYRK( 'Upper', 'Transpose', JB, J-1, -ONE,
-     $                     A( 1, J ), LDA, ONE, A( J, J ), LDA )
-               CALL DPOTRF2( 'Upper', JB, A( J, J ), LDA, INFO )
-               IF( INFO.NE.0 )
-     $            GO TO 30
-               IF( J+JB.LE.N ) THEN
-*
-*                 Compute the current block row.
-*
-                  CALL DGEMM( 'Transpose', 'No transpose', JB, N-J-JB+1,
-     $                        J-1, -ONE, A( 1, J ), LDA, A( 1, J+JB ),
-     $                        LDA, ONE, A( J, J+JB ), LDA )
-                  CALL DTRSM( 'Left', 'Upper', 'Transpose', 'Non-unit',
-     $                        JB, N-J-JB+1, ONE, A( J, J ), LDA,
-     $                        A( J, J+JB ), LDA )
-               END IF
-   10       CONTINUE
-*
-         ELSE
-*
-*           Compute the Cholesky factorization A = L*L**T.
-*
-            DO 20 J = 1, N, NB
-*
-*              Update and factorize the current diagonal block and test
-*              for non-positive-definiteness.
-*
-               JB = MIN( NB, N-J+1 )
-               CALL DSYRK( 'Lower', 'No transpose', JB, J-1, -ONE,
-     $                     A( J, 1 ), LDA, ONE, A( J, J ), LDA )
-               CALL DPOTRF2( 'Lower', JB, A( J, J ), LDA, INFO )
-               IF( INFO.NE.0 )
-     $            GO TO 30
-               IF( J+JB.LE.N ) THEN
-*
-*                 Compute the current block column.
-*
-                  CALL DGEMM( 'No transpose', 'Transpose', N-J-JB+1, JB,
-     $                        J-1, -ONE, A( J+JB, 1 ), LDA, A( J, 1 ),
-     $                        LDA, ONE, A( J+JB, J ), LDA )
-                  CALL DTRSM( 'Right', 'Lower', 'Transpose', 'Non-unit',
-     $                        N-J-JB+1, JB, ONE, A( J, J ), LDA,
-     $                        A( J+JB, J ), LDA )
-               END IF
-   20       CONTINUE
-         END IF
-      END IF
-      GO TO 40
-*
-   30 CONTINUE
-      INFO = INFO + J - 1
-*
-   40 CONTINUE
-      RETURN
-*
-*     End of DPOTRF
-*
-      END
-*> \brief \b DPOTRF2
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*  Definition:
-*  ===========
-*
-*       RECURSIVE SUBROUTINE DPOTRF2( UPLO, N, A, LDA, INFO )
-*
-*       .. Scalar Arguments ..
-*       CHARACTER          UPLO
-*       INTEGER            INFO, LDA, N
-*       ..
-*       .. Array Arguments ..
-*       REAL               A( LDA, * )
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> DPOTRF2 computes the Cholesky factorization of a real symmetric
-*> positive definite matrix A using the recursive algorithm.
-*>
-*> The factorization has the form
-*>    A = U**T * U,  if UPLO = 'U', or
-*>    A = L  * L**T,  if UPLO = 'L',
-*> where U is an upper triangular matrix and L is lower triangular.
-*>
-*> This is the recursive version of the algorithm. It divides
-*> the matrix into four submatrices:
-*>
-*>        [  A11 | A12  ]  where A11 is n1 by n1 and A22 is n2 by n2
-*>    A = [ -----|----- ]  with n1 = n/2
-*>        [  A21 | A22  ]       n2 = n-n1
-*>
-*> The subroutine calls itself to factor A11. Update and scale A21
-*> or A12, update A22 then calls itself to factor A22.
-*>
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] UPLO
-*> \verbatim
-*>          UPLO is CHARACTER*1
-*>          = 'U':  Upper triangle of A is stored;
-*>          = 'L':  Lower triangle of A is stored.
-*> \endverbatim
-*>
-*> \param[in] N
-*> \verbatim
-*>          N is INTEGER
-*>          The order of the matrix A.  N >= 0.
-*> \endverbatim
-*>
-*> \param[in,out] A
-*> \verbatim
-*>          A is DOUBLE PRECISION array, dimension (LDA,N)
-*>          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
-*>          N-by-N upper triangular part of A contains the upper
-*>          triangular part of the matrix A, and the strictly lower
-*>          triangular part of A is not referenced.  If UPLO = 'L', the
-*>          leading N-by-N lower triangular part of A contains the lower
-*>          triangular part of the matrix A, and the strictly upper
-*>          triangular part of A is not referenced.
-*>
-*>          On exit, if INFO = 0, the factor U or L from the Cholesky
-*>          factorization A = U**T*U or A = L*L**T.
-*> \endverbatim
-*>
-*> \param[in] LDA
-*> \verbatim
-*>          LDA is INTEGER
-*>          The leading dimension of the array A.  LDA >= max(1,N).
-*> \endverbatim
-*>
-*> \param[out] INFO
-*> \verbatim
-*>          INFO is INTEGER
-*>          = 0:  successful exit
-*>          < 0:  if INFO = -i, the i-th argument had an illegal value
-*>          > 0:  if INFO = i, the leading minor of order i is not
-*>                positive definite, and the factorization could not be
-*>                completed.
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup doublePOcomputational
-*
-*  =====================================================================
-      RECURSIVE SUBROUTINE DPOTRF2( UPLO, N, A, LDA, INFO )
-*
-*  -- LAPACK computational routine --
-*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      CHARACTER          UPLO
-      INTEGER            INFO, LDA, N
-*     ..
-*     .. Array Arguments ..
-      DOUBLE PRECISION   A( LDA, * )
-*     ..
-*
-*  =====================================================================
-*
-*     .. Parameters ..
-      DOUBLE PRECISION   ONE, ZERO
-      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
-*     ..
-*     .. Local Scalars ..
-      LOGICAL            UPPER
-      INTEGER            N1, N2, IINFO
-*     ..
-*     .. External Functions ..
-      LOGICAL            LSAME, DISNAN
-      EXTERNAL           LSAME, DISNAN
-*     ..
-*     .. External Subroutines ..
-      EXTERNAL           DSYRK, DTRSM, XERBLA
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC          MAX, SQRT
-*     ..
-*     .. Executable Statements ..
-*
-*     Test the input parameters
-*
-      INFO = 0
-      UPPER = LSAME( UPLO, 'U' )
-      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
-         INFO = -1
-      ELSE IF( N.LT.0 ) THEN
-         INFO = -2
-      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
-         INFO = -4
-      END IF
-      IF( INFO.NE.0 ) THEN
-         CALL XERBLA( 'DPOTRF2', -INFO )
-         RETURN
-      END IF
-*
-*     Quick return if possible
-*
-      IF( N.EQ.0 )
-     $   RETURN
-*
-*     N=1 case
-*
-      IF( N.EQ.1 ) THEN
-*
-*        Test for non-positive-definiteness
-*
-         IF( A( 1, 1 ).LE.ZERO.OR.DISNAN( A( 1, 1 ) ) ) THEN
-            INFO = 1
-            RETURN
-         END IF
-*
-*        Factor
-*
-         A( 1, 1 ) = SQRT( A( 1, 1 ) )
-*
-*     Use recursive code
-*
-      ELSE
-         N1 = N/2
-         N2 = N-N1
-*
-*        Factor A11
-*
-         CALL DPOTRF2( UPLO, N1, A( 1, 1 ), LDA, IINFO )
-         IF ( IINFO.NE.0 ) THEN
-            INFO = IINFO
-            RETURN
-         END IF
-*
-*        Compute the Cholesky factorization A = U**T*U
-*
-         IF( UPPER ) THEN
-*
-*           Update and scale A12
-*
-            CALL DTRSM( 'L', 'U', 'T', 'N', N1, N2, ONE,
-     $                  A( 1, 1 ), LDA, A( 1, N1+1 ), LDA )
-*
-*           Update and factor A22
-*
-            CALL DSYRK( UPLO, 'T', N2, N1, -ONE, A( 1, N1+1 ), LDA,
-     $                  ONE, A( N1+1, N1+1 ), LDA )
-            CALL DPOTRF2( UPLO, N2, A( N1+1, N1+1 ), LDA, IINFO )
-            IF ( IINFO.NE.0 ) THEN
-               INFO = IINFO + N1
-               RETURN
-            END IF
-*
-*        Compute the Cholesky factorization A = L*L**T
-*
-         ELSE
-*
-*           Update and scale A21
-*
-            CALL DTRSM( 'R', 'L', 'T', 'N', N2, N1, ONE,
-     $                  A( 1, 1 ), LDA, A( N1+1, 1 ), LDA )
-*
-*           Update and factor A22
-*
-            CALL DSYRK( UPLO, 'N', N2, N1, -ONE, A( N1+1, 1 ), LDA,
-     $                  ONE, A( N1+1, N1+1 ), LDA )
-            CALL DPOTRF2( UPLO, N2, A( N1+1, N1+1 ), LDA, IINFO )
-            IF ( IINFO.NE.0 ) THEN
-               INFO = IINFO + N1
-               RETURN
-            END IF
-         END IF
-      END IF
-      RETURN
-*
-*     End of DPOTRF2
-*
-      END
-*> \brief \b DISNAN tests input for NaN.
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*> \htmlonly
-*> Download DISNAN + dependencies
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/disnan.f">
-*> [TGZ]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/disnan.f">
-*> [ZIP]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/disnan.f">
-*> [TXT]</a>
-*> \endhtmlonly
-*
-*  Definition:
-*  ===========
-*
-*       LOGICAL FUNCTION DISNAN( DIN )
-*
-*       .. Scalar Arguments ..
-*       DOUBLE PRECISION, INTENT(IN) :: DIN
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> DISNAN returns .TRUE. if its argument is NaN, and .FALSE.
-*> otherwise.  To be replaced by the Fortran 2003 intrinsic in the
-*> future.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] DIN
-*> \verbatim
-*>          DIN is DOUBLE PRECISION
-*>          Input to test for NaN.
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup OTHERauxiliary
-*
-*  =====================================================================
-      LOGICAL FUNCTION DISNAN( DIN )
-*
-*  -- LAPACK auxiliary routine --
-*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      DOUBLE PRECISION, INTENT(IN) :: DIN
-*     ..
-*
-*  =====================================================================
-*
-*  .. External Functions ..
-      LOGICAL DLAISNAN
-      EXTERNAL DLAISNAN
-*  ..
-*  .. Executable Statements ..
-      DISNAN = DLAISNAN(DIN,DIN)
-      RETURN
-      END
-*> \brief \b DLAISNAN tests input for NaN by comparing two arguments for inequality.
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*> \htmlonly
-*> Download DLAISNAN + dependencies
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dlaisnan.f">
-*> [TGZ]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dlaisnan.f">
-*> [ZIP]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dlaisnan.f">
-*> [TXT]</a>
-*> \endhtmlonly
-*
-*  Definition:
-*  ===========
-*
-*       LOGICAL FUNCTION DLAISNAN( DIN1, DIN2 )
-*
-*       .. Scalar Arguments ..
-*       DOUBLE PRECISION, INTENT(IN) :: DIN1, DIN2
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> This routine is not for general use.  It exists solely to avoid
-*> over-optimization in DISNAN.
-*>
-*> DLAISNAN checks for NaNs by comparing its two arguments for
-*> inequality.  NaN is the only floating-point value where NaN != NaN
-*> returns .TRUE.  To check for NaNs, pass the same variable as both
-*> arguments.
-*>
-*> A compiler must assume that the two arguments are
-*> not the same variable, and the test will not be optimized away.
-*> Interprocedural or whole-program optimization may delete this
-*> test.  The ISNAN functions will be replaced by the correct
-*> Fortran 03 intrinsic once the intrinsic is widely available.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] DIN1
-*> \verbatim
-*>          DIN1 is DOUBLE PRECISION
-*> \endverbatim
-*>
-*> \param[in] DIN2
-*> \verbatim
-*>          DIN2 is DOUBLE PRECISION
-*>          Two numbers to compare for inequality.
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup OTHERauxiliary
-*
-*  =====================================================================
-      LOGICAL FUNCTION DLAISNAN( DIN1, DIN2 )
-*
-*  -- LAPACK auxiliary routine --
-*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      DOUBLE PRECISION, INTENT(IN) :: DIN1, DIN2
-*     ..
-*
-*  =====================================================================
-*
-*  .. Executable Statements ..
-      DLAISNAN = (DIN1.NE.DIN2)
-      RETURN
-      END
-               
-*> \brief \b DPOTRS
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*> \htmlonly
-*> Download DPOTRS + dependencies
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dpotrs.f">
-*> [TGZ]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dpotrs.f">
-*> [ZIP]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dpotrs.f">
-*> [TXT]</a>
-*> \endhtmlonly
-*
-*  Definition:
-*  ===========
-*
-*       SUBROUTINE DPOTRS( UPLO, N, NRHS, A, LDA, B, LDB, INFO )
-*
-*       .. Scalar Arguments ..
-*       CHARACTER          UPLO
-*       INTEGER            INFO, LDA, LDB, N, NRHS
-*       ..
-*       .. Array Arguments ..
-*       DOUBLE PRECISION   A( LDA, * ), B( LDB, * )
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> DPOTRS solves a system of linear equations A*X = B with a symmetric
-*> positive definite matrix A using the Cholesky factorization
-*> A = U**T*U or A = L*L**T computed by DPOTRF.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] UPLO
-*> \verbatim
-*>          UPLO is CHARACTER*1
-*>          = 'U':  Upper triangle of A is stored;
-*>          = 'L':  Lower triangle of A is stored.
-*> \endverbatim
-*>
-*> \param[in] N
-*> \verbatim
-*>          N is INTEGER
-*>          The order of the matrix A.  N >= 0.
-*> \endverbatim
-*>
-*> \param[in] NRHS
-*> \verbatim
-*>          NRHS is INTEGER
-*>          The number of right hand sides, i.e., the number of columns
-*>          of the matrix B.  NRHS >= 0.
-*> \endverbatim
-*>
-*> \param[in] A
-*> \verbatim
-*>          A is DOUBLE PRECISION array, dimension (LDA,N)
-*>          The triangular factor U or L from the Cholesky factorization
-*>          A = U**T*U or A = L*L**T, as computed by DPOTRF.
-*> \endverbatim
-*>
-*> \param[in] LDA
-*> \verbatim
-*>          LDA is INTEGER
-*>          The leading dimension of the array A.  LDA >= max(1,N).
-*> \endverbatim
-*>
-*> \param[in,out] B
-*> \verbatim
-*>          B is DOUBLE PRECISION array, dimension (LDB,NRHS)
-*>          On entry, the right hand side matrix B.
-*>          On exit, the solution matrix X.
-*> \endverbatim
-*>
-*> \param[in] LDB
-*> \verbatim
-*>          LDB is INTEGER
-*>          The leading dimension of the array B.  LDB >= max(1,N).
-*> \endverbatim
-*>
-*> \param[out] INFO
-*> \verbatim
-*>          INFO is INTEGER
-*>          = 0:  successful exit
-*>          < 0:  if INFO = -i, the i-th argument had an illegal value
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup doublePOcomputational
-*
-*  =====================================================================
-      SUBROUTINE DPOTRS( UPLO, N, NRHS, A, LDA, B, LDB, INFO )
-*
-*  -- LAPACK computational routine --
-*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      CHARACTER          UPLO
-      INTEGER            INFO, LDA, LDB, N, NRHS
-*     ..
-*     .. Array Arguments ..
-      DOUBLE PRECISION   A( LDA, * ), B( LDB, * )
-*     ..
-*
-*  =====================================================================
-*
-*     .. Parameters ..
-      DOUBLE PRECISION   ONE
-      PARAMETER          ( ONE = 1.0D+0 )
-*     ..
-*     .. Local Scalars ..
-      LOGICAL            UPPER
-*     ..
-*     .. External Functions ..
-      LOGICAL            LSAME
-      EXTERNAL           LSAME
-*     ..
-*     .. External Subroutines ..
-      EXTERNAL           DTRSM, XERBLA
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC          MAX
-*     ..
-*     .. Executable Statements ..
-*
-*     Test the input parameters.
-*
-      INFO = 0
-      UPPER = LSAME( UPLO, 'U' )
-      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
-         INFO = -1
-      ELSE IF( N.LT.0 ) THEN
-         INFO = -2
-      ELSE IF( NRHS.LT.0 ) THEN
-         INFO = -3
-      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
-         INFO = -5
-      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
-         INFO = -7
-      END IF
-      IF( INFO.NE.0 ) THEN
-         CALL XERBLA( 'DPOTRS', -INFO )
-         RETURN
-      END IF
-*
-*     Quick return if possible
-*
-      IF( N.EQ.0 .OR. NRHS.EQ.0 )
-     $   RETURN
-*
-      IF( UPPER ) THEN
-*
-*        Solve A*X = B where A = U**T *U.
-*
-*        Solve U**T *X = B, overwriting B with X.
-*
-         CALL DTRSM( 'Left', 'Upper', 'Transpose', 'Non-unit', N, NRHS,
-     $               ONE, A, LDA, B, LDB )
-*
-*        Solve U*X = B, overwriting B with X.
-*
-         CALL DTRSM( 'Left', 'Upper', 'No transpose', 'Non-unit', N,
-     $               NRHS, ONE, A, LDA, B, LDB )
-      ELSE
-*
-*        Solve A*X = B where A = L*L**T.
-*
-*        Solve L*X = B, overwriting B with X.
-*
-         CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Non-unit', N,
-     $               NRHS, ONE, A, LDA, B, LDB )
-*
-*        Solve L**T *X = B, overwriting B with X.
-*
-         CALL DTRSM( 'Left', 'Lower', 'Transpose', 'Non-unit', N, NRHS,
-     $               ONE, A, LDA, B, LDB )
-      END IF
-*
-      RETURN
-*
-*     End of DPOTRS
-*
-      END
-*> \brief \b DPOTF2 computes the Cholesky factorization of a symmetric/Hermitian positive definite matrix (unblocked algorithm).
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*> \htmlonly
-*> Download DPOTF2 + dependencies
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dpotf2.f">
-*> [TGZ]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dpotf2.f">
-*> [ZIP]</a>
-*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dpotf2.f">
-*> [TXT]</a>
-*> \endhtmlonly
-*
-*  Definition:
-*  ===========
-*
-*       SUBROUTINE DPOTF2( UPLO, N, A, LDA, INFO )
-*
-*       .. Scalar Arguments ..
-*       CHARACTER          UPLO
-*       INTEGER            INFO, LDA, N
-*       ..
-*       .. Array Arguments ..
-*       DOUBLE PRECISION   A( LDA, * )
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> DPOTF2 computes the Cholesky factorization of a real symmetric
-*> positive definite matrix A.
-*>
-*> The factorization has the form
-*>    A = U**T * U ,  if UPLO = 'U', or
-*>    A = L  * L**T,  if UPLO = 'L',
-*> where U is an upper triangular matrix and L is lower triangular.
-*>
-*> This is the unblocked version of the algorithm, calling Level 2 BLAS.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] UPLO
-*> \verbatim
-*>          UPLO is CHARACTER*1
-*>          Specifies whether the upper or lower triangular part of the
-*>          symmetric matrix A is stored.
-*>          = 'U':  Upper triangular
-*>          = 'L':  Lower triangular
-*> \endverbatim
-*>
-*> \param[in] N
-*> \verbatim
-*>          N is INTEGER
-*>          The order of the matrix A.  N >= 0.
-*> \endverbatim
-*>
-*> \param[in,out] A
-*> \verbatim
-*>          A is DOUBLE PRECISION array, dimension (LDA,N)
-*>          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
-*>          n by n upper triangular part of A contains the upper
-*>          triangular part of the matrix A, and the strictly lower
-*>          triangular part of A is not referenced.  If UPLO = 'L', the
-*>          leading n by n lower triangular part of A contains the lower
-*>          triangular part of the matrix A, and the strictly upper
-*>          triangular part of A is not referenced.
-*>
-*>          On exit, if INFO = 0, the factor U or L from the Cholesky
-*>          factorization A = U**T *U  or A = L*L**T.
-*> \endverbatim
-*>
-*> \param[in] LDA
-*> \verbatim
-*>          LDA is INTEGER
-*>          The leading dimension of the array A.  LDA >= max(1,N).
-*> \endverbatim
-*>
-*> \param[out] INFO
-*> \verbatim
-*>          INFO is INTEGER
-*>          = 0: successful exit
-*>          < 0: if INFO = -k, the k-th argument had an illegal value
-*>          > 0: if INFO = k, the leading minor of order k is not
-*>               positive definite, and the factorization could not be
-*>               completed.
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup doublePOcomputational
-*
-*  =====================================================================
-      SUBROUTINE DPOTF2( UPLO, N, A, LDA, INFO )
-*
-*  -- LAPACK computational routine --
-*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      CHARACTER          UPLO
-      INTEGER            INFO, LDA, N
-*     ..
-*     .. Array Arguments ..
-      DOUBLE PRECISION   A( LDA, * )
-*     ..
-*
-*  =====================================================================
-*
-*     .. Parameters ..
-      DOUBLE PRECISION   ONE, ZERO
-      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
-*     ..
-*     .. Local Scalars ..
-      LOGICAL            UPPER
-      INTEGER            J
-      DOUBLE PRECISION   AJJ
-*     ..
-*     .. External Functions ..
-      LOGICAL            LSAME, DISNAN
-      DOUBLE PRECISION   DDOT
-      EXTERNAL           LSAME, DDOT, DISNAN
-*     ..
-*     .. External Subroutines ..
-      EXTERNAL           DGEMV, DSCAL, XERBLA
-*     ..
-*     .. Intrinsic Functions ..
-      INTRINSIC          MAX, SQRT
-*     ..
-*     .. Executable Statements ..
-*
-*     Test the input parameters.
-*
-      INFO = 0
-      UPPER = LSAME( UPLO, 'U' )
-      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
-         INFO = -1
-      ELSE IF( N.LT.0 ) THEN
-         INFO = -2
-      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
-         INFO = -4
-      END IF
-      IF( INFO.NE.0 ) THEN
-         CALL XERBLA( 'DPOTF2', -INFO )
-         RETURN
-      END IF
-*
-*     Quick return if possible
-*
-      IF( N.EQ.0 )
-     $   RETURN
-*
-      IF( UPPER ) THEN
-*
-*        Compute the Cholesky factorization A = U**T *U.
-*
-         DO 10 J = 1, N
-*
-*           Compute U(J,J) and test for non-positive-definiteness.
-*
-            AJJ = A( J, J ) - DDOT( J-1, A( 1, J ), 1, A( 1, J ), 1 )
-            IF( AJJ.LE.ZERO.OR.DISNAN( AJJ ) ) THEN
-               A( J, J ) = AJJ
-               GO TO 30
-            END IF
-            AJJ = SQRT( AJJ )
-            A( J, J ) = AJJ
-*
-*           Compute elements J+1:N of row J.
-*
-            IF( J.LT.N ) THEN
-               CALL DGEMV( 'Transpose', J-1, N-J, -ONE, A( 1, J+1 ),
-     $                     LDA, A( 1, J ), 1, ONE, A( J, J+1 ), LDA )
-               CALL DSCAL( N-J, ONE / AJJ, A( J, J+1 ), LDA )
-            END IF
-   10    CONTINUE
-      ELSE
-*
-*        Compute the Cholesky factorization A = L*L**T.
-*
-         DO 20 J = 1, N
-*
-*           Compute L(J,J) and test for non-positive-definiteness.
-*
-            AJJ = A( J, J ) - DDOT( J-1, A( J, 1 ), LDA, A( J, 1 ),
-     $            LDA )
-            IF( AJJ.LE.ZERO.OR.DISNAN( AJJ ) ) THEN
-               A( J, J ) = AJJ
-               GO TO 30
-            END IF
-            AJJ = SQRT( AJJ )
-            A( J, J ) = AJJ
-*
-*           Compute elements J+1:N of column J.
-*
-            IF( J.LT.N ) THEN
-               CALL DGEMV( 'No transpose', N-J, J-1, -ONE, A( J+1, 1 ),
-     $                     LDA, A( J, 1 ), LDA, ONE, A( J+1, J ), 1 )
-               CALL DSCAL( N-J, ONE / AJJ, A( J+1, J ), 1 )
-            END IF
-   20    CONTINUE
-      END IF
-      GO TO 40
-*
-   30 CONTINUE
-      INFO = J
-*
-   40 CONTINUE
-      RETURN
-*
-*     End of DPOTF2
-*
-      END
-*> \brief \b LSAME
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*  Definition:
-*  ===========
-*
-*       LOGICAL FUNCTION LSAME(CA,CB)
-*
-*       .. Scalar Arguments ..
-*       CHARACTER CA,CB
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> LSAME returns .TRUE. if CA is the same letter as CB regardless of
-*> case.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] CA
-*> \verbatim
-*>          CA is CHARACTER*1
-*> \endverbatim
-*>
-*> \param[in] CB
-*> \verbatim
-*>          CB is CHARACTER*1
-*>          CA and CB specify the single characters to be compared.
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup aux_blas
-*
-*  =====================================================================
-      LOGICAL FUNCTION LSAME(CA,CB)
-*
-*  -- Reference BLAS level1 routine --
-*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      CHARACTER CA,CB
-*     ..
-*
-* =====================================================================
-*
-*     .. Intrinsic Functions ..
-      INTRINSIC ICHAR
-*     ..
-*     .. Local Scalars ..
-      INTEGER INTA,INTB,ZCODE
-*     ..
-*
-*     Test if the characters are equal
-*
-      LSAME = CA .EQ. CB
-      IF (LSAME) RETURN
-*
-*     Now test for equivalence if both characters are alphabetic.
-*
-      ZCODE = ICHAR('Z')
-*
-*     Use 'Z' rather than 'A' so that ASCII can be detected on Prime
-*     machines, on which ICHAR returns a value with bit 8 set.
-*     ICHAR('A') on Prime machines returns 193 which is the same as
-*     ICHAR('A') on an EBCDIC machine.
-*
-      INTA = ICHAR(CA)
-      INTB = ICHAR(CB)
-*
-      IF (ZCODE.EQ.90 .OR. ZCODE.EQ.122) THEN
-*
-*        ASCII is assumed - ZCODE is the ASCII code of either lower or
-*        upper case 'Z'.
-*
-          IF (INTA.GE.97 .AND. INTA.LE.122) INTA = INTA - 32
-          IF (INTB.GE.97 .AND. INTB.LE.122) INTB = INTB - 32
-*
-      ELSE IF (ZCODE.EQ.233 .OR. ZCODE.EQ.169) THEN
-*
-*        EBCDIC is assumed - ZCODE is the EBCDIC code of either lower or
-*        upper case 'Z'.
-*
-          IF (INTA.GE.129 .AND. INTA.LE.137 .OR.
-     +        INTA.GE.145 .AND. INTA.LE.153 .OR.
-     +        INTA.GE.162 .AND. INTA.LE.169) INTA = INTA + 64
-          IF (INTB.GE.129 .AND. INTB.LE.137 .OR.
-     +        INTB.GE.145 .AND. INTB.LE.153 .OR.
-     +        INTB.GE.162 .AND. INTB.LE.169) INTB = INTB + 64
-*
-      ELSE IF (ZCODE.EQ.218 .OR. ZCODE.EQ.250) THEN
-*
-*        ASCII is assumed, on Prime machines - ZCODE is the ASCII code
-*        plus 128 of either lower or upper case 'Z'.
-*
-          IF (INTA.GE.225 .AND. INTA.LE.250) INTA = INTA - 32
-          IF (INTB.GE.225 .AND. INTB.LE.250) INTB = INTB - 32
-      END IF
-      LSAME = INTA .EQ. INTB
-*
-*     RETURN
-*
-*     End of LSAME
-*
-      END
-*> \brief \b XERBLA
-*
-*  =========== DOCUMENTATION ===========
-*
-* Online html documentation available at
-*            http://www.netlib.org/lapack/explore-html/
-*
-*  Definition:
-*  ===========
-*
-*       SUBROUTINE XERBLA( SRNAME, INFO )
-*
-*       .. Scalar Arguments ..
-*       CHARACTER*(*)      SRNAME
-*       INTEGER            INFO
-*       ..
-*
-*
-*> \par Purpose:
-*  =============
-*>
-*> \verbatim
-*>
-*> XERBLA  is an error handler for the LAPACK routines.
-*> It is called by an LAPACK routine if an input parameter has an
-*> invalid value.  A message is printed and execution stops.
-*>
-*> Installers may consider modifying the STOP statement in order to
-*> call system-specific exception-handling facilities.
-*> \endverbatim
-*
-*  Arguments:
-*  ==========
-*
-*> \param[in] SRNAME
-*> \verbatim
-*>          SRNAME is CHARACTER*(*)
-*>          The name of the routine which called XERBLA.
-*> \endverbatim
-*>
-*> \param[in] INFO
-*> \verbatim
-*>          INFO is INTEGER
-*>          The position of the invalid parameter in the parameter list
-*>          of the calling routine.
-*> \endverbatim
-*
-*  Authors:
-*  ========
-*
-*> \author Univ. of Tennessee
-*> \author Univ. of California Berkeley
-*> \author Univ. of Colorado Denver
-*> \author NAG Ltd.
-*
-*> \ingroup aux_blas
-*
-*  =====================================================================
-      SUBROUTINE XERBLA( SRNAME, INFO )
-*
-*  -- Reference BLAS level1 routine --
-*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
-*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*
-*     .. Scalar Arguments ..
-      CHARACTER*(*)      SRNAME
-      INTEGER            INFO
-*     ..
-*
-* =====================================================================
-*
-*     .. Intrinsic Functions ..
-      INTRINSIC          LEN_TRIM
-*     ..
-*     .. Executable Statements ..
-*
-      WRITE( *, FMT = 9999 )SRNAME( 1:LEN_TRIM( SRNAME ) ), INFO
-*
-      STOP
-*
- 9999 FORMAT( ' ** On entry to ', A, ' parameter number ', I2, ' had ',
-     $      'an illegal value' )
-*
-*     End of XERBLA
-*
-      END
+      
+
+
 	SUBROUTINE GETIPATF(IFILE,NSUBTOT,NSUB,IPATVEC,IERRR,ERRFIL)
 	DIMENSION IPATVEC(9999)
 	CHARACTER READLINE*300,ERRFIL*20
@@ -15491,5 +11665,5362 @@ c
       RETURN
 *
 *     End of DASUM
+*
+      END
+*> \brief \b IEEECK
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download IEEECK + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/ieeeck.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/ieeeck.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/ieeeck.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       INTEGER          FUNCTION IEEECK( ISPEC, ZERO, ONE )
+*
+*       .. Scalar Arguments ..
+*       INTEGER            ISPEC
+*       REAL               ONE, ZERO
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> IEEECK is called from the ILAENV to verify that Infinity and
+*> possibly NaN arithmetic is safe (i.e. will not trap).
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] ISPEC
+*> \verbatim
+*>          ISPEC is INTEGER
+*>          Specifies whether to test just for inifinity arithmetic
+*>          or whether to test for infinity and NaN arithmetic.
+*>          = 0: Verify infinity arithmetic only.
+*>          = 1: Verify infinity and NaN arithmetic.
+*> \endverbatim
+*>
+*> \param[in] ZERO
+*> \verbatim
+*>          ZERO is REAL
+*>          Must contain the value 0.0
+*>          This is passed to prevent the compiler from optimizing
+*>          away this code.
+*> \endverbatim
+*>
+*> \param[in] ONE
+*> \verbatim
+*>          ONE is REAL
+*>          Must contain the value 1.0
+*>          This is passed to prevent the compiler from optimizing
+*>          away this code.
+*>
+*>  RETURN VALUE:  INTEGER
+*>          = 0:  Arithmetic failed to produce the correct answers
+*>          = 1:  Arithmetic produced the correct answers
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup OTHERauxiliary
+*
+*  =====================================================================
+      INTEGER          FUNCTION IEEECK( ISPEC, ZERO, ONE )
+*
+*  -- LAPACK auxiliary routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER            ISPEC
+      REAL               ONE, ZERO
+*     ..
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      REAL               NAN1, NAN2, NAN3, NAN4, NAN5, NAN6, NEGINF,
+     $                   NEGZRO, NEWZRO, POSINF
+*     ..
+*     .. Executable Statements ..
+      IEEECK = 1
+*
+      POSINF = ONE / ZERO
+      IF( POSINF.LE.ONE ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      NEGINF = -ONE / ZERO
+      IF( NEGINF.GE.ZERO ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      NEGZRO = ONE / ( NEGINF+ONE )
+      IF( NEGZRO.NE.ZERO ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      NEGINF = ONE / NEGZRO
+      IF( NEGINF.GE.ZERO ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      NEWZRO = NEGZRO + ZERO
+      IF( NEWZRO.NE.ZERO ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      POSINF = ONE / NEWZRO
+      IF( POSINF.LE.ONE ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      NEGINF = NEGINF*POSINF
+      IF( NEGINF.GE.ZERO ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      POSINF = POSINF*POSINF
+      IF( POSINF.LE.ONE ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+*
+*
+*
+*     Return if we were only asked to check infinity arithmetic
+*
+      IF( ISPEC.EQ.0 )
+     $   RETURN
+*
+      NAN1 = POSINF + NEGINF
+*
+      NAN2 = POSINF / NEGINF
+*
+      NAN3 = POSINF / POSINF
+*
+      NAN4 = POSINF*ZERO
+*
+      NAN5 = NEGINF*NEGZRO
+*
+      NAN6 = NAN5*ZERO
+*
+      IF( NAN1.EQ.NAN1 ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      IF( NAN2.EQ.NAN2 ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      IF( NAN3.EQ.NAN3 ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      IF( NAN4.EQ.NAN4 ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      IF( NAN5.EQ.NAN5 ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      IF( NAN6.EQ.NAN6 ) THEN
+         IEEECK = 0
+         RETURN
+      END IF
+*
+      RETURN
+      END
+*> \brief \b IPARMQ
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download IPARMQ + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/iparmq.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/iparmq.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/iparmq.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       INTEGER FUNCTION IPARMQ( ISPEC, NAME, OPTS, N, ILO, IHI, LWORK )
+*
+*       .. Scalar Arguments ..
+*       INTEGER            IHI, ILO, ISPEC, LWORK, N
+*       CHARACTER          NAME*( * ), OPTS*( * )
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*>      This program sets problem and machine dependent parameters
+*>      useful for xHSEQR and related subroutines for eigenvalue
+*>      problems. It is called whenever
+*>      IPARMQ is called with 12 <= ISPEC <= 16
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] ISPEC
+*> \verbatim
+*>          ISPEC is INTEGER
+*>              ISPEC specifies which tunable parameter IPARMQ should
+*>              return.
+*>
+*>              ISPEC=12: (INMIN)  Matrices of order nmin or less
+*>                        are sent directly to xLAHQR, the implicit
+*>                        double shift QR algorithm.  NMIN must be
+*>                        at least 11.
+*>
+*>              ISPEC=13: (INWIN)  Size of the deflation window.
+*>                        This is best set greater than or equal to
+*>                        the number of simultaneous shifts NS.
+*>                        Larger matrices benefit from larger deflation
+*>                        windows.
+*>
+*>              ISPEC=14: (INIBL) Determines when to stop nibbling and
+*>                        invest in an (expensive) multi-shift QR sweep.
+*>                        If the aggressive early deflation subroutine
+*>                        finds LD converged eigenvalues from an order
+*>                        NW deflation window and LD > (NW*NIBBLE)/100,
+*>                        then the next QR sweep is skipped and early
+*>                        deflation is applied immediately to the
+*>                        remaining active diagonal block.  Setting
+*>                        IPARMQ(ISPEC=14) = 0 causes TTQRE to skip a
+*>                        multi-shift QR sweep whenever early deflation
+*>                        finds a converged eigenvalue.  Setting
+*>                        IPARMQ(ISPEC=14) greater than or equal to 100
+*>                        prevents TTQRE from skipping a multi-shift
+*>                        QR sweep.
+*>
+*>              ISPEC=15: (NSHFTS) The number of simultaneous shifts in
+*>                        a multi-shift QR iteration.
+*>
+*>              ISPEC=16: (IACC22) IPARMQ is set to 0, 1 or 2 with the
+*>                        following meanings.
+*>                        0:  During the multi-shift QR/QZ sweep,
+*>                            blocked eigenvalue reordering, blocked
+*>                            Hessenberg-triangular reduction,
+*>                            reflections and/or rotations are not
+*>                            accumulated when updating the
+*>                            far-from-diagonal matrix entries.
+*>                        1:  During the multi-shift QR/QZ sweep,
+*>                            blocked eigenvalue reordering, blocked
+*>                            Hessenberg-triangular reduction,
+*>                            reflections and/or rotations are
+*>                            accumulated, and matrix-matrix
+*>                            multiplication is used to update the
+*>                            far-from-diagonal matrix entries.
+*>                        2:  During the multi-shift QR/QZ sweep,
+*>                            blocked eigenvalue reordering, blocked
+*>                            Hessenberg-triangular reduction,
+*>                            reflections and/or rotations are
+*>                            accumulated, and 2-by-2 block structure
+*>                            is exploited during matrix-matrix
+*>                            multiplies.
+*>                        (If xTRMM is slower than xGEMM, then
+*>                        IPARMQ(ISPEC=16)=1 may be more efficient than
+*>                        IPARMQ(ISPEC=16)=2 despite the greater level of
+*>                        arithmetic work implied by the latter choice.)
+*>
+*>              ISPEC=17: (ICOST) An estimate of the relative cost of flops
+*>                        within the near-the-diagonal shift chase compared
+*>                        to flops within the BLAS calls of a QZ sweep.
+*> \endverbatim
+*>
+*> \param[in] NAME
+*> \verbatim
+*>          NAME is CHARACTER string
+*>               Name of the calling subroutine
+*> \endverbatim
+*>
+*> \param[in] OPTS
+*> \verbatim
+*>          OPTS is CHARACTER string
+*>               This is a concatenation of the string arguments to
+*>               TTQRE.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>               N is the order of the Hessenberg matrix H.
+*> \endverbatim
+*>
+*> \param[in] ILO
+*> \verbatim
+*>          ILO is INTEGER
+*> \endverbatim
+*>
+*> \param[in] IHI
+*> \verbatim
+*>          IHI is INTEGER
+*>               It is assumed that H is already upper triangular
+*>               in rows and columns 1:ILO-1 and IHI+1:N.
+*> \endverbatim
+*>
+*> \param[in] LWORK
+*> \verbatim
+*>          LWORK is INTEGER
+*>               The amount of workspace available.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup OTHERauxiliary
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>       Little is known about how best to choose these parameters.
+*>       It is possible to use different values of the parameters
+*>       for each of CHSEQR, DHSEQR, SHSEQR and ZHSEQR.
+*>
+*>       It is probably best to choose different parameters for
+*>       different matrices and different parameters at different
+*>       times during the iteration, but this has not been
+*>       implemented --- yet.
+*>
+*>
+*>       The best choices of most of the parameters depend
+*>       in an ill-understood way on the relative execution
+*>       rate of xLAQR3 and xLAQR5 and on the nature of each
+*>       particular eigenvalue problem.  Experiment may be the
+*>       only practical way to determine which choices are most
+*>       effective.
+*>
+*>       Following is a list of default values supplied by IPARMQ.
+*>       These defaults may be adjusted in order to attain better
+*>       performance in any particular computational environment.
+*>
+*>       IPARMQ(ISPEC=12) The xLAHQR vs xLAQR0 crossover point.
+*>                        Default: 75. (Must be at least 11.)
+*>
+*>       IPARMQ(ISPEC=13) Recommended deflation window size.
+*>                        This depends on ILO, IHI and NS, the
+*>                        number of simultaneous shifts returned
+*>                        by IPARMQ(ISPEC=15).  The default for
+*>                        (IHI-ILO+1) <= 500 is NS.  The default
+*>                        for (IHI-ILO+1) > 500 is 3*NS/2.
+*>
+*>       IPARMQ(ISPEC=14) Nibble crossover point.  Default: 14.
+*>
+*>       IPARMQ(ISPEC=15) Number of simultaneous shifts, NS.
+*>                        a multi-shift QR iteration.
+*>
+*>                        If IHI-ILO+1 is ...
+*>
+*>                        greater than      ...but less    ... the
+*>                        or equal to ...      than        default is
+*>
+*>                                0               30       NS =   2+
+*>                               30               60       NS =   4+
+*>                               60              150       NS =  10
+*>                              150              590       NS =  **
+*>                              590             3000       NS =  64
+*>                             3000             6000       NS = 128
+*>                             6000             infinity   NS = 256
+*>
+*>                    (+)  By default matrices of this order are
+*>                         passed to the implicit double shift routine
+*>                         xLAHQR.  See IPARMQ(ISPEC=12) above.   These
+*>                         values of NS are used only in case of a rare
+*>                         xLAHQR failure.
+*>
+*>                    (**) The asterisks (**) indicate an ad-hoc
+*>                         function increasing from 10 to 64.
+*>
+*>       IPARMQ(ISPEC=16) Select structured matrix multiply.
+*>                        (See ISPEC=16 above for details.)
+*>                        Default: 3.
+*>
+*>       IPARMQ(ISPEC=17) Relative cost heuristic for blocksize selection.
+*>                        Expressed as a percentage.
+*>                        Default: 10.
+*> \endverbatim
+*>
+*  =====================================================================
+      INTEGER FUNCTION IPARMQ( ISPEC, NAME, OPTS, N, ILO, IHI, LWORK )
+*
+*  -- LAPACK auxiliary routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER            IHI, ILO, ISPEC, LWORK, N
+      CHARACTER          NAME*( * ), OPTS*( * )
+*
+*  ================================================================
+*     .. Parameters ..
+      INTEGER            INMIN, INWIN, INIBL, ISHFTS, IACC22, ICOST
+      PARAMETER          ( INMIN = 12, INWIN = 13, INIBL = 14,
+     $                   ISHFTS = 15, IACC22 = 16, ICOST = 17 )
+      INTEGER            NMIN, K22MIN, KACMIN, NIBBLE, KNWSWP, RCOST
+      PARAMETER          ( NMIN = 75, K22MIN = 14, KACMIN = 14,
+     $                   NIBBLE = 14, KNWSWP = 500, RCOST = 10 )
+      REAL               TWO
+      PARAMETER          ( TWO = 2.0 )
+*     ..
+*     .. Local Scalars ..
+      INTEGER            NH, NS
+      INTEGER            I, IC, IZ
+      CHARACTER          SUBNAM*6
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          LOG, MAX, MOD, NINT, REAL
+*     ..
+*     .. Executable Statements ..
+      IF( ( ISPEC.EQ.ISHFTS ) .OR. ( ISPEC.EQ.INWIN ) .OR.
+     $    ( ISPEC.EQ.IACC22 ) ) THEN
+*
+*        ==== Set the number simultaneous shifts ====
+*
+         NH = IHI - ILO + 1
+         NS = 2
+         IF( NH.GE.30 )
+     $      NS = 4
+         IF( NH.GE.60 )
+     $      NS = 10
+         IF( NH.GE.150 )
+     $      NS = MAX( 10, NH / NINT( LOG( REAL( NH ) ) / LOG( TWO ) ) )
+         IF( NH.GE.590 )
+     $      NS = 64
+         IF( NH.GE.3000 )
+     $      NS = 128
+         IF( NH.GE.6000 )
+     $      NS = 256
+         NS = MAX( 2, NS-MOD( NS, 2 ) )
+      END IF
+*
+      IF( ISPEC.EQ.INMIN ) THEN
+*
+*
+*        ===== Matrices of order smaller than NMIN get sent
+*        .     to xLAHQR, the classic double shift algorithm.
+*        .     This must be at least 11. ====
+*
+         IPARMQ = NMIN
+*
+      ELSE IF( ISPEC.EQ.INIBL ) THEN
+*
+*        ==== INIBL: skip a multi-shift qr iteration and
+*        .    whenever aggressive early deflation finds
+*        .    at least (NIBBLE*(window size)/100) deflations. ====
+*
+         IPARMQ = NIBBLE
+*
+      ELSE IF( ISPEC.EQ.ISHFTS ) THEN
+*
+*        ==== NSHFTS: The number of simultaneous shifts =====
+*
+         IPARMQ = NS
+*
+      ELSE IF( ISPEC.EQ.INWIN ) THEN
+*
+*        ==== NW: deflation window size.  ====
+*
+         IF( NH.LE.KNWSWP ) THEN
+            IPARMQ = NS
+         ELSE
+            IPARMQ = 3*NS / 2
+         END IF
+*
+      ELSE IF( ISPEC.EQ.IACC22 ) THEN
+*
+*        ==== IACC22: Whether to accumulate reflections
+*        .     before updating the far-from-diagonal elements
+*        .     and whether to use 2-by-2 block structure while
+*        .     doing it.  A small amount of work could be saved
+*        .     by making this choice dependent also upon the
+*        .     NH=IHI-ILO+1.
+*
+*
+*        Convert NAME to upper case if the first character is lower case.
+*
+         IPARMQ = 0
+         SUBNAM = NAME
+         IC = ICHAR( SUBNAM( 1: 1 ) )
+         IZ = ICHAR( 'Z' )
+         IF( IZ.EQ.90 .OR. IZ.EQ.122 ) THEN
+*
+*           ASCII character set
+*
+            IF( IC.GE.97 .AND. IC.LE.122 ) THEN
+               SUBNAM( 1: 1 ) = CHAR( IC-32 )
+               DO I = 2, 6
+                  IC = ICHAR( SUBNAM( I: I ) )
+                  IF( IC.GE.97 .AND. IC.LE.122 )
+     $               SUBNAM( I: I ) = CHAR( IC-32 )
+               END DO
+            END IF
+*
+         ELSE IF( IZ.EQ.233 .OR. IZ.EQ.169 ) THEN
+*
+*           EBCDIC character set
+*
+            IF( ( IC.GE.129 .AND. IC.LE.137 ) .OR.
+     $          ( IC.GE.145 .AND. IC.LE.153 ) .OR.
+     $          ( IC.GE.162 .AND. IC.LE.169 ) ) THEN
+               SUBNAM( 1: 1 ) = CHAR( IC+64 )
+               DO I = 2, 6
+                  IC = ICHAR( SUBNAM( I: I ) )
+                  IF( ( IC.GE.129 .AND. IC.LE.137 ) .OR.
+     $                ( IC.GE.145 .AND. IC.LE.153 ) .OR.
+     $                ( IC.GE.162 .AND. IC.LE.169 ) )SUBNAM( I:
+     $                I ) = CHAR( IC+64 )
+               END DO
+            END IF
+*
+         ELSE IF( IZ.EQ.218 .OR. IZ.EQ.250 ) THEN
+*
+*           Prime machines:  ASCII+128
+*
+            IF( IC.GE.225 .AND. IC.LE.250 ) THEN
+               SUBNAM( 1: 1 ) = CHAR( IC-32 )
+               DO I = 2, 6
+                  IC = ICHAR( SUBNAM( I: I ) )
+                  IF( IC.GE.225 .AND. IC.LE.250 )
+     $               SUBNAM( I: I ) = CHAR( IC-32 )
+               END DO
+            END IF
+         END IF
+*
+         IF( SUBNAM( 2:6 ).EQ.'GGHRD' .OR.
+     $       SUBNAM( 2:6 ).EQ.'GGHD3' ) THEN
+            IPARMQ = 1
+            IF( NH.GE.K22MIN )
+     $         IPARMQ = 2
+         ELSE IF ( SUBNAM( 4:6 ).EQ.'EXC' ) THEN
+            IF( NH.GE.KACMIN )
+     $         IPARMQ = 1
+            IF( NH.GE.K22MIN )
+     $         IPARMQ = 2
+         ELSE IF ( SUBNAM( 2:6 ).EQ.'HSEQR' .OR.
+     $             SUBNAM( 2:5 ).EQ.'LAQR' ) THEN
+            IF( NS.GE.KACMIN )
+     $         IPARMQ = 1
+            IF( NS.GE.K22MIN )
+     $         IPARMQ = 2
+         END IF
+*
+      ELSE IF( ISPEC.EQ.ICOST ) THEN
+*
+*        === Relative cost of near-the-diagonal chase vs
+*            BLAS updates ===
+*
+         IPARMQ = RCOST
+      ELSE
+*        ===== invalid value of ispec =====
+         IPARMQ = -1
+*
+      END IF
+*
+*     ==== End of IPARMQ ====
+*
+      END
+*> \brief \b DLAMCH
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*      DOUBLE PRECISION FUNCTION DLAMCH( CMACH )
+*
+*     .. Scalar Arguments ..
+*     CHARACTER          CMACH
+*     ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DLAMCH determines double precision machine parameters.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] CMACH
+*> \verbatim
+*>          CMACH is CHARACTER*1
+*>          Specifies the value to be returned by DLAMCH:
+*>          = 'E' or 'e',   DLAMCH := eps
+*>          = 'S' or 's ,   DLAMCH := sfmin
+*>          = 'B' or 'b',   DLAMCH := base
+*>          = 'P' or 'p',   DLAMCH := eps*base
+*>          = 'N' or 'n',   DLAMCH := t
+*>          = 'R' or 'r',   DLAMCH := rnd
+*>          = 'M' or 'm',   DLAMCH := emin
+*>          = 'U' or 'u',   DLAMCH := rmin
+*>          = 'L' or 'l',   DLAMCH := emax
+*>          = 'O' or 'o',   DLAMCH := rmax
+*>          where
+*>          eps   = relative machine precision
+*>          sfmin = safe minimum, such that 1/sfmin does not overflow
+*>          base  = base of the machine
+*>          prec  = eps*base
+*>          t     = number of (base) digits in the mantissa
+*>          rnd   = 1.0 when rounding occurs in addition, 0.0 otherwise
+*>          emin  = minimum exponent before (gradual) underflow
+*>          rmin  = underflow threshold - base**(emin-1)
+*>          emax  = largest exponent before overflow
+*>          rmax  = overflow threshold  - (base**emax)*(1-eps)
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+
+*> \ingroup auxOTHERauxiliary
+*
+*  =====================================================================
+      DOUBLE PRECISION FUNCTION DLAMCH( CMACH )
+*
+*  -- LAPACK auxiliary routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          CMACH
+*     ..
+*
+* =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      DOUBLE PRECISION   RND, EPS, SFMIN, SMALL, RMACH
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      EXTERNAL           LSAME
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          DIGITS, EPSILON, HUGE, MAXEXPONENT,
+     $                   MINEXPONENT, RADIX, TINY
+*     ..
+*     .. Executable Statements ..
+*
+*
+*     Assume rounding, not chopping. Always.
+*
+      RND = ONE
+*
+      IF( ONE.EQ.RND ) THEN
+         EPS = EPSILON(ZERO) * 0.5
+      ELSE
+         EPS = EPSILON(ZERO)
+      END IF
+*
+      IF( LSAME( CMACH, 'E' ) ) THEN
+         RMACH = EPS
+      ELSE IF( LSAME( CMACH, 'S' ) ) THEN
+         SFMIN = TINY(ZERO)
+         SMALL = ONE / HUGE(ZERO)
+         IF( SMALL.GE.SFMIN ) THEN
+*
+*           Use SMALL plus a bit, to avoid the possibility of rounding
+*           causing overflow when computing  1/sfmin.
+*
+            SFMIN = SMALL*( ONE+EPS )
+         END IF
+         RMACH = SFMIN
+      ELSE IF( LSAME( CMACH, 'B' ) ) THEN
+         RMACH = RADIX(ZERO)
+      ELSE IF( LSAME( CMACH, 'P' ) ) THEN
+         RMACH = EPS * RADIX(ZERO)
+      ELSE IF( LSAME( CMACH, 'N' ) ) THEN
+         RMACH = DIGITS(ZERO)
+      ELSE IF( LSAME( CMACH, 'R' ) ) THEN
+         RMACH = RND
+      ELSE IF( LSAME( CMACH, 'M' ) ) THEN
+         RMACH = MINEXPONENT(ZERO)
+      ELSE IF( LSAME( CMACH, 'U' ) ) THEN
+         RMACH = tiny(zero)
+      ELSE IF( LSAME( CMACH, 'L' ) ) THEN
+         RMACH = MAXEXPONENT(ZERO)
+      ELSE IF( LSAME( CMACH, 'O' ) ) THEN
+         RMACH = HUGE(ZERO)
+      ELSE
+         RMACH = ZERO
+      END IF
+*
+      DLAMCH = RMACH
+      RETURN
+*
+*     End of DLAMCH
+*
+      END
+************************************************************************
+*> \brief \b DLAMC3
+*> \details
+*> \b Purpose:
+*> \verbatim
+*> DLAMC3  is intended to force  A  and  B  to be stored prior to doing
+*> the addition of  A  and  B ,  for use in situations where optimizers
+*> might hold one of these in a register.
+*> \endverbatim
+*> \author LAPACK is a software package provided by Univ. of Tennessee, Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..
+*> \param[in] A
+*> \verbatim
+*>          A is a DOUBLE PRECISION
+*> \endverbatim
+*>
+*> \param[in] B
+*> \verbatim
+*>          B is a DOUBLE PRECISION
+*>          The values A and B.
+*> \endverbatim
+*>
+      DOUBLE PRECISION FUNCTION DLAMC3( A, B )
+*
+*  -- LAPACK auxiliary routine --
+*     Univ. of Tennessee, Univ. of California Berkeley and NAG Ltd..
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION   A, B
+*     ..
+* =====================================================================
+*
+*     .. Executable Statements ..
+*
+      DLAMC3 = A + B
+*
+      RETURN
+*
+*     End of DLAMC3
+*
+      END
+*
+************************************************************************
+*> \brief \b DGETRF2
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       RECURSIVE SUBROUTINE DGETRF2( M, N, A, LDA, IPIV, INFO )
+*
+*       .. Scalar Arguments ..
+*       INTEGER            INFO, LDA, M, N
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   A( LDA, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGETRF2 computes an LU factorization of a general M-by-N matrix A
+*> using partial pivoting with row interchanges.
+*>
+*> The factorization has the form
+*>    A = P * L * U
+*> where P is a permutation matrix, L is lower triangular with unit
+*> diagonal elements (lower trapezoidal if m > n), and U is upper
+*> triangular (upper trapezoidal if m < n).
+*>
+*> This is the recursive version of the algorithm. It divides
+*> the matrix into four submatrices:
+*>
+*>        [  A11 | A12  ]  where A11 is n1 by n1 and A22 is n2 by n2
+*>    A = [ -----|----- ]  with n1 = min(m,n)/2
+*>        [  A21 | A22  ]       n2 = n-n1
+*>
+*>                                       [ A11 ]
+*> The subroutine calls itself to factor [ --- ],
+*>                                       [ A12 ]
+*>                 [ A12 ]
+*> do the swaps on [ --- ], solve A12, update A22,
+*>                 [ A22 ]
+*>
+*> then calls itself to factor A22 and do the swaps on A21.
+*>
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] M
+*> \verbatim
+*>          M is INTEGER
+*>          The number of rows of the matrix A.  M >= 0.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The number of columns of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          On entry, the M-by-N matrix to be factored.
+*>          On exit, the factors L and U from the factorization
+*>          A = P*L*U; the unit diagonal elements of L are not stored.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,M).
+*> \endverbatim
+*>
+*> \param[out] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (min(M,N))
+*>          The pivot indices; for 1 <= i <= min(M,N), row i of the
+*>          matrix was interchanged with row IPIV(i).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0:  successful exit
+*>          < 0:  if INFO = -i, the i-th argument had an illegal value
+*>          > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+*>                has been completed, but the factor U is exactly
+*>                singular, and division by zero will occur if it is used
+*>                to solve a system of equations.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleGEcomputational
+*
+*  =====================================================================
+      RECURSIVE SUBROUTINE DGETRF2( M, N, A, LDA, IPIV, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER            INFO, LDA, M, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      DOUBLE PRECISION   SFMIN, TEMP
+      INTEGER            I, IINFO, N1, N2
+*     ..
+*     .. External Functions ..
+      DOUBLE PRECISION   DLAMCH
+      INTEGER            IDAMAX
+      EXTERNAL           DLAMCH, IDAMAX
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGEMM, DSCAL, DLASWP, DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters
+*
+      INFO = 0
+      IF( M.LT.0 ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, M ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGETRF2', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( M.EQ.0 .OR. N.EQ.0 )
+     $   RETURN
+
+      IF ( M.EQ.1 ) THEN
+*
+*        Use unblocked code for one row case
+*        Just need to handle IPIV and INFO
+*
+         IPIV( 1 ) = 1
+         IF ( A(1,1).EQ.ZERO )
+     $      INFO = 1
+*
+      ELSE IF( N.EQ.1 ) THEN
+*
+*        Use unblocked code for one column case
+*
+*
+*        Compute machine safe minimum
+*
+         SFMIN = DLAMCH('S')
+*
+*        Find pivot and test for singularity
+*
+         I = IDAMAX( M, A( 1, 1 ), 1 )
+         IPIV( 1 ) = I
+         IF( A( I, 1 ).NE.ZERO ) THEN
+*
+*           Apply the interchange
+*
+            IF( I.NE.1 ) THEN
+               TEMP = A( 1, 1 )
+               A( 1, 1 ) = A( I, 1 )
+               A( I, 1 ) = TEMP
+            END IF
+*
+*           Compute elements 2:M of the column
+*
+            IF( ABS(A( 1, 1 )) .GE. SFMIN ) THEN
+               CALL DSCAL( M-1, ONE / A( 1, 1 ), A( 2, 1 ), 1 )
+            ELSE
+               DO 10 I = 1, M-1
+                  A( 1+I, 1 ) = A( 1+I, 1 ) / A( 1, 1 )
+   10          CONTINUE
+            END IF
+*
+         ELSE
+            INFO = 1
+         END IF
+*
+      ELSE
+*
+*        Use recursive code
+*
+         N1 = MIN( M, N ) / 2
+         N2 = N-N1
+*
+*               [ A11 ]
+*        Factor [ --- ]
+*               [ A21 ]
+*
+         CALL DGETRF2( M, N1, A, LDA, IPIV, IINFO )
+
+         IF ( INFO.EQ.0 .AND. IINFO.GT.0 )
+     $      INFO = IINFO
+*
+*                              [ A12 ]
+*        Apply interchanges to [ --- ]
+*                              [ A22 ]
+*
+         CALL DLASWP( N2, A( 1, N1+1 ), LDA, 1, N1, IPIV, 1 )
+*
+*        Solve A12
+*
+         CALL DTRSM( 'L', 'L', 'N', 'U', N1, N2, ONE, A, LDA,
+     $               A( 1, N1+1 ), LDA )
+*
+*        Update A22
+*
+         CALL DGEMM( 'N', 'N', M-N1, N2, N1, -ONE, A( N1+1, 1 ), LDA,
+     $               A( 1, N1+1 ), LDA, ONE, A( N1+1, N1+1 ), LDA )
+*
+*        Factor A22
+*
+         CALL DGETRF2( M-N1, N2, A( N1+1, N1+1 ), LDA, IPIV( N1+1 ),
+     $                 IINFO )
+*
+*        Adjust INFO and the pivot indices
+*
+         IF ( INFO.EQ.0 .AND. IINFO.GT.0 )
+     $      INFO = IINFO + N1
+         DO 20 I = N1+1, MIN( M, N )
+            IPIV( I ) = IPIV( I ) + N1
+   20    CONTINUE
+*
+*        Apply interchanges to A21
+*
+         CALL DLASWP( N1, A( 1, 1 ), LDA, N1+1, MIN( M, N), IPIV, 1 )
+*
+      END IF
+      RETURN
+*
+*     End of DGETRF2
+*
+      END
+*> \brief \b DGBTRF
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DGBTRF + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgbtrf.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgbtrf.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgbtrf.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGBTRF( M, N, KL, KU, AB, LDAB, IPIV, INFO )
+*
+*       .. Scalar Arguments ..
+*       INTEGER            INFO, KL, KU, LDAB, M, N
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   AB( LDAB, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGBTRF computes an LU factorization of a real m-by-n band matrix A
+*> using partial pivoting with row interchanges.
+*>
+*> This is the blocked version of the algorithm, calling Level 3 BLAS.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] M
+*> \verbatim
+*>          M is INTEGER
+*>          The number of rows of the matrix A.  M >= 0.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The number of columns of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in] KL
+*> \verbatim
+*>          KL is INTEGER
+*>          The number of subdiagonals within the band of A.  KL >= 0.
+*> \endverbatim
+*>
+*> \param[in] KU
+*> \verbatim
+*>          KU is INTEGER
+*>          The number of superdiagonals within the band of A.  KU >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] AB
+*> \verbatim
+*>          AB is DOUBLE PRECISION array, dimension (LDAB,N)
+*>          On entry, the matrix A in band storage, in rows KL+1 to
+*>          2*KL+KU+1; rows 1 to KL of the array need not be set.
+*>          The j-th column of A is stored in the j-th column of the
+*>          array AB as follows:
+*>          AB(kl+ku+1+i-j,j) = A(i,j) for max(1,j-ku)<=i<=min(m,j+kl)
+*>
+*>          On exit, details of the factorization: U is stored as an
+*>          upper triangular band matrix with KL+KU superdiagonals in
+*>          rows 1 to KL+KU+1, and the multipliers used during the
+*>          factorization are stored in rows KL+KU+2 to 2*KL+KU+1.
+*>          See below for further details.
+*> \endverbatim
+*>
+*> \param[in] LDAB
+*> \verbatim
+*>          LDAB is INTEGER
+*>          The leading dimension of the array AB.  LDAB >= 2*KL+KU+1.
+*> \endverbatim
+*>
+*> \param[out] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (min(M,N))
+*>          The pivot indices; for 1 <= i <= min(M,N), row i of the
+*>          matrix was interchanged with row IPIV(i).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0: successful exit
+*>          < 0: if INFO = -i, the i-th argument had an illegal value
+*>          > 0: if INFO = +i, U(i,i) is exactly zero. The factorization
+*>               has been completed, but the factor U is exactly
+*>               singular, and division by zero will occur if it is used
+*>               to solve a system of equations.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleGBcomputational
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  The band storage scheme is illustrated by the following example, when
+*>  M = N = 6, KL = 2, KU = 1:
+*>
+*>  On entry:                       On exit:
+*>
+*>      *    *    *    +    +    +       *    *    *   u14  u25  u36
+*>      *    *    +    +    +    +       *    *   u13  u24  u35  u46
+*>      *   a12  a23  a34  a45  a56      *   u12  u23  u34  u45  u56
+*>     a11  a22  a33  a44  a55  a66     u11  u22  u33  u44  u55  u66
+*>     a21  a32  a43  a54  a65   *      m21  m32  m43  m54  m65   *
+*>     a31  a42  a53  a64   *    *      m31  m42  m53  m64   *    *
+*>
+*>  Array elements marked * are not used by the routine; elements marked
+*>  + need not be set on entry, but are required by the routine to store
+*>  elements of U because of fill-in resulting from the row interchanges.
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DGBTRF( M, N, KL, KU, AB, LDAB, IPIV, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER            INFO, KL, KU, LDAB, M, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   AB( LDAB, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+      INTEGER            NBMAX, LDWORK
+      PARAMETER          ( NBMAX = 64, LDWORK = NBMAX+1 )
+*     ..
+*     .. Local Scalars ..
+      INTEGER            I, I2, I3, II, IP, J, J2, J3, JB, JJ, JM, JP,
+     $                   JU, K2, KM, KV, NB, NW
+      DOUBLE PRECISION   TEMP
+*     ..
+*     .. Local Arrays ..
+      DOUBLE PRECISION   WORK13( LDWORK, NBMAX ),
+     $                   WORK31( LDWORK, NBMAX )
+*     ..
+*     .. External Functions ..
+      INTEGER            IDAMAX, ILAENV
+      EXTERNAL           IDAMAX, ILAENV
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DCOPY, DGBTF2, DGEMM, DGER, DLASWP, DSCAL,
+     $                   DSWAP, DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     KV is the number of superdiagonals in the factor U, allowing for
+*     fill-in
+*
+      KV = KU + KL
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF( M.LT.0 ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( KL.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( KU.LT.0 ) THEN
+         INFO = -4
+      ELSE IF( LDAB.LT.KL+KV+1 ) THEN
+         INFO = -6
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGBTRF', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( M.EQ.0 .OR. N.EQ.0 )
+     $   RETURN
+*
+*     Determine the block size for this environment
+*
+      NB = ILAENV( 1, 'DGBTRF', ' ', M, N, KL, KU )
+*
+*     The block size must not exceed the limit set by the size of the
+*     local arrays WORK13 and WORK31.
+*
+      NB = MIN( NB, NBMAX )
+*
+      IF( NB.LE.1 .OR. NB.GT.KL ) THEN
+*
+*        Use unblocked code
+*
+         CALL DGBTF2( M, N, KL, KU, AB, LDAB, IPIV, INFO )
+      ELSE
+*
+*        Use blocked code
+*
+*        Zero the superdiagonal elements of the work array WORK13
+*
+         DO 20 J = 1, NB
+            DO 10 I = 1, J - 1
+               WORK13( I, J ) = ZERO
+   10       CONTINUE
+   20    CONTINUE
+*
+*        Zero the subdiagonal elements of the work array WORK31
+*
+         DO 40 J = 1, NB
+            DO 30 I = J + 1, NB
+               WORK31( I, J ) = ZERO
+   30       CONTINUE
+   40    CONTINUE
+*
+*        Gaussian elimination with partial pivoting
+*
+*        Set fill-in elements in columns KU+2 to KV to zero
+*
+         DO 60 J = KU + 2, MIN( KV, N )
+            DO 50 I = KV - J + 2, KL
+               AB( I, J ) = ZERO
+   50       CONTINUE
+   60    CONTINUE
+*
+*        JU is the index of the last column affected by the current
+*        stage of the factorization
+*
+         JU = 1
+*
+         DO 180 J = 1, MIN( M, N ), NB
+            JB = MIN( NB, MIN( M, N )-J+1 )
+*
+*           The active part of the matrix is partitioned
+*
+*              A11   A12   A13
+*              A21   A22   A23
+*              A31   A32   A33
+*
+*           Here A11, A21 and A31 denote the current block of JB columns
+*           which is about to be factorized. The number of rows in the
+*           partitioning are JB, I2, I3 respectively, and the numbers
+*           of columns are JB, J2, J3. The superdiagonal elements of A13
+*           and the subdiagonal elements of A31 lie outside the band.
+*
+            I2 = MIN( KL-JB, M-J-JB+1 )
+            I3 = MIN( JB, M-J-KL+1 )
+*
+*           J2 and J3 are computed after JU has been updated.
+*
+*           Factorize the current block of JB columns
+*
+            DO 80 JJ = J, J + JB - 1
+*
+*              Set fill-in elements in column JJ+KV to zero
+*
+               IF( JJ+KV.LE.N ) THEN
+                  DO 70 I = 1, KL
+                     AB( I, JJ+KV ) = ZERO
+   70             CONTINUE
+               END IF
+*
+*              Find pivot and test for singularity. KM is the number of
+*              subdiagonal elements in the current column.
+*
+               KM = MIN( KL, M-JJ )
+               JP = IDAMAX( KM+1, AB( KV+1, JJ ), 1 )
+               IPIV( JJ ) = JP + JJ - J
+               IF( AB( KV+JP, JJ ).NE.ZERO ) THEN
+                  JU = MAX( JU, MIN( JJ+KU+JP-1, N ) )
+                  IF( JP.NE.1 ) THEN
+*
+*                    Apply interchange to columns J to J+JB-1
+*
+                     IF( JP+JJ-1.LT.J+KL ) THEN
+*
+                        CALL DSWAP( JB, AB( KV+1+JJ-J, J ), LDAB-1,
+     $                              AB( KV+JP+JJ-J, J ), LDAB-1 )
+                     ELSE
+*
+*                       The interchange affects columns J to JJ-1 of A31
+*                       which are stored in the work array WORK31
+*
+                        CALL DSWAP( JJ-J, AB( KV+1+JJ-J, J ), LDAB-1,
+     $                              WORK31( JP+JJ-J-KL, 1 ), LDWORK )
+                        CALL DSWAP( J+JB-JJ, AB( KV+1, JJ ), LDAB-1,
+     $                              AB( KV+JP, JJ ), LDAB-1 )
+                     END IF
+                  END IF
+*
+*                 Compute multipliers
+*
+                  CALL DSCAL( KM, ONE / AB( KV+1, JJ ), AB( KV+2, JJ ),
+     $                        1 )
+*
+*                 Update trailing submatrix within the band and within
+*                 the current block. JM is the index of the last column
+*                 which needs to be updated.
+*
+                  JM = MIN( JU, J+JB-1 )
+                  IF( JM.GT.JJ )
+     $               CALL DGER( KM, JM-JJ, -ONE, AB( KV+2, JJ ), 1,
+     $                          AB( KV, JJ+1 ), LDAB-1,
+     $                          AB( KV+1, JJ+1 ), LDAB-1 )
+               ELSE
+*
+*                 If pivot is zero, set INFO to the index of the pivot
+*                 unless a zero pivot has already been found.
+*
+                  IF( INFO.EQ.0 )
+     $               INFO = JJ
+               END IF
+*
+*              Copy current column of A31 into the work array WORK31
+*
+               NW = MIN( JJ-J+1, I3 )
+               IF( NW.GT.0 )
+     $            CALL DCOPY( NW, AB( KV+KL+1-JJ+J, JJ ), 1,
+     $                        WORK31( 1, JJ-J+1 ), 1 )
+   80       CONTINUE
+            IF( J+JB.LE.N ) THEN
+*
+*              Apply the row interchanges to the other blocks.
+*
+               J2 = MIN( JU-J+1, KV ) - JB
+               J3 = MAX( 0, JU-J-KV+1 )
+*
+*              Use DLASWP to apply the row interchanges to A12, A22, and
+*              A32.
+*
+               CALL DLASWP( J2, AB( KV+1-JB, J+JB ), LDAB-1, 1, JB,
+     $                      IPIV( J ), 1 )
+*
+*              Adjust the pivot indices.
+*
+               DO 90 I = J, J + JB - 1
+                  IPIV( I ) = IPIV( I ) + J - 1
+   90          CONTINUE
+*
+*              Apply the row interchanges to A13, A23, and A33
+*              columnwise.
+*
+               K2 = J - 1 + JB + J2
+               DO 110 I = 1, J3
+                  JJ = K2 + I
+                  DO 100 II = J + I - 1, J + JB - 1
+                     IP = IPIV( II )
+                     IF( IP.NE.II ) THEN
+                        TEMP = AB( KV+1+II-JJ, JJ )
+                        AB( KV+1+II-JJ, JJ ) = AB( KV+1+IP-JJ, JJ )
+                        AB( KV+1+IP-JJ, JJ ) = TEMP
+                     END IF
+  100             CONTINUE
+  110          CONTINUE
+*
+*              Update the relevant part of the trailing submatrix
+*
+               IF( J2.GT.0 ) THEN
+*
+*                 Update A12
+*
+                  CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Unit',
+     $                        JB, J2, ONE, AB( KV+1, J ), LDAB-1,
+     $                        AB( KV+1-JB, J+JB ), LDAB-1 )
+*
+                  IF( I2.GT.0 ) THEN
+*
+*                    Update A22
+*
+                     CALL DGEMM( 'No transpose', 'No transpose', I2, J2,
+     $                           JB, -ONE, AB( KV+1+JB, J ), LDAB-1,
+     $                           AB( KV+1-JB, J+JB ), LDAB-1, ONE,
+     $                           AB( KV+1, J+JB ), LDAB-1 )
+                  END IF
+*
+                  IF( I3.GT.0 ) THEN
+*
+*                    Update A32
+*
+                     CALL DGEMM( 'No transpose', 'No transpose', I3, J2,
+     $                           JB, -ONE, WORK31, LDWORK,
+     $                           AB( KV+1-JB, J+JB ), LDAB-1, ONE,
+     $                           AB( KV+KL+1-JB, J+JB ), LDAB-1 )
+                  END IF
+               END IF
+*
+               IF( J3.GT.0 ) THEN
+*
+*                 Copy the lower triangle of A13 into the work array
+*                 WORK13
+*
+                  DO 130 JJ = 1, J3
+                     DO 120 II = JJ, JB
+                        WORK13( II, JJ ) = AB( II-JJ+1, JJ+J+KV-1 )
+  120                CONTINUE
+  130             CONTINUE
+*
+*                 Update A13 in the work array
+*
+                  CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Unit',
+     $                        JB, J3, ONE, AB( KV+1, J ), LDAB-1,
+     $                        WORK13, LDWORK )
+*
+                  IF( I2.GT.0 ) THEN
+*
+*                    Update A23
+*
+                     CALL DGEMM( 'No transpose', 'No transpose', I2, J3,
+     $                           JB, -ONE, AB( KV+1+JB, J ), LDAB-1,
+     $                           WORK13, LDWORK, ONE, AB( 1+JB, J+KV ),
+     $                           LDAB-1 )
+                  END IF
+*
+                  IF( I3.GT.0 ) THEN
+*
+*                    Update A33
+*
+                     CALL DGEMM( 'No transpose', 'No transpose', I3, J3,
+     $                           JB, -ONE, WORK31, LDWORK, WORK13,
+     $                           LDWORK, ONE, AB( 1+KL, J+KV ), LDAB-1 )
+                  END IF
+*
+*                 Copy the lower triangle of A13 back into place
+*
+                  DO 150 JJ = 1, J3
+                     DO 140 II = JJ, JB
+                        AB( II-JJ+1, JJ+J+KV-1 ) = WORK13( II, JJ )
+  140                CONTINUE
+  150             CONTINUE
+               END IF
+            ELSE
+*
+*              Adjust the pivot indices.
+*
+               DO 160 I = J, J + JB - 1
+                  IPIV( I ) = IPIV( I ) + J - 1
+  160          CONTINUE
+            END IF
+*
+*           Partially undo the interchanges in the current block to
+*           restore the upper triangular form of A31 and copy the upper
+*           triangle of A31 back into place
+*
+            DO 170 JJ = J + JB - 1, J, -1
+               JP = IPIV( JJ ) - JJ + 1
+               IF( JP.NE.1 ) THEN
+*
+*                 Apply interchange to columns J to JJ-1
+*
+                  IF( JP+JJ-1.LT.J+KL ) THEN
+*
+*                    The interchange does not affect A31
+*
+                     CALL DSWAP( JJ-J, AB( KV+1+JJ-J, J ), LDAB-1,
+     $                           AB( KV+JP+JJ-J, J ), LDAB-1 )
+                  ELSE
+*
+*                    The interchange does affect A31
+*
+                     CALL DSWAP( JJ-J, AB( KV+1+JJ-J, J ), LDAB-1,
+     $                           WORK31( JP+JJ-J-KL, 1 ), LDWORK )
+                  END IF
+               END IF
+*
+*              Copy the current column of A31 back into place
+*
+               NW = MIN( I3, JJ-J+1 )
+               IF( NW.GT.0 )
+     $            CALL DCOPY( NW, WORK31( 1, JJ-J+1 ), 1,
+     $                        AB( KV+KL+1-JJ+J, JJ ), 1 )
+  170       CONTINUE
+  180    CONTINUE
+      END IF
+*
+      RETURN
+*
+*     End of DGBTRF
+*
+      END
+*> \brief \b DGETRF
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DGETRF + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgetrf.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgetrf.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgetrf.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGETRF( M, N, A, LDA, IPIV, INFO )
+*
+*       .. Scalar Arguments ..
+*       INTEGER            INFO, LDA, M, N
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   A( LDA, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGETRF computes an LU factorization of a general M-by-N matrix A
+*> using partial pivoting with row interchanges.
+*>
+*> The factorization has the form
+*>    A = P * L * U
+*> where P is a permutation matrix, L is lower triangular with unit
+*> diagonal elements (lower trapezoidal if m > n), and U is upper
+*> triangular (upper trapezoidal if m < n).
+*>
+*> This is the right-looking Level 3 BLAS version of the algorithm.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] M
+*> \verbatim
+*>          M is INTEGER
+*>          The number of rows of the matrix A.  M >= 0.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The number of columns of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          On entry, the M-by-N matrix to be factored.
+*>          On exit, the factors L and U from the factorization
+*>          A = P*L*U; the unit diagonal elements of L are not stored.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,M).
+*> \endverbatim
+*>
+*> \param[out] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (min(M,N))
+*>          The pivot indices; for 1 <= i <= min(M,N), row i of the
+*>          matrix was interchanged with row IPIV(i).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0:  successful exit
+*>          < 0:  if INFO = -i, the i-th argument had an illegal value
+*>          > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+*>                has been completed, but the factor U is exactly
+*>                singular, and division by zero will occur if it is used
+*>                to solve a system of equations.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleGEcomputational
+*
+*  =====================================================================
+      SUBROUTINE DGETRF( M, N, A, LDA, IPIV, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER            INFO, LDA, M, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE
+      PARAMETER          ( ONE = 1.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      INTEGER            I, IINFO, J, JB, NB
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGEMM, DGETRF2, DLASWP, DTRSM, XERBLA
+*     ..
+*     .. External Functions ..
+      INTEGER            ILAENV
+      EXTERNAL           ILAENV
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF( M.LT.0 ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, M ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGETRF', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( M.EQ.0 .OR. N.EQ.0 )
+     $   RETURN
+*
+*     Determine the block size for this environment.
+*
+      NB = ILAENV( 1, 'DGETRF', ' ', M, N, -1, -1 )
+      IF( NB.LE.1 .OR. NB.GE.MIN( M, N ) ) THEN
+*
+*        Use unblocked code.
+*
+         CALL DGETRF2( M, N, A, LDA, IPIV, INFO )
+      ELSE
+*
+*        Use blocked code.
+*
+         DO 20 J = 1, MIN( M, N ), NB
+            JB = MIN( MIN( M, N )-J+1, NB )
+*
+*           Factor diagonal and subdiagonal blocks and test for exact
+*           singularity.
+*
+            CALL DGETRF2( M-J+1, JB, A( J, J ), LDA, IPIV( J ), IINFO )
+*
+*           Adjust INFO and the pivot indices.
+*
+            IF( INFO.EQ.0 .AND. IINFO.GT.0 )
+     $         INFO = IINFO + J - 1
+            DO 10 I = J, MIN( M, J+JB-1 )
+               IPIV( I ) = J - 1 + IPIV( I )
+   10       CONTINUE
+*
+*           Apply interchanges to columns 1:J-1.
+*
+            CALL DLASWP( J-1, A, LDA, J, J+JB-1, IPIV, 1 )
+*
+            IF( J+JB.LE.N ) THEN
+*
+*              Apply interchanges to columns J+JB:N.
+*
+               CALL DLASWP( N-J-JB+1, A( 1, J+JB ), LDA, J, J+JB-1,
+     $                      IPIV, 1 )
+*
+*              Compute block row of U.
+*
+               CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Unit', JB,
+     $                     N-J-JB+1, ONE, A( J, J ), LDA, A( J, J+JB ),
+     $                     LDA )
+               IF( J+JB.LE.M ) THEN
+*
+*                 Update trailing submatrix.
+*
+                  CALL DGEMM( 'No transpose', 'No transpose', M-J-JB+1,
+     $                        N-J-JB+1, JB, -ONE, A( J+JB, J ), LDA,
+     $                        A( J, J+JB ), LDA, ONE, A( J+JB, J+JB ),
+     $                        LDA )
+               END IF
+            END IF
+   20    CONTINUE
+      END IF
+      RETURN
+*
+*     End of DGETRF
+*
+      END
+*> \brief \b DGBTRS
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DGBTRS + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgbtrs.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgbtrs.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgbtrs.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGBTRS( TRANS, N, KL, KU, NRHS, AB, LDAB, IPIV, B, LDB,
+*                          INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER          TRANS
+*       INTEGER            INFO, KL, KU, LDAB, LDB, N, NRHS
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   AB( LDAB, * ), B( LDB, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGBTRS solves a system of linear equations
+*>    A * X = B  or  A**T * X = B
+*> with a general band matrix A using the LU factorization computed
+*> by DGBTRF.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] TRANS
+*> \verbatim
+*>          TRANS is CHARACTER*1
+*>          Specifies the form of the system of equations.
+*>          = 'N':  A * X = B  (No transpose)
+*>          = 'T':  A**T* X = B  (Transpose)
+*>          = 'C':  A**T* X = B  (Conjugate transpose = Transpose)
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The order of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in] KL
+*> \verbatim
+*>          KL is INTEGER
+*>          The number of subdiagonals within the band of A.  KL >= 0.
+*> \endverbatim
+*>
+*> \param[in] KU
+*> \verbatim
+*>          KU is INTEGER
+*>          The number of superdiagonals within the band of A.  KU >= 0.
+*> \endverbatim
+*>
+*> \param[in] NRHS
+*> \verbatim
+*>          NRHS is INTEGER
+*>          The number of right hand sides, i.e., the number of columns
+*>          of the matrix B.  NRHS >= 0.
+*> \endverbatim
+*>
+*> \param[in] AB
+*> \verbatim
+*>          AB is DOUBLE PRECISION array, dimension (LDAB,N)
+*>          Details of the LU factorization of the band matrix A, as
+*>          computed by DGBTRF.  U is stored as an upper triangular band
+*>          matrix with KL+KU superdiagonals in rows 1 to KL+KU+1, and
+*>          the multipliers used during the factorization are stored in
+*>          rows KL+KU+2 to 2*KL+KU+1.
+*> \endverbatim
+*>
+*> \param[in] LDAB
+*> \verbatim
+*>          LDAB is INTEGER
+*>          The leading dimension of the array AB.  LDAB >= 2*KL+KU+1.
+*> \endverbatim
+*>
+*> \param[in] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (N)
+*>          The pivot indices; for 1 <= i <= N, row i of the matrix was
+*>          interchanged with row IPIV(i).
+*> \endverbatim
+*>
+*> \param[in,out] B
+*> \verbatim
+*>          B is DOUBLE PRECISION array, dimension (LDB,NRHS)
+*>          On entry, the right hand side matrix B.
+*>          On exit, the solution matrix X.
+*> \endverbatim
+*>
+*> \param[in] LDB
+*> \verbatim
+*>          LDB is INTEGER
+*>          The leading dimension of the array B.  LDB >= max(1,N).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0:  successful exit
+*>          < 0: if INFO = -i, the i-th argument had an illegal value
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleGBcomputational
+*
+*  =====================================================================
+      SUBROUTINE DGBTRS( TRANS, N, KL, KU, NRHS, AB, LDAB, IPIV, B, LDB,
+     $                   INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          TRANS
+      INTEGER            INFO, KL, KU, LDAB, LDB, N, NRHS
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   AB( LDAB, * ), B( LDB, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE
+      PARAMETER          ( ONE = 1.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            LNOTI, NOTRAN
+      INTEGER            I, J, KD, L, LM
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      EXTERNAL           LSAME
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGEMV, DGER, DSWAP, DTBSV, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      NOTRAN = LSAME( TRANS, 'N' )
+      IF( .NOT.NOTRAN .AND. .NOT.LSAME( TRANS, 'T' ) .AND. .NOT.
+     $    LSAME( TRANS, 'C' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( KL.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( KU.LT.0 ) THEN
+         INFO = -4
+      ELSE IF( NRHS.LT.0 ) THEN
+         INFO = -5
+      ELSE IF( LDAB.LT.( 2*KL+KU+1 ) ) THEN
+         INFO = -7
+      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
+         INFO = -10
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGBTRS', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 .OR. NRHS.EQ.0 )
+     $   RETURN
+*
+      KD = KU + KL + 1
+      LNOTI = KL.GT.0
+*
+      IF( NOTRAN ) THEN
+*
+*        Solve  A*X = B.
+*
+*        Solve L*X = B, overwriting B with X.
+*
+*        L is represented as a product of permutations and unit lower
+*        triangular matrices L = P(1) * L(1) * ... * P(n-1) * L(n-1),
+*        where each transformation L(i) is a rank-one modification of
+*        the identity matrix.
+*
+         IF( LNOTI ) THEN
+            DO 10 J = 1, N - 1
+               LM = MIN( KL, N-J )
+               L = IPIV( J )
+               IF( L.NE.J )
+     $            CALL DSWAP( NRHS, B( L, 1 ), LDB, B( J, 1 ), LDB )
+               CALL DGER( LM, NRHS, -ONE, AB( KD+1, J ), 1, B( J, 1 ),
+     $                    LDB, B( J+1, 1 ), LDB )
+   10       CONTINUE
+         END IF
+*
+         DO 20 I = 1, NRHS
+*
+*           Solve U*X = B, overwriting B with X.
+*
+            CALL DTBSV( 'Upper', 'No transpose', 'Non-unit', N, KL+KU,
+     $                  AB, LDAB, B( 1, I ), 1 )
+   20    CONTINUE
+*
+      ELSE
+*
+*        Solve A**T*X = B.
+*
+         DO 30 I = 1, NRHS
+*
+*           Solve U**T*X = B, overwriting B with X.
+*
+            CALL DTBSV( 'Upper', 'Transpose', 'Non-unit', N, KL+KU, AB,
+     $                  LDAB, B( 1, I ), 1 )
+   30    CONTINUE
+*
+*        Solve L**T*X = B, overwriting B with X.
+*
+         IF( LNOTI ) THEN
+            DO 40 J = N - 1, 1, -1
+               LM = MIN( KL, N-J )
+               CALL DGEMV( 'Transpose', LM, NRHS, -ONE, B( J+1, 1 ),
+     $                     LDB, AB( KD+1, J ), 1, ONE, B( J, 1 ), LDB )
+               L = IPIV( J )
+               IF( L.NE.J )
+     $            CALL DSWAP( NRHS, B( L, 1 ), LDB, B( J, 1 ), LDB )
+   40       CONTINUE
+         END IF
+      END IF
+      RETURN
+*
+*     End of DGBTRS
+*
+      END
+*> \brief \b ILAENV
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download ILAENV + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/ilaenv.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/ilaenv.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/ilaenv.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       INTEGER FUNCTION ILAENV( ISPEC, NAME, OPTS, N1, N2, N3, N4 )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER*( * )    NAME, OPTS
+*       INTEGER            ISPEC, N1, N2, N3, N4
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> ILAENV is called from the LAPACK routines to choose problem-dependent
+*> parameters for the local environment.  See ISPEC for a description of
+*> the parameters.
+*>
+*> ILAENV returns an INTEGER
+*> if ILAENV >= 0: ILAENV returns the value of the parameter specified by ISPEC
+*> if ILAENV < 0:  if ILAENV = -k, the k-th argument had an illegal value.
+*>
+*> This version provides a set of parameters which should give good,
+*> but not optimal, performance on many of the currently available
+*> computers.  Users are encouraged to modify this subroutine to set
+*> the tuning parameters for their particular machine using the option
+*> and problem size information in the arguments.
+*>
+*> This routine will not function correctly if it is converted to all
+*> lower case.  Converting it to all upper case is allowed.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] ISPEC
+*> \verbatim
+*>          ISPEC is INTEGER
+*>          Specifies the parameter to be returned as the value of
+*>          ILAENV.
+*>          = 1: the optimal blocksize; if this value is 1, an unblocked
+*>               algorithm will give the best performance.
+*>          = 2: the minimum block size for which the block routine
+*>               should be used; if the usable block size is less than
+*>               this value, an unblocked routine should be used.
+*>          = 3: the crossover point (in a block routine, for N less
+*>               than this value, an unblocked routine should be used)
+*>          = 4: the number of shifts, used in the nonsymmetric
+*>               eigenvalue routines (DEPRECATED)
+*>          = 5: the minimum column dimension for blocking to be used;
+*>               rectangular blocks must have dimension at least k by m,
+*>               where k is given by ILAENV(2,...) and m by ILAENV(5,...)
+*>          = 6: the crossover point for the SVD (when reducing an m by n
+*>               matrix to bidiagonal form, if max(m,n)/min(m,n) exceeds
+*>               this value, a QR factorization is used first to reduce
+*>               the matrix to a triangular form.)
+*>          = 7: the number of processors
+*>          = 8: the crossover point for the multishift QR method
+*>               for nonsymmetric eigenvalue problems (DEPRECATED)
+*>          = 9: maximum size of the subproblems at the bottom of the
+*>               computation tree in the divide-and-conquer algorithm
+*>               (used by xGELSD and xGESDD)
+*>          =10: ieee infinity and NaN arithmetic can be trusted not to trap
+*>          =11: infinity arithmetic can be trusted not to trap
+*>          12 <= ISPEC <= 17:
+*>               xHSEQR or related subroutines,
+*>               see IPARMQ for detailed explanation
+*> \endverbatim
+*>
+*> \param[in] NAME
+*> \verbatim
+*>          NAME is CHARACTER*(*)
+*>          The name of the calling subroutine, in either upper case or
+*>          lower case.
+*> \endverbatim
+*>
+*> \param[in] OPTS
+*> \verbatim
+*>          OPTS is CHARACTER*(*)
+*>          The character options to the subroutine NAME, concatenated
+*>          into a single character string.  For example, UPLO = 'U',
+*>          TRANS = 'T', and DIAG = 'N' for a triangular routine would
+*>          be specified as OPTS = 'UTN'.
+*> \endverbatim
+*>
+*> \param[in] N1
+*> \verbatim
+*>          N1 is INTEGER
+*> \endverbatim
+*>
+*> \param[in] N2
+*> \verbatim
+*>          N2 is INTEGER
+*> \endverbatim
+*>
+*> \param[in] N3
+*> \verbatim
+*>          N3 is INTEGER
+*> \endverbatim
+*>
+*> \param[in] N4
+*> \verbatim
+*>          N4 is INTEGER
+*>          Problem dimensions for the subroutine NAME; these may not all
+*>          be required.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup OTHERauxiliary
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  The following conventions have been used when calling ILAENV from the
+*>  LAPACK routines:
+*>  1)  OPTS is a concatenation of all of the character options to
+*>      subroutine NAME, in the same order that they appear in the
+*>      argument list for NAME, even if they are not used in determining
+*>      the value of the parameter specified by ISPEC.
+*>  2)  The problem dimensions N1, N2, N3, N4 are specified in the order
+*>      that they appear in the argument list for NAME.  N1 is used
+*>      first, N2 second, and so on, and unused problem dimensions are
+*>      passed a value of -1.
+*>  3)  The parameter value returned by ILAENV is checked for validity in
+*>      the calling subroutine.  For example, ILAENV is used to retrieve
+*>      the optimal blocksize for STRTRI as follows:
+*>
+*>      NB = ILAENV( 1, 'STRTRI', UPLO // DIAG, N, -1, -1, -1 )
+*>      IF( NB.LE.1 ) NB = MAX( 1, N )
+*> \endverbatim
+*>
+*  =====================================================================
+      INTEGER FUNCTION ILAENV( ISPEC, NAME, OPTS, N1, N2, N3, N4 )
+*
+*  -- LAPACK auxiliary routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER*( * )    NAME, OPTS
+      INTEGER            ISPEC, N1, N2, N3, N4
+*     ..
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      INTEGER            I, IC, IZ, NB, NBMIN, NX
+      LOGICAL            CNAME, SNAME, TWOSTAGE
+      CHARACTER          C1*1, C2*2, C4*2, C3*3, SUBNAM*16
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          CHAR, ICHAR, INT, MIN, REAL
+*     ..
+*     .. External Functions ..
+      INTEGER            IEEECK, IPARMQ, IPARAM2STAGE
+      EXTERNAL           IEEECK, IPARMQ, IPARAM2STAGE
+*     ..
+*     .. Executable Statements ..
+*
+      GO TO ( 10, 10, 10, 80, 90, 100, 110, 120,
+     $        130, 140, 150, 160, 160, 160, 160, 160, 160)ISPEC
+*
+*     Invalid value for ISPEC
+*
+      ILAENV = -1
+      RETURN
+*
+   10 CONTINUE
+*
+*     Convert NAME to upper case if the first character is lower case.
+*
+      ILAENV = 1
+      SUBNAM = NAME
+      IC = ICHAR( SUBNAM( 1: 1 ) )
+      IZ = ICHAR( 'Z' )
+      IF( IZ.EQ.90 .OR. IZ.EQ.122 ) THEN
+*
+*        ASCII character set
+*
+         IF( IC.GE.97 .AND. IC.LE.122 ) THEN
+            SUBNAM( 1: 1 ) = CHAR( IC-32 )
+            DO 20 I = 2, 6
+               IC = ICHAR( SUBNAM( I: I ) )
+               IF( IC.GE.97 .AND. IC.LE.122 )
+     $            SUBNAM( I: I ) = CHAR( IC-32 )
+   20       CONTINUE
+         END IF
+*
+      ELSE IF( IZ.EQ.233 .OR. IZ.EQ.169 ) THEN
+*
+*        EBCDIC character set
+*
+         IF( ( IC.GE.129 .AND. IC.LE.137 ) .OR.
+     $       ( IC.GE.145 .AND. IC.LE.153 ) .OR.
+     $       ( IC.GE.162 .AND. IC.LE.169 ) ) THEN
+            SUBNAM( 1: 1 ) = CHAR( IC+64 )
+            DO 30 I = 2, 6
+               IC = ICHAR( SUBNAM( I: I ) )
+               IF( ( IC.GE.129 .AND. IC.LE.137 ) .OR.
+     $             ( IC.GE.145 .AND. IC.LE.153 ) .OR.
+     $             ( IC.GE.162 .AND. IC.LE.169 ) )SUBNAM( I:
+     $             I ) = CHAR( IC+64 )
+   30       CONTINUE
+         END IF
+*
+      ELSE IF( IZ.EQ.218 .OR. IZ.EQ.250 ) THEN
+*
+*        Prime machines:  ASCII+128
+*
+         IF( IC.GE.225 .AND. IC.LE.250 ) THEN
+            SUBNAM( 1: 1 ) = CHAR( IC-32 )
+            DO 40 I = 2, 6
+               IC = ICHAR( SUBNAM( I: I ) )
+               IF( IC.GE.225 .AND. IC.LE.250 )
+     $            SUBNAM( I: I ) = CHAR( IC-32 )
+   40       CONTINUE
+         END IF
+      END IF
+*
+      C1 = SUBNAM( 1: 1 )
+      SNAME = C1.EQ.'S' .OR. C1.EQ.'D'
+      CNAME = C1.EQ.'C' .OR. C1.EQ.'Z'
+      IF( .NOT.( CNAME .OR. SNAME ) )
+     $   RETURN
+      C2 = SUBNAM( 2: 3 )
+      C3 = SUBNAM( 4: 6 )
+      C4 = C3( 2: 3 )
+      TWOSTAGE = LEN( SUBNAM ).GE.11
+     $           .AND. SUBNAM( 11: 11 ).EQ.'2'
+*
+      GO TO ( 50, 60, 70 )ISPEC
+*
+   50 CONTINUE
+*
+*     ISPEC = 1:  block size
+*
+*     In these examples, separate code is provided for setting NB for
+*     real and complex.  We assume that NB will take the same value in
+*     single or double precision.
+*
+      NB = 1
+*
+      IF( SUBNAM(2:6).EQ.'LAORH' ) THEN
+*
+*        This is for *LAORHR_GETRFNP routine
+*
+         IF( SNAME ) THEN
+             NB = 32
+         ELSE
+             NB = 32
+         END IF
+      ELSE IF( C2.EQ.'GE' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         ELSE IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR.
+     $            C3.EQ.'QLF' ) THEN
+            IF( SNAME ) THEN
+               NB = 32
+            ELSE
+               NB = 32
+            END IF
+         ELSE IF( C3.EQ.'QR ') THEN
+            IF( N3 .EQ. 1) THEN
+               IF( SNAME ) THEN
+*     M*N
+                  IF ((N1*N2.LE.131072).OR.(N1.LE.8192)) THEN
+                     NB = N1
+                  ELSE
+                     NB = 32768/N2
+                  END IF
+               ELSE
+                  IF ((N1*N2.LE.131072).OR.(N1.LE.8192)) THEN
+                     NB = N1
+                  ELSE
+                     NB = 32768/N2
+                  END IF
+               END IF
+            ELSE
+               IF( SNAME ) THEN
+                  NB = 1
+               ELSE
+                  NB = 1
+               END IF
+            END IF
+         ELSE IF( C3.EQ.'LQ ') THEN
+            IF( N3 .EQ. 2) THEN
+               IF( SNAME ) THEN
+*     M*N
+                  IF ((N1*N2.LE.131072).OR.(N1.LE.8192)) THEN
+                     NB = N1
+                  ELSE
+                     NB = 32768/N2
+                  END IF
+               ELSE
+                  IF ((N1*N2.LE.131072).OR.(N1.LE.8192)) THEN
+                     NB = N1
+                  ELSE
+                     NB = 32768/N2
+                  END IF
+               END IF
+            ELSE
+               IF( SNAME ) THEN
+                  NB = 1
+               ELSE
+                  NB = 1
+               END IF
+            END IF
+         ELSE IF( C3.EQ.'HRD' ) THEN
+            IF( SNAME ) THEN
+               NB = 32
+            ELSE
+               NB = 32
+            END IF
+         ELSE IF( C3.EQ.'BRD' ) THEN
+            IF( SNAME ) THEN
+               NB = 32
+            ELSE
+               NB = 32
+            END IF
+         ELSE IF( C3.EQ.'TRI' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'PO' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'SY' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               IF( TWOSTAGE ) THEN
+                  NB = 192
+               ELSE
+                  NB = 64
+               END IF
+            ELSE
+               IF( TWOSTAGE ) THEN
+                  NB = 192
+               ELSE
+                  NB = 64
+               END IF
+            END IF
+         ELSE IF( SNAME .AND. C3.EQ.'TRD' ) THEN
+            NB = 32
+         ELSE IF( SNAME .AND. C3.EQ.'GST' ) THEN
+            NB = 64
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( TWOSTAGE ) THEN
+               NB = 192
+            ELSE
+               NB = 64
+            END IF
+         ELSE IF( C3.EQ.'TRD' ) THEN
+            NB = 32
+         ELSE IF( C3.EQ.'GST' ) THEN
+            NB = 64
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NB = 32
+            END IF
+         ELSE IF( C3( 1: 1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NB = 32
+            END IF
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NB = 32
+            END IF
+         ELSE IF( C3( 1: 1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NB = 32
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'GB' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               IF( N4.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            ELSE
+               IF( N4.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'PB' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               IF( N2.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            ELSE
+               IF( N2.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'TR' ) THEN
+         IF( C3.EQ.'TRI' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         ELSE IF ( C3.EQ.'EVC' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'LA' ) THEN
+         IF( C3.EQ.'UUM' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'ST' ) THEN
+         IF( C3.EQ.'EBZ' ) THEN
+            NB = 1
+         END IF
+      ELSE IF( C2.EQ.'GG' ) THEN
+         NB = 32
+         IF( C3.EQ.'HD3' ) THEN
+            IF( SNAME ) THEN
+               NB = 32
+            ELSE
+               NB = 32
+            END IF
+         END IF
+      END IF
+      ILAENV = NB
+      RETURN
+*
+   60 CONTINUE
+*
+*     ISPEC = 2:  minimum block size
+*
+      NBMIN = 2
+      IF( C2.EQ.'GE' ) THEN
+         IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR. C3.EQ.
+     $       'QLF' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         ELSE IF( C3.EQ.'HRD' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         ELSE IF( C3.EQ.'BRD' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         ELSE IF( C3.EQ.'TRI' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'SY' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 8
+            ELSE
+               NBMIN = 8
+            END IF
+         ELSE IF( SNAME .AND. C3.EQ.'TRD' ) THEN
+            NBMIN = 2
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
+         IF( C3.EQ.'TRD' ) THEN
+            NBMIN = 2
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NBMIN = 2
+            END IF
+         ELSE IF( C3( 1: 1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NBMIN = 2
+            END IF
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NBMIN = 2
+            END IF
+         ELSE IF( C3( 1: 1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NBMIN = 2
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'GG' ) THEN
+         NBMIN = 2
+         IF( C3.EQ.'HD3' ) THEN
+            NBMIN = 2
+         END IF
+      END IF
+      ILAENV = NBMIN
+      RETURN
+*
+   70 CONTINUE
+*
+*     ISPEC = 3:  crossover point
+*
+      NX = 0
+      IF( C2.EQ.'GE' ) THEN
+         IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR. C3.EQ.
+     $       'QLF' ) THEN
+            IF( SNAME ) THEN
+               NX = 128
+            ELSE
+               NX = 128
+            END IF
+         ELSE IF( C3.EQ.'HRD' ) THEN
+            IF( SNAME ) THEN
+               NX = 128
+            ELSE
+               NX = 128
+            END IF
+         ELSE IF( C3.EQ.'BRD' ) THEN
+            IF( SNAME ) THEN
+               NX = 128
+            ELSE
+               NX = 128
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'SY' ) THEN
+         IF( SNAME .AND. C3.EQ.'TRD' ) THEN
+            NX = 32
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
+         IF( C3.EQ.'TRD' ) THEN
+            NX = 32
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NX = 128
+            END IF
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
+         IF( C3( 1: 1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR. C4.EQ.
+     $          'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR. C4.EQ.'BR' )
+     $           THEN
+               NX = 128
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'GG' ) THEN
+         NX = 128
+         IF( C3.EQ.'HD3' ) THEN
+            NX = 128
+         END IF
+      END IF
+      ILAENV = NX
+      RETURN
+*
+   80 CONTINUE
+*
+*     ISPEC = 4:  number of shifts (used by xHSEQR)
+*
+      ILAENV = 6
+      RETURN
+*
+   90 CONTINUE
+*
+*     ISPEC = 5:  minimum column dimension (not used)
+*
+      ILAENV = 2
+      RETURN
+*
+  100 CONTINUE
+*
+*     ISPEC = 6:  crossover point for SVD (used by xGELSS and xGESVD)
+*
+      ILAENV = INT( REAL( MIN( N1, N2 ) )*1.6E0 )
+      RETURN
+*
+  110 CONTINUE
+*
+*     ISPEC = 7:  number of processors (not used)
+*
+      ILAENV = 1
+      RETURN
+*
+  120 CONTINUE
+*
+*     ISPEC = 8:  crossover point for multishift (used by xHSEQR)
+*
+      ILAENV = 50
+      RETURN
+*
+  130 CONTINUE
+*
+*     ISPEC = 9:  maximum size of the subproblems at the bottom of the
+*                 computation tree in the divide-and-conquer algorithm
+*                 (used by xGELSD and xGESDD)
+*
+      ILAENV = 25
+      RETURN
+*
+  140 CONTINUE
+*
+*     ISPEC = 10: ieee and infinity NaN arithmetic can be trusted not to trap
+*
+*     ILAENV = 0
+      ILAENV = 1
+      IF( ILAENV.EQ.1 ) THEN
+         ILAENV = IEEECK( 1, 0.0, 1.0 )
+      END IF
+      RETURN
+*
+  150 CONTINUE
+*
+*     ISPEC = 11: ieee infinity arithmetic can be trusted not to trap
+*
+*     ILAENV = 0
+      ILAENV = 1
+      IF( ILAENV.EQ.1 ) THEN
+         ILAENV = IEEECK( 0, 0.0, 1.0 )
+      END IF
+      RETURN
+*
+  160 CONTINUE
+*
+*     12 <= ISPEC <= 17: xHSEQR or related subroutines.
+*
+      ILAENV = IPARMQ( ISPEC, NAME, OPTS, N1, N2, N3, N4 )
+      RETURN
+*
+*     End of ILAENV
+*
+      END
+
+*> \brief \b DGBTF2 computes the LU factorization of a general band matrix using the unblocked version of the algorithm.
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DGBTF2 + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgbtf2.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgbtf2.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgbtf2.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGBTF2( M, N, KL, KU, AB, LDAB, IPIV, INFO )
+*
+*       .. Scalar Arguments ..
+*       INTEGER            INFO, KL, KU, LDAB, M, N
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   AB( LDAB, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGBTF2 computes an LU factorization of a real m-by-n band matrix A
+*> using partial pivoting with row interchanges.
+*>
+*> This is the unblocked version of the algorithm, calling Level 2 BLAS.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] M
+*> \verbatim
+*>          M is INTEGER
+*>          The number of rows of the matrix A.  M >= 0.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The number of columns of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in] KL
+*> \verbatim
+*>          KL is INTEGER
+*>          The number of subdiagonals within the band of A.  KL >= 0.
+*> \endverbatim
+*>
+*> \param[in] KU
+*> \verbatim
+*>          KU is INTEGER
+*>          The number of superdiagonals within the band of A.  KU >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] AB
+*> \verbatim
+*>          AB is DOUBLE PRECISION array, dimension (LDAB,N)
+*>          On entry, the matrix A in band storage, in rows KL+1 to
+*>          2*KL+KU+1; rows 1 to KL of the array need not be set.
+*>          The j-th column of A is stored in the j-th column of the
+*>          array AB as follows:
+*>          AB(kl+ku+1+i-j,j) = A(i,j) for max(1,j-ku)<=i<=min(m,j+kl)
+*>
+*>          On exit, details of the factorization: U is stored as an
+*>          upper triangular band matrix with KL+KU superdiagonals in
+*>          rows 1 to KL+KU+1, and the multipliers used during the
+*>          factorization are stored in rows KL+KU+2 to 2*KL+KU+1.
+*>          See below for further details.
+*> \endverbatim
+*>
+*> \param[in] LDAB
+*> \verbatim
+*>          LDAB is INTEGER
+*>          The leading dimension of the array AB.  LDAB >= 2*KL+KU+1.
+*> \endverbatim
+*>
+*> \param[out] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (min(M,N))
+*>          The pivot indices; for 1 <= i <= min(M,N), row i of the
+*>          matrix was interchanged with row IPIV(i).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0: successful exit
+*>          < 0: if INFO = -i, the i-th argument had an illegal value
+*>          > 0: if INFO = +i, U(i,i) is exactly zero. The factorization
+*>               has been completed, but the factor U is exactly
+*>               singular, and division by zero will occur if it is used
+*>               to solve a system of equations.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleGBcomputational
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  The band storage scheme is illustrated by the following example, when
+*>  M = N = 6, KL = 2, KU = 1:
+*>
+*>  On entry:                       On exit:
+*>
+*>      *    *    *    +    +    +       *    *    *   u14  u25  u36
+*>      *    *    +    +    +    +       *    *   u13  u24  u35  u46
+*>      *   a12  a23  a34  a45  a56      *   u12  u23  u34  u45  u56
+*>     a11  a22  a33  a44  a55  a66     u11  u22  u33  u44  u55  u66
+*>     a21  a32  a43  a54  a65   *      m21  m32  m43  m54  m65   *
+*>     a31  a42  a53  a64   *    *      m31  m42  m53  m64   *    *
+*>
+*>  Array elements marked * are not used by the routine; elements marked
+*>  + need not be set on entry, but are required by the routine to store
+*>  elements of U, because of fill-in resulting from the row
+*>  interchanges.
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DGBTF2( M, N, KL, KU, AB, LDAB, IPIV, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER            INFO, KL, KU, LDAB, M, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   AB( LDAB, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      INTEGER            I, J, JP, JU, KM, KV
+*     ..
+*     .. External Functions ..
+      INTEGER            IDAMAX
+      EXTERNAL           IDAMAX
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGER, DSCAL, DSWAP, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     KV is the number of superdiagonals in the factor U, allowing for
+*     fill-in.
+*
+      KV = KU + KL
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF( M.LT.0 ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( KL.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( KU.LT.0 ) THEN
+         INFO = -4
+      ELSE IF( LDAB.LT.KL+KV+1 ) THEN
+         INFO = -6
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGBTF2', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( M.EQ.0 .OR. N.EQ.0 )
+     $   RETURN
+*
+*     Gaussian elimination with partial pivoting
+*
+*     Set fill-in elements in columns KU+2 to KV to zero.
+*
+      DO 20 J = KU + 2, MIN( KV, N )
+         DO 10 I = KV - J + 2, KL
+            AB( I, J ) = ZERO
+   10    CONTINUE
+   20 CONTINUE
+*
+*     JU is the index of the last column affected by the current stage
+*     of the factorization.
+*
+      JU = 1
+*
+      DO 40 J = 1, MIN( M, N )
+*
+*        Set fill-in elements in column J+KV to zero.
+*
+         IF( J+KV.LE.N ) THEN
+            DO 30 I = 1, KL
+               AB( I, J+KV ) = ZERO
+   30       CONTINUE
+         END IF
+*
+*        Find pivot and test for singularity. KM is the number of
+*        subdiagonal elements in the current column.
+*
+         KM = MIN( KL, M-J )
+         JP = IDAMAX( KM+1, AB( KV+1, J ), 1 )
+         IPIV( J ) = JP + J - 1
+         IF( AB( KV+JP, J ).NE.ZERO ) THEN
+            JU = MAX( JU, MIN( J+KU+JP-1, N ) )
+*
+*           Apply interchange to columns J to JU.
+*
+            IF( JP.NE.1 )
+     $         CALL DSWAP( JU-J+1, AB( KV+JP, J ), LDAB-1,
+     $                     AB( KV+1, J ), LDAB-1 )
+*
+            IF( KM.GT.0 ) THEN
+*
+*              Compute multipliers.
+*
+               CALL DSCAL( KM, ONE / AB( KV+1, J ), AB( KV+2, J ), 1 )
+*
+*              Update trailing submatrix within the band.
+*
+               IF( JU.GT.J )
+     $            CALL DGER( KM, JU-J, -ONE, AB( KV+2, J ), 1,
+     $                       AB( KV, J+1 ), LDAB-1, AB( KV+1, J+1 ),
+     $                       LDAB-1 )
+            END IF
+         ELSE
+*
+*           If pivot is zero, set INFO to the index of the pivot
+*           unless a zero pivot has already been found.
+*
+            IF( INFO.EQ.0 )
+     $         INFO = J
+         END IF
+   40 CONTINUE
+      RETURN
+*
+*     End of DGBTF2
+*
+      END
+
+*> \brief \b DGER
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGER(M,N,ALPHA,X,INCX,Y,INCY,A,LDA)
+*
+*       .. Scalar Arguments ..
+*       DOUBLE PRECISION ALPHA
+*       INTEGER INCX,INCY,LDA,M,N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION A(LDA,*),X(*),Y(*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGER   performs the rank 1 operation
+*>
+*>    A := alpha*x*y**T + A,
+*>
+*> where alpha is a scalar, x is an m element vector, y is an n element
+*> vector and A is an m by n matrix.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] M
+*> \verbatim
+*>          M is INTEGER
+*>           On entry, M specifies the number of rows of the matrix A.
+*>           M must be at least zero.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>           On entry, N specifies the number of columns of the matrix A.
+*>           N must be at least zero.
+*> \endverbatim
+*>
+*> \param[in] ALPHA
+*> \verbatim
+*>          ALPHA is DOUBLE PRECISION.
+*>           On entry, ALPHA specifies the scalar alpha.
+*> \endverbatim
+*>
+*> \param[in] X
+*> \verbatim
+*>          X is DOUBLE PRECISION array, dimension at least
+*>           ( 1 + ( m - 1 )*abs( INCX ) ).
+*>           Before entry, the incremented array X must contain the m
+*>           element vector x.
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>           On entry, INCX specifies the increment for the elements of
+*>           X. INCX must not be zero.
+*> \endverbatim
+*>
+*> \param[in] Y
+*> \verbatim
+*>          Y is DOUBLE PRECISION array, dimension at least
+*>           ( 1 + ( n - 1 )*abs( INCY ) ).
+*>           Before entry, the incremented array Y must contain the n
+*>           element vector y.
+*> \endverbatim
+*>
+*> \param[in] INCY
+*> \verbatim
+*>          INCY is INTEGER
+*>           On entry, INCY specifies the increment for the elements of
+*>           Y. INCY must not be zero.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension ( LDA, N )
+*>           Before entry, the leading m by n part of the array A must
+*>           contain the matrix of coefficients. On exit, A is
+*>           overwritten by the updated matrix.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>           On entry, LDA specifies the first dimension of A as declared
+*>           in the calling (sub) program. LDA must be at least
+*>           max( 1, m ).
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level2
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  Level 2 Blas routine.
+*>
+*>  -- Written on 22-October-1986.
+*>     Jack Dongarra, Argonne National Lab.
+*>     Jeremy Du Croz, Nag Central Office.
+*>     Sven Hammarling, Nag Central Office.
+*>     Richard Hanson, Sandia National Labs.
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DGER(M,N,ALPHA,X,INCX,Y,INCY,A,LDA)
+*
+*  -- Reference BLAS level2 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION ALPHA
+      INTEGER INCX,INCY,LDA,M,N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION A(LDA,*),X(*),Y(*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION ZERO
+      PARAMETER (ZERO=0.0D+0)
+*     ..
+*     .. Local Scalars ..
+      DOUBLE PRECISION TEMP
+      INTEGER I,INFO,IX,J,JY,KX
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC MAX
+*     ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF (M.LT.0) THEN
+          INFO = 1
+      ELSE IF (N.LT.0) THEN
+          INFO = 2
+      ELSE IF (INCX.EQ.0) THEN
+          INFO = 5
+      ELSE IF (INCY.EQ.0) THEN
+          INFO = 7
+      ELSE IF (LDA.LT.MAX(1,M)) THEN
+          INFO = 9
+      END IF
+      IF (INFO.NE.0) THEN
+          CALL XERBLA('DGER  ',INFO)
+          RETURN
+      END IF
+*
+*     Quick return if possible.
+*
+      IF ((M.EQ.0) .OR. (N.EQ.0) .OR. (ALPHA.EQ.ZERO)) RETURN
+*
+*     Start the operations. In this version the elements of A are
+*     accessed sequentially with one pass through A.
+*
+      IF (INCY.GT.0) THEN
+          JY = 1
+      ELSE
+          JY = 1 - (N-1)*INCY
+      END IF
+      IF (INCX.EQ.1) THEN
+          DO 20 J = 1,N
+              IF (Y(JY).NE.ZERO) THEN
+                  TEMP = ALPHA*Y(JY)
+                  DO 10 I = 1,M
+                      A(I,J) = A(I,J) + X(I)*TEMP
+   10             CONTINUE
+              END IF
+              JY = JY + INCY
+   20     CONTINUE
+      ELSE
+          IF (INCX.GT.0) THEN
+              KX = 1
+          ELSE
+              KX = 1 - (M-1)*INCX
+          END IF
+          DO 40 J = 1,N
+              IF (Y(JY).NE.ZERO) THEN
+                  TEMP = ALPHA*Y(JY)
+                  IX = KX
+                  DO 30 I = 1,M
+                      A(I,J) = A(I,J) + X(IX)*TEMP
+                      IX = IX + INCX
+   30             CONTINUE
+              END IF
+              JY = JY + INCY
+   40     CONTINUE
+      END IF
+*
+      RETURN
+*
+*     End of DGER
+*
+      END
+*> \brief \b DLASWP performs a series of row interchanges on a general rectangular matrix.
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DLASWP + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dlaswp.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dlaswp.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dlaswp.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DLASWP( N, A, LDA, K1, K2, IPIV, INCX )
+*
+*       .. Scalar Arguments ..
+*       INTEGER            INCX, K1, K2, LDA, N
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   A( LDA, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DLASWP performs a series of row interchanges on the matrix A.
+*> One row interchange is initiated for each of rows K1 through K2 of A.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The number of columns of the matrix A.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          On entry, the matrix of column dimension N to which the row
+*>          interchanges will be applied.
+*>          On exit, the permuted matrix.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.
+*> \endverbatim
+*>
+*> \param[in] K1
+*> \verbatim
+*>          K1 is INTEGER
+*>          The first element of IPIV for which a row interchange will
+*>          be done.
+*> \endverbatim
+*>
+*> \param[in] K2
+*> \verbatim
+*>          K2 is INTEGER
+*>          (K2-K1+1) is the number of elements of IPIV for which a row
+*>          interchange will be done.
+*> \endverbatim
+*>
+*> \param[in] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (K1+(K2-K1)*abs(INCX))
+*>          The vector of pivot indices. Only the elements in positions
+*>          K1 through K1+(K2-K1)*abs(INCX) of IPIV are accessed.
+*>          IPIV(K1+(K-K1)*abs(INCX)) = L implies rows K and L are to be
+*>          interchanged.
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>          The increment between successive values of IPIV. If INCX
+*>          is negative, the pivots are applied in reverse order.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleOTHERauxiliary
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  Modified by
+*>   R. C. Whaley, Computer Science Dept., Univ. of Tenn., Knoxville, USA
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DLASWP( N, A, LDA, K1, K2, IPIV, INCX )
+*
+*  -- LAPACK auxiliary routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER            INCX, K1, K2, LDA, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+* =====================================================================
+*
+*     .. Local Scalars ..
+      INTEGER            I, I1, I2, INC, IP, IX, IX0, J, K, N32
+      DOUBLE PRECISION   TEMP
+*     ..
+*     .. Executable Statements ..
+*
+*     Interchange row I with row IPIV(K1+(I-K1)*abs(INCX)) for each of rows
+*     K1 through K2.
+*
+      IF( INCX.GT.0 ) THEN
+         IX0 = K1
+         I1 = K1
+         I2 = K2
+         INC = 1
+      ELSE IF( INCX.LT.0 ) THEN
+         IX0 = K1 + ( K1-K2 )*INCX
+         I1 = K2
+         I2 = K1
+         INC = -1
+      ELSE
+         RETURN
+      END IF
+*
+      N32 = ( N / 32 )*32
+      IF( N32.NE.0 ) THEN
+         DO 30 J = 1, N32, 32
+            IX = IX0
+            DO 20 I = I1, I2, INC
+               IP = IPIV( IX )
+               IF( IP.NE.I ) THEN
+                  DO 10 K = J, J + 31
+                     TEMP = A( I, K )
+                     A( I, K ) = A( IP, K )
+                     A( IP, K ) = TEMP
+   10             CONTINUE
+               END IF
+               IX = IX + INCX
+   20       CONTINUE
+   30    CONTINUE
+      END IF
+      IF( N32.NE.N ) THEN
+         N32 = N32 + 1
+         IX = IX0
+         DO 50 I = I1, I2, INC
+            IP = IPIV( IX )
+            IF( IP.NE.I ) THEN
+               DO 40 K = N32, N
+                  TEMP = A( I, K )
+                  A( I, K ) = A( IP, K )
+                  A( IP, K ) = TEMP
+   40          CONTINUE
+            END IF
+            IX = IX + INCX
+   50    CONTINUE
+      END IF
+*
+      RETURN
+*
+*     End of DLASWP
+*
+      END
+*> \brief \b DGETF2 computes the LU factorization of a general m-by-n matrix using partial pivoting with row interchanges (unblocked algorithm).
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DGETF2 + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgetf2.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgetf2.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgetf2.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGETF2( M, N, A, LDA, IPIV, INFO )
+*
+*       .. Scalar Arguments ..
+*       INTEGER            INFO, LDA, M, N
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   A( LDA, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGETF2 computes an LU factorization of a general m-by-n matrix A
+*> using partial pivoting with row interchanges.
+*>
+*> The factorization has the form
+*>    A = P * L * U
+*> where P is a permutation matrix, L is lower triangular with unit
+*> diagonal elements (lower trapezoidal if m > n), and U is upper
+*> triangular (upper trapezoidal if m < n).
+*>
+*> This is the right-looking Level 2 BLAS version of the algorithm.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] M
+*> \verbatim
+*>          M is INTEGER
+*>          The number of rows of the matrix A.  M >= 0.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The number of columns of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          On entry, the m by n matrix to be factored.
+*>          On exit, the factors L and U from the factorization
+*>          A = P*L*U; the unit diagonal elements of L are not stored.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,M).
+*> \endverbatim
+*>
+*> \param[out] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (min(M,N))
+*>          The pivot indices; for 1 <= i <= min(M,N), row i of the
+*>          matrix was interchanged with row IPIV(i).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0: successful exit
+*>          < 0: if INFO = -k, the k-th argument had an illegal value
+*>          > 0: if INFO = k, U(k,k) is exactly zero. The factorization
+*>               has been completed, but the factor U is exactly
+*>               singular, and division by zero will occur if it is used
+*>               to solve a system of equations.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleGEcomputational
+*
+*  =====================================================================
+      SUBROUTINE DGETF2( M, N, A, LDA, IPIV, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER            INFO, LDA, M, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      DOUBLE PRECISION   SFMIN
+      INTEGER            I, J, JP
+*     ..
+*     .. External Functions ..
+      DOUBLE PRECISION   DLAMCH
+      INTEGER            IDAMAX
+      EXTERNAL           DLAMCH, IDAMAX
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGER, DSCAL, DSWAP, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF( M.LT.0 ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, M ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGETF2', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( M.EQ.0 .OR. N.EQ.0 )
+     $   RETURN
+*
+*     Compute machine safe minimum
+*
+      SFMIN = DLAMCH('S')
+*
+      DO 10 J = 1, MIN( M, N )
+*
+*        Find pivot and test for singularity.
+*
+         JP = J - 1 + IDAMAX( M-J+1, A( J, J ), 1 )
+         IPIV( J ) = JP
+         IF( A( JP, J ).NE.ZERO ) THEN
+*
+*           Apply the interchange to columns 1:N.
+*
+            IF( JP.NE.J )
+     $         CALL DSWAP( N, A( J, 1 ), LDA, A( JP, 1 ), LDA )
+*
+*           Compute elements J+1:M of J-th column.
+*
+            IF( J.LT.M ) THEN
+               IF( ABS(A( J, J )) .GE. SFMIN ) THEN
+                  CALL DSCAL( M-J, ONE / A( J, J ), A( J+1, J ), 1 )
+               ELSE
+                 DO 20 I = 1, M-J
+                    A( J+I, J ) = A( J+I, J ) / A( J, J )
+   20            CONTINUE
+               END IF
+            END IF
+*
+         ELSE IF( INFO.EQ.0 ) THEN
+*
+            INFO = J
+         END IF
+*
+         IF( J.LT.MIN( M, N ) ) THEN
+*
+*           Update trailing submatrix.
+*
+            CALL DGER( M-J, N-J, -ONE, A( J+1, J ), 1, A( J, J+1 ), LDA,
+     $                 A( J+1, J+1 ), LDA )
+         END IF
+   10 CONTINUE
+      RETURN
+*
+*     End of DGETF2
+*
+      END
+*> \brief \b DTBSV
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DTBSV(UPLO,TRANS,DIAG,N,K,A,LDA,X,INCX)
+*
+*       .. Scalar Arguments ..
+*       INTEGER INCX,K,LDA,N
+*       CHARACTER DIAG,TRANS,UPLO
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION A(LDA,*),X(*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DTBSV  solves one of the systems of equations
+*>
+*>    A*x = b,   or   A**T*x = b,
+*>
+*> where b and x are n element vectors and A is an n by n unit, or
+*> non-unit, upper or lower triangular band matrix, with ( k + 1 )
+*> diagonals.
+*>
+*> No test for singularity or near-singularity is included in this
+*> routine. Such tests must be performed before calling this routine.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] UPLO
+*> \verbatim
+*>          UPLO is CHARACTER*1
+*>           On entry, UPLO specifies whether the matrix is an upper or
+*>           lower triangular matrix as follows:
+*>
+*>              UPLO = 'U' or 'u'   A is an upper triangular matrix.
+*>
+*>              UPLO = 'L' or 'l'   A is a lower triangular matrix.
+*> \endverbatim
+*>
+*> \param[in] TRANS
+*> \verbatim
+*>          TRANS is CHARACTER*1
+*>           On entry, TRANS specifies the equations to be solved as
+*>           follows:
+*>
+*>              TRANS = 'N' or 'n'   A*x = b.
+*>
+*>              TRANS = 'T' or 't'   A**T*x = b.
+*>
+*>              TRANS = 'C' or 'c'   A**T*x = b.
+*> \endverbatim
+*>
+*> \param[in] DIAG
+*> \verbatim
+*>          DIAG is CHARACTER*1
+*>           On entry, DIAG specifies whether or not A is unit
+*>           triangular as follows:
+*>
+*>              DIAG = 'U' or 'u'   A is assumed to be unit triangular.
+*>
+*>              DIAG = 'N' or 'n'   A is not assumed to be unit
+*>                                  triangular.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>           On entry, N specifies the order of the matrix A.
+*>           N must be at least zero.
+*> \endverbatim
+*>
+*> \param[in] K
+*> \verbatim
+*>          K is INTEGER
+*>           On entry with UPLO = 'U' or 'u', K specifies the number of
+*>           super-diagonals of the matrix A.
+*>           On entry with UPLO = 'L' or 'l', K specifies the number of
+*>           sub-diagonals of the matrix A.
+*>           K must satisfy  0 .le. K.
+*> \endverbatim
+*>
+*> \param[in] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension ( LDA, N )
+*>           Before entry with UPLO = 'U' or 'u', the leading ( k + 1 )
+*>           by n part of the array A must contain the upper triangular
+*>           band part of the matrix of coefficients, supplied column by
+*>           column, with the leading diagonal of the matrix in row
+*>           ( k + 1 ) of the array, the first super-diagonal starting at
+*>           position 2 in row k, and so on. The top left k by k triangle
+*>           of the array A is not referenced.
+*>           The following program segment will transfer an upper
+*>           triangular band matrix from conventional full matrix storage
+*>           to band storage:
+*>
+*>                 DO 20, J = 1, N
+*>                    M = K + 1 - J
+*>                    DO 10, I = MAX( 1, J - K ), J
+*>                       A( M + I, J ) = matrix( I, J )
+*>              10    CONTINUE
+*>              20 CONTINUE
+*>
+*>           Before entry with UPLO = 'L' or 'l', the leading ( k + 1 )
+*>           by n part of the array A must contain the lower triangular
+*>           band part of the matrix of coefficients, supplied column by
+*>           column, with the leading diagonal of the matrix in row 1 of
+*>           the array, the first sub-diagonal starting at position 1 in
+*>           row 2, and so on. The bottom right k by k triangle of the
+*>           array A is not referenced.
+*>           The following program segment will transfer a lower
+*>           triangular band matrix from conventional full matrix storage
+*>           to band storage:
+*>
+*>                 DO 20, J = 1, N
+*>                    M = 1 - J
+*>                    DO 10, I = J, MIN( N, J + K )
+*>                       A( M + I, J ) = matrix( I, J )
+*>              10    CONTINUE
+*>              20 CONTINUE
+*>
+*>           Note that when DIAG = 'U' or 'u' the elements of the array A
+*>           corresponding to the diagonal elements of the matrix are not
+*>           referenced, but are assumed to be unity.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>           On entry, LDA specifies the first dimension of A as declared
+*>           in the calling (sub) program. LDA must be at least
+*>           ( k + 1 ).
+*> \endverbatim
+*>
+*> \param[in,out] X
+*> \verbatim
+*>          X is DOUBLE PRECISION array, dimension at least
+*>           ( 1 + ( n - 1 )*abs( INCX ) ).
+*>           Before entry, the incremented array X must contain the n
+*>           element right-hand side vector b. On exit, X is overwritten
+*>           with the solution vector x.
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>           On entry, INCX specifies the increment for the elements of
+*>           X. INCX must not be zero.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level2
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  Level 2 Blas routine.
+*>
+*>  -- Written on 22-October-1986.
+*>     Jack Dongarra, Argonne National Lab.
+*>     Jeremy Du Croz, Nag Central Office.
+*>     Sven Hammarling, Nag Central Office.
+*>     Richard Hanson, Sandia National Labs.
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DTBSV(UPLO,TRANS,DIAG,N,K,A,LDA,X,INCX)
+*
+*  -- Reference BLAS level2 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER INCX,K,LDA,N
+      CHARACTER DIAG,TRANS,UPLO
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION A(LDA,*),X(*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION ZERO
+      PARAMETER (ZERO=0.0D+0)
+*     ..
+*     .. Local Scalars ..
+      DOUBLE PRECISION TEMP
+      INTEGER I,INFO,IX,J,JX,KPLUS1,KX,L
+      LOGICAL NOUNIT
+*     ..
+*     .. External Functions ..
+      LOGICAL LSAME
+      EXTERNAL LSAME
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC MAX,MIN
+*     ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF (.NOT.LSAME(UPLO,'U') .AND. .NOT.LSAME(UPLO,'L')) THEN
+          INFO = 1
+      ELSE IF (.NOT.LSAME(TRANS,'N') .AND. .NOT.LSAME(TRANS,'T') .AND.
+     +         .NOT.LSAME(TRANS,'C')) THEN
+          INFO = 2
+      ELSE IF (.NOT.LSAME(DIAG,'U') .AND. .NOT.LSAME(DIAG,'N')) THEN
+          INFO = 3
+      ELSE IF (N.LT.0) THEN
+          INFO = 4
+      ELSE IF (K.LT.0) THEN
+          INFO = 5
+      ELSE IF (LDA.LT. (K+1)) THEN
+          INFO = 7
+      ELSE IF (INCX.EQ.0) THEN
+          INFO = 9
+      END IF
+      IF (INFO.NE.0) THEN
+          CALL XERBLA('DTBSV ',INFO)
+          RETURN
+      END IF
+*
+*     Quick return if possible.
+*
+      IF (N.EQ.0) RETURN
+*
+      NOUNIT = LSAME(DIAG,'N')
+*
+*     Set up the start point in X if the increment is not unity. This
+*     will be  ( N - 1 )*INCX  too small for descending loops.
+*
+      IF (INCX.LE.0) THEN
+          KX = 1 - (N-1)*INCX
+      ELSE IF (INCX.NE.1) THEN
+          KX = 1
+      END IF
+*
+*     Start the operations. In this version the elements of A are
+*     accessed by sequentially with one pass through A.
+*
+      IF (LSAME(TRANS,'N')) THEN
+*
+*        Form  x := inv( A )*x.
+*
+          IF (LSAME(UPLO,'U')) THEN
+              KPLUS1 = K + 1
+              IF (INCX.EQ.1) THEN
+                  DO 20 J = N,1,-1
+                      IF (X(J).NE.ZERO) THEN
+                          L = KPLUS1 - J
+                          IF (NOUNIT) X(J) = X(J)/A(KPLUS1,J)
+                          TEMP = X(J)
+                          DO 10 I = J - 1,MAX(1,J-K),-1
+                              X(I) = X(I) - TEMP*A(L+I,J)
+   10                     CONTINUE
+                      END IF
+   20             CONTINUE
+              ELSE
+                  KX = KX + (N-1)*INCX
+                  JX = KX
+                  DO 40 J = N,1,-1
+                      KX = KX - INCX
+                      IF (X(JX).NE.ZERO) THEN
+                          IX = KX
+                          L = KPLUS1 - J
+                          IF (NOUNIT) X(JX) = X(JX)/A(KPLUS1,J)
+                          TEMP = X(JX)
+                          DO 30 I = J - 1,MAX(1,J-K),-1
+                              X(IX) = X(IX) - TEMP*A(L+I,J)
+                              IX = IX - INCX
+   30                     CONTINUE
+                      END IF
+                      JX = JX - INCX
+   40             CONTINUE
+              END IF
+          ELSE
+              IF (INCX.EQ.1) THEN
+                  DO 60 J = 1,N
+                      IF (X(J).NE.ZERO) THEN
+                          L = 1 - J
+                          IF (NOUNIT) X(J) = X(J)/A(1,J)
+                          TEMP = X(J)
+                          DO 50 I = J + 1,MIN(N,J+K)
+                              X(I) = X(I) - TEMP*A(L+I,J)
+   50                     CONTINUE
+                      END IF
+   60             CONTINUE
+              ELSE
+                  JX = KX
+                  DO 80 J = 1,N
+                      KX = KX + INCX
+                      IF (X(JX).NE.ZERO) THEN
+                          IX = KX
+                          L = 1 - J
+                          IF (NOUNIT) X(JX) = X(JX)/A(1,J)
+                          TEMP = X(JX)
+                          DO 70 I = J + 1,MIN(N,J+K)
+                              X(IX) = X(IX) - TEMP*A(L+I,J)
+                              IX = IX + INCX
+   70                     CONTINUE
+                      END IF
+                      JX = JX + INCX
+   80             CONTINUE
+              END IF
+          END IF
+      ELSE
+*
+*        Form  x := inv( A**T)*x.
+*
+          IF (LSAME(UPLO,'U')) THEN
+              KPLUS1 = K + 1
+              IF (INCX.EQ.1) THEN
+                  DO 100 J = 1,N
+                      TEMP = X(J)
+                      L = KPLUS1 - J
+                      DO 90 I = MAX(1,J-K),J - 1
+                          TEMP = TEMP - A(L+I,J)*X(I)
+   90                 CONTINUE
+                      IF (NOUNIT) TEMP = TEMP/A(KPLUS1,J)
+                      X(J) = TEMP
+  100             CONTINUE
+              ELSE
+                  JX = KX
+                  DO 120 J = 1,N
+                      TEMP = X(JX)
+                      IX = KX
+                      L = KPLUS1 - J
+                      DO 110 I = MAX(1,J-K),J - 1
+                          TEMP = TEMP - A(L+I,J)*X(IX)
+                          IX = IX + INCX
+  110                 CONTINUE
+                      IF (NOUNIT) TEMP = TEMP/A(KPLUS1,J)
+                      X(JX) = TEMP
+                      JX = JX + INCX
+                      IF (J.GT.K) KX = KX + INCX
+  120             CONTINUE
+              END IF
+          ELSE
+              IF (INCX.EQ.1) THEN
+                  DO 140 J = N,1,-1
+                      TEMP = X(J)
+                      L = 1 - J
+                      DO 130 I = MIN(N,J+K),J + 1,-1
+                          TEMP = TEMP - A(L+I,J)*X(I)
+  130                 CONTINUE
+                      IF (NOUNIT) TEMP = TEMP/A(1,J)
+                      X(J) = TEMP
+  140             CONTINUE
+              ELSE
+                  KX = KX + (N-1)*INCX
+                  JX = KX
+                  DO 160 J = N,1,-1
+                      TEMP = X(JX)
+                      IX = KX
+                      L = 1 - J
+                      DO 150 I = MIN(N,J+K),J + 1,-1
+                          TEMP = TEMP - A(L+I,J)*X(IX)
+                          IX = IX - INCX
+  150                 CONTINUE
+                      IF (NOUNIT) TEMP = TEMP/A(1,J)
+                      X(JX) = TEMP
+                      JX = JX - INCX
+                      IF ((N-J).GE.K) KX = KX - INCX
+  160             CONTINUE
+              END IF
+          END IF
+      END IF
+*
+      RETURN
+*
+*     End of DTBSV
+*
+      END
+         
+*> \brief \b DPOTRF
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DPOTRF + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dpotrf.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dpotrf.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dpotrf.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DPOTRF( UPLO, N, A, LDA, INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER          UPLO
+*       INTEGER            INFO, LDA, N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION   A( LDA, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DPOTRF computes the Cholesky factorization of a real symmetric
+*> positive definite matrix A.
+*>
+*> The factorization has the form
+*>    A = U**T * U,  if UPLO = 'U', or
+*>    A = L  * L**T,  if UPLO = 'L',
+*> where U is an upper triangular matrix and L is lower triangular.
+*>
+*> This is the block version of the algorithm, calling Level 3 BLAS.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] UPLO
+*> \verbatim
+*>          UPLO is CHARACTER*1
+*>          = 'U':  Upper triangle of A is stored;
+*>          = 'L':  Lower triangle of A is stored.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The order of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+*>          N-by-N upper triangular part of A contains the upper
+*>          triangular part of the matrix A, and the strictly lower
+*>          triangular part of A is not referenced.  If UPLO = 'L', the
+*>          leading N-by-N lower triangular part of A contains the lower
+*>          triangular part of the matrix A, and the strictly upper
+*>          triangular part of A is not referenced.
+*>
+*>          On exit, if INFO = 0, the factor U or L from the Cholesky
+*>          factorization A = U**T*U or A = L*L**T.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,N).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0:  successful exit
+*>          < 0:  if INFO = -i, the i-th argument had an illegal value
+*>          > 0:  if INFO = i, the leading minor of order i is not
+*>                positive definite, and the factorization could not be
+*>                completed.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doublePOcomputational
+*
+*  =====================================================================
+      SUBROUTINE DPOTRF( UPLO, N, A, LDA, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, LDA, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE
+      PARAMETER          ( ONE = 1.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+      INTEGER            J, JB, NB
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      INTEGER            ILAENV
+      EXTERNAL           LSAME, ILAENV
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGEMM, DPOTRF2, DSYRK, DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DPOTRF', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+*     Determine the block size for this environment.
+*
+      NB = ILAENV( 1, 'DPOTRF', UPLO, N, -1, -1, -1 )
+      IF( NB.LE.1 .OR. NB.GE.N ) THEN
+*
+*        Use unblocked code.
+*
+         CALL DPOTRF2( UPLO, N, A, LDA, INFO )
+      ELSE
+*
+*        Use blocked code.
+*
+         IF( UPPER ) THEN
+*
+*           Compute the Cholesky factorization A = U**T*U.
+*
+            DO 10 J = 1, N, NB
+*
+*              Update and factorize the current diagonal block and test
+*              for non-positive-definiteness.
+*
+               JB = MIN( NB, N-J+1 )
+               CALL DSYRK( 'Upper', 'Transpose', JB, J-1, -ONE,
+     $                     A( 1, J ), LDA, ONE, A( J, J ), LDA )
+               CALL DPOTRF2( 'Upper', JB, A( J, J ), LDA, INFO )
+               IF( INFO.NE.0 )
+     $            GO TO 30
+               IF( J+JB.LE.N ) THEN
+*
+*                 Compute the current block row.
+*
+                  CALL DGEMM( 'Transpose', 'No transpose', JB, N-J-JB+1,
+     $                        J-1, -ONE, A( 1, J ), LDA, A( 1, J+JB ),
+     $                        LDA, ONE, A( J, J+JB ), LDA )
+                  CALL DTRSM( 'Left', 'Upper', 'Transpose', 'Non-unit',
+     $                        JB, N-J-JB+1, ONE, A( J, J ), LDA,
+     $                        A( J, J+JB ), LDA )
+               END IF
+   10       CONTINUE
+*
+         ELSE
+*
+*           Compute the Cholesky factorization A = L*L**T.
+*
+            DO 20 J = 1, N, NB
+*
+*              Update and factorize the current diagonal block and test
+*              for non-positive-definiteness.
+*
+               JB = MIN( NB, N-J+1 )
+               CALL DSYRK( 'Lower', 'No transpose', JB, J-1, -ONE,
+     $                     A( J, 1 ), LDA, ONE, A( J, J ), LDA )
+               CALL DPOTRF2( 'Lower', JB, A( J, J ), LDA, INFO )
+               IF( INFO.NE.0 )
+     $            GO TO 30
+               IF( J+JB.LE.N ) THEN
+*
+*                 Compute the current block column.
+*
+                  CALL DGEMM( 'No transpose', 'Transpose', N-J-JB+1, JB,
+     $                        J-1, -ONE, A( J+JB, 1 ), LDA, A( J, 1 ),
+     $                        LDA, ONE, A( J+JB, J ), LDA )
+                  CALL DTRSM( 'Right', 'Lower', 'Transpose', 'Non-unit',
+     $                        N-J-JB+1, JB, ONE, A( J, J ), LDA,
+     $                        A( J+JB, J ), LDA )
+               END IF
+   20       CONTINUE
+         END IF
+      END IF
+      GO TO 40
+*
+   30 CONTINUE
+      INFO = INFO + J - 1
+*
+   40 CONTINUE
+      RETURN
+*
+*     End of DPOTRF
+*
+      END
+*> \brief \b DPOTRF2
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       RECURSIVE SUBROUTINE DPOTRF2( UPLO, N, A, LDA, INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER          UPLO
+*       INTEGER            INFO, LDA, N
+*       ..
+*       .. Array Arguments ..
+*       REAL               A( LDA, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DPOTRF2 computes the Cholesky factorization of a real symmetric
+*> positive definite matrix A using the recursive algorithm.
+*>
+*> The factorization has the form
+*>    A = U**T * U,  if UPLO = 'U', or
+*>    A = L  * L**T,  if UPLO = 'L',
+*> where U is an upper triangular matrix and L is lower triangular.
+*>
+*> This is the recursive version of the algorithm. It divides
+*> the matrix into four submatrices:
+*>
+*>        [  A11 | A12  ]  where A11 is n1 by n1 and A22 is n2 by n2
+*>    A = [ -----|----- ]  with n1 = n/2
+*>        [  A21 | A22  ]       n2 = n-n1
+*>
+*> The subroutine calls itself to factor A11. Update and scale A21
+*> or A12, update A22 then calls itself to factor A22.
+*>
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] UPLO
+*> \verbatim
+*>          UPLO is CHARACTER*1
+*>          = 'U':  Upper triangle of A is stored;
+*>          = 'L':  Lower triangle of A is stored.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The order of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+*>          N-by-N upper triangular part of A contains the upper
+*>          triangular part of the matrix A, and the strictly lower
+*>          triangular part of A is not referenced.  If UPLO = 'L', the
+*>          leading N-by-N lower triangular part of A contains the lower
+*>          triangular part of the matrix A, and the strictly upper
+*>          triangular part of A is not referenced.
+*>
+*>          On exit, if INFO = 0, the factor U or L from the Cholesky
+*>          factorization A = U**T*U or A = L*L**T.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,N).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0:  successful exit
+*>          < 0:  if INFO = -i, the i-th argument had an illegal value
+*>          > 0:  if INFO = i, the leading minor of order i is not
+*>                positive definite, and the factorization could not be
+*>                completed.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doublePOcomputational
+*
+*  =====================================================================
+      RECURSIVE SUBROUTINE DPOTRF2( UPLO, N, A, LDA, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, LDA, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+      INTEGER            N1, N2, IINFO
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME, DISNAN
+      EXTERNAL           LSAME, DISNAN
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DSYRK, DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, SQRT
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DPOTRF2', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+*     N=1 case
+*
+      IF( N.EQ.1 ) THEN
+*
+*        Test for non-positive-definiteness
+*
+         IF( A( 1, 1 ).LE.ZERO.OR.DISNAN( A( 1, 1 ) ) ) THEN
+            INFO = 1
+            RETURN
+         END IF
+*
+*        Factor
+*
+         A( 1, 1 ) = SQRT( A( 1, 1 ) )
+*
+*     Use recursive code
+*
+      ELSE
+         N1 = N/2
+         N2 = N-N1
+*
+*        Factor A11
+*
+         CALL DPOTRF2( UPLO, N1, A( 1, 1 ), LDA, IINFO )
+         IF ( IINFO.NE.0 ) THEN
+            INFO = IINFO
+            RETURN
+         END IF
+*
+*        Compute the Cholesky factorization A = U**T*U
+*
+         IF( UPPER ) THEN
+*
+*           Update and scale A12
+*
+            CALL DTRSM( 'L', 'U', 'T', 'N', N1, N2, ONE,
+     $                  A( 1, 1 ), LDA, A( 1, N1+1 ), LDA )
+*
+*           Update and factor A22
+*
+            CALL DSYRK( UPLO, 'T', N2, N1, -ONE, A( 1, N1+1 ), LDA,
+     $                  ONE, A( N1+1, N1+1 ), LDA )
+            CALL DPOTRF2( UPLO, N2, A( N1+1, N1+1 ), LDA, IINFO )
+            IF ( IINFO.NE.0 ) THEN
+               INFO = IINFO + N1
+               RETURN
+            END IF
+*
+*        Compute the Cholesky factorization A = L*L**T
+*
+         ELSE
+*
+*           Update and scale A21
+*
+            CALL DTRSM( 'R', 'L', 'T', 'N', N2, N1, ONE,
+     $                  A( 1, 1 ), LDA, A( N1+1, 1 ), LDA )
+*
+*           Update and factor A22
+*
+            CALL DSYRK( UPLO, 'N', N2, N1, -ONE, A( N1+1, 1 ), LDA,
+     $                  ONE, A( N1+1, N1+1 ), LDA )
+            CALL DPOTRF2( UPLO, N2, A( N1+1, N1+1 ), LDA, IINFO )
+            IF ( IINFO.NE.0 ) THEN
+               INFO = IINFO + N1
+               RETURN
+            END IF
+         END IF
+      END IF
+      RETURN
+*
+*     End of DPOTRF2
+*
+      END
+*> \brief \b DISNAN tests input for NaN.
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DISNAN + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/disnan.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/disnan.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/disnan.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       LOGICAL FUNCTION DISNAN( DIN )
+*
+*       .. Scalar Arguments ..
+*       DOUBLE PRECISION, INTENT(IN) :: DIN
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DISNAN returns .TRUE. if its argument is NaN, and .FALSE.
+*> otherwise.  To be replaced by the Fortran 2003 intrinsic in the
+*> future.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] DIN
+*> \verbatim
+*>          DIN is DOUBLE PRECISION
+*>          Input to test for NaN.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup OTHERauxiliary
+*
+*  =====================================================================
+      LOGICAL FUNCTION DISNAN( DIN )
+*
+*  -- LAPACK auxiliary routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION, INTENT(IN) :: DIN
+*     ..
+*
+*  =====================================================================
+*
+*  .. External Functions ..
+      LOGICAL DLAISNAN
+      EXTERNAL DLAISNAN
+*  ..
+*  .. Executable Statements ..
+      DISNAN = DLAISNAN(DIN,DIN)
+      RETURN
+      END
+*> \brief \b DLAISNAN tests input for NaN by comparing two arguments for inequality.
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DLAISNAN + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dlaisnan.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dlaisnan.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dlaisnan.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       LOGICAL FUNCTION DLAISNAN( DIN1, DIN2 )
+*
+*       .. Scalar Arguments ..
+*       DOUBLE PRECISION, INTENT(IN) :: DIN1, DIN2
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> This routine is not for general use.  It exists solely to avoid
+*> over-optimization in DISNAN.
+*>
+*> DLAISNAN checks for NaNs by comparing its two arguments for
+*> inequality.  NaN is the only floating-point value where NaN != NaN
+*> returns .TRUE.  To check for NaNs, pass the same variable as both
+*> arguments.
+*>
+*> A compiler must assume that the two arguments are
+*> not the same variable, and the test will not be optimized away.
+*> Interprocedural or whole-program optimization may delete this
+*> test.  The ISNAN functions will be replaced by the correct
+*> Fortran 03 intrinsic once the intrinsic is widely available.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] DIN1
+*> \verbatim
+*>          DIN1 is DOUBLE PRECISION
+*> \endverbatim
+*>
+*> \param[in] DIN2
+*> \verbatim
+*>          DIN2 is DOUBLE PRECISION
+*>          Two numbers to compare for inequality.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup OTHERauxiliary
+*
+*  =====================================================================
+      LOGICAL FUNCTION DLAISNAN( DIN1, DIN2 )
+*
+*  -- LAPACK auxiliary routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION, INTENT(IN) :: DIN1, DIN2
+*     ..
+*
+*  =====================================================================
+*
+*  .. Executable Statements ..
+      DLAISNAN = (DIN1.NE.DIN2)
+      RETURN
+      END
+               
+*> \brief \b DPOTRS
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DPOTRS + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dpotrs.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dpotrs.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dpotrs.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DPOTRS( UPLO, N, NRHS, A, LDA, B, LDB, INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER          UPLO
+*       INTEGER            INFO, LDA, LDB, N, NRHS
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION   A( LDA, * ), B( LDB, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DPOTRS solves a system of linear equations A*X = B with a symmetric
+*> positive definite matrix A using the Cholesky factorization
+*> A = U**T*U or A = L*L**T computed by DPOTRF.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] UPLO
+*> \verbatim
+*>          UPLO is CHARACTER*1
+*>          = 'U':  Upper triangle of A is stored;
+*>          = 'L':  Lower triangle of A is stored.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The order of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in] NRHS
+*> \verbatim
+*>          NRHS is INTEGER
+*>          The number of right hand sides, i.e., the number of columns
+*>          of the matrix B.  NRHS >= 0.
+*> \endverbatim
+*>
+*> \param[in] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          The triangular factor U or L from the Cholesky factorization
+*>          A = U**T*U or A = L*L**T, as computed by DPOTRF.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,N).
+*> \endverbatim
+*>
+*> \param[in,out] B
+*> \verbatim
+*>          B is DOUBLE PRECISION array, dimension (LDB,NRHS)
+*>          On entry, the right hand side matrix B.
+*>          On exit, the solution matrix X.
+*> \endverbatim
+*>
+*> \param[in] LDB
+*> \verbatim
+*>          LDB is INTEGER
+*>          The leading dimension of the array B.  LDB >= max(1,N).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0:  successful exit
+*>          < 0:  if INFO = -i, the i-th argument had an illegal value
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doublePOcomputational
+*
+*  =====================================================================
+      SUBROUTINE DPOTRS( UPLO, N, NRHS, A, LDA, B, LDB, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, LDA, LDB, N, NRHS
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * ), B( LDB, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE
+      PARAMETER          ( ONE = 1.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      EXTERNAL           LSAME
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( NRHS.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -5
+      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
+         INFO = -7
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DPOTRS', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 .OR. NRHS.EQ.0 )
+     $   RETURN
+*
+      IF( UPPER ) THEN
+*
+*        Solve A*X = B where A = U**T *U.
+*
+*        Solve U**T *X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Upper', 'Transpose', 'Non-unit', N, NRHS,
+     $               ONE, A, LDA, B, LDB )
+*
+*        Solve U*X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Upper', 'No transpose', 'Non-unit', N,
+     $               NRHS, ONE, A, LDA, B, LDB )
+      ELSE
+*
+*        Solve A*X = B where A = L*L**T.
+*
+*        Solve L*X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Non-unit', N,
+     $               NRHS, ONE, A, LDA, B, LDB )
+*
+*        Solve L**T *X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Lower', 'Transpose', 'Non-unit', N, NRHS,
+     $               ONE, A, LDA, B, LDB )
+      END IF
+*
+      RETURN
+*
+*     End of DPOTRS
+*
+      END
+*> \brief \b DPOTF2 computes the Cholesky factorization of a symmetric/Hermitian positive definite matrix (unblocked algorithm).
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DPOTF2 + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dpotf2.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dpotf2.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dpotf2.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DPOTF2( UPLO, N, A, LDA, INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER          UPLO
+*       INTEGER            INFO, LDA, N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION   A( LDA, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DPOTF2 computes the Cholesky factorization of a real symmetric
+*> positive definite matrix A.
+*>
+*> The factorization has the form
+*>    A = U**T * U ,  if UPLO = 'U', or
+*>    A = L  * L**T,  if UPLO = 'L',
+*> where U is an upper triangular matrix and L is lower triangular.
+*>
+*> This is the unblocked version of the algorithm, calling Level 2 BLAS.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] UPLO
+*> \verbatim
+*>          UPLO is CHARACTER*1
+*>          Specifies whether the upper or lower triangular part of the
+*>          symmetric matrix A is stored.
+*>          = 'U':  Upper triangular
+*>          = 'L':  Lower triangular
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The order of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+*>          n by n upper triangular part of A contains the upper
+*>          triangular part of the matrix A, and the strictly lower
+*>          triangular part of A is not referenced.  If UPLO = 'L', the
+*>          leading n by n lower triangular part of A contains the lower
+*>          triangular part of the matrix A, and the strictly upper
+*>          triangular part of A is not referenced.
+*>
+*>          On exit, if INFO = 0, the factor U or L from the Cholesky
+*>          factorization A = U**T *U  or A = L*L**T.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,N).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0: successful exit
+*>          < 0: if INFO = -k, the k-th argument had an illegal value
+*>          > 0: if INFO = k, the leading minor of order k is not
+*>               positive definite, and the factorization could not be
+*>               completed.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doublePOcomputational
+*
+*  =====================================================================
+      SUBROUTINE DPOTF2( UPLO, N, A, LDA, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, LDA, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+      INTEGER            J
+      DOUBLE PRECISION   AJJ
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME, DISNAN
+      DOUBLE PRECISION   DDOT
+      EXTERNAL           LSAME, DDOT, DISNAN
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGEMV, DSCAL, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, SQRT
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DPOTF2', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+      IF( UPPER ) THEN
+*
+*        Compute the Cholesky factorization A = U**T *U.
+*
+         DO 10 J = 1, N
+*
+*           Compute U(J,J) and test for non-positive-definiteness.
+*
+            AJJ = A( J, J ) - DDOT( J-1, A( 1, J ), 1, A( 1, J ), 1 )
+            IF( AJJ.LE.ZERO.OR.DISNAN( AJJ ) ) THEN
+               A( J, J ) = AJJ
+               GO TO 30
+            END IF
+            AJJ = SQRT( AJJ )
+            A( J, J ) = AJJ
+*
+*           Compute elements J+1:N of row J.
+*
+            IF( J.LT.N ) THEN
+               CALL DGEMV( 'Transpose', J-1, N-J, -ONE, A( 1, J+1 ),
+     $                     LDA, A( 1, J ), 1, ONE, A( J, J+1 ), LDA )
+               CALL DSCAL( N-J, ONE / AJJ, A( J, J+1 ), LDA )
+            END IF
+   10    CONTINUE
+      ELSE
+*
+*        Compute the Cholesky factorization A = L*L**T.
+*
+         DO 20 J = 1, N
+*
+*           Compute L(J,J) and test for non-positive-definiteness.
+*
+            AJJ = A( J, J ) - DDOT( J-1, A( J, 1 ), LDA, A( J, 1 ),
+     $            LDA )
+            IF( AJJ.LE.ZERO.OR.DISNAN( AJJ ) ) THEN
+               A( J, J ) = AJJ
+               GO TO 30
+            END IF
+            AJJ = SQRT( AJJ )
+            A( J, J ) = AJJ
+*
+*           Compute elements J+1:N of column J.
+*
+            IF( J.LT.N ) THEN
+               CALL DGEMV( 'No transpose', N-J, J-1, -ONE, A( J+1, 1 ),
+     $                     LDA, A( J, 1 ), LDA, ONE, A( J+1, J ), 1 )
+               CALL DSCAL( N-J, ONE / AJJ, A( J+1, J ), 1 )
+            END IF
+   20    CONTINUE
+      END IF
+      GO TO 40
+*
+   30 CONTINUE
+      INFO = J
+*
+   40 CONTINUE
+      RETURN
+*
+*     End of DPOTF2
+*
+      END
+*> \brief \b LSAME
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       LOGICAL FUNCTION LSAME(CA,CB)
+*
+*       .. Scalar Arguments ..
+*       CHARACTER CA,CB
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> LSAME returns .TRUE. if CA is the same letter as CB regardless of
+*> case.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] CA
+*> \verbatim
+*>          CA is CHARACTER*1
+*> \endverbatim
+*>
+*> \param[in] CB
+*> \verbatim
+*>          CB is CHARACTER*1
+*>          CA and CB specify the single characters to be compared.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup aux_blas
+*
+*  =====================================================================
+      LOGICAL FUNCTION LSAME(CA,CB)
+*
+*  -- Reference BLAS level1 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER CA,CB
+*     ..
+*
+* =====================================================================
+*
+*     .. Intrinsic Functions ..
+      INTRINSIC ICHAR
+*     ..
+*     .. Local Scalars ..
+      INTEGER INTA,INTB,ZCODE
+*     ..
+*
+*     Test if the characters are equal
+*
+      LSAME = CA .EQ. CB
+      IF (LSAME) RETURN
+*
+*     Now test for equivalence if both characters are alphabetic.
+*
+      ZCODE = ICHAR('Z')
+*
+*     Use 'Z' rather than 'A' so that ASCII can be detected on Prime
+*     machines, on which ICHAR returns a value with bit 8 set.
+*     ICHAR('A') on Prime machines returns 193 which is the same as
+*     ICHAR('A') on an EBCDIC machine.
+*
+      INTA = ICHAR(CA)
+      INTB = ICHAR(CB)
+*
+      IF (ZCODE.EQ.90 .OR. ZCODE.EQ.122) THEN
+*
+*        ASCII is assumed - ZCODE is the ASCII code of either lower or
+*        upper case 'Z'.
+*
+          IF (INTA.GE.97 .AND. INTA.LE.122) INTA = INTA - 32
+          IF (INTB.GE.97 .AND. INTB.LE.122) INTB = INTB - 32
+*
+      ELSE IF (ZCODE.EQ.233 .OR. ZCODE.EQ.169) THEN
+*
+*        EBCDIC is assumed - ZCODE is the EBCDIC code of either lower or
+*        upper case 'Z'.
+*
+          IF (INTA.GE.129 .AND. INTA.LE.137 .OR.
+     +        INTA.GE.145 .AND. INTA.LE.153 .OR.
+     +        INTA.GE.162 .AND. INTA.LE.169) INTA = INTA + 64
+          IF (INTB.GE.129 .AND. INTB.LE.137 .OR.
+     +        INTB.GE.145 .AND. INTB.LE.153 .OR.
+     +        INTB.GE.162 .AND. INTB.LE.169) INTB = INTB + 64
+*
+      ELSE IF (ZCODE.EQ.218 .OR. ZCODE.EQ.250) THEN
+*
+*        ASCII is assumed, on Prime machines - ZCODE is the ASCII code
+*        plus 128 of either lower or upper case 'Z'.
+*
+          IF (INTA.GE.225 .AND. INTA.LE.250) INTA = INTA - 32
+          IF (INTB.GE.225 .AND. INTB.LE.250) INTB = INTB - 32
+      END IF
+      LSAME = INTA .EQ. INTB
+*
+*     RETURN
+*
+*     End of LSAME
+*
+END
+*> \brief \b XERBLA
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE XERBLA( SRNAME, INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER*(*)      SRNAME
+*       INTEGER            INFO
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> XERBLA  is an error handler for the LAPACK routines.
+*> It is called by an LAPACK routine if an input parameter has an
+*> invalid value.  A message is printed and execution stops.
+*>
+*> Installers may consider modifying the STOP statement in order to
+*> call system-specific exception-handling facilities.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] SRNAME
+*> \verbatim
+*>          SRNAME is CHARACTER*(*)
+*>          The name of the routine which called XERBLA.
+*> \endverbatim
+*>
+*> \param[in] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          The position of the invalid parameter in the parameter list
+*>          of the calling routine.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup aux_blas
+*
+*  =====================================================================
+      SUBROUTINE XERBLA( SRNAME, INFO )
+*
+*  -- Reference BLAS level1 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER*(*)      SRNAME
+      INTEGER            INFO
+*     ..
+*
+* =====================================================================
+*
+*     .. Intrinsic Functions ..
+      INTRINSIC          LEN_TRIM
+*     ..
+*     .. Executable Statements ..
+*
+      WRITE( *, FMT = 9999 )SRNAME( 1:LEN_TRIM( SRNAME ) ), INFO
+*
+      STOP
+*
+ 9999 FORMAT( ' ** On entry to ', A, ' parameter number ', I2, ' had ',
+     $      'an illegal value' )
+*
+*     End of XERBLA
 *
       END

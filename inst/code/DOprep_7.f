@@ -1,450 +1,5 @@
       IMPLICIT REAL*8(A-H,O-Z)
-      PARAMETER(MAXDIM=30,MAXGRD=1500,MAXNUMEQ=7)
-      DIMENSION CORDEN(MAXGRD,MAXDIM+1),VALFIX(20),SIG(5000),
-     2 RS(5000,34),YOI(MAXNUMEQ),IRAN(32),RANFIXEST(20)
-      CHARACTER NPAGOUT*20,READLINE*72,DENFILE*20,PATFILE*20,COMARG*50,
-     1 MODELFILE*20,PAR(30)*11,PARFIX(20)*11,PSYM(32)*11,
-     2 RANNAM*11,FIXNAM*11,PSYMNAME*11,CODE*14,PARRANFIX(20)*11
-      CHARACTER(LEN=20) :: OSName
-      CHARACTER(LEN=5) :: CopyFile
-      CHARACTER(LEN=4) :: DeleteFile
-      CHARACTER(LEN=6) :: ClearScreen
-      CHARACTER(LEN=10) :: ListDir
-       CALL GET_COMMAND_ARGUMENT(1,OSName)
-       IF ((INDEX(OSName,"MacOSX",.TRUE.).EQ.1)
-     $ .OR.(INDEX(OSName,"Darwin",.TRUE.).EQ.1)
-     $ .OR.(INDEX(OSName,"BSD",.TRUE.).EQ.1)) THEN
-          PRINT *,"Requested OS is ", OSName
-          OSName="UNIX"
-          PRINT *,"Setting OS to ", OSName
-          PRINT *,""
-          CopyFile="cp "
-          DeleteFile="rm "
-          ClearScreen="clear "
-          ListDir="ls -tp "
-       ELSE IF ((INDEX(OSName,"DOS",.TRUE.).EQ.1)
-     $ .OR.(INDEX(OSName,"WinXP",.TRUE.).EQ.1)
-     $ .OR.(INDEX(OSName,"XP",.TRUE.).EQ.1)
-     $ .OR.(INDEX(OSName,"WinXP",.TRUE.).EQ.1)
-     $ .OR.(INDEX(OSName,"Vista",.TRUE.).EQ.1)
-     $ .OR.(INDEX(OSName,"Win7",.TRUE.).EQ.1)) THEN
-          PRINT *,"Requested OS is ", OSName
-          OSName="DOS"
-          PRINT *,"Setting OS to ", OSName
-          CopyFile="COPY "
-          DeleteFile="DEL "
-          ClearScreen="CLS "
-          ListDir="DIR /OD "
-       ELSE
-          PRINT *,"WARNING: Operating system not declared."
-          PRINT *,"WARNING: Can not initialize system calls."
-          PRINT *,""
-          PRINT *,"Possible command line error, try:"
-          PRINT *,"C:\> npbig.exe <DOS,Win,XP,Vista,or Win7>"
-          PRINT *,"unix$ npbig <MacOSX,Darwin,BSD>"
-          PRINT *,""
-          PRINT *,"NPAG Exiting with status 2"
-          PRINT *,""
-          CALL EXIT(2)
-       END IF
-      GO TO 10
-   15 WRITE(*,14) NPAGOUT
-   14 FORMAT(/' THE FILE ',A20,' DOES NOT EXIST.')
-    2 FORMAT(A20)
-   10 WRITE(*,1)
-    1 FORMAT(/' THIS PROGRAM PREPARES FILES SO ITS "ENGINE" MODULE,'/
-     1' dopteng5.f, CAN CALCULATE THE D-OPTIMAL DESIGN BASED ON THE'/
-     2' RESULTS OF AN NPAG RUN. IN PARTICULAR, THE OUTPUT FILE FOR AN'/
-     3' NPAG RUN IS READ TO GET:'//
-     4' 1. THE FINAL CYCLE JOINT DENSITY, AS WELL AS THE FIXED '/
-     6'    PARAMETER VALUES. THIS INFO WILL BE STORED INTO THE FILE '/
-     7'    DENQZPX.DAT.'/
-     7' 2. THE DATA FROM PATIENT 1, TO GET THE DOSAGE REGIMEN, THE'/
-     8'    OBS. TIMES (WHICH WILL BE THE INITIAL GUESSES FOR THE '/
-     9'    D-OPTIMAL DESIGN), AND THE ASSAY COEFFICIENTS. THIS INFO'/
-     1'    WILL BE STORED INTO FILE PATQZPX.001.'/
-     2' 3. ADDITIONAL INFO, NAMELY THE TOL. PARAMETER USED BY VODE;'/
-     3'    WHICH OF THE PARAMETERS ARE RANDOM AND WHICH ARE FIXED; '/
-     4'    AND IERRMOD AND GAMLAM, WHICH WILL BE USED TO ESTABLISH'/
-     5'    THE ASSAY ERRORS FOR THE OBSERVATIONS. THESE VALUES WILL '/
-     6'    BE STORED INTO DATAQZPX.DAT.'/
-     2' 4. THE MODEL FILE, WHICH WILL BE STORED INTO MODELQZPX.FOR SO'/
-     3'    IT CAN BE COMPILED WITH THE "ENGINE", dopteng5.f, WHICH'/
-     4'    CAN THEN CALCULATE THE D-OTPIMAL DESIGN. '//
-     8' NOTE THAT YOU WILL BE ABLE TO CHANGE ANY OF THESE VALUES/FILES'/
-     9' BELOW IF YOU DESIRE.'//
-     9' ENTER THE NAME OF THE OUTPUT FILE FROM YOUR NPAG RUN: ')
-      READ(*,2) NPAGOUT
-      OPEN(21,FILE=NPAGOUT,ERR=15,STATUS='OLD')
-  270 READ(21,3) READLINE
-      IF(READLINE(2:24) .NE. 'THE TOLERANCE PARAMETER') GO TO 270
-      READ(21,*)
-      READ(21,*) RTOL
-      IERRMOD = -99
-  210  READ(21,3) READLINE
-       IF(READLINE(2:32) .NE. 'THIS RUN STOPPED WITH ICONVERGE')
-     1  GO TO 210
-  220  BACKSPACE(21)
-       BACKSPACE(21)
-       READ(21,3) READLINE
-       IF(READLINE(10:36) .NE. 'AND THE ESTIMATE FOR GAMLAM') GO TO 220
-       READ(21,*) IERRMOD,GAMLAM
-      IF(IERRMOD .EQ. -99) THEN
-       WRITE(*,211)
-  211  FORMAT(/' THE PROGRAM COULD NOT READ THE ASSAY ERROR FUNCTION'/
-     1' INFORMATION AT THE END OF THE CYCLE CALCULATIONS (I.E., '/
-     2' IERRMOD AND GAMLAM.'//
-     3' THE PROGRAM STOPS. IF YOU HAVE NOT EDITED YOUR OUTPUT FILE,'/
-     4' PLEASE SEND IT TO THE LAPK.'/)
-       CALL PAUSE
-      ENDIF
-   20 READ(21,3) READLINE
-    3 FORMAT(A72)
-      IF(READLINE(19:43) .NE. 'START OF THE DENSITY FILE') GO TO 20
-      READ(21,*)
-      READ(21,7123) CODE
- 7123 FORMAT(A14)
-      ICODEPRI = 0
-      IF(CODE .EQ. 'DENSITY FEB_97') ICODEPRI = 1
-      IF(CODE .EQ. 'DENSITY JUN_09') ICODEPRI = 1
-      IF(CODE .EQ. 'DENSITY APR_10') ICODEPRI = 1
-      IF(CODE .EQ. 'DENSITY OCT_15') ICODEPRI = 2
-      IF(ICODEPRI .EQ. 0) THEN
-       WRITE(*,8181)
- 8181  FORMAT(//' THE DENSITY FILE IN THE COMBINED OUTPUT FILE YOU '/
-     1' ENTERED IS OBSOLETE.'//
-     2' THIS DENSITY FILE MUST HAVE DENSITY XXX_XX ON LINE 1, WHERE'/
-     3' XXX_XX IS FEB_97, JUN_09, APR_10, OR OCT_15.'//
-     4' THE PROGRAM STOPS. '/)
-       CALL PAUSE
-       STOP
-      ENDIF
-      DO I = 1,2
-       READ(21,*)
-      END DO
-      READ(21,*) NACTVE
-	READ(21,*) NVAR
-      DO I = 1,NVAR
-       READ(21,2227) PAR(I)
-      END DO
- 2227 FORMAT(A11)
-	READ(21,*) NOFIX
-      IF(NOFIX .EQ. 0) READ(21,*)
-      IF(NOFIX .GT. 0) THEN
-       DO I = 1,NOFIX
-        READ(21,2227) PARFIX(I)
-       END DO
-      ENDIF
-      IF(ICODEPRI .EQ. 2) THEN
-       READ(21,*) NRANFIX
-       IF(NRANFIX .EQ. 0) READ(21,*)
-       IF(NRANFIX .GT. 0) THEN
-        DO I = 1,NRANFIX
-         READ(21,2227) PARRANFIX(I)
-        END DO
-       ENDIF
-      ENDIF
-      DO I=1,NVAR
-       READ(21,*)
-      END DO
-      IF(NOFIX .EQ. 0) READ(21,*)
-      IF(NOFIX .GT. 0) READ(21,*) (VALFIX(I),I=1,NOFIX)
-      IF(ICODEPRI .EQ. 2) THEN
-       IF(NRANFIX .EQ. 0) READ(21,*)
-       IF(NRANFIX .GT. 0) READ(21,*) (RANFIXEST(I),I=1,NRANFIX)
-      ENDIF
-      IF(ICODEPRI .EQ. 2 .AND. NRANFIX .GT. 0) THEN
-       DO I = 1, NRANFIX
-        PARFIX(NOFIX+I) = PARRANFIX(I)
-        VALFIX(NOFIX+I) = RANFIXEST(I)
-       END DO
-       NOFIX = NOFIX + NRANFIX
-      ENDIF
-      READ(21,*)
-      READ(21,*)
-      READ(21,*)
-      DO I = 1,NACTVE
-       READ(21,*) (CORDEN(I,J),J=1,NVAR+1)
-      END DO
-      OPEN(25,FILE='DENQZPX.DAT',ERR=190,STATUS='NEW')
-      GO TO 180
-  190 WRITE(*,191)
-  191 FORMAT(/' FILE "DENQZPX.DAT" ALREADY EXISTS, AND IS ABOUT TO'/
-     1' BE OVERWRITTEN WITH THE INFO FROM THE NPAG OUTPUT FILE YOU'/
-     2' ENTERED ABOVE. '//
-     3' IF YOU DO NOT WANT THIS TO HAPPEN, STOP THIS PROGRAM NOW,'/
-     4' COPY DENQZPX.DAT TO ANOTHER FILE, AND THEN RERUN. '/)
-      CALL PAUSE
-      OPEN(25,FILE='DENQZPX.DAT')
-  180  WRITE(25,*) NVAR
-       WRITE(25,*) NACTVE
-       DO I = 1,NACTVE
-        WRITE(25,*) (CORDEN(I,J),J=1,NVAR+1)
-       END DO
-       WRITE(25,*) NOFIX
-       IF(NOFIX .GT. 0) THEN
-        DO I = 1,NOFIX
-         WRITE(25,*) VALFIX(I)
-        END DO
-       ENDIF
-       CLOSE(25)
-      OPEN(25,FILE='PATQZPX.001',ERR=30,STATUS='NEW')
-      GO TO 40
-   30 WRITE(*,31)
-   31 FORMAT(/' FILE "PATQZPX.001" ALREADY EXISTS, AND IS ABOUT TO'/
-     1' BE OVERWRITTEN WITH THE FIRST PATIENT DATA INFO FROM THE '/
-     2' NPAG OUTPUT FILE YOU ENTERED ABOVE. '//
-     3' IF YOU DO NOT WANT THIS TO HAPPEN, STOP THIS PROGRAM NOW,'/
-     4' COPY PATQZPX.001 TO ANOTHER FILE, AND THEN RERUN. '/)
-      CALL PAUSE
-      OPEN(25,FILE='PATQZPX.001')
-   40 READ(21,3) READLINE
-      IF(READLINE(19:43) .NE. 'START OF THE PATIENT DATA') GO TO 40
-      READ(21,3) READLINE
-   50 READ(21,3) READLINE
-      WRITE(25,3) READLINE
-      IF(READLINE(12:23) .NE. 'NO. OF DRUGS') GO TO 50
-      BACKSPACE(21)
-      READ(21,4) NDRUG
-    4 FORMAT(T2,I5)
-      READ(21,3) READLINE
-      WRITE(25,3) READLINE
-      BACKSPACE(21)
-      READ(21,4) NADD
-      NI = 2*NDRUG + NADD
-      READ(21,3) READLINE
-      WRITE(25,3) READLINE
-      BACKSPACE(21)
-      READ(21,4) ND
-      READ(21,3) READLINE
-      WRITE(25,3) READLINE
-      READ(21,3) READLINE
-      WRITE(25,3) READLINE
-      IF(ND .EQ. 0) GO TO 60
-      DO I = 1,ND
-       READ(21,*) SIG(I),(RS(I,J),J=1,NI)
-       WRITE(25,*) SIG(I),(RS(I,J),J=1,NI)
-      END DO
-   60 READ(21,3) READLINE
-      WRITE(25,3) READLINE
-      IF(READLINE(12:30) .NE. 'NO. OF TOTAL OUTPUT') GO TO 60
-      BACKSPACE(21)
-      READ(21,4) NUMEQT
-      READ(21,3) READLINE
-      WRITE(25,3) READLINE
-      BACKSPACE(21)
-      READ(21,4) NOBSER
-      DO I=1,NOBSER
-       READ(21,*) T,(YOI(J),J=1,NUMEQT)
-       WRITE(25,*) T,(YOI(J),J=1,NUMEQT)
-      END DO
-   70 READ(21,3) READLINE
-      IF((READLINE(3:16) .NE. 'LAST AND FIRST') .AND.
-     1   (READLINE(19:41) .NE. 'END OF THE PATIENT DATA')) THEN
-       WRITE(25,3) READLINE
-       GO TO 70
-      ENDIF
-      CLOSE(25)
-      OPEN(25,FILE='MODELQZPX.FOR',ERR=80,STATUS='NEW')
-      GO TO 90
-   80 WRITE(*,81)
-   81 FORMAT(/' FILE "MODELQZPX.FOR" ALREADY EXISTS, AND IS ABOUT TO'/
-     1' BE OVERWRITTEN WITH THE MODEL FILE INFO FROM THE '/
-     2' NPAG OUTPUT FILE YOU ENTERED ABOVE. '//
-     3' IF YOU DO NOT WANT THIS TO HAPPEN, STOP THIS PROGRAM NOW,'/
-     4' COPY MODELQZPX.FOR TO ANOTHER FILE, AND THEN RERUN. '/)
-      CALL PAUSE
-      OPEN(25,FILE='MODELQZPX.FOR')
-   90 READ(21,3) READLINE
-      CALL CHECKMOD(READLINE,IYES)
-      IF(IYES .EQ. 0) GO TO 90
-      BACKSPACE(21)
-      INDP = 0
-  100 READ(21,3) READLINE
-      IF(READLINE(19:37) .NE. 'END OF THE npagdriv') THEN
-       WRITE(25,3) READLINE
-       IF(READLINE(8:12) .EQ. 'PSYM(') THEN
-        INDP = INDP + 1
-        IF(INDP .LE. 9)  PSYM(INDP) = READLINE(17:27)
-        IF(INDP .GE. 10) PSYM(INDP) = READLINE(18:28)
-       ENDIF
-       GO TO 100
-      ENDIF
-      CLOSE(25)
-      NRAN = 1
-      NFIX = 1
-      DO I = 1,NVAR+NOFIX
-       PSYMNAME = PSYM(I)
-       IF(NRAN .LE. NVAR) THEN
-        RANNAM = PAR(NRAN)
-        DO IR = 1,11
-         IF(RANNAM(IR:IR) .EQ. ' ') GO TO 230
-        END DO
-        IR = 12
-  230   IR = IR-1
-        IF(RANNAM(1:IR) .EQ. PSYMNAME(1:IR)) THEN
-         IRAN(I) = 1
-         NRAN = NRAN + 1
-        ENDIF
-        ENDIF
-       IF(NFIX .LE. NOFIX) THEN
-        FIXNAM = PARFIX(NFIX)
-        DO IF = 1,11
-         IF(FIXNAM(IF:IF) .EQ. ' ') GO TO 240
-        END DO
-        IF = 12
-  240   IF = IF-1
-        IF(FIXNAM(1:IF) .EQ. PSYMNAME(1:IF)) THEN
-         IRAN(I) = 0
-         NFIX = NFIX + 1
-        ENDIF
-        ENDIF
-      END DO
-      OPEN(25,FILE='DATAQZPX.DAT',ERR=250,STATUS='NEW')
-      GO TO 260
-  250 WRITE(*,251)
-  251 FORMAT(/' FILE "DATAQZPX.DAT" ALREADY EXISTS, AND IS ABOUT TO'/
-     1' BE OVERWRITTEN WITH THE INFO FROM THE NPAG OUTPUT FILE YOU'/
-     2' ENTERED ABOVE. '//
-     3' IF YOU DO NOT WANT THIS TO HAPPEN, STOP THIS PROGRAM NOW,'/
-     4' COPY DATAQZPX.DAT TO ANOTHER FILE, AND THEN RERUN. '/)
-      CALL PAUSE
-      OPEN(25,FILE='DATAQZPX.DAT')
-  260 WRITE(25,*) RTOL
-      WRITE(25,*) IERRMOD,GAMLAM
-      DO I = 1,NVAR+NOFIX
-       WRITE(25,*) IRAN(I)
-      END DO
-      CLOSE(25)
-  110 WRITE(*,101)
-  101 FORMAT(//' ENTER 0 IF YOU WOULD LIKE TO CHANGE THE JOINT '/
-     1'         DENSITY OR THE FIXED PARAMETER VALUES (WHICH NOW '/
-     2'         INCLUDE ANY RANFIX ESTIMATED PARAMETER VALUES) TO BE'/
-     3'         USED IN THE D-OPTIMAL CALCULATIONS FROM THE VALUES'/
-     4'         READ IN. FROM YOUR NPAG OUTPUT FILE (THESE VALUES ARE'/
-     5'         CURRENTLY STORED IN FILE, DENQZPX.DAT);'/
-     6' ENTER 1 OTHERWISE: ')
-      READ(*,*,ERR= 110) ICHANGE
-      IF(ICHANGE .NE. 0 .AND. ICHANGE .NE. 1) GO TO 110
-      IF(ICHANGE .EQ. 0) THEN
-       GO TO 120
-  115  WRITE(*,14) DENFILE
-  120  WRITE(*,102) NVAR,NOFIX,NOFIX
-  102  FORMAT(/' ENTER THE NAME OF THE FILE WHICH HAS THE JOINT '/
-     1' DENSITY AND FIXED VALUES TO BE USED. THIS FILE MUST HAVE ',I2/
-     2' ON LINE 1 (NO. OF RANDOM VARIABLES); NACTVE (THE NO. OF ACTIVE'/
-     3' GRID POINTS ON LINE 2; NACTVE LINES, EACH WITH THE GRID PT. '/
-     4' VALUES, IN THE SAME ORDER AS IN YOUR NPAG RUN, FOLLOWED BY'/
-     5' THE ASSOCIATED DENSITY; ',I2,' ON THE NEXT LINE (NO. OF FIXED'/
-     6' PARAMETER VALUES, WHICH NOW ALSO INCLUDES ANY RANFIX ESTIMATED'/
-     7' VALUES); AND THEN ',I2,' LINES, ONE FOR EACH FIXED PARAMETER'/
-     8' VALUE IN THE SAME ORDER AS IN YOUR NPAG RUN.'//
-     9' ENTER THE NAME OF THIS FILE: ')
-       READ(*,2) DENFILE
-        OPEN(24,FILE=DENFILE,ERR=115,STATUS='OLD')
-       CLOSE(24)
-       WRITE(*,173) DENFILE
-  173  FORMAT(/' THE FILE, ',A20,' IS ABOUT TO BE COPIED TO'/
-     1' DENQZPX.DAT ... SO IF YOU WISH TO SAVE DENQZPX.DAT AS IT'/
-     2' WAS MADE FROM YOUR NPAG OUTPUT FILE, COPY IT TO ANOTHER FILE'/
-     3' BEFORE CONTINUING.'/)
-       CALL PAUSE
-        COMARG = CopyFile//DENFILE//' '//'DENQZPX.DAT'
-        CALL SYSTEM(COMARG)
-      ENDIF
-  130 WRITE(*,131)
-  131 FORMAT(/' ENTER 0 IF YOU WOULD LIKE TO CHANGE THE PATIENT'/
-     1'         DATA FILE FROM PATQZPX.001, WHICH WAS READ IN FROM'/
-     2'         YOUR NPAG OUTPUT FILE;'/
-     3' ENTER 1 OTHERWISE: ')
-      READ(*,*,ERR=130) ICHANGE
-      IF(ICHANGE .NE. 0 .AND. ICHANGE .NE. 1) GO TO 130
-      IF(ICHANGE .EQ. 0) THEN
-       GO TO 140
-  135  WRITE(*,14) PATFILE
-  140  WRITE(*,132)
-  132  FORMAT(/' ENTER THE NAME OF THE PATIENT DATA FILE. THIS FILE'/
-     1' CAN BE A (MULTIPLE DRUG) WORKING COPY PATIENT DATA FILE OR'/
-     2' A BLOCK MATRIX .CSV FILE (THE INFO WILL COME FROM THE DATA OF '/
-     3' THE FIRST SUBJECT IN THIS CASE ... AND NOTE THAT THIS SUBJECT'/
-     4' MUST HAVE ASSAY COEFFICIENTS SPECIFIED - OTHERWISE THE '/
-     5' ASSAY COEFS. WILL ALL BE DEFAULTED TO 1.0).'//
-     4' ENTER 1 TO ENTER INFO USING A .CSV FILE; '/
-     5' ENTER 0 TO ENTER INFO USING A WORKING COPY PATIENT DATA FILE: ')
-        READ(*,*,ERR=140) ICSVFILE
-        IF(ICSVFILE .NE. 1 .AND. ICSVFILE .NE. 0) GO TO 140
-        IF(ICSVFILE .EQ. 0) THEN
-         WRITE(*,1021)
- 1021    FORMAT(/' ENTER THE NAME OF THE WORKING COPY FILE: ')
-         READ(*,2) PATFILE
-         OPEN(24,FILE=PATFILE,ERR=135,STATUS='OLD')
-         CLOSE(24)
-         WRITE(*,133) PATFILE
-  133    FORMAT(/' THE FILE, ',A20,' IS ABOUT TO BE COPIED TO'/
-     1' PATQZPX.001 ... SO IF YOU WISH TO SAVE PATQZPX.001 AS IT WAS'/
-     2' MADE FROM YOUR NPAG OUTPUT FILE, COPY IT TO ANOTHER FILE'/
-     3' BEFORE CONTINUING.'/)
-         CALL PAUSE
-         COMARG = CopyFile//PATFILE//' '//'PATQZPX.001'
-         CALL SYSTEM(COMARG)
-        ENDIF
-        IF(ICSVFILE .EQ. 1) THEN
-         WRITE(*,3021)
- 3021    FORMAT(/' ENTER THE NAME OF THE BLOCK MATRIX .CSV FILE (BE'/
-     1' SURE THAT THIS FILE DOES NOT INCLUDE STEADY STATE DOSING: ')
-         READ(*,2) PATFILE
-         WRITE(*,233) PATFILE
-  233    FORMAT(/' THE DATA FROM THE FIRST SUBJECT IN FILE, ',A20,' IS'/
-     1' ABOUT TO BE COPIED TO PATQZPX.001 ... SO IF YOU WISH TO SAVE'/
-     2' PATQZPX.001 AS IT WAS MADE FROM YOUR NPAG OUTPUT FILE, COPY IT'/
-     3' TO ANOTHER FILE BEFORE CONTINUING.'/)
-         CALL PAUSE
-         OPEN(87,FILE=PATFILE,ERR=135,STATUS='OLD')
-         CALL CONVERTCSV
-         OPEN(67)
-         CALL NEWCSV
-         CALL CSVCHANGE
-         REWIND(66)
-         CALL READBLOCK3
-         CLOSE(66)
-         OPEN(24,FILE='PATQZPX.001',ERR=5465,STATUS='OLD')
-         GO TO 5470
- 5465    WRITE(*,5466) 'PATQZPX.001',PATFILE
- 5466    FORMAT(//' THE FOLLOWING FILE DOES NOT EXIST ... '/
-     1' ',A93/
-     2' WHICH MEANS THAT YOUR .CSV FILE, ',A20,' WAS NOT READ '/
-     3' PROPERLY. PLEASE CHECK THIS FILE TO MAKE SURE IT IS CORRECT.'//)
-         GO TO 140
- 5470    CLOSE(24)
-        ENDIF
-      ENDIF
-  150 WRITE(*,151)
-  151 FORMAT(/' ENTER 0 IF YOU WOULD LIKE TO CHANGE THE MODEL FILE'/
-     1'         FROM MODELQZPX.FOR, WHICH WAS READ IN FROM'/
-     2'         YOUR NPAG OUTPUT FILE;'/
-     3' ENTER 1 OTHERWISE: ')
-      READ(*,*,ERR=150) ICHANGE
-      IF(ICHANGE .NE. 0 .AND. ICHANGE .NE. 1) GO TO 150
-      IF(ICHANGE .EQ. 0) THEN
-       GO TO 160
-  155  WRITE(*,14) PATFILE
-  160  WRITE(*,152)
-  152  FORMAT(/' ENTER THE NAME OF THE MODEL. NOTE THAT THIS FILE'/
-     1' SHOULD BE BASED ON THE TEMPLATE FILE, TSTMULTN.FOR, AND'/
-     2' THE PARAMETERS IN SUBROUTINE SYMBOL SHOULD BE THE SAME AS'/
-     3' THOSE LISTED IN THE NPAG OUTPUT FILE YOU ENTERED ABOVE: ')
-       READ(*,2) MODELFILE
-        OPEN(24,FILE=MODELFILE,ERR=155,STATUS='OLD')
-       CLOSE(24)
-       WRITE(*,153) MODELFILE
-  153  FORMAT(/' THE FILE, ',A20,' IS ABOUT TO BE COPIED TO'/
-     1' MODELQZPX.FOR ... SO IF YOU WISH TO SAVE MODELQZPX.FOR AS IT'/
-     2' WAS MADE FROM YOUR NPAG OUTPUT FILE, COPY IT TO ANOTHER FILE'/
-     3' BEFORE CONTINUING.'/)
-       CALL PAUSE
-       COMARG = CopyFile//MODELFILE//' '//'MODELQZPX.FOR'
-       CALL SYSTEM(COMARG)
-      ENDIF
+      write (6,*) 'Good!'
       STOP
       END
       SUBROUTINE CHECKMOD(READLINE,IYES)
@@ -953,7 +508,7 @@
       BACKSPACE(67)
       GO TO 20
       END
-        SUBROUTINE NEWCSV
+      SUBROUTINE NEWCSV
         IMPLICIT REAL*8(A-H,O-Z)
         CHARACTER READLINE*1000
    10   READ(77,4,IOSTAT=IEND) READLINE
@@ -1767,7 +1322,7 @@
         IF(NUMCHAR .GT. 11) WRITE(57,*) READLINE(ISTART+1:IEND-1)
 	RETURN
 	END
-        SUBROUTINE WRITEDOS(ISUB,NTIMIV,TIMIV,RATEIV,NTIMBOL,TIMBOL,
+      SUBROUTINE WRITEDOS(ISUB,NTIMIV,TIMIV,RATEIV,NTIMBOL,TIMBOL,
      1   BOLUS,NTIMCOV,TIMCOV,COV,ICOVTYPE,NDRUG,NCOVA,NOUT,NTIMOUT,
      2   TIMOUT,OUT,SUBID,COVNAME,MAXSUB,NTIMI,TIMI,TIMADD,CSUB,
      3   NSST,DOSELINEST)
@@ -2215,7 +1770,7 @@
       END
       SUBROUTINE VERIFYVAL(N,X)
       IMPLICIT REAL*8(A-H,O-Z)
-      DIMENSION X(200)
+      DIMENSION X(*)
       DO I = 1,N
        IF(X(I) .GE. -1.D-99 .AND. X(I) .LE. 1.D-99) X(I) = 0.D0
       END DO
@@ -2297,3 +1852,10667 @@
       END DO
       RETURN
       END
+*> \brief \b DGBTRF
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DGBTRF + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgbtrf.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgbtrf.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgbtrf.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGBTRF( M, N, KL, KU, AB, LDAB, IPIV, INFO )
+*
+*       .. Scalar Arguments ..
+*       INTEGER            INFO, KL, KU, LDAB, M, N
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   AB( LDAB, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGBTRF computes an LU factorization of a real m-by-n band matrix A
+*> using partial pivoting with row interchanges.
+*>
+*> This is the blocked version of the algorithm, calling Level 3 BLAS.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] M
+*> \verbatim
+*>          M is INTEGER
+*>          The number of rows of the matrix A.  M >= 0.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The number of columns of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in] KL
+*> \verbatim
+*>          KL is INTEGER
+*>          The number of subdiagonals within the band of A.  KL >= 0.
+*> \endverbatim
+*>
+*> \param[in] KU
+*> \verbatim
+*>          KU is INTEGER
+*>          The number of superdiagonals within the band of A.  KU >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] AB
+*> \verbatim
+*>          AB is DOUBLE PRECISION array, dimension (LDAB,N)
+*>          On entry, the matrix A in band storage, in rows KL+1 to
+*>          2*KL+KU+1; rows 1 to KL of the array need not be set.
+*>          The j-th column of A is stored in the j-th column of the
+*>          array AB as follows:
+*>          AB(kl+ku+1+i-j,j) = A(i,j) for max(1,j-ku)<=i<=min(m,j+kl)
+*>
+*>          On exit, details of the factorization: U is stored as an
+*>          upper triangular band matrix with KL+KU superdiagonals in
+*>          rows 1 to KL+KU+1, and the multipliers used during the
+*>          factorization are stored in rows KL+KU+2 to 2*KL+KU+1.
+*>          See below for further details.
+*> \endverbatim
+*>
+*> \param[in] LDAB
+*> \verbatim
+*>          LDAB is INTEGER
+*>          The leading dimension of the array AB.  LDAB >= 2*KL+KU+1.
+*> \endverbatim
+*>
+*> \param[out] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (min(M,N))
+*>          The pivot indices; for 1 <= i <= min(M,N), row i of the
+*>          matrix was interchanged with row IPIV(i).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0: successful exit
+*>          < 0: if INFO = -i, the i-th argument had an illegal value
+*>          > 0: if INFO = +i, U(i,i) is exactly zero. The factorization
+*>               has been completed, but the factor U is exactly
+*>               singular, and division by zero will occur if it is used
+*>               to solve a system of equations.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleGBcomputational
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  The band storage scheme is illustrated by the following example, when
+*>  M = N = 6, KL = 2, KU = 1:
+*>
+*>  On entry:                       On exit:
+*>
+*>      *    *    *    +    +    +       *    *    *   u14  u25  u36
+*>      *    *    +    +    +    +       *    *   u13  u24  u35  u46
+*>      *   a12  a23  a34  a45  a56      *   u12  u23  u34  u45  u56
+*>     a11  a22  a33  a44  a55  a66     u11  u22  u33  u44  u55  u66
+*>     a21  a32  a43  a54  a65   *      m21  m32  m43  m54  m65   *
+*>     a31  a42  a53  a64   *    *      m31  m42  m53  m64   *    *
+*>
+*>  Array elements marked * are not used by the routine; elements marked
+*>  + need not be set on entry, but are required by the routine to store
+*>  elements of U because of fill-in resulting from the row interchanges.
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DGBTRF( M, N, KL, KU, AB, LDAB, IPIV, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER            INFO, KL, KU, LDAB, M, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   AB( LDAB, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+      INTEGER            NBMAX, LDWORK
+      PARAMETER          ( NBMAX = 64, LDWORK = NBMAX+1 )
+*     ..
+*     .. Local Scalars ..
+      INTEGER            I, I2, I3, II, IP, J, J2, J3, JB, JJ, JM, JP,
+     $                   JU, K2, KM, KV, NB, NW
+      DOUBLE PRECISION   TEMP
+*     ..
+*     .. Local Arrays ..
+      DOUBLE PRECISION   WORK13( LDWORK, NBMAX ),
+     $                   WORK31( LDWORK, NBMAX )
+*     ..
+*     .. External Functions ..
+      INTEGER            IDAMAX, ILAENV
+      EXTERNAL           IDAMAX, ILAENV
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DCOPY, DGBTF2, DGEMM, DGER, DLASWP, DSCAL,
+     $                   DSWAP, DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     KV is the number of superdiagonals in the factor U, allowing for
+*     fill-in
+*
+      KV = KU + KL
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF( M.LT.0 ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( KL.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( KU.LT.0 ) THEN
+         INFO = -4
+      ELSE IF( LDAB.LT.KL+KV+1 ) THEN
+         INFO = -6
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGBTRF', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( M.EQ.0 .OR. N.EQ.0 )
+     $   RETURN
+*
+*     Determine the block size for this environment
+*
+      NB = ILAENV( 1, 'DGBTRF', ' ', M, N, KL, KU )
+*
+*     The block size must not exceed the limit set by the size of the
+*     local arrays WORK13 and WORK31.
+*
+      NB = MIN( NB, NBMAX )
+*
+      IF( NB.LE.1 .OR. NB.GT.KL ) THEN
+*
+*        Use unblocked code
+*
+         CALL DGBTF2( M, N, KL, KU, AB, LDAB, IPIV, INFO )
+      ELSE
+*
+*        Use blocked code
+*
+*        Zero the superdiagonal elements of the work array WORK13
+*
+         DO 20 J = 1, NB
+            DO 10 I = 1, J - 1
+               WORK13( I, J ) = ZERO
+   10       CONTINUE
+   20    CONTINUE
+*
+*        Zero the subdiagonal elements of the work array WORK31
+*
+         DO 40 J = 1, NB
+            DO 30 I = J + 1, NB
+               WORK31( I, J ) = ZERO
+   30       CONTINUE
+   40    CONTINUE
+*
+*        Gaussian elimination with partial pivoting
+*
+*        Set fill-in elements in columns KU+2 to KV to zero
+*
+         DO 60 J = KU + 2, MIN( KV, N )
+            DO 50 I = KV - J + 2, KL
+               AB( I, J ) = ZERO
+   50       CONTINUE
+   60    CONTINUE
+*
+*        JU is the index of the last column affected by the current
+*        stage of the factorization
+*
+         JU = 1
+*
+         DO 180 J = 1, MIN( M, N ), NB
+            JB = MIN( NB, MIN( M, N )-J+1 )
+*
+*           The active part of the matrix is partitioned
+*
+*              A11   A12   A13
+*              A21   A22   A23
+*              A31   A32   A33
+*
+*           Here A11, A21 and A31 denote the current block of JB columns
+*           which is about to be factorized. The number of rows in the
+*           partitioning are JB, I2, I3 respectively, and the numbers
+*           of columns are JB, J2, J3. The superdiagonal elements of A13
+*           and the subdiagonal elements of A31 lie outside the band.
+*
+            I2 = MIN( KL-JB, M-J-JB+1 )
+            I3 = MIN( JB, M-J-KL+1 )
+*
+*           J2 and J3 are computed after JU has been updated.
+*
+*           Factorize the current block of JB columns
+*
+            DO 80 JJ = J, J + JB - 1
+*
+*              Set fill-in elements in column JJ+KV to zero
+*
+               IF( JJ+KV.LE.N ) THEN
+                  DO 70 I = 1, KL
+                     AB( I, JJ+KV ) = ZERO
+   70             CONTINUE
+               END IF
+*
+*              Find pivot and test for singularity. KM is the number of
+*              subdiagonal elements in the current column.
+*
+               KM = MIN( KL, M-JJ )
+               JP = IDAMAX( KM+1, AB( KV+1, JJ ), 1 )
+               IPIV( JJ ) = JP + JJ - J
+               IF( AB( KV+JP, JJ ).NE.ZERO ) THEN
+                  JU = MAX( JU, MIN( JJ+KU+JP-1, N ) )
+                  IF( JP.NE.1 ) THEN
+*
+*                    Apply interchange to columns J to J+JB-1
+*
+                     IF( JP+JJ-1.LT.J+KL ) THEN
+*
+                        CALL DSWAP( JB, AB( KV+1+JJ-J, J ), LDAB-1,
+     $                              AB( KV+JP+JJ-J, J ), LDAB-1 )
+                     ELSE
+*
+*                       The interchange affects columns J to JJ-1 of A31
+*                       which are stored in the work array WORK31
+*
+                        CALL DSWAP( JJ-J, AB( KV+1+JJ-J, J ), LDAB-1,
+     $                              WORK31( JP+JJ-J-KL, 1 ), LDWORK )
+                        CALL DSWAP( J+JB-JJ, AB( KV+1, JJ ), LDAB-1,
+     $                              AB( KV+JP, JJ ), LDAB-1 )
+                     END IF
+                  END IF
+*
+*                 Compute multipliers
+*
+                  CALL DSCAL( KM, ONE / AB( KV+1, JJ ), AB( KV+2, JJ ),
+     $                        1 )
+*
+*                 Update trailing submatrix within the band and within
+*                 the current block. JM is the index of the last column
+*                 which needs to be updated.
+*
+                  JM = MIN( JU, J+JB-1 )
+                  IF( JM.GT.JJ )
+     $               CALL DGER( KM, JM-JJ, -ONE, AB( KV+2, JJ ), 1,
+     $                          AB( KV, JJ+1 ), LDAB-1,
+     $                          AB( KV+1, JJ+1 ), LDAB-1 )
+               ELSE
+*
+*                 If pivot is zero, set INFO to the index of the pivot
+*                 unless a zero pivot has already been found.
+*
+                  IF( INFO.EQ.0 )
+     $               INFO = JJ
+               END IF
+*
+*              Copy current column of A31 into the work array WORK31
+*
+               NW = MIN( JJ-J+1, I3 )
+               IF( NW.GT.0 )
+     $            CALL DCOPY( NW, AB( KV+KL+1-JJ+J, JJ ), 1,
+     $                        WORK31( 1, JJ-J+1 ), 1 )
+   80       CONTINUE
+            IF( J+JB.LE.N ) THEN
+*
+*              Apply the row interchanges to the other blocks.
+*
+               J2 = MIN( JU-J+1, KV ) - JB
+               J3 = MAX( 0, JU-J-KV+1 )
+*
+*              Use DLASWP to apply the row interchanges to A12, A22, and
+*              A32.
+*
+               CALL DLASWP( J2, AB( KV+1-JB, J+JB ), LDAB-1, 1, JB,
+     $                      IPIV( J ), 1 )
+*
+*              Adjust the pivot indices.
+*
+               DO 90 I = J, J + JB - 1
+                  IPIV( I ) = IPIV( I ) + J - 1
+   90          CONTINUE
+*
+*              Apply the row interchanges to A13, A23, and A33
+*              columnwise.
+*
+               K2 = J - 1 + JB + J2
+               DO 110 I = 1, J3
+                  JJ = K2 + I
+                  DO 100 II = J + I - 1, J + JB - 1
+                     IP = IPIV( II )
+                     IF( IP.NE.II ) THEN
+                        TEMP = AB( KV+1+II-JJ, JJ )
+                        AB( KV+1+II-JJ, JJ ) = AB( KV+1+IP-JJ, JJ )
+                        AB( KV+1+IP-JJ, JJ ) = TEMP
+                     END IF
+  100             CONTINUE
+  110          CONTINUE
+*
+*              Update the relevant part of the trailing submatrix
+*
+               IF( J2.GT.0 ) THEN
+*
+*                 Update A12
+*
+                  CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Unit',
+     $                        JB, J2, ONE, AB( KV+1, J ), LDAB-1,
+     $                        AB( KV+1-JB, J+JB ), LDAB-1 )
+*
+                  IF( I2.GT.0 ) THEN
+*
+*                    Update A22
+*
+                     CALL DGEMM( 'No transpose', 'No transpose', I2, J2,
+     $                           JB, -ONE, AB( KV+1+JB, J ), LDAB-1,
+     $                           AB( KV+1-JB, J+JB ), LDAB-1, ONE,
+     $                           AB( KV+1, J+JB ), LDAB-1 )
+                  END IF
+*
+                  IF( I3.GT.0 ) THEN
+*
+*                    Update A32
+*
+                     CALL DGEMM( 'No transpose', 'No transpose', I3, J2,
+     $                           JB, -ONE, WORK31, LDWORK,
+     $                           AB( KV+1-JB, J+JB ), LDAB-1, ONE,
+     $                           AB( KV+KL+1-JB, J+JB ), LDAB-1 )
+                  END IF
+               END IF
+*
+               IF( J3.GT.0 ) THEN
+*
+*                 Copy the lower triangle of A13 into the work array
+*                 WORK13
+*
+                  DO 130 JJ = 1, J3
+                     DO 120 II = JJ, JB
+                        WORK13( II, JJ ) = AB( II-JJ+1, JJ+J+KV-1 )
+  120                CONTINUE
+  130             CONTINUE
+*
+*                 Update A13 in the work array
+*
+                  CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Unit',
+     $                        JB, J3, ONE, AB( KV+1, J ), LDAB-1,
+     $                        WORK13, LDWORK )
+*
+                  IF( I2.GT.0 ) THEN
+*
+*                    Update A23
+*
+                     CALL DGEMM( 'No transpose', 'No transpose', I2, J3,
+     $                           JB, -ONE, AB( KV+1+JB, J ), LDAB-1,
+     $                           WORK13, LDWORK, ONE, AB( 1+JB, J+KV ),
+     $                           LDAB-1 )
+                  END IF
+*
+                  IF( I3.GT.0 ) THEN
+*
+*                    Update A33
+*
+                     CALL DGEMM( 'No transpose', 'No transpose', I3, J3,
+     $                           JB, -ONE, WORK31, LDWORK, WORK13,
+     $                           LDWORK, ONE, AB( 1+KL, J+KV ), LDAB-1 )
+                  END IF
+*
+*                 Copy the lower triangle of A13 back into place
+*
+                  DO 150 JJ = 1, J3
+                     DO 140 II = JJ, JB
+                        AB( II-JJ+1, JJ+J+KV-1 ) = WORK13( II, JJ )
+  140                CONTINUE
+  150             CONTINUE
+               END IF
+            ELSE
+*
+*              Adjust the pivot indices.
+*
+               DO 160 I = J, J + JB - 1
+                  IPIV( I ) = IPIV( I ) + J - 1
+  160          CONTINUE
+            END IF
+*
+*           Partially undo the interchanges in the current block to
+*           restore the upper triangular form of A31 and copy the upper
+*           triangle of A31 back into place
+*
+            DO 170 JJ = J + JB - 1, J, -1
+               JP = IPIV( JJ ) - JJ + 1
+               IF( JP.NE.1 ) THEN
+*
+*                 Apply interchange to columns J to JJ-1
+*
+                  IF( JP+JJ-1.LT.J+KL ) THEN
+*
+*                    The interchange does not affect A31
+*
+                     CALL DSWAP( JJ-J, AB( KV+1+JJ-J, J ), LDAB-1,
+     $                           AB( KV+JP+JJ-J, J ), LDAB-1 )
+                  ELSE
+*
+*                    The interchange does affect A31
+*
+                     CALL DSWAP( JJ-J, AB( KV+1+JJ-J, J ), LDAB-1,
+     $                           WORK31( JP+JJ-J-KL, 1 ), LDWORK )
+                  END IF
+               END IF
+*
+*              Copy the current column of A31 back into place
+*
+               NW = MIN( I3, JJ-J+1 )
+               IF( NW.GT.0 )
+     $            CALL DCOPY( NW, WORK31( 1, JJ-J+1 ), 1,
+     $                        AB( KV+KL+1-JJ+J, JJ ), 1 )
+  170       CONTINUE
+  180    CONTINUE
+      END IF
+*
+      RETURN
+*
+*     End of DGBTRF
+*
+      END
+      SUBROUTINE DGETRF( M, N, A, LDA, IPIV, INFO )
+*
+*  -- LAPACK routine (version 1.1) --
+*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+*     Courant Institute, Argonne National Lab, and Rice University
+*     March 31, 1993
+*
+*     .. Scalar Arguments ..
+      INTEGER            INFO, LDA, M, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  DGETRF computes an LU factorization of a general M-by-N matrix A
+*  using partial pivoting with row interchanges.
+*
+*  The factorization has the form
+*     A = P * L * U
+*  where P is a permutation matrix, L is lower triangular with unit
+*  diagonal elements (lower trapezoidal if m > n), and U is upper
+*  triangular (upper trapezoidal if m < n).
+*
+*  This is the right-looking Level 3 BLAS version of the algorithm.
+*
+*  Arguments
+*  =========
+*
+*  M       (input) INTEGER
+*          The number of rows of the matrix A.  M >= 0.
+*
+*  N       (input) INTEGER
+*          The number of columns of the matrix A.  N >= 0.
+*
+*  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
+*          On entry, the M-by-N matrix to be factored.
+*          On exit, the factors L and U from the factorization
+*          A = P*L*U; the unit diagonal elements of L are not stored.
+*
+*  LDA     (input) INTEGER
+*          The leading dimension of the array A.  LDA >= max(1,M).
+*
+*  IPIV    (output) INTEGER array, dimension (min(M,N))
+*          The pivot indices; for 1 <= i <= min(M,N), row i of the
+*          matrix was interchanged with row IPIV(i).
+*
+*  INFO    (output) INTEGER
+*          = 0:  successful exit
+*          < 0:  if INFO = -i, the i-th argument had an illegal value
+*          > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+*                has been completed, but the factor U is exactly
+*                singular, and division by zero will occur if it is used
+*                to solve a system of equations.
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE
+      PARAMETER          ( ONE = 1.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      INTEGER            I, IINFO, J, JB, NB
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGEMM, DGETF2, DLASWP, DTRSM, XERBLA
+*     ..
+*     .. External Functions ..
+      INTEGER            ILAENV
+      EXTERNAL           ILAENV
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF( M.LT.0 ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, M ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGETRF', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( M.EQ.0 .OR. N.EQ.0 )
+     $   RETURN
+*
+*     Determine the block size for this environment.
+*
+      NB = ILAENV( 1, 'DGETRF', ' ', M, N, -1, -1 )
+      IF( NB.LE.1 .OR. NB.GE.MIN( M, N ) ) THEN
+*
+*        Use unblocked code.
+*
+         CALL DGETF2( M, N, A, LDA, IPIV, INFO )
+      ELSE
+*
+*        Use blocked code.
+*
+         DO 20 J = 1, MIN( M, N ), NB
+            JB = MIN( MIN( M, N )-J+1, NB )
+*
+*           Factor diagonal and subdiagonal blocks and test for exact
+*           singularity.
+*
+            CALL DGETF2( M-J+1, JB, A( J, J ), LDA, IPIV( J ), IINFO )
+*
+*           Adjust INFO and the pivot indices.
+*
+            IF( INFO.EQ.0 .AND. IINFO.GT.0 )
+     $         INFO = IINFO + J - 1
+            DO 10 I = J, MIN( M, J+JB-1 )
+               IPIV( I ) = J - 1 + IPIV( I )
+   10       CONTINUE
+*
+*           Apply interchanges to columns 1:J-1.
+*
+            CALL DLASWP( J-1, A, LDA, J, J+JB-1, IPIV, 1 )
+*
+            IF( J+JB.LE.N ) THEN
+*
+*              Apply interchanges to columns J+JB:N.
+*
+               CALL DLASWP( N-J-JB+1, A( 1, J+JB ), LDA, J, J+JB-1,
+     $                      IPIV, 1 )
+*
+*              Compute block row of U.
+*
+               CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Unit', JB,
+     $                     N-J-JB+1, ONE, A( J, J ), LDA, A( J, J+JB ),
+     $                     LDA )
+               IF( J+JB.LE.M ) THEN
+*
+*                 Update trailing submatrix.
+*
+                  CALL DGEMM( 'No transpose', 'No transpose', M-J-JB+1,
+     $                        N-J-JB+1, JB, -ONE, A( J+JB, J ), LDA,
+     $                        A( J, J+JB ), LDA, ONE, A( J+JB, J+JB ),
+     $                        LDA )
+               END IF
+            END IF
+   20    CONTINUE
+      END IF
+      RETURN
+*
+*     End of DGETRF
+*
+      END
+*> \brief \b DGBTRS
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DGBTRS + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgbtrs.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgbtrs.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgbtrs.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGBTRS( TRANS, N, KL, KU, NRHS, AB, LDAB, IPIV, B, LDB,
+*                          INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER          TRANS
+*       INTEGER            INFO, KL, KU, LDAB, LDB, N, NRHS
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   AB( LDAB, * ), B( LDB, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGBTRS solves a system of linear equations
+*>    A * X = B  or  A**T * X = B
+*> with a general band matrix A using the LU factorization computed
+*> by DGBTRF.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] TRANS
+*> \verbatim
+*>          TRANS is CHARACTER*1
+*>          Specifies the form of the system of equations.
+*>          = 'N':  A * X = B  (No transpose)
+*>          = 'T':  A**T* X = B  (Transpose)
+*>          = 'C':  A**T* X = B  (Conjugate transpose = Transpose)
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The order of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in] KL
+*> \verbatim
+*>          KL is INTEGER
+*>          The number of subdiagonals within the band of A.  KL >= 0.
+*> \endverbatim
+*>
+*> \param[in] KU
+*> \verbatim
+*>          KU is INTEGER
+*>          The number of superdiagonals within the band of A.  KU >= 0.
+*> \endverbatim
+*>
+*> \param[in] NRHS
+*> \verbatim
+*>          NRHS is INTEGER
+*>          The number of right hand sides, i.e., the number of columns
+*>          of the matrix B.  NRHS >= 0.
+*> \endverbatim
+*>
+*> \param[in] AB
+*> \verbatim
+*>          AB is DOUBLE PRECISION array, dimension (LDAB,N)
+*>          Details of the LU factorization of the band matrix A, as
+*>          computed by DGBTRF.  U is stored as an upper triangular band
+*>          matrix with KL+KU superdiagonals in rows 1 to KL+KU+1, and
+*>          the multipliers used during the factorization are stored in
+*>          rows KL+KU+2 to 2*KL+KU+1.
+*> \endverbatim
+*>
+*> \param[in] LDAB
+*> \verbatim
+*>          LDAB is INTEGER
+*>          The leading dimension of the array AB.  LDAB >= 2*KL+KU+1.
+*> \endverbatim
+*>
+*> \param[in] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (N)
+*>          The pivot indices; for 1 <= i <= N, row i of the matrix was
+*>          interchanged with row IPIV(i).
+*> \endverbatim
+*>
+*> \param[in,out] B
+*> \verbatim
+*>          B is DOUBLE PRECISION array, dimension (LDB,NRHS)
+*>          On entry, the right hand side matrix B.
+*>          On exit, the solution matrix X.
+*> \endverbatim
+*>
+*> \param[in] LDB
+*> \verbatim
+*>          LDB is INTEGER
+*>          The leading dimension of the array B.  LDB >= max(1,N).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0:  successful exit
+*>          < 0: if INFO = -i, the i-th argument had an illegal value
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleGBcomputational
+*
+*  =====================================================================
+      SUBROUTINE DGBTRS( TRANS, N, KL, KU, NRHS, AB, LDAB, IPIV, B, LDB,
+     $                   INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          TRANS
+      INTEGER            INFO, KL, KU, LDAB, LDB, N, NRHS
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   AB( LDAB, * ), B( LDB, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE
+      PARAMETER          ( ONE = 1.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            LNOTI, NOTRAN
+      INTEGER            I, J, KD, L, LM
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      EXTERNAL           LSAME
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGEMV, DGER, DSWAP, DTBSV, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      NOTRAN = LSAME( TRANS, 'N' )
+      IF( .NOT.NOTRAN .AND. .NOT.LSAME( TRANS, 'T' ) .AND. .NOT.
+     $    LSAME( TRANS, 'C' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( KL.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( KU.LT.0 ) THEN
+         INFO = -4
+      ELSE IF( NRHS.LT.0 ) THEN
+         INFO = -5
+      ELSE IF( LDAB.LT.( 2*KL+KU+1 ) ) THEN
+         INFO = -7
+      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
+         INFO = -10
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGBTRS', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 .OR. NRHS.EQ.0 )
+     $   RETURN
+*
+      KD = KU + KL + 1
+      LNOTI = KL.GT.0
+*
+      IF( NOTRAN ) THEN
+*
+*        Solve  A*X = B.
+*
+*        Solve L*X = B, overwriting B with X.
+*
+*        L is represented as a product of permutations and unit lower
+*        triangular matrices L = P(1) * L(1) * ... * P(n-1) * L(n-1),
+*        where each transformation L(i) is a rank-one modification of
+*        the identity matrix.
+*
+         IF( LNOTI ) THEN
+            DO 10 J = 1, N - 1
+               LM = MIN( KL, N-J )
+               L = IPIV( J )
+               IF( L.NE.J )
+     $            CALL DSWAP( NRHS, B( L, 1 ), LDB, B( J, 1 ), LDB )
+               CALL DGER( LM, NRHS, -ONE, AB( KD+1, J ), 1, B( J, 1 ),
+     $                    LDB, B( J+1, 1 ), LDB )
+   10       CONTINUE
+         END IF
+*
+         DO 20 I = 1, NRHS
+*
+*           Solve U*X = B, overwriting B with X.
+*
+            CALL DTBSV( 'Upper', 'No transpose', 'Non-unit', N, KL+KU,
+     $                  AB, LDAB, B( 1, I ), 1 )
+   20    CONTINUE
+*
+      ELSE
+*
+*        Solve A**T*X = B.
+*
+         DO 30 I = 1, NRHS
+*
+*           Solve U**T*X = B, overwriting B with X.
+*
+            CALL DTBSV( 'Upper', 'Transpose', 'Non-unit', N, KL+KU, AB,
+     $                  LDAB, B( 1, I ), 1 )
+   30    CONTINUE
+*
+*        Solve L**T*X = B, overwriting B with X.
+*
+         IF( LNOTI ) THEN
+            DO 40 J = N - 1, 1, -1
+               LM = MIN( KL, N-J )
+               CALL DGEMV( 'Transpose', LM, NRHS, -ONE, B( J+1, 1 ),
+     $                     LDB, AB( KD+1, J ), 1, ONE, B( J, 1 ), LDB )
+               L = IPIV( J )
+               IF( L.NE.J )
+     $            CALL DSWAP( NRHS, B( L, 1 ), LDB, B( J, 1 ), LDB )
+   40       CONTINUE
+         END IF
+      END IF
+      RETURN
+*
+*     End of DGBTRS
+*
+      END
+      INTEGER FUNCTION ILAENV( ISPEC, NAME, OPTS, N1, N2, N3,
+     $                 N4 )
+*
+*  -- LAPACK auxiliary routine (preliminary version) --
+*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+*     Courant Institute, Argonne National Lab, and Rice University
+*     February 20, 1992
+*
+*     .. Scalar Arguments ..
+      CHARACTER*( * )    NAME, OPTS
+      INTEGER            ISPEC, N1, N2, N3, N4
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  ILAENV is called from the LAPACK routines to choose problem-dependent
+*  parameters for the local environment.  See ISPEC for a description of
+*  the parameters.
+*
+*  This version provides a set of parameters which should give good,
+*  but not optimal, performance on many of the currently available
+*  computers.  Users are encouraged to modify this subroutine to set
+*  the tuning parameters for their particular machine using the option
+*  and problem size information in the arguments.
+*
+*  This routine will not function correctly if it is converted to all
+*  lower case.  Converting it to all upper case is allowed.
+*
+*  Arguments
+*  =========
+*
+*  ISPEC   (input) INTEGER
+*          Specifies the parameter to be returned as the value of
+*          ILAENV.
+*          = 1: the optimal blocksize; if this value is 1, an unblocked
+*               algorithm will give the best performance.
+*          = 2: the minimum block size for which the block routine
+*               should be used; if the usable block size is less than
+*               this value, an unblocked routine should be used.
+*          = 3: the crossover point (in a block routine, for N less
+*               than this value, an unblocked routine should be used)
+*          = 4: the number of shifts, used in the nonsymmetric
+*               eigenvalue routines
+*          = 5: the minimum column dimension for blocking to be used;
+*               rectangular blocks must have dimension at least k by m,
+*               where k is given by ILAENV(2,...) and m by ILAENV(5,...)
+*          = 6: the crossover point for the SVD (when reducing an m by n
+*               matrix to bidiagonal form, if max(m,n)/min(m,n) exceeds
+*               this value, a QR factorization is used first to reduce
+*               the matrix to a triangular form.)
+*          = 7: the number of processors
+*          = 8: the crossover point for the multishift QR and QZ methods
+*               for nonsymmetric eigenvalue problems.
+*
+*  NAME    (input) CHARACTER*(*)
+*          The name of the calling subroutine, in either upper case or
+*          lower case.
+*
+*  OPTS    (input) CHARACTER*(*)
+*          The character options to the subroutine NAME, concatenated
+*          into a single character string.  For example, UPLO = 'U',
+*          TRANS = 'T', and DIAG = 'N' for a triangular routine would
+*          be specified as OPTS = 'UTN'.
+*
+*  N1      (input) INTEGER
+*  N2      (input) INTEGER
+*  N3      (input) INTEGER
+*  N4      (input) INTEGER
+*          Problem dimensions for the subroutine NAME; these may not all
+*          be required.
+*
+* (ILAENV) (output) INTEGER
+*          >= 0: the value of the parameter specified by ISPEC
+*          < 0:  if ILAENV = -k, the k-th argument had an illegal value.
+*
+*  Further Details
+*  ===============
+*
+*  The following conventions have been used when calling ILAENV from the
+*  LAPACK routines:
+*  1)  OPTS is a concatenation of all of the character options to
+*      subroutine NAME, in the same order that they appear in the
+*      argument list for NAME, even if they are not used in determining
+*      the value of the parameter specified by ISPEC.
+*  2)  The problem dimensions N1, N2, N3, N4 are specified in the order
+*      that they appear in the argument list for NAME.  N1 is used
+*      first, N2 second, and so on, and unused problem dimensions are
+*      passed a value of -1.
+*  3)  The parameter value returned by ILAENV is checked for validity in
+*      the calling subroutine.  For example, ILAENV is used to retrieve
+*      the optimal blocksize for STRTRI as follows:
+*
+*      NB = ILAENV( 1, 'STRTRI', UPLO // DIAG, N, -1, -1, -1 )
+*      IF( NB.LE.1 ) NB = MAX( 1, N )
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      LOGICAL            CNAME, SNAME
+      CHARACTER*1        C1
+      CHARACTER*2        C2, C4
+      CHARACTER*3        C3
+      CHARACTER*6        SUBNAM
+      INTEGER            I, IC, IZ, NB, NBMIN, NX
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          CHAR, ICHAR, INT, MIN, REAL
+*     ..
+*     .. Executable Statements ..
+*
+      GO TO ( 100, 100, 100, 400, 500, 600, 700, 800 ) ISPEC
+*
+*     Invalid value for ISPEC
+*
+      ILAENV = -1
+      RETURN
+*
+  100 CONTINUE
+*
+*     Convert NAME to upper case if the first character is lower case.
+*
+      ILAENV = 1
+      SUBNAM = NAME
+      IC = ICHAR( SUBNAM( 1:1 ) )
+      IZ = ICHAR( 'Z' )
+      IF( IZ.EQ.90 .OR. IZ.EQ.122 ) THEN
+*
+*        ASCII character set
+*
+         IF( IC.GE.97 .AND. IC.LE.122 ) THEN
+            SUBNAM( 1:1 ) = CHAR( IC-32 )
+            DO 10 I = 2, 6
+               IC = ICHAR( SUBNAM( I:I ) )
+               IF( IC.GE.97 .AND. IC.LE.122 )
+     $            SUBNAM( I:I ) = CHAR( IC-32 )
+   10       CONTINUE
+         END IF
+*
+      ELSE IF( IZ.EQ.233 .OR. IZ.EQ.169 ) THEN
+*
+*        EBCDIC character set
+*
+         IF( ( IC.GE.129 .AND. IC.LE.137 ) .OR.
+     $       ( IC.GE.145 .AND. IC.LE.153 ) .OR.
+     $       ( IC.GE.162 .AND. IC.LE.169 ) ) THEN
+            SUBNAM( 1:1 ) = CHAR( IC+64 )
+            DO 20 I = 2, 6
+               IC = ICHAR( SUBNAM( I:I ) )
+               IF( ( IC.GE.129 .AND. IC.LE.137 ) .OR.
+     $             ( IC.GE.145 .AND. IC.LE.153 ) .OR.
+     $             ( IC.GE.162 .AND. IC.LE.169 ) )
+     $            SUBNAM( I:I ) = CHAR( IC+64 )
+   20       CONTINUE
+         END IF
+*
+      ELSE IF( IZ.EQ.218 .OR. IZ.EQ.250 ) THEN
+*
+*        Prime machines:  ASCII+128
+*
+         IF( IC.GE.225 .AND. IC.LE.250 ) THEN
+            SUBNAM( 1:1 ) = CHAR( IC-32 )
+            DO 30 I = 2, 6
+               IC = ICHAR( SUBNAM( I:I ) )
+               IF( IC.GE.225 .AND. IC.LE.250 )
+     $            SUBNAM( I:I ) = CHAR( IC-32 )
+   30       CONTINUE
+         END IF
+      END IF
+*
+      C1 = SUBNAM( 1:1 )
+      SNAME = C1.EQ.'S' .OR. C1.EQ.'D'
+      CNAME = C1.EQ.'C' .OR. C1.EQ.'Z'
+      IF( .NOT.( CNAME .OR. SNAME ) )
+     $   RETURN
+      C2 = SUBNAM( 2:3 )
+      C3 = SUBNAM( 4:6 )
+      C4 = C3( 2:3 )
+*
+      GO TO ( 110, 200, 300 ) ISPEC
+*
+  110 CONTINUE
+*
+*     ISPEC = 1:  block size
+*
+*     In these examples, separate code is provided for setting NB for
+*     real and complex.  We assume that NB will take the same value in
+*     single or double precision.
+*
+      NB = 1
+*
+      IF( C2.EQ.'GE' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         ELSE IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR.
+     $            C3.EQ.'QLF' ) THEN
+            IF( SNAME ) THEN
+               NB = 32
+            ELSE
+               NB = 32
+            END IF
+         ELSE IF( C3.EQ.'HRD' ) THEN
+            IF( SNAME ) THEN
+               NB = 32
+            ELSE
+               NB = 32
+            END IF
+         ELSE IF( C3.EQ.'BRD' ) THEN
+            IF( SNAME ) THEN
+               NB = 32
+            ELSE
+               NB = 32
+            END IF
+         ELSE IF( C3.EQ.'TRI' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'PO' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'SY' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         ELSE IF( SNAME .AND. C3.EQ.'TRD' ) THEN
+            NB = 1
+         ELSE IF( SNAME .AND. C3.EQ.'GST' ) THEN
+            NB = 64
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            NB = 64
+         ELSE IF( C3.EQ.'TRD' ) THEN
+            NB = 1
+         ELSE IF( C3.EQ.'GST' ) THEN
+            NB = 64
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
+         IF( C3( 1:1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
+     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
+     $          C4.EQ.'BR' ) THEN
+               NB = 32
+            END IF
+         ELSE IF( C3( 1:1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
+     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
+     $          C4.EQ.'BR' ) THEN
+               NB = 32
+            END IF
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
+         IF( C3( 1:1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
+     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
+     $          C4.EQ.'BR' ) THEN
+               NB = 32
+            END IF
+         ELSE IF( C3( 1:1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
+     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
+     $          C4.EQ.'BR' ) THEN
+               NB = 32
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'GB' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               IF( N4.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            ELSE
+               IF( N4.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'PB' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               IF( N2.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            ELSE
+               IF( N2.LE.64 ) THEN
+                  NB = 1
+               ELSE
+                  NB = 32
+               END IF
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'TR' ) THEN
+         IF( C3.EQ.'TRI' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'LA' ) THEN
+         IF( C3.EQ.'UUM' ) THEN
+            IF( SNAME ) THEN
+               NB = 64
+            ELSE
+               NB = 64
+            END IF
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'ST' ) THEN
+         IF( C3.EQ.'EBZ' ) THEN
+            NB = 1
+         END IF
+      END IF
+      ILAENV = NB
+      RETURN
+*
+  200 CONTINUE
+*
+*     ISPEC = 2:  minimum block size
+*
+      NBMIN = 2
+      IF( C2.EQ.'GE' ) THEN
+         IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR.
+     $       C3.EQ.'QLF' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         ELSE IF( C3.EQ.'HRD' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         ELSE IF( C3.EQ.'BRD' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         ELSE IF( C3.EQ.'TRI' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'SY' ) THEN
+         IF( C3.EQ.'TRF' ) THEN
+            IF( SNAME ) THEN
+               NBMIN = 2
+            ELSE
+               NBMIN = 2
+            END IF
+         ELSE IF( SNAME .AND. C3.EQ.'TRD' ) THEN
+            NBMIN = 2
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
+         IF( C3.EQ.'TRD' ) THEN
+            NBMIN = 2
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
+         IF( C3( 1:1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
+     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
+     $          C4.EQ.'BR' ) THEN
+               NBMIN = 2
+            END IF
+         ELSE IF( C3( 1:1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
+     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
+     $          C4.EQ.'BR' ) THEN
+               NBMIN = 2
+            END IF
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
+         IF( C3( 1:1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
+     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
+     $          C4.EQ.'BR' ) THEN
+               NBMIN = 2
+            END IF
+         ELSE IF( C3( 1:1 ).EQ.'M' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
+     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
+     $          C4.EQ.'BR' ) THEN
+               NBMIN = 2
+            END IF
+         END IF
+      END IF
+      ILAENV = NBMIN
+      RETURN
+*
+  300 CONTINUE
+*
+*     ISPEC = 3:  crossover point
+*
+      NX = 0
+      IF( C2.EQ.'GE' ) THEN
+         IF( C3.EQ.'QRF' .OR. C3.EQ.'RQF' .OR. C3.EQ.'LQF' .OR.
+     $       C3.EQ.'QLF' ) THEN
+            IF( SNAME ) THEN
+               NX = 128
+            ELSE
+               NX = 128
+            END IF
+         ELSE IF( C3.EQ.'HRD' ) THEN
+            IF( SNAME ) THEN
+               NX = 128
+            ELSE
+               NX = 128
+            END IF
+         ELSE IF( C3.EQ.'BRD' ) THEN
+            IF( SNAME ) THEN
+               NX = 128
+            ELSE
+               NX = 128
+            END IF
+         END IF
+      ELSE IF( C2.EQ.'SY' ) THEN
+         IF( SNAME .AND. C3.EQ.'TRD' ) THEN
+            NX = 1
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'HE' ) THEN
+         IF( C3.EQ.'TRD' ) THEN
+            NX = 1
+         END IF
+      ELSE IF( SNAME .AND. C2.EQ.'OR' ) THEN
+         IF( C3( 1:1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
+     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
+     $          C4.EQ.'BR' ) THEN
+               NX = 128
+            END IF
+         END IF
+      ELSE IF( CNAME .AND. C2.EQ.'UN' ) THEN
+         IF( C3( 1:1 ).EQ.'G' ) THEN
+            IF( C4.EQ.'QR' .OR. C4.EQ.'RQ' .OR. C4.EQ.'LQ' .OR.
+     $          C4.EQ.'QL' .OR. C4.EQ.'HR' .OR. C4.EQ.'TR' .OR.
+     $          C4.EQ.'BR' ) THEN
+               NX = 128
+            END IF
+         END IF
+      END IF
+      ILAENV = NX
+      RETURN
+*
+  400 CONTINUE
+*
+*     ISPEC = 4:  number of shifts (used by xHSEQR)
+*
+      ILAENV = 6
+      RETURN
+*
+  500 CONTINUE
+*
+*     ISPEC = 5:  minimum column dimension (not used)
+*
+      ILAENV = 2
+      RETURN
+*
+  600 CONTINUE
+*
+*     ISPEC = 6:  crossover point for SVD (used by xGELSS and xGESVD)
+*
+      ILAENV = INT( REAL( MIN( N1, N2 ) )*1.6E0 )
+      RETURN
+*
+  700 CONTINUE
+*
+*     ISPEC = 7:  number of processors (not used)
+*
+      ILAENV = 1
+      RETURN
+*
+  800 CONTINUE
+*
+*     ISPEC = 8:  crossover point for multishift (used by xHSEQR)
+*
+      ILAENV = 50
+      RETURN
+*
+*     End of ILAENV
+*
+      END
+c
+*> \brief \b DGBTF2 computes the LU factorization of a general band matrix using the unblocked version of the algorithm.
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DGBTF2 + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgbtf2.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgbtf2.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgbtf2.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGBTF2( M, N, KL, KU, AB, LDAB, IPIV, INFO )
+*
+*       .. Scalar Arguments ..
+*       INTEGER            INFO, KL, KU, LDAB, M, N
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   AB( LDAB, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGBTF2 computes an LU factorization of a real m-by-n band matrix A
+*> using partial pivoting with row interchanges.
+*>
+*> This is the unblocked version of the algorithm, calling Level 2 BLAS.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] M
+*> \verbatim
+*>          M is INTEGER
+*>          The number of rows of the matrix A.  M >= 0.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The number of columns of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in] KL
+*> \verbatim
+*>          KL is INTEGER
+*>          The number of subdiagonals within the band of A.  KL >= 0.
+*> \endverbatim
+*>
+*> \param[in] KU
+*> \verbatim
+*>          KU is INTEGER
+*>          The number of superdiagonals within the band of A.  KU >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] AB
+*> \verbatim
+*>          AB is DOUBLE PRECISION array, dimension (LDAB,N)
+*>          On entry, the matrix A in band storage, in rows KL+1 to
+*>          2*KL+KU+1; rows 1 to KL of the array need not be set.
+*>          The j-th column of A is stored in the j-th column of the
+*>          array AB as follows:
+*>          AB(kl+ku+1+i-j,j) = A(i,j) for max(1,j-ku)<=i<=min(m,j+kl)
+*>
+*>          On exit, details of the factorization: U is stored as an
+*>          upper triangular band matrix with KL+KU superdiagonals in
+*>          rows 1 to KL+KU+1, and the multipliers used during the
+*>          factorization are stored in rows KL+KU+2 to 2*KL+KU+1.
+*>          See below for further details.
+*> \endverbatim
+*>
+*> \param[in] LDAB
+*> \verbatim
+*>          LDAB is INTEGER
+*>          The leading dimension of the array AB.  LDAB >= 2*KL+KU+1.
+*> \endverbatim
+*>
+*> \param[out] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (min(M,N))
+*>          The pivot indices; for 1 <= i <= min(M,N), row i of the
+*>          matrix was interchanged with row IPIV(i).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0: successful exit
+*>          < 0: if INFO = -i, the i-th argument had an illegal value
+*>          > 0: if INFO = +i, U(i,i) is exactly zero. The factorization
+*>               has been completed, but the factor U is exactly
+*>               singular, and division by zero will occur if it is used
+*>               to solve a system of equations.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleGBcomputational
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  The band storage scheme is illustrated by the following example, when
+*>  M = N = 6, KL = 2, KU = 1:
+*>
+*>  On entry:                       On exit:
+*>
+*>      *    *    *    +    +    +       *    *    *   u14  u25  u36
+*>      *    *    +    +    +    +       *    *   u13  u24  u35  u46
+*>      *   a12  a23  a34  a45  a56      *   u12  u23  u34  u45  u56
+*>     a11  a22  a33  a44  a55  a66     u11  u22  u33  u44  u55  u66
+*>     a21  a32  a43  a54  a65   *      m21  m32  m43  m54  m65   *
+*>     a31  a42  a53  a64   *    *      m31  m42  m53  m64   *    *
+*>
+*>  Array elements marked * are not used by the routine; elements marked
+*>  + need not be set on entry, but are required by the routine to store
+*>  elements of U, because of fill-in resulting from the row
+*>  interchanges.
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DGBTF2( M, N, KL, KU, AB, LDAB, IPIV, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER            INFO, KL, KU, LDAB, M, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   AB( LDAB, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      INTEGER            I, J, JP, JU, KM, KV
+*     ..
+*     .. External Functions ..
+      INTEGER            IDAMAX
+      EXTERNAL           IDAMAX
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGER, DSCAL, DSWAP, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     KV is the number of superdiagonals in the factor U, allowing for
+*     fill-in.
+*
+      KV = KU + KL
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF( M.LT.0 ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( KL.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( KU.LT.0 ) THEN
+         INFO = -4
+      ELSE IF( LDAB.LT.KL+KV+1 ) THEN
+         INFO = -6
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGBTF2', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( M.EQ.0 .OR. N.EQ.0 )
+     $   RETURN
+*
+*     Gaussian elimination with partial pivoting
+*
+*     Set fill-in elements in columns KU+2 to KV to zero.
+*
+      DO 20 J = KU + 2, MIN( KV, N )
+         DO 10 I = KV - J + 2, KL
+            AB( I, J ) = ZERO
+   10    CONTINUE
+   20 CONTINUE
+*
+*     JU is the index of the last column affected by the current stage
+*     of the factorization.
+*
+      JU = 1
+*
+      DO 40 J = 1, MIN( M, N )
+*
+*        Set fill-in elements in column J+KV to zero.
+*
+         IF( J+KV.LE.N ) THEN
+            DO 30 I = 1, KL
+               AB( I, J+KV ) = ZERO
+   30       CONTINUE
+         END IF
+*
+*        Find pivot and test for singularity. KM is the number of
+*        subdiagonal elements in the current column.
+*
+         KM = MIN( KL, M-J )
+         JP = IDAMAX( KM+1, AB( KV+1, J ), 1 )
+         IPIV( J ) = JP + J - 1
+         IF( AB( KV+JP, J ).NE.ZERO ) THEN
+            JU = MAX( JU, MIN( J+KU+JP-1, N ) )
+*
+*           Apply interchange to columns J to JU.
+*
+            IF( JP.NE.1 )
+     $         CALL DSWAP( JU-J+1, AB( KV+JP, J ), LDAB-1,
+     $                     AB( KV+1, J ), LDAB-1 )
+*
+            IF( KM.GT.0 ) THEN
+*
+*              Compute multipliers.
+*
+               CALL DSCAL( KM, ONE / AB( KV+1, J ), AB( KV+2, J ), 1 )
+*
+*              Update trailing submatrix within the band.
+*
+               IF( JU.GT.J )
+     $            CALL DGER( KM, JU-J, -ONE, AB( KV+2, J ), 1,
+     $                       AB( KV, J+1 ), LDAB-1, AB( KV+1, J+1 ),
+     $                       LDAB-1 )
+            END IF
+         ELSE
+*
+*           If pivot is zero, set INFO to the index of the pivot
+*           unless a zero pivot has already been found.
+*
+            IF( INFO.EQ.0 )
+     $         INFO = J
+         END IF
+   40 CONTINUE
+      RETURN
+*
+*     End of DGBTF2
+*
+      END
+
+      SUBROUTINE DGER  ( M, N, ALPHA, X, INCX, Y, INCY, A, LDA )
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION   ALPHA
+      INTEGER            INCX, INCY, LDA, M, N
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * ), X( * ), Y( * )
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  DGER   performs the rank 1 operation
+*
+*     A := alpha*x*y' + A,
+*
+*  where alpha is a scalar, x is an m element vector, y is an n element
+*  vector and A is an m by n matrix.
+*
+*  Parameters
+*  ==========
+*
+*  M      - INTEGER.
+*           On entry, M specifies the number of rows of the matrix A.
+*           M must be at least zero.
+*           Unchanged on exit.
+*
+*  N      - INTEGER.
+*           On entry, N specifies the number of columns of the matrix A.
+*           N must be at least zero.
+*           Unchanged on exit.
+*
+*  ALPHA  - DOUBLE PRECISION.
+*           On entry, ALPHA specifies the scalar alpha.
+*           Unchanged on exit.
+*
+*  X      - DOUBLE PRECISION array of dimension at least
+*           ( 1 + ( m - 1 )*abs( INCX ) ).
+*           Before entry, the incremented array X must contain the m
+*           element vector x.
+*           Unchanged on exit.
+*
+*  INCX   - INTEGER.
+*           On entry, INCX specifies the increment for the elements of
+*           X. INCX must not be zero.
+*           Unchanged on exit.
+*
+*  Y      - DOUBLE PRECISION array of dimension at least
+*           ( 1 + ( n - 1 )*abs( INCY ) ).
+*           Before entry, the incremented array Y must contain the n
+*           element vector y.
+*           Unchanged on exit.
+*
+*  INCY   - INTEGER.
+*           On entry, INCY specifies the increment for the elements of
+*           Y. INCY must not be zero.
+*           Unchanged on exit.
+*
+*  A      - DOUBLE PRECISION array of DIMENSION ( LDA, n ).
+*           Before entry, the leading m by n part of the array A must
+*           contain the matrix of coefficients. On exit, A is
+*           overwritten by the updated matrix.
+*
+*  LDA    - INTEGER.
+*           On entry, LDA specifies the first dimension of A as declared
+*           in the calling (sub) program. LDA must be at least
+*           max( 1, m ).
+*           Unchanged on exit.
+*
+*
+*  Level 2 Blas routine.
+*
+*  -- Written on 22-October-1986.
+*     Jack Dongarra, Argonne National Lab.
+*     Jeremy Du Croz, Nag Central Office.
+*     Sven Hammarling, Nag Central Office.
+*     Richard Hanson, Sandia National Labs.
+*
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ZERO
+      PARAMETER        ( ZERO = 0.0D+0 )
+*     .. Local Scalars ..
+      DOUBLE PRECISION   TEMP
+      INTEGER            I, INFO, IX, J, JY, KX
+*     .. External Subroutines ..
+      EXTERNAL           XERBLA
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF     ( M.LT.0 )THEN
+         INFO = 1
+      ELSE IF( N.LT.0 )THEN
+         INFO = 2
+      ELSE IF( INCX.EQ.0 )THEN
+         INFO = 5
+      ELSE IF( INCY.EQ.0 )THEN
+         INFO = 7
+      ELSE IF( LDA.LT.MAX( 1, M ) )THEN
+         INFO = 9
+      END IF
+      IF( INFO.NE.0 )THEN
+         CALL XERBLA( 'DGER  ', INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible.
+*
+      IF( ( M.EQ.0 ).OR.( N.EQ.0 ).OR.( ALPHA.EQ.ZERO ) )
+     $   RETURN
+*
+*     Start the operations. In this version the elements of A are
+*     accessed sequentially with one pass through A.
+*
+      IF( INCY.GT.0 )THEN
+         JY = 1
+      ELSE
+         JY = 1 - ( N - 1 )*INCY
+      END IF
+      IF( INCX.EQ.1 )THEN
+         DO 20, J = 1, N
+            IF( Y( JY ).NE.ZERO )THEN
+               TEMP = ALPHA*Y( JY )
+               DO 10, I = 1, M
+                  A( I, J ) = A( I, J ) + X( I )*TEMP
+   10          CONTINUE
+            END IF
+            JY = JY + INCY
+   20    CONTINUE
+      ELSE
+         IF( INCX.GT.0 )THEN
+            KX = 1
+         ELSE
+            KX = 1 - ( M - 1 )*INCX
+         END IF
+         DO 40, J = 1, N
+            IF( Y( JY ).NE.ZERO )THEN
+               TEMP = ALPHA*Y( JY )
+               IX   = KX
+               DO 30, I = 1, M
+                  A( I, J ) = A( I, J ) + X( IX )*TEMP
+                  IX        = IX        + INCX
+   30          CONTINUE
+            END IF
+            JY = JY + INCY
+   40    CONTINUE
+      END IF
+*
+      RETURN
+*
+*     End of DGER  .
+*
+      END
+*> \brief \b DLASWP performs a series of row interchanges on a general rectangular matrix.
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DLASWP + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dlaswp.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dlaswp.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dlaswp.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DLASWP( N, A, LDA, K1, K2, IPIV, INCX )
+*
+*       .. Scalar Arguments ..
+*       INTEGER            INCX, K1, K2, LDA, N
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   A( LDA, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DLASWP performs a series of row interchanges on the matrix A.
+*> One row interchange is initiated for each of rows K1 through K2 of A.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The number of columns of the matrix A.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          On entry, the matrix of column dimension N to which the row
+*>          interchanges will be applied.
+*>          On exit, the permuted matrix.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.
+*> \endverbatim
+*>
+*> \param[in] K1
+*> \verbatim
+*>          K1 is INTEGER
+*>          The first element of IPIV for which a row interchange will
+*>          be done.
+*> \endverbatim
+*>
+*> \param[in] K2
+*> \verbatim
+*>          K2 is INTEGER
+*>          (K2-K1+1) is the number of elements of IPIV for which a row
+*>          interchange will be done.
+*> \endverbatim
+*>
+*> \param[in] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (K1+(K2-K1)*abs(INCX))
+*>          The vector of pivot indices. Only the elements in positions
+*>          K1 through K1+(K2-K1)*abs(INCX) of IPIV are accessed.
+*>          IPIV(K1+(K-K1)*abs(INCX)) = L implies rows K and L are to be
+*>          interchanged.
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>          The increment between successive values of IPIV. If INCX
+*>          is negative, the pivots are applied in reverse order.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleOTHERauxiliary
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  Modified by
+*>   R. C. Whaley, Computer Science Dept., Univ. of Tenn., Knoxville, USA
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DLASWP( N, A, LDA, K1, K2, IPIV, INCX )
+*
+*  -- LAPACK auxiliary routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER            INCX, K1, K2, LDA, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+* =====================================================================
+*
+*     .. Local Scalars ..
+      INTEGER            I, I1, I2, INC, IP, IX, IX0, J, K, N32
+      DOUBLE PRECISION   TEMP
+*     ..
+*     .. Executable Statements ..
+*
+*     Interchange row I with row IPIV(K1+(I-K1)*abs(INCX)) for each of rows
+*     K1 through K2.
+*
+      IF( INCX.GT.0 ) THEN
+         IX0 = K1
+         I1 = K1
+         I2 = K2
+         INC = 1
+      ELSE IF( INCX.LT.0 ) THEN
+         IX0 = K1 + ( K1-K2 )*INCX
+         I1 = K2
+         I2 = K1
+         INC = -1
+      ELSE
+         RETURN
+      END IF
+*
+      N32 = ( N / 32 )*32
+      IF( N32.NE.0 ) THEN
+         DO 30 J = 1, N32, 32
+            IX = IX0
+            DO 20 I = I1, I2, INC
+               IP = IPIV( IX )
+               IF( IP.NE.I ) THEN
+                  DO 10 K = J, J + 31
+                     TEMP = A( I, K )
+                     A( I, K ) = A( IP, K )
+                     A( IP, K ) = TEMP
+   10             CONTINUE
+               END IF
+               IX = IX + INCX
+   20       CONTINUE
+   30    CONTINUE
+      END IF
+      IF( N32.NE.N ) THEN
+         N32 = N32 + 1
+         IX = IX0
+         DO 50 I = I1, I2, INC
+            IP = IPIV( IX )
+            IF( IP.NE.I ) THEN
+               DO 40 K = N32, N
+                  TEMP = A( I, K )
+                  A( I, K ) = A( IP, K )
+                  A( IP, K ) = TEMP
+   40          CONTINUE
+            END IF
+            IX = IX + INCX
+   50    CONTINUE
+      END IF
+*
+      RETURN
+*
+*     End of DLASWP
+*
+      END
+cat > dgetf2.f <<'CUT HERE............'
+      SUBROUTINE DGETF2( M, N, A, LDA, IPIV, INFO )
+*
+*  -- LAPACK routine (version 1.1) --
+*     Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,
+*     Courant Institute, Argonne National Lab, and Rice University
+*     June 30, 1992
+*
+*     .. Scalar Arguments ..
+      INTEGER            INFO, LDA, M, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  DGETF2 computes an LU factorization of a general m-by-n matrix A
+*  using partial pivoting with row interchanges.
+*
+*  The factorization has the form
+*     A = P * L * U
+*  where P is a permutation matrix, L is lower triangular with unit
+*  diagonal elements (lower trapezoidal if m > n), and U is upper
+*  triangular (upper trapezoidal if m < n).
+*
+*  This is the right-looking Level 2 BLAS version of the algorithm.
+*
+*  Arguments
+*  =========
+*
+*  M       (input) INTEGER
+*          The number of rows of the matrix A.  M >= 0.
+*
+*  N       (input) INTEGER
+*          The number of columns of the matrix A.  N >= 0.
+*
+*  A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
+*          On entry, the m by n matrix to be factored.
+*          On exit, the factors L and U from the factorization
+*          A = P*L*U; the unit diagonal elements of L are not stored.
+*
+*  LDA     (input) INTEGER
+*          The leading dimension of the array A.  LDA >= max(1,M).
+*
+*  IPIV    (output) INTEGER array, dimension (min(M,N))
+*          The pivot indices; for 1 <= i <= min(M,N), row i of the
+*          matrix was interchanged with row IPIV(i).
+*
+*  INFO    (output) INTEGER
+*          = 0: successful exit
+*          < 0: if INFO = -k, the k-th argument had an illegal value
+*          > 0: if INFO = k, U(k,k) is exactly zero. The factorization
+*               has been completed, but the factor U is exactly
+*               singular, and division by zero will occur if it is used
+*               to solve a system of equations.
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      INTEGER            J, JP
+*     ..
+*     .. External Functions ..
+      INTEGER            IDAMAX
+      EXTERNAL           IDAMAX
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGER, DSCAL, DSWAP, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF( M.LT.0 ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, M ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGETF2', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( M.EQ.0 .OR. N.EQ.0 )
+     $   RETURN
+*
+      DO 10 J = 1, MIN( M, N )
+*
+*        Find pivot and test for singularity.
+*
+         JP = J - 1 + IDAMAX( M-J+1, A( J, J ), 1 )
+         IPIV( J ) = JP
+         IF( A( JP, J ).NE.ZERO ) THEN
+*
+*           Apply the interchange to columns 1:N.
+*
+            IF( JP.NE.J )
+     $         CALL DSWAP( N, A( J, 1 ), LDA, A( JP, 1 ), LDA )
+*
+*           Compute elements J+1:M of J-th column.
+*
+            IF( J.LT.M )
+     $         CALL DSCAL( M-J, ONE / A( J, J ), A( J+1, J ), 1 )
+*
+         ELSE IF( INFO.EQ.0 ) THEN
+*
+            INFO = J
+         END IF
+*
+         IF( J.LT.MIN( M, N ) ) THEN
+*
+*           Update trailing submatrix.
+*
+            CALL DGER( M-J, N-J, -ONE, A( J+1, J ), 1, A( J, J+1 ), LDA,
+     $                 A( J+1, J+1 ), LDA )
+         END IF
+   10 CONTINUE
+      RETURN
+*
+*     End of DGETF2
+*
+      END
+      SUBROUTINE DTBSV ( UPLO, TRANS, DIAG, N, K, A, LDA, X, INCX )
+*     .. Scalar Arguments ..
+      INTEGER            INCX, K, LDA, N
+      CHARACTER*1        DIAG, TRANS, UPLO
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * ), X( * )
+*     ..
+*
+*  Purpose
+*  =======
+*
+*  DTBSV  solves one of the systems of equations
+*
+*     A*x = b,   or   A'*x = b,
+*
+*  where b and x are n element vectors and A is an n by n unit, or
+*  non-unit, upper or lower triangular band matrix, with ( k + 1 )
+*  diagonals.
+*
+*  No test for singularity or near-singularity is included in this
+*  routine. Such tests must be performed before calling this routine.
+*
+*  Parameters
+*  ==========
+*
+*  UPLO   - CHARACTER*1.
+*           On entry, UPLO specifies whether the matrix is an upper or
+*           lower triangular matrix as follows:
+*
+*              UPLO = 'U' or 'u'   A is an upper triangular matrix.
+*
+*              UPLO = 'L' or 'l'   A is a lower triangular matrix.
+*
+*           Unchanged on exit.
+*
+*  TRANS  - CHARACTER*1.
+*           On entry, TRANS specifies the equations to be solved as
+*           follows:
+*
+*              TRANS = 'N' or 'n'   A*x = b.
+*
+*              TRANS = 'T' or 't'   A'*x = b.
+*
+*              TRANS = 'C' or 'c'   A'*x = b.
+*
+*           Unchanged on exit.
+*
+*  DIAG   - CHARACTER*1.
+*           On entry, DIAG specifies whether or not A is unit
+*           triangular as follows:
+*
+*              DIAG = 'U' or 'u'   A is assumed to be unit triangular.
+*
+*              DIAG = 'N' or 'n'   A is not assumed to be unit
+*                                  triangular.
+*
+*           Unchanged on exit.
+*
+*  N      - INTEGER.
+*           On entry, N specifies the order of the matrix A.
+*           N must be at least zero.
+*           Unchanged on exit.
+*
+*  K      - INTEGER.
+*           On entry with UPLO = 'U' or 'u', K specifies the number of
+*           super-diagonals of the matrix A.
+*           On entry with UPLO = 'L' or 'l', K specifies the number of
+*           sub-diagonals of the matrix A.
+*           K must satisfy  0 .le. K.
+*           Unchanged on exit.
+*
+*  A      - DOUBLE PRECISION array of DIMENSION ( LDA, n ).
+*           Before entry with UPLO = 'U' or 'u', the leading ( k + 1 )
+*           by n part of the array A must contain the upper triangular
+*           band part of the matrix of coefficients, supplied column by
+*           column, with the leading diagonal of the matrix in row
+*           ( k + 1 ) of the array, the first super-diagonal starting at
+*           position 2 in row k, and so on. The top left k by k triangle
+*           of the array A is not referenced.
+*           The following program segment will transfer an upper
+*           triangular band matrix from conventional full matrix storage
+*           to band storage:
+*
+*                 DO 20, J = 1, N
+*                    M = K + 1 - J
+*                    DO 10, I = MAX( 1, J - K ), J
+*                       A( M + I, J ) = matrix( I, J )
+*              10    CONTINUE
+*              20 CONTINUE
+*
+*           Before entry with UPLO = 'L' or 'l', the leading ( k + 1 )
+*           by n part of the array A must contain the lower triangular
+*           band part of the matrix of coefficients, supplied column by
+*           column, with the leading diagonal of the matrix in row 1 of
+*           the array, the first sub-diagonal starting at position 1 in
+*           row 2, and so on. The bottom right k by k triangle of the
+*           array A is not referenced.
+*           The following program segment will transfer a lower
+*           triangular band matrix from conventional full matrix storage
+*           to band storage:
+*
+*                 DO 20, J = 1, N
+*                    M = 1 - J
+*                    DO 10, I = J, MIN( N, J + K )
+*                       A( M + I, J ) = matrix( I, J )
+*              10    CONTINUE
+*              20 CONTINUE
+*
+*           Note that when DIAG = 'U' or 'u' the elements of the array A
+*           corresponding to the diagonal elements of the matrix are not
+*           referenced, but are assumed to be unity.
+*           Unchanged on exit.
+*
+*  LDA    - INTEGER.
+*           On entry, LDA specifies the first dimension of A as declared
+*           in the calling (sub) program. LDA must be at least
+*           ( k + 1 ).
+*           Unchanged on exit.
+*
+*  X      - DOUBLE PRECISION array of dimension at least
+*           ( 1 + ( n - 1 )*abs( INCX ) ).
+*           Before entry, the incremented array X must contain the n
+*           element right-hand side vector b. On exit, X is overwritten
+*           with the solution vector x.
+*
+*  INCX   - INTEGER.
+*           On entry, INCX specifies the increment for the elements of
+*           X. INCX must not be zero.
+*           Unchanged on exit.
+*
+*
+*  Level 2 Blas routine.
+*
+*  -- Written on 22-October-1986.
+*     Jack Dongarra, Argonne National Lab.
+*     Jeremy Du Croz, Nag Central Office.
+*     Sven Hammarling, Nag Central Office.
+*     Richard Hanson, Sandia National Labs.
+*
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ZERO
+      PARAMETER        ( ZERO = 0.0D+0 )
+*     .. Local Scalars ..
+      DOUBLE PRECISION   TEMP
+      INTEGER            I, INFO, IX, J, JX, KPLUS1, KX, L
+      LOGICAL            NOUNIT
+*     .. External Functions ..
+      LOGICAL            LSAME
+      EXTERNAL           LSAME
+*     .. External Subroutines ..
+      EXTERNAL           XERBLA
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF     ( .NOT.LSAME( UPLO , 'U' ).AND.
+     $         .NOT.LSAME( UPLO , 'L' )      )THEN
+         INFO = 1
+      ELSE IF( .NOT.LSAME( TRANS, 'N' ).AND.
+     $         .NOT.LSAME( TRANS, 'T' ).AND.
+     $         .NOT.LSAME( TRANS, 'C' )      )THEN
+         INFO = 2
+      ELSE IF( .NOT.LSAME( DIAG , 'U' ).AND.
+     $         .NOT.LSAME( DIAG , 'N' )      )THEN
+         INFO = 3
+      ELSE IF( N.LT.0 )THEN
+         INFO = 4
+      ELSE IF( K.LT.0 )THEN
+         INFO = 5
+      ELSE IF( LDA.LT.( K + 1 ) )THEN
+         INFO = 7
+      ELSE IF( INCX.EQ.0 )THEN
+         INFO = 9
+      END IF
+      IF( INFO.NE.0 )THEN
+         CALL XERBLA( 'DTBSV ', INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible.
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+      NOUNIT = LSAME( DIAG, 'N' )
+*
+*     Set up the start point in X if the increment is not unity. This
+*     will be  ( N - 1 )*INCX  too small for descending loops.
+*
+      IF( INCX.LE.0 )THEN
+         KX = 1 - ( N - 1 )*INCX
+      ELSE IF( INCX.NE.1 )THEN
+         KX = 1
+      END IF
+*
+*     Start the operations. In this version the elements of A are
+*     accessed by sequentially with one pass through A.
+*
+      IF( LSAME( TRANS, 'N' ) )THEN
+*
+*        Form  x := inv( A )*x.
+*
+         IF( LSAME( UPLO, 'U' ) )THEN
+            KPLUS1 = K + 1
+            IF( INCX.EQ.1 )THEN
+               DO 20, J = N, 1, -1
+                  IF( X( J ).NE.ZERO )THEN
+                     L = KPLUS1 - J
+                     IF( NOUNIT )
+     $                  X( J ) = X( J )/A( KPLUS1, J )
+                     TEMP = X( J )
+                     DO 10, I = J - 1, MAX( 1, J - K ), -1
+                        X( I ) = X( I ) - TEMP*A( L + I, J )
+   10                CONTINUE
+                  END IF
+   20          CONTINUE
+            ELSE
+               KX = KX + ( N - 1 )*INCX
+               JX = KX
+               DO 40, J = N, 1, -1
+                  KX = KX - INCX
+                  IF( X( JX ).NE.ZERO )THEN
+                     IX = KX
+                     L  = KPLUS1 - J
+                     IF( NOUNIT )
+     $                  X( JX ) = X( JX )/A( KPLUS1, J )
+                     TEMP = X( JX )
+                     DO 30, I = J - 1, MAX( 1, J - K ), -1
+                        X( IX ) = X( IX ) - TEMP*A( L + I, J )
+                        IX      = IX      - INCX
+   30                CONTINUE
+                  END IF
+                  JX = JX - INCX
+   40          CONTINUE
+            END IF
+         ELSE
+            IF( INCX.EQ.1 )THEN
+               DO 60, J = 1, N
+                  IF( X( J ).NE.ZERO )THEN
+                     L = 1 - J
+                     IF( NOUNIT )
+     $                  X( J ) = X( J )/A( 1, J )
+                     TEMP = X( J )
+                     DO 50, I = J + 1, MIN( N, J + K )
+                        X( I ) = X( I ) - TEMP*A( L + I, J )
+   50                CONTINUE
+                  END IF
+   60          CONTINUE
+            ELSE
+               JX = KX
+               DO 80, J = 1, N
+                  KX = KX + INCX
+                  IF( X( JX ).NE.ZERO )THEN
+                     IX = KX
+                     L  = 1  - J
+                     IF( NOUNIT )
+     $                  X( JX ) = X( JX )/A( 1, J )
+                     TEMP = X( JX )
+                     DO 70, I = J + 1, MIN( N, J + K )
+                        X( IX ) = X( IX ) - TEMP*A( L + I, J )
+                        IX      = IX      + INCX
+   70                CONTINUE
+                  END IF
+                  JX = JX + INCX
+   80          CONTINUE
+            END IF
+         END IF
+      ELSE
+*
+*        Form  x := inv( A')*x.
+*
+         IF( LSAME( UPLO, 'U' ) )THEN
+            KPLUS1 = K + 1
+            IF( INCX.EQ.1 )THEN
+               DO 100, J = 1, N
+                  TEMP = X( J )
+                  L    = KPLUS1 - J
+                  DO 90, I = MAX( 1, J - K ), J - 1
+                     TEMP = TEMP - A( L + I, J )*X( I )
+   90             CONTINUE
+                  IF( NOUNIT )
+     $               TEMP = TEMP/A( KPLUS1, J )
+                  X( J ) = TEMP
+  100          CONTINUE
+            ELSE
+               JX = KX
+               DO 120, J = 1, N
+                  TEMP = X( JX )
+                  IX   = KX
+                  L    = KPLUS1  - J
+                  DO 110, I = MAX( 1, J - K ), J - 1
+                     TEMP = TEMP - A( L + I, J )*X( IX )
+                     IX   = IX   + INCX
+  110             CONTINUE
+                  IF( NOUNIT )
+     $               TEMP = TEMP/A( KPLUS1, J )
+                  X( JX ) = TEMP
+                  JX      = JX   + INCX
+                  IF( J.GT.K )
+     $               KX = KX + INCX
+  120          CONTINUE
+            END IF
+         ELSE
+            IF( INCX.EQ.1 )THEN
+               DO 140, J = N, 1, -1
+                  TEMP = X( J )
+                  L    = 1      - J
+                  DO 130, I = MIN( N, J + K ), J + 1, -1
+                     TEMP = TEMP - A( L + I, J )*X( I )
+  130             CONTINUE
+                  IF( NOUNIT )
+     $               TEMP = TEMP/A( 1, J )
+                  X( J ) = TEMP
+  140          CONTINUE
+            ELSE
+               KX = KX + ( N - 1 )*INCX
+               JX = KX
+               DO 160, J = N, 1, -1
+                  TEMP = X( JX )
+                  IX   = KX
+                  L    = 1       - J
+                  DO 150, I = MIN( N, J + K ), J + 1, -1
+                     TEMP = TEMP - A( L + I, J )*X( IX )
+                     IX   = IX   - INCX
+  150             CONTINUE
+                  IF( NOUNIT )
+     $               TEMP = TEMP/A( 1, J )
+                  X( JX ) = TEMP
+                  JX      = JX   - INCX
+                  IF( ( N - J ).GE.K )
+     $               KX = KX - INCX
+  160          CONTINUE
+            END IF
+         END IF
+      END IF
+*
+      RETURN
+*
+*     End of DTBSV .
+*
+      END
+c         
+      subroutine checkd(corden,new,nactveold,ab,maxgrd,nvar,iclose)
+      implicit real*8 (a-h,o-z)
+      real*8 ab(30,2), corden(maxgrd,1)
+      iclose=0
+      do ibas=1,nactveold
+       sum=0.
+       do i=1,nvar
+       sum=sum+abs(corden(new,i)-corden(ibas,i))/(ab(i,2)-ab(i,1))
+       enddo
+      if(sum.le.1.d-4) then
+      iclose=1
+      return
+      endif
+      enddo
+      return
+      end
+      subroutine emint(psi,ldpsi,theta,ldtheta,npoint,nsub,ijob,
+     &                 x,dx,y,dy,fobj,gap,nvar,keep,IHESS)
+      implicit real*8 (a-h,o-z)
+      real*8 mu
+      dimension psi(ldpsi,*),theta(ldtheta,*),x(*),dx(*),y(*),dy(*)
+      CHARACTER ERRFIL*20
+	COMMON/SUPRES/ISUPRES
+      COMMON/ERR/ERRFIL
+      parameter (MAXSUBem=999,MAXACTem=10000000)
+      dimension w(MAXSUBem),dw(MAXSUBem),Ptx(MAXSUBem),
+     &          hess(MAXSUBem,2*MAXSUBem)
+      dimension psisum(MAXSUBem),XVERIFY(100)
+      integer kpvt(MAXSUBem), ipivot(MAXACTem), list(MAXACTem)
+      keep = nactve
+      if(nsub.gt.MAXSUBem) then
+      write(6,*) 'nsub =',nsub, ' is greater than MAXSUBem=',MAXSUBem
+      write(6,*) 'MAXSUBem needs to be reset as large as nsub'
+      write(6,*) 'in PARAMETER statement in subroutine emint'
+        OPEN(42,FILE=ERRFIL)
+      write(42,*) 'nsub =',nsub, ' is greater than MAXSUBem=',MAXSUBem
+      write(42,*) 'MAXSUBem needs to be reset as large as nsub'
+      write(42,*) 'in PARAMETER statement in subroutine emint'
+        CLOSE(42)
+      CALL PAUSE
+      stop
+      endif
+      if(npoint.gt.MAXACTem) then
+      write(6,*) 'npoint=',npoint,' is larger than MAXACTem=',MAXACTem
+      write(6,*) 'MAXACTem needs to be reset as large as npoint'
+      write(6,*) 'in PARAMETER statement in subroutine emint'
+        OPEN(42,FILE=ERRFIL)
+      write(42,*) 'npoint=',npoint,' is larger than MAXACTem=',MAXACTem
+      write(42,*) 'MAXACTem needs to be reset as large as npoint'
+      write(42,*) 'in PARAMETER statement in subroutine emint'
+        CLOSE(42)
+      CALL PAUSE
+      stop
+      endif
+      psimin=0.
+      do j=1,nsub
+      do i=1,npoint
+      if(psi(j,i).le.psimin) psimin=psi(j,i)
+      enddo
+      enddo
+      if(psimin.lt.0) then
+	  write(6,*) 'Psi matrix not non-negative -stop'
+        OPEN(42,FILE=ERRFIL)
+	   write(42,*) 'Psi matrix not non-negative -stop'
+        CLOSE(42)
+	  CALL PAUSE
+	  stop
+      endif
+      colsummin=1.e10
+      do j=1,nsub
+        s=0.
+        do i=1,npoint
+           x(i)=1.d0
+           s=s+psi(j,i)
+        enddo
+      psisum(j) = s
+        Ptx(j)=s
+        if(s.le.colsummin) colsummin=s
+        if(s.le.0) then
+           write(6,*) 'psi has a zero row -stop'
+        OPEN(42,FILE=ERRFIL)
+	   write(42,*) 'psi has a zero row -stop'
+        CLOSE(42)
+	   CALL PAUSE
+           stop
+        endif
+        w(j)=1./s
+      enddo
+      shrink=0.
+      do i=1,npoint
+        sum=0.d0
+        do j=1,nsub
+           sum=sum+psi(j,i)*w(j)
+        enddo
+        y(i)=sum
+        if(sum.gt.shrink) shrink=sum
+      enddo
+      shrink=2.d0*shrink
+      if(s.le.0) then
+	  write(6,*) 'Psi has a zero column -stop'
+        OPEN(42,FILE=ERRFIL)
+	   write(42,*) 'Psi has a zero column -stop'
+        CLOSE(42)
+	  CALL PAUSE
+	  stop
+      endif
+      eps=1.d-10
+      sig=0.d0
+      mu=0.d0
+      do i=1,npoint
+        x(i)=1.d0*shrink
+        y(i)=y(i)/shrink
+        y(i)=1.d0-y(i)
+        mu=mu+x(i)*y(i)
+      enddo
+      mu=mu/npoint
+      rmax = -1.e38
+      do j=1,nsub
+        w(j)=w(j)/shrink
+        Ptx(j)=Ptx(j)*shrink
+        if(dabs(1.d0-w(j)*Ptx(j)).ge.rmax) rmax =
+     &  dabs(1.d0-w(j)*Ptx(j))
+      enddo
+      gap=1.d0
+      iter=0
+100   continue
+	conval = mu
+      if(conval .lt. rmax) conval = rmax
+      if(conval .lt. gap) conval = gap
+      convcrit = eps/conval
+      XVERIFY(1) = convcrit
+      CALL VERIFYVAL(1,XVERIFY)
+       IF(ILOOP .GT. 0) WRITE(*,123) iter,XVERIFY(1)
+  123 FORMAT(' Iteration ',I9,' CONV. CRIT = ',G15.2,' (1 OR HIGHER FOR
+     1CONVERGENCE)')
+      if(mu.le.eps.and.rmax.le.eps.and.gap.le.eps) go to 9000
+      iter=iter+1
+        ILOOP = ILOOP + 1
+      tbuilda=0
+      smu=sig*mu
+      do j=1,nsub
+        do k=1,nsub
+           hess(j,k)=0.
+        enddo
+      enddo
+      do i=1,npoint
+        scale=x(i)/y(i)
+       do j=1,nsub
+         fact=scale*psi(j,i)
+         do k=j,nsub
+           hess(k,j)=hess(k,j)+fact*psi(k,i)
+         enddo
+       enddo
+      enddo
+      do j=1,nsub-1
+      do k=j+1,nsub
+      hess(j,k)=hess(k,j)
+      enddo
+      enddo
+      do j=1,nsub
+        hess(j,j)=hess(j,j)+Ptx(j)/w(j)
+      enddo
+      tbuildb=0
+      tbuild=tbuildb-tbuilda
+      IF(ISUPRES .EQ. 0) write(6,*) 'tbuild=',tbuild
+      CALL DPOTRF( 'L', nsub, hess, MAXSUBem, INFO )
+      tbuildc=0
+      tfactor=tbuildc-tbuildb
+      IF(ISUPRES .EQ. 0) write(6,*) 'tfactor=',tfactor
+      IHESS = 0
+      if(info .ne. 0) then
+       IHESS = -1
+       WRITE(25,163)
+       WRITE(*,163)
+  163  FORMAT(//' Hessian matrix in interior point EM algorithm'/
+     1' is singular.  Possibly number of grid points is too small,'/
+     2' or assay coefficients are too large. '//
+     3' Try again with a new assay polynomial or larger grid.'//
+     4' Suggested quick fix: rerun and select error model 2)'/
+     5' in response to the initial question; then enter a'/
+     6' initial value gamma = 10.0 in response to the prompt for'/
+     7' that value.'//
+     8' THE PROGRAM WILL CREATE OUTPUT FILES BEFORE STOPPING. '//)
+      WRITE(25,164) info
+      WRITE(*,164) info
+  164 FORMAT(//' NOTE THAT IN SUBROUTINE emint, THE VALUE OF INFO'/
+     1' IS ',i6,//
+     2' IF THIS VALUE IS POSTIVE, IT IS LIKELY THE NO. OF THE SUBJECT'/
+     3' (OR AT LEAST THE FIRST SUBJECT) WHICH CAUSED THE HESSIAN '/
+     4' ERROR. SO IN THIS CASE, YOU MIGHT ALSO WANT TO EXAMINE THE'/
+     5' DATA IN THIS SUBJECT TO VERIFY THEY ARE CORRECT.'//)
+        OPEN(42,FILE=ERRFIL)
+         WRITE(42,163)
+         WRITE(42,164) info
+        CLOSE(42)
+      return
+      endif
+      do j=1,nsub
+        sum=0.d0
+        do i=1,npoint
+          sum=sum+psi(j,i)*smu/y(i)
+        enddo
+        dw(j)=1.d0/w(j)-sum
+      enddo
+      call DPOTRS( 'L', nsub, 1, hess, MAXSUBem, dw, nsub, INFO )
+      do i=1,npoint
+        sum=0.
+        do j=1,nsub
+          sum=sum+psi(j,i)*dw(j)
+        enddo
+        dy(i)=-sum
+        dx(i)=smu/y(i)-x(i)-dy(i)*x(i)/y(i)
+      enddo
+      alfpri=-.5
+      do i=1,npoint
+        if(dx(i)/x(i).le.alfpri) alfpri=dx(i)/x(i)
+      enddo
+      alfpri=-1.d0/alfpri
+      alfpri=min(1.d0,0.99995*alfpri)
+      alfdual=-0.5d0
+      do i=1,npoint
+        if(dy(i)/y(i).le.alfdual) alfdual=dy(i)/y(i)
+      enddo
+      alfdual=-1.d0/alfdual
+      alfdual=min(1.d0,0.99995*alfdual)
+      mu=0.d0
+      do i=1,npoint
+        x(i)=x(i)+alfpri*dx(i)
+        y(i)=y(i)+alfdual*dy(i)
+        mu=mu+x(i)*y(i)
+      enddo
+      mu=mu/npoint
+      do j=1,nsub
+        sum=0.d0
+        do i=1,npoint
+          sum=sum+psi(j,i)*x(i)
+        enddo
+        Ptx(j)=sum
+      enddo
+      do j=1,nsub
+        w(j)=w(j)+alfdual*dw(j)
+      enddo
+      rmax=0.
+      do j=1,nsub
+        rtest=1.d0-w(j)*Ptx(j)
+        if(dabs(rtest).gt.rmax) rmax=dabs(rtest)
+      enddo
+      sumlogw=0.d0
+      sumlgPtx=0.d0
+      do j=1,nsub
+        sumlogw=sumlogw+dlog(w(j))
+        sumlgPtx=sumlgPtx+dlog(Ptx(j))
+      enddo
+      gap = dabs(sumlogw+sumlgPtx)/(1.d0+dabs(sumlgPtx))
+      if(mu.lt.eps.and.rmax.gt.eps) then
+        sig=1.d0
+      else
+        c2=1.d2
+        term1=(1.d0-alfpri)**2
+        term2=(1.d0-alfdual)**2
+        term3=(rmax-mu)/(rmax+c2*mu)
+        term=max(term1,term2)
+        term=max(term,term3)
+        sig=min(0.3d0,term)
+      endif
+      sumx=0.d0
+      do i=1,npoint
+        sumx=sumx+x(i)
+      enddo
+      fobj=0.
+      do j=1,nsub
+        fobj=fobj+dlog(Ptx(j)/sumx)
+      enddo
+      go to 100
+9000  continue
+      sumx=0.
+      do i=1,npoint
+      sumx=sumx+x(i)
+      enddo
+      do i=1,npoint
+      x(i)=x(i)/sumx
+      enddo
+      if(ijob.eq.0) return
+      isum=0
+      xlim=0.
+      do i=1,npoint
+      if(x(i).gt.xlim) xlim=x(i)
+      enddo
+      xlim=xlim*1.d-3
+      isum = 0
+      do i=1,npoint
+      if(x(i).gt.xlim) then
+        isum = isum + 1
+        list(isum) = i
+        do j=1,nsub
+        psi(j,isum) = psi(j,i)
+        enddo
+      do j=1,nvar
+      theta(isum,j)=theta(i,j)
+      enddo
+      x(isum)=x(i)
+      endif
+      enddo
+      job=1
+      do k=1,npoint
+      ipivot(k)=0
+      enddo
+      do i=1,isum
+      do j=1,nsub
+      psi(j,i+isum)=psi(j,i)
+      enddo
+      enddo
+      do i=1,isum
+      do j=1,nsub
+      psi(j,i) = psi(j,i)/psisum(j)
+      enddo
+      enddo
+      call dqrdc(psi,ldpsi,nsub,isum,y,ipivot,dy,job)
+      keep = 0
+      limloop = nsub
+      if(isum.lt.nsub) limloop = isum
+      do i=1,limloop
+      test=dnrm2(i,psi(1,i),1)
+      if(dabs(psi(i,i)/test).ge.1.d-8) keep=keep+1
+      enddo
+      if(isum.gt.1) then
+      do i=1,keep-1
+      do j=i,keep
+      if(ipivot(i)*ipivot(j).ne.0.and.ipivot(i).gt.ipivot(j)) then
+         itemp=ipivot(i)
+         ipivot(i)=ipivot(j)
+         ipivot(j)=itemp
+      endif
+      enddo
+      enddo
+      endif
+      do i=1,isum
+      do j=1,nsub
+      psi(j,i)=psi(j,i+isum)
+      enddo
+      enddo
+      do k=1,npoint
+      dx(k)=0
+      enddo
+      sumkeep = 0.
+      do k=1,keep
+      j=ipivot(k)
+      if(j.ne.0) then
+         do jj=1,nsub
+         psi(jj,k)=psi(jj,j)
+         enddo
+      do jvar=1,nvar
+      theta(k,jvar) = theta(j,jvar)
+      enddo
+      endif
+      if(j.gt.0) dx(list(j))=1.
+      if(j.gt.0) sumkeep = sumkeep + x(list(j))
+      if(j.gt.0) w(k)=x(list(j))
+      enddo
+      return
+      end
+      subroutine dpoco(a,lda,n,rcond,z,info)
+      integer lda,n,info
+      double precision a(lda,1),z(1)
+      double precision rcond
+      double precision ddot,ek,t,wk,wkm
+      double precision anorm,s,dasum,sm,ynorm
+      integer i,j,jm1,k,kb,kp1
+      do 30 j = 1, n
+         z(j) = dasum(j,a(1,j),1)
+         jm1 = j - 1
+         if (jm1 .lt. 1) go to 20
+         do 10 i = 1, jm1
+            z(i) = z(i) + dabs(a(i,j))
+   10    continue
+   20    continue
+   30 continue
+      anorm = 0.0d0
+      do 40 j = 1, n
+         anorm = dmax1(anorm,z(j))
+   40 continue
+      call dpofa(a,lda,n,info)
+      if (info .ne. 0) go to 180
+         ek = 1.0d0
+         do 50 j = 1, n
+            z(j) = 0.0d0
+   50    continue
+         do 110 k = 1, n
+            if (z(k) .ne. 0.0d0) ek = dsign(ek,-z(k))
+            if (dabs(ek-z(k)) .le. a(k,k)) go to 60
+               s = a(k,k)/dabs(ek-z(k))
+               call dscal(n,s,z,1)
+               ek = s*ek
+   60       continue
+            wk = ek - z(k)
+            wkm = -ek - z(k)
+            s = dabs(wk)
+            sm = dabs(wkm)
+            wk = wk/a(k,k)
+            wkm = wkm/a(k,k)
+            kp1 = k + 1
+            if (kp1 .gt. n) go to 100
+               do 70 j = kp1, n
+                  sm = sm + dabs(z(j)+wkm*a(k,j))
+                  z(j) = z(j) + wk*a(k,j)
+                  s = s + dabs(z(j))
+   70          continue
+               if (s .ge. sm) go to 90
+                  t = wkm - wk
+                  wk = wkm
+                  do 80 j = kp1, n
+                     z(j) = z(j) + t*a(k,j)
+   80             continue
+   90          continue
+  100       continue
+            z(k) = wk
+  110    continue
+         s = 1.0d0/dasum(n,z,1)
+         call dscal(n,s,z,1)
+         do 130 kb = 1, n
+            k = n + 1 - kb
+            if (dabs(z(k)) .le. a(k,k)) go to 120
+               s = a(k,k)/dabs(z(k))
+               call dscal(n,s,z,1)
+  120       continue
+            z(k) = z(k)/a(k,k)
+            t = -z(k)
+            call daxpy(k-1,t,a(1,k),1,z(1),1)
+  130    continue
+         s = 1.0d0/dasum(n,z,1)
+         call dscal(n,s,z,1)
+         ynorm = 1.0d0
+         do 150 k = 1, n
+            z(k) = z(k) - ddot(k-1,a(1,k),1,z(1),1)
+            if (dabs(z(k)) .le. a(k,k)) go to 140
+               s = a(k,k)/dabs(z(k))
+               call dscal(n,s,z,1)
+               ynorm = s*ynorm
+  140       continue
+            z(k) = z(k)/a(k,k)
+  150    continue
+         s = 1.0d0/dasum(n,z,1)
+         call dscal(n,s,z,1)
+         ynorm = s*ynorm
+         do 170 kb = 1, n
+            k = n + 1 - kb
+            if (dabs(z(k)) .le. a(k,k)) go to 160
+               s = a(k,k)/dabs(z(k))
+               call dscal(n,s,z,1)
+               ynorm = s*ynorm
+  160       continue
+            z(k) = z(k)/a(k,k)
+            t = -z(k)
+            call daxpy(k-1,t,a(1,k),1,z(1),1)
+  170    continue
+         s = 1.0d0/dasum(n,z,1)
+         call dscal(n,s,z,1)
+         ynorm = s*ynorm
+         if (anorm .ne. 0.0d0) rcond = ynorm/anorm
+         if (anorm .eq. 0.0d0) rcond = 0.0d0
+  180 continue
+      return
+      end
+      subroutine dpofa(a,lda,n,info)
+      integer lda,n,info
+      double precision a(lda,1)
+      double precision ddot,t
+      double precision s
+      integer j,jm1,k
+         do 30 j = 1, n
+            info = j
+            s = 0.0d0
+            jm1 = j - 1
+            if (jm1 .lt. 1) go to 20
+            do 10 k = 1, jm1
+               t = a(k,j) - ddot(k-1,a(1,k),1,a(1,j),1)
+               t = t/a(k,k)
+               a(k,j) = t
+               s = s + t*t
+   10       continue
+   20       continue
+            s = a(j,j) - s
+            if (s .le. 0.0d0) go to 40
+            a(j,j) = dsqrt(s)
+   30    continue
+         info = 0
+   40 continue
+      return
+      end
+      subroutine dposl(a,lda,n,b)
+      integer lda,n
+      double precision a(lda,1),b(1)
+      double precision ddot,t
+      integer k,kb
+      do 10 k = 1, n
+         t = ddot(k-1,a(1,k),1,b(1),1)
+         b(k) = (b(k) - t)/a(k,k)
+   10 continue
+      do 20 kb = 1, n
+         k = n + 1 - kb
+         b(k) = b(k)/a(k,k)
+         t = -b(k)
+         call daxpy(k-1,t,a(1,k),1,b(1),1)
+   20 continue
+      return
+      end
+      subroutine dsifa(a,lda,n,kpvt,info)
+      integer lda,n,kpvt(1),info
+      double precision a(lda,1)
+      double precision ak,akm1,bk,bkm1,denom,mulk,mulkm1,t
+      double precision absakk,alpha,colmax,rowmax
+      integer imax,imaxp1,j,jj,jmax,k,km1,km2,kstep,idamax
+      logical swap
+      alpha = (1.0d0 + dsqrt(17.0d0))/8.0d0
+      info = 0
+      k = n
+   10 continue
+         if (k .eq. 0) go to 200
+         if (k .gt. 1) go to 20
+            kpvt(1) = 1
+            if (a(1,1) .eq. 0.0d0) info = 1
+            go to 200
+   20    continue
+         km1 = k - 1
+         absakk = dabs(a(k,k))
+         imax = idamax(k-1,a(1,k),1)
+         colmax = dabs(a(imax,k))
+         if (absakk .lt. alpha*colmax) go to 30
+            kstep = 1
+            swap = .false.
+         go to 90
+   30    continue
+            rowmax = 0.0d0
+            imaxp1 = imax + 1
+            do 40 j = imaxp1, k
+               rowmax = dmax1(rowmax,dabs(a(imax,j)))
+   40       continue
+            if (imax .eq. 1) go to 50
+               jmax = idamax(imax-1,a(1,imax),1)
+               rowmax = dmax1(rowmax,dabs(a(jmax,imax)))
+   50       continue
+            if (dabs(a(imax,imax)) .lt. alpha*rowmax) go to 60
+               kstep = 1
+               swap = .true.
+            go to 80
+   60       continue
+            if (absakk .lt. alpha*colmax*(colmax/rowmax)) go to 70
+               kstep = 1
+               swap = .false.
+            go to 80
+   70       continue
+               kstep = 2
+               swap = imax .ne. km1
+   80       continue
+   90    continue
+         if (dmax1(absakk,colmax) .ne. 0.0d0) go to 100
+            kpvt(k) = k
+            info = k
+         go to 190
+  100    continue
+         if (kstep .eq. 2) go to 140
+            if (.not.swap) go to 120
+               call dswap(imax,a(1,imax),1,a(1,k),1)
+               do 110 jj = imax, k
+                  j = k + imax - jj
+                  t = a(j,k)
+                  a(j,k) = a(imax,j)
+                  a(imax,j) = t
+  110          continue
+  120       continue
+            do 130 jj = 1, km1
+               j = k - jj
+               mulk = -a(j,k)/a(k,k)
+               t = mulk
+               call daxpy(j,t,a(1,k),1,a(1,j),1)
+               a(j,k) = mulk
+  130       continue
+            kpvt(k) = k
+            if (swap) kpvt(k) = imax
+         go to 190
+  140    continue
+            if (.not.swap) go to 160
+               call dswap(imax,a(1,imax),1,a(1,k-1),1)
+               do 150 jj = imax, km1
+                  j = km1 + imax - jj
+                  t = a(j,k-1)
+                  a(j,k-1) = a(imax,j)
+                  a(imax,j) = t
+  150          continue
+               t = a(k-1,k)
+               a(k-1,k) = a(imax,k)
+               a(imax,k) = t
+  160       continue
+            km2 = k - 2
+            if (km2 .eq. 0) go to 180
+               ak = a(k,k)/a(k-1,k)
+               akm1 = a(k-1,k-1)/a(k-1,k)
+               denom = 1.0d0 - ak*akm1
+               do 170 jj = 1, km2
+                  j = km1 - jj
+                  bk = a(j,k)/a(k-1,k)
+                  bkm1 = a(j,k-1)/a(k-1,k)
+                  mulk = (akm1*bk - bkm1)/denom
+                  mulkm1 = (ak*bkm1 - bk)/denom
+                  t = mulk
+                  call daxpy(j,t,a(1,k),1,a(1,j),1)
+                  t = mulkm1
+                  call daxpy(j,t,a(1,k-1),1,a(1,j),1)
+                  a(j,k) = mulk
+                  a(j,k-1) = mulkm1
+  170          continue
+  180       continue
+            kpvt(k) = 1 - k
+            if (swap) kpvt(k) = -imax
+            kpvt(k-1) = kpvt(k)
+  190    continue
+         k = k - kstep
+      go to 10
+  200 continue
+      return
+      end
+      subroutine dsisl(a,lda,n,kpvt,b)
+      integer lda,n,kpvt(1)
+      double precision a(lda,1),b(1)
+      double precision ak,akm1,bk,bkm1,ddot,denom,temp
+      integer k,kp
+      k = n
+   10 if (k .eq. 0) go to 80
+         if (kpvt(k) .lt. 0) go to 40
+            if (k .eq. 1) go to 30
+               kp = kpvt(k)
+               if (kp .eq. k) go to 20
+                  temp = b(k)
+                  b(k) = b(kp)
+                  b(kp) = temp
+   20          continue
+               call daxpy(k-1,b(k),a(1,k),1,b(1),1)
+   30       continue
+            b(k) = b(k)/a(k,k)
+            k = k - 1
+         go to 70
+   40    continue
+            if (k .eq. 2) go to 60
+               kp = iabs(kpvt(k))
+               if (kp .eq. k - 1) go to 50
+                  temp = b(k-1)
+                  b(k-1) = b(kp)
+                  b(kp) = temp
+   50          continue
+               call daxpy(k-2,b(k),a(1,k),1,b(1),1)
+               call daxpy(k-2,b(k-1),a(1,k-1),1,b(1),1)
+   60       continue
+            ak = a(k,k)/a(k-1,k)
+            akm1 = a(k-1,k-1)/a(k-1,k)
+            bk = b(k)/a(k-1,k)
+            bkm1 = b(k-1)/a(k-1,k)
+            denom = ak*akm1 - 1.0d0
+            b(k) = (akm1*bk - bkm1)/denom
+            b(k-1) = (ak*bkm1 - bk)/denom
+            k = k - 2
+   70    continue
+      go to 10
+   80 continue
+      k = 1
+   90 if (k .gt. n) go to 160
+         if (kpvt(k) .lt. 0) go to 120
+            if (k .eq. 1) go to 110
+               b(k) = b(k) + ddot(k-1,a(1,k),1,b(1),1)
+               kp = kpvt(k)
+               if (kp .eq. k) go to 100
+                  temp = b(k)
+                  b(k) = b(kp)
+                  b(kp) = temp
+  100          continue
+  110       continue
+            k = k + 1
+         go to 150
+  120    continue
+            if (k .eq. 1) go to 140
+               b(k) = b(k) + ddot(k-1,a(1,k),1,b(1),1)
+               b(k+1) = b(k+1) + ddot(k-1,a(1,k+1),1,b(1),1)
+               kp = iabs(kpvt(k))
+               if (kp .eq. k) go to 130
+                  temp = b(k)
+                  b(k) = b(kp)
+                  b(kp) = temp
+  130          continue
+  140       continue
+            k = k + 2
+  150    continue
+      go to 90
+  160 continue
+      return
+      end
+      subroutine dqrdc(x,ldx,n,p,qraux,jpvt,work,job)
+      integer ldx,n,p,job
+      integer jpvt(1)
+      double precision x(ldx,1),qraux(1),work(1)
+      integer j,jp,l,lp1,lup,maxj,pl,pu
+      double precision maxnrm,dnrm2,tt
+      double precision ddot,nrmxl,t
+      logical negj,swapj
+      pl = 1
+      pu = 0
+      if (job .eq. 0) go to 60
+         do 20 j = 1, p
+            swapj = jpvt(j) .gt. 0
+            negj = jpvt(j) .lt. 0
+            jpvt(j) = j
+            if (negj) jpvt(j) = -j
+            if (.not.swapj) go to 10
+               if (j .ne. pl) call dswap(n,x(1,pl),1,x(1,j),1)
+               jpvt(j) = jpvt(pl)
+               jpvt(pl) = j
+               pl = pl + 1
+   10       continue
+   20    continue
+         pu = p
+         do 50 jj = 1, p
+            j = p - jj + 1
+            if (jpvt(j) .ge. 0) go to 40
+               jpvt(j) = -jpvt(j)
+               if (j .eq. pu) go to 30
+                  call dswap(n,x(1,pu),1,x(1,j),1)
+                  jp = jpvt(pu)
+                  jpvt(pu) = jpvt(j)
+                  jpvt(j) = jp
+   30          continue
+               pu = pu - 1
+   40       continue
+   50    continue
+   60 continue
+      if (pu .lt. pl) go to 80
+      do 70 j = pl, pu
+         qraux(j) = dnrm2(n,x(1,j),1)
+         work(j) = qraux(j)
+   70 continue
+   80 continue
+      lup = min0(n,p)
+      do 200 l = 1, lup
+         if (l .lt. pl .or. l .ge. pu) go to 120
+            maxnrm = 0.0d0
+            maxj = l
+            do 100 j = l, pu
+               if (qraux(j) .le. maxnrm) go to 90
+                  maxnrm = qraux(j)
+                  maxj = j
+   90          continue
+  100       continue
+            if (maxj .eq. l) go to 110
+               call dswap(n,x(1,l),1,x(1,maxj),1)
+               qraux(maxj) = qraux(l)
+               work(maxj) = work(l)
+               jp = jpvt(maxj)
+               jpvt(maxj) = jpvt(l)
+               jpvt(l) = jp
+  110       continue
+  120    continue
+         qraux(l) = 0.0d0
+         if (l .eq. n) go to 190
+            nrmxl = dnrm2(n-l+1,x(l,l),1)
+            if (nrmxl .eq. 0.0d0) go to 180
+               if (x(l,l) .ne. 0.0d0) nrmxl = dsign(nrmxl,x(l,l))
+               call dscal(n-l+1,1.0d0/nrmxl,x(l,l),1)
+               x(l,l) = 1.0d0 + x(l,l)
+               lp1 = l + 1
+               if (p .lt. lp1) go to 170
+               do 160 j = lp1, p
+                  t = -ddot(n-l+1,x(l,l),1,x(l,j),1)/x(l,l)
+                  call daxpy(n-l+1,t,x(l,l),1,x(l,j),1)
+                  if (j .lt. pl .or. j .gt. pu) go to 150
+                  if (qraux(j) .eq. 0.0d0) go to 150
+                     tt = 1.0d0 - (dabs(x(l,j))/qraux(j))**2
+                     tt = dmax1(tt,0.0d0)
+                     t = tt
+                     tt = 1.0d0 + 0.05d0*tt*(qraux(j)/work(j))**2
+                     if (tt .eq. 1.0d0) go to 130
+                        qraux(j) = qraux(j)*dsqrt(t)
+                     go to 140
+  130                continue
+                        qraux(j) = dnrm2(n-l,x(l+1,j),1)
+                        work(j) = qraux(j)
+  140                continue
+  150             continue
+  160          continue
+  170          continue
+               qraux(l) = x(l,l)
+               x(l,l) = -nrmxl
+  180       continue
+  190    continue
+  200 continue
+      return
+      end
+*> \brief \b DPOTRF
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DPOTRF + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dpotrf.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dpotrf.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dpotrf.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DPOTRF( UPLO, N, A, LDA, INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER          UPLO
+*       INTEGER            INFO, LDA, N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION   A( LDA, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DPOTRF computes the Cholesky factorization of a real symmetric
+*> positive definite matrix A.
+*>
+*> The factorization has the form
+*>    A = U**T * U,  if UPLO = 'U', or
+*>    A = L  * L**T,  if UPLO = 'L',
+*> where U is an upper triangular matrix and L is lower triangular.
+*>
+*> This is the block version of the algorithm, calling Level 3 BLAS.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] UPLO
+*> \verbatim
+*>          UPLO is CHARACTER*1
+*>          = 'U':  Upper triangle of A is stored;
+*>          = 'L':  Lower triangle of A is stored.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The order of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+*>          N-by-N upper triangular part of A contains the upper
+*>          triangular part of the matrix A, and the strictly lower
+*>          triangular part of A is not referenced.  If UPLO = 'L', the
+*>          leading N-by-N lower triangular part of A contains the lower
+*>          triangular part of the matrix A, and the strictly upper
+*>          triangular part of A is not referenced.
+*>
+*>          On exit, if INFO = 0, the factor U or L from the Cholesky
+*>          factorization A = U**T*U or A = L*L**T.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,N).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0:  successful exit
+*>          < 0:  if INFO = -i, the i-th argument had an illegal value
+*>          > 0:  if INFO = i, the leading minor of order i is not
+*>                positive definite, and the factorization could not be
+*>                completed.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doublePOcomputational
+*
+*  =====================================================================
+      SUBROUTINE DPOTRF( UPLO, N, A, LDA, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, LDA, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE
+      PARAMETER          ( ONE = 1.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+      INTEGER            J, JB, NB
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      INTEGER            ILAENV
+      EXTERNAL           LSAME, ILAENV
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGEMM, DPOTRF2, DSYRK, DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, MIN
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DPOTRF', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+*     Determine the block size for this environment.
+*
+      NB = ILAENV( 1, 'DPOTRF', UPLO, N, -1, -1, -1 )
+      IF( NB.LE.1 .OR. NB.GE.N ) THEN
+*
+*        Use unblocked code.
+*
+         CALL DPOTRF2( UPLO, N, A, LDA, INFO )
+      ELSE
+*
+*        Use blocked code.
+*
+         IF( UPPER ) THEN
+*
+*           Compute the Cholesky factorization A = U**T*U.
+*
+            DO 10 J = 1, N, NB
+*
+*              Update and factorize the current diagonal block and test
+*              for non-positive-definiteness.
+*
+               JB = MIN( NB, N-J+1 )
+               CALL DSYRK( 'Upper', 'Transpose', JB, J-1, -ONE,
+     $                     A( 1, J ), LDA, ONE, A( J, J ), LDA )
+               CALL DPOTRF2( 'Upper', JB, A( J, J ), LDA, INFO )
+               IF( INFO.NE.0 )
+     $            GO TO 30
+               IF( J+JB.LE.N ) THEN
+*
+*                 Compute the current block row.
+*
+                  CALL DGEMM( 'Transpose', 'No transpose', JB, N-J-JB+1,
+     $                        J-1, -ONE, A( 1, J ), LDA, A( 1, J+JB ),
+     $                        LDA, ONE, A( J, J+JB ), LDA )
+                  CALL DTRSM( 'Left', 'Upper', 'Transpose', 'Non-unit',
+     $                        JB, N-J-JB+1, ONE, A( J, J ), LDA,
+     $                        A( J, J+JB ), LDA )
+               END IF
+   10       CONTINUE
+*
+         ELSE
+*
+*           Compute the Cholesky factorization A = L*L**T.
+*
+            DO 20 J = 1, N, NB
+*
+*              Update and factorize the current diagonal block and test
+*              for non-positive-definiteness.
+*
+               JB = MIN( NB, N-J+1 )
+               CALL DSYRK( 'Lower', 'No transpose', JB, J-1, -ONE,
+     $                     A( J, 1 ), LDA, ONE, A( J, J ), LDA )
+               CALL DPOTRF2( 'Lower', JB, A( J, J ), LDA, INFO )
+               IF( INFO.NE.0 )
+     $            GO TO 30
+               IF( J+JB.LE.N ) THEN
+*
+*                 Compute the current block column.
+*
+                  CALL DGEMM( 'No transpose', 'Transpose', N-J-JB+1, JB,
+     $                        J-1, -ONE, A( J+JB, 1 ), LDA, A( J, 1 ),
+     $                        LDA, ONE, A( J+JB, J ), LDA )
+                  CALL DTRSM( 'Right', 'Lower', 'Transpose', 'Non-unit',
+     $                        N-J-JB+1, JB, ONE, A( J, J ), LDA,
+     $                        A( J+JB, J ), LDA )
+               END IF
+   20       CONTINUE
+         END IF
+      END IF
+      GO TO 40
+*
+   30 CONTINUE
+      INFO = INFO + J - 1
+*
+   40 CONTINUE
+      RETURN
+*
+*     End of DPOTRF
+*
+      END
+*> \brief \b DPOTRF2
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       RECURSIVE SUBROUTINE DPOTRF2( UPLO, N, A, LDA, INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER          UPLO
+*       INTEGER            INFO, LDA, N
+*       ..
+*       .. Array Arguments ..
+*       REAL               A( LDA, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DPOTRF2 computes the Cholesky factorization of a real symmetric
+*> positive definite matrix A using the recursive algorithm.
+*>
+*> The factorization has the form
+*>    A = U**T * U,  if UPLO = 'U', or
+*>    A = L  * L**T,  if UPLO = 'L',
+*> where U is an upper triangular matrix and L is lower triangular.
+*>
+*> This is the recursive version of the algorithm. It divides
+*> the matrix into four submatrices:
+*>
+*>        [  A11 | A12  ]  where A11 is n1 by n1 and A22 is n2 by n2
+*>    A = [ -----|----- ]  with n1 = n/2
+*>        [  A21 | A22  ]       n2 = n-n1
+*>
+*> The subroutine calls itself to factor A11. Update and scale A21
+*> or A12, update A22 then calls itself to factor A22.
+*>
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] UPLO
+*> \verbatim
+*>          UPLO is CHARACTER*1
+*>          = 'U':  Upper triangle of A is stored;
+*>          = 'L':  Lower triangle of A is stored.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The order of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+*>          N-by-N upper triangular part of A contains the upper
+*>          triangular part of the matrix A, and the strictly lower
+*>          triangular part of A is not referenced.  If UPLO = 'L', the
+*>          leading N-by-N lower triangular part of A contains the lower
+*>          triangular part of the matrix A, and the strictly upper
+*>          triangular part of A is not referenced.
+*>
+*>          On exit, if INFO = 0, the factor U or L from the Cholesky
+*>          factorization A = U**T*U or A = L*L**T.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,N).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0:  successful exit
+*>          < 0:  if INFO = -i, the i-th argument had an illegal value
+*>          > 0:  if INFO = i, the leading minor of order i is not
+*>                positive definite, and the factorization could not be
+*>                completed.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doublePOcomputational
+*
+*  =====================================================================
+      RECURSIVE SUBROUTINE DPOTRF2( UPLO, N, A, LDA, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, LDA, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+      INTEGER            N1, N2, IINFO
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME, DISNAN
+      EXTERNAL           LSAME, DISNAN
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DSYRK, DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, SQRT
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DPOTRF2', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+*     N=1 case
+*
+      IF( N.EQ.1 ) THEN
+*
+*        Test for non-positive-definiteness
+*
+         IF( A( 1, 1 ).LE.ZERO.OR.DISNAN( A( 1, 1 ) ) ) THEN
+            INFO = 1
+            RETURN
+         END IF
+*
+*        Factor
+*
+         A( 1, 1 ) = SQRT( A( 1, 1 ) )
+*
+*     Use recursive code
+*
+      ELSE
+         N1 = N/2
+         N2 = N-N1
+*
+*        Factor A11
+*
+         CALL DPOTRF2( UPLO, N1, A( 1, 1 ), LDA, IINFO )
+         IF ( IINFO.NE.0 ) THEN
+            INFO = IINFO
+            RETURN
+         END IF
+*
+*        Compute the Cholesky factorization A = U**T*U
+*
+         IF( UPPER ) THEN
+*
+*           Update and scale A12
+*
+            CALL DTRSM( 'L', 'U', 'T', 'N', N1, N2, ONE,
+     $                  A( 1, 1 ), LDA, A( 1, N1+1 ), LDA )
+*
+*           Update and factor A22
+*
+            CALL DSYRK( UPLO, 'T', N2, N1, -ONE, A( 1, N1+1 ), LDA,
+     $                  ONE, A( N1+1, N1+1 ), LDA )
+            CALL DPOTRF2( UPLO, N2, A( N1+1, N1+1 ), LDA, IINFO )
+            IF ( IINFO.NE.0 ) THEN
+               INFO = IINFO + N1
+               RETURN
+            END IF
+*
+*        Compute the Cholesky factorization A = L*L**T
+*
+         ELSE
+*
+*           Update and scale A21
+*
+            CALL DTRSM( 'R', 'L', 'T', 'N', N2, N1, ONE,
+     $                  A( 1, 1 ), LDA, A( N1+1, 1 ), LDA )
+*
+*           Update and factor A22
+*
+            CALL DSYRK( UPLO, 'N', N2, N1, -ONE, A( N1+1, 1 ), LDA,
+     $                  ONE, A( N1+1, N1+1 ), LDA )
+            CALL DPOTRF2( UPLO, N2, A( N1+1, N1+1 ), LDA, IINFO )
+            IF ( IINFO.NE.0 ) THEN
+               INFO = IINFO + N1
+               RETURN
+            END IF
+         END IF
+      END IF
+      RETURN
+*
+*     End of DPOTRF2
+*
+      END
+*> \brief \b DISNAN tests input for NaN.
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DISNAN + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/disnan.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/disnan.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/disnan.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       LOGICAL FUNCTION DISNAN( DIN )
+*
+*       .. Scalar Arguments ..
+*       DOUBLE PRECISION, INTENT(IN) :: DIN
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DISNAN returns .TRUE. if its argument is NaN, and .FALSE.
+*> otherwise.  To be replaced by the Fortran 2003 intrinsic in the
+*> future.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] DIN
+*> \verbatim
+*>          DIN is DOUBLE PRECISION
+*>          Input to test for NaN.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup OTHERauxiliary
+*
+*  =====================================================================
+      LOGICAL FUNCTION DISNAN( DIN )
+*
+*  -- LAPACK auxiliary routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION, INTENT(IN) :: DIN
+*     ..
+*
+*  =====================================================================
+*
+*  .. External Functions ..
+      LOGICAL DLAISNAN
+      EXTERNAL DLAISNAN
+*  ..
+*  .. Executable Statements ..
+      DISNAN = DLAISNAN(DIN,DIN)
+      RETURN
+      END
+*> \brief \b DLAISNAN tests input for NaN by comparing two arguments for inequality.
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DLAISNAN + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dlaisnan.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dlaisnan.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dlaisnan.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       LOGICAL FUNCTION DLAISNAN( DIN1, DIN2 )
+*
+*       .. Scalar Arguments ..
+*       DOUBLE PRECISION, INTENT(IN) :: DIN1, DIN2
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> This routine is not for general use.  It exists solely to avoid
+*> over-optimization in DISNAN.
+*>
+*> DLAISNAN checks for NaNs by comparing its two arguments for
+*> inequality.  NaN is the only floating-point value where NaN != NaN
+*> returns .TRUE.  To check for NaNs, pass the same variable as both
+*> arguments.
+*>
+*> A compiler must assume that the two arguments are
+*> not the same variable, and the test will not be optimized away.
+*> Interprocedural or whole-program optimization may delete this
+*> test.  The ISNAN functions will be replaced by the correct
+*> Fortran 03 intrinsic once the intrinsic is widely available.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] DIN1
+*> \verbatim
+*>          DIN1 is DOUBLE PRECISION
+*> \endverbatim
+*>
+*> \param[in] DIN2
+*> \verbatim
+*>          DIN2 is DOUBLE PRECISION
+*>          Two numbers to compare for inequality.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup OTHERauxiliary
+*
+*  =====================================================================
+      LOGICAL FUNCTION DLAISNAN( DIN1, DIN2 )
+*
+*  -- LAPACK auxiliary routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION, INTENT(IN) :: DIN1, DIN2
+*     ..
+*
+*  =====================================================================
+*
+*  .. Executable Statements ..
+      DLAISNAN = (DIN1.NE.DIN2)
+      RETURN
+      END
+               
+*> \brief \b DPOTRS
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DPOTRS + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dpotrs.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dpotrs.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dpotrs.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DPOTRS( UPLO, N, NRHS, A, LDA, B, LDB, INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER          UPLO
+*       INTEGER            INFO, LDA, LDB, N, NRHS
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION   A( LDA, * ), B( LDB, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DPOTRS solves a system of linear equations A*X = B with a symmetric
+*> positive definite matrix A using the Cholesky factorization
+*> A = U**T*U or A = L*L**T computed by DPOTRF.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] UPLO
+*> \verbatim
+*>          UPLO is CHARACTER*1
+*>          = 'U':  Upper triangle of A is stored;
+*>          = 'L':  Lower triangle of A is stored.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The order of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in] NRHS
+*> \verbatim
+*>          NRHS is INTEGER
+*>          The number of right hand sides, i.e., the number of columns
+*>          of the matrix B.  NRHS >= 0.
+*> \endverbatim
+*>
+*> \param[in] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          The triangular factor U or L from the Cholesky factorization
+*>          A = U**T*U or A = L*L**T, as computed by DPOTRF.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,N).
+*> \endverbatim
+*>
+*> \param[in,out] B
+*> \verbatim
+*>          B is DOUBLE PRECISION array, dimension (LDB,NRHS)
+*>          On entry, the right hand side matrix B.
+*>          On exit, the solution matrix X.
+*> \endverbatim
+*>
+*> \param[in] LDB
+*> \verbatim
+*>          LDB is INTEGER
+*>          The leading dimension of the array B.  LDB >= max(1,N).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0:  successful exit
+*>          < 0:  if INFO = -i, the i-th argument had an illegal value
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doublePOcomputational
+*
+*  =====================================================================
+      SUBROUTINE DPOTRS( UPLO, N, NRHS, A, LDA, B, LDB, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, LDA, LDB, N, NRHS
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * ), B( LDB, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE
+      PARAMETER          ( ONE = 1.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      EXTERNAL           LSAME
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( NRHS.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -5
+      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
+         INFO = -7
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DPOTRS', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 .OR. NRHS.EQ.0 )
+     $   RETURN
+*
+      IF( UPPER ) THEN
+*
+*        Solve A*X = B where A = U**T *U.
+*
+*        Solve U**T *X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Upper', 'Transpose', 'Non-unit', N, NRHS,
+     $               ONE, A, LDA, B, LDB )
+*
+*        Solve U*X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Upper', 'No transpose', 'Non-unit', N,
+     $               NRHS, ONE, A, LDA, B, LDB )
+      ELSE
+*
+*        Solve A*X = B where A = L*L**T.
+*
+*        Solve L*X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Non-unit', N,
+     $               NRHS, ONE, A, LDA, B, LDB )
+*
+*        Solve L**T *X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Lower', 'Transpose', 'Non-unit', N, NRHS,
+     $               ONE, A, LDA, B, LDB )
+      END IF
+*
+      RETURN
+*
+*     End of DPOTRS
+*
+      END
+*> \brief \b DPOTF2 computes the Cholesky factorization of a symmetric/Hermitian positive definite matrix (unblocked algorithm).
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DPOTF2 + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dpotf2.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dpotf2.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dpotf2.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DPOTF2( UPLO, N, A, LDA, INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER          UPLO
+*       INTEGER            INFO, LDA, N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION   A( LDA, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DPOTF2 computes the Cholesky factorization of a real symmetric
+*> positive definite matrix A.
+*>
+*> The factorization has the form
+*>    A = U**T * U ,  if UPLO = 'U', or
+*>    A = L  * L**T,  if UPLO = 'L',
+*> where U is an upper triangular matrix and L is lower triangular.
+*>
+*> This is the unblocked version of the algorithm, calling Level 2 BLAS.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] UPLO
+*> \verbatim
+*>          UPLO is CHARACTER*1
+*>          Specifies whether the upper or lower triangular part of the
+*>          symmetric matrix A is stored.
+*>          = 'U':  Upper triangular
+*>          = 'L':  Lower triangular
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The order of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in,out] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+*>          n by n upper triangular part of A contains the upper
+*>          triangular part of the matrix A, and the strictly lower
+*>          triangular part of A is not referenced.  If UPLO = 'L', the
+*>          leading n by n lower triangular part of A contains the lower
+*>          triangular part of the matrix A, and the strictly upper
+*>          triangular part of A is not referenced.
+*>
+*>          On exit, if INFO = 0, the factor U or L from the Cholesky
+*>          factorization A = U**T *U  or A = L*L**T.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,N).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0: successful exit
+*>          < 0: if INFO = -k, the k-th argument had an illegal value
+*>          > 0: if INFO = k, the leading minor of order k is not
+*>               positive definite, and the factorization could not be
+*>               completed.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doublePOcomputational
+*
+*  =====================================================================
+      SUBROUTINE DPOTF2( UPLO, N, A, LDA, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          UPLO
+      INTEGER            INFO, LDA, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( LDA, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      PARAMETER          ( ONE = 1.0D+0, ZERO = 0.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            UPPER
+      INTEGER            J
+      DOUBLE PRECISION   AJJ
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME, DISNAN
+      DOUBLE PRECISION   DDOT
+      EXTERNAL           LSAME, DDOT, DISNAN
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DGEMV, DSCAL, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX, SQRT
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      UPPER = LSAME( UPLO, 'U' )
+      IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -4
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DPOTF2', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 )
+     $   RETURN
+*
+      IF( UPPER ) THEN
+*
+*        Compute the Cholesky factorization A = U**T *U.
+*
+         DO 10 J = 1, N
+*
+*           Compute U(J,J) and test for non-positive-definiteness.
+*
+            AJJ = A( J, J ) - DDOT( J-1, A( 1, J ), 1, A( 1, J ), 1 )
+            IF( AJJ.LE.ZERO.OR.DISNAN( AJJ ) ) THEN
+               A( J, J ) = AJJ
+               GO TO 30
+            END IF
+            AJJ = SQRT( AJJ )
+            A( J, J ) = AJJ
+*
+*           Compute elements J+1:N of row J.
+*
+            IF( J.LT.N ) THEN
+               CALL DGEMV( 'Transpose', J-1, N-J, -ONE, A( 1, J+1 ),
+     $                     LDA, A( 1, J ), 1, ONE, A( J, J+1 ), LDA )
+               CALL DSCAL( N-J, ONE / AJJ, A( J, J+1 ), LDA )
+            END IF
+   10    CONTINUE
+      ELSE
+*
+*        Compute the Cholesky factorization A = L*L**T.
+*
+         DO 20 J = 1, N
+*
+*           Compute L(J,J) and test for non-positive-definiteness.
+*
+            AJJ = A( J, J ) - DDOT( J-1, A( J, 1 ), LDA, A( J, 1 ),
+     $            LDA )
+            IF( AJJ.LE.ZERO.OR.DISNAN( AJJ ) ) THEN
+               A( J, J ) = AJJ
+               GO TO 30
+            END IF
+            AJJ = SQRT( AJJ )
+            A( J, J ) = AJJ
+*
+*           Compute elements J+1:N of column J.
+*
+            IF( J.LT.N ) THEN
+               CALL DGEMV( 'No transpose', N-J, J-1, -ONE, A( J+1, 1 ),
+     $                     LDA, A( J, 1 ), LDA, ONE, A( J+1, J ), 1 )
+               CALL DSCAL( N-J, ONE / AJJ, A( J+1, J ), 1 )
+            END IF
+   20    CONTINUE
+      END IF
+      GO TO 40
+*
+   30 CONTINUE
+      INFO = J
+*
+   40 CONTINUE
+      RETURN
+*
+*     End of DPOTF2
+*
+      END
+*> \brief \b LSAME
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       LOGICAL FUNCTION LSAME(CA,CB)
+*
+*       .. Scalar Arguments ..
+*       CHARACTER CA,CB
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> LSAME returns .TRUE. if CA is the same letter as CB regardless of
+*> case.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] CA
+*> \verbatim
+*>          CA is CHARACTER*1
+*> \endverbatim
+*>
+*> \param[in] CB
+*> \verbatim
+*>          CB is CHARACTER*1
+*>          CA and CB specify the single characters to be compared.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup aux_blas
+*
+*  =====================================================================
+      LOGICAL FUNCTION LSAME(CA,CB)
+*
+*  -- Reference BLAS level1 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER CA,CB
+*     ..
+*
+* =====================================================================
+*
+*     .. Intrinsic Functions ..
+      INTRINSIC ICHAR
+*     ..
+*     .. Local Scalars ..
+      INTEGER INTA,INTB,ZCODE
+*     ..
+*
+*     Test if the characters are equal
+*
+      LSAME = CA .EQ. CB
+      IF (LSAME) RETURN
+*
+*     Now test for equivalence if both characters are alphabetic.
+*
+      ZCODE = ICHAR('Z')
+*
+*     Use 'Z' rather than 'A' so that ASCII can be detected on Prime
+*     machines, on which ICHAR returns a value with bit 8 set.
+*     ICHAR('A') on Prime machines returns 193 which is the same as
+*     ICHAR('A') on an EBCDIC machine.
+*
+      INTA = ICHAR(CA)
+      INTB = ICHAR(CB)
+*
+      IF (ZCODE.EQ.90 .OR. ZCODE.EQ.122) THEN
+*
+*        ASCII is assumed - ZCODE is the ASCII code of either lower or
+*        upper case 'Z'.
+*
+          IF (INTA.GE.97 .AND. INTA.LE.122) INTA = INTA - 32
+          IF (INTB.GE.97 .AND. INTB.LE.122) INTB = INTB - 32
+*
+      ELSE IF (ZCODE.EQ.233 .OR. ZCODE.EQ.169) THEN
+*
+*        EBCDIC is assumed - ZCODE is the EBCDIC code of either lower or
+*        upper case 'Z'.
+*
+          IF (INTA.GE.129 .AND. INTA.LE.137 .OR.
+     +        INTA.GE.145 .AND. INTA.LE.153 .OR.
+     +        INTA.GE.162 .AND. INTA.LE.169) INTA = INTA + 64
+          IF (INTB.GE.129 .AND. INTB.LE.137 .OR.
+     +        INTB.GE.145 .AND. INTB.LE.153 .OR.
+     +        INTB.GE.162 .AND. INTB.LE.169) INTB = INTB + 64
+*
+      ELSE IF (ZCODE.EQ.218 .OR. ZCODE.EQ.250) THEN
+*
+*        ASCII is assumed, on Prime machines - ZCODE is the ASCII code
+*        plus 128 of either lower or upper case 'Z'.
+*
+          IF (INTA.GE.225 .AND. INTA.LE.250) INTA = INTA - 32
+          IF (INTB.GE.225 .AND. INTB.LE.250) INTB = INTB - 32
+      END IF
+      LSAME = INTA .EQ. INTB
+*
+*     RETURN
+*
+*     End of LSAME
+*
+      END
+*> \brief \b XERBLA
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE XERBLA( SRNAME, INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER*(*)      SRNAME
+*       INTEGER            INFO
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> XERBLA  is an error handler for the LAPACK routines.
+*> It is called by an LAPACK routine if an input parameter has an
+*> invalid value.  A message is printed and execution stops.
+*>
+*> Installers may consider modifying the STOP statement in order to
+*> call system-specific exception-handling facilities.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] SRNAME
+*> \verbatim
+*>          SRNAME is CHARACTER*(*)
+*>          The name of the routine which called XERBLA.
+*> \endverbatim
+*>
+*> \param[in] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          The position of the invalid parameter in the parameter list
+*>          of the calling routine.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup aux_blas
+*
+*  =====================================================================
+      SUBROUTINE XERBLA( SRNAME, INFO )
+*
+*  -- Reference BLAS level1 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER*(*)      SRNAME
+      INTEGER            INFO
+*     ..
+*
+* =====================================================================
+*
+*     .. Intrinsic Functions ..
+      INTRINSIC          LEN_TRIM
+*     ..
+*     .. Executable Statements ..
+*
+      WRITE( *, FMT = 9999 )SRNAME( 1:LEN_TRIM( SRNAME ) ), INFO
+*
+      STOP
+*
+ 9999 FORMAT( ' ** On entry to ', A, ' parameter number ', I2, ' had ',
+     $      'an illegal value' )
+*
+*     End of XERBLA
+*
+      END
+	SUBROUTINE GETIPATF(IFILE,NSUBTOT,NSUB,IPATVEC,IERRR,ERRFIL)
+	DIMENSION IPATVEC(9999)
+	CHARACTER READLINE*300,ERRFIL*20
+    3   FORMAT(A300)
+	NSUBB = 0
+	NUMCUR = 0
+ 4210	IF(IFILE .EQ. 23) READ(23,3,ERR=4200) READLINE
+	IF(IFILE .EQ. 25) READ(25,3,ERR=4200) READLINE
+	CALL GETNUMSF(1,READLINE,NSUBB,NSUBTOT,NUMCUR,ISTOP,IPATVEC)
+	IF(ISTOP .EQ. -1) GO TO 4200
+	IF(ISTOP .EQ. 1) GO TO 4210
+	IF(NSUB .EQ. NSUBB) THEN
+	 IERRR = 0
+	 RETURN
+	ENDIF
+	IF(NSUB .NE. NSUBB) THEN
+         WRITE(*,2)
+        OPEN(42,FILE=ERRFIL)
+         WRITE(42,2)
+        CLOSE(42)
+    2   FORMAT(//' THERE WAS AN ERROR IN THE READING OF PATIENT NOS.'/
+     1' TO BE USED FOR THIS ANALYSIS. IN PARTICULAR, THE NO. OF '/
+     2' SUBJECTS TO BE INCLUDED IN THE ANALYSIS, AS ENTERED IN THE'/
+     3' INSTRUCTION FILE, DOES NOT MATCH THE LIST OF SUBJECT NOS.'/
+     4' WHICH FOLLOW THAT NUMBER. PLEASE RERUN THE PC PREP PROGRAM'/
+     2' TO MAKE SURE THESE PATIENT NOS. ARE WRITTEN CORRECTLY INTO'/
+     3' THE INSTRUCTION FILE. ')
+	IERRR = -1
+	 RETURN
+	ENDIF
+ 4200   WRITE(*,1)
+        OPEN(42,FILE=ERRFIL)
+         WRITE(42,1)
+        CLOSE(42)
+    1   FORMAT(//' THERE WAS AN ERROR IN THE READING OF PATIENT NOS.'/
+     1' TO BE USED FOR THIS ANALYSIS. PLEASE RERUN THE PC PREP PROGRAM'/
+     2' TO MAKE SURE THESE PATIENT NOS. ARE WRITTEN CORRECTLY INTO'/
+     3' THE INSTRUCTION FILE. ')
+	IERRR = -1
+	RETURN
+	END
+	SUBROUTINE GETNUMSF(IINCLUDE,READLINE,NSUBB,NSUBTOT,NUMCUR,
+     1    ISTOP,IPATVECC)
+	DIMENSION IPATVECC(9999)
+	CHARACTER READLINE*300
+	ISTOP = 1
+	DO J = 1,70
+	 IF(READLINE(J:J) .NE. ' ') GO TO 10
+	END DO
+	IF(NSUBB .EQ. 0) WRITE(*,1)
+    1   FORMAT(/' THE INSTRUCTION FILE HAS AN IMPROPER BLANK LINE IN '/
+     1' THE PATIENT NUMBER SECTION. ')
+	ISTOP = -1
+	RETURN
+   10   CONTINUE
+	DO J = 1,70
+	 IF(READLINE(J:J) .NE. ' ') GO TO 20
+	END DO
+   20   ISTART = J
+	IF(READLINE(ISTART:ISTART) .NE. '0') GO TO 30
+	DO I = ISTART+1,70
+	 IF(READLINE(I:I) .NE. ' ') GO TO 30
+	END DO
+	IF(IINCLUDE .EQ. 1 .AND. NSUBB .EQ. 0) THEN
+	 WRITE(*,3)
+    3    FORMAT(/' THE INSTRUCTION FILE HAS AN IMPROPER LINE - WITH'/
+     1' JUST A "0" ON IT - IN THE PATIENT NUMBER SECTION.')
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	IF(IINCLUDE .EQ. 2 .OR. NSUBB .GT. 0) THEN
+	 ISTOP = 0
+	 RETURN
+	ENDIF
+   30   CONTINUE
+     	DO I = ISTART+1,70
+	 IF(READLINE(I:I) .EQ. ' ' .OR. READLINE(I:I) .EQ. ',' .OR.
+     1      READLINE(I:I) .EQ. '-') GO TO 40
+	END DO
+   40   IEND = I-1
+	CALL GETSUB(READLINE,ISTART,IEND,ISUB,IERROR)
+	IF(IERROR .EQ. -1) THEN
+	 WRITE(*,7)
+    7    FORMAT(/' THE INSTRUCTION FILE HAS AN IMPROPER LINE - WITH'/
+     1' AN INVALID CHARACTER ON IT - IN THE PATIENT NUMBER SECTION.')
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	IF(ISUB .LE. NUMCUR) THEN
+	 WRITE(*,4) ISUB,NUMCUR
+    4    FORMAT(/' THE INSTRUCTION FILE HAS AN IMPROPER LINE IN IT'/
+     1' IN THE PATIENT NUMBER SECTION.'//
+     2' IT HAS A SUBJECT NO. (',I4,' ) WHICH IS LESS THAN OR EQUAL TO '/
+     3' A PREVIOUSLY ENTERED SUBJECT NO. (',I4,').')
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	IF(ISUB .GT. NSUBTOT) THEN
+	 WRITE(*,6) ISUB,NSUBTOT
+    6    FORMAT(/' THE INSTRUCTION FILE HAS AN IMPROPER LINE IN IT'/
+     1' IN THE PATIENT NUMBER SECTION.'//
+     2' IT HAS A SUBJECT NO. (',I4,' ) WHICH IS GREATER THAN THE NO.'/
+     3' OF SUBJECTS IN YOUR DATA FILE (',I4,').')
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	DO I = IEND+1,70
+	 IF(READLINE(I:I) .NE. ' ') GO TO 50
+	END DO
+	NUMCUR = ISUB
+	NSUBB = NSUBB + 1
+	IPATVECC(NSUBB) = ISUB
+	RETURN
+   50   CONTINUE
+	IF(READLINE(I:I) .EQ. ',') THEN
+	 NUMCUR = ISUB
+ 	 NSUBB = NSUBB + 1
+	 IPATVECC(NSUBB) = ISUB
+	 DO J = I+1,70
+	  IF(READLINE(J:J) .NE. ' ') GO TO 60
+	 END DO
+	 RETURN
+   60    ISTART = J
+	 GO TO 30
+	ENDIF
+	INUM = 0
+	IF(READLINE(I:I) .EQ. '0') INUM = 1
+	IF(READLINE(I:I) .EQ. '1') INUM = 1
+	IF(READLINE(I:I) .EQ. '2') INUM = 1
+	IF(READLINE(I:I) .EQ. '3') INUM = 1
+	IF(READLINE(I:I) .EQ. '4') INUM = 1
+	IF(READLINE(I:I) .EQ. '5') INUM = 1
+	IF(READLINE(I:I) .EQ. '6') INUM = 1
+	IF(READLINE(I:I) .EQ. '7') INUM = 1
+	IF(READLINE(I:I) .EQ. '8') INUM = 1
+	IF(READLINE(I:I) .EQ. '9') INUM = 1
+	IF(INUM .EQ. 1) THEN
+	 NUMCUR = ISUB
+ 	 NSUBB = NSUBB + 1
+	 IPATVECC(NSUBB) = ISUB
+         ISTART = I
+	 GO TO 30
+	ENDIF
+	IF(READLINE(I:I) .EQ. '-') THEN
+	 NUMCUR1 = ISUB
+	 DO J = I+1,70
+	  IF(READLINE(J:J) .NE. ' ') GO TO 70
+	 END DO
+	 WRITE(*,8)
+    8    FORMAT(/' THE INSTRUCTION FILE HAS AN IMPROPER LINE IN IT'/
+     1' IN THE PATIENT NUMBER SECTION.'//
+     2' A LINE HAS BEEN ENDED WITH A DASH.')
+	 ISTOP = -1
+	 RETURN
+   70   ISTART = J
+     	DO K = ISTART+1,70
+	 IF(READLINE(K:K) .EQ. ' ' .OR. READLINE(K:K) .EQ. ',')
+     1    GO TO 80
+	END DO
+   80   IEND = K-1
+	CALL GETSUB(READLINE,ISTART,IEND,ISUB,IERROR)
+	IF(IERROR .EQ. -1) THEN
+	 WRITE(*,7)
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	IF(ISUB .LE. NUMCUR1) THEN
+	 WRITE(*,9)
+    9    FORMAT(/' THE INSTRUCTION FILE HAS AN IMPROPER LINE IN IT'/
+     1' IN THE PATIENT NUMBER SECTION.'//
+     2' IT HAS A RANGE OF SUBJECT NOS. WITH THE ENDING NO. LESS THAN '/
+     3' OR EQUAL TO THE BEGINNING NO.')
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	IF(ISUB .GT. NSUBTOT) THEN
+	 WRITE(*,6) ISUB,NSUBTOT
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	 NUMCUR = ISUB
+	 NN = NSUBB
+ 	 NSUBB = NSUBB + (NUMCUR - NUMCUR1) + 1
+	 NONEW = 0
+	 DO K = NN+1,NSUBB
+	  NONEW = NONEW + 1
+	  IPATVECC(K) = NUMCUR1 - 1 + NONEW
+	 END DO
+	 DO J = IEND+1,70
+	  IF(READLINE(J:J) .NE. ' ' .AND. READLINE(J:J) .NE. ',' )
+     1    GO TO 90
+	 END DO
+	 RETURN
+   90    ISTART = J
+	 GO TO 30
+	ENDIF
+	WRITE(*,7)
+	ISTOP = -1
+	RETURN
+	END
+	SUBROUTINE WRITEPT2(IFILE,NSUB,IPATVEC)
+	DIMENSION IPATVEC(9999)
+	NEXTIND = 0
+   50   NEXTIND = NEXTIND + 1
+	IF(NEXTIND .GT. NSUB) GO TO 100
+	IFIRST = IPATVEC(NEXTIND)
+	IF(NEXTIND .EQ. NSUB) THEN
+	 IF(IFILE .EQ. 25) WRITE(25,222) IFIRST
+	 IF(IFILE .EQ. 29) WRITE(29,222) IFIRST
+  222    FORMAT(1X,I5)
+	 GO TO 100
+	ENDIF
+	IF(IPATVEC(NEXTIND+1) .NE. IFIRST + 1) THEN
+	 IF(IFILE .EQ. 25) WRITE(25,222) IFIRST
+	 IF(IFILE .EQ. 29) WRITE(29,222) IFIRST
+	 GO TO 50
+	ENDIF
+	ILAST = IPATVEC(NEXTIND+1)
+	NEXT = NEXTIND+1
+	DO I = NEXTIND+2,NSUB
+	 IF(IPATVEC(I) .NE. ILAST + 1) GO TO 80
+	 ILAST = IPATVEC(I)
+	 NEXT = I
+	END DO
+   80	IF(IFILE .EQ. 25) WRITE(25,221) IFIRST,ILAST
+   	IF(IFILE .EQ. 29) WRITE(29,221) IFIRST,ILAST
+  221   FORMAT(1X,I5,'   - ',I5)
+	NEXTIND = NEXT
+	GO TO 50
+  100   RETURN
+	END
+	SUBROUTINE GETSUB(READLINE,ISTART,IEND,ISUB,IERROR)
+	CHARACTER READLINE*300
+    3   FORMAT(A300)
+	IERROR = 0
+  	ISIZE = IEND-ISTART
+	ISUB = 0
+	 DO K=ISTART,IEND
+	  IVAL = -9
+	  IF(READLINE(K:K) .EQ. '0') IVAL = 0
+	  IF(READLINE(K:K) .EQ. '1') IVAL = 1
+	  IF(READLINE(K:K) .EQ. '2') IVAL = 2
+	  IF(READLINE(K:K) .EQ. '3') IVAL = 3
+	  IF(READLINE(K:K) .EQ. '4') IVAL = 4
+	  IF(READLINE(K:K) .EQ. '5') IVAL = 5
+	  IF(READLINE(K:K) .EQ. '6') IVAL = 6
+	  IF(READLINE(K:K) .EQ. '7') IVAL = 7
+	  IF(READLINE(K:K) .EQ. '8') IVAL = 8
+	  IF(READLINE(K:K) .EQ. '9') IVAL = 9
+	  IF(IVAL .EQ. -9) THEN
+	   IERROR = -1
+	   RETURN
+	  ENDIF
+	  ISUB = ISUB + IVAL*10**ISIZE
+	  ISIZE = ISIZE-1
+	 END DO
+	RETURN
+	END
+      SUBROUTINE CALCTPRED(JSUB,IDELTA,NOBSER,NUMTSUB,TPRED,TPREDREL,
+     1   NOMAXTIMS,TEND,TBEGG)
+	IMPLICIT REAL*8(A-H,O-Z)
+      PARAMETER(MAXNUMEQ=7)
+      DIMENSION TPRED(71281),TEND(99),TIM(594),SIG(5000),RS(5000,34),
+     1  BS(5000,7),YOO(594,MAXNUMEQ),TBEGG(99),TPREDREL(71281)
+        COMMON/OBSER/ TIM,SIG,RS,YOO,BS
+        COMMON/CNST/ N,ND,NI,NUP,NUIC,NP
+      IDOSE = 1
+	NOMAXTIMS = 0
+	NUMTSUB = 0
+	INDEX = 0
+   50	TIMMAX = -1.D30
+   10 INDEX = INDEX + 1
+	IF(TIM(INDEX) .GT. TIMMAX) TIMMAX = TIM(INDEX)
+	IF(TIM(INDEX) .LE. 0.D0 .AND. INDEX .GT. 1) GO TO 20
+	IF(INDEX .EQ. NOBSER) GO TO 20
+	GO TO 10
+   20   CONTINUE
+      TBEG = 0.D0
+      IF(SIG(IDOSE) .LT. 0.D0) TBEG = 100.D0*(-SIG(IDOSE))
+	T_END = TIMMAX + 24.D0
+	NUMT2 = (T_END - TBEG)*60/IDELTA
+	NUMTSUB = NUMTSUB + 1
+      IF(TBEG .GT. 0.D0 .AND. NUMTSUB .GT. 1) THEN
+       TPRED(NUMTSUB) = 0.D0
+       TPREDREL(NUMTSUB) = 0.D0
+       NUMTSUB = NUMTSUB + 1
+      ENDIF
+	TPRED(NUMTSUB) = TBEG
+      TPREDREL(NUMTSUB) = 0.D0
+	DO I=1,NUMT2
+	 NUMTSUB = NUMTSUB + 1
+	 IF(NUMTSUB .GT. 7200) GO TO 40
+	 TPRED(NUMTSUB) = TPRED(NUMTSUB-1) + IDELTA/60.D0
+       TPREDREL(NUMTSUB) = TPRED(NUMTSUB) - TBEG
+	END DO
+	NOMAXTIMS = NOMAXTIMS + 1
+	TEND(NOMAXTIMS) = T_END
+      TBEGG(NOMAXTIMS) = TBEG
+      IF(IDOSE .LT. ND) THEN
+       DO ID = IDOSE + 1,ND
+        IF(SIG(ID) .LE. 0.D0) THEN
+         IDOSE = ID
+         GO TO 35
+        ENDIF
+       END DO
+      ENDIF
+   35 CONTINUE
+	IF(INDEX .EQ. NOBSER) RETURN
+	GO TO 50
+   40   CONTINUE
+	WRITE(*,2031) JSUB,IDELTA
+	WRITE(25,2031) JSUB,IDELTA
+ 2031    FORMAT(///' FOR SUBJECT NO. ',I4,' THE MAXIMUM NO. OF '/
+     1' PREDICTED VALUES (7200) HAS BEEN REACHED. THIS MEANS THAT IN'/
+     2' THE DENSITY PART OF THE OUTPUT FILE, AND IN THE PRTB FILE'/
+     3' (WHERE THE PREDICTED VALUES ARE WRITTEN ',I3,' MINUTES APART),'/
+     4' THIS SUBJECT WILL NOT HAVE A COMPLETE SET OF PREDICTED VALUES.')
+	NUMTSUB = 7200
+	RETURN
+	END
+        SUBROUTINE CONDENSE(READLINE)
+        CHARACTER READLINE*1000
+	DO IEND = 1000,1,-1
+	 IF(READLINE(IEND:IEND) .NE. ' ') GO TO 20
+	END DO
+   20   CONTINUE
+	IF(IEND .LE. 26) THEN
+	 WRITE(26,26) READLINE
+   26    FORMAT(A26)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 51) THEN
+	 WRITE(26,51) READLINE
+   51    FORMAT(A51)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 76) THEN
+	 WRITE(26,76) READLINE
+   76    FORMAT(A76)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 101) THEN
+	 WRITE(26,101) READLINE
+  101    FORMAT(A101)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 126) THEN
+	 WRITE(26,126) READLINE
+  126    FORMAT(A126)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 151) THEN
+	 WRITE(26,151) READLINE
+  151    FORMAT(A151)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 176) THEN
+	 WRITE(26,176) READLINE
+  176    FORMAT(A176)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 201) THEN
+	 WRITE(26,201) READLINE
+  201    FORMAT(A201)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 226) THEN
+	 WRITE(26,226) READLINE
+  226    FORMAT(A226)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 251) THEN
+	 WRITE(26,251) READLINE
+  251    FORMAT(A251)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 276) THEN
+	 WRITE(26,276) READLINE
+  276    FORMAT(A276)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 301) THEN
+	 WRITE(26,301) READLINE
+  301    FORMAT(A301)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 326) THEN
+	 WRITE(26,326) READLINE
+  326    FORMAT(A326)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 351) THEN
+	 WRITE(26,351) READLINE
+  351    FORMAT(A351)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 376) THEN
+	 WRITE(26,376) READLINE
+  376    FORMAT(A376)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 401) THEN
+	 WRITE(26,401) READLINE
+  401    FORMAT(A401)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 426) THEN
+	 WRITE(26,426) READLINE
+  426    FORMAT(A426)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 451) THEN
+	 WRITE(26,451) READLINE
+  451    FORMAT(A451)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 476) THEN
+	 WRITE(26,476) READLINE
+  476    FORMAT(A476)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 501) THEN
+	 WRITE(26,501) READLINE
+  501    FORMAT(A501)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 526) THEN
+	 WRITE(26,526) READLINE
+  526    FORMAT(A526)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 551) THEN
+	 WRITE(26,551) READLINE
+  551    FORMAT(A551)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 576) THEN
+	 WRITE(26,576) READLINE
+  576    FORMAT(A576)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 601) THEN
+	 WRITE(26,601) READLINE
+  601    FORMAT(A601)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 626) THEN
+	 WRITE(26,626) READLINE
+  626    FORMAT(A626)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 651) THEN
+	 WRITE(26,651) READLINE
+  651    FORMAT(A651)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 676) THEN
+	 WRITE(26,676) READLINE
+  676    FORMAT(A676)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 701) THEN
+	 WRITE(26,701) READLINE
+  701    FORMAT(A701)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 726) THEN
+	 WRITE(26,726) READLINE
+  726    FORMAT(A726)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 751) THEN
+	 WRITE(26,751) READLINE
+  751    FORMAT(A751)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 776) THEN
+	 WRITE(26,776) READLINE
+  776    FORMAT(A776)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 801) THEN
+	 WRITE(26,801) READLINE
+  801    FORMAT(A801)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 826) THEN
+	 WRITE(26,826) READLINE
+  826    FORMAT(A826)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 851) THEN
+	 WRITE(26,851) READLINE
+  851    FORMAT(A851)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 876) THEN
+	 WRITE(26,876) READLINE
+  876    FORMAT(A876)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 901) THEN
+	 WRITE(26,901) READLINE
+  901    FORMAT(A901)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 926) THEN
+	 WRITE(26,926) READLINE
+  926    FORMAT(A926)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 951) THEN
+	 WRITE(26,951) READLINE
+  951    FORMAT(A951)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 976) THEN
+	 WRITE(26,976) READLINE
+  976    FORMAT(A976)
+	 RETURN
+	ENDIF
+	WRITE(26,4) READLINE
+    4    FORMAT(A1000)
+       RETURN
+       END
+      SUBROUTINE NEWWORK1(MAXSUB,JSUB,TIMOBREL)
+      IMPLICIT REAL*8(A-H,O-Z)
+      PARAMETER(MAXNUMEQ=7)
+      DIMENSION SIG(5000),RS(5000,34),DELTAIV(7),ORDELT(7),
+     1 RSS(5000,34),SIGG(5000),TIM(594),TIMM(594),YO(594,MAXNUMEQ),
+     2 TIMDELAY(99),TIMOBREL(MAXSUB,594),OBSBLOCK(800,150,MAXNUMEQ+1),
+     3 DOSEBLOCK(800,1000,35),NDORIG(800),XVERIFY(100)
+      CHARACTER READLINE*300,ERRFIL*20
+   	COMMON/DOSEOBS/DOSEBLOCK,OBSBLOCK,NDORIG
+      COMMON/ERR/ERRFIL
+ 1717 FORMAT(A300)
+   10 READ(23,1717) READLINE
+      IF(READLINE(12:23) .NE. 'NO. OF DRUGS') GO TO 10
+    3 FORMAT(T2,I5)
+      BACKSPACE(23)
+      READ(23,3) NDRUG
+      READ(23,3) NADD
+      READ(23,3) ND
+	NI = 2*NDRUG + NADD
+      IF(ND .EQ. 0) ICOPY = 1
+      IF(ND .GE. 1) THEN
+       READ(23,*)
+       READ(23,*)
+       ICOPY = 1
+       NDORIG(JSUB) = ND
+       DO I = 1,ND
+        READ(23,*) SIG(I),(RS(I,J),J=1,NI)
+        DOSEBLOCK(JSUB,I,1) = SIG(I)
+        DO J = 2,1+NI
+         DOSEBLOCK(JSUB,I,J) = RS(I,J-1)
+        END DO
+        IF(SIG(I) .LT. 0.D0) ICOPY = 0
+       END DO
+      ENDIF
+  140	 READ(23,1717) READLINE
+       IF(READLINE(12:23) .NE. 'NO. OF TOTAL') GO TO 140
+       BACKSPACE(23)
+       READ(23,*) NUMEQT
+       READ(23,3) M
+       DO I = 1,M
+        READ(23,*) (OBSBLOCK(JSUB,I,J),J=1,1+NUMEQT)
+       END DO
+      IF(ICOPY .EQ. 1) THEN
+ 1720  BACKSPACE(23)
+       BACKSPACE(23)
+       READ(23,1717,IOSTAT=IEND) READLINE
+	 IF(IEND .LT. 0) THEN
+        WRITE(*,1721)
+ 1721   FORMAT(/' PATIENT DATA INFORMATION WAS NOT READ CORRECTLY'/
+     1' FROM THE INSTRUCTION FILE, npag103.inp. IF YOU EDITED THIS'/
+     2' FILE MANUALLY, PLEASE RERUN THE PC PREP PROGRAM TO HAVE IT'/
+     3' PREPARE npag103.inp AGAIN AND THEN RERUN THIS PROGRAM.'//
+     4' IF YOU DID NOT MANUALLY EDIT npag103.inp, PLEASE SEND THE'/
+     5' DETAILS OF THIS RUN (STARTING WITH THE PC PREP EXECUTION) TO'/
+     5' THE LAPK. '//
+     6' THANK YOU.'/)
+        OPEN(42,FILE=ERRFIL)
+         WRITE(42,1721)
+        CLOSE(42)
+	  CALL PAUSE
+	  STOP
+	 ENDIF
+       IF(READLINE(3:16) .NE. 'LAST AND FIRST') GO TO 1720
+       WRITE(27,1717) READLINE
+   30  READ(23,1717) READLINE
+       WRITE(27,1717) READLINE
+       IF(READLINE(12:23) .NE. 'NO. OF DOSE ') GO TO 30
+       DO I = 1,2
+        READ(23,1717) READLINE
+        WRITE(27,1717) READLINE
+       END DO
+       IF(ND.EQ.0) GO TO 40
+       DO I = 1,ND
+        READ(23,*) SIG(I),(RS(I,J),J=1,NI)
+        WRITE(27,*) SIG(I),(RS(I,J),J=1,NI)
+       END DO
+   40	 READ(23,1717) READLINE
+       WRITE(27,1717) READLINE
+       IF(READLINE(12:23) .NE. 'NO. OF TOTAL') GO TO 40
+       BACKSPACE(23)
+       READ(23,*)
+       READ(23,3) M
+       BACKSPACE(23)
+       READ(23,1717) READLINE
+       WRITE(27,1717) READLINE
+       DO I = 1,M
+        READ(23,*) TIM(I),(YO(I,J),J=1,NUMEQT)
+        WRITE(27,*) TIM(I),(YO(I,J),J=1,NUMEQT)
+        TIMOBREL(JSUB,I) = TIM(I)
+       END DO
+   50	 READ(23,1717,IOSTAT=IEND) READLINE
+       IF(IEND .LT. 0) GO TO 100
+   	 IF(READLINE(3:16) .EQ. 'LAST AND FIRST') GO TO 100
+       WRITE(27,1717) READLINE
+       GO TO 50
+  100	 BACKSPACE(23)
+      ENDIF
+      IF(ICOPY .EQ. 0) THEN
+      ILINE = 0
+      DELDOSE = 0.D0
+      NSECTION = 0
+      DO ID = 1,ND
+       IF(SIG(ID) .GE. 0.D0) THEN
+        CALL THESAME(SIG(ID),0.D0,ISAME)
+        IF(ISAME .EQ. 1) THEN
+         DELDOSE = 0.D0
+         NSECTION = NSECTION + 1
+         TIMDELAY(NSECTION) = 0.0
+        ENDIF
+        ILINE = ILINE + 1
+        SIGG(ILINE) = SIG(ID) + 100.D0*DELDOSE
+        DO J = 1,NI
+         RSS(ILINE,J) = RS(ID,J)
+        END DO
+       ENDIF
+       IF(SIG(ID) .LT. 0.D0) THEN
+        DO IDRUG = 1,NDRUG
+         DELTAIV(IDRUG) = 0.D0
+         IF(RS(ID,2*IDRUG) .GT. 0.D0 .AND. RS(ID,2*IDRUG-1) .GT. 0.D0)
+     1    DELTAIV(IDRUG) = RS(ID,2*IDRUG)/RS(ID,2*IDRUG-1)
+       XVERIFY(1) = SIG(ID)
+       XVERIFY(2) = RS(ID,2*IDRUG-1)
+       XVERIFY(3) = RS(ID,2*IDRUG)
+       CALL VERIFYVAL(3,XVERIFY)
+      IF(RS(ID,2*IDRUG) .LE. 0.D0 .AND. RS(ID,2*IDRUG-1) .GT. 0) THEN
+       WRITE(*,101) ID,XVERIFY(1),IDRUG,XVERIFY(2),XVERIFY(3)
+  101     FORMAT(//' THERE IS AN ERROR IN YOUR INSTRUCTION FILE, AS'/
+     1' DETERMINED BY SUBROUTINE NEWWORK1.'//
+     2' ONE OF THE SUBJECTS HAS A STEADY STATE DOSE SET WITH A '/
+     3' POSITIVE IV RATE, BUT WITH A TOTAL DOSE AMOUNT .LE. 0.'//
+     4' IN PARTICULAR, FOR DOSE EVENT ',I4,' AND TIME ',G19.9,/
+     5' FOR DRUG ',I2,', THE IV VALUE IS ',G19.9,' WHILE THE TOTAL'/
+     6' DOSE AMOUNT IS ',G19.9//
+     7' THE PROGRAM STOPS. PLEASE CORRECT THE ERROR BEFORE RERUNNING.'/)
+        OPEN(42,FILE=ERRFIL)
+         WRITE(42,101) ID,SIG(ID),IDRUG,RS(ID,2*IDRUG-1),RS(ID,2*IDRUG)
+        CLOSE(42)
+          CALL PAUSE
+          STOP
+         ENDIF
+        END DO
+        CALL ORDERDELTA(NDRUG,DELTAIV,NDELTA,ORDELT)
+        DELDOSE = -SIG(ID)
+        NSECTION = NSECTION + 1
+        TIMDELAY(NSECTION) = 100.D0*DELDOSE
+        DO ISET = 1,101
+         ILINE = ILINE + 1
+         DO IDRUG = 1,NDRUG
+          RSS(ILINE,2*IDRUG-1) = RS(ID,2*IDRUG-1)
+          RSS(ILINE,2*IDRUG) = RS(ID,2*IDRUG)
+          IF(RS(ID,2*IDRUG-1) .GT. 0.D0) RSS(ILINE,2*IDRUG) = 0.D0
+         END DO
+         DO IADD = 1,NADD
+          RSS(ILINE,2*NDRUG+IADD) = RS(ID,2*NDRUG+IADD)
+         END DO
+         IF(ISET .EQ. 1) THEN
+          SIGG(ILINE) = SIG(ID)
+          DOSESTART = 0.D0
+         ENDIF
+         IF(ISET .GT. 1) THEN
+          SIGG(ILINE) = (ISET-1)*DELDOSE
+          DOSESTART = SIGG(ILINE)
+         ENDIF
+        IF(NDELTA .GT. 0) THEN
+         DO INDEL = 1,NDELTA
+          ILINE = ILINE + 1
+          DO IDRUG = 1,NDRUG
+           RSS(ILINE,2*IDRUG-1) = 0.D0
+           IF(DELTAIV(IDRUG) .GT. ORDELT(INDEL))
+     1      RSS(ILINE,2*IDRUG-1) = RS(ID,2*IDRUG-1)
+           RSS(ILINE,2*IDRUG) = 0.D0
+          END DO
+          DO IADD = 1,NADD
+           RSS(ILINE,2*NDRUG+IADD) = RS(ID,2*NDRUG+IADD)
+          END DO
+          SIGG(ILINE) = DOSESTART + ORDELT(INDEL)
+         END DO
+        ENDIF
+        END DO
+       ENDIF
+      END DO
+1920   BACKSPACE(23)
+       BACKSPACE(23)
+       READ(23,1717,IOSTAT=IEND) READLINE
+	 IF(IEND .LT. 0) THEN
+        WRITE(*,1721)
+        OPEN(42,FILE=ERRFIL)
+         WRITE(42,1721)
+        CLOSE(42)
+	  CALL PAUSE
+	  STOP
+	 ENDIF
+       IF(READLINE(12:23) .NE. 'NO. OF TOTAL') GO TO 1920
+       BACKSPACE(23)
+       READ(23,*)
+       READ(23,3) M
+       NSECTION = 1
+       DO I = 1,M
+        READ(23,*) TIM(I),(YO(I,J),J=1,NUMEQT)
+        TIMOBREL(JSUB,I) = TIM(I)
+        CALL THESAME(TIM(I),0.D0,ISAME)
+        IF(ISAME .EQ. 1 .AND. I .GT. 1) NSECTION = NSECTION + 1
+        IF(ISAME .EQ. 1) TIMM(I) = 0.D0
+        IF(ISAME .EQ. 0) TIMM(I) = TIM(I) + TIMDELAY(NSECTION)
+       END DO
+ 1820  BACKSPACE(23)
+       BACKSPACE(23)
+       READ(23,1717,IOSTAT=IEND) READLINE
+	 IF(IEND .LT. 0) THEN
+        WRITE(*,1721)
+        OPEN(42,FILE=ERRFIL)
+         WRITE(42,1721)
+        CLOSE(42)
+	  CALL PAUSE
+	  STOP
+	 ENDIF
+       IF(READLINE(3:16) .NE. 'LAST AND FIRST') GO TO 1820
+       WRITE(27,1717) READLINE
+   60  READ(23,1717) READLINE
+       WRITE(27,1717) READLINE
+       IF(READLINE(12:23) .NE. 'NO. OF ADDIT') GO TO 60
+       READ(23,1717) READLINE
+       WRITE(27,133) ILINE
+  133  FORMAT(I6,' ... NO. OF DOSE EVENTS')
+       DO I = 1,2
+        READ(23,1717) READLINE
+        WRITE(27,1717) READLINE
+       END DO
+       SIGLAST = -999999.D0
+       DO I = 1,ILINE
+        WRITE(27,*) SIGG(I),(RSS(I,J),J=1,NI)
+        CALL THESAME(SIGLAST,SIGG(I),ISAME)
+        IF(ISAME .EQ. 1) THEN
+         XVERIFY(1) = SIGLAST
+         CALL VERIFYVAL(1,XVERIFY)
+         WRITE(*,4031) XVERIFY(1)
+ 4031    FORMAT(/' IN SUBROUTINE NEWWORK1, TWO CONSECUTIVE DOSE TIMES'/
+     1' HAVE THE SAME VALUE IN WORKING COPY FORMAT, ',F20.8//
+     2' THIS COULD CAUSE UNEXPECTED RESULTS IF THE PROGRAM WERE TO '/
+     3' CONTINUE. SO THE PROGRAM NOW STOPS. PLEASE CHECK YOUR PATIENT '/
+     4' INFORMATION AND CORRECT (NOTE THAT THIS CAN HAPPEN IF THE '/
+     5' FIRST DOSE FOLLOWING A STEADY STATE DOSE SET HAS THE SAME'/
+     6' STARTING TIME AS THE ENDING TIME OF THE LAST STEADY STATE '/
+     7' DOSE SET.)'//)
+        OPEN(42,FILE=ERRFIL)
+         WRITE(42,4031) SIGLAST
+        CLOSE(42)
+	  CALL PAUSE
+	  STOP
+	 ENDIF
+       SIGLAST = SIGG(I)
+       END DO
+       DO I = 1,ND
+        READ(23,*) SIG(I),(RS(I,J),J=1,NI)
+       END DO
+       DO I = 1,3
+        READ(23,1717) READLINE
+        WRITE(27,1717) READLINE
+       END DO
+      DO I = 1,M
+       WRITE(27,*) TIMM(I),(YO(I,J),J=1,NUMEQT)
+       READ(23,*) TIM(I),(YO(I,J),J=1,NUMEQT)
+      END DO
+   70	 READ(23,1717,IOSTAT=IEND) READLINE
+       IF(IEND .LT. 0) GO TO 200
+   	 IF(READLINE(3:16) .EQ. 'LAST AND FIRST') GO TO 200
+       WRITE(27,1717) READLINE
+       GO TO 70
+  200	 BACKSPACE(23)
+      ENDIF
+      RETURN
+      END
+      SUBROUTINE ORDERDELTA(NDRUG,DELTAIV,NDELTA,ORDELT)
+      IMPLICIT REAL*8(A-H,O-Z)
+      DIMENSION DELTAIV(7),ORDELT(7),X(7)
+      DO IDRUG = 1,NDRUG
+       X(IDRUG) = DELTAIV(IDRUG)
+      END DO
+      DO IDRUG = 2, NDRUG
+       IDRUGNEW = IDRUG
+       ICOMP = IDRUG
+  110  ICOMP = ICOMP - 1
+       IF(X(IDRUGNEW) .LT. X(ICOMP)) THEN
+        VALUE = X(IDRUGNEW)
+        X(IDRUGNEW) = X(ICOMP)
+        X(ICOMP) = VALUE
+        IDRUGNEW = ICOMP
+        IF(IDRUGNEW .EQ. 1) GO TO 150
+        IF(IDRUGNEW .GT. 1) GO TO 110
+       ENDIF
+  150 END DO
+      NDELTA = 0
+      DO IDRUG = 1,NDRUG
+       IF(IDRUG .EQ. 1 .AND. X(IDRUG) .GT. 0) THEN
+        NDELTA = NDELTA + 1
+        ORDELT(NDELTA) = X(IDRUG)
+       ENDIF
+       IF(IDRUG .GE. 2) THEN
+        CALL THESAME(X(IDRUG),X(IDRUG-1),ISAME)
+        IF(ISAME .EQ. 0) THEN
+         NDELTA = NDELTA + 1
+         ORDELT(NDELTA) = X(IDRUG)
+        ENDIF
+       ENDIF
+      END DO
+      RETURN
+      END
+	SUBROUTINE CALCRF(NTOTPAR,VEC,FNTVAL,NUMEQT,YO,C0,C1,C2,C3)
+	IMPLICIT REAL*8(A-H,O-Z)
+      PARAMETER(MAXNUMEQ=7)
+	DIMENSION VEC(NTOTPAR),IRAN(32),PX(32),SIG(594,MAXNUMEQ),
+     1 YO(594,NUMEQT),C0(NUMEQT),C1(NUMEQT),C2(NUMEQT),C3(NUMEQT),
+     2 AB(30,2)
+      COMMON SIG
+	COMMON/TOCALC/IRAN,PX,NOFIX,NSUB,gamma,flat,AB
+      NVEC = 0
+      DO I = 1,NTOTPAR+NOFIX
+       IF(IRAN(I) .EQ. 2) THEN
+        NVEC = NVEC + 1
+        PX(I) = VEC(NVEC)
+       ENDIF
+      END DO
+      IRANO = 0
+      DO I = 1,NTOTPAR+NOFIX
+       IF(IRAN(I) .EQ. 1) THEN
+        NVEC = NVEC + 1
+        IRANO = IRANO + 1
+        VN = VEC(NVEC)
+        IF(VN .GT. AB(IRANO,2) .OR. VN .LT. AB(IRANO,1)) THEN
+         FNTVAL = 1.D30
+         RETURN
+        ENDIF
+        PX(I) = VEC(NVEC)
+       ENDIF
+      END DO
+      SUMTOT = 0.D0
+      REWIND(27)
+      DO JSUB = 1,NSUB
+       CALL FILRED(NOBSER,YO,C0,C1,C2,C3,NUMEQT)
+       DO 140 I=1,NOBSER
+        DO 140 J=1,NUMEQT
+         Y = YO(I,J)
+         IF(Y .EQ. -99) GO TO 140
+         SIG(I,J) = C0(J)+C1(J)*Y+C2(J)*Y*Y+C3(J)*Y**3
+         if(ierrmod.eq.2) sig(i,j) = sig(i,j)*gamma
+         if(ierrmod.eq.3) sig(i,j)=dsqrt(sig(i,j)**2 + gamma**2)
+         if(ierrmod.eq.4) sig(i,j) = gamma*flat
+  140    CONTINUE
+       CALL IDPC(PX,W)
+       SUMTOT = SUMTOT + W
+      END DO
+      FNTVAL = SUMTOT
+	RETURN
+	END
+        SUBROUTINE ELDERY(N,START,XMIN,YNEWLO,REQMIN,STEP,
+     X  ITMAX,FUNC,IPRINT,ICONV,NITER,ICOUNT,NUMEQT,YO,C0,C1,C2,C3)
+      IMPLICIT REAL*8(A-H,O-Z)
+        DIMENSION START(N),STEP(N),XMIN(N),XSEC(30),
+     X  P(30,31),PSTAR(30),P2STAR(30),PBAR(30),Y(31),YO(594,NUMEQT),
+     1  C0(NUMEQT),C1(NUMEQT),C2(NUMEQT),C3(NUMEQT)
+        EXTERNAL FUNC
+        DATA RCOEFF/1.0D0/,ECOEFF/2.0D0/,CCOEFF/.5D0/
+        KCOUNT=1000000
+        ICOUNT=0
+        NITER=0
+        ICONV=0
+        IF(REQMIN.LE.0.0D0) ICOUNT=ICOUNT-1
+        IF(N.LE.0) ICOUNT=ICOUNT-10
+        IF(N.GT.99) ICOUNT=ICOUNT-10
+        IF(ICOUNT.LT.0) RETURN
+        DABIT=2.04607D-35
+        BIGNUM=1.0D+38
+        KONVGE=5
+        XN=FLOAT(N)
+        DN=FLOAT(N)
+        NN=N+1
+1001    DO 1 I=1,N
+1       P(I,NN)=START(I)
+        CALL FUNC(N,START,FN,NUMEQT,YO,C0,C1,C2,C3)
+        Y(NN)=FN
+        ICOUNT=ICOUNT+1
+        IF(ITMAX.NE.0) GO TO 40
+        DO 45 I=1,N
+45      XMIN(I)=START(I)
+        YNEWLO=FN
+        RETURN
+40      DO 2 J=1,N
+        DCHK=START(J)
+        START(J)=DCHK+STEP(J)
+        DO 3 I=1,N
+3       P(I,J)=START(I)
+        CALL FUNC(N,START,FN,NUMEQT,YO,C0,C1,C2,C3)
+        Y(J)=FN
+        ICOUNT=ICOUNT+1
+2       START(J)=DCHK
+1000    YLO=Y(1)
+        YNEWLO=YLO
+        ILO=1
+        IHI=1
+        DO 5 I=2,NN
+        IF(Y(I).GE.YLO) GO TO 4
+        YLO=Y(I)
+        ILO=I
+4       IF(Y(I).LE.YNEWLO) GO TO 5
+        YNEWLO=Y(I)
+        IHI=I
+5       CONTINUE
+        IF(ICOUNT.LE.NN) YOLDLO=YLO
+        IF(ICOUNT.LE.NN) GO TO 2002
+        IF(YLO.GE.YOLDLO) GO TO 2002
+        YOLDLO=YLO
+        NITER=NITER+1
+        IF(NITER.GE.ITMAX) GO TO 900
+        IF(IPRINT.EQ.0) GO TO 2002
+2002    DCHK=(YNEWLO+DABIT)/(YLO+DABIT)-1.0D0
+        IF(DABS(DCHK).GT. REQMIN) GO TO 2001
+        ICONV=1
+        GO TO 900
+2001    KONVGE=KONVGE-1
+        IF(KONVGE.NE.0) GO TO 2020
+        KONVGE=5
+        DO 2015 I=1,N
+        COORD1=P(I,1)
+        COORD2=COORD1
+        DO 2010 J=2,NN
+        IF(P(I,J).GE.COORD1) GO TO 2005
+        COORD1=P(I,J)
+2005    IF(P(I,J).LE.COORD2) GO TO 2010
+        COORD2=P(I,J)
+2010    CONTINUE
+        DCHK=(COORD2+DABIT)/(COORD1+DABIT)-1.0D0
+        IF(DABS(DCHK).GT.REQMIN) GO TO 2020
+2015    CONTINUE
+        ICONV=1
+        GO TO 900
+2020    IF(ICOUNT.GE.KCOUNT) GO TO 900
+        DO 7 I=1,N
+        Z=0.0D0
+        DO 6 J=1,NN
+6       Z=Z+P(I,J)
+        Z=Z-P(I,IHI)
+7       PBAR(I)=Z/DN
+        DO 8 I=1,N
+8       PSTAR(I)=(1.0D0+RCOEFF)*PBAR(I)-RCOEFF*P(I,IHI)
+        CALL FUNC(N,PSTAR,FN,NUMEQT,YO,C0,C1,C2,C3)
+        YSTAR=FN
+        ICOUNT=ICOUNT+1
+        IF(YSTAR.GE.YLO) GO TO 12
+        IF(ICOUNT.GE.KCOUNT) GO TO 19
+        DO 9 I=1,N
+9       P2STAR(I)=ECOEFF*PSTAR(I)+(1.0D0-ECOEFF)*PBAR(I)
+        CALL FUNC(N,P2STAR,FN,NUMEQT,YO,C0,C1,C2,C3)
+        Y2STAR=FN
+        ICOUNT=ICOUNT+1
+        IF(Y2STAR.GE.YSTAR) GO TO 19
+10      DO 11 I=1,N
+11      P(I,IHI)=P2STAR(I)
+        Y(IHI)=Y2STAR
+        GO TO 1000
+12      L=0
+        DO 13 I=1,NN
+        IF(Y(I).GT.YSTAR) L=L+1
+13      CONTINUE
+        IF(L.GT.1) GO TO 19
+        IF(L.EQ.0) GO TO 15
+        DO 14 I=1,N
+14      P(I,IHI)=PSTAR(I)
+        Y(IHI)=YSTAR
+15      IF(ICOUNT.GE.KCOUNT) GO TO 900
+        DO 16 I=1,N
+16      P2STAR(I)=CCOEFF*P(I,IHI)+(1.0D0-CCOEFF)*PBAR(I)
+        CALL FUNC(N,P2STAR,FN,NUMEQT,YO,C0,C1,C2,C3)
+        Y2STAR=FN
+        ICOUNT=ICOUNT+1
+        IF(Y2STAR.LT.Y(IHI)) GO TO 10
+        DO 18 J=1,NN
+        DO 17 I=1,N
+        P(I,J)=(P(I,J)+P(I,ILO))*0.5D0
+17      XMIN(I)=P(I,J)
+        CALL FUNC(N,XMIN,FN,NUMEQT,YO,C0,C1,C2,C3)
+        Y(J)=FN
+18      CONTINUE
+        ICOUNT=ICOUNT+NN
+        IF(ICOUNT.LT.KCOUNT) GO TO 1000
+        GO TO 900
+19      CONTINUE
+        DO 20 I=1,N
+20      P(I,IHI)=PSTAR(I)
+        Y(IHI)=YSTAR
+        GO TO 1000
+900     DO 23 J=1,NN
+        DO 22 I=1,N
+22      XMIN(I)=P(I,J)
+        CALL FUNC(N,XMIN,FN,NUMEQT,YO,C0,C1,C2,C3)
+        Y(J)=FN
+23      CONTINUE
+        ICOUNT=ICOUNT+NN
+        YNEWLO=BIGNUM
+        DO 24 J=1,NN
+        IF(Y(J).GE.YNEWLO) GO TO 24
+        YNEWLO=Y(J)
+        IBEST=J
+24      CONTINUE
+        Y(IBEST)=BIGNUM
+        YSEC=BIGNUM
+        DO 25 J=1,NN
+        IF(Y(J).GE.YSEC) GO TO 25
+        YSEC=Y(J)
+        ISEC=J
+25      CONTINUE
+        DO 26 I=1,N
+        XMIN(I)=P(I,IBEST)
+        XSEC(I)=P(I,ISEC)
+26      CONTINUE
+        RETURN
+        END
+      SUBROUTINE READOUT(OUTFILER)
+        IMPLICIT REAL*8(A-H,O-Z)
+      PARAMETER(MAXNUMEQ=7)
+        DIMENSION YO(150,MAXNUMEQ),PYJGX(800,1500),AB(30,2),VALFIX(20),
+     1  EXX(800,3,30),YPREDPOP(800,MAXNUMEQ,150,3),
+     2  YPREDBAY(800,MAXNUMEQ,150,3),
+     2  CORDEN(1500,31),C0(MAXNUMEQ),C1(MAXNUMEQ),C2(MAXNUMEQ),
+     3  C3(MAXNUMEQ),IPATVEC(800),YPREDPOPT(800,MAXNUMEQ,7201,3),
+     4  TTPRED(800,7200),NUMT(800),TO(150),NOBS(800),RANFIXEST(20)
+        DIMENSION XLOGLIK(9997),XMEAN(9997,30),
+     1   STDEV(9997,30),PRCFVR(9997,30),ACTPTS(9997),SCALNFO(9997),
+     2   GAMLAM(9997),OBSBLOCK(800,150,MAXNUMEQ+1),
+     3   DOSEBLOCK(800,1000,35),
+     3   AGE(800),HEIGHT(800),SUBMEAN(800,30),SUBLOGLIK(800),
+     4   SUBSTD(800,30),SUBPERCOF(800,30),
+     6   NDD(800),AICBIC(9997,2),
+     7   ASSAYC(800,MAXNUMEQ,4),AF(7),NDORIG(800),
+     8   BAYPOS(100,1500,31),NACTSUB(100),XVERIFY(100)
+        CHARACTER PAR(30)*11,PARFIX(20)*11,READLINE*80,
+     1   NAME(800)*53,CHARTNO(800)*53,SEX(800)*1,PARRANFIX(20)*11,
+     2   DESCR(26)*20,OUTFILER*20,READLINE2*1000,PRIFILE*20
+        CHARACTER(LEN=20) :: OSName
+   	COMMON/DOSEOBS/DOSEBLOCK,OBSBLOCK,NDORIG
+      COMMON/BAY/NACTSUB,BAYPOS
+      WRITE(*,911)
+  911 FORMAT(//' NOW CREATING THE NP_RFxxxx.TXT FILE ...')
+        MAXGRD = 1500
+        MAXOBDIM = 150
+        MAXSUB = 800
+    1   FORMAT(A20)
+        IVER = 42
+    2   FORMAT(A80)
+        CALL GETNUM(NUMEQT)
+   80   READ(25,2) READLINE
+        CALL GETNSUB2(NSUBTOT)
+        CALL GETNSUB(NSUB)
+        CALL GETIPATFF(25,NSUBTOT,NSUB,MAXSUB,IPATVEC,IERRR)
+        IF(IERRR .EQ. -1) STOP
+ 210    READ(25,2) READLINE
+         IF(READLINE(2:17) .EQ. 'THE NO. OF DRUGS') THEN
+          READ(25,*) NDRUG
+          READ(25,*)
+          READ(25,*)
+          READ(25,*)
+          READ(25,*) (AF(I),I=1,NDRUG)
+          GO TO 165
+         ENDIF
+        GO TO 210
+  165	  CALL GETICYCSTART(ICYCSTART)
+        CALL GETMAXCYCNO(IMAXCYC)
+ 1650   READ(25,2) READLINE
+        IF(READLINE(2:20) .EQ. 'THE TOLERANCE PARAM') THEN
+         READ(25,*)
+         READ(25,*) RTOL
+         GO TO 1660
+        ENDIF
+        GO TO 1650
+1660   READ(25,2) READLINE
+        IF(READLINE(14:34) .EQ. 'JOINT DENSITY IS FROM') THEN
+         PRIFILE = READLINE(41:60)
+         GO TO 1670
+        ENDIF
+        IF(READLINE(14:34) .EQ. 'JOINT DENSITY IS UNIF') THEN
+         PRIFILE = 'UNIFORM'
+         GO TO 1670
+        ENDIF
+        GO TO 1660
+ 1670   CONTINUE
+        READ(25,2) READLINE
+        IF(READLINE(2:25) .EQ. 'THIS RUN STOPPED WITH IC') THEN
+         READ(25,2) READLINE
+         IF(READLINE(2:2) .EQ. '0') ICONVERGE = 0
+         IF(READLINE(2:2) .EQ. '1') ICONVERGE = 1
+         IF(READLINE(2:2) .EQ. '2') ICONVERGE = 2
+         IF(READLINE(2:2) .EQ. '3') ICONVERGE = 3
+         GO TO 1680
+        ENDIF
+        GO TO 1670
+ 1680   CONTINUE
+        READ(23,*)
+	  READ(23,*) NDIM
+        READ(23,*) INDPTS
+	READ(23,*) NACTVE
+	IF(NACTVE .GT. MAXGRD) THEN
+	 WRITE(*,1718) NACTVE,MAXGRD,MAXGRD
+ 1718    FORMAT(//' THE NO. OF ACTIVE GRID POINTS IS ',I7,' WHICH IS'/
+     1' MORE THAN THE MAXIMUM ALLOWED FOR THIS PROGRAM (',I7,'). RERUN'/
+     2' THIS PROGRAM AFTER YOU HAVE REDUCED THE NO. OF GRID POINTS IN'/
+     3' THE DENSITY FILE TO NO MORE THAN ',I7//)
+	 CALL PAUSE
+	 STOP
+	ENDIF
+	READ(23,*) NVAR
+	READ(23,1717) (PAR(I),I=1,NVAR)
+ 1717 FORMAT(A11)
+	READ(23,*) NOFIX
+	READ(23,1717) (PARFIX(I),I=1,NOFIX)
+      READ(23,*) NRANFIX
+	READ(23,1717) (PARRANFIX(I),I=1,NRANFIX)
+	DO I=1,NVAR
+	READ(23,*) (AB(I,J),J=1,2)
+	END DO
+	READ(23,*) (VALFIX(I),I=1,NOFIX)
+	READ(23,*) (RANFIXEST(I),I=1,NRANFIX)
+	READ(23,*)
+	READ(23,*) ICYCTOT
+	READ(23,*)
+	DO I=1,NACTVE
+	READ(23,*) (CORDEN(I,J),J=1,NVAR+1)
+	END DO
+	DO JSUB=1,NSUB
+	 DO I=1,NACTVE
+	  READ(23,*) PYJGX(JSUB,I)
+	 END DO
+	END DO
+	REWIND(27)
+	DO JSUB=1,NSUB
+	 CALL FILREDT(NOBSER,TO,YO,C0,C1,C2,C3,MAXOBDIM,NDRUG,ND,NADD)
+       NOBS(JSUB) = NOBSER
+	 DO IEQ=1,NUMEQT
+	  DO J=1,NOBSER
+	   READ(23,*) (YPREDPOP(JSUB,IEQ,J,ICENTER),ICENTER=1,3)
+	  END DO
+	 END DO
+	END DO
+	IF(IVER .GE. 39) THEN
+	 DO JSUB = 1,NSUB
+	  READ(23,*) NUMT(JSUB)
+	 END DO
+	 DO JSUB=1,NSUB
+	  DO IEQ=1,NUMEQT
+	   DO J=1,NUMT(JSUB)
+	    READ(23,*) (YPREDPOPT(JSUB,IEQ,J,ICENTER),ICENTER=1,3)
+	   END DO
+	  END DO
+	 END DO
+	 DO JSUB=1,NSUB
+	  DO J=1,NUMT(JSUB)
+	   READ(23,*) TTPRED(JSUB,J)
+	  END DO
+	 END DO
+	ENDIF
+	REWIND(27)
+	DO JSUB=1,NSUB
+	 CALL FILREDT(NOBSER,TO,YO,C0,C1,C2,C3,MAXOBDIM,NDRUG,ND,NADD)
+	 DO IEQ=1,NUMEQT
+	  DO J=1,NOBSER
+	   READ(23,*) (YPREDBAY(JSUB,IEQ,J,ICENTER),ICENTER=1,3)
+	  END DO
+	 END DO
+	END DO
+	DO JSUB=1,NSUB
+	 DO ICENTER=1,3
+	  READ(23,*) (EXX(JSUB,ICENTER,J),J=1,NVAR)
+       END DO
+	END DO
+	CLOSE(23)
+        CALL CONVERGE2(NCYCLE,XLOGLIK,XMEAN,STDEV,INDXSD,AICBIC,
+     1   PRCFVR,ACTPTS,SCALNFO,GAMLAM,AGE,HEIGHT,
+     2   SUBMEAN,SUBLOGLIK,SUBSTD,SUBPERCOF,
+     3   NAME,CHARTNO,SEX,NDD,NI,ASSAYC,IERRMOD)
+        OPEN(21)
+        NLINE = 0
+        WRITE(21,101)
+  101   FORMAT(' VERSION 1.8 - OCT 2015')
+        NLINE = NLINE + 1
+        WRITE(21,102)
+  102   FORMAT(/' # Run information')
+        NLINE = NLINE + 2
+        WRITE(21,103) NSUB
+  103   FORMAT(15X,I6,'   # NSUB')
+        NLINE = NLINE + 1
+        WRITE(21,104) NACTVE,NSUB
+  104   FORMAT(15X,I6,'   # NACTVE FOR ALL ',I5,' SUBJECTS')
+        NLINE = NLINE + 1
+        NNSUB = NSUB
+        IF(NSUB .GT. 100) NNSUB = 100
+        DO ISUB = 1,NNSUB
+         WRITE(21,2011) NACTSUB(ISUB),ISUB
+ 2011    FORMAT(15X,I6,'   # NACTVE FOR BAYESIAN POSTERIOR OF SUBJECT ',
+     1I5)
+         NLINE = NLINE + 1
+        END DO
+        WRITE(21,106) NVAR
+  106   FORMAT(15X,I6,'   # NVAR')
+        NLINE = NLINE + 1
+        WRITE(21,107) NOFIX
+  107   FORMAT(15X,I6,'   # NOFIX')
+        NLINE = NLINE + 1
+        WRITE(21,307) NRANFIX
+  307   FORMAT(15X,I6,'   # NRANFIX')
+        NLINE = NLINE + 1
+        WRITE(21,108) NDIM
+  108   FORMAT(15X,I6,'   # NDIM')
+        NLINE = NLINE + 1
+        WRITE(21,109) INDPTS
+  109   FORMAT(15X,I6,'   # INDPTS')
+        NLINE = NLINE + 1
+        WRITE(21,771) ICYCSTART
+  771   FORMAT(15X,I6,'   # STARTING CYCLE NO.')
+        NLINE = NLINE + 1
+        WRITE(21,772) IMAXCYC
+  772   FORMAT(15X,I6,'   # MAXIMUM ENDING CYCLE NO.')
+        NLINE = NLINE + 1
+        WRITE(21,111) ICYCTOT - ICYCSTART + 1
+  111   FORMAT(15X,I6,'   # NO. OF CYCLES RUN')
+        NLINE = NLINE + 1
+        WRITE(21,773) ICONVERGE
+  773   FORMAT(15X,I6,'   # CONVERGENCE FLAG ')
+        NLINE = NLINE + 1
+        XVERIFY(1) = RTOL
+        CALL VERIFYVAL(1,XVERIFY)
+        WRITE(21,774) XVERIFY(1)
+  774   FORMAT(2X,F19.17,'   # O.D.E. TOLERANCE ')
+        NLINE = NLINE + 1
+        WRITE(21,777) PRIFILE
+  777   FORMAT(1X,A20,'   # PRIOR DENSITY ')
+        NLINE = NLINE + 1
+        WRITE(21,778) IERRMOD
+  778   FORMAT(15X,I6,'   # ASSAY ERROR MODEL ')
+        NLINE = NLINE + 1
+        WRITE(21,112) NUMEQT
+  112   FORMAT(15X,I6,'   # NUMEQT')
+        NLINE = NLINE + 1
+        WRITE(21,113) NDRUG
+  113   FORMAT(15X,I6,'   # NDRUG ')
+        NLINE = NLINE + 1
+        DO I = 1,NDRUG
+         XVERIFY(1) = AF(I)
+         CALL VERIFYVAL(1,XVERIFY)
+         WRITE(21,1107) XVERIFY(I),I
+         NLINE = NLINE + 1
+ 1107    FORMAT(2X,F19.17,'   # ACTIVE (SALT) FRACTION FOR DRUG ',I1)
+        END DO
+        DO JSUB = 1,NSUB
+         WRITE(21,114) NDORIG(JSUB),JSUB
+  114    FORMAT(15X,I6,'   # NO. OF DOSE EVENTS FOR SUBJ. ',I6)
+         NLINE = NLINE + 1
+        END DO
+        WRITE(21,116) NADD
+  116   FORMAT(15X,I6,'   # NO. OF ADDITIONAL COVARIATES')
+        NLINE = NLINE + 1
+        DO JSUB = 1,NSUB
+         WRITE(21,117) NOBS(JSUB),JSUB
+  117    FORMAT(15X,I6,'   # NO. OF OBS. VALUE TIMES FOR SUBJ. ',I6)
+         NLINE = NLINE + 1
+        END DO
+        DO JSUB = 1,NSUB
+         WRITE(21,118) NUMT(JSUB),JSUB
+  118    FORMAT(15X,I6,'   # NO. OF PREDICTED TIMES FOR SUBJ. ',I6)
+         NLINE = NLINE + 1
+        END DO
+        WRITE(21,121)
+  121   FORMAT(/' #Block information with starting line numbers')
+        NLINE = NLINE + 2
+        WRITE(21,122)
+  122   FORMAT(8X,'   # START PAR')
+        NLINE = NLINE + 1
+        WRITE(21,123)
+  123   FORMAT(8X,'   # START PARFIX')
+        NLINE = NLINE + 1
+        WRITE(21,223)
+  223   FORMAT(8X,'   # START PARRANFIX')
+        NLINE = NLINE + 1
+        WRITE(21,124)
+  124   FORMAT(8X,'   # START AB')
+        NLINE = NLINE + 1
+        WRITE(21,126)
+  126   FORMAT(8X,'   # START VALFIX')
+        NLINE = NLINE + 1
+        WRITE(21,423)
+  423   FORMAT(8X,'   # START RANFIXEST')
+        NLINE = NLINE + 1
+        WRITE(21,226)
+  226   FORMAT(8X,'   # START COVARIATE NAMES')
+        NLINE = NLINE + 1
+        WRITE(21,127)
+  127   FORMAT(8X,'   # START CORDEN')
+        NLINE = NLINE + 1
+        WRITE(21,2012)
+ 2012   FORMAT(8X,'   # START BAYESIAN POSTERIOR DENSITIES')
+        NLINE = NLINE + 1
+        WRITE(21,128)
+  128   FORMAT(8X,'   # START PYJGX')
+        NLINE = NLINE + 1
+        WRITE(21,129)
+  129   FORMAT(8X,'   # START YPREDPOP')
+        NLINE = NLINE + 1
+        WRITE(21,229)
+  229   FORMAT(8X,'   # START YPREDBAY')
+        NLINE = NLINE + 1
+        WRITE(21,131)
+  131   FORMAT(8X,'   # START TTPRED')
+        NLINE = NLINE + 1
+        WRITE(21,132)
+  132   FORMAT(8X,'   # START YPREDPOPT')
+        NLINE = NLINE + 1
+        WRITE(21,133)
+  133   FORMAT(8X,'   # START EXX')
+        NLINE = NLINE + 1
+        WRITE(21,134)
+  134   FORMAT(8X,'   # START CYCLE LOG-LIKELIHOODS')
+        NLINE = NLINE + 1
+        WRITE(21,1134)
+ 1134   FORMAT(8X,'   # START CYCLE AIC AND BIC VALUES ')
+        NLINE = NLINE + 1
+        WRITE(21,136)
+  136   FORMAT(8X,'   # START CYCLE MEANS')
+        NLINE = NLINE + 1
+        WRITE(21,137)
+  137   FORMAT(8X,'   # START CYCLE STD. DEVS.')
+        NLINE = NLINE + 1
+        WRITE(21,177)
+  177   FORMAT(8X,'   # START CYCLE ADDITIONAL STATISTICS')
+        NLINE = NLINE + 1
+        WRITE(21,138)
+  138   FORMAT(8X,'   # START CYCLE GAMLAM VALUES')
+        NLINE = NLINE + 1
+        WRITE(21,139)
+  139   FORMAT(8X,'   # START BAYESIAN LOG-LIKELIHOODS')
+        NLINE = NLINE + 1
+        WRITE(21,141)
+  141   FORMAT(8X,'   # START BAYESIAN MEANS')
+        NLINE = NLINE + 1
+        WRITE(21,143)
+  143   FORMAT(8X,'   # START BAYESIAN STD. DEVS.')
+        NLINE = NLINE + 1
+        WRITE(21,142)
+  142   FORMAT(8X,'   # START BAYESIAN ADDITIONAL STATISTICS')
+        NLINE = NLINE + 1
+        WRITE(21,146)
+  146   FORMAT(8X,'   # START PATIENT IDS')
+        NLINE = NLINE + 1
+        WRITE(21,147)
+  147   FORMAT(8X,'   # START PATIENT DOSE COV. BLOCKS')
+        NLINE = NLINE + 1
+        WRITE(21,148)
+  148   FORMAT(8X,'   # START PATIENT OUTPUT AND ASSAY COEFF. BLOCKS')
+        NLINE = NLINE + 1
+        WRITE(21,149)
+  149   FORMAT(/' #BEGIN DATA HERE')
+        NLINE = NLINE + 2
+        WRITE(21,151)
+  151   FORMAT(/8X,'   # RANDOM PARAMETER NAMES')
+        NLINE = NLINE + 2
+        NLRANPAR = NLINE
+        DO IVAR = 1,NVAR
+         WRITE(21,1717) PAR(IVAR)
+         NLINE = NLINE + 1
+        END DO
+        WRITE(21,153)
+  153   FORMAT(/8X,'   # FIXED PARAMETER NAMES')
+        NLINE = NLINE + 2
+        NLFIXPAR = NLINE
+        IF(NOFIX .GT. 0) THEN
+         DO IFIX = 1,NOFIX
+          WRITE(21,1717) PARFIX(IFIX)
+          NLINE = NLINE + 1
+         END DO
+        ENDIF
+        WRITE(21,353)
+  353   FORMAT(/8X,'   # RANFIX PARAMETER NAMES')
+        NLINE = NLINE + 2
+        NLRANFIXPAR = NLINE
+        IF(NRANFIX .GT. 0) THEN
+         DO IRANFIX = 1,NRANFIX
+          WRITE(21,1717) PARRANFIX(IRANFIX)
+          NLINE = NLINE + 1
+         END DO
+        ENDIF
+        WRITE(21,154)
+  154   FORMAT(/8X,'   # PARAMETER BOUNDARIES')
+        NLINE = NLINE + 2
+        NLAB = NLINE
+        DO I = 1,NVAR
+         WRITE(21,*) AB(I,1),AB(I,2)
+         NLINE = NLINE + 1
+        END DO
+        WRITE(21,156)
+  156   FORMAT(/8X,'   # FIXED PARAMETER VALUES')
+        NLINE = NLINE + 2
+        NLFIXVAL = NLINE
+        IF(NOFIX .GT. 0) THEN
+         DO IFIX = 1,NOFIX
+          WRITE(21,*) VALFIX(IFIX)
+          NLINE = NLINE + 1
+         END DO
+        ENDIF
+        WRITE(21,356)
+  356   FORMAT(/8X,'   # RANFIX PARAMETER ESTIMATES')
+        NLINE = NLINE + 2
+        NLRANFIXVAL = NLINE
+        IF(NRANFIX .GT. 0) THEN
+         DO IRANFIX = 1,NRANFIX
+          WRITE(21,*) RANFIXEST(IRANFIX)
+          NLINE = NLINE + 1
+         END DO
+        ENDIF
+        WRITE(21,336)
+  336   FORMAT(/8X,'   # COVARIATE NAMES')
+        NLINE = NLINE + 2
+        NLCOVNAM = NLINE
+        CALL GETCOVR2(NCOV,DESCR)
+        IF(NCOV .GE. 1) THEN
+         DO ICOV = 1,NCOV
+          WRITE(21,1717) DESCR(ICOV)
+          NLINE = NLINE + 1
+         END DO
+        ENDIF
+        WRITE(21,157)
+  157   FORMAT(/8X,'   # CORDEN (FINAL DENSITY VALUES)')
+        NLINE = NLINE + 2
+        NLCORDEN = NLINE
+        DO I = 1,NACTVE
+         DO J = 1,NVAR+1
+          WRITE(21,*) CORDEN(I,J)
+          NLINE = NLINE + 1
+         END DO
+        END DO
+        WRITE(21,2013)
+ 2013   FORMAT(/8X,'   # BAYESIAN POSTERIOR DENSITY VALUES, IN ORDER')
+        NLINE = NLINE + 2
+        NLBAYPOS = NLINE
+       DO ISUB = 1,NNSUB
+        DO K = 1,NACTSUB(ISUB)
+         DO J = 1,NVAR+1
+          WRITE(21,*) BAYPOS(ISUB,K,J)
+          NLINE = NLINE + 1
+         END DO
+        END DO
+       END DO
+        WRITE(21,158)
+  158   FORMAT(/8X,'   # PYJGX (CONDITIONAL PROB. VALUES)')
+        NLINE = NLINE + 2
+        NLPYJGX = NLINE
+        DO JSUB = 1,NSUB
+         DO K = 1,NACTVE
+          WRITE(21,*) PYJGX(JSUB,K)
+          NLINE = NLINE + 1
+         END DO
+        END DO
+        WRITE(21,159)
+  159   FORMAT(/8X,'   # YPREDPOP ARRAY')
+        NLINE = NLINE + 2
+        NLYPREDPOP = NLINE
+        DO JSUB = 1,NSUB
+         DO IEQ = 1,NUMEQT
+          DO IOBS = 1,NOBS(JSUB)
+           DO ICEN = 1,3
+            WRITE(21,*) YPREDPOP(JSUB,IEQ,IOBS,ICEN)
+            NLINE = NLINE + 1
+           END DO
+          END DO
+         END DO
+        END DO
+        WRITE(21,161)
+  161   FORMAT(/8X,'   # YPREDBAY ARRAY')
+        NLINE = NLINE + 2
+        NLYPREDBAY = NLINE
+        DO JSUB = 1,NSUB
+         DO IEQ = 1,NUMEQT
+          DO IOBS = 1,NOBS(JSUB)
+           DO ICEN = 1,3
+            WRITE(21,*) YPREDBAY(JSUB,IEQ,IOBS,ICEN)
+            NLINE = NLINE + 1
+           END DO
+          END DO
+         END DO
+        END DO
+        WRITE(21,162)
+  162   FORMAT(/8X,'   # TTPRED ARRAY')
+        NLINE = NLINE + 2
+        NLTTPRED = NLINE
+        DO JSUB=1,NSUB
+         DO J=1,NUMT(JSUB)
+          WRITE(21,*) TTPRED(JSUB,J)
+          NLINE = NLINE + 1
+         END DO
+        END DO
+        WRITE(21,163)
+  163   FORMAT(/8X,'   # YPREDPOPT ARRAY')
+        NLINE = NLINE + 2
+        NLYPREDPOPT = NLINE
+        DO JSUB = 1,NSUB
+         DO IEQ = 1,NUMEQT
+          DO J = 1,NUMT(JSUB)
+           DO ICEN = 1,3
+            WRITE(21,*) YPREDPOPT(JSUB,IEQ,J,ICEN)
+            NLINE = NLINE + 1
+           END DO
+          END DO
+         END DO
+        END DO
+        WRITE(21,164)
+  164   FORMAT(/8X,'   # EXX ARRAY')
+        NLINE = NLINE + 2
+        NLEXX = NLINE
+        DO JSUB = 1,NSUB
+         DO ICEN = 1,3
+          DO J = 1,NVAR
+           WRITE(21,*) EXX(JSUB,ICEN,J)
+           NLINE = NLINE + 1
+          END DO
+         END DO
+        END DO
+        WRITE(21,166)
+  166   FORMAT(/8X,'   # CYCLE LOG-LIKLIHOODS')
+        NLINE = NLINE + 2
+        NLCYCLOGLIK = NLINE
+        DO ICYCLE = 1,NCYCLE
+         WRITE(21,*) XLOGLIK(ICYCLE)
+         NLINE = NLINE + 1
+        END DO
+        WRITE(21,1166)
+ 1166   FORMAT(/8X,'   # CYCLE AICs AND BICs')
+        NLINE = NLINE + 2
+        NLCYCAICBIC = NLINE
+        DO ICYCLE = 1,NCYCLE
+         WRITE(21,*) (AICBIC(ICYCLE,J),J=1,2)
+         NLINE = NLINE + 1
+        END DO
+        WRITE(21,167)
+  167   FORMAT(/8X,'   # CYCLE MEAN VECTORS')
+        NLINE = NLINE + 2
+        NLCYCMEAN = NLINE
+        DO ICYCLE = 1,NCYCLE
+         DO J = 1,NVAR
+          WRITE(21,*) XMEAN(ICYCLE,J)
+          NLINE = NLINE + 1
+         END DO
+        END DO
+        WRITE(21,168)
+  168   FORMAT(/8X,'   # CYCLE STD. DEV. VECTORS')
+        NLINE = NLINE + 2
+        NLCYCSTDEV = NLINE
+        DO ICYCLE = 1,INDXSD
+         DO J = 1,NVAR
+          WRITE(21,*) STDEV(ICYCLE,J)
+          NLINE = NLINE + 1
+         END DO
+        END DO
+        WRITE(21,169)
+  169   FORMAT(/8X,'   # CYCLE ADDITIONAL STATISTICS ')
+        NLINE = NLINE + 2
+        NLCYCADDSTAT = NLINE
+        REWIND(25)
+        ICYCLE = 0
+  180   READ(25,2) READLINE
+        IF(READLINE(2:23) .NE. 'IN THE LINE IS THE THE') GO TO 180
+        ICYCLE = ICYCLE + 1
+        IF(ICYCLE .GT. ICYCTOT - ICYCSTART + 1) GO TO 220
+        READ(25,*)
+        READ(25,*)
+        DO IVAR = 1,NVAR
+         READ(25,*)
+         READ(25,*)
+          DO II = 1,3
+           READ(25,2) READLINE
+           WRITE(21,182) READLINE(1:80)
+           NLINE = NLINE + 1
+          END DO
+        END DO
+  182   FORMAT(A80)
+        GO TO 180
+  220   WRITE(21,171)
+  171   FORMAT(/8X,'   # CYCLE GAMLAM VALUES')
+        NLINE = NLINE + 2
+        NLCYCGAM = NLINE
+        DO ICYCLE = 1,NCYCLE
+         WRITE(21,*) GAMLAM(ICYCLE)
+         NLINE = NLINE + 1
+        END DO
+        WRITE(21,172)
+  172   FORMAT(/8X,'   # BAYESIAN LOG-LIKLIHOODS')
+        NLINE = NLINE + 2
+        NLBAYLOGLIK = NLINE
+        DO JSUB = 1,NSUB
+         WRITE(21,*) SUBLOGLIK(JSUB)
+         NLINE = NLINE + 1
+        END DO
+        WRITE(21,173)
+  173   FORMAT(/8X,'   # BAYESIAN MEANS')
+        NLINE = NLINE + 2
+        NLBAYMEAN = NLINE
+        DO JSUB = 1,NSUB
+         DO J = 1,NVAR
+          WRITE(21,*) SUBMEAN(JSUB,J)
+          NLINE = NLINE + 1
+         END DO
+        END DO
+        WRITE(21,174)
+  174   FORMAT(/8X,'   # BAYESIAN STD. DEVS')
+        NLINE = NLINE + 2
+        NLBAYSTD = NLINE
+        DO JSUB = 1,NSUB
+         DO J = 1,NVAR
+          WRITE(21,*) SUBSTD(JSUB,J)
+          NLINE = NLINE + 1
+         END DO
+        END DO
+        WRITE(21,176)
+  176   FORMAT(/8X,'   # BAYESIAN ADDITIONAL STATISTICS ')
+        NLINE = NLINE + 2
+        NLBAYADDSTAT = NLINE
+        BACKSPACE(25)
+        BACKSPACE(25)
+        BACKSPACE(25)
+        JSUB = 0
+  280   IF(JSUB .EQ. NSUB) GO TO 230
+        READ(25,2,IOSTAT=IEND) READLINE
+        IF(READLINE(2:23) .NE. 'IN THE LINE IS THE THE') GO TO 280
+        JSUB = JSUB + 1
+        READ(25,*)
+        READ(25,*)
+        DO IVAR = 1,NVAR
+         READ(25,*)
+         READ(25,*)
+          DO II = 1,3
+           READ(25,2) READLINE
+           WRITE(21,182) READLINE(1:80)
+           NLINE = NLINE + 1
+          END DO
+        END DO
+        GO TO 280
+  230   CONTINUE
+        WRITE(21,179)
+  179   FORMAT(/8X,'   # PATIENT ID DATA')
+        NLINE = NLINE + 2
+        NLPATID = NLINE
+        DO JSUB = 1,NSUB
+         WRITE(21,181) NAME(JSUB)
+  181    FORMAT(A53)
+         WRITE(21,181) CHARTNO(JSUB)
+         XVERIFY(1) = AGE(JSUB)
+         XVERIFY(2) = HEIGHT(JSUB)
+         CALL VERIFYVAL(2,XVERIFY)
+         WRITE(21,1182) XVERIFY(1),SEX(JSUB),XVERIFY(2)
+ 1182    FORMAT(2X,F10.3,2X,A1,2X,F10.3)
+         NLINE = NLINE + 3
+        END DO
+        WRITE(21,183)
+  183   FORMAT(/8X,'   # PATIENT DOSECOV BLOCKS')
+        NLINE = NLINE + 2
+        NLPATDOS = NLINE
+        DO JSUB =1,NSUB
+         DO IDOSE = 1,NDORIG(JSUB)
+          DO J = 1,1+NI
+           WRITE(21,*) DOSEBLOCK(JSUB,IDOSE,J)
+           NLINE = NLINE + 1
+          END DO
+         END DO
+        END DO
+        WRITE(21,184)
+  184   FORMAT(/8X,'   # PATIENT OUTPUT AND ASSAY COEFF. BLOCKS')
+        NLINE = NLINE + 2
+        NLPATOUTASSAY = NLINE
+        DO JSUB =1,NSUB
+         DO IOBS = 1,NOBS(JSUB)
+          DO J = 2,NUMEQT+1
+           WRITE(21,*) JSUB, OBSBLOCK(JSUB,IOBS,1), J-1,
+     1      OBSBLOCK(JSUB,IOBS,J), (ASSAYC(JSUB,J-1,K),K=1,4)
+           NLINE = NLINE + 1
+          END DO
+         END DO
+        END DO
+        REWIND(21)
+        OPEN(22,FILE=OUTFILER)
+  250   READ(21,2) READLINE
+        IF(READLINE(12:22) .NE. '# START PAR') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 250
+        ENDIF
+        WRITE(22,186) NLRANPAR
+  186   FORMAT(2X,I10,'   # START PAR')
+  260   READ(21,2) READLINE
+        IF(READLINE(12:25) .NE. '# START PARFIX') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 260
+        ENDIF
+        WRITE(22,187) NLFIXPAR
+  187   FORMAT(2X,I10,'   # START PARFIX')
+  960   READ(21,2) READLINE
+        IF(READLINE(12:28) .NE. '# START PARRANFIX') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 960
+        ENDIF
+        WRITE(22,1187) NLRANFIXPAR
+ 1187   FORMAT(2X,I10,'   # START PARRANFIX')
+  270   READ(21,2) READLINE
+        IF(READLINE(12:21) .NE. '# START AB') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 270
+        ENDIF
+        WRITE(22,188) NLAB
+  188   FORMAT(2X,I10,'   # START AB')
+ 1280   READ(21,2) READLINE
+        IF(READLINE(12:25) .NE. '# START VALFIX') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 1280
+        ENDIF
+        WRITE(22,189) NLFIXVAL
+  189   FORMAT(2X,I10,'   # START VALFIX')
+1380   READ(21,2) READLINE
+        IF(READLINE(12:28) .NE. '# START RANFIXEST') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 1380
+        ENDIF
+        WRITE(22,1189) NLRANFIXVAL
+ 1189   FORMAT(2X,I10,'   # START RANFIXEST')
+  840   READ(21,2) READLINE
+        IF(READLINE(12:25) .NE. '# START COVARI') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 840
+        ENDIF
+        WRITE(22,841) NLCOVNAM
+  841   FORMAT(2X,I10,'   # START COVARIATE NAMES')
+ 1290   READ(21,2) READLINE
+        IF(READLINE(12:25) .NE. '# START CORDEN') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 1290
+        ENDIF
+        WRITE(22,191) NLCORDEN
+  191   FORMAT(2X,I10,'   # START CORDEN')
+2020   READ(21,2) READLINE
+        IF(READLINE(12:37) .NE. '# START BAYESIAN POSTERIOR') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 2020
+        ENDIF
+        WRITE(22,2014) NLBAYPOS
+ 2014   FORMAT(2X,I10,'   # START BAYESIAN POSTERIOR DENSITIES')
+ 1310   READ(21,2) READLINE
+        IF(READLINE(12:24) .NE. '# START PYJGX') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 1310
+        ENDIF
+        WRITE(22,192) NLPYJGX
+  192   FORMAT(2X,I10,'   # START PYJGX')
+  320   READ(21,2) READLINE
+        IF(READLINE(12:27) .NE. '# START YPREDPOP') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 320
+        ENDIF
+        WRITE(22,193) NLYPREDPOP
+  193   FORMAT(2X,I10,'   # START YPREDPOP')
+  330   READ(21,2) READLINE
+        IF(READLINE(12:27) .NE. '# START YPREDBAY') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 330
+        ENDIF
+        WRITE(22,194) NLYPREDBAY
+  194   FORMAT(2X,I10,'   # START YPREDBAY')
+  340   READ(21,2) READLINE
+        IF(READLINE(12:25) .NE. '# START TTPRED') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 340
+        ENDIF
+        WRITE(22,196) NLTTPRED
+  196   FORMAT(2X,I10,'   # START TTPRED')
+  350   READ(21,2) READLINE
+        IF(READLINE(12:28) .NE. '# START YPREDPOPT') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 350
+        ENDIF
+        WRITE(22,197) NLYPREDPOPT
+  197   FORMAT(2X,I10,'   # START YPREDPOPT')
+  360   READ(21,2) READLINE
+        IF(READLINE(12:22) .NE. '# START EXX') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 360
+        ENDIF
+        WRITE(22,198) NLEXX
+  198   FORMAT(2X,I10,'   # START EXX')
+  370   READ(21,2) READLINE
+        IF(READLINE(12:28) .NE. '# START CYCLE LOG') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 370
+        ENDIF
+        WRITE(22,199) NLCYCLOGLIK
+  199   FORMAT(2X,I10,'   # START CYCLE LOG-LIKELIHOODS')
+ 1370   READ(21,2) READLINE
+        IF(READLINE(12:28) .NE. '# START CYCLE AIC') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 1370
+        ENDIF
+        WRITE(22,1199) NLCYCAICBIC
+ 1199   FORMAT(2X,I10,'   # START CYCLE AIC AND BIC VALUES')
+  380   READ(21,2) READLINE
+        IF(READLINE(12:28) .NE. '# START CYCLE MEA') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 380
+        ENDIF
+        WRITE(22,201) NLCYCMEAN
+  201   FORMAT(2X,I10,'   # START CYCLE MEANS')
+  390   READ(21,2) READLINE
+        IF(READLINE(12:28) .NE. '# START CYCLE STD') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 390
+        ENDIF
+        WRITE(22,202) NLCYCSTDEV
+  202   FORMAT(2X,I10,'   # START CYCLE STD. DEVS.')
+  410   READ(21,2) READLINE
+        IF(READLINE(12:28) .NE. '# START CYCLE ADD') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 410
+        ENDIF
+        WRITE(22,203) NLCYCADDSTAT
+  203   FORMAT(2X,I10,'   # START CYCLE ADDITIONAL STATISTICS')
+  420   READ(21,2) READLINE
+        IF(READLINE(12:28) .NE. '# START CYCLE GAM') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 420
+        ENDIF
+        WRITE(22,204) NLCYCGAM
+  204   FORMAT(2X,I10,'   # START CYCLE GAMLAM VALUES')
+  430   READ(21,2) READLINE
+        IF(READLINE(12:31) .NE. '# START BAYESIAN LOG') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 430
+        ENDIF
+        WRITE(22,206) NLBAYLOGLIK
+  206   FORMAT(2X,I10,'   # START BAYESIAN LOG-LIKELIHOODS')
+  440   READ(21,2) READLINE
+        IF(READLINE(12:31) .NE. '# START BAYESIAN MEA') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 440
+        ENDIF
+        WRITE(22,207) NLBAYMEAN
+  207   FORMAT(2X,I10,'   # START BAYESIAN MEANS')
+  450   READ(21,2) READLINE
+        IF(READLINE(12:31) .NE. '# START BAYESIAN STD') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 450
+        ENDIF
+        WRITE(22,208) NLBAYSTD
+  208   FORMAT(2X,I10,'   # START BAYESIAN STD. DEVS.')
+  460   READ(21,2) READLINE
+        IF(READLINE(12:31) .NE. '# START BAYESIAN ADD') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 460
+        ENDIF
+        WRITE(22,209) NLBAYADDSTAT
+  209   FORMAT(2X,I10,'   # START BAYESIAN ADDITIONAL STATISTICS')
+  480   READ(21,2) READLINE
+        IF(READLINE(12:30) .NE. '# START PATIENT IDS') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 480
+        ENDIF
+        WRITE(22,212) NLPATID
+  212   FORMAT(2X,I10,'   # START PATIENT IDS')
+  490   READ(21,2) READLINE
+        IF(READLINE(12:30) .NE. '# START PATIENT DOS') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 490
+        ENDIF
+        WRITE(22,213) NLPATDOS
+  213   FORMAT(2X,I10,'   # START PATIENT DOSE COV. BLOCKS')
+  510   READ(21,2) READLINE
+        IF(READLINE(12:30) .NE. '# START PATIENT OUT') THEN
+         CALL CONDENSE2(READLINE)
+         GO TO 510
+        ENDIF
+        WRITE(22,214) NLPATOUTASSAY
+  214 FORMAT(2X,I10,'   # START PATIENT OUTPUT AND ASSAY COEFF. BLOCKS')
+  600   READ(21,222,IOSTAT=IEND) READLINE2
+  222   FORMAT(A1000)
+        IF(IEND .LT. 0) GO TO 700
+        CALL CONDENSE3(READLINE2)
+        GO TO 600
+  700   CLOSE(21)
+        CLOSE(22)
+        RETURN
+        END
+	SUBROUTINE GETNUM(NUMEQT)
+	IMPLICIT REAL*8(A-H,O-Z)
+	CHARACTER READLINE*1000
+    2   FORMAT(A1000)
+   35	READ(27,2,IOSTAT=IEND) READLINE
+	IF(IEND .LT. 0) THEN
+	 WRITE(*,57)
+   57    FORMAT(//' THE COMBINATION OUTPUT FILE YOU HAVE ENTERED TO'/
+     1' THIS PROGRAM WAS NOT MADE BY A RECENT BIG NPAG PROGRAM.'//
+     2' SUCH A FILE MUST HAVE CONCATENATED PATIENT DATA FILES HAVING'/
+     3' A LINE WITH "NO. OF TOTAL OUTPUT EQUATIONS" IN COLUMNS 12:40.'//
+     3' THE PROGRAM STOPS. '//)
+	 STOP
+	ENDIF
+	IF(READLINE(12:40) .NE. 'NO. OF TOTAL OUTPUT EQUATIONS')GO TO 35
+	BACKSPACE(27)
+   13   FORMAT(T2,I5)
+        READ(27,13) NUMEQT
+	RETURN
+	END
+	SUBROUTINE GETNSUB2(NSUBTOT)
+	CHARACTER READLINE*1000
+    2   FORMAT(A1000)
+   10   READ(25,2) READLINE
+	ILINE=0
+	 DO I=1,51
+	  IF(READLINE(I:I+21) .EQ. 'CTS IN THE DATA SET IS') THEN
+	   ILINE=1
+	   GO TO 20
+	  ENDIF
+	 END DO
+   20   IF(ILINE .EQ. 0) GO TO 10
+	 IEND = 0
+	 ISTART = 0
+	  DO J = I+22, 72
+	   IF(ISTART .EQ. 0 .AND. READLINE(J:J) .NE. ' ') ISTART = J
+	   IF(ISTART .NE. 0 .AND. READLINE(J:J) .EQ. ' ') THEN
+	    IEND = J-1
+	    GO TO 30
+	   ENDIF
+	  END DO
+   30	ISIZE = IEND-ISTART
+	IF(ISIZE .GT. 3) THEN
+	 WRITE(*,*)' NSUBTOT IS ',NSUBTOT,' WHICH IS TOO LARGE. '
+	 WRITE(*,*)' THE PROGRAM STOPS. '
+	 STOP
+	ENDIF
+	NSUBTOT = 0
+	 DO K=ISTART,IEND
+	  IF(READLINE(K:K) .EQ. '0') IVAL = 0
+	  IF(READLINE(K:K) .EQ. '1') IVAL = 1
+	  IF(READLINE(K:K) .EQ. '2') IVAL = 2
+	  IF(READLINE(K:K) .EQ. '3') IVAL = 3
+	  IF(READLINE(K:K) .EQ. '4') IVAL = 4
+	  IF(READLINE(K:K) .EQ. '5') IVAL = 5
+	  IF(READLINE(K:K) .EQ. '6') IVAL = 6
+	  IF(READLINE(K:K) .EQ. '7') IVAL = 7
+	  IF(READLINE(K:K) .EQ. '8') IVAL = 8
+	  IF(READLINE(K:K) .EQ. '9') IVAL = 9
+	  NSUBTOT = NSUBTOT + IVAL*10**ISIZE
+	  ISIZE = ISIZE-1
+	 END DO
+	RETURN
+	END
+	SUBROUTINE GETNSUB(NSUB)
+	CHARACTER READLINE*1000
+    2   FORMAT(A1000)
+   10   READ(25,2) READLINE
+	ILINE=0
+	 DO I=1,51
+	  IF(READLINE(I:I+21) .EQ. 'THE NO. OF SUBJECTS IS') THEN
+	   ILINE=1
+	   GO TO 20
+	  ENDIF
+	 END DO
+   20   IF(ILINE .EQ. 0) GO TO 10
+	 IEND = 0
+	 ISTART = 0
+	  DO J = I+22, 72
+	   IF(ISTART .EQ. 0 .AND. READLINE(J:J) .NE. ' ') ISTART = J
+	   IF(ISTART .NE. 0 .AND. READLINE(J:J) .EQ. ' ') THEN
+	    IEND = J-1
+	    GO TO 30
+	   ENDIF
+	  END DO
+   30	ISIZE = IEND-ISTART
+	IF(ISIZE .GT. 3) THEN
+	 WRITE(*,*)' NSUB IS ',NSUB,' WHICH IS TOO LARGE. '
+	 WRITE(*,*)' THE PROGRAM STOPS. '
+	 STOP
+	ENDIF
+	NSUB = 0
+	 DO K=ISTART,IEND
+	  IF(READLINE(K:K) .EQ. '0') IVAL = 0
+	  IF(READLINE(K:K) .EQ. '1') IVAL = 1
+	  IF(READLINE(K:K) .EQ. '2') IVAL = 2
+	  IF(READLINE(K:K) .EQ. '3') IVAL = 3
+	  IF(READLINE(K:K) .EQ. '4') IVAL = 4
+	  IF(READLINE(K:K) .EQ. '5') IVAL = 5
+	  IF(READLINE(K:K) .EQ. '6') IVAL = 6
+	  IF(READLINE(K:K) .EQ. '7') IVAL = 7
+	  IF(READLINE(K:K) .EQ. '8') IVAL = 8
+	  IF(READLINE(K:K) .EQ. '9') IVAL = 9
+	  NSUB = NSUB + IVAL*10**ISIZE
+	  ISIZE = ISIZE-1
+	 END DO
+	RETURN
+	END
+	SUBROUTINE GETIPATFF(IFILE,NSUBTOT,NSUB,MAXSUB,
+     1   IPATVEC,IERRR)
+	DIMENSION IPATVEC(MAXSUB)
+	CHARACTER READLINE*1000
+    3   FORMAT(A1000)
+	NSUBB = 0
+	NUMCUR = 0
+ 4210	READ(25,3,ERR=4200) READLINE
+	CALL GETNUMSF2(1,READLINE,NSUBB,NSUBTOT,NUMCUR,ISTOP,
+     1                  MAXSUB,IPATVEC)
+	IF(ISTOP .EQ. -1) GO TO 4200
+	IF(ISTOP .EQ. 1) GO TO 4210
+	IF(NSUB .EQ. NSUBB) THEN
+	 IERRR = 0
+	 RETURN
+	ENDIF
+	IF(NSUB .NE. NSUBB) THEN
+         WRITE(*,2)
+    2   FORMAT(//' THERE WAS AN ERROR IN THE READING OF PATIENT NOS.'/
+     1' USED FOR THIS ANALYSIS. IN PARTICULAR, THE NO. OF '/
+     2' SUBJECTS TO BE INCLUDED IN THE ANALYSIS, AS ENTERED IN THE'/
+     3' OUTPUT FILE, DOES NOT MATCH THE LIST OF SUBJECT NOS.'/
+     4' WHICH FOLLOW THAT NUMBER. IF YOU DID NOT MANUALLY EDIT THE'/
+     5' OUTPUT FILE AFTER THE RUN, PLEASE CONTACT LAPK AND REPORT THIS'/
+     6' ERROR.'//)
+	IERRR = -1
+	 RETURN
+	ENDIF
+ 4200   WRITE(*,1)
+    1   FORMAT(//' THERE WAS AN ERROR IN THE READING OF PATIENT NOS.'/
+     1' USED FOR THIS ANALYSIS FROM THE OUTPUT FILE. IF YOU DID NOT '/
+     2' MANUALLY EDIT THE OUTPUT FILE AFTER THE RUN, PLEASE CONTACT '/
+     3' LAPK AND REPORT THIS ERROR.'//)
+	IERRR = -1
+	RETURN
+	END
+        SUBROUTINE FILREDT(NOBSER,TO,YO,C0,C1,C2,C3,MAXOBDIM,NDRUG,ND,
+     1   NADD)
+        IMPLICIT REAL*8(A-H,O-Z)
+        PARAMETER(MAXNUMEQ=7)
+        DIMENSION YO(MAXOBDIM,MAXNUMEQ),RJUNK(34),C0(MAXNUMEQ),
+     1  C1(MAXNUMEQ),C2(MAXNUMEQ),C3(MAXNUMEQ),TO(MAXOBDIM)
+	CHARACTER READLINE*1000
+	DO I=1,7
+	 READ(27,*)
+	END DO
+	READ(27,*)
+	READ(27,*)
+    2   FORMAT(A1)
+      READ(27,*)
+	READ(27,*)
+    1   FORMAT(A1000)
+   10	READ(27,1) READLINE
+	IF(READLINE(12:23) .NE. 'NO. OF DRUGS') GO TO 10
+	BACKSPACE(27)
+    3   FORMAT(T2,I5)
+        READ(27,3) NDRUG
+	IF(NDRUG .GT. 7) THEN
+	 WRITE(*,124)
+  124    FORMAT(' YOUR PATIENT DATA FILES CANNOT HAVE MORE THAN 7'/
+     1' DRUGS. THE PROGRAM IS NOW STOPPING. '/)
+	 CALL PAUSE
+	 STOP
+	ENDIF
+        READ(27,3) NADD
+	NI = 2*NDRUG + NADD
+	IF(NI .GT. 34) THEN
+  	 WRITE(*,123)
+123    FORMAT(/' YOUR PATIENT DATA FILES HAVE TOO MANY COLUMNS IN '/
+     1' THE DOSAGE REGIMEN BLOCK. THE NO. OF ADDITIONAL COVARIATES '/
+     2' PLUS TWICE THE NO. OF DRUGS CANNOT EXCEED 34. THE PROGRAM IS'/
+     3' NOW STOPPING. '/)
+	 CALL PAUSE
+	 STOP
+	ENDIF
+        READ(27,3) ND
+	IF(ND .GT. 1000) THEN
+	 WRITE(*,125)
+  125    FORMAT(' YOUR PATIENT DATA FILES CANNOT HAVE MORE THAN 1000'/
+     1' DOSE EVENTS. THE PROGRAM IS NOW STOPPING. '/)
+	 CALL PAUSE
+	 STOP
+	ENDIF
+	READ(27,*)
+	READ(27,*)
+        IF(ND.EQ.0) GO TO 40
+	DO I = 1,ND
+         READ(27,*) XJUNK,(RJUNK(J),J=1,NI)
+	END DO
+   40	READ(27,1) READLINE
+	IF(READLINE(12:23) .NE. 'NO. OF TOTAL') GO TO 40
+	BACKSPACE(27)
+        READ(27,3) NUMEQT
+        READ(27,3) M
+	IF(M .GT. MAXOBDIM) THEN
+  	 WRITE(*,126) MAXOBDIM
+  126    FORMAT(/' AT LEAST ONE OF YOUR PATIENT DATA FILES HAS TOO'/
+     1' MANY OBSERVED VALUE TIMES. THIS NO. CANNOT EXCEED ',I5,'.'/
+     2' THE PROGRAM IS NOW STOPPING. '/)
+	 CALL PAUSE
+	 STOP
+	ENDIF
+	IF(NUMEQT .GT. MAXNUMEQ) THEN
+  	 WRITE(*,127) MAXNUMEQ
+  127    FORMAT(/' AT LEAST ONE OF YOUR PATIENT DATA FILES HAS TOO'/
+     1' MANY OUTPUT EQUATION COLUMNS. THIS NO. CANNOT EXCEED ',I2/
+     2' THE PROGRAM IS NOW STOPPING. '/)
+	 CALL PAUSE
+	 STOP
+	ENDIF
+	DO I=1,M
+         READ(27,*) TO(I),(YO(I,J),J=1,NUMEQT)
+	END DO
+	NOBSER = M
+   50	READ(27,1) READLINE
+	IF(READLINE(1:25) .NE. 'ASSAY COEFFICIENTS FOLLOW') GO TO 50
+	DO IEQ = 1,NUMEQT
+	 READ(27,*) C0(IEQ),C1(IEQ),C2(IEQ),C3(IEQ)
+	END DO
+	RETURN
+	END
+	SUBROUTINE GETNUMSF2(IINCLUDE,READLINE,NSUBB,NSUBTOT,NUMCUR,
+     1    ISTOP,MAXSUB,IPATVECC)
+	DIMENSION IPATVECC(MAXSUB)
+	CHARACTER READLINE*1000
+	ISTOP = 1
+	DO J = 1,70
+	 IF(READLINE(J:J) .NE. ' ') GO TO 10
+	END DO
+	IF(NSUBB .EQ. 0) WRITE(*,1)
+    1   FORMAT(/' THE INSTRUCTION OR OUTPUT FILE HAS AN IMPROPER BLANK'/
+     1' LINE IN THE PATIENT NUMBER SECTION. ')
+	ISTOP = -1
+	RETURN
+   10   CONTINUE
+	DO J = 1,70
+	 IF(READLINE(J:J) .NE. ' ') GO TO 20
+	END DO
+   20   ISTART = J
+	IF(READLINE(ISTART:ISTART) .NE. '0') GO TO 30
+	DO I = ISTART+1,70
+	 IF(READLINE(I:I) .NE. ' ') GO TO 30
+	END DO
+	IF(IINCLUDE .EQ. 1 .AND. NSUBB .EQ. 0) THEN
+	 WRITE(*,3)
+    3    FORMAT(/' THE INSTRUCTION OR OUTPUT FILE HAS AN IMPROPER '/
+     1' LINE - WITH JUST A "0" ON IT - IN THE PATIENT NUMBER SECTION.')
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	IF(IINCLUDE .EQ. 2 .OR. NSUBB .GT. 0) THEN
+	 ISTOP = 0
+	 RETURN
+	ENDIF
+   30   CONTINUE
+     	DO I = ISTART+1,70
+	 IF(READLINE(I:I) .EQ. ' ' .OR. READLINE(I:I) .EQ. ',' .OR.
+     1      READLINE(I:I) .EQ. '-') GO TO 40
+	END DO
+   40   IEND = I-1
+	CALL GETSUB2(READLINE,ISTART,IEND,ISUB,IERROR)
+	IF(IERROR .EQ. -1) THEN
+	 WRITE(*,7)
+    7    FORMAT(/' THE INSTRUCTION OR OUTPUT FILE HAS AN IMPROPER '/
+     1' LINE - WITH AN INVALID CHARACTER ON IT - IN THE PATIENT '/
+     2' NUMBER SECTION.')
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	IF(ISUB .LE. NUMCUR) THEN
+	 WRITE(*,4) ISUB,NUMCUR
+    4    FORMAT(/' THE INSTRUCTION OR OUTPUT FILE HAS AN IMPROPER '/
+     1' LINE IN IT IN THE PATIENT NUMBER SECTION.'//
+     2' IT HAS A SUBJECT NO. (',I4,' ) WHICH IS LESS THAN OR EQUAL TO '/
+     3' A PREVIOUSLY ENTERED SUBJECT NO. (',I4,').')
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	IF(ISUB .GT. NSUBTOT) THEN
+	 WRITE(*,6) ISUB,NSUBTOT
+    6    FORMAT(/' THE INSTRUCTION OR OUTPUT FILE HAS AN IMPROPER '/
+     1' LINE IN IT IN THE PATIENT NUMBER SECTION.'//
+     2' IT HAS A SUBJECT NO. (',I4,' ) WHICH IS GREATER THAN THE NO.'/
+     3' OF SUBJECTS IN YOUR DATA FILE (',I4,').')
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	DO I = IEND+1,70
+	 IF(READLINE(I:I) .NE. ' ') GO TO 50
+	END DO
+	NUMCUR = ISUB
+	NSUBB = NSUBB + 1
+	IPATVECC(NSUBB) = ISUB
+	RETURN
+   50   CONTINUE
+	IF(READLINE(I:I) .EQ. ',') THEN
+	 NUMCUR = ISUB
+ 	 NSUBB = NSUBB + 1
+	 IPATVECC(NSUBB) = ISUB
+	 DO J = I+1,70
+	  IF(READLINE(J:J) .NE. ' ') GO TO 60
+	 END DO
+	 RETURN
+   60    ISTART = J
+	 GO TO 30
+	ENDIF
+	INUM = 0
+	IF(READLINE(I:I) .EQ. '0') INUM = 1
+	IF(READLINE(I:I) .EQ. '1') INUM = 1
+	IF(READLINE(I:I) .EQ. '2') INUM = 1
+	IF(READLINE(I:I) .EQ. '3') INUM = 1
+	IF(READLINE(I:I) .EQ. '4') INUM = 1
+	IF(READLINE(I:I) .EQ. '5') INUM = 1
+	IF(READLINE(I:I) .EQ. '6') INUM = 1
+	IF(READLINE(I:I) .EQ. '7') INUM = 1
+	IF(READLINE(I:I) .EQ. '8') INUM = 1
+	IF(READLINE(I:I) .EQ. '9') INUM = 1
+	IF(INUM .EQ. 1) THEN
+	 NUMCUR = ISUB
+ 	 NSUBB = NSUBB + 1
+	 IPATVECC(NSUBB) = ISUB
+         ISTART = I
+	 GO TO 30
+	ENDIF
+	IF(READLINE(I:I) .EQ. '-') THEN
+	 NUMCUR1 = ISUB
+	 DO J = I+1,70
+	  IF(READLINE(J:J) .NE. ' ') GO TO 70
+	 END DO
+	 WRITE(*,8)
+    8    FORMAT(/' THE INSTRUCTION OR OUTPUT FILE HAS AN IMPROPER '/
+     1' LINE IN IT IN THE PATIENT NUMBER SECTION.'//
+     2' A LINE HAS BEEN ENDED WITH A DASH.')
+	 ISTOP = -1
+	 RETURN
+   70   ISTART = J
+     	DO K = ISTART+1,70
+	 IF(READLINE(K:K) .EQ. ' ' .OR. READLINE(K:K) .EQ. ',')
+     1    GO TO 80
+	END DO
+   80   IEND = K-1
+	CALL GETSUB2(READLINE,ISTART,IEND,ISUB,IERROR)
+	IF(IERROR .EQ. -1) THEN
+	 WRITE(*,7)
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	IF(ISUB .LE. NUMCUR1) THEN
+	 WRITE(*,9)
+    9    FORMAT(/' THE INSTRUCTION OR OUTPUT FILE HAS AN IMPROPER '/
+     1' LINE IN IT IN THE PATIENT NUMBER SECTION.'//
+     2' IT HAS A RANGE OF SUBJECT NOS. WITH THE ENDING NO. LESS THAN '/
+     3' OR EQUAL TO THE BEGINNING NO.')
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	IF(ISUB .GT. NSUBTOT) THEN
+	 WRITE(*,6) ISUB,NSUBTOT
+	 ISTOP = -1
+	 RETURN
+	ENDIF
+	 NUMCUR = ISUB
+	 NN = NSUBB
+ 	 NSUBB = NSUBB + (NUMCUR - NUMCUR1) + 1
+	 NONEW = 0
+	 DO K = NN+1,NSUBB
+	  NONEW = NONEW + 1
+	  IPATVECC(K) = NUMCUR1 - 1 + NONEW
+	 END DO
+	 DO J = IEND+1,70
+	  IF(READLINE(J:J) .NE. ' ' .AND. READLINE(J:J) .NE. ',' )
+     1    GO TO 90
+	 END DO
+	 RETURN
+   90    ISTART = J
+	 GO TO 30
+	ENDIF
+	WRITE(*,7)
+	ISTOP = -1
+	RETURN
+	END
+	SUBROUTINE GETSUB2(READLINE,ISTART,IEND,ISUB,IERROR)
+	CHARACTER READLINE*1000
+    3   FORMAT(A1000)
+	IERROR = 0
+  	ISIZE = IEND-ISTART
+	ISUB = 0
+	 DO K=ISTART,IEND
+	  IVAL = -9
+	  IF(READLINE(K:K) .EQ. '0') IVAL = 0
+	  IF(READLINE(K:K) .EQ. '1') IVAL = 1
+	  IF(READLINE(K:K) .EQ. '2') IVAL = 2
+	  IF(READLINE(K:K) .EQ. '3') IVAL = 3
+	  IF(READLINE(K:K) .EQ. '4') IVAL = 4
+	  IF(READLINE(K:K) .EQ. '5') IVAL = 5
+	  IF(READLINE(K:K) .EQ. '6') IVAL = 6
+	  IF(READLINE(K:K) .EQ. '7') IVAL = 7
+	  IF(READLINE(K:K) .EQ. '8') IVAL = 8
+	  IF(READLINE(K:K) .EQ. '9') IVAL = 9
+	  IF(IVAL .EQ. -9) THEN
+	   IERROR = -1
+	   RETURN
+	  ENDIF
+	  ISUB = ISUB + IVAL*10**ISIZE
+	  ISIZE = ISIZE-1
+	 END DO
+	RETURN
+	END
+        SUBROUTINE CONVERGE2(NCYCLE,XLOGLIK,XMEAN,STDEV,INDXSD,AICBIC,
+     1   PRCFVR,ACTPTS,SCALNFO,GAMLAM,AGE,HEIGHT,
+     2   SUBMEAN,SUBLOGLIK,SUBSTD,SUBPERCOF,
+     3   NAME,CHARTNO,SEX,NDD,NI,ASSAYC,IERRMOD)
+        IMPLICIT REAL*8(A-H,O-Z)
+        PARAMETER(MAXNUMEQ=7)
+        CHARACTER READLINE*1000,NAME(800)*53,CHARTNO(800)*53,SEX(800)*1
+        DIMENSION XLOGLIK(9997),XMEAN(9997,30),AICBIC(9997,2),
+     1   STDEV(9997,30),PRCFVR(9997,30),ACTPTS(9997),SCALNFO(9997),
+     2   GAMLAM(9997),
+     3   AGE(800),HEIGHT(800),SUBMEAN(800,30),SUBLOGLIK(800),
+     4   SUBSTD(800,30),SUBPERCOF(800,30),
+     6   NDD(800),ASSAYC(800,MAXNUMEQ,4)
+        REWIND(25)
+    2   FORMAT(A1000)
+        ILOC=2
+   50   READ(25,2) READLINE
+        IF(ILOC .EQ. 2) GO TO 202
+        IF(ILOC .EQ. 3) GO TO 203
+  202   IF(READLINE(2:29) .EQ. 'STATISTICS FOR THE VARIABLES') THEN
+	  BACKSPACE(25)
+	  BACKSPACE(25)
+	  READ(25,53) NVAR
+   53     FORMAT(T6,I2)
+	  ILOC=3
+	  REWIND(25)
+	ENDIF
+        IF(READLINE(2:16) .EQ. 'THE FOLLOWING  ') THEN
+	  BACKSPACE(25)
+	  READ(25,531) NVAR
+  531     FORMAT(T17,I1)
+	  ILOC=3
+	  REWIND(25)
+	ENDIF
+	GO TO 50
+  203   IF(READLINE(2:21) .EQ. 'THE RANDOM VARIABLES' .OR.
+     1  READLINE(3:22) .EQ. 'THE RANDOM VARIABLES') THEN
+	  DO I=1,NVAR
+	    READ(25,*)
+	    READ(25,*)
+	  END DO
+	    GO TO 60
+	ENDIF
+	GO TO 50
+   60	INDXLOG = 0
+      INDAICBIC = 0
+	INDXPTS = 0
+	INDXNFO = 0
+	INDXMEAN = 0
+	INDXSD = 0
+	INDXPRCF = 0
+      INDGAM = 0
+   10	READ(25,2,IOSTAT=IEND) READLINE
+        IF(IEND .LT. 0) THEN
+         WRITE(*,217)
+  217    FORMAT(/' SOMETHING IS WRONG WITH THE OUTPUT FILE ENTERED;'/
+     1' THERE ARE NO BAYESIAN RESULTS. THE PROGRAM STOPS.'//)
+         CALL PAUSE
+         STOP
+        ENDIF
+      IF(READLINE(2:31) .EQ. 'THE BAYESIAN POSTERIOR DENSITY') GO TO 100
+        IF(READLINE(2:12) .EQ. 'THE LOG-LIK') THEN
+	 INDXLOG = INDXLOG+1
+	 READ(25,*)
+	 READ(25,*) XLOGLIK(INDXLOG)
+	 GO TO 10
+	ENDIF
+	IF(READLINE(11:41) .EQ. '(NUMERICAL) LOG-LIKELIHOOD (USI') THEN
+	 INDXLOG = INDXLOG+1
+	 READ(25,*)
+	 READ(25,*)
+	 READ(25,*) XLOGLIK(INDXLOG)
+	 GO TO 10
+	ENDIF
+	IF(READLINE(11:41) .EQ. '(NUMERICAL) LOG-LIKELIHOOD OF T') THEN
+	 INDXLOG = INDXLOG+1
+	 READ(25,*)
+	 READ(25,*) XLOGLIK(INDXLOG)
+	 GO TO 10
+	ENDIF
+	IF(READLINE(2:11) .EQ. 'THE AKAIKE') THEN
+	 INDAICBIC = INDAICBIC+1
+	 READ(25,*) (AICBIC(INDAICBIC,J),J=1,2)
+	 GO TO 10
+	ENDIF
+        IF(READLINE(3:19) .EQ. 'THE NO. OF ACTIVE' .OR.
+     1   READLINE(2:18) .EQ. 'THE NO. OF ACTIVE') THEN
+         INDXPTS = INDXPTS+1
+         BACKSPACE(25)
+         READ(25,57) ACTPTS(INDXPTS)
+   57    FORMAT(T39,G30.0)
+         GO TO 10
+        ENDIF
+        IF(READLINE(2:11) .EQ. 'THE SCALED') THEN
+         INDXNFO = INDXNFO+1
+	 IOLDER = 0
+	 IF(READLINE(43:43) .EQ. '%') IOLDER = 1
+	 BACKSPACE(25)
+	 IF(IOLDER .EQ. 0) READ(25,58) SCALNFO(INDXNFO)
+	 IF(IOLDER .EQ. 1) READ(25,158) SCALNFO(INDXNFO)
+   58    FORMAT(T36,F10.2)
+  158    FORMAT(T36,F6.2)
+	 GO TO 10
+	ENDIF
+        IF(READLINE(2:10) .EQ. 'THE MEANS' .OR.
+     1     READLINE(3:11) .EQ. 'THE MEANS') THEN
+           INDXMEAN = INDXMEAN+1
+	IF(READLINE(20:30) .NE. '           ') THEN
+	  IOLD=-1
+	  BACKSPACE(25)
+	  READ(25,19) (XMEAN(INDXMEAN,J),J=1,NVAR)
+   19   FORMAT(T17,7G13.6)
+	ELSE
+	  IOLD=1
+	  READ(25,*)
+	  READ(25,*) (XMEAN(INDXMEAN,J),J=1,NVAR)
+	ENDIF
+	GO TO 10
+	ENDIF
+        IF(READLINE(2:28) .EQ. 'THE STANDARD DEVIATIONS ARE') THEN
+         INDXSD = INDXSD+1
+	 IF(IOLD .EQ. 1) READ(25,*)
+	 READ(25,*) (STDEV(INDXSD,J),J=1,NVAR)
+	 GO TO 10
+	ENDIF
+        IF(READLINE(2:12) .EQ. 'THE PERCENT') THEN
+	 INDXPRCF = INDXPRCF+1
+	 IF(IOLD .EQ. 1) READ(25,*)
+	 READ(25,*) (PRCFVR(INDXPRCF,J),J=1,NVAR)
+	 GO TO 10
+	ENDIF
+        IF(READLINE(2:12) .EQ. 'IERRMOD AND') THEN
+         INDGAM = INDGAM+1
+         READ(25,*) IERRMOD,GAMLAM(INDGAM)
+        ENDIF
+	GO TO 10
+  100   NCYCLE = INDXLOG
+        INDSUB = 0
+  110	  READ(25,2,IOSTAT=IEND) READLINE
+        IF(IEND .LT. 0) GO TO 200
+        IF(READLINE(11:41) .EQ. '(NUMERICAL) LOG-LIKELIHOOD OF T') THEN
+         INDSUB = INDSUB + 1
+         READ(25,*)
+         READ(25,*)
+         READ(25,*) SUBLOGLIK(INDSUB)
+         GO TO 110
+        ENDIF
+        IF(READLINE(2:10) .EQ. 'THE MEANS' .OR.
+     1     READLINE(3:11) .EQ. 'THE MEANS') THEN
+         READ(25,*)
+         READ(25,*) (SUBMEAN(INDSUB,J),J=1,NVAR)
+         GO TO 110
+        ENDIF
+        IF(READLINE(2:27) .EQ. 'THE VARIANCE FOR PARAMETER') THEN
+         DO J = 1,NVAR
+          SUBSTD(INDSUB,J) = -99.D0
+          SUBPERCOF(INDSUB,J) = -99.D0
+         END DO
+        ENDIF
+        IF(READLINE(2:13) .EQ. 'THE STANDARD') THEN
+         READ(25,*)
+         READ(25,*) (SUBSTD(INDSUB,J),J=1,NVAR)
+         GO TO 110
+        ENDIF
+        IF(READLINE(2:13) .EQ. 'THE PERCENT ') THEN
+         READ(25,*)
+         READ(25,*) (SUBPERCOF(INDSUB,J),J=1,NVAR)
+         GO TO 110
+        ENDIF
+        GO TO 110
+  200   REWIND(27)
+        INDSUB = 0
+  210	  READ(27,2,IOSTAT=IEND) READLINE
+        IF(IEND .LT. 0) RETURN
+        IF(READLINE(3:16) .EQ. 'LAST AND FIRST') THEN
+         INDSUB = INDSUB + 1
+         NAME(INDSUB) = READLINE(28:80)
+         READ(27,2) READLINE
+         CHARTNO(INDSUB) = READLINE(18:70)
+          DO I = 1,5
+           READ(27,*)
+          END DO
+         READ(27,*) AGE(INDSUB)
+         READ(27,2) READLINE
+         SEX(INDSUB) = READLINE(1:1)
+         READ(27,*) HEIGHT(INDSUB)
+         GO TO 210
+        ENDIF
+        IF(READLINE(12:23) .EQ. 'NO. OF DRUGS') THEN
+         BACKSPACE(27)
+    3    FORMAT(T2,I5)
+         READ(27,3) NDRUG
+         READ(27,3) NADD
+         NI = 2*NDRUG + NADD
+         READ(27,3) ND
+         NDD(INDSUB) = ND
+         GO TO 210
+        ENDIF
+        IF(READLINE(12:23) .EQ. 'NO. OF TOTAL') THEN
+         BACKSPACE(27)
+         READ(27,3) NUMEQT
+         READ(27,3) M
+         GO TO 210
+        ENDIF
+        IF(READLINE(1:25) .EQ. 'ASSAY COEFFICIENTS FOLLOW') THEN
+         DO J = 1,NUMEQT
+          READ(27,*) (ASSAYC(INDSUB,J,K),K=1,4)
+         END DO
+         GO TO 210
+        ENDIF
+        GO TO 210
+        END
+	SUBROUTINE GETCOVR2(NCOV,DESCR)
+	IMPLICIT REAL*8(A-H,O-Z)
+	CHARACTER READLINE*1000,DESCR(26)*20
+    2   FORMAT(A20)
+   33   FORMAT(A1000)
+	REWIND(27)
+   10	READ(27,33) READLINE
+	IF(READLINE(12:28) .NE. 'NO. OF ADDITIONAL') GO TO 10
+	BACKSPACE(27)
+    3   FORMAT(T2,I5)
+        READ(27,3) NADD
+	NCOV = NADD
+   20	READ(27,33) READLINE
+	IF(READLINE(2:16) .NE. 'COVARIATE NAMES') GO TO 20
+        IF(NCOV .GE. 1) THEN
+         DO J = 1,NCOV
+          READ(27,33) READLINE
+          DO I = 3,20
+           IF(READLINE(I:I) .EQ. ' ') GO TO 30
+          END DO
+   30     DESCR(J) = READLINE(1:I-1)
+         END DO
+        ENDIF
+	REWIND(27)
+	RETURN
+	END
+	SUBROUTINE GETICYCSTART(ICYCSTART)
+	CHARACTER READLINE*1000
+    2   FORMAT(A1000)
+   10 READ(25,2) READLINE
+	ILINE=0
+	 DO I=1,51
+	  IF(READLINE(I:I+21) .EQ. 'LE NO. FOR THIS RUN IS') THEN
+	   ILINE=1
+	   GO TO 20
+	  ENDIF
+	 END DO
+   20 IF(ILINE .EQ. 0) GO TO 10
+	 IEND = 0
+	 ISTART = 0
+	  DO J = I+22, 72
+	   IF(ISTART .EQ. 0 .AND. READLINE(J:J) .NE. ' ') ISTART = J
+	   IF(ISTART .NE. 0 .AND. READLINE(J:J) .EQ. ' ') THEN
+	    IEND = J-1
+	    GO TO 30
+	   ENDIF
+	  END DO
+   30	ISIZE = IEND-ISTART
+        IF(ISIZE .GT. 5) THEN
+         WRITE(*,31)
+   31    FORMAT(/' THE STARTING CYCLE NO IS LARGER THAN 999999, WHICH'/
+     1' IS TOO LARGE.'//
+     1' THE PROGRAM STOPS. ')
+	   CALL PAUSE
+         STOP
+        ENDIF
+	ICYCSTART = 0
+	 DO K=ISTART,IEND
+	  IF(READLINE(K:K) .EQ. '0') IVAL = 0
+	  IF(READLINE(K:K) .EQ. '1') IVAL = 1
+	  IF(READLINE(K:K) .EQ. '2') IVAL = 2
+	  IF(READLINE(K:K) .EQ. '3') IVAL = 3
+	  IF(READLINE(K:K) .EQ. '4') IVAL = 4
+	  IF(READLINE(K:K) .EQ. '5') IVAL = 5
+	  IF(READLINE(K:K) .EQ. '6') IVAL = 6
+	  IF(READLINE(K:K) .EQ. '7') IVAL = 7
+	  IF(READLINE(K:K) .EQ. '8') IVAL = 8
+	  IF(READLINE(K:K) .EQ. '9') IVAL = 9
+	  ICYCSTART = ICYCSTART + IVAL*10**ISIZE
+	  ISIZE = ISIZE-1
+	 END DO
+	RETURN
+	END
+        SUBROUTINE CONDENSE2(READLINE)
+        CHARACTER READLINE*80
+	DO IEND = 80,1,-1
+	 IF(READLINE(IEND:IEND) .NE. ' ') GO TO 20
+	END DO
+   20   CONTINUE
+	IF(IEND .LE. 2) THEN
+	 WRITE(22,26) READLINE
+   26    FORMAT(A2)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 4) THEN
+	 WRITE(22,51) READLINE
+   51    FORMAT(A4)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 6) THEN
+	 WRITE(22,76) READLINE
+   76    FORMAT(A6)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 8) THEN
+	 WRITE(22,101) READLINE
+  101    FORMAT(A8)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 10) THEN
+	 WRITE(22,126) READLINE
+  126    FORMAT(A10)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 12) THEN
+	 WRITE(22,151) READLINE
+  151    FORMAT(A12)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 14) THEN
+	 WRITE(22,176) READLINE
+  176    FORMAT(A14)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 16) THEN
+	 WRITE(22,201) READLINE
+  201    FORMAT(A16)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 18) THEN
+	 WRITE(22,226) READLINE
+  226    FORMAT(A18)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 20) THEN
+	 WRITE(22,251) READLINE
+  251    FORMAT(A20)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 22) THEN
+	 WRITE(22,276) READLINE
+  276    FORMAT(A22)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 24) THEN
+	 WRITE(22,301) READLINE
+  301    FORMAT(A24)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 26) THEN
+	 WRITE(22,326) READLINE
+  326    FORMAT(A26)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 28) THEN
+	 WRITE(22,351) READLINE
+  351    FORMAT(A28)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 30) THEN
+	 WRITE(22,376) READLINE
+  376    FORMAT(A30)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 32) THEN
+	 WRITE(22,401) READLINE
+  401    FORMAT(A32)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 34) THEN
+	 WRITE(22,426) READLINE
+  426    FORMAT(A34)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 36) THEN
+	 WRITE(22,451) READLINE
+  451    FORMAT(A36)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 38) THEN
+	 WRITE(22,476) READLINE
+  476    FORMAT(A38)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 40) THEN
+	 WRITE(22,501) READLINE
+  501    FORMAT(A40)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 42) THEN
+	 WRITE(22,526) READLINE
+  526    FORMAT(A42)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 44) THEN
+	 WRITE(22,551) READLINE
+  551    FORMAT(A44)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 46) THEN
+	 WRITE(22,576) READLINE
+  576    FORMAT(A46)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 48) THEN
+	 WRITE(22,601) READLINE
+  601    FORMAT(A48)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 50) THEN
+	 WRITE(22,626) READLINE
+  626    FORMAT(A50)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 52) THEN
+	 WRITE(22,651) READLINE
+  651    FORMAT(A52)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 54) THEN
+	 WRITE(22,676) READLINE
+  676    FORMAT(A54)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 56) THEN
+	 WRITE(22,701) READLINE
+  701    FORMAT(A56)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 58) THEN
+	 WRITE(22,726) READLINE
+  726    FORMAT(A58)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 60) THEN
+	 WRITE(22,751) READLINE
+  751    FORMAT(A60)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 62) THEN
+	 WRITE(22,776) READLINE
+  776    FORMAT(A62)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 64) THEN
+	 WRITE(22,801) READLINE
+  801    FORMAT(A64)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 66) THEN
+	 WRITE(22,826) READLINE
+  826    FORMAT(A66)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 68) THEN
+	 WRITE(22,851) READLINE
+  851    FORMAT(A68)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 70) THEN
+	 WRITE(22,876) READLINE
+  876    FORMAT(A70)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 72) THEN
+	 WRITE(22,901) READLINE
+  901    FORMAT(A72)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 74) THEN
+	 WRITE(22,926) READLINE
+  926    FORMAT(A74)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 76) THEN
+	 WRITE(22,951) READLINE
+  951    FORMAT(A76)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 78) THEN
+	 WRITE(22,976) READLINE
+  976    FORMAT(A78)
+	 RETURN
+	ENDIF
+	WRITE(22,4) READLINE
+    4    FORMAT(A80)
+        RETURN
+        END
+        SUBROUTINE CONDENSE3(READLINE)
+        CHARACTER READLINE*1000
+	DO IEND = 1000,1,-1
+	 IF(READLINE(IEND:IEND) .NE. ' ') GO TO 20
+	END DO
+   20   CONTINUE
+	IF(IEND .LE. 26) THEN
+	 WRITE(22,26) READLINE
+   26    FORMAT(A26)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 51) THEN
+	 WRITE(22,51) READLINE
+   51    FORMAT(A51)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 76) THEN
+	 WRITE(22,76) READLINE
+   76    FORMAT(A76)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 101) THEN
+	 WRITE(22,101) READLINE
+  101    FORMAT(A101)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 126) THEN
+	 WRITE(22,126) READLINE
+  126    FORMAT(A126)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 151) THEN
+	 WRITE(22,151) READLINE
+  151    FORMAT(A151)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 176) THEN
+	 WRITE(22,176) READLINE
+  176    FORMAT(A176)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 201) THEN
+	 WRITE(22,201) READLINE
+  201    FORMAT(A201)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 226) THEN
+	 WRITE(22,226) READLINE
+  226    FORMAT(A226)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 251) THEN
+	 WRITE(22,251) READLINE
+  251    FORMAT(A251)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 276) THEN
+	 WRITE(22,276) READLINE
+  276    FORMAT(A276)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 301) THEN
+	 WRITE(22,301) READLINE
+  301    FORMAT(A301)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 326) THEN
+	 WRITE(22,326) READLINE
+  326    FORMAT(A326)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 351) THEN
+	 WRITE(22,351) READLINE
+  351    FORMAT(A351)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 376) THEN
+	 WRITE(22,376) READLINE
+  376    FORMAT(A376)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 401) THEN
+	 WRITE(22,401) READLINE
+  401    FORMAT(A401)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 426) THEN
+	 WRITE(22,426) READLINE
+  426    FORMAT(A426)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 451) THEN
+	 WRITE(22,451) READLINE
+  451    FORMAT(A451)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 476) THEN
+	 WRITE(22,476) READLINE
+  476    FORMAT(A476)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 501) THEN
+	 WRITE(22,501) READLINE
+  501    FORMAT(A501)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 526) THEN
+	 WRITE(22,526) READLINE
+  526    FORMAT(A526)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 551) THEN
+	 WRITE(22,551) READLINE
+  551    FORMAT(A551)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 576) THEN
+	 WRITE(22,576) READLINE
+  576    FORMAT(A576)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 601) THEN
+	 WRITE(22,601) READLINE
+  601    FORMAT(A601)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 626) THEN
+	 WRITE(22,626) READLINE
+  626    FORMAT(A626)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 651) THEN
+	 WRITE(22,651) READLINE
+  651    FORMAT(A651)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 676) THEN
+	 WRITE(22,676) READLINE
+  676    FORMAT(A676)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 701) THEN
+	 WRITE(22,701) READLINE
+  701    FORMAT(A701)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 726) THEN
+	 WRITE(22,726) READLINE
+  726    FORMAT(A726)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 751) THEN
+	 WRITE(22,751) READLINE
+  751    FORMAT(A751)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 776) THEN
+	 WRITE(22,776) READLINE
+  776    FORMAT(A776)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 801) THEN
+	 WRITE(22,801) READLINE
+  801    FORMAT(A801)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 826) THEN
+	 WRITE(22,826) READLINE
+  826    FORMAT(A826)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 851) THEN
+	 WRITE(22,851) READLINE
+  851    FORMAT(A851)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 876) THEN
+	 WRITE(22,876) READLINE
+  876    FORMAT(A876)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 901) THEN
+	 WRITE(22,901) READLINE
+  901    FORMAT(A901)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 926) THEN
+	 WRITE(22,926) READLINE
+  926    FORMAT(A926)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 951) THEN
+	 WRITE(22,951) READLINE
+  951    FORMAT(A951)
+	 RETURN
+	ENDIF
+	IF(IEND .LE. 976) THEN
+	 WRITE(22,976) READLINE
+  976    FORMAT(A976)
+	 RETURN
+	ENDIF
+	WRITE(22,4) READLINE
+    4    FORMAT(A1000)
+        RETURN
+        END
+        SUBROUTINE GETMAXCYCNO(IMAXCYC)
+        CHARACTER READLINE*1000
+    2   FORMAT(A1000)
+   10 READ(25,2) READLINE
+	ILINE=0
+	 DO I=1,42
+        IF(READLINE(I:I+30) .EQ. 'THE LAST CYCLE NO. WILL BE .LE.') THEN
+	   ILINE=1
+	   GO TO 20
+	  ENDIF
+	 END DO
+   20 IF(ILINE .EQ. 0) GO TO 10
+	 IEND = 0
+	 ISTART = 0
+	  DO J = I+31,72
+	   IF(ISTART .EQ. 0 .AND. READLINE(J:J) .NE. ' ') ISTART = J
+	   IF(ISTART .NE. 0 .AND. READLINE(J:J) .EQ. ' ') THEN
+	    IEND = J-1
+	    GO TO 30
+	   ENDIF
+	  END DO
+   30	ISIZE = IEND-ISTART
+        IF(ISIZE .GT. 5) THEN
+         WRITE(*,31)
+   31    FORMAT(/' THE MAXIMUM ENDING CYCLE NO IS LARGER THAN 999999,'/
+     1' WHICH IS TOO LARGE.'//
+     1' THE PROGRAM STOPS. ')
+	   CALL PAUSE
+         STOP
+        ENDIF
+	IMAXCYC = 0
+	 DO K=ISTART,IEND
+	  IF(READLINE(K:K) .EQ. '0') IVAL = 0
+	  IF(READLINE(K:K) .EQ. '1') IVAL = 1
+	  IF(READLINE(K:K) .EQ. '2') IVAL = 2
+	  IF(READLINE(K:K) .EQ. '3') IVAL = 3
+	  IF(READLINE(K:K) .EQ. '4') IVAL = 4
+	  IF(READLINE(K:K) .EQ. '5') IVAL = 5
+	  IF(READLINE(K:K) .EQ. '6') IVAL = 6
+	  IF(READLINE(K:K) .EQ. '7') IVAL = 7
+	  IF(READLINE(K:K) .EQ. '8') IVAL = 8
+	  IF(READLINE(K:K) .EQ. '9') IVAL = 9
+	  IMAXCYC = IMAXCYC + IVAL*10**ISIZE
+	  ISIZE = ISIZE-1
+	 END DO
+	RETURN
+	END
+	SUBROUTINE SHIFT(TAU,ND,SIG,NDRUG,NADD,RS)
+	IMPLICIT REAL*8(A-H,O-Z)
+	DIMENSION SIG(5000),RS(5000,34),TAU(7),XIV(7,5000,2),
+     1  BOL(7,5000,2),COV(20,5000,2),INDIV(7),INDBOL(7),INDCOV(20),
+     2  TIMCAN(34)
+! NEW PARALLEL CODE BELOW AS OF npageng28.f.
+        Save XIV,BOL,COV
+!$omp   Threadprivate(XIV,BOL,COV)
+	DO I = 1,NDRUG
+	 XIV(I,1,1) = 1.D29
+	 IND = 0
+	 VALAST = -99.D0
+	DO IDOSE = 1,ND
+	  RR = RS(IDOSE,2*I-1)
+	  IF(SIG(IDOSE) .LE. 0 .AND. IDOSE .GT. 1) THEN
+	    IND = IND + 1
+	    XIV(I,IND,1) = 1.D19
+	    XIV(I,IND,2) = XIV(I,IND-1,2)
+	    IND = IND + 1
+	    XIV(I,IND,1) = SIG(IDOSE)
+	    XIV(I,IND,2) = RR
+	    XIV(I,IND+1,1) = 1.D29
+	    VALAST = RR
+	    GO TO 200
+	  ENDIF
+	  IF(RR .NE. VALAST) THEN
+         IND = IND + 1
+	   XIV(I,IND,1) = SIG(IDOSE)
+	   XIV(I,IND,2) = RR
+	   XIV(I,IND+1,1) = 1.D29
+	   VALAST = RR
+	  ENDIF
+  200     CONTINUE
+	 END DO
+	END DO
+        IF(NADD .GT. 0) THEN
+	DO I = 1, NADD
+	 COV(I,1,1) = 1.D29
+	 IND = 0
+	 VALAST = -99.D0
+	 DO IDOSE = 1,ND
+	  RR = RS(IDOSE,2*NDRUG+I)
+	  IF(SIG(IDOSE) .LE. 0 .AND. IDOSE .GT. 1) THEN
+	    IND = IND + 1
+	    COV(I,IND,1) = 1.D19
+	    COV(I,IND,2) = COV(I,IND-1,2)
+	    IND = IND + 1
+	    COV(I,IND,1) = SIG(IDOSE)
+	    COV(I,IND,2) = RR
+	    COV(I,IND+1,1) = 1.D29
+	    VALAST = RR
+	    GO TO 300
+	  ENDIF
+	  IF(RR .NE. VALAST) THEN
+           IND = IND + 1
+	   COV(I,IND,1) = SIG(IDOSE)
+	   COV(I,IND,2) = RR
+	   COV(I,IND+1,1) = 1.D29
+	   VALAST = RR
+	  ENDIF
+  300     CONTINUE
+	 END DO
+	END DO
+        ENDIF
+	DO I = 1,NDRUG
+	 BOL(I,1,1) = 1.D29
+	 IND = 0
+	 DO IDOSE = 1,ND
+	  RR = RS(IDOSE,2*I)
+	  IF(SIG(IDOSE) .LE. 0 .AND. IDOSE .GT. 1) THEN
+	    IND = IND + 1
+	    BOL(I,IND,1) = 1.D19
+	    BOL(I,IND,2) = 0.D0
+	    IND = IND + 1
+      CALL THESAME(SIG(IDOSE),0.D0,ISAME1)
+      CALL THESAME(TAU(I),0.D0,ISAME2)
+      CALL THESAME(RR,0.D0,ISAME3)
+      IF(ISAME1 .EQ. 1) BOL(I,IND,1) = TAU(I)
+      IF(ISAME1 .EQ. 0) THEN
+       BOL(I,IND,1) = SIG(IDOSE)
+       IF(ISAME2 .EQ. 0 .AND. ISAME3 .EQ. 0) BOL(I,IND,1) = TAU(I)
+      ENDIF
+	    BOL(I,IND,2) = RR
+	    BOL(I,IND+1,1) = 1.D29
+	    VALAST = RR
+	    GO TO 400
+	  ENDIF
+	  IF(RR .NE. 0.D0) THEN
+           IND = IND + 1
+         IF(SIG(IDOSE) .GE. 0.D0) BOL(I,IND,1) = SIG(IDOSE) + TAU(I)
+         IF(SIG(IDOSE) .LT. 0.D0) BOL(I,IND,1) = TAU(I)
+	   BOL(I,IND,2) = RR
+	   BOL(I,IND+1,1) = 1.D29
+	  ENDIF
+  400     CONTINUE
+	 END DO
+	END DO
+	NI = 2*NDRUG + NADD
+	ND = 0
+	DO I = 1,NDRUG
+	 INDIV(I) = 1
+	 INDBOL(I) = 1
+	END DO
+        IF(NADD .GT. 0) THEN
+         DO I = 1,NADD
+          INDCOV(I) = 1
+         END DO
+        ENDIF
+	TIMNXT = -9999999.D0
+  100   CONTINUE
+        DO I = 1,NDRUG
+	 IF(XIV(I,INDIV(I),1) .GT. TIMNXT) TIMCAN(I)=XIV(I,INDIV(I),1)
+	 IF(XIV(I,INDIV(I),1) .EQ. TIMNXT) TIMCAN(I)=XIV(I,INDIV(I)+1,1)
+	END DO
+        DO I = 1,NDRUG
+	 IF(BOL(I,INDBOL(I),1) .GT. TIMNXT) TIMCAN(NDRUG+I) =
+     1    BOL(I,INDBOL(I),1)
+	 IF(BOL(I,INDBOL(I),1) .EQ. TIMNXT) TIMCAN(NDRUG+I) =
+     1    BOL(I,INDBOL(I)+1,1)
+	END DO
+        IF(NADD .GT. 0) THEN
+         DO I = 1,NADD
+          IF(COV(I,INDCOV(I),1) .GT. TIMNXT) TIMCAN(2*NDRUG+I) =
+     1     COV(I,INDCOV(I),1)
+          IF(COV(I,INDCOV(I),1) .EQ. TIMNXT) TIMCAN(2*NDRUG+I) =
+     1     COV(I,INDCOV(I)+1,1)
+         END DO
+        ENDIF
+	TIMNXT = TIMCAN(1)
+	DO I = 2,NI
+	 IF(TIMCAN(I) .LT. TIMNXT) TIMNXT = TIMCAN(I)
+	END DO
+	IF(TIMNXT .EQ. 1.D29) RETURN
+	IF(TIMNXT .EQ. 1.D19) THEN
+       DO I = 1,NDRUG
+	  INDIV(I) = INDIV(I) + 1
+	  INDBOL(I) = INDBOL(I) + 1
+	 END DO
+        IF(NADD .GT. 0) THEN
+         DO I = 1,NADD
+          INDCOV(I) = INDCOV(I) + 1
+         END DO
+        ENDIF
+	 TIMNXT = -9999999.D0
+	 GO TO 100
+	ENDIF
+	ND = ND+1
+	IF(ND .GT. 5000) THEN
+   10	 WRITE(*,1) ND
+    1    FORMAT(/' THE NUMBER OF DOSE EVENTS, AFTER TAKING INTO'/
+     1' ACCOUNT DIFFERING TIMES DUE TO TIMELAGS IS ',I6,', MORE THAN'/
+     2' THE ALLOWABLE MAXIMUM OF 5000. THE PROGRAM IS STOPPING. PLEASE'/
+     3' RERUN WITH PATIENTS HAVING FEWER DOSE EVENTS, OR WITH FEWER'/
+     4' TIMELAG VALUES SELECTED AS FIXED OR RANDOM PARAMETERS.'//)
+	 STOP
+	ENDIF
+	SIG(ND) = TIMNXT
+        DO I = 1,NDRUG
+	 IF(TIMNXT .LT. XIV(I,INDIV(I),1)) THEN
+	  RS(ND,2*I-1) = RS(ND-1,2*I-1)
+	 ENDIF
+	 IF(TIMNXT .EQ. XIV(I,INDIV(I),1)) THEN
+	  RS(ND,2*I-1) = XIV(I,INDIV(I),2)
+	  INDIV(I) = INDIV(I) + 1
+	 ENDIF
+	 IF(TIMNXT .LT. BOL(I,INDBOL(I),1)) THEN
+	  RS(ND,2*I) = 0.D0
+	 ENDIF
+	 IF(TIMNXT .EQ. BOL(I,INDBOL(I),1)) THEN
+	  RS(ND,2*I) = BOL(I,INDBOL(I),2)
+	  INDBOL(I) = INDBOL(I) + 1
+	 ENDIF
+	END DO
+        IF(NADD .GT. 0) THEN
+         DO I = 1,NADD
+          IF(TIMNXT .LT. COV(I,INDCOV(I),1))
+     1     RS(ND,2*NDRUG+I) = RS(ND-1,2*NDRUG+I)
+          IF(TIMNXT .EQ. COV(I,INDCOV(I),1)) THEN
+           RS(ND,2*NDRUG+I) = COV(I,INDCOV(I),2)
+           INDCOV(I) = INDCOV(I) + 1
+          ENDIF
+         END DO
+        ENDIF
+	GO TO 100
+      END
+*> \brief \b DGETRS
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*> \htmlonly
+*> Download DGETRS + dependencies
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.tgz?format=tgz&filename=/lapack/lapack_routine/dgetrs.f">
+*> [TGZ]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.zip?format=zip&filename=/lapack/lapack_routine/dgetrs.f">
+*> [ZIP]</a>
+*> <a href="http://www.netlib.org/cgi-bin/netlibfiles.txt?format=txt&filename=/lapack/lapack_routine/dgetrs.f">
+*> [TXT]</a>
+*> \endhtmlonly
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGETRS( TRANS, N, NRHS, A, LDA, IPIV, B, LDB, INFO )
+*
+*       .. Scalar Arguments ..
+*       CHARACTER          TRANS
+*       INTEGER            INFO, LDA, LDB, N, NRHS
+*       ..
+*       .. Array Arguments ..
+*       INTEGER            IPIV( * )
+*       DOUBLE PRECISION   A( LDA, * ), B( LDB, * )
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGETRS solves a system of linear equations
+*>    A * X = B  or  A**T * X = B
+*> with a general N-by-N matrix A using the LU factorization computed
+*> by DGETRF.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] TRANS
+*> \verbatim
+*>          TRANS is CHARACTER*1
+*>          Specifies the form of the system of equations:
+*>          = 'N':  A * X = B  (No transpose)
+*>          = 'T':  A**T* X = B  (Transpose)
+*>          = 'C':  A**T* X = B  (Conjugate transpose = Transpose)
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>          The order of the matrix A.  N >= 0.
+*> \endverbatim
+*>
+*> \param[in] NRHS
+*> \verbatim
+*>          NRHS is INTEGER
+*>          The number of right hand sides, i.e., the number of columns
+*>          of the matrix B.  NRHS >= 0.
+*> \endverbatim
+*>
+*> \param[in] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension (LDA,N)
+*>          The factors L and U from the factorization A = P*L*U
+*>          as computed by DGETRF.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>          The leading dimension of the array A.  LDA >= max(1,N).
+*> \endverbatim
+*>
+*> \param[in] IPIV
+*> \verbatim
+*>          IPIV is INTEGER array, dimension (N)
+*>          The pivot indices from DGETRF; for 1<=i<=N, row i of the
+*>          matrix was interchanged with row IPIV(i).
+*> \endverbatim
+*>
+*> \param[in,out] B
+*> \verbatim
+*>          B is DOUBLE PRECISION array, dimension (LDB,NRHS)
+*>          On entry, the right hand side matrix B.
+*>          On exit, the solution matrix X.
+*> \endverbatim
+*>
+*> \param[in] LDB
+*> \verbatim
+*>          LDB is INTEGER
+*>          The leading dimension of the array B.  LDB >= max(1,N).
+*> \endverbatim
+*>
+*> \param[out] INFO
+*> \verbatim
+*>          INFO is INTEGER
+*>          = 0:  successful exit
+*>          < 0:  if INFO = -i, the i-th argument had an illegal value
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup doubleGEcomputational
+*
+*  =====================================================================
+      SUBROUTINE DGETRS( TRANS, N, NRHS, A, LDA, IPIV, B, LDB, INFO )
+*
+*  -- LAPACK computational routine --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      CHARACTER          TRANS
+      INTEGER            INFO, LDA, LDB, N, NRHS
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   A( LDA, * ), B( LDB, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE
+      PARAMETER          ( ONE = 1.0D+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            NOTRAN
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      EXTERNAL           LSAME
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           DLASWP, DTRSM, XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          MAX
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      NOTRAN = LSAME( TRANS, 'N' )
+      IF( .NOT.NOTRAN .AND. .NOT.LSAME( TRANS, 'T' ) .AND. .NOT.
+     $    LSAME( TRANS, 'C' ) ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 ) THEN
+         INFO = -2
+      ELSE IF( NRHS.LT.0 ) THEN
+         INFO = -3
+      ELSE IF( LDA.LT.MAX( 1, N ) ) THEN
+         INFO = -5
+      ELSE IF( LDB.LT.MAX( 1, N ) ) THEN
+         INFO = -8
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'DGETRS', -INFO )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( N.EQ.0 .OR. NRHS.EQ.0 )
+     $   RETURN
+*
+      IF( NOTRAN ) THEN
+*
+*        Solve A * X = B.
+*
+*        Apply row interchanges to the right hand sides.
+*
+         CALL DLASWP( NRHS, B, LDB, 1, N, IPIV, 1 )
+*
+*        Solve L*X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Lower', 'No transpose', 'Unit', N, NRHS,
+     $               ONE, A, LDA, B, LDB )
+*
+*        Solve U*X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Upper', 'No transpose', 'Non-unit', N,
+     $               NRHS, ONE, A, LDA, B, LDB )
+      ELSE
+*
+*        Solve A**T * X = B.
+*
+*        Solve U**T *X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Upper', 'Transpose', 'Non-unit', N, NRHS,
+     $               ONE, A, LDA, B, LDB )
+*
+*        Solve L**T *X = B, overwriting B with X.
+*
+         CALL DTRSM( 'Left', 'Lower', 'Transpose', 'Unit', N, NRHS, ONE,
+     $               A, LDA, B, LDB )
+*
+*        Apply row interchanges to the solution vectors.
+*
+         CALL DLASWP( NRHS, B, LDB, 1, N, IPIV, -1 )
+      END IF
+*
+      RETURN
+*
+*     End of DGETRS
+*
+      END
+
+      DOUBLE PRECISION FUNCTION dnrm2(N,X,INCX)
+*
+*  -- Reference BLAS level1 routine (version 3.4.0) --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*     November 2011
+*
+*     .. Scalar Arguments ..
+      INTEGER INCX,N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION X(*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION ONE,ZERO
+      parameter(one=1.0d+0,zero=0.0d+0)
+*     ..
+*     .. Local Scalars ..
+      DOUBLE PRECISION ABSXI,NORM,SCALE,SSQ
+      INTEGER IX
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC abs,sqrt
+*     ..
+      IF (n.LT.1 .OR. incx.LT.1) THEN
+          norm = zero
+      ELSE IF (n.EQ.1) THEN
+          norm = abs(x(1))
+      ELSE
+          scale = zero
+          ssq = one
+*        The following loop is equivalent to this call to the LAPACK
+*        auxiliary routine:
+*        CALL DLASSQ( N, X, INCX, SCALE, SSQ )
+*
+          DO 10 ix = 1,1 + (n-1)*incx,incx
+              IF (x(ix).NE.zero) THEN
+                  absxi = abs(x(ix))
+                  IF (scale.LT.absxi) THEN
+                      ssq = one + ssq* (scale/absxi)**2
+                      scale = absxi
+                  ELSE
+                      ssq = ssq + (absxi/scale)**2
+                  END IF
+              END IF
+   10     CONTINUE
+          norm = scale*sqrt(ssq)
+      END IF
+*
+      dnrm2 = norm
+      RETURN
+*
+*     End of DNRM2.
+*
+      END      
+      
+*> \brief \b DGEMM
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGEMM(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+*
+*       .. Scalar Arguments ..
+*       DOUBLE PRECISION ALPHA,BETA
+*       INTEGER K,LDA,LDB,LDC,M,N
+*       CHARACTER TRANSA,TRANSB
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION A(LDA,*),B(LDB,*),C(LDC,*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGEMM  performs one of the matrix-matrix operations
+*>
+*>    C := alpha*op( A )*op( B ) + beta*C,
+*>
+*> where  op( X ) is one of
+*>
+*>    op( X ) = X   or   op( X ) = X**T,
+*>
+*> alpha and beta are scalars, and A, B and C are matrices, with op( A )
+*> an m by k matrix,  op( B )  a  k by n matrix and  C an m by n matrix.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] TRANSA
+*> \verbatim
+*>          TRANSA is CHARACTER*1
+*>           On entry, TRANSA specifies the form of op( A ) to be used in
+*>           the matrix multiplication as follows:
+*>
+*>              TRANSA = 'N' or 'n',  op( A ) = A.
+*>
+*>              TRANSA = 'T' or 't',  op( A ) = A**T.
+*>
+*>              TRANSA = 'C' or 'c',  op( A ) = A**T.
+*> \endverbatim
+*>
+*> \param[in] TRANSB
+*> \verbatim
+*>          TRANSB is CHARACTER*1
+*>           On entry, TRANSB specifies the form of op( B ) to be used in
+*>           the matrix multiplication as follows:
+*>
+*>              TRANSB = 'N' or 'n',  op( B ) = B.
+*>
+*>              TRANSB = 'T' or 't',  op( B ) = B**T.
+*>
+*>              TRANSB = 'C' or 'c',  op( B ) = B**T.
+*> \endverbatim
+*>
+*> \param[in] M
+*> \verbatim
+*>          M is INTEGER
+*>           On entry,  M  specifies  the number  of rows  of the  matrix
+*>           op( A )  and of the  matrix  C.  M  must  be at least  zero.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>           On entry,  N  specifies the number  of columns of the matrix
+*>           op( B ) and the number of columns of the matrix C. N must be
+*>           at least zero.
+*> \endverbatim
+*>
+*> \param[in] K
+*> \verbatim
+*>          K is INTEGER
+*>           On entry,  K  specifies  the number of columns of the matrix
+*>           op( A ) and the number of rows of the matrix op( B ). K must
+*>           be at least  zero.
+*> \endverbatim
+*>
+*> \param[in] ALPHA
+*> \verbatim
+*>          ALPHA is DOUBLE PRECISION.
+*>           On entry, ALPHA specifies the scalar alpha.
+*> \endverbatim
+*>
+*> \param[in] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension ( LDA, ka ), where ka is
+*>           k  when  TRANSA = 'N' or 'n',  and is  m  otherwise.
+*>           Before entry with  TRANSA = 'N' or 'n',  the leading  m by k
+*>           part of the array  A  must contain the matrix  A,  otherwise
+*>           the leading  k by m  part of the array  A  must contain  the
+*>           matrix A.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>           On entry, LDA specifies the first dimension of A as declared
+*>           in the calling (sub) program. When  TRANSA = 'N' or 'n' then
+*>           LDA must be at least  max( 1, m ), otherwise  LDA must be at
+*>           least  max( 1, k ).
+*> \endverbatim
+*>
+*> \param[in] B
+*> \verbatim
+*>          B is DOUBLE PRECISION array, dimension ( LDB, kb ), where kb is
+*>           n  when  TRANSB = 'N' or 'n',  and is  k  otherwise.
+*>           Before entry with  TRANSB = 'N' or 'n',  the leading  k by n
+*>           part of the array  B  must contain the matrix  B,  otherwise
+*>           the leading  n by k  part of the array  B  must contain  the
+*>           matrix B.
+*> \endverbatim
+*>
+*> \param[in] LDB
+*> \verbatim
+*>          LDB is INTEGER
+*>           On entry, LDB specifies the first dimension of B as declared
+*>           in the calling (sub) program. When  TRANSB = 'N' or 'n' then
+*>           LDB must be at least  max( 1, k ), otherwise  LDB must be at
+*>           least  max( 1, n ).
+*> \endverbatim
+*>
+*> \param[in] BETA
+*> \verbatim
+*>          BETA is DOUBLE PRECISION.
+*>           On entry,  BETA  specifies the scalar  beta.  When  BETA  is
+*>           supplied as zero then C need not be set on input.
+*> \endverbatim
+*>
+*> \param[in,out] C
+*> \verbatim
+*>          C is DOUBLE PRECISION array, dimension ( LDC, N )
+*>           Before entry, the leading  m by n  part of the array  C must
+*>           contain the matrix  C,  except when  beta  is zero, in which
+*>           case C need not be set on entry.
+*>           On exit, the array  C  is overwritten by the  m by n  matrix
+*>           ( alpha*op( A )*op( B ) + beta*C ).
+*> \endverbatim
+*>
+*> \param[in] LDC
+*> \verbatim
+*>          LDC is INTEGER
+*>           On entry, LDC specifies the first dimension of C as declared
+*>           in  the  calling  (sub)  program.   LDC  must  be  at  least
+*>           max( 1, m ).
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level3
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  Level 3 Blas routine.
+*>
+*>  -- Written on 8-February-1989.
+*>     Jack Dongarra, Argonne National Laboratory.
+*>     Iain Duff, AERE Harwell.
+*>     Jeremy Du Croz, Numerical Algorithms Group Ltd.
+*>     Sven Hammarling, Numerical Algorithms Group Ltd.
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DGEMM(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
+*
+*  -- Reference BLAS level3 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION ALPHA,BETA
+      INTEGER K,LDA,LDB,LDC,M,N
+      CHARACTER TRANSA,TRANSB
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION A(LDA,*),B(LDB,*),C(LDC,*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. External Functions ..
+      LOGICAL LSAME
+      EXTERNAL LSAME
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC MAX
+*     ..
+*     .. Local Scalars ..
+      DOUBLE PRECISION TEMP
+      INTEGER I,INFO,J,L,NROWA,NROWB
+      LOGICAL NOTA,NOTB
+*     ..
+*     .. Parameters ..
+      DOUBLE PRECISION ONE,ZERO
+      PARAMETER (ONE=1.0D+0,ZERO=0.0D+0)
+*     ..
+*
+*     Set  NOTA  and  NOTB  as  true if  A  and  B  respectively are not
+*     transposed and set  NROWA and NROWB  as the number of rows of  A
+*     and  B  respectively.
+*
+      NOTA = LSAME(TRANSA,'N')
+      NOTB = LSAME(TRANSB,'N')
+      IF (NOTA) THEN
+          NROWA = M
+      ELSE
+          NROWA = K
+      END IF
+      IF (NOTB) THEN
+          NROWB = K
+      ELSE
+          NROWB = N
+      END IF
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF ((.NOT.NOTA) .AND. (.NOT.LSAME(TRANSA,'C')) .AND.
+     +    (.NOT.LSAME(TRANSA,'T'))) THEN
+          INFO = 1
+      ELSE IF ((.NOT.NOTB) .AND. (.NOT.LSAME(TRANSB,'C')) .AND.
+     +         (.NOT.LSAME(TRANSB,'T'))) THEN
+          INFO = 2
+      ELSE IF (M.LT.0) THEN
+          INFO = 3
+      ELSE IF (N.LT.0) THEN
+          INFO = 4
+      ELSE IF (K.LT.0) THEN
+          INFO = 5
+      ELSE IF (LDA.LT.MAX(1,NROWA)) THEN
+          INFO = 8
+      ELSE IF (LDB.LT.MAX(1,NROWB)) THEN
+          INFO = 10
+      ELSE IF (LDC.LT.MAX(1,M)) THEN
+          INFO = 13
+      END IF
+      IF (INFO.NE.0) THEN
+          CALL XERBLA('DGEMM ',INFO)
+          RETURN
+      END IF
+*
+*     Quick return if possible.
+*
+      IF ((M.EQ.0) .OR. (N.EQ.0) .OR.
+     +    (((ALPHA.EQ.ZERO).OR. (K.EQ.0)).AND. (BETA.EQ.ONE))) RETURN
+*
+*     And if  alpha.eq.zero.
+*
+      IF (ALPHA.EQ.ZERO) THEN
+          IF (BETA.EQ.ZERO) THEN
+              DO 20 J = 1,N
+                  DO 10 I = 1,M
+                      C(I,J) = ZERO
+   10             CONTINUE
+   20         CONTINUE
+          ELSE
+              DO 40 J = 1,N
+                  DO 30 I = 1,M
+                      C(I,J) = BETA*C(I,J)
+   30             CONTINUE
+   40         CONTINUE
+          END IF
+          RETURN
+      END IF
+*
+*     Start the operations.
+*
+      IF (NOTB) THEN
+          IF (NOTA) THEN
+*
+*           Form  C := alpha*A*B + beta*C.
+*
+              DO 90 J = 1,N
+                  IF (BETA.EQ.ZERO) THEN
+                      DO 50 I = 1,M
+                          C(I,J) = ZERO
+   50                 CONTINUE
+                  ELSE IF (BETA.NE.ONE) THEN
+                      DO 60 I = 1,M
+                          C(I,J) = BETA*C(I,J)
+   60                 CONTINUE
+                  END IF
+                  DO 80 L = 1,K
+                      TEMP = ALPHA*B(L,J)
+                      DO 70 I = 1,M
+                          C(I,J) = C(I,J) + TEMP*A(I,L)
+   70                 CONTINUE
+   80             CONTINUE
+   90         CONTINUE
+          ELSE
+*
+*           Form  C := alpha*A**T*B + beta*C
+*
+              DO 120 J = 1,N
+                  DO 110 I = 1,M
+                      TEMP = ZERO
+                      DO 100 L = 1,K
+                          TEMP = TEMP + A(L,I)*B(L,J)
+  100                 CONTINUE
+                      IF (BETA.EQ.ZERO) THEN
+                          C(I,J) = ALPHA*TEMP
+                      ELSE
+                          C(I,J) = ALPHA*TEMP + BETA*C(I,J)
+                      END IF
+  110             CONTINUE
+  120         CONTINUE
+          END IF
+      ELSE
+          IF (NOTA) THEN
+*
+*           Form  C := alpha*A*B**T + beta*C
+*
+              DO 170 J = 1,N
+                  IF (BETA.EQ.ZERO) THEN
+                      DO 130 I = 1,M
+                          C(I,J) = ZERO
+  130                 CONTINUE
+                  ELSE IF (BETA.NE.ONE) THEN
+                      DO 140 I = 1,M
+                          C(I,J) = BETA*C(I,J)
+  140                 CONTINUE
+                  END IF
+                  DO 160 L = 1,K
+                      TEMP = ALPHA*B(J,L)
+                      DO 150 I = 1,M
+                          C(I,J) = C(I,J) + TEMP*A(I,L)
+  150                 CONTINUE
+  160             CONTINUE
+  170         CONTINUE
+          ELSE
+*
+*           Form  C := alpha*A**T*B**T + beta*C
+*
+              DO 200 J = 1,N
+                  DO 190 I = 1,M
+                      TEMP = ZERO
+                      DO 180 L = 1,K
+                          TEMP = TEMP + A(L,I)*B(J,L)
+  180                 CONTINUE
+                      IF (BETA.EQ.ZERO) THEN
+                          C(I,J) = ALPHA*TEMP
+                      ELSE
+                          C(I,J) = ALPHA*TEMP + BETA*C(I,J)
+                      END IF
+  190             CONTINUE
+  200         CONTINUE
+          END IF
+      END IF
+*
+      RETURN
+*
+*     End of DGEMM
+*
+      END
+*> \brief \b DGEMV
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DGEMV(TRANS,M,N,ALPHA,A,LDA,X,INCX,BETA,Y,INCY)
+*
+*       .. Scalar Arguments ..
+*       DOUBLE PRECISION ALPHA,BETA
+*       INTEGER INCX,INCY,LDA,M,N
+*       CHARACTER TRANS
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION A(LDA,*),X(*),Y(*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DGEMV  performs one of the matrix-vector operations
+*>
+*>    y := alpha*A*x + beta*y,   or   y := alpha*A**T*x + beta*y,
+*>
+*> where alpha and beta are scalars, x and y are vectors and A is an
+*> m by n matrix.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] TRANS
+*> \verbatim
+*>          TRANS is CHARACTER*1
+*>           On entry, TRANS specifies the operation to be performed as
+*>           follows:
+*>
+*>              TRANS = 'N' or 'n'   y := alpha*A*x + beta*y.
+*>
+*>              TRANS = 'T' or 't'   y := alpha*A**T*x + beta*y.
+*>
+*>              TRANS = 'C' or 'c'   y := alpha*A**T*x + beta*y.
+*> \endverbatim
+*>
+*> \param[in] M
+*> \verbatim
+*>          M is INTEGER
+*>           On entry, M specifies the number of rows of the matrix A.
+*>           M must be at least zero.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>           On entry, N specifies the number of columns of the matrix A.
+*>           N must be at least zero.
+*> \endverbatim
+*>
+*> \param[in] ALPHA
+*> \verbatim
+*>          ALPHA is DOUBLE PRECISION.
+*>           On entry, ALPHA specifies the scalar alpha.
+*> \endverbatim
+*>
+*> \param[in] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension ( LDA, N )
+*>           Before entry, the leading m by n part of the array A must
+*>           contain the matrix of coefficients.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>           On entry, LDA specifies the first dimension of A as declared
+*>           in the calling (sub) program. LDA must be at least
+*>           max( 1, m ).
+*> \endverbatim
+*>
+*> \param[in] X
+*> \verbatim
+*>          X is DOUBLE PRECISION array, dimension at least
+*>           ( 1 + ( n - 1 )*abs( INCX ) ) when TRANS = 'N' or 'n'
+*>           and at least
+*>           ( 1 + ( m - 1 )*abs( INCX ) ) otherwise.
+*>           Before entry, the incremented array X must contain the
+*>           vector x.
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>           On entry, INCX specifies the increment for the elements of
+*>           X. INCX must not be zero.
+*> \endverbatim
+*>
+*> \param[in] BETA
+*> \verbatim
+*>          BETA is DOUBLE PRECISION.
+*>           On entry, BETA specifies the scalar beta. When BETA is
+*>           supplied as zero then Y need not be set on input.
+*> \endverbatim
+*>
+*> \param[in,out] Y
+*> \verbatim
+*>          Y is DOUBLE PRECISION array, dimension at least
+*>           ( 1 + ( m - 1 )*abs( INCY ) ) when TRANS = 'N' or 'n'
+*>           and at least
+*>           ( 1 + ( n - 1 )*abs( INCY ) ) otherwise.
+*>           Before entry with BETA non-zero, the incremented array Y
+*>           must contain the vector y. On exit, Y is overwritten by the
+*>           updated vector y.
+*> \endverbatim
+*>
+*> \param[in] INCY
+*> \verbatim
+*>          INCY is INTEGER
+*>           On entry, INCY specifies the increment for the elements of
+*>           Y. INCY must not be zero.
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level2
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  Level 2 Blas routine.
+*>  The vector and matrix arguments are not referenced when N = 0, or M = 0
+*>
+*>  -- Written on 22-October-1986.
+*>     Jack Dongarra, Argonne National Lab.
+*>     Jeremy Du Croz, Nag Central Office.
+*>     Sven Hammarling, Nag Central Office.
+*>     Richard Hanson, Sandia National Labs.
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DGEMV(TRANS,M,N,ALPHA,A,LDA,X,INCX,BETA,Y,INCY)
+*
+*  -- Reference BLAS level2 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION ALPHA,BETA
+      INTEGER INCX,INCY,LDA,M,N
+      CHARACTER TRANS
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION A(LDA,*),X(*),Y(*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION ONE,ZERO
+      PARAMETER (ONE=1.0D+0,ZERO=0.0D+0)
+*     ..
+*     .. Local Scalars ..
+      DOUBLE PRECISION TEMP
+      INTEGER I,INFO,IX,IY,J,JX,JY,KX,KY,LENX,LENY
+*     ..
+*     .. External Functions ..
+      LOGICAL LSAME
+      EXTERNAL LSAME
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC MAX
+*     ..
+*
+*     Test the input parameters.
+*
+      INFO = 0
+      IF (.NOT.LSAME(TRANS,'N') .AND. .NOT.LSAME(TRANS,'T') .AND.
+     +    .NOT.LSAME(TRANS,'C')) THEN
+          INFO = 1
+      ELSE IF (M.LT.0) THEN
+          INFO = 2
+      ELSE IF (N.LT.0) THEN
+          INFO = 3
+      ELSE IF (LDA.LT.MAX(1,M)) THEN
+          INFO = 6
+      ELSE IF (INCX.EQ.0) THEN
+          INFO = 8
+      ELSE IF (INCY.EQ.0) THEN
+          INFO = 11
+      END IF
+      IF (INFO.NE.0) THEN
+          CALL XERBLA('DGEMV ',INFO)
+          RETURN
+      END IF
+*
+*     Quick return if possible.
+*
+      IF ((M.EQ.0) .OR. (N.EQ.0) .OR.
+     +    ((ALPHA.EQ.ZERO).AND. (BETA.EQ.ONE))) RETURN
+*
+*     Set  LENX  and  LENY, the lengths of the vectors x and y, and set
+*     up the start points in  X  and  Y.
+*
+      IF (LSAME(TRANS,'N')) THEN
+          LENX = N
+          LENY = M
+      ELSE
+          LENX = M
+          LENY = N
+      END IF
+      IF (INCX.GT.0) THEN
+          KX = 1
+      ELSE
+          KX = 1 - (LENX-1)*INCX
+      END IF
+      IF (INCY.GT.0) THEN
+          KY = 1
+      ELSE
+          KY = 1 - (LENY-1)*INCY
+      END IF
+*
+*     Start the operations. In this version the elements of A are
+*     accessed sequentially with one pass through A.
+*
+*     First form  y := beta*y.
+*
+      IF (BETA.NE.ONE) THEN
+          IF (INCY.EQ.1) THEN
+              IF (BETA.EQ.ZERO) THEN
+                  DO 10 I = 1,LENY
+                      Y(I) = ZERO
+   10             CONTINUE
+              ELSE
+                  DO 20 I = 1,LENY
+                      Y(I) = BETA*Y(I)
+   20             CONTINUE
+              END IF
+          ELSE
+              IY = KY
+              IF (BETA.EQ.ZERO) THEN
+                  DO 30 I = 1,LENY
+                      Y(IY) = ZERO
+                      IY = IY + INCY
+   30             CONTINUE
+              ELSE
+                  DO 40 I = 1,LENY
+                      Y(IY) = BETA*Y(IY)
+                      IY = IY + INCY
+   40             CONTINUE
+              END IF
+          END IF
+      END IF
+      IF (ALPHA.EQ.ZERO) RETURN
+      IF (LSAME(TRANS,'N')) THEN
+*
+*        Form  y := alpha*A*x + y.
+*
+          JX = KX
+          IF (INCY.EQ.1) THEN
+              DO 60 J = 1,N
+                  TEMP = ALPHA*X(JX)
+                  DO 50 I = 1,M
+                      Y(I) = Y(I) + TEMP*A(I,J)
+   50             CONTINUE
+                  JX = JX + INCX
+   60         CONTINUE
+          ELSE
+              DO 80 J = 1,N
+                  TEMP = ALPHA*X(JX)
+                  IY = KY
+                  DO 70 I = 1,M
+                      Y(IY) = Y(IY) + TEMP*A(I,J)
+                      IY = IY + INCY
+   70             CONTINUE
+                  JX = JX + INCX
+   80         CONTINUE
+          END IF
+      ELSE
+*
+*        Form  y := alpha*A**T*x + y.
+*
+          JY = KY
+          IF (INCX.EQ.1) THEN
+              DO 100 J = 1,N
+                  TEMP = ZERO
+                  DO 90 I = 1,M
+                      TEMP = TEMP + A(I,J)*X(I)
+   90             CONTINUE
+                  Y(JY) = Y(JY) + ALPHA*TEMP
+                  JY = JY + INCY
+  100         CONTINUE
+          ELSE
+              DO 120 J = 1,N
+                  TEMP = ZERO
+                  IX = KX
+                  DO 110 I = 1,M
+                      TEMP = TEMP + A(I,J)*X(IX)
+                      IX = IX + INCX
+  110             CONTINUE
+                  Y(JY) = Y(JY) + ALPHA*TEMP
+                  JY = JY + INCY
+  120         CONTINUE
+          END IF
+      END IF
+*
+      RETURN
+*
+*     End of DGEMV
+*
+      END
+*> \brief \b DSYRK
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DSYRK(UPLO,TRANS,N,K,ALPHA,A,LDA,BETA,C,LDC)
+*
+*       .. Scalar Arguments ..
+*       DOUBLE PRECISION ALPHA,BETA
+*       INTEGER K,LDA,LDC,N
+*       CHARACTER TRANS,UPLO
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION A(LDA,*),C(LDC,*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DSYRK  performs one of the symmetric rank k operations
+*>
+*>    C := alpha*A*A**T + beta*C,
+*>
+*> or
+*>
+*>    C := alpha*A**T*A + beta*C,
+*>
+*> where  alpha and beta  are scalars, C is an  n by n  symmetric matrix
+*> and  A  is an  n by k  matrix in the first case and a  k by n  matrix
+*> in the second case.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] UPLO
+*> \verbatim
+*>          UPLO is CHARACTER*1
+*>           On  entry,   UPLO  specifies  whether  the  upper  or  lower
+*>           triangular  part  of the  array  C  is to be  referenced  as
+*>           follows:
+*>
+*>              UPLO = 'U' or 'u'   Only the  upper triangular part of  C
+*>                                  is to be referenced.
+*>
+*>              UPLO = 'L' or 'l'   Only the  lower triangular part of  C
+*>                                  is to be referenced.
+*> \endverbatim
+*>
+*> \param[in] TRANS
+*> \verbatim
+*>          TRANS is CHARACTER*1
+*>           On entry,  TRANS  specifies the operation to be performed as
+*>           follows:
+*>
+*>              TRANS = 'N' or 'n'   C := alpha*A*A**T + beta*C.
+*>
+*>              TRANS = 'T' or 't'   C := alpha*A**T*A + beta*C.
+*>
+*>              TRANS = 'C' or 'c'   C := alpha*A**T*A + beta*C.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>           On entry,  N specifies the order of the matrix C.  N must be
+*>           at least zero.
+*> \endverbatim
+*>
+*> \param[in] K
+*> \verbatim
+*>          K is INTEGER
+*>           On entry with  TRANS = 'N' or 'n',  K  specifies  the number
+*>           of  columns   of  the   matrix   A,   and  on   entry   with
+*>           TRANS = 'T' or 't' or 'C' or 'c',  K  specifies  the  number
+*>           of rows of the matrix  A.  K must be at least zero.
+*> \endverbatim
+*>
+*> \param[in] ALPHA
+*> \verbatim
+*>          ALPHA is DOUBLE PRECISION.
+*>           On entry, ALPHA specifies the scalar alpha.
+*> \endverbatim
+*>
+*> \param[in] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension ( LDA, ka ), where ka is
+*>           k  when  TRANS = 'N' or 'n',  and is  n  otherwise.
+*>           Before entry with  TRANS = 'N' or 'n',  the  leading  n by k
+*>           part of the array  A  must contain the matrix  A,  otherwise
+*>           the leading  k by n  part of the array  A  must contain  the
+*>           matrix A.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>           On entry, LDA specifies the first dimension of A as declared
+*>           in  the  calling  (sub)  program.   When  TRANS = 'N' or 'n'
+*>           then  LDA must be at least  max( 1, n ), otherwise  LDA must
+*>           be at least  max( 1, k ).
+*> \endverbatim
+*>
+*> \param[in] BETA
+*> \verbatim
+*>          BETA is DOUBLE PRECISION.
+*>           On entry, BETA specifies the scalar beta.
+*> \endverbatim
+*>
+*> \param[in,out] C
+*> \verbatim
+*>          C is DOUBLE PRECISION array, dimension ( LDC, N )
+*>           Before entry  with  UPLO = 'U' or 'u',  the leading  n by n
+*>           upper triangular part of the array C must contain the upper
+*>           triangular part  of the  symmetric matrix  and the strictly
+*>           lower triangular part of C is not referenced.  On exit, the
+*>           upper triangular part of the array  C is overwritten by the
+*>           upper triangular part of the updated matrix.
+*>           Before entry  with  UPLO = 'L' or 'l',  the leading  n by n
+*>           lower triangular part of the array C must contain the lower
+*>           triangular part  of the  symmetric matrix  and the strictly
+*>           upper triangular part of C is not referenced.  On exit, the
+*>           lower triangular part of the array  C is overwritten by the
+*>           lower triangular part of the updated matrix.
+*> \endverbatim
+*>
+*> \param[in] LDC
+*> \verbatim
+*>          LDC is INTEGER
+*>           On entry, LDC specifies the first dimension of C as declared
+*>           in  the  calling  (sub)  program.   LDC  must  be  at  least
+*>           max( 1, n ).
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level3
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  Level 3 Blas routine.
+*>
+*>  -- Written on 8-February-1989.
+*>     Jack Dongarra, Argonne National Laboratory.
+*>     Iain Duff, AERE Harwell.
+*>     Jeremy Du Croz, Numerical Algorithms Group Ltd.
+*>     Sven Hammarling, Numerical Algorithms Group Ltd.
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DSYRK(UPLO,TRANS,N,K,ALPHA,A,LDA,BETA,C,LDC)
+*
+*  -- Reference BLAS level3 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION ALPHA,BETA
+      INTEGER K,LDA,LDC,N
+      CHARACTER TRANS,UPLO
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION A(LDA,*),C(LDC,*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. External Functions ..
+      LOGICAL LSAME
+      EXTERNAL LSAME
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC MAX
+*     ..
+*     .. Local Scalars ..
+      DOUBLE PRECISION TEMP
+      INTEGER I,INFO,J,L,NROWA
+      LOGICAL UPPER
+*     ..
+*     .. Parameters ..
+      DOUBLE PRECISION ONE,ZERO
+      PARAMETER (ONE=1.0D+0,ZERO=0.0D+0)
+*     ..
+*
+*     Test the input parameters.
+*
+      IF (LSAME(TRANS,'N')) THEN
+          NROWA = N
+      ELSE
+          NROWA = K
+      END IF
+      UPPER = LSAME(UPLO,'U')
+*
+      INFO = 0
+      IF ((.NOT.UPPER) .AND. (.NOT.LSAME(UPLO,'L'))) THEN
+          INFO = 1
+      ELSE IF ((.NOT.LSAME(TRANS,'N')) .AND.
+     +         (.NOT.LSAME(TRANS,'T')) .AND.
+     +         (.NOT.LSAME(TRANS,'C'))) THEN
+          INFO = 2
+      ELSE IF (N.LT.0) THEN
+          INFO = 3
+      ELSE IF (K.LT.0) THEN
+          INFO = 4
+      ELSE IF (LDA.LT.MAX(1,NROWA)) THEN
+          INFO = 7
+      ELSE IF (LDC.LT.MAX(1,N)) THEN
+          INFO = 10
+      END IF
+      IF (INFO.NE.0) THEN
+          CALL XERBLA('DSYRK ',INFO)
+          RETURN
+      END IF
+*
+*     Quick return if possible.
+*
+      IF ((N.EQ.0) .OR. (((ALPHA.EQ.ZERO).OR.
+     +    (K.EQ.0)).AND. (BETA.EQ.ONE))) RETURN
+*
+*     And when  alpha.eq.zero.
+*
+      IF (ALPHA.EQ.ZERO) THEN
+          IF (UPPER) THEN
+              IF (BETA.EQ.ZERO) THEN
+                  DO 20 J = 1,N
+                      DO 10 I = 1,J
+                          C(I,J) = ZERO
+   10                 CONTINUE
+   20             CONTINUE
+              ELSE
+                  DO 40 J = 1,N
+                      DO 30 I = 1,J
+                          C(I,J) = BETA*C(I,J)
+   30                 CONTINUE
+   40             CONTINUE
+              END IF
+          ELSE
+              IF (BETA.EQ.ZERO) THEN
+                  DO 60 J = 1,N
+                      DO 50 I = J,N
+                          C(I,J) = ZERO
+   50                 CONTINUE
+   60             CONTINUE
+              ELSE
+                  DO 80 J = 1,N
+                      DO 70 I = J,N
+                          C(I,J) = BETA*C(I,J)
+   70                 CONTINUE
+   80             CONTINUE
+              END IF
+          END IF
+          RETURN
+      END IF
+*
+*     Start the operations.
+*
+      IF (LSAME(TRANS,'N')) THEN
+*
+*        Form  C := alpha*A*A**T + beta*C.
+*
+          IF (UPPER) THEN
+              DO 130 J = 1,N
+                  IF (BETA.EQ.ZERO) THEN
+                      DO 90 I = 1,J
+                          C(I,J) = ZERO
+   90                 CONTINUE
+                  ELSE IF (BETA.NE.ONE) THEN
+                      DO 100 I = 1,J
+                          C(I,J) = BETA*C(I,J)
+  100                 CONTINUE
+                  END IF
+                  DO 120 L = 1,K
+                      IF (A(J,L).NE.ZERO) THEN
+                          TEMP = ALPHA*A(J,L)
+                          DO 110 I = 1,J
+                              C(I,J) = C(I,J) + TEMP*A(I,L)
+  110                     CONTINUE
+                      END IF
+  120             CONTINUE
+  130         CONTINUE
+          ELSE
+              DO 180 J = 1,N
+                  IF (BETA.EQ.ZERO) THEN
+                      DO 140 I = J,N
+                          C(I,J) = ZERO
+  140                 CONTINUE
+                  ELSE IF (BETA.NE.ONE) THEN
+                      DO 150 I = J,N
+                          C(I,J) = BETA*C(I,J)
+  150                 CONTINUE
+                  END IF
+                  DO 170 L = 1,K
+                      IF (A(J,L).NE.ZERO) THEN
+                          TEMP = ALPHA*A(J,L)
+                          DO 160 I = J,N
+                              C(I,J) = C(I,J) + TEMP*A(I,L)
+  160                     CONTINUE
+                      END IF
+  170             CONTINUE
+  180         CONTINUE
+          END IF
+      ELSE
+*
+*        Form  C := alpha*A**T*A + beta*C.
+*
+          IF (UPPER) THEN
+              DO 210 J = 1,N
+                  DO 200 I = 1,J
+                      TEMP = ZERO
+                      DO 190 L = 1,K
+                          TEMP = TEMP + A(L,I)*A(L,J)
+  190                 CONTINUE
+                      IF (BETA.EQ.ZERO) THEN
+                          C(I,J) = ALPHA*TEMP
+                      ELSE
+                          C(I,J) = ALPHA*TEMP + BETA*C(I,J)
+                      END IF
+  200             CONTINUE
+  210         CONTINUE
+          ELSE
+              DO 240 J = 1,N
+                  DO 230 I = J,N
+                      TEMP = ZERO
+                      DO 220 L = 1,K
+                          TEMP = TEMP + A(L,I)*A(L,J)
+  220                 CONTINUE
+                      IF (BETA.EQ.ZERO) THEN
+                          C(I,J) = ALPHA*TEMP
+                      ELSE
+                          C(I,J) = ALPHA*TEMP + BETA*C(I,J)
+                      END IF
+  230             CONTINUE
+  240         CONTINUE
+          END IF
+      END IF
+*
+      RETURN
+*
+*     End of DSYRK
+*
+      END
+
+*> \brief \b DTRSM
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DTRSM(SIDE,UPLO,TRANSA,DIAG,M,N,ALPHA,A,LDA,B,LDB)
+*
+*       .. Scalar Arguments ..
+*       DOUBLE PRECISION ALPHA
+*       INTEGER LDA,LDB,M,N
+*       CHARACTER DIAG,SIDE,TRANSA,UPLO
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION A(LDA,*),B(LDB,*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*> DTRSM  solves one of the matrix equations
+*>
+*>    op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
+*>
+*> where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+*> non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
+*>
+*>    op( A ) = A   or   op( A ) = A**T.
+*>
+*> The matrix X is overwritten on B.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] SIDE
+*> \verbatim
+*>          SIDE is CHARACTER*1
+*>           On entry, SIDE specifies whether op( A ) appears on the left
+*>           or right of X as follows:
+*>
+*>              SIDE = 'L' or 'l'   op( A )*X = alpha*B.
+*>
+*>              SIDE = 'R' or 'r'   X*op( A ) = alpha*B.
+*> \endverbatim
+*>
+*> \param[in] UPLO
+*> \verbatim
+*>          UPLO is CHARACTER*1
+*>           On entry, UPLO specifies whether the matrix A is an upper or
+*>           lower triangular matrix as follows:
+*>
+*>              UPLO = 'U' or 'u'   A is an upper triangular matrix.
+*>
+*>              UPLO = 'L' or 'l'   A is a lower triangular matrix.
+*> \endverbatim
+*>
+*> \param[in] TRANSA
+*> \verbatim
+*>          TRANSA is CHARACTER*1
+*>           On entry, TRANSA specifies the form of op( A ) to be used in
+*>           the matrix multiplication as follows:
+*>
+*>              TRANSA = 'N' or 'n'   op( A ) = A.
+*>
+*>              TRANSA = 'T' or 't'   op( A ) = A**T.
+*>
+*>              TRANSA = 'C' or 'c'   op( A ) = A**T.
+*> \endverbatim
+*>
+*> \param[in] DIAG
+*> \verbatim
+*>          DIAG is CHARACTER*1
+*>           On entry, DIAG specifies whether or not A is unit triangular
+*>           as follows:
+*>
+*>              DIAG = 'U' or 'u'   A is assumed to be unit triangular.
+*>
+*>              DIAG = 'N' or 'n'   A is not assumed to be unit
+*>                                  triangular.
+*> \endverbatim
+*>
+*> \param[in] M
+*> \verbatim
+*>          M is INTEGER
+*>           On entry, M specifies the number of rows of B. M must be at
+*>           least zero.
+*> \endverbatim
+*>
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>           On entry, N specifies the number of columns of B.  N must be
+*>           at least zero.
+*> \endverbatim
+*>
+*> \param[in] ALPHA
+*> \verbatim
+*>          ALPHA is DOUBLE PRECISION.
+*>           On entry,  ALPHA specifies the scalar  alpha. When  alpha is
+*>           zero then  A is not referenced and  B need not be set before
+*>           entry.
+*> \endverbatim
+*>
+*> \param[in] A
+*> \verbatim
+*>          A is DOUBLE PRECISION array, dimension ( LDA, k ),
+*>           where k is m when SIDE = 'L' or 'l'
+*>             and k is n when SIDE = 'R' or 'r'.
+*>           Before entry  with  UPLO = 'U' or 'u',  the  leading  k by k
+*>           upper triangular part of the array  A must contain the upper
+*>           triangular matrix  and the strictly lower triangular part of
+*>           A is not referenced.
+*>           Before entry  with  UPLO = 'L' or 'l',  the  leading  k by k
+*>           lower triangular part of the array  A must contain the lower
+*>           triangular matrix  and the strictly upper triangular part of
+*>           A is not referenced.
+*>           Note that when  DIAG = 'U' or 'u',  the diagonal elements of
+*>           A  are not referenced either,  but are assumed to be  unity.
+*> \endverbatim
+*>
+*> \param[in] LDA
+*> \verbatim
+*>          LDA is INTEGER
+*>           On entry, LDA specifies the first dimension of A as declared
+*>           in the calling (sub) program.  When  SIDE = 'L' or 'l'  then
+*>           LDA  must be at least  max( 1, m ),  when  SIDE = 'R' or 'r'
+*>           then LDA must be at least max( 1, n ).
+*> \endverbatim
+*>
+*> \param[in,out] B
+*> \verbatim
+*>          B is DOUBLE PRECISION array, dimension ( LDB, N )
+*>           Before entry,  the leading  m by n part of the array  B must
+*>           contain  the  right-hand  side  matrix  B,  and  on exit  is
+*>           overwritten by the solution matrix  X.
+*> \endverbatim
+*>
+*> \param[in] LDB
+*> \verbatim
+*>          LDB is INTEGER
+*>           On entry, LDB specifies the first dimension of B as declared
+*>           in  the  calling  (sub)  program.   LDB  must  be  at  least
+*>           max( 1, m ).
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level3
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>  Level 3 Blas routine.
+*>
+*>
+*>  -- Written on 8-February-1989.
+*>     Jack Dongarra, Argonne National Laboratory.
+*>     Iain Duff, AERE Harwell.
+*>     Jeremy Du Croz, Numerical Algorithms Group Ltd.
+*>     Sven Hammarling, Numerical Algorithms Group Ltd.
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DTRSM(SIDE,UPLO,TRANSA,DIAG,M,N,ALPHA,A,LDA,B,LDB)
+*
+*  -- Reference BLAS level3 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION ALPHA
+      INTEGER LDA,LDB,M,N
+      CHARACTER DIAG,SIDE,TRANSA,UPLO
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION A(LDA,*),B(LDB,*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. External Functions ..
+      LOGICAL LSAME
+      EXTERNAL LSAME
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL XERBLA
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC MAX
+*     ..
+*     .. Local Scalars ..
+      DOUBLE PRECISION TEMP
+      INTEGER I,INFO,J,K,NROWA
+      LOGICAL LSIDE,NOUNIT,UPPER
+*     ..
+*     .. Parameters ..
+      DOUBLE PRECISION ONE,ZERO
+      PARAMETER (ONE=1.0D+0,ZERO=0.0D+0)
+*     ..
+*
+*     Test the input parameters.
+*
+      LSIDE = LSAME(SIDE,'L')
+      IF (LSIDE) THEN
+          NROWA = M
+      ELSE
+          NROWA = N
+      END IF
+      NOUNIT = LSAME(DIAG,'N')
+      UPPER = LSAME(UPLO,'U')
+*
+      INFO = 0
+      IF ((.NOT.LSIDE) .AND. (.NOT.LSAME(SIDE,'R'))) THEN
+          INFO = 1
+      ELSE IF ((.NOT.UPPER) .AND. (.NOT.LSAME(UPLO,'L'))) THEN
+          INFO = 2
+      ELSE IF ((.NOT.LSAME(TRANSA,'N')) .AND.
+     +         (.NOT.LSAME(TRANSA,'T')) .AND.
+     +         (.NOT.LSAME(TRANSA,'C'))) THEN
+          INFO = 3
+      ELSE IF ((.NOT.LSAME(DIAG,'U')) .AND. (.NOT.LSAME(DIAG,'N'))) THEN
+          INFO = 4
+      ELSE IF (M.LT.0) THEN
+          INFO = 5
+      ELSE IF (N.LT.0) THEN
+          INFO = 6
+      ELSE IF (LDA.LT.MAX(1,NROWA)) THEN
+          INFO = 9
+      ELSE IF (LDB.LT.MAX(1,M)) THEN
+          INFO = 11
+      END IF
+      IF (INFO.NE.0) THEN
+          CALL XERBLA('DTRSM ',INFO)
+          RETURN
+      END IF
+*
+*     Quick return if possible.
+*
+      IF (M.EQ.0 .OR. N.EQ.0) RETURN
+*
+*     And when  alpha.eq.zero.
+*
+      IF (ALPHA.EQ.ZERO) THEN
+          DO 20 J = 1,N
+              DO 10 I = 1,M
+                  B(I,J) = ZERO
+   10         CONTINUE
+   20     CONTINUE
+          RETURN
+      END IF
+*
+*     Start the operations.
+*
+      IF (LSIDE) THEN
+          IF (LSAME(TRANSA,'N')) THEN
+*
+*           Form  B := alpha*inv( A )*B.
+*
+              IF (UPPER) THEN
+                  DO 60 J = 1,N
+                      IF (ALPHA.NE.ONE) THEN
+                          DO 30 I = 1,M
+                              B(I,J) = ALPHA*B(I,J)
+   30                     CONTINUE
+                      END IF
+                      DO 50 K = M,1,-1
+                          IF (B(K,J).NE.ZERO) THEN
+                              IF (NOUNIT) B(K,J) = B(K,J)/A(K,K)
+                              DO 40 I = 1,K - 1
+                                  B(I,J) = B(I,J) - B(K,J)*A(I,K)
+   40                         CONTINUE
+                          END IF
+   50                 CONTINUE
+   60             CONTINUE
+              ELSE
+                  DO 100 J = 1,N
+                      IF (ALPHA.NE.ONE) THEN
+                          DO 70 I = 1,M
+                              B(I,J) = ALPHA*B(I,J)
+   70                     CONTINUE
+                      END IF
+                      DO 90 K = 1,M
+                          IF (B(K,J).NE.ZERO) THEN
+                              IF (NOUNIT) B(K,J) = B(K,J)/A(K,K)
+                              DO 80 I = K + 1,M
+                                  B(I,J) = B(I,J) - B(K,J)*A(I,K)
+   80                         CONTINUE
+                          END IF
+   90                 CONTINUE
+  100             CONTINUE
+              END IF
+          ELSE
+*
+*           Form  B := alpha*inv( A**T )*B.
+*
+              IF (UPPER) THEN
+                  DO 130 J = 1,N
+                      DO 120 I = 1,M
+                          TEMP = ALPHA*B(I,J)
+                          DO 110 K = 1,I - 1
+                              TEMP = TEMP - A(K,I)*B(K,J)
+  110                     CONTINUE
+                          IF (NOUNIT) TEMP = TEMP/A(I,I)
+                          B(I,J) = TEMP
+  120                 CONTINUE
+  130             CONTINUE
+              ELSE
+                  DO 160 J = 1,N
+                      DO 150 I = M,1,-1
+                          TEMP = ALPHA*B(I,J)
+                          DO 140 K = I + 1,M
+                              TEMP = TEMP - A(K,I)*B(K,J)
+  140                     CONTINUE
+                          IF (NOUNIT) TEMP = TEMP/A(I,I)
+                          B(I,J) = TEMP
+  150                 CONTINUE
+  160             CONTINUE
+              END IF
+          END IF
+      ELSE
+          IF (LSAME(TRANSA,'N')) THEN
+*
+*           Form  B := alpha*B*inv( A ).
+*
+              IF (UPPER) THEN
+                  DO 210 J = 1,N
+                      IF (ALPHA.NE.ONE) THEN
+                          DO 170 I = 1,M
+                              B(I,J) = ALPHA*B(I,J)
+  170                     CONTINUE
+                      END IF
+                      DO 190 K = 1,J - 1
+                          IF (A(K,J).NE.ZERO) THEN
+                              DO 180 I = 1,M
+                                  B(I,J) = B(I,J) - A(K,J)*B(I,K)
+  180                         CONTINUE
+                          END IF
+  190                 CONTINUE
+                      IF (NOUNIT) THEN
+                          TEMP = ONE/A(J,J)
+                          DO 200 I = 1,M
+                              B(I,J) = TEMP*B(I,J)
+  200                     CONTINUE
+                      END IF
+  210             CONTINUE
+              ELSE
+                  DO 260 J = N,1,-1
+                      IF (ALPHA.NE.ONE) THEN
+                          DO 220 I = 1,M
+                              B(I,J) = ALPHA*B(I,J)
+  220                     CONTINUE
+                      END IF
+                      DO 240 K = J + 1,N
+                          IF (A(K,J).NE.ZERO) THEN
+                              DO 230 I = 1,M
+                                  B(I,J) = B(I,J) - A(K,J)*B(I,K)
+  230                         CONTINUE
+                          END IF
+  240                 CONTINUE
+                      IF (NOUNIT) THEN
+                          TEMP = ONE/A(J,J)
+                          DO 250 I = 1,M
+                              B(I,J) = TEMP*B(I,J)
+  250                     CONTINUE
+                      END IF
+  260             CONTINUE
+              END IF
+          ELSE
+*
+*           Form  B := alpha*B*inv( A**T ).
+*
+              IF (UPPER) THEN
+                  DO 310 K = N,1,-1
+                      IF (NOUNIT) THEN
+                          TEMP = ONE/A(K,K)
+                          DO 270 I = 1,M
+                              B(I,K) = TEMP*B(I,K)
+  270                     CONTINUE
+                      END IF
+                      DO 290 J = 1,K - 1
+                          IF (A(J,K).NE.ZERO) THEN
+                              TEMP = A(J,K)
+                              DO 280 I = 1,M
+                                  B(I,J) = B(I,J) - TEMP*B(I,K)
+  280                         CONTINUE
+                          END IF
+  290                 CONTINUE
+                      IF (ALPHA.NE.ONE) THEN
+                          DO 300 I = 1,M
+                              B(I,K) = ALPHA*B(I,K)
+  300                     CONTINUE
+                      END IF
+  310             CONTINUE
+              ELSE
+                  DO 360 K = 1,N
+                      IF (NOUNIT) THEN
+                          TEMP = ONE/A(K,K)
+                          DO 320 I = 1,M
+                              B(I,K) = TEMP*B(I,K)
+  320                     CONTINUE
+                      END IF
+                      DO 340 J = K + 1,N
+                          IF (A(J,K).NE.ZERO) THEN
+                              TEMP = A(J,K)
+                              DO 330 I = 1,M
+                                  B(I,J) = B(I,J) - TEMP*B(I,K)
+  330                         CONTINUE
+                          END IF
+  340                 CONTINUE
+                      IF (ALPHA.NE.ONE) THEN
+                          DO 350 I = 1,M
+                              B(I,K) = ALPHA*B(I,K)
+  350                     CONTINUE
+                      END IF
+  360             CONTINUE
+              END IF
+          END IF
+      END IF
+*
+      RETURN
+*
+*     End of DTRSM
+*
+      END
+       
+*> \brief \b DCOPY
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DCOPY(N,DX,INCX,DY,INCY)
+*
+*       .. Scalar Arguments ..
+*       INTEGER INCX,INCY,N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION DX(*),DY(*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*>    DCOPY copies a vector, x, to a vector, y.
+*>    uses unrolled loops for increments equal to 1.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>         number of elements in input vector(s)
+*> \endverbatim
+*>
+*> \param[in] DX
+*> \verbatim
+*>          DX is DOUBLE PRECISION array, dimension ( 1 + ( N - 1 )*abs( INCX ) )
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>         storage spacing between elements of DX
+*> \endverbatim
+*>
+*> \param[out] DY
+*> \verbatim
+*>          DY is DOUBLE PRECISION array, dimension ( 1 + ( N - 1 )*abs( INCY ) )
+*> \endverbatim
+*>
+*> \param[in] INCY
+*> \verbatim
+*>          INCY is INTEGER
+*>         storage spacing between elements of DY
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level1
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>     jack dongarra, linpack, 3/11/78.
+*>     modified 12/3/93, array(1) declarations changed to array(*)
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DCOPY(N,DX,INCX,DY,INCY)
+*
+*  -- Reference BLAS level1 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION DX(*),DY(*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      INTEGER I,IX,IY,M,MP1
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC MOD
+*     ..
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+*
+*        code for both increments equal to 1
+*
+*
+*        clean-up loop
+*
+         M = MOD(N,7)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DY(I) = DX(I)
+            END DO
+            IF (N.LT.7) RETURN
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,7
+            DY(I) = DX(I)
+            DY(I+1) = DX(I+1)
+            DY(I+2) = DX(I+2)
+            DY(I+3) = DX(I+3)
+            DY(I+4) = DX(I+4)
+            DY(I+5) = DX(I+5)
+            DY(I+6) = DX(I+6)
+         END DO
+      ELSE
+*
+*        code for unequal increments or equal increments
+*          not equal to 1
+*
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            DY(IY) = DX(IX)
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+*
+*     End of DCOPY
+*
+      END
+*> \brief \b DSCAL
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DSCAL(N,DA,DX,INCX)
+*
+*       .. Scalar Arguments ..
+*       DOUBLE PRECISION DA
+*       INTEGER INCX,N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION DX(*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*>    DSCAL scales a vector by a constant.
+*>    uses unrolled loops for increment equal to 1.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>         number of elements in input vector(s)
+*> \endverbatim
+*>
+*> \param[in] DA
+*> \verbatim
+*>          DA is DOUBLE PRECISION
+*>           On entry, DA specifies the scalar alpha.
+*> \endverbatim
+*>
+*> \param[in,out] DX
+*> \verbatim
+*>          DX is DOUBLE PRECISION array, dimension ( 1 + ( N - 1 )*abs( INCX ) )
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>         storage spacing between elements of DX
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level1
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>     jack dongarra, linpack, 3/11/78.
+*>     modified 3/93 to return if incx .le. 0.
+*>     modified 12/3/93, array(1) declarations changed to array(*)
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DSCAL(N,DA,DX,INCX)
+*
+*  -- Reference BLAS level1 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION DA
+      INTEGER INCX,N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION DX(*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      INTEGER I,M,MP1,NINCX
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC MOD
+*     ..
+      IF (N.LE.0 .OR. INCX.LE.0) RETURN
+      IF (INCX.EQ.1) THEN
+*
+*        code for increment equal to 1
+*
+*
+*        clean-up loop
+*
+         M = MOD(N,5)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DX(I) = DA*DX(I)
+            END DO
+            IF (N.LT.5) RETURN
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,5
+            DX(I) = DA*DX(I)
+            DX(I+1) = DA*DX(I+1)
+            DX(I+2) = DA*DX(I+2)
+            DX(I+3) = DA*DX(I+3)
+            DX(I+4) = DA*DX(I+4)
+         END DO
+      ELSE
+*
+*        code for increment not equal to 1
+*
+         NINCX = N*INCX
+         DO I = 1,NINCX,INCX
+            DX(I) = DA*DX(I)
+         END DO
+      END IF
+      RETURN
+*
+*     End of DSCAL
+*
+      END
+*> \brief \b DAXPY
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DAXPY(N,DA,DX,INCX,DY,INCY)
+*
+*       .. Scalar Arguments ..
+*       DOUBLE PRECISION DA
+*       INTEGER INCX,INCY,N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION DX(*),DY(*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*>    DAXPY constant times a vector plus a vector.
+*>    uses unrolled loops for increments equal to one.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>         number of elements in input vector(s)
+*> \endverbatim
+*>
+*> \param[in] DA
+*> \verbatim
+*>          DA is DOUBLE PRECISION
+*>           On entry, DA specifies the scalar alpha.
+*> \endverbatim
+*>
+*> \param[in] DX
+*> \verbatim
+*>          DX is DOUBLE PRECISION array, dimension ( 1 + ( N - 1 )*abs( INCX ) )
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>         storage spacing between elements of DX
+*> \endverbatim
+*>
+*> \param[in,out] DY
+*> \verbatim
+*>          DY is DOUBLE PRECISION array, dimension ( 1 + ( N - 1 )*abs( INCY ) )
+*> \endverbatim
+*>
+*> \param[in] INCY
+*> \verbatim
+*>          INCY is INTEGER
+*>         storage spacing between elements of DY
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level1
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>     jack dongarra, linpack, 3/11/78.
+*>     modified 12/3/93, array(1) declarations changed to array(*)
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DAXPY(N,DA,DX,INCX,DY,INCY)
+*
+*  -- Reference BLAS level1 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      DOUBLE PRECISION DA
+      INTEGER INCX,INCY,N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION DX(*),DY(*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      INTEGER I,IX,IY,M,MP1
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC MOD
+*     ..
+      IF (N.LE.0) RETURN
+      IF (DA.EQ.0.0d0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+*
+*        code for both increments equal to 1
+*
+*
+*        clean-up loop
+*
+         M = MOD(N,4)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DY(I) = DY(I) + DA*DX(I)
+            END DO
+         END IF
+         IF (N.LT.4) RETURN
+         MP1 = M + 1
+         DO I = MP1,N,4
+            DY(I) = DY(I) + DA*DX(I)
+            DY(I+1) = DY(I+1) + DA*DX(I+1)
+            DY(I+2) = DY(I+2) + DA*DX(I+2)
+            DY(I+3) = DY(I+3) + DA*DX(I+3)
+         END DO
+      ELSE
+*
+*        code for unequal increments or equal increments
+*          not equal to 1
+*
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+          DY(IY) = DY(IY) + DA*DX(IX)
+          IX = IX + INCX
+          IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+*
+*     End of DAXPY
+*
+      END
+*> \brief \b DDOT
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       DOUBLE PRECISION FUNCTION DDOT(N,DX,INCX,DY,INCY)
+*
+*       .. Scalar Arguments ..
+*       INTEGER INCX,INCY,N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION DX(*),DY(*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*>    DDOT forms the dot product of two vectors.
+*>    uses unrolled loops for increments equal to one.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>         number of elements in input vector(s)
+*> \endverbatim
+*>
+*> \param[in] DX
+*> \verbatim
+*>          DX is DOUBLE PRECISION array, dimension ( 1 + ( N - 1 )*abs( INCX ) )
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>         storage spacing between elements of DX
+*> \endverbatim
+*>
+*> \param[in] DY
+*> \verbatim
+*>          DY is DOUBLE PRECISION array, dimension ( 1 + ( N - 1 )*abs( INCY ) )
+*> \endverbatim
+*>
+*> \param[in] INCY
+*> \verbatim
+*>          INCY is INTEGER
+*>         storage spacing between elements of DY
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level1
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>     jack dongarra, linpack, 3/11/78.
+*>     modified 12/3/93, array(1) declarations changed to array(*)
+*> \endverbatim
+*>
+*  =====================================================================
+      DOUBLE PRECISION FUNCTION DDOT(N,DX,INCX,DY,INCY)
+*
+*  -- Reference BLAS level1 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION DX(*),DY(*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      DOUBLE PRECISION DTEMP
+      INTEGER I,IX,IY,M,MP1
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC MOD
+*     ..
+      DDOT = 0.0d0
+      DTEMP = 0.0d0
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+*
+*        code for both increments equal to 1
+*
+*
+*        clean-up loop
+*
+         M = MOD(N,5)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DTEMP = DTEMP + DX(I)*DY(I)
+            END DO
+            IF (N.LT.5) THEN
+               DDOT=DTEMP
+            RETURN
+            END IF
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,5
+          DTEMP = DTEMP + DX(I)*DY(I) + DX(I+1)*DY(I+1) +
+     $            DX(I+2)*DY(I+2) + DX(I+3)*DY(I+3) + DX(I+4)*DY(I+4)
+         END DO
+      ELSE
+*
+*        code for unequal increments or equal increments
+*          not equal to 1
+*
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            DTEMP = DTEMP + DX(IX)*DY(IY)
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      DDOT = DTEMP
+      RETURN
+*
+*     End of DDOT
+*
+      END
+*> \brief \b IDAMAX
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       INTEGER FUNCTION IDAMAX(N,DX,INCX)
+*
+*       .. Scalar Arguments ..
+*       INTEGER INCX,N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION DX(*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*>    IDAMAX finds the index of the first element having maximum absolute value.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>         number of elements in input vector(s)
+*> \endverbatim
+*>
+*> \param[in] DX
+*> \verbatim
+*>          DX is DOUBLE PRECISION array, dimension ( 1 + ( N - 1 )*abs( INCX ) )
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>         storage spacing between elements of DX
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup aux_blas
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>     jack dongarra, linpack, 3/11/78.
+*>     modified 3/93 to return if incx .le. 0.
+*>     modified 12/3/93, array(1) declarations changed to array(*)
+*> \endverbatim
+*>
+*  =====================================================================
+      INTEGER FUNCTION IDAMAX(N,DX,INCX)
+*
+*  -- Reference BLAS level1 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER INCX,N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION DX(*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      DOUBLE PRECISION DMAX
+      INTEGER I,IX
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC DABS
+*     ..
+      IDAMAX = 0
+      IF (N.LT.1 .OR. INCX.LE.0) RETURN
+      IDAMAX = 1
+      IF (N.EQ.1) RETURN
+      IF (INCX.EQ.1) THEN
+*
+*        code for increment equal to 1
+*
+         DMAX = DABS(DX(1))
+         DO I = 2,N
+            IF (DABS(DX(I)).GT.DMAX) THEN
+               IDAMAX = I
+               DMAX = DABS(DX(I))
+            END IF
+         END DO
+      ELSE
+*
+*        code for increment not equal to 1
+*
+         IX = 1
+         DMAX = DABS(DX(1))
+         IX = IX + INCX
+         DO I = 2,N
+            IF (DABS(DX(IX)).GT.DMAX) THEN
+               IDAMAX = I
+               DMAX = DABS(DX(IX))
+            END IF
+            IX = IX + INCX
+         END DO
+      END IF
+      RETURN
+*
+*     End of IDAMAX
+*
+      END
+*> \brief \b DSWAP
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       SUBROUTINE DSWAP(N,DX,INCX,DY,INCY)
+*
+*       .. Scalar Arguments ..
+*       INTEGER INCX,INCY,N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION DX(*),DY(*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*>    DSWAP interchanges two vectors.
+*>    uses unrolled loops for increments equal to 1.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>         number of elements in input vector(s)
+*> \endverbatim
+*>
+*> \param[in,out] DX
+*> \verbatim
+*>          DX is DOUBLE PRECISION array, dimension ( 1 + ( N - 1 )*abs( INCX ) )
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>         storage spacing between elements of DX
+*> \endverbatim
+*>
+*> \param[in,out] DY
+*> \verbatim
+*>          DY is DOUBLE PRECISION array, dimension ( 1 + ( N - 1 )*abs( INCY ) )
+*> \endverbatim
+*>
+*> \param[in] INCY
+*> \verbatim
+*>          INCY is INTEGER
+*>         storage spacing between elements of DY
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level1
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>     jack dongarra, linpack, 3/11/78.
+*>     modified 12/3/93, array(1) declarations changed to array(*)
+*> \endverbatim
+*>
+*  =====================================================================
+      SUBROUTINE DSWAP(N,DX,INCX,DY,INCY)
+*
+*  -- Reference BLAS level1 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION DX(*),DY(*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      DOUBLE PRECISION DTEMP
+      INTEGER I,IX,IY,M,MP1
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC MOD
+*     ..
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+*
+*       code for both increments equal to 1
+*
+*
+*       clean-up loop
+*
+         M = MOD(N,3)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DTEMP = DX(I)
+               DX(I) = DY(I)
+               DY(I) = DTEMP
+            END DO
+            IF (N.LT.3) RETURN
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,3
+            DTEMP = DX(I)
+            DX(I) = DY(I)
+            DY(I) = DTEMP
+            DTEMP = DX(I+1)
+            DX(I+1) = DY(I+1)
+            DY(I+1) = DTEMP
+            DTEMP = DX(I+2)
+            DX(I+2) = DY(I+2)
+            DY(I+2) = DTEMP
+         END DO
+      ELSE
+*
+*       code for unequal increments or equal increments not equal
+*         to 1
+*
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            DTEMP = DX(IX)
+            DX(IX) = DY(IY)
+            DY(IY) = DTEMP
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+*
+*     End of DSWAP
+*
+      END
+*> \brief \b DASUM
+*
+*  =========== DOCUMENTATION ===========
+*
+* Online html documentation available at
+*            http://www.netlib.org/lapack/explore-html/
+*
+*  Definition:
+*  ===========
+*
+*       DOUBLE PRECISION FUNCTION DASUM(N,DX,INCX)
+*
+*       .. Scalar Arguments ..
+*       INTEGER INCX,N
+*       ..
+*       .. Array Arguments ..
+*       DOUBLE PRECISION DX(*)
+*       ..
+*
+*
+*> \par Purpose:
+*  =============
+*>
+*> \verbatim
+*>
+*>    DASUM takes the sum of the absolute values.
+*> \endverbatim
+*
+*  Arguments:
+*  ==========
+*
+*> \param[in] N
+*> \verbatim
+*>          N is INTEGER
+*>         number of elements in input vector(s)
+*> \endverbatim
+*>
+*> \param[in] DX
+*> \verbatim
+*>          DX is DOUBLE PRECISION array, dimension ( 1 + ( N - 1 )*abs( INCX ) )
+*> \endverbatim
+*>
+*> \param[in] INCX
+*> \verbatim
+*>          INCX is INTEGER
+*>         storage spacing between elements of DX
+*> \endverbatim
+*
+*  Authors:
+*  ========
+*
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
+*
+*> \ingroup double_blas_level1
+*
+*> \par Further Details:
+*  =====================
+*>
+*> \verbatim
+*>
+*>     jack dongarra, linpack, 3/11/78.
+*>     modified 3/93 to return if incx .le. 0.
+*>     modified 12/3/93, array(1) declarations changed to array(*)
+*> \endverbatim
+*>
+*  =====================================================================
+      DOUBLE PRECISION FUNCTION DASUM(N,DX,INCX)
+*
+*  -- Reference BLAS level1 routine --
+*  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*
+*     .. Scalar Arguments ..
+      INTEGER INCX,N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION DX(*)
+*     ..
+*
+*  =====================================================================
+*
+*     .. Local Scalars ..
+      DOUBLE PRECISION DTEMP
+      INTEGER I,M,MP1,NINCX
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC DABS,MOD
+*     ..
+      DASUM = 0.0d0
+      DTEMP = 0.0d0
+      IF (N.LE.0 .OR. INCX.LE.0) RETURN
+      IF (INCX.EQ.1) THEN
+*        code for increment equal to 1
+*
+*
+*        clean-up loop
+*
+         M = MOD(N,6)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DTEMP = DTEMP + DABS(DX(I))
+            END DO
+            IF (N.LT.6) THEN
+               DASUM = DTEMP
+               RETURN
+            END IF
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,6
+            DTEMP = DTEMP + DABS(DX(I)) + DABS(DX(I+1)) +
+     $              DABS(DX(I+2)) + DABS(DX(I+3)) +
+     $              DABS(DX(I+4)) + DABS(DX(I+5))
+         END DO
+      ELSE
+*
+*        code for increment not equal to 1
+*
+         NINCX = N*INCX
+         DO I = 1,NINCX,INCX
+            DTEMP = DTEMP + DABS(DX(I))
+         END DO
+      END IF
+      DASUM = DTEMP
+      RETURN
+*
+*     End of DASUM
+*
+      END
+
+               
