@@ -30,7 +30,7 @@ PMFortranConfig <- function(reconfig = F) {
     compiler <- readLines(configFilename)
     #check for non-parallel gfortran, and if present, update for 64 bit only (doesn't work in 32 bit)
     if (getBits() == "64" & length(compiler) == 1 & length(grep("^gfortran", compiler) > 0)) {
-      compiler <- c(compiler, "gfortran -O3 -march=native -std=legacy -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>")
+      compiler <- c(compiler, "gfortran -Ofast -march=native -std=legacy -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>")
       writeLines(compiler, configFilename)
       cat("Your gfortran compiler statement has been updated to include parallel processing.\nYou can use PMFortranConfig() to see the new statement.\n\n")
       flush.console()
@@ -50,7 +50,7 @@ PMFortranConfig <- function(reconfig = F) {
     cat("In each of the following <exec> is a place holder for the executable file name\n")
     cat("and <files> is a placeholder for the files to be compiled.  Both are required.\n")
     cat("When applicable serial and parallel compile statements in Pmetrics are listed in that order.\n\n")
-    cat(paste("1. gfortran -m", getBits(), " -O3 -march=native -std=legacy -w -o <exec> <files>\ngfortran -O3 -march=native -std=legacy -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>\n", sep = ""))
+    cat(paste("1. gfortran -m", getBits(), " -Ofast -march=native -std=legacy -w -o <exec> <files>\ngfortran -Ofast -march=native -std=legacy -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>\n", sep = ""))
     cat("2. g95: g95 -o -fstatic <exec> <files>\n")
     cat("3. Intel Visual: ifort -o <exec> <files>\n")
     cat("4. Lahey: lf90  <files> -fix -out <exec>\n")
@@ -70,7 +70,7 @@ PMFortranConfig <- function(reconfig = F) {
 
       if (as.numeric(choice) < 5) {
         compiler <- switch(as.numeric(choice),
-                           paste("gfortran -m", getBits(), " -O3 -march=native -std=legacy -w -o <exec> <files>\ngfortran -O3 -march=native -std=legacy -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>", sep = ""),
+                           paste("gfortran -m", getBits(), " -Ofast -march=native -std=legacy -w -o <exec> <files>\ngfortran -Ofast -march=native -std=legacy -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>", sep = ""),
                            "g95 -o -fstatic <exec> <files> ",
                            "ifort -o <exec> <files>",
                            "lf90  <files> -fix -out <exec>")
