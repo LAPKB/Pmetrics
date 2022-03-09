@@ -31,15 +31,15 @@ PM_result <- R6Class(
     #' the save data.  It contains the information required to plot visual predictive checks and normalized prediction
     #' error discrepancies via the npde code developed by Comets et al
     valid = NULL,
-    
+
     #' @description
     #' Create new object populated with data from previous run
     #' @details
     #' Creation of new \code{PM_result} objects is via
     #' \code{\link{PM_load}}
     #' @param out The parsed output from \code{\link{PM_load}}
-    
-    
+
+
     initialize = function(out) {
       self$npdata <- out$NPdata
       self$pop <- out$pop
@@ -53,21 +53,21 @@ PM_result <- R6Class(
       self$errfile <- out$errfile
       self$success <- out$success
     },
-    
+
     #' @description
     #' Plot generic function based on type
     #' @param type Type of plot based on class of object
     #' @param \dots Plot-specific arguments
-    
+
     plot = function(type, ...) {
       self[[type]]$plot(...)
     },
-    
+
     #' @description
     #' Summary generic function based on type
     #' @param type Type of summary based on class of object
     #' @param \dots Summary-specific arguments
-    
+
     summary = function(type, ...) {
       self[[type]]$summary(...)
     }
