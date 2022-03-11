@@ -74,7 +74,7 @@ PM_result <- R6::R6Class(
   ) # end public
 ) # end PM_result
 
-result_block <- R6Class(
+result_block <- R6::R6Class(
   "result_block",
   public <- list(
     data = NULL,

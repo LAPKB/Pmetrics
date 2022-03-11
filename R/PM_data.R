@@ -29,7 +29,7 @@ PM_data <- R6::R6Class("PM_data",
     write = function(file_name) {
       PMwriteMatrix(self$data, file_name)
     },
-    print = function(standard = F, viewer = T) {
+    print = function(standard = F, viewer = T,...) {
       if (standard) {
         what <- self$standard_data
         title <- "Standardized Data"
@@ -42,6 +42,7 @@ PM_data <- R6::R6Class("PM_data",
       } else {
         print(what)
       }
+      return(invisible(self))
     },
     summary = function(formula, FUN, include, exclude) {
       object <- self$data

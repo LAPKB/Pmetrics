@@ -1,24 +1,21 @@
 #pri
 Ka, 0.100000, 0.900000
 Ke, 0.001000, 0.100000
-V0, 30.000000, 120.000000
+V, 30.000000, 120.000000
 Tlag1, 0.000000, 4.000000
 
 #cov
-WT
-AFRICA
-AGE
-GENDER
-HEIGHT
-
-#sec
-V=V0*(WT/55)
+wt
+africa
+age
+gender
+height
 
 #lag
-TLAG(1) = Tlag1
+Tlag(1) = Tlag1
 
 #out
-Y(1)=X(2)/V
+Y(1)=X(1)/V
 
 #err
 G=5.000000
