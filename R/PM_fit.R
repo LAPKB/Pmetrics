@@ -13,7 +13,7 @@
 #' Object to define and run models/data in Pmetrics
 #'
 #' @export
-PM_fit <- R6Class("PM_fit",
+PM_fit <- R6::R6Class("PM_fit",
   public = list(
 
     #' @description

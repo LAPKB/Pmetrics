@@ -3,7 +3,7 @@
 
 # Factory pattern
 #' @export
-PM_model <- R6Class("PM_model", list())
+PM_model <- R6::R6Class("PM_model", list())
 PM_model$new <- function(model, ..., julia = F) {
   # Now we have multiple options for the model:
   # The model can be a String -> legacy run
@@ -59,7 +59,7 @@ fixed <- function(fixed, constant = F, gtz = F) {
 
 # Virtual Class
 # it seems that protected does not exist in R
-PM_Vmodel <- R6Class("PM_Vmodel",
+PM_Vmodel <- R6::R6Class("PM_Vmodel",
   public = list(
     name = NULL, # used by PM_model_legacy
     # error = NULL,
@@ -138,7 +138,7 @@ PM_Vmodel <- R6Class("PM_Vmodel",
 
 # private classes
 # TODO: Should I make these fields private?
-PM_Vinput <- R6Class(
+PM_Vinput <- R6::R6Class(
   "PM_Vinput",
   public <- list(
     mode = NULL,
@@ -253,7 +253,7 @@ PM_Vinput <- R6Class(
 # PM_model_list -----------------------------------------------------------
 
 
-PM_model_list <- R6Class("PM_model_list",
+PM_model_list <- R6::R6Class("PM_model_list",
   inherit = PM_Vmodel,
   public = list(
     model_list = NULL,
@@ -407,7 +407,7 @@ PM_model_list <- R6Class("PM_model_list",
 # # PM_model_legacy ---------------------------------------------------------
 
 
-# PM_model_legacy <- R6Class("PM_model_legacy",
+# PM_model_legacy <- R6::R6Class("PM_model_legacy",
 #   inherit = PM_Vmodel,
 #   public = list(
 #     legacy_file_path = NULL,
@@ -422,7 +422,7 @@ PM_model_list <- R6Class("PM_model_list",
 #   )
 # )
 
-PM_model_file <- R6Class("PM_model_file",
+PM_model_file <- R6::R6Class("PM_model_file",
   inherit = PM_model_list,
   public = list(
     content = NULL,
@@ -571,7 +571,7 @@ PM_model_file <- R6Class("PM_model_file",
 # PM_model_julia ----------------------------------------------------------
 
 
-PM_model_julia <- R6Class("PM_model_julia",
+PM_model_julia <- R6::R6Class("PM_model_julia",
   inherit = PM_Vmodel,
   public = list(
     model_function = NULL,
