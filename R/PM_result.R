@@ -78,6 +78,9 @@ PM_result <- R6Class(
 
     sim = function(...) {
       SIMrun(self, ...)
+      # TODO: read files and fix the missing E problem
+      SIMparse(file = "sim*.txt")
+      # TODO: remove all sim* files
     }
   ) # end public
 ) # end PM_result
