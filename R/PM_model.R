@@ -5,6 +5,7 @@
 #' @export
 PM_model <- R6Class("PM_model", list())
 PM_model$new <- function(model, ..., julia = F) {
+  print(model)
   # Now we have multiple options for the model:
   # The model can be a String -> legacy run
   # The model can be a Function -> julia run
