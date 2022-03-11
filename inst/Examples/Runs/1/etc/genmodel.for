@@ -3,7 +3,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE DIFFEQ(NDIM,T,X,XP,RPAR,IPAR)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V0,Tlag1,V,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,wt,africa,age,gender,height
       COMMON /PARAMD/ P
       COMMON /INPUT/ R,B
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG
@@ -23,14 +23,13 @@ C  TSTMULTN.FOR                          NOV, 2014
 
          Ka=P(1)
          Ke=P(2)
-         V0=P(3)
+         V=P(3)
          Tlag1=P(4)
-         WT=CV(1)
-         AFRICA=CV(2)
-         AGE=CV(3)
-         GENDER=CV(4)
-         HEIGHT=CV(5)
-         V=V0*(WT/55)
+         wt=CV(1)
+         africa=CV(2)
+         age=CV(3)
+         gender=CV(4)
+         height=CV(5)
          KCP=0
          KPC=0
 
@@ -43,7 +42,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE OUTPUT(T,Y)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V0,Tlag1,V,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,wt,africa,age,gender,height
       COMMON /PARAMD/ P
       COMMON /STATE/ X
       COMMON /INPUT/ R,B
@@ -60,18 +59,17 @@ C  TSTMULTN.FOR                          NOV, 2014
 
          Ka=P(1)
          Ke=P(2)
-         V0=P(3)
+         V=P(3)
          Tlag1=P(4)
-         WT=CV(1)
-         AFRICA=CV(2)
-         AGE=CV(3)
-         GENDER=CV(4)
-         HEIGHT=CV(5)
-         V=V0*(WT/55)
+         wt=CV(1)
+         africa=CV(2)
+         age=CV(3)
+         gender=CV(4)
+         height=CV(5)
          KCP=0
          KPC=0
 
-         Y(1)=X(2)/V
+         Y(1)=X(1)/V
 
       RETURN
       END
@@ -80,7 +78,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE SYMBOL
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V0,Tlag1,V,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,wt,africa,age,gender,height
       CHARACTER PSYM(32)*11
       COMMON /CNST/ N,ND,NI,NUP,NUIC,NP
       COMMON/BOLUSCOMP/NBCOMP
@@ -96,7 +94,7 @@ C  TSTMULTN.FOR                          NOV, 2014
        NP=4
        PSYM(1)='Ka'
        PSYM(2)='Ke'
-       PSYM(3)='V0'
+       PSYM(3)='V'
        PSYM(4)='Tlag1'
 
       RETURN
@@ -106,7 +104,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE GETFA(FA)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V0,Tlag1,V,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,wt,africa,age,gender,height
       COMMON /PARAMD/ P
       COMMON /INPUT/ R,B
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG
@@ -126,14 +124,13 @@ C  TSTMULTN.FOR                          NOV, 2014
 
          Ka=P(1)
          Ke=P(2)
-         V0=P(3)
+         V=P(3)
          Tlag1=P(4)
-         WT=CV(1)
-         AFRICA=CV(2)
-         AGE=CV(3)
-         GENDER=CV(4)
-         HEIGHT=CV(5)
-         V=V0*(WT/55)
+         wt=CV(1)
+         africa=CV(2)
+         age=CV(3)
+         gender=CV(4)
+         height=CV(5)
          KCP=0
          KPC=0
 
@@ -146,7 +143,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE GETIX(N,X)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V0,Tlag1,V,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,wt,africa,age,gender,height
       COMMON /PARAMD/ P
       COMMON /INPUT/ R,B
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG
@@ -173,14 +170,13 @@ C  TSTMULTN.FOR                          NOV, 2014
 
          Ka=P(1)
          Ke=P(2)
-         V0=P(3)
+         V=P(3)
          Tlag1=P(4)
-         WT=CV(1)
-         AFRICA=CV(2)
-         AGE=CV(3)
-         GENDER=CV(4)
-         HEIGHT=CV(5)
-         V=V0*(WT/55)
+         wt=CV(1)
+         africa=CV(2)
+         age=CV(3)
+         gender=CV(4)
+         height=CV(5)
          KCP=0
          KPC=0
 
@@ -193,7 +189,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE GETTLAG(TLAG)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V0,Tlag1,V,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,wt,africa,age,gender,height
       COMMON /PARAMD/ P
       COMMON /INPUT/ R,B
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG
@@ -213,18 +209,17 @@ C  TSTMULTN.FOR                          NOV, 2014
 
          Ka=P(1)
          Ke=P(2)
-         V0=P(3)
+         V=P(3)
          Tlag1=P(4)
-         WT=CV(1)
-         AFRICA=CV(2)
-         AGE=CV(3)
-         GENDER=CV(4)
-         HEIGHT=CV(5)
-         V=V0*(WT/55)
+         wt=CV(1)
+         africa=CV(2)
+         age=CV(3)
+         gender=CV(4)
+         height=CV(5)
          KCP=0
          KPC=0
 
-         TLAG(1) = Tlag1
+         Tlag(1) = Tlag1
 
       RETURN
       END
@@ -233,7 +228,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE ANAL3(X,TIN,TOUT)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V0,Tlag1,V,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,wt,africa,age,gender,height
 
       COMMON /PARAMD/ P
       COMMON /INPUT/ R,B
@@ -249,14 +244,13 @@ C  TSTMULTN.FOR                          NOV, 2014
 
          Ka=P(1)
          Ke=P(2)
-         V0=P(3)
+         V=P(3)
          Tlag1=P(4)
-         WT=CV(1)
-         AFRICA=CV(2)
-         AGE=CV(3)
-         GENDER=CV(4)
-         HEIGHT=CV(5)
-         V=V0*(WT/55)
+         wt=CV(1)
+         africa=CV(2)
+         age=CV(3)
+         gender=CV(4)
+         height=CV(5)
          KCP=0
          KPC=0
 
