@@ -14,7 +14,7 @@ genmodel.for
  PAR(I),I=1,NVAR
 Ka
 Ke
-V0
+V
 Tlag1
  AB ARRAY
 0.1    0.9

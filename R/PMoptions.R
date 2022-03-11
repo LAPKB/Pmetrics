@@ -18,7 +18,7 @@ getPMoptions <- function(opt) {
   PMoptionsFile <- paste(system.file("options", package = "Pmetrics"),"PMoptions.json", sep = "/")
   #if it doesn't exist, create it with defaults
   if (!file.exists(PMoptionsFile)) {
-    loc <- Sys.getlocale("LC_TIME") %>% substr(1,2) #get system language
+    loc <- substr(Sys.getlocale("LC_TIME"), 1,2) #get system language
     locales <- NULL
     data(locales,envir = environment())
     language <- locales$language[which(locales$iso639_2==loc)]
@@ -65,7 +65,7 @@ setPMoptions <- function(sep, dec, server_address) {
   if (!missing(sep)) PMopts$sep <- sep
   if (!missing(dec)) PMopts$dec <- dec
   if (!missing(server_address)) PMopts$server_address <- server_address
-  PMopts$lang <- Sys.getlocale("LC_TIME") %>% substr(1,2)
+  PMopts$lang <- substr(Sys.getlocale("LC_TIME"),1,2)
   #set the options
   options(PMopts)
   

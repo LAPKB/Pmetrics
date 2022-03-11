@@ -1,11 +1,9 @@
 
 # INTRODUCTION ------------------------------------------------------------
 
-#Outputs of all plots in this tutorial are shown in the plots.pdf file, which 
-#can be found in the /src folder
-
-#Lines that start with "#" are comments and ignored by R.  Follow the directions in them.
-#Execute each non-comment line in this script by putting your cursor on it and sending it to the R console.
+#Lines that start with "#" are comments and ignored by R.  Follow the 
+#directions in them. Execute each non-comment line in this script by 
+#putting your cursor on it and sending it to the R console.
 #You can do this in several ways:
 #     Windows
 #        R-studio
@@ -21,48 +19,48 @@
 #        R GUI 
 #           1) Command-Enter 
 
-#This script also serves to introduce several R programming functions and techniques.
-#For any function, you can get help by typing ?function_name in the R console (the
-#lower left window pane in RStudio).
+#This script also serves to introduce several R programming functions 
+#and techniques. For any function, you can get help by typing ?function_name 
+#in the R console (the lower left window pane in RStudio).
 
-#Load Pmetrics into memory.  You must include this line at the beginning of every script.
+#Load Pmetrics into memory.  You must include this line at the beginning 
+#of every script.
+
 library(Pmetrics)
-
-
 
 # EXERCISE 1 - NPAG RUN ------------------------------------------------
 
 
 #EXAMPLE NPAG RUN - tlag, ka, kel, vol 
 
-#It is useful to annotate your runs so that you can remember what you did later!
+#It is useful to annotate your runs as above, so that you can remember 
+#what you did later!
 
 
 #Tell R where your working directory is going to be.
-#Windows users:  Make sure that you separate directories with a forward slash "/".  
-#Unfortunately, Windows is the only OS that uses backslashes "\", so R conforms to
-#Unix/Linux style.
+#Windows users:  Make sure that you separate directories with a 
+#forward slash "/". Unfortunately, Windows is the only OS that uses 
+#backslashes "\", so R conforms to Unix/Linux style.
 
 wd <- "##WD##"
 
 #change to the working directory
 setwd(wd)
-#Now we're going to change to the Runs folder
-setwd("Runs")
-
 
 #DATA OBJECT
 
 #Pmetrics always needs data and a model to run
 #create our first data object
-setwd("../src")
+
+setwd("src")
 exData <- PM_data$new(data="ex.csv")
+#you can look at this file directly by opening it in 
+#a spreadsheet program like Excel, or a text editor
 
 #look at the contents
 names(exData)
 #exData$data contains your original datafile
 #exData$standard_data contains the standardized and validated data,
-#which in this case is the same.
 #the other objects are functions
 
 exData #view the original data
@@ -96,6 +94,11 @@ mod1 <- PM_model$new(list(
   )
   
 ))
+#look at it
+mod1
+#create the same model from a file in the working directory
+mod1b <- PM_model$new("model.txt")
+mod1b
 
 #RNow we need to put the data object and model object together.
 run1 <- PM_fit$new(model = mod1, data = exData)
