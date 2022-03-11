@@ -2,7 +2,7 @@
 
 
 #' @export
-PM_data <- R6Class("PM_data",
+PM_data <- R6::R6Class("PM_data",
   public <- list(
     #' @field data frame containing the data to be modeled
     data = NULL,
