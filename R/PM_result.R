@@ -2,7 +2,7 @@
 
 #' R6 object containing the results of a Pmetrics run
 #'
-PM_result <- R6Class(
+PM_result <- R6::R6Class(
   "PM_result",
   public <- list(
     #' @field npdata List with all output from NPAG
