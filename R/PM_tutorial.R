@@ -15,7 +15,6 @@ PM_tutorial <- function(wd = getwd()){
     } else {dir.create(ans)
       wd <- ans}
   }
-  
   file.copy(system.file("Examples", package="Pmetrics"), wd, recursive = T)
   script <- readr::read_lines(paste0(wd,"/Examples/Rscript/examples.R")) %>%
     stringr::str_replace_all("##WD##",wd)
