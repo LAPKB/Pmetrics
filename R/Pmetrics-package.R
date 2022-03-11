@@ -23,7 +23,7 @@
 #' theme ggtitle element_blank geom_segment aes_string aes_string theme_bw
 #' @importFrom purrr map reduce map_chr keep pluck %>% 
 #' @importFrom tibble as_tibble
-#' @importFrom tidyr pivot_longer pivot_wider unnest extract separate fill
+#' @importFrom tidyr pivot_longer pivot_wider unnest extract separate fill %>%
 #' @importFrom gridExtra grid.arrange
 #' @importFrom tidyr pivot_longer pivot_wider unnest
 #' @importFrom mclust Mclust mclustBIC
