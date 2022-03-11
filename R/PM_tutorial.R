@@ -16,9 +16,18 @@ PM_tutorial <- function(wd = getwd()){
     } else {dir.create(ans)
       wd <- ans}
   }
+  if(dir.exists(paste0(wd,"/Examples"))){
+    ans2 <- readline("\"Examples\" already exists in this location. Overwrite (y/n)? ")
+    if(tolower(substr(ans2,1,1))=="n"){
+      cat("No files copied.\n")
+      return(invisible())
+    }
+  }
+  
   file.copy(system.file("Examples", package="Pmetrics"), wd, recursive = T)
   script <- readr::read_lines(paste0(wd,"/Examples/Rscript/examples.R")) %>%
-    stringr::str_replace_all("##WD##",wd)
+    stringr::str_replace_all("##WD##",paste0(wd, "/Examples"))
   readr::write_lines(script,paste0(wd,"/Examples/Rscript/examples.R"))
+  cat("Open the Examples/Rscript/examples.R file to proceed with the tutorial.\n")
   return(invisible())
 }

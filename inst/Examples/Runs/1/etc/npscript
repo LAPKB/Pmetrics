@@ -1,4 +1,4 @@
-cd '/Users/mneely/LAPK/Pmetrics/Examples/Runs/1'
+cd '/Users/mneely/LAPK/Development/Pmetrics/inst/Examples/Runs/1'
 echo Unix>time.txt
 date +%s>>time.txt
 ./np_prep MacOSX < PMcontrol
@@ -39,6 +39,6 @@ mv gendata.csv inputs
 date +%s >> time.txt
 mv time.txt outputs
 if ! $error ; then 
-/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/bin/Rscript '/Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.1/aarch64-apple-darwin20/Pmetrics/report/NPrepScript.R' '/Users/mneely/LAPK/Pmetrics/Examples/Runs/1/outputs' median FALSE
-open '/Users/mneely/LAPK/Pmetrics/Examples/Runs/1/outputs/NPAGreport.html' ; fi
+/Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/bin/Rscript '/Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.1/aarch64-apple-darwin20/Pmetrics/report/NPrepScript.R' '/Users/mneely/LAPK/Development/Pmetrics/inst/Examples/Runs/1/outputs' median FALSE
+open '/Users/mneely/LAPK/Development/Pmetrics/inst/Examples/Runs/1/outputs/NPAGreport.html' ; fi
 mv npscript etc
