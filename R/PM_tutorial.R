@@ -20,4 +20,5 @@ PM_tutorial <- function(wd = getwd()){
   script <- readr::read_lines(paste0(wd,"/Examples/Rscript/examples.R")) %>%
     stringr::str_replace_all("##WD##",wd)
   readr::write_lines(script,paste0(wd,"/Examples/Rscript/examples.R"))
+  return(invisible())
 }
