@@ -70,6 +70,14 @@ PM_result <- R6Class(
 
     summary = function(type, ...) {
       self[[type]]$summary(...)
+    },
+
+    #' @description
+    #' Simulates using the self$final object
+    #' For parameter information refer to \code{\link{SIMrun}}
+
+    sim = function(...) {
+      SIMrun(self, ...)
     }
   ) # end public
 ) # end PM_result

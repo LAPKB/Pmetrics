@@ -305,9 +305,9 @@ makeRdata <- function(wd, remote, reportType = 1) {
       mdata <- NA
     }
     model <- list.files("../inputs") %>%
-      .[grepl(".txt", ., fixed = TRUE)] %>%
+      .[grepl(".txt$", .)] %>%
       paste0("../inputs/", .) %>%
-      PM_model(.)
+      PM_model$new(.)
     cat(paste("\n\n\nSaving R data objects to ", wd, "......\n\n", sep = ""))
     cat("\nUse PMload() to load them.\n")
     cat("\nThe following objects have been saved:\n")
