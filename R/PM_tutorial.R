@@ -1,5 +1,6 @@
 
 #' @export
+#' 
 PM_tutorial <- function(wd = getwd()){
   cat("This copies to your current working directory an \"Examples\" folder,
   which contains all the files and folders you need to work through an
