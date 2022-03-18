@@ -103,6 +103,7 @@ summary.PMop <- function(object,...,digits=max(3,getOption("digits")-3),pred.typ
   }  
   
   class(sumresult) <- c("summary.PMop","list")
+  attr(sumresult,"pred.type") <- pred.type
   sumresult
 }
 
