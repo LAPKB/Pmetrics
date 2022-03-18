@@ -570,7 +570,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
   #try to fix errors if asked
   if (fix) {
     if (attr(err, "error") == 0) {
-      cat("\nFIX DATA REPORT:\n\nThere were no errors to fix in you data file.\n")
+      if(!quiet) {cat("\nFIX DATA REPORT:\n\nThere were no errors to fix in you data file.\n")}
       return(invisible(data2))
     } else {
       newdata <- errfix(data = data2, model = model, quiet = quiet)

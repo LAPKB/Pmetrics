@@ -18,13 +18,13 @@ PM_data <- R6::R6Class("PM_data",
     #' @param data A quoted name of a file with full path if not
     #' in the working directory, or an unquoted name of a data frame
     #' in the current R environment.
-    initialize = function(data) {
+    initialize = function(data, quiet = F) {
       self$data <- if (is.character(data)) {
         PMreadMatrix(data, quiet = T)
       } else {
         data
       }
-      self$standard_data <- private$validate(self$data)
+      self$standard_data <- private$validate(self$data, quiet = quiet)
     },
     write = function(file_name) {
       PMwriteMatrix(self$data, file_name)
@@ -91,7 +91,7 @@ PM_data <- R6::R6Class("PM_data",
   ), # end public
   private = list(
     dataObj = NULL,
-    validate = function(dataObj = NULL) {
+    validate = function(dataObj = NULL, quiet) {
       dataNames <- names(dataObj)
       standardNames <- getFixedColNames()
 
@@ -156,9 +156,9 @@ PM_data <- R6::R6Class("PM_data",
       if (length(msg) > 2) {
         msg <- msg[-2]
       } # data were not in standard format, so remove that message
-      cat(msg)
+      if(!quiet) {cat(msg)}
 
-      validData <- PMcheck(data = dataObj, fix = T)
+      validData <- PMcheck(data = dataObj, fix = T, quiet = quiet)
       return(validData)
     } # end validate function
   ) # end private
