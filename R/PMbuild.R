@@ -101,7 +101,8 @@ PMbuild <- function(skipRegistration = F) {
   #if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
   sch_str <- c("which -s gfortran", "where gfortran", "which -s gfortran")
   OS <- getOS()
-  env = Sys.getenv("env")
+  # env = Sys.getenv("env")
+  env <- "standard"
   if (env != "Development") {
     if (!binaries.installed()) {
       cat("Pmetrics cannot find required compiled binary files.\n")
