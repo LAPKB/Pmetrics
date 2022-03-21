@@ -1,0 +1,5 @@
+ NPAG  run initiated at 18:01 on 2022 Mar 10. 
+PREP FILES: /Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.1/aarch64-apple-darwin20/Pmetrics/compiledFortran/sNPprep.o 
+ENGINE FILES: /Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.1/aarch64-apple-darwin20/Pmetrics/compiledFortran/sNPeng.o 
+
+
