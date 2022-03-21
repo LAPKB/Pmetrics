@@ -4,19 +4,7 @@
 \alias{makePTA}
 \title{Calculation of PTAs}
 \usage{
-makePTA(
-  simdata,
-  simlabels,
-  targets,
-  target.type,
-  success,
-  outeq = 1,
-  free.fraction = 1,
-  start,
-  end,
-  icen = "median",
-  block = 1
-)
+makePTA(simdata, targets, target.type, ...)
 }
 \arguments{
 \item{simdata}{Can be one of multiple inputs.  Typically it is a vector of simulator output filenames, e.g. c(\dQuote{simout1.txt},\dQuote{simout2.txt}),
@@ -25,8 +13,6 @@ a list of PMsim objects made by \code{\link{SIMparse}} with suitable simulated r
 observations does not have to be the same in all objects.  It can also be a \emph{PMpta} object previously made with
 \code{makePTA} can be passed for recalculation with a new success value or simlabels.  Finally, \emph{PMpost} and \emph{PMmatrix} objects are 
 also allowed.}
-
-\item{simlabels}{Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.}
 
 \item{targets}{A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. c(0.25, 0.5,1,2,4,8,16,32).
 This can also be a sampled distribution using  \code{\link{makePTAtarget}}.}
@@ -38,6 +24,8 @@ concentration.  Be sure that the time in the simulated data is used, e.g. 122 af
 \dQuote{time}, \dQuote{auc}, \dQuote{peak}, or \dQuote{min}, for, respectively, percent time above target within the time range
 specified by \code{start} and \code{end}, ratio of area under the curve within the time range to target, ratio of peak concentration within the time range 
 to target, or ratio of minimum concentration within the time range to target.}
+
+\item{simlabels}{Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.}
 
 \item{success}{A single value specifying the success statistic, e.g. 0.4 for proportion time (end-start) above target, or 100 for peak:target.}
 
