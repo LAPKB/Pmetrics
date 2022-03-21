@@ -4,31 +4,7 @@
 \alias{SIMrun}
 \title{Run the Pmetrics Simulator}
 \usage{
-SIMrun(
-  poppar,
-  limits = NULL,
-  model = "model.txt",
-  data = "data.csv",
-  split,
-  include,
-  exclude,
-  nsim = 1000,
-  predInt = 0,
-  covariate,
-  usePost = F,
-  seed = -17,
-  ode = -4,
-  obsNoise,
-  doseTimeNoise = rep(0, 4),
-  doseNoise = rep(0, 4),
-  obsTimeNoise = rep(0, 4),
-  makecsv,
-  outname,
-  clean = T,
-  silent = F,
-  nocheck = F,
-  overwrite = F
-)
+SIMrun(poppar, ...)
 }
 \arguments{
 \item{poppar}{Either an object of class \emph{PMfinal} (see
@@ -274,27 +250,29 @@ directed to a new Pmetrics .csv data file using the \code{makecsv} argument.
 \examples{
 \dontrun{
 wd <- getwd()
-#make 1 lognormal distribution for each parameter
+# make 1 lognormal distribution for each parameter
 weights <- 1
-mean <- log(c(0.7,0.05,100))
-cov <- matrix(rep(0,length(mean)**2),ncol=length(mean))
-diag(cov) <- (c(0.15,0.15,0.15)*mean)**2
-#make the prior for the simulation
-poppar <- list(weights,mean,cov)
-#create temp folder and make data/model files
+mean <- log(c(0.7, 0.05, 100))
+cov <- matrix(rep(0, length(mean)**2), ncol = length(mean))
+diag(cov) <- (c(0.15, 0.15, 0.15) * mean)**2
+# make the prior for the simulation
+poppar <- list(weights, mean, cov)
+# create temp folder and make data/model files
 tempDir <- tempdir()
 data(mdata.1)
 data(model)
 setwd(tempDir)
-PMwriteMatrix(mdata.1,"temp1.csv")
+PMwriteMatrix(mdata.1, "temp1.csv")
 writeLines(model, "model.txt")
-#run simulation
-SIMrun(poppar,"temp1.csv",nsim=15,model="model.txt",include=1:4,
-obsNoise=c(0.02,0.1,0,0))
-#extract results of simulation
+# run simulation
+SIMrun(poppar, "temp1.csv",
+  nsim = 15, model = "model.txt", include = 1:4,
+  obsNoise = c(0.02, 0.1, 0, 0)
+)
+# extract results of simulation
 simout <- SIMparse("simout.txt")
 unlink(tempDir)
-#plot simulated profiles (use help(plot.PMsim) for more information)
+# plot simulated profiles (use help(plot.PMsim) for more information)
 plot(simout)
 setwd(wd)
 }
