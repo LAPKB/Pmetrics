@@ -13,7 +13,7 @@
 #' Object to define and run models/data in Pmetrics
 #'
 #' @export
-PM_fit <- R6Class("PM_fit",
+PM_fit <- R6::R6Class("PM_fit",
   public = list(
 
     #' @description
@@ -44,12 +44,12 @@ PM_fit <- R6Class("PM_fit",
     run = function(..., engine = "npag") {
       if (inherits(private$model, "PM_model_legacy")) {
         cat(sprintf("Runing Legacy"))
-        Pmetrics::NPrun(private$model$legacy_file_path, private$data$data, ...)
+        Pmetrics::NPrun(private$model$legacy_file_path, private$data$standard_data, ...)
       } else if (inherits(private$model, "PM_model_list")) {
         engine <- tolower(engine)
         model_path <- private$model$write_model_file(engine = engine)
         cat(sprintf("Creating model file at: %s\n", model_path))
-        Pmetrics::NPrun(model_path, private$data$data, ...)
+        Pmetrics::NPrun(model_path, private$data$standard_data, ...)
       } else if (inherits(private$model, "PM_model_julia")) {
         cat(sprintf("Runing Julia: %s-%s\n", private$data, private$model$name))
         return(
@@ -70,7 +70,7 @@ PM_fit <- R6Class("PM_fit",
     check = function() {
       if (inherits(private$model, "PM_model_legacy")) {
         cat(sprintf("Runing Legacy\n"))
-        Pmetrics::PMcheck(private$data$data, private$model$legacy_file_path)
+        Pmetrics::PMcheck(private$data$standard_data, private$model$legacy_file_path)
       }
     }
   ),
