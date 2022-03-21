@@ -26,12 +26,6 @@ PM_sim <- R6Class(
             saveRDS(self, file_name)
         },
         #' @description
-        #' Returns a PM_sim object based on the information found in a specified rds file.
-        #' @param file_name Name of the file to be read, the default is PMsim.rds
-        load = function(file_name = "PMsim.rds") {
-            readRDS(file_name)
-        },
-        #' @description
         #' Estimates the Probability of Target Attaintment (PTA), based on the results of the current Simulation.
         #' @param targets A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. c(0.25, 0.5,1,2,4,8,16,32).
         #' This can also be a sampled distribution using  \code{\link{makePTAtarget}}.
@@ -53,3 +47,10 @@ PM_sim <- R6Class(
         }
     )
 )
+
+        #' @description
+        #' Returns a PM_sim object based on the information found in a specified rds file.
+        #' @param file_name Name of the file to be read, the default is PMsim.rds
+PM_sim$load <- function(file_name = "PMsim.rds") {
+    readRDS(file_name)
+}
