@@ -77,10 +77,7 @@ PM_result <- R6Class(
     #' For parameter information refer to \code{\link{SIMrun}}
 
     sim = function(...) {
-      SIMrun(self, ...)
-      # TODO: read files and fix the missing E problem
-      SIMparse(file = "sim*.txt")
-      # TODO: remove all sim* files
+      PM_sim$new(self, ...)
     }
   ) # end public
 ) # end PM_result
