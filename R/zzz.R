@@ -9,12 +9,14 @@
              "\nUse PMmanual() or visit the LAPK website at http://www.lapk.org/pmetrics.php for help.",
              "\nSee PMnews() for version log.\n")
     
-    response <- httr::GET("https://api.github.com/repos/LAPKB/Pmetrics/releases/latest", httr::add_headers(Accept= "application/vnd.github.v3+json"))
-    if(response$status == 200){
-      currentVersion <- package_version(gsub("v", "", httr::content(response)$tag_name))
-    } else {
-      currentVersion <- "0.1"
+    response <- tryCatch(httr::GET("https://api.github.com/repos/LAPKB/Pmetrics/releases/latest", httr::add_headers(Accept= "application/vnd.github.v3+json")), error=function(e){print(e); return(NULL)})
+    currentVersion <- "0.1"
+    if(!is.null(response)){
+      if(response$status == 200){
+        currentVersion <- package_version(gsub("v", "", httr::content(response)$tag_name))
+      }
     }
+    
     if (currentVersion > installedVersion) {
       packageStartupMessage(paste("\nPmetrics version ", currentVersion, " is available from www.lapk.org/Pmetrics_install.php.  You have version ", installedVersion, ".\n", sep = ""))
     }
