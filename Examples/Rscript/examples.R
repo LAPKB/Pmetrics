@@ -1,0 +1,610 @@
+
+# INTRODUCTION ------------------------------------------------------------
+
+#Lines that start with "#" are comments and ignored by R.  Follow the 
+#directions in them. Execute each non-comment line in this script by 
+#putting your cursor on it and sending it to the R console.
+#You can do this in several ways:
+#     Windows
+#        R-studio
+#           1) The Run button at the top
+#           2) Ctrl-Enter
+#        R GUI - when the script window is active
+#           1) The Run line or selection button at the top 
+#           2) Ctrl-R
+#     Mac
+#        R-studio
+#           1) The Run button at the top
+#           2) Command-Enter
+#        R GUI 
+#           1) Command-Enter 
+
+#This script also serves to introduce several R programming functions 
+#and techniques. For any function, you can get help by typing ?function_name 
+#in the R console (the lower left window pane in RStudio).
+
+#Load Pmetrics into memory.  You must include this line at the beginning 
+#of every script.
+
+library(Pmetrics)
+
+# EXERCISE 1 - NPAG RUN ------------------------------------------------
+
+
+#EXAMPLE NPAG RUN - tlag, ka, kel, vol 
+
+#It is useful to annotate your runs as above, so that you can remember 
+#what you did later!
+
+
+#Tell R where your working directory is going to be.
+#Windows users:  Make sure that you separate directories with a 
+#forward slash "/". Unfortunately, Windows is the only OS that uses 
+#backslashes "\", so R conforms to Unix/Linux style.
+
+wd <- "/Users/mneely/LAPK/Development/Pmetrics/Examples"
+
+#change to the working directory
+setwd(wd)
+
+#DATA OBJECT
+
+#Pmetrics always needs data and a model to run
+#create our first data object
+
+setwd("src")
+exData <- PM_data$new(data="ex.csv")
+#you can look at this file directly by opening it in 
+#a spreadsheet program like Excel, or a text editor
+
+#look at the contents
+names(exData)
+#exData$data contains your original datafile
+#exData$standard_data contains the standardized and validated data,
+#the other objects are functions
+
+exData #view the original data
+exData$print(standard = T) #view the standardized data
+exData$print(viewer = F) #view original data in console
+
+#MODEL OBJECT
+#You can specify a model as a file or an object. We'll do both.
+#The following code creates the same model as in model.txt file.
+#See PMmanual for details on creating models in R compared to text files.
+#The advantage of creating them in R is that one does not need to copy model
+#files into folders to provide necessary inputs.
+
+mod1 <- PM_model$new(list(
+  pri = list(
+    Ka = range(0.1, 0.9),
+    Ke = range(0.001, 0.1),
+    V = range(30, 120),
+    Tlag1 = range(0, 4)
+  ),
+  cov = list("wt", "africa", "age", "gender", "height"),
+  lag = list("Tlag(1) = Tlag1"),
+  out = list(
+    Y1 = list(
+      value = "X(1)/V",
+      err = list(
+        model = proportional(5),
+        assay = c(0.02, 0.05, -0.0002, 0)
+      )
+    )
+  )
+  
+))
+#look at it
+mod1
+#create the same model from a file in the working directory
+mod1b <- PM_model$new("model.txt")
+mod1b
+
+#RNow we need to put the data object and model object together.
+run1 <- PM_fit$new(model = mod1b, data = exData)
+
+#notice that we didn't have to move any files...
+setwd("../Runs") #move working directory back to Runs
+run1$run() #execute the run with default arguments
+#See plots.pdf, pages 2-8
+
+
+#Windows users: launch the npscript.bat file in your working directory
+#Mac users: a terminal window will open and run; don't worry about pauses; the program has not crashed"
+
+#After the run is complete you need get the extracted information back into R.
+#They will be sequentially numbered as /1, /2, /3,... in you working directory.
+getwd()
+res1 <- PM_load(1)
+
+#Load all the extracted information.  The "1" in the parentheses tells Pmetrics to
+#look in the /1 folder.  You can load multiple runs with PMload(2), PMload(3), or even
+#PMload(1:3) or PMload(1,3,5,10)..., and you can compare them with PMcompare().
+#Type ?PMload in the R console for help on PMload.
+
+#Plot the raw data with various options.  Type ?plot.PMmatrix in the R console for help.
+#See plots.pdf, pages 9-11
+plot(mdata.1)
+plot(mdata.1,overlay=F,xlim=c(120,144))
+plot(mdata.1,pred=post.1,overlay=T,group="gender",pch=1,cex=1.2,lwd=2,xlim=c(120,144),join=F,doses=F,legend=list(legend=c("Female","Male")),col=c("red","black"),log=T)
+plot(mdata.1,pred=post.1,overlay=F,group="gender",pch=1,cex=1,lwd=2,xlim=c(120,144),join=F,doses=F,legend=F,col=c("red","black"),log=T)
+
+#Plot some observed vs. predicted data.  Type ?plot.PMop in the R console for help.
+#See plots.pdf, pages 12-18
+plot(op.1)
+plot(op.1,pred.type="pop",main="Population",square=T,ref=T,reg=T,col="blue",cex.stat=0.6,x.stat=0,y.stat=0.8)
+#below, we are plotting posterior predictions, which are the default pred.type, so
+#we don't have to specify it
+plot(op.1,main="Posterior",log=F,square=T,ref=T,reg=F,lowess=T)
+#the default is to use the median of the population or posterior parameter value
+#distributions, but we can also use the mean with the "icen" argument
+plot(op.1,main="Posterior",icen="mean",cex.stat=0.8)
+plot(op.1,ident=T)
+plot(op.1,resid=T)
+
+#you can also specify a residual op plot like this, with some
+#additional arguments to control the position and size of the 
+#statistics on the plot
+plot(op.1,pred.type="pop",resid=T,y.stat=1,x.stat=0,cex.stat=0.8)
+
+#see the names of op.1; ?makeOP for help on what each one is
+names(op.1)
+#see a header with the first 10 rows of op.1
+head(op.1,10)
+#get a summary with bias and imprecision of the population predictions;
+#?summary.PMop for help
+summary(op.1,pred.type="pop")
+#look at the summary for the posterior predictions (default pred.type) based
+#on means of parameter values
+summary(op.1,icen="mean")
+#here's a summary of the original data file; ?summary.PMmatrix for help
+summary(mdata.1)
+
+#Plot final population joint density information.  Type ?plot.PMfinal in the R console for help.
+#See plots.pdf, pages 19-21
+plot(final.1)
+#add a kernel density curve
+plot(final.1,density=T)
+#A bivariate plot. Plotting formulae in R are of the form 'y~x'
+plot(final.1,Ke~V)
+
+#see the names of the final.1 object; see ?makeFinal for help
+names(final.1)
+#see the population points
+final.1$popPoints
+#see the population mean parameter values
+final.1$popMean
+#see a summary of final.1 with confidence intervals around the medians
+#and the Median Absolute Weighted Difference (MAWD); ?summary.PMfinal for help
+summary(final.1)
+
+#Plot cycle information with smaller sized legend.  
+#Type ?plot.PMcycle in the R console for help.
+#See plots.pdf, page 22
+plot(cycle.1,cex.leg=0.8)
+#names of cycle.1; ?makeCycle for help
+names(cycle.1)
+#gamma/lamda value on last 6 cycles
+tail(cycle.1$gamlam)
+
+#Plot covariate information.  Type ?plot.PMcov in the R console for help.
+#Recall that plotting formulae in R are of the form 'y~x'
+#See plots.pdf, pages 23-26
+plot(cov.1,V~wt)
+plot(cov.1,Ke~age,lowess=F,reg=T,pch=3)
+
+#Same plot but with mean Bayesian posterior parameter and covariate values...
+#Remember the 'icen' argument?
+plot(cov.1,V~wt,icen="mean")
+#When time is the x variable, the y variable is aggregated by subject.
+#In R plot formulae, calculations on the fly can be included using the I() function
+plot(cov.1,I(V*wt)~time)
+#names of cov.1; ?makeCov for help
+names(cov.1)
+#summarize with mean covariates; ?summary.PMcov for help
+summary(cov.1,icen="mean")
+#Look at all possible covariate-parameter relationships by multiple linear regression with forward
+#and backward elimination - type ?PMstep in the R console for help.
+PMstep(cov.1)
+#icen works here too....
+PMstep(cov.1,icen="mean")
+
+
+# EXERCISE 2 - NPAG WITH COVARIATES ---------------------------------------
+
+setwd(paste(wd,"/Runs",sep=""))
+#copy the files model.txt and ex.csv to your Runs folder to get ready for a run
+file.copy(from=c("../src/model2.txt","../src/ex.csv"),to=getwd(),overwrite=T)
+
+NPrun(data="ex.csv",model="model2.txt")
+
+PMload(2)
+
+# EXERCISE 3 - COMPARING MODELS -------------------------------------------
+
+
+#Let's compare model 1 and model 2.   You can compare any number of models.
+#Type ?PMcompare for help.
+PMcompare(1,2)
+
+#compare with plots
+#See plots.pdf, page 27
+PMcompare(1,2,plot=T,cex.stat=0.5)
+
+
+# EXERCISE 4 - MODEL VALIDATION -------------------------------------------
+
+#MODEL VALIDATION EXAMPLES
+#Example of Pmetrics visual predictive check and prediction-corrected visual predictive check
+#for model validation - be sure to have executed the NPAG run above
+#Type ?makeValid in the R console for help.
+setwd(paste(wd,"/Runs",sep=""))
+#Choose wt as the covariate to bin. Accept all default bin sizes.
+valid.2 <- makeValid(run=2,limits=NA)
+#To see what it contains, use:
+str(valid.2)
+#Default visual predictive check; ?plot.PMvalid for help
+plot(valid.2)
+#Generate a prediction-corrected visual predictive check; type ?plot.PMvalid in the R console for help.
+plot(valid.2,type="pcvpc")
+#Create an npde plot
+plot(valid.2,type="npde")
+
+#Here is another way to generate a visual predicive check...
+npc.2 <- plot(valid.2$simdata,obs=op.2,log=F,binSize=1)
+#The jagged appearance of the plot when binSize=0 is because different subjects have
+#different doses, covariates, and observation times, which are all combined in one simulation.
+#Collapsing simulation times within 1 hour bins (binSize=1) smooths
+#the plot, but can change the P-values in the numerical predictive check below. 
+
+npc.2$npc
+#...and here is a numerical predictive check
+#P-values are binomial test of proportion of observations less than
+#the respective quantile
+
+
+# EXERCISE 5 - SIMULATOR RUN ----------------------------------------------
+
+
+#Here's an example of a simulator run.  
+#Be sure to have executed the NPAG run above and used PMload(2)
+#Type ?SIMrun, ?SIMparse, or ?plot.PMsim into the R console for help.
+setwd(paste(wd,"/Sim",sep=""))
+file.copy(from=c("../src/model2.txt","../src/ex.csv"),to=getwd(),overwrite=T)
+#The following will simulate 500 sets of parameters/concentrations using each of the first 4 subjects in the data file
+#Limits are put on the simulated parameter ranges
+#The final.2 population parameter values from the NPAG run above are used for the Monte Carlo Simulation.
+SIMrun(poppar=final.2,data="ex.csv",model="model2.txt",include=1:4,limits=NA,nsim=100)
+#Wildcards can be used in the following.  This will extract and combine all matching output datasets into
+#a single dataset.  Use '?' for a single character match, and '*' for multiple.
+#Parse one file
+simdata <- SIMparse("simout1.txt")
+#Plot it; ?plot.PMsim for help
+#See plots.pdf, pages 31-34
+plot(simdata)
+#Parse multiple files and plot the third:
+simdata <- SIMparse("simout?.txt")
+plot(simdata[[3]])
+#Parse and combine multiple files and plot them.  Note that combining simulations from templates
+#with different simulated observation times can lead to unpredictable plots
+simdata2 <- SIMparse("simout?.txt",combine=T)
+plot(simdata2)
+
+#simulate with covariates
+#in this case we use the covariate-parameter correlations from run 2, which
+#are found in the cov.2 object; we re-define the mean weight to be 50 with
+#SD of 20, and limits of 10 to 70 kg.  We fix africa, gender and height covariates,
+#but allow age (the last covariate) to be simulated, using the mean, sd, and 
+#limits in the original population, since we didn't specify them.
+#See ?SIMrun for more help on this and the Pmetrics manual.
+covariate <- list(cov=cov.2,
+                  mean=list(wt=50),
+                  sd=list(wt=20),
+                  limits=list(wt=c(10,70)),
+                  fix=c("africa","gender","height"))
+#now simulate with this covariate list object
+SIMrun(poppar=final.2,data="ex.csv",model="model2.txt",include=1:4,limits=NA,nsim=100,
+       covariate=covariate)
+
+simdata3 <- SIMparse("simout?.txt")
+
+#compare difference in simulations without covariates simulated...
+plot(simdata[[1]])
+#...and with covariates simulated
+plot(simdata3[[1]])
+
+#Here are the simulated parameters and covariates for the first subject's
+#template; note that both wt and age are simulated, using proper covariances
+#with simulated PK parameters
+simdata3[[1]]$parValues
+#look in the /Sim folder and find the "c_ex.csv" and "c_model2.txt" files
+#which were made when you simulated with covariates.  Compare to original
+#"ex.csv" and "model2.txt" files to note that simulated covariates become
+#Primary block variables, and are removed from the template data file.
+
+# EXERCISE 6 - SAVING PMETRICS OBJECTS ------------------------------------
+
+
+#You can resave any objects with a .x after them, corresponding to a run number,
+#like cov.1, op.1, and others that you might have changed.  PMsave() will save them
+#back to the .Rdata file in the outputs folder of the run.
+
+#First, change back to the Runs folder, or else PMsave won't know where your runs are.
+setwd(paste(wd,"/Runs",sep=""))
+#Now save all the items associated with run 2.
+PMsave(2)
+#You can also add other objects that you might have made, and they will get suffixed
+#with the same run number when you load them back with PMload().
+PMsave(2,simdata)
+#Now look at what's you get back with PMload(1)...simdata.2 is there too.
+PMload(2)
+
+
+
+# EXERCISE 7 - CONTINUING RUNS OR EXTERNAL VALIDATIONS --------------------
+
+#Example of a run with a non-uniform density
+#This is a good way to continue a previous run,
+#in this case it continues where run 1 left off
+setwd(paste(wd,"/Runs",sep=""))
+
+#note that we can supply a run number to model, data, and prior arguments.  The numbers do not
+#have to be the same.  This will copy the appropriate files from the specified run to be used
+#in the current run.  By specifiying a prior, we are starting with the non-uniform density from the 
+#end of the specified fun.
+
+NPrun(data=2,model=2,prior=2)
+PMload(3)
+
+#We could also generate Bayesian posterior parameter estimates for a new population this
+#way, and with 0 cycles:
+#  NPrun(data="newPop.csv",model=1,prior=1,cycles=0)
+#This won't run but shows you how it could be done.
+
+
+# EXERCISE 8 - EXAMPLE PARAMETRIC IT2B RUN --------------------------------
+
+#IT2B is our parametric population parameter estimator.  Population parameter value
+#distributions are estimated as means and covariances.
+
+#EXAMPLE IT2B run - tlag, ka, kel, vol 
+
+setwd(paste(wd,"/Runs",sep=""))
+
+#copy the files model.txt and ex.csv to your Runs folder to get ready for a run
+
+file.copy(from=c("../src/model2.txt","../src/ex.csv"),to=getwd(),overwrite=T)
+
+#Run IT2B.  Type ?ITrun in the R console for help.
+ITrun(data="ex.csv",model="model2.txt")
+#Windows users: launch the itscript.bat file in your working directory
+#Mac users: a terminal window will open and run; don't worry about pauses; the program has not crashed"
+
+
+#Type ?PMload in the R console for help on PMload.
+#If this is the second run in the directory, use PMload(3)
+PMload(4)
+
+#Most of the commands above work the same for IT2B but some produce different plots.
+#See plots.pdf, pages 35-37
+plot(final.4)
+#in the following plot, we standardize the x-scales to enable
+#comparisons of the widths of the normal distributions of the
+#parameter values
+plot(final.4,standard=T)
+#here's a bivariate plot of IT2B population parameter value distributions
+plot(final.4,Ke~V0)
+
+
+
+# EXERCISE 9 - PROBABILITY OF TARGET ATTAINMENT ---------------------------
+
+#Note: these can be computationally intense and take some time.
+#We're working on ways to speed them up.
+
+# Examples of probability of target attainment analysis
+#Be sure to have executed the NPAG run above and used PMload(2) in EXERCISE 2
+#Type ?SIMrun, ?SIMparse, ?makePTA, or ?plot.PMpta into the R console for help.
+
+setwd(paste(wd,"/PTA",sep=""))
+
+#copy the files model.txt and ex.csv to your Runs folder to get ready for a run
+file.copy(from=c("../src/model2.txt","../src/ptaex1.csv"),to=getwd(),overwrite=T)
+
+#simulate with the template data file that contains different doses
+#Look at ?SIMrun for help on arguments to this function, including predInt,
+#seed, limits, nsim.
+SIMrun(poppar=final.2,limits=5,data="ptaex1.csv",model="model2.txt",nsim=1000,
+       predInt=c(120,144,0.5),seed=rep(-17,4))
+#parse all the simulated output as a list
+#note you can also bypass this step and specify simlist="simout*" directly in the makePTA statements
+simlist1 <- SIMparse("simout*")
+
+#now simulate with covariates; make sure that you defined the covariate
+#object first in Exercise 5 above and have loaded the results of Exercise 2
+#with PMload(2)
+SIMrun(poppar=final.2,limits=5,data="ptaex1.csv",model="model2.txt",nsim=1000,
+       predInt=c(120,144,0.5),seed=rep(-17,4),
+       covariate=covariate)
+simlist2 <- SIMparse("simout*")
+
+#make the first PMpta object to calculate the time above each target for at least 60% of the dosing
+#interval from 120 to 144 hours.  Include labels for the simulations.
+#?makePTA for help
+#define simulation labels first
+simlabels <- c("600 mg daily","1200 mg daily","300 mg bid","600 mg bid")
+
+pta1.2 <- makePTA(simdata=simlist1,
+                  targets=c(0.25,0.5,1,2,4,8,16,32),target.type="time",success=0.6, start=120, end=144)
+
+pta1b.2 <- makePTA(simdata=simlist2,
+                   simlabels=simlabels,
+                   targets=c(0.25,0.5,1,2,4,8,16,32),target.type="time",success=0.6, start=120, end=144)
+
+#look at the pta1.2 object in the $pta, simnum is the simulation (dose) number;
+#target is the MIC; prop.success is the proportion of the simulated
+#profiles for each dose/MIC that are above the success threshold (0.6); pdi.mean and pdi.sd
+#are the mean and standard deviation of the pharmacodynamic index (PDI), in this case proportion of the interval > MIC.
+#In the $pdi, target and simnum are the same, but now the median and confidence
+#intervals (default 95%) PDI are shown.
+#?summary.PMpta for help
+summary(pta1.2)
+summary(pta1.2,ci=0.8)
+#Plot the first without covariates.   We didn't include simulation
+#labels in the makePTA command, so generics are used here, but we move it to
+#the bottom left; ?legend for help on arguments to supply to the 
+#legend list argument to plot.PMpta.
+#See plots.pdf, pages 37-48
+plot(pta1.2,ylab="Proportion with %T>MIC of at least 60%",grid=T,legend=list(x="bottomleft"))
+summary(pta1b.2)
+#Plot the second with covariates simulated. Note the regimen labels are included, but we move
+#the legend to the bottom left.
+plot(pta1b.2,ylab="Proportion with %T>MIC of at least 60%",grid=T,
+     legend=list(x="bottomleft"))
+
+#Now we'll define success as free auc:mic > 100 with a free drug fraction of 50%
+pta2.2 <- makePTA(simdata=simlist2,
+                  simlabels=simlabels,targets=c(0.25,0.5,1,2,4,8,16,32),
+                  free.fraction=0.7,
+                  target.type="auc",success=100, start=120, end=144)
+summary(pta2.2)
+plot(pta2.2,ylab="Proportion with AUC/MIC of at least 100",grid=T,
+     legend=list(x="bottomleft"))
+
+#success is Cmax/MIC >=10
+pta3.2 <- makePTA(simdata=simlist2,
+                  simlabels=simlabels,
+                  targets=c(0.25,0.5,1,2,4,8,16,32),
+                  target.type="peak",success=10, start=120, end=144)
+summary(pta3.2)
+plot(pta3.2,ylab="Proportion with peak/MIC of at least 10",grid=T)
+
+#success = Cmin:MIC > 1
+pta4.2 <- makePTA(simdata=simlist2,
+                  simlabels=simlabels,
+                  targets=c(0.25,0.5,1,2,4,8,16,32),
+                  target.type="min",success=1, start=120, end=144)
+summary(pta4.2)
+plot(pta4.2,ylab="Proportion with Cmin/MIC of at least 1",grid=T,legend=list(x="bottomleft"))
+#now plot the PDI (pharmacodynamic index) of each regimen, rather than the proportion
+#of successful profiles.  A PDI plot is always available for PMpta objects.
+plot(pta4.2,plot.type="pdi", ylab="Cmin:MIC",grid=T)
+#Each regimen has the 90% confidence interval PDI around the median curve,
+#in the corresponding, semi-transparent color.  Make the CI much narrower...
+plot(pta4.2,plot.type="pdi",ci=0.1)
+#...or gone altogether, put back the grid, redefine the colors, and make lines narrower
+plot(pta4.2,plot.type="pdi",ci=0,grid=T,
+     col=c("blue","purple","black","brown"),
+     lwd=1)
+
+#now let's repeat the analysis but simulate the distribution of MICs
+#using susceptibility of Staphylococcus aureus to vancomycin
+
+#load the sample data
+data(mic1)
+#see the source with ?mic1
+pta4b.2 <- makePTA(simdata=simlist2,
+                   simlabels=c("600 mg daily","1200 mg daily","300 mg bid","600 mg bid"),
+                   targets=makePTAtarget(mic1),target.type="min",success=1, start=120, end=144)
+#plot it
+plot(pta4b.2,grid=T,ylab="Proportion with Cmin/MIC of at least 1")
+#note that the plot changes since target MICs are no longer discrete
+#since most of the MICs are very low, the regimens all look very similar
+
+#to see the distribution of simulated targets
+#look at ?hist for help, also ?par for general graphing parameters,
+#including xaxt, which suppresses the x-axis
+hist(log10(pta4b.2$results$target),breaks=20,freq=F,xlab="MIC",xaxt="n")
+#now draw an x-axis with nice labels on the log scale.  See ?axis for help,
+#which allows fine tuning of axes
+#pretty is a useful function for this, as it divides ranges of values into
+#nice intervals for plotting; see ?pretty for help
+axis(side=1,at=pretty(log10(pta4b.2$results$target)),labels=10**pretty(log10(pta4b.2$results$target)))
+#overlay the original mic distribution
+#look at ?lines for help; it adds lines to an existing plot
+lines(x=log10(mic1$mic),y=mic1$n/sum(mic1$n),type="h",col="red",lwd=4)
+#this shows that we have sampled nicely from the original distribution in red
+
+#success = concentration at time 3 hours:MIC > 2
+pta5.2 <- makePTA(simdata=simlist2,
+                  simlabels=simlabels,
+                  targets=c(0.25,0.5,1,2,4,8,16,32),target.type=123,success=2, start=120, end=144)
+summary(pta5.2)
+plot(pta5.2,ylab="Proportion with C3/MIC of at least 1",grid=T,legend=list(x="bottomleft"))
+
+
+#success is trough >10
+pta6.2 <- makePTA(simdata=simlist2,
+                  simlabels=simlabels,
+                  targets=10,target.type=144,success=1,start=140,end=144)
+plot(pta6.2)
+summary(pta6.2)
+
+#Let's save all these.  First go back to our Runs folder.
+setwd(paste(wd,"/Runs",sep=""))
+#Now save.
+PMsave(2)
+
+
+
+
+# EXERCISE 10 - OPTIMAL SAMPLE TIMES --------------------------------------
+
+
+#calculate MM-optimal sample times for Run 2, and the 1200 mg once daily dose in the PTA
+setwd(paste(wd,"/MMopt",sep=""))
+
+file.copy(from=c("../src/model2.txt","../src/ptaex1.csv"),to=getwd(),overwrite=T)
+
+#By specifying the predInt to start and stop at 120 and 144 hours, with an interval of 1 hour,
+#we are sampling at steady state.  Including "subject 2", means only the 1200 mg once daily dose
+#will serve as a simulation template.
+mmopt.2 <- MMopt(final.2,data="ptaex1.csv",model="model2.txt",nsamp=2,predInt=c(120,140,1),include=2)
+#see the optimal sample times and the Bayes Risk of misclassification,
+#which is only useful to compare optimal sampling regimens, i.e. the
+#absolute value is less helpful, but is the statistic minimized by the 
+#selected optimal sample times for a given model
+mmopt.2
+#plot it, with the red lines indicating the optimal sample times.
+#see ?plot.MMopt for help
+#See plots.pdf, page 48
+plot(mmopt.2)
+
+
+# EXERCISE 11 - ASSAY ERROR -----------------------------------------------
+#see ?makeErrorPoly for more help
+#This will let you choose the best set of C0, C1, C2, C3 for your modeling,
+#based on assay validation data which includes the "obs", which are the 
+#nominal concentrations of the standards, and "sd", which is the standard
+#deviation of replicate measurements of each of the standards, i.e. the 
+#inter-day and/or intra-day standard deviation
+obs <- c(0,25,50,100,250,500,1000,2000,5000)
+sd <- c(0.5,6.4,8.6,12,8.6,37.2,60.1,165.7,483)
+
+#See plots.pdf, page 50
+makeErrorPoly(obs=obs,sd=sd)
+
+#choose the one with the best R-squared that will never result in a
+#negative value for the SD
+
+
+
+# Ancillary functions -----------------------------------------------------
+
+# Be sure to check out the help files for the following functions:
+#   
+# makeAUC() - calculate AUC from a variety of inputs
+# makeNCA() - non-compartmental analysis
+# NM2PM() - convert NONMEM data files to Pmetrics data files
+# PMcheck() - check data files for errors
+# PMmatrixRelTime() - convert absolute date/time to relative time
+# PMreadMatrix() - read Pmetrics data files
+# PMwriteMatrix() - write Pmetrics data files
+# qgrowth() - CDC growth charts
+# ss.PK() - sample size for Phase 1 PK studies
+
+#new format
+#copy the files model.txt and ex.csv to your Runs folder to get ready for a run
+file.copy(from=c("../src/model.txt","../src/ex.csv"),to=getwd(),overwrite=T)
+
+
