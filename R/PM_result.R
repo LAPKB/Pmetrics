@@ -2,7 +2,7 @@
 
 #' R6 object containing the results of a Pmetrics run
 #'
-PM_result <- R6Class(
+PM_result <- R6::R6Class(
   "PM_result",
   public <- list(
     #' @field npdata List with all output from NPAG
@@ -40,15 +40,15 @@ PM_result <- R6Class(
     #' @param out The parsed output from \code{\link{PM_load}}
 
 
-    initialize = function(out) {
+    initialize = function(out, quiet = T) {
       self$npdata <- out$NPdata
-      self$pop <- out$pop
-      self$post <- out$post
+      self$pop <- result_block$new(out$pop, "pop")
+      self$post <- result_block$new(out$post, "post")
       self$final <- result_block$new(out$final, "final")
       self$cycle <- result_block$new(out$cycle, "cycle")
       self$op <- result_block$new(out$op, "op")
       self$cov <- result_block$new(out$cov, "cov")
-      self$data <- PM_data$new(data = out$data)
+      self$data <- PM_data$new(data = out$data, quiet = quiet) #no need to report
       self$model <- out$model
       self$errfile <- out$errfile
       self$success <- out$success
@@ -78,17 +78,34 @@ PM_result <- R6Class(
 
     sim = function(...) {
       PM_sim$new(self, ...)
+    },
+    
+    #' @description
+    #' AUC generic function based on type
+    #' @param type Type of auc based on class of object
+    #' @param \dots AUC-specific arguments
+    auc = function(type, ...) {
+      self[[type]]$auc(...)
+    },
+    
+    #' @description
+    #' Print generic function based on type
+    #' @param type Type of print based on class of object
+    #' @param \dots Print-specific arguments
+    print = function(type, ...) {
+      self[[type]]$print(...)
     }
+    
   ) # end public
 ) # end PM_result
 
-result_block <- R6Class(
+result_block <- R6::R6Class(
   "result_block",
   public <- list(
     data = NULL,
     type = NULL,
     initialize = function(data, type) {
-      stopifnot(type %in% c("op", "cov", "cycle", "final"))
+      stopifnot(type %in% c("op", "cov", "cycle", "final", "pop", "post"))
       self$type <- type
       self$data <- data
     },
@@ -101,6 +118,8 @@ result_block <- R6Class(
         plot.PMcycle(self$data, ...)
       } else if (self$type == "final") {
         plot.PMfinal(self$data, ...)
+      } else {
+        cat(paste0("Plot method is not defined for ",self$type,".\n"))
       }
     },
     summary = function(...) {
@@ -110,6 +129,22 @@ result_block <- R6Class(
         summary.PMcov(self$data, ...)
       } else if (self$type == "final") {
         summary.PMfinal(self$data, ...)
+      } else {
+        cat(paste0("Summary method is not defined for ",self$type,".\n"))
+      }
+    },
+    auc = function(...) {
+      if (self$type %in% c("op", "pop", "post", "sim")) {
+        makeAUC(data = self$data, ...)
+      } else {
+        cat(paste0("AUC method is not defined for ",self$type,".\n"))
+      }
+    },
+    print = function(...){
+      if (self$type %in% c("op", "pop", "post", "sim")) {
+        print(x = self$data, ...)
+      } else {
+        cat(paste0("Print method is not defined for ",self$type,".\n"))
       }
     }
   )

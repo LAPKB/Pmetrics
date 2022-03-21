@@ -3,7 +3,7 @@
 
 # Factory pattern
 #' @export
-PM_model <- R6Class("PM_model", list())
+PM_model <- R6::R6Class("PM_model", list())
 PM_model$new <- function(model, ..., julia = F) {
   print(model)
   # Now we have multiple options for the model:
@@ -60,16 +60,71 @@ fixed <- function(fixed, constant = F, gtz = F) {
 
 # Virtual Class
 # it seems that protected does not exist in R
-PM_Vmodel <- R6Class("PM_Vmodel",
+PM_Vmodel <- R6::R6Class("PM_Vmodel",
   public = list(
     name = NULL, # used by PM_model_legacy
     # error = NULL,
-    initialize = function() stop("Unable to initialize abstract class")
+    initialize = function() {stop("Unable to initialize abstract class")},
+    
+    print = function(...){
+      cat("$model_list\n")
+      mlist <- self$model_list
+      blockNames <- names(mlist)
+      sapply(blockNames, function(x){
+        if(x=="pri"){
+          cat("\t$pri\n")
+          for(i in 1:length(mlist$pri)){
+            thispri <- mlist$pri[[i]]
+            thisname <- names(mlist$pri)[i]
+            cat(paste0("\t\t$",thisname,"\n\t\t\t$min: ", round(thispri$min,3),
+                       "\n\t\t\t$max: ", round(thispri$max,3),
+                       "\n\t\t\t$mean: ", round(thispri$mean,3),
+                       "\n\t\t\t$sd: ", round(thispri$sd, 3),
+                       "\n\t\t\t$gtz: ", thispri$gtz,"\n"))
+          }
+        } else if(x=="cov"){
+          cat("\n\t$cov: ",paste0("[",1:length(mlist$cov),"] \"",mlist$cov,"\"", collapse=", "))
+          cat("\n")
+        } else if(x=="sec"){
+          cat("\n\t$sec: ",paste0("[",1:length(mlist$sec),"] \"",mlist$sec,"\"", collapse=", "))
+          cat("\n")
+        } else if(x=="dif"){
+          cat("\n\t$dif: ",paste0("[",1:length(mlist$dif),"] \"",mlist$dif,"\"", collapse=", "))
+          cat("\n")
+        } else if(x=="lag"){
+          cat("\n\t$lag: ",paste0("[",1:length(mlist$lag),"] \"",mlist$lag,"\"", collapse=", "))
+          cat("\n")
+        } else if(x=="bol"){
+          cat("\n\t$bol: ",paste0("[",1:length(mlist$bol),"] \"",mlist$bol,"\"", collapse=", "))
+          cat("\n")
+        } else if(x=="fa"){
+          cat("\n\t$fa: ",paste0("[",1:length(mlist$fa),"] \"",mlist$fa,"\"", collapse=", "))
+          cat("\n")
+        } else if(x=="ini"){
+          cat("\n\t$ini: ",paste0("[",1:length(mlist$ini),"] \"",mlist$ini,"\"", collapse=", "))
+          cat("\n")
+        } else if(x=="out"){
+          cat("\n\t$out\n")
+          for(i in 1:length(mlist$out)){
+            thisout <- mlist$out[[i]]
+            cat(paste0("\t\t$Y",i,
+                       "\n\t\t\t$value: \"", thisout[[1]],"\"",
+                       "\n\t\t\t$err\n",
+                       "\n\t\t\t\t$model\n", 
+                       "\t\t\t\t\t$additive: ",thisout$err$model$additive,"\n",
+                       "\t\t\t\t\t$proportional: ",thisout$err$model$proportional,"\n",
+                       "\t\t\t\t\t$constant: ",thisout$err$model$constant,"\n",
+                       "\n\t\t\t\t$assay: ",
+                       paste0("[",1:length(thisout$err$assay),"] ",thisout$err$assay, collapse=", ")))
+          }
+          cat("\n")
+        }
+      }) #end sapply
+      
+      invisible(self)
+    }
 
-    # print = function(){
-    # #   cat("This is a test.\n")
-    # #   invisible(self)
-    # }
+
   ),
   private = list(
     validate = function() {
@@ -84,7 +139,7 @@ PM_Vmodel <- R6Class("PM_Vmodel",
 
 # private classes
 # TODO: Should I make these fields private?
-PM_Vinput <- R6Class(
+PM_Vinput <- R6::R6Class(
   "PM_Vinput",
   public <- list(
     mode = NULL,
@@ -199,7 +254,7 @@ PM_Vinput <- R6Class(
 # PM_model_list -----------------------------------------------------------
 
 
-PM_model_list <- R6Class("PM_model_list",
+PM_model_list <- R6::R6Class("PM_model_list",
   inherit = PM_Vmodel,
   public = list(
     model_list = NULL,
@@ -353,7 +408,7 @@ PM_model_list <- R6Class("PM_model_list",
 # # PM_model_legacy ---------------------------------------------------------
 
 
-# PM_model_legacy <- R6Class("PM_model_legacy",
+# PM_model_legacy <- R6::R6Class("PM_model_legacy",
 #   inherit = PM_Vmodel,
 #   public = list(
 #     legacy_file_path = NULL,
@@ -368,7 +423,7 @@ PM_model_list <- R6Class("PM_model_list",
 #   )
 # )
 
-PM_model_file <- R6Class("PM_model_file",
+PM_model_file <- R6::R6Class("PM_model_file",
   inherit = PM_model_list,
   public = list(
     content = NULL,
@@ -490,7 +545,8 @@ PM_model_file <- R6Class("PM_model_file",
 
       out <- list()
       for (i in 1:num_out) {
-        out[[i]] <- list(diffList[i],
+        out[[i]] <- list(
+          value = diffList[i],
           err = list(
             model = if ((1 + as.numeric(gamma)) == 1) {
               additive(gamlam_value, constant = const_gamlam)
@@ -516,7 +572,7 @@ PM_model_file <- R6Class("PM_model_file",
 # PM_model_julia ----------------------------------------------------------
 
 
-PM_model_julia <- R6Class("PM_model_julia",
+PM_model_julia <- R6::R6Class("PM_model_julia",
   inherit = PM_Vmodel,
   public = list(
     model_function = NULL,
