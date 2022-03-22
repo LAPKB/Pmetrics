@@ -45,7 +45,7 @@ PM_data <- R6::R6Class("PM_data",
       return(invisible(self))
     },
     summary = function(formula, FUN, include, exclude) {
-      object <- self$data
+      object <- self$standard_data
       # filter data if needed
       if (!missing(include)) {
         object <- subset(object, sub("[[:space:]]+", "", as.character(object$id)) %in% as.character(include))
@@ -163,3 +163,7 @@ PM_data <- R6::R6Class("PM_data",
     } # end validate function
   ) # end private
 ) # end PM_data
+#' @export
+summary.PM_data <- function(obj, ...) {
+  obj$summary(...)
+}

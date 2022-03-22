@@ -297,7 +297,11 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
   return(outlist)
 }
 
-
+random_name <- function() {
+  n<-1
+  a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
+  paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
+}
 
 #read and set defaults
 # PMreadDefaults <- function() {

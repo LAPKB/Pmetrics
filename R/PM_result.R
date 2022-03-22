@@ -60,6 +60,7 @@ PM_result <- R6::R6Class(
     #' @param \dots Plot-specific arguments
 
     plot = function(type, ...) {
+      stopifnot(!is.null(type), "please provide the type of plot you want to obtain")
       self[[type]]$plot(...)
     },
 
@@ -69,6 +70,7 @@ PM_result <- R6::R6Class(
     #' @param \dots Summary-specific arguments
 
     summary = function(type, ...) {
+      stopifnot(!is.null(type), "please provide the type of summary you want to obtain")
       self[[type]]$summary(...)
     },
 
@@ -86,15 +88,15 @@ PM_result <- R6::R6Class(
     #' @param \dots AUC-specific arguments
     auc = function(type, ...) {
       self[[type]]$auc(...)
-    },
-    
-    #' @description
-    #' Print generic function based on type
-    #' @param type Type of print based on class of object
-    #' @param \dots Print-specific arguments
-    print = function(type, ...) {
-      self[[type]]$print(...)
     }
+    
+    # #' @description
+    # #' Print generic function based on type
+    # #' @param type Type of print based on class of object
+    # #' @param \dots Print-specific arguments
+    # print = function(type, ...) {
+    #   self[[type]]$print(...)
+    # }
     
   ) # end public
 ) # end PM_result
@@ -149,3 +151,7 @@ result_block <- R6::R6Class(
     }
   )
 )
+#' @export
+summary.result_block <- function(obj, ...) {
+  obj$summary(...)
+}
