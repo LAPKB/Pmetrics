@@ -29,6 +29,9 @@ PM_data <- R6::R6Class("PM_data",
     write = function(file_name) {
       PMwriteMatrix(self$data, file_name)
     },
+    plot = function(...){
+      plot.PMmatrix(self$standard_data, ...)
+    },
     print = function(standard = F, viewer = T,...) {
       if (standard) {
         what <- self$standard_data
