@@ -48,9 +48,9 @@ PM_sim <- R6Class(
     )
 )
 
-        #' @description
-        #' Returns a PM_sim object based on the information found in a specified rds file.
-        #' @param file_name Name of the file to be read, the default is PMsim.rds
+#' @description
+#' Returns a PM_sim object based on the information found in a specified rds file.
+#' @param file_name Name of the file to be read, the default is PMsim.rds
 PM_sim$load <- function(file_name = "PMsim.rds") {
     readRDS(file_name)
 }
