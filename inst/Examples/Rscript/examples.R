@@ -1,4 +1,3 @@
-
 # INTRODUCTION ------------------------------------------------------------
 
 #Lines that start with "#" are comments and ignored by R.  Follow the 
@@ -39,12 +38,12 @@ library(Pmetrics)
 
 #Tell R where your working directory is going to be.
 #Windows users:  Make sure that you separate directories with a 
-#forward slash "/". Unfortunately, Windows is the only OS that uses 
+#forward slash "/" or double backslashes "\\". Unfortunately, Windows is the only OS that uses 
 #backslashes "\", so R conforms to Unix/Linux style.
 
 wd <- "##WD##"
 
-#change to the working directory
+#change to the working directory to the Examples folder
 setwd(wd)
 
 #DATA OBJECT
@@ -52,17 +51,26 @@ setwd(wd)
 #Pmetrics always needs data and a model to run
 #create our first data object
 
+#The working directory we want to move to can be specified as an absolute
+#path (Line 45) or as a relative path (Line 57)
 setwd("src")
+#list the files inside the current working directory
+list.files()
 exData <- PM_data$new(data="ex.csv")
 #you can look at this file directly by opening it in 
 #a spreadsheet program like Excel, or a text editor
 
-#look at the contents
-names(exData)
-#exData$data contains your original datafile
-#exData$standard_data contains the standardized and validated data,
-#the other objects are functions
+#exData is an 'object' it means that contains both data and methods to process 
+#that data, for example:
+exData$data #contains your original datafile
+exData$standard_data #contains the standardized and validated data,
+exData$summary() #prints the summary of the data to the terminal, or
+summary(exData)
 
+#To look at the contents of an object:
+names(exData)
+
+#other examples of things that can be done with this object are
 exData #view the original data
 exData$print(standard = T) #view the standardized data
 exData$print(viewer = F) #view original data in console
@@ -96,113 +104,156 @@ mod1 <- PM_model$new(list(
 ))
 #look at it
 mod1
-#create the same model from a file in the working directory
+
+#in the working directory we have another file "model.txt" that contains the old
+#representation of the same model we previously presented, let's take a look at it.
+system("cat model.txt")
+#PM_model$new() also accepts the path to a model file
+#create the same model using this file
 mod1b <- PM_model$new("model.txt")
 mod1b
 
+#PM_model provides a method to update the different elements of a mode, for example:
+
+mod1b$update(list(
+  pri = list(
+    Ka = range(0.001, 5)
+  )
+))
+mod1b
+
+
+#FIT OBJECT
 #Now we define a new fit problem as the combination of a dataset and a suitable model.
-run1 <- PM_fit$new(model = mod1, data = exData)
+exRun <- PM_fit$new(model = mod1, data = exData)
 
+#Let's analyze this object
+exRun
+#there are some methods we can execute over this object, like:
+exRun$check()
+
+
+#To keep everything tidy, let's move to another folder specific to store the runs
 #notice that we didn't have to move any files...
-setwd("../Runs") #move working directory back to Runs
-run1$run() #execute the run with default arguments
+setwd("../Runs")
+exRun$run() #execute the run with default arguments
 #See plots.pdf, pages 2-8
-
 
 #A terminal window will open and run; don't worry about pauses; the program has not crashed"
 
 #After the run is complete you need get the extracted information back into R.
 #They will be sequentially numbered as /1, /2, /3,... in you working directory.
+
+#One benefit of having this fit object is that it is possible to run multiple
+#fittings without needing to move datafiles around
 getwd()
 list.files()
-result1<-PM_load(1)
+
+#Result Object
+exRes<-PM_load(1)
+PMload(1)
 
 #Create a PM_result object by reading a run folder.  The "1" in the parentheses tells Pmetrics to
-#look in the /1 folder.  You can load multiple runs with PMload(2), PMload(3), or even
-#PMload(1:3) or PMload(1,3,5,10)..., and you can compare them with PMcompare().
-#Type ?PMload in the R console for help on PMload.
+#look in the /1 folder.  
+
+###OUTDATED
+##You can load multiple runs with PMload(2), PMload(3), or even
+##PMload(1:3) or PMload(1,3,5,10)..., and you can compare them with PMcompare().
+##Type ?PMload in the R console for help on PMload.
+##
 
 #Plot the raw data with various options.  Type ?plot.PMmatrix in the R console for help.
 #See plots.pdf, pages 9-11
-plot(mdata.1)
-plot(mdata.1,overlay=F,xlim=c(120,144))
-plot(mdata.1,pred=post.1,overlay=T,group="gender",pch=1,cex=1.2,lwd=2,xlim=c(120,144),join=F,doses=F,legend=list(legend=c("Female","Male")),col=c("red","black"),log=T)
-plot(mdata.1,pred=post.1,overlay=F,group="gender",pch=1,cex=1,lwd=2,xlim=c(120,144),join=F,doses=F,legend=F,col=c("red","black"),log=T)
+plot(exRes$data)
+plot(exRes$data,overlay=F,xlim=c(120,144))
+plot(exRes$data,pred=post.1,overlay=T,group="gender",pch=1,cex=1.2,lwd=2,xlim=c(120,144),join=F,doses=F,legend=list(legend=c("Female","Male")),col=c("red","black"),log=T)
+plot(exRes$data,pred=post.1,overlay=F,group="gender",pch=1,cex=1,lwd=2,xlim=c(120,144),join=F,doses=F,legend=F,col=c("red","black"),log=T)
+
 
 #Plot some observed vs. predicted data.  Type ?plot.PMop in the R console for help.
 #See plots.pdf, pages 12-18
-plot(op.1)
-plot(op.1,pred.type="pop",main="Population",square=T,ref=T,reg=T,col="blue",cex.stat=0.6,x.stat=0,y.stat=0.8)
-#below, we are plotting posterior predictions, which are the default pred.type, so
-#we don't have to specify it
-plot(op.1,main="Posterior",log=F,square=T,ref=T,reg=F,lowess=T)
-#the default is to use the median of the population or posterior parameter value
-#distributions, but we can also use the mean with the "icen" argument
-plot(op.1,main="Posterior",icen="mean",cex.stat=0.8)
-plot(op.1,ident=T)
-plot(op.1,resid=T)
+plot(exRes$op)
+plot(exRes$op, pred.type="pop")
 
-#you can also specify a residual op plot like this, with some
-#additional arguments to control the position and size of the 
-#statistics on the plot
-plot(op.1,pred.type="pop",resid=T,y.stat=1,x.stat=0,cex.stat=0.8)
 
-#see the names of op.1; ?makeOP for help on what each one is
-names(op.1)
-#see a header with the first 10 rows of op.1
-head(op.1,10)
+###This needs to be supported
+##below, we are plotting posterior predictions, which are the default pred.type, so
+##we don't have to specify it
+##plot(op.1,main="Posterior",log=F,square=T,ref=T,reg=F,lowess=T)
+##the default is to use the median of the population or posterior parameter value
+##distributions, but we can also use the mean with the "icen" argument
+##plot(op.1,main="Posterior",icen="mean",cex.stat=0.8)
+##plot(op.1,ident=T)
+##plot(op.1,resid=T)
+##
+##you can also specify a residual op plot like this, with some
+##additional arguments to control the position and size of the 
+##statistics on the plot
+#plot(op.1,pred.type="pop",resid=T,y.stat=1,x.stat=0,cex.stat=0.8)
+###
+
+
+#the original op object data can be accessed via
+exRes$op$data
+names(exRes$op$data)
+#see a header with the first 10 rows of the op object
+head(exRes$op$data,10)
 #get a summary with bias and imprecision of the population predictions;
 #?summary.PMop for help
-summary(op.1,pred.type="pop")
+summary(exRes$op,pred.type="pop")
 #look at the summary for the posterior predictions (default pred.type) based
 #on means of parameter values
-summary(op.1,icen="mean")
+summary(exRes$op,icen="mean")
 #here's a summary of the original data file; ?summary.PMmatrix for help
-summary(mdata.1)
+summary(exRes$data)
 
 #Plot final population joint density information.  Type ?plot.PMfinal in the R console for help.
 #See plots.pdf, pages 19-21
-plot(final.1)
+plot(exRes$final)
 #add a kernel density curve
-plot(final.1,density=T)
+plot(exRes$final,density=T)
 #A bivariate plot. Plotting formulae in R are of the form 'y~x'
-plot(final.1,Ke~V)
+plot(exRes$final,Ke~V)
 
-#see the names of the final.1 object; see ?makeFinal for help
-names(final.1)
+#The original final object can be accessed using
+exRes$final$data
+names(exRes$final$data)
 #see the population points
-final.1$popPoints
+exRes$final$data$popPoints
 #see the population mean parameter values
-final.1$popMean
+exRes$final$data$popMean
 #see a summary of final.1 with confidence intervals around the medians
 #and the Median Absolute Weighted Difference (MAWD); ?summary.PMfinal for help
-summary(final.1)
+summary(exRes$final)
 
-#Plot cycle information with smaller sized legend.  
+#Plot cycle information  
 #Type ?plot.PMcycle in the R console for help.
 #See plots.pdf, page 22
-plot(cycle.1,cex.leg=0.8)
-#names of cycle.1; ?makeCycle for help
-names(cycle.1)
+plot(exRes$cycle)
+#names of the cycle object; ?makeCycle for help
+names(exRes$cycle$data)
 #gamma/lamda value on last 6 cycles
-tail(cycle.1$gamlam)
+tail(exRes$cycle$data$gamlam)
 
 #Plot covariate information.  Type ?plot.PMcov in the R console for help.
 #Recall that plotting formulae in R are of the form 'y~x'
 #See plots.pdf, pages 23-26
-plot(cov.1,V~wt)
-plot(cov.1,Ke~age,lowess=F,reg=T,pch=3)
+plot(exRes$cov, V~wt)
+plot(exRes$cov, Ke~age,lowess=F,reg=T,pch=3)
 
 #Same plot but with mean Bayesian posterior parameter and covariate values...
 #Remember the 'icen' argument?
-plot(cov.1,V~wt,icen="mean")
+plot(exRes$cov,V~wt,icen="mean")
 #When time is the x variable, the y variable is aggregated by subject.
 #In R plot formulae, calculations on the fly can be included using the I() function
-plot(cov.1,I(V*wt)~time)
-#names of cov.1; ?makeCov for help
-names(cov.1)
+plot(exRes$cov,I(V*wt)~time)
+#The previous cov object can be accessed via:
+exRes$cov
+names(exRes$cov)
 #summarize with mean covariates; ?summary.PMcov for help
-summary(cov.1,icen="mean")
+summary(exRes$cov,icen="mean")
+
+
 #Look at all possible covariate-parameter relationships by multiple linear regression with forward
 #and backward elimination - type ?PMstep in the R console for help.
 PMstep(cov.1)
