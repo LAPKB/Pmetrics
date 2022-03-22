@@ -68,9 +68,12 @@ PM_fit <- R6::R6Class("PM_fit",
       }
     },
     check = function() {
-      if (inherits(private$model, "PM_model_legacy")) {
-        cat(sprintf("Runing Legacy\n"))
-        Pmetrics::PMcheck(private$data$standard_data, private$model$legacy_file_path)
+      if (inherits(private$model, "PM_model_list")) {
+        cat(sprintf("Checking...\n"))
+        file_name <- random_name()
+        private$model$write_model_file(file_name)
+        Pmetrics::PMcheck(private$data$standard_data, file_name)
+        system(sprintf("rm %s", file_name))
       }
     }
   ),
