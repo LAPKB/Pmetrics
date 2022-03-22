@@ -100,7 +100,7 @@ mod1
 mod1b <- PM_model$new("model.txt")
 mod1b
 
-#RNow we need to put the data object and model object together.
+#Now we define a new fit problem as the combination of a dataset and a suitable model.
 run1 <- PM_fit$new(model = mod1, data = exData)
 
 #notice that we didn't have to move any files...
@@ -109,15 +109,15 @@ run1$run() #execute the run with default arguments
 #See plots.pdf, pages 2-8
 
 
-#Windows users: launch the npscript.bat file in your working directory
-#Mac users: a terminal window will open and run; don't worry about pauses; the program has not crashed"
+#A terminal window will open and run; don't worry about pauses; the program has not crashed"
 
 #After the run is complete you need get the extracted information back into R.
 #They will be sequentially numbered as /1, /2, /3,... in you working directory.
 getwd()
-PMload(1)
+list.files()
+result1<-PM_load(1)
 
-#Load all the extracted information.  The "1" in the parentheses tells Pmetrics to
+#Create a PM_result object by reading a run folder.  The "1" in the parentheses tells Pmetrics to
 #look in the /1 folder.  You can load multiple runs with PMload(2), PMload(3), or even
 #PMload(1:3) or PMload(1,3,5,10)..., and you can compare them with PMcompare().
 #Type ?PMload in the R console for help on PMload.
