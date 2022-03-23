@@ -67,6 +67,12 @@ PM_fit <- R6::R6Class("PM_fit",
         )
       }
     },
+    #' @description
+    #' Save the current PM_fit object into a .rds file.
+    #' @param file_name Name of the file to be created, the default is PMfit.rds
+    save = function(file_name = "PMfit.rds") {
+      saveRDS(self, file_name)
+    },
     check = function() {
       if (inherits(private$model, "PM_model_list")) {
         cat(sprintf("Checking...\n"))
@@ -83,3 +89,10 @@ PM_fit <- R6::R6Class("PM_fit",
     engine = "NPAG" # eventually should be public
   )
 )
+
+#' @description
+#' Returns a PM_fit object based on the information found in a specified rds file.
+#' @param file_name Name of the file to be read, the default is PMfit.rds
+PM_fit$load <- function(file_name = "PMfit.rds") {
+  readRDS(file_name)
+}
