@@ -252,8 +252,7 @@ SIMrun <- function(poppar, ...) {
     is_res <- T
     res <- poppar
     poppar <- poppar$final$data
-  }
-  if (inherits(poppar, "result_block") && poppar$type == "final") {
+  }else if (inherits(poppar, "result_block") && poppar$type == "final") {
     poppar <- poppar$data
   }
   dots <- list(...)
@@ -273,7 +272,9 @@ SIMrun <- function(poppar, ...) {
     }
   }
   if (exists("data", where = dots)) {
-    data <- dots$data
+    data <- "gendata.csv"
+    data_obj <- PM_data$new(dots$data)
+    data_obj$write(data)
   } else {
     if (is_res) {
       data <- "gendata.csv"
