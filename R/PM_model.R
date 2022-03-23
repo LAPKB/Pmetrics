@@ -3,7 +3,7 @@
 
 # Factory pattern
 #' @export
-PM_model <- R6::R6Class("PM_model", list())
+PM_model <- R6::R6Class("PM_Vmodel", list())
 PM_model$new <- function(model, ..., julia = F) {
   print(model)
   # Now we have multiple options for the model:
@@ -60,7 +60,7 @@ fixed <- function(fixed, constant = F, gtz = F) {
 
 # Virtual Class
 # it seems that protected does not exist in R
-PM_Vmodel <- R6::R6Class("PM_Vmodel",
+PM_Vmodel <- R6::R6Class("PM_model",
   public = list(
     name = NULL, # used by PM_model_legacy
     # error = NULL,
