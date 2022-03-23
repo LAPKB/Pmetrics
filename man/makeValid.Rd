@@ -10,37 +10,37 @@ makeValid(run, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 \item{run}{When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
 which will typically be a number, e.g. 1.}
 
-\item{tad}{Boolean argument, default \code{FALSE}.  If \code{TRUE}, will include 
-time after dose (TAD) in binning as well as standard relative time.  \emph{NOTE:} Including TAD is only 
+\item{tad}{Boolean argument, default \code{FALSE}.  If \code{TRUE}, will include
+time after dose (TAD) in binning as well as standard relative time.  \emph{NOTE:} Including TAD is only
 valid if steady state conditions exist for each patient.  This means that dosing is stable and regular
 for each patient, without changes in amount or timing, and that sampling occurs after the average concentrations
-are the same from dose to dose.  Otherwise observations are \emph{NOT} superimposable and \code{tad} should 
+are the same from dose to dose.  Otherwise observations are \emph{NOT} superimposable and \code{tad} should
 \emph{NOT} be used, i.e. should be set to \code{FALSE}.}
 
 \item{binCov}{A character vector of the names of covariates which are included in the model, i.e. in the
 model equations and which need to be binned.  For example \code{binCov='wt'} if \dQuote{wt} is included in a
-model equation like V=V0*wt, or \code{binCov=c( 'wt', 'crcl')} if both \dQuote{wt} and \dQuote{crcl} 
+model equation like V=V0*wt, or \code{binCov=c( 'wt', 'crcl')} if both \dQuote{wt} and \dQuote{crcl}
 are included in model equations.}
 
-\item{doseC}{An integer with the number of dose/covariate bins to cluster, if known from a previous run of 
+\item{doseC}{An integer with the number of dose/covariate bins to cluster, if known from a previous run of
 this function.  Including this value will skip the clustering portion for doses/covariates.}
 
-\item{timeC}{An integer with the number of observation time bins to cluster, if known from a previous run of 
+\item{timeC}{An integer with the number of observation time bins to cluster, if known from a previous run of
 this function.  Including this value will skip the clustering portion for observation times.}
 
-\item{tadC}{An integer with the number of time after dose bins to cluster, if known from a previous run of 
+\item{tadC}{An integer with the number of time after dose bins to cluster, if known from a previous run of
 this function.  Including this value will skip the clustering portion for time after dose. This argument
 will be ignored if \code{tad=FALSE}.}
 
 \item{\dots}{Other parameters to be passed to \code{\link{SIMrun}}, especially \code{limits}.}
 }
 \value{
-The output of \code{makeValid} is a list of class \code{PMvalid}, which is a list with the following.  
+The output of \code{makeValid} is a list of class \code{PMvalid}, which is a list with the following.
 \item{simdata}{The combined, simulated files for all subjects using the population mean values and each subject
 as a template. See \code{\link{SIMparse}}.} This object will be automatically saved to the run, to be loaded with
 \code{\link{PMload}} next time.
 \item{timeBinMedian}{A data frame with the median times for each cluster bin.}
-\item{tadBinMedian}{A data frame with the median time after dose (tad) for each cluster bin.  This will be \code{NA} if 
+\item{tadBinMedian}{A data frame with the median time after dose (tad) for each cluster bin.  This will be \code{NA} if
 \code{tad = FALSE}.}
 \item{opDF}{A data frame with observations, predicitons, and bin-corrected predictions for each subject.}
 }

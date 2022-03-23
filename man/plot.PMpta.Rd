@@ -65,12 +65,12 @@ as noted in \emph{Details}.}
 
 \item{ci}{Confidence interval around curves on \code{pdi} plot, on scale of 0 to 1. Default is 0.9.}
 
-\item{out}{Direct output to a PDF, EPS or image file.  Format is a named list whose first argument, 
+\item{out}{Direct output to a PDF, EPS or image file.  Format is a named list whose first argument,
 \code{type} is one of the following character vectors: \dQuote{pdf}, \dQuote{eps} (maps to \code{postscript}),
 \dQuote{\code{png}}, \dQuote{\code{tiff}}, \dQuote{\code{jpeg}}, or \dQuote{\code{bmp}}.  Other named items in the list
 are the arguments to each graphic device. PDF and EPS are vector images acceptable to most journals
 in a very small file size, with scalable (i.e. infinite) resolution.  The others are raster images which may be very
-large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the 
+large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the
 output will go to the current graphic device (usually the monitor). For example, to output an eps file,
 out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.}
 
@@ -87,9 +87,9 @@ This function will plot the percent target attainment for objects made with the 
 For the legend, defaults that are different that the standard are:
 \itemize{
   \item x Default \dQuote{topright}
-  \item legend Default will be the labeled regimen names supplied during \code{\link{makePTA}}, 
-  or if missing, \dQuote{Regimen 1, Regimen 2,...Regimen n}, where \emph{n} is the number of 
-  regimens in the PMpta object.  
+  \item legend Default will be the labeled regimen names supplied during \code{\link{makePTA}},
+  or if missing, \dQuote{Regimen 1, Regimen 2,...Regimen n}, where \emph{n} is the number of
+  regimens in the PMpta object.
   This default can be overridden by a supplied character vector of regimen names.
   \item col The color of each Regimen plot as specified by the default color scheme or \code{col}
   \item pch The plotting character for each Regimen plot as specified by the default plotting characters or \code{pch}
