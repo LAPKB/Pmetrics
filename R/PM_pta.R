@@ -14,6 +14,12 @@ PM_pta <- R6Class(
         #' @param file_name Name of the file to be created, the default is PMpta.rds
         save = function(file_name = "PMpta.rds") {
             saveRDS(self, file_name)
+        },
+        summary = function(...) {
+            summary.PM_pta(self, ...)
+        },
+        plot = function(...) {
+            plot.PMpta(self, ...)
         }
     )
 )
@@ -23,4 +29,9 @@ PM_pta <- R6Class(
 #' @param file_name Name of the file to be read, the default is PMpta.rds
 PM_pta$load <- function(file_name = "PMpta.rds") {
     readRDS(file_name)
+}
+
+#' @export
+summary.PM_pta <- function(obj, ...) {
+    obj$summary(...)
 }
