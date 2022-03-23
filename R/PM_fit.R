@@ -32,7 +32,7 @@ PM_fit <- R6::R6Class("PM_fit",
         model <- PM_model(model, ...)
       }
       stopifnot(inherits(data, "PM_data"))
-      stopifnot(inherits(model, "PM_Vmodel"))
+      stopifnot(inherits(model, "PM_model"))
       private$data <- data
       private$model <- model
     },
