@@ -48,7 +48,7 @@ PM_result <- R6::R6Class(
       self$cycle <- result_block$new(out$cycle, "cycle")
       self$op <- result_block$new(out$op, "op")
       self$cov <- result_block$new(out$cov, "cov")
-      self$data <- PM_data$new(data = out$data, quiet = quiet) #no need to report
+      self$data <- PM_data$new(data = out$data, quiet = quiet) # no need to report
       self$model <- out$model
       self$errfile <- out$errfile
       self$success <- out$success
@@ -81,15 +81,21 @@ PM_result <- R6::R6Class(
     sim = function(...) {
       PM_sim$new(self, ...)
     },
-    
+
     #' @description
     #' AUC generic function based on type
     #' @param type Type of auc based on class of object
     #' @param \dots AUC-specific arguments
     auc = function(type, ...) {
       self[[type]]$auc(...)
+    },
+    #' @description
+    #' Save the current PM_result object into a .rds file.
+    #' @param file_name Name of the file to be created, the default is PMresult.rds
+    save = function(file_name = "PMresult.rds") {
+      saveRDS(self, file_name)
     }
-    
+
     # #' @description
     # #' Print generic function based on type
     # #' @param type Type of print based on class of object
@@ -97,9 +103,15 @@ PM_result <- R6::R6Class(
     # print = function(type, ...) {
     #   self[[type]]$print(...)
     # }
-    
   ) # end public
 ) # end PM_result
+
+#' @description
+#' Returns a PM_result object based on the information found in a specified rds file.
+#' @param file_name Name of the file to be read, the default is PMresult.rds
+PM_result$load <- function(file_name = "PMsim.rds") {
+  readRDS(file_name)
+}
 
 result_block <- R6::R6Class(
   "result_block",
@@ -121,7 +133,7 @@ result_block <- R6::R6Class(
       } else if (self$type == "final") {
         plot.PMfinal(self$data, ...)
       } else {
-        cat(paste0("Plot method is not defined for ",self$type,".\n"))
+        cat(paste0("Plot method is not defined for ", self$type, ".\n"))
       }
     },
     summary = function(...) {
@@ -132,21 +144,21 @@ result_block <- R6::R6Class(
       } else if (self$type == "final") {
         summary.PMfinal(self$data, ...)
       } else {
-        cat(paste0("Summary method is not defined for ",self$type,".\n"))
+        cat(paste0("Summary method is not defined for ", self$type, ".\n"))
       }
     },
     auc = function(...) {
       if (self$type %in% c("op", "pop", "post", "sim")) {
         makeAUC(data = self$data, ...)
       } else {
-        cat(paste0("AUC method is not defined for ",self$type,".\n"))
+        cat(paste0("AUC method is not defined for ", self$type, ".\n"))
       }
     },
-    print = function(...){
+    print = function(...) {
       if (self$type %in% c("op", "pop", "post", "sim")) {
         print(x = self$data, ...)
       } else {
-        cat(paste0("Print method is not defined for ",self$type,".\n"))
+        cat(paste0("Print method is not defined for ", self$type, ".\n"))
       }
     }
   )
