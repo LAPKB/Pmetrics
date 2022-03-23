@@ -64,67 +64,70 @@ PM_Vmodel <- R6::R6Class("PM_model",
   public = list(
     name = NULL, # used by PM_model_legacy
     # error = NULL,
-    initialize = function() {stop("Unable to initialize abstract class")},
-    
-    print = function(...){
+    initialize = function() {
+      stop("Unable to initialize abstract class")
+    },
+    print = function(...) {
       cat("$model_list\n")
       mlist <- self$model_list
       blockNames <- names(mlist)
-      sapply(blockNames, function(x){
-        if(x=="pri"){
+      sapply(blockNames, function(x) {
+        if (x == "pri") {
           cat("\t$pri\n")
-          for(i in 1:length(mlist$pri)){
+          for (i in 1:length(mlist$pri)) {
             thispri <- mlist$pri[[i]]
             thisname <- names(mlist$pri)[i]
-            cat(paste0("\t\t$",thisname,"\n\t\t\t$min: ", round(thispri$min,3),
-                       "\n\t\t\t$max: ", round(thispri$max,3),
-                       "\n\t\t\t$mean: ", round(thispri$mean,3),
-                       "\n\t\t\t$sd: ", round(thispri$sd, 3),
-                       "\n\t\t\t$gtz: ", thispri$gtz,"\n"))
+            cat(paste0(
+              "\t\t$", thisname, "\n\t\t\t$min: ", round(thispri$min, 3),
+              "\n\t\t\t$max: ", round(thispri$max, 3),
+              "\n\t\t\t$mean: ", round(thispri$mean, 3),
+              "\n\t\t\t$sd: ", round(thispri$sd, 3),
+              "\n\t\t\t$gtz: ", thispri$gtz, "\n"
+            ))
           }
-        } else if(x=="cov"){
-          cat("\n\t$cov: ",paste0("[",1:length(mlist$cov),"] \"",mlist$cov,"\"", collapse=", "))
+        } else if (x == "cov") {
+          cat("\n\t$cov: ", paste0("[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = ", "))
           cat("\n")
-        } else if(x=="sec"){
-          cat("\n\t$sec: ",paste0("[",1:length(mlist$sec),"] \"",mlist$sec,"\"", collapse=", "))
+        } else if (x == "sec") {
+          cat("\n\t$sec: ", paste0("[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = ", "))
           cat("\n")
-        } else if(x=="dif"){
-          cat("\n\t$dif: ",paste0("[",1:length(mlist$dif),"] \"",mlist$dif,"\"", collapse=", "))
+        } else if (x == "dif") {
+          cat("\n\t$dif: ", paste0("[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = ", "))
           cat("\n")
-        } else if(x=="lag"){
-          cat("\n\t$lag: ",paste0("[",1:length(mlist$lag),"] \"",mlist$lag,"\"", collapse=", "))
+        } else if (x == "lag") {
+          cat("\n\t$lag: ", paste0("[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = ", "))
           cat("\n")
-        } else if(x=="bol"){
-          cat("\n\t$bol: ",paste0("[",1:length(mlist$bol),"] \"",mlist$bol,"\"", collapse=", "))
+        } else if (x == "bol") {
+          cat("\n\t$bol: ", paste0("[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = ", "))
           cat("\n")
-        } else if(x=="fa"){
-          cat("\n\t$fa: ",paste0("[",1:length(mlist$fa),"] \"",mlist$fa,"\"", collapse=", "))
+        } else if (x == "fa") {
+          cat("\n\t$fa: ", paste0("[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = ", "))
           cat("\n")
-        } else if(x=="ini"){
-          cat("\n\t$ini: ",paste0("[",1:length(mlist$ini),"] \"",mlist$ini,"\"", collapse=", "))
+        } else if (x == "ini") {
+          cat("\n\t$ini: ", paste0("[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = ", "))
           cat("\n")
-        } else if(x=="out"){
+        } else if (x == "out") {
           cat("\n\t$out\n")
-          for(i in 1:length(mlist$out)){
+          for (i in 1:length(mlist$out)) {
             thisout <- mlist$out[[i]]
-            cat(paste0("\t\t$Y",i,
-                       "\n\t\t\t$value: \"", thisout[[1]],"\"",
-                       "\n\t\t\t$err\n",
-                       "\n\t\t\t\t$model\n", 
-                       "\t\t\t\t\t$additive: ",thisout$err$model$additive,"\n",
-                       "\t\t\t\t\t$proportional: ",thisout$err$model$proportional,"\n",
-                       "\t\t\t\t\t$constant: ",thisout$err$model$constant,"\n",
-                       "\n\t\t\t\t$assay: ",
-                       paste0("[",1:length(thisout$err$assay),"] ",thisout$err$assay, collapse=", ")))
+            cat(paste0(
+              "\t\t$Y", i,
+              "\n\t\t\t$value: \"", thisout[[1]], "\"",
+              "\n\t\t\t$err\n",
+              "\n\t\t\t\t$model\n",
+              "\t\t\t\t\t$additive: ", thisout$err$model$additive, "\n",
+              "\t\t\t\t\t$proportional: ", thisout$err$model$proportional, "\n",
+              "\t\t\t\t\t$constant: ", thisout$err$model$constant, "\n",
+              "\n\t\t\t\t$assay: ",
+              paste0("[", 1:length(thisout$err$assay), "] ", thisout$err$assay, collapse = ", ")
+            ))
           }
           cat("\n")
         }
-      }) #end sapply
-      
+      }) # end sapply
+
       invisible(self)
     }
-
-
   ),
   private = list(
     validate = function() {

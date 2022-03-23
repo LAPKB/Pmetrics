@@ -29,7 +29,7 @@ PM_fit <- R6::R6Class("PM_fit",
         data <- PM_data$new(data)
       }
       if (is.character(model)) {
-        model <- PM_model(model, ...)
+        model <- PM_model$new(model, ...)
       }
       stopifnot(inherits(data, "PM_data"))
       stopifnot(inherits(model, "PM_model"))
