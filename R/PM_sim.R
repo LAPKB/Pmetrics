@@ -48,7 +48,7 @@ PM_vsim <- R6::R6Class(
         save = function(file_name = "PMsim.rds") {
             saveRDS(self, file_name)
         },
-        plot = function(...){
+        plot = function(...) {
             plot.PMsim(self, ...)
         },
         #' @description
