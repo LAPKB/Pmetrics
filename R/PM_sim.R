@@ -1,5 +1,32 @@
 #' @export
-PM_sim <- R6Class(
+PM_sim <- R6::R6Class("PM_Vsim", list())
+PM_sim$new <- function(poppar, ...) {
+    dots <- list(...)
+    combine <- if (exists("combine", where = dots)) {
+        dots$combine
+    } else {
+        F
+    }
+    SIMrun(poppar, ...)
+    # TODO: read files and fix the missing E problem
+    sim_files <- list.files() %>% .[grepl("simout*", .)]
+    if (length(sim_files) == 1) {
+        parse <- SIMparse(file = "simout*") %>% PM_vsim$new()
+    } else {
+        if (combine) {
+            parse <- SIMparse(file = "simout*", combine = T) %>% PM_vsim$new()
+        } else {
+            parse <- list()
+            for (i in seq_len(length(sim_files))) {
+                parse <- append(parse, SIMparse(file = sprintf("simout%i.txt", i)) %>% PM_vsim$new())
+            }
+        }
+    }
+    system("rm simout*")
+    parse
+}
+
+PM_vsim <- R6::R6Class(
     "PM_sim",
     public <- list(
         obs = NULL,
@@ -8,22 +35,21 @@ PM_sim <- R6Class(
         totalSets = NULL,
         totalMeans = NULL,
         totalCov = NULL,
-        initialize = function(poppar, ...) {
-            SIMrun(poppar, ...)
-            # TODO: read files and fix the missing E problem
-            parse <- SIMparse(file = "sim*.txt")
-            # TODO: remove all sim* files
-            self$obs <- parse$obs
-            self$amt <- parse$amt
-            self$parValues <- parse$parValues
-            self$totalMeans <- parse$totalMeans
-            self$totalCov <- parse$totalCov
+        initialize = function(list) {
+            self$obs <- list$obs
+            self$amt <- list$amt
+            self$parValues <- list$parValues
+            self$totalMeans <- list$totalMeans
+            self$totalCov <- list$totalCov
         },
         #' @description
         #' Save the current PM_sim object into a .rds file.
         #' @param file_name Name of the file to be created, the default is PMsim.rds
         save = function(file_name = "PMsim.rds") {
             saveRDS(self, file_name)
+        },
+        plot = function(...){
+            plot.PMsim(self, ...)
         },
         #' @description
         #' Estimates the Probability of Target Attaintment (PTA), based on the results of the current Simulation.

@@ -1,3 +1,4 @@
+
 # INTRODUCTION ------------------------------------------------------------
 
 #Lines that start with "#" are comments and ignored by R.  Follow the 
@@ -89,11 +90,11 @@ mod1 <- PM_model$new(list(
     V = range(30, 120),
     Tlag1 = range(0, 4)
   ),
-  cov = list("wt", "africa", "age", "gender", "height"),
+  cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
   lag = list("Tlag(1) = Tlag1"),
   out = list(
     Y1 = list(
-      value = "X(1)/V",
+      value = "X(2)/V",
       err = list(
         model = proportional(5),
         assay = c(0.02, 0.05, -0.0002, 0)
@@ -256,19 +257,43 @@ summary(exRes$cov,icen="mean")
 
 #Look at all possible covariate-parameter relationships by multiple linear regression with forward
 #and backward elimination - type ?PMstep in the R console for help.
-PMstep(cov.1)
+PMstep(exRes$cov$data)
 #icen works here too....
-PMstep(cov.1,icen="mean")
+PMstep(exRes$cov$data,icen="mean")
 
 
 # EXERCISE 2 - NPAG WITH COVARIATES ---------------------------------------
 
-setwd(paste(wd,"/Runs",sep=""))
-#copy the files model.txt and ex.csv to your Runs folder to get ready for a run
-file.copy(from=c("../src/model2.txt","../src/ex.csv"),to=getwd(),overwrite=T)
+#Again, without copying files, let's create another run object, this time using
+#a model that include covaraites
+mod2<-PM_model$new(list(
+  pri = list(
+    Ka = range(0.1, 0.9),
+    Ke = range(0.001, 0.1),
+    V0 = range(30, 120),
+    Tlag1 = range(0, 4)
+  ),
+  cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
+  sec = list(V="V0*(WT/55)"),
+  lag = list("Tlag(1) = Tlag1"),
+  out = list(
+    Y1 = list(
+      value = "X(2)/V",
+      err = list(
+        model = proportional(5),
+        assay = c(0.02, 0.05, -0.0002, 0)
+      )
+    )
+  )
+  
+))
 
-NPrun(data="ex.csv",model="model2.txt")
+exRun2<-PM_fit$new(data="../src/ex.csv", model=mod2)
+exRun2$check()
+exRun2$run()
 
+list.files()
+exRes2<-PM_load(2)
 PMload(2)
 
 # EXERCISE 3 - COMPARING MODELS -------------------------------------------
@@ -283,15 +308,14 @@ PMcompare(1,2)
 PMcompare(1,2,plot=T,cex.stat=0.5)
 
 
-# EXERCISE 4 - MODEL VALIDATION -------------------------------------------
+# EXERCISE 4X - MODEL VALIDATION -------------------------------------------
 
 #MODEL VALIDATION EXAMPLES
 #Example of Pmetrics visual predictive check and prediction-corrected visual predictive check
 #for model validation - be sure to have executed the NPAG run above
 #Type ?makeValid in the R console for help.
-setwd(paste(wd,"/Runs",sep=""))
 #Choose wt as the covariate to bin. Accept all default bin sizes.
-valid.2 <- makeValid(run=2,limits=NA)
+valid_2 <- makeValid(run=2,limits=NA)
 #To see what it contains, use:
 str(valid.2)
 #Default visual predictive check; ?plot.PMvalid for help
@@ -320,25 +344,28 @@ npc.2$npc
 #Here's an example of a simulator run.  
 #Be sure to have executed the NPAG run above and used PMload(2)
 #Type ?SIMrun, ?SIMparse, or ?plot.PMsim into the R console for help.
-setwd(paste(wd,"/Sim",sep=""))
-file.copy(from=c("../src/model2.txt","../src/ex.csv"),to=getwd(),overwrite=T)
+#setwd(paste(wd,"/Sim",sep=""))
+#file.copy(from=c("../src/model2.txt","../src/ex.csv"),to=getwd(),overwrite=T)
 #The following will simulate 500 sets of parameters/concentrations using each of the first 4 subjects in the data file
 #Limits are put on the simulated parameter ranges
 #The final.2 population parameter values from the NPAG run above are used for the Monte Carlo Simulation.
-SIMrun(poppar=final.2,data="ex.csv",model="model2.txt",include=1:4,limits=NA,nsim=100)
+simdata<-exRes2$sim(include=1,limits=NA,nsim=100)
+#SIMrun(poppar=final.2,data="ex_full.csv",model="model2.txt",include=1:4,limits=NA,nsim=100)
 #Wildcards can be used in the following.  This will extract and combine all matching output datasets into
 #a single dataset.  Use '?' for a single character match, and '*' for multiple.
 #Parse one file
-simdata <- SIMparse("simout1.txt")
+#simdata <- SIMparse("simout1.txt")
 #Plot it; ?plot.PMsim for help
 #See plots.pdf, pages 31-34
 plot(simdata)
-#Parse multiple files and plot the third:
-simdata <- SIMparse("simout?.txt")
+#Simulate multiple subjects and plot the third:
+simdata<-exRes2$sim(include=1:4,limits=NA,nsim=100)
+#simdata <- SIMparse("simout?.txt")
 plot(simdata[[3]])
 #Parse and combine multiple files and plot them.  Note that combining simulations from templates
 #with different simulated observation times can lead to unpredictable plots
-simdata2 <- SIMparse("simout?.txt",combine=T)
+simdata2<-exRes2$sim(include=1:4,limits=NA,nsim=100, combine=T)
+#simdata2 <- SIMparse("simout?.txt",combine=T)
 plot(simdata2)
 
 #simulate with covariates
@@ -348,16 +375,17 @@ plot(simdata2)
 #but allow age (the last covariate) to be simulated, using the mean, sd, and 
 #limits in the original population, since we didn't specify them.
 #See ?SIMrun for more help on this and the Pmetrics manual.
-covariate <- list(cov=cov.2,
+covariate <- list(cov=exRes2$cov$data,
                   mean=list(wt=50),
                   sd=list(wt=20),
                   limits=list(wt=c(10,70)),
                   fix=c("africa","gender","height"))
 #now simulate with this covariate list object
-SIMrun(poppar=final.2,data="ex.csv",model="model2.txt",include=1:4,limits=NA,nsim=100,
-       covariate=covariate)
+simdata3<-exRes2$sim(include=1:4,limits=NA,nsim=100,covariate=covariate)
+#SIMrun(poppar=final.2,data="ex.csv",model="model2.txt",include=1:4,limits=NA,nsim=100,
+#       covariate=covariate)
 
-simdata3 <- SIMparse("simout?.txt")
+#simdata3 <- SIMparse("simout?.txt")
 
 #compare difference in simulations without covariates simulated...
 plot(simdata[[1]])

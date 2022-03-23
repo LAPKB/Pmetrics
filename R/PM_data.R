@@ -27,7 +27,7 @@ PM_data <- R6::R6Class("PM_data",
       self$standard_data <- private$validate(self$data, quiet = quiet)
     },
     write = function(file_name) {
-      PMwriteMatrix(self$data, file_name)
+      PMwriteMatrix(self$standard_data, file_name)
     },
     plot = function(...){
       plot.PMmatrix(self$standard_data, ...)
