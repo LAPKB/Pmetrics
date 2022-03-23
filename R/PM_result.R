@@ -94,6 +94,9 @@ PM_result <- R6::R6Class(
     #' @param file_name Name of the file to be created, the default is PMresult.rds
     save = function(file_name = "PMresult.rds") {
       saveRDS(self, file_name)
+    },
+    make_valid = function(...) {
+      PM_valid$new(self, ...)
     }
 
     # #' @description
