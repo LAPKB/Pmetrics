@@ -42,12 +42,12 @@ PM_result <- R6::R6Class(
 
     initialize = function(out, quiet = T) {
       self$npdata <- out$NPdata
-      self$pop <- result_block$new(out$pop, "pop")
-      self$post <- result_block$new(out$post, "post")
-      self$final <- result_block$new(out$final, "final")
-      self$cycle <- result_block$new(out$cycle, "cycle")
-      self$op <- result_block$new(out$op, "op")
-      self$cov <- result_block$new(out$cov, "cov")
+      self$pop <- PM_pop$new(out$pop)
+      self$post <- PM_post$new(out$post)
+      self$final <- PM_final$new(out$final)
+      self$cycle <- PM_cycle$new(out$cycle)
+      self$op <- PM_op$new(out$op)
+      self$cov <- PM_cov$new(out$cov)
       self$data <- PM_data$new(data = out$data, quiet = quiet) # no need to report
       self$model <- out$model
       self$errfile <- out$errfile
@@ -81,14 +81,6 @@ PM_result <- R6::R6Class(
     sim = function(...) {
       PM_sim$new(self, ...)
     },
-
-    #' @description
-    #' AUC generic function based on type
-    #' @param type Type of auc based on class of object
-    #' @param \dots AUC-specific arguments
-    auc = function(type, ...) {
-      self[[type]]$auc(...)
-    },
     #' @description
     #' Save the current PM_result object into a .rds file.
     #' @param file_name Name of the file to be created, the default is PMresult.rds
@@ -98,14 +90,6 @@ PM_result <- R6::R6Class(
     make_valid = function(...) {
       PM_valid$new(self, ...)
     }
-
-    # #' @description
-    # #' Print generic function based on type
-    # #' @param type Type of print based on class of object
-    # #' @param \dots Print-specific arguments
-    # print = function(type, ...) {
-    #   self[[type]]$print(...)
-    # }
   ) # end public
 ) # end PM_result
 
@@ -116,57 +100,206 @@ PM_result$load <- function(file_name = "PMsim.rds") {
   readRDS(file_name)
 }
 
-result_block <- R6::R6Class(
-  "result_block",
+PM_op <- R6Class(
+  "PM_op",
   public <- list(
-    data = NULL,
-    type = NULL,
-    initialize = function(data, type) {
-      stopifnot(type %in% c("op", "cov", "cycle", "final", "pop", "post"))
-      self$type <- type
-      self$data <- data
+    id = NULL,
+    time = NULL,
+    obs = NULL,
+    pred = NULL,
+    pred.type = NULL,
+    icen = NULL,
+    outeq = NULL,
+    block = NULL,
+    obsSD = NULL,
+    d = NULL,
+    ds = NULL,
+    wd = NULL,
+    wds = NULL,
+    initialize = function(op) {
+      self$id <- op$id
+      self$time <- op$time
+      self$obs <- op$obs
+      self$pred <- op$pred
+      self$pred.type <- op$pred.typ
+      self$icen <- op$icen
+      self$outeq <- op$outeq
+      self$block <- op$block
+      self$obsSD <- op$obsSD
+      self$d <- op$d
+      self$ds <- op$ds
+      self$wd <- op$wd
+      self$wds <- op$wds
     },
     plot = function(...) {
-      if (self$type == "op") {
-        plot.PMfit(self$data, ...)
-      } else if (self$type == "cov") {
-        plot.PMcov(self$data, ...)
-      } else if (self$type == "cycle") {
-        plot.PMcycle(self$data, ...)
-      } else if (self$type == "final") {
-        plot.PMfinal(self$data, ...)
-      } else {
-        cat(paste0("Plot method is not defined for ", self$type, ".\n"))
-      }
+      plot.PMfit(self, ...)
     },
     summary = function(...) {
-      if (self$type == "op") {
-        summary.PMop(self$data, ...)
-      } else if (self$type == "cov") {
-        summary.PMcov(self$data, ...)
-      } else if (self$type == "final") {
-        summary.PMfinal(self$data, ...)
-      } else {
-        cat(paste0("Summary method is not defined for ", self$type, ".\n"))
-      }
+      summary.PMop(self, ...)
     },
-    auc = function(...) {
-      if (self$type %in% c("op", "pop", "post", "sim")) {
-        makeAUC(data = self$data, ...)
-      } else {
-        cat(paste0("AUC method is not defined for ", self$type, ".\n"))
-      }
-    },
-    print = function(...) {
-      if (self$type %in% c("op", "pop", "post", "sim")) {
-        print(x = self$data, ...)
-      } else {
-        cat(paste0("Print method is not defined for ", self$type, ".\n"))
-      }
+    #' @description
+    #' AUC function
+    #' @param \dots AUC-specific arguments
+    auc = function() {
+      makeAUC(data = self, ...)
     }
   )
 )
 #' @export
-summary.result_block <- function(obj, ...) {
+summary.PM_op <- function(obj, ...) {
+  obj$summary(...)
+}
+PM_post <- R6Class(
+  "PM_post",
+  public <- list(
+    id = NULL,
+    time = NULL,
+    ice = NULL,
+    outeq = NULL,
+    pred = NULL,
+    block = NULL,
+    initialize = function(post) {
+      self$id <- post$id
+      self$time <- post$time
+      self$ice <- post$ice
+      self$outeq <- post$outeq
+      self$pred <- post$pred
+      self$block <- post$block
+    },
+    #' @description
+    #' AUC function
+    #' @param \dots AUC-specific arguments
+    auc = function() {
+      makeAUC(data = self, ...)
+    }
+  )
+)
+PM_final <- R6Class(
+  "PM_final",
+  public <- list(
+    popPoints = NULL,
+    popMean = NULL,
+    popSD = NULL,
+    popCV = NULL,
+    popVar = NULL,
+    popCov = NULL,
+    popCor = NULL,
+    popMedian = NULL,
+    popRanFix = NULL,
+    postPoints = NULL,
+    postMean = NULL,
+    postSD = NULL,
+    postVar = NULL,
+    postCov = NULL,
+    postCor = NULL,
+    postMed = NULL,
+    shrinkage = NULL,
+    gridpts = NULL,
+    nsub = NULL,
+    ab = NULL,
+    initialize = function(final) {
+      self$popPoints <- final$popPoints
+      self$popMean <- final$popMean
+      self$popSD <- final$popSD
+      self$popCV <- final$popCV
+      self$popVar <- final$popVar
+      self$popCov <- final$popCov
+      self$popCor <- final$popCor
+      self$popMedian <- final$popMedian
+      self$popRanFix <- final$popRanFix
+      self$postPoints <- final$postPoints
+      self$postMean <- final$postMean
+      self$postSD <- final$postSD
+      self$postVar <- final$postVar
+      self$postCov <- final$postCov
+      self$postCor <- final$postCor
+      self$postMed <- final$postMed
+      self$shrinkage <- final$shrinkage
+      self$gridpts <- final$gridpts
+      self$nsub <- final$nsub
+      self$ab <- final$ab
+    },
+    summary = function(...) {
+      summary.PMfinal(self, ...)
+    },
+    plot = function(...) {
+      plot.PMfinal(self, ...)
+    }
+  )
+)
+#' @export
+summary.PM_final <- function(obj, ...) {
+  obj$summary(...)
+}
+PM_cycle <- R6Class(
+  "PM_cycle",
+  public <- list(
+    names = NULL,
+    cynum = NULL,
+    ll = NULL,
+    gamlam = NULL,
+    mean = NULL,
+    sd = NULL,
+    median = NULL,
+    aic = NULL,
+    bic = NULL,
+    initialize = function(cycle) {
+      self$names <- cycle$names
+      self$cynum <- cycle$cynum
+      self$ll <- cycle$ll
+      self$gamlam <- cycle$gamlam
+      self$mean <- cycle$mean
+      self$sd <- cycle$sd
+      self$median <- cycle$median
+      self$aic <- cycle$aic
+      self$bic <- cycle$bic
+    },
+    plot = function(...) {
+      plot.PMcycle(self, ...)
+    }
+  )
+)
+PM_pop <- R6Class(
+  "PM_pop",
+  public <- list(
+    id = NULL,
+    time = NULL,
+    ice = NULL,
+    outeq = NULL,
+    pred = NULL,
+    block = NULL,
+    initialize = function(pop) {
+      self$id <- pop$id
+      self$time <- pop$time
+      self$ice <- pop$ice
+      self$outeq <- pop$outeq
+      self$pred <- pop$pred
+      self$block <- pop$block
+    },
+    #' @description
+    #' AUC function
+    #' @param \dots AUC-specific arguments
+    auc = function() {
+      makeAUC(data = self, ...)
+    }
+  )
+)
+PM_cov <- R6Class(
+  "PM_cov",
+  public <- list(
+    data = NULL,
+    initialize = function(cov) {
+      self$data <- cov
+    },
+    summary = function(...) {
+      summary.PMcov(self$data, ...)
+    },
+    plot = function(...) {
+      plot.PMcov(self$data, ...)
+    }
+  )
+)
+#' @export
+summary.PM_cov <- function(obj, ...) {
   obj$summary(...)
 }
