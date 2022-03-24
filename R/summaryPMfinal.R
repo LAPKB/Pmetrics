@@ -81,7 +81,7 @@ summary.PMfinal <- function(object,...,lower=0.025,upper=0.975){
       ciMAD <- quantile(sapply(sim,function(x) x[[2]]),c(lower,0.5,upper))
       return(list(ciMed,ciMAD))
     }
-    if(inherits(object,"NPAG")){
+    if(inherits(object,"NPAG") || inherits(object,"PM_final")){
       popPoints <- object$popPoints
     } else {popPoints <- object}
     

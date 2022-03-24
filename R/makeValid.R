@@ -367,7 +367,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   invisible(file.remove(Sys.glob("sim*.txt")))
 
   # get poppar and make one with zero covariance
-  poppar <- result$final$data
+  poppar <- result$final
   popparZero <- poppar
   popparZero$popCov[popparZero$popCov != 0] <- 0
   # do the simulation for each subject using the median dose, median covariates and pop parameters
@@ -402,7 +402,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   PRED_bin <- SIMparse("simMed*", combine = T, silent = T)
 
   # make tempDF subset of PMop for subject, time, non-missing obs, outeq, pop predictions (PREDij)
-  tempDF <- result$op$data
+  tempDF <- result$op
   tempDF <- tempDF[tempDF$pred.type == "pop", ]
   tempDF <- tempDF[obsStatus(tempDF$obs)$present, ] %>% filter(time > 0)
   if (!is.na(includeID[1])) {
@@ -518,8 +518,8 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     NPdata = result$NPdata,
     pop = result$pop,
     post = result$post,
-    final = result$final$data,
-    cycle = result$cycle$data,
+    final = result$final,
+    cycle = result$cycle,
     op = result$op,
     cov = result$cov$data,
     mdata = result$data$standard_data,

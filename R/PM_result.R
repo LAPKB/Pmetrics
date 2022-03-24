@@ -89,6 +89,9 @@ PM_result <- R6::R6Class(
     },
     make_valid = function(...) {
       PM_valid$new(self, ...)
+    },
+    step = function(...){
+      PMstep(self$cov$data, ...)
     }
   ) # end public
 ) # end PM_result
@@ -132,20 +135,40 @@ PM_op <- R6Class(
       self$wds <- op$wds
     },
     plot = function(...) {
-      plot.PMfit(self, ...)
+      plot.PM_op(self$to_df(), ...)
     },
     summary = function(...) {
-      summary.PMop(self, ...)
+      summary.PMop(self$to_df(), ...)
     },
     #' @description
     #' AUC function
     #' @param \dots AUC-specific arguments
     auc = function() {
       makeAUC(data = self, ...)
+    },
+    to_df = function() {
+      df<-list(
+        id = self$id,
+        time = self$time,
+        obs = self$obs,
+        pred = self$pred,
+        pred.type = self$pred.type,
+        icen = self$icen,
+        outeq = self$outeq,
+        block = self$block,
+        obsSD = self$obsSD,
+        d = self$d,
+        ds = self$ds,
+        wd = self$wd,
+        wds = self$wds
+      )%>%
+      as.data.frame()
+      class(df)<-c("PMop","data.frame")
+      df
     }
   )
 )
-#' @export
+
 summary.PM_op <- function(obj, ...) {
   obj$summary(...)
 }
@@ -296,6 +319,9 @@ PM_cov <- R6Class(
     },
     plot = function(...) {
       plot.PMcov(self$data, ...)
+    },
+    print = function(...){
+      print(x = self$data, ...)
     }
   )
 )
