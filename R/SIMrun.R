@@ -251,9 +251,9 @@ SIMrun <- function(poppar, ...) {
   if (inherits(poppar, "PM_result")) {
     is_res <- T
     res <- poppar
-    poppar <- poppar$final$data
+    poppar <- poppar$final
   }else if (inherits(poppar, "result_block") && poppar$type == "final") {
-    poppar <- poppar$data
+    poppar <- poppar
   }
   dots <- list(...)
   if (exists("limits", where = dots)) {
