@@ -299,24 +299,25 @@ PMcompare(1, 2, plot = T, cex.stat = 0.5)
 # for model validation - be sure to have executed the NPAG run above
 # Type ?makeValid in the R console for help.
 # Choose wt as the covariate to bin. Accept all default bin sizes.
-valid_2 <- makeValid(run = 2, limits = NA)
+# exRes2$make_valid(limits = NA)
+valid_2 <- exRes2$make_valid(limits = NA)
 # To see what it contains, use:
-str(valid.2)
+str(valid_2)
 # Default visual predictive check; ?plot.PMvalid for help
-plot(valid.2)
+plot(valid_2)
 # Generate a prediction-corrected visual predictive check; type ?plot.PMvalid in the R console for help.
-plot(valid.2, type = "pcvpc")
+plot(valid_2, type = "pcvpc")
 # Create an npde plot
-plot(valid.2, type = "npde")
+plot(valid_2, type = "npde")
 
 # Here is another way to generate a visual predicive check...
-npc.2 <- plot(valid.2$simdata, obs = op.2, log = F, binSize = 1)
+npc_2 <- plot(valid_2$simdata, obs = op.2, log = F, binSize = 1)
 # The jagged appearance of the plot when binSize=0 is because different subjects have
 # different doses, covariates, and observation times, which are all combined in one simulation.
 # Collapsing simulation times within 1 hour bins (binSize=1) smooths
 # the plot, but can change the P-values in the numerical predictive check below.
 
-npc.2$npc
+npc._$npc
 # ...and here is a numerical predictive check
 # P-values are binomial test of proportion of observations less than
 # the respective quantile
