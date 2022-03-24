@@ -74,11 +74,11 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
     }
     # Generate plots
     for (i in 1:rdata$NPdata$numeqt) {
-      plot.PMfit(rdata$op, outeq = i, pred.type = "pop") %>%
+      plot.PM_op(rdata$op, outeq = i, pred.type = "pop") %>%
         plotly::as_widget() %>%
         htmlwidgets::saveWidget(sprintf("op_pop%i.html", i), libdir = "deps", selfcontained = F)
 
-      plot.PMfit(rdata$op, outeq = i) %>%
+      plot.PM_op(rdata$op, outeq = i) %>%
         plotly::as_widget() %>%
         htmlwidgets::saveWidget(sprintf("op_ind%i.html", i), libdir = "deps", selfcontained = F)
 
