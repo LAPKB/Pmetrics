@@ -290,50 +290,17 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   }
 
   # Simulations -------------------------------------------------------------
+  datafileName <- "gendata.csv"
+  modelfile <- "genmodel.txt"
 
-  # create /vpc
-  if (!file.exists(paste(run, "/vpc", sep = ""))) dir.create(paste(run, "/vpc", sep = ""))
-
-  # get model file
-  instrfile <- suppressWarnings(tryCatch(readLines(paste(run, "etc/instr.inx", sep = "/")), error = function(e) NULL))
-  if (length(grep("IVERIFY", instrfile)) == 0) { # not updated instruction file
-    modelfile <- readline("Your run used an old instruction file. Enter model name: ")
-  } else { # ok we are using updated instruction file
-    if (length(instrfile) > 0) { # ok we got one
-      # model.for file name
-      modelfile <- instrfile[5]
-      # convert to original name
-      modelfile <- basename(Sys.glob(paste(run, "/inputs/", strsplit(modelfile, "\\.")[[1]][1], "*", sep = "")))
-      if (length(modelfile) > 1) {
-        modelfile <- modelfile[grep(".txt", modelfile)]
-      }
-    } else {
-      stop("Model file not found.\n")
-    }
-  }
-
-  # copy this modelfile to new /vpc folder
-  invisible(file.copy(from = paste(run, "/inputs/", modelfile, sep = ""), to = paste(run, "/vpc", sep = "")))
-
-  # now get the data file
-  RFfile <- suppressWarnings(tryCatch(readLines(Sys.glob(paste(run, "outputs/??_RF0001.TXT", sep = "/"))), error = function(e) NULL))
-  if (length(RFfile) > 0) {
-    datafileName <- tail(RFfile, 1)
-    # remove trailing spaces
-    datafileName <- sub(" +$", "", datafileName)
-    file.copy(from = paste(run, "inputs", datafileName, sep = "/"), to = paste(run, "/vpc", sep = ""))
-    datafile <- datafileName
-  } else {
-    stop("Data file not found\n")
-  }
-
-  # change wd to new /vpc folder which now contains data and model files
-  setwd(paste(run, "/vpc", sep = ""))
+  result$data$write(datafileName)
+  result$model$write_model_file(modelfile)
 
   # simulate PRED_bin from pop icen parameter values and median of each bin for each subject
   # first, calculate median of each bin
   dcMedian <- aggregate(dataSub[, c("dose", binCov)], by = list(dataSub$dcBin), FUN = median, na.rm = T)
-  names(dcMedian)[1] <- "bin"
+  # names(dcMedian)[1] <- "bin"
+  names(dcMedian) <- c("bin", "dose")
   timeMedian <- aggregate(dataSub$time, by = list(dataSub$timeBin), FUN = median)
   names(timeMedian) <- c("bin", "time")
 
@@ -402,7 +369,11 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   PRED_bin <- SIMparse("simMed*", combine = T, silent = T)
 
   # make tempDF subset of PMop for subject, time, non-missing obs, outeq, pop predictions (PREDij)
-  tempDF <- result$op
+  tempDF <- if (inherits(result$op, "PM_op")) {
+    result$op$to_df()
+  } else {
+    result$op
+  }
   tempDF <- tempDF[tempDF$pred.type == "pop", ]
   tempDF <- tempDF[obsStatus(tempDF$obs)$present, ] %>% filter(time > 0)
   if (!is.na(includeID[1])) {
@@ -514,18 +485,18 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   class(valRes) <- c("PMvalid", "list")
 
   # save it back to run so it can be loaded in the future
-  NPAGout <- list(
-    NPdata = result$NPdata,
-    pop = result$pop,
-    post = result$post,
-    final = result$final,
-    cycle = result$cycle,
-    op = result$op,
-    cov = result$cov$data,
-    mdata = result$data$standard_data,
-    valid = result$valid
-  )
-  save(NPAGout, file = "../outputs/NPAGout.Rdata")
+  # NPAGout <- list(
+  #   NPdata = result$NPdata,
+  #   pop = result$pop,
+  #   post = result$post,
+  #   final = result$final,
+  #   cycle = result$cycle,
+  #   op = result$op,
+  #   cov = result$cov$data,
+  #   mdata = result$data$standard_data,
+  #   valid = result$valid
+  # )
+  #save(NPAGout, file = "../outputs/NPAGout.Rdata")
 
   # #put sim in global environment
   # assign(paste("sim",as.character(run),sep="."),simFull,pos=1)

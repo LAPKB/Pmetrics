@@ -88,7 +88,8 @@ PM_result <- R6::R6Class(
       saveRDS(self, file_name)
     },
     make_valid = function(...) {
-      PM_valid$new(self, ...)
+      self$valid<-PM_valid$new(self, ...)
+      self$valid
     },
     step = function(...){
       PMstep(self$cov$data, ...)
@@ -241,6 +242,7 @@ PM_final <- R6Class(
       self$gridpts <- final$gridpts
       self$nsub <- final$nsub
       self$ab <- final$ab
+      class(self) <- c("NPAG", class(self))
     },
     summary = function(...) {
       summary.PMfinal(self, ...)
