@@ -21,12 +21,12 @@
 #' #read it back
 #' mdata <- PMreadMatrix("PMex1.csv")
 #' }
-#' @export
+
 
 PMwriteMatrix <- function(data,filename,override=F,version="DEC_11"){
   
   if(!override){
-    err <- PMcheck(data)
+    err <- PMcheck(data, quiet=T)
     if(length(grep("FAIL",err))>0){
       cat("Write failed; returning errors.")
       return(invisible(err))

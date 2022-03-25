@@ -8,10 +8,15 @@
 \alias{ITload,}
 \alias{NPreport,}
 \alias{ITreport,}
-\alias{PMdiag}
+\alias{PMdiag,}
+\alias{PMreadDefaults,}
+\alias{PMwriteDefaults,}
+\alias{makeNPDE,}
+\alias{PMupdate,}
+\alias{PMload}
 \title{Deprecated functions.}
 \usage{
-PMcheckMatrix()
+PMcheckMatrix(...)
 }
 \description{
 The following functions are deprecated in Pmetrics.

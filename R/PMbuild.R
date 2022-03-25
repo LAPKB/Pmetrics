@@ -101,7 +101,8 @@ PMbuild <- function(skipRegistration = F) {
   #if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
   sch_str <- c("which -s gfortran", "where gfortran", "which -s gfortran")
   OS <- getOS()
-  env = Sys.getenv("env")
+  # env = Sys.getenv("env")
+  env <- "standard"
   if (env != "Development") {
     if (!binaries.installed()) {
       cat("Pmetrics cannot find required compiled binary files.\n")
@@ -111,7 +112,7 @@ PMbuild <- function(skipRegistration = F) {
         if (substr(input, 1, 1) == "y") {
           if (.installOrUpdateGfortran()) {
             cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
-            cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
+            cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.\n")
             cat("If the registration time outs, please run PMbuild(skipRegistration=T) ")
             if(skipRegistration == F){
               .PMremote_registerNewInstallation()
@@ -127,7 +128,7 @@ PMbuild <- function(skipRegistration = F) {
         }
       } else {
         cat("Pmetrics has detected gfortran and will compile required binary files.\n")
-        cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.")
+        cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.\n")
         cat("If the registration time outs, please run PMbuild(skipRegistration=T) ")
         if(skipRegistration == F){
           .PMremote_registerNewInstallation()
