@@ -481,7 +481,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 
   # Clean Up ----------------------------------------------------------------
 
-  valRes <- list(simdata = simFull, timeBinMedian = timeMedian, tadBinMedian = tadMedian, opDF = tempDF, npde = npdeRes)
+  valRes <- list(simdata = PM_vsim$new(simFull), timeBinMedian = timeMedian, tadBinMedian = tadMedian, opDF = tempDF, npde = npdeRes)
   class(valRes) <- c("PMvalid", "list")
 
   # save it back to run so it can be loaded in the future
