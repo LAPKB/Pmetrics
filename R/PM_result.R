@@ -221,6 +221,7 @@ PM_final <- R6Class(
     gridpts = NULL,
     nsub = NULL,
     ab = NULL,
+    final = NULL,
     initialize = function(final) {
       self$popPoints <- final$popPoints
       self$popMean <- final$popMean
@@ -242,6 +243,7 @@ PM_final <- R6Class(
       self$gridpts <- final$gridpts
       self$nsub <- final$nsub
       self$ab <- final$ab
+      self$final <- final
       class(self) <- c("NPAG", class(self))
     },
     summary = function(...) {
