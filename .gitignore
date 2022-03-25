@@ -23,3 +23,5 @@ tests/testthat/Runs/
 .vscode/
 .Rd2pdf65996/
 other/
+.Rprofile
+Examples
