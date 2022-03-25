@@ -38,7 +38,7 @@
 #' @export
 
 plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,upper=0.975,
-                         log=F,pch.obs = 1,col.obs="black",cex.obs=1,data_theme="color",plot_theme=theme_grey(),
+                         log=F,pch.obs = 1,col.obs="black",cex.obs=1,data_theme="color",plot_theme=ggplot2::theme_grey(),
                          col.obs.ci="blue",col.obs.med="red",col.sim.ci="dodgerblue",col.sim.med="lightpink",
                          axis.x = NULL,
                          axis.y = NULL

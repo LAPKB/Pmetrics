@@ -16,7 +16,7 @@ PM_pta <- R6Class(
             saveRDS(self, file_name)
         },
         summary = function(...) {
-            summary.PM_pta(self, ...)
+            summary.PMpta(self, ...)
         },
         plot = function(...) {
             plot.PMpta(self, ...)
