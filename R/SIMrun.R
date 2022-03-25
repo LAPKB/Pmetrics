@@ -252,8 +252,6 @@ SIMrun <- function(poppar, ...) {
     is_res <- T
     res <- poppar
     poppar <- poppar$final
-  }else if (inherits(poppar, "result_block") && poppar$type == "final") {
-    poppar <- poppar
   }
   dots <- list(...)
   if (exists("limits", where = dots)) {
@@ -265,19 +263,19 @@ SIMrun <- function(poppar, ...) {
     model <- dots$model
   } else {
     if (is_res) {
-      model <- "genmodel.txt"
+      model <- "simmodel.txt"
       res$model$write_model_file(model)
     } else {
       model <- "model.txt"
     }
   }
   if (exists("data", where = dots)) {
-    data <- "gendata.csv"
+    data <- "simdata.csv"
     data_obj <- PM_data$new(dots$data)
     data_obj$write(data)
   } else {
     if (is_res) {
-      data <- "gendata.csv"
+      data <- "simdata.csv"
       res$data$write(data)
     } else {
       data <- "data.csv"
@@ -430,7 +428,7 @@ SIMrun <- function(poppar, ...) {
   }
 
   # number of random parameters
-  if (inherits(poppar, "PMfinal")) {
+  if (inherits(poppar, "PM_final")) {
     npar <- nrow(poppar$popCov)
   } else {
     npar <- nrow(poppar[[3]])
@@ -445,7 +443,7 @@ SIMrun <- function(poppar, ...) {
     if (!is.na(limits[1]) & is.vector(limits)) {
       # limits not NA and specified as vector of length 1 or 2
       # so first check to make sure poppar is a PMfinal object
-      if (!inherits(poppar, "PMfinal")) endNicely("\npoppar must be a PMfinal object when multiplicative limits specified.\n", modeltxt, data)
+      if (!inherits(poppar, "PM_final")) endNicely("\npoppar must be a PM_final object when multiplicative limits specified.\n", modeltxt, data)
       orig.lim <- poppar$ab
       if (length(limits) == 1) limits <- c(1, limits)
       final.lim <- t(apply(poppar$ab, 1, function(x) x * limits))
@@ -480,7 +478,7 @@ SIMrun <- function(poppar, ...) {
     if (length(postToUse) > 0) endNicely("\nYou cannot simulate from posteriors while simulating covariates.\n", model, data)
     simWithCov <- T
     # check to make sure poppar is PMfinal object
-    if (!inherits(poppar, "PMfinal")) endNicely("\npoppar must be a PMfinal object if covariate simulations are used.\n", model, data)
+    if (!inherits(poppar, "PM_final")) endNicely("\npoppar must be a PM_final object if covariate simulations are used.\n", model, data)
 
     # check to make sure covariate arugment is list (PMcov, mean, sd, limits,fix)
     if (!inherits(covariate, "list")) endNicely("\nThe covariate argument must be a list; see ?SIMrun for help.\n", model, data)
@@ -825,7 +823,7 @@ SIMrun <- function(poppar, ...) {
   # get prior density
   getSimPrior <- function(i) {
     # get prior density
-    if (inherits(poppar, "PMfinal")) {
+    if (inherits(poppar, "PM_final")) {
       if (split & inherits(poppar, "NPAG")) {
         popPoints <- poppar$popPoints
         ndist <- nrow(popPoints)
@@ -856,7 +854,7 @@ SIMrun <- function(poppar, ...) {
         whichfix <- trans$blocks$primVar[ptype == "f"]
         whichrand <- trans$blocks$primVar[ptype == "r"]
         modelpar <- names(pop.mean)
-        if (!all(modelpar %in% c(whichfix, whichrand))) stop("Primary parameters in simulation model file do not match parameters\nin the PMfinal object used as a simulation prior.\n")
+        if (!all(modelpar %in% c(whichfix, whichrand))) stop("Primary parameters in simulation model file do not match parameters\nin the PM_final object used as a simulation prior.\n")
         tofix <- which(modelpar %in% whichfix)
         if (length(tofix) > 0) {
           pop.mean <- pop.mean[, -tofix]
