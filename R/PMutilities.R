@@ -169,6 +169,8 @@ rmnorm <- function(n, mean, sigma) {
   retval
 }
 
+openHTML <- function(x) browseURL(paste0('file://', x))
+
 
 #parse NP_RF file only for final cycle information; used for bootstrapping
 #indpts,ab,corden,nvar,nactve,iaddl,icyctot,par  
@@ -271,7 +273,7 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
       xmedindex <- min(which(xsum > 0.5))
       xmed <- x[xmedindex, 1]
       xnint <- max(c(100, 2 * nsub))
-      xint <- diff(range(x[, 1])) / xnint
+      xint <- diff(base::range(x[, 1])) / xnint
       xmed <- xmed - (xsum[xmedindex] - 0.5) / xnint * xint
       return(xmed)
     }
@@ -295,7 +297,11 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
   return(outlist)
 }
 
-
+random_name <- function() {
+  n<-1
+  a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
+  paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
+}
 
 #read and set defaults
 # PMreadDefaults <- function() {
@@ -353,7 +359,7 @@ gfortranCheck <- function(gfortran = Sys.which("gfortran")) {
   }
   # -w == no warnings; -Wall == all warnings (except extra ones; use -Wextra for those)
   # return(paste("gfortran -m",get("PmetricsBit",envir=PMenv)," -w -O3 -o <exec> <files>",sep=""))
-  return(paste("gfortran -m", getBits(), " -Wall -O3 -o <exec> <files>", sep = ""))
+  return(paste("gfortran -march=native -o <exec> <files>", sep = ""))
 }
 
 
@@ -447,7 +453,6 @@ chunks <- function(x, maxwidth = 60) {
 
 
 #convert new model template to model fortran file
-#convert new model template to model fortran file
 makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T, silent = F) {
 
   blocks <- parseBlocks(model)
@@ -500,12 +505,6 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   ptype <- c(1, 2)[1 + as.numeric(is.na(b))]
   #if any fixed constant variables are present, set ptype to 0
   if (nofix > 0) ptype[fixcon] <- 0
-
-  # #for now, make all fixed constants for IT2B and SIM
-  # if(engine$alg=="IT" | engine$alg=="SIM"){
-  #   ptype[ptype==2] <- 0
-  #   nofix <- sum(as.numeric(is.na(b)))
-  # }
 
   #npvar is total number of parameters
   #nvar is number of random (estimated) parameters

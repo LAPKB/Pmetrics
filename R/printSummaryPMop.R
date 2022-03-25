@@ -17,6 +17,7 @@ print.summary.PMop <- function(x, digits=max(3,getOption("digits")-3),...){
   printSumWrk <- function(data,dataname){
     cat(paste("\n",dataname,"\n",sep=""))
     print(data$sumstat)
+    cat(paste("\nPrediction type:",attr(x,"pred.type"),"\n"))
     cat("\n\n")
     cat(paste("Mean prediction error:",round(data$pe$mpe,digits),"\n"))
     cat(paste("Mean weighted prediction error (bias): ",round(data$pe$mwpe,digits)," (P=",round(data$wtd.t$p.value,digits)," different than 0)\n",sep=""))

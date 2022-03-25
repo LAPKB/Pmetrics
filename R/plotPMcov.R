@@ -164,9 +164,9 @@ plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,squa
     text <- paste(xlab," mean effect: ",round(coef(op.r)[2],2)," (",ci*100,"%CI ",round(confint(op.r,level=ci)[2,1],2)," to ",round(confint(op.r,level=ci)[2,2],2),")",sep="")
   }
   if (missing(xlim)){
-    if(!is.factor(x)){xlim <- range(x,na.rm=T)} else {xlim <- c(0.5,0.5+length(levels(x)))}
+    if(!is.factor(x)){xlim <- base::range(x,na.rm=T)} else {xlim <- c(0.5,0.5+length(levels(x)))}
   }
-  if (missing(ylim)){ylim <- range(y,na.rm=T)}
+  if (missing(ylim)){ylim <- base::range(y,na.rm=T)}
   if (square){
     xlim <- c(min(xlim,ylim),max(xlim,ylim))
     ylim <- xlim

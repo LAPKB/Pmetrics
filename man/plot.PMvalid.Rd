@@ -17,7 +17,7 @@
   col.obs = "black",
   cex.obs = 1,
   data_theme = "color",
-  plot_theme = theme_grey(),
+  plot_theme = ggplot2::theme_grey(),
   col.obs.ci = "blue",
   col.obs.med = "red",
   col.sim.ci = "dodgerblue",

@@ -1,0 +1,26 @@
+#PRIMVAR
+Ka, 0.1, 0.9
+Ke, 0.001, 0.1
+V0, 30, 120
+Tlag1, 0, 4
+wt,10,70
+age,19,54
+
+#COVAR
+africa
+gender
+height
+
+#SECVAR
+V=V0*(WT/55)
+
+#LAG
+TLAG(1) = Tlag1
+
+#OUTPUT
+Y(1) = X(2)/V
+
+#ERROR
+G=5
+0.02, 0.05, -0.0002, 0
+

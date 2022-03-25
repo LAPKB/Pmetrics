@@ -1,8 +1,78 @@
+#' Loads all the data from an \emph{NPAG} or \emph{IT2B} run.
+#'
+#'
+#' @title Load Pmetrics NPAG or IT2B output
+#' @param run The numerical value of the folder number containing the run results.
+#' This parameter is \code{1} by default.
+#' @param remote Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
+#' See \code{\link{NPrun}}. Currently remote runs are not configured for IT2B or the Simulator.
+#' @param server_address If missing, will use the default server address returned by getPMoptions(). 
+#' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
+#' in \code{\link{NPrun}}. 
+#' @return An R6 \code{\link{PM_result}}.
+#' @author Michael Neely and Julian Otalvaro
+#' @seealso \code{\link{PMreport}}, \code{\link{NPparse}}, \code{\link{ITparse}}, 
+#' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}}, 
+#' \code{\link{makePop}}, \code{\link{makePost}}
+#' @export
+
+PM_load <- function(run = 1, remote = F, server_address) {
+  
+  #declare variables to avoid R CMD Check flag
+  NPAGout <- NULL
+  IT2Bout <- NULL
+  
+  
+  if (missing(server_address)) server_address <- getPMoptions("server_address")
+  
+  
+  #check for NPAG output file
+  filename <- "NPAGout.Rdata"
+  outfile <- paste(run, "outputs", filename, sep = "/")
+  
+  if (remote) { #only look on server
+    status = .remoteLoad(thisrun, server_address)
+    if (status == "finished") {
+      result <- output2List(Out = NPAGout)
+    } else {
+      sprintf("Warning: Remote run #%d has not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
+        cat()
+    }
+  } else if (file.exists(outfile)) { #remote F, so look locally
+    # load(outfile, .GlobalEnv)
+    load(outfile)
+    result <- output2List(Out = get("NPAGout"))
+  } else {
+    #check for IT2B output file
+    filename <- "IT2Bout.Rdata"
+    outfile <- paste(run, "outputs", filename, sep = "/")
+    if (file.exists(outfile)) {
+      load(outfile)
+      result <- output2List(Out = get("IT2Bout"))
+    } else {
+      stop(paste(outfile, " not found in ", getwd(), "/", run, "/outputs or ", getwd(), ".\n", sep = ""))
+    }
+  }
+  return(PM_result$new(result, quiet = T)) #no errors
+  
+}
+
+output2List <- function(Out) {
+  result <- list()
+  for (i in 1:length(Out)) {
+    aux_list <- list(Out[[i]])
+    names(aux_list) <- names(Out)[i]
+    result <- append(result, aux_list)
+  }
+  
+  return(result)
+}
+
 #' Loads all the data from an \emph{NPAG} or \emph{IT2B} run
 #'
 #'
 #'
-#' @title Load Pmetrics NPAG or IT2B output
+#' @title Load Pmetrics NPAG or IT2B output (Legacy)
 #' @param run The numerical value of the folder number containing the run results.  This
 #' number will also be used to name objects uniquely by appending \dQuote{.\code{run}}, 
 #' e.g. NPdata.1 or ITdata.1 if run=1. This parameter is \code{1} by default.
@@ -32,6 +102,8 @@
 
 PMload <- function(run = 1, ..., remote = F, server_address) {
   
+  cat("This function is for legacy Pmetrics.\nPlease see documentation for R6 Pmetrics
+      and PM_load\n")
   #declare variables to avoid R CMD Check flag
   NPAGout <- NULL
   IT2Bout <- NULL
@@ -53,7 +125,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
         .splitOut(thisrun,NPAGout)
       } else {
         sprintf("Warning: Remote run #%d has not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
-        cat()
+          cat()
       }
     } else if (file.exists(outfile)) { #remote F, so look locally
       # load(outfile, .GlobalEnv)
@@ -71,20 +143,20 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
         return(invisible(F)) #error, abort
       }
     }
-
+    
   }
   #end thisrun loop
-
-
+  
+  
   return(invisible(T)) #no errors
-
+  
 }
 
 .splitOut <- function(run,Out) {
   newNames <- paste(names(Out), ".", as.character(run), sep = "")
   for (i in 1:length(newNames)) {
     assign(newNames[i], Out[[i]], pos = .GlobalEnv)
-
+    
   }
 }
 
@@ -94,9 +166,9 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
   status = .PMremote_check(rid = rid, server_address = server_address)
   if (status == "finished") {
     sprintf("Remote run #%d finished successfuly.\n", run) %>%
-        cat()
+      cat()
     .PMremote_outdata(run, server_address)
-
+    
   }
   return(status)
 }
@@ -111,4 +183,5 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
     return(NULL)
   }
 }
+
 

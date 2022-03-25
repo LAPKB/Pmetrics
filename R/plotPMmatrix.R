@@ -281,12 +281,12 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
     if(!is.null(pred)){
       for (i in unique(data$id)){      
         if (xlim.flag){
-          xlim <- range(c(data$time[data$id==i],pred$time[pred$id==i]),na.rm=T)
-          if(abs(xlim[1])==Inf | abs(xlim[2])==Inf) xlim <- range(data$time,na.rm=T)
+          xlim <- base::range(c(data$time[data$id==i],pred$time[pred$id==i]),na.rm=T)
+          if(abs(xlim[1])==Inf | abs(xlim[2])==Inf) xlim <- base::range(data$time,na.rm=T)
         }
         if (ylim.flag){
-          ylim <- range(c(data$out[data$id==i],pred$pred[pred$id==i]),na.rm=T)
-          if(abs(ylim[1])==Inf | abs(ylim[2])==Inf) ylim <- range(data$out,na.rm=T)
+          ylim <- base::range(c(data$out[data$id==i],pred$pred[pred$id==i]),na.rm=T)
+          if(abs(ylim[1])==Inf | abs(ylim[2])==Inf) ylim <- base::range(data$out,na.rm=T)
           if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out[data$id==i],na.rm=T)}
         }
         if (main.flag) main <- paste("ID",i)
@@ -342,12 +342,12 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
       #case where there is no predicted
       for (i in unique(data$id)){
         if (xlim.flag){
-          xlim <- range(data$time[data$id==i],na.rm=T)
-          if(abs(xlim[1])==Inf | abs(xlim[2])==Inf) xlim <- range(data$time,na.rm=T)
+          xlim <- base::range(data$time[data$id==i],na.rm=T)
+          if(abs(xlim[1])==Inf | abs(xlim[2])==Inf) xlim <- base::range(data$time,na.rm=T)
         }
         if (ylim.flag){
-          ylim <- range(data$out[data$id==i],na.rm=T)
-          if(abs(ylim[1])==Inf | abs(ylim[2])==Inf) ylim <- range(data$out,na.rm=T)
+          ylim <- base::range(data$out[data$id==i],na.rm=T)
+          if(abs(ylim[1])==Inf | abs(ylim[2])==Inf) ylim <- base::range(data$out,na.rm=T)
           if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out[data$id==i],na.rm=T)}
         }
         if (main.flag) main <- paste("ID",i)
@@ -404,9 +404,9 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
   } else {  #there is overlay
     #predicted suppplied
     if(!is.null(pred)){
-      if (xlim.flag) xlim <- range(c(data$time,pred$time),na.rm=T)
+      if (xlim.flag) xlim <- base::range(c(data$time,pred$time),na.rm=T)
       if (ylim.flag){
-        ylim <- range(c(data$out,pred$pred),na.rm=T)
+        ylim <- base::range(c(data$out,pred$pred),na.rm=T)
         if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out,na.rm=T)}
       }
       
@@ -450,9 +450,9 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
       if(legend$plot) do.call("legend",legend)
       
     } else { #there is no predicted
-      if (xlim.flag) xlim <- range(data$time,na.rm=T)
+      if (xlim.flag) xlim <- base::range(data$time,na.rm=T)
       if (ylim.flag){
-        ylim <- range(data$out,na.rm=T)
+        ylim <- base::range(data$out,na.rm=T)
         if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out,na.rm=T)}
       }     
       if (main.flag){main <- ""}
