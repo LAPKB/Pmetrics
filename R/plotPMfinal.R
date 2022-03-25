@@ -83,266 +83,309 @@
 
 
 
+plot.PMfinal <- function(x,formula,include,exclude,xlab,ylab, marker=list(), density=F, grid=T){
 
-plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref,alpha.ref=0.5,pch,cex,lwd,lwd.ref,density=F,scale=20,bg,standard=F,
-                         probs=c(0.05,0.25,0.5,0.75,0.95),legend=T,grid=T,layout,xlab,ylab,xlim,ylim,out=NA,add=F,...){
-  #choose output
-  if(inherits(out,"list") & !add){
-    if(out$type=="eps") {setEPS();out$type <- "postscript"}
-    if(length(out)>1) {do.call(out$type,args=out[-1])} else {do.call(out$type,list())}
-  }
-  .par <- par("mfrow") #save current layout
-  if(missing(formula)){ #univariate plot
-    data <- x
-    if(missing(col)) col <- "red"
-    if(missing(lwd)) lwd <- 4
-    if(!add){
-      if(missing(layout)){
-        par(mfrow=c(ceiling(length(data$popMean)/3),ifelse(length(data$popMean)>2,3,length(data$popMean))))
-      } else {par(mfrow=layout)}
-      par(mar=c(5,5,4,2)+0.1)
+  if(missing(formula)){ #Univariate plot
+    df <- data.frame(x$popPoints)
+    plots<-list()
+    for(param in names(df)[-length(df)]){
+      p<-ggplot2::ggplot(data=df)+
+        ggplot2::geom_hline(aes(yintercept=0),color="black") +
+        ggplot2::geom_segment(size=0.3,ggplot2::aes_string(param,"prob",xend=param,yend=0),color="red")+
+        ggplot2::geom_point(ggplot2::aes_string(param,"prob"),color="red") + ggplot2::theme_bw()
+
+      if(density){p<-p+ggplot2::geom_density(ggplot2::aes_string(x=param,y="..scaled..*max(df$prob)"))}
+      plots<-append(plots,list(plotly::ggplotly(p)))
     }
+    fig<-plotly::subplot(plots, margin=0.05, titleX = T, titleY = T, nrows=(length(names(df))-1)%/%2)
+    fig
+    return(fig)
+  } 
+  else { #Bivariate plot
 
-    
-    if(inherits(data,"NPAG")){
-      if(missing(ylim) & !add) ylim <- c(0,max(data$popPoints[,"prob"]))
-      for (i in 1:(ncol(data$popPoints)-1)){        
-        if(!add){
-          plot(data$popPoints[,"prob"]~data$popPoints[,i],type="h",lwd=lwd,col=col,xlab=names(data$popPoints)[i],xlim=data$ab[i,],
-               ylim=ylim,ylab="Probability",cex.lab=cex.lab,...)
-          abline(v=data$ab[i,],lty=2,lwd=1,col="black")
-        } else {
-          points(y=data$popPoints[,"prob"],x=data$popPoints[,i],type="h",lwd=lwd,col=col,...)
-        }
 
-        if(density & nrow(data$popPoints)>1){
-          den <- density(data$popPoints[,i])
-          den$y <- den$y/(max(den$y)/max(data$popPoints[,"prob"]))
-          lines(den)
-        }
-      } 
-    }
-    if(inherits(data,"IT2B")){
-      for (i in 1:(length(data$popMean))){
-        x <- seq(data$ab[i,1],data$ab[i,2],(data$ab[i,2]-data$ab[i,1])/1000)
-        y <- dnorm(x,mean=data$popMean[i],sd=data$popSD[i])
-        if (standard){xlim <- range(data$ab)} else {xlim <- data$ab[i,]}
-        if(!add){
-          plot(x=x,y=y,type="l",lwd=lwd,col=col,xlab=names(data$popMean)[i],xlim=xlim,
-               ,ylab="Probability",cex.lab=cex.lab,...)
-        } else {
-          points(x=x,y=y,type="l",lwd=lwd,col=col,xlab=names(data$popMean)[i],xlim=xlim,
-               ,ylab="Probability",cex.lab=cex.lab,...)
-        }
-
-        abline(v=data$ab[i,],lty=2,lwd=1,col="black")
-        abline(v=data$popMean[i],lwd=1,col="black")
-        for(j in c(qnorm(0.975),1)){
-          lines(x=c(data$popMean[i]-j*data$popSD[i],data$popMean[i]+j*data$popSD[i]),y=c(0,0),lwd=4,col=c("gray80","black")[1+as.numeric(j==1)])
-        }
-      } 
-    }
-    par(mfrow=c(1,1))
-    par(mar=c(5,4,4,2)+0.1)
-    
-  } else {  #bivariate plot
-    data <- x
-    keep <- NULL
+    df<-model.frame(formula=formula,data=x$popPoints)
+    df$prob <- x$popPoints[,"prob"]
     yCol <- as.character(attr(terms(formula),"variables")[2])
     xCol <- as.character(attr(terms(formula),"variables")[3])
     if(missing(xlab)) xlab <- xCol
     if(missing(ylab)) ylab <- yCol
-    if(missing(pch)) pch <- 3
-    if(missing(cex)) cex <- 1
-    
-    if(inherits(data,"IT2B")){
-      if(yCol=="prob"){ #posterior plot
-        #filter includes and excludes
-        if(!missing(include)) data$postMean <- subset(data$postMean,as.character(data$postMean$id) %in% as.character(include))
-        if(!missing(exclude)) data$postMean <- subset(data$postMean,!sub("[[:space:]]+","",as.character(data$postMean$id)) %in% as.character(exclude))
-        #number of subjects to plot
-        subjID <- unique(data$postMean$id)
-        nsub <- length(subjID)
-        #default values and layout
-        if(missing(col)) col <- "red"
-        if(missing(lwd)) lwd <- 4
-        if(missing(layout)){
-          if(nsub>4){
-            par(mfrow=c(2,2))
-            devAskNewPage(T)
-          } else {
-            par(mfrow=c(ceiling(nsub/2),ifelse(nsub>2,2,nsub)))
-          }
-        } else {
-          par(mfrow=layout)
-          if(nsub>sum(layout)) {devAskNewPage(T)}
-        }
-        par(mar=c(5,5,4,2)+0.1)
-        
-        if(ref){ #adding in population marginal as reference
-          
-          i <- which(names(data$postMean)==all.vars(formula)[2])-1 #choose the right variable
-          x.pop <- seq(data$ab[i,1],data$ab[i,2],(data$ab[i,2]-data$ab[i,1])/1000)
-          y.pop <- dnorm(x.pop,mean=data$popMean[i],sd=data$popSD[i])
-          
-          if(missing(col.ref)) col.ref <- "gray50"
-          #make semi transparent
-          col.ref.rgb <- col2rgb(col.ref,T)/255
-          col.ref.trans <- rgb(col.ref.rgb[1,],col.ref.rgb[2,],col.ref.rgb[3,],alpha.ref)
-          if(missing(lwd.ref)) lwd.ref <- 3
-          if(missing(xlim)) xlim <- range(x.pop)
-        }
-        
-        this.x <- seq(data$ab[i,1],data$ab[i,2],(data$ab[i,2]-data$ab[i,1])/1000)
-        #cycle through subjects to get y coordinates
-        this.y <- matrix(NA,ncol=length(this.x),nrow=nsub)
-        for (j in 1:nsub){
-          #get the x & y parameters
-          this.y[j,] <- dnorm(this.x,mean=data$postMean[j,i+1],sd=data$postSD[j,i+1])
-        } 
-        
-        if(standard){
-          xlim <- range(this.x)
-          ylim <- range(this.y)
-        }
-        if(missing(xlim)){xlim <- NULL}
-        if(missing(ylim)){ylim <- NULL}
-        
-        for(j in 1:nsub){
-          plot(this.y[j,]~this.x,type="l",lwd=lwd,col=col,ylab="Probability",
-               xlab=attr(terms(formula),"term.labels"),cex.lab=cex.lab,
-               main=paste("Subject",data$postMean$id[j]),xlim=xlim,ylim=ylim,...)
-          if(ref){lines(y.pop~x.pop,type="l",col=col.ref.trans,lwd=lwd.ref)}
-        }
-      } else {
-        #internal ellipse function from package mixtools
-        ellipse <- function(mu,sigma,alpha = 0.05,npoints=250,newplot=FALSE,draw=TRUE, ...) 
-        {
-          es <- eigen(sigma)
-          e1 <- es$vec %*% diag(sqrt(es$val))
-          r1 <- sqrt(qchisq(1 - alpha, 2))
-          theta <- seq(0, 2 * pi, len = npoints)
-          v1 <- cbind(r1 * cos(theta), r1 * sin(theta))
-          pts = t(mu - (e1 %*% t(v1)))
-          if (newplot && draw) {
-            plot(pts, ...)
-          }
-          else if (!newplot && draw) {
-            lines(pts, ...)
-          }
-          invisible(pts)
-        }
-        ell <- array(NA,dim=c(length(probs),250,2))
-        for(i in 1:length(probs)){
-          ell[i,,] <- ellipse(mu=c(data$popMean[xCol],data$popMean[yCol]),sigma=data$popCov[c(xCol,yCol),c(xCol,yCol)],type="l",alpha=probs[i],draw=F)
-        }
-        graycols <- rev(gray.colors(n=length(probs),start=0,end=0.9))
-        if(missing(xlim)) xlim <- range(ell[,,1])
-        if(missing(ylim)) ylim <- range(ell[,,2])
-        if(missing(col)) col="white"
-        if(missing(lwd)) lwd <- 1
-        if(!missing(legend)){        
-          if(class(legend)=="list"){
-            legend$plot<- T
-            if(is.null(legend$x)) legend$x <- "topright"
-            if(is.null(legend$fill)) legend$fill <- graycols
-            if(is.null(legend$legend)) legend$legend <- 1-probs
-            if(is.null(legend$title)) legend$title <- "Quantile"
-          } else {
-            if(legend) legend <- {list(plot=T,x="topright",legend=1-probs,fill=graycols,title="Quantile")} else {legend <- list(plot=F)}
-          }
-        } else {legend <- list(plot=F)}
-        
-        plot(NA,cex.lab=cex.lab,xlim=xlim,ylim=ylim,type="n",xlab=xlab,ylab=ylab,...)
-        
-        
-        for(i in 1:length(probs)){
-          polygon(ell[i,,],col=graycols[i],lwd=lwd)
-        }
-        if(grid) abline(v=c(axTicks(1),diff(axTicks(1))/2 + axTicks(1)[-length(axTicks(1))]),h=c(axTicks(2),diff(axTicks(2))/2 + axTicks(2)[-length(axTicks(2))]),col="lightgrey")
-        points(x=data$popMean[xCol],y=data$popMean[yCol],pch=pch,col=col,cex=cex,lwd=lwd,...)
-        if(legend$plot) do.call("legend",legend)
-      }
-    }    
-    if(inherits(data,"NPAG")){
-      if(yCol=="prob"){ #posterior plot
-        #filter includes and excludes
-        if(length(data$postPoints)==0){ #old final object
-          stop("Use makeFinal and PMsave to update your PMfinal object.\n\nExample:\n\nfinal.1 <- makeFinal(NPdata.1)\nPMsave(1)\n")
-        }
-        if(!missing(include)) data$postPoints <- subset(data$postPoints,as.character(data$postPoints$id) %in% as.character(include))
-        if(!missing(exclude)) data$postPoints <- subset(data$postPoints,!sub("[[:space:]]+","",as.character(data$postPoints$id)) %in% as.character(exclude))
-        #number of subjects to plot
-        subjID <- unique(data$postPoints$id)
-        nsub <- length(subjID)
-        #default values and layout
-        if(missing(col)) col <- "red"
-        if(missing(lwd)) lwd <- 4
-        if(missing(layout)){
-          if(nsub>4){
-            par(mfrow=c(2,2))
-            devAskNewPage(T)
-          } else {
-            par(mfrow=c(ceiling(nsub/2),ifelse(nsub>2,2,nsub)))
-          }
-        } else {
-          par(mfrow=layout)
-          if(nsub>sum(layout)) {devAskNewPage(T)}
-        }
-        par(mar=c(5,5,4,2)+0.1)
-        if(missing(ylim)) ylim <- c(0,max(data$postPoints$prob))
-        if(ref){ #adding in population marginal as reference
-          x.pop <- model.frame(formula=formula,data=data$popPoints)[,2] #parameter
-          y.pop <- model.frame(formula=formula,data=data$popPoints)[,1] #prob
-          if(missing(col.ref)) col.ref <- "gray50"
-          #make semi transparent
-          col.ref.rgb <- col2rgb(col.ref,T)/255
-          col.ref.trans <- rgb(col.ref.rgb[1,],col.ref.rgb[2,],col.ref.rgb[3,],alpha.ref)
-          if(missing(lwd.ref)) lwd.ref <- 3
-          if(missing(xlim)) xlim <- range(x.pop)
-        }
-        if(missing(xlim)) xlim <- range(model.frame(formula=formula,data=data$postPoints)[,2])
-        #cycle through subjects
-        for (i in 1:nsub){
-          temp <- subset(data$postPoints, data$postPoints$id==subjID[i])
-          #get the x & y parameters
-          x <- model.frame(formula=formula,data=temp)[,2] #parameter
-          y <- model.frame(formula=formula,data=temp)[,1] #prob
-          plot(y~x,type="h",lwd=lwd,col=col,xlim=xlim,ylim=ylim,ylab="Probability",
-               xlab=attr(terms(formula),"term.labels"),cex.lab=cex.lab,main=paste("Subject",subjID[i]),...)
-          if(ref){lines(y.pop~x.pop,type="h",col=col.ref.trans,lwd=lwd.ref)}
-        } 
-      }else{ #population plot
-        if(missing(bg)) bg <- "gray50"
-        if(missing(col)) col <- "white"
-        if(missing(lwd)) lwd <- 1
-        x <- model.frame(formula=formula,data=data$popPoints)[2][,1]
-        y <- model.frame(formula=formula,data=data$popPoints)[1][,1]
-        z <- data$popPoints[,"prob"]
-        if(missing(xlim)){
-          minx <- which(x==min(x))[1]
-          maxx <- which(x==max(x))[1]
-          xlim <- c(x[minx]-scale/10*z[minx],x[maxx]+scale/10*z[maxx])
-        } 
-        if(missing(ylim)){
-          miny <- which(y==min(y))[1]
-          maxy <- which(y==max(y))[1]
-          ylim <- c(y[miny]-scale/10*z[miny],y[maxy]+scale/10*z[maxy])
-        } 
-        plot(y=y,x=x,pch=21,bg=bg,cex=scale*z,xlab=xlab,ylab=ylab,lwd=lwd,cex.lab=cex.lab,xlim=xlim,ylim=ylim,...)
-        points(y=y,x=x,pch=pch,col=col,cex=cex,lwd=lwd,...)
-        if(grid) abline(v=c(axTicks(1),diff(axTicks(1))/2 + axTicks(1)[-length(axTicks(1))]),h=c(axTicks(2),diff(axTicks(2))/2 + axTicks(2)[-length(axTicks(2))]),col="lightgrey")
-      }
-    }
-    
-    
+    fig <- plot_ly(df,
+                x = ~get(xCol),
+                y = ~get(yCol),
+                type = 'scatter',
+                mode = 'markers',
+                text = ~paste("prob: ", prob,"<br>",xCol,get(xCol),"<br>",yCol,get(yCol)),
+                marker = modifyList(list(size = ~get("prob"),
+                            opacity = 0.5,
+                            sizeref=min(df$prob)/10),marker))  %>% 
+    layout(title = sprintf("%s - %s",ylab,xlab),
+          xaxis=list(title=xlab, showgrid=grid),
+          yaxis=list(title=ylab, showgrid=grid))
+    print(fig)
+    return(fig)
   }
-  #close device if necessary
-  if(inherits(out,"list")) dev.off()
-  #restore layout
-  par(.par)
-  devAskNewPage(F)
-  return(invisible(1))
 }
+
+# plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref,alpha.ref=0.5,pch,cex,lwd,lwd.ref,density=F,scale=20,bg,standard=F,
+#                          probs=c(0.05,0.25,0.5,0.75,0.95),legend=T,grid=T,layout,xlab,ylab,xlim,ylim,out=NA,add=F,...){
+#   #choose output
+#   if(inherits(out,"list") & !add){
+#     if(out$type=="eps") {setEPS();out$type <- "postscript"}
+#     if(length(out)>1) {do.call(out$type,args=out[-1])} else {do.call(out$type,list())}
+#   }
+#   .par <- par("mfrow") #save current layout
+#   if(missing(formula)){ #univariate plot
+#     data <- x
+#     if(missing(col)) col <- "red"
+#     if(missing(lwd)) lwd <- 4
+#     if(!add){
+#       if(missing(layout)){
+#         par(mfrow=c(ceiling(length(data$popMean)/3),ifelse(length(data$popMean)>2,3,length(data$popMean))))
+#       } else {par(mfrow=layout)}
+#       par(mar=c(5,5,4,2)+0.1)
+#     }
+
+    
+#     if(inherits(data,"NPAG")){
+#       if(missing(ylim) & !add) ylim <- c(0,max(data$popPoints[,"prob"]))
+#       for (i in 1:(ncol(data$popPoints)-1)){        
+#         if(!add){
+#           plot(data$popPoints[,"prob"]~data$popPoints[,i],type="h",lwd=lwd,col=col,xlab=names(data$popPoints)[i],xlim=data$ab[i,],
+#                ylim=ylim,ylab="Probability",cex.lab=cex.lab,...)
+#           abline(v=data$ab[i,],lty=2,lwd=1,col="black")
+#         } else {
+#           points(y=data$popPoints[,"prob"],x=data$popPoints[,i],type="h",lwd=lwd,col=col,...)
+#         }
+
+#         if(density & nrow(data$popPoints)>1){
+#           den <- density(data$popPoints[,i])
+#           den$y <- den$y/(max(den$y)/max(data$popPoints[,"prob"]))
+#           lines(den)
+#         }
+#       } 
+#     }
+#     if(inherits(data,"IT2B")){
+#       for (i in 1:(length(data$popMean))){
+#         x <- seq(data$ab[i,1],data$ab[i,2],(data$ab[i,2]-data$ab[i,1])/1000)
+#         y <- dnorm(x,mean=data$popMean[i],sd=data$popSD[i])
+#         if (standard){xlim <- base::range(data$ab)} else {xlim <- data$ab[i,]}
+#         if(!add){
+#           plot(x=x,y=y,type="l",lwd=lwd,col=col,xlab=names(data$popMean)[i],xlim=xlim,
+#                ,ylab="Probability",cex.lab=cex.lab,...)
+#         } else {
+#           points(x=x,y=y,type="l",lwd=lwd,col=col,xlab=names(data$popMean)[i],xlim=xlim,
+#                ,ylab="Probability",cex.lab=cex.lab,...)
+#         }
+
+#         abline(v=data$ab[i,],lty=2,lwd=1,col="black")
+#         abline(v=data$popMean[i],lwd=1,col="black")
+#         for(j in c(qnorm(0.975),1)){
+#           lines(x=c(data$popMean[i]-j*data$popSD[i],data$popMean[i]+j*data$popSD[i]),y=c(0,0),lwd=4,col=c("gray80","black")[1+as.numeric(j==1)])
+#         }
+#       } 
+#     }
+#     par(mfrow=c(1,1))
+#     par(mar=c(5,4,4,2)+0.1)
+    
+#   } else {  #bivariate plot
+#     data <- x
+#     keep <- NULL
+#     yCol <- as.character(attr(terms(formula),"variables")[2])
+#     xCol <- as.character(attr(terms(formula),"variables")[3])
+#     if(missing(xlab)) xlab <- xCol
+#     if(missing(ylab)) ylab <- yCol
+#     if(missing(pch)) pch <- 3
+#     if(missing(cex)) cex <- 1
+    
+#     if(inherits(data,"IT2B")){
+#       if(yCol=="prob"){ #posterior plot
+#         #filter includes and excludes
+#         if(!missing(include)) data$postMean <- subset(data$postMean,as.character(data$postMean$id) %in% as.character(include))
+#         if(!missing(exclude)) data$postMean <- subset(data$postMean,!sub("[[:space:]]+","",as.character(data$postMean$id)) %in% as.character(exclude))
+#         #number of subjects to plot
+#         subjID <- unique(data$postMean$id)
+#         nsub <- length(subjID)
+#         #default values and layout
+#         if(missing(col)) col <- "red"
+#         if(missing(lwd)) lwd <- 4
+#         if(missing(layout)){
+#           if(nsub>4){
+#             par(mfrow=c(2,2))
+#             devAskNewPage(T)
+#           } else {
+#             par(mfrow=c(ceiling(nsub/2),ifelse(nsub>2,2,nsub)))
+#           }
+#         } else {
+#           par(mfrow=layout)
+#           if(nsub>sum(layout)) {devAskNewPage(T)}
+#         }
+#         par(mar=c(5,5,4,2)+0.1)
+        
+#         if(ref){ #adding in population marginal as reference
+          
+#           i <- which(names(data$postMean)==all.vars(formula)[2])-1 #choose the right variable
+#           x.pop <- seq(data$ab[i,1],data$ab[i,2],(data$ab[i,2]-data$ab[i,1])/1000)
+#           y.pop <- dnorm(x.pop,mean=data$popMean[i],sd=data$popSD[i])
+          
+#           if(missing(col.ref)) col.ref <- "gray50"
+#           #make semi transparent
+#           col.ref.rgb <- col2rgb(col.ref,T)/255
+#           col.ref.trans <- rgb(col.ref.rgb[1,],col.ref.rgb[2,],col.ref.rgb[3,],alpha.ref)
+#           if(missing(lwd.ref)) lwd.ref <- 3
+#           if(missing(xlim)) xlim <- base::range(x.pop)
+#         }
+        
+#         this.x <- seq(data$ab[i,1],data$ab[i,2],(data$ab[i,2]-data$ab[i,1])/1000)
+#         #cycle through subjects to get y coordinates
+#         this.y <- matrix(NA,ncol=length(this.x),nrow=nsub)
+#         for (j in 1:nsub){
+#           #get the x & y parameters
+#           this.y[j,] <- dnorm(this.x,mean=data$postMean[j,i+1],sd=data$postSD[j,i+1])
+#         } 
+        
+#         if(standard){
+#           xlim <- base::range(this.x)
+#           ylim <- base::range(this.y)
+#         }
+#         if(missing(xlim)){xlim <- NULL}
+#         if(missing(ylim)){ylim <- NULL}
+        
+#         for(j in 1:nsub){
+#           plot(this.y[j,]~this.x,type="l",lwd=lwd,col=col,ylab="Probability",
+#                xlab=attr(terms(formula),"term.labels"),cex.lab=cex.lab,
+#                main=paste("Subject",data$postMean$id[j]),xlim=xlim,ylim=ylim,...)
+#           if(ref){lines(y.pop~x.pop,type="l",col=col.ref.trans,lwd=lwd.ref)}
+#         }
+#       } else {
+#         #internal ellipse function from package mixtools
+#         ellipse <- function(mu,sigma,alpha = 0.05,npoints=250,newplot=FALSE,draw=TRUE, ...) 
+#         {
+#           es <- eigen(sigma)
+#           e1 <- es$vec %*% diag(sqrt(es$val))
+#           r1 <- sqrt(qchisq(1 - alpha, 2))
+#           theta <- seq(0, 2 * pi, len = npoints)
+#           v1 <- cbind(r1 * cos(theta), r1 * sin(theta))
+#           pts = t(mu - (e1 %*% t(v1)))
+#           if (newplot && draw) {
+#             plot(pts, ...)
+#           }
+#           else if (!newplot && draw) {
+#             lines(pts, ...)
+#           }
+#           invisible(pts)
+#         }
+#         ell <- array(NA,dim=c(length(probs),250,2))
+#         for(i in 1:length(probs)){
+#           ell[i,,] <- ellipse(mu=c(data$popMean[xCol],data$popMean[yCol]),sigma=data$popCov[c(xCol,yCol),c(xCol,yCol)],type="l",alpha=probs[i],draw=F)
+#         }
+#         graycols <- rev(gray.colors(n=length(probs),start=0,end=0.9))
+#         if(missing(xlim)) xlim <- base::range(ell[,,1])
+#         if(missing(ylim)) ylim <- base::range(ell[,,2])
+#         if(missing(col)) col="white"
+#         if(missing(lwd)) lwd <- 1
+#         if(!missing(legend)){        
+#           if(class(legend)=="list"){
+#             legend$plot<- T
+#             if(is.null(legend$x)) legend$x <- "topright"
+#             if(is.null(legend$fill)) legend$fill <- graycols
+#             if(is.null(legend$legend)) legend$legend <- 1-probs
+#             if(is.null(legend$title)) legend$title <- "Quantile"
+#           } else {
+#             if(legend) legend <- {list(plot=T,x="topright",legend=1-probs,fill=graycols,title="Quantile")} else {legend <- list(plot=F)}
+#           }
+#         } else {legend <- list(plot=F)}
+        
+#         plot(NA,cex.lab=cex.lab,xlim=xlim,ylim=ylim,type="n",xlab=xlab,ylab=ylab,...)
+        
+        
+#         for(i in 1:length(probs)){
+#           polygon(ell[i,,],col=graycols[i],lwd=lwd)
+#         }
+#         if(grid) abline(v=c(axTicks(1),diff(axTicks(1))/2 + axTicks(1)[-length(axTicks(1))]),h=c(axTicks(2),diff(axTicks(2))/2 + axTicks(2)[-length(axTicks(2))]),col="lightgrey")
+#         points(x=data$popMean[xCol],y=data$popMean[yCol],pch=pch,col=col,cex=cex,lwd=lwd,...)
+#         if(legend$plot) do.call("legend",legend)
+#       }
+#     }    
+#     if(inherits(data,"NPAG")){
+#       if(yCol=="prob"){ #posterior plot
+#         #filter includes and excludes
+#         if(length(data$postPoints)==0){ #old final object
+#           stop("Use makeFinal and PMsave to update your PMfinal object.\n\nExample:\n\nfinal.1 <- makeFinal(NPdata.1)\nPMsave(1)\n")
+#         }
+#         if(!missing(include)) data$postPoints <- subset(data$postPoints,as.character(data$postPoints$id) %in% as.character(include))
+#         if(!missing(exclude)) data$postPoints <- subset(data$postPoints,!sub("[[:space:]]+","",as.character(data$postPoints$id)) %in% as.character(exclude))
+#         #number of subjects to plot
+#         subjID <- unique(data$postPoints$id)
+#         nsub <- length(subjID)
+#         #default values and layout
+#         if(missing(col)) col <- "red"
+#         if(missing(lwd)) lwd <- 4
+#         if(missing(layout)){
+#           if(nsub>4){
+#             par(mfrow=c(2,2))
+#             devAskNewPage(T)
+#           } else {
+#             par(mfrow=c(ceiling(nsub/2),ifelse(nsub>2,2,nsub)))
+#           }
+#         } else {
+#           par(mfrow=layout)
+#           if(nsub>sum(layout)) {devAskNewPage(T)}
+#         }
+#         par(mar=c(5,5,4,2)+0.1)
+#         if(missing(ylim)) ylim <- c(0,max(data$postPoints$prob))
+#         if(ref){ #adding in population marginal as reference
+#           x.pop <- model.frame(formula=formula,data=data$popPoints)[,2] #parameter
+#           y.pop <- model.frame(formula=formula,data=data$popPoints)[,1] #prob
+#           if(missing(col.ref)) col.ref <- "gray50"
+#           #make semi transparent
+#           col.ref.rgb <- col2rgb(col.ref,T)/255
+#           col.ref.trans <- rgb(col.ref.rgb[1,],col.ref.rgb[2,],col.ref.rgb[3,],alpha.ref)
+#           if(missing(lwd.ref)) lwd.ref <- 3
+#           if(missing(xlim)) xlim <- base::range(x.pop)
+#         }
+#         if(missing(xlim)) xlim <- base::range(model.frame(formula=formula,data=data$postPoints)[,2])
+#         #cycle through subjects
+#         for (i in 1:nsub){
+#           temp <- subset(data$postPoints, data$postPoints$id==subjID[i])
+#           #get the x & y parameters
+#           x <- model.frame(formula=formula,data=temp)[,2] #parameter
+#           y <- model.frame(formula=formula,data=temp)[,1] #prob
+#           plot(y~x,type="h",lwd=lwd,col=col,xlim=xlim,ylim=ylim,ylab="Probability",
+#                xlab=attr(terms(formula),"term.labels"),cex.lab=cex.lab,main=paste("Subject",subjID[i]),...)
+#           if(ref){lines(y.pop~x.pop,type="h",col=col.ref.trans,lwd=lwd.ref)}
+#         } 
+#       }else{ #population plot
+#         if(missing(bg)) bg <- "gray50"
+#         if(missing(col)) col <- "white"
+#         if(missing(lwd)) lwd <- 1
+#         x <- model.frame(formula=formula,data=data$popPoints)[2][,1]
+#         y <- model.frame(formula=formula,data=data$popPoints)[1][,1]
+#         z <- data$popPoints[,"prob"]
+#         if(missing(xlim)){
+#           minx <- which(x==min(x))[1]
+#           maxx <- which(x==max(x))[1]
+#           xlim <- c(x[minx]-scale/10*z[minx],x[maxx]+scale/10*z[maxx])
+#         } 
+#         if(missing(ylim)){
+#           miny <- which(y==min(y))[1]
+#           maxy <- which(y==max(y))[1]
+#           ylim <- c(y[miny]-scale/10*z[miny],y[maxy]+scale/10*z[maxy])
+#         } 
+#         plot(y=y,x=x,pch=21,bg=bg,cex=scale*z,xlab=xlab,ylab=ylab,lwd=lwd,cex.lab=cex.lab,xlim=xlim,ylim=ylim,...)
+#         points(y=y,x=x,pch=pch,col=col,cex=cex,lwd=lwd,...)
+#         if(grid) abline(v=c(axTicks(1),diff(axTicks(1))/2 + axTicks(1)[-length(axTicks(1))]),h=c(axTicks(2),diff(axTicks(2))/2 + axTicks(2)[-length(axTicks(2))]),col="lightgrey")
+#       }
+#     }
+    
+    
+#   }
+#   #close device if necessary
+#   if(inherits(out,"list")) dev.off()
+#   #restore layout
+#   par(.par)
+#   devAskNewPage(F)
+#   return(invisible(1))
+# }
 
 

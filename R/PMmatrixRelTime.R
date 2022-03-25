@@ -30,9 +30,9 @@
 #' @seealso \code{\link{PMreadMatrix}}
 #' @export
 
-PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCol="evid",format=c("m/d/y","h:m"),split=F){
+PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCol="evid",
+                            format =c("Ymd","HM"),split=F){
   
-  # checkRequiredPackages("chron")
   dataCols <- names(data)
   #convert numeric if necessary
   if(is.numeric(idCol)) idCol <- dataCols[idCol]
@@ -45,8 +45,8 @@ PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCo
   temp$date <- as.character(temp$date)
   temp$time <- as.character(temp$time)
   temp$time <- unlist(lapply(temp$time,function(x) ifelse(length(gregexpr(":",x)[[1]])==1,paste(x,":00",sep=""),x)))
-  if(format[2]=="h:m") format[2] <- "h:m:s"
-  temp$dt <- chron::chron(dates.=temp$date,times.=temp$time,format=format)
+  if(format[2]=="HM") format[2] <- "HMS"
+  temp$dt <- lubridate::parse_date_time(paste(temp$date, temp$time), orders = paste(format, collapse=" "))
   
   if(split){
     #calculate PK event numbers for each patient
@@ -71,7 +71,7 @@ PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCo
   reset <- c(reset,nrow(temp),new)
   reset <- sort(reset)
   for (i in 1:(length(reset)-1)){
-    temp$relTime[reset[i]:reset[i+1]] <- 24*(temp$dt[reset[i]:reset[i+1]] - temp$dt[reset[i]])
+    temp$relTime[reset[i]:reset[i+1]] <- (temp$dt[reset[i]:reset[i+1]] - temp$dt[reset[i]])/dhours(1)
   }
   
   temp$relTime <- round(temp$relTime,2)

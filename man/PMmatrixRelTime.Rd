@@ -10,7 +10,7 @@ PMmatrixRelTime(
   dateCol = "date",
   timeCol = "time",
   evidCol = "evid",
-  format = c("m/d/y", "h:m"),
+  format = c("Ymd", "HM"),
   split = F
 )
 }
