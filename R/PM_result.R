@@ -93,6 +93,9 @@ PM_result <- R6::R6Class(
     },
     step = function(...){
       PMstep(self$cov$data, ...)
+    },
+    MM_opt = function(...){
+      MM_opt(self,...)
     }
   ) # end public
 ) # end PM_result

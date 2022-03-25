@@ -53,7 +53,7 @@ setwd(wd)
 
 # The working directory we want to move to can be specified as an absolute
 # path (Line 45) or as a relative path (Line 57)
-setwd("src")
+setwd(paste(wd, "/src", sep = ""))
 # list the files inside the current working directory
 list.files()
 exData <- PM_data$new(data = "ex.csv")
@@ -112,7 +112,7 @@ system("cat model.txt")
 mod1b <- PM_model$new("model.txt")
 mod1b
 
-# PM_model provides a method to update the different elements of a mode, for example:
+# PM_model provides a method to update the different elements of a model, for example:
 
 mod1b$update(list(
   pri = list(
@@ -134,7 +134,7 @@ exRun$check()
 
 # To keep everything tidy, let's move to another folder specific to store the runs
 # notice that we didn't have to move any files...
-setwd("../Runs")
+setwd(paste(wd, "/Runs", sep = ""))
 exRun$run() # execute the run with default arguments
 # See plots.pdf, pages 2-8
 
@@ -180,10 +180,10 @@ plot(exRes$op, linear = T)
 ## plot(op.1,resid=T)
 
 # the original op object data can be accessed via
-exRes$op$data
-names(exRes$op$data)
+exRes$op
+names(exRes$op)
 # see a header with the first 10 rows of the op object
-head(exRes$op$data, 10)
+head(exRes$op$to_df(), 10)
 # get a summary with bias and imprecision of the population predictions;
 # ?summary.PMop for help
 summary(exRes$op, pred.type = "pop")
@@ -202,12 +202,12 @@ plot(exRes$final, density = T)
 plot(exRes$final, Ke ~ V)
 
 # The original final object can be accessed using
-exRes$final$data
-names(exRes$final$data)
+exRes$final
+names(exRes$final)
 # see the population points
-exRes$final$data$popPoints
+exRes$final$popPoints
 # see the population mean parameter values
-exRes$final$data$popMean
+exRes$final$popMean
 # see a summary of final.1 with confidence intervals around the medians
 # and the Median Absolute Weighted Difference (MAWD); ?summary.PMfinal for help
 summary(exRes$final)
@@ -217,9 +217,9 @@ summary(exRes$final)
 # See plots.pdf, page 22
 plot(exRes$cycle)
 # names of the cycle object; ?makeCycle for help
-names(exRes$cycle$data)
+names(exRes$cycle)
 # gamma/lamda value on last 6 cycles
-tail(exRes$cycle$data$gamlam)
+tail(exRes$cycle$gamlam)
 
 # Plot covariate information.  Type ?plot.PMcov in the R console for help.
 # Recall that plotting formulae in R are of the form 'y~x'
@@ -242,9 +242,11 @@ summary(exRes$cov, icen = "mean")
 
 # Look at all possible covariate-parameter relationships by multiple linear regression with forward
 # and backward elimination - type ?PMstep in the R console for help.
-PMstep(exRes$cov$data)
+exRes$step()
 # icen works here too....
-PMstep(exRes$cov$data, icen = "mean")
+exRes$step(icen = "mean")
+exRes$step(direction = "forward")
+#PMstep(exRes$cov$data, icen = "mean")
 
 
 # EXERCISE 2 - NPAG WITH COVARIATES ---------------------------------------
@@ -302,22 +304,28 @@ PMcompare(1, 2, plot = T, cex.stat = 0.5)
 # exRes2$make_valid(limits = NA)
 valid_2 <- exRes2$make_valid(limits = NA)
 # To see what it contains, use:
-str(valid_2)
+valid_2
 # Default visual predictive check; ?plot.PMvalid for help
 plot(valid_2)
+#or
+valid_2$plot()
+#or
+exRes2$valid$plot()
+#or
+plot(exRes2$valid)
 # Generate a prediction-corrected visual predictive check; type ?plot.PMvalid in the R console for help.
 plot(valid_2, type = "pcvpc")
 # Create an npde plot
 plot(valid_2, type = "npde")
 
 # Here is another way to generate a visual predicive check...
-npc_2 <- plot(valid_2$simdata, obs = op.2, log = F, binSize = 1)
+#npc_2 <- plot(valid_2$simdata, obs = exRes2$op$to_df(), log = F, binSize = 1)
 # The jagged appearance of the plot when binSize=0 is because different subjects have
 # different doses, covariates, and observation times, which are all combined in one simulation.
 # Collapsing simulation times within 1 hour bins (binSize=1) smooths
 # the plot, but can change the P-values in the numerical predictive check below.
 
-npc._$npc
+#npc._$npc
 # ...and here is a numerical predictive check
 # P-values are binomial test of proportion of observations less than
 # the respective quantile
@@ -444,7 +452,7 @@ setwd(paste(wd, "/Runs", sep = ""))
 # in the current run.  By specifiying a prior, we are starting with the non-uniform density from the
 # end of the specified fun.
 
-NPrun(data = 2, model = 2, prior = 2)
+exRun2$run(prior=2)
 exRes3 <- PM_load(3)
 
 # We could also generate Bayesian posterior parameter estimates for a new population this
@@ -498,7 +506,7 @@ exRes3 <- PM_load(3)
 # Be sure to have executed the NPAG run above and used PMload(2) in EXERCISE 2
 # Type ?SIMrun, ?SIMparse, ?makePTA, or ?plot.PMpta into the R console for help.
 
-setwd(paste(wd, "/PTA", sep = ""))
+#setwd(paste(wd, "/PTA", sep = ""))
 
 # copy the files model.txt and ex.csv to your Runs folder to get ready for a run
 # file.copy(from = c("../src/model2.txt", "../src/ptaex1.csv"), to = getwd(), overwrite = T)
@@ -511,7 +519,6 @@ setwd(paste(wd, "/PTA", sep = ""))
 #  predInt = c(120, 144, 0.5), seed = rep(-17, 4)
 # )
 simlist1 <- exRes2$sim(limits = 5, data = "../src/ptaex1.csv", predInt = c(120, 144, 0.5), seed = rep(-17, 4))
-simlist1_c <- exRes2$sim(limits = 5, combine = T, data = "../src/ptaex1.csv", predInt = c(120, 144, 0.5), seed = rep(-17, 4))
 # parse all the simulated output as a list
 # note you can also bypass this step and specify simlist="simout*" directly in the makePTA statements
 # simlist1 <- SIMparse("simout*")
@@ -530,11 +537,6 @@ simlist2 <- exRes2$sim(
   predInt = c(120, 144, 0.5), seed = rep(-17, 4),
   covariate = covariate
 )
-simlist2_c <- exRes2$sim(
-  limits = 5, data = "../src/ptaex1.csv",
-  predInt = c(120, 144, 0.5), seed = rep(-17, 4),
-  covariate = covariate, combine = T
-)
 
 # make the first PMpta object to calculate the time above each target for at least 60% of the dosing
 # interval from 120 to 144 hours.  Include labels for the simulations.
@@ -547,22 +549,11 @@ pta1_2 <- PM_pta$new(
   targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time", success = 0.6, start = 120, end = 144
 )
 
-pta1_2c <- simlist1_c$pta(
-  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
-  success = 0.6, start = 120, end = 144
-)
-
 pta1b_2 <- PM_pta$new(
   simdata = simlist2,
   simlabels = simlabels,
   targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
   success = 0.6, start = 120, end = 144
-)
-
-pta1b_2c <- simlist2_c$pta(
-  simlabels = simlabels,
-  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
-  target.type = "time", success = 0.6, start = 120, end = 144
 )
 
 # look at the pta1.2 object in the $pta, simnum is the simulation (dose) number;
@@ -691,23 +682,24 @@ summary(pta6_2)
 
 
 # calculate MM-optimal sample times for Run 2, and the 1200 mg once daily dose in the PTA
-setwd(paste(wd, "/MMopt", sep = ""))
+#setwd(paste(wd, "/MMopt", sep = ""))
 
-file.copy(from = c("../src/model2.txt", "../src/ptaex1.csv"), to = getwd(), overwrite = T)
+#file.copy(from = c("../src/model2.txt", "../src/ptaex1.csv"), to = getwd(), overwrite = T)
 
 # By specifying the predInt to start and stop at 120 and 144 hours, with an interval of 1 hour,
 # we are sampling at steady state.  Including "subject 2", means only the 1200 mg once daily dose
 # will serve as a simulation template.
-mmopt_2 <- MMopt(exRes2$final$data, data = "../src/ptaex1.csv", model = "../src/model2.txt", nsamp = 2, predInt = c(120, 140, 1), include = 2)
+#mmopt_2 <- MMopt(exRes2$final, data = "../src/ptaex1.csv", model = "genmodel.txt", nsamp = 2, predInt = c(120, 140, 1), include = 2)
+mmopt_2 <- exRes2$MM_opt(data="../src/ptaex1.csv",nsamp = 2, predInt = c(120, 140, 1), include = 2)
 # see the optimal sample times and the Bayes Risk of misclassification,
 # which is only useful to compare optimal sampling regimens, i.e. the
 # absolute value is less helpful, but is the statistic minimized by the
 # selected optimal sample times for a given model
-mmopt.2
+mmopt_2
 # plot it, with the red lines indicating the optimal sample times.
 # see ?plot.MMopt for help
 # See plots.pdf, page 48
-plot(mmopt.2)
+plot(mmopt_2)
 
 
 # EXERCISE 11 - ASSAY ERROR -----------------------------------------------
