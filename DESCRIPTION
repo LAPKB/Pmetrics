@@ -17,9 +17,9 @@ Description: Parametric and non-parametric
     which used to be available on CRAN.
 Authors@R: person("Michael", "Neely",
     email = "mneely@usc.edu", role = c("aut", "cre"))
-Version: 1.9.7
+Version: 2.0.0
 URL: http://www.lapk.org
-Date: 2020-06-12
+Date: 2022-03-12
 Depends: 
     R (>= 3.5.0)
 Imports:
@@ -47,8 +47,11 @@ Imports:
     tibble,
     tidyr,
     utils,
-    xtable
+    plotly,
+    xtable,
+    readr,
+    R6
 Suggests:
     testthat
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Encoding: UTF-8

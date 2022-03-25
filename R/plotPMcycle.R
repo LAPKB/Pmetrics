@@ -62,8 +62,8 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
     x = x,
     m_two_ll = data$ll[omit:numcycles]
   )
-  p1 <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=m_two_ll)) + ggplot2::geom_line() + ggplot2::geom_point() + ggplot2::ggtitle("-2 x Log likelihood") + ggplot2::xlab("Cycle") + ggplot2::ylab("")
-    #qplot(y=data$ll[omit:numcycles], x=x, geom=c("point", "line"), xlab = "Cycle", ylab = "") + ggtitle("-2 x Log likelihood")
+  p1 <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=m_two_ll)) + ggplot2::geom_line() + ggplot2::ylab("-2 x Log likelihood") + ggplot2::xlab("Cycle") 
+    #qplot(y=data$ll[omit:numcycles], x=x, geom=c("point", "line"), xlab = "Cycle", ylab = "") + ylab("-2 x Log likelihood")
   
   #axis(1,at=x,labels=cycnum)
   #AIC and BIC
@@ -77,7 +77,7 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
   #       x.intersp=0.8,y.intersp=0.8)   
   graph_data$aic <- data$aic[omit:numcycles]
   graph_data$bic <- data$bic[omit:numcycles]
-  p2 <- ggplot2::ggplot(data = graph_data) + ggplot2::geom_line(aes(x = x, y = aic, colour = "aic")) + ggplot2::geom_line(ggplot2::aes(x = x, y = bic, colour = "bic")) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ggtitle("AIC/BIC") + ggplot2::xlab("Cycle") + ggplot2::ylab("")
+  p2 <- ggplot2::ggplot(data = graph_data) + ggplot2::geom_line(ggplot2::aes(x = x, y = aic, colour = "aic")) + ggplot2::geom_line(ggplot2::aes(x = x, y = bic, colour = "bic")) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ylab("AIC/BIC") + ggplot2::xlab("Cycle") 
   
   
   #gamma/lambda
@@ -86,7 +86,7 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
     #TODO Don't know how to check this scenario, JD-Jul/2020
     #plot(y=data$gamlam[omit:numcycles],x=x,type="l",xlab="Cycle",ylab="",main="Gamma/Lambda",xaxt="n",...)
     #axis(1,at=x,labels=cycnum)
-    p3 <- ggplot2::ggplot(data = graph_data) + ggplot2::geom_line(ggplot2::aes(x = x, y = gamma_lambda))  + ggplot2::ggtitle("Gamma/Lambda") + ggplot2::xlab("Cycle") + ggplot2::ylab("")
+    p3 <- ggplot2::ggplot(data = graph_data) + ggplot2::geom_line(ggplot2::aes(x = x, y = gamma_lambda))  + ggplot2::ylab("Gamma/Lambda") + ggplot2::xlab("Cycle") 
   } else {
     #plot(y=max(data$gamlam[omit:numcycles,]),x=max(x),type="n",xlab="Cycle",ylab="",main="Gamma/Lambda",
     #     xlim=range(x),ylim=range(data$gamlam[omit:numcycles,]),xaxt="n")
@@ -100,7 +100,7 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
     #         x.intersp=0.8,y.intersp=0.8)
     #}
     
-    p3 <- ggplot2::ggplot(data = graph_data) + ggplot2::geom_line(ggplot2::aes(x = x, y = gamma_lambda))  + ggplot2::ggtitle("Gamma/Lambda") + ggplot2::xlab("Cycle") + ggplot2::ylab("")
+    p3 <- ggplot2::ggplot(data = graph_data) + ggplot2::geom_line(ggplot2::aes(x = x, y = gamma_lambda))  + ggplot2::ylab("Gamma/Lambda") + ggplot2::xlab("Cycle") 
   }
   
   
@@ -113,7 +113,7 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
     #lines(y=data$mean[omit:numcycles,i],x=x,col=col[i],lty=lnty[i])
   #}
   graph_data$mean <- data$mean[omit:numcycles,]
-  p4 <- purrr::reduce(1:nvar, ~.x + ggplot2::geom_line(ggplot2::aes(x=x, y= mean[,.y], colour = data$names[.y])), .init=ggplot2::ggplot(data = graph_data) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ggtitle("Normalized Mean") + ggplot2::xlab("Cycle") + ggplot2::ylab(""))
+  p4 <- purrr::reduce(1:nvar, ~.x + ggplot2::geom_line(ggplot2::aes(x=x, y= mean[,.y], colour = data$names[.y])), .init=ggplot2::ggplot(data = graph_data) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ylab("Normalized Mean") + ggplot2::xlab("Cycle") )
   #legend(x=x.leg*max(x)+omit,y=min(data$mean[omit:numcycles,])+y.leg*(max(data$mean[omit:numcycles,])-min(data$mean[omit:numcycles,])),
   #       legend=data$names,col=col[1:nvar],lty=lnty[1:nvar],lwd=2,bg="white",cex=cex.leg,
   #       x.intersp=0.8,y.intersp=0.8)
@@ -132,7 +132,7 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
     #       legend=data$names,col=col[1:nvar],lty=lnty[1:nvar],lwd=2,bg="white",cex=cex.leg,
     #       x.intersp=0.8,y.intersp=0.8)
     graph_data$sd <- data$sd[omit:numcycles,]
-    p5 <- purrr::reduce(1:nvar, ~.x + ggplot2::geom_line(ggplot2::aes(x=x, y= sd[,.y], colour = data$names[.y])), .init=ggplot2::ggplot(data = graph_data) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ggtitle("Normalized SD") + ggplot2::xlab("Cycle") + ggplot2::ylab(""))
+    p5 <- purrr::reduce(1:nvar, ~.x + ggplot2::geom_line(ggplot2::aes(x=x, y= sd[,.y], colour = data$names[.y])), .init=ggplot2::ggplot(data = graph_data) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ylab("Normalized SD") + ggplot2::xlab("Cycle") )
     
   } else {
     #plot(y=data$median[omit:numcycles,],x=rep(x,nvar),xlab="Cycle",ylab="",main="Normalized SD",type="n",xaxt="n",...)
@@ -159,15 +159,19 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
   
   #par(mfrow=c(1,1))
   graph_data$median <- data$median[omit:numcycles,]
-  p6 <- purrr::reduce(1:nvar, ~.x + ggplot2::geom_line(ggplot2::aes(x=x, y= median[,.y], colour = data$names[.y])), .init=ggplot2::ggplot(data = graph_data) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ggtitle("Normalized Median") + ggplot2::xlab("Cycle") + ggplot2::ylab(""))
+  p6 <- purrr::reduce(1:nvar, ~.x + ggplot2::geom_line(ggplot2::aes(x=x, y= median[,.y], colour = data$names[.y])), .init=ggplot2::ggplot(data = graph_data) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ylab("Normalized Median") + ggplot2::xlab("Cycle") )
   
   
-  #close device if necessary
-  if(inherits(out,"list")) dev.off()
-  
-  gridExtra::grid.arrange(p1, p2, p3, p4, p5, p6, ncol=2)
-  
-  return(invisible(1))
+  # #close device if necessary
+  # if(inherits(out,"list")) dev.off()
+  p<-plotly::subplot(p1, p2, p3, p4, p5, p6,nrows=3, titleX=T,titleY=T, margin=c(0.05,0.05,0,0.05))
+  p$x$layout$showlegend=F
+  p$x$layout$xaxis$title$text=""
+  p$x$layout$xaxis2$title$text=""
+  p$x$layout$xaxis3$title$text=""
+  p$x$layout$xaxis4$title$text=""
+  print(p)
+  return(p)
 }
 
 

@@ -109,7 +109,7 @@
 
 
 PMcheck <- function(data, model, fix = F, quiet = F) {
-
+  
   #checkRequiredPackages("openxlsx")
   #here's the subfunction to check for errors 
   errcheck <- function(data2, model, quiet = quiet) {
@@ -129,19 +129,19 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
                 contigID = list(msg = "OK - All subject IDs are contiguous.", results = NA, col = 1, code = 12),
                 nonNum = list(msg = "OK - All columns that must be numeric are numeric.", results = NA, col = NA, code = 13),
                 noObs = list(msg = "OK - All subjects have at least one observation.", results = NA, col = 1, code = 14)
-
+                
     )
     #set initial attribute to 0 for no error
     attr(err, "error") <- 0
-
+    
     #define fixed column names
     fixedColNames <- getFixedColNames()
-
+    
     #define number of columns and number of covariates
     numcol <- ncol(data2)
     numfix <- getFixedColNum()
     numcov <- getCov(data2)$ncov
-
+    
     # check to make sure first 14 columns are correct
     t <- tolower(names(data2))
     if (any(!c("id", "time", "evid") %in% t)) {
@@ -157,7 +157,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
         attr(err, "error") <- -1
       }
     }
-
+    
     # check to make sure cols names are 11 char or less
     t <- which(nchar(names(data2)) > 11)
     if (length(t) > 0) {
@@ -165,7 +165,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$maxCharCol$results <- t
       attr(err, "error") <- -1
     }
-
+    
     # check to make sure ids are 11 char or less
     t <- which(nchar(as.character(data2$id)) > 11)
     if (length(t) > 0) {
@@ -173,7 +173,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$maxCharID$results <- t
       attr(err, "error") <- -1
     }
-
+    
     #check that all records have an EVID value
     t <- which(is.na(data2$evid))
     if (length(t) > 0) {
@@ -181,7 +181,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$missEVID$results <- t
       attr(err, "error") <- -1
     }
-
+    
     #check that all records have an TIME value
     t <- which(is.na(data2$time))
     if (length(t) > 0) {
@@ -189,7 +189,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$missTIME$results <- t
       attr(err, "error") <- -1
     }
-
+    
     #check for dur on dose records
     t <- which(data2$evid != 0 & is.na(data2$dur))
     if (length(t) > 0) {
@@ -197,7 +197,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$doseDur$results <- t
       attr(err, "error") <- -1
     }
-
+    
     #check for dose on dose records
     t <- which(data2$evid != 0 & is.na(data2$dose))
     if (length(t) > 0) {
@@ -205,7 +205,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$doseDose$results <- t
       attr(err, "error") <- -1
     }
-
+    
     #check for input on dose records
     t <- which(data2$evid != 0 & is.na(data2$input))
     if (length(t) > 0) {
@@ -213,7 +213,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$doseInput$results <- t
       attr(err, "error") <- -1
     }
-
+    
     #check for out on observation records
     t <- which(data2$evid == 0 & is.na(data2$out))
     if (length(t) > 0) {
@@ -221,7 +221,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$obsOut$results <- t
       attr(err, "error") <- -1
     }
-
+    
     #check for outeq on observation records
     t <- which(data2$evid == 0 & is.na(data2$outeq))
     if (length(t) > 0) {
@@ -229,8 +229,8 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$obsOuteq$results <- t
       attr(err, "error") <- -1
     }
-
-
+    
+    
     #check for time=0 for each subject as first record
     t <- which(tapply(data2$time, data2$id, function(x) x[1]) != 0)
     t2 <- match(names(t), data2$id)
@@ -239,7 +239,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$T0$results <- t2
       attr(err, "error") <- -1
     }
-
+    
     #covariate checks
     if (numcov > 0) {
       covinfo <- getCov(data2)
@@ -252,7 +252,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
         attr(err, "error") <- -1
       } else { err$covT0$msg <- "OK - All subjects have covariate data at time 0." }
     }
-
+    
     #check that all times within a given ID block are monotonically increasing
     misorder <- NA
     for (i in 2:nrow(data2)) {
@@ -272,9 +272,9 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$contigID$results <- t2
       attr(err, "error") <- -1
     }
-
-
-    #check that all non-missing colmuns other than ID are numeric
+    
+    
+    #check that all non-missing columns other than ID are numeric
     allMiss <- which(apply(data2[, 2:numcol], 2, function(x) all(is.na(x))))
     nonNumeric <- which(sapply(data2[, 2:numcol], function(x)!is.numeric(x)))
     if (length(allMiss) > 0) {
@@ -285,7 +285,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$nonNum$results <- nonNumeric + 1
       attr(err, "error") <- -1
     }
-
+    
     #check that all subjects have at least one observation
     subjObs <- tapply(data2$evid, data2$id, function(x) sum(x == 0, na.rm = T))
     if (any(subjObs == 0)) {
@@ -293,11 +293,9 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       err$noObs$msg <- "FAIL - The following rows are subjects with no observations."
       err$noObs$results <- which(data2$id %in% subjMissObs)
     }
-    #openxlsx.installed <- require(openxlsx)
-    #create the color coded Excel file using code from Patrick Nolain
-    #if (openxlsx.installed) {
-      # Definition of a table of n types of errors, each one with 'code' and 'color' properties
-      errorsTable <- data.frame(comment = c("ID > 11 characters",
+    
+    # Definition of a table of n types of errors, each one with 'code' and 'color' properties
+    errorsTable <- data.frame(comment = c("ID > 11 characters",
                                           "Missing EVID",
                                           "Missing TIME",
                                           "Missing DUR for dose event",
@@ -311,124 +309,107 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
                                           "Non-contiguous subject ID",
                                           "Column with non-numeric rows (green)",
                                           "Subject with no observations"),
-                                stringsAsFactors = F)
-      numError <- nrow(errorsTable)
-      errorsTable$code <- 1:numError
-
-      #assign errors with row, column, and code
-      errList <- lapply(err[3:length(err)], function(x)(lapply(x$results, function(y) c(y, x$col, x$code))))
-      errDF <- data.frame(t(data.frame(errList)))
-      row.names(errDF) <- 1:nrow(errDF)
-      names(errDF) <- c("row", "column", "code")
-      errors <- errDF[!is.na(errDF$row),]
-
-
-
-      class(err) <- c("PMerr", "list")
-      if (!quiet) cat("\nDATA FILE REPORT:\n")
-      if (!quiet) { print(err); flush.console() }
-
-      if (nrow(errors) > 0) {
-        # Initializing a new Excel Workbook
-        wb <- openxlsx::createWorkbook()
-        pmVersion <- "POPDATA DEC_11"
-        formattedCols <- toupper(names(data2))
-        formattedCols[1] <- "#ID"
-        errColor <- "#FFFF00" #yellow
-        errColor2 <- "#00FF00" #green
-
-        errStyle1 <- openxlsx::createStyle(fgFill = errColor)
-        errStyle2 <- openxlsx::createStyle(fgFill = errColor2)
-
-
-        # Adding a new Worksheet
-        sheet <- openxlsx::addWorksheet(wb, sheetName = "errors")
-
-        # Writing out the header of the Pmetrics data file : version line and data frame column names
-        openxlsx::writeData(wb, sheet, pmVersion, xy = c(1, 1)) # POPDATA...
-        openxlsx::writeData(wb, sheet, t(formattedCols), xy = c(1, 2), colNames = F) # #ID,EVID,...
-
-
-        # Highlight the cells with errors
-        for (i in 1:nrow(errors)) {
-          thisErr <- errors[i,]
-          comment <- openxlsx::createComment(errorsTable[errorsTable$code == thisErr$code,]$comment, author = "Pmetrics", visible = F)
-          colIndex <- thisErr$column
-          rowIndex <- thisErr$row
-
-
-          #special highlighting - overwrite some values
-          if (errorsTable$comment[match(thisErr$code, errorsTable$code)] == "Missing one or more covariate values at TIME=0") {
-            #if covariate error
-            colIndex <- (numfix + 1):numcol
-          }
-          if (errorsTable$comment[match(thisErr$code, errorsTable$code)] == "Column with non-numeric rows (green)") {
-            #special for non-numeric columns
-            rowIndex <- 2
-            colIndex <- thisErr$row #because of the way the error is detected    
-
-            is.char.num <- function(x) {
-              if (!is.na(x) && suppressWarnings(is.na(as.numeric(x)))) {
-                return(T)
-              } else { return(F) }
-            }
-
-            #find the non-numeric cells in a column
-            rowIndex2 <- which(sapply(data2[, colIndex], is.char.num)) + 2
-            #highlight them
-            openxlsx::addStyle(wb, sheet, errStyle2, rowIndex2, colIndex)
-
-          } else {
-            #not non-numeric column error
-            rowIndex <- thisErr$row + 2
-            colIndex <- thisErr$column
-          }
-
-          #add the highlighting and comments
-          openxlsx::addStyle(wb, sheet, errStyle1, rowIndex, colIndex)
-          openxlsx::writeComment(wb, sheet, col = colIndex, row = rowIndex, comment = comment)
+                              stringsAsFactors = F)
+    numError <- nrow(errorsTable)
+    errorsTable$code <- 1:numError
+    
+    #assign errors with row, column, and code
+    errList <- lapply(err[3:length(err)], function(x)(lapply(x$results, function(y) c(y, x$col, x$code))))
+    errDF <- data.frame(t(data.frame(errList)))
+    row.names(errDF) <- 1:nrow(errDF)
+    names(errDF) <- c("row", "column", "code")
+    errors <- errDF[!is.na(errDF$row),]
+    
+    
+    
+    class(err) <- c("PMerr", "list")
+    if (!quiet) cat("\nDATA VALIDATION REPORT:\n")
+    if (!quiet) {print(err); flush.console() }
+    
+    if (nrow(errors) > 0) {
+      # Initializing a new Excel Workbook
+      wb <- openxlsx::createWorkbook()
+      pmVersion <- "POPDATA DEC_11"
+      formattedCols <- toupper(names(data2))
+      formattedCols[1] <- "#ID"
+      errColor <- "#FFFF00" #yellow
+      errColor2 <- "#00FF00" #green
+      
+      errStyle1 <- openxlsx::createStyle(fgFill = errColor)
+      errStyle2 <- openxlsx::createStyle(fgFill = errColor2)
+      
+      
+      # Adding a new Worksheet
+      sheet <- openxlsx::addWorksheet(wb, sheetName = "errors")
+      
+      # Writing out the header of the Pmetrics data file : version line and data frame column names
+      openxlsx::writeData(wb, sheet, pmVersion, xy = c(1, 1)) # POPDATA...
+      openxlsx::writeData(wb, sheet, t(formattedCols), xy = c(1, 2), colNames = F) # #ID,EVID,...
+      
+      
+      # Highlight the cells with errors
+      for (i in 1:nrow(errors)) {
+        thisErr <- errors[i,]
+        comment <- openxlsx::createComment(errorsTable[errorsTable$code == thisErr$code,]$comment, author = "Pmetrics", visible = F)
+        colIndex <- thisErr$column
+        rowIndex <- thisErr$row
+        
+        
+        #special highlighting - overwrite some values
+        if (errorsTable$comment[match(thisErr$code, errorsTable$code)] == "Missing one or more covariate values at TIME=0") {
+          #if covariate error
+          colIndex <- (numfix + 1):numcol
         }
-
-        # Check for NA values and set '.' as cells content 
-        data2[is.na(data2)] <- "."
-
-        #Add the data
-        openxlsx::writeData(wb, sheet, data2, rowNames = F, colNames = F, xy = c(1, 3))
-
-        # # Check for NA values and set '.' as cells content 
-        # for(i in 1:nrow(data2))
-        # {
-        #   for(j in 1:numcol)
-        #   {
-        #     if(is.na(data2[i,j]))
-        #     {
-        #       (writeData(wb,sheet,".", xy=c(j,i+2)))
-        #     }
-        #   }
-        # }
-
-
-        # Save the workbook ...
-        openxlsx::saveWorkbook(wb, file = "errors.xlsx", overwrite = T)
+        if (errorsTable$comment[match(thisErr$code, errorsTable$code)] == "Column with non-numeric rows (green)") {
+          #special for non-numeric columns
+          rowIndex <- 2
+          colIndex <- thisErr$row #because of the way the error is detected    
+          
+          is.char.num <- function(x) {
+            if (!is.na(x) && suppressWarnings(is.na(as.numeric(x)))) {
+              return(T)
+            } else { return(F) }
+          }
+          
+          #find the non-numeric cells in a column
+          rowIndex2 <- which(sapply(data2[, colIndex], is.char.num)) + 2
+          #highlight them
+          openxlsx::addStyle(wb, sheet, errStyle2, rowIndex2, colIndex)
+          
+        } else {
+          #not non-numeric column error
+          rowIndex <- thisErr$row + 2
+          colIndex <- thisErr$column
+        }
+        
+        #add the highlighting and comments
+        openxlsx::addStyle(wb, sheet, errStyle1, rowIndex, colIndex)
+        openxlsx::writeComment(wb, sheet, col = colIndex, row = rowIndex, comment = comment)
       }
-      #end writing of datafile with highlighted errors
-
-   # } else { cat("Unable to write errors.xlsx;\n connect to internet to download and install xlsx package.\n") }
+      
+      #Add the data
+      openxlsx::writeData(wb, sheet, data2, rowNames = F, colNames = F, xy = c(1, 3), 
+                          keepNA = T, na.string = ".")
+      
+      # Save the workbook ...
+      openxlsx::saveWorkbook(wb, file = "errors.xlsx", overwrite = T)
+    } #end writing of datafile with highlighted errors
+    
 
     #if no errors in data, and model is specified, check it for errors too
     if (all(unlist(sapply(err, function(x) is.na(x$results)))) & !is.na(model)) {
       #get information from data      
-
+      
       if (numcov > 0) { covnames <- getCov(data2)$covnames } else { covnames <- NA }
       numeqt <- max(data2$outeq, na.rm = T)
-
+      
       modeltxt <- model
       #attempt to translate model file into separate fortran model file and instruction files
       engine <- list(alg = "NP", ncov = numcov, covnames = covnames, numeqt = numeqt, indpts = -99, limits = NA)
-
+      
       if (!quiet) cat("\nMODEL REPORT:\n")
       trans <- makeModel(model = model, data = data, engine = engine, write = F, silent = quiet)
-
+      
       if (trans$status == -1) {
         if ("mQRZZZ.txt" %in% Sys.glob("*", T)) {
           file.remove(model)
@@ -452,11 +433,11 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
     if (!quiet) flush.console()
     return(err)
   }
-
+  
   #here's the function to try and fix errors in the data file
   errfix <- function(data2, model, quiet) {
     report <- NA
-    err <- errcheck(data = data2, model = model, quiet = quiet)
+    err <- errcheck(data = data2, model = model, quiet = T)
     numcol <- ncol(data2)
     #Fix first fixed columns
     if (length(grep("FAIL", err$colorder$msg)) > 0) {
@@ -481,7 +462,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
     if (length(grep("FAIL", err$obsMiss$msg)) > 0) {
       data2 <- data2[err$obsMiss$results, "out"] < -99
       report <- c(report, paste("Missing observations for evid=0 have been replaced with -99."))
-      err <- errcheck(data = data2, model = model, quiet = quiet)
+      err <- errcheck(data = data2, model = model, quiet = T)
     }
     #Check for DUR dose records
     if (length(grep("FAIL", err$doseDur$msg)) > 0) {
@@ -503,7 +484,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
     if (length(grep("FAIL", err$obsOuteq$msg)) > 0) {
       report <- c(report, paste("Observation records (evid=0) must have OUTEQ. Fix manually."))
     }
-
+    
     #Insert dummy doses of 0 for those missing time=0 first events
     if (length(grep("FAIL", err$T0$msg)) > 0) {
       T0 <- data2[err$T0$results,]
@@ -513,14 +494,14 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       data2 <- rbind(data2, T0)
       data2 <- data2[order(data2$id, data2$time),]
       report <- c(report, paste("Subjects with first time > 0 have had a dummy dose of 0 inserted at time 0."))
-      err <- errcheck(data = data2, model = model, quiet = quiet)
+      err <- errcheck(data = data2, model = model, quiet = T)
     }
-
+    
     #Alert for missing covariate data
     if (length(grep("FAIL", err$covT0$msg)) > 0) {
       report <- c(report, paste("All covariates must have values for each subject's first event.  Fix manually."))
     }
-
+    
     #Reorder times
     if (length(grep("FAIL", err$timeOrder$msg)) > 0) {
       if (any(data2$evid == 4)) {
@@ -544,35 +525,36 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       data2$evid[err$missEVID$results] <- ifelse(is.na(data2$dose[err$missEVID$results]), 0, 1)
       report <- c(report, paste("EVID for events with doses changed to 1, otherwise 0."))
     }
-
+    
     #Report missing TIME
     if (length(grep("FAIL", err$missTIME$msg)) > 0) {
       report <- c(report, paste("Your dataset has missing times.  Fix manually."))
     }
-
+    
     #Report non-numeric columns
     if (length(grep("FAIL", err$nonNum$msg)) > 0) {
       report <- c(report, paste("Your dataset has non-numeric columns.  Fix manually."))
     }
-
+    
     #Report subjects with no observations
     if (length(grep("FAIL", err$noObs$msg)) > 0) {
       report <- c(report, paste("Your dataset has subjects with no observations.  Fix manually."))
     }
-
-    if (!quiet) cat("\nFIX DATA REPORT:\n")
-    print(report[-1])
+    
+    if (!quiet) cat("\nFIX DATA REPORT:\n\n")
+    report <- report[-1]
+    cat(paste0("(", 1:length(report), ") ",report))
     flush.console()
-    row.names(data2) <- 1:nrow(data2)
+    #row.names(data2) <- 1:nrow(data2)
     return(data2)
   }
-
+  
   #get the data
   if (is.character(data)) {
     data2 <- tryCatch(suppressWarnings(PMreadMatrix(data, quiet = T)), error = function(e) return(invisible(e)))
   } else { data2 <- data }
   if (missing(model)) model <- NA
-
+  
   #check for errors
   err <- errcheck(data2, model = model, quiet = quiet)
   if (length(err) == 1) {
@@ -583,13 +565,13 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
   maxTime <- max(data2$time, na.rm = T)
   if (maxTime > 24 * 48 & !quiet) cat(paste("Warning: The maximum number of AUC intervals in NPAG is 48.\nYour longest event horizon is ", maxTime, " hours.\nPmetrics will automatically choose an AUC interval of at least ", ceiling(maxTime / 48), " hours during an NPAG run.\nYou can calculate AUCs for other intervals after the run using makeAUC().\n\n", sep = ""))
   flush.console()
-
-
+  
+  
   #try to fix errors if asked
   if (fix) {
     if (attr(err, "error") == 0) {
-      cat("\nFIX DATA REPORT:\n\nThere were no errors found in your data file.\n")
-      return(invisible(err))
+      if(!quiet) {cat("\nFIX DATA REPORT:\n\nThere were no errors to fix in you data file.\n")}
+      return(invisible(data2))
     } else {
       newdata <- errfix(data = data2, model = model, quiet = quiet)
       flush.console()
@@ -599,7 +581,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
     #didn't ask to fix errors so return error object
     return(invisible(err))
   }
-
+  
 }
 
 

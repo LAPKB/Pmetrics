@@ -103,7 +103,7 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
   
   simout <- x
   
-  if(!inherits(simout,"PMsim")){stop("Use SIMparse() to make object of class Psim.\n")}
+  if(!(inherits(simout,"PMsim") || inherits(simout,"PM_sim"))){stop("Use SIMparse() to make object of class Psim.\n")}
   if(!missing(obs)){
     if(!inherits(obs,"PMop")){stop("Use makeOP() to make object of class PMop.\n")}
     if(inherits(obs,"list")){
