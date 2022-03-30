@@ -24,6 +24,7 @@ PM_pta <- R6Class(
     )
 )
 
+#' @export
 #' @description
 #' Returns a PM_pta object based on the information found in a specified rds file.
 #' @param file_name Name of the file to be read, the default is PMpta.rds
