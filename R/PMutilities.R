@@ -1516,8 +1516,21 @@ FileNameOK <- function(filename) {
 # Get OS version ----------------------------------------------------------
 
 getOS <- function() {
-  OS <- switch(Sys.info()[1], Darwin = 1, Windows = 2, Linux = 3)
+  OS <- switch(Sys.info()[1],
+    Darwin = 1,
+    Windows = 2,
+    Linux = 3
+  )
   return(OS)
+}
+
+isM1 <- function(){
+  OS <- getOS()
+  isM1<-F
+  if(OS == 1 && Sys.info()[5] == "arm64"){#This means it is a M1-chip based apple computer
+    isM1<-T
+  }
+  isM1
 }
 
 
