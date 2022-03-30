@@ -1,5 +1,7 @@
 #' @export
 PM_sim <- R6::R6Class("PM_Vsim", list())
+
+#' @export
 PM_sim$new <- function(poppar, ...) {
     dots <- list(...)
     combine <- if (exists("combine", where = dots)) {
@@ -74,6 +76,7 @@ PM_vsim <- R6::R6Class(
     )
 )
 
+#' @export
 #' @description
 #' Returns a PM_sim object based on the information found in a specified rds file.
 #' @param file_name Name of the file to be read, the default is PMsim.rds

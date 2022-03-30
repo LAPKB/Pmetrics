@@ -70,7 +70,7 @@ PM_fit <- R6::R6Class("PM_fit",
     #' @description
     #' Save the current PM_fit object into a .rds file.
     #' @param file_name Name of the file to be created, the default is PMfit.rds
-    save = function(file_name = "PMfit.rds") {
+    save = function(file_name = "PMfit.rds") {dd
       saveRDS(self, file_name)
     },
     check = function() {
@@ -90,6 +90,7 @@ PM_fit <- R6::R6Class("PM_fit",
   )
 )
 
+#' @export
 #' @description
 #' Returns a PM_fit object based on the information found in a specified rds file.
 #' @param file_name Name of the file to be read, the default is PMfit.rds
