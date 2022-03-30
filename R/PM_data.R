@@ -29,6 +29,9 @@ PM_data <- R6::R6Class("PM_data",
     write = function(file_name) {
       PMwriteMatrix(self$standard_data, file_name)
     },
+    nca = function(...){
+      makeNCA(self, ...)
+    },
     plot = function(...){
       plot.PMmatrix(self$standard_data, ...)
     },
