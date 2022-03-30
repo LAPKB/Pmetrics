@@ -2,6 +2,7 @@
 
 #' R6 object containing the results of a Pmetrics run
 #'
+#' @export
 PM_result <- R6::R6Class(
   "PM_result",
   public <- list(
@@ -103,6 +104,7 @@ PM_result <- R6::R6Class(
   ) # end public
 ) # end PM_result
 
+#' @export
 #' @description
 #' Returns a PM_result object based on the information found in a specified rds file.
 #' @param file_name Name of the file to be read, the default is PMresult.rds
@@ -161,6 +163,7 @@ PM_op <- R6Class(
 summary.PM_op <- function(obj, ...) {
   obj$summary(...)
 }
+
 PM_post <- R6Class(
   "PM_post",
   public <- list(
@@ -188,6 +191,7 @@ PM_post <- R6Class(
     }
   )
 )
+
 PM_final <- R6Class(
   "PM_final",
   public <- list(
@@ -246,10 +250,12 @@ PM_final <- R6Class(
     }
   )
 )
+
 #' @export
 summary.PM_final <- function(obj, ...) {
   obj$summary(...)
 }
+
 PM_cycle <- R6Class(
   "PM_cycle",
   public <- list(
@@ -280,6 +286,7 @@ PM_cycle <- R6Class(
     }
   )
 )
+
 PM_pop <- R6Class(
   "PM_pop",
   public <- list(
@@ -307,6 +314,7 @@ PM_pop <- R6Class(
     }
   )
 )
+
 PM_cov <- R6Class(
   "PM_cov",
   public <- list(
