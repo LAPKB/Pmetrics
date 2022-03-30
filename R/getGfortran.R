@@ -23,8 +23,12 @@ update_gfortran <- function() {
       return(F)
     }
     .installOrUpdateGCC(OS)
-
-    if (system("which -s gfortran") != 0) {
+    if (isM1()) {
+      sch_str <- "which -s /opt/homebrew/bin/gfortran"
+    } else {
+      sch_str <- "which -s gfortran"
+    }
+    if (system(sch_str) != 0) {
       cat("ERROR: Pmetrics did not install gfortan automatically.\nPlease install gfortran manually and then run PMbuild().\nGo to http://www.lapk.org/Pmetrics_install.php for help.\n")
       return(FALSE)
     } else {
@@ -72,7 +76,7 @@ update_gfortran <- function() {
   } else {
     # brew is installed
     cat("Pmetrics found Homebrew found and will ensure latest version is installed.\n")
-    system(" update")
+    system("/opt/homebrew/bin/brew update")
   }
   return(T)
 }
