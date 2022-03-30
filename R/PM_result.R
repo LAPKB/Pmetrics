@@ -88,14 +88,14 @@ PM_result <- R6::R6Class(
       saveRDS(self, file_name)
     },
     make_valid = function(...) {
-      self$valid<-PM_valid$new(self, ...)
+      self$valid <- PM_valid$new(self, ...)
       self$valid
     },
-    step = function(...){
+    step = function(...) {
       PMstep(self$cov$data, ...)
     },
-    MM_opt = function(...){
-      MM_opt(self,...)
+    MM_opt = function(...) {
+      MM_opt(self, ...)
     }
   ) # end public
 ) # end PM_result
@@ -123,7 +123,9 @@ PM_op <- R6Class(
     ds = NULL,
     wd = NULL,
     wds = NULL,
+    data = NULL,
     initialize = function(op) {
+      self$data <- op
       self$id <- op$id
       self$time <- op$time
       self$obs <- op$obs
@@ -139,36 +141,16 @@ PM_op <- R6Class(
       self$wds <- op$wds
     },
     plot = function(...) {
-      plot.PM_op(self$to_df(), ...)
+      plot.PM_op(self$data, ...)
     },
     summary = function(...) {
-      summary.PMop(self$to_df(), ...)
+      summary.PMop(self$data, ...)
     },
     #' @description
     #' AUC function
     #' @param \dots AUC-specific arguments
-    auc = function() {
-      makeAUC(data = self, ...)
-    },
-    to_df = function() {
-      df<-list(
-        id = self$id,
-        time = self$time,
-        obs = self$obs,
-        pred = self$pred,
-        pred.type = self$pred.type,
-        icen = self$icen,
-        outeq = self$outeq,
-        block = self$block,
-        obsSD = self$obsSD,
-        d = self$d,
-        ds = self$ds,
-        wd = self$wd,
-        wds = self$wds
-      )%>%
-      as.data.frame()
-      class(df)<-c("PMop","data.frame")
-      df
+    auc = function(...) {
+      makeAUC(data = self$data, ...)
     }
   )
 )
@@ -185,7 +167,9 @@ PM_post <- R6Class(
     outeq = NULL,
     pred = NULL,
     block = NULL,
+    data = NULL,
     initialize = function(post) {
+      self$data <- post
       self$id <- post$id
       self$time <- post$time
       self$ice <- post$ice
@@ -196,8 +180,8 @@ PM_post <- R6Class(
     #' @description
     #' AUC function
     #' @param \dots AUC-specific arguments
-    auc = function() {
-      makeAUC(data = self, ...)
+    auc = function(...) {
+      makeAUC(data = self$data, ...)
     }
   )
 )
@@ -225,7 +209,9 @@ PM_final <- R6Class(
     nsub = NULL,
     ab = NULL,
     final = NULL,
+    data = NULL,
     initialize = function(final) {
+      self$data <- final
       self$popPoints <- final$popPoints
       self$popMean <- final$popMean
       self$popSD <- final$popSD
@@ -273,7 +259,9 @@ PM_cycle <- R6Class(
     median = NULL,
     aic = NULL,
     bic = NULL,
+    data = NULL,
     initialize = function(cycle) {
+      self$data <- cycle
       self$names <- cycle$names
       self$cynum <- cycle$cynum
       self$ll <- cycle$ll
@@ -298,7 +286,9 @@ PM_pop <- R6Class(
     outeq = NULL,
     pred = NULL,
     block = NULL,
+    data = NULL,
     initialize = function(pop) {
+      self$data <- pop
       self$id <- pop$id
       self$time <- pop$time
       self$ice <- pop$ice
@@ -309,8 +299,8 @@ PM_pop <- R6Class(
     #' @description
     #' AUC function
     #' @param \dots AUC-specific arguments
-    auc = function() {
-      makeAUC(data = self, ...)
+    auc = function(...) {
+      makeAUC(data = self$data, ...)
     }
   )
 )
@@ -327,7 +317,7 @@ PM_cov <- R6Class(
     plot = function(...) {
       plot.PMcov(self$data, ...)
     },
-    print = function(...){
+    print = function(...) {
       print(x = self$data, ...)
     }
   )

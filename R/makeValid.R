@@ -370,7 +370,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 
   # make tempDF subset of PMop for subject, time, non-missing obs, outeq, pop predictions (PREDij)
   tempDF <- if (inherits(result$op, "PM_op")) {
-    result$op$to_df()
+    result$op$data
   } else {
     result$op
   }
@@ -496,7 +496,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   #   mdata = result$data$standard_data,
   #   valid = result$valid
   # )
-  #save(NPAGout, file = "../outputs/NPAGout.Rdata")
+  # save(NPAGout, file = "../outputs/NPAGout.Rdata")
 
   # #put sim in global environment
   # assign(paste("sim",as.character(run),sep="."),simFull,pos=1)
