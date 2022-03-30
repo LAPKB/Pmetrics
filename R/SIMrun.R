@@ -271,8 +271,12 @@ SIMrun <- function(poppar, ...) {
   }
   if (exists("data", where = dots)) {
     data <- "simdata.csv"
-    data_obj <- PM_data$new(dots$data)
-    data_obj$write(data)
+    if (inherits(dots$data, "PM_data")) {
+      dots$data$write(data)
+    } else {
+      data_obj <- PM_data$new(dots$data)
+      data_obj$write(data)
+    }
   } else {
     if (is_res) {
       data <- "simdata.csv"
