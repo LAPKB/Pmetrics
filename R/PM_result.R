@@ -63,6 +63,9 @@ PM_result <- R6::R6Class(
       stopifnot(!is.null(type), "please provide the type of plot you want to obtain")
       self[[type]]$plot(...)
     },
+    nca = function(...) {
+      makeNCA(self, ...)
+    },
 
     #' @description
     #' Summary generic function based on type
