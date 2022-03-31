@@ -83,7 +83,10 @@ PM_result <- R6::R6Class(
     #' For parameter information refer to \code{\link{SIMrun}}
 
     sim = function(...) {
-      PM_sim$new(self, ...)
+      #store copy of the final object
+      bk_final <- self$final$clone()
+      sim<-PM_sim$new(self, ...)
+      self$final <- bk_final
     },
     #' @description
     #' Save the current PM_result object into a .rds file.
