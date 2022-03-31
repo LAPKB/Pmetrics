@@ -5,14 +5,13 @@ PM_pta <- R6Class(
         results = NULL,
         outcome = NULL,
         initialize = function(simdata, targets, target.type, ...) {
-            self <- makePTA(simdata, targets, target.type, ...)
-            # pta <- makePTA(simdata, targets, target.type, ...)
-            # self$results <- pta$results
-            # self$outcome <- pta$outcome
-            # attr(self, "simlabels") <- attr(pta, "simlabels")
-            # attr(self, "simTarg") <- attr(pta, "simTarg")
-            # attr(self, "success") <- attr(pta, "success")
-            # attr(self, "type") <- attr(pta, "type")
+            pta <- makePTA(simdata, targets, target.type, ...)
+            self$results <- pta$results
+            self$outcome <- pta$outcome
+            attr(self, "simlabels") <- attr(pta, "simlabels")
+            attr(self, "simTarg") <- attr(pta, "simTarg")
+            attr(self, "success") <- attr(pta, "success")
+            attr(self, "type") <- attr(pta, "type")
         },
         #' @description
         #' Save the current PM_pta object into a .rds file.
