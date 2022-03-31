@@ -87,6 +87,7 @@ PM_result <- R6::R6Class(
       bk_final <- self$final$clone()
       sim<-PM_sim$new(self, ...)
       self$final <- bk_final
+      sim
     },
     #' @description
     #' Save the current PM_result object into a .rds file.
