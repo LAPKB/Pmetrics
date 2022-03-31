@@ -8,8 +8,9 @@ PM_sim$new <- function(poppar, ...) {
         dots$combine
     } else {
         F
-    }
+    }    
     SIMrun(poppar, ...)
+    
     # TODO: read files and fix the missing E problem
     sim_files <- list.files() %>% .[grepl("simout*", .)]
     if (length(sim_files) == 1) {

@@ -651,8 +651,8 @@ SIMrun <- function(poppar, ...) {
     PMwriteMatrix(dataFile, data, override = T)
 
     # remake poppar
-    # poppar$popMean <- meanVector
-    # poppar$popCov <- covMat
+    poppar$popMean <- meanVector
+    poppar$popCov <- covMat
     # clean up covlimits if necessary
     if (omitCovLimits) {
       covLimits <- matrix(rep(NA, 2 * nsimcov), ncol = 2)
@@ -671,7 +671,7 @@ SIMrun <- function(poppar, ...) {
       names(covDF) <- names(covToAdd)
       popPoints <- cbind(popPoints[, 1:npar], covDF)
       popPoints$prob <- prob
-      # poppar$popPoints <- popPoints
+      poppar$popPoints <- popPoints
     }
   } else {
     simWithCov <- F
@@ -829,7 +829,7 @@ SIMrun <- function(poppar, ...) {
     # get prior density
     if (inherits(poppar, "PM_final")) {
       if (split & inherits(poppar, "NPAG")) {
-        popPoints <- popPoints
+        popPoints <- poppar$popPoints
         ndist <- nrow(popPoints)
         if (ndist > 30) {
           ndist <- 30
@@ -838,12 +838,12 @@ SIMrun <- function(poppar, ...) {
         popPointsOrdered <- popPoints[order(popPoints$prob), ]
         pop.weight <- popPointsOrdered$prob[1:ndist]
         pop.mean <- popPointsOrdered[1:ndist, 1:(ncol(popPointsOrdered) - 1)]
-        pop.cov <- covMat
+        pop.cov <- poppar$popCov
       } else {
         if (length(postToUse) == 0) {
           pop.weight <- 1
-          pop.mean <- data.frame(t(meanVector))
-          pop.cov <- covMat
+          pop.mean <- data.frame(t(poppar$popMean))
+          pop.cov <- poppar$popCov
           ndist <- 1
         } else {
           thisPost <- which(poppar$postMean$id == include[i])
@@ -918,7 +918,7 @@ SIMrun <- function(poppar, ...) {
         endNicely(paste("You cannot simulate each point with simulated covariates.\n"), model, data)
       }
       if (length(postToUse) == 0) {
-        popPoints <- popPoints
+        popPoints <- poppar$popPoints
       } else {
         popPoints <- poppar$postMean
       }
