@@ -41,7 +41,7 @@ library(Pmetrics)
 # forward slash "/" or double backslashes "\\". Unfortunately, Windows is the only OS that uses
 # backslashes "\", so R conforms to Unix/Linux style.
 
-wd <- "##WD##"
+wd <- "/Users/mneely/LAPK/Development/Pmetrics/Examples"
 
 # change to the working directory to the Examples folder
 setwd(wd)
@@ -548,8 +548,6 @@ pta1_2$plot(ylab = "Proportion with %T>MIC of at least 60%", grid = T, legend = 
 pta1b_2$summary()
 # Plot the second with covariates simulated. Note the regimen labels are included, but we move
 # the legend to the bottom left.
-
-###### The labels aren't being included; need to fix PM_pta which is ignoring attributes
 
 pta1b_2$plot(
   ylab = "Proportion with %T>MIC of at least 60%", grid = T,
