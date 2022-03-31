@@ -25,10 +25,10 @@ makeNCA(
 \itemize{
 \item It can be the run number, e.g. 3, that has been previously loaded with \code{\link{PMload}}.
 Either the mdata file from the run (NPAG or IT2B) can be used (default) or
-the post object can be used (NPAG only) by specifying \code{postPred = T} below.  If \code{x} is a run number that corresponds 
-to both an NPAG and IT2B run which have been previously loaded into memory with \code{PMload}, the NPAG run will be used. 
+the post object can be used (NPAG only) by specifying \code{postPred = T} below.  If \code{x} is a run number that corresponds
+to both an NPAG and IT2B run which have been previously loaded into memory with \code{PMload}, the NPAG run will be used.
 \item It can be the run number of a run that has \emph{not} been previously loaded with \code{\link{PMload}}.
-In this case, the current working directory should be the Runs folder as \code{makeNCA} will call \code{PMload}. 
+In this case, the current working directory should be the Runs folder as \code{makeNCA} will call \code{PMload}.
 \item It can be the specific name of an mdata.x file already loaded into memory with \code{\link{PMload}}, e.g. mdata.3.  Note
 that quotation marks are not necessary since mdata.3 is an object, not a label/character vector.
 \item Finally, it can be the name of a Pmetrics data file in the current working directory, which will be loaded with
@@ -36,7 +36,7 @@ that quotation marks are not necessary since mdata.3 is an object, not a label/c
 is now a character vector specifying the filename of the file to load.
 }}
 
-\item{postPred}{Boolean switch to use the posterior predictions rather than the observed. 
+\item{postPred}{Boolean switch to use the posterior predictions rather than the observed.
 concentrations.  Default is \code{FALSE}. Ignored if an IT2B run is
 used to supply the raw data file.}
 
@@ -55,7 +55,7 @@ subject's Bayesian posterior parameter distribution.  Default is "median", but c
 
 \item{start}{The beginning of the time interval to look for doses and observations, e.g. 120.  It can be
 a vector to allow for individual start times per subject, e.g. c(120,120,144,168).  If the length of \code{start}
-is less than the number of subjects, the last value will be recycled as needed.  If the \code{start} time is not 0 (default), 
+is less than the number of subjects, the last value will be recycled as needed.  If the \code{start} time is not 0 (default),
 then it is assumed that steady state (multiple dose) conditions apply.}
 
 \item{end}{Analogous to \code{start}, set this equal to the end of the dosing interval. It too can be a vector, with the last value
@@ -75,10 +75,10 @@ to signify maximum time for that subject.}
 \value{
 A dataframe of class \emph{PMnca} with columns
  \item{id }{Subject identification}
- \item{auc }{Area under the time-observation curve, using the trapezoidal approximation, from time 0 until the second dose, 
+ \item{auc }{Area under the time-observation curve, using the trapezoidal approximation, from time 0 until the second dose,
 or if only one dose, until the last observation}
  \item{aumc }{Area under the first moment curve}
- \item{k }{Slope by least-squares linear regression of the final 3 log-transformed observations vs. time.  
+ \item{k }{Slope by least-squares linear regression of the final 3 log-transformed observations vs. time.
  If the final 3 concentrations are not decreasing such that linear regression results in a positive slope,
  this value and all others that depend on \code{k} will be suppressed.}
  \item{auclast }{Area under the curve from the time of the last observation to infinity, calculated as [Final obs]/k.
@@ -97,8 +97,8 @@ or if only one dose, until the last observation}
 }
 \description{
 Performs a non-compartmental analysis from observed concentrations in the raw data
-file or from an individual Bayesian posterior predicted 
-time-observation profiles (PMpost object) generated automatically after an NPAG run 
+file or from an individual Bayesian posterior predicted
+time-observation profiles (PMpost object) generated automatically after an NPAG run
 by the \code{\link{makePost}} command and loaded with \code{\link{PMload}}.
 }
 \details{
