@@ -41,7 +41,7 @@ library(Pmetrics)
 # forward slash "/" or double backslashes "\\". Unfortunately, Windows is the only OS that uses
 # backslashes "\", so R conforms to Unix/Linux style.
 
-wd <- "/Users/mneely/LAPK/Development/Pmetrics/Examples"
+wd <- "##WD##"
 
 # change to the working directory to the Examples folder
 setwd(wd)
