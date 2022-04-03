@@ -1,5 +1,10 @@
 #' Defines the PM_data object
 #' 
+#' @description
+#' PM_data R6 objects containing raw, standardized and valid data, and methods
+#' to process the data
+#' 
+#' @details
 #' PM_data objects are passed to \code{\link{PM_fit}} objects to initiate a
 #' population analysis. The object is created by reading a delimited file in 
 #' the current working directory. The data will be transformed into the standard
@@ -178,6 +183,7 @@ PM_data <- R6::R6Class("PM_data",
 #' Calls \code{\link{summary.PMmatrix}}
 #'
 #' @export
+#' 
 summary.PM_data <- function(x, ...) {
   x$summary(...)
 }
