@@ -33,7 +33,7 @@ matrix with the minimum, first quartile, median, third quartile, maximum,
 mean and standard deviation for times, observations and predictions in \code{x}.
 The second contains the mean prediction error,
 the mean weighted prediction error (bias), the mean squared prediction error, root mean sqaured error (RMSE),
-percent root mean squared error (%RMSE), the mean weighted
+percent root mean squared error (\%RMSE), the mean weighted
 squared prediction error, the bias-adjusted mean squared prediction error, and the bias-
 adjusted mean weighted squared prediction error (imprecision).
 }

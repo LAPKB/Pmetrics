@@ -1,13 +1,14 @@
+#' Parse Pmetrics NPAG Output
+#' 
 #' \code{NPparse} processes the output from an NPAG run into a list.
 #'
 #' This function can take some time to process the RFILE, depending on the number of subjects,
 #'  doses, observations, etc.  Typical wait times are a few seconds up to 5 minutes.
 #'  When processing is complete a summary of the extracted data will be reported on the console.
 #'
-#' @title Parse Pmetrics NPAG Output
 #' @param outfile This is the filename of the output from NPAG. Typically,
 #' the file will be called NP_RF0001.txt, and this is the default.
-#' @return The output of \code{NPparse} is a list with the following objects and
+#' @return The output of  \code{NPparse} is a list with the following objects and
 #'  of the class \emph{NPAG}.
 #'  \item{nsub }{Number of subjects}
 #'  \item{nactve }{Number of active grid points at the final cycle}
@@ -27,7 +28,7 @@
 #'  \item{converge }{Boolean value if convergence occurred.}
 #'  \item{ODEtol }{Ordindary Differential Equation solver tolerance.}
 #'  \item{prior }{Prior density for the run, either \dQuote{UNIFORM} or the name of the user-specified density file, typically \dQuote{DEN0001}.}
-#'  \item{ERRmod }{Assay error model: 1 for SD; 2 for SD*gamma; 3 for additive lambda model; and 4 for gamma only}
+#'  \item{ERRmod }{Assay error model: 1 for SD; 2 for \eqn{SD*gamma}; 3 for additive lambda model; and 4 for gamma only}
 #'  \item{numeqt }{Number of output equations}
 #'  \item{ndrug }{Number of drug inputs}
 #'  \item{salt }{Vector of values of the salt fraction for each \code{ndrug}}
@@ -56,8 +57,9 @@
 #'  \item{isd }{Matrix of cycle numbers and associated standard deviations for each random parameter}
 #'  \item{iaddl }{Array of additional information for each random parameter in each cycle,
 #'  of the form \emph{iaddl[info, nvar, cycle]},  where info is a value from 1 to 12:
-#'  1= mode; 2= skewness; 3= kurtosis; 4-8 give percentiles of the distribution (4=2.5\%; 5=25\%;
-#'  6=50\% [median],  7=75\%; 8=97.5\%); 9= the standard deviation of a normal distribution
+#'  1= mode; 2= skewness; 3= kurtosis; 4-8 give percentiles of the distribution 
+#' where 4=2.5\%; 5=25\%;
+#'  6=50\% (median);  7=75\%; 8=97.5\%; 9= the standard deviation of a normal distribution
 #'  with the same interquartile range; 10=the standard deviation of a normal distribution
 #'  with the same 95\% range; 11=the average of 9 and 10; 12=the \% scaled information}
 #'  \item{igamlam }{Matrix of cycle number and associated gamma or lambda}
@@ -78,10 +80,11 @@
 #'  \item{outputs }{Matrix with measured outputs for each subject and associated assay error polynomials.
 #'   The order of the columns is nsub, time, numeqt, observation, c0, c1, c2, c3, where the last
 #'   four columns are the coefficients of the assay error polynomial for that observation, such that
-#'   SD[obs] = c0 + c1*[obs] + c2*[obs]**2 + c3*[obs]**3}
+#'   \eqn{SD[obs] = c0 + c1*[obs] + c2*[obs]**2 + c3*[obs]**3}}
 #'  \item{negflag }{A flag indicating that some negative predictions were changed to missing.
 #'  This means that the model may be misspecified.}
 #'  \item{mdata }{The filename of the data used in the run.}
+#' @noMd
 #' @author Michael Neely
 #' @export
 

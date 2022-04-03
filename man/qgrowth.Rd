@@ -20,14 +20,14 @@ of the two sexes will be returned.  Default is \dQuote{M}.}
 }
 \value{
 A dataframe with columns
- \item{age }{Age in months}
- \item{wt }{Weight in kilograms}
- \item{ht }{Height or length in centimeters}
- \item{sex }{The selected \code{sex}}
- \item{percentile }{The selected \code{percentile}}
+\item{age }{Age in months}
+\item{wt }{Weight in kilograms}
+\item{ht }{Height or length in centimeters}
+\item{sex }{The selected \code{sex}}
+\item{percentile }{The selected \code{percentile}}
 }
 \description{
-Will extract height and weight for boys, girls or both for a given range of ages in months and percentile. This can be useful for 
+Will extract height and weight for boys, girls or both for a given range of ages in months and percentile. This can be useful for
 simulations in Pmetrics.
 }
 \author{

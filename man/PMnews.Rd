@@ -7,7 +7,7 @@
 PMnews(PMversion = packageVersion("Pmetrics"))
 }
 \arguments{
-\item{PMversion}{Default is the current version, otherwise a character string with the starting version you wish to see up to 
+\item{PMversion}{Default is the current version, otherwise a character string with the starting version you wish to see up to
 the current, e.g. \dQuote{0.21}.  Use \dQuote{all} for all versions.}
 }
 \value{

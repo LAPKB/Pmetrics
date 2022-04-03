@@ -5,16 +5,16 @@
 #' to process the data
 #' 
 #' @details
-#' PM_data objects are passed to \code{\link{PM_fit}} objects to initiate a
+#' PM_data objects are passed to [PM_fit] objects to initiate a
 #' population analysis. The object is created by reading a delimited file in 
 #' the current working directory. The data will be transformed into the standard
 #' format which is the same for all engines, with a report of any assumptions
-#' that were necessary to standardize the data. \code{\link{PMcheck}} is called
+#' that were necessary to standardize the data. [PMcheck] is called
 #' on the standard data to evaluate for errors. There are a number of methods
 #' defined for a PM_data object, including to write the standard data back 
 #' to a file for future use, to summarize and to plot the object, and to
 #' conduct a non-compartmental analysis on the raw data using 
-#' \code{\link{makeNCA}}.
+#' [makeNCA].
 #' 
 #' @export
 PM_data <- R6::R6Class("PM_data",
@@ -26,13 +26,13 @@ PM_data <- R6::R6Class("PM_data",
     #' @description
     #' Create new data object
     #' @details
-    #' Creation of a new \code{PM_data} objects from a file or
+    #' Creation of a new `PM_data` objects from a file or
     #' a data frame. Data will be standardized and checked
     #' automatically to a fully specified, valid data object.
     #' @param data A quoted name of a file with full path if not
     #' in the working directory, or an unquoted name of a data frame
     #' in the current R environment.
-    #' @param quiet Quietly validate. Default is \code{FALSE}.
+    #' @param quiet Quietly validate. Default is `FALSE`.
     initialize = function(data, quiet = F) {
       self$data <- if (is.character(data)) {
         PMreadMatrix(data, quiet = T)
@@ -45,7 +45,7 @@ PM_data <- R6::R6Class("PM_data",
     #' Write data to file
     #' @details
     #' Writes a delimited file (e.g. comma-separated)
-    #' from the \code{standard_data} field 
+    #' from the `standard_data` field 
     #' @param file_name A quoted name of the file to create 
     #' with full path if not
     #' in the working directory.
@@ -55,16 +55,16 @@ PM_data <- R6::R6Class("PM_data",
     #' @description
     #' Perform non-compartmental analysis
     #' @details
-    #' See \code{\link{makeNCA}}.
-    #' @param ... Arguments passed to \code{\link{makeNCA}}.
+    #' See [makeNCA].
+    #' @param ... Arguments passed to [makeNCA].
     nca = function(...){
       makeNCA(self, ...)
     },
     #' @description
     #' Plot method
     #' @details
-    #' See \code{\link{plot.PMmatrix}.
-    #' @param ... Arguments passed to \code{\link{plot.PMmatrix}}.
+    #' See [plot.PMmatrix].
+    #' @param ... Arguments passed to [plot.PMmatrix].
     plot = function(...){
       plot.PMmatrix(self$standard_data, ...)
     },
@@ -72,12 +72,12 @@ PM_data <- R6::R6Class("PM_data",
     #' Print method
     #' @details
     #' Displays the PM_data object in a variety of ways.
-    #' @param standard Display the standardized data if \code{TRUE}.
-    #' Default is \code{FALSE}.
-    #' @param viewer Display the Viewer if \code{TRUE}.
+    #' @param standard Display the standardized data if `TRUE`.
+    #' Default is `FALSE`.
+    #' @param viewer Display the Viewer if `TRUE`.
     #' Default is \code{TRUE}.
-    #' @param ... Other arguments to \code{\link{print.data.frame}}. Only
-    #' passed if \code{viewer = FALSE}.
+    #' @param ... Other arguments to [print.data.frame]. Only
+    #' passed if `viewer = FALSE`.
     print = function(standard = F, viewer = T,...) {
       if (standard) {
         what <- self$standard_data
@@ -96,8 +96,8 @@ PM_data <- R6::R6Class("PM_data",
     #' @description
     #' Summary method
     #' @details
-    #' See \code{\link{summary.PMmatrix}.
-    #' @param ... Arguments passed to \code{\link{summary.PMmatrix}}.
+    #' See [summary.PMmatrix].
+    #' @param ... Arguments passed to [summary.PMmatrix].
     summary = function(...) {
       summary.PMmatrix(self$standard_data,...)
     }

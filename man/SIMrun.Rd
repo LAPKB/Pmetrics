@@ -39,7 +39,7 @@ data.frame or matrix with number of rows equal to the number of random
 paramters and 2 columns, corresponding to the minimum and maximum values.
 For example, a final$ab object, or a directly coded matrix, e.g.
 matrix(c(0,5,0,5,0.01,100),nrow=3,ncol=2,byrow=T) for 3 parameters with
-limits of [0,5], [0,5] and [0.01,100], respectively.  It is possible to
+limits of \link{0,5}, \link{0,5} and \link{0.01,100}, respectively.  It is possible to
 convert a parameter to fixed by omitting the second limit.   Means and
 covariances of the total number of simulated sets will be returned to
 verify the simulation, but only those sets within the specified limits will
@@ -160,7 +160,7 @@ simulated concentrations may not be as accurate.}
 
 \item{obsNoise}{The noise added to each simulated concentration for each
 output equation, where the noise is randomly drawn from a normal
-distribution with mean 0 and SD = C0 + C1*conc + C2*conc^2 + C3*conc^3.
+distribution with mean 0 and SD = C0 + C1\emph{conc + C2}conc^2 + C3*conc^3.
 Default values are 0 for all coefficients (i.e.) no noise. If present will
 override any other values in the data file or model file. Specify as a
 vector of length 4 times the number of output equations, e.g.
@@ -201,7 +201,7 @@ creating new output. Default is \code{FALSE}.}
 }
 \value{
 No value is returned, but simulated file(s) will be in the working
-  directory.
+directory.
 }
 \description{
 Runs the Pmetrics simulator

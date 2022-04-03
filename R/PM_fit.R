@@ -1,32 +1,33 @@
-#' Object to define and run models/data in Pmetrics
+#' Object to define and run a model and data in Pmetrics
 #' 
 #' @description 
-#' PM_fit objects comprise a PM_data and PM_model object ready for analysis
+#' `PM_fit` objects comprise a `PM_data` and `PM_model` object ready for analysis
 #' 
 #' @details 
-#' Data and model objects can be previously created as PM_data or PM_fit objects,
+#' Data and model objects can be previously created as [PM_data] or [PM_model] objects,
 #' or created on the fly when making a new PM_fit object. PM_fit objects contain
 #' methods to cross-check data and model objects for compatibility, as well as to 
 #' run the analysis.
-#'
+#' @name PM_fit
 #' @export
+
 PM_fit <- R6::R6Class("PM_fit",
   public = list(
 
     #' @description
     #' Create a new object
-    #' @param data Either the name of a  \code{\link{PM_data}}
+    #' @param data Either the name of a  [PM_data]
     #' object in memory or the quoted name of a Pmetrics
-    #' data file in the current working directory, which will crate a \code{PM_data}
+    #' data file in the current working directory, which will crate a `PM_data`
     #' object on the fly. However, if created on the fly, this object 
     #' will not be available to other
-    #' methods or other instances of \code{PM_fit}.
-    #' @param model Similarly, this is either the name of a \code{\link{PM_model}}
+    #' methods or other instances of `PM_fit`.
+    #' @param model Similarly, this is either the name of a [PM_model]
     #' object in memory or the quoted name of a Pmetrics text model file
     #' in the current working directory. Again, if created on the fly,
     #' the object will not be available to other
-    #' methods or other instances of \code{PM_fit}.
-    #' @param ... Other parameters passed to \code{\link{PM_model}} if created
+    #' methods or other instances of `PM_fit`.
+    #' @param ... Other parameters passed to `PM_model` if created
     #' from a filename
     initialize = function(data = data, model = model, ...) {
       if (is.character(data)) {
@@ -41,8 +42,8 @@ PM_fit <- R6::R6Class("PM_fit",
       private$model <- model
     },
     #' @description Fit the model to the data
-    #' @param ... Other arguments passed to \code{\link{NPrun}}
-    #' @param engine Currently only \dQuote{npag}.
+    #' @param ... Other arguments passed to [NPrun]
+    #' @param engine Currently only "npag".
     run = function(..., engine = "npag") {
       if (inherits(private$model, "PM_model_legacy")) {
         cat(sprintf("Runing Legacy"))
@@ -72,7 +73,7 @@ PM_fit <- R6::R6Class("PM_fit",
     #' @description
     #' Save the current PM_fit object to a .rds file.
     #' @param file_name Name of the file to be created. The
-    #' default is \dQuote{PMfit.rds}.
+    #' default is "PMfit.rds".
     save = function(file_name = "PMfit.rds") {
       saveRDS(self, file_name)
     },
@@ -98,12 +99,20 @@ PM_fit <- R6::R6Class("PM_fit",
 
 #' Load a PM_fit from a previously saved rds file.
 #' 
-#' This function loads an rds file created using the \code{$save} method on a 
-#' \code{PM_fit} object.
-#' @param file_name Name of the file to be read, the default is \dQuote{PMfit.rds}.
-#' @return A \code{\link{PM_fit}} object.
-#' @export
+#' @description
+#' This function loads an rds file created using the `$save` method on a 
+#' `PM_fit` object.
 #' 
+#' @details
+#' `PM_fit` objects contain a `save` method which invokes [saveRDS] to write
+#' the object to the hard drive as an .rds file. This is the corresponding load
+#' function.
+#' @rdname PM_fit
+#' 
+#' @param file_name Name of the file to be read, the default is "PMfit.rds".
+#' @return A `PM_fit` object.
+#' @export
+
 PM_fit$load <- function(file_name = "PMfit.rds") {
   readRDS(file_name)
 }
