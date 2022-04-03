@@ -1,9 +1,22 @@
-# PM_model ----------------------------------------------------------------
 
-
-# Factory pattern
+#' Defines the PM_model class
+#' 
+#' PM_model objects are passed to \code{\link{PM_fit}} objects to initiate a
+#' population analysis. The object is created by defining a list of lists
+#' directly in R, or by reading a model text file in the current working directory.
 #' @export
 PM_model <- R6::R6Class("PM_Vmodel", list())
+
+#' @description 
+#' Create a new PM_model 
+#' @param model This can be a quoted name of a model text file in the 
+#' working directory which will be read and passed to Fortran engines unless
+#' \code{julia = TRUE} in which case is will be passed as a Julia model.
+#' It can be a list of lists that defines the model directly in R. Similarly,
+#' it can be a function that defines a Julia model directly in R. See the user
+#' manual for more help on directly defining models in R.
+#' @param julia Controls whether a filename defines a Fortran or Julia model.
+#' Default is \code{FALSE}, i.e. using Fortran.
 PM_model$new <- function(model, ..., julia = F) {
   print(model)
   # Now we have multiple options for the model:
@@ -60,9 +73,10 @@ fixed <- function(fixed, constant = F, gtz = F) {
 
 # Virtual Class
 # it seems that protected does not exist in R
+
 PM_Vmodel <- R6::R6Class("PM_model",
   public = list(
-    name = NULL, # used by PM_model_legacy
+    #name = NULL, # used by PM_model_legacy
     # error = NULL,
     initialize = function() {
       stop("Unable to initialize abstract class")
@@ -71,54 +85,80 @@ PM_Vmodel <- R6::R6Class("PM_model",
       cat("$model_list\n")
       mlist <- self$model_list
       blockNames <- names(mlist)
+      
+      #internal function to add space blocks
+      sp <- function(n){rep("  ",n)}
+      
       sapply(blockNames, function(x) {
         if (x == "pri") {
-          cat("\t$pri\n")
+          # cat("\t$pri\n")
+          cat(sp(1),"$pri\n")
           for (i in 1:length(mlist$pri)) {
             thispri <- mlist$pri[[i]]
             thisname <- names(mlist$pri)[i]
             cat(paste0(
-              "\t\t$", thisname, "\n\t\t\t$min: ", round(thispri$min, 3),
-              "\n\t\t\t$max: ", round(thispri$max, 3),
-              "\n\t\t\t$mean: ", round(thispri$mean, 3),
-              "\n\t\t\t$sd: ", round(thispri$sd, 3),
-              "\n\t\t\t$gtz: ", thispri$gtz, "\n"
+              # "\t\t$", thisname, "\n\t\t\t$min: ", round(thispri$min, 3),
+              # "\n\t\t\t$max: ", round(thispri$max, 3),
+              # "\n\t\t\t$mean: ", round(thispri$mean, 3),
+              # "\n\t\t\t$sd: ", round(thispri$sd, 3),
+              # "\n\t\t\t$gtz: ", thispri$gtz, "\n"
+              sp(2),"$", thisname, "\n\t\t\t$min: ", round(thispri$min, 3),
+              "\n",sp(3),"$max: ", round(thispri$max, 3),
+              "\n",sp(3),"$mean: ", round(thispri$mean, 3),
+              "\n",sp(3),"$sd: ", round(thispri$sd, 3),
+              "\n",sp(3),"$gtz: ", thispri$gtz, "\n"
             ))
           }
         } else if (x == "cov") {
-          cat("\n\t$cov: ", paste0("[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = ", "))
+          # cat("\n\t$cov: ", paste0("[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = ", "))
+          cat("\n",sp(1),"$cov: ", paste0("[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = ", "))
           cat("\n")
         } else if (x == "sec") {
-          cat("\n\t$sec: ", paste0("[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = ", "))
+          # cat("\n\t$sec: ", paste0("[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = ", "))
+          cat("\n",sp(1),"$sec: ", paste0("[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = ", "))
           cat("\n")
         } else if (x == "dif") {
-          cat("\n\t$dif: ", paste0("[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = ", "))
+          # cat("\n\t$dif: ", paste0("[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = ", "))
+          cat("\n",sp(1),"$dif: ", paste0("[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = ", "))
           cat("\n")
         } else if (x == "lag") {
-          cat("\n\t$lag: ", paste0("[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = ", "))
+          # cat("\n\t$lag: ", paste0("[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = ", "))
+          cat("\n",sp(1),"$lag: ", paste0("[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = ", "))
           cat("\n")
         } else if (x == "bol") {
-          cat("\n\t$bol: ", paste0("[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = ", "))
+          # cat("\n\t$bol: ", paste0("[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = ", "))
+          cat("\n",sp(1),"$bol: ", paste0("[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = ", "))
           cat("\n")
         } else if (x == "fa") {
-          cat("\n\t$fa: ", paste0("[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = ", "))
+          # cat("\n\t$fa: ", paste0("[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = ", "))
+          cat("\n",sp(1),"$fa: ", paste0("[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = ", "))
           cat("\n")
         } else if (x == "ini") {
-          cat("\n\t$ini: ", paste0("[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = ", "))
+          cat("\n",sp(1),"$ini: ", paste0("[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = ", "))
+          # cat("\n\t$ini: ", paste0("[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = ", "))
           cat("\n")
         } else if (x == "out") {
-          cat("\n\t$out\n")
+          # cat("\n\t$out\n")
+          cat("\n",sp(1),"$out\n")
           for (i in 1:length(mlist$out)) {
             thisout <- mlist$out[[i]]
             cat(paste0(
-              "\t\t$Y", i,
-              "\n\t\t\t$value: \"", thisout[[1]], "\"",
-              "\n\t\t\t$err\n",
-              "\n\t\t\t\t$model\n",
-              "\t\t\t\t\t$additive: ", thisout$err$model$additive, "\n",
-              "\t\t\t\t\t$proportional: ", thisout$err$model$proportional, "\n",
-              "\t\t\t\t\t$constant: ", thisout$err$model$constant, "\n",
-              "\n\t\t\t\t$assay: ",
+              # "\t\t$Y", i,
+              # "\n\t\t\t$value: \"", thisout[[1]], "\"",
+              # "\n\t\t\t$err\n",
+              # "\n\t\t\t\t$model\n",
+              # "\t\t\t\t\t$additive: ", thisout$err$model$additive, "\n",
+              # "\t\t\t\t\t$proportional: ", thisout$err$model$proportional, "\n",
+              # "\t\t\t\t\t$constant: ", thisout$err$model$constant, "\n",
+              # "\n\t\t\t\t$assay: ",
+              sp(2),"$Y", i,
+              sp(3),"$value: \"", thisout[[1]], "\"",
+              sp(3),"$err\n",
+              sp(4),"$model\n",
+              sp(5),"$additive: ", thisout$err$model$additive, "\n",
+              sp(5),"$proportional: ", thisout$err$model$proportional, "\n",
+              sp(5),"$constant: ", thisout$err$model$constant, "\n",
+              "\n",sp(4),"$assay: ",
               paste0("[", 1:length(thisout$err$assay), "] ", thisout$err$assay, collapse = ", ")
             ))
           }

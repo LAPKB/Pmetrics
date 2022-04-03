@@ -1,15 +1,3 @@
-# library(R6)
-# library(JuliaCall)
-# j <- julia_setup()
-# julia_library("npag")
-# j$library("npag")
-# public classes
-
-# may need to separate out error model as separate, e.g. need data, model, error to run
-
-# PM_fit ------------------------------------------------------------------
-
-
 #' Object to define and run models/data in Pmetrics
 #'
 #' @export
@@ -18,12 +6,19 @@ PM_fit <- R6::R6Class("PM_fit",
 
     #' @description
     #' Create a new object
-    #' @param data Either a PMmatrix object loaded via
-    #' \code{\link{PMreadMatrix}} or the quoted name of a Pmetrics
-    #' data file in the current working directory
-    #' @param model Either the name of a \code{\link{PM_model}}
-    #' object or the quoted name of a Pmetrics text model file
-    #' in the current working directory
+    #' @param data Either the name of a  \code{\link{PM_data}}
+    #' object in memory or the quoted name of a Pmetrics
+    #' data file in the current working directory, which will crate a \code{PM_data}
+    #' object on the fly. However, if created on the fly, this object 
+    #' will not be available to other
+    #' methods or other instances of \code{PM_fit}.
+    #' @param model Similarly, this is either the name of a \code{\link{PM_model}}
+    #' object in memory or the quoted name of a Pmetrics text model file
+    #' in the current working directory. Again, if created on the fly,
+    #' the object will not be available to other
+    #' methods or other instances of \code{PM_fit}.
+    #' @param ... Other parameters passed to \code{\link{PM_model}} if created
+    #' from a filename
     initialize = function(data = data, model = model, ...) {
       if (is.character(data)) {
         data <- PM_data$new(data)
@@ -36,11 +31,9 @@ PM_fit <- R6::R6Class("PM_fit",
       private$data <- data
       private$model <- model
     },
-
     #' @description Fit the model to the data
-    #' @param engine Currently only npag.
-    #' @param \dots Other arguments passed to \code{\link{NPrun}}
-
+    #' @param ... Other arguments passed to \code{\link{NPrun}}
+    #' @param engine Currently only \dQuote{npag}.
     run = function(..., engine = "npag") {
       if (inherits(private$model, "PM_model_legacy")) {
         cat(sprintf("Runing Legacy"))
@@ -68,11 +61,14 @@ PM_fit <- R6::R6Class("PM_fit",
       }
     },
     #' @description
-    #' Save the current PM_fit object into a .rds file.
-    #' @param file_name Name of the file to be created, the default is PMfit.rds
-    save = function(file_name = "PMfit.rds") {dd
+    #' Save the current PM_fit object to a .rds file.
+    #' @param file_name Name of the file to be created. The
+    #' default is \dQuote{PMfit.rds}.
+    save = function(file_name = "PMfit.rds") {
       saveRDS(self, file_name)
     },
+    #' @description 
+    #' Checks for errors in data and model objects and agreement between them.
     check = function() {
       if (inherits(private$model, "PM_model_list")) {
         cat(sprintf("Checking...\n"))
@@ -90,10 +86,11 @@ PM_fit <- R6::R6Class("PM_fit",
   )
 )
 
+
+#' Load a PM_fit from a previously saved .rds file.
+#' @param file_name Name of the file to be read, the default is \dQuote{PMfit.rds}.
+#' @return A \code{\link{PM_fit}} objects.
 #' @export
-#' @description
-#' Returns a PM_fit object based on the information found in a specified rds file.
-#' @param file_name Name of the file to be read, the default is PMfit.rds
 PM_fit$load <- function(file_name = "PMfit.rds") {
   readRDS(file_name)
 }
