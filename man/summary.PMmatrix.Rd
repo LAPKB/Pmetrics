@@ -13,7 +13,7 @@
 
 \item{formula}{Optional formula for specifying custom summaries.  See \code{\link{aggregate}}
 and \code{\link{formula}} for details on how to specify formulae in R. If, for example, the data contain
-a covariate for weight named 'wt', then to summarize the mean dose in mg/kg per subject specify 
+a covariate for weight named 'wt', then to summarize the mean dose in mg/kg per subject specify
 \code{formula=dose/wt~id, FUN=mean}.}
 
 \item{FUN}{The summary function to apply to \code{formula}, if specified.}
@@ -23,7 +23,7 @@ a covariate for weight named 'wt', then to summarize the mean dose in mg/kg per 
 \item{exclude}{A vector of subject IDs to exclude in the summary, e.g. c(4,6:14,16:20)}
 }
 \value{
-A list of class \emph{summary.PMmatrix} with the summary of the PMmatrix object, 
+A list of class \emph{summary.PMmatrix} with the summary of the PMmatrix object,
 containing the following items:
 \item{nsub}{Number of subjects}
 \item{ndrug}{Number of drug inputs}

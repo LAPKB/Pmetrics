@@ -78,7 +78,7 @@ If this option is selected, regression statistics will be printed on the plot if
 \item{x.stat}{Horizontal position to plot the linear regression statistics;
 the units are relative to the origin, i.e. extreme left is 0 and extreme right is 1.}
 
-\item{y.stat}{Vertical position to plot the linear regression statistics; 
+\item{y.stat}{Vertical position to plot the linear regression statistics;
 the units are relative to the origin, i.e. extreme bottom is 0 and extreme top is 1.}
 
 \item{col.stat}{Color of the text for the regression statistics.}
@@ -98,12 +98,12 @@ lowess regression)}
 
 \item{ylab}{Label for the y-axis.  If missing, will default to the name of the y-variable.}
 
-\item{out}{Direct output to a PDF, EPS or image file.  Format is a named list whose first argument, 
+\item{out}{Direct output to a PDF, EPS or image file.  Format is a named list whose first argument,
 \code{type} is one of the following character vectors: \dQuote{pdf}, \dQuote{eps} (maps to \code{postscript}),
 \dQuote{\code{png}}, \dQuote{\code{tiff}}, \dQuote{\code{jpeg}}, or \dQuote{\code{bmp}}.  Other named items in the list
 are the arguments to each graphic device. PDF and EPS are vector images acceptable to most journals
 in a very small file size, with scalable (i.e. infinite) resolution.  The others are raster images which may be very
-large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the 
+large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the
 output will go to the current graphic device (usually the monitor). For example, to output an eps file,
 out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.}
 
@@ -119,7 +119,7 @@ Plot PMcov objects
 This method will plot any two columns, specified using a formula, of a PMcov object, which contains covariate and Bayesian posterior parameter information
 for each subject.  Specifiying any two variables that do not include time will result in a scatter plot with optional regression and reference lines.  If
 time is included as the x variable, the y variable will be plotted vs. time, aggregated by subject.  This can be useful to see time varying parameters,
-although a formula within formula approach may be required, e.g. plot(cov.1,I(cl_0*wt**0.75)~time) in order to see the change in cl over time according to 
+although a formula within formula approach may be required, e.g. plot(cov.1,I(cl_0*wt**0.75)~time) in order to see the change in cl over time according to
 the change in wt over time, even though cl_0 is constant for a given subject.
 }
 \examples{

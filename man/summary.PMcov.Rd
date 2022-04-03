@@ -14,7 +14,7 @@
 \item{icen}{Summary function for covariates and posterior parameters. Default is \dQuote{median}, but can specify \dQuote{mean}.}
 }
 \value{
-A data frame with the summary of the PMcov object for each subject's covariates and 
+A data frame with the summary of the PMcov object for each subject's covariates and
 Bayesian posterior parameter values.
 }
 \description{
