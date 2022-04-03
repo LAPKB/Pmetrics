@@ -12,8 +12,8 @@ makeFinal(data)
 \value{
 The output of \code{makeFinal} is a list of class \emph{PMfinal}, which contains the following:
 \item{popPoints }{(NPAG only) Dataframe of the final cycle joint population density of grid points
- with column names equal to the name of each random parameter plus \emph{prob} for the
- associated probability of that point}
+with column names equal to the name of each random parameter plus \emph{prob} for the
+associated probability of that point}
 \item{popMean }{The final cycle mean for each random parameter distribution}
 \item{popSD }{The final cycle standard deviation for each random parameter distribution}
 \item{popCV }{The final cycle coefficient of variation (SD/Mean) for each random parameter distribution}
@@ -24,17 +24,17 @@ The output of \code{makeFinal} is a list of class \emph{PMfinal}, which contains
 #' \item{postPoints}{(NPAG only) Dataframe of posterior population points for each of the first 100 subject,
 with columns id, point, parameters and probability.  The first column is the subject, the second column has the population
 point number, followed by the values for the parameters in that point and the probability.}
-\item{postMean }{A \emph{nsub} x \emph{npar} data frame containing 
+\item{postMean }{A \emph{nsub} x \emph{npar} data frame containing
 the means of the posterior distributions for each parameter.}
-\item{postSD }{A \emph{nsub} x \emph{npar} data frame containing 
+\item{postSD }{A \emph{nsub} x \emph{npar} data frame containing
 the SDs of the posterior distributions for each parameter.}
-\item{postVar }{A \emph{nsub} x \emph{npar} data frame containing 
+\item{postVar }{A \emph{nsub} x \emph{npar} data frame containing
 the variances of the posterior distributions for each parameter.}
 \item{postCov }{NPAG only: An array of dimensions \emph{npar} x \emph{npar} x \emph{nsub} that
 contains the covariances of the posterior distributions for each parameter and subject.}
 \item{postCor }{NPAG only: An array of dimensions \emph{npar} x \emph{npar} x \emph{nsub} that
 contains the correlations of the posterior distributions for each parameter and subject.}
-\item{postMed }{A \emph{nsub} x \emph{npar} data frame containing 
+\item{postMed }{A \emph{nsub} x \emph{npar} data frame containing
 the medians of the posterior distributions for each parameter.}
 \item{shrinkage }{A data frame with the shrinkage for each parameter.  \code{popVar}
 is comprised of variance(EBE) + variance(EBD), where EBE is the Emprical Bayes Estimate or mean of the posterior

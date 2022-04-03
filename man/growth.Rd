@@ -15,7 +15,7 @@ growth
 Centers for Disease Control Pediatric and Adolescent Growth Data Table
 }
 \details{
-Coefficients to calculate sex-specific percentiles of length, weight and head cicumference data 
+Coefficients to calculate sex-specific percentiles of length, weight and head cicumference data
 in children from 0 to 18 years.  Downloaded and combined from http://www.cdc.gov/growthcharts/data_tables.htm.
 Used with the \code{qgrowth} function to generate height and weight percentiles for the purposes of simulation.
 }

@@ -15,27 +15,27 @@ mtsknn.eq(x, y, k, clevel = 0.05, getpval = TRUE, print = TRUE)
 
 \item{clevel}{The confidence level. Default value is 0.05.}
 
-\item{getpval}{Logic value. If it is set to be TRUE the p value of 
-test will be calcuated and reported; if it is set to be false the 
+\item{getpval}{Logic value. If it is set to be TRUE the p value of
+test will be calcuated and reported; if it is set to be false the
 p value will not be calculated.}
 
-\item{print}{Boolean value. If it is set to be TRUE the test 
-result will be reported; if it is set to be FALSE the test 
+\item{print}{Boolean value. If it is set to be TRUE the test
+result will be reported; if it is set to be FALSE the test
 result will not be reported.}
 }
 \value{
-A list consists of the test statistics, 
+A list consists of the test statistics,
 normalized Z score and corresponding P value.
 }
 \description{
 Compare discrete distributions
 }
 \details{
-This function tests whether two samples share the same underlying 
+This function tests whether two samples share the same underlying
 distribution based on k-nearest-neighbors approach.
-Matrices or data frames x and y are the two samples to be tested. 
-Each row consists of the coordinates of a data point. 
-The integer k is the number of nearest neighbors to choose in the 
+Matrices or data frames x and y are the two samples to be tested.
+Each row consists of the coordinates of a data point.
+The integer k is the number of nearest neighbors to choose in the
 testing procedure. This approach is robust in the unbalanced case.
 }
 \references{

@@ -86,15 +86,15 @@ Plots PMpta objects
 This function will plot the percent target attainment for objects made with the \code{\link{makePTA}} function.
 For the legend, defaults that are different that the standard are:
 \itemize{
-  \item x Default \dQuote{topright}
-  \item legend Default will be the labeled regimen names supplied during \code{\link{makePTA}},
-  or if missing, \dQuote{Regimen 1, Regimen 2,...Regimen n}, where \emph{n} is the number of
-  regimens in the PMpta object.
-  This default can be overridden by a supplied character vector of regimen names.
-  \item col The color of each Regimen plot as specified by the default color scheme or \code{col}
-  \item pch The plotting character for each Regimen plot as specified by the default plotting characters or \code{pch}
-  \item lty The line type of each Regimen plot as specified by the default line types or \code{lty}
-  \item bg Default \dQuote{white}
+\item x Default \dQuote{topright}
+\item legend Default will be the labeled regimen names supplied during \code{\link{makePTA}},
+or if missing, \dQuote{Regimen 1, Regimen 2,...Regimen n}, where \emph{n} is the number of
+regimens in the PMpta object.
+This default can be overridden by a supplied character vector of regimen names.
+\item col The color of each Regimen plot as specified by the default color scheme or \code{col}
+\item pch The plotting character for each Regimen plot as specified by the default plotting characters or \code{pch}
+\item lty The line type of each Regimen plot as specified by the default line types or \code{lty}
+\item bg Default \dQuote{white}
 }
 }
 \seealso{

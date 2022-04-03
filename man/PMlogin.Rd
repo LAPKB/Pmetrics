@@ -18,7 +18,7 @@ A message that specifies if the user was successfuly logged in, or an explanatio
 Login a existent user onto the server.
 }
 \details{
-This function receives an email of a registered user and optionally the server adress.  
+This function receives an email of a registered user and optionally the server adress.
 The function will prompt the user for the password.
 The server session will last until the R session finishes or by using \code{PMlogout}.
 }

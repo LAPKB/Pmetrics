@@ -20,9 +20,9 @@ and fourth file, specify \code{include=c(1,4)}.}
 
 \item{combine}{Boolean parameter, default \code{False}, which specifies whether you wish to combine
 the parsed files into a single PMsim object.  This can be useful for making visual predictive
-checks, for example.  If \code{combine=F}, and multiple files are parsed, then the return object 
+checks, for example.  If \code{combine=F}, and multiple files are parsed, then the return object
 will be a list of PMsim objects, which can be plotted or otherwise accessed using standard list
-referencing, e.g. simlist[[1]], simlist[[2]], etc.}
+referencing, e.g. simlist[\link{1}], simlist[\link{2}], etc.}
 
 \item{silent}{Suppress messages}
 
@@ -58,11 +58,11 @@ Parses the output of the Pmetrics simulator
 For \code{file} specification \dQuote{?} will be matched by just a single numeral or character; \dQuote{*} will be
 matched by any number of consecutive alphanumeric characters.  Examples include \code{file='simout1.txt,simout2.txt,simout3.txt'},
 \code{file='simout?.txt'} and \code{file='sim*.txt'}.All three will find the files simout1.txt,
-simout2.txt, and simout3.txt in the working directory. The second example would also find simout4.txt, etc.  The third 
-example would also find sim_1.txt if that existed. 
+simout2.txt, and simout3.txt in the working directory. The second example would also find simout4.txt, etc.  The third
+example would also find sim_1.txt if that existed.
 Note that to combine simulator output files, the numbers of simulated profiles may differ.
 The number of outputs and times of observations also may differ, although combining these may lead to
-strange plots since not all profiles have the same observations. 
+strange plots since not all profiles have the same observations.
 For parallel execution, the function requires packages 'doParallel' and 'foreach'. If not installed, it will try to install, failing that it will run in serial mode.
 }
 \seealso{
