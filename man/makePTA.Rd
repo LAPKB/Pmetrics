@@ -11,18 +11,18 @@ makePTA(simdata, targets, target.type, ...)
 with wildcard support, e.g. \dQuote{simout*} or \dQuote{simout?}, or
 a list of PMsim objects made by \code{\link{SIMparse}} with suitable simulated regimens and observations.  The number and times of simulated
 observations does not have to be the same in all objects.  It can also be a \emph{PMpta} object previously made with
-\code{makePTA} can be passed for recalculation with a new success value or simlabels.  Finally, \emph{PMpost} and \emph{PMmatrix} objects are
+\code{makePTA} can be passed for recalculation with a new success value or simlabels.  Finally, \emph{PMpost} and \emph{PMmatrix} objects are 
 also allowed.}
 
 \item{targets}{A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. c(0.25, 0.5,1,2,4,8,16,32).
 This can also be a sampled distribution using  \code{\link{makePTAtarget}}.}
 
 \item{target.type}{A numeric or character vector, length 1.  If numeric, must correspond to an observation time common to all PMsim objects in
-\code{simdata}, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at time \code{target.type} to target.  This enables
+\code{simdata}, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at time \code{target.type} to target.  This enables 
 testing of a specific timed concentration (e.g. one hour after a dose or C1) which may be called a peak, but is not actually the maximum drug
-concentration.  Be sure that the time in the simulated data is used, e.g. 122 after a dose given at 120.  Character values may be one of
+concentration.  Be sure that the time in the simulated data is used, e.g. 122 after a dose given at 120.  Character values may be one of 
 \dQuote{time}, \dQuote{auc}, \dQuote{peak}, or \dQuote{min}, for, respectively, percent time above target within the time range
-specified by \code{start} and \code{end}, ratio of area under the curve within the time range to target, ratio of peak concentration within the time range
+specified by \code{start} and \code{end}, ratio of area under the curve within the time range to target, ratio of peak concentration within the time range 
 to target, or ratio of minimum concentration within the time range to target.}
 
 \item{simlabels}{Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.}
@@ -31,7 +31,7 @@ to target, or ratio of minimum concentration within the time range to target.}
 
 \item{outeq}{An integer specifying the number of the simulated output equation to use. Default is 1.}
 
-\item{free.fraction}{Proportion of free, active drug.  Default is 1, i.e. 100\\% free drug or 0\\% protein binding.}
+\item{free.fraction}{Proportion of free, active drug.  Default is 1, i.e. 100\% free drug or 0\% protein binding.}
 
 \item{start}{Specify the time to begin PTA calculations. Default is a vector with the first observation time for subjects
 in each element of \code{simdata}, e.g. dose regimen. If specified as a vector, values will be recycled as necessary.}
@@ -50,8 +50,7 @@ distributions, or "mean".  Default is "median".}
 \value{
 The output of \code{makePTA} is a list of class \emph{PMpta},
 which has 2 objects:
-\itemize{
-\item{results }{A data frame with the following columns: simnum, id, target, pdi.
+\item{results }{A data frame with the following columns: simnum, id, target, pdi.  
 \emph{simnum} is the number of the simulation; \emph{id} is the simulated profile number
 within each simulation; \emph{target} is the specified target; and \emph{pdi} is
 the target pharmacodynamic index, e.g. time > target, auc:target, etc.}
@@ -59,9 +58,8 @@ the target pharmacodynamic index, e.g. time > target, auc:target, etc.}
 If \code{targets} was specified via \code{\link{makePTAtarget}} to be a sampled distribution, then
 the target column will be missing from the outcome table.
 \emph{simnum} and \emph{target} are as for \code{results}.  The \emph{prop.success} column has the proportion with a pdi > \code{success},
-as specified in the function call.  The \emph{pdi.mean} and \emph{pdi.sd} columns have the
+as specified in the function call.  The \emph{pdi.mean} and \emph{pdi.sd} columns have the 
 mean and standard deviation of the target pharmacodynamic index (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.}
-}
 }
 \description{
 Calculates the Percent Target Attainment (PTA)
@@ -70,7 +68,7 @@ Calculates the Percent Target Attainment (PTA)
 \code{makePTA} will calculate the PTA for any number of simulations, targets and definitions of success.
 Simulations typically differ by dose, but may differ by other features such as children vs. adults. This function will also
 accept data from real subjects either in the form of a \emph{PMpost} or a \emph{PMmatrix} object.
-If a \emph{PMpta} object is passed to the function as the \code{simdata}, the only other parameter required is success.
+If a \emph{PMpta} object is passed to the function as the \code{simdata}, the only other parameter required is success. 
 If desired, a new set of simlabels can be specified; all other parameters will be ignored.
 }
 \seealso{
