@@ -16,7 +16,7 @@ which has the following columns:
 \item{time }{Times of covariate observations}
 \item{covnames... }{Columns with each covariate observations in the dataset for each subject and \code{time} }
 \item{parnames... }{Columns with each parameter in the model and the \code{icen} summary
-for each subject, replicated as necessary for covariate observation times and duplicated for Bayesian 
+for each subject, replicated as necessary for covariate observation times and duplicated for Bayesian
 parameter means and medians }
 \item{icen}{The type of summarized Bayesian posterior individual parameter values: mean or median.}
 }

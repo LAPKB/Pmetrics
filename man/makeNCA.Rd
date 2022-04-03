@@ -74,26 +74,26 @@ to signify maximum time for that subject.}
 }
 \value{
 A dataframe of class \emph{PMnca} with columns
- \item{id }{Subject identification}
- \item{auc }{Area under the time-observation curve, using the trapezoidal approximation, from time 0 until the second dose,
+\item{id }{Subject identification}
+\item{auc }{Area under the time-observation curve, using the trapezoidal approximation, from time 0 until the second dose,
 or if only one dose, until the last observation}
- \item{aumc }{Area under the first moment curve}
- \item{k }{Slope by least-squares linear regression of the final 3 log-transformed observations vs. time.
- If the final 3 concentrations are not decreasing such that linear regression results in a positive slope,
- this value and all others that depend on \code{k} will be suppressed.}
- \item{auclast }{Area under the curve from the time of the last observation to infinity, calculated as [Final obs]/k.
- This value will be suppressed if start != 0.}
- \item{aumclast }{Area under the first moment curve from the time of the last observation to infinity.
- This value will be suppressed if start!=0.}
- \item{aucinf }{Area under the curve from time 0 to infinity, caluculated as auc + auclast}
- \item{aumcinf }{Area under the first moment curve from time 0 to infinity}
- \item{mrt }{Mean residence time, calculated as 1/k}
- \item{cmax }{Maximum predicted concentration after the first dose}
- \item{tmax }{Time to cmax}
- \item{cl }{Clearance, calculated as dose/aucinf}
- \item{vdss }{Volume of distribution at steady state, calculated as cl*mrt}
- \item{thalf }{Half life of elimination, calculated as ln(2)/k}
- \item{dose }{Dose for each subject}
+\item{aumc }{Area under the first moment curve}
+\item{k }{Slope by least-squares linear regression of the final 3 log-transformed observations vs. time.
+If the final 3 concentrations are not decreasing such that linear regression results in a positive slope,
+this value and all others that depend on \code{k} will be suppressed.}
+\item{auclast }{Area under the curve from the time of the last observation to infinity, calculated as \link{Final obs}/k.
+This value will be suppressed if start != 0.}
+\item{aumclast }{Area under the first moment curve from the time of the last observation to infinity.
+This value will be suppressed if start!=0.}
+\item{aucinf }{Area under the curve from time 0 to infinity, caluculated as auc + auclast}
+\item{aumcinf }{Area under the first moment curve from time 0 to infinity}
+\item{mrt }{Mean residence time, calculated as 1/k}
+\item{cmax }{Maximum predicted concentration after the first dose}
+\item{tmax }{Time to cmax}
+\item{cl }{Clearance, calculated as dose/aucinf}
+\item{vdss }{Volume of distribution at steady state, calculated as cl*mrt}
+\item{thalf }{Half life of elimination, calculated as ln(2)/k}
+\item{dose }{Dose for each subject}
 }
 \description{
 Performs a non-compartmental analysis from observed concentrations in the raw data

@@ -24,7 +24,7 @@ Plots the simulation profiles with MMoptimal times indicated as vertical lines.
 Plots \emph{MMopt} objects
 }
 \details{
-Simulated observations are plotted on the y-axis vs. time on the x.axis.  
+Simulated observations are plotted on the y-axis vs. time on the x.axis.
 Optimal sampling times are indicated as vertical lines.
 }
 \seealso{

@@ -7,10 +7,10 @@
 #' numerical predictive checks.
 #' 
 #' @details
-#' This object is created by running the \code{make_valid} method in a 
-#' \code{\link{PM_result}} object. It contains all the information necessary
+#' This object is created by running the `make_valid` method in a 
+#' [PM_result] object. It contains all the information necessary
 #' to internally validate the result by simulation methods. 
-#' @seealso \code{\link{PM_result}}, \code{\link{makeValid}}
+#' @seealso [PM_result], [makeValid]
 #' @export
 PM_valid <- R6Class("PM_valid",
     public = list(
@@ -38,8 +38,8 @@ PM_valid <- R6Class("PM_valid",
             self$npde <- valRes$npde
         },
         #' @description 
-        #' Plot method. Calls \code{\link{plot.PMvalid}}.
-        #' @param ... Arguments to pass to \code{\link{plot.PMvalid}}.
+        #' Plot method. Calls [plot.PMvalid].
+        #' @param ... Arguments to pass to \[plot.PMvalid].
         plot = function(...) {
             plot.PMvalid(self, ...)
         }

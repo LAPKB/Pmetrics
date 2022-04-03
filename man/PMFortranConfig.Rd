@@ -7,7 +7,7 @@
 PMFortranConfig(reconfig = F)
 }
 \arguments{
-\item{reconfig}{Default is \code{False}.  If \code{True}, will allow user to change
+\item{reconfig}{Default is \code{FALSE}.  If \code{TRUE}, will allow user to change
 the previously specified compiler and template.}
 }
 \value{
@@ -19,17 +19,16 @@ compiler.
 a command line template appropriate to the compiler.
 }
 \details{
-Command line templates are defined for the following compilers: \bold{gfortran}, \bold{g95},
-\bold{Intel Visual}, and \bold{Lahey}.  Additionally, users may specify a custom command line
+Command line templates are defined for the following compilers: \strong{gfortran}, \strong{g95},
+\strong{Intel Visual}, and \strong{Lahey}.  Additionally, users may specify a custom command line
 template for any other compiler.  Within the template \emph{<exec>} is used as a placeholder
 for the filename of the executable file, and \emph{<files>} as a placeholder for the files to
 compile and link, both of which will be defined at run time by the appropriate Pmetrics functions.
-The Pmetrics functions which use a Fortran compiler are \code{\link{NPrun}}, \code{\link{ITrun}},
-\code{\link{ERRrun}}, and \code{\link{SIMrun}}.
+The Pmetrics functions which use a Fortran compiler are \link{NPrun}, \link{ITrun},
+\link{ERRrun}, and \link{SIMrun}.
 }
 \seealso{
-\code{\link{NPrun}}, \code{\link{ITrun}},\code{\link{ERRrun}}, and
-\code{\link{SIMrun}}
+\link{NPrun}, \link{ITrun},[ERRrun], and \link{SIMrun}
 }
 \author{
 Michael Neely

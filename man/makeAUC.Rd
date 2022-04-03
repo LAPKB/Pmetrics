@@ -61,7 +61,7 @@ Calculates AUC from a variety of inputs
 }
 \details{
 \code{makeAUC} will calculate the area under the time concentration curve using the
-trapezoidal approximation from a variety of inputs.  If a PMpost, PMop, or PMsim object is specified, 
+trapezoidal approximation from a variety of inputs.  If a PMpost, PMop, or PMsim object is specified,
 \code{formula} is not required.  AUCs from PMop objects are based on observations.
 For AUCs based on predictions, use a PMpost object.
 }
