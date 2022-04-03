@@ -1,5 +1,12 @@
 #' Pmetrics validation object
 #' 
+#' @description 
+#' Contains results of internal validation by simulation to permit generation of
+#' visual predictive checks (VPCs), prediction corrected visual predictive checks, 
+#' (pcVPCs), normalized prediction distribution errors (NPDE), and 
+#' numerical predictive checks.
+#' 
+#' @details
 #' This object is created by running the \code{make_valid} method in a 
 #' \code{\link{PM_result}} object. It contains all the information necessary
 #' to internally validate the result by simulation methods. 

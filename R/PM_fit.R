@@ -1,4 +1,13 @@
 #' Object to define and run models/data in Pmetrics
+#' 
+#' @description 
+#' PM_fit objects comprise a PM_data and PM_model object ready for analysis
+#' 
+#' @details 
+#' Data and model objects can be previously created as PM_data or PM_fit objects,
+#' or created on the fly when making a new PM_fit object. PM_fit objects contain
+#' methods to cross-check data and model objects for compatibility, as well as to 
+#' run the analysis.
 #'
 #' @export
 PM_fit <- R6::R6Class("PM_fit",
@@ -87,10 +96,14 @@ PM_fit <- R6::R6Class("PM_fit",
 )
 
 
-#' Load a PM_fit from a previously saved .rds file.
+#' Load a PM_fit from a previously saved rds file.
+#' 
+#' This function loads an rds file created using the \code{$save} method on a 
+#' \code{PM_fit} object.
 #' @param file_name Name of the file to be read, the default is \dQuote{PMfit.rds}.
-#' @return A \code{\link{PM_fit}} objects.
+#' @return A \code{\link{PM_fit}} object.
 #' @export
+#' 
 PM_fit$load <- function(file_name = "PMfit.rds") {
   readRDS(file_name)
 }
