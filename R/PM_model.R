@@ -76,7 +76,7 @@ fixed <- function(fixed, constant = F, gtz = F) {
 
 PM_Vmodel <- R6::R6Class("PM_model",
   public = list(
-    #name = NULL, # used by PM_model_legacy
+    name = NULL, # used by PM_model_legacy
     # error = NULL,
     initialize = function() {
       stop("Unable to initialize abstract class")
@@ -87,7 +87,7 @@ PM_Vmodel <- R6::R6Class("PM_model",
       blockNames <- names(mlist)
       
       #internal function to add space blocks
-      sp <- function(n){rep("  ",n)}
+      sp <- function(n){paste0(rep("   ",n), collapse="")}
       
       sapply(blockNames, function(x) {
         if (x == "pri") {
@@ -102,7 +102,7 @@ PM_Vmodel <- R6::R6Class("PM_model",
               # "\n\t\t\t$mean: ", round(thispri$mean, 3),
               # "\n\t\t\t$sd: ", round(thispri$sd, 3),
               # "\n\t\t\t$gtz: ", thispri$gtz, "\n"
-              sp(2),"$", thisname, "\n\t\t\t$min: ", round(thispri$min, 3),
+              sp(2),"$", thisname, "\n",sp(3),"$min: ", round(thispri$min, 3),
               "\n",sp(3),"$max: ", round(thispri$max, 3),
               "\n",sp(3),"$mean: ", round(thispri$mean, 3),
               "\n",sp(3),"$sd: ", round(thispri$sd, 3),
@@ -151,8 +151,8 @@ PM_Vmodel <- R6::R6Class("PM_model",
               # "\t\t\t\t\t$proportional: ", thisout$err$model$proportional, "\n",
               # "\t\t\t\t\t$constant: ", thisout$err$model$constant, "\n",
               # "\n\t\t\t\t$assay: ",
-              sp(2),"$Y", i,
-              sp(3),"$value: \"", thisout[[1]], "\"",
+              sp(2),"$Y", i,"\n",
+              sp(3),"$value: \"", thisout[[1]], "\"\n",
               sp(3),"$err\n",
               sp(4),"$model\n",
               sp(5),"$additive: ", thisout$err$model$additive, "\n",
