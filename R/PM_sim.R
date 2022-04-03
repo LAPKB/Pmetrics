@@ -1,3 +1,9 @@
+#' Object to contain results of simulation
+#' 
+#' To do
+#' 
+#' To do
+#' 
 #' @export
 PM_sim <- R6::R6Class("PM_Vsim", list())
 
@@ -32,12 +38,22 @@ PM_sim$new <- function(poppar, ...) {
 PM_vsim <- R6::R6Class(
     "PM_sim",
     public <- list(
+        #' @field obs Observations
         obs = NULL,
+        #' @field amt Amounts
         amt = NULL,
+        #' @field parValues Retained simulated parameter values after discarding
+        #' any due to truncation limits
         parValues = NULL,
+        #' @field totalSets Number of all simulated parameter values
         totalSets = NULL,
+        #' @field totalMeans Mean of all simulated parameter values
         totalMeans = NULL,
+        #' @field totalCov Covariance of all simulated parameter values
         totalCov = NULL,
+        #' @description Create new simulation objects with results of `$sim`
+        #' method for [PM_result]
+        #' @param list List of output passed by `$sim`.
         initialize = function(list) {
             self$obs <- list$obs
             self$amt <- list$amt
@@ -51,6 +67,9 @@ PM_vsim <- R6::R6Class(
         save = function(file_name = "PMsim.rds") {
             saveRDS(self, file_name)
         },
+        #' @description
+        #' Plot `PM_sim` object.
+        #' @param ... Arguments passed to [plot.PMsim].
         plot = function(...) {
             plot.PMsim(self, ...)
         },
