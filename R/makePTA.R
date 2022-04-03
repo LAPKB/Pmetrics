@@ -39,7 +39,6 @@
 #' @param block Which block to plot, where a new block is defined by dose resets (evid=4); default is 1.
 #' @return The output of \code{makePTA} is a list of class \emph{PMpta},
 #' which has 2 objects:
-#' \itemize{
 #' \item{results }{A data frame with the following columns: simnum, id, target, pdi.  
 #' \emph{simnum} is the number of the simulation; \emph{id} is the simulated profile number
 #' within each simulation; \emph{target} is the specified target; and \emph{pdi} is
@@ -50,7 +49,7 @@
 #' \emph{simnum} and \emph{target} are as for \code{results}.  The \emph{prop.success} column has the proportion with a pdi > \code{success},
 #' as specified in the function call.  The \emph{pdi.mean} and \emph{pdi.sd} columns have the 
 #' mean and standard deviation of the target pharmacodynamic index (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.}  
-#' }
+#' @noMd
 #' @author Michael Neely and Jan Strojil
 #' @seealso \code{\link{plot.PMpta}}, \code{\link{SIMparse}}
 #' @export
