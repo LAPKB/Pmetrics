@@ -42,7 +42,6 @@ library(Pmetrics)
 # backslashes "\", so R conforms to Unix/Linux style.
 
 wd <- "##WD##"
-wd <- "/Users/mneely/LAPK/Development/Pmetrics/Examples"
 
 # change to the working directory to the Examples folder
 setwd(wd)
