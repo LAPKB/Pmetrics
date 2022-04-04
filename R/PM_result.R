@@ -87,7 +87,16 @@ PM_result <- R6::R6Class(
       stopifnot(!is.null(type), "please provide the type of summary you want to obtain")
       self[[type]]$summary(...)
     },
-    
+    #' @description
+    #' AUC generic function based on type
+    #' @param type Type of AUC based on class of object
+    #' @param ... Summary-specific arguments
+    auc = function(type, ...) {
+      if(!type %in% c("op", "pop", "post", "sim")){
+        stop("Method defined only for PMop, PMpop, PMpost, PMsim objects.\n")
+      }
+      self[[type]]$auc(...)
+    },
     #' @description
     #' Simulates using the self$final object
     #' For parameter information refer to [SIMrun]
@@ -139,7 +148,7 @@ PM_result <- R6::R6Class(
     #' @param file_name Name of the file to be read, the default is "PMresult.rds".
     #' @return A `PM_result` object.
     #' @examples 
-    #' \donotrun{newRes <- PM_result$load("PMresult.rds")}
+    #' \dontrun{newRes <- PM_result$load("PMresult.rds")}
     load = function(file_name){
       return(invisible)
     }
