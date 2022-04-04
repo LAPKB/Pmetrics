@@ -33,16 +33,16 @@ any number(s) other than -99.  The number(s) will be replaced in the simulator o
 relative weight. Values should sum to 1.  Names can be any of the following:
 \itemize{
 \item \code{none} The default. MMopt times will be chosen to maximally discriminate all responses at all times.
-\item \code{AUC} MMopt times will be chosen to maximally discriminate AUC, regardless of the shape of the response profile. 
+\item \code{AUC} MMopt times will be chosen to maximally discriminate AUC, regardless of the shape of the response profile.
 \item \code{max} MMopt times will be chosen to maximally discriminate maximum, regardless of the shape of the response profile.
-\item \code{min} MMopt times will be chosen to maximally discriminate minimum, regardless of the shape of the response profile. 
+\item \code{min} MMopt times will be chosen to maximally discriminate minimum, regardless of the shape of the response profile.
 }
 Any combination of AUC, max, and min can be chosen.  If \dQuote{none} is specified, other
 weight types will be ignored and the relative value will be set to 1.
 For example,\code{list(auc=0.5,max=0.5)} or \code{auc=0.2,min=0.8}.}
 
 \item{predInt}{The interval in fractional hours for simulated predicted outputs at times other than those specified in the template \code{data}.
-The default is 0.5, which means there will be simulated outputs every 30 minutes from time 0 up 
+The default is 0.5, which means there will be simulated outputs every 30 minutes from time 0 up
 to the maximal time in the template file.  You may also specify \code{predInt}
 as a vector of 3 values, e.g. \code{c(1,4,1)}, similar to the R command \code{\link{seq}}, where the
 first value is the start time, the second is the stop time, and the third is the

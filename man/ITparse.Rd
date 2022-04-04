@@ -12,69 +12,69 @@ the file will be called IT_RF0001.txt, and this is the default.}
 }
 \value{
 The output of \code{ITparse} is a list with the following objects and
- of the class \emph{IT2B}.
- \item{nsub }{Number of subjects}
- \item{nvar }{Number of random variables or parameters in the model}
- \item{nofix }{Number of fixed variables or parameters in the model}
- \item{par }{Names of random parameters}
- \item{parfix }{Names of fixed parameters}
- \item{covnames }{Names of covariates}
- \item{ab }{Suggested boundaries for each random parameter to be passed to NPAG}
- \item{fixedpos }{Index of variables fixed to be positive}
- \item{valfix }{Values for fixed parameters}
- \item{icycmax }{Maximum number of cycles specified by the user}
- \item{icyctot }{Number of cycles run.  If less than \code{icycmax}, convergence occurred.}
- \item{stoptol }{Stopping tolerance for convergence, default 0.001}
- \item{converge }{Boolean value if convergence occurred.}
- \item{ODEtol }{Ordindary Differential Equation solver tolerance.}
- \item{numeqt }{Number of output equations}
- \item{ERRmod }{Vector of length equal to \code{numeqt} whose values are 0 if gamma was estimated for that
-  output equation or 1 if gamma was fixed to 1 for that output equation}
- \item{ndrug }{Number of drug inputs}
- \item{salt }{Vector of values of the salt fraction for each \code{ndrug}}
- \item{ndose }{Vector of the number of doses for each subject in the population}
- \item{ncov }{Number of covariates in the model}
- \item{nobs }{Vector of the number of observations for each subject in the population}
- \item{nobsmax }{Maximum number of observation in any individual subject}
- \item{ypredpop }{Array of population model predictions for each subject at each observation time point.
- \emph{ypredpop[nsub,numeqt,time,type]} where \emph{type} is 1=mean, 2=median of the population prior used to calculate ypredpop}
- \item{ypredbay }{Array of Bayesian posterior model predictions for each subject at each observation time point.
- \emph{ypredbay[nsub,numeqt,time,type]} where \emph{type} is 1=mean, 2=median of the population prior used to calculate ypredbay}
- \item{parbay }{Array of Bayesian posterior parameter estimates for each subject,
- \emph{parbay[nsub,nvar,type]} where \emph{type} is 1=mean, 2=median of the population prior used to calculate parbay}
- \item{ic }{Data frame with one row and two columns for final cycle Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC)}
- \item{ilog }{Vector of cycle number and associated log-likelihood}
- \item{imean }{Matrix of cycle numbers and associated means for each random parameter}
- \item{imed }{Matrix of cycle numbers and associated medians for each random parameter}
- \item{isd }{Matrix of cycle numbers and associated standard deviations for each random parameter}
- \item{icv }{Matrix of cycle numbers and associated coefficients of variation for each random parameter}
- \item{igamlam }{Matrix of cycle number and associated gamma or lambda with each output equation in a column}
- \item{lpar }{Matrix of subjects in rows and MAP Bayesian parameter estimates in columns for each parameter,
-  based on population means from the next to last cycle.}
- \item{lsd }{Matrix of subjects in rows and SD of Bayesian posterior parameter distributions in columns for each parameter,
-  based on population means from the next to last cycle.}
- \item{lcv }{Matrix of subjects in rows and CV of Bayesian posterior parameter distributions in columns for each parameter,
-  based on population means from the next to last cycle.}
- \item{sdata }{Subject data consisting of 5 columns: [id,  nsub,  age,  sex,  ht],
- \emph{id} is the original identification number in the .csv matrix file;
- \emph{nsub} is the sequential subject number in the IT2B run; \emph{age},
- \emph{sex} and \emph{ht} will be missing for .csv input and present if included in .wrk input files}
- \item{dosecov }{Data frame with all dosing information for each subject,  including times,  routes,  amounts,  and associated covariate values}
- \item{outputs }{Data frame with measured outputs for each subject and associated assay error polynomials.
-  The order of the columns is nsub, time, numeqt, observation, c0, c1, c2, c3, where the last
-  four columns are the coefficients of the assay error polynomial for that observation, such that
-  SD[obs] = c0 + c1*[obs] + c2*[obs]**2 + c3*[obs]**3}
- \item{negflag }{A flag indicating that some negative predictions were changed to missing.
- This means that the model may be misspecified.}
- \item{mdata }{The filename of the data used in the run.}
+of the class \emph{IT2B}.
+\item{nsub }{Number of subjects}
+\item{nvar }{Number of random variables or parameters in the model}
+\item{nofix }{Number of fixed variables or parameters in the model}
+\item{par }{Names of random parameters}
+\item{parfix }{Names of fixed parameters}
+\item{covnames }{Names of covariates}
+\item{ab }{Suggested boundaries for each random parameter to be passed to NPAG}
+\item{fixedpos }{Index of variables fixed to be positive}
+\item{valfix }{Values for fixed parameters}
+\item{icycmax }{Maximum number of cycles specified by the user}
+\item{icyctot }{Number of cycles run.  If less than \code{icycmax}, convergence occurred.}
+\item{stoptol }{Stopping tolerance for convergence, default 0.001}
+\item{converge }{Boolean value if convergence occurred.}
+\item{ODEtol }{Ordindary Differential Equation solver tolerance.}
+\item{numeqt }{Number of output equations}
+\item{ERRmod }{Vector of length equal to \code{numeqt} whose values are 0 if gamma was estimated for that
+output equation or 1 if gamma was fixed to 1 for that output equation}
+\item{ndrug }{Number of drug inputs}
+\item{salt }{Vector of values of the salt fraction for each \code{ndrug}}
+\item{ndose }{Vector of the number of doses for each subject in the population}
+\item{ncov }{Number of covariates in the model}
+\item{nobs }{Vector of the number of observations for each subject in the population}
+\item{nobsmax }{Maximum number of observation in any individual subject}
+\item{ypredpop }{Array of population model predictions for each subject at each observation time point.
+\emph{ypredpop\link{nsub,numeqt,time,type}} where \emph{type} is 1=mean, 2=median of the population prior used to calculate ypredpop}
+\item{ypredbay }{Array of Bayesian posterior model predictions for each subject at each observation time point.
+\emph{ypredbay\link{nsub,numeqt,time,type}} where \emph{type} is 1=mean, 2=median of the population prior used to calculate ypredbay}
+\item{parbay }{Array of Bayesian posterior parameter estimates for each subject,
+\emph{parbay\link{nsub,nvar,type}} where \emph{type} is 1=mean, 2=median of the population prior used to calculate parbay}
+\item{ic }{Data frame with one row and two columns for final cycle Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC)}
+\item{ilog }{Vector of cycle number and associated log-likelihood}
+\item{imean }{Matrix of cycle numbers and associated means for each random parameter}
+\item{imed }{Matrix of cycle numbers and associated medians for each random parameter}
+\item{isd }{Matrix of cycle numbers and associated standard deviations for each random parameter}
+\item{icv }{Matrix of cycle numbers and associated coefficients of variation for each random parameter}
+\item{igamlam }{Matrix of cycle number and associated gamma or lambda with each output equation in a column}
+\item{lpar }{Matrix of subjects in rows and MAP Bayesian parameter estimates in columns for each parameter,
+based on population means from the next to last cycle.}
+\item{lsd }{Matrix of subjects in rows and SD of Bayesian posterior parameter distributions in columns for each parameter,
+based on population means from the next to last cycle.}
+\item{lcv }{Matrix of subjects in rows and CV of Bayesian posterior parameter distributions in columns for each parameter,
+based on population means from the next to last cycle.}
+\item{sdata }{Subject data consisting of 5 columns: \link{id,  nsub,  age,  sex,  ht},
+\emph{id} is the original identification number in the .csv matrix file;
+\emph{nsub} is the sequential subject number in the IT2B run; \emph{age},
+\emph{sex} and \emph{ht} will be missing for .csv input and present if included in .wrk input files}
+\item{dosecov }{Data frame with all dosing information for each subject,  including times,  routes,  amounts,  and associated covariate values}
+\item{outputs }{Data frame with measured outputs for each subject and associated assay error polynomials.
+The order of the columns is nsub, time, numeqt, observation, c0, c1, c2, c3, where the last
+four columns are the coefficients of the assay error polynomial for that observation, such that
+SD\link{obs} = c0 + c1*\link{obs} + c2*\link{obs}*\emph{2 + c3}\link{obs}**3}
+\item{negflag }{A flag indicating that some negative predictions were changed to missing.
+This means that the model may be misspecified.}
+\item{mdata }{The filename of the data used in the run.}
 }
 \description{
 \code{ITparse} processes the output from an IT2B run into a list.
 }
 \details{
 This function can take some time to process the RFILE, depending on the number of subjects,
- doses, observations, etc.  Typical wait times are a few seconds up to 5 minutes.
- When processing is complete a summary of the extracted data will be reported on the console.
+doses, observations, etc.  Typical wait times are a few seconds up to 5 minutes.
+When processing is complete a summary of the extracted data will be reported on the console.
 }
 \author{
 Michael Neely

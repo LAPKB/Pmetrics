@@ -8,9 +8,11 @@
 \description{
 This package contains functions to run and analyze the output from all three components
 of the Pmetrics software suite for population pharmacometric data analysis:
-1) IT2B (Iterative Two-Stage Bayesian) for parametric models; 2) NPAG (Non-parametric
+\enumerate{
+\item IT2B (Iterative Two-Stage Bayesian) for parametric models; 2) NPAG (Non-parametric
 Adaptive Grid) for non-parametric models; 3) Simulator for semi-parametric Monte-Carlo
 simulations.
+}
 }
 \author{
 Michael Neely MD

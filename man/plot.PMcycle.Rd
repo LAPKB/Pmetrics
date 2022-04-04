@@ -2,7 +2,9 @@
 % Please edit documentation in R/plotPMcycle.R
 \name{plot.PMcycle}
 \alias{plot.PMcycle}
-\title{Plot NPAG Cycle Information}
+\title{Plot NPAG Cycle Information
+
+\code{plot.PMcycle} plots \emph{PMcycle} objects}
 \usage{
 \method{plot}{PMcycle}(data, x.leg = 0, y.leg = 1, cex.leg = 1.2, omit, col, out = NA, ...)
 }
@@ -39,6 +41,8 @@ standard deviation of the population distribution for each parameter at each cyc
 the normalized median parameter values at each cycle.
 }
 \description{
+Plot NPAG Cycle Information
+
 \code{plot.PMcycle} plots \emph{PMcycle} objects
 }
 \examples{

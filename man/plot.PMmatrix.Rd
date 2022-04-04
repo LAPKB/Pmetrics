@@ -44,7 +44,7 @@
 
 \item{exclude}{A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)}
 
-\item{pred}{The name of a population or posterior prediction object read by \code{\link{makePop}} or 
+\item{pred}{The name of a population or posterior prediction object read by \code{\link{makePop}} or
 \code{\link{makePost}}, respectively}
 
 \item{icen}{Only relevant for PMpost or PMpop objects which have predictions based on median or mean of each
@@ -75,7 +75,7 @@ in the data file, setting this to \code{True} will plot error bars around each o
 according to the standard deviation calculated from C0, C1, C2 and C3 in the data file.
 If C0, C1, C2, and C3 are missing in the data file, you can specify \code{errbar} to be a named list,
 i.e. \code{list(c0=,c1=,c2=,c3=)}, where each value is a vector of length equal to the number of
-output equations.  For example, with two output equations having coefficients of 
+output equations.  For example, with two output equations having coefficients of
 0.1, 0.15, 0, 0 and 0.2, 0.1, -0.001, and 0, specify as \code{errbar=list(c0=c(0.1,0.2),
 c1=c(0.15,0.1),c2=c(0,-0.001),c3=c(0,0))}.}
 
@@ -122,12 +122,12 @@ function (see its documentation).  If \code{False} or missing, a legend will not
 If \code{True}, the default legend parameters will be used, as documented in that function, with exceptions
 as noted in \emph{Details}.}
 
-\item{out}{Direct output to a PDF, EPS or image file.  Format is a named list whose first argument, 
+\item{out}{Direct output to a PDF, EPS or image file.  Format is a named list whose first argument,
 \code{type} is one of the following character vectors: \dQuote{pdf}, \dQuote{eps} (maps to \code{postscript}),
 \dQuote{\code{png}}, \dQuote{\code{tiff}}, \dQuote{\code{jpeg}}, or \dQuote{\code{bmp}}.  Other named items in the list
 are the arguments to each graphic device. PDF and EPS are vector images acceptable to most journals
 in a very small file size, with scalable (i.e. infinite) resolution.  The others are raster images which may be very
-large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the 
+large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the
 output will go to the current graphic device (usually the monitor). For example, to output an eps file,
 out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.}
 
@@ -143,12 +143,12 @@ Plots the object.
 This function will plot raw and fitted time and concentration data with a variety of options.
 For the legend, defaults that are different that the standard are:
 \itemize{
-  \item x Default \dQuote{topright}
-  \item legend Default will be factor label names if \code{group} is specified and valid; otherwise
-  \dQuote{Output 1, Output 2,...Output n}, where \emph{n} is the number of output equations.  This default
-  can be overridden by a supplied character vector of output names.
-  \item fill The color of each group/output as specified by the default color scheme or \code{col}
-  \item bg Default \dQuote{white}
+\item x Default \dQuote{topright}
+\item legend Default will be factor label names if \code{group} is specified and valid; otherwise
+\dQuote{Output 1, Output 2,...Output n}, where \emph{n} is the number of output equations.  This default
+can be overridden by a supplied character vector of output names.
+\item fill The color of each group/output as specified by the default color scheme or \code{col}
+\item bg Default \dQuote{white}
 }
 }
 \examples{

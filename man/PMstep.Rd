@@ -10,7 +10,7 @@ PMstep(x, icen = "median", direction = "backward")
 \item{x}{A PMcov object loaded by \code{\link{PMload}}
 or made by \code{\link{makeCov}}.}
 
-\item{icen}{A character vector to summarize covariate values.  Default is \dQuote{median}, but can also be 
+\item{icen}{A character vector to summarize covariate values.  Default is \dQuote{median}, but can also be
 \dQuote{mean}.}
 
 \item{direction}{The direction for covariate elmination can be \dQuote{backward}, \dQuote{forward}, or \dQuote{both}.

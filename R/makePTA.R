@@ -1,3 +1,5 @@
+#' Calculation of PTAs
+#' 
 #' Calculates the Percent Target Attainment (PTA)
 #'
 #' \code{makePTA} will calculate the PTA for any number of simulations, targets and definitions of success.
@@ -6,7 +8,6 @@
 #' If a \emph{PMpta} object is passed to the function as the \code{simdata}, the only other parameter required is success. 
 #' If desired, a new set of simlabels can be specified; all other parameters will be ignored.
 #'
-#' @title Calculation of PTAs
 #' @param simdata Can be one of multiple inputs.  Typically it is a vector of simulator output filenames, e.g. c(\dQuote{simout1.txt},\dQuote{simout2.txt}),
 #' with wildcard support, e.g. \dQuote{simout*} or \dQuote{simout?}, or
 #' a list of PMsim objects made by \code{\link{SIMparse}} with suitable simulated regimens and observations.  The number and times of simulated
@@ -48,6 +49,7 @@
 #' \emph{simnum} and \emph{target} are as for \code{results}.  The \emph{prop.success} column has the proportion with a pdi > \code{success},
 #' as specified in the function call.  The \emph{pdi.mean} and \emph{pdi.sd} columns have the 
 #' mean and standard deviation of the target pharmacodynamic index (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.}  
+#' @noMd
 #' @author Michael Neely and Jan Strojil
 #' @seealso \code{\link{plot.PMpta}}, \code{\link{SIMparse}}
 #' @export

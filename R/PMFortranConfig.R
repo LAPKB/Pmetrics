@@ -1,21 +1,20 @@
-#' \code{PMFortranConfig} will read or define the installed Fortran compiler and generate
+#' `PMFortranConfig` will read or define the installed Fortran compiler and generate
 #' a command line template appropriate to the compiler.
 #'
-#' Command line templates are defined for the following compilers: \bold{gfortran}, \bold{g95},
-#' \bold{Intel Visual}, and \bold{Lahey}.  Additionally, users may specify a custom command line
-#' template for any other compiler.  Within the template \emph{<exec>} is used as a placeholder
-#' for the filename of the executable file, and \emph{<files>} as a placeholder for the files to
+#' Command line templates are defined for the following compilers: **gfortran**, **g95**,
+#' **Intel Visual**, and **Lahey**.  Additionally, users may specify a custom command line
+#' template for any other compiler.  Within the template *<exec>* is used as a placeholder
+#' for the filename of the executable file, and *<files>* as a placeholder for the files to
 #' compile and link, both of which will be defined at run time by the appropriate Pmetrics functions.
-#' The Pmetrics functions which use a Fortran compiler are \code{\link{NPrun}}, \code{\link{ITrun}},
-#' \code{\link{ERRrun}}, and \code{\link{SIMrun}}.
+#' The Pmetrics functions which use a Fortran compiler are [NPrun], [ITrun],
+#' [ERRrun], and [SIMrun].
 #' @title Read or define the Fortran compiler and command line template
-#' @param reconfig Default is \code{False}.  If \code{True}, will allow user to change
+#' @param reconfig Default is `FALSE`.  If `TRUE`, will allow user to change
 #' the previously specified compiler and template.
-#' @return \code{PMFortranConfig} returns the compile command template specific to the chosen
+#' @return `PMFortranConfig` returns the compile command template specific to the chosen
 #' compiler.
 #' @author Michael Neely
-#' @seealso \code{\link{NPrun}}, \code{\link{ITrun}},\code{\link{ERRrun}}, and
-#' \code{\link{SIMrun}}
+#' @seealso [NPrun], [ITrun],\[ERRrun], and [SIMrun]
 #' @export
 
 PMFortranConfig <- function(reconfig = F) {
