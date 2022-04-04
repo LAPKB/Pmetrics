@@ -42,6 +42,7 @@ library(Pmetrics)
 # backslashes "\", so R conforms to Unix/Linux style.
 
 wd <- "##WD##"
+wd <- "/Users/mneely/LAPK/Development/Pmetrics/Examples"
 
 # change to the working directory to the Examples folder
 setwd(wd)
@@ -195,6 +196,8 @@ exRes$final$plot()
 # add a kernel density curve
 exRes$final$plot(density = T)
 # A bivariate plot. Plotting formulae in R are of the form 'y~x'
+exRes$final$plot(Ke ~ V)
+#or the S3 way
 plot(exRes$final, Ke ~ V)
 
 # The original final object can be accessed using
@@ -294,12 +297,9 @@ exRes2 <- PM_load(2)
 
 
 # Let's compare model 1 and model 2.   You can compare any number of models.
-# Type ?PMcompare for help.
-PMcompare(1, 2)
+# Type ?PM_compare for help.
+PM_compare(exRes, exRes2)
 
-# compare with plots
-# See plots.pdf, page 27
-PMcompare(1, 2, plot = T, cex.stat = 0.5)
 
 
 # EXERCISE 4X - MODEL VALIDATION -------------------------------------------
@@ -309,7 +309,7 @@ PMcompare(1, 2, plot = T, cex.stat = 0.5)
 # for model validation - be sure to have executed the NPAG run above
 # Type ?makeValid in the R console for help.
 # Choose wt as the covariate to bin. Accept all default bin sizes.
-valid_2 <- exRes2$make_valid(limits = NA)
+valid_2 <- exRes2$make_valid(limits = NA) #NOT WORKING
 # To see what it contains, use:
 valid_2
 # Default visual predictive check; ?plot.PMvalid for help
@@ -340,21 +340,11 @@ plot(valid_2, type = "npde")
 
 # EXERCISE 5 - SIMULATOR RUN ----------------------------------------------
 
-
-# Here's an example of a simulator run.
-# Be sure to have executed the NPAG run above and used PMload(2)
-# Type ?SIMrun, ?SIMparse, or ?plot.PMsim into the R console for help.
-# setwd(paste(wd,"/Sim",sep=""))
-# file.copy(from=c("../src/model2.txt","../src/ex.csv"),to=getwd(),overwrite=T)
-# The following will simulate 500 sets of parameters/concentrations using each of the first 4 subjects in the data file
-# Limits are put on the simulated parameter ranges
+# The following will simulate 100 sets of parameters/concentrations using the 
+# first subject in the data file as a template.
+# Limits are put on the simulated parameter ranges to be the same as in the model.
 # The population parameter values from the NPAG run in exercise 2 are used for the Monte Carlo Simulation.
 simdata <- exRes2$sim(include = 1, limits = NA, nsim = 100)
-# SIMrun(poppar=final.2,data="ex_full.csv",model="model2.txt",include=1:4,limits=NA,nsim=100)
-# Wildcards can be used in the following.  This will extract and combine all matching output datasets into
-# a single dataset.  Use '?' for a single character match, and '*' for multiple.
-# Parse one file
-# simdata <- SIMparse("simout1.txt")
 # Plot it; ?plot.PMsim for help
 simdata$plot()
 # Simulate using multiple subjects as templates
@@ -437,7 +427,7 @@ setwd(paste(wd, "/Runs", sep = ""))
 
 # note that we can supply a run number to model, data, and prior arguments.  The numbers do not
 # have to be the same.  This will copy the appropriate files from the specified run to be used
-# in the current run.  By specifiying a prior, we are starting with the non-uniform density from the
+# in the current run.  By specifying a prior, we are starting with the non-uniform density from the
 # end of the specified fun.
 
 exFit2$run(prior=2)
@@ -445,7 +435,8 @@ exRes3 <- PM_load(3)
 
 # We could also generate Bayesian posterior parameter estimates for a new population this
 # way, and with 0 cycles:
-#  NPrun(data="newPop.csv",model=1,prior=1,cycles=0)
+# exFit3 <- PM_fit(data=PM_data("newPop.csv"), mod2)
+# exFit3$run(prior = 2, cycles = 0)
 # This won't run but shows you how it could be done.
 
 
@@ -610,7 +601,7 @@ pta4b_2 <- PM_pta$new(
   simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
   targets = makePTAtarget(mic1), target.type = "min", success = 1, start = 120, end = 144
 )
-# plot it
+# plot it NOT WORKING
 pta4b_2$plot(plot.type = "pdi", grid = T, ylab = "Proportion with Cmin/MIC of at least 1")
 # note that the plot changes since target MICs are no longer discrete
 # since most of the MICs are very low, the regimens all look very similar
@@ -697,10 +688,6 @@ makeErrorPoly(obs = obs, sd = sd)
 # makeAUC() - calculate AUC from a variety of inputs
 # makeNCA() - non-compartmental analysis
 # NM2PM() - convert NONMEM data files to Pmetrics data files
-# PMcheck() - check data files for errors
-# PMmatrixRelTime() - convert absolute date/time to relative time
-# PMreadMatrix() - read Pmetrics data files
-# PMwriteMatrix() - write Pmetrics data files
 # qgrowth() - CDC growth charts
 # ss.PK() - sample size for Phase 1 PK studies
 
