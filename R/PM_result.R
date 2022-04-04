@@ -1,15 +1,15 @@
 # PM_result ---------------------------------------------------------------
 
+#' @title
 #' R6 object containing the results of a Pmetrics run
 #'
 #' @description 
 #' This object contains all of the results after a Pmetrics runs. It is created 
-#' by using the \code{\link{PM_load}} function.
+#' by using the [PM_load] function.
 #' 
 #' @details 
 #' To complete.
 #' 
-#' @name PM_result
 #' @export
 PM_result <- R6::R6Class(
   "PM_result",
@@ -36,9 +36,11 @@ PM_result <- R6::R6Class(
     errfile = NULL,
     #' @field success Boolean if successful run
     success = NULL,
-    #' @field valid If [makeValid] has been executed after a run, this object will be added to
-    #' the save data.  It contains the information required to plot visual predictive checks and normalized prediction
-    #' error discrepancies via the npde code developed by Comets et al
+    #' @field valid If the `$make_valid` method has been executed after a run, this object will be added to
+    #' the `PM_result` object.  It contains the information required to plot visual predictive checks and normalized prediction
+    #' error discrepancies via the npde code developed by Comets et al. Use the 
+    #' `$save` method on the augmented `PM_result` object to save it with the 
+    #' new validation results.
     valid = NULL,
 
     #' @description
@@ -93,12 +95,16 @@ PM_result <- R6::R6Class(
     sim = function(...) {
       #store copy of the final object
       bk_final <- self$final$clone()
-      sim<-PM_sim$new(self, ...)
+      sim <- PM_sim$new(self, ...)
       self$final <- bk_final
       sim
     },
     #' @description
-    #' Save the current PM_result object into a .rds file.
+    #' Save the current PM_result object into a .rds file. This is useful if you
+    #' have run the `$make_valid` method on a `PM_result` object, which returns 
+    #' an internal simulation based validation as a new `valid` field. To save this
+    #' validation, use the `$save` method. You could also save the result if you wish
+    #' to share it with someone else.
     #' @param file_name Name of the file to be created, the default is PMresult.rds
     save = function(file_name = "PMresult.rds") {
       saveRDS(self, file_name)
@@ -122,26 +128,27 @@ PM_result <- R6::R6Class(
     #' @param ... Arguments passed to [MMopt].
     MM_opt = function(...) {
       MM_opt(self, ...)
+    },
+    #' @description
+    #' This function loads an rds file created using the `$save` method on a 
+    #' `PM_result` object.
+    #' @details
+    #' `PM_result` objects contain a `save` method which invokes [saveRDS] to write
+    #' the object to the hard drive as an .rds file. This is the corresponding load
+    #' function.
+    #' @param file_name Name of the file to be read, the default is "PMresult.rds".
+    #' @return A `PM_result` object.
+    #' @examples 
+    #' \donotrun{newRes <- PM_result$load("PMresult.rds")}
+    load = function(file_name){
+      return(invisible)
     }
   ) # end public
 ) # end PM_result
 
-#' Load a PM_result from a previously saved rds file.
-#' 
-#' @description
-#' This function loads an rds file created using the `$save` method on a 
-#' `PM_result` object.
-#' 
-#' @details
-#' `PM_result` objects contain a `save` method which invokes [saveRDS] to write
-#' the object to the hard drive as an .rds file. This is the corresponding load
-#' function.
-#' @rdname PM_result
-#' 
-#' @param file_name Name of the file to be read, the default is "PMsim.rds".
-#' @return A `PM_sim` object.
+
 #' @export
-PM_result$load <- function(file_name = "PMsim.rds") {
+PM_result$load <- function(file_name = "PMresult.rds") {
   readRDS(file_name)
 }
 
@@ -186,7 +193,7 @@ PM_op <- R6Class(
     },
     #' @description
     #' AUC function
-    #' @param \dots AUC-specific arguments
+    #' @param ... AUC-specific arguments
     auc = function(...) {
       makeAUC(data = self$data, ...)
     }
