@@ -1,3 +1,4 @@
+#' @title
 #' Object to define and run a model and data in Pmetrics
 #' 
 #' @description 
@@ -8,7 +9,6 @@
 #' or created on the fly when making a new PM_fit object. PM_fit objects contain
 #' methods to cross-check data and model objects for compatibility, as well as to 
 #' run the analysis.
-#' @name PM_fit
 #' @export
 
 PM_fit <- R6::R6Class("PM_fit",
@@ -77,6 +77,16 @@ PM_fit <- R6::R6Class("PM_fit",
     save = function(file_name = "PMfit.rds") {
       saveRDS(self, file_name)
     },
+
+    #' @description
+    #' `PM_fit` objects contain a `save` method which invokes [saveRDS] to write
+    #' the object to the hard drive as an .rds file. This is the corresponding load
+    #' function.
+    #' @param file_name Name of the file to be read, the default is "PMfit.rds".
+    #' @return A `PM_fit` object.
+    load = function(file_name){
+      return(invisible())
+    }
     #' @description 
     #' Checks for errors in data and model objects and agreement between them.
     check = function() {
@@ -97,22 +107,8 @@ PM_fit <- R6::R6Class("PM_fit",
 )
 
 
-#' Load a PM_fit from a previously saved rds file.
-#' 
-#' @description
-#' This function loads an rds file created using the `$save` method on a 
-#' `PM_fit` object.
-#' 
-#' @details
-#' `PM_fit` objects contain a `save` method which invokes [saveRDS] to write
-#' the object to the hard drive as an .rds file. This is the corresponding load
-#' function.
-#' @rdname PM_fit
-#' 
-#' @param file_name Name of the file to be read, the default is "PMfit.rds".
-#' @return A `PM_fit` object.
-#' @export
 
+#' @export
 PM_fit$load <- function(file_name = "PMfit.rds") {
   readRDS(file_name)
 }
