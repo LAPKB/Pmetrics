@@ -10,7 +10,7 @@ makePTAtarget(x)
 \item{x}{A data.frame or name of .csv file in working directory whose first two
 columns are targets and the number of samples for each target.  An example can be
 seen for Staphylococcus aureus susceptibility to vancomycin at the
- \href{http://mic.eucast.org/Eucast2/regShow.jsp?Id=1214}{EUCAST} website.}
+\href{http://mic.eucast.org/Eucast2/regShow.jsp?Id=1214}{EUCAST} website.}
 }
 \value{
 A data frame with two columns named targets and n, of class \emph{PMpta.targ}.

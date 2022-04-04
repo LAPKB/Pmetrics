@@ -20,12 +20,12 @@ Returns the error report (see \code{\link{PMcheck}} for details).
 }
 \description{
 \code{PMwriteMatrix} is the companion function to \code{\link{PMreadMatrix}}.
- It will write an appropriate R data object to a formatted .csv file.
+It will write an appropriate R data object to a formatted .csv file.
 }
 \details{
 \code{PMwriteMatrix} will first run \code{\link{PMcheck}} to determine
- if there are any errors in the structure of  \code{data}.  If the error check
- fails, the file will not be written and a message will be printed on the console.
+if there are any errors in the structure of  \code{data}.  If the error check
+fails, the file will not be written and a message will be printed on the console.
 }
 \examples{
 \dontrun{

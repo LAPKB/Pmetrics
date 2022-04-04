@@ -1,4 +1,12 @@
-
+#' Introductory tutorial to Pmetrics
+#' 
+#' This function will create an Examples folder in the current working
+#' directory. The folder will contain all files and folder necessary to
+#' conduct the tutorial. After the Examples folder is created, open the
+#' examples.R script to begin the tutorial.
+#' @param wd The working directory in which to create the Examples folder.
+#' Default is current working directory.
+#' @return NULL. 
 #' @export
 #' 
 PM_tutorial <- function(wd = getwd()){

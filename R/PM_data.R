@@ -1,23 +1,38 @@
-# PM_data -----------------------------------------------------------------
-
-
+#' Defines the PM_data object
+#' 
+#' @description
+#' PM_data R6 objects containing raw, standardized and valid data, and methods
+#' to process the data
+#' 
+#' @details
+#' PM_data objects are passed to [PM_fit] objects to initiate a
+#' population analysis. The object is created by reading a delimited file in 
+#' the current working directory. The data will be transformed into the standard
+#' format which is the same for all engines, with a report of any assumptions
+#' that were necessary to standardize the data. [PMcheck] is called
+#' on the standard data to evaluate for errors. There are a number of methods
+#' defined for a PM_data object, including to write the standard data back 
+#' to a file for future use, to summarize and to plot the object, and to
+#' conduct a non-compartmental analysis on the raw data using 
+#' [makeNCA].
+#' 
 #' @export
 PM_data <- R6::R6Class("PM_data",
   public <- list(
-    #' @field data frame containing the data to be modeled
+    #' @field data Data frame containing the data to be modeled
     data = NULL,
-    #' @field data frame containing standardized version of the data
+    #' @field standard_data Data frame containing standardized version of the data
     standard_data = NULL,
-
     #' @description
     #' Create new data object
     #' @details
-    #' Creation of a new \code{PM_data} objects from a file or
+    #' Creation of a new `PM_data` objects from a file or
     #' a data frame. Data will be standardized and checked
     #' automatically to a fully specified, valid data object.
     #' @param data A quoted name of a file with full path if not
     #' in the working directory, or an unquoted name of a data frame
     #' in the current R environment.
+    #' @param quiet Quietly validate. Default is `FALSE`.
     initialize = function(data, quiet = F) {
       self$data <- if (is.character(data)) {
         PMreadMatrix(data, quiet = T)
@@ -26,15 +41,43 @@ PM_data <- R6::R6Class("PM_data",
       }
       self$standard_data <- private$validate(self$data, quiet = quiet)
     },
+    #' @description
+    #' Write data to file
+    #' @details
+    #' Writes a delimited file (e.g. comma-separated)
+    #' from the `standard_data` field 
+    #' @param file_name A quoted name of the file to create 
+    #' with full path if not
+    #' in the working directory.
     write = function(file_name) {
       PMwriteMatrix(self$standard_data, file_name)
     },
+    #' @description
+    #' Perform non-compartmental analysis
+    #' @details
+    #' See [makeNCA].
+    #' @param ... Arguments passed to [makeNCA].
     nca = function(...){
       makeNCA(self, ...)
     },
+    #' @description
+    #' Plot method
+    #' @details
+    #' See [plot.PMmatrix].
+    #' @param ... Arguments passed to [plot.PMmatrix].
     plot = function(...){
       plot.PMmatrix(self$standard_data, ...)
     },
+    #' @description
+    #' Print method
+    #' @details
+    #' Displays the PM_data object in a variety of ways.
+    #' @param standard Display the standardized data if `TRUE`.
+    #' Default is `FALSE`.
+    #' @param viewer Display the Viewer if `TRUE`.
+    #' Default is \code{TRUE}.
+    #' @param ... Other arguments to [print.data.frame]. Only
+    #' passed if `viewer = FALSE`.
     print = function(standard = F, viewer = T,...) {
       if (standard) {
         what <- self$standard_data
@@ -46,58 +89,22 @@ PM_data <- R6::R6Class("PM_data",
       if (viewer) {
         View(what, title = title)
       } else {
-        print(what)
+        print(what,...)
       }
       return(invisible(self))
     },
-    summary = function(formula, FUN, include, exclude) {
-      object <- self$standard_data
-      # filter data if needed
-      if (!missing(include)) {
-        object <- subset(object, sub("[[:space:]]+", "", as.character(object$id)) %in% as.character(include))
-      }
-      if (!missing(exclude)) {
-        object <- subset(object, !sub("[[:space:]]+", "", as.character(object$id)) %in% as.character(exclude))
-      }
-
-      # make results list
-      results <- list()
-      idOrder <- rank(unique(object$id))
-
-      results$nsub <- length(unique(object$id))
-      results$ndrug <- max(object$input, na.rm = T)
-      results$numeqt <- max(object$outeq, na.rm = T)
-      results$nobsXouteq <- tapply(object$evid, object$outeq, function(x) length(x == 0))
-      results$missObsXouteq <- by(object, object$outeq, function(x) length(x$out[x$evid == 0 & x$out == -99]))
-      covinfo <- getCov(object)
-      ncov <- covinfo$ncov
-      results$ncov <- ncov
-      results$covnames <- covinfo$covnames
-      results$ndoseXid <- tapply(object$evid, list(object$id, object$input), function(x) length(x != 0))[idOrder, ]
-      results$nobsXid <- tapply(object$evid, list(object$id, object$outeq), function(x) length(x == 0))[idOrder, ]
-      results$doseXid <- tapply(object$dose, list(object$id, object$input), function(x) x[!is.na(x)])[idOrder, ]
-      results$obsXid <- tapply(object$out, list(object$id, object$outeq), function(x) x[!is.na(x)])[idOrder, ]
-      if (ncov > 0) {
-        # get each subject's covariate values
-        results$cov <- lapply(1:ncov, function(y) {
-          tapply(
-            object[[covinfo$covstart + y - 1]], object$id,
-            function(z) z[!is.na(z)]
-          )[idOrder]
-        })
-        names(results$cov) <- covinfo$covnames
-      }
-      if (!missing(formula)) {
-        results$formula <- aggregate(formula, object, FUN, ...)
-      }
-
-      class(results) <- c("summary.PMmatrix", "list")
-      return(results)
-    } # end summary function
+    #' @description
+    #' Summary method
+    #' @details
+    #' See [summary.PMmatrix].
+    #' @param ... Arguments passed to [summary.PMmatrix].
+    summary = function(...) {
+      summary.PMmatrix(self$standard_data,...)
+    }
   ), # end public
   private = list(
-    dataObj = NULL,
-    validate = function(dataObj = NULL, quiet) {
+    #dataObj = NULL,
+    validate = function(dataObj, quiet) {
       dataNames <- names(dataObj)
       standardNames <- getFixedColNames()
 
@@ -169,7 +176,14 @@ PM_data <- R6::R6Class("PM_data",
     } # end validate function
   ) # end private
 ) # end PM_data
+
+#' Summarize a Pmetrics PM_data object
+#'
+#' Summarize a PM_data object using S3 method. 
+#' Calls \code{\link{summary.PMmatrix}}
+#'
 #' @export
-summary.PM_data <- function(obj, ...) {
-  obj$summary(...)
+#' 
+summary.PM_data <- function(x, ...) {
+  x$summary(...)
 }

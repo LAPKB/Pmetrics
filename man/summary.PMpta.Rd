@@ -16,12 +16,12 @@
 \value{
 A list with two named objects: pta (probability of target attainment)
 and pti (pharmacodynamic index).
-\item{pta }{A data frame with the following columns: simnum, target, prop.success, pdi.mean, and pdi.sd  
-\emph{simnum} is the number of the simulation; \emph{target} is the specified target; 
-\emph{success}  has the proportion with a ratio > \code{prop.success}; \emph{pdi.mean} and \emph{pdi.sd} 
+\item{pta }{A data frame with the following columns: simnum, target, prop.success, pdi.mean, and pdi.sd
+\emph{simnum} is the number of the simulation; \emph{target} is the specified target;
+\emph{success}  has the proportion with a ratio > \code{prop.success}; \emph{pdi.mean} and \emph{pdi.sd}
 are the mean and standard deviation of the pharmacodyamic index (e.g. AUC/MIC) for each simulation and target.}
 \item{pdi }{A data frame with the following columns: target, simnum, lowerCI, median, upperCI.
-\emph{target} and \emph{simnum} are as above. \emph{lowerCI}, \emph{median}, 
+\emph{target} and \emph{simnum} are as above. \emph{lowerCI}, \emph{median},
 and \emph{upperCI} are the lower limit, median, and upper limit of the confidence
 interval for the pdi whose width is specified by \code{ci}}
 }

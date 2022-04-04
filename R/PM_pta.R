@@ -1,9 +1,27 @@
+#' Define object for PTA
+#' 
+#' This object class contains results of simulations and a probability of
+#' target attainment analysis.
+#' 
+#' Creating this object first requires a simulation of appropriate regimens
+#' from a model using the `$sim` method for a [PM_result] object. That simulation
+#' result is passed to the [makePTA] function when a new `PM_pta` is created.
+#' 
+#' @author Julian Otalvaro and Michael Neely
 #' @export
 PM_pta <- R6Class(
     "PM_pta",
     public <- list(
+        #' @field results Contains the raw results. See [makePTA].
         results = NULL,
+        #' @field outcome Contains summary of raw results. See [makePTA].
         outcome = NULL,
+        #' @description 
+        #' Create a new `PM_pta` object
+        #' @param simdata Output of `$sim` method for [PM_result] object 
+        #' @param targets See [makePTA].
+        #' @param target.type See [makePTA].
+        #' @param ... Other arguments passed to [makePTA].
         initialize = function(simdata, targets, target.type, ...) {
             pta <- makePTA(simdata, targets, target.type, ...)
             self$results <- pta$results
@@ -19,9 +37,15 @@ PM_pta <- R6Class(
         save = function(file_name = "PMpta.rds") {
             saveRDS(self, file_name)
         },
+        #' @description 
+        #' Summarize the `PM_pta` object. See [summary.PMpta].
+        #' @param ... Arguments passed to [summary.PMpta]
         summary = function(...) {
             summary.PMpta(self, ...)
         },
+        #' @description 
+        #' Plot the `PM_pta` object. See [plot.PMpta].
+        #' @param ... Arguments passed to [plot.PMpta]
         plot = function(...) {
             plot.PMpta(self, ...)
         }
