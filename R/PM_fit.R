@@ -86,7 +86,7 @@ PM_fit <- R6::R6Class("PM_fit",
     #' @return A `PM_fit` object.
     load = function(file_name){
       return(invisible())
-    }
+    },
     #' @description 
     #' Checks for errors in data and model objects and agreement between them.
     check = function() {
