@@ -1,22 +1,65 @@
-
+#' @title
 #' Defines the PM_model class
 #' 
+#' @description
+#' PM_model objects contain the variables, covariates, equations and error models
+#' necessary to run a population analysis.
+#' 
+#' @details
 #' PM_model objects are passed to \code{\link{PM_fit}} objects to initiate a
 #' population analysis. The object is created by defining a list of lists
 #' directly in R, or by reading a model text file in the current working directory.
+#' 
 #' @export
-PM_model <- R6::R6Class("PM_Vmodel", list())
+PM_model <- R6::R6Class("PM_Vmodel", 
+  public = list(
+    #' @description 
+    #' Build a new PM_model from a variety of inputs.
+    #' @param model This can be a quoted name of a model text file in the 
+    #' working directory which will be read and passed to Fortran engines unless
+    #' \code{julia = TRUE} in which case is will be passed as a Julia model.
+    #' It can be a list of lists that defines the model directly in R. Similarly,
+    #' it can be a function that defines a Julia model directly in R. See the user
+    #' manual for more help on directly defining models in R.
+    #' @param julia Controls whether a filename defines a Fortran or Julia model.
+    #' Default is \code{FALSE}, i.e. using Fortran.
+    #' @param ... Additional arguments passed to creation of new Julia model.
 
-#' @description 
-#' Create a new PM_model 
-#' @param model This can be a quoted name of a model text file in the 
-#' working directory which will be read and passed to Fortran engines unless
-#' \code{julia = TRUE} in which case is will be passed as a Julia model.
-#' It can be a list of lists that defines the model directly in R. Similarly,
-#' it can be a function that defines a Julia model directly in R. See the user
-#' manual for more help on directly defining models in R.
-#' @param julia Controls whether a filename defines a Fortran or Julia model.
-#' Default is \code{FALSE}, i.e. using Fortran.
+    #the following functions are dummy to permit documentation
+    new = function(model, ..., julia = F){
+      return(invisible())
+    },
+    #' @description 
+    #' Print a model object to the console in readable format
+    #' @param ... Not used currently.
+    print = function(...){
+      return(invisible())
+    },
+    #' @description 
+    #' Update selected elements of a model object
+    #' @param changes_list The named list containing elements and values to update.
+    #' @examples 
+    #' \dontrun{mod1$update(list(
+    #'   pri = list(
+    # '    Ke = range(0,1)
+    #'   )
+    #' )) 
+    #' }
+    update = function(changes_list){
+      return(invisible())
+    },
+    #' @description Write a `PM_model` object to a text file
+    #' @param model_path Full name of the file to be created, including the path
+    #' relative to the current working directory
+    #' @param engine Currently only "npag".
+    write_model_file = function(model_path = "genmodel.txt", engine = "npag"){
+      return(invisible())
+    }
+  )
+)
+
+
+#' @export
 PM_model$new <- function(model, ..., julia = F) {
   print(model)
   # Now we have multiple options for the model:
@@ -73,7 +116,6 @@ fixed <- function(fixed, constant = F, gtz = F) {
 
 # Virtual Class
 # it seems that protected does not exist in R
-
 PM_Vmodel <- R6::R6Class("PM_model",
   public = list(
     name = NULL, # used by PM_model_legacy
