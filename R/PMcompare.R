@@ -284,7 +284,7 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
   postPercent_RMSE <- sapply(sumobjPost, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$percent_rmse))
 
   # get population points
-  final <- purrr::map(allObj, function(x) {
+  final <- purrr::map(obj, function(x) {
     x$final$data
   })
   # find intersecting parameters
