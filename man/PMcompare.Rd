@@ -14,7 +14,7 @@ This will serve as the reference output for P-value testing (see details).}
 
 \item{y}{The run number of the second object to compare.}
 
-\item{\dots}{Additional run numbers to compare.  See details.  Also, parameters to be passed to \code{\link{plot.PMop}} 
+\item{\dots}{Additional run numbers to compare.  See details.  Also, parameters to be passed to \code{\link{plot.PMop}}
 if \code{plot} is true as well as to \code{\link{mtsknn.eq}}.  Order does not matter.}
 
 \item{icen}{Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
@@ -55,7 +55,7 @@ approach if all models are non-parametrics.  Models may only be compared on para
 in the first model.  The P-value is the comparison between each model and the first model in
 the list.  Missing P-values are when a model has no parameter names in common with the first
 model, and for the first model compared to itself, or when models from IT2B runs are included.  Significant P-values indicate that the null
-hypothesis should be rejected, i.e. the joint distributions between the two compared models are 
+hypothesis should be rejected, i.e. the joint distributions between the two compared models are
 significantly different.
 }
 \seealso{
