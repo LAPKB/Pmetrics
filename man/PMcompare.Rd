@@ -27,23 +27,23 @@ as in \code{\link{plot.PMop}}}
 }
 \value{
 A data frame with the following objects for each model to analyze:
- \item{run }{The run number of the data}
- \item{type }{NPAG or IT2B data}
- \item{nsub }{Number of subjects in the model}
- \item{nvar }{Number of random parameters in the model}
- \item{par }{Names of random parameters}
- \item{cycles }{Number of cycles run}
- \item{converge }{Boolean value if convergence occurred.}
- \item{ll }{Final cycle -2*Log-likelihood }
- \item{aic }{Final cycle Akaike Information Criterion}
- \item{bic }{Final cycle Bayesian (Schwartz) Information Criterion }
- \item{popBias }{Bias, or mean weighted prediction error of predictions based on population parameters minus observations}
- \item{popImp }{Imprecision, or bias-adjusted mean weighted squared error of predictions based on population parameters minus observations }
- \item{popPerRMSE}{Percent root mean squared error of predictions based on population parameters minus observations}
- \item{postBias }{Bias, or mean weighted prediction error of predictions - observations  based on posterior parameters}
- \item{postImp }{Imprecision, or bias-adjusted mean weighted squared error of predictions - observations based on posterior parameters}
- \item{postPerRMSE}{Percent root mean squared error of predictions based on posterior parameters minus observations}
- \item{pval }{P-value for each model compared to the first. See details.}
+\item{run }{The run number of the data}
+\item{type }{NPAG or IT2B data}
+\item{nsub }{Number of subjects in the model}
+\item{nvar }{Number of random parameters in the model}
+\item{par }{Names of random parameters}
+\item{cycles }{Number of cycles run}
+\item{converge }{Boolean value if convergence occurred.}
+\item{ll }{Final cycle -2*Log-likelihood }
+\item{aic }{Final cycle Akaike Information Criterion}
+\item{bic }{Final cycle Bayesian (Schwartz) Information Criterion }
+\item{popBias }{Bias, or mean weighted prediction error of predictions based on population parameters minus observations}
+\item{popImp }{Imprecision, or bias-adjusted mean weighted squared error of predictions based on population parameters minus observations }
+\item{popPerRMSE}{Percent root mean squared error of predictions based on population parameters minus observations}
+\item{postBias }{Bias, or mean weighted prediction error of predictions - observations  based on posterior parameters}
+\item{postImp }{Imprecision, or bias-adjusted mean weighted squared error of predictions - observations based on posterior parameters}
+\item{postPerRMSE}{Percent root mean squared error of predictions based on posterior parameters minus observations}
+\item{pval }{P-value for each model compared to the first. See details.}
 }
 \description{
 Compare NPAG or IT2B runs

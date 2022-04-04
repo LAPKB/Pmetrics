@@ -17,11 +17,11 @@ Does not have to be specified.}
 }
 \value{
 A new file will be created with the name equal to \code{prefix} and
- an extension of \dQuote{csv}.
+an extension of \dQuote{csv}.
 }
 \description{
 \code{PMwrk2csv} will convert old style, single drug working copy files into
- a single .csv matrix file.
+a single .csv matrix file.
 }
 \details{
 This function will determine if the working copy files are old and convert them.
