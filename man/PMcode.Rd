@@ -7,7 +7,7 @@
 PMcode(func)
 }
 \arguments{
-\item{func}{Quoted name of a function family used in Pmetrics.  Currently, these are limited to \dQuote{run}, 
+\item{func}{Quoted name of a function family used in Pmetrics.  Currently, these are limited to \dQuote{run},
 for \code{\link{NPrun}}, \code{\link{ITrun}} and \dQuote{plot}.  For the first two, make sure that the model and data files are in your
 working directory before calling the function.}
 }

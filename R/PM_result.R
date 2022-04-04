@@ -2,15 +2,23 @@
 
 #' R6 object containing the results of a Pmetrics run
 #'
+#' @description 
+#' This object contains all of the results after a Pmetrics runs. It is created 
+#' by using the \code{\link{PM_load}} function.
+#' 
+#' @details 
+#' To complete.
+#' 
+#' @name PM_result
 #' @export
 PM_result <- R6::R6Class(
   "PM_result",
   public <- list(
     #' @field npdata List with all output from NPAG
     npdata = NULL,
-    #' @field pop  NPAG only: Population predictions for each output equation
+    #' @field pop NPAG only: Population predictions for each output equation
     pop = NULL,
-    #' @field post  NPAG only: Individual posterior predictions for each output equation
+    #' @field post NPAG only: Individual posterior predictions for each output equation
     post = NULL,
     #' @field final Final cycle population support points and parameter summary statistics
     final = NULL,
@@ -20,7 +28,7 @@ PM_result <- R6::R6Class(
     op = NULL,
     #' @field cov Data frame of subject ID, covariate values, and Bayesian posterior parameter estimates
     cov = NULL,
-    #' @field data \link{PM_data} object representing the original .csv data file used in the run
+    #' @field data [PM_data] object representing the original .csv data file used in the run
     data = NULL,
     #' @field model text string representing the original model file used in the run
     model = NULL,
@@ -28,7 +36,7 @@ PM_result <- R6::R6Class(
     errfile = NULL,
     #' @field success Boolean if successful run
     success = NULL,
-    #' @field valid If \code{\link{makeValid}} has been executed after a run, this object will be added to
+    #' @field valid If [makeValid] has been executed after a run, this object will be added to
     #' the save data.  It contains the information required to plot visual predictive checks and normalized prediction
     #' error discrepancies via the npde code developed by Comets et al
     valid = NULL,
@@ -36,11 +44,9 @@ PM_result <- R6::R6Class(
     #' @description
     #' Create new object populated with data from previous run
     #' @details
-    #' Creation of new \code{PM_result} objects is via
-    #' \code{\link{PM_load}}
-    #' @param out The parsed output from \code{\link{PM_load}}
-
-
+    #' Creation of new `PM_result` objects is via [PM_load].
+    #' @param out The parsed output from [PM_load].
+    #' @param quiet Quietly validate. Default is `FALSE`.
     initialize = function(out, quiet = T) {
       self$npdata <- out$NPdata
       self$pop <- PM_pop$new(out$pop)
@@ -58,30 +64,32 @@ PM_result <- R6::R6Class(
     #' @description
     #' Plot generic function based on type
     #' @param type Type of plot based on class of object
-    #' @param \dots Plot-specific arguments
-
+    #' @param ... Plot-specific arguments
     plot = function(type, ...) {
       stopifnot(!is.null(type), "please provide the type of plot you want to obtain")
       self[[type]]$plot(...)
     },
+    #' @description
+    #' Perform non-compartmental analysis
+    #' @details
+    #' See [makeNCA].
+    #' @param ... Arguments passed to [makeNCA].
     nca = function(...) {
       makeNCA(self, ...)
     },
-
     #' @description
     #' Summary generic function based on type
     #' @param type Type of summary based on class of object
-    #' @param \dots Summary-specific arguments
-
+    #' @param ... Summary-specific arguments
     summary = function(type, ...) {
       stopifnot(!is.null(type), "please provide the type of summary you want to obtain")
       self[[type]]$summary(...)
     },
-
+    
     #' @description
     #' Simulates using the self$final object
-    #' For parameter information refer to \code{\link{SIMrun}}
-
+    #' For parameter information refer to [SIMrun]
+    #' @param ... Parameters passed to [SIMrun]
     sim = function(...) {
       #store copy of the final object
       bk_final <- self$final$clone()
@@ -95,23 +103,44 @@ PM_result <- R6::R6Class(
     save = function(file_name = "PMresult.rds") {
       saveRDS(self, file_name)
     },
+    #' @description 
+    #' Validate the result by internal simulation methods.
+    #' @param ... Arguments passed to [makeValid].
     make_valid = function(...) {
       self$valid <- PM_valid$new(self, ...)
       self$valid
     },
+    #' @description 
+    #' Conduct stepwise linear regression of Bayesian posterior parameter values
+    #' and covariates.
+    #' @param ... Arguments passed to [PMstep].
     step = function(...) {
       PMstep(self$cov$data, ...)
     },
+    #' @description 
+    #' Calculate optimal sample times from result and template data file.
+    #' @param ... Arguments passed to [MMopt].
     MM_opt = function(...) {
       MM_opt(self, ...)
     }
   ) # end public
 ) # end PM_result
 
-#' @export
+#' Load a PM_result from a previously saved rds file.
+#' 
 #' @description
-#' Returns a PM_result object based on the information found in a specified rds file.
-#' @param file_name Name of the file to be read, the default is PMresult.rds
+#' This function loads an rds file created using the `$save` method on a 
+#' `PM_result` object.
+#' 
+#' @details
+#' `PM_result` objects contain a `save` method which invokes [saveRDS] to write
+#' the object to the hard drive as an .rds file. This is the corresponding load
+#' function.
+#' @rdname PM_result
+#' 
+#' @param file_name Name of the file to be read, the default is "PMsim.rds".
+#' @return A `PM_sim` object.
+#' @export
 PM_result$load <- function(file_name = "PMsim.rds") {
   readRDS(file_name)
 }

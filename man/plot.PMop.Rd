@@ -91,7 +91,7 @@ This option is useful to identify outliers.}
 \item{x.stat}{Horizontal position to plot the regression or residual statistics;
 the units are relative to the origin, i.e. extreme left is 0 and extreme right is 1.}
 
-\item{y.stat}{Vertical position to plot the regression or residual statistics; 
+\item{y.stat}{Vertical position to plot the regression or residual statistics;
 the units are relative to the origin, i.e. extreme bottom is 0 and extreme top is 1.}
 
 \item{col.stat}{Color of the text for the regression or residual statistics.}
@@ -111,12 +111,12 @@ lowess regression)}
 
 \item{ylab}{Label for the y-axis.  If missing, will default to \dQuote{Predicted}.}
 
-\item{out}{Direct output to a PDF, EPS or image file.  Format is a named list whose first argument, 
+\item{out}{Direct output to a PDF, EPS or image file.  Format is a named list whose first argument,
 \code{type} is one of the following character vectors: \dQuote{pdf}, \dQuote{eps} (maps to \code{postscript}),
 \dQuote{\code{png}}, \dQuote{\code{tiff}}, \dQuote{\code{jpeg}}, or \dQuote{\code{bmp}}.  Other named items in the list
 are the arguments to each graphic device. PDF and EPS are vector images acceptable to most journals
 in a very small file size, with scalable (i.e. infinite) resolution.  The others are raster images which may be very
-large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the 
+large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the
 output will go to the current graphic device (usually the monitor). For example, to output an eps file,
 out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.}
 

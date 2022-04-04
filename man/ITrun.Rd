@@ -27,15 +27,15 @@ ITrun(
 \arguments{
 \item{model}{Name of a suitable model file template in the working directory or
 an existing (previous) run number corresponding to a folder in the current working directory that used the same model file as will be used in the current run.
-If this is supplied, then the model file will be copied into the current 
-working directory for convenience.  If not supplied, 
+If this is supplied, then the model file will be copied into the current
+working directory for convenience.  If not supplied,
 the default is \dQuote{model.txt}.  This file will be converted to a fortran model file.
 If it is detected to already be a fortran file, then the analysis will proceed without any further
 file conversion.}
 
 \item{data}{Name of a suitable data file (see \code{\link{PMwriteMatrix}}) or
 an existing (previous) run number corresponding to a folder in the current working directory that used the same data file as will be used in the current run.
-If this is supplied, then previously made  '.ZMQ' files will be copied into the current 
+If this is supplied, then previously made  '.ZMQ' files will be copied into the current
 working directory, bypassing the need to re-convert the .csv file and speeding up the run..}
 
 \item{run}{Specify the run number of the output folder.  Default if missing is the next available number.}
@@ -63,7 +63,7 @@ be helpful for beginners.  Default is \code{True}.}
 
 \item{intern}{MacOSX only: Run IT2B in the R console without a batch script.  Default is false.
 This will be ignored on Windows systems.  On the latter, the behavior of cmd.exe (aka the \dQuote{DOS} window)
-with R is poor - it does not update until the end of execution, so you cannot see any output that indicates that IT2B is running.  
+with R is poor - it does not update until the end of execution, so you cannot see any output that indicates that IT2B is running.
 If \code{intern=T} the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
 and you can find the HTML summary page in the /outputs folder: IT2Breport.html.}
 
@@ -77,13 +77,13 @@ and you can find the HTML summary page in the /outputs folder: IT2Breport.html.}
 }
 \value{
 A successful IT2B run will result in creation of a new folder in the working
-directory. This folder will be named numerically and sequentially with respect to previous runs.   
+directory. This folder will be named numerically and sequentially with respect to previous runs.
 Within this folder will be four subfolders: etc, inputs, outputs, and
 wrkcopy, described below.
 \itemize{
- \item \bold{etc}   Control files for IT2B generally not needed by the user after a completed run.
- \item \bold{inputs}   This folder will contain the .csv data file and the model file.
- \item \bold{outputs}   This folder will contain the output from the IT2B run.  These files will be
+\item \bold{etc}   Control files for IT2B generally not needed by the user after a completed run.
+\item \bold{inputs}   This folder will contain the .csv data file and the model file.
+\item \bold{outputs}   This folder will contain the output from the IT2B run.  These files will be
 prefixed by DENF, ILOG, OUTF, OUFF, LAST, FROM and RFILE, with appended numbers, usually 0001.
 DEN is the density file which contains the joint posterior density which can be passed to IT2B.
 OUTF and OUFF are full and truncated textfiles containing all output of IT2B.  OUFF is missing
@@ -93,7 +93,7 @@ RFILE contains IT2B output formatted for easy import into R, and is the file rea
 the \code{\link{ITparse}} command.  Finally, there will also be an itlog.txt file
 containing additional run information.
 \item \bold{wrkcopy}    The working copy format which is used by IT2B.  Invisibly to the user,
-the .csv input file is converted to these text files, one file per subject.  
+the .csv input file is converted to these text files, one file per subject.
 }
 }
 \description{
@@ -102,7 +102,7 @@ Runs IT2B
 \details{
 \code{ITrun} will execute an IT2B run.
 
-If all function arguments are default, the simplest execution of this command is 
+If all function arguments are default, the simplest execution of this command is
 \code{ITrun()}.  This will result in generation of a batch file.  On Unix (Mac) systems
 will be launched automatically in a terminal window.  On Windows systems, the user
 must execute the batch file from the current working directory, which will launch IT2B

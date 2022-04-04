@@ -22,7 +22,7 @@ A list of class \emph{PMdopt} with 2 items.
 Computes D-optimal sampling times.
 }
 \details{
-This algorithm calculates the D-optimal sample times for each grid point 
+This algorithm calculates the D-optimal sample times for each grid point
 in a nonparametric population model.  It returns all the sample times and the mean weighted
 results.  The optimization is run twice for stability checking, and the results of both runs
 are reported.

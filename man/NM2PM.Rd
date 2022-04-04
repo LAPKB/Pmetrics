@@ -26,7 +26,7 @@ A list of other differences follows by data item.
 \itemize{
 \item ID This item is the same in both formats and is required.
 \item EVID This is the same in both formats but is not required in NONMEM.  Doses have an EVID
-of 1 and observations 0.  EVID=4 (dose/time reset) is the same in Pmetrics and NONMEM. 
+of 1 and observations 0.  EVID=4 (dose/time reset) is the same in Pmetrics and NONMEM.
 EVID=2 (other event) and EVID=3 (dose reset) are not directly supported in Pmetrics, but if included
 in a NONMEM file, will be converted into covariate values.  Specifically the value in the CMT variable will
 be the covariate value for EVID=2, while for EVID=3, the covariate will be 1 at the time of the EVID=3 entry
@@ -39,10 +39,10 @@ to relative times, as does \code{NM2PM}.
 \item ADDL is supported in both formats.  However, if NONMEM files contain an SS flag, it will be
 incorporated as ADDL=-1 according to Pmetrics style.
 \item II is the same in both formats.
-\item INPUT in Pmetrics is similar to CMT in NONMEM for doses.  
+\item INPUT in Pmetrics is similar to CMT in NONMEM for doses.
 \item DV in NONMEM becomes OUT in Pmetrics.  Ensure that the units of OUT are consistent with the
 units of DOSE.
-\item OUTEQ In Pmetrics, this is roughly equivalent to CMT in NONMEM for observation events.  
+\item OUTEQ In Pmetrics, this is roughly equivalent to CMT in NONMEM for observation events.
 The lowest CMT value for any observation becomes OUTEQ=1; the next lowest becomes OUTEQ=2, etc.
 \item SS Steady state dosing is incorporated into Pmetrics as ADDL=-1.
 \item MDV Missing DV in NONMEM become OUT=-99 in Pmetrics.

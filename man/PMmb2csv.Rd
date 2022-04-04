@@ -14,11 +14,11 @@ This could be easily obtained with \code{\link{list.files}}.}
 }
 \value{
 A new file will be created with the name equal to \code{newFile} and
- an extension of \dQuote{csv}.
+an extension of \dQuote{csv}.
 }
 \description{
 \code{PMmb2csv} will convert old style, single drug .mb or USC*PACK files into
- a single .csv matrix file.
+a single .csv matrix file.
 }
 \details{
 IDs will be suffixed with .1 to .9 for <10 subjects, .01 to .99 for <100 subjects and .001 to .999 for <1000 subjects,
