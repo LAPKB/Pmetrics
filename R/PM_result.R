@@ -209,6 +209,7 @@ PM_op <- R6Class(
   )
 )
 
+#' @export
 summary.PM_op <- function(obj, ...) {
   obj$summary(...)
 }
