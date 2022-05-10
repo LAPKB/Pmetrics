@@ -1,5 +1,5 @@
 #' \code{PMFortranConfig} will read or define the installed Fortran compiler and generate
-#' a command line template appropriate to the compiler. 
+#' a command line template appropriate to the compiler.
 #'
 #' Command line templates are defined for the following compilers: \bold{gfortran}, \bold{g95},
 #' \bold{Intel Visual}, and \bold{Lahey}.  Additionally, users may specify a custom command line
@@ -12,23 +12,25 @@
 #' @param reconfig Default is \code{False}.  If \code{True}, will allow user to change
 #' the previously specified compiler and template.
 #' @return \code{PMFortranConfig} returns the compile command template specific to the chosen
-#' compiler.  
+#' compiler.
 #' @author Michael Neely
 #' @seealso \code{\link{NPrun}}, \code{\link{ITrun}},\code{\link{ERRrun}}, and
 #' \code{\link{SIMrun}}
 #' @export
 
 PMFortranConfig <- function(reconfig = F) {
-  #figure out the OS
+  # figure out the OS
   OS <- getOS()
-  #get the fortran path
-  configFilename <- switch(OS, "~/.config/Pmetrics/FortConfig.txt",
-                           paste(Sys.getenv("APPDATA"), "\\Pmetrics\\FortConfig.txt", sep = ""),
-                           "~/.config/Pmetrics/FortConfig.txt")
-  #read the configuration file
+  # get the fortran path
+  configFilename <- switch(OS,
+    "~/.config/Pmetrics/FortConfig.txt",
+    paste(Sys.getenv("APPDATA"), "\\Pmetrics\\FortConfig.txt", sep = ""),
+    "~/.config/Pmetrics/FortConfig.txt"
+  )
+  # read the configuration file
   if (file.exists(configFilename)) {
     compiler <- readLines(configFilename)
-    #check for non-parallel gfortran, and if present, update for 64 bit only (doesn't work in 32 bit)
+    # check for non-parallel gfortran, and if present, update for 64 bit only (doesn't work in 32 bit)
     if (getBits() == "64" & length(compiler) == 1 & length(grep("^gfortran", compiler) > 0)) {
       compiler <- c(compiler, "gfortran -O3 -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>")
       writeLines(compiler, configFilename)
@@ -37,11 +39,13 @@ PMFortranConfig <- function(reconfig = F) {
     }
   } else {
     compiler <- NA
-    dir.create(switch(OS, "~/.config/Pmetrics",
-                      paste(Sys.getenv("APPDATA"), "\\Pmetrics", sep = ""),
-                      "~/.config/Pmetrics"), showWarnings = T, recursive = T)
+    dir.create(switch(OS,
+      "~/.config/Pmetrics",
+      paste(Sys.getenv("APPDATA"), "\\Pmetrics", sep = ""),
+      "~/.config/Pmetrics"
+    ), showWarnings = T, recursive = T)
   }
-  #if compiler is missing or user wants to reconfigure, execute the following block
+  # if compiler is missing or user wants to reconfigure, execute the following block
   if (is.na(compiler[1]) | reconfig) {
     cat("\nPmetrics needs to know which Fortran compiler you are using.\n")
     cat("You only have to specify this once.\n")
@@ -57,11 +61,14 @@ PMFortranConfig <- function(reconfig = F) {
     cat("5. Other (define custom command)\n")
     cat("6. Help, I don't have a Fortran compiler!\n")
     choice <- NA
-    #ensure valid input
+    # ensure valid input
     while (is.na(choice)) {
       # choice <- readline("\nEnter the number of your compiler: ")
-      choice <- "1" #make gfortran only choice for now
-      if (length(grep("[[:digit:]]", choice)) == 0) { choice <- NA; next }
+      choice <- "1" # make gfortran only choice for now
+      if (length(grep("[[:digit:]]", choice)) == 0) {
+        choice <- NA
+        next
+      }
       if ((OS == 1 | OS == 3) & (choice == "2" | choice == "4")) {
         cat("\n g95 and Lahey compilers are not available in the Mac/Unix/Linux environment.\n")
         choice <- NA
@@ -70,10 +77,11 @@ PMFortranConfig <- function(reconfig = F) {
 
       if (as.numeric(choice) < 5) {
         compiler <- switch(as.numeric(choice),
-                           paste("gfortran -m", getBits(), " -w -O3 -o <exec> <files>\ngfortran -O3 -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>", sep = ""),
-                           "g95 -o -fstatic <exec> <files> ",
-                           "ifort -o <exec> <files>",
-                           "lf90  <files> -fix -out <exec>")
+          paste("gfortran -w -O3 -o <exec> <files>\ngfortran -O3 -w -fopenmp -fmax-stack-var-size=32768 -o <exec> <files>", sep = ""),
+          "g95 -o -fstatic <exec> <files> ",
+          "ifort -o <exec> <files>",
+          "lf90  <files> -fix -out <exec>"
+        )
       } else {
         if (choice == "5") {
           cat("\nCustom compile commands should be entered using '<exec>' as a placeholder\n")
@@ -82,7 +90,7 @@ PMFortranConfig <- function(reconfig = F) {
           cat("\nExample: gfortran -O3 -o <exec> <files>\n")
           compiler <- readline("\nEnter your custom compile statement: ")
         } else {
-          #get system-appropriate gfortran
+          # get system-appropriate gfortran
           compiler <- gfortranCheck()
         }
       }
@@ -91,4 +99,3 @@ PMFortranConfig <- function(reconfig = F) {
   }
   return(compiler)
 }
-
