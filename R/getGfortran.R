@@ -16,7 +16,7 @@ update_gfortran <- function() {
   }
 }
 
-.installOrUpdateGfortran <- function() {
+.installOrUpdateGfortran <- function(autoyes) {
   OS <- getOS()
   if (OS == 1) {
     cat("Checking for Brew \n")
