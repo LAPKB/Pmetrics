@@ -60,7 +60,14 @@ update_gfortran <- function() {
 }
 
 .installOrUpdateBrew <- function() {
-  if (system("which -s /opt/homebrew/bin/brew") != 0) {
+  if (isM1()) {
+    gfortran_path <- "/opt/homebrew/bin/gfortran"
+    brew_path <- "/opt/homebrew/bin/brew"
+  } else {
+    gfortran_path <- "gfortran"
+    brew_path <- "brew"
+  }
+  if (system(paste0("which -s ", gfortran_path)) != 0) {
     # Brew is not installed
     cat("Pmetrics did not find the Homebrew Package Manager and will attempt to download and install it.\n")
     input <- tolower(readline("Do you wish to proceed? (Y/N)"))
@@ -76,22 +83,27 @@ update_gfortran <- function() {
   } else {
     # brew is installed
     cat("Pmetrics found Homebrew found and will ensure latest version is installed.\n")
-    system("/opt/homebrew/bin/brew update")
+    system(paste0(brew_path, " update"))
   }
   return(T)
 }
 
 .installOrUpdateGCC <- function(OS) {
   if (OS == 1) {
-    if (system("/opt/homebrew/bin/brew ls --versions gcc") != 0) {
+    if (isM1()) {
+      brew_path <- "/opt/homebrew/bin/brew"
+    } else {
+      brew_path <- "brew"
+    }
+    if (system(paste0(brew_path, " ls --versions gcc")) != 0) {
       cat("Pmetrics did not find GCC and will install it.\n")
-      system("/opt/homebrew/bin/brew install gcc")
+      system(paste0(brew_path, " install gcc"))
     } else {
       cat("Pmetrics found GCC.\n")
-      if (system("/opt/homebrew/bin/brew outdated | grep gcc") == 0) {
+      if (system(paste0(brew_path, " outdated | grep gcc")) == 0) {
         # there is a new version of GCC
         cat("Pmetrics found a newer version of GCC and will update it.\n")
-        system("/opt/homebrew/bin/brew upgrade gcc")
+        system(paste0(brew_path, " upgrade gcc"))
       }
     }
   } else if (OS == 2) {
