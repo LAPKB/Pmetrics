@@ -6,8 +6,7 @@
     installedVersion <- packageVersion("Pmetrics")
     file <- "http://www.lapk.org/PMmsg.txt"
     msg <- c(paste("\nWelcome to Pmetrics, version ", packageVersion("Pmetrics"), ".", sep = ""),
-             "\nUse PMmanual() or visit the LAPK website at http://www.lapk.org/pmetrics.php for help.",
-             "\nSee PMnews() for version log.\n")
+             "\nUse PMmanual() or visit the LAPK website at http://www.lapk.org/pmetrics.php for help.")
     
     response <- tryCatch(httr::GET("https://api.github.com/repos/LAPKB/Pmetrics/releases/latest", httr::add_headers(Accept= "application/vnd.github.v3+json")), error=function(e){print(e); return(NULL)})
     currentVersion <- "0.1"
