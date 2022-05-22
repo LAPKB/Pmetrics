@@ -121,7 +121,7 @@ PM_result <- R6::R6Class(
     #' @description 
     #' Validate the result by internal simulation methods.
     #' @param ... Arguments passed to [makeValid].
-    make_valid = function(...) {
+    valid = function(...) {
       self$valid <- PM_valid$new(self, ...)
       self$valid
     },
@@ -184,7 +184,7 @@ PM_op <- R6Class(
       self$time <- op$time
       self$obs <- op$obs
       self$pred <- op$pred
-      self$pred.type <- op$pred.typ
+      self$pred.type <- op$pred.type
       self$icen <- op$icen
       self$outeq <- op$outeq
       self$block <- op$block
