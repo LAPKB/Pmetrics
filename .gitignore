@@ -24,3 +24,5 @@ tests/testthat/Runs/
 other/
 .Rprofile
 Examples
+.Rdata
+.httr-oauth

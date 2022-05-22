@@ -32,14 +32,25 @@ PM_data <- R6::R6Class("PM_data",
     #' @param data A quoted name of a file with full path if not
     #' in the working directory, or an unquoted name of a data frame
     #' in the current R environment.
+    #' @param dt Date time format as a character vector whose
+    #' first element is date format and second is time. Default is 
+    #' `c("Ymd", "HS")`. Use the following abbreviations:
+    #' * Y = 4 digit year
+    #' * y = 2 digit year
+    #' * m = decimal month (1, 2, ..., 12)
+    #' * d = decimal day (1, 2, ..., 31)
+    #' * H = hours (0-23)
+    #' * M = minutes (0-59)
+    #' Other formats are possible. See [strptime] for these,
+    #' omitting the % before each abbreviation.
     #' @param quiet Quietly validate. Default is `FALSE`.
-    initialize = function(data, quiet = F) {
+    initialize = function(data, dt = c("Ymd", "HS"), quiet = F) {
       self$data <- if (is.character(data)) {
         PMreadMatrix(data, quiet = T)
       } else {
         data
       }
-      self$standard_data <- private$validate(self$data, quiet = quiet)
+      self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)
     },
     #' @description
     #' Write data to file
@@ -104,7 +115,7 @@ PM_data <- R6::R6Class("PM_data",
   ), # end public
   private = list(
     #dataObj = NULL,
-    validate = function(dataObj, quiet) {
+    validate = function(dataObj, quiet, dt) {
       dataNames <- names(dataObj)
       standardNames <- getFixedColNames()
 
@@ -127,7 +138,7 @@ PM_data <- R6::R6Class("PM_data",
       }
 
       if ("date" %in% dataNames) {
-        relTime <- PMmatrixRelTime(dataObj)
+        relTime <- PMmatrixRelTime(dataObj, format = dt)
         dataObj$time <- relTime$relTime
         dataObj <- dataObj %>% select(-date)
         msg <- c(msg, "Dates and clock times converted to relative decimal times.\n")
