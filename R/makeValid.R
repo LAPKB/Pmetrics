@@ -299,8 +299,8 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   # simulate PRED_bin from pop icen parameter values and median of each bin for each subject
   # first, calculate median of each bin
   dcMedian <- aggregate(dataSub[, c("dose", binCov)], by = list(dataSub$dcBin), FUN = median, na.rm = T)
-  # names(dcMedian)[1] <- "bin"
-  names(dcMedian) <- c("bin", "dose")
+  names(dcMedian)[1] <- "bin"
+  # names(dcMedian) <- c("bin", "dose")
   timeMedian <- aggregate(dataSub$time, by = list(dataSub$timeBin), FUN = median)
   names(timeMedian) <- c("bin", "time")
 
@@ -317,7 +317,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   mdataMedian$dcBin <- dataSub$dcBin
   mdataMedian$timeBin <- dataSub$timeBin
   # no need for tadBin as we don't simulate with tad
-  mdataMedian$dose <- dcMedian$dose[match(mdataMedian$dcBin, dcMedian$bin)]
+  mdataMedian$dose <- dcMedian[[2]][match(mdataMedian$dcBin, dcMedian$bin)]
   mdataMedian$time[mdataMedian$evid == 0] <- timeMedian$time[match(mdataMedian$timeBin[mdataMedian$evid == 0], timeMedian$bin)]
   covCols <- which(names(mdataMedian) %in% binCov)
   if (length(covCols) > 0) {
@@ -569,7 +569,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   # Cluster raw data --------------------------------------------------------
 
   # grab raw data file
-  mdata <- getName("mdata")
+  mdata <- getName("data")
   # remove missing observations
   missObs <- obsStatus(mdata$out)$missing
   if (length(missObs) > 0) mdata <- mdata[-missObs, ]
@@ -864,7 +864,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   mdataMedian$dcBin <- dataSub$dcBin
   mdataMedian$timeBin <- dataSub$timeBin
   # no need for tadBin as we don't simulate with tad
-  mdataMedian$dose <- dcMedian$dose[match(mdataMedian$dcBin, dcMedian$bin)]
+  mdataMedian$dose <- dcMedian$x[match(mdataMedian$dcBin, dcMedian$bin)]
   mdataMedian$time[mdataMedian$evid == 0] <- timeMedian$time[match(mdataMedian$timeBin[mdataMedian$evid == 0], timeMedian$bin)]
   covCols <- which(names(mdataMedian) %in% binCov)
   if (length(covCols) > 0) {
@@ -1036,7 +1036,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
     cycle = getName("cycle"),
     op = getName("op"),
     cov = getName("cov"),
-    mdata = getName("mdata"),
+    mdata = getName("data"),
     valid = valRes
   )
   save(NPAGout, file = "../outputs/NPAGout.Rdata")
