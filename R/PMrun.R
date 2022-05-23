@@ -562,11 +562,11 @@
         paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript", sep = "")), " ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
         paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
       )[OS]
-      PMscript[getNext(PMscript)] <- c(
-        paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
-        paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
-        paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
-      )[OS]
+      # PMscript[getNext(PMscript)] <- c(
+      #   paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
+      #   paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
+      #   paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
+      # )[OS]
     }
     # final clean up
     if (OS == 1 | OS == 3) {
@@ -608,6 +608,7 @@
       # if (!batch) system(paste("openvt ", shQuote(paste(getwd(), "./", scriptFileName, sep = "")), sep = ""))
       system(paste0("./", scriptFileName, " &"))
     }
+    browseURL(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))
     setwd(currwd)
     return(outpath)
   } else {
@@ -787,8 +788,7 @@
     file.copy(from = Sys.glob("*.*"), to = "inputs")
     file.remove(Sys.glob("*.*"))
     outpath <- paste(currwd, newdir, "outputs", sep = "/")
-
-
+    browseURL(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))
     return(outpath)
   }
 }
