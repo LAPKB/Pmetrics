@@ -7,8 +7,8 @@
 
 
 
-PMbuild <- function(skipRegistration = F) {
-  if (.check_and_install_gfortran(skipRegistration)) {
+PMbuild <- function(skipRegistration = F, autoyes = F) {
+  if (.check_and_install_gfortran(skipRegistration, autoyes)) {
     currwd <- getwd()
     OS <- getOS()
 
@@ -106,7 +106,7 @@ PMbuild <- function(skipRegistration = F) {
   }
 }
 
-.check_and_install_gfortran <- function(skipRegistration) {
+.check_and_install_gfortran <- function(skipRegistration, autoyes) {
   # restore user defaults - deprecated
   # if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
   sch_str <- c("which -s gfortran", "where gfortran", "which -s gfortran")
@@ -121,7 +121,11 @@ PMbuild <- function(skipRegistration = F) {
       cat("Pmetrics cannot find required compiled binary files.\n")
       if (system(sch_str[OS]) != 0) {
         cat("Pmetrics cannot detect gfortran and will attempt to download and install all components.\n")
-        input <- tolower(readline(prompt = "Do you agree? (Y/N)"))
+        input <- if (autoyes) {
+          "y"
+        } else {
+          tolower(readline(prompt = "Do you agree? (Y/N)"))
+        }
         if (substr(input, 1, 1) == "y") {
           if (.installOrUpdateGfortran()) {
             cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
