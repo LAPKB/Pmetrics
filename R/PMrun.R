@@ -553,9 +553,9 @@
         paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript", sep = "")), " ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
         paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
       )[OS]
-      PMscript[getNext(PMscript)] <-
-        # c(
-        browseURL(shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")))
+      # PMscript[getNext(PMscript)] <-
+      #   # c(
+      #   browseURL(shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")))
       # paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
       # paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
       # paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
@@ -602,6 +602,7 @@
       system(paste0("./", scriptFileName, " &"))
     }
     setwd(currwd)
+    browseURL(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))
     return(outpath)
   } else {
     # run internally, also for servers
@@ -782,6 +783,7 @@
     outpath <- paste(currwd, newdir, "outputs", sep = "/")
 
 
+    browseURL(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))
     return(outpath)
   }
 }
