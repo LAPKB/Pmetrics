@@ -573,7 +573,7 @@
     #     paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
     #     paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
     #   )[OS]
-    # }
+    }
     # final clean up
     if (OS == 1 | OS == 3) {
       # for Mac or Linux
