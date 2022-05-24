@@ -562,19 +562,19 @@
         paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript", sep = "")), " ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
         paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
       )[OS]
-      # PMscript[getNext(PMscript)] <- 
-      # c(
-      #   paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
-      #   paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript", sep = "")), shQuote(), " ",  ")", sep = ""),
-      #   paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(), " ; fi", sep = "")
-      # )[OS]
       PMscript[getNext(PMscript)] <- 
       c(
-        paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
-        paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
-        paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
+        paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = ""),
+        paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
+        paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = "")
       )[OS]
-    }
+    #   PMscript[getNext(PMscript)] <- 
+    #   c(
+    #     paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
+    #     paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
+    #     paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
+    #   )[OS]
+    # }
     # final clean up
     if (OS == 1 | OS == 3) {
       # for Mac or Linux
