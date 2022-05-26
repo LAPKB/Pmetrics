@@ -499,3 +499,243 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
   #close device if necessary
   if(inherits(out,"list")) dev.off()
 }
+
+
+#' `plot.PM_data` plots \emph{PM_data} objects
+#'
+#' This function will plot raw and fitted time and concentration data with a variety of options.
+#' For the legend, defaults that are different that the standard are:
+#' * x Default "topright"
+#' * legend Default will be factor label names if `group` is specified and valid; otherwise
+#'   "Output 1, Output 2,...Output n", where \emph{n} is the number of output equations.  This default
+#'   can be overridden by a supplied character vector of output names.
+#' * fill The color of each group/output as specified by the default color scheme or `col`
+#' 8 bg Default "white"
+#' }
+#'
+#' @title Plot PM_data Time-Output Data
+#' @method plot PM_data
+#' @param x The name of an \emph{PM_data} data object created by [PM_data$new()] or loaded as a field
+#' in a [PM_result] object
+#' @param include A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)
+#' @param exclude A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)
+#' @param pred The name of a population or posterior prediction object in a [PM_result] object, eg. 
+#' `run1$post` or `run1$pop`. Can be a list, with the prediction object first, followed by named options to control the 
+#' prediction plot
+#' * icen Chooses the median or mean of each
+#' subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".
+#' * Other parameters to pass to plotly to control line characteristics, including `color`, `width`, and `dash`.
+#' For example: `pred = list(run1$post, color = "blue", width = 2)`. Defaults are "dodgerblue", 1, and 1 (solid line).
+#' Type `schema()` into the console (with the plotly package loaded), select traces > scatter > attributes > line
+#' for more details on the available options for line formatting. 
+#' @param mult Multiplication factor for y axis, e.g. to convert mg/L to ng/mL
+#' @param outeq A vector of output equation(s) to plot; if missing, plot all.  E.g. outeq=1, outeq=2, outeq=c(1,3).
+#' @param group **Not currently implemented.** Quoted name of a covariate in `data` by which
+#' to distinguish groups with color in the plot. Note that if covariates do not have values on observation
+#' rows, those observations will be unable to be grouped.  Grouping is only applicable if `outeq` is
+#' specified; otherwise there would be a confusing mix of colors for groups and output equations.
+#' @param block Which block to plot, where a new block is defined by dose resets (evid=4); default is 1.
+#' @param log Boolean operator to plot in log-log space; the default is `FALSE`.
+#' @param marker Either `TRUE` (the default), `FALSE` to suppress, or a list 
+#' controlling the plotting symbol for observations. Type `schema()` 
+#' into the console (with the plotly package loaded), select traces > scatter > attributes > marker
+#' for more details on the available options for marker formatting. The most relevant are `color`, `size`, 
+#' `symbol`, and `opacity`. For example: `marker = list(color = "green", size = 15)` 
+#' Defaults are red, 10, circle, and 0.5.
+#' @param tad Boolean operator to use time after dose rather than time after start.  Default is `FALSE`.
+#' @param join Either `TRUE` (the default), `FALSE` to suppress, or a list 
+#' controlling the joining line segments between observations. Type `schema()` 
+#' into the console (with the plotly package loaded), select traces > scatter > attributes > line
+#' for more details on the available options for marker formatting. The most relevant are `color`, `width`, 
+#' and `dash`. For example: `join = list(color = "green", width = 2)` 
+#' Defaults are the same as for `pred`: "dodgerblue", 1, and 1 (solid).
+#' @param grid Either `TRUE` or `FALSE` (the default) to plot or suppress the grid.  It may also be a list with either
+#' or both of `gridcolor` or `gridwidth`. Type `schema()` 
+#' into the console (with the plotly package loaded), select layout > layoutAttributes > xaxis > gridcolor or gridwidth
+#' for more details on the available options for formatting. Defaults if plotted are grey and 1.
+#' @param overlay Boolean operator to overlay all time concentration profiles in a single plot.
+#' The default is `TRUE`.
+#' @param xlim Optional to specify the limits for the x axis. This is a shortcut for the plotly method
+#' of specifying xaxis = list(range = c(min, max)).
+#' @param ylim Optional to specify the limits for the y axis. It's a shortcut similar to `xlim`.
+#' @param xlab Label for the x axis.  Default is "Time". This is a shortcut for the plotly method
+#' of specifying xaxis = list(title = xlab).
+#' @param ylab Label for the y axis.  Default is "Observation". It's a shortcut similar to `xlab`.
+#' @param legend Either a boolean operator (most common) or a list of parameters to be supplied to plotly.
+#' If `FALSE` (the default), a legend will not be plotted. Type `schema()` 
+#' into the console (with the plotly package loaded), select layout > layoutAttributes > legend
+#' for more details on the available options for formatting. 
+#' @param ... Not currently implemented.
+#' @return Plots the object.
+#' @author Michael Neely
+#' @seealso [PM_data], [PM_result]
+#' @export
+
+plot.PM_data <- function(x, include, exclude, pred = NULL,
+                         mult = 1, outeq = 1, group, block = 1,
+                         log = F, 
+                         join = T,
+                         marker = T,
+                         grid = F,
+                         legend = F,
+                         tad = F,
+                         overlay = T,
+                         xlim, ylim,
+                         xlab="Time", ylab="Output", ...){
+  
+  
+  
+  # Plot parameters ---------------------------------------------------------
+  
+  dots <- list(...)
+  
+  marker <- amendMarker(marker)
+  join <- amendLine(join)
+  
+  xaxis <- purrr::pluck(dots, "xaxis") #check for additional changes
+  xaxis <- if(is.null(xaxis)) xaxis <- list()
+  yaxis <- purrr::pluck(dots, "yaxis")
+  yaxis <- if(is.null(yaxis)) yaxis <- list()
+  
+  if(!is.null(purrr::pluck(dots, "layout"))){stop("Specify individual layout elements, not layout.")}
+  layout <- list()
+  
+  #legend
+  legendList <- amendLegend(legend)
+  layout <- modifyList(layout, list(showlegend = legendList[[1]]))
+  if(!is.null(legendList[[2]])){layout <- modifyList(layout, list(legend = legendList[[2]]))}
+  
+  #grid
+  xaxis <- setGrid(xaxis, grid)
+  yaxis <- setGrid(yaxis, grid)
+  
+  #axis labels
+  xaxis <- modifyList(xaxis, list(title = xlab))
+  yaxis <- modifyList(yaxis, list(title = ylab))
+  
+  #axis ranges
+  if(!missing(xlim)){xaxis <- modifyList(xaxis, list(range = xlim)) }
+  if(!missing(ylim)){yaxis <- modifyList(yaxis, list(range = ylim)) }
+  
+  #log y axis
+  if(log){
+    yaxis <- modifyList(yaxis, list(type = "log"))
+  }
+  
+  #finalize layout
+  layoutList <- modifyList(layout, list(xaxis = xaxis, yaxis = yaxis))
+  
+  
+  # Data processing ---------------------------------------------------------
+  
+  #filter & group by id
+  if(missing(include)) {include <- unique(x$standard_data$id)}
+  if(missing(exclude)) {exclude <- NA}
+  
+  sub <- x %>% filter(outeq == !!outeq, block == !!block, evid == 0) %>% 
+    includeExclude(include,exclude) %>% 
+    group_by(id)
+  
+  #time after dose
+  if(tad){sub$time <- calcTAD(sub)}
+  
+  #select relevant columns
+  sub <- sub %>% select(id, time, out)
+  
+  #add identifier
+  sub$src <- "obs"
+  
+  #now process pred data if there
+  if(!is.null(pred)){
+    if(inherits(pred,"PM_post")){pred <- list(pred)} #only PM_post was supplied, make into a list of 1
+    if(!inherits(pred[[1]],"PM_post")){cat("The first element of <pred> must be a PM_post object")
+    } else {
+      predData <- pred[[1]]$data
+      if(length(pred)==1){ #default
+        predArgs <- T
+        icen <- "median"
+      } else { #not default, but need to extract icen if present
+        icen <- pluck(pred, "icen") #check if icen is in list
+        if(is.null(icen)){ #not in list so set default
+          icen <- "median"
+        } else {pluck(predArgs, "icen") <- NULL} #was in list, so remove after extraction
+        predArgs <- pred[-1]
+      }
+    }
+    
+    predArgs <- amendLine(predArgs)
+    #filter and group by id
+    predsub <- predData %>% filter(outeq == !!outeq, block == !!block, icen == !!icen) %>% 
+      includeExclude(include,exclude) %>% group_by(id)
+    
+    #time after dose
+    if(tad){predsub$time <- calcTAD(predsub)}
+    
+    #select relevant columns
+    predsub <- predsub %>% select(id, time, out = pred)
+    
+    #add identifier
+    predsub$src <- "pred"
+    
+  } else {predsub <- NULL} #end pred processing
+  
+  
+  
+  # Plot function ----------------------------------------------------------
+  
+  dataPlot <- function(allsub, overlay, includePred){
+    
+    #set appropriate pop up text
+    if(!overlay){
+      hovertemplate <-  "Time: %{x}<br>Out: %{y}<extra></extra>"
+      text <- ""
+    } else {
+      hovertemplate <- "Time: %{x}<br>Out: %{y}<br>ID: %{text}<extra></extra>"
+      text <- ~id
+    }
+    
+    p <- allsub %>% filter(src == "obs") %>%
+      plotly::plot_ly(x = ~time, y = ~out * mult) %>%
+      add_markers(marker = marker,
+                  text = text,
+                  hovertemplate = hovertemplate) %>%
+      add_lines(line = join)
+    
+    if(includePred){
+      p <- p %>% 
+        add_lines(data = allsub[allsub$src == "pred",], x = ~time, y = ~out,
+                  line = predArgs )
+    }
+    p <- p %>% layout(xaxis = layoutList$xaxis,
+                      yaxis = layoutList$yaxis,
+                      showlegend = layoutList$showlegend,
+                      legend = layoutList$legend) 
+    return(p)
+  } #end dataPlot
+  
+  
+  # Call plot ---------------------------------------------------------------
+  
+  
+  #if pred present, need to combine data and pred for proper display
+  if(!is.null(predsub)){
+    allsub <- bind_rows(sub, predsub) %>% arrange(id, time)
+    includePred <- T
+  } else {
+    allsub <- sub
+    includePred <- F}
+  
+  #call the plot function and display appropriately 
+  if(overlay){
+    p <- dataPlot(allsub, overlay = T, includePred)
+    print(p)
+  } else { #overlay = F, ie. split them
+    sub_split <- allsub %>% nest(data = -id) %>%
+      mutate(panel = map_plot(data, dataPlot, overlay = F, includePred = includePred))
+    s_p <- sub_split %>% ungroup() %>% trelliscope(name = "Data")
+    print(s_p)
+  }
+  
+  return(p)
+}
+

@@ -35,6 +35,7 @@ Julian Otalvaro and Michael Neely
 \item \href{#method-save}{\code{PM_pta$save()}}
 \item \href{#method-summary}{\code{PM_pta$summary()}}
 \item \href{#method-plot}{\code{PM_pta$plot()}}
+\item \href{#method-load}{\code{PM_pta$load()}}
 \item \href{#method-clone}{\code{PM_pta$clone()}}
 }
 }
@@ -108,6 +109,23 @@ Plot the \code{PM_pta} object. See \link{plot.PMpta}.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{...}}{Arguments passed to \link{plot.PMpta}}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-load"></a>}}
+\if{latex}{\out{\hypertarget{method-load}{}}}
+\subsection{Method \code{load()}}{
+Returns a PM_pta object based on the information found in a specified rds file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_pta$load(file_name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file_name}}{Name of the file to be read, the default is PMpta.rds}
 }
 \if{html}{\out{</div>}}
 }
