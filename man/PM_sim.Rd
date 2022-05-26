@@ -4,15 +4,40 @@
 \alias{PM_sim}
 \title{Object to contain results of simulation}
 \description{
-To do
+Object to contain results of simulation
+
+Object to contain results of simulation
 }
 \details{
+To do
+
 To do
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
+\item \href{#method-new}{\code{PM_sim$new()}}
 \item \href{#method-clone}{\code{PM_sim$clone()}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
+\subsection{Method \code{new()}}{
+Create a new PM_sim object.  Alternatively,
+use the \verb{$sim} method attached to \link{PM_result} objects.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$new(poppar, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{poppar}}{A \code{PM_result$final} object}
+
+\item{\code{...}}{Additional arguments to \link{SIMrun}}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}

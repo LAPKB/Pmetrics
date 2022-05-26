@@ -18,6 +18,7 @@ run the analysis.
 \item \href{#method-new}{\code{PM_fit$new()}}
 \item \href{#method-run}{\code{PM_fit$run()}}
 \item \href{#method-save}{\code{PM_fit$save()}}
+\item \href{#method-load}{\code{PM_fit$load()}}
 \item \href{#method-check}{\code{PM_fit$check()}}
 \item \href{#method-clone}{\code{PM_fit$clone()}}
 }
@@ -88,6 +89,28 @@ Save the current PM_fit object to a .rds file.
 default is "PMfit.rds".}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-load"></a>}}
+\if{latex}{\out{\hypertarget{method-load}{}}}
+\subsection{Method \code{load()}}{
+\code{PM_fit} objects contain a \code{save} method which invokes \link{saveRDS} to write
+the object to the hard drive as an .rds file. This is the corresponding load
+function.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_fit$load(file_name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file_name}}{Name of the file to be read, the default is "PMfit.rds".}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{PM_fit} object.
 }
 }
 \if{html}{\out{<hr>}}

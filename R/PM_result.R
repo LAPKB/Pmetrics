@@ -36,7 +36,7 @@ PM_result <- R6::R6Class(
     errfile = NULL,
     #' @field success Boolean if successful run
     success = NULL,
-    #' @field valid If the `$make_valid` method has been executed after a run, this object will be added to
+    #' @field valid If the `$validate` method has been executed after a run, this object will be added to
     #' the `PM_result` object.  It contains the information required to plot visual predictive checks and normalized prediction
     #' error discrepancies via the npde code developed by Comets et al. Use the 
     #' `$save` method on the augmented `PM_result` object to save it with the 
@@ -68,35 +68,39 @@ PM_result <- R6::R6Class(
     #' @param type Type of plot based on class of object
     #' @param ... Plot-specific arguments
     plot = function(type, ...) {
-      stopifnot(!is.null(type), "please provide the type of plot you want to obtain")
-      self[[type]]$plot(...)
+      if(is.null(type)){stop("Please provide the type of plot.")
+      } else {self[[type]]$plot(...)}
     },
-    #' @description
-    #' Perform non-compartmental analysis
-    #' @details
-    #' See [makeNCA].
-    #' @param ... Arguments passed to [makeNCA].
-    nca = function(...) {
-      makeNCA(self, ...)
-    },
+    
     #' @description
     #' Summary generic function based on type
     #' @param type Type of summary based on class of object
     #' @param ... Summary-specific arguments
     summary = function(type, ...) {
-      stopifnot(!is.null(type), "please provide the type of summary you want to obtain")
-      self[[type]]$summary(...)
+      if(is.null(type)){stop("please provide the type of summary you want to obtain")
+        } else {self[[type]]$summary(...)} 
     },
+    
     #' @description
     #' AUC generic function based on type
     #' @param type Type of AUC based on class of object
     #' @param ... Summary-specific arguments
     auc = function(type, ...) {
       if(!type %in% c("op", "pop", "post", "sim")){
-        stop("Method defined only for PMop, PMpop, PMpost, PMsim objects.\n")
+        stop("makeAUC is defined only for PMop, PMpop, PMpost, PMsim objects.\n")
       }
       self[[type]]$auc(...)
     },
+    
+    #' @description
+    #' Perform non-compartmental analysis
+    #' @details
+    #' See [makeNCA].
+    #' @param ... Arguments passed to [makeNCA].
+    nca = function(...) {
+      make_NCA(self, ...)
+    },
+    
     #' @description
     #' Simulates using the self$final object
     #' For parameter information refer to [SIMrun]
@@ -108,6 +112,7 @@ PM_result <- R6::R6Class(
       self$final <- bk_final
       sim
     },
+    
     #' @description
     #' Save the current PM_result object into a .rds file. This is useful if you
     #' have run the `$make_valid` method on a `PM_result` object, which returns 
@@ -118,13 +123,15 @@ PM_result <- R6::R6Class(
     save = function(file_name = "PMresult.rds") {
       saveRDS(self, file_name)
     },
+    
     #' @description 
     #' Validate the result by internal simulation methods.
     #' @param ... Arguments passed to [makeValid].
-    valid = function(...) {
+    validate = function(...) {
       self$valid <- PM_valid$new(self, ...)
       self$valid
     },
+    
     #' @description 
     #' Conduct stepwise linear regression of Bayesian posterior parameter values
     #' and covariates.
@@ -132,12 +139,14 @@ PM_result <- R6::R6Class(
     step = function(...) {
       PMstep(self$cov$data, ...)
     },
+    
     #' @description 
     #' Calculate optimal sample times from result and template data file.
     #' @param ... Arguments passed to [MMopt].
     MM_opt = function(...) {
       MM_opt(self, ...)
     },
+    
     #' @description
     #' This function loads an rds file created using the `$save` method on a 
     #' `PM_result` object.
