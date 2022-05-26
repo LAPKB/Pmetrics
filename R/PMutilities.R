@@ -2248,6 +2248,7 @@ checkRequiredPackages <- function(pkg, repos = "CRAN") {
 
 # calculate time after dose
 calcTAD <- function(rawData) {
+  rawData$tad <- NA
   for (i in 1:nrow(rawData)) {
     if (rawData$evid[i] != 0) {
       if (!is.na(rawData$addl[i]) && rawData$addl[i] > 0) {

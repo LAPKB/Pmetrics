@@ -46,7 +46,7 @@ conduct a non-compartmental analysis on the raw data using
 \subsection{Method \code{new()}}{
 Create new data object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_data$new(data, quiet = F)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$new(data, dt = c("Ymd", "HS"), quiet = F)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -55,6 +55,20 @@ Create new data object
 \item{\code{data}}{A quoted name of a file with full path if not
 in the working directory, or an unquoted name of a data frame
 in the current R environment.}
+
+\item{\code{dt}}{Date time format as a character vector whose
+first element is date format and second is time. Default is
+\code{c("Ymd", "HS")}. Use the following abbreviations:
+\itemize{
+\item Y = 4 digit year
+\item y = 2 digit year
+\item m = decimal month (1, 2, ..., 12)
+\item d = decimal day (1, 2, ..., 31)
+\item H = hours (0-23)
+\item M = minutes (0-59)
+Other formats are possible. See \link{strptime} for these,
+omitting the \% before each abbreviation.
+}}
 
 \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
 }

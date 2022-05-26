@@ -77,7 +77,7 @@ PM_data <- R6::R6Class("PM_data",
     #' See [plot.PMmatrix].
     #' @param ... Arguments passed to [plot.PMmatrix].
     plot = function(...){
-      plot.PMmatrix(self$standard_data, ...)
+      plot.PM_data(self$standard_data, ...)
     },
     #' @description
     #' Print method

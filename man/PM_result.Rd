@@ -43,7 +43,7 @@ To complete.
 
 \item{\code{success}}{Boolean if successful run}
 
-\item{\code{valid}}{If the \verb{$make_valid} method has been executed after a run, this object will be added to
+\item{\code{valid}}{If the \verb{$validate} method has been executed after a run, this object will be added to
 the \code{PM_result} object.  It contains the information required to plot visual predictive checks and normalized prediction
 error discrepancies via the npde code developed by Comets et al. Use the
 \verb{$save} method on the augmented \code{PM_result} object to save it with the
@@ -56,12 +56,12 @@ new validation results.}
 \itemize{
 \item \href{#method-new}{\code{PM_result$new()}}
 \item \href{#method-plot}{\code{PM_result$plot()}}
-\item \href{#method-nca}{\code{PM_result$nca()}}
 \item \href{#method-summary}{\code{PM_result$summary()}}
 \item \href{#method-auc}{\code{PM_result$auc()}}
+\item \href{#method-nca}{\code{PM_result$nca()}}
 \item \href{#method-sim}{\code{PM_result$sim()}}
 \item \href{#method-save}{\code{PM_result$save()}}
-\item \href{#method-make_valid}{\code{PM_result$make_valid()}}
+\item \href{#method-validate}{\code{PM_result$validate()}}
 \item \href{#method-step}{\code{PM_result$step()}}
 \item \href{#method-MM_opt}{\code{PM_result$MM_opt()}}
 \item \href{#method-load}{\code{PM_result$load()}}
@@ -111,27 +111,6 @@ Plot generic function based on type
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-nca"></a>}}
-\if{latex}{\out{\hypertarget{method-nca}{}}}
-\subsection{Method \code{nca()}}{
-Perform non-compartmental analysis
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$nca(...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{makeNCA}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{makeNCA}.
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-summary}{}}}
 \subsection{Method \code{summary()}}{
@@ -168,6 +147,27 @@ AUC generic function based on type
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-nca"></a>}}
+\if{latex}{\out{\hypertarget{method-nca}{}}}
+\subsection{Method \code{nca()}}{
+Perform non-compartmental analysis
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$nca(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{makeNCA}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{makeNCA}.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-sim"></a>}}
@@ -209,12 +209,12 @@ to share it with someone else.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-make_valid"></a>}}
-\if{latex}{\out{\hypertarget{method-make_valid}{}}}
-\subsection{Method \code{make_valid()}}{
+\if{html}{\out{<a id="method-validate"></a>}}
+\if{latex}{\out{\hypertarget{method-validate}{}}}
+\subsection{Method \code{validate()}}{
 Validate the result by internal simulation methods.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$make_valid(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$validate(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
