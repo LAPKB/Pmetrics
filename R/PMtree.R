@@ -51,16 +51,13 @@ PMtree <- function(project="NewProject",folder=getwd()){
                "run1 <- PM_load(1)",
                "",
                "#Plots",
-               "",
                "run1$op$plot()",
                "run1$op$plot(pred.type=\"pop\")",
-               "",
                "run1$final$plot()",
-               "#Summaries",
                "",
+               "#Summaries",
                "run1$op$summary()",
-               "run1$final$summary()",
-               
+               "run1$final$summary()"
                ),
              con=paste(newFolder,"/Rscript/",project,".R",sep=""))
   setwd(current) 
