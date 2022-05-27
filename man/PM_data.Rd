@@ -138,7 +138,7 @@ Plot method
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{plot.PMmatrix}.}
+\item{\code{...}}{Arguments passed to \link{plot.PM_data}}
 }
 \if{html}{\out{</div>}}
 }

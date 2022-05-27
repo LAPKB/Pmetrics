@@ -2,13 +2,39 @@
 % Please edit documentation in R/PM_result.R
 \name{PM_result}
 \alias{PM_result}
-\title{R6 object containing the results of a Pmetrics run}
+\title{Results of a Pmetrics run}
+\value{
+The following objects are returned as fields within the created object.
+Indicated objects are themselves R6 objects.
+\itemize{
+\item npdata List with all output from NPAG
+\item pop  Population predictions for each output equation (R6)
+\item post  Individual posterior predictions for each output equation (R6)
+\item final Final cycle population support points and parameter summary statistics (R6)
+\item cycle Cycle log-likelihood, AIC, BIC, Gamma/lambda, and normalized parameter
+means, medians and SDs (R6)
+\item op List of observed vs. population and posterior predicted plots for each
+output equation (R6)
+\item cov Data frame of subject ID, covariate values, and Bayesian posterior
+parameter estimates (R6)
+\item data The original data used in the run
+\item model The original model used in the run
+\item errfile Name of a created error file if the run terminated abnormally
+\item success Boolean report of completed run
+\item valid Initially will be \code{NULL}. After executing the \verb{$validate()} method on
+the \code{PM_result} object, it will contain a \link{PM_valid} result, which contains
+the information required to plot visual predictive checks and normalized prediction
+error discrepancies via the npde code developed by Comets et al. (R6)
+}
+}
 \description{
 This object contains all of the results after a Pmetrics runs. It is created
 by using the \link{PM_load} function.
 }
 \details{
-To complete.
+After a run completes, results are stored on your hard drive. They are loaded
+back into R with \link{PM_load} to create the \link{PM_result} object, which contains both
+the results and functions to analyze or plot the result.
 }
 \examples{
 
@@ -17,6 +43,9 @@ To complete.
 ## ------------------------------------------------
 
 \dontrun{newRes <- PM_result$load("PMresult.rds")}
+}
+\author{
+Michael Neely, Julian Otalvaro
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -31,7 +60,7 @@ To complete.
 
 \item{\code{cycle}}{Cycle log-likelihood, AIC, BIC, Gamma/lambda, and normalized parameter means, medians and SDs}
 
-\item{\code{op}}{List of observed vs. population and posterior predicted plots for each output equation}
+\item{\code{op}}{A \link{PM_op} object.}
 
 \item{\code{cov}}{Data frame of subject ID, covariate values, and Bayesian posterior parameter estimates}
 
@@ -220,7 +249,7 @@ Validate the result by internal simulation methods.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{makeValid}.}
+\item{\code{...}}{Arguments passed to \link{make_valid}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -255,7 +284,7 @@ Calculate optimal sample times from result and template data file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{MMopt}.}
+\item{\code{...}}{Arguments passed to \link{MM_opt}.}
 }
 \if{html}{\out{</div>}}
 }
