@@ -501,21 +501,13 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
 }
 
 
-#' `plot.PM_data` plots \emph{PM_data} objects
+#' `plot.PM_data` plots *PM_data* objects
 #'
 #' This function will plot raw and fitted time and concentration data with a variety of options.
-#' For the legend, defaults that are different that the standard are:
-#' * x Default "topright"
-#' * legend Default will be factor label names if `group` is specified and valid; otherwise
-#'   "Output 1, Output 2,...Output n", where \emph{n} is the number of output equations.  This default
-#'   can be overridden by a supplied character vector of output names.
-#' * fill The color of each group/output as specified by the default color scheme or `col`
-#' 8 bg Default "white"
-#' }
 #'
 #' @title Plot PM_data Time-Output Data
 #' @method plot PM_data
-#' @param x The name of an \emph{PM_data} data object created by [PM_data$new()] or loaded as a field
+#' @param x The name of an `PM_data` data object created by [PM_data$new()] or loaded as a field
 #' in a [PM_result] object
 #' @param include A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)
 #' @param exclude A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)
