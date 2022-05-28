@@ -1,7 +1,9 @@
-#' `PMFortranConfig` will read or define the installed Fortran compiler and generate
+#' Fortran compiler commands
+#' 
+#' This function will read or define the installed Fortran compiler and generate
 #' a command line template appropriate to the compiler.
 #'
-#' Command line templates are defined for the following compilers: **gfortran**, **g95**,
+#' Templates are defined for the following compilers: **gfortran**, **g95**,
 #' **Intel Visual**, and **Lahey**.  Additionally, users may specify a custom command line
 #' template for any other compiler.  Within the template *<exec>* is used as a placeholder
 #' for the filename of the executable file, and *<files>* as a placeholder for the files to
