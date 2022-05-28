@@ -5,58 +5,7 @@
 #' To do
 #' 
 #' @export
-PM_sim <- R6::R6Class("PM_Vsim",
-                      public = list(
-                        #' @description Create a new PM_sim object.  Alternatively,
-                        #' use the `$sim` method attached to [PM_result] objects.
-                        #' @param poppar A `PM_result$final` object
-                        #' @param ... Additional arguments to [SIMrun]
-                        new = function(poppar, ...){
-                          return(invisible())
-                        }
-                      ))
-#' Wrapper function for SIMrun in R6
-#' 
-#' Provides an alternative method to call the simulator directly from output
-#' of a model fitting run. 
-#' 
-#' Calling this function is equivalent to `PM_result$sim()`.
-#' 
-#' @param poppar A population parameter result, which is a PM_final object. This
-#' can be found in `PM_result$final$data`.
-#' @param ... Additional parameters to be passed to [SIMrun] and optionally,
-#' "combine = T" as an argument will be passed to [SIMparse].
-#' @return A `PM_sim` object created by calling [SIMparse] at the completion of the 
-#' simulation.
-#' @export
-PM_sim$new <- function(poppar, ...) {
-  dots <- list(...)
-  combine <- if (exists("combine", where = dots)) {
-    dots$combine
-  } else {
-    F
-  }    
-  SIMrun(poppar, ...)
-  
-  # TODO: read files and fix the missing E problem
-  sim_files <- list.files() %>% .[grepl("simout*", .)]
-  if (length(sim_files) == 1) {
-    parse <- SIMparse(file = "simout*") %>% PM_vsim$new()
-  } else {
-    if (combine) {
-      parse <- SIMparse(file = "simout*", combine = T) %>% PM_vsim$new()
-    } else {
-      parse <- list()
-      for (i in seq_len(length(sim_files))) {
-        parse <- append(parse, SIMparse(file = sprintf("simout%i.txt", i)) %>% PM_vsim$new())
-      }
-    }
-  }
-  system("rm simout*")
-  parse
-}
-
-PM_vsim <- R6::R6Class(
+PM_sim <- R6::R6Class(
   "PM_sim",
   public <- list(
     #' @field obs Observations
@@ -129,4 +78,45 @@ PM_vsim <- R6::R6Class(
 #' @export
 PM_sim$load <- function(file_name = "PMsim.rds") {
   readRDS(file_name)
+}
+
+#' Wrapper function for SIMrun in R6
+#' 
+#' Provides an alternative method to call the simulator directly from output
+#' of a model fitting run. 
+#' 
+#' Calling this function is equivalent to `PM_result$sim()`.
+#' 
+#' @param poppar A population parameter result, which is a PM_final object. This
+#' can be found in `PM_result$final$data`.
+#' @param ... Additional parameters to be passed to [SIMrun] and optionally,
+#' "combine = T" as an argument will be passed to [SIMparse].
+#' @return A `PM_sim` object created by calling [SIMparse] at the completion of the 
+#' simulation.
+#' @export
+PM_sim$run <- function(poppar, ...) {
+  dots <- list(...)
+  combine <- if (exists("combine", where = dots)) {
+    dots$combine
+  } else {
+    F
+  }    
+  SIMrun(poppar, ...)
+  
+  # TODO: read files and fix the missing E problem
+  sim_files <- list.files() %>% .[grepl("simout*", .)]
+  if (length(sim_files) == 1) {
+    parse <- SIMparse(file = "simout*") %>% PM_vsim$new()
+  } else {
+    if (combine) {
+      parse <- SIMparse(file = "simout*", combine = T) %>% PM_vsim$new()
+    } else {
+      parse <- list()
+      for (i in seq_len(length(sim_files))) {
+        parse <- append(parse, SIMparse(file = sprintf("simout%i.txt", i)) %>% PM_sim$new())
+      }
+    }
+  }
+  system("rm simout*")
+  parse
 }
