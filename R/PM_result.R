@@ -20,7 +20,7 @@ PM_result <- R6::R6Class(
     post = NULL,
     #' @field final A [PM_final] object
     final = NULL,
-    #' @field cycle A [PM-cycle] object
+    #' @field cycle A [PM_cycle] object
     cycle = NULL,
     #' @field op A [PM_op] object
     op = NULL,
