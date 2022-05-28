@@ -58,11 +58,31 @@ PM_pta <- R6Class(
     )
 )
 
+#' Read results of previously saved PTA analyses.
+#' 
+#' If the `$save` method has previously been invoked on a [PM_pta] 
+#' object, this function will load those results.
+#' 
+#' The saved object is an .rds file. When loaded, it should be assigned to an R
+#' object, e.g. `pta1 <- PM_pta$load("filename")`.
+#' @param file_name The name of the .rds file to load.
+#' @return A [PM_pta] object
 #' @export
 PM_pta$load <- function(file_name = "PMpta.rds") {
     readRDS(file_name)
 }
 
+#' Wrapper function for summmary.PMpta
+#' 
+#' This redirects to summary.PMpta for PM_pta R6 objects
+#' 
+#' See [summary.PMpta]. Alternative way to summarize is
+#' `PM_pta$summary()`.
+#' 
+#' @param obj The *PM_pta* object to summarize
+#' @param ... Arguments passed to [summary.PMpta]
+#' @return A [summary.PMpta] object
+#' @export
 summary.PM_pta <- function(obj, ...) {
     obj$summary(...)
 }

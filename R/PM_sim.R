@@ -15,7 +15,19 @@ PM_sim <- R6::R6Class("PM_Vsim",
                           return(invisible())
                         }
                       ))
-
+#' Wrapper function for SIMrun in R6
+#' 
+#' Provides an alternative method to call the simulator directly from output
+#' of a model fitting run. 
+#' 
+#' Calling this function is equivalent to `PM_result$sim()`.
+#' 
+#' @param poppar A population parameter result, which is a PM_final object. This
+#' can be found in `PM_result$final$data`.
+#' @param ... Additional parameters to be passed to [SIMrun] and optionally,
+#' "combine = T" as an argument will be passed to [SIMparse].
+#' @return A `PM_sim` object created by calling [SIMparse] at the completion of the 
+#' simulation.
 #' @export
 PM_sim$new <- function(poppar, ...) {
   dots <- list(...)
@@ -105,10 +117,16 @@ PM_vsim <- R6::R6Class(
   )
 )
 
+#' Read results of previously saved simulation.
+#' 
+#' If the `$save` method has previously been invoked on a [PM_sim] 
+#' object, this function will load those results.
+#' 
+#' The saved object is an .rds file. When loaded, it should be assigned to an R
+#' object, e.g. `sim1 <- PM_sim$load("filename")`.
+#' @param file_name The name of the .rds file to load.
+#' @return A [PM_sim] object
 #' @export
-#' @description
-#' Returns a PM_sim object based on the information found in a specified rds file.
-#' @param file_name Name of the file to be read, the default is PMsim.rds
 PM_sim$load <- function(file_name = "PMsim.rds") {
   readRDS(file_name)
 }
