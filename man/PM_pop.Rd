@@ -4,10 +4,14 @@
 \alias{PM_pop}
 \title{Population predictions at short intervals}
 \description{
-Contains the population predictions at short intervals
-specified as an argument to \link{PM_fit$run}. Default is every 12 minutes.
+Population predictions at short intervals
+
+Population predictions at short intervals
 }
 \details{
+Contains the population predictions at short intervals
+specified as an argument to \link{PM_fit$run}. Default is every 12 minutes.
+
 Contains the results of \link{makePop}, which is a
 data frame with population predicted outputs for all subjects.
 To provide a more traditional experience in R,
@@ -20,6 +24,11 @@ use the \code{data} field, e.g. \code{trough <- run1$pop$data \%>\% filter(time 
 you are unfamiliar with the \verb{\%>\%} pipe function, please type \code{help("\%>\%", "magrittr")}
 into the R console and look online for instructions/tutorials in tidyverse, a
 powerful approach to data manipulation upon which Pmetrics is built.
+
+Creation of new \code{PM_pop} object is automatic and not generally necessary
+for the user to do.
+
+See \link{makeAUC}
 }
 \author{
 Michael Neely, Julian Otalvaro
@@ -68,11 +77,6 @@ regular, frequent intervals
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-Creation of new \code{PM_pop} object is automatic and not generally necessary
-for the user to do.
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-auc"></a>}}
@@ -92,10 +96,6 @@ Calculate AUC
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-See \link{makeAUC}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}
