@@ -15,11 +15,13 @@ the previously specified compiler and template.}
 compiler.
 }
 \description{
-\code{PMFortranConfig} will read or define the installed Fortran compiler and generate
-a command line template appropriate to the compiler.
+Fortran compiler commands
 }
 \details{
-Command line templates are defined for the following compilers: \strong{gfortran}, \strong{g95},
+This function will read or define the installed Fortran compiler and generate
+a command line template appropriate to the compiler.
+
+Templates are defined for the following compilers: \strong{gfortran}, \strong{g95},
 \strong{Intel Visual}, and \strong{Lahey}.  Additionally, users may specify a custom command line
 template for any other compiler.  Within the template \emph{<exec>} is used as a placeholder
 for the filename of the executable file, and \emph{<files>} as a placeholder for the files to

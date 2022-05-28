@@ -4,14 +4,27 @@
 \alias{PM_cov}
 \title{Contains covariate data}
 \description{
-Contains a data frame with subject-specific covariate data output
-from \link{makeCov}
+Contains covariate data
+
+Contains covariate data
 }
 \details{
+Contains a data frame with subject-specific covariate data output
+from \link{makeCov}
+
 For each subject, \link{makeCov} extracts covariate information and
 Bayesian posterior parameter estimates.
 This output of this function is suitable for exploration of covariate-
 parameter, covariate-time, or parameter-time relationships.
+
+Creation of new \code{PM_cov} object is automatic and not generally necessary
+for the user to do.
+
+See \link{summary.PMcov}.
+
+See \link{plot.PMcov}.
+
+Print method for \emph{PM_cov}
 }
 \author{
 Michael Neely, Julian Otalvaro
@@ -58,11 +71,6 @@ Create new object populated with covariate-parameter information
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-Creation of new \code{PM_cov} object is automatic and not generally necessary
-for the user to do.
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-summary"></a>}}
@@ -80,10 +88,6 @@ Summary method
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-See \link{summary.PMcov}.
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-plot"></a>}}
@@ -101,10 +105,6 @@ Plot method
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-See \link{plot.PMcov}.
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print"></a>}}
@@ -122,10 +122,6 @@ Print method
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-Print method for \emph{PM_cov}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

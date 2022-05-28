@@ -3,38 +3,26 @@
 \name{PM_result}
 \alias{PM_result}
 \title{Results of a Pmetrics run}
-\value{
-The following objects are returned as fields within the created object.
-Indicated objects are themselves R6 objects.
-\itemize{
-\item npdata List with all output from NPAG
-\item pop  Population predictions for each output equation (R6)
-\item post  Individual posterior predictions for each output equation (R6)
-\item final Final cycle population support points and parameter summary statistics (R6)
-\item cycle Cycle log-likelihood, AIC, BIC, Gamma/lambda, and normalized parameter
-means, medians and SDs (R6)
-\item op List of observed vs. population and posterior predicted plots for each
-output equation (R6)
-\item cov Data frame of subject ID, covariate values, and Bayesian posterior
-parameter estimates (R6)
-\item data The original data used in the run
-\item model The original model used in the run
-\item errfile Name of a created error file if the run terminated abnormally
-\item success Boolean report of completed run
-\item valid Initially will be \code{NULL}. After executing the \verb{$validate()} method on
-the \code{PM_result} object, it will contain a \link{PM_valid} result, which contains
-the information required to plot visual predictive checks and normalized prediction
-error discrepancies via the npde code developed by Comets et al. (R6)
-}
-}
 \description{
-This object contains all of the results after a Pmetrics runs. It is created
-by using the \link{PM_load} function.
+Results of a Pmetrics run
+
+Results of a Pmetrics run
 }
 \details{
+This object contains all of the results after a Pmetrics runs. It is created
+by using the \link{PM_load} function.
+
 After a run completes, results are stored on your hard drive. They are loaded
 back into R with \link{PM_load} to create the \link{PM_result} object, which contains both
 the results and functions to analyze or plot the result.
+
+Creation of new \code{PM_result} objects is via \link{PM_load}.
+
+See \link{makeNCA}.
+
+\code{PM_result} objects contain a \code{save} method which invokes \link{saveRDS} to write
+the object to the hard drive as an .rds file. This is the corresponding load
+function.
 }
 \examples{
 
@@ -50,19 +38,19 @@ Michael Neely, Julian Otalvaro
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{npdata}}{List with all output from NPAG}
+\item{\code{npdata}}{List with all output from NPAG, made by \link{NPparse}}
 
-\item{\code{pop}}{NPAG only: Population predictions for each output equation}
+\item{\code{pop}}{A \link{PM_pop} object}
 
-\item{\code{post}}{NPAG only: Individual posterior predictions for each output equation}
+\item{\code{post}}{A \link{PM_post} object}
 
-\item{\code{final}}{Final cycle population support points and parameter summary statistics}
+\item{\code{final}}{A \link{PM_final} object}
 
-\item{\code{cycle}}{Cycle log-likelihood, AIC, BIC, Gamma/lambda, and normalized parameter means, medians and SDs}
+\item{\code{cycle}}{A \link{PM-cycle} object}
 
-\item{\code{op}}{A \link{PM_op} object.}
+\item{\code{op}}{A \link{PM_op} object}
 
-\item{\code{cov}}{Data frame of subject ID, covariate values, and Bayesian posterior parameter estimates}
+\item{\code{cov}}{A \link{PM_cov} object}
 
 \item{\code{data}}{\link{PM_data} object representing the original .csv data file used in the run}
 
@@ -115,10 +103,6 @@ Create new object populated with data from previous run
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-Creation of new \code{PM_result} objects is via \link{PM_load}.
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-plot"></a>}}
@@ -193,17 +177,14 @@ Perform non-compartmental analysis
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-See \link{makeNCA}.
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-sim"></a>}}
 \if{latex}{\out{\hypertarget{method-sim}{}}}
 \subsection{Method \code{sim()}}{
-Simulates using the self$final object
-For parameter information refer to \link{SIMrun}
+Simulates using the self$final object.
+For parameter information refer to \link{SIMrun}. It will return a \code{PM_sim} object
+by running \link{SIMparse} at the end of the simulation.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_result$sim(...)}\if{html}{\out{</div>}}
 }
@@ -306,12 +287,6 @@ This function loads an rds file created using the \verb{$save} method on a
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Details}{
-\code{PM_result} objects contain a \code{save} method which invokes \link{saveRDS} to write
-the object to the hard drive as an .rds file. This is the corresponding load
-function.
-}
-
 \subsection{Returns}{
 A \code{PM_result} object.
 }
