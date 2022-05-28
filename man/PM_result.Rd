@@ -46,7 +46,7 @@ Michael Neely, Julian Otalvaro
 
 \item{\code{final}}{A \link{PM_final} object}
 
-\item{\code{cycle}}{A \link{PM-cycle} object}
+\item{\code{cycle}}{A \link{PM_cycle} object}
 
 \item{\code{op}}{A \link{PM_op} object}
 
