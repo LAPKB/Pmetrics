@@ -106,10 +106,10 @@ PM_sim$run <- function(poppar, ...) {
   # TODO: read files and fix the missing E problem
   sim_files <- list.files() %>% .[grepl("simout*", .)]
   if (length(sim_files) == 1) {
-    parse <- SIMparse(file = "simout*") %>% PM_vsim$new()
+    parse <- SIMparse(file = "simout*") %>% PM_sim$new()
   } else {
     if (combine) {
-      parse <- SIMparse(file = "simout*", combine = T) %>% PM_vsim$new()
+      parse <- SIMparse(file = "simout*", combine = T) %>% PM_sim$new()
     } else {
       parse <- list()
       for (i in seq_len(length(sim_files))) {
