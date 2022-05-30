@@ -50,7 +50,7 @@ PM_fit <- R6::R6Class("PM_fit",
         Pmetrics::NPrun(private$model$legacy_file_path, private$data$standard_data, ...)
       } else if (inherits(private$model, "PM_model_list")) {
         engine <- tolower(engine)
-        model_path <- private$model$write_model_file(engine = engine)
+        model_path <- private$model$write(engine = engine)
         cat(sprintf("Creating model file at: %s\n", model_path))
         Pmetrics::NPrun(model_path, private$data$standard_data, ...)
       } else if (inherits(private$model, "PM_model_julia")) {
@@ -93,7 +93,7 @@ PM_fit <- R6::R6Class("PM_fit",
       if (inherits(private$model, "PM_model_list")) {
         cat(sprintf("Checking...\n"))
         file_name <- random_name()
-        private$model$write_model_file(file_name)
+        private$model$write(file_name)
         Pmetrics::PMcheck(private$data$standard_data, file_name)
         system(sprintf("rm %s", file_name))
       }

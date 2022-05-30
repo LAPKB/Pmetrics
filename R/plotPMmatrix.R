@@ -621,10 +621,10 @@ plot.PM_data <- function(x, include, exclude, pred = NULL,
   # Data processing ---------------------------------------------------------
   
   #filter & group by id
-  if(missing(include)) {include <- unique(x$standard_data$id)}
+  if(missing(include)) {include <- NA}
   if(missing(exclude)) {exclude <- NA}
   
-  sub <- x %>% filter(outeq == !!outeq, block == !!block, evid == 0) %>% 
+  sub <- x$standard_data %>% filter(outeq == !!outeq, block == !!block, evid == 0) %>% 
     includeExclude(include,exclude) %>% 
     group_by(id)
   
@@ -711,7 +711,7 @@ plot.PM_data <- function(x, include, exclude, pred = NULL,
   
   #if pred present, need to combine data and pred for proper display
   if(!is.null(predsub)){
-    allsub <- bind_rows(sub, predsub) %>% arrange(id, time)
+    allsub <- dplyr::bind_rows(sub, predsub) %>% dplyr::arrange(id, time)
     includePred <- T
   } else {
     allsub <- sub
@@ -723,9 +723,9 @@ plot.PM_data <- function(x, include, exclude, pred = NULL,
     print(p)
   } else { #overlay = F, ie. split them
     sub_split <- allsub %>% nest(data = -id) %>%
-      mutate(panel = map_plot(data, dataPlot, overlay = F, includePred = includePred))
-    s_p <- sub_split %>% ungroup() %>% trelliscope(name = "Data")
-    print(s_p)
+      mutate(panel = trelliscopejs::map_plot(data, dataPlot, overlay = F, includePred = includePred))
+    p <- sub_split %>% ungroup() %>% trelliscopejs::trelliscope(name = "Data")
+    print(p)
   }
   
   return(p)

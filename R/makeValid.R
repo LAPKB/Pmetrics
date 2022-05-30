@@ -366,7 +366,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   do.call("SIMrun", argsSIM1)
 
   # read and format the results of the simulation
-  PRED_bin <- SIMparse("simMed*", combine = T, silent = T)
+  PRED_bin <- SIMparse("simMed*", combine = T, quiet = T)
 
   # make tempDF subset of PMop for subject, time, non-missing obs, outeq, pop predictions (PREDij)
   tempDF <- if (inherits(result$op, "PM_op")) {
@@ -428,7 +428,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   }
   do.call("SIMrun", argsSIM2)
   # read and format the results of the simulation
-  simFull <- SIMparse("full*", combine = T, silent = T)
+  simFull <- SIMparse("full*", combine = T, quiet = T)
   # take out observations at time 0 from evid=4
   simFull$obs <- simFull$obs[simFull$obs$time > 0, ]
   # add TAD for plotting options
@@ -913,7 +913,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   do.call("SIMrun", argsSIM1)
 
   # read and format the results of the simulation
-  PRED_bin <- SIMparse("simMed*", combine = T, silent = T)
+  PRED_bin <- SIMparse("simMed*", combine = T, quiet = T)
 
   # make tempDF subset of PMop for subject, time, non-missing obs, outeq, pop predictions (PREDij)
   tempDF <- getName("op")
@@ -971,7 +971,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   }
   do.call("SIMrun", argsSIM2)
   # read and format the results of the simulation
-  simFull <- SIMparse("full*", combine = T, silent = T)
+  simFull <- SIMparse("full*", combine = T, quiet = T)
   # take out observations at time 0 from evid=4
   simFull$obs <- simFull$obs[simFull$obs$time > 0, ]
   # add TAD for plotting options

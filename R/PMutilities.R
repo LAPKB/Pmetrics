@@ -488,7 +488,7 @@ chunks <- function(x, maxwidth = 60) {
 
 
 # convert new model template to model fortran file
-makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T, silent = F) {
+makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T, quiet = F) {
   blocks <- parseBlocks(model)
 
   # check for reserved variable names
@@ -1516,7 +1516,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   # end instruction file creation
 
   # write report
-  if (!silent) {
+  if (!quiet) {
     cat(paste("\nModel solver mode: ", switch(letters[N + 2],
       a = "Algebraic",
       b = "Exact",
@@ -1564,7 +1564,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     if (engine$alg != "SIM") cat(paste("\nNumber of cycles to run:", engine$cycles))
     cat("\n\n")
   }
-  # end if silent
+  # end if quiet
   return(list(status = 1, modelFor = modelFor, N = N, ptype = ptype, ctype = ctype, nvar = nvar, nofix = nofix, nranfix = nranfix, valfix = valfix, ab = ab.df, indpts = indpts, asserr = asserr, blocks = blocks))
 }
 # end makeModel function
@@ -1572,7 +1572,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
 
 ###### END NICELY FROM CRASHED NPrun or ITrun
 
-endNicely <- function(message, model = -99, data = -99) {
+endNicely <- function(message, model=-99, data=-99) {
   files <- Sys.glob("*", T)
   if ("mQRZZZ.txt" %in% files) {
     file.remove(model)
@@ -1670,6 +1670,16 @@ FileNameOK <- function(filename) {
   }
 }
 
+FileExists <- function(filename){
+  if(!file.exists(filename)){
+    while (!file.exists(filename)) { #oops, filename doesn't exist
+      cat(paste0(filename," does not exist in ",getwd(),".\n"))
+      filename <- tryCatch(readline("Enter another filename or 'ESC' to quit: \n"),
+                          interrupt = function(e) {stop("No filename. Function aborted.\n", call. = F)})
+    }
+  }
+  return(filename)
+}
 
 
 # Get OS version ----------------------------------------------------------
