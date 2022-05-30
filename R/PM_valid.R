@@ -12,7 +12,7 @@
 #' to internally validate the result by simulation methods. 
 #' @seealso [PM_result], [makeValid]
 #' @export
-PM_valid <- R6Class("PM_valid",
+PM_valid <- R6::R6Class("PM_valid",
     public = list(
         #' @field simdata Simulated data created in the validation process
         simdata = NULL,

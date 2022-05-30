@@ -55,9 +55,9 @@ MMopt <- function(poppar,model="model.txt",data="data.csv",nsamp=1,weight=list(n
   popPoints <- poppar$popPoints
   #if(nsamp>4) nsamp <- 4
   #simulate each point
-  SIMrun(poppar=poppar,model=model,data=data,nsim=0,predInt=predInt,obsNoise=NA,outname="MMsim",silent=T,...)
+  SIMrun(poppar=poppar,model=model,data=data,nsim=0,predInt=predInt,obsNoise=NA,outname="MMsim",quiet=T,...)
   #parse the simulated output
-  simdata <- SIMparse("MMsim*.txt",combine=T,silent=T)
+  simdata <- SIMparse("MMsim*.txt",combine=T,quiet=T)
   simdata$obs <- simdata$obs[simdata$obs$outeq==outeq,]
   #transform into format for MMopt
   #nsubs is the number of subjects
@@ -245,9 +245,9 @@ MM_opt <- function(poppar,...){
   popPoints <- poppar$popPoints
   #if(nsamp>4) nsamp <- 4
   #simulate each point
-  SIMrun(poppar=poppar,model=model,data=data,nsim=0,predInt=predInt,obsNoise=NA,outname="MMsim",silent=T,...)
+  SIMrun(poppar=poppar,model=model,data=data,nsim=0,predInt=predInt,obsNoise=NA,outname="MMsim",quiet=T,...)
   #parse the simulated output
-  simdata <- SIMparse("MMsim*.txt",combine=T,silent=T)
+  simdata <- SIMparse("MMsim*.txt",combine=T,quiet=T)
   simdata$obs <- simdata$obs[simdata$obs$outeq==outeq,]
   #transform into format for MMopt
   #nsubs is the number of subjects

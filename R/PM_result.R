@@ -107,7 +107,7 @@ PM_result <- R6::R6Class(
     sim = function(...) {
       #store copy of the final object
       bk_final <- self$final$clone()
-      sim <- PM_sim$new(self, ...)
+      sim <- PM_sim$run(self, ...)
       self$final <- bk_final
       sim
     },
@@ -198,7 +198,7 @@ PM_result$load <- function(file_name = "PMresult.rds") {
 #' into the R console and look online for instructions/tutorials in tidyverse, a
 #' powerful approach to data manipulation upon which Pmetrics is built.
 #' 
-PM_op <- R6Class(
+PM_op <- R6::R6Class(
   "PM_op",
   public <- list(
     #' @field id subject identification
@@ -315,7 +315,7 @@ summary.PM_op <- function(obj, ...) {
 #' powerful approach to data manipulation upon which Pmetrics is built.
 #' @author Michael Neely, Julian Otalvara
 #' @export
-PM_post <- R6Class(
+PM_post <- R6::R6Class(
   "PM_post",
   public <- list(
     #' @field id Subject id
@@ -375,7 +375,7 @@ PM_post <- R6Class(
 #' into the R console and look online for instructions/tutorials in tidyverse, a
 #' powerful approach to data manipulation upon which Pmetrics is built.
 
-PM_final <- R6Class(
+PM_final <- R6::R6Class(
   "PM_final",
   public <- list(
     #' @field popPoints (NPAG only) Data frame of the final cycle joint population density of grid points
@@ -524,7 +524,7 @@ summary.PM_final <- function(obj, ...) {
 #' into the R console and look online for instructions/tutorials in tidyverse, a
 #' powerful approach to data manipulation upon which Pmetrics is built.
 
-PM_cycle <- R6Class(
+PM_cycle <- R6::R6Class(
   "PM_cycle",
   public <- list(
     #' @field names Vector of names of the random parameters
@@ -599,7 +599,7 @@ PM_cycle <- R6Class(
 #' powerful approach to data manipulation upon which Pmetrics is built.
 #' @author Michael Neely, Julian Otalvaro
 #' @export
-PM_pop <- R6Class(
+PM_pop <- R6::R6Class(
   "PM_pop",
   public <- list(
     #' @field id Subject id
@@ -656,7 +656,7 @@ PM_pop <- R6Class(
 #' @author Michael Neely, Julian Otalvaro
 #' @export
 
-PM_cov <- R6Class(
+PM_cov <- R6::R6Class(
   "PM_cov",
   public <- list(
     #' @field data A data frame with the following columns

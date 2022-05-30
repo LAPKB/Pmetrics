@@ -52,7 +52,7 @@ PM_model <- R6::R6Class("PM_Vmodel",
     #' @param model_path Full name of the file to be created, including the path
     #' relative to the current working directory
     #' @param engine Currently only "npag".
-    write_model_file = function(model_path = "genmodel.txt", engine = "npag"){
+    write = function(model_path = "genmodel.txt", engine = "npag"){
       return(invisible())
     }
   )
@@ -357,7 +357,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       self$model_list <- model_list
     },
-    write_model_file = function(model_path = "genmodel.txt", engine = "npag") {
+    write = function(model_path = "genmodel.txt", engine = "npag") {
       engine <- tolower(engine)
       keys <- names(self$model_list)
       lines <- c()

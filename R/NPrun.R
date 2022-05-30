@@ -51,7 +51,7 @@
 #' with R is poor - it does not update until the end of execution, so you cannot see any output that indicates that NPAG is running.  
 #' If \code{intern=T} the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
 #' and you can find the HTML summary page in the /outputs folder: NPAGreport.html.
-#' @param silent Boolean operator controlling whether a model summary report is given.  Default is \code{TRUE}.
+#' @param quiet Boolean operator controlling whether a model summary report is given.  Default is \code{TRUE}.
 #' @param overwrite Overwrite existing run result folders.  Default is \code{FALSE}.
 #' @param nocheck Suppress the automatic checking of the data file with \code{\link{PMcheck}}.  Default is \code{FALSE}.
 #' @param parallel Run NPAG in parallel.  Default is \code{NA}, which will be set to \code{TRUE} for models that use
@@ -90,6 +90,7 @@
 
 
 NPrun <- function(model = "model.txt", data = "data.csv", ...){
+  
   dots = list(...)
   if(exists("run", where=dots)){run<-dots$run}else{run<-NULL}
   if(exists("include", where=dots)){include<-dots$include}else{include<-NULL}
@@ -105,7 +106,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", ...){
   if(exists("prior", where=dots)){prior<-dots$prior}else{prior<-NULL}
   if(exists("auto", where=dots)){auto<-dots$auto}else{auto<-T}
   if(exists("intern", where=dots)){intern<-dots$intern}else{intern<-F}
-  if(exists("silent", where=dots)){silent<-dots$silent}else{silent<-F}
+  if(exists("quiet", where=dots)){quiet<-dots$quiet}else{quiet<-F}
   if(exists("overwrite", where=dots)){overwrite<-dots$overwrite}else{overwrite<-F}
   if(exists("nocheck", where=dots)){nocheck<-dots$nocheck}else{nocheck<-F}
   if(exists("parallel", where=dots)){parallel<-dots$parallel}else{parallel<-NA}
@@ -131,7 +132,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", ...){
           include = include, exclude = exclude, ode = ode, tol = tol, salt = salt, cycles = cycles,
           indpts = indpts, icen = icen, aucint = aucint,
           idelta = idelta, prior = prior,
-          auto = auto, intern = intern, silent = silent, overwrite = overwrite, nocheck = nocheck, parallel = parallel, batch = batch,
+          auto = auto, intern = intern, quiet = quiet, overwrite = overwrite, nocheck = nocheck, parallel = parallel, batch = batch,
           alq = alq))
 
   }
