@@ -30,7 +30,7 @@ directly in R, or by reading a model text file in the current working directory.
 \item \href{#method-new}{\code{PM_model$new()}}
 \item \href{#method-print}{\code{PM_model$print()}}
 \item \href{#method-update}{\code{PM_model$update()}}
-\item \href{#method-write_model_file}{\code{PM_model$write_model_file()}}
+\item \href{#method-write}{\code{PM_model$write()}}
 \item \href{#method-clone}{\code{PM_model$clone()}}
 }
 }
@@ -108,12 +108,12 @@ Update selected elements of a model object
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-write_model_file"></a>}}
-\if{latex}{\out{\hypertarget{method-write_model_file}{}}}
-\subsection{Method \code{write_model_file()}}{
+\if{html}{\out{<a id="method-write"></a>}}
+\if{latex}{\out{\hypertarget{method-write}{}}}
+\subsection{Method \code{write()}}{
 Write a \code{PM_model} object to a text file
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$write_model_file(model_path = "genmodel.txt", engine = "npag")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$write(model_path = "genmodel.txt", engine = "npag")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

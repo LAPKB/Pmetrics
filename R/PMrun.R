@@ -3,7 +3,7 @@
                    include, exclude, ode, tol, salt, cycles,
                    indpts, icen, aucint,
                    idelta, prior, xdev, search,
-                   auto, intern, silent, overwrite, nocheck, parallel, batch,
+                   auto, intern, quiet, overwrite, nocheck, parallel, batch,
                    alq) {
 
   currwd <- getwd() #set the current working directory to go back to it at the end
@@ -192,7 +192,7 @@
                    ode = ode, limits = NA, wrkFlag = wrkFlag)
   }
 
-  trans <- makeModel(model = model, data = data, engine = engine, write = T, silent = silent)
+  trans <- makeModel(model = model, data = data, engine = engine, write = T, quiet = quiet)
 
   if (trans$status == -1) endNicely(trans$msg, model, data) #error
   if (trans$status == 0) {

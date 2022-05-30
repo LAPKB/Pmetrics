@@ -14,7 +14,7 @@
 #' @keywords package
 #'
 #' @importFrom dplyr select arrange filter mutate transmute group_by row_number
-#' group_map
+#' group_map ungroup
 #' @importFrom cubelyr as.tbl_cube
 #' @importFrom foreach %dopar%
 #' @importFrom readr read_file write_file
@@ -23,9 +23,8 @@
 #' theme ggtitle element_blank geom_segment aes_string aes_string theme_bw theme_grey
 #' @importFrom purrr map reduce map_chr keep pluck %>% 
 #' @importFrom tibble as_tibble
-#' @importFrom tidyr pivot_longer pivot_wider unnest extract separate fill %>%
+#' @importFrom tidyr pivot_longer pivot_wider nest unnest extract separate fill %>%
 #' @importFrom gridExtra grid.arrange
-#' @importFrom tidyr pivot_longer pivot_wider unnest
 #' @importFrom mclust Mclust mclustBIC
 #' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg 
 #' pdf png postscript rgb setEPS
@@ -46,7 +45,9 @@
 #' @importFrom base64enc base64decode
 #' @importFrom rlang .data
 #' @importFrom R6 R6Class
-#' @importFrom plotly filter mutate plot_ly add_markers add_lines layout ggplotly subplot
+#' @importFrom plotly filter mutate plot_ly add_markers add_lines layout 
+#' ggplotly subplot
+#' @importFrom trelliscopejs trelliscope map_plot
 
 NULL
 

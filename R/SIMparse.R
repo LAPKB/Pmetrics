@@ -24,7 +24,7 @@
 #' checks, for example.  If \code{combine=F}, and multiple files are parsed, then the return object 
 #' will be a list of PMsim objects, which can be plotted or otherwise accessed using standard list
 #' referencing, e.g. simlist[[1]], simlist[[2]], etc.
-#' @param silent Suppress messages
+#' @param quiet Suppress messages
 #' @param parallel Runs in parallel mode.  Defaults to true if multiple files are to be parsed, otherwise false.
 #' Can be overridden by specifying \code{TRUE} or \code{FALSE}.
 #' @return If one file is parsed or multiple files are parsed and combined, the return will be a list with five items, of class \emph{PMsim}.
@@ -51,7 +51,7 @@
 #' @seealso \code{\link{SIMrun}}
 #' @export
 
-SIMparse <- function(file,include,exclude,combine=F,silent=F, parallel){
+SIMparse <- function(file,include,exclude,combine=F,quiet=F, parallel){
   processfile <- function(n) {
     out <- readLines(allfiles[n])
     nsim <- as.numeric(strparse("[[:digit:]]+",out[grep(" THE NO. OF SIMULATED SUBJECTS",out)]))
@@ -220,7 +220,7 @@ SIMparse <- function(file,include,exclude,combine=F,silent=F, parallel){
     # doParallel.installed <- require(doParallel, warn.conflicts = F, quietly = T)
     # foreach.installed <- require(foreach, warn.conflicts = F, quietly = T)
     # if (!doParallel.installed | !foreach.installed) {
-    #   warning("Required package failed to be installed. SIMparse will run in serial mode.\n", call. = F, immediate. = !silent)
+    #   warning("Required package failed to be installed. SIMparse will run in serial mode.\n", call. = F, immediate. = !quiet)
     #   parallel <- F
     # } else {
       no_cores <- parallel::detectCores()
@@ -229,13 +229,13 @@ SIMparse <- function(file,include,exclude,combine=F,silent=F, parallel){
 
   #initialize return objects
   simlist <- list()
-  if(!silent){
+  if(!quiet){
     cat(paste("\nProcessing ",nfiles," simulated data file(s)",sep=""))
     if (parallel) cat(" in parallel on ",no_cores, " cores.", sep = "")
     cat("\n")
     flush.console()
   }
-  if(!silent & !parallel) {pb <- txtProgressBar(min = 0, max = nfiles, style = 3)}
+  if(!quiet & !parallel) {pb <- txtProgressBar(min = 0, max = nfiles, style = 3)}
   
   if (parallel) {
     cl <- parallel::makeCluster(no_cores, setup_timeout = 0.5) 
@@ -246,14 +246,14 @@ SIMparse <- function(file,include,exclude,combine=F,silent=F, parallel){
   } else {
     for (n in 1:nfiles) {
       simlist[[n]] <- processfile(n)
-      if(!silent) {setTxtProgressBar(pb, n)}
+      if(!quiet) {setTxtProgressBar(pb, n)}
     }
-    if(!silent) {close(pb)}
+    if(!quiet) {close(pb)}
   }
   
   #combine obs if requested
   if(combine & nfiles>1){
-    if(!silent){
+    if(!quiet){
       cat("\nCombining files...\n")
       flush.console()
     }
@@ -287,8 +287,8 @@ SIMparse <- function(file,include,exclude,combine=F,silent=F, parallel){
   
   utils::Rprof(NULL)
   #  runningtime <- proc.time()-starttime
-  if(!silent) cat(message)
-  #  if(!silent) cat(message,"Running time: ", runningtime[3], sep="")
+  if(!quiet) cat(message)
+  #  if(!quiet) cat(message,"Running time: ", runningtime[3], sep="")
   return(simlist)
   
 }

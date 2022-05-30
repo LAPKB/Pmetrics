@@ -9,7 +9,7 @@
 #' 
 #' @author Julian Otalvaro and Michael Neely
 #' @export
-PM_pta <- R6Class(
+PM_pta <- R6::R6Class(
     "PM_pta",
     public <- list(
         #' @field results Contains the raw results. See [makePTA].

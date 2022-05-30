@@ -408,7 +408,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       engine <- list(alg = "NP", ncov = numcov, covnames = covnames, numeqt = numeqt, indpts = -99, limits = NA)
       
       if (!quiet) cat("\nMODEL REPORT:\n")
-      trans <- makeModel(model = model, data = data, engine = engine, write = F, silent = quiet)
+      trans <- makeModel(model = model, data = data, engine = engine, write = F, quiet = quiet)
       
       if (trans$status == -1) {
         if ("mQRZZZ.txt" %in% Sys.glob("*", T)) {

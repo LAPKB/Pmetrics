@@ -39,7 +39,7 @@
 #' with R is poor - it does not update until the end of execution, so you cannot see any output that indicates that ERR is running.  
 #' If \code{intern=T} the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
 #' and you can find the HTML summary page in the /outputs folder: ERRreport.html.
-#' @param silent Boolean operator controlling whether a model summary report is given.  Default is \code{True}.
+#' @param quiet Boolean operator controlling whether a model summary report is given.  Default is \code{True}.
 #' @param nocheck Suppress the automatic checking of the data file with \code{\link{PMcheck}}.  Default is \code{FALSE}.
 #' @param overwrite Overwrite existing run result folders.  Default is FALSE.
 #' @return A successful  run will result in creation of a new folder in the working
@@ -63,7 +63,7 @@
 
 ERRrun <- function(model="model.txt",data="data.csv",run,include,exclude,
                    ode=-4,tol=0.001,salt,cycles=100,search="cursory",
-                   xdev=5,auto=T,intern=F,silent=F,
+                   xdev=5,auto=T,intern=F,quiet=F,
                    overwrite=F,nocheck=F){
   
   if(missing(run)) run <- NULL
@@ -75,7 +75,7 @@ ERRrun <- function(model="model.txt",data="data.csv",run,include,exclude,
   outpath <- .PMrun(type="ERR",model=model,data=data,run=run,
                    include=include,exclude=exclude,ode=ode,tol=tol,salt=salt,cycles=cycles,
                    search=search,xdev=xdev,icen=NULL,
-                   auto=auto,intern=intern,silent=silent,overwrite=overwrite,nocheck=nocheck,parallel=F)
+                   auto=auto,intern=intern,quiet=quiet,overwrite=overwrite,nocheck=nocheck,parallel=F)
   return(outpath)
   
 }

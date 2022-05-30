@@ -33,7 +33,7 @@ PMtest <- function() {
                  ndrug = 1, tol = 0.01,
                  salt = 1, numeqt = 1, cycles = 1, icen = "median", indpts = 6, aucint = 24, idelta = 12, xmic = 1,
                  ode = -4, limits = NA, priorString = 1, wrkFlag = F)
-  trans <- makeModel(model = "model.txt", data = "data.csv", engine = engine, write = T, silent = T)
+  trans <- makeModel(model = "model.txt", data = "data.csv", engine = engine, write = T, quiet = T)
 
   OS <- getOS()
   fortSource <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")

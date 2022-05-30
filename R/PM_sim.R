@@ -1,8 +1,14 @@
 #' Object to contain results of simulation
 #' 
-#' To do
+#' This object is created after a successful run of the simulator.
 #' 
-#' To do
+#' There are two methods of creating a PM_sim object.
+#' * [PM_result$sim]
+#' * [PM_sim$run]
+#' 
+#' These both call [SIMrun] to execute the simulation and [SIMparse] to process
+#' the results and return the PM_sim objects. See help on both of these functions
+#' for further details.
 #' 
 #' @export
 PM_sim <- R6::R6Class(
@@ -44,18 +50,27 @@ PM_sim <- R6::R6Class(
       plot.PMsim(self, ...)
     },
     #' @description
-    #' Estimates the Probability of Target Attaintment (PTA), based on the results of the current Simulation.
-    #' @param targets A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. c(0.25, 0.5,1,2,4,8,16,32).
-    #' This can also be a sampled distribution using  \code{\link{makePTAtarget}}.
-    #' @param target.type A numeric or character vector, length 1.  If numeric, must correspond to an observation time common to all PMsim objects in
-    #' \code{simdata}, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at time \code{target.type} to target.  This enables
-    #' testing of a specific timed concentration (e.g. one hour after a dose or C1) which may be called a peak, but is not actually the maximum drug
-    #' concentration.  Be sure that the time in the simulated data is used, e.g. 122 after a dose given at 120.  Character values may be one of
-    #' \dQuote{time}, \dQuote{auc}, \dQuote{peak}, or \dQuote{min}, for, respectively, percent time above target within the time range
-    #' specified by \code{start} and \code{end}, ratio of area under the curve within the time range to target, ratio of peak concentration within the time range
+    #' Estimates the Probability of Target Attaintment (PTA), based on the results 
+    #' of the current Simulation.
+    #' @param targets A vector of pharmacodynamic targets, such as 
+    #' Minimum Inhibitory Concentrations (MICs), e.g. c(0.25, 0.5,1,2,4,8,16,32).
+    #' This can also be a sampled distribution using  [makePTAtarget].
+    #' @param target.type A numeric or character vector, length 1.  If numeric, 
+    #' must correspond to an observation time common to all PMsim objects in
+    #' `simdata`, rounded to the nearest hour.  In this case, the target 
+    #' statistic will be the ratio of observation at time `target.type` 
+    #' to target.  This enables
+    #' testing of a specific timed concentration (e.g. one hour after a dose 
+    #' or C1) which may be called a peak, but is not actually the maximum drug
+    #' concentration.  Be sure that the time in the simulated data is used, 
+    #' e.g. 122 after a dose given at 120.  Character values may be one of
+    #' "time", "auc", "peak", or "min", for, 
+    #' respectively, percent time above target within the time range
+    #' specified by `start` and `end`, ratio of area under the curve 
+    #' within the time range to target, ratio of peak concentration within the time range
     #' to target, or ratio of minimum concentration within the time range to target.
     #'
-    #' @param \dots Additional parameters, refer to \code{\link{makePTA}}
+    #' @param ... Additional parameters, refer to [makePTA]
     pta = function(targets, target.type, ...) {
       PM_pta$new(self,
                  targets = targets,
@@ -96,10 +111,11 @@ PM_sim$load <- function(file_name = "PMsim.rds") {
 #' @export
 PM_sim$run <- function(poppar, ...) {
   dots <- list(...)
-  combine <- if (exists("combine", where = dots)) {
-    dots$combine
+  if (exists("combine", where = dots)) {
+    combine <- dots$combine
+    dots <- modifyList(dots, list(combine = NULL)) #remove combine
   } else {
-    F
+    combine <- F
   }    
   SIMrun(poppar, ...)
   
