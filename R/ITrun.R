@@ -39,7 +39,7 @@
 #' with R is poor - it does not update until the end of execution, so you cannot see any output that indicates that IT2B is running.  
 #' If \code{intern=T} the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
 #' and you can find the HTML summary page in the /outputs folder: IT2Breport.html.
-#' @param silent Boolean operator controlling whether a model summary report is given.  Default is \code{True}.
+#' @param quiet Boolean operator controlling whether a model summary report is given.  Default is \code{True}.
 #' @param overwrite Overwrite existing run result folders.  Default is \code{FALSE}.
 #' @param nocheck Suppress the automatic checking of the data file with \code{\link{PMcheck}}.  Default is \code{FALSE}.
 #' @param alq For internal developer use only.  Should be set to \code{FALSE}.
@@ -71,7 +71,7 @@
 ITrun <- function(model="model.txt",data="data.csv",run,
                   include,exclude,ode=-4,tol=0.001,salt,cycles=100,
                   xdev=5,icen="median",
-                  auto=T,intern=F,silent=F,overwrite=F,nocheck=F,alq=F){
+                  auto=T,intern=F,quiet=F,overwrite=F,nocheck=F,alq=F){
   
   if(missing(run)) run <- NULL
   if(missing(include)) include <- NULL
@@ -82,7 +82,7 @@ ITrun <- function(model="model.txt",data="data.csv",run,
   outpath <- .PMrun(type="IT2B",model=model,data=data,run=run,
                    include=include,exclude=exclude,ode=ode,tol=tol,salt=salt,cycles=cycles,icen=icen,
                    xdev=xdev,
-                   auto=auto,intern=intern,silent=silent,overwrite=overwrite,nocheck=nocheck,parallel=F,batch=batch,alq=alq)
+                   auto=auto,intern=intern,quiet=quiet,overwrite=overwrite,nocheck=nocheck,parallel=F,batch=batch,alq=alq)
   return(outpath)
   
 }

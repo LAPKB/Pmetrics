@@ -56,7 +56,7 @@ setwd(wd)
 setwd(paste(wd, "/src", sep = ""))
 # list the files inside the current working directory
 list.files()
-#create a new data object by reading a file
+# create a new data object by reading a file
 exData <- PM_data$new(data = "ex.csv")
 # you can look at this file directly by opening it in
 # a spreadsheet program like Excel, or a text editor
@@ -66,8 +66,9 @@ exData <- PM_data$new(data = "ex.csv")
 exData$data # contains your original datafile
 exData$standard_data # contains the standardized and validated data,
 exData$summary() # prints the summary of the data to the terminal, or
-#another way to do that is using the more common S3 framework in R:
+# another way to do that is using the more common S3 framework in R:
 summary(exData)
+
 
 # To look at the contents of an object:
 names(exData)
@@ -76,6 +77,10 @@ names(exData)
 exData # view the original data in the viewer
 exData$print(standard = T) # view the standardized data in the viewer
 exData$print(viewer = F) # view original data in console
+exData$plot() # plot with concentrations joined by segments
+exData$plot(overlay = F) # same plot separated by subjects
+
+# ?PM_data for more details on data objects
 
 # MODEL OBJECT
 # You can specify a model by reading a file or directl as an object. We'll do both.
@@ -155,17 +160,19 @@ exRes <- PM_load(1)
 # Create a PM_result object by reading a run folder.  The "1" in the parentheses tells Pmetrics to
 # look in the /1 folder.
 
-# Plot the raw data using R6 with various options.  Type ?plot.PMmatrix in the R console for help.
+# Plot the raw data using R6 with various options.  Type ?plot.PM_data in the R console for help.
 exRes$data$plot()
 exRes$data$plot(overlay = F, xlim = c(120, 144))
-exRes$data$plot(pred = post.1, overlay = T, group = "gender", pch = 1, cex = 1.2, lwd = 2, xlim = c(120, 144), join = F, doses = F, legend = list(legend = c("Female", "Male")), col = c("red", "black"), log = T)
-exRes$data$plot(pred = post.1, overlay = F, group = "gender", pch = 1, cex = 1, lwd = 2, xlim = c(120, 144), join = F, doses = F, legend = F, col = c("red", "black"), log = T)
+exRes$data$plot(overlay = F, 
+                pred = list(exRes$post, color = "green"), 
+                marker = list(symbol = "diamond-open", color = "blue", opacity = 0.8), 
+                join = F, log = T)
+# You can see all the possible symbols here: https://plotly.com/r/reference/scatter/#scatter-marker-symbol
 
 # The following are the older S3 method with plot(...) for the first two examples
 # You can use R6 or S3 for any Pmetrics object
 # We will focus on R6 as the more modern way.
 plot(exRes$data)
-plot(exRes$data, xlim = c(120, 144), col="blue")
 
 # here's a summary of the original data file; ?summary.PMmatrix for help
 exRes$data$summary()
@@ -300,44 +307,7 @@ exRes2 <- PM_load(2)
 PM_compare(exRes, exRes2)
 
 
-
-# EXERCISE 4X - MODEL VALIDATION -------------------------------------------
-
-# MODEL VALIDATION EXAMPLES
-# Example of Pmetrics visual predictive check and prediction-corrected visual predictive check
-# for model validation - be sure to have executed the NPAG run above
-# Type ?makeValid in the R console for help.
-# Choose wt as the covariate to bin. Accept all default bin sizes.
-valid_2 <- exRes2$make_valid(limits = NA) #NOT WORKING
-# To see what it contains, use:
-valid_2
-# Default visual predictive check; ?plot.PMvalid for help
-plot(valid_2)
-#or
-valid_2$plot()
-#or
-exRes2$valid$plot()
-#or
-plot(exRes2$valid)
-# Generate a prediction-corrected visual predictive check; type ?plot.PMvalid in the R console for help.
-plot(valid_2, type = "pcvpc")
-# Create an npde plot
-plot(valid_2, type = "npde")
-
-# Here is another way to generate a visual predicive check...
-#npc_2 <- plot(valid_2$simdata, obs = exRes2$op$to_df(), log = F, binSize = 1)
-# The jagged appearance of the plot when binSize=0 is because different subjects have
-# different doses, covariates, and observation times, which are all combined in one simulation.
-# Collapsing simulation times within 1 hour bins (binSize=1) smooths
-# the plot, but can change the P-values in the numerical predictive check below.
-
-#npc._$npc
-# ...and here is a numerical predictive check
-# P-values are binomial test of proportion of observations less than
-# the respective quantile
-
-
-# EXERCISE 5 - SIMULATOR RUN ----------------------------------------------
+# EXERCISE 4 - SIMULATOR RUN ----------------------------------------------
 
 # The following will simulate 100 sets of parameters/concentrations using the 
 # first subject in the data file as a template.
@@ -355,7 +325,6 @@ plot(simdata[[3]])
 # Parse and combine multiple files and plot them.  Note that combining simulations from templates
 # with different simulated observation times can lead to unpredictable plots
 simdata2 <- exRes2$sim(include = 1:4, limits = NA, nsim = 100, combine = T)
-# simdata2 <- SIMparse("simout?.txt",combine=T)
 simdata2$plot()
 
 # simulate with covariates
@@ -388,6 +357,46 @@ simdata3[[1]]$parValues
 # which were made when you simulated with covariates.  Compare to original
 # "simdata.csv" and "simmoddel.txt" files to note that simulated covariates become
 # Primary block variables, and are removed from the template data file.
+
+
+# EXERCISE 5 - MODEL VALIDATION -------------------------------------------
+  
+  # MODEL VALIDATION EXAMPLES
+  # Example of Pmetrics visual predictive check and prediction-corrected visual predictive check
+  # for model validation - be sure to have executed the NPAG run above
+  # Type ?makeValid in the R console for help.
+  
+  # Choose wt as the covariate to bin. Accept all default bin sizes.
+  
+  valid_2 <- exRes2$validate(limits = NA) 
+
+# To see what it contains, use:
+valid_2
+# Default visual predictive check; ?plot.PMvalid for help
+plot(valid_2)
+#or
+valid_2$plot()
+#or
+exRes2$valid$plot()
+#or
+plot(exRes2$valid)
+# Generate a prediction-corrected visual predictive check; type ?plot.PMvalid in the R console for help.
+plot(valid_2, type = "pcvpc")
+# Create an npde plot
+plot(valid_2, type = "npde")
+
+# Here is another way to generate a visual predicive check...
+#npc_2 <- plot(valid_2$simdata, obs = exRes2$op$to_df(), log = F, binSize = 1)
+# The jagged appearance of the plot when binSize=0 is because different subjects have
+# different doses, covariates, and observation times, which are all combined in one simulation.
+# Collapsing simulation times within 1 hour bins (binSize=1) smooths
+# the plot, but can change the P-values in the numerical predictive check below.
+
+#npc._$npc
+# ...and here is a numerical predictive check
+# P-values are binomial test of proportion of observations less than
+# the respective quantile
+
 
 # EXERCISE 6 - SAVING PMETRICS OBJECTS ------------------------------------
 

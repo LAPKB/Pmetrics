@@ -92,10 +92,14 @@ amendLegend <- function(.legend){
 }
 
 includeExclude <- function(.data, include, exclude){
-  .data <- .data %>% filter(id %in% include)
-  if(!is.na(exclude)){
+  if(!is.na(include[1])){
+    .data <- .data %>% filter(id %in% include)
+  }
+  if(!is.na(exclude[1])){
     .data <- .data %>% filter(!id %in% exclude)
   }
+  if(nrow(.data)==0){stop("Include/exclude criteria result in zero subjects.")}
+  
   return(.data)
 }
 

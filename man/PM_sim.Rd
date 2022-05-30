@@ -9,14 +9,43 @@ Object to contain results of simulation
 Object to contain results of simulation
 }
 \details{
-To do
+This object is created after a successful run of the simulator.
 
-To do
+There are two methods of creating a PM_sim object.
+\itemize{
+\item \link{PM_result$sim}
+\item \link{PM_sim$run}
+}
+
+These both call \link{SIMrun} to execute the simulation and \link{SIMparse} to process
+the results and return the PM_sim objects. See help on both of these functions
+for further details.
+}
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{obs}}{Observations}
+
+\item{\code{amt}}{Amounts}
+
+\item{\code{parValues}}{Retained simulated parameter values after discarding
+any due to truncation limits}
+
+\item{\code{totalSets}}{Number of all simulated parameter values}
+
+\item{\code{totalMeans}}{Mean of all simulated parameter values}
+
+\item{\code{totalCov}}{Covariance of all simulated parameter values}
+}
+\if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{PM_sim$new()}}
+\item \href{#method-save}{\code{PM_sim$save()}}
+\item \href{#method-plot}{\code{PM_sim$plot()}}
+\item \href{#method-pta}{\code{PM_sim$pta()}}
 \item \href{#method-clone}{\code{PM_sim$clone()}}
 }
 }
@@ -24,18 +53,87 @@ To do
 \if{html}{\out{<a id="method-new"></a>}}
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
-Create a new PM_sim object.  Alternatively,
-use the \verb{$sim} method attached to \link{PM_result} objects.
+Create new simulation objects with results of \verb{$sim}
+method for \link{PM_result}
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$new(poppar, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$new(list)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{poppar}}{A \code{PM_result$final} object}
+\item{\code{list}}{List of output passed by \verb{$sim}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-save"></a>}}
+\if{latex}{\out{\hypertarget{method-save}{}}}
+\subsection{Method \code{save()}}{
+Save the current PM_sim object into a .rds file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$save(file_name = "PMsim.rds")}\if{html}{\out{</div>}}
+}
 
-\item{\code{...}}{Additional arguments to \link{SIMrun}}
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file_name}}{Name of the file to be created, the default is PMsim.rds}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-plot}{}}}
+\subsection{Method \code{plot()}}{
+Plot \code{PM_sim} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$plot(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{plot.PMsim}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-pta"></a>}}
+\if{latex}{\out{\hypertarget{method-pta}{}}}
+\subsection{Method \code{pta()}}{
+Estimates the Probability of Target Attaintment (PTA), based on the results
+of the current Simulation.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$pta(targets, target.type, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{targets}}{A vector of pharmacodynamic targets, such as
+Minimum Inhibitory Concentrations (MICs), e.g. c(0.25, 0.5,1,2,4,8,16,32).
+This can also be a sampled distribution using  \link{makePTAtarget}.}
+
+\item{\code{target.type}}{A numeric or character vector, length 1.  If numeric,
+must correspond to an observation time common to all PMsim objects in
+\code{simdata}, rounded to the nearest hour.  In this case, the target
+statistic will be the ratio of observation at time \code{target.type}
+to target.  This enables
+testing of a specific timed concentration (e.g. one hour after a dose
+or C1) which may be called a peak, but is not actually the maximum drug
+concentration.  Be sure that the time in the simulated data is used,
+e.g. 122 after a dose given at 120.  Character values may be one of
+"time", "auc", "peak", or "min", for,
+respectively, percent time above target within the time range
+specified by \code{start} and \code{end}, ratio of area under the curve
+within the time range to target, ratio of peak concentration within the time range
+to target, or ratio of minimum concentration within the time range to target.}
+
+\item{\code{...}}{Additional parameters, refer to \link{makePTA}}
 }
 \if{html}{\out{</div>}}
 }
