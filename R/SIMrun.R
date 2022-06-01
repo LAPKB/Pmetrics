@@ -255,6 +255,8 @@
 #' @param overwrite Cleans up any old output files without asking before
 #' creating new output. Default is `FALSE`.
 #' 
+#' @param combine Pass through to [SIMparse]. Ignored for SIMrun.
+#' 
 #' @return No value is returned, but simulated file(s) will be in the working
 #' directory.
 #' @author Michael Neely
@@ -301,7 +303,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
                    include = NA, exclude = NA, nsim = 1000, predInt = 0, covariate, usePost = F,
                    seed = -17, ode = -4,
                    obsNoise, doseTimeNoise = rep(0, 4), doseNoise = rep(0, 4), obsTimeNoise = rep(0, 4),
-                   makecsv, outname, clean = T, quiet = F, nocheck = F, overwrite = F) {
+                   makecsv, outname, clean = T, quiet = F, nocheck = F, overwrite = F, combine) {
   
   if (inherits(poppar, "PM_result")) {
     is_res <- T
@@ -409,10 +411,10 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
       if (!inherits(poppar, "PM_final")) endNicely("\npoppar must be a PM_final object when multiplicative limits specified.\n", modeltxt, data)
       orig.lim <- poppar$ab
       if (length(limits) == 1) limits <- c(1, limits)
-      final.lim <- t(apply(poppar$ab, 1, function(x) x * limits))
+      final.lim <- t(apply(orig.lim, 1, function(x) x * limits))
       parLimits <- final.lim
     } else {
-      if (is.na(limits)) {
+      if (is.na(limits[1])) {
         # limits specified as NA (use limits in model file)
         parLimits <- matrix(rep(NA, 2 * npar), ncol = 2)
       } else {
@@ -648,18 +650,13 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
   }
   numeqt <- max(dataFile$outeq, na.rm = T)
   
+  #handle include/exclude
   dataFile <- includeExclude(dataFile, include, exclude)
-  # 
-  # if (missing(include)) {
-  #   include <- unique(dataFile$id)
-  # }
-  # if (!is.null(exclude)) {
-  #   include <- unique(dataFile$id)[!unique(dataFile$id) %in% exclude]
-  # }
-  # nsub <- length(include)
-  nsub <- length(unique(dataFile$id))
+  toInclude <- unique(dataFile$id)
+  nsub <- length(toInclude)
+
   
-  postToUse <- postToUse[postToUse %in% include] # subset the posteriors if applicable
+  postToUse <- postToUse[postToUse %in% toInclude] # subset the posteriors if applicable
   if (length(postToUse) > 0 && length(postToUse) != nsub) endNicely(paste("\nYou have ", length(postToUse), " posteriors and ", nsub, " selected subjects in the data file.  These must be equal.\n", sep = ""), model, data)
   
   if (missing(obsNoise)) {
@@ -810,7 +807,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
           pop.cov <- poppar$popCov
           ndist <- 1
         } else {
-          thisPost <- which(poppar$postMean$id == include[i])
+          thisPost <- which(poppar$postMean$id == toInclude[i])
           pop.weight <- 1
           pop.mean <- data.frame(poppar$postMean[thisPost, -1])
           pop.cov <- poppar$postCov[, , thisPost]
@@ -1002,17 +999,17 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
   
   
   # cycle through the subjects and simulate
-  if (!quiet) cat(paste("\nThe following subject(s) in the data will serve as the template(s) for simulation: ", paste(include, collapse = " "), "\n\n"))
+  if (!quiet) cat(paste("\nThe following subject(s) in the data will serve as the template(s) for simulation: ", paste(toInclude, collapse = " "), "\n\n"))
   for (i in 1:nsub) {
     if (!quiet) {
-      cat(paste("Simulating from subject", include[i], "...\n"))
+      cat(paste("Simulating from subject", toInclude[i], "...\n"))
       flush.console()
     }
     
-    temp <- subset(dataFile, dataFile$id == include[i])
+    temp <- subset(dataFile, dataFile$id == toInclude[i])
     if (nrow(temp) == 0) {
       if (!quiet) {
-        cat(paste("\nThere is no subject with an ID of ", include[i], ". Skipping...\n", sep = ""))
+        cat(paste("\nThere is no subject with an ID of ", toInclude[i], ". Skipping...\n", sep = ""))
         flush.console()
       }
       next
@@ -1141,7 +1138,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
     trunc <- ceiling(log10(nsim + 1)) + 1
     temp <- PMreadMatrix("abcde1.csv", quiet = T)
     simnum <- unlist(lapply(temp$id, function(x) substr(gsub("[[:space:]]", "", x), 9 - trunc, 8)))
-    temp$id <- paste(include[1], simnum, sep = "_")
+    temp$id <- paste(toInclude[1], simnum, sep = "_")
     # add back simulated covariates if done, but keep non-simulated ones
     if (simWithCov) {
       getBackCov <- function(temp, n) {
@@ -1171,7 +1168,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
       for (j in 2:nsub) {
         curTemp <- PMreadMatrix(paste("abcde", j, ".csv", sep = ""), quiet = T)
         simnum <- unlist(lapply(curTemp$id, function(x) substr(gsub("[[:space:]]", "", x), 9 - trunc, 8)))
-        curTemp$id <- paste(include[j], simnum, sep = "_")
+        curTemp$id <- paste(toInclude[j], simnum, sep = "_")
         if (simWithCov) {
           curTemp <- getBackCov(curTemp, j)
         }

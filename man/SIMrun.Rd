@@ -25,9 +25,10 @@ SIMrun(
   makecsv,
   outname,
   clean = T,
-  silent = F,
+  quiet = F,
   nocheck = F,
-  overwrite = F
+  overwrite = F,
+  combine
 )
 }
 \arguments{
@@ -217,7 +218,7 @@ from each subject.}
 course of the simulation run should be deleted. Defaults to \code{TRUE}.
 This is primarily used for debugging.}
 
-\item{silent}{Boolean operator controlling whether a model summary report is
+\item{quiet}{Boolean operator controlling whether a model summary report is
 given.  Default is \code{FALSE}.}
 
 \item{nocheck}{Suppress the automatic checking of the data file with
@@ -225,6 +226,8 @@ given.  Default is \code{FALSE}.}
 
 \item{overwrite}{Cleans up any old output files without asking before
 creating new output. Default is \code{FALSE}.}
+
+\item{combine}{Pass through to \link{SIMparse}. Ignored for SIMrun.}
 }
 \value{
 No value is returned, but simulated file(s) will be in the working

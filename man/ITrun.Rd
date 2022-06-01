@@ -18,7 +18,7 @@ ITrun(
   icen = "median",
   auto = T,
   intern = F,
-  silent = F,
+  quiet = F,
   overwrite = F,
   nocheck = F,
   alq = F
@@ -67,7 +67,7 @@ with R is poor - it does not update until the end of execution, so you cannot se
 If \code{intern=T} the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
 and you can find the HTML summary page in the /outputs folder: IT2Breport.html.}
 
-\item{silent}{Boolean operator controlling whether a model summary report is given.  Default is \code{True}.}
+\item{quiet}{Boolean operator controlling whether a model summary report is given.  Default is \code{True}.}
 
 \item{overwrite}{Overwrite existing run result folders.  Default is \code{FALSE}.}
 
