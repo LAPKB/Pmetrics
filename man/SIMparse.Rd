@@ -4,7 +4,7 @@
 \alias{SIMparse}
 \title{Parse Pmetrics Simulator Output}
 \usage{
-SIMparse(file, include, exclude, combine = F, silent = F, parallel)
+SIMparse(file, include, exclude, combine = F, quiet = F, parallel)
 }
 \arguments{
 \item{file}{An output file or files of the simulator in the current working directory, or the full
@@ -24,7 +24,7 @@ checks, for example.  If \code{combine=F}, and multiple files are parsed, then t
 will be a list of PMsim objects, which can be plotted or otherwise accessed using standard list
 referencing, e.g. simlist[\link{1}], simlist[\link{2}], etc.}
 
-\item{silent}{Suppress messages}
+\item{quiet}{Suppress messages}
 
 \item{parallel}{Runs in parallel mode.  Defaults to true if multiple files are to be parsed, otherwise false.
 Can be overridden by specifying \code{TRUE} or \code{FALSE}.}

@@ -268,7 +268,7 @@ PM_Vinput <- R6::R6Class(
     },
     print_to = function(mode_not_used, engine) {
       # TODO:use mode and self$mode to translate to the right set of outputs
-      if (engine == "npag") {
+      if (engine == "npag" | engine == "it2b") {
         if (self$mode == "range") {
           return(sprintf("%f, %f", self$min, self$max))
         } else if (self$mode == "msd") {
@@ -284,6 +284,7 @@ PM_Vinput <- R6::R6Class(
             return(sprintf("%f", self$fixed))
           }
         } else if (self$mode == "additive") {
+          if(engine == "it2b"){stop("Lambda is not defined in IT2B.")}
           if (self$constant) {
             return(sprintf("L=%f!", self$additive))
           } else {

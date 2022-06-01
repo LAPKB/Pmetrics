@@ -111,28 +111,28 @@ PM_sim$load <- function(file_name = "PMsim.rds") {
 #' @export
 PM_sim$run <- function(poppar, ...) {
   dots <- list(...)
-  if (exists("combine", where = dots)) {
-    combine <- dots$combine
-    dots <- modifyList(dots, list(combine = NULL)) #remove combine
+  combine <- if (exists("combine", where = dots)) {
+    dots$combine
   } else {
-    combine <- F
+    F
   }    
-  SIMrun(poppar, ...)
+  
+  SIMrun(poppar,...)
   
   # TODO: read files and fix the missing E problem
   sim_files <- list.files() %>% .[grepl("simout*", .)]
   if (length(sim_files) == 1) {
-    parse <- SIMparse(file = "simout*") %>% PM_sim$new()
+    parseRes <- SIMparse(file = "simout*") %>% PM_sim$new()
   } else {
     if (combine) {
-      parse <- SIMparse(file = "simout*", combine = T) %>% PM_sim$new()
+      parseRes <- SIMparse(file = "simout*", combine = T) %>% PM_sim$new()
     } else {
-      parse <- list()
+      parseRes <- list()
       for (i in seq_len(length(sim_files))) {
-        parse <- append(parse, SIMparse(file = sprintf("simout%i.txt", i)) %>% PM_sim$new())
+        parseRes <- append(parseRes, SIMparse(file = sprintf("simout%i.txt", i)) %>% PM_sim$new())
       }
     }
   }
   system("rm simout*")
-  parse
+  return(parseRes)
 }
