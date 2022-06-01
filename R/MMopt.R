@@ -202,7 +202,7 @@ MM_opt <- function(poppar,...){
   } else {
     if (is_res) {
       model <- "simmodel.txt"
-      res$model$write_model_file(model)
+      res$model$write(model)
     } else {
       model <- "model.txt"
     }
