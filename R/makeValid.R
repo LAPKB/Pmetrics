@@ -294,7 +294,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   modelfile <- "genmodel.txt"
 
   result$data$write(datafileName)
-  result$model$write_model_file(modelfile)
+  result$model$write(modelfile)
 
   # simulate PRED_bin from pop icen parameter values and median of each bin for each subject
   # first, calculate median of each bin

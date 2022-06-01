@@ -4,7 +4,31 @@
 \alias{NPrun}
 \title{Execute an NPAG run.}
 \usage{
-NPrun(model = "model.txt", data = "data.csv", ...)
+NPrun(
+  model = "model.txt",
+  data = "data.csv",
+  run,
+  include,
+  exclude,
+  ode = -4,
+  tol = 0.01,
+  salt,
+  cycles = 100,
+  indpts,
+  icen = "median",
+  aucint,
+  idelta = 12,
+  prior,
+  auto = T,
+  intern = F,
+  quiet = F,
+  overwrite = F,
+  nocheck = F,
+  parallel = NA,
+  alq = F,
+  remote = F,
+  server_address
+)
 }
 \arguments{
 \item{model}{Name of a suitable model file template in the working directory or
@@ -64,7 +88,7 @@ with R is poor - it does not update until the end of execution, so you cannot se
 If \code{intern=T} the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
 and you can find the HTML summary page in the /outputs folder: NPAGreport.html.}
 
-\item{silent}{Boolean operator controlling whether a model summary report is given.  Default is \code{TRUE}.}
+\item{quiet}{Boolean operator controlling whether a model summary report is given.  Default is \code{TRUE}.}
 
 \item{overwrite}{Overwrite existing run result folders.  Default is \code{FALSE}.}
 

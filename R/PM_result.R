@@ -472,7 +472,7 @@ PM_final <- R6::R6Class(
       self$gridpts <- final$gridpts
       self$nsub <- final$nsub
       self$ab <- final$ab
-      class(self) <- c("NPAG", class(self))
+      class(self) <- c(c("NPAG", "IT2B")[1+as.numeric(is.null(self$popPoints))], class(self))
     },
     #' @description
     #' Summary method
@@ -488,7 +488,7 @@ PM_final <- R6::R6Class(
     #' See [plot.PMfinal].
     #' @param ... Arguments passed to [plot.PMfinal]
     plot = function(...) {
-      plot.PMfinal(self, ...)
+      plot.PM_final(self, ...)
     }
   )
 )

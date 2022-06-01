@@ -186,15 +186,20 @@ makeFinal <- function(data){
   if(inherits(data,"IT2B")){                                    
     popMean <- data$imean[data$icyctot,]
     names(popMean) <- data$par
+    popMean <- data.frame(t(popMean))
+    
     
     popSD <- data$isd[data$icyctot,]
     names(popSD) <- data$par
+    popSD <- data.frame(t(popSD))
+    
     
     popVar <- popSD**2
     names(popVar) <- data$par
     
     popCV <- abs(data$icv[data$icyctot,])
     names(popCV) <- data$par
+    popCV <- data.frame(t(popCV))
     
     popCov <- cov(data$lpar)
     dimnames(popCov) <- list(data$par,data$par)
@@ -204,6 +209,7 @@ makeFinal <- function(data){
     
     popMedian <- data$imed[data$icyctot,]
     names(popMedian) <- data$par
+    popMedian <- data.frame(t(popMedian))
     
     postMean <- data.frame(id=data$sdata$id,data$lpar)
     

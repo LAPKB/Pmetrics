@@ -1,9 +1,9 @@
 # Common plotly utilities in Pmetrics
 
 #amend markers
-amendMarker <- function(.marker){
+amendMarker <- function(.marker, color = "red"){
   default_marker <- list(symbol = "circle", 
-                         color = "red", 
+                         color = color, 
                          size = 10, 
                          opacity = 0.5,
                          stroke = "black", 
@@ -25,8 +25,8 @@ amendMarker <- function(.marker){
 }
 
 #amend lines
-amendLine <- function(.line){
-  default_line <- list(color = "dodgerblue", width = 1, linetype = 1)
+amendLine <- function(.line, color = "dodgerblue"){
+  default_line <- list(color = color, width = 1, linetype = 1)
   
   if(inherits(.line,"logical")){
     if(!.line){
@@ -41,6 +41,25 @@ amendLine <- function(.line){
     .line <- modifyList(default_line, .line)
   }
   return(.line)
+}
+
+#amend bar
+amendBar <- function(.bar, color = "dodgerblue"){
+  default_bar <- list(color = color, width = 0.02, opacity = 0.75)
+  
+  if(inherits(.bar,"logical")){
+    if(!.bar){
+      .bar <- default_bar
+      .bar$width = 0
+    } else {
+      .bar <- default_bar
+    }
+  }
+  
+  if(inherits(.bar,"list")){
+    .bar <- modifyList(default_bar, .bar)
+  }
+  return(.bar)
 }
 
 
@@ -104,4 +123,27 @@ includeExclude <- function(.data, include, exclude){
 }
 
 
+vline <- function(x = 0, color = "black", width = 1, dash = 1) {
+  list(
+    type = "line", 
+    y0 = 0, 
+    y1 = 1, 
+    yref = "paper",
+    x0 = x, 
+    x1 = x, 
+    line = list(color = color, width = width, dash = dash)
+  )
+}
+
+hline <- function(y = 0, color = "black", width = 1, dash = 1) {
+  list(
+    type = "line", 
+    x0 = 0, 
+    x1 = 1, 
+    xref = "paper",
+    y0 = y, 
+    y1 = y, 
+    line = list(color = color, width = width, dash = dash)
+  )
+}
 

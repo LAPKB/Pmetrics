@@ -43,17 +43,27 @@ PM_fit <- R6::R6Class("PM_fit",
     },
     #' @description Fit the model to the data
     #' @param ... Other arguments passed to [NPrun]
-    #' @param engine Currently only "npag".
-    run = function(..., engine = "npag") {
+    #' @param engine "NPAG" (default) or "IT2B"
+    run = function(..., engine = "NPAG") {
+      engine <- tolower(engine)
       if (inherits(private$model, "PM_model_legacy")) {
         cat(sprintf("Runing Legacy"))
-        Pmetrics::NPrun(private$model$legacy_file_path, private$data$standard_data, ...)
+        if(engine=="npag"){
+          Pmetrics::NPrun(private$model$legacy_file_path, private$data$standard_data, ...)
+        } else {
+          Pmetrics::ITrun(private$model$legacy_file_path, private$data$standard_data, ...)
+        }
       } else if (inherits(private$model, "PM_model_list")) {
         engine <- tolower(engine)
         model_path <- private$model$write(engine = engine)
         cat(sprintf("Creating model file at: %s\n", model_path))
-        Pmetrics::NPrun(model_path, private$data$standard_data, ...)
+        if(engine == "npag"){
+          Pmetrics::NPrun(model_path, private$data$standard_data, ...)
+        } else {
+          Pmetrics::ITrun(model_path, private$data$standard_data, ...)
+        }
       } else if (inherits(private$model, "PM_model_julia")) {
+        if(engine != "npag") {stop("Julia is only for NPAG currently.")}
         cat(sprintf("Runing Julia: %s-%s\n", private$data, private$model$name))
         return(
           julia_call(
@@ -101,8 +111,7 @@ PM_fit <- R6::R6Class("PM_fit",
   ),
   private = list(
     data = NULL,
-    model = NULL,
-    engine = "NPAG" # eventually should be public
+    model = NULL
   )
 )
 

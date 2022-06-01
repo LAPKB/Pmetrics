@@ -361,14 +361,14 @@ simdata3[[1]]$parValues
 
 # EXERCISE 5 - MODEL VALIDATION -------------------------------------------
   
-  # MODEL VALIDATION EXAMPLES
-  # Example of Pmetrics visual predictive check and prediction-corrected visual predictive check
-  # for model validation - be sure to have executed the NPAG run above
-  # Type ?makeValid in the R console for help.
+# MODEL VALIDATION EXAMPLES
+# Example of Pmetrics visual predictive check and prediction-corrected visual predictive check
+# for model validation - be sure to have executed the NPAG run above
+# Type ?makeValid in the R console for help.
   
-  # Choose wt as the covariate to bin. Accept all default bin sizes.
+# Choose wt as the covariate to bin. Accept all default bin sizes.
   
-  valid_2 <- exRes2$validate(limits = NA) 
+valid_2 <- exRes2$validate(limits = NA) 
 
 # To see what it contains, use:
 valid_2
@@ -438,12 +438,12 @@ setwd(paste(wd, "/Runs", sep = ""))
 # in the current run.  By specifying a prior, we are starting with the non-uniform density from the
 # end of the specified fun.
 
-exFit2$run(prior=2)
+exFit2$run(prior = 2)
 exRes3 <- PM_load(3)
 
 # We could also generate Bayesian posterior parameter estimates for a new population this
 # way, and with 0 cycles:
-# exFit3 <- PM_fit(data=PM_data("newPop.csv"), mod2)
+# exFit3 <- PM_fit$new(data = "newPop.csv", mod2)
 # exFit3$run(prior = 2, cycles = 0)
 # This won't run but shows you how it could be done.
 
@@ -456,30 +456,36 @@ exRes3 <- PM_load(3)
 
 # EXAMPLE IT2B run - tlag, ka, kel, vol
 
-# setwd(paste(wd, "/Runs", sep = ""))
+setwd(paste(wd, "/Runs", sep = ""))
 
-# copy the files model.txt and ex.csv to your Runs folder to get ready for a run
+# Make the fit object. Notice that you can specify the data and model as files
+# directly, without having to first create a PM_data and PM_model object.
+# However, by doing it this way, the data and model do not exist as R objects
+# and would need to be copied to the working directory or a path specified as
+# we did below.
 
-# file.copy(from = c("../src/model2.txt", "../src/ex.csv"), to = getwd(), overwrite = T)
+fit4 <- PM_fit$new(data = "../src/ex_full.csv", model = "../src/model2.txt")
 
-# Run IT2B.  Type ?ITrun in the R console for help.
-# ITrun(data = "ex.csv", model = "model2.txt")
-# Windows users: launch the itscript.bat file in your working directory
-# Mac users: a terminal window will open and run; don't worry about pauses; the program has not crashed"
+# Now run the fit, using IT2B as the engine.
+fit4$run(engine = "IT2B")
 
 
 # Type ?PMload in the R console for help on PMload.
-# If this is the second run in the directory, use PMload(3)
-# PMload(4)
+
+run4 <- PM_load(4)
 
 # Most of the commands above work the same for IT2B but some produce different plots.
-# See plots.pdf, pages 35-37
-# plot(final.4)
+
+run4$final$plot()
+
 # in the following plot, we standardize the x-scales to enable
 # comparisons of the widths of the normal distributions of the
 # parameter values
-# plot(final.4, standard = T)
+# NOT YET IMPLEMENTED IN R6
+# run4$final$plot(standard = T)
+
 # here's a bivariate plot of IT2B population parameter value distributions
+# NOT YET IMPLEMENTED IN R6
 # plot(final.4, Ke ~ V0)
 
 
