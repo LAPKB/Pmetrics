@@ -481,8 +481,11 @@ run4$final$plot()
 # in the following plot, we standardize the x-scales to enable
 # comparisons of the widths of the normal distributions of the
 # parameter values
-# NOT YET IMPLEMENTED IN R6
-# run4$final$plot(standard = T)
+
+
+run4$final$plot(standardize = "all")
+run4$final$plot(standardize = c("Ka", "Ke", "Tlag1"))
+
 
 # here's a bivariate plot of IT2B population parameter value distributions
 # NOT YET IMPLEMENTED IN R6
