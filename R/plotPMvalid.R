@@ -45,17 +45,18 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
                          
 ){
   
+  plotData <- x
   #parse dots
   #arglist <- list(...)
   #names_theme <- names(formals(ggplot2::theme)) #check for elements of ggplot2::theme
   #argsTheme <- arglist[which(names(arglist) %in% names_theme)]
 
   #checkRequiredPackages("ggplot2")
-  if(outeq > max(x$opDF$outeq)){stop(paste("Your data do not contain",outeq,"output equations.\n"))}
+  if(outeq > max(plotData$opDF$outeq)){stop(paste("Your data do not contain",outeq,"output equations.\n"))}
   if(icen!="mean" & icen!="median"){stop(paste("Use \"mean\" or \"median\" for icen.\n",sep=""))}
   
-  x$opDF <- x$opDF[x$opDF$icen==icen & x$opDF$outeq==outeq,] #filter to icen & outeq
-  x$simdata$obs <- x$simdata$obs[x$simdat$obs$outeq==outeq,] #filter to outeq
+  plotData$opDF <- plotData$opDF[plotData$opDF$icen==icen & plotData$opDF$outeq==outeq,] #filter to icen & outeq
+  plotData$simdata$obs <- plotData$simdata$obs[plotData$simdata$obs$outeq==outeq,] #filter to outeq
   
   #set names if not specified
   if(!"name" %in% names(axis.x)){axis.x$name <- "Time"}
@@ -66,33 +67,33 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   
   #select correct time
   if(!tad){
-    use.timeBinMedian <- x$timeBinMedian$time
-    use.optimes <- x$opDF$time
-    use.opTimeBinMedian <- x$opDF$timeBinMedian
-    use.opTimeBinNum <- x$opDF$timeBinNum
-    use.simBinNum <- x$simdata$obs$timeBinNum
+    use.timeBinMedian <- plotData$timeBinMedian$time
+    use.optimes <- plotData$opDF$time
+    use.opTimeBinMedian <- plotData$opDF$timeBinMedian
+    use.opTimeBinNum <- plotData$opDF$timeBinNum
+    use.simBinNum <- plotData$simdata$obs$timeBinNum
   } else {
-    if(!all(is.na(x$tadBinMedian))){
+    if(!all(is.na(plotData$tadBinMedian))){
       cat("Warning: Using time after dose is misleading if not under steady-state conditions.\n")
-      use.timeBinMedian <- x$tadBinMedian$time
-      use.optimes <- x$opDF$tad
-      use.opTimeBinMedian <- x$opDF$tadBinMedian
-      use.opTimeBinNum <- x$opDF$tadBinNum
-      use.simBinNum <- x$simdata$obs$tadBinNum
+      use.timeBinMedian <- plotData$tadBinMedian$time
+      use.optimes <- plotData$opDF$tad
+      use.opTimeBinMedian <- plotData$opDF$tadBinMedian
+      use.opTimeBinNum <- plotData$opDF$tadBinNum
+      use.simBinNum <- plotData$simdata$obs$tadBinNum
       if(axis.x$name=="Time") {axis.x$name <- "Time after dose"}
       
     } else {stop("Rerun makePMvalid and set tad argument to TRUE.\n")}
   }
   
   #calculate lower, 50th and upper percentiles for pcYij by time bins
-  quant_pcObs <- tapply(x$opDF$pcObs,use.opTimeBinNum ,quantile,probs=c(lower,0.5,upper),na.rm=T)
+  quant_pcObs <- tapply(plotData$opDF$pcObs,use.opTimeBinNum ,quantile,probs=c(lower,0.5,upper),na.rm=T)
   #calculate lower, 50th and upper percentiles for Yij by time bin
-  quant_Obs <- tapply(x$opDF$obs,use.opTimeBinNum,quantile,probs=c(lower,0.5,upper),na.rm=T)
+  quant_Obs <- tapply(plotData$opDF$obs,use.opTimeBinNum,quantile,probs=c(lower,0.5,upper),na.rm=T)
   
   #find lower, median, upper percentiles by sim and bin
-  simMed <- tapply(x$simdata$obs$out,list(x$simdata$obs$simnum,use.simBinNum),FUN=median,na.rm=T) #nsim row, timeBinNum col
-  simLower <- tapply(x$simdata$obs$out,list(x$simdata$obs$simnum,use.simBinNum),FUN=quantile,na.rm=T,lower) #nsim row, timeBinNum col
-  simUpper <- tapply(x$simdata$obs$out,list(x$simdata$obs$simnum,use.simBinNum),FUN=quantile,na.rm=T,upper) #nsim row, timeBinNum col
+  simMed <- tapply(plotData$simdata$obs$out,list(plotData$simdata$obs$simnum,use.simBinNum),FUN=median,na.rm=T) #nsim row, timeBinNum col
+  simLower <- tapply(plotData$simdata$obs$out,list(plotData$simdata$obs$simnum,use.simBinNum),FUN=quantile,na.rm=T,lower) #nsim row, timeBinNum col
+  simUpper <- tapply(plotData$simdata$obs$out,list(plotData$simdata$obs$simnum,use.simBinNum),FUN=quantile,na.rm=T,upper) #nsim row, timeBinNum col
   
   #calculate median and CI for upper, median, and lower for each bin
   
@@ -105,11 +106,11 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   
   #calculate time boundaries for each bin
   if(tad){
-    minBin <- tapply(x$opDF$tad,x$opDF$tadBinNum,min)
-    maxBin <- tapply(x$opDF$tad,x$opDF$tadBinNum,max)
+    minBin <- tapply(plotData$opDF$tad,plotData$opDF$tadBinNum,min)
+    maxBin <- tapply(plotData$opDF$tad,plotData$opDF$tadBinNum,max)
   } else {
-    minBin <- tapply(x$opDF$time,x$opDF$timeBinNum,min)
-    maxBin <- tapply(x$opDF$time,x$opDF$timeBinNum,max)
+    minBin <- tapply(plotData$opDF$time,plotData$opDF$timeBinNum,min)
+    maxBin <- tapply(plotData$opDF$time,plotData$opDF$timeBinNum,max)
   }
   timeBinNum <- length(minBin)
   
@@ -121,11 +122,11 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   
   
   #type specific options
-  if(type=="vpc"){ plotData <- list(obsQuant=quant_Obs,obs=x$opDF$obs,binTime=use.timeBinMedian,
+  if(type=="vpc"){ plotData <- list(obsQuant=quant_Obs,obs=plotData$opDF$obs,binTime=use.timeBinMedian,
                                     obsTime=use.optimes,upperDF=upperDF,lowerDF=lowerDF,
                                     medDF=medDF)
   }
-  if(type=="pcvpc"){ plotData <- list(obsQuant=quant_pcObs,obs=x$opDF$pcObs,binTime=use.timeBinMedian,
+  if(type=="pcvpc"){ plotData <- list(obsQuant=quant_pcObs,obs=plotData$opDF$pcObs,binTime=use.timeBinMedian,
                                       obsTime=use.opTimeBinMedian,upperDF=upperDF,lowerDF=lowerDF,
                                       medDF=medDF)
   }
@@ -171,8 +172,8 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   
   if(type=="npde"){
     #cat("NPDE temporarily disabled pending code cleaning.\n")
-    if(is.null(x$npde)) stop("No npde object found.  Re-run makeValid.\n")
-    plot(x$npde)
+    if(is.null(plotData$npde)) stop("No npde object found.  Re-run makeValid.\n")
+    plot(plotData$npde)
     par(mfrow=c(1,1))
     p <- NULL
   }
