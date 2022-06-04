@@ -147,3 +147,61 @@ hline <- function(y = 0, color = "black", width = 1, dash = 1) {
   )
 }
 
+group2NA <- function(data, groupNames = "group", nested = NULL, ordered = NULL,
+                     retrace.first = inherits(data, "GeomPolygon")) {
+  
+  if (NROW(data) == 0) return(data)
+  
+  # for restoring class information on exit
+  datClass <- oldClass(data)
+  
+  # data.table doesn't play nice with list-columns
+  if (inherits(data, "sf")) data <- fortify_sf(data)
+  
+  # evaluate this lazy argument now (in case we change class of data)
+  retrace <- force(retrace.first)
+  
+  # sanitize variable names (TODO: throw warnings if non-existing vars are referenced?)
+  groupNames <- groupNames[groupNames %in% names(data)]
+  nested <- nested[nested %in% names(data)]
+  ordered <- ordered[ordered %in% names(data)]
+  
+  dt <- data.table::as.data.table(data)
+  
+  # if group doesn't exist, just order the rows and exit
+  if (!length(groupNames)) {
+    keyVars <- c(nested, ordered)
+    if (length(keyVars)) data.table::setorderv(dt, cols = keyVars)
+    return(structure(dt, class = datClass))
+  }
+  
+  # order the rows
+  data.table::setorderv(dt, cols = c(nested, groupNames, ordered))
+  
+  # when connectgaps=FALSE, inserting NAs ensures each "group" 
+  # will be visually distinct https://plotly.com/r/reference/#scatter-connectgaps
+  # also, retracing is useful for creating polygon(s) via scatter trace(s)
+  keyVars <- c(nested, groupNames)
+  keyNum <- length(keyVars) + 1
+  idx <- if (retrace) {
+    dt[, c(.I, .I[1], NA), by = keyVars][[keyNum]]
+  } else {
+    dt[, c(.I, NA), by = keyVars][[keyNum]]
+  }
+  dt <- dt[idx]
+  
+  # remove NAs that unnecessarily seperate nested groups
+  # (at least internally, nested really tracks trace index, meaning we don't need 
+  # to seperate them)
+  NAidx <- which(is.na(idx))
+  for (i in seq_along(keyVars)) {
+    dt[[keyVars[[i]]]][NAidx] <- dt[[keyVars[[i]]]][NAidx - 1]
+  }
+  if (length(nested)) {
+    dt <- dt[ dt[, .I[-.N], by = nested][[length(nested) + 1]] ]
+  } else {
+    dt <- dt[-.N]
+  }
+  
+  structure(dt, class = datClass)
+}
