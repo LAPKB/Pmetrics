@@ -77,7 +77,10 @@ names(exData)
 exData # view the original data in the viewer
 exData$print(standard = T) # view the standardized data in the viewer
 exData$print(viewer = F) # view original data in console
-exData$plot() # plot with concentrations joined by segments
+
+# plot with concentrations joined by segments
+# mouse over points in the plot to see values
+exData$plot() 
 exData$plot(overlay = F) # same plot separated by subjects
 
 # ?PM_data for more details on data objects
@@ -149,20 +152,18 @@ exFit$run() # execute the run with default arguments
 # They will be sequentially numbered as /1, /2, /3,... in your working directory.
 
 # One benefit of having this fit object is that it is possible to run multiple
-# fittings without needing to move datafiles around
+# fittings without needing to move data files around
 getwd()
 list.files()
 
 # Result Object
 exRes <- PM_load(1)
-# PMload(1)
 
 # Create a PM_result object by reading a run folder.  The "1" in the parentheses tells Pmetrics to
 # look in the /1 folder.
 
 # Plot the raw data using R6 with various options.  Type ?plot.PM_data in the R console for help.
 exRes$data$plot()
-exRes$data$plot(overlay = F, xlim = c(120, 144))
 exRes$data$plot(overlay = F, 
                 pred = list(exRes$post, color = "green"), 
                 marker = list(symbol = "diamond-open", color = "blue", opacity = 0.8), 
