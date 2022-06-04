@@ -81,7 +81,7 @@
 #' data(final.2)
 #' plot(final.2)
 plot.PM_final <- function(x, formula, include, exclude, xlab, ylab, 
-                          line=T, density=F, grid=T,
+                          line=T, density=F, marker = T, grid=T,
                           standardize){
   
   
@@ -93,14 +93,15 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
     bar <- amendBar(line)
   } else {
     type <- "IT2B"
-    line <- amendLine(line)
-    
   }
+  line <- amendLine(line)
+  marker <- amendMarker(marker)
+  
   
   ab <- data.frame(x$ab)
   names(ab) <- c("min","max")
   ab$par <- names(x$popMean)
-  ab <- ab %>% arrange(par)
+  ab_alpha <- ab %>% arrange(par)
   
   #plot functions for univariate
   uniPlot <- function(param, name, min, max, type){
@@ -161,46 +162,101 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
   }
   
   
+  biPlot <- function(formula, x, xlab, ylab){
+    yCol <- as.character(attr(terms(formula),"variables")[2])
+    xCol <- as.character(attr(terms(formula),"variables")[3])
+    if(missing(xlab)) xlab <- xCol
+    if(missing(ylab)) ylab <- yCol
+    whichX <- which(ab$par == xCol)
+    whichY <- which(ab$par == yCol)
+    
+    if(type == "IT2B"){
+      rangeX <- as.numeric(ab[whichX,1:2])
+      rangeY <- as.numeric(ab[whichY,1:2])
+      coords <- data.frame(x = seq(rangeX[1],rangeX[2],
+                                   (rangeX[2] - rangeX[1])/100),
+                           y = seq(rangeY[1],rangeY[2],
+                                   (rangeY[2] - rangeY[1])/100)) %>%
+        tidyr::expand(x,y)
+      
+      z <- mvtnorm::dmvnorm(coords,mean=as.numeric(x$popMean[1,c(whichX,whichY)]),
+                            sigma=as.matrix(x$popCov[c(whichX,whichY),c(whichX,whichY)])
+      )
+      z <- matrix(z, nrow=101)
+      
+      p <- plot_ly(x = ~unique(coords$x), y = ~unique(coords$y), z = ~z) %>% 
+        plotly::add_surface(
+          hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
+        layout(scene = list( 
+          xaxis = list(title = list(text = xlab, font = list(size = 18))),
+          yaxis = list(title = list(text = ylab, font = list(size = 18))),
+          zaxis = list(title = list(text = "Probability", font = list(size = 18))))) %>%
+        plotly::hide_colorbar()
+      return(p)
+    } else { #NPAG
+      
+      x$popPoints$id <- seq_len(nrow(x$popPoints))
+      pp <- replicate(2, x$popPoints, simplify = F)
+      pp[[2]]$prob <- min(pp[[1]]$prob)
+      m <- group2NA(dplyr::bind_rows(pp), "id") %>% 
+        select(x=whichX[1], y=whichY[1], prob=prob)
+      
+      p <- x$popPoints %>% select(x=whichX[1], y=whichY[1], prob=prob) %>%
+      plot_ly(x = ~x, y = ~y, z = ~prob,
+              hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
+        add_markers(marker = marker) %>% 
+        add_paths(data = m, x = ~x, y = ~y, z = ~prob,
+                  line = line) %>%
+        layout(showlegend = F,
+               scene = list( 
+                 xaxis = list(title = list(text = xlab, font = list(size = 18))),
+                 yaxis = list(title = list(text = ylab, font = list(size = 18))),
+                 zaxis = list(title = list(text = "Probability", font = list(size = 18)))))
+      return(p)
+    }
+  } #end bivariate plot function
+  
+  
   #set up the plots
   
-  #NPAG
-  if(type == "NPAG"){
-    p <- x$popPoints %>% pivot_longer(cols = !prob, names_to = "Par") %>%
-      dplyr::nest_by(Par) %>% 
-      dplyr::bind_cols(ab) %>%
-      dplyr::mutate(name = Par, panel = list(uniPlot(data, name = Par, min, max, type = "NPAG"))) %>%
-      plotly::subplot(margin = 0.1, nrows = 2)
-  } else {
-    #IT2B
-    if(!missing(standardize)){ #standardize plot
-      original_ab <- x$ab #store original matrix
-      if(tolower(standardize[1])=="all"){
-        to_standardize_x <- to_standardize_ab <- 1:nrow(x$ab)
-      } else {
-        to_standardize_x <- which(names(x$popMean) %in% standardize)
-        to_standardize_ab <- which(ab$par %in% standardize)
+  if(missing(formula)){ #univariate
+    #NPAG
+    if(type == "NPAG"){
+      p <- x$popPoints %>% pivot_longer(cols = !prob, names_to = "Par") %>%
+        dplyr::nest_by(Par) %>% 
+        dplyr::bind_cols(ab_alpha) %>%
+        dplyr::mutate(name = Par, panel = list(uniPlot(data, name = Par, min, max, type = "NPAG"))) %>%
+        plotly::subplot(margin = 0.1, nrows = 2)
+    } else {
+      #IT2B
+      if(!missing(standardize)){ #standardize plot
+        if(tolower(standardize[1])=="all"){
+          to_standardize <- 1:nrow(ab)
+        } else {
+          to_standardize <- which(names(x$popMean) %in% standardize)
+        }
+        if(length(to_standardize_x)>0){
+          ab[to_standardize,1] <- min(ab[to_standardize,1])
+          ab[to_standardize,2] <- max(ab[to_standardize,2])
+        } else {stop("Requested standardization parameters are not in model.")}
       }
-      if(length(to_standardize_x)>0){
-        x$ab[to_standardize_x,1] <- min(x$ab[to_standardize_x,1])
-        x$ab[to_standardize_x,2] <- max(x$ab[to_standardize_x,2])
-        ab[to_standardize_ab,1] <- min(ab[to_standardize_ab,1])
-        ab[to_standardize_ab,2] <- max(ab[to_standardize_ab,2])
-      } else {stop("Requested standardization parameters are not in model.")}
+      
+      p <- data.frame(mean = t(x$popMean), sd = t(x$popSD), min = ab[,1], max = ab[,2]) %>%
+        purrr::pmap(.f = function(mean, sd, min, max){tibble::tibble(value = seq(min, max, (max-min)/1000),
+                                                                     prob = dnorm(value, mean, sd))}) %>% 
+        purrr::set_names(names(x$popMean)) %>%
+        dplyr::bind_rows(.id = "Par") %>%
+        dplyr::nest_by(Par) %>% 
+        dplyr::bind_cols(ab) %>%
+        dplyr::mutate(name = Par, panel = list(uniPlot(data, name = Par, min, max, type = "IT2B"))) %>%
+        plotly::subplot(margin = 0.1, nrows = 2)
+      
     }
-    
-    p <- data.frame(mean = t(x$popMean), sd = t(x$popSD), min = x$ab[,1], max = x$ab[,2]) %>%
-      purrr::pmap(.f = function(mean, sd, min, max){tibble::tibble(value = seq(min, max, (max-min)/1000),
-                                                    prob = dnorm(value, mean, sd))}) %>% 
-      purrr::set_names(names(x$popMean)) %>%
-      dplyr::bind_rows(.id = "Par") %>%
-      dplyr::nest_by(Par) %>% 
-      dplyr::bind_cols(ab) %>%
-      dplyr::mutate(name = Par, panel = list(uniPlot(data, name = Par, min, max, type = "IT2B"))) %>%
-      plotly::subplot(margin = 0.1, nrows = 2)
-    
+  } else { #bivariate
+    # if(type == "IT2B"){
+      p <- biPlot(formula, x, xlab, ylab)
+    # }
   }
-  
-  if(!missing(standardize)){x$ab <- original_ab} #restore
   print(p)
   return(p)
   

@@ -299,6 +299,11 @@ exFit2$run()
 list.files()
 exRes2 <- PM_load(2)
 
+# Look at the marginals
+exRes2$final$plot()
+
+# Bivariate
+exRes2$final$plot(V0~Ke)
 
 # EXERCISE 3 - COMPARING MODELS -------------------------------------------
 
@@ -501,8 +506,7 @@ run4$final$plot(standardize = c("Ka", "Ke", "Tlag1"))
 
 
 # here's a bivariate plot of IT2B population parameter value distributions
-# NOT YET IMPLEMENTED IN R6
-# plot(final.4, Ke ~ V0)
+run4$final$plot(V0~Ke)
 
 
 
