@@ -366,7 +366,8 @@ simdata3[[1]]$parValues
 # for model validation - be sure to have executed the NPAG run above
 # Type ?makeValid in the R console for help.
   
-# Choose wt as the covariate to bin. Accept all default bin sizes.
+# Enter "wt" as the covariate to bin when prompted. 
+# Accept all default bin sizes.
   
 valid_2 <- exRes2$validate(limits = NA) 
 
@@ -374,26 +375,37 @@ valid_2 <- exRes2$validate(limits = NA)
 valid_2
 # Default visual predictive check; ?plot.PMvalid for help
 plot(valid_2)
-#or
+# or
 valid_2$plot()
-#or
+
+# Note that the result object is modified to now contain the
+# validation, so any of the above plot methods will work on it,
+# for example...
 exRes2$valid$plot()
-#or
+# or
 plot(exRes2$valid)
 # Generate a prediction-corrected visual predictive check; type ?plot.PMvalid in the R console for help.
 plot(valid_2, type = "pcvpc")
 # Create an npde plot
 plot(valid_2, type = "npde")
 
+# Because the result object has the validation added to it, we can
+# save it.
+exRes2$save("valid.rds")
+# and load it again later.
+exRes2 <- PM_result$load("valid.rds")
+
 # Here is another way to generate a visual predicive check...
-#npc_2 <- plot(valid_2$simdata, obs = exRes2$op$to_df(), log = F, binSize = 1)
+npc_2 <- valid_2$simdata$plot(obs = exRes2$op$data, 
+                              log = F, binSize = 1)
+
 # The jagged appearance of the plot when binSize=0 is because different subjects have
 # different doses, covariates, and observation times, which are all combined in one simulation.
 # Collapsing simulation times within 1 hour bins (binSize=1) smooths
 # the plot, but can change the P-values in the numerical predictive check below.
 
-#npc._$npc
 # ...and here is a numerical predictive check
+npc_2
 # P-values are binomial test of proportion of observations less than
 # the respective quantile
 
