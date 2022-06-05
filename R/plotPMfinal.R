@@ -101,7 +101,6 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
   ab <- data.frame(x$ab)
   names(ab) <- c("min","max")
   ab$par <- names(x$popMean)
-  ab_alpha <- ab %>% arrange(par)
   
   #plot functions for univariate
   uniPlot <- function(param, name, min, max, type){
@@ -222,6 +221,7 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
   if(missing(formula)){ #univariate
     #NPAG
     if(type == "NPAG"){
+      ab_alpha <- ab %>% arrange(par)
       p <- x$popPoints %>% pivot_longer(cols = !prob, names_to = "Par") %>%
         dplyr::nest_by(Par) %>% 
         dplyr::bind_cols(ab_alpha) %>%
@@ -235,11 +235,13 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
         } else {
           to_standardize <- which(names(x$popMean) %in% standardize)
         }
-        if(length(to_standardize_x)>0){
+        if(length(to_standardize)>0){
           ab[to_standardize,1] <- min(ab[to_standardize,1])
           ab[to_standardize,2] <- max(ab[to_standardize,2])
         } else {stop("Requested standardization parameters are not in model.")}
       }
+      ab_alpha <- ab %>% arrange(par)
+      
       
       p <- data.frame(mean = t(x$popMean), sd = t(x$popSD), min = ab[,1], max = ab[,2]) %>%
         purrr::pmap(.f = function(mean, sd, min, max){tibble::tibble(value = seq(min, max, (max-min)/1000),
@@ -247,7 +249,7 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
         purrr::set_names(names(x$popMean)) %>%
         dplyr::bind_rows(.id = "Par") %>%
         dplyr::nest_by(Par) %>% 
-        dplyr::bind_cols(ab) %>%
+        dplyr::bind_cols(ab_alpha) %>%
         dplyr::mutate(name = Par, panel = list(uniPlot(data, name = Par, min, max, type = "IT2B"))) %>%
         plotly::subplot(margin = 0.1, nrows = 2)
       

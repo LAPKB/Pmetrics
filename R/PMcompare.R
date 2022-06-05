@@ -217,7 +217,7 @@ PMcompare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
 
 #' @export
 PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
-  if (missing(x) | missing(y)) stop("You must specify at least two run numbers for PMcompare.\n")
+  if (missing(x) | missing(y)) stop("You must specify at least two PM_result objects for PM_compare.\n")
   stopifnot("Please specify your PM_result objects.  See help." = inherits(x, "PM_result"))
 
 
@@ -250,26 +250,57 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
   if (length(argsPM) >= 1) obj <- c(list(x, y), arglist[argsPM])
 
   # declare global variables to avoid problems with R CMD Check
-  NPAGout <- NULL
+  # NPAGout <- NULL
   # get each obj
   nobj <- length(obj)
   allObj <- purrr::map(obj, function(x) {
-    x$npdata
+    if(!is.null(x$NPdata)){x$NPdata} else {x$ITdata}
   })
 
-  objClass <- mapply(class, allObj)
+  objClass <- purrr::map(allObj, function(x) class(x)[1])
   # check for non-Pmetrics data objects and remove them if found
-  yesPM <- which(objClass %in% c("NPAG"))
+  yesPM <- which(objClass %in% c("NPAG", "IT2B"))
   allObj <- allObj[yesPM]
   objClass <- objClass[yesPM]
 
   # check for zero cycle objects
-  cycles <- unlist(sapply(allObj, function(x) x$npdata$icyctot))
+  cycles <- unlist(sapply(allObj, function(x) x$icyctot))
   if (any(cycles == 0)) stop(paste("Do not include 0-cycle runs: item(s) ", paste(which(cycles == 0), collapse = ", "), "\n", sep = ""))
 
   op <- purrr::map(obj, function(x) {
     x$op$data
   })
+  
+  if (plot) {
+    if (!"resid" %in% names(argsPlot)) {
+      if (nobj <= 3) {
+        par(mfrow = c(nobj, 2))
+      } else {
+        par(mfrow = c(3, 2))
+        devAskNewPage(ask = T)
+      }
+      for (i in 1:length(op)) {
+        do.call(plot.PMop, args = c(list(
+          x = op[[i]], pred.type = "pop", icen = icen, outeq = outeq,
+          main = paste("Model", i, "Population")
+        ), argsPlot))
+        do.call(plot.PMop, args = c(list(
+          x = op[[i]], pred.type = "post", icen = icen, outeq = outeq,
+          main = paste("Model", i, "Posterior")
+        ), argsPlot))
+      }
+    } else {
+      devAskNewPage(ask = T)
+      for (i in 1:length(op)) {
+        do.call(plot.PMop, args = c(list(
+          x = op[[i]], pred.type = "post", icen = icen, outeq = outeq,
+          main = paste("Model", i)
+        ), argsPlot))
+      }
+    }
+    par(mfrow = c(1, 1))
+    devAskNewPage(ask = F)
+  }
 
   # get summaries of op for outeq
   sumobjPop <- mapply(summary.PMop, op, MoreArgs = list(outeq = outeq, pred.type = "pop", icen = icen), SIMPLIFY = F)
@@ -308,7 +339,7 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
   t <- c(NA, t)
   results <- data.frame(
     run = seq(1:nobj),
-    type = objClass,
+    type = unlist(objClass),
     nsub = unlist(purrr::map(obj,function(x){x$final$nsub})),
     nvar = mapply(function(x) x$nvar, allObj),
     par = mapply(function(x) paste(x$par, collapse = " "), allObj),
