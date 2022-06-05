@@ -51,6 +51,7 @@ Imports:
     plotly,
     xtable,
     readr,
+    trelliscopejs,
     R6
 Suggests:
     testthat
