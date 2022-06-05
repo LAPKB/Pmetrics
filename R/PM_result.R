@@ -12,8 +12,10 @@
 PM_result <- R6::R6Class(
   "PM_result",
   public <- list(
-    #' @field npdata List with all output from NPAG, made by [NPparse]
-    npdata = NULL,
+    #' @field NPdata List with all output from NPAG, made by [NPparse]
+    NPdata = NULL,
+    #' @field ITdata List with all output from IT2B, made by [ITparse]
+    ITdata = NULL,
     #' @field pop A [PM_pop] object
     pop = NULL,
     #' @field post A [PM_post] object
@@ -48,7 +50,14 @@ PM_result <- R6::R6Class(
     #' @param out The parsed output from [PM_load].
     #' @param quiet Quietly validate. Default is `FALSE`.
     initialize = function(out, quiet = T) {
-      self$npdata <- out$NPdata
+      if(!is.null(out$NPdata)){
+        self$NPdata <- out$NPdata
+        class(self$NPdata) <- c("NPAG", "list")
+      } else {self$NPdata <- NULL}
+      if(!is.null(out$ITdata)){
+        self$ITdata <- out$ITdata
+        class(self$ITdata) <- c("IT2B", "list")
+      } else {self$ITdata <- NULL}
       self$pop <- PM_pop$new(out$pop)
       self$post <- PM_post$new(out$post)
       self$final <- PM_final$new(out$final)
