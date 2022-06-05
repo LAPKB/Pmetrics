@@ -125,11 +125,7 @@ PM_result <- R6::R6Class(
     
     #' @description 
     #' Validate the result by internal simulation methods.
-<<<<<<< HEAD
     #' @param ... Arguments passed to [make_valid].
-=======
-    #' @param ... Arguments passed to [makeValid].
->>>>>>> Version2
     validate = function(...) {
       self$valid <- PM_valid$new(self, ...)
       self$valid
