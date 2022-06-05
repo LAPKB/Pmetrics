@@ -195,18 +195,23 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
     } else { #NPAG
       
       x$popPoints$id <- seq_len(nrow(x$popPoints))
-      pp <- replicate(2, x$popPoints, simplify = F)
-      pp[[2]]$prob <- min(pp[[1]]$prob)
-      m <- group2NA(dplyr::bind_rows(pp), "id") %>% 
-        select(x=whichX[1], y=whichY[1], prob=prob)
+      pp <- replicate(3, x$popPoints, simplify = F)
+      x$popPoints <- x$popPoints %>% select(-id) #undo modification
       
+      #make object for drop lines
+      pp[[2]]$prob <- min(pp[[1]]$prob)
+      pp2 <- dplyr::bind_rows(pp, .id = "key") %>% dplyr::arrange(id,key) 
+      pp2[pp2$key == 3,] <- NA
+      pp2 <- pp2 %>%
+        dplyr::select(x=whichX[1]+1, y=whichY[1]+1, prob=prob)
+
       p <- x$popPoints %>% select(x=whichX[1], y=whichY[1], prob=prob) %>%
-      plot_ly(x = ~x, y = ~y, z = ~prob,
-              hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
-        add_markers(marker = marker) %>% 
-        add_paths(data = m, x = ~x, y = ~y, z = ~prob,
+        plotly::plot_ly(x = ~x, y = ~y, z = ~prob,
+                hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
+        plotly::add_markers(marker = marker) %>% 
+        plotly::add_paths(data = pp2, x = ~x, y = ~y, z = ~prob,
                   line = line) %>%
-        layout(showlegend = F,
+        plotly::layout(showlegend = F,
                scene = list( 
                  xaxis = list(title = list(text = xlab, font = list(size = 18))),
                  yaxis = list(title = list(text = ylab, font = list(size = 18))),
@@ -256,7 +261,7 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
     }
   } else { #bivariate
     # if(type == "IT2B"){
-      p <- biPlot(formula, x, xlab, ylab)
+    p <- biPlot(formula, x, xlab, ylab)
     # }
   }
   print(p)

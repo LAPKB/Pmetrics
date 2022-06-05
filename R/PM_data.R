@@ -50,7 +50,7 @@ PM_data <- R6::R6Class("PM_data",
       } else {
         data
       }
-      self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)
+      if(!is.null(self$data)) {self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)}
     },
     #' @description
     #' Write data to file
@@ -90,6 +90,10 @@ PM_data <- R6::R6Class("PM_data",
     #' @param ... Other arguments to [print.data.frame]. Only
     #' passed if `viewer = FALSE`.
     print = function(standard = F, viewer = T,...) {
+      if(is.null(self$data)){
+        cat("NULL data")
+        return(invisible(self))
+      }
       if (standard) {
         what <- self$standard_data
         title <- "Standardized Data"

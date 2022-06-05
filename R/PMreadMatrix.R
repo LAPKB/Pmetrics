@@ -53,7 +53,7 @@ PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("d
   }
   if (!file.exists(file)){
     warning(paste("The file ",sQuote(file)," was not found in the current working directory:\n",getwd(),"\n",sep=""))
-    return(invisible())
+    return(invisible(NULL))
   }
   
   headers <- scan(file, what = "character", quiet = T, nlines = 1, 

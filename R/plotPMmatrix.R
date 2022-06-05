@@ -724,7 +724,7 @@ plot.PM_data <- function(x, include, exclude, pred = NULL,
   } else { #overlay = F, ie. split them
     sub_split <- allsub %>% nest(data = -id) %>%
       mutate(panel = trelliscopejs::map_plot(data, dataPlot, overlay = F, includePred = includePred))
-    p <- sub_split %>% ungroup() %>% trelliscopejs::trelliscope(name = "Data")
+    p <- sub_split %>% ungroup() %>% trelliscopejs::trelliscope(name = "Data", self_contained = F)
     print(p)
   }
   
