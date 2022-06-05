@@ -200,10 +200,15 @@ exRes$op$summary(icen = "mean")
 # Plot final population joint density information.  Type ?plot.PMfinal in the R console for help.
 # See plots.pdf, pages 19-21
 exRes$final$plot()
+
 # add a kernel density curve
 exRes$final$plot(density = T)
+
 # A bivariate plot. Plotting formulae in R are of the form 'y~x'
-exRes$final$plot(Ke ~ V)
+exRes$final$plot(Ke ~ V, 
+                 line = list(width=2, color = "black"),
+                 marker = list(color = "blue", opacity = 1, size = 4))
+
 #or the S3 way
 plot(exRes$final, Ke ~ V)
 
@@ -485,7 +490,7 @@ setwd(paste(wd, "/Runs", sep = ""))
 fit4 <- PM_fit$new(data = "../src/ex_full.csv", model = "../src/model2.txt")
 
 # Now run the fit, using IT2B as the engine.
-fit4$run(engine = "IT2B")
+fit4$run(engine = "IT2B", run=4)
 
 
 # Type ?PMload in the R console for help on PMload.
