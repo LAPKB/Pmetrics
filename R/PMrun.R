@@ -564,7 +564,8 @@
       )[OS]
       PMscript[getNext(PMscript)] <- c(
         paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = ""),
-        paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
+        # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
+        paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
         paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = "")
       )[OS]
     #   PMscript[getNext(PMscript)] <- 
