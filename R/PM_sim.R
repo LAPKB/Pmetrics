@@ -116,7 +116,7 @@ PM_sim$run <- function(poppar, ...) {
   } else {
     F
   }    
-  
+  system("echo 347 > SEEDTO.MON") #TODO: look to fix the simulator without this
   SIMrun(poppar,...)
   
   # TODO: read files and fix the missing E problem
