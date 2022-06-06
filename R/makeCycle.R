@@ -37,7 +37,8 @@ makeCycle <- function(data){
     data$isd <- data$isd[apply(data$isd,1,function(x) all(x!=0)),]
 
     #make sure still matrix if only one row left
-    if(class(data$isd)=="numeric") data$isd <- matrix(data$isd,nrow=1)
+    #if(class(data$isd)=="numeric") TODO: This is crashing on R 4.2.0
+    data$isd <- matrix(data$isd,nrow=1)
 
     if(inherits(data,"NPAG")){ 
       cycle <- list(names=data$par,cycnum=data$icycst:(data$icycst+data$icyctot-1),ll=-2*data$ilog,gamlam=data$igamlam,mean=t(t(data$imean)/data$imean[1,]),
