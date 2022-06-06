@@ -35,7 +35,7 @@
 
 
 
-plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
+plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit=1,col,out=NA,...){
   
   #choose output
   if(inherits(out,"list")){
