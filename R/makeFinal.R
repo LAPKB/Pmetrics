@@ -171,7 +171,7 @@ makeFinal <- function(data){
     } else {popRanFix <- NULL}
 
     popCov <- data.frame(popCov, row.names = data$par)
-    if(!is.na(popCor)){popCor <- data.frame(popCor, row.names = data$par)}
+    if(!all(is.na(popCor))){popCor <- data.frame(popCor, row.names = data$par)}
     names(popCov) <- data$par
     if (all(!is.na(popCor))) names(popCor) <- data$par
     
