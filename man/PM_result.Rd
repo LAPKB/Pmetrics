@@ -38,7 +38,9 @@ Michael Neely, Julian Otalvaro
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{npdata}}{List with all output from NPAG, made by \link{NPparse}}
+\item{\code{NPdata}}{List with all output from NPAG, made by \link{NPparse}}
+
+\item{\code{ITdata}}{List with all output from IT2B, made by \link{ITparse}}
 
 \item{\code{pop}}{A \link{PM_pop} object}
 
