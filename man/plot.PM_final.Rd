@@ -13,6 +13,7 @@
   ylab,
   line = T,
   density = F,
+  marker = T,
   grid = T,
   standardize
 )
