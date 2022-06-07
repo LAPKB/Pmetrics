@@ -113,6 +113,8 @@ PMbuild <- function(skipRegistration = F, autoyes = F) {
   OS <- getOS()
   if (isM1()) {
     sch_str <- c("which -s /opt/homebrew/bin/gfortran")
+    #sch_str <- c("which -s /opt/R/arm64/gfortran/bin")
+    
   }
   # env = Sys.getenv("env")
   env <- "standard"
