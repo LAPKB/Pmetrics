@@ -246,7 +246,7 @@ PM_Vinput <- R6::R6Class(
       if (mode %in% c("range")) {
         self$min <- a
         self$max <- b
-        self$mean <- round((b - a) / 2, 3)
+        self$mean <- a + round((b - a) / 2, 3)
         self$sd <- round((b - a) / 6, 3)
       } else if (mode %in% c("msd")) {
         self$mean <- a

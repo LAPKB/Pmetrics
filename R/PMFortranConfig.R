@@ -68,6 +68,7 @@ PMFortranConfig <- function(reconfig = F) {
       choice <- "1" # make gfortran only choice for now
       gfortran_command <- if (OS == 1 && isM1()) {
         "/opt/homebrew/bin/gfortran"
+        #"/opt/R/arm64/gfortran/bin"
       } else {
         "gfortran"
       }
