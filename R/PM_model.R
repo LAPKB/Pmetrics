@@ -185,14 +185,6 @@ PM_Vmodel <- R6::R6Class("PM_model",
           for (i in 1:length(mlist$out)) {
             thisout <- mlist$out[[i]]
             cat(paste0(
-              # "\t\t$Y", i,
-              # "\n\t\t\t$value: \"", thisout[[1]], "\"",
-              # "\n\t\t\t$err\n",
-              # "\n\t\t\t\t$model\n",
-              # "\t\t\t\t\t$additive: ", thisout$err$model$additive, "\n",
-              # "\t\t\t\t\t$proportional: ", thisout$err$model$proportional, "\n",
-              # "\t\t\t\t\t$constant: ", thisout$err$model$constant, "\n",
-              # "\n\t\t\t\t$assay: ",
               sp(2),"$Y", i,"\n",
               sp(3),"$value: \"", thisout[[1]], "\"\n",
               sp(3),"$err\n",
@@ -200,8 +192,9 @@ PM_Vmodel <- R6::R6Class("PM_model",
               sp(5),"$additive: ", thisout$err$model$additive, "\n",
               sp(5),"$proportional: ", thisout$err$model$proportional, "\n",
               sp(5),"$constant: ", thisout$err$model$constant, "\n",
-              "\n",sp(4),"$assay: ",
-              paste0("[", 1:length(thisout$err$assay), "] ", thisout$err$assay, collapse = ", ")
+              sp(4),"$assay: ",
+              paste0("[", 1:length(thisout$err$assay), "] ", thisout$err$assay, collapse = ", "),
+              "\n"
             ))
           }
           cat("\n")
@@ -461,6 +454,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
           if (i == 1) {
             err_block <- block[[1]]$err
             err_lines <- append(err_lines, err_block$model$print_to("range", engine))
+          }
             err_lines <- append(
               err_lines,
               sprintf(
@@ -471,16 +465,12 @@ PM_model_list <- R6::R6Class("PM_model_list",
                 err_block$assay[4]
               )
             )
-          }
           i <- i + 1
         }
         lines <- append(lines, "")
         lines <- append(lines, err_lines)
       }
-      # } else if(key == "err"){
-      #     lines<-append(lines,sprintf("%s=%f",names(block)[1], block[[1]]))
-      #     lines<-append(lines,sprintf("%f,%f,%f,%f",block[[2]][1],block[[2]][2],block[[2]][3],block[[2]][4]))
-      # }
+
       else {
         stop(sprintf("Error: Unsupported block named: %s", key))
       }
