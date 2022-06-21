@@ -58,6 +58,7 @@ PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("d
   
   headers <- scan(file, what = "character", quiet = T, nlines = 1, 
                   sep = sep, dec = dec, strip.white = T) 
+  if(grepl(",",headers)[1]){stop("Your .csv delimiter is not a comma. Use setPMoptions(sep = \";\"), for example.")}
   headers <- headers[headers !=""]
   popdata_format <- grep("POPDATA .*", headers)
   
@@ -74,6 +75,10 @@ PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("d
                             skip = skip, show_col_types = F, progress = F)
   names(data)[1] <- "id"
   names(data) <- tolower(names(data))
+  
+  #check for decimals
+  decimals <- purrr::map(data, stringr::str_locate,dec)$out
+  if(all(is.na(decimals))) cat("WARNING: No decimal separators detected in your file.\nCheck your data and if needed, use setPMoptions(dec = \",\"), for example.\n")
 
   #remove commented lines
   comments <- grep("#",data$id)
