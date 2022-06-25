@@ -94,7 +94,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
                   indpts, icen = "median", aucint,
                   idelta = 12, prior,
                   auto = T, intern = F, quiet = F, overwrite = F, nocheck = F, parallel = NA, 
-                  alq = F, remote = F, server_address) {
+                  alq = F, remote = F, server_address, report = T) {
   
   if (missing(run)) run <- NULL
   if (missing(include)) include <- NULL
@@ -114,7 +114,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
           indpts = indpts, icen = icen, aucint = aucint,
           idelta = idelta, prior = prior,
           auto = auto, intern = intern, quiet = quiet, overwrite = overwrite, nocheck = nocheck, parallel = parallel, batch = batch,
-          alq = alq))
+          alq = alq, report = report))
 
   }
 
