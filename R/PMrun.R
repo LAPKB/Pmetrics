@@ -4,7 +4,7 @@
                    indpts, icen, aucint,
                    idelta, prior, xdev, search,
                    auto, intern, quiet, overwrite, nocheck, parallel, batch,
-                   alq) {
+                   alq, report) {
   currwd <- getwd() # set the current working directory to go back to it at the end
   if (missing(alq)) alq <- F
   if (missing(batch)) batch <- F
@@ -554,27 +554,30 @@
 
 
     # call report script and then open HTML file
-    if (alq) {
-      PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
-    } else {
-      PMscript[getNext(PMscript)] <- c(
-        paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
-        paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript", sep = "")), " ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
-        paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
-      )[OS]
-      PMscript[getNext(PMscript)] <- c(
-        paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = ""),
-        # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
-        paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
-        paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = "")
-      )[OS]
-    #   PMscript[getNext(PMscript)] <- 
-    #   c(
-    #     paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
-    #     paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
-    #     paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
-    #   )[OS]
+    if (report) {
+      if (alq) {
+        PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
+      } else {
+        PMscript[getNext(PMscript)] <- c(
+          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
+          paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript", sep = "")), " ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
+          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
+        )[OS]
+        PMscript[getNext(PMscript)] <- c(
+          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = ""),
+          # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
+          paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
+          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = "")
+        )[OS]
+      #   PMscript[getNext(PMscript)] <- 
+      #   c(
+      #     paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
+      #     paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
+      #     paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
+      #   )[OS]
+      }
     }
+    
     # final clean up
     if (OS == 1 | OS == 3) {
       # for Mac or Linux
@@ -795,7 +798,7 @@
     file.copy(from = Sys.glob("*.*"), to = "inputs")
     file.remove(Sys.glob("*.*"))
     outpath <- paste(currwd, newdir, "outputs", sep = "/")
-    browseURL(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))
+    if(report){browseURL(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))}
     return(outpath)
   }
 }
