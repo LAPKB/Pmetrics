@@ -109,7 +109,7 @@ PMbuild <- function(skipRegistration = F, autoyes = F) {
 .check_and_install_gfortran <- function(skipRegistration, autoyes) {
   # restore user defaults - deprecated
   # if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
-  sch_str <- c("which -s gfortran", "where gfortran", "which -s gfortran")
+  sch_str <- c("which -s gfortran", "where gfortran", "which gfortran")
   OS <- getOS()
   env <- Sys.getenv("env")
   if (env != "Development") {
