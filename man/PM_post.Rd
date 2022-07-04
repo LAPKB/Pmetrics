@@ -55,14 +55,14 @@ Michael Neely, Julian Otalvara
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_post$new()}}
-\item \href{#method-auc}{\code{PM_post$auc()}}
-\item \href{#method-clone}{\code{PM_post$clone()}}
+\item \href{#method-PM_post-new}{\code{PM_post$new()}}
+\item \href{#method-PM_post-auc}{\code{PM_post$auc()}}
+\item \href{#method-PM_post-clone}{\code{PM_post$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_post-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_post-new}{}}}
 \subsection{Method \code{new()}}{
 Create new object populated with Bayesian posterior predicted data at
 regular, frequent intervals
@@ -79,8 +79,8 @@ regular, frequent intervals
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-auc"></a>}}
-\if{latex}{\out{\hypertarget{method-auc}{}}}
+\if{html}{\out{<a id="method-PM_post-auc"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_post-auc}{}}}
 \subsection{Method \code{auc()}}{
 Calculate AUC
 \subsection{Usage}{
@@ -98,8 +98,8 @@ Calculate AUC
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_post-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_post-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

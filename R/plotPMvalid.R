@@ -37,80 +37,115 @@
 #' @seealso \code{\link{makeValid}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{points}}
 #' @export
 
-plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,upper=0.975,
-                         log=F,pch.obs = 1,col.obs="black",cex.obs=1,data_theme="color",plot_theme=ggplot2::theme_grey(),
-                         col.obs.ci="blue",col.obs.med="red",col.sim.ci="dodgerblue",col.sim.med="lightpink",
-                         axis.x = NULL,
-                         axis.y = NULL
+plot.PMvalid <- function(x, type = "vpc", tad = F, outeq = 1,
+                         log = F,
+                         marker = T,
+                         upper = T,
+                         lower = T,
+                         mid = T,
+                         grid = T,
+                         legend = F,
+                         xlim, ylim,
+                         xlab = "Time", ylab = "Output", ...
                          
 ){
   
-  plotData <- x
-  #parse dots
-  #arglist <- list(...)
-  #names_theme <- names(formals(ggplot2::theme)) #check for elements of ggplot2::theme
-  #argsTheme <- arglist[which(names(arglist) %in% names_theme)]
-
-  #checkRequiredPackages("ggplot2")
-  if(outeq > max(plotData$opDF$outeq)){stop(paste("Your data do not contain",outeq,"output equations.\n"))}
-  if(icen!="mean" & icen!="median"){stop(paste("Use \"mean\" or \"median\" for icen.\n",sep=""))}
+  #to avoid modifying original object, x
+  opDF <- x$opDF
+  simdata <- x$simdata$obs
   
-  plotData$opDF <- plotData$opDF[plotData$opDF$icen==icen & plotData$opDF$outeq==outeq,] #filter to icen & outeq
-  plotData$simdata$obs <- plotData$simdata$obs[plotData$simdata$obs$outeq==outeq,] #filter to outeq
   
-  #set names if not specified
-  if(!"name" %in% names(axis.x)){axis.x$name <- "Time"}
-  if(!"name" %in% names(axis.y)){axis.y$name <- "Observation"}
+  if(outeq > max(opDF$outeq)){stop(paste("Your data do not contain",outeq,"output equations.\n"))}
   
-  #set scale
-  if(log){yscale <- "scale_y_log10"} else {yscale <- "scale_y_continuous"}
+  opDF <- opDF[opDF$outeq == outeq,] #filter to outeq
+  simdata <- simdata[simdata$outeq == outeq,] #filter to outeq
+  
+  dots <- list(...)
+  
+  marker <- amendMarker(marker, default = list(color = "black", symbol = "circle-open", size = 8))
+  upper <- amendCI(upper, default = list(value = 0.975))
+  mid <- amendCI(mid, default = list(value = 0.5, color = "red", dash = "solid"))
+  lower <- amendCI(lower, default = list(value = 0.025))
+  
+  xaxis <- purrr::pluck(dots, "xaxis") #check for additional changes
+  xaxis <- if(is.null(xaxis)) xaxis <- list()
+  yaxis <- purrr::pluck(dots, "yaxis")
+  yaxis <- if(is.null(yaxis)) yaxis <- list()
+  
+  if(!is.null(purrr::pluck(dots, "layout"))){stop("Specify individual layout elements, not layout.")}
+  layout <- list()
+  
+  #legend
+  legendList <- amendLegend(legend)
+  layout <- modifyList(layout, list(showlegend = legendList[[1]]))
+  if(!is.null(legendList[[2]])){layout <- modifyList(layout, list(legend = legendList[[2]]))}
+  
+  #grid
+  xaxis <- setGrid(xaxis, grid)
+  yaxis <- setGrid(yaxis, grid)
+  
+  #axis labels
+  xaxis <- modifyList(xaxis, list(title = xlab))
+  yaxis <- modifyList(yaxis, list(title = ylab))
+  
+  #axis ranges
+  if(!missing(xlim)){xaxis <- modifyList(xaxis, list(range = xlim)) }
+  if(!missing(ylim)){yaxis <- modifyList(yaxis, list(range = ylim)) }
+  
+  #log y axis
+  if(log){
+    yaxis <- modifyList(yaxis, list(type = "log"))
+  }
+  
+  #finalize layout
+  layoutList <- modifyList(layout, list(xaxis = xaxis, yaxis = yaxis))
   
   #select correct time
   if(!tad){
-    use.timeBinMedian <- plotData$timeBinMedian$time
-    use.optimes <- plotData$opDF$time
-    use.opTimeBinMedian <- plotData$opDF$timeBinMedian
-    use.opTimeBinNum <- plotData$opDF$timeBinNum
-    use.simBinNum <- plotData$simdata$obs$timeBinNum
+    use.timeBinMedian <- unique(opDF$timeBinMedian)
+    use.optimes <- opDF$time
+    use.opTimeBinMedian <- opDF$timeBinMedian
+    use.opTimeBinNum <- opDF$timeBinNum
+    use.simBinNum <- simdata$timeBinNum
   } else {
-    if(!all(is.na(plotData$tadBinMedian))){
+    if(!all(is.na(opDF$tadBinMedian))){
       cat("Warning: Using time after dose is misleading if not under steady-state conditions.\n")
-      use.timeBinMedian <- plotData$tadBinMedian$time
-      use.optimes <- plotData$opDF$tad
-      use.opTimeBinMedian <- plotData$opDF$tadBinMedian
-      use.opTimeBinNum <- plotData$opDF$tadBinNum
-      use.simBinNum <- plotData$simdata$obs$tadBinNum
-      if(axis.x$name=="Time") {axis.x$name <- "Time after dose"}
+      use.timeBinMedian <- unique(opDF$tadBinMedian)
+      use.optimes <- opDF$tad
+      use.opTimeBinMedian <- opDF$tadBinMedian
+      use.opTimeBinNum <- opDF$tadBinNum
+      use.simBinNum <- simdata$tadBinNum
+      if(xaxis$title=="Time") {xaxis$title <- "Time after dose"}
       
     } else {stop("Rerun makePMvalid and set tad argument to TRUE.\n")}
   }
   
   #calculate lower, 50th and upper percentiles for pcYij by time bins
-  quant_pcObs <- tapply(plotData$opDF$pcObs,use.opTimeBinNum ,quantile,probs=c(lower,0.5,upper),na.rm=T)
+  quant_pcObs <- tapply(opDF$pcObs,use.opTimeBinNum,quantile,probs=c(lower$value,mid$value,upper$value),na.rm=T)
   #calculate lower, 50th and upper percentiles for Yij by time bin
-  quant_Obs <- tapply(plotData$opDF$obs,use.opTimeBinNum,quantile,probs=c(lower,0.5,upper),na.rm=T)
+  quant_Obs <- tapply(opDF$obs,use.opTimeBinNum,quantile,probs=c(lower$value,mid$value,upper$value),na.rm=T)
   
   #find lower, median, upper percentiles by sim and bin
-  simMed <- tapply(plotData$simdata$obs$out,list(plotData$simdata$obs$simnum,use.simBinNum),FUN=median,na.rm=T) #nsim row, timeBinNum col
-  simLower <- tapply(plotData$simdata$obs$out,list(plotData$simdata$obs$simnum,use.simBinNum),FUN=quantile,na.rm=T,lower) #nsim row, timeBinNum col
-  simUpper <- tapply(plotData$simdata$obs$out,list(plotData$simdata$obs$simnum,use.simBinNum),FUN=quantile,na.rm=T,upper) #nsim row, timeBinNum col
+  simMed <- tapply(simdata$out,list(simdata$simnum,use.simBinNum),FUN=quantile,na.rm=T, mid$value) #nsim row, timeBinNum col
+  simLower <- tapply(simdata$out,list(simdata$simnum,use.simBinNum),FUN=quantile,na.rm=T,lower$value) #nsim row, timeBinNum col
+  simUpper <- tapply(simdata$out,list(simdata$simnum,use.simBinNum),FUN=quantile,na.rm=T,upper$value) #nsim row, timeBinNum col
   
   #calculate median and CI for upper, median, and lower for each bin
   
-  upperLower <- apply(simUpper,2,quantile,lower,na.rm=T)[order(use.timeBinMedian)]
-  upperUpper <- apply(simUpper,2,quantile,upper,na.rm=T)[order(use.timeBinMedian)]
-  medianLower <- apply(simMed,2,quantile,lower,na.rm=T)[order(use.timeBinMedian)]
-  medianUpper <- apply(simMed,2,quantile,upper,na.rm=T)[order(use.timeBinMedian)]
-  lowerLower <- apply(simLower,2,quantile,lower,na.rm=T)[order(use.timeBinMedian)]
-  lowerUpper <- apply(simLower,2,quantile,upper,na.rm=T)[order(use.timeBinMedian)]
+  upperLower <- apply(simUpper,2,quantile,lower$value,na.rm=T)[order(use.timeBinMedian)]
+  upperUpper <- apply(simUpper,2,quantile,upper$value,na.rm=T)[order(use.timeBinMedian)]
+  medianLower <- apply(simMed,2,quantile,lower$value,na.rm=T)[order(use.timeBinMedian)]
+  medianUpper <- apply(simMed,2,quantile,upper$value,na.rm=T)[order(use.timeBinMedian)]
+  lowerLower <- apply(simLower,2,quantile,lower$value,na.rm=T)[order(use.timeBinMedian)]
+  lowerUpper <- apply(simLower,2,quantile,upper$value,na.rm=T)[order(use.timeBinMedian)]
   
   #calculate time boundaries for each bin
   if(tad){
-    minBin <- tapply(plotData$opDF$tad,plotData$opDF$tadBinNum,min)
-    maxBin <- tapply(plotData$opDF$tad,plotData$opDF$tadBinNum,max)
+    minBin <- tapply(opDF$tad,opDF$tadBinNum,min)
+    maxBin <- tapply(opDF$tad,opDF$tadBinNum,max)
   } else {
-    minBin <- tapply(plotData$opDF$time,plotData$opDF$timeBinNum,min)
-    maxBin <- tapply(plotData$opDF$time,plotData$opDF$timeBinNum,max)
+    minBin <- tapply(opDF$time,opDF$timeBinNum,min)
+    maxBin <- tapply(opDF$time,opDF$timeBinNum,max)
   }
   timeBinNum <- length(minBin)
   
@@ -122,59 +157,63 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   
   
   #type specific options
-  if(type=="vpc"){ plotData <- list(obsQuant=quant_Obs,obs=plotData$opDF$obs,binTime=use.timeBinMedian,
+  if(type=="vpc"){ plotData <- list(obsQuant=quant_Obs,obs=opDF$obs,binTime=use.timeBinMedian,
                                     obsTime=use.optimes,upperDF=upperDF,lowerDF=lowerDF,
                                     medDF=medDF)
   }
-  if(type=="pcvpc"){ plotData <- list(obsQuant=quant_pcObs,obs=plotData$opDF$pcObs,binTime=use.timeBinMedian,
+  if(type=="pcvpc"){ plotData <- list(obsQuant=quant_pcObs,obs=opDF$pcObs,binTime=use.timeBinMedian,
                                       obsTime=use.opTimeBinMedian,upperDF=upperDF,lowerDF=lowerDF,
                                       medDF=medDF)
   }
   
-  #common options
   if(type=="vpc" | type=="pcvpc"){
     
-    
-    
-    #set limits if not specified
-    if(!"limits" %in% names(axis.x)){axis.x$limits <- c(base::range(plotData$obsTime))}
-    if(!"limits" %in% names(axis.y)){axis.y$limits <- c(min(plotData$obs,plotData$lower$value),
-                                max(plotData$obs,plotData$upperDF$value))}
-    
-    
-    #override colors to make greyscale
-    if(data_theme=="grey"|data_theme=="gray"){ #set to grayscale
-      col.obs <- "black"
-      col.obs.ci <- "grey20"
-      col.obs.med <- "grey20"
-      col.sim.ci <- "grey75"
-      col.sim.med <- "grey50"
-    }
     #GENERATE THE PLOT
-    p <- with(plotData,
-              ggplot(mapping=aes(x=binTime,y=unlist(lapply(obsQuant,function(x) x[3])))) +
-                geom_line(col=col.obs.ci,lty=2,lwd=1) + 
-                geom_polygon(aes(x=time,y=value),data=upperDF,fill=col.sim.ci,alpha=0.25) +
-                geom_polygon(aes(x=time,y=value),data=medDF,fill=col.sim.med,alpha=0.25) +
-                geom_polygon(aes(x=time,y=value),data=lowerDF,fill=col.sim.ci,alpha=0.25) +
-                geom_line(aes(x=binTime,
-                              y=unlist(lapply(obsQuant,function(x) x[2]))),col=col.obs.med,lty=1,lwd=1) +
-                geom_line(aes(x=binTime,
-                              y=unlist(lapply(obsQuant,function(x) x[1]))),col=col.obs.ci,lty=2,lwd=1) + 
-                geom_point(aes(x=obsTime,y=obs),col=col.obs,pch=pch.obs,cex=cex.obs) + 
-                do.call(scale_x_continuous,axis.x) + 
-                do.call(yscale,axis.y) +
-                do.call(theme,plot_theme)
-    )
+    p <-  plotly::plot_ly(x = ~plotData$binTime, 
+                          y = ~unlist(lapply(plotData$obsQuant,function(x) x[3]))) %>%
+      plotly::add_ribbons(ymin = ~upperLower, ymax = ~upperUpper,
+                          color = I(upper$color), opacity = upper$opacity,
+                          line = list(width = 0),
+                          hoverinfo = "none") %>%
+      plotly::add_ribbons(ymin = ~lowerLower, ymax = ~lowerUpper,
+                          color = I(lower$color), opacity = lower$opacity,
+                          line = list(width = 0),
+                          hoverinfo = "none") %>%
+      plotly::add_ribbons(ymin = ~medianLower, ymax = ~medianUpper,
+                          color = I(mid$color), opacity = mid$opacity,
+                          line = list(width = 0),
+                          hoverinfo = "none") %>%
+      plotly::add_lines(line = list(color = upper$color, dash = upper$dash),
+                        hovertemplate = "Time: %{x}<br>Out: %{y}<br><extra></extra>") %>%
+      plotly::add_lines(y = ~unlist(lapply(plotData$obsQuant,function(x) x[2])),
+                        line = list(color = mid$color, dash = mid$dash),
+                        hovertemplate = "Time: %{x}<br>Out: %{y}<br><extra></extra>") %>%
+      plotly::add_lines(y = ~unlist(lapply(plotData$obsQuant,function(x) x[1])),
+                        line = list(color = lower$color, dash = lower$dash),
+                        hovertemplate = "Time: %{x}<br>Out: %{y}<br><extra></extra>") %>%
+      plotly::add_markers(x = ~plotData$obsTime, y = ~plotData$obs,
+                          marker = marker,
+                          hovertemplate = "Time: %{x}<br>Out: %{y}<br>ID: %{text}<extra></extra>",
+                          text = ~opDF$id) 
+    
+    p <- p %>% layout(xaxis = layoutList$xaxis,
+                      yaxis = layoutList$yaxis,
+                      showlegend = layoutList$showlegend,
+                      legend = layoutList$legend) 
+    
     #SEND TO CONSOLE
     print(p)
   }
   
   if(type=="npde"){
     #cat("NPDE temporarily disabled pending code cleaning.\n")
-    if(is.null(plotData$npde)) stop("No npde object found.  Re-run makeValid.\n")
-    plot(plotData$npde)
-    par(mfrow=c(1,1))
+    if(is.null(x$npde)) stop("No npde object found.  Re-run makeValid.\n")
+    if(inherits(x$npde[[outeq]], "NpdeObject")){
+      plot(x$npde[[outeq]])
+      par(mfrow=c(1,1))
+    } else {
+      cat(paste0("Unable to calculate NPDE for outeq ",outeq))
+    }
     p <- NULL
   }
   return(p)

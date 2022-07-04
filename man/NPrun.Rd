@@ -27,7 +27,8 @@ NPrun(
   parallel = NA,
   alq = F,
   remote = F,
-  server_address
+  server_address,
+  report = T
 )
 }
 \arguments{

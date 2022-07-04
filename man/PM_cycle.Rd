@@ -58,14 +58,14 @@ parameter at each cycle,  normalized to initial median}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_cycle$new()}}
-\item \href{#method-plot}{\code{PM_cycle$plot()}}
-\item \href{#method-clone}{\code{PM_cycle$clone()}}
+\item \href{#method-PM_cycle-new}{\code{PM_cycle$new()}}
+\item \href{#method-PM_cycle-plot}{\code{PM_cycle$plot()}}
+\item \href{#method-PM_cycle-clone}{\code{PM_cycle$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_cycle-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cycle-new}{}}}
 \subsection{Method \code{new()}}{
 Create new object populated with  cycle information
 \subsection{Usage}{
@@ -81,8 +81,8 @@ Create new object populated with  cycle information
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-PM_cycle-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cycle-plot}{}}}
 \subsection{Method \code{plot()}}{
 Plot method
 \subsection{Usage}{
@@ -98,8 +98,8 @@ Plot method
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_cycle-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cycle-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

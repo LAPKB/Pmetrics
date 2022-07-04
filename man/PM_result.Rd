@@ -3,10 +3,16 @@
 \name{PM_result}
 \alias{PM_result}
 \title{Results of a Pmetrics run}
+\arguments{
+\item{file_name}{The name of the .rds file to load.}
+}
+\value{
+A \link{PM_result} object
+}
 \description{
-Results of a Pmetrics run
-
-Results of a Pmetrics run
+If the \verb{$save} method has previously been invoked on a \link{PM_result} object that
+was changed, for  example by using the \verb{$validate} method, this function
+will load those results.
 }
 \details{
 This object contains all of the results after a Pmetrics runs. It is created
@@ -23,6 +29,10 @@ See \link{makeNCA}.
 \code{PM_result} objects contain a \code{save} method which invokes \link{saveRDS} to write
 the object to the hard drive as an .rds file. This is the corresponding load
 function.
+
+The saved object is an .rds file. When loaded, it should be assigned to an R
+object, e.g. \code{run2 <- PM_result$load("filename")}. This contrasts with loading
+unmodified results after a run, which is accomplished with \link{PM_load}.
 }
 \examples{
 
@@ -73,23 +83,23 @@ new validation results.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_result$new()}}
-\item \href{#method-plot}{\code{PM_result$plot()}}
-\item \href{#method-summary}{\code{PM_result$summary()}}
-\item \href{#method-auc}{\code{PM_result$auc()}}
-\item \href{#method-nca}{\code{PM_result$nca()}}
-\item \href{#method-sim}{\code{PM_result$sim()}}
-\item \href{#method-save}{\code{PM_result$save()}}
-\item \href{#method-validate}{\code{PM_result$validate()}}
-\item \href{#method-step}{\code{PM_result$step()}}
-\item \href{#method-MM_opt}{\code{PM_result$MM_opt()}}
-\item \href{#method-load}{\code{PM_result$load()}}
-\item \href{#method-clone}{\code{PM_result$clone()}}
+\item \href{#method-PM_result-new}{\code{PM_result$new()}}
+\item \href{#method-PM_result-plot}{\code{PM_result$plot()}}
+\item \href{#method-PM_result-summary}{\code{PM_result$summary()}}
+\item \href{#method-PM_result-auc}{\code{PM_result$auc()}}
+\item \href{#method-PM_result-nca}{\code{PM_result$nca()}}
+\item \href{#method-PM_result-sim}{\code{PM_result$sim()}}
+\item \href{#method-PM_result-save}{\code{PM_result$save()}}
+\item \href{#method-PM_result-validate}{\code{PM_result$validate()}}
+\item \href{#method-PM_result-step}{\code{PM_result$step()}}
+\item \href{#method-PM_result-MM_opt}{\code{PM_result$MM_opt()}}
+\item \href{#method-PM_result-load}{\code{PM_result$load()}}
+\item \href{#method-PM_result-clone}{\code{PM_result$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_result-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-new}{}}}
 \subsection{Method \code{new()}}{
 Create new object populated with data from previous run
 \subsection{Usage}{
@@ -107,8 +117,8 @@ Create new object populated with data from previous run
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-PM_result-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-plot}{}}}
 \subsection{Method \code{plot()}}{
 Plot generic function based on type
 \subsection{Usage}{
@@ -126,8 +136,8 @@ Plot generic function based on type
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-summary"></a>}}
-\if{latex}{\out{\hypertarget{method-summary}{}}}
+\if{html}{\out{<a id="method-PM_result-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-summary}{}}}
 \subsection{Method \code{summary()}}{
 Summary generic function based on type
 \subsection{Usage}{
@@ -145,8 +155,8 @@ Summary generic function based on type
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-auc"></a>}}
-\if{latex}{\out{\hypertarget{method-auc}{}}}
+\if{html}{\out{<a id="method-PM_result-auc"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-auc}{}}}
 \subsection{Method \code{auc()}}{
 AUC generic function based on type
 \subsection{Usage}{
@@ -164,8 +174,8 @@ AUC generic function based on type
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-nca"></a>}}
-\if{latex}{\out{\hypertarget{method-nca}{}}}
+\if{html}{\out{<a id="method-PM_result-nca"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-nca}{}}}
 \subsection{Method \code{nca()}}{
 Perform non-compartmental analysis
 \subsection{Usage}{
@@ -181,8 +191,8 @@ Perform non-compartmental analysis
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-sim"></a>}}
-\if{latex}{\out{\hypertarget{method-sim}{}}}
+\if{html}{\out{<a id="method-PM_result-sim"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-sim}{}}}
 \subsection{Method \code{sim()}}{
 Simulates using the self$final object.
 For parameter information refer to \link{SIMrun}. It will return a \code{PM_sim} object
@@ -200,8 +210,8 @@ by running \link{SIMparse} at the end of the simulation.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-save"></a>}}
-\if{latex}{\out{\hypertarget{method-save}{}}}
+\if{html}{\out{<a id="method-PM_result-save"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-save}{}}}
 \subsection{Method \code{save()}}{
 Save the current PM_result object into a .rds file. This is useful if you
 have run the \verb{$make_valid} method on a \code{PM_result} object, which returns
@@ -221,8 +231,8 @@ to share it with someone else.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-validate"></a>}}
-\if{latex}{\out{\hypertarget{method-validate}{}}}
+\if{html}{\out{<a id="method-PM_result-validate"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-validate}{}}}
 \subsection{Method \code{validate()}}{
 Validate the result by internal simulation methods.
 \subsection{Usage}{
@@ -238,8 +248,8 @@ Validate the result by internal simulation methods.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-step"></a>}}
-\if{latex}{\out{\hypertarget{method-step}{}}}
+\if{html}{\out{<a id="method-PM_result-step"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-step}{}}}
 \subsection{Method \code{step()}}{
 Conduct stepwise linear regression of Bayesian posterior parameter values
 and covariates.
@@ -256,8 +266,8 @@ and covariates.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MM_opt"></a>}}
-\if{latex}{\out{\hypertarget{method-MM_opt}{}}}
+\if{html}{\out{<a id="method-PM_result-MM_opt"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-MM_opt}{}}}
 \subsection{Method \code{MM_opt()}}{
 Calculate optimal sample times from result and template data file.
 \subsection{Usage}{
@@ -273,8 +283,8 @@ Calculate optimal sample times from result and template data file.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-load"></a>}}
-\if{latex}{\out{\hypertarget{method-load}{}}}
+\if{html}{\out{<a id="method-PM_result-load"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-load}{}}}
 \subsection{Method \code{load()}}{
 This function loads an rds file created using the \verb{$save} method on a
 \code{PM_result} object.
@@ -302,8 +312,8 @@ A \code{PM_result} object.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_result-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

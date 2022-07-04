@@ -3,10 +3,27 @@
 \name{PM_sim}
 \alias{PM_sim}
 \title{Object to contain results of simulation}
-\description{
-Object to contain results of simulation
+\arguments{
+\item{file_name}{The name of the .rds file to load.}
 
-Object to contain results of simulation
+\item{poppar}{A population parameter result, which is a PM_final object. This
+can be found in \code{PM_result$final$data}.}
+
+\item{...}{Additional parameters to be passed to \link{SIMrun} and optionally,
+"combine = T" as an argument will be passed to \link{SIMparse}.}
+}
+\value{
+A \link{PM_sim} object
+
+A \code{PM_sim} object created by calling \link{SIMparse} at the completion of the
+simulation.
+}
+\description{
+If the \verb{$save} method has previously been invoked on a \link{PM_sim}
+object, this function will load those results.
+
+Provides an alternative method to call the simulator directly from output
+of a model fitting run.
 }
 \details{
 This object is created after a successful run of the simulator.
@@ -20,6 +37,11 @@ There are two methods of creating a PM_sim object.
 These both call \link{SIMrun} to execute the simulation and \link{SIMparse} to process
 the results and return the PM_sim objects. See help on both of these functions
 for further details.
+
+The saved object is an .rds file. When loaded, it should be assigned to an R
+object, e.g. \code{sim1 <- PM_sim$load("filename")}.
+
+Calling this function is equivalent to \code{PM_result$sim()}.
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -42,16 +64,16 @@ any due to truncation limits}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_sim$new()}}
-\item \href{#method-save}{\code{PM_sim$save()}}
-\item \href{#method-plot}{\code{PM_sim$plot()}}
-\item \href{#method-pta}{\code{PM_sim$pta()}}
-\item \href{#method-clone}{\code{PM_sim$clone()}}
+\item \href{#method-PM_sim-new}{\code{PM_sim$new()}}
+\item \href{#method-PM_sim-save}{\code{PM_sim$save()}}
+\item \href{#method-PM_sim-plot}{\code{PM_sim$plot()}}
+\item \href{#method-PM_sim-pta}{\code{PM_sim$pta()}}
+\item \href{#method-PM_sim-clone}{\code{PM_sim$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_sim-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_sim-new}{}}}
 \subsection{Method \code{new()}}{
 Create new simulation objects with results of \verb{$sim}
 method for \link{PM_result}
@@ -68,8 +90,8 @@ method for \link{PM_result}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-save"></a>}}
-\if{latex}{\out{\hypertarget{method-save}{}}}
+\if{html}{\out{<a id="method-PM_sim-save"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_sim-save}{}}}
 \subsection{Method \code{save()}}{
 Save the current PM_sim object into a .rds file.
 \subsection{Usage}{
@@ -85,8 +107,8 @@ Save the current PM_sim object into a .rds file.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-PM_sim-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_sim-plot}{}}}
 \subsection{Method \code{plot()}}{
 Plot \code{PM_sim} object.
 \subsection{Usage}{
@@ -102,8 +124,8 @@ Plot \code{PM_sim} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-pta"></a>}}
-\if{latex}{\out{\hypertarget{method-pta}{}}}
+\if{html}{\out{<a id="method-PM_sim-pta"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_sim-pta}{}}}
 \subsection{Method \code{pta()}}{
 Estimates the Probability of Target Attaintment (PTA), based on the results
 of the current Simulation.
@@ -139,8 +161,8 @@ to target, or ratio of minimum concentration within the time range to target.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_sim-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_sim-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

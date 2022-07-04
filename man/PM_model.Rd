@@ -27,16 +27,16 @@ directly in R, or by reading a model text file in the current working directory.
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_model$new()}}
-\item \href{#method-print}{\code{PM_model$print()}}
-\item \href{#method-update}{\code{PM_model$update()}}
-\item \href{#method-write}{\code{PM_model$write()}}
-\item \href{#method-clone}{\code{PM_model$clone()}}
+\item \href{#method-PM_Vmodel-new}{\code{PM_model$new()}}
+\item \href{#method-PM_Vmodel-print}{\code{PM_model$print()}}
+\item \href{#method-PM_Vmodel-update}{\code{PM_model$update()}}
+\item \href{#method-PM_Vmodel-write}{\code{PM_model$write()}}
+\item \href{#method-PM_Vmodel-clone}{\code{PM_model$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_Vmodel-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-new}{}}}
 \subsection{Method \code{new()}}{
 Build a new PM_model from a variety of inputs.
 \subsection{Usage}{
@@ -62,8 +62,8 @@ Default is \code{FALSE}, i.e. using Fortran.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-PM_Vmodel-print"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-print}{}}}
 \subsection{Method \code{print()}}{
 Print a model object to the console in readable format
 \subsection{Usage}{
@@ -79,8 +79,8 @@ Print a model object to the console in readable format
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-update"></a>}}
-\if{latex}{\out{\hypertarget{method-update}{}}}
+\if{html}{\out{<a id="method-PM_Vmodel-update"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-update}{}}}
 \subsection{Method \code{update()}}{
 Update selected elements of a model object
 \subsection{Usage}{
@@ -108,8 +108,8 @@ Update selected elements of a model object
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-write"></a>}}
-\if{latex}{\out{\hypertarget{method-write}{}}}
+\if{html}{\out{<a id="method-PM_Vmodel-write"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-write}{}}}
 \subsection{Method \code{write()}}{
 Write a \code{PM_model} object to a text file
 \subsection{Usage}{
@@ -128,8 +128,8 @@ relative to the current working directory}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_Vmodel-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

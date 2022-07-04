@@ -68,6 +68,7 @@ PM_pta <- R6::R6Class(
 #' @param file_name The name of the .rds file to load.
 #' @return A [PM_pta] object
 #' @export
+#' @name PM_pta
 PM_pta$load <- function(file_name = "PMpta.rds") {
     readRDS(file_name)
 }
