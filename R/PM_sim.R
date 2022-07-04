@@ -91,6 +91,7 @@ PM_sim <- R6::R6Class(
 #' @param file_name The name of the .rds file to load.
 #' @return A [PM_sim] object
 #' @export
+#' @name PM_sim
 PM_sim$load <- function(file_name = "PMsim.rds") {
   readRDS(file_name)
 }
@@ -109,6 +110,7 @@ PM_sim$load <- function(file_name = "PMsim.rds") {
 #' @return A `PM_sim` object created by calling [SIMparse] at the completion of the 
 #' simulation.
 #' @export
+#' @name PM_sim
 PM_sim$run <- function(poppar, ...) {
   dots <- list(...)
   combine <- if (exists("combine", where = dots)) {

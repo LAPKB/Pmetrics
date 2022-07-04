@@ -15,6 +15,7 @@
 #'
 #' @importFrom dplyr select arrange filter mutate transmute group_by row_number
 #' group_map ungroup bind_cols bind_rows nest_by
+#' @importFrom tidyselect all_of
 #' @importFrom cubelyr as.tbl_cube
 #' @importFrom foreach %dopar%
 #' @importFrom readr read_file write_file
