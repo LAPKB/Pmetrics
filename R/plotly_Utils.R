@@ -1,13 +1,16 @@
 # Common plotly utilities in Pmetrics
 
 #amend markers
-amendMarker <- function(.marker, color = "red"){
+amendMarker <- function(.marker, default){
   default_marker <- list(symbol = "circle", 
-                         color = color, 
+                         color = "red", 
                          size = 10, 
                          opacity = 0.5,
                          stroke = "black", 
                          span = 1)
+  if(!missing(default)){
+    default_marker <- modifyList(default_marker, default)
+  }
   
   if(inherits(.marker,"logical")){
     if(!.marker){
@@ -25,8 +28,12 @@ amendMarker <- function(.marker, color = "red"){
 }
 
 #amend lines
-amendLine <- function(.line, color = "dodgerblue"){
-  default_line <- list(color = color, width = 1, linetype = 1)
+amendLine <- function(.line, default){
+  default_line <- list(color = "dodgerblue", width = 1, linetype = 1)
+  
+  if(!missing(default)){
+    default_line <- modifyList(default_line, default)
+  }
   
   if(inherits(.line,"logical")){
     if(!.line){
@@ -43,9 +50,35 @@ amendLine <- function(.line, color = "dodgerblue"){
   return(.line)
 }
 
+#amend lines
+amendCI <- function(.ci, default){
+  default_ci <- list(color = "dodgerblue", dash = "dash", opacity = 0.4)
+  
+  if(!missing(default)){
+    default_ci <- modifyList(default_ci, default)
+  }
+  
+  if(inherits(.ci,"logical")){
+    if(!.ci){
+      .ci <- modifyList(default_ci, list(opacity = 0))
+    } else {
+      .ci <- default_ci
+    }
+  }
+  
+  if(inherits(.ci,"list")){
+    .ci <- modifyList(default_ci, .ci)
+  }
+  return(.ci)
+}
+
 #amend bar
-amendBar <- function(.bar, color = "dodgerblue"){
+amendBar <- function(.bar, color = "dodgerblue", default){
   default_bar <- list(color = color, width = 0.02, opacity = 0.75)
+  
+  if(!missing(default)){
+    default_bar <- modifyList(default_bar, default)
+  }
   
   if(inherits(.bar,"logical")){
     if(!.bar){
@@ -64,9 +97,12 @@ amendBar <- function(.bar, color = "dodgerblue"){
 
 
 #make grid lines
-setGrid <- function(.axis, grid = F){
+setGrid <- function(.axis, grid = F, default){
   
   default_grid <- list(gridcolor = "grey50", gridwidth = 1)
+  if(!missing(default)){
+    default_grid <- modifyList(default_grid, default)
+  }
   
   if(inherits(grid,"logical")){
     if(grid){

@@ -48,16 +48,16 @@ parameter means and medians
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_cov$new()}}
-\item \href{#method-summary}{\code{PM_cov$summary()}}
-\item \href{#method-plot}{\code{PM_cov$plot()}}
-\item \href{#method-print}{\code{PM_cov$print()}}
-\item \href{#method-clone}{\code{PM_cov$clone()}}
+\item \href{#method-PM_cov-new}{\code{PM_cov$new()}}
+\item \href{#method-PM_cov-summary}{\code{PM_cov$summary()}}
+\item \href{#method-PM_cov-plot}{\code{PM_cov$plot()}}
+\item \href{#method-PM_cov-print}{\code{PM_cov$print()}}
+\item \href{#method-PM_cov-clone}{\code{PM_cov$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_cov-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cov-new}{}}}
 \subsection{Method \code{new()}}{
 Create new object populated with covariate-parameter information
 \subsection{Usage}{
@@ -73,8 +73,8 @@ Create new object populated with covariate-parameter information
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-summary"></a>}}
-\if{latex}{\out{\hypertarget{method-summary}{}}}
+\if{html}{\out{<a id="method-PM_cov-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cov-summary}{}}}
 \subsection{Method \code{summary()}}{
 Summary method
 \subsection{Usage}{
@@ -90,8 +90,8 @@ Summary method
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-PM_cov-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cov-plot}{}}}
 \subsection{Method \code{plot()}}{
 Plot method
 \subsection{Usage}{
@@ -107,8 +107,8 @@ Plot method
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-PM_cov-print"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cov-print}{}}}
 \subsection{Method \code{print()}}{
 Print method
 \subsection{Usage}{
@@ -124,8 +124,8 @@ Print method
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_cov-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cov-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

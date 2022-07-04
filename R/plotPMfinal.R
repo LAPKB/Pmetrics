@@ -88,7 +88,7 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
   #housekeeping
   if(inherits(x,"NPAG")){
     type <- "NPAG"
-    densityFormat <- amendLine(density, color = "black")
+    densityFormat <- amendLine(density, default = list(color = "black"))
     if(inherits(density,"list")) density <- T
     bar <- amendBar(line)
   } else {

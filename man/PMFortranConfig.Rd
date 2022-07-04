@@ -23,8 +23,8 @@ a command line template appropriate to the compiler.
 
 Templates are defined for the following compilers: \strong{gfortran}, \strong{g95},
 \strong{Intel Visual}, and \strong{Lahey}.  Additionally, users may specify a custom command line
-template for any other compiler.  Within the template \emph{<exec>} is used as a placeholder
-for the filename of the executable file, and \emph{<files>} as a placeholder for the files to
+template for any other compiler.  Within the template \emph{\<exec\>} is used as a placeholder
+for the filename of the executable file, and \emph{\<files\>} as a placeholder for the files to
 compile and link, both of which will be defined at run time by the appropriate Pmetrics functions.
 The Pmetrics functions which use a Fortran compiler are \link{NPrun}, \link{ITrun},
 \link{ERRrun}, and \link{SIMrun}.

@@ -8,22 +8,19 @@
   x,
   type = "vpc",
   tad = F,
-  icen = "median",
   outeq = 1,
-  lower = 0.025,
-  upper = 0.975,
   log = F,
-  pch.obs = 1,
-  col.obs = "black",
-  cex.obs = 1,
-  data_theme = "color",
-  plot_theme = ggplot2::theme_grey(),
-  col.obs.ci = "blue",
-  col.obs.med = "red",
-  col.sim.ci = "dodgerblue",
-  col.sim.med = "lightpink",
-  axis.x = NULL,
-  axis.y = NULL
+  marker = T,
+  upper = T,
+  lower = T,
+  mid = T,
+  grid = T,
+  legend = F,
+  xlim,
+  ylim,
+  xlab = "Time",
+  ylab = "Output",
+  ...
 )
 }
 \arguments{
@@ -36,16 +33,26 @@ prediction-corrected visual predictive check.}
 relative time.  This will be the only option if \code{tad} was not set to \code{TRUE} when making the
 PMvalid object.}
 
-\item{icen}{Can be either \dQuote{median} for the predictions based on medians of the population parameter value
-distributions, or \dQuote{mean}.  Default is \dQuote{median}.}
-
 \item{outeq}{The number of the output equation to simulate/test.  Default is 1.}
 
-\item{lower}{The lower quantile displayed for the observed and simulated profiles. Default is 0.025.}
+\item{log}{Boolean operator to plot in semilog space.  The default is \code{FALSE}.}
 
 \item{upper}{The upper quantile displayed for the observed and simulated profiles. Default is 0.975.}
 
-\item{log}{Boolean operator to plot in semilog space.  The default is \code{FALSE}.}
+\item{lower}{The lower quantile displayed for the observed and simulated profiles. Default is 0.025.}
+
+\item{xlim}{Limits for x axis}
+
+\item{ylim}{Limits for y axis}
+
+\item{xlab}{Label for x axis.  Default is \dQuote{Time}.}
+
+\item{ylab}{Label for y axis.  Default is \dQuote{Observation}.}
+
+\item{\dots}{Not currently used}
+
+\item{icen}{Can be either \dQuote{median} for the predictions based on medians of the population parameter value
+distributions, or \dQuote{mean}.  Default is \dQuote{median}.}
 
 \item{pch.obs}{Control the plotting character used for observations.  Default is 1, i.e. an open circle.
 See \code{\link{points}} for other values of \code{pch}.}
@@ -53,6 +60,8 @@ See \code{\link{points}} for other values of \code{pch}.}
 \item{col.obs}{Color for observations.  Default is black.}
 
 \item{cex.obs}{Size for observatins.  Default is 1.}
+
+\item{theme}{Default is \dQuote{color}, but could be \dQuote{grey} or \dQuote{gray}.}
 
 \item{col.obs.ci}{Color of the observation confidence interval (set by \code{lower} and \code{upper}).
 Default is blue.}
@@ -65,18 +74,6 @@ Default is dodgerblue.}
 
 \item{col.sim.med}{Color of the simulation median.
 Default is lightpink.}
-
-\item{theme}{Default is \dQuote{color}, but could be \dQuote{grey} or \dQuote{gray}.}
-
-\item{xlab}{Label for x axis.  Default is \dQuote{Time}.}
-
-\item{ylab}{Label for y axis.  Default is \dQuote{Observation}.}
-
-\item{xlim}{Limits for x axis}
-
-\item{ylim}{Limits for y axis}
-
-\item{\dots}{Not currently used}
 }
 \value{
 Plots the object using ggplot2.

@@ -35,14 +35,14 @@ to internally validate the result by simulation methods.
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_valid$new()}}
-\item \href{#method-plot}{\code{PM_valid$plot()}}
-\item \href{#method-clone}{\code{PM_valid$clone()}}
+\item \href{#method-PM_valid-new}{\code{PM_valid$new()}}
+\item \href{#method-PM_valid-plot}{\code{PM_valid$plot()}}
+\item \href{#method-PM_valid-clone}{\code{PM_valid$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_valid-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_valid-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new PM_valid object from a PM_result
 \subsection{Usage}{
@@ -60,8 +60,8 @@ Create a new PM_valid object from a PM_result
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-PM_valid-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_valid-plot}{}}}
 \subsection{Method \code{plot()}}{
 Plot method. Calls \link{plot.PMvalid}.
 \subsection{Usage}{
@@ -77,8 +77,8 @@ Plot method. Calls \link{plot.PMvalid}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_valid-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_valid-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

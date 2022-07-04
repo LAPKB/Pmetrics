@@ -15,17 +15,17 @@ run the analysis.
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_fit$new()}}
-\item \href{#method-run}{\code{PM_fit$run()}}
-\item \href{#method-save}{\code{PM_fit$save()}}
-\item \href{#method-load}{\code{PM_fit$load()}}
-\item \href{#method-check}{\code{PM_fit$check()}}
-\item \href{#method-clone}{\code{PM_fit$clone()}}
+\item \href{#method-PM_fit-new}{\code{PM_fit$new()}}
+\item \href{#method-PM_fit-run}{\code{PM_fit$run()}}
+\item \href{#method-PM_fit-save}{\code{PM_fit$save()}}
+\item \href{#method-PM_fit-load}{\code{PM_fit$load()}}
+\item \href{#method-PM_fit-check}{\code{PM_fit$check()}}
+\item \href{#method-PM_fit-clone}{\code{PM_fit$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_fit-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_fit-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new object
 \subsection{Usage}{
@@ -55,8 +55,8 @@ from a filename}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-run"></a>}}
-\if{latex}{\out{\hypertarget{method-run}{}}}
+\if{html}{\out{<a id="method-PM_fit-run"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_fit-run}{}}}
 \subsection{Method \code{run()}}{
 Fit the model to the data
 \subsection{Usage}{
@@ -74,8 +74,8 @@ Fit the model to the data
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-save"></a>}}
-\if{latex}{\out{\hypertarget{method-save}{}}}
+\if{html}{\out{<a id="method-PM_fit-save"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_fit-save}{}}}
 \subsection{Method \code{save()}}{
 Save the current PM_fit object to a .rds file.
 \subsection{Usage}{
@@ -92,8 +92,8 @@ default is "PMfit.rds".}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-load"></a>}}
-\if{latex}{\out{\hypertarget{method-load}{}}}
+\if{html}{\out{<a id="method-PM_fit-load"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_fit-load}{}}}
 \subsection{Method \code{load()}}{
 \code{PM_fit} objects contain a \code{save} method which invokes \link{saveRDS} to write
 the object to the hard drive as an .rds file. This is the corresponding load
@@ -114,8 +114,8 @@ A \code{PM_fit} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-check"></a>}}
-\if{latex}{\out{\hypertarget{method-check}{}}}
+\if{html}{\out{<a id="method-PM_fit-check"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_fit-check}{}}}
 \subsection{Method \code{check()}}{
 Checks for errors in data and model objects and agreement between them.
 \subsection{Usage}{
@@ -124,8 +124,8 @@ Checks for errors in data and model objects and agreement between them.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_fit-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_fit-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

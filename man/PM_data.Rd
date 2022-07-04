@@ -31,18 +31,18 @@ conduct a non-compartmental analysis on the raw data using
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_data$new()}}
-\item \href{#method-write}{\code{PM_data$write()}}
-\item \href{#method-nca}{\code{PM_data$nca()}}
-\item \href{#method-plot}{\code{PM_data$plot()}}
-\item \href{#method-print}{\code{PM_data$print()}}
-\item \href{#method-summary}{\code{PM_data$summary()}}
-\item \href{#method-clone}{\code{PM_data$clone()}}
+\item \href{#method-PM_data-new}{\code{PM_data$new()}}
+\item \href{#method-PM_data-write}{\code{PM_data$write()}}
+\item \href{#method-PM_data-nca}{\code{PM_data$nca()}}
+\item \href{#method-PM_data-plot}{\code{PM_data$plot()}}
+\item \href{#method-PM_data-print}{\code{PM_data$print()}}
+\item \href{#method-PM_data-summary}{\code{PM_data$summary()}}
+\item \href{#method-PM_data-clone}{\code{PM_data$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_data-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-new}{}}}
 \subsection{Method \code{new()}}{
 Create new data object
 \subsection{Usage}{
@@ -82,8 +82,8 @@ automatically to a fully specified, valid data object.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-write"></a>}}
-\if{latex}{\out{\hypertarget{method-write}{}}}
+\if{html}{\out{<a id="method-PM_data-write"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-write}{}}}
 \subsection{Method \code{write()}}{
 Write data to file
 \subsection{Usage}{
@@ -106,8 +106,8 @@ from the \code{standard_data} field
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-nca"></a>}}
-\if{latex}{\out{\hypertarget{method-nca}{}}}
+\if{html}{\out{<a id="method-PM_data-nca"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-nca}{}}}
 \subsection{Method \code{nca()}}{
 Perform non-compartmental analysis
 \subsection{Usage}{
@@ -127,8 +127,8 @@ See \link{makeNCA}.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-PM_data-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-plot}{}}}
 \subsection{Method \code{plot()}}{
 Plot method
 \subsection{Usage}{
@@ -148,8 +148,8 @@ See \link{plot.PMmatrix}.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-PM_data-print"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-print}{}}}
 \subsection{Method \code{print()}}{
 Print method
 \subsection{Usage}{
@@ -176,8 +176,8 @@ Displays the PM_data object in a variety of ways.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-summary"></a>}}
-\if{latex}{\out{\hypertarget{method-summary}{}}}
+\if{html}{\out{<a id="method-PM_data-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-summary}{}}}
 \subsection{Method \code{summary()}}{
 Summary method
 \subsection{Usage}{
@@ -197,8 +197,8 @@ See \link{summary.PMmatrix}.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_data-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
