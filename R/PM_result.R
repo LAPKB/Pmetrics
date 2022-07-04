@@ -185,6 +185,7 @@ PM_result <- R6::R6Class(
 #' @param file_name The name of the .rds file to load.
 #' @return A [PM_result] object
 #' @export
+#' @name PM_result
 PM_result$load <- function(file_name = "PMresult.rds") {
   readRDS(file_name)
 }

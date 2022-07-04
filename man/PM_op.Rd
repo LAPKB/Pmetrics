@@ -70,16 +70,16 @@ or individual predictions based on Bayesian posterior parameter value distributi
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_op$new()}}
-\item \href{#method-plot}{\code{PM_op$plot()}}
-\item \href{#method-summary}{\code{PM_op$summary()}}
-\item \href{#method-auc}{\code{PM_op$auc()}}
-\item \href{#method-clone}{\code{PM_op$clone()}}
+\item \href{#method-PM_op-new}{\code{PM_op$new()}}
+\item \href{#method-PM_op-plot}{\code{PM_op$plot()}}
+\item \href{#method-PM_op-summary}{\code{PM_op$summary()}}
+\item \href{#method-PM_op-auc}{\code{PM_op$auc()}}
+\item \href{#method-PM_op-clone}{\code{PM_op$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_op-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_op-new}{}}}
 \subsection{Method \code{new()}}{
 Create new object populated with observed vs. predicted data
 \subsection{Usage}{
@@ -95,8 +95,8 @@ Create new object populated with observed vs. predicted data
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-PM_op-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_op-plot}{}}}
 \subsection{Method \code{plot()}}{
 Plot method
 \subsection{Usage}{
@@ -112,8 +112,8 @@ Plot method
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-summary"></a>}}
-\if{latex}{\out{\hypertarget{method-summary}{}}}
+\if{html}{\out{<a id="method-PM_op-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_op-summary}{}}}
 \subsection{Method \code{summary()}}{
 Summary method
 \subsection{Usage}{
@@ -129,8 +129,8 @@ Summary method
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-auc"></a>}}
-\if{latex}{\out{\hypertarget{method-auc}{}}}
+\if{html}{\out{<a id="method-PM_op-auc"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_op-auc}{}}}
 \subsection{Method \code{auc()}}{
 Calculate AUC
 \subsection{Usage}{
@@ -148,8 +148,8 @@ Calculate AUC
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_op-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_op-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

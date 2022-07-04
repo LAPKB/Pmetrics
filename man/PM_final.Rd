@@ -102,15 +102,15 @@ shrink towards the population mean.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_final$new()}}
-\item \href{#method-summary}{\code{PM_final$summary()}}
-\item \href{#method-plot}{\code{PM_final$plot()}}
-\item \href{#method-clone}{\code{PM_final$clone()}}
+\item \href{#method-PM_final-new}{\code{PM_final$new()}}
+\item \href{#method-PM_final-summary}{\code{PM_final$summary()}}
+\item \href{#method-PM_final-plot}{\code{PM_final$plot()}}
+\item \href{#method-PM_final-clone}{\code{PM_final$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_final-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_final-new}{}}}
 \subsection{Method \code{new()}}{
 Create new object populated with final cycle information
 \subsection{Usage}{
@@ -126,8 +126,8 @@ Create new object populated with final cycle information
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-summary"></a>}}
-\if{latex}{\out{\hypertarget{method-summary}{}}}
+\if{html}{\out{<a id="method-PM_final-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_final-summary}{}}}
 \subsection{Method \code{summary()}}{
 Summary method
 \subsection{Usage}{
@@ -143,8 +143,8 @@ Summary method
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-PM_final-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_final-plot}{}}}
 \subsection{Method \code{plot()}}{
 Plot method
 \subsection{Usage}{
@@ -160,8 +160,8 @@ Plot method
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_final-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_final-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

@@ -3,10 +3,15 @@
 \name{PM_pta}
 \alias{PM_pta}
 \title{Define object for PTA}
+\arguments{
+\item{file_name}{The name of the .rds file to load.}
+}
+\value{
+A \link{PM_pta} object
+}
 \description{
-Define object for PTA
-
-Define object for PTA
+If the \verb{$save} method has previously been invoked on a \link{PM_pta}
+object, this function will load those results.
 }
 \details{
 This object class contains results of simulations and a probability of
@@ -15,6 +20,9 @@ target attainment analysis.
 Creating this object first requires a simulation of appropriate regimens
 from a model using the \verb{$sim} method for a \link{PM_result} object. That simulation
 result is passed to the \link{makePTA} function when a new \code{PM_pta} is created.
+
+The saved object is an .rds file. When loaded, it should be assigned to an R
+object, e.g. \code{pta1 <- PM_pta$load("filename")}.
 }
 \author{
 Julian Otalvaro and Michael Neely
@@ -31,17 +39,17 @@ Julian Otalvaro and Michael Neely
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{PM_pta$new()}}
-\item \href{#method-save}{\code{PM_pta$save()}}
-\item \href{#method-summary}{\code{PM_pta$summary()}}
-\item \href{#method-plot}{\code{PM_pta$plot()}}
-\item \href{#method-load}{\code{PM_pta$load()}}
-\item \href{#method-clone}{\code{PM_pta$clone()}}
+\item \href{#method-PM_pta-new}{\code{PM_pta$new()}}
+\item \href{#method-PM_pta-save}{\code{PM_pta$save()}}
+\item \href{#method-PM_pta-summary}{\code{PM_pta$summary()}}
+\item \href{#method-PM_pta-plot}{\code{PM_pta$plot()}}
+\item \href{#method-PM_pta-load}{\code{PM_pta$load()}}
+\item \href{#method-PM_pta-clone}{\code{PM_pta$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-PM_pta-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_pta-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new \code{PM_pta} object
 \subsection{Usage}{
@@ -63,8 +71,8 @@ Create a new \code{PM_pta} object
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-save"></a>}}
-\if{latex}{\out{\hypertarget{method-save}{}}}
+\if{html}{\out{<a id="method-PM_pta-save"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_pta-save}{}}}
 \subsection{Method \code{save()}}{
 Save the current PM_pta object into a .rds file.
 \subsection{Usage}{
@@ -80,8 +88,8 @@ Save the current PM_pta object into a .rds file.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-summary"></a>}}
-\if{latex}{\out{\hypertarget{method-summary}{}}}
+\if{html}{\out{<a id="method-PM_pta-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_pta-summary}{}}}
 \subsection{Method \code{summary()}}{
 Summarize the \code{PM_pta} object. See \link{summary.PMpta}.
 \subsection{Usage}{
@@ -97,8 +105,8 @@ Summarize the \code{PM_pta} object. See \link{summary.PMpta}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-plot}{}}}
+\if{html}{\out{<a id="method-PM_pta-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_pta-plot}{}}}
 \subsection{Method \code{plot()}}{
 Plot the \code{PM_pta} object. See \link{plot.PMpta}.
 \subsection{Usage}{
@@ -114,8 +122,8 @@ Plot the \code{PM_pta} object. See \link{plot.PMpta}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-load"></a>}}
-\if{latex}{\out{\hypertarget{method-load}{}}}
+\if{html}{\out{<a id="method-PM_pta-load"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_pta-load}{}}}
 \subsection{Method \code{load()}}{
 Returns a PM_pta object based on the information found in a specified rds file.
 \subsection{Usage}{
@@ -131,8 +139,8 @@ Returns a PM_pta object based on the information found in a specified rds file.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-PM_pta-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_pta-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
