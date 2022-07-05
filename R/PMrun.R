@@ -553,16 +553,16 @@
     PMscript[getNext(PMscript)] <- c("if ! $error ; then ", "if %error% == 0 (", "if ! $error ; then ")[OS]
 
 
-    # call report script and then open HTML file
-    if (report) {
-      if (alq) {
-        PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
-      } else {
-        PMscript[getNext(PMscript)] <- c(
+  
+    PMscript[getNext(PMscript)] <- c(
           paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
           paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript", sep = "")), " ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
           paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
         )[OS]
+    if (report) {
+      if (alq) {
+        PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
+      } else {
         PMscript[getNext(PMscript)] <- c(
           paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = ""),
           # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
