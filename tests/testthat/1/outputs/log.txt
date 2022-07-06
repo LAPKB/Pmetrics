@@ -1,0 +1,5 @@
+ NPAG  run initiated at 13:48 on 2022 Jul 06. 
+PREP FILES: /home/siel/dev/Pmetrics/inst/compiledFortran/sNPprep.o 
+ENGINE FILES: /home/siel/dev/Pmetrics/inst/compiledFortran/sNPeng.o 
+
+
