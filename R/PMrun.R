@@ -795,8 +795,9 @@
 
     # final clean up
     setwd(currwd)
-    file.copy(from = Sys.glob("*.*"), to = "inputs")
-    file.remove(Sys.glob("*.*"))
+    # file.copy(from = Sys.glob("*.*"), to = "inputs")
+    # file.remove(Sys.glob("*.*"))
+    # system("mv *.* inputs/")
     outpath <- paste(currwd, newdir, "outputs", sep = "/")
     if(report){browseURL(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))}
     return(outpath)

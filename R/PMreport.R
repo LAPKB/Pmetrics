@@ -64,8 +64,8 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   if (success) {
     # TODO:create r6 object
 
-    report_file <- paste(path.package("Pmetrics"), "/report/report.html", sep = "")
-    manual_file <- paste(path.package("Pmetrics"), "/manual/index.html", sep = "")
+    report_file <- system.file('report/report.html',package="Pmetrics")
+    manual_file <- system.file('manual/index.html',package="Pmetrics")
     html <- readr::read_file(report_file)
     html <- gsub("</manual_link>", manual_file, html)
 
