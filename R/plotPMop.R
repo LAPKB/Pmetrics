@@ -316,81 +316,98 @@ plot.PMop <- function(x,include,exclude,pred.type="post",icen="median",outeq=1,m
 
 
 plot.PM_op <- function(x, icen = "median", outeq = 1, pred.type = "post", block = 1, log = F, 
-                   marker = list(), linear, loess, reference, include, exclude, mult = 1){
+                       marker = list(), linear=T, loess, reference, include, exclude, mult = 1, ci=0.95){
   
-    default_marker <- list(symbol = "circle", color = "dodgerblue", size = 30, opacity = 0.5)
-    marker <- modifyList(default_marker,marker)
-    if(missing(linear)){
-      linearMod <- list(plot = F)
-    } else {
-      if(is.logical(linear)){linearMod <- list(plot = linear)} else {linearMod <- linear; linearMod$plot <- T}
-    } 
-    if(missing(loess)){
-      loessMod <- list(plot = F)
-    } else {
-      if(is.logical(loess)){loessMod <- list(plot = loess)} else {loessMod <- loess; loessMod$plot <- T}
-    }
-    if(missing(reference)){
-      reference <- list(plot = F)
-    } else {
-      if(is.logical(reference)) reference = list(plot = reference); reference$plot <- T
-    }
+  default_marker <- list(symbol = "circle", color = "dodgerblue", size = 30, opacity = 0.5)
+  marker <- modifyList(default_marker,marker)
+  
+  if(is.logical(linear)){
+    linearMod <- list(plot = linear)
+  } else {
+    inearMod <- linear
+    linearMod$plot <- T
+  }
+  
+  if(missing(loess)){
+    loessMod <- list(plot = F)
+  } else {
+    if(is.logical(loess)){loessMod <- list(plot = loess)} else {loessMod <- loess; loessMod$plot <- T}
+  }
+  if(missing(reference)){
+    reference <- list(plot = F)
+  } else {
+    if(is.logical(reference)) reference = list(plot = reference); reference$plot <- T
+  }
+  
+  if(missing(include)) include <- unique(x$id)
+  if(missing(exclude)) exclude <- NULL
+  
+  sub1 <- x %>%
+    plotly::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block,
+                   id %in% include, !id %in% exclude) %>%
+    filter(!is.na(obs)) %>%
+    plotly::mutate(pred = pred* mult, obs = obs * mult)
+  
+  
+  p <- sub1 %>%
+    plotly::plot_ly(x = ~pred) %>%
+    plotly::add_markers(y = ~obs,
+                        symbol = I(marker$symbol), 
+                        opacity = I(marker$opacity), 
+                        size = I(marker$size), 
+                        color = I(marker$color),
+                        stroke = I("black"), span = I(1),
+                        text = ~id,
+                        hovertemplate = "Pred: %{x}<br>Obs: %{y}<br>ID: %{text}<extra></extra>") 
+  
+  if(linearMod$plot){
     
-    if(missing(include)) include <- unique(x$id)
-    if(missing(exclude)) exclude <- NULL
+    if(is.null(linearMod$color)) linearMod$color <- "orange"
+    if(is.null(linearMod$width)) linearMod$width <- 2
+    if(is.null(linearMod$dash)) linearMod$dash <- "solid"
+    lm1 <- lm(obs~pred,sub1)
+    inter <- format(coef(lm1)[1],digits=3)
+    slope <- format(coef(lm1)[2],digits=3)
+    if(is.na(summary(lm1)$coefficients[1,2])) {ci.inter <- rep("NA",2)} else {ci.inter <- c(format(confint(lm1,level=ci)[1,1],digits=3),format(confint(lm1,level=ci)[1,2],digits=3)) }
+    if(is.na(summary(lm1)$coefficients[2,2])) {ci.slope <- rep("NA",2)} else {ci.slope <- c(format(confint(lm1,level=ci)[2,1],digits=3),format(confint(lm1,level=ci)[2,2],digits=3)) }
+    p <- p %>% plotly::add_lines(
+      y = fitted(lm1), 
+      hoverinfo = "text",
+      text = paste0("R-squared = ",format(summary(lm1)$r.squared,digits=3),"<br>",
+                    "Inter = ",inter," (",ci*100,"%CI ",ci.inter[1]," to ",ci.inter[2],")","<br>",
+                    "Slope = ",slope," (",ci*100,"%CI ",ci.slope[1]," to ",ci.slope[2],")","<br>"
+                    #"Bias = ",format(summary(data,pred.type=pred.type,icen=icen,outeq=outeq)$pe$mwpe,digits=3),"<br>"
+                    #"Imprecision  = ",format(summary(data,pred.type=pred.type,icen=icen,outeq=outeq)$pe$bamwspe,digits=3)
+                    ), 
+      line = 
+        list(color = linearMod$color, width = linearMod$width, dash = linearMod$dash))
+  } 
+  
+  if(loessMod$plot){
     
-    sub1 <- x %>%
-      plotly::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block,
-             id %in% include, !id %in% exclude) %>%
-             filter(!is.na(obs)) %>%
-      plotly::mutate(pred = pred* mult, obs = obs * mult)
+    if(is.null(loessMod$color)) loessMod$color <- "darkgreen"
+    if(is.null(loessMod$width)) loessMod$width <- 2
+    if(is.null(loessMod$dash)) loessMod$dash <- "solid"
+    lo1 <- loess(obs~pred,sub1)
+    p <- p %>% plotly::add_lines(y = fitted(lo1), hoverinfo = "none", 
+                                 line = list(color = loessMod$color, width = loessMod$width, dash = loessMod$dash))
+  } 
+  
+  if(reference$plot){
     
-    
-    p <- sub1 %>%
-      plotly::plot_ly(x = ~pred) %>%
-      plotly::add_markers(y = ~obs,
-                  symbol = I(marker$symbol), 
-                  opacity = I(marker$opacity), 
-                  size = I(marker$size), 
-                  color = I(marker$color),
-                  stroke = I("black"), span = I(1),
-                  text = ~id,
-                  hovertemplate = "Pred: %{x}<br>Obs: %{y}<br>ID: %{text}<extra></extra>") 
-    
-    if(linearMod$plot){
-      
-      if(is.null(linearMod$color)) linearMod$color <- "orange"
-      if(is.null(linearMod$width)) linearMod$width <- 2
-      if(is.null(linearMod$dash)) linearMod$dash <- "solid"
-      lm1 <- lm(obs~pred,sub1)
-      p <- p %>% plotly::add_lines(y = fitted(lm1), hoverinfo = "none", 
-                           line = list(color = linearMod$color, width = linearMod$width, dash = linearMod$dash))
-    } 
-    
-    if(loessMod$plot){
-      
-      if(is.null(loessMod$color)) loessMod$color <- "darkgreen"
-      if(is.null(loessMod$width)) loessMod$width <- 2
-      if(is.null(loessMod$dash)) loessMod$dash <- "solid"
-      lo1 <- loess(obs~pred,sub1)
-      p <- p %>% plotly::add_lines(y = fitted(lo1), hoverinfo = "none", 
-                           line = list(color = loessMod$color, width = loessMod$width, dash = loessMod$dash))
-    } 
-    
-    if(reference$plot){
-      
-      if(is.null(reference$color)) reference$color <- "grey50"
-      if(is.null(reference$width)) reference$width <- 2
-      if(is.null(reference$dash)) reference$dash <- "dash"
-      p <- p %>% plotly::add_lines(y = ~x, hoverinfo = "none", 
-                           line = list(color = reference$color, width = reference$width, dash = reference$dash))
-    }
-    
-    
-    if(log){axis_type <- "log"} else {axis_type <- "linear"}
-    
-    p <- p %>% plotly::layout(xaxis = list(title = "Predicted", type = axis_type), 
-                      yaxis = list(title="Observed", type = axis_type), showlegend = F)
+    if(is.null(reference$color)) reference$color <- "grey50"
+    if(is.null(reference$width)) reference$width <- 2
+    if(is.null(reference$dash)) reference$dash <- "dash"
+    p <- p %>% plotly::add_lines(y = ~x, hoverinfo = "none", 
+                                 line = list(color = reference$color, width = reference$width, dash = reference$dash))
+  }
+  
+  
+  if(log){axis_type <- "log"} else {axis_type <- "linear"}
+  
+  
+  p <- p %>% plotly::layout(xaxis = list(title = "Predicted", type = axis_type), 
+                            yaxis = list(title="Observed", type = axis_type), showlegend = F)
   
   
   
