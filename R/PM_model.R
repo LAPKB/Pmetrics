@@ -139,11 +139,6 @@ PM_Vmodel <- R6::R6Class("PM_model",
                                    thispri <- mlist$pri[[i]]
                                    thisname <- names(mlist$pri)[i]
                                    cat(paste0(
-                                     # "\t\t$", thisname, "\n\t\t\t$min: ", round(thispri$min, 3),
-                                     # "\n\t\t\t$max: ", round(thispri$max, 3),
-                                     # "\n\t\t\t$mean: ", round(thispri$mean, 3),
-                                     # "\n\t\t\t$sd: ", round(thispri$sd, 3),
-                                     # "\n\t\t\t$gtz: ", thispri$gtz, "\n"
                                      sp(2),"$", thisname, "\n",sp(3),"$min: ", round(thispri$min, 3),
                                      "\n",sp(3),"$max: ", round(thispri$max, 3),
                                      "\n",sp(3),"$mean: ", round(thispri$mean, 3),
@@ -152,41 +147,33 @@ PM_Vmodel <- R6::R6Class("PM_model",
                                    ))
                                  }
                                } else if (x == "cov") {
-                                 # cat("\n\t$cov: ", paste0("[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = ", "))
-                                 cat("\n",sp(1),"$cov: ", paste0("[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$cov\n", paste0(sp(2), "[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = "\n "))
                                  cat("\n")
                                } else if (x == "sec") {
-                                 # cat("\n\t$sec: ", paste0("[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = ", "))
-                                 cat("\n",sp(1),"$sec: ", paste0("[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$sec\n", paste0(sp(2), "[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = "\n "))
                                  cat("\n")
                                } else if (x == "dif") {
-                                 # cat("\n\t$dif: ", paste0("[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = ", "))
-                                 cat("\n",sp(1),"$dif: ", paste0("[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$dif\n", paste0(sp(2), "[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = "\n "))
                                  cat("\n")
                                } else if (x == "lag") {
-                                 # cat("\n\t$lag: ", paste0("[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = ", "))
-                                 cat("\n",sp(1),"$lag: ", paste0("[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$lag\n", paste0(sp(2), "[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = "\n "))
                                  cat("\n")
                                } else if (x == "bol") {
-                                 # cat("\n\t$bol: ", paste0("[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = ", "))
-                                 cat("\n",sp(1),"$bol: ", paste0("[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$bol\n", paste0(sp(2), "[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = "\n "))
                                  cat("\n")
                                } else if (x == "fa") {
-                                 # cat("\n\t$fa: ", paste0("[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = ", "))
-                                 cat("\n",sp(1),"$fa: ", paste0("[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$fa\n", paste0(sp(2), "[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = "\n "))
                                  cat("\n")
                                } else if (x == "ini") {
-                                 cat("\n",sp(1),"$ini: ", paste0("[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = ", "))
-                                 # cat("\n\t$ini: ", paste0("[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$ini\n", paste0(sp(2), "[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = "\n "))
                                  cat("\n")
                                } else if (x == "out") {
-                                 # cat("\n\t$out\n")
                                  cat("\n",sp(1),"$out\n")
                                  for (i in 1:length(mlist$out)) {
                                    thisout <- mlist$out[[i]]
                                    cat(paste0(
                                      sp(2),"$Y", i,"\n",
-                                     sp(3),"$value: \"", thisout[[1]], "\"\n",
+                                     sp(3),"$val: \"", thisout[[1]], "\"\n",
                                      sp(3),"$err\n",
                                      sp(4),"$model\n",
                                      sp(5),"$additive: ", thisout$err$model$additive, "\n",
@@ -336,19 +323,40 @@ PM_model_list <- R6::R6Class("PM_model_list",
                              public = list(
                                model_list = NULL,
                                initialize = function(model_list) {
-                                 names(model_list) <- sapply(names(model_list), 
-                                                             function(x){
-                                                               x <- substr(tolower(x), 1, 3)
-                                                               x})
+                   
                                  #guarantees primary keys are lowercase and max first 3 characters
-                                 stopifnot(
-                                   "pri" %in% names(model_list),
-                                   "out" %in% names(model_list),
-                                   "err" %in% names(model_list$out[[1]]),
-                                   "model" %in% names(model_list$out[[1]]$err),
-                                   "assay" %in% names(model_list$out[[1]]$err),
-                                   "proportional" %in% names(model_list$out[[1]]$err$model) || "additive" %in% names(model_list$out[[1]]$err$model)
-                                 )
+                                 orig_names <- names(model_list) 
+                                 names(model_list) <- private$lower3(names(model_list))
+                                 model_blocks <- names(model_list)
+                                 if(!identical(model_blocks, orig_names)) cat("Model block names standardized to 3 lowercase characters.\n")
+                                 if(!"pri" %in% model_blocks) stop("Model must have a PRImary block.")
+                                 if(!"out" %in% model_blocks) stop("Model must have an OUTput block.")
+                                 n_out <- length(names(model_list$out))
+                                 for(i in 1:n_out){
+                                   out_names <- private$lower3(names(model_list$out[[i]]))
+                                   names(model_list$out[[i]]) <- out_names
+                                   if(!"err" %in% out_names){
+                                     stop("Ensure all outputs have an ERRor block.")}
+                                   if(!"model" %in% names(model_list$out[[i]]$err) ||
+                                      !"assay" %in% names(model_list$out[[i]]$err)){
+                                     stop("ERRor blocks need 'model' and 'assay' components.")
+                                   }
+                                   if(!"proportional" %in% names(model_list$out[[i]]$err$model) ||
+                                      !"additive" %in% names(model_list$out[[i]]$err$model)){
+                                     stop("ERRor model block must be either proportional or additive.")
+                                   }
+                                   
+                                 }
+                                 
+                                 # stopifnot(
+                                 #   "pri" %in% model_blocks,
+                                 #   "out" %in% model_blocks,
+                                 #   "err" %in% private$lower3(names(model_list$out[[1]])),
+                                 #   "model" %in% private$lower3(names(model_list$out[[1]]$err)),
+                                 #   "assay" %in% private$lower3(names(model_list$out[[1]]$err)),
+                                 #   "proportional" %in% private$lower3(names(model_list$out[[1]]$err$model)) || 
+                                 #     "additive" %in% private$lower3(names(model_list$out[[1]]$err$model))
+                                 # )
                                  
                                  self$model_list <- model_list
                                },
@@ -367,17 +375,22 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                },
                                update = function(changes_list) {
                                  keys <- names(changes_list)
-                                 stopifnot(keys %in% c("pri")) # TODO: add all supported blocks
+                                 stopifnot(private$lower3(keys) %in% c("pri")) # TODO: add all supported blocks
                                  self$model_list <- modifyList(self$model_list, changes_list)
                                }
                              ),
                              private = list(
+                               lower3 = function(chr){
+                                 purrr::map_chr(chr,function(x){
+                                   substr(tolower(x),1,3)
+                                 })
+                               },
                                write_block = function(lines, key, block, engine) {
-                                 if (key == "fa") {
+                                 if (private$lower3(key) == "fa") {
                                    key <- "f"
                                  }
                                  lines <- append(lines, sprintf("#%s", key))
-                                 if (key == "pri") {
+                                 if (private$lower3(key) == "pri") {
                                    i <- 1
                                    for (param in names(block)) {
                                      lines <- append(
@@ -390,12 +403,12 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                      )
                                      i <- i + 1
                                    }
-                                 } else if (key %in% c("cov", "bol", "lag", "ext")) {
+                                 } else if (private$lower3(key) %in% c("cov", "bol", "lag", "ext")) {
                                    stopifnot(is.null(names(block)))
                                    for (i in 1:length(block)) {
                                      lines <- append(lines, sprintf("%s", block[[i]]))
                                    }
-                                 } else if (key %in% c("sec")) {
+                                 } else if (private$lower3(key) %in% c("sec")) {
                                    names <- names(block)
                                    for (i in 1:length(block)) {
                                      key <- toupper(names[i])
@@ -408,7 +421,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                        }
                                      )
                                    }
-                                 } else if (key == "ini") {
+                                 } else if (private$lower3(key) == "ini") {
                                    names <- names(block)
                                    for (i in 1:length(block)) {
                                      key <- toupper(names[i])
@@ -423,7 +436,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                        }
                                      )
                                    }
-                                 } else if (key %in% c("dif", "f")) {
+                                 } else if (private$lower3(key) %in% c("dif", "f")) {
                                    names <- names(block)
                                    for (i in 1:length(block)) {
                                      key <- toupper(names[i])
@@ -438,7 +451,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                        }
                                      )
                                    }
-                                 } else if (key == "out") {
+                                 } else if (private$lower3(key) == "out") {
                                    i <- 1 # keep track of the first outeq
                                    err_lines <- c("#err")
                                    for (param in names(block)) {
