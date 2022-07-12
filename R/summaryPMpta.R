@@ -44,9 +44,6 @@ summary.PMpta <- function(object,...,ci=0.95){
       pivot_wider(id_cols=c("target","simnum"),values_from="pdi",names_from="quantile") %>%
       select(.data$target,.data$simnum,.data$lowerCI,.data$median,.data$upperCI)
   
-    # pdi2 <- melt(pdi,value.name="pdi",varnames=c("target","simnum"))
-    # pdi2$quantile <- rep(c("median","lowerCI","upperCI"),each=ntarg,times=nsim)
-    # pdi3 <- dcast(pdi2,target+simnum~quantile,value.var="pdi") 
   } else { #random targets
     pdi.median <- unlist(tapply(object$results$pdi,object$results$simnum,median,na.rm=T,simplify=F))
     pdi.lower <- tapply(object$results$pdi,object$results$simnum,quantile,probs=0.5-ci/2,na.rm=T)
@@ -55,13 +52,9 @@ summary.PMpta <- function(object,...,ci=0.95){
     pdi$quantile <- c("median","lowerCI","upperCI")
     
     pdi2 <- pdi %>% 
-      pivot_longer(cols=1:2,values_to="pdi",names_to="simnum",names_prefix = "X") %>%
+      pivot_longer(cols=starts_with("X"),values_to="pdi",names_to="simnum",names_prefix = "X") %>%
       pivot_wider(id_cols="simnum",values_from="pdi",names_from="quantile") %>%
       select(.data$simnum,.data$lowerCI,.data$median,.data$upperCI)
-    
-    # pdi2 <- melt(pdi,value.name="pdi",varnames=c("sumstat","simnum"))
-    # pdi2$quantile <- rep(c("median","lowerCI","upperCI"),times=nsim)
-    # pdi3 <- dcast(pdi2,simnum~quantile,value.var="pdi") 
   } 
 
   sumres <- list(pta=object$outcome,pdi=pdi2)
