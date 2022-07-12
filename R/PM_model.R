@@ -12,50 +12,50 @@
 #' 
 #' @export
 PM_model <- R6::R6Class("PM_Vmodel", 
-  public = list(
-    #' @description 
-    #' Build a new PM_model from a variety of inputs.
-    #' @param model This can be a quoted name of a model text file in the 
-    #' working directory which will be read and passed to Fortran engines unless
-    #' \code{julia = TRUE} in which case is will be passed as a Julia model.
-    #' It can be a list of lists that defines the model directly in R. Similarly,
-    #' it can be a function that defines a Julia model directly in R. See the user
-    #' manual for more help on directly defining models in R.
-    #' @param julia Controls whether a filename defines a Fortran or Julia model.
-    #' Default is \code{FALSE}, i.e. using Fortran.
-    #' @param ... Additional arguments passed to creation of new Julia model.
-
-    #the following functions are dummy to permit documentation
-    new = function(model, ..., julia = F){
-      return(invisible())
-    },
-    #' @description 
-    #' Print a model object to the console in readable format
-    #' @param ... Not used currently.
-    print = function(...){
-      return(invisible())
-    },
-    #' @description 
-    #' Update selected elements of a model object
-    #' @param changes_list The named list containing elements and values to update.
-    #' @examples 
-    #' \dontrun{mod1$update(list(
-    #'   pri = list(
-    # '    Ke = range(0,1)
-    #'   )
-    #' )) 
-    #' }
-    update = function(changes_list){
-      return(invisible())
-    },
-    #' @description Write a `PM_model` object to a text file
-    #' @param model_path Full name of the file to be created, including the path
-    #' relative to the current working directory
-    #' @param engine Currently only "npag".
-    write = function(model_path = "genmodel.txt", engine = "npag"){
-      return(invisible())
-    }
-  )
+                        public = list(
+                          #' @description 
+                          #' Build a new PM_model from a variety of inputs.
+                          #' @param model This can be a quoted name of a model text file in the 
+                          #' working directory which will be read and passed to Fortran engines unless
+                          #' \code{julia = TRUE} in which case is will be passed as a Julia model.
+                          #' It can be a list of lists that defines the model directly in R. Similarly,
+                          #' it can be a function that defines a Julia model directly in R. See the user
+                          #' manual for more help on directly defining models in R.
+                          #' @param julia Controls whether a filename defines a Fortran or Julia model.
+                          #' Default is \code{FALSE}, i.e. using Fortran.
+                          #' @param ... Additional arguments passed to creation of new Julia model.
+                          
+                          #the following functions are dummy to permit documentation
+                          new = function(model, ..., julia = F){
+                            return(invisible())
+                          },
+                          #' @description 
+                          #' Print a model object to the console in readable format
+                          #' @param ... Not used currently.
+                          print = function(...){
+                            return(invisible())
+                          },
+                          #' @description 
+                          #' Update selected elements of a model object
+                          #' @param changes_list The named list containing elements and values to update.
+                          #' @examples 
+                          #' \dontrun{mod1$update(list(
+                          #'   pri = list(
+                          # '    Ke = range(0,1)
+                          #'   )
+                          #' )) 
+                          #' }
+                          update = function(changes_list){
+                            return(invisible())
+                          },
+                          #' @description Write a `PM_model` object to a text file
+                          #' @param model_path Full name of the file to be created, including the path
+                          #' relative to the current working directory
+                          #' @param engine Currently only "npag".
+                          write = function(model_path = "genmodel.txt", engine = "npag"){
+                            return(invisible())
+                          }
+                        )
 )
 
 
@@ -117,98 +117,98 @@ fixed <- function(fixed, constant = F, gtz = F) {
 # Virtual Class
 # it seems that protected does not exist in R
 PM_Vmodel <- R6::R6Class("PM_model",
-  public = list(
-    name = NULL, # used by PM_model_legacy
-    # error = NULL,
-    initialize = function() {
-      stop("Unable to initialize abstract class")
-    },
-    print = function(...) {
-      cat("$model_list\n")
-      mlist <- self$model_list
-      blockNames <- names(mlist)
-      
-      #internal function to add space blocks
-      sp <- function(n){paste0(rep("   ",n), collapse="")}
-      
-      sapply(blockNames, function(x) {
-        if (x == "pri") {
-          # cat("\t$pri\n")
-          cat(sp(1),"$pri\n")
-          for (i in 1:length(mlist$pri)) {
-            thispri <- mlist$pri[[i]]
-            thisname <- names(mlist$pri)[i]
-            cat(paste0(
-              # "\t\t$", thisname, "\n\t\t\t$min: ", round(thispri$min, 3),
-              # "\n\t\t\t$max: ", round(thispri$max, 3),
-              # "\n\t\t\t$mean: ", round(thispri$mean, 3),
-              # "\n\t\t\t$sd: ", round(thispri$sd, 3),
-              # "\n\t\t\t$gtz: ", thispri$gtz, "\n"
-              sp(2),"$", thisname, "\n",sp(3),"$min: ", round(thispri$min, 3),
-              "\n",sp(3),"$max: ", round(thispri$max, 3),
-              "\n",sp(3),"$mean: ", round(thispri$mean, 3),
-              "\n",sp(3),"$sd: ", round(thispri$sd, 3),
-              "\n",sp(3),"$gtz: ", thispri$gtz, "\n"
-            ))
-          }
-        } else if (x == "cov") {
-          # cat("\n\t$cov: ", paste0("[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = ", "))
-          cat("\n",sp(1),"$cov: ", paste0("[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = ", "))
-          cat("\n")
-        } else if (x == "sec") {
-          # cat("\n\t$sec: ", paste0("[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = ", "))
-          cat("\n",sp(1),"$sec: ", paste0("[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = ", "))
-          cat("\n")
-        } else if (x == "dif") {
-          # cat("\n\t$dif: ", paste0("[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = ", "))
-          cat("\n",sp(1),"$dif: ", paste0("[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = ", "))
-          cat("\n")
-        } else if (x == "lag") {
-          # cat("\n\t$lag: ", paste0("[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = ", "))
-          cat("\n",sp(1),"$lag: ", paste0("[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = ", "))
-          cat("\n")
-        } else if (x == "bol") {
-          # cat("\n\t$bol: ", paste0("[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = ", "))
-          cat("\n",sp(1),"$bol: ", paste0("[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = ", "))
-          cat("\n")
-        } else if (x == "fa") {
-          # cat("\n\t$fa: ", paste0("[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = ", "))
-          cat("\n",sp(1),"$fa: ", paste0("[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = ", "))
-          cat("\n")
-        } else if (x == "ini") {
-          cat("\n",sp(1),"$ini: ", paste0("[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = ", "))
-          # cat("\n\t$ini: ", paste0("[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = ", "))
-          cat("\n")
-        } else if (x == "out") {
-          # cat("\n\t$out\n")
-          cat("\n",sp(1),"$out\n")
-          for (i in 1:length(mlist$out)) {
-            thisout <- mlist$out[[i]]
-            cat(paste0(
-              sp(2),"$Y", i,"\n",
-              sp(3),"$value: \"", thisout[[1]], "\"\n",
-              sp(3),"$err\n",
-              sp(4),"$model\n",
-              sp(5),"$additive: ", thisout$err$model$additive, "\n",
-              sp(5),"$proportional: ", thisout$err$model$proportional, "\n",
-              sp(5),"$constant: ", thisout$err$model$constant, "\n",
-              sp(4),"$assay: ",
-              paste0("[", 1:length(thisout$err$assay), "] ", thisout$err$assay, collapse = ", "),
-              "\n"
-            ))
-          }
-          cat("\n")
-        }
-      }) # end sapply
-
-      invisible(self)
-    }
-  ),
-  private = list(
-    validate = function() {
-      # add checks here
-    }
-  )
+                         public = list(
+                           name = NULL, # used by PM_model_legacy
+                           # error = NULL,
+                           initialize = function() {
+                             stop("Unable to initialize abstract class")
+                           },
+                           print = function(...) {
+                             cat("$model_list\n")
+                             mlist <- self$model_list
+                             blockNames <- names(mlist)
+                             
+                             #internal function to add space blocks
+                             sp <- function(n){paste0(rep("   ",n), collapse="")}
+                             
+                             sapply(blockNames, function(x) {
+                               if (x == "pri") {
+                                 # cat("\t$pri\n")
+                                 cat(sp(1),"$pri\n")
+                                 for (i in 1:length(mlist$pri)) {
+                                   thispri <- mlist$pri[[i]]
+                                   thisname <- names(mlist$pri)[i]
+                                   cat(paste0(
+                                     # "\t\t$", thisname, "\n\t\t\t$min: ", round(thispri$min, 3),
+                                     # "\n\t\t\t$max: ", round(thispri$max, 3),
+                                     # "\n\t\t\t$mean: ", round(thispri$mean, 3),
+                                     # "\n\t\t\t$sd: ", round(thispri$sd, 3),
+                                     # "\n\t\t\t$gtz: ", thispri$gtz, "\n"
+                                     sp(2),"$", thisname, "\n",sp(3),"$min: ", round(thispri$min, 3),
+                                     "\n",sp(3),"$max: ", round(thispri$max, 3),
+                                     "\n",sp(3),"$mean: ", round(thispri$mean, 3),
+                                     "\n",sp(3),"$sd: ", round(thispri$sd, 3),
+                                     "\n",sp(3),"$gtz: ", thispri$gtz, "\n"
+                                   ))
+                                 }
+                               } else if (x == "cov") {
+                                 # cat("\n\t$cov: ", paste0("[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$cov: ", paste0("[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = ", "))
+                                 cat("\n")
+                               } else if (x == "sec") {
+                                 # cat("\n\t$sec: ", paste0("[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$sec: ", paste0("[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = ", "))
+                                 cat("\n")
+                               } else if (x == "dif") {
+                                 # cat("\n\t$dif: ", paste0("[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$dif: ", paste0("[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = ", "))
+                                 cat("\n")
+                               } else if (x == "lag") {
+                                 # cat("\n\t$lag: ", paste0("[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$lag: ", paste0("[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = ", "))
+                                 cat("\n")
+                               } else if (x == "bol") {
+                                 # cat("\n\t$bol: ", paste0("[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$bol: ", paste0("[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = ", "))
+                                 cat("\n")
+                               } else if (x == "fa") {
+                                 # cat("\n\t$fa: ", paste0("[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = ", "))
+                                 cat("\n",sp(1),"$fa: ", paste0("[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = ", "))
+                                 cat("\n")
+                               } else if (x == "ini") {
+                                 cat("\n",sp(1),"$ini: ", paste0("[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = ", "))
+                                 # cat("\n\t$ini: ", paste0("[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = ", "))
+                                 cat("\n")
+                               } else if (x == "out") {
+                                 # cat("\n\t$out\n")
+                                 cat("\n",sp(1),"$out\n")
+                                 for (i in 1:length(mlist$out)) {
+                                   thisout <- mlist$out[[i]]
+                                   cat(paste0(
+                                     sp(2),"$Y", i,"\n",
+                                     sp(3),"$value: \"", thisout[[1]], "\"\n",
+                                     sp(3),"$err\n",
+                                     sp(4),"$model\n",
+                                     sp(5),"$additive: ", thisout$err$model$additive, "\n",
+                                     sp(5),"$proportional: ", thisout$err$model$proportional, "\n",
+                                     sp(5),"$constant: ", thisout$err$model$constant, "\n",
+                                     sp(4),"$assay: ",
+                                     paste0("[", 1:length(thisout$err$assay), "] ", thisout$err$assay, collapse = ", "),
+                                     "\n"
+                                   ))
+                                 }
+                                 cat("\n")
+                               }
+                             }) # end sapply
+                             
+                             invisible(self)
+                           }
+                         ),
+                         private = list(
+                           validate = function() {
+                             # add checks here
+                           }
+                         )
 )
 
 
@@ -262,13 +262,11 @@ PM_Vinput <- R6::R6Class(
     print_to = function(mode_not_used, engine) {
       # TODO:use mode and self$mode to translate to the right set of outputs
       if (engine == "npag" | engine == "it2b") {
-        if (self$mode == "range") {
-          return(sprintf("%f, %f", self$min, self$max))
-        } else if (self$mode == "msd") {
+        if (self$mode == "range" | self$mode == "msd") {
           if (self$gtz) {
-            return(sprintf("+%f, %f", self$mean, self$sd))
+            return(sprintf("+%f, %f", self$mind, self$max))
           } else {
-            return(sprintf("%f, %f", self$mean, self$sd))
+            return(sprintf("%f, %f", self$min, self$max))
           }
         } else if (self$mode == "fixed") {
           if (self$constant) {
@@ -334,150 +332,153 @@ PM_Vinput <- R6::R6Class(
 
 
 PM_model_list <- R6::R6Class("PM_model_list",
-  inherit = PM_Vmodel,
-  public = list(
-    model_list = NULL,
-    initialize = function(model_list) {
-      names(model_list) <- lapply(names(model_list), tolower)
-      # Should I guarantee that all the keys are only 3 characters long?
-      stopifnot(
-        "pri" %in% names(model_list),
-        "out" %in% names(model_list),
-        "err" %in% names(model_list$out[[1]]),
-        "model" %in% names(model_list$out[[1]]$err),
-        "assay" %in% names(model_list$out[[1]]$err),
-        "proportional" %in% names(model_list$out[[1]]$err$model) || "additive" %in% names(model_list$out[[1]]$err$model)
-      )
-
-      self$model_list <- model_list
-    },
-    write = function(model_path = "genmodel.txt", engine = "npag") {
-      engine <- tolower(engine)
-      keys <- names(self$model_list)
-      lines <- c()
-      for (i in 1:length(keys)) {
-        lines <- private$write_block(lines, keys[i], self$model_list[[i]], engine)
-      }
-      fileConn <- file(model_path)
-      writeLines(lines, fileConn)
-      close(fileConn)
-
-      return(model_path)
-    },
-    update = function(changes_list) {
-      keys <- names(changes_list)
-      stopifnot(keys %in% c("pri")) # TODO: add all supported blocks
-      self$model_list <- modifyList(self$model_list, changes_list)
-    }
-  ),
-  private = list(
-    write_block = function(lines, key, block, engine) {
-      if (key == "fa") {
-        key <- "f"
-      }
-      lines <- append(lines, sprintf("#%s", key))
-      if (key == "pri") {
-        i <- 1
-        for (param in names(block)) {
-          lines <- append(
-            lines,
-            if (is.numeric(block[[i]])) {
-              sprintf("%s, %f", param, block[[i]])
-            } else {
-              sprintf("%s, %s", param, block[[i]]$print_to("range", engine))
-            }
-          )
-          i <- i + 1
-        }
-      } else if (key %in% c("cov", "bol", "lag", "extra")) {
-        stopifnot(is.null(names(block)))
-        for (i in 1:length(block)) {
-          lines <- append(lines, sprintf("%s", block[[i]]))
-        }
-      } else if (key %in% c("sec")) {
-        names <- names(block)
-        for (i in 1:length(block)) {
-          key <- toupper(names[i])
-          lines <- append(
-            lines,
-            if (is.null(names[i]) || nchar(names[i]) == 0) {
-              sprintf("%s", block[[i]])
-            } else {
-              sprintf("%s=%s", key, block[[i]][1])
-            }
-          )
-        }
-      } else if (key == "ini") {
-        names <- names(block)
-        for (i in 1:length(block)) {
-          key <- toupper(names[i])
-          lines <- append(
-            lines,
-            if (is.null(names[i]) || nchar(names[i]) == 0) {
-              sprintf("%s", block[[i]][1])
-            } else if (nchar(names[i]) == 2) {
-              sprintf("%s(%s)=%s", substr(key, 1, 1), substr(key, 2, 2), block[[i]][1])
-            } else {
-              stop(sprintf("Error: Unsupported key named: %s", key))
-            }
-          )
-        }
-      } else if (key %in% c("dif", "f")) {
-        names <- names(block)
-        for (i in 1:length(block)) {
-          key <- toupper(names[i])
-          lines <- append(
-            lines,
-            if (is.null(names[i]) || nchar(names[i]) == 0) {
-              sprintf("%s", block[[i]][1])
-            } else if (nchar(names[i]) == 3) {
-              sprintf("%s(%s)=%s", substr(key, 1, 2), substr(key, 3, 3), block[[i]][1])
-            } else {
-              stop(sprintf("Error: Unsupported key named: %s", key))
-            }
-          )
-        }
-      } else if (key == "out") {
-        i <- 1 # keep track of the first outeq
-        err_lines <- c("#err")
-        for (param in names(block)) {
-          stopifnot(nchar(param) == 2 || nchar(param) == 0)
-          key <- toupper(names(block)[i])
-          lines <- append(
-            lines,
-            if (nchar(param) == 2) {
-              sprintf("%s(%s)=%s", substr(key, 1, 1), substr(key, 2, 2), block[[i]][1])
-            } else {
-              sprintf("%s", block[[i]][1])
-            }
-          )
-          if (i == 1) {
-            err_block <- block[[1]]$err
-            err_lines <- append(err_lines, err_block$model$print_to("range", engine))
-          }
-            err_lines <- append(
-              err_lines,
-              sprintf(
-                "%f,%f,%f,%f",
-                err_block$assay[1],
-                err_block$assay[2],
-                err_block$assay[3],
-                err_block$assay[4]
-              )
-            )
-          i <- i + 1
-        }
-        lines <- append(lines, "")
-        lines <- append(lines, err_lines)
-      }
-
-      else {
-        stop(sprintf("Error: Unsupported block named: %s", key))
-      }
-      lines <- append(lines, "")
-      return(lines)
-    }
-  )
+                             inherit = PM_Vmodel,
+                             public = list(
+                               model_list = NULL,
+                               initialize = function(model_list) {
+                                 names(model_list) <- sapply(names(model_list), 
+                                                             function(x){
+                                                               x <- substr(tolower(x), 1, 3)
+                                                               x})
+                                 #guarantees primary keys are lowercase and max first 3 characters
+                                 stopifnot(
+                                   "pri" %in% names(model_list),
+                                   "out" %in% names(model_list),
+                                   "err" %in% names(model_list$out[[1]]),
+                                   "model" %in% names(model_list$out[[1]]$err),
+                                   "assay" %in% names(model_list$out[[1]]$err),
+                                   "proportional" %in% names(model_list$out[[1]]$err$model) || "additive" %in% names(model_list$out[[1]]$err$model)
+                                 )
+                                 
+                                 self$model_list <- model_list
+                               },
+                               write = function(model_path = "genmodel.txt", engine = "npag") {
+                                 engine <- tolower(engine)
+                                 keys <- names(self$model_list)
+                                 lines <- c()
+                                 for (i in 1:length(keys)) {
+                                   lines <- private$write_block(lines, keys[i], self$model_list[[i]], engine)
+                                 }
+                                 fileConn <- file(model_path)
+                                 writeLines(lines, fileConn)
+                                 close(fileConn)
+                                 
+                                 return(model_path)
+                               },
+                               update = function(changes_list) {
+                                 keys <- names(changes_list)
+                                 stopifnot(keys %in% c("pri")) # TODO: add all supported blocks
+                                 self$model_list <- modifyList(self$model_list, changes_list)
+                               }
+                             ),
+                             private = list(
+                               write_block = function(lines, key, block, engine) {
+                                 if (key == "fa") {
+                                   key <- "f"
+                                 }
+                                 lines <- append(lines, sprintf("#%s", key))
+                                 if (key == "pri") {
+                                   i <- 1
+                                   for (param in names(block)) {
+                                     lines <- append(
+                                       lines,
+                                       if (is.numeric(block[[i]])) {
+                                         sprintf("%s, %f", param, block[[i]])
+                                       } else {
+                                         sprintf("%s, %s", param, block[[i]]$print_to("range", engine))
+                                       }
+                                     )
+                                     i <- i + 1
+                                   }
+                                 } else if (key %in% c("cov", "bol", "lag", "ext")) {
+                                   stopifnot(is.null(names(block)))
+                                   for (i in 1:length(block)) {
+                                     lines <- append(lines, sprintf("%s", block[[i]]))
+                                   }
+                                 } else if (key %in% c("sec")) {
+                                   names <- names(block)
+                                   for (i in 1:length(block)) {
+                                     key <- toupper(names[i])
+                                     lines <- append(
+                                       lines,
+                                       if (is.null(names[i]) || nchar(names[i]) == 0) {
+                                         sprintf("%s", block[[i]])
+                                       } else {
+                                         sprintf("%s=%s", key, block[[i]][1])
+                                       }
+                                     )
+                                   }
+                                 } else if (key == "ini") {
+                                   names <- names(block)
+                                   for (i in 1:length(block)) {
+                                     key <- toupper(names[i])
+                                     lines <- append(
+                                       lines,
+                                       if (is.null(names[i]) || nchar(names[i]) == 0) {
+                                         sprintf("%s", block[[i]][1])
+                                       } else if (nchar(names[i]) == 2) {
+                                         sprintf("%s(%s)=%s", substr(key, 1, 1), substr(key, 2, 2), block[[i]][1])
+                                       } else {
+                                         stop(sprintf("Error: Unsupported key named: %s", key))
+                                       }
+                                     )
+                                   }
+                                 } else if (key %in% c("dif", "f")) {
+                                   names <- names(block)
+                                   for (i in 1:length(block)) {
+                                     key <- toupper(names[i])
+                                     lines <- append(
+                                       lines,
+                                       if (is.null(names[i]) || nchar(names[i]) == 0) {
+                                         sprintf("%s", block[[i]][1])
+                                       } else if (nchar(names[i]) == 3) {
+                                         sprintf("%s(%s)=%s", substr(key, 1, 2), substr(key, 3, 3), block[[i]][1])
+                                       } else {
+                                         stop(sprintf("Error: Unsupported key named: %s", key))
+                                       }
+                                     )
+                                   }
+                                 } else if (key == "out") {
+                                   i <- 1 # keep track of the first outeq
+                                   err_lines <- c("#err")
+                                   for (param in names(block)) {
+                                     stopifnot(nchar(param) == 2 || nchar(param) == 0)
+                                     key <- toupper(names(block)[i])
+                                     lines <- append(
+                                       lines,
+                                       if (nchar(param) == 2) {
+                                         sprintf("%s(%s)=%s", substr(key, 1, 1), substr(key, 2, 2), block[[i]][1])
+                                       } else {
+                                         sprintf("%s", block[[i]][1])
+                                       }
+                                     )
+                                     if (i == 1) {
+                                       err_block <- block[[1]]$err
+                                       err_lines <- append(err_lines, err_block$model$print_to("range", engine))
+                                     }
+                                     err_lines <- append(
+                                       err_lines,
+                                       sprintf(
+                                         "%f,%f,%f,%f",
+                                         err_block$assay[1],
+                                         err_block$assay[2],
+                                         err_block$assay[3],
+                                         err_block$assay[4]
+                                       )
+                                     )
+                                     i <- i + 1
+                                   }
+                                   lines <- append(lines, "")
+                                   lines <- append(lines, err_lines)
+                                 }
+                                 
+                                 else {
+                                   stop(sprintf("Error: Unsupported block named: %s", key))
+                                 }
+                                 lines <- append(lines, "")
+                                 return(lines)
+                               }
+                             )
 )
 
 
@@ -500,148 +501,148 @@ PM_model_list <- R6::R6Class("PM_model_list",
 # )
 
 PM_model_file <- R6::R6Class("PM_model_file",
-  inherit = PM_model_list,
-  public = list(
-    content = NULL,
-    initialize = function(model_filename) {
-      self$name <- basename(model_filename)[1]
-      self$model_list <- private$makeR6model(model_filename)
-      self$content <- readChar(model_filename, file.info(model_filename)$size)
-    }
-  ),
-  private = list(
-    makeR6model = function(file) {
-      msg <- ""
-
-      blocks <- parseBlocks(file) # this function is in PMutilities
-
-      # check for reserved variable names
-      reserved <- c(
-        "ndim", "t", "x", "xp", "rpar", "ipar", "p", "r", "b", "npl", "numeqt", "ndrug", "nadd", "rateiv", "cv",
-        "n", "nd", "ni", "nup", "nuic", "np", "nbcomp", "psym", "fa", "lag", "tin", "tout"
-      )
-      conflict <- c(match(tolower(blocks$primVar), reserved, nomatch = -99), match(tolower(blocks$secVar), reserved, nomatch = -99), match(tolower(blocks$covar), reserved, nomatch = -99))
-      nconflict <- sum(conflict != -99)
-      if (nconflict > 0) {
-        msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
-        return(list(status = -1, msg = msg))
-      }
-
-      if (length(grep(";", blocks$primVar)) > 0) {
-        # using ';' as separator
-        sep <- ";"
-      } else {
-        if (length(grep(",", blocks$primVar)) > 0) {
-          # using ',' as separator
-          sep <- ","
-        } else {
-          return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n"))
-        }
-      }
-
-
-      model_list <- list()
-      # this function makes pri for PM_model
-      model_list$pri <- sapply(strsplit(blocks$primVar, sep), function(x) {
-        # find out if constrained to be positive
-        const_pos <- any(grepl("\\+", x))
-        if (const_pos) {
-          x <- gsub("\\+", "", x)
-          gtz <- T
-          msg <- c(msg, "Truncating variables to positive ranges is not recommended.\n
+                             inherit = PM_model_list,
+                             public = list(
+                               content = NULL,
+                               initialize = function(model_filename) {
+                                 self$name <- basename(model_filename)[1]
+                                 self$model_list <- private$makeR6model(model_filename)
+                                 self$content <- readChar(model_filename, file.info(model_filename)$size)
+                               }
+                             ),
+                             private = list(
+                               makeR6model = function(file) {
+                                 msg <- ""
+                                 
+                                 blocks <- parseBlocks(file) # this function is in PMutilities
+                                 
+                                 # check for reserved variable names
+                                 reserved <- c(
+                                   "ndim", "t", "x", "xp", "rpar", "ipar", "p", "r", "b", "npl", "numeqt", "ndrug", "nadd", "rateiv", "cv",
+                                   "n", "nd", "ni", "nup", "nuic", "np", "nbcomp", "psym", "fa", "lag", "tin", "tout"
+                                 )
+                                 conflict <- c(match(tolower(blocks$primVar), reserved, nomatch = -99), match(tolower(blocks$secVar), reserved, nomatch = -99), match(tolower(blocks$covar), reserved, nomatch = -99))
+                                 nconflict <- sum(conflict != -99)
+                                 if (nconflict > 0) {
+                                   msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
+                                   return(list(status = -1, msg = msg))
+                                 }
+                                 
+                                 if (length(grep(";", blocks$primVar)) > 0) {
+                                   # using ';' as separator
+                                   sep <- ";"
+                                 } else {
+                                   if (length(grep(",", blocks$primVar)) > 0) {
+                                     # using ',' as separator
+                                     sep <- ","
+                                   } else {
+                                     return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n"))
+                                   }
+                                 }
+                                 
+                                 
+                                 model_list <- list()
+                                 # this function makes pri for PM_model
+                                 model_list$pri <- sapply(strsplit(blocks$primVar, sep), function(x) {
+                                   # find out if constrained to be positive
+                                   const_pos <- any(grepl("\\+", x))
+                                   if (const_pos) {
+                                     x <- gsub("\\+", "", x)
+                                     gtz <- T
+                                     msg <- c(msg, "Truncating variables to positive ranges is not recommended.\n
                Consider log transformation instead.\n")
-        } else {
-          gtz <- F
-        }
-
-        # find out if constant
-        const_var <- any(grepl("!", x))
-        if (const_var) {
-          x <- gsub("!", "", x)
-        }
-
-        values <- as.numeric(x[-1])
-
-        if (length(x[-1]) == 1) { # fixed
-          thisItem <- list(fixed(values[2], constant = const_var, gtz = gtz))
-        } else { # range
-          thisItem <- list(range(values[1], values[2], gtz = gtz))
-        }
-        names(thisItem) <- x[1]
-        thisItem
-      }) # end sapply
-
-      # covariates
-      blocks$covar <- gsub("!", "", blocks$covar) # for now remove "!" indicating step, default interpolate
-      if (blocks$covar[1] != "") {
-        model_list$cov <- blocks$covar
-      }
-
-      # secondary variables
-      if (blocks$secVar[1] != "") {
-        model_list$sec <- blocks$secVar
-      }
-
-      # bioavailability
-      if (blocks$f[1] != "") {
-        model_list$fa <- blocks$f
-      }
-
-      # bolus
-      if (blocks$bol[1] != "") {
-        model_list$bol <- blocks$bol
-      }
-
-      # initial conditions
-      if (blocks$ini[1] != "") {
-        model_list$ini <- blocks$ini
-      }
-
-      # lag time
-      if (blocks$lag[1] != "") {
-        model_list$lag <- blocks$lag
-      }
-
-      # differential equations
-      if (blocks$diffeq[1] != "") {
-        model_list$dif <- blocks$diffeq
-      }
-
-      # out/err
-      output <- blocks$output
-      remParen <- stringr::str_replace(output, "Y\\((\\d+)\\)", "Y\\1")
-      diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
-      diffList <- sapply(diffeq, function(x) x[2])
-      num_out <- length(diffList)
-
-      err <- tolower(gsub("[[:space:]]", "", blocks$error))
-      gamma <- grepl("^g", err[1])
-      const_gamlam <- grepl("!", err[1])
-      gamlam_value <- as.numeric(stringr::str_match(err[1], "\\d+"))
-
-      out <- list()
-      for (i in 1:num_out) {
-        out[[i]] <- list(
-          value = diffList[i],
-          err = list(
-            model = if ((1 + as.numeric(gamma)) == 1) {
-              additive(gamlam_value, constant = const_gamlam)
-            } else {
-              proportional(gamlam_value, constant = const_gamlam)
-            },
-            assay = stringr::str_split(err[i + 1], ",")[[1]] %>% as.numeric()
-          )
-        )
-      }
-      names(out) <- sapply(diffeq, function(x) x[1])
-      model_list$out <- out
-
-      cat(msg)
-      flush.console()
-
-      return(model_list)
-    }
-  ) # end private list
+                                   } else {
+                                     gtz <- F
+                                   }
+                                   
+                                   # find out if constant
+                                   const_var <- any(grepl("!", x))
+                                   if (const_var) {
+                                     x <- gsub("!", "", x)
+                                   }
+                                   
+                                   values <- as.numeric(x[-1])
+                                   
+                                   if (length(x[-1]) == 1) { # fixed
+                                     thisItem <- list(fixed(values[2], constant = const_var, gtz = gtz))
+                                   } else { # range
+                                     thisItem <- list(range(values[1], values[2], gtz = gtz))
+                                   }
+                                   names(thisItem) <- x[1]
+                                   thisItem
+                                 }) # end sapply
+                                 
+                                 # covariates
+                                 blocks$covar <- gsub("!", "", blocks$covar) # for now remove "!" indicating step, default interpolate
+                                 if (blocks$covar[1] != "") {
+                                   model_list$cov <- blocks$covar
+                                 }
+                                 
+                                 # secondary variables
+                                 if (blocks$secVar[1] != "") {
+                                   model_list$sec <- blocks$secVar
+                                 }
+                                 
+                                 # bioavailability
+                                 if (blocks$f[1] != "") {
+                                   model_list$fa <- blocks$f
+                                 }
+                                 
+                                 # bolus
+                                 if (blocks$bol[1] != "") {
+                                   model_list$bol <- blocks$bol
+                                 }
+                                 
+                                 # initial conditions
+                                 if (blocks$ini[1] != "") {
+                                   model_list$ini <- blocks$ini
+                                 }
+                                 
+                                 # lag time
+                                 if (blocks$lag[1] != "") {
+                                   model_list$lag <- blocks$lag
+                                 }
+                                 
+                                 # differential equations
+                                 if (blocks$diffeq[1] != "") {
+                                   model_list$dif <- blocks$diffeq
+                                 }
+                                 
+                                 # out/err
+                                 output <- blocks$output
+                                 remParen <- stringr::str_replace(output, "Y\\((\\d+)\\)", "Y\\1")
+                                 diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
+                                 diffList <- sapply(diffeq, function(x) x[2])
+                                 num_out <- length(diffList)
+                                 
+                                 err <- tolower(gsub("[[:space:]]", "", blocks$error))
+                                 gamma <- grepl("^g", err[1])
+                                 const_gamlam <- grepl("!", err[1])
+                                 gamlam_value <- as.numeric(stringr::str_match(err[1], "\\d+"))
+                                 
+                                 out <- list()
+                                 for (i in 1:num_out) {
+                                   out[[i]] <- list(
+                                     value = diffList[i],
+                                     err = list(
+                                       model = if ((1 + as.numeric(gamma)) == 1) {
+                                         additive(gamlam_value, constant = const_gamlam)
+                                       } else {
+                                         proportional(gamlam_value, constant = const_gamlam)
+                                       },
+                                       assay = stringr::str_split(err[i + 1], ",")[[1]] %>% as.numeric()
+                                     )
+                                   )
+                                 }
+                                 names(out) <- sapply(diffeq, function(x) x[1])
+                                 model_list$out <- out
+                                 
+                                 cat(msg)
+                                 flush.console()
+                                 
+                                 return(model_list)
+                               }
+                             ) # end private list
 )
 
 
@@ -649,37 +650,37 @@ PM_model_file <- R6::R6Class("PM_model_file",
 
 
 PM_model_julia <- R6::R6Class("PM_model_julia",
-  inherit = PM_Vmodel,
-  public = list(
-    model_function = NULL,
-    # prior:  created based on user input that needs to include possible values
-    # for means, SDs, mins, maxes, and initial support points (which could be a function)
-    min = NULL, # this will be folded into prior bin
-    max = NULL, # this will be folded into prior bin
-    n_points0 = NULL, # this will be folded into prior bin
-    initialize = function(model, ...) {
-      dots <- list(...)
-      if (!exists("max", where = dots) || !exists("min", where = sdots)) {
-        stop("Error: Running using the Julia solver requires sufficient information to create a prior, e.g. min, max or mean/SD.")
-      }
-      self$min <- dots$min
-      self$max <- dots$max
-      self$error <- if (is.null(dots$error)) c(0.1, 0.01, 0) else dots$error # will need dynamic function to detect poisson, etc.
-      self$n_points0 <- if (is.null(dots$n_points0)) 100 else dots$n_points0
-      if (is.function(model)) {
-        private$julia_type <- "function"
-        self$name <- "Dyn function(...){...}"
-        self$model_function <- model
-      } else {
-        private$julia_type <- "Str function"
-        self$name <- "Str function(...){...}"
-      }
-    },
-    print = function() {}
-  ),
-  private = list(
-    julia_type = NULL
-  )
+                              inherit = PM_Vmodel,
+                              public = list(
+                                model_function = NULL,
+                                # prior:  created based on user input that needs to include possible values
+                                # for means, SDs, mins, maxes, and initial support points (which could be a function)
+                                min = NULL, # this will be folded into prior bin
+                                max = NULL, # this will be folded into prior bin
+                                n_points0 = NULL, # this will be folded into prior bin
+                                initialize = function(model, ...) {
+                                  dots <- list(...)
+                                  if (!exists("max", where = dots) || !exists("min", where = sdots)) {
+                                    stop("Error: Running using the Julia solver requires sufficient information to create a prior, e.g. min, max or mean/SD.")
+                                  }
+                                  self$min <- dots$min
+                                  self$max <- dots$max
+                                  self$error <- if (is.null(dots$error)) c(0.1, 0.01, 0) else dots$error # will need dynamic function to detect poisson, etc.
+                                  self$n_points0 <- if (is.null(dots$n_points0)) 100 else dots$n_points0
+                                  if (is.function(model)) {
+                                    private$julia_type <- "function"
+                                    self$name <- "Dyn function(...){...}"
+                                    self$model_function <- model
+                                  } else {
+                                    private$julia_type <- "Str function"
+                                    self$name <- "Str function(...){...}"
+                                  }
+                                },
+                                print = function() {}
+                              ),
+                              private = list(
+                                julia_type = NULL
+                              )
 )
 
 
