@@ -71,7 +71,7 @@ PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCo
   reset <- c(reset,nrow(temp),new)
   reset <- sort(reset)
   for (i in 1:(length(reset)-1)){
-    temp$relTime[reset[i]:reset[i+1]] <- (temp$dt[reset[i]:reset[i+1]] - temp$dt[reset[i]])/dhours(1)
+    temp$relTime[reset[i]:reset[i+1]] <- (temp$dt[reset[i]:reset[i+1]] - temp$dt[reset[i]])/lubridate::dhours(1)
   }
   
   temp$relTime <- round(temp$relTime,2)

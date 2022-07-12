@@ -52,6 +52,7 @@ Imports:
     xtable,
     readr,
     trelliscopejs,
+    lubridate,
     R6
 Suggests:
     testthat
