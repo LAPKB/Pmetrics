@@ -69,8 +69,6 @@ makeAUC <- function(data,formula,include,exclude,start=0,end=Inf,icen="median",
       )
     }
     
-    # sumScaleConc <- df$out[-1] * df$time[-1] + df$out[-N] * df$time[-N]
-    # aumc <- 0.5 * sum( diffTimes * sumScaleConc)
     return(auc)
   }
   
@@ -118,11 +116,14 @@ makeAUC <- function(data,formula,include,exclude,start=0,end=Inf,icen="median",
     ) %>%
     select(id,time,out) %>%
     group_by(id)
-
+  
+  
   #calculate AUC
-  AUCdf <- tibble::tibble(id=unique(data3$id),
+  AUCdf <- tibble::tibble(id=group_data(data3)$id,
                   tau = group_map(data3, ~get_auc(.x,addZero,method)) %>% unlist())
   class(AUCdf) <- c("PMauc",class(AUCdf))
+  #reorder according to original
+  AUCdf <- AUCdf[match(unique(data3$id),AUCdf$id),]
   return(AUCdf)
   
 }
