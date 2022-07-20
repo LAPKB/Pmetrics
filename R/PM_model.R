@@ -138,13 +138,22 @@ PM_Vmodel <- R6::R6Class("PM_model",
                                  for (i in 1:length(mlist$pri)) {
                                    thispri <- mlist$pri[[i]]
                                    thisname <- names(mlist$pri)[i]
-                                   cat(paste0(
-                                     sp(2),"$", thisname, "\n",sp(3),"$min: ", round(thispri$min, 3),
-                                     "\n",sp(3),"$max: ", round(thispri$max, 3),
-                                     "\n",sp(3),"$mean: ", round(thispri$mean, 3),
-                                     "\n",sp(3),"$sd: ", round(thispri$sd, 3),
-                                     "\n",sp(3),"$gtz: ", thispri$gtz, "\n"
-                                   ))
+                                   if(is.null(thispri$fixed)){
+                                     cat(paste0(
+                                       sp(2),"$", thisname, "\n",sp(3),"$min: ", round(thispri$min, 3),
+                                       "\n",sp(3),"$max: ", round(thispri$max, 3),
+                                       "\n",sp(3),"$mean: ", round(thispri$mean, 3),
+                                       "\n",sp(3),"$sd: ", round(thispri$sd, 3),
+                                       "\n",sp(3),"$gtz: ", thispri$gtz, "\n"
+                                     ))
+                                   } else {
+                                     cat(paste0(
+                                       sp(2),"$", thisname, "\n",sp(3),"$fixed: ", round(thispri$fixed, 3),
+                                       "\n",sp(3),"$contant: ", thispri$constant,
+                                       "\n"
+                                     ))
+                                   }
+                                   
                                  }
                                } else if (x == "cov") {
                                  cat("\n",sp(1),"$cov\n", paste0(sp(2), "[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = "\n "))
@@ -375,7 +384,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                },
                                update = function(changes_list) {
                                  keys <- names(changes_list)
-                                 stopifnot(private$lower3(keys) %in% c("pri")) # TODO: add all supported blocks
+                                 stopifnot(private$lower3(keys) %in% c("pri", "sec", "dif", "ini", "cov", "out", "err", "fa")) # TODO: add all supported blocks
                                  self$model_list <- modifyList(self$model_list, changes_list)
                                }
                              ),
@@ -577,7 +586,7 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                    values <- as.numeric(x[-1])
                                    
                                    if (length(x[-1]) == 1) { # fixed
-                                     thisItem <- list(fixed(values[2], constant = const_var, gtz = gtz))
+                                     thisItem <- list(fixed(values[1], constant = const_var, gtz = gtz))
                                    } else { # range
                                      thisItem <- list(range(values[1], values[2], gtz = gtz))
                                    }
@@ -622,7 +631,16 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                  }
                                  
                                  # out/err
-                                 output <- blocks$output
+                                 n_outputLines <- length(blocks$output)
+                                 outputLines <- grep("Y\\([[:digit:]]+\\)", blocks$output)
+                                 if (length(outputLines) == 0) {
+                                   return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y(1) = ...'\n"))
+                                 }
+                                 otherLines <- (1:n_outputLines)[!(1:n_outputLines) %in% outputLines] #find other lines
+                                 if(length(otherLines)>0){
+                                   model_list$sec <- c(model_list$sec, blocks$output[otherLines]) #append to #sec block
+                                 }
+                                 output <- blocks$output[outputLines]
                                  remParen <- stringr::str_replace(output, "Y\\((\\d+)\\)", "Y\\1")
                                  diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
                                  diffList <- sapply(diffeq, function(x) x[2])
