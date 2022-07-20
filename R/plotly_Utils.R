@@ -50,7 +50,7 @@ amendLine <- function(.line, default){
   return(.line)
 }
 
-#amend lines
+#amend CI
 amendCI <- function(.ci, default){
   default_ci <- list(color = "dodgerblue", dash = "dash", opacity = 0.4)
   
