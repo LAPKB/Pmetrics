@@ -64,6 +64,361 @@
 #' @seealso \code{\link{SIMparse}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 
+plot.PMsim <- function(x, 
+                       mult = 1, 
+                       log = T, 
+                       probs = list(0.05, 0.25, 0.5, 0.75, 0.95),
+                       ci = 0.95,
+                       binSize = 0, 
+                       outeq = 1,
+                       marker = F, 
+                       grid = F,
+                       xlab="Time (h)",ylab="Output",
+                       xlim, ylim, obs, ...){
+  
+  
+  dots <- list(...)
+  
+  marker <- amendMarker(marker, default = list(color = "black", symbol = "circle-open", size = 8))
+  #parse probs
+  
+  #Case 1: probs = NA or misspecified as vector
+  if(!is.list(probs)){ #probs is not a list
+    if(length(probs)>1) {stop("Specify the probs argument as a list.")}
+    if(is.na(probs[1])){ #probs specified as probs = NA
+      join <- amendLine(T) #apply default join
+      probValues <- NA
+    } else { #probs specified as probs = numeric
+      stop("Specify the probs argument as a list.")
+    }
+    
+  } else {
+    if(is.list(probs[[1]])){ #first probs item is a list
+      
+      #Case 2: probs = list(list(value=NA)) - unnecessary, but user might do it
+      
+      if(is.na(probs[[1]]$value)){ #is it set to NA?
+        length1 <- length(probs[[1]])
+        if(!is.null(probs)){ #more than one argument
+          join <- amendLine(probs[[1]]$line) #extract the join format
+        } else { #first probs value is just NA
+          join <- amendLine(T)
+        }
+      }
+    } else { #first probs item was not a list 
+      probValues <- rep(0, times = length(probs))
+      probFormats <- purrr::map(rep(TRUE, length(probs)), amendLine)
+      
+      listProbs <- which(sapply(probs, function(x) which(is.list(x))) == 1)
+      if(length(listProbs)>0){
+        numericProbs <- which(sapply(probs, function(x) which(is.numeric(x))) == 1)
+        if(length(numericProbs>0)){
+          probValues[numericProbs] <- unlist(probs[numericProbs])
+        }
+        probValues[listProbs] <- sapply(listProbs, function(x) probs[[x]]$value)
+        for(i in listProbs){
+          probFormats[[i]] <- modifyList(probFormats[[i]], probs[[i]])
+          probFormats[[i]]$value <- NULL
+        }
+      } else {
+        probValues <- unlist(probs)
+      }
+    }
+  }
+  
+  
+  xaxis <- purrr::pluck(dots, "xaxis") #check for additional changes
+  xaxis <- if(is.null(xaxis)) xaxis <- list()
+  yaxis <- purrr::pluck(dots, "yaxis")
+  yaxis <- if(is.null(yaxis)) yaxis <- list()
+  
+  if(!is.null(purrr::pluck(dots, "layout"))){stop("Specify individual layout elements, not layout.")}
+  layout <- list()
+  
+  #legend
+  legendList <- amendLegend(legend)
+  layout <- modifyList(layout, list(showlegend = legendList[[1]]))
+  if(!is.null(legendList[[2]])){layout <- modifyList(layout, list(legend = legendList[[2]]))}
+  
+  #grid
+  xaxis <- setGrid(xaxis, grid)
+  yaxis <- setGrid(yaxis, grid)
+  
+  #axis labels
+  xaxis <- modifyList(xaxis, list(title = xlab))
+  yaxis <- modifyList(yaxis, list(title = ylab))
+  
+  #axis ranges
+  if(!missing(xlim)){xaxis <- modifyList(xaxis, list(range = xlim)) }
+  if(!missing(ylim)){yaxis <- modifyList(yaxis, list(range = ylim)) }
+  
+  #log y axis
+  if(log){
+    yaxis <- modifyList(yaxis, list(type = "log"))
+  }
+  
+  #finalize layout
+  layoutList <- modifyList(layout, list(xaxis = xaxis, yaxis = yaxis))
+  
+  
+  #numerical check function
+  NPsimInterp <- function(time, out, sim_sum, probs){
+    if (min(sim_sum$time) <= time){
+      lower_time <- max(sim_sum$time[sim_sum$time <= time], na.rm = T)
+    } else return(NA)
+    if (max(sim_sum$time >= time)){
+      upper_time <- min(sim_sum$time[sim_sum$time >= time], na.rm = T)
+    } else return(NA)
+    sim_quantile <- 0
+    for (i in probs){
+      if (lower_time != upper_time){
+        lower_sim <- sim_sum$value[sim_sum$time == lower_time & sim_sum$quantile ==i ]
+        upper_sim <- sim_sum$value[sim_sum$time == upper_time & sim_sum$quantile == i]
+        slope <- (upper_sim - lower_sim) / (upper_time - lower_time)
+        calc_sim <- lower_sim + slope*(time-lower_time)
+      } else {calc_sim <- sim_sum$value[sim_sum$time == lower_time & sim_sum$quantile == i]}
+      if (out >= calc_sim){
+        sim_quantile <- i
+      } 
+    }
+    return(sim_quantile)
+  }
+  
+  simout <- x
+  
+  if(!(inherits(simout,"PM_sim"))){stop("Use PM_sim$run() to make object of class PM_sim.\n")}
+  if(!missing(obs)){
+    if(!inherits(obs, c("PM_result", "PM_op"))) stop("Supply a PM_result or PM_op object for the obs argument.")
+    if(inherits(obs, "PM_result")){ obs <- obs$op$data}
+    if(inherits(obs, "PM_op")){ obs <- obs$data}
+    obs <- obs %>% filter(outeq == !!outeq, icen == "median", 
+                          pred.type == "post") %>% select(id, time, obs) #just need obs; median and post are arbitrary
+    
+  } else {obs <- data.frame(time=NA,obs=NA)}
+  
+  #change <=0 to NA if log plot
+  if(log){
+    if(all(is.na(obs$obs))){
+      if(any(simout$obs<=0,na.rm=T)){
+        cat("Values <= 0 omitted from log plot.\n")
+        simout$obs[simout$obs <= 0] <- NA            
+      }
+    } else {
+      if(any(obs$obs<=0,na.rm=T) | any(simout$obs<=0,na.rm=T)){
+        cat("Values <= 0 omitted from log plot.\n")
+        obs$obs[obs$obs <= 0] <- NA
+        simout$obs[simout$obs <= 0] <- NA
+      }
+    }
+    
+  } 
+  
+  #multiply 
+  simout$obs$out <- simout$obs$out * mult
+  obs$obs <- obs$obs * mult
+  
+  #simplify 
+  sim_out <- simout$obs[!is.na(simout$obs$out),]
+  
+  #bin times if requested
+  if(binSize > 0){
+    binnedTimes <- seq(floor(min(sim_out$time,na.rm=T)),ceiling(max(sim_out$time,na.rm=T)),binSize)
+    sim_out$time <- binnedTimes[.bincode(sim_out$time, binnedTimes, include.lowest = T)]
+    sim_out <- sim_out %>% group_by(id, time, outeq) %>% summarize(out = mean(out), .groups = "drop") 
+  }
+  
+  nout <- max(sim_out$outeq)
+  nsim <- nrow(simout$parValues)
+  
+  
+  sim <- sim_out %>% filter(outeq == !!outeq)
+  times <- sort(unique(sim$time))
+  nobs <- length(times)
+  
+  if(!all(is.na(probValues)) & nsim>=10){
+    
+    #make DF of time, quantile and value
+    sim_quant_df <- sim %>% 
+      group_by(time) %>% 
+      group_map(~quantile(.x$out, probs = probValues, na.rm = T)) %>%
+      tibble() %>%
+      unnest_longer(1, indices_to = "quantile", values_to = "value") %>%
+      mutate(time = rep(times, each = length(probValues)),
+             quantile = readr::parse_number(quantile)/100) %>%
+      select(time, quantile, value)
+    
+    lower_confint <- function(sub) {
+      l.ci <- ceiling(nsim*probValues - qnorm(1-(1-ci)/2)*sqrt(nsim*probValues*(1-probValues)))
+      l.ci[l.ci==0] <- NA
+      return(l.ci)
+    }
+    
+    upper_confint <- function(nsim) {
+      u.ci <- ceiling(nsim*probValues + qnorm(1-(1-ci)/2)*sqrt(nsim*probValues*(1-probValues)))
+      return(u.ci)
+    }
+    
+    lconfint <- tapply(sim$out,sim$time,function(x) sort(x)[lower_confint(length(x))])
+    uconfint <- tapply(sim$out,sim$time,function(x) sort(x)[upper_confint(length(x))])
+    
+    sim_quant_df$lowerCI <- unlist(lconfint)
+    sim_quant_df$upperCI <- unlist(uconfint)
+    
+    #plot main data
+    p <- sim_quant_df %>% 
+      group_by(quantile) %>%
+      plotly::plot_ly(x = ~time, y = ~value)
+    
+    #add confidence intervals
+    if(nsim<100) {
+      cat("\nNote: Confidence intervals for simulation quantiles omitted when nsim < 100\n")
+    } else {
+      p <- p %>%
+        plotly::add_ribbons(ymin = ~lowerCI, ymax = ~upperCI,
+                            color = I("grey"), opacity = 0.5,
+                            line = list(width = 0),
+                            hoverinfo = "none") 
+    }
+    
+    #add quantile lines, allowing for the independent formats 
+    for(i in 1:length(probValues)){
+      thisQ <- sim_quant_df %>% filter(quantile == probValues[i])
+      p <- p %>% plotly::add_lines(x = ~time, y = ~value, data = thisQ, line = probFormats[[i]],
+                                   hovertemplate =  "Time: %{x}<br>Out: %{y}<br>Quantile: %{text}<extra></extra>",
+                                   text = ~quantile)
+    }
+    retValue <- NULL
+    
+    #add observations if supplied, and calculate NPC
+    if(!all(is.na(obs))){
+      p <- p %>% add_markers(x = ~time, y = ~obs, data = obs, marker = marker)
+      
+      
+      for (i in 1:nrow(obs)){
+        obs$sim_quant[i] <- ifelse(is.na(obs$obs[i]),NA,
+                                   NPsimInterp(obs$time[i], obs$obs[i], sim_quant_df, probs = probValues))
+      }
+      not.miss <- sum(!is.na(obs$sim_quant))
+      npc <- data.frame(quantile = probValues, 
+                        prop_less = rep(NA, length(probValues)),
+                        pval = rep(NA, length(probValues)))
+      for (i in 1:nrow(npc)){
+        success <- sum(as.numeric(obs$sim_quant < probValues[i]), na.rm = T)
+        
+        pval <- binom.test(success, not.miss, probValues[i], alternative = "two")$p.value
+        npc$prop_less[i] <- round(success/not.miss, 3)
+        npc$pval[i] <- pval
+        
+      }
+      
+      #calculate proportion between 0.05 and 0.95
+      between <- rep(NA, nrow(obs))
+      for (i in 1:nrow(obs)){
+        between[i] <- ifelse(is.na(obs$obs[i]), NA,
+                             NPsimInterp(obs$time[i], obs$obs[i], sim_quant_df, probs=c(0.05, 0.95)))
+      }
+      success90 <- sum(as.numeric(between >= 0.05 & between < 0.95), na.rm = T)
+      attr(npc, "05-95") <- success90/not.miss
+      attr(npc, "P-90") <- binom.test(success90, not.miss, 0.9, "two")$p.value
+      
+      if (not.miss < nrow(obs)){cat(paste("\n",nrow(obs)-not.miss," observed values were obtained beyond the \nsimulated time range of ",min(sim_quant_df$time)," to ",max(sim_quant_df$time)," and were excluded.", sep = ""))}
+      
+      
+      retVal <- list(npc=npc, simsum=sim_quant_df, obs=obs)
+      class(retVal) <- c("PMnpc","list")
+      
+    }
+  } else { #probs was set to NA or nsim < 10
+    
+    #plot all simulated profiles
+    p <- sim %>% 
+      group_by(id) %>%
+      plotly::plot_ly(x = ~time, y = ~out) %>%
+      plotly::add_lines(line = join)
+    #plot observations if available
+    if(!all(is.na(obs))){
+      p <- p %>% add_markers(x = ~time, y = ~obs, data = obs, marker = marker)
+    }
+    retValue <- NULL
+  }
+  
+  
+  #common to all plots
+  p <- p %>% plotly::layout(xaxis = layoutList$xaxis,
+                            yaxis = layoutList$yaxis,
+                            showlegend = layoutList$showlegend,
+                            legend = layoutList$legend)
+  
+  print(p)
+  return(invisible(retValue))
+}
+
+#' Plots \emph{PMsim} objects with the option to perform a visual and numerical predictive check
+#'
+#' Simulated observations are plotted as quantiles on the y-axis vs. time on the x.axis.  If measured
+#' observations are included, a visual and numerical predictive check will be performed.
+#'
+#' @title Plot Pmetrics Simulation Objects
+#' @method plot PMsim
+#' @param x The name of an \emph{PMsim} data object generated by \code{\link{SIMparse}}
+#' @param mult Multiplication factor for y axis, e.g. to convert mg/L to ng/mL
+#' @param log Boolean operator to plot in log-log space; the default is \code{False}
+#' @param probs Vector of quantiles to plot; if set to \code{NA}, all simulated profiles will be plotted,
+#' and numerical predictive checking will be suppressed
+#' @param binSize Width of binning interval for simulated concentrations, in time units, e.g. hours.  For example,
+#' a \code{binSize} of 0.5 will pull all simulated concentrations +/- 0.5 hours into the same time.  This is useful
+#' for plotting PMsim objects made during \code{\link{makeValid}}. The default is 0, i.e. no binning.
+#' @param outeq Which output equation to plot if more than 1
+#' @param pch Controls the plotting symbol for observations; default is NA which results in no symbol.
+#' Use 0 for open square, 1 for open circle, 2 for open triangle, 3 for cross, 4 for X, or 5 for a diamond.
+#' Other alternatives are \dQuote{*} for asterisks, \dQuote{.} for tiny dots, or \dQuote{+} for a smaller,
+#' bolder cross.  These plotting symbols are standard for R (see \code{\link{par}}).
+#' @param join Boolean operator to join observations by a straight line; the default is \code{True}.
+#' @param x.qlab Proportionate value of x-axis at which to draw the quantile labels; 0 is left, 1 is right.
+#' The default is 0.4.
+#' @param pos.qlab This allows more refined positioning of the quantile labels.  It takes standard R
+#' values: 1, below; 2, left; 3, above; 4, right.
+#' @param cex.qlab  Size of the quantile labels.
+#' @param ci Width of confidence interval bands around simulated quantiles, from 0 to 1.  If 0, or \emph{nsim}<100, will not plot.
+#' Default is 0.95, i.e. 95th percentile with tails of 2.5 percent above and below excluded.
+#' @param cex.lab Size of the plot labels.
+#' @param xlab Label for x-axis; default is \dQuote{Time}
+#' @param ylab Label for y-axis; default is \dQuote{Output}
+#' @param xlim Limits of the x-axis as a vector, e.g. \code{c(0,1)}.  It does not need to be specified, but can be.
+#' @param ylim Analogous to \code{xlim}
+#' @param obs The name of an \emph{makeOP} data object generated by \code{\link{makeOP}}.  If specified,
+#' the observations will be overlaid upon the simulation plot enabling a visual predicitve check.  In this case,
+#' a list object will be returned with two items: $npc containing the quantiles and probability that the observations
+#' are below each quantile (binomial test); and $simsum, the times of each observation and the 
+#' value of the simulated quantile with upper and lower confidence intervals at that time.
+#' @param grid Either a boolean operator to plot a reference grid, or a list with elements x and y,
+#' each of which is a vector specifying the native coordinates to plot grid lines; the default is \code{False}.
+#' For example, grid=list(x=seq(0,24,2),y=1:10).  Defaults for missing x or y will be calculated by \code{\link{axTicks}}.
+#' @param ocol Color for observations
+#' @param add Boolean operator, if \code{True} will add lines to existing plot
+#' @param out Direct output to a PDF, EPS or image file.  Format is a named list whose first argument, 
+#' \code{type} is one of the following character vectors: \dQuote{pdf}, \dQuote{eps} (maps to \code{postscript}),
+#' \dQuote{\code{png}}, \dQuote{\code{tiff}}, \dQuote{\code{jpeg}}, or \dQuote{\code{bmp}}.  Other named items in the list
+#' are the arguments to each graphic device. PDF and EPS are vector images acceptable to most journals
+#' in a very small file size, with scalable (i.e. infinite) resolution.  The others are raster images which may be very
+#' large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the 
+#' output will go to the current graphic device (usually the monitor). For example, to output an eps file,
+#' out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.
+#' @param \dots Other parameters as found in \code{\link{plot.default}}.
+#' @return Plots the simulation object.  If \code{obs} is included, a list will be returned with
+#' the folowing items:
+#' \item{npc}{A dataframe with three columns: quantile, prop.less, pval.  \emph{quantile} are those specified
+#' by the \code{prob} argument to the plot call; \emph{prop.less} are the proportion of simulated
+#' observations at all times less than the quantile; \emph{pval} is the P-value of the difference in the 
+#' prop.less and quantile by the beta-binomial test.}
+#' \item{simsum}{A dataframe with the quantile concentration at each simulated time,
+#' with lower and upper confidence intervals}
+#' \item{obs}{A dataframe similar to an PMop object made by \code{\link{makeOP}}
+#' with the addition of the quantile for each observation}
+#' @author Michael Neely
+#' @seealso \code{\link{SIMparse}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
+#' @export
+
 plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0,outeq=1,
                        pch=NA,join=T,x.qlab=0.4,cex.qlab=0.8,pos.qlab=1,ci=0.95,
                        cex.lab=1.2,xlab="Time (h)",ylab="Output",xlim,ylim,obs,
@@ -135,7 +490,7 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
   
   simout$obs$out <- simout$obs$out * mult
   obs$obs <- obs$obs * mult
-
+  
   sim.out <- simout$obs[!is.na(simout$obs$out),]
   #bin times if requested
   if(binSize > 0){
@@ -145,7 +500,7 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
   
   nout <- max(sim.out$outeq)
   nsim <- nrow(simout$parValues)
-
+  
   
   sim <- sim.out[sim.out$outeq==outeq,]
   times <- sort(unique(sim$time))
@@ -254,7 +609,7 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
         pval <- binom.test(success,not.miss,probs[i],alternative="two")$p.value
         npc$prop.less[i] <- round(success/not.miss,3)
         npc$pval[i] <- pval
-
+        
       }
       
       #calculate proportion between 0.05 and 0.95
