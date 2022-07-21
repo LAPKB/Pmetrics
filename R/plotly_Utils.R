@@ -126,24 +126,30 @@ setGrid <- function(.axis, grid = F, default){
 
 
 #amend the legend
-amendLegend <- function(.legend){
+amendLegend <- function(.legend, default){
+  
+  default_legend <- list(showlegend = F)
+  if(!missing(default)){
+    default_legend <- modifyList(default_legend, default)
+  }
   
   if(inherits(.legend,"logical")){
-    if(.legend){
-      showlegend <- T
-      legendArgs <- NULL
+    if(!.legend){
+      .legend <- default_legend
     } else {
-      showlegend <- F
-      legendArgs <- NULL
+      .legend <- default_legend
+      .legend$showlegend <- T
+    }
+  } else {
+    if(inherits(.legend,"list")){
+      .legend <- modifyList(default_legend, .legend)
+      .legend$showlegend <- T
     }
   }
   
-  if(inherits(.legend,"list")){
-    showlegend <- T
-    legendArgs <- .legend
-  }
   
-  return(list(showlegend=showlegend, legendArgs=legendArgs))
+  
+  return(.legend)
 }
 
 includeExclude <- function(.data, include, exclude){
