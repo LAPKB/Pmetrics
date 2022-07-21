@@ -146,9 +146,6 @@ amendLegend <- function(.legend, default){
       .legend$showlegend <- T
     }
   }
-  
-  
-  
   return(.legend)
 }
 
