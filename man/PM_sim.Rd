@@ -3,6 +3,9 @@
 \name{PM_sim}
 \alias{PM_sim}
 \title{Object to contain results of simulation}
+\usage{
+PM_sim$run
+}
 \arguments{
 \item{file_name}{The name of the .rds file to load.}
 
