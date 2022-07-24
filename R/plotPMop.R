@@ -315,16 +315,26 @@ plot.PMop <- function(x,include,exclude,pred.type="post",icen="median",outeq=1,m
 }
 
 
-plot.PM_op <- function(x, icen = "median", outeq = 1, pred.type = "post", block = 1, log = F, 
-                       marker = list(), linear=T, loess, reference, include, exclude, mult = 1, ci=0.95){
+plot.PM_op <- function(x, 
+                       icen = "median", 
+                       outeq = 1, 
+                       pred.type = "post", 
+                       block = 1, 
+                       log = F, 
+                       marker = T, 
+                       linear=T, 
+                       loess, 
+                       reference, 
+                       include, exclude, 
+                       mult = 1, 
+                       ci=0.95){
   
-  default_marker <- list(symbol = "circle", color = "dodgerblue", size = 30, opacity = 0.5)
-  marker <- modifyList(default_marker,marker)
+  marker <- amendMarker(marker, default = list(color = "dodgerblue"))
   
   if(is.logical(linear)){
     linearMod <- list(plot = linear)
   } else {
-    inearMod <- linear
+    linearMod <- linear
     linearMod$plot <- T
   }
   
@@ -346,17 +356,17 @@ plot.PM_op <- function(x, icen = "median", outeq = 1, pred.type = "post", block 
     plotly::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block,
                    id %in% include, !id %in% exclude) %>%
     filter(!is.na(obs)) %>%
-    plotly::mutate(pred = pred* mult, obs = obs * mult)
+    plotly::mutate(pred = pred * mult, obs = obs * mult)
   
   
   p <- sub1 %>%
     plotly::plot_ly(x = ~pred) %>%
-    plotly::add_markers(y = ~obs,
-                        symbol = I(marker$symbol), 
-                        opacity = I(marker$opacity), 
-                        size = I(marker$size), 
-                        color = I(marker$color),
-                        stroke = I("black"), span = I(1),
+    plotly::add_markers(y = ~obs, marker = marker,
+                        # symbol = I(marker$symbol), 
+                        # opacity = I(marker$opacity), 
+                        # size = I(marker$size), 
+                        # color = I(marker$color),
+                        # stroke = I(marker$stroke), span = I(marker$span),
                         text = ~id,
                         hovertemplate = "Pred: %{x}<br>Obs: %{y}<br>ID: %{text}<extra></extra>") 
   

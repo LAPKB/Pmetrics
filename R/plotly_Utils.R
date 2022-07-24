@@ -6,8 +6,8 @@ amendMarker <- function(.marker, default){
                          color = "red", 
                          size = 10, 
                          opacity = 0.5,
-                         stroke = "black", 
-                         span = 1)
+                         line = list(color = "black", width = 1)
+                         )
   if(!missing(default)){
     default_marker <- modifyList(default_marker, default)
   }
