@@ -33,12 +33,12 @@
 \item{probs}{List of quantiles to plot, e.g. \code{probs = list(0.05, 0.5, 0.95)}. If set to \code{NA}, all simulated profiles will be plotted,
 and numerical predictive checking will be suppressed. To format individual quantile lines, expand the list object for that quantile
 For example, \code{probs = list(0.05, list(value = 0.5, color = "red", width = 2, dash = "dash"), 0.95)}.
-Use the plotly \code{schema()} command
-in the console and navigate to traces -> scatter -> attributes -> line to see all the ways the marker
+Use the plotly \code{plotly::schema()} command
+in the console and navigate to traces > scatter > attributes > line to see all the ways the marker
 can be formatted. Most common will be:
 \itemize{
 \item color Fill color and outline color if not otherwise specified
-\item symbol Plotting character. See \code{schema()}, traces -> scatter -> attributes -> marker -> symbol -> values.
+\item symbol Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values.
 \item size Character size in points
 \item opacity Ranging between 0 (fully transparent) to 1 (fully opaque).
 }}
@@ -48,19 +48,20 @@ Default is 0.95, i.e. 95th percentile with tails of 2.5 percent above and below 
 
 \item{binSize}{Width of binning interval for simulated concentrations, in time units, e.g. hours.
 A \code{binSize} of 0.5 will pull all simulated concentrations +/- 0.5 hours into the same time.  This is useful
-for plotting PMsim objects made during \link{makeValid}. The default is 0, i.e. no binning.}
+for plotting PMsim objects made during \link{makeValid}. The default is 0, i.e. no binning.
+If an \code{obs} object is provided, it will be binned similarly.}
 
 \item{outeq}{Which output equation to plot if more than 1}
 
 \item{marker}{Controls the plotting symbol for observations; default is \code{FALSE} which results in no symbol.
 Will be set to \code{TRUE} if \code{obs} is supplied. In this case, the default plotly marker will be an open circle, black in color,
 point size 8. To change these, specify arguments as a list to \code{marker}. For example,
-\verb{marker = list(color = "red", symbol = "triangle", size = 10}). Use the plotly \code{schema()} command
-in the console and navigate to traces -> scatter -> attributes -> marker to see all the ways the marker
+\verb{marker = list(color = "red", symbol = "triangle", size = 10}). Use the plotly \code{plotly::schema()} command
+in the console and navigate to traces > scatter > attributes > marker to see all the ways the marker
 can be formatted. Most common will be:
 \itemize{
 \item color Marker color, default black.
-\item symbol Plotting character. See \code{schema()}, traces -> scatter -> attributes -> marker -> symbol -> values.
+\item symbol Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values.
 Default is open circle.
 \item size Character size in points, default 8.
 \item opacity Ranging between 0 (fully transparent) to 1 (fully opaque, the default).
@@ -73,27 +74,30 @@ If missing,  defaults to marker color and width 1.
 color \emph{grey50} and width 1 will be plotted at major tick marks. If a list,
 color and width can be customized, e.g. \code{grid = list(gridcolor = "black", gridwidth = 2)}.
 The grid parameter modifies the xaxis and yaxis layout object in plotly.
-See \code{schema()} layout -> xaxis/yaxis -> gridcolor/gridwidth.}
+See \code{plotly::schema()} layout > xaxis/yaxis > gridcolor/gridwidth.}
 
 \item{xlab}{Label for x-axis; default is "Time". The xlab parameter modifies
 the xaxis title in the layout object in plotly.
-See \code{schema()} layout -> xaxis -> title.}
+See \code{plotly::schema()} layout > xaxis > title.}
 
 \item{ylab}{Label for y-axis; default is "Output". The ylab parameter modifies
 the yaxis title in the layout object in plotly.
-See \code{schema()} layout -> yaxis -> title.}
+See \code{plotly::schema()} layout > yaxis > title.}
 
 \item{xlim}{Limits of the x-axis as a vector, e.g. \code{c(0,1)}.
 The xlim parameter modifies
 the xaxis range in the layout object in plotly.
-See \code{schema()} layout -> xaxis -> range}
+See \code{plotly::schema()} layout > xaxis > range}
 
 \item{ylim}{Analogous to \code{xlim} for the yaxis.}
 
 \item{legend}{Either a boolean operator (most common) or a list of parameters to be supplied to plotly.
-If \code{FALSE} (the default), a legend will not be plotted. Type \code{schema()}
-into the console (with the plotly package loaded), select layout > layoutAttributes > legend
-for more details on the available options for formatting.}
+If \code{FALSE} (the default), a legend will not be plotted. If \code{TRUE} the plotted quantiles
+are the legend. See \code{plotly::schema()} > layout > layoutAttributes > legend
+for more details on the available options for formatting. For example,
+\code{legend = list(orientation = "h", font = list(color = "blue"))}. Note that if a
+legend is included, clicking on a quantile item in the legend will hide it in the plot,
+and double clicking will hide all other quantiles.}
 
 \item{obs}{The name of a \link{PM_result} data object or the PM_op field in the
 PM_result object, all generated by \link{PM_load}.  For example, if
@@ -111,7 +115,7 @@ Additionally, the number of observations beyond the 5th and 95th percentiles wil
 and the binomial test P-value if this number is different than the expected 10\% value.}
 
 \item{\dots}{Other parameters which can be passed to control axis formatting. Specify as lists
-named either xaxis or yaxis. See \code{schema()} layout -> xaxis/yaxis for options.}
+named either xaxis or yaxis. See \code{plotly::schema()} layout > xaxis/yaxis for options.}
 }
 \value{
 Plots the simulation object.  If \code{obs} is included, a list will be returned with
@@ -122,7 +126,7 @@ observations at all times less than the quantile; \emph{pval} is the P-value of 
 prop.less and quantile by the beta-binomial test.}
 \item{simsum}{A dataframe with the quantile concentration at each simulated time,
 with lower and upper confidence intervals}
-\item{obs}{A dataframe similar to an PMop object made by \code{\link{makeOP}}
+\item{obs}{A data frame similar to an PMop object made by \link{makeOP} at the end of a run
 with the addition of the quantile for each observation}
 }
 \description{
