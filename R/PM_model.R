@@ -462,7 +462,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                    }
                                  } else if (private$lower3(key) == "out") {
                                    i <- 1 # keep track of the first outeq
-                                   err_lines <- c("#err")
+                                   err_lines <- "#err"
                                    for (param in names(block)) {
                                      stopifnot(nchar(param) == 2 || nchar(param) == 0)
                                      key <- toupper(names(block)[i])
@@ -474,8 +474,8 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                          sprintf("%s", block[[i]][1])
                                        }
                                      )
+                                     err_block <- block[[i]]$err
                                      if (i == 1) {
-                                       err_block <- block[[1]]$err
                                        err_lines <- append(err_lines, err_block$model$print_to("range", engine))
                                      }
                                      err_lines <- append(
