@@ -90,7 +90,7 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
     type <- "NPAG"
     densityFormat <- amendLine(density, default = list(color = "black"))
     if(inherits(density,"list")) density <- T
-    bar <- amendBar(line)
+    bar <- amendBar(line, )
   } else {
     type <- "IT2B"
   }
@@ -98,20 +98,20 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
   marker <- amendMarker(marker)
   
   
+  
   ab <- data.frame(x$ab)
   names(ab) <- c("min","max")
   ab$par <- names(x$popMean)
   
   #plot functions for univariate
-  uniPlot <- function(param, name, min, max, type){
-    
-    p <- param %>%
+  uniPlot <- function(points, type, bar){
+    p <- points %>%
       plotly::plot_ly(x = ~value , y = ~prob) 
     
     if(type == "NPAG"){
-      barWidth <- bar$width * (max-min) #normalize
+      barWidth <- bar$width * (points$max[1] - points$min[1]) #normalize
       p <- p %>% 
-        add_bars( 
+        plotly::add_bars( 
           opacity = I(bar$opacity), 
           color = I(bar$color),
           marker = list(
@@ -125,38 +125,44 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
         ) 
       
       if(density){
-        densList <- density(param$value, weights = param$prob)
+        densList <- density(points$value, weights = points$prob)
         dens <- data.frame(x=densList$x, y=densList$y)
         
-        p <- p %>% add_lines(data = dens, x = ~x, y = ~y/max(y) * I(max(param$prob)), 
+        p <- p %>% plotly::add_lines(data = dens, x = ~x, y = ~y/max(y) * I(max(points$prob)), 
                              line = densityFormat,
                              text = round(dens$y,2),
                              hovertemplate = "Value: %{x:0.2f}<br>Prob: %{text}<extra></extra>") 
       }
     } else { #IT2B
-      p <- param %>%
+      p <- points %>%
         plotly::plot_ly(x = ~value , y = ~prob) %>%
-        add_lines(
+        plotly::add_lines(
           line = line,
           hovertemplate = "Value: %{x:0.2f}<br>Prob: %{y:0.2f}<extra></extra>") 
     }
     
     #common to both
-    p <- p %>% add_annotations(
-      text = name,
-      x = 0.5,
-      y = 1,
-      yref = "paper",
-      xref = "paper",
-      xanchor = "middle",
-      yanchor = "top",
-      yshift = 10,
-      showarrow = FALSE,
-      font = list(size = 18)
-    ) %>%
-      layout(showlegend = F, xaxis = list(range = c(min, max)), 
-             shapes = list(vline(min, width=3, dash="dash"), 
-                           vline(max, width=3, dash="dash")))
+    p <- p %>% 
+    #   plotly::add_annotations(
+    #   text = points$name[1],
+    #   x = 0.5,
+    #   y = 1,
+    #   yref = "paper",
+    #   xref = "paper",
+    #   xanchor = "middle",
+    #   yanchor = "top",
+    #   yshift = 10,
+    #   showarrow = FALSE,
+    #   font = list(size = 18)
+    # ) %>%
+      plotly::layout(showlegend = F, 
+                     xaxis = list(#range = c(min[1], max[1]), 
+                                  title = list(text = paste0("<b>",points$name[1],"</b>"))),
+                     yaxis = list(title = list(text = "<b>Probability</b>")),
+             shapes = list(vline(points$min[1], width=3, dash="dash"),
+                           vline(points$max[1], width=3, dash="dash")),
+             barmode = "overlay")
+             
     return(p)
   }
   
@@ -186,7 +192,7 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
       p <- plot_ly(x = ~unique(coords$x), y = ~unique(coords$y), z = ~z) %>% 
         plotly::add_surface(
           hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
-        layout(scene = list( 
+        plotly::layout(scene = list( 
           xaxis = list(title = list(text = xlab, font = list(size = 18))),
           yaxis = list(title = list(text = ylab, font = list(size = 18))),
           zaxis = list(title = list(text = "Probability", font = list(size = 18))))) %>%
@@ -226,12 +232,15 @@ plot.PM_final <- function(x, formula, include, exclude, xlab, ylab,
   if(missing(formula)){ #univariate
     #NPAG
     if(type == "NPAG"){
-      ab_alpha <- ab %>% arrange(par)
-      p <- x$popPoints %>% pivot_longer(cols = !prob, names_to = "Par") %>%
-        dplyr::nest_by(Par) %>% 
-        dplyr::bind_cols(ab_alpha) %>%
-        dplyr::mutate(name = Par, panel = list(uniPlot(data, name = Par, min, max, type = "NPAG"))) %>%
-        plotly::subplot(margin = 0.1, nrows = 2)
+      p <- x$popPoints %>% pivot_longer(cols = !prob, names_to = "par") %>%
+        dplyr::mutate(name = par,
+                      min = ab$min[match(par,ab$par)],
+                      max =  ab$max[match(par,ab$par)]) %>%
+        tidyr::nest(points = -par) %>% 
+        dplyr::mutate(panel = trelliscopejs::map_plot(points, uniPlot, 
+                                                      type = "NPAG", bar = bar)) %>%
+        trelliscope(name = "Marginals", nrow = 2, ncol = 2, jsonp = F)
+     
     } else {
       #IT2B
       if(!missing(standardize)){ #standardize plot
