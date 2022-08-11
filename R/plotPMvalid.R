@@ -77,8 +77,8 @@ plot.PMvalid <- function(x, type = "vpc", tad = F, outeq = 1,
   
   #legend
   legendList <- amendLegend(legend)
-  layout <- modifyList(layout, list(showlegend = legendList[[1]]))
-  if(!is.null(legendList[[2]])){layout <- modifyList(layout, list(legend = legendList[[2]]))}
+  layout <- modifyList(layout, list(showlegend = legendList$showlegend))
+  if(length(legendList)>1){layout <- modifyList(layout, list(legend = within(legendList,rm(showlegend))))}
   
   #grid
   xaxis <- setGrid(xaxis, grid)
@@ -196,7 +196,7 @@ plot.PMvalid <- function(x, type = "vpc", tad = F, outeq = 1,
                           hovertemplate = "Time: %{x}<br>Out: %{y}<br>ID: %{text}<extra></extra>",
                           text = ~opDF$id) 
     
-    p <- p %>% layout(xaxis = layoutList$xaxis,
+    p <- p %>% plotly::layout(xaxis = layoutList$xaxis,
                       yaxis = layoutList$yaxis,
                       showlegend = layoutList$showlegend,
                       legend = layoutList$legend) 
@@ -206,14 +206,24 @@ plot.PMvalid <- function(x, type = "vpc", tad = F, outeq = 1,
   }
   
   if(type=="npde"){
-    #cat("NPDE temporarily disabled pending code cleaning.\n")
-    if(is.null(x$npde)) stop("No npde object found.  Re-run makeValid.\n")
-    if(inherits(x$npde[[outeq]], "NpdeObject")){
-      plot(x$npde[[outeq]])
-      par(mfrow=c(1,1))
+    if(!tad){
+      if(is.null(x$npde)) stop("No npde object found.  Re-run makeValid.\n")
+      if(inherits(x$npde[[outeq]], "NpdeObject")){
+        plot(x$npde[[outeq]])
+        par(mfrow=c(1,1))
+      } else {
+        cat(paste0("Unable to calculate NPDE for outeq ",outeq))
+      }
     } else {
-      cat(paste0("Unable to calculate NPDE for outeq ",outeq))
+      if(is.null(x$npde_tad)) stop("No npde_tad object found.  Re-run makeValid with tad = T.\n")
+      if(inherits(x$npde_tad[[outeq]], "NpdeObject")){
+        plot(x$npde_tad[[outeq]])
+        par(mfrow=c(1,1))
+      } else {
+        cat(paste0("Unable to calculate NPDE with TAD for outeq ",outeq))
+      }
     }
+    
     p <- NULL
   }
   return(p)
