@@ -74,7 +74,7 @@ amendCI <- function(.ci, default){
 
 #amend bar
 amendBar <- function(.bar, color = "dodgerblue", default){
-  default_bar <- list(color = color, width = 0.02, opacity = 0.75)
+  default_bar <- list(color = color, width = .02, opacity = 0.75)
   
   if(!missing(default)){
     default_bar <- modifyList(default_bar, default)
