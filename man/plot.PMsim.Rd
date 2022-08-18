@@ -28,10 +28,17 @@
 
 \item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
 
-\item{log}{Boolean operator to plot in log-log space; the default is \code{False}}
+\item{log}{Boolean operator to plot the y axis in log base 10.
+This argument maps to the
+the yaxis type value in the layout object in plotly.
+Use the plotly \code{plotly::schema()} command in the console and navigate
+to layout > layoutAttributes > yaxis > type.
+Example: \code{log = T}}
 
-\item{probs}{List of quantiles to plot, e.g. \code{probs = list(0.05, 0.5, 0.95)}. If set to \code{NA}, all simulated profiles will be plotted,
-and numerical predictive checking will be suppressed. To format individual quantile lines, expand the list object for that quantile
+\item{probs}{List of quantiles to plot, e.g. \code{probs = list(0.05, 0.5, 0.95)}.
+If set to \code{NA}, all simulated profiles will be plotted,
+and numerical predictive checking will be suppressed.
+To format individual quantile lines, expand the list object for that quantile
 For example, \code{probs = list(0.05, list(value = 0.5, color = "red", width = 2, dash = "dash"), 0.95)}.
 Use the plotly \code{plotly::schema()} command
 in the console and navigate to traces > scatter > attributes > line to see all the ways the marker
@@ -43,61 +50,91 @@ can be formatted. Most common will be:
 \item opacity Ranging between 0 (fully transparent) to 1 (fully opaque).
 }}
 
-\item{ci}{Width of confidence interval bands around simulated quantiles, from 0 to 1.  If 0, or \emph{nsim}<100, will not plot.
+\item{ci}{Width of confidence interval bands around simulated quantiles,
+from 0 to 1.  If 0, or \emph{nsim}<100, will not plot.
 Default is 0.95, i.e. 95th percentile with tails of 2.5 percent above and below excluded.}
 
 \item{binSize}{Width of binning interval for simulated concentrations, in time units, e.g. hours.
-A \code{binSize} of 0.5 will pull all simulated concentrations +/- 0.5 hours into the same time.  This is useful
+A \code{binSize} of 0.5 will pull all simulated concentrations +/- 0.5 hours into
+the same time.  This is useful
 for plotting PMsim objects made during \link{makeValid}. The default is 0, i.e. no binning.
 If an \code{obs} object is provided, it will be binned similarly.}
 
-\item{outeq}{Which output equation to plot if more than 1}
+\item{outeq}{Which output equation to plot. Default is 1.}
 
-\item{marker}{Controls the plotting symbol for observations; default is \code{FALSE} which results in no symbol.
-Will be set to \code{TRUE} if \code{obs} is supplied. In this case, the default plotly marker will be an open circle, black in color,
-point size 8. To change these, specify arguments as a list to \code{marker}. For example,
-\verb{marker = list(color = "red", symbol = "triangle", size = 10}). Use the plotly \code{plotly::schema()} command
-in the console and navigate to traces > scatter > attributes > marker to see all the ways the marker
+\item{marker}{Controls the plotting symbol for observations.
+This argument maps to the plotly marker object.
+It can be boolean or a list.
+\code{TRUE} will plot the marker with default characteristics.
+\code{FALSE} will suppress marker plotting.
+If a list, can control many marker characteristics, including overriding defaults.
+Use the plotly \code{plotly::schema()} command in the console and navigate
+to traces > scatter > attributes > marker to see all the ways the marker
 can be formatted. Most common will be:
 \itemize{
-\item color Marker color, default black.
+\item color Marker color.
 \item symbol Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values.
-Default is open circle.
-\item size Character size in points, default 8.
-\item opacity Ranging between 0 (fully transparent) to 1 (fully opaque, the default).
+\item size Character size in points.
+\item opacity Ranging between 0 (fully transparent) to 1 (fully opaque).
 \item line A list of  additional attributes governing the outline for filled shapes, most commonly
-color and width, e.g \code{marker = list(color = "red", line = list(color = "black", width = 2))}
-If missing,  defaults to marker color and width 1.
+color and width.
+Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}
 }}
 
-\item{grid}{If \code{FALSE}, the default, no grid plotted. If \code{TRUE}, the default
-color \emph{grey50} and width 1 will be plotted at major tick marks. If a list,
-color and width can be customized, e.g. \code{grid = list(gridcolor = "black", gridwidth = 2)}.
-The grid parameter modifies the xaxis and yaxis layout object in plotly.
-See \code{plotly::schema()} layout > xaxis/yaxis > gridcolor/gridwidth.}
+\item{grid}{Controls grid display.
+This argument maps to the xaxis and yaxis layout objects in plotly.
+Use the plotly \code{plotly::schema()} command in the console and navigate
+to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth.
+It is a Boolean operator. If \code{FALSE}, no grid is plotted.
+If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at
+major tick marks. If a list,
+color and width can be customized.
+Examples:
+\itemize{
+\item \code{grid = F}
+\item \code{grid = list(gridcolor = "black", gridwidth = 2)}
+}}
 
-\item{xlab}{Label for x-axis; default is "Time". The xlab parameter modifies
-the xaxis title in the layout object in plotly.
-See \code{plotly::schema()} layout > xaxis > title.}
+\item{xlab}{Value for x axis label.
+This argument maps to the the xaxis layout object in plotly.
+Use the plotly \code{plotly::schema()} command in the console and navigate
+to layout > layoutAttributes > xaxis to see other ways to customize
+this axis using lists as additional arguments to the plot function.
+Example: \code{xaxis = list(title = list(text = "Time", font = list(color = "red", family = "Arial", size = 10)))}}
 
-\item{ylab}{Label for y-axis; default is "Output". The ylab parameter modifies
-the yaxis title in the layout object in plotly.
-See \code{plotly::schema()} layout > yaxis > title.}
+\item{ylab}{Value for y axis label.
+This argument maps to the yaxis layout object in plotly.
+Use the plotly \code{plotly::schema()} command in the console and navigate
+to layout > layoutAttributes > yaxis to see other ways to customize
+this axis using lists as additional arguments to the plot function.
+Example: \code{yaxis = list(title = list(text = "Concentration", font = list(color = "blue", family = "Times New Roman", size = 12)))}}
 
-\item{xlim}{Limits of the x-axis as a vector, e.g. \code{c(0,1)}.
-The xlim parameter modifies
+\item{xlim}{Limits of the x axis as a vector.
+This argument maps to the
 the xaxis range in the layout object in plotly.
-See \code{plotly::schema()} layout > xaxis > range}
+Use the plotly \code{plotly::schema()} command in the console and navigate
+to layout > layoutAttributes > xaxis > range.
+Example: \code{xlim = c(0,1)}}
 
-\item{ylim}{Analogous to \code{xlim} for the yaxis.}
+\item{ylim}{Limits of the y axis as a vector.
+This argument maps to the
+the yaxis range in the layout object in plotly.
+Use the plotly \code{plotly::schema()} command in the console and navigate
+to layout > layoutAttributes > yaxis > range.
+Example: \code{ylim = c(0,100)}}
 
-\item{legend}{Either a boolean operator (most common) or a list of parameters to be supplied to plotly.
-If \code{FALSE} (the default), a legend will not be plotted. If \code{TRUE} the plotted quantiles
-are the legend. See \code{plotly::schema()} > layout > layoutAttributes > legend
-for more details on the available options for formatting. For example,
-\code{legend = list(orientation = "h", font = list(color = "blue"))}. Note that if a
-legend is included, clicking on a quantile item in the legend will hide it in the plot,
-and double clicking will hide all other quantiles.}
+\item{legend}{Controls display of legend.
+This argument maps to the plotly layout showlegend and legend arguments.
+It is either a boolean operator (most common) or a list of parameters to be supplied to plotly.
+See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend
+for more details on the available options for formatting.
+If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will
+be set to \code{TRUE} automatically.
+Examples:
+\itemize{
+\item \code{legend = T}
+\item \code{legend = list(orientation = "h", font = list(color = "blue"))}
+}}
 
 \item{obs}{The name of a \link{PM_result} data object or the PM_op field in the
 PM_result object, all generated by \link{PM_load}.  For example, if
@@ -120,14 +157,18 @@ named either xaxis or yaxis. See \code{plotly::schema()} layout > xaxis/yaxis fo
 \value{
 Plots the simulation object.  If \code{obs} is included, a list will be returned with
 the folowing items:
-\item{npc}{A dataframe with three columns: quantile, prop_less, pval.  \emph{quantile} are those specified
-by the \code{probs} argument to the plot call; \emph{prop_less} are the proportion of simulated
-observations at all times less than the quantile; \emph{pval} is the P-value of the difference in the
-prop.less and quantile by the beta-binomial test.}
-\item{simsum}{A dataframe with the quantile concentration at each simulated time,
-with lower and upper confidence intervals}
-\item{obs}{A data frame similar to an PMop object made by \link{makeOP} at the end of a run
-with the addition of the quantile for each observation}
+\itemize{
+\item npc A dataframe with three columns: quantile, prop_less, pval.
+** quantile are those specified by the \code{probs} argument to the plot call
+** prop_less are the proportion of simulated
+observations at all times less than the quantile
+** pval is the P-value of the difference in the
+prop.less and quantile by the beta-binomial test.
+\item simsum A dataframe with the quantile concentration at each simulated time,
+with lower and upper confidence intervals
+\item obs A data frame similar to an PMop object made by \link{makeOP} at the end of a run
+with the addition of the quantile for each observation
+}
 }
 \description{
 Plots \emph{PMsim} objects with the option to perform a visual and numerical predictive check
@@ -135,10 +176,20 @@ Plots \emph{PMsim} objects with the option to perform a visual and numerical pre
 \details{
 Simulated observations are plotted as quantiles on the y-axis vs. time on the x.axis.  If measured
 observations are included, a visual and numerical predictive check will be performed.
+The default plot is to omit markers, but if the marker arugment is set to \code{TRUE},
+the resulting marker will have the following plotly properties:
+\code{list(symbol = "circle-open", color = "black", size = 8)}. By default a grid is
+omitted. The legend is also omitted by default, but if included,
+clicking on a quantile item in the legend will hide it in the plot,
+and double clicking will hide all other quantiles.
 }
 \seealso{
 \link{PM_sim}, \link{plot_ly}, \link{schema}
+
+Other plotly: 
+\code{\link{plot.PM_op}()}
 }
 \author{
 Michael Neely
 }
+\concept{plotly}
