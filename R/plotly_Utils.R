@@ -29,7 +29,7 @@ amendMarker <- function(.marker, default){
 
 #amend lines
 amendLine <- function(.line, default){
-  default_line <- list(color = "dodgerblue", width = 1, linetype = 1)
+  default_line <- list(color = "dodgerblue", width = 1, dash = "solid")
   
   if(!missing(default)){
     default_line <- modifyList(default_line, default)
@@ -52,7 +52,7 @@ amendLine <- function(.line, default){
 
 #amend CI
 amendCI <- function(.ci, default){
-  default_ci <- list(color = "dodgerblue", dash = "dash", opacity = 0.4)
+  default_ci <- list(color = "dodgerblue", dash = "dash", width = 1, opacity = 0.4)
   
   if(!missing(default)){
     default_ci <- modifyList(default_ci, default)
