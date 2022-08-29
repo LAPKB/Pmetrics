@@ -42,9 +42,9 @@ prediction plot
 \item icen Chooses the median or mean of each
 subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".
 \item Other parameters to pass to plotly to control line characteristics, including \code{color}, \code{width}, and \code{dash}.
-For example: \code{pred = list(run1$post, color = "blue", width = 2)}. Defaults are "dodgerblue", 1, and 1 (solid line).
-Type \code{schema()} into the console (with the plotly package loaded), select traces > scatter > attributes > line
-for more details on the available options for line formatting.
+For example: \code{pred = list(run1$post, icen = "mean", color = "red", width = 2)}.
+Defaults are the same as for the \code{line} argument, since normally one would not plot
+both lines joining observations and prediction lines.
 }}
 
 \item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
@@ -64,13 +64,6 @@ the yaxis type value in the layout object in plotly.
 Use the plotly \code{plotly::schema()} command in the console and navigate
 to layout > layoutAttributes > yaxis > type.
 Example: \code{log = T}}
-
-\item{join}{Either \code{TRUE} (the default), \code{FALSE} to suppress, or a list
-controlling the joining line segments between observations. Type \code{schema()}
-into the console (with the plotly package loaded), select traces > scatter > attributes > line
-for more details on the available options for marker formatting. The most relevant are \code{color}, \code{width},
-and \code{dash}. For example: \code{join = list(color = "green", width = 2)}
-Defaults are the same as for \code{pred}: "dodgerblue", 1, and 1 (solid).}
 
 \item{marker}{Controls the plotting symbol for observations.
 This argument maps to the plotly marker object.
@@ -152,6 +145,20 @@ this axis using lists as additional arguments to the plot function.
 Example: \code{yaxis = list(title = list(text = "Concentration", font = list(color = "blue", family = "Times New Roman", size = 12)))}}
 
 \item{...}{Not currently implemented.}
+
+\item{line}{Controls characteristics of lines.
+This argument maps to plotly trace line attributes.
+\code{TRUE} will plot default lines. \code{FALSE} will suppress lines.
+If a list, can control many line characteristics, including overriding defaults.
+Use the plotly \code{plotly::schema()} command in the console and navigate
+to traces > scatter > attributes > line to see all the ways the line
+can be formatted. Most common will be:
+\itemize{
+\item color Line color.
+\item dash Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > line > dash > values.
+\item width Thickness in points.
+Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
+}}
 }
 \value{
 Plots the object.
@@ -163,6 +170,9 @@ Plots the object.
 This function will plot raw and fitted time and concentration data with a variety of options.
 By default markers are included and  have the following plotly properties:
 \code{list(symbol = "circle", color = "red", size = 10, opacity = 0.5, line = list(color = "black", width = 1))}.
+Markers can be joined by lines, default is \code{FALSE}. If chosen to be \code{TRUE},
+the joining lines will have the following properties:
+\verb{list(color = "dodgerblue", width = 1, dash = "solid"}.
 The grid and legend are omitted by default.
 }
 \seealso{
