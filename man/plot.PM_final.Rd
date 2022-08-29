@@ -7,14 +7,14 @@
 \method{plot}{PM_final}(
   x,
   formula,
+  marker = T,
+  line = T,
+  density = F,
+  grid = T,
   include,
   exclude,
   xlab,
   ylab,
-  line = T,
-  density = F,
-  marker = T,
-  grid = T,
   standardize
 )
 }
@@ -24,15 +24,34 @@
 \item{formula}{An optional formula of the form \code{y ~ x}, where \code{y} and \code{x}
 are two model parameters to plot in a 3-dimensional bivariate plot.  See details.}
 
-\item{xlab}{Define x-axis label for bivariate NPAG or IT2B plot.  Default is the name of the plotted x-variable.}
-
-\item{ylab}{Define y-axis label for bivariate NPAG or IT2B plot.  Default is the name of the plotted y-variable.}
+\item{marker}{Controls the plotting symbol for observations.
+This argument maps to the plotly marker object.
+It can be boolean or a list.
+\code{TRUE} will plot the marker with default characteristics.
+\code{FALSE} will suppress marker plotting.
+If a list, can control many marker characteristics, including overriding defaults.
+Use the plotly \code{plotly::schema()} command in the console and navigate
+to traces > scatter > attributes > marker to see all the ways the marker
+can be formatted. Most common will be:
+\itemize{
+\item color Marker color.
+\item symbol Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values.
+\item size Character size in points.
+\item opacity Ranging between 0 (fully transparent) to 1 (fully opaque).
+\item line A list of  additional attributes governing the outline for filled shapes, most commonly
+color and width.
+Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}
+}}
 
 \item{density}{Boolean operator to plot a kernel density function overlying the histogram
 of a univarite marginal parameter distribution from NPAG; the default is \code{False}.
 See \link{density}.  Ignored for IT2B output.}
 
 \item{grid}{Boolean operator to plot a grid on either a bivariate NPAG or IT2B plot.}
+
+\item{xlab}{Define x-axis label for bivariate NPAG or IT2B plot.  Default is the name of the plotted x-variable.}
+
+\item{ylab}{Define y-axis label for bivariate NPAG or IT2B plot.  Default is the name of the plotted y-variable.}
 
 \item{cex.lab}{Size of the plot labels for any univariate or bivariate marginal plot.}
 
@@ -94,21 +113,17 @@ Plot objects made by \link{makeFinal}.
 If \code{formula} is omitted, this will generate a marginal plot for each parameter.
 For NPAG data, this will be a histogram of marginal values for each parameter and the associated probability
 of that value.  For IT2B, this will be a series of normal distributions with mean and standard deviation
-equal to the mean and standard deviation of each parameter marginal distribution, and the standard deviation and 95\% distribution
-indicated at the bottom of each plot.  IF \code{formula} IS specified,
+equal to the mean and standard deviation of each parameter marginal distribution.  IF \code{formula} IS specified,
 this will generate one of two plots.  Specifying "prob" as the y-value vs. a parameter
 will generate a marginal plot of Bayesian posterior parameter distributions for included/excluded
 subjects.  For example, \code{prob~CL} will plot Bayesian posterior distributions for CL for each
 included/excluded subject.
-}
-\section{Bivariate plots}{
 
 On the other hand, if \code{formula} is two parameters, e.g. CL~V, this will generate a bivariate plot.
 For NPAG data, it will be support point with size proportional to the probability
 of each point.  For IT2B, it will be an elliptical distribution of a bivariate normal distribution centered at the mean
 of each plotted variable and surrounding quantiles of the bivariate distribution plotted in decreasing shades of grey.
 }
-
 \examples{
 #NPAG
 data(final.1)

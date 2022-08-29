@@ -1,6 +1,6 @@
 #' Plot PM_valid objects
 #'
-#' @title Plot Pmetrics Validation Objects
+#' Plot Pmetrics Validation Objects
 #' 
 #' Generates a plot of outputs (typically concentrations) on the y axis and time 
 #' on the x axis. If `tad` was set to `TRUE`
