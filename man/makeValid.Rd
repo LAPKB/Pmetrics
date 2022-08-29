@@ -14,12 +14,12 @@ which will typically be a number, e.g. 1.}
 time after dose (TAD) in binning as well as standard relative time.  \emph{NOTE:} Including TAD is only
 valid if steady state conditions exist for each patient.  This means that dosing is stable and regular
 for each patient, without changes in amount or timing, and that sampling occurs after the average concentrations
-are the same from dose to dose.  Otherwise observations are \emph{NOT} superimposable and \code{tad} should
+are the same from dose to dose.  Otherwise observations are \\emph{NOT\} superimposable and \code{tad} should
 \emph{NOT} be used, i.e. should be set to \code{FALSE}.}
 
 \item{binCov}{A character vector of the names of covariates which are included in the model, i.e. in the
-model equations and which need to be binned.  For example \code{binCov='wt'} if \dQuote{wt} is included in a
-model equation like V=V0*wt, or \code{binCov=c( 'wt', 'crcl')} if both \dQuote{wt} and \dQuote{crcl}
+model equations and which need to be binned.  For example \code{binCov='wt'} if "wt" is included in a
+model equation like V=V0*wt, or \code{binCov=c( 'wt', 'crcl')} if both "wt" and "crcl"
 are included in model equations.}
 
 \item{doseC}{An integer with the number of dose/covariate bins to cluster, if known from a previous run of
