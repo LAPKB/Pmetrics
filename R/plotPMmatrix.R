@@ -78,16 +78,22 @@ plot.PM_data <- function(x, include, exclude, pred = NULL,
   
   #legend
   legendList <- amendLegend(legend)
-  layout <- modifyList(layout, list(showlegend = legendList[[1]]))
-  if(!is.null(legendList[[2]])){layout <- modifyList(layout, list(legend = legendList[[2]]))}
+  layout <- modifyList(layout, list(showlegend = legendList$showlegend))
+  if(length(legendList)>1){layout <- modifyList(layout, list(legend = within(legendList,rm(showlegend))))}
   
   #grid
   xaxis <- setGrid(xaxis, grid)
   yaxis <- setGrid(yaxis, grid)
   
-  #axis labels
-  xaxis <- modifyList(xaxis, list(title = xlab))
-  yaxis <- modifyList(yaxis, list(title = ylab))
+  #axis labels if needed
+  xtitle <- pluck(xaxis, "title")
+  ytitle <- pluck(yaxis, "title")
+  if(is.null(xtitle)){
+    xaxis <- modifyList(xaxis, list(title = list(text =  xlab)))
+  }
+  if(is.null(ytitle)){
+    yaxis <- modifyList(yaxis, list(title = list(text = ylab)))
+  }  
   
   #axis ranges
   if(!missing(xlim)){xaxis <- modifyList(xaxis, list(range = xlim)) }

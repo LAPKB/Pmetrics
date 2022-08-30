@@ -27,11 +27,11 @@ PM_fit <- R6::R6Class("PM_fit",
     #' in the current working directory. Again, if created on the fly,
     #' the object will not be available to other
     #' methods or other instances of `PM_fit`.
-    #' @param ... Other parameters passed to `PM_model` if created
+    #' @param ... Other parameters passed to `PM_data` or `PM_model` if created
     #' from a filename
     initialize = function(data = data, model = model, ...) {
       if (is.character(data)) {
-        data <- PM_data$new(data)
+        data <- PM_data$new(data, ...)
       }
       if (is.character(model)) {
         model <- PM_model$new(model, ...)
