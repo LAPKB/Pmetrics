@@ -7,12 +7,7 @@
 make_valid(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 }
 \arguments{
-\item{tad}{Boolean argument, default \code{FALSE}.  If \code{TRUE}, will include
-time after dose (TAD) in binning as well as standard relative time.  \emph{NOTE:} Including TAD is only
-valid if steady state conditions exist for each patient.  This means that dosing is stable and regular
-for each patient, without changes in amount or timing, and that sampling occurs after the average concentrations
-are the same from dose to dose.  Otherwise observations are \\emph{NOT\} superimposable and \code{tad} should
-\emph{NOT} be used, i.e. should be set to \code{FALSE}.}
+\item{tad}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
 
 \item{binCov}{A character vector of the names of covariates which are included in the model, i.e. in the
 model equations and which need to be binned.  For example \code{binCov='wt'} if "wt" is included in a
@@ -38,7 +33,7 @@ which will typically be a number, e.g. 1.}
 The output of \code{make_valid} is a list of class \code{PMvalid}, which is a list with the following.
 \itemize{
 \item simdata The combined, simulated files for all subjects using the population mean values and each subject
-as a template. See \link{SIMparse}} This object will be automatically saved to the run, to be loaded with
+as a template. See \link{SIMparse} This object will be automatically saved to the run, to be loaded with
 \link{PM_load} next time.
 \item timeBinMedian A data frame with the median times for each cluster bin.
 \item tadBinMedian A data frame with the median time after dose (tad) for each cluster bin.
@@ -55,7 +50,16 @@ Creates a Pmetrics validation object
 This function will create an object suitable for plotting visual predictive
 checks (VPCs) and prediction-corrected visual
 predictive checks (pcVPCs). The function will guide the user
-through appropriate clustering of doses, covariates and sample times for prediction correction using the methods of Bergstrand et al (2011).
+through appropriate clustering of doses, covariates and sample times for
+prediction correction using the methods of Bergstrand et al (2011).
+\emph{NOTE:} Including \code{tad} is only
+valid if steady state conditions exist for each patient.
+This means that dosing is stable and regular
+for each patient, without changes in amount or timing, and that
+sampling occurs after the average concentrations
+are the same from dose to dose.  Otherwise observations are \emph{NOT}
+superimposable and \code{tad} should
+\emph{NOT} be used, i.e. should be set to \code{FALSE}.
 }
 \seealso{
 \link{SIMrun}, \link{plot.PMvalid}

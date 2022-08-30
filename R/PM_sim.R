@@ -78,6 +78,14 @@ PM_sim <- R6::R6Class(
                  target.type = target.type,
                  ...
       )
+    },
+    #' @description
+    #' Calculate AUC
+    #' @details 
+    #' See [makeAUC]
+    #' @param ... Arguments passed to [makeAUC]
+    auc = function(...) {
+      makeAUC(data = self, ...)
     }
   )
 )
