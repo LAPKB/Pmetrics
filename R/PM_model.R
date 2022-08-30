@@ -61,7 +61,7 @@ PM_model <- R6::R6Class("PM_Vmodel",
 
 #' @export
 PM_model$new <- function(model, ..., julia = F) {
-  print(model)
+  # print(model)
   # Now we have multiple options for the model:
   # The model can be a String -> legacy run
   # The model can be a Function -> julia run
@@ -654,7 +654,7 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                  out <- list()
                                  for (i in 1:num_out) {
                                    out[[i]] <- list(
-                                     value = diffList[i],
+                                     val = diffList[i],
                                      err = list(
                                        model = if ((1 + as.numeric(gamma)) == 1) {
                                          additive(gamlam_value, constant = const_gamlam)
