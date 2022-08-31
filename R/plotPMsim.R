@@ -56,6 +56,7 @@
 #' value of the simulated quantile with upper and lower confidence intervals at that time.
 #' Additionally, the number of observations beyond the 5th and 95th percentiles will be reported
 #' and the binomial test P-value if this number is different than the expected 10% value.
+#' @param quiet Suppress plot if `TRUE`.
 #' @param \dots Other parameters which can be passed to control axis formatting. Specify as lists
 #' named either xaxis or yaxis. See `plotly::schema()` layout > xaxis/yaxis for options.
 #' @return Plots the simulation object.  If `obs` is included, a list will be returned with
@@ -87,7 +88,8 @@ plot.PMsim <- function(x,
                        xlab="Time",ylab="Output",
                        xlim, ylim, 
                        legend = F, 
-                       obs, ...){
+                       obs,
+                       quiet = F,...){
   
   
   dots <- list(...)
@@ -111,8 +113,8 @@ plot.PMsim <- function(x,
       #Case 2: probs = list(list(value=NA)) - unnecessary, but user might do it
       
       if(is.na(probs[[1]]$value)){ #is it set to NA?
-        length1 <- length(probs[[1]])
-        if(!is.null(probs)){ #more than one argument
+        probValues <- NA
+        if(length(probs[[1]])>1){ #more than one argument
           join <- amendLine(probs[[1]]$line) #extract the join format
         } else { #first probs value is just NA
           join <- amendLine(T)
@@ -141,11 +143,11 @@ plot.PMsim <- function(x,
   
   
   xaxis <- purrr::pluck(dots, "xaxis") #check for additional changes
-  xaxis <- if(is.null(xaxis)) xaxis <- list()
-  yaxis <- purrr::pluck(dots, "yaxis")
-  yaxis <- if(is.null(yaxis)) yaxis <- list()
+  if(is.null(xaxis)){xaxis <- list()}
   
-  if(!is.null(purrr::pluck(dots, "layout"))){stop("Specify individual layout elements, not layout.")}
+  yaxis <- purrr::pluck(dots, "yaxis")
+  if(is.null(yaxis)){yaxis <- list()}
+
   layout <- list()
   
   #legend
@@ -159,8 +161,8 @@ plot.PMsim <- function(x,
   yaxis <- setGrid(yaxis, grid)
   
   #axis labels
-  xaxis <- modifyList(xaxis, list(title = xlab))
-  yaxis <- modifyList(yaxis, list(title = ylab))
+  xaxis <- modifyList(xaxis, list(title = list(text = xlab)))
+  yaxis <- modifyList(yaxis, list(title = list(text = ylab)))
   
   #axis ranges
   if(!missing(xlim)){xaxis <- modifyList(xaxis, list(range = xlim)) }
@@ -200,7 +202,7 @@ plot.PMsim <- function(x,
   
   simout <- x
   
-  if(!(inherits(simout,"PM_sim"))){stop("Use PM_sim$run() to make object of class PM_sim.\n")}
+  if(!inherits(simout,c("PM_sim", "PMsim"))){stop("Use PM_sim$run() to make object of class PM_sim.\n")}
   if(!missing(obs)){
     if(!inherits(obs, c("PM_result", "PM_op"))) stop("Supply a PM_result or PM_op object for the obs argument.")
     if(inherits(obs, "PM_result")){ obs <- obs$op$data}
@@ -362,7 +364,7 @@ plot.PMsim <- function(x,
     if(!all(is.na(obs))){
       p <- p %>% add_markers(x = ~time, y = ~obs, data = obs, marker = marker)
     }
-    retValue <- NULL
+    retValue <- list()
   }
   
   
@@ -372,7 +374,9 @@ plot.PMsim <- function(x,
                             showlegend = layoutList$showlegend,
                             legend = layoutList$legend)
   
-  print(p)
+  
+  if(!quiet) print(p)
+  retValue$p <- p
   return(invisible(retValue))
 }
 
