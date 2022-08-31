@@ -1,21 +1,26 @@
 #' Creates a Pmetrics validation object
 #'
-#' \code{makeValid} will create an object suitable for plotting visual predictive checks (VPCs) and prediction-corrected visual
+#' This function will create an object suitable for plotting visual predictive 
+#' checks (VPCs) and prediction-corrected visual
 #' predictive checks (pcVPCs). The function will guide the user
-#' through appropriate clustering of doses, covariates and sample times for prediction correction using the methods of Bergstrand et al (2011).
+#' through appropriate clustering of doses, covariates and sample times for 
+#' prediction correction using the methods of Bergstrand et al (2011). 
+#' *NOTE:* Including `tad` is only
+#' valid if steady state conditions exist for each patient.  
+#' This means that dosing is stable and regular
+#' for each patient, without changes in amount or timing, and that 
+#' sampling occurs after the average concentrations
+#' are the same from dose to dose.  Otherwise observations are *NOT* 
+#' superimposable and `tad` should
+#' *NOT* be used, i.e. should be set to `FALSE`.
 #'
 #' @title Create a Pmetrics validation object
 #' @param run When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
 #' which will typically be a number, e.g. 1.
-#' @param tad Boolean argument, default \code{FALSE}.  If \code{TRUE}, will include
-#' time after dose (TAD) in binning as well as standard relative time.  \emph{NOTE:} Including TAD is only
-#' valid if steady state conditions exist for each patient.  This means that dosing is stable and regular
-#' for each patient, without changes in amount or timing, and that sampling occurs after the average concentrations
-#' are the same from dose to dose.  Otherwise observations are \emph{NOT} superimposable and \code{tad} should
-#' \emph{NOT} be used, i.e. should be set to \code{FALSE}.
+#' @template tad 
 #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
-#' model equations and which need to be binned.  For example \code{binCov='wt'} if \dQuote{wt} is included in a
-#' model equation like V=V0*wt, or \code{binCov=c( 'wt', 'crcl')} if both \dQuote{wt} and \dQuote{crcl}
+#' model equations and which need to be binned.  For example `binCov='wt'` if "wt" is included in a
+#' model equation like V=V0*wt, or `binCov=c( 'wt', 'crcl')` if both "wt" and "crcl"
 #' are included in model equations.
 #' @param doseC An integer with the number of dose/covariate bins to cluster, if known from a previous run of
 #' this function.  Including this value will skip the clustering portion for doses/covariates.
@@ -24,17 +29,19 @@
 #' @param tadC An integer with the number of time after dose bins to cluster, if known from a previous run of
 #' this function.  Including this value will skip the clustering portion for time after dose. This argument
 #' will be ignored if \code{tad=FALSE}.
-#' @param \dots Other parameters to be passed to \code{\link{SIMrun}}, especially \code{limits}.
-#' @return The output of \code{makeValid} is a list of class \code{PMvalid}, which is a list with the following.
-#' \item{simdata}{The combined, simulated files for all subjects using the population mean values and each subject
-#' as a template. See \code{\link{SIMparse}}.} This object will be automatically saved to the run, to be loaded with
-#' \code{\link{PMload}} next time.
-#' \item{timeBinMedian}{A data frame with the median times for each cluster bin.}
-#' \item{tadBinMedian}{A data frame with the median time after dose (tad) for each cluster bin.  This will be \code{NA} if
-#' \code{tad = FALSE}.}
-#' \item{opDF}{A data frame with observations, predicitons, and bin-corrected predictions for each subject.}
+#' @param \dots Other parameters to be passed to [SIMrun], especially `limits`.
+#' @return The output of `make_valid` is a list of class `PMvalid`, which is a list with the following.
+#' * simdata The combined, simulated files for all subjects using the population mean values and each subject
+#' as a template. See [SIMparse] This object will be automatically saved to the run, to be loaded with
+#' [PM_load] next time.
+#' * timeBinMedian A data frame with the median times for each cluster bin.
+#' * tadBinMedian A data frame with the median time after dose (tad) for each cluster bin.  
+#' This will be `NA` if `tad = FALSE`.
+#' * opDF A data frame with observations, predicitons, and bin-corrected predictions for each subject.
+#' * ndpe An object with results of normalized distrubition of prediction errors analysis.
+#' * npde_tad NPDE with time after dose rather than absolute time, if `tad = TRUE`
 #' @author Michael Neely
-#' @seealso \code{\link{SIMrun}}, \code{\link{plot.PMvalid}}
+#' @seealso [SIMrun], [plot.PMvalid]
 
 
 make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
@@ -424,6 +431,8 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   # add TAD for plotting options
   if (tad) {
     simFull$obs$tad <- unlist(tapply(dataSub$tad[dataSub$evid == 0], dataSub$id[dataSub$evid == 0], function(x) rep(x, nsim)))
+  } else {
+    simFull$obs$tad <- NA
   }
   
   # arrange simulations
@@ -447,30 +456,35 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   checkRequiredPackages("npde", repos = "LAPKB/npde")
   
   # prepare data for npde
-  obs <- tempDF %>% select("id", "time", "obs", "outeq")
+  obs <- tempDF %>% select(id, time, tad, out = obs, outeq)
+  
   
   # remove missing obs
-  obs <- obs[obs$obs != -99, ]
-  names(obs)[3] <- "out"
-  obs <- obs %>% arrange(id, time, outeq)
+  obs <- obs[obs$out != -99, ]
   
   simobs <- simFull$obs
   # remove missing simulations
   simobs <- simobs[simobs$out != -99, ]
-  simobs <- simobs %>% arrange(id, time, outeq)
   simobs$id <- rep(obs$id, times = nsim)
+  
+  simobs <- simobs %>% select(id, time, tad, out, outeq)
   
   
   #get number of outeq
   nout <- max(obs$outeq, na.rm=T)
   npdeRes <- list()
+  npdeRes2 <- list()
   
   for(thisout in 1:nout){
     
     obs_sub <- obs %>% filter(outeq == thisout) %>% select(id, time, out)
-    sim_sub <- simobs %>% filter(outeq == thisout, id %in% obs_sub$id)
-    # get NPDE
+    sim_sub <- simobs %>% filter(outeq == thisout, id %in% obs_sub$id) %>% select(id, time, out)
     
+    if(tad){
+      obs_sub2 <- obs %>% filter(outeq == thisout) %>% select(id, time=tad, out)
+      sim_sub2 <- simobs %>% filter(outeq == thisout, id %in% obs_sub$id) %>% select(id, time=tad, out)
+    }
+    # get NPDE
     npdeRes[[thisout]] <- tryCatch(npde::autonpde(namobs = obs_sub, namsim = sim_sub, 1, 2, 3, verbose = T), error = function(e) {
       e
       return(e)
@@ -488,11 +502,41 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
       }
       
     }
+    
+    # get NPDE for TAD
+    if(tad){
+      npdeRes2[[thisout]] <- tryCatch(npde::autonpde(namobs = obs_sub2, 
+                                                     namsim = sim_sub2, 
+                                                     iid = 1, ix = 2, iy = 3, 
+                                                     verbose = T), 
+                                      error = function(e) {
+                                        e
+                                        return(e)
+                                      })
+      if(inherits(npdeRes2[[thisout]], "error")){ #error, often due to non pos-def matrix
+        npdeRes2[[thisout]] <- tryCatch(npde::autonpde(namobs = obs_sub2, 
+                                                       namsim = sim_sub2, 
+                                                       iid = 1, ix= 2, iy = 3, 
+                                                       decorr.method = "inverse", 
+                                                       verbose = T), 
+                                        error = function(e) {
+                                          e
+                                          return(e)
+                                        })
+        if(inherits(npdeRes2[[thisout]], "error")){ #still with error
+          npdeRes2[[thisout]] <- paste0("Unable to calculate NPDE with TAD for outeq ",thisout)
+        } else {
+          cat(paste0("NOTE: Due to numerical instability, for outeq ", thisout, " and TAD, inverse decorrelation applied, not Cholesky (the default)."))
+        }
+        
+      }
+    }
+    
   }
   
   # Clean Up ----------------------------------------------------------------
   
-  valRes <- list(simdata = PM_sim$new(simFull), timeBinMedian = timeMedian, tadBinMedian = tadMedian, opDF = tempDF, npde = npdeRes)
+  valRes <- list(simdata = PM_sim$new(simFull), timeBinMedian = timeMedian, tadBinMedian = tadMedian, opDF = tempDF, npde = npdeRes, npde_tad = npdeRes2)
   class(valRes) <- c("PMvalid", "list")
   
   setwd(currwd)
@@ -502,22 +546,24 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 
 #' Creates a Pmetrics validation object
 #'
-#' \code{makeValid} will create an object suitable for plotting visual predictive checks (VPCs) and prediction-corrected visual
+#' `makeValid` will create an object suitable for plotting visual predictive 
+#' checks (VPCs) and prediction-corrected visual
 #' predictive checks (pcVPCs). The function will guide the user
-#' through appropriate clustering of doses, covariates and sample times for prediction correction using the methods of Bergstrand et al (2011).
+#' through appropriate clustering of doses, covariates and sample times for 
+#' prediction correction using the methods of Bergstrand et al (2011).
+#' *NOTE:* Including TAD is only
+#' valid if steady state conditions exist for each patient.  This means that dosing is stable and regular
+#' for each patient, without changes in amount or timing, and that sampling occurs after the average concentrations
+#' are the same from dose to dose.  Otherwise observations are *NOT* superimposable and `tad` should
+#' *NOT* be used, i.e. should be set to `FALSE`.
 #'
 #' @title Create a Pmetrics validation object
 #' @param run When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
 #' which will typically be a number, e.g. 1.
-#' @param tad Boolean argument, default \code{FALSE}.  If \code{TRUE}, will include
-#' time after dose (TAD) in binning as well as standard relative time.  \emph{NOTE:} Including TAD is only
-#' valid if steady state conditions exist for each patient.  This means that dosing is stable and regular
-#' for each patient, without changes in amount or timing, and that sampling occurs after the average concentrations
-#' are the same from dose to dose.  Otherwise observations are \emph{NOT} superimposable and \code{tad} should
-#' \emph{NOT} be used, i.e. should be set to \code{FALSE}.
+#' @template tad  
 #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
-#' model equations and which need to be binned.  For example \code{binCov='wt'} if \dQuote{wt} is included in a
-#' model equation like V=V0*wt, or \code{binCov=c( 'wt', 'crcl')} if both \dQuote{wt} and \dQuote{crcl}
+#' model equations and which need to be binned.  For example `binCov='wt'` if "wt" is included in a
+#' model equation like V=V0*wt, or `binCov=c( 'wt', 'crcl')` if both "wt" and "crcl"
 #' are included in model equations.
 #' @param doseC An integer with the number of dose/covariate bins to cluster, if known from a previous run of
 #' this function.  Including this value will skip the clustering portion for doses/covariates.
@@ -525,18 +571,18 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 #' this function.  Including this value will skip the clustering portion for observation times.
 #' @param tadC An integer with the number of time after dose bins to cluster, if known from a previous run of
 #' this function.  Including this value will skip the clustering portion for time after dose. This argument
-#' will be ignored if \code{tad=FALSE}.
-#' @param \dots Other parameters to be passed to \code{\link{SIMrun}}, especially \code{limits}.
-#' @return The output of \code{makeValid} is a list of class \code{PMvalid}, which is a list with the following.
-#' \item{simdata}{The combined, simulated files for all subjects using the population mean values and each subject
-#' as a template. See \code{\link{SIMparse}}.} This object will be automatically saved to the run, to be loaded with
-#' \code{\link{PMload}} next time.
-#' \item{timeBinMedian}{A data frame with the median times for each cluster bin.}
-#' \item{tadBinMedian}{A data frame with the median time after dose (tad) for each cluster bin.  This will be \code{NA} if
-#' \code{tad = FALSE}.}
-#' \item{opDF}{A data frame with observations, predicitons, and bin-corrected predictions for each subject.}
+#' will be ignored if `tad=FALSE`.
+#' @param \dots Other parameters to be passed to [SIMrun], especially `limits`.
+#' @return The output of `makeValid` is a list of class `PMvalid`, which is a list with the following.
+#' * simdata The combined, simulated files for all subjects using the population mean values and each subject
+#' as a template. See [SIMparse]. This object will be automatically saved to the run, to be loaded with
+#' [PMload] next time.
+#' * timeBinMedian A data frame with the median times for each cluster bin.
+#' * tadBinMedian A data frame with the median time after dose (tad) for each cluster bin.  This will be `NA` if
+#' `tad = FALSE`.
+#' * opDF A data frame with observations, predicitons, and bin-corrected predictions for each subject.
 #' @author Michael Neely
-#' @seealso \code{\link{SIMrun}}, \code{\link{plot.PMvalid}}
+#' @seealso [SIMrun], [plot.PMvalid]
 #' @export
 
 makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {

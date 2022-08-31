@@ -29,6 +29,7 @@ PM_sim <- R6::R6Class(
     totalCov = NULL,
     #' @description Create new simulation objects with results of `$sim`
     #' method for [PM_result]
+    #' @usage PM_sim$run
     #' @param list List of output passed by `$sim`.
     initialize = function(list) {
       self$obs <- list$obs
@@ -77,6 +78,14 @@ PM_sim <- R6::R6Class(
                  target.type = target.type,
                  ...
       )
+    },
+    #' @description
+    #' Calculate AUC
+    #' @details 
+    #' See [makeAUC]
+    #' @param ... Arguments passed to [makeAUC]
+    auc = function(...) {
+      makeAUC(data = self, ...)
     }
   )
 )

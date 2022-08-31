@@ -29,6 +29,9 @@ to internally validate the result by simulation methods.
 \item{\code{opDF}}{Observed-predicted data frame}
 
 \item{\code{npde}}{Data for Normalized Prediction Distribution Error}
+
+\item{\code{npde_tad}}{Data for Normalized Prediction Distribution Error
+using Time After Dose if available}
 }
 \if{html}{\out{</div>}}
 }

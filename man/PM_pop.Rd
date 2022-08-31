@@ -91,8 +91,6 @@ Calculate AUC
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{...}}{Arguments passed to \link{makeAUC}}
-
-\item{\code{data}}{The object to use for AUC calculation}
 }
 \if{html}{\out{</div>}}
 }
