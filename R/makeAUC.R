@@ -2,8 +2,7 @@
 #'
 #' \code{makeAUC} will calculate the area under the time concentration curve using the
 #' trapezoidal approximation from a variety of inputs.  If a PMpost, PMop, or PMsim object is specified, 
-#' \code{formula} is not required.  AUCs from PMop objects are based on observations.
-#' For AUCs based on predictions, use a PMpost object.
+#' \code{formula} is not required.
 #'
 #' @title Calculation of AUCs
 #' @param formula A formula of the form \code{obs ~ time}.  This is only required with data that is not of class PMpop, PMpost, PMop or PMsim.
@@ -38,8 +37,67 @@
 #' makeAUC(op)
 #' @export
 
-makeAUC <- function(data,formula,include,exclude,start=0,end=Inf,icen="median",
-                    outeq=1,block=1,method="linear",addZero=F){
+makeAUC <- function(data,
+                    formula,
+                    include, exclude,
+                    start = 0, end = Inf,
+                    icen = "median",
+                    outeq = 1, block = 1,
+                    method = "linear",
+                    addZero = F){
+  
+
+  #handle objects
+  if(missing(data)) stop("Please supply a data object.\n")
+  
+  data_class <- which(
+    inherits(data, c("PMsim", "PM_sim", 
+                     "PMop", "PM_op", 
+                     "PMpop", "PM_pop",
+                     "PMpost", "PM_post"), which = T) == 1
+  ) #will be all zeros except matching class, undefined if none
+  
+  if(length(data_class)>0){ #there was a match
+    data2 <- switch(data_class,
+                    data$obs, #PMsim
+                    data$obs, #PM_sim
+                    data %>% mutate(out = obs), #PMop
+                    data$data %>% mutate(out = obs), #PM_op
+                    data %>% mutate(out = pred), #PMpop
+                    data$data %>% mutate(out = pred), #PM_pop
+                    data %>% mutate(out = pred), #PMpost
+                    data$data %>% mutate(out = pred), #PM_post
+                    )
+  } else { #class not matched, so needs formula
+    if (missing(formula)) stop("\nPlease supply a formula of form 'out~time' for objects other than class PMsim, PMpost or PMop.")
+    y.name <- as.character(attr(terms(formula),"variables")[2])
+    x.name <- as.character(attr(terms(formula),"variables")[3])
+    if (length(grep(y.name,names(data)))==0) {stop(paste("\n'",y.name,"' is not a variable in the data.",sep=""))}
+    if (length(grep(x.name,names(data)))==0) {stop(paste("\n'",x.name,"' is not a variable in the data.",sep=""))}
+    data2 <- data %>% dplyr::mutate(time = get(x.name), out = get(y.name))
+  }
+
+  
+  #create dummy variables if missing
+  if(!"id" %in% names(data2)) data2$id <- 1 #add id if missing
+  if(!"outeq" %in% names(data2)) data2$outeq <- 1 #add outeq if missing
+  if(!"block" %in% names(data2)) data2$block <- 1 #add block if missing
+  if(!"icen" %in% names(data2)) data2$icen <- "median" #add icen if missing
+  if(missing(include)) include <- unique(data2$id)
+  if(missing(exclude)) exclude <- NA
+
+  #filter to create object to pass to auc calculation
+  data3 <- tibble::tibble(data2) %>%
+    dplyr::filter(outeq==outeq,
+           block==block,
+           id %in% include,
+           !id %in% exclude,
+           time>=start & time<=end,
+           icen==icen,
+           !is.na(out)
+    ) %>%
+    dplyr::select(id,time,out) %>%
+    dplyr::group_by(id)
   
   #auc function
   get_auc <- function(df, addZero, method) {
@@ -72,59 +130,16 @@ makeAUC <- function(data,formula,include,exclude,start=0,end=Inf,icen="median",
     return(auc)
   }
   
-  #handle objects
-  if(missing(data)) stop("Please supply a data object.\n")
-  
-  if (inherits(data,"PMsim")){
-    data2 <- data$obs
-  }
-  
-  if(inherits(data,"PMop")){
-    if(inherits(data,"list")) {data2 <- data[[2*outeq-1]]} else {data2 <- data}
-    data2 <- data2 %>% mutate(out = obs)
-  }
-  
-  if (inherits(data,c("PMpost","PMpop"))){
-    data2 <- data %>% mutate(out = pred)
-  }
-  
-  if(!inherits(data,c("PMsim","PMpost","PMpop","PMop"))){ #needs formula
-    if (missing(formula)) stop("\nPlease supply a formula of form 'out~time' for objects other than class PMsim, PMpost or PMop.")
-    y.name <- as.character(attr(terms(formula),"variables")[2])
-    x.name <- as.character(attr(terms(formula),"variables")[3])
-    if (length(grep(y.name,names(data)))==0) {stop(paste("\n'",y.name,"' is not a variable in the data.",sep=""))}
-    if (length(grep(x.name,names(data)))==0) {stop(paste("\n'",x.name,"' is not a variable in the data.",sep=""))}
-    data2 <- data %>% mutate(time = get(x.name), out = get(y.name))
-  }
-  
-  if(!"id" %in% names(data2)) data2$id <- 1 #add id if missing
-  if(!"outeq" %in% names(data2)) data2$outeq <- 1 #add outeq if missing
-  if(!"block" %in% names(data2)) data2$block <- 1 #add block if missing
-  if(!"icen" %in% names(data2)) data2$icen <- "median" #add icen if missing
-  if(missing(include)) include <- unique(data2$id)
-  if(missing(exclude)) exclude <- NA
-
-  #make object to pass to auc calculation
-  data3 <- tibble::tibble(data2) %>%
-    filter(outeq==outeq,
-           block==block,
-           id %in% include,
-           !id %in% exclude,
-           time>=start & time<=end,
-           icen==icen,
-           !is.na(out)
-    ) %>%
-    select(id,time,out) %>%
-    group_by(id)
-  
-  
   #calculate AUC
-  AUCdf <- tibble::tibble(id=group_data(data3)$id,
-                  tau = group_map(data3, ~get_auc(.x,addZero,method)) %>% unlist())
+  AUCdf <- tidyr::nest(data3, pk = !id) %>% 
+    dplyr::mutate(tau = sapply(pk, get_auc, addZero, method)) %>%
+    dplyr::select(id, tau)
+  
   class(AUCdf) <- c("PMauc",class(AUCdf))
+  
   #reorder according to original
   AUCdf <- AUCdf[match(unique(data3$id),AUCdf$id),]
-  return(AUCdf)
   
+  return(AUCdf)
 }
 

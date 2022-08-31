@@ -3,6 +3,9 @@
 \name{PM_sim}
 \alias{PM_sim}
 \title{Object to contain results of simulation}
+\usage{
+PM_sim$run
+}
 \arguments{
 \item{file_name}{The name of the .rds file to load.}
 
@@ -38,6 +41,8 @@ These both call \link{SIMrun} to execute the simulation and \link{SIMparse} to p
 the results and return the PM_sim objects. See help on both of these functions
 for further details.
 
+See \link{makeAUC}
+
 The saved object is an .rds file. When loaded, it should be assigned to an R
 object, e.g. \code{sim1 <- PM_sim$load("filename")}.
 
@@ -68,6 +73,7 @@ any due to truncation limits}
 \item \href{#method-PM_sim-save}{\code{PM_sim$save()}}
 \item \href{#method-PM_sim-plot}{\code{PM_sim$plot()}}
 \item \href{#method-PM_sim-pta}{\code{PM_sim$pta()}}
+\item \href{#method-PM_sim-auc}{\code{PM_sim$auc()}}
 \item \href{#method-PM_sim-clone}{\code{PM_sim$clone()}}
 }
 }
@@ -156,6 +162,23 @@ within the time range to target, ratio of peak concentration within the time ran
 to target, or ratio of minimum concentration within the time range to target.}
 
 \item{\code{...}}{Additional parameters, refer to \link{makePTA}}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_sim-auc"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_sim-auc}{}}}
+\subsection{Method \code{auc()}}{
+Calculate AUC
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$auc(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{makeAUC}}
 }
 \if{html}{\out{</div>}}
 }

@@ -48,7 +48,7 @@ in the current working directory. Again, if created on the fly,
 the object will not be available to other
 methods or other instances of \code{PM_fit}.}
 
-\item{\code{...}}{Other parameters passed to \code{PM_model} if created
+\item{\code{...}}{Other parameters passed to \code{PM_data} or \code{PM_model} if created
 from a filename}
 }
 \if{html}{\out{</div>}}

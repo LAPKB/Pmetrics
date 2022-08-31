@@ -502,12 +502,15 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       report <- c(report, paste("All covariates must have values for each subject's first event.  Fix manually."))
     }
     
-    #Reorder times
+    #Reorder times - assume times are in correct block
     if (length(grep("FAIL", err$timeOrder$msg)) > 0) {
+      
+      data2 <- makePMmatrixBlock(data2) %>% dplyr::group_by(id, block) %>%
+        dplyr::arrange(time, .by_group = T) %>% ungroup() %>% select(-block)
+      
       if (any(data2$evid == 4)) {
-        report <- c(report, paste("Your dataset has EVID=4 events. Unable to sort times automatically."))
+        report <- c(report, paste("Your dataset has EVID=4 events. Times ordered within each event block."))
       } else {
-        data2 <- data2[order(data2$id, data2$time),]
         report <- c(report, paste("Times for each subject have been ordered."))
       }
     }
@@ -541,11 +544,12 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       report <- c(report, paste("Your dataset has subjects with no observations.  Fix manually."))
     }
     
-    if (!quiet) cat("\nFIX DATA REPORT:\n\n")
-    report <- report[-1]
-    cat(paste0("(", 1:length(report), ") ",report))
-    flush.console()
-    #row.names(data2) <- 1:nrow(data2)
+    if (!quiet){
+      cat("\nFIX DATA REPORT:\n\n")
+      report <- report[-1]
+      cat(paste0("(", 1:length(report), ") ",report))
+      flush.console()
+    } 
     return(data2)
   }
   
