@@ -406,8 +406,8 @@ exRes2$save("valid.rds")
 # and load it again later.
 exRes2 <- PM_result$load("valid.rds")
 
-# Here is another way to generate a visual predicive check...
-npc_2 <- valid_2$simdata$plot(obs = exRes2$op$data, 
+# Here is another way to generate a visual predictive check...
+npc_2 <- valid_2$simdata$plot(obs = exRes2$op, 
                               log = F, binSize = 1)
 
 # The jagged appearance of the plot when binSize=0 is because different subjects have
