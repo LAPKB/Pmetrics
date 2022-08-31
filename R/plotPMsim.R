@@ -94,6 +94,10 @@ plot.PMsim <- function(x,
   
   dots <- list(...)
   
+  if(!missing(obs)){
+    if(!marker) marker <- T
+  }
+  
   marker <- amendMarker(marker, default = list(color = "black", symbol = "circle-open", size = 8))
   #parse probs
   
@@ -268,14 +272,14 @@ plot.PMsim <- function(x,
              quantile = readr::parse_number(quantile)/100) %>%
       select(time, quantile, value)
     
-    lower_confint <- function(sub) {
-      l.ci <- ceiling(nsim*probValues - qnorm(1-(1-ci)/2)*sqrt(nsim*probValues*(1-probValues)))
+    lower_confint <- function(n) {
+      l.ci <- ceiling(n*probValues - qnorm(1-(1-ci)/2)*sqrt(n*probValues*(1-probValues)))
       l.ci[l.ci==0] <- NA
       return(l.ci)
     }
     
-    upper_confint <- function(nsim) {
-      u.ci <- ceiling(nsim*probValues + qnorm(1-(1-ci)/2)*sqrt(nsim*probValues*(1-probValues)))
+    upper_confint <- function(n) {
+      u.ci <- ceiling(n*probValues + qnorm(1-(1-ci)/2)*sqrt(n*probValues*(1-probValues)))
       return(u.ci)
     }
     
@@ -310,12 +314,12 @@ plot.PMsim <- function(x,
                                    text = ~quantile,
                                    name = ~quantile)
     }
-    retValue <- NULL
+    retValue <- list()
     
     #add observations if supplied, and calculate NPC
     if(!all(is.na(obs))){
       p <- p %>% add_markers(x = ~time, y = ~obs, data = obs, marker = marker)
-      
+      obs$sim_quant <- NA
       
       for (i in 1:nrow(obs)){
         obs$sim_quant[i] <- ifelse(is.na(obs$obs[i]),NA,
@@ -349,8 +353,8 @@ plot.PMsim <- function(x,
       if (not.miss < nrow(obs)){cat(paste("\n",nrow(obs)-not.miss," observed values were obtained beyond the \nsimulated time range of ",min(sim_quant_df$time)," to ",max(sim_quant_df$time)," and were excluded.", sep = ""))}
       
       
-      retVal <- list(npc=npc, simsum=sim_quant_df, obs=obs)
-      class(retVal) <- c("PMnpc","list")
+      retValue <- modifyList(retValue, list(npc=npc, simsum=sim_quant_df, obs=obs))
+      class(retValue) <- c("PMnpc","list")
       
     }
   } else { #probs was set to NA or nsim < 10
@@ -376,7 +380,7 @@ plot.PMsim <- function(x,
   
   
   if(!quiet) print(p)
-  retValue$p <- p
-  return(invisible(retValue))
+  retValue <- modifyList(retValue, list(p = p))
+  return(retValue)
 }
 
