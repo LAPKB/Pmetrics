@@ -282,7 +282,6 @@ PM_op <- R6::R6Class(
     #' Calculate AUC
     #' @details 
     #' See [makeAUC]
-    #' @param data The object to use for AUC calculation
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       makeAUC(data = self$data, ...)
@@ -362,7 +361,6 @@ PM_post <- R6::R6Class(
     #' Calculate AUC
     #' @details 
     #' See [makeAUC]
-    #' @param data The object to use for AUC calculation
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       makeAUC(data = self$data, ...)
@@ -646,7 +644,6 @@ PM_pop <- R6::R6Class(
     #' Calculate AUC
     #' @details 
     #' See [makeAUC]
-    #' @param data The object to use for AUC calculation
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       makeAUC(data = self$data, ...)

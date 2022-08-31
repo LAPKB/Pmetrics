@@ -6,8 +6,8 @@ amendMarker <- function(.marker, default){
                          color = "red", 
                          size = 10, 
                          opacity = 0.5,
-                         stroke = "black", 
-                         span = 1)
+                         line = list(color = "black", width = 1)
+                         )
   if(!missing(default)){
     default_marker <- modifyList(default_marker, default)
   }
@@ -29,7 +29,7 @@ amendMarker <- function(.marker, default){
 
 #amend lines
 amendLine <- function(.line, default){
-  default_line <- list(color = "dodgerblue", width = 1, linetype = 1)
+  default_line <- list(color = "dodgerblue", width = 1, dash = "solid")
   
   if(!missing(default)){
     default_line <- modifyList(default_line, default)
@@ -50,9 +50,9 @@ amendLine <- function(.line, default){
   return(.line)
 }
 
-#amend lines
+#amend CI
 amendCI <- function(.ci, default){
-  default_ci <- list(color = "dodgerblue", dash = "dash", opacity = 0.4)
+  default_ci <- list(color = "dodgerblue", dash = "dash", width = 1, opacity = 0.4)
   
   if(!missing(default)){
     default_ci <- modifyList(default_ci, default)
@@ -74,7 +74,7 @@ amendCI <- function(.ci, default){
 
 #amend bar
 amendBar <- function(.bar, color = "dodgerblue", default){
-  default_bar <- list(color = color, width = 0.02, opacity = 0.75)
+  default_bar <- list(color = color, width = .02, opacity = 0.75)
   
   if(!missing(default)){
     default_bar <- modifyList(default_bar, default)
@@ -126,24 +126,27 @@ setGrid <- function(.axis, grid = F, default){
 
 
 #amend the legend
-amendLegend <- function(.legend){
+amendLegend <- function(.legend, default){
+  
+  default_legend <- list(showlegend = F)
+  if(!missing(default)){
+    default_legend <- modifyList(default_legend, default)
+  }
   
   if(inherits(.legend,"logical")){
-    if(.legend){
-      showlegend <- T
-      legendArgs <- NULL
+    if(!.legend){
+      .legend <- default_legend
     } else {
-      showlegend <- F
-      legendArgs <- NULL
+      .legend <- default_legend
+      .legend$showlegend <- T
+    }
+  } else {
+    if(inherits(.legend,"list")){
+      .legend <- modifyList(default_legend, .legend)
+      .legend$showlegend <- T
     }
   }
-  
-  if(inherits(.legend,"list")){
-    showlegend <- T
-    legendArgs <- .legend
-  }
-  
-  return(list(showlegend=showlegend, legendArgs=legendArgs))
+  return(.legend)
 }
 
 includeExclude <- function(.data, include, exclude){

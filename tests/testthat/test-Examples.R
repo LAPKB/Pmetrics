@@ -1,5 +1,5 @@
 test_that("Data object creation", {
-  exData <- PM_data$new(data = "ex.csv")
+  exData <- PM_data$new(data = "ex.csv", quiet = T)
   summary<-exData$summary()
   expect_equal(summary$nsub, 20)
   expect_equal(summary$ndrug, 1)
@@ -10,9 +10,8 @@ test_that("Data object creation", {
 
 
 test_that("PMdata print",{
-  exData <- PM_data$new(data = "ex.csv")
-  expect_output(exData$print(viewer = F),"2    1    1  24.00   0  600   NA NA     1    NA    NA   NA     NA     NA NA")
-  expect_output(exData$print(viewer = F),"259 59.0      1  31      1    170")
+  exData <- PM_data$new(data = "ex.csv", quiet = T)
+  expect_snapshot_output(exData$print(viewer = F))
 })
 
 test_that("Model object creation",{
@@ -131,7 +130,7 @@ test_that("Fit object creation",{
       )
     )
   ))
-  exFit <- PM_fit$new(model = mod1, data = "ex.csv")
+  exFit <- PM_fit$new(model = mod1, data = "ex.csv", quiet = T)
   expect_output(exFit$check(),"Excellent - there were no errors found in your model file.")
   expect_output(exFit$check(),"No data errors found.")
 })
@@ -165,7 +164,7 @@ test_that("Basic model fitting", {
 
 test_that("Load model",{
   exRes <- PM_load(1)
-  expect_equal(exRes$data,PM_data$new(data = "ex.csv"))
+  expect_equal(exRes$data$data,PM_data$new(data = "ex.csv", quiet=T)$data, ignore_attr = T)
   expect_equal(exRes$model$model_list,PM_model$new(list(
     pri = list(
       Ka = range(0.1, 0.9),
@@ -192,8 +191,5 @@ test_that("Load model",{
   expect_output(print(exRes$op$summary()),"Mean weighed squared prediction error: 0.99")
   expect_true(all(class(exRes$cycle) == c("PM_cycle", "R6")))
   expect_output(print(exRes$cycle$ll),"440.1974")
-  # expect_output(print(exRes$cycle$bic),"464.8381")
-  # expect_output(print(exRes$cycle$aic),"450.6168")
-  # expect_output(print(exRes$cycle$median),"100 1.020956 0.9975805 0.9711862 0.8552348")
-  # expect_output(print(exRes$cycle$sd),"100 1.130509 0.9829713 1.0694383 1.011984")
+  
 })
