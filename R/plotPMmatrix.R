@@ -50,7 +50,7 @@
 plot.PM_data <- function(x, include, exclude, pred = NULL,
                          mult = 1, outeq = 1, group, block = 1,
                          log = F, 
-                         join = T,
+                         line = T,
                          marker = T,
                          grid = F,
                          legend = F,
@@ -176,19 +176,19 @@ plot.PM_data <- function(x, include, exclude, pred = NULL,
       text <- ~id
     }
     
-    p <- allsub %>% filter(src == "obs") %>%
+    p <- allsub %>% plotly::filter(src == "obs") %>%
       plotly::plot_ly(x = ~time, y = ~out * mult) %>%
-      add_markers(marker = marker,
+      plotly::add_markers(marker = marker,
                   text = text,
                   hovertemplate = hovertemplate) %>%
-      add_lines(line = line)
+      plotly::add_lines(line = line)
     
     if(includePred){
       p <- p %>% 
-        add_lines(data = allsub[allsub$src == "pred",], x = ~time, y = ~out,
+        plotly::add_lines(data = allsub[allsub$src == "pred",], x = ~time, y = ~out,
                   line = predArgs )
     }
-    p <- p %>% layout(xaxis = layoutList$xaxis,
+    p <- p %>% plotly::layout(xaxis = layoutList$xaxis,
                       yaxis = layoutList$yaxis,
                       showlegend = layoutList$showlegend,
                       legend = layoutList$legend) 
