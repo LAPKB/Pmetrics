@@ -26,7 +26,7 @@ test_that("Model object creation",{
   lag = list("Tlag(1) = Tlag1"),
   out = list(
     Y1 = list(
-      value = "X(2)/V",
+      val = "X(2)/V",
       err = list(
         model = proportional(5),
         assay = c(0.02, 0.05, -0.0002, 0)
@@ -34,6 +34,7 @@ test_that("Model object creation",{
     )
   )
 ))
+
 expect_equal(mod1$model_list$pri$Ka, range(0.1,0.9))
 expect_equal(mod1$model_list$pri$Ka$max, 0.9)
 expect_equal(mod1$model_list$pri$Ka$min, 0.1)
