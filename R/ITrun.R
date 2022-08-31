@@ -71,7 +71,7 @@
 ITrun <- function(model="model.txt",data="data.csv",run,
                   include,exclude,ode=-4,tol=0.001,salt,cycles=100,
                   xdev=5,icen="median",
-                  auto=T,intern=F,quiet=F,overwrite=F,nocheck=F,alq=F){
+                  auto=T,intern=F,quiet=F,overwrite=F,nocheck=F,alq=F, report = T){
   
   if(missing(run)) run <- NULL
   if(missing(include)) include <- NULL
@@ -82,7 +82,8 @@ ITrun <- function(model="model.txt",data="data.csv",run,
   outpath <- .PMrun(type="IT2B",model=model,data=data,run=run,
                    include=include,exclude=exclude,ode=ode,tol=tol,salt=salt,cycles=cycles,icen=icen,
                    xdev=xdev,
-                   auto=auto,intern=intern,quiet=quiet,overwrite=overwrite,nocheck=nocheck,parallel=F,batch=batch,alq=alq)
+                   auto=auto,intern=intern,quiet=quiet,overwrite=overwrite,nocheck=nocheck,parallel=F,batch=batch,alq=alq,
+                   report = report)
   return(outpath)
   
 }
