@@ -167,7 +167,7 @@ exRes$data$plot()
 exRes$data$plot(overlay = F, 
                 pred = list(exRes$post, color = "green"), 
                 marker = list(symbol = "diamond-open", color = "blue", opacity = 0.8), 
-                join = F, log = T)
+                line = F, log = T)
 # You can see all the possible symbols here: https://plotly.com/r/reference/scatter/#scatter-marker-symbol
 
 # The following are the older S3 method with plot(...) for the first two examples
@@ -181,7 +181,7 @@ exRes$data$summary()
 # Plot some observed vs. predicted data.  Type ?plot.PMop in the R console for help.
 exRes$op$plot()
 exRes$op$plot(pred.type = "pop")
-exRes$op$plot(linear = T)
+exRes$op$plot(loess = T)
 
 # the original op object data can be accessed via
 exRes$op$data
@@ -698,7 +698,6 @@ mmopt_2 <- exRes2$MM_opt(data="../src/ptaex1.csv",nsamp = 2, predInt = c(120, 14
 mmopt_2
 # plot it, with the red lines indicating the optimal sample times.
 # see ?plot.MMopt for help
-# See plots.pdf, page 48
 plot(mmopt_2)
 
 

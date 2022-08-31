@@ -24,6 +24,9 @@ PM_valid <- R6::R6Class("PM_valid",
         opDF = NULL,
         #' @field npde Data for Normalized Prediction Distribution Error
         npde = NULL,
+        #' @field npde_tad Data for Normalized Prediction Distribution Error 
+        #' using Time After Dose if available
+        npde_tad = NULL,
         #' @description 
         #' Create a new PM_valid object from a PM_result
         #' @param result The PM_result object
@@ -36,6 +39,7 @@ PM_valid <- R6::R6Class("PM_valid",
             self$tadBinMedian <- valRes$tadBinMedian
             self$opDF <- valRes$opDF
             self$npde <- valRes$npde
+            self$npde_tad <- valRes$npde_tad
         },
         #' @description 
         #' Plot method. Calls [plot.PMvalid].
