@@ -173,7 +173,7 @@ makePTA <- function(simdata,targets,target.type, ...){
   
   #what kind of object is simdata?
   #lists, characters are assumed to be simulations 
-  dataType <- switch(EXPR=class(simdata)[1], PM_sim=0,PMsim=1,list=2,character=3,PMpost=4,PMmatrix=5,PMta=6,-1)
+  dataType <- switch(EXPR=class(simdata)[1], PM_sim=0,PMsim=1,list=2,character=3,PMpost=4,PMmatrix=5,PMpta=6,-1)
   if(dataType==-1){
     stop("You must specify a PMsim, list of PMsim, character vector of simulator output files, PMpost, or PMmatrix object\n")
   }
@@ -200,14 +200,16 @@ makePTA <- function(simdata,targets,target.type, ...){
     }
     
     if(dataType==4){  #PMpost object
-      simdata <- simdata[simdata$icen==icen & simdata$block==block,]
+      simdata <- simdata %>% filter(icen == !!icen & block == !!block)
+      #simdata <- simdata[simdata$icen==icen & simdata$block==block,]
       temp <- list(obs=data.frame(id=simdata$id,time=simdata$time,out=simdata$pred,outeq=simdata$outeq))
       simdata <- list(temp)
     }
     
     if(dataType==5){  #PMmatrix object
       simdata <- makePMmatrixBlock(simdata)
-      simdata <- simdata[simdata$evid==0 & simdata$block==block,]
+      simdata <- simdata %>% filter(evid==0 & block== !!block)
+      #simdata <- simdata[simdata$evid==0 & simdata$block==block,]
       temp <- list(obs=data.frame(id=simdata$id,time=simdata$time,out=simdata$out,outeq=simdata$outeq))
       simdata <- list(temp)
     }
@@ -285,7 +287,8 @@ makePTA <- function(simdata,targets,target.type, ...){
       }
       
       # include only those that match OUTEQ, are not N/A and fall between START and END
-      wrk.sim <- wrk.sim[wrk.sim$outeq == outeq & !is.na(wrk.sim$out) & wrk.sim$time >= wrk.start & wrk.sim$time <= wrk.end, ] 
+      wrk.sim <- wrk.sim %>% filter(outeq == !!outeq & !is.na(out) & time >= wrk.start & time <= wrk.end) 
+      #wrk.sim <- wrk.sim[wrk.sim$outeq == outeq & !is.na(wrk.sim$out) & wrk.sim$time >= wrk.start & wrk.sim$time <= wrk.end, ] 
       
       if (length(wrk.sim) == 0) {
         cat(paste("Note: Simulation ", simnum, " omitted because no simulated observations matched required time period/output equation.\n", sep = ""))
@@ -311,13 +314,13 @@ makePTA <- function(simdata,targets,target.type, ...){
         ptaM <- vector("list", n_targ)
         
         allpairs <- by(wrk.sim, wrk.sim$id, function(x) pairUp(x))
-        
+
         if (!simTarg) { # if not simulated targets
           # secondary FOR cycle, cycles TARGETS from 1 to number of targets 
           for (t in 1:n_targ) {
             targ <- targets[t] #get current target
             if (min(wrk.sim$out)>=targ) {
-              # all succeeded 100% for this target (possible at very hight MICs)
+              # all succeeded 100% for this target (possible at very high MICs)
               ptaM[[t]] <- unlist(lapply(1:wrk.nprofile, function(x) x <- 1))
             } else if (max(wrk.sim$out)<=targ) {
               # all failed at 0% for this target (unlikely to happen if there is at least 1 subject dropping to 0)
@@ -340,7 +343,9 @@ makePTA <- function(simdata,targets,target.type, ...){
       
       ##################    calculation for AUC  ##################    
       if (target.type == "auc") {
-        auc <- by(wrk.sim, wrk.sim$id, function(x) makeAUC(x, out ~ time, start = wrk.start, end = wrk.end)[,2])
+        
+        auc <- wrk.sim %>% group_by(id) %>% makeAUC(., out ~ time, start = wrk.start, end = wrk.end) %>%
+          ungroup() %>% select(tau) %>% as.vector(.)
         if (simTarg) {
           results[simnum,,] <- matrix(c(randTarg, auc/randTarg), ncol = 2)
         } else {
