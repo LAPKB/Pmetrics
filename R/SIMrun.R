@@ -479,6 +479,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
       corMat <- cbind(corMat, corCVsub)
       corMat2 <- as.matrix(c(corCV[(1:nsimcov), (nsimcov + 1):(npar + nsimcov)], corCV[(1:nsimcov), (1:nsimcov)]), ncol = 1)
       dimnames(corMat2)[[2]] <- dimnames(corCV)[[1]][1] # replace dropped name
+      dimnames(corMat2)[[1]] <- dimnames(corMat)[[2]] #temp fix for Katharine's issue 
       corMat <- rbind(corMat, t(corMat2))
     } else {
       corCVsub <- corCV[(nsimcov + 1):(npar + nsimcov), (1:nsimcov)]
