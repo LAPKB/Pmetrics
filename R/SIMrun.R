@@ -484,6 +484,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
       corCVsub <- corCV[(nsimcov + 1):(npar + nsimcov), (1:nsimcov)]
       corMat <- cbind(corMat, corCVsub)
       corMat2 <- cbind(corCV[(1:nsimcov), (nsimcov + 1):(npar + nsimcov)], corCV[(1:nsimcov), (1:nsimcov)])
+      dimnames(corMat2)[[1]] <- dimnames(corMat)[[2]] #temp fix for Katharine's issue 
       corMat <- rbind(corMat, corMat2)
     }
     
