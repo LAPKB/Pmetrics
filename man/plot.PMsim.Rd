@@ -20,6 +20,7 @@
   ylim,
   legend = F,
   obs,
+  quiet = F,
   ...
 )
 }
@@ -150,6 +151,8 @@ observation and the
 value of the simulated quantile with upper and lower confidence intervals at that time.
 Additionally, the number of observations beyond the 5th and 95th percentiles will be reported
 and the binomial test P-value if this number is different than the expected 10\% value.}
+
+\item{quiet}{Suppress plot if \code{TRUE}.}
 
 \item{\dots}{Other parameters which can be passed to control axis formatting. Specify as lists
 named either xaxis or yaxis. See \code{plotly::schema()} layout > xaxis/yaxis for options.}
