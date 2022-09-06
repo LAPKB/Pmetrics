@@ -21,7 +21,8 @@ ITrun(
   quiet = F,
   overwrite = F,
   nocheck = F,
-  alq = F
+  alq = F,
+  report = T
 )
 }
 \arguments{
