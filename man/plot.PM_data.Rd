@@ -14,7 +14,7 @@
   group,
   block = 1,
   log = F,
-  join = T,
+  line = T,
   marker = T,
   grid = F,
   legend = F,
@@ -64,6 +64,20 @@ the yaxis type value in the layout object in plotly.
 Use the plotly \code{plotly::schema()} command in the console and navigate
 to layout > layoutAttributes > yaxis > type.
 Example: \code{log = T}}
+
+\item{line}{Controls characteristics of lines.
+This argument maps to plotly trace line attributes.
+\code{TRUE} will plot default lines. \code{FALSE} will suppress lines.
+If a list, can control many line characteristics, including overriding defaults.
+Use the plotly \code{plotly::schema()} command in the console and navigate
+to traces > scatter > attributes > line to see all the ways the line
+can be formatted. Most common will be:
+\itemize{
+\item color Line color.
+\item dash Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > line > dash > values.
+\item width Thickness in points.
+Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
+}}
 
 \item{marker}{Controls the plotting symbol for observations.
 This argument maps to the plotly marker object.
@@ -145,20 +159,6 @@ this axis using lists as additional arguments to the plot function.
 Example: \code{yaxis = list(title = list(text = "Concentration", font = list(color = "blue", family = "Times New Roman", size = 12)))}}
 
 \item{...}{Not currently implemented.}
-
-\item{line}{Controls characteristics of lines.
-This argument maps to plotly trace line attributes.
-\code{TRUE} will plot default lines. \code{FALSE} will suppress lines.
-If a list, can control many line characteristics, including overriding defaults.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to traces > scatter > attributes > line to see all the ways the line
-can be formatted. Most common will be:
-\itemize{
-\item color Line color.
-\item dash Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > line > dash > values.
-\item width Thickness in points.
-Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
-}}
 }
 \value{
 Plots the object.
