@@ -180,9 +180,14 @@
       if (inherits(prior, "NPAG")) {
         priorString <- c(0, "prior.txt")
       }
-      # prior is an NPdata object
+      # prior is a file_name
       if (is.character(prior)) {
-        priorString <- c(0, prior)
+        priorDEN <- Sys.glob(paste0(currwd,"/",prior))[1]
+        if (length(priorDEN) > 0) {
+          file.copy(from = priorDEN, to = paste(getwd(), "/prior.txt", sep = ""))
+          prior <- "prior.txt"
+          priorString <- c(0, prior)
+        }
       }
       # prior is the name of a file
       if (is.numeric(prior)) {
