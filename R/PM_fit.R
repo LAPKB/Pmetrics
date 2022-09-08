@@ -50,8 +50,10 @@ PM_fit <- R6::R6Class("PM_fit",
         cat(sprintf("Runing Legacy"))
         if(engine=="npag"){
           Pmetrics::NPrun(private$model$legacy_file_path, private$data$standard_data, ...)
-        } else {
+        } else if(engine=="it2b") {
           Pmetrics::ITrun(private$model$legacy_file_path, private$data$standard_data, ...)
+        } else{
+          endNicely(paste0("Unknown engine: ",engine,". \n"))
         }
       } else if (inherits(private$model, "PM_model_list")) {
         engine <- tolower(engine)
