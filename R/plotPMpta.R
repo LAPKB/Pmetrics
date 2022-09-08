@@ -90,7 +90,7 @@
 #' @author Michael Neely
 #' @seealso [makePTA]
 #' @export
-
+#' @family PMplots
 
 plot.PMpta <- function(x,
                        include, exclude,

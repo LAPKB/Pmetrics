@@ -46,6 +46,7 @@
 #' @author Michael Neely
 #' @seealso [PM_data], [PM_result]
 #' @export
+#' @family PMplots
 
 plot.PM_data <- function(x, include, exclude, pred = NULL,
                          mult = 1, outeq = 1, group, block = 1,

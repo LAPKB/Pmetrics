@@ -15,6 +15,7 @@
 #' @author Michael Neely
 #' @seealso \code{\link{plot.PMsim}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
+#' @family PMplots
 
 
 plot.MMopt <- function(x, probs = NA, line = T,...){

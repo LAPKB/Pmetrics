@@ -189,10 +189,18 @@ and double clicking will hide all other quantiles.
 \seealso{
 \link{PM_sim}, \link{plot_ly}, \link{schema}
 
-Other plotly: 
-\code{\link{plot.PM_op}()}
+Other PMplots: 
+\code{\link{plot.MMopt}()},
+\code{\link{plot.PM_data}()},
+\code{\link{plot.PM_final}()},
+\code{\link{plot.PM_op}()},
+\code{\link{plot.PMcov}()},
+\code{\link{plot.PMcycle}()},
+\code{\link{plot.PMdopt}()},
+\code{\link{plot.PMpta}()},
+\code{\link{plot.PMvalid}()}
 }
 \author{
 Michael Neely
 }
-\concept{plotly}
+\concept{PMplots}
