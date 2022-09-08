@@ -64,6 +64,7 @@
 #' @author Michael Neely
 #' @seealso [makeValid]
 #' @export
+#' @family PMplots
 
 plot.PMvalid <- function(x, 
                          type = "vpc", 

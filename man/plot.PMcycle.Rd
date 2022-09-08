@@ -48,7 +48,19 @@ plot(cycle.1,omit=0)
 }
 \seealso{
 \code{\link{makeCycle}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
+
+Other PMplots: 
+\code{\link{plot.MMopt}()},
+\code{\link{plot.PM_data}()},
+\code{\link{plot.PM_final}()},
+\code{\link{plot.PM_op}()},
+\code{\link{plot.PMcov}()},
+\code{\link{plot.PMdopt}()},
+\code{\link{plot.PMpta}()},
+\code{\link{plot.PMsim}()},
+\code{\link{plot.PMvalid}()}
 }
 \author{
 Michael Neely
 }
+\concept{PMplots}

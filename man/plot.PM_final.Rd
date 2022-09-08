@@ -134,7 +134,19 @@ plot(final.2)
 }
 \seealso{
 \link{makeFinal}, \link{plot}, \link{par}, \link{axis}
+
+Other PMplots: 
+\code{\link{plot.MMopt}()},
+\code{\link{plot.PM_data}()},
+\code{\link{plot.PM_op}()},
+\code{\link{plot.PMcov}()},
+\code{\link{plot.PMcycle}()},
+\code{\link{plot.PMdopt}()},
+\code{\link{plot.PMpta}()},
+\code{\link{plot.PMsim}()},
+\code{\link{plot.PMvalid}()}
 }
 \author{
 Michael Neely
 }
+\concept{PMplots}

@@ -32,6 +32,7 @@
 #' data(cycle.1)
 #' plot(cycle.1)
 #' plot(cycle.1,omit=0)
+#' @family PMplots
 
 
 
