@@ -60,6 +60,7 @@
 #' @examples
 #' data(cov.1)
 #' plot(cov.1,V~wt)
+#' @family PMplots
 
 
 

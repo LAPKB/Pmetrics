@@ -58,273 +58,77 @@
 
 #' Example output from an NPAG run.
 #'
+#' This is an R6 Pmetrics [PM_result] object created with [PM_load] after an NPAG run.
 #' The run consisted of a model with an absorptive compartment and a central compartment.
 #' There were 4 parameters in the model: lag time of absorption (Tlag1),
 #' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
 #' There were 20 subjects in the dataset.  The run was
 #' 100 cycles long and did not converge.
 #'
-#' @name NPdata.1
+#' @name NPex
 #' @docType data
 #' @title Example NPAG Output
-#' @usage NPdata.1
-#' @format An R data frame made by \code{\link{NPparse}} at the end of a successful NPAG run.
+#' @usage NPex
+#' @format R6 [PM_result]
 #' @author Michael Neely
 #' @keywords datasets
-#' 
-"NPdata.1"
-#' 
-#' Example output from an NPAG run.
 #'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name final.1
-#' @docType data
-#' @title Example NPAG Output
-#' @usage final.1
-#' @format An R data frame made by \code{\link{makeFinal}} at the end of a successful NPAG run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"final.1"
-#' 
-#' Example output from an NPAG run.
-#'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name cycle.1
-#' @docType data
-#' @title Example NPAG Output
-#' @usage cycle.1
-#' @format An R data frame made by \code{\link{makeCycle}} at the end of a successful NPAG run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"cycle.1"
-#' 
-#' Example output from an NPAG run.
-#'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name op.1
-#' @docType data
-#' @title Example NPAG Output
-#' @usage op.1
-#' @format An R data frame made by \code{\link{makeOP}} at the end of a successful NPAG run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"op.1"
-#' 
-#' Example output from an NPAG run.
-#'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name cov.1
-#' @docType data
-#' @title Example NPAG Output
-#' @usage cov.1
-#' @format An R data frame made by \code{\link{makeCov}} at the end of a successful NPAG run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"cov.1"
-#' 
-#' Example output from an NPAG run.
-#'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name pop.1
-#' @docType data
-#' @title Example NPAG Output
-#' @usage pop.1
-#' @format An R data frame made by \code{\link{makePop}} at the end of a successful NPAG run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"pop.1"
-#' 
-#' Example output from an NPAG run.
-#'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name post.1
-#' @docType data
-#' @title Example NPAG Output
-#' @usage post.1
-#' @format An R data frame made by \code{\link{makePost}} at the end of a successful NPAG run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"post.1"
-#' 
-#' Example output from an NPAG run.
-#'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name mdata.1
-#' @docType data
-#' @title Example NPAG Output
-#' @usage mdata.1
-#' @format The original data file as read by \code{\link{PMreadMatrix}} at the end of a successful NPAG run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"mdata.1"
 
-
+"NPex"
 
 #' Example output from an IT2B run.
 #'
+#' This is an R6 Pmetrics [PM_result] object created with [PM_load] after an NPAG run.
 #' The run consisted of a model with an absorptive compartment and a central compartment.
 #' There were 4 parameters in the model: lag time of absorption (Tlag1),
 #' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
 #' There were 20 subjects in the dataset.  The run was
 #' 100 cycles long and did not converge.
 #'
-#' @name ITdata.2
+#' @name ITex
 #' @docType data
 #' @title Example IT2B Output
-#' @usage ITdata.2
-#' @format An R data frame made by \code{\link{NPparse}} at the end of a successful IT2B run.
+#' @usage ITex
+#' @format R6 [PM_result]
 #' @author Michael Neely
 #' @keywords datasets
 #' 
-"ITdata.2"
-#' 
-#' Example output from an IT2B run.
-#'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name final.2
-#' @docType data
-#' @title Example IT2B Output
-#' @usage final.2
-#' @format An R data frame made by \code{\link{makeFinal}} at the end of a successful IT2B run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"final.2"
-#' 
-#' Example output from an IT2B run.
-#'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name cycle.2
-#' @docType data
-#' @title Example IT2B Output
-#' @usage cycle.2
-#' @format An R data frame made by \code{\link{makeCycle}} at the end of a successful IT2B run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"cycle.2"
-#' 
-#' Example output from an IT2B run.
-#'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name op.2
-#' @docType data
-#' @title Example IT2B Output
-#' @usage op.2
-#' @format An R data frame made by \code{\link{makeOP}} at the end of a successful IT2B run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"op.2"
-#' 
-#' Example output from an IT2B run.
-#'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name cov.2
-#' @docType data
-#' @title Example IT2B Output
-#' @usage cov.2
-#' @format An R data frame made by \code{\link{makeCov}} at the end of a successful IT2B run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"cov.2"
-#' 
-#' Example output from an IT2B run.
-#'
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name mdata.2
-#' @docType data
-#' @title Example IT2B Output
-#' @usage mdata.2
-#' @format The original data file as read by \code{\link{PMreadMatrix}} at the end of a successful IT2B run.
-#' @author Michael Neely
-#' @keywords datasets
-#' 
-"mdata.2"
 
-#' Example dataset for an NPAG/IT2B run, which has been corrupted with errors.
+"ITex"
+
+#' Example data set for an NPAG/IT2B run.
 #'
-#' Errors include missing covariate on first line for subject 1, alphanumeric covariate for
+#' Data are kindly supplied by Chuck Peloquin, PharmD. They consist of multiple 
+#' rifapentine oral doses followed by 6-7 concentrations in 20 adult subjects.
+#' Covariates include weight (kg), africa (origin), age (years), 
+#' gender (1 = male), and height (cm).
+#' 
+#' @name dataEx
+#' @docType data
+#' @title Pmetrics data file 
+#' @usage dataEx
+#' @format [PM_data]
+#' @author Michael Neely
+#' @keywords datasets
+
+"dataEx"
+
+#' Example data set for an NPAG/IT2B run, which has been corrupted with errors.
+#'
+#' Errors include missing covariate on first line for subject 1, 
+#' alphanumeric covariate for
 #' gender, and trailing dose for subject 1.
 #' 
 #'
-#' @name badCSV
+#' @name badData
 #' @docType data
 #' @title Pmetrics data file with errors
-#' @usage badCSV
-#' @format badCSV is a PMmatrix object as read by \code{\link{PMreadMatrix}}
+#' @usage badData
+#' @format [PM_data]
 #' @author Michael Neely
 #' @keywords datasets
 
-"badCSV"
+"badData"
 
 
 
@@ -336,15 +140,15 @@
 #'
 
 #'
-#' @name model
+#' @name modEx
 #' @docType data
-#' @title Pmetrics model file
-#' @usage model
-#' @format model is a PMmatrix model.txt file.  See user manual for details on model format.
+#' @title Pmetrics model object 
+#' @usage modEx
+#' @format R6 [PM_model]
 #' @author Michael Neely
 #' @keywords datasets
 
-"model"
+"modEx"
 
 
 

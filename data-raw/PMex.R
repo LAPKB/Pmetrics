@@ -1,27 +1,31 @@
-## code to prepare `PMex` dataset goes here
+#code to prepare example datasets for Pmetrics
+#re-run when datasets change
+#edit DataDescriptions.R for documentation of datasets
+
 library(Pmetrics)
 library(usethis)
-setwd("data-raw")
-#file.copy(from = c("ex.csv","model.txt"),to="Runs")
+
+setwd("~/LAPK/Development/Pmetrics/data-raw")
+#model file
+modEx <- PM_model$new("model.txt")
+usethis::use_data(modEx)
+
+#data
+dataEx <- PM_data$new("ex.csv")
+usethis::use_data(dataEx)
+
+#bad data
+badData<- PM_data$new("bad.csv")
+usethis::use_data(badData)
+
+
 setwd("Runs")
-#NPrun(data="ex.csv")
-PMload(1)
+#NPAG
+NPex <- PM_load(1)
+use_data(NPex)
+
+#IT2B
+ITex <- PM_load(2)
+use_data(ITex)
 
 
-use_data(NPdata.1)
-use_data(final.1)
-use_data(op.1)
-use_data(cycle.1)
-use_data(pop.1)
-use_data(post.1)
-use_data(cov.1)
-use_data(mdata.1)
-
-#ITrun(data=1,model=1)
-PMload(2)
-use_data(ITdata.2)
-use_data(final.2)
-use_data(op.2)
-use_data(cycle.2)
-use_data(cov.2)
-use_data(mdata.2)
