@@ -74,7 +74,7 @@
 #' @author Michael Neely
 #' @seealso [PM_sim], [plot_ly], [schema]
 #' @export
-#' @family plotly
+#' @family PMplots
 
 plot.PMsim <- function(x, 
                        mult = 1, 
@@ -155,8 +155,6 @@ plot.PMsim <- function(x,
   layout <- list()
   
   #legend
-  
-
   legendList <- amendLegend(legend, default = list(title = list(text = "<b> Quantiles </b>")))
   layout <- modifyList(layout, list(showlegend = legendList[[1]], legend = legendList[-1]))
 

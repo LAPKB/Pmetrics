@@ -128,7 +128,19 @@ plot(cov.1,V~wt)
 }
 \seealso{
 \code{\link{makeCov}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
+
+Other PMplots: 
+\code{\link{plot.MMopt}()},
+\code{\link{plot.PM_data}()},
+\code{\link{plot.PM_final}()},
+\code{\link{plot.PM_op}()},
+\code{\link{plot.PMcycle}()},
+\code{\link{plot.PMdopt}()},
+\code{\link{plot.PMpta}()},
+\code{\link{plot.PMsim}()},
+\code{\link{plot.PMvalid}()}
 }
 \author{
 Michael Neely
 }
+\concept{PMplots}
