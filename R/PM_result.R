@@ -488,7 +488,7 @@ PM_final <- R6::R6Class(
     #' See [summary.PMfinal].
     #' @param ... Arguments passed to [summary.PMfinal]
     summary = function(...) {
-      summary.PMfinal(self, ...)
+      summary.PMfinal(self$data, ...)
     },
     #' @description
     #' Plot method
@@ -496,7 +496,7 @@ PM_final <- R6::R6Class(
     #' See [plot.PMfinal].
     #' @param ... Arguments passed to [plot.PMfinal]
     plot = function(...) {
-      plot.PM_final(self, ...)
+      plot.PM_final(self$data, ...)
     }
   )
 )
@@ -583,7 +583,7 @@ PM_cycle <- R6::R6Class(
     #' See [plot.PMcycle].
     #' @param ... Arguments passed to [plot.PMcycle]
     plot = function(...) {
-      plot.PMcycle(self, ...)
+      plot.PMcycle(self$data, ...)
     }
   )
 )
