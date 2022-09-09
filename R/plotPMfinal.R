@@ -117,9 +117,9 @@ plot.PM_final <- function(x,
       barWidth <- bar$width * (.max - .min) #normalize
       p <- p %>% 
         plotly::add_bars( 
-          marker = marker,
+          marker = bar,
           hovertemplate = "Value: %{x:0.3f}<br>Prob: %{y:0.3f}<extra></extra>",
-          width = I(marker$width)
+          width = I(barWidth)
         ) 
       
       if(density){
