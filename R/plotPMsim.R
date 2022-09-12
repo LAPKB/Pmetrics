@@ -73,6 +73,7 @@
 #' with the addition of the quantile for each observation
 #' @author Michael Neely
 #' @seealso [PM_sim], [plot_ly], [schema]
+#' @importFrom tidyr unnest_longer
 #' @export
 #' @family PMplots
 
@@ -265,7 +266,7 @@ plot.PMsim <- function(x,
       group_by(time) %>% 
       group_map(~quantile(.x$out, probs = probValues, na.rm = T)) %>%
       tibble() %>%
-      unnest_longer(1, indices_to = "quantile", values_to = "value") %>%
+      tidyr::unnest_longer(1, indices_to = "quantile", values_to = "value") %>%
       mutate(time = rep(times, each = length(probValues)),
              quantile = readr::parse_number(quantile)/100) %>%
       select(time, quantile, value)

@@ -89,6 +89,7 @@
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso [makePTA]
+#' @importFrom plotly plotly_build
 #' @export
 #' @family PMplots
 
