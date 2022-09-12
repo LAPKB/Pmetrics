@@ -53,6 +53,7 @@ Imports:
     readr,
     trelliscopejs,
     lubridate,
+    mvtnorm,
     R6
 Suggests:
     testthat
