@@ -66,6 +66,7 @@
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso [PM_final], [schema]
+#' @importFrom mvtnorm dmvnorm
 #' @export
 #' @examples
 #' #NPAG

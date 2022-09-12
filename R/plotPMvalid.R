@@ -63,6 +63,8 @@
 #' @return Plots and returns the plotly object
 #' @author Michael Neely
 #' @seealso [makeValid]
+#' @importFrom dplyr summarise
+#' @importFrom dplyr quo
 #' @export
 #' @family PMplots
 
