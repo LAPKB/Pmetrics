@@ -66,7 +66,7 @@
 #' @export
 #' @family PMplots
 
-plot.PMvalid <- function(x, 
+plot.PM_valid <- function(x, 
                          type = "vpc", 
                          tad = F, 
                          outeq = 1,
