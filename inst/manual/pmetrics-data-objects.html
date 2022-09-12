@@ -4,12 +4,12 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Pmetrics User Manual</title>
+  <title>Chapter 7 Pmetrics Data Objects | Pmetrics User Manual</title>
   <meta name="description" content="This is the manual for the Pmetrics population modeling and simulation
 package for R." />
   <meta name="generator" content="bookdown 0.28 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Pmetrics User Manual" />
+  <meta property="og:title" content="Chapter 7 Pmetrics Data Objects | Pmetrics User Manual" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="This is the manual for the Pmetrics population modeling and simulation
@@ -17,7 +17,7 @@ package for R." />
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Pmetrics User Manual" />
+  <meta name="twitter:title" content="Chapter 7 Pmetrics Data Objects | Pmetrics User Manual" />
   
   <meta name="twitter:description" content="This is the manual for the Pmetrics population modeling and simulation
 package for R." />
@@ -33,8 +33,8 @@ package for R." />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-
-<link rel="next" href="introduction.html"/>
+<link rel="prev" href="how-to-use-r-and-pmetrics.html"/>
+<link rel="next" href="performing-simulations.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,86 +229,479 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="header">
-<h1 class="title">Pmetrics User Manual</h1>
-<p class="author"><em>LAPKB</em></p>
-<p class="date"><em>2022-09-12</em></p>
-</div>
-<div id="preface" class="section level1 hasAnchor">
-<h1><span class="header-section-number">Chapter 1</span> Preface<a href="index.html#preface" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>This is the manual for Pmetrics, a population modeling and simulation package for R.</p>
-<p>Pmetrics is the result of years of labor from many people. It was created by the Laboratory of Applied Pharmacokinetics and Bioinformatics (LAPKB).</p>
-<div id="a-brief-history" class="section level2 hasAnchor">
-<h2><span class="header-section-number">1.1</span> A brief history<a href="index.html#a-brief-history" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>LAPKB, established in 1973 as LAPK by Roger Jelliffe, MD, has been continually associated with the University of Southern California and the USC Keck School of Medicine. Since 2012, it has been housed under the Saban Research Institute at Children’s Hospital Los Angeles (CHLA).</p>
-<p>Since its inception, LAPKB has been a pharmacometric resource for optimal study and control of pharmacokinetic/pharmacodynamic systems and for individualized drug therapy and personalized medicine. It has been continually supported by grants, including from The National Institute for General Medical Studies (NIGMS), National Institute of Biomedical Imagining and Bioengineering (NIBIB), the Eunice Kennedy Shriver National Institute of Child Health and Human Development (NICHD), the US Food and Drug Administration (FDA), and by the Stella Slutzky Kunin Memorial Research Fund.</p>
-<p>The laboratory has employed physicians, pharmacists, engineers, statisticians, and mathematicians. LAPKB has special strengths in nonparametric statistical methods, optimal stochastic control, optimal design of pharmacokinetic experiments and clinical trials, and practical application of tools for optimal clinical therapy.</p>
-<p>The laboratory also seeks collaborative relationships to further the understanding and development of this field of Clinical Pharmacology. These collaborations may take the form of clinical trials and evaluations of therapeutic methods or of development and software implementation of new concepts. Educational opportunities in the form of workshops and visiting scholars are available to physicians, pharmacists, engineers, mathematicians, and other investigators.</p>
-</div>
-<div id="people" class="section level2 hasAnchor">
-<h2><span class="header-section-number">1.2</span> People<a href="index.html#people" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>This is not an exhaustive list by any means, but highlights some individuals who have made exceptional contributions to the lab.</p>
-<ul>
-<li>Roger Jellife, MD - founder and pioneer. Passed away June 22, 2020.</li>
-<li>Alan Schumitzky, PhD - Emeritus Professor of Mathematics at USC. Professor Schumitzky’s research interests are focused on estimation and control theory, applied pharmacokinetics, complex analysis, and software development. He developed NPEM, co-developed NPAG, NPOD, and every other algorithm from the lab, and he continues to share his genius.</li>
-<li>Robert Leary, PhD - co-developer of NPAG and former consultant to the lab.</li>
-<li>David Bayard, PhD - consultant to the lab and expert in optimal control. He developed the Multiple Model algorithm powering BestDose, as well as the MMopt optimal sampling algorithm.</li>
-<li>Michael van Guilder PhD - consultant to the lab who turned all of the ideas into working, stable, reliable Fortran code.</li>
-<li>Walter Yamada, PhD - Current scientific programmer, modeler, and the person who knows the code the best and manages the lab on a daily basis. He developed the Poisson likelihood function and makes updates to the code every day.</li>
-<li>Julian Otalvaro - Scientfic programmer who has transformed Pmetrics by developing the R6 framework, moving it to Github, and just about every other aspect of the package. He is also one of the labs experts in machine learning.</li>
-<li>Rong Chen, PhD - post-doc and author of RPEM. He is our expert in Fortran and use of MPI to parallelize code.</li>
-<li>Alona Kryshchenko, PhD - consulant and co-developer of NPOD.</li>
-<li>Michael Neely, MD - current leader of the lab, physician and dabbler in statistics. He wrote all of the original Pmetrics package and continues to write to this day, in addition to all the other jobs associate with Principle Investigator and Chief of the Division of Infectious Diseases at CHLA.</li>
-</ul>
-</div>
-<div id="citing-pmetrics" class="section level2 hasAnchor">
-<h2><span class="header-section-number">1.3</span> Citing Pmetrics<a href="index.html#citing-pmetrics" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Please help us maintain our funding to provide Pmetrics as a free
-research tool to the pharmacometric community. If you use Pmetrics in a
-publication, you can cite it as below.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">citation</span>(<span class="st">&quot;Pmetrics&quot;</span>)</a></code></pre></div>
-<pre><code>## 
-## To cite package &#39;Pmetrics&#39; in publications use:
-## 
-##   Neely MN, van Guilder MG, Yamada WM, Schumitzky A, Jelliffe RW.
-##   Accurate detection of outliers and subpopulations with Pmetrics, a
-##   nonparametric and parametric pharmacometric modeling and simulation
-##   package for R. Therapeutic Drug Monitoring. 2012; 34(4): 467-476.
-## 
-## A BibTeX entry for LaTeX users is
-## 
-##   @Article{,
-##     title = {Accurate Detection of outliers and subpopulations with Pmetrics: a non-parametric and parametric pharmacometric modeling and simulation package for R},
-##     author = {Michael Neely and Michael {van Guilder} and Walter Yamada and Alan Schumitzky and Roger Jelliffe},
-##     year = {2012},
-##     journal = {Therapeutic Drug Monitoring},
-##     volume = {34},
-##     number = {4},
-##     pages = {467-476},
-##   }</code></pre>
-</div>
-<div id="donate" class="section level2 hasAnchor">
-<h2><span class="header-section-number">1.4</span> Donate<a href="index.html#donate" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>If you appreciate the enormous work to develop and maintain Pmetrics,
-please consider a donation.</p>
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="5QPCGE2M68SGL">
-<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0"
-  name="submit" title="PayPal - The safer, easier way to pay online!"
-  alt="Donate with PayPal button">
-<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1">
-</form>
+<div id="pmetrics-data-objects" class="section level1 hasAnchor">
+<h1><span class="header-section-number">Chapter 7</span> Pmetrics Data Objects<a href="pmetrics-data-objects.html#pmetrics-data-objects" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>After a successful IT2B or NPAG run, an R datafile is saved in the
+output subdirectory of the newly created numerically ordered folder in
+the working directory. After IT2B, this file is called “IT2Bout.Rdata”,
+and after NPAG it is called “NPAGout.Rdata”. As mentioned in the
+previous section, these data files can be loaded by ensuring that the
+Runs folder is set as the working directory, and then using the Pmetrics
+commands <code>PM_load()</code> in <span class="r6">R6</span> or <code>PMload()</code> for
+<span class="legacy">Legacy</span>.</p>
+<p>There are several Pmetrics data objects contained within the Rdata files
+which are loaded, making these objects available for
+plotting and other analysis.</p>
+<p><span class="r6">R6</span></p>
+<p><code>PM_load()</code> returns a <code>PM_result</code> object. The fields in</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb45-1" title="1">res1 &lt;-<span class="st"> </span><span class="kw">PM_load</span>(<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb45-2" title="2"></a>
+<a class="sourceLine" id="cb45-3" title="3">res1<span class="op">$</span></a>
+<a class="sourceLine" id="cb45-4" title="4"></a>
+<a class="sourceLine" id="cb45-5" title="5"><span class="er">**</span>Objects loaded by <span class="kw">PMload</span>(run\_num)<span class="op">**</span></a></code></pre></div>
+<table>
+<colgroup>
+<col width="16%" />
+<col width="15%" />
+<col width="67%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Objects</th>
+<th align="left">Variables</th>
+<th align="left">Comments</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">op (class: PMop, list)</td>
+<td align="left">$id</td>
+<td align="left">Subject identification</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$time</td>
+<td align="left">Observation time in relative decimal hours</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$obs</td>
+<td align="left">Observation</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$pred</td>
+<td align="left">Predicted value</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$pred.type</td>
+<td align="left">Type of prediction, i.e. based on the population parameter values or Bayesian posterior parameter values</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$icen</td>
+<td align="left">Median (default) or mean of the parameter distributions used to calculate the predicted values.</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$outeq</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$block</td>
+<td align="left">Dosing block, usually 1 unless data file contains EVID=4 dose reset events, in which case each such reset within a given ID will increment the dosing block by 1 for that ID</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$obsSD</td>
+<td align="left">Calculated standard deviation (error) of the observation based on the assay error polynomial</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$d</td>
+<td align="left">Difference between pred and obs</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$ds</td>
+<td align="left">Squared difference between pred and obs</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$wd</td>
+<td align="left">$d, weighted by the $obsSD</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$wds</td>
+<td align="left">$ds, weighted by the $obsSD</td>
+</tr>
+<tr class="even">
+<td align="left">final (class: PMfinal, list)</td>
+<td align="left">$popPoints</td>
+<td align="left">(NPAG only) Data.frame of the final cycle joint population density of grid points with column names equal to the name of each random parameter plus $prob for the associated probability of that point</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$popMean</td>
+<td align="left">The final cycle mean for each random parameter distribution</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$popSD</td>
+<td align="left">The final cycle standard deviation for each random parameter distribution</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$popCV</td>
+<td align="left">The final cycle coefficient of variation for each random parameter distribution</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$popVar</td>
+<td align="left">The final cycle variance for each random parameter distribution</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$popCov</td>
+<td align="left">The final cycle covariance matrix for each random parameter distribution</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$popCor</td>
+<td align="left">The final cycle correlation matrix for each random parameter distribution</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$popMedian</td>
+<td align="left">The final cycle median for each random parameter distribution</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$popRanFix</td>
+<td align="left">The final cycle values for all fixed but random parameters</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$postPoints</td>
+<td align="left">(NPAG only) Data frame of the Bayesian posterior parameter points for each of the first 100 subjects, with the following columns:</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">id: subject ID</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">point: point number for that subject</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">parameters: parameters in the model</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">prob: probability of each point in the posterior for each patient</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$postMean</td>
+<td align="left">A matrix of means of posterior distributions for each subject and parameter</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$postSD</td>
+<td align="left">A matrix of SDs of posterior distributions for each subject and parameter</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$postVar</td>
+<td align="left">A matrix of variances of posterior distributions for each subject and parameter</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$postCov</td>
+<td align="left">An array of covariance matrices for posterior parameter values for each subject</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$postCor</td>
+<td align="left">An array of correlation matrices for posterior parameter values for each subject</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$gridpts</td>
+<td align="left">(NPAG only) The initial number of support points</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$ab</td>
+<td align="left">Matrix of boundaries for random parameter values. For NPAG, this is specified by the user prior to the run; for IT2B, it is calculated as a user specified multiple of the SD for the parameter value distribution</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">cycle (class: PMcycle, list)</td>
+<td align="left">$names</td>
+<td align="left">Vector of names of the random parameters</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$ll</td>
+<td align="left">Matrix of cycle number and -2*Log-likelihood at each cycle</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$gamlam</td>
+<td align="left">A matrix of cycle number and gamma or lambda at each cycle (see item #16 under NPAG Runs below for a discussion of gamma and lambda)</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$mean</td>
+<td align="left">A matrix of cycle number and the mean of each random parameter at each cycle, normalized to initial mean</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$sd</td>
+<td align="left">A matrix of cycle number and the standard deviation of each random parameter at each cycle, normalized to initial standard deviation</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$median</td>
+<td align="left">A matrix of cycle number and the median of each random parameter at each cycle, normalized to initial standard deviation</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$aic</td>
+<td align="left">A matrix of cycle number and Akaike Information Criterion at each cycle</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$bic</td>
+<td align="left">A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle</td>
+</tr>
+<tr class="even">
+<td align="left">cov (class: PMcov, data.frame)</td>
+<td align="left">$id</td>
+<td align="left">Subject identification</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$time</td>
+<td align="left">Time for each covariate entry</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">covariates…</td>
+<td align="left">Covariate values for each subject at each time, extracted from the raw data file</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">parameters…</td>
+<td align="left">Mean, median, or mode of Bayesian posterior distribution for each random parameter in the model. Mode summaries are available for NPAG output only, and the default is median. Values are recycled for each row within a given subject, with the number of rows driven by the number of covariate entries</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$icen</td>
+<td align="left">Median (default) or mean of the covariates and parameter value distributions.</td>
+</tr>
+<tr class="odd">
+<td align="left">pop (class: PMpop, data.frame)</td>
+<td align="left">$id</td>
+<td align="left">Subject identification</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">post (class: PMpost, data.frame)</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">NPAG only</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$time</td>
+<td align="left">Time of each prediction at a frequency specified in the NPrun() command, with a default of 12 minutes.</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$icen</td>
+<td align="left">Median (default) or mean of the parameter distributions used to calculate the predicted values.</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$pred</td>
+<td align="left">Population prior (PMpop) or Bayesian posterior (PMpost) predictions for each output equation</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$outeq</td>
+<td align="left">Output equation for each prediction</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$block</td>
+<td align="left">Same as for PMop objects above</td>
+</tr>
+<tr class="odd">
+<td align="left">NPdata (class: NPAG, list) ITdata (class: IT2B, list</td>
+<td align="left"></td>
+<td align="left">Raw data used to make the above objects. Please use ?NPparse or ?ITparse in R for discussion of the data contained in these objects</td>
+</tr>
+<tr class="even">
+<td align="left">mdata (class: PMmatrix, data.frame)</td>
+<td align="left">See Pmetrics Input Files.</td>
+<td align="left">Your original raw data file.</td>
+</tr>
+<tr class="odd">
+<td align="left">valid (class: PMvalid, list)</td>
+<td align="left">Use the command str(valid.x) in R, where x is the run number</td>
+<td align="left">This is a list containing the information to perform graphical and numerical analysis of prediction checks and normalized prediction distribution errors. It is a method of internal model validation.</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left">This object will only be present if you have run makeValid() after a run is completed.</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">valid$simdata (class: PMsim, list)</td>
+<td align="left">$obs</td>
+<td align="left">A data frame with $id, $time, $out, $outeq columns containing simulated observations at each time and output equation number in the template data file. If simulations from multiple template subjects have been combined (see Simulator Runs), then $id will be of the form x.y, where x is the simulation number, and y is the template number.</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$amt</td>
+<td align="left">A data frame with $id, $time, $out, $comp columns containing simulated amounts in each compartment.</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$parValues</td>
+<td align="left">A data frame with $id, … columns containing the parameter value sets for each simulated subject with “…” signifying the columns named according to the names of the random parameters in the model</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$totalSets</td>
+<td align="left">The total number of simulated sets of parameters, which may be greater than the requested number if limits were specified in the simulation (see Simulator Runs).</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$totalMeans</td>
+<td align="left">The means of the parameter values in the total simulated sets which can be used as a check of the adequacy of the simulation to reproduce the requested mean values when limits were applied. The final truncated set will likely not have the requested mean values.</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$totalCov</td>
+<td align="left">The covariances of the parameter values in the total simulated sets which can be used as a check of the adequacy of the simulation to reproduce the requested covariance values when limits were applied. The final truncated set will likely not have the requested covariance values.</td>
+</tr>
+<tr class="even">
+<td align="left">valid$timeBinMedian (class: data frame)</td>
+<td align="left">$bin</td>
+<td align="left">Time bin number</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$time</td>
+<td align="left">Median time for each bin</td>
+</tr>
+<tr class="even">
+<td align="left">valid$tadBinMedian (class: data frame)</td>
+<td align="left">$bin</td>
+<td align="left">Time after dose bin number</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$time</td>
+<td align="left">Median time after dose for each bin</td>
+</tr>
+<tr class="even">
+<td align="left">valid$opDF (class: data frame)</td>
+<td align="left">$id, $time, $obs, $pred, $icen, $outeq, $block, $obsSD, $ds, $wd, $wds</td>
+<td align="left">See op above.</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$tad</td>
+<td align="left">Time after dose</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$PRED_bin</td>
+<td align="left">Median prediction for each bin</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$pcObs</td>
+<td align="left">Prediction corrected observation (based on bin)</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$timeBinNum</td>
+<td align="left">Number of each time bin</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$timeBinMedian</td>
+<td align="left">Median time for each bin</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$tadBinNum</td>
+<td align="left">Number of each time after dose bin</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$tadBinMedian</td>
+<td align="left">Median time after dose for each bin</td>
+</tr>
+<tr class="even">
+<td align="left">valid$npde (class: NpdeObject)</td>
+<td align="left"></td>
+<td align="left">A list of object suitable for plotting an npde.</td>
+</tr>
+</tbody>
+</table>
+<p>Since R is an object oriented language, to access the observations in a
+<strong>PMop</strong> object, for example, use the following syntax: op$post1$obs.</p>
+<p>Note that you will place an integer corresponding to the run number
+within the parentheses of the loading functions, e.g. PMload(1), which
+will suffix all the above objects with that integer, e.g. op.1, final.1,
+NPdata.1. This allows several models to be loaded into R simultaneously,
+each with a unique suffix, and which can be compared with the
+PMcompare() command (see <a href="\l"><span class="underline">Model Diagnostics</span></a> below).</p>
 
-</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-
-<a href="introduction.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="how-to-use-r-and-pmetrics.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="performing-simulations.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -339,7 +732,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/index.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-DataObjects.Rmd",
 "text": "Edit"
 },
 "history": {
