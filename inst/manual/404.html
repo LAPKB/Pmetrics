@@ -7,11 +7,10 @@
   <title>Page not found | Pmetrics User Manual</title>
   <meta name="description" content="This is the manual for the Pmetrics population modeling and simulation
 package for R." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.28 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Page not found | Pmetrics User Manual" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="This is the manual for the Pmetrics population modeling and simulation
 package for R." />
@@ -27,7 +26,7 @@ package for R." />
 <meta name="author" content="LAPKB" />
 
 
-<meta name="date" content="2022-02-23" />
+<meta name="date" content="2022-09-12" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -53,8 +52,9 @@ package for R." />
 
 
 
-<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
 
 
 <style type="text/css">
@@ -156,16 +156,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="3.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#pmetrics-control-functions"><i class="fa fa-check"></i><b>3.2</b> Pmetrics control functions</a><ul>
 <li class="chapter" data-level="3.2.1" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#run-functions"><i class="fa fa-check"></i><b>3.2.1</b> Run functions</a></li>
 <li class="chapter" data-level="3.2.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#parse-functions"><i class="fa fa-check"></i><b>3.2.2</b> Parse functions</a></li>
-<li class="chapter" data-level="3.2.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#saving-and-loading-functions"><i class="fa fa-check"></i><b>3.2.3</b> Saving and loading functions</a></li>
-<li class="chapter" data-level="3.2.4" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#report-generation"><i class="fa fa-check"></i><b>3.2.4</b> Report generation</a></li>
+<li class="chapter" data-level="3.2.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#saving-functions"><i class="fa fa-check"></i><b>3.2.3</b> Saving functions</a></li>
+<li class="chapter" data-level="3.2.4" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#loading-functions"><i class="fa fa-check"></i><b>3.2.4</b> Loading functions</a></li>
+<li class="chapter" data-level="3.2.5" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#report-generation"><i class="fa fa-check"></i><b>3.2.5</b> Report generation</a></li>
 </ul></li>
-<li class="chapter" data-level="3.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#data-manipulation-functions"><i class="fa fa-check"></i><b>3.3</b> Data manipulation functions</a></li>
+<li class="chapter" data-level="3.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#other-functions"><i class="fa fa-check"></i><b>3.3</b> Other functions</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#data-manipulation"><i class="fa fa-check"></i><b>3.3.1</b> Data manipulation</a></li>
+<li class="chapter" data-level="3.3.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#model-selection-and-diagnostics"><i class="fa fa-check"></i><b>3.3.2</b> Model selection and diagnostics</a></li>
+<li class="chapter" data-level="3.3.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#other-functions-1"><i class="fa fa-check"></i><b>3.3.3</b> Other functions</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="4" data-path="general-workflow.html"><a href="general-workflow.html"><i class="fa fa-check"></i><b>4</b> General Workflow</a></li>
 <li class="chapter" data-level="5" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html"><i class="fa fa-check"></i><b>5</b> Pmetrics Input Files</a><ul>
 <li class="chapter" data-level="5.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#data.csv-files"><i class="fa fa-check"></i><b>5.1</b> Data.csv Files</a><ul>
 <li class="chapter" data-level="5.1.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#data-file-format"><i class="fa fa-check"></i><b>5.1.1</b> Data file format</a></li>
 <li class="chapter" data-level="5.1.2" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#manipulation-of-csv-files"><i class="fa fa-check"></i><b>5.1.2</b> Manipulation of CSV files</a></li>
+<li class="chapter" data-level="5.1.3" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#specifying-data-objects-in-r6"><i class="fa fa-check"></i><b>5.1.3</b> Specifying Data Objects in R6</a></li>
 </ul></li>
 <li class="chapter" data-level="5.2" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#specifying-models-in-r6"><i class="fa fa-check"></i><b>5.2</b> Specifying Models in R6</a><ul>
 <li class="chapter" data-level="5.2.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#priR6"><i class="fa fa-check"></i><b>5.2.1</b> PRImary variables</a></li>
@@ -193,17 +199,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.3.13" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#completeEx"><i class="fa fa-check"></i><b>5.3.13</b> Complete Example</a></li>
 <li class="chapter" data-level="5.3.14" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#brief-fortran-tutorial"><i class="fa fa-check"></i><b>5.3.14</b> Brief Fortran Tutorial</a></li>
 </ul></li>
+<li class="chapter" data-level="5.4" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#using-legacy-models-in-r6"><i class="fa fa-check"></i><b>5.4</b> Using legacy models in R6</a></li>
 </ul></li>
 <li class="chapter" data-level="6" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html"><i class="fa fa-check"></i><b>6</b> How to use R and Pmetrics</a><ul>
 <li class="chapter" data-level="6.1" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#setting-up-a-pmetrics-project"><i class="fa fa-check"></i><b>6.1</b> Setting up a Pmetrics project</a></li>
-<li class="chapter" data-level="6.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#getting-the-required-inputs-to-run-pmetrics"><i class="fa fa-check"></i><b>6.2</b> Getting the required inputs to run Pmetrics</a><ul>
-<li class="chapter" data-level="6.2.1" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#r6"><i class="fa fa-check"></i><b>6.2.1</b> R6</a></li>
-<li class="chapter" data-level="6.2.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#legacy"><i class="fa fa-check"></i><b>6.2.2</b> Legacy</a></li>
-</ul></li>
-<li class="chapter" data-level="6.3" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#using-scripts-to-control-pmetrics"><i class="fa fa-check"></i><b>6.3</b> Using scripts to control Pmetrics</a></li>
+<li class="chapter" data-level="6.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#getting-the-required-inputs-to-run-pmetrics"><i class="fa fa-check"></i><b>6.2</b> Getting the required inputs to run Pmetrics</a></li>
+<li class="chapter" data-level="6.3" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#fitting-models-to-data"><i class="fa fa-check"></i><b>6.3</b> Fitting models to data</a></li>
 <li class="chapter" data-level="6.4" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#loading-results-after-a-completed-run"><i class="fa fa-check"></i><b>6.4</b> Loading results after a completed run</a></li>
-<li class="chapter" data-level="6.5" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#using-shiny-to-control-pmetrics"><i class="fa fa-check"></i><b>6.5</b> Using Shiny to control Pmetrics</a></li>
 </ul></li>
+<li class="chapter" data-level="7" data-path="pmetrics-data-objects.html"><a href="pmetrics-data-objects.html"><i class="fa fa-check"></i><b>7</b> Pmetrics Data Objects</a></li>
+<li class="chapter" data-level="8" data-path="performing-simulations.html"><a href="performing-simulations.html"><i class="fa fa-check"></i><b>8</b> Performing Simulations</a></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
 
@@ -296,7 +301,7 @@ gitbook.start({
     var script = document.createElement("script");
     script.type = "text/javascript";
     var src = "true";
-    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
     if (location.protocol !== "file:")
       if (/^https?:/.test(src))
         src = src.replace(/^https?:/, '');

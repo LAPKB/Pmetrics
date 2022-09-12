@@ -4,12 +4,12 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Pmetrics User Manual</title>
+  <title>Chapter 8 Performing Simulations | Pmetrics User Manual</title>
   <meta name="description" content="This is the manual for the Pmetrics population modeling and simulation
 package for R." />
   <meta name="generator" content="bookdown 0.28 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Pmetrics User Manual" />
+  <meta property="og:title" content="Chapter 8 Performing Simulations | Pmetrics User Manual" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="This is the manual for the Pmetrics population modeling and simulation
@@ -17,7 +17,7 @@ package for R." />
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Pmetrics User Manual" />
+  <meta name="twitter:title" content="Chapter 8 Performing Simulations | Pmetrics User Manual" />
   
   <meta name="twitter:description" content="This is the manual for the Pmetrics population modeling and simulation
 package for R." />
@@ -33,8 +33,8 @@ package for R." />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
+<link rel="prev" href="pmetrics-data-objects.html"/>
 
-<link rel="next" href="introduction.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -229,86 +229,34 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="header">
-<h1 class="title">Pmetrics User Manual</h1>
-<p class="author"><em>LAPKB</em></p>
-<p class="date"><em>2022-09-12</em></p>
-</div>
-<div id="preface" class="section level1 hasAnchor">
-<h1><span class="header-section-number">Chapter 1</span> Preface<a href="index.html#preface" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>This is the manual for Pmetrics, a population modeling and simulation package for R.</p>
-<p>Pmetrics is the result of years of labor from many people. It was created by the Laboratory of Applied Pharmacokinetics and Bioinformatics (LAPKB).</p>
-<div id="a-brief-history" class="section level2 hasAnchor">
-<h2><span class="header-section-number">1.1</span> A brief history<a href="index.html#a-brief-history" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>LAPKB, established in 1973 as LAPK by Roger Jelliffe, MD, has been continually associated with the University of Southern California and the USC Keck School of Medicine. Since 2012, it has been housed under the Saban Research Institute at Children’s Hospital Los Angeles (CHLA).</p>
-<p>Since its inception, LAPKB has been a pharmacometric resource for optimal study and control of pharmacokinetic/pharmacodynamic systems and for individualized drug therapy and personalized medicine. It has been continually supported by grants, including from The National Institute for General Medical Studies (NIGMS), National Institute of Biomedical Imagining and Bioengineering (NIBIB), the Eunice Kennedy Shriver National Institute of Child Health and Human Development (NICHD), the US Food and Drug Administration (FDA), and by the Stella Slutzky Kunin Memorial Research Fund.</p>
-<p>The laboratory has employed physicians, pharmacists, engineers, statisticians, and mathematicians. LAPKB has special strengths in nonparametric statistical methods, optimal stochastic control, optimal design of pharmacokinetic experiments and clinical trials, and practical application of tools for optimal clinical therapy.</p>
-<p>The laboratory also seeks collaborative relationships to further the understanding and development of this field of Clinical Pharmacology. These collaborations may take the form of clinical trials and evaluations of therapeutic methods or of development and software implementation of new concepts. Educational opportunities in the form of workshops and visiting scholars are available to physicians, pharmacists, engineers, mathematicians, and other investigators.</p>
-</div>
-<div id="people" class="section level2 hasAnchor">
-<h2><span class="header-section-number">1.2</span> People<a href="index.html#people" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>This is not an exhaustive list by any means, but highlights some individuals who have made exceptional contributions to the lab.</p>
-<ul>
-<li>Roger Jellife, MD - founder and pioneer. Passed away June 22, 2020.</li>
-<li>Alan Schumitzky, PhD - Emeritus Professor of Mathematics at USC. Professor Schumitzky’s research interests are focused on estimation and control theory, applied pharmacokinetics, complex analysis, and software development. He developed NPEM, co-developed NPAG, NPOD, and every other algorithm from the lab, and he continues to share his genius.</li>
-<li>Robert Leary, PhD - co-developer of NPAG and former consultant to the lab.</li>
-<li>David Bayard, PhD - consultant to the lab and expert in optimal control. He developed the Multiple Model algorithm powering BestDose, as well as the MMopt optimal sampling algorithm.</li>
-<li>Michael van Guilder PhD - consultant to the lab who turned all of the ideas into working, stable, reliable Fortran code.</li>
-<li>Walter Yamada, PhD - Current scientific programmer, modeler, and the person who knows the code the best and manages the lab on a daily basis. He developed the Poisson likelihood function and makes updates to the code every day.</li>
-<li>Julian Otalvaro - Scientfic programmer who has transformed Pmetrics by developing the R6 framework, moving it to Github, and just about every other aspect of the package. He is also one of the labs experts in machine learning.</li>
-<li>Rong Chen, PhD - post-doc and author of RPEM. He is our expert in Fortran and use of MPI to parallelize code.</li>
-<li>Alona Kryshchenko, PhD - consulant and co-developer of NPOD.</li>
-<li>Michael Neely, MD - current leader of the lab, physician and dabbler in statistics. He wrote all of the original Pmetrics package and continues to write to this day, in addition to all the other jobs associate with Principle Investigator and Chief of the Division of Infectious Diseases at CHLA.</li>
-</ul>
-</div>
-<div id="citing-pmetrics" class="section level2 hasAnchor">
-<h2><span class="header-section-number">1.3</span> Citing Pmetrics<a href="index.html#citing-pmetrics" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Please help us maintain our funding to provide Pmetrics as a free
-research tool to the pharmacometric community. If you use Pmetrics in a
-publication, you can cite it as below.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">citation</span>(<span class="st">&quot;Pmetrics&quot;</span>)</a></code></pre></div>
-<pre><code>## 
-## To cite package &#39;Pmetrics&#39; in publications use:
-## 
-##   Neely MN, van Guilder MG, Yamada WM, Schumitzky A, Jelliffe RW.
-##   Accurate detection of outliers and subpopulations with Pmetrics, a
-##   nonparametric and parametric pharmacometric modeling and simulation
-##   package for R. Therapeutic Drug Monitoring. 2012; 34(4): 467-476.
-## 
-## A BibTeX entry for LaTeX users is
-## 
-##   @Article{,
-##     title = {Accurate Detection of outliers and subpopulations with Pmetrics: a non-parametric and parametric pharmacometric modeling and simulation package for R},
-##     author = {Michael Neely and Michael {van Guilder} and Walter Yamada and Alan Schumitzky and Roger Jelliffe},
-##     year = {2012},
-##     journal = {Therapeutic Drug Monitoring},
-##     volume = {34},
-##     number = {4},
-##     pages = {467-476},
-##   }</code></pre>
-</div>
-<div id="donate" class="section level2 hasAnchor">
-<h2><span class="header-section-number">1.4</span> Donate<a href="index.html#donate" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>If you appreciate the enormous work to develop and maintain Pmetrics,
-please consider a donation.</p>
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="5QPCGE2M68SGL">
-<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0"
-  name="submit" title="PayPal - The safer, easier way to pay online!"
-  alt="Donate with PayPal button">
-<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1">
-</form>
+<div id="performing-simulations" class="section level1 hasAnchor">
+<h1><span class="header-section-number">Chapter 8</span> Performing Simulations<a href="performing-simulations.html#performing-simulations" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>The Pmetrics simulator is a powerful Monte Carlo engine that is smoothly integrated with Pmetrics inputs and
+outputs. Unlike NPAG and IT2B, it is run from within R. No batch file is created or terminal window opened.
+However, the actual simulator is a Fortran executable compiled and run in an OS shell. It is documented with an
+example within R. You can access this by using the <code>?SIMrun</code> in <span class="legacy">Legacy</span> or
+<code>?PM_sim</code> for <span class="r6">R6</span> commands from R.</p>
+<p>In order to complete a simulator run you must include a data .csv file and a model file in the working directory.
+The structure of these files is identical to those used by NPAG and IT2B. The data .csv contains the template dosing
+and observation history as well as any covariates. Observation values (the OUT column) for EVID=0 events can be
+any number; they will be replaced with the simulated values. However, do not use -99, as this will simulate a
+missing value, which might be useful if you are testing the effects of such values. A good choice for the OUT value
+in the simulator template .csv file is -1.</p>
+<p>You can have any number of subject records within a data .csv file, each with its own covariates if applicable. Each
+subject will cause the simulator to run one time, generating as many simulated profiles as you specify from each
+template subject. This is controlled from the <code>SIMrun</code> in <span class="legacy">Legacy</span> or
+<code>PM_sim$run()</code> for <span class="r6">R6</span> command with the include and nsim arguments. The
+first specifies which subjects in the data .csv file will serve as templates for simulation. The second specifies how
+many profiles are to be generated from each included subject.</p>
 
-</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
+<a href="pmetrics-data-objects.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 
-<a href="introduction.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -339,7 +287,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/index.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/07-Simulations.Rmd",
 "text": "Edit"
 },
 "history": {

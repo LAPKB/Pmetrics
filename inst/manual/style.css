@@ -2,19 +2,22 @@
   color: #777;
   margin-top: 10px;
 }
+
 p code {
   white-space: inherit;
 }
+
 pre {
   word-break: normal;
   word-wrap: normal;
 }
+
 pre code {
   white-space: inherit;
 }
 
 h1 {
-  color:#446e9b
+  color: #446e9b
 }
 
 .legacy {
@@ -38,8 +41,19 @@ h1 {
   padding: 3px;
 }
 
+.to-be-reviewed {
+  background-color: red;
+  color: white;
+  text-shadow: 1px 1px black;
+  padding: 3px;
+}
+
 .script {
   font-family: Arial, Helvetica, sans-serif;
   background-color: lightgrey;
   color: #446e9b;
+}
+
+body {
+  text-align: justify;
 }
