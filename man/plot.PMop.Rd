@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotPMop.R
 \name{plot.PMop}
 \alias{plot.PMop}
-\title{Plot Pmetrics Observed vs. Predicted Objects}
+\title{Plot PMop objects}
 \usage{
 \method{plot}{PMop}(
   x,
@@ -126,11 +126,11 @@ out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.}
 Plots the object.
 }
 \description{
-Plot PMop objects
+Plot Legacy Pmetrics Observed vs. Predicted Objects
 }
-\examples{
-data(op.1)
-plot(op.1)
+\details{
+This function is for legacy Pmetrics objects loaded with \link{PMload} prior to
+Pmetrics version 2.
 }
 \seealso{
 \code{\link{makeOP}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
