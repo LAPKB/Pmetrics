@@ -74,6 +74,7 @@
 #' @author Michael Neely
 #' @seealso [PM_sim], [plot_ly], [schema]
 #' @importFrom tidyr unnest_longer
+#' @importFrom dplyr summarize
 #' @export
 #' @family PMplots
 

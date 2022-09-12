@@ -64,7 +64,7 @@
 #' @author Michael Neely
 #' @seealso [makeValid]
 #' @importFrom dplyr summarise
-#' @importFrom nseval quo
+#' @importFrom dplyr quo
 #' @export
 #' @family PMplots
 
