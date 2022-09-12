@@ -89,13 +89,15 @@ plot.PM_final <- function(x,
                           standardize){
   
   
+  
   #housekeeping
   if(inherits(x,"NPAG")){
     type <- "NPAG"
     densityFormat <- amendLine(density, default = list(color = "black"))
     if(inherits(density,"list")) density <- T
-    bar <- amendMarker(marker, default = list(color = "dodgerblue", 
-                                              width = 0.02))
+    bar <- amendMarker(marker, default = list(color = "dodgerblue", size = 5,
+                                              width = 0.02, opacity = 0.5))
+    line <- amendLine(line)
   } else {
     type <- "IT2B"
     line <- amendLine(line)
@@ -200,7 +202,7 @@ plot.PM_final <- function(x,
       p <- x$popPoints %>% select(x=whichX[1], y=whichY[1], prob=prob) %>%
         plotly::plot_ly(x = ~x, y = ~y, z = ~prob,
                         hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
-        plotly::add_markers(marker = marker) %>% 
+        plotly::add_markers(marker = bar) %>% 
         plotly::add_paths(data = pp2, x = ~x, y = ~y, z = ~prob,
                           line = line) %>%
         plotly::layout(showlegend = F,
@@ -239,7 +241,7 @@ plot.PM_final <- function(x,
         } else {stop("Requested standardization parameters are not in model.")}
       }
       ab_alpha <- ab %>% arrange(par)
-      p <- data.frame(mean = x$popMean, sd = x$popSD, min = ab[,1], max = ab[,2]) %>%
+      p <- data.frame(mean = purrr::as_vector(x$popMean), sd = purrr::as_vector(x$popSD), min = ab[,1], max = ab[,2]) %>%
         purrr::pmap(.f = function(mean, sd, min, max){tibble::tibble(value = seq(min, max, (max-min)/1000),
                                                                      prob = dnorm(value, mean, sd))}) %>% 
         purrr::set_names(names(x$popMean)) %>%
@@ -251,9 +253,7 @@ plot.PM_final <- function(x,
       
     }
   } else { #bivariate
-    # if(type == "IT2B"){
     p <- biPlot(formula, x, xlab, ylab)
-    # }
   }
   print(p)
   return(p)
@@ -610,51 +610,6 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
 
 
 
-
-
-# plot.PM_final <- function(x,formula,include,exclude,xlab,ylab, marker=list(), density=F, grid=T){
-#   
-#   if(missing(formula)){ #Univariate plot
-#     df <- data.frame(x$popPoints)
-#     plots <- list()
-#     for(param in names(df)[-length(df)]){
-#       p <- ggplot2::ggplot(data=df)+
-#         ggplot2::geom_hline(aes(yintercept=0),color="black") +
-#         ggplot2::geom_segment(size=0.3,ggplot2::aes_string(param,"prob",xend=param,yend=0),color="red")+
-#         ggplot2::geom_point(ggplot2::aes_string(param,"prob"),color="red") + ggplot2::theme_bw()
-#       
-#       if(density){p<-p+ggplot2::geom_density(ggplot2::aes_string(x=param,y="..scaled..*max(df$prob)"))}
-#       plots<-append(plots,list(plotly::ggplotly(p)))
-#     }
-#     fig<-plotly::subplot(plots, margin=0.05, titleX = T, titleY = T, nrows=(length(names(df))-1)%/%2)
-#     fig
-#     return(fig)
-#   } 
-#   else { #Bivariate plot
-#     
-#     
-#     df<-model.frame(formula=formula,data=x$popPoints)
-#     df$prob <- x$popPoints[,"prob"]
-#     yCol <- as.character(attr(terms(formula),"variables")[2])
-#     xCol <- as.character(attr(terms(formula),"variables")[3])
-#     if(missing(xlab)) xlab <- xCol
-#     if(missing(ylab)) ylab <- yCol
-#     fig <- plot_ly(df,
-#                    x = ~get(xCol),
-#                    y = ~get(yCol),
-#                    type = 'scatter',
-#                    mode = 'markers',
-#                    text = ~paste("prob: ", prob,"<br>",xCol,get(xCol),"<br>",yCol,get(yCol)),
-#                    marker = modifyList(list(size = ~get("prob"),
-#                                             opacity = 0.5,
-#                                             sizeref=min(df$prob)/10),marker))  %>% 
-#       layout(title = sprintf("%s - %s",ylab,xlab),
-#              xaxis=list(title=xlab, showgrid=grid),
-#              yaxis=list(title=ylab, showgrid=grid))
-#     print(fig)
-#     return(fig)
-#   }
-# }
 
 
 
