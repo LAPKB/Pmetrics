@@ -268,7 +268,7 @@ PM_op <- R6::R6Class(
     #' See [plot.PM_op].
     #' @param ... Arguments passed to [plot.PM_op]
     plot = function(...) {
-      plot.PM_op(self$data, ...)
+      plot.PM_op(self, ...)
     },
     #' @description
     #' Summary method
@@ -496,7 +496,7 @@ PM_final <- R6::R6Class(
     #' See [plot.PMfinal].
     #' @param ... Arguments passed to [plot.PMfinal]
     plot = function(...) {
-      plot.PM_final(self$data, ...)
+      plot.PM_final(self, ...)
     }
   )
 )
@@ -583,7 +583,7 @@ PM_cycle <- R6::R6Class(
     #' See [plot.PMcycle].
     #' @param ... Arguments passed to [plot.PMcycle]
     plot = function(...) {
-      plot.PMcycle(self$data, ...)
+      plot.PMcycle(self$data, ...) #update to (self,...) when plot.PM_cycle done
     }
   )
 )
@@ -698,7 +698,7 @@ PM_cov <- R6::R6Class(
     #' See [plot.PMcov].
     #' @param ... Arguments passed to [plot.PMcov]
     plot = function(...) {
-      plot.PMcov(self$data, ...)
+      plot.PMcov(self$data, ...) #update to (self,...) when plot.PM_cov done
     },
     #' @description
     #' Print method
