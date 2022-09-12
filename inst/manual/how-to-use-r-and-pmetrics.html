@@ -7,11 +7,10 @@
   <title>Chapter 6 How to use R and Pmetrics | Pmetrics User Manual</title>
   <meta name="description" content="This is the manual for the Pmetrics population modeling and simulation
 package for R." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.28 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 6 How to use R and Pmetrics | Pmetrics User Manual" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="This is the manual for the Pmetrics population modeling and simulation
 package for R." />
@@ -27,7 +26,7 @@ package for R." />
 <meta name="author" content="LAPKB" />
 
 
-<meta name="date" content="2022-02-23" />
+<meta name="date" content="2022-09-12" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -35,7 +34,7 @@ package for R." />
   
   
 <link rel="prev" href="pmetrics-input-files.html"/>
-
+<link rel="next" href="pmetrics-data-objects.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -53,8 +52,9 @@ package for R." />
 
 
 
-<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
 
 
 <style type="text/css">
@@ -156,16 +156,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="3.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#pmetrics-control-functions"><i class="fa fa-check"></i><b>3.2</b> Pmetrics control functions</a><ul>
 <li class="chapter" data-level="3.2.1" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#run-functions"><i class="fa fa-check"></i><b>3.2.1</b> Run functions</a></li>
 <li class="chapter" data-level="3.2.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#parse-functions"><i class="fa fa-check"></i><b>3.2.2</b> Parse functions</a></li>
-<li class="chapter" data-level="3.2.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#saving-and-loading-functions"><i class="fa fa-check"></i><b>3.2.3</b> Saving and loading functions</a></li>
-<li class="chapter" data-level="3.2.4" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#report-generation"><i class="fa fa-check"></i><b>3.2.4</b> Report generation</a></li>
+<li class="chapter" data-level="3.2.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#saving-functions"><i class="fa fa-check"></i><b>3.2.3</b> Saving functions</a></li>
+<li class="chapter" data-level="3.2.4" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#loading-functions"><i class="fa fa-check"></i><b>3.2.4</b> Loading functions</a></li>
+<li class="chapter" data-level="3.2.5" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#report-generation"><i class="fa fa-check"></i><b>3.2.5</b> Report generation</a></li>
 </ul></li>
-<li class="chapter" data-level="3.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#data-manipulation-functions"><i class="fa fa-check"></i><b>3.3</b> Data manipulation functions</a></li>
+<li class="chapter" data-level="3.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#other-functions"><i class="fa fa-check"></i><b>3.3</b> Other functions</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#data-manipulation"><i class="fa fa-check"></i><b>3.3.1</b> Data manipulation</a></li>
+<li class="chapter" data-level="3.3.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#model-selection-and-diagnostics"><i class="fa fa-check"></i><b>3.3.2</b> Model selection and diagnostics</a></li>
+<li class="chapter" data-level="3.3.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#other-functions-1"><i class="fa fa-check"></i><b>3.3.3</b> Other functions</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="4" data-path="general-workflow.html"><a href="general-workflow.html"><i class="fa fa-check"></i><b>4</b> General Workflow</a></li>
 <li class="chapter" data-level="5" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html"><i class="fa fa-check"></i><b>5</b> Pmetrics Input Files</a><ul>
 <li class="chapter" data-level="5.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#data.csv-files"><i class="fa fa-check"></i><b>5.1</b> Data.csv Files</a><ul>
 <li class="chapter" data-level="5.1.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#data-file-format"><i class="fa fa-check"></i><b>5.1.1</b> Data file format</a></li>
 <li class="chapter" data-level="5.1.2" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#manipulation-of-csv-files"><i class="fa fa-check"></i><b>5.1.2</b> Manipulation of CSV files</a></li>
+<li class="chapter" data-level="5.1.3" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#specifying-data-objects-in-r6"><i class="fa fa-check"></i><b>5.1.3</b> Specifying Data Objects in R6</a></li>
 </ul></li>
 <li class="chapter" data-level="5.2" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#specifying-models-in-r6"><i class="fa fa-check"></i><b>5.2</b> Specifying Models in R6</a><ul>
 <li class="chapter" data-level="5.2.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#priR6"><i class="fa fa-check"></i><b>5.2.1</b> PRImary variables</a></li>
@@ -193,17 +199,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.3.13" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#completeEx"><i class="fa fa-check"></i><b>5.3.13</b> Complete Example</a></li>
 <li class="chapter" data-level="5.3.14" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#brief-fortran-tutorial"><i class="fa fa-check"></i><b>5.3.14</b> Brief Fortran Tutorial</a></li>
 </ul></li>
+<li class="chapter" data-level="5.4" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#using-legacy-models-in-r6"><i class="fa fa-check"></i><b>5.4</b> Using legacy models in R6</a></li>
 </ul></li>
 <li class="chapter" data-level="6" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html"><i class="fa fa-check"></i><b>6</b> How to use R and Pmetrics</a><ul>
 <li class="chapter" data-level="6.1" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#setting-up-a-pmetrics-project"><i class="fa fa-check"></i><b>6.1</b> Setting up a Pmetrics project</a></li>
-<li class="chapter" data-level="6.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#getting-the-required-inputs-to-run-pmetrics"><i class="fa fa-check"></i><b>6.2</b> Getting the required inputs to run Pmetrics</a><ul>
-<li class="chapter" data-level="6.2.1" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#r6"><i class="fa fa-check"></i><b>6.2.1</b> R6</a></li>
-<li class="chapter" data-level="6.2.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#legacy"><i class="fa fa-check"></i><b>6.2.2</b> Legacy</a></li>
-</ul></li>
-<li class="chapter" data-level="6.3" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#using-scripts-to-control-pmetrics"><i class="fa fa-check"></i><b>6.3</b> Using scripts to control Pmetrics</a></li>
+<li class="chapter" data-level="6.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#getting-the-required-inputs-to-run-pmetrics"><i class="fa fa-check"></i><b>6.2</b> Getting the required inputs to run Pmetrics</a></li>
+<li class="chapter" data-level="6.3" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#fitting-models-to-data"><i class="fa fa-check"></i><b>6.3</b> Fitting models to data</a></li>
 <li class="chapter" data-level="6.4" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#loading-results-after-a-completed-run"><i class="fa fa-check"></i><b>6.4</b> Loading results after a completed run</a></li>
-<li class="chapter" data-level="6.5" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#using-shiny-to-control-pmetrics"><i class="fa fa-check"></i><b>6.5</b> Using Shiny to control Pmetrics</a></li>
 </ul></li>
+<li class="chapter" data-level="7" data-path="pmetrics-data-objects.html"><a href="pmetrics-data-objects.html"><i class="fa fa-check"></i><b>7</b> Pmetrics Data Objects</a></li>
+<li class="chapter" data-level="8" data-path="performing-simulations.html"><a href="performing-simulations.html"><i class="fa fa-check"></i><b>8</b> Performing Simulations</a></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
 
@@ -224,17 +229,18 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="how-to-use-r-and-pmetrics" class="section level1">
-<h1><span class="header-section-number">Chapter 6</span> How to use R and Pmetrics</h1>
+<div id="how-to-use-r-and-pmetrics" class="section level1 hasAnchor">
+<h1><span class="header-section-number">Chapter 6</span> How to use R and Pmetrics<a href="how-to-use-r-and-pmetrics.html#how-to-use-r-and-pmetrics" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>In this section, we suggest a workflow to help you maintain organized
 modeling projects.</p>
-<div id="setting-up-a-pmetrics-project" class="section level2">
-<h2><span class="header-section-number">6.1</span> Setting up a Pmetrics project</h2>
+<div id="setting-up-a-pmetrics-project" class="section level2 hasAnchor">
+<h2><span class="header-section-number">6.1</span> Setting up a Pmetrics project<a href="how-to-use-r-and-pmetrics.html#setting-up-a-pmetrics-project" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p><span class="legacy">Legacy</span></br><span class="r6">R6</span></p>
 <p>When beginning a new modeling project, it is convenient to use the
 command <code>PMtree</code>. This command will set up a new directory
 in the current working directory named whatever you have included as the
 “project name”.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="kw">PMtree</span>(<span class="st">&quot;DrugX&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1"><span class="kw">PMtree</span>(<span class="st">&quot;DrugX&quot;</span>)</a></code></pre></div>
 <p>In the above example, a directory called “DrugX” will be created
 in the current working directory in R, which you can check with the <code>getwd</code> function. Beneath the new DrugX directory, several subdirectories will
 be also created.</p>
@@ -247,14 +253,8 @@ be also created.</p>
 <p>You are free to edit this directory tree structure as you please, or make your
 own entirely.</p>
 </div>
-<div id="getting-the-required-inputs-to-run-pmetrics" class="section level2">
-<h2><span class="header-section-number">6.2</span> Getting the required inputs to run Pmetrics</h2>
-<div id="r6" class="section level3">
-<h3><span class="header-section-number">6.2.1</span> R6</h3>
-<p><span class="r6">R6</span></p>
-</div>
-<div id="legacy" class="section level3">
-<h3><span class="header-section-number">6.2.2</span> Legacy</h3>
+<div id="getting-the-required-inputs-to-run-pmetrics" class="section level2 hasAnchor">
+<h2><span class="header-section-number">6.2</span> Getting the required inputs to run Pmetrics<a href="how-to-use-r-and-pmetrics.html#getting-the-required-inputs-to-run-pmetrics" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p><span class="legacy">Legacy</span></p>
 <p>When you wish to execute a Pmetrics run, you must ensure that
 appropriate Pmetrics model.txt and data.csv files are in the working
@@ -267,21 +267,49 @@ errors in the context of a datafile, e.g. covariates that do not match.
 <code>PMcheck(...,fix=T)</code> attempts to automatically rid data files of errors.
 The function <code>PMwriteMatrix</code> can be used to write the R data object in
 the correct format for use by IT2B, NPAG, or the Simulator.</p>
-<p>You can also download sample data and scripts from the <a href="http://lapk.org/pmetrics.php">Pmetrics
-downloads</a> section of our
-website. Edit prior versions of model files to make new model files.</p>
+<!-- ### R6 -->
+<p><span class="r6">R6</span></p>
+<p>There is a full tutorial integrated in Pmetrics to teach new users the basic functionality of the whole package. To start that tutorial in R type:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1"><span class="kw">library</span>(Pmetrics)</a>
+<a class="sourceLine" id="cb34-2" title="2"><span class="kw">PM_tutorial</span>()</a></code></pre></div>
+<p>And follow the instructions prompted in the terminal.</p>
+<p>To setup a R6 Pmetrics run, you must provide a <code>PM_data</code> and a <code>PM_model</code> objects.
+It does not matter where the files (if there are any) that represent those files are located on your system.</p>
+<p>Both objects provide a <code>$check</code> method to validate the consistency of each one:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" title="1">my_model &lt;-<span class="st"> </span>PM_model<span class="op">$</span><span class="kw">new</span>(...)</a>
+<a class="sourceLine" id="cb35-2" title="2">my_data &lt;-<span class="st"> </span>PM_data<span class="op">$</span><span class="kw">new</span>(...)</a>
+<a class="sourceLine" id="cb35-3" title="3"></a>
+<a class="sourceLine" id="cb35-4" title="4"><span class="co"># Scan both model and data for errors</span></a>
+<a class="sourceLine" id="cb35-5" title="5">my_model<span class="op">$</span><span class="kw">check</span>()</a>
+<a class="sourceLine" id="cb35-6" title="6">my_data<span class="op">$</span><span class="kw">check</span>()</a></code></pre></div>
+<p>The next step is to define a fitting problem, this is an object that represents a fitting proccess that will be solved by Pmetrics. On its minimum a fitting problem consists of a data object and a model object. This object is represented by the <code>PM_fit</code> class, let’s see a couple of examples:</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb36-1" title="1">my_data &lt;-<span class="st"> </span>PM_data<span class="op">$</span><span class="kw">new</span>(...)</a>
+<a class="sourceLine" id="cb36-2" title="2">my_simple_model &lt;-<span class="st"> </span>PM_model<span class="op">$</span><span class="kw">new</span>(...)</a>
+<a class="sourceLine" id="cb36-3" title="3">my_complex_model &lt;-<span class="st"> </span>PM_model<span class="op">$</span><span class="kw">new</span>(...)</a>
+<a class="sourceLine" id="cb36-4" title="4"></a>
+<a class="sourceLine" id="cb36-5" title="5"><span class="co">#Here we&#39;re defining a fitting problem using the drug&#39;s data and a simple model:</span></a>
+<a class="sourceLine" id="cb36-6" title="6">simple_fit &lt;-<span class="st"> </span>PM_fit<span class="op">$</span><span class="kw">new</span>(my_data, my_simple_model)</a>
+<a class="sourceLine" id="cb36-7" title="7"></a>
+<a class="sourceLine" id="cb36-8" title="8"><span class="co">#Let&#39;s do the same but using the other model</span></a>
+<a class="sourceLine" id="cb36-9" title="9">complex_fit &lt;-<span class="st"> </span>PM_fit<span class="op">$</span><span class="kw">new</span>(my_data, my_complex_model)</a></code></pre></div>
+<p>The fit object also contains a cumple of methods attached to it, i.e:</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb37-1" title="1">simple_fit<span class="op">$</span><span class="kw">check</span>() <span class="co">#This will check the consistency between the model and the data</span></a>
+<a class="sourceLine" id="cb37-2" title="2">complex_fit<span class="op">$</span><span class="kw">save</span>(<span class="st">&quot;complex_fit.rds&quot;</span>) <span class="co">#This will save the fit to a file in your working directory</span></a>
+<a class="sourceLine" id="cb37-3" title="3"></a>
+<a class="sourceLine" id="cb37-4" title="4">my_complex_fit_again &lt;-<span class="st"> </span>PM_fit<span class="op">$</span><span class="kw">load</span>(<span class="st">&quot;complex_fit.rds&quot;</span>) <span class="co">#This will load the fit again from disk</span></a></code></pre></div>
+<p>To see the full list of methods available see <code>?PM_fit</code>.</p>
 </div>
-</div>
-<div id="using-scripts-to-control-pmetrics" class="section level2">
-<h2><span class="header-section-number">6.3</span> Using scripts to control Pmetrics</h2>
+<div id="fitting-models-to-data" class="section level2 hasAnchor">
+<h2><span class="header-section-number">6.3</span> Fitting models to data<a href="how-to-use-r-and-pmetrics.html#fitting-models-to-data" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p><span class="legacy">Legacy</span></p>
 <p>As you will see in the skeleton R script made by <code>PMtree</code> and placed in
 the Rscript subdirectory, if this is a first-time run, the R commands to
 run IT2B or NPAG are as follows. Recall that the “#” character is a
 comment character.</p>
-<p>library(Pmetrics)</p>
-<p>#Run 1 - add your run description here</p>
-<p>setwd(“working directory”)</p>
-<p>NPrun() #for NPAG or ITrun() for IT2B</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb38-1" title="1"><span class="kw">library</span>(Pmetrics)</a>
+<a class="sourceLine" id="cb38-2" title="2"><span class="co">#Run 1 - add your run description here</span></a>
+<a class="sourceLine" id="cb38-3" title="3"><span class="kw">setwd</span>(<span class="st">&quot;working directory&quot;</span>)</a>
+<a class="sourceLine" id="cb38-4" title="4"><span class="kw">NPrun</span>() <span class="co">#for NPAG or ITrun() for IT2B</span></a></code></pre></div>
 <p>The first line will load the Pmetrics library of functions. The second
 line sets the working directory to the specified path. The third line
 generates the batch file to run NPAG or IT2B and saves it to the working
@@ -291,13 +319,57 @@ in a Terminal window. On Windows systems prior to version 1.9, the batch
 file must be launched manually by double clicking the <em>npscript.bat</em> or
 <em>itscript.bat</em> file in the working directory. As of version 1.9, Windows
 users no longer need to do this.</p>
-<p><code>ITrun</code> and <code>NPrun</code> are described in full detail via their help commands in R. At minimum, they require a data file and a model file. If the default names of “data.csv” and “model.txt” are used, they may be called with no arguments. Again, the data and model files must be in the current working directory, usually the Runs folder.</p>
+<p><code>ITrun</code> and <code>NPrun</code> are described in full detail via their help commands in R and later in this manual. At minimum, they require a data file and a model file. If the default names of “data.csv” and “model.txt” are used, they may be called with no arguments. Again, the data and model files must be in the current working directory, usually the Runs folder.</p>
 <p>Both functions return the full path of the output directory to
 the clipboard. By default, runs are placed in folders numbered
 sequentially, beginning with “1”.</p>
+<p>When you wish to execute a Pmetrics run, you must ensure that
+both of the appropriate Pmetrics data.csv and model.txt files are in the working
+directory, i.e. the Runs subdirectory of the project directory. The names are supplied as arguments to <code>NPrun</code>, <code>ITrun</code>, and <code>ERRrun</code>. A shorthand notation is to supply the number of a previous run for either the data, model or both files so that you do not have to manually copy them into the working directory.</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1"><span class="co">#Using default names data.csv and model.txt</span></a>
+<a class="sourceLine" id="cb39-2" title="2"><span class="kw">NPrun</span>()</a>
+<a class="sourceLine" id="cb39-3" title="3"></a>
+<a class="sourceLine" id="cb39-4" title="4"><span class="co">#Using custom names</span></a>
+<a class="sourceLine" id="cb39-5" title="5"><span class="kw">ITrun</span>(<span class="dt">model =</span> <span class="st">&quot;model1.txt&quot;</span>, <span class="dt">data =</span> <span class="st">&quot;mydata.csv&quot;</span>)</a>
+<a class="sourceLine" id="cb39-6" title="6"></a>
+<a class="sourceLine" id="cb39-7" title="7"><span class="co">#Grab data from run 1 and use default model.txt</span></a>
+<a class="sourceLine" id="cb39-8" title="8"><span class="kw">NPrun</span>(<span class="dt">data=</span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb39-9" title="9"></a>
+<a class="sourceLine" id="cb39-10" title="10"><span class="co">#Use model and data from run 2 and continue where run 2 ended</span></a>
+<a class="sourceLine" id="cb39-11" title="11"><span class="kw">NPrun</span>(<span class="dt">data=</span><span class="dv">2</span>, <span class="dt">model=</span><span class="dv">2</span>, <span class="dt">prior=</span><span class="dv">2</span>, <span class="dt">cycles=</span><span class="dv">1000</span>)</a></code></pre></div>
+<p>See the sections on runing NPAG and IT2B later in the manual for more details on arguments available to modify run behavior.</p>
+<p>You can also download sample data and scripts from the <a href="http://lapk.org/pmetrics.php">Pmetrics
+downloads</a> section of our
+website. Edit prior versions of model files to make new model files.</p>
+<p><span class="r6">R6</span></p>
+<p>We have discussed the creation of model objects with <code>PM_model</code>.</p>
+<p>To bring these together, use the <code>PM_fit</code> object creator. It only needs two arguments: the name of the data file in the working directory or
+<span class="update"> Update</span> in memory loaded via <code>PMreadMatrix</code>and a model object. <code>PM_fit</code> will accept a model object created by <code>PM_model</code> or the name of a model file in Legacy format and in the working directory.</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb40-1" title="1"><span class="co">#Example 1 - data file and PM_model object</span></a>
+<a class="sourceLine" id="cb40-2" title="2">fit1 &lt;-<span class="st"> </span>PM_fit<span class="op">$</span><span class="kw">new</span>(<span class="dt">data =</span> <span class="st">&quot;data.csv&quot;</span>, <span class="dt">model =</span> mod1)</a>
+<a class="sourceLine" id="cb40-3" title="3"></a>
+<a class="sourceLine" id="cb40-4" title="4"><span class="co">#Example 2 - data object and model file</span></a>
+<a class="sourceLine" id="cb40-5" title="5">PMdata &lt;-<span class="st"> </span><span class="kw">PMreadMatrix</span>(<span class="st">&quot;data.csv&quot;</span>)</a>
+<a class="sourceLine" id="cb40-6" title="6">fit2 &lt;-<span class="st"> </span>PM_fit<span class="op">$</span><span class="kw">new</span>(<span class="dt">data =</span> PMdata, <span class="dt">model =</span> <span class="st">&quot;model.txt&quot;</span>)</a>
+<a class="sourceLine" id="cb40-7" title="7"></a>
+<a class="sourceLine" id="cb40-8" title="8"><span class="co">#Example 3 - data and model objects</span></a>
+<a class="sourceLine" id="cb40-9" title="9">PMdata &lt;-<span class="st"> </span>PM_data<span class="op">$</span><span class="kw">new</span>(<span class="st">&quot;data.csv&quot;</span>)</a>
+<a class="sourceLine" id="cb40-10" title="10">mod1 &lt;-<span class="st"> </span>PM_model<span class="op">$</span><span class="kw">new</span>(<span class="kw">list</span>(...))</a>
+<a class="sourceLine" id="cb40-11" title="11">fit3 &lt;-<span class="st"> </span>PM_fit<span class="op">$</span><span class="kw">new</span>(PMdata, mod1)</a></code></pre></div>
+<p>Once the <code>PM_fit</code> object is created it has only one function defined for it: <code>$run()</code>. Arguments for this function can be found in the help for <code>PM_fit</code> and later in this manual.</p>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" title="1"><span class="co">#default run parameters</span></a>
+<a class="sourceLine" id="cb41-2" title="2">fit3<span class="op">$</span><span class="kw">run</span>()</a>
+<a class="sourceLine" id="cb41-3" title="3"></a>
+<a class="sourceLine" id="cb41-4" title="4"><span class="co">#change the cycle number from default 100</span></a>
+<a class="sourceLine" id="cb41-5" title="5">fit3<span class="op">$</span><span class="kw">run</span>(<span class="dt">cycles=</span><span class="dv">500</span>)</a>
+<a class="sourceLine" id="cb41-6" title="6"></a>
+<a class="sourceLine" id="cb41-7" title="7"><span class="co">#change the engine from default NPAG</span></a>
+<a class="sourceLine" id="cb41-8" title="8">fit3<span class="op">$</span><span class="kw">run</span>(<span class="dt">engine =</span> <span class="st">&quot;IT2B&quot;</span>)</a></code></pre></div>
+<p>See the sections on running NPAG and IT2B later in the manual for more details on arguments available to modify run behavior.</p>
 </div>
-<div id="loading-results-after-a-completed-run" class="section level2">
-<h2><span class="header-section-number">6.4</span> Loading results after a completed run</h2>
+<div id="loading-results-after-a-completed-run" class="section level2 hasAnchor">
+<h2><span class="header-section-number">6.4</span> Loading results after a completed run<a href="how-to-use-r-and-pmetrics.html#loading-results-after-a-completed-run" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p><span class="legacy">Legacy</span></p>
 <p>Now the output of IT2B or NPAG needs to be loaded into R, so the next
 command does this.</p>
 <p><code>PMload(run_number)</code></p>
@@ -307,14 +379,11 @@ should be included within the parentheses to be appended to the names of
 loaded R objects, allowing for comparison between runs, e.g. <code>PMload(1)</code>.
 Finally, at this point other Pmetrics commands can be added to the
 script to process the data, such as the following.</p>
-<div class="script">
-<p>plot(final.1)<br />
-plot(cycle.1)<br />
-plot(op.1,type=“pop”) or plot(op.1$pop1)<br />
-plot(op.1) #default is to plot posterior predictions for output 1<br />
-plot(op.1,type=“pop”,resid=T)<br />
-</p>
-</div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb42-1" title="1"><span class="kw">plot</span>(final<span class="fl">.1</span>)</a>
+<a class="sourceLine" id="cb42-2" title="2"><span class="kw">plot</span>(cycle<span class="fl">.1</span>)</a>
+<a class="sourceLine" id="cb42-3" title="3"><span class="kw">plot</span>(op<span class="fl">.1</span>,<span class="dt">type=</span><span class="st">&quot;pop&quot;</span>) <span class="co">#or plot(op.1$pop1)</span></a>
+<a class="sourceLine" id="cb42-4" title="4"><span class="kw">plot</span>(op<span class="fl">.1</span>) <span class="co">#default is to plot posterior predictions for output 1</span></a>
+<a class="sourceLine" id="cb42-5" title="5"><span class="kw">plot</span>(op<span class="fl">.1</span>,<span class="dt">type=</span><span class="st">&quot;pop&quot;</span>,<span class="dt">resid=</span>T)</a></code></pre></div>
 <p>Of course, the full power of R can be used in scripts to analyze data,
 but these simple statements serve as examples.</p>
 <p>If you do not use the <code>PMtree</code> structure, we suggest that the R script
@@ -322,35 +391,44 @@ for a particular project be saved into a folder called “Rscript” or some
 other meaningful name in the working directory. Folders are not be moved
 by the batch file. Within the script, number runs sequentially and use
 comments liberally to distinguish runs, as shown below.</p>
-<p>library(Pmetrics)</p>
-<p>#Run 1 - Ka, Kel, V, all subjects</p>
-<p>setwd(“working directory”)</p>
-<p>NPrun() #assumes model=“model.txt” and data=“data.csv”</p>
-<p>PMload(1)</p>
-<p>...</p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" title="1"><span class="kw">library</span>(Pmetrics)</a>
+<a class="sourceLine" id="cb43-2" title="2"><span class="co">#Run 1 - Ka, Kel, V, all subjects</span></a>
+<a class="sourceLine" id="cb43-3" title="3"><span class="kw">setwd</span>(<span class="st">&quot;working directory&quot;</span>)</a>
+<a class="sourceLine" id="cb43-4" title="4"><span class="kw">NPrun</span>() <span class="co">#assumes model=&quot;model.txt&quot; and data=&quot;data.csv&quot;</span></a>
+<a class="sourceLine" id="cb43-5" title="5"><span class="kw">PMload</span>(<span class="dv">1</span>)</a></code></pre></div>
 <p>Remember in R that the command <code>example(function)</code> will provide examples
 for the specified function. Most Pmetrics functions have examples.</p>
-</div>
-<div id="using-shiny-to-control-pmetrics" class="section level2">
-<h2><span class="header-section-number">6.5</span> Using Shiny to control Pmetrics</h2>
-<p>Shiny is an R package made by the same group who produces Rstudio. While
-you are learning to use Pmetrics, you can use a graphical user interface
-that teaches you how to build code. Currently we have implemented Shiny
-interfaces for NPAG, IT2B and many plots in Pmetrics.</p>
-<p>To use these Shiny interfaces, type <code>PMcode("x")</code>, where x is the function
-you wish. Currently you have two choices: “run” and “plot”.</p>
-<p><code>PMcode("run")</code> will launch the following dialog window in your default
-browser. As you make your selections, you will see R code generated
-which you can copy back to your script and execute. Simply close the
-browser window when you are finished.</p>
-<p>You can select from an NPAG or IT2B run, and then use the Data, Model,
-and Run tabs to navigate to different options. With a valid Pmetrics
-model and data file loaded, you will see a summary of the model in the
-Current Model window.</p>
-<p>If you use <code>PMcode("plot")</code> you will see the dialog window below. It will
-allow you to select various Pmetrics objects that have been already
-loaded with <code>PMload</code>, and offer you many plot options, as well as the
-code to generate you selected plot.</p>
+<p><span class="r6">R6</span></p>
+<p>After the execution is done, you can load the output into R using <code>my_run&lt;-PM_load(run_number)</code>, where <code>my_run</code> is the variable where the information will be stored in.</p>
+<p>Detailed information about the different elements contained in the result object can be accessed via <code>?PM_result</code> or by typing the result object into the terminal.</p>
+<p>After that, that object can be used to access the different elements of the results, for example:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb44-1" title="1">exRes &lt;-<span class="st"> </span><span class="kw">PM_load</span>(<span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb44-2" title="2"><span class="kw">plot</span>(exRes<span class="op">$</span>final) <span class="co"># or exRes$final$plot() will plot the marginal distribution of the support points. See ?plot.PM_final.</span></a>
+<a class="sourceLine" id="cb44-3" title="3"></a>
+<a class="sourceLine" id="cb44-4" title="4">exRes<span class="op">$</span>op<span class="op">$</span><span class="kw">plot</span>(<span class="dt">type=</span><span class="st">&quot;pop&quot;</span>) <span class="co"># see ?plot.PM_op,</span></a>
+<a class="sourceLine" id="cb44-5" title="5">exRes<span class="op">$</span>data<span class="op">$</span><span class="kw">plot</span>(<span class="dt">overlay =</span> F, </a>
+<a class="sourceLine" id="cb44-6" title="6">                <span class="dt">pred =</span> <span class="kw">list</span>(exRes<span class="op">$</span>post, <span class="dt">color =</span> <span class="st">&quot;green&quot;</span>), </a>
+<a class="sourceLine" id="cb44-7" title="7">                <span class="dt">marker =</span> <span class="kw">list</span>(<span class="dt">symbol =</span> <span class="st">&quot;diamond-open&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">opacity =</span> <span class="fl">0.8</span>), </a>
+<a class="sourceLine" id="cb44-8" title="8">                <span class="dt">line =</span> F, <span class="dt">log =</span> T) <span class="co"># see ?plot.PM_data</span></a></code></pre></div>
+<!-- ## Using Shiny to control Pmetrics -->
+<!-- Shiny is an R package made by the same group who produces Rstudio. While -->
+<!-- you are learning to use Pmetrics, you can use a graphical user interface -->
+<!-- that teaches you how to build code. Currently we have implemented Shiny -->
+<!-- interfaces for NPAG, IT2B and many plots in Pmetrics. -->
+<!-- To use these Shiny interfaces, type `PMcode("x")`, where x is the function -->
+<!-- you wish. Currently you have two choices: "run" and "plot". -->
+<!-- `PMcode("run")` will launch the following dialog window in your default -->
+<!-- browser. As you make your selections, you will see R code generated -->
+<!-- which you can copy back to your script and execute. Simply close the -->
+<!-- browser window when you are finished. -->
+<!-- You can select from an NPAG or IT2B run, and then use the Data, Model, -->
+<!-- and Run tabs to navigate to different options. With a valid Pmetrics -->
+<!-- model and data file loaded, you will see a summary of the model in the -->
+<!-- Current Model window. -->
+<!-- If you use `PMcode("plot")` you will see the dialog window below. It will -->
+<!-- allow you to select various Pmetrics objects that have been already -->
+<!-- loaded with `PMload`, and offer you many plot options, as well as the -->
+<!-- code to generate you selected plot. -->
 
 </div>
 </div>
@@ -359,8 +437,8 @@ code to generate you selected plot.</p>
           </div>
         </div>
       </div>
-<a href="pmetrics-input-files.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-
+<a href="pmetrics-input-files.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="pmetrics-data-objects.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -420,7 +498,7 @@ gitbook.start({
     var script = document.createElement("script");
     script.type = "text/javascript";
     var src = "true";
-    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
     if (location.protocol !== "file:")
       if (/^https?:/.test(src))
         src = src.replace(/^https?:/, '');
