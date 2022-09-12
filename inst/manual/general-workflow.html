@@ -7,11 +7,10 @@
   <title>Chapter 4 General Workflow | Pmetrics User Manual</title>
   <meta name="description" content="This is the manual for the Pmetrics population modeling and simulation
 package for R." />
-  <meta name="generator" content="bookdown 0.24 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.28 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Chapter 4 General Workflow | Pmetrics User Manual" />
   <meta property="og:type" content="book" />
-  
   
   <meta property="og:description" content="This is the manual for the Pmetrics population modeling and simulation
 package for R." />
@@ -27,7 +26,7 @@ package for R." />
 <meta name="author" content="LAPKB" />
 
 
-<meta name="date" content="2022-02-23" />
+<meta name="date" content="2022-09-12" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -53,8 +52,9 @@ package for R." />
 
 
 
-<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
-<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
 
 
 <style type="text/css">
@@ -156,16 +156,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="3.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#pmetrics-control-functions"><i class="fa fa-check"></i><b>3.2</b> Pmetrics control functions</a><ul>
 <li class="chapter" data-level="3.2.1" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#run-functions"><i class="fa fa-check"></i><b>3.2.1</b> Run functions</a></li>
 <li class="chapter" data-level="3.2.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#parse-functions"><i class="fa fa-check"></i><b>3.2.2</b> Parse functions</a></li>
-<li class="chapter" data-level="3.2.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#saving-and-loading-functions"><i class="fa fa-check"></i><b>3.2.3</b> Saving and loading functions</a></li>
-<li class="chapter" data-level="3.2.4" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#report-generation"><i class="fa fa-check"></i><b>3.2.4</b> Report generation</a></li>
+<li class="chapter" data-level="3.2.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#saving-functions"><i class="fa fa-check"></i><b>3.2.3</b> Saving functions</a></li>
+<li class="chapter" data-level="3.2.4" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#loading-functions"><i class="fa fa-check"></i><b>3.2.4</b> Loading functions</a></li>
+<li class="chapter" data-level="3.2.5" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#report-generation"><i class="fa fa-check"></i><b>3.2.5</b> Report generation</a></li>
 </ul></li>
-<li class="chapter" data-level="3.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#data-manipulation-functions"><i class="fa fa-check"></i><b>3.3</b> Data manipulation functions</a></li>
+<li class="chapter" data-level="3.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#other-functions"><i class="fa fa-check"></i><b>3.3</b> Other functions</a><ul>
+<li class="chapter" data-level="3.3.1" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#data-manipulation"><i class="fa fa-check"></i><b>3.3.1</b> Data manipulation</a></li>
+<li class="chapter" data-level="3.3.2" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#model-selection-and-diagnostics"><i class="fa fa-check"></i><b>3.3.2</b> Model selection and diagnostics</a></li>
+<li class="chapter" data-level="3.3.3" data-path="pmetrics-overview.html"><a href="pmetrics-overview.html#other-functions-1"><i class="fa fa-check"></i><b>3.3.3</b> Other functions</a></li>
+</ul></li>
 </ul></li>
 <li class="chapter" data-level="4" data-path="general-workflow.html"><a href="general-workflow.html"><i class="fa fa-check"></i><b>4</b> General Workflow</a></li>
 <li class="chapter" data-level="5" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html"><i class="fa fa-check"></i><b>5</b> Pmetrics Input Files</a><ul>
 <li class="chapter" data-level="5.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#data.csv-files"><i class="fa fa-check"></i><b>5.1</b> Data.csv Files</a><ul>
 <li class="chapter" data-level="5.1.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#data-file-format"><i class="fa fa-check"></i><b>5.1.1</b> Data file format</a></li>
 <li class="chapter" data-level="5.1.2" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#manipulation-of-csv-files"><i class="fa fa-check"></i><b>5.1.2</b> Manipulation of CSV files</a></li>
+<li class="chapter" data-level="5.1.3" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#specifying-data-objects-in-r6"><i class="fa fa-check"></i><b>5.1.3</b> Specifying Data Objects in R6</a></li>
 </ul></li>
 <li class="chapter" data-level="5.2" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#specifying-models-in-r6"><i class="fa fa-check"></i><b>5.2</b> Specifying Models in R6</a><ul>
 <li class="chapter" data-level="5.2.1" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#priR6"><i class="fa fa-check"></i><b>5.2.1</b> PRImary variables</a></li>
@@ -193,17 +199,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="5.3.13" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#completeEx"><i class="fa fa-check"></i><b>5.3.13</b> Complete Example</a></li>
 <li class="chapter" data-level="5.3.14" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#brief-fortran-tutorial"><i class="fa fa-check"></i><b>5.3.14</b> Brief Fortran Tutorial</a></li>
 </ul></li>
+<li class="chapter" data-level="5.4" data-path="pmetrics-input-files.html"><a href="pmetrics-input-files.html#using-legacy-models-in-r6"><i class="fa fa-check"></i><b>5.4</b> Using legacy models in R6</a></li>
 </ul></li>
 <li class="chapter" data-level="6" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html"><i class="fa fa-check"></i><b>6</b> How to use R and Pmetrics</a><ul>
 <li class="chapter" data-level="6.1" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#setting-up-a-pmetrics-project"><i class="fa fa-check"></i><b>6.1</b> Setting up a Pmetrics project</a></li>
-<li class="chapter" data-level="6.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#getting-the-required-inputs-to-run-pmetrics"><i class="fa fa-check"></i><b>6.2</b> Getting the required inputs to run Pmetrics</a><ul>
-<li class="chapter" data-level="6.2.1" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#r6"><i class="fa fa-check"></i><b>6.2.1</b> R6</a></li>
-<li class="chapter" data-level="6.2.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#legacy"><i class="fa fa-check"></i><b>6.2.2</b> Legacy</a></li>
-</ul></li>
-<li class="chapter" data-level="6.3" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#using-scripts-to-control-pmetrics"><i class="fa fa-check"></i><b>6.3</b> Using scripts to control Pmetrics</a></li>
+<li class="chapter" data-level="6.2" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#getting-the-required-inputs-to-run-pmetrics"><i class="fa fa-check"></i><b>6.2</b> Getting the required inputs to run Pmetrics</a></li>
+<li class="chapter" data-level="6.3" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#fitting-models-to-data"><i class="fa fa-check"></i><b>6.3</b> Fitting models to data</a></li>
 <li class="chapter" data-level="6.4" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#loading-results-after-a-completed-run"><i class="fa fa-check"></i><b>6.4</b> Loading results after a completed run</a></li>
-<li class="chapter" data-level="6.5" data-path="how-to-use-r-and-pmetrics.html"><a href="how-to-use-r-and-pmetrics.html#using-shiny-to-control-pmetrics"><i class="fa fa-check"></i><b>6.5</b> Using Shiny to control Pmetrics</a></li>
 </ul></li>
+<li class="chapter" data-level="7" data-path="pmetrics-data-objects.html"><a href="pmetrics-data-objects.html"><i class="fa fa-check"></i><b>7</b> Pmetrics Data Objects</a></li>
+<li class="chapter" data-level="8" data-path="performing-simulations.html"><a href="performing-simulations.html"><i class="fa fa-check"></i><b>8</b> Performing Simulations</a></li>
 <li class="divider"></li>
 <li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
 
@@ -224,44 +229,55 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="general-workflow" class="section level1">
-<h1><span class="header-section-number">Chapter 4</span> General Workflow</h1>
+<div id="general-workflow" class="section level1 hasAnchor">
+<h1><span class="header-section-number">Chapter 4</span> General Workflow<a href="general-workflow.html#general-workflow" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p><span class="r6">R6</span></p>
 <p>The general Pmetrics workflow in R6 for IT2B and NPAG is shown in the
 following diagram.</p>
-<p>The user supplies the items in <strong>yellow</strong>. R is used to specify the working directory containing the data .csv file. The model file is created in R using
-the <code>PM_model</code> function. When combined using <code>PM_fit</code> and the <code>$run()</code> function
-on the resulting object, a batch file is generated by R, causing the preparation
-program to be compiled and executed. An instruction file is generated
-automatically by the contents of the data and model, and by
-arguments to the <code>$run()</code> function. The batch file
-will then compile and execute the engine file according to the
-instructions, which will generate several output files upon completion.
-Finally, the batch file will call the R script to generate the summary
-report and several data objects, including the IT2Bout.Rdata or
-NPAGout.Rdata files which can be loaded into R subsequently using
-<code>PM_load</code>. Objects that are modified can be saved back to the .Rdata
-files with <code>PMsave</code>.</p>
 <p><img src="Images/Slide1.png" /></p>
+<p>The user creates the data and model objects at the top. These can come from the hard drive or from within R (dashed arrows). The model file is created in R using
+the <code>PM_model$new()</code> function and the data file by <code>PM_data$new()</code>. When combined using <code>PM_fit$new()</code> and the <code>$run()</code> function
+on the resulting object, the analysis is executed. At the end of the run, the hard drive will contain a new numerically named folder, e.g., 1, 2, 3, …, that contains the files which can be loaded into R subsequently using
+<code>PM_load(x)</code>, replacing <code>x</code> with the folder number. <code>PM_load()</code> is an alias for <code>PM_result$new()</code> because it creates a new <code>PM_result</code> object which contains all the results of a run, and has many assciated methods attached to it for plotting, simulating, etc.</p>
+<p>To change model parameters, the model object is updated via <code>PM_model$update()</code>, <code>PM_fit$new()</code> is called and then the run is executed with <code>$run()</code>. If continuing a previous run that did not end, simply use the <code>$run()</code> and specify the run number you wish to continue as the <code>prior</code> argument to <code>$run()</code>. These scenarios are illustrated below.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="co">#Run 1 - ensure the data, model files are in the working directory</span></a>
+<a class="sourceLine" id="cb13-2" title="2">data1 &lt;-<span class="st"> </span>PM_data<span class="op">$</span><span class="kw">new</span>(<span class="st">&quot;data.csv&quot;</span>)</a>
+<a class="sourceLine" id="cb13-3" title="3">mod1 &lt;-<span class="st"> </span>PM_model<span class="op">$</span><span class="kw">new</span>(<span class="st">&quot;model.txt&quot;</span>)</a>
+<a class="sourceLine" id="cb13-4" title="4">fit1 &lt;-<span class="st"> </span>PM_fit<span class="op">$</span><span class="kw">new</span>(data1, mod1)</a>
+<a class="sourceLine" id="cb13-5" title="5">fit1<span class="op">$</span><span class="kw">run</span>()</a>
+<a class="sourceLine" id="cb13-6" title="6">res1 &lt;-<span class="st"> </span><span class="kw">PM_load</span>(<span class="dv">1</span>) <span class="co">#PM_load is an alias for PM_result$new()</span></a>
+<a class="sourceLine" id="cb13-7" title="7"></a>
+<a class="sourceLine" id="cb13-8" title="8"><span class="co">#Run 2 - update Ke range</span></a>
+<a class="sourceLine" id="cb13-9" title="9">mod2 &lt;-<span class="st"> </span>mod1<span class="op">$</span><span class="kw">update</span>(<span class="kw">list</span>(<span class="dt">pri =</span> <span class="kw">list</span>(<span class="dt">Ke =</span> <span class="kw">range</span>(<span class="fl">0.5</span>, <span class="dv">3</span>))))</a>
+<a class="sourceLine" id="cb13-10" title="10">fit2 &lt;-<span class="st"> </span>PM_fit<span class="op">$</span><span class="kw">new</span>(data1, mod2)</a>
+<a class="sourceLine" id="cb13-11" title="11">fit2<span class="op">$</span><span class="kw">run</span>()</a>
+<a class="sourceLine" id="cb13-12" title="12"></a>
+<a class="sourceLine" id="cb13-13" title="13"><span class="co">#Run 3 - continue run 2</span></a>
+<a class="sourceLine" id="cb13-14" title="14">fit2<span class="op">$</span><span class="kw">run</span>(<span class="dt">prior =</span> <span class="dv">2</span>)</a></code></pre></div>
+<p>The great advantage of R6 over Legacy is that in R6, you no longer need to spend time copying files from prior run folders, modifying them, and ensuring that they are in the working directory. After the initial creation of the data and model objects, everything can be done in R from memory, although results are still saved to hard drive for later retrieval.</p>
 <p><span class="legacy">Legacy</span></p>
 <p>The general Pmetrics workflow in Legacy for IT2B and NPAG is shown in the
-following diagram. The major differences compared to R6 are that the model is a text file, and the commands to start the run are different.</p>
+following diagram. The major differences compared to R6 are:</p>
+<ul>
+<li><em>Data and model</em> The data is always a .csv file, and the model is always a text file which must be edited to make changes. Both must be copied from a prior folder to the current working directory for every run.</li>
+<li><em>Run.</em> Separate commands for NPAG and IT2B must be used, i.e. <code>NPrun()</code> and <code>ITrun()</code>.</li>
+<li><em>Loading.</em> Results are loaded with <code>PMload()</code> not <code>PM_load()</code> because the former returns a collection of results all suffixed with the run number, e.g. <code>op.1</code> or <code>final.1</code> for run 1. This can lead to confusion if working on two projects at once, or uncertainty about what is actually loaded.</li>
+</ul>
 <p><img src="Images/Slide2.png" /></p>
-<p>The user supplies the items in <strong>yellow</strong> as arguments to
-the run functions. R is used to specify the working directory containing the data.csv and
-model.txt files. Through the batch file generated by R, the preparation
-program is compiled and executed. The instruction file is generated
-automatically by the contents of the data and model files, and by
-arguments to the <code>NPrun</code>, <code>ITrun</code> or <code>ERRrun</code> commands. The batch file
-will then compile and execute the engine file according to the
-instructions, which will generate several output files upon completion.
-Finally, the batch file will call the R script to generate the summary
-report and several data objects, including the IT2Bout.Rdata or
-NPAGout.Rdata files which can be loaded into R subsequently using
-<code>PMload</code>. Objects that are modified can be saved back to the .Rdata
-files with <code>PMsave</code>.</p>
-<p>Both input files (data, model) are text files which can be edited
-directly.</p>
+<p>The user supplies the names of the data and model files as arguments to
+the run functions. R is used to specify the working directory containing these files. The analysis is executed in a terminal window by calling <code>NPrun</code>, <code>ITrun</code> or <code>ERRrun</code> functions. The results can be loaded into R after the run completes using
+<code>PMload</code>. The analgous Legacy code to the R6 code above is shown here.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="co">#Run 1 - ensure the data, model files are in the working directory</span></a>
+<a class="sourceLine" id="cb14-2" title="2"><span class="kw">NPrun</span>(<span class="st">&quot;data.csv&quot;</span>, <span class="st">&quot;model.txt&quot;</span>)</a>
+<a class="sourceLine" id="cb14-3" title="3"><span class="kw">PMload</span>(<span class="dv">1</span>) </a>
+<a class="sourceLine" id="cb14-4" title="4"></a>
+<a class="sourceLine" id="cb14-5" title="5"><span class="co">#Run 2 - update Ke range - edit file outside R, copy to working directory</span></a>
+<a class="sourceLine" id="cb14-6" title="6"><span class="co">#use same data as for run 1</span></a>
+<a class="sourceLine" id="cb14-7" title="7"><span class="kw">NPrun</span>(<span class="dt">data =</span> <span class="dv">1</span>, <span class="st">&quot;model2.txt&quot;</span>)</a>
+<a class="sourceLine" id="cb14-8" title="8"></a>
+<a class="sourceLine" id="cb14-9" title="9"><span class="co">#Run 3 - continue run 2</span></a>
+<a class="sourceLine" id="cb14-10" title="10"><span class="kw">NPrun</span>(<span class="dt">data =</span> <span class="dv">1</span>, <span class="dt">model =</span> <span class="dv">1</span>, <span class="dt">prior =</span> <span class="dv">2</span>)</a></code></pre></div>
+<p>While there are fewer lines of R code than for R6, the edits made to create model2.txt are not recorded anywhere in R, and must be made outside R, with cumbersome file copying to ensure everything is in the working directory.</p>
 
 </div>
             </section>
@@ -330,7 +346,7 @@ gitbook.start({
     var script = document.createElement("script");
     script.type = "text/javascript";
     var src = "true";
-    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
     if (location.protocol !== "file:")
       if (/^https?:/.test(src))
         src = src.replace(/^https?:/, '');
