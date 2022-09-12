@@ -44,10 +44,10 @@ PM_pta <- R6::R6Class(
             summary.PMpta(self, ...)
         },
         #' @description 
-        #' Plot the `PM_pta` object. See [plot.PMpta].
-        #' @param ... Arguments passed to [plot.PMpta]
+        #' Plot the `PM_pta` object. See [plot.PM_pta].
+        #' @param ... Arguments passed to [plot.PM_pta]
         plot = function(...) {
-            plot.PMpta(self, ...)
+            plot.PM_pta(self, ...)
         },
         #' @description
         #' Returns a PM_pta object based on the information found in a specified rds file.
