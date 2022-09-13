@@ -6,3 +6,7 @@
 ^\.Rproj\.user$
 compile.*
 .vscode
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
