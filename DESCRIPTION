@@ -19,7 +19,8 @@ Description: Parametric and non-parametric
 Authors@R: person("Michael", "Neely",
     email = "mneely@usc.edu", role = c("aut", "cre"))
 Version: 2.0.0
-URL: http://www.lapk.org
+URL: http://www.lapk.org,
+    https://lapkb.github.io/Pmetrics/
 Date: 2022-05-30
 Depends: 
     R (>= 3.5.0)
