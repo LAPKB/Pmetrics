@@ -1,4 +1,5 @@
 url: https://lapkb.github.io/Pmetrics/
 template:
   bootstrap: 5
+  bootswatch: cosmo
 
