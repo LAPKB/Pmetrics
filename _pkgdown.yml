@@ -1,6 +1,7 @@
 url: https://lapkb.github.io/Pmetrics/
 template:
   bootstrap: 5
+  bootswatch: cosmo
 reference:
 - title: R6 objects
   desc: Create Pmetrics R6 objects
