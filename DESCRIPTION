@@ -18,7 +18,7 @@ Description: Parametric and non-parametric
     which used to be available on CRAN.
 Authors@R: c(
   person("Michael", "Neely", email = "mneely@usc.edu", role = c("aut", "cre")),
-  person("Julián", "Otálvaro", email = "juliandavid347@gmail.com", role = c("aut", "cre")),
+  person("Julián", "Otálvaro", email = "juliandavid347@gmail.com", role = "aut"),
   person("Walter", "Yamada", email = "", role="ctb"),
   person("Alan", "Schumitzky", email = "", role = "ctb"),
   person("Michael", "van Guilder", email = "", role = "ctb"),
