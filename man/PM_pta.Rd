@@ -108,7 +108,7 @@ Summarize the \code{PM_pta} object. See \link{summary.PMpta}.
 \if{html}{\out{<a id="method-PM_pta-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_pta-plot}{}}}
 \subsection{Method \code{plot()}}{
-Plot the \code{PM_pta} object. See \link{plot.PMpta}.
+Plot the \code{PM_pta} object. See \link{plot.PM_pta}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_pta$plot(...)}\if{html}{\out{</div>}}
 }
@@ -116,7 +116,7 @@ Plot the \code{PM_pta} object. See \link{plot.PMpta}.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{plot.PMpta}}
+\item{\code{...}}{Arguments passed to \link{plot.PM_pta}}
 }
 \if{html}{\out{</div>}}
 }
