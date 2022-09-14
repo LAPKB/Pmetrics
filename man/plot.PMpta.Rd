@@ -8,154 +8,73 @@
   x,
   include,
   exclude,
-  type = "pta",
-  mult = 1,
-  log = F,
-  outeq = 1,
-  line = T,
-  marker = T,
-  grid = T,
-  legend = T,
-  ci = 0.9,
+  plot.type = "pta",
+  log = T,
+  pch,
+  grid,
   xlab,
   ylab,
-  xlim,
-  ylim,
+  col,
+  lty,
+  lwd = 4,
+  legend = T,
+  ci = 0.9,
+  out = NA,
   ...
 )
 }
 \arguments{
-\item{x}{The name of an *PMpta" data object read by \link{makePTA}}
+\item{x}{The name of an \emph{PMpta} data object read by \code{\link{makePTA}}}
 
-\item{include}{A vector of simulations (regimens) to include in the plot, e.g. \code{include = c(1,3)}}
+\item{include}{A vector of simulations (regimens) to include in the plot, e.g. c(1,3)}
 
-\item{exclude}{A vector of simulations (regimens) in the plot, e.g. \code{exclude = c(2,4:6)}}
+\item{exclude}{A vector of simulations (regimens) in the plot, e.g. c(2,4:6)}
 
-\item{type}{Character vector controlling type of plot.
-Default is "pta", which plots proportion with success on the y-axis and target on the x-axis.
-The other choice is "pdi", which plots the median pdi (pharmacodynamic index), e.g. AUC/MIC, on the
+\item{plot.type}{Character vector controlling type of plot.
+Default is \dQuote{pta}, which plots proportion with success on the y-axis and target on the x-axis.
+The other choice is \dQuote{pdi}, which plots the median pdi (pharmacodynamic index), e.g. AUC/MIC, on the
 y-axis, and target on the x-axis.}
 
-\item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
+\item{log}{Boolean operator to plot x-axis in logarithmic scale; the default is \code{True}}
 
-\item{log}{Boolean operator to plot the y axis in log base 10.
-This argument maps to the
-the yaxis type value in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > yaxis > type.
-Example: \code{log = T}}
+\item{pch}{Vector of integers which control the plotting symbol for each regimen curve; the default is 1:nsim.  NA results in no symbol.
+Use 0 for open square, 1 for open circle, 2 for open triangle, 3 for cross, 4 for X, or 5 for a diamond.
+Other alternatives are \dQuote{*} for asterisks, \dQuote{.} for tiny dots, or \dQuote{+} for a smaller,
+bolder cross.  These plotting symbols are standard for R (see \code{\link{par}}).}
 
-\item{outeq}{Which output equation to plot. Default is 1.}
+\item{grid}{Either a boolean operator to plot a reference grid, or a list with elements x and y,
+each of which is a vector specifying the native coordinates to plot grid lines; the default is \code{False}.
+For example, grid=list(x=seq(0,24,2),y=1:10).  Defaults for missing x or y will be calculated by \code{\link{axTicks}}.}
 
-\item{line}{Controls characteristics of lines.
-This argument maps to the plotly line object.
-It can be boolean or a list.
-\code{TRUE} will plot the line with default characteristics for each simulated regimen.
-\code{FALSE} will suppress line plotting.
-If a list, it functions a little differently than other Pmetrics plotly functions.
-Rather than controlling individual line characteristics, for this plot,
-the \code{line} argument should be a list of the options for group based plotting,
-where each group corresponds to a simulated regimen. The possible elements of the
-\code{line} list should be exactly named:
-\itemize{
-\item color Maps to the \link{plot_ly} \code{colors} argument to override default colors
-applied to the lines for each regimen. This can be a named palette, which
-can be obtained with \code{RColorBrewer::display.brewer.all()} or a vector of hexadecimal
-color names. One way to ensure reliable color palettes is to use the
-\href{https://colorbrewer2.org/#type=qualitative&scheme=Accent&n=6}{ColorBrewer} site.
-Choosing the number of data classes to correspond to regimens, and qualitative data
-results in a distinct palette. Easiest importing into R is to copy/paste the Export
-of JavaScript on the ColorBrewer website. The default is "Spectral". Palettes
-with fewer colors than regimens will be recycled. A color can also be a character
-vector of color names, recycled as needed. For example, a print-friendly choice
-is \code{line = list(color = "black")}.
-\item width Maps to the \link{plot_ly} \code{width} argument to override default widths
-applied to the lines for each regimen. All lines will have the same width.
-The default value is 2.
-\item dash Maps to the \link{plot_ly} \code{linetypes} argument to override default styles
-applied to the lines for each regimen. If numeric, will map to \code{lty} \link{par} values.
-It can also be a character vector of dash names as listed in \link{plot_ly}.
-Example: \code{line = list(color = "Blues", width = 1, dash = 2)}, whicb will result
-in dotted lines (dash  = 2) all with width 1 but in different shades of blue.
-}}
+\item{xlab}{Label for the x axis.  Default is \dQuote{MIC}}
 
-\item{marker}{Controls the plotting symbol.
-This argument maps to the plotly marker object.
-It can be boolean or a list.
-\code{TRUE} will plot the profiles with default characteristics for each simulated regimen.
-\code{FALSE} will suppress line plotting.
-If a list, it functions a little differently than other Pmetrics plotly functions.
-Rather than controlling individual marker characteristics, for this plot,
-the \code{marker} argument should be a list of the options for group based plotting,
-where each group corresponds to a simulated regimen. The possible elements of the
-\code{marker} list should be exactly named:
-\itemize{
-\item color Default marker color is the same as the line color. If line color is specified,
-marker color does not need to also be specified. Even if line plotting is suppressed
-with \code{line = F}, the default color value of "Spectral" will be applied to markers,
-unless specified, e.g. \code{marker = list(color = "Blues")}.
-\item symbol Maps to the \link{plot_ly} \code{symbols} argument to override default symbols
-applied to the markers for each regimen. If only one value is supplied for this,
-it will be recycled for each regimen, i.e. all will have the same symbol.
-See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values
-for options.
-\item size Maps to the \link{plot_ly} \code{size} argument to override default size
-applied to the markers for each regimen. All markers will have the same size.
-The default value is 12.
-}}
+\item{ylab}{Label for the y axis.  Default is \dQuote{Proportion with success}}
 
-\item{grid}{Controls grid display.
-This argument maps to the xaxis and yaxis layout objects in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth.
-It is a Boolean operator. If \code{FALSE}, no grid is plotted.
-If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at
-major tick marks. If a list,
-color and width can be customized.
-Examples:
-\itemize{
-\item \code{grid = F}
-\item \code{grid = list(gridcolor = "black", gridwidth = 2)}
-}}
+\item{col}{A vector of color names to be used for each regimen plotted.  If the
+length of \code{col} is too short, values will be recycled.}
 
-\item{legend}{Controls display of legend.
-This argument maps to the plotly layout showlegend and legend arguments.
-It is either a boolean operator (most common) or a list of parameters to be supplied to plotly.
-See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend
-for more details on the available options for formatting.
-If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will
-be set to \code{TRUE} automatically.
-Examples:
-\itemize{
-\item \code{legend = T}
-\item \code{legend = list(orientation = "h", font = list(color = "blue"))}
-}}
+\item{lty}{A vector of line types to be used for each regimen plotted.  If the
+length of \code{lty} is too short, values will be recycled.}
 
-\item{ci}{Confidence interval around curves on \code{type = "pdi"} plot, on scale of 0 to 1. Default is 0.9.}
+\item{lwd}{Line width, with default of 4.}
 
-\item{xlab}{Label for the x axis.  Default is "Target" when targets are discrete,
-and "Regimen" when targets are sampled.}
+\item{legend}{Either a boolean operator or a list of parameters to be supplied to the \code{\link{legend}}
+function (see its documentation).  If \code{False}, a legend will not be plotted.
+If \code{True} (the default), the default legend parameters will be used, as documented in that function, with exceptions
+as noted in \emph{Details}.}
 
-\item{ylab}{Label for the y axis.  Default is "Proportion with success" for
-plot \code{type = "pta"} and "Pharmacodynamic Index" for plot \code{type = "pdi"}.}
+\item{ci}{Confidence interval around curves on \code{pdi} plot, on scale of 0 to 1. Default is 0.9.}
 
-\item{xlim}{Limits of the x axis as a vector.
-This argument maps to the
-the xaxis range in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > xaxis > range.
-Example: \code{xlim = c(0,1)}}
+\item{out}{Direct output to a PDF, EPS or image file.  Format is a named list whose first argument,
+\code{type} is one of the following character vectors: \dQuote{pdf}, \dQuote{eps} (maps to \code{postscript}),
+\dQuote{\code{png}}, \dQuote{\code{tiff}}, \dQuote{\code{jpeg}}, or \dQuote{\code{bmp}}.  Other named items in the list
+are the arguments to each graphic device. PDF and EPS are vector images acceptable to most journals
+in a very small file size, with scalable (i.e. infinite) resolution.  The others are raster images which may be very
+large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the
+output will go to the current graphic device (usually the monitor). For example, to output an eps file,
+out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.}
 
-\item{ylim}{Limits of the y axis as a vector.
-This argument maps to the
-the yaxis range in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > yaxis > range.
-Example: \code{ylim = c(0,100)}}
-
-\item{\dots}{Other parameters which can be passed to control axis formatting. Specify as lists
-named either xaxis or yaxis. See \code{plotly::schema()} layout > layoutAttributes > xaxis/yaxis for options.
-Example: \code{xaxis = list(title = list(text = "Time (h)", font = list(family = "Arial", size = 14, color = "black")))}}
+\item{\dots}{Other parameters as found in \code{\link{plot.default}}.}
 }
 \value{
 Plots the object.
@@ -164,37 +83,23 @@ Plots the object.
 Plots PMpta objects
 }
 \details{
-This function will plot the percent target attainment for objects made with the \link{makePTA} function.
+This function will plot the percent target attainment for objects made with the \code{\link{makePTA}} function.
 For the legend, defaults that are different that the standard are:
 \itemize{
-\item x Default "topright"
-\item legend Default will be the labeled regimen names supplied during \link{makePTA},
-or if missing, "Regimen 1, Regimen 2,...Regimen n", where \emph{n} is the number of
+\item x Default \dQuote{topright}
+\item legend Default will be the labeled regimen names supplied during \code{\link{makePTA}},
+or if missing, \dQuote{Regimen 1, Regimen 2,...Regimen n}, where \emph{n} is the number of
 regimens in the PMpta object.
 This default can be overridden by a supplied character vector of regimen names.
-\itemize{
 \item col The color of each Regimen plot as specified by the default color scheme or \code{col}
 \item pch The plotting character for each Regimen plot as specified by the default plotting characters or \code{pch}
 \item lty The line type of each Regimen plot as specified by the default line types or \code{lty}
-\item bg Default "white"
-}
+\item bg Default \dQuote{white}
 }
 }
 \seealso{
-\link{makePTA}
-
-Other PMplots: 
-\code{\link{plot.MMopt}()},
-\code{\link{plot.PM_data}()},
-\code{\link{plot.PM_final}()},
-\code{\link{plot.PM_op}()},
-\code{\link{plot.PMcov}()},
-\code{\link{plot.PMcycle}()},
-\code{\link{plot.PMdopt}()},
-\code{\link{plot.PMsim}()},
-\code{\link{plot.PMvalid}()}
+\code{\link{makePTA}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 }
 \author{
 Michael Neely
 }
-\concept{PMplots}

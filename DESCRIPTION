@@ -16,14 +16,20 @@ Description: Parametric and non-parametric
     semi-parametric Monte-Carlo simulations. It includes
     source code from the NPDE package by Emanuelle Comets, et al,
     which used to be available on CRAN.
-Authors@R: person("Michael", "Neely",
-    email = "mneely@usc.edu", role = c("aut", "cre"))
+Authors@R: c(
+  person("Michael", "Neely", email = "mneely@usc.edu", role = c("aut", "cre")),
+  person("Julián", "Otálvaro", email = "juliandavid347@gmail.com", role = c("aut", "cre")),
+  person("Walter", "Yamada", email = "", role="ctb"),
+  person("Alan", "Schumitzky", email = "", role = "ctb"),
+  person("Michael", "van Guilder", email = "", role = "ctb"),
+  person("David", "Bayard", email = "", role = "ctb"),
+  person("Robert", "Leary", email = "", role = "ctb")
+    )
 Version: 2.0.0
-URL: http://www.lapk.org,
-    https://lapkb.github.io/Pmetrics/
-Date: 2022-05-30
+URL: https://lapkb.github.io/Pmetrics/
+Date: 2022-09-30
 Depends: 
-    R (>= 3.5.0)
+    R (>= 4.0.0)
 Imports:
     askpass,
     base64enc,
