@@ -1,12 +1,11 @@
 url: https://lapkb.github.io/Pmetrics/
 template:
-    bootstrap: 5
-    bootswatch: cosmo
+  bootstrap: 5
+  bootswatch: cosmo
 reference:
 - title: R6 objects
   desc: Create Pmetrics R6 objects
-- contents:
-  - starts_with("PM_")
+- contents: starts_with("PM_")
 - title: Make functions
   desc: Functions for making Pmetrics objects
 - contents:
@@ -19,27 +18,23 @@ reference:
   - MM_opt
 - title: Plot
   desc: Functions for plotting Pmetrics output
-- contents:
-  - starts_with("plot")
+- contents: starts_with("plot")
 - title: Summary
   desc: Functions for summarizing Pmetrics output
-- contents:
-  - starts_with("summary")
+- contents: starts_with("summary")
 - title: Print
   desc: Functions for printing Pmetrics output
-- contents:
-  - starts_with("print")
+- contents: starts_with("print")
 - title: Run
   desc: Run functions for modeling or simulating data
-- contents:
-  - ends_with("run")
+- contents: ends_with("run")
 - title: Parse/load
   desc: Parse functions for loading modeled or simulated data
 - contents:
   - ends_with("parse")
   - PMload
 - title: Auxilliary
-  desc: Auxilliary functions 
+  desc: Auxilliary functions
 - contents:
   - qgrowth
   - zBMI
@@ -50,8 +45,7 @@ reference:
   - PMstep
 - title: Datasets
   desc: Pmetrics datasets
-- contents:
-  - has_keyword("datasets")
+- contents: has_keyword("datasets")
 - title: Data processing
   desc: Data processing and interconversion
 - contents:
@@ -87,3 +81,4 @@ reference:
   - PMmanual
   - PMnews
   - Pmetrics-package
+
