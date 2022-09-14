@@ -7,6 +7,12 @@
     <loc>https://lapkb.github.io/Pmetrics/LICENSE-text.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/articles/index.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/articles/plotly.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/authors.html</loc>
   </url>
   <url>
@@ -254,6 +260,15 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_op.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMcov.html</loc>
