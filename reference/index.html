@@ -144,6 +144,11 @@
         <dd>Create a new Pmetrics folder tree</dd>
       </dl><dl><dt>
           
+          <code><a href="PMcheckMatrix.html">PMcheckMatrix()</a></code> 
+        </dt>
+        <dd>Deprecated functions.</dd>
+      </dl><dl><dt>
+          
           <code><a href="makeAUC.html">makeAUC()</a></code> 
         </dt>
         <dd>Calculation of AUCs</dd>
@@ -179,16 +184,6 @@
         <dd>Generated observed vs. predicted data</dd>
       </dl><dl><dt>
           
-          <code><a href="makePop.html">makePop()</a></code> 
-        </dt>
-        <dd>Individual Bayesian population prior predictions at short intervals</dd>
-      </dl><dl><dt>
-          
-          <code><a href="makePost.html">makePost()</a></code> 
-        </dt>
-        <dd>Individual Bayesian posterior predictions at short intervals</dd>
-      </dl><dl><dt>
-          
           <code><a href="makePTA.html">makePTA()</a></code> 
         </dt>
         <dd>Calculation of PTAs</dd>
@@ -197,6 +192,16 @@
           <code><a href="makePTAtarget.html">makePTAtarget()</a></code> 
         </dt>
         <dd>Make PTA target object</dd>
+      </dl><dl><dt>
+          
+          <code><a href="makePop.html">makePop()</a></code> 
+        </dt>
+        <dd>Individual Bayesian population prior predictions at short intervals</dd>
+      </dl><dl><dt>
+          
+          <code><a href="makePost.html">makePost()</a></code> 
+        </dt>
+        <dd>Individual Bayesian posterior predictions at short intervals</dd>
       </dl><dl><dt>
           
           <code><a href="makeValid.html">makeValid()</a></code> 
@@ -212,11 +217,6 @@
           <code><a href="make_valid.html">make_valid()</a></code> 
         </dt>
         <dd>Create a Pmetrics validation object</dd>
-      </dl><dl><dt>
-          
-          <code><a href="PMcheckMatrix.html">PMcheckMatrix()</a></code> 
-        </dt>
-        <dd>Deprecated functions.</dd>
       </dl></div><div class="section level2">
       <h2 id="optimal-sampling">Optimal sampling<a class="anchor" aria-label="anchor" href="#optimal-sampling"></a></h2>
       
@@ -254,6 +254,36 @@
           <code><a href="plot.MMopt.html">plot(<i>&lt;MMopt&gt;</i>)</a></code> 
         </dt>
         <dd>Plot Pmetrics Multiple-Model Optimal Sampling Objects</dd>
+      </dl><dl><dt>
+          
+          <code><a href="plot.PM_data.html">plot(<i>&lt;PM_data&gt;</i>)</a></code> 
+        </dt>
+        <dd>Plot PM_data Time-Output Data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="plot.PM_final.html">plot(<i>&lt;PM_final&gt;</i>)</a></code> 
+        </dt>
+        <dd>Plot Pmetrics Final Cycle Parameter Value Distributions</dd>
+      </dl><dl><dt>
+          
+          <code><a href="plot.PM_op.html">plot(<i>&lt;PMop&gt;</i>)</a></code> 
+        </dt>
+        <dd>Plot PMop objects</dd>
+      </dl><dl><dt>
+          
+          <code><a href="plot.PM_pta.html">plot(<i>&lt;PM_pta&gt;</i>)</a></code> 
+        </dt>
+        <dd>Plot PM_pta Percent Target Attainment objects</dd>
+      </dl><dl><dt>
+          
+          <code><a href="plot.PM_sim.html">plot(<i>&lt;PM_sim&gt;</i>)</a></code> 
+        </dt>
+        <dd>Plot Pmetrics Simulation Objects</dd>
+      </dl><dl><dt>
+          
+          <code><a href="plot.PM_valid.html">plot(<i>&lt;PM_valid&gt;</i>)</a></code> 
+        </dt>
+        <dd>Plot PM_valid objects</dd>
       </dl><dl><dt>
           
           <code><a href="plot.PMcov.html">plot(<i>&lt;PMcov&gt;</i>)</a></code> 
@@ -299,36 +329,6 @@
           <code><a href="plot.PMvalid.html">plot(<i>&lt;PMvalid&gt;</i>)</a></code> 
         </dt>
         <dd>Plot Pmetrics Validation Objects</dd>
-      </dl><dl><dt>
-          
-          <code><a href="plot.PM_data.html">plot(<i>&lt;PM_data&gt;</i>)</a></code> 
-        </dt>
-        <dd>Plot PM_data Time-Output Data</dd>
-      </dl><dl><dt>
-          
-          <code><a href="plot.PM_final.html">plot(<i>&lt;PM_final&gt;</i>)</a></code> 
-        </dt>
-        <dd>Plot Pmetrics Final Cycle Parameter Value Distributions</dd>
-      </dl><dl><dt>
-          
-          <code><a href="plot.PM_op.html">plot(<i>&lt;PMop&gt;</i>)</a></code> 
-        </dt>
-        <dd>Plot PMop objects</dd>
-      </dl><dl><dt>
-          
-          <code><a href="plot.PM_pta.html">plot(<i>&lt;PM_pta&gt;</i>)</a></code> 
-        </dt>
-        <dd>Plot PM_pta Percent Target Attainment objects</dd>
-      </dl><dl><dt>
-          
-          <code><a href="plot.PM_sim.html">plot(<i>&lt;PM_sim&gt;</i>)</a></code> 
-        </dt>
-        <dd>Plot Pmetrics Simulation Objects</dd>
-      </dl><dl><dt>
-          
-          <code><a href="plot.PM_valid.html">plot(<i>&lt;PM_valid&gt;</i>)</a></code> 
-        </dt>
-        <dd>Plot PM_valid objects</dd>
       </dl></div><div class="section level2">
       <h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a></h2>
       
@@ -341,6 +341,31 @@
       
 
       <dl><dt>
+          
+          <code><a href="summary.PM_cov.html">summary(<i>&lt;PM_cov&gt;</i>)</a></code> 
+        </dt>
+        <dd>Wrapper function for summmary.PMcov</dd>
+      </dl><dl><dt>
+          
+          <code><a href="summary.PM_data.html">summary(<i>&lt;PM_data&gt;</i>)</a></code> 
+        </dt>
+        <dd>Summarize a Pmetrics PM_data object</dd>
+      </dl><dl><dt>
+          
+          <code><a href="summary.PM_final.html">summary(<i>&lt;PM_final&gt;</i>)</a></code> 
+        </dt>
+        <dd>Wrapper function for summmary.PMfinal</dd>
+      </dl><dl><dt>
+          
+          <code><a href="summary.PM_op.html">summary(<i>&lt;PM_op&gt;</i>)</a></code> 
+        </dt>
+        <dd>Wrapper function for summmary.PMop</dd>
+      </dl><dl><dt>
+          
+          <code><a href="summary.PM_pta.html">summary(<i>&lt;PM_pta&gt;</i>)</a></code> 
+        </dt>
+        <dd>Wrapper function for summmary.PMpta</dd>
+      </dl><dl><dt>
           
           <code><a href="summary.PMcov.html">summary(<i>&lt;PMcov&gt;</i>)</a></code> 
         </dt>
@@ -370,31 +395,6 @@
           <code><a href="summary.PMpta.html">summary(<i>&lt;PMpta&gt;</i>)</a></code> 
         </dt>
         <dd>Summarize Percent Target Attainment</dd>
-      </dl><dl><dt>
-          
-          <code><a href="summary.PM_cov.html">summary(<i>&lt;PM_cov&gt;</i>)</a></code> 
-        </dt>
-        <dd>Wrapper function for summmary.PMcov</dd>
-      </dl><dl><dt>
-          
-          <code><a href="summary.PM_data.html">summary(<i>&lt;PM_data&gt;</i>)</a></code> 
-        </dt>
-        <dd>Summarize a Pmetrics PM_data object</dd>
-      </dl><dl><dt>
-          
-          <code><a href="summary.PM_final.html">summary(<i>&lt;PM_final&gt;</i>)</a></code> 
-        </dt>
-        <dd>Wrapper function for summmary.PMfinal</dd>
-      </dl><dl><dt>
-          
-          <code><a href="summary.PM_op.html">summary(<i>&lt;PM_op&gt;</i>)</a></code> 
-        </dt>
-        <dd>Wrapper function for summmary.PMop</dd>
-      </dl><dl><dt>
-          
-          <code><a href="summary.PM_pta.html">summary(<i>&lt;PM_pta&gt;</i>)</a></code> 
-        </dt>
-        <dd>Wrapper function for summmary.PMpta</dd>
       </dl></div><div class="section level2">
       <h2 id="print">Print<a class="anchor" aria-label="anchor" href="#print"></a></h2>
       
@@ -562,6 +562,16 @@
 
       <dl><dt>
           
+          <code><a href="ITex.html">ITex</a></code> 
+        </dt>
+        <dd>Example IT2B Output</dd>
+      </dl><dl><dt>
+          
+          <code><a href="NPex.html">NPex</a></code> 
+        </dt>
+        <dd>Example NPAG Output</dd>
+      </dl><dl><dt>
+          
           <code><a href="all_bmi.html">all_bmi</a></code> 
         </dt>
         <dd>CDC Pediatric and Adolescent BMI Table</dd>
@@ -582,11 +592,6 @@
         <dd>CDC Pediatric and Adolescent Growth Data Table</dd>
       </dl><dl><dt>
           
-          <code><a href="ITex.html">ITex</a></code> 
-        </dt>
-        <dd>Example IT2B Output</dd>
-      </dl><dl><dt>
-          
           <code><a href="mic1.html">mic1</a></code> 
         </dt>
         <dd>Example MIC data</dd>
@@ -595,11 +600,6 @@
           <code><a href="modEx.html">modEx</a></code> 
         </dt>
         <dd>Pmetrics model object</dd>
-      </dl><dl><dt>
-          
-          <code><a href="NPex.html">NPex</a></code> 
-        </dt>
-        <dd>Example NPAG Output</dd>
       </dl></div><div class="section level2">
       <h2 id="data-processing">Data processing<a class="anchor" aria-label="anchor" href="#data-processing"></a></h2>
       
