@@ -43,4 +43,4 @@ jobs:
         with:
           clean: false
           branch: Version2
-          folder: pkgdown
+          folder: docs
