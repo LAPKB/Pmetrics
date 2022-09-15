@@ -2,7 +2,7 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, Version2]
   pull_request:
     branches: [main, master]
   release:
@@ -43,4 +43,4 @@ jobs:
         with:
           clean: false
           branch: Version2
-          folder: docs
+          folder: pkgdown
