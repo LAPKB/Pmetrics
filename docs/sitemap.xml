@@ -1,363 +1,363 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/404.html</loc>
+    <loc>/404.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/LICENSE-text.html</loc>
+    <loc>/LICENSE-text.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/authors.html</loc>
+    <loc>/authors.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/index.html</loc>
+    <loc>/index.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/Dopt.html</loc>
+    <loc>/reference/Dopt.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/ERRreport.html</loc>
+    <loc>/reference/ERRreport.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/ERRrun.html</loc>
+    <loc>/reference/ERRrun.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/ITex.html</loc>
+    <loc>/reference/ITex.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/ITparse.html</loc>
+    <loc>/reference/ITparse.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/ITrun.html</loc>
+    <loc>/reference/ITrun.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/MM_opt.html</loc>
+    <loc>/reference/MM_opt.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/NM2PM.html</loc>
+    <loc>/reference/NM2PM.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/NPex.html</loc>
+    <loc>/reference/NPex.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/NPparse.html</loc>
+    <loc>/reference/NPparse.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/NPrun.html</loc>
+    <loc>/reference/NPrun.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMFortranConfig.html</loc>
+    <loc>/reference/PMFortranConfig.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_cov.html</loc>
+    <loc>/reference/PM_cov.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_cycle.html</loc>
+    <loc>/reference/PM_cycle.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_data.html</loc>
+    <loc>/reference/PM_data.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_final.html</loc>
+    <loc>/reference/PM_final.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_fit.html</loc>
+    <loc>/reference/PM_fit.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_load.html</loc>
+    <loc>/reference/PM_load.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_model.html</loc>
+    <loc>/reference/PM_model.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_op.html</loc>
+    <loc>/reference/PM_op.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_pop.html</loc>
+    <loc>/reference/PM_pop.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_post.html</loc>
+    <loc>/reference/PM_post.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_pta.html</loc>
+    <loc>/reference/PM_pta.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_result.html</loc>
+    <loc>/reference/PM_result.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_sim.html</loc>
+    <loc>/reference/PM_sim.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_tutorial.html</loc>
+    <loc>/reference/PM_tutorial.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PM_valid.html</loc>
+    <loc>/reference/PM_valid.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMbuild.html</loc>
+    <loc>/reference/PMbuild.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMcheck.html</loc>
+    <loc>/reference/PMcheck.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html</loc>
+    <loc>/reference/PMcheckMatrix.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMcode.html</loc>
+    <loc>/reference/PMcode.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMcompare.html</loc>
+    <loc>/reference/PMcompare.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMgetCRCL.html</loc>
+    <loc>/reference/PMgetCRCL.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMload.html</loc>
+    <loc>/reference/PMload.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMlogin.html</loc>
+    <loc>/reference/PMlogin.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMlogout.html</loc>
+    <loc>/reference/PMlogout.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMmanual.html</loc>
+    <loc>/reference/PMmanual.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMmatrixRelTime.html</loc>
+    <loc>/reference/PMmatrixRelTime.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMmb2csv.html</loc>
+    <loc>/reference/PMmb2csv.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMnews.html</loc>
+    <loc>/reference/PMnews.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMpatch.html</loc>
+    <loc>/reference/PMpatch.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMreadMatrix.html</loc>
+    <loc>/reference/PMreadMatrix.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMregister.html</loc>
+    <loc>/reference/PMregister.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMreport.html</loc>
+    <loc>/reference/PMreport.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMsave.html</loc>
+    <loc>/reference/PMsave.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMstep.html</loc>
+    <loc>/reference/PMstep.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMtest.html</loc>
+    <loc>/reference/PMtest.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMtree.html</loc>
+    <loc>/reference/PMtree.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMupdate.html</loc>
+    <loc>/reference/PMupdate.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMwriteMatrix.html</loc>
+    <loc>/reference/PMwriteMatrix.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/PMwrk2csv.html</loc>
+    <loc>/reference/PMwrk2csv.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/Pmetrics-package.html</loc>
+    <loc>/reference/Pmetrics-package.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/SIMparse.html</loc>
+    <loc>/reference/SIMparse.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/SIMrun.html</loc>
+    <loc>/reference/SIMrun.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/all_bmi.html</loc>
+    <loc>/reference/all_bmi.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/badData.html</loc>
+    <loc>/reference/badData.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/dataEx.html</loc>
+    <loc>/reference/dataEx.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/getPMoptions.html</loc>
+    <loc>/reference/getPMoptions.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/growth.html</loc>
+    <loc>/reference/growth.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/index.html</loc>
+    <loc>/reference/index.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makeAUC.html</loc>
+    <loc>/reference/makeAUC.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makeCov.html</loc>
+    <loc>/reference/makeCov.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makeCycle.html</loc>
+    <loc>/reference/makeCycle.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makeErrorPoly.html</loc>
+    <loc>/reference/makeErrorPoly.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makeFinal.html</loc>
+    <loc>/reference/makeFinal.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makeNCA.html</loc>
+    <loc>/reference/makeNCA.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makeOP.html</loc>
+    <loc>/reference/makeOP.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makePTA.html</loc>
+    <loc>/reference/makePTA.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makePTAtarget.html</loc>
+    <loc>/reference/makePTAtarget.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makePop.html</loc>
+    <loc>/reference/makePop.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makePost.html</loc>
+    <loc>/reference/makePost.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/makeValid.html</loc>
+    <loc>/reference/makeValid.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/make_NCA.html</loc>
+    <loc>/reference/make_NCA.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/make_valid.html</loc>
+    <loc>/reference/make_valid.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/mic1.html</loc>
+    <loc>/reference/mic1.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/modEx.html</loc>
+    <loc>/reference/modEx.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/mtsknn.eq.html</loc>
+    <loc>/reference/mtsknn.eq.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.MMopt.html</loc>
+    <loc>/reference/plot.MMopt.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_data.html</loc>
+    <loc>/reference/plot.PM_data.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_final.html</loc>
+    <loc>/reference/plot.PM_final.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_op.html</loc>
+    <loc>/reference/plot.PM_op.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.html</loc>
+    <loc>/reference/plot.PM_pta.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.html</loc>
+    <loc>/reference/plot.PM_sim.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.html</loc>
+    <loc>/reference/plot.PM_valid.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMcov.html</loc>
+    <loc>/reference/plot.PMcov.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMcycle.html</loc>
+    <loc>/reference/plot.PMcycle.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMdopt.html</loc>
+    <loc>/reference/plot.PMdopt.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMfinal.html</loc>
+    <loc>/reference/plot.PMfinal.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMmatrix.html</loc>
+    <loc>/reference/plot.PMmatrix.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMop.html</loc>
+    <loc>/reference/plot.PMop.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMpta.html</loc>
+    <loc>/reference/plot.PMpta.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMsim.html</loc>
+    <loc>/reference/plot.PMsim.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMvalid.html</loc>
+    <loc>/reference/plot.PMvalid.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/print.MMopt.html</loc>
+    <loc>/reference/print.MMopt.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/print.PMdopt.html</loc>
+    <loc>/reference/print.PMdopt.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/print.PMerr.html</loc>
+    <loc>/reference/print.PMerr.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/print.PMnpc.html</loc>
+    <loc>/reference/print.PMnpc.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/print.summary.PMfinal.html</loc>
+    <loc>/reference/print.summary.PMfinal.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/print.summary.PMmatrix.html</loc>
+    <loc>/reference/print.summary.PMmatrix.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/print.summary.PMop.html</loc>
+    <loc>/reference/print.summary.PMop.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/qgrowth.html</loc>
+    <loc>/reference/qgrowth.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/setPMoptions.html</loc>
+    <loc>/reference/setPMoptions.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/ss.PK.html</loc>
+    <loc>/reference/ss.PK.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/summary.PM_cov.html</loc>
+    <loc>/reference/summary.PM_cov.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/summary.PM_data.html</loc>
+    <loc>/reference/summary.PM_data.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/summary.PM_final.html</loc>
+    <loc>/reference/summary.PM_final.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/summary.PM_op.html</loc>
+    <loc>/reference/summary.PM_op.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/summary.PM_pta.html</loc>
+    <loc>/reference/summary.PM_pta.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/summary.PMcov.html</loc>
+    <loc>/reference/summary.PMcov.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/summary.PMdopt.html</loc>
+    <loc>/reference/summary.PMdopt.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/summary.PMfinal.html</loc>
+    <loc>/reference/summary.PMfinal.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/summary.PMmatrix.html</loc>
+    <loc>/reference/summary.PMmatrix.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/summary.PMop.html</loc>
+    <loc>/reference/summary.PMop.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/summary.PMpta.html</loc>
+    <loc>/reference/summary.PMpta.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/update_gfortran.html</loc>
+    <loc>/reference/update_gfortran.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/zBMI.html</loc>
+    <loc>/reference/zBMI.html</loc>
   </url>
 </urlset>
