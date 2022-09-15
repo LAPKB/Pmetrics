@@ -3,7 +3,7 @@ library(Pmetrics)
 
 #Run 1 - add your run description here
 
-setwd("/Users/mneely/LAPK/Development/Pmetrics/docs/reference/DrugX/Runs")
+setwd("/home/runner/work/Pmetrics/Pmetrics/docs/reference/DrugX/Runs")
 #Ensure your model and data files are in the /Runs folder
 #Make the data object
 dat <- PM_data$new("[replace with your data file name]")
