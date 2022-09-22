@@ -87,13 +87,13 @@ makeAUC <- function(data,
   if(missing(exclude)) exclude <- NA
 
   #filter to create object to pass to auc calculation
-  data3 <- tibble::tibble(data2) %>%
-    dplyr::filter(outeq==outeq,
-           block==block,
+  data3 <- data2 %>%
+    dplyr::filter(outeq == !!outeq,
+           block == !!block,
            id %in% include,
            !id %in% exclude,
            time>=start & time<=end,
-           icen==icen,
+           icen == !!icen,
            !is.na(out)
     ) %>%
     dplyr::select(id,time,out) %>%
