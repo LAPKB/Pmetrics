@@ -55,13 +55,13 @@
 <span>  <span class="va">exclude</span>,</span>
 <span>  type <span class="op">=</span> <span class="st">"pta"</span>,</span>
 <span>  mult <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  log <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  outeq <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  line <span class="op">=</span> <span class="cn">T</span>,</span>
 <span>  marker <span class="op">=</span> <span class="cn">T</span>,</span>
-<span>  grid <span class="op">=</span> <span class="cn">T</span>,</span>
-<span>  legend <span class="op">=</span> <span class="cn">T</span>,</span>
 <span>  ci <span class="op">=</span> <span class="fl">0.9</span>,</span>
+<span>  legend <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  log <span class="op">=</span> <span class="cn">F</span>,</span>
+<span>  grid <span class="op">=</span> <span class="cn">T</span>,</span>
 <span>  <span class="va">xlab</span>,</span>
 <span>  <span class="va">ylab</span>,</span>
 <span>  <span class="va">xlim</span>,</span>
@@ -77,11 +77,11 @@
 
 
 <dt>include</dt>
-<dd><p>A vector of simulations (regimens) to include in the plot, e.g. <code>include = c(1,3)</code></p></dd>
+<dd><p>A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)</p></dd>
 
 
 <dt>exclude</dt>
-<dd><p>A vector of simulations (regimens) in the plot, e.g. <code>exclude = c(2,4:6)</code></p></dd>
+<dd><p>A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)</p></dd>
 
 
 <dt>type</dt>
@@ -93,15 +93,6 @@ y-axis, and target on the x-axis.</p></dd>
 
 <dt>mult</dt>
 <dd><p>Multiplication factor for y axis, e.g. to convert mg/L to ng/mL</p></dd>
-
-
-<dt>log</dt>
-<dd><p>Boolean operator to plot the y axis in log base 10.
-This argument maps to the
-the yaxis type value in the layout object in plotly.
-Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate
-to layout &gt; layoutAttributes &gt; yaxis &gt; type.
-Example: <code>log = T</code></p></dd>
 
 
 <dt>outeq</dt>
@@ -165,69 +156,44 @@ The default value is 12.</p></li>
 </ul></dd>
 
 
-<dt>grid</dt>
-<dd><p>Controls grid display.
-This argument maps to the xaxis and yaxis layout objects in plotly.
-Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate
-to layout &gt; layoutAttributes &gt; xaxis or yaxis &gt; gridcolor or gridwidth.
-It is a Boolean operator. If <code>FALSE</code>, no grid is plotted.
-If <code>TRUE</code>, the default color <em>grey50</em> and width 1 will be plotted at
-major tick marks. If a list,
-color and width can be customized.
-Examples:</p><ul><li><p><code>grid = F</code></p></li>
-<li><p><code>grid = list(gridcolor = "black", gridwidth = 2)</code></p></li>
-</ul></dd>
-
-
-<dt>legend</dt>
-<dd><p>Controls display of legend.
-This argument maps to the plotly layout showlegend and legend arguments.
-It is either a boolean operator (most common) or a list of parameters to be supplied to plotly.
-See <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> &gt; layout &gt; layoutAttributes &gt; legend and showlegend
-for more details on the available options for formatting.
-If legend is supplied as a list,  the plotly layout &gt; layoutAttributes &gt; showlegend value will
-be set to <code>TRUE</code> automatically.
-Examples:</p><ul><li><p><code>legend = T</code></p></li>
-<li><p><code>legend = list(orientation = "h", font = list(color = "blue"))</code></p></li>
-</ul></dd>
-
-
 <dt>ci</dt>
 <dd><p>Confidence interval around curves on <code>type = "pdi"</code> plot, on scale of 0 to 1. Default is 0.9.</p></dd>
 
 
+<dt>legend</dt>
+<dd><p>Controls display of legend. This argument maps to the plotly layout showlegend and legend arguments. It is either a boolean operator (most common) or a list of parameters to be supplied to plotly. See <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> &gt; layout &gt; layoutAttributes &gt; legend and showlegend for more details on the available options for formatting.  If legend is supplied as a list,  the plotly layout &gt; layoutAttributes &gt; showlegend value will be set to <code>TRUE</code> automatically. Examples: * <code>legend = T</code> * <code>legend = list(orientation = "h", font = list(color = "blue"))</code> Default will be the labeled regimen names supplied during <a href="makePTA.html">makePTA</a>,
+or if missing, "Regimen 1, Regimen 2,...Regimen n", where <em>n</em> is the number of
+regimens in the PM_pta object.</p></dd>
+
+
+<dt>log</dt>
+<dd><p>Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; yaxis &gt; type. Example: <code>log = T</code></p></dd>
+
+
+<dt>grid</dt>
+<dd><p>Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; xaxis or yaxis &gt; gridcolor or gridwidth. It is a Boolean operator. If <code>FALSE</code>, no grid is plotted.  If <code>TRUE</code>, the default color <em>grey50</em> and width 1 will be plotted at  major tick marks. If a list, color and width can be customized. Examples:  * <code>grid = F</code> * <code>grid = list(gridcolor = "black", gridwidth = 2)</code></p></dd>
+
+
 <dt>xlab</dt>
-<dd><p>Label for the x axis.  Default is "Target" when targets are discrete,
+<dd><p>Value for x axis label. This argument maps to the the xaxis layout object in plotly.  Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; xaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: <code>xaxis = list(title = list(text = "Time", font = list(color = "red", family = "Arial", size = 10)))</code>  Default is "Target" when targets are discrete,
 and "Regimen" when targets are sampled.</p></dd>
 
 
 <dt>ylab</dt>
-<dd><p>Label for the y axis.  Default is "Proportion with success" for
+<dd><p>Value for y axis label. This argument maps to the yaxis layout object in plotly.  Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; yaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: <code>yaxis = list(title = list(text = "Concentration", font = list(color = "blue", family = "Times New Roman", size = 12)))</code>  Default is "Proportion with success" for
 plot <code>type = "pta"</code> and "Pharmacodynamic Index" for plot <code>type = "pdi"</code>.</p></dd>
 
 
 <dt>xlim</dt>
-<dd><p>Limits of the x axis as a vector.
-This argument maps to the
-the xaxis range in the layout object in plotly.
-Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate
-to layout &gt; layoutAttributes &gt; xaxis &gt; range.
-Example: <code>xlim = c(0,1)</code></p></dd>
+<dd><p>Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; xaxis &gt; range. Example: <code>xlim = c(0,1)</code></p></dd>
 
 
 <dt>ylim</dt>
-<dd><p>Limits of the y axis as a vector.
-This argument maps to the
-the yaxis range in the layout object in plotly.
-Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate
-to layout &gt; layoutAttributes &gt; yaxis &gt; range.
-Example: <code>ylim = c(0,100)</code></p></dd>
+<dd><p>Limits of the y axis as a vector.   This argument maps to the   the yaxis range in the layout object in plotly.  Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; yaxis &gt; range. Example: <code>ylim = c(0,100)</code></p></dd>
 
 
-<dt>...</dt>
-<dd><p>Other parameters which can be passed to control axis formatting. Specify as lists
-named either xaxis or yaxis. See <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> layout &gt; layoutAttributes &gt; xaxis/yaxis for options.
-Example: <code>xaxis = list(title = list(text = "Time (h)", font = list(family = "Arial", size = 14, color = "black")))</code></p></dd>
+<dt>`r</dt>
+<dd><p>template("dotsPlotly")`</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -238,17 +204,8 @@ Example: <code>xaxis = list(title = list(text = "Time (h)", font = list(family =
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function will plot the percent target attainment for objects made with the <a href="makePTA.html">makePTA</a> function.
-For the legend, defaults that are different that the standard are:</p><ul><li><p>x Default "topright"</p></li>
-<li><p>legend Default will be the labeled regimen names supplied during <a href="makePTA.html">makePTA</a>,
-or if missing, "Regimen 1, Regimen 2,...Regimen n", where <em>n</em> is the number of
-regimens in the PM_pta object.
-This default can be overridden by a supplied character vector of regimen names.</p><ul><li><p>col The color of each Regimen plot as specified by the default color scheme or <code>col</code></p></li>
-<li><p>pch The plotting character for each Regimen plot as specified by the default plotting characters or <code>pch</code></p></li>
-<li><p>lty The line type of each Regimen plot as specified by the default line types or <code>lty</code></p></li>
-<li><p>bg Default "white"</p></li>
-</ul></li>
-</ul></div>
+    <p>This function will plot the percent target attainment for objects made with the <a href="makePTA.html">makePTA</a> function.</p>
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><a href="makePTA.html">makePTA</a></p>
