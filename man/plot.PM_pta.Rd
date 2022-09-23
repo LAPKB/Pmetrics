@@ -10,13 +10,13 @@
   exclude,
   type = "pta",
   mult = 1,
-  log = F,
   outeq = 1,
   line = T,
   marker = T,
-  grid = T,
-  legend = T,
   ci = 0.9,
+  legend = T,
+  log = F,
+  grid = T,
   xlab,
   ylab,
   xlim,
@@ -27,9 +27,9 @@
 \arguments{
 \item{x}{The name of an *PM_pta" data object read by \link{makePTA}}
 
-\item{include}{A vector of simulations (regimens) to include in the plot, e.g. \code{include = c(1,3)}}
+\item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
 
-\item{exclude}{A vector of simulations (regimens) in the plot, e.g. \code{exclude = c(2,4:6)}}
+\item{exclude}{A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)}
 
 \item{type}{Character vector controlling type of plot.
 Default is "pta", which plots proportion with success on the y-axis and target on the x-axis.
@@ -37,13 +37,6 @@ The other choice is "pdi", which plots the median pdi (pharmacodynamic index), e
 y-axis, and target on the x-axis.}
 
 \item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
-
-\item{log}{Boolean operator to plot the y axis in log base 10.
-This argument maps to the
-the yaxis type value in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > yaxis > type.
-Example: \code{log = T}}
 
 \item{outeq}{Which output equation to plot. Default is 1.}
 
@@ -104,58 +97,27 @@ applied to the markers for each regimen. All markers will have the same size.
 The default value is 12.
 }}
 
-\item{grid}{Controls grid display.
-This argument maps to the xaxis and yaxis layout objects in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth.
-It is a Boolean operator. If \code{FALSE}, no grid is plotted.
-If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at
-major tick marks. If a list,
-color and width can be customized.
-Examples:
-\itemize{
-\item \code{grid = F}
-\item \code{grid = list(gridcolor = "black", gridwidth = 2)}
-}}
-
-\item{legend}{Controls display of legend.
-This argument maps to the plotly layout showlegend and legend arguments.
-It is either a boolean operator (most common) or a list of parameters to be supplied to plotly.
-See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend
-for more details on the available options for formatting.
-If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will
-be set to \code{TRUE} automatically.
-Examples:
-\itemize{
-\item \code{legend = T}
-\item \code{legend = list(orientation = "h", font = list(color = "blue"))}
-}}
-
 \item{ci}{Confidence interval around curves on \code{type = "pdi"} plot, on scale of 0 to 1. Default is 0.9.}
 
-\item{xlab}{Label for the x axis.  Default is "Target" when targets are discrete,
+\item{legend}{Controls display of legend. This argument maps to the plotly layout showlegend and legend arguments. It is either a boolean operator (most common) or a list of parameters to be supplied to plotly. See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend for more details on the available options for formatting.  If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will be set to \code{TRUE} automatically. Examples: * \code{legend = T} * \code{legend = list(orientation = "h", font = list(color = "blue"))} Default will be the labeled regimen names supplied during \link{makePTA},
+or if missing, "Regimen 1, Regimen 2,...Regimen n", where \emph{n} is the number of
+regimens in the PM_pta object.}
+
+\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type. Example: \code{log = T}}
+
+\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized. Examples:  * \code{grid = F} * \code{grid = list(gridcolor = "black", gridwidth = 2)}}
+
+\item{xlab}{Value for x axis label. This argument maps to the the xaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{xaxis = list(title = list(text = "Time", font = list(color = "red", family = "Arial", size = 10)))}  Default is "Target" when targets are discrete,
 and "Regimen" when targets are sampled.}
 
-\item{ylab}{Label for the y axis.  Default is "Proportion with success" for
+\item{ylab}{Value for y axis label. This argument maps to the yaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{yaxis = list(title = list(text = "Concentration", font = list(color = "blue", family = "Times New Roman", size = 12)))}  Default is "Proportion with success" for
 plot \code{type = "pta"} and "Pharmacodynamic Index" for plot \code{type = "pdi"}.}
 
-\item{xlim}{Limits of the x axis as a vector.
-This argument maps to the
-the xaxis range in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > xaxis > range.
-Example: \code{xlim = c(0,1)}}
+\item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range. Example: \code{xlim = c(0,1)}}
 
-\item{ylim}{Limits of the y axis as a vector.
-This argument maps to the
-the yaxis range in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > yaxis > range.
-Example: \code{ylim = c(0,100)}}
+\item{ylim}{Limits of the y axis as a vector.   This argument maps to the   the yaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > range. Example: \code{ylim = c(0,100)}}
 
-\item{\dots}{Other parameters which can be passed to control axis formatting. Specify as lists
-named either xaxis or yaxis. See \code{plotly::schema()} layout > layoutAttributes > xaxis/yaxis for options.
-Example: \code{xaxis = list(title = list(text = "Time (h)", font = list(family = "Arial", size = 14, color = "black")))}}
+\item{`r}{template("dotsPlotly")`}
 }
 \value{
 Plots the object.
@@ -165,20 +127,6 @@ Plots PM_pta objects
 }
 \details{
 This function will plot the percent target attainment for objects made with the \link{makePTA} function.
-For the legend, defaults that are different that the standard are:
-\itemize{
-\item x Default "topright"
-\item legend Default will be the labeled regimen names supplied during \link{makePTA},
-or if missing, "Regimen 1, Regimen 2,...Regimen n", where \emph{n} is the number of
-regimens in the PM_pta object.
-This default can be overridden by a supplied character vector of regimen names.
-\itemize{
-\item col The color of each Regimen plot as specified by the default color scheme or \code{col}
-\item pch The plotting character for each Regimen plot as specified by the default plotting characters or \code{pch}
-\item lty The line type of each Regimen plot as specified by the default line types or \code{lty}
-\item bg Default "white"
-}
-}
 }
 \seealso{
 \link{makePTA}

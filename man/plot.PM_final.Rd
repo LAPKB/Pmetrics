@@ -7,13 +7,17 @@
 \method{plot}{PM_final}(
   x,
   formula,
-  marker = T,
   line = T,
+  marker = T,
   density = F,
+  standardize,
+  legend,
+  log,
   grid = T,
   xlab,
   ylab,
-  standardize
+  xlim,
+  ylim
 )
 }
 \arguments{
@@ -22,6 +26,15 @@ object, e.g \code{PM_result$final}.}
 
 \item{formula}{An optional formula of the form \code{y ~ x}, where \code{y} and \code{x}
 are two model parameters to plot in a 3-dimensional bivariate plot.  See details.}
+
+\item{line}{Controls characteristics of lines. This argument maps to plotly trace line attributes. \code{TRUE} will plot default lines. \code{FALSE} will suppress lines. If a list, can control many line characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > line to see all the ways the line can be formatted. Most common will be: * color Line color. * dash Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > line > dash > values. * width Thickness in points. Example: \code{line = list(color = "red", dash = "longdash", width = 2)} The \code{line} argument is used to format:
+\itemize{
+\item the density line drawn from an NPAG \link{PM_final object} if \code{density = T}
+\item the drop lines from an NPAG \link{PM_final object} when a \code{formula} is specified
+to generate a bivariate plot
+\item the lines drawing the normal distribution
+of parameter values from an IT2B \link{PM_Final} object.
+}}
 
 \item{marker}{See details for which objects the \code{marker} argument controls.
 This argument maps to the plotly marker object.
@@ -50,44 +63,18 @@ Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, 
 }
 }}
 
-\item{line}{Controls characteristics of lines.
-This argument maps to plotly trace line attributes.
-\code{TRUE} will plot default lines. \code{FALSE} will suppress lines.
-If a list, can control many line characteristics, including overriding defaults.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to traces > scatter > attributes > line to see all the ways the line
-can be formatted. Most common will be:
-\itemize{
-\item color Line color.
-\item dash Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > line > dash > values.
-\item width Thickness in points.
-Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
-}}
-
 \item{density}{Boolean operator to plot a kernel density function overlying the histogram
 of a univariate marginal parameter distribution from NPAG; the default is \code{FALSE}.
 See \link{density}.  Ignored for IT2B output.}
 
-\item{grid}{Controls grid display.
-This argument maps to the xaxis and yaxis layout objects in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth.
-It is a Boolean operator. If \code{FALSE}, no grid is plotted.
-If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at
-major tick marks. If a list,
-color and width can be customized.
-Examples:
-\itemize{
-\item \code{grid = F}
-\item \code{grid = list(gridcolor = "black", gridwidth = 2)}
-}}
-
-\item{xlab}{Define x-axis label for bivariate NPAG or IT2B plot.  Default is the name of the plotted x-variable.}
-
-\item{ylab}{Define y-axis label for bivariate NPAG or IT2B plot.  Default is the name of the plotted y-variable.}
-
 \item{standardize}{Standardize the normal parameter distribution plots from IT2B to the same
 scale x-axis.  Ignored for NPAG output.}
+
+\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized. Examples:  * \code{grid = F} * \code{grid = list(gridcolor = "black", gridwidth = 2)}}
+
+\item{xlab}{Value for x axis label. This argument maps to the the xaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{xaxis = list(title = list(text = "Time", font = list(color = "red", family = "Arial", size = 10)))} Only relevant for bivariate plots.  Default is the name of the plotted x-variable.}
+
+\item{ylab}{Value for y axis label. This argument maps to the yaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{yaxis = list(title = list(text = "Concentration", font = list(color = "blue", family = "Times New Roman", size = 12)))} Only relevant for bivariate plots.  Default is the name of the plotted y-variable.}
 }
 \value{
 Plots the object.
@@ -107,20 +94,6 @@ On the other hand, if \code{formula} is two parameters, e.g. CL~V, this will gen
 For NPAG data, it will be support point with size proportional to the probability
 of each point.  For IT2B, it will be an elliptical distribution of a bivariate normal distribution centered at the mean
 of each plotted variable and surrounding quantiles of the bivariate distribution plotted in decreasing shades of grey.
-
-The \code{line} argument is used to format:
-\itemize{
-\item the density line drawn from an NPAG \link{PM_final object} if \code{density = T}
-\item the drop lines from an NPAG \link{PM_final object} when a \code{formula} is specified
-to generate a bivariate plot
-\item the lines drawing the normal distribution
-of parameter values from an IT2B \link{PM_Final} object.
-The \code{marker} argument is used to format:
-\item the bar fill color and opacity, and the outline color and width
-from an NPAG \link{PM_final object}
-\item the markers used from an NPAG \link{PM_final object} when a \code{formula} is specified
-to generate a bivariate plot
-}
 }
 \examples{
 #NPAG

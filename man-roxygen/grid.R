@@ -1,4 +1,4 @@
-#' @param grid Controls grid display.
+#' Controls grid display.
 #' This argument maps to the xaxis and yaxis layout objects in plotly. 
 #' Use the plotly `plotly::schema()` command in the console and navigate
 #' to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth.

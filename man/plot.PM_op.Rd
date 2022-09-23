@@ -2,9 +2,9 @@
 % Please edit documentation in R/plotPMop.R
 \name{plot.PM_op}
 \alias{plot.PM_op}
-\title{Plot PMop objects}
+\title{Plot PM_op objects}
 \usage{
-\method{plot}{PMop}(
+\method{plot}{PM_op}(
   x,
   include,
   exclude,
@@ -12,11 +12,11 @@
   pred.type = "post",
   outeq = 1,
   block = 1,
-  marker = T,
   line,
+  marker = T,
   mult = 1,
   resid = F,
-  ci = 0.95,
+  legend,
   log = F,
   grid = T,
   xlab,
@@ -34,34 +34,13 @@ and loaded with \link{PM_load} as a \link{PM_result}, e.g. \code{PM_result$op}.}
 
 \item{exclude}{A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)}
 
-\item{icen}{Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
-distributions, or "mean".  Default is "median".}
+\item{icen}{Can be either "median" for the predictions based on medians of \code{pred.type} parameter value distributions, or "mean".  Default is "median".}
 
 \item{pred.type}{Either 'post' for a posterior object or 'pop' for a population object.  Default is 'post'.}
 
 \item{outeq}{Which output equation to plot. Default is 1.}
 
-\item{block}{Which block to plot, where blocks are defined
-by dose reset events (EVID = 4) in the data. Default is 1.}
-
-\item{marker}{Controls the plotting symbol for observations.
-This argument maps to the plotly marker object.
-It can be boolean or a list.
-\code{TRUE} will plot the marker with default characteristics.
-\code{FALSE} will suppress marker plotting.
-If a list, can control many marker characteristics, including overriding defaults.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to traces > scatter > attributes > marker to see all the ways the marker
-can be formatted. Most common will be:
-\itemize{
-\item color Marker color.
-\item symbol Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values.
-\item size Character size in points.
-\item opacity Ranging between 0 (fully transparent) to 1 (fully opaque).
-\item line A list of  additional attributes governing the outline for filled shapes, most commonly
-color and width.
-Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}
-}}
+\item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data. Default is 1.}
 
 \item{line}{Controls characteristics of lines. Unlike
 some other Pmetrics plots, for plot.PM_op, \code{line} is a list of
@@ -103,6 +82,9 @@ regression with reference line, but no linear regression.
 }
 }}
 
+\item{marker}{Controls the plotting symbol for observations.  This argument maps to the plotly marker object. It can be boolean or a list. \code{TRUE} will plot the marker with default characteristics. \code{FALSE} will suppress marker plotting. If a list, can control many marker characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > marker to see all the ways the marker can be formatted. Most common will be: * color Marker color. * symbol Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values. * size Character size in points. * opacity Ranging between 0 (fully transparent) to 1 (fully opaque). * line A list of  additional attributes governing the outline for filled shapes, most commonly color and width. Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))} Default is
+\code{marker = list(color = orange, shape = "circle", size = 10, opacity = 0.5, line = list(color = black, width = 1))}.}
+
 \item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
 
 \item{resid}{Boolean operator to generate a plot of weighted prediction error vs. time,
@@ -110,52 +92,23 @@ a plot of weighted prediction error vs. prediction. Prediction error is
 pred - obs. By default a loess regression will indicate deviation from
 zero prediction error.}
 
-\item{log}{Boolean operator to plot the y axis in log base 10.
-This argument maps to the
-the yaxis type value in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > yaxis > type.
-Example: \code{log = T}}
+\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type. Example: \code{log = T}}
 
-\item{grid}{Controls grid display.
-This argument maps to the xaxis and yaxis layout objects in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth.
-It is a Boolean operator. If \code{FALSE}, no grid is plotted.
-If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at
-major tick marks. If a list,
-color and width can be customized.
-Examples:
-\itemize{
-\item \code{grid = F}
-\item \code{grid = list(gridcolor = "black", gridwidth = 2)}
-}}
+\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized. Examples:  * \code{grid = F} * \code{grid = list(gridcolor = "black", gridwidth = 2)}}
 
-\item{xlab}{Label for the x-axis.  If missing, will default to "Predicted" for
+\item{xlab}{Value for x axis label. This argument maps to the the xaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{xaxis = list(title = list(text = "Time", font = list(color = "red", family = "Arial", size = 10)))}   If missing, will default to "Predicted" for
 plots when \code{resid = F} and either "Time" or "Predicted" for residual plots.}
 
-\item{ylab}{Label for the y-axis.  If missing, will default to "Observed" for
+\item{ylab}{Value for y axis label. This argument maps to the yaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{yaxis = list(title = list(text = "Concentration", font = list(color = "blue", family = "Times New Roman", size = 12)))}   If missing, will default to "Observed" for
 plots when \code{resid = F} and either "Individual weighted residuals" or
 "Population weighted residuals" for residual plots, depending on the value of
 \code{pred.type}.}
 
-\item{xlim}{Limits of the x axis as a vector.
-This argument maps to the
-the xaxis range in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > xaxis > range.
-Example: \code{xlim = c(0,1)}}
+\item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range. Example: \code{xlim = c(0,1)}}
 
-\item{ylim}{Limits of the y axis as a vector.
-This argument maps to the
-the yaxis range in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > yaxis > range.
-Example: \code{ylim = c(0,100)}}
+\item{ylim}{Limits of the y axis as a vector.   This argument maps to the   the yaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > range. Example: \code{ylim = c(0,100)}}
 
-\item{\dots}{Other parameters which can be passed to control axis formatting. Specify as lists
-named either xaxis or yaxis. See \code{plotly::schema()} layout > layoutAttributes > xaxis/yaxis for options.
-Example: \code{xaxis = list(title = list(text = "Time (h)", font = list(family = "Arial", size = 14, color = "black")))}}
+\item{\dots}{Other parameters which can be passed to the layout > xaxis or > yaxis attributes in a plotly plot to further control axis formatting.  Note that \code{legend}, \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  xaxis or yaxis See \code{plotly::schema()} layout > layoutAttributes > xaxis/yaxis for options. Example: \verb{xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black")))} .}
 }
 \value{
 Plots the object.
@@ -166,20 +119,9 @@ Plot Pmetrics Observed vs. Predicted Objects
 \details{
 Generates a plot of Observed vs. Predicted observations. The default
 is to generate an observed vs. predicted plot of predictions based on the
-median of the Bayesian posterior distributions for each subject, plotted
-as \code{marker = list(color = orange, shape = "circle", size = 10, opacity = 0.5, line = list(color = black, width = 1))}.
-Defaults for regression and reference lines are detailed in the \code{line} argument
-below.
+median of the Bayesian posterior distributions for each subject.
 }
 \examples{
-# The code below won't run, but if you had the results of a run
-# in a folder named "1" in your current working directory, it would
-# load those results into NPex, which becomes a PM_result object.
-\dontrun{
-NPex <- PM_load(1)
-}
-# Once loaded, the following are examples of plots. These will all run
-# since NPex is available as a data object in Pmetrics.
 NPex$op$plot()
 NPex$op$plot(pred.type = "pop")
 NPex$op$plot(line = list(lm = T, ref = T, loess = F))

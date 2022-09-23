@@ -123,19 +123,31 @@ Default is <code>FALSE</code>, i.e. using Fortran.</p></dd>
 <div class="section">
 <h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>changes_list</code></dt>
-<dd><p>The named list containing elements and values to update.</p></dd>
+<dd><p>The named list containing elements and values to update.
+Because R6 objects are mini-environments, using typical
+R notation to copy an object like mod2 &lt;- mod1 can lead to unexpected
+results since this syntax simply creates a copied object in the same
+environment. Therefore updating any one object (e.g., mod1 or mod2)
+will update the other. To avoid this behavior, use the $clone() function
+first if you want to create a copied, yet independent new model.</p></dd>
 
 
 </dl><p></p></div>
 </div>
 <div class="section">
 <h4 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a></h4>
-<p></p><div class="r example copy"><div class="sourceCode"><pre><code>\dontrun{mod1$update(list(
-  pri = list(
-  )
-)) 
-}
-</code></pre></div><p></p></div>
+<p></p><div class="r example copy"><div class="sourceCode"><pre><code><span><span class="va">mod2</span> <span class="op">&lt;-</span> <span class="va">modEx</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span><span class="op">)</span> <span class="co">#create an independent copy of modEx called mod2</span></span>
+<span><span class="va">mod2</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>   Ke <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, <span class="co">#change the range</span></span>
+<span>   V <span class="op">=</span> <span class="cn">NULL</span>, <span class="co">#this deletes the variable</span></span>
+<span>   V0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span><span class="op">)</span> <span class="co">#add a new variable</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  sec <span class="op">=</span> <span class="st">"V = V0 * WT"</span> <span class="co">#add a new secondary equation</span></span>
+<span><span class="op">)</span><span class="op">)</span> </span>
+<span><span class="co">#note that they are different now</span></span>
+<span><span class="va">mod2</span></span>
+<span><span class="va">modEx</span></span></code></pre></div><p></p></div>
 </div>
 
 
@@ -159,6 +171,14 @@ relative to the current working directory</p></dd>
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="examples-1">Examples<a class="anchor" aria-label="anchor" href="#examples-1"></a></h4>
+<p></p><div class="r example copy"><div class="sourceCode"><pre><code>\dontrun{
+modEx$write("model.txt")
+}
+</code></pre></div><p></p></div>
+</div>
+
 
 </div><p></p><hr><a id="method-PM_Vmodel-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
@@ -187,11 +207,123 @@ relative to the current working directory</p></dd>
 <span class="r-in"><span><span class="co">## Method `PM_model$update`</span></span></span>
 <span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="va">mod1</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span><span class="va">mod2</span> <span class="op">&lt;-</span> <span class="va">modEx</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span><span class="op">)</span> <span class="co">#create an independent copy of modEx called mod2</span></span></span>
+<span class="r-in"><span><span class="va">mod2</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span>   Ke <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, <span class="co">#change the range</span></span></span>
+<span class="r-in"><span>   V <span class="op">=</span> <span class="cn">NULL</span>, <span class="co">#this deletes the variable</span></span></span>
+<span class="r-in"><span>   V0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span><span class="op">)</span> <span class="co">#add a new variable</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  sec <span class="op">=</span> <span class="st">"V = V0 * WT"</span> <span class="co">#add a new secondary equation</span></span></span>
 <span class="r-in"><span><span class="op">)</span><span class="op">)</span> </span></span>
+<span class="r-in"><span><span class="co">#note that they are different now</span></span></span>
+<span class="r-in"><span><span class="va">mod2</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $model_list</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     $pri</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       $Ka</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $min: 0.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $max: 0.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $mean: 0.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $sd: 0.133</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $gtz: FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       $Ke</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $min: 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $max: 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $mean: 0.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $sd: 0.167</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $gtz: FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       $Tlag1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $min: 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $max: 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $mean: 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $sd: 0.667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $gtz: FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       $V0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $min: 10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $max: 100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $mean: 55</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $sd: 15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $gtz: FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      $cov</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [1] "WT"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [2] "AFRICA"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [3] "AGE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [4] "GENDER"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [5] "HEIGHT"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      $lag</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [1] "TLAG(1) = Tlag1"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      $out</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       $Y1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $val: "X(2)/V"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $err</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             $model</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                $additive: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                $proportional: 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                $constant: FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             $assay: [1] 0.02, [2] 0.05, [3] -2e-04, [4] 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      $sec</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [1] "V = V0 * WT"</span>
+<span class="r-in"><span><span class="va">modEx</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $model_list</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     $pri</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       $Ka</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $min: 0.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $max: 0.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $mean: 0.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $sd: 0.133</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $gtz: FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       $Ke</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $min: 0.001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $max: 0.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $mean: 0.051</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $sd: 0.016</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $gtz: FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       $V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $min: 30</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $max: 120</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $mean: 75</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $sd: 15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $gtz: FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       $Tlag1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $min: 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $max: 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $mean: 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $sd: 0.667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $gtz: FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      $cov</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [1] "WT"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [2] "AFRICA"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [3] "AGE"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [4] "GENDER"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [5] "HEIGHT"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      $lag</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        [1] "TLAG(1) = Tlag1"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      $out</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       $Y1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $val: "X(2)/V"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          $err</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             $model</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                $additive: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                $proportional: 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                $constant: FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             $assay: [1] 0.02, [2] 0.05, [3] -2e-04, [4] 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
+<span class="r-in"><span><span class="co">## Method `PM_model$write`</span></span></span>
+<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="va">modEx</span><span class="op">$</span><span class="fu">write</span><span class="op">(</span><span class="st">"model.txt"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

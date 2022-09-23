@@ -38,13 +38,25 @@ PM_model <- R6::R6Class("PM_Vmodel",
                           #' @description 
                           #' Update selected elements of a model object
                           #' @param changes_list The named list containing elements and values to update.
+                          #' Because R6 objects are mini-environments, using typical
+                          #' R notation to copy an object like mod2 <- mod1 can lead to unexpected
+                          #' results since this syntax simply creates a copied object in the same
+                          #' environment. Therefore updating any one object (e.g., mod1 or mod2)
+                          #' will update the other. To avoid this behavior, use the $clone() function 
+                          #' first if you want to create a copied, yet independent new model.
                           #' @examples 
-                          #' \dontrun{mod1$update(list(
+                          #' mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+                          #' mod2$update(list(
                           #'   pri = list(
-                          # '    Ke = range(0,1)
-                          #'   )
+                          #'    Ke = range(0, 1), #change the range
+                          #'    V = NULL, #this deletes the variable
+                          #'    V0 = range(10, 100) #add a new variable
+                          #'   ),
+                          #'   sec = "V = V0 * WT" #add a new secondary equation
                           #' )) 
-                          #' }
+                          #' #note that they are different now
+                          #' mod2
+                          #' modEx
                           update = function(changes_list){
                             return(invisible())
                           },
@@ -52,6 +64,10 @@ PM_model <- R6::R6Class("PM_Vmodel",
                           #' @param model_path Full name of the file to be created, including the path
                           #' relative to the current working directory
                           #' @param engine Currently only "npag".
+                          #' @examples 
+                          #' \dontrun{
+                          #' modEx$write("model.txt")
+                          #' }
                           write = function(model_path = "genmodel.txt", engine = "npag"){
                             return(invisible())
                           }

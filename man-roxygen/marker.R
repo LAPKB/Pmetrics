@@ -1,4 +1,4 @@
-#' @param marker Controls the plotting symbol for observations. 
+#' Controls the plotting symbol for observations. 
 #' This argument maps to the plotly marker object.
 #' It can be boolean or a list.
 #' `TRUE` will plot the marker with default characteristics.

@@ -14,18 +14,6 @@
 #' For NPAG data, it will be support point with size proportional to the probability
 #' of each point.  For IT2B, it will be an elliptical distribution of a bivariate normal distribution centered at the mean
 #' of each plotted variable and surrounding quantiles of the bivariate distribution plotted in decreasing shades of grey.
-#' 
-#' The `line` argument is used to format:
-#' * the density line drawn from an NPAG [PM_final object] if `density = T` 
-#' * the drop lines from an NPAG [PM_final object] when a `formula` is specified
-#' to generate a bivariate plot
-#' * the lines drawing the normal distribution
-#' of parameter values from an IT2B [PM_Final] object. 
-#' The `marker` argument is used to format:
-#' * the bar fill color and opacity, and the outline color and width
-#'  from an NPAG [PM_final object]
-#' * the markers used from an NPAG [PM_final object] when a `formula` is specified
-#' to generate a bivariate plot
 #' @method plot PM_final
 #' @param x The name of an [PM_final] data object as a field in a [PM_result] R6
 #' object, e.g `PM_result$final`. 
@@ -53,14 +41,18 @@
 #'     - `color` Outline color. Default is "black".
 #'     - `width` Outline width. Default is 1.
 #' Example: `marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))`
-
-#' @template line
+#' @param line `r template("line")` The `line` argument is used to format:
+#' * the density line drawn from an NPAG [PM_final object] if `density = T` 
+#' * the drop lines from an NPAG [PM_final object] when a `formula` is specified
+#' to generate a bivariate plot
+#' * the lines drawing the normal distribution
+#' of parameter values from an IT2B [PM_Final] object. 
 #' @param density Boolean operator to plot a kernel density function overlying the histogram
 #' of a univariate marginal parameter distribution from NPAG; the default is `FALSE`.
 #' See [density].  Ignored for IT2B output.
-#' @template grid
-#' @param xlab Define x-axis label for bivariate NPAG or IT2B plot.  Default is the name of the plotted x-variable.
-#' @param ylab Define y-axis label for bivariate NPAG or IT2B plot.  Default is the name of the plotted y-variable.
+#' @param grid `r template("grid")`
+#' @param xlab `r template("xlab")` Only relevant for bivariate plots.  Default is the name of the plotted x-variable.
+#' @param ylab `r template("ylab")` Only relevant for bivariate plots.  Default is the name of the plotted y-variable.
 #' @param standardize Standardize the normal parameter distribution plots from IT2B to the same
 #' scale x-axis.  Ignored for NPAG output.
 #' @return Plots the object.
@@ -80,15 +72,15 @@
 
 plot.PM_final <- function(x, 
                           formula, 
+                          line = T,
                           marker = T,
-                          line = T, 
                           density = F, 
+                          standardize,
+                          legend, 
+                          log, 
                           grid = T,
-                          xlab, 
-                          ylab, 
-                          standardize){
-  
-  
+                          xlab, ylab,
+                          xlim, ylim){
   
   #housekeeping
   if(inherits(x,"NPAG")){
@@ -103,7 +95,9 @@ plot.PM_final <- function(x,
     line <- amendLine(line)
   }
   
-  
+  #unnecessary arguments
+  if(!missing(legend)){notNeeded("legend", "plot.PM_final")}
+  if(!missing(log)){notNeeded("log", "plot.PM_final")}
   
   
   
