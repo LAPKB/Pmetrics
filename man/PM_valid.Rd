@@ -66,7 +66,7 @@ Create a new PM_valid object from a PM_result
 \if{html}{\out{<a id="method-PM_valid-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_valid-plot}{}}}
 \subsection{Method \code{plot()}}{
-Plot method. Calls \link{plot.PMvalid}.
+Plot method. Calls \link{plot.PM_valid}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_valid$plot(...)}\if{html}{\out{</div>}}
 }
@@ -74,7 +74,7 @@ Plot method. Calls \link{plot.PMvalid}.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments to pass to [plot.PMvalid].}
+\item{\code{...}}{Arguments to pass to [plot.PM_valid].}
 }
 \if{html}{\out{</div>}}
 }

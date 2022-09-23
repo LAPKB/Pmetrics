@@ -12,8 +12,9 @@
 #' @method plot PM_data
 #' @param x The name of an `PM_data` data object created by [PM_data$new()] or loaded as a field
 #' in a [PM_result] object
-#' @template includeExclude
-#' @template line
+#' @param include `r template("include")` 
+#' @param exclude `r template("exclude")` 
+#' @param line Formats the lines joining observations. `r template("line")` 
 #' @param pred The name of a population or posterior prediction object in a [PM_result] object, eg. 
 #' `run1$post` or `run1$pop`. Can be a list, with the prediction object first, followed by named options to control the 
 #' prediction plot
@@ -23,59 +24,78 @@
 #' For example: `pred = list(run1$post, icen = "mean", color = "red", width = 2)`. 
 #' Defaults are the same as for the `line` argument, since normally one would not plot
 #' both lines joining observations and prediction lines.
-#' @template mult
-#' @template outeq 
+#' @param marker Formats the symbols plotting observations. `r template("marker")` 
+#' @param mult `r template("mult")` 
+#' @param outeq `r template("outeq")` 
 #' @param group **Not currently implemented.** Quoted name of a covariate in `data` by which
 #' to distinguish groups with color in the plot. Note that if covariates do not have values on observation
 #' rows, those observations will be unable to be grouped.  Grouping is only applicable if `outeq` is
 #' specified; otherwise there would be a confusing mix of colors for groups and output equations.
-#' @param block Which block to plot, where a new block is defined by dose resets (evid=4); default is 1.
-#' @template log
-#' @template marker
-#' @template tad
-#' @template grid 
+#' @param block `r template("block")` 
+#' @param tad `r template("tad")` 
 #' @param overlay Boolean operator to overlay all time concentration profiles in a single plot.
 #' The default is `TRUE`.
-#' @template xlim
-#' @template ylim
-#' @template xlab 
-#' @template ylab 
-#' @template legend 
-#' @param ... Not currently implemented.
+#' @param legend `r template("legend")` Default is `FALSE`
+#' @param log `r template("log")` 
+#' @param grid `r template("grid")` 
+#' @param xlim `r template("xlim")` 
+#' @param ylim `r template("ylim")` 
+#' @param xlab `r template("xlab")` Default is "Time".
+#' @param ylab `r template("ylab")` Default is "Output".
+#' @param \dots Not currently implemented.
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso [PM_data], [PM_result]
 #' @export
+#' @examples 
+#' #basic spaghetti plot
+#' exData$plot()
+#' #plot by subject
+#' exData$plot(overlay = F)
+#' #format line and marker
+#' exData$plot(
+#' marker = list(color = "blue", symbol = "square", size = 12, opacity = 0.4),
+#' line = list(color = "orange"))
+#' #include predictions with default format and suppress joining lines
+#' exData$plot(
+#' line = F,
+#' pred = NPex$pop,
+#' xlim = c(119,146))
+#' #customize prediction lines
+#' exData$plot(
+#' line = F,
+#' pred = list(NPex$post, color = "slategrey", dash = "dash"))
 #' @family PMplots
 
-plot.PM_data <- function(x, include, exclude, pred = NULL,
-                         mult = 1, outeq = 1, group, block = 1,
-                         log = F, 
+plot.PM_data <- function(x, 
+                         include, exclude, 
                          line = T,
+                         pred = NULL,
                          marker = T,
-                         grid = F,
-                         legend = F,
+                         mult = 1, 
+                         outeq = 1, 
+                         group, 
+                         block = 1,
                          tad = F,
                          overlay = T,
-                         xlim, ylim,
-                         xlab="Time", ylab="Output", ...){
+                         legend = F, 
+                         log = F, 
+                         grid = F,
+                         xlab, ylab,
+                         xlim, ylim,...){
   
   
   
   # Plot parameters ---------------------------------------------------------
   
-  dots <- list(...)
   
+  
+  #process marker and line
   marker <- amendMarker(marker)
   line <- amendLine(line)
   
-  xaxis <- purrr::pluck(dots, "xaxis") #check for additional changes
-  xaxis <- if(is.null(xaxis)) xaxis <- list()
-  yaxis <- purrr::pluck(dots, "yaxis")
-  yaxis <- if(is.null(yaxis)) yaxis <- list()
-  
-  if(!is.null(purrr::pluck(dots, "layout"))){stop("Specify individual layout elements, not layout.")}
-  layout <- list()
+  #process dots
+  layout <- amendDots(list(...))
   
   #legend
   legendList <- amendLegend(legend)
@@ -83,30 +103,24 @@ plot.PM_data <- function(x, include, exclude, pred = NULL,
   if(length(legendList)>1){layout <- modifyList(layout, list(legend = within(legendList,rm(showlegend))))}
   
   #grid
-  xaxis <- setGrid(xaxis, grid)
-  yaxis <- setGrid(yaxis, grid)
+  layout$xaxis <- setGrid(layout$xaxis, grid)
+  layout$yaxis <- setGrid(layout$yaxis, grid)
   
   #axis labels if needed
-  xtitle <- pluck(xaxis, "title")
-  ytitle <- pluck(yaxis, "title")
-  if(is.null(xtitle)){
-    xaxis <- modifyList(xaxis, list(title = list(text =  xlab)))
-  }
-  if(is.null(ytitle)){
-    yaxis <- modifyList(yaxis, list(title = list(text = ylab)))
-  }  
+  xlab <- if(missing(xlab)){"Time"}
+  ylab <- if(missing(ylab)){"Output"}
+  
+  layout$xaxis <- amendAxisLabel(layout$xaxis, xlab)
+  layout$yaxis <- amendAxisLabel(layout$yaxis, ylab)
   
   #axis ranges
-  if(!missing(xlim)){xaxis <- modifyList(xaxis, list(range = xlim)) }
-  if(!missing(ylim)){yaxis <- modifyList(yaxis, list(range = ylim)) }
+  if(!missing(xlim)){layout$xaxis <- modifyList(layout$xaxis, list(range = xlim)) }
+  if(!missing(ylim)){layout$yaxis <- modifyList(layout$yaxis, list(range = ylim)) }
   
   #log y axis
   if(log){
-    yaxis <- modifyList(yaxis, list(type = "log"))
+    layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
-  
-  #finalize layout
-  layoutList <- modifyList(layout, list(xaxis = xaxis, yaxis = yaxis))
   
   
   # Data processing ---------------------------------------------------------
@@ -130,15 +144,15 @@ plot.PM_data <- function(x, include, exclude, pred = NULL,
   
   #now process pred data if there
   if(!is.null(pred)){
-    if(inherits(pred,"PM_post")){pred <- list(pred)} #only PM_post was supplied, make into a list of 1
-    if(!inherits(pred[[1]],"PM_post")){cat("The first element of <pred> must be a PM_post object")
+    if(inherits(pred,c("PM_post", "PM_pop"))){pred <- list(pred)} #only PM_post/pop was supplied, make into a list of 1
+    if(!inherits(pred[[1]],c("PM_post", "PM_pop"))){cat("The first element of <pred> must be a PM_pop or PM_post object")
     } else {
       predData <- pred[[1]]$data
       if(length(pred)==1){ #default
         predArgs <- T
         icen <- "median"
       } else { #not default, but need to extract icen if present
-        icen <- pluck(pred, "icen") #check if icen is in list
+        icen <- purrr::pluck(pred, "icen") #check if icen is in list
         if(is.null(icen)){ #not in list so set default
           icen <- "median"
         } else {pluck(predArgs, "icen") <- NULL} #was in list, so remove after extraction
@@ -189,10 +203,10 @@ plot.PM_data <- function(x, include, exclude, pred = NULL,
         plotly::add_lines(data = allsub[allsub$src == "pred",], x = ~time, y = ~out,
                   line = predArgs )
     }
-    p <- p %>% plotly::layout(xaxis = layoutList$xaxis,
-                      yaxis = layoutList$yaxis,
-                      showlegend = layoutList$showlegend,
-                      legend = layoutList$legend) 
+    p <- p %>% plotly::layout(xaxis = layout$xaxis,
+                      yaxis = layout$yaxis,
+                      showlegend = layout$showlegend,
+                      legend = layout$legend) 
     return(p)
   } #end dataPlot
   

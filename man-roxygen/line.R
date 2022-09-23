@@ -1,4 +1,4 @@
-#' @param line Controls characteristics of lines.
+#' Controls characteristics of lines.
 #' This argument maps to plotly trace line attributes.
 #' `TRUE` will plot default lines. `FALSE` will suppress lines.
 #' If a list, can control many line characteristics, including overriding defaults.

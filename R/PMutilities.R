@@ -2313,3 +2313,13 @@ binaries.installed <- function() {
   }
   return(installed)
 }
+
+#import functions into documentation
+
+template <- function(name){
+  insert <- readLines(paste0("man-roxygen/", name,".R")) %>%
+    stringr::str_replace("#' ","") %>%
+    stringr::str_replace("@param ","")
+  
+  return(paste0(insert, collapse = " "))
+}

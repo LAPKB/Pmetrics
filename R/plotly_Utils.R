@@ -7,7 +7,7 @@ amendMarker <- function(.marker, default){
                          size = 10, 
                          opacity = 0.5,
                          line = list(color = "black", width = 1)
-                         )
+  )
   if(!missing(default)){
     default_marker <- modifyList(default_marker, default)
   }
@@ -90,7 +90,7 @@ amendCI <- function(.ci, default){
   
   if(inherits(.ci,"logical")){
     if(!.ci){
-      .ci <- modifyList(default_ci, list(opacity = 0))
+      .ci <- modifyList(default_ci, list(opacity = 0, width = 0))
     } else {
       .ci <- default_ci
     }
@@ -179,6 +179,23 @@ amendLegend <- function(.legend, default){
   return(.legend)
 }
 
+#amend dots
+amendDots <- function(dots){
+  if(length(dots)>0){
+    if(!names(dots) %in% c("xaxis", "yaxis")){
+      cat(crayon::red("Warning: "),"Only xaxis and yaxis in dots are currently recognized.")
+    }
+  }
+  xaxis <- purrr::pluck(dots, "xaxis") #check for additional changes
+  xaxis <- if(is.null(xaxis)){xaxis <- list()} else {xaxis}
+  yaxis <- purrr::pluck(dots, "yaxis")
+  yaxis <- if(is.null(yaxis)){yaxis <- list()} else {yaxis}
+  
+  layout <- list(xaxis = xaxis, yaxis = yaxis)
+  return(layout)
+  
+}
+
 includeExclude <- function(.data, include, exclude){
   if(!is.na(include[1])){
     .data <- .data %>% filter(id %in% include)
@@ -214,5 +231,9 @@ hline <- function(y = 0, color = "black", width = 1, dash = 1) {
     y1 = y, 
     line = list(color = color, width = width, dash = dash)
   )
+}
+
+notNeeded <- function(x, f){
+  cat(paste0(crayon::blue(x)," is not required for ",f," and will be ignored."))
 }
 

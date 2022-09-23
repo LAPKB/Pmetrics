@@ -42,10 +42,10 @@ PM_valid <- R6::R6Class("PM_valid",
             self$npde_tad <- valRes$npde_tad
         },
         #' @description 
-        #' Plot method. Calls [plot.PMvalid].
-        #' @param ... Arguments to pass to \[plot.PMvalid].
+        #' Plot method. Calls [plot.PM_valid].
+        #' @param ... Arguments to pass to \[plot.PM_valid].
         plot = function(...) {
-            plot.PMvalid(self, ...)
+            plot.PM_valid(self, ...)
         }
     )
 )
