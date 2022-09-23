@@ -195,22 +195,22 @@ predictions will be truncated.</p></dd>
 <dt>covariate</dt>
 <dd><p>If you are using the results of an NPAG or IT2B run to
 simulate, i.e. a <a href="PM_final.html">PM_final</a> object as <code>poppar</code>, then you can also
-simulate with covariates. This argument is a list with the following names.</p><ul><li><p><strong>cov</strong> The name of a <a href="PM_cov.html">PM_cov</a> object, such as a field in a <a href="PM_result.html">PM_result</a>.
+simulate with covariates. This argument is a list with the following names.</p><ul><li><p><code>cov</code> The name of a <a href="PM_result.html">PM_result</a> or <a href="PM_cov.html">PM_cov</a> object
 Pmetrics will use this covariate object to calculate the correlation
 matrix between all covariates and Bayesian posterior parameter values.</p></li>
-<li><p><strong>mean</strong> A named list that allows you to specify a different mean
+<li><p><code>mean</code> A named list that allows you to specify a different mean
 for one or more of the covariates. Each named item in the list is the name
 of a covariate in your data that is to have a different mean. If this
 argument is missing then the mean covariate values in the population will
 be used for simulation. The same applies to any covariates that are not
 named in this list.  Example:
-<code>covariate = list(cov =cov.1, mean = list(wt = 50))</code>.</p></li>
-<li><p><strong>sd</strong> This functions just as the mean list argument does - allowing you to
+<code>run1 &lt;- PM_load(1); covariate = list(cov = run1, mean = list(wt = 50))</code>.</p></li>
+<li><p><code>sd</code> This functions just as the mean list argument does - allowing you to
 specify different standard deviations for covariates in the simulation. If
 it, or any covariate in the sd list is missing, then the standard
 deviations of the covariates in the population are used. Example:
-<code>covariate = list(cov = cov.1, sd = list(wt = 10))</code>.</p></li>
-<li><p><strong>limits</strong> This is a bit different than the limits for population
+<code>covariate = list(cov = run1$cov, sd = list(wt = 10))</code>.</p></li>
+<li><p><code>limits</code> This is a bit different than the limits for population
 parameters above. Here,
 limits is similar to mean and sd for covariates in
 that it is a named list with the minimum and maximum allowable simulated
@@ -220,8 +220,8 @@ indicated limits, and covariates not in the list will have limits that are
 the same as in the original population.  If you want some to be limited and
 some to be unlimited, then specify the unlimited ones as items in this list
 with very large ranges.  Example:
-<code>covariate = list(cov = cov.1, limits = list( wt = c(10, 70)))</code>.</p></li>
-<li><p><strong>fix</strong> A character vector (not a list) of covariates to fix and not simulate.  In
+<code>covariate = list(cov = run1, limits = list( wt = c(10, 70)))</code>.</p></li>
+<li><p><code>fix</code> A character vector (not a list) of covariates to fix and not simulate.  In
 this case values in the template data file will be used and not simulated.
 Example: <code>fix = c("wt", "age")</code>.  Whether you use the means and
 standard deviations in the population or specify your own, the covariance
