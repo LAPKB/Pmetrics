@@ -14,11 +14,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, echo=F, message=F}
 library(Pmetrics)
 ```
 
-# Background
+## Background
 
 As of version 2, *Pmetrics* uses the *plotly* package for most plots. Plots
 made with plotly are interactive, so that moving your cursor over them
@@ -29,7 +29,7 @@ However, the documentation for plotly is a bit complex and often lacking in
 sufficient examples. This vignette attempts to orient you to the specific
 aspects of plotly most relevant to Pmetric.
 
-# General
+## General
 
 Plotly is based on a foundation of lists. Most plot elements are lists whose
 arguments control characteristics of the elements. Pmetrics chiefly uses only
@@ -46,7 +46,7 @@ in the Viewer tab in Rstudio.
 In plotly, the layout items control everything to do with the appearance of the
 axes and the legend. The traces items control appearance of the data.  
 
-# Traces 
+## Traces 
 
 Pmetrics almost exclusively uses scatter traces, and those elements can be 
 referenced by expanding traces `r knitr::asis_output("\U25B6")` scatter 
@@ -55,16 +55,102 @@ referenced by expanding traces `r knitr::asis_output("\U25B6")` scatter
 There are many such attributes, but the most commonly used and accessible to the
 user are line and marker.
 
-## Line attributes
+### Line attributes
 
 All plotly plots in Pmetrics have a `line` argument which maps to the *line* attribute 
 of a plotly scatter trace. 
 When Pmetrics detects a boolean argument, e.g. `TRUE` or `FALSE` it either plots
 the default line or suppresses the line altogether. A good example of this is the
 `line` argument to `plot.PM_op` to generate an observed vs. predicted plot. In this
-function.
+function, `line` is a list of named lines that can be plotted. If *NPex* is a
+*PM_result* object loaded with `PM_load()` then the default is 
+`NPex$plot$op(line = list(lm = F, loess = T, ref = T))`.This means that a 
+linear model (regression) will not be plotted, a loess regression will be plotted,
+and a reference line with slope = 1 and intercept = 0 will also be plotted. If we
+are happy with all the defaults, we simply need to call the plot method for the
+*PM_op* object field in NPex.
+
+
+```{r, echo = T, eval = T}
+NPex$op$plot()
+```
+
+Below is a simple example of how to change the default lines plotted, but retain
+the default formatting. Now a linear regression (using the R `lm` function) is plotted with a reference line, but not a loess regression.
 
 ```{r, echo = T, eval = T}
 NPex$op$plot(line = list(lm = T, loess = F, ref = T))
 ```
+
+The default formats for lines may differ from function to function and are indicated
+in the help files. However all lines may be formatted using three arguments as a **list**.
+
+* `color` Specify the color of the line as a character with either the
+    - name: a good reference in R is to use the `colors()` function, e.g. "dodgerblue"
+    - hexadecimal code: this can be searched on the web, and is specified as a character
+    with leading "#" followed by 6 hexidecimal digits, two each for Red, Green, Blue, e.g. "#C0C0C0".
+    Adding an extra two digits specifies transparency, with 00 fully transparent and FF fully opaque, 
+    e.g. #C0C0C066".
+    - a plotly function `toRGB` which takes a color name and alpha (transparency) value on a scale of 0 - 1,
+    e.g., `toRGB("red", 0.5)`.
+* `width` Units are pixels.
+* `dash` Sets the dash style of lines. Set to a dash type string (*solid*,*dot*, *dash*, *longdash*, *dashdot*, or *longdashdot*) or a dash length list in px (eg *5px,10px,2px,2px*)
+
+
+```{r, echo = T, eval = T}
+NPex$op$plot(line = list(loess = list(color = "orange", dash = "dashdot", width = 2)))
+```
+
+
+Note the default is `lm = F` and `ref = T`, so we don't need to specify them if that's what we want.
+
+### Marker attributes
+
+All plotly plots in Pmetrics have a `marker` argument which maps to the *marker* attribute 
+of a plotly scatter trace. 
+When Pmetrics detects a boolean argument, e.g. `TRUE` or `FALSE` it either plots
+the default marker or suppresses the line altogether. A good example of this is also the
+`marker` argument to `plot.PM_op` to generate an observed vs. predicted plot. In this
+function, `marker` controls the plotting symbol. If *NPex* is a
+*PM_result* object loaded with `PM_load()` then the default is 
+`NPex$plot$op(marker = T)`.This means that the symbols will be plotted with default
+formatting. If we are happy with all the defaults, we simply need to call the plot method for the
+*PM_op* object field in NPex.
+
+
+```{r, echo = T, eval = T}
+NPex$op$plot()
+```
+
+The default formats for markers may differ from function to function and are indicated
+in the help files. However all markers may be formatted using most commonly four arguments as a **list**.
+
+* `color` Specify the color of the marker fill as a character with either the
+    - name: a good reference in R is to use the `colors()` function, e.g. "dodgerblue"
+    - hexadecimal code: this can be searched on the web, and is specified as a character
+    with leading "#" followed by 6 hexidecimal digits, two each for Red, Green, Blue, e.g. "#C0C0C0".
+    Adding an extra two digits specifies transparency, with 00 fully transparent and FF fully opaque, 
+    e.g. #C0C0C066".
+    - a plotly function `toRGB` which takes a color name and alpha (transparency) value on a scale of 0 - 1,
+    e.g., `toRGB("red", 0.5)`.
+* `size` Units are points.
+* `symbol` Either a character name or the numeric value associated with the character.
+See `schema()` traces `r knitr::asis_output("\U25B6")` scatter 
+`r knitr::asis_output("\U25B6")` attributes `r knitr::asis_output("\U25B6")`
+marker `r knitr::asis_output("\U25B6")` symbol `r knitr::asis_output("\U25B6")`
+values for all the possibilities, e.g. "circle-open" is equivalent to 100, "square"
+is equivalent to 1, and "diamond-open-dot" is equivalent to 302.
+* `opacity` On a scale of 0 (transparent) to 1 (opaque).
+
+Any other marker attribute is possible, including `line`, which itself is a list
+to specify attributes of the outline for a marker.
+
+
+```{r, echo = T, eval = T}
+NPex$op$plot(marker = list(color = "slategray", size = 12, 
+                           opacity = 0.5, line = list(color = "navy")))
+```
+
+
+## Layouts
 

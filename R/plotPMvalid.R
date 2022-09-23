@@ -31,57 +31,68 @@
 #' @param type Default is "vpc" for a visual predictive check, but could be 
 #' "pcvpc" for a prediction-corrected visual predictive check, or
 #' "npde" for a normalized prediction distribution error analysis/plot.
-#' @template tad  
-#' @template outeq 
-#' @template log
-#' @template marker
-#' @param lower,mid,upper Controls characteristics of quantiles.
-#' These arguments map to several plotly attributes.
+#' @param tad `r template("tad")`
+#' @param outeq `r template("outeq")`
+#' @param log `r template("log")`
+#' @param marker `r template("marker")`
+#' @param line A list of three elements `$upper`, `$mid`, and `$lower`, 
+#' each of which controls characteristics of corresponding quantiles.
+#' The arguments to each of these list elements map to several plotly attributes.
 #' Each can be a boolean value or a list.
 #' `TRUE` will plot default characteristics. `FALSE` will suppress quantile plots.
 #' The elements of the list for each argument are as follows:
-#' * value The quantile value. Default for lower is 0.025, mid is 0.5, 
+#' * `value` The quantile value. Default for lower is 0.025, mid is 0.5, 
 #' and upper is 0.975.
-#' * color The color for both the 95%CI region around simulated quantile vs. time,
+#' * `color` The color for both the 95%CI region around simulated quantile vs. time,
 #' and the color of the line for the observation quantile vs. time.
 #' Default for lower and upper is "dodgerblue" and for mid it is "red".
-#' * dash The style of the obervation quantile line.  
+#' * `dash` The style of the obervation quantile line.  
 #' See `plotly::schema()`, traces > scatter > attributes > line > dash > values.
 #' Default for lower and upper is "dash" and for mid it is "solid".
-#' * width Default is 1 for lower, mid, and upper.
-#' * opacity The opacity of the 95%CI region around simulated quantile vs. time.
+#' * `width` Default is 1 for lower, mid, and upper.
+#' * `opacity` The opacity of the 95%CI region around simulated quantile vs. time.
 #' Default is 0.4 for lower, mid and upper, 
 #' but can range between 0 (fully transparent) to 1 (fully opaque).
-#' Example: `upper = list(value = 0.9, color = "red", dash = "longdash", opacity = 0.5, width = 2)`
-#' @template grid
-#' @template legend
-#' @template xlim 
-#' @template ylim 
-#' @template xlab 
-#' @template ylab 
-#' @template dotsPlotly
+#' Example: `line = list(upper = list(value = 0.9, color = "red", dash = "longdash", opacity = 0.5, width = 2))`
+#' @param legend `r template("legend")` Default is `FALSE`
+#' @param log `r template("log")` 
+#' @param grid `r template("grid")` 
+#' @param xlim `r template("xlim")` 
+#' @param ylim `r template("ylim")` 
+#' @param xlab `r template("xlab")` Default is "Time" or "Time after dose" if `tad = TRUE`.
+#' @param ylab `r template("ylab")` Default is "Output".
+#' @param \dots `r template("dotsPlotly")`
 #' @return Plots and returns the plotly object
 #' @author Michael Neely
 #' @seealso [makeValid]
 #' @importFrom dplyr summarise
 #' @importFrom dplyr quo
 #' @export
+#' @examples 
+#' #VPC
+#' NPex_val$valid$plot()
+#' 
+#' #pcVPC
+#' NPex_val$valid$plot(type = "pcvpc")
+#' 
+#' #modify median line and marker
+#' NPex_val$valid$plot(
+#' line = list(mid = list(color = "orange", dash = "dashdot")),
+#' marker = list(color = "blue", size = 12, symbol = "diamond",
+#' line = list(color = "navy")))
 #' @family PMplots
 
 plot.PM_valid <- function(x, 
                          type = "vpc", 
                          tad = F, 
                          outeq = 1,
-                         log = F,
+                         line = T,
                          marker = T,
-                         lower = T,
-                         mid = T,
-                         upper = T,
+                         legend = F, 
+                         log = F, 
                          grid = T,
-                         legend = F,
-                         xlim, ylim,
-                         xlab = c("Time", "Time after dose"), ylab = "Output",
-                         ...){
+                         xlab, ylab,
+                         xlim, ylim,...){
   
   #to avoid modifying original object, x
   opDF <- x$opDF
@@ -93,51 +104,55 @@ plot.PM_valid <- function(x,
   opDF <- opDF %>% filter(outeq == !!outeq) #filter to outeq
   simdata <- simdata %>% filter(outeq == !!outeq)  #filter to outeq
   
-  dots <- list(...)
+
   
+  #process CI lines
+  if(is.logical(line)){
+    if(line){
+      line <- list(lower = T, mid = T, upper = T)
+    } else {
+      line <- list(lower = F, mid = F, upper = F)
+    }
+  } else {
+    if(is.null(line$lower)) {line$lower <- T}
+    if(is.null(line$mid)) {line$mid <- T}
+    if(is.null(line$upper)) {line$upper <- T}
+  }
+  
+  upper <- amendCI(line$upper, default = list(value = 0.975))
+  mid <- amendCI(line$mid, default = list(value = 0.5, color = "red", dash = "solid"))
+  lower <- amendCI(line$lower, default = list(value = 0.025))
+
+  #process marker
   marker <- amendMarker(marker, default = list(color = "black", symbol = "circle-open", size = 8))
-  upper <- amendCI(upper, default = list(value = 0.975))
-  mid <- amendCI(mid, default = list(value = 0.5, color = "red", dash = "solid"))
-  lower <- amendCI(lower, default = list(value = 0.025))
+
+  #process dots
+  layout <- amendDots(list(...))
   
-  xaxis <- purrr::pluck(dots, "xaxis") #check for additional changes
-  xaxis <- if(is.null(xaxis)) xaxis <- list()
-  yaxis <- purrr::pluck(dots, "yaxis")
-  yaxis <- if(is.null(yaxis)) yaxis <- list()
+  #grid
+  layout$xaxis <- setGrid(layout$xaxis, grid)
+  layout$yaxis <- setGrid(layout$yaxis, grid)
   
-  if(!is.null(purrr::pluck(dots, "layout"))){stop("Specify individual layout elements, not layout.")}
-  layout <- list()
+  #axis labels if needed
+  if(missing(xlab)){xlab = c("Time", "Time after dose"[1 + as.numeric(tad)])}
+  if(missing(ylab)){ylab = "Output"}
+  
+  layout$xaxis <- amendAxisLabel(layout$xaxis, xlab)
+  layout$yaxis <- amendAxisLabel(layout$yaxis, ylab)
+  
+  #axis ranges
+  if(!missing(xlim)){layout$xaxis <- modifyList(layout$xaxis, list(range = xlim)) }
+  if(!missing(ylim)){layout$yaxis <- modifyList(layout$yaxis, list(range = ylim)) }
+  
+  #log y axis
+  if(log){
+    layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
+  }
   
   #legend
   legendList <- amendLegend(legend)
   layout <- modifyList(layout, list(showlegend = legendList$showlegend))
   if(length(legendList)>1){layout <- modifyList(layout, list(legend = within(legendList,rm(showlegend))))}
-  
-  #grid
-  xaxis <- setGrid(xaxis, grid)
-  yaxis <- setGrid(yaxis, grid)
-  
-  #axis labels if needed
-  xtitle <- pluck(xaxis, "title")
-  ytitle <- pluck(yaxis, "title")
-  if(is.null(xtitle)){
-    xaxis <- modifyList(xaxis, list(title = list(text =  xlab[1 + as.numeric(tad)])))
-  }
-  if(is.null(ytitle)){
-    yaxis <- modifyList(yaxis, list(title = list(text = ylab)))
-  }  
-  
-  #axis ranges
-  if(!missing(xlim)){xaxis <- modifyList(xaxis, list(range = xlim)) }
-  if(!missing(ylim)){yaxis <- modifyList(yaxis, list(range = ylim)) }
-  
-  #log y axis
-  if(log){
-    yaxis <- modifyList(yaxis, list(type = "log"))
-  }
-  
-  #finalize layout
-  layoutList <- modifyList(layout, list(xaxis = xaxis, yaxis = yaxis))
   
   #select correct time
   if(!tad){
@@ -226,10 +241,10 @@ plot.PM_valid <- function(x,
                           inherit = F) %>%
       #add layout
       
-      plotly::layout(xaxis = layoutList$xaxis,
-                     yaxis = layoutList$yaxis,
-                     showlegend = layoutList$showlegend,
-                     legend = layoutList$legend) 
+      plotly::layout(xaxis = layout$xaxis,
+                     yaxis = layout$yaxis,
+                     showlegend = layout$showlegend,
+                     legend = layout$legend) 
     
     #SEND TO CONSOLE
     print(p)

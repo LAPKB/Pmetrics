@@ -155,22 +155,22 @@
 #' @param covariate If you are using the results of an NPAG or IT2B run to
 #' simulate, i.e. a [PM_final] object as `poppar`, then you can also
 #' simulate with covariates. This argument is a list with the following names.
-#' * __cov__ The name of a [PM_cov] object, such as a field in a [PM_result].
+#' * `cov` The name of a [PM_result] or [PM_cov] object
 #' Pmetrics will use this covariate object to calculate the correlation
 #' matrix between all covariates and Bayesian posterior parameter values.
-#' * __mean__ A named list that allows you to specify a different mean
+#' * `mean` A named list that allows you to specify a different mean
 #' for one or more of the covariates. Each named item in the list is the name
 #' of a covariate in your data that is to have a different mean. If this
 #' argument is missing then the mean covariate values in the population will
 #' be used for simulation. The same applies to any covariates that are not
 #' named in this list.  Example:
-#' `covariate = list(cov =cov.1, mean = list(wt = 50))`. 
-#' * __sd__ This functions just as the mean list argument does - allowing you to
+#' `run1 <- PM_load(1); covariate = list(cov = run1, mean = list(wt = 50))`. 
+#' * `sd` This functions just as the mean list argument does - allowing you to
 #' specify different standard deviations for covariates in the simulation. If
 #' it, or any covariate in the sd list is missing, then the standard
 #' deviations of the covariates in the population are used. Example:
-#' `covariate = list(cov = cov.1, sd = list(wt = 10))`.
-#' * __limits__ This is a bit different than the limits for population 
+#' `covariate = list(cov = run1$cov, sd = list(wt = 10))`.
+#' * `limits` This is a bit different than the limits for population 
 #' parameters above. Here,
 #' limits is similar to mean and sd for covariates in
 #' that it is a named list with the minimum and maximum allowable simulated
@@ -180,8 +180,8 @@
 #' the same as in the original population.  If you want some to be limited and
 #' some to be unlimited, then specify the unlimited ones as items in this list
 #' with very large ranges.  Example:
-#' `covariate = list(cov = cov.1, limits = list( wt = c(10, 70)))`. 
-#' * __fix__ A character vector (not a list) of covariates to fix and not simulate.  In
+#' `covariate = list(cov = run1, limits = list( wt = c(10, 70)))`. 
+#' * `fix` A character vector (not a list) of covariates to fix and not simulate.  In
 #' this case values in the template data file will be used and not simulated.
 #' Example: `fix = c("wt", "age")`.  Whether you use the means and
 #' standard deviations in the population or specify your own, the covariance
@@ -453,7 +453,9 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
     if (length(badNames) > 0) endNicely("\nThe covariate argument must be a named list; see ?SIMrun for help.\n", model, data)
     
     # check to make sure first element is PMcov
-    if (!inherits(covariate$cov, "PMcov")) endNicely("\nThe cov element of covariate must be a PMcov object; see ?SIMrun for help.\n", model, data)
+    if(inherits(covariate$cov, "PM_result")){covariate$cov <- covariate$cov$cov$data}
+    if(inherits(covariate$cov, "PM_cov")){covariate$cov <- covariate$cov$data}
+    if (!inherits(covariate$cov, "PMcov")){endNicely("\nThe cov element of covariate must be a PMcov object; see ?SIMrun for help.\n", model, data)}
     # get mean of each covariate and Bayesian posterior parameter
     CVsum <- summary(covariate$cov, "mean")
     # take out fixed covariates not to be simulated
@@ -485,7 +487,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
       corCVsub <- corCV[(nsimcov + 1):(npar + nsimcov), (1:nsimcov)]
       corMat <- cbind(corMat, corCVsub)
       corMat2 <- cbind(corCV[(1:nsimcov), (nsimcov + 1):(npar + nsimcov)], corCV[(1:nsimcov), (1:nsimcov)])
-      dimnames(corMat2)[[1]] <- dimnames(corMat)[[2]] #temp fix for Katharine's issue 
+      #dimnames(corMat2)[[1]] <- dimnames(corMat)[[2]] #temp fix for Katharine's issue 
       corMat <- rbind(corMat, corMat2)
     }
     

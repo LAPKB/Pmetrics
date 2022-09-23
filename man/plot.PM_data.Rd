@@ -8,22 +8,22 @@
   x,
   include,
   exclude,
+  line = T,
   pred = NULL,
+  marker = T,
   mult = 1,
   outeq = 1,
   group,
   block = 1,
-  log = F,
-  line = T,
-  marker = T,
-  grid = F,
-  legend = F,
   tad = F,
   overlay = T,
+  legend = F,
+  log = F,
+  grid = F,
+  xlab,
+  ylab,
   xlim,
   ylim,
-  xlab = "Time",
-  ylab = "Output",
   ...
 )
 }
@@ -34,6 +34,8 @@ in a \link{PM_result} object}
 \item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
 
 \item{exclude}{A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)}
+
+\item{line}{Formats the lines joining observations. Controls characteristics of lines. This argument maps to plotly trace line attributes. \code{TRUE} will plot default lines. \code{FALSE} will suppress lines. If a list, can control many line characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > line to see all the ways the line can be formatted. Most common will be: * color Line color. * dash Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > line > dash > values. * width Thickness in points. Example: \code{line = list(color = "red", dash = "longdash", width = 2)}}
 
 \item{pred}{The name of a population or posterior prediction object in a \link{PM_result} object, eg.
 \code{run1$post} or \code{run1$pop}. Can be a list, with the prediction object first, followed by named options to control the
@@ -47,6 +49,8 @@ Defaults are the same as for the \code{line} argument, since normally one would 
 both lines joining observations and prediction lines.
 }}
 
+\item{marker}{Formats the symbols plotting observations. Controls the plotting symbol for observations.  This argument maps to the plotly marker object. It can be boolean or a list. \code{TRUE} will plot the marker with default characteristics. \code{FALSE} will suppress marker plotting. If a list, can control many marker characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > marker to see all the ways the marker can be formatted. Most common will be: * color Marker color. * symbol Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values. * size Character size in points. * opacity Ranging between 0 (fully transparent) to 1 (fully opaque). * line A list of  additional attributes governing the outline for filled shapes, most commonly color and width. Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}}
+
 \item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
 
 \item{outeq}{Which output equation to plot. Default is 1.}
@@ -56,109 +60,28 @@ to distinguish groups with color in the plot. Note that if covariates do not hav
 rows, those observations will be unable to be grouped.  Grouping is only applicable if \code{outeq} is
 specified; otherwise there would be a confusing mix of colors for groups and output equations.}
 
-\item{block}{Which block to plot, where a new block is defined by dose resets (evid=4); default is 1.}
-
-\item{log}{Boolean operator to plot the y axis in log base 10.
-This argument maps to the
-the yaxis type value in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > yaxis > type.
-Example: \code{log = T}}
-
-\item{line}{Controls characteristics of lines.
-This argument maps to plotly trace line attributes.
-\code{TRUE} will plot default lines. \code{FALSE} will suppress lines.
-If a list, can control many line characteristics, including overriding defaults.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to traces > scatter > attributes > line to see all the ways the line
-can be formatted. Most common will be:
-\itemize{
-\item color Line color.
-\item dash Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > line > dash > values.
-\item width Thickness in points.
-Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
-}}
-
-\item{marker}{Controls the plotting symbol for observations.
-This argument maps to the plotly marker object.
-It can be boolean or a list.
-\code{TRUE} will plot the marker with default characteristics.
-\code{FALSE} will suppress marker plotting.
-If a list, can control many marker characteristics, including overriding defaults.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to traces > scatter > attributes > marker to see all the ways the marker
-can be formatted. Most common will be:
-\itemize{
-\item color Marker color.
-\item symbol Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values.
-\item size Character size in points.
-\item opacity Ranging between 0 (fully transparent) to 1 (fully opaque).
-\item line A list of  additional attributes governing the outline for filled shapes, most commonly
-color and width.
-Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}
-}}
-
-\item{grid}{Controls grid display.
-This argument maps to the xaxis and yaxis layout objects in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth.
-It is a Boolean operator. If \code{FALSE}, no grid is plotted.
-If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at
-major tick marks. If a list,
-color and width can be customized.
-Examples:
-\itemize{
-\item \code{grid = F}
-\item \code{grid = list(gridcolor = "black", gridwidth = 2)}
-}}
-
-\item{legend}{Controls display of legend.
-This argument maps to the plotly layout showlegend and legend arguments.
-It is either a boolean operator (most common) or a list of parameters to be supplied to plotly.
-See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend
-for more details on the available options for formatting.
-If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will
-be set to \code{TRUE} automatically.
-Examples:
-\itemize{
-\item \code{legend = T}
-\item \code{legend = list(orientation = "h", font = list(color = "blue"))}
-}}
+\item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data. Default is 1.}
 
 \item{tad}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
 
 \item{overlay}{Boolean operator to overlay all time concentration profiles in a single plot.
 The default is \code{TRUE}.}
 
-\item{xlim}{Limits of the x axis as a vector.
-This argument maps to the
-the xaxis range in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > xaxis > range.
-Example: \code{xlim = c(0,1)}}
+\item{legend}{Controls display of legend. This argument maps to the plotly layout showlegend and legend arguments. It is either a boolean operator (most common) or a list of parameters to be supplied to plotly. See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend for more details on the available options for formatting.  If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will be set to \code{TRUE} automatically. Examples: * \code{legend = T} * \code{legend = list(orientation = "h", font = list(color = "blue"))} Default is \code{FALSE}}
 
-\item{ylim}{Limits of the y axis as a vector.
-This argument maps to the
-the yaxis range in the layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > yaxis > range.
-Example: \code{ylim = c(0,100)}}
+\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type. Example: \code{log = T}}
 
-\item{xlab}{Value for x axis label.
-This argument maps to the the xaxis layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > xaxis to see other ways to customize
-this axis using lists as additional arguments to the plot function.
-Example: \code{xaxis = list(title = list(text = "Time", font = list(color = "red", family = "Arial", size = 10)))}}
+\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized. Examples:  * \code{grid = F} * \code{grid = list(gridcolor = "black", gridwidth = 2)}}
 
-\item{ylab}{Value for y axis label.
-This argument maps to the yaxis layout object in plotly.
-Use the plotly \code{plotly::schema()} command in the console and navigate
-to layout > layoutAttributes > yaxis to see other ways to customize
-this axis using lists as additional arguments to the plot function.
-Example: \code{yaxis = list(title = list(text = "Concentration", font = list(color = "blue", family = "Times New Roman", size = 12)))}}
+\item{xlab}{Value for x axis label. This argument maps to the the xaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{xaxis = list(title = list(text = "Time", font = list(color = "red", family = "Arial", size = 10)))} Default is "Time".}
 
-\item{...}{Not currently implemented.}
+\item{ylab}{Value for y axis label. This argument maps to the yaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{yaxis = list(title = list(text = "Concentration", font = list(color = "blue", family = "Times New Roman", size = 12)))} Default is "Output".}
+
+\item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range. Example: \code{xlim = c(0,1)}}
+
+\item{ylim}{Limits of the y axis as a vector.   This argument maps to the   the yaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > range. Example: \code{ylim = c(0,100)}}
+
+\item{\dots}{Not currently implemented.}
 }
 \value{
 Plots the object.
@@ -174,6 +97,25 @@ Markers can be joined by lines, default is \code{FALSE}. If chosen to be \code{T
 the joining lines will have the following properties:
 \verb{list(color = "dodgerblue", width = 1, dash = "solid"}.
 The grid and legend are omitted by default.
+}
+\examples{
+#basic spaghetti plot
+exData$plot()
+#plot by subject
+exData$plot(overlay = F)
+#format line and marker
+exData$plot(
+marker = list(color = "blue", symbol = "square", size = 12, opacity = 0.4),
+line = list(color = "orange"))
+#include predictions with default format and suppress joining lines
+exData$plot(
+line = F,
+pred = NPex$pop,
+xlim = c(119,146))
+#customize prediction lines
+exData$plot(
+line = F,
+pred = list(NPex$post, color = "slategrey", dash = "dash"))
 }
 \seealso{
 \link{PM_data}, \link{PM_result}

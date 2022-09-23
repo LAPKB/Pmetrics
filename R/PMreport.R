@@ -326,7 +326,7 @@ makeRdata <- function(wd, remote, reportType) {
       paste0("../inputs/", .) %>% .[[1]] %>%
       PM_model$new(.)
     cat(paste("\n\n\nSaving R data objects to ", wd, "......\n\n", sep = ""))
-    cat("\nUse PMload() to load them.\n")
+    cat("\nUse PM_load() to load them.\n")
     cat("\nThe following objects have been saved:\n")
     cat(c("\nNPdata: All output from NPAG\n", "\nITdata: All output from IT2B\n")[reportType])
     if (reportType == 1 && !all(is.null(pop))) cat("pop: Population predictions at regular, frequent intervals\n")

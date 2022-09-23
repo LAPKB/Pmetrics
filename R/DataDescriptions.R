@@ -150,7 +150,22 @@
 
 "modEx"
 
+#' Example simulator output
+#'
+#' This is an R6 Pmetrics [PM_sim] object created by
+#' created by running `$sim()` on a [PM_result] object, e.g.
+#' `NPex$sim(include = 1:4, limits = NA, nsim = 100).`
+#'
+#' @name simEx
+#' @docType data
+#' @title Example simulator output
+#' @usage simEx
+#' @format R6 [PM_sim]
+#' @author Michael Neely
+#' @keywords datasets
+#'
 
+"simEx"
 
 
 
