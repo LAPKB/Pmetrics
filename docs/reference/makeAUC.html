@@ -66,23 +66,23 @@
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>data</dt>
-<dd><p>A suitable data object of the <em>PMpop</em> class (see <code><a href="makePop.html">makePop</a></code>),
-<em>PMpost</em> class (see <code><a href="makePost.html">makePost</a></code>),
-<em>PMop</em> class (see <code><a href="makeOP.html">makeOP</a></code>),
-the <em>PMsim</em> class (see <code><a href="SIMparse.html">SIMparse</a></code>), or some other suitable dataframe
-with at least time/observation columns referred to by <code>formula</code>, with an “id” column (so named) if necessary.</p></dd>
+<dd><p>A suitable data object, i.e. <a href="PM_pop.html">PM_pop</a>, <a href="PM_post.html">PM_post</a>, <a href="PM_op.html">PM_op</a>,
+<a href="PM_sim.html">PM_sim</a>, or some other suitable dataframe
+with at least time/observation columns referred to by <code>formula</code>, with an
+"id" column (so named) if necessary.</p></dd>
 
 
 <dt>formula</dt>
-<dd><p>A formula of the form <code>obs ~ time</code>.  This is only required with data that is not of class PMpop, PMpost, PMop or PMsim.</p></dd>
+<dd><p>A formula of the form <code>obs ~ time</code>.
+This is only required with data that is not of class PM_pop, PM_post, PM_op or PM_sim.</p></dd>
 
 
 <dt>include</dt>
-<dd><p>A vector of subject IDs to include in the AUC calculations, e.g. c(1:3,5,15)</p></dd>
+<dd><p>A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)</p></dd>
 
 
 <dt>exclude</dt>
-<dd><p>A vector of subject IDs to exclude in the AUC calculations, e.g. c(4,6:14,16:20)</p></dd>
+<dd><p>A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)</p></dd>
 
 
 <dt>start</dt>
@@ -97,16 +97,15 @@ AUC calculated for the available data, not to exceed the specified interval.</p>
 
 
 <dt>icen</dt>
-<dd><p>Only relevant for PMpost or PMpop objects which have predictions based on median or mean of each
-subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".</p></dd>
+<dd><p>Can be either "median" for the predictions based on medians of <code>pred.type</code> parameter value distributions, or "mean".  Default is "median". Only relevant for PMpost or PMpop objects.</p></dd>
 
 
 <dt>outeq</dt>
-<dd><p>Specify which output equation is to be used.  Default is 1.</p></dd>
+<dd><p>Which output equation to plot. Default is 1.</p></dd>
 
 
 <dt>block</dt>
-<dd><p>Specify which observation block (separated by EVID=4) is to be used for each subject.  Default is 1.</p></dd>
+<dd><p>Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data. Default is 1.</p></dd>
 
 
 <dt>method</dt>
@@ -122,24 +121,19 @@ linear up, log down.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>The output of <code>makeAUC</code> is a dataframe of class <em>PMauc</em>,
-which has 2 columns:</p>
-<dl><dt>id </dt>
-<dd><p>subject identification</p></dd>
-
-<dt>tau </dt>
-<dd><p>AUC from <code>start</code> to <code>end</code></p></dd>
-
-</dl></div>
+<p>A dataframe of class <em>PMauc</em>, which has 2 columns:</p><ul><li><p>id - Subject identification</p></li>
+<li><p>tau - AUC from <code>start</code> to <code>end</code></p></li>
+</ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>makeAUC</code> will calculate the area under the time concentration curve using the
-trapezoidal approximation from a variety of inputs.  If a PMpost, PMop, or PMsim object is specified,
+    <p>Calculates the area under the time concentration curve using the
+trapezoidal approximation from a variety of inputs.
+If a PM_pop, PM_post, PM_op, or PMsim object is specified,
 <code>formula</code> is not required.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="makeOP.html">makeOP</a></code>, <code><a href="SIMparse.html">SIMparse</a></code></p></div>
+    <div class="dont-index"><p><a href="PM_result.html">PM_result</a>, <a href="PM_sim.html">PM_sim</a>, <a href="PM_op.html">PM_op</a></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
@@ -148,12 +142,42 @@ trapezoidal approximation from a variety of inputs.  If a PMpost, PMop, or PMsim
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">NPdata.1</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘NPdata.1’ not found</span>
-<span class="r-in"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="makeOP.html">makeOP</a></span><span class="op">(</span><span class="va">NPdata.1</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in makeOP(NPdata.1):</span> object 'NPdata.1' not found</span>
-<span class="r-in"><span><span class="fu">makeAUC</span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in which(inherits(data, c("PMsim", "PM_sim", "PMop", "PM_op", "PMpop",     "PM_pop", "PMpost", "PM_post"), which = T) == 1):</span> object 'op' not found</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">NPex</span><span class="op">$</span><span class="va">op</span><span class="op">$</span><span class="fu">auc</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 20 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Groups:   id [20]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       id   tau</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>     1 448. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>     2 154. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span>     3 147. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span>     4 126. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span>     5  89.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span>     6 312. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span>     7 260. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>     8 310. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>     9 208. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>    10 237. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span>    11 186. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span>    12 234. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span>    13 294. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span>    14 152. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span>    15 224. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span>    16 246. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span>    17 206. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span>    18 288. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">19</span>    19 471. </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">20</span>    20 286. </span>
+<span class="r-in"><span><span class="va">Indometh</span> <span class="op">%&gt;%</span> <span class="fu">mutate</span><span class="op">(</span>id <span class="op">=</span> <span class="va">Subject</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">makeAUC</span><span class="op">(</span><span class="va">conc</span> <span class="op">~</span> <span class="va">time</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Groups:   id [6]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   id      tau</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1      1.55</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2      2.68</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 3      2.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 4      2.25</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 5      1.70</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 6      2.58</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
