@@ -1,4 +1,4 @@
-#' @param legend Controls display of legend.
+#' Controls display of legend.
 #' This argument maps to the plotly layout showlegend and legend arguments.
 #' It is either a boolean operator (most common) or a list of parameters to be supplied to plotly.
 #' See `plotly::schema()` > layout > layoutAttributes > legend and showlegend

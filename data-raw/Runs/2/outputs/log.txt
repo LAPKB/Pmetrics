@@ -1,5 +1,5 @@
- IT2B  run initiated at 15:37 on 2020 Mar 10. 
-PREP FILES: /Library/Frameworks/R.framework/Versions/3.6/Resources/library/Pmetrics/compiledFortran/sITprep.o 
-ENGINE FILES: /Library/Frameworks/R.framework/Versions/3.6/Resources/library/Pmetrics/compiledFortran/sITeng.o 
+ NPAG  run initiated at 00:20 on 2022 Sep 23. 
+PREP FILES: /Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.2/aarch64-apple-darwin20/Pmetrics/compiledFortran/sNPprep.o 
+ENGINE FILES: /Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.2/aarch64-apple-darwin20/Pmetrics/compiledFortran/sNPeng.o 
 
 

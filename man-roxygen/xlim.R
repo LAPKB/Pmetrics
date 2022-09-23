@@ -1,4 +1,4 @@
-#' @param xlim Limits of the x axis as a vector.  
+#' Limits of the x axis as a vector.  
 #' This argument maps to the  
 #' the xaxis range in the layout object in plotly. 
 #' Use the plotly `plotly::schema()` command in the console and navigate

@@ -1,40 +1,38 @@
 #' Calculates AUC from a variety of inputs
 #'
-#' \code{makeAUC} will calculate the area under the time concentration curve using the
-#' trapezoidal approximation from a variety of inputs.  If a PMpost, PMop, or PMsim object is specified, 
-#' \code{formula} is not required.
+#' Calculates the area under the time concentration curve using the
+#' trapezoidal approximation from a variety of inputs.  
+#' If a PM_pop, PM_post, PM_op, or PMsim object is specified, 
+#' `formula` is not required.
 #'
 #' @title Calculation of AUCs
-#' @param formula A formula of the form \code{obs ~ time}.  This is only required with data that is not of class PMpop, PMpost, PMop or PMsim.
-#' @param data A suitable data object of the \emph{PMpop} class (see \code{\link{makePop}}),
-#' \emph{PMpost} class (see \code{\link{makePost}}),
-#' \emph{PMop} class (see \code{\link{makeOP}}),
-#' the \emph{PMsim} class (see \code{\link{SIMparse}}), or some other suitable dataframe
-#' with at least time/observation columns referred to by \code{formula}, with an \dQuote{id} column (so named) if necessary.
-#' @param include A vector of subject IDs to include in the AUC calculations, e.g. c(1:3,5,15)
-#' @param exclude A vector of subject IDs to exclude in the AUC calculations, e.g. c(4,6:14,16:20)
+#' @param formula A formula of the form `obs ~ time`.  
+#' This is only required with data that is not of class PM_pop, PM_post, PM_op or PM_sim.
+#' @param data A suitable data object, i.e. [PM_pop], [PM_post], [PM_op],
+#' [PM_sim], or some other suitable dataframe
+#' with at least time/observation columns referred to by `formula`, with an
+#'  "id" column (so named) if necessary.
+#' @param include `r template("include")`
+#' @param exclude `r template("exclude")`
 #' @param start Specify the time to begin AUC calculations. Default is 0.
 #' @param end Specify the time to end AUC calculations so that AUC is calculated
-#' from \code{start} to \code{end}.  Default for end is the maximum observation
+#' from `start` to `end`.  Default for end is the maximum observation
 #' time for each subject.  Subjects with insufficient data for a specified interval will have
 #' AUC calculated for the available data, not to exceed the specified interval.
-#' @param icen Only relevant for PMpost or PMpop objects which have predictions based on median or mean of each
-#' subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".
-#' @param outeq Specify which output equation is to be used.  Default is 1.
-#' @param block Specify which observation block (separated by EVID=4) is to be used for each subject.  Default is 1.
+#' @param icen `r template("icen")` Only relevant for PMpost or PMpop objects.
+#' @param outeq `r template("outeq")`
+#' @param block `r template("block")`
 #' @param method Default is "linear" for AUC trapezoidal calculation.  Any other value will result in
 #' linear up, log down.
 #' @param addZero Boolean to add a zero concentration at time 0. Default is \code{FALSE}.
-#' @return The output of \code{makeAUC} is a dataframe of class \emph{PMauc},
-#' which has 2 columns:
-#' \item{id }{subject identification}
-#' \item{tau }{AUC from \code{start} to \code{end}}
+#' @return A dataframe of class *PMauc*, which has 2 columns:
+#' * id - Subject identification
+#' * tau - AUC from `start` to `end`
 #' @author Michael Neely
-#' @seealso \code{\link{makeOP}}, \code{\link{SIMparse}}
+#' @seealso [PM_result], [PM_sim], [PM_op]
 #' @examples
-#' data(NPdata.1)
-#' op <- makeOP(NPdata.1)
-#' makeAUC(op)
+#' NPex$op$auc()
+#' Indometh %>% mutate(id = Subject) %>% makeAUC(conc ~ time)
 #' @export
 
 makeAUC <- function(data,

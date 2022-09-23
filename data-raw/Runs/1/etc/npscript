@@ -1,10 +1,10 @@
-cd '/Users/Neely/LAPK/Development/Pmetrics/data-raw/Runs/1'
+cd '/Users/mneely/LAPK/Examples/Runs/1'
 echo Unix>time.txt
 date +%s>>time.txt
 ./np_prep MacOSX < PMcontrol
 echo 1 > extnum
 echo go > go
-gfortran -m64 -w -O3 -o np_run '/Library/Frameworks/R.framework/Versions/3.6/Resources/library/Pmetrics/compiledFortran/sNPeng.o' npagdriv.f
+gfortran -w -march=native -O3 -o np_run '/Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.2/aarch64-apple-darwin20/Pmetrics/compiledFortran/sNPeng.o' npagdriv.f
 ./np_run < go
 echo;echo Cleaning up....;echo
 stty -echo
@@ -12,7 +12,7 @@ mkdir inputs
 mkdir outputs
 mkdir wrkcopy
 mkdir etc
-echo ex.csv >> NP_RF0001.TXT
+echo gendata.csv >> NP_RF0001.TXT
 if [ ! -f NP_RF0001.TXT ]; then error=true; else error=false; fi
 if [ -f DEN* ]; then mv DEN* outputs; fi
 if [ -f OUT0* ]; then mv OUT0* outputs; fi
@@ -24,8 +24,8 @@ if [ -f ERROR* ]; then mv ERROR* outputs; fi
 mv instr.inx etc
 mv log.txt outputs
 mv PMcontrol etc
-mv model.for etc/model.for
-mv model.txt inputs/model.txt
+mv genmodel.for etc/genmodel.for
+mv genmodel.txt inputs/genmodel.txt
 mv XQZPJ*.ZMQ wrkcopy
 mv extnum etc
 mv npag*.* etc
@@ -35,10 +35,10 @@ rm fort.*
 rm go
 mv np_prep* etc
 mv np_run* etc
-mv ex.csv inputs
+mv gendata.csv inputs
 date +%s >> time.txt
 mv time.txt outputs
 if ! $error ; then 
-/Library/Frameworks/R.framework/Versions/3.6/Resources/bin/Rscript '/Library/Frameworks/R.framework/Versions/3.6/Resources/library/Pmetrics/report/NPrepScript.R' '/Users/Neely/LAPK/Development/Pmetrics/data-raw/Runs/1/outputs' median FALSE
-open '/Users/Neely/LAPK/Development/Pmetrics/data-raw/Runs/1/outputs/NPAGreport.html' ; fi
+/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript '/Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.2/aarch64-apple-darwin20/Pmetrics/report/NPrepScript.R' '/Users/mneely/LAPK/Examples/Runs/1/outputs' median FALSE
+/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript -e "browseURL('/Users/mneely/LAPK/Examples/Runs/1/outputs/NPAGreport.html')" ; fi
 mv npscript etc

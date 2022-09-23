@@ -48,7 +48,7 @@ PM_sim <- R6::R6Class(
     #' Plot `PM_sim` object.
     #' @param ... Arguments passed to [plot.PMsim].
     plot = function(...) {
-      plot.PMsim(self, ...)
+      plot.PM_sim(self, ...)
     },
     #' @description
     #' Estimates the Probability of Target Attaintment (PTA), based on the results 

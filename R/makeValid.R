@@ -17,7 +17,7 @@
 #' @title Create a Pmetrics validation object
 #' @param run When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
 #' which will typically be a number, e.g. 1.
-#' @template tad 
+#' @param tad `r template("tad")` 
 #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
 #' model equations and which need to be binned.  For example `binCov='wt'` if "wt" is included in a
 #' model equation like V=V0*wt, or `binCov=c( 'wt', 'crcl')` if both "wt" and "crcl"
@@ -560,7 +560,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 #' @title Create a Pmetrics validation object
 #' @param run When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
 #' which will typically be a number, e.g. 1.
-#' @template tad  
+#' @param tad `r template("tad")` 
 #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
 #' model equations and which need to be binned.  For example `binCov='wt'` if "wt" is included in a
 #' model equation like V=V0*wt, or `binCov=c( 'wt', 'crcl')` if both "wt" and "crcl"

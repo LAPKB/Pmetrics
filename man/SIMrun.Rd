@@ -126,22 +126,22 @@ predictions will be truncated.}
 simulate, i.e. a \link{PM_final} object as \code{poppar}, then you can also
 simulate with covariates. This argument is a list with the following names.
 \itemize{
-\item \strong{cov} The name of a \link{PM_cov} object, such as a field in a \link{PM_result}.
+\item \code{cov} The name of a \link{PM_result} or \link{PM_cov} object
 Pmetrics will use this covariate object to calculate the correlation
 matrix between all covariates and Bayesian posterior parameter values.
-\item \strong{mean} A named list that allows you to specify a different mean
+\item \code{mean} A named list that allows you to specify a different mean
 for one or more of the covariates. Each named item in the list is the name
 of a covariate in your data that is to have a different mean. If this
 argument is missing then the mean covariate values in the population will
 be used for simulation. The same applies to any covariates that are not
 named in this list.  Example:
-\code{covariate = list(cov =cov.1, mean = list(wt = 50))}.
-\item \strong{sd} This functions just as the mean list argument does - allowing you to
+\verb{run1 <- PM_load(1); covariate = list(cov = run1, mean = list(wt = 50))}.
+\item \code{sd} This functions just as the mean list argument does - allowing you to
 specify different standard deviations for covariates in the simulation. If
 it, or any covariate in the sd list is missing, then the standard
 deviations of the covariates in the population are used. Example:
-\code{covariate = list(cov = cov.1, sd = list(wt = 10))}.
-\item \strong{limits} This is a bit different than the limits for population
+\code{covariate = list(cov = run1$cov, sd = list(wt = 10))}.
+\item \code{limits} This is a bit different than the limits for population
 parameters above. Here,
 limits is similar to mean and sd for covariates in
 that it is a named list with the minimum and maximum allowable simulated
@@ -151,8 +151,8 @@ indicated limits, and covariates not in the list will have limits that are
 the same as in the original population.  If you want some to be limited and
 some to be unlimited, then specify the unlimited ones as items in this list
 with very large ranges.  Example:
-\code{covariate = list(cov = cov.1, limits = list( wt = c(10, 70)))}.
-\item \strong{fix} A character vector (not a list) of covariates to fix and not simulate.  In
+\code{covariate = list(cov = run1, limits = list( wt = c(10, 70)))}.
+\item \code{fix} A character vector (not a list) of covariates to fix and not simulate.  In
 this case values in the template data file will be used and not simulated.
 Example: \code{fix = c("wt", "age")}.  Whether you use the means and
 standard deviations in the population or specify your own, the covariance

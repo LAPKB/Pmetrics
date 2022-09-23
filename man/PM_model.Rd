@@ -18,10 +18,25 @@ directly in R, or by reading a model text file in the current working directory.
 ## Method `PM_model$update`
 ## ------------------------------------------------
 
-\dontrun{mod1$update(list(
+mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+mod2$update(list(
   pri = list(
-  )
+   Ke = range(0, 1), #change the range
+   V = NULL, #this deletes the variable
+   V0 = range(10, 100) #add a new variable
+  ),
+  sec = "V = V0 * WT" #add a new secondary equation
 )) 
+#note that they are different now
+mod2
+modEx
+
+## ------------------------------------------------
+## Method `PM_model$write`
+## ------------------------------------------------
+
+\dontrun{
+modEx$write("model.txt")
 }
 }
 \section{Methods}{
@@ -90,17 +105,30 @@ Update selected elements of a model object
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{changes_list}}{The named list containing elements and values to update.}
+\item{\code{changes_list}}{The named list containing elements and values to update.
+Because R6 objects are mini-environments, using typical
+R notation to copy an object like mod2 <- mod1 can lead to unexpected
+results since this syntax simply creates a copied object in the same
+environment. Therefore updating any one object (e.g., mod1 or mod2)
+will update the other. To avoid this behavior, use the $clone() function
+first if you want to create a copied, yet independent new model.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{mod1$update(list(
+\preformatted{mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+mod2$update(list(
   pri = list(
-  )
+   Ke = range(0, 1), #change the range
+   V = NULL, #this deletes the variable
+   V0 = range(10, 100) #add a new variable
+  ),
+  sec = "V = V0 * WT" #add a new secondary equation
 )) 
-}
+#note that they are different now
+mod2
+modEx
 }
 \if{html}{\out{</div>}}
 
@@ -126,6 +154,16 @@ relative to the current working directory}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+modEx$write("model.txt")
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_Vmodel-clone"></a>}}

@@ -1,30 +1,19 @@
 #' Plots PM_pta objects
 #'
 #' This function will plot the percent target attainment for objects made with the [makePTA] function.
-#' For the legend, defaults that are different that the standard are:
-#' * x Default "topright"
-#' * legend Default will be the labeled regimen names supplied during [makePTA],
-#'   or if missing, "Regimen 1, Regimen 2,...Regimen n", where *n* is the number of
-#'   regimens in the PM_pta object.
-#'   This default can be overridden by a supplied character vector of regimen names.
-#'   * col The color of each Regimen plot as specified by the default color scheme or \code{col}
-#'   * pch The plotting character for each Regimen plot as specified by the default plotting characters or \code{pch}
-#'   * lty The line type of each Regimen plot as specified by the default line types or \code{lty}
-#'   * bg Default "white"
 #' 
-#'
 #' @title Plot PM_pta Percent Target Attainment objects
 #' @method plot PM_pta
 #' @param x The name of an *PM_pta" data object read by [makePTA]
-#' @param include A vector of simulations (regimens) to include in the plot, e.g. `include = c(1,3)`
-#' @param exclude A vector of simulations (regimens) in the plot, e.g. `exclude = c(2,4:6)`
+#' @param include `r template("include")`
+#' @param exclude `r template("exclude")`
 #' @param type Character vector controlling type of plot.
 #' Default is "pta", which plots proportion with success on the y-axis and target on the x-axis.
 #' The other choice is "pdi", which plots the median pdi (pharmacodynamic index), e.g. AUC/MIC, on the
 #' y-axis, and target on the x-axis.
-#' @template mult 
-#' @template log
-#' @template outeq
+#' @param mult `r template("mult")`
+#' @param log `r template("log")`
+#' @param outeq `r template("outeq")`
 #' @param line Controls characteristics of lines. 
 #' This argument maps to the plotly line object.
 #' It can be boolean or a list.
@@ -76,16 +65,18 @@
 #' * size Maps to the [plot_ly] `size` argument to override default size
 #' applied to the markers for each regimen. All markers will have the same size. 
 #' The default value is 12.
-#' @template grid
-#' @template legend 
+#' @param grid `r template("grid")`
+#' @param legend `r template("legend")` Default will be the labeled regimen names supplied during [makePTA],
+#' or if missing, "Regimen 1, Regimen 2,...Regimen n", where *n* is the number of
+#' regimens in the PM_pta object.
 #' @param ci Confidence interval around curves on `type = "pdi"` plot, on scale of 0 to 1. Default is 0.9.
-#' @param xlab Label for the x axis.  Default is "Target" when targets are discrete,
+#' @param xlab `r template("xlab")`  Default is "Target" when targets are discrete,
 #' and "Regimen" when targets are sampled.
-#' @param ylab Label for the y axis.  Default is "Proportion with success" for
+#' @param ylab `r template("ylab")`  Default is "Proportion with success" for
 #' plot `type = "pta"` and "Pharmacodynamic Index" for plot `type = "pdi"`.
-#' @template xlim
-#' @template ylim
-#' @template dotsPlotly
+#' @param xlim `r template("xlim")`
+#' @param ylim `r template("ylim")`
+#' @param `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso [makePTA]
@@ -97,19 +88,17 @@ plot.PM_pta <- function(x,
                        include, exclude,
                        type = "pta",
                        mult = 1, 
-                       log = F, 
                        outeq = 1,
                        line = T, 
                        marker = T,
-                       grid = T,
-                       legend = T,
                        ci = 0.9,
+                       legend = T, 
+                       log = F, 
+                       grid = T,
                        xlab, ylab,
-                       xlim, ylim, 
-                       ...) {
+                       xlim, ylim,...) {
   
-  
-  dots <- list(...)
+
   
   #vector of regimens
   simnum <- 1:max(x$outcome$simnum)
@@ -132,8 +121,6 @@ plot.PM_pta <- function(x,
   
   nsim <- length(simnum)
   
-
-  
   #names of regimens
   simLabels <- attr(x, "simlabels")[simnum]
   if (is.null(simLabels)) simLabels <- paste("Regimen", simnum)
@@ -153,13 +140,9 @@ plot.PM_pta <- function(x,
   simTarg <- 1 + as.numeric(attr(x, "simTarg")) # 1 if missing or set, 2 if random
   if (length(simTarg) == 0) simTarg <- 1
   
-  xaxis <- purrr::pluck(dots, "xaxis") #check for additional changes
-  xaxis <- if(is.null(xaxis)) xaxis <- list()
-  yaxis <- purrr::pluck(dots, "yaxis")
-  yaxis <- if(is.null(yaxis)) yaxis <- list()
-  
-  if(!is.null(purrr::pluck(dots, "layout"))){stop("Specify individual layout elements, not layout.")}
-  layout <- list()
+  #process dots
+  layout <- amendDots(list(...))
+
   
   #legend
   legendList <- amendLegend(legend, default = list(xanchor = "right", title = list(text = "<b>Regimen</b>")))
@@ -167,12 +150,12 @@ plot.PM_pta <- function(x,
   if(length(legendList)>1){layout <- modifyList(layout, list(legend = within(legendList,rm(showlegend))))}
   
   #grid
-  xaxis <- setGrid(xaxis, grid)
-  yaxis <- setGrid(yaxis, grid)
+  layout$xaxis <- setGrid(layout$xaxis, grid)
+  layout$yaxis <- setGrid(layout$yaxis, grid)
   
   #axis labels if needed
-  xtitle <- pluck(xaxis, "title")
-  ytitle <- pluck(yaxis, "title")
+  xtitle <- pluck(layout$xaxis, "title")
+  ytitle <- pluck(layout$yaxis, "title")
   if(is.null(xtitle)){
     if (missing(xlab)) {
       # choose xlab as Target if targets were set or Regimen if targets were simulated
@@ -182,7 +165,7 @@ plot.PM_pta <- function(x,
                      "Regimen"
       )
     }
-    xaxis <- modifyList(xaxis, list(title = list(text =  paste0("<b>",xlab,"</b>"), size = 16)))
+    layout$xaxis <- modifyList(layout$xaxis, list(title = list(text =  paste0("<b>",xlab,"</b>"), size = 16)))
   }
   if(is.null(ytitle)){
     if (missing(ylab)) {
@@ -192,21 +175,18 @@ plot.PM_pta <- function(x,
                      "Proportion with success"
       )
     }
-    yaxis <- modifyList(yaxis, list(title = list(text =  paste0("<b>",ylab,"</b>"), size = 16),
+    layout$yaxis <- modifyList(layout$yaxis, list(title = list(text =  paste0("<b>",ylab,"</b>"), size = 16),
                                     showline = T))
   }  
   
   #axis ranges
-  if(!missing(xlim)){xaxis <- modifyList(xaxis, list(range = xlim)) }
-  if(!missing(ylim)){yaxis <- modifyList(yaxis, list(range = ylim)) }
+  if(!missing(xlim)){layout$xaxis <- modifyList(layout$xaxis, list(range = xlim)) }
+  if(!missing(ylim)){layout$yaxis <- modifyList(layout$yaxis, list(range = ylim)) }
   
   #log y axis
   if(log){
-    yaxis <- modifyList(yaxis, list(type = "log"))
+    layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
-  
-  #finalize layout
-  layoutList <- modifyList(layout, list(xaxis = xaxis, yaxis = yaxis))
   
 
   #PLOTS
@@ -237,11 +217,11 @@ plot.PM_pta <- function(x,
                             opacity = 0.5, line = list(width = 0), 
                             marker = list(size = .01), showlegend = F)
        
-      layoutList$xaxis <- modifyList(layoutList$xaxis, list(tickvals = ~targets, type = "log"))
-      p <- p %>% plotly::layout(xaxis = layoutList$xaxis,
-                                yaxis = layoutList$yaxis,
-                                showlegend = layoutList$showlegend,
-                                legend = layoutList$legend) 
+      layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~target, type = "log"))
+      p <- p %>% plotly::layout(xaxis = layout$xaxis,
+                                yaxis = layout$yaxis,
+                                showlegend = layout$showlegend,
+                                legend = layout$legend) 
       
     } else { # random targets
       
@@ -256,11 +236,11 @@ plot.PM_pta <- function(x,
                                    color = line$color),
                     marker = list(color = marker$color, size = marker$size, symbol = marker$symbol))
       
-      xaxis <- modifyList(layoutList$xaxis, list(tickvals = ~simnum, ticktext = ~simLabels))
-      p <- p %>% plotly::layout(xaxis = xaxis,
-                                yaxis = layoutList$yaxis,
+      layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~simnum, ticktext = ~simLabels))
+      p <- p %>% plotly::layout(xaxis = layout$xaxis,
+                                yaxis = layout$yaxis,
                                 showlegend = F,
-                                legend = layoutList$legend) 
+                                legend = layout$legend) 
     }
   } else { # pta plot
   
@@ -279,11 +259,11 @@ plot.PM_pta <- function(x,
                         marker = list(size = marker$size),
                         line = list(width = line$width))
       
-      layoutList$xaxis <- modifyList(layoutList$xaxis, list(tickvals = ~targets, type = "log"))
-      p <- p %>% plotly::layout(xaxis = layoutList$xaxis,
-                                yaxis = layoutList$yaxis,
-                                showlegend = layoutList$showlegend,
-                                legend = layoutList$legend) 
+      layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~target, type = "log"))
+      p <- p %>% plotly::layout(xaxis = layout$xaxis,
+                                yaxis = layout$yaxis,
+                                showlegend = layout$showlegend,
+                                legend = layout$legend) 
       
       
     } else { # random targets
@@ -293,11 +273,11 @@ plot.PM_pta <- function(x,
                         type = "scatter", mode = "lines+markers",
                         line = list(color = line$color, width = line$width, dash = line$dash),
                         marker = list(color = marker$color, symbol = marker$symbol, size = marker$size)) 
-      xaxis <- modifyList(layoutList$xaxis, list(tickvals = ~simnum, ticktext = ~simLabels))
-      p <- p %>% plotly::layout(xaxis = xaxis,
-                                yaxis = layoutList$yaxis,
+      layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~simnum, ticktext = ~simLabels))
+      p <- p %>% plotly::layout(xaxis = layout$xaxis,
+                                yaxis = layout$yaxis,
                                 showlegend = F,
-                                legend = layoutList$legend) 
+                                legend = layout$legend) 
       
     }
   }
