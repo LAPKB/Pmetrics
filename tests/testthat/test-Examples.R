@@ -17,10 +17,10 @@ test_that("PMdata print",{
 test_that("Model object creation",{
   mod1 <- PM_model$new(list(
   pri = list(
-    Ka = range(0.1, 0.9),
-    Ke = range(0.001, 0.1),
-    V = range(30, 120),
-    Tlag1 = range(0, 4)
+    Ka = ab(0.1, 0.9),
+    Ke = ab(0.001, 0.1),
+    V = ab(30, 120),
+    Tlag1 = ab(0, 4)
   ),
   cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
   lag = list("Tlag(1) = Tlag1"),
@@ -35,14 +35,14 @@ test_that("Model object creation",{
   )
 ))
 
-expect_equal(mod1$model_list$pri$Ka, range(0.1,0.9))
+expect_equal(mod1$model_list$pri$Ka, ab(0.1,0.9))
 expect_equal(mod1$model_list$pri$Ka$max, 0.9)
 expect_equal(mod1$model_list$pri$Ka$min, 0.1)
 expect_equal(mod1$model_list$pri$Ka$mean, 0.5)
 expect_equal(mod1$model_list$pri$Ka$sd, 0.133)
 expect_equal(mod1$model_list$pri$Ka$mode, "range")
 expect_equal(mod1$model_list$pri$Ka$gtz, F)
-expect_equal(range(0.1,0.9,gtz=T)$gtz,T)
+expect_equal(ab(0.1,0.9,gtz=T)$gtz,T)
 expect_equal(mod1$model_list$cov, list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"))
 expect_equal(mod1$model_list$lag, list("Tlag(1) = Tlag1"))
 expect_equal(names(mod1$model_list$out), "Y1")
@@ -56,10 +56,10 @@ expect_equal(mod1$model_list$out$Y1$err$assay, c(0.02, 0.05, -0.0002, 0))
 test_that("Object representation",{
   mod1 <- PM_model$new(list(
   pri = list(
-    Ka = range(0.1, 0.9),
-    Ke = range(0.001, 0.1),
-    V = range(30, 120),
-    Tlag1 = range(0, 4)
+    Ka = ab(0.1, 0.9),
+    Ke = ab(0.001, 0.1),
+    V = ab(30, 120),
+    Tlag1 = ab(0, 4)
   ),
   cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
   lag = list("Tlag(1) = Tlag1"),
@@ -80,10 +80,10 @@ expect_equal(readLines("mod1.txt"),readLines("generated_model.txt"))
 test_that("Object update",{
   mod1 <- PM_model$new(list(
   pri = list(
-    Ka = range(0.1, 0.9),
-    Ke = range(0.001, 0.1),
-    V = range(30, 120),
-    Tlag1 = range(0, 4)
+    Ka = ab(0.1, 0.9),
+    Ke = ab(0.001, 0.1),
+    V = ab(30, 120),
+    Tlag1 = ab(0, 4)
   ),
   cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
   lag = list("Tlag(1) = Tlag1"),
@@ -99,10 +99,10 @@ test_that("Object update",{
 ))
 mod1$update(list(
   pri = list(
-    Ka = range(0.001, 5)
+    Ka = ab(0.001, 5)
   )
 ))
-expect_equal(mod1$model_list$pri$Ka, range(0.001,5))
+expect_equal(mod1$model_list$pri$Ka, ab(0.001,5))
 expect_equal(mod1$model_list$pri$Ka$max, 5)
 expect_equal(mod1$model_list$pri$Ka$min, 0.001)
 expect_equal(mod1$model_list$pri$Ka$mean, 2.5)
@@ -113,10 +113,10 @@ expect_equal(mod1$model_list$pri$Ka$sd, 0.833)
 test_that("Fit object creation",{
   mod1 <- PM_model$new(list(
     pri = list(
-      Ka = range(0.1, 0.9),
-      Ke = range(0.001, 0.1),
-      V = range(30, 120),
-      Tlag1 = range(0, 4)
+      Ka = ab(0.1, 0.9),
+      Ke = ab(0.001, 0.1),
+      V = ab(30, 120),
+      Tlag1 = ab(0, 4)
     ),
     cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
     lag = list("Tlag(1) = Tlag1"),
@@ -139,10 +139,10 @@ test_that("Basic model fitting", {
   skip_if(length(list.files("1")) != 0)
   mod1 <- PM_model$new(list(
     pri = list(
-      Ka = range(0.1, 0.9),
-      Ke = range(0.001, 0.1),
-      V = range(30, 120),
-      Tlag1 = range(0, 4)
+      Ka = ab(0.1, 0.9),
+      Ke = ab(0.001, 0.1),
+      V = ab(30, 120),
+      Tlag1 = ab(0, 4)
     ),
     cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
     lag = list("Tlag(1) = Tlag1"),
@@ -167,10 +167,10 @@ test_that("Load model",{
   expect_equal(exRes$data$data,PM_data$new(data = "ex.csv", quiet=T)$data, ignore_attr = T)
   expect_equal(exRes$model$model_list,PM_model$new(list(
     pri = list(
-      Ka = range(0.1, 0.9),
-      Ke = range(0.001, 0.1),
-      V = range(30, 120),
-      Tlag1 = range(0, 4)
+      Ka = ab(0.1, 0.9),
+      Ke = ab(0.001, 0.1),
+      V = ab(30, 120),
+      Tlag1 = ab(0, 4)
     ),
     cov = c("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
     lag = c("Tlag(1) = Tlag1"),

@@ -3,28 +3,26 @@ test_that("makeAUC PM_sim", {
   sim <- readRDS("simtest.rds")
   auc <- sim$auc()
   summary_auc <- summary(auc$tau)
-  expect_equal(as.numeric(summary_auc), c(52.71472, 118.07382, 170.04533, 
-                                          192.47084, 241.90776, 575.20889))
+  expect_equal(round(as.numeric(summary_auc),2), c(52.71, 118.07, 170.05, 
+                                                   192.47, 241.91, 575.21))
 })
 
 test_that("makeAUC PM_load",{
-  res <- PM_load("preRun")
+  res <- PM_load(1)
   auc1 <- res$op$auc()
   summary_auc1 <- summary(auc1$tau)
-  expect_equal(as.numeric(summary_auc1), c(118.1156, 273.87325, 354.4164, 
-                                           359.709915, 419.0703, 746.6104))
+  expect_equal(round(as.numeric(summary_auc1),2), c(89.90, 177.93, 235.54, 
+                                                    243.92, 289.45, 471.35))
   
   auc2 <- res$post$auc()
   summary_auc2 <- summary(auc2$tau)
-  expect_equal(as.numeric(summary_auc2), c(867.824375569, 1390.992604111, 
-                                           1906.729297505, 1954.921511965,
-                                           2384.402302823, 3542.787775232))
+  expect_equal(round(as.numeric(summary_auc2),2), c(458.98,  738.67, 1052.52,
+                                                    1054.27, 1246.86, 1957.90))
   
   auc3 <- res$pop$auc()
   summary_auc3 <- summary(auc3$tau)
-  expect_equal(as.numeric(summary_auc3), c(1409.06867601, 1878.75748050,
-                                           1880.13551509, 1832.93723579,
-                                           1880.13831216, 1885.53829003))
+  expect_equal(round(as.numeric(summary_auc3),2), c(817.26, 1089.68, 1090.02, 
+                                                    1062.72, 1090.02, 1091.380))
   
   df1 <- tibble(id = 1, time = 1:24, out = 100 * exp(-0.1 * time))
   df2 <- tibble(id = 2, time = 1:24, out = 75 * exp(-0.07 * time))
@@ -32,7 +30,6 @@ test_that("makeAUC PM_load",{
   
   auc4 <- makeAUC(df, out~time)
   summary_auc4 <- summary(auc4$tau)
-  expect_equal(as.numeric(summary_auc4), c(799.633332601, 803.424445598,
-                                           807.215558595, 807.215558595,
-                                           811.006671592, 814.797784589))
+  expect_equal(round(as.numeric(summary_auc4),2), c(799.63, 803.42, 807.22,
+                                                    807.22, 811.01, 814.80))
 })

@@ -16,18 +16,28 @@ knitr::opts_chunk$set(
 
 ```{r setup, echo=F, message=F}
 library(Pmetrics)
+library(tidyverse)
+library(plotly)
 ```
+## Contents
+[Overview](#overview)  
+[General](#general)  
+[Traces](#traces)  
+[Layout](#layout)  
+[Shapes](#shapes)  
+[Annotations](#annotations)  
+[Exporting](#exporting)
 
-## Background
+
+## Overview
 
 As of version 2, *Pmetrics* uses the *plotly* package for most plots. Plots
 made with plotly are interactive, so that moving your cursor over them
-results in pop up information being displayed. Plotly is a successor to the
-very popular *ggplot2* package.
+results in pop up information being displayed. A nice feature of plotly is the `ggplotly` command which takes any *ggplot* plot object and turns it into a plotly plot. This route doesn't provide complete control of plotly objects, so Pmetrics uses plotly from the ground up.
 
 However, the documentation for plotly is a bit complex and often lacking in 
 sufficient examples. This vignette attempts to orient you to the specific
-aspects of plotly most relevant to Pmetric.
+aspects of plotly most relevant to Pmetrics.
 
 ## General
 
@@ -40,20 +50,19 @@ by typing `plotly::schema()` into the R console. If you have already loaded
 plotly you can just type `schema()`. You will see something like the menu below
 in the Viewer tab in Rstudio.
 
-![Figure 1: Top level plotly schema](schemaTop.png)
+![Top level plotly schema](schemaTop.png)
 
 
-In plotly, the layout items control everything to do with the appearance of the
-axes and the legend. The traces items control appearance of the data.  
+In plotly, the [traces](#traces) items control appearance of the data. The [layout](#layout) items control everything to do with the appearance of the
+axes and the legend.   
 
 ## Traces 
 
-Pmetrics almost exclusively uses scatter traces, and those elements can be 
+Pmetrics almost exclusively uses scatter traces, and those elements can be
 referenced by expanding traces `r knitr::asis_output("\U25B6")` scatter 
 `r knitr::asis_output("\U25B6")` attributes.
 
-There are many such attributes, but the most commonly used and accessible to the
-user are line and marker.
+There are many such attributes, but the most commonly used and accessible to the user are line and marker.
 
 ### Line attributes
 
@@ -152,5 +161,184 @@ NPex$op$plot(marker = list(color = "slategray", size = 12,
 ```
 
 
-## Layouts
+## Layout
 
+Layout layout `r knitr::asis_output("\U25B6")` layoutAttributes 
+`r knitr::asis_output("\U25B6")` displays all the options for the layout. Pmetrics plot functions currently only provide access to the following layout options:
+* `legend`
+* `xaxis`
+* `yaxis`
+* `title`
+Details of how each is accessed are below.
+
+### Legend
+
+In all relevant Pmetrics plotly plots, the argument for legend can take one of three forms:
+`TRUE`, `FALSE`, or a list. The first and second options choose to include the default legend or to suppress the legend, respectively.
+
+Specifying `legend` as a list allows for detailed formatting of the legend using
+any of the attributes documented by typing `schema()` into the R console, and expanding layout `r knitr::asis_output("\U25B6")` layoutAttributes 
+`r knitr::asis_output("\U25B6")` legend. These can be included as elements in the legend list.
+
+Here's a basic legend.
+```{r, echo = T, eval = T}
+NPex$data$plot(legend = T)
+```
+
+...and a more complex one.
+```{r, echo = T, eval = T}
+NPex$data$plot(pred = list(NPex$post, color = "navy"), 
+               line = F, 
+               legend = list(
+                 x = 0.75,
+                 y = 0.85,
+                 borderwidth = 1,
+                 bgcolor = "antiquewhite"
+               ),
+               xlim = c(119, 146))
+```
+
+### X axis and Y axis 
+
+Several arguments in most Pmetrics plots map to plotly list elements that control the formatting of the x- and y-axes. A full list of these elements can be viewed by typing `schema()` into the R console and expanding layout `r knitr::asis_output("\U25B6")` layoutAttributes 
+`r knitr::asis_output("\U25B6")` xaxis / yaxis.
+
+* `log` When `TRUE`, maps to `yaxis = list(type = "log")` and sets the y axis to 
+log scale.
+* `xlim` and `ylim` If specified as vectors of length two, e.g. `xlim = c(0, 100)`,
+map to `xaxis = list(range = xlim)` and the same for the y axis.
+* `xlab` and `ylab` If specified as character vectors of length 1, e.g. `xlab = "Time"`,
+map to `xaxis = list(title = list(text = xlab))` and the same for the y axis. However, unlike the simpler `log`, `xlim`, and `ylim` arguments, `xlab` and `ylab` can also be specified as lists to control the formatting of the axes labels. The lists follow the plotly conventions:
+    - `text` The name of the axis
+    - `font` The formatting of the label, itself a list:
+        - `color` Color of the text
+        - `family` The HTML font family, e.g. "Arial" or "Times New Roman"
+        - `size` Size in points
+
+``` {r echo = T, eval = T}
+NPex$data$plot(xlab = "Time (h)", ylab = "Rifapentine (mg/L)")
+```
+
+``` {r echo = T, eval = T}
+NPex$data$plot(xlab = list(text = "Time (h)", font = list(color = "slategrey", family = "Times New Roman", size = 18)))
+```
+
+For greater control over the axes, e.g. tick placement, coloring, etc., the "..." argument in plots is coded to pass arguments to the xaxis and yaxis lists. This allows access to any attribute. If axis attributes are passed through ... in a named list, e.g. `xaxis = list(linecolor = "red")`, then they will be specific to that axis. However, if the attributes are passed through ... by themselves, they will apply to both the axes, e.g. `linecolor = "red"`.
+
+``` {r echo = T, eval = T}
+NPex$data$plot(xaxis = list(linecolor = "firebrick", ticks = "inside"))
+```
+
+
+``` {r echo = T, eval = T}
+NPex$data$plot(linecolor = "dodgerblue", ticks = "outside")
+```
+
+### Title
+
+All Pmetrics plotly plots have a `title` argument which maps to the attributes controlling the text and formatting of the plot title. A full list of these elements can be viewed by typing `schema()` into the R console and expanding layout `r knitr::asis_output("\U25B6")` layoutAttributes 
+`r knitr::asis_output("\U25B6")` title. These are the same as for the axes titles, i.e. `text` and `font`, plus additional attributes to control the positioning of the title. The most common will be `x` to control the horizontal placement from 0 (left) to 1 (right) of the plot, and `y` to control the vertical placement from 0 (bottom) to 1 (top). The default for `x` is 0.5 (middle) and for `y` it is "auto", which puts the bottom of the title text onto the vertical center of the top margin.
+
+By default the title text is oriented around the `x` value automatically ("auto") via the `xanchor` attribute, but this could also be "left", "right", or "center" to make the text begin at, end at, or span the `x` value, respectively. Analogous behavior can be controlled by the `yanchor` attribute for which part of the text lines up with the `y` value: "top", "middle", or "bottom". The default is "auto".
+
+```{r echo = T, eval = T}
+NPex$data$plot(title = list(text = "Rifapentine", yanchor = "top"), ylab = "Concentration (mg/L)", xlab = "Time (h)")
+```
+
+## Shapes
+
+Shapes in plotly are part of the layout and detailed by typing `schema()` into the R console and expanding layout `r knitr::asis_output("\U25B6")` layoutAttributes 
+`r knitr::asis_output("\U25B6")` shapes `r knitr::asis_output("\U25B6")` shape. Oddly, there is no native ability in R plotly to add shapes to an existing plot,
+so Pmetrics has a custom function `add_shapes` which does the job.
+
+The workflow is to first create a plot. All Pmetrics functions return the plot object so you can either assign the plot call to a variable, e.g. `p <- plot(...)` or use the current plot via plotly's `last_plot` function, which is the default value for `add_shapes`.
+
+Since reference lines are by far the most common shape to add, Pmetrics has a helper function called `ab_line`, which is very similar to the workflow in base R that uses the `abline` function to add a line to the current plot.
+
+```{r echo = T, eval = T}
+NPex$data$plot() %>%
+  add_shapes(ab_line(h = 5, line = list(color = "green", width = 3)))
+```
+
+Note the use of the pipe operator `%>%` to pipe the plot directly into the `add_shapes` function. This is not mandatory, since `add_shapes` by default takes the current plot as its target. If you have a previously saved plot in a variable, you can add a shape any time by supplying that variable to `add_shapes`, for example `add_shapes(p, ab_line(h = 5))`.
+
+It is possible to add other shapes, but it will require more manual effort as there are no Pmetrics helper functions to add circles, rectangles, or paths.  Here's an example of adding a circle.
+
+
+```{r echo = T, eval = T}
+NPex$data$plot() %>%
+  add_shapes(shape = list(type = "circle", x0 = 122, x1 = 132,
+                                y0 = 15, y1 = 22))
+```
+
+The values for x0 and x1 determine the left and right extent, and for y0 and y1 the bottom and top of the circle. Coordinates are absolute, unless you include `xref = "paper"` and/or `yref = "paper"` An additional line list can control formatting.
+
+## Annotations
+
+Here plotly does provide two functions to add annotations to plots as labels or as floating text.
+
+`add_annotations()` will add labels to data, allowing for connection between the data point and the label by an arrow. The options are detailed by typing `?add_annotations` into the R console. However, rather than following the hyperlink there to get additional information on options, you can get more help by typing `schema()` into the R console and expanding layout `r knitr::asis_output("\U25B6")` layoutAttributes 
+`r knitr::asis_output("\U25B6")` annotations `r knitr::asis_output("\U25B6")` items `r knitr::asis_output("\U25B6")`annotation.
+
+Similarly, `add_text()` adds labels/text to a plot, but without the connecting line. The options are detailed by typing `?add_text` into the R console.  You can get more options by typing `schema()` into the R console and expanding traces `r knitr::asis_output("\U25B6")` scatter 
+`r knitr::asis_output("\U25B6")` attributes `r knitr::asis_output("\U25B6")` text, textfont, and textposition. The others (textpositionsrc, textsrc, texttemplate, textemplatesrc) are more obscure and not needed.
+
+Annotations with connecting arrows...
+
+```{r echo = T, eval = T}
+NPex$data$plot() %>%
+  add_annotations(text = ~id) #the tilde tells plotly to use the contents of the id column
+```
+
+
+Text without arrows...
+
+```{r echo = T, eval = T}
+NPex$data$plot() %>%
+  add_text(text = ~id, textposition = "top right", 
+           textfont = list(color = "green", size = 12))
+```
+
+A single text item...
+
+
+```{r echo = T, eval = T}
+NPex$data$plot() %>%
+  add_text(x = 125, y = 2, text = "<b>Limit of quantification</b>", textfont = list(size = 10)) %>%
+  add_shapes(shape = ab_line(h = 1.8))
+```
+
+Notice how the tidyverse pipe `%>%` lets you string together commands. [Tidyverse](https://www.tidyverse.org) is a powerful set of libraries for R that permit methodical, advanced data manipulation. You can load it with `library(tidyverse)`. In the plot below, we return to `add_annotations` to demonstrate that it gives you more control over the formatting. Generally, this function is likely the more useful to add text pop ups or to label data. Notice the use of the html tags <b></b> to surround the text and make it bold. You can also use `<i></i>` for italics, but plotly does not support `<u></u>` for underline.
+
+```{r echo = T, eval = T}
+NPex$data$plot() %>%
+  add_annotations(x = 125, y = 2, text = "<i>Limit of quantification</i>", font = list(size = 10), showarrow = F, bgcolor = "antiquewhite", bordercolor = "black") %>%
+  add_shapes(shape = ab_line(h = 1.8))
+```
+
+## Exporting 
+
+### Images 
+
+Although the plotly team is working on methods to export plots to images via scripting, they require installation of additional components and are not yet stable. However, exporting a plotly plot to a static image can be accomplished in two ways.
+
+The first is to select the Export button from the Viewer window in Rstudio when the desired plot is displayed. This gives the option to save the plot as a .png, .jpeg, or .tiff. You cannot save as a .pdf with this method.
+
+![Export from Rstudio](Export.png)
+
+
+The second option is to click the camera icon that appears in the top right of a plotly plot when you mouse over the plot.
+
+![Download png](downloadPNG.png)
+
+
+This gives you the option to download and save the file as a .png.
+
+### PDFs
+
+To export to a .pdf, open the plot in a browser.
+
+![Open in browser](plotBrowser.png)
+
+
+From there you should be able to export the image as .pdf file.
