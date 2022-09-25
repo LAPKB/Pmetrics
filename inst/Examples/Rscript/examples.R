@@ -90,10 +90,10 @@ exData$print(viewer = F) # view original data in console
 
 mod1 <- PM_model$new(list(
   pri = list(
-    Ka = range(0.1, 0.9),
-    Ke = range(0.001, 0.1),
-    V = range(30, 120),
-    Tlag1 = range(0, 4)
+    Ka = ab(0.1, 0.9),
+    Ke = ab(0.001, 0.1),
+    V = ab(30, 120),
+    Tlag1 = ab(0, 4)
   ),
   cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
   lag = list("Tlag(1) = Tlag1"),
@@ -122,7 +122,7 @@ mod1b
 # PM_model provides a method to update the different elements of a model, for example:
 mod1b$update(list(
   pri = list(
-    Ka = range(0.001, 5)
+    Ka = ab(0.001, 5)
   )
 ))
 mod1b
@@ -289,7 +289,7 @@ mod2 <- mod1$clone()
 #Then update it
 mod2$update(list(
   pri = list(
-    V0 = range(30, 120),
+    V0 = ab(30, 120),
     V = NULL
   ),
   sec = "V = V0*(WT/55)"

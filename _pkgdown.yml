@@ -18,7 +18,10 @@ reference:
   - MM_opt
 - title: Plot
   desc: Functions for plotting Pmetrics output
-- contents: starts_with("plot")
+- contents: 
+  - starts_with("plot")
+  - ab_line
+  - add_shapes
 - title: Summary
   desc: Functions for summarizing Pmetrics output
 - contents: starts_with("summary")

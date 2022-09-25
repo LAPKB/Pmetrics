@@ -74,6 +74,7 @@
 #' and "Regimen" when targets are sampled.
 #' @param ylab `r template("ylab")`  Default is "Proportion with success" for
 #' plot `type = "pta"` and "Pharmacodynamic Index" for plot `type = "pdi"`.
+#' @param title `r template("title")` Default is to have no title.
 #' @param xlim `r template("xlim")`
 #' @param ylim `r template("ylim")`
 #' @param `r template("dotsPlotly")`
@@ -96,6 +97,7 @@ plot.PM_pta <- function(x,
                        log = F, 
                        grid = T,
                        xlab, ylab,
+                       title,
                        xlim, ylim,...) {
   
 
@@ -165,7 +167,7 @@ plot.PM_pta <- function(x,
                      "Regimen"
       )
     }
-    layout$xaxis <- modifyList(layout$xaxis, list(title = list(text =  paste0("<b>",xlab,"</b>"), size = 16)))
+    layout$xaxis$title <- amendTitle(xlab)
   }
   if(is.null(ytitle)){
     if (missing(ylab)) {
@@ -175,8 +177,7 @@ plot.PM_pta <- function(x,
                      "Proportion with success"
       )
     }
-    layout$yaxis <- modifyList(layout$yaxis, list(title = list(text =  paste0("<b>",ylab,"</b>"), size = 16),
-                                    showline = T))
+    layout$yaxis$title <- amendTitle(ylab)
   }  
   
   #axis ranges
@@ -187,6 +188,10 @@ plot.PM_pta <- function(x,
   if(log){
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
+  
+  #title
+  if(missing(title)){ title <- ""}
+  layout$title <- amendTitle(title, default = list(size = 20))
   
 
   #PLOTS
@@ -221,7 +226,8 @@ plot.PM_pta <- function(x,
       p <- p %>% plotly::layout(xaxis = layout$xaxis,
                                 yaxis = layout$yaxis,
                                 showlegend = layout$showlegend,
-                                legend = layout$legend) 
+                                legend = layout$legend,
+                                title = layout$title) 
       
     } else { # random targets
       
@@ -240,7 +246,8 @@ plot.PM_pta <- function(x,
       p <- p %>% plotly::layout(xaxis = layout$xaxis,
                                 yaxis = layout$yaxis,
                                 showlegend = F,
-                                legend = layout$legend) 
+                                legend = layout$legend,
+                                title = layout$title) 
     }
   } else { # pta plot
   
@@ -263,7 +270,8 @@ plot.PM_pta <- function(x,
       p <- p %>% plotly::layout(xaxis = layout$xaxis,
                                 yaxis = layout$yaxis,
                                 showlegend = layout$showlegend,
-                                legend = layout$legend) 
+                                legend = layout$legend,
+                                title = layout$title) 
       
       
     } else { # random targets
@@ -277,7 +285,8 @@ plot.PM_pta <- function(x,
       p <- p %>% plotly::layout(xaxis = layout$xaxis,
                                 yaxis = layout$yaxis,
                                 showlegend = F,
-                                legend = layout$legend) 
+                                legend = layout$legend,
+                                title = layout$title) 
       
     }
   }

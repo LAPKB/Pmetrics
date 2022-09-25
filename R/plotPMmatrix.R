@@ -42,6 +42,7 @@
 #' @param ylim `r template("ylim")` 
 #' @param xlab `r template("xlab")` Default is "Time".
 #' @param ylab `r template("ylab")` Default is "Output".
+#' @param title `r template("title")` Default is to have no title.
 #' @param \dots Not currently implemented.
 #' @return Plots the object.
 #' @author Michael Neely
@@ -82,6 +83,7 @@ plot.PM_data <- function(x,
                          log = F, 
                          grid = F,
                          xlab, ylab,
+                         title,
                          xlim, ylim,...){
   
   
@@ -107,11 +109,12 @@ plot.PM_data <- function(x,
   layout$yaxis <- setGrid(layout$yaxis, grid)
   
   #axis labels if needed
-  xlab <- if(missing(xlab)){"Time"}
-  ylab <- if(missing(ylab)){"Output"}
+  xlab <- if(missing(xlab)){"Time"} else {xlab}
+  ylab <- if(missing(ylab)){"Output"} else {ylab}
   
-  layout$xaxis <- amendAxisLabel(layout$xaxis, xlab)
-  layout$yaxis <- amendAxisLabel(layout$yaxis, ylab)
+  layout$xaxis$title <- amendTitle(xlab)
+  layout$yaxis$title <- amendTitle(ylab)
+  
   
   #axis ranges
   if(!missing(xlim)){layout$xaxis <- modifyList(layout$xaxis, list(range = xlim)) }
@@ -121,6 +124,11 @@ plot.PM_data <- function(x,
   if(log){
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
+  
+  #title
+  if(missing(title)){ title <- ""}
+  layout$title <- amendTitle(title, default = list(size = 20))
+  
   
   
   # Data processing ---------------------------------------------------------
@@ -194,19 +202,23 @@ plot.PM_data <- function(x,
     p <- allsub %>% plotly::filter(src == "obs") %>%
       plotly::plot_ly(x = ~time, y = ~out * mult) %>%
       plotly::add_markers(marker = marker,
-                  text = text,
-                  hovertemplate = hovertemplate) %>%
-      plotly::add_lines(line = line)
+                          text = text,
+                          hovertemplate = hovertemplate,
+                          name = "Observed") %>%
+      plotly::add_lines(line = line,
+                        showlegend = F)
     
     if(includePred){
       p <- p %>% 
         plotly::add_lines(data = allsub[allsub$src == "pred",], x = ~time, y = ~out,
-                  line = predArgs )
+                          line = predArgs,
+                          name = "Predicted")
     }
     p <- p %>% plotly::layout(xaxis = layout$xaxis,
-                      yaxis = layout$yaxis,
-                      showlegend = layout$showlegend,
-                      legend = layout$legend) 
+                              yaxis = layout$yaxis,
+                              title = layout$title,
+                              showlegend = layout$showlegend,
+                              legend = layout$legend) 
     return(p)
   } #end dataPlot
   
@@ -220,7 +232,8 @@ plot.PM_data <- function(x,
     includePred <- T
   } else {
     allsub <- sub
-    includePred <- F}
+    includePred <- F
+  }
   
   #call the plot function and display appropriately 
   if(overlay){

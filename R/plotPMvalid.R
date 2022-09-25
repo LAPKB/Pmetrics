@@ -61,6 +61,7 @@
 #' @param ylim `r template("ylim")` 
 #' @param xlab `r template("xlab")` Default is "Time" or "Time after dose" if `tad = TRUE`.
 #' @param ylab `r template("ylab")` Default is "Output".
+#' @param title `r template("title")` Default is to have no title.
 #' @param \dots `r template("dotsPlotly")`
 #' @return Plots and returns the plotly object
 #' @author Michael Neely
@@ -92,6 +93,7 @@ plot.PM_valid <- function(x,
                          log = F, 
                          grid = T,
                          xlab, ylab,
+                         title,
                          xlim, ylim,...){
   
   #to avoid modifying original object, x
@@ -137,8 +139,8 @@ plot.PM_valid <- function(x,
   if(missing(xlab)){xlab = c("Time", "Time after dose"[1 + as.numeric(tad)])}
   if(missing(ylab)){ylab = "Output"}
   
-  layout$xaxis <- amendAxisLabel(layout$xaxis, xlab)
-  layout$yaxis <- amendAxisLabel(layout$yaxis, ylab)
+  layout$xaxis$title <- amendTitle(xlab)
+  layout$yaxis$title <- amendTitle(ylab)
   
   #axis ranges
   if(!missing(xlim)){layout$xaxis <- modifyList(layout$xaxis, list(range = xlim)) }
@@ -148,6 +150,10 @@ plot.PM_valid <- function(x,
   if(log){
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
+  
+  #title
+  if(missing(title)){ title <- ""}
+  layout$title <- amendTitle(title, default = list(size = 20))
   
   #legend
   legendList <- amendLegend(legend)
@@ -244,7 +250,8 @@ plot.PM_valid <- function(x,
       plotly::layout(xaxis = layout$xaxis,
                      yaxis = layout$yaxis,
                      showlegend = layout$showlegend,
-                     legend = layout$legend) 
+                     legend = layout$legend,
+                     title = layout$title) 
     
     #SEND TO CONSOLE
     print(p)

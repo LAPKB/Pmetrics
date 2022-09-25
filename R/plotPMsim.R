@@ -70,6 +70,7 @@
 #' @param ylim `r template("ylim")` 
 #' @param xlab `r template("xlab")` Default is "Time".
 #' @param ylab `r template("ylab")` Default is "Output".
+#' @param title `r template("title")` Default is to have no title.
 #' @param \dots `r template("dotsPlotly")`
 #' @return Plots the simulation object.  If `obs` is included, a list will be returned with
 #' the folowing items:
@@ -106,19 +107,9 @@ plot.PM_sim <- function(x,
                        log = T, 
                        grid = F,
                        xlab, ylab,
+                       title,
                        xlim, ylim,...){
   
-  
-  #parse line
-  
-  # if(is.logical(line)){
-  #   if(line){probs <- list(0.05, 0.25, 0.5, 0.75, 0.95) #line = T
-  #   } else {
-  #     probs <- NULL #line = F
-  #   }
-  # } else { #line was not T/F
-  #   probs <- line
-  # }
   
   if(all(is.na(line))){line <- list(probs = NA)} #standardize
   if(is.logical(line)){
@@ -175,12 +166,11 @@ plot.PM_sim <- function(x,
   layout <- amendDots(list(...))
   
   #axis labels
-  xlab <- if(missing(xlab)){"Time"}
-  ylab <- if(missing(ylab)){"Output"}
+  xlab <- if(missing(xlab)){"Time"} else {xlab}
+  ylab <- if(missing(ylab)){"Output"} else {ylab}
   
-  layout$xaxis <- amendAxisLabel(layout$xaxis, xlab)
-  layout$yaxis <- amendAxisLabel(layout$yaxis, ylab)
-  
+  layout$xaxis$title <- amendTitle(xlab)
+  layout$yaxis$title <- amendTitle(ylab)
   
   #grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
@@ -194,6 +184,11 @@ plot.PM_sim <- function(x,
   if(log){
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
+  
+  #title
+  if(missing(title)){ title <- ""}
+  layout$title <- amendTitle(title, default = list(size = 20))
+  
   
   #legend
   legendList <- amendLegend(legend, default = list(title = list(text = "<b> Quantiles </b>")))
@@ -395,7 +390,8 @@ plot.PM_sim <- function(x,
   p <- p %>% plotly::layout(xaxis = layout$xaxis,
                             yaxis = layout$yaxis,
                             showlegend = layout$showlegend,
-                            legend = layout$legend)
+                            legend = layout$legend,
+                            title = layout$title)
   
   
   if(!quiet) print(p)

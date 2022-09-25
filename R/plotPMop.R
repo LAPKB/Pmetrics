@@ -64,6 +64,7 @@
 #' plots when `resid = F` and either "Individual weighted residuals" or 
 #' "Population weighted residuals" for residual plots, depending on the value of
 #' `pred.type`.
+#' @param title `r template("title")` Default is to have no title.
 #' @param \dots `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
@@ -92,6 +93,7 @@ plot.PM_op <- function(x,
                        log = F, 
                        grid = T,
                        xlab, ylab,
+                       title,
                        xlim, ylim,...){
   
 
@@ -150,6 +152,9 @@ plot.PM_op <- function(x,
   if(!missing(xlim)){layout$xaxis <- modifyList(layout$xaxis, list(range = xlim)) }
   if(!missing(ylim)){layout$yaxis <- modifyList(layout$yaxis, list(range = ylim)) }
   
+  #title
+  if(missing(title)){ title <- ""}
+  layout$title <- amendTitle(title, default = list(size = 20))
   
   
   # PLOTS -------------------------------------------------------------------
@@ -168,8 +173,8 @@ plot.PM_op <- function(x,
     xlab <- if(missing(xlab)){"Predicted"} else {xlab}
     ylab <- if(missing(ylab)){"Observed"} else {ylab}
 
-    layout$xaxis <- amendAxisLabel(layout$xaxis, xlab)
-    layout$yaxis <- amendAxisLabel(layout$yaxis, ylab)
+    layout$xaxis$title <- amendTitle(xlab)
+    layout$yaxis$title <- amendTitle(ylab)
     
     #log axes
     if(log){
@@ -285,7 +290,8 @@ plot.PM_op <- function(x,
       plotly::layout(xaxis = layout$xaxis,
                      yaxis = layout$yaxis,
                      showlegend = layout$showlegend,
-                     shapes = layout$refLine)
+                     shapes = layout$refLine,
+                     title = layout$title)
     
     print(p)
     return(p)
@@ -304,7 +310,7 @@ plot.PM_op <- function(x,
       ylab <- "Population weighted residuals (pred - obs)"
       pointLab <- "PWRES"
     }
-    layout$yaxis <- amendAxisLabel(layout$yaxis, ylab)
+    layout$yaxis$title <- amendTitle(ylab)
     
     
     #res vs. time
@@ -469,7 +475,8 @@ plot.PM_op <- function(x,
     p2 <- p2 %>%
       plotly::layout(xaxis = layout$xaxis,
                      yaxis = layout$yaxis,
-                     showlegend = layout$showlegend)
+                     showlegend = layout$showlegend,
+                     title = layout$title)
     
     #final residual plot
     p <- subplot(p1, p2, nrows = 1,
