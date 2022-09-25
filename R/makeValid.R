@@ -277,11 +277,13 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   dataSub$dcBin[dataSub$evid > 0] <- dcClusters$cluster # m=dose,covariate bins
   
   timeClusters <- stats::kmeans(dataSubTime, centers = timeC, nstart = 50)
-  dataSub$timeBin[dataSub$evid == 0] <- sapply(timeClusters$cluster, function(x) which(order(timeClusters$centers) == x)) # n=ordered time bins
+  # dataSub$timeBin[dataSub$evid == 0] <- sapply(timeClusters$cluster, function(x) which(order(timeClusters$centers) == x)) # n=ordered time bins
+  dataSub$timeBin[dataSub$evid == 0] <- timeClusters$cluster
   
   if (tad) {
     tadClusters <- stats::kmeans(dataSubTad, centers = tadC, nstart = 50)
-    dataSub$tadBin[dataSub$evid == 0] <- sapply(tadClusters$cluster, function(x) which(order(tadClusters$centers) == x)) # n=ordered time bins
+    # dataSub$tadBin[dataSub$evid == 0] <- sapply(tadClusters$cluster, function(x) which(order(tadClusters$centers) == x)) # n=ordered time bins
+    dataSub$tadBin[dataSub$evid == 0] <- tadClusters$cluster
   } else {
     dataSub$tadBin <- NA
   }
@@ -295,15 +297,15 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   
   # simulate PRED_bin from pop icen parameter values and median of each bin for each subject
   # first, calculate median of each bin
-  dcMedian <- aggregate(dataSub[, c("dose", binCov)], by = list(dataSub$dcBin), FUN = median, na.rm = T)
-  names(dcMedian)[1] <- "bin"
-  # names(dcMedian) <- c("bin", "dose")
-  timeMedian <- aggregate(dataSub$time, by = list(dataSub$timeBin), FUN = median)
-  names(timeMedian) <- c("bin", "time")
+  dcMedian <- dataSub %>% group_by(bin = dcBin) %>% filter(!is.na(dose)) %>%
+    summarize(dplyr::across(c(dose,!!binCov), median, na.rm=T))
+  
+  timeMedian <- dataSub %>% group_by(bin = timeBin) %>% filter(!is.na(timeBin)) %>%
+    summarize(time = median(time, na.rm=T)) %>% arrange(time)
   
   if (tad) {
-    tadMedian <- aggregate(dataSub$tad, by = list(dataSub$tadBin), FUN = median)
-    names(tadMedian) <- c("bin", "time")
+    tadMedian <- dataSub %>% group_by(bin = tadBin) %>% filter(!is.na(tadBin)) %>%
+      summarize(time = median(tad, na.rm=T)) %>% arrange(time)
   } else {
     tadMedian <- NA
   }
@@ -325,7 +327,6 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   }
   # write median file
   MedianDataFileName <- paste(substr(paste("m_", strsplit(datafileName, "\\.")[[1]][1], sep = ""), 0, 8), ".csv", sep = "")
-  #PMwriteMatrix(mdataMedian[, 1:(ncol(mdataMedian) - 2)], MedianDataFileName, override = T)
   medianData <- PM_data$new(mdataMedian[, 1:(ncol(mdataMedian) - 2)], quiet = T)
   medianData$write(MedianDataFileName)
   
@@ -408,7 +409,6 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   # write the adjusted mdata file first
   fullData <- PM_data$new(mdata, quiet = T)
   fullData$write(datafileName)
-  #PMwriteMatrix(mdata, datafileName, override = T)
   
   set.seed(seed.start)
   argsSIM2 <- c(list(
@@ -425,27 +425,35 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   # read and format the results of the simulation
   simFull <- SIMparse("full*", combine = T, quiet = T)
   # take out observations at time 0 from evid=4
-  simFull$obs <- simFull$obs[simFull$obs$time > 0, ]
+  simFull$obs <- simFull$obs %>% filter(time > 0)
   # take out missing observations
   simFull$obs <- simFull$obs[obsStatus(simFull$obs$out)$present,]
+
   # add TAD for plotting options
   if (tad) {
-    simFull$obs$tad <- unlist(tapply(dataSub$tad[dataSub$evid == 0], dataSub$id[dataSub$evid == 0], function(x) rep(x, nsim)))
+    # simFull$obs$tad <- unlist(tapply(dataSub$tad[dataSub$evid == 0], dataSub$id[dataSub$evid == 0], function(x) rep(x, nsim)))
+    simFull$obs$tad  <- dataSub %>% filter(evid == 0) %>% group_by(id) %>% group_map(~rep(.x$tad, nsim)) %>% unlist()
   } else {
     simFull$obs$tad <- NA
   }
   
-  # arrange simulations
-  simFull$obs <- simFull$obs %>% arrange(id, time, outeq)
-  
+
   # pull in time bins from tempDF; only need median as tempDF contains median and mean,
   # but simulation is only from pop means
+    simFull$obs$timeBinNum <- dataSub %>% 
+    filter(evid == 0) %>% 
+    group_by(id) %>% 
+    group_map(~rep(.x$timeBin, nsim)) %>% 
+    unlist()
   
-  
-  simFull$obs$timeBinNum <- unlist(tapply(tempDF$timeBinNum[tempDF$icen == "median"], tempDF$id[tempDF$icen == "median"], function(x) rep(x, nsim)))
   # pull in tad bins from tempDF
-  simFull$obs$tadBinNum <- unlist(tapply(tempDF$tadBinNum[tempDF$icen == "median"], tempDF$id[tempDF$icen == "median"], function(x) rep(x, nsim)))
-  # make simulation number 1:nsim
+  simFull$obs$tadBinNum <- dataSub %>% 
+    filter(evid == 0) %>%  
+    group_by(id) %>% 
+    group_map(~rep(.x$tadBin, nsim)) %>% 
+    unlist()
+  
+    # make simulation number 1:nsim
   simFull$obs$simnum <- as.numeric(sapply(strsplit(simFull$obs$id, "\\."), function(x) x[1]))
   class(simFull) <- c("PMsim", "list")
   
@@ -535,6 +543,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   }
   
   # Clean Up ----------------------------------------------------------------
+  
   
   valRes <- list(simdata = PM_sim$new(simFull), timeBinMedian = timeMedian, tadBinMedian = tadMedian, opDF = tempDF, npde = npdeRes, npde_tad = npdeRes2)
   class(valRes) <- c("PMvalid", "list")
