@@ -84,17 +84,17 @@
 #' @family PMplots
 
 plot.PM_valid <- function(x, 
-                         type = "vpc", 
-                         tad = F, 
-                         outeq = 1,
-                         line = T,
-                         marker = T,
-                         legend = F, 
-                         log = F, 
-                         grid = T,
-                         xlab, ylab,
-                         title,
-                         xlim, ylim,...){
+                          type = "vpc", 
+                          tad = F, 
+                          outeq = 1,
+                          line = T,
+                          marker = T,
+                          legend = F, 
+                          log = F, 
+                          grid = T,
+                          xlab, ylab,
+                          title,
+                          xlim, ylim,...){
   
   #to avoid modifying original object, x
   opDF <- x$opDF
@@ -106,7 +106,7 @@ plot.PM_valid <- function(x,
   opDF <- opDF %>% filter(outeq == !!outeq) #filter to outeq
   simdata <- simdata %>% filter(outeq == !!outeq)  #filter to outeq
   
-
+  
   
   #process CI lines
   if(is.logical(line)){
@@ -124,10 +124,10 @@ plot.PM_valid <- function(x,
   upper <- amendCI(line$upper, default = list(value = 0.975))
   mid <- amendCI(line$mid, default = list(value = 0.5, color = "red", dash = "solid"))
   lower <- amendCI(line$lower, default = list(value = 0.025))
-
+  
   #process marker
   marker <- amendMarker(marker, default = list(color = "black", symbol = "circle-open", size = 8))
-
+  
   #process dots
   layout <- amendDots(list(...))
   
@@ -175,12 +175,10 @@ plot.PM_valid <- function(x,
       use.opTimeBinMedian <- x$tadBinMedian$time
       use.opTimeBinNum <- x$tadBinMedian$bin
       use.simBinNum <- simdata$tadBinNum
-      if(xaxis$title=="Time") {xaxis$title <- "Time after dose"}
-      
     } else {stop("Rerun makePMvalid and set tad argument to TRUE.\n")}
   }
   
-  #calculate lower, 50th and upper percentiles for pcYij by time bins
+  #calculate lower, mid, and upper percentiles for pcYij by time bins
   groupVar <- if(tad){quo(tadBinMedian)} else {quo(timeBinMedian)}
   quant_pcObs <- opDF %>%
     group_by(!!groupVar) %>%
@@ -197,15 +195,27 @@ plot.PM_valid <- function(x,
   
   #calculate median and CI for upper, median, and lower for each bin
   simGroupVar <- if(tad){quo(tadBinNum)} else {quo(timeBinNum)}
-  simCI <- simdata %>% group_by(simnum, !!simGroupVar) %>% summarise(value = quantile(out, probs = c(lower$value,mid$value,upper$value),na.rm = T),
-                                                                     q = c("lower","mid","upper"), .groups = "keep") %>%
-    group_by(bin = !!simGroupVar, q) %>% summarise(value = quantile(value, probs = c(lower$value,upper$value),na.rm = T),
+  simCI <- simdata %>% group_by(simnum, !!simGroupVar) %>% 
+    summarise(value = quantile(out, probs = c(lower$value,mid$value,upper$value),na.rm = T),
+              q = c("lower","mid","upper"), .groups = "keep") %>%
+    group_by(bin = !!simGroupVar, q) %>% 
+    summarise(value = quantile(value, probs = c(lower$value,upper$value),na.rm = T),
                                                    ci = c(lower$value,upper$value), .groups = "keep") %>%
-    pivot_wider(names_from = ci, values_from = value, names_prefix = "q")
+    pivot_wider(names_from = ci, values_from = value, names_prefix = "q") 
+  
+  #arrange simCI in order of time, not bin
+  if(!tad){
+    simCI$time <- x$timeBinMedian$time[match(simCI$bin, x$timeBinMedian$bin)]
+  } else {
+    simCI$time <- x$tadBinMedian$time[match(simCI$bin, x$tadBinMedian$bin)]
+  }
+  simCI <- simCI %>% arrange(time, q) 
+  
+ 
   
   #combine obs and simCI
-  quant_pcObs <- quant_pcObs %>% select(-q) %>% bind_cols(simCI)
-  quant_Obs <- quant_Obs %>% select(-q) %>% bind_cols(simCI)
+  quant_pcObs <- quant_pcObs %>% select(-q) %>% bind_cols(simCI[2:4])
+  quant_Obs <- quant_Obs %>% select(-q) %>% bind_cols(simCI[2:4])
   
   
   
@@ -213,15 +223,15 @@ plot.PM_valid <- function(x,
   if(type=="vpc"){ 
     timeVar <- if(tad){quo(tad)} else {quo(time)}
     plotData <- list(obsQuant = quant_Obs,
-                                    obs = opDF %>% 
-                                      select(id, time = !!timeVar, obs))
-                                   
+                     obs = opDF %>% 
+                       select(id, time = !!timeVar, obs))
+    
   }
   if(type=="pcvpc"){ 
     timeVar <- if(tad){quo(tadBinMedian)} else {quo(timeBinMedian)}
     plotData <- list(obsQuant = quant_pcObs,
-                                      obs = opDF %>% 
-                                        select(id, time = !!timeVar, obs))
+                     obs = opDF %>% 
+                       select(id, time = !!timeVar, obs))
   }
   if(type=="vpc" | type=="pcvpc"){
     
@@ -235,7 +245,7 @@ plot.PM_valid <- function(x,
       #add simulation quantile CIs
       plotly::add_ribbons(ymin = ~q0.025, ymax = ~q0.975,
                           opacity = upper$opacity,
-                          line = list(width = 0),
+                          line = list(width = 2, color = "white", dash = "solid"),
                           hoverinfo = "none") %>%
       #add observation quantiles
       plotly::add_lines(hovertemplate = "Time: %{x}<br>Out: %{y}<br><extra></extra>") %>%
