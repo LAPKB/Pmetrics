@@ -38,7 +38,8 @@ from \code{start} to \code{end}.  Default for end is the maximum observation
 time for each subject.  Subjects with insufficient data for a specified interval will have
 AUC calculated for the available data, not to exceed the specified interval.}
 
-\item{icen}{Can be either "median" for the predictions based on medians of \code{pred.type} parameter value distributions, or "mean".  Default is "median". Only relevant for PMpost or PMpop objects.}
+\item{icen}{Can be either "median" for the predictions based on medians of\code{pred.type}  parameter value distributions, or "mean".  Default is "median".
+Only relevant for PMpost or PMpop objects.}
 
 \item{outeq}{Which output equation to plot. Default is 1.}
 

@@ -51,10 +51,16 @@
 #' of a univariate marginal parameter distribution from NPAG; the default is `FALSE`.
 #' See [density].  Ignored for IT2B output.
 #' @param grid `r template("grid")`
-#' @param xlab `r template("xlab")` Only relevant for bivariate plots.  Default is the name of the plotted x-variable.
-#' @param ylab `r template("ylab")` Only relevant for bivariate plots.  Default is the name of the plotted y-variable.
+#' @param xlab `r template("xlab")` Default is the name of the plotted x-variable.
+#' Formatting can be controlled, but the text is recommended to not be changed.
+#' @param ylab `r template("ylab")` Default is "Probability" for univariate plots,
+#' and the name of the plotted y-variable for bivariate plots.
+#' Formatting can be controlled, but the text is recommended to not be changed.
+#' @param zlab Only for bivariate plots. Default is "Probability". Can be a list
+#' to control formatting or default text, as for `xlab` and `zlab`.
 #' @param standardize Standardize the normal parameter distribution plots from IT2B to the same
 #' scale x-axis.  Ignored for NPAG output.
+#' @param title `r template("title")` Default is to have no title on plots.
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso [PM_final], [schema]
@@ -79,8 +85,10 @@ plot.PM_final <- function(x,
                           legend, 
                           log, 
                           grid = T,
-                          xlab, ylab,
-                          xlim, ylim){
+                          xlab, ylab, zlab,
+                          title,
+                          xlim, ylim,
+                          ...){
   
   #housekeeping
   if(inherits(x,"NPAG")){
@@ -99,14 +107,16 @@ plot.PM_final <- function(x,
   if(!missing(legend)){notNeeded("legend", "plot.PM_final")}
   if(!missing(log)){notNeeded("log", "plot.PM_final")}
   
+  #process dots
+  layout <- amendDots(list(...))
   
-  
+  #ranges
   ab <- data.frame(x$ab)
   names(ab) <- c("min","max")
   ab$par <- names(x$popMean)
   
   #plot functions for univariate
-  uniPlot <- function(.par, .data, .min, .max, type, bar){
+  uniPlot <- function(.par, .data, .min, .max, type, bar, xlab, ylab, title){
     p <- .data %>%
       plotly::plot_ly(x = ~value , y = ~prob, height = 2000) 
     
@@ -137,25 +147,125 @@ plot.PM_final <- function(x,
     }
     
     #common to both
+    
+    #axis labels
+    if(is.null(xlab)){
+      xlb <- .par
+    } else {
+      if(is.character(xlab)){ #specified as fixed character, not recommended
+        xlb <- list(text = xlab)
+      } else { #specified as list,likely to update formatting
+        if(is.null(purrr::pluck(xlab, "text"))){ #text not included in list
+          xlb <- modifyList(xlab, list(text = .par)) #so add it
+        }
+      }
+    }
+    
+    if(is.null(ylab)){
+      ylb <- "Probability"
+    } else {
+      if(is.character(ylab)){
+        ylb <- list(text = ylab)
+      } else { #specified as list,likely to update formatting
+        if(is.null(purrr::pluck(ylab, "text"))){ #text not included in list
+          ylb <- modifyList(ylab, list(text = "Probability")) #so add it
+        }
+      }
+    }
+    
+    #title
+    if(is.null(title)){ 
+      titl <- ""
+    } else {
+      if(is.character(title)){
+        titl <- list(text = title)
+      } else { #specified as list,likely to update formatting
+        if(is.null(purrr::pluck(title, "text"))){ #text not included in list
+          titl <- modifyList(title, list(text = "Marginal")) #so add it
+        } else {titl <- title}
+      }
+    }
+    
+    layout$title <- amendTitle(titl, default = list(size = 20))
+    layout$xaxis$title <- amendTitle(xlb)
+    layout$yaxis$title <- amendTitle(ylb)
+    
+    
     p <- p %>% 
       plotly::layout(showlegend = F, 
-                     xaxis = list(title = list(text = paste0("<b>",.par,"</b>"), size = 18)),
-                     yaxis = list(title = list(text = "<b>Probability</b>"), size = 18),
-                     shapes = list(vline(.min, width=3, dash="dash"),
-                                   vline(.max, width=3, dash="dash")),
-                     barmode = "overlay")
+                     xaxis = layout$xaxis,
+                     yaxis = layout$yaxis,
+                     shapes = list(ab_line(v = .min, line = list(width=3, dash="dash")),
+                                   ab_line(v = .max, line = list(width=3, dash="dash"))),
+                     barmode = "overlay",
+                     title = layout$title)
     
     return(p)
   }
   
   
-  biPlot <- function(formula, x, xlab, ylab){
+  biPlot <- function(formula, x, xlab, ylab, zlab, title){
     yCol <- as.character(attr(terms(formula),"variables")[2])
     xCol <- as.character(attr(terms(formula),"variables")[3])
-    if(missing(xlab)) xlab <- xCol
-    if(missing(ylab)) ylab <- yCol
+    
     whichX <- which(ab$par == xCol)
     whichY <- which(ab$par == yCol)
+    
+    #axes labels
+    if(is.null(xlab)){
+      xlb <- xCol
+    } else {
+      if(is.character(xlab)){ #specified as fixed character
+        xlb <- list(text = xlab)
+      } else { #specified as list,likely to update formatting
+        if(is.null(purrr::pluck(xlab, "text"))){ #text not included in list
+          xlb <- modifyList(xlab, list(text = xCol)) #so add it
+        }
+      }
+    }
+    
+    if(is.null(ylab)){
+      ylb <- yCol
+    } else {
+      if(is.character(ylab)){
+        ylb <- list(text = ylab)
+      } else { #specified as list,likely to update formatting
+        if(is.null(purrr::pluck(ylab, "text"))){ #text not included in list
+          ylb <- modifyList(ylab, list(text = yCol)) #so add it
+        }
+      }
+    }
+    
+    if(is.null(zlab)){
+      zlb <- "Probability"
+    } else {
+      if(is.character(zlab)){
+        zlb <- list(text = zlab)
+      } else { #specified as list,likely to update formatting
+        if(is.null(purrr::pluck(zlab, "text"))){ #text not included in list
+          zlb <- modifyList(zlab, list(text = "Probability")) #so add it
+        }
+      }
+    }
+    
+    #title
+    if(is.null(title)){ 
+      titl <- ""
+    } else {
+      if(is.character(title)){
+        titl <- list(text = title)
+      } else { #specified as list,likely to update formatting
+        if(is.null(purrr::pluck(title, "text"))){ #text not included in list
+          titl <- modifyList(title, list(text = paste0(yCol, " x ", xCol))) #so add it
+        } else {titl <- title}
+      }
+    }
+    
+    layout$title <- amendTitle(titl, default = list(size = 20))
+    layout$xaxis$title <- amendTitle(xlb)
+    layout$yaxis$title <- amendTitle(ylb)
+    layout$zaxis$title <- amendTitle(zlb)
+    
     
     if(type == "IT2B"){
       rangeX <- as.numeric(ab[whichX,1:2])
@@ -175,9 +285,10 @@ plot.PM_final <- function(x,
         plotly::add_surface(
           hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
         plotly::layout(scene = list( 
-          xaxis = list(title = list(text = xlab, font = list(size = 18))),
-          yaxis = list(title = list(text = ylab, font = list(size = 18))),
-          zaxis = list(title = list(text = "Probability", font = list(size = 18))))) %>%
+          xaxis = layout$xaxis,
+          yaxis = layout$yaxis,
+          zaxis = layout$zaxis),
+          title = layout$title) %>%
         plotly::hide_colorbar()
       return(p)
     } else { #NPAG
@@ -201,9 +312,10 @@ plot.PM_final <- function(x,
                           line = line) %>%
         plotly::layout(showlegend = F,
                        scene = list( 
-                         xaxis = list(title = list(text = xlab, font = list(size = 18))),
-                         yaxis = list(title = list(text = ylab, font = list(size = 18))),
-                         zaxis = list(title = list(text = "Probability", font = list(size = 18)))))
+                         xaxis = layout$xaxis,
+                         yaxis = layout$yaxis,
+                         zaxis = layout$zaxis),
+                       title = layout$title)
       return(p)
     }
   } #end bivariate plot function
@@ -211,14 +323,22 @@ plot.PM_final <- function(x,
   
   #set up the plots
   
+  
+  if(missing(xlab)){xlab <- NULL}
+  if(missing(ylab)){ylab <- NULL}
+  if(missing(zlab)){zlab <- NULL}
+  if(missing(title)){title <- NULL}
+  
   if(missing(formula)){ #univariate
+    
     #NPAG
     if(type == "NPAG"){
       ab_alpha <- ab %>% arrange(par)
       p <- x$popPoints %>% pivot_longer(cols = !prob, names_to = "par") %>%
         dplyr::nest_by(par) %>%
         dplyr::full_join(ab_alpha, by = "par") %>%
-        dplyr::mutate(panel = list(uniPlot(par, data, min, max, type = "NPAG", bar = bar))) %>%
+        dplyr::mutate(panel = list(uniPlot(par, data, min, max, type = "NPAG", 
+                                           bar = bar, xlab = xlab, ylab = ylab, title = title))) %>%
         plotly::subplot(margin = 0.02, nrows = nrow(.), titleX = T, titleY = T)
       
     } else {
@@ -242,12 +362,13 @@ plot.PM_final <- function(x,
         dplyr::bind_rows(.id = "par") %>%
         dplyr::nest_by(par) %>% 
         dplyr::full_join(ab_alpha, by = "par") %>%
-        dplyr::mutate(panel = list(uniPlot(par, data, min, max, type = "IT2B"))) %>%
+        dplyr::mutate(panel = list(uniPlot(par, data, min, max, 
+                                           type = "IT2B", xlab = xlab, ylab = ylab, title = title))) %>%
         plotly::subplot(margin = 0.02, nrows = nrow(.), titleX = T, titleY = T)
       
     }
   } else { #bivariate
-    p <- biPlot(formula, x, xlab, ylab)
+    p <- biPlot(formula, x, xlab, ylab, zlab, title)
   }
   print(p)
   return(p)

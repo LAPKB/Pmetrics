@@ -23,11 +23,11 @@ usethis::use_data(badData)
 setwd("Runs")
 #NPAG
 NPex <- PM_load(1)
-usethis::use_data(NPex)
+usethis::use_data(NPex, overwrite = T)
 
 #IT2B
 ITex <- PM_load(2)
-usethis::use_data(ITex)
+usethis::use_data(ITex, overwrite = T)
 
 #simulator example
 simEx <- PM_sim$load("sim.rds")

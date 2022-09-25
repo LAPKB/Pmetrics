@@ -16,8 +16,11 @@
   grid = T,
   xlab,
   ylab,
+  zlab,
+  title,
   xlim,
-  ylim
+  ylim,
+  ...
 )
 }
 \arguments{
@@ -27,7 +30,10 @@ object, e.g \code{PM_result$final}.}
 \item{formula}{An optional formula of the form \code{y ~ x}, where \code{y} and \code{x}
 are two model parameters to plot in a 3-dimensional bivariate plot.  See details.}
 
-\item{line}{Controls characteristics of lines. This argument maps to plotly trace line attributes. \code{TRUE} will plot default lines. \code{FALSE} will suppress lines. If a list, can control many line characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > line to see all the ways the line can be formatted. Most common will be: * color Line color. * dash Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > line > dash > values. * width Thickness in points. Example: \code{line = list(color = "red", dash = "longdash", width = 2)} The \code{line} argument is used to format:
+\item{line}{Controls characteristics of lines. This argument maps to plotly line attributes. \code{TRUE} will plot default lines. \code{FALSE} will suppress lines. If a list, can control many line characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > line to see all the ways the line can be formatted. Most common will be:  \itemize{ \item{\code{color}} Line color. \item{\code{dash}} Plotting character. See \code{plotly::schema()}, traces > scatter >  attributes > line > dash > values. \item{\code{width}} Thickness in points. }
+
+Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
+The \code{line} argument is used to format:
 \itemize{
 \item the density line drawn from an NPAG \link{PM_final object} if \code{density = T}
 \item the drop lines from an NPAG \link{PM_final object} when a \code{formula} is specified
@@ -70,11 +76,29 @@ See \link{density}.  Ignored for IT2B output.}
 \item{standardize}{Standardize the normal parameter distribution plots from IT2B to the same
 scale x-axis.  Ignored for NPAG output.}
 
-\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized. Examples:  * \code{grid = F} * \code{grid = list(gridcolor = "black", gridwidth = 2)}}
+\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized.
 
-\item{xlab}{Value for x axis label. This argument maps to the the xaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{xaxis = list(title = list(text = "Time", font = list(color = "red", family = "Arial", size = 10)))} Only relevant for bivariate plots.  Default is the name of the plotted x-variable.}
+Examples: \itemize{ \item{\code{grid = F}} \item{\code{grid = list(gridcolor = "black", gridwidth = 2)}} }}
 
-\item{ylab}{Value for y axis label. This argument maps to the yaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{yaxis = list(title = list(text = "Concentration", font = list(color = "blue", family = "Times New Roman", size = 12)))} Only relevant for bivariate plots.  Default is the name of the plotted y-variable.}
+\item{xlab}{Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element. The default for \code{bold} is \code{TRUE}.
+
+Examples: \itemize{ \item{\code{xlab = "Time (h)"}} \item{\code{xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))}} }
+Default is the name of the plotted x-variable.
+Formatting can be controlled, but the text is recommended to not be changed.}
+
+\item{ylab}{Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See xlab for details.
+
+Default is "Probability" for univariate plots,
+and the name of the plotted y-variable for bivariate plots.
+Formatting can be controlled, but the text is recommended to not be changed.}
+
+\item{zlab}{Only for bivariate plots. Default is "Probability". Can be a list
+to control formatting or default text, as for \code{xlab} and \code{zlab}.}
+
+\item{title}{Plot title. This argument maps to the the title layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the plot title, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > title to see other ways to customize the title using lists as additional arguments. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element. The default for \code{bold} is \code{TRUE}.
+
+Examples: \itemize{ \item{\code{title = "Observed vs. Predicted"}} \item{\code{title = list(text = "Raw Data", bold = F, font = list(color = "red", family = "Arial", size = 10))}} }
+Default is to have no title on plots.}
 }
 \value{
 Plots the object.
