@@ -50,24 +50,48 @@ amendLine <- function(.line, default){
   return(.line)
 }
 
-#amend axis labels
-amendAxisLabel <- function(.axis, .title, bold = T){
+
+#amend title
+amendTitle <- function(.title, default){
   
   default_font <- list(family = "Arial", color = "black", size = 16)
+  if(!missing(default)){
+    default_font <- modifyList(default_font, default)
+  }
+  bold <- pluck(.title, "bold")
+  if(is.null(bold)){bold <- T}
+  errors <- NULL
+  error <- F
   
   if(is.list(.title)){
     if(is.null(purrr::pluck(.title,"text"))){
-      stop("Axis title missing text element.\nSee plotly::schema() > layout > layoutAttributes > xaxis/yaxis > title for help.\n")
-    } else {
-      .text <- .title$text
-    }
+      stop("Missing title text element.\nSee plotly::schema() > layout > layoutAttributes > title for help.\n")
+    } 
+    if(!is.null(purrr::pluck(.title,"size"))){
+      error <- T
+      errors <- "size"
+      default_font$size <- .title$size
+      .title$size <- NULL
+    } 
+    if(!is.null(purrr::pluck(.title,"color"))){
+      error <- T
+      errors <- c(errors, "color")
+      default_font$color <- .title$color
+      .title$color <- NULL
+    } 
+    if(!is.null(purrr::pluck(.title,"family"))){
+      error <- T
+      errors <- c(errors, "family")
+      default_font$family <- .title$family
+      .title$family <- NULL
+    } 
     
     if(is.null(purrr::pluck(.title, "font"))){
-      .font <- default_font
+      .title$font <- default_font
     } else {
-      .font <- modifyList(default_font, .title$font)
+      .title$font <- modifyList(default_font, .title$font)
     }
-    .title <- list(text = .text, font = .font)
+    
   } else { #title is simply a name
     .title <- list(text = .title, font = default_font)
   }
@@ -76,8 +100,11 @@ amendAxisLabel <- function(.axis, .title, bold = T){
     .title$text <- paste0("<b>",.title$text,"</b>")
   }
   
-  .axis$title <- .title
-  return(.axis)
+  if(error){
+    cat(paste0(crayon::red("Note: "), paste(errors, collapse = " and "), " should be within a font list.\nSee plotly::schema() > layout > layoutAttributes > title/xaxis/yaxis for help.\n"))
+  }
+  
+  return(.title)
 }
 
 #amend CI
@@ -181,15 +208,33 @@ amendLegend <- function(.legend, default){
 
 #amend dots
 amendDots <- function(dots){
-  if(length(dots)>0){
-    if(!names(dots) %in% c("xaxis", "yaxis")){
-      cat(crayon::red("Warning: "),"Only xaxis and yaxis in dots are currently recognized.")
-    }
-  }
+  axesAttr <- names(plotly::schema(F)$layout$layoutAttributes$xaxis)
+  
   xaxis <- purrr::pluck(dots, "xaxis") #check for additional changes
-  xaxis <- if(is.null(xaxis)){xaxis <- list()} else {xaxis}
+  if(is.null(xaxis)){
+    xaxis <- list()
+  } else {
+    xaxis <- dots$xaxis
+    dots$xaxis <- NULL #take it out of dots
+  }
   yaxis <- purrr::pluck(dots, "yaxis")
-  yaxis <- if(is.null(yaxis)){yaxis <- list()} else {yaxis}
+  if(is.null(yaxis)){
+    yaxis <- list()
+  } else {
+    yaxis <- dots$yaxis
+    dots$yaxis <- NULL #take it out of dots
+  }
+  
+  
+  otherArgs <- purrr::map_lgl(names(dots), function(x) x %in% axesAttr)
+  if(any(otherArgs)){
+    xaxis <- modifyList(xaxis, dots[otherArgs])
+    yaxis <- modifyList(yaxis, dots[otherArgs])
+  }
+  
+  if(!all(otherArgs)){ #some are false
+    cat(crayon::red("Warning: "),"Attributes other than xaxis/yaxis in dots are currently ignored.")
+  }
   
   layout <- list(xaxis = xaxis, yaxis = yaxis)
   return(layout)
@@ -209,31 +254,124 @@ includeExclude <- function(.data, include, exclude){
 }
 
 
-vline <- function(x = 0, color = "black", width = 1, dash = 1) {
-  list(
-    type = "line", 
-    y0 = 0, 
-    y1 = 1, 
-    yref = "paper",
-    x0 = x, 
-    x1 = x, 
-    line = list(color = color, width = width, dash = dash)
-  )
-}
-
-hline <- function(y = 0, color = "black", width = 1, dash = 1) {
-  list(
-    type = "line", 
-    x0 = 0, 
-    x1 = 1, 
-    xref = "paper",
-    y0 = y, 
-    y1 = y, 
-    line = list(color = color, width = width, dash = dash)
-  )
-}
-
 notNeeded <- function(x, f){
   cat(paste0(crayon::blue(x)," is not required for ",f," and will be ignored."))
 }
 
+
+#' Add lines to plotly plot
+#' 
+#' Analogous to [abline], draws horizontal, vertical or sloped reference lines.
+#' 
+#' This function creates a line shape that can be added a plotly plot.
+#' See schema() > layout > layoutAttributes > shapes for details. Use only one 
+#' of the following:
+#' * a and b to specify a line with intercept and slope
+#' * h to specify a horizontal line with y-intercept at `h`
+#' * v to specify a vertical line with x-intercept at `v`
+#' 
+#' If using this function to add a line to an existing plot, it must be used
+#' with [add_shapes]. If used for a new plot, it can be included as an element
+#' in the layout list.
+#' 
+#' @param a Intercept y value in relative coordinates, i.e. 0 (bottom) to 1 (top).
+#' The x value is 0.
+#' @param b Slope 
+#' @param h Y-intercept of horizontal line, in absolute coordinates
+#' @param v X-intercept of vertical line, in absolute coordinates
+#' @param line `r template("line")`.  
+#' Default is `line = list(color = "black", width = 1, dash = "dash")`.
+#' @export
+#' @seealso [add_shapes]
+#' @examples 
+#' #add to an existing plot
+#' NPex$op$plot()
+#' add_shapes(shapes = ab_line(v = 12))
+#' 
+#' #add to a new plot
+#' plotly::plot_ly(x = 1:10, y=1:10, type = "scatter", mode = "lines+markers") %>%
+#' layout(shapes = ab_line(h = 5, line = list(color = "red", dash = "solid")))
+ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = T){
+  if(!is.null(a)){
+    if(is.null(b)){
+      stop(paste0("Specify both ", crayon::red("a"), " (intercept) and ", 
+                  crayon::red("b"), " (slope)."))
+    }
+    x0 <- 0
+    y0 <- a
+    x1 <- 1
+    y1 <- b + a #y1 = b*x1 + a
+    xref <- "paper"
+    yref <- "paper"
+  }
+  if(!is.null(b)){
+    if(is.null(a)){
+      stop(paste0("Specify both ", crayon::red("a"), " (intercept) and ", 
+                  crayon::red("b"), " (slope)."))
+    }
+  }
+  if(!is.null(h)){
+    x0 <- 0
+    x1 <- 1
+    xref <- "paper"
+    y0 <- h
+    y1 <- h
+    yref = "y"
+  }
+  
+  if(!is.null(v)){
+    x0 <- v
+    x1 <- v
+    xref <- "x"
+    y0 <- 0
+    y1 <- 1
+    yref = "paper"
+  }
+  line = amendLine(line, default = list(color = "black", width = 1, dash = "dash"))
+  return(list(type = "line", 
+              x0 = x0, y0 = y0, x1 = x1, y1 = y1, 
+              xref = xref, yref = yref, 
+              line = line))
+  
+}
+
+
+#' Add shapes to plotly plot
+#' 
+#' Modifies the layout object of an existing plot to include a new shape.
+#' 
+#' This function adds a shape to the layout element of a plotly plot.
+#' Type `schema()` in the console and expand the list for 
+#' layout > layoutAttributes > shapes for details on how
+#' to specify a shape. A convenient Pmetrics helper function to add line shapes
+#' is [ab_line]. Other shapes such as circles, rectangles and paths can be added,
+#' but must be done manually as outlined in the plotly schema documentation.
+#' An example of a circle shape is below in examples.
+#' 
+#' @param p The plot to which the shape should be added. Default is the
+#' `last_plot()`.
+#' @param shapes A list of attributes that specify a shape. 
+#' @export
+#' @seealso [ab_line]
+#' @examples 
+#' NPex$op$plot()
+#' add_shapes(shapes = ab_line(v = 12))
+#' 
+#' NPex$data$plot()
+#' add_shapes(shapes = list(type = "circle", x0 = 125, y0 = 10, x1 = 135, y1 = 15))
+add_shapes <- function(p = last_plot(), shape){
+  cur_data <- p$x$cur_data
+  #try different locations
+  if(is.null(p$x$layoutAttrs)){ #no layout attributes
+    p$x$layoutAttrs[[cur_data]] <- list(shapes = shape)
+  } else {
+    nAttrs <- length(p$x$layoutAttrs)
+    shapPos <- which(sapply(p$x$layoutAttrs, function(x) which("shapes" %in% names(x))) == 1)
+    if(length(shapPos)>0){ #found one
+      p$x$layoutAttrs[[shapPos]]$shapes <- append(list(p$x$layoutAttrs[[shapPos]]$shapes), list(shape))
+    } else { #didn't find one
+      p$x$layoutAttrs[[1]]$shapes <- list(shape)
+    }
+  }
+  return(p)
+}

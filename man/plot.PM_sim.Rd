@@ -19,6 +19,7 @@
   grid = F,
   xlab,
   ylab,
+  title,
   xlim,
   ylim,
   ...
@@ -68,7 +69,8 @@ Example: \code{line = list(dash = "dashdot")}.
 }
 }}
 
-\item{marker}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15) Formatting will only be applied to observations
+\item{marker}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)
+Formatting will only be applied to observations
 if included via the \code{obs} argument.}
 
 \item{obs}{The name of a \link{PM_result} data object or the PM_op field in the
@@ -88,21 +90,46 @@ and the binomial test P-value if this number is different than the expected 10\%
 
 \item{quiet}{Suppress plot if \code{TRUE}.}
 
-\item{legend}{Controls display of legend. This argument maps to the plotly layout showlegend and legend arguments. It is either a boolean operator (most common) or a list of parameters to be supplied to plotly. See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend for more details on the available options for formatting.  If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will be set to \code{TRUE} automatically. Examples: * \code{legend = T} * \code{legend = list(orientation = "h", font = list(color = "blue"))} Default is \code{FALSE}}
+\item{legend}{Controls display of legend. This argument maps to the plotly layout showlegend and legend arguments. It is either a boolean operator (most common) or a list of parameters to be supplied to plotly. See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend for more details on the available options for formatting.  If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will be set to \code{TRUE} automatically.
 
-\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type. Example: \code{log = T}  Default is \code{TRUE}.}
+Examples: \itemize{ \item{\code{legend = T}} \item{\code{legend = list(orientation = "h", font = list(color = "blue"))}} }
+Default is \code{FALSE}}
 
-\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey50} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized. Examples:  * \code{grid = F} * \code{grid = list(gridcolor = "black", gridwidth = 2)} Default is \code{FALSE}}
+\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type.
 
-\item{xlab}{Value for x axis label. This argument maps to the the xaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{xaxis = list(title = list(text = "Time", font = list(color = "red", family = "Arial", size = 10)))} Default is "Time".}
+Example: \code{log = T}
+Default is \code{TRUE}.}
 
-\item{ylab}{Value for y axis label. This argument maps to the yaxis layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis to see other ways to customize this axis using lists as additional arguments to the plot function. Example: \code{yaxis = list(title = list(text = "Concentration", font = list(color = "blue", family = "Times New Roman", size = 12)))} Default is "Output".}
+\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized.
 
-\item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range. Example: \code{xlim = c(0,1)}}
+Examples: \itemize{ \item{\code{grid = F}} \item{\code{grid = list(gridcolor = "black", gridwidth = 2)}} }
+Default is \code{FALSE}}
 
-\item{ylim}{Limits of the y axis as a vector.   This argument maps to the   the yaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > range. Example: \code{ylim = c(0,100)}}
+\item{xlab}{Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element. The default for \code{bold} is \code{TRUE}.
 
-\item{\dots}{Other parameters which can be passed to the layout > xaxis or > yaxis attributes in a plotly plot to further control axis formatting.  Note that \code{legend}, \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  xaxis or yaxis See \code{plotly::schema()} layout > layoutAttributes > xaxis/yaxis for options. Example: \verb{xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black")))} .}
+Examples: \itemize{ \item{\code{xlab = "Time (h)"}} \item{\code{xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))}} }
+Default is "Time".}
+
+\item{ylab}{Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See xlab for details.
+
+Default is "Output".}
+
+\item{title}{Plot title. This argument maps to the the title layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the plot title, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > title to see other ways to customize the title using lists as additional arguments. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element. The default for \code{bold} is \code{TRUE}.
+
+Examples: \itemize{ \item{\code{title = "Observed vs. Predicted"}} \item{\code{title = list(text = "Raw Data", bold = F, font = list(color = "red", family = "Arial", size = 10))}} }
+Default is to have no title.}
+
+\item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range.
+
+Example: \code{xlim = c(0,1)}}
+
+\item{ylim}{Limits of the y axis as a vector.   This argument maps to the   the yaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > range.
+
+Example: \code{ylim = c(0,100)}}
+
+\item{\dots}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
+
+Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
 
 \item{overlay}{Boolean operator to overlay all time concentration profiles in a single plot.
 The default is \code{TRUE}.}

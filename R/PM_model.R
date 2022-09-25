@@ -48,9 +48,9 @@ PM_model <- R6::R6Class("PM_Vmodel",
                           #' mod2 <- modEx$clone() #create an independent copy of modEx called mod2
                           #' mod2$update(list(
                           #'   pri = list(
-                          #'    Ke = range(0, 1), #change the range
+                          #'    Ke = ab(0, 1), #change the range
                           #'    V = NULL, #this deletes the variable
-                          #'    V0 = range(10, 100) #add a new variable
+                          #'    V0 = ab(10, 100) #add a new variable
                           #'   ),
                           #'   sec = "V = V0 * WT" #add a new secondary equation
                           #' )) 
@@ -113,8 +113,8 @@ combination <- function(add, prop, constant = F) {
 }
 
 #' @export
-range <- function(min, max, gtz = F) {
-  PM_Vinput$new(min, max, "range", constant = F, gtz)
+ab <- function(min, max, gtz = F) {
+  PM_Vinput$new(min, max, "ab", constant = F, gtz)
 }
 
 #' @export
@@ -244,11 +244,11 @@ PM_Vinput <- R6::R6Class(
     proportional = NULL,
     gtz = NULL,
     initialize = function(a, b, mode, constant = F, gtz = F) {
-      stopifnot(mode %in% c("range", "msd", "fixed", "additive", "proportional", "combination"))
+      stopifnot(mode %in% c("ab", "msd", "fixed", "additive", "proportional", "combination"))
       self$gtz <- gtz
       self$constant <- constant
       self$mode <- mode
-      if (mode %in% c("range")) {
+      if (mode %in% c("ab")) {
         self$min <- a
         self$max <- b
         self$mean <- a + round((b - a) / 2, 3)
@@ -274,7 +274,7 @@ PM_Vinput <- R6::R6Class(
     print_to = function(mode_not_used, engine) {
       # TODO:use mode and self$mode to translate to the right set of outputs
       if (engine == "npag" | engine == "it2b") {
-        if (self$mode == "range" | self$mode == "msd") {
+        if (self$mode == "ab" | self$mode == "msd") {
           if (self$gtz) {
             return(sprintf("+%f, %f", self$mind, self$max))
           } else {
@@ -301,7 +301,7 @@ PM_Vinput <- R6::R6Class(
           }
         }
       } else if (engine == "rpem") {
-        if (self$mode == "range") {
+        if (self$mode == "ab") {
           if (self$gtz) {
             return(sprintf("+%f, %f", self$min, self$max))
           } else {
@@ -348,7 +348,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                              public = list(
                                model_list = NULL,
                                initialize = function(model_list) {
-                   
+                                 
                                  #guarantees primary keys are lowercase and max first 3 characters
                                  orig_names <- names(model_list) 
                                  names(model_list) <- private$lower3(names(model_list))
@@ -423,7 +423,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                        if (is.numeric(block[[i]])) {
                                          sprintf("%s, %f", param, block[[i]])
                                        } else {
-                                         sprintf("%s, %s", param, block[[i]]$print_to("range", engine))
+                                         sprintf("%s, %s", param, block[[i]]$print_to("ab", engine))
                                        }
                                      )
                                      i <- i + 1
@@ -492,7 +492,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                      )
                                      err_block <- block[[i]]$err
                                      if (i == 1) {
-                                       err_lines <- append(err_lines, err_block$model$print_to("range", engine))
+                                       err_lines <- append(err_lines, err_block$model$print_to("ab", engine))
                                      }
                                      err_lines <- append(
                                        err_lines,
@@ -604,7 +604,7 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                    if (length(x[-1]) == 1) { # fixed
                                      thisItem <- list(fixed(values[1], constant = const_var, gtz = gtz))
                                    } else { # range
-                                     thisItem <- list(range(values[1], values[2], gtz = gtz))
+                                     thisItem <- list(ab(values[1], values[2], gtz = gtz))
                                    }
                                    names(thisItem) <- x[1]
                                    thisItem
@@ -735,7 +735,7 @@ PM_model_julia <- R6::R6Class("PM_model_julia",
 
 # simple_model <- PM_model(list(
 #   pri=list(
-#     Ke=range(0.001,2,gtz=F),
+#     Ke=ab(0.001,2,gtz=F),
 #     V=msd(50, 250)
 #   ),
 #   out=list(
@@ -751,17 +751,17 @@ PM_model_julia <- R6::R6Class("PM_model_julia",
 
 # simple_model$update(list(
 #   pri = list(
-#     Ke = range(0,1)
+#     Ke = ab(0,1)
 #   )
 # ))
 
 
 # full_model <- PM_model(list(
 #     pri=list(
-#         ke=range(0.001,2),
-#         V=range(50, 250),
+#         ke=ab(0.001,2),
+#         V=ab(50, 250),
 #         ka=fixed(5),
-#         Kcp=range(0.01, 10, gtz=F),
+#         Kcp=ab(0.01, 10, gtz=F),
 #         Kpc=5
 #         # alpha = msd(0,0.3, gtz=F)
 #     ),
@@ -790,7 +790,7 @@ PM_model_julia <- R6::R6Class("PM_model_julia",
 #     )
 # ))
 # 600
-# # # ke=ranges(0.001,2),
+# # # ke=abs(0.001,2),
 # # # V=meansd(50, 250)
 # bimodal_ke <- PM_fit$new("data.csv", model)
 

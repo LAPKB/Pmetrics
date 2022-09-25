@@ -33,10 +33,7 @@ plot.MMopt <- function(x, line = list(probs = NA), times = T,...){
   
   p <- p %>% layout(shapes = lapply(x$sampleTime,
                                     function(t){
-                                      vline(x = t, 
-                                            color = times$color,
-                                            dash = times$dash,
-                                            width = times$width)
+                                      ab_line(v = t, line = times)
                                     })
   )
   print(p)

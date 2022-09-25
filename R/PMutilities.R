@@ -103,7 +103,7 @@ logAxis <- function(side, grid = F, ...) {
   }
   axis(side, ticksat1, labels = labels, tcl = -0.5, lwd = 0, lwd.ticks = 1, ...)
   axis(side, ticksat2, labels = NA, tcl = -0.25, lwd = 0, lwd.ticks = 1, ...)
-
+  
   if (grid & (side == 1 | side == 3)) abline(v = ticksat2, col = "lightgray", lty = 1)
   if (grid & (side == 2 | side == 4)) abline(h = ticksat2, col = "lightgray", lty = 1)
 }
@@ -120,7 +120,7 @@ makeDen <- function(NPdata, bootstrap = F) {
     cat("Please enter the numerical value of N in your model file.")
     NPdata$ndim <- as.numeric(readline("(-1 for analytic, 0 for calculated output, or the number of differential equations): "))
   }
-
+  
   # resample, i.e. jitter the population prior if bootstrapping
   if (bootstrap) {
     final <- makeFinal(NPdata)
@@ -181,23 +181,23 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
   if (!file.exists(outfile)) {
     stop(paste(outfile, "not found.\n", sep = " "))
   }
-
+  
   setwd(dirname(outfile))
-
+  
   negflag <- F
   RFver <- readLines(outfile, n = 1)
   vernum <- switch(RFver,
-    " VERSION 1.1 - JAN 2011 " = 1,
-    " VERSION 1.2 - APR 2011 " = 2,
-    " VERSION 1.3 - JUL 2011 " = 3,
-    " VERSION 1.4 - AUG 2011 " = 4,
-    4
+                   " VERSION 1.1 - JAN 2011 " = 1,
+                   " VERSION 1.2 - APR 2011 " = 2,
+                   " VERSION 1.3 - JUL 2011 " = 3,
+                   " VERSION 1.4 - AUG 2011 " = 4,
+                   4
   )
   dimlines <- switch(vernum,
-    9,
-    9,
-    15,
-    15
+                     9,
+                     9,
+                     15,
+                     15
   )
   NPdims <- scan(outfile, quiet = T, skip = 3, nlines = dimlines, , what = "character", comment.char = "#")
   # number of subjects
@@ -208,7 +208,7 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
   nvar <- as.numeric(NPdims[3])
   # index of grid points
   indpts <- as.numeric(NPdims[6])
-
+  
   # if version 1.2 or less
   if (vernum < 3) {
     # final cycle number
@@ -246,12 +246,12 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
   iaddl <- array(data = as.numeric(sub("D", "E", scan(outfile, skip = toc[17], n = icyctot * nvar * 12, quiet = T, what = ""))), dim = c(12, nvar, icyctot))
   # set the number of grid points at the beginning
   gridpts <- switch(indpts,
-    2129,
-    5003,
-    10007,
-    20011,
-    40009,
-    80021
+                    2129,
+                    5003,
+                    10007,
+                    20011,
+                    40009,
+                    80021
   )
   if (is.null(gridpts)) {
     gridpts <- (indpts - 100) * 80021
@@ -263,7 +263,7 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
   } else {
     popMean <- corden[1:nvar] * corden[nvar + 1] * wParVol
   }
-
+  
   if (nrow(corden) > 1) {
     popCov <- matrix(NA, ncol = nvar, nrow = nvar)
     for (i in 1:nvar) {
@@ -281,14 +281,14 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
     popCor <- matrix(rep(NA, nvar**2), nrow = nvar)
     diag(popCor) <- rep(1, nvar)
   }
-
+  
   popPoints <- data.frame(corden)
   names(popPoints) <- c(par, "prob")
   popPoints$prob <- popPoints$prob * wParVol
   names(popMean) <- par
   dimnames(popCov) <- list(par, par)
   if (all(!is.na(popCor))) dimnames(popCor) <- list(par, par)
-
+  
   if (icyctot > 0) {
     popMedian <- iaddl[6, , icyctot]
   } else {
@@ -309,17 +309,17 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
     popMedian <- apply(popPoints[, 1:(ncol(popPoints) - 1)], 2, calcWtMed, popPoints$prob)
   }
   names(popMedian) <- par
-
+  
   popVar <- diag(popCov)
   names(popVar) <- par
-
+  
   popSD <- sqrt(popVar)
   names(popSD) <- par
-
+  
   popCV <- abs(100 * (popSD / popMean))
   names(popCV) <- par
-
-
+  
+  
   outlist <- list(
     popPoints = popPoints, popMean = popMean, popSD = popSD, popCV = popCV, popVar = popVar,
     popCov = popCov, popCor = popCor, popMedian = popMedian, gridpts = gridpts, ab = ab
@@ -434,7 +434,7 @@ parseBlocks <- function(model) {
   output <- blockStart[grep("#out", headers)]
   error <- blockStart[grep("#err", headers)]
   extra <- blockStart[grep("#ext", headers)]
-
+  
   headerPresent <- which(c(
     length(primVar) > 0, length(covar) > 0, length(secVar) > 0, length(bolus) > 0, length(ini) > 0,
     length(f) > 0, length(lag) > 0, length(diffeq) > 0, length(output) > 0, length(error) > 0, length(extra) > 0
@@ -442,17 +442,17 @@ parseBlocks <- function(model) {
   if (any(!c(1, 9, 10) %in% headerPresent)) {
     return(list(status = -1, msg = "You must have #Primary, #Output, and #Error blocks at minimum"))
   }
-
+  
   headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, diffeq, output, error, extra)
   blockStart <- blockStart[rank(headerOrder)]
   blockStop <- blockStop[rank(headerOrder)]
-
+  
   # remove headers that have no information
   ok <- mapply(function(x, y) x != y, blockStart, blockStop)
   blockStart <- blockStart[ok]
   blockStop <- blockStop[ok]
   headerPresent <- headerPresent[ok]
-
+  
   # get blocks
   blocks <- list(primVar = NA, covar = NA, secVar = NA, bolus = NA, ini = NA, f = NA, lag = NA, diffeq = NA, output = NA, error = NA, extra = NA)
   for (i in 1:length(headerPresent)) {
@@ -490,7 +490,7 @@ chunks <- function(x, maxwidth = 60) {
 # convert new model template to model fortran file
 makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T, quiet = F) {
   blocks <- parseBlocks(model)
-
+  
   # check for reserved variable names
   reserved <- c(
     "ndim", "t", "x", "xp", "rpar", "ipar", "p", "r", "b", "npl", "numeqt", "ndrug", "nadd", "rateiv", "cv",
@@ -502,12 +502,12 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
     return(list(status = -1, msg = msg))
   }
-
+  
   # check all blocks statements for more than maxwidth characters and insert line break if necessary
   maxwidth <- 60
   blocks <- chunks(x = blocks, maxwidth = maxwidth)
-
-
+  
+  
   # primary variable definitions
   npvar <- length(blocks$primVar)
   psym <- vector("character", npvar)
@@ -523,51 +523,51 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
       return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n"))
     }
   }
-
+  
   # find out if any are fixed to be positive only for IT2B
   fixedpos <- grep("\\+", blocks$primVar)
   if (length(fixedpos) > 0) blocks$primVar <- gsub("\\+", "", blocks$primVar)
-
+  
   # find out if any are to be fixed (constant)
   fixcon <- grep("!", blocks$primVar)
   nofix <- length(fixcon)
   if (nofix > 0) blocks$primVar <- gsub("!", "", blocks$primVar)
-
-
+  
+  
   # get limits [a,b] on primary variables
   splitprimVar <- strsplit(blocks$primVar, sep)
   a <- as.numeric(unlist(lapply(splitprimVar, function(x) x[2])))
   b <- as.numeric(unlist(lapply(splitprimVar, function(x) x[3])))
-
+  
   # set parameter type: 1 for random, 0 for constant, -1 for random but pos (IT2B only) and 2 for fixed random
   ptype <- c(1, 2)[1 + as.numeric(is.na(b))]
   # if any fixed constant variables are present, set ptype to 0
   if (nofix > 0) ptype[fixcon] <- 0
-
+  
   # npvar is total number of parameters
   # nvar is number of random (estimated) parameters
   # nranfix is number of fixed (but unknown) parameters
   # nofix is number of constant parameters
   nranfix <- sum(as.numeric(is.na(b))) - nofix
   nvar <- npvar - nofix - nranfix
-
+  
   if ((engine$alg == "IT" | engine$alg == "ERR") & length(fixedpos) > 0) ptype[fixedpos] <- -1
-
+  
   if (nofix > 0) {
     valfix <- a[which(ptype == 0)]
   } else {
     valfix <- NA
   }
-
+  
   if (nranfix > 0) {
     valranfix <- a[which(ptype == 2)]
   } else {
     valranfix <- NA
   }
-
+  
   ab.df <- data.frame(a = a[which(ptype == 1)], b = b[which(ptype == 1)])
-
-
+  
+  
   # replace a,b with SIM limits argument if it is present
   if (engine$alg == "SIM" & !all(is.na(engine$limits))) {
     if (nrow(engine$limits) == nvar) {
@@ -580,30 +580,30 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
       return(list(status = -1, msg = "Your limit block does not have the same number of parameters as the model file.\n"))
     }
   }
-
+  
   if (nofix > 0 & any(is.na(valfix))) {
     return(list(status = -1, msg = "One or more variables did not have any boundaries.\n"))
   }
   if (nranfix > 0 & any(is.na(valranfix))) {
     return(list(status = -1, msg = "One or more variables did not have any boundaries.\n"))
   }
-
+  
   # set grid point index for NPAG if not supplied
   if (engine$indpts == -99) {
     indpts <- switch(nvar,
-      1,
-      1,
-      3,
-      4,
-      6
+                     1,
+                     1,
+                     3,
+                     4,
+                     6
     )
     if (is.null(indpts)) indpts <- 100 + nvar - 5
     if (indpts > 108) indpts <- 108
   } else {
     indpts <- engine$indpts
   }
-
-
+  
+  
   # transform ab
   if (nrow(ab.df) > 0) {
     ab <- paste(t(as.matrix(ab.df)))
@@ -612,15 +612,15 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     ab[seq(2, 2 * nvar, 2)] <- sub("t", "\n", ab[seq(2, 2 * nvar, 2)])
     ab <- paste(ab, collapse = "")
   }
-
+  
   blocks$primVar <- unlist(lapply(splitprimVar, function(x) x[1]))
-
+  
   for (i in 1:npvar) {
     psym[i] <- paste("PSYM(", i, ")='", blocks$primVar[i], "'", sep = "")
     pvardef[i] <- paste(blocks$primVar[i], "=P(", i, ")", sep = "")
   }
-
-
+  
+  
   # covariate definitions
   if (blocks$covar[1] != "") {
     ncov <- length(blocks$covar)
@@ -644,10 +644,10 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   }
   # set covariate type based on number of covariates in data file, default is 2, interpolated
   if (length(interpol) > 0) ctype[interpol] <- 1 # change those in model file with "!" to constant
-
+  
   # secondary variable definitions
   svardef <- blocks$secVar
-
+  
   # get secondary variables and remove continuation lines beginning with "&"
   secVarNames <- gsub("[[:blank:]]", "", unlist(lapply(strsplit(svardef, "="), function(x) x[1])))
   secVarNames[is.na(secVarNames)] <- ""
@@ -656,12 +656,12 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     return(list(status = -1, msg = "\nThe model file format has changed.  Please replace '+' with '&' in all continuation lines.\n"))
   }
   contLines <- grep("^&", secVarNames)
-
+  
   if (length(contLines) > 0) {
     secVarNames <- secVarNames[-contLines]
     svardef <- gsub("^&", "", svardef)
   }
-
+  
   # take out any extra declarations in diffeq to add to declarations in subroutine
   diffdec <- grep("COMMON|EXTERNAL|DIMENSION", blocks$diffeq, ignore.case = T)
   if (length(diffdec) > 0) {
@@ -670,7 +670,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   } else {
     diffstate <- ""
   }
-
+  
   # detect N
   if (blocks$diffeq[1] == "") {
     if ("KE" %in% toupper(secVarNames) | "KE" %in% toupper(blocks$primVar)) {
@@ -691,7 +691,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
       N <- max(as.numeric(compNumbers))
     }
   }
-
+  
   # figure out model if N = -1 and if so, assign values to required KA,KE,V,KCP,KPC
   reqVars <- c("KA", "KE", "KCP", "KPC", "V")
   matchVars <- match(reqVars, toupper(c(blocks$primVar, secVarNames)))
@@ -720,7 +720,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
       missVars <- NA
     }
   }
-
+  
   # get number of equations and verify with data file
   # find statements with Y(digit)
   outputLines <- grep("Y\\([[:digit:]]+\\)", blocks$output)
@@ -735,7 +735,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   if (modelnumeqt != engine$numeqt) {
     return(list(status = -1, msg = "\nThe number of output equations in the model file\ndoes not match the maximum value of outeq in your datafile.\n"))
   }
-
+  
   # remove leading ampersands from getfa, getix, gettlag if present
   oldContLines <- grep("^\\+", c(blocks$f, blocks$ini, blocks$lag))
   if (length(oldContLines > 0)) {
@@ -744,7 +744,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   if (length(grep("^&", blocks$f) > 0)) blocks$f <- gsub("^&", "", blocks$f)
   if (length(grep("^&", blocks$ini) > 0)) blocks$ini <- gsub("^&", "", blocks$ini)
   if (length(grep("^&", blocks$lag) > 0)) blocks$lag <- gsub("^&", "", blocks$lag)
-
+  
   # variable declarations for fortran and make sure not >maxwidth characters
   if (secVarNames[1] != "") {
     vardec <- paste("REAL*8 ", paste(blocks$primVar, collapse = ","), ",", paste(secVarNames, collapse = ","), sep = "")
@@ -757,18 +757,18 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   if (nchar(vardec) > maxwidth) {
     vardec <- paste(unlist(strsplit(vardec, ",")), collapse = ",\n     &  ")
   }
-
+  
   # error
   blocks$error <- tolower(gsub("[[:space:]]", "", blocks$error))
   # check to make sure coefficient lines are the same number as outputs
   nErrCoeff <- length(blocks$error) - 1
   if (nErrCoeff != modelnumeqt) {
     return(list(status = -1, msg = paste("\nThere ", c("is", "are")[1 + as.numeric(nErrCoeff > 1)], " ",
-      nErrCoeff, c(" line", " lines")[1 + as.numeric(nErrCoeff > 1)],
-      " of error coefficients in the model file, but ",
-      modelnumeqt, " output ", c("equation", "equations")[1 + as.numeric(modelnumeqt > 1)],
-      ".\nThese must be the same.\n",
-      sep = ""
+                                         nErrCoeff, c(" line", " lines")[1 + as.numeric(nErrCoeff > 1)],
+                                         " of error coefficients in the model file, but ",
+                                         modelnumeqt, " output ", c("equation", "equations")[1 + as.numeric(modelnumeqt > 1)],
+                                         ".\nThese must be the same.\n",
+                                         sep = ""
     )))
   }
   # get assay error only if SIMrun
@@ -789,7 +789,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
       fixed <- grep("!", blocks$error[gamlam[1]])
       ierr <- unlist(strsplit(blocks$error[gamlam[1]], "="))
       ierrtype <- gsub("[[:space:]]", "", tolower(substr(ierr[1], 1, 1)))
-
+      
       # NPAG error parameters
       # IERRMOD
       # 1 SD WITH GAMMA(IEQ) FIXED
@@ -802,7 +802,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
       # 2 IF ONE SET OF ABOVE Cs USED FOR ALL PATIENTS;
       # 1 IF Cs ALREADY IN PATIENT FILES WILL BE USED; IF A
       # PATIENT HAS NO C'S, THEN POPULATION C'S WILL BE USED.
-
+      
       if (engine$alg == "NP") {
         if (length(fixed) > 0) {
           # gamma is fixed (error for lambda)
@@ -822,8 +822,8 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
         } else {
           # gamma/lambda are to be estimated
           ierrmod <- switch(ierrtype,
-            g = 2,
-            l = 3
+                            g = 2,
+                            l = 3
           )
           gamlam0 <- as.numeric(ierr[2])
           asserr <- gsub(sep, "  ", blocks$error[-gamlam])
@@ -837,7 +837,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
         asserr <- paste(gsub("!", "", asserr), collapse = "\n") # clean up asserr
         iass <- paste(iass, collapse = "     ") # clean up iass
       }
-
+      
       # IT2B error parameters
       # IERRMOD
       # 1 IF GAMMA(IEQ) IS TO REMAIN 1.0 THROUGHOUT THE ANALYSIS;
@@ -850,7 +850,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
       # 2 IF ONE SET OF ABOVE Cs USED FOR ALL PATIENTS;
       # 1 IF Cs ALREADY IN PATIENT FILES WILL BE USED; IF A
       # PATIENT HAS NO C'S, THEN POPULATION C'S WILL BE USED.
-
+      
       # IQVAL
       # 0 IF OUTPUT EQ. HAS ITS Cs ENTERED BY USER (NOT
       # ESTIMATED BY assbigxx.exe) AND IERRTYPE(IEQ) = 1
@@ -858,7 +858,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
       # ESTIMATED BY assbigxx.exe) AND IERRTYPE(IEQ) = 0
       # 4 IF OUTPUT EQ. HAD ITS Cs ESTIMATED PREVIOUSLY
       # BY assbigxx.exe.
-
+      
       if (engine$alg == "IT") {
         if (ierrtype == "l") {
           return(list(status = -1, msg = "\nLambda is not currently implemented in IT2B\nPlease correct the error block in your model file.\n"))
@@ -900,9 +900,9 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
       return(list(status = -1, msg = "Please specify a gamma or lambda error model in your\nmodel file error block."))
     }
   }
-
+  
   # build the fortran model file
-
+  
   # function to add blank lines
   blank <- function(n) {
     x <- rep("", n)
@@ -931,8 +931,8 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     }
     return(x)
   }
-
-
+  
+  
   space <- function(n, x) {
     if (length(grep("^@", x)) == 0) {
       # not a preserve format line
@@ -942,9 +942,9 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     }
     return(y)
   }
-
+  
   blocks <- lapply(blocks, prespace)
-
+  
   fmod <- list(header = NA, diffeq = NA, output = NA, symbol = NA, getfa = NA, getix = NA, gettlag = NA, anal3 = NA)
   fmod$header <- c("C  TSTMULTN.FOR                          NOV, 2014", blank(2))
   fmod$diffeq <- c(
@@ -1323,9 +1323,9 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     space(8, "RETURN "),
     space(8, "END")
   )
-
+  
   fmod$extra <- c(blank(2), unlist(lapply(blocks$extra, function(x) space(6, x))))
-
+  
   modelFor <- paste(unlist(strsplit(model, "\\."))[1], "for", sep = ".")
   writeLines(unlist(fmod), modelFor)
   # check model file for errors
@@ -1334,7 +1334,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   if (is.null(compiler)) {
     return(list(status = -1, msg = "Execute PMbuild or PMFortranConfig(reconfig=T) to choose your fortran compiler.\n"))
   }
-
+  
   # build syntax check statement and check model if possible
   fortran <- strsplit(compiler, " ")[[1]][1]
   syntaxcheck <- NA
@@ -1352,7 +1352,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   if (length(grep("g95", fortran) > 0)) {
     syntaxcheck <- paste(fortran, "-fsyntax-only", modelFor)
   }
-
+  
   if (!is.na(syntaxcheck)) {
     if (OS == 1 | OS == 3) {
       modelErr <- system(syntaxcheck, intern = T)
@@ -1366,7 +1366,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     cat("\nYour fortran compiler does not support model syntax checking.\n")
   }
   # end of model file creation
-
+  
   # start instruction file creation if not SIM
   if (engine$alg != "SIM" & write) {
     instr <- vector("character")
@@ -1440,15 +1440,15 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
       instr[getNext(instr)] <- " EXT"
       instr[getNext(instr)] <- "ZMQ"
     }
-
+    
     instr[getNext(instr)] <- " NSUBTOT"
     instr[getNext(instr)] <- engine$nsubtot
     instr[getNext(instr)] <- " NSUB"
     instr[getNext(instr)] <- engine$nsub
     instr[getNext(instr)] <- " ACTIVE PATIENT NUMBERS, FOLLOWED BY A LINE WITH 0"
     instr[getNext(instr)] <- paste(engine$activesub, collapse = "\n")
-
-
+    
+    
     if (engine$alg == "NP") {
       # create NPAG instruction file
       instr[getNext(instr)] <- " NUMEQT"
@@ -1479,10 +1479,10 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
       instr[getNext(instr)] <- engine$xmic
       instr[getNext(instr)] <- " ICENT, WHICH IS NOW IRRELEVANT"
       instr[getNext(instr)] <- switch(engine$icen,
-        mean = 1,
-        median = 2,
-        mode = 3,
-        2
+                                      mean = 1,
+                                      median = 2,
+                                      mode = 3,
+                                      2
       )
       instr[getNext(instr)] <- " AUCINT"
       instr[getNext(instr)] <- engine$aucint
@@ -1514,13 +1514,13 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     writeLines(instr, "instr.inx")
   }
   # end instruction file creation
-
+  
   # write report
   if (!quiet) {
     cat(paste("\nModel solver mode: ", switch(letters[N + 2],
-      a = "Algebraic",
-      b = "Exact",
-      "ODE"
+                                              a = "Algebraic",
+                                              b = "Exact",
+                                              "ODE"
     ), sep = ""))
     if (N > 0) {
       numcomp <- N
@@ -1557,9 +1557,9 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     cat(paste("\nCovariates used in model file: ", c(paste(blocks$covar, collapse = ", "), "None")[1 + as.numeric(blocks$covar[1] == "")]))
     cat(paste("\nSecondary Variables: ", paste(secVarNames, collapse = ", "), sep = ""))
     cat(paste("\nModel conditions: ", c("bioavailability term defined, ", "no bioavailability term defined, ")[1 + as.numeric(blocks$f[1] == "")],
-      c("initial conditions are not zero, ", "initial conditions are zero, ")[1 + as.numeric(blocks$ini[1] == "")],
-      c("lag term defined", "no lag term defined")[1 + as.numeric(blocks$lag[1] == "")],
-      sep = ""
+              c("initial conditions are not zero, ", "initial conditions are zero, ")[1 + as.numeric(blocks$ini[1] == "")],
+              c("lag term defined", "no lag term defined")[1 + as.numeric(blocks$lag[1] == "")],
+              sep = ""
     ))
     if (engine$alg != "SIM") cat(paste("\nNumber of cycles to run:", engine$cycles))
     cat("\n\n")
@@ -1584,7 +1584,7 @@ endNicely <- function(message, model=-99, data=-99) {
     "it2b*.*", "itas*.*", "it_prep*", "it_run*", "itlog.txt", "ITcontrol", "itscript*", "instr.inx",
     "assdriv.f", "err_prep*", "err_run*", "ERRcontrol", "errscript*", "errlog.txt"
   ))
-
+  
   if (length(cleanUp) > 0) file.remove(cleanUp)
   stop(message, call. = F)
 }
@@ -1604,8 +1604,8 @@ var.wt <- function(x, w, na.rm = FALSE) {
 # weighted t test
 weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.sided", na.rm = TRUE) {
   if (!missing(conf.level) &
-    (length(conf.level) != 1 || !is.finite(conf.level) ||
-      conf.level < 0 || conf.level > 1)) {
+      (length(conf.level) != 1 || !is.finite(conf.level) ||
+       conf.level < 0 || conf.level > 1)) {
     stop("'conf.level' must be a single number between 0 and 1")
   }
   # see if x is PMop$pop or PMop$post object
@@ -1614,29 +1614,29 @@ weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.side
     x <- x$d
     mu <- 0
   }
-
+  
   if (na.rm) {
     w <- w[i <- !is.na(x)]
     x <- x[i]
   }
-
+  
   # to achieve consistent behavior in loops, return NA-structure in case of complete missings
   if (sum(is.na(x)) == length(x)) {
     return(list(estimate = NA, se = NA, conf.int = NA, statistic = NA, df = NA, p.value = NA))
   }
-
+  
   # if only one value is present: this is the best estimate, no significance test provided
   if (sum(!is.na(x)) == 1) {
     warning("Warning weighted.t.test: only one value provided; this value is returned without test of significance!", call. = FALSE)
     return(list(estimate = x[which(!is.na(x))], se = NA, conf.int = NA, statistic = NA, df = NA, p.value = NA))
   }
-
+  
   x.w <- weighted.mean(x, w, na.rm = na.rm)
   var.w <- var.wt(x, w, na.rm = na.rm)
   df <- length(x) - 1
   t.value <- sqrt(length(x)) * ((x.w - mu) / sqrt(var.w))
   se <- sqrt(var.w) / sqrt(length(x))
-
+  
   if (alternative == "less") {
     pval <- pt(t.value, df)
     cint <- c(-Inf, x.w + se * qt(conf.level, df))
@@ -1648,7 +1648,7 @@ weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.side
     alpha <- 1 - conf.level
     cint <- x.w + se * qt(1 - alpha / 2, df) * c(-1, 1)
   }
-
+  
   names(t.value) <- "t"
   return(list(estimate = x.w, se = se, conf.int = cint, statistic = t.value, df = df, p.value = pval))
 }
@@ -1675,7 +1675,7 @@ FileExists <- function(filename){
     while (!file.exists(filename)) { #oops, filename doesn't exist
       cat(paste0(filename," does not exist in ",getwd(),".\n"))
       filename <- tryCatch(readline("Enter another filename or 'ESC' to quit: \n"),
-                          interrupt = function(e) {stop("No filename. Function aborted.\n", call. = F)})
+                           interrupt = function(e) {stop("No filename. Function aborted.\n", call. = F)})
     }
   }
   return(filename)
@@ -1686,9 +1686,9 @@ FileExists <- function(filename){
 
 getOS <- function() {
   OS <- switch(Sys.info()[1],
-    Darwin = 1,
-    Windows = 2,
-    Linux = 3
+               Darwin = 1,
+               Windows = 2,
+               Linux = 3
   )
   return(OS)
 }
@@ -1751,9 +1751,9 @@ wmmopt1 <- function(Mu, time, pH, cassay, nsamp, nsubs, nout, Cbar) {
   #            using the optimal design having i samples
   #                "-1" indicates "not applicable"
   # optindex - 4x4, indices of optimal sample times from time=(nt)x1
-
+  
   #
-
+  
   # -------------------------------------
   # Initialize all entries with -1
   optsamp <- matrix(-1, 4, 4)
@@ -1773,14 +1773,14 @@ wmmopt1 <- function(Mu, time, pH, cassay, nsamp, nsubs, nout, Cbar) {
   Perror4_min <- -1
   # -------------------------------
   # Extract needed quantities
-
+  
   c0 <- cassay[1]
   # additive noise
   c1 <- cassay[2]
   c2 <- cassay[3]
   c3 <- cassay[4]
-
-
+  
+  
   # BEGIN MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
   # FULL SCRIPT VERSION OF MMOPT ALGORITHM
   # -----------------------------------
@@ -1788,7 +1788,7 @@ wmmopt1 <- function(Mu, time, pH, cassay, nsamp, nsubs, nout, Cbar) {
   kallijn <- kall_ijn(Mu, c0, c1, c2, c3, nsubs, nout)
   Kall <- kallijn$Kall
   skall <- kallijn$skall
-
+  
   # ------------------------------
   # SINGLE SAMPLE OPTIMIZATION
   if (nsamp == 1) {
@@ -1817,8 +1817,8 @@ wmmopt1 <- function(Mu, time, pH, cassay, nsamp, nsubs, nout, Cbar) {
     # 111111111111111111111111111111111111111111111111111111111111111
   }
   # endif
-
-
+  
+  
   # ------------------------------
   # TWO SAMPLE OPTIMIZATION
   if (nsamp == 2) {
@@ -1965,7 +1965,7 @@ kall_ijn <- function(Mu, c0, c1, c2, c3, nsubs, nout) {
   # n = n'th time in horizon, n=1,...,nt
   # nsubs = # subjects
   # nout=nt = # times in time horizon
-
+  
   # INPUTS
   # -------
   # Mu = (nout)X(nsubs), Mean of Assay for nout=# output values, nsubs=#subjects
@@ -1982,7 +1982,7 @@ kall_ijn <- function(Mu, c0, c1, c2, c3, nsubs, nout) {
   #
   #
   # --------------
-
+  
   # Make full K matrix
   Kall <- array(0, dim = c(nsubs, nsubs, nout))
   skall <- matrix(0, nout, 1)
@@ -2060,7 +2060,7 @@ kmat_ijn <- function(Mu, n, c0, c1, c2, c3, nsubs, nout) {
   # column vector
   Mun_minus <- Mun %*% matrix(1, 1, nsubs) - matrix(1, nsubs, 1) %*% t(Mun)
   Kijn <- (1 / 4) * (Mun_minus^2) / Sig2plus + (1 / 2) * log(.5 * Sig2plus) - (1 / 4) * log(Sig2prod)
-
+  
   # ------------------------
   # Create output variable
   Kn <- Kijn
@@ -2101,7 +2101,7 @@ perrorc1 <- function(pH, Kall, nvec, Cbar) {
   # Create Kallall
   # Example: For nsamp=4 sampling times [n1,n2,n3,n4] we have
   #         Kallall=Kall(:,:,n1)+Kall(:,:,n2)+Kall(:,:,n3)+Kall(:,:,n4);
-
+  
   # Replace following statement with ONE statement below
   # ----------------
   # @@ LOOP APPROACH
@@ -2191,7 +2191,7 @@ getCov <- function(mdata) {
     covstart <- NA
     covend <- NA
   }
-
+  
   return(list(ncov = ncov, covnames = covnames, covstart = covstart, covend = covend))
 }
 
@@ -2243,7 +2243,7 @@ checkRequiredPackages <- function(pkg, repos = "CRAN") {
       } # nope, still didn't install
     }
   }
-
+  
   pkg %>%
     map_chr(managePkgs) %>%
     keep(~ . != "ok") %>%
@@ -2288,7 +2288,7 @@ obsStatus <- function(data) {
 
 binaries.installed <- function() {
   # checkRequiredPackages("purrr")
-
+  
   # #library(purrr)
   # exists <- function(name) {
   #   paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/") %>%
@@ -2299,7 +2299,7 @@ binaries.installed <- function() {
   #   "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
   #   "sNPeng.o", "sNPprep.o", "sSIMeng.o") %>%
   # map(exists) %>% unlist() %>% all() %>% return()
-
+  
   exists <- function(name) {
     file.exists(paste(system.file("", package = "Pmetrics"), "compiledFortran", name, sep = "/"))
   }
@@ -2314,12 +2314,12 @@ binaries.installed <- function() {
   return(installed)
 }
 
-#import functions into documentation
-
+#import recycled text into documentation
 template <- function(name){
   insert <- readLines(paste0("man-roxygen/", name,".R")) %>%
     stringr::str_replace("#' ","") %>%
-    stringr::str_replace("@param ","")
-  
-  return(paste0(insert, collapse = " "))
+    stringr::str_replace("<br>","  \n")
+  insert <- c(insert, "  \n")
+  insert <- paste(insert, collapse = " ")
+  return(insert)
 }

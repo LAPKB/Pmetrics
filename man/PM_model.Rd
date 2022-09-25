@@ -21,9 +21,9 @@ directly in R, or by reading a model text file in the current working directory.
 mod2 <- modEx$clone() #create an independent copy of modEx called mod2
 mod2$update(list(
   pri = list(
-   Ke = range(0, 1), #change the range
+   Ke = ab(0, 1), #change the range
    V = NULL, #this deletes the variable
-   V0 = range(10, 100) #add a new variable
+   V0 = ab(10, 100) #add a new variable
   ),
   sec = "V = V0 * WT" #add a new secondary equation
 )) 
@@ -120,9 +120,9 @@ first if you want to create a copied, yet independent new model.}
 \preformatted{mod2 <- modEx$clone() #create an independent copy of modEx called mod2
 mod2$update(list(
   pri = list(
-   Ke = range(0, 1), #change the range
+   Ke = ab(0, 1), #change the range
    V = NULL, #this deletes the variable
-   V0 = range(10, 100) #add a new variable
+   V0 = ab(10, 100) #add a new variable
   ),
   sec = "V = V0 * WT" #add a new secondary equation
 )) 

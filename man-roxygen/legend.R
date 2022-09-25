@@ -4,7 +4,10 @@
 #' See `plotly::schema()` > layout > layoutAttributes > legend and showlegend
 #' for more details on the available options for formatting. 
 #' If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will
-#' be set to `TRUE` automatically.
+#' be set to `TRUE` automatically.<br>
+#' <br>
 #' Examples:
-#' * `legend = T`
-#' * `legend = list(orientation = "h", font = list(color = "blue"))`
+#' \itemize{
+#' \item{`legend = T`}
+#' \item{`legend = list(orientation = "h", font = list(color = "blue"))`}
+#' }
