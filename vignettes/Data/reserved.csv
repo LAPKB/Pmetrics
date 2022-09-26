@@ -1,0 +1,28 @@
+Reserved Variable,Function in Pmetrics
+ndim,internal
+t,time
+x,array of compartment amounts
+xp,array of first derivative of compartment amounts
+rpar,internal
+ipar,internal
+p,array of primary parameters
+r,input rates
+b,input boluses
+npl,internal
+numeqt,output equation number
+ndrug,input number
+nadd,covariate number
+rateiv,intravenous input for inputs when DUR>0 in data files
+cv,covariate values array
+n,number of compartments
+nd,internal
+ni,internal
+nup,internal
+nuic,internal
+np,number of primary parameters
+nbcomp,bolus compartment array
+psym,names of primary parameters
+fa,biovailability
+tlag,lag time
+tin,internal
+tout,internal
