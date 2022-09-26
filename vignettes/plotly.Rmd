@@ -268,10 +268,10 @@ The values for x0 and x1 determine the left and right extent, and for y0 and y1 
 
 Here plotly does provide two functions to add annotations to plots as labels or as floating text.
 
-`add_annotations()` will add labels to data, allowing for connection between the data point and the label by an arrow. The options are detailed by typing `?add_annotations` into the R console. However, rather than following the hyperlink there to get additional information on options, you can get more help by typing `schema()` into the R console and expanding layout `r knitr::asis_output("\U25B6")` layoutAttributes 
+`plotly::add_annotations()` will add labels to data, allowing for connection between the data point and the label by an arrow. The options are detailed by typing `?add_annotations` into the R console. However, rather than following the hyperlink there to get additional information on options, you can get more help by typing `schema()` into the R console and expanding layout `r knitr::asis_output("\U25B6")` layoutAttributes 
 `r knitr::asis_output("\U25B6")` annotations `r knitr::asis_output("\U25B6")` items `r knitr::asis_output("\U25B6")`annotation.
 
-Similarly, `add_text()` adds labels/text to a plot, but without the connecting line. The options are detailed by typing `?add_text` into the R console.  You can get more options by typing `schema()` into the R console and expanding traces `r knitr::asis_output("\U25B6")` scatter 
+Similarly, `plotly::add_text()` adds labels/text to a plot, but without the connecting line. The options are detailed by typing `?add_text` into the R console.  You can get more options by typing `schema()` into the R console and expanding traces `r knitr::asis_output("\U25B6")` scatter 
 `r knitr::asis_output("\U25B6")` attributes `r knitr::asis_output("\U25B6")` text, textfont, and textposition. The others (textpositionsrc, textsrc, texttemplate, textemplatesrc) are more obscure and not needed.
 
 Annotations with connecting arrows...

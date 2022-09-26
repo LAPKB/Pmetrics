@@ -1,6 +1,12 @@
 url: https://lapkb.github.io/Pmetrics/
 navbar:
+  structure:
+      left:  [intro, reference, articles, tutorials, news]
+      right: [search, github]
   components:
+    intro:
+      text: Start Here
+      href: articles/pmetrics.html
     articles:
       text: Articles
       menu:
