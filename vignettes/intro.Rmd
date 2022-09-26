@@ -1,6 +1,8 @@
 ---
 title: "Introduction"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    css: style.css
 vignette: >
   %\VignetteIndexEntry{Introduction}
   %\VignetteEngine{knitr::rmarkdown}
@@ -19,8 +21,6 @@ library(Pmetrics)
 library(tidyverse)
 library(plotly)
 ```
-
-# Introduction 
 
 Thank you for your interest in Pmetrics! This guide provides
 instructions and examples to assist users of the Pmetrics R package, by
@@ -45,8 +45,9 @@ object-oriented R6 style of programming available in R that makes it more
 consistent with object-oriented languages such as Python. We will indicate
 old-style approaches with <span class="legacy">Legacy</span>.
 
+Functions and classes in <span class="r6">R6</span> are generally named with "PM_" as the prefix, e.g. `PM_load()` or `PM_final`. In <span class="legacy">Legacy</span>, functions and classes are prefixed without the underscore "_", such as `PMload()`, and `PMfinal`.
 
-**Here are some tips for using this guide.**
+**Tips for using this guide.**
 
 * Items that are hyperlinked can be selected to cross reference
 within this manual or link to external sites.

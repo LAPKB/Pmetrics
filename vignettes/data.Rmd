@@ -1,0 +1,282 @@
+---
+title: "Data objects"
+output: 
+  rmarkdown::html_vignette:
+    css: style.css
+vignette: >
+  %\VignetteIndexEntry{Data objects}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=F, message=F}
+library(Pmetrics)
+library(tidyverse)
+library(plotly)
+```
+
+## Introduction
+
+Pmetrics data  are either R6 objects loaded into memory or files, usually comma-separated (.csv). It is possible
+to use other separators, like the semicolon, by setting the appropriate argument with `setPMoptions()`. 
+
+```{r echo = T, eval = F}
+setPMoptions(sep = ";", dec = ",") 
+#changes field separator to ";" from default ","
+#and decimal separator from "." to ","
+```
+
+Examples of programs that can save .csv files are any text editor (e.g. TextEdit on Mac, Notepad on Windows) or spreadsheet program (e.g. Excel). **Please keep the number of characters in the file name ≤ 8.**
+
+## Data file use
+
+<span class="r6">R6</span> 
+
+R6 Pmetrics introduces a new concept, the data object. The idea of this object is to represent a dataset that is going to be modeled/simulated.
+All its behaviour is represented by the class `PM_data`. This class allows datasets to be checked, plotted, written to disk and more. Use `PM_data$new("filename")` to create a `PM_data()` object by reading the file.
+
+```{r echo=T, eval=FALSE}
+#assume that data.csv is in the working directory
+data1 <- PM_data$new("data.csv")
+```
+
+You can also build an appropriate data frame in R and provide that as an argument to `PM_data$new()`.
+
+```{r echo=T, eval=FALSE}
+#assume df is data frame with at least these columns:
+#id, time, dose, out
+data1 <- PM_data$new(df)
+```
+
+Once you have created the `PM_data()` object, you never need to create it again during your R session. You also don't have to bother copying the data file to the Runs folder each time you run the model.
+
+<span class="legacy">Legacy</span> 
+
+You must always have the the data file in the current working directory. You can manually copy it there from a previous run or some other folder or use the shortcut of providing a prior run number as an argument to `NPrun()` or `ITrun()`.
+
+```{r echo=T, eval=FALSE}
+#Run 1 - ensure that data.csv is in the working directory
+NPrun("data.csv", "model.txt")
+
+#run 2 - use the data from run 1 in this run
+#note that the file model.txt still has to be copied
+# into the working directory in this example
+NPrun(data = 1, "model.txt")
+```
+
+
+## Data format
+
+<span class="r6">R6</span>
+
+R6 Pmetrics can use file or data frame input, unlike Legacy which can only take file input. The  format is also much more flexible in R6. The only required columns are those below. There is no longer a requirement for a header or to prefix the ID column with "\#". However, any subsequent row
+that begins with "\#" will be ignored, which is helpful if you want to
+exclude data from the analysis, but preserve the integrity of the
+original dataset, or to add comment lines. The column order can be anything you wish, but the names should be the same as in the Legacy format below. Ultimately, `PM_data$new()` converts all valid data into the format used in Legacy Pmetrics.
+
+* ***ID*** This field can be numeric or character and
+identifies each individual. All rows must contain an ID, and all
+records from one individual must be contiguous. IDs should be 11 characters
+or less but may be any alphanumeric combination. **There can be at
+most 800 subjects per run.**
+
+* ***TIME*** This is the elapsed time in decimal hours since the first
+event. You may also specify time as clock time if you include a ***DATE*** column below. In that case the default format is HH:MM. Other formats can be specified. See `PM_data()` for more details. Every row must have an entry, and within a given ID, rows must be sorted chronologically, earliest to latest.
+ 
+* ***DATE***  This column is only required if ***TIME*** is clock time, detected by the presence of ":". The default format of the date column is YYYY-MM-DD. As for ***TIME***, other formats can be specified. See `?PM_data` for more details.
+
+* ***DOSE*** This is the dose amount. It should be "." for observation rows.
+
+* ***OUT*** This is the observation, or output value, e.g., concentration. For dose rows, it should be ".". If an observation occurred at a given time, but the result was missing, e.g. sample lost or below the limit of quantification, this should be coded as -99. There can be at most 150 observations for a given subject.
+
+* ***COVARIATES\...*** Columns with names other than the above will be interpreted as covariates.
+
+When `PM_data()` reads a file, it will standardize it to the Legacy format below. This means some inferences are made. For example, in the absence of EVID, all doses are interpreted as oral. If they are infusions, DUR must be included as for Legacy files below. EVID only needs to be included if EVID=4 (reset event) is required, described below. Similarly, INPUT and OUTEQ are only required if multiple inputs or outputs are being modeled. Lastly, ADDL and II are optional.  All inferred columns function the same as below for Legacy.
+
+Lastly, the standardized data are checked for errors with `PMcheck()`, which no longer needs to be called directly by the user.
+
+
+<span class="legacy">Legacy</span>
+
+Legacy Pmetrics can only use file input, typically a .csv, although as for R6 above, other separators are possible by using `setPMoptions()`. The format below is rigid for Legacy. All columns are required, and the order, capitalization and names of the header and the first 12 columns are fixed. All entries must be numeric, with the
+exception of ID and "." for non-required placeholder entries. Any subsequent row
+that begins with "\#" will be ignored, as above.
+
+A full example data file is below, with details following.
+
+***POPDATA DEC\_11***
+```{r echo=F, results='asis'}
+library(knitr)
+tab <- read.csv("Data/mdata.csv")
+names(tab)[1] <- "#ID"
+tab$OUT <- as.character(tab$OUT)
+kable(tab)
+```
+
+* ***POPDATA DEC\_11*** This is the fixed header for the file and must be
+in the first line. It identifies the version. It is not the date of your
+data file.
+
+* ***\#ID*** This field must be preceded by the "\#" symbol to confirm
+that this is the header row. It can be numeric or character and
+identifies each individual. All rows must contain an ID, and all
+records from one individual must be contiguous. Any subsequent row
+that begins with "\#" will be ignored, which is helpful if you want to
+exclude data from the analysis, but preserve the integrity of the
+original dataset, or to add comment lines. IDs should be 11 characters
+or less but may be any alphanumeric combination. **There can be at
+most 800 subjects per run.**
+
+* ***EVID*** This is the event ID field. It can be 0, 1, or 4. Every row
+must have an entry.
+
+    + 0 = observation
+
+    + 1 = input (e.g. dose)
+
+    + 2, 3 are currently unused
+
+    + 4 = reset, where all compartment values are set to 0 and the time
+counter is reset to 0. This is useful when an individual has multiple
+sampling episodes that are widely spaced in time with no new
+information gathered. This is a dose event, so dose information needs
+to be complete.
+
+* ***TIME*** This is the elapsed time in decimal hours since the first
+event. It is not clock time (e.g. 09:30), although the `PMmatrixRelTime()`
+function can convert dates and clock times to decimal hours. 
+Every row must have an entry, and within a given ID, rows
+must be sorted chronologically, earliest to latest.
+
+* ***DUR*** This is the duration of an infusion in hours. If EVID=1,
+there must be an entry, otherwise it is ignored. For a bolus (i.e. an
+oral dose), set the value equal to 0.
+
+* ***DOSE*** This is the dose amount. If EVID=1, there must be an entry,
+otherwise it is ignored.
+
+* ***ADDL*** This specifies the number of additional doses to give at
+interval II. It may be missing for dose events (EVID=1 or 4), in which
+case it is assumed to be 0. It is ignored for observation (EVID=0)
+events. Be sure to adjust the time entry for the subsequent row, if
+necessary, to account for the extra doses. If set to -1, the dose is
+assumed to be given under steady-state conditions. ADDL=-1 can only be
+used for the first dose event for a given subject, or an EVID=4 event,
+as you cannot suddenly be at steady state in the middle of dosing
+record, unless all compartments/times are reset to 0 (as for an EVID=4
+event). To clarify further, when ADDL=-1, all compartments in the
+model will contain the predicted amounts of drug at the end of the
+100th II interval.
+
+* ***II*** This is the interdose interval and is only relevant if ADDL
+is not equal to 0, in which case it cannot be missing. If ADDL=0 or is
+missing, II is ignored.
+
+* ***INPUT*** This defines which input (i.e. drug) the DOSE corresponds
+to. Inputs are defined in the model file.
+
+* ***OUT*** This is the observation, or output value. If EVID=0, there
+must be an entry; if missing, this must be coded as -99. It will be
+ignored for any other EVID and therefore can be ".". There can be at
+most 150 observations for a given subject.
+
+* ***OUTEQ*** This is the output equation number that corresponds to the
+OUT value. Output equations are defined in the model file.
+
+* ***C0, C1, C2, C3*** These are the coefficients for the assay error
+polynomial for that observation. Each subject may have up to one set
+of coefficients per output equation. If more than one set is detected
+for a given subject and output equation, the last set will be used. If
+there are no available coefficients, these cells may be left blank or
+filled with "." as a placeholder.
+
+* ***COVARIATES***\... Any column after the assay error coefficients is assumed
+to be a covariate, one column per covariate. The first row for any subject
+must have a value for all covariates, since the first row is always a dose.
+Covariate values are applied at the time of doses.
+
+## Manipulation of CSV files
+
+<span class="r6">R6</span>
+
+#### Read
+
+As we have seen,  `PM_data$new("filename")` will 
+read an appropriate data file in the current working directory to create a 
+new `PM_data` object. 
+
+#### Write
+
+`PM_data$write("filename")` will write the `PM_data` object to a file called
+"filename". This can be useful if you have loaded or created a data file and then
+changed it in R.
+
+#### Standardize
+
+`PM_data$new()` automatically standardizes the data into the full format used by Legacy. This includes conversion of calendar date / clock time into decimal elapsed time.
+
+#### Validate
+
+`PM_data$new()` automatically calls `PMcheck()` so the data are validated as the data object is created.
+  
+
+<span class="legacy">Legacy</span> 
+
+#### Read
+
+`PMreadMatrix("filename", ...)` reads *filename* and
+creates a PMmatrix object in R. However, unlike R6, it cannot be used
+to run a model. For that, you need to copy the file into the working directory
+each time, either yourself or by using the `NPrun(data = 1, ...)` shortcut, for 
+example.
+
+#### Write
+
+`PMwriteMatrix(data.frame, "filename", ...)` writes an
+appropriate data frame as a new .csv file. It will first check the
+data.frame for errors via the `PMcheck()` function below, and writing will
+fail if errors are detected. This can be overridden with `override=T`.
+
+#### Standardize
+
+No standardizing occurs in Legacy as the file format must always be standard. To convert calendar dates and clock times to elapsed decimal time, use `PMmatrixRelTime()`. This function converts dates and clock times of
+specified formats into relative times for use in the NPAG, IT2B and
+Simulator engines. The output is used to create a data frame with relative
+times that can be saved as a new .csv file with `PMwriteMatrix()`, which in turn
+serves as input to a run. 
+
+#### Validate
+
+`PMcheck()` will check a .csv file named *filename* or a `PMmatrix` data frame containing a previously loaded .csv file (the output of `PMreadMatrix()`) for errors which would cause the analysis to fail. If a model file is provided, and the data file has no errors, it will also check the model file for errors. If it finds errors, it will generate a new *errors.xlsx* file with all errors
+highlighted and commented so that you can find and correct them easily. `PMcheck()` is automatically called with every `NPrun()`, `ITrun()`, `ERRrun()`, and `SIMrun()` call, unless the `nocheck = T` argument is used.
+
+<span class="r6">R6</span> <span class="legacy">Legacy</span> 
+
+The following functions are the same in either R6 or Legacy.
+
+* `PMwrk2csv()` This function will convert old-style, single-drug USC\*PACK
+.wrk formatted files into Pmetrics data .csv files. 
+
+* `PMmb2csv()` This function will convert USC\*PACK .mb files into Pmetrics
+data .csv files.
+
+* `NM2PM()` Although the structure of Pmetrics data files is similar to
+NONMEM, there are some differences. This function attempts to
+automatically convert to Pmetrics format. It has been tested on several
+examples, but there are probably NONMEM files which will cause it to
+crash. Running `PMcheck()` afterwards is a good idea. 
+
+## Summary of R6 and Legacy Data Differences
+
+```{r echo=F, results='asis'}
+library(knitr)
+tab <- read.csv("Data/RLcomp_data.csv")
+kable(tab)
+```

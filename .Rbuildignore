@@ -10,3 +10,5 @@ compile.*
 ^docs$
 ^pkgdown$
 ^\.github$
+^Meta$
+^doc$

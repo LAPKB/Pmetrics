@@ -1,0 +1,788 @@
+---
+title: "Models"
+output: 
+  rmarkdown::html_vignette:
+    css: style.css
+vignette: >
+  %\VignetteIndexEntry{Models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=F, message=F}
+library(Pmetrics)
+library(tidyverse)
+library(plotly)
+```
+
+## Specifying Models in R6
+
+In <span class="r6">R6</span> Pmetrics, use the `PM_model` function to create models directly
+in R. There are two ways to do this.
+
+* The first method is to specify the name of a .txt model file in the same format as for [Legacy Models](#specifying-models-in-legacy) 
+
+```{r echo = T, eval = F}
+mod1 <- PM_model$new("model.txt") 
+#assumes model.txt is in working directory
+#check with list.files() and/or getwd()
+```
+
+* The second way is to create a list in R. Blocks in the Legacy model.txt files which were delimited with the "#" character become lists in R6.
+
+The R6 list model components are:
+
+* [PRImary](#priR6)
+* [COVariate](#covR6)
+* [SECondary](#secR6)
+* [BOLus](#bolR6)
+* [INItial conditions](#iniR6)
+* [F (bioavailability)](#FaR6)
+* [LAG time](#lagR6)
+* [DIFferential equations](#diffR6)
+* [OUTputs](#outR6)
+
+
+### PRImary variables {#priR6}
+Primary variables are the model parameters that are to be estimated by
+Pmetrics or are designated as fixed parameters with user specified
+values. It should be a list of variable names, one name to a line.
+Variable names should be 11 characters or fewer. Some variable names are 
+[reserved](#reserved) for use by Pmetrics and cannot be used as
+primary variable names. **The number of primary variables must be
+between 2 and 32, with at most 30 random or 20 fixed.**
+
+Each variable can be specified by `ab` or `msd`. The first defines the absolute search space for that parameter for NPAG/NPOD, i.e., the range. For IT2B/RPEM, it defines the mean of the prior as the midpoint of the range, and the range covers 6 standard deviations, e.g. ±3 SD above and below the mean, or 99.7% of the prior distribution. `msd` is the companion function that specifies a mean and SD in IT2B and RPEM. For NPAG/NPOD, it will be converted in to a range in the reverse fashion as described for `ab`. For both specifying functions, `gtz` is an argument to force the parameter value to be positive, i.e. `gtz=T`, which is the default. To allow negative parameters, set `gtz=F`.
+
+```{r echo=T, eval=F}
+mod <- PM_model$new(list(
+  pri = list(
+    Ke = ab(0,5),
+    V = msd(100,20),
+    eff = ab(-2,2,gtz=F)
+  )
+))
+```
+
+
+### COVariates {#covR6}
+Covariates are subject-specific data, such as body weight, contained in
+the data .csv file. The covariate names, which are the column names in
+the data file, must be declared, even if not used in the model object. Once declared, they can be used in secondary variable
+and differential equations. The order and names should be the same as in the data file.
+
+Covariates are applied at each dose event. The first dose event for each
+subject must have a value for every covariate in the data file. 
+
+<span class="update">Update</span> By default, missing covariate values for subsequent dose events are linearly interpolated between existing values, or carried forward if the first value is the only non-missing entry.
+
+To specify a new covariate value at a time other than a dose, enter a dose event in the data file with 0 dose amount and the new covariate value.
+
+```{r echo=T, eval=F}
+mod <- PM_model$new(list(
+  pri = list(...),
+  cov = list("wt","age")
+))
+```
+
+### SECondary variables {#secR6}
+Secondary variables are those that are defined by equations that are
+combinations of primary, covariates, and other secondary variables. If
+using other secondary variables, define them first within this block.
+Equation syntax must be Fortran. Specify each variable equation as a character vector. It is permissible to have conditional
+statements, but because expressions in this block are translated into
+variable declarations in Fortran, expressions other than of the form \"X = function(Y)\" must be on a new line, prefixed by \"&\" and contain only variables which have been previously defined in the Primary, Covariate, or Secondary blocks. 
+
+In the example below, V0 is the primary parameter which will be estimated, but internally, the model uses V as V0*wt, unless age is >18, in which case weight is capped at 75 kg. It's the same for CL0. Note that the conditional statement is not named.
+
+```{r echo=T, eval=F}
+mod <- PM_model$new(list(
+  pri = list(
+    CL0 = ab(0,5),
+    V0 = msd(10,3),
+    eff = ab(-2,2,gtz=F)
+  ),
+  cov = list("wt","age"),
+  sec = list(
+    V = "V0*wt",
+    "&IF(age >18) V = V0 * 75",
+    CL = "CL0 * wt"
+  )
+))
+```
+
+### BOLus inputs {#bolR6}
+
+By default, inputs with DUR (duration) of 0 in the data .csv file are
+"delivered" instantaneously to the model compartment equal to the
+input number, i.e. input 1 goes to compartment 1, input 2 goes to
+compartment 2, etc. This can be overridden with NBCOMP(input number) =
+compartment number.
+
+```{r echo=T, eval=F}
+mod <- PM_model$new(list(
+  bol = list("NBCOMP(1) = 2")
+))
+```
+### INItial conditions {#iniR6}
+
+By default, all model compartments have zero amounts at time 0. This can be changed by specifying the compartment amount as X(.) = expression, where "." is the compartment number. Primary and secondary variables and covariates may be used in the expression, as can conditional statements in Fortran code. An "&" continuation prefix is not necessary in this block for any statement, although if present, will be ignored.
+
+```{r echo=T, eval=F}
+mod <- PM_model$new(list(
+  pri = pri = list(
+    Ke = ab(0,5),
+    V = msd(100,30),
+    IC3 = ab(0,1000)
+  ),
+  cov = list("wt","age","IC2"),
+  ini = list(
+    X2 = "IC2*V",
+    X3 = "IC3"
+  )
+))
+```
+
+In the example above, IC is a covariate with the measured trough
+concentration prior to an observed dose and IC3 is a fitted primary parameter specifying an initial amount in unobserved compartment 3.
+
+In the first case, the initial condition for compartment 2 becomes the
+value of the IC covariate (defined in `cov` list) multiplied by
+the current estimate of V during each iteration. This is useful when a
+subject has been taking a drug as an outpatient, and comes in to the lab for PK sampling, with measurement of a concentration immediately prior to a witnessed dose, which is in turn followed by more sampling. In this case, IC or any other covariate can be set to the initial measured concentration, and if V is the volume of compartment 2, the  initial condition (amount) in compartment 2 will now be set to the measured concentration of drug multiplied by the estimated volume for each iteration until convergence.
+
+In the second case, the initial condition for compartment 3 becomes
+another variable, IC3 defined in the `pri` list, to fit in the
+model, given the observed data.
+
+### FA (bioavailability) {#FaR6}
+
+Specify the bioavailability term, if present. Use the form FA(.) =
+expression, where "." is the input number. Primary and secondary
+variables and covariates may be used in the expression, as can
+conditional statements in Fortran code. An "&" continuation prefix is not necessary in this block for any statement, although if present, will be ignored.
+
+```{r echo=T, eval=F}
+mod <- PM_model$new(list(
+  pri = pri = list(
+    Ke = ab(0,5),
+    V = msd(100,30),
+    FA1 = ab(0,1)
+  ),
+  fa = list(
+    fa1 = "FA1"
+  )
+)
+```
+
+### LAG time {#lagR6}
+
+Specify the lag term, if present, which is the delay after an absorbed
+dose before observed concentrations. Use the form TLAG(.) = expression, where "." is the input number. Primary and secondary variables and covariates may be used in the expression, as can conditional statements in Fortran code. An "&" continuation prefix is not necessary in this block for any statement, although if present, will be ignored.
+
+```{r echo=T, eval=F}
+mod <- PM_model$new(list(
+  pri = pri = list(
+    Ke = ab(0,5),
+    V = msd(100,30),
+    lag1 = ab(0,4)
+  ),
+  lag = list(tlag1 = "lag1")
+  )
+)
+```
+
+### Differential equations
+
+Specify a model in terms of ordinary differential equations, in Fortran format. XP(.) is the notation for dX(.)/dt, where "." is the
+compartment number. X(.) is the amount in the compartment. **There can
+be a maximum of 20 such equations.**
+
+Specify equations as elements in a list, with XP(1) replaced by XP1, for example, to name the list, and the list value a character vector in Fortran.
+
+
+```{r echo=T, eval=F}
+mod <- PM_model$new(list(
+  pri = pri = list(
+    Ka = ab(0,5),
+    Ke = ab(0,5),
+    V = msd(100,30),
+    Kcp = ab(0,5),
+    Kpc = ab(0,5)
+  ),
+  diff = list(
+    xp1 = "-Ka * X(1)",
+    xp2 = "RATEIV(1) + Ka * X(1) - (Ke + Kcp) * X(2) + Kpc * X(3)",
+    xp3 = "Kcp * X(2) - Kpc * X(3)"
+  )
+))
+```
+
+RATEIV(1) is the notation to indicate an infusion of input 1 (typically drug 1). The duration of the infusion and total dose is defined in the data.csv file. **Up to 7 inputs are currently
+allowed.** These can be used in the model file as RATEIV(1), RATEIV(2), etc. The compartments for receiving the inputs of oral (bolus) doses are defined in the `bol` list, but can be accessed by using the B(1), B(2), etc. notation in equations.
+
+
+### OUTputs {#outR6}
+
+Output equations are in Fortran format. Outputs are of the form Y(.) =
+expression, where "." is the output equation number. Primary and
+secondary variables and covariates may be used in the expression, as can conditional statements in Fortran code. An "&" continuation prefix is not necessary in this block for any statement, although if present, will be ignored. **There can be a maximum of 6 outputs.** 
+
+They are referred
+to as Y(1), Y(2), etc. These equations may also define a model
+explicitly as a function of primary and secondary variables and
+covariates.
+
+The `out` list is a series of nested lists.  The outer list defines all the outputs. The next level defines each output equation. Within the equation list is the equation and the error model. Within the error model for that output, is the last list comprising model and assay error specifications. 
+
+* To name output equations, Y(1) is replaced by Y1
+```{r echo=T, eval=F}
+out = list(
+  Y1 = list(...)
+)
+```
+* The output equation is a character vector followed by an error list. 
+
+```{r echo=T, eval=F}
+out = list(
+  Y1 = list(
+    "X(1)/V",
+    err = list(...)
+  )
+)
+```
+
+* The error model for an output equation has two elements. The first is the `model` error, which can be one of three functions: `proportional`, `additive`, or `combination`. The arguments to these functions are a number and optionally `fixed`, which defaults to `FALSE`. If `fixed` is `FALSE`, the number serves as the starting estimate for the model error. If `fixed` is `TRUE`, the number serves as the model error, with no estimation. Note that you can only fix the additive model currently to zero.
+
+The second element is the `assay` error model. It is a vector of 4 numbers that define a polynomial equation to permit calculation of the standard deviation of an observation, based on the noise of the asaay. The four terms estimate SD according to the folowing equation: $C0 + C1 * [obs] + C2 * [obs]^2 + C3 * [obs]^3$ and $[obs]$ is the observation. The values for the coefficients should ideally come from the analytic lab in the form of inter-run standard deviations or coefficients of variation at standard concentrations. You can use the Pmetrics function `makeErrorPoly()` to choose the best set of coefficients that fit the data from the
+laboratory. <span class="update">To be done:</span>Alternatively, if you have no information about the assay,
+you can use the Pmetrics `ERRrun()` engine as an argument to the `run` function for `PM_fit` objects  (i.e., `$run(engine="err")`) to estimate the coefficients
+from the data. Finally, you can use a generic set of coefficients. We
+recommend that as a start, $C0$ be set to half of the lowest
+concentration in the dataset and $C1$ be set to 0.1. $C2$ and $C3$ can
+be 0.
+
+The proportional model weights each observation by $1/(\gamma * SD)^2$, where $\gamma$ is either fixed or estimated. The additive model weights each observation by $1/(\lambda + SD)^2$, where $\lambda$ is either fixed or estimated. The combination model uses $1/((\gamma * SD)^2 + (\lambda + SD)^2)$.
+
+In the proportional model, $\gamma$ is a scalar on assay SD. In general,
+well-designed and executed studies and models with low mis-specification will have data with $\gamma$ values approaching 1. Values <1 suggest over-inflated assay noise. Poor quality, noisy data will result in $\gamma$ of 5 or more. A good starting value for $\gamma$ is usually 5, and sometimes 10 if data are particularly complex or noisy.
+
+In the additive model, $\lambda$ is additive to assay SD. In general,
+well-designed and executed studies and models with low mis-specification will have data with $\lambda$ values approaching 0. Values of 0 may suggest over inflated assay noise. Poor quality, noisy data will result in $\lambda$ of $5*C0$ or more. A good starting value for $\lambda$ is usually $3*C0$. Note, that $C0$
+should generally not be 0, as it represents machine noise (e.g. HPLC or
+mass spectrometer) that is always present.
+
+
+```{r echo=T, eval=F}
+out = list(
+  Y1 = list(
+    "X(1)/V",
+    err = list(
+      model = proportional(1),
+      assay = c(0.15, 0.1, 0, 0)
+    )
+  )
+)
+```
+
+
+```{r echo=T, eval=F}
+out = list(
+  Y1 = list(
+    "X(1)/V",
+    err = list(
+      model = additive(1, fixed = TRUE)
+      assay = c(0.05, 0.1, 0, 0)
+    )
+)
+```
+
+More complete examples.
+
+```{r echo=T, eval=F}
+mod <- PM_model$new(list(
+  pri = pri = list(
+    Ke = ab(0,5),
+    V = msd(100,30),
+  ),
+  out = list(
+    y1 = list(
+      "X(1)/V",
+      err = list(
+        model = proportional(5),
+        assay = c(0.05, 0.1, 0, 0)
+      )
+    )
+  )
+))
+
+mod2 <- PM_model$new(list(
+  pri = pri = list(
+    kin = ab(0,5),
+    kout = ab(0,5),
+    tpd = ab(0,5),
+    V = msd(100,30),
+  ),
+  sec = list("RES = B(1) * KIN/(KIN-KOUT) * (EXP(-KOUT*TPD)-EXP(-KIN*TPD))"),
+  out = list(
+    y1 = list(
+      "RES/V",
+      err = list(
+        model = combination(0.4,3) #additive, proportional
+        assay = c(0.3, 0.15, 0, 0)
+      )
+    )
+  )
+))
+```
+
+This last example is known as the Bateman equation for a model with
+linear absorption (KIN) into and elimination (KOUT) from a central
+compartment, and a time post-dose (TPD) or lag time. Here B(1) is the
+oral bolus dosing vector for drug 1, and V is the volume of the central
+compartment.
+
+## Updating Models in R6
+
+Because models are loaded as memory items in R6 Pmetrics, they can be modified in R without having to edit text files. This function is accessed via the `$update()` method for `PM_model` objects.
+
+All R6 objects are mini-environments, so direct copies of an R6 environment are in the same environment and changes to one will change them all. This means the following code will likely not work as intended.
+
+```{r echo=T, eval = F}
+mod2 <- mod1
+mod2$update(...)
+```
+
+When *mod2* is updated, mod1 will update as the are in the same environment. The way to create an independent copy of an R6 object, which does not share the same environment, is to use the `$clone()` method.
+
+```{r echo=T, eval = F}
+mod2 <- mod1$clone()
+mod2$update(...)
+```
+
+Now changes to mod2 do not propagate to mod1.
+
+To update a model, simply supply the list items you wish to change with the new values. 
+
+```{r echo=T, eval = F}
+
+mod2$update(list(
+  pri = list(Ke = ab(1,3),
+             V = NULL,
+             V0 = ab(0, 20)),
+  sec = list(V = "V0 * wt")
+))
+```
+This example changes the range of *Ke*, deletes *V*, adds *V0*, and defines a new secondary relationship for *V = V0 \* wt*. 
+
+## Specifying Models in Legacy
+
+<span class="legacy">Legacy</span> models are only text files. All the following also apply when using a model text file with `PM_model()` in R6 Pmetrics. In either R6 or Legacy Pmetrics, models are ultimately translated into Fortran text files with a header version of TSMULT\... 
+
+However, after Pmetrics version 0.30, we  adopted a
+very simple user format that Pmetrics will use to generate the Fortran
+code automatically for you. Version 0.4 additionally eliminated the
+previously separate instruction file. A model library is available on
+our website at
+[http://www.lapk.org/pmetrics.php](http://www.lapk.org/pmetrics.php).
+
+**Naming your model files.** The default model file name is "model.txt,"
+but you can call them whatever you wish. However, **please keep the
+number of characters in the model file name ≤ 8**. When you use a model
+file in `NPrun()`, `ITrun()`, `ERRrun()`, or `SIMrun()`, Pmetrics will make a
+Fortran model file of the same name, temporarily renaming your file. At
+the end of the run, your original model file will be in the /inputs
+subfolder of the run folder, and the generated Fortran model file will
+be called "model.for" and moved to the /etc subfolder of the run folder.
+If your model is called "mymodel.txt", then the Fortran file will be
+"mymodel.for".
+
+You can still use appropriate Fortran model files directly, but we
+suggest you keep the .for extension for all Fortran files to avoid
+confusion with the new format. If you use a .for file as your model, you
+will have to specify its name explicitly in  `NPrun()`, `ITrun()`,
+`ERRrun()`, or `SIMrun()`, since the default model name again is
+"model.txt." If you use a .for file directly, it will be in the /inputs
+subfolder of the run folder, not in /etc, since you did not use the
+simpler template as your model file.
+
+**Structure of model files.** The model file is a text file with 11
+blocks, each marked by \"\#\" followed by a header tag. Only details which are different than the R6 documentation are included below.
+
+* [\#PRImary variables](#pri)
+* [\#COVariates](#cov)
+* [\#SECcondary variables](#sec)
+* [\#BOLus inputs](#bol)
+* [\#INItial conditions](#ini)
+* [\#Fa (bioavailability)](#fa)
+* [\#LAG time](#lag)
+* [\#DIFferential equations](#dif)
+* [\#OUTputs](#out)
+* [\#ERRor](#err)
+* [\#EXTra](#extra)
+
+For each header, only the capital letters are required for recognition
+by Pmetrics. The blocks can be in any order, and header names are
+case-insensitive (i.e. the capitalization here is just to show which
+letters are required). Fortran is also case-insensitive, so in variable
+names and expressions case is ignored. Details of each block are next,
+followed by a [complete example](#completeEx).
+
+Important: Sometimes it is important to preserve spacing and formatting in Fortran code that you might insert into blocks, particularly the \#EXTRA block. If you wish to do this, insert [format] and [\/format] before and after any code that you wish to reproduce verbatim with spacing in the fortran model file.
+
+Comments: You can insert comments into your model text file by starting a line with a capital "C" followed by a space. These lines will be removed/ignored in the final fortran code.
+
+### Primary variables {#pri}
+
+Primary variables are the model parameters that are to be estimated by
+Pmetrics or are designated as fixed parameters with user specified
+values. It should be a list of variable names, one name to a line.
+Variable names should be 11 characters or fewer. Some variable names are [reserved](#reserved) for use by Pmetrics and cannot be used as
+primary variable names. **The number of primary variables must be
+between 2 and 32, with at most 30 random or 20 fixed.**
+
+On each row, following the variable name, include the range for the
+parameter that defines the search space. These ranges behave slightly
+differently for NPAG, IT2B, and the simulator.
+
+- For all engines, the format of the limits is *min, max*. A single
+    value will indicate that the parameter is to be fixed but unknown in
+    the population, i.e. the value is taken as the starting point for
+    the optimization, but the final value will depend on the model and
+    data and will be the same across the population. A single value
+    followed by an "!" will indicate that this value is to be held
+    constant (i.e. fixed and known) across the population, and not to be
+    estimated.
+
+- For **NPAG**, when *min/max* limits are specified, they are
+    absolute, i.e. the algorithm will not search outside this range.
+
+- For **IT2B**, the range defines the Bayesian prior distribution of
+    the parameter values for cycle 1. For each parameter, the mean of
+    the Bayesian prior distribution is taken as the middle of the range,
+    and the standard deviation is *xsig*\*range (see [[IT2B
+    runs]{.underline}](\l)). Adding a plus sign (+) to a line will
+    prevent that parameter from being assigned negative values. NPAG and
+    the simulator will ignore the pluses as the ranges are absolute for
+    these engines. Note that prior to version 1.5.0, this used to be an
+    exclamation point (!) but to be consistent throughout the model
+    file, the exclamation point is now used when fixed values are
+    desired.
+
+- The **simulator** will ignore the ranges with the default value of
+    NULL for the *limits* argument. If the simulator *limits* argument
+    is set to NA, which will mean that these ranges will be used as the
+    limits to truncate the simulation (see [[Simulator
+    Runs]{.underline}](\l)).
+
+Example:
+<div class="script">
+\#Pri\
+KE, +0, 5\
+V, 0.01, 100\
+KA, 0, 5\
+KCP, 5\
+KPC, 0 , 5\
+Tlag1, 0, 2\
+IC3, 0, 10000\
+FA1, 0.5!
+</div>
+
+### Covariates {#cov}
+
+By default, missing covariate values for subsequent dose events are
+linearly interpolated between existing values, or carried forward if the
+first value is the only non-missing entry. To suppress interpolation and
+carry forward the previous value in a piece-wise constant fashion,
+include an exclamation point (!) in any declaration line.
+
+**Note** that any covariate relationship to any parameter may be
+described as the user wishes by mathematical equations and Fortran code,
+allowing for exploration of complex, non-linear, time-dependent, and/or
+conditional relationships. This is accomplished in the [\#Sec](#sec) block.
+
+Example:
+
+<div class="script">
+\#Cov\
+wt\
+cyp\
+IC!
+</div>
+
+where IC will be piece-wise constant and the other two will be linearly
+interpolated for missing values.
+
+### Secondary variables {#sec}
+
+Equation syntax must be Fortran. It is permissible to have conditional
+statements, but because expressions in this block are translated into
+variable declarations in Fortran, expressions other than of the form \"X
+= function(Y)\" must be prefixed by a \"&\" and contain only variables
+which have been previously defined in the Primary, Covariate, or
+Secondary blocks. Note that prior to version 1.5.0, the continuation
+symbol was "+" before each line, but to avoid confusion with the use of
+"+" in the Primary block for IT2B models, and to be consistent with
+Fortran notation, the "&" is used henceforth.
+
+Example:
+
+<div class="script">
+\#Sec\
+CL = Ke \* V \* wt\*\*0.75\
+& IF(cyp .GT. 1) CL = CL \* cyp
+</div>
+
+### Bolus inputs {#bol}
+
+Example:
+
+<div class="script">
+\#Bol\
+NBCOMP(1) = 2
+</div>
+
+### Initial conditions {#ini}
+
+Example:
+
+<div class="script">
+\#Ini\
+X(2) = IC\*V\
+X(3) = IC3\
+</div>
+
+In the first case, the initial condition for compartment 2 becomes the
+value of the IC covariate (defined in \#Covariate block) multiplied by
+the current estimate of V during each iteration. This is useful when a
+subject has been taking a drug as an outpatient, and comes in to the lab
+for PK sampling, with measurement of a concentration immediately prior
+to a witnessed dose, which is in turn followed by more sampling. In this
+case, IC or any other covariate can be set to the initial measured
+concentration, and if V is the volume of compartment 2, the initial
+condition (amount) in compartment 2 will now be set to the measured
+concentration of drug multiplied by the estimated volume for each
+iteration until convergence.
+
+In the second case, the initial condition for compartment 3 becomes
+another variable, IC3 defined in the \#Primary block, to fit in the
+model, given the observed data.
+
+### Fa (bioavailability) {#Fa}
+
+Specify the bioavailability term, if present. Use the form FA(.) =
+expression, where \".\" is the input number. Primary and secondary
+variables and covariates may be used in the expression, as can
+conditional statements in Fortran code. An \"&\" continuation prefix is
+not necessary in this block for any statement, although if present, will
+be ignored.
+
+Example:
+
+<div class="script">
+\#Fa\
+FA(1) = FA1
+</div>
+
+### Lag time {#lag}
+
+Example:
+
+<div class="script">
+\#Lag\
+TLAG(1) = Tlag1
+</div>
+
+### Differential equations {#dif}
+
+Example:
+
+<div class="script">
+\#Dif\
+XP(1) = -KA\*X(1)\
+XP(2) = RATEIV(1) + KA\*X(1) - (KE+KCP)\*X(2) + KPC\*X(3)\
+XP(3) = KCP\*X(2) - KPC\*X(3)
+</div>
+
+### Outputs {#out}
+
+Output equations, in Fortran format. Outputs are of the form Y(.) =
+expression, where \".\" is the output equation number. Primary and
+secondary variables and covariates may be used in the expression, as can
+conditional statements in Fortran code. An \"&\" continuation prefix is
+not necessary in this block for any statement, although if present, will
+be ignored. **There can be a maximum of 6 outputs.** They are referred
+to as Y(1), Y(2), etc. These equations may also define a model
+explicitly as a function of primary and secondary variables and
+covariates.
+
+Examples:
+
+<div class="script">
+\#Out\
+Y(1) = X(2)/V
+
+\#OUT
+
+RES = B(1) \* KIN/(KIN-KOUT) \* (EXP(-KOUT\*TPD)-EXP(-KIN\*TPD))
+
+Y(1) = RES/VD
+</div>
+
+### Error {#err}
+
+Unlike the R6, the error block is separate from the output block. In Legacy Pmetrics, this block contains all the information Pmetrics requires for the
+structure of the error model. 
+
+To specify the model in this block, the first line needs to be either
+L=number or G=number for a $\lambda$ or $\gamma$ error model. The
+number is the starting value for $\lambda$ or $\gamma$. If you include an exclamation point (!) in the declaration,
+then $\lambda$ or $\gamma$ will be fixed and not estimated. Recall that you can
+only fix $\lambda$ currently to zero.
+
+The next line(s) contain the values for $C0$, $C1$, $C2$, and $C3$,
+separated by commas. There should be one line of coefficients for each
+output equation. By default Pmetrics will use values for these
+coefficients found in the data file. If none are present or if the model
+declaration line contains an exclamation point (!) the values here will
+be used.
+
+Example 1: estimated $\lambda$, starting at 0.4, one output, use data file
+coefficients but if missing, use 0.1,0.1,0,0.
+
+<div class="script">
+\#Err\
+L=0.4\
+0.1,0.1,0,0\
+</div>
+
+Example 2: fixed $\gamma$ of 2, two outputs, use data file coefficients but
+if missing, use 0.1,0.1,0,0 for the first output, but use 0.3, 0.1, 0, 0
+for output 2 regardless of what is in the data file.
+
+<div class="script">
+\#Err\
+G=2!\
+0.1,0.1,0,0\
+0.3,0.1,0,0!\
+</div>
+
+### Extra
+
+This block is for advanced Fortran programmers only. 
+<span class="update>Update</span>It is not yet implemented in R6.
+Occasionally, for very complex models, additional Fortran subroutines are required. They can be placed here. The code must specify complete Fortran subroutines
+which can be called from other blocks with appropriate call functions.
+As stated earlier, sometimes it is important to preserve spacing and
+formatting in Fortran code that you might insert into blocks,
+particularly the \#EXTRA block. If you wish to do this, insert [format] and [\/format] in the fortran model file around the affected code.
+
+### Reserved Names {#reserved}
+
+The following cannot be used as primary, covariate, or secondary
+variable names. They can be used in equations, however.
+
+```{r echo=F}
+res <- read.csv("Data/reserved.csv")
+knitr::kable(res, col.names = gsub("[.]", " ", names(res)))
+```
+
+
+### Complete Example {#completeEx}
+
+Here is a complete example of a model file, as of Pmetrics version 0.40
+and higher:
+
+<div class="script">
+\#Pri\
+KE, 0, 5\
+V0, 0.1, 100\
+KA, 0, 5\
+Tlag1, 0, 3\
+
+\#Cov\
+wt\
+C this weight is in kg\
+
+\#Sec\
+V = V0*wt\
+
+\#Lag\
+TLAG(1) = Tlag1\
+
+\#Out\
+Y(1) = X(2)/V\
+
+\#Err\
+L=0.4\
+0.1,0.1,0,0\
+</div>
+
+*Notes*:
+
+By omitting a \#Diffeq block with ODEs, Pmetrics understands that you
+are specifying the model to be solved algebraically. In this case, at
+least KE and V must be in the Primary or Secondary variables. KA, KCP,
+and KPC are optional and specify absorption, and transfer to and from
+the central to a peripheral compartment, respectively.
+
+The comment line "C this weight is in kg" will be ignored.
+
+## Updating models in Legacy
+
+The only way to update a model is to edit the text file and copy it into the working directory to be included in a new run. The advantage is that it is quick and relatively easy. The disadvantage is that you have to keep editing, copying and pasting files, and unless your documentation in R or elsewhere is good, you have no idea how you changed the model from run to run. In contrast, by using the `$update()` method in R6, you can see a written record of how the model evolved over the project.
+
+## Brief Fortran Tutorial
+
+Much more detailed help is available from
+http://www.cs.mtu.edu/\~shene/COURSES/cs201/NOTES/fortran.html.
+
+```{r echo=F}
+for1 <- read.csv("Data/fortran1.csv")
+knitr::kable(for1, col.names = gsub("[.]", " ", names(for1)))
+
+```
+
+
+
+------------------------- ----------------- -----------------------
+**Relational Operator**   **Alternative**   **Meaning**
+\<                        .LT.              less than
+\<=                       .LE.              less than or equal
+\>                        .GT.              greater than
+\>=                       .GE.              greater than or equal
+==                        .EQ.              equal
+/=                        .NE.              not equal
+------------------------- ----------------- -----------------------
+
++---------------------------------------+------------------------+
+| **Selective Execution**               | **Example**            |
++---------------------------------------+------------------------+
+| IF (logical-expression) one-statement | IF (T \>= 100) CL = 10 |
++---------------------------------------+------------------------+
+| IF (logical-expression) THEN          | IF (T \>= 100) THEN    |
+|                                       |                        |
+| statements                            | CL = 10                |
+|                                       |                        |
+| END IF                                | V = 10                 |
+|                                       |                        |
+|                                       | END IF                 |
++---------------------------------------+------------------------+
+| IF (logical-expression) THEN          | IF (T \>= 100) THEN    |
+|                                       |                        |
+| statements-1                          | CL = 10                |
+|                                       |                        |
+| ELSE                                  | ELSE                   |
+|                                       |                        |
+| statements-2                          | CL = CL                |
+|                                       |                        |
+| END IF                                | END IF                 |
++---------------------------------------+------------------------+
+
