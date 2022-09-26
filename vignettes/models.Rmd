@@ -360,7 +360,7 @@ mod2 <- mod1
 mod2$update(...)
 ```
 
-When *mod2* is updated, mod1 will update as the are in the same environment. The way to create an independent copy of an R6 object, which does not share the same environment, is to use the `$clone()` method.
+When *mod2* is updated, mod1 will update as they are in the same environment. The way to create an independent copy of an R6 object, which does not share the same environment, is to use the `$clone()` method.
 
 ```{r echo=T, eval = F}
 mod2 <- mod1$clone()
@@ -742,7 +742,7 @@ The only way to update a model is to edit the text file and copy it into the wor
 ## Brief Fortran Tutorial
 
 Much more detailed help is available from
-http://www.cs.mtu.edu/\~shene/COURSES/cs201/NOTES/fortran.html.
+https://fortran-lang.org/en/learn/quickstart/.
 
 ```{r echo=F}
 for1 <- read.csv("Data/fortran1.csv")

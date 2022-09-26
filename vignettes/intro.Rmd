@@ -31,6 +31,7 @@ Southern California. Please see our website at
 [[http://www.lapk.org]{.underline}](http://www.lapk.org) for more
 information.
 
+
 ## R6 architecture
 
 **As of v. 2.0**, Pmetrics shifted to an architecture less dependent on

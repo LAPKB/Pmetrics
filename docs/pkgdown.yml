@@ -7,9 +7,10 @@ articles:
   models: models.html
   overview: overview.html
   plotly: plotly.html
+  pmetrics: pmetrics.html
   simulation: simulation.html
   workflow: workflow.html
-last_built: 2022-09-26T20:32Z
+last_built: 2022-09-26T22:07Z
 urls:
   reference: https://lapkb.github.io/Pmetrics/reference
   article: https://lapkb.github.io/Pmetrics/articles
