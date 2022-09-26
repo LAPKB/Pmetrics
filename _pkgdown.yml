@@ -4,6 +4,11 @@ articles:
   navbar: ~
   contents:
   - intro
+  - overview
+  - workflow
+  - data
+  - models
+  - simulation
   - plotly
 template:
   bootstrap: 5

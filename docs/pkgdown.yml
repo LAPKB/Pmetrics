@@ -2,9 +2,14 @@ pandoc: 2.17.1.1
 pkgdown: 2.0.6
 pkgdown_sha: ~
 articles:
+  data: data.html
   intro: intro.html
+  models: models.html
+  overview: overview.html
   plotly: plotly.html
-last_built: 2022-09-26T08:56Z
+  simulation: simulation.html
+  workflow: workflow.html
+last_built: 2022-09-26T20:05Z
 urls:
   reference: https://lapkb.github.io/Pmetrics/reference
   article: https://lapkb.github.io/Pmetrics/articles
