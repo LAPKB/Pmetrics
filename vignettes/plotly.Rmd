@@ -19,15 +19,6 @@ library(Pmetrics)
 library(tidyverse)
 library(plotly)
 ```
-## Contents
-[Overview](#overview)  
-[General](#general)  
-[Traces](#traces)  
-[Layout](#layout)  
-[Shapes](#shapes)  
-[Annotations](#annotations)  
-[Exporting](#exporting)
-
 
 ## Overview
 
@@ -50,7 +41,7 @@ by typing `plotly::schema()` into the R console. If you have already loaded
 plotly you can just type `schema()`. You will see something like the menu below
 in the Viewer tab in Rstudio.
 
-![Top level plotly schema](schemaTop.png)
+![Top level plotly schema](Images/schemaTop.png)
 
 
 In plotly, the [traces](#traces) items control appearance of the data. The [layout](#layout) items control everything to do with the appearance of the
@@ -118,7 +109,7 @@ Note the default is `lm = F` and `ref = T`, so we don't need to specify them if 
 All plotly plots in Pmetrics have a `marker` argument which maps to the *marker* attribute 
 of a plotly scatter trace. 
 When Pmetrics detects a boolean argument, e.g. `TRUE` or `FALSE` it either plots
-the default marker or suppresses the line altogether. A good example of this is also the
+the default marker or suppresses the marker altogether. A good example of this is also the
 `marker` argument to `plot.PM_op` to generate an observed vs. predicted plot. In this
 function, `marker` controls the plotting symbol. If *NPex* is a
 *PM_result* object loaded with `PM_load()` then the default is 
@@ -324,12 +315,12 @@ Although the plotly team is working on methods to export plots to images via scr
 
 The first is to select the Export button from the Viewer window in Rstudio when the desired plot is displayed. This gives the option to save the plot as a .png, .jpeg, or .tiff. You cannot save as a .pdf with this method.
 
-![Export from Rstudio](Export.png)
+![Export from Rstudio](Images/Export.png)
 
 
 The second option is to click the camera icon that appears in the top right of a plotly plot when you mouse over the plot.
 
-![Download png](downloadPNG.png)
+![Download png](Images/downloadPNG.png)
 
 
 This gives you the option to download and save the file as a .png.
@@ -338,7 +329,7 @@ This gives you the option to download and save the file as a .png.
 
 To export to a .pdf, open the plot in a browser.
 
-![Open in browser](plotBrowser.png)
+![Open in browser](Images/plotBrowser.png)
 
 
 From there you should be able to export the image as .pdf file.
