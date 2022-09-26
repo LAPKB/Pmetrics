@@ -25,6 +25,11 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/intro.html">Introduction</a>
+    <a class="dropdown-item" href="../articles/overview.html">Overview</a>
+    <a class="dropdown-item" href="../articles/workflow.html">Workflow</a>
+    <a class="dropdown-item" href="../articles/data.html">Data objects</a>
+    <a class="dropdown-item" href="../articles/models.html">Models</a>
+    <a class="dropdown-item" href="../articles/simulation.html">Simulation</a>
     <a class="dropdown-item" href="../articles/plotly.html">How to use plotly in Pmetrics</a>
   </div>
 </li>
@@ -170,7 +175,16 @@ If a PM_pop, PM_post, PM_op, or PMsim object is specified,
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">19</span>    19 471. </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">20</span>    20 286. </span>
 <span class="r-in"><span><span class="va">Indometh</span> <span class="op">%&gt;%</span> <span class="fu">mutate</span><span class="op">(</span>id <span class="op">=</span> <span class="va">Subject</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">makeAUC</span><span class="op">(</span><span class="va">conc</span> <span class="op">~</span> <span class="va">time</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in Indometh %&gt;% mutate(id = Subject) %&gt;% makeAUC(conc ~ time):</span> could not find function "%&gt;%"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Groups:   id [6]</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   id      tau</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1      1.55</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2      2.68</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 3      2.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 4      2.25</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 5      1.70</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 6      2.58</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
