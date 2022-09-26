@@ -1,4 +1,10 @@
 url: https://lapkb.github.io/Pmetrics/
+articles:
+- title: Articles
+  navbar: ~
+  contents:
+  - intro
+  - plotly
 template:
   bootstrap: 5
   bootswatch: cosmo
