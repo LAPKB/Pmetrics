@@ -1,15 +1,23 @@
 url: https://lapkb.github.io/Pmetrics/
-articles:
-- title: Articles
-  navbar: ~
-  contents:
-  - intro
-  - overview
-  - workflow
-  - data
-  - models
-  - simulation
-  - plotly
+navbar:
+  components:
+    articles:
+      text: Articles
+      menu:
+        - text: Introduction
+          href: articles/intro.html
+        - text: Overview
+          href: articles/overview.html
+        - text: Workflow
+          href: articles/workflow.html
+        - text: Data Inputs
+          href: articles/data.html
+        - text: Model Inputs
+          href: articles/models.html
+        - text: Simulation
+          href: articles/simulation.html
+        - text: Plotly plots
+          href: articles/plotly.html
 template:
   bootstrap: 5
   bootswatch: cosmo
