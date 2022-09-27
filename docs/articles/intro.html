@@ -143,65 +143,8 @@ constitutes your agreement to this provision.</p>
 <h2 id="system-requirements-and-installation">System Requirements and Installation<a class="anchor" aria-label="anchor" href="#system-requirements-and-installation"></a>
 </h2>
 <p>Pmetrics and all required components will run under Mac (Unix),
-Windows, and Linux. There are three <em>required</em> software
-components which must be installed on your system <strong>in this
-order</strong>:</p>
-<ol style="list-style-type: decimal">
-<li>
-<p>The statistical programming language and environment
-“<strong>R</strong>”</p>
-<ul>
-<li>After installing R, we highly recommended that you also install
-<strong>Rstudio</strong>, a user-friendly environment for R.</li>
-</ul>
-</li>
-<li><p>The <strong>Pmetrics</strong> package for R</p></li>
-<li><p>The <strong>gfortran</strong> Fortran compiler.</p></li>
-</ol>
-<p>All components have versions for Mac, Windows, and Linux
-environments, and 64- bit processors. Systems with 32-bit processors are
-no longer supported. All are free of charge.</p>
-<div class="section level3">
-<h3 id="r">R<a class="anchor" aria-label="anchor" href="#r"></a>
-</h3>
-<p>R is a free software environment for statistical computing and
-graphics, which can be obtained from <a href="http://www.R-project.org" class="external-link"><u>http://www.R-project.org</u></a>.
-Pmetrics is a library for R.</p>
-</div>
-<div class="section level3">
-<h3 id="rstudio">Rstudio<a class="anchor" aria-label="anchor" href="#rstudio"></a>
-</h3>
-<p>We strongly recommend using <a href="http://rstudio.org/" class="external-link">Rstudio</a>
-rather than any other R interface.</p>
-</div>
-<div class="section level3">
-<h3 id="pmetrics">Pmetrics<a class="anchor" aria-label="anchor" href="#pmetrics"></a>
-</h3>
-<p>If you are reading this manual, then you have likely visited our
-website at <a href="http://www.lapk.org" class="external-link"><u>http://www.lapk.org</u></a>,
-where you can select the software tab to access instructions. As of
-version 1.9, Pmetrics is distributed on github and is a self-contained
-package that will install gfortran with your permission, if it is not
-already installed on your computer. Installing from github will also
-install all packages upon which Pmetrics depends.</p>
-</div>
-<div class="section level3">
-<h3 id="gfortran">Gfortran<a class="anchor" aria-label="anchor" href="#gfortran"></a>
-</h3>
-<p>In order to run Pmetrics, a Fortran compiler compiler is required.
-Pmetrics is designed to work with gfortran, a free compiler. After you
-have installed Pmetrics, it will check your system for an active
-gfortran installation. If it doesn’t find one, it will offer to download
-and install it. From there, installation should proceed automatically.
-This is by far the easiest and most reliable way to complete
-installation. Rest assured that no files are installed without your
-permission.</p>
-<p>If you do not wish to do this, you will have to get components
-manually, and the first command to run is <code><a href="../reference/PMbuild.html">PMbuild()</a></code>. You
-can get detailed instructions on how to obtain and install gfortran
-appropriate for your system on our <a href="http://www.lapk.org/Pmetrics_install_manual.php" class="external-link">LAPKB
-website</a>.</p>
-</div>
+Windows, and Linux. Instructions on obtaining and installing the package
+are in <a href="articles/pmetrics.html">Start Here</a></p>
 </div>
 <div class="section level2">
 <h2 id="what-this-manual-is-not">What This Manual Is Not<a class="anchor" aria-label="anchor" href="#what-this-manual-is-not"></a>
@@ -213,8 +156,9 @@ regular and well documented. A very good free online resource for
 learning the basics of R can be found at <a href="http://www.statmethods.net/index.html" class="external-link">Stat Methods</a>.</p>
 <p>We recognize that initial use of a new software package can be
 complex, so please feel free to contact us at any time, preferably
-through the <a href="http:/www.lapk.org">Pmetrics forum</a> or directly
-by <a href="mailto:contact@lapk.org">email</a>.</p>
+through the <a href="https://github.com/LAPKB/Pmetrics/discussions" class="external-link">Pmetrics
+Disussions</a>. You can report <a href="https://github.com/LAPKB/Pmetrics/issues" class="external-link">issues</a> online as
+well.</p>
 <p>This manual is also not intended to be a theoretical treatise on the
 algorithms used in IT2B or NPAG. For that, the user is directed to our
 <a href="http://www.lapk.org" class="external-link">website</a>.</p>
@@ -261,7 +205,7 @@ Currently, the following GUIs are available: `PMcode("run")` and
 <h2 id="customizing-pmetrics-options">Customizing Pmetrics Options<a class="anchor" aria-label="anchor" href="#customizing-pmetrics-options"></a>
 </h2>
 <p>You can change global options in Pmetrics with
-<code>setPMoptions(sep, dec,server\_address)</code>.</p>
+<code>setPMoptions(sep, dec, server\_address)</code>.</p>
 <p>Currently you can change three options: <code>sep</code> and
 <code>dec</code> will allow Pmetrics to read data files whose field
 separators are semicolons and decimal separators are commas,
