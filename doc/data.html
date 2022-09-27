@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Data objects</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">.caption {
+color: #777;
+margin-top: 10px;
+}
+.legacy {
+background-color: #98a4a6;
+color: white;
+text-shadow: 1px 1px black;
+border-radius: 5px;
+padding: 3px;
+}
+.r6 {
+background-color: #5296d5;
+color: white;
+text-shadow: 1px 1px black;
+border-radius: 5px;
+padding: 3px;
+}
+.update {
+background-color: #d65645;
+color: white;
+text-shadow: 1px 1px black;
+border-radius: 5px;
+padding: 3px;
+}
+.to-be-reviewed {
+background-color: red;
+color: white;
+text-shadow: 1px 1px black;
+padding: 3px;
+}
+.script {
+font-family: Arial, Helvetica, sans-serif;
+background-color: lightgrey;
+color: #446e9b;
+}
+body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; }
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+color: #5296d5;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+code > span.kw { color: #555; font-weight: bold; } code > span.dt { color: #902000; } code > span.dv { color: #40a070; } code > span.bn { color: #d14; } code > span.fl { color: #d14; } code > span.ch { color: #d14; } code > span.st { color: #d14; } code > span.co { color: #888888; font-style: italic; } code > span.ot { color: #007020; } code > span.al { color: #ff0000; font-weight: bold; } code > span.fu { color: #900; font-weight: bold; } code > span.er { color: #a61717; background-color: #e3d2d2; } </style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Data objects</h1>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Pmetrics data are either R6 objects loaded into memory or files,
+usually comma-separated (.csv). It is possible to use other separators,
+like the semicolon, by setting the appropriate argument with
+<code>setPMoptions()</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setPMoptions</span>(<span class="at">sep =</span> <span class="st">&quot;;&quot;</span>, <span class="at">dec =</span> <span class="st">&quot;,&quot;</span>) </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#changes field separator to &quot;;&quot; from default &quot;,&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#and decimal separator from &quot;.&quot; to &quot;,&quot;</span></span></code></pre></div>
+<p>Examples of programs that can save .csv files are any text editor
+(e.g. TextEdit on Mac, Notepad on Windows) or spreadsheet program
+(e.g. Excel). <strong>Please keep the number of characters in the file
+name ≤ 8.</strong></p>
+</div>
+<div id="data-file-use" class="section level2">
+<h2>Data file use</h2>
+<p><span class="r6">R6</span></p>
+<p>R6 Pmetrics introduces a new concept, the data object. The idea of
+this object is to represent a dataset that is going to be
+modeled/simulated. All its behaviour is represented by the class
+<code>PM_data</code>. This class allows datasets to be checked, plotted,
+written to disk and more. Use <code>PM_data$new(&quot;filename&quot;)</code> to
+create a <code>PM_data()</code> object by reading the file.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#assume that data.csv is in the working directory</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>data1 <span class="ot">&lt;-</span> PM_data<span class="sc">$</span><span class="fu">new</span>(<span class="st">&quot;data.csv&quot;</span>)</span></code></pre></div>
+<p>You can also build an appropriate data frame in R and provide that as
+an argument to <code>PM_data$new()</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#assume df is data frame with at least these columns:</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#id, time, dose, out</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>data1 <span class="ot">&lt;-</span> PM_data<span class="sc">$</span><span class="fu">new</span>(df)</span></code></pre></div>
+<p>Once you have created the <code>PM_data()</code> object, you never
+need to create it again during your R session. You also don’t have to
+bother copying the data file to the Runs folder each time you run the
+model.</p>
+<p><span class="legacy">Legacy</span></p>
+<p>You must always have the the data file in the current working
+directory. You can manually copy it there from a previous run or some
+other folder or use the shortcut of providing a prior run number as an
+argument to <code>NPrun()</code> or <code>ITrun()</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Run 1 - ensure that data.csv is in the working directory</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">NPrun</span>(<span class="st">&quot;data.csv&quot;</span>, <span class="st">&quot;model.txt&quot;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#run 2 - use the data from run 1 in this run</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#note that the file model.txt still has to be copied</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># into the working directory in this example</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">NPrun</span>(<span class="at">data =</span> <span class="dv">1</span>, <span class="st">&quot;model.txt&quot;</span>)</span></code></pre></div>
+</div>
+<div id="data-format" class="section level2">
+<h2>Data format</h2>
+<p><span class="r6">R6</span></p>
+<p>R6 Pmetrics can use file or data frame input, unlike Legacy which can
+only take file input. The format is also much more flexible in R6. The
+only required columns are those below. There is no longer a requirement
+for a header or to prefix the ID column with “#”. However, any
+subsequent row that begins with “#” will be ignored, which is helpful if
+you want to exclude data from the analysis, but preserve the integrity
+of the original dataset, or to add comment lines. The column order can
+be anything you wish, but the names should be the same as in the Legacy
+format below. Ultimately, <code>PM_data$new()</code> converts all valid
+data into the format used in Legacy Pmetrics.</p>
+<ul>
+<li><p><strong><em>ID</em></strong> This field can be numeric or
+character and identifies each individual. All rows must contain an ID,
+and all records from one individual must be contiguous. IDs should be 11
+characters or less but may be any alphanumeric combination.
+<strong>There can be at most 800 subjects per run.</strong></p></li>
+<li><p><strong><em>TIME</em></strong> This is the elapsed time in
+decimal hours since the first event. You may also specify time as clock
+time if you include a <strong><em>DATE</em></strong> column below. In
+that case the default format is HH:MM. Other formats can be specified.
+See <code>PM_data()</code> for more details. Every row must have an
+entry, and within a given ID, rows must be sorted chronologically,
+earliest to latest.</p></li>
+<li><p><strong><em>DATE</em></strong> This column is only required if
+<strong><em>TIME</em></strong> is clock time, detected by the presence
+of “:”. The default format of the date column is YYYY-MM-DD. As for
+<strong><em>TIME</em></strong>, other formats can be specified. See
+<code>?PM_data</code> for more details.</p></li>
+<li><p><strong><em>DOSE</em></strong> This is the dose amount. It should
+be “.” for observation rows.</p></li>
+<li><p><strong><em>OUT</em></strong> This is the observation, or output
+value, e.g., concentration. For dose rows, it should be “.”. If an
+observation occurred at a given time, but the result was missing,
+e.g. sample lost or below the limit of quantification, this should be
+coded as -99. There can be at most 150 observations for a given
+subject.</p></li>
+<li><p><strong><em>COVARIATES...</em></strong> Columns with names other
+than the above will be interpreted as covariates.</p></li>
+</ul>
+<p>When <code>PM_data()</code> reads a file, it will standardize it to
+the Legacy format below. This means some inferences are made. For
+example, in the absence of EVID, all doses are interpreted as oral. If
+they are infusions, DUR must be included as for Legacy files below. EVID
+only needs to be included if EVID=4 (reset event) is required, described
+below. Similarly, INPUT and OUTEQ are only required if multiple inputs
+or outputs are being modeled. Lastly, ADDL and II are optional. All
+inferred columns function the same as below for Legacy.</p>
+<p>Lastly, the standardized data are checked for errors with
+<code>PMcheck()</code>, which no longer needs to be called directly by
+the user.</p>
+<p><span class="legacy">Legacy</span></p>
+<p>Legacy Pmetrics can only use file input, typically a .csv, although
+as for R6 above, other separators are possible by using
+<code>setPMoptions()</code>. The format below is rigid for Legacy. All
+columns are required, and the order, capitalization and names of the
+header and the first 12 columns are fixed. All entries must be numeric,
+with the exception of ID and “.” for non-required placeholder entries.
+Any subsequent row that begins with “#” will be ignored, as above.</p>
+<p>A full example data file is below, with details following.</p>
+<p><strong><em>POPDATA DEC_11</em></strong></p>
+<table style="width:100%;">
+<colgroup>
+<col width="6%" />
+<col width="6%" />
+<col width="7%" />
+<col width="5%" />
+<col width="6%" />
+<col width="6%" />
+<col width="3%" />
+<col width="7%" />
+<col width="6%" />
+<col width="7%" />
+<col width="6%" />
+<col width="5%" />
+<col width="7%" />
+<col width="7%" />
+<col width="6%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">#ID</th>
+<th align="right">EVID</th>
+<th align="right">TIME</th>
+<th align="left">DUR</th>
+<th align="left">DOSE</th>
+<th align="left">ADDL</th>
+<th align="left">II</th>
+<th align="left">INPUT</th>
+<th align="left">OUT</th>
+<th align="left">OUTEQ</th>
+<th align="left">C0</th>
+<th align="left">C1</th>
+<th align="left">C2</th>
+<th align="left">C3</th>
+<th align="left">COV</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">GH</td>
+<td align="right">1</td>
+<td align="right">0.00</td>
+<td align="left">0</td>
+<td align="left">400</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">1</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">10</td>
+</tr>
+<tr class="even">
+<td align="left">GH</td>
+<td align="right">0</td>
+<td align="right">0.50</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">0.42</td>
+<td align="left">1</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+</tr>
+<tr class="odd">
+<td align="left">GH</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">0.46</td>
+<td align="left">1</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+</tr>
+<tr class="even">
+<td align="left">GH</td>
+<td align="right">0</td>
+<td align="right">2.00</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">2.47</td>
+<td align="left">1</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+</tr>
+<tr class="odd">
+<td align="left">GH</td>
+<td align="right">4</td>
+<td align="right">0.00</td>
+<td align="left">0</td>
+<td align="left">150</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">1</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+</tr>
+<tr class="even">
+<td align="left">GH</td>
+<td align="right">1</td>
+<td align="right">3.50</td>
+<td align="left">0.5</td>
+<td align="left">150</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">1</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+</tr>
+<tr class="odd">
+<td align="left">GH</td>
+<td align="right">0</td>
+<td align="right">5.12</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">0.55</td>
+<td align="left">1</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+</tr>
+<tr class="even">
+<td align="left">GH</td>
+<td align="right">0</td>
+<td align="right">24.00</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">0.52</td>
+<td align="left">1</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+</tr>
+<tr class="odd">
+<td align="left">1423</td>
+<td align="right">1</td>
+<td align="right">0.00</td>
+<td align="left">1</td>
+<td align="left">400</td>
+<td align="left">-1</td>
+<td align="left">12</td>
+<td align="left">1</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">34.5</td>
+</tr>
+<tr class="even">
+<td align="left">1423</td>
+<td align="right">1</td>
+<td align="right">0.10</td>
+<td align="left">0</td>
+<td align="left">100</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">2</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+</tr>
+<tr class="odd">
+<td align="left">1423</td>
+<td align="right">0</td>
+<td align="right">1.00</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">-99</td>
+<td align="left">1</td>
+<td align="left">0.01</td>
+<td align="left">0.1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">.</td>
+</tr>
+<tr class="even">
+<td align="left">1423</td>
+<td align="right">0</td>
+<td align="right">2.00</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">0.38</td>
+<td align="left">1</td>
+<td align="left">0.01</td>
+<td align="left">0.1</td>
+<td align="left">0</td>
+<td align="left">0</td>
+<td align="left">.</td>
+</tr>
+<tr class="odd">
+<td align="left">1423</td>
+<td align="right">0</td>
+<td align="right">2.00</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">.</td>
+<td align="left">1.6</td>
+<td align="left">2</td>
+<td align="left">0.05</td>
+<td align="left">0.2</td>
+<td align="left">-0.11</td>
+<td align="left">0.002</td>
+<td align="left">.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p><strong><em>POPDATA DEC_11</em></strong> This is the fixed header
+for the file and must be in the first line. It identifies the version.
+It is not the date of your data file.</p></li>
+<li><p><strong><em>#ID</em></strong> This field must be preceded by the
+“#” symbol to confirm that this is the header row. It can be numeric or
+character and identifies each individual. All rows must contain an ID,
+and all records from one individual must be contiguous. Any subsequent
+row that begins with “#” will be ignored, which is helpful if you want
+to exclude data from the analysis, but preserve the integrity of the
+original dataset, or to add comment lines. IDs should be 11 characters
+or less but may be any alphanumeric combination. <strong>There can be at
+most 800 subjects per run.</strong></p></li>
+<li><p><strong><em>EVID</em></strong> This is the event ID field. It can
+be 0, 1, or 4. Every row must have an entry.</p>
+<ul>
+<li><p>0 = observation</p></li>
+<li><p>1 = input (e.g. dose)</p></li>
+<li><p>2, 3 are currently unused</p></li>
+<li><p>4 = reset, where all compartment values are set to 0 and the time
+counter is reset to 0. This is useful when an individual has multiple
+sampling episodes that are widely spaced in time with no new information
+gathered. This is a dose event, so dose information needs to be
+complete.</p></li>
+</ul></li>
+<li><p><strong><em>TIME</em></strong> This is the elapsed time in
+decimal hours since the first event. It is not clock time (e.g. 09:30),
+although the <code>PMmatrixRelTime()</code> function can convert dates
+and clock times to decimal hours. Every row must have an entry, and
+within a given ID, rows must be sorted chronologically, earliest to
+latest.</p></li>
+<li><p><strong><em>DUR</em></strong> This is the duration of an infusion
+in hours. If EVID=1, there must be an entry, otherwise it is ignored.
+For a bolus (i.e. an oral dose), set the value equal to 0.</p></li>
+<li><p><strong><em>DOSE</em></strong> This is the dose amount. If
+EVID=1, there must be an entry, otherwise it is ignored.</p></li>
+<li><p><strong><em>ADDL</em></strong> This specifies the number of
+additional doses to give at interval II. It may be missing for dose
+events (EVID=1 or 4), in which case it is assumed to be 0. It is ignored
+for observation (EVID=0) events. Be sure to adjust the time entry for
+the subsequent row, if necessary, to account for the extra doses. If set
+to -1, the dose is assumed to be given under steady-state conditions.
+ADDL=-1 can only be used for the first dose event for a given subject,
+or an EVID=4 event, as you cannot suddenly be at steady state in the
+middle of dosing record, unless all compartments/times are reset to 0
+(as for an EVID=4 event). To clarify further, when ADDL=-1, all
+compartments in the model will contain the predicted amounts of drug at
+the end of the 100th II interval.</p></li>
+<li><p><strong><em>II</em></strong> This is the interdose interval and
+is only relevant if ADDL is not equal to 0, in which case it cannot be
+missing. If ADDL=0 or is missing, II is ignored.</p></li>
+<li><p><strong><em>INPUT</em></strong> This defines which input
+(i.e. drug) the DOSE corresponds to. Inputs are defined in the model
+file.</p></li>
+<li><p><strong><em>OUT</em></strong> This is the observation, or output
+value. If EVID=0, there must be an entry; if missing, this must be coded
+as -99. It will be ignored for any other EVID and therefore can be “.”.
+There can be at most 150 observations for a given subject.</p></li>
+<li><p><strong><em>OUTEQ</em></strong> This is the output equation
+number that corresponds to the OUT value. Output equations are defined
+in the model file.</p></li>
+<li><p><strong><em>C0, C1, C2, C3</em></strong> These are the
+coefficients for the assay error polynomial for that observation. Each
+subject may have up to one set of coefficients per output equation. If
+more than one set is detected for a given subject and output equation,
+the last set will be used. If there are no available coefficients, these
+cells may be left blank or filled with “.” as a placeholder.</p></li>
+<li><p><strong><em>COVARIATES</em></strong>... Any column after the
+assay error coefficients is assumed to be a covariate, one column per
+covariate. The first row for any subject must have a value for all
+covariates, since the first row is always a dose. Covariate values are
+applied at the time of doses.</p></li>
+</ul>
+</div>
+<div id="manipulation-of-csv-files" class="section level2">
+<h2>Manipulation of CSV files</h2>
+<p><span class="r6">R6</span></p>
+<div id="read" class="section level4">
+<h4>Read</h4>
+<p>As we have seen, <code>PM_data$new(&quot;filename&quot;)</code> will read an
+appropriate data file in the current working directory to create a new
+<code>PM_data</code> object.</p>
+</div>
+<div id="write" class="section level4">
+<h4>Write</h4>
+<p><code>PM_data$write(&quot;filename&quot;)</code> will write the
+<code>PM_data</code> object to a file called “filename”. This can be
+useful if you have loaded or created a data file and then changed it in
+R.</p>
+</div>
+<div id="standardize" class="section level4">
+<h4>Standardize</h4>
+<p><code>PM_data$new()</code> automatically standardizes the data into
+the full format used by Legacy. This includes conversion of calendar
+date / clock time into decimal elapsed time.</p>
+</div>
+<div id="validate" class="section level4">
+<h4>Validate</h4>
+<p><code>PM_data$new()</code> automatically calls <code>PMcheck()</code>
+so the data are validated as the data object is created.</p>
+<p><span class="legacy">Legacy</span></p>
+</div>
+<div id="read-1" class="section level4">
+<h4>Read</h4>
+<p><code>PMreadMatrix(&quot;filename&quot;, ...)</code> reads <em>filename</em>
+and creates a PMmatrix object in R. However, unlike R6, it cannot be
+used to run a model. For that, you need to copy the file into the
+working directory each time, either yourself or by using the
+<code>NPrun(data = 1, ...)</code> shortcut, for example.</p>
+</div>
+<div id="write-1" class="section level4">
+<h4>Write</h4>
+<p><code>PMwriteMatrix(data.frame, &quot;filename&quot;, ...)</code> writes an
+appropriate data frame as a new .csv file. It will first check the
+data.frame for errors via the <code>PMcheck()</code> function below, and
+writing will fail if errors are detected. This can be overridden with
+<code>override=T</code>.</p>
+</div>
+<div id="standardize-1" class="section level4">
+<h4>Standardize</h4>
+<p>No standardizing occurs in Legacy as the file format must always be
+standard. To convert calendar dates and clock times to elapsed decimal
+time, use <code>PMmatrixRelTime()</code>. This function converts dates
+and clock times of specified formats into relative times for use in the
+NPAG, IT2B and Simulator engines. The output is used to create a data
+frame with relative times that can be saved as a new .csv file with
+<code>PMwriteMatrix()</code>, which in turn serves as input to a
+run.</p>
+</div>
+<div id="validate-1" class="section level4">
+<h4>Validate</h4>
+<p><code>PMcheck()</code> will check a .csv file named <em>filename</em>
+or a <code>PMmatrix</code> data frame containing a previously loaded
+.csv file (the output of <code>PMreadMatrix()</code>) for errors which
+would cause the analysis to fail. If a model file is provided, and the
+data file has no errors, it will also check the model file for errors.
+If it finds errors, it will generate a new <em>errors.xlsx</em> file
+with all errors highlighted and commented so that you can find and
+correct them easily. <code>PMcheck()</code> is automatically called with
+every <code>NPrun()</code>, <code>ITrun()</code>, <code>ERRrun()</code>,
+and <code>SIMrun()</code> call, unless the <code>nocheck = T</code>
+argument is used.</p>
+<p><span class="r6">R6</span> <span class="legacy">Legacy</span></p>
+<p>The following functions are the same in either R6 or Legacy.</p>
+<ul>
+<li><p><code>PMwrk2csv()</code> This function will convert old-style,
+single-drug USC*PACK .wrk formatted files into Pmetrics data .csv
+files.</p></li>
+<li><p><code>PMmb2csv()</code> This function will convert USC*PACK .mb
+files into Pmetrics data .csv files.</p></li>
+<li><p><code>NM2PM()</code> Although the structure of Pmetrics data
+files is similar to NONMEM, there are some differences. This function
+attempts to automatically convert to Pmetrics format. It has been tested
+on several examples, but there are probably NONMEM files which will
+cause it to crash. Running <code>PMcheck()</code> afterwards is a good
+idea.</p></li>
+</ul>
+</div>
+</div>
+<div id="summary-of-r6-and-legacy-data-differences" class="section level2">
+<h2>Summary of R6 and Legacy Data Differences</h2>
+<table>
+<colgroup>
+<col width="46%" />
+<col width="32%" />
+<col width="21%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Function</th>
+<th align="left">R6</th>
+<th align="left">Legacy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Read data file</td>
+<td align="left">PM_data$new()</td>
+<td align="left">PMreadMatrix()</td>
+</tr>
+<tr class="even">
+<td align="left">Check data file</td>
+<td align="left">Embedded in PM_data$new()</td>
+<td align="left">PMcheck()</td>
+</tr>
+<tr class="odd">
+<td align="left">Write data file</td>
+<td align="left">PM_data$write()</td>
+<td align="left">PMwriteMatrix()</td>
+</tr>
+<tr class="even">
+<td align="left">Convert calendar dates and clock times</td>
+<td align="left">Embedded in PM_data$new()</td>
+<td align="left">PMmatrixReltime()</td>
+</tr>
+<tr class="odd">
+<td align="left">Convert from old USC*PACK .wrk format</td>
+<td align="left">PMwrk2csv()</td>
+<td align="left">PMwrk2csv()</td>
+</tr>
+<tr class="even">
+<td align="left">Convert from NONMEM</td>
+<td align="left">NM2PM()</td>
+<td align="left">NM2PM()</td>
+</tr>
+<tr class="odd">
+<td align="left">Convert from old USC*PACK .mb format</td>
+<td align="left">PMmb2csv()</td>
+<td align="left">PMmb2csv()</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
