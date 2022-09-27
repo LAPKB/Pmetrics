@@ -4,23 +4,26 @@
 }
 
 .legacy {
-  background-color: DimGrey;
+  background-color: #98a4a6;
   color: white;
   text-shadow: 1px 1px black;
+  border-radius: 15px;
   padding: 3px;
 }
 
 .r6 {
-  background-color: #446e9b;
+  background-color: #5296d5;
   color: white;
   text-shadow: 1px 1px black;
+  border-radius: 15px;
   padding: 3px;
 }
 
 .update {
-  background-color: red;
+  background-color: #d65645;
   color: white;
   text-shadow: 1px 1px black;
+  border-radius: 15px;
   padding: 3px;
 }
 
@@ -171,7 +174,7 @@ h1 {
 margin-top: 0;
 font-size: 35px;
 line-height: 40px;
-color: #446e9b;
+color: #5296d5;
 }
 h2 {
 border-bottom: 4px solid #f7f7f7;
