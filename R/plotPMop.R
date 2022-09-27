@@ -395,7 +395,7 @@ plot.PM_op <- function(x,
       }
     }
     #set layout
-    layout$xaxis$title <- amendTitlel("Time")
+    layout$xaxis$title <- amendTitle("Time")
     p1 <- p1 %>%
       plotly::layout(xaxis = layout$xaxis,
                      yaxis = layout$yaxis,
