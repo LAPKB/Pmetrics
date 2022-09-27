@@ -66,11 +66,10 @@ Hospital Los Angeles and the University of Southern California and their
 employees assume no liability whatsoever. Your use of the package
 constitutes your agreement to this provision.
 
-## System Requirements and Installation
-
+## Installation
 
 Pmetrics and all required components will run under Mac (Unix), Windows,
-and Linux. Instructions on obtaining and installing the package are in [Start Here](articles/pmetrics.html)
+and Linux. Instructions on obtaining and installing the package are in `vignette("pmetrics")`.
 
 ## What This Manual Is Not
 
@@ -128,7 +127,7 @@ Currently, the following GUIs are available: `PMcode("run")` and
 `PMcode("plot")`. 
 --> 
 
-## Customizing Pmetrics Options
+## Customizing Options
 
 You can change global options in Pmetrics with 
 `setPMoptions(sep, dec, server\_address)`.
