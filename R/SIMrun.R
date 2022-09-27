@@ -320,7 +320,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
     } else {
       model <- FileExists("model.txt") #default name if model is missing
       mod_obj <- PM_model$new(model) #we have valid filename, create new PM_model
-      mod_obj$write("simmodel.csv")
+      mod_obj$write("simmodel.txt")
       model_file_src <- T #used a file as source
     }
   } else { #model is  specified
