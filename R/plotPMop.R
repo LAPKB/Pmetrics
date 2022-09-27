@@ -395,7 +395,7 @@ plot.PM_op <- function(x,
       }
     }
     #set layout
-    layout$xaxis <- amendAxisLabel(layout$xaxis, "Time")
+    layout$xaxis$title <- amendTitlel("Time")
     p1 <- p1 %>%
       plotly::layout(xaxis = layout$xaxis,
                      yaxis = layout$yaxis,
@@ -471,7 +471,7 @@ plot.PM_op <- function(x,
     
     
     #set layout
-    layout$xaxis <- amendAxisLabel(layout$xaxis, "Predicted")
+    layout$xaxis$title <- amendTitle("Predicted")
     p2 <- p2 %>%
       plotly::layout(xaxis = layout$xaxis,
                      yaxis = layout$yaxis,
