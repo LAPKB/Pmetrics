@@ -1,0 +1,143 @@
+---
+title: "Introduction"
+output: 
+  rmarkdown::html_vignette:
+    css: style.css
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=F, message=F}
+library(Pmetrics)
+library(tidyverse)
+library(plotly)
+```
+
+Thank you for your interest in Pmetrics! This guide provides
+instructions and examples to assist users of the Pmetrics R package, by
+the Laboratory of Applied Pharmacokinetics and Bioinformatics at the
+Saban Research Institute, Children's Hospital Los Angeles, and the
+Department of Pediatrics, Keck School of Medicine, University of
+Southern California. Please see our website at
+[[http://www.lapk.org]{.underline}](http://www.lapk.org) for more
+information.
+
+
+## R6 architecture
+
+**As of v. 2.0**, Pmetrics shifted to an architecture less dependent on
+reading and writing files. Data files are unchanged and described later in
+this manual.
+
+Model files can now be defined as an R object, instead of in a text file. 
+Pmetrics can suppoort legacy runs with the old-style text file models, but
+users are encouraged to change to the new methods. Throughout this manual we
+will indicate the new style with the <span class="r6">R6</span> designation to reflect the
+object-oriented R6 style of programming available in R that makes it more
+consistent with object-oriented languages such as Python. We will indicate
+old-style approaches with <span class="legacy">Legacy</span>.
+
+Functions and classes in <span class="r6">R6</span> are generally named with "PM_" as the prefix, e.g. `PM_load()` or `PM_final`. In <span class="legacy">Legacy</span>, functions and classes are prefixed without the underscore "_", such as `PMload()`, and `PMfinal`.
+
+**Tips for using this guide.**
+
+* Items that are hyperlinked can be selected to cross reference
+within this manual or link to external sites.
+
+* `Items` correspond to inline examples of R code, which are not evaluted
+in this document, but serve as templates for what may be typed into your 
+R console or script. They may not necessarily be executable if typed verbatim.
+
+## Disclaimer
+
+You, the user, assume all responsibility for acting on the results
+obtained from Pmetrics. The Laboratory of Applied Pharmacokinetics and
+Bioinformatics (LAPKB), members and consultants to LAPKB, and Children's
+Hospital Los Angeles and the University of Southern California and their
+employees assume no liability whatsoever. Your use of the package
+constitutes your agreement to this provision.
+
+## System Requirements and Installation
+
+
+Pmetrics and all required components will run under Mac (Unix), Windows,
+and Linux. Instructions on obtaining and installing the package are in [Start Here](articles/pmetrics.html)
+
+## What This Manual Is Not
+
+We assume that the user has familiarity with population modeling and R,
+and thus this manual is not a tutorial for basic concepts and techniques
+in either domain. We have tried to make the R code simple, regular and
+well documented. A very good free online resource for learning the
+basics of R can be found at [Stat Methods](http://www.statmethods.net/index.html).
+
+We recognize that initial use of a new software package can be complex,
+so please feel free to contact us at any time, preferably through the
+[Pmetrics Disussions](https://github.com/LAPKB/Pmetrics/discussions). You can report [issues](https://github.com/LAPKB/Pmetrics/issues) online as well.
+
+This manual is also not intended to be a theoretical treatise on the
+algorithms used in IT2B or NPAG. For that, the user is directed to our
+[website](http://www.lapk.org).
+
+## Getting Help and Updates
+
+<!--There is an active [LAPK forum](http://www.lapk.org) with all kinds
+of useful tips and help with Pmetrics. Register and feel free to post! 
+-->
+Within R, you can  use
+`help("command")` or `?command` in the R console to see detailed help files
+for any Pmetrics command. Many commands have examples included in this
+documentation and you can execute the examples with `example(command)`.
+
+<!--You can also type `PMmanual()` to launch this manual from within Pmetrics 
+as well as a catalogue of all Pmetrics functions. Finally, 
+`PMnews()` will display the Pmetrics change log.
+-->
+
+Pmetrics will check for updates automatically every time you load it
+with `library(Pmetrics)` and you are connected to the internet. 
+If an update is available, it will provide a
+brief message to inform you. You can then reinstall the package from github.
+
+<!--When bugs arise in Pmetrics, you may see a start up message to inform you of 
+the bug and a patch can be installed by the command `PMpatch()` if available. 
+Note that patches must be reinstalled with this command every time you launch
+Pmetrics, until the bug is corrected in the next version.
+-->
+
+<!--As of version 1.0.0 Pmetrics has graphical user interface (GUI)
+capability for many functions. Using `PMcode("function")` will launch the
+GUI in your default browser. While you are interacting with the GUI, R
+is "listening" and no other activity is possible. The GUI is designed to
+generate Pmetrics R code in response to your input in a friendly,
+intuitive environment. That code can be copied and pasted into your
+Pmetrics R script. You can also see live plot previews with the GUI. All
+this is made possible with the 'shiny' package for R.
+
+
+Currently, the following GUIs are available: `PMcode("run")` and
+`PMcode("plot")`. 
+--> 
+
+## Customizing Pmetrics Options
+
+You can change global options in Pmetrics with 
+`setPMoptions(sep, dec, server\_address)`.
+
+Currently you can change three options: `sep` and `dec` will allow Pmetrics
+to read data files whose field separators are semicolons and decimal
+separators are commas, e.g. `setPMoptions(sep=";", dec=",")`. These
+options will persist from session to session until changed. The third
+option, `server\_address`, allows you to specify the address of a remote
+server with Pmetrics installed, to allow remote runs.
+
+`getPMoptions()` will return the current options.

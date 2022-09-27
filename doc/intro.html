@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Introduction</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+
+
+<style type="text/css">.caption {
+color: #777;
+margin-top: 10px;
+}
+.legacy {
+background-color: #98a4a6;
+color: white;
+text-shadow: 1px 1px black;
+border-radius: 5px;
+padding: 3px;
+}
+.r6 {
+background-color: #5296d5;
+color: white;
+text-shadow: 1px 1px black;
+border-radius: 5px;
+padding: 3px;
+}
+.update {
+background-color: #d65645;
+color: white;
+text-shadow: 1px 1px black;
+border-radius: 5px;
+padding: 3px;
+}
+.to-be-reviewed {
+background-color: red;
+color: white;
+text-shadow: 1px 1px black;
+padding: 3px;
+}
+.script {
+font-family: Arial, Helvetica, sans-serif;
+background-color: lightgrey;
+color: #446e9b;
+}
+body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; }
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+color: #5296d5;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+code > span.kw { color: #555; font-weight: bold; } code > span.dt { color: #902000; } code > span.dv { color: #40a070; } code > span.bn { color: #d14; } code > span.fl { color: #d14; } code > span.ch { color: #d14; } code > span.st { color: #d14; } code > span.co { color: #888888; font-style: italic; } code > span.ot { color: #007020; } code > span.al { color: #ff0000; font-weight: bold; } code > span.fu { color: #900; font-weight: bold; } code > span.er { color: #a61717; background-color: #e3d2d2; } </style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction</h1>
+
+
+
+<p>Thank you for your interest in Pmetrics! This guide provides
+instructions and examples to assist users of the Pmetrics R package, by
+the Laboratory of Applied Pharmacokinetics and Bioinformatics at the
+Saban Research Institute, Children’s Hospital Los Angeles, and the
+Department of Pediatrics, Keck School of Medicine, University of
+Southern California. Please see our website at <a href="http://www.lapk.org"><u>http://www.lapk.org</u></a> for more
+information.</p>
+<div id="r6-architecture" class="section level2">
+<h2>R6 architecture</h2>
+<p><strong>As of v. 2.0</strong>, Pmetrics shifted to an architecture
+less dependent on reading and writing files. Data files are unchanged
+and described later in this manual.</p>
+<p>Model files can now be defined as an R object, instead of in a text
+file. Pmetrics can suppoort legacy runs with the old-style text file
+models, but users are encouraged to change to the new methods.
+Throughout this manual we will indicate the new style with the <span class="r6">R6</span> designation to reflect the object-oriented R6 style
+of programming available in R that makes it more consistent with
+object-oriented languages such as Python. We will indicate old-style
+approaches with <span class="legacy">Legacy</span>.</p>
+<p>Functions and classes in <span class="r6">R6</span> are generally
+named with “PM_” as the prefix, e.g. <code>PM_load()</code> or
+<code>PM_final</code>. In <span class="legacy">Legacy</span>, functions
+and classes are prefixed without the underscore “_“, such as
+<code>PMload()</code>, and <code>PMfinal</code>.</p>
+<p><strong>Tips for using this guide.</strong></p>
+<ul>
+<li><p>Items that are hyperlinked can be selected to cross reference
+within this manual or link to external sites.</p></li>
+<li><p><code>Items</code> correspond to inline examples of R code, which
+are not evaluted in this document, but serve as templates for what may
+be typed into your R console or script. They may not necessarily be
+executable if typed verbatim.</p></li>
+</ul>
+</div>
+<div id="disclaimer" class="section level2">
+<h2>Disclaimer</h2>
+<p>You, the user, assume all responsibility for acting on the results
+obtained from Pmetrics. The Laboratory of Applied Pharmacokinetics and
+Bioinformatics (LAPKB), members and consultants to LAPKB, and Children’s
+Hospital Los Angeles and the University of Southern California and their
+employees assume no liability whatsoever. Your use of the package
+constitutes your agreement to this provision.</p>
+</div>
+<div id="system-requirements-and-installation" class="section level2">
+<h2>System Requirements and Installation</h2>
+<p>Pmetrics and all required components will run under Mac (Unix),
+Windows, and Linux. Instructions on obtaining and installing the package
+are in <a href="articles/pmetrics.html">Start Here</a></p>
+</div>
+<div id="what-this-manual-is-not" class="section level2">
+<h2>What This Manual Is Not</h2>
+<p>We assume that the user has familiarity with population modeling and
+R, and thus this manual is not a tutorial for basic concepts and
+techniques in either domain. We have tried to make the R code simple,
+regular and well documented. A very good free online resource for
+learning the basics of R can be found at <a href="http://www.statmethods.net/index.html">Stat Methods</a>.</p>
+<p>We recognize that initial use of a new software package can be
+complex, so please feel free to contact us at any time, preferably
+through the <a href="https://github.com/LAPKB/Pmetrics/discussions">Pmetrics
+Disussions</a>. You can report <a href="https://github.com/LAPKB/Pmetrics/issues">issues</a> online as
+well.</p>
+<p>This manual is also not intended to be a theoretical treatise on the
+algorithms used in IT2B or NPAG. For that, the user is directed to our
+<a href="http://www.lapk.org">website</a>.</p>
+</div>
+<div id="getting-help-and-updates" class="section level2">
+<h2>Getting Help and Updates</h2>
+<!--There is an active [LAPK forum](http://www.lapk.org) with all kinds
+of useful tips and help with Pmetrics. Register and feel free to post! 
+-->
+<p>Within R, you can use <code>help(&quot;command&quot;)</code> or
+<code>?command</code> in the R console to see detailed help files for
+any Pmetrics command. Many commands have examples included in this
+documentation and you can execute the examples with
+<code>example(command)</code>.</p>
+<!--You can also type `PMmanual()` to launch this manual from within Pmetrics 
+as well as a catalogue of all Pmetrics functions. Finally, 
+`PMnews()` will display the Pmetrics change log.
+-->
+<p>Pmetrics will check for updates automatically every time you load it
+with <code>library(Pmetrics)</code> and you are connected to the
+internet. If an update is available, it will provide a brief message to
+inform you. You can then reinstall the package from github.</p>
+<!--When bugs arise in Pmetrics, you may see a start up message to inform you of 
+the bug and a patch can be installed by the command `PMpatch()` if available. 
+Note that patches must be reinstalled with this command every time you launch
+Pmetrics, until the bug is corrected in the next version.
+-->
+<!--As of version 1.0.0 Pmetrics has graphical user interface (GUI)
+capability for many functions. Using `PMcode("function")` will launch the
+GUI in your default browser. While you are interacting with the GUI, R
+is "listening" and no other activity is possible. The GUI is designed to
+generate Pmetrics R code in response to your input in a friendly,
+intuitive environment. That code can be copied and pasted into your
+Pmetrics R script. You can also see live plot previews with the GUI. All
+this is made possible with the 'shiny' package for R.
+
+
+Currently, the following GUIs are available: `PMcode("run")` and
+`PMcode("plot")`. 
+-->
+</div>
+<div id="customizing-pmetrics-options" class="section level2">
+<h2>Customizing Pmetrics Options</h2>
+<p>You can change global options in Pmetrics with
+<code>setPMoptions(sep, dec, server\_address)</code>.</p>
+<p>Currently you can change three options: <code>sep</code> and
+<code>dec</code> will allow Pmetrics to read data files whose field
+separators are semicolons and decimal separators are commas,
+e.g. <code>setPMoptions(sep=&quot;;&quot;, dec=&quot;,&quot;)</code>. These options will
+persist from session to session until changed. The third option,
+<code>server\_address</code>, allows you to specify the address of a
+remote server with Pmetrics installed, to allow remote runs.</p>
+<p><code>getPMoptions()</code> will return the current options.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
