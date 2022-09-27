@@ -1,4 +1,7 @@
 url: https://lapkb.github.io/Pmetrics/
+template:
+  bootstrap: 5
+  bootswatch: flatly
 navbar:
   structure:
       left:  [intro, reference, articles, tutorials, news]
@@ -24,9 +27,14 @@ navbar:
           href: articles/simulation.html
         - text: Plotly plots
           href: articles/plotly.html
-template:
-  bootstrap: 5
-  bootswatch: cosmo
+home:
+  sidebar:
+    structure: [links, license, community, citation, authors, dev]
+    components:
+      custom:
+        title: Discussion
+        text: Discussion board
+        href: https://github.com/LAPKB/Pmetrics/discussions
 reference:
 - title: R6 objects
   desc: Create Pmetrics R6 objects
