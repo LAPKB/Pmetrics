@@ -70,60 +70,7 @@ constitutes your agreement to this provision.
 
 
 Pmetrics and all required components will run under Mac (Unix), Windows,
-and Linux. There are three *required* software components
-which must be installed on your system **in this order**:
-
-1.  The statistical programming language and environment "**R**"
-    + After installing R, we highly recommended that you also install
-**Rstudio**, a user-friendly environment for R.
-
-2.  The **Pmetrics** package for R
-
-3.  The **gfortran** Fortran compiler.
-
- 
-All components have versions for Mac, Windows, and Linux environments,
-and 64- bit processors. Systems with 32-bit processors are no longer
-supported. All are free of charge.
-
-### R
-
-R is a free software environment for statistical computing and graphics,
-which can be obtained from
-[[http://www.R-project.org]{.underline}](http://www.R-project.org).
-Pmetrics is a library for R.
-
-### Rstudio
-
-We strongly recommend using [Rstudio](http://rstudio.org/) rather than any
-other R interface.
-
-### Pmetrics
-
-If you are reading this manual, then you have likely visited our website
-at [[http://www.lapk.org]{.underline}](http://www.lapk.org), where you
-can select the software tab to access instructions. 
-As of version 1.9, Pmetrics is distributed on github and is a self-contained
-package that will install gfortran with your permission, if it is not
-already installed on your computer. Installing from github will also install
-all packages upon which Pmetrics depends.
-
-
-### Gfortran
-
-In order to run Pmetrics, a Fortran compiler compiler is required.
-Pmetrics is designed to work with gfortran, a free compiler. After you
-have installed Pmetrics, it will check your system for an active
-gfortran installation. If it doesn't find one, it will offer to download
-and install it. From there, installation should proceed automatically.
-This is by far the easiest and most reliable way to complete
-installation. Rest assured that no files are installed without your
-permission.
-
-If you do not wish to do this, you will have to get components manually,
-and the first command to run is `PMbuild()`. You can get detailed
-instructions on how to obtain and install gfortran appropriate for your
-system on our [LAPKB website](http://www.lapk.org/Pmetrics_install_manual.php).
+and Linux. Instructions on obtaining and installing the package are in [Start Here](articles/pmetrics.html)
 
 ## What This Manual Is Not
 
@@ -135,7 +82,7 @@ basics of R can be found at [Stat Methods](http://www.statmethods.net/index.html
 
 We recognize that initial use of a new software package can be complex,
 so please feel free to contact us at any time, preferably through the
-[Pmetrics forum](http:/www.lapk.org) or directly by [email](mailto:contact@lapk.org).
+[Pmetrics Disussions](https://github.com/LAPKB/Pmetrics/discussions). You can report [issues](https://github.com/LAPKB/Pmetrics/issues) online as well.
 
 This manual is also not intended to be a theoretical treatise on the
 algorithms used in IT2B or NPAG. For that, the user is directed to our
@@ -184,7 +131,7 @@ Currently, the following GUIs are available: `PMcode("run")` and
 ## Customizing Pmetrics Options
 
 You can change global options in Pmetrics with 
-`setPMoptions(sep, dec,server\_address)`.
+`setPMoptions(sep, dec, server\_address)`.
 
 Currently you can change three options: `sep` and `dec` will allow Pmetrics
 to read data files whose field separators are semicolons and decimal
