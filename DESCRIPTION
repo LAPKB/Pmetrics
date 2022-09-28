@@ -62,6 +62,7 @@ Imports:
     trelliscopejs,
     lubridate,
     mvtnorm,
+    tidyverse,
     R6
 Suggests:
     knitr,
