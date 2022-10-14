@@ -30,7 +30,10 @@
 #' objects.
 #' @param type Default is "vpc" for a visual predictive check, but could be 
 #' "pcvpc" for a prediction-corrected visual predictive check, or
-#' "npde" for a normalized prediction distribution error analysis/plot.
+#' "npde" for a normalized prediction distribution error analysis/plot. 
+#' Choosing npde will call [npde::plot.NpdeObject]. To modify this plot,
+#' supply argmuents as a named list: `npde = (...)`. Available arguments
+#' are in the user manual for the [npde package](https://github.com/ecomets/npde30).
 #' @param tad `r template("tad")`
 #' @param outeq `r template("outeq")`
 #' @param log `r template("log")`
@@ -62,7 +65,10 @@
 #' @param xlab `r template("xlab")` Default is "Time" or "Time after dose" if `tad = TRUE`.
 #' @param ylab `r template("ylab")` Default is "Output".
 #' @param title `r template("title")` Default is to have no title.
-#' @param \dots `r template("dotsPlotly")`
+#' @param \dots If `type` is not "npde", the following apply. `r template("dotsPlotly")`.
+#' However, if `type` is "npde", to modify the appearance of the plot,
+#' supply a list of options, `npde = list(...)`. See the documentation
+#' for the `type` argument above. 
 #' @return Plots and returns the plotly object
 #' @author Michael Neely
 #' @seealso [makeValid]
@@ -129,18 +135,27 @@ plot.PM_valid <- function(x,
   marker <- amendMarker(marker, default = list(color = "black", symbol = "circle-open", size = 8))
   
   #process dots
-  layout <- amendDots(list(...))
+  dots <- list(...)
+  npdeOpts <- pluck(dots, "npde")
+  if(!is.null(npdeOpts)){
+    dots$npde <- NULL #remove
+  }
+  layout <- amendDots(dots)
   
   #grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
   
   #axis labels if needed
-  if(missing(xlab)){xlab = c("Time", "Time after dose"[1 + as.numeric(tad)])}
+  if(missing(xlab)){xlab = c("Time", "Time after dose")[1 + as.numeric(tad)]}
   if(missing(ylab)){ylab = "Output"}
   
   layout$xaxis$title <- amendTitle(xlab)
-  layout$yaxis$title <- amendTitle(ylab)
+  if(is.character(ylab)){
+    layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
+  } else {
+    layout$yaxis$title <- amendTitle(ylab)
+  }
   
   #axis ranges
   if(!missing(xlim)){layout$xaxis <- modifyList(layout$xaxis, list(range = xlim)) }
@@ -271,7 +286,8 @@ plot.PM_valid <- function(x,
     if(!tad){
       if(is.null(x$npde)) stop("No npde object found.  Re-run makeValid.\n")
       if(inherits(x$npde[[outeq]], "NpdeObject")){
-        plot(x$npde[[outeq]])
+        npdeArgs <- c(x = x$npde[[outeq]], npdeOpts)
+        do.call(npde:::plot.NpdeObject, npdeArgs)
         par(mfrow=c(1,1))
       } else {
         cat(paste0("Unable to calculate NPDE for outeq ",outeq))
@@ -279,7 +295,8 @@ plot.PM_valid <- function(x,
     } else {
       if(is.null(x$npde_tad)) stop("No npde_tad object found.  Re-run makeValid with tad = T.\n")
       if(inherits(x$npde_tad[[outeq]], "NpdeObject")){
-        plot(x$npde_tad[[outeq]])
+        npdeArgs <- c(x = x$npde_tad[[outeq]], npdeOpts)
+        do.call(npde:::plot.NpdeObject, npdeArgs)
         par(mfrow=c(1,1))
       } else {
         cat(paste0("Unable to calculate NPDE with TAD for outeq ",outeq))
@@ -288,7 +305,7 @@ plot.PM_valid <- function(x,
     
     p <- NULL
   }
-  return(p)
+  return(invisible(p))
 }
 
 
