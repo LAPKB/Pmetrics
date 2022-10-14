@@ -54,12 +54,11 @@ amendLine <- function(.line, default){
 #amend title
 amendTitle <- function(.title, default){
   
-  default_font <- list(family = "Arial", color = "black", size = 16)
+  default_font <- list(family = "Arial", color = "black", bold = T, size = 16)
   if(!missing(default)){
     default_font <- modifyList(default_font, default)
   }
-  bold <- pluck(.title, "bold")
-  if(is.null(bold)){bold <- T}
+  
   errors <- NULL
   error <- F
   
@@ -86,6 +85,12 @@ amendTitle <- function(.title, default){
       .title$family <- NULL
     } 
     
+    if(!is.null(purrr::pluck(.title,"bold"))){
+      #don't report error, since not standard plotly
+      default_font$bold <- .title$bold
+      .title$bold <- NULL
+    } 
+    
     if(is.null(purrr::pluck(.title, "font"))){
       .title$font <- default_font
     } else {
@@ -96,10 +101,11 @@ amendTitle <- function(.title, default){
     .title <- list(text = .title, font = default_font)
   }
   
-  if(bold){
+  if(.title$font$bold){
     .title$text <- paste0("<b>",.title$text,"</b>")
   }
   
+
   if(error){
     cat(paste0(crayon::red("Note: "), paste(errors, collapse = " and "), " should be within a font list.\nSee plotly::schema() > layout > layoutAttributes > title/xaxis/yaxis for help.\n"))
   }
@@ -224,7 +230,6 @@ amendDots <- function(dots){
     yaxis <- dots$yaxis
     dots$yaxis <- NULL #take it out of dots
   }
-  
   
   otherArgs <- purrr::map_lgl(names(dots), function(x) x %in% axesAttr)
   if(any(otherArgs)){

@@ -25,12 +25,20 @@
 #' Defaults are the same as for the `line` argument, since normally one would not plot
 #' both lines joining observations and prediction lines.
 #' @param marker Formats the symbols plotting observations. `r template("marker")` 
+#' @param color Character vector naming a column in `x` to **group** by, e.g. "id" or 
+#' a covariate like "gender"
+#' @param colors to use for **groups**. This can be a palette or a vector of colors.
+#' For accepted palette names see `RColorBrewer::brewer.pal.info`. Examples include
+#' "BrBG", or "Set2". An example vector could be `c("red", "green", "blue")`. It is not
+#' necessary to specify the same number of colors as groups within `color`, as colors
+#' will be interpolated to generate the correct number. The default when `color`
+#' is specified is the "Spectral" palette.
+#' @param names A character vector of names to label the **groups** if `legend = T`.
+#' This vector does need to be the same length as the number of groups within `color`.
+#' Example: `c("Male", "Female")` if `color = "gender"` and "gender" is a covariate
+#' in the data.
 #' @param mult `r template("mult")` 
 #' @param outeq `r template("outeq")` 
-#' @param group **Not currently implemented.** Quoted name of a covariate in `data` by which
-#' to distinguish groups with color in the plot. Note that if covariates do not have values on observation
-#' rows, those observations will be unable to be grouped.  Grouping is only applicable if `outeq` is
-#' specified; otherwise there would be a confusing mix of colors for groups and output equations.
 #' @param block `r template("block")` 
 #' @param tad `r template("tad")` 
 #' @param overlay Boolean operator to overlay all time concentration profiles in a single plot.
@@ -43,7 +51,7 @@
 #' @param xlab `r template("xlab")` Default is "Time".
 #' @param ylab `r template("ylab")` Default is "Output".
 #' @param title `r template("title")` Default is to have no title.
-#' @param \dots Not currently implemented.
+#' @param \dots `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso [PM_data], [PM_result]
@@ -70,12 +78,13 @@
 
 plot.PM_data <- function(x, 
                          include, exclude, 
-                         line = T,
-                         pred = NULL,
+                         line,
                          marker = T,
+                         color,
+                         colors,
+                         names,
                          mult = 1, 
                          outeq = 1, 
-                         group, 
                          block = 1,
                          tad = F,
                          overlay = T,
@@ -90,13 +99,44 @@ plot.PM_data <- function(x,
   
   # Plot parameters ---------------------------------------------------------
   
-  
-  
-  #process marker and line
+  #process marker
   marker <- amendMarker(marker)
-  line <- amendLine(line)
   
-  #process dots
+  #process line
+  if(missing(line)){
+    line <- list(join = T, pred = NULL)
+  } else {
+    if(any(!base::names(line)%in% c("join", "pred"))){
+      cat(paste0(crayon::red("Warning: "),"<line> should be a list with at most two named elements: ",crayon::blue("<join>")," and/or ",crayon::blue("<pred>"),".\n See help(\"plot.PM_data\")."))
+    }
+    if(is.null(line$join)) {line$join <- F}
+    if(is.null(line$pred)) {line$pred <- NULL}
+  }
+  
+  join <- amendLine(line$join)
+  pred <- line$pred #process further later
+  
+  
+  #process for groups
+  if(missing(color)){
+    color <- NULL
+  } else {
+    if(!color %in% base::names(x$standard_data)){
+      stop(paste0(crayon::red(color), " is not a column in the data.\n"))
+    }
+  }
+  
+  palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
+  if(missing(colors)){
+    colors <- "Spectral"
+  }
+  
+  if(missing(names)){
+    names <- NULL
+  }
+  
+  
+  #get the rest of the dots
   layout <- amendDots(list(...))
   
   #legend
@@ -113,7 +153,11 @@ plot.PM_data <- function(x,
   ylab <- if(missing(ylab)){"Output"} else {ylab}
   
   layout$xaxis$title <- amendTitle(xlab)
-  layout$yaxis$title <- amendTitle(ylab)
+  if(is.character(ylab)){
+    layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
+  } else {
+    layout$yaxis$title <- amendTitle(ylab)
+  }
   
   
   #axis ranges
@@ -137,15 +181,19 @@ plot.PM_data <- function(x,
   if(missing(include)) {include <- NA}
   if(missing(exclude)) {exclude <- NA}
   
-  sub <- x$standard_data %>% filter(outeq == !!outeq, block == !!block, evid == 0) %>% 
+  presub <- x$standard_data %>% filter(outeq == !!outeq, block == !!block, evid == 0) %>% 
     includeExclude(include,exclude) %>% 
     group_by(id)
   
   #time after dose
-  if(tad){sub$time <- calcTAD(sub)}
+  if(tad){presub$time <- calcTAD(presub)}
   
   #select relevant columns
-  sub <- sub %>% select(id, time, out)
+  sub <- presub %>% select(id, time, out)
+  if(!is.null(color)){
+    group <- presub %>% ungroup() %>% select(group = !!color) 
+    sub <- bind_cols(sub, group)
+  }
   
   #add identifier
   sub$src <- "obs"
@@ -153,7 +201,8 @@ plot.PM_data <- function(x,
   #now process pred data if there
   if(!is.null(pred)){
     if(inherits(pred,c("PM_post", "PM_pop"))){pred <- list(pred)} #only PM_post/pop was supplied, make into a list of 1
-    if(!inherits(pred[[1]],c("PM_post", "PM_pop"))){cat("The first element of <pred> must be a PM_pop or PM_post object")
+    if(!inherits(pred[[1]],c("PM_post", "PM_pop"))){
+      cat(paste0(crayon::red("Warning: "), "The first element of ", crayon::blue("pred"), " must be a PM_pop or PM_post object.\n"))
     } else {
       predData <- pred[[1]]$data
       if(length(pred)==1){ #default
@@ -166,9 +215,11 @@ plot.PM_data <- function(x,
         } else {pluck(predArgs, "icen") <- NULL} #was in list, so remove after extraction
         predArgs <- pred[-1]
       }
+      
+      predArgs <- amendLine(predArgs)
+      
     }
     
-    predArgs <- amendLine(predArgs)
     #filter and group by id
     predsub <- predData %>% filter(outeq == !!outeq, block == !!block, icen == !!icen) %>% 
       includeExclude(include,exclude) %>% group_by(id)
@@ -178,6 +229,11 @@ plot.PM_data <- function(x,
     
     #select relevant columns
     predsub <- predsub %>% select(id, time, out = pred)
+    
+    #add group if needed
+    if(!is.null(color)){
+      predsub$group <- sub$group[match(predsub$id, sub$id)]
+    }
     
     #add identifier
     predsub$src <- "pred"
@@ -199,20 +255,49 @@ plot.PM_data <- function(x,
       text <- ~id
     }
     
+    
+    if(!is.null(color)){ #there was grouping
+      if(!is.null(names)){
+        allsub$group <- factor(allsub$group, labels = names)
+      } else {
+        allsub$group <- factor(allsub$group)
+      }
+      
+      if(length(colors)==1 && colors %in% palettes$name){
+        max_colors <- palettes$maxcolors[match(colors, palettes$name)]
+        n_colors <- length(levels(allsub$group))
+        colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
+      }
+      
+      # colorLevels <- allsub$group
+      # nameLevels <- allsub$group
+      marker$color <- NULL
+      join$color <- NULL
+    } else {
+      # colorLevels <- NULL
+      # nameLevels <- "Observed"
+      allsub$group <- factor(1,labels = "Observed")
+    }
+    
     p <- allsub %>% plotly::filter(src == "obs") %>%
-      plotly::plot_ly(x = ~time, y = ~out * mult) %>%
+      plotly::plot_ly(x = ~time, y = ~out * mult,
+                      color = ~group,
+                      colors = colors,
+                      name = ~group) %>%
       plotly::add_markers(marker = marker,
                           text = text,
-                          hovertemplate = hovertemplate,
-                          name = "Observed") %>%
-      plotly::add_lines(line = line,
+                          hovertemplate = hovertemplate) %>%
+      plotly::add_lines(line = join,
                         showlegend = F)
     
+    
     if(includePred){
+      if(!is.null(color)){ predArgs$color <- NULL}
       p <- p %>% 
         plotly::add_lines(data = allsub[allsub$src == "pred",], x = ~time, y = ~out,
                           line = predArgs,
-                          name = "Predicted")
+                          name = "Predicted",
+                          showlegend = F)
     }
     p <- p %>% plotly::layout(xaxis = layout$xaxis,
                               yaxis = layout$yaxis,

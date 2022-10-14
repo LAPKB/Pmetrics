@@ -177,7 +177,11 @@ plot.PM_pta <- function(x,
                      "Proportion with success"
       )
     }
-    layout$yaxis$title <- amendTitle(ylab)
+    if(is.character(ylab)){
+      layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
+    } else {
+      layout$yaxis$title <- amendTitle(ylab)
+    }
   }  
   
   #axis ranges

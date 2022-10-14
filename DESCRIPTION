@@ -45,6 +45,7 @@ Imports:
     Matrix,
     mclust,
     methods,
+    npde,
     openxlsx,
     parallel,
     plyr,

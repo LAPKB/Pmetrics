@@ -41,6 +41,7 @@
 #' * ndpe An object with results of normalized distrubition of prediction errors analysis.
 #' * npde_tad NPDE with time after dose rather than absolute time, if `tad = TRUE`
 #' @author Michael Neely
+#' @export
 #' @seealso [SIMrun], [plot.PMvalid]
 
 
@@ -431,8 +432,10 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 
   # add TAD for plotting options
   if (tad) {
-    # simFull$obs$tad <- unlist(tapply(dataSub$tad[dataSub$evid == 0], dataSub$id[dataSub$evid == 0], function(x) rep(x, nsim)))
-    simFull$obs$tad  <- dataSub %>% filter(evid == 0) %>% group_by(id) %>% group_map(~rep(.x$tad, nsim)) %>% unlist()
+    simFull$obs$tad  <- dataSub %>% 
+      filter(evid == 0) %>% 
+      group_by(id) %>% 
+      group_map(~rep(.x$tad, nsim)) %>% unlist()
   } else {
     simFull$obs$tad <- NA
   }
@@ -461,7 +464,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   
   
   # get npde from github
-  checkRequiredPackages("npde", repos = "LAPKB/npde")
+  # checkRequiredPackages("npde", repos = "LAPKB/npde")
   
   # prepare data for npde
   obs <- tempDF %>% select(id, time, tad, out = obs, outeq)
@@ -480,31 +483,47 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   
   #get number of outeq
   nout <- max(obs$outeq, na.rm=T)
-  npdeRes <- list()
-  npdeRes2 <- list()
+  npde <- list()
+  npdeTAD <- list()
   
   for(thisout in 1:nout){
     
-    obs_sub <- obs %>% filter(outeq == thisout) %>% select(id, time, out)
-    sim_sub <- simobs %>% filter(outeq == thisout, id %in% obs_sub$id) %>% select(id, time, out)
+    obs_sub <- obs %>% filter(outeq == thisout) %>% 
+      select(id, time, out) %>% 
+      arrange(id, time)
+    sim_sub <- simobs %>% filter(outeq == thisout, id %in% obs_sub$id) %>% 
+      select(id, time, out) %>% 
+      arrange(id, time)
     
     if(tad){
-      obs_sub2 <- obs %>% filter(outeq == thisout) %>% select(id, time=tad, out)
-      sim_sub2 <- simobs %>% filter(outeq == thisout, id %in% obs_sub$id) %>% select(id, time=tad, out)
+      obs_sub2 <- obs %>% 
+        filter(outeq == thisout) %>% 
+        select(id, time = tad, out) %>% 
+        arrange(id, time)
+      sim_sub2 <- simobs %>% filter(outeq == thisout, id %in% obs_sub$id) %>% 
+        select(id, time = tad, out) %>% 
+        arrange(id, time)
     }
-    # get NPDE
-    npdeRes[[thisout]] <- tryCatch(npde::autonpde(namobs = obs_sub, namsim = sim_sub, 1, 2, 3, verbose = T), error = function(e) {
-      e
-      return(e)
-    })
-    if(inherits(npdeRes[[thisout]], "error")){ #error, often due to non pos-def matrix
-      npdeRes[[thisout]] <- tryCatch(npde::autonpde(namobs = obs_sub, namsim = sim_sub, 1, 2, 3, 
-                                                    decorr.method = "inverse", verbose = T), error = function(e) {
-                                                      e
-                                                      return(e)
-                                                    })
-      if(inherits(npdeRes[[thisout]], "error")){ #still with error
-        npdeRes[[thisout]] <- paste0("Unable to calculate NPDE for outeq ",thisout)
+    # get NPDE decorr.method = "inverse",
+    npde[[thisout]] <- tryCatch(npde::autonpde(obs_sub, sim_sub,
+                                                  iid = "id", ix = "time", iy = "out",
+                                                  detect = F,
+                                                  verbose = F,
+                                                  boolsave = F), 
+                                   error = function(e) {e; return(e)})
+   
+     if(inherits(npde[[thisout]], "error")){ #error, often due to non pos-def matrix
+      npde[[thisout]] <- tryCatch(npde::autonpde(obs_sub, sim_sub,
+                                                    iid = "id", ix = "time", iy = "out",
+                                                    detect = F,
+                                                    verbose = F,
+                                                    boolsave = F,
+                                                    decorr.method = "inverse"), 
+                                     error = function(e) {e; return(e)})
+    
+        if(inherits(npde[[thisout]], "error")){ #still with error
+        errorMsg <- npde[[thisout]] 
+        npde[[thisout]] <- paste0("Unable to calculate NPDE for outeq ",thisout,": ",errorMsg)
       } else {
         cat(paste0("NOTE: Due to numerical instability, for outeq ", thisout, " inverse decorrelation applied, not Cholesky (the default)."))
       }
@@ -513,26 +532,26 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     
     # get NPDE for TAD
     if(tad){
-      npdeRes2[[thisout]] <- tryCatch(npde::autonpde(namobs = obs_sub2, 
-                                                     namsim = sim_sub2, 
-                                                     iid = 1, ix = 2, iy = 3, 
-                                                     verbose = T), 
-                                      error = function(e) {
-                                        e
-                                        return(e)
-                                      })
-      if(inherits(npdeRes2[[thisout]], "error")){ #error, often due to non pos-def matrix
-        npdeRes2[[thisout]] <- tryCatch(npde::autonpde(namobs = obs_sub2, 
-                                                       namsim = sim_sub2, 
-                                                       iid = 1, ix= 2, iy = 3, 
-                                                       decorr.method = "inverse", 
-                                                       verbose = T), 
-                                        error = function(e) {
-                                          e
-                                          return(e)
-                                        })
-        if(inherits(npdeRes2[[thisout]], "error")){ #still with error
-          npdeRes2[[thisout]] <- paste0("Unable to calculate NPDE with TAD for outeq ",thisout)
+      npdeTAD[[thisout]] <- tryCatch(npde::autonpde(obs_sub2, sim_sub2,
+                                                     iid = "id", ix = "time", iy = "out",
+                                                     detect = F,
+                                                     verbose = F,
+                                                     boolsave = F
+                                                     ), 
+                                      error = function(e) {e; return(e)})
+      
+      if(inherits(npdeTAD[[thisout]], "error")){ #error, often due to non pos-def matrix
+        npdeTAD[[thisout]] <- tryCatch(npde::autonpde(obs_sub2, sim_sub2,
+                                                       iid = "id", ix = "time", iy = "out",
+                                                       detect = F,
+                                                       verbose = F,
+                                                       boolsave = F,
+                                                       decorr.method = "inverse"), 
+                                        error = function(e) {e; return(e)})
+        
+        if(inherits(npdeTAD[[thisout]], "error")){ #still with error
+          errorMsg <- npdeTAD[[thisout]] 
+          npdeTAD[[thisout]] <- paste0("Unable to calculate NPDE with TAD for outeq ",thisout,": ",errorMsg)
         } else {
           cat(paste0("NOTE: Due to numerical instability, for outeq ", thisout, " and TAD, inverse decorrelation applied, not Cholesky (the default)."))
         }
@@ -545,7 +564,11 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   # Clean Up ----------------------------------------------------------------
   
   
-  valRes <- list(simdata = PM_sim$new(simFull), timeBinMedian = timeMedian, tadBinMedian = tadMedian, opDF = tempDF, npde = npdeRes, npde_tad = npdeRes2)
+  valRes <- list(simdata = PM_sim$new(simFull), 
+                 timeBinMedian = timeMedian, 
+                 tadBinMedian = tadMedian, 
+                 opDF = tempDF, 
+                 npde = npde, npde_tad = npdeTAD)
   class(valRes) <- c("PMvalid", "list")
   
   setwd(currwd)

@@ -106,6 +106,9 @@ plot.PM_op <- function(x,
   if(missing(line)){
     line <- list(lm = F, loess = T, ref = T)
   } else {
+    if(any(!names(line)%in% c("lm", "loess", "pred"))){
+      cat(paste0(crayon::red("Warning: "),crayon::blue("line")," should be a list with at most three named elements: ",crayon::blue("lm"),", ",crayon::blue("loess"), " and/or ",crayon::blue("ref"),".\n See help(\"plot.PM_op\")."))
+    }
     if(is.null(line$lm)) {line$lm <- F}
     if(is.null(line$loess)) {line$loess <- T}
     if(is.null(line$ref)) {line$ref <- T}
@@ -174,7 +177,11 @@ plot.PM_op <- function(x,
     ylab <- if(missing(ylab)){"Observed"} else {ylab}
 
     layout$xaxis$title <- amendTitle(xlab)
-    layout$yaxis$title <- amendTitle(ylab)
+    if(is.character(ylab)){
+      layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
+    } else {
+      layout$yaxis$title <- amendTitle(ylab)
+    }
     
     #log axes
     if(log){
@@ -311,7 +318,11 @@ plot.PM_op <- function(x,
       pointLab <- "PWRES"
     }
     layout$yaxis$title <- amendTitle(ylab)
-    
+    if(is.character(ylab)){
+      layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
+    } else {
+      layout$yaxis$title <- amendTitle(ylab)
+    }
     
     #res vs. time
     p1 <- sub1 %>%
