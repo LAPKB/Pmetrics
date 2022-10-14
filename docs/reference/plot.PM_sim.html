@@ -187,14 +187,15 @@ Default is <code>TRUE</code>.</p></dd>
 
 
 <dt>xlab</dt>
-<dd><p>Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; xaxis &gt; title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute <code>bold</code>  may be included as a list element. The default for <code>bold</code> is <code>TRUE</code>.</p>
+<dd><p>Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; xaxis &gt; title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute <code>bold</code>  may be included as a list element, either on its own or within the font list. The default for <code>bold</code> is <code>TRUE</code>.</p>
 <p>Examples:</p><ul><li><p><code>xlab = "Time (h)"</code></p></li>
 <li><p><code>xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))</code></p></li>
+<li><p><code>xlab = list(text = "Time", font = list(bold = T))</code></p></li>
 </ul><p>Default is "Time".</p></dd>
 
 
 <dt>ylab</dt>
-<dd><p>Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See xlab for details.</p>
+<dd><p>Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See <code>xlab</code> for details. If <code>xlab</code> is specified as a list with formatting, and <code>ylab</code> is simply a character label, then the formatting for the  <code>xlab</code> will be applied to the <code>ylab</code>. To format <code>ylab</code> independently, specify a formatting list as for <code>xlab</code>.</p>
 <p>Default is "Output".</p></dd>
 
 
