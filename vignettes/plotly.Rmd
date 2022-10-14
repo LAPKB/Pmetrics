@@ -178,8 +178,8 @@ NPex$data$plot(legend = T)
 
 ...and a more complex one.
 ```{r, echo = T, eval = T}
-NPex$data$plot(pred = list(NPex$post, color = "navy"), 
-               line = F, 
+NPex$data$plot(line = list(join = F, 
+                           pred = list(NPex$post, color = "navy")), 
                legend = list(
                  x = 0.75,
                  y = 0.85,
