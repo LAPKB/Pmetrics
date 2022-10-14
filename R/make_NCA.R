@@ -161,6 +161,8 @@ make_NCA <- function(x, postPred = F, include, exclude, input = 1, icen = "media
     mdata2 <- mdata2[order(mdata2$id, mdata2$time, -mdata2$evid), ]
     
     # then calculate time after dose and previous dose
+    doseTime <- 0
+    prevDose <- 0
     for (i in 1:nrow(mdata2)) {
       if (mdata2$evid[i] != 0) {
         doseTime <- mdata2$time[i]
