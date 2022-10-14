@@ -189,6 +189,11 @@ plot.PM_final <- function(x,
     layout$title <- amendTitle(titl, default = list(size = 20))
     layout$xaxis$title <- amendTitle(xlb)
     layout$yaxis$title <- amendTitle(ylb)
+    if(is.character(ylb)){
+      layout$yaxis$title <- amendTitle(ylb, layout$xaxis$title$font)
+    } else {
+      layout$yaxis$title <- amendTitle(ylb)
+    }
     
     
     p <- p %>% 
@@ -265,6 +270,16 @@ plot.PM_final <- function(x,
     layout$xaxis$title <- amendTitle(xlb)
     layout$yaxis$title <- amendTitle(ylb)
     layout$zaxis$title <- amendTitle(zlb)
+    if(is.character(ylb)){
+      layout$yaxis$title <- amendTitle(ylb, layout$xaxis$title$font)
+    } else {
+      layout$yaxis$title <- amendTitle(ylb)
+    }
+    if(is.character(zlb)){
+      layout$yaxis$title <- amendTitle(zlb, layout$xaxis$title$font)
+    } else {
+      layout$yaxis$title <- amendTitle(zlb)
+    }
     
     
     if(type == "IT2B"){

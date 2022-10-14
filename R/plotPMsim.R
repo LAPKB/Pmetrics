@@ -170,7 +170,11 @@ plot.PM_sim <- function(x,
   ylab <- if(missing(ylab)){"Output"} else {ylab}
   
   layout$xaxis$title <- amendTitle(xlab)
-  layout$yaxis$title <- amendTitle(ylab)
+  if(is.character(ylab)){
+    layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
+  } else {
+    layout$yaxis$title <- amendTitle(ylab)
+  }
   
   #grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
