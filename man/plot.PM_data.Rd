@@ -8,12 +8,13 @@
   x,
   include,
   exclude,
-  line = T,
-  pred = NULL,
+  line,
   marker = T,
+  color,
+  colors,
+  names,
   mult = 1,
   outeq = 1,
-  group,
   block = 1,
   tad = F,
   overlay = T,
@@ -40,30 +41,28 @@ in a \link{PM_result} object}
 
 Example: \code{line = list(color = "red", dash = "longdash", width = 2)}}
 
-\item{pred}{The name of a population or posterior prediction object in a \link{PM_result} object, eg.
-\code{run1$post} or \code{run1$pop}. Can be a list, with the prediction object first, followed by named options to control the
-prediction plot
-\itemize{
-\item icen Chooses the median or mean of each
-subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".
-\item Other parameters to pass to plotly to control line characteristics, including \code{color}, \code{width}, and \code{dash}.
-For example: \code{pred = list(run1$post, icen = "mean", color = "red", width = 2)}.
-Defaults are the same as for the \code{line} argument, since normally one would not plot
-both lines joining observations and prediction lines.
-}}
-
 \item{marker}{Formats the symbols plotting observations. Controls the plotting symbol for observations.  This argument maps to the plotly marker object. It can be boolean or a list. \code{TRUE} will plot the marker with default characteristics. \code{FALSE} will suppress marker plotting. If a list, can control many marker characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > marker to see all the ways the marker can be formatted. Most common will be: \itemize{ \item{\code{color}} Marker color. \item{\code{symbol}} Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values. \item{\code{size}} Character size in points. \item{\code{opacity}} Ranging between 0 (fully transparent) to 1 (fully opaque). \item{\code{line}} A list of  additional attributes governing the outline for filled shapes, most commonly color and width. }
 
 Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}}
 
+\item{color}{Character vector naming a column in \code{x} to \strong{group} by, e.g. "id" or
+a covariate like "gender"}
+
+\item{colors}{to use for \strong{groups}. This can be a palette or a vector of colors.
+For accepted palette names see \code{RColorBrewer::brewer.pal.info}. Examples include
+"BrBG", or "Set2". An example vector could be \code{c("red", "green", "blue")}. It is not
+necessary to specify the same number of colors as groups within \code{color}, as colors
+will be interpolated to generate the correct number. The default when \code{color}
+is specified is the "Spectral" palette.}
+
+\item{names}{A character vector of names to label the \strong{groups} if \code{legend = T}.
+This vector does need to be the same length as the number of groups within \code{color}.
+Example: \code{c("Male", "Female")} if \code{color = "gender"} and "gender" is a covariate
+in the data.}
+
 \item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
 
 \item{outeq}{Which output equation to plot. Default is 1.}
-
-\item{group}{\strong{Not currently implemented.} Quoted name of a covariate in \code{data} by which
-to distinguish groups with color in the plot. Note that if covariates do not have values on observation
-rows, those observations will be unable to be grouped.  Grouping is only applicable if \code{outeq} is
-specified; otherwise there would be a confusing mix of colors for groups and output equations.}
 
 \item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data. Default is 1.}
 
@@ -85,12 +84,12 @@ Example: \code{log = T}}
 
 Examples: \itemize{ \item{\code{grid = F}} \item{\code{grid = list(gridcolor = "black", gridwidth = 2)}} }}
 
-\item{xlab}{Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element. The default for \code{bold} is \code{TRUE}.
+\item{xlab}{Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element, either on its own or within the font list. The default for \code{bold} is \code{TRUE}.
 
-Examples: \itemize{ \item{\code{xlab = "Time (h)"}} \item{\code{xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))}} }
+Examples: \itemize{ \item{\code{xlab = "Time (h)"}} \item{\code{xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))}} \item{\code{xlab = list(text = "Time", font = list(bold = T))}} }
 Default is "Time".}
 
-\item{ylab}{Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See xlab for details.
+\item{ylab}{Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See \code{xlab} for details. If \code{xlab} is specified as a list with formatting, and \code{ylab} is simply a character label, then the formatting for the  \code{xlab} will be applied to the \code{ylab}. To format \code{ylab} independently, specify a formatting list as for \code{xlab}.
 
 Default is "Output".}
 
@@ -107,7 +106,21 @@ Example: \code{xlim = c(0,1)}}
 
 Example: \code{ylim = c(0,100)}}
 
-\item{\dots}{Not currently implemented.}
+\item{\dots}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
+
+Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
+
+\item{pred}{The name of a population or posterior prediction object in a \link{PM_result} object, eg.
+\code{run1$post} or \code{run1$pop}. Can be a list, with the prediction object first, followed by named options to control the
+prediction plot
+\itemize{
+\item icen Chooses the median or mean of each
+subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".
+\item Other parameters to pass to plotly to control line characteristics, including \code{color}, \code{width}, and \code{dash}.
+For example: \code{pred = list(run1$post, icen = "mean", color = "red", width = 2)}.
+Defaults are the same as for the \code{line} argument, since normally one would not plot
+both lines joining observations and prediction lines.
+}}
 }
 \value{
 Plots the object.

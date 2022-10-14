@@ -6,11 +6,13 @@
 #' to layout > layoutAttributes > xaxis > title to see the ways to customize
 #' this axis label.
 #' In addition to the plotly attributes, a custom Pmetrics attribute `bold` 
-#' may be included as a list element. The default for `bold` is `TRUE`.<br>
+#' may be included as a list element, either on its own or within the font
+#' list. The default for `bold` is `TRUE`.<br>
 #' <br>
 #' Examples:
 #' \itemize{
 #' \item{`xlab = "Time (h)"`}
 #' \item{`xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))`}
+#' \item{`xlab = list(text = "Time", font = list(bold = T))`}
 #' }
   

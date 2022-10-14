@@ -7,7 +7,7 @@
 PMmanual()
 }
 \description{
-Opens the Pmetrics User Manual and function libraries
+Opens the Pmetrics User reference online
 }
 \details{
 Help for Pmetrics.

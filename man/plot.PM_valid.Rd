@@ -29,7 +29,10 @@ objects.}
 
 \item{type}{Default is "vpc" for a visual predictive check, but could be
 "pcvpc" for a prediction-corrected visual predictive check, or
-"npde" for a normalized prediction distribution error analysis/plot.}
+"npde" for a normalized prediction distribution error analysis/plot.
+Choosing npde will call \link[npde:plot.NpdeObject]{npde::plot.NpdeObject}. To modify this plot,
+supply argmuents as a named list: \code{npde = (...)}. Available arguments
+are in the user manual for the \href{https://github.com/ecomets/npde30}{npde package}.}
 
 \item{tad}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
 
@@ -74,12 +77,12 @@ Example: \code{log = T}}
 
 Examples: \itemize{ \item{\code{grid = F}} \item{\code{grid = list(gridcolor = "black", gridwidth = 2)}} }}
 
-\item{xlab}{Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element. The default for \code{bold} is \code{TRUE}.
+\item{xlab}{Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element, either on its own or within the font list. The default for \code{bold} is \code{TRUE}.
 
-Examples: \itemize{ \item{\code{xlab = "Time (h)"}} \item{\code{xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))}} }
+Examples: \itemize{ \item{\code{xlab = "Time (h)"}} \item{\code{xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))}} \item{\code{xlab = list(text = "Time", font = list(bold = T))}} }
 Default is "Time" or "Time after dose" if \code{tad = TRUE}.}
 
-\item{ylab}{Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See xlab for details.
+\item{ylab}{Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See \code{xlab} for details. If \code{xlab} is specified as a list with formatting, and \code{ylab} is simply a character label, then the formatting for the  \code{xlab} will be applied to the \code{ylab}. To format \code{ylab} independently, specify a formatting list as for \code{xlab}.
 
 Default is "Output".}
 
@@ -96,9 +99,13 @@ Example: \code{xlim = c(0,1)}}
 
 Example: \code{ylim = c(0,100)}}
 
-\item{\dots}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
+\item{\dots}{If \code{type} is not "npde", the following apply. Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
 
-Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
+Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .
+.
+However, if \code{type} is "npde", to modify the appearance of the plot,
+supply a list of options, \code{npde = list(...)}. See the documentation
+for the \code{type} argument above.}
 }
 \value{
 Plots and returns the plotly object
