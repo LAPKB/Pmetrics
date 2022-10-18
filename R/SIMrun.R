@@ -307,9 +307,14 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
   
   if (inherits(poppar, "PM_result")) {
     is_res <- T
-    res <- poppar
-    poppar <- poppar$final
-  } else {is_res <- F}
+    res <- poppar$clone()
+    poppar <- poppar$final$clone()
+  } else {
+    if(inherits(poppar, "PM_final")){
+      poppar <- poppar$clone()
+    }
+    is_res <- F
+  }
   
   
   if(missing(model)){
@@ -658,7 +663,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
   dataFile <- includeExclude(dataFile, include, exclude)
   toInclude <- unique(dataFile$id)
   nsub <- length(toInclude)
-
+  
   
   postToUse <- postToUse[postToUse %in% toInclude] # subset the posteriors if applicable
   if (length(postToUse) > 0 && length(postToUse) != nsub) endNicely(paste("\nYou have ", length(postToUse), " posteriors and ", nsub, " selected subjects in the data file.  These must be equal.\n", sep = ""), model, data)
