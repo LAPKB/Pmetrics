@@ -55,8 +55,10 @@
     <a class="dropdown-item" href="../articles/intro.html">Introduction</a>
     <a class="dropdown-item" href="../articles/overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/workflow.html">Workflow</a>
-    <a class="dropdown-item" href="../articles/data.html">Data Inputs</a>
-    <a class="dropdown-item" href="../articles/models.html">Model Inputs</a>
+    <a class="dropdown-item" href="../articles/data.html">Data Objects</a>
+    <a class="dropdown-item" href="../articles/models.html">Model Objects</a>
+    <a class="dropdown-item" href="../articles/running.html">Running the fit</a>
+    <a class="dropdown-item" href="../articles/objects.html">Created Objects</a>
     <a class="dropdown-item" href="../articles/simulation.html">Simulation</a>
     <a class="dropdown-item" href="../articles/plotly.html">Plotly plots</a>
   </div>
@@ -100,7 +102,7 @@
 </h2>
 <p><strong>As of v. 2.0</strong>, Pmetrics shifted to an architecture less dependent on reading and writing files. Data files are unchanged and described later in this manual.</p>
 <p>Model files can now be defined as an R object, instead of in a text file. Pmetrics can suppoort legacy runs with the old-style text file models, but users are encouraged to change to the new methods. Throughout this manual we will indicate the new style with the <span class="r6">R6</span> designation to reflect the object-oriented R6 style of programming available in R that makes it more consistent with object-oriented languages such as Python. We will indicate old-style approaches with <span class="legacy">Legacy</span>.</p>
-<p>Functions and classes in <span class="r6">R6</span> are generally named with “PM_” as the prefix, e.g. <code><a href="../reference/PM_load.html">PM_load()</a></code> or <code>PM_final</code>. In <span class="legacy">Legacy</span>, functions and classes are prefixed without the underscore “_“, such as <code>PMload()</code>, and <code>PMfinal</code>.</p>
+<p>Functions and classes in <span class="r6">R6</span> are generally named with “PM_” as the prefix, e.g. <code><a href="../reference/PM_load.html">PM_load()</a></code> or <code>PM_final</code>. In <span class="legacy">Legacy</span>, functions and classes are prefixed without the underscore “_“, such as <code><a href="../reference/PMload.html">PMload()</a></code>, and <code>PMfinal</code>.</p>
 <p><strong>Tips for using this guide.</strong></p>
 <ul>
 <li><p>Items that are hyperlinked can be selected to cross reference within this manual or link to external sites.</p></li>
