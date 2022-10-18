@@ -1,0 +1,94 @@
+---
+title: "Created Objects"
+output: 
+  rmarkdown::html_vignette:
+    css: style.css
+bibliography: Citations.bib
+vignette: >
+  %\VignetteIndexEntry{Created Objects}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo = F, message = F}
+library(Pmetrics)
+```
+
+## Objects created after a run
+
+After a successful IT2B or NPAG run, an R datafile is saved in the
+output subdirectory of the newly created numerically ordered folder in
+the working directory. After IT2B, this file is called "IT2Bout.Rdata",
+and after NPAG it is called "NPAGout.Rdata". These data files can be loaded by ensuring that the
+Runs folder is set as the working directory, and then using the Pmetrics
+commands `PM_load()` in <span class="r6">R6</span> or `PMload()` for 
+<span class="legacy">Legacy</span>.
+
+There are several Pmetrics data objects contained within the Rdata files
+which are loaded, making these objects available for
+plotting and other analysis. 
+
+<span class="r6">R6</span>
+
+`PM_load()` returns a `PM_result` object. The fields in the object are in the table below.
+
+
+```{r echo = F, results = 'asis'}
+library(knitr)
+tabObj <- read.csv("Data/Objects.csv",na.strings=".")
+kable(tabObj)
+```
+
+To access the fields in a `PM_result` object, use the "$". 
+
+```{r echo=T, eval = F}
+res1 <- PM_load(1)
+res1$op
+res1$op$time
+res1$op$data #this accesses the whole observed vs. predicted data frame
+```
+
+Most of the fields are themselves R6 objects with methods.
+
+```{r echo = T, eval = F}
+res1 <- PM_load(1)
+res1$op
+res1$op$summary()
+res1$op$plot()
+```
+
+<span class="legacy">Legacy</span>
+
+`PMload()` returns a number of objects into the R environment, suffixed by the run number supplied as an argument to `PMload()`. 
+
+The objects are the same as the fields in a `PM_result` object, except for the *valid* field, which is not a loaded object. The disadvantage of this approach compared to R6 is that there is no indication what is loaded into R with this command. If you had previously added to your run results with `PMsave()`, you would not necessarily know that there were additional results when you executed `PMload()`.
+
+
+```{r echo = T, eval = F}
+PMload(1)
+op.1
+final.1
+cycle.1
+cov.1
+post.1 #NPAG only
+pop.1 #NPAG only
+#other results could be included if PMsave() had been run previously
+```
+
+Because Legacy Pmetrics works fully under the S3 framework, these objects are passed to functions and do not have methods attached to them.
+
+```{r echo=F, eval = F}
+PMload(1)
+summary(op.1)
+plot(op.1)
+#op.1$plot() will not work since op.1 is not an R6 object and has no attached methods
+```
+
+ 

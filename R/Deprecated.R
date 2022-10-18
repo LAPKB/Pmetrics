@@ -3,7 +3,7 @@
 #' 
 #' @title Deprecated functions.
 #' @aliases PMcheckMatrix, PMfixMatrix, NPload, ITload, NPreport, ITreport, 
-#' PMdiag, PMreadDefaults, PMwriteDefaults, makeNPDE, PMupdate, PMload
+#' PMdiag, PMreadDefaults, PMwriteDefaults, makeNPDE, PMupdate
 #' @author Michael Neely
 #' @export
 
@@ -55,7 +55,7 @@ PMwriteDefaults <- function(...){
 
 #' @export
 makeNPDE <- function(...){
-  cat("\nmakeNPDE is deprecated.  Use makeValid() instead.\n")
+  cat("\nmakeNPDE is deprecated.  Use $validate() on a PM_result object or makeValid() instead.\n")
 }
 
 #' @export
