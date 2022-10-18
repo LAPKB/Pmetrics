@@ -12,8 +12,7 @@
 \alias{PMreadDefaults,}
 \alias{PMwriteDefaults,}
 \alias{makeNPDE,}
-\alias{PMupdate,}
-\alias{PMload}
+\alias{PMupdate}
 \title{Deprecated functions.}
 \usage{
 PMcheckMatrix(...)
