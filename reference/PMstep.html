@@ -30,8 +30,10 @@
     <a class="dropdown-item" href="../articles/intro.html">Introduction</a>
     <a class="dropdown-item" href="../articles/overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/workflow.html">Workflow</a>
-    <a class="dropdown-item" href="../articles/data.html">Data Inputs</a>
-    <a class="dropdown-item" href="../articles/models.html">Model Inputs</a>
+    <a class="dropdown-item" href="../articles/data.html">Data Objects</a>
+    <a class="dropdown-item" href="../articles/models.html">Model Objects</a>
+    <a class="dropdown-item" href="../articles/running.html">Running the fit</a>
+    <a class="dropdown-item" href="../articles/objects.html">Created Objects</a>
     <a class="dropdown-item" href="../articles/simulation.html">Simulation</a>
     <a class="dropdown-item" href="../articles/plotly.html">Plotly plots</a>
   </div>
@@ -69,7 +71,7 @@
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>x</dt>
-<dd><p>A PMcov object loaded by <code>PMload</code>
+<dd><p>A PMcov object loaded by <code><a href="PMload.html">PMload</a></code>
 or made by <code><a href="makeCov.html">makeCov</a></code>.</p></dd>
 
 
@@ -92,7 +94,7 @@ A value of <code>NA</code> indicates that the variable was not retained in the f
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function will perform stepwise linear regressions on a PMcov object loaded by <code>PMload</code>,
+    <p>This function will perform stepwise linear regressions on a PMcov object loaded by <code><a href="PMload.html">PMload</a></code>,
 or made by <code><a href="makeCov.html">makeCov</a></code>.  Every covariate in the model will be tested in a stepwise linear regression for their relationships
 to each parameter in the model.  Bayesian posterior parameters and individual covariates are used.</p>
     </div>
