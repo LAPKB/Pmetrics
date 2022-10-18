@@ -19,10 +19,14 @@ navbar:
           href: articles/overview.html
         - text: Workflow
           href: articles/workflow.html
-        - text: Data Inputs
+        - text: Data Objects
           href: articles/data.html
-        - text: Model Inputs
+        - text: Model Objects
           href: articles/models.html
+        - text: Running the fit
+          href: articles/running.html
+        - text: Created Objects
+          href: articles/objects.html
         - text: Simulation
           href: articles/simulation.html
         - text: Plotly plots

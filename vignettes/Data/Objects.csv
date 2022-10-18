@@ -61,7 +61,7 @@ NPAG only,,
 "mdata (class: PMmatrix, data.frame)",See Pmetrics Input Files.,Your original raw data file.
 "valid (class: PMvalid, list)","Use the command str(valid.x) in R, where x is the run number",This is a list containing the information to perform graphical and numerical analysis of prediction checks and normalized prediction distribution errors.  It is a method of internal model validation.
 ,,
-This object will only be present if you have run makeValid() after a run is completed. ,,
+This object will only be present if you have run \$validate(…) after a run is completed. ,,
 "valid\$simdata (class: PMsim, list)",\$obs,"A data frame with \$id, \$time, \$out, \$outeq columns containing simulated observations at each time and output equation number in the template data file.  If simulations from multiple template subjects have been combined (see Simulator Runs), then \$id will be of the form x.y, where x is the simulation number, and y is the template number."
 ,,
 ,,

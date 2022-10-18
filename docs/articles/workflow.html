@@ -55,8 +55,10 @@
     <a class="dropdown-item" href="../articles/intro.html">Introduction</a>
     <a class="dropdown-item" href="../articles/overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/workflow.html">Workflow</a>
-    <a class="dropdown-item" href="../articles/data.html">Data Inputs</a>
-    <a class="dropdown-item" href="../articles/models.html">Model Inputs</a>
+    <a class="dropdown-item" href="../articles/data.html">Data Objects</a>
+    <a class="dropdown-item" href="../articles/models.html">Model Objects</a>
+    <a class="dropdown-item" href="../articles/running.html">Running the fit</a>
+    <a class="dropdown-item" href="../articles/objects.html">Created Objects</a>
     <a class="dropdown-item" href="../articles/simulation.html">Simulation</a>
     <a class="dropdown-item" href="../articles/plotly.html">Plotly plots</a>
   </div>
@@ -157,7 +159,7 @@ every run.</li>
 <em>Run.</em> Separate commands for NPAG and IT2B must be used,
 i.e. <code><a href="../reference/NPrun.html">NPrun()</a></code> and <code><a href="../reference/ITrun.html">ITrun()</a></code>.</li>
 <li>
-<em>Loading.</em> Results are loaded with <code>PMload()</code> not
+<em>Loading.</em> Results are loaded with <code><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">PMload()</a></code> not
 <code><a href="../reference/PM_load.html">PM_load()</a></code> because the former returns a collection of
 results all suffixed with the run number, e.g. <code>op.1</code> or
 <code>final.1</code> for run 1. This can lead to confusion if working on
@@ -169,12 +171,12 @@ to the run functions. R is used to specify the working directory
 containing these files. The analysis is executed in a terminal window by
 calling <code><a href="../reference/NPrun.html">NPrun()</a></code>, <code><a href="../reference/ITrun.html">ITrun()</a></code> or
 <code><a href="../reference/ERRrun.html">ERRrun()</a></code> functions. The results can be loaded into R after
-the run completes using <code>PMload()</code>. The analgous Legacy code
+the run completes using <code><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">PMload()</a></code>. The analgous Legacy code
 to the R6 code above is shown here.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#Run 1 - ensure the data, model files are in the working directory</span></span>
 <span><span class="fu"><a href="../reference/NPrun.html">NPrun</a></span><span class="op">(</span><span class="st">"data.csv"</span>, <span class="st">"model.txt"</span><span class="op">)</span></span>
-<span><span class="fu">PMload</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> </span>
+<span><span class="fu"><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">PMload</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="co">#Run 2 - update Ke range - edit file outside R, copy to working directory</span></span>
 <span><span class="co">#use same data as for run 1</span></span>
