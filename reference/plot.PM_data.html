@@ -68,12 +68,13 @@
 <span>  <span class="va">x</span>,</span>
 <span>  <span class="va">include</span>,</span>
 <span>  <span class="va">exclude</span>,</span>
-<span>  line <span class="op">=</span> <span class="cn">T</span>,</span>
-<span>  pred <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">line</span>,</span>
 <span>  marker <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  <span class="va">color</span>,</span>
+<span>  <span class="va">colors</span>,</span>
+<span>  <span class="va">names</span>,</span>
 <span>  mult <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  outeq <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  <span class="va">group</span>,</span>
 <span>  block <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  tad <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  overlay <span class="op">=</span> <span class="cn">T</span>,</span>
@@ -111,18 +112,6 @@ in a <a href="PM_result.html">PM_result</a> object</p></dd>
 </ul><p>Example: <code>line = list(color = "red", dash = "longdash", width = 2)</code></p></dd>
 
 
-<dt>pred</dt>
-<dd><p>The name of a population or posterior prediction object in a <a href="PM_result.html">PM_result</a> object, eg.
-<code>run1$post</code> or <code>run1$pop</code>. Can be a list, with the prediction object first, followed by named options to control the
-prediction plot</p><ul><li><p>icen Chooses the median or mean of each
-subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".</p></li>
-<li><p>Other parameters to pass to plotly to control line characteristics, including <code>color</code>, <code>width</code>, and <code>dash</code>.
-For example: <code>pred = list(run1$post, icen = "mean", color = "red", width = 2)</code>.
-Defaults are the same as for the <code>line</code> argument, since normally one would not plot
-both lines joining observations and prediction lines.</p></li>
-</ul></dd>
-
-
 <dt>marker</dt>
 <dd><p>Formats the symbols plotting observations. Controls the plotting symbol for observations.  This argument maps to the plotly marker object. It can be boolean or a list. <code>TRUE</code> will plot the marker with default characteristics. <code>FALSE</code> will suppress marker plotting. If a list, can control many marker characteristics, including overriding defaults. Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to traces &gt; scatter &gt; attributes &gt; marker to see all the ways the marker can be formatted. Most common will be:</p><ul><li><p><code>color</code> Marker color.</p></li>
 <li><p><code>symbol</code> Plotting character. See <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code>, traces &gt; scatter &gt; attributes &gt; marker &gt; symbol &gt; values.</p></li>
@@ -132,19 +121,33 @@ both lines joining observations and prediction lines.</p></li>
 </ul><p>Example: <code>marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))</code></p></dd>
 
 
+<dt>color</dt>
+<dd><p>Character vector naming a column in <code>x</code> to <strong>group</strong> by, e.g. "id" or
+a covariate like "gender"</p></dd>
+
+
+<dt>colors</dt>
+<dd><p>to use for <strong>groups</strong>. This can be a palette or a vector of colors.
+For accepted palette names see <code><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">RColorBrewer::brewer.pal.info</a></code>. Examples include
+"BrBG", or "Set2". An example vector could be <code>c("red", "green", "blue")</code>. It is not
+necessary to specify the same number of colors as groups within <code>color</code>, as colors
+will be interpolated to generate the correct number. The default when <code>color</code>
+is specified is the "Spectral" palette.</p></dd>
+
+
+<dt>names</dt>
+<dd><p>A character vector of names to label the <strong>groups</strong> if <code>legend = T</code>.
+This vector does need to be the same length as the number of groups within <code>color</code>.
+Example: <code>c("Male", "Female")</code> if <code>color = "gender"</code> and "gender" is a covariate
+in the data.</p></dd>
+
+
 <dt>mult</dt>
 <dd><p>Multiplication factor for y axis, e.g. to convert mg/L to ng/mL</p></dd>
 
 
 <dt>outeq</dt>
 <dd><p>Which output equation to plot. Default is 1.</p></dd>
-
-
-<dt>group</dt>
-<dd><p><strong>Not currently implemented.</strong> Quoted name of a covariate in <code>data</code> by which
-to distinguish groups with color in the plot. Note that if covariates do not have values on observation
-rows, those observations will be unable to be grouped.  Grouping is only applicable if <code>outeq</code> is
-specified; otherwise there would be a confusing mix of colors for groups and output equations.</p></dd>
 
 
 <dt>block</dt>
@@ -180,14 +183,15 @@ The default is <code>TRUE</code>.</p></dd>
 
 
 <dt>xlab</dt>
-<dd><p>Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; xaxis &gt; title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute <code>bold</code>  may be included as a list element. The default for <code>bold</code> is <code>TRUE</code>.</p>
+<dd><p>Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; xaxis &gt; title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute <code>bold</code>  may be included as a list element, either on its own or within the font list. The default for <code>bold</code> is <code>TRUE</code>.</p>
 <p>Examples:</p><ul><li><p><code>xlab = "Time (h)"</code></p></li>
 <li><p><code>xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))</code></p></li>
+<li><p><code>xlab = list(text = "Time", font = list(bold = T))</code></p></li>
 </ul><p>Default is "Time".</p></dd>
 
 
 <dt>ylab</dt>
-<dd><p>Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See xlab for details.</p>
+<dd><p>Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See <code>xlab</code> for details. If <code>xlab</code> is specified as a list with formatting, and <code>ylab</code> is simply a character label, then the formatting for the  <code>xlab</code> will be applied to the <code>ylab</code>. To format <code>ylab</code> independently, specify a formatting list as for <code>xlab</code>.</p>
 <p>Default is "Output".</p></dd>
 
 
@@ -209,7 +213,22 @@ The default is <code>TRUE</code>.</p></dd>
 
 
 <dt>...</dt>
-<dd><p>Not currently implemented.</p></dd>
+<dd><p>Other attributes which can be passed to the layout &gt; xaxis/yaxis  in a plotly plot to further control formatting.  Note that <code>log</code>, <code>xlab</code>, <code>ylab</code>, <code>xlim</code>, and <code>ylim</code> are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> layout &gt; layoutAttributes  &gt; xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.</p>
+<p>Examples:</p><ul><li><p><code>NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only</code></p></li>
+<li><p><code>NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes</code></p></li>
+</ul><p>.</p></dd>
+
+
+<dt>pred</dt>
+<dd><p>The name of a population or posterior prediction object in a <a href="PM_result.html">PM_result</a> object, eg.
+<code>run1$post</code> or <code>run1$pop</code>. Can be a list, with the prediction object first, followed by named options to control the
+prediction plot</p><ul><li><p>icen Chooses the median or mean of each
+subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".</p></li>
+<li><p>Other parameters to pass to plotly to control line characteristics, including <code>color</code>, <code>width</code>, and <code>dash</code>.
+For example: <code>pred = list(run1$post, icen = "mean", color = "red", width = 2)</code>.
+Defaults are the same as for the <code>line</code> argument, since normally one would not plot
+both lines joining observations and prediction lines.</p></li>
+</ul></dd>
 
 </dl></div>
     <div class="section level2">
