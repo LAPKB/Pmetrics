@@ -30,8 +30,10 @@
     <a class="dropdown-item" href="../articles/intro.html">Introduction</a>
     <a class="dropdown-item" href="../articles/overview.html">Overview</a>
     <a class="dropdown-item" href="../articles/workflow.html">Workflow</a>
-    <a class="dropdown-item" href="../articles/data.html">Data Inputs</a>
-    <a class="dropdown-item" href="../articles/models.html">Model Inputs</a>
+    <a class="dropdown-item" href="../articles/data.html">Data Objects</a>
+    <a class="dropdown-item" href="../articles/models.html">Model Objects</a>
+    <a class="dropdown-item" href="../articles/running.html">Running the fit</a>
+    <a class="dropdown-item" href="../articles/objects.html">Created Objects</a>
     <a class="dropdown-item" href="../articles/simulation.html">Simulation</a>
     <a class="dropdown-item" href="../articles/plotly.html">Plotly plots</a>
   </div>
@@ -85,17 +87,17 @@ e.g. var1, var2, var3.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Any objects that are made during the course of analysis in R can be added to the saved data
-that are automatically generated at the end of an NPAG or IT2B run and loaded with <code>PMload</code>.
+that are automatically generated at the end of an NPAG or IT2B run and loaded with <code><a href="PMload.html">PMload</a></code>.
 Objects with the same run number will be saved as a group.  So if a user has made a new object called
 lm.1 that contains regressions related to run 1, it will be saved with any other object
 that also has .1 at the end.</p>
 <p>Additionally, other objects can be saved via the ... argument.  For exmaple PMsave(1,lm) will
 save any object with .1 at the end, plus an object named "lm".  All objects will be suffixed
-with the run number when loaded back with <code>PMload</code>.</p>
+with the run number when loaded back with <code><a href="PMload.html">PMload</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code>PMload</code></p></div>
+    <div class="dont-index"><p><code><a href="PMload.html">PMload</a></code></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
