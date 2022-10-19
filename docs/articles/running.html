@@ -145,16 +145,16 @@ R type:</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lapkb.github.io/Pmetrics/">Pmetrics</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/PM_tutorial.html">PM_tutorial</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Follow the instructions prompted in the terminal.</p>
-<p>To setup a R6 Pmetrics run, you must provide <code>PM_data</code> and
-<code>PM_model</code> objects. Once created, it does not matter where
-the files (if there are any) are located on your system because Pmetrics
-will use those objects, not the files.</p>
+<p>To setup a R6 Pmetrics run, you must provide <code><a href="../reference/PM_data.html">PM_data()</a></code>
+and <code><a href="../reference/PM_model.html">PM_model()</a></code> objects. Once created, it does not matter
+where the files (if there are any) are located on your system because
+Pmetrics will use those objects, not the files.</p>
 <p>To bring these together, use the <code>PM_fit$new()</code> object
 creator. It only needs two arguments: the name of the data file in the
 working directory or in memory loaded via the Legacy
-<code><a href="../reference/PMreadMatrix.html">PMreadMatrix()</a></code>and a model object. <code>PM_fit</code> will
-accept a model object created by <code>PM_model</code> or the name of a
-model file in Legacy format and in the working directory.</p>
+<code><a href="../reference/PMreadMatrix.html">PMreadMatrix()</a></code>and a model object. <code><a href="../reference/PM_fit.html">PM_fit()</a></code>
+will accept a model object created by <code>PM_model</code> or the name
+of a model file in Legacy format and in the working directory.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co">#Example 1 - data and model objects</span></span>
@@ -195,10 +195,10 @@ correct format for use by IT2B, NPAG, or the Simulator.</p>
 <h3 id="running-the-model-to-fit-the-data">Running the model to fit the data<a class="anchor" aria-label="anchor" href="#running-the-model-to-fit-the-data"></a>
 </h3>
 <p><span class="r6">R6</span></p>
-<p>Once the <code>PM_fit</code> object is created the
+<p>Once the <code><a href="../reference/PM_fit.html">PM_fit()</a></code> object is created the
 <code>$run()</code> method will execute the fit. Arguments for this
 method can be found in the help for <code><a href="../reference/NPrun.html">NPrun()</a></code> and
-<code>ITrun</code>.</p>
+<code><a href="../reference/ITrun.html">ITrun()</a></code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#default run parameters</span></span>
 <span><span class="va">fit3</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">)</span></span>
@@ -209,10 +209,10 @@ method can be found in the help for <code><a href="../reference/NPrun.html">NPru
 <span><span class="co">#change the engine from default NPAG</span></span>
 <span><span class="va">fit3</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>engine <span class="op">=</span> <span class="st">"IT2B"</span><span class="op">)</span></span></code></pre></div>
 <p><span class="legacy">Legacy</span></p>
-<p>As you will see in the skeleton R script made by <code>PMtree</code>
-and placed in the Rscript subdirectory, if this is a first-time run, the
-R commands to run IT2B or NPAG are as follows. Recall that the “#”
-character is a comment character.</p>
+<p>As you will see in the skeleton R script made by
+<code><a href="../reference/PMtree.html">PMtree()</a></code> and placed in the Rscript subdirectory, if this is
+a first-time run, the R commands to run IT2B or NPAG are as follows.
+Recall that the “#” character is a comment character.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lapkb.github.io/Pmetrics/">Pmetrics</a></span><span class="op">)</span></span>
@@ -269,13 +269,13 @@ files.</p>
 <p><span class="r6">R6</span></p>
 <p>After the execution is done, you can load the output into R using
 <code><a href="../reference/PM_load.html">PM_load()</a></code>. Note the underscore “_” to distinguish this
-function from the Legacy <code><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">PMload()</a></code>. The argument to the
+function from the Legacy <code><a href="../reference/PMload.html">PMload()</a></code>. The argument to the
 function is the run number which you wish to load, corresponding to a
 folder with the same number in your <strong>Runs</strong> folder (if you
 made one).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_run</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PM_load.html">PM_load</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p>This creates a <code>PM_result</code> object called
+<p>This creates a <code><a href="../reference/PM_result.html">PM_result()</a></code> object called
 <code>my_run</code>. Detailed information about the different elements
 contained in the result object can be accessed via
 <code><a href="../reference/PM_result.html">?PM_result</a></code> or by typing the result object into the
@@ -295,7 +295,7 @@ of the results, for example:</p>
 command does this.</p>
 <p><code>PMload(run_number)</code></p>
 <p>Details of these commands and what is loaded are described in the R
-documentation <code><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">?PMload</a></code>. The <strong>run_number</strong>
+documentation <code><a href="../reference/PMload.html">?PMload</a></code>. The <strong>run_number</strong>
 should be included within the parentheses to be appended to the names of
 loaded R objects, allowing for comparison between runs,
 e.g. <code>PMload(1)</code>. Finally, at this point other Pmetrics
@@ -320,7 +320,7 @@ shown below.</p>
 <span><span class="co">#Run 1 - Ka, Kel, V, all subjects</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="st">"working directory"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/NPrun.html">NPrun</a></span><span class="op">(</span><span class="op">)</span> <span class="co">#assumes model="model.txt" and data="data.csv"</span></span>
-<span><span class="fu"><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">PMload</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/PMload.html">PMload</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p>Remember in R that the command <code>example(function)</code> will
 provide examples for the specified function. Most Pmetrics functions
 have examples.</p>

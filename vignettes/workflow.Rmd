@@ -33,7 +33,7 @@ following diagram.
 The user creates the data and model objects at the top. These can come from the hard drive or from within R (dashed arrows). The model file is created in R using
 the `PM_model$new()` function and the data file by `PM_data$new()`. When combined using `PM_fit$new()` and the `$run()` function
 on the resulting object, the analysis is executed. At the end of the run, the hard drive will contain a new numerically named folder, e.g., 1, 2, 3, ..., that contains the files which can be loaded into R subsequently using
-`PM_load(x)`, replacing `x` with the folder number. `PM_load()` is an alias for `PM_result$new()` because it creates a new `PM_result` object which contains all the results of a run, and has many assciated methods attached to it for plotting, simulating, etc.
+`PM_load(x)`, replacing `x` with the folder number. `PM_load()` is an alias for `PM_result$new()` because it creates a new `PM_result()` object which contains all the results of a run, and has many assciated methods attached to it for plotting, simulating, etc.
 
 To change model parameters, the model object is updated via `PM_model$update()`, `PM_fit$new()` is called and then the run is executed with `$run()`. If  continuing a previous run that did not end, simply use the `$run()` and specify the run number you wish to continue as the `prior` argument to `$run()`. These scenarios are illustrated below.
 
