@@ -118,15 +118,15 @@ object-oriented languages such as Python. We will indicate old-style
 approaches with <span class="legacy">Legacy</span>.</p>
 <p>Functions and classes in <span class="r6">R6</span> are generally
 named with “PM_” as the prefix, e.g. <code><a href="../reference/PM_load.html">PM_load()</a></code> or
-<code>PM_final</code>. In <span class="legacy">Legacy</span>, functions
-and classes are prefixed without the underscore “_“, such as
-<code><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">PMload()</a></code>, and <code>PMfinal</code>.</p>
+<code><a href="../reference/PM_final.html">PM_final()</a></code>. In <span class="legacy">Legacy</span>,
+functions and classes are prefixed without the underscore “_“, such as
+<code><a href="../reference/PMload.html">PMload()</a></code>, and <code>PMfinal()</code>.</p>
 <p><strong>Tips for using this guide.</strong></p>
 <ul>
 <li><p>Items that are hyperlinked can be selected to cross reference
 within this manual or link to external sites.</p></li>
 <li><p><code>Items</code> correspond to inline examples of R code, which
-are not evaluted in this document, but serve as templates for what may
+are not evaluated in this document, but serve as templates for what may
 be typed into your R console or script. They may not necessarily be
 executable if typed verbatim.</p></li>
 </ul>
@@ -163,7 +163,7 @@ Disussions</a>. You can report <a href="https://github.com/LAPKB/Pmetrics/issues
 well.</p>
 <p>This manual is also not intended to be a theoretical treatise on the
 algorithms used in IT2B or NPAG. For that, the user is directed to our
-<a href="http://www.lapk.org" class="external-link">website</a>.</p>
+<a href="http://www.lapk.org/publications.php" class="external-link">website</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="getting-help-and-updates">Getting Help and Updates<a class="anchor" aria-label="anchor" href="#getting-help-and-updates"></a>
@@ -171,15 +171,15 @@ algorithms used in IT2B or NPAG. For that, the user is directed to our
 <!--There is an active [LAPK forum](http://www.lapk.org) with all kinds
 of useful tips and help with Pmetrics. Register and feel free to post! 
 -->
-<p>Within R, you can use <code>help("command")</code> or
-<code>?command</code> in the R console to see detailed help files for
-any Pmetrics command. Many commands have examples included in this
+<p>Within R, you can use <code>help("command")</code> or more simply
+just <code>?command</code> in the R console to see detailed help files
+for any Pmetrics command. Many commands have examples included in this
 documentation and you can execute the examples with
 <code>example(command)</code>.</p>
-<!--You can also type `PMmanual()` to launch this manual from within Pmetrics 
-as well as a catalogue of all Pmetrics functions. Finally, 
-`PMnews()` will display the Pmetrics change log.
--->
+<p>You can also type <code><a href="../reference/PMmanual.html">PMmanual()</a></code> to launch this website from
+within Pmetrics.
+<!--Finally, `PMnews()` will display the Pmetrics change log.
+--></p>
 <p>Pmetrics will check for updates automatically every time you load it
 with <code><a href="https://lapkb.github.io/Pmetrics/">library(Pmetrics)</a></code> and you are connected to the
 internet. If an update is available, it will provide a brief message to
@@ -207,13 +207,13 @@ Currently, the following GUIs are available: `PMcode("run")` and
 <h2 id="customizing-options">Customizing Options<a class="anchor" aria-label="anchor" href="#customizing-options"></a>
 </h2>
 <p>You can change global options in Pmetrics with
-<code>setPMoptions(sep, dec, server\_address)</code>.</p>
+<code><a href="../reference/setPMoptions.html">setPMoptions()</a></code>.</p>
 <p>Currently you can change three options: <code>sep</code> and
 <code>dec</code> will allow Pmetrics to read data files whose field
 separators are semicolons and decimal separators are commas,
 e.g. <code>setPMoptions(sep=";", dec=",")</code>. These options will
 persist from session to session until changed. The third option,
-<code>server\_address</code>, allows you to specify the address of a
+<code>server_address</code>, allows you to specify the address of a
 remote server with Pmetrics installed, to allow remote runs.</p>
 <p><code><a href="../reference/getPMoptions.html">getPMoptions()</a></code> will return the current options.</p>
 </div>

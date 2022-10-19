@@ -61,10 +61,10 @@ PM_tutorial()
 ```
 Follow the instructions prompted in the terminal.
 
-To setup a R6 Pmetrics run, you must provide `PM_data` and  `PM_model` objects. Once created, it does not matter where the files (if there are any) are located on your system because Pmetrics will use those objects, not the files.
+To setup a R6 Pmetrics run, you must provide `PM_data()` and  `PM_model()` objects. Once created, it does not matter where the files (if there are any) are located on your system because Pmetrics will use those objects, not the files.
 
 To bring these together, use the `PM_fit$new()` object creator. It only needs two arguments: the name of the data file in the working directory or
-in memory loaded via the Legacy `PMreadMatrix()`and a model object. `PM_fit` will accept a model object created by `PM_model` or the name of a model file in Legacy format and in the working directory.
+in memory loaded via the Legacy `PMreadMatrix()`and a model object. `PM_fit()` will accept a model object created by `PM_model` or the name of a model file in Legacy format and in the working directory.
 
 ``` {r echo=T, eval=F}
 
@@ -112,7 +112,7 @@ the correct format for use by IT2B, NPAG, or the Simulator.
 
 <span class="r6">R6</span>
 
-Once the `PM_fit` object is created the `$run()` method will execute the fit. Arguments for this method can be found in the help for `NPrun()` and `ITrun`.
+Once the `PM_fit()` object is created the `$run()` method will execute the fit. Arguments for this method can be found in the help for `NPrun()` and `ITrun()`.
 
 ``` {r echo=T, eval=F}
 #default run parameters
@@ -127,7 +127,7 @@ fit3$run(engine = "IT2B")
 
 <span class="legacy">Legacy</span>
 
-As you will see in the skeleton R script made by `PMtree` and placed in
+As you will see in the skeleton R script made by `PMtree()` and placed in
 the Rscript subdirectory, if this is a first-time run, the R commands to
 run IT2B or NPAG are as follows. Recall that the "\#" character is a
 comment character.
@@ -191,7 +191,7 @@ After the execution is done, you can load the output into R using `PM_load()`. N
 my_run <- PM_load(1)
 ```
 
-This creates a `PM_result` object called `my_run`. Detailed information about the different elements contained in the result object can be accessed via `?PM_result` or by typing the result object into the terminal.
+This creates a `PM_result()` object called `my_run`. Detailed information about the different elements contained in the result object can be accessed via `?PM_result` or by typing the result object into the terminal.
 
 After that, that object can be used to access the different elements of the results, for example:
 

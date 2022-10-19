@@ -121,6 +121,15 @@ so that simdata will contain the results. The arguments to `SIMparse()` are deta
 
 Output from `PM_result$sim()` and `PM_sim$run()` is a `PM_sim` object. The object can be plotted with the attached plot method: `PM_sim$plot()` which in turn calls the `plot.PM_sim()` function. See the help for the function and `vignette("plotly")` for further details.
 
+<span class="legacy">Legacy</span>
+
+Load the output of `SIMrun()` with `SIMparse()` as described above. This creates a `PMsim` object which can be plotted.
+
+```{r eval = F, echo = T}
+sim <- SIMparse(...)
+plot(sim) #see plot.PMsim for help
+```
+s
 
 ## Citations
 
