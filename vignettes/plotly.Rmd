@@ -205,6 +205,8 @@ map to `xaxis = list(title = list(text = xlab))` and the same for the y axis. Ho
         - `color` Color of the text
         - `family` The HTML font family, e.g. "Arial" or "Times New Roman"
         - `size` Size in points
+        
+If you only specify a list for `xlab` it will be applied to `ylab`. To format them independently, specify a list for both.
 
 ``` {r echo = T, eval = T}
 NPex$data$plot(xlab = "Time (h)", ylab = "Rifapentine (mg/L)")
@@ -212,17 +214,20 @@ NPex$data$plot(xlab = "Time (h)", ylab = "Rifapentine (mg/L)")
 
 ``` {r echo = T, eval = T}
 NPex$data$plot(xlab = list(text = "Time (h)", font = list(color = "slategrey", family = "Times New Roman", size = 18)))
+#notice that ylab is also formatted in the same way
 ```
 
-For greater control over the axes, e.g. tick placement, coloring, etc., the "..." argument in plots is coded to pass arguments to the xaxis and yaxis lists. This allows access to any attribute. If axis attributes are passed through ... in a named list, e.g. `xaxis = list(linecolor = "red")`, then they will be specific to that axis. However, if the attributes are passed through ... by themselves, they will apply to both the axes, e.g. `linecolor = "red"`.
+For greater control over the axes, e.g. tick placement, coloring, etc., the "..." argument in plots is coded to pass arguments to the xaxis and yaxis lists. This allows access to any attribute. If axis attributes are passed through ... in a named list, e.g. `xaxis = list(linecolor = "red")`, then they will be specific to that axis. However, if the attributes are passed through ... directly, without inclusion in an `xaxis` or `yaxis` list, they will apply to both the axes, e.g. `$plot(...,`linecolor = "red")` will color the xaxis and yaxis lines red.
 
 ``` {r echo = T, eval = T}
 NPex$data$plot(xaxis = list(linecolor = "firebrick", ticks = "inside"))
+#only affects x axis since formatting within xaxis list
 ```
 
 
 ``` {r echo = T, eval = T}
 NPex$data$plot(linecolor = "dodgerblue", ticks = "outside")
+#formatting affects both axes since arguments are outside xaxis or yaxis lists
 ```
 
 ### Title
