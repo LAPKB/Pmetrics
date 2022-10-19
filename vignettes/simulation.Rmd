@@ -129,7 +129,7 @@ Load the output of `SIMrun()` with `SIMparse()` as described above. This creates
 sim <- SIMparse(...)
 plot(sim) #see plot.PMsim for help
 ```
-s
+
 
 ## Citations
 
