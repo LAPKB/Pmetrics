@@ -46,14 +46,14 @@ object-oriented R6 style of programming available in R that makes it more
 consistent with object-oriented languages such as Python. We will indicate
 old-style approaches with <span class="legacy">Legacy</span>.
 
-Functions and classes in <span class="r6">R6</span> are generally named with "PM_" as the prefix, e.g. `PM_load()` or `PM_final`. In <span class="legacy">Legacy</span>, functions and classes are prefixed without the underscore "_", such as `PMload()`, and `PMfinal`.
+Functions and classes in <span class="r6">R6</span> are generally named with "PM_" as the prefix, e.g. `PM_load()` or `PM_final()`. In <span class="legacy">Legacy</span>, functions and classes are prefixed without the underscore "_", such as `PMload()`, and `PMfinal()`.
 
 **Tips for using this guide.**
 
 * Items that are hyperlinked can be selected to cross reference
 within this manual or link to external sites.
 
-* `Items` correspond to inline examples of R code, which are not evaluted
+* `Items` correspond to inline examples of R code, which are not evaluated
 in this document, but serve as templates for what may be typed into your 
 R console or script. They may not necessarily be executable if typed verbatim.
 
@@ -85,7 +85,7 @@ so please feel free to contact us at any time, preferably through the
 
 This manual is also not intended to be a theoretical treatise on the
 algorithms used in IT2B or NPAG. For that, the user is directed to our
-[website](http://www.lapk.org).
+[website](http://www.lapk.org/publications.php).
 
 ## Getting Help and Updates
 
@@ -93,13 +93,10 @@ algorithms used in IT2B or NPAG. For that, the user is directed to our
 of useful tips and help with Pmetrics. Register and feel free to post! 
 -->
 Within R, you can  use
-`help("command")` or `?command` in the R console to see detailed help files
-for any Pmetrics command. Many commands have examples included in this
-documentation and you can execute the examples with `example(command)`.
+`help("command")` or more simply just `?command` in the R console to see detailed help files for any Pmetrics command. Many commands have examples included in this documentation and you can execute the examples with `example(command)`.
 
-<!--You can also type `PMmanual()` to launch this manual from within Pmetrics 
-as well as a catalogue of all Pmetrics functions. Finally, 
-`PMnews()` will display the Pmetrics change log.
+You can also type `PMmanual()` to launch this website from within Pmetrics. 
+<!--Finally, `PMnews()` will display the Pmetrics change log.
 -->
 
 Pmetrics will check for updates automatically every time you load it
@@ -130,13 +127,13 @@ Currently, the following GUIs are available: `PMcode("run")` and
 ## Customizing Options
 
 You can change global options in Pmetrics with 
-`setPMoptions(sep, dec, server\_address)`.
+`setPMoptions()`.
 
 Currently you can change three options: `sep` and `dec` will allow Pmetrics
 to read data files whose field separators are semicolons and decimal
 separators are commas, e.g. `setPMoptions(sep=";", dec=",")`. These
 options will persist from session to session until changed. The third
-option, `server\_address`, allows you to specify the address of a remote
+option, `server_address`, allows you to specify the address of a remote
 server with Pmetrics installed, to allow remote runs.
 
 `getPMoptions()` will return the current options.

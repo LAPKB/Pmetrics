@@ -130,39 +130,42 @@ simulation.</p></li>
 <h2 id="pmetrics-control-functions">Pmetrics control functions<a class="anchor" aria-label="anchor" href="#pmetrics-control-functions"></a>
 </h2>
 <p><span class="r6">R6</span></p>
-<p>Pmetrics uses<code>PM_data</code> to create data objects,
-<code>PM_model</code> to create model objects, and <code>PM_fit</code>
-to create objects that combine the model with the data, ready to be run
-(fitted), generating probability distributions for primary model
-parameters. These are extensively documented within R by using the
-<code>help(command)</code> or <code>?command syntax</code>.</p>
+<p>Pmetrics uses<code><a href="../reference/PM_data.html">PM_data()</a></code> to create data objects,
+<code><a href="../reference/PM_model.html">PM_model()</a></code> to create model objects, and
+<code><a href="../reference/PM_fit.html">PM_fit()</a></code> to create objects that combine the model with the
+data, ready to be run (fitted), generating probability distributions for
+primary model parameters. These are extensively documented within R by
+using the <code>help(command)</code> or <code>?command</code>
+syntax.</p>
 <p>These functions replace the following Legacy functions:
-<code>ITrun</code>, <code>ERRrun</code>, <code>NPrun</code>.</p>
+<code><a href="../reference/ITrun.html">ITrun()</a></code>, <code><a href="../reference/ERRrun.html">ERRrun()</a></code>, <code><a href="../reference/NPrun.html">NPrun()</a></code>,
+although all Legacy functions are still supported for users who are
+accustomed to them.</p>
 <p>Invoking the simulator in R6 becomes a method attached to
-<code>PM_result</code> objects or by using <code>PM_sim$run()</code> for
-models, parameter value probability distributions and template data not
-derived from a previous fit, e.g. when lifted from an article.</p>
+<code><a href="../reference/PM_result.html">PM_result()</a></code> objects or by using <code>PM_sim$run()</code>
+for models, parameter value probability distributions and template data
+not derived from a previous fit, e.g. when lifted from an article.</p>
 <p><span class="legacy">Legacy</span></p>
 <p>Pmetrics has groups of R functions named logically to run each of
 these programs and to extract the output. Again, these are extensively
 documented within R by using the <code>help(command)</code> or
 <code>?command syntax</code>.</p>
 <ul>
-<li><p><code>ITrun</code>, <code>ITparse</code>,
-<code>ERRrun</code></p></li>
-<li><p><code>NPrun</code>, <code>NPparse</code></p></li>
-<li><p><code>PMload</code>, <code>PMsave</code>,
-<code>PMreport</code></p></li>
-<li><p><code>SIMrun</code>, <code>SIMparse</code></p></li>
+<li><p><code><a href="../reference/ITrun.html">ITrun()</a></code>, <code><a href="../reference/ITparse.html">ITparse()</a></code>,
+<code><a href="../reference/ERRrun.html">ERRrun()</a></code></p></li>
+<li><p><code><a href="../reference/NPrun.html">NPrun()</a></code>, <code><a href="../reference/NPparse.html">NPparse()</a></code></p></li>
+<li><p><code><a href="../reference/PMload.html">PMload()</a></code>, <code><a href="../reference/PMsave.html">PMsave()</a></code>,
+<code><a href="../reference/PMreport.html">PMreport()</a></code></p></li>
+<li><p><code><a href="../reference/SIMrun.html">SIMrun()</a></code>, <code><a href="../reference/SIMparse.html">SIMparse()</a></code></p></li>
 </ul>
 <div class="section level3">
 <h3 id="run-functions">Run functions<a class="anchor" aria-label="anchor" href="#run-functions"></a>
 </h3>
 <p><span class="r6">R6</span></p>
-<p>Once a <code>PM_fit</code> object is created, which combines a model
-with a data file, it can be run by using the syntax <code>$run()</code>
-to access the appropriate function defined for the <code>PM_fit</code>
-object.</p>
+<p>Once a <code><a href="../reference/PM_fit.html">PM_fit()</a></code> object is created, which combines a
+model with a data file, it can be run by using the syntax
+<code>$run()</code> to access the appropriate function defined for the
+<code><a href="../reference/PM_fit.html">PM_fit()</a></code> object.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit1</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_fit.html">PM_fit</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">model</span>, <span class="va">data</span><span class="op">)</span></span>
 <span><span class="va">fit1</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="va">options</span><span class="op">)</span></span></code></pre></div>
@@ -193,20 +196,27 @@ and return a <code>PM_sim</code> object.</p>
 <p>The first line loads previous results of run 1 into a PM_result
 object called run1. The second line uses model and prior in run1 with
 new data template.</p>
-<p>An equivalent method is to run a new <code>PM_sim</code> directly
-with <code>PM_sim$run()</code>. It also returns a <code>PM_sim</code>
+<p>An equivalent method is to run a new <code><a href="../reference/PM_sim.html">PM_sim()</a></code> directly
+with <code>PM_sim$run()</code>. It also returns a <code><a href="../reference/PM_sim.html">PM_sim()</a></code>
 object, i.e. there is no longer any need to run
-<code>SIMparse</code>.</p>
+<code><a href="../reference/SIMparse.html">SIMparse()</a></code>.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim1</span> <span class="op">&lt;-</span> <span class="va">PM_sim</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>poppar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span>, model <span class="op">=</span> <span class="st">"model.txt"</span>, data <span class="op">=</span> <span class="st">"new.csv"</span><span class="op">)</span> </span></code></pre></div>
 <p>See <code><a href="../articles/simulation.html">vignette("simulation")</a></code> for details on specifying
 <code>poppar</code> this way.</p>
 <p><span class="legacy">Legacy</span></p>
-<p>To run the simulator in legacy mode, use <code>SIMrun</code>. Results
-are saved to the hard drive in the working directory, and can be read
-with <code>SIMparse</code> as described below.</p>
+<p>To run the simulator in legacy mode, use <code><a href="../reference/SIMrun.html">SIMrun()</a></code>.
+Results are saved to the hard drive in the working directory, and can be
+read with <code><a href="../reference/SIMparse.html">SIMparse()</a></code> as described below.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/SIMrun.html">SIMrun</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<p>The above command, with the appropriate arguments to replace “…”,
+will execute a simulation and save the results to the hard drive. The
+arguments are all documented in <code><a href="../reference/SIMrun.html">?SIMrun</a></code>. By default, these
+files will be called “simoutX.csv”, where “X” will be sequential numbers
+1, 2, 3, … corresponding to the subject number in the template data
+file. These “simout” files are read by <code><a href="../reference/SIMparse.html">SIMparse()</a></code>
+below.</p>
 </div>
 <div class="section level3">
 <h3 id="parse-functions">Parse functions<a class="anchor" aria-label="anchor" href="#parse-functions"></a>
@@ -214,27 +224,28 @@ with <code>SIMparse</code> as described below.</p>
 <p><span class="r6">R6</span> <span class="legacy">Legacy</span></p>
 <p>For all programs, the “parse” functions will extract the primary
 output from the program into meaningful R data objects. For IT2B and
-NPAG in either R6 or legacy modes, this is done automatically at the end
+NPAG in either R6 or Legacy modes, this is done automatically at the end
 of a successful run, and the objects are saved in the output
 subdirectory as <em>IT2Bout.Rdata</em> or <em>NPAGout.Rdata</em>,
-respectively. The parse functions run automatically and are not
-generally necessary for the user to access.</p>
+respectively. The parse functions are not generally necessary for the
+user to access.</p>
 <p><span class="r6">R6</span></p>
 <p>For the simulator the results are returned automatically to the
-object assigned to contain the output of the simulator,
+object assigned to contain the output of the simulation,
 e.g. <code>sim1</code> below.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim1</span> <span class="op">&lt;-</span> <span class="va">PM_result</span><span class="op">$</span><span class="fu">sim</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>
 <p>As mentioned above, there is no longer any need to use the
-<code>SIMparse</code> legacy function described below, because the
-<code>SIMrun</code> and <code>SIMparse</code> legacy functions are
+<code><a href="../reference/SIMparse.html">SIMparse()</a></code> Legacy function described below, because the
+<code><a href="../reference/SIMrun.html">SIMrun()</a></code> and <code><a href="../reference/SIMparse.html">SIMparse()</a></code> Legacy functions are
 combined within the <code>$sim()</code> method for
-<code>PM_result</code> objects or the <code>$run()</code> method for
-<code>PM_sim</code> objects.</p>
+<code><a href="../reference/PM_result.html">PM_result()</a></code> objects or the <code>$run()</code> method for
+<code><a href="../reference/PM_sim.html">PM_sim()</a></code> objects.</p>
 <p><span class="legacy">Legacy</span></p>
-<p>After running the simulator with <code>SIMrun</code>, the results are
-saved to files in the working directory. They can be retrieved using
-<code>SIMparse</code>.</p>
+<p>After running the simulator with <code><a href="../reference/SIMrun.html">SIMrun()</a></code>, the results
+are saved to files in the working directory. They can be retrieved using
+<code><a href="../reference/SIMparse.html">SIMparse()</a></code>. See <code><a href="../reference/SIMparse.html">?SIMparse</a></code> for options,
+including use of wildcards and combining simulation output files.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">simdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SIMparse.html">SIMparse</a></span><span class="op">(</span><span class="st">"simout1.txt"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -242,18 +253,19 @@ saved to files in the working directory. They can be retrieved using
 <h3 id="saving-functions">Saving functions<a class="anchor" aria-label="anchor" href="#saving-functions"></a>
 </h3>
 <p><span class="r6">R6</span></p>
-<p>The Pmetrics R6 objects <code>PM_fit</code>, <code>PM_result</code>,
-<code>PM_sim</code>, <code>PM_valid</code>, and <code>PM_pta</code> all
-have a <code>$save()</code> method. This method saves the object to the
-hard drive in the current working directory by default. The format is
-.rds which is a binary format used by R to save individual objects. The
+<p>The Pmetrics R6 objects <code><a href="../reference/PM_fit.html">PM_fit()</a></code>,
+<code><a href="../reference/PM_result.html">PM_result()</a></code>, <code><a href="../reference/PM_sim.html">PM_sim()</a></code>,
+<code><a href="../reference/PM_valid.html">PM_valid()</a></code>, and <code><a href="../reference/PM_pta.html">PM_pta()</a></code> all have a
+<code>$save()</code> method. This method saves the object to the hard
+drive in the current working directory by default. The format is .rds
+which is a binary format used by R to save individual objects. The
 purpose of the <code>$save()</code> method is to enable retrieval of the
 object at a later time.</p>
 <p><span class="legacy">Legacy</span></p>
 <p>Objects created that are attached to a particular run can be
 identified by using the same suffix number as the run.
-<code>PMsave</code> can add these attached objects to the .Rdata file
-for that run, which is loaded with <code>PMload</code>.</p>
+<code><a href="../reference/PMsave.html">PMsave()</a></code> can add these attached objects to the .Rdata file
+for that run, which is loaded with <code><a href="../reference/PMload.html">PMload()</a></code>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim.2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SIMparse.html">SIMparse</a></span><span class="op">(</span><span class="st">"simout1.txt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/PMsave.html">PMsave</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
@@ -264,30 +276,34 @@ file for future retrieval with <code>PMload(2)</code>.</p>
 <h3 id="loading-functions">Loading functions<a class="anchor" aria-label="anchor" href="#loading-functions"></a>
 </h3>
 <p><span class="r6">R6</span></p>
-<p>After a successful IT2B or NPAG run, <code>PM_load</code> creates a
-<code>PM_result</code> object rather than loading run results into the
+<p>After a successful IT2B or NPAG run, <code><a href="../reference/PM_load.html">PM_load()</a></code> creates a
+<code><a href="../reference/PM_result.html">PM_result()</a></code> object rather than loading run results into the
 current environment and suffixed with the run number as for legacy
 mode.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PM_load.html">PM_load</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">res1</span><span class="op">$</span><span class="va">op</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><code>PM_result</code>, <code>PM_fit</code>, <code>PM_sim</code>,
-<code>PM_valid</code>, and <code>PM_pta</code> all have a
-<code>$load()</code> method that takes as its only argument the full or
-relative path (if not in the working directory) and name of an .rds file
-created by the corresponding <code>$save()</code> method.</p>
+<p><code><a href="../reference/PM_result.html">PM_result()</a></code>, <code><a href="../reference/PM_fit.html">PM_fit()</a></code>,
+<code><a href="../reference/PM_sim.html">PM_sim()</a></code>, <code><a href="../reference/PM_valid.html">PM_valid()</a></code>, and
+<code><a href="../reference/PM_pta.html">PM_pta()</a></code> all have a <code>$load()</code> method that takes
+as its only argument the full or relative path (if not in the working
+directory) and name of an .rds file created by the corresponding
+<code>$save()</code> method.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim1</span> <span class="op">&lt;-</span> <span class="va">PM_sim</span><span class="op">$</span><span class="fu">load</span><span class="op">(</span><span class="st">"sim.rds"</span><span class="op">)</span></span></code></pre></div>
 <p><span class="legacy">Legacy</span></p>
-<p>For IT2B and NPAG, the <code>PMload</code> function can be used to
+<p>For IT2B and NPAG, the <code><a href="../reference/PMload.html">PMload()</a></code> function can be used to
 load the .Rdata file after a successful run. Objects will be loaded into
 the current environment in R and suffixed with “.run”, where “run” is
 the run number.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">PMload</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">op.1</span><span class="op">)</span></span></code></pre></div>
-<p>For simulations, <code>SIMparse</code>, described above, combines the
-parsing and loading functions.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/PMload.html">PMload</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">op.1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/PMload.html">PMload</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">final.3</span><span class="op">)</span></span></code></pre></div>
+<p>For simulations, <code><a href="../reference/SIMparse.html">SIMparse()</a></code>, described above, combines
+the parsing and loading functions.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim.2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SIMparse.html">SIMparse</a></span><span class="op">(</span><span class="st">"simout1.txt"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -295,13 +311,14 @@ parsing and loading functions.</p>
 <h3 id="report-generation">Report generation<a class="anchor" aria-label="anchor" href="#report-generation"></a>
 </h3>
 <p><span class="r6">R6</span> <span class="legacy">Legacy</span></p>
-<p>The <code>PMreport</code> function is automatically run at the end of
-a successful NPAG and IT2B run, and it will generate an HTML page with
-summaries of the run, as well as the .Rdata files and other objects. The
-default browser will be automatically launched for viewing of the HTML
-report page.
+<p>The <code><a href="../reference/PMreport.html">PMreport()</a></code> function is automatically run at the end
+of a successful NPAG and IT2B run, and it will generate an HTML page
+with summaries of the run, as well as the .Rdata files and other
+objects. The default browser will be automatically launched for viewing
+of the HTML report page.
 <!--It will also generate a .tex file suitable for processing by a
-LATEX engine to generate a pdf report.--> See the <a href="#outputs">Pmetrics Outputs</a> section.</p>
+LATEX engine to generate a pdf report. See the [Pmetrics
+Outputs](#outputs) section.--></p>
 </div>
 </div>
 <div class="section level2">
@@ -385,7 +402,7 @@ files and process and plot extracted data.</p>
 </tr>
 <tr class="even">
 <td align="left">Plot residuals</td>
-<td align="left">PM_result<span class="math inline">\(op\)</span>plot(resid = T,…)</td>
+<td align="left">PM_result$op$plot(resid = T,…)</td>
 <td align="left">plot(op, resid = T)</td>
 </tr>
 <tr class="odd">
@@ -395,9 +412,12 @@ files and process and plot extracted data.</p>
 </tr>
 <tr class="even">
 <td align="left">Plot VPC, pcVPC, NPDE</td>
-<td align="left">PM_valid<span class="math inline">\(plot()
-|plot(PMvalid) | |Stepwise covariate regression
-|PM_result\)</span>step()</td>
+<td align="left">PM_valid$plot()</td>
+<td align="left">plot(PMvalid)</td>
+</tr>
+<tr class="odd">
+<td align="left">Stepwise covariate regression</td>
+<td align="left">PM_result$step()</td>
 <td align="left">PMstep()</td>
 </tr>
 </tbody>
@@ -406,8 +426,6 @@ files and process and plot extracted data.</p>
 <div class="section level3">
 <h3 id="other-functions-1">Other functions<a class="anchor" aria-label="anchor" href="#other-functions-1"></a>
 </h3>
-<pre><code><span><span class="co">#&gt; Warning in read.table(file = file, header = header, sep = sep, quote = quote, :</span></span>
-<span><span class="co">#&gt; incomplete final line found by readTableHeader on 'Data/RLcomp_other.csv'</span></span></code></pre>
 <table style="width:100%;" class="table">
 <colgroup>
 <col width="33%">

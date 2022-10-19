@@ -367,13 +367,13 @@ error specifications.</p>
 <span>  Y1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <ul>
-<li>The output equation is a character vector followed by an error
-list.</li>
+<li>The output equation is a character vector named “val” followed by an
+error list.</li>
 </ul>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  Y1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="st">"X(1)/V"</span>,</span>
+<span>    val <span class="op">=</span> <span class="st">"X(1)/V"</span>,</span>
 <span>    err <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -402,7 +402,7 @@ Pmetrics function <code><a href="../reference/makeErrorPoly.html">makeErrorPoly(
 coefficients that fit the data from the laboratory. <span class="update">To be done:</span>Alternatively, if you have no
 information about the assay, you can use the Pmetrics
 <code><a href="../reference/ERRrun.html">ERRrun()</a></code> engine as an argument to the <code>run</code>
-function for <code>PM_fit</code> objects (i.e.,
+function for <code><a href="../reference/PM_fit.html">PM_fit()</a></code> objects (i.e.,
 <code>$run(engine="err")</code>) to estimate the coefficients from the
 data. Finally, you can use a generic set of coefficients. We recommend
 that as a start, <span class="math inline">\(C0\)</span> be set to half
@@ -430,7 +430,7 @@ present.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  Y1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="st">"X(1)/V"</span>,</span>
+<span>    val <span class="op">=</span> <span class="st">"X(1)/V"</span>,</span>
 <span>    err <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>      model <span class="op">=</span> <span class="fu">proportional</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,</span>
 <span>      assay <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.15</span>, <span class="fl">0.1</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span></span>
@@ -439,7 +439,7 @@ present.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>out <span class="ot">=</span> <span class="fu">list</span>(</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Y1 =</span> <span class="fu">list</span>(</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"X(1)/V"</span>,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">val =</span> <span class="st">"X(1)/V"</span>,</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">err =</span> <span class="fu">list</span>(</span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">model =</span> <span class="fu">additive</span>(<span class="dv">1</span>, <span class="at">fixed =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">assay =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
@@ -453,7 +453,7 @@ present.</p>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  ),</span>
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">out =</span> <span class="fu">list</span>(</span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y1 =</span> <span class="fu">list</span>(</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>      <span class="st">"X(1)/V"</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">val =</span> <span class="st">"X(1)/V"</span>,</span>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">err =</span> <span class="fu">list</span>(</span>
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">model =</span> <span class="fu">proportional</span>(<span class="dv">5</span>),</span>
 <span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">assay =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
@@ -472,7 +472,7 @@ present.</p>
 <span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">sec =</span> <span class="fu">list</span>(<span class="st">"RES = B(1) * KIN/(KIN-KOUT) * (EXP(-KOUT*TPD)-EXP(-KIN*TPD))"</span>),</span>
 <span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">out =</span> <span class="fu">list</span>(</span>
 <span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">y1 =</span> <span class="fu">list</span>(</span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>      <span class="st">"RES/V"</span>,</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">val =</span> <span class="st">"RES/V"</span>,</span>
 <span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">err =</span> <span class="fu">list</span>(</span>
 <span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>        <span class="at">model =</span> <span class="fu">combination</span>(<span class="fl">0.4</span>,<span class="dv">3</span>) <span class="co">#additive, proportional</span></span>
 <span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>        <span class="at">assay =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.15</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
@@ -504,7 +504,7 @@ intended.</p>
 <p>When <em>mod2</em> is updated, mod1 will update as they are in the
 same environment. The way to create an independent copy of an R6 object,
 which does not share the same environment, is to use the
-<code>$clone()</code> method.</p>
+<code>$clone()</code> method available for all R6 objects.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod2</span> <span class="op">&lt;-</span> <span class="va">mod1</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">mod2</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>

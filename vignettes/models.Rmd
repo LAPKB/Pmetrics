@@ -248,12 +248,12 @@ out = list(
   Y1 = list(...)
 )
 ```
-* The output equation is a character vector followed by an error list. 
+* The output equation is a character vector named "val" followed by an error list. 
 
 ```{r echo=T, eval=F}
 out = list(
   Y1 = list(
-    "X(1)/V",
+    val = "X(1)/V",
     err = list(...)
   )
 )
@@ -263,7 +263,7 @@ out = list(
 
 The second element is the `assay` error model. It is a vector of 4 numbers that define a polynomial equation to permit calculation of the standard deviation of an observation, based on the noise of the asaay. The four terms estimate SD according to the folowing equation: $C0 + C1 * [obs] + C2 * [obs]^2 + C3 * [obs]^3$ and $[obs]$ is the observation. The values for the coefficients should ideally come from the analytic lab in the form of inter-run standard deviations or coefficients of variation at standard concentrations. You can use the Pmetrics function `makeErrorPoly()` to choose the best set of coefficients that fit the data from the
 laboratory. <span class="update">To be done:</span>Alternatively, if you have no information about the assay,
-you can use the Pmetrics `ERRrun()` engine as an argument to the `run` function for `PM_fit` objects  (i.e., `$run(engine="err")`) to estimate the coefficients
+you can use the Pmetrics `ERRrun()` engine as an argument to the `run` function for `PM_fit()` objects  (i.e., `$run(engine="err")`) to estimate the coefficients
 from the data. Finally, you can use a generic set of coefficients. We
 recommend that as a start, $C0$ be set to half of the lowest
 concentration in the dataset and $C1$ be set to 0.1. $C2$ and $C3$ can
@@ -283,7 +283,7 @@ mass spectrometer) that is always present.
 ```{r echo=T, eval=F}
 out = list(
   Y1 = list(
-    "X(1)/V",
+    val = "X(1)/V",
     err = list(
       model = proportional(1),
       assay = c(0.15, 0.1, 0, 0)
@@ -296,7 +296,7 @@ out = list(
 ```{r echo=T, eval=F}
 out = list(
   Y1 = list(
-    "X(1)/V",
+    val = "X(1)/V",
     err = list(
       model = additive(1, fixed = TRUE)
       assay = c(0.05, 0.1, 0, 0)
@@ -314,7 +314,7 @@ mod <- PM_model$new(list(
   ),
   out = list(
     y1 = list(
-      "X(1)/V",
+      val = "X(1)/V",
       err = list(
         model = proportional(5),
         assay = c(0.05, 0.1, 0, 0)
@@ -333,7 +333,7 @@ mod2 <- PM_model$new(list(
   sec = list("RES = B(1) * KIN/(KIN-KOUT) * (EXP(-KOUT*TPD)-EXP(-KIN*TPD))"),
   out = list(
     y1 = list(
-      "RES/V",
+      val = "RES/V",
       err = list(
         model = combination(0.4,3) #additive, proportional
         assay = c(0.3, 0.15, 0, 0)
@@ -360,7 +360,7 @@ mod2 <- mod1
 mod2$update(...)
 ```
 
-When *mod2* is updated, mod1 will update as they are in the same environment. The way to create an independent copy of an R6 object, which does not share the same environment, is to use the `$clone()` method.
+When *mod2* is updated, mod1 will update as they are in the same environment. The way to create an independent copy of an R6 object, which does not share the same environment, is to use the `$clone()` method available for all R6 objects.
 
 ```{r echo=T, eval = F}
 mod2 <- mod1$clone()

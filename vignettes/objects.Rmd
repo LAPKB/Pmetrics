@@ -42,7 +42,7 @@ plotting and other analysis.
 
 ```{r echo = F, results = 'asis'}
 library(knitr)
-tabObj <- read.csv("Data/Objects.csv",na.strings=".")
+tabObj <- read.csv("Data/ObjectsR6.csv",na.strings=".")
 kable(tabObj)
 ```
 
@@ -67,6 +67,14 @@ res1$op$plot()
 <span class="legacy">Legacy</span>
 
 `PMload()` returns a number of objects into the R environment, suffixed by the run number supplied as an argument to `PMload()`. 
+
+
+```{r echo = F, results = 'asis'}
+library(knitr)
+tabObj <- read.csv("Data/ObjectsLegacy.csv",na.strings=".")
+kable(tabObj)
+```
+
 
 The objects are the same as the fields in a `PM_result` object, except for the *valid* field, which is not a loaded object. The disadvantage of this approach compared to R6 is that there is no indication what is loaded into R with this command. If you had previously added to your run results with `PMsave()`, you would not necessarily know that there were additional results when you executed `PMload()`.
 

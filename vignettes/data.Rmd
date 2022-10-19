@@ -210,11 +210,11 @@ Covariate values are applied at the time of doses.
 
 As we have seen,  `PM_data$new("filename")` will 
 read an appropriate data file in the current working directory to create a 
-new `PM_data` object. 
+new `PM_data()` object. 
 
 #### Write
 
-`PM_data$write("filename")` will write the `PM_data` object to a file called
+`PM_data$write("filename")` will write the `PM_data()` object to a file called
 "filename". This can be useful if you have loaded or created a data file and then
 changed it in R.
 

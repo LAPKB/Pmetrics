@@ -233,6 +233,14 @@ can be plotted with the attached plot method: <code>PM_sim$plot()</code>
 which in turn calls the <code><a href="../reference/plot.PM_sim.html">plot.PM_sim()</a></code> function. See the
 help for the function and <code><a href="../articles/plotly.html">vignette("plotly")</a></code> for further
 details.</p>
+<p><span class="legacy">Legacy</span></p>
+<p>Load the output of <code><a href="../reference/SIMrun.html">SIMrun()</a></code> with <code><a href="../reference/SIMparse.html">SIMparse()</a></code>
+as described above. This creates a <code>PMsim</code> object which can
+be plotted.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SIMparse.html">SIMparse</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sim</span><span class="op">)</span> <span class="co">#see plot.PMsim for help</span></span></code></pre></div>
+<p>s</p>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="citations">Citations<a class="anchor" aria-label="anchor" href="#citations"></a>

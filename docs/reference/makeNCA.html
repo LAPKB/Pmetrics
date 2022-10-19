@@ -69,7 +69,7 @@ by the makePost command and loaded with PMload."><meta property="og:image" conte
     <p>Performs a non-compartmental analysis from observed concentrations in the raw data
 file or from an individual Bayesian posterior predicted
 time-observation profiles (PMpost object) generated automatically after an NPAG run
-by the <code><a href="makePost.html">makePost</a></code> command and loaded with <code><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">PMload</a></code>.</p>
+by the <code><a href="makePost.html">makePost</a></code> command and loaded with <code><a href="PMload.html">PMload</a></code>.</p>
     </div>
 
     <div class="section level2">
@@ -94,13 +94,13 @@ by the <code><a href="makePost.html">makePost</a></code> command and loaded with
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>x</dt>
-<dd><p>Data to analyze.  This can be specified in a number of ways.</p><ul><li><p>It can be the run number, e.g. 3, that has been previously loaded with <code><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">PMload</a></code>.
+<dd><p>Data to analyze.  This can be specified in a number of ways.</p><ul><li><p>It can be the run number, e.g. 3, that has been previously loaded with <code><a href="PMload.html">PMload</a></code>.
 Either the mdata file from the run (NPAG or IT2B) can be used (default) or
 the post object can be used (NPAG only) by specifying <code>postPred = T</code> below.  If <code>x</code> is a run number that corresponds
 to both an NPAG and IT2B run which have been previously loaded into memory with <code>PMload</code>, the NPAG run will be used.</p></li>
-<li><p>It can be the run number of a run that has <em>not</em> been previously loaded with <code><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">PMload</a></code>.
+<li><p>It can be the run number of a run that has <em>not</em> been previously loaded with <code><a href="PMload.html">PMload</a></code>.
 In this case, the current working directory should be the Runs folder as <code>makeNCA</code> will call <code>PMload</code>.</p></li>
-<li><p>It can be the specific name of an mdata.x file already loaded into memory with <code><a href="https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html">PMload</a></code>, e.g. mdata.3.  Note
+<li><p>It can be the specific name of an mdata.x file already loaded into memory with <code><a href="PMload.html">PMload</a></code>, e.g. mdata.3.  Note
 that quotation marks are not necessary since mdata.3 is an object, not a label/character vector.</p></li>
 <li><p>Finally, it can be the name of a Pmetrics data file in the current working directory, which will be loaded with
 <code><a href="PMreadMatrix.html">PMreadMatrix</a></code> and analyzed, e.g. “data.csv”.  In this case, quotation marks are reqired, because <code>x</code>
