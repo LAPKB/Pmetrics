@@ -198,6 +198,9 @@ plot.PM_data <- function(x,
   #add identifier
   sub$src <- "obs"
   
+  #remove missing
+  sub <- sub %>% filter(out !=-99)
+  
   #now process pred data if there
   if(!is.null(pred)){
     if(inherits(pred,c("PM_post", "PM_pop"))){pred <- list(pred)} #only PM_post/pop was supplied, make into a list of 1
@@ -227,8 +230,9 @@ plot.PM_data <- function(x,
     #time after dose
     if(tad){predsub$time <- calcTAD(predsub)}
     
-    #select relevant columns
-    predsub <- predsub %>% select(id, time, out = pred)
+    #select relevant columns and filter missing
+    predsub <- predsub %>% select(id, time, out = pred) %>%
+      filter(out !=-99)
     
     #add group if needed
     if(!is.null(color)){
