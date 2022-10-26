@@ -22,7 +22,7 @@
 
 plot.MMopt <- function(x, line = list(probs = NA), times = T,...){
   
-  times <- amendLine(times, default = list(color = "red", dash = "dash", width = 2))
+  mm_format <- amendLine(times, default = list(color = "red", dash = "dash", width = 2))
   
   #parse dots
   arglist <- list(...)
@@ -31,10 +31,29 @@ plot.MMopt <- function(x, line = list(probs = NA), times = T,...){
   
   p <- do.call(plot.PM_sim,c(list(x$simdata),arglist))$p
   
-  p <- p %>% layout(shapes = lapply(x$sampleTime,
-                                    function(t){
-                                      ab_line(v = t, line = times)
-                                    })
-  )
+ 
+  if(!is.null(x$mmInt)){ #add MM interval times
+    shapeList <- lapply(x$mmInt, function(m){
+      list(type = "rect",
+      x0 = m[1],
+      y0 = 0,
+      x1 = m[2],
+      y1 = 1,
+      xref = "x",
+      yref = "paper",
+      fillcolor = "grey",
+      opacity = 0.1,
+      line = list(width = 0)
+      )
+    })
+  } else {shapeList <- list()}
+  
+  shapeList <- append(shapeList, lapply(x$sampleTime,
+                                        function(t){
+                                          ab_line(v = t, line = mm_format)
+                                        }))
+  
+  p <- p %>% layout(shapes = shapeList)
+ 
   print(p)
 }

@@ -1,54 +1,58 @@
 #' Computes 1 to 4 MM-optimal sampling times.
 #'
-#' Based on the mulitple-model optimization algorithm developed by David Bayard and presented at the 2012 American
-#' College of Clinical Pharmacology Meeting and the 2013 International Association of Therapeutic
-#' Drug Monitoring and Clinical Toxicology meeting.  A manuscript is in preparation.
+#' Based on the mulitple-model optimization algorithm.
+#' Bayard, David S., and Michael Neely. "Experiment Design for Nonparametric 
+#' Models Based on Minimizing Bayes Risk: Application to Voriconazole." 
+#' Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017): 
+#' 95–111. https://doi.org/10.1007/s10928-016-9498-5.
 #' 
 #' @title Compute MM-optimal Sample Times
 #' 
-#' @param poppar An object of class \emph{PMfinal} (see \code{\link{makeFinal}})
+#' @param poppar An object of class *PMfinal* (see [makeFinal])
 #' @param model Name of a suitable model file template in the working directory.
-#' The default is \dQuote{model.txt}.  This file will be converted to a fortran model file.
-#' If it is detected to already be a fortran file, then the simulation will proceed without any further
-#' file conversion.
-#' @param data Either a PMmatrix object previously loaded with (\code{\link{PMreadMatrix}}) or character vector with the filename of a Pmetrics matrix file
-#' that contains template regimens and observation times.  The value for outputs can be coded as
-#' any number(s) other than -99.  The number(s) will be replaced in the simulator output with the simulated values.
+#' The default is "model.txt".  This file will be converted to a fortran model file.
+#' If it is detected to already be a fortran file, then the simulation will proceed without any further file conversion.
+#' @param data Either a [PM_data] object or character vector with the filename 
+#' of a Pmetrics data file
+#' that contains template regimens and observation times.  The value for outputs 
+#' can be coded as any number(s) other than -99.  The number(s) will be replaced in the simulator output with the simulated values.
 #' @param nsamp The number of MM-optimal sample times to compute; default is 1, but can be up to 4.  Values >4 will be capped at 4.
-#' @param weight List whose names indicate the type of weighting, and values indicate the
-#' relative weight. Values should sum to 1.  Names can be any of the following:
+#' @param weight List whose names indicate the type of weighting, and values indicate the relative weight. Values should sum to 1.  Names can be any of the following:
 #' \itemize{
-#' \item \code{none} The default. MMopt times will be chosen to maximally discriminate all responses at all times.
-#' \item \code{AUC} MMopt times will be chosen to maximally discriminate AUC, regardless of the shape of the response profile. 
-#' \item \code{max} MMopt times will be chosen to maximally discriminate maximum, regardless of the shape of the response profile.
-#' \item \code{min} MMopt times will be chosen to maximally discriminate minimum, regardless of the shape of the response profile. 
+#' \item `none` The default. MMopt times will be chosen to maximally discriminate all responses at all times.
+#' \item `AUC` MMopt times will be chosen to maximally discriminate AUC, regardless of the shape of the response profile. 
+#' \item `max` MMopt times will be chosen to maximally discriminate maximum, regardless of the shape of the response profile.
+#' \item `min` MMopt times will be chosen to maximally discriminate minimum, regardless of the shape of the response profile. 
 #' }
-#' Any combination of AUC, max, and min can be chosen.  If \dQuote{none} is specified, other
+#' Any combination of AUC, max, and min can be chosen.  If "none" is specified, other
 #' weight types will be ignored and the relative value will be set to 1.
 #' For example,\code{list(auc=0.5,max=0.5)} or \code{auc=0.2,min=0.8}.
-#' @param predInt The interval in fractional hours for simulated predicted outputs at times other than those specified in the template \code{data}.  
+#' @param predInt The interval in fractional hours for simulated predicted outputs at times other than those specified in the template `data`.  
 #' The default is 0.5, which means there will be simulated outputs every 30 minutes from time 0 up 
-#' to the maximal time in the template file.  You may also specify \code{predInt}
-#' as a vector of 3 values, e.g. \code{c(1,4,1)}, similar to the R command \code{\link{seq}}, where the
+#' to the maximal time in the template file.  You may also specify `predInt`
+#' as a vector of 3 values, e.g. \code{c(1,4,1)}, similar to the R command [seq], where the
 #' first value is the start time, the second is the stop time, and the third is the
 #' step value.  Outputs for times specified in the template file will also be simulated.
-#' To simulate outputs \emph{only} at the output times in the template data (i.e. EVID=0 events), use \code{predInt=0}.
+#' To simulate outputs *only* at the output times in the template data (i.e. EVID=0 events), use \code{predInt=0}.
 #' Note that the maximum number of predictions total is 594, so the interval must be sufficiently large to accommodate this for a given
-#' number of output equations and total time to simulate over.  If \code{predInt} is set so that this cap is exceeded, predictions will be truncated.
+#' number of output equations and total time to simulate over.  If `predInt` is set so that this cap is exceeded, predictions will be truncated.
+#' @param mmInt Specify the time intervals from which MMopt times can be selected.
+#' These should only include simulated times specified by `predInt`.
 #' @param outeq Output equation to optimize
-#' @param \dots Other parameters to pass to \code{\link{SIMrun}}, which are not usually necessary.
-#' @return A object of class \emph{MMopt} with 3 items.
+#' @param \dots Other parameters to pass to [SIMrun], which are not usually necessary.
+#' @return A object of class *MMopt* with 3 items.
 #' \item{sampleTime }{The MM-optimal sample times}
 #' \item{bayesRisk }{The Bayesian risk of mis-classifying a subject based on the sample times.  This
 #' is more useful for comparisons between sampling strategies, with minimization the goal.}
-#' \item{simdata }{A \emph{PMsim} object with the simulated profiles}
+#' \item{simdata }{A *PMsim* object with the simulated profiles}
+#' \item{mmInt }{A list with the `mmInt` values, `NULL` if `mmInt` is missing.}
 #' @author Michael Neely
-#' @seealso \code{\link{SIMrun}}, \code{\link{plot.MMopt}}, \code{\link{print.MMopt}}
+#' @seealso [SIMrun], [plot.MMopt], [print.MMopt]
 #' @export
 
 
-MM_opt <- function(poppar, model, data, nsamp=1, weight=list(none=1), 
-                   predInt=0.5, outeq=1, ...){
+MM_opt <- function(poppar, model, data, nsamp = 1, weight = list(none = 1), 
+                   predInt = 0.5, mmInt, outeq = 1, ...){
   
   if(inherits(poppar,"PM_result")){
     if(!inherits(poppar$final,"NPAG")) {stop("Prior must be NPAG result.")}
@@ -73,6 +77,20 @@ MM_opt <- function(poppar, model, data, nsamp=1, weight=list(none=1),
   #transform into format for MMopt
   #nsubs is the number of subjects
   nsubs <- length(unique(simdata$obs$id))
+  #parse mmInt
+  if(!missing(mmInt)){
+    simdata_full <- simdata
+    if(!inherits(mmInt,"list")){ 
+      mmInt <- list(mmInt)
+    } #mmInt was a single vector; make a list of 1
+    simdata$obs <- purrr::map_df(mmInt, function(x){
+      filter(simdata$obs, time >= x[1] & time <= x[2])
+    }) %>% arrange(id, time)
+  } else {
+    mmInt <- NULL
+    simdata_full <- simdata
+    }
+  
   #time is the simulated times
   time <- unique(simdata$obs$time) 
   #nout is the number of simulated times (outputs)
@@ -143,9 +161,9 @@ MM_opt <- function(poppar, model, data, nsamp=1, weight=list(none=1),
   
   
   
-  mmopt <- list(sampleTime=optsamp[1:nsamp,nsamp],
-                bayesRisk=brisk[nsamp],Cbar=Cbar,
-                simdata=simdata)
+  mmopt <- list(sampleTime = optsamp[1:nsamp,nsamp],
+                bayesRisk = brisk[nsamp], Cbar = Cbar,
+                simdata = simdata_full, mmInt = mmInt)
   class(mmopt) <- c("MMopt","list")
   return(mmopt)
 }
