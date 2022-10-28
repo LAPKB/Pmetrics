@@ -67,3 +67,28 @@ PMbatch <- function(type,datafolder,modelfolder,batchname="batch",...){
   
 }
 
+
+#' Runs a set of PM_fit objects in order
+#'
+#' This function receives a batch (list) of PM_fit objects and executes them in order
+#'
+#' @title Execute a Batch of PM_fit objects
+#' @param batch list of PM_fit objects
+#' @param batchname name of the folder in which the batch will be executed
+#' @param ... other parameters passed to PM_fit$run(...)
+#' @export
+PM_batch <- function(batch,batchname="batch",...){
+  wd <- getwd()
+  system(paste0("mkdir ",batchname))
+  setwd(batchname)
+
+  for (fit in batch){
+    stopifnot(inherits(fit, "PM_fit"))
+    fit$run(...)
+  }
+
+
+
+  setwd(wd)
+}
+
