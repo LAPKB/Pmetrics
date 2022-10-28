@@ -11,49 +11,52 @@ MM_opt(
   nsamp = 1,
   weight = list(none = 1),
   predInt = 0.5,
+  mmInt,
   outeq = 1,
   ...
 )
 }
 \arguments{
-\item{poppar}{An object of class \emph{PMfinal} (see \code{\link{makeFinal}})}
+\item{poppar}{An object of class \emph{PMfinal} (see \link{makeFinal})}
 
 \item{model}{Name of a suitable model file template in the working directory.
-The default is \dQuote{model.txt}.  This file will be converted to a fortran model file.
-If it is detected to already be a fortran file, then the simulation will proceed without any further
-file conversion.}
+The default is "model.txt".  This file will be converted to a fortran model file.
+If it is detected to already be a fortran file, then the simulation will proceed without any further file conversion.}
 
-\item{data}{Either a PMmatrix object previously loaded with (\code{\link{PMreadMatrix}}) or character vector with the filename of a Pmetrics matrix file
-that contains template regimens and observation times.  The value for outputs can be coded as
-any number(s) other than -99.  The number(s) will be replaced in the simulator output with the simulated values.}
+\item{data}{Either a \link{PM_data} object or character vector with the filename
+of a Pmetrics data file
+that contains template regimens and observation times.  The value for outputs
+can be coded as any number(s) other than -99.  The number(s) will be replaced in the simulator output with the simulated values.}
 
 \item{nsamp}{The number of MM-optimal sample times to compute; default is 1, but can be up to 4.  Values >4 will be capped at 4.}
 
-\item{weight}{List whose names indicate the type of weighting, and values indicate the
-relative weight. Values should sum to 1.  Names can be any of the following:
+\item{weight}{List whose names indicate the type of weighting, and values indicate the relative weight. Values should sum to 1.  Names can be any of the following:
 \itemize{
 \item \code{none} The default. MMopt times will be chosen to maximally discriminate all responses at all times.
 \item \code{AUC} MMopt times will be chosen to maximally discriminate AUC, regardless of the shape of the response profile.
 \item \code{max} MMopt times will be chosen to maximally discriminate maximum, regardless of the shape of the response profile.
 \item \code{min} MMopt times will be chosen to maximally discriminate minimum, regardless of the shape of the response profile.
 }
-Any combination of AUC, max, and min can be chosen.  If \dQuote{none} is specified, other
+Any combination of AUC, max, and min can be chosen.  If "none" is specified, other
 weight types will be ignored and the relative value will be set to 1.
 For example,\code{list(auc=0.5,max=0.5)} or \code{auc=0.2,min=0.8}.}
 
 \item{predInt}{The interval in fractional hours for simulated predicted outputs at times other than those specified in the template \code{data}.
 The default is 0.5, which means there will be simulated outputs every 30 minutes from time 0 up
 to the maximal time in the template file.  You may also specify \code{predInt}
-as a vector of 3 values, e.g. \code{c(1,4,1)}, similar to the R command \code{\link{seq}}, where the
+as a vector of 3 values, e.g. \code{c(1,4,1)}, similar to the R command \link{seq}, where the
 first value is the start time, the second is the stop time, and the third is the
 step value.  Outputs for times specified in the template file will also be simulated.
 To simulate outputs \emph{only} at the output times in the template data (i.e. EVID=0 events), use \code{predInt=0}.
 Note that the maximum number of predictions total is 594, so the interval must be sufficiently large to accommodate this for a given
 number of output equations and total time to simulate over.  If \code{predInt} is set so that this cap is exceeded, predictions will be truncated.}
 
+\item{mmInt}{Specify the time intervals from which MMopt times can be selected.
+These should only include simulated times specified by \code{predInt}.}
+
 \item{outeq}{Output equation to optimize}
 
-\item{\dots}{Other parameters to pass to \code{\link{SIMrun}}, which are not usually necessary.}
+\item{\dots}{Other parameters to pass to \link{SIMrun}, which are not usually necessary.}
 }
 \value{
 A object of class \emph{MMopt} with 3 items.
@@ -61,17 +64,20 @@ A object of class \emph{MMopt} with 3 items.
 \item{bayesRisk }{The Bayesian risk of mis-classifying a subject based on the sample times.  This
 is more useful for comparisons between sampling strategies, with minimization the goal.}
 \item{simdata }{A \emph{PMsim} object with the simulated profiles}
+\item{mmInt }{A list with the \code{mmInt} values, \code{NULL} if \code{mmInt} is missing.}
 }
 \description{
 Computes 1 to 4 MM-optimal sampling times.
 }
 \details{
-Based on the mulitple-model optimization algorithm developed by David Bayard and presented at the 2012 American
-College of Clinical Pharmacology Meeting and the 2013 International Association of Therapeutic
-Drug Monitoring and Clinical Toxicology meeting.  A manuscript is in preparation.
+Based on the mulitple-model optimization algorithm.
+Bayard, David S., and Michael Neely. "Experiment Design for Nonparametric
+Models Based on Minimizing Bayes Risk: Application to Voriconazole."
+Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017):
+95–111. https://doi.org/10.1007/s10928-016-9498-5.
 }
 \seealso{
-\code{\link{SIMrun}}, \code{\link{plot.MMopt}}, \code{\link{print.MMopt}}
+\link{SIMrun}, \link{plot.MMopt}, \link{print.MMopt}
 }
 \author{
 Michael Neely
