@@ -285,6 +285,20 @@ PM_op <- R6::R6Class(
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       makeAUC(data = self$data, ...)
+    },
+    tidy = function(x,icen = "median", pred.type = "post", outeq = 1, block = 1,include, exclude,mult = 1){
+      if(inherits(x, "PM_op")) {x <- x$data}
+      if(missing(include)) include <- unique(x$id)
+      if(missing(exclude)) exclude <- NA 
+      struct <- x %>%
+        dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
+        includeExclude(include,exclude) %>%
+        dplyr::filter(!is.na(obs)) %>%
+        mutate(pred = pred * mult, obs = obs * mult) %>%
+        arrange(time)
+
+      class(struct) <- append("tidy_op",class(struct))
+      return(struct)
     }
   )
 )
