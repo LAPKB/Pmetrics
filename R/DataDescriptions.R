@@ -18,19 +18,45 @@
 #' Centers for Disease Control Pediatric and Adolescent BMI Table
 #'
 #' Coefficients to calculate sex-specific BMI z-scores and percentiles.  
-#' Downloaded from https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf.
+#' Downloaded from [https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf].
+#' Tables were last updated in 2000, based on data through 1994. Definitions of overweight
+#' and obese come from these data, based on BMI percentile >=85 for overweight and >=95 
+#' for obese. See [ger_bmi] for percentiles based on more modern NHANES data.
 #' 
-#' @name all_bmi
+#' @name cdc_bmi
 #' @docType data
 #' @title CDC Pediatric and Adolescent BMI Table
-#' @usage all_bmi
+#' @usage cdc_bmi
 #' @format A data frame with the following 9 columns: Sex (1 = male), Agemos; 
 #' L, M, S (coefficients for calculating z-scores), P3, P5, P10, P25, P50, P75, 
 #' P85, P90, P95, P97: age and sex specific BMI percentiles
 #' @author Michael Neely
 #' @keywords datasets
 
-"all_bmi"
+"cdc_bmi"
+
+
+#' Revised Pediatric and Adolescent BMI Table
+#'
+#' Coefficients to calculate sex-specific BMI z-scores and percentiles based on the
+#' supplemental data published by Gerhart et al:
+#' Gerhart, Jacqueline G., Fernando O. Carreño, Andrea N. Edginton, Jaydeep Sinha, Eliana M. Perrin, 
+#' Karan R. Kumar, Aruna Rikhi, et al. “Development and Evaluation of a Virtual 
+#' Population of Children with Obesity for Physiologically Based Pharmacokinetic Modeling.” 
+#' Clinical Pharmacokinetics 61, no. 2 (February 2022): 307–20. [https://doi.org/10.1007/s40262-021-01072-4].
+#' These data are in the same format as [cdc_bmi] but are derived from more recent NHANES data.
+#'
+#' @name ger_bmi
+#' @docType data
+#' @title CDC Pediatric and Adolescent BMI Table
+#' @usage ger_bmi
+#' @format A data frame with the following 9 columns: Sex (1 = male), Agemos; 
+#' L, M, S (coefficients for calculating z-scores), P3, P5, P10, P25, P50, P75, 
+#' P85, P90, P95, P97: age and sex specific BMI percentiles
+#' @author Michael Neely
+#' @keywords datasets
+
+"ger_bmi"
 
 #' Example MIC data
 #'
