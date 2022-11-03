@@ -1,3 +1,8 @@
+#' @export
+plot.tidy_op <- function(x,...){
+  plot.PM_op(x,...)
+}
+
 #' Plot PM_op objects
 #'
 #' Plot Pmetrics Observed vs. Predicted Objects
@@ -78,17 +83,11 @@
 #' NPex$op$plot(marker = list(color = "blue"))
 #' NPex$op$plot(resid = T)
 #' @family PMplots
-
-plot.PM_op <- function(x, 
-                       include, exclude, 
-                       icen = "median", 
-                       pred.type = "post", 
-                       outeq = 1, 
-                       block = 1, 
+plot.PM_op <- function(x,  
                        line,
                        marker = T,
-                       mult = 1, 
-                       resid = F,
+                       resid = F,                      
+                       icen = "median", pred.type = "post", outeq = 1, block = 1,include,exclude,mult = 1,
                        legend,
                        log = F, 
                        grid = T,
@@ -96,9 +95,11 @@ plot.PM_op <- function(x,
                        title,
                        xlim, ylim,...){
   
-
-  if(inherits(x, "PM_op")) {x <- x$data}
-  
+  #include/exclude
+  if(missing(include)) include <- unique(x$id)
+  if(missing(exclude)) exclude <- NA                      
+  sub1 <- x
+  if(!inherits(x, "tidy_op")) {sub1 <- x$tidy(icen, pred.type, outeq, block,include, exclude,mult)}
   #unnecessary arguments for consistency with other plot functions
   if(!missing(legend)){notNeeded("legend", "plot.PM_op")}
   
@@ -137,9 +138,7 @@ plot.PM_op <- function(x,
     refLine$plot <- T
   }
   
-  #include/exclude
-  if(missing(include)) include <- unique(x$id)
-  if(missing(exclude)) exclude <- NA
+  
   
   #process dots
   layout <- amendDots(list(...))
@@ -162,12 +161,6 @@ plot.PM_op <- function(x,
   
   # PLOTS -------------------------------------------------------------------
   
-  sub1 <- x %>%
-    filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
-    includeExclude(include,exclude) %>%
-    filter(!is.na(obs)) %>%
-    mutate(pred = pred * mult, obs = obs * mult) %>%
-    arrange(time)
   
   
   if(!resid){
