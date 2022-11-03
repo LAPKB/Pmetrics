@@ -170,7 +170,7 @@ plot.PM_op <- function(x,
     mutate(pred = pred * mult, obs = obs * mult) %>%
     arrange(time)
 
-  if(!missing(filter)){sub1 %>% filter(eval(rlang::parse_expr(filter)))}
+  if(!missing(filter)){sub1<-sub1 %>% filter(eval(rlang::parse_expr(filter)))}
   
   
   if(!resid){
