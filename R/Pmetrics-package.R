@@ -22,9 +22,10 @@
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon geom_hline
 #' scale_x_log10 scale_x_continuous scale_y_log10 scale_y_continuous xlab ylab
 #' theme ggtitle element_blank geom_segment aes_string aes_string theme_bw theme_grey
-#' @importFrom purrr map reduce map_chr keep pluck %>% 
+#' @importFrom purrr map reduce map_chr keep pluck
+#' @importFrom magrittr %>%
 #' @importFrom tibble as_tibble tibble
-#' @importFrom tidyr pivot_longer pivot_wider nest unnest extract separate fill %>%
+#' @importFrom tidyr pivot_longer pivot_wider nest unnest extract separate fill
 #' @importFrom gridExtra grid.arrange
 #' @importFrom mclust Mclust mclustBIC
 #' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg 
