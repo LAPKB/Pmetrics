@@ -100,10 +100,8 @@ plot.tidy_op <- function(x,...){
 plot.PM_op <- function(x,  
                        line,
                        marker = T,
-                       resid = F,
-                       
-                       icen = "median", pred.type = "post", outeq = 1, block = 1,include, exclude,mult = 1
-
+                       resid = F,                      
+                       icen = "median", pred.type = "post", outeq = 1, block = 1,include, exclude,mult = 1,
                        legend,
                        log = F, 
                        grid = T,
