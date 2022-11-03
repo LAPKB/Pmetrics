@@ -1,20 +1,4 @@
 #' @export
-tidy <- function(x,icen = "median", pred.type = "post", outeq = 1, block = 1,include, exclude,mult = 1){
-  if(inherits(x, "PM_op")) {x <- x$data}
-  if(missing(include)) include <- unique(x$id)
-  if(missing(exclude)) exclude <- NA 
-  struct <- x %>%
-    dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
-    includeExclude(include,exclude) %>%
-    dplyr::filter(!is.na(obs)) %>%
-    mutate(pred = pred * mult, obs = obs * mult) %>%
-    arrange(time)
-
-  class(struct) <- append("tidy_op",class(struct))
-  return(struct)
-}
-
-#' @export
 plot.tidy_op <- function(x,...){
   plot.PM_op(x,...)
 }
