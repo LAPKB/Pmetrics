@@ -1,5 +1,5 @@
 #' @export
-tidy <- function(x,icen = "median", pred.type = "post", outeq = 1, block = 1,include, exclude,mult = 1){
+tidy <- function(x,icen = "median", pred.type = "post", outeq = 1, block = 1,include=NA, exclude=NA,mult = 1){
   if(inherits(x, "PM_op")) {x <- x$data}
   struct <- x %>%
     dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
@@ -101,7 +101,7 @@ plot.PM_op <- function(x,
                        line,
                        marker = T,
                        resid = F,                      
-                       icen = "median", pred.type = "post", outeq = 1, block = 1,include, exclude,mult = 1,
+                       icen = "median", pred.type = "post", outeq = 1, block = 1,include=NA,exclude=NA,mult = 1,
                        legend,
                        log = F, 
                        grid = T,
