@@ -74,6 +74,7 @@ or individual predictions based on Bayesian posterior parameter value distributi
 \item \href{#method-PM_op-plot}{\code{PM_op$plot()}}
 \item \href{#method-PM_op-summary}{\code{PM_op$summary()}}
 \item \href{#method-PM_op-auc}{\code{PM_op$auc()}}
+\item \href{#method-PM_op-tidy}{\code{PM_op$tidy()}}
 \item \href{#method-PM_op-clone}{\code{PM_op$clone()}}
 }
 }
@@ -144,6 +145,24 @@ Calculate AUC
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_op-tidy"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_op-tidy}{}}}
+\subsection{Method \code{tidy()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_op$tidy(
+  x,
+  icen = "median",
+  pred.type = "post",
+  outeq = 1,
+  block = 1,
+  include,
+  exclude,
+  mult = 1
+)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_op-clone"></a>}}
