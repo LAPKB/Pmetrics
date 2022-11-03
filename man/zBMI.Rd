@@ -4,27 +4,47 @@
 \alias{zBMI}
 \title{Extract CDC pediatric BMI z-scores}
 \usage{
-zBMI(agemos, sex, bmi)
+zBMI(agemos, sex, bmi, wt, ht, data = "CDC")
 }
 \arguments{
 \item{agemos}{The age in months.  Should be between 24 and 240.5.}
 
-\item{sex}{A single quoted character: \dQuote{M} for males, \dQuote{F} for females.  Default is \dQuote{M}.}
+\item{sex}{A single quoted character: "M" for males, "F" for females.  Default is "M".}
 
-\item{bmi}{The individual's BMI.}
+\item{bmi}{The individual's BMI. If specified, \code{wt} and \code{ht} are not necessary
+and will be ingnored.}
+
+\item{wt}{The individual's weight in kg as an alternative to specifying \code{BMI}.
+Will be ignored if \code{BMI} is specified.}
+
+\item{ht}{The individual's height in centimeters. Required if \code{wt} is specified
+and \code{BMI} is not. Ignored if \code{BMI} is specified.}
+
+\item{data}{Source data for calculations. Default is "CDC" which uses the \link{cdc_bmi}
+dataset. The alternative is "NHANES", which uses the \link{ger_bmi} dataset.}
 }
 \value{
 A list with objects calculated for \code{agemos} and \code{sex}.
-\item{z }{Z-score}
-\item{mod_z }{Modified Z-score for extreme BMI}
-\item{per }{BMI percentile}
-\item{mod_per }{Modifed BMI percentile}
+\itemize{
+\item z Z-score
+\item mod_z Modified Z-score for extreme BMI
+\item per BMI percentile
+\item mod_per Modified BMI percentile
+}
 }
 \description{
-Will extract BMI z-scores based on age in months and sex. Overweight is
+Will extract BMI z-scores based on a single age in months and sex. Overweight is
 a z-score of >1.04, and obese is a z-score > 1.64. Calculations are based on
 CDC data/formulae as found here:
 \link{https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf}
+}
+\details{
+For a z-score > 3, which indicates an extreme BMI, consider using the modified
+z-score and percentile.
+}
+\examples{
+zBMI(36, 15)
+
 }
 \author{
 Michael Neely
