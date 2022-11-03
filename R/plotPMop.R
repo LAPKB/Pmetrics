@@ -99,7 +99,7 @@ plot.PM_op <- function(x,
   if(missing(include)) include <- unique(x$id)
   if(missing(exclude)) exclude <- NA                      
   
-  if(!inherits(x, "tidy")) {sub1 <- tidy(x,icen, pred.type, outeq, block,include, exclude,mult)}
+  if(!inherits(x, "tidy")) {sub1 <- x$tidy(icen, pred.type, outeq, block,include, exclude,mult)}
   #unnecessary arguments for consistency with other plot functions
   if(!missing(legend)){notNeeded("legend", "plot.PM_op")}
   
