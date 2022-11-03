@@ -164,13 +164,13 @@ plot.PM_op <- function(x,
   # PLOTS -------------------------------------------------------------------
   
   sub1 <- x %>%
-    filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
+    dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
     includeExclude(include,exclude) %>%
-    filter(!is.na(obs)) %>%
+    dplyr::filter(!is.na(obs)) %>%
     mutate(pred = pred * mult, obs = obs * mult) %>%
     arrange(time)
 
-  if(!missing(filter)){sub1<-sub1 %>% filter(eval(rlang::parse_expr(filter)))}
+  if(!missing(filter)){sub1<-sub1 %>% dplyr::filter(eval(rlang::parse_expr(filter)))}
   
   
   if(!resid){
