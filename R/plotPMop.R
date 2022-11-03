@@ -94,6 +94,7 @@ plot.PM_op <- function(x,
                        grid = T,
                        xlab, ylab,
                        title,
+                       filter,
                        xlim, ylim,...){
   
 
@@ -168,6 +169,8 @@ plot.PM_op <- function(x,
     filter(!is.na(obs)) %>%
     mutate(pred = pred * mult, obs = obs * mult) %>%
     arrange(time)
+
+  if(!missing(filter)){sub1 %>% filter(eval(rlang::parse_expr(filter)))}
   
   
   if(!resid){
