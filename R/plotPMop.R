@@ -1,3 +1,22 @@
+#' @export
+tidy <- function(x,icen = "median", pred.type = "post", outeq = 1, block = 1,include, exclude,mult = 1){
+  if(inherits(x, "PM_op")) {x <- x$data}
+  struct <- x %>%
+    dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
+    includeExclude(include,exclude) %>%
+    dplyr::filter(!is.na(obs)) %>%
+    mutate(pred = pred * mult, obs = obs * mult) %>%
+    arrange(time)
+
+  class(struct) <- append("tidy_op",class(struct))
+  return(struct)
+}
+
+#' @export
+plot.tidy_op <- function(x,...){
+  plot.PM_op(x,...)
+}
+
 #' Plot PM_op objects
 #'
 #' Plot Pmetrics Observed vs. Predicted Objects
@@ -78,28 +97,23 @@
 #' NPex$op$plot(marker = list(color = "blue"))
 #' NPex$op$plot(resid = T)
 #' @family PMplots
-
-plot.PM_op <- function(x, 
-                       include, exclude, 
-                       icen = "median", 
-                       pred.type = "post", 
-                       outeq = 1, 
-                       block = 1, 
+plot.PM_op <- function(x,  
                        line,
                        marker = T,
-                       mult = 1, 
                        resid = F,
+                       
+                       icen = "median", pred.type = "post", outeq = 1, block = 1,include, exclude,mult = 1
+
                        legend,
                        log = F, 
                        grid = T,
                        xlab, ylab,
                        title,
-                       filter,
                        xlim, ylim,...){
   
 
-  if(inherits(x, "PM_op")) {x <- x$data}
   
+  if(!inherits(x, "tidy")) {sub1 <- tidy(x,icen, pred.type, outeq, block,include, exclude,mult)}
   #unnecessary arguments for consistency with other plot functions
   if(!missing(legend)){notNeeded("legend", "plot.PM_op")}
   
@@ -163,14 +177,6 @@ plot.PM_op <- function(x,
   
   # PLOTS -------------------------------------------------------------------
   
-  sub1 <- x %>%
-    dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
-    includeExclude(include,exclude) %>%
-    dplyr::filter(!is.na(obs)) %>%
-    mutate(pred = pred * mult, obs = obs * mult) %>%
-    arrange(time)
-
-  if(!missing(filter)){sub1<-sub1 %>% dplyr::filter(eval(rlang::parse_expr(filter)))}
   
   
   if(!resid){
