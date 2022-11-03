@@ -64,7 +64,8 @@ Imports:
     lubridate,
     mvtnorm,
     tidyverse,
-    R6
+    R6,
+    magrittr
 Suggests:
     knitr,
     rmarkdown,

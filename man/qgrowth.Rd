@@ -6,28 +6,35 @@
 \usage{
 qgrowth(
   sex = c("M", "F", "B"),
-  percentile = c("5", "10", "25", "50", "75", "90", "95"),
+  percentile = c(5, 10, 25, 50, 75, 90, 95),
   agemos = (seq(0, 18) * 12)
 )
 }
 \arguments{
-\item{sex}{A single quoted character: \dQuote{M} for males, \dQuote{F} for females, or \dQuote{B} for both, in which case an average
-of the two sexes will be returned.  Default is \dQuote{M}.}
+\item{sex}{A single quoted character: "M" for males, "F" for
+females, or "B" for both.  Default is "B".}
 
-\item{percentile}{An integer of the percentile for each age/sex to return.  Default is 5.}
+\item{percentile}{An integer vector of the percentile for each age/sex to return.
+Default is 50, but could be, for example \code{c(5, 10, 25, 50, 75, 90, 95)}.}
 
-\item{agemos}{The ages in months to return.  The default is \code{seq(0,18)*12}, i.e. 1 to 18 years.}
+\item{agemos}{A vector of ages in months to return.  The default is
+\code{seq(0,18)*12}, i.e. 0 to 216 months in increments of 12, which is
+1 to 18 years. Values do not have to be multiples of 12.}
 }
 \value{
 A dataframe with columns
-\item{age }{Age in months}
-\item{wt }{Weight in kilograms}
-\item{ht }{Height or length in centimeters}
-\item{sex }{The selected \code{sex}}
-\item{percentile }{The selected \code{percentile}}
+\itemize{
+\item agemos Age in months
+\item ageyrs Age in years
+\item wt Weight in kilograms
+\item ht Height or length in centimeters
+\item bmi Body mass index $kg/m^2$
+\item sex The selected sex(es)
+\item percentile The selected percentile(s)
+}
 }
 \description{
-Will extract height and weight for boys, girls or both for a given range of ages in months and percentile. This can be useful for
+Will extract height, weight, and BMI for boys, girls or both for a given range of ages in months and percentiles. This can be useful for
 simulations in Pmetrics.
 }
 \author{
