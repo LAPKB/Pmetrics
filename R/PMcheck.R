@@ -259,7 +259,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       if ((data2$time[i] - data2$time[i - 1] < 0) & data2$id[i] == data2$id[i - 1] & data2$evid[i] != 4) misorder <- c(misorder, i)
     }
     if (length(misorder) > 1) {
-      err$timeOrder$msg <- "FAIL - The following rows are from subject IDs with unsorted time entries."
+      err$timeOrder$msg <- "FAIL - The following rows are from subject IDs with unsorted time entries. Check date/time format."
       err$timeOrder$results <- misorder[-1]
       attr(err, "error") <- -1
     }

@@ -31,7 +31,7 @@
 #' @export
 
 PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCol="evid",
-                            format =c("Ymd","HM"),split=F){
+                            format, split = F){
   
   dataCols <- names(data)
   #convert numeric if necessary
@@ -40,13 +40,42 @@ PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCo
   if(is.numeric(timeCol)) timeCol <- dataCols[timeCol]
   if(is.numeric(evidCol)) evidCol <- dataCols[evidCol]
   
+  #all reasonable combinations
+  dt_df <- tidyr::crossing(date = c("dmy", "mdy", "ymd", "ydm"),time = c("HM", "HMS", "IMOp", "IMSOp")) 
+  dt_formats <- paste(dt_df$date, dt_df$time)
+
   if(!all(c(idCol,dateCol,timeCol,evidCol) %in% dataCols)){stop("Please provide column names for id, date, time and evid.\n")}
   temp <- data.frame(id=data[,idCol],date=data[,dateCol],time=data[,timeCol],evid=data[,evidCol])
   temp$date <- as.character(temp$date)
   temp$time <- as.character(temp$time)
   temp$time <- unlist(lapply(temp$time,function(x) ifelse(length(gregexpr(":",x)[[1]])==1,paste(x,":00",sep=""),x)))
-  if(format[2]=="HM") format[2] <- "HMS"
-  temp$dt <- lubridate::parse_date_time(paste(temp$date, temp$time), orders = paste(format, collapse=" "))
+
+  get_dt_format <- function(test){
+    found_formats <- table(suppressWarnings(lubridate::guess_formats(paste(temp$date, temp$time), test)))
+    format_str <- names(found_formats)[which(found_formats == max(found_formats))]
+    O_str <- grep("O",format_str)
+    if(length(O_str)>0){format_str <- format_str[-O_str]}
+    the_format <- gsub("%","",format_str)
+    return(the_format)
+  }
+  
+  
+  dt <- NA
+  if(!missing(format) && !is.null(format)){
+    if(format[2]=="HM") format[2] <- "HMS"
+    format <- paste(format, collapse = " ")
+    dt <- tryCatch(suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, format)), 
+                   error = function(e) e) #try with specific format
+    found_format <- get_dt_format(format)
+  }
+  if(all(is.na(dt))){ #didn't parse yet, try automatic parsing
+    dt <- tryCatch(suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, dt_formats)), 
+                   error = function(e) e)
+    found_format <- get_dt_format(dt_formats)
+  }
+  if(all(is.na(dt))){stop("Dates/times failed to parse. Please specify correct format. ")}
+
+  temp$dt <- dt #didn't have to stop, so parsed
   
   if(split){
     #calculate PK event numbers for each patient
@@ -74,9 +103,11 @@ PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCo
     temp$relTime[reset[i]:reset[i+1]] <- (temp$dt[reset[i]:reset[i+1]] - temp$dt[reset[i]])/lubridate::dhours(1)
   }
   
-  temp$relTime <- round(temp$relTime,2)
+  temp$relTime <- round(temp$relTime,2) 
+  temp <- temp[,c("id","evid","relTime")]
+  attr(temp,"dt_format") <- found_format
   
-  return(temp[,c("id","evid","relTime")])
+  return(temp)
   
 }
 

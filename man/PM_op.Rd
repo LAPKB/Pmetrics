@@ -152,7 +152,6 @@ Calculate AUC
 \subsection{Method \code{tidy()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_op$tidy(
-  x,
   icen = "median",
   pred.type = "post",
   outeq = 1,
