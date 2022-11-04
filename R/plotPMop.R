@@ -98,8 +98,16 @@ plot.PM_op <- function(x,
   #include/exclude
   if(missing(include)) include <- unique(x$id)
   if(missing(exclude)) exclude <- NA                      
-  sub1 <- x
-  if(!inherits(x, "tidy_op")) {sub1 <- x$tidy(icen, pred.type, outeq, block,include, exclude,mult)}
+  
+  if(!inherits(x, "tidy_op")) {x<-x$tidy()}
+  sub1 <- x %>%
+    dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
+    includeExclude(include,exclude) %>%
+    dplyr::filter(!is.na(obs)) %>%
+    mutate(pred = pred * mult, obs = obs * mult) %>%
+    arrange(time)
+
+  
   #unnecessary arguments for consistency with other plot functions
   if(!missing(legend)){notNeeded("legend", "plot.PM_op")}
   

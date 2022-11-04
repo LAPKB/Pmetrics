@@ -1,3 +1,8 @@
+#' @export
+plot.tidy_final <- function(x,...){
+  plot.PM_final(x,...)
+}
+
 #' Plot Pmetrics Final Cycle Parameter Value Distributions
 #' 
 #' Plot R6 [PM_final] objects made by [makeFinal] and loaded as a field in the
@@ -110,10 +115,11 @@ plot.PM_final <- function(x,
   #process dots
   layout <- amendDots(list(...))
   
+  data<-if(inherits(x, "tidy_final")) {x$tidy()}else{x}
   #ranges
-  ab <- data.frame(x$ab)
+  ab <- data.frame(data$ab)
   names(ab) <- c("min","max")
-  ab$par <- names(x$popMean)
+  ab$par <- names(data$popMean)
   
   #plot functions for univariate
   uniPlot <- function(.par, .data, .min, .max, type, bar, xlab, ylab, title){
@@ -291,8 +297,8 @@ plot.PM_final <- function(x,
                                    (rangeY[2] - rangeY[1])/100)) %>%
         tidyr::expand(x,y)
       
-      z <- mvtnorm::dmvnorm(coords,mean=as.numeric(x$popMean[1,c(whichX,whichY)]),
-                            sigma=as.matrix(x$popCov[c(whichX,whichY),c(whichX,whichY)])
+      z <- mvtnorm::dmvnorm(coords,mean=as.numeric(data$popMean[1,c(whichX,whichY)]),
+                            sigma=as.matrix(data$popCov[c(whichX,whichY),c(whichX,whichY)])
       )
       z <- matrix(z, nrow=101)
       
@@ -308,9 +314,9 @@ plot.PM_final <- function(x,
       return(p)
     } else { #NPAG
       
-      x$popPoints$id <- seq_len(nrow(x$popPoints))
-      pp <- replicate(3, x$popPoints, simplify = F)
-      x$popPoints <- x$popPoints %>% select(-id) #undo modification
+      data$popPoints$id <- seq_len(nrow(x$popPoints))
+      pp <- replicate(3, data$popPoints, simplify = F)
+      data$popPoints <- data$popPoints %>% select(-id) #undo modification
       
       #make object for drop lines
       pp[[2]]$prob <- min(pp[[1]]$prob)
@@ -319,7 +325,7 @@ plot.PM_final <- function(x,
       pp2 <- pp2 %>%
         dplyr::select(x=whichX[1]+1, y=whichY[1]+1, prob=prob)
       
-      p <- x$popPoints %>% select(x=whichX[1], y=whichY[1], prob=prob) %>%
+      p <- data$popPoints %>% select(x=whichX[1], y=whichY[1], prob=prob) %>%
         plotly::plot_ly(x = ~x, y = ~y, z = ~prob,
                         hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
         plotly::add_markers(marker = bar) %>% 
@@ -349,7 +355,7 @@ plot.PM_final <- function(x,
     #NPAG
     if(type == "NPAG"){
       ab_alpha <- ab %>% arrange(par)
-      p <- x$popPoints %>% pivot_longer(cols = !prob, names_to = "par") %>%
+      p <- data$popPoints %>% pivot_longer(cols = !prob, names_to = "par") %>%
         dplyr::nest_by(par) %>%
         dplyr::full_join(ab_alpha, by = "par") %>%
         dplyr::mutate(panel = list(uniPlot(par, data, min, max, type = "NPAG", 
@@ -362,7 +368,7 @@ plot.PM_final <- function(x,
         if(tolower(standardize[1])=="all"){
           to_standardize <- 1:nrow(ab)
         } else {
-          to_standardize <- which(names(x$popMean) %in% standardize)
+          to_standardize <- which(names(data$popMean) %in% standardize)
         }
         if(length(to_standardize)>0){
           ab[to_standardize,1] <- min(ab[to_standardize,1])
@@ -370,10 +376,10 @@ plot.PM_final <- function(x,
         } else {stop("Requested standardization parameters are not in model.")}
       }
       ab_alpha <- ab %>% arrange(par)
-      p <- data.frame(mean = purrr::as_vector(x$popMean), sd = purrr::as_vector(x$popSD), min = ab[,1], max = ab[,2]) %>%
+      p <- data.frame(mean = purrr::as_vector(data$popMean), sd = purrr::as_vector(data$popSD), min = ab[,1], max = ab[,2]) %>%
         purrr::pmap(.f = function(mean, sd, min, max){tibble::tibble(value = seq(min, max, (max-min)/1000),
                                                                      prob = dnorm(value, mean, sd))}) %>% 
-        purrr::set_names(names(x$popMean)) %>%
+        purrr::set_names(names(data$popMean)) %>%
         dplyr::bind_rows(.id = "par") %>%
         dplyr::nest_by(par) %>% 
         dplyr::full_join(ab_alpha, by = "par") %>%
