@@ -99,7 +99,8 @@ plot.PM_op <- function(x,
   if(missing(include)) include <- unique(x$id)
   if(missing(exclude)) exclude <- NA                      
   
-  if(!inherits(x, "tidy_op")) {x<-x$tidy()}
+  # if(!inherits(x, "tidy_op")) {x<-x$tidy()}
+  x<-if(inherits(x, "PM_op")) {x$tidy()}else{x}
   sub1 <- x %>%
     dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
     includeExclude(include,exclude) %>%
