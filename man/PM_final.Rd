@@ -105,6 +105,7 @@ shrink towards the population mean.}
 \item \href{#method-PM_final-new}{\code{PM_final$new()}}
 \item \href{#method-PM_final-summary}{\code{PM_final$summary()}}
 \item \href{#method-PM_final-plot}{\code{PM_final$plot()}}
+\item \href{#method-PM_final-tidy}{\code{PM_final$tidy()}}
 \item \href{#method-PM_final-clone}{\code{PM_final$clone()}}
 }
 }
@@ -158,6 +159,16 @@ Plot method
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_final-tidy"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_final-tidy}{}}}
+\subsection{Method \code{tidy()}}{
+Returns a structure compatible with tidy methods.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_final$tidy()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_final-clone"></a>}}
