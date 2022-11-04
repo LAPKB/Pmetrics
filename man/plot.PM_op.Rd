@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{PM_op}(
   x,
-  line,
+  line = list(lm = F, loess = T, ref = T),
   marker = T,
   resid = F,
   icen = "median",

@@ -113,7 +113,7 @@ plot.PM_op <- function(x,
   if(!missing(legend)){notNeeded("legend", "plot.PM_op")}
   
   #process reference lines
-  if(any(!names(line)%in% c("lm", "loess", "pred"))){
+  if(any(!names(line)%in% c("lm", "loess", "ref"))){ #ref/pred?
     cat(paste0(crayon::red("Warning: "),crayon::blue("line")," should be a list with at most three named elements: ",crayon::blue("lm"),", ",crayon::blue("loess"), " and/or ",crayon::blue("ref"),".\n See help(\"plot.PM_op\")."))
   }
   if(!is.list(line)){
