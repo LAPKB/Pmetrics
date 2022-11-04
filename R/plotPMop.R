@@ -84,7 +84,7 @@ plot.tidy_op <- function(x,...){
 #' NPex$op$plot(resid = T)
 #' @family PMplots
 plot.PM_op <- function(x,  
-                       line,
+                       line=list(lm = F, loess = T, ref = T),
                        marker = T,
                        resid = F,                      
                        icen = "median", pred.type = "post", outeq = 1, block = 1,include,exclude,mult = 1,
@@ -113,16 +113,16 @@ plot.PM_op <- function(x,
   if(!missing(legend)){notNeeded("legend", "plot.PM_op")}
   
   #process reference lines
-  if(missing(line)){
-    line <- list(lm = F, loess = T, ref = T)
-  } else {
-    if(any(!names(line)%in% c("lm", "loess", "pred"))){
-      cat(paste0(crayon::red("Warning: "),crayon::blue("line")," should be a list with at most three named elements: ",crayon::blue("lm"),", ",crayon::blue("loess"), " and/or ",crayon::blue("ref"),".\n See help(\"plot.PM_op\")."))
-    }
-    if(is.null(line$lm)) {line$lm <- F}
-    if(is.null(line$loess)) {line$loess <- T}
-    if(is.null(line$ref)) {line$ref <- T}
+  if(any(!names(line)%in% c("lm", "loess", "pred"))){
+    cat(paste0(crayon::red("Warning: "),crayon::blue("line")," should be a list with at most three named elements: ",crayon::blue("lm"),", ",crayon::blue("loess"), " and/or ",crayon::blue("ref"),".\n See help(\"plot.PM_op\")."))
   }
+  if(!is.list(line)){
+    cat(paste0(crayon::red("Error: "),crayon::blue("line")," should be a list(). See help(\"plot.PM_op\")."))
+  }
+  if(is.null(line$lm)) {line$lm <- F}
+  if(is.null(line$loess)) {line$loess <- T}
+  if(is.null(line$ref)) {line$ref <- T}
+  
   
   marker <- amendMarker(marker, default = list(color = "orange"))
   lmLine <- amendLine(line$lm, default = list(color = "dodgerblue", dash = "solid"))
