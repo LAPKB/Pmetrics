@@ -8,12 +8,22 @@ PM_data R6 objects containing raw, standardized and valid data, and methods
 to process the data
 }
 \details{
-PM_data objects are passed to \link{PM_fit} objects to initiate a
+\emph{PM_data} objects are passed to \link{PM_fit} objects to initiate a
 population analysis. The object is created by reading a delimited file in
 the current working directory. The data will be transformed into the standard
 format which is the same for all engines, with a report of any assumptions
 that were necessary to standardize the data. \link{PMcheck} is called
-on the standard data to evaluate for errors. There are a number of methods
+on the standard data to evaluate for errors. If dates and times are converted
+to relative decimal times in the standard data, automatic detection of the correct
+format will be attempted using \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}}. In the case of failure
+due to an unusual format, use the 'dt' argument to specify the correct format in your
+data. In the case of successful automatic detection, the format used will be
+included in the standardization report generated upon creation of a new \emph{PM_data}
+object. Check carefully to make sure the correct format was chosen. Note that if
+your clock times did not include seconds, they were appended as ":00" to the end
+of each time and will appear that way in the copy of the original data.
+
+There are a number of methods
 defined for a PM_data object, including to write the standard data back
 to a file for future use, to summarize and to plot the object, and to
 conduct a non-compartmental analysis on the raw data using
@@ -46,7 +56,7 @@ conduct a non-compartmental analysis on the raw data using
 \subsection{Method \code{new()}}{
 Create new data object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_data$new(data, dt = c("Ymd", "HS"), quiet = F)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$new(data, dt = NULL, quiet = F)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -56,9 +66,10 @@ Create new data object
 in the working directory, or an unquoted name of a data frame
 in the current R environment.}
 
-\item{\code{dt}}{Date time format as a character vector whose
-first element is date format and second is time. Default is
-\code{c("Ymd", "HS")}. Use the following abbreviations:
+\item{\code{dt}}{Pmetrics will try a variety of date/time formats. If all 16 of
+them fail, use this parameter to specify the correct format as a
+character vector whose
+first element is date format and second is time. Use the following abbreviations:
 \itemize{
 \item Y = 4 digit year
 \item y = 2 digit year
@@ -66,8 +77,10 @@ first element is date format and second is time. Default is
 \item d = decimal day (1, 2, ..., 31)
 \item H = hours (0-23)
 \item M = minutes (0-59)
-Other formats are possible. See \link{strptime} for these,
-omitting the \% before each abbreviation.
+Example: \code{format = c("myd", "mh")}. Not one of the tried combinations!
+Always check to make sure that dates/times were parsed correctly and the
+relative times in the \code{PM_data$standard_data} field look correct.
+Other date/time formats are possible. See \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} for these.
 }}
 
 \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}

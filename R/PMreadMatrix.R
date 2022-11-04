@@ -72,7 +72,7 @@ PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("d
   
   data <- readr::read_delim(file, delim = sep, col_names = T, na=".", 
                             locale = readr::locale(decimal_mark = dec, date_format = date_format, time_format = time_format),
-                            skip = skip, show_col_types = F, progress = F)
+                            skip = skip, show_col_types = F, progress = F, num_threads = 1)
   names(data)[1] <- "id"
   names(data) <- tolower(names(data))
   
