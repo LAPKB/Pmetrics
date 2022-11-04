@@ -115,7 +115,7 @@ plot.PM_final <- function(x,
   #process dots
   layout <- amendDots(list(...))
   
-  data<-if(inherits(x, "tidy_final")) {x$tidy()}else{x}
+  data<-if(inherits(x, "PM_final")) {x$tidy()}else{x}
   #ranges
   ab <- data.frame(data$ab)
   names(ab) <- c("min","max")
