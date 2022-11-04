@@ -150,16 +150,9 @@ Calculate AUC
 \if{html}{\out{<a id="method-PM_op-tidy"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_op-tidy}{}}}
 \subsection{Method \code{tidy()}}{
+Returns a structure compatible with tidy methods.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_op$tidy(
-  icen = "median",
-  pred.type = "post",
-  outeq = 1,
-  block = 1,
-  include,
-  exclude,
-  mult = 1
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_op$tidy()}\if{html}{\out{</div>}}
 }
 
 }
