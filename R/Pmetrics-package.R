@@ -14,7 +14,8 @@
 #' @keywords package
 #'
 #' @importFrom dplyr select arrange filter mutate transmute group_by row_number
-#' group_map ungroup bind_cols bind_rows nest_by
+#' group_map ungroup bind_cols bind_rows nest_by rowwise rename inner_join
+#' slice_tail slice_head slice across
 #' @importFrom tidyselect all_of
 #' @importFrom cubelyr as.tbl_cube
 #' @importFrom foreach %dopar%
@@ -25,7 +26,8 @@
 #' @importFrom purrr map reduce map_chr keep pluck
 #' @importFrom magrittr %>%
 #' @importFrom tibble as_tibble tibble
-#' @importFrom tidyr pivot_longer pivot_wider nest unnest extract separate fill
+#' @importFrom tidyr pivot_longer pivot_wider nest unnest extract separate fill crossing
+#' @importFrom stringr str_replace regex
 #' @importFrom gridExtra grid.arrange
 #' @importFrom mclust Mclust mclustBIC
 #' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg 

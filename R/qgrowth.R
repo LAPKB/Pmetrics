@@ -148,14 +148,15 @@ qgrowth <- function(sex=c("M","F","B"),percentile=c(5, 10, 25, 50, 75, 90, 95),a
     mutate(agecat = ifelse(agemos<=36,"0-36 mos","2-18 years")) %>% #categorize age
     inner_join(., sub1, by = c("agecat", "sex", "percentile")) %>% #lookup combinations in CDC table
     group_by(agemos, sex, percentile, CHART) %>%
-    filter(KNOT <= agemos) %>% slice_tail(n=1) %>% #choose the maximum KNOT which is < agemos for each combination
+    filter(KNOT <= agemos) %>% 
+    slice_tail(n=1) %>% #choose the maximum KNOT which is < agemos for each combination
     ungroup() %>%
     group_by(CHART) %>%
     rowwise() %>%
     mutate(corr_age = agemos - KNOT, measure = A + B1 * corr_age + B2 * corr_age**2 + B3 * corr_age**3) %>% #calculate appropriate measure
     ungroup() %>%
     mutate(across(CHART, stringr::str_replace, "length", "ht")) %>% #tidy labels
-    mutate(across(CHART, stringr::str_replace, regex("\\s+x age"), "")) %>%
+    mutate(across(CHART, stringr::str_replace, stringr::regex("\\s+x age"), "")) %>%
     select(agemos, sex, percentile, CHART, measure) %>%
     pivot_wider(id_cols = 1:3, names_from = CHART, values_from = measure) %>% #reform the data frame
     mutate(ageyrs = agemos/12, bmi = wt/(ht/100)**2) %>% #add age in years and BMI
