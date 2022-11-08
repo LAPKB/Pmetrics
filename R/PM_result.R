@@ -286,17 +286,10 @@ PM_op <- R6::R6Class(
     auc = function(...) {
       makeAUC(data = self$data, ...)
     },
-    tidy = function(icen = "median", pred.type = "post", outeq = 1, block = 1,include, exclude,mult = 1){
-      x <- self$data
-      if(missing(include)) include <- unique(x$id)
-      if(missing(exclude)) exclude <- NA 
-      struct <- x %>%
-        dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
-        includeExclude(include,exclude) %>%
-        dplyr::filter(!is.na(obs)) %>%
-        mutate(pred = pred * mult, obs = obs * mult) %>%
-        arrange(time)
-
+    #' @description
+    #' Returns a structure compatible with tidy methods.
+    tidy = function(){
+      struct <- self$data
       class(struct) <- append("tidy_op",class(struct))
       return(struct)
     }
@@ -511,6 +504,13 @@ PM_final <- R6::R6Class(
     #' @param ... Arguments passed to [plot.PMfinal]
     plot = function(...) {
       plot.PM_final(self, ...)
+    },
+    #' @description
+    #' Returns a structure compatible with tidy methods.
+    tidy = function(){
+      struct <- self$data
+      class(struct) <- append("tidy_final",class(struct))
+      return(struct)
     }
   )
 )
