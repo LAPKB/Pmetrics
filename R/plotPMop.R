@@ -1,8 +1,3 @@
-#' @export
-plot.tidy_op <- function(x,...){
-  plot.PM_op(x,...)
-}
-
 #' Plot PM_op objects
 #'
 #' Plot Pmetrics Observed vs. Predicted Objects
