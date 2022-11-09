@@ -1,8 +1,3 @@
-#' @export
-plot.tidy_final <- function(x,...){
-  plot.PM_final(x,...)
-}
-
 #' Plot Pmetrics Final Cycle Parameter Value Distributions
 #' 
 #' Plot R6 [PM_final] objects made by [makeFinal] and loaded as a field in the
