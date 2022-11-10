@@ -2,7 +2,7 @@
 % Please edit documentation in R/PM_result.R
 \name{plot.tidy_cov}
 \alias{plot.tidy_cov}
-\title{Wrapper function for plot.PM_cov}
+\title{Wrapper function for plot.PMcov}
 \usage{
 \method{plot}{tidy_cov}(x, ...)
 }
@@ -15,7 +15,7 @@
 A \link{plot.PMcov} object
 }
 \description{
-This redirects to plot.PM_cov for tidy_cov objects
+This redirects to plot.PMcov for tidy_cov objects
 }
 \details{
 See \link{plot.PMcov}. Alternative way to plot is
