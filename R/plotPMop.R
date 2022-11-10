@@ -89,12 +89,12 @@ plot.PM_op <- function(x,
                        xlab, ylab,
                        title,
                        xlim, ylim,...){
-  
+
+  x<-if(inherits(x, "PM_op")) {x$data}else{x}
   #include/exclude
   if(missing(include)) include <- unique(x$id)
   if(missing(exclude)) exclude <- NA                      
-  
-  x<-if(inherits(x, "PM_op")) {x$data}else{x}
+
   sub1 <- x %>%
     dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
     includeExclude(include,exclude) %>%
