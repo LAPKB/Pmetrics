@@ -58,8 +58,8 @@ PM_result <- R6::R6Class(
         self$ITdata <- out$ITdata
         class(self$ITdata) <- c("IT2B", "list")
       } else {self$ITdata <- NULL}
-      self$pop <- PM_pop$new(out$pop)
-      self$post <- PM_post$new(out$post)
+      self$pop <- if is.null(out$pop){NULL}else{PM_pop$new(out$pop)}
+      self$post <- is.null(out$pop){NULL}else{PM_post$new(out$post)}
       self$final <- PM_final$new(out$final)
       self$cycle <- PM_cycle$new(out$cycle)
       self$op <- PM_op$new(out$op)
@@ -551,20 +551,20 @@ PM_cycle <- R6::R6Class(
   )
 )
 
-#' Wrapper function for plot.PM_cycle
-#' 
-#' This redirects to plot.PM_cycle for tidy_cycle objects
-#' 
-#' See [plot.PMcycle]. Alternative way to plot is
-#' `PM_result$cycle$plot()`.
-#' 
-#' @param x A *PMcycle* object with the *tidy_cycle* class to be plotted
-#' @param ... Arguments passed to [plot.PMcycle]
-#' @return A [plot.PM_cycle] object
-#' @export
-plot.tidy_cycle <- function(x,...){
-  plot.PM_cycle(x,...)
-}
+# #' Wrapper function for plot.PM_cycle
+# #' 
+# #' This redirects to plot.PM_cycle for tidy_cycle objects
+# #' 
+# #' See [plot.PMcycle]. Alternative way to plot is
+# #' `PM_result$cycle$plot()`.
+# #' 
+# #' @param x A *PMcycle* object with the *tidy_cycle* class to be plotted
+# #' @param ... Arguments passed to [plot.PMcycle]
+# #' @return A [plot.PM_cycle] object
+# #' @export
+# plot.tidy_cycle <- function(x,...){
+#   plot.PMcycle(x,...)
+# }
 
 #' Population predictions at short intervals
 #' 
