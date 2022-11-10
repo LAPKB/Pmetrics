@@ -257,6 +257,11 @@ tail(exRes$cycle$data$gamlam)
 # Plot covariate information.  Type ?plot.PMcov in the R console for help.
 # Recall that plotting formulae in R are of the form 'y~x'
 exRes$cov$plot(V ~ wt)
+exRes$cov$data %>% plot(V ~ wt)
+exRes$cov$data %>%
+  filter(age > 25) %>%
+  plot(V ~ wt)
+
 exRes$cov$plot(Ke ~ age, lowess = F, reg = T, pch = 3)
 
 # Same plot but with mean Bayesian posterior parameter and covariate values...
