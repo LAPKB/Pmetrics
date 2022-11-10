@@ -234,7 +234,7 @@ PM_op <- R6::R6Class(
     #' for the user to do.
     #' @param op The parsed output from [makeOP].
     initialize = function(op) {
-      class(op) <- append("tidy_op",class(op))
+      class(op) <- append(class(op),"tidy_op")
       self$data <- op
     },
     #' @description
@@ -333,7 +333,7 @@ PM_post <- R6::R6Class(
     #' for the user to do.
     #' @param post The parsed output from [makePost].
     initialize = function(post) {
-      class(post) <- append("tidy_post",class(post))
+      class(post) <- append(class(post),"tidy_post")
       self$data <- post
     },
     #' @description
@@ -438,7 +438,7 @@ PM_final <- R6::R6Class(
     #' for the user to do.
     #' @param final The parsed output from [makeFinal].
     initialize = function(final) {
-      class(final) <- append("tidy_final",class(final))
+      class(final) <- append(class(final),"tidy_final")
       self$data <- final
       self$popPoints <- final$popPoints
       self$popMean <- final$popMean
@@ -537,7 +537,7 @@ PM_cycle <- R6::R6Class(
     #' for the user to do.
     #' @param cycle The parsed output from [makeCycle].
     initialize = function(cycle) {
-      class(cycle) <- append("tidy_cycle",class(cycle))
+      class(cycle) <- append(class(cycle),"tidy_cycle")
       self$data <- cycle
     },
     #' @description
@@ -604,7 +604,7 @@ PM_pop <- R6::R6Class(
     #' for the user to do.
     #' @param pop The parsed output from [makePop].
     initialize = function(pop) {
-      class(pop) <- append("tidy_pop",class(pop))
+      class(pop) <- append(class(pop),"tidy_pop")
       self$data <- pop
       # self$id <- pop$id
       # self$time <- pop$time
@@ -655,7 +655,7 @@ PM_cov <- R6::R6Class(
     #' for the user to do.
     #' @param cov The parsed output from [makeCov].
     initialize = function(cov) {
-      class(cov) <- append("tidy_cov",class(cov))
+      class(cov) <- append(class(cov),"tidy_cov")
       self$data <- cov
     },
     #' @description
