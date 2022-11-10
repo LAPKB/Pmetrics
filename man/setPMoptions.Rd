@@ -4,7 +4,7 @@
 \alias{setPMoptions}
 \title{Set Pmetrics User Options}
 \usage{
-setPMoptions(sep, dec, server_address)
+setPMoptions(sep, dec, server_address, op_stats)
 }
 \arguments{
 \item{sep}{The field separator character; \dQuote{,} by default, but could be \dQuote{;}}
@@ -13,6 +13,11 @@ setPMoptions(sep, dec, server_address)
 
 \item{server_address}{Specify address of server for remote runs.  Server must be set up separately.
 This functionality is coming soon.}
+
+\item{op_stats}{Argument to include/format regression statistics in observed vs. predicted plots.
+Default is \code{FALSE}, but could either be set to \code{TRUE} for default format or a list of format options.
+The default format when set to \code{TRUE} is
+\code{list(x= 0.4, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 8))}}
 }
 \value{
 The user preferences file will be updated.  This will persist from session to session.
