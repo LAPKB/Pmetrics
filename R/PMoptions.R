@@ -29,7 +29,8 @@ getPMoptions <- function(opt) {
     PMopts <- list(sep = ",",
                    dec = ".",
                    lang = loc,
-                   server_address = "http://localhost:5000")
+                   server_address = "http://localhost:5000",
+                   op_stats = T)
     options(PMopts)
     jsonlite::write_json(PMopts, path = PMoptionsFile, auto_unbox=T)
   }
@@ -54,17 +55,22 @@ getPMoptions <- function(opt) {
 #' @param dec The decimal separator character; \dQuote{.} by default, but could be \dQuote{,}
 #' @param server_address Specify address of server for remote runs.  Server must be set up separately.
 #' This functionality is coming soon.
+#' @param op_stats Argument to include/format regression statistics in observed vs. predicted plots.
+#' Default is `FALSE`, but could either be set to `TRUE` for default format or a list of format options.
+#' The default format when set to `TRUE` is 
+#' `list(x= 0.4, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 8))`
 #' @return The user preferences file will be updated.  This will persist from session to session.
 #' @author Michael Neely
 #' @export
 
-setPMoptions <- function(sep, dec, server_address) {
+setPMoptions <- function(sep, dec, server_address, op_stats) {
   #read old values first
   PMopts <- getPMoptions()
   #update/add options
-  if (!missing(sep)) PMopts$sep <- sep
-  if (!missing(dec)) PMopts$dec <- dec
-  if (!missing(server_address)) PMopts$server_address <- server_address
+  if(!missing(sep)) PMopts$sep <- sep
+  if(!missing(dec)) PMopts$dec <- dec
+  if(!missing(server_address)) PMopts$server_address <- server_address
+  if(!missing(op_stats)) PMopts$op_stats <- op_stats 
   PMopts$lang <- substr(Sys.getlocale("LC_TIME"),1,2)
   #set the options
   options(PMopts)
