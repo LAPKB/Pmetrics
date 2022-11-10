@@ -47,8 +47,8 @@
 #' Note that there is no *ci* argument for the *ref* list.
 #' Example: `line = list(lm = F, loess = T, ref = list(color = "lightgrey"))`
 #' If the `line` argument is missing, it will be set to
-#' `line = list(lm = F, loess = T, ref = T)`, i.e. there will be a loess
-#' regression with reference line, but no linear regression.
+#' `line = list(lm = T, loess = F, ref = T)`, i.e. there will be a linear
+#' regression with reference line, but no loess regression.
 #' @param mult `r template("mult")` 
 #' @param resid Boolean operator to generate a plot of weighted prediction error vs. time,
 #' a plot of weighted prediction error vs. prediction. Prediction error is
@@ -65,6 +65,14 @@
 #' "Population weighted residuals" for residual plots, depending on the value of
 #' `pred.type`.
 #' @param title `r template("title")` Default is to have no title.
+#' @param stats Add the statistics from linear regression to the plot. If missing or
+#' `FALSE`, will be suppressed. Can be set to `TRUE` which results in default format of 
+#' `list(x= 0.8, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 14))`.
+#' The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
+#' argument maps to `plotly::add_text()`. It is also an option that can be set in 
+#' [setPMoptions] to avoid specifying this argument for every plot. The default option
+#' is `TRUE`. If specified as a
+#' Pmetrics option, it can be overridden for specific plots by supplying a value.
 #' @param \dots `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
@@ -77,31 +85,37 @@
 #' NPex$op$plot(line = list(loess = list(ci = 0.9, color = "green")))
 #' NPex$op$plot(marker = list(color = "blue"))
 #' NPex$op$plot(resid = T)
+#' NPex$op$plot(stats = T)
+#' NPex$op$plot(stats = list(x = 0.5, y = 0.2, font = list(size = 7, color = "blue")))
+#' 
 #' @family PMplots
 plot.PM_op <- function(x,  
-                       line=list(lm = F, loess = T, ref = T),
+                       line=list(lm = T, loess = F, ref = T),
                        marker = T,
                        resid = F,                      
-                       icen = "median", pred.type = "post", outeq = 1, block = 1,include,exclude,mult = 1,
+                       icen = "median", pred.type = "post", outeq = 1, block = 1,
+                       include, exclude, 
+                       mult = 1,
                        legend,
                        log = F, 
                        grid = T,
                        xlab, ylab,
                        title,
+                       stats,
                        xlim, ylim,...){
-
+  
   x<-if(inherits(x, "PM_op")) {x$data}else{x}
   #include/exclude
   if(missing(include)) include <- unique(x$id)
   if(missing(exclude)) exclude <- NA                      
-
+  
   sub1 <- x %>%
     dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
     includeExclude(include,exclude) %>%
     dplyr::filter(!is.na(obs)) %>%
     mutate(pred = pred * mult, obs = obs * mult) %>%
     arrange(time)
-
+  
   
   #unnecessary arguments for consistency with other plot functions
   if(!missing(legend)){notNeeded("legend", "plot.PM_op")}
@@ -161,6 +175,32 @@ plot.PM_op <- function(x,
   if(missing(title)){ title <- ""}
   layout$title <- amendTitle(title, default = list(size = 20))
   
+  #lm stats
+  if(lmLine$plot){
+    if(missing(stats)) stats <- getPMoptions("op_stats")
+    if(is.null(stats)){
+      setPMoptions(op_stats = T)
+      stats <- T
+      statPlot <- T
+    }
+    if(is.logical(stats)){ #default formatting
+      if(stats){
+        statPlot <- T
+      } else {statPlot <- F}
+      stats <- amendTitle("", default = list(size = 14, bold = F))
+      stats$x <- 0.8
+      stats$y <- 0.1
+    } else { #formatting supplied, set text to "" (will be replaced later)
+      stats$text <- ""
+      if(is.null(stats$x)){stats$x <- 0.8}
+      if(is.null(stats$y)){stats$y <- 0.1}
+      stats <- amendTitle(stats, default = list(size = 14, bold = F))
+      statPlot <- T
+    }
+  } else {
+    statPlot <- F
+  }
+  
   
   # PLOTS -------------------------------------------------------------------
   
@@ -171,7 +211,7 @@ plot.PM_op <- function(x,
     #axis labels
     xlab <- if(missing(xlab)){"Predicted"} else {xlab}
     ylab <- if(missing(ylab)){"Observed"} else {ylab}
-
+    
     layout$xaxis$title <- amendTitle(xlab)
     if(is.character(ylab)){
       layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
@@ -193,7 +233,7 @@ plot.PM_op <- function(x,
       layout$yaxis <- modifyList(layout$yaxis, list(matches = "x"))
     }
     
-     
+    
     p <- sub1 %>%
       plotly::plot_ly(x = ~pred) %>%
       plotly::add_markers(y = ~obs, 
@@ -221,15 +261,17 @@ plot.PM_op <- function(x,
       upper <- seFit$fit + zVal * seFit$se.fit
       lower <- seFit$fit - zVal * seFit$se.fit
       
+      regStat <- paste0("R-squared = ",format(summary(lm1)$r.squared,digits=3),"<br>",
+                        "Inter = ",inter," (",ci*100,"%CI ",ci.inter[1]," to ",ci.inter[2],")","<br>",
+                        "Slope = ",slope," (",ci*100,"%CI ",ci.slope[1]," to ",ci.slope[2],")","<br>",
+                        "Bias = ",format(summary.PMop(sub1)$pe$mwpe,digits=3),"<br>",
+                        "Imprecision  = ",format(summary(sub1)$pe$bamwspe,digits=3)
+      )
+      
       p <- p %>% 
         plotly::add_lines(y = fitted(lm1), 
                           hoverinfo = "text",
-                          text = paste0("R-squared = ",format(summary(lm1)$r.squared,digits=3),"<br>",
-                                        "Inter = ",inter," (",ci*100,"%CI ",ci.inter[1]," to ",ci.inter[2],")","<br>",
-                                        "Slope = ",slope," (",ci*100,"%CI ",ci.slope[1]," to ",ci.slope[2],")","<br>"
-                                        #"Bias = ",format(summary(data,pred.type=pred.type,icen=icen,outeq=outeq)$pe$mwpe,digits=3),"<br>"
-                                        #"Imprecision  = ",format(summary(data,pred.type=pred.type,icen=icen,outeq=outeq)$pe$bamwspe,digits=3)
-                          ), 
+                          text = regStat,
                           line = lmLine)
       if(ci > 0){
         p <- p %>% 
@@ -240,6 +282,18 @@ plot.PM_op <- function(x,
                               name = "Linear regression",
                               hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
                                                      "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
+      }
+      if(statPlot){ #add statistics
+        p <- p %>%
+          plotly::layout(annotations = list(
+            x = stats$x, 
+            y = stats$y, 
+            text = regStat, 
+            font = stats$font,
+            xref = "paper",
+            yref = "paper",
+            align = "left")
+          )
       }
     } 
     
@@ -279,13 +333,13 @@ plot.PM_op <- function(x,
       
       refLine$plot <- NULL
       layout$refLine <- list(type = "line",
-                                 x0 = 0,
-                                 y0 = 0,
-                                 x1 = 1,
-                                 y1 = 1,
-                                 xref = "paper",
-                                 yref = "paper",
-                                 line = refLine)
+                             x0 = 0,
+                             y0 = 0,
+                             x1 = 1,
+                             y1 = 1,
+                             xref = "paper",
+                             yref = "paper",
+                             line = refLine)
     }
     
     #set layout

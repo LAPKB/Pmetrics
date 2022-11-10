@@ -11,7 +11,7 @@
 #' Examples:
 #' \itemize{
 #' \item{`title = "Observed vs. Predicted"`}
-#' \item{`title = list(text = "Raw Data", bold = F, font = list(color = "red", family = "Arial", size = 10))`}
+#' \item{`title = list(text = "Raw Data", font = list(color = "red", family = "Arial", size = 10, bold = T))`}
 #' }
 
 
