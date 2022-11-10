@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{PM_op}(
   x,
-  line = list(lm = F, loess = T, ref = T),
+  line = list(lm = T, loess = F, ref = T),
   marker = T,
   resid = F,
   icen = "median",
@@ -22,6 +22,7 @@
   xlab,
   ylab,
   title,
+  stats,
   xlim,
   ylim,
   ...
@@ -66,8 +67,8 @@ The default values for the elements of the \code{ref} list are:
 Note that there is no \emph{ci} argument for the \emph{ref} list.
 Example: \code{line = list(lm = F, loess = T, ref = list(color = "lightgrey"))}
 If the \code{line} argument is missing, it will be set to
-\code{line = list(lm = F, loess = T, ref = T)}, i.e. there will be a loess
-regression with reference line, but no linear regression.
+\code{line = list(lm = T, loess = F, ref = T)}, i.e. there will be a linear
+regression with reference line, but no loess regression.
 }
 }}
 
@@ -119,8 +120,17 @@ plots when \code{resid = F} and either "Individual weighted residuals" or
 
 \item{title}{Plot title. This argument maps to the the title layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the plot title, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > title to see other ways to customize the title using lists as additional arguments. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element. The default for \code{bold} is \code{TRUE}.
 
-Examples: \itemize{ \item{\code{title = "Observed vs. Predicted"}} \item{\code{title = list(text = "Raw Data", bold = F, font = list(color = "red", family = "Arial", size = 10))}} }
+Examples: \itemize{ \item{\code{title = "Observed vs. Predicted"}} \item{\code{title = list(text = "Raw Data", font = list(color = "red", family = "Arial", size = 10, bold = T))}} }
 Default is to have no title.}
+
+\item{stats}{Add the statistics from linear regression to the plot. If missing or
+\code{FALSE}, will be suppressed. Can be set to \code{TRUE} which results in default format of
+\code{list(x= 0.8, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 14))}.
+The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
+argument maps to \code{plotly::add_text()}. It is also an option that can be set in
+\link{setPMoptions} to avoid specifying this argument for every plot. The default option
+is \code{TRUE}. If specified as a
+Pmetrics option, it can be overridden for specific plots by supplying a value.}
 
 \item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range.
 
@@ -152,6 +162,9 @@ NPex$op$plot(line = list(lm = T, ref = T, loess = F))
 NPex$op$plot(line = list(loess = list(ci = 0.9, color = "green")))
 NPex$op$plot(marker = list(color = "blue"))
 NPex$op$plot(resid = T)
+NPex$op$plot(stats = T)
+NPex$op$plot(stats = list(x = 0.5, y = 0.2, font = list(size = 7, color = "blue")))
+
 }
 \seealso{
 \link{PM_result}, \link{schema}
