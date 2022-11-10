@@ -31,24 +31,20 @@ for the user to do.
 See \link{makeAUC}
 }
 \author{
-Michael Neely, Julian Otalvara
+Michael Neely, Julian Otalvaro
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{id}}{Subject id}
-
-\item{\code{time}}{Time of predictions in decimal hours}
-
-\item{\code{icen}}{Prediction based on mean or median of Bayesian posterior parameter distribution}
-
-\item{\code{outeq}}{Output equation number}
-
-\item{\code{pred}}{Predicted output for each outeq}
-
-\item{\code{block}}{Observation blocks within subjects as defined by \emph{EVID=4} dosing events}
-
-\item{\code{data}}{A data frame combining all the above fields as its columns}
+\item{\code{data}}{A data frame with the following columns
+\itemize{
+\item id Subject id
+\item time Time of predictions in decimal hours
+\item icen Prediction based on mean or median of Bayesian posterior parameter distribution
+\item outeq Output equation number
+\item pred Predicted output for each outeq
+\item block Observation blocks within subjects as defined by \emph{EVID=4} dosing events
+}}
 }
 \if{html}{\out{</div>}}
 }
