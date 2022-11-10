@@ -249,10 +249,10 @@ exRes$final$summary()
 exRes$cycle$plot()
 
 # names of the cycle object; ?makeCycle for help
-names(exRes$cycle)
+names(exRes$cycle$data)
 
 # gamma/lamda value on last 6 cycles
-tail(exRes$cycle$gamlam)
+tail(exRes$cycle$data$gamlam)
 
 # Plot covariate information.  Type ?plot.PMcov in the R console for help.
 # Recall that plotting formulae in R are of the form 'y~x'
