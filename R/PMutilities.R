@@ -1609,7 +1609,7 @@ weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.side
     stop("'conf.level' must be a single number between 0 and 1")
   }
   # see if x is PMop$pop or PMop$post object
-  if (identical(inherits(x, c("PMop", "data.frame"), which = T), as.integer(c(1, 2)))) {
+  if (all(inherits(x, c("PMop", "data.frame"), which = T))) {
     w <- 1 / x$obsSD**2
     x <- x$d
     mu <- 0
