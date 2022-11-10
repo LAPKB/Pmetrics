@@ -701,9 +701,9 @@ summary.PM_cov <- function(obj, ...) {
   obj$summary(...)
 }
 
-#' Wrapper function for plot.PM_cov
+#' Wrapper function for plot.PMcov
 #' 
-#' This redirects to plot.PM_cov for tidy_cov objects
+#' This redirects to plot.PMcov for tidy_cov objects
 #' 
 #' See [plot.PMcov]. Alternative way to plot is
 #' `PM_result$cov$plot()`.
@@ -713,5 +713,5 @@ summary.PM_cov <- function(obj, ...) {
 #' @return A [plot.PMcov] object
 #' @export
 plot.tidy_cov <- function(x,...){
-  plot.PM_cov(x,...)
+  plot.PMcov(x,...)
 }
