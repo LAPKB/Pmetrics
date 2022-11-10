@@ -36,34 +36,23 @@ See \link{makeAUC}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{id}}{subject identification}
-
-\item{\code{time}}{observation time in relative units, usually hours}
-
-\item{\code{obs}}{observation}
-
-\item{\code{pred}}{prediction}
-
-\item{\code{pred.type}}{Population predictions based on Bayesian prior parameter value distribution,
-or individual predictions based on Bayesian posterior parameter value distributions}
-
-\item{\code{icen}}{Predictions based on mean or median of Bayesian \code{pred.type}parameter values}
-
-\item{\code{outeq}}{output equation number}
-
-\item{\code{block}}{dosing block number for each subject, as defined by dose resets (evid=4).}
-
-\item{\code{obsSD}}{standard deviation of the observation based on the assay error polynomial}
-
-\item{\code{d}}{prediction error, \code{pred} - \code{obs}}
-
-\item{\code{ds}}{squared prediction error}
-
-\item{\code{wd}}{weighted prediction error, which is the prediction error divided by the \code{obsSD}}
-
-\item{\code{wds}}{weighted squared prediction error}
-
-\item{\code{data}}{A data frame combining all the above fields as its columns}
+\item{\code{data}}{A data frame with the following columns
+\itemize{
+\item id Subject identification
+\item time observation time in relative units, usually hours
+\item obs observation
+\item pred prediction
+\item pred.type Population predictions based on Bayesian prior parameter value distribution,
+or individual predictions based on Bayesian posterior parameter value distributions
+\item icen Predictions based on mean or median of Bayesian \code{pred.type}parameter values
+\item outeq output equation number
+\item block dosing block number for each subject, as defined by dose resets (evid=4).
+\item obsSD standard deviation of the observation based on the assay error polynomial
+\item d prediction error, \code{pred} - \code{obs}
+\item ds squared prediction error
+\item wd weighted prediction error, which is the prediction error divided by the \code{obsSD}
+\item wds weighted squared prediction error
+}}
 }
 \if{html}{\out{</div>}}
 }
@@ -74,7 +63,6 @@ or individual predictions based on Bayesian posterior parameter value distributi
 \item \href{#method-PM_op-plot}{\code{PM_op$plot()}}
 \item \href{#method-PM_op-summary}{\code{PM_op$summary()}}
 \item \href{#method-PM_op-auc}{\code{PM_op$auc()}}
-\item \href{#method-PM_op-tidy}{\code{PM_op$tidy()}}
 \item \href{#method-PM_op-clone}{\code{PM_op$clone()}}
 }
 }
@@ -145,16 +133,6 @@ Calculate AUC
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_op-tidy"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_op-tidy}{}}}
-\subsection{Method \code{tidy()}}{
-Returns a structure compatible with tidy methods.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_op$tidy()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_op-clone"></a>}}
