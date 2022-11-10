@@ -68,7 +68,6 @@ plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,squa
                        cex.lab=1.2,x.stat=0.6,y.stat=0.1,col.stat="black",cex.stat=0.8,lwd=2,col="red",
                        xlim,ylim,xlab,ylab,out=NA,...){ 
   
-  
   if(missing(formula)) stop("Please supply a formula of the form y ~ x")
   if(!missing(include)) x <- subset(x,as.character(x$id) %in% as.character(include))
   if(!missing(exclude)) x <- subset(x,!sub("[[:space:]]+","",as.character(x$id)) %in% as.character(exclude))
