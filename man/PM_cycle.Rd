@@ -29,29 +29,22 @@ See \link{plot.PMcycle}.
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{names}}{Vector of names of the random parameters}
-
-\item{\code{cynum}}{Vector cycle numbers, which may start at numbers greater
-than 1 if a non-uniform prior was specified for the run (NPAG only)}
-
-\item{\code{ll}}{Matrix of cycle number and -2*Log-likelihood at each cycle}
-
-\item{\code{gamlam}}{A matrix of cycle number and gamma or lambda at each cycle}
-
-\item{\code{mean}}{A matrix of cycle number and the mean of each random parameter
-at each cycle, normalized to initial mean}
-
-\item{\code{sd}}{A matrix of cycle number and the standard deviation of each random parameter
-at each cycle,  normalized to initial standard deviation}
-
-\item{\code{median}}{A matrix of cycle number and the median of each random
-parameter at each cycle,  normalized to initial median}
-
-\item{\code{aic}}{A matrix of cycle number and Akaike Information Criterion at each cycle}
-
-\item{\code{bic}}{A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle}
-
-\item{\code{data}}{A data frame combining all the above fields as its columns}
+\item{\code{data}}{A data frame with the following columns
+\itemize{
+\item names Vector of names of the random parameters
+\item cynum Vector cycle numbers, which may start at numbers greater
+than 1 if a non-uniform prior was specified for the run (NPAG only)
+\item ll Matrix of cycle number and -2*Log-likelihood at each cycle
+\item gamlam A matrix of cycle number and gamma or lambda at each cycle
+\item mean A matrix of cycle number and the mean of each random parameter
+at each cycle, normalized to initial mean
+\item sd A matrix of cycle number and the standard deviation of each random parameter
+at each cycle,  normalized to initial standard deviation
+\item median A matrix of cycle number and the median of each random
+parameter at each cycle,  normalized to initial median
+\item aic A matrix of cycle number and Akaike Information Criterion at each cycle
+\item bic A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle
+}}
 }
 \if{html}{\out{</div>}}
 }
