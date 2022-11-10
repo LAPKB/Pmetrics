@@ -251,6 +251,7 @@ plot.PM_op <- function(x,
         lmLine$ci <- NULL
       }
       lm1 <- lm(obs~pred, sub1)
+      p$lm <- lm1
       inter <- format(coef(lm1)[1],digits=3)
       slope <- format(coef(lm1)[2],digits=3)
       if(is.na(summary(lm1)$coefficients[1,2])) {ci.inter <- rep("NA",2)} else {ci.inter <- c(format(confint(lm1,level=ci)[1,1],digits=3),format(confint(lm1,level=ci)[1,2],digits=3)) }
