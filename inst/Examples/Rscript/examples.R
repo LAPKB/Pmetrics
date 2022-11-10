@@ -185,10 +185,10 @@ exRes$op$plot()
 exRes$op$plot(pred.type = "pop")
 exRes$op$plot(line = list(lm = list(ci = 0, color = "red"), loess = F))
 
-# The OP plot can be disaggregated into a Tidy compatible format using the $tidy() method (see https://www.tidyverse.org/)
+# The OP plot can be disaggregated into a Tidy compatible format using the $data attribute (see https://www.tidyverse.org/)
 library(tidyverse)
-exRes$op$tidy() %>% plot()
-exRes$op$tidy() %>%
+exRes$op$data %>% plot()
+exRes$op$data %>%
   filter(pred > 5) %>%
   filter(pred < 10) %>%
   plot()
@@ -222,9 +222,6 @@ exRes$final$plot(Ke ~ V,
                  marker = list(color = "red", symbol = "diamond"),
                  line=list(color = "purple", dash = "dash", width = 2))
 
-# The final object can also be disaggregated using $tidy()
-
-exRes$final$tidy() %>% plot()
 
 #or the S3 way
 plot(exRes$final)
