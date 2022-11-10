@@ -59,7 +59,7 @@ PM_result <- R6::R6Class(
         class(self$ITdata) <- c("IT2B", "list")
       } else {self$ITdata <- NULL}
       self$pop <- if is.null(out$pop){NULL}else{PM_pop$new(out$pop)}
-      self$post <- is.null(out$pop){NULL}else{PM_post$new(out$post)}
+      self$post <- if is.null(out$pop){NULL}else{PM_post$new(out$post)}
       self$final <- PM_final$new(out$final)
       self$cycle <- PM_cycle$new(out$cycle)
       self$op <- PM_op$new(out$op)
