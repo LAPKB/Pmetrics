@@ -26,7 +26,7 @@
 #' }
 #' Any combination of AUC, max, and min can be chosen.  If "none" is specified, other
 #' weight types will be ignored and the relative value will be set to 1.
-#' For example,\code{list(auc=0.5,max=0.5)} or \code{auc=0.2,min=0.8}.
+#' For example,`list(auc = 0.5,max = 0.5)` or `list(auc = 0.2, min = 0.8)`.
 #' @param predInt The interval in fractional hours for simulated predicted outputs at times other than those specified in the template `data`.  
 #' The default is 0.5, which means there will be simulated outputs every 30 minutes from time 0 up 
 #' to the maximal time in the template file.  You may also specify `predInt`
@@ -116,7 +116,7 @@ MM_opt <- function(poppar, model, data, nsamp = 1, weight = list(none = 1),
   Cbar0 <- array(NA,dim=c(nsubs,nsubs,4),
                  dimnames=list(a=1:nsubs,b=1:nsubs,type=c("none","auc","cmax","cmin")))
   
-  #default is no penalites (diag=0, off-diag=1)
+  #default is no penalties (diag=0, off-diag=1)
   if("none" %in% wtnames){
     Cbar0[,,1] <- matrix(1,nrow=nsubs,ncol=nsubs)
     diag(Cbar0[,,1]) <- 0
