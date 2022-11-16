@@ -58,19 +58,19 @@ setwd(paste(wd, "/src", sep = ""))
 # list the files inside the current working directory
 list.files()
 
-#create a new data object by reading a file
+# create a new data object by reading a file
 exData <- PM_data$new(data = "ex.csv")
 
 # you can look at this file directly by opening it in
 # a spreadsheet program like Excel, or a text editor
 
-# exData is an R6 object, which means that contains both data and methods to 
+# exData is an R6 object, which means that contains both data and methods to
 # process that data, for example:
 exData$data # contains your original datafile
 exData$standard_data # contains the standardized and validated data,
 exData$summary() # prints the summary of the data to the terminal, or
 
-#another way to do that is using the more common S3 framework in R:
+# another way to do that is using the more common S3 framework in R:
 summary(exData)
 
 # To look at the contents of an object:
@@ -127,11 +127,11 @@ mod1b$update(list(
 ))
 mod1b
 
-#to copy a model use the $clone() method. 
+# to copy a model use the $clone() method.
 mod1b <- mod1$clone()
 
 # simply using mod1b <- mod1 will cause mod1b to be changed if mod1 is changed,
-# as R6 objects use reference semantics. For more details you can refer to 
+# as R6 objects use reference semantics. For more details you can refer to
 # https://adv-r.hadley.nz/r6.html, Section 14.4.
 
 
@@ -218,12 +218,13 @@ exRes$final$plot()
 exRes$final$plot(density = T)
 
 # A bivariate plot. Plotting formulae in R are of the form 'y~x'
-exRes$final$plot(Ke ~ V, 
-                 marker = list(color = "red", symbol = "diamond"),
-                 line=list(color = "purple", dash = "dash", width = 2))
+exRes$final$plot(Ke ~ V,
+  marker = list(color = "red", symbol = "diamond"),
+  line = list(color = "purple", dash = "dash", width = 2)
+)
 
 
-#or the S3 way
+# or the S3 way
 plot(exRes$final)
 
 # The original final object can be accessed using
@@ -240,8 +241,8 @@ exRes$final$data$popPoints
 exRes$final$popMean
 
 # see a summary with confidence intervals around the medians
-# and the Median Absolute Weighted Difference (MAWD); 
-#?summary.PMfinal for help
+# and the Median Absolute Weighted Difference (MAWD);
+# ?summary.PMfinal for help
 exRes$final$summary()
 
 # Plot cycle information
@@ -276,7 +277,7 @@ exRes$cov$plot(I(V * wt) ~ time)
 exRes$cov
 
 # but to access individual elements, use:
-exRes$cov$data[,1:3] #for example
+exRes$cov$data[, 1:3] # for example
 names(exRes$cov)
 
 # summarize with mean covariates; ?summary.PMcov for help
@@ -300,7 +301,7 @@ exRes$step(direction = "forward")
 # First clone mod1
 mod2 <- mod1$clone()
 
-#Then update it
+# Then update it
 mod2$update(list(
   pri = list(
     V0 = ab(30, 120),
@@ -308,7 +309,7 @@ mod2$update(list(
   ),
   sec = "V = V0*(WT/55)"
 ))
-#we can also make a model object by loading a file
+# we can also make a model object by loading a file
 mod2b <- PM_model$new("../src/model2.txt")
 
 
@@ -341,7 +342,7 @@ PM_compare(exRes, exRes2)
 # for model validation - be sure to have executed the NPAG run above
 # Type ?makeValid in the R console for help.
 # Choose wt as the covariate to bin. Accept all default bin sizes.
-valid_2 <- exRes2$validate(limits = c(0,3))
+valid_2 <- exRes2$validate(limits = c(0, 3))
 
 # To see what it contains, use:
 valid_2
@@ -349,14 +350,14 @@ valid_2
 # Default visual predictive check; ?plot.PM_valid for help
 valid_2$plot()
 
-#or old S3
+# or old S3
 plot(valid_2)
 
-#or take advantage of the valid object being added automatically to the
-#result object
+# or take advantage of the valid object being added automatically to the
+# result object
 exRes2$valid$plot()
 
-#or S3
+# or S3
 plot(exRes2$valid)
 
 # Generate a prediction-corrected visual predictive check; type ?plot.PMvalid in the R console for help.
@@ -381,19 +382,21 @@ npc_2
 
 # EXERCISE 5 - SIMULATOR RUN ----------------------------------------------
 
-# The following will simulate 100 sets of parameters/concentrations using the 
+# The following will simulate 100 sets of parameters/concentrations using the
 # first subject in the data file as a template.
 # Limits are put on the simulated parameter ranges to be the same as in the model.
 # The population parameter values from the NPAG run in exercise 2 are used for the Monte Carlo Simulation.
 simdata <- exRes2$sim(include = 1, limits = NA, nsim = 100)
 
 
-#simulate from a model with new data
-sim_new <- exRes2$sim(data = "../src/ptaex1.csv", 
-                      include = 2, limits = NA, 
-                      predInt = c(120,144,0.5))
+# simulate from a model with new data
+sim_new <- exRes2$sim(
+  data = "../src/ptaex1.csv",
+  include = 2, limits = NA,
+  predInt = c(120, 144, 0.5)
+)
 
-sim_new$plot(log=F)
+sim_new$plot(log = F)
 
 # Plot it; ?plot.PMsim for help
 simdata$plot()
@@ -402,7 +405,7 @@ simdata$plot()
 simdata <- exRes2$sim(include = 1:4, limits = NA, nsim = 100)
 
 # Plot the third simulation
-simdata[[3]]$plot()
+simdata$plot(at = 3)
 
 # or in S3
 plot(simdata[[3]])
@@ -425,21 +428,23 @@ covariate <- list(
   mean = list(wt = 50),
   sd = list(wt = 20),
   limits = list(wt = c(10, 70)),
-  fix = c("africa", "gender", "height"))
+  fix = c("africa", "gender", "height")
+)
 
 # now simulate with this covariate list object
 simdata3 <- exRes2$sim(include = 1:4, limits = NA, nsim = 100, covariate = covariate)
 
 # compare difference in simulations without covariates simulated...
-simdata[[1]]$plot()
+# PM_simlist's plot function defaults to the first simulation
+simdata$plot()
 
 # ...and with covariates simulated
-simdata3[[1]]$plot()
+simdata3$plot()
 
 # Here are the simulated parameters and covariates for the first subject's
 # template; note that both wt and age are simulated, using proper covariances
 # with simulated PK parameters
-simdata3[[1]]$parValues
+simdata3$data[[1]]$parValues
 
 # look in the working directory and find the "c_simdata.csv" and "c_simmodel.txt" files
 # which were made when you simulated with covariates.  Compare to original
@@ -484,7 +489,7 @@ setwd(paste(wd, "/Runs", sep = ""))
 # have to be the same.  This will copy the appropriate files from the specified run to be used
 # in the current run.  By specifying a prior, we are starting with the non-uniform density from the
 # end of the specified fun.
-exFit2$run(prior=2)
+exFit2$run(prior = 2)
 exRes3 <- PM_load(3)
 
 # We could also generate Bayesian posterior parameter estimates for a new population this
@@ -492,7 +497,7 @@ exRes3 <- PM_load(3)
 # exFit3 <- PM_fit(data=PM_data("newPop.csv"), mod2)
 # exFit3$run(prior = 2, cycles = 0)
 # This won't run because we don't have a newPop.csv file,
-#but shows you how it could be done.
+# but shows you how it could be done.
 
 
 
@@ -540,8 +545,10 @@ run4$final$plot(Ke ~ V)
 # Look at ?SIMrun for help on arguments to this function, including predInt,
 # seed, limits, nsim.
 
-simlist1 <- exRes2$sim(limits = c(0,3), data = "../src/ptaex1.csv", 
-                       predInt = c(120, 144, 0.5), seed = rep(-17, 4))
+simlist1 <- exRes2$sim(
+  limits = c(0, 3), data = "../src/ptaex1.csv",
+  predInt = c(120, 144, 0.5), seed = rep(-17, 4)
+)
 
 # now simulate with covariates; make sure that you defined the covariate
 # object first in Exercise 5 above and have loaded the results of Exercise 2
@@ -552,8 +559,8 @@ simlist2 <- exRes2$sim(
   covariate = covariate
 )
 
-# make the first PMpta object to calculate the time above each target for at 
-#least 60% of the dosing
+# make the first PMpta object to calculate the time above each target for at
+# least 60% of the dosing
 # interval from 120 to 144 hours.  Include labels for the simulations.
 # ?makePTA for help
 # define simulation labels first
@@ -561,7 +568,7 @@ simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid")
 
 pta1_2 <- PM_pta$new(
   simdata = simlist1,
-  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time", 
+  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
   success = 0.6, start = 120, end = 144
 )
 
@@ -642,8 +649,10 @@ pta4_2$plot(type = "pdi", ci = 0.1)
 # ...or gone altogether, put back the grid, redefine the colors, and make lines narrower
 pta4_2$plot(
   type = "pdi", ci = 0, grid = T,
-  line = list(color = c("blue", "purple", "black", "brown"),
-              width = 1)
+  line = list(
+    color = c("blue", "purple", "black", "brown"),
+    width = 1
+  )
 )
 
 # now let's repeat the analysis but simulate the distribution of MICs
@@ -656,9 +665,11 @@ pta4b_2 <- PM_pta$new(
   simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
   targets = makePTAtarget(mic1), target.type = "min", success = 1, start = 120, end = 144
 )
-# plot it 
-pta4b_2$plot(grid = T, ylab = "Proportion with Cmin/MIC of at least 1",
-             marker = list(color = "red"), line = list(color = "black"))
+# plot it
+pta4b_2$plot(
+  grid = T, ylab = "Proportion with Cmin/MIC of at least 1",
+  marker = list(color = "red"), line = list(color = "black")
+)
 pta4b_2$plot(type = "pdi", grid = T, ylab = "Proportion with Cmin/MIC of at least 1")
 
 # note that the plot changes since target MICs are no longer discrete
@@ -691,9 +702,11 @@ pta6_2$summary()
 # we are sampling at steady state.  Including "subject 2", means only the 1200 mg once daily dose
 # will serve as a simulation template.
 
-mmopt_2 <- exRes2$MM_opt(data="../src/ptaex1.csv", 
-                         nsamp = 2, predInt = c(120, 140, 1), 
-                         include = 2)
+mmopt_2 <- exRes2$MM_opt(
+  data = "../src/ptaex1.csv",
+  nsamp = 2, predInt = c(120, 140, 1),
+  include = 2
+)
 # see the optimal sample times and the Bayes Risk of misclassification,
 # which is only useful to compare optimal sampling regimens, i.e. the
 # absolute value is less helpful, but is the statistic minimized by the
