@@ -66,11 +66,15 @@
 #' @param grid `r template("grid")` Default is `FALSE`
 #' @param overlay Boolean operator to overlay all time concentration profiles in a single plot.
 #' The default is `TRUE`.
-#' @param xlim `r template("xlim")` 
-#' @param ylim `r template("ylim")` 
 #' @param xlab `r template("xlab")` Default is "Time".
 #' @param ylab `r template("ylab")` Default is "Output".
 #' @param title `r template("title")` Default is to have no title.
+#' @param xlim `r template("xlim")` 
+#' @param ylim `r template("ylim")` 
+#' @param simnum Choose which object to plot in a PM_simlist,
+#' i.e., a list of [PM_sim] objects created when more than one
+#' subject is included in a simultation data template and 
+#' `combine = F` (the default) when parsing the results of a simulation.
 #' @param \dots `r template("dotsPlotly")`
 #' @return Plots the simulation object.  If `obs` is included, a list will be returned with
 #' the folowing items:
@@ -108,7 +112,8 @@ plot.PM_sim <- function(x,
                        grid = F,
                        xlab, ylab,
                        title,
-                       xlim, ylim,...){
+                       xlim, ylim,
+                       simnum,...){
   
   
   if(all(is.na(line))){line <- list(probs = NA)} #standardize
@@ -222,7 +227,15 @@ plot.PM_sim <- function(x,
     return(sim_quantile)
   }
   
-  simout <- x
+  if(inherits(x, "PM_simlist")){ 
+    if(missing(simnum)){
+      cat("Plotting first object in the PM_simlist.\nUse simnum argument to choose different PM_sim object in PM_simlist.\n")
+      simout <- x[[1]]
+    } else {simout <- x[[simnum]]}
+  } else {
+    simout <- x
+  }
+  
   
   if(!inherits(simout,c("PM_sim", "PMsim"))){stop("Use PM_sim$run() to make object of class PM_sim.\n")}
   if(!missing(obs)){
@@ -401,6 +414,24 @@ plot.PM_sim <- function(x,
   if(!quiet) print(p)
   retValue <- modifyList(retValue, list(p = p))
   return(invisible(retValue))
+}
+
+#' Plots a list of *PM_sim* objects created when `combine = F`.
+#' 
+#' When simulating from a data template with multiple subjects, the
+#' default is to create a list of [PM_sim] objects of class *PM_simlist*.
+#' This function passes that list to [plot.PM_sim]. If the 'simnum' argument
+#' is not chosen, the first object will be plotted.
+#' 
+#' @title Plot list of Pmetrics Simulation Objects
+#' @method plot PM_simlist
+#' @param x The name of a *PM_simlist* object created when `combine = F`
+#' is used when parsing the results of a simulation with multiple subjects
+#' in the data template.
+#' @param \dots Parameters passsed to [plot.PM_sim].
+
+plot.PM_simlist <- function(x, ...){
+  plot.PM_sim(x, ...)
 }
 
 

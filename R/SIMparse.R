@@ -277,7 +277,8 @@ SIMparse <- function(file,include,exclude,combine=F,quiet=F, parallel){
       message <- paste("\nThe following files were successfully parsed and combined: ",paste(allfiles,collapse=", "),"\n",sep="")
     } else {      #not combined
       simlist <- lapply(simlist,function(x) {class(x) <- c("PMsim","list");x})
-      message <- paste("\nThe following files were successfully parsed as a list: ",paste(allfiles,collapse=", "),"\n",sep="")
+      class(simlist) <- c("PM_simlist", "list")
+      message <- paste("\nThe following files were successfully parsed as a PM_simlist: ",paste(allfiles,collapse=", "),"\n",sep="")
     }
   } else {  #only one file
     simlist <- simlist[[1]]
