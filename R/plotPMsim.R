@@ -429,6 +429,7 @@ plot.PM_sim <- function(x,
 #' is used when parsing the results of a simulation with multiple subjects
 #' in the data template.
 #' @param \dots Parameters passsed to [plot.PM_sim].
+#' @export
 
 plot.PM_simlist <- function(x, ...){
   plot.PM_sim(x, ...)
