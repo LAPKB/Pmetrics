@@ -408,7 +408,7 @@ simdata <- exRes2$sim(include = 1:4, limits = NA, nsim = 100)
 simdata$plot(at = 3)
 
 # or in S3
-plot(simdata[[3]])
+plot(simdata$data[[3]])
 
 # Parse and combine multiple files and plot them.  Note that combining simulations from templates
 # with different simulated observation times can lead to unpredictable plots
