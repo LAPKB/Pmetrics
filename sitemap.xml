@@ -82,6 +82,9 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/PMFortranConfig.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/PM_batch.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PM_cov.html</loc>
   </url>
   <url>
@@ -119,6 +122,9 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PM_sim.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/PM_simlist.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PM_tutorial.html</loc>
@@ -214,13 +220,16 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/add_shapes.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/all_bmi.html</loc>
-  </url>
-  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/badData.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/cdc_bmi.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/dataEx.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/ger_bmi.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/getPMoptions.html</loc>
@@ -283,6 +292,9 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/mtsknn.eq.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/pipe.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.MMopt.html</loc>
   </url>
   <url>
@@ -299,6 +311,9 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_simlist.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.html</loc>
@@ -329,6 +344,12 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMvalid.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/plot.tidy_cov.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/plot.tidy_op.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/print.MMopt.html</loc>
