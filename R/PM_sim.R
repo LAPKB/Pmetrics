@@ -179,6 +179,27 @@ PM_simlist <- R6::R6Class(
         stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
       }
       self$data[[at]]$plot(...)
+    },
+    #' @description
+    #' Estimates the Probability of Target Attaintment (PTA), based on the results
+    #' of the specified Simulation.
+    #' @param at Index of the PM_sim object to be plotted.
+    #' @param ... Arguments passed to [PM_pta$new].
+    pta = function(at = 1, ...) {
+      if (at > length(self$data)) {
+        stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
+      }
+      self$data[[at]]$pta(...)
+    },
+    #' @description
+    #' Calculates the AUC of the specified simulation
+    #' @param at Index of the PM_sim object to be plotted.
+    #' @param ... Arguments passed to [makeAUC].
+    auc = function(at = 1, ...) {
+      if (at > length(self$data)) {
+        stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
+      }
+      self$data[[at]]$auc(...)
     }
   )
 )
