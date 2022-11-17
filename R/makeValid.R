@@ -494,6 +494,8 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     sim_sub <- simobs %>% filter(outeq == thisout, id %in% obs_sub$id) %>% 
       select(id, time, out) %>% 
       arrange(id, time)
+    obs_sub <- data.frame(obs_sub)
+    sim_sub <- data.frame(sim_sub)
     
     if(tad){
       obs_sub2 <- obs %>% 
@@ -503,6 +505,8 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
       sim_sub2 <- simobs %>% filter(outeq == thisout, id %in% obs_sub$id) %>% 
         select(id, time = tad, out) %>% 
         arrange(id, time)
+      obs_sub2 <- data.frame(obs_sub2)
+      sim_sub2 <- data.frame(sim_sub2)
     }
     # get NPDE decorr.method = "inverse",
     npde[[thisout]] <- tryCatch(npde::autonpde(obs_sub, sim_sub,
