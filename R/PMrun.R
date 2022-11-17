@@ -605,7 +605,16 @@
     if (OS == 1) {
       # Mac
       system(paste("chmod +x ", scriptFileName))
-      if (!batch) system(paste("open -a Terminal.app ", shQuote(paste(getwd(), "/", scriptFileName, sep = "")), sep = ""))
+      if(compareVersion("22.0.0",Sys.info()[2])<=0){ #running Ventura
+        if(!file.exists("/Applications/iTerm.app")){
+          message <- paste("As of Ventura, there is a bug that prevents running a script in Terminal.\n",
+          "Suggested workarounds: 1) use `intern = T` when running NPAG/IT2B\n",
+          "or 2) download iTerm2 from https://iterm2.com, which permits use of `intern = F`.")
+          endNicely(message = message)
+        } else {
+          if (!batch) system(paste("open -a iTerm.app ", shQuote(paste(getwd(), "/", scriptFileName, sep = "")), sep = ""))
+        }
+      }
     }
     if (OS == 2 & !batch) {
       # Create a wrapper script
