@@ -63,6 +63,8 @@ any due to truncation limits}
 \item{\code{totalMeans}}{Mean of all simulated parameter values}
 
 \item{\code{totalCov}}{Covariance of all simulated parameter values}
+
+\item{\code{data}}{A matrix that contains all the above elements as columns}
 }
 \if{html}{\out{</div>}}
 }

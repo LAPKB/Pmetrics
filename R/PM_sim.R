@@ -144,35 +144,41 @@ PM_sim$run <- function(poppar, ...) {
       parseRes <- list()
       for (i in seq_len(length(sim_files))) {
         parseRes <- append(parseRes, SIMparse(file = sprintf("simout%i.txt", i)) %>% PM_sim$new())
-        PM_simlist$new(parseRes) # Returns a PM_simlist object
       }
+      parseRes <- PM_simlist$new(parseRes) # Returns a PM_simlist object
     }
   }
   system("rm simout*")
   return(parseRes)
 }
 
-
-#' @export
+#' Object to contain list of results of simulation
 #'
+#' This object is created after a successful run of the simulator when
+#' there are multiple subjects in the data template and `combine = F` is
+#' used as an argument to `PM_sim$run`, which is the default.
+#'
+#' @export
 
 PM_simlist <- R6::R6Class(
   "PM_simlist",
   public <- list(
     #' @field data List of all the individual [PM_sim] objects
     data = NULL,
+    #' @description Create new PM_simlist.
+    #' @param data The list of PM_sim objects.
     initialize = function(data) {
       self$data <- data
     },
     #' @description
     #' Plot `PM_sim` object.
     #' @param at Index of the PM_sim object to be plotted.
-    #' @param ... Arguments passed to [plot.PMsim].
+    #' @param ... Arguments passed to [plot.PM_sim].
     plot = function(at = 1, ...) {
       if (at > length(self$data)) {
         stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
       }
       self$data[[at]]$plot(...)
-    },
+    }
   )
 )
