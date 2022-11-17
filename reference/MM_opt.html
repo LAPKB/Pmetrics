@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,6 +72,7 @@
 <span>  nsamp <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  weight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>none <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  predInt <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  <span class="va">mmInt</span>,</span>
 <span>  outeq <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -80,42 +81,41 @@
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>poppar</dt>
-<dd><p>An object of class <em>PMfinal</em> (see <code><a href="makeFinal.html">makeFinal</a></code>)</p></dd>
+<dd><p>An object of class <em>PMfinal</em> (see <a href="makeFinal.html">makeFinal</a>)</p></dd>
 
 
 <dt>model</dt>
 <dd><p>Name of a suitable model file template in the working directory.
-The default is “model.txt”.  This file will be converted to a fortran model file.
-If it is detected to already be a fortran file, then the simulation will proceed without any further
-file conversion.</p></dd>
+The default is "model.txt".  This file will be converted to a fortran model file.
+If it is detected to already be a fortran file, then the simulation will proceed without any further file conversion.</p></dd>
 
 
 <dt>data</dt>
-<dd><p>Either a PMmatrix object previously loaded with (<code><a href="PMreadMatrix.html">PMreadMatrix</a></code>) or character vector with the filename of a Pmetrics matrix file
-that contains template regimens and observation times.  The value for outputs can be coded as
-any number(s) other than -99.  The number(s) will be replaced in the simulator output with the simulated values.</p></dd>
+<dd><p>Either a <a href="PM_data.html">PM_data</a> object or character vector with the filename
+of a Pmetrics data file
+that contains template regimens and observation times.  The value for outputs
+can be coded as any number(s) other than -99.  The number(s) will be replaced in the simulator output with the simulated values.</p></dd>
 
 
 <dt>nsamp</dt>
-<dd><p>The number of MM-optimal sample times to compute; default is 1, but can be up to 4.  Values &gt;4 will be capped at 4.</p></dd>
+<dd><p>The number of MM-optimal sample times to compute; default is 1, but can be any number.  Values &gt;4 will take an exponentially longer time.</p></dd>
 
 
 <dt>weight</dt>
-<dd><p>List whose names indicate the type of weighting, and values indicate the
-relative weight. Values should sum to 1.  Names can be any of the following:</p><ul><li><p><code>none</code> The default. MMopt times will be chosen to maximally discriminate all responses at all times.</p></li>
+<dd><p>List whose names indicate the type of weighting, and values indicate the relative weight. Values should sum to 1.  Names can be any of the following:</p><ul><li><p><code>none</code> The default. MMopt times will be chosen to maximally discriminate all responses at all times.</p></li>
 <li><p><code>AUC</code> MMopt times will be chosen to maximally discriminate AUC, regardless of the shape of the response profile.</p></li>
 <li><p><code>max</code> MMopt times will be chosen to maximally discriminate maximum, regardless of the shape of the response profile.</p></li>
 <li><p><code>min</code> MMopt times will be chosen to maximally discriminate minimum, regardless of the shape of the response profile.</p></li>
-</ul><p>Any combination of AUC, max, and min can be chosen.  If “none” is specified, other
+</ul><p>Any combination of AUC, max, and min can be chosen.  If "none" is specified, other
 weight types will be ignored and the relative value will be set to 1.
-For example,<code>list(auc=0.5,max=0.5)</code> or <code>auc=0.2,min=0.8</code>.</p></dd>
+For example,<code>list(auc = 0.5,max = 0.5)</code> or <code>list(auc = 0.2, min = 0.8)</code>.</p></dd>
 
 
 <dt>predInt</dt>
 <dd><p>The interval in fractional hours for simulated predicted outputs at times other than those specified in the template <code>data</code>.
 The default is 0.5, which means there will be simulated outputs every 30 minutes from time 0 up
 to the maximal time in the template file.  You may also specify <code>predInt</code>
-as a vector of 3 values, e.g. <code>c(1,4,1)</code>, similar to the R command <code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></code>, where the
+as a vector of 3 values, e.g. <code>c(1,4,1)</code>, similar to the R command <a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a>, where the
 first value is the start time, the second is the stop time, and the third is the
 step value.  Outputs for times specified in the template file will also be simulated.
 To simulate outputs <em>only</em> at the output times in the template data (i.e. EVID=0 events), use <code>predInt=0</code>.
@@ -123,12 +123,17 @@ Note that the maximum number of predictions total is 594, so the interval must b
 number of output equations and total time to simulate over.  If <code>predInt</code> is set so that this cap is exceeded, predictions will be truncated.</p></dd>
 
 
+<dt>mmInt</dt>
+<dd><p>Specify the time intervals from which MMopt times can be selected.
+These should only include simulated times specified by <code>predInt</code>.</p></dd>
+
+
 <dt>outeq</dt>
 <dd><p>Output equation to optimize</p></dd>
 
 
 <dt>...</dt>
-<dd><p>Other parameters to pass to <code><a href="SIMrun.html">SIMrun</a></code>, which are not usually necessary.</p></dd>
+<dd><p>Other parameters to pass to <a href="SIMrun.html">SIMrun</a>, which are not usually necessary.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -146,16 +151,21 @@ is more useful for comparisons between sampling strategies, with minimization th
 <dt>simdata </dt>
 <dd><p>A <em>PMsim</em> object with the simulated profiles</p></dd>
 
+<dt>mmInt </dt>
+<dd><p>A list with the <code>mmInt</code> values, <code>NULL</code> if <code>mmInt</code> is missing.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Based on the mulitple-model optimization algorithm developed by David Bayard and presented at the 2012 American
-College of Clinical Pharmacology Meeting and the 2013 International Association of Therapeutic
-Drug Monitoring and Clinical Toxicology meeting.  A manuscript is in preparation.</p>
+    <p>Based on the mulitple-model optimization algorithm.
+Bayard, David S., and Michael Neely. "Experiment Design for Nonparametric
+Models Based on Minimizing Bayes Risk: Application to Voriconazole."
+Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017):
+95–111. https://doi.org/10.1007/s10928-016-9498-5.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="SIMrun.html">SIMrun</a></code>, <code><a href="plot.MMopt.html">plot.MMopt</a></code>, <code><a href="print.MMopt.html">print.MMopt</a></code></p></div>
+    <div class="dont-index"><p><a href="SIMrun.html">SIMrun</a>, <a href="plot.MMopt.html">plot.MMopt</a>, <a href="print.MMopt.html">print.MMopt</a></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

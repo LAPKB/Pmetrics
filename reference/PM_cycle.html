@@ -12,7 +12,7 @@ Pmetrics Run Cycle Information"><meta property="og:image" content="https://lapkb
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,48 +84,21 @@ for the user to do.</p>
     </div>
     <div class="section level2">
     <h2 id="public-fields">Public fields<a class="anchor" aria-label="anchor" href="#public-fields"></a></h2>
-    <p></p><div class="r6-fields"><dl><dt><code>names</code></dt>
-<dd><p>Vector of names of the random parameters</p></dd>
-
-
-<dt><code>cynum</code></dt>
-<dd><p>Vector cycle numbers, which may start at numbers greater
-than 1 if a non-uniform prior was specified for the run (NPAG only)</p></dd>
-
-
-<dt><code>ll</code></dt>
-<dd><p>Matrix of cycle number and -2*Log-likelihood at each cycle</p></dd>
-
-
-<dt><code>gamlam</code></dt>
-<dd><p>A matrix of cycle number and gamma or lambda at each cycle</p></dd>
-
-
-<dt><code>mean</code></dt>
-<dd><p>A matrix of cycle number and the mean of each random parameter
-at each cycle, normalized to initial mean</p></dd>
-
-
-<dt><code>sd</code></dt>
-<dd><p>A matrix of cycle number and the standard deviation of each random parameter
-at each cycle,  normalized to initial standard deviation</p></dd>
-
-
-<dt><code>median</code></dt>
-<dd><p>A matrix of cycle number and the median of each random
-parameter at each cycle,  normalized to initial median</p></dd>
-
-
-<dt><code>aic</code></dt>
-<dd><p>A matrix of cycle number and Akaike Information Criterion at each cycle</p></dd>
-
-
-<dt><code>bic</code></dt>
-<dd><p>A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle</p></dd>
-
-
-<dt><code>data</code></dt>
-<dd><p>A data frame combining all the above fields as its columns</p></dd>
+    <p></p><div class="r6-fields"><dl><dt><code>data</code></dt>
+<dd><p>A data frame with the following columns</p><ul><li><p>names Vector of names of the random parameters</p></li>
+<li><p>cynum Vector cycle numbers, which may start at numbers greater
+than 1 if a non-uniform prior was specified for the run (NPAG only)</p></li>
+<li><p>ll Matrix of cycle number and -2*Log-likelihood at each cycle</p></li>
+<li><p>gamlam A matrix of cycle number and gamma or lambda at each cycle</p></li>
+<li><p>mean A matrix of cycle number and the mean of each random parameter
+at each cycle, normalized to initial mean</p></li>
+<li><p>sd A matrix of cycle number and the standard deviation of each random parameter
+at each cycle,  normalized to initial standard deviation</p></li>
+<li><p>median A matrix of cycle number and the median of each random
+parameter at each cycle,  normalized to initial median</p></li>
+<li><p>aic A matrix of cycle number and Akaike Information Criterion at each cycle</p></li>
+<li><p>bic A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle</p></li>
+</ul></dd>
 
 
 </dl><p></p></div>

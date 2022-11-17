@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,7 +65,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">setPMoptions</span><span class="op">(</span><span class="va">sep</span>, <span class="va">dec</span>, <span class="va">server_address</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">setPMoptions</span><span class="op">(</span><span class="va">sep</span>, <span class="va">dec</span>, <span class="va">server_address</span>, <span class="va">op_stats</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -81,6 +81,13 @@
 <dt>server_address</dt>
 <dd><p>Specify address of server for remote runs.  Server must be set up separately.
 This functionality is coming soon.</p></dd>
+
+
+<dt>op_stats</dt>
+<dd><p>Argument to include/format regression statistics in observed vs. predicted plots.
+Default is <code>FALSE</code>, but could either be set to <code>TRUE</code> for default format or a list of format options.
+The default format when set to <code>TRUE</code> is
+<code>list(x= 0.4, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 8))</code></p></dd>
 
 </dl></div>
     <div class="section level2">

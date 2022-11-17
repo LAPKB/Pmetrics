@@ -12,7 +12,7 @@ Observed vs. predicted data"><meta property="og:image" content="https://lapkb.gi
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,61 +89,22 @@ for the user to do.</p>
     </div>
     <div class="section level2">
     <h2 id="public-fields">Public fields<a class="anchor" aria-label="anchor" href="#public-fields"></a></h2>
-    <p></p><div class="r6-fields"><dl><dt><code>id</code></dt>
-<dd><p>subject identification</p></dd>
-
-
-<dt><code>time</code></dt>
-<dd><p>observation time in relative units, usually hours</p></dd>
-
-
-<dt><code>obs</code></dt>
-<dd><p>observation</p></dd>
-
-
-<dt><code>pred</code></dt>
-<dd><p>prediction</p></dd>
-
-
-<dt><code>pred.type</code></dt>
-<dd><p>Population predictions based on Bayesian prior parameter value distribution,
-or individual predictions based on Bayesian posterior parameter value distributions</p></dd>
-
-
-<dt><code>icen</code></dt>
-<dd><p>Predictions based on mean or median of Bayesian <code>pred.type</code>parameter values</p></dd>
-
-
-<dt><code>outeq</code></dt>
-<dd><p>output equation number</p></dd>
-
-
-<dt><code>block</code></dt>
-<dd><p>dosing block number for each subject, as defined by dose resets (evid=4).</p></dd>
-
-
-<dt><code>obsSD</code></dt>
-<dd><p>standard deviation of the observation based on the assay error polynomial</p></dd>
-
-
-<dt><code>d</code></dt>
-<dd><p>prediction error, <code>pred</code> - <code>obs</code></p></dd>
-
-
-<dt><code>ds</code></dt>
-<dd><p>squared prediction error</p></dd>
-
-
-<dt><code>wd</code></dt>
-<dd><p>weighted prediction error, which is the prediction error divided by the <code>obsSD</code></p></dd>
-
-
-<dt><code>wds</code></dt>
-<dd><p>weighted squared prediction error</p></dd>
-
-
-<dt><code>data</code></dt>
-<dd><p>A data frame combining all the above fields as its columns</p></dd>
+    <p></p><div class="r6-fields"><dl><dt><code>data</code></dt>
+<dd><p>A data frame with the following columns</p><ul><li><p>id Subject identification</p></li>
+<li><p>time observation time in relative units, usually hours</p></li>
+<li><p>obs observation</p></li>
+<li><p>pred prediction</p></li>
+<li><p>pred.type Population predictions based on Bayesian prior parameter value distribution,
+or individual predictions based on Bayesian posterior parameter value distributions</p></li>
+<li><p>icen Predictions based on mean or median of Bayesian <code>pred.type</code>parameter values</p></li>
+<li><p>outeq output equation number</p></li>
+<li><p>block dosing block number for each subject, as defined by dose resets (evid=4).</p></li>
+<li><p>obsSD standard deviation of the observation based on the assay error polynomial</p></li>
+<li><p>d prediction error, <code>pred</code> - <code>obs</code></p></li>
+<li><p>ds squared prediction error</p></li>
+<li><p>wd weighted prediction error, which is the prediction error divided by the <code>obsSD</code></p></li>
+<li><p>wds weighted squared prediction error</p></li>
+</ul></dd>
 
 
 </dl><p></p></div>
