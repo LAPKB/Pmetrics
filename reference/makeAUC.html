@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -185,8 +185,8 @@ If a PM_pop, PM_post, PM_op, or PMsim object is specified,
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span>    18 288. </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">19</span>    19 471. </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">20</span>    20 286. </span>
-<span class="r-in"><span><span class="va">Indometh</span> <span class="op">%&gt;%</span> <span class="fu">mutate</span><span class="op">(</span>id <span class="op">=</span> <span class="va">Subject</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">makeAUC</span><span class="op">(</span><span class="va">conc</span> <span class="op">~</span> <span class="va">time</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in Indometh %&gt;% mutate(id = Subject) %&gt;% makeAUC(conc ~ time):</span> could not find function "%&gt;%"</span>
+<span class="r-in"><span><span class="va">Indometh</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> <span class="fu">mutate</span><span class="op">(</span>id <span class="op">=</span> <span class="va">Subject</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> <span class="fu">makeAUC</span><span class="op">(</span><span class="va">conc</span> <span class="op">~</span> <span class="va">time</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in mutate(., id = Subject):</span> could not find function "mutate"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
