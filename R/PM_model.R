@@ -665,7 +665,7 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                  err <- tolower(gsub("[[:space:]]", "", blocks$error))
                                  gamma <- grepl("^g", err[1])
                                  const_gamlam <- grepl("!", err[1])
-                                 gamlam_value <- as.numeric(stringr::str_match(err[1], "\\d+.*"))
+                                 gamlam_value <- as.numeric(stringr::str_match(err[1], "\\d+\\.?\\d*"))
                                  
                                  out <- list()
                                  for (i in 1:num_out) {
