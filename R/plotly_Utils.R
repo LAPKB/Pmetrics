@@ -364,7 +364,7 @@ ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = T){
 #' 
 #' NPex$data$plot()
 #' add_shapes(shapes = list(type = "circle", x0 = 125, y0 = 10, x1 = 135, y1 = 15))
-add_shapes <- function(p = last_plot(), shape){
+add_shapes <- function(p = plotly::last_plot(), shape){
   cur_data <- p$x$cur_data
   #try different locations
   if(is.null(p$x$layoutAttrs)){ #no layout attributes
@@ -380,3 +380,4 @@ add_shapes <- function(p = last_plot(), shape){
   }
   return(p)
 }
+
