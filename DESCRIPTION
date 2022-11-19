@@ -60,7 +60,7 @@ Imports:
     xtable,
     readr,
     trelliscopejs,
-    npde
+    npde,
     lubridate,
     mvtnorm,
     tidyverse,
