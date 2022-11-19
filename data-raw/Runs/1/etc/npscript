@@ -1,10 +1,10 @@
-cd '/Users/mneely/LAPK/Examples/Runs/1'
+cd '/Users/mneely/LAPK/Pmetrics/Examples/Runs/1'
 echo Unix>time.txt
 date +%s>>time.txt
 ./np_prep MacOSX < PMcontrol
 echo 1 > extnum
 echo go > go
-gfortran -w -march=native -O3 -o np_run '/Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.2/aarch64-apple-darwin20/Pmetrics/compiledFortran/sNPeng.o' npagdriv.f
+/opt/homebrew/bin/gfortran -march=native -w -O3 -o np_run '/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library/Pmetrics/compiledFortran/sNPeng.o' npagdriv.f
 ./np_run < go
 echo;echo Cleaning up....;echo
 stty -echo
@@ -39,6 +39,6 @@ mv gendata.csv inputs
 date +%s >> time.txt
 mv time.txt outputs
 if ! $error ; then 
-/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript '/Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.2/aarch64-apple-darwin20/Pmetrics/report/NPrepScript.R' '/Users/mneely/LAPK/Examples/Runs/1/outputs' median FALSE
-/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript -e "browseURL('/Users/mneely/LAPK/Examples/Runs/1/outputs/NPAGreport.html')" ; fi
+/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript '/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library/Pmetrics/report/NPrepScript.R' '/Users/mneely/LAPK/Pmetrics/Examples/Runs/1/outputs' median FALSE
+/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript -e "browseURL('/Users/mneely/LAPK/Pmetrics/Examples/Runs/1/outputs/NPAGreport.html')" ; fi
 mv npscript etc
