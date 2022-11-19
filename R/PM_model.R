@@ -175,6 +175,9 @@ PM_Vmodel <- R6::R6Class("PM_model",
         } else if (x == "cov") {
           cat("\n", sp(1), "$cov\n", paste0(sp(2), "[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = "\n "))
           cat("\n")
+        } else if (x == "ext") {
+          cat("\n", sp(1), "$ext\n", paste0(sp(2), "[", 1:length(mlist$ext), "] \"", mlist$ext, "\"", collapse = "\n "))
+          cat("\n")
         } else if (x == "sec") {
           cat("\n", sp(1), "$sec\n", paste0(sp(2), "[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = "\n "))
           cat("\n")
