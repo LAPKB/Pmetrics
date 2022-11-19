@@ -25,7 +25,7 @@ Authors@R: c(
   person("David", "Bayard", email = "", role = "ctb"),
   person("Robert", "Leary", email = "", role = "ctb")
     )
-Version: 2.0.2
+Version: 2.0.1
 URL: https://lapkb.github.io/Pmetrics/
 BugReports: https://github.com/LAPKB/Pmetrics/issues
 Date: 2022-09-30
@@ -60,6 +60,7 @@ Imports:
     xtable,
     readr,
     trelliscopejs,
+    npde
     lubridate,
     mvtnorm,
     tidyverse,
@@ -69,8 +70,6 @@ Suggests:
     knitr,
     rmarkdown,
     testthat
-Remotes:
-    LAPKB/npde
 RoxygenNote: 7.2.2
 Encoding: UTF-8
 Config/testthat/edition: 3
