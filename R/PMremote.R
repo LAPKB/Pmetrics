@@ -195,18 +195,24 @@ PMlogout <- function(server_address) {
   setwd(wd)
 }
 
-.PMremote_registerNewInstallation <- function() {
-  if (Sys.getenv("env") != "Development") {
+.PMremote_registerNewInstallation = function() {
+  if (Sys.getenv("env") == "Developmet") {
+    cat("You are inside the development folder, skipping the registration of the current installation.")
+    return()
+  }
+  
   current_version <- packageVersion("Pmetrics")
   api_url <-"http://181.59.83.182:5000/api/v0/count"
-  r <- httr::POST(
-      api_url,
-      body = list(version = paste0("v", current_version)),
+  
+  safe_POST = purrr::safely(httr::POST)
+  r <- safe_POST(
+    api_url,
+    body = list(version = paste0("v", current_version)),
     encode = "json",
     httr::content_type_json()
-    )
-  httr::content(r)
-  } else {
-    cat("You are inside the development folder, skipping the registration of the current installation. ")
+  )
+  
+  if (!is.null(r$error)) {
+    cat("Pmetrics was unable to register your installation.")
   }
 }
