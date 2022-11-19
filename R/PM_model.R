@@ -619,6 +619,11 @@ PM_model_file <- R6::R6Class("PM_model_file",
         model_list$cov <- blocks$covar
       }
 
+      # extra
+      if (blocks$extra[1] != "") {
+        model_list$ext <- blocks$extra
+      }
+
       # secondary variables
       if (blocks$secVar[1] != "") {
         model_list$sec <- blocks$secVar
