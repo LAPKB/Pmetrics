@@ -85,6 +85,10 @@ getPMoptions <- function(opt) {
 setPMoptions <- function(sep, dec, server_address, compilation_statements, op_stats) {
   # read old values first
   PMopts <- getPMoptions()
+  if (length(compilation_statements) == 1) {
+    compilation_statements <- c(compilation_statements, compilation_statements)
+  }
+
   # update/add options
   if (!missing(sep)) PMopts$sep <- sep
   if (!missing(dec)) PMopts$dec <- dec
