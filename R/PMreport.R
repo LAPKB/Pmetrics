@@ -362,7 +362,6 @@ makeRdata <- function(wd, remote, reportType) {
 
 # function to process data.frames
 makeHTMLdf <- function(df, ndigit) {
-  print(df)
   Nrow <- nrow(df)
   Ncol <- ncol(df)
   dfScript <- vector("character")
