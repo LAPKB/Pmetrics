@@ -47,6 +47,9 @@ PM_fit <- R6::R6Class("PM_fit",
     #' @param rundir This argument specifies an *existing* folder that will store the run inside.
     run = function(..., engine = "NPAG", rundir = getwd()) {
       wd <- getwd()
+      if (!dir.exists(rundir)) {
+          stop("You have specified a directory that does not exist, please create it first.")
+       }
       setwd(rundir)
       engine <- tolower(engine)
       if (inherits(private$model, "PM_model_legacy")) {
