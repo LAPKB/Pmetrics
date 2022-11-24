@@ -34,7 +34,7 @@
 PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   cwd <- getwd()
   reportType <- which(c("NPAG", "IT2B") == type)
-  
+
   if (missing(rdata)) rdata <- makeRdata(wd, remote = F, reportType)
   # get elapsed time if available
   if (file.exists("time.txt")) {
@@ -59,13 +59,13 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   error <- length(errfile) > 0
   # #see if NP_RF or IT_RF made anyway (i.e. is >1MB in size)
   success <- rdata$success
-  #reportType <- 1
+  # reportType <- 1
   # success <- file.info(c("NP_RF0001.TXT", "IT_RF0001.TXT")[reportType])$size >= 1000
   if (success) {
     # TODO:create r6 object
 
-    report_file <- system.file('report/report.html',package="Pmetrics")
-    manual_file <- system.file('manual/index.html',package="Pmetrics")
+    report_file <- system.file("report/report.html", package = "Pmetrics")
+    manual_file <- system.file("manual/index.html", package = "Pmetrics")
     html <- readr::read_file(report_file)
     html <- gsub("</manual_link>", manual_file, html)
 
@@ -75,7 +75,10 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
       html <- gsub("</red>", "red", html)
     }
     # Generate plots
-    thisData <- switch(reportType, rdata$NPdata, rdata$ITdata)
+    thisData <- switch(reportType,
+      rdata$NPdata,
+      rdata$ITdata
+    )
     for (i in 1:thisData$numeqt) {
       plot.PM_op(rdata$op, outeq = i, pred.type = "pop") %>%
         plotly::as_widget() %>%
@@ -117,37 +120,51 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
 
     # Edit HTML
 
-    if(reportType == 1){
-      html <- gsub("</parameter_values>", paste0('<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Support Points</h2>', 
-                                                 makeHTMLdf(rdata$final$popPoints, 3), "</div></parameter_values>"), html)
+    if (reportType == 1) {
+      html <- gsub("</parameter_values>", paste0(
+        '<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Support Points</h2>',
+        makeHTMLdf(rdata$final$popPoints, 3), "</div></parameter_values>"
+      ), html)
     }
-    report.table <- data.frame(mean = t(rdata$final$popMean), 
-                               sd = t(rdata$final$popSD), 
-                               CV = t(rdata$final$popCV), 
-                               var = t(rdata$final$popVar), 
-                               median = t(rdata$final$popMedian), 
-                               shrink = t(100 * rdata$final$shrinkage))
+    report.table <- data.frame(
+      mean = t(rdata$final$popMean),
+      sd = t(rdata$final$popSD),
+      CV = t(rdata$final$popCV),
+      var = t(rdata$final$popVar),
+      median = t(rdata$final$popMedian),
+      shrink = t(100 * rdata$final$shrinkage)
+    )
     names(report.table) <- c("Mean", "SD", "CV%", "Var", "Median", "Shrink%")
-    html <- gsub("</parameter_values>", paste0('<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Parameter Values Summary</h2>', 
-                                               makeHTMLdf(report.table, 3), "</div></parameter_values>"), html)
+    html <- gsub("</parameter_values>", paste0(
+      '<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Parameter Values Summary</h2>',
+      makeHTMLdf(report.table, 3), "</div></parameter_values>"
+    ), html)
 
     if (thisData$nranfix > 0) {
       ranfixdf <- data.frame(Parameter = thisData$parranfix, Value = thisData$valranfix)
-      html <- gsub("</parameter_values>", paste0('<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Population Fixed (but Random) Values</h2>', 
-                                                 makeHTMLdf(ranfixdf, 3), "</div></parameter_values>"), html)
+      html <- gsub("</parameter_values>", paste0(
+        '<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Population Fixed (but Random) Values</h2>',
+        makeHTMLdf(ranfixdf, 3), "</div></parameter_values>"
+      ), html)
     }
     if (thisData$nofix > 0) {
       fixdf <- data.frame(Parameter = thisData$parfix, Value = thisData$valfix)
-      html <- gsub("</parameter_values>", paste0('<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Population Fixed (and Constant) Values</h2>', 
-                                                 makeHTMLdf(fixdf, 3), "</div></parameter_values>"), html)
+      html <- gsub("</parameter_values>", paste0(
+        '<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Population Fixed (and Constant) Values</h2>',
+        makeHTMLdf(fixdf, 3), "</div></parameter_values>"
+      ), html)
     }
     # covariance matrix
-    html <- gsub("</parameter_values>", paste0('<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Covariance Matrix</h2>', 
-                                               makeHTMLdf(rdata$final$popCov, 3), "</div></parameter_values>"), html)
+    html <- gsub("</parameter_values>", paste0(
+      '<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Covariance Matrix</h2>',
+      makeHTMLdf(rdata$final$popCov, 3), "</div></parameter_values>"
+    ), html)
 
     # correlation matrix
-    html <- gsub("</parameter_values>", paste0('<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Correlation Matrix</h2>', 
-                                               makeHTMLdf(rdata$final$popCor, 3), "</div></parameter_values>"), html)
+    html <- gsub("</parameter_values>", paste0(
+      '<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Correlation Matrix</h2>',
+      makeHTMLdf(rdata$final$popCor, 3), "</div></parameter_values>"
+    ), html)
 
 
 
@@ -270,7 +287,7 @@ makeRdata <- function(wd, remote, reportType) {
     # run completed
     # open and parse the output
     if (reportType == 1) {
-      #NPAG
+      # NPAG
       PMdata <- suppressWarnings(tryCatch(NPparse(), error = function(e) {
         e <- NULL
         cat("\nWARNING: The run did not complete successfully.\n")
@@ -285,13 +302,13 @@ makeRdata <- function(wd, remote, reportType) {
         e <- NULL
         cat("\nWARNING: error in extraction of population predictions at time tpred; 'PMpop' object not saved.\n\n")
       }))
-    } else { #IT2B
+    } else { # IT2B
       PMdata <- suppressWarnings(tryCatch(ITparse(), error = function(e) {
         e <- NULL
         cat("\nWARNING: The run did not complete successfully.\n")
       }))
     }
-    #both NPAG and IT2B
+    # both NPAG and IT2B
     cat("\n\n")
     flush.console()
     if (is.null(PMdata$nranfix)) PMdata$nranfix <- 0
@@ -323,20 +340,9 @@ makeRdata <- function(wd, remote, reportType) {
     }
     model <- list.files("../inputs") %>%
       .[grepl(".txt$", .)] %>%
-      paste0("../inputs/", .) %>% .[[1]] %>%
+      paste0("../inputs/", .) %>%
+      .[[1]] %>%
       PM_model$new(.)
-    cat(paste("\n\n\nSaving R data objects to ", wd, "......\n\n", sep = ""))
-    cat("\nUse PM_load() to load them.\n")
-    cat("\nThe following objects have been saved:\n")
-    cat(c("\nNPdata: All output from NPAG\n", "\nITdata: All output from IT2B\n")[reportType])
-    if (reportType == 1 && !all(is.null(pop))) cat("pop: Population predictions at regular, frequent intervals\n")
-    if (reportType == 1 && !all(is.null(post))) cat("post: Posterior predictions at regular, frequent inteverals\n")
-    if (!all(is.null(final))) cat("final: Final cycle parameters and summary statistics\n")
-    if (!all(is.null(cycle))) cat("cycle: Cycle information\n")
-    if (!all(is.null(op))) cat("op: Observed vs. population and posterior predicted\n")
-    if (!all(is.null(cov))) cat("cov: Individual covariates and Bayesian posterior parameters\n")
-    if (length(mdata) > 1) cat("mdata: The data file used for the run\n")
-
 
     if (reportType == 1) {
       NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, data = mdata, model = model, errfile = errfile, success = success)
@@ -362,7 +368,6 @@ makeRdata <- function(wd, remote, reportType) {
 
 # function to process data.frames
 makeHTMLdf <- function(df, ndigit) {
-  print(df)
   Nrow <- nrow(df)
   Ncol <- ncol(df)
   dfScript <- vector("character")
