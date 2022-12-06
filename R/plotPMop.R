@@ -13,7 +13,7 @@
 #' @param icen `r template("icen")`
 #' @param pred.type Either 'post' for a posterior object or 'pop' for a population object.  Default is 'post'.
 #' @param outeq `r template("outeq")` 
-#' @param block `r template("block")` 
+#' @param block `r template("block")` Default is missing, which results in all blocks included.
 #' @param marker `r template("marker")` Default is
 #' `marker = list(color = orange, shape = "circle", size = 10, opacity = 0.5, line = list(color = black, width = 1))`.
 #' @param line Controls characteristics of lines. Unlike
@@ -93,7 +93,7 @@ plot.PM_op <- function(x,
                        line = list(lm = T, loess = F, ref = T),
                        marker = T,
                        resid = F,                      
-                       icen = "median", pred.type = "post", outeq = 1, block = 1,
+                       icen = "median", pred.type = "post", outeq = 1, block,
                        include, exclude, 
                        mult = 1,
                        legend,
@@ -104,17 +104,19 @@ plot.PM_op <- function(x,
                        stats,
                        xlim, ylim,...){
   
-  x<-if(inherits(x, "PM_op")) {x$data}else{x}
+  x <- if(inherits(x, "PM_op")) {x$data}else{x}
   #include/exclude
   if(missing(include)) include <- unique(x$id)
-  if(missing(exclude)) exclude <- NA                      
+  if(missing(exclude)) exclude <- NA  
+  if(missing(block)){ block <- unique(x$block)}
   
   sub1 <- x %>%
-    dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, block==!!block) %>%
+    dplyr::filter(icen==!!icen, outeq==!!outeq, pred.type==!!pred.type, 
+                  block  %in% !!block ) %>%
     includeExclude(include,exclude) %>%
     dplyr::filter(!is.na(obs)) %>%
     dplyr::mutate(pred = pred * mult, obs = obs * mult) %>%
-    dplyr::arrange(time)
+    dplyr::arrange(id, time)
   
   
   #unnecessary arguments for consistency with other plot functions
@@ -297,7 +299,7 @@ plot.PM_op <- function(x,
       #     )
       # }
       
-      p <- p %>% add_smooth(x = ~pred, y = ~obs, ci = ci, line = lmLine)
+      p <- p %>% add_smooth(x = ~pred, y = ~obs, ci = ci, line = lmLine, stats = stats)
     } 
     
     if(loessLine$plot){

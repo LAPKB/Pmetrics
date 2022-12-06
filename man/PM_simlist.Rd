@@ -25,6 +25,8 @@ used as an argument to \code{PM_sim$run}, which is the default.
 \itemize{
 \item \href{#method-PM_simlist-new}{\code{PM_simlist$new()}}
 \item \href{#method-PM_simlist-plot}{\code{PM_simlist$plot()}}
+\item \href{#method-PM_simlist-pta}{\code{PM_simlist$pta()}}
+\item \href{#method-PM_simlist-auc}{\code{PM_simlist$auc()}}
 \item \href{#method-PM_simlist-clone}{\code{PM_simlist$clone()}}
 }
 }
@@ -60,6 +62,45 @@ Plot \code{PM_sim} object.
 \item{\code{at}}{Index of the PM_sim object to be plotted.}
 
 \item{\code{...}}{Arguments passed to \link{plot.PM_sim}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_simlist-pta"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_simlist-pta}{}}}
+\subsection{Method \code{pta()}}{
+Estimates the Probability of Target Attaintment (PTA), based on the results
+of the specified Simulation.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_simlist$pta(at = 1, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{at}}{Index of the PM_sim object to be plotted.}
+
+\item{\code{...}}{Arguments passed to \link{PM_pta$new}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_simlist-auc"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_simlist-auc}{}}}
+\subsection{Method \code{auc()}}{
+Calculates the AUC of the specified simulation
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_simlist$auc(at = 1, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{at}}{Index of the PM_sim object to be plotted.}
+
+\item{\code{...}}{Arguments passed to \link{makeAUC}.}
 }
 \if{html}{\out{</div>}}
 }
