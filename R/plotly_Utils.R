@@ -449,36 +449,52 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
   names(vals) <- c("x","y")
   mod <- do.call(method, args = list(formula = y ~ x, data = vals))
   
-  zVal <- qnorm(0.5 + ci/2)
-  seFit <- predict(mod, newdata = vals, se = T)
-  upper <- seFit$fit + zVal * seFit$se.fit
-  lower <- seFit$fit - zVal * seFit$se.fit
+  if(method == "lm"){
+    inter <- format(coef(mod)[1],digits=3)
+    slope <- format(coef(mod)[2],digits=3)
+    if(is.na(summary(mod)$coefficients[1,2])) {ci.inter <- rep("NA",2)} else {ci.inter <- c(format(confint(mod,level=ci)[1,1],digits=3),format(confint(mod,level=ci)[1,2],digits=3)) }
+    if(is.na(summary(mod)$coefficients[2,2])) {ci.slope <- rep("NA",2)} else {ci.slope <- c(format(confint(mod,level=ci)[2,1],digits=3),format(confint(mod,level=ci)[2,2],digits=3)) }
+    
+    regStat <- paste0("R-squared = ",format(summary(mod)$r.squared,digits=3),"<br>",
+                      "Inter = ",inter," (",ci*100,"%CI ",ci.inter[1]," to ",ci.inter[2],")","<br>",
+                      "Slope = ",slope," (",ci*100,"%CI ",ci.slope[1]," to ",ci.slope[2],")","<br>")
+    
+    p_data <- plotly::plotly_data(p)
+    if(inherits(p_data,c("PM_op", "PMop"))){ #this is a PM_op object
+      regStat <- paste0(regStat,"<br>",
+                        "Bias = ",format(summary.PMop(sub1)$pe$mwpe,digits=3),"<br>",
+                        "Imprecision  = ",format(summary(sub1)$pe$bamwspe,digits=3)
+                        )
+    }
+    
+    p <- p %>% add_lines(x = vals$x, y = fitted(mod),
+                         hoverinfo = "text",
+                         text = regStat,
+                         line = line)
+  } else {
+    p <- p %>% add_lines(x = vals$x, y = fitted(mod),
+                         hoverinfo = "none",
+                         line = line)
+  }
   
-  inter <- format(coef(mod)[1],digits=3)
-  slope <- format(coef(mod)[2],digits=3)
-  if(is.na(summary(mod)$coefficients[1,2])) {ci.inter <- rep("NA",2)} else {ci.inter <- c(format(confint(mod,level=ci)[1,1],digits=3),format(confint(mod,level=ci)[1,2],digits=3)) }
-  if(is.na(summary(mod)$coefficients[2,2])) {ci.slope <- rep("NA",2)} else {ci.slope <- c(format(confint(mod,level=ci)[2,1],digits=3),format(confint(mod,level=ci)[2,2],digits=3)) }
-  
-  regStat <- paste0("R-squared = ",format(summary(mod)$r.squared,digits=3),"<br>",
-                    "Inter = ",inter," (",ci*100,"%CI ",ci.inter[1]," to ",ci.inter[2],")","<br>",
-                    "Slope = ",slope," (",ci*100,"%CI ",ci.slope[1]," to ",ci.slope[2],")","<br>")
-  
-  
-  p <- p %>% add_lines(x = vals$x, y = fitted(mod),
-                       hoverinfo = "text",
-                       text = regStat,
-                       line = line) %>%
-    add_ribbons(x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper, 
-                fillcolor = line$color,
-                line = list(color = line$color),
-                opacity = 0.2,
-                name = case_when(
-                  method == "lm" ~"Linear Regression",
-                  method == "loess" ~"Loess Regression"
-                ),
-                hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
-                                       "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
-  
+  if(ci > 0){
+    zVal <- qnorm(0.5 + ci/2)
+    seFit <- predict(mod, newdata = vals, se = T)
+    upper <- seFit$fit + zVal * seFit$se.fit
+    lower <- seFit$fit - zVal * seFit$se.fit
+    
+    p <- p %>%
+      add_ribbons(x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper, 
+                  fillcolor = line$color,
+                  line = list(color = line$color),
+                  opacity = 0.2,
+                  name = case_when(
+                    method == "lm" ~"Linear Regression",
+                    method == "loess" ~"Loess Regression"
+                  ),
+                  hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
+                                         "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
+  }
   if(missing(stats)) stats <- getPMoptions("op_stats")
   if(is.null(stats)){
     setPMoptions(op_stats = T)
@@ -501,7 +517,7 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
   }
   
   if(statPlot & method == "lm"){ #add statistics
-     p <- p %>%
+    p <- p %>%
       plotly::layout(annotations = list(
         x = stats$x, 
         y = stats$y, 
