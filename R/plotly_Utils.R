@@ -419,11 +419,11 @@ add_shapes <- function(p = plotly::last_plot(), shape){
 #' @export
 #' @seealso [add_shapes]
 #' @examples 
-#' NPex$op$plot()
-#' add_shapes(shapes = ab_line(v = 12))
-#' 
-#' NPex$data$plot()
-#' add_shapes(shapes = list(type = "circle", x0 = 125, y0 = 10, x1 = 135, y1 = 15))
+#' plotly::plot_ly(mtcars, x = ~hp, y = ~mpg, type = "scatter", mode = "markers", showlegend = F) %>%
+#'  add_smooth()
+#' plotly::plot_ly(iris, x = ~Sepal.Length, y = ~Petal.Length, type = "scatter", mode = "markers", showlegend = F) %>%
+#'  add_smooth(method = "loess", ci = 0.9, line = list(color = "red", dash = "dash"))
+
 add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
                        data = NULL, method = "lm", line = T, ci = 0.95, stats){
   
@@ -441,8 +441,8 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
                          y = model.frame(y, p$x$visdat[[1]]()))
       
     } else {
-      vals <- data.frame(x = model.frame(p$x$attrs[[1]]$x, p$x$visdat[[1]]())[,1],
-                         y = model.frame(p$x$attrs[[1]]$y, p$x$visdat[[1]]())[,1])
+      vals <- data.frame(x = model.frame(p$x$attrs[[2]]$x, p$x$visdat[[1]]())[,1],
+                         y = model.frame(p$x$attrs[[2]]$y, p$x$visdat[[1]]())[,1])
     }
     
   }
@@ -462,17 +462,17 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
     p_data <- plotly::plotly_data(p)
     if(inherits(p_data,c("PM_op", "PMop"))){ #this is a PM_op object
       regStat <- paste0(regStat,"<br>",
-                        "Bias = ",format(summary.PMop(sub1)$pe$mwpe,digits=3),"<br>",
-                        "Imprecision  = ",format(summary(sub1)$pe$bamwspe,digits=3)
+                        "Bias = ",format(summary(p_data, pred.type = p_data$pred.type[1])$pe$mwpe,digits=3),"<br>",
+                        "Imprecision  = ",format(summary(p_data, pred.type = p_data$pred.type[1])$pe$bamwspe,digits=3)
                         )
     }
     
-    p <- p %>% add_lines(x = vals$x, y = fitted(mod),
+    p <- p %>% plotly::add_lines(x = vals$x, y = fitted(mod),
                          hoverinfo = "text",
                          text = regStat,
                          line = line)
   } else {
-    p <- p %>% add_lines(x = vals$x, y = fitted(mod),
+    p <- p %>% plotly::add_lines(x = vals$x, y = fitted(mod),
                          hoverinfo = "none",
                          line = line)
   }
@@ -484,11 +484,11 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
     lower <- seFit$fit - zVal * seFit$se.fit
     
     p <- p %>%
-      add_ribbons(x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper, 
+      plotly::add_ribbons(x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper, 
                   fillcolor = line$color,
                   line = list(color = line$color),
                   opacity = 0.2,
-                  name = case_when(
+                  name = dplyr::case_when(
                     method == "lm" ~"Linear Regression",
                     method == "loess" ~"Loess Regression"
                   ),

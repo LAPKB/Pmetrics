@@ -12,7 +12,7 @@
   icen = "median",
   pred.type = "post",
   outeq = 1,
-  block = 1,
+  block,
   include,
   exclude,
   mult = 1,
@@ -89,7 +89,8 @@ zero prediction error.}
 
 \item{outeq}{Which output equation to plot. Default is 1.}
 
-\item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data. Default is 1.}
+\item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data.
+Default is missing, which results in all blocks included.}
 
 \item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
 
