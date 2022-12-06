@@ -4,15 +4,21 @@
 \alias{setPMoptions}
 \title{Set Pmetrics User Options}
 \usage{
-setPMoptions(sep, dec, server_address, op_stats)
+setPMoptions(sep, dec, server_address, compilation_statements, op_stats)
 }
 \arguments{
-\item{sep}{The field separator character; \dQuote{,} by default, but could be \dQuote{;}}
+\item{sep}{The field separator character; "," by default, but could be";"}
 
-\item{dec}{The decimal separator character; \dQuote{.} by default, but could be \dQuote{,}}
+\item{dec}{The decimal separator character; "." by default, but could be ","}
 
 \item{server_address}{Specify address of server for remote runs.  Server must be set up separately.
 This functionality is coming soon.}
+
+\item{compilation_statements}{a vector with tho string elements that defines the compilation arguments for
+single thread and parallel executions. Custom compile commands should be entered using \verb{<exec>} as a placeholder
+for the executable filename, and \verb{<files>} as a placeholder for the files to be linked and compiled.
+Example: \verb{gfortran -O3 -o <exec> <files>}.
+If a simgle compilation statement is provided, it will be used for both kind of compilations.}
 
 \item{op_stats}{Argument to include/format regression statistics in observed vs. predicted plots.
 Default is \code{FALSE}, but could either be set to \code{TRUE} for default format or a list of format options.

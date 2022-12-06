@@ -44,14 +44,14 @@ getPMoptions <- function(opt, warn = T) {
 #' language.
 #'
 #' @title Set Pmetrics User Options
-#' @param sep The field separator character; \dQuote{,} by default, but could be \dQuote{;}
-#' @param dec The decimal separator character; \dQuote{.} by default, but could be \dQuote{,}
+#' @param sep The field separator character; "," by default, but could be";"
+#' @param dec The decimal separator character; "." by default, but could be ","
 #' @param server_address Specify address of server for remote runs.  Server must be set up separately.
 #' This functionality is coming soon.
 #' @param compilation_statements a vector with tho string elements that defines the compilation arguments for
-#' single thread and parallel executions. Custom compile commands should be entered using '<exec>' as a placeholder
-#' for the executable filename, and '<files>' as a placeholder for the files to be linked and compiled.
-#' Example: gfortran -O3 -o <exec> <files>.
+#' single thread and parallel executions. Custom compile commands should be entered using `<exec>` as a placeholder
+#' for the executable filename, and `<files>` as a placeholder for the files to be linked and compiled.
+#' Example: `gfortran -O3 -o <exec> <files>`.
 #' If a simgle compilation statement is provided, it will be used for both kind of compilations.
 #' @param op_stats Argument to include/format regression statistics in observed vs. predicted plots.
 #' Default is `FALSE`, but could either be set to `TRUE` for default format or a list of format options.

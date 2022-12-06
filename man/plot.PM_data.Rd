@@ -64,7 +64,8 @@ in the data.}
 
 \item{outeq}{Which output equation to plot. Default is 1.}
 
-\item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data. Default is 1.}
+\item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data.
+Default is 1.}
 
 \item{tad}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
 
