@@ -26,7 +26,7 @@ mod2$update(list(
    V0 = ab(10, 100) #add a new variable
   ),
   sec = "V = V0 * WT" #add a new secondary equation
-)) 
+))
 #note that they are different now
 mod2
 modEx
@@ -125,7 +125,7 @@ mod2$update(list(
    V0 = ab(10, 100) #add a new variable
   ),
   sec = "V = V0 * WT" #add a new secondary equation
-)) 
+))
 #note that they are different now
 mod2
 modEx
