@@ -29,7 +29,7 @@ getPMoptions <- function(opt) {
     PMopts <- list(sep = ",",
                    dec = ".",
                    lang = loc,
-                   server_address = "http://localhost:5000",
+                   server_address = "http://localhost:4000",
                    op_stats = T)
     options(PMopts)
     jsonlite::write_json(PMopts, path = PMoptionsFile, auto_unbox=T)

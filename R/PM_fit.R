@@ -43,11 +43,23 @@ PM_fit <- R6::R6Class("PM_fit",
     },
     #' @description Fit the model to the data
     #' @param ... Other arguments passed to [NPrun]
+    #' @param remote "PM_remote object if a remote execution is desired"
     #' @param engine "NPAG" (default) or "IT2B"
-    run = function(..., engine = "NPAG") {
+    run = function(..., remote, engine = "NPAG") {
+      if(!is.null(remote)){
+        if(is.null(remote$status)){stop("Invalid remote status to start an execution.")}
+        cat(sprintf("Attempting remote run to server: %s",remote$server_address))
+        tempfile <- tempfile()
+        exData$write(tempfile)
+        data_txt<-readr::read_file(tempfile)
+        mod1$write(tempfile)
+        model_txt<-readr::read_file(tempfile)
+
+        return(.remote_run(..., remote = remote, data = data_txt, model = model_txt))
+      }
       engine <- tolower(engine)
       if (inherits(private$model, "PM_model_legacy")) {
-        cat(sprintf("Runing Legacy"))
+        cat(sprintf("Running Legacy"))
         if(engine=="npag"){
           Pmetrics::NPrun(private$model$legacy_file_path, private$data$standard_data, ...)
         } else if(engine=="it2b") {
@@ -66,7 +78,7 @@ PM_fit <- R6::R6Class("PM_fit",
         }
       } else if (inherits(private$model, "PM_model_julia")) {
         if(engine != "npag") {stop("Julia is only for NPAG currently.")}
-        cat(sprintf("Runing Julia: %s-%s\n", private$data, private$model$name))
+        cat(sprintf("Running Julia: %s-%s\n", private$data, private$model$name))
         return(
           julia_call(
             "npag.run",

@@ -1,65 +1,51 @@
-#' Creates a new user in the remote server
-#'
-#' This function receives an unused email and optionally the server adress.  
-#'
-#' @title Register a new user in the remote server
-#' @param email User's email. 
-#' @param server_address remote server address. If omitted,  Pmetrics will use the the default one. See \code{\link{setPMoptions}}.
-#' @return A message that specifies if the user was registered or if some error happened.
-#' @author Michael Neely
 #' @export
+PM_remote <- R6Class("PM_remote", 
+  public = list(
+    run_id = NULL,
+    status = NULL,
+    token = NULL,
+    run_folder = NULL,
+    server_address = NULL,
 
-PMregister <- function(email, server_address) {
-  if (missing(server_address)) server_address <- getPMoptions("server_address")
-  password <- askpass::askpass("Password: ")
-  password_confirmation <- askpass::askpass("Password Confirmation: ")
-  api_url <- paste0(server_address, "/api")
-  r <- httr::POST(
-      paste0(api_url, "/user/new"),
-      body = list(
-        email = email,
-        password = password,
-        password_confirmation = password_confirmation),
-    encode = "json",
-    add_headers(api_key = .getApiKey())
-    )
-  httr::content(r)
-}
+    #' @description
+    #' Login a existent user onto the server.
+    #'
+    #' This function receives an email of a registered user and optionally the server adress.  
+    #' The function will prompt the user for the password.
+    #' The server session will last until the R session finishes or by using PM_remote$logout().
+    #'
+    #' @param email User's email. 
+    #' @param server_address remote server address. If omitted,  Pmetrics will use the the default one. See \code{\link{setPMoptions}}.
+    #' @return A message that specifies if the user was successfuly logged in, or an explanation of the error.
+    initialize = function(email, server_address){
+      if (missing(email)) email <- readline("please type your email: ")
+      if (missing(server_address)) server_address <- getPMoptions("server_address")
+      password <- askpass::askpass("Password: ")
+      api_url <- paste0(server_address, "/api")
+      r <- httr::POST(
+            paste0(api_url, "/users/log_in"),
+            body = list(
+              user = list(
+                email = email,
+                password = password)),
+            encode = "json")
+      if (r$status == 200) {
+        cat("Authorized\n")
+        self$token <- httr::content(r)$data$token
+        self$server_address <- server_address
+        self$status <- "Logged_in"
+      } else {
+        cat("Unauthorized\n")
+      }
+    },
+    get_status = function(){
 
-#' Login a existent user onto the server.
-#'
-#' This function receives an email of a registered user and optionally the server adress.  
-#' The function will prompt the user for the password.
-#' The server session will last until the R session finishes or by using \code{PMlogout}.
-#'
-#' @title Login a user in the remote server
-#' @param email User's email. 
-#' @param server_address remote server address. If omitted,  Pmetrics will use the the default one. See \code{\link{setPMoptions}}.
-#' @return A message that specifies if the user was successfuly logged in, or an explanation of the error.
-#' @author Michael Neely
-#' @export
+    },
+    logout = function(){
 
-PMlogin <- function(email, server_address) {
-  if (missing(email)) email <- readline("please type your email: ")
-  if (missing(server_address)) server_address <- getPMoptions("server_address")
-  password <- askpass::askpass("Password: ")
-  api_url <- paste0(server_address, "/api")
-  r <- httr::POST(
-      paste0(api_url, "/session/new"),
-      body = list(
-        email = email,
-        password = password),
-    encode = "json",
-    add_headers(api_key = .getApiKey())
-    )
-  if (r$status == 200) {
-    cat("Authorized\n")
-    return(T)
-  } else {
-    cat("Unauthorized\n")
-    return(F)
-  }
-}
+    }
+  )
+)
 
 #' Logout a logged in user onto the server.
 #'
@@ -86,19 +72,18 @@ PMlogout <- function(server_address) {
   }
 }
 
-.PMremote_run <- function(model, data, server_address, run, overwrite) {
-  api_url <- paste(server_address, "/api", sep = "")
-  model_txt <- readChar(model, file.info(model)$size)
-  data_txt <- readChar(data, file.info(data)$size)
+.remote_run <- function(model, data, server_address, remote, run=1, overwrite=T) {
+  api_url <- paste(remote$server_address, "/api", sep = "")
+
   r <- httr::POST(
-      paste(api_url, "/analysis/new", sep = ""),
-      body = list(
-        model_txt = model_txt,
-        data_txt = data_txt,
-        name = "prueba"),
-    encode = "json",
-    add_headers(api_key = .getApiKey())
-    )
+        paste(api_url, "/runs/new", sep = ""),
+        body = list(
+          run = list(
+            model_txt = model,
+            data_txt = data)),
+        encode = "json",
+        add_headers(Authorization = sprintf("Bearer %s",remote$token))
+        )
   if (r$status == 200) {
     #The same code in PMrun
     currwd <- getwd()
@@ -118,9 +103,9 @@ PMlogout <- function(server_address) {
     dir.create(newdir)
     dir.create(paste(newdir, "inputs", sep = "/"))
     dir.create(paste(newdir, "outputs", sep = "/"))
-    inputFiles <- c(model, data) #list.files(getwd(), "txt|csv")
-    file.copy(inputFiles, paste(newdir, "inputs", sep = "/"))
-    file.remove(inputFiles)
+    # inputFiles <- c(model, data) #list.files(getwd(), "txt|csv")
+    # file.copy(inputFiles, paste(newdir, "inputs", sep = "/"))
+    # file.remove(inputFiles)
     setwd(paste(newdir, "inputs", sep = "/"))
     #END same code PMrun
     sprintf("Remote run #%s started successfuly, You can access this run's id using: PMload(id).\n Id can be the full id string or the run number.\n", newdir, newdir) %>%
@@ -133,13 +118,6 @@ PMlogout <- function(server_address) {
     return()
   } else {
     cat("You need to be logged in to perform this operation.\n")
-
-    if (PMlogin()) {
-      .PMremote_run(model, data, server_address, run)
-    } else {
-      cat("Authentication error\n")
-    }
-
   }
 
 }

@@ -65,11 +65,11 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   # Cluster raw data --------------------------------------------------------
   
   # grab raw data file
-  if(missing(data)){
+  # if(missing(data)){
     mdata <- result$data$standard_data
-  } else {
-    mdata <- data
-  }
+  # } else {
+  #   mdata <- data
+  # }
   # remove missing observations
   missObs <- obsStatus(mdata$out)$missing
   if (length(missObs) > 0) mdata <- mdata[-missObs, ]
