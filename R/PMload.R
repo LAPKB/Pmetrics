@@ -16,7 +16,7 @@
 #' \code{\link{makePop}}, \code{\link{makePost}}
 #' @export
 
-PM_load <- function(run = 1, remote = F, server_address) {
+PM_load <- function(run = 1, remote = NA, server_address) {
   
   #declare variables to avoid R CMD Check flag
   NPAGout <- NULL
@@ -30,9 +30,13 @@ PM_load <- function(run = 1, remote = F, server_address) {
   filename <- "NPAGout.Rdata"
   outfile <- paste(run, "outputs", filename, sep = "/")
   
-  if (remote) { #only look on server
-    status = .remoteLoad(thisrun, server_address)
+  if (!all(is.na(remote))) { #only look on server
+    status = remote$get_updates(server_address)
+    
     if (status == "finished") {
+      sprintf("Remote run #%d finished successfuly.\n", run) %>%
+        cat()
+      NPAGout <- .PMremote_outdata(remote, server_address)
       result <- output2List(Out = NPAGout)
     } else {
       sprintf("Warning: Remote run #%d has not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%

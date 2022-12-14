@@ -48,7 +48,7 @@ PM_fit <- R6::R6Class("PM_fit",
     run = function(..., remote, engine = "NPAG") {
       if(!is.null(remote)){
         if(is.null(remote$status)){stop("Invalid remote status to start an execution.")}
-        cat(sprintf("Attempting remote run to server: %s",remote$server_address))
+        cat(sprintf("Attempting remote run to server: %s\n",remote$server_address))
         tempfile <- tempfile()
         exData$write(tempfile)
         data_txt<-readr::read_file(tempfile)
