@@ -4,7 +4,7 @@
 #' 
 #' @title Plot PM_pta Percent Target Attainment objects
 #' @method plot PM_pta
-#' @param x The name of an *PM_pta" data object read by [makePTA]
+#' @param x The name of an *PM_pta* data object read by [makePTA]
 #' @param include `r template("include")`
 #' @param exclude `r template("exclude")`
 #' @param type Character vector controlling type of plot.
@@ -86,24 +86,26 @@
 #' @family PMplots
 
 plot.PM_pta <- function(x,
-                       include, exclude,
-                       type = "pta",
-                       mult = 1, 
-                       outeq = 1,
-                       line = T, 
-                       marker = T,
-                       ci = 0.9,
-                       legend = T, 
-                       log = F, 
-                       grid = T,
-                       xlab, ylab,
-                       title,
-                       xlim, ylim,...) {
+                        include, exclude,
+                        type = "pta",
+                        mult = 1, 
+                        outeq = 1,
+                        line = T, 
+                        marker = T,
+                        ci = 0.9,
+                        legend = T, 
+                        log = F, 
+                        grid = T,
+                        xlab, ylab,
+                        title,
+                        xlim, ylim,...) {
   
-
+  
+  #clone to avoid changes
+  pta <- x$clone()
   
   #vector of regimens
-  simnum <- 1:max(x$outcome$simnum)
+  simnum <- 1:max(pta$outcome$simnum)
   
   #names of regimens
   simLabels <- attr(x, "simlabels")[simnum]
@@ -127,20 +129,24 @@ plot.PM_pta <- function(x,
     }
   }
   
+  #filter by include/exclude
+  pta$outcome <- pta$outcome %>% filter(simnum %in% !!simnum)
+  pta$results <- pta$results %>% filter(simnum %in% !!simnum)
+  
   nsim <- length(simnum)
   
-
+  
   
   #parse line
   line <- amendLine(line, default = list(color = "Spectral", 
-                     width = 2,
-                     dash = 1:nsim))
+                                         width = 2,
+                                         dash = 1:nsim))
   
   #parse marker
   marker <- amendMarker(marker, default = list(color = line$color, 
                                                size = 12,
                                                symbol = 1:nsim))
- 
+  
   
   #simulated or discrete targets
   simTarg <- 1 + as.numeric(attr(x, "simTarg")) # 1 if missing or set, 2 if random
@@ -148,7 +154,7 @@ plot.PM_pta <- function(x,
   
   #process dots
   layout <- amendDots(list(...))
-
+  
   
   #legend
   legendList <- amendLegend(legend, default = list(xanchor = "right", title = list(text = "<b>Regimen</b>")))
@@ -201,12 +207,12 @@ plot.PM_pta <- function(x,
   if(missing(title)){ title <- ""}
   layout$title <- amendTitle(title, default = list(size = 20))
   
-
+  
   #PLOTS
   if (type == "pdi") { # pdi plot
     
     if (simTarg == 1) { # set targets
-      p <- x$results %>% 
+      p <- pta$results %>% 
         nest_by(simnum,target) %>% 
         mutate(lower = quantile(data$pdi, probs = 0.5 - ci / 2, na.rm = T),
                median = median(data$pdi),
@@ -229,7 +235,7 @@ plot.PM_pta <- function(x,
         plotly::add_ribbons(ymin = ~lower, ymax = ~upper,
                             opacity = 0.5, line = list(width = 0), 
                             marker = list(size = .01), showlegend = F)
-       
+      
       layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~target, type = "log"))
       p <- p %>% plotly::layout(xaxis = layout$xaxis,
                                 yaxis = layout$yaxis,
@@ -239,7 +245,7 @@ plot.PM_pta <- function(x,
       
     } else { # random targets
       
-      p <- x$results %>% nest_by(simnum) %>% 
+      p <- pta$results %>% nest_by(simnum) %>% 
         mutate(lower = quantile(data$pdi, probs = 0.5 - ci / 2, na.rm = T),
                median = median(data$pdi),
                upper = quantile(data$pdi, probs = 0.5 + ci / 2, na.rm = T)) %>%
@@ -258,9 +264,9 @@ plot.PM_pta <- function(x,
                                 title = layout$title) 
     }
   } else { # pta plot
-  
+    
     if (simTarg == 1) { # set targets
-      p <- x$outcome %>% mutate(simnum = factor(simnum, labels=simLabels)) %>% group_by(simnum) %>%
+      p <- pta$outcome %>% mutate(simnum = factor(simnum, labels=simLabels)) %>% group_by(simnum) %>%
         plotly::plot_ly(x = ~target, y = ~prop.success, 
                         type = "scatter", mode = "lines+markers",
                         colors = marker$color,
@@ -284,7 +290,7 @@ plot.PM_pta <- function(x,
       
     } else { # random targets
       
-      p <- x$outcome %>%
+      p <- pta$outcome %>%
         plotly::plot_ly(x = ~simnum, y = ~prop.success,
                         type = "scatter", mode = "lines+markers",
                         line = list(color = line$color, width = line$width, dash = line$dash),
@@ -298,12 +304,11 @@ plot.PM_pta <- function(x,
       
     }
   }
-  p <- suppressMessages(plotly_build(p))
+  p <- suppressMessages(plotly::plotly_build(p))
   print(p)
   return(p)
   
 }
-
 
 #' Plots PMpta objects
 #' 
