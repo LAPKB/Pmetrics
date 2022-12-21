@@ -26,7 +26,7 @@
 )
 }
 \arguments{
-\item{x}{The name of an *PM_pta" data object read by \link{makePTA}}
+\item{x}{The name of an \emph{PM_pta} data object read by \link{makePTA}}
 
 \item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
 
