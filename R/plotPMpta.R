@@ -105,12 +105,17 @@ plot.PM_pta <- function(x,
   #vector of regimens
   simnum <- 1:max(x$outcome$simnum)
   
+  #names of regimens
+  simLabels <- attr(x, "simlabels")[simnum]
+  if (is.null(simLabels)) simLabels <- paste("Regimen", simnum)
+  
   # check input
   if (!missing(include)) {
     if (any(include > max(simnum))) {
       stop(paste("PMpta object does not have ", max(simnum), " simulations.\n", sep = ""))
     } else {
       simnum <- simnum[include]
+      simLabels <- simLabels[include]
     }
   }
   if (!missing(exclude)) {
@@ -118,14 +123,13 @@ plot.PM_pta <- function(x,
       stop(paste("PMpta object does not have ", max(simnum), " simulations.\n", sep = ""))
     } else {
       simnum <- simnum[-exclude]
+      simLabels <- simLabels[-exclude]
     }
   }
   
   nsim <- length(simnum)
   
-  #names of regimens
-  simLabels <- attr(x, "simlabels")[simnum]
-  if (is.null(simLabels)) simLabels <- paste("Regimen", simnum)
+
   
   #parse line
   line <- amendLine(line, default = list(color = "Spectral", 
