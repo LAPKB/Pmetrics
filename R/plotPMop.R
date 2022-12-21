@@ -157,6 +157,7 @@ plot.PM_op <- function(x,
     refLine$plot <- T
   }
   
+  if(missing(stats)) stats <- getPMoptions("op_stats")
   
   
   #process dots
