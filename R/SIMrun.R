@@ -937,7 +937,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
     # apply limits as necessary
     # this will result in string with "f" or "r,1" or "r,0,a,b" for fixed, random no limits,
     # or random with limits a and b, respectively
-    if (sum(ptype == "r") > ncol(pop.mean)) stop("You have specified variables to be random in your model file\nthat were not random in poppar.\n")
+    if (sum(ptype == "r") > nrow(pop.mean)) stop("You have specified variables to be random in your model file\nthat were not random in poppar.\n")
     varDF <- data.frame(ptype = ptype, limit = ifelse(ptype == "r", apply(limits, 1, function(x) ifelse(all(is.na(x)), 1, 0)), NA))
     varDF$a[varDF$ptype == "r"] <- limits[, 1]
     varDF$b[varDF$ptype == "r"] <- limits[, 2]

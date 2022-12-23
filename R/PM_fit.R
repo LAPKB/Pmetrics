@@ -45,7 +45,7 @@ PM_fit <- R6::R6Class("PM_fit",
     #' @param ... Other arguments passed to [NPrun]
     #' @param remote "PM_remote object if a remote execution is desired"
     #' @param engine "NPAG" (default) or "IT2B"
-    run = function(..., remote, engine = "NPAG") {
+    run = function(..., remote=NULL, engine = "NPAG") {
       if(!is.null(remote)){
         if(is.null(remote$status)){stop("Invalid remote status to start an execution.")}
         cat(sprintf("Attempting remote run to server: %s\n",remote$server_address))
