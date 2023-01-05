@@ -108,7 +108,7 @@ plot.PM_pta <- function(x,
   simnum <- 1:max(pta$outcome$simnum)
   
   #names of regimens
-  simLabels <- attr(x, "simlabels")[simnum]
+  simLabels <- attr(x, "simlabels")
   if (is.null(simLabels)) simLabels <- paste("Regimen", simnum)
   
   # check input
