@@ -2,104 +2,62 @@
 #' 
 #' Calculates the Percent Target Attainment (PTA)
 #'
-#' \code{makePTA} will calculate the PTA for any number of simulations, targets and definitions of success.
+#' `makePTA` will calculate the PTA for any number of simulations, targets and definitions of success.
 #' Simulations typically differ by dose, but may differ by other features such as children vs. adults. This function will also
-#' accept data from real subjects either in the form of a \emph{PMpost} or a \emph{PMmatrix} object.
-#' If a \emph{PMpta} object is passed to the function as the \code{simdata}, the only other parameter required is success. 
+#' accept data from real subjects either in the form of a *PMpost* or a *PMmatrix* object.
+#' If a *PMpta* object is passed to the function as the `simdata`, the only other parameter required is success. 
 #' If desired, a new set of simlabels can be specified; all other parameters will be ignored.
 #'
-#' @param simdata Can be one of multiple inputs.  Typically it is a vector of simulator output filenames, e.g. c(\dQuote{simout1.txt},\dQuote{simout2.txt}),
-#' with wildcard support, e.g. \dQuote{simout*} or \dQuote{simout?}, or
-#' a list of PMsim objects made by \code{\link{SIMparse}} with suitable simulated regimens and observations.  The number and times of simulated
-#' observations does not have to be the same in all objects.  It can also be a \emph{PMpta} object previously made with
-#' \code{makePTA} can be passed for recalculation with a new success value or simlabels.  Finally, \emph{PMpost} and \emph{PMmatrix} objects are 
+#' @param simdata Can be one of multiple inputs.  Typically it is a vector of simulator output filenames, e.g. c("simout1.txt","simout2.txt"),
+#' with wildcard support, e.g. "simout*" or "simout?", or
+#' a list of PMsim objects made by `simdata` with suitable simulated regimens and observations.  The number and times of simulated
+#' observations does not have to be the same in all objects.  It can also be a *PMpta* object previously made with
+#' `makePTA` can be passed for recalculation with a new success value or simlabels.  Finally, *PMpost* and *PMmatrix* objects are 
 #' also allowed.
-#' @param simlabels Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.
-#' @param targets A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. c(0.25, 0.5,1,2,4,8,16,32).
-#' This can also be a sampled distribution using  \code{\link{makePTAtarget}}.
+#' @param simlabels Optional character vector of labels for each simulation.  Default is `c('Regimen 1', 'Regimen 2',...)`.
+#' @param targets A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. `c(0.25, 0.5,1,2,4,8,16,32)`.
+#' This can also be a sampled distribution using  [makePTAtarget].
 #' @param target.type A numeric or character vector, length 1.  If numeric, must correspond to an observation time common to all PMsim objects in
-#' \code{simdata}, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at time \code{target.type} to target.  This enables 
+#' `simdata`, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at time `target.type` to target.  This enables 
 #' testing of a specific timed concentration (e.g. one hour after a dose or C1) which may be called a peak, but is not actually the maximum drug
 #' concentration.  Be sure that the time in the simulated data is used, e.g. 122 after a dose given at 120.  Character values may be one of 
-#' \dQuote{time}, \dQuote{auc}, \dQuote{peak}, or \dQuote{min}, for, respectively, percent time above target within the time range
-#' specified by \code{start} and \code{end}, ratio of area under the curve within the time range to target, ratio of peak concentration within the time range 
+#' "time", "auc", "peak", or "min", for, respectively, percent time above target within the time range
+#' specified by `start` and `end`, ratio of area under the curve within the time range to target, ratio of peak concentration within the time range 
 #' to target, or ratio of minimum concentration within the time range to target.  
 #' @param success A single value specifying the success statistic, e.g. 0.4 for proportion time (end-start) above target, or 100 for peak:target.
 #' @param outeq An integer specifying the number of the simulated output equation to use. Default is 1.
 #' @param free.fraction Proportion of free, active drug.  Default is 1, i.e. 100\% free drug or 0\% protein binding.
 #' @param start Specify the time to begin PTA calculations. Default is a vector with the first observation time for subjects
-#' in each element of \code{simdata}, e.g. dose regimen. If specified as a vector, values will be recycled as necessary.
+#' in each element of `simdata`, e.g. dose regimen. If specified as a vector, values will be recycled as necessary.
 #' @param end Specify the time to end PTA calculations so that PTA is calculated
-#' from \code{start} to \code{end}.  Default for end is the maximum observation
-#' time for subjects in each element of \code{simdata}, e.g. dose regimen.  If specified as a vector, values will be recycled
+#' from `start` to `end`.  Default for end is the maximum observation
+#' time for subjects in each element of `simdata`, e.g. dose regimen.  If specified as a vector, values will be recycled
 #' as necessary. Subjects with insufficient data (fewer than 5 simulated observations) for a specified interval will trigger a warning.
-#' Ideally then, the simulated datset should contain sufficient observations within the interval specified by \code{start} and \code{end}.
-#' @param icen Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
+#' Ideally then, the simulated datset should contain sufficient observations within the interval specified by `start` and `end`.
+#' @param icen Can be either "median" for the predictions based on medians of `pred.type` parameter value
 #' distributions, or "mean".  Default is "median".
 #' @param block Which block to plot, where a new block is defined by dose resets (evid=4); default is 1.
-#' @return The output of \code{makePTA} is a list of class \emph{PMpta},
+#' @return The output of `makePTA` is a list of class *PMpta*,
 #' which has 2 objects:
 #' \item{results }{A data frame with the following columns: simnum, id, target, pdi.  
-#' \emph{simnum} is the number of the simulation; \emph{id} is the simulated profile number
-#' within each simulation; \emph{target} is the specified target; and \emph{pdi} is
+#' *simnum* is the number of the simulation; *id* is the simulated profile number
+#' within each simulation; *target* is the specified target; and *pdi* is
 #' the target pharmacodynamic index, e.g. time > target, auc:target, etc.}
 #' \item{outcome }{A data frame summarizing the results with the following columns: simnum, target, prop.success, pdi.mean, and pdi.sd.
-#' If \code{targets} was specified via \code{\link{makePTAtarget}} to be a sampled distribution, then
+#' If `targets` was specified via [makePTAtarget] to be a sampled distribution, then
 #' the target column will be missing from the outcome table.
-#' \emph{simnum} and \emph{target} are as for \code{results}.  The \emph{prop.success} column has the proportion with a pdi > \code{success},
-#' as specified in the function call.  The \emph{pdi.mean} and \emph{pdi.sd} columns have the 
+#' *simnum* and *target* are as for `results`.  The *prop.success* column has the proportion with a pdi > `success`,
+#' as specified in the function call.  The *pdi.mean* and *pdi.sd* columns have the 
 #' mean and standard deviation of the target pharmacodynamic index (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.}  
 #' @noMd
 #' @author Michael Neely and Jan Strojil
-#' @seealso \code{\link{plot.PMpta}}, \code{\link{SIMparse}}
+#' @seealso [plot.PM_pta], [SIMparse]
 #' @export
 
-#simdata,targets,target.type,
-#simlabels,success,outeq=1,
-#free.fraction=1,start,end,icen="median",block=1
 
-makePTA <- function(simdata,targets,target.type, ...){
-  dots <- list(...)
-  simlabels<- if (exists("simlabels", where = dots)) {
-     dots$simlabels
-  } else {
-    NULL
-  }
-  success<- if (exists("success", where = dots)) {
-     dots$success
-  } else {
-    NULL
-  }
-  outeq<- if (exists("outeq", where = dots)) {
-     dots$outeq
-  } else {
-    1
-  }
-  free.fraction<- if (exists("free.fraction", where = dots)) {
-     dots$free.fraction
-  } else {
-    1
-  }
-  start<- if (exists("start", where = dots)) {
-     dots$start
-  } else {
-    NULL
-  }
-  end<- if (exists("end", where = dots)) {
-     dots$end
-  } else {
-    NULL
-  }
-  icen<- if (exists("icen", where = dots)) {
-     dots$icen
-  } else {
-    "median"
-  }
-  block<- if (exists("block", where = dots)) {
-     dots$block
-  } else {
-    1
-  }
+makePTA <- function(simdata, simlabels, targets, target.type, success, outeq = 1,
+                    free.fraction = 1, start, end, icen = "median", block = 1){
+
 
   ############ define subfunctions ############
   
@@ -149,9 +107,9 @@ makePTA <- function(simdata,targets,target.type, ...){
   
   ################### begining of makePTA ######################
   # initial checks
-  #checkRequiredPackages("reshape2")
-  if (missing(simdata) | missing(target.type)) 
-    stop("Simulation output and target.type must be specified.\n")
+  
+  if (missing(simdata) | missing(targets) | missing(target.type) | missing(success)) 
+    stop("Simulation output (simdata), targets, target.type, and success are all mandatory.\n")
   if (is.character(target.type) & !target.type %in% c("time", "auc", "peak", "min")) 
     stop("Please specify target.type as a numerical value corresponding to a common\ntime in all simulated datasets, or a character value of 'time', 'auc', 'peak' or 'min'.\n")
   if (is.character(free.fraction) & substr(success,nchar(free.fraction),nchar(free.fraction))=="%") # if passed as percents convert to a number
@@ -173,9 +131,11 @@ makePTA <- function(simdata,targets,target.type, ...){
   
   #what kind of object is simdata?
   #lists, characters are assumed to be simulations 
-  dataType <- switch(EXPR=class(simdata)[1], PM_sim=0,PMsim=1,list=2,character=3,PMpost=4,PMmatrix=5,PMpta=6,-1)
+  dataType <- switch(EXPR=class(simdata)[1], PM_sim = 0, PMsim = 1, 
+                     list = 2, character = 3, PMpost = 4, PMmatrix = 5 ,
+                     PMpta = 6, PM_data = 7, -1)
   if(dataType==-1){
-    stop("You must specify a PMsim, list of PMsim, character vector of simulator output files, PMpost, or PMmatrix object\n")
+    stop("You must specify a PM_sim, PMsim (legacy), list of simulations, character vector of simulator output files, PMpost, PMmatrix (legacy), or PM_data object\n")
   }
   
   if (dataType!=6) { #check if object passed as simdata is already a PMpta object
@@ -206,10 +166,12 @@ makePTA <- function(simdata,targets,target.type, ...){
       simdata <- list(temp)
     }
     
-    if(dataType==5){  #PMmatrix object
+    if(dataType == 5 | dataType == 7){  #PMmatrix or PM_data object
+      if(dataType == 7){
+        simdata <- simdata$data
+      }
       simdata <- makePMmatrixBlock(simdata)
       simdata <- simdata %>% filter(evid==0 & block== !!block)
-      #simdata <- simdata[simdata$evid==0 & simdata$block==block,]
       temp <- list(obs=data.frame(id=simdata$id,time=simdata$time,out=simdata$out,outeq=simdata$outeq))
       simdata <- list(temp)
     }
@@ -233,9 +195,16 @@ makePTA <- function(simdata,targets,target.type, ...){
     }
     
     # if START and END are specified, fill in start and end times for each regimen
-    if (!is.null(start)) {start <- rep(start, n_sim)}
-    if (!is.null(end)) {end <- rep(end, n_sim)}
-    if (missing(targets)) {stop("You must supply at least one target.\n")}
+    if(missing(start)) start <- NULL
+    if(missing(end)) end <- NULL
+    if(length(start) < n_sim){
+      start <- rep(start, n_sim)[1:n_sim]
+      cat("Recycling start values to match number of simulations.")
+    }
+    if(length(end) < n_sim){
+      end <- rep(end, n_sim)[1:n_sim]
+      cat("Recycling end values to match number of simulations.")
+    }
     if (inherits(targets, "PMpta.targ")) {
       simTarg <- T
       n_targ <- n_id #one target per simulated subject
@@ -272,12 +241,12 @@ makePTA <- function(simdata,targets,target.type, ...){
       
       # Get START and END times first
       wrk.times <- unique(wrk.sim$time) # get list of observation times
-      if (is.null(start)) {
+      if (is.null(start[simnum])) {
         wrk.start <- min(wrk.times) # if start not specified, start at earliest simulated time
       } else {
         wrk.start <- start[simnum] # or use start time specified for regimen number "simnum"
       }
-      if (is.null(end)) {
+      if (is.null(end[simnum])) {
         wrk.end <- max(wrk.times) # if end not specified, use last simulated observation for given regimen
       } else {
         wrk.end <- end[simnum] # or use specified end time for regimen number "simnum"
