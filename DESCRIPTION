@@ -28,7 +28,7 @@ Authors@R: c(
 Version: 2.0.2
 URL: https://lapkb.github.io/Pmetrics/
 BugReports: https://github.com/LAPKB/Pmetrics/issues
-Date: 2022-09-30
+Date: 2023-01-05
 Depends: 
     R (>= 4.0.0)
 Imports:
