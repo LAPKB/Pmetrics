@@ -4438,7 +4438,7 @@
       DATA ONE /1.0D0/, ZERO /0.0D0/
       IERSL = 0
       GO TO (100, 100, 300, 400, 400), MITER
- !100  CALL DGESL (WM(3), N, N, IWM(31), X, 0)
+ !100  !CALL DGESL (WM(3), N, N, IWM(31), X, 0)
  100  CALL DGETRS('N',N,1,WM(3),N,IWM(31),X,N,INFO)      
       RETURN
  300  PHRL1 = WM(2)
