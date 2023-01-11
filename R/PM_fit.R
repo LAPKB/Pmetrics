@@ -1,13 +1,13 @@
 #' @title
 #' Object to define and run a model and data in Pmetrics
-#' 
-#' @description 
+#'
+#' @description
 #' `PM_fit` objects comprise a `PM_data` and `PM_model` object ready for analysis
-#' 
-#' @details 
+#'
+#' @details
 #' Data and model objects can be previously created as [PM_data] or [PM_model] objects,
 #' or created on the fly when making a new PM_fit object. PM_fit objects contain
-#' methods to cross-check data and model objects for compatibility, as well as to 
+#' methods to cross-check data and model objects for compatibility, as well as to
 #' run the analysis.
 #' @export
 
@@ -19,7 +19,7 @@ PM_fit <- R6::R6Class("PM_fit",
     #' @param data Either the name of a  [PM_data]
     #' object in memory or the quoted name of a Pmetrics
     #' data file in the current working directory, which will crate a `PM_data`
-    #' object on the fly. However, if created on the fly, this object 
+    #' object on the fly. However, if created on the fly, this object
     #' will not be available to other
     #' methods or other instances of `PM_fit`.
     #' @param model Similarly, this is either the name of a [PM_model]
@@ -44,28 +44,36 @@ PM_fit <- R6::R6Class("PM_fit",
     #' @description Fit the model to the data
     #' @param ... Other arguments passed to [NPrun]
     #' @param engine "NPAG" (default) or "IT2B"
-    run = function(..., engine = "NPAG") {
+    #' @param rundir This argument specifies an *existing* folder that will store the run inside.
+    run = function(..., engine = "NPAG", rundir = getwd()) {
+      wd <- getwd()
+      if (!dir.exists(rundir)) {
+          stop("You have specified a directory that does not exist, please create it first.")
+       }
+      setwd(rundir)
       engine <- tolower(engine)
       if (inherits(private$model, "PM_model_legacy")) {
         cat(sprintf("Runing Legacy"))
-        if(engine=="npag"){
+        if (engine == "npag") {
           Pmetrics::NPrun(private$model$legacy_file_path, private$data$standard_data, ...)
-        } else if(engine=="it2b") {
+        } else if (engine == "it2b") {
           Pmetrics::ITrun(private$model$legacy_file_path, private$data$standard_data, ...)
-        } else{
-          endNicely(paste0("Unknown engine: ",engine,". \n"))
+        } else {
+          endNicely(paste0("Unknown engine: ", engine, ". \n"))
         }
       } else if (inherits(private$model, "PM_model_list")) {
         engine <- tolower(engine)
         model_path <- private$model$write(engine = engine)
         cat(sprintf("Creating model file at: %s\n", model_path))
-        if(engine == "npag"){
+        if (engine == "npag") {
           Pmetrics::NPrun(model_path, private$data$standard_data, ...)
         } else {
           Pmetrics::ITrun(model_path, private$data$standard_data, ...)
         }
       } else if (inherits(private$model, "PM_model_julia")) {
-        if(engine != "npag") {stop("Julia is only for NPAG currently.")}
+        if (engine != "npag") {
+          stop("Julia is only for NPAG currently.")
+        }
         cat(sprintf("Runing Julia: %s-%s\n", private$data, private$model$name))
         return(
           julia_call(
@@ -81,6 +89,7 @@ PM_fit <- R6::R6Class("PM_fit",
           )
         )
       }
+      setwd(wd)
     },
     #' @description
     #' Save the current PM_fit object to a .rds file.
@@ -96,10 +105,10 @@ PM_fit <- R6::R6Class("PM_fit",
     #' function.
     #' @param file_name Name of the file to be read, the default is "PMfit.rds".
     #' @return A `PM_fit` object.
-    load = function(file_name){
+    load = function(file_name) {
       return(invisible())
     },
-    #' @description 
+    #' @description
     #' Checks for errors in data and model objects and agreement between them.
     check = function() {
       if (inherits(private$model, "PM_model_list")) {

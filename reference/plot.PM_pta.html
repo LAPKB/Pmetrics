@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -217,7 +217,7 @@ plot <code>type = "pta"</code> and "Pharmacodynamic Index" for plot <code>type =
 <dt>title</dt>
 <dd><p>Plot title. This argument maps to the the title layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the plot title, or it can be a list for greater control. Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; title to see other ways to customize the title using lists as additional arguments. In addition to the plotly attributes, a custom Pmetrics attribute <code>bold</code>  may be included as a list element. The default for <code>bold</code> is <code>TRUE</code>.</p>
 <p>Examples:</p><ul><li><p><code>title = "Observed vs. Predicted"</code></p></li>
-<li><p><code>title = list(text = "Raw Data", bold = F, font = list(color = "red", family = "Arial", size = 10))</code></p></li>
+<li><p><code>title = list(text = "Raw Data", font = list(color = "red", family = "Arial", size = 10, bold = T))</code></p></li>
 </ul><p>Default is to have no title.</p></dd>
 
 

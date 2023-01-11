@@ -15,8 +15,10 @@
 #' *NOT* be used, i.e. should be set to `FALSE`.
 #'
 #' @title Create a Pmetrics validation object
-#' @param run When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
-#' which will typically be a number, e.g. 1.
+#' @param result The result of a prior run, loaded with [PM_load].
+#' @param data An optional external [PM_data] object with the same covariates
+#' used in the model to test. If not specified, the original data will be obtained
+#' from the `result`.
 #' @param tad `r template("tad")` 
 #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
 #' model equations and which need to be binned.  For example `binCov='wt'` if "wt" is included in a
@@ -63,7 +65,11 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   # Cluster raw data --------------------------------------------------------
   
   # grab raw data file
-  mdata <- result$data$standard_data
+  if(missing(data)){
+    mdata <- result$data$standard_data
+  } else {
+    mdata <- data
+  }
   # remove missing observations
   missObs <- obsStatus(mdata$out)$missing
   if (length(missObs) > 0) mdata <- mdata[-missObs, ]

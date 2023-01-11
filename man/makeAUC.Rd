@@ -43,7 +43,7 @@ Only relevant for PMpost or PMpop objects.}
 
 \item{outeq}{Which output equation to plot. Default is 1.}
 
-\item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data. Default is 1.}
+\item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data.}
 
 \item{method}{Default is "linear" for AUC trapezoidal calculation.  Any other value will result in
 linear up, log down.}

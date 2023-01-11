@@ -7,7 +7,7 @@
 
 
 
-PMbuild <- function(skipRegistration = F, autoyes = F) {
+PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
   if (.check_and_install_gfortran(skipRegistration, autoyes)) {
     currwd <- getwd()
     OS <- getOS()
@@ -25,9 +25,7 @@ PMbuild <- function(skipRegistration = F, autoyes = F) {
 
     # }
 
-    compiler <- PMFortranConfig()
-    # try again just in case redefined
-    compiler <- PMFortranConfig()
+    compiler <- getPMoptions()$compilation_statements
     # check if parallel is possible
     if (length(compiler) == 2 & getBits() == "64") {
       parallel <- T
@@ -38,6 +36,9 @@ PMbuild <- function(skipRegistration = F, autoyes = F) {
     destdir <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
     # remove old files if present
     oldfiles <- c(Sys.glob(paste(destdir, "*.o", sep = "/")), Sys.glob(paste(destdir, "*.exe", sep = "/")))
+    if (rebuild) {
+      system(paste0("rm -rf ", destdir))
+    }
 
     if (length(oldfiles) > 0) {
       file.remove(oldfiles)
@@ -72,11 +73,6 @@ PMbuild <- function(skipRegistration = F, autoyes = F) {
       }
       serialFortstatus <- suppressWarnings(system(serialCommand, intern = T, ignore.stderr = F))
       if (!is.null(attr(serialFortstatus, "status"))) {
-        unlink(switch(OS,
-          "~/.config/Pmetrics",
-          paste(Sys.getenv("APPDATA"), "\\Pmetrics", sep = ""),
-          "~/.config/Pmetrics"
-        ), recursive = T)
         stop(paste("\nThere was an error compiling ", PMfiles$filename[i], ".\nDid you select the right fortran compiler?  If yes, try reinstalling fortran.\nFor gfortran, log into www.lapk.org and access system-specific tips on the Pmetrics installation page (step 5).\n", sep = ""))
       }
       if (i == 2 & parallel) {
@@ -85,11 +81,6 @@ PMbuild <- function(skipRegistration = F, autoyes = F) {
         parallelCommand <- sub("<files>", PMfiles$path[i], parallelCommand)
         parallelFortstatus <- suppressWarnings(system(parallelCommand, intern = T, ignore.stderr = F))
         if (!is.null(attr(parallelFortstatus, "status"))) {
-          unlink(switch(OS,
-            "~/.config/Pmetrics",
-            paste(Sys.getenv("APPDATA"), "\\Pmetrics", sep = ""),
-            "~/.config/Pmetrics"
-          ), recursive = T)
           stop(paste("\nThere was an error compiling ", PMfiles$filename[i], ".\nDid you select the right fortran compiler?  If yes, try reinstalling fortran.\nFor gfortran, log into www.lapk.org and access system-specific tips on the Pmetrics installation page (step 5).\n", sep = ""))
         }
       }
@@ -113,8 +104,7 @@ PMbuild <- function(skipRegistration = F, autoyes = F) {
   OS <- getOS()
   if (isM1()) {
     sch_str <- c("which -s /opt/homebrew/bin/gfortran")
-    #sch_str <- c("which -s /opt/R/arm64/gfortran/bin")
-    
+    # sch_str <- c("which -s /opt/R/arm64/gfortran/bin")
   }
   # env = Sys.getenv("env")
   env <- "standard"

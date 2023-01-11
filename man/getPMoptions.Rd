@@ -4,10 +4,12 @@
 \alias{getPMoptions}
 \title{Get Pmetrics User Options}
 \usage{
-getPMoptions(opt)
+getPMoptions(opt, warn = T)
 }
 \arguments{
 \item{opt}{The option to retrieve.  If omitted, all option values will be returned.}
+
+\item{warn}{Warn if options file doesn't exist. Default \code{TRUE}.}
 }
 \value{
 The user options file will be updated.  This will persist from session to session.

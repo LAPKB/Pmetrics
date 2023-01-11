@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,6 +84,7 @@
 <span>  <span class="va">title</span>,</span>
 <span>  <span class="va">xlim</span>,</span>
 <span>  <span class="va">ylim</span>,</span>
+<span>  <span class="va">simnum</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -204,7 +205,7 @@ Default is <code>TRUE</code>.</p></dd>
 <dt>title</dt>
 <dd><p>Plot title. This argument maps to the the title layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the plot title, or it can be a list for greater control. Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; title to see other ways to customize the title using lists as additional arguments. In addition to the plotly attributes, a custom Pmetrics attribute <code>bold</code>  may be included as a list element. The default for <code>bold</code> is <code>TRUE</code>.</p>
 <p>Examples:</p><ul><li><p><code>title = "Observed vs. Predicted"</code></p></li>
-<li><p><code>title = list(text = "Raw Data", bold = F, font = list(color = "red", family = "Arial", size = 10))</code></p></li>
+<li><p><code>title = list(text = "Raw Data", font = list(color = "red", family = "Arial", size = 10, bold = T))</code></p></li>
 </ul><p>Default is to have no title.</p></dd>
 
 
@@ -216,6 +217,13 @@ Default is <code>TRUE</code>.</p></dd>
 <dt>ylim</dt>
 <dd><p>Limits of the y axis as a vector.   This argument maps to the   the yaxis range in the layout object in plotly.  Use the plotly <code><a href="https://rdrr.io/pkg/plotly/man/schema.html" class="external-link">plotly::schema()</a></code> command in the console and navigate to layout &gt; layoutAttributes &gt; yaxis &gt; range.</p>
 <p>Example: <code>ylim = c(0,100)</code></p></dd>
+
+
+<dt>simnum</dt>
+<dd><p>Choose which object to plot in a PM_simlist,
+i.e., a list of <a href="PM_sim.html">PM_sim</a> objects created when more than one
+subject is included in a simultation data template and
+<code>combine = F</code> (the default) when parsing the results of a simulation.</p></dd>
 
 
 <dt>...</dt>
