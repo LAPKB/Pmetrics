@@ -1330,11 +1330,8 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   writeLines(unlist(fmod), modelFor)
   # check model file for errors
   OS <- getOS()
-  compiler <- PMFortranConfig()
-  if (is.null(compiler)) {
-    return(list(status = -1, msg = "Execute PMbuild or PMFortranConfig(reconfig=T) to choose your fortran compiler.\n"))
-  }
-  
+  compiler <- getPMoptions()$compilation_statements
+    
   # build syntax check statement and check model if possible
   fortran <- strsplit(compiler, " ")[[1]][1]
   syntaxcheck <- NA

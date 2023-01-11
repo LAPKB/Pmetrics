@@ -105,7 +105,7 @@ amendTitle <- function(.title, default){
     .title$text <- paste0("<b>",.title$text,"</b>")
   }
   
-
+  
   if(error){
     cat(paste0(crayon::red("Note: "), paste(errors, collapse = " and "), " should be within a font list.\nSee plotly::schema() > layout > layoutAttributes > title/xaxis/yaxis for help.\n"))
   }
@@ -364,7 +364,7 @@ ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = T){
 #' 
 #' NPex$data$plot()
 #' add_shapes(shapes = list(type = "circle", x0 = 125, y0 = 10, x1 = 135, y1 = 15))
-add_shapes <- function(p = last_plot(), shape){
+add_shapes <- function(p = plotly::last_plot(), shape){
   cur_data <- p$x$cur_data
   #try different locations
   if(is.null(p$x$layoutAttrs)){ #no layout attributes
@@ -378,5 +378,157 @@ add_shapes <- function(p = last_plot(), shape){
       p$x$layoutAttrs[[1]]$shapes <- list(shape)
     }
   }
+  return(p)
+}
+
+#' Add regression to plotly plot
+#' 
+#' Modifies an existing plot to include a regression line with  confidence interval.
+#' 
+#' This function adds a regression line to an existing  plotly plot.
+#' The default is to use the x and y values in the plot, but this can be overridden
+#' by specifying a data object. If another `data` object is used, values for `x` and `y`
+#' must also be specified. Alternatively, the original data can be used and new columns
+#' selected for regression by omitting the `data` argument and specifying new `x` and
+#' `y` values. The intent of this function is to replicate the behavior of 
+#' `ggplot::geom_smooth()`.
+#' 
+#' @param p The plot to which the shape should be added. Default is the
+#' `plotly::last_plot()`.
+#' @param x X value for regression if not the original x value of the plot. Be
+#' sure to specify as a formula, e.g. `x = ~pred`. 
+#' @param y Y value for regression if not the original y value of the plot. Be
+#' sure to specify as a formula, e.g. `y = ~obs`. 
+#' @param data A secondary data object to use for regression other than the 
+#' original plot data.
+#' @param method The tegression method, currently either "lm" (the default) for
+#' linear regression, or "loess" for loess regression.
+#' @param line `r template("line")` Default is `list(color = "blue", width = 2)`.
+#' The confidence interval will have the same color but at opacity 0.2.
+#' @param ci Confidence interval for regressions. Default is 0.95. It can be suppressed
+#' by setting to 0.
+#' @param stats Add the statistics from linear regression to the plot. Ignored if 
+#' `method = "loess"`. If missing or
+#' `FALSE`, will be suppressed. Can be set to `TRUE` which results in default format of 
+#' `list(x= 0.8, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 14))`.
+#' The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
+#' argument maps to `plotly::add_text()`. It is also an option that can be set in 
+#' [setPMoptions] to avoid specifying this argument for every plot. The default option
+#' is `TRUE`. If specified as a
+#' Pmetrics option, it can be overridden for specific plots by supplying a value.
+#' @export
+#' @seealso [add_shapes]
+#' @examples 
+#' plotly::plot_ly(mtcars, x = ~hp, y = ~mpg, type = "scatter", mode = "markers", showlegend = F) %>%
+#'  add_smooth()
+#' plotly::plot_ly(iris, x = ~Sepal.Length, y = ~Petal.Length, type = "scatter", mode = "markers", showlegend = F) %>%
+#'  add_smooth(method = "loess", ci = 0.9, line = list(color = "red", dash = "dash"))
+
+add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
+                       data = NULL, method = "lm", line = T, ci = 0.95, stats){
+  
+  line <- amendLine(line, default = list(color = "blue", width = 2))
+  
+  if(!is.null(data)){
+    if(is.null(x) | is.null(y)) stop("Missing x or y with data.\n")
+    if(!rlang::is_formula(x) | !rlang::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
+    vals <- data.frame(x = model.frame(x, data),
+                       y = model.frame(y, data))
+  } else { #data is null
+    if(!is.null(x) | !is.null(y)){
+      if(!rlang::is_formula(x) | !rlang::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
+      vals <- data.frame(x = model.frame(x, p$x$visdat[[1]]()),
+                         y = model.frame(y, p$x$visdat[[1]]()))
+      
+    } else {
+      vals <- data.frame(x = model.frame(p$x$attrs[[2]]$x, p$x$visdat[[1]]())[,1],
+                         y = model.frame(p$x$attrs[[2]]$y, p$x$visdat[[1]]())[,1])
+    }
+    
+  }
+  names(vals) <- c("x","y")
+  mod <- do.call(method, args = list(formula = y ~ x, data = vals))
+  
+  if(method == "lm"){
+    inter <- format(coef(mod)[1],digits=3)
+    slope <- format(coef(mod)[2],digits=3)
+    if(is.na(summary(mod)$coefficients[1,2])) {ci.inter <- rep("NA",2)} else {ci.inter <- c(format(confint(mod,level=ci)[1,1],digits=3),format(confint(mod,level=ci)[1,2],digits=3)) }
+    if(is.na(summary(mod)$coefficients[2,2])) {ci.slope <- rep("NA",2)} else {ci.slope <- c(format(confint(mod,level=ci)[2,1],digits=3),format(confint(mod,level=ci)[2,2],digits=3)) }
+    
+    regStat <- paste0("R-squared = ",format(summary(mod)$r.squared,digits=3),"<br>",
+                      "Inter = ",inter," (",ci*100,"%CI ",ci.inter[1]," to ",ci.inter[2],")","<br>",
+                      "Slope = ",slope," (",ci*100,"%CI ",ci.slope[1]," to ",ci.slope[2],")","<br>")
+    
+    p_data <- plotly::plotly_data(p)
+    if(inherits(p_data,c("PM_op", "PMop"))){ #this is a PM_op object
+      regStat <- paste0(regStat,"<br>",
+                        "Bias = ",format(summary(p_data, pred.type = p_data$pred.type[1])$pe$mwpe,digits=3),"<br>",
+                        "Imprecision  = ",format(summary(p_data, pred.type = p_data$pred.type[1])$pe$bamwspe,digits=3)
+                        )
+    }
+    
+    p <- p %>% plotly::add_lines(x = vals$x, y = fitted(mod),
+                         hoverinfo = "text",
+                         text = regStat,
+                         line = line)
+  } else {
+    p <- p %>% plotly::add_lines(x = vals$x, y = fitted(mod),
+                         hoverinfo = "none",
+                         line = line)
+  }
+  
+  if(ci > 0){
+    zVal <- qnorm(0.5 + ci/2)
+    seFit <- predict(mod, newdata = vals, se = T)
+    upper <- seFit$fit + zVal * seFit$se.fit
+    lower <- seFit$fit - zVal * seFit$se.fit
+    
+    p <- p %>%
+      plotly::add_ribbons(x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper, 
+                  fillcolor = line$color,
+                  line = list(color = line$color),
+                  opacity = 0.2,
+                  name = dplyr::case_when(
+                    method == "lm" ~"Linear Regression",
+                    method == "loess" ~"Loess Regression"
+                  ),
+                  hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
+                                         "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
+  }
+  if(missing(stats)) stats <- getPMoptions("op_stats")
+  if(is.null(stats)){
+    setPMoptions(op_stats = T)
+    stats <- T
+    statPlot <- T
+  }
+  if(is.logical(stats)){ #default formatting
+    if(stats){
+      statPlot <- T
+    } else {statPlot <- F}
+    stats <- amendTitle("", default = list(size = 14, bold = F))
+    stats$x <- 0.8
+    stats$y <- 0.1
+  } else { #formatting supplied, set text to "" (will be replaced later)
+    stats$text <- ""
+    if(is.null(stats$x)){stats$x <- 0.8}
+    if(is.null(stats$y)){stats$y <- 0.1}
+    stats <- amendTitle(stats, default = list(size = 14, bold = F))
+    statPlot <- T
+  }
+  
+  if(statPlot & method == "lm"){ #add statistics
+    p <- p %>%
+      plotly::layout(annotations = list(
+        x = stats$x, 
+        y = stats$y, 
+        text = regStat, 
+        font = stats$font,
+        xref = "paper",
+        yref = "paper",
+        align = "left",
+        showarrow = F)
+      )
+  }
+  
   return(p)
 }

@@ -39,7 +39,7 @@
 #' in the data.
 #' @param mult `r template("mult")` 
 #' @param outeq `r template("outeq")` 
-#' @param block `r template("block")` 
+#' @param block `r template("block")` Default is 1.
 #' @param tad `r template("tad")` 
 #' @param overlay Boolean operator to overlay all time concentration profiles in a single plot.
 #' The default is `TRUE`.

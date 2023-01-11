@@ -34,7 +34,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -99,11 +99,24 @@
 <div class="section level2">
 <h2 id="what-is-pmetrics">What is Pmetrics?<a class="anchor" aria-label="anchor" href="#what-is-pmetrics"></a>
 </h2>
-<p>Pmetrics is a population modeling and simulation package for R. It can model data using nonparametric and parametric approaches. Some excellent articles discussing the differences, strengths, and limitations of both approaches are below.</p>
+<p>Pmetrics is a population modeling and simulation package for R. It
+can model data using nonparametric and parametric approaches. Some
+excellent articles discussing the differences, strengths, and
+limitations of both approaches are below.</p>
 <ul>
-<li>Goutelle, Sylvain, Jean‐Baptiste Woillard, Thierry Buclin, Laurent Bourguignon, Walter Yamada, Chantal Csajka, Michael Neely, and Monia Guidi. “Parametric and Nonparametric Methods in Population Pharmacokinetics: Experts’ Discussion on Use, Strengths, and Limitations.” The Journal of Clinical Pharmacology 62, no. 2 (February 2022): 158–70. <a href="https://doi.org/10.1002/jcph.1993" class="external-link uri">https://doi.org/10.1002/jcph.1993</a>.</li>
-<li>Goutelle, Sylvain, Jean‐Baptiste Woillard, Michael Neely, Walter Yamada, and Laurent Bourguignon. “Nonparametric Methods in Population Pharmacokinetics.” The Journal of Clinical Pharmacology 62, no. 2 (February 2022): 142–57. <a href="https://doi.org/10.1002/jcph.1650" class="external-link uri">https://doi.org/10.1002/jcph.1650</a>.</li>
-<li>Guidi, Monia, Chantal Csajka, and Thierry Buclin. “Parametric Approaches in Population Pharmacokinetics.” Journal of Clinical Pharmacology 62, no. 2 (February 2022): 125–41. <a href="https://doi.org/10.1002/jcph.1633" class="external-link uri">https://doi.org/10.1002/jcph.1633</a>.</li>
+<li>Goutelle, Sylvain, Jean‐Baptiste Woillard, Thierry Buclin, Laurent
+Bourguignon, Walter Yamada, Chantal Csajka, Michael Neely, and Monia
+Guidi. “Parametric and Nonparametric Methods in Population
+Pharmacokinetics: Experts’ Discussion on Use, Strengths, and
+Limitations.” The Journal of Clinical Pharmacology 62, no. 2 (February
+2022): 158–70. <a href="https://doi.org/10.1002/jcph.1993" class="external-link uri">https://doi.org/10.1002/jcph.1993</a>.</li>
+<li>Goutelle, Sylvain, Jean‐Baptiste Woillard, Michael Neely, Walter
+Yamada, and Laurent Bourguignon. “Nonparametric Methods in Population
+Pharmacokinetics.” The Journal of Clinical Pharmacology 62, no. 2
+(February 2022): 142–57. <a href="https://doi.org/10.1002/jcph.1650" class="external-link uri">https://doi.org/10.1002/jcph.1650</a>.</li>
+<li>Guidi, Monia, Chantal Csajka, and Thierry Buclin. “Parametric
+Approaches in Population Pharmacokinetics.” Journal of Clinical
+Pharmacology 62, no. 2 (February 2022): 125–41. <a href="https://doi.org/10.1002/jcph.1633" class="external-link uri">https://doi.org/10.1002/jcph.1633</a>.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -113,28 +126,43 @@
 <ol style="list-style-type: decimal">
 <li>Install <a href="https://cran.r-project.org" class="external-link">R</a>
 </li>
-<li>Install <a href="https://www.rstudio.com" class="external-link">Rstudio</a>, which will soon be rebranded as <a href="https://posit.co" class="external-link">posit</a>.</li>
-<li>Install the <em>devtools</em> package into Rstudio. The easiest way is to click the Install button on the Packages tab, and search the CRAN repository for <em>devtools</em>.</li>
+<li>Install <a href="https://www.rstudio.com" class="external-link">Rstudio</a>, which will
+soon be rebranded as <a href="https://posit.co" class="external-link">posit</a>.</li>
+<li>Install the <em>devtools</em> package into Rstudio. The easiest way
+is to click the Install button on the Packages tab, and search the CRAN
+repository for <em>devtools</em>.</li>
 </ol>
 <p><img src="Images/installPkg.png"></p>
 <ol start="4" style="list-style-type: decimal">
-<li>Type the following into the R console (lower left window): <code>devtools::install_github("LAPKB/Pmetrics")</code>
+<li>Type the following into the R console (lower left window):
+<code>devtools::install_github("LAPKB/Pmetrics")</code>
 </li>
 <li>Launch Pmetrics in Rstudio with <code><a href="https://lapkb.github.io/Pmetrics/">library(Pmetrics)</a></code>
 </li>
-<li>Run <code><a href="../reference/PMbuild.html">PMbuild()</a></code> to download necessary components and install them. It might be many components, depending on your system.</li>
+<li>Run <code><a href="../reference/PMbuild.html">PMbuild()</a></code> to download necessary components and
+install them. It might be many components, depending on your
+system.</li>
 </ol>
 <p>That’s it!</p>
 </div>
 <div class="section level2">
 <h2 id="how-do-i-get-help">How do I get help?<a class="anchor" aria-label="anchor" href="#how-do-i-get-help"></a>
 </h2>
-<p>Head on over to our <a href="https://github.com/LAPKB/Pmetrics/discussions" class="external-link">Discussion</a> board at Github.</p>
+<p>Head on over to our <a href="https://github.com/LAPKB/Pmetrics/discussions" class="external-link">Discussion</a>
+board at Github.</p>
 </div>
 <div class="section level2">
 <h2 id="how-do-i-start-using-pmetrics">How do I start using Pmetrics?<a class="anchor" aria-label="anchor" href="#how-do-i-start-using-pmetrics"></a>
 </h2>
-<p>A good place to start is to run <code><a href="../reference/PM_tutorial.html">PM_tutorial()</a></code>, which will install an <strong>Examples</strong> folder at your chosen location, which will contain sample data, models, and a script to get you started building and simulating from population models. Also have a look at the Articles on this website. All functions are extensively documented, most with examples, which can be seen in the Reference section of the <a href="https://lapkb.github.io/Pmetrics/">website</a>. There are also more tutorials and references on our Laboratory of Applied Pharmacokinetics and Bioinformatics <a href="http://www.lapk.org" class="external-link">website</a>.</p>
+<p>A good place to start is to run <code><a href="../reference/PM_tutorial.html">PM_tutorial()</a></code>, which
+will install an <strong>Examples</strong> folder at your chosen
+location, which will contain sample data, models, and a script to get
+you started building and simulating from population models. Also have a
+look at the Articles on this website. All functions are extensively
+documented, most with examples, which can be seen in the Reference
+section of the <a href="https://lapkb.github.io/Pmetrics/">website</a>.
+There are also more tutorials and references on our Laboratory of
+Applied Pharmacokinetics and Bioinformatics <a href="http://www.lapk.org" class="external-link">website</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="thank-you-for-your-support">Thank you for your support!<a class="anchor" aria-label="anchor" href="#thank-you-for-your-support"></a>

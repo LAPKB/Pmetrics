@@ -108,7 +108,7 @@ Dopt <- function(run, data, clean = T) {
   if (!file.exists(fortSource)) {
     PMbuild()
   }
-  compiler <- PMFortranConfig()
+  compiler <- getPMoptions()$compilation_statements
   #choose serial compiliation
   if (length(compiler) == 2) {
     compiler <- compiler[1]

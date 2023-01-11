@@ -34,7 +34,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -99,9 +99,13 @@
 <div class="section level2">
 <h2 id="specifying-models-in-r6">Specifying Models in R6<a class="anchor" aria-label="anchor" href="#specifying-models-in-r6"></a>
 </h2>
-<p>In <span class="r6">R6</span> Pmetrics, use the <code>PM_model</code> function to create models directly in R. There are two ways to do this.</p>
+<p>In <span class="r6">R6</span> Pmetrics, use the <code>PM_model</code>
+function to create models directly in R. There are two ways to do
+this.</p>
 <ul>
-<li>The first method is to specify the name of a .txt model file in the same format as for <a href="#specifying-models-in-legacy">Legacy Models</a>
+<li>The first method is to specify the name of a .txt model file in the
+same format as for <a href="#specifying-models-in-legacy">Legacy
+Models</a>
 </li>
 </ul>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -109,7 +113,9 @@
 <span><span class="co">#assumes model.txt is in working directory</span></span>
 <span><span class="co">#check with list.files() and/or getwd()</span></span></code></pre></div>
 <ul>
-<li>The second way is to create a list in R. Blocks in the Legacy model.txt files which were delimited with the “#” character become lists in R6.</li>
+<li>The second way is to create a list in R. Blocks in the Legacy
+model.txt files which were delimited with the “#” character become lists
+in R6.</li>
 </ul>
 <p>The R6 list model components are:</p>
 <ul>
@@ -126,8 +132,25 @@
 <div class="section level3">
 <h3 id="priR6">PRImary variables<a class="anchor" aria-label="anchor" href="#priR6"></a>
 </h3>
-<p>Primary variables are the model parameters that are to be estimated by Pmetrics or are designated as fixed parameters with user specified values. It should be a list of variable names, one name to a line. Variable names should be 11 characters or fewer. Some variable names are <a href="#reserved">reserved</a> for use by Pmetrics and cannot be used as primary variable names. <strong>The number of primary variables must be between 2 and 32, with at most 30 random or 20 fixed.</strong></p>
-<p>Each variable can be specified by <code>ab</code> or <code>msd</code>. The first defines the absolute search space for that parameter for NPAG/NPOD, i.e., the range. For IT2B/RPEM, it defines the mean of the prior as the midpoint of the range, and the range covers 6 standard deviations, e.g. ±3 SD above and below the mean, or 99.7% of the prior distribution. <code>msd</code> is the companion function that specifies a mean and SD in IT2B and RPEM. For NPAG/NPOD, it will be converted in to a range in the reverse fashion as described for <code>ab</code>. For both specifying functions, <code>gtz</code> is an argument to force the parameter value to be positive, i.e. <code>gtz=T</code>, which is the default. To allow negative parameters, set <code>gtz=F</code>.</p>
+<p>Primary variables are the model parameters that are to be estimated
+by Pmetrics or are designated as fixed parameters with user specified
+values. It should be a list of variable names, one name to a line.
+Variable names should be 11 characters or fewer. Some variable names are
+<a href="#reserved">reserved</a> for use by Pmetrics and cannot be used
+as primary variable names. <strong>The number of primary variables must
+be between 2 and 32, with at most 30 random or 20 fixed.</strong></p>
+<p>Each variable can be specified by <code>ab</code> or
+<code>msd</code>. The first defines the absolute search space for that
+parameter for NPAG/NPOD, i.e., the range. For IT2B/RPEM, it defines the
+mean of the prior as the midpoint of the range, and the range covers 6
+standard deviations, e.g. ±3 SD above and below the mean, or 99.7% of
+the prior distribution. <code>msd</code> is the companion function that
+specifies a mean and SD in IT2B and RPEM. For NPAG/NPOD, it will be
+converted in to a range in the reverse fashion as described for
+<code>ab</code>. For both specifying functions, <code>gtz</code> is an
+argument to force the parameter value to be positive,
+i.e. <code>gtz=T</code>, which is the default. To allow negative
+parameters, set <code>gtz=F</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -140,10 +163,21 @@
 <div class="section level3">
 <h3 id="covR6">COVariates<a class="anchor" aria-label="anchor" href="#covR6"></a>
 </h3>
-<p>Covariates are subject-specific data, such as body weight, contained in the data .csv file. The covariate names, which are the column names in the data file, must be declared, even if not used in the model object. Once declared, they can be used in secondary variable and differential equations. The order and names should be the same as in the data file.</p>
-<p>Covariates are applied at each dose event. The first dose event for each subject must have a value for every covariate in the data file.</p>
-<p><span class="update">Update</span> By default, missing covariate values for subsequent dose events are linearly interpolated between existing values, or carried forward if the first value is the only non-missing entry.</p>
-<p>To specify a new covariate value at a time other than a dose, enter a dose event in the data file with 0 dose amount and the new covariate value.</p>
+<p>Covariates are subject-specific data, such as body weight, contained
+in the data .csv file. The covariate names, which are the column names
+in the data file, must be declared, even if not used in the model
+object. Once declared, they can be used in secondary variable and
+differential equations. The order and names should be the same as in the
+data file.</p>
+<p>Covariates are applied at each dose event. The first dose event for
+each subject must have a value for every covariate in the data file.</p>
+<p><span class="update">Update</span> By default, missing covariate
+values for subsequent dose events are linearly interpolated between
+existing values, or carried forward if the first value is the only
+non-missing entry.</p>
+<p>To specify a new covariate value at a time other than a dose, enter a
+dose event in the data file with 0 dose amount and the new covariate
+value.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span>,</span>
@@ -153,8 +187,20 @@
 <div class="section level3">
 <h3 id="secR6">SECondary variables<a class="anchor" aria-label="anchor" href="#secR6"></a>
 </h3>
-<p>Secondary variables are those that are defined by equations that are combinations of primary, covariates, and other secondary variables. If using other secondary variables, define them first within this block. Equation syntax must be Fortran. Specify each variable equation as a character vector. It is permissible to have conditional statements, but because expressions in this block are translated into variable declarations in Fortran, expressions other than of the form "X = function(Y)" must be on a new line, prefixed by "&amp;" and contain only variables which have been previously defined in the Primary, Covariate, or Secondary blocks.</p>
-<p>In the example below, V0 is the primary parameter which will be estimated, but internally, the model uses V as V0*wt, unless age is &gt;18, in which case weight is capped at 75 kg. It’s the same for CL0. Note that the conditional statement is not named.</p>
+<p>Secondary variables are those that are defined by equations that are
+combinations of primary, covariates, and other secondary variables. If
+using other secondary variables, define them first within this block.
+Equation syntax must be Fortran. Specify each variable equation as a
+character vector. It is permissible to have conditional statements, but
+because expressions in this block are translated into variable
+declarations in Fortran, expressions other than of the form "X =
+function(Y)" must be on a new line, prefixed by "&amp;" and contain only
+variables which have been previously defined in the Primary, Covariate,
+or Secondary blocks.</p>
+<p>In the example below, V0 is the primary parameter which will be
+estimated, but internally, the model uses V as V0*wt, unless age is
+&gt;18, in which case weight is capped at 75 kg. It’s the same for CL0.
+Note that the conditional statement is not named.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -173,7 +219,11 @@
 <div class="section level3">
 <h3 id="bolR6">BOLus inputs<a class="anchor" aria-label="anchor" href="#bolR6"></a>
 </h3>
-<p>By default, inputs with DUR (duration) of 0 in the data .csv file are “delivered” instantaneously to the model compartment equal to the input number, i.e. input 1 goes to compartment 1, input 2 goes to compartment 2, etc. This can be overridden with NBCOMP(input number) = compartment number.</p>
+<p>By default, inputs with DUR (duration) of 0 in the data .csv file are
+“delivered” instantaneously to the model compartment equal to the input
+number, i.e. input 1 goes to compartment 1, input 2 goes to compartment
+2, etc. This can be overridden with NBCOMP(input number) = compartment
+number.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  bol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"NBCOMP(1) = 2"</span><span class="op">)</span></span>
@@ -182,7 +232,13 @@
 <div class="section level3">
 <h3 id="iniR6">INItial conditions<a class="anchor" aria-label="anchor" href="#iniR6"></a>
 </h3>
-<p>By default, all model compartments have zero amounts at time 0. This can be changed by specifying the compartment amount as X(.) = expression, where “.” is the compartment number. Primary and secondary variables and covariates may be used in the expression, as can conditional statements in Fortran code. An “&amp;” continuation prefix is not necessary in this block for any statement, although if present, will be ignored.</p>
+<p>By default, all model compartments have zero amounts at time 0. This
+can be changed by specifying the compartment amount as X(.) =
+expression, where “.” is the compartment number. Primary and secondary
+variables and covariates may be used in the expression, as can
+conditional statements in Fortran code. An “&amp;” continuation prefix
+is not necessary in this block for any statement, although if present,
+will be ignored.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> PM_model<span class="sc">$</span><span class="fu">new</span>(<span class="fu">list</span>(</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">pri =</span> <span class="at">pri =</span> <span class="fu">list</span>(</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ke =</span> <span class="fu">ab</span>(<span class="dv">0</span>,<span class="dv">5</span>),</span>
@@ -195,14 +251,33 @@
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">X3 =</span> <span class="st">"IC3"</span></span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div>
-<p>In the example above, IC is a covariate with the measured trough concentration prior to an observed dose and IC3 is a fitted primary parameter specifying an initial amount in unobserved compartment 3.</p>
-<p>In the first case, the initial condition for compartment 2 becomes the value of the IC covariate (defined in <code>cov</code> list) multiplied by the current estimate of V during each iteration. This is useful when a subject has been taking a drug as an outpatient, and comes in to the lab for PK sampling, with measurement of a concentration immediately prior to a witnessed dose, which is in turn followed by more sampling. In this case, IC or any other covariate can be set to the initial measured concentration, and if V is the volume of compartment 2, the initial condition (amount) in compartment 2 will now be set to the measured concentration of drug multiplied by the estimated volume for each iteration until convergence.</p>
-<p>In the second case, the initial condition for compartment 3 becomes another variable, IC3 defined in the <code>pri</code> list, to fit in the model, given the observed data.</p>
+<p>In the example above, IC is a covariate with the measured trough
+concentration prior to an observed dose and IC3 is a fitted primary
+parameter specifying an initial amount in unobserved compartment 3.</p>
+<p>In the first case, the initial condition for compartment 2 becomes
+the value of the IC covariate (defined in <code>cov</code> list)
+multiplied by the current estimate of V during each iteration. This is
+useful when a subject has been taking a drug as an outpatient, and comes
+in to the lab for PK sampling, with measurement of a concentration
+immediately prior to a witnessed dose, which is in turn followed by more
+sampling. In this case, IC or any other covariate can be set to the
+initial measured concentration, and if V is the volume of compartment 2,
+the initial condition (amount) in compartment 2 will now be set to the
+measured concentration of drug multiplied by the estimated volume for
+each iteration until convergence.</p>
+<p>In the second case, the initial condition for compartment 3 becomes
+another variable, IC3 defined in the <code>pri</code> list, to fit in
+the model, given the observed data.</p>
 </div>
 <div class="section level3">
 <h3 id="FaR6">FA (bioavailability)<a class="anchor" aria-label="anchor" href="#FaR6"></a>
 </h3>
-<p>Specify the bioavailability term, if present. Use the form FA(.) = expression, where “.” is the input number. Primary and secondary variables and covariates may be used in the expression, as can conditional statements in Fortran code. An “&amp;” continuation prefix is not necessary in this block for any statement, although if present, will be ignored.</p>
+<p>Specify the bioavailability term, if present. Use the form FA(.) =
+expression, where “.” is the input number. Primary and secondary
+variables and covariates may be used in the expression, as can
+conditional statements in Fortran code. An “&amp;” continuation prefix
+is not necessary in this block for any statement, although if present,
+will be ignored.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> PM_model<span class="sc">$</span><span class="fu">new</span>(<span class="fu">list</span>(</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">pri =</span> <span class="at">pri =</span> <span class="fu">list</span>(</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ke =</span> <span class="fu">ab</span>(<span class="dv">0</span>,<span class="dv">5</span>),</span>
@@ -217,7 +292,13 @@
 <div class="section level3">
 <h3 id="lagR6">LAG time<a class="anchor" aria-label="anchor" href="#lagR6"></a>
 </h3>
-<p>Specify the lag term, if present, which is the delay after an absorbed dose before observed concentrations. Use the form TLAG(.) = expression, where “.” is the input number. Primary and secondary variables and covariates may be used in the expression, as can conditional statements in Fortran code. An “&amp;” continuation prefix is not necessary in this block for any statement, although if present, will be ignored.</p>
+<p>Specify the lag term, if present, which is the delay after an
+absorbed dose before observed concentrations. Use the form TLAG(.) =
+expression, where “.” is the input number. Primary and secondary
+variables and covariates may be used in the expression, as can
+conditional statements in Fortran code. An “&amp;” continuation prefix
+is not necessary in this block for any statement, although if present,
+will be ignored.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> PM_model<span class="sc">$</span><span class="fu">new</span>(<span class="fu">list</span>(</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">pri =</span> <span class="at">pri =</span> <span class="fu">list</span>(</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ke =</span> <span class="fu">ab</span>(<span class="dv">0</span>,<span class="dv">5</span>),</span>
@@ -231,8 +312,13 @@
 <div class="section level3">
 <h3 id="differential-equations">Differential equations<a class="anchor" aria-label="anchor" href="#differential-equations"></a>
 </h3>
-<p>Specify a model in terms of ordinary differential equations, in Fortran format. XP(.) is the notation for dX(.)/dt, where “.” is the compartment number. X(.) is the amount in the compartment. <strong>There can be a maximum of 20 such equations.</strong></p>
-<p>Specify equations as elements in a list, with XP(1) replaced by XP1, for example, to name the list, and the list value a character vector in Fortran.</p>
+<p>Specify a model in terms of ordinary differential equations, in
+Fortran format. XP(.) is the notation for dX(.)/dt, where “.” is the
+compartment number. X(.) is the amount in the compartment. <strong>There
+can be a maximum of 20 such equations.</strong></p>
+<p>Specify equations as elements in a list, with XP(1) replaced by XP1,
+for example, to name the list, and the list value a character vector in
+Fortran.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> PM_model<span class="sc">$</span><span class="fu">new</span>(<span class="fu">list</span>(</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">pri =</span> <span class="at">pri =</span> <span class="fu">list</span>(</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ka =</span> <span class="fu">ab</span>(<span class="dv">0</span>,<span class="dv">5</span>),</span>
@@ -247,14 +333,32 @@
 <span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">xp3 =</span> <span class="st">"Kcp * X(2) - Kpc * X(3)"</span></span>
 <span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div>
-<p>RATEIV(1) is the notation to indicate an infusion of input 1 (typically drug 1). The duration of the infusion and total dose is defined in the data.csv file. <strong>Up to 7 inputs are currently allowed.</strong> These can be used in the model file as RATEIV(1), RATEIV(2), etc. The compartments for receiving the inputs of oral (bolus) doses are defined in the <code>bol</code> list, but can be accessed by using the B(1), B(2), etc. notation in equations.</p>
+<p>RATEIV(1) is the notation to indicate an infusion of input 1
+(typically drug 1). The duration of the infusion and total dose is
+defined in the data.csv file. <strong>Up to 7 inputs are currently
+allowed.</strong> These can be used in the model file as RATEIV(1),
+RATEIV(2), etc. The compartments for receiving the inputs of oral
+(bolus) doses are defined in the <code>bol</code> list, but can be
+accessed by using the B(1), B(2), etc. notation in equations.</p>
 </div>
 <div class="section level3">
 <h3 id="outR6">OUTputs<a class="anchor" aria-label="anchor" href="#outR6"></a>
 </h3>
-<p>Output equations are in Fortran format. Outputs are of the form Y(.) = expression, where “.” is the output equation number. Primary and secondary variables and covariates may be used in the expression, as can conditional statements in Fortran code. An “&amp;” continuation prefix is not necessary in this block for any statement, although if present, will be ignored. <strong>There can be a maximum of 6 outputs.</strong></p>
-<p>They are referred to as Y(1), Y(2), etc. These equations may also define a model explicitly as a function of primary and secondary variables and covariates.</p>
-<p>The <code>out</code> list is a series of nested lists. The outer list defines all the outputs. The next level defines each output equation. Within the equation list is the equation and the error model. Within the error model for that output, is the last list comprising model and assay error specifications.</p>
+<p>Output equations are in Fortran format. Outputs are of the form Y(.)
+= expression, where “.” is the output equation number. Primary and
+secondary variables and covariates may be used in the expression, as can
+conditional statements in Fortran code. An “&amp;” continuation prefix
+is not necessary in this block for any statement, although if present,
+will be ignored. <strong>There can be a maximum of 6
+outputs.</strong></p>
+<p>They are referred to as Y(1), Y(2), etc. These equations may also
+define a model explicitly as a function of primary and secondary
+variables and covariates.</p>
+<p>The <code>out</code> list is a series of nested lists. The outer list
+defines all the outputs. The next level defines each output equation.
+Within the equation list is the equation and the error model. Within the
+error model for that output, is the last list comprising model and assay
+error specifications.</p>
 <ul>
 <li>To name output equations, Y(1) is replaced by Y1</li>
 </ul>
@@ -263,26 +367,70 @@
 <span>  Y1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <ul>
-<li>The output equation is a character vector followed by an error list.</li>
+<li>The output equation is a character vector named “val” followed by an
+error list.</li>
 </ul>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  Y1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="st">"X(1)/V"</span>,</span>
+<span>    val <span class="op">=</span> <span class="st">"X(1)/V"</span>,</span>
 <span>    err <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <ul>
-<li>The error model for an output equation has two elements. The first is the <code>model</code> error, which can be one of three functions: <code>proportional</code>, <code>additive</code>, or <code>combination</code>. The arguments to these functions are a number and optionally <code>fixed</code>, which defaults to <code>FALSE</code>. If <code>fixed</code> is <code>FALSE</code>, the number serves as the starting estimate for the model error. If <code>fixed</code> is <code>TRUE</code>, the number serves as the model error, with no estimation. Note that you can only fix the additive model currently to zero.</li>
+<li>The error model for an output equation has two elements. The first
+is the <code>model</code> error, which can be one of three functions:
+<code>proportional</code>, <code>additive</code>, or
+<code>combination</code>. The arguments to these functions are a number
+and optionally <code>fixed</code>, which defaults to <code>FALSE</code>.
+If <code>fixed</code> is <code>FALSE</code>, the number serves as the
+starting estimate for the model error. If <code>fixed</code> is
+<code>TRUE</code>, the number serves as the model error, with no
+estimation. Note that you can only fix the additive model currently to
+zero.</li>
 </ul>
-<p>The second element is the <code>assay</code> error model. It is a vector of 4 numbers that define a polynomial equation to permit calculation of the standard deviation of an observation, based on the noise of the asaay. The four terms estimate SD according to the folowing equation: <span class="math inline">\(C0 + C1 * [obs] + C2 * [obs]^2 + C3 * [obs]^3\)</span> and <span class="math inline">\([obs]\)</span> is the observation. The values for the coefficients should ideally come from the analytic lab in the form of inter-run standard deviations or coefficients of variation at standard concentrations. You can use the Pmetrics function <code><a href="../reference/makeErrorPoly.html">makeErrorPoly()</a></code> to choose the best set of coefficients that fit the data from the laboratory. <span class="update">To be done:</span>Alternatively, if you have no information about the assay, you can use the Pmetrics <code><a href="../reference/ERRrun.html">ERRrun()</a></code> engine as an argument to the <code>run</code> function for <code>PM_fit</code> objects (i.e., <code>$run(engine="err")</code>) to estimate the coefficients from the data. Finally, you can use a generic set of coefficients. We recommend that as a start, <span class="math inline">\(C0\)</span> be set to half of the lowest concentration in the dataset and <span class="math inline">\(C1\)</span> be set to 0.1. <span class="math inline">\(C2\)</span> and <span class="math inline">\(C3\)</span> can be 0.</p>
-<p>The proportional model weights each observation by <span class="math inline">\(1/(\gamma * SD)^2\)</span>, where <span class="math inline">\(\gamma\)</span> is either fixed or estimated. The additive model weights each observation by <span class="math inline">\(1/(\lambda + SD)^2\)</span>, where <span class="math inline">\(\lambda\)</span> is either fixed or estimated. The combination model uses <span class="math inline">\(1/((\gamma * SD)^2 + (\lambda + SD)^2)\)</span>.</p>
-<p>In the proportional model, <span class="math inline">\(\gamma\)</span> is a scalar on assay SD. In general, well-designed and executed studies and models with low mis-specification will have data with <span class="math inline">\(\gamma\)</span> values approaching 1. Values &lt;1 suggest over-inflated assay noise. Poor quality, noisy data will result in <span class="math inline">\(\gamma\)</span> of 5 or more. A good starting value for <span class="math inline">\(\gamma\)</span> is usually 5, and sometimes 10 if data are particularly complex or noisy.</p>
-<p>In the additive model, <span class="math inline">\(\lambda\)</span> is additive to assay SD. In general, well-designed and executed studies and models with low mis-specification will have data with <span class="math inline">\(\lambda\)</span> values approaching 0. Values of 0 may suggest over inflated assay noise. Poor quality, noisy data will result in <span class="math inline">\(\lambda\)</span> of <span class="math inline">\(5*C0\)</span> or more. A good starting value for <span class="math inline">\(\lambda\)</span> is usually <span class="math inline">\(3*C0\)</span>. Note, that <span class="math inline">\(C0\)</span> should generally not be 0, as it represents machine noise (e.g. HPLC or mass spectrometer) that is always present.</p>
+<p>The second element is the <code>assay</code> error model. It is a
+vector of 4 numbers that define a polynomial equation to permit
+calculation of the standard deviation of an observation, based on the
+noise of the asaay. The four terms estimate SD according to the folowing
+equation: <span class="math inline">\(C0 + C1 * [obs] + C2 * [obs]^2 +
+C3 * [obs]^3\)</span> and <span class="math inline">\([obs]\)</span> is
+the observation. The values for the coefficients should ideally come
+from the analytic lab in the form of inter-run standard deviations or
+coefficients of variation at standard concentrations. You can use the
+Pmetrics function <code><a href="../reference/makeErrorPoly.html">makeErrorPoly()</a></code> to choose the best set of
+coefficients that fit the data from the laboratory. <span class="update">To be done:</span>Alternatively, if you have no
+information about the assay, you can use the Pmetrics
+<code><a href="../reference/ERRrun.html">ERRrun()</a></code> engine as an argument to the <code>run</code>
+function for <code><a href="../reference/PM_fit.html">PM_fit()</a></code> objects (i.e.,
+<code>$run(engine="err")</code>) to estimate the coefficients from the
+data. Finally, you can use a generic set of coefficients. We recommend
+that as a start, <span class="math inline">\(C0\)</span> be set to half
+of the lowest concentration in the dataset and <span class="math inline">\(C1\)</span> be set to 0.1. <span class="math inline">\(C2\)</span> and <span class="math inline">\(C3\)</span> can be 0.</p>
+<p>The proportional model weights each observation by <span class="math inline">\(1/(\gamma * SD)^2\)</span>, where <span class="math inline">\(\gamma\)</span> is either fixed or estimated. The
+additive model weights each observation by <span class="math inline">\(1/(\lambda + SD)^2\)</span>, where <span class="math inline">\(\lambda\)</span> is either fixed or estimated. The
+combination model uses <span class="math inline">\(1/((\gamma * SD)^2 +
+(\lambda + SD)^2)\)</span>.</p>
+<p>In the proportional model, <span class="math inline">\(\gamma\)</span> is a scalar on assay SD. In
+general, well-designed and executed studies and models with low
+mis-specification will have data with <span class="math inline">\(\gamma\)</span> values approaching 1. Values &lt;1
+suggest over-inflated assay noise. Poor quality, noisy data will result
+in <span class="math inline">\(\gamma\)</span> of 5 or more. A good
+starting value for <span class="math inline">\(\gamma\)</span> is
+usually 5, and sometimes 10 if data are particularly complex or
+noisy.</p>
+<p>In the additive model, <span class="math inline">\(\lambda\)</span>
+is additive to assay SD. In general, well-designed and executed studies
+and models with low mis-specification will have data with <span class="math inline">\(\lambda\)</span> values approaching 0. Values of 0
+may suggest over inflated assay noise. Poor quality, noisy data will
+result in <span class="math inline">\(\lambda\)</span> of <span class="math inline">\(5*C0\)</span> or more. A good starting value for
+<span class="math inline">\(\lambda\)</span> is usually <span class="math inline">\(3*C0\)</span>. Note, that <span class="math inline">\(C0\)</span> should generally not be 0, as it
+represents machine noise (e.g. HPLC or mass spectrometer) that is always
+present.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  Y1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="st">"X(1)/V"</span>,</span>
+<span>    val <span class="op">=</span> <span class="st">"X(1)/V"</span>,</span>
 <span>    err <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>      model <span class="op">=</span> <span class="fu">proportional</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>,</span>
 <span>      assay <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.15</span>, <span class="fl">0.1</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span></span>
@@ -291,7 +439,7 @@
 <span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>out <span class="ot">=</span> <span class="fu">list</span>(</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">Y1 =</span> <span class="fu">list</span>(</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"X(1)/V"</span>,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">val =</span> <span class="st">"X(1)/V"</span>,</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">err =</span> <span class="fu">list</span>(</span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">model =</span> <span class="fu">additive</span>(<span class="dv">1</span>, <span class="at">fixed =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">assay =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
@@ -305,7 +453,7 @@
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  ),</span>
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">out =</span> <span class="fu">list</span>(</span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">y1 =</span> <span class="fu">list</span>(</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>      <span class="st">"X(1)/V"</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>      <span class="at">val =</span> <span class="st">"X(1)/V"</span>,</span>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">err =</span> <span class="fu">list</span>(</span>
 <span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">model =</span> <span class="fu">proportional</span>(<span class="dv">5</span>),</span>
 <span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">assay =</span> <span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
@@ -324,7 +472,7 @@
 <span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">sec =</span> <span class="fu">list</span>(<span class="st">"RES = B(1) * KIN/(KIN-KOUT) * (EXP(-KOUT*TPD)-EXP(-KIN*TPD))"</span>),</span>
 <span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">out =</span> <span class="fu">list</span>(</span>
 <span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">y1 =</span> <span class="fu">list</span>(</span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>      <span class="st">"RES/V"</span>,</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>      <span class="at">val =</span> <span class="st">"RES/V"</span>,</span>
 <span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">err =</span> <span class="fu">list</span>(</span>
 <span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>        <span class="at">model =</span> <span class="fu">combination</span>(<span class="fl">0.4</span>,<span class="dv">3</span>) <span class="co">#additive, proportional</span></span>
 <span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>        <span class="at">assay =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.15</span>, <span class="dv">0</span>, <span class="dv">0</span>)</span>
@@ -332,23 +480,37 @@
 <span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>))</span></code></pre></div>
-<p>This last example is known as the Bateman equation for a model with linear absorption (KIN) into and elimination (KOUT) from a central compartment, and a time post-dose (TPD) or lag time. Here B(1) is the oral bolus dosing vector for drug 1, and V is the volume of the central compartment.</p>
+<p>This last example is known as the Bateman equation for a model with
+linear absorption (KIN) into and elimination (KOUT) from a central
+compartment, and a time post-dose (TPD) or lag time. Here B(1) is the
+oral bolus dosing vector for drug 1, and V is the volume of the central
+compartment.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="updating-models-in-r6">Updating Models in R6<a class="anchor" aria-label="anchor" href="#updating-models-in-r6"></a>
 </h2>
-<p>Because models are loaded as memory items in R6 Pmetrics, they can be modified in R without having to edit text files. This function is accessed via the <code>$update()</code> method for <code>PM_model</code> objects.</p>
-<p>All R6 objects are mini-environments, so direct copies of an R6 environment are in the same environment and changes to one will change them all. This means the following code will likely not work as intended.</p>
+<p>Because models are loaded as memory items in R6 Pmetrics, they can be
+modified in R without having to edit text files. This function is
+accessed via the <code>$update()</code> method for <code>PM_model</code>
+objects.</p>
+<p>All R6 objects are mini-environments, so direct copies of an R6
+environment are in the same environment and changes to one will change
+them all. This means the following code will likely not work as
+intended.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod2</span> <span class="op">&lt;-</span> <span class="va">mod1</span></span>
 <span><span class="va">mod2</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>
-<p>When <em>mod2</em> is updated, mod1 will update as they are in the same environment. The way to create an independent copy of an R6 object, which does not share the same environment, is to use the <code>$clone()</code> method.</p>
+<p>When <em>mod2</em> is updated, mod1 will update as they are in the
+same environment. The way to create an independent copy of an R6 object,
+which does not share the same environment, is to use the
+<code>$clone()</code> method available for all R6 objects.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod2</span> <span class="op">&lt;-</span> <span class="va">mod1</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">mod2</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>
 <p>Now changes to mod2 do not propagate to mod1.</p>
-<p>To update a model, simply supply the list items you wish to change with the new values.</p>
+<p>To update a model, simply supply the list items you wish to change
+with the new values.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">mod2</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -357,16 +519,46 @@
 <span>             V0 <span class="op">=</span> <span class="fu">ab</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  sec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>V <span class="op">=</span> <span class="st">"V0 * wt"</span><span class="op">)</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>This example changes the range of <em>Ke</em>, deletes <em>V</em>, adds <em>V0</em>, and defines a new secondary relationship for <em>V = V0 * wt</em>.</p>
+<p>This example changes the range of <em>Ke</em>, deletes <em>V</em>,
+adds <em>V0</em>, and defines a new secondary relationship for <em>V =
+V0 * wt</em>.</p>
 </div>
 <div class="section level2">
 <h2 id="specifying-models-in-legacy">Specifying Models in Legacy<a class="anchor" aria-label="anchor" href="#specifying-models-in-legacy"></a>
 </h2>
-<p><span class="legacy">Legacy</span> models are only text files. All the following also apply when using a model text file with <code><a href="../reference/PM_model.html">PM_model()</a></code> in R6 Pmetrics. In either R6 or Legacy Pmetrics, models are ultimately translated into Fortran text files with a header version of TSMULT...</p>
-<p>However, after Pmetrics version 0.30, we adopted a very simple user format that Pmetrics will use to generate the Fortran code automatically for you. Version 0.4 additionally eliminated the previously separate instruction file. A model library is available on our website at <a href="http://www.lapk.org/pmetrics.php" class="external-link">http://www.lapk.org/pmetrics.php</a>.</p>
-<p><strong>Naming your model files.</strong> The default model file name is “model.txt,” but you can call them whatever you wish. However, <strong>please keep the number of characters in the model file name ≤ 8</strong>. When you use a model file in <code><a href="../reference/NPrun.html">NPrun()</a></code>, <code><a href="../reference/ITrun.html">ITrun()</a></code>, <code><a href="../reference/ERRrun.html">ERRrun()</a></code>, or <code><a href="../reference/SIMrun.html">SIMrun()</a></code>, Pmetrics will make a Fortran model file of the same name, temporarily renaming your file. At the end of the run, your original model file will be in the /inputs subfolder of the run folder, and the generated Fortran model file will be called “model.for” and moved to the /etc subfolder of the run folder. If your model is called “mymodel.txt”, then the Fortran file will be “mymodel.for”.</p>
-<p>You can still use appropriate Fortran model files directly, but we suggest you keep the .for extension for all Fortran files to avoid confusion with the new format. If you use a .for file as your model, you will have to specify its name explicitly in <code><a href="../reference/NPrun.html">NPrun()</a></code>, <code><a href="../reference/ITrun.html">ITrun()</a></code>, <code><a href="../reference/ERRrun.html">ERRrun()</a></code>, or <code><a href="../reference/SIMrun.html">SIMrun()</a></code>, since the default model name again is “model.txt.” If you use a .for file directly, it will be in the /inputs subfolder of the run folder, not in /etc, since you did not use the simpler template as your model file.</p>
-<p><strong>Structure of model files.</strong> The model file is a text file with 11 blocks, each marked by "#" followed by a header tag. Only details which are different than the R6 documentation are included below.</p>
+<p><span class="legacy">Legacy</span> models are only text files. All
+the following also apply when using a model text file with
+<code><a href="../reference/PM_model.html">PM_model()</a></code> in R6 Pmetrics. In either R6 or Legacy Pmetrics,
+models are ultimately translated into Fortran text files with a header
+version of TSMULT...</p>
+<p>However, after Pmetrics version 0.30, we adopted a very simple user
+format that Pmetrics will use to generate the Fortran code automatically
+for you. Version 0.4 additionally eliminated the previously separate
+instruction file. A model library is available on our website at <a href="http://www.lapk.org/pmetrics.php" class="external-link">http://www.lapk.org/pmetrics.php</a>.</p>
+<p><strong>Naming your model files.</strong> The default model file name
+is “model.txt,” but you can call them whatever you wish. However,
+<strong>please keep the number of characters in the model file name ≤
+8</strong>. When you use a model file in <code><a href="../reference/NPrun.html">NPrun()</a></code>,
+<code><a href="../reference/ITrun.html">ITrun()</a></code>, <code><a href="../reference/ERRrun.html">ERRrun()</a></code>, or <code><a href="../reference/SIMrun.html">SIMrun()</a></code>,
+Pmetrics will make a Fortran model file of the same name, temporarily
+renaming your file. At the end of the run, your original model file will
+be in the /inputs subfolder of the run folder, and the generated Fortran
+model file will be called “model.for” and moved to the /etc subfolder of
+the run folder. If your model is called “mymodel.txt”, then the Fortran
+file will be “mymodel.for”.</p>
+<p>You can still use appropriate Fortran model files directly, but we
+suggest you keep the .for extension for all Fortran files to avoid
+confusion with the new format. If you use a .for file as your model, you
+will have to specify its name explicitly in <code><a href="../reference/NPrun.html">NPrun()</a></code>,
+<code><a href="../reference/ITrun.html">ITrun()</a></code>, <code><a href="../reference/ERRrun.html">ERRrun()</a></code>, or <code><a href="../reference/SIMrun.html">SIMrun()</a></code>,
+since the default model name again is “model.txt.” If you use a .for
+file directly, it will be in the /inputs subfolder of the run folder,
+not in /etc, since you did not use the simpler template as your model
+file.</p>
+<p><strong>Structure of model files.</strong> The model file is a text
+file with 11 blocks, each marked by "#" followed by a header tag. Only
+details which are different than the R6 documentation are included
+below.</p>
 <ul>
 <li><a href="#pri">#PRImary variables</a></li>
 <li><a href="#cov">#COVariates</a></li>
@@ -380,19 +572,58 @@
 <li><a href="#err">#ERRor</a></li>
 <li><a href="#extra">#EXTra</a></li>
 </ul>
-<p>For each header, only the capital letters are required for recognition by Pmetrics. The blocks can be in any order, and header names are case-insensitive (i.e. the capitalization here is just to show which letters are required). Fortran is also case-insensitive, so in variable names and expressions case is ignored. Details of each block are next, followed by a <a href="#completeEx">complete example</a>.</p>
-<p>Important: Sometimes it is important to preserve spacing and formatting in Fortran code that you might insert into blocks, particularly the #EXTRA block. If you wish to do this, insert [format] and [/format] before and after any code that you wish to reproduce verbatim with spacing in the fortran model file.</p>
-<p>Comments: You can insert comments into your model text file by starting a line with a capital “C” followed by a space. These lines will be removed/ignored in the final fortran code.</p>
+<p>For each header, only the capital letters are required for
+recognition by Pmetrics. The blocks can be in any order, and header
+names are case-insensitive (i.e. the capitalization here is just to show
+which letters are required). Fortran is also case-insensitive, so in
+variable names and expressions case is ignored. Details of each block
+are next, followed by a <a href="#completeEx">complete example</a>.</p>
+<p>Important: Sometimes it is important to preserve spacing and
+formatting in Fortran code that you might insert into blocks,
+particularly the #EXTRA block. If you wish to do this, insert [format]
+and [/format] before and after any code that you wish to reproduce
+verbatim with spacing in the fortran model file.</p>
+<p>Comments: You can insert comments into your model text file by
+starting a line with a capital “C” followed by a space. These lines will
+be removed/ignored in the final fortran code.</p>
 <div class="section level3">
 <h3 id="pri">Primary variables<a class="anchor" aria-label="anchor" href="#pri"></a>
 </h3>
-<p>Primary variables are the model parameters that are to be estimated by Pmetrics or are designated as fixed parameters with user specified values. It should be a list of variable names, one name to a line. Variable names should be 11 characters or fewer. Some variable names are <a href="#reserved">reserved</a> for use by Pmetrics and cannot be used as primary variable names. <strong>The number of primary variables must be between 2 and 32, with at most 30 random or 20 fixed.</strong></p>
-<p>On each row, following the variable name, include the range for the parameter that defines the search space. These ranges behave slightly differently for NPAG, IT2B, and the simulator.</p>
+<p>Primary variables are the model parameters that are to be estimated
+by Pmetrics or are designated as fixed parameters with user specified
+values. It should be a list of variable names, one name to a line.
+Variable names should be 11 characters or fewer. Some variable names are
+<a href="#reserved">reserved</a> for use by Pmetrics and cannot be used
+as primary variable names. <strong>The number of primary variables must
+be between 2 and 32, with at most 30 random or 20 fixed.</strong></p>
+<p>On each row, following the variable name, include the range for the
+parameter that defines the search space. These ranges behave slightly
+differently for NPAG, IT2B, and the simulator.</p>
 <ul>
-<li><p>For all engines, the format of the limits is <em>min, max</em>. A single value will indicate that the parameter is to be fixed but unknown in the population, i.e. the value is taken as the starting point for the optimization, but the final value will depend on the model and data and will be the same across the population. A single value followed by an “!” will indicate that this value is to be held constant (i.e. fixed and known) across the population, and not to be estimated.</p></li>
-<li><p>For <strong>NPAG</strong>, when <em>min/max</em> limits are specified, they are absolute, i.e. the algorithm will not search outside this range.</p></li>
-<li><p>For <strong>IT2B</strong>, the range defines the Bayesian prior distribution of the parameter values for cycle 1. For each parameter, the mean of the Bayesian prior distribution is taken as the middle of the range, and the standard deviation is <em>xsig</em>*range (see <a href="%5Cl"><u>IT2B runs</u></a>). Adding a plus sign (+) to a line will prevent that parameter from being assigned negative values. NPAG and the simulator will ignore the pluses as the ranges are absolute for these engines. Note that prior to version 1.5.0, this used to be an exclamation point (!) but to be consistent throughout the model file, the exclamation point is now used when fixed values are desired.</p></li>
-<li><p>The <strong>simulator</strong> will ignore the ranges with the default value of NULL for the <em>limits</em> argument. If the simulator <em>limits</em> argument is set to NA, which will mean that these ranges will be used as the limits to truncate the simulation (see <a href="%5Cl"><u>Simulator Runs</u></a>).</p></li>
+<li><p>For all engines, the format of the limits is <em>min, max</em>. A
+single value will indicate that the parameter is to be fixed but unknown
+in the population, i.e. the value is taken as the starting point for the
+optimization, but the final value will depend on the model and data and
+will be the same across the population. A single value followed by an
+“!” will indicate that this value is to be held constant (i.e. fixed and
+known) across the population, and not to be estimated.</p></li>
+<li><p>For <strong>NPAG</strong>, when <em>min/max</em> limits are
+specified, they are absolute, i.e. the algorithm will not search outside
+this range.</p></li>
+<li><p>For <strong>IT2B</strong>, the range defines the Bayesian prior
+distribution of the parameter values for cycle 1. For each parameter,
+the mean of the Bayesian prior distribution is taken as the middle of
+the range, and the standard deviation is <em>xsig</em>*range (see <a href="%5Cl"><u>IT2B runs</u></a>). Adding a plus sign (+) to a line will
+prevent that parameter from being assigned negative values. NPAG and the
+simulator will ignore the pluses as the ranges are absolute for these
+engines. Note that prior to version 1.5.0, this used to be an
+exclamation point (!) but to be consistent throughout the model file,
+the exclamation point is now used when fixed values are
+desired.</p></li>
+<li><p>The <strong>simulator</strong> will ignore the ranges with the
+default value of NULL for the <em>limits</em> argument. If the simulator
+<em>limits</em> argument is set to NA, which will mean that these ranges
+will be used as the limits to truncate the simulation (see <a href="%5Cl"><u>Simulator Runs</u></a>).</p></li>
 </ul>
 Example:
 <div class="script">
@@ -410,8 +641,16 @@ FA1, 0.5!</p>
 <div class="section level3">
 <h3 id="cov">Covariates<a class="anchor" aria-label="anchor" href="#cov"></a>
 </h3>
-<p>By default, missing covariate values for subsequent dose events are linearly interpolated between existing values, or carried forward if the first value is the only non-missing entry. To suppress interpolation and carry forward the previous value in a piece-wise constant fashion, include an exclamation point (!) in any declaration line.</p>
-<p><strong>Note</strong> that any covariate relationship to any parameter may be described as the user wishes by mathematical equations and Fortran code, allowing for exploration of complex, non-linear, time-dependent, and/or conditional relationships. This is accomplished in the <a href="#sec">#Sec</a> block.</p>
+<p>By default, missing covariate values for subsequent dose events are
+linearly interpolated between existing values, or carried forward if the
+first value is the only non-missing entry. To suppress interpolation and
+carry forward the previous value in a piece-wise constant fashion,
+include an exclamation point (!) in any declaration line.</p>
+<p><strong>Note</strong> that any covariate relationship to any
+parameter may be described as the user wishes by mathematical equations
+and Fortran code, allowing for exploration of complex, non-linear,
+time-dependent, and/or conditional relationships. This is accomplished
+in the <a href="#sec">#Sec</a> block.</p>
 <p>Example:</p>
 <div class="script">
 <p>#Cov<br>
@@ -419,12 +658,21 @@ wt<br>
 cyp<br>
 IC!</p>
 </div>
-<p>where IC will be piece-wise constant and the other two will be linearly interpolated for missing values.</p>
+<p>where IC will be piece-wise constant and the other two will be
+linearly interpolated for missing values.</p>
 </div>
 <div class="section level3">
 <h3 id="sec">Secondary variables<a class="anchor" aria-label="anchor" href="#sec"></a>
 </h3>
-<p>Equation syntax must be Fortran. It is permissible to have conditional statements, but because expressions in this block are translated into variable declarations in Fortran, expressions other than of the form "X = function(Y)" must be prefixed by a "&amp;" and contain only variables which have been previously defined in the Primary, Covariate, or Secondary blocks. Note that prior to version 1.5.0, the continuation symbol was “+” before each line, but to avoid confusion with the use of “+” in the Primary block for IT2B models, and to be consistent with Fortran notation, the “&amp;” is used henceforth.</p>
+<p>Equation syntax must be Fortran. It is permissible to have
+conditional statements, but because expressions in this block are
+translated into variable declarations in Fortran, expressions other than
+of the form "X = function(Y)" must be prefixed by a "&amp;" and contain
+only variables which have been previously defined in the Primary,
+Covariate, or Secondary blocks. Note that prior to version 1.5.0, the
+continuation symbol was “+” before each line, but to avoid confusion
+with the use of “+” in the Primary block for IT2B models, and to be
+consistent with Fortran notation, the “&amp;” is used henceforth.</p>
 <p>Example:</p>
 <div class="script">
 <p>#Sec<br>
@@ -450,13 +698,30 @@ NBCOMP(1) = 2</p>
 X(2) = IC*V<br>
 X(3) = IC3<br></p>
 </div>
-<p>In the first case, the initial condition for compartment 2 becomes the value of the IC covariate (defined in #Covariate block) multiplied by the current estimate of V during each iteration. This is useful when a subject has been taking a drug as an outpatient, and comes in to the lab for PK sampling, with measurement of a concentration immediately prior to a witnessed dose, which is in turn followed by more sampling. In this case, IC or any other covariate can be set to the initial measured concentration, and if V is the volume of compartment 2, the initial condition (amount) in compartment 2 will now be set to the measured concentration of drug multiplied by the estimated volume for each iteration until convergence.</p>
-<p>In the second case, the initial condition for compartment 3 becomes another variable, IC3 defined in the #Primary block, to fit in the model, given the observed data.</p>
+<p>In the first case, the initial condition for compartment 2 becomes
+the value of the IC covariate (defined in #Covariate block) multiplied
+by the current estimate of V during each iteration. This is useful when
+a subject has been taking a drug as an outpatient, and comes in to the
+lab for PK sampling, with measurement of a concentration immediately
+prior to a witnessed dose, which is in turn followed by more sampling.
+In this case, IC or any other covariate can be set to the initial
+measured concentration, and if V is the volume of compartment 2, the
+initial condition (amount) in compartment 2 will now be set to the
+measured concentration of drug multiplied by the estimated volume for
+each iteration until convergence.</p>
+<p>In the second case, the initial condition for compartment 3 becomes
+another variable, IC3 defined in the #Primary block, to fit in the
+model, given the observed data.</p>
 </div>
 <div class="section level3">
 <h3 id="Fa">Fa (bioavailability)<a class="anchor" aria-label="anchor" href="#Fa"></a>
 </h3>
-<p>Specify the bioavailability term, if present. Use the form FA(.) = expression, where "." is the input number. Primary and secondary variables and covariates may be used in the expression, as can conditional statements in Fortran code. An "&amp;" continuation prefix is not necessary in this block for any statement, although if present, will be ignored.</p>
+<p>Specify the bioavailability term, if present. Use the form FA(.) =
+expression, where "." is the input number. Primary and secondary
+variables and covariates may be used in the expression, as can
+conditional statements in Fortran code. An "&amp;" continuation prefix
+is not necessary in this block for any statement, although if present,
+will be ignored.</p>
 <p>Example:</p>
 <div class="script">
 <p>#Fa<br>
@@ -486,7 +751,15 @@ XP(3) = KCP*X(2) - KPC*X(3)</p>
 <div class="section level3">
 <h3 id="out">Outputs<a class="anchor" aria-label="anchor" href="#out"></a>
 </h3>
-<p>Output equations, in Fortran format. Outputs are of the form Y(.) = expression, where "." is the output equation number. Primary and secondary variables and covariates may be used in the expression, as can conditional statements in Fortran code. An "&amp;" continuation prefix is not necessary in this block for any statement, although if present, will be ignored. <strong>There can be a maximum of 6 outputs.</strong> They are referred to as Y(1), Y(2), etc. These equations may also define a model explicitly as a function of primary and secondary variables and covariates.</p>
+<p>Output equations, in Fortran format. Outputs are of the form Y(.) =
+expression, where "." is the output equation number. Primary and
+secondary variables and covariates may be used in the expression, as can
+conditional statements in Fortran code. An "&amp;" continuation prefix
+is not necessary in this block for any statement, although if present,
+will be ignored. <strong>There can be a maximum of 6 outputs.</strong>
+They are referred to as Y(1), Y(2), etc. These equations may also define
+a model explicitly as a function of primary and secondary variables and
+covariates.</p>
 <p>Examples:</p>
 <div class="script">
 <p>#Out<br>
@@ -499,16 +772,33 @@ Y(1) = X(2)/V</p>
 <div class="section level3">
 <h3 id="err">Error<a class="anchor" aria-label="anchor" href="#err"></a>
 </h3>
-<p>Unlike the R6, the error block is separate from the output block. In Legacy Pmetrics, this block contains all the information Pmetrics requires for the structure of the error model.</p>
-<p>To specify the model in this block, the first line needs to be either L=number or G=number for a <span class="math inline">\(\lambda\)</span> or <span class="math inline">\(\gamma\)</span> error model. The number is the starting value for <span class="math inline">\(\lambda\)</span> or <span class="math inline">\(\gamma\)</span>. If you include an exclamation point (!) in the declaration, then <span class="math inline">\(\lambda\)</span> or <span class="math inline">\(\gamma\)</span> will be fixed and not estimated. Recall that you can only fix <span class="math inline">\(\lambda\)</span> currently to zero.</p>
-<p>The next line(s) contain the values for <span class="math inline">\(C0\)</span>, <span class="math inline">\(C1\)</span>, <span class="math inline">\(C2\)</span>, and <span class="math inline">\(C3\)</span>, separated by commas. There should be one line of coefficients for each output equation. By default Pmetrics will use values for these coefficients found in the data file. If none are present or if the model declaration line contains an exclamation point (!) the values here will be used.</p>
-<p>Example 1: estimated <span class="math inline">\(\lambda\)</span>, starting at 0.4, one output, use data file coefficients but if missing, use 0.1,0.1,0,0.</p>
+<p>Unlike the R6, the error block is separate from the output block. In
+Legacy Pmetrics, this block contains all the information Pmetrics
+requires for the structure of the error model.</p>
+<p>To specify the model in this block, the first line needs to be either
+L=number or G=number for a <span class="math inline">\(\lambda\)</span>
+or <span class="math inline">\(\gamma\)</span> error model. The number
+is the starting value for <span class="math inline">\(\lambda\)</span>
+or <span class="math inline">\(\gamma\)</span>. If you include an
+exclamation point (!) in the declaration, then <span class="math inline">\(\lambda\)</span> or <span class="math inline">\(\gamma\)</span> will be fixed and not estimated.
+Recall that you can only fix <span class="math inline">\(\lambda\)</span> currently to zero.</p>
+<p>The next line(s) contain the values for <span class="math inline">\(C0\)</span>, <span class="math inline">\(C1\)</span>, <span class="math inline">\(C2\)</span>, and <span class="math inline">\(C3\)</span>, separated by commas. There should be
+one line of coefficients for each output equation. By default Pmetrics
+will use values for these coefficients found in the data file. If none
+are present or if the model declaration line contains an exclamation
+point (!) the values here will be used.</p>
+<p>Example 1: estimated <span class="math inline">\(\lambda\)</span>,
+starting at 0.4, one output, use data file coefficients but if missing,
+use 0.1,0.1,0,0.</p>
 <div class="script">
 <p>#Err<br>
 L=0.4<br>
 0.1,0.1,0,0<br></p>
 </div>
-<p>Example 2: fixed <span class="math inline">\(\gamma\)</span> of 2, two outputs, use data file coefficients but if missing, use 0.1,0.1,0,0 for the first output, but use 0.3, 0.1, 0, 0 for output 2 regardless of what is in the data file.</p>
+<p>Example 2: fixed <span class="math inline">\(\gamma\)</span> of 2,
+two outputs, use data file coefficients but if missing, use 0.1,0.1,0,0
+for the first output, but use 0.3, 0.1, 0, 0 for output 2 regardless of
+what is in the data file.</p>
 <div class="script">
 <p>#Err<br>
 G=2!<br>
@@ -519,13 +809,27 @@ G=2!<br>
 <div class="section level3">
 <h3 id="extra">Extra<a class="anchor" aria-label="anchor" href="#extra"></a>
 </h3>
-<p>This block is for advanced Fortran programmers only. &lt;span class=“update&gt;UpdateIt is not yet implemented in R6. Occasionally, for very complex models, additional Fortran subroutines are required. They can be placed here. The code must specify complete Fortran subroutines which can be called from other blocks with appropriate call functions. As stated earlier, sometimes it is important to preserve spacing and formatting in Fortran code that you might insert into blocks, particularly the #EXTRA block. If you wish to do this, insert [format] and [/format] in the fortran model file around the affected code.</p>
+<p>This block is for advanced Fortran programmers only. &lt;span
+class=“update&gt;UpdateIt is not yet implemented in R6.
+Occasionally, for very complex models, additional Fortran subroutines
+are required. They can be placed here. The code must specify complete
+Fortran subroutines which can be called from other blocks with
+appropriate call functions. As stated earlier, sometimes it is important
+to preserve spacing and formatting in Fortran code that you might insert
+into blocks, particularly the #EXTRA block. If you wish to do this,
+insert [format] and [/format] in the fortran model file around the
+affected code.</p>
 </div>
 <div class="section level3">
 <h3 id="reserved">Reserved Names<a class="anchor" aria-label="anchor" href="#reserved"></a>
 </h3>
-<p>The following cannot be used as primary, covariate, or secondary variable names. They can be used in equations, however.</p>
+<p>The following cannot be used as primary, covariate, or secondary
+variable names. They can be used in equations, however.</p>
 <table class="table">
+<colgroup>
+<col width="25%">
+<col width="75%">
+</colgroup>
 <thead><tr class="header">
 <th align="left">Reserved Variable</th>
 <th align="left">Function in Pmetrics</th>
@@ -585,7 +889,8 @@ G=2!<br>
 </tr>
 <tr class="even">
 <td align="left">rateiv</td>
-<td align="left">intravenous input for inputs when DUR&gt;0 in data files</td>
+<td align="left">intravenous input for inputs when DUR&gt;0 in data
+files</td>
 </tr>
 <tr class="odd">
 <td align="left">cv</td>
@@ -645,7 +950,8 @@ G=2!<br>
 <div class="section level3">
 <h3 id="completeEx">Complete Example<a class="anchor" aria-label="anchor" href="#completeEx"></a>
 </h3>
-<p>Here is a complete example of a model file, as of Pmetrics version 0.40 and higher:</p>
+<p>Here is a complete example of a model file, as of Pmetrics version
+0.40 and higher:</p>
 <div class="script">
 <p>#Pri<br>
 KE, 0, 5<br>
@@ -666,14 +972,25 @@ L=0.4<br>
 0.1,0.1,0,0<br></p>
 </div>
 <p><em>Notes</em>:</p>
-<p>By omitting a #Diffeq block with ODEs, Pmetrics understands that you are specifying the model to be solved algebraically. In this case, at least KE and V must be in the Primary or Secondary variables. KA, KCP, and KPC are optional and specify absorption, and transfer to and from the central to a peripheral compartment, respectively.</p>
+<p>By omitting a #Diffeq block with ODEs, Pmetrics understands that you
+are specifying the model to be solved algebraically. In this case, at
+least KE and V must be in the Primary or Secondary variables. KA, KCP,
+and KPC are optional and specify absorption, and transfer to and from
+the central to a peripheral compartment, respectively.</p>
 <p>The comment line “C this weight is in kg” will be ignored.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="updating-models-in-legacy">Updating models in Legacy<a class="anchor" aria-label="anchor" href="#updating-models-in-legacy"></a>
 </h2>
-<p>The only way to update a model is to edit the text file and copy it into the working directory to be included in a new run. The advantage is that it is quick and relatively easy. The disadvantage is that you have to keep editing, copying and pasting files, and unless your documentation in R or elsewhere is good, you have no idea how you changed the model from run to run. In contrast, by using the <code>$update()</code> method in R6, you can see a written record of how the model evolved over the project.</p>
+<p>The only way to update a model is to edit the text file and copy it
+into the working directory to be included in a new run. The advantage is
+that it is quick and relatively easy. The disadvantage is that you have
+to keep editing, copying and pasting files, and unless your
+documentation in R or elsewhere is good, you have no idea how you
+changed the model from run to run. In contrast, by using the
+<code>$update()</code> method in R6, you can see a written record of how
+the model evolved over the project.</p>
 </div>
 <div class="section level2">
 <h2 id="brief-fortran-tutorial">Brief Fortran Tutorial<a class="anchor" aria-label="anchor" href="#brief-fortran-tutorial"></a>
