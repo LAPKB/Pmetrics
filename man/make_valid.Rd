@@ -7,6 +7,8 @@
 make_valid(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 }
 \arguments{
+\item{result}{The result of a prior run, loaded with \link{PM_load}.}
+
 \item{tad}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
 
 \item{binCov}{A character vector of the names of covariates which are included in the model, i.e. in the
@@ -26,8 +28,9 @@ will be ignored if \code{tad=FALSE}.}
 
 \item{\dots}{Other parameters to be passed to \link{SIMrun}, especially \code{limits}.}
 
-\item{run}{When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
-which will typically be a number, e.g. 1.}
+\item{data}{An optional external \link{PM_data} object with the same covariates
+used in the model to test. If not specified, the original data will be obtained
+from the \code{result}.}
 }
 \value{
 The output of \code{make_valid} is a list of class \code{PMvalid}, which is a list with the following.

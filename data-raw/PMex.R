@@ -35,6 +35,6 @@ usethis::use_data(simEx)
 
 #NPex with valid field
 NPex_val <- PM_result$load("valid.rds")
-usethis::use_data(NPex_val)
+usethis::use_data(NPex_val, overwrite = T)
 
 

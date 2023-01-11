@@ -394,9 +394,15 @@ makeNCA <- function(x, postPred = F, include, exclude, input = 1, icen = "median
 
     NCA[i, 10] <- max(temp$out) # cmax
     NCA[i, 11] <- temp$tad[which(temp$out == NCA[i, 10])][1] # tmax
-    NCA[i, 2] <- makeAUC(temp, out ~ tad, icen = icen, outeq = outeq, block = block)[, 2] # auc
+    
+    # AUC
+    auc = makeAUC(temp, out ~ tad, icen = icen, outeq = outeq, block = block)$tau
+    NCA[i, 2] <- ifelse(length(auc) == 0, NA, auc)
+
+    #AUMC
     temp2 <- data.frame(id = temp$id, tad = temp$tad, out = temp$tad * temp$out)
-    NCA[i, 3] <- makeAUC(temp2, out ~ tad, icen = icen, outeq = outeq, block = block)[, 2] # aumc
+    aumc = makeAUC(temp2, out ~ tad, icen = icen, outeq = outeq, block = block)$tau
+    NCA[i, 3] <-  ifelse(length(aumc) == 0, NA, aumc)
 
     if (nrow(temp) >= 5) {
       temp <- tail(temp, terminal)

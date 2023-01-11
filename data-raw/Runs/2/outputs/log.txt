@@ -1,5 +1,5 @@
- IT2B  run initiated at 00:25 on 2022 Sep 23. 
-PREP FILES: /Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.2/aarch64-apple-darwin20/Pmetrics/compiledFortran/sITprep.o 
-ENGINE FILES: /Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.2/aarch64-apple-darwin20/Pmetrics/compiledFortran/sITeng.o 
+ IT2B  run initiated at 11:44 on 2022 Nov 19. 
+PREP FILES: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library/Pmetrics/compiledFortran/sITprep.o 
+ENGINE FILES: /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library/Pmetrics/compiledFortran/sITeng.o 
 
 

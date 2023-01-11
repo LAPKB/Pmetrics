@@ -1,10 +1,10 @@
-cd '/Users/mneely/LAPK/Examples/Runs/4'
+cd '/Users/mneely/LAPK/Pmetrics/Examples/Runs/3'
 echo Unix>time.txt
 date +%s>>time.txt
 ./it_prep MacOSX < PMcontrol
 echo 1 > extnum
 echo go > go
-gfortran -w -march=native -O3 -o it_run '/Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.2/aarch64-apple-darwin20/Pmetrics/compiledFortran/sITeng.o' it2bdriv.f
+/opt/homebrew/bin/gfortran -march=native -w -O3 -o it_run '/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library/Pmetrics/compiledFortran/sITeng.o' it2bdriv.f
 ./it_run < go
 echo;echo Cleaning up....;echo
 stty -echo
@@ -38,6 +38,6 @@ mv gendata.csv inputs
 date +%s >> time.txt
 mv time.txt outputs
 if ! $error ; then 
-/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript '/Users/mneely/Library/Caches/org.R-project.R/R/renv/library/Pmetrics-0f9bffc0/R-4.2/aarch64-apple-darwin20/Pmetrics/report/ITrepScript.R' '/Users/mneely/LAPK/Examples/Runs/4/outputs' median FALSE
-/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript -e "browseURL('/Users/mneely/LAPK/Examples/Runs/4/outputs/IT2Breport.html')" ; fi
+/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript '/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library/Pmetrics/report/ITrepScript.R' '/Users/mneely/LAPK/Pmetrics/Examples/Runs/3/outputs' median FALSE
+/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript -e "browseURL('/Users/mneely/LAPK/Pmetrics/Examples/Runs/3/outputs/IT2Breport.html')" ; fi
 mv itscript etc

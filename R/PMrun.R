@@ -272,7 +272,7 @@
   if (!file.exists(fortSource)) {
     PMbuild()
   }
-  compiler <- PMFortranConfig()
+  compiler <- getPMoptions()$compilation_statements
   # check if gfortran and choose serial if not
   if (length(compiler) == 1) {
     parallel <- F

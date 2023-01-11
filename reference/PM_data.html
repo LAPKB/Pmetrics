@@ -12,7 +12,7 @@ to process the data"><meta property="og:image" content="https://lapkb.github.io/
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,12 +69,21 @@ to process the data</p>
 
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>PM_data objects are passed to <a href="PM_fit.html">PM_fit</a> objects to initiate a
+    <p><em>PM_data</em> objects are passed to <a href="PM_fit.html">PM_fit</a> objects to initiate a
 population analysis. The object is created by reading a delimited file in
 the current working directory. The data will be transformed into the standard
 format which is the same for all engines, with a report of any assumptions
 that were necessary to standardize the data. <a href="PMcheck.html">PMcheck</a> is called
-on the standard data to evaluate for errors. There are a number of methods
+on the standard data to evaluate for errors. If dates and times are converted
+to relative decimal times in the standard data, automatic detection of the correct
+format will be attempted using <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code>. In the case of failure
+due to an unusual format, use the 'dt' argument to specify the correct format in your
+data. In the case of successful automatic detection, the format used will be
+included in the standardization report generated upon creation of a new <em>PM_data</em>
+object. Check carefully to make sure the correct format was chosen. Note that if
+your clock times did not include seconds, they were appended as ":00" to the end
+of each time and will appear that way in the copy of the original data.</p>
+<p>There are a number of methods
 defined for a PM_data object, including to write the standard data back
 to a file for future use, to summarize and to plot the object, and to
 conduct a non-compartmental analysis on the raw data using
@@ -109,7 +118,7 @@ conduct a non-compartmental analysis on the raw data using
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
 <p>Create new data object</p><div class="section">
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/PM_data.html">PM_data</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">data</span>, dt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Ymd"</span>, <span class="st">"HS"</span><span class="op">)</span>, quiet <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/PM_data.html">PM_data</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">data</span>, dt <span class="op">=</span> <span class="cn">NULL</span>, quiet <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -121,16 +130,19 @@ in the current R environment.</p></dd>
 
 
 <dt><code>dt</code></dt>
-<dd><p>Date time format as a character vector whose
-first element is date format and second is time. Default is
-<code>c("Ymd", "HS")</code>. Use the following abbreviations:</p><ul><li><p>Y = 4 digit year</p></li>
+<dd><p>Pmetrics will try a variety of date/time formats. If all 16 of
+them fail, use this parameter to specify the correct format as a
+character vector whose
+first element is date format and second is time. Use the following abbreviations:</p><ul><li><p>Y = 4 digit year</p></li>
 <li><p>y = 2 digit year</p></li>
 <li><p>m = decimal month (1, 2, ..., 12)</p></li>
 <li><p>d = decimal day (1, 2, ..., 31)</p></li>
 <li><p>H = hours (0-23)</p></li>
 <li><p>M = minutes (0-59)
-Other formats are possible. See <a href="https://rdrr.io/r/base/strptime.html" class="external-link">strptime</a> for these,
-omitting the % before each abbreviation.</p></li>
+Example: <code>format = c("myd", "mh")</code>. Not one of the tried combinations!
+Always check to make sure that dates/times were parsed correctly and the
+relative times in the <code>PM_data$standard_data</code> field look correct.
+Other date/time formats are possible. See <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> for these.</p></li>
 </ul></dd>
 
 

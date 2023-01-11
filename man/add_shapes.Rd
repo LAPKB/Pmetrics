@@ -4,7 +4,7 @@
 \alias{add_shapes}
 \title{Add shapes to plotly plot}
 \usage{
-add_shapes(p = last_plot(), shape)
+add_shapes(p = plotly::last_plot(), shape)
 }
 \arguments{
 \item{p}{The plot to which the shape should be added. Default is the
