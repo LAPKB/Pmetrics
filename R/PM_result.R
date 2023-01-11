@@ -537,7 +537,7 @@ PM_cycle <- R6::R6Class(
     #' for the user to do.
     #' @param cycle The parsed output from [makeCycle].
     initialize = function(cycle) {
-      class(cycle) <- append("tidy_cycle",class(cycle))
+      if(!is.null(cycle)) {class(cycle) <- append("tidy_cycle",class(cycle))}
       self$data <- cycle
     },
     #' @description

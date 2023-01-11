@@ -677,7 +677,7 @@ G=2!\
 ### Extra
 
 This block is for advanced Fortran programmers only. 
-<span class="update>Update</span>It is not yet implemented in R6.
+<span class="update>Update</span>.
 Occasionally, for very complex models, additional Fortran subroutines are required. They can be placed here. The code must specify complete Fortran subroutines
 which can be called from other blocks with appropriate call functions.
 As stated earlier, sometimes it is important to preserve spacing and

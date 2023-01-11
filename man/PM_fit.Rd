@@ -60,7 +60,7 @@ from a filename}
 \subsection{Method \code{run()}}{
 Fit the model to the data
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_fit$run(..., engine = "NPAG")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_fit$run(..., engine = "NPAG", rundir = getwd())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -69,6 +69,8 @@ Fit the model to the data
 \item{\code{...}}{Other arguments passed to \link{NPrun}}
 
 \item{\code{engine}}{"NPAG" (default) or "IT2B"}
+
+\item{\code{rundir}}{This argument specifies an \emph{existing} folder that will store the run inside.}
 }
 \if{html}{\out{</div>}}
 }
