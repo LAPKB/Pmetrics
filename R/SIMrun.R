@@ -789,6 +789,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
         return()
       }
     }
+    if(makecsv == "simdata.csv") stop(paste0(crayon::red("simdata.csv "),"is reserved. Use another name for ",crayon::green("makecsv"),"."))
     if (file.exists(makecsv)) file.remove(makecsv)
     orig.makecsv <- makecsv
     makecsv <- c("1", "abcde.csv")
