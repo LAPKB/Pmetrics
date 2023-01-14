@@ -1189,6 +1189,10 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
     zero <- which(temp$evid == 1 & temp$dur == 0 & temp$dose == 0)
     if (length(zero) > 0) temp <- temp[-zero, ]
     
+    #remove any white space
+    temp <- purrr::map_df(temp,stringr::str_trim)
+    names(temp) <- purrr::map_chr(names(temp),stringr::str_trim)
+    
     ### update the version once simulator updated
     PMwriteMatrix(temp, orig.makecsv, override = T, version = "DEC_11")
   }
