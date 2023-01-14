@@ -378,16 +378,6 @@ PM_model_list <- R6::R6Class("PM_model_list",
         }
       }
 
-      # stopifnot(
-      #   "pri" %in% model_blocks,
-      #   "out" %in% model_blocks,
-      #   "err" %in% private$lower3(names(model_list$out[[1]])),
-      #   "model" %in% private$lower3(names(model_list$out[[1]]$err)),
-      #   "assay" %in% private$lower3(names(model_list$out[[1]]$err)),
-      #   "proportional" %in% private$lower3(names(model_list$out[[1]]$err$model)) ||
-      #     "additive" %in% private$lower3(names(model_list$out[[1]]$err$model))
-      # )
-
       self$model_list <- model_list
     },
     write = function(model_path = "genmodel.txt", engine = "npag") {
@@ -405,7 +395,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
     },
     update = function(changes_list) {
       keys <- names(changes_list)
-      stopifnot(private$lower3(keys) %in% c("pri", "sec", "dif", "ini", "cov", "out", "err", "fa", "ext")) # TODO: add all supported blocks
+      stopifnot(private$lower3(keys) %in% c("pri", "sec", "dif", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")) # TODO: add all supported blocks
       self$model_list <- modifyList(self$model_list, changes_list)
     }
   ),
@@ -433,21 +423,48 @@ PM_model_list <- R6::R6Class("PM_model_list",
           )
           i <- i + 1
         }
-      } else if (private$lower3(key) %in% c("cov", "bol", "lag", "ext")) {
+      } else if (private$lower3(key) %in% c("cov", "bol", "ext")) {
         stopifnot(is.null(names(block)))
         for (i in 1:length(block)) {
           lines <- append(lines, sprintf("%s", block[[i]]))
         }
-      } else if (private$lower3(key) %in% c("sec")) {
+      } else if (private$lower3(key) == "sec") {
         names <- names(block)
         for (i in 1:length(block)) {
           key <- toupper(names[i])
           lines <- append(
             lines,
             if (is.null(names[i]) || nchar(names[i]) == 0) {
+              
               sprintf("%s", block[[i]])
             } else {
-              sprintf("%s=%s", key, block[[i]][1])
+              sprintf("%s = %s", key, block[[i]][1])
+            }
+          )
+        }
+      } else if (private$lower3(key) == "lag") {
+        names <- names(block)
+        for (i in 1:length(block)) {
+          key <- toupper(names[i])
+          lines <- append(
+            lines,
+            if (is.null(names[i]) || nchar(names[i]) == 0) { #not named list
+              #grab right side of equation if there
+              rhs <- stringr::str_split(block[[i]][1],"=")[[1]][2]
+              if(!is.na(rhs)){
+                rhs <- str_replace_all(rhs," ","")
+              } else { #no "=" detected
+                stop(sprintf("Error: No equation detected for lag expression: %s", block[[i]][1]))
+              }
+              lhs <- stringr::str_split(block[[i]][1],"=")[[1]][1]
+              eqn <- stringr::str_extract(lhs, "\\d+")
+              if(is.na(eqn)){ #no number in lhs
+                stop(sprintf("Error: No equation number detected for lag expression: %s", block[[i]][1]))
+              }
+              sprintf("TLAG(%s) = %s", eqn, rhs)
+            } else { #named list
+              eqn <- stringr::str_extract(names[i], "\\d+") #standardize
+              sprintf("TLAG(%s) = %s", eqn, block[[i]][1])
             }
           )
         }
@@ -457,27 +474,75 @@ PM_model_list <- R6::R6Class("PM_model_list",
           key <- toupper(names[i])
           lines <- append(
             lines,
-            if (is.null(names[i]) || nchar(names[i]) == 0) {
-              sprintf("%s", block[[i]][1])
-            } else if (nchar(names[i]) == 2) {
-              sprintf("%s(%s)=%s", substr(key, 1, 1), substr(key, 2, 2), block[[i]][1])
-            } else {
-              stop(sprintf("Error: Unsupported key named: %s", key))
+            if (is.null(names[i]) || nchar(names[i]) == 0) { #not named list
+              #grab right side of equation if there
+              rhs <- stringr::str_split(block[[i]][1],"=")[[1]][2]
+              if(!is.na(rhs)){
+                rhs <- str_replace_all(rhs," ","")
+              } else { #no "=" detected
+                stop(sprintf("Error: No equation detected for initial conditions: %s", block[[i]][1]))
+              }
+              lhs <- stringr::str_split(block[[i]][1],"=")[[1]][1]
+              eqn <- stringr::str_extract(lhs, "\\d+")
+              if(is.na(eqn)){ #no number in lhs
+                stop(sprintf("Error: No equation number detected for initial conditions: %s", block[[i]][1]))
+              }
+              sprintf("X(%s) = %s", eqn, rhs)
+            } else { #named list
+              eqn <- stringr::str_extract(names[i], "\\d+") #standardize
+              sprintf("X(%s) = %s", eqn, block[[i]][1])
             }
           )
         }
-      } else if (private$lower3(key) %in% c("dif", "f")) {
+      } else if (private$lower3(key) == "f") {
         names <- names(block)
         for (i in 1:length(block)) {
           key <- toupper(names[i])
           lines <- append(
             lines,
-            if (is.null(names[i]) || nchar(names[i]) == 0) {
-              sprintf("%s", block[[i]][1])
-            } else if (nchar(names[i]) == 3) {
-              sprintf("%s(%s)=%s", substr(key, 1, 2), substr(key, 3, 3), block[[i]][1])
-            } else {
-              stop(sprintf("Error: Unsupported key named: %s", key))
+            if (is.null(names[i]) || nchar(names[i]) == 0) { #not named list
+              #grab right side of equation if there
+              rhs <- stringr::str_split(block[[i]][1],"=")[[1]][2]
+              if(!is.na(rhs)){
+                rhs <- str_replace_all(rhs," ","")
+              } else { #no "=" detected
+                stop(sprintf("Error: No equation detected for bioavailability: %s", block[[i]][1]))
+              }
+              lhs <- stringr::str_split(block[[i]][1],"=")[[1]][1]
+              eqn <- stringr::str_extract(lhs, "\\d+")
+              if(is.na(eqn)){ #no number in lhs
+                stop(sprintf("Error: No equation number detected for bioavailabilty: %s", block[[i]][1]))
+              }
+              sprintf("FA(%s) = %s", eqn, rhs)
+            } else { #named list
+              eqn <- stringr::str_extract(names[i], "\\d+") #standardize
+              sprintf("FA(%s) = %s", eqn, block[[i]][1])
+            }
+          )
+        }
+      } else if (private$lower3(key) == "dif") {
+        names <- names(block)
+        for (i in 1:length(block)) {
+          key <- toupper(names[i])
+          lines <- append(
+            lines,
+            if (is.null(names[i]) || nchar(names[i]) == 0) { #not named list
+              #grab right side of equation if there
+              rhs <- stringr::str_split(block[[i]][1],"=")[[1]][2]
+              if(!is.na(rhs)){
+                rhs <- str_replace_all(rhs," ","")
+              } else { #no "=" detected
+                stop(sprintf("Error: No differential equation(s) detected for: %s", block[[i]][1]))
+              }
+              lhs <- stringr::str_split(block[[i]][1],"=")[[1]][1]
+              eqn <- stringr::str_extract(lhs, "\\d+")
+              if(is.na(eqn)){ #no number in lhs
+                stop(sprintf("Error: No differential equation number detected for: %s", block[[i]][1]))
+              }
+              sprintf("XP(%s) = %s", eqn, rhs)
+            } else { #named list
+              eqn <- stringr::str_extract(names[i], "\\d+") #standardize
+              sprintf("XP(%s) = %s", eqn, block[[i]][1])
             }
           )
         }
