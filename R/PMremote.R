@@ -183,7 +183,7 @@ PMlogout <- function(server_address) {
   }
   
   current_version <- packageVersion("Pmetrics")
-  api_url <-"http://181.59.83.182:5000/api/v0/count"
+  api_url <-"https://pmcount.siel.com.co/api/v0/count"
   
   safe_POST = purrr::safely(httr::POST)
   r <- safe_POST(
