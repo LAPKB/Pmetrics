@@ -46,14 +46,18 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
     # compile new files
     setwd(sourcedir)
     if (!file.exists(destdir)) dir.create(destdir, showWarnings = F)
-    PMfiles <- data.frame(filename = as.character(c("NPprep", "NPeng", "ITprep", "ITeng", "ITerr", "SIMeng", "DOprep", "DOeng", "mb2csv")))
+    PMfiles <- data.frame(filename = as.character(c("NPpatch", "NPprep", "NPeng", "ITprep", "ITeng", "ITerr", "SIMeng", "DOprep", "DOeng", "mb2csv")))
     PMfiles$path <- sapply(
       PMfiles$filename,
       function(x) {
         shQuote(
           list.files(
             getwd(),
-            pattern = as.character(paste(x, "_[[:digit:]]+\\.f", sep = ""))
+            pattern = if(x == "NPpatch") {
+              as.character(paste(x, "_[[:digit:]]+\\.f90", sep = ""))
+            } else {
+              as.character(paste(x, "_[[:digit:]]+\\.f", sep = ""))
+            }
           )
         )
       }
