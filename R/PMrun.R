@@ -304,13 +304,38 @@
       ERR = "sITprep"
     ), full.names = T
   )))
-  enginefiles <- shQuote(normalizePath(list.files(fortSource,
-    pattern = switch(type,
-      NPAG = paste(prefix, "NPeng", sep = ""),
-      IT2B = "sITeng",
-      ERR = "sITerr"
-    ), full.names = T
-  )))
+
+# CR Hessian fix required NPAG links to a patch file ... replace this w/block below
+#  enginefiles <- shQuote(normalizePath(list.files(fortSource,
+#    pattern = switch(type,
+#      NPAG = paste(prefix, "NPeng", sep = ""),
+#      IT2B = "sITeng",
+#      ERR = "sITerr"
+#    ), full.names = T
+#  )))
+# OBFUSCATED CODE:
+# enginefiles <- shQuote(normalizePath(list.files(fortSource,
+#   pattern = switch(type, NPAG = paste(prefix, "NPeng", sep = ""), IT2B = "sITeng", ERR = "sITerr"), full.names = T)))
+# if NPAG, then we need to add NPpatch to enginefiles
+  if (type == "NPAG") {
+     if (parallel) {
+        enginefiles <- paste(fortSource,"/pNPpatch_120.o "
+           , fortSource,"/pNPeng.o", sep = "")  
+     } else {
+        enginefiles <- paste(fortSource,"/sNPpatch_120.o "
+           , fortSource,"/sNPeng.o", sep = "")  
+     }
+  } else if (type == "IT2B") { # same command as before
+    enginefiles <- shQuote(normalizePath(list.files(fortSource,
+      pattern = switch(type,
+        IT2B = "sITeng",
+         ERR = "sITerr"
+       ), full.names = T
+      )))
+  } else {
+     print(paste("Cannot create enginefiles for run type = ", type, sep = ""))
+  }
+# ------------------------
 
   # generate names of files that will be created
   prepFileName <- switch(type,
