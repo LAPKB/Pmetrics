@@ -452,7 +452,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
               #grab right side of equation if there
               rhs <- stringr::str_split(block[[i]][1],"=")[[1]][2]
               if(!is.na(rhs)){
-                rhs <- str_replace_all(rhs," ","")
+                rhs <- stringr::str_replace_all(rhs," ","")
               } else { #no "=" detected
                 stop(sprintf("Error: No equation detected for lag expression: %s", block[[i]][1]))
               }
@@ -478,7 +478,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
               #grab right side of equation if there
               rhs <- stringr::str_split(block[[i]][1],"=")[[1]][2]
               if(!is.na(rhs)){
-                rhs <- str_replace_all(rhs," ","")
+                rhs <- stringr::str_replace_all(rhs," ","")
               } else { #no "=" detected
                 stop(sprintf("Error: No equation detected for initial conditions: %s", block[[i]][1]))
               }
@@ -504,7 +504,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
               #grab right side of equation if there
               rhs <- stringr::str_split(block[[i]][1],"=")[[1]][2]
               if(!is.na(rhs)){
-                rhs <- str_replace_all(rhs," ","")
+                rhs <- stringr::str_replace_all(rhs," ","")
               } else { #no "=" detected
                 stop(sprintf("Error: No equation detected for bioavailability: %s", block[[i]][1]))
               }
@@ -530,7 +530,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
               #grab right side of equation if there
               rhs <- stringr::str_split(block[[i]][1],"=")[[1]][2]
               if(!is.na(rhs)){
-                rhs <- str_replace_all(rhs," ","")
+                rhs <- stringr::str_replace_all(rhs," ","")
               } else { #no "=" detected
                 stop(sprintf("Error: No differential equation(s) detected for: %s", block[[i]][1]))
               }
