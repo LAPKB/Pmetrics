@@ -170,7 +170,7 @@ rmnorm <- function(n, mean, sigma) {
   retval
 }
 
-openHTML <- function(x) browseURL(paste0("file://", x))
+openHTML <- function(x) pander::openFileInOS(x)
 
 
 # parse NP_RF file only for final cycle information; used for bootstrapping
