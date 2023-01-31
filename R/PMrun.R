@@ -594,10 +594,10 @@
         PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
       } else {
         PMscript[getNext(PMscript)] <- c(
-          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = ""),
-          # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
+          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('pander::openFileInOS(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = ""),
+          # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('pander::openFileInOS(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
           paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
-          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('browseURL(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = "")
+          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('pander::openFileInOS(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = "")
         )[OS]
       #   PMscript[getNext(PMscript)] <- 
       #   c(
@@ -838,7 +838,7 @@
     # file.remove(Sys.glob("*.*"))
     # system("mv *.* inputs/")
     outpath <- paste(currwd, newdir, "outputs", sep = "/")
-    if(report){browseURL(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))}
+    if(report){pander::openFileInOS(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))}
     return(outpath)
   }
 }
