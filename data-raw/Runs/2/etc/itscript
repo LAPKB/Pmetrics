@@ -39,5 +39,5 @@ date +%s >> time.txt
 mv time.txt outputs
 if ! $error ; then 
 /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript '/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library/Pmetrics/report/ITrepScript.R' '/Users/mneely/LAPK/Pmetrics/Examples/Runs/3/outputs' median FALSE
-/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript -e "browseURL('/Users/mneely/LAPK/Pmetrics/Examples/Runs/3/outputs/IT2Breport.html')" ; fi
+/Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/bin/Rscript -e "pander::openFileInOS('/Users/mneely/LAPK/Pmetrics/Examples/Runs/3/outputs/IT2Breport.html')" ; fi
 mv itscript etc
