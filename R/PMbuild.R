@@ -68,7 +68,12 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
         serialCommand <- sub("<exec>", paste(PMfiles$filename[i], ".exe", sep = ""), compiler[1])
         serialCommand <- sub("<files>", PMfiles$path[i], serialCommand)
       } else {
-        serialCommand <- sub("<exec>", paste("s", PMfiles$filename[i], ".o -c", sep = ""), compiler[1])
+        if (i == 2) { # NPAG
+          system("gfortran -c -march=native -w -fmax-stack-var-size=32768 -O3 -o sNPpatch_120.o NPpatch_120.f90")
+          serialCommand <- sub("<exec>", paste("s", PMfiles$filename[i], ".o -c", sep = ""), compiler[1])
+        } else {
+          serialCommand <- sub("<exec>", paste("s", PMfiles$filename[i], ".o -c", sep = ""), compiler[1])
+        }
         serialCommand <- sub("<files>", PMfiles$path[i], serialCommand)
       }
       serialFortstatus <- suppressWarnings(system(serialCommand, intern = T, ignore.stderr = F))
@@ -76,10 +81,16 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
         stop(paste("\nThere was an error compiling ", PMfiles$filename[i], ".\nDid you select the right fortran compiler?  If yes, try reinstalling fortran.\nFor gfortran, log into www.lapk.org and access system-specific tips on the Pmetrics installation page (step 5).\n", sep = ""))
       }
       if (i == 2 & parallel) {
-        # parallel compilation for NPAG only
+        # parallel compilation for NPAG only; f90 module first
+        #  system("gfortran -c -march=native -fopenmp -w -fmax-stack-var-size=32768 -O3 -o pNPpatch_120.o NPpatch_120.f90")
+        parallelCommand <- sub("<exec>", paste("p", "NPpatch_120", ".o -c", sep = ""), compiler[2])
+        parallelCommand <- sub("<files>", "NPpatch_120.f90", parallelCommand)
+        parallelFortstatus <- suppressWarnings(system(parallelCommand, intern = T, ignore.stderr = F))
+        # now link module to engine
         parallelCommand <- sub("<exec>", paste("p", PMfiles$filename[i], ".o -c", sep = ""), compiler[2])
         parallelCommand <- sub("<files>", PMfiles$path[i], parallelCommand)
         parallelFortstatus <- suppressWarnings(system(parallelCommand, intern = T, ignore.stderr = F))
+        #
         if (!is.null(attr(parallelFortstatus, "status"))) {
           stop(paste("\nThere was an error compiling ", PMfiles$filename[i], ".\nDid you select the right fortran compiler?  If yes, try reinstalling fortran.\nFor gfortran, log into www.lapk.org and access system-specific tips on the Pmetrics installation page (step 5).\n", sep = ""))
         }
