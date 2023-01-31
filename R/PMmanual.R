@@ -13,7 +13,7 @@ PMmanual <- function() {
     cat("Browsing package vignettes...")
     browseVignettes("Pmetrics")
   } else {
-    pander::openFileInOS("https://lapkb.github.io/Pmetrics/")
+    browseURL("https://lapkb.github.io/Pmetrics/")
   }
   #openHTML(paste(path.package("Pmetrics"), "/manual/index.html", sep = ""))
 }
