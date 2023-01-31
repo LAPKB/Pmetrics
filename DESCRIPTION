@@ -65,6 +65,7 @@ Imports:
     mvtnorm,
     tidyverse,
     R6,
+    pander,
     magrittr
 Suggests:
     knitr,

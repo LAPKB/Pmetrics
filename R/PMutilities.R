@@ -170,8 +170,6 @@ rmnorm <- function(n, mean, sigma) {
   retval
 }
 
-openHTML <- function(x) browseURL(paste0("file://", x))
-
 
 # parse NP_RF file only for final cycle information; used for bootstrapping
 # indpts,ab,corden,nvar,nactve,iaddl,icyctot,par
