@@ -14,16 +14,34 @@
 #' in a [PM_result] object
 #' @param include `r template("include")` 
 #' @param exclude `r template("exclude")` 
-#' @param line Formats the lines joining observations. `r template("line")` 
-#' @param pred The name of a population or posterior prediction object in a [PM_result] object, eg. 
-#' `run1$post` or `run1$pop`. Can be a list, with the prediction object first, followed by named options to control the 
-#' prediction plot
+#' @param line Controls characteristics of lines as for all plotly plots. 
+#' Here  `line` is a list of two elements:
+#' * `join`  Can either be a boolean or a list. If set to `TRUE` or 
+#' a list of plotly line attributes, it
+#' will generate line segments joining observations. If set to 
+#' `FALSE`, no segments will be generated. The default
+#' values for the elements of the `join` list, all of which can be 
+#' overriden are:
+#'     - `color` Color of the segments. Default is "dodgerblue".
+#'     - `width `Width of the segments, default 1.
+#'     - `dash` See `plotly::schema()`, traces > scatter > attributes > 
+#' line > dash > values. Default is "solid".
+#' Example: `line = list(join = list(color = "red", dash = "longdash", width = 2))`
+#' * `pred` Default is `FALSE`, which means that predictions will not be included
+#' in the plot. To include predictions, supply the name of a population or 
+#' posterior prediction object in a [PM_result] object, eg. 
+#' `run1$post` or `run1$pop`. To format the predictions, supply `pred` as 
+#' a list, with the prediction object first, followed by named options to control the 
+#' prediction plot:
 #' * icen Chooses the median or mean of each
-#' subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".
-#' * Other parameters to pass to plotly to control line characteristics, including `color`, `width`, and `dash`.
+#' subject's Bayesian posterior parameter distribution.  Default is "median", 
+#' but could be "mean".
+#' * Other parameters to pass to plotly to control line characteristics that join
+#' the predictions, including `color`, `width`, and `dash`.
 #' For example: `pred = list(run1$post, icen = "mean", color = "red", width = 2)`. 
-#' Defaults are the same as for the `line` argument, since normally one would not plot
-#' both lines joining observations and prediction lines.
+#' Default formats are the same as for the `join` argument, since normally one would not plot
+#' both lines joining observations and prediction lines, i.e., typical use would be
+#' `line = list(join = F, pred = run1$post)`. 
 #' @param marker Formats the symbols plotting observations. `r template("marker")` 
 #' @param color Character vector naming a column in `x` to **group** by, e.g. "id" or 
 #' a covariate like "gender"
@@ -104,16 +122,19 @@ plot.PM_data <- function(x,
   
   #process line
   if(missing(line)){
-    line <- list(join = T, pred = NULL)
+    line <- list(join = T, pred = F)
   } else {
     if(any(!base::names(line)%in% c("join", "pred"))){
       cat(paste0(crayon::red("Warning: "),"<line> should be a list with at most two named elements: ",crayon::blue("<join>")," and/or ",crayon::blue("<pred>"),".\n See help(\"plot.PM_data\")."))
     }
     if(is.null(line$join)) {line$join <- F}
-    if(is.null(line$pred)) {line$pred <- NULL}
+    if(is.null(line$pred)) {line$pred <- F}
   }
   
   join <- amendLine(line$join)
+  if(is.logical(line$pred) && !line$pred){ #if line$pred is FALSE
+    line$pred <- NULL
+  }
   pred <- line$pred #process further later
   
   

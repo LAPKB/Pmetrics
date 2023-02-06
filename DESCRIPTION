@@ -19,8 +19,9 @@ Description: Parametric and non-parametric
 Authors@R: c(
   person("Michael", "Neely", email = "mneely@usc.edu", role = c("aut", "cre")),
   person("Julián", "Otálvaro", email = "juliandavid347@gmail.com", role = "aut"),
-  person("Walter", "Yamada", email = "", role="ctb"),
+  person("Walter", "Yamada", email = "", role= "ctb"),
   person("Alan", "Schumitzky", email = "", role = "ctb"),
+  person("Rong", "Chen", email = "", role = "ctb"),
   person("Michael", "van Guilder", email = "", role = "ctb"),
   person("David", "Bayard", email = "", role = "ctb"),
   person("Robert", "Leary", email = "", role = "ctb")
@@ -71,7 +72,7 @@ Suggests:
     knitr,
     rmarkdown,
     testthat
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
 Encoding: UTF-8
 Config/testthat/edition: 3
 VignetteBuilder: knitr
