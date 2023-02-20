@@ -607,7 +607,7 @@
       #   )[OS]
       }
     } else { #close if statement if report = F
-      PMscript[getNext(PMscript)] <- ("fi", "", "fi")[OS]
+      PMscript[getNext(PMscript)] <- c("fi", "", "fi")[OS]
     }
     
     # final clean up
