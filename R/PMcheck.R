@@ -280,8 +280,6 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
     if (length(allMiss) > 0) {
       nonNumeric <- nonNumeric[!nonNumeric %in% allMiss]
     }
-    #exclude special case for column "OUT"
-    nonNumeric <- nonNumeric[names(nonNumeric) != 'out']
     if (length(nonNumeric) > 0) {
       err$nonNum$msg <- "FAIL - The following columns must be all numeric."
       err$nonNum$results <- nonNumeric + 1
