@@ -606,6 +606,8 @@
       #     paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
       #   )[OS]
       }
+    } else { #close if statement if report = F
+      PMscript[getNext(PMscript)] <- c("fi", "", "fi")[OS]
     }
     
     # final clean up
