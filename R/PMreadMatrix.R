@@ -85,6 +85,9 @@ PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("d
   if(length(comments) > 0){
     data <- data[-comments, ]
   }
+
+  #reasses column types after comment removal
+  data[] <- lapply(data, function(x) type.convert(as.character(x), as.is = TRUE))
   
   if(!quiet){
     cat(paste("The file",sQuote(file),"contains these columns:\n",sep=" "))
