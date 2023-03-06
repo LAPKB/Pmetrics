@@ -40,6 +40,13 @@ PM_fit <- R6::R6Class("PM_fit",
       stopifnot(inherits(model, "PM_model"))
       private$data <- data
       private$model <- model
+
+      if (getPMoptions()$backend == "rust"){
+        self$setup_rust_execution()
+      }
+      
+
+
     },
     #' @description Fit the model to the data
     #' @param ... Other arguments passed to [NPrun]
@@ -118,6 +125,27 @@ PM_fit <- R6::R6Class("PM_fit",
         Pmetrics::PMcheck(private$data$standard_data, file_name)
         system(sprintf("rm %s", file_name))
       }
+    },
+
+    setup_rust_execution = function(){
+      # Create a folder 1,2,3... 
+      currwd <- getwd() # set the current working directory to go back to it at the end
+      olddir <- list.dirs(recursive = F)
+      olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
+      olddir <- sub("^\\./", "", olddir)
+      if (length(olddir) > 0) {
+        newdir <- as.character(max(as.numeric(olddir)) + 1)
+      } else {
+        newdir <- "1"
+      }
+      dir.create(newdir)
+      setwd(newdir)
+      # Move data inside that folder
+      private$data$write("gendata.csv", header=F)
+      # create rust's model and config files
+      # copy model to the template project
+      # compile the template folder
+      # move the binary to wd
     }
   ),
   private = list(

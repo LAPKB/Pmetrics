@@ -73,8 +73,8 @@ PM_data <- R6::R6Class("PM_data",
     #' @param file_name A quoted name of the file to create 
     #' with full path if not
     #' in the working directory.
-    write = function(file_name) {
-      PMwriteMatrix(self$standard_data, file_name)
+    write = function(file_name, ...) {
+      PMwriteMatrix(self$standard_data, file_name, ...)
     },
     #' @description
     #' Perform non-compartmental analysis
