@@ -393,6 +393,30 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       return(model_path)
     },
+    write_rust = function(){
+      model_file <- system.file('Rust/template.rs',package="Pmetrics")
+      content <- readr::read_file(model_file)
+      sp_lines <- c()
+      pa_lines <- c()
+      for (key in 1:length(tolower(names(self$model_list$pri)))){
+        sp_lines.append(sprintf("{}: f64,\n",key))
+        pa_lines.append(sprintf("let {} = self.{};",key,key))
+      }
+      content <- gsub("</struct_params>", sp_lines, content)
+      content <- gsub("</parameter_alias>", pa_lines, content)
+      lag <- ""
+      if (length(self$model_list$lag > 0)){
+        lag <- "let t = t - self.lag;"
+      }
+      content <- gsub("</lag>", lag, content)
+      content <- gsub("</diff_eq>", "", content)
+      content <- gsub("</seq>", "", content)
+      content <- gsub("</model_params>", "", content)
+      content <- gsub("</init>", "", content)
+      content <- gsub("</v_alias>", "", content)
+      content <- gsub("</out_eqs>", "", content)
+      readr::write_file(content, "main.rs")
+    },
     update = function(changes_list) {
       keys <- names(changes_list)
       stopifnot(private$lower3(keys) %in% c("pri", "sec", "dif", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")) # TODO: add all supported blocks
