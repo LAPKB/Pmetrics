@@ -23,7 +23,7 @@
 #' }
 
 
-PMwriteMatrix <- function(data,filename,override=F,version="DEC_11"){
+PMwriteMatrix <- function(data,filename,override=F,version="DEC_11",header=T){
   
   if(!override){
     err <- PMcheck(data, quiet=T)
@@ -39,7 +39,9 @@ PMwriteMatrix <- function(data,filename,override=F,version="DEC_11"){
   OS <- getOS()
   eol <- c("\r\n","\n","\r\n")[OS]  
   f <- file(filename,"w")  
-  writeLines(paste("POPDATA ",version,"\n#",sep=""),f,sep="")
+  if (header){
+    writeLines(paste("POPDATA ",version,"\n#",sep=""),f,sep="")
+  }
   writeLines(toupper(names(data)[-ncol(data)]),sep=getPMoptions("sep"),f)
   writeLines(toupper(names(data)[ncol(data)]),f)
   write.table(data,f,row.names=F,na=".",quote=F,sep=getPMoptions("sep"),
