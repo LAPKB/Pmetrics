@@ -61,7 +61,7 @@ getPMoptions <- function(opt, warn = T) {
 #' @author Michael Neely
 #' @export
 
-setPMoptions <- function(sep, dec, server_address, compilation_statements, op_stats, backend) {
+setPMoptions <- function(sep, dec, server_address, compilation_statements, op_stats, backend, rust_template) {
   # read old values first
   PMopts <- getPMoptions(warn = F)
   
@@ -84,7 +84,8 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements, op_st
     ),
     server_address = "http://localhost:5000",
     op_stats = T,
-    backend = "fortran"
+    backend = "fortran",
+    rust_template = NULL
   )
   
   #missing so create
@@ -114,6 +115,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements, op_st
   if (!missing(server_address)) PMopts$server_address <- server_address
   if (!missing(op_stats)) PMopts$op_stats <- op_stats
   if (!missing(backend)) PMopts$backend <- backend
+  if (!missing(rust_template)) PMopts$rust_template <- rust_template
   
   
   # set the options
