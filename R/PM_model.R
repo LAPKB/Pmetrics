@@ -409,6 +409,11 @@ PM_model_list <- R6::R6Class("PM_model_list",
         lag <- "let t = t - self.lag;"
       }
       content <- gsub("</lag>", lag, content)
+      eqs <- self$model_list$dif %>% tolower()
+      #gsub("\\(([0-9]))","[\\1]",tolower(eqs))
+      #str_replace_all(tolower(eqs),"\\((\\d)\\)",function(a){a})
+      #str_replace_all(tolower(eqs),"(?<=\\()\\d+(?=\\))",function(a){paste0("[",as.integer(a)-1,"]")})
+      eqs <- str_replace_all(eqs,"\\((\\d)\\)",function(a){paste0("[",as.integer(substring(a,2,2))-1,"]")})
       content <- gsub("</diff_eq>", "", content)
       content <- gsub("</seq>", "", content)
       content <- gsub("</model_params>", "", content)
