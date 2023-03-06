@@ -143,6 +143,8 @@ PM_fit <- R6::R6Class("PM_fit",
       # Move data inside that folder
       private$data$write("gendata.csv", header=F)
       # create rust's model and config files
+      private$model$write_rust()
+      
       # copy model to the template project
       # compile the template folder
       # move the binary to wd
