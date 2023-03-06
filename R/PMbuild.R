@@ -113,8 +113,11 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
       system("rustup install nightly")
       system("rustup default nightly")
       cwd<-getwd()
+      #This might not work if the folder is deleted afther the R Session is closed
+      # If that is the case, we should create a folder inside the Pmetrics Package folder
       setwd(tempdir())
       system("cargo new template")
+      system("cd template")
       system("cargo add --git https://github.com/Siel/ode-solvers")
       #setup a credential storage https://git-scm.com/book/en/v2/Git-Tools-Credential-Storage
       # ssh-keygen -t ecdsa -b 521
@@ -126,6 +129,7 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
       # https://doc.rust-lang.org/cargo/appendix/git-authentication.html
 
       system("cargo add --git ssh://git@github.com/LAPKB/NPcore.git")
+      system("cargo add eyre")
       system("cargo build --release")
       setPMoptions(rust_template = getwd())
       setwd(cwd)
