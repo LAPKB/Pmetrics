@@ -61,7 +61,7 @@ getPMoptions <- function(opt, warn = T) {
 #' @author Michael Neely
 #' @export
 
-setPMoptions <- function(sep, dec, server_address, compilation_statements, op_stats) {
+setPMoptions <- function(sep, dec, server_address, compilation_statements, op_stats, backend) {
   # read old values first
   PMopts <- getPMoptions(warn = F)
   
@@ -83,7 +83,8 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements, op_st
       sprintf("%s -march=native -w -fopenmp -fmax-stack-var-size=32768 -O3 -o <exec> <files>", gfortran_command)
     ),
     server_address = "http://localhost:5000",
-    op_stats = T
+    op_stats = T,
+    backend = "fortran"
   )
   
   #missing so create
@@ -112,6 +113,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements, op_st
   }
   if (!missing(server_address)) PMopts$server_address <- server_address
   if (!missing(op_stats)) PMopts$op_stats <- op_stats
+  if (!missing(backend)) PMopts$backend <- backend
   
   
   # set the options
