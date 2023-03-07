@@ -398,12 +398,19 @@ PM_model_list <- R6::R6Class("PM_model_list",
       content <- readr::read_file(model_file)
       sp_lines <- c()
       pa_lines <- c()
-      for (key in 1:length(tolower(names(self$model_list$pri)))){
-        sp_lines.append(sprintf("{}: f64,\n",key))
-        pa_lines.append(sprintf("let {} = self.{};",key,key))
+      mp_lines <- c()
+      va_lines <- c()
+      index <- 0
+      for (key in tolower(names(self$model_list$pri))){
+        sp_lines <- append(sp_lines,sprintf("%s: f64,",key))
+        pa_lines <- append(pa_lines,sprintf("let %s = self.%s;",key,key))
+        va_lines <- append(va_lines,sprintf("let %s = params[%i];",key,index))
+        mp_lines <- append(mp_lines,sprintf("%s: params[%i],",key,index))
+        index <- index+1
       }
-      content <- gsub("</struct_params>", sp_lines, content)
-      content <- gsub("</parameter_alias>", pa_lines, content)
+      content <- gsub("</struct_params>", sp_lines %>% paste(collapse="\n"), content)
+      
+      content <- gsub("</parameter_alias>", pa_lines %>% paste(collapse="\n"), content)
       lag <- ""
       if (length(self$model_list$lag > 0)){
         lag <- "let t = t - self.lag;"
@@ -413,13 +420,33 @@ PM_model_list <- R6::R6Class("PM_model_list",
       #gsub("\\(([0-9]))","[\\1]",tolower(eqs))
       #str_replace_all(tolower(eqs),"\\((\\d)\\)",function(a){a})
       #str_replace_all(tolower(eqs),"(?<=\\()\\d+(?=\\))",function(a){paste0("[",as.integer(a)-1,"]")})
-      eqs <- str_replace_all(eqs,"\\((\\d)\\)",function(a){paste0("[",as.integer(substring(a,2,2))-1,"]")})
-      content <- gsub("</diff_eq>", "", content)
+      neqs <- stringr::str_extract_all(eqs,"xp\\((\\d)\\)") %>% unique() %>% length()
+      eqs <- stringr::str_replace_all(eqs,"\\((\\d)\\)",function(a){paste0("[",as.integer(substring(a,2,2))-1,"]")}) %>%
+               stringr::str_replace_all("xp","dx")
+      content <- gsub("</diff_eq>", eqs %>% paste(collapse = "\n"), content)
+      content <- gsub("</neqs>", neqs, content)
       content <- gsub("</seq>", "", content)
-      content <- gsub("</model_params>", "", content)
-      content <- gsub("</init>", "", content)
-      content <- gsub("</v_alias>", "", content)
-      content <- gsub("</out_eqs>", "", content)
+      content <- gsub("</model_params>", mp_lines %>% paste(collapse=''), content)
+      content <- gsub("</init>", paste(rep("0.0",neqs),collapse=','), content)
+      content <- gsub("</v_alias>", va_lines %>% paste(collapse = "\n"), content)
+      for(outeq in self$model_list$out){
+        out <- c()
+        out <- append(out,"let y0: Vec<f64> = y.iter().map(|x|{")
+        out <- append(out,stringr::str_replace_all(tolower(outeq[[1]][[1]]),"\\((\\d)\\)",function(a){paste0("[",as.integer(substring(a,2,2))-1,"]")}))
+        out <- append(out,"}).collect();")
+        out <- append(out,"yout.push(y0);")
+      }
+      content <- gsub("</out_eqs>", out %>% paste(collapse = "\n"), content)
+      ranges <- c()
+      for(val in self$model_list$pri){
+        if(val$mode != "ab"){
+          stop("only ab() mode is currently supported by this function")
+        }
+        ranges <- append(ranges,sprintf("(%f,%f)",val$min, val$max))
+      }
+      content <- gsub("</ranges>", ranges %>% paste(collapse = ","), content)
+      assay <- self$model_list$out[1][[1]]$err$assay
+      content <- gsub("</c>", assay %>% paste(collapse = ","), content)
       readr::write_file(content, "main.rs")
     },
     update = function(changes_list) {
