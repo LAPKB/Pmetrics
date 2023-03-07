@@ -11,11 +11,11 @@ struct Model<'a>{
     scenario: &'a Scenario
 }
 
-type State = Vector2<f64>;
+type State = Vector</neqs><f64>;
 type Time = f64;
 
 impl ode_solvers::System<State> for Model<'_> {
-    fn system(&self, t: Time, y: &mut State, dy: &mut State) {
+    fn system(&self, t: Time, x: &mut State, dx: &mut State) {
         // let ka = self.ka;
         // let ke = self.ke;
         </parameter_alias>
@@ -40,7 +40,7 @@ struct Sim{}
 impl Simulate for Sim{
     fn simulate(&self, params: Vec<f64>, tspan:[f64;2], scenario: &Scenario) -> (Vec<f64>, Vec<Vec<f64>>) {
         // let system = Model {ka: params[0], ke: params[1], _v: params[2], lag: params[3], scenario};
-        let system = Model {</model_params>, scenario};
+        let system = Model {</model_params> scenario};
         // let y0 = State::new(0.0, 0.0);
         let y0 = State::new(</init>);
         let mut stepper = Rk4::new(system, tspan[0], y0, tspan[1],0.1);
