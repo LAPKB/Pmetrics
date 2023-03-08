@@ -423,7 +423,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       neqs <- stringr::str_extract_all(eqs,"xp\\((\\d)\\)") %>% unique() %>% length()
       eqs <- stringr::str_replace_all(eqs,"\\((\\d)\\)",function(a){paste0("[",as.integer(substring(a,2,2))-1,"]")}) %>%
                stringr::str_replace_all("xp","dx")
-      content <- gsub("</diff_eq>", eqs %>% paste(collapse = "\n"), content)
+      content <- gsub("</diff_eq>", paste0(eqs %>% paste(collapse = ";\n"),";"), content)
       content <- gsub("</neqs>", neqs, content)
       content <- gsub("</seq>", "", content)
       content <- gsub("</model_params>", mp_lines %>% paste(collapse=''), content)
@@ -446,7 +446,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       }
       content <- gsub("</ranges>", ranges %>% paste(collapse = ","), content)
       assay <- self$model_list$out[1][[1]]$err$assay
-      content <- gsub("</c>", assay %>% paste(collapse = ","), content)
+      content <- gsub("</c>", sprintf("(%f,%f,%f,%f)",assay[1],assay[2],assay[3],assay[4]), content)
       readr::write_file(content, "main.rs")
     },
     update = function(changes_list) {
