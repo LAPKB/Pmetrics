@@ -42,7 +42,7 @@ PM_fit <- R6::R6Class("PM_fit",
       private$model <- model
 
       if (getPMoptions()$backend == "rust"){
-        self$setup_rust_execution()
+        private$setup_rust_execution()
       }
       
 
@@ -125,8 +125,14 @@ PM_fit <- R6::R6Class("PM_fit",
         Pmetrics::PMcheck(private$data$standard_data, file_name)
         system(sprintf("rm %s", file_name))
       }
-    },
+    }
 
+    
+  ),
+  private = list(
+    data = NULL,
+    model = NULL,
+    binary_path = NULL,
     setup_rust_execution = function(){
       if(is.null(getPMoptions()$rust_template)){
         stop("Rust has not been built, execute PMbuild()")
@@ -184,12 +190,9 @@ PM_fit <- R6::R6Class("PM_fit",
       system(sprintf("cp %s NPcore",compiled_binary_path))
       private$binary_path <- paste0(getwd(),"/NPcore")
       setwd(cwd)
+      #TODO: I think it might be necessary to implement a re_build() method
+      #In case the binary the temp folder gets deleted
     }
-  ),
-  private = list(
-    data = NULL,
-    model = NULL,
-    binary_path = NULL
   )
 )
 
