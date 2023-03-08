@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+
 use ode_solvers::*;
 use np_core::prelude::*;
 use eyre::Result;
@@ -28,7 +31,7 @@ impl ode_solvers::System<State> for Model<'_> {
         //////////////// END USER DEFINED ////////////////
         for dose in &self.scenario.doses{
             if (t-dose.time).abs() < 1.0e-4 {
-                y[dose.compartment] += dose.dose;
+                x[dose.compartment] += dose.dose;
             }
         }
         </seq>
@@ -73,7 +76,7 @@ fn main()-> Result<()>{
     start(
         Engine::new(Sim{}),
         vec![</ranges>],
-        "</config_path>".to_string(),
+        "config.toml".to_string(),
         </c>
     )?;
     Ok(())
