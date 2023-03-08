@@ -59,43 +59,35 @@ PM_fit <- R6::R6Class("PM_fit",
        }
       setwd(rundir)
       engine <- tolower(engine)
-      if (inherits(private$model, "PM_model_legacy")) {
-        cat(sprintf("Runing Legacy"))
-        if (engine == "npag") {
-          Pmetrics::NPrun(private$model$legacy_file_path, private$data$standard_data, ...)
-        } else if (engine == "it2b") {
-          Pmetrics::ITrun(private$model$legacy_file_path, private$data$standard_data, ...)
-        } else {
-          endNicely(paste0("Unknown engine: ", engine, ". \n"))
-        }
-      } else if (inherits(private$model, "PM_model_list")) {
-        engine <- tolower(engine)
-        model_path <- private$model$write(engine = engine)
-        cat(sprintf("Creating model file at: %s\n", model_path))
-        if (engine == "npag") {
-          Pmetrics::NPrun(model_path, private$data$standard_data, ...)
-        } else {
-          Pmetrics::ITrun(model_path, private$data$standard_data, ...)
-        }
-      } else if (inherits(private$model, "PM_model_julia")) {
-        if (engine != "npag") {
-          stop("Julia is only for NPAG currently.")
-        }
-        cat(sprintf("Runing Julia: %s-%s\n", private$data, private$model$name))
-        return(
-          julia_call(
-            "npag.run",
-            private$model$model_function,
-            private$data,
-            private$model$min,
-            private$model$max,
-            private$model$error[1],
-            private$model$error[2],
-            private$model$error[3],
-            private$model$n_theta0
-          )
-        )
+
+      if(getPMoptions()$backend == "fortran"){
+
+        if (inherits(private$model, "PM_model_legacy")) {
+          cat(sprintf("Runing Legacy"))
+          if (engine == "npag") {
+            Pmetrics::NPrun(private$model$legacy_file_path, private$data$standard_data, ...)
+          } else if (engine == "it2b") {
+            Pmetrics::ITrun(private$model$legacy_file_path, private$data$standard_data, ...)
+          } else {
+            endNicely(paste0("Unknown engine: ", engine, ". \n"))
+          }
+        } else if (inherits(private$model, "PM_model_list")) {
+          engine <- tolower(engine)
+          model_path <- private$model$write(engine = engine)
+          cat(sprintf("Creating model file at: %s\n", model_path))
+          if (engine == "npag") {
+            Pmetrics::NPrun(model_path, private$data$standard_data, ...)
+          } else {
+            Pmetrics::ITrun(model_path, private$data$standard_data, ...)
+          }
+        } 
+      } else if(getPMoptions()$backend == "rust"){
+        private$run_rust(...)
+      } else {
+        setwd(wd)
+        stop("Error: unsupported backend, check your PMoptions")
       }
+
       setwd(wd)
     },
     #' @description
@@ -133,39 +125,45 @@ PM_fit <- R6::R6Class("PM_fit",
     data = NULL,
     model = NULL,
     binary_path = NULL,
+    run_rust = function(...){
+      cwd <- getwd()
+      olddir <- list.dirs(recursive = F)
+      olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
+      olddir <- sub("^\\./", "", olddir)
+      if (length(olddir) > 0) {
+        newdir <- as.character(max(as.numeric(olddir)) + 1)
+      } else {
+        newdir <- "1"
+      }
+      dir.create(newdir)
+      setwd(newdir)
+
+      private$data$write("gendata.csv", header=F)
+      config <- c()
+      config <- config %>% append("[paths]")
+      config <- config %>% append("data=\"gendata.csv\"")
+      config <- config %>% append("log_out=\"run.log\"")
+      config <- config %>% append("[config]")
+      config <- config %>% append("cycles=100")
+      config <- config %>% append("engine=\"NPAG\"")
+      config <- config %>% append("init_points=1000")
+      config <- config %>% append("seed=347")
+      config <- config %>% append("tui=false")
+      writeLines(config,"config.toml")
+      #check if the file exists
+      file.copy(private$binary_path,"NPcore")
+      system("./NPcore &")
+      setwd(cwd)
+    },
     setup_rust_execution = function(){
       if(is.null(getPMoptions()$rust_template)){
         stop("Rust has not been built, execute PMbuild()")
       }
       cwd <- getwd()
-      
-      # Create a folder 1,2,3... 
-
-      # setwd(tempdir())
-      # if(!file.exists("wrk")){
-      #   system("mkdir wrk")
-      #   if(!file.exists("wrk/template")){
-      #     system(sprintf("cp -R %s/ wrk/template/",getPMoptions()$rust_template))
-      #   }
-      # }
-      
-      # Move data inside that folder
-      # private$data$write("gendata.csv", header=F)
-      # create rust's model and config files
       private$model$write_rust()
-      # config <- c()
-      # config <- config %>% append("[paths]")
-      # config <- config %>% append("data=gendata.csv")
-      # config <- config %>% append("[config]")
-      # config <- config %>% append("cycles=100")
-      # config <- config %>% append("engine=\"NPAG\"")
-      # config <- config %>% append("init_points=1000")
-      # config <- config %>% append("seed=347")
-      # config <- config %>% append("tui=false")
-      # writeLines(config,"config.toml")
+      
       # copy model and config to the template project
       system(sprintf("mv main.rs %s/src/main.rs",getPMoptions()$rust_template))
-      # system("mv config.toml wrk/template/config.toml")
       # compile the template folder
       setwd(getPMoptions()$rust_template)
       system("cargo build --release")
