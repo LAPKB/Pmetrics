@@ -125,8 +125,48 @@ PM_fit <- R6::R6Class("PM_fit",
     },
 
     setup_rust_execution = function(){
+      if(is.null(getPMoptions()$rust_template)){
+        stop("Rust has not been built, execute PMbuild()")
+      }
+      cwd <- getwd()
+      
       # Create a folder 1,2,3... 
-      currwd <- getwd() # set the current working directory to go back to it at the end
+
+      # setwd(tempdir())
+      # if(!file.exists("wrk")){
+      #   system("mkdir wrk")
+      #   if(!file.exists("wrk/template")){
+      #     system(sprintf("cp -R %s/ wrk/template/",getPMoptions()$rust_template))
+      #   }
+      # }
+      
+      # Move data inside that folder
+      # private$data$write("gendata.csv", header=F)
+      # create rust's model and config files
+      private$model$write_rust()
+      # config <- c()
+      # config <- config %>% append("[paths]")
+      # config <- config %>% append("data=gendata.csv")
+      # config <- config %>% append("[config]")
+      # config <- config %>% append("cycles=100")
+      # config <- config %>% append("engine=\"NPAG\"")
+      # config <- config %>% append("init_points=1000")
+      # config <- config %>% append("seed=347")
+      # config <- config %>% append("tui=false")
+      # writeLines(config,"config.toml")
+      # copy model and config to the template project
+      system(sprintf("mv main.rs %s/src/main.rs",getPMoptions()$rust_template))
+      # system("mv config.toml wrk/template/config.toml")
+      # compile the template folder
+      setwd(getPMoptions()$rust_template)
+      system("cargo build --release")
+      if(!file.exists("target/release/template")){
+        setwd(cwd)
+        stop("Error: Compilation failed")
+      }
+      compiled_binary_path <- paste0(getwd(),"/target/release/template")
+      # Save the binary somewhere
+      setwd(tempdir())
       olddir <- list.dirs(recursive = F)
       olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
       olddir <- sub("^\\./", "", olddir)
@@ -137,19 +177,16 @@ PM_fit <- R6::R6Class("PM_fit",
       }
       dir.create(newdir)
       setwd(newdir)
-      # Move data inside that folder
-      private$data$write("gendata.csv", header=F)
-      # create rust's model and config files
-      private$model$write_rust()
-      
-      # copy model to the template project
-      # compile the template folder
-      # move the binary to wd
+      cat("\nMoving compiled binary to a temp folder\n")
+      system(sprintf("cp %s NPcore",compiled_binary_path))
+      private$binary_path <- paste0(getwd(),"/NPcore")
+      setwd(cwd)
     }
 
     
   ),
   private = list(
+<<<<<<< HEAD
     
     binary_path = NULL,
     run_rust = function(...){
@@ -267,6 +304,11 @@ PM_fit <- R6::R6Class("PM_fit",
       #TODO: I think it might be necessary to implement a re_build() method
       #In case the binary the temp folder gets deleted
     }
+=======
+    data = NULL,
+    model = NULL,
+    binary_path = NULL
+>>>>>>> e7c4f4c (compiling the rust model and storing the path to the generated binary inside the PM-fir struct)
   )
 )
 
