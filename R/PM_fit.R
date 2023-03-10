@@ -149,6 +149,7 @@ PM_fit <- R6::R6Class("PM_fit",
       config <- config %>% append("init_points=1000")
       config <- config %>% append("seed=347")
       config <- config %>% append("tui=false")
+      config <- config %>% append("pmetrics_outputs=true")
       writeLines(config,"config.toml")
       #check if the file exists
       file.copy(private$binary_path,"NPcore")
