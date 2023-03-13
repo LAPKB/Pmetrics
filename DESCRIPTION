@@ -69,7 +69,13 @@ Imports:
     magrittr,
     patchwork,
     DT,
+<<<<<<< HEAD
     pander,
+=======
+    pander
+Suggests:
+    knitr,
+>>>>>>> 8dd8657 (First draft of new report template)
     rmarkdown,
     knitr,
     pandoc,
