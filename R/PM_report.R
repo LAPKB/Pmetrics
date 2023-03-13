@@ -8,6 +8,7 @@
 #' @import pander
 #' @import DT
 #' @import patchwork
+#' @import rmarkdown
 #' @return Generates an HTML-report in the current working directory.
 #' @author Markus Hovd and Julian Otalvaro
 #' @seealso \code{\link{PM_load}}
