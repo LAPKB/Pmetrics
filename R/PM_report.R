@@ -14,7 +14,7 @@
 #' @seealso \code{\link{PM_load}}
 #' @export
 
-PM_report <- function(PM_result, template) {
+PM_report <- function(PM_result, template, outfile, show = TRUE) {
   
   if (!is(PM_result, "PM_result")) {
     stop("This function expects a valid PM_result object from PM_load\n")
@@ -24,10 +24,24 @@ PM_report <- function(PM_result, template) {
     template = system.file("report/templates/default.Rmd", package = "Pmetrics")
   }
   
+  if (missing(outfile)) {
+    outfile = tempfile(fileext = ".html")
+  }
+  
+  cat("Generating report based on specified template...\n")
+  
   rmarkdown::render(
     input = template, 
+    output_file = outfile,
     params = list(res = PM_result),
     clean = TRUE,
     quiet = TRUE
   )
+  
+  if (show & file.exists(outfile)) {
+    pander::openFileInOS(outfile)
+  }
+  
+  cat(paste("Report generated at", outfile, "\n"))
+  
 }
