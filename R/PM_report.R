@@ -57,8 +57,18 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
     
   }
   
+  if (missing(outfile)) {
+    outfile = tempfile(fileext = ".html")
+  }
+  
+  cat("Generating report based on specified template...\n")
+  
   rmarkdown::render(
+<<<<<<< HEAD
     input = templateFile,
+=======
+    input = template, 
+>>>>>>> ff3b094 (Added argument for outfile and show)
     output_file = outfile,
     params = list(res = PM_result),
     clean = TRUE,
@@ -71,4 +81,8 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
   
   cat(paste("Report generated at", outfile, "\n"))
   
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> ff3b094 (Added argument for outfile and show)
