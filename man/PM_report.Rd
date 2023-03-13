@@ -4,12 +4,16 @@
 \alias{PM_report}
 \title{Generate a report}
 \usage{
-PM_report(PM_result, template)
+PM_report(PM_result, template, outfile, show = TRUE)
 }
 \arguments{
 \item{PM_result}{A \code{PM_result} object obtained from \code{PM_load(x)}, where \code{x} is the run number.}
 
-\item{template}{The path to a template. If not specified, uses the default Pmetrics report template.
+\item{template}{The path to a template. If not specified, uses the default Pmetrics report template.}
+
+\item{outfile}{The location of the generated report, defaults to a temporary file.}
+
+\item{show}{Controls if the report should be automatically opened on generation, defaults to \code{TRUE}
 Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
 in \code{\link{NPrun}}.}
 }
