@@ -89,8 +89,13 @@ Suggests:
 =======
     rmarkdown,
     knitr,
+<<<<<<< HEAD
     pandoc
 >>>>>>> 5239733 (Error handling for pandoc)
+=======
+    pandoc,
+    ggpubr
+>>>>>>> 3095784 (Documentation)
 Suggests:
     testthat
 RoxygenNote: 7.2.3
