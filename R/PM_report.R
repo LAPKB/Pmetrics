@@ -61,6 +61,12 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
     outfile = tempfile(fileext = ".html")
   }
   
+  ### TEMPORARY LIMITATION FOR OUTEQ ###
+  # Currently, the report only s
+  if (PM_result$NPdata$numeqt > 1) {
+    stop("Currently only one output equation is supported.\n")
+  }
+  
   cat("Generating report based on specified template...\n")
   
   rmarkdown::render(
