@@ -3,6 +3,7 @@
 #'
 #' @title Load Pmetrics NPAG or IT2B output
 #' @param run The numerical value of the folder number containing the run results.
+#' Run can also be the path pointing a folder containing the corresponding Rdata file
 #' This parameter is \code{1} by default.
 #' @param remote Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
 #' See \code{\link{NPrun}}. Currently remote runs are not configured for IT2B or the Simulator.
@@ -28,7 +29,12 @@ PM_load <- function(run = 1, remote = F, server_address) {
   
   #check for NPAG output file
   filename <- "NPAGout.Rdata"
-  outfile <- paste(run, "outputs", filename, sep = "/")
+  if (is.numeric(run)){
+    outfile <- paste(run, "outputs", filename, sep = "/")
+  } else {
+    outfile <- paste(run,filename,sep="/")
+  }
+  
   
   if (remote) { #only look on server
     status = .remoteLoad(thisrun, server_address)
@@ -45,7 +51,11 @@ PM_load <- function(run = 1, remote = F, server_address) {
   } else {
     #check for IT2B output file
     filename <- "IT2Bout.Rdata"
-    outfile <- paste(run, "outputs", filename, sep = "/")
+    if (is.numeric(run)){
+      outfile <- paste(run, "outputs", filename, sep = "/")
+    } else {
+      outfile <- paste(run,filename,sep="/")
+    }
     if (file.exists(outfile)) {
       load(outfile)
       result <- output2List(Out = get("IT2Bout"))
