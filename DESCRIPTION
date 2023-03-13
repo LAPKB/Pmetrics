@@ -70,10 +70,10 @@ Imports:
     patchwork,
     DT,
     pander,
-    rmarkdown
-Suggests:
-    knitr,
     rmarkdown,
+    knitr,
+    pandoc
+Suggests:
     testthat
 RoxygenNote: 7.2.3
 Encoding: UTF-8
