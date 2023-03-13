@@ -66,8 +66,10 @@ Imports:
     mvtnorm,
     tidyverse,
     R6,
-    pander,
-    magrittr
+    magrittr,
+    patchwork,
+    DT,
+    pander
 Suggests:
     knitr,
     rmarkdown,
