@@ -170,10 +170,7 @@ rmnorm <- function(n, mean, sigma) {
   retval
 }
 
-<<<<<<< HEAD
 openHTML <- function(x) pander::openFileInOS(x)
-=======
->>>>>>> ff0c643 (fixed open websites)
 
 # parse NP_RF file only for final cycle information; used for bootstrapping
 # indpts,ab,corden,nvar,nactve,iaddl,icyctot,par
