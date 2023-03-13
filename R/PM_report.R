@@ -5,11 +5,6 @@
 #' @param template The path to a template. If not specified, uses the default Pmetrics report template.
 #' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
 #' in \code{\link{NPrun}}.
-#' @import pander
-#' @import DT
-#' @import patchwork
-#' @import rmarkdown
-#' @import pandoc
 #' @return Generates an HTML-report in the current working directory.
 #' @author Markus Hovd and Julian Otalvaro
 #' @seealso \code{\link{PM_load}}
