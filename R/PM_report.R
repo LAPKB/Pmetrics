@@ -3,6 +3,8 @@
 #' @title Generate a report
 #' @param PM_result A `PM_result` object obtained from \code{PM_load(x)}, where `x` is the run number.
 #' @param template The path to a template. If not specified, uses the default Pmetrics report template.
+#' @param outfile The location of the generated report, defaults to a temporary file.
+#' @param show Controls if the report should be automatically opened on generation, defaults to `TRUE`
 #' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
 #' in \code{\link{NPrun}}.
 #' @return Generates an HTML-report in the current working directory.
