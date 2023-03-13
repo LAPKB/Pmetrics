@@ -827,8 +827,14 @@
     file.remove("time.txt")
 
     # make report
-    if (type == "NPAG" | type == "IT2B") {
-      PMreport(paste(currwd, newdir, "outputs", sep = "/"), icen = icen, type = type, parallel = parallel)
+    if (type == "NPAG" || type == "IT2B") {
+      reportType <- which(c("NPAG", "IT2B") == type)
+      makeRdata(paste(currwd, newdir, "outputs", sep = "/"), F, reportType)
+      res <- PM_load(paste(currwd, newdir, "outputs", sep = "/"))
+      PM_report(res,outfile = paste(currwd, newdir, "outputs/NPreport.html", sep = "/"))
+      setwd(currwd)
+      return(res)
+      # PMreport(paste(currwd, newdir, "outputs", sep = "/"), icen = icen, type = type, parallel = parallel)
     }
     if (type == "ERR") {
       ERRreport(paste(currwd, newdir, "outputs", sep = "/"), icen = icen, type = type)
@@ -839,7 +845,7 @@
     # file.copy(from = Sys.glob("*.*"), to = "inputs")
     # file.remove(Sys.glob("*.*"))
     # system("mv *.* inputs/")
-    outpath <- paste(currwd, newdir, "outputs", sep = "/")
+    # outpath <- paste(currwd, newdir, "outputs", sep = "/")
     if(report){pander::openFileInOS(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))}
     return(outpath)
   }
