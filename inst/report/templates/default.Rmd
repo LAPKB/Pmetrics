@@ -1,6 +1,6 @@
 ---
 title: "Pmetrics - report"
-author: "Laboratory of Applied Pharmacokinetics and Bioinformatincs (LAPKB)"
+author: "Laboratory of Applied Pharmacokinetics and Bioinformatics (LAPKB)"
 date: "`r Sys.Date()`"
 output:
   html_document:
