@@ -76,6 +76,7 @@ Imports:
     pander
 =======
     pander,
+<<<<<<< HEAD
     rmarkdown
 >>>>>>> 5ea4650 (Added rmarkdown as dependency)
 Suggests:
@@ -85,6 +86,11 @@ Suggests:
     knitr,
     pandoc,
     ggpubr
+=======
+    rmarkdown,
+    knitr,
+    pandoc
+>>>>>>> 5239733 (Error handling for pandoc)
 Suggests:
     testthat
 RoxygenNote: 7.2.3
