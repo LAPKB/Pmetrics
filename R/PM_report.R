@@ -69,12 +69,24 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
   
   cat("Generating report based on specified template...\n")
   
+  # Check if pandoc is exposed to Rstudio
+  if (!rmarkdown::pandoc_available()) {
+    # Check if pandoc is installed
+    if (!pandoc::pandoc_available()) {
+      pandoc::pandoc_install()
+    }
+    
+    # Set the correct environmental variable for use in shell
+    Sys.setenv(RSTUDIO_PANDOC = pandoc::pandoc_locate())
+    
+    if (!rmarkdown::pandoc_available()) {
+      stop("Unable to install pandoc, or expose it to Rmarkdown.")
+    }
+    
+  }
+  
   rmarkdown::render(
-<<<<<<< HEAD
     input = templateFile,
-=======
-    input = template, 
->>>>>>> ff3b094 (Added argument for outfile and show)
     output_file = outfile,
     params = list(res = PM_result),
     clean = TRUE,
@@ -87,8 +99,5 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
   
   cat(paste("Report generated at", outfile, "\n"))
   
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> ff3b094 (Added argument for outfile and show)
+
