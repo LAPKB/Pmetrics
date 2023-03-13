@@ -69,7 +69,8 @@ Imports:
     magrittr,
     patchwork,
     DT,
-    pander
+    pander,
+    rmarkdown
 Suggests:
     knitr,
     rmarkdown,
