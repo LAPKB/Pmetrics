@@ -70,9 +70,14 @@ Imports:
     patchwork,
     DT,
 <<<<<<< HEAD
+<<<<<<< HEAD
     pander,
 =======
     pander
+=======
+    pander,
+    rmarkdown
+>>>>>>> 5ea4650 (Added rmarkdown as dependency)
 Suggests:
     knitr,
 >>>>>>> 8dd8657 (First draft of new report template)
