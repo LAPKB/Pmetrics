@@ -192,6 +192,26 @@ PM_data <- R6::R6Class("PM_data",
         dataObj$c0 <- dataObj$c1 <- dataObj$c2 <- dataObj$c3 <- NA
         msg <- c(msg, "One or more error coefficients not specified. Error in model object will be used.\n")
       }
+      
+      #expand any ADDL > 0
+      #preserve original order (necessary for EVID=4)
+      dataObj$row <- 1:nrow(dataObj)
+      addl_lines <- dataObj %>% filter(!is.na(addl) & addl > 0)
+      if(nrow(addl_lines)>0){
+        new_lines <- addl_lines %>% tidyr::uncount(addl,.remove=F) %>%
+          group_by(id) %>%
+          mutate(time = ii * row_number() + time)
+        
+        dataObj <- bind_rows(dataObj, new_lines) %>%
+          arrange(id, row, time) %>%
+          mutate(addl = ifelse(addl==-1,-1,NA),
+                 ii = ifelse(addl==-1,ii,NA)) %>%
+          select(!row)
+        
+        msg <- c(msg, "ADDL > 0 rows expanded.\n")
+        
+        
+      }
 
       dataObj <- dataObj %>% select(standardNames, all_of(covNames))
       if (length(msg) > 2) {
