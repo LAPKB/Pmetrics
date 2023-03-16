@@ -340,7 +340,7 @@ makeRdata <- function(wd, remote, reportType) {
 
     if (reportType == 1) {
       NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, data = mdata, model = model, errfile = errfile, success = success)
-      save(NPAGout, file = "NPAGout.Rdata")
+      save(NPAGout, file = "PMout.Rdata")
       # Hacky return to deal with Rservex bug T.T
       if (remote) {
         return("ok")
@@ -348,8 +348,8 @@ makeRdata <- function(wd, remote, reportType) {
       return(NPAGout)
     }
     if (reportType == 2) {
-      IT2Bout <- list(ITdata = PMdata, final = final, cycle = cycle, op = op, cov = cov, data = mdata, errfile = errfile, success = success)
-      save(IT2Bout, file = "IT2Bout.Rdata")
+      IT2Bout <- list(ITdata = PMdata, final = final, cycle = cycle, op = op, cov = cov, data = mdata, model = model, errfile = errfile, success = success)
+      save(IT2Bout, file = "PMout.Rdata")
       if (remote) {
         return("ok")
       }
