@@ -48,7 +48,9 @@
 #' Example: `line = list(lm = F, loess = T, ref = list(color = "lightgrey"))`
 #' If the `line` argument is missing, it will be set to
 #' `line = list(lm = T, loess = F, ref = T)`, i.e. there will be a linear
-#' regression with reference line, but no loess regression.
+#' regression with reference line, but no loess regression. However, if `resid = T`,
+#' the default will become `line = list(lm = F, loess = T, ref = T)`, i.e.,
+#' loess regression with reference line, but no linear regression.
 #' @param mult `r template("mult")` 
 #' @param resid Boolean operator to generate a plot of weighted prediction error vs. time,
 #' a plot of weighted prediction error vs. prediction. Prediction error is
@@ -90,7 +92,7 @@
 #' 
 #' @family PMplots
 plot.PM_op <- function(x,  
-                       line = list(lm = T, loess = F, ref = T),
+                       line = list(lm = NULL, loess = NULL, ref = NULL),
                        marker = T,
                        resid = F,                      
                        icen = "median", pred.type = "post", outeq = 1, block,
@@ -129,9 +131,17 @@ plot.PM_op <- function(x,
   if(!is.list(line)){
     cat(paste0(crayon::red("Error: "),crayon::blue("line")," should be a list(). See help(\"plot.PM_op\")."))
   }
-  if(is.null(line$lm)) {line$lm <- T}
-  if(is.null(line$loess)) {line$loess <- F}
-  if(is.null(line$ref)) {line$ref <- T}
+  
+  if(!resid){ #defaults 
+    if(is.null(line$lm)) {line$lm <- T}
+    if(is.null(line$loess)) {line$loess <- F}
+    if(is.null(line$ref)) {line$ref <- T} 
+  } else { #defaults for residual plot
+    if(is.null(line$lm)) {line$lm <- F}
+    if(is.null(line$loess)) {line$loess <- T}
+    if(is.null(line$ref)) {line$ref <- T}
+  }
+
   
   
   marker <- amendMarker(marker, default = list(color = "orange"))
@@ -178,38 +188,11 @@ plot.PM_op <- function(x,
   if(missing(title)){ title <- ""}
   layout$title <- amendTitle(title, default = list(size = 20))
   
-  #lm stats
-  # if(lmLine$plot){
-  #   if(missing(stats)) stats <- getPMoptions("op_stats")
-  #   if(is.null(stats)){
-  #     setPMoptions(op_stats = T)
-  #     stats <- T
-  #     statPlot <- T
-  #   }
-  #   if(is.logical(stats)){ #default formatting
-  #     if(stats){
-  #       statPlot <- T
-  #     } else {statPlot <- F}
-  #     stats <- amendTitle("", default = list(size = 14, bold = F))
-  #     stats$x <- 0.8
-  #     stats$y <- 0.1
-  #   } else { #formatting supplied, set text to "" (will be replaced later)
-  #     stats$text <- ""
-  #     if(is.null(stats$x)){stats$x <- 0.8}
-  #     if(is.null(stats$y)){stats$y <- 0.1}
-  #     stats <- amendTitle(stats, default = list(size = 14, bold = F))
-  #     statPlot <- T
-  #   }
-  # } else {
-  #   statPlot <- F
-  # }
   
   
   # PLOTS -------------------------------------------------------------------
-  
-  
-  
-  if(!resid){
+
+  if(!resid){ #default plot
     
     #axis labels
     xlab <- if(missing(xlab)){"Predicted"} else {xlab}
@@ -244,102 +227,31 @@ plot.PM_op <- function(x,
                           text = ~id,
                           hovertemplate = "Pred: %{x:.2f}<br>Obs: %{y:.2f}<br>ID: %{text}<extra></extra>")
     
-    if(lmLine$plot){
-      
-      lmLine$plot <- NULL
+    if(lmLine$plot){ #linear regression
+      lmLine$plot <- NULL #remove to allow only formatting arguments below
       if(is.null(purrr::pluck(lmLine$ci))){
         ci <- 0.95
       } else {
         ci <- lmLine$ci
-        lmLine$ci <- NULL
+        lmLine$ci <- NULL #remove to allow only formatting arguments below
       }
-      # lm1 <- lm(obs~pred, sub1)
-      # p$lm <- lm1
-      # inter <- format(coef(lm1)[1],digits=3)
-      # slope <- format(coef(lm1)[2],digits=3)
-      # if(is.na(summary(lm1)$coefficients[1,2])) {ci.inter <- rep("NA",2)} else {ci.inter <- c(format(confint(lm1,level=ci)[1,1],digits=3),format(confint(lm1,level=ci)[1,2],digits=3)) }
-      # if(is.na(summary(lm1)$coefficients[2,2])) {ci.slope <- rep("NA",2)} else {ci.slope <- c(format(confint(lm1,level=ci)[2,1],digits=3),format(confint(lm1,level=ci)[2,2],digits=3)) }
-      # 
-      # zVal <- qnorm(1 - (1 - ci)/2)
-      # seFit <- predict(lm1, newdata = sub1, se.fit = T)
-      # upper <- seFit$fit + zVal * seFit$se.fit
-      # lower <- seFit$fit - zVal * seFit$se.fit
-      # 
-      # regStat <- paste0("R-squared = ",format(summary(lm1)$r.squared,digits=3),"<br>",
-      #                   "Inter = ",inter," (",ci*100,"%CI ",ci.inter[1]," to ",ci.inter[2],")","<br>",
-      #                   "Slope = ",slope," (",ci*100,"%CI ",ci.slope[1]," to ",ci.slope[2],")","<br>",
-      #                   "Bias = ",format(summary.PMop(sub1)$pe$mwpe,digits=3),"<br>",
-      #                   "Imprecision  = ",format(summary(sub1)$pe$bamwspe,digits=3)
-      # )
-      # 
-      # p <- p %>% 
-      #   plotly::add_lines(y = fitted(lm1), 
-      #                     hoverinfo = "text",
-      #                     text = regStat,
-      #                     line = lmLine)
-      # if(ci > 0){
-      #   p <- p %>% 
-      #     plotly::add_ribbons(ymin = ~lower, ymax = ~upper, 
-      #                         fillcolor = lmLine$color,
-      #                         line = list(color = lmLine$color),
-      #                         opacity = 0.2,
-      #                         name = "Linear regression",
-      #                         hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
-      #                                                "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
-      # }
-      # if(statPlot){ #add statistics
-      #   p <- p %>%
-      #     plotly::layout(annotations = list(
-      #       x = stats$x, 
-      #       y = stats$y, 
-      #       text = regStat, 
-      #       font = stats$font,
-      #       xref = "paper",
-      #       yref = "paper",
-      #       align = "left")
-      #     )
-      # }
       
       p <- p %>% add_smooth(x = ~pred, y = ~obs, ci = ci, line = lmLine, stats = stats)
     } 
     
-    if(loessLine$plot){
-      
-      loessLine$plot <- NULL
+    if(loessLine$plot){ #loess regression
+      loessLine$plot <- NULL #remove to allow only formatting arguments below
       if(is.null(purrr::pluck(loessLine$ci))){
         ci <- 0.95
       } else {
         ci <- loessLine$ci
-        loessLine$ci <- NULL
+        loessLine$ci <- NULL #remove to allow only formatting arguments below
       }
-      # lo1 <- loess(obs~pred,sub1)
-      # zVal <- qnorm(1 - (1 - ci)/2)
-      # seFit <- predict(lo1, newdata = sub1, se = T)
-      # upper <- seFit$fit + zVal * seFit$se.fit
-      # lower <- seFit$fit - zVal * seFit$se.fit
-      # 
-      # p <- p %>% 
-      #   plotly::add_lines(y = fitted(lo1), 
-      #                     hoverinfo = "none", 
-      #                     line = loessLine) 
-      # if(ci > 0){
-      #   p <- p %>%
-      #     plotly::add_ribbons(ymin = ~lower, ymax = ~upper, 
-      #                         fillcolor = loessLine$color,
-      #                         line = list(color = loessLine$color),
-      #                         opacity = 0.2,
-      #                         name = "Loess regression",
-      #                         hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
-      #                                                "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
-      #   
-      # }
       p <- p %>% add_smooth(x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
-      
     } 
     
-    if(refLine$plot){
-      
-      refLine$plot <- NULL
+    if(refLine$plot){ #reference line
+      refLine$plot <- NULL #remove to allow only formatting arguments below
       layout$refLine <- list(type = "line",
                              x0 = 0,
                              y0 = 0,
@@ -362,11 +274,8 @@ plot.PM_op <- function(x,
     return(p)
     
     
-    
-    
   } else { #residual plot
-    
-    
+
     #Y axis and point labels
     if(pred.type == "post"){
       ylab <- "Individual weighted residuals (pred - obs)"
@@ -375,93 +284,52 @@ plot.PM_op <- function(x,
       ylab <- "Population weighted residuals (pred - obs)"
       pointLab <- "PWRES"
     }
+    
     layout$yaxis$title <- amendTitle(ylab)
-    if(is.character(ylab)){
-      layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
-    } else {
-      layout$yaxis$title <- amendTitle(ylab)
-    }
+    #amend xaxis title later
+
     
     #res vs. time
     p1 <- sub1 %>%
       plotly::plot_ly(x = ~time) %>%
-      add_markers(y = ~wd,
+      plotly::add_markers(y = ~wd,
                   marker = marker,
                   text = ~id,
                   hovertemplate = paste0("Time: %{x:.2f}<br>",pointLab,": %{y:.2f}<br>ID: %{text}<extra></extra>"))
     
+    #res vs. pred
+    p2 <- sub1 %>%
+      plotly::plot_ly(x = ~pred) %>%
+      plotly::add_markers(y = ~wd,
+                  marker = marker,
+                  text = ~id,
+                  hovertemplate = paste0("Pred: %{x:.2f}<br>",pointLab,": %{y:.2f}<br>ID: %{text}<extra></extra>"))
     
+    #add reference lines
     if(lmLine$plot){
-      
-      lmLine$plot <- NULL
+      lmLine$plot <- NULL #remove to allow only formatting arguments below
       if(is.null(purrr::pluck(lmLine$ci))){
         ci <- 0.95
       } else {
         ci <- lmLine$ci
-        lmLine$ci <- NULL
+        lmLine$ci <- NULL #remove to allow only formatting arguments below
       }
-      lm1 <- lm(wd ~ time, sub1)
-      inter <- format(coef(lm1)[1],digits=3)
-      slope <- format(coef(lm1)[2],digits=3)
-      if(is.na(summary(lm1)$coefficients[1,2])) {ci.inter <- rep("NA",2)} else {ci.inter <- c(format(confint(lm1,level=ci)[1,1],digits=3),format(confint(lm1,level=ci)[1,2],digits=3)) }
-      if(is.na(summary(lm1)$coefficients[2,2])) {ci.slope <- rep("NA",2)} else {ci.slope <- c(format(confint(lm1,level=ci)[2,1],digits=3),format(confint(lm1,level=ci)[2,2],digits=3)) }
+      p1 <- p1 %>% add_smooth(x = ~time, y = ~wd, ci = ci, line = lmLine, stats = stats)
+      p2 <- p2 %>% add_smooth(x = ~pred, y = ~wd, ci = ci, line = lmLine, stats = stats)
       
-      zVal <- qnorm(1 - (1 - ci)/2)
-      seFit <- predict(lm1, newdata = sub1, se.fit = T)
-      upper <- seFit$fit + zVal * seFit$se.fit
-      lower <- seFit$fit - zVal * seFit$se.fit
-      
-      p <- p %>% 
-        plotly::add_lines(y = fitted(lm1), 
-                          hoverinfo = "text",
-                          text = paste0("R-squared = ",format(summary(lm1)$r.squared,digits=3),"<br>",
-                                        "Inter = ",inter," (",ci*100,"%CI ",ci.inter[1]," to ",ci.inter[2],")","<br>",
-                                        "Slope = ",slope," (",ci*100,"%CI ",ci.slope[1]," to ",ci.slope[2],")","<br>"
-                                        #"Bias = ",format(summary(data,pred.type=pred.type,icen=icen,outeq=outeq)$pe$mwpe,digits=3),"<br>"
-                                        #"Imprecision  = ",format(summary(data,pred.type=pred.type,icen=icen,outeq=outeq)$pe$bamwspe,digits=3)
-                          ), 
-                          line = lmLine)
-      if(ci > 0){
-        p <- p %>% 
-          plotly::add_ribbons(ymin = ~lower, ymax = ~upper, 
-                              fillcolor = lmLine$color,
-                              line = list(color = lmLine$color),
-                              opacity = 0.2,
-                              name = "Linear regression",
-                              hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
-                                                     "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
-      }
     } 
     
     if(loessLine$plot){
+      loessLine$plot <- NULL #remove to allow only formatting arguments below
       if(is.null(purrr::pluck(loessLine$ci))){
         ci <- 0.95
       } else {
         ci <- loessLine$ci
-        loessLine$ci <- NULL
+        loessLine$ci <- NULL #remove to allow only formatting arguments below
       }
-      lo1 <- loess(wd ~ time, sub1)
-      zVal <- qnorm(1 - (1 - ci)/2)
-      seFit <- predict(lo1, newdata = sub1$time, se = T)
-      upper <- seFit$fit + zVal * seFit$se.fit
-      lower <- seFit$fit - zVal * seFit$se.fit
+      p1 <- p1 %>% add_smooth(x = ~time, y = ~wd, ci = ci, line = loessLine, method = "loess")
+      p2 <- p2 %>% add_smooth(x = ~pred, y = ~wd, ci = ci, line = loessLine, method = "loess")
       
-      p1 <- p1 %>% 
-        plotly::add_lines(y = fitted(lo1), 
-                          hoverinfo = "none",
-                          line = within(loessLine, rm(plot)))
-      
-      if(ci > 0){
-        p1 <- p1 %>%
-          plotly::add_ribbons(ymin = ~lower, ymax = ~upper, 
-                              fillcolor = loessLine$color,
-                              line = list(color = loessLine$color),
-                              opacity = 0.2,
-                              name = "Loess regression",
-                              hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
-                                                     "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
-        
-      }
     }
     #set layout
     layout$xaxis$title <- amendTitle("Time")
@@ -470,76 +338,6 @@ plot.PM_op <- function(x,
                      yaxis = layout$yaxis,
                      showlegend = layout$showlegend)
     
-    
-    #res vs. pred
-    p2 <- sub1 %>%
-      plotly::plot_ly(x = ~pred) %>%
-      add_markers(y = ~wd,
-                  marker = marker,
-                  text = ~id,
-                  hovertemplate = paste0("Pred: %{x:.2f}<br>",pointLab,": %{y:.2f}<br>ID: %{text}<extra></extra>"))
-    if(lmLine$plot){
-      lmLine$plot <- NULL
-      lm2 <- lm(wd ~ pred, sub1)
-      inter <- format(coef(lm2)[1],digits=3)
-      slope <- format(coef(lm2)[2],digits=3)
-      if(is.na(summary(lm2)$coefficients[1,2])) {ci.inter <- rep("NA",2)} else {ci.inter <- c(format(confint(lm2,level=ci)[1,1],digits=3),format(confint(lm2,level=ci)[1,2],digits=3)) }
-      if(is.na(summary(lm2)$coefficients[2,2])) {ci.slope <- rep("NA",2)} else {ci.slope <- c(format(confint(lm2,level=ci)[2,1],digits=3),format(confint(lm2,level=ci)[2,2],digits=3)) }
-      
-      zVal <- qnorm(1 - (1 - ci)/2)
-      seFit <- predict(lm2, newdata = sub1, se.fit = T)
-      upper <- seFit$fit + zVal * seFit$se.fit
-      lower <- seFit$fit - zVal * seFit$se.fit
-      
-      p <- p %>% 
-        plotly::add_lines(y = fitted(lm2), 
-                          hoverinfo = "text",
-                          text = paste0("R-squared = ",format(summary(lm2)$r.squared,digits=3),"<br>",
-                                        "Inter = ",inter," (",ci*100,"%CI ",ci.inter[1]," to ",ci.inter[2],")","<br>",
-                                        "Slope = ",slope," (",ci*100,"%CI ",ci.slope[1]," to ",ci.slope[2],")","<br>"
-                                        #"Bias = ",format(summary(data,pred.type=pred.type,icen=icen,outeq=outeq)$pe$mwpe,digits=3),"<br>"
-                                        #"Imprecision  = ",format(summary(data,pred.type=pred.type,icen=icen,outeq=outeq)$pe$bamwspe,digits=3)
-                          ), 
-                          line = lmLine)
-      if(ci > 0){
-        p <- p %>% 
-          plotly::add_ribbons(ymin = ~lower, ymax = ~upper, 
-                              fillcolor = lmLine$color,
-                              line = list(color = lmLine$color),
-                              opacity = 0.2,
-                              name = "Linear regression",
-                              hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
-                                                     "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
-      }
-    } 
-    
-    if(loessLine$plot){
-      loessLine$plot <- NULL
-      lo2 <- loess(wd~pred, sub1)
-      zVal <- qnorm(1 - (1 - ci)/2)
-      seFit <- predict(lo2, newdata = sub1, se = T)
-      upper <- seFit$fit + zVal * seFit$se.fit
-      lower <- seFit$fit - zVal * seFit$se.fit
-      
-      p2 <- p2 %>% 
-        plotly::add_lines(y = fitted(lo2), 
-                          hoverinfo = "none", 
-                          line = loessLine) 
-      if(ci > 0){
-        p2 <- p2 %>%
-          plotly::add_ribbons(ymin = ~lower, ymax = ~upper, 
-                              fillcolor = loessLine$color,
-                              line = list(color = loessLine$color),
-                              opacity = 0.2,
-                              name = "Loess regression",
-                              hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
-                                                     "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
-        
-      }
-    }
-    
-    
-    #set layout
     layout$xaxis$title <- amendTitle("Predicted")
     p2 <- p2 %>%
       plotly::layout(xaxis = layout$xaxis,
