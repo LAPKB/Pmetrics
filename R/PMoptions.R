@@ -97,7 +97,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements, op_st
   }
   
   #add missing defaults
-  PMopts <- modifyList(PMopts, defaultOpts)
+  PMopts <- modifyList(defaultOpts, PMopts)
   
   #update user values
   if (!missing(sep)) PMopts$sep <- sep
