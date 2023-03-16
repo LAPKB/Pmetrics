@@ -290,7 +290,7 @@ dmean = res$op$data %>%
   geom_smooth(method = "loess", se = FALSE, col = "black") +
   geom_point(pch = 21, col = "black", fill = "red") +
   theme_classic() +
-  labs(x = "Observed concentration", y = "Weighted prediction error")
+  labs(x = "Observed concentration", y = "Prediction error")
 
 wdmean = res$op$data %>% 
   filter(icen == "mean") %>% # Mean
