@@ -173,7 +173,7 @@ setGrid <- function(.axis, grid = F, default){
     } else {
       grid <- default_grid
       grid$gridcolor = "white"
-      grid$gridwidth = 0
+        grid$gridwidth = 0
     }
   }
   
@@ -432,21 +432,24 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
   if(!is.null(data)){
     if(is.null(x) | is.null(y)) stop("Missing x or y with data.\n")
     if(!rlang::is_formula(x) | !rlang::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
-    vals <- data.frame(x = model.frame(x, data),
-                       y = model.frame(y, data))
+    x <- model.frame(x, data)
+    y <- model.frame(y, data)
   } else { #data is null
     if(!is.null(x) | !is.null(y)){
       if(!rlang::is_formula(x) | !rlang::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
-      vals <- data.frame(x = model.frame(x, p$x$visdat[[1]]()),
-                         y = model.frame(y, p$x$visdat[[1]]()))
+      x <- model.frame(x, p$x$visdat[[1]]())
+      y <- model.frame(y, p$x$visdat[[1]]())
       
     } else {
-      vals <- data.frame(x = model.frame(p$x$attrs[[2]]$x, p$x$visdat[[1]]())[,1],
-                         y = model.frame(p$x$attrs[[2]]$y, p$x$visdat[[1]]())[,1])
+      x <- model.frame(p$x$attrs[[2]]$x, p$x$visdat[[1]]())[,1]
+      y <- model.frame(p$x$attrs[[2]]$y, p$x$visdat[[1]]())[,1]
     }
     
   }
-  names(vals) <- c("x","y")
+  if(length(x) != length(y)){
+    stop("Regression failed due to unequal x (n = ", length(x), ") and y (n = ", length(y), ").\n")
+  }
+  vals <- dplyr::bind_cols(x, y) %>% dplyr::rename("x" = 1, "y" = 2)
   mod <- do.call(method, args = list(formula = y ~ x, data = vals))
   
   if(method == "lm"){
@@ -466,17 +469,17 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
       regStat <- paste0(regStat,"<br>",
                         "Bias = ",format(sumStat$pe$mwpe,digits=3),"<br>",
                         "Imprecision  = ",format(sumStat$pe$bamwspe,digits=3)
-                        )
+      )
     }
     
     p <- p %>% plotly::add_lines(x = vals$x, y = fitted(mod),
-                         hoverinfo = "text",
-                         text = regStat,
-                         line = line)
-  } else {
+                                 hoverinfo = "text",
+                                 text = regStat,
+                                 line = line)
+  } else { #loess
     p <- p %>% plotly::add_lines(x = vals$x, y = fitted(mod),
-                         hoverinfo = "none",
-                         line = line)
+                                 hoverinfo = "none",
+                                 line = line)
   }
   
   if(ci > 0){
@@ -487,15 +490,15 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
     
     p <- p %>%
       plotly::add_ribbons(x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper, 
-                  fillcolor = line$color,
-                  line = list(color = line$color),
-                  opacity = 0.2,
-                  name = dplyr::case_when(
-                    method == "lm" ~"Linear Regression",
-                    method == "loess" ~"Loess Regression"
-                  ),
-                  hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
-                                         "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
+                          fillcolor = line$color,
+                          line = list(color = line$color),
+                          opacity = 0.2,
+                          name = dplyr::case_when(
+                            method == "lm" ~"Linear Regression",
+                            method == "loess" ~"Loess Regression"
+                          ),
+                          hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
+                                                 "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
   }
   if(missing(stats)) stats <- getPMoptions("op_stats")
   if(is.null(stats)){
