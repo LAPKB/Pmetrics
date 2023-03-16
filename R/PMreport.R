@@ -40,9 +40,9 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   if (file.exists("time.txt")) {
     execTime <- readLines("time.txt")
     OS <- switch(gsub("[[:blank:]]", "", execTime[1]),
-      Unix = 1,
-      Windows = 2,
-      Linux = 3
+                 Unix = 1,
+                 Windows = 2,
+                 Linux = 3
     )
     if (OS == 1 | OS == 3) {
       elapsed <- difftime(as.POSIXct(execTime[3], format = "%s"), as.POSIXct(execTime[2], format = "%s"))
@@ -63,13 +63,13 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
   # success <- file.info(c("NP_RF0001.TXT", "IT_RF0001.TXT")[reportType])$size >= 1000
   if (success) {
     # TODO:create r6 object
-
+    
     report_file <- system.file('report/report.html',package="Pmetrics")
     manual_file <- system.file('manual/index.html',package="Pmetrics")
     html <- readr::read_file(report_file)
     html <- gsub("</manual_link>", manual_file, html)
-
-
+    
+    
     # red Summary
     if (error) {
       html <- gsub("</red>", "red", html)
@@ -77,14 +77,27 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
     # Generate plots
     thisData <- switch(reportType, rdata$NPdata, rdata$ITdata)
     for (i in 1:thisData$numeqt) {
-      plot.PM_op(rdata$op, outeq = i, pred.type = "pop") %>%
-        plotly::as_widget() %>%
-        htmlwidgets::saveWidget(sprintf("op_pop%i.html", i), libdir = "deps", selfcontained = F)
-
-      plot.PM_op(rdata$op, outeq = i) %>%
-        plotly::as_widget() %>%
-        htmlwidgets::saveWidget(sprintf("op_ind%i.html", i), libdir = "deps", selfcontained = F)
-
+      tryCatch(
+        plot.PM_op(rdata$op, outeq = i, pred.type = "pop") %>%
+          plotly::as_widget() %>%
+          htmlwidgets::saveWidget(sprintf("op_pop%i.html", i), libdir = "deps", selfcontained = F),
+        error = function(e){
+          message("Unable to generate obs vs. pop pred plot")
+          print(e)
+          return(invisible(NULL))
+        }
+      )
+      
+      tryCatch(
+        plot.PM_op(rdata$op, outeq = i) %>%
+          plotly::as_widget() %>%
+          htmlwidgets::saveWidget(sprintf("op_ind%i.html", i), libdir = "deps", selfcontained = F),
+        error = function(e){
+          message("Unable to generate obs vs. post pred plot")
+          print(e)
+          return(invisible(NULL))
+        }      
+      )
       html <- gsub("</op>", sprintf('<div class="col-lg-12">
                     <div class="home-content text-center">
                         <h3 class="home-title mb-4 text-white">Output %i</h3>
@@ -102,21 +115,36 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
                     </div>
                 </div></op>', i, i, i), html)
     }
-
-
-    plot.PMcycle(rdata$cycle) %>%
-      plotly::as_widget(height = "1060px", width = "500px") %>%
-      htmlwidgets::saveWidget("cycle.html", libdir = "deps", selfcontained = F)
-
-
+    
+    
+    tryCatch(
+      plot.PMcycle(rdata$cycle) %>%
+        plotly::as_widget(height = "1060px", width = "500px") %>%
+        htmlwidgets::saveWidget("cycle.html", libdir = "deps", selfcontained = F),
+      error = function(e){
+        message("Unable to generate cycle plot")
+        print(e)
+        return(invisible(NULL))
+      }
+    )
+    
     pmfinal_height <- ((length(names(rdata$final$popMean)) - 1) %/% 2) * 500
-    plot.PM_final(rdata$final) %>%
-      plotly::as_widget(final, height = sprintf("%ipx", pmfinal_height), width = "1420px") %>%
-      htmlwidgets::saveWidget("final.html", libdir = "deps", selfcontained = F)
+    
+    tryCatch(
+      plot.PM_final(rdata$final) %>%
+        plotly::as_widget(final, height = sprintf("%ipx", pmfinal_height), width = "1420px") %>%
+        htmlwidgets::saveWidget("final.html", libdir = "deps", selfcontained = F),
+      error = function(e){
+        message("Unable to generate final plot")
+        print(e)
+        return(invisible(NULL))
+      }
+    )
+    
     html <- gsub("</pmfinal_height>", sprintf("%ipx", pmfinal_height), html)
-
+    
     # Edit HTML
-
+    
     if(reportType == 1){
       html <- gsub("</parameter_values>", paste0('<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Support Points</h2>', 
                                                  makeHTMLdf(rdata$final$popPoints, 3), "</div></parameter_values>"), html)
@@ -130,7 +158,7 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
     names(report.table) <- c("Mean", "SD", "CV%", "Var", "Median", "Shrink%")
     html <- gsub("</parameter_values>", paste0('<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Parameter Values Summary</h2>', 
                                                makeHTMLdf(report.table, 3), "</div></parameter_values>"), html)
-
+    
     if (thisData$nranfix > 0) {
       ranfixdf <- data.frame(Parameter = thisData$parranfix, Value = thisData$valranfix)
       html <- gsub("</parameter_values>", paste0('<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Population Fixed (but Random) Values</h2>', 
@@ -144,13 +172,13 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
     # covariance matrix
     html <- gsub("</parameter_values>", paste0('<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Covariance Matrix</h2>', 
                                                makeHTMLdf(rdata$final$popCov, 3), "</div></parameter_values>"), html)
-
+    
     # correlation matrix
     html <- gsub("</parameter_values>", paste0('<div class="col-md-6 col-sm-12" style="padding-right: 10px;padding-left: 10px;"><h2>Correlation Matrix</h2>', 
                                                makeHTMLdf(rdata$final$popCor, 3), "</div></parameter_values>"), html)
-
-
-
+    
+    
+    
     if (thisData$nofix == 0) {
       parfix <- "There were no constant fixed parameters."
     } else {
@@ -179,79 +207,79 @@ PMreport <- function(wd, rdata, icen = "median", type = "NPAG", parallel = F) {
       }
     } else {
       coninterp <- switch(1 + thisData$converge,
-        " *The run did not converge before the last cycle.",
-        " - The run converged.",
-        "",
-        " *The run ended with a Hessian Error."
+                          " *The run did not converge before the last cycle.",
+                          " - The run converged.",
+                          "",
+                          " *The run ended with a Hessian Error."
       )
       confor1 <- switch(1 + thisData$converge,
-        "<span class=\"alert\">",
-        "",
-        "",
-        "<span class=\"alert\">"
+                        "<span class=\"alert\">",
+                        "",
+                        "",
+                        "<span class=\"alert\">"
       )
       confor2 <- switch(1 + thisData$converge,
-        "</span>",
-        "",
-        "",
-        "</span>"
+                        "</span>",
+                        "",
+                        "",
+                        "</span>"
       )
       html <- gsub("</red>", "red", html)
     }
     if (reportType == 1 && !is.null(thisData$prior)) {
       # this will only be for NPAG
       extra <- paste("Prior density: ", c("Non-uniform (prior.txt)", "Uniform")[1 + as.numeric(thisData$prior == "UNIFORM")], "<br>",
-        "Assay error model: ", switch(thisData$ERRmod,
-          "SD",
-          "SD, gamma",
-          "SD, lambda",
-          "gamma"
-        ), "<br>",
-        sep = ""
+                     "Assay error model: ", switch(thisData$ERRmod,
+                                                   "SD",
+                                                   "SD, gamma",
+                                                   "SD, lambda",
+                                                   "gamma"
+                     ), "<br>",
+                     sep = ""
       )
     } else {
       extra <- ""
     }
-
+    
     # no error, but alert if no convergence
     # TODO: This code detects if the run does not converged, how are we going to show that?
     # writeHTML(ifelse(coninterp == " - The run converged.",
     #                   "<label for=\"tab5\">Summary</label>",
     #                   "<label for=\"tab5\">Summary<span class=\"alert\">*</span></label>"))
-
-
+    
+    
     fixedvar <- ""
     html <- gsub("</summary>", paste("Engine: ", c("NPAG", "IT2B")[reportType], "<br>",
-      "Computation mode: ", c("Serial", "Parallel")[1 + as.numeric(parallel)], "<br>",
-      "Output file: <a href=", file.path(wd), c("/NP_RF0001.TXT target=_blank>", "/IT_RF0001.TXT target=_blank>")[reportType], file.path(wd), c("/NP_RF0001.TXT</a><br>", "/IT_RF0001.TXT</a><br>")[reportType],
-      "Random parameters: ", paste(paste(thisData$par, collapse = ", "), fixedvar, sep = " "), "<br>",
-      parranfix, "<br>", parfix, "<br>",
-      "Number of analyzed subjects: ", thisData$nsub, "<br>",
-      "Number of output equations: ", thisData$numeqt, "<br>",
-      "Number of cycles: ", thisData$icyctot, "  ", confor1, coninterp, confor2, "<br>",
-      "Additional covariates: ", paste(thisData$covnames, collapse = ", "), "<br>", extra, "</summary>",
-      sep = ""
+                                     "Computation mode: ", c("Serial", "Parallel")[1 + as.numeric(parallel)], "<br>",
+                                     "Output file: <a href=", file.path(wd), c("/NP_RF0001.TXT target=_blank>", "/IT_RF0001.TXT target=_blank>")[reportType], file.path(wd), c("/NP_RF0001.TXT</a><br>", "/IT_RF0001.TXT</a><br>")[reportType],
+                                     "Random parameters: ", paste(paste(thisData$par, collapse = ", "), fixedvar, sep = " "), "<br>",
+                                     parranfix, "<br>", parfix, "<br>",
+                                     "Number of analyzed subjects: ", thisData$nsub, "<br>",
+                                     "Number of output equations: ", thisData$numeqt, "<br>",
+                                     "Number of cycles: ", thisData$icyctot, "  ", confor1, coninterp, confor2, "<br>",
+                                     "Additional covariates: ", paste(thisData$covnames, collapse = ", "), "<br>", extra, "</summary>",
+                                     sep = ""
     ), html)
-
-
+    
+    
     if (thisData$negflag) {
       html <- gsub("</summary>", "WARNING: There were negative pop/post predictions.<br></summary>", html)
     }
     if (!is.na(elapsed)) {
       html <- gsub("</summary>", paste("Elapsed time for this run was", elapsed, attr(elapsed, "units"), "<br></summary>"), html)
     }
-
+    
     # system(paste0("cp ",report_file," /NPAGreport.html"))
     readr::write_file(html, c("NPAGreport.html", "IT2Breport.html")[reportType])
   } else {
     error_file <- paste(path.package("Pmetrics"), "/report/error.html", sep = "")
     html <- readr::read_file(error_file)
-
+    
     errmessage <- readLines(errfile)
     errmessage <- paste(errmessage, collapse = "")
     errmessage <- gsub("  ", " ", errmessage)
     errmessage <- sub("^ *", "", errmessage)
-
+    
     html <- gsub("</summary>", paste0("<h2>ERROR REPORT<h2>", errmessage), html)
     readr::write_file(html, c("NPAGreport.html", "IT2Breport.html")[reportType])
   }
@@ -265,7 +293,7 @@ makeRdata <- function(wd, remote, reportType) {
   # error <- length(errfile) > 0
   # see if NP_RF or IT_RF made anyway (i.e. is >1MB in size)
   success <- file.info(c("NP_RF0001.TXT", "IT_RF0001.TXT")[reportType])$size >= 1000
-
+  
   if (success) {
     # run completed
     # open and parse the output
@@ -336,8 +364,8 @@ makeRdata <- function(wd, remote, reportType) {
     if (!all(is.null(op))) cat("op: Observed vs. population and posterior predicted\n")
     if (!all(is.null(cov))) cat("cov: Individual covariates and Bayesian posterior parameters\n")
     if (length(mdata) > 1) cat("mdata: The data file used for the run\n")
-
-
+    
+    
     if (reportType == 1) {
       NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, data = mdata, model = model, errfile = errfile, success = success)
       save(NPAGout, file = "PMout.Rdata")
@@ -378,15 +406,15 @@ makeHTMLdf <- function(df, ndigit) {
     dfScript <- append(dfScript, paste("<td class=firstcolumn>", rownames(df)[i], "</td>", sep = ""))
     for (j in 1:Ncol) {
       dfScript <- append(dfScript, ifelse(inherits(df[i, j], "numeric"),
-        paste("<td class=cellinside>", sprintf(paste("%.", ndigit, "f", sep = ""), round(as.numeric(df[i, j]), ndigit)), "</td>", sep = ""),
-        paste("<td class=cellinside>", df[i, j])
+                                          paste("<td class=cellinside>", sprintf(paste("%.", ndigit, "f", sep = ""), round(as.numeric(df[i, j]), ndigit)), "</td>", sep = ""),
+                                          paste("<td class=cellinside>", df[i, j])
       ))
     }
     dfScript <- append(dfScript, "</tr>")
   }
   dfScript <- append(dfScript, "</tbody>")
   dfScript <- append(dfScript, "</table>")
-
+  
   return(paste(dfScript, collapse = ""))
 }
 # end makeHTMLdf function
