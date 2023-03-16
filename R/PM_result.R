@@ -122,14 +122,40 @@ PM_result <- R6::R6Class(
     },
     
     #' @description
-    #' Save the current PM_result object into a .rds file. This is useful if you
-    #' have run the `$make_valid` method on a `PM_result` object, which returns 
+    #' Save the current PM_result object to an .Rdata file. 
+    #' This is useful if you have updated the result in some way, for example you
+    #' have run the `$make_valid` method on the `PM_result` object, which returns 
     #' an internal simulation based validation as a new `valid` field. To save this
-    #' validation, use the `$save` method. You could also save the result if you wish
-    #' to share it with someone else.
-    #' @param file_name Name of the file to be created, the default is PMresult.rds
-    save = function(file_name = "PMresult.rds") {
-      saveRDS(self, file_name)
+    #' validation, use this `$save` method. Note that unless a `file` name is provided,
+    #' the changes will overwrite the
+    #' previous run results, although unchanged items will be preserved. This is the
+    #' usual workflow. However, a custom file name may be useful to share the run
+    #' results with someone. The files
+    #' can be loaded again with [PM_load]. 
+    #' @param run The run output folder number to save the revised result. If missing,
+    #' will save in the current working directory. For example, if folder "1" is in
+    #' your current working directory, specify `run = 1` to save the result to the "outputs"
+    #' subfolder of the "1" folder.
+    #' @param file Custom file name. Default is "PMout.Rdata".
+    save = function(run, file) {
+     if(missing(run)){run <- getwd()} else {
+       outputfolder <- paste0(run,"/outputs")
+       if(!file.exists(outputfolder)){
+         stop(paste0(outputfolder," does not exist from the current working directory./n"))
+       }
+     }
+     if(missing(file)){file <- "PMout.Rdata"}
+      PMout <- list(
+        NPdata = self$NPdata,
+        ITdata = self$ITdata,
+        pop = self$pop$data, post = self$post$data, 
+        final = self$final$data, cycle = self$cycle$data, 
+        op = self$op$data, cov = self$cov$data, data = self$data$data, 
+        model = self$model, errfile = self$errfile, 
+        success = self$success,
+        valid = self$valid
+      )
+      save(PMout, file = paste0(outputfolder,"/",file))
     },
     
     #' @description 

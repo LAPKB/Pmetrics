@@ -213,19 +213,29 @@ by running \link{SIMparse} at the end of the simulation.
 \if{html}{\out{<a id="method-PM_result-save"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-save}{}}}
 \subsection{Method \code{save()}}{
-Save the current PM_result object into a .rds file. This is useful if you
-have run the \verb{$make_valid} method on a \code{PM_result} object, which returns
+Save the current PM_result object to an .Rdata file.
+This is useful if you have updated the result in some way, for example you
+have run the \verb{$make_valid} method on the \code{PM_result} object, which returns
 an internal simulation based validation as a new \code{valid} field. To save this
-validation, use the \verb{$save} method. You could also save the result if you wish
-to share it with someone else.
+validation, use this \verb{$save} method. Note that unless a \code{file} name is provided,
+the changes will overwrite the
+previous run results, although unchanged items will be preserved. This is the
+usual workflow. However, a custom file name may be useful to share the run
+results with someone. The files
+can be loaded again with \link{PM_load}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$save(file_name = "PMresult.rds")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$save(run, file)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file_name}}{Name of the file to be created, the default is PMresult.rds}
+\item{\code{run}}{The run output folder number to save the revised result. If missing,
+will save in the current working directory. For example, if folder "1" is in
+your current working directory, specify \code{run = 1} to save the result to the "outputs"
+subfolder of the "1" folder.}
+
+\item{\code{file}}{Custom file name. Default is "PMout.Rdata".}
 }
 \if{html}{\out{</div>}}
 }
