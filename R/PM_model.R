@@ -132,6 +132,11 @@ fixed <- function(fixed, constant = F, gtz = F) {
   PM_Vinput$new(fixed, fixed, "fixed", constant, gtz)
 }
 
+#' @export
+covariate <- function(name, constant = F){
+  PM_Vinput$new(name, mode = "covariate", constant = constant)
+}
+
 # PM_Vmodel ---------------------------------------------------------------
 
 
@@ -180,6 +185,17 @@ PM_Vmodel <- R6::R6Class("PM_model",
                                } else if (x == "cov") {
                                  cat("\n", sp(1), "$cov\n", paste0(sp(2), "[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = "\n "))
                                  cat("\n")
+                                 
+                                 cat("\n", sp(1), "$cov\n")
+                                 for (i in 1:length(mlist$cov)) {
+                                   thisout <- mlist$cov[[i]]
+                                   cat(paste0(
+                                     sp(2), "$covariate: ", thisout$covariate, "\n",
+                                     sp(3), "$constant: ", thisout$constant, "\n",
+                                     "\n"
+                                   ))
+                                 }
+                                 
                                } else if (x == "ext") {
                                  cat("\n", sp(1), "$ext\n", paste0(sp(2), "[", 1:length(mlist$ext), "] \"", mlist$ext, "\"", collapse = "\n "))
                                  cat("\n")
@@ -253,10 +269,12 @@ PM_Vinput <- R6::R6Class(
     additive = NULL,
     proportional = NULL,
     coefficients = NULL,
+    covariate = NULL,
     gtz = NULL,
     initialize = function(a, b, mode, constant = F, gtz = F) {
       stopifnot(mode %in% c("ab", "msd", "fixed", "additive", 
-                            "proportional", "combination", "coefficients"))
+                            "proportional", "combination", 
+                            "coefficients", "covariate"))
       self$gtz <- gtz
       self$constant <- constant
       self$mode <- mode
@@ -283,6 +301,8 @@ PM_Vinput <- R6::R6Class(
         self$proportional <- b
       } else if (mode == "coefficients") {
         self$coefficients <- a #a is a vector in this case
+      } else if (mode == "covariate") {
+        self$covariate <- a #a is a character vector in this case
       }
     },
     print_to = function(mode_not_used, engine) {
@@ -321,37 +341,43 @@ PM_Vinput <- R6::R6Class(
           } else {
             return(do.call(sprintf, c("%f, %f, %f, %f", as.list(self$coefficients))))
           }
-        }
-      } else if (engine == "rpem") {
-        if (self$mode == "ab") {
-          if (self$gtz) {
-            return(sprintf("+%f, %f", self$min, self$max))
-          } else {
-            return(sprintf("%f, %f", self$min, self$max))
-          }
-        } else if (self$mode == "msd") {
-          if (self$gtz) {
-            return(sprintf("+%%%f, %f", self$mean, self$sd))
-          } else {
-            return(sprintf("%%%f, %f", self$mean, self$sd))
-          }
-        } else if (self$mode == "fixed") {
+        } else if (self$mode == "covariate") {
           if (self$constant) {
-            return(sprintf("%f!", self$fixed))
+            return(sprintf("%s!", self$covariate))
           } else {
-            return(sprintf("%f", self$fixed))
+            return(sprintf("%s", self$covariate))
           }
-        } else if (self$mode == "additive") {
-          if (self$constant) {
-            return(sprintf("L=%f!", self$additive))
-          } else {
-            return(sprintf("L=%f", self$additive))
-          }
-        } else if (self$mode == "proportional") {
-          if (self$constant) {
-            return(sprintf("G=%f!", self$proportional))
-          } else {
-            return(sprintf("G=%f", self$proportional))
+        } else if (engine == "rpem") {
+          if (self$mode == "ab") {
+            if (self$gtz) {
+              return(sprintf("+%f, %f", self$min, self$max))
+            } else {
+              return(sprintf("%f, %f", self$min, self$max))
+            }
+          } else if (self$mode == "msd") {
+            if (self$gtz) {
+              return(sprintf("+%%%f, %f", self$mean, self$sd))
+            } else {
+              return(sprintf("%%%f, %f", self$mean, self$sd))
+            }
+          } else if (self$mode == "fixed") {
+            if (self$constant) {
+              return(sprintf("%f!", self$fixed))
+            } else {
+              return(sprintf("%f", self$fixed))
+            }
+          } else if (self$mode == "additive") {
+            if (self$constant) {
+              return(sprintf("L=%f!", self$additive))
+            } else {
+              return(sprintf("L=%f", self$additive))
+            }
+          } else if (self$mode == "proportional") {
+            if (self$constant) {
+              return(sprintf("G=%f!", self$proportional))
+            } else {
+              return(sprintf("G=%f", self$proportional))
+            }
           }
         }
       }
@@ -439,7 +465,18 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                      )
                                      i <- i + 1
                                    }
-                                 } else if (private$lower3(key) %in% c("cov", "bol", "ext")) {
+                                 } else if (private$lower3(key) == "cov") {
+                                   for(i in 1:length(block)){
+                                     lines <- append(
+                                       lines, 
+                                       if(block[[i]]$constant){
+                                         sprintf("%s!", block[[i]]$covariate)
+                                       } else {sprintf("%s", block[[i]]$covariate)}
+                                     )
+                                   }
+                                   
+                                   
+                                 } else if (private$lower3(key) %in% c("bol", "ext")) {
                                    stopifnot(is.null(names(block)))
                                    for (i in 1:length(block)) {
                                      lines <- append(lines, sprintf("%s", block[[i]]))
@@ -672,10 +709,19 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                  }) # end sapply
                                  
                                  # covariates
-                                 blocks$covar <- gsub("!", "", blocks$covar) # for now remove "!" indicating step, default interpolate
-                                 if (blocks$covar[1] != "") {
-                                   model_list$cov <- blocks$covar
-                                 }
+                                 # process constant covariates
+                                 covar <- blocks$covar
+                                 const_covar <- grepl("!", covar ) #returns boolean vector, length = nout
+                                 covar <- gsub("!","", covar) #remove "!"
+                                 #cycle through covariates
+                                 if (covar[1] != "") {
+                                   covar_list <- list()
+                                   for(i in 1:length(covar)){
+                                     covar_list[[i]] <- covariate(name = covar[i], constant = const_covar[i])
+                                   }
+                                 } else {covar_list <- NULL}
+                                 #add to model_list
+                                 model_list$cov <- covar_list
                                  
                                  # extra
                                  if (blocks$extra[1] != "") {
