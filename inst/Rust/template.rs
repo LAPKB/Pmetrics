@@ -5,6 +5,8 @@ use ode_solvers::*;
 use np_core::prelude::*;
 use eyre::Result;
 
+const STEP_SIZE: f64 = 0.1;
+
 struct Model<'a>{
     </struct_params>
     scenario: &'a Scenario
@@ -26,7 +28,7 @@ impl ode_solvers::System<State> for Model<'_> {
         </diff_eq>
 
         for dose in &self.scenario.doses{
-            if (t-dose.time).abs() < 1.0e-4 {
+            if (t-dose.time).abs() < (STEP_SIZE/2. - 1.0e-07) {
                 x[dose.compartment] += dose.dose;
             }
         }
@@ -38,7 +40,7 @@ impl Simulate for Sim{
     fn simulate(&self, params: Vec<f64>, tspan:[f64;2], scenario: &Scenario) -> (Vec<f64>, Vec<Vec<f64>>) {
         let system = Model {</model_params> scenario};
         let y0 = State::new(</init>);
-        let mut stepper = Rk4::new(system, tspan[0], y0, tspan[1],0.1);
+        let mut stepper = Rk4::new(system, tspan[0], y0, tspan[1],STEP_SIZE);
         let _res = stepper.integrate();
         let x = stepper.x_out().to_vec();
         let y = stepper.y_out();
