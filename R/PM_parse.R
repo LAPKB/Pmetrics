@@ -154,6 +154,7 @@ make_Pop = function(pred_file = "pred.csv", version) {
   return(pop)
   
 }
+<<<<<<< HEAD
 
 # FINAL
 make_Final = function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", post_file = "posterior.csv") {
@@ -374,3 +375,10 @@ make_Cycle = function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", ver
   return(res)
   
 }
+=======
+make_Pop("pred.csv")
+
+# FINAL
+
+# CYCLES
+>>>>>>> ed9cba9 (Create PM_parse.R)
