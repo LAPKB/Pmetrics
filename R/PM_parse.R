@@ -17,12 +17,14 @@
 PM_parse = function(wd = getwd()) {
   pred_file = "pred.csv"
   obs_file = "obs.csv"
-  meta_r = "meta_r.csv"
+  meta_r_file = "meta_r.csv"
   meta_rust = "meta_rust.csv"
+  cycle_file = "cycles.csv"
   
   op = make_OP(pred_file = pred_file, obs_file = obs_file)
   post = make_Post(pred_file = pred_file)
   pop = make_Pop(pred_file = pred_file)
+  cycle = make_Cycle(cycle_file = cycle_file, meta_r_file = meta_r)
   
   res = list(op = op, post = post, pop = pop)
   
@@ -140,7 +142,7 @@ make_Pop = function(pred_file, version) {
 # FINAL
 
 # CYCLES
-make_Cycle = function(cycle_file, meta_file, version) {
+make_Cycle = function(cycle_file, meta_r_file, version) {
   
   raw = data.table::fread(
     input = cycle_file,
@@ -152,7 +154,7 @@ make_Cycle = function(cycle_file, meta_file, version) {
   )
   
   meta = data.table::fread(
-    input = meta_file,
+    input = meta_r_file,
     sep = ",",
     header = TRUE,
     data.table = FALSE,
@@ -181,3 +183,6 @@ make_Cycle = function(cycle_file, meta_file, version) {
   return(cycle)
   
 }
+
+
+make_Cycle(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv")
