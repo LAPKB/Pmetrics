@@ -4,7 +4,15 @@
 \alias{setPMoptions}
 \title{Set Pmetrics User Options}
 \usage{
-setPMoptions(sep, dec, server_address, compilation_statements, op_stats)
+setPMoptions(
+  sep,
+  dec,
+  server_address,
+  compilation_statements,
+  op_stats,
+  backend,
+  rust_template
+)
 }
 \arguments{
 \item{sep}{The field separator character; "," by default, but could be";"}

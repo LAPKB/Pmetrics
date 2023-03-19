@@ -84,6 +84,8 @@ Other date/time formats are possible. See \code{\link[lubridate:parse_date_time]
 }}
 
 \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
+
+\item{\code{...}}{Arguments to be passed further}
 }
 \if{html}{\out{</div>}}
 }
@@ -100,7 +102,7 @@ automatically to a fully specified, valid data object.
 \subsection{Method \code{write()}}{
 Write data to file
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_data$write(file_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$write(file_name, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -109,6 +111,8 @@ Write data to file
 \item{\code{file_name}}{A quoted name of the file to create
 with full path if not
 in the working directory.}
+
+\item{\code{...}}{ARguments passed to PMwriteMatrix}
 }
 \if{html}{\out{</div>}}
 }
