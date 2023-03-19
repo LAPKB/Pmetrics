@@ -67,8 +67,6 @@ make_OP = function(pred_file, obs_file, meta_file, version) {
   
 }
 
-make_OP(pred_file = "pred.csv", obs_file = "obs.csv") %>% head()
-
 # POST
 make_Post = function(pred_file, version) {
   raw = data.table::fread(
@@ -95,7 +93,6 @@ make_Post = function(pred_file, version) {
   return(post)
   
 }
-make_Post("pred.csv")
 
 # POP
 make_Pop = function(pred_file, version) {
@@ -122,7 +119,6 @@ make_Pop = function(pred_file, version) {
   return(pop)
   
 }
-make_Pop("pred.csv")
 
 # FINAL
 
