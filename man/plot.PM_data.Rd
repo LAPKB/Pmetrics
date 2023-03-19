@@ -37,9 +37,38 @@ in a \link{PM_result} object}
 
 \item{exclude}{A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)}
 
-\item{line}{Formats the lines joining observations. Controls characteristics of lines. This argument maps to plotly line attributes. \code{TRUE} will plot default lines. \code{FALSE} will suppress lines. If a list, can control many line characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > line to see all the ways the line can be formatted. Most common will be:  \itemize{ \item{\code{color}} Line color. \item{\code{dash}} Plotting character. See \code{plotly::schema()}, traces > scatter >  attributes > line > dash > values. \item{\code{width}} Thickness in points. }
-
-Example: \code{line = list(color = "red", dash = "longdash", width = 2)}}
+\item{line}{Controls characteristics of lines as for all plotly plots.
+Here  \code{line} is a list of two elements:
+\itemize{
+\item \code{join}  Can either be a boolean or a list. If set to \code{TRUE} or
+a list of plotly line attributes, it
+will generate line segments joining observations. If set to
+\code{FALSE}, no segments will be generated. The default
+values for the elements of the \code{join} list, all of which can be
+overriden are:
+\itemize{
+\item \code{color} Color of the segments. Default is "dodgerblue".
+\item \code{width }Width of the segments, default 1.
+\item \code{dash} See \code{plotly::schema()}, traces > scatter > attributes >
+line > dash > values. Default is "solid".
+Example: \code{line = list(join = list(color = "red", dash = "longdash", width = 2))}
+}
+\item \code{pred} Default is \code{FALSE}, which means that predictions will not be included
+in the plot. To include predictions, supply the name of a population or
+posterior prediction object in a \link{PM_result} object, eg.
+\code{run1$post} or \code{run1$pop}. To format the predictions, supply \code{pred} as
+a list, with the prediction object first, followed by named options to control the
+prediction plot:
+\item icen Chooses the median or mean of each
+subject's Bayesian posterior parameter distribution.  Default is "median",
+but could be "mean".
+\item Other parameters to pass to plotly to control line characteristics that join
+the predictions, including \code{color}, \code{width}, and \code{dash}.
+For example: \code{pred = list(run1$post, icen = "mean", color = "red", width = 2)}.
+Default formats are the same as for the \code{join} argument, since normally one would not plot
+both lines joining observations and prediction lines, i.e., typical use would be
+\code{line = list(join = F, pred = run1$post)}.
+}}
 
 \item{marker}{Formats the symbols plotting observations. Controls the plotting symbol for observations.  This argument maps to the plotly marker object. It can be boolean or a list. \code{TRUE} will plot the marker with default characteristics. \code{FALSE} will suppress marker plotting. If a list, can control many marker characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > marker to see all the ways the marker can be formatted. Most common will be: \itemize{ \item{\code{color}} Marker color. \item{\code{symbol}} Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values. \item{\code{size}} Character size in points. \item{\code{opacity}} Ranging between 0 (fully transparent) to 1 (fully opaque). \item{\code{line}} A list of  additional attributes governing the outline for filled shapes, most commonly color and width. }
 
@@ -110,18 +139,6 @@ Example: \code{ylim = c(0,100)}}
 \item{\dots}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
 
 Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
-
-\item{pred}{The name of a population or posterior prediction object in a \link{PM_result} object, eg.
-\code{run1$post} or \code{run1$pop}. Can be a list, with the prediction object first, followed by named options to control the
-prediction plot
-\itemize{
-\item icen Chooses the median or mean of each
-subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".
-\item Other parameters to pass to plotly to control line characteristics, including \code{color}, \code{width}, and \code{dash}.
-For example: \code{pred = list(run1$post, icen = "mean", color = "red", width = 2)}.
-Defaults are the same as for the \code{line} argument, since normally one would not plot
-both lines joining observations and prediction lines.
-}}
 }
 \value{
 Plots the object.
