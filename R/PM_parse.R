@@ -17,7 +17,8 @@
 PM_parse = function(wd = getwd()) {
   pred_file = "pred.csv"
   obs_file = "obs.csv"
-  meta_file = "meta.csv"
+  meta_r = "meta_r.csv"
+  meta_rust = "meta_rust.csv"
   
   op = make_OP(pred_file = pred_file, obs_file = obs_file)
   post = make_Post(pred_file = pred_file)
@@ -139,3 +140,44 @@ make_Pop = function(pred_file, version) {
 # FINAL
 
 # CYCLES
+make_Cycle = function(cycle_file, meta_file, version) {
+  
+  raw = data.table::fread(
+    input = cycle_file,
+    sep = ",",
+    header = TRUE,
+    data.table = FALSE,
+    dec = ".",
+    showProgress = TRUE
+  )
+  
+  meta = data.table::fread(
+    input = meta_file,
+    sep = ",",
+    header = TRUE,
+    data.table = FALSE,
+    dec = ".",
+    showProgress = TRUE
+  )
+  
+  par_names = meta %>% 
+    select(starts_with("param")) %>% 
+    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number")
+  
+  # Fix parameter names
+  cycle = raw %>% 
+    pivot_longer(cols = starts_with("param")) %>% 
+    separate_wider_delim(name, delim = ".", names = c("param_number", "statistic")) %>% 
+    left_join(par_names, by = "param_number") %>% 
+    select(-param_number)
+  
+  # Calculate AIC and BIC
+  # TO-DO: Do not include fixed (but not random) parameters!
+  num_params = length(unique(par_names$parameter))
+  cycle = cycle %>%
+    mutate(AIC = 2*num_params - neg2ll,
+           BIC = num_params * log(meta$nsub) - neg2ll)
+  
+  return(cycle)
+  
+}
