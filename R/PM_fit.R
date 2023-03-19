@@ -177,7 +177,7 @@ PM_fit <- R6::R6Class("PM_fit",
       
       meta = cbind(meta_base, param_dict)
       
-      write.csv(meta, "meta_r.csv", row.names = FALSE, sep = ",")
+      write.csv(meta, "meta_r.csv", row.names = FALSE, sep = ",", dec = ".")
       
       #### Generate config.toml ####
       # Temporary variables 
