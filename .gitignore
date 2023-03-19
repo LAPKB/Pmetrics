@@ -26,5 +26,6 @@ other/
 Examples
 .Rdata
 .httr-oauth
-
-
+inst/rust/template/*
+inst/options/PMoptions.json
+inst/options/PMoptions.json
