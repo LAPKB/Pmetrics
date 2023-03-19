@@ -9,6 +9,7 @@
 #' or created on the fly when making a new PM_fit object. PM_fit objects contain
 #' methods to cross-check data and model objects for compatibility, as well as to
 #' run the analysis.
+#' @importFrom stringr str_glue
 #' @export
 
 PM_fit <- R6::R6Class("PM_fit",
@@ -126,6 +127,7 @@ PM_fit <- R6::R6Class("PM_fit",
     model = NULL,
     binary_path = NULL,
     run_rust = function(...){
+      arglist = list(...)
       cwd <- getwd()
       olddir <- list.dirs(recursive = F)
       olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
@@ -137,23 +139,70 @@ PM_fit <- R6::R6Class("PM_fit",
       }
       dir.create(newdir)
       setwd(newdir)
+      
+      # First read default values from NPrun, then modify with arglist
+      default_NPrun = formals(NPrun)
+      arglist = modifyList(default_NPrun, arglist)
 
-      private$data$write("gendata.csv", header=F)
-      config <- c()
-      config <- config %>% append("[paths]")
-      config <- config %>% append("data=\"gendata.csv\"")
-      config <- config %>% append("log_out=\"run.log\"")
-      config <- config %>% append("[config]")
-      config <- config %>% append("cycles=100")
-      config <- config %>% append("engine=\"NPAG\"")
-      config <- config %>% append("init_points=1000")
-      config <- config %>% append("seed=347")
-      config <- config %>% append("tui=false")
-      config <- config %>% append("pmetrics_outputs=true")
-      writeLines(config,"config.toml")
+    
+      # Include or exclude subjects
+      data_filtered = data_filtered = private$data$data
+      if (!is.symbol(arglist$include)) {
+        data_filtered = data_filtered %>%
+          filter(id %in% arglist$include)
+      }
+      
+      if (!is.symbol(arglist$exclude)) {
+        data_filtered = data_filtered %>%
+          filter(!id %in% arglist$exclude)
+      }
+      
+      data_new = PM_data$new(data_filtered, quiet = TRUE)
+      data_new$write("gendata.csv", header = FALSE)
+      
+      #### Generate meta_r.csv #####
+      nsub = length(unique(data_filtered$id))
+      
+      param_names = names(private$model$model_list$pri)
+      param_num = paste0("param", 0:(length(param_names) - 1))
+      
+      names(param_names) = param_num
+      
+      param_dict = as.data.frame(t(param_names))
+      
+      meta_base = data.frame(
+        nsub = nsub,
+        max_cycles = arglist$cycles
+      ) 
+      
+      meta = cbind(meta_base, param_dict)
+      
+      write.csv(meta, "meta_r.csv", row.names = FALSE, sep = ",")
+      
+      #### Generate config.toml ####
+      # Temporary variables 
+      arglist$num_indpts = 1000
+      arglist$use_tui = "false" # TO-DO: Convert TRUE -> "true", vice versa.
+
+      toml_template = stringr::str_glue(
+        "[paths]",
+        "data=\"gendata.csv\"",
+        "log_out=\"run.log\"",
+        "#prior_list=\"Optional\"",
+        "[config]",
+        "cycles={cycles}",
+        "engine=\"NPAG\"",
+        "init_points={num_indpts}",
+        "seed=22",
+        "tui={use_tui}",
+        "pmetrics_outputs=true",
+        .envir = arglist,
+        .sep = "\n")
+      
+      writeLines(text = toml_template, con = "config.toml")
       #check if the file exists
       file.copy(private$binary_path,"NPcore")
-      system("./NPcore &")
+      system2("./NPcore", args = "&")
       setwd(cwd)
     },
     setup_rust_execution = function(){
