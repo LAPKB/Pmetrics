@@ -1,3 +1,19 @@
+#' A flexible parser for Pmetrics output
+#'
+#' Currently written for the Rust implementation of NPAG
+#' @title Parse Pmetrics output
+#' @param wd The directory containing the output from the Rust-implementation of NPAG
+#' @return The output of \code{PM_parse} is a list containing the following elements
+#' \item{op }{Written to the standard of PM_op}
+#' \item{pop }{Written to the standard of PM_pop}
+#' \item{post }{Written to the standard of PM_post}
+#' \item{cycles }{Written to the standard of PM_cycle}
+#' 
+#' @seealso \code{\link{NPparse}}
+#' @importFrom data.table fread
+#' @export
+
+
 PM_parse = function(wd = getwd()) {
   pred_file = "pred.csv"
   obs_file = "obs.csv"
