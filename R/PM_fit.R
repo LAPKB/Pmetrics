@@ -144,7 +144,6 @@ PM_fit <- R6::R6Class("PM_fit",
       default_NPrun = formals(NPrun)
       arglist = modifyList(default_NPrun, arglist)
 
-    
       # Include or exclude subjects
       data_filtered = data_filtered = self$data$data
       if (!is.symbol(arglist$include)) {
