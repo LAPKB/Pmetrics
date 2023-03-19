@@ -17,6 +17,14 @@
 #' @export
 
 PM_load <- function(run = 1, remote = F, server_address) {
+
+  # If Rust
+  npcore_out <- paste(run, "NPcore.Rdata", filename, sep = "/")
+  if (file.exists(npcore_out)){
+    load(npcore_out)
+    result <- get("NPcore")
+    return(PM_result$new(result, backend="rust"))
+  }
   
   #declare variables to avoid R CMD Check flag
   NPAGout <- NULL
