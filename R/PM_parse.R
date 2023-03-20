@@ -3,6 +3,7 @@
 #' Currently written for the Rust implementation of NPAG
 #' @title Parse Pmetrics output
 #' @param wd The directory containing the output from the Rust-implementation of NPAG
+#' @param write A logical value indicating if the results should be returned (`FALSE`, default) or written to disk (`TRUE`)
 #' @return The output of \code{PM_parse} is a list containing the following elements
 #' \item{op }{Written to the standard of PM_op}
 #' \item{pop }{Written to the standard of PM_pop}
