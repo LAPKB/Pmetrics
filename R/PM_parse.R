@@ -13,7 +13,6 @@
 #' @importFrom data.table fread
 #' @export
 
-
 PM_parse = function(wd = getwd(), write = TRUE) {
   pred_file = "pred.csv"
   obs_file = "obs.csv"
@@ -48,7 +47,7 @@ PM_parse = function(wd = getwd(), write = TRUE) {
 }
 
 # DATA
-make_OP = function(pred_file, obs_file, meta_file, version) {
+make_OP = function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
   pred_raw = data.table::fread(
     input = pred_file,
     sep = ",",
@@ -102,7 +101,7 @@ make_OP = function(pred_file, obs_file, meta_file, version) {
 }
 
 # POST
-make_Post = function(pred_file, version) {
+make_Post = function(pred_file = "pred.csv", version) {
   raw = data.table::fread(
     input = pred_file,
     sep = ",",
@@ -129,7 +128,7 @@ make_Post = function(pred_file, version) {
 }
 
 # POP
-make_Pop = function(pred_file, version) {
+make_Pop = function(pred_file = "pred.csv", version) {
   raw = data.table::fread(
     input = pred_file,
     sep = ",",
@@ -157,7 +156,7 @@ make_Pop = function(pred_file, version) {
 # FINAL
 
 # CYCLES
-make_Cycle = function(cycle_file, meta_r_file, version) {
+make_Cycle = function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", version) {
   
   raw = data.table::fread(
     input = cycle_file,
@@ -178,8 +177,9 @@ make_Cycle = function(cycle_file, meta_r_file, version) {
   )
   
   par_names = meta %>% 
-    select(starts_with("param")) %>% 
-    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number")
+    select(ends_with(".name")) %>% 
+    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>% 
+    mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number))
   
   # Fix parameter names
   cycle_data = raw %>% 
@@ -190,7 +190,14 @@ make_Cycle = function(cycle_file, meta_r_file, version) {
   
   # Calculate AIC and BIC
   # TO-DO: Do not include fixed (but not random) parameters!
-  num_params = length(unique(par_names$parameter))
+  num_fixed = meta %>% 
+    select(ends_with(".fixed")) %>% 
+    pivot_longer(cols = everything()) %>% 
+    pull(value) %>% 
+    sum()
+  
+  num_params = nrow(par_names) - num_fixed
+  
   aic = 2*num_params - cycle_data$neg2ll
   names(aic) = cycle_data$cycle
   bic = num_params * log(meta$nsub) - cycle_data$neg2ll
