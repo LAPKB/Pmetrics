@@ -241,8 +241,8 @@ PM_Vinput <- R6::R6Class(
     max = NULL,
     mean = NULL,
     sd = NULL,
-    fixed = NULL,
-    constant = NULL,
+    fixed = FALSE,
+    constant = FALSE,
     param = NULL, # is this used?
     additive = NULL,
     proportional = NULL,
