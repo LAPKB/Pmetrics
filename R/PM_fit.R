@@ -163,25 +163,35 @@ PM_fit <- R6::R6Class("PM_fit",
       #### Generate meta_r.csv #####
       nsub = length(unique(data_filtered$id))
       
-      param_names = names(private$model$model_list$pri)
-      param_num = paste0("param", 0:(length(param_names) - 1))
+      par_names = names(private$model$model_list$pri)
+      par_info = lapply(seq_along(par_names), function(i) {
+        par = NPex$model$model_list$pri[[i]]
+        
+        par_df = data.frame(
+          name = par_names[i],
+          # TO-DO: Change PM_results default to FALSE, then remove ifelse
+          fixed = ifelse(is.null(par$fixed), FALSE, par$fixed), 
+          constant = par$constant,
+          min = par$min,
+          max = par$max
+        )
+        
+        names(par_df) = paste0("param", i - 1, ".", names(par_df))
+        
+        return(par_df)
+        
+      }) %>% bind_cols()
       
-      names(param_names) = param_num
+      # Bind columns and write file
+      meta_base = data.frame(nsub = nsub, max_cycles = arglist$cycles)
+      meta = cbind(meta_base, par_info)
+  
+      write.table(meta, "meta_r.csv", row.names = FALSE, sep = ",", dec = ".")
       
-      param_dict = as.data.frame(t(param_names))
+      #### Generate config.toml #####
       
-      meta_base = data.frame(
-        nsub = nsub,
-        max_cycles = arglist$cycles
-      ) 
-      
-      meta = cbind(meta_base, param_dict)
-      
-      write.csv(meta, "meta_r.csv", row.names = FALSE, sep = ",", dec = ".")
-      
-      #### Generate config.toml ####
-      # Temporary variables 
-      arglist$num_indpts = 1000
+      ###### indpts #####
+      arglist$num_indpts = 10000
       arglist$use_tui = "false" # TO-DO: Convert TRUE -> "true", vice versa.
 
       toml_template = stringr::str_glue(
@@ -249,4 +259,13 @@ PM_fit <- R6::R6Class("PM_fit",
 #' @export
 PM_fit$load <- function(file_name = "PMfit.rds") {
   readRDS(file_name)
+}
+
+.logical_to_rust = function(bool) {
+  if (!is.logical(bool)) {
+    stop("This functions expects a logical value")
+  }
+  
+  rust_logical = ifelse(bool, "true", "false")
+  
 }
