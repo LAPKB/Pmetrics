@@ -20,10 +20,13 @@ PM_parse = function(wd = getwd(), write = TRUE) {
   meta_r_file = "meta_r.csv"
   meta_rust_file = "meta_rust.csv"
   cycle_file = "cycles.csv"
+  theta_file = "theta.csv"
+  post_file = "posterior.csv"
   
   op = make_OP(pred_file = pred_file, obs_file = obs_file)
   post = make_Post(pred_file = pred_file)
   pop = make_Pop(pred_file = pred_file)
+  final = make_Final(theta_file = theta_file, meta_r_file = meta_r_file, post_file = post_file)
   cycle = make_Cycle(
     cycle_file = cycle_file,
     meta_r_file = meta_r,
@@ -34,6 +37,8 @@ PM_parse = function(wd = getwd(), write = TRUE) {
     op = op,
     post = post,
     pop = pop,
+    cycle = cycle,
+    final = final,
     backend = "rust",
     algorithm = "NPAG"
   )
@@ -155,6 +160,133 @@ make_Pop = function(pred_file = "pred.csv", version) {
 }
 
 # FINAL
+make_Final = function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", post_file = "posterior.csv") {
+  
+  theta = data.table::fread(
+    input = theta_file,
+    sep = ",",
+    header = FALSE,
+    data.table = FALSE,
+    dec = ".",
+    showProgress = TRUE
+  )
+  
+  meta = data.table::fread(
+    input = meta_r_file,
+    sep = ",",
+    header = TRUE,
+    data.table = FALSE,
+    dec = ".",
+    showProgress = TRUE
+  )
+  
+  post = data.table::fread(
+    input = post_file,
+    sep = ",",
+    header = TRUE,
+    data.table = FALSE,
+    dec = ".",
+    showProgress = TRUE
+  )
+  
+  par_names = meta %>% 
+    select(ends_with(".name")) %>% 
+    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>% 
+    mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number)) %>% 
+    pull(parameter)
+  
+  par_names = c(par_names, "prob")
+  
+  names(theta) = par_names
+  
+  popMean = theta %>% 
+    summarise(across(.cols = -prob, .fns = function(x) {
+      mean(x)
+    }))
+  
+  popSD = theta %>% 
+    summarise(across(.cols = -prob, .fns = function(x) {
+      sd(x)
+    }))
+  
+  popCov = theta %>% 
+    select(-prob) %>% 
+    cov()
+  
+  popCor = theta %>% 
+    select(-prob) %>% 
+    cor()
+  
+  popMedian = theta %>% 
+    summarise(across(.cols = -prob, .fns = function(x) {
+      median(x)
+    }))
+  
+  # Posterior
+  post_names = c("id","point", par_names)
+  names(post) = post_names
+  
+  postMean = post %>% 
+    group_by(id) %>% 
+    summarise(across(.cols = -c(point, prob), .fns = function(x) {
+      weighted.mean(x = x, w = prob)
+    }))
+  
+  postSD = post %>% 
+    group_by(id) %>% 
+    summarise(across(.cols = -c(point, prob), .fns = function(x) {
+      sd(x)
+    }))
+  
+  postVar = post %>% 
+    group_by(id) %>% 
+    summarise(across(.cols = -c(point, prob), .fns = function(x) {
+      sd(x)**2
+    }))
+  
+  # TO-DO: Add postCov, postCor, Post
+  
+  postMed = post %>% 
+    group_by(id) %>% 
+    summarise(across(.cols = -c(point, prob), .fns = function(x) {
+      matrixStats::weightedMedian(x = x, w = prob, interpolate = TRUE)
+    }))
+  
+  
+  shrinkage = 1
+  #varEBD <- apply(postVar[,-1],2,mean) # Mean postVar / popVar
+  #sh <- varEBD/popVar
+  
+  ab = meta %>% 
+    select(ends_with(c(".min", ".max"))) %>% 
+    pivot_longer(cols = everything()) %>% 
+    separate_wider_delim(cols = name, delim = ".", names = c("param_num", "type")) %>% 
+    pivot_wider(names_from = type, values_from = value) %>% 
+    arrange(param_num) %>% 
+    select(min, max) %>% 
+    as.matrix()
+  
+  ab = unname(ab)
+  
+  final = list(
+    popPoints = theta,
+    popMean = popMean,
+    popSD = popSD,
+    popCV = popSD/popMean,
+    popVar = popSD ** 2,
+    popCov = popCov,
+    popCor = popCor,
+    popMedian = popMedian,
+    #
+    postMean = postMean,
+    postMed = postMed,
+    gridpts = meta$gridpts,
+    nsub = meta$nsub,
+    ab = ab
+  )
+  
+  return(final)
+}
 
 # CYCLES
 make_Cycle = function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", version) {

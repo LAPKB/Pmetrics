@@ -160,6 +160,13 @@ PM_fit <- R6::R6Class("PM_fit",
       data_new = PM_data$new(data_filtered, quiet = TRUE)
       data_new$write("gendata.csv", header = FALSE)
       
+      #### Determine indpts #####
+      arglist$num_indpts = 10000
+      arglist$num_indpts = format(arglist$num_indpts, scientific = FALSE)
+      
+      #### Format cycles #####
+      arglist$cycles = format(arglist$cycles, scientific = FALSE)
+      
       #### Generate meta_r.csv #####
       nsub = length(unique(data_filtered$id))
       
@@ -185,13 +192,12 @@ PM_fit <- R6::R6Class("PM_fit",
       # Bind columns and write file
       meta_base = data.frame(nsub = nsub, max_cycles = arglist$cycles)
       meta = cbind(meta_base, par_info)
-  
-      write.table(meta, "meta_r.csv", row.names = FALSE, sep = ",", dec = ".")
+      meta$gridpts = arglist$num_indpts
+
+      write.table(meta, "meta_r.csv", row.names = FALSE, sep = ",", dec = ".", )
       
       #### Generate config.toml #####
       
-      ###### indpts #####
-      arglist$num_indpts = 10000
       arglist$use_tui = "false" # TO-DO: Convert TRUE -> "true", vice versa.
 
       toml_template = stringr::str_glue(
@@ -210,6 +216,7 @@ PM_fit <- R6::R6Class("PM_fit",
         .sep = "\n")
       
       writeLines(text = toml_template, con = "config.toml")
+
       #check if the file exists
       file.copy(private$binary_path,"NPcore")
       system2("./NPcore", args = "&")
