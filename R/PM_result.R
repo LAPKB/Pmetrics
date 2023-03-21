@@ -49,6 +49,7 @@ PM_result <- R6::R6Class(
     #' Creation of new `PM_result` objects is via [PM_load].
     #' @param out The parsed output from [PM_load].
     #' @param quiet Quietly validate. Default is `FALSE`.
+    #' @param backend Should the backend use Fortran ("fortran", default) or Rust ("rust")
     initialize = function(out, quiet = T, backend = "fortran") {
       if(backend == "fortran"){
         if(!is.null(out$NPdata)){
