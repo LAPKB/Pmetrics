@@ -17,6 +17,7 @@ PM_fit <- R6::R6Class("PM_fit",
 
     data = NULL,
     model = NULL,
+    arglist = NULL,
 
     #' @description
     #' Create a new object
@@ -169,39 +170,21 @@ PM_fit <- R6::R6Class("PM_fit",
       #### Format cycles #####
       arglist$cycles = format(arglist$cycles, scientific = FALSE)
       
-      #### Generate meta_r.csv #####
-      nsub = length(unique(data_filtered$id))
-      
-      par_names = names(self$model$model_list$pri)
-      par_info = lapply(seq_along(par_names), function(i) {
-        par = self$model$model_list$pri[[i]]
-        
-        par_df = data.frame(
-          name = par_names[i],
-          # TO-DO: Change PM_results default to FALSE, then remove ifelse
-          fixed = ifelse(is.null(par$fixed), FALSE, par$fixed), 
-          constant = par$constant,
-          min = par$min,
-          max = par$max
-        )
-        
-        names(par_df) = paste0("param", i - 1, ".", names(par_df))
-        
-        return(par_df)
-        
-      }) %>% bind_cols()
-      
-      # Bind columns and write file
-      meta_base = data.frame(nsub = nsub, max_cycles = arglist$cycles)
-      meta = cbind(meta_base, par_info)
-      meta$gridpts = arglist$num_indpts
-
-      write.table(meta, "meta_r.csv", row.names = FALSE, sep = ",", dec = ".", )
-      
-      #### Generate config.toml #####
-      
+      #### Other arguments ####
       arglist$use_tui = "false" # TO-DO: Convert TRUE -> "true", vice versa.
+      param_names = names(self$model$model_list$pri)
+      param_names = paste0("\"", param_names, "\"")
+      param_names = paste0(param_names, collapse = ",")
+      arglist$param_names = paste0("[ ", param_names, " ]")
+      
+      
+      #### Save PM_fit ####
+      self$data = data_filtered
+      self$arglist = arglist
+      save(self, file = "fit.Rdata")
+      
 
+      #### Generate config.toml #####
       toml_template = stringr::str_glue(
         "[paths]",
         "data=\"gendata.csv\"",
@@ -214,6 +197,7 @@ PM_fit <- R6::R6Class("PM_fit",
         "seed=22",
         "tui={use_tui}",
         "pmetrics_outputs=true",
+        "parameter_names={param_names}",
         .envir = arglist,
         .sep = "\n")
       
