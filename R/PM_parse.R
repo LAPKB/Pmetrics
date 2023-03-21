@@ -27,11 +27,7 @@ PM_parse = function(wd = getwd(), write = TRUE) {
   post = make_Post(pred_file = pred_file)
   pop = make_Pop(pred_file = pred_file)
   final = make_Final(theta_file = theta_file, meta_r_file = meta_r_file, post_file = post_file)
-  cycle = make_Cycle(
-    cycle_file = cycle_file,
-    meta_r_file = meta_r,
-    meta_rust_file = meta_rust_file
-  )
+  cycle = make_Cycle(cycle_file = cycle_file, meta_r_file = meta_r_file)
   
   NPcore = list(
     op = op,

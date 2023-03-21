@@ -72,11 +72,11 @@ PM_result <- R6::R6Class(
         self$success <- out$success
       } else if (backend == "rust"){
         self$NPdata <- out
-        self$op <- out$op
-        self$post <- out$post
-        self$pop <- out$pop
-        self$cycle <- out$cycle
-        self$final <- out$final
+        self$op <- PM_op$new(out$op)
+        self$post <- PM_post$new(out$post)
+        self$pop <- PM_pop$new(out$pop)
+        self$cycle <- PM_cycle$new(out$cycle)
+        self$final <- PM_final$new(out$final)
       }
       
     },

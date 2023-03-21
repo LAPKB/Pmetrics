@@ -20,7 +20,7 @@
 PM_load <- function(run = 1, remote = F, server_address) {
 
   # If Rust
-  npcore_out <- paste(run, "NPcore.Rdata", filename, sep = "/")
+  npcore_out <- paste(run, "NPcore.Rdata", sep = "/")
   if (file.exists(npcore_out)){
     load(npcore_out)
     result <- get("NPcore")
