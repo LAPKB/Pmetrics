@@ -120,15 +120,6 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
       setwd("template")
       # system("cd template")
       system("cargo add --git https://github.com/Siel/ode-solvers")
-      #setup a credential storage https://git-scm.com/book/en/v2/Git-Tools-Credential-Storage
-      # ssh-keygen -t ecdsa -b 521
-      # eval `ssh-agent -s`
-      # ssh-add
-      # cargo add --git ssh://git@github.com/LAPKB/NPcore.git
-      # [net]
-      # git-fetrch-with-cli = true
-      # https://doc.rust-lang.org/cargo/appendix/git-authentication.html
-
       system("cargo add --git https://github.com/LAPKB/NPcore")
       system("cargo add eyre")
       system("cargo build --release")
