@@ -17,6 +17,7 @@ library(tidyverse)
 library(patchwork)
 library(DT)
 library(Pmetrics)
+library(htmltools)
 ```
 
 ```{r output-folding}
@@ -43,7 +44,10 @@ knitr::knit_hooks$set(
 
 
 ```{r setup-extra}
-res = params$res
+#res = params$res
+#res <- NPex
+setwd("~/LAPK/Pmetrics/Markus/Runs")
+res <- PM_load(67)
 ```
 
 ## Summary
@@ -59,193 +63,149 @@ After `r res$NPdata$icyctot`/`r res$NPdata$icycmax` cycles, the model `r did_con
 
 ## Performance metrics {.tabset}
 
-### Median
 ```{r}
-pe = res$op$summary(icen = "median")$pe
+#summary function
+metrics <- function(icen, outeq){
+  pe <- res$op$summary(icen = icen, outeq = outeq)$pe %>%
+    rename(`Mean PE` = mpe,
+           `Mean weighted PE` = mwpe,
+           `Mean square PE` = mspe,
+           `Mean weighted squared PE` = mwspe,
+           `Root mean squared PE` = rmse,
+           `Root mean squared PE (%)` = percent_rmse,
+           `Bias-adjusted mean squared PE` = bamspe,
+           `Bias-adjusted mean weighted squared PE` = bamwspe
+    ) %>% 
+    mutate(across(.cols = everything(),
+                  .fns = function(x) {
+                    round(x, digits = 3)
+                  })) %>% 
+    t() %>% 
+    datatable(
+      colnames = c("Metric", "Value"),
+      options = list(
+        searching = FALSE,
+        pageLength = 10,
+        lengthChange = FALSE,
+        info = FALSE,
+        dom = "t",
+        autoHideNavigation = TRUE
+      )
+    )  
+  return(pe)
+}
 
-pe %>% 
-  rename(`Mean PE` = mpe,
-         `Mean weighted PE` = mwpe,
-         `Mean square PE` = mspe,
-         `Mean weighted squared PE` = mwspe,
-         `Root mean squared PE` = rmse,
-         `Root mean squared PE (%)` = percent_rmse,
-         `Bias-adjusted mean squared PE` = bamspe,
-         `Bias-adjusted mean weighted squared PE` = bamwspe
-         ) %>% 
-  mutate(across(.cols = everything(),
-                .fns = function(x) {
-                  round(x, digits = 3)
-                })) %>% 
-  t() %>% 
-  datatable(
-    colnames = c("Metric", "Value"),
-    options = list(
-      searching = FALSE,
-      pageLength = 10,
-      lengthChange = FALSE,
-      info = FALSE,
-      dom = "t",
-      autoHideNavigation = TRUE
-    )
-  )
+
+```
+
+```{r, results = "asis"}
+
+for(i in 1:res$NPdata$numeqt){
+  cat("### Outeq ",i,"{.tabset .tabset-pills}\n")
+  cat("\n")
+  cat("#### Median\n")
+  cat("\n")
+  print(tagList(metrics("median", i)))
+  cat("\n")
+  cat("#### Mean\n")
+  cat("\n")
+  print(tagList(metrics("mean", i)))
+  cat("\n")
+}
+
 ```
 
 
-### Mean
-```{r}
-pe = res$op$summary(icen = "mean")$pe
-
-pe %>% 
-  rename(`Mean PE` = mpe,
-         `Mean weighted PE` = mwpe,
-         `Mean square PE` = mspe,
-         `Mean weighted squared PE` = mwspe,
-         `Root mean squared PE` = rmse,
-         `Root mean squared PE (%)` = percent_rmse,
-         `Bias-adjusted mean squared PE` = bamspe,
-         `Bias-adjusted mean weighted squared PE` = bamwspe
-         ) %>% 
-  mutate(across(.cols = everything(),
-                .fns = function(x) {
-                  round(x, digits = 3)
-                })) %>% 
-  t() %>% 
-  datatable(
-    colnames = c("Metric", "Value"),
-    options = list(
-      searching = FALSE,
-      pageLength = 10,
-      lengthChange = FALSE,
-      info = FALSE,
-      dom = "t",
-      autoHideNavigation = TRUE
-    )
-  )
-```
-
-## Observed-predicted plot {.tabset}
+## Observed-predicted plot {.tabset .tabset-pills}
 
 Points should appear close to, and randomly distributed around, the (dashed) identity-line.
 
-### Median
-
 ```{r}
-op_pop = res$op$data %>% 
-  filter(icen == "median") %>% 
-  filter(pred.type == "pop") %>% 
-  ggplot(aes(x = pred, y = obs)) +
-  geom_abline(slope = 1, intercept = 0, lty = "dashed") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() + 
-  labs(x = "Predicted", y = "Observed", subtitle = "Population") +
-  theme(aspect.ratio = 1) +
-  ggpubr::grids() +
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) +
-  scale_y_continuous(breaks = scales::breaks_pretty(n = 8))
 
-op_post = res$op$data %>% 
-  filter(icen == "median") %>% 
-  filter(pred.type == "post") %>% 
-  ggplot(aes(x = pred, y = obs)) +
-  geom_abline(slope = 1, intercept = 0, lty = "dashed") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() + 
-  labs(x = "Predicted", y = "Observed", subtitle = "Individual") +
-  theme(aspect.ratio = 1) +
-  ggpubr::grids() +
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) +
-  scale_y_continuous(breaks = scales::breaks_pretty(n = 8))
+op_plot <- function(icen, pred.type, outeq){
+  subtitle <- switch(pred.type, pop = "Population", post = "Individual")
+  p <- res$op$data %>% 
+    filter(icen == !!icen, pred.type == !!pred.type, outeq == !!outeq) %>% 
+    ggplot(aes(x = pred, y = obs)) +
+    geom_abline(slope = 1, intercept = 0, lty = "dashed") +
+    geom_point(pch = 21, col = "black", fill = "red") +
+    theme_classic() + 
+    labs(x = "Predicted", y = "Observed", subtitle = subtitle) +
+    theme(aspect.ratio = 1) +
+    ggpubr::grids() +
+    scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) +
+    scale_y_continuous(breaks = scales::breaks_pretty(n = 8))
+  return(p)
+}
 
-op_pop + op_post 
 ```
 
-### Mean
+```{r, results = "asis"}
 
-```{r}
-op_pop = res$op$data %>% 
-  filter(icen == "mean") %>% 
-  filter(pred.type == "pop") %>% 
-  ggplot(aes(x = pred, y = obs)) +
-  geom_abline(slope = 1, intercept = 0, lty = "dashed") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() + 
-  labs(x = "Predicted", y = "Observed", subtitle = "Population") +
-  theme(aspect.ratio = 1) +
-  ggpubr::grids() +
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) +
-  scale_y_continuous(breaks = scales::breaks_pretty(n = 8))
+for(i in 1:res$NPdata$numeqt){
+  p1 <- op_plot("median", "pop", i)
+  p2 <- op_plot("median", "post", i)
+  p3 <- op_plot("mean", "pop", i)
+  p4 <- op_plot("mean", "post", i)
+  cat("\n")
+  cat("### Outeq ",i,"{.tabset}\n")
+  cat("\n")
+  cat("#### Median\n")
+  cat("\n\n")
+  print(p1 + p2)
+  cat("\n\n")
+  cat("#### Mean\n")
+  cat("\n\n")
+  print(p3 + p4)
+  cat("\n\n")
+}
 
-op_post = res$op$data %>% 
-  filter(icen == "mean") %>% 
-  filter(pred.type == "post") %>% 
-  ggplot(aes(x = pred, y = obs)) +
-  geom_abline(slope = 1, intercept = 0, lty = "dashed") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() + 
-  labs(x = "Predicted", y = "Observed", subtitle = "Individual") +
-  theme(aspect.ratio = 1) +
-  ggpubr::grids() +
-  scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) +
-  scale_y_continuous(breaks = scales::breaks_pretty(n = 8))
 
-op_pop + op_post 
 ```
 
-## Posterior residuals by time {.tabset}
+
+## Posterior residuals by time {.tabset .tabset-pills}
 
 Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
 
-### Median
 ```{r}
-dmedian = res$op$data %>% 
-  filter(icen == "median") %>% # Mean
-  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = time, y = d)) +
-  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
-  geom_smooth(method = "loess", se = FALSE, col = "black") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() +
-  labs(x = "Time", y = "Prediction error")
 
-wdmedian = res$op$data %>% 
-  filter(icen == "median") %>% # Mean
-  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = time, y = wd)) +
-  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
-  geom_smooth(method = "loess", se = FALSE, col = "black") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() +
-  labs(x = "Time", y = "Weighted prediction error")
+resid_plot <- function(x, y, icen, outeq){
+  p <- res$op$data %>% 
+    filter(icen == !!icen, outeq == !!outeq, pred.type == "post") %>% # Posterior concentrations (not pop)
+    ggplot(aes(x = {{x}}, y = {{y}})) +
+    geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
+    geom_smooth(method = "loess", se = FALSE, col = "black") +
+    geom_point(pch = 21, col = "black", fill = "red") +
+    theme_classic() +
+    labs(x = "Time", y = ifelse(deparse(substitute(y))=="d", "Prediction error", "Weighted Prediction Error"))
+  return(p)
+}
 
-dmedian / wdmedian
 ```
 
+```{r, results = "asis"}
 
-### Mean
-```{r}
-dmean = res$op$data %>% 
-  filter(icen == "mean") %>% # Mean
-  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = time, y = d)) +
-  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
-  geom_smooth(method = "loess", se = FALSE, col = "black") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() +
-  labs(x = "Time", y = "Prediction error")
+for(i in 1:res$NPdata$numeqt){
+  p1 <- resid_plot(time, d, "median", i)
+  p2 <- resid_plot(time, wd, "median", i)
+  p3 <- resid_plot(time, d, "mean", i)
+  p4 <- resid_plot(time, wd, "mean", i)
+  cat("\n")
+  cat("### Outeq ",i,"{.tabset}\n")
+  cat("\n")
+  cat("#### Median\n")
+  cat("\n\n")
+  print(p1 / p2)
+  cat("\n\n")
+  cat("#### Mean\n")
+  cat("\n\n")
+  print(p3 / p4)
+  cat("\n\n")
+}
 
-wdmean = res$op$data %>% 
-  filter(icen == "mean") %>% # Mean
-  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = time, y = wd)) +
-  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
-  geom_smooth(method = "loess", se = FALSE, col = "black") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() +
-  labs(x = "Time", y = "Weighted prediction error")
 
-dmean / wdmean
 ```
 
 
@@ -254,57 +214,28 @@ dmean / wdmean
 Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
 
-### Median
-```{r}
-dmedian = res$op$data %>% 
-  filter(icen == "median") %>% # Mean
-  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = obs, y = d)) +
-  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
-  geom_smooth(method = "loess", se = FALSE, col = "black") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() +
-  labs(x = "Observed concentration", y = "Prediction error")
+```{r, results = "asis"}
 
-wdmedian = res$op$data %>% 
-  filter(icen == "median") %>% # Mean
-  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = obs, y = wd)) +
-  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
-  geom_smooth(method = "loess", se = FALSE, col = "black") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() +
-  labs(x = "Observed concentration", y = "Weighted prediction error")
+for(i in 1:res$NPdata$numeqt){
+  p1 <- resid_plot(obs, d, "median", i)
+  p2 <- resid_plot(obs, wd, "median", i)
+  p3 <- resid_plot(obs, d, "mean", i)
+  p4 <- resid_plot(obs, wd, "mean", i)
+  cat("\n")
+  cat("### Outeq ",i,"{.tabset}\n")
+  cat("\n")
+  cat("#### Median\n")
+  cat("\n\n")
+  print(p1 / p2)
+  cat("\n\n")
+  cat("#### Mean\n")
+  cat("\n\n")
+  print(p3 / p4)
+  cat("\n\n")
+}
 
-dmedian / wdmedian
+
 ```
-
-
-### Mean
-```{r}
-dmean = res$op$data %>% 
-  filter(icen == "mean") %>% # Mean
-  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = obs, y = d)) +
-  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
-  geom_smooth(method = "loess", se = FALSE, col = "black") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() +
-  labs(x = "Observed concentration", y = "Weighted prediction error")
-
-wdmean = res$op$data %>% 
-  filter(icen == "mean") %>% # Mean
-  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = obs, y = wd)) +
-  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
-  geom_smooth(method = "loess", se = FALSE, col = "black") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() +
-  labs(x = "Observed concentration", y = "Weighted prediction error")
-
-dmean / wdmean
-```
-
 
 ## Parameter values and distributions
 
@@ -392,42 +323,42 @@ res$final$popPoints %>%
 
 
 
-<!-- THE FOLLOWING SECTION CONTAINS SUPPORT FUNCTIONS -->
-```{js}
-// This code ensures that click "Mean" tab changes all tabs to "Mean"
-// Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943
+<!-- <!-- THE FOLLOWING SECTION CONTAINS SUPPORT FUNCTIONS --> -->
+<!-- ```{js} -->
+<!-- // This code ensures that click "Mean" tab changes all tabs to "Mean" -->
+<!-- // Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943 -->
 
-// make sure html is fully loaded
-document.addEventListener("DOMContentLoaded", function() {
-    document.addEventListener('click', function(event) {
-        if (event.target.getAttribute('data-toggle') === 'tab') {
-            var clickedTabId = event.target.getAttribute('href').replace(/-[0-9]*/g, '');
+<!-- // make sure html is fully loaded -->
+<!-- document.addEventListener("DOMContentLoaded", function() { -->
+<!-- document.addEventListener('click', function(event) { -->
+<!-- if (event.target.getAttribute('data-toggle') === 'tab') { -->
+<!-- var clickedTabId = event.target.getAttribute('href').replace(/-[0-9]*/g, ''); -->
 
-            var tabs = document.querySelectorAll('[href^="' +                            clickedTabId + '"][data-toggle="tab"]')
+<!-- var tabs = document.querySelectorAll('[href^="' +                            clickedTabId + '"][data-toggle="tab"]') -->
 
-            for (var i = 0; i < tabs.length; i++) {
-                $(tabs[i]).tab('show');
-            }
-        }
-    })
-});
-```
+<!-- for (var i = 0; i < tabs.length; i++) { -->
+<!-- $(tabs[i]).tab('show'); -->
+<!-- } -->
+<!-- } -->
+<!-- }) -->
+<!-- }); -->
+<!-- ``` -->
 
 
 ```{js}
 $("input.hideshow").each(function(index, button) {
-    button.value = 'Hide Output';
-    $(button).click(function() {
-        var target = this.nextSibling ? this : this.parentNode;
-        target = target.nextSibling.nextSibling.nextSibling.nextSibling;
-        if (target.style.display == 'block' || target.style.display == '') {
-            target.style.display = 'none';
-            this.value = 'Show Output';
-        } else {
-            target.style.display = 'block';
-            this.value = 'Hide Output';
-        }
-    });
+button.value = 'Hide Output';
+$(button).click(function() {
+var target = this.nextSibling ? this : this.parentNode;
+target = target.nextSibling.nextSibling.nextSibling.nextSibling;
+if (target.style.display == 'block' || target.style.display == '') {
+target.style.display = 'none';
+this.value = 'Show Output';
+} else {
+target.style.display = 'block';
+this.value = 'Hide Output';
+}
+});
 });
 $("input.hideshow").click()
 ```
