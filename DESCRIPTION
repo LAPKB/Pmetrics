@@ -66,11 +66,15 @@ Imports:
     mvtnorm,
     tidyverse,
     R6,
+    magrittr,
+    patchwork,
+    DT,
     pander,
-    magrittr
-Suggests:
-    knitr,
     rmarkdown,
+    knitr,
+    pandoc,
+    ggpubr
+Suggests:
     testthat
 RoxygenNote: 7.2.3
 Encoding: UTF-8
