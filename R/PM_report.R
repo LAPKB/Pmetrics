@@ -57,6 +57,7 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
     
   }
   
+  
   if (missing(outfile)) {
     outfile = tempfile(fileext = ".html")
   }
