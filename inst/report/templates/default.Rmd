@@ -215,36 +215,7 @@ for(i in 1:res$NPdata$numeqt){
 
 ```
 
-<<<<<<< HEAD
-=======
 
-### Mean
-```{r}
-dmean = res$op$data %>% 
-  filter(icen == "mean") %>% # Mean
-  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = obs, y = d)) +
-  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
-  geom_smooth(method = "loess", se = FALSE, col = "black") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() +
-  labs(x = "Observed concentration", y = "Prediction error")
-
-wdmean = res$op$data %>% 
-  filter(icen == "mean") %>% # Mean
-  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = obs, y = wd)) +
-  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
-  geom_smooth(method = "loess", se = FALSE, col = "black") +
-  geom_point(pch = 21, col = "black", fill = "red") +
-  theme_classic() +
-  labs(x = "Observed concentration", y = "Weighted prediction error")
-
-dmean / wdmean
-```
-
-
->>>>>>> 4b9d071599916bd61ae80d06582e1029659c03e5
 ## Parameter values and distributions
 
 The model included the following primary parameters
@@ -340,13 +311,14 @@ cycle_info = data.frame(
   gamlam = res$cycle$data$gamlam
   
 )
+```
 
-<<<<<<< HEAD
-<!-- <!-- THE FOLLOWING SECTION CONTAINS SUPPORT FUNCTIONS --> -->
+
+<!-- THE FOLLOWING SECTION CONTAINS SUPPORT FUNCTIONS --> 
 <!-- ```{js} -->
 <!-- // This code ensures that click "Mean" tab changes all tabs to "Mean" -->
 <!-- // Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943 -->
-=======
+
 cycle_info = slice_tail(cycle_info, prop = 0.8)
 
 plot_ll = cycle_info %>% 
@@ -431,7 +403,7 @@ plot_ll + plot_aic_bic + plot_gamlam + plot_mean + plot_sd + plot_median +
 ```{js}
 // This code ensures that click "Mean" tab changes all tabs to "Mean"
 // Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943
->>>>>>> 4b9d071599916bd61ae80d06582e1029659c03e5
+
 
 <!-- // make sure html is fully loaded -->
 <!-- document.addEventListener("DOMContentLoaded", function() { -->
@@ -449,7 +421,7 @@ plot_ll + plot_aic_bic + plot_gamlam + plot_mean + plot_sd + plot_median +
 <!-- }); -->
 <!-- ``` -->
 
-<<<<<<< HEAD
+
 
 ```{js}
 $("input.hideshow").each(function(index, button) {
@@ -470,5 +442,3 @@ $("input.hideshow").click()
 ```
 
 
-=======
->>>>>>> 4b9d071599916bd61ae80d06582e1029659c03e5
