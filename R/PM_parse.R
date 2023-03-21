@@ -3,6 +3,7 @@
 #' Currently written for the Rust implementation of NPAG
 #' @title Parse Pmetrics output
 #' @param wd The directory containing the output from the Rust-implementation of NPAG
+#' @param write A logical value indicating if the results should be returned (`FALSE`, default) or written to disk (`TRUE`)
 #' @return The output of \code{PM_parse} is a list containing the following elements
 #' \item{op }{Written to the standard of PM_op}
 #' \item{pop }{Written to the standard of PM_pop}
@@ -13,27 +14,41 @@
 #' @importFrom data.table fread
 #' @export
 
-
-PM_parse = function(wd = getwd()) {
+PM_parse = function(wd = getwd(), write = TRUE) {
   pred_file = "pred.csv"
   obs_file = "obs.csv"
   meta_r_file = "meta_r.csv"
-  meta_rust = "meta_rust.csv"
+  meta_rust_file = "meta_rust.csv"
   cycle_file = "cycles.csv"
   
   op = make_OP(pred_file = pred_file, obs_file = obs_file)
   post = make_Post(pred_file = pred_file)
   pop = make_Pop(pred_file = pred_file)
-  cycle = make_Cycle(cycle_file = cycle_file, meta_r_file = meta_r)
+  cycle = make_Cycle(
+    cycle_file = cycle_file,
+    meta_r_file = meta_r,
+    meta_rust_file = meta_rust_file
+  )
   
-  res = list(op = op, post = post, pop = pop)
+  NPcore = list(
+    op = op,
+    post = post,
+    pop = pop,
+    backend = "rust",
+    algorithm = "NPAG"
+  )
   
-  return(res)
+  if (write) {
+    save(NPcore, file = "NPcore.Rdata")
+    return()
+  }
+  
+  return(NPcore)
   
 }
 
 # DATA
-make_OP = function(pred_file, obs_file, meta_file, version) {
+make_OP = function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
   pred_raw = data.table::fread(
     input = pred_file,
     sep = ",",
@@ -87,7 +102,7 @@ make_OP = function(pred_file, obs_file, meta_file, version) {
 }
 
 # POST
-make_Post = function(pred_file, version) {
+make_Post = function(pred_file = "pred.csv", version) {
   raw = data.table::fread(
     input = pred_file,
     sep = ",",
@@ -114,7 +129,7 @@ make_Post = function(pred_file, version) {
 }
 
 # POP
-make_Pop = function(pred_file, version) {
+make_Pop = function(pred_file = "pred.csv", version) {
   raw = data.table::fread(
     input = pred_file,
     sep = ",",
@@ -142,7 +157,7 @@ make_Pop = function(pred_file, version) {
 # FINAL
 
 # CYCLES
-make_Cycle = function(cycle_file, meta_r_file, version) {
+make_Cycle = function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", version) {
   
   raw = data.table::fread(
     input = cycle_file,
@@ -163,11 +178,12 @@ make_Cycle = function(cycle_file, meta_r_file, version) {
   )
   
   par_names = meta %>% 
-    select(starts_with("param")) %>% 
-    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number")
+    select(ends_with(".name")) %>% 
+    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>% 
+    mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number))
   
   # Fix parameter names
-  cycle = raw %>% 
+  cycle_data = raw %>% 
     pivot_longer(cols = starts_with("param")) %>% 
     separate_wider_delim(name, delim = ".", names = c("param_number", "statistic")) %>% 
     left_join(par_names, by = "param_number") %>% 
@@ -175,14 +191,58 @@ make_Cycle = function(cycle_file, meta_r_file, version) {
   
   # Calculate AIC and BIC
   # TO-DO: Do not include fixed (but not random) parameters!
-  num_params = length(unique(par_names$parameter))
-  cycle = cycle %>%
-    mutate(AIC = 2*num_params - neg2ll,
-           BIC = num_params * log(meta$nsub) - neg2ll)
+  num_fixed = meta %>% 
+    select(ends_with(".fixed")) %>% 
+    pivot_longer(cols = everything()) %>% 
+    pull(value) %>% 
+    sum()
   
-  return(cycle)
+  num_params = nrow(par_names) - num_fixed
+  
+  aic = 2*num_params - cycle_data$neg2ll
+  names(aic) = cycle_data$cycle
+  bic = num_params * log(meta$nsub) - cycle_data$neg2ll
+  names(bic) = cycle_data$cycle
+  
+  mean = cycle_data %>% 
+    filter(statistic == "mean") %>% 
+    select(cycle, value, parameter) %>% 
+    pivot_wider(names_from = parameter, values_from = value) %>% 
+    arrange(cycle) %>% 
+    mutate(across(.cols = -cycle, .fns = function(x) {
+      x / first(x)
+    }))
+  
+  sd = cycle_data %>% 
+    filter(statistic == "sd") %>% 
+    select(cycle, value, parameter) %>% 
+    pivot_wider(names_from = parameter, values_from = value) %>% 
+    arrange(cycle) %>% 
+    mutate(across(.cols = -cycle, .fns = function(x) {
+      x / first(x)
+    }))
+  
+  median = cycle_data %>% 
+    filter(statistic == "median") %>% 
+    select(cycle, value, parameter) %>% 
+    pivot_wider(names_from = parameter, values_from = value) %>% 
+    arrange(cycle) %>% 
+    mutate(across(.cols = -cycle, .fns = function(x) {
+      x / first(x)
+    }))
+  
+  res = list(
+    names = par_names$parameter,
+    cycnum = cycle_data$cycle,
+    ll = cycle_data$neg2ll,
+    gamlam = 1, # Not implemented
+    mean = mean,
+    sd = sd,
+    median = median,
+    aic = aic,
+    bic = bic
+  )
+  
+  return(res)
   
 }
-
-
-
