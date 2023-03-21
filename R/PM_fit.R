@@ -15,6 +15,9 @@
 PM_fit <- R6::R6Class("PM_fit",
   public = list(
 
+    data = NULL,
+    model = NULL,
+
     #' @description
     #' Create a new object
     #' @param data Either the name of a  [PM_data]
@@ -39,8 +42,8 @@ PM_fit <- R6::R6Class("PM_fit",
       }
       stopifnot(inherits(data, "PM_data"))
       stopifnot(inherits(model, "PM_model"))
-      private$data <- data
-      private$model <- model
+      self$data <- data
+      self$model <- model
 
       if (getPMoptions()$backend == "rust"){
         private$setup_rust_execution()
@@ -63,23 +66,23 @@ PM_fit <- R6::R6Class("PM_fit",
 
       if(getPMoptions()$backend == "fortran"){
 
-        if (inherits(private$model, "PM_model_legacy")) {
+        if (inherits(self$model, "PM_model_legacy")) {
           cat(sprintf("Runing Legacy"))
           if (engine == "npag") {
-            Pmetrics::NPrun(private$model$legacy_file_path, private$data$standard_data, ...)
+            Pmetrics::NPrun(self$model$legacy_file_path, self$data$standard_data, ...)
           } else if (engine == "it2b") {
-            Pmetrics::ITrun(private$model$legacy_file_path, private$data$standard_data, ...)
+            Pmetrics::ITrun(self$model$legacy_file_path, self$data$standard_data, ...)
           } else {
             endNicely(paste0("Unknown engine: ", engine, ". \n"))
           }
-        } else if (inherits(private$model, "PM_model_list")) {
+        } else if (inherits(self$model, "PM_model_list")) {
           engine <- tolower(engine)
-          model_path <- private$model$write(engine = engine)
+          model_path <- self$model$write(engine = engine)
           cat(sprintf("Creating model file at: %s\n", model_path))
           if (engine == "npag") {
-            Pmetrics::NPrun(model_path, private$data$standard_data, ...)
+            Pmetrics::NPrun(model_path, self$data$standard_data, ...)
           } else {
-            Pmetrics::ITrun(model_path, private$data$standard_data, ...)
+            Pmetrics::ITrun(model_path, self$data$standard_data, ...)
           }
         } 
       } else if(getPMoptions()$backend == "rust"){
@@ -111,11 +114,11 @@ PM_fit <- R6::R6Class("PM_fit",
     #' @description
     #' Checks for errors in data and model objects and agreement between them.
     check = function() {
-      if (inherits(private$model, "PM_model_list")) {
+      if (inherits(self$model, "PM_model_list")) {
         cat(sprintf("Checking...\n"))
         file_name <- random_name()
-        private$model$write(file_name)
-        Pmetrics::PMcheck(private$data$standard_data, file_name)
+        self$model$write(file_name)
+        Pmetrics::PMcheck(self$data$standard_data, file_name)
         system(sprintf("rm %s", file_name))
       }
     }
@@ -123,8 +126,7 @@ PM_fit <- R6::R6Class("PM_fit",
     
   ),
   private = list(
-    data = NULL,
-    model = NULL,
+    
     binary_path = NULL,
     run_rust = function(...){
       arglist = list(...)
@@ -146,7 +148,7 @@ PM_fit <- R6::R6Class("PM_fit",
 
     
       # Include or exclude subjects
-      data_filtered = data_filtered = private$data$data
+      data_filtered = data_filtered = self$data$data
       if (!is.symbol(arglist$include)) {
         data_filtered = data_filtered %>%
           filter(id %in% arglist$include)
@@ -170,9 +172,9 @@ PM_fit <- R6::R6Class("PM_fit",
       #### Generate meta_r.csv #####
       nsub = length(unique(data_filtered$id))
       
-      par_names = names(private$model$model_list$pri)
+      par_names = names(self$model$model_list$pri)
       par_info = lapply(seq_along(par_names), function(i) {
-        par = private$model$model_list$pri[[i]]
+        par = self$model$model_list$pri[[i]]
         
         par_df = data.frame(
           name = par_names[i],
@@ -227,7 +229,7 @@ PM_fit <- R6::R6Class("PM_fit",
         stop("Rust has not been built, execute PMbuild()")
       }
       cwd <- getwd()
-      private$model$write_rust()
+      self$model$write_rust()
       
       # copy model and config to the template project
       system(sprintf("mv main.rs %s/src/main.rs",getPMoptions()$rust_template))
