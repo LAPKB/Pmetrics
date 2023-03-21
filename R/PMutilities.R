@@ -1,5 +1,4 @@
-# This file contains internal Pmetrics utility functions
-
+#This file contains internal Pmetrics utility functions
 # BUG FIX wmy.2017.04.12 The Femke error polynomial quandry.
 #
 # wmy.2017.04.12
