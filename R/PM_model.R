@@ -241,17 +241,18 @@ PM_Vinput <- R6::R6Class(
     max = NULL,
     mean = NULL,
     sd = NULL,
-    fixed = NULL,
-    constant = NULL,
+    fixed = FALSE,
+    constant = FALSE,
     param = NULL, # is this used?
     additive = NULL,
     proportional = NULL,
     gtz = NULL,
-    initialize = function(a, b, mode, constant = F, gtz = F) {
+    initialize = function(a, b, mode, constant = FALSE, fixed = FALSE, gtz = FALSE) {
       stopifnot(mode %in% c("ab", "msd", "fixed", "additive", "proportional", "combination"))
       self$gtz <- gtz
       self$constant <- constant
       self$mode <- mode
+      self$fixed <- fixed
       if (mode %in% c("ab")) {
         self$min <- a
         self$max <- b
