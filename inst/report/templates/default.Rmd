@@ -48,14 +48,7 @@ res = params$res
 
 ## Summary
 
-```{r}
-did_converge = ifelse(res$NPdata$converge == 1, "converged", "did not converge")
-```
-
-
-The model includes `r res$NPdata$nsub` subjects, and a total of `r  sum(res$NPdata$nobs, na.rm = TRUE)` observations.
-
-After `r res$NPdata$icyctot`/`r res$NPdata$icycmax` cycles, the model `r did_converge`.
+TBA
 
 ## Performance metrics {.tabset}
 
