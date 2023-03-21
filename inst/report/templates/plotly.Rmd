@@ -1,0 +1,432 @@
+---
+title: "Pmetrics - report"
+author: "Laboratory of Applied Pharmacokinetics and Bioinformatics (LAPKB)"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+params:
+  res: FALSE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(patchwork)
+library(DT)
+library(Pmetrics)
+library(htmltools)
+```
+
+
+```{r setup-extra}
+#res = params$res
+setwd("~/LAPK/Pmetrics/Markus/Runs")
+res <- PM_load(67)
+```
+
+## Summary
+
+```{r}
+did_converge = ifelse(res$NPdata$converge == 1, "converged", "did not converge")
+```
+
+
+The model includes `r res$NPdata$nsub` subjects, and a total of `r  sum(res$NPdata$nobs, na.rm = TRUE)` observations.
+
+After `r res$NPdata$icyctot`/`r res$NPdata$icycmax` cycles, the model `r did_converge`.
+
+## Performance metrics {.tabset}
+
+```{r}
+#summary function
+metrics <- function(icen, outeq){
+  pe <- res$op$summary(icen = icen, outeq = outeq)$pe %>%
+    rename(`Mean PE` = mpe,
+           `Mean weighted PE` = mwpe,
+           `Mean square PE` = mspe,
+           `Mean weighted squared PE` = mwspe,
+           `Root mean squared PE` = rmse,
+           `Root mean squared PE (%)` = percent_rmse,
+           `Bias-adjusted mean squared PE` = bamspe,
+           `Bias-adjusted mean weighted squared PE` = bamwspe
+    ) %>% 
+    mutate(across(.cols = everything(),
+                  .fns = function(x) {
+                    round(x, digits = 3)
+                  })) %>% 
+    t() %>% 
+    datatable(
+      colnames = c("Metric", "Value"),
+      options = list(
+        searching = FALSE,
+        pageLength = 10,
+        lengthChange = FALSE,
+        info = FALSE,
+        dom = "t",
+        autoHideNavigation = TRUE
+      )
+    )  
+  return(pe)
+}
+
+
+```
+
+```{r, results = "asis"}
+
+for(i in 1:res$NPdata$numeqt){
+  cat("### Outeq ",i,"{.tabset .tabset-pills}\n")
+  cat("\n")
+  cat("#### Median\n")
+  cat("\n")
+  print(tagList(metrics("median", i)))
+  cat("\n")
+  cat("#### Mean\n")
+  cat("\n")
+  print(tagList(metrics("mean", i)))
+  cat("\n")
+}
+
+```
+
+
+## Observed-predicted plot {.tabset .tabset-pills}
+
+Points should appear close to, and randomly distributed around, the (dashed) identity-line.
+
+``` {r include = FALSE}
+
+template <- c(
+  "### Outeq {{outeq}} {.tabset .tabset-pills}\n",
+  "#### Population {.tabset .tabset-pills}\n",
+  "##### Median\n",
+  "```{r message = F}\n",
+  "res$op$plot(icen = 'median', pred.type = 'pop', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+  "```\n",
+  "##### Mean\n",
+  "```{r message = F}\n",
+  "res$op$plot(icen = 'mean', pred.type = 'pop', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+  "```\n",
+  "#### Posterior {.tabset .tabset-pills}\n",
+  "##### Median\n",
+  "```{r message = F}\n",
+  "res$op$plot(icen = 'median', pred.type = 'post', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+  "```\n",
+  "##### Mean\n",
+  "```{r message = F}\n",
+  "res$op$plot(icen = 'mean', pred.type = 'post', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+  "```\n",
+  "\n"
+)
+
+numeqt <- max(res$op$data$outeq)
+p <- lapply(1:numeqt, function(i) {
+  knitr::knit_expand(
+    outeq = i,
+    text = template)
+})
+
+```
+`r knitr::knit_child(text = unlist(p))`
+
+
+## Posterior residuals by time {.tabset .tabset-pills}
+
+Residuals should be randomly distributed around zero, with no apparent trend.
+For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
+
+```{r}
+
+resid_plot <- function(x, y, icen, outeq){
+  p <- res$op$data %>% 
+    filter(icen == !!icen, outeq == !!outeq, pred.type == "post") %>% # Posterior concentrations (not pop)
+    ggplot(aes(x = {{x}}, y = {{y}})) +
+    geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
+    geom_smooth(method = "loess", se = FALSE, col = "black") +
+    geom_point(pch = 21, col = "black", fill = "red") +
+    theme_classic() +
+    labs(x = "Time", y = ifelse(deparse(substitute(y))=="d", "Prediction error", "Weighted Prediction Error"))
+  return(p)
+}
+
+```
+
+```{r, results = "asis"}
+
+for(i in 1:res$NPdata$numeqt){
+  p1 <- resid_plot(time, d, "median", i)
+  p2 <- resid_plot(time, wd, "median", i)
+  p3 <- resid_plot(time, d, "mean", i)
+  p4 <- resid_plot(time, wd, "mean", i)
+  cat("\n")
+  cat("### Outeq ",i,"{.tabset}\n")
+  cat("\n")
+  cat("#### Median\n")
+  cat("\n\n")
+  print(p1 / p2)
+  cat("\n\n")
+  cat("#### Mean\n")
+  cat("\n\n")
+  print(p3 / p4)
+  cat("\n\n")
+}
+
+
+```
+
+
+## Posterior residuals by concentration {.tabset}
+
+Residuals should be randomly distributed around zero, with no apparent trend.
+For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
+
+```{r, results = "asis"}
+
+for(i in 1:res$NPdata$numeqt){
+  p1 <- resid_plot(obs, d, "median", i)
+  p2 <- resid_plot(obs, wd, "median", i)
+  p3 <- resid_plot(obs, d, "mean", i)
+  p4 <- resid_plot(obs, wd, "mean", i)
+  cat("\n")
+  cat("### Outeq ",i,"{.tabset}\n")
+  cat("\n")
+  cat("#### Median\n")
+  cat("\n\n")
+  print(p1 / p2)
+  cat("\n\n")
+  cat("#### Mean\n")
+  cat("\n\n")
+  print(p3 / p4)
+  cat("\n\n")
+}
+
+
+```
+
+
+## Parameter values and distributions
+
+The model included the following primary parameters
+```{r}
+par_lims = data.frame(
+  name = head(names(res$final$popPoints), -1),
+  lower = res$final$ab[,1],
+  upper = res$final$ab[,2]
+)
+
+par_lims %>% 
+  rename(`Parameter` = name,
+         `Lower limit` = lower,
+         `Upper limit` = upper) %>% 
+  datatable(
+    options = list(
+      searching = FALSE,
+      pageLength = 10,
+      lengthChange = FALSE,
+      info = FALSE,
+      dom = "t",
+      autoHideNavigation = TRUE
+    )
+  )
+```
+
+#### Marginal plots
+Support points, height correspond to probability
+
+```{r}
+res$final$popPoints %>% 
+  pivot_longer(cols = -prob) %>% 
+  left_join(par_lims, by = "name") %>% 
+  ggplot(aes(x = value, y = prob)) +
+  geom_segment(aes(xend = value, yend = 0)) +
+  geom_vline(aes(xintercept = lower), lty = "dashed", alpha = 0.5) +
+  geom_vline(aes(xintercept = upper), lty = "dashed", alpha = 0.5) +
+  facet_wrap(~name, scales = "free") +
+  labs(x = "Parameter value", y = "Density")
+```
+
+
+#### Posterior parameter distributions
+Posterior parameter density estimates based on the mean and median icen.
+
+```{r}
+pmean = res$final$postMean %>%
+  mutate(type = "Mean")
+
+pmedian = res$final$postMed %>%
+  mutate(type = "Median")
+
+pmean %>% 
+  bind_rows(pmedian) %>%
+  pivot_longer(cols = -c(id, type)) %>%
+  left_join(par_lims, by = "name") %>%
+  ggplot(aes(x = value)) +
+  geom_density(aes(col = type, fill = type), alpha = 0.5) +
+  geom_vline(aes(xintercept = lower), 
+             lty = "dashed", alpha = 0.5) +
+  geom_vline(aes(xintercept = upper), 
+             lty = "dashed", alpha = 0.5) +
+  facet_wrap( ~ name, scales = "free") +
+  labs(x = "Parameter value",
+       y = "Density",
+       fill = NULL,
+       col = NULL) +
+  theme(legend.position = "bottom")
+```
+
+#### Table of support points
+
+The following table lists the final support points, in order of decreasing probability
+```{r}
+res$final$popPoints %>% 
+  arrange(desc(prob)) %>% 
+  mutate(across(.cols = everything(), .fns = function(x) {
+    round(x, digits = 4)
+  })) %>% 
+  mutate(`Probability (cumulative sum)` = cumsum(prob)) %>% 
+  rename(Probability = prob) %>% 
+  datatable(options = list(pageLength = 10, searching = FALSE))
+```
+
+
+
+## Cycle information
+```{r}
+cycle_info = data.frame(
+  cycle = res$cycle$data$cycnum,
+  ll = res$cycle$data$ll,
+  AIC = res$cycle$data$aic,
+  BIC = res$cycle$data$bic,
+  gamlam = res$cycle$data$gamlam
+  
+)
+
+cycle_info = slice_tail(cycle_info, prop = 0.8)
+
+plot_ll = cycle_info %>% 
+  ggplot(aes(x = cycle, y = ll)) +
+  geom_line() +
+  labs(subtitle = "-2 x log likelihood",
+       x = "Cycle number", y = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_aic_bic = cycle_info %>% 
+  pivot_longer(cols = c(AIC, BIC)) %>% 
+  ggplot(aes(x = cycle, y = value, col = name)) +
+  geom_line() +
+  labs(subtitle = "AIC/BIC",
+       x = "Cycle number", y = NULL, col = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_gamlam = cycle_info %>% 
+  ggplot(aes(x = cycle, y = gamlam)) +
+  geom_line() +
+  labs(subtitle = "Gamma / Lambda",
+       x = "Cycle number", y = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_mean = res$cycle$data$mean %>% 
+  data.frame() %>% 
+  mutate(cycle = res$cycle$data$cycnum) %>% 
+  slice_tail(prop = 0.8) %>% 
+  pivot_longer(cols = -cycle) %>% 
+  ggplot(aes(x = cycle, y = value, col = name)) +
+  geom_line() + 
+  labs(subtitle = "Normalized mean",
+       x = "Cycle number", y = NULL, col = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_sd = res$cycle$data$sd %>% 
+  data.frame() %>% 
+  mutate(cycle = res$cycle$data$cycnum) %>% 
+  slice_tail(prop = 0.8) %>% 
+  pivot_longer(cols = -cycle) %>% 
+  ggplot(aes(x = cycle, y = value, col = name)) +
+  geom_line() + 
+  labs(subtitle = "Normalized standard deviation",
+       x = "Cycle number", y = NULL, col = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_median = res$cycle$data$median %>% 
+  data.frame() %>% 
+  mutate(cycle = res$cycle$data$cycnum) %>% 
+  slice_tail(prop = 0.8) %>% 
+  pivot_longer(cols = -cycle) %>% 
+  ggplot(aes(x = cycle, y = value, col = name)) +
+  geom_line() + 
+  labs(subtitle = "Normalized median",
+       x = "Cycle number", y = NULL, col = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_design = "
+AB
+CD
+EF
+"
+
+plot_ll + plot_aic_bic + plot_gamlam + plot_mean + plot_sd + plot_median +
+  plot_layout(design = plot_design, guides = "collect") &
+  theme(legend.position = "bottom")
+```
+
+<!-- THE FOLLOWING SECTION CONTAINS JAVASCRPT SUPPORT FUNCTIONS -->
+```{js}
+// This code ensures that click "Mean" tab changes all tabs to "Mean"
+// Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943
+
+
+<!-- // make sure html is fully loaded -->
+<!-- document.addEventListener("DOMContentLoaded", function() { -->
+<!-- document.addEventListener('click', function(event) { -->
+<!-- if (event.target.getAttribute('data-toggle') === 'tab') { -->
+<!-- var clickedTabId = event.target.getAttribute('href').replace(/-[0-9]*/g, ''); -->
+
+<!-- var tabs = document.querySelectorAll('[href^="' +                            clickedTabId + '"][data-toggle="tab"]') -->
+
+<!-- for (var i = 0; i < tabs.length; i++) { -->
+<!-- $(tabs[i]).tab('show'); -->
+<!-- } -->
+<!-- } -->
+<!-- }) -->
+<!-- }); -->
+<!-- ``` -->
+
+
+
+```{js}
+$("input.hideshow").each(function(index, button) {
+button.value = 'Hide Output';
+$(button).click(function() {
+var target = this.nextSibling ? this : this.parentNode;
+target = target.nextSibling.nextSibling.nextSibling.nextSibling;
+if (target.style.display == 'block' || target.style.display == '') {
+target.style.display = 'none';
+this.value = 'Show Output';
+} else {
+target.style.display = 'block';
+this.value = 'Hide Output';
+}
+});
+});
+$("input.hideshow").click()
+```
+
