@@ -205,7 +205,7 @@ dmedian = res$op$data %>%
 wdmedian = res$op$data %>% 
   filter(icen == "median") %>% # Mean
   filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = time, y = wd)) +
+  ggplot(aes(x = time, y = d)) + # Change to wd
   geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
   geom_smooth(method = "loess", se = FALSE, col = "black") +
   geom_point(pch = 21, col = "black", fill = "red") +
@@ -231,7 +231,7 @@ dmean = res$op$data %>%
 wdmean = res$op$data %>% 
   filter(icen == "mean") %>% # Mean
   filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = time, y = wd)) +
+  ggplot(aes(x = time, y = d)) +
   geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
   geom_smooth(method = "loess", se = FALSE, col = "black") +
   geom_point(pch = 21, col = "black", fill = "red") +
@@ -262,7 +262,7 @@ dmedian = res$op$data %>%
 wdmedian = res$op$data %>% 
   filter(icen == "median") %>% # Mean
   filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = obs, y = wd)) +
+  ggplot(aes(x = obs, y = d)) +
   geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
   geom_smooth(method = "loess", se = FALSE, col = "black") +
   geom_point(pch = 21, col = "black", fill = "red") +
@@ -288,7 +288,7 @@ dmean = res$op$data %>%
 wdmean = res$op$data %>% 
   filter(icen == "mean") %>% # Mean
   filter(pred.type == "post") %>% # Posterior concentrations (not pop)
-  ggplot(aes(x = obs, y = wd)) +
+  ggplot(aes(x = obs, y = d)) +
   geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
   geom_smooth(method = "loess", se = FALSE, col = "black") +
   geom_point(pch = 21, col = "black", fill = "red") +
