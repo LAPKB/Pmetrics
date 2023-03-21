@@ -20,28 +20,6 @@ library(Pmetrics)
 library(htmltools)
 ```
 
-```{r output-folding}
-hooks = knitr::knit_hooks$get()
-hook_foldable = function(type) {
-  force(type)
-  function(x, options) {
-    res = hooks[[type]](x, options)
-    
-    if (isFALSE(options[[paste0("fold.", type)]])) return(res)
-    
-    paste0(
-      "<details><summary>", type, "</summary>\n\n",
-      res,
-      "\n\n</details>"
-    )
-  }
-}
-knitr::knit_hooks$set(
-  #
-)
-```
-
-
 
 ```{r setup-extra}
 #res = params$res
@@ -237,6 +215,36 @@ for(i in 1:res$NPdata$numeqt){
 
 ```
 
+<<<<<<< HEAD
+=======
+
+### Mean
+```{r}
+dmean = res$op$data %>% 
+  filter(icen == "mean") %>% # Mean
+  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
+  ggplot(aes(x = obs, y = d)) +
+  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
+  geom_smooth(method = "loess", se = FALSE, col = "black") +
+  geom_point(pch = 21, col = "black", fill = "red") +
+  theme_classic() +
+  labs(x = "Observed concentration", y = "Prediction error")
+
+wdmean = res$op$data %>% 
+  filter(icen == "mean") %>% # Mean
+  filter(pred.type == "post") %>% # Posterior concentrations (not pop)
+  ggplot(aes(x = obs, y = wd)) +
+  geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
+  geom_smooth(method = "loess", se = FALSE, col = "black") +
+  geom_point(pch = 21, col = "black", fill = "red") +
+  theme_classic() +
+  labs(x = "Observed concentration", y = "Weighted prediction error")
+
+dmean / wdmean
+```
+
+
+>>>>>>> 4b9d071599916bd61ae80d06582e1029659c03e5
 ## Parameter values and distributions
 
 The model included the following primary parameters
@@ -322,11 +330,108 @@ res$final$popPoints %>%
 ```
 
 
+## Cycle information
+```{r}
+cycle_info = data.frame(
+  cycle = res$cycle$data$cycnum,
+  ll = res$cycle$data$ll,
+  AIC = res$cycle$data$aic,
+  BIC = res$cycle$data$bic,
+  gamlam = res$cycle$data$gamlam
+  
+)
 
+<<<<<<< HEAD
 <!-- <!-- THE FOLLOWING SECTION CONTAINS SUPPORT FUNCTIONS --> -->
 <!-- ```{js} -->
 <!-- // This code ensures that click "Mean" tab changes all tabs to "Mean" -->
 <!-- // Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943 -->
+=======
+cycle_info = slice_tail(cycle_info, prop = 0.8)
+
+plot_ll = cycle_info %>% 
+  ggplot(aes(x = cycle, y = ll)) +
+  geom_line() +
+  labs(subtitle = "-2 x log likelihood",
+       x = "Cycle number", y = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_aic_bic = cycle_info %>% 
+  pivot_longer(cols = c(AIC, BIC)) %>% 
+  ggplot(aes(x = cycle, y = value, col = name)) +
+  geom_line() +
+  labs(subtitle = "AIC/BIC",
+       x = "Cycle number", y = NULL, col = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_gamlam = cycle_info %>% 
+  ggplot(aes(x = cycle, y = gamlam)) +
+  geom_line() +
+  labs(subtitle = "Gamma / Lambda",
+       x = "Cycle number", y = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_mean = res$cycle$data$mean %>% 
+  data.frame() %>% 
+  mutate(cycle = res$cycle$data$cycnum) %>% 
+  slice_tail(prop = 0.8) %>% 
+  pivot_longer(cols = -cycle) %>% 
+  ggplot(aes(x = cycle, y = value, col = name)) +
+  geom_line() + 
+  labs(subtitle = "Normalized mean",
+       x = "Cycle number", y = NULL, col = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_sd = res$cycle$data$sd %>% 
+  data.frame() %>% 
+  mutate(cycle = res$cycle$data$cycnum) %>% 
+  slice_tail(prop = 0.8) %>% 
+  pivot_longer(cols = -cycle) %>% 
+  ggplot(aes(x = cycle, y = value, col = name)) +
+  geom_line() + 
+  labs(subtitle = "Normalized standard deviation",
+       x = "Cycle number", y = NULL, col = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_median = res$cycle$data$median %>% 
+  data.frame() %>% 
+  mutate(cycle = res$cycle$data$cycnum) %>% 
+  slice_tail(prop = 0.8) %>% 
+  pivot_longer(cols = -cycle) %>% 
+  ggplot(aes(x = cycle, y = value, col = name)) +
+  geom_line() + 
+  labs(subtitle = "Normalized median",
+       x = "Cycle number", y = NULL, col = NULL) +
+  theme_classic() +
+  ggpubr::grids() +
+  theme(legend.position = "bottom")
+
+plot_design = "
+AB
+CD
+EF
+"
+
+plot_ll + plot_aic_bic + plot_gamlam + plot_mean + plot_sd + plot_median +
+  plot_layout(design = plot_design, guides = "collect") &
+  theme(legend.position = "bottom")
+```
+
+<!-- THE FOLLOWING SECTION CONTAINS JAVASCRPT SUPPORT FUNCTIONS -->
+```{js}
+// This code ensures that click "Mean" tab changes all tabs to "Mean"
+// Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943
+>>>>>>> 4b9d071599916bd61ae80d06582e1029659c03e5
 
 <!-- // make sure html is fully loaded -->
 <!-- document.addEventListener("DOMContentLoaded", function() { -->
@@ -344,6 +449,7 @@ res$final$popPoints %>%
 <!-- }); -->
 <!-- ``` -->
 
+<<<<<<< HEAD
 
 ```{js}
 $("input.hideshow").each(function(index, button) {
@@ -364,3 +470,5 @@ $("input.hideshow").click()
 ```
 
 
+=======
+>>>>>>> 4b9d071599916bd61ae80d06582e1029659c03e5
