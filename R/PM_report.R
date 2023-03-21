@@ -18,7 +18,8 @@ PM_report <- function(PM_result, template, outfile, show = TRUE) {
   }
   
   if (missing(template)) {
-    template = system.file("report/templates/default.Rmd", package = "Pmetrics")
+    template <- "/Users/mneely/LAPK/Development/Pmetrics/inst/report/templates/default.Rmd"
+    #template = system.file("report/templates/default.Rmd", package = "Pmetrics")
   }
   
   if (missing(outfile)) {
