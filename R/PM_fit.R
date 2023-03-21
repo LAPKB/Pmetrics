@@ -172,7 +172,7 @@ PM_fit <- R6::R6Class("PM_fit",
       
       par_names = names(private$model$model_list$pri)
       par_info = lapply(seq_along(par_names), function(i) {
-        par = NPex$model$model_list$pri[[i]]
+        par = private$model$model_list$pri[[i]]
         
         par_df = data.frame(
           name = par_names[i],
