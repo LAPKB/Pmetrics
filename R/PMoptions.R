@@ -66,7 +66,7 @@ getPMoptions <- function(opt, warn = T) {
 #' @author Michael Neely
 #' @export
 
-setPMoptions <- function(sep, dec, server_address, compilation_statements, op_stats, backend, rust_template) {
+setPMoptions <- function(sep, dec, server_address, compilation_statements, op_stats, backend, rust_template, report_template) {
   # read old values first
   PMopts <- getPMoptions(warn = F)
   
@@ -93,6 +93,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements, op_st
     rust_template = NULL,
     report_template = "plotly"
   )
+
   
   #missing so create
   if (PMopts[[1]] == -1) { 
@@ -122,7 +123,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements, op_st
   if (!missing(op_stats)) PMopts$op_stats <- op_stats
   if (!missing(backend)) PMopts$backend <- backend
   if (!missing(rust_template)) PMopts$rust_template <- rust_template
-  
+  if (!missing(report_template)) PMopts$report_template <- report_template
   
   # set the options
   options(PMopts)
