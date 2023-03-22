@@ -69,40 +69,13 @@ Imports:
     magrittr,
     patchwork,
     DT,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     pander,
-=======
-    pander
-=======
-    pander,
-<<<<<<< HEAD
     rmarkdown
->>>>>>> 5ea4650 (Added rmarkdown as dependency)
-Suggests:
-    knitr,
->>>>>>> 8dd8657 (First draft of new report template)
-=======
-    pander,
->>>>>>> rust
-    rmarkdown,
     knitr,
     pandoc,
     ggpubr
-<<<<<<< HEAD
-=======
-    rmarkdown,
-    knitr,
-<<<<<<< HEAD
     pandoc
->>>>>>> 5239733 (Error handling for pandoc)
-=======
-    pandoc,
     ggpubr
->>>>>>> 3095784 (Documentation)
-=======
->>>>>>> rust
 Suggests:
     testthat
 RoxygenNote: 7.2.3
