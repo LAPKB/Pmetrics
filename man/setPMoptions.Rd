@@ -32,6 +32,14 @@ If a simgle compilation statement is provided, it will be used for both kind of 
 Default is \code{FALSE}, but could either be set to \code{TRUE} for default format or a list of format options.
 The default format when set to \code{TRUE} is
 \code{list(x= 0.4, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 8))}}
+
+\item{backend}{Name of compiler to use. Default is "fortran" (for now) but can be "rust" to use rust compiler.
+Currently, only NPAG is available in rust.}
+
+\item{rust_template}{Only used if \code{backend} is set to "rust".}
+
+\item{report_template}{Format of the plots included in the summary report presented at the end of a run.
+Default is to use "plotly", but can be set to "ggplot".}
 }
 \value{
 The user preferences file will be updated.  This will persist from session to session.

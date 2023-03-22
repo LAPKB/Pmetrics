@@ -8,6 +8,7 @@ PM_load(run = 1, remote = F, server_address)
 }
 \arguments{
 \item{run}{The numerical value of the folder number containing the run results.
+Run can also be the path pointing a folder containing the corresponding Rdata file
 This parameter is \code{1} by default.}
 
 \item{remote}{Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.

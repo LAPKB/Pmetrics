@@ -10,7 +10,6 @@
 #' methods to cross-check data and model objects for compatibility, as well as to
 #' run the analysis.
 #' @importFrom stringr str_glue
-#' @importFrom RcppTOML parseTOML
 #' @export
 
 PM_fit <- R6::R6Class("PM_fit",
