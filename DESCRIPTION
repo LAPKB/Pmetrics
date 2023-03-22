@@ -73,8 +73,6 @@ Imports:
     rmarkdown,
     knitr,
     pandoc,
-    ggpubr,
-    pandoc,
     ggpubr
 Suggests:
     testthat
