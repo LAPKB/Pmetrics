@@ -22,9 +22,7 @@ library(htmltools)
 
 
 ```{r setup-extra}
-#res = params$res
-setwd("~/LAPK/Pmetrics/Markus/Runs")
-res <- PM_load(67)
+res = params$res
 ```
 
 ## Summary
