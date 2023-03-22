@@ -70,11 +70,11 @@ Imports:
     patchwork,
     DT,
     pander,
-    rmarkdown
+    rmarkdown,
     knitr,
     pandoc,
-    ggpubr
-    pandoc
+    ggpubr,
+    pandoc,
     ggpubr
 Suggests:
     testthat
