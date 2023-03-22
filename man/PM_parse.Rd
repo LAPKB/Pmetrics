@@ -4,14 +4,13 @@
 \alias{PM_parse}
 \title{Parse Pmetrics output}
 \usage{
-
 PM_parse(wd = getwd(), write = TRUE)
 }
 \arguments{
 \item{wd}{The directory containing the output from the Rust-implementation of NPAG}
+
 \item{write}{A logical value indicating if the results should be returned (\code{FALSE}, default) or written to disk (\code{TRUE})}
 }
-
 \value{
 The output of \code{PM_parse} is a list containing the following elements
 \item{op }{Written to the standard of PM_op}

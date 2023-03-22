@@ -54,9 +54,7 @@ impl Simulate for Sim{
 fn main()-> Result<()>{
     start(
         Engine::new(Sim{}),
-        vec![</ranges>],
         "config.toml".to_string(),
-        </c>
     )?;
     Ok(())
 }
