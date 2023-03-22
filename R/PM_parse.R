@@ -15,19 +15,12 @@
 #' @export
 
 PM_parse = function(wd = getwd(), write = TRUE) {
-  pred_file = "pred.csv"
-  obs_file = "obs.csv"
-  meta_r_file = "meta_r.csv"
-  meta_rust_file = "meta_rust.csv"
-  cycle_file = "cycles.csv"
-  theta_file = "theta.csv"
-  post_file = "posterior.csv"
   
-  op = make_OP(pred_file = pred_file, obs_file = obs_file)
-  post = make_Post(pred_file = pred_file)
-  pop = make_Pop(pred_file = pred_file)
-  final = make_Final(theta_file = theta_file, meta_r_file = meta_r_file, post_file = post_file)
-  cycle = make_Cycle(cycle_file = cycle_file, meta_r_file = meta_r_file)
+  op = make_OP()
+  post = make_Post()
+  pop = make_Pop()
+  final = make_Final()
+  cycle = make_Cycle()
   
   NPcore = list(
     op = op,

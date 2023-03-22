@@ -10,6 +10,7 @@
 #' methods to cross-check data and model objects for compatibility, as well as to
 #' run the analysis.
 #' @importFrom stringr str_glue
+#' @importFrom RcppTOML parseTOML
 #' @export
 
 PM_fit <- R6::R6Class("PM_fit",
@@ -164,7 +165,12 @@ PM_fit <- R6::R6Class("PM_fit",
       data_new$write("gendata.csv", header = FALSE)
       
       #### Determine indpts #####
-      arglist$num_indpts = 10000
+      num_ran_param = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
+        self$model$model_list$pri[[i]]$fixed
+      }) %>% unlist() %>% sum()
+      
+      arglist$indpts = ifelse(is.symbol(arglist$indpts), 1, arglist$indpts)
+      arglist$num_indpts = (2**num_ran_param)*arglist$indpts
       arglist$num_indpts = format(arglist$num_indpts, scientific = FALSE)
       
       #### Format cycles #####
@@ -172,18 +178,87 @@ PM_fit <- R6::R6Class("PM_fit",
       
       #### Other arguments ####
       arglist$use_tui = "false" # TO-DO: Convert TRUE -> "true", vice versa.
-      param_names = names(self$model$model_list$pri)
-      param_names = paste0("\"", param_names, "\"")
-      param_names = paste0(param_names, collapse = ",")
-      arglist$param_names = paste0("[ ", param_names, " ]")
-      
+    
       
       #### Save PM_fit ####
       self$data = data_filtered
       self$arglist = arglist
       save(self, file = "fit.Rdata")
       
-
+      #### Parse names and limits ####
+      pris = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
+        pri = self$model$model_list$pri[[i]]
+        return(pri)
+      })
+      
+      #### Parameter names (random only) ####
+      arglist$param_names = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
+        pri = self$model$model_list$pri[i]
+        name = names(pri)
+        pri = self$model$model_list$pri[[i]]
+        
+        is_constant = pri$constant
+        is_fixed = pri$fixed != FALSE
+        
+        if (is_constant) {
+          return(NULL)
+        }
+        
+        if (is_fixed) {
+          return(NULL)
+        }
+        
+        return(paste0("\"", name, "\""))
+        
+      }) %>% unlist() %>% 
+        paste0(., collapse = ",") %>% 
+        paste0("[", ., "]")
+      
+      arglist$par_limits = lapply(pris, function(x) {
+        if (x$fixed | x$constant) {
+          return(NULL)
+        }
+        tuple = paste0("[", x$min,",", x$max, "]")
+        tuple = format(tuple, scientific = FALSE, decimal.mark = ".") 
+      }) %>% unlist() %>% 
+        format(., scientific = FALSE, decimal.mark = ".") %>% 
+        paste0(., collapse = ",") %>% 
+        paste0("[", ., "]")
+      
+      constant_lines = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
+        pri = self$model$model_list$pri[i]
+        name = names(pri)
+        pri = self$model$model_list$pri[[i]]
+        
+        is_constant = pri$constant
+        is_fixed = is.numeric(fixed)
+        
+        if (is_constant) {
+          str = paste0(name, "=", pri$fixed)
+          return(str)
+        }
+      }) %>% unlist()
+      arglist$constant_block = paste("[constant]", constant_lines, sep = "\n")
+      
+    
+      randfix_lines = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
+        pri = self$model$model_list$pri[i]
+        name = names(pri)
+        pri = self$model$model_list$pri[[i]]
+        
+        is_constant = pri$constant
+        is_fixed = is.numeric(pri$fixed)
+        
+        if (!is_constant & is_fixed) {
+          str = paste0(name, "=", pri$fixed)
+          return(str)
+        }
+      }) %>% unlist()
+      arglist$randfix_block = paste("[randfix]", randfix_lines, sep = "\n")
+      
+      
+      
+      
       #### Generate config.toml #####
       toml_template = stringr::str_glue(
         "[paths]",
@@ -198,6 +273,9 @@ PM_fit <- R6::R6Class("PM_fit",
         "tui={use_tui}",
         "pmetrics_outputs=true",
         "parameter_names={param_names}",
+        "parameter_limits={par_limits}",
+        "{randfix_block}",
+        "{constant_block}",
         .envir = arglist,
         .sep = "\n")
       
