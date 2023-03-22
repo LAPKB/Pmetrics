@@ -33,41 +33,6 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
     outfile = tempfile(fileext = ".html")
   }
   
-  ### TEMPORARY LIMITATION FOR OUTEQ ###
-  # Currently, the report only s
-  #if (PM_result$NPdata$numeqt > 1) {
-  #  stop("Currently only one output equation is supported.\n")
-  #}
-  
-  cat("Generating report based on specified template...\n")
-  
-  # Check if pandoc is exposed to Rstudio
-  if (!rmarkdown::pandoc_available()) {
-    # Check if pandoc is installed
-    if (!pandoc::pandoc_available()) {
-      pandoc::pandoc_install()
-    }
-    
-    # Set the correct environmental variable for use in shell
-    Sys.setenv(RSTUDIO_PANDOC = pandoc::pandoc_locate())
-    
-    if (!rmarkdown::pandoc_available()) {
-      stop("Unable to install pandoc, or expose it to Rmarkdown.")
-    }
-    
-  }
-  
-  
-  if (missing(outfile)) {
-    outfile = tempfile(fileext = ".html")
-  }
-  
-  ### TEMPORARY LIMITATION FOR OUTEQ ###
-  # Currently, the report only s
-  #if (PM_result$NPdata$numeqt > 1) {
-  #  stop("Currently only one output equation is supported.\n")
-  #}
-  
   cat("Generating report based on specified template...\n")
   
   # Check if pandoc is exposed to Rstudio
