@@ -438,14 +438,14 @@ PM_model_list <- R6::R6Class("PM_model_list",
         out <- append(out,"yout.push(y0);")
       }
       content <- gsub("</out_eqs>", out %>% paste(collapse = "\n"), content)
-      ranges <- c()
-      for(val in self$model_list$pri){
-        if(val$mode != "ab"){
-          stop("only ab() mode is currently supported by this function")
-        }
-        ranges <- append(ranges,sprintf("(%f,%f)",val$min, val$max))
-      }
-      content <- gsub("</ranges>", ranges %>% paste(collapse = ","), content)
+      #ranges <- c()
+      #for(val in self$model_list$pri){
+      #  if(val$mode != "ab"){
+      #    stop("only ab() mode is currently supported by this function")
+      #  }
+      #  ranges <- append(ranges,sprintf("(%f,%f)",val$min, val$max))
+      #}
+      #content <- gsub("</ranges>", ranges %>% paste(collapse = ","), content)
       assay <- self$model_list$out[1][[1]]$err$assay
       content <- gsub("</c>", sprintf("(%f,%f,%f,%f)",assay[1],assay[2],assay[3],assay[4]), content)
       readr::write_file(content, "main.rs")
