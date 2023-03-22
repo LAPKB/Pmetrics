@@ -71,6 +71,7 @@ Imports:
     DT,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     pander,
 =======
     pander
@@ -82,10 +83,14 @@ Imports:
 Suggests:
     knitr,
 >>>>>>> 8dd8657 (First draft of new report template)
+=======
+    pander,
+>>>>>>> rust
     rmarkdown,
     knitr,
     pandoc,
     ggpubr
+<<<<<<< HEAD
 =======
     rmarkdown,
     knitr,
@@ -96,6 +101,8 @@ Suggests:
     pandoc,
     ggpubr
 >>>>>>> 3095784 (Documentation)
+=======
+>>>>>>> rust
 Suggests:
     testthat
 RoxygenNote: 7.2.3
