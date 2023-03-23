@@ -24,6 +24,7 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
   templateFile <- switch(template, 
                          plotly = system.file("report/templates/plotly.Rmd", package = "Pmetrics"),
                          ggplot = system.file("report/templates/ggplot.Rmd", package = "Pmetrics"))
+  
   if(is.null(templateFile)){
     if(!file.exists(templateFile)) stop(crayon::red("ERROR: "), templateFile, " does not exist.\n")
   }
@@ -33,7 +34,8 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
     outfile = tempfile(fileext = ".html")
   }
   
-  cat("Generating report based on specified template...\n")
+  cat("Generating report based on the", template, "template...\n")
+  
   
   # Check if pandoc is exposed to Rstudio
   if (!rmarkdown::pandoc_available()) {
