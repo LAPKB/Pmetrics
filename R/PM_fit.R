@@ -14,9 +14,11 @@
 
 PM_fit <- R6::R6Class("PM_fit",
   public = list(
-
+    #' @field data [PM_data] object
     data = NULL,
+    #' @field model [PM_model] object
     model = NULL,
+    #' @field arglist Arguments passed to rust engine
     arglist = NULL,
 
     #' @description
