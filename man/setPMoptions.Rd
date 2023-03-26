@@ -11,7 +11,8 @@ setPMoptions(
   compilation_statements,
   op_stats,
   backend,
-  rust_template
+  rust_template,
+  report_template
 )
 }
 \arguments{
