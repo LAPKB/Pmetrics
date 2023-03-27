@@ -229,8 +229,8 @@ PM_Vmodel <- R6::R6Class("PM_model",
                                      sp(5), "$additive: ", thisout$err$model$additive, "\n",
                                      sp(5), "$proportional: ", thisout$err$model$proportional, "\n",
                                      sp(5), "$constant: ", thisout$err$model$constant, "\n",
-                                     sp(4), "$assay: ",
-                                     paste0("[", 1:length(thisout$err$assay$coefficients), "] ", thisout$err$assay$coefficients, collapse = ", "), "\n",
+                                     sp(4), "$assay\n",
+                                     sp(5), "$coefficients: ", paste0("[", 1:length(thisout$err$assay$coefficients), "] ", thisout$err$assay$coefficients, collapse = ", "), "\n",
                                      sp(5), "$constant: ", thisout$err$assay$constant, "\n",
                                      "\n"
                                    ))
