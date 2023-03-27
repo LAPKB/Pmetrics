@@ -150,7 +150,8 @@ resid_plot <- function(x, y, icen, outeq){
     geom_smooth(method = "loess", se = FALSE, col = "black") +
     geom_point(pch = 21, col = "black", fill = "red") +
     theme_classic() +
-    labs(x = "Time", y = ifelse(deparse(substitute(y))=="d", "Prediction error", "Weighted Prediction Error"))
+    labs(x = ifelse(deparse(substitute(x))=="time", "Time", "Observation"), 
+         y = ifelse(deparse(substitute(y))=="d", "Prediction error", "Weighted Prediction Error"))
   return(p)
 }
 
@@ -180,7 +181,7 @@ for(i in 1:res$NPdata$numeqt){
 ```
 
 
-## Posterior residuals by concentration {.tabset}
+## Posterior residuals by observation {.tabset}
 
 Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
