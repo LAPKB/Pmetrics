@@ -462,7 +462,8 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
     p_data <- plotly::plotly_data(p)
     if(inherits(p_data,c("PM_op", "PMop"))){ #this is a PM_op object
       sumStat <- summary(p_data, outeq = p_data$outeq[1], 
-                         pred.type = p_data$pred.type[1])
+                         pred.type = p_data$pred.type[1],
+                         icen = p_data$icen[1])
       regStat <- paste0(regStat,"<br>",
                         "Bias = ",format(sumStat$pe$mwpe,digits=3),"<br>",
                         "Imprecision  = ",format(sumStat$pe$bamwspe,digits=3)
