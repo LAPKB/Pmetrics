@@ -9,27 +9,27 @@
 #' \item{pop }{Written to the standard of PM_pop}
 #' \item{post }{Written to the standard of PM_post}
 #' \item{cycles }{Written to the standard of PM_cycle}
-#' 
+#'
 #' @seealso \code{\link{NPparse}}
 #' @importFrom data.table fread
 #' @export
 
-PM_parse = function(wd = getwd(), write = TRUE) {
-  pred_file = "pred.csv"
-  obs_file = "obs.csv"
-  meta_r_file = "meta_r.csv"
-  meta_rust_file = "meta_rust.csv"
-  cycle_file = "cycles.csv"
-  theta_file = "theta.csv"
-  post_file = "posterior.csv"
-  
-  op = make_OP(pred_file = pred_file, obs_file = obs_file)
-  post = make_Post(pred_file = pred_file)
-  pop = make_Pop(pred_file = pred_file)
-  final = make_Final(theta_file = theta_file, meta_r_file = meta_r_file, post_file = post_file)
-  cycle = make_Cycle(cycle_file = cycle_file, meta_r_file = meta_r_file)
-  
-  NPcore = list(
+PM_parse <- function(wd = getwd(), write = TRUE) {
+  pred_file <- "pred.csv"
+  obs_file <- "obs.csv"
+  meta_r_file <- "meta_r.csv"
+  meta_rust_file <- "meta_rust.csv"
+  cycle_file <- "cycles.csv"
+  theta_file <- "theta.csv"
+  post_file <- "posterior.csv"
+
+  op <- make_OP(pred_file = pred_file, obs_file = obs_file)
+  post <- make_Post(pred_file = pred_file)
+  pop <- make_Pop(pred_file = pred_file)
+  final <- make_Final(theta_file = theta_file, meta_r_file = meta_r_file, post_file = post_file)
+  cycle <- make_Cycle(cycle_file = cycle_file, meta_r_file = meta_r_file)
+
+  NPcore <- list(
     op = op,
     post = post,
     pop = pop,
@@ -38,19 +38,18 @@ PM_parse = function(wd = getwd(), write = TRUE) {
     backend = "rust",
     algorithm = "NPAG"
   )
-  
+
   if (write) {
     save(NPcore, file = "NPcore.Rdata")
     return()
   }
-  
+
   return(NPcore)
-  
 }
 
 # DATA
-make_OP = function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
-  pred_raw = data.table::fread(
+make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
+  pred_raw <- data.table::fread(
     input = pred_file,
     sep = ",",
     header = TRUE,
@@ -58,8 +57,8 @@ make_OP = function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
     dec = ".",
     showProgress = TRUE
   )
-  
-  obs_raw = data.table::fread(
+
+  obs_raw <- data.table::fread(
     input = obs_file,
     sep = ",",
     header = TRUE,
@@ -67,12 +66,12 @@ make_OP = function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
     dec = ".",
     showProgress = TRUE
   )
-  
-  obs_raw = obs_raw %>%
+
+  obs_raw <- obs_raw %>%
     rename(id = sub_num)
-  
-  op = obs_raw %>%
-    left_join(pred_raw, by = c("id", "time", "outeq")) %>%
+
+  op <- obs_raw %>%
+    dplyr::left_join(pred_raw, by = c("id", "time", "outeq")) %>%
     pivot_longer(cols = c(popMean, popMedian, postMean, postMedian)) %>%
     mutate(
       icen = case_when(
@@ -96,15 +95,14 @@ make_OP = function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
     mutate(ds = d * d) %>%
     # Hardcoded for now
     mutate(block = 1)
-  
-  class(op) = c("PMop", "data.frame")
+
+  class(op) <- c("PMop", "data.frame")
   return(op)
-  
 }
 
 # POST
-make_Post = function(pred_file = "pred.csv", version) {
-  raw = data.table::fread(
+make_Post <- function(pred_file = "pred.csv", version) {
+  raw <- data.table::fread(
     input = pred_file,
     sep = ",",
     header = TRUE,
@@ -112,26 +110,29 @@ make_Post = function(pred_file = "pred.csv", version) {
     dec = ".",
     showProgress = TRUE
   )
-  
-  post = raw %>%
+
+  post <- raw %>%
     select(-popMedian, -popMean) %>%
-    pivot_longer(cols = c(postMedian, postMean),
-                 values_to = "pred") %>%
+    pivot_longer(
+      cols = c(postMedian, postMean),
+      values_to = "pred"
+    ) %>%
     rename(icen = name) %>%
-    mutate(icen = case_when(icen == "postMedian" ~ "median",
-                            icen == "postMean" ~ "mean")) %>%
+    mutate(icen = case_when(
+      icen == "postMedian" ~ "median",
+      icen == "postMean" ~ "mean"
+    )) %>%
     # Hardcoded for now
     mutate(block = 1) %>%
     relocate(id, time, icen, outeq, pred, block)
-  
-  class(post) = c("PMpost", "data.frame")
+
+  class(post) <- c("PMpost", "data.frame")
   return(post)
-  
 }
 
 # POP
-make_Pop = function(pred_file = "pred.csv", version) {
-  raw = data.table::fread(
+make_Pop <- function(pred_file = "pred.csv", version) {
+  raw <- data.table::fread(
     input = pred_file,
     sep = ",",
     header = TRUE,
@@ -139,26 +140,26 @@ make_Pop = function(pred_file = "pred.csv", version) {
     dec = ".",
     showProgress = TRUE
   )
-  
-  pop = raw %>%
+
+  pop <- raw %>%
     select(-postMedian, -postMean) %>%
     pivot_longer(cols = c(popMedian, popMean), values_to = "pred") %>%
     rename(icen = name) %>%
-    mutate(icen = case_when(icen == "popMedian" ~ "median",
-                            icen == "popMean" ~ "mean")) %>%
+    mutate(icen = case_when(
+      icen == "popMedian" ~ "median",
+      icen == "popMean" ~ "mean"
+    )) %>%
     # Hardcoded for now
     mutate(block = 1) %>%
     relocate(id, time, icen, outeq, pred, block)
-  
-  class(pop) = c("PMpop", "data.frame")
+
+  class(pop) <- c("PMpop", "data.frame")
   return(pop)
-  
 }
 
 # FINAL
-make_Final = function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", post_file = "posterior.csv") {
-  
-  theta = data.table::fread(
+make_Final <- function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", post_file = "posterior.csv") {
+  theta <- data.table::fread(
     input = theta_file,
     sep = ",",
     header = FALSE,
@@ -166,8 +167,8 @@ make_Final = function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", post
     dec = ".",
     showProgress = TRUE
   )
-  
-  meta = data.table::fread(
+
+  meta <- data.table::fread(
     input = meta_r_file,
     sep = ",",
     header = TRUE,
@@ -175,8 +176,8 @@ make_Final = function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", post
     dec = ".",
     showProgress = TRUE
   )
-  
-  post = data.table::fread(
+
+  post <- data.table::fread(
     input = post_file,
     sep = ",",
     header = TRUE,
@@ -184,92 +185,92 @@ make_Final = function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", post
     dec = ".",
     showProgress = TRUE
   )
-  
-  par_names = meta %>% 
-    select(ends_with(".name")) %>% 
-    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>% 
-    mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number)) %>% 
+
+  par_names <- meta %>%
+    select(ends_with(".name")) %>%
+    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>%
+    mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number)) %>%
     pull(parameter)
-  
-  par_names = c(par_names, "prob")
-  
-  names(theta) = par_names
-  
-  popMean = theta %>% 
+
+  par_names <- c(par_names, "prob")
+
+  names(theta) <- par_names
+
+  popMean <- theta %>%
     summarise(across(.cols = -prob, .fns = function(x) {
       mean(x)
     }))
-  
-  popSD = theta %>% 
+
+  popSD <- theta %>%
     summarise(across(.cols = -prob, .fns = function(x) {
       sd(x)
     }))
-  
-  popCov = theta %>% 
-    select(-prob) %>% 
+
+  popCov <- theta %>%
+    select(-prob) %>%
     cov()
-  
-  popCor = theta %>% 
-    select(-prob) %>% 
+
+  popCor <- theta %>%
+    select(-prob) %>%
     cor()
-  
-  popMedian = theta %>% 
+
+  popMedian <- theta %>%
     summarise(across(.cols = -prob, .fns = function(x) {
       median(x)
     }))
-  
+
   # Posterior
-  post_names = c("id","point", par_names)
-  names(post) = post_names
-  
-  postMean = post %>% 
-    group_by(id) %>% 
+  post_names <- c("id", "point", par_names)
+  names(post) <- post_names
+
+  postMean <- post %>%
+    group_by(id) %>%
     summarise(across(.cols = -c(point, prob), .fns = function(x) {
       weighted.mean(x = x, w = prob)
     }))
-  
-  postSD = post %>% 
-    group_by(id) %>% 
+
+  postSD <- post %>%
+    group_by(id) %>%
     summarise(across(.cols = -c(point, prob), .fns = function(x) {
       sd(x)
     }))
-  
-  postVar = post %>% 
-    group_by(id) %>% 
+
+  postVar <- post %>%
+    group_by(id) %>%
     summarise(across(.cols = -c(point, prob), .fns = function(x) {
       sd(x)**2
     }))
-  
+
   # TO-DO: Add postCov, postCor, Post
-  
-  postMed = post %>% 
-    group_by(id) %>% 
+
+  postMed <- post %>%
+    group_by(id) %>%
     summarise(across(.cols = -c(point, prob), .fns = function(x) {
       matrixStats::weightedMedian(x = x, w = prob, interpolate = TRUE)
     }))
-  
-  
-  shrinkage = 1
-  #varEBD <- apply(postVar[,-1],2,mean) # Mean postVar / popVar
-  #sh <- varEBD/popVar
-  
-  ab = meta %>% 
-    select(ends_with(c(".min", ".max"))) %>% 
-    pivot_longer(cols = everything()) %>% 
-    separate_wider_delim(cols = name, delim = ".", names = c("param_num", "type")) %>% 
-    pivot_wider(names_from = type, values_from = value) %>% 
-    arrange(param_num) %>% 
-    select(min, max) %>% 
+
+
+  shrinkage <- 1
+  # varEBD <- apply(postVar[,-1],2,mean) # Mean postVar / popVar
+  # sh <- varEBD/popVar
+
+  ab <- meta %>%
+    select(ends_with(c(".min", ".max"))) %>%
+    pivot_longer(cols = everything()) %>%
+    separate_wider_delim(cols = name, delim = ".", names = c("param_num", "type")) %>%
+    pivot_wider(names_from = type, values_from = value) %>%
+    arrange(param_num) %>%
+    select(min, max) %>%
     as.matrix()
-  
-  ab = unname(ab)
-  
-  final = list(
+
+  ab <- unname(ab)
+
+  final <- list(
     popPoints = theta,
     popMean = popMean,
     popSD = popSD,
-    popCV = popSD/popMean,
-    popVar = popSD ** 2,
+    popCV = popSD / popMean,
+    popVar = popSD**2,
     popCov = popCov,
     popCor = popCor,
     popMedian = popMedian,
@@ -280,14 +281,13 @@ make_Final = function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", post
     nsub = meta$nsub,
     ab = ab
   )
-  
+
   return(final)
 }
 
 # CYCLES
-make_Cycle = function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", version) {
-  
-  raw = data.table::fread(
+make_Cycle <- function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", version) {
+  raw <- data.table::fread(
     input = cycle_file,
     sep = ",",
     header = TRUE,
@@ -295,8 +295,8 @@ make_Cycle = function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", ver
     dec = ".",
     showProgress = TRUE
   )
-  
-  meta = data.table::fread(
+
+  meta <- data.table::fread(
     input = meta_r_file,
     sep = ",",
     header = TRUE,
@@ -304,62 +304,62 @@ make_Cycle = function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", ver
     dec = ".",
     showProgress = TRUE
   )
-  
-  par_names = meta %>% 
-    select(ends_with(".name")) %>% 
-    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>% 
+
+  par_names <- meta %>%
+    select(ends_with(".name")) %>%
+    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>%
     mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number))
-  
+
   # Fix parameter names
-  cycle_data = raw %>% 
-    pivot_longer(cols = starts_with("param")) %>% 
-    separate_wider_delim(name, delim = ".", names = c("param_number", "statistic")) %>% 
-    left_join(par_names, by = "param_number") %>% 
+  cycle_data <- raw %>%
+    pivot_longer(cols = starts_with("param")) %>%
+    separate_wider_delim(name, delim = ".", names = c("param_number", "statistic")) %>%
+    dplyr::left_join(par_names, by = "param_number") %>%
     select(-param_number)
-  
+
   # Calculate AIC and BIC
   # TO-DO: Do not include fixed (but not random) parameters!
-  num_fixed = meta %>% 
-    select(ends_with(".fixed")) %>% 
-    pivot_longer(cols = everything()) %>% 
-    pull(value) %>% 
+  num_fixed <- meta %>%
+    select(ends_with(".fixed")) %>%
+    pivot_longer(cols = everything()) %>%
+    pull(value) %>%
     sum()
-  
-  num_params = nrow(par_names) - num_fixed
-  
-  aic = 2*num_params - cycle_data$neg2ll
-  names(aic) = cycle_data$cycle
-  bic = num_params * log(meta$nsub) - cycle_data$neg2ll
-  names(bic) = cycle_data$cycle
-  
-  mean = cycle_data %>% 
-    filter(statistic == "mean") %>% 
-    select(cycle, value, parameter) %>% 
-    pivot_wider(names_from = parameter, values_from = value) %>% 
-    arrange(cycle) %>% 
+
+  num_params <- nrow(par_names) - num_fixed
+
+  aic <- 2 * num_params - cycle_data$neg2ll
+  names(aic) <- cycle_data$cycle
+  bic <- num_params * log(meta$nsub) - cycle_data$neg2ll
+  names(bic) <- cycle_data$cycle
+
+  mean <- cycle_data %>%
+    filter(statistic == "mean") %>%
+    select(cycle, value, parameter) %>%
+    pivot_wider(names_from = parameter, values_from = value) %>%
+    arrange(cycle) %>%
     mutate(across(.cols = -cycle, .fns = function(x) {
       x / first(x)
     }))
-  
-  sd = cycle_data %>% 
-    filter(statistic == "sd") %>% 
-    select(cycle, value, parameter) %>% 
-    pivot_wider(names_from = parameter, values_from = value) %>% 
-    arrange(cycle) %>% 
+
+  sd <- cycle_data %>%
+    filter(statistic == "sd") %>%
+    select(cycle, value, parameter) %>%
+    pivot_wider(names_from = parameter, values_from = value) %>%
+    arrange(cycle) %>%
     mutate(across(.cols = -cycle, .fns = function(x) {
       x / first(x)
     }))
-  
-  median = cycle_data %>% 
-    filter(statistic == "median") %>% 
-    select(cycle, value, parameter) %>% 
-    pivot_wider(names_from = parameter, values_from = value) %>% 
-    arrange(cycle) %>% 
+
+  median <- cycle_data %>%
+    filter(statistic == "median") %>%
+    select(cycle, value, parameter) %>%
+    pivot_wider(names_from = parameter, values_from = value) %>%
+    arrange(cycle) %>%
     mutate(across(.cols = -cycle, .fns = function(x) {
       x / first(x)
     }))
-  
-  res = list(
+
+  res <- list(
     names = par_names$parameter,
     cycnum = cycle_data$cycle,
     ll = cycle_data$neg2ll,
@@ -370,7 +370,6 @@ make_Cycle = function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", ver
     aic = aic,
     bic = bic
   )
-  
+
   return(res)
-  
 }
