@@ -150,7 +150,7 @@ PM_fit <- R6::R6Class("PM_fit",
       arglist = modifyList(default_NPrun, arglist)
 
     
-      # Include or exclude subjects
+      # Include or exclude subjects according to
       data_filtered = data_filtered = self$data$data
       if (!is.symbol(arglist$include)) {
         data_filtered = data_filtered %>%
@@ -162,6 +162,7 @@ PM_fit <- R6::R6Class("PM_fit",
           filter(!id %in% arglist$exclude)
       }
       
+      #### Write data ####
       data_new = PM_data$new(data_filtered, quiet = TRUE)
       data_new$write("gendata.csv", header = FALSE)
       
@@ -179,86 +180,52 @@ PM_fit <- R6::R6Class("PM_fit",
       
       #### Other arguments ####
       arglist$use_tui = "false" # TO-DO: Convert TRUE -> "true", vice versa.
-    
       
       #### Save PM_fit ####
       self$data = data_filtered
       self$arglist = arglist
       save(self, file = "fit.Rdata")
       
-      #### Parse names and limits ####
-      pris = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
+      #### Parameter info ####
+      pars = list(
+        random = "[random]",
+        fixed = "[fixed]",
+        constant = "[constant]"
+      )
+      
+      temp = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
+        pri = self$model$model_list$pri[i]
+        name = names(pri)
         pri = self$model$model_list$pri[[i]]
-        return(pri)
+        
+        # Constant parameter
+        if (pri$constant) {
+          value = format(pri$fixed, scientific = FALSE, nsmall = 1)
+          str = paste0(name, " = ", value)
+          pars$constant <- paste(pars$constant, str, sep = "\n")
+        }
+        
+        # Fixed parameter
+        if (!pri$constant & !is.null(pri$fixed)) {
+          value = format(pri$fixed, scientific = FALSE, nsmall = 1)
+          str = paste0(name, " = ", value)
+          pars$fixed <- paste(pars$fixed, str, sep = "\n")
+        }
+        
+        # Random parameter
+        if (!pri$constant & is.null(pri$fixed)) {
+          min = format(pri$min, scientific = FALSE, nsmall = 1)
+          max = format(pri$max, scientific = FALSE, nsmall = 1)
+          str = paste0(name, " = [", min, ",", max, "]")
+          pars$random <- paste(pars$random, str, sep = "\n")
+          
+        }
+        
+        return()
+        
       })
       
-      #### Parameter names (random only) ####
-      arglist$param_names = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
-        pri = self$model$model_list$pri[i]
-        name = names(pri)
-        pri = self$model$model_list$pri[[i]]
-        
-        is_constant = pri$constant
-        is_fixed = pri$fixed != FALSE
-        
-        if (is_constant) {
-          return(NULL)
-        }
-        
-        if (is_fixed) {
-          return(NULL)
-        }
-        
-        return(paste0("\"", name, "\""))
-        
-      }) %>% unlist() %>% 
-        paste0(., collapse = ",") %>% 
-        paste0("[", ., "]")
-      
-      arglist$par_limits = lapply(pris, function(x) {
-        if (x$fixed | x$constant) {
-          return(NULL)
-        }
-        tuple = paste0("[", x$min,",", x$max, "]")
-        tuple = format(tuple, scientific = FALSE, decimal.mark = ".") 
-      }) %>% unlist() %>% 
-        format(., scientific = FALSE, decimal.mark = ".") %>% 
-        paste0(., collapse = ",") %>% 
-        paste0("[", ., "]")
-      
-      constant_lines = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
-        pri = self$model$model_list$pri[i]
-        name = names(pri)
-        pri = self$model$model_list$pri[[i]]
-        
-        is_constant = pri$constant
-        is_fixed = is.numeric(fixed)
-        
-        if (is_constant) {
-          str = paste0(name, "=", pri$fixed)
-          return(str)
-        }
-      }) %>% unlist()
-      arglist$constant_block = paste("[constant]", constant_lines, sep = "\n")
-      
-    
-      randfix_lines = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
-        pri = self$model$model_list$pri[i]
-        name = names(pri)
-        pri = self$model$model_list$pri[[i]]
-        
-        is_constant = pri$constant
-        is_fixed = is.numeric(pri$fixed)
-        
-        if (!is_constant & is_fixed) {
-          str = paste0(name, "=", pri$fixed)
-          return(str)
-        }
-      }) %>% unlist()
-      arglist$randfix_block = paste("[randfix]", randfix_lines, sep = "\n")
-      
-      
-      
+      arglist$parameter_block = paste0(unlist(parameter_block), collapse = "\n")
       
       #### Generate config.toml #####
       toml_template = stringr::str_glue(
@@ -273,10 +240,7 @@ PM_fit <- R6::R6Class("PM_fit",
         "seed=22",
         "tui={use_tui}",
         "pmetrics_outputs=true",
-        "parameter_names={param_names}",
-        "parameter_limits={par_limits}",
-        "{randfix_block}",
-        "{constant_block}",
+        "{parameter_block}",
         .envir = arglist,
         .sep = "\n")
       
