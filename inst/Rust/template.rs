@@ -55,6 +55,7 @@ fn main()-> Result<()>{
     start(
         Engine::new(Sim{}),
         "config.toml".to_string(),
+        </c>
     )?;
     Ok(())
 }
