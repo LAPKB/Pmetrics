@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{PM_op}(
   x,
-  line = list(lm = T, loess = F, ref = T),
+  line = list(lm = NULL, loess = NULL, ref = NULL),
   marker = T,
   resid = F,
   icen = "median",
@@ -68,7 +68,9 @@ Note that there is no \emph{ci} argument for the \emph{ref} list.
 Example: \code{line = list(lm = F, loess = T, ref = list(color = "lightgrey"))}
 If the \code{line} argument is missing, it will be set to
 \code{line = list(lm = T, loess = F, ref = T)}, i.e. there will be a linear
-regression with reference line, but no loess regression.
+regression with reference line, but no loess regression. However, if \code{resid = T},
+the default will become \code{line = list(lm = F, loess = T, ref = T)}, i.e.,
+loess regression with reference line, but no linear regression.
 }
 }}
 
