@@ -202,14 +202,14 @@ PM_fit <- R6::R6Class("PM_fit",
         if (pri$constant) {
           value = format(pri$fixed, scientific = FALSE, nsmall = 1)
           str = paste0(name, " = ", value)
-          pars$constant <- paste(pars$constant, str, sep = "\n")
+          pars$constant <<- paste(pars$constant, str, sep = "\n")
         }
         
         # Fixed parameter
         if (!pri$constant & !is.null(pri$fixed)) {
           value = format(pri$fixed, scientific = FALSE, nsmall = 1)
           str = paste0(name, " = ", value)
-          pars$fixed <- paste(pars$fixed, str, sep = "\n")
+          pars$fixed <<- paste(pars$fixed, str, sep = "\n")
         }
         
         # Random parameter
@@ -217,7 +217,7 @@ PM_fit <- R6::R6Class("PM_fit",
           min = format(pri$min, scientific = FALSE, nsmall = 1)
           max = format(pri$max, scientific = FALSE, nsmall = 1)
           str = paste0(name, " = [", min, ",", max, "]")
-          pars$random <- paste(pars$random, str, sep = "\n")
+          pars$random <<- paste(pars$random, str, sep = "\n")
           
         }
         
