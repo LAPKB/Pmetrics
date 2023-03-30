@@ -188,8 +188,8 @@ PM_fit <- R6::R6Class("PM_fit",
       
       #### Parameter info ####
       pars = list(
-        random = "[parameters]",
-        fixed = "[randfix]",
+        random = "[random]",
+        fixed = "[fixed]",
         constant = "[constant]"
       )
       
