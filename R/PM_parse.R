@@ -12,6 +12,7 @@
 #'
 #' @seealso \code{\link{NPparse}}
 #' @importFrom data.table fread
+#' @importFrom dplyr select rename mutate relocate left_join case_when pivot_longer
 #' @export
 
 PM_parse <- function(wd = getwd(), write = TRUE) {
@@ -71,7 +72,7 @@ make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
     rename(id = sub_num)
 
   op <- obs_raw %>%
-    dplyr::left_join(pred_raw, by = c("id", "time", "outeq")) %>%
+    left_join(pred_raw, by = c("id", "time", "outeq")) %>%
     pivot_longer(cols = c(popMean, popMedian, postMean, postMedian)) %>%
     mutate(
       icen = case_when(
@@ -314,7 +315,7 @@ make_Cycle <- function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", ve
   cycle_data <- raw %>%
     pivot_longer(cols = starts_with("param")) %>%
     separate_wider_delim(name, delim = ".", names = c("param_number", "statistic")) %>%
-    dplyr::left_join(par_names, by = "param_number") %>%
+    left_join(par_names, by = "param_number") %>%
     select(-param_number)
 
   # Calculate AIC and BIC
