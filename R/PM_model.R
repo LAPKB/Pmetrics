@@ -494,7 +494,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       #  ranges <- append(ranges,sprintf("(%f,%f)",val$min, val$max))
       # }
       # content <- gsub("</ranges>", ranges %>% paste(collapse = ","), content)
-      assay <- self$model_list$out[1][[1]]$err$assay
+      assay <- self$model_list$out[[1]]$err$assay$coefficients
       content <- gsub("</c>", sprintf("(%f,%f,%f,%f)", assay[1], assay[2], assay[3], assay[4]), content)
       readr::write_file(content, "main.rs")
     },
