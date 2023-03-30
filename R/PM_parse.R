@@ -12,8 +12,8 @@
 #'
 #' @seealso \code{\link{NPparse}}
 #' @importFrom data.table fread
-#' @importFrom dplyr select rename mutate relocate left_join case_when
-#' @importFrom tidyr pivot_longer
+#' @importFrom dplyr select rename mutate relocate left_join case_when first across
+#' @importFrom tidyr pivot_longer separate_wider_delim
 #' @importFrom RcppTOML parseTOML
 #' @importFrom matrixStats weightedMedian
 #' @export
@@ -74,7 +74,7 @@ make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
   )
 
   obs_raw <- obs_raw %>%
-    rename(id = sub_num)
+    dplyr::rename(id = sub_num)
 
   op <- obs_raw %>%
     left_join(pred_raw, by = c("id", "time", "outeq")) %>%
@@ -96,7 +96,7 @@ make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
       )
     ) %>%
     select(-name) %>%
-    rename(pred = value) %>%
+    dplyr::rename(pred = value) %>%
     mutate(d = pred - obs) %>%
     mutate(ds = d * d) %>%
     # Hardcoded for now
@@ -123,7 +123,7 @@ make_Post <- function(pred_file = "pred.csv", version) {
       cols = c(postMedian, postMean),
       values_to = "pred"
     ) %>%
-    rename(icen = name) %>%
+    dplyr::rename(icen = name) %>%
     mutate(icen = case_when(
       icen == "postMedian" ~ "median",
       icen == "postMean" ~ "mean"
@@ -150,7 +150,7 @@ make_Pop <- function(pred_file = "pred.csv", version) {
   pop <- raw %>%
     select(-postMedian, -postMean) %>%
     pivot_longer(cols = c(popMedian, popMean), values_to = "pred") %>%
-    rename(icen = name) %>%
+    dplyr::rename(icen = name) %>%
     mutate(icen = case_when(
       icen == "popMedian" ~ "median",
       icen == "popMean" ~ "mean"
