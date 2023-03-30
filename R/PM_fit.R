@@ -225,7 +225,7 @@ PM_fit <- R6::R6Class("PM_fit",
         
       })
       
-      arglist$parameter_block = paste0(unlist(parameter_block), collapse = "\n")
+      arglist$parameter_block = paste0(unlist(pars), collapse = "\n")
       
       #### Generate config.toml #####
       toml_template = stringr::str_glue(
