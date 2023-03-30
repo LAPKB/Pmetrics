@@ -14,22 +14,25 @@
 #' @importFrom data.table fread
 #' @importFrom dplyr select rename mutate relocate left_join case_when
 #' @importFrom tidyr pivot_longer
+#' @importFrom RcppTOML parseTOML
+#' @importFrom matrixStats weightedMedian
 #' @export
 
 PM_parse <- function(wd = getwd(), write = TRUE) {
-  pred_file <- "pred.csv"
-  obs_file <- "obs.csv"
-  meta_r_file <- "meta_r.csv"
-  meta_rust_file <- "meta_rust.csv"
-  cycle_file <- "cycles.csv"
-  theta_file <- "theta.csv"
-  post_file <- "posterior.csv"
+  pred_file <- paste(wd, "pred.csv", sep = "/")
+  obs_file <- paste(wd, "obs.csv", sep = "/")
+  # meta_r_file <- paste(wd, "meta_r.csv", sep = "/")
+  meta_rust_file <- paste(wd, "meta_rust.csv", sep = "/")
+  toml_config_file <- paste(wd, "config.toml", sep = "/")
+  cycle_file <- paste(wd, "cycles.csv", sep = "/")
+  theta_file <- paste(wd, "theta.csv", sep = "/")
+  post_file <- paste(wd, "posterior.csv", sep = "/")
 
   op <- make_OP(pred_file = pred_file, obs_file = obs_file)
   post <- make_Post(pred_file = pred_file)
   pop <- make_Pop(pred_file = pred_file)
-  final <- make_Final(theta_file = theta_file, meta_r_file = meta_r_file, post_file = post_file)
-  cycle <- make_Cycle(cycle_file = cycle_file, meta_r_file = meta_r_file)
+  final <- make_Final(theta_file = theta_file, toml_config_file = toml_config_file, post_file = post_file)
+  cycle <- make_Cycle(cycle_file = cycle_file, toml_config_file = toml_config_file)
 
   NPcore <- list(
     op = op,
@@ -38,7 +41,8 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
     cycle = cycle,
     final = final,
     backend = "rust",
-    algorithm = "NPAG"
+    algorithm = "NPAG",
+    numeqt = 1 # Fixed
   )
 
   if (write) {
@@ -160,7 +164,7 @@ make_Pop <- function(pred_file = "pred.csv", version) {
 }
 
 # FINAL
-make_Final <- function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", post_file = "posterior.csv") {
+make_Final <- function(theta_file = "theta.csv", toml_config_file = "config.toml", post_file = "posterior.csv") {
   theta <- data.table::fread(
     input = theta_file,
     sep = ",",
@@ -170,14 +174,14 @@ make_Final <- function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", pos
     showProgress = TRUE
   )
 
-  meta <- data.table::fread(
-    input = meta_r_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
+  # meta <- data.table::fread(
+  #   input = toml_config_file,
+  #   sep = ",",
+  #   header = TRUE,
+  #   data.table = FALSE,
+  #   dec = ".",
+  #   showProgress = TRUE
+  # )
 
   post <- data.table::fread(
     input = post_file,
@@ -188,11 +192,13 @@ make_Final <- function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", pos
     showProgress = TRUE
   )
 
-  par_names <- meta %>%
-    select(ends_with(".name")) %>%
-    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>%
-    mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number)) %>%
-    pull(parameter)
+  # par_names <- meta %>%
+  #   select(ends_with(".name")) %>%
+  #   pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>%
+  #   mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number)) %>%
+  #   pull(parameter)
+
+  par_names <- parseTOML(toml_config_file)$random %>% names()
 
   par_names <- c(par_names, "prob")
 
@@ -248,7 +254,7 @@ make_Final <- function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", pos
   postMed <- post %>%
     group_by(id) %>%
     summarise(across(.cols = -c(point, prob), .fns = function(x) {
-      matrixStats::weightedMedian(x = x, w = prob, interpolate = TRUE)
+      weightedMedian(x = x, w = prob, interpolate = TRUE)
     }))
 
 
@@ -256,16 +262,21 @@ make_Final <- function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", pos
   # varEBD <- apply(postVar[,-1],2,mean) # Mean postVar / popVar
   # sh <- varEBD/popVar
 
-  ab <- meta %>%
-    select(ends_with(c(".min", ".max"))) %>%
-    pivot_longer(cols = everything()) %>%
-    separate_wider_delim(cols = name, delim = ".", names = c("param_num", "type")) %>%
-    pivot_wider(names_from = type, values_from = value) %>%
-    arrange(param_num) %>%
-    select(min, max) %>%
-    as.matrix()
+  # ab <- meta %>%
+  #   select(ends_with(c(".min", ".max"))) %>%
+  #   pivot_longer(cols = everything()) %>%
+  #   separate_wider_delim(cols = name, delim = ".", names = c("param_num", "type")) %>%
+  #   pivot_wider(names_from = type, values_from = value) %>%
+  #   arrange(param_num) %>%
+  #   select(min, max) %>%
+  #   as.matrix()
 
-  ab <- unname(ab)
+  # ab <- unname(ab)
+  ab <- parseTOML(toml_config_file)$random %>%
+    unlist() %>%
+    matrix(ncol = 2, byrow = T)
+
+  gridpts <- parseTOML(toml_config_file)$config$init_points
 
   final <- list(
     popPoints = theta,
@@ -279,8 +290,8 @@ make_Final <- function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", pos
     #
     postMean = postMean,
     postMed = postMed,
-    gridpts = meta$gridpts,
-    nsub = meta$nsub,
+    gridpts = gridpts,
+    nsub = 51, # TODO: Hardcoded for now
     ab = ab
   )
 
@@ -288,7 +299,7 @@ make_Final <- function(theta_file = "theta.csv", meta_r_file = "meta_r.csv", pos
 }
 
 # CYCLES
-make_Cycle <- function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", version) {
+make_Cycle <- function(cycle_file = "cycles.csv", toml_config_file = "config.toml", version) {
   raw <- data.table::fread(
     input = cycle_file,
     sep = ",",
@@ -298,40 +309,49 @@ make_Cycle <- function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", ve
     showProgress = TRUE
   )
 
-  meta <- data.table::fread(
-    input = meta_r_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
+  # meta <- data.table::fread(
+  #   input = toml_config_file,
+  #   sep = ",",
+  #   header = TRUE,
+  #   data.table = FALSE,
+  #   dec = ".",
+  #   showProgress = TRUE
+  # )
 
-  par_names <- meta %>%
-    select(ends_with(".name")) %>%
-    pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>%
-    mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number))
+  # par_names <- meta %>%
+  #   select(ends_with(".name")) %>%
+  #   pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>%
+  #   mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number))
+
+  par_names <- parseTOML(toml_config_file)$random %>% names()
 
   # Fix parameter names
+  # cycle_data <- raw %>%
+  #   pivot_longer(cols = starts_with("param")) %>%
+  #   separate_wider_delim(name, delim = ".", names = c("param_number", "statistic")) %>%
+  #   left_join(par_names, by = "param_number") %>%
+  #   select(-param_number)
   cycle_data <- raw %>%
-    pivot_longer(cols = starts_with("param")) %>%
-    separate_wider_delim(name, delim = ".", names = c("param_number", "statistic")) %>%
-    left_join(par_names, by = "param_number") %>%
-    select(-param_number)
+    pivot_longer(cols = ends_with(c("mean", "median", "sd"))) %>%
+    separate_wider_delim(name, delim = ".", names = c("parameter", "statistic"))
 
   # Calculate AIC and BIC
   # TO-DO: Do not include fixed (but not random) parameters!
-  num_fixed <- meta %>%
-    select(ends_with(".fixed")) %>%
-    pivot_longer(cols = everything()) %>%
-    pull(value) %>%
-    sum()
+  # num_fixed <- meta %>%
+  #   select(ends_with(".fixed")) %>%
+  #   pivot_longer(cols = everything()) %>%
+  #   pull(value) %>%
+  #   sum()
 
-  num_params <- nrow(par_names) - num_fixed
+  num_fixed <- 0 # TODO: Hardcoded for now
+
+  # num_params <- nrow(par_names) - num_fixed
+  num_params <- length(par_names) - num_fixed
 
   aic <- 2 * num_params - cycle_data$neg2ll
   names(aic) <- cycle_data$cycle
-  bic <- num_params * log(meta$nsub) - cycle_data$neg2ll
+  # bic <- num_params * log(meta$nsub) - cycle_data$neg2ll
+  bic <- num_params * log(51) - cycle_data$neg2ll # TODO: Hardcoded for now
   names(bic) <- cycle_data$cycle
 
   mean <- cycle_data %>%
@@ -362,7 +382,7 @@ make_Cycle <- function(cycle_file = "cycles.csv", meta_r_file = "meta_r.csv", ve
     }))
 
   res <- list(
-    names = par_names$parameter,
+    names = par_names, # TODO: changed
     cycnum = cycle_data$cycle,
     ll = cycle_data$neg2ll,
     gamlam = 1, # Not implemented
