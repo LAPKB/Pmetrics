@@ -48,12 +48,9 @@ PM_fit <- R6::R6Class("PM_fit",
       self$data <- data
       self$model <- model
 
-      if (getPMoptions()$backend == "rust"){
+      if (getPMoptions()$backend == "rust") {
         private$setup_rust_execution()
       }
-      
-
-
     },
     #' @description Fit the model to the data
     #' @param ... Other arguments passed to [NPrun]
@@ -62,13 +59,12 @@ PM_fit <- R6::R6Class("PM_fit",
     run = function(..., engine = "NPAG", rundir = getwd()) {
       wd <- getwd()
       if (!dir.exists(rundir)) {
-          stop("You have specified a directory that does not exist, please create it first.")
-       }
+        stop("You have specified a directory that does not exist, please create it first.")
+      }
       setwd(rundir)
       engine <- tolower(engine)
 
-      if(getPMoptions()$backend == "fortran"){
-
+      if (getPMoptions()$backend == "fortran") {
         if (inherits(self$model, "PM_model_legacy")) {
           cat(sprintf("Runing Legacy"))
           if (engine == "npag") {
@@ -87,8 +83,8 @@ PM_fit <- R6::R6Class("PM_fit",
           } else {
             Pmetrics::ITrun(model_path, self$data$standard_data, ...)
           }
-        } 
-      } else if(getPMoptions()$backend == "rust"){
+        }
+      } else if (getPMoptions()$backend == "rust") {
         private$run_rust(...)
       } else {
         setwd(wd)
@@ -125,14 +121,11 @@ PM_fit <- R6::R6Class("PM_fit",
         system(sprintf("rm %s", file_name))
       }
     }
-
-    
   ),
   private = list(
-    
     binary_path = NULL,
-    run_rust = function(...){
-      arglist = list(...)
+    run_rust = function(...) {
+      arglist <- list(...)
       cwd <- getwd()
       olddir <- list.dirs(recursive = F)
       olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
@@ -144,91 +137,91 @@ PM_fit <- R6::R6Class("PM_fit",
       }
       dir.create(newdir)
       setwd(newdir)
-      
-      # First read default values from NPrun, then modify with arglist
-      default_NPrun = formals(NPrun)
-      arglist = modifyList(default_NPrun, arglist)
 
-    
+      # First read default values from NPrun, then modify with arglist
+      default_NPrun <- formals(NPrun)
+      arglist <- modifyList(default_NPrun, arglist)
+
+
       # Include or exclude subjects according to
-      data_filtered = data_filtered = self$data$data
+      data_filtered <- data_filtered <- self$data$data
       if (!is.symbol(arglist$include)) {
-        data_filtered = data_filtered %>%
+        data_filtered <- data_filtered %>%
           filter(id %in% arglist$include)
       }
-      
+
       if (!is.symbol(arglist$exclude)) {
-        data_filtered = data_filtered %>%
+        data_filtered <- data_filtered %>%
           filter(!id %in% arglist$exclude)
       }
-      
+
       #### Write data ####
-      data_new = PM_data$new(data_filtered, quiet = TRUE)
+      data_new <- PM_data$new(data_filtered, quiet = TRUE)
       data_new$write("gendata.csv", header = FALSE)
-      
+
       #### Determine indpts #####
-      num_ran_param = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
+      num_ran_param <- lapply(seq_along(names(self$model$model_list$pri)), function(i) {
         self$model$model_list$pri[[i]]$fixed
-      }) %>% unlist() %>% sum()
-      
-      arglist$indpts = ifelse(is.symbol(arglist$indpts), 1, arglist$indpts)
-      arglist$num_indpts = (2**num_ran_param)*arglist$indpts
-      arglist$num_indpts = format(arglist$num_indpts, scientific = FALSE)
-      
+      }) %>%
+        unlist() %>%
+        sum()
+
+      arglist$indpts <- ifelse(is.symbol(arglist$indpts), 1, arglist$indpts)
+      arglist$num_indpts <- (2**num_ran_param) * arglist$indpts
+      arglist$num_indpts <- format(arglist$num_indpts, scientific = FALSE)
+
       #### Format cycles #####
-      arglist$cycles = format(arglist$cycles, scientific = FALSE)
-      
+      arglist$cycles <- format(arglist$cycles, scientific = FALSE)
+
       #### Other arguments ####
-      arglist$use_tui = "false" # TO-DO: Convert TRUE -> "true", vice versa.
-      
+      arglist$use_tui <- "false" # TO-DO: Convert TRUE -> "true", vice versa.
+
       #### Save PM_fit ####
-      self$data = data_filtered
-      self$arglist = arglist
+      self$data <- data_filtered
+      self$arglist <- arglist
       save(self, file = "fit.Rdata")
-      
+
       #### Parameter info ####
-      pars = list(
+      pars <- list(
         random = "[random]",
         fixed = "[fixed]",
         constant = "[constant]"
       )
-      
-      temp = lapply(seq_along(names(self$model$model_list$pri)), function(i) {
-        pri = self$model$model_list$pri[i]
-        name = names(pri)
-        pri = self$model$model_list$pri[[i]]
-        
+
+      temp <- lapply(seq_along(names(self$model$model_list$pri)), function(i) {
+        pri <- self$model$model_list$pri[i]
+        name <- names(pri)
+        pri <- self$model$model_list$pri[[i]]
+
         # Constant parameter
         if (pri$constant) {
-          value = format(pri$fixed, scientific = FALSE, nsmall = 1)
-          str = paste0(name, " = ", value)
+          value <- format(pri$fixed, scientific = FALSE, nsmall = 1)
+          str <- paste0(name, " = ", value)
           pars$constant <<- paste(pars$constant, str, sep = "\n")
         }
-        
+
         # Fixed parameter
         if (!pri$constant & !is.null(pri$fixed)) {
-          value = format(pri$fixed, scientific = FALSE, nsmall = 1)
-          str = paste0(name, " = ", value)
+          value <- format(pri$fixed, scientific = FALSE, nsmall = 1)
+          str <- paste0(name, " = ", value)
           pars$fixed <<- paste(pars$fixed, str, sep = "\n")
         }
-        
+
         # Random parameter
         if (!pri$constant & is.null(pri$fixed)) {
-          min = format(pri$min, scientific = FALSE, nsmall = 1)
-          max = format(pri$max, scientific = FALSE, nsmall = 1)
-          str = paste0(name, " = [", min, ",", max, "]")
+          min <- format(pri$min, scientific = FALSE, nsmall = 1)
+          max <- format(pri$max, scientific = FALSE, nsmall = 1)
+          str <- paste0(name, " = [", min, ",", max, "]")
           pars$random <<- paste(pars$random, str, sep = "\n")
-          
         }
-        
+
         return()
-        
       })
-      
-      arglist$parameter_block = paste0(unlist(pars), collapse = "\n")
-      
+
+      arglist$parameter_block <- paste0(unlist(pars), collapse = "\n")
+
       #### Generate config.toml #####
-      toml_template = stringr::str_glue(
+      toml_template <- stringr::str_glue(
         "[paths]",
         "data=\"gendata.csv\"",
         "log_out=\"run.log\"",
@@ -236,38 +229,40 @@ PM_fit <- R6::R6Class("PM_fit",
         "[config]",
         "cycles={cycles}",
         "engine=\"NPAG\"",
-        "init_points={num_indpts}",
+        # "init_points={num_indpts}",
+        "init_points=2129", # TO-DO: temporary """"hacky"""" fix
         "seed=22",
         "tui={use_tui}",
         "pmetrics_outputs=true",
         "{parameter_block}",
         .envir = arglist,
-        .sep = "\n")
-      
+        .sep = "\n"
+      )
+
       writeLines(text = toml_template, con = "config.toml")
 
-      #check if the file exists
-      file.copy(private$binary_path,"NPcore")
+      # check if the file exists
+      file.copy(private$binary_path, "NPcore")
       system2("./NPcore", args = "&")
       setwd(cwd)
     },
-    setup_rust_execution = function(){
-      if(is.null(getPMoptions()$rust_template)){
+    setup_rust_execution = function() {
+      if (is.null(getPMoptions()$rust_template)) {
         stop("Rust has not been built, execute PMbuild()")
       }
       cwd <- getwd()
       self$model$write_rust()
-      
+
       # copy model and config to the template project
-      system(sprintf("mv main.rs %s/src/main.rs",getPMoptions()$rust_template))
+      system(sprintf("mv main.rs %s/src/main.rs", getPMoptions()$rust_template))
       # compile the template folder
       setwd(getPMoptions()$rust_template)
       system("cargo build --release")
-      if(!file.exists("target/release/template")){
+      if (!file.exists("target/release/template")) {
         setwd(cwd)
         stop("Error: Compilation failed")
       }
-      compiled_binary_path <- paste0(getwd(),"/target/release/template")
+      compiled_binary_path <- paste0(getwd(), "/target/release/template")
       # Save the binary somewhere
       setwd(tempdir())
       olddir <- list.dirs(recursive = F)
@@ -281,11 +276,11 @@ PM_fit <- R6::R6Class("PM_fit",
       dir.create(newdir)
       setwd(newdir)
       cat("\nMoving compiled binary to a temp folder\n")
-      system(sprintf("cp %s NPcore",compiled_binary_path))
-      private$binary_path <- paste0(getwd(),"/NPcore")
+      system(sprintf("cp %s NPcore", compiled_binary_path))
+      private$binary_path <- paste0(getwd(), "/NPcore")
       setwd(cwd)
-      #TODO: I think it might be necessary to implement a re_build() method
-      #In case the binary the temp folder gets deleted
+      # TODO: I think it might be necessary to implement a re_build() method
+      # In case the binary the temp folder gets deleted
     }
   )
 )
@@ -297,11 +292,10 @@ PM_fit$load <- function(file_name = "PMfit.rds") {
   readRDS(file_name)
 }
 
-.logical_to_rust = function(bool) {
+.logical_to_rust <- function(bool) {
   if (!is.logical(bool)) {
     stop("This functions expects a logical value")
   }
-  
-  rust_logical = ifelse(bool, "true", "false")
-  
+
+  rust_logical <- ifelse(bool, "true", "false")
 }
