@@ -73,7 +73,9 @@ Imports:
     rmarkdown,
     knitr,
     pandoc,
-    ggpubr
+    ggpubr,
+    RcppTOML,
+    matrixStats
 Suggests:
     testthat
 RoxygenNote: 7.2.3
