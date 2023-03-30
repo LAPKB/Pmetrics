@@ -12,7 +12,8 @@
 #'
 #' @seealso \code{\link{NPparse}}
 #' @importFrom data.table fread
-#' @importFrom dplyr select rename mutate relocate left_join case_when pivot_longer
+#' @importFrom dplyr select rename mutate relocate left_join case_when
+#' @importFrom tidyr pivot_longer
 #' @export
 
 PM_parse <- function(wd = getwd(), write = TRUE) {
