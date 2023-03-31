@@ -43,12 +43,10 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
     final = final,
     backend = "rust",
     algorithm = "NPAG",
-    NPdata = list(
-      numeqt = 1
-    )
+    numeqt = 1
   )
-  
-  class(NPcore) = "PM_result"
+
+  class(NPcore) <- "PM_result"
 
   if (write) {
     save(NPcore, file = "NPcore.Rdata")
@@ -105,9 +103,11 @@ make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
     mutate(d = pred - obs) %>%
     mutate(ds = d * d) %>%
     # Hardcoded for now
-    mutate(block = 1,
-           wd = d,
-           wds = d)
+    mutate(
+      block = 1,
+      wd = d,
+      wds = d
+    )
 
   class(op) <- c("PMop", "data.frame")
   return(op)
