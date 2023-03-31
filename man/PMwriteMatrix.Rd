@@ -4,7 +4,7 @@
 \alias{PMwriteMatrix}
 \title{Write a Pmetrics .csv Matrix File}
 \usage{
-PMwriteMatrix(data, filename, override = F, version = "DEC_11")
+PMwriteMatrix(data, filename, override = F, version = "DEC_11", header = T)
 }
 \arguments{
 \item{data}{Must be a data.frame with appropriate structure (see \code{\link{PMcheck}}.}

@@ -49,25 +49,36 @@ PM_result <- R6::R6Class(
     #' Creation of new `PM_result` objects is via [PM_load].
     #' @param out The parsed output from [PM_load].
     #' @param quiet Quietly validate. Default is `FALSE`.
-    initialize = function(out, quiet = T) {
-      if(!is.null(out$NPdata)){
-        self$NPdata <- out$NPdata
-        class(self$NPdata) <- c("NPAG", "list")
-      } else {self$NPdata <- NULL}
-      if(!is.null(out$ITdata)){
-        self$ITdata <- out$ITdata
-        class(self$ITdata) <- c("IT2B", "list")
-      } else {self$ITdata <- NULL}
-      self$pop <- if(is.null(out$pop)){NULL}else{PM_pop$new(out$pop)}
-      self$post <- if(is.null(out$pop)){NULL}else{PM_post$new(out$post)}
-      self$final <- PM_final$new(out$final)
-      self$cycle <- PM_cycle$new(out$cycle)
-      self$op <- PM_op$new(out$op)
-      self$cov <- PM_cov$new(out$cov)
-      self$data <- PM_data$new(data = out$data, quiet = quiet) # no need to report
-      self$model <- out$model
-      self$errfile <- out$errfile
-      self$success <- out$success
+    #' @param backend Should the backend use Fortran ("fortran", default) or Rust ("rust")
+    initialize = function(out, quiet = T, backend = "fortran") {
+      if(backend == "fortran"){
+        if(!is.null(out$NPdata)){
+          self$NPdata <- out$NPdata
+          class(self$NPdata) <- c("NPAG", "list")
+        } else {self$NPdata <- NULL}
+        if(!is.null(out$ITdata)){
+          self$ITdata <- out$ITdata
+          class(self$ITdata) <- c("IT2B", "list")
+        } else {self$ITdata <- NULL}
+        self$pop <- if(is.null(out$pop)){NULL}else{PM_pop$new(out$pop)}
+        self$post <- if(is.null(out$pop)){NULL}else{PM_post$new(out$post)}
+        self$final <- PM_final$new(out$final)
+        self$cycle <- PM_cycle$new(out$cycle)
+        self$op <- PM_op$new(out$op)
+        self$cov <- PM_cov$new(out$cov)
+        self$data <- PM_data$new(data = out$data, quiet = quiet) # no need to report
+        self$model <- out$model
+        self$errfile <- out$errfile
+        self$success <- out$success
+      } else if (backend == "rust"){
+        self$NPdata <- out
+        self$op <- PM_op$new(out$op)
+        self$post <- PM_post$new(out$post)
+        self$pop <- PM_pop$new(out$pop)
+        self$cycle <- PM_cycle$new(out$cycle)
+        self$final <- PM_final$new(out$final)
+      }
+      
     },
 
     #' @description

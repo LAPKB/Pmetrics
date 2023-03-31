@@ -1,5 +1,4 @@
-# This file contains internal Pmetrics utility functions
-
+#This file contains internal Pmetrics utility functions
 # BUG FIX wmy.2017.04.12 The Femke error polynomial quandry.
 #
 # wmy.2017.04.12
@@ -170,6 +169,7 @@ rmnorm <- function(n, mean, sigma) {
   retval
 }
 
+openHTML <- function(x) pander::openFileInOS(x)
 
 # parse NP_RF file only for final cycle information; used for bootstrapping
 # indpts,ab,corden,nvar,nactve,iaddl,icyctot,par
