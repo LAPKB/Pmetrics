@@ -35,6 +35,15 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
   final <- make_Final(theta_file = theta_file, toml_config_file = toml_config_file, post_file = post_file)
   cycle <- make_Cycle(cycle_file = cycle_file, toml_config_file = toml_config_file)
 
+  meta_rust <- data.table::fread(
+    input = meta_rust_file,
+    sep = ",",
+    header = TRUE,
+    data.table = FALSE,
+    dec = ".",
+    showProgress = TRUE
+  )
+
   NPcore <- list(
     op = op,
     post = post,
@@ -43,7 +52,8 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
     final = final,
     backend = "rust",
     algorithm = "NPAG",
-    numeqt = 1
+    numeqt = 1,
+    converge = meta_rust$converged
   )
 
   class(NPcore) <- "PM_result"
