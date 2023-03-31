@@ -127,6 +127,11 @@ PM_fit <- R6::R6Class("PM_fit",
     run_rust = function(...) {
       arglist <- list(...)
       cwd <- getwd()
+      # First read default values from NPrun, then modify with arglist
+      default_NPrun <- formals(NPrun)
+      arglist <- modifyList(default_NPrun, arglist)
+
+      # Create a new directory for this run
       olddir <- list.dirs(recursive = F)
       olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
       olddir <- sub("^\\./", "", olddir)
@@ -138,9 +143,7 @@ PM_fit <- R6::R6Class("PM_fit",
       dir.create(newdir)
       setwd(newdir)
 
-      # First read default values from NPrun, then modify with arglist
-      default_NPrun <- formals(NPrun)
-      arglist <- modifyList(default_NPrun, arglist)
+
 
 
       # Include or exclude subjects according to
@@ -243,7 +246,20 @@ PM_fit <- R6::R6Class("PM_fit",
 
       # check if the file exists
       file.copy(private$binary_path, "NPcore")
-      system2("./NPcore", args = "&")
+      if (arglist$intern) {
+        system2("./NPcore")
+        if (file.exists("meta_rust.csv")) {
+          # Execution ended successfully
+          PM_parse()
+          res <- PM_load(file = "NPcore.Rdata")
+          PM_report(res, outfile = "report.html", template = "ggplot_rust")
+        } else {
+          setwd(cwd)
+          stop("Error: Execution failed")
+        }
+      } else {
+        system2("./NPcore", args = "&")
+      }
       setwd(cwd)
     },
     setup_rust_execution = function() {
