@@ -214,13 +214,12 @@ PM_data <- R6::R6Class("PM_data",
         
         
       }
-
       dataObj <- dataObj %>% select(standardNames, all_of(covNames))
       if (length(msg) > 2) {
         msg <- msg[-2]
       } # data were not in standard format, so remove that message
       if(!quiet) {cat(msg)}
-
+      
       validData <- PMcheck(data = dataObj, fix = T, quiet = quiet)
       return(validData)
     } # end validate function

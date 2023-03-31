@@ -3,8 +3,17 @@
 #'
 #' @title Load Pmetrics NPAG or IT2B output
 #' @param run The numerical value of the folder number containing the run results.
-#' Run can also be the path pointing a folder containing the corresponding Rdata file
-#' This parameter is \code{1} by default.
+#' Loading results of a prior standard run in folder "1" are as 
+#' simple as `run1 <- PM_load(1)`. There is no default value for this, and if
+#' missing, Pmetrics will only search the current working directory for output files.
+#' @param file Optional name of an .Rdata file created by running the
+#' `$save` method for a [PM_result] object. For example,
+#' `run2 <- PM_load(2, "other.Rdata")` will look in the run 2 folder outputs
+#' for a file named "other.Rdata". `PM_load(file = "other.Rdata")` will look in the
+#' current working directory, since `run` is missing. If `file` is missing,
+#' Pmetrics will attempt to find a "PMout.Rdata" or the older "NPAGout.Rdata" or 
+#' "IT2Bout.Rdata" files in either the current working directory (if `run` is not
+#' specified) or the `run/outputs` folder, if `run` is provided.
 #' @param remote Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
 #' See \code{\link{NPrun}}. Currently remote runs are not configured for IT2B or the Simulator.
 #' @param server_address If missing, will use the default server address returned by getPMoptions(). 
@@ -16,7 +25,6 @@
 #' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}}, 
 #' \code{\link{makePop}}, \code{\link{makePost}}
 #' @export
-
 PM_load <- function(run = 1, remote = F, server_address) {
 
   # If Rust
@@ -43,14 +51,18 @@ PM_load <- function(run = 1, remote = F, server_address) {
     outfile <- paste(run,filename,sep="/")
   }
   
+
   
   if (remote) { #only look on server
+    if (missing(server_address)) server_address <- getPMoptions("server_address")
     status = .remoteLoad(thisrun, server_address)
     if (status == "finished") {
       result <- output2List(Out = NPAGout)
+      return(PM_result$new(result, quiet = T)) #no errors
     } else {
       sprintf("Warning: Remote run #%d has not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
         cat()
+      return(invisible(NULL))
     }
   } else if (file.exists(outfile)) { #remote F, so look locally
     # load(outfile, .GlobalEnv)
@@ -67,11 +79,48 @@ PM_load <- function(run = 1, remote = F, server_address) {
     if (file.exists(outfile)) {
       load(outfile)
       result <- output2List(Out = get("IT2Bout"))
+  } 
+  
+  #if file supplied
+  if(!missing(file)) {
+    #try in current wd
+    if(file.exists(file)){
+      found <- T
+
     } else {
-      stop(paste(outfile, " not found in ", getwd(), "/", run, "/outputs or ", getwd(), ".\n", sep = ""))
+      #nope, try in an outputs folder
+      if(!missing(run)){
+        file <- paste0(run, "/outputs/", file)
+        if(file.exists(file)){found <- T}
+      }
+    }
+  } else {
+    #didn't have file, so check for other outputs
+    if(!missing(run)){
+      file_list <- c("PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
+      for(i in file_list){
+        file <- paste0(run, "/outputs/", i)
+        if(file.exists(file)){
+          found <- T
+          break}
+      }
     }
   }
-  return(PM_result$new(result, quiet = T)) #no errors
+  
+  if(found){
+    result <- output2List(Out = get(load(file)))
+    return(PM_result$new(result, quiet = T)) #no errors
+  } else {
+    stop(paste0("No Pmetrics output file found in ", getwd(), ".\n"))
+  }
+  
+  
+  
+  
+  
+  
+  
+  
   
 }
 

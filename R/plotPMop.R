@@ -142,8 +142,6 @@ plot.PM_op <- function(x,
     if(is.null(line$ref)) {line$ref <- T}
   }
   
-  
-  
   marker <- amendMarker(marker, default = list(color = "orange"))
   lmLine <- amendLine(line$lm, default = list(color = "dodgerblue", dash = "solid"))
   loessLine <- amendLine(line$loess, default = list(color = "dodgerblue", dash = "dash"))
@@ -191,7 +189,6 @@ plot.PM_op <- function(x,
   
   
   # PLOTS -------------------------------------------------------------------
-  
   if(!resid){ #default plot
     
     #axis labels
@@ -275,7 +272,6 @@ plot.PM_op <- function(x,
     
     
   } else { #residual plot
-    
     #Y axis and point labels
     if(pred.type == "post"){
       ylab <- "Individual weighted residuals (pred - obs)"
@@ -288,22 +284,21 @@ plot.PM_op <- function(x,
     layout$yaxis$title <- amendTitle(ylab)
     #amend xaxis title later
     
-    
     #res vs. time
     p1 <- sub1 %>%
       plotly::plot_ly(x = ~time) %>%
       plotly::add_markers(y = ~wd,
-                          marker = marker,
-                          text = ~id,
-                          hovertemplate = paste0("Time: %{x:.2f}<br>",pointLab,": %{y:.2f}<br>ID: %{text}<extra></extra>"))
+                  marker = marker,
+                  text = ~id,
+                  hovertemplate = paste0("Time: %{x:.2f}<br>",pointLab,": %{y:.2f}<br>ID: %{text}<extra></extra>"))
     
     #res vs. pred
     p2 <- sub1 %>%
       plotly::plot_ly(x = ~pred) %>%
       plotly::add_markers(y = ~wd,
-                          marker = marker,
-                          text = ~id,
-                          hovertemplate = paste0("Pred: %{x:.2f}<br>",pointLab,": %{y:.2f}<br>ID: %{text}<extra></extra>"))
+                  marker = marker,
+                  text = ~id,
+                  hovertemplate = paste0("Pred: %{x:.2f}<br>",pointLab,": %{y:.2f}<br>ID: %{text}<extra></extra>"))
     
     #add reference lines
     if(lmLine$plot){
