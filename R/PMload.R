@@ -27,14 +27,24 @@
 #' @export
 
 
-PM_load <- function(run = 1, remote = F, server_address) {
+PM_load <- function(run = 1, remote = F, server_address, file) {
   # If Rust
-  npcore_out <- paste(run, "NPcore.Rdata", sep = "/")
-  if (file.exists(npcore_out)) {
-    load(npcore_out)
-    result <- get("NPcore")
-    return(PM_result$new(result, backend = "rust"))
+  if (getPMoptions()$backend == "rust") {
+    if (!missing(file) && file.exists(file)) {
+      npcore_out <- file
+    } else {
+      npcore_out <- paste(run, "NPcore.Rdata", sep = "/")
+    }
+    if (file.exists(npcore_out)) {
+      load(npcore_out)
+      result <- get("NPcore")
+      return(PM_result$new(result, backend = "rust"))
+    } else {
+      stop(paste0("No NPcore.Rdata file found in ", run, ".\n"))
+    }
   }
+
+
 
   # declare variables to avoid R CMD Check flag
   NPAGout <- NULL
