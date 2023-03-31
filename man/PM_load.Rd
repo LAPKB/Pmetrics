@@ -4,13 +4,21 @@
 \alias{PM_load}
 \title{Load Pmetrics NPAG or IT2B output}
 \usage{
-PM_load(run, file, remote = F, server_address)
+PM_load(run = 1, remote = F, server_address)
 }
 \arguments{
 \item{run}{The numerical value of the folder number containing the run results.
 Loading results of a prior standard run in folder "1" are as
 simple as \code{run1 <- PM_load(1)}. There is no default value for this, and if
 missing, Pmetrics will only search the current working directory for output files.}
+
+\item{remote}{Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
+See \code{\link{NPrun}}. Currently remote runs are not configured for IT2B or the Simulator.}
+
+\item{server_address}{If missing, will use the default server address returned by getPMoptions().
+Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
+in \code{\link{NPrun}}.}
+
 \item{file}{Optional name of an .Rdata file created by running the
 \verb{$save} method for a \link{PM_result} object. For example,
 \code{run2 <- PM_load(2, "other.Rdata")} will look in the run 2 folder outputs
@@ -19,13 +27,6 @@ current working directory, since \code{run} is missing. If \code{file} is missin
 Pmetrics will attempt to find a "PMout.Rdata" or the older "NPAGout.Rdata" or
 "IT2Bout.Rdata" files in either the current working directory (if \code{run} is not
 specified) or the \code{run/outputs} folder, if \code{run} is provided.}
-
-\item{remote}{Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
-See \code{\link{NPrun}}. Currently remote runs are not configured for IT2B or the Simulator.}
-
-\item{server_address}{If missing, will use the default server address returned by getPMoptions().
-Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
-in \code{\link{NPrun}}.}
 }
 \value{
 An R6 \code{\link{PM_result}}.
