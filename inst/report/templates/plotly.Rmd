@@ -135,80 +135,45 @@ p <- lapply(1:numeqt, function(i) {
 `r knitr::knit_child(text = unlist(p))`
 
 
-## Posterior residuals by time {.tabset .tabset-pills}
+## Prediction residuals {.tabset .tabset-pills}
 
 Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
 
-```{r}
+``` {r include = FALSE}
 
-resid_plot <- function(x, y, icen, outeq){
-  p <- res$op$data %>% 
-    filter(icen == !!icen, outeq == !!outeq, pred.type == "post") %>% # Posterior concentrations (not pop)
-    ggplot(aes(x = {{x}}, y = {{y}})) +
-    geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
-    geom_smooth(method = "loess", se = FALSE, col = "black") +
-    geom_point(pch = 21, col = "black", fill = "red") +
-    theme_classic() +
-    labs(x = ifelse(deparse(substitute(x))=="time", "Time", "Observation"), 
-         y = ifelse(deparse(substitute(y))=="d", "Prediction error", "Weighted Prediction Error"))
-  return(p)
-}
+template <- c(
+  "### Outeq {{outeq}} {.tabset .tabset-pills}\n",
+  "#### Population {.tabset .tabset-pills}\n",
+  "##### Median\n",
+  "```{r message = F}\n",
+  "res$op$plot(resid = T, icen = 'median', pred.type = 'pop', outeq = {{outeq}})\n",
+  "```\n",
+  "##### Mean\n",
+  "```{r message = F}\n",
+  "res$op$plot(resid = T, icen = 'mean', pred.type = 'pop', outeq = {{outeq}})\n",
+  "```\n",
+  "#### Posterior {.tabset .tabset-pills}\n",
+  "##### Median\n",
+  "```{r message = F}\n",
+  "res$op$plot(resid = T, icen = 'median', pred.type = 'post', outeq = {{outeq}})\n",
+  "```\n",
+  "##### Mean\n",
+  "```{r message = F}\n",
+  "res$op$plot(resid = T, icen = 'mean', pred.type = 'post', outeq = {{outeq}})\n",
+  "```\n",
+  "\n"
+)
 
-```
-
-```{r, results = "asis"}
-
-for(i in 1:res$NPdata$numeqt){
-  p1 <- resid_plot(time, d, "median", i)
-  p2 <- resid_plot(time, wd, "median", i)
-  p3 <- resid_plot(time, d, "mean", i)
-  p4 <- resid_plot(time, wd, "mean", i)
-  cat("\n")
-  cat("### Outeq ",i,"{.tabset}\n")
-  cat("\n")
-  cat("#### Median\n")
-  cat("\n\n")
-  print(p1 / p2)
-  cat("\n\n")
-  cat("#### Mean\n")
-  cat("\n\n")
-  print(p3 / p4)
-  cat("\n\n")
-}
-
+numeqt <- max(res$op$data$outeq)
+p <- lapply(1:numeqt, function(i) {
+  knitr::knit_expand(
+    outeq = i,
+    text = template)
+})
 
 ```
-
-
-## Posterior residuals by observation {.tabset}
-
-Residuals should be randomly distributed around zero, with no apparent trend.
-For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
-
-```{r, results = "asis"}
-
-for(i in 1:res$NPdata$numeqt){
-  p1 <- resid_plot(obs, d, "median", i)
-  p2 <- resid_plot(obs, wd, "median", i)
-  p3 <- resid_plot(obs, d, "mean", i)
-  p4 <- resid_plot(obs, wd, "mean", i)
-  cat("\n")
-  cat("### Outeq ",i,"{.tabset}\n")
-  cat("\n")
-  cat("#### Median\n")
-  cat("\n\n")
-  print(p1 / p2)
-  cat("\n\n")
-  cat("#### Mean\n")
-  cat("\n\n")
-  print(p3 / p4)
-  cat("\n\n")
-}
-
-
-```
-
+`r knitr::knit_child(text = unlist(p), options = list(fig.width = 10))`
 
 ## Parameter values and distributions
 
