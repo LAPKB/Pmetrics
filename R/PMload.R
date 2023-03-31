@@ -25,11 +25,33 @@
 #' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}}, 
 #' \code{\link{makePop}}, \code{\link{makePost}}
 #' @export
+PM_load <- function(run = 1, remote = F, server_address) {
 
-PM_load <- function(run, file, remote = F, server_address) {
+  # If Rust
+  npcore_out <- paste(run, "NPcore.Rdata", sep = "/")
+  if (file.exists(npcore_out)){
+    load(npcore_out)
+    result <- get("NPcore")
+    return(PM_result$new(result, backend="rust"))
+  }
   
   #declare variables to avoid R CMD Check flag
-  found <- F
+  NPAGout <- NULL
+  IT2Bout <- NULL
+  
+  
+  if (missing(server_address)) server_address <- getPMoptions("server_address")
+  
+  
+  #check for NPAG output file
+  filename <- "NPAGout.Rdata"
+  if (is.numeric(run)){
+    outfile <- paste(run, "outputs", filename, sep = "/")
+  } else {
+    outfile <- paste(run,filename,sep="/")
+  }
+  
+
   
   if (remote) { #only look on server
     if (missing(server_address)) server_address <- getPMoptions("server_address")
@@ -42,6 +64,21 @@ PM_load <- function(run, file, remote = F, server_address) {
         cat()
       return(invisible(NULL))
     }
+  } else if (file.exists(outfile)) { #remote F, so look locally
+    # load(outfile, .GlobalEnv)
+    load(outfile)
+    result <- output2List(Out = get("NPAGout"))
+  } else {
+    #check for IT2B output file
+    filename <- "IT2Bout.Rdata"
+    if (is.numeric(run)){
+      outfile <- paste(run, "outputs", filename, sep = "/")
+    } else {
+      outfile <- paste(run,filename,sep="/")
+    }
+    if (file.exists(outfile)) {
+      load(outfile)
+      result <- output2List(Out = get("IT2Bout"))
   } 
   
   #if file supplied
@@ -49,6 +86,7 @@ PM_load <- function(run, file, remote = F, server_address) {
     #try in current wd
     if(file.exists(file)){
       found <- T
+
     } else {
       #nope, try in an outputs folder
       if(!missing(run)){

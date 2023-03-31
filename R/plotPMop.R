@@ -141,8 +141,6 @@ plot.PM_op <- function(x,
     if(is.null(line$loess)) {line$loess <- T}
     if(is.null(line$ref)) {line$ref <- T}
   }
-
-  
   
   marker <- amendMarker(marker, default = list(color = "orange"))
   lmLine <- amendLine(line$lm, default = list(color = "dodgerblue", dash = "solid"))
@@ -191,7 +189,6 @@ plot.PM_op <- function(x,
   
   
   # PLOTS -------------------------------------------------------------------
-
   if(!resid){ #default plot
     
     #axis labels
@@ -275,7 +272,6 @@ plot.PM_op <- function(x,
     
     
   } else { #residual plot
-
     #Y axis and point labels
     if(pred.type == "post"){
       ylab <- "Individual weighted residuals (pred - obs)"
@@ -287,7 +283,6 @@ plot.PM_op <- function(x,
     
     layout$yaxis$title <- amendTitle(ylab)
     #amend xaxis title later
-
     
     #res vs. time
     p1 <- sub1 %>%

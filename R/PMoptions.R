@@ -57,11 +57,16 @@ getPMoptions <- function(opt, warn = T) {
 #' Default is `FALSE`, but could either be set to `TRUE` for default format or a list of format options.
 #' The default format when set to `TRUE` is
 #' `list(x= 0.4, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 8))`
+#' @param backend Name of compiler to use. Default is "fortran" (for now) but can be "rust" to use rust compiler.
+#' Currently, only NPAG is available in rust.
+#' @param rust_template Only used if `backend` is set to "rust".
+#' @param report_template Format of the plots included in the summary report presented at the end of a run.
+#' Default is to use "plotly", but can be set to "ggplot".
 #' @return The user preferences file will be updated.  This will persist from session to session.
 #' @author Michael Neely
 #' @export
 
-setPMoptions <- function(sep, dec, server_address, compilation_statements, op_stats) {
+setPMoptions <- function(sep, dec, server_address, compilation_statements, op_stats, backend, rust_template, report_template) {
   # read old values first
   PMopts <- getPMoptions(warn = F)
   
@@ -83,8 +88,12 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements, op_st
       sprintf("%s -march=native -w -fopenmp -fmax-stack-var-size=32768 -O3 -o <exec> <files>", gfortran_command)
     ),
     server_address = "http://localhost:5000",
-    op_stats = T
+    op_stats = T,
+    backend = "fortran",
+    rust_template = NULL,
+    report_template = "plotly"
   )
+
   
   #missing so create
   if (PMopts[[1]] == -1) { 
@@ -97,7 +106,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements, op_st
   }
   
   #add missing defaults
-  PMopts <- modifyList(PMopts, defaultOpts)
+  PMopts <- modifyList(defaultOpts,PMopts)
   
   #update user values
   if (!missing(sep)) PMopts$sep <- sep
@@ -112,7 +121,9 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements, op_st
   }
   if (!missing(server_address)) PMopts$server_address <- server_address
   if (!missing(op_stats)) PMopts$op_stats <- op_stats
-  
+  if (!missing(backend)) PMopts$backend <- backend
+  if (!missing(rust_template)) PMopts$rust_template <- rust_template
+  if (!missing(report_template)) PMopts$report_template <- report_template
   
   # set the options
   options(PMopts)

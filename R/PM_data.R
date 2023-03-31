@@ -39,6 +39,7 @@ PM_data <- R6::R6Class("PM_data",
     #' Creation of a new `PM_data` objects from a file or
     #' a data frame. Data will be standardized and checked
     #' automatically to a fully specified, valid data object.
+    #' @param ... Arguments to be passed further
     #' @param data A quoted name of a file with full path if not
     #' in the working directory, or an unquoted name of a data frame
     #' in the current R environment.
@@ -73,8 +74,9 @@ PM_data <- R6::R6Class("PM_data",
     #' @param file_name A quoted name of the file to create 
     #' with full path if not
     #' in the working directory.
-    write = function(file_name) {
-      PMwriteMatrix(self$standard_data, file_name)
+    #' @param ... ARguments passed to PMwriteMatrix
+    write = function(file_name, ...) {
+      PMwriteMatrix(self$standard_data, file_name, ...)
     },
     #' @description
     #' Perform non-compartmental analysis
@@ -212,7 +214,6 @@ PM_data <- R6::R6Class("PM_data",
         
         
       }
-      
       dataObj <- dataObj %>% select(standardNames, all_of(covNames))
       if (length(msg) > 2) {
         msg <- msg[-2]

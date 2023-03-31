@@ -103,7 +103,7 @@ new validation results.}
 \subsection{Method \code{new()}}{
 Create new object populated with data from previous run
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$new(out, quiet = T)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$new(out, quiet = T, backend = "fortran")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -112,6 +112,8 @@ Create new object populated with data from previous run
 \item{\code{out}}{The parsed output from \link{PM_load}.}
 
 \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
+
+\item{\code{backend}}{Should the backend use Fortran ("fortran", default) or Rust ("rust")}
 }
 \if{html}{\out{</div>}}
 }
