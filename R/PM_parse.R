@@ -11,6 +11,8 @@
 #' \item{cycles }{Written to the standard of PM_cycle}
 #'
 #' @seealso \code{\link{NPparse}}
+#' @import dplyr
+#' @import tidyr
 #' @importFrom data.table fread
 #' @importFrom dplyr select rename mutate relocate left_join case_when first across
 #' @importFrom tidyr pivot_longer separate_wider_delim
@@ -21,7 +23,6 @@
 PM_parse <- function(wd = getwd(), write = TRUE) {
   pred_file <- paste(wd, "pred.csv", sep = "/")
   obs_file <- paste(wd, "obs.csv", sep = "/")
-  # meta_r_file <- paste(wd, "meta_r.csv", sep = "/")
   meta_rust_file <- paste(wd, "meta_rust.csv", sep = "/")
   toml_config_file <- paste(wd, "config.toml", sep = "/")
   cycle_file <- paste(wd, "cycles.csv", sep = "/")
@@ -42,12 +43,16 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
     final = final,
     backend = "rust",
     algorithm = "NPAG",
-    numeqt = 1 # Fixed
+    NPdata = list(
+      numeqt = 1
+    )
   )
+  
+  class(NPcore) = "PM_result"
 
   if (write) {
     save(NPcore, file = "NPcore.Rdata")
-    return()
+    return(invisible(NPcore))
   }
 
   return(NPcore)
@@ -100,7 +105,9 @@ make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
     mutate(d = pred - obs) %>%
     mutate(ds = d * d) %>%
     # Hardcoded for now
-    mutate(block = 1)
+    mutate(block = 1,
+           wd = d,
+           wds = d)
 
   class(op) <- c("PMop", "data.frame")
   return(op)
@@ -198,7 +205,7 @@ make_Final <- function(theta_file = "theta.csv", toml_config_file = "config.toml
   #   mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number)) %>%
   #   pull(parameter)
 
-  par_names <- parseTOML(toml_config_file)$random %>% names()
+  par_names <- RcppTOML::parseTOML(toml_config_file)$random %>% names()
 
   par_names <- c(par_names, "prob")
 
@@ -272,11 +279,11 @@ make_Final <- function(theta_file = "theta.csv", toml_config_file = "config.toml
   #   as.matrix()
 
   # ab <- unname(ab)
-  ab <- parseTOML(toml_config_file)$random %>%
+  ab <- RcppTOML::parseTOML(toml_config_file)$random %>%
     unlist() %>%
     matrix(ncol = 2, byrow = T)
 
-  gridpts <- parseTOML(toml_config_file)$config$init_points
+  gridpts <- RcppTOML::parseTOML(toml_config_file)$config$init_points
 
   final <- list(
     popPoints = theta,
@@ -323,7 +330,7 @@ make_Cycle <- function(cycle_file = "cycles.csv", toml_config_file = "config.tom
   #   pivot_longer(cols = everything(), values_to = "parameter", names_to = "param_number") %>%
   #   mutate(param_number = gsub(pattern = ".name", replacement = "", x = param_number))
 
-  par_names <- parseTOML(toml_config_file)$random %>% names()
+  par_names <- RcppTOML::parseTOML(toml_config_file)$random %>% names()
 
   # Fix parameter names
   # cycle_data <- raw %>%
