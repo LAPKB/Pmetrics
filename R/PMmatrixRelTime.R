@@ -73,9 +73,11 @@ PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCo
                    error = function(e) e)
     found_format <- get_dt_format(dt_formats)
   }
-  if(all(is.na(dt))){stop("Dates/times failed to parse. Please specify correct format. ")}
+  
+  if(all(is.na(dt))){stop("All dates/times failed to parse. Please specify correct format. ")}
 
-  temp$dt <- dt #didn't have to stop, so parsed
+  
+  temp$dt <- dt #didn't have to stop, so at least some parsed
   
   if(split){
     #calculate PK event numbers for each patient
@@ -94,15 +96,10 @@ PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCo
     
   }
   
-  temp$relTime <- 0
-  reset <- which(temp$evid==4)
-  new <- which(!duplicated(temp$id))
-  reset <- c(reset,nrow(temp),new)
-  reset <- sort(reset)
-  for (i in 1:(length(reset)-1)){
-    temp$relTime[reset[i]:reset[i+1]] <- (temp$dt[reset[i]:reset[i+1]] - temp$dt[reset[i]])/lubridate::dhours(1)
-  }
-  
+  #calculate relative times
+  temp <- Pmetrics:::makePMmatrixBlock(temp) %>% dplyr::group_by(id, block) %>%
+    dplyr::mutate(relTime = (dt - dt[1])/lubridate::dhours(1))
+ 
   temp$relTime <- round(temp$relTime,2) 
   temp <- temp[,c("id","evid","relTime")]
   attr(temp,"dt_format") <- found_format
