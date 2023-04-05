@@ -135,8 +135,8 @@ PM_data <- R6::R6Class("PM_data",
     }
   ), # end public
   private = list(
-    # dataObj = NULL,
     validate = function(dataObj, quiet, dt) {
+      dataObj_orig <- dataObj #keep the original to pass to PMcheck
       dataNames <- names(dataObj)
       standardNames <- getFixedColNames()
 
@@ -225,7 +225,7 @@ PM_data <- R6::R6Class("PM_data",
         cat(msg)
       }
 
-      validData <- PMcheck(data = dataObj, fix = T, quiet = quiet)
+      validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = T, quiet = quiet)
       return(validData)
     } # end validate function
   ) # end private
