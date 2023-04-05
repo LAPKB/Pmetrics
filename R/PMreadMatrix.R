@@ -1,54 +1,42 @@
-#' \code{PMreadMatrix} reads an NPAG .csv matrix input file into R.
+#' Reads a Pmetrics .csv matrix input file into R.
 #'
-#' The structure of a valid .csv file is fairly rigid.  See \code{\link{PMcheckMatrix}}
-#'  for details.  Note that \code{PMreadMatrix} converts the column headers in the
-#'  \code{matrixfile} from upper to lowercase for convenient referencing in R.
+#' As of Pmetrics version 2, the structure of a valid .csv file has relaxed.  
+#' Minimal required columns are id, time, dose, and out. This function is now included
+#' as part of the [PM_data] R6 object to create new `PM_data` objects. Users should
+#' rarely have a need to call `PMreadMatrix` as a standalone function unless they
+#' continue to use Pmetrics in its legacy mode (versions < 2.0). Note that support 
+#' for legacy Pmetrics will eventually wither as the package evolves.
+#' 
+#' There are a number of other options for columns in the data input.  Details can
+#' be found in the [documentation](https://lapkb.github.io/Pmetrics/articles/data.html).
 #'
-#' @title Read a Pmetrics .csv Matrix Input File
+#' @title Read a Pmetrics data file
 #' @param file The name of the file to be loaded, including the full path if not
-#'  in the current working directory (check with \code{\link{getwd}}).
-#' @param skip Skip \emph{n} lines, with default set to 0.
+#'  in the current working directory (check with [getwd]).
 #' @param sep Delimiter between columns, which is a comma by default, but can be changed with
-#' \code{\link{setPMoptions}}.
+#' [setPMoptions].
 #' @param dec Decimal separator, which is a period by default, but can be changed with
-#' \code{\link{setPMoptions}}.
-#' @param date_format Format for any dates. Default is set as year month day, with flexible separator.
-#' See \code{\link{parse_date}} in the readr package for more information on formatting dates.
-#' #' @param time_format Format for any clock times. Default is set as hours:minutes.
-#' See \code{\link{parse_date}} in the readr package for more information on formatting times.
-#' @param quiet Default is \emph{false}.  If \emph{true}, there will be no report to
+#' [setPMoptions].
+#' @param quiet Default is `FALSE`.  If `TRUE`, there will be no report to
 #'  the console on the contents of file.
-#' @param \dots Other parameters to be passed to \code{\link{read.table}}
-#' @return \code{PMreadMatrix} returns a data.frame of class \dQuote{PMmatrix} with one row per
-#'  event and the following columns.  
-#'  \item{id }{The id value for each event.}
-#'  \item{evid }{The evid value for each event, with 0=observation, 1=dose, 4=dose reset, which resets the time to 0 and all compartment amounts to 0.  Note that evid=2 and 3 are not currently implemented.}
-#'  \item{time }{Relative time of the event in hours.}
-#'  \item{dur }{Duration of the dose.  If dose is instantaneous, e.g. an oral dose into an absorptive compartment, \code{dur} should be 0.  Any values greater than 0 are interpreted to mean a constant infusion of that duration, equalling the \code{dose}.}
-#'  \item{dose }{The dose.  Be sure that the units are consistent with \code{out}.}
-#'  \item{addl }{Optional number of additional doses to add at an interval specified in \emph{ii}.  The default if missing is 0.  A value of -1
-#'  will cause steady state conditions to be approximated.  Any value for \emph{addl} other than 0 or missing requires input in \emph{ii}.}
-#'  \item{ii }{The interdose interval for \emph{addl} doses or dosing at steady state.}
-#'  \item{input }{The input number corresponding to \code{dose}.}
-#'  \item{out }{The measured output, equivalent to \dQuote{DV} in some other PK modeling software tools.}
-#'  \item{outeq }{The number of the output equation specified in the model file which corresponds to the \code{out} value.}
-#'  \item{C0 }{Assay error polynomial coefficient, e.g. SD = C0 + C1*obs + C2*obs^2 + C3*obs^3}
-#'  \item{C1 }{See \code{C0}}
-#'  \item{C2 }{See \code{C0}}
-#'  \item{C3 }{See \code{C0}}
-#'  \item{\dots }{Additional columns are interpreted to be covariates.}
-#'  If the file is successfully read and \code{quiet}=F,
-#'  the column headers of the scanned file will be reported to the console as a validation check.
+#' @param \dots Other parameters to be passed to [readr::read_delim()]
+#' @return `PMreadMatrix` returns a data frame of class "PMmatrix". 
+#'  If the file is successfully read and `quiet=F`,
+#'  the column headers will be reported to the console as a validation check.
+#'  Note that this function converts the column headers in the
+#'  `file` from upper to lowercase for convenient referencing in R.
+#
 #' @author Michael Neely 
-#' @seealso \code{\link{PMwriteMatrix}}, \code{\link{PMcheckMatrix}}, and \code{\link{plot.PMmatrix}}
+#' @seealso [PMwriteMatrix], [PMcheck], and [plot.PM_data]
 
 
-PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("dec"),
-                         date_format = "%AD",
-                         time_format = "%AT", quiet=F,...){
-#get data
+PMreadMatrix <- function(file,
+                         sep = getPMoptions("sep"),
+                         dec = getPMoptions("dec"),
+                         quiet = F,...){
+  #get data
   if (missing(file)){
-    warning("Please provide filename of Pmetrics block input file.\n")
+    warning("Please provide filename of Pmetrics data file.\n")
     return(invisible())
   }
   if (!file.exists(file)){
@@ -56,43 +44,47 @@ PMreadMatrix <- function(file,skip=1,sep=getPMoptions("sep"),dec=getPMoptions("d
     return(invisible(NULL))
   }
   
+  #read the first line to understand the format
   headers <- scan(file, what = "character", quiet = T, nlines = 1, 
                   sep = sep, dec = dec, strip.white = T) 
   if(grepl(",",headers)[1]){stop("Your .csv delimiter is not a comma. Use setPMoptions(sep = \";\"), for example.")}
   headers <- headers[headers !=""]
-  popdata_format <- grep("POPDATA .*", headers)
+  skip <- ifelse(grepl("POPDATA .*", headers[1]), 1, 0) #0 if current, 1 if legacy
+
   
-  if(length( popdata_format > 0)){
-    #format with POPDATA header
-    skip <- 1
+  
+  args1 <- list(file = file, delim = sep, col_names = T, na=".", 
+               locale = readr::locale(decimal_mark = dec),
+               skip = skip, show_col_types = F, progress = F, num_threads = 1)
+  args2 <- list(...)
+  
+  args <- modifyList(args1, args2)
+
+  if(quiet){
+    data <- suppressWarnings(rlang::exec(readr::read_delim, !!!args))
   } else {
-    #without POPDATA header
-    skip <- 0
+    data <- rlang::exec(readr::read_delim, !!!args)
   }
   
-  data <- readr::read_delim(file, delim = sep, col_names = T, na=".", 
-                            locale = readr::locale(decimal_mark = dec, date_format = date_format, time_format = time_format),
-                            skip = skip, show_col_types = F, progress = F, num_threads = 1)
-  names(data)[1] <- "id"
-  names(data) <- tolower(names(data))
-  
-  #check for decimals
-  decimals <- purrr::map(data, stringr::str_locate,dec)$out
-  if(all(is.na(decimals))) cat("WARNING: No decimal separators detected in your file.\nCheck your data and if needed, use setPMoptions(dec = \",\"), for example.\n")
-
-  #remove commented lines
-  comments <- grep("#",data$id)
+  #remove commented headers and lines
+  if(grepl("#",names(data)[1])){
+    names(data)[1] <- sub("#","",names(data)[1])
+  }
+  comments <- grep("#",t(data[,1]))
   if(length(comments) > 0){
     data <- data[-comments, ]
   }
   
+  names(data) <- tolower(names(data))
+  
   if(!quiet){
     cat(paste("The file",sQuote(file),"contains these columns:\n",sep=" "))
-    cat(names(data))
+    cat(paste(names(data), collapse = ", "))
     cat("\n")
   }
   
+  attr(data,"legacy") <- ifelse(skip == 1, T, F) #if skip = 1, set attribute to TRUE
   class(data) <- c("PMmatrix","data.frame")
   return(data)
- }
+}
 
