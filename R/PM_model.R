@@ -637,29 +637,30 @@ PM_model_list <- R6::R6Class("PM_model_list",
           )
         }
       } else if (private$lower3(key) == "dif") {
-        names <- names(block)
+        # names <- names(block)
         for (i in 1:length(block)) {
-          key <- toupper(names[i])
+          # key <- toupper(names[i])
           lines <- append(
             lines,
-            if (is.null(names[i]) || nchar(names[i]) == 0) { # not named list
-              # grab right side of equation if there
-              rhs <- stringr::str_split(block[[i]][1], "=")[[1]][2]
-              if (!is.na(rhs)) {
-                rhs <- stringr::str_replace_all(rhs, " ", "")
-              } else { # no "=" detected
-                stop(sprintf("Error: No differential equation(s) detected for: %s", block[[i]][1]))
-              }
-              lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
-              eqn <- stringr::str_extract(lhs, "\\d+")
-              if (is.na(eqn)) { # no number in lhs
-                stop(sprintf("Error: No differential equation number detected for: %s", block[[i]][1]))
-              }
-              sprintf("XP(%s) = %s", eqn, rhs)
-            } else { # named list
-              eqn <- stringr::str_extract(names[i], "\\d+") # standardize
-              sprintf("XP(%s) = %s", eqn, block[[i]][1])
-            }
+            block[[i]]
+            # if (is.null(names[i]) || nchar(names[i]) == 0) { # not named list
+            #   # grab right side of equation if there
+            #   rhs <- stringr::str_split(block[[i]][1], "=")[[1]][2]
+            #   if (!is.na(rhs)) {
+            #     rhs <- stringr::str_replace_all(rhs, " ", "")
+            #   } else { # no "=" detected
+            #     stop(sprintf("Error: No differential equation(s) detected for: %s", block[[i]][1]))
+            #   }
+            #   lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
+            #   eqn <- stringr::str_extract(lhs, "\\d+")
+            #   if (is.na(eqn)) { # no number in lhs
+            #     stop(sprintf("Error: No differential equation number detected for: %s", block[[i]][1]))
+            #   }
+            #   sprintf("XP(%s) = %s", eqn, rhs)
+            # } else { # named list
+            #   eqn <- stringr::str_extract(names[i], "\\d+") # standardize
+            #   sprintf("XP(%s) = %s", eqn, block[[i]][1])
+            # }
           )
         }
       } else if (private$lower3(key) == "out") {

@@ -53,7 +53,7 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
 
   if (missing(server_address)) server_address <- getPMoptions("server_address")
 
-
+  found <- FALSE
   # check for NPAG output file
   filename <- "NPAGout.Rdata"
   if (is.numeric(run)) {
