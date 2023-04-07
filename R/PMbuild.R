@@ -8,7 +8,7 @@
 
 
 PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
-  if(getPMoptions()$backend == "fortran"){
+  if (getPMoptions()$backend == "fortran") {
     if (.check_and_install_gfortran(skipRegistration, autoyes)) {
       currwd <- getwd()
       OS <- getOS()
@@ -107,19 +107,19 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
       writeLines("0", fort) # reset to zero
       setwd(currwd)
     }
-  } else if (getPMoptions()$backend == "rust"){
-    if (is_rustup_installed()){
+  } else if (getPMoptions()$backend == "rust") {
+    if (is_rustup_installed()) {
       cat("Rustup was detected in your system, Ferching dependencies and building base project.\n")
       system("rustup install nightly")
       system("rustup default nightly")
-      cwd<-getwd()
-      #This might not work if the folder is deleted afther the R Session is closed
+      cwd <- getwd()
+      # This might not work if the folder is deleted afther the R Session is closed
       # If that is the case, we should create a folder inside the Pmetrics Package folder
-      setwd(system.file("Rust",package="Pmetrics"))
+      setwd(system.file("Rust", package = "Pmetrics"))
       system("cargo new template")
       setwd("template")
       # system("cd template")
-      system("cargo add --git https://github.com/Siel/ode-solvers")
+      system("cargo add --git https://github.com/Siel/ode-solvers --branch mut_state")
       system("cargo add --git https://github.com/LAPKB/NPcore")
       system("cargo add eyre")
       system("cargo build --release")
@@ -134,8 +134,6 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
   } else {
     cat("\nError: Non-supported backend\n")
   }
-
-  
 }
 
 .check_and_install_gfortran <- function(skipRegistration, autoyes) {
@@ -195,9 +193,9 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
   }
 }
 
-is_rustup_installed <- function(){
+is_rustup_installed <- function() {
   flag <- system("which rustup")
-  if (flag == 0){
+  if (flag == 0) {
     return(T)
   } else {
     return(F)

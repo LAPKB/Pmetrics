@@ -1,4 +1,3 @@
-
 .PMrun <- function(type, model, data, run,
                    include, exclude, ode, tol, salt, cycles,
                    indpts, icen, aucint,
@@ -182,7 +181,7 @@
       }
       # prior is a file_name
       if (is.character(prior)) {
-        priorDEN <- Sys.glob(paste0(currwd,"/",prior))[1]
+        priorDEN <- Sys.glob(paste0(currwd, "/", prior))[1]
         if (length(priorDEN) > 0) {
           file.copy(from = priorDEN, to = paste(getwd(), "/prior.txt", sep = ""))
           prior <- "prior.txt"
@@ -305,37 +304,41 @@
     ), full.names = T
   )))
 
-# CR Hessian fix required NPAG links to a patch file ... replace this w/block below
-#  enginefiles <- shQuote(normalizePath(list.files(fortSource,
-#    pattern = switch(type,
-#      NPAG = paste(prefix, "NPeng", sep = ""),
-#      IT2B = "sITeng",
-#      ERR = "sITerr"
-#    ), full.names = T
-#  )))
-# OBFUSCATED CODE:
-# enginefiles <- shQuote(normalizePath(list.files(fortSource,
-#   pattern = switch(type, NPAG = paste(prefix, "NPeng", sep = ""), IT2B = "sITeng", ERR = "sITerr"), full.names = T)))
-# if NPAG, then we need to add NPpatch to enginefiles
+  # CR Hessian fix required NPAG links to a patch file ... replace this w/block below
+  #  enginefiles <- shQuote(normalizePath(list.files(fortSource,
+  #    pattern = switch(type,
+  #      NPAG = paste(prefix, "NPeng", sep = ""),
+  #      IT2B = "sITeng",
+  #      ERR = "sITerr"
+  #    ), full.names = T
+  #  )))
+  # OBFUSCATED CODE:
+  # enginefiles <- shQuote(normalizePath(list.files(fortSource,
+  #   pattern = switch(type, NPAG = paste(prefix, "NPeng", sep = ""), IT2B = "sITeng", ERR = "sITerr"), full.names = T)))
+  # if NPAG, then we need to add NPpatch to enginefiles
   if (type == "NPAG") {
-     if (parallel) {
-        enginefiles <- paste(fortSource,"/pNPpatch_120.o "
-           , fortSource,"/pNPeng.o", sep = "")  
-     } else {
-        enginefiles <- paste(fortSource,"/sNPpatch_120.o "
-           , fortSource,"/sNPeng.o", sep = "")  
-     }
+    if (parallel) {
+      enginefiles <- paste(fortSource, "/pNPpatch_120.o ",
+        fortSource, "/pNPeng.o",
+        sep = ""
+      )
+    } else {
+      enginefiles <- paste(fortSource, "/sNPpatch_120.o ",
+        fortSource, "/sNPeng.o",
+        sep = ""
+      )
+    }
   } else if (type == "IT2B") { # same command as before
     enginefiles <- shQuote(normalizePath(list.files(fortSource,
       pattern = switch(type,
         IT2B = "sITeng",
-         ERR = "sITerr"
-       ), full.names = T
-      )))
+        ERR = "sITerr"
+      ), full.names = T
+    )))
   } else {
-     print(paste("Cannot create enginefiles for run type = ", type, sep = ""))
+    print(paste("Cannot create enginefiles for run type = ", type, sep = ""))
   }
-# ------------------------
+  # ------------------------
 
   # generate names of files that will be created
   prepFileName <- switch(type,
@@ -501,13 +504,14 @@
 
     # move output files
     for (i in 1:6) {
-      PMscript[getNext(PMscript)] <- paste(c(
-        paste("if [ -f ", outlist[i], " ]; then mv ", sep = ""),
-        paste("if exist ", outlist[i], " move ", sep = ""),
-        paste("if [ -f ", outlist[i], " ]; then mv ", sep = "")
-      )[OS],
-      outlist[i], " ", c("outputs; fi", "outputs", "outputs; fi")[OS],
-      sep = ""
+      PMscript[getNext(PMscript)] <- paste(
+        c(
+          paste("if [ -f ", outlist[i], " ]; then mv ", sep = ""),
+          paste("if exist ", outlist[i], " move ", sep = ""),
+          paste("if [ -f ", outlist[i], " ]; then mv ", sep = "")
+        )[OS],
+        outlist[i], " ", c("outputs; fi", "outputs", "outputs; fi")[OS],
+        sep = ""
       )
     }
     # if error file exists
@@ -583,33 +587,33 @@
     PMscript[getNext(PMscript)] <- c("if ! $error ; then ", "if %error% == 0 (", "if ! $error ; then ")[OS]
 
 
-  
+
     PMscript[getNext(PMscript)] <- c(
-          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
-          paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript", sep = "")), " ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
-          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
-        )[OS]
+      paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
+      paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript", sep = "")), " ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
+      paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
+    )[OS]
     if (report) {
       if (alq) {
         PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
       } else {
         PMscript[getNext(PMscript)] <- c(
-          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('pander::openFileInOS(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = ""),
+          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0("pander::openFileInOS(", shQuote(paste0(gsub("/", rep, outpath), "/", type, "report.html")), ")")), " ; fi", sep = ""),
           # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('pander::openFileInOS(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
           paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
-          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0('pander::openFileInOS(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ; fi", sep = "")
+          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0("pander::openFileInOS(", shQuote(paste0(gsub("/", rep, outpath), "/", type, "report.html")), ")")), " ; fi", sep = "")
         )[OS]
-      #   PMscript[getNext(PMscript)] <- 
-      #   c(
-      #     paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
-      #     paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
-      #     paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
-      #   )[OS]
+        #   PMscript[getNext(PMscript)] <-
+        #   c(
+        #     paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
+        #     paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
+        #     paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
+        #   )[OS]
       }
-    } else { #close if statement if report = F
+    } else { # close if statement if report = F
       PMscript[getNext(PMscript)] <- c("fi", "", "fi")[OS]
     }
-    
+
     # final clean up
     if (OS == 1 | OS == 3) {
       # for Mac or Linux
@@ -632,11 +636,13 @@
     if (OS == 1) {
       # Mac
       system(paste("chmod +x ", scriptFileName))
-      if(compareVersion("22.0.0",Sys.info()[2])<=0){ #running Ventura
-        if(!file.exists("/Applications/iTerm.app")){
-          message <- paste("As of Ventura, there is a bug that prevents running a script in Terminal.\n",
-          "Suggested workarounds: 1) use `intern = T` when running NPAG/IT2B\n",
-          "or 2) download iTerm2 from https://iterm2.com, which permits use of `intern = F`.")
+      if (compareVersion("22.0.0", Sys.info()[2]) <= 0) { # running Ventura
+        if (!file.exists("/Applications/iTerm.app")) {
+          message <- paste(
+            "As of Ventura, there is a bug that prevents running a script in Terminal.\n",
+            "Suggested workarounds: 1) use `intern = T` when running NPAG/IT2B\n",
+            "or 2) download iTerm2 from https://iterm2.com, which permits use of `intern = F`."
+          )
           endNicely(message = message)
         } else {
           if (!batch) system(paste("open -a iTerm.app ", shQuote(paste(getwd(), "/", scriptFileName, sep = "")), sep = ""))
@@ -659,7 +665,7 @@
       # if (!batch) system(paste("openvt ", shQuote(paste(getwd(), "./", scriptFileName, sep = "")), sep = ""))
       system(paste0("./", scriptFileName, " &"))
     }
-    
+
     setwd(currwd)
     return(outpath)
   } else {
@@ -830,8 +836,8 @@
     if (type == "NPAG" || type == "IT2B") {
       reportType <- which(c("NPAG", "IT2B") == type)
       makeRdata(paste(currwd, newdir, "outputs", sep = "/"), F, reportType)
-      res <- PM_load(paste(currwd, newdir, "outputs", sep = "/"))
-      PM_report(res,outfile = paste(currwd, newdir, "outputs/NPreport.html", sep = "/"))
+      res <- PM_load(file = paste(currwd, newdir, "outputs", "PMout.Rdata", sep = "/"))
+      PM_report(res, outfile = "NPreport.html")
       setwd(currwd)
       return(res)
       # PMreport(paste(currwd, newdir, "outputs", sep = "/"), icen = icen, type = type, parallel = parallel)
@@ -846,7 +852,9 @@
     # file.remove(Sys.glob("*.*"))
     # system("mv *.* inputs/")
     # outpath <- paste(currwd, newdir, "outputs", sep = "/")
-    if(report){pander::openFileInOS(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))}
+    if (report) {
+      pander::openFileInOS(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))
+    }
     return(outpath)
   }
 }
