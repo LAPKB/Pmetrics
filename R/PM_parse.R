@@ -15,7 +15,6 @@
 #' @import tidyr
 #' @importFrom data.table fread
 #' @importFrom dplyr select rename mutate relocate left_join case_when first across
-#' @importFrom tidyr pivot_longer separate_wider_delim
 #' @importFrom RcppTOML parseTOML
 #' @importFrom matrixStats weightedMedian
 #' @export
