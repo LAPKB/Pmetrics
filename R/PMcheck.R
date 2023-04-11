@@ -387,7 +387,7 @@ errcheck <- function(data2, model, quiet = quiet) {
   
   #check for columns with malformed NA values
   mal_NA <- purrr::map(as.list(data2), ~stringr::str_count(.x,"(?<!\\d)\\s*\\.+\\s*")) %>%
-    map(~which(.x==1)) %>% map_vec(~length(.x)>0) %>% which()
+    map(~which(.x==1)) %>% purrr::map_vec(~length(.x)>0) %>% which()
   if (length(mal_NA)>0){
     err$mal_NA$msg <- "FAIL - The following columns contain malformed NA values."
     err$mal_NA$results <- mal_NA
@@ -659,7 +659,7 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet){
       #find the malformed NAs as a special case and remove them (separate error below)
       #because openxlsx can't overwrite comments
       mal_NA <- stringr::str_count(dplyr::pull(dat, colIndex),"(?<!\\d)\\s*\\.+\\s*") %>%
-        map(~which(.x==1)) %>% map_vec(~length(.x)>0) %>% which() + 1 + legacy_offset
+        map(~which(.x==1)) %>% purrr::map_vec(~length(.x)>0) %>% which() + 1 + legacy_offset
       #remove any mal_NA from non-numeric
       rowIndex2 <- rowIndex2[!rowIndex2 %in% mal_NA]
       #highlight them if any left
@@ -679,7 +679,7 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet){
       #malformed NA
       colIndex <- thisErr$row #because of the way the error is detected 
       rowIndex3 <- stringr::str_count(dplyr::pull(dat, colIndex),"(?<!\\d)\\s*\\.+\\s*") %>%
-        map(~which(.x==1)) %>% map_vec(~length(.x)>0) %>% which() + 1 + legacy_offset
+        map(~which(.x==1)) %>% purrr::map_vec(~length(.x)>0) %>% which() + 1 + legacy_offset
       #highlight them
       openxlsx::addStyle(wb, sheet, errStyle3, rows = rowIndex3, cols = colIndex)
       purrr::walk2(colIndex, rowIndex3, ~openxlsx::writeComment(wb, sheet, col = .x, row = .y, 
