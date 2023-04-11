@@ -186,7 +186,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
 
   for (thisrun in allruns) {
     # check for NPAG output file
-    filename <- "NPAGout.Rdata"
+    filename <- "PMout.Rdata"
     outfile <- paste(thisrun, "outputs", filename, sep = "/")
 
     if (remote) { # only look on server
