@@ -403,8 +403,8 @@ plot.PM_op <- function(x,
 #' @param col This parameter will be applied to the plotting symbol and is \dQuote{red} by default.
 #' @param xlim Limits of the x-axis as a vector, e.g. \code{c(0,1)}.  It does not need to be specified, but can be.
 #' @param ylim Analogous to \code{xlim}
-#' @param xlab Label for the x-axis.  If missing, will default to \dQuote{Observed}.
-#' @param ylab Label for the y-axis.  If missing, will default to \dQuote{Predicted}.
+#' @param xlab Label for the x-axis.  If missing, will default to \dQuote{Predicted}.
+#' @param ylab Label for the y-axis.  If missing, will default to \dQuote{Observed}.
 #' @param out Direct output to a PDF, EPS or image file.  Format is a named list whose first argument, 
 #' \code{type} is one of the following character vectors: \dQuote{pdf}, \dQuote{eps} (maps to \code{postscript}),
 #' \dQuote{\code{png}}, \dQuote{\code{tiff}}, \dQuote{\code{jpeg}}, or \dQuote{\code{bmp}}.  Other named items in the list
