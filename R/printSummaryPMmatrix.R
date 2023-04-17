@@ -30,7 +30,7 @@ print.summary.PMmatrix <- function(x,...){
   cat(paste("Number of inputs:",x$ndrug,"\n"))
   cat(paste("Number of outputs:",x$numeqt,"\n"))
   for(i in 1:x$numeqt){
-    cat(paste("Total number of observations (outeq ",i,"): ",x$nobsXouteq[i],", with ",x$missObsXouteq[i]," (",sprintf("%.3f",x$missObsXouteq[i]/x$nobsXouteq[i]),"%) missing\n",sep=""))
+    cat(paste("Total number of observations (outeq ",i,"): ",x$nobsXouteq[i],", with ",x$missObsXouteq[i]," (",sprintf("%.3f",100*x$missObsXouteq[i]/x$nobsXouteq[i]),"%) missing\n",sep=""))
     
   }
   cat(paste("Number of covariates:",x$ncov,"\n"))
