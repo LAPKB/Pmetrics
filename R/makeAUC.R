@@ -52,7 +52,7 @@ makeAUC <- function(data,
     inherits(data, c("PMsim", "PM_sim", 
                      "PMop", "PM_op", 
                      "PMpop", "PM_pop",
-                     "PMpost", "PM_post"), which = T) == 1
+                     "PMpost", "PM_post"), which = T) > 0
   ) #will be all zeros except matching class, undefined if none
   
   if(length(data_class)>0){ #there was a match
