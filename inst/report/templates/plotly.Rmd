@@ -1,5 +1,5 @@
 ---
-title: "Pmetrics - report"
+title: "Pmetrics - Report"
 author: "Laboratory of Applied Pharmacokinetics and Bioinformatics (LAPKB)"
 date: "`r Sys.Date()`"
 output:
@@ -18,33 +18,78 @@ library(patchwork)
 library(DT)
 library(Pmetrics)
 library(htmltools)
+library(crayon)
 ```
 
 
 ```{r setup-extra}
-res = params$res
+#res = params$res
+res <- Pmetrics::NPex
 ```
 
 ## Summary
 
 ```{r}
-did_converge = ifelse(res$NPdata$converge == 1, "converged", "did not converge")
+did_converge <- ifelse(res$NPdata$converge == 1, "converged", "did not converge")
 ```
 
 
-The model includes `r res$NPdata$nsub` subjects, and a total of `r  sum(res$NPdata$nobs, na.rm = TRUE)` observations.
+The data had `r res$NPdata$nsub` subjects and a total of `r  sum(res$NPdata$nobs, na.rm = TRUE)` observations.
 
 After `r res$NPdata$icyctot`/`r res$NPdata$icycmax` cycles, the model `r did_converge`.
 
-## Performance metrics {.tabset}
+## Observed-predicted plot {.tabset .tabset-pills}
+
+Points should appear close to, and randomly distributed around, the (dashed) identity-line.
+
+``` {r include = FALSE}
+
+template <- c(
+  "### Outeq {{outeq}} {.tabset .tabset-pills}\n",
+  "#### Population {.tabset .tabset-pills}\n",
+  "##### Median\n",
+  "```{r message = F}\n",
+  "res$op$plot(icen = 'median', pred.type = 'pop', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+  "```\n",
+  "##### Mean\n",
+  "```{r message = F}\n",
+  "res$op$plot(icen = 'mean', pred.type = 'pop', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+  "```\n",
+  "#### Posterior {.tabset .tabset-pills}\n",
+  "##### Median\n",
+  "```{r message = F}\n",
+  "res$op$plot(icen = 'median', pred.type = 'post', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+  "```\n",
+  "##### Mean\n",
+  "```{r message = F}\n",
+  "res$op$plot(icen = 'mean', pred.type = 'post', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+  "```\n",
+  "\n"
+)
+
+numeqt <- max(res$op$data$outeq)
+p <- lapply(1:numeqt, function(i) {
+  knitr::knit_expand(
+    outeq = i,
+    text = template)
+})
+
+```
+`r knitr::knit_child(text = unlist(p))`
+
+## Prediction metrics {.tabset .tabset-pills}
 
 ```{r}
 #summary function
 metrics <- function(icen, outeq){
   pe <- res$op$summary(icen = icen, outeq = outeq)$pe %>%
-    rename(`Mean PE` = mpe,
+    rename(`Mean PE (prediction - observation)` = mpe,
            `Mean weighted PE` = mwpe,
-           `Mean square PE` = mspe,
+           `Mean squared PE` = mspe,
            `Mean weighted squared PE` = mwspe,
            `Root mean squared PE` = rmse,
            `Root mean squared PE (%)` = percent_rmse,
@@ -91,50 +136,6 @@ for(i in 1:res$NPdata$numeqt){
 ```
 
 
-## Observed-predicted plot {.tabset .tabset-pills}
-
-Points should appear close to, and randomly distributed around, the (dashed) identity-line.
-
-``` {r include = FALSE}
-
-template <- c(
-  "### Outeq {{outeq}} {.tabset .tabset-pills}\n",
-  "#### Population {.tabset .tabset-pills}\n",
-  "##### Median\n",
-  "```{r message = F}\n",
-  "res$op$plot(icen = 'median', pred.type = 'pop', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
-  "```\n",
-  "##### Mean\n",
-  "```{r message = F}\n",
-  "res$op$plot(icen = 'mean', pred.type = 'pop', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
-  "```\n",
-  "#### Posterior {.tabset .tabset-pills}\n",
-  "##### Median\n",
-  "```{r message = F}\n",
-  "res$op$plot(icen = 'median', pred.type = 'post', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
-  "```\n",
-  "##### Mean\n",
-  "```{r message = F}\n",
-  "res$op$plot(icen = 'mean', pred.type = 'post', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
-  "```\n",
-  "\n"
-)
-
-numeqt <- max(res$op$data$outeq)
-p <- lapply(1:numeqt, function(i) {
-  knitr::knit_expand(
-    outeq = i,
-    text = template)
-})
-
-```
-`r knitr::knit_child(text = unlist(p))`
-
-
 ## Prediction residuals {.tabset .tabset-pills}
 
 Residuals should be randomly distributed around zero, with no apparent trend.
@@ -177,18 +178,30 @@ p <- lapply(1:numeqt, function(i) {
 
 ## Parameter values and distributions
 
+### Parameter summmaries
 The model included the following primary parameters
 ```{r}
-par_lims = data.frame(
-  name = head(names(res$final$popPoints), -1),
+par_lims <- data.frame(
+  name = names(res$final$popMean),
   lower = res$final$ab[,1],
-  upper = res$final$ab[,2]
-)
+  upper = res$final$ab[,2],
+  ave = t(res$final$popMean),
+  med = t(res$final$popMedian),
+  sd = t(res$final$popSD),
+  cv = t(res$final$popCV),
+  shrink = 100*t(res$final$shrinkage)
+) %>%
+  mutate(across(4:8,round,3))
 
 par_lims %>% 
   rename(`Parameter` = name,
          `Lower limit` = lower,
-         `Upper limit` = upper) %>% 
+         `Upper limit` = upper,
+         `Mean` = ave,
+         `Median` = X2, #no idea why this gets named X2
+         `SD` = sd,
+         `CV%` = cv,
+         `%shrink` = shrink) %>% 
   datatable(
     options = list(
       searching = FALSE,
@@ -197,27 +210,30 @@ par_lims %>%
       info = FALSE,
       dom = "t",
       autoHideNavigation = TRUE
-    )
+    ),
+    rownames = FALSE
   )
 ```
 
-#### Marginal plots
-Support points, height correspond to probability
+### Marginal plots
+Support points, height corresponds to probability
 
-```{r}
-res$final$popPoints %>% 
-  pivot_longer(cols = -prob) %>% 
-  left_join(par_lims, by = "name") %>% 
-  ggplot(aes(x = value, y = prob)) +
-  geom_segment(aes(xend = value, yend = 0)) +
-  geom_vline(aes(xintercept = lower), lty = "dashed", alpha = 0.5) +
-  geom_vline(aes(xintercept = upper), lty = "dashed", alpha = 0.5) +
-  facet_wrap(~name, scales = "free") +
-  labs(x = "Parameter value", y = "Density")
+<!-- ```{r} -->
+<!-- res$final$popPoints %>%  -->
+<!--   pivot_longer(cols = -prob) %>%  -->
+<!--   left_join(par_lims, by = "name") %>%  -->
+<!--   ggplot(aes(x = value, y = prob)) + -->
+<!--   geom_segment(aes(xend = value, yend = 0)) + -->
+<!--   geom_vline(aes(xintercept = lower), lty = "dashed", alpha = 0.5) + -->
+<!--   geom_vline(aes(xintercept = upper), lty = "dashed", alpha = 0.5) + -->
+<!--   facet_wrap(~name, scales = "free") + -->
+<!--   labs(x = "Parameter value", y = "Density") -->
+<!-- ``` -->
+``` {r}
+res$final$plot()
 ```
 
-
-#### Posterior parameter distributions
+### Posterior parameter distributions
 Posterior parameter density estimates based on the mean and median icen.
 
 ```{r}
@@ -245,7 +261,7 @@ pmean %>%
   theme(legend.position = "bottom")
 ```
 
-#### Table of support points
+### Table of support points
 
 The following table lists the final support points, in order of decreasing probability
 ```{r}
@@ -254,12 +270,10 @@ res$final$popPoints %>%
   mutate(across(.cols = everything(), .fns = function(x) {
     round(x, digits = 4)
   })) %>% 
-  mutate(`Probability (cumulative sum)` = cumsum(prob)) %>% 
+  mutate(`Cumulative Probability` = cumsum(prob)) %>% 
   rename(Probability = prob) %>% 
   datatable(options = list(pageLength = 10, searching = FALSE))
 ```
-
-
 
 ## Cycle information
 ```{r}

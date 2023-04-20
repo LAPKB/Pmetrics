@@ -36,6 +36,238 @@
 
 
 
+plot.PM_cycle <- function(x, 
+                          formula, 
+                          line = T,
+                          marker = T,
+                          omit, 
+                          legend, 
+                          grid = T,
+                          xlab, ylab,
+                          title,
+                          xlim, ylim,
+                          ...){
+  
+  
+  
+  #function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
+  
+  
+  
+  if (inherits(x, "PMcycle")) {
+    data <- x
+  } else if (inherits(x, "PM_cycle")){
+    data <- x$data
+  } else {
+    stop("Please supply a PM_cycle or PMcycle object to plot.\n")
+  }
+  
+  
+  #housekeeping
+  line <- amendLine(line)
+  marker <- amendMarker(marker, default = list(symbol = "x")) 
+  
+  #process dots
+  layout <- amendDots(list(...))
+  
+  #legend - not needed for this function
+  layout <- modifyList(layout, list(showlegend = F))
+  
+  #grid
+  layout$xaxis <- setGrid(layout$xaxis, grid)
+  layout$yaxis <- setGrid(layout$yaxis, grid)
+  
+  #axis labels
+  if(is.null(xlab)){
+    xlb <- .par
+  } else {
+    if(is.character(xlab)){ #specified as fixed character, not recommended
+      xlb <- list(text = xlab)
+    } else { #specified as list,likely to update formatting
+      if(is.null(purrr::pluck(xlab, "text"))){ #text not included in list
+        xlb <- modifyList(xlab, list(text = .par)) #so add it
+      }
+    }
+  }
+  
+  if(is.null(ylab)){
+    ylb <- "Probability"
+  } else {
+    if(is.character(ylab)){
+      ylb <- list(text = ylab)
+    } else { #specified as list,likely to update formatting
+      if(is.null(purrr::pluck(ylab, "text"))){ #text not included in list
+        ylb <- modifyList(ylab, list(text = "Probability")) #so add it
+      }
+    }
+  }
+  
+  #title
+  if(is.null(title)){ 
+    titl <- ""
+  } else {
+    if(is.character(title)){
+      titl <- list(text = title)
+    } else { #specified as list,likely to update formatting
+      if(is.null(purrr::pluck(title, "text"))){ #text not included in list
+        titl <- modifyList(title, list(text = "Marginal")) #so add it
+      } else {titl <- title}
+    }
+  }
+  
+  layout$title <- amendTitle(titl, default = list(size = 20))
+  layout$xaxis$title <- amendTitle(xlb)
+  layout$yaxis$title <- amendTitle(ylb)
+  if(is.character(ylb)){
+    layout$yaxis$title <- amendTitle(ylb, layout$xaxis$title$font)
+  } else {
+    layout$yaxis$title <- amendTitle(ylb)
+  }
+  
+  
+  numcycles <- nrow(data$mean)
+  if (missing(omit)) {omit <- floor(0.2*numcycles)} else {omit <- floor(omit*numcycles)} 
+  if(omit==0) omit <- 1
+  
+  include <- omit:numcycles
+  if(length(data$cycnum)==0) {cycnum <- include} else {cycnum <- data$cycnum[include]}
+  nvar <- ncol(data$mean)
+  nout <- ncol(data$gamlam)
+  
+  #LL
+  graph_data <- tibble::tibble(x = x, m_two_ll = data$ll[include])
+  
+  p1 <- graph_data  %>%
+    plotly::plot_ly(x = ~x, y = ~m_two_ll, 
+                    type = "scatter", 
+                    mode = "markers+lines",
+                    line = line,
+                    marker = marker,
+                    showlegend = F,
+                    hovertemplate = "Cycle: %{x:i}<br>-2*LL: %{y:.3f}<extra></extra>") %>%
+    layout(
+      xaxis = list(title = "Cycle Number"),
+      yaxis = list(title = "-2 * Log-Likelihood")
+    )
+  
+  #AIC/BIC
+  graph_data$aic <- data$aic[include]
+  graph_data$bic <- data$bic[include]
+  
+  p2 <- graph_data  %>%
+    plotly::plot_ly(x = ~x, y = ~aic, type = "scatter", mode = "lines+markers",
+                    name = "AIC",
+                    line = line, 
+                    marker = marker, 
+                    text = ~bic,
+                    hovertemplate = "Cycle: %{x:i}<br>AIC: %{y:.3f}<br>BIC: %{text:.3f}<extra></extra>",
+                    showlegend = F) %>%
+    layout(
+      xaxis = list(title = "Cycle Number"),
+      yaxis = list(title = "AIC")
+    )
+  
+  #gamma/lambda
+  graph_data$gamlam <- data$gamlam[include,]
+  p3 <- graph_data  %>%
+    plotly::plot_ly(x = ~x, y = ~gamlam, type = "scatter", mode = "lines+markers",
+                    line = line,
+                    marker = marker,
+                    hovertemplate = "Cycle: %{x:i}<br>Gam/Lam: %{y:.3f}<extra></extra>",
+                    showlegend = F) %>%
+    layout(
+      xaxis = list(title = "Cycle Number"),
+      yaxis = list(title = "Gamma/Lambda")
+    )
+  
+  #normalized plots
+  
+  normalized_plot <- function(.par){
+    .p <- graph_data[[.par]] %>% bind_cols(x=graph_data$x) %>% pivot_longer(cols = -x, names_to = "par") %>%
+      plot_ly(x = ~x, y = ~value, type = "scatter", mode = "markers+lines", 
+              color = ~par,
+              hovertemplate = paste0("Cycle: %{x:i}<br>",.par,": %{y:.3f}<extra></extra>"),
+              showlegend = ifelse(.par == "Mean",T,F),
+              legendgroup = "Normalized") %>%
+      
+      layout(
+        xaxis = list(title = "Cycle Number"),
+        yaxis = list(title = paste0("Normalized ", .par))
+      )
+    return(.p)
+  }
+  graph_data$Mean <- data.frame(data$mean[include,])
+  p4 <- normalized_plot("Mean")
+  graph_data$Median <- data.frame(data$median[include,])
+  p5 <- normalized_plot("Median")
+  graph_data$SD <- data.frame(data$sd[include,])
+  
+  
+  if(!all(is.na(data$sd))){
+    p6 <- normalized_plot("SD")
+  } else {
+    p6 <- plotly::plotly_empty(type = "scatter", mode = "markers", showlegend = F) %>%
+      layout(title = list(text = "Initial standard deviation = 0.\nAssay error may be too large.", 
+                          yref = "paper",
+                          y = 0.5))
+  }
+  
+  
+  
+  
+  
+  
+  # #close device if necessary
+  p <- plotly::subplot(p1, p2, p3, p4, p5, p6, nrows=3, 
+                       titleX = T, shareX = T,
+                       titleY = T, 
+                       margin=c(0.05,0.05,0,0.05)) 
+  
+  print(p)
+  return(p)
+}
+
+
+
+
+#' Plot NPAG Cycle Information
+#'
+#' Plot \emph{PMcycle} objects
+#'
+#' @method plot PMcycle
+#' @param data The name of an \emph{PMcycle} data object generated by \code{\link{makeCycle}}
+#' @param x.leg Porportionate location along the X-axis to place legend; 0 (default) is at left, 1 at right.
+#' @param y.leg Porportionate location along the X-axis to place legend;  0 is at bottom, 1 (default) at top.
+#' @param cex.leg Porportionate size of legend text.
+#' @param omit Deceimal between 0 and 1 specifying the proportion of \dQuote{burn-in} cycles to omit from the plots.  If missing,
+#' the first 20\% will be omitted.
+#' @param col A vector of colors for the curves, which will be recycled if too short.  Not mandatory.
+#' @param out Direct output to a PDF, EPS or image file.  Format is a named list whose first argument, 
+#' \code{type} is one of the following character vectors: \dQuote{pdf}, \dQuote{eps} (maps to \code{postscript}),
+#' \dQuote{\code{png}}, \dQuote{\code{tiff}}, \dQuote{\code{jpeg}}, or \dQuote{\code{bmp}}.  Other named items in the list
+#' are the arguments to each graphic device. PDF and EPS are vector images acceptable to most journals
+#' in a very small file size, with scalable (i.e. infinite) resolution.  The others are raster images which may be very
+#' large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the 
+#' output will go to the current graphic device (usually the monitor). For example, to output an eps file,
+#' out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.
+#' @param \dots Additional R plotting parameters.
+#' @return Plots a panel with the following windows: -2 times the log-likelihood at each cycle, gamma/lambda at
+#' each cycle; Akaike Information Criterion at each cyle and Bayesian (Schwartz) Information Criterion
+#' at each cycle, the mean parameter values at each cycle (normalized to starting values); the normalized
+#' standard deviation of the population distribution for each parameter at each cycle; and
+#' the normalized median parameter values at each cycle.
+#' @author Michael Neely
+#' @seealso \code{\link{makeCycle}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
+#' @noMd
+#' @export
+#' @examples
+#' data(cycle.1)
+#' plot(cycle.1)
+#' plot(cycle.1,omit=0)
+#' @family PMplots
+
+
+
 plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
   
   #choose output
@@ -66,7 +298,7 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
     m_two_ll = data$ll[omit:numcycles]
   )
   p1 <- ggplot2::ggplot(data = graph_data, ggplot2::aes(x=x, y=m_two_ll)) + ggplot2::geom_line() + ggplot2::ylab("-2 x Log likelihood") + ggplot2::xlab("Cycle") 
-    #qplot(y=data$ll[omit:numcycles], x=x, geom=c("point", "line"), xlab = "Cycle", ylab = "") + ylab("-2 x Log likelihood")
+  #qplot(y=data$ll[omit:numcycles], x=x, geom=c("point", "line"), xlab = "Cycle", ylab = "") + ylab("-2 x Log likelihood")
   
   #axis(1,at=x,labels=cycnum)
   #AIC and BIC
@@ -113,7 +345,7 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
   
   
   #for(i in 1:nvar){
-    #lines(y=data$mean[omit:numcycles,i],x=x,col=col[i],lty=lnty[i])
+  #lines(y=data$mean[omit:numcycles,i],x=x,col=col[i],lty=lnty[i])
   #}
   graph_data$mean <- data$mean[omit:numcycles,]
   p4 <- purrr::reduce(1:nvar, ~.x + ggplot2::geom_line(ggplot2::aes(x=x, y= mean[,.y], colour = data$names[.y])), .init=ggplot2::ggplot(data = graph_data) + ggplot2::theme(legend.title = ggplot2::element_blank()) + ggplot2::ylab("Normalized Mean") + ggplot2::xlab("Cycle") )
@@ -142,10 +374,10 @@ plot.PMcycle <- function(data,x.leg=0,y.leg=1,cex.leg=1.2,omit,col,out=NA,...){
     #axis(1,at=x,labels=cycnum)
     #text("Initial standard deviation = 0\nAssay error may be too large.",x=median(c(omit,numcycles)),y=median(data$median[omit:numcycles,]),col="gray50",cex=2)
     p5<- ggplot2::ggplot() + 
-  ggplot2::annotate("text", x = 0, y = 0, size=4, label = "Initial standard deviation = 0\nAssay error may be too large.") + 
-  ggplot2::theme_bw() +
-  ggplot2::theme(panel.grid.major=ggplot2::element_blank(),
-    panel.grid.minor=ggplot2::element_blank())
+      ggplot2::annotate("text", x = 0, y = 0, size=4, label = "Initial standard deviation = 0\nAssay error may be too large.") + 
+      ggplot2::theme_bw() +
+      ggplot2::theme(panel.grid.major=ggplot2::element_blank(),
+                     panel.grid.minor=ggplot2::element_blank())
   }
   
   
