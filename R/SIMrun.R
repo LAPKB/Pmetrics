@@ -395,11 +395,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
   }
 
   # number of random parameters
-  if (inherits(poppar, "PM_final")) {
     npar <- nrow(poppar$popCov)
-  } else {
-    npar <- nrow(poppar[[3]])
-  }
 
   # deal with limits on parameter simulated values
   if (all(is.null(limits))) {
