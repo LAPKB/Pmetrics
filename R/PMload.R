@@ -28,7 +28,8 @@
 
 
 PM_load <- function(run = 1, remote = F, server_address, file) {
-  # If Rust
+  
+  #If Rust
   if (getPMoptions()$backend == "rust") {
     if (!missing(file) && file.exists(file)) {
       npcore_out <- file
@@ -45,13 +46,9 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
   }
 
 
-
   # declare variables to avoid R CMD Check flag
   NPAGout <- NULL
   IT2Bout <- NULL
-
-
-  if (missing(server_address)) server_address <- getPMoptions("server_address")
 
   found <- FALSE
   # check for NPAG output file
@@ -61,7 +58,7 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
   } else {
     outfile <- paste(run, filename, sep = "/")
   }
-
+  
   if (remote) { # only look on server
     if (missing(server_address)) server_address <- getPMoptions("server_address")
     status <- .remoteLoad(thisrun, server_address)
@@ -73,68 +70,50 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
         cat()
       return(invisible(NULL))
     }
-  } else if (file.exists(outfile)) { # remote F, so look locally
-    # load(outfile, .GlobalEnv)
-    load(outfile)
-    result <- output2List(Out = get("NPAGout"))
-  } else {
-    # check for IT2B output file
-    filename <- "IT2Bout.Rdata"
-    if (is.numeric(run)) {
-      outfile <- paste(run, "outputs", filename, sep = "/")
+  } else if (!missing(file)) { #file supplied, so look for it
+    # try in current wd
+    if (file.exists(file)) {
+      found <- T
     } else {
-      outfile <- paste(run, filename, sep = "/")
-    }
-    if (file.exists(outfile)) {
-      load(outfile)
-      result <- output2List(Out = get("IT2Bout"))
-    }
-    # if file supplied
-    if (!missing(file)) {
-      # try in current wd
-      if (file.exists(file)) {
-        found <- T
-      } else {
-        # nope, try in an outputs folder
-        if (!missing(run)) {
-          file <- paste0(run, "/outputs/", file)
-          if (file.exists(file)) {
-            found <- T
-          }
-        }
-      }
-    } else {
-      # didn't have file, so check for other outputs
+      # nope, try in an outputs folder
       if (!missing(run)) {
-        file_list <- c("PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
-        for (i in file_list) {
-          file <- paste0(run, "/outputs/", i)
-          if (file.exists(file)) {
-            found <- T
-            break
-          }
+        file <- paste0(run, "/outputs/", file)
+        if (file.exists(file)) {
+          found <- T
         }
       }
     }
-
-    if (found) {
-      result <- output2List(Out = get(load(file)))
-      return(PM_result$new(result, quiet = T)) # no errors
-    } else {
-      stop(paste0("No Pmetrics output file found in ", getwd(), ".\n"))
+  } else { # didn't have file, so check for other outputs
+    if (!missing(run)) {
+      file_list <- c("PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
+      for (i in file_list) {
+        file <- paste0(run, "/outputs/", i)
+        if (file.exists(file)) {
+          found <- T
+          break
+        }
+      }
     }
   }
-}
-
-output2List <- function(Out) {
-  result <- list()
-  for (i in 1:length(Out)) {
-    aux_list <- list(Out[[i]])
-    names(aux_list) <- names(Out)[i]
-    result <- append(result, aux_list)
+  
+  if (found) {
+    result <- output2List(Out = get(load(file)))
+    return(PM_result$new(result, quiet = T)) # no errors
+  } else {
+    stop(paste0("No Pmetrics output file found in ", getwd(), ".\n"))
   }
-
-  return(result)
+  
+  
+  output2List <- function(Out) {
+    result <- list()
+    for (i in 1:length(Out)) {
+      aux_list <- list(Out[[i]])
+      names(aux_list) <- names(Out)[i]
+      result <- append(result, aux_list)
+    }
+    
+    return(result)
+  }
 }
 
 #' Loads all the data from an \emph{NPAG} or \emph{IT2B} run
@@ -175,7 +154,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
   # declare variables to avoid R CMD Check flag
   NPAGout <- NULL
   IT2Bout <- NULL
-
+  
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   addlruns <- list(...)
   if (length(addlruns) > 0) {
@@ -183,12 +162,12 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
   } else {
     allruns <- run
   }
-
+  
   for (thisrun in allruns) {
     # check for NPAG output file
     filename <- "PMout.Rdata"
     outfile <- paste(thisrun, "outputs", filename, sep = "/")
-
+    
     if (remote) { # only look on server
       status <- .remoteLoad(thisrun, server_address)
       if (status == "finished") {
@@ -215,8 +194,8 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
     }
   }
   # end thisrun loop
-
-
+  
+  
   return(invisible(T)) # no errors
 }
 
