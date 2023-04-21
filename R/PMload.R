@@ -14,16 +14,16 @@
 #' Pmetrics will attempt to find a "PMout.Rdata" or the older "NPAGout.Rdata" or
 #' "IT2Bout.Rdata" files in either the current working directory (if `run` is not
 #' specified) or the `run/outputs` folder, if `run` is provided.
-#' @param remote Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
-#' See \code{\link{NPrun}}. Currently remote runs are not configured for IT2B or the Simulator.
+#' @param remote Default is `FALSE`.  Set to `TRUE` if loading results of an NPAG run on remote server.
+#' See [NPrun]. Currently remote runs are not configured for IT2B or the Simulator.
 #' @param server_address If missing, will use the default server address returned by getPMoptions().
-#' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
-#' in \code{\link{NPrun}}.
-#' @return An R6 \code{\link{PM_result}}.
+#' Pmetrics will prompt the user to set this address the first time the `remote` argument is set to `TRUE`
+#' in [NPrun].
+#' @return An R6 [PM_result].
 #' @author Michael Neely and Julian Otalvaro
-#' @seealso \code{\link{PMreport}}, \code{\link{NPparse}}, \code{\link{ITparse}},
-#' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}},
-#' \code{\link{makePop}}, \code{\link{makePost}}
+#' @seealso [PMreport], [NPparse], [ITparse],
+#' [makeFinal], [makeCycle], [makeOP], [makeCov],
+#' [makePop], [makePost]
 #' @export
 
 
