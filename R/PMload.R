@@ -41,6 +41,7 @@ PM_load <- function(run = 1, remote = F, server_address) {
     # load(outfile, .GlobalEnv)
     load(outfile)
     result <- output2List(Out = get("NPAGout"))
+    return(PM_result$new(result, quiet = T)) 
   } else {
     # check for IT2B output file
     filename <- "IT2Bout.Rdata"
