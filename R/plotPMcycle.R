@@ -65,7 +65,9 @@ plot.PM_cycle <- function(x,
   
   #housekeeping
   line <- amendLine(line)
-  marker <- amendMarker(marker, default = list(symbol = "x")) 
+  marker <- amendMarker(marker, default = list(symbol = "circle",
+                                               color = "dodgerblue",
+                                               size = 1)) 
   
   #process dots
   layout <- amendDots(list(...))
@@ -182,29 +184,32 @@ plot.PM_cycle <- function(x,
   
   #normalized plots
   
-  normalized_plot <- function(.par){
+  normalized_plot <- function(.par, range){
     .p <- graph_data[[.par]] %>% bind_cols(x=graph_data$x) %>% pivot_longer(cols = -x, names_to = "par") %>%
       plot_ly(x = ~x, y = ~value, type = "scatter", mode = "markers+lines", 
-              color = ~par,
+              color = ~par, marker = list(size = marker$size),
               hovertemplate = paste0("Cycle: %{x:i}<br>",.par,": %{y:.3f}<extra></extra>"),
               showlegend = ifelse(.par == "Mean",T,F),
               legendgroup = "Normalized") %>%
       
       layout(
         xaxis = list(title = "Cycle Number"),
-        yaxis = list(title = paste0("Normalized ", .par))
+        yaxis = list(title = paste0("Normalized ", .par), range = range)
       )
     return(.p)
   }
   graph_data$Mean <- data.frame(data$mean[include,])
-  p4 <- normalized_plot("Mean")
   graph_data$Median <- data.frame(data$median[include,])
-  p5 <- normalized_plot("Median")
   graph_data$SD <- data.frame(data$sd[include,])
   
+  graph_range <- range(graph_data$Mean, graph_data$Median, graph_data$SD)
+  
+  
+  p4 <- normalized_plot("Mean", graph_range)
+  p5 <- normalized_plot("Median", graph_range)
   
   if(!all(is.na(data$sd))){
-    p6 <- normalized_plot("SD")
+    p6 <- normalized_plot("SD", graph_range)
   } else {
     p6 <- plotly::plotly_empty(type = "scatter", mode = "markers", showlegend = F) %>%
       layout(title = list(text = "Initial standard deviation = 0.\nAssay error may be too large.", 
@@ -214,14 +219,17 @@ plot.PM_cycle <- function(x,
   
   
   
-  
-  
-  
-  # #close device if necessary
-  p <- plotly::subplot(p1, p2, p3, p4, p5, p6, nrows=3, 
-                       titleX = T, shareX = T,
+  p_r1 <- plotly::subplot(p1, p2, p3, nrows = 1,
+                          titleX = F, titleY = T,
+                          margin=c(0.05,0.05,0,0.05))
+  p_r2 <- plotly::subplot(p4, p5, p6, nrows = 1,
+                          titleX = T, titleY = T,
+                          margin=c(0.05,0.05,0,0.05))
+  p <- plotly::subplot(p_r1, p_r2, nrows = 2, 
+                       titleX = T, shareX = F,
                        titleY = T, 
-                       margin=c(0.05,0.05,0,0.05)) 
+                       margin=c(0.05,0.05,0,0.05)) %>%
+    layout(legend = list(y = 0.4))
   
   print(p)
   return(p)
