@@ -113,7 +113,6 @@
 #' @export
 
 PMcheck <- function(data, model, fix = F, quiet = F) {
-  
   #get the data
   if (is.character(data)) { #data is a filename
     data2 <- tryCatch(suppressWarnings(PMreadMatrix(data, quiet = T)), error = function(e) return(invisible(e)))
