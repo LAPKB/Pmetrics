@@ -4,7 +4,7 @@
 \alias{PM_load}
 \title{Load Pmetrics NPAG or IT2B output}
 \usage{
-PM_load(run = 1, remote = F, server_address)
+PM_load(run = 1, remote = F, server_address, file)
 }
 \arguments{
 \item{run}{The numerical value of the folder number containing the run results.

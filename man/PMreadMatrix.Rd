@@ -2,73 +2,54 @@
 % Please edit documentation in R/PMreadMatrix.R
 \name{PMreadMatrix}
 \alias{PMreadMatrix}
-\title{Read a Pmetrics .csv Matrix Input File}
+\title{Read a Pmetrics data file}
 \usage{
 PMreadMatrix(
   file,
-  skip = 1,
   sep = getPMoptions("sep"),
   dec = getPMoptions("dec"),
-  date_format = "\%AD",
-  time_format = "\%AT",
   quiet = F,
   ...
 )
 }
 \arguments{
 \item{file}{The name of the file to be loaded, including the full path if not
-in the current working directory (check with \code{\link{getwd}}).}
-
-\item{skip}{Skip \emph{n} lines, with default set to 0.}
+in the current working directory (check with \link{getwd}).}
 
 \item{sep}{Delimiter between columns, which is a comma by default, but can be changed with
-\code{\link{setPMoptions}}.}
+\link{setPMoptions}.}
 
 \item{dec}{Decimal separator, which is a period by default, but can be changed with
-\code{\link{setPMoptions}}.}
+\link{setPMoptions}.}
 
-\item{date_format}{Format for any dates. Default is set as year month day, with flexible separator.
-See \code{\link{parse_date}} in the readr package for more information on formatting dates.
-#' @param time_format Format for any clock times. Default is set as hours:minutes.
-See \code{\link{parse_date}} in the readr package for more information on formatting times.}
-
-\item{quiet}{Default is \emph{false}.  If \emph{true}, there will be no report to
+\item{quiet}{Default is \code{FALSE}.  If \code{TRUE}, there will be no report to
 the console on the contents of file.}
 
-\item{\dots}{Other parameters to be passed to \code{\link{read.table}}}
+\item{\dots}{Other parameters to be passed to \code{\link[readr:read_delim]{readr::read_delim()}}}
 }
 \value{
-\code{PMreadMatrix} returns a data.frame of class \dQuote{PMmatrix} with one row per
-event and the following columns.
-\item{id }{The id value for each event.}
-\item{evid }{The evid value for each event, with 0=observation, 1=dose, 4=dose reset, which resets the time to 0 and all compartment amounts to 0.  Note that evid=2 and 3 are not currently implemented.}
-\item{time }{Relative time of the event in hours.}
-\item{dur }{Duration of the dose.  If dose is instantaneous, e.g. an oral dose into an absorptive compartment, \code{dur} should be 0.  Any values greater than 0 are interpreted to mean a constant infusion of that duration, equalling the \code{dose}.}
-\item{dose }{The dose.  Be sure that the units are consistent with \code{out}.}
-\item{addl }{Optional number of additional doses to add at an interval specified in \emph{ii}.  The default if missing is 0.  A value of -1
-will cause steady state conditions to be approximated.  Any value for \emph{addl} other than 0 or missing requires input in \emph{ii}.}
-\item{ii }{The interdose interval for \emph{addl} doses or dosing at steady state.}
-\item{input }{The input number corresponding to \code{dose}.}
-\item{out }{The measured output, equivalent to \dQuote{DV} in some other PK modeling software tools.}
-\item{outeq }{The number of the output equation specified in the model file which corresponds to the \code{out} value.}
-\item{C0 }{Assay error polynomial coefficient, e.g. SD = C0 + C1\emph{obs + C2}obs^2 + C3*obs^3}
-\item{C1 }{See \code{C0}}
-\item{C2 }{See \code{C0}}
-\item{C3 }{See \code{C0}}
-\item{\dots }{Additional columns are interpreted to be covariates.}
-If the file is successfully read and \code{quiet}=F,
-the column headers of the scanned file will be reported to the console as a validation check.
+\code{PMreadMatrix} returns a data frame of class "PMmatrix".
+If the file is successfully read and \code{quiet=F},
+the column headers will be reported to the console as a validation check.
+Note that this function converts the column headers in the
+\code{file} from upper to lowercase for convenient referencing in R.
 }
 \description{
-\code{PMreadMatrix} reads an NPAG .csv matrix input file into R.
+Reads a Pmetrics .csv matrix input file into R.
 }
 \details{
-The structure of a valid .csv file is fairly rigid.  See \code{\link{PMcheckMatrix}}
-for details.  Note that \code{PMreadMatrix} converts the column headers in the
-\code{matrixfile} from upper to lowercase for convenient referencing in R.
+As of Pmetrics version 2, the structure of a valid .csv file has relaxed.
+Minimal required columns are id, time, dose, and out. This function is now included
+as part of the \link{PM_data} R6 object to create new \code{PM_data} objects. Users should
+rarely have a need to call \code{PMreadMatrix} as a standalone function unless they
+continue to use Pmetrics in its legacy mode (versions < 2.0). Note that support
+for legacy Pmetrics will eventually wither as the package evolves.
+
+There are a number of other options for columns in the data input.  Details can
+be found in the \href{https://lapkb.github.io/Pmetrics/articles/data.html}{documentation}.
 }
 \seealso{
-\code{\link{PMwriteMatrix}}, \code{\link{PMcheckMatrix}}, and \code{\link{plot.PMmatrix}}
+\link{PMwriteMatrix}, \link{PMcheck}, and \link{plot.PM_data}
 }
 \author{
 Michael Neely
