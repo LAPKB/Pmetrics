@@ -107,9 +107,9 @@ lowess regression)}
 
 \item{ylim}{Analogous to \code{xlim}}
 
-\item{xlab}{Label for the x-axis.  If missing, will default to \dQuote{Observed}.}
+\item{xlab}{Label for the x-axis.  If missing, will default to \dQuote{Predicted}.}
 
-\item{ylab}{Label for the y-axis.  If missing, will default to \dQuote{Predicted}.}
+\item{ylab}{Label for the y-axis.  If missing, will default to \dQuote{Observed}.}
 
 \item{out}{Direct output to a PDF, EPS or image file.  Format is a named list whose first argument,
 \code{type} is one of the following character vectors: \dQuote{pdf}, \dQuote{eps} (maps to \code{postscript}),

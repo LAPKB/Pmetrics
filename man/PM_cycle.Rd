@@ -24,7 +24,7 @@ powerful approach to data manipulation upon which Pmetrics is built.
 Creation of new \code{PM_cycle} object is automatic and not generally necessary
 for the user to do.
 
-See \link{plot.PMcycle}.
+See \link{plot.PM_cycle}.
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -85,7 +85,7 @@ Plot method
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{plot.PMcycle}}
+\item{\code{...}}{Arguments passed to \link{plot.PM_cycle}}
 }
 \if{html}{\out{</div>}}
 }
