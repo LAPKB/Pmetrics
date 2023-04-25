@@ -10,10 +10,13 @@
 
 PMupdate <- function(force=F){
   
+  gitREST <- curl::curl(url = "https://api.github.com/repos/LAPKB/Pmetrics/releases")
+  
   currentVersion <- package_version(suppressWarnings(
-    tryCatch(scan("http://www.lapk.org/software/Pmetrics/PmetricsVersion.txt",what="character",quiet=T), 
+    tryCatch(jsonlite::fromJSON(gitREST)$name[1] %>% 
+               stringr::str_extract("\\d+\\.\\d+\\.\\d+$"), 
              error = function(e) e <-"0.1")))  
-  if(currentVersion=="0.1"){cat("LAPKB server not available. Check your internet connection.\n");return(invisible(FALSE))}
+  if(currentVersion=="0.1"){cat("LAPKB github server not available. Check your internet connection.\n");return(invisible(FALSE))}
   installedVersion <- packageVersion("Pmetrics")
   if(!force & installedVersion >= currentVersion){
     cat("You have the most current version of Pmetrics.\n")
