@@ -309,11 +309,17 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
     is_res <- T
     res <- poppar$clone()
     poppar <- poppar$final$clone()
-  } else {
-    if(inherits(poppar, "PM_final")){
-      poppar <- poppar$clone()
-    }
+  } else if(inherits(poppar, "PM_final")){
+    poppar <- poppar$clone()
     is_res <- F
+  } else { #poppar is a list, make sure formatted properly
+    if(length(poppar)!=3) stop("Ensure poppar is a list of 3 elements: weight, mean, covariance.\n")
+    names(poppar) <- c("weight", "popMean", "popCov")
+    if(is.null(nrow(poppar$popMean))) poppar$popMean <- matrix(poppar$popMean, nrow = 1, byrow = T) #ensure 1 row
+    if(length(poppar$weight) != nrow(poppar$popMean)) stop("Length of weight must equal number of rows of mean.\n")
+    if(nrow(poppar$popCov) != ncol(poppar$popCov)) stop("Covariance matrix is not square.\n")
+    if(ncol(poppar$popCov) != ncol(poppar$popMean)) stop(paste0("Covariance matrix should have ",
+                                                                ncol(poppar$popMean)," rows and columns to match ncol(mean)."))
   }
   
   
@@ -398,8 +404,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
   }
   
   # number of random parameters
-  npar <- nrow(poppar$popCov)
-  
+  npar <- nrow(poppar$popMean) #will work with final object or list
   
   # deal with limits on parameter simulated values
   if (all(is.null(limits))) {
@@ -834,14 +839,10 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
         }
       }
     } else { #poppar is a list, not a PM_final / PMfinal object
-      #list format should be [[1]] weight, [[2]] mean, [[3]] covariance
-      pop.weight <- poppar[[1]]
+      #list format should be set at beginning
+      pop.weight <- poppar$weight
       ndist <- length(pop.weight)
-      if (inherits(poppar[[2]], "numeric")) {
-        pop.mean <- data.frame(poppar[[2]])
-      } else {
-        pop.mean <- data.frame(poppar[[2]])
-      }
+      pop.mean <- poppar$popMean
       pop.mean <- pop.mean[order(pop.weight), ] # sort means by order of probability
       if (ndist > 30) {
         ndist <- 30
@@ -850,7 +851,7 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
       pop.weight <- sort(pop.weight)
       pop.weight <- pop.weight[1:ndist]
       pop.mean <- pop.mean[1:ndist, ]
-      pop.cov <- data.frame(poppar[[3]])
+      pop.cov <- poppar$popCov
     }
     
     # check to make sure pop.cov (within 15 sig digits, which is in file) is pos-def and fix if necessary
