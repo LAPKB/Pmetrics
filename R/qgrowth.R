@@ -155,8 +155,8 @@ qgrowth <- function(sex=c("M","F","B"),percentile=c(5, 10, 25, 50, 75, 90, 95),a
   
   sub2 <- tidyr::crossing(agemos,sex,percentile) %>% #all combinations
     mutate(agecat = ifelse(agemos<=36,"0-36 mos","2-18 years")) %>% #categorize age
-    inner_join(., sub1, by = c("agecat", "sex", "percentile",
-                               relationship = "many-to-many")) %>% #lookup combinations in CDC table
+    inner_join(., sub1, by = c("agecat", "sex", "percentile"),
+               relationship = "many-to-many") %>% #lookup combinations in CDC table
     group_by(agemos, sex, percentile, CHART) %>%
     filter(KNOT <= agemos) %>% 
     slice_tail(n=1) %>% #choose the maximum KNOT which is < agemos for each combination
