@@ -67,18 +67,15 @@
 #' "Population weighted residuals" for residual plots, depending on the value of
 #' `pred.type`.
 #' @param title `r template("title")` Default is to have no title.
-#' @param stats Add the statistics from linear regression to the plot. If missing or
-#' `FALSE`, will be suppressed. Can be set to `TRUE` which results in default format of 
+#' @param stats Add the statistics from linear regression to the plot. If 
+#' `FALSE`, will be suppressed. Default is `TRUE` which results in default format of 
 #' `list(x= 0.8, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 14))`.
 #' The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
-#' argument maps to `plotly::add_text()`. It is also an option that can be set in 
-#' [setPMoptions] to avoid specifying this argument for every plot. The default option
-#' is `TRUE`. If specified as a
-#' Pmetrics option, it can be overridden for specific plots by supplying a value.
+#' argument maps to `plotly::add_text()`. 
 #' @param \dots `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
-#' @seealso [PM_result], [schema]
+#' @seealso [makeOP], [PM_result], [schema]
 #' @export
 #' @examples
 #' NPex$op$plot()
@@ -103,7 +100,7 @@ plot.PM_op <- function(x,
                        grid = T,
                        xlab, ylab,
                        title,
-                       stats,
+                       stats = T,
                        xlim, ylim,...){
   
   x <- if(inherits(x, "PM_op")) {x$data}else{x}
@@ -163,8 +160,6 @@ plot.PM_op <- function(x,
   } else {
     refLine$plot <- T
   }
-  
-  if(missing(stats)) stats <- getPMoptions("op_stats")
   
   
   #process dots

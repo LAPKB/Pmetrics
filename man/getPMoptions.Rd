@@ -12,17 +12,13 @@ getPMoptions(opt, warn = T)
 \item{warn}{Warn if options file doesn't exist. Default \code{TRUE}.}
 }
 \value{
-The user options file will be updated.  This will persist from session to session.
+A list with the current options.
 }
 \description{
 Get user options for Pmetrics
 }
 \details{
-This function will get user options for Pmetrics.  Current user options are
-\itemize{
-\item sep Field separator in data files
-\item dec Decimal separator in numbers
-}
+This function will get user options for Pmetrics.
 }
 \author{
 Michael Neely
