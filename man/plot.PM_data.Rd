@@ -179,6 +179,7 @@ pred = list(NPex$post, color = "slategrey", dash = "dash"))
 
 Other PMplots: 
 \code{\link{plot.MMopt}()},
+\code{\link{plot.PM_cycle}()},
 \code{\link{plot.PM_final}()},
 \code{\link{plot.PM_op}()},
 \code{\link{plot.PM_pta}()},
