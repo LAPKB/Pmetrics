@@ -98,9 +98,8 @@
 #'  * noObs Ensure that all subjects have at least one observation, which could be missing, i.e. -99.
 #'  * mal_NA Ensure that all NA values are ".", not ". ", " .", "..", or other malformations.
 #'  
-
 #' @author Michael Neely and Patrick Nolain
-#' @seealso [PMwriteMatrix}}, \code{\link{PMreadMatrix]
+#' @seealso [PMwriteMatrix], [PMreadMatrix]
 #' @examples
 #' \dontrun{
 #' err <- PMcheck(badData)
