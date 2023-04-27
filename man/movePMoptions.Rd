@@ -4,7 +4,10 @@
 \alias{movePMoptions}
 \title{Move Pmetrics User Options}
 \usage{
-movePMoptions()
+movePMoptions(quiet = F)
+}
+\arguments{
+\item{quiet}{Suppress warning messages. Default \code{FALSE}.}
 }
 \value{
 NULL, invisibly.

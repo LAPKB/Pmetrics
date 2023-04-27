@@ -5,11 +5,12 @@
 #' @title Get Pmetrics User Options
 #' @param opt The option to retrieve.  If omitted, all option values will be returned.
 #' @param warn Warn if options file doesn't exist. Default `TRUE`.
+#' @param quiet Suppress warning messages. Default `FALSE`.
 #' @return A list with the current options.
 #' @author Michael Neely
 #' @export
 
-getPMoptions <- function(opt, warn = T) {
+getPMoptions <- function(opt, warn = T, quiet = F) {
   # check for existing options
   opt_dir  <- dplyr::case_when(
     getOS() == 1 | getOS() == 3 ~ "~/.PMopts", #Mac, Linux
@@ -25,7 +26,7 @@ getPMoptions <- function(opt, warn = T) {
   
   #if it doesn't exist, warn and exit
   if (!file.exists(PMoptionsFile)) {
-    if(warn) cat("Run setPMoptions() to create a Pmetrics options file.\n")
+    if(warn & !quiet) cat("Run setPMoptions() to create a Pmetrics options file.\n")
     return(invisible(-1))
   }
   
@@ -89,13 +90,14 @@ getPMoptions <- function(opt, warn = T) {
 #' To remove all defaults the JSON file should contain `"func_defaults": {}`. After saving the file,
 #' you will need to [base::detach()] the Pmetrics package and reload it with [base::library()] 
 #' for the changes to take effect.
+#' @param quiet Suppress warning messages. Default `FALSE`.
 #' @return The user preferences file will be updated.  This will persist from session to session
 #' and if stored in the external location, through Pmetrics versions.
 #' @author Michael Neely
 #' @export
 
 setPMoptions <- function(sep, dec, server_address, compilation_statements, 
-                         backend, rust_template, report_template, func_defaults) {
+                         backend, rust_template, report_template, func_defaults, quiet = F) {
   # read old values first
   PMopts <- getPMoptions(warn = F)
   
@@ -131,7 +133,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
   
   if(!identical(loc,PMopts$lang)){
     language <- locales$language[which(locales$iso639_2 == loc)]
-    cat(paste0("Language has changed. Based on system, setting default language to ", language,"."))
+    if (!quiet) cat(paste0("Language has changed. Based on system, setting default language to ", language,"."))
   }
   
   #add missing defaults
@@ -182,16 +184,20 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
       jsonlite::write_json(PMopts, path = PMoptionsFile, pretty = T)
       
     } else { #package options file does not exist
-      cat("Pmetrics can store all your options and function defaults in a folder outside the package.\n",
-          "This allows them to persist across installations of differing Pmetrics versions.\n")
-      cat(paste0("On your system, Pmetrics will place a PMoptions.json file in ",opt_dir, 
-                 ", which is a hidden folder.\n\n"))
-      cat(paste0("Enter ",crayon::red("<1>"), " to write to the external folder (persistent) or ",
-                 crayon::red("<2>"), " to write to the Pmetrics package (destroyed with new package version).\n"),
-          "You will not be asked this again with this Pmetrics version, but see help for setPMoptions().\n")
-      ans <- ""
-      while(ans != "1" & ans != "2"){
-        ans <- readline("Response: ")
+      if (!quiet){
+        cat("Pmetrics can store all your options and function defaults in a folder outside the package.\n",
+            "This allows them to persist across installations of differing Pmetrics versions.\n")
+        cat(paste0("On your system, Pmetrics will place a PMoptions.json file in ",opt_dir, 
+                   ", which is a hidden folder.\n\n"))
+        cat(paste0("Enter ",crayon::red("<1>"), " to write to the external folder (persistent) or ",
+                   crayon::red("<2>"), " to write to the Pmetrics package (destroyed with new package version).\n"),
+            "You will not be asked this again with this Pmetrics version, but see help for setPMoptions().\n")
+        ans <- ""
+        while(ans != "1" & ans != "2"){
+          ans <- readline("Response: ")
+        } 
+      } else { #default is to proceed with external if quiet = T
+        ans <- 1
       }
       if(ans == "1"){ #write to external
         dir.create(opt_dir)
@@ -210,10 +216,11 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
 #' location so that options can persist when the Pmetrics package is updated.  
 #'
 #' @title Move Pmetrics User Options
+#' @param quiet Suppress warning messages. Default `FALSE`.
 #' @return NULL, invisibly.
 #' @author Michael Neely
 #' @export
-movePMoptions <- function(){
+movePMoptions <- function(quiet = F){
   
   original_options <- paste(system.file("options", package = "Pmetrics"), "PMoptions.json", sep = "/")
   
@@ -228,19 +235,25 @@ movePMoptions <- function(){
     getOS() == 2 ~ file.path(Sys.getenv("APPDATA"), "PMopts")
   )
   
-  cat(paste0(crayon::red("WARNING: "), "This will move internal saved options to ",opt_dir, ".\n"))
-  cat("Pmetrics will now save and use options from that folder.\n")
+  if (!quiet){
+    cat(paste0(crayon::red("WARNING: "), "This will move internal saved options to ",opt_dir, ".\n"))
+    cat("Pmetrics will now save and use options from that folder.\n")
+  }
   
   destination_options <- file.path(opt_dir, "PMoptions.json")
-  if(file.exists(destination_options)){
+  if(file.exists(destination_options) & !quiet){
     cat(crayon::blue("You already have a PMoptions.json file in that folder. It will be overwritten.\n"))
   }
   
-  cat(paste0("Enter ",crayon::red("<1>"), " to proceed or ",
-             crayon::red("<2>"), " to abort.\n"))
-  ans <- ""
-  while(ans != "1" & ans != "2"){
-    ans <- readline("Response: ")
+  if (!quiet){
+    cat(paste0("Enter ",crayon::red("<1>"), " to proceed or ",
+               crayon::red("<2>"), " to abort.\n"))
+    ans <- ""
+    while(ans != "1" & ans != "2"){
+      ans <- readline("Response: ")
+    }
+  } else { #default when quiet = T
+    ans <- 1
   }
   if(ans == "2"){
     cat("Aborting PMoptions copy.\n")
@@ -249,12 +262,12 @@ movePMoptions <- function(){
   
   if(!dir.exists(opt_dir)){
     dir.create(opt_dir)
-    cat(paste0(opt_dir, " has been created.\n"))
+    if(!quiet) cat(paste0(opt_dir, " has been created.\n"))
   }
   
   file.copy(original_options, destination_options, overwrite = T)
   file.remove(original_options)
-  cat(paste0(destination_options, " written.\n"))
+  if(!quiet) cat(paste0(destination_options, " written.\n"))
   return(invisible(NULL))
 }
 
