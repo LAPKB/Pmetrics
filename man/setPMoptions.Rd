@@ -12,7 +12,8 @@ setPMoptions(
   backend,
   rust_template,
   report_template,
-  func_defaults
+  func_defaults,
+  quiet = F
 )
 }
 \arguments{
@@ -51,6 +52,8 @@ the entries no longer desired. Use caution with this, as a malformed file will c
 To remove all defaults the JSON file should contain \code{"func_defaults": {}}. After saving the file,
 you will need to \code{\link[base:detach]{base::detach()}} the Pmetrics package and reload it with \code{\link[base:library]{base::library()}}
 for the changes to take effect.}
+
+\item{quiet}{Suppress warning messages. Default \code{FALSE}.}
 }
 \value{
 The user preferences file will be updated.  This will persist from session to session
