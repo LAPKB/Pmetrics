@@ -4,12 +4,14 @@
 \alias{getPMoptions}
 \title{Get Pmetrics User Options}
 \usage{
-getPMoptions(opt, warn = T)
+getPMoptions(opt, warn = T, quiet = F)
 }
 \arguments{
 \item{opt}{The option to retrieve.  If omitted, all option values will be returned.}
 
 \item{warn}{Warn if options file doesn't exist. Default \code{TRUE}.}
+
+\item{quiet}{Suppress warning messages. Default \code{FALSE}.}
 }
 \value{
 A list with the current options.
