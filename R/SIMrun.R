@@ -398,11 +398,8 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
   }
   
   # number of random parameters
-  if (inherits(poppar, "PM_final")) {
     npar <- nrow(poppar$popCov)
-  } else {
-    npar <- nrow(poppar[[3]])
-  }
+
   
   # deal with limits on parameter simulated values
   if (all(is.null(limits))) {
@@ -907,10 +904,10 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
       # confirm gridpoints
       
       confirm <- rep(1, 2)
-    }
-    # end of block to make distribution when nsim=0
+    } else { # end of block to make distribution when nsim=0
     
-    else {
+    
+    
       # put it all together in the following order
       # 1:                             enter values from "keyboard"
       # ndist:                         number of distributions

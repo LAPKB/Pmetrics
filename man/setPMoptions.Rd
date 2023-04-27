@@ -9,16 +9,17 @@ setPMoptions(
   dec,
   server_address,
   compilation_statements,
-  op_stats,
   backend,
   rust_template,
-  report_template
+  report_template,
+  func_defaults,
+  quiet = F
 )
 }
 \arguments{
-\item{sep}{The field separator character; "," by default, but could be";"}
+\item{sep}{The field separator character; "," by default, but could be ";" or another separator.}
 
-\item{dec}{The decimal separator character; "." by default, but could be ","}
+\item{dec}{The decimal separator character; "." by default, but could be "," for example.}
 
 \item{server_address}{Specify address of server for remote runs.  Server must be set up separately.
 This functionality is coming soon.}
@@ -27,12 +28,7 @@ This functionality is coming soon.}
 single thread and parallel executions. Custom compile commands should be entered using \verb{<exec>} as a placeholder
 for the executable filename, and \verb{<files>} as a placeholder for the files to be linked and compiled.
 Example: \verb{gfortran -O3 -o <exec> <files>}.
-If a simgle compilation statement is provided, it will be used for both kind of compilations.}
-
-\item{op_stats}{Argument to include/format regression statistics in observed vs. predicted plots.
-Default is \code{FALSE}, but could either be set to \code{TRUE} for default format or a list of format options.
-The default format when set to \code{TRUE} is
-\code{list(x= 0.4, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 8))}}
+If a single compilation statement is provided, it will be used for both kind of compilations.}
 
 \item{backend}{Name of compiler to use. Default is "fortran" (for now) but can be "rust" to use rust compiler.
 Currently, only NPAG is available in rust.}
@@ -41,17 +37,46 @@ Currently, only NPAG is available in rust.}
 
 \item{report_template}{Format of the plots included in the summary report presented at the end of a run.
 Default is to use "plotly", but can be set to "ggplot".}
+
+\item{func_defaults}{Change the default argument value for any Pmetrics function or method.
+\code{func_defaults} should be a list, with each item itself a list of function name = list(arg1 = value, arg2 = value,...).
+For example: \code{func_defaults = list(plot.PM_op = list(stats = T, marker = list(color = "red")), qgrowth = list(percentile = 50))}.
+This is an incredibly powerful tool to customize your Pmetrics experience. If you store your
+options in the external location (recommended), these custom argument values will persist
+when Pmetrics is updated, as long as the argument is unchanged in the function. You can
+only change Pmetrics function arguments, as this is a very powerful tool that can mess up your
+R installation if used carelessly. You can add new argument defaults to the same function at a
+later time, as old entries will not be erased. To restore original defaults, either change
+it back to the original value or use \link{editPMoptions} to directly edit the JSON file and delete
+the entries no longer desired. Use caution with this, as a malformed file will cause errors.
+To remove all defaults the JSON file should contain \code{"func_defaults": {}}. After saving the file,
+you will need to \code{\link[base:detach]{base::detach()}} the Pmetrics package and reload it with \code{\link[base:library]{base::library()}}
+for the changes to take effect.}
+
+\item{quiet}{Suppress warning messages. Default \code{FALSE}.}
 }
 \value{
-The user preferences file will be updated.  This will persist from session to session.
+The user preferences file will be updated.  This will persist from session to session
+and if stored in the external location, through Pmetrics versions.
 }
 \description{
 Set user options for Pmetrics
 }
 \details{
-This function will set user options for Pmetrics. When the package is first installed,
-it will obtain the user's locale from system information and set the appropriate
-language.
+When the Pmetrics package is first loaded with \code{library(Pmetrics)},
+this function will be called. It will obtain
+the user's locale from system information and set the appropriate
+language. It will look for a \emph{PMoptions.json} file in a hidden folder outside
+of the Pmetrics package. If that does not exist, it will offer to create this for you.
+With this choice, your options will persist when Pmetrics is updated. If you choose
+to store the options within the package architecture, your options will be erased
+every time you update Pmetrics. After you make your choice, you will not be presented
+with that choice again. However, if you wish to later move your options from the internal
+location to the external one, use \link{movePMoptions}.
+
+The function will obtain Pmetrics user options from the \emph{PMoptions.json}
+file by calling \link{getPMoptions}, set them for the session and update any
+missing options with default values.
 }
 \author{
 Michael Neely

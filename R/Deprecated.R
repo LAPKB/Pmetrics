@@ -3,7 +3,7 @@
 #'
 #' @title Deprecated functions.
 #' @aliases PMFortranConfig, PMcheckMatrix, PMfixMatrix, NPload, ITload, NPreport, ITreport,
-#' PMdiag, PMreadDefaults, PMwriteDefaults, makeNPDE, PMupdate
+#' PMdiag, PMreadDefaults, PMwriteDefaults, makeNPDE
 #' @author Michael Neely
 #' @export
 
@@ -14,7 +14,7 @@ PMFortranConfig <- function(...) {
 
 #' @export
 PMcheckMatrix <- function(...) {
-  cat("\nPMcheckMatrix is deprecated.  Use PMcheck() instead to check data and model files.\n")
+  cat("\nPMcheckMatrix is deprecated.  Use PM_data$new() and PM_model$new() instead to check data and model files.\n")
 }
 
 #' @export
@@ -44,7 +44,7 @@ ITreport <- function(...) {
 
 #' @export
 PMdiag <- function(...) {
-  cat("\nPMdiag is deprecated.  Use makeNPDE() instead to internally validate a model.\n")
+  cat("\nPMdiag is deprecated.  Use $validate() on a PM_result object or makeValid() instead.\n")
 }
 
 #' @export
@@ -62,7 +62,3 @@ makeNPDE <- function(...) {
   cat("\nmakeNPDE is deprecated.  Use $validate() on a PM_result object or makeValid() instead.\n")
 }
 
-#' @export
-PMupdate <- function(...) {
-  cat("\nPMupdate is deprecated. Please restart Rstudio and do not load Pmetrics.  Then use the command devtools::install_github(\"LAPKB/Pmetrics\")")
-}
