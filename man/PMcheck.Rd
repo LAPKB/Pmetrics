@@ -132,7 +132,7 @@ PMcheck(goodData)
 }
 }
 \seealso{
-\link{PMwriteMatrix}}, \code{\link{PMreadMatrix}
+\link{PMwriteMatrix}, \link{PMreadMatrix}
 }
 \author{
 Michael Neely and Patrick Nolain

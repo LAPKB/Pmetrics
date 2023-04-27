@@ -501,12 +501,8 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
                           hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
                                                  "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
   }
-  if(missing(stats)) stats <- getPMoptions("op_stats")
-  if(is.null(stats)){
-    setPMoptions(op_stats = T)
-    stats <- T
-    statPlot <- T
-  }
+  if(missing(stats)) stats <- T
+
   if(is.logical(stats)){ #default formatting
     if(stats){
       statPlot <- T
