@@ -22,7 +22,7 @@
   xlab,
   ylab,
   title,
-  stats,
+  stats = T,
   xlim,
   ylim,
   ...
@@ -126,14 +126,11 @@ plots when \code{resid = F} and either "Individual weighted residuals" or
 Examples: \itemize{ \item{\code{title = "Observed vs. Predicted"}} \item{\code{title = list(text = "Raw Data", font = list(color = "red", family = "Arial", size = 10, bold = T))}} }
 Default is to have no title.}
 
-\item{stats}{Add the statistics from linear regression to the plot. If missing or
-\code{FALSE}, will be suppressed. Can be set to \code{TRUE} which results in default format of
+\item{stats}{Add the statistics from linear regression to the plot. If
+\code{FALSE}, will be suppressed. Default is \code{TRUE} which results in default format of
 \code{list(x= 0.8, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 14))}.
 The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
-argument maps to \code{plotly::add_text()}. It is also an option that can be set in
-\link{setPMoptions} to avoid specifying this argument for every plot. The default option
-is \code{TRUE}. If specified as a
-Pmetrics option, it can be overridden for specific plots by supplying a value.}
+argument maps to \code{plotly::add_text()}.}
 
 \item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range.
 
@@ -170,10 +167,11 @@ NPex$op$plot(stats = list(x = 0.5, y = 0.2, font = list(size = 7, color = "blue"
 
 }
 \seealso{
-\link{PM_result}, \link{schema}
+\link{makeOP}, \link{PM_result}, \link{schema}
 
 Other PMplots: 
 \code{\link{plot.MMopt}()},
+\code{\link{plot.PM_cycle}()},
 \code{\link{plot.PM_data}()},
 \code{\link{plot.PM_final}()},
 \code{\link{plot.PM_pta}()},

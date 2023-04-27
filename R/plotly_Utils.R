@@ -501,12 +501,8 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
                           hovertemplate = paste0("Predicted: %{x:.2f}<br>", 100*ci, 
                                                  "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"))
   }
-  if(missing(stats)) stats <- getPMoptions("op_stats")
-  if(is.null(stats)){
-    setPMoptions(op_stats = T)
-    stats <- T
-    statPlot <- T
-  }
+  if(missing(stats)) stats <- T
+
   if(is.logical(stats)){ #default formatting
     if(stats){
       statPlot <- T
@@ -536,5 +532,239 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
       )
   }
   
+  return(p)
+}
+
+#' Export plotly plot
+#' 
+#' Wrapper around [plotly::save_image()].
+#' 
+#' This function improves the experience with the native plotly method of exporting
+#' plots to static images. Much of the online documentation points towards using
+#' the orca package, but the R help indicates that this method has been superseded
+#' by the kaleido python package, made accesible in R via the reticulate package and
+#' installation of the miniconda package manager.
+#' 
+#' These steps are all outlined in the help for [plotly::save_image()], but one step
+#' is neglected. It is necessary to execute the following line of code at the end:
+#' `reticulate::py_run_string("import sys")`.
+#' 
+#' This function will check to see that all installations are in place and offer to
+#' install if not.
+#' 
+#' Many of the arguments are the same as for `save_image` and are passed directly
+#' to that function.
+#' 
+#' @param p The plot to which the shape should be added. Default is the
+#' `plotly::last_plot()`.
+#' @param file A file path with a suitable file extension (png, jpg, jpeg, webp, svg, or pdf).
+#' Unlike `save_image`, the `file` argument may include the full path and filename
+#' other than in the current working directory.
+#' @param width, height  The width/height of the exported image in pixels,
+#' mutliplied by `scale`. 
+#' @param scale The scale factor to use when exporting the figure. Default is 1.0.
+#' A scale factor larger than 1.0 will increase the image size, 
+#' and less than 1.0 will decrease the image size. Note that the documentation 
+#' for `save_image` says that this argument changes the resolution, but that is
+#' not true. The resolution will remain at 72 pixels/inch (28.3 px/cm), which is
+#' the default for R. To increase the resolution, export to .pdf or .svg and use
+#' an external program, such as Adobe Acrobat, Acrobat Reader, or Mac Preview.
+#' @param units Units for `width` and `height`. Default is pixels ("px").
+#' Alternatives are inches ("in") or centimeters ("cm")
+#' @param show Show the exported image in R via [base::file.show()]. If export
+#' format is pdf, it will open the system default pdf viewer. Default is `TRUE`.
+#' @return Plot `p` will be exported to `file` with format determined by the
+#' extension for `file`.
+#' @export
+#' @seealso [plotly::save_image()]
+#' @examples 
+#' NPex$op$plot(stats = list(x = 0.9)) %>% export_plotly(file = "op.png", width = 12, height = 6, units = "in")
+#' @author Michael Neely
+
+
+export_plotly <- function(p, file, width = NULL, height = NULL, 
+                          scale = NULL, units = "px", show = T){
+  
+  if(missing(p)) p <- plotly::last_plot()
+  if(!inherits(p,"plotly")) stop("Specify a plotly object to be exported.\n")
+  if(missing(file)) stop("Provide a file name. The extension will determine the type of export.\n")
+  
+  if(Sys.which("kaleido")==""){ #not installed
+    cat("Pmetrics needs to install/update the kaleido python package.\n")
+    cat("See ?kaleido for more information.\n")
+    confirm <- readline(cat("Enter:\n<1> to continue\n<2> to abort"))
+    if (confirm == 2) {
+      return(invisible(NULL))
+    }
+    if(!rlang::is_installed("reticulate")){
+      install.packages('reticulate')
+    }
+    if(reticulate::miniconda_path() == ""){
+      reticulate::install_miniconda()
+    }
+    reticulate::conda_install('r-reticulate', 'python-kaleido')
+    reticulate::conda_install('r-reticulate', 'plotly', channel = 'plotly')
+    reticulate::use_miniconda('r-reticulate')
+    reticulate::py_run_string("import sys")
+  }
+  
+  currwd <- getwd()
+  
+  if(grepl(.Platform$file.sep, file)){ #file is a path
+    setwd(dirname(file))
+    filename <- basename(file)
+  } else {filename <- file}
+  
+  correction <- dplyr::case_when(
+    units == "px" ~ 1,
+    units == "in" ~ 72,
+    units == "cm" ~ 28
+  )
+  width <- if(!is.null(width)) width * correction
+  height <- if(!is.null(height)) height * correction
+  
+  tryCatch(plotly::save_image(p = p, file = filename, width = width, height = height, scale = scale),
+           error = function(e){
+             cat("The kaleido python package does not appear to be installed properly.\n")
+             cat("Try following the installation instructions in the save_image() help page.\n")
+             cat(paste0(crayon::red("Note - "),"Add one more line of code after the others: ",crayon::blue("reticulate::py_run_string('import sys')\n")))
+             stop("Plot not saved.\n",call. = F)
+           }
+  )
+  if(show){
+    if(!grepl("\\.pdf$",file)){ #not pdf
+      file.show(file, title = file)
+    } else { #pdf
+      system(paste("open",file))
+    }
+  }
+  setwd(currwd) #in case changed
+}
+
+
+#' Display multiple plotly plots
+#' 
+#' Wrapper around [plotly::subplot()].
+#' 
+#' This function addresses the deficiency with the native plotly method of combining
+#' multiple plots that prevents individualized titling of subplots. The function
+#' has identical arguments to [plotly::subplot()] with the addition of a `titles`
+#' argument. In addition to `subplot`, the behavior of this function is two-fold:
+#' * Fetch the titles (text and formatting) from each included plot
+#' * Include the titles with placement per the `titles` argument
+#' @param \dots One of the following
+#' * any number of plotly objects
+#' * a list of plotly objects.
+#' Note that unlike [plotly::subplot()], ggplots and tibbles cannot be passed to
+#' this function.
+#' @param nrows number of rows for laying out plots in a grid-like 
+#' structure. Default is 1.
+#' @param widths, heights Vector of relative column widths or heights
+#' on a 0-1 scale. By default all columns have an equal relative width/height, 
+#' i.e. `c(0.5, 0.5)` for two columns, `rep(0.25, 4)` for 4 columns. 
+#' @param margin either a single value or a vector of four values (all between 0 and 1),
+#' e.g. `c(0.05, 0.05, 0.05, 0.1)` 
+#' If four values are provided, the first is used as the left margin, 
+#' the second is used as the right margin, the third is used as the top margin, 
+#' and the fourth is used as the bottom margin. If a single value is provided, 
+#' it will be used as all four margins.
+#' @param titles Include titles on individual subplots? Default is `NULL`. If
+#' specified as vector of length 2, will be rendered as x and y values relative
+#' to each plot. For example, `title = c(0,1)` plots the titles in the upper
+#' left corner of each subplot and `title = c(1,0)` renders the titles in the 
+#' lower right corner. Title text and formatting will be grabbed from each 
+#' individual plot. To modfify these characteristics, modify the code that 
+#' generated the individual plot. 
+#' @param shareX, shareY Should the x- or y- axis be shared amongst the subplots?
+#' @param titleX, titleY Should x- or y- axis titles be retained?
+#' @param which_layout Adopt the layout of which plot? If the default value of 
+#' "merge" is used, layout options found later in the sequence of plots 
+#' will override options found earlier in the sequence. This argument also 
+#' accepts a numeric vector specifying which plots to consider when merging.
+#' @return A plot and plotly object combining all the plots in `...`, 
+#' which can be further modified.
+#' @export
+#' @seealso [plotly::subplot()]
+#' @examples 
+#' plot1 <- NPex$op$plot(title = "Posterior")
+#' plot2 <- NPex$op$plot(pred.type = "pop", title = "Population")
+#' sub_plot(plot1, plot2, titles = c(0, 0.95), nrows = 2)
+#' @author Michael Neely
+
+sub_plot <- function(...,
+                     nrows = 1,
+                     widths = NULL,
+                     heights = NULL,
+                     margin = 0.02,
+                     titles = NULL, #or (x,y)
+                     shareX = FALSE,
+                     shareY = FALSE,
+                     titleX = shareX,
+                     titleY = shareY,
+                     which_layout = "merge"){
+  
+  #number of plots
+  plots <- list(...)
+  n_plots <- length(plots)
+  if(nrows > n_plots) nrows <- n_plots #sanity check
+  
+  #grab title lists from each plot and convert to annotations
+  plot_annotations <- purrr::map(plots, function(p) p$x$layoutAttrs[[2]]$title) %>%
+    purrr::map(function(title){
+      list(
+        text = title$text,
+        font = title$font,
+        xref = "paper",
+        yref = "paper",
+        yanchor = "bottom",
+        xanchor = "left",
+        align = "right",
+        x = 0, #will be replaced
+        y = 0, #will be replaced
+        showarrow = FALSE
+      )
+    })
+  
+  #remove titles from plots
+  plots <- purrr::map(plots, function(p){
+    purrr::modify_in(p, list("x","layoutAttrs",2,"title","text"), \(p) "" )
+  })
+  
+  #calculate relative x and y based on plot number and rows
+  if(!is.null(titles) && length(titles) == 2){ #we have x and y
+    x_pos <- titles[1]
+    y_pos <- titles[2]
+    plots_per_row <- ceiling(n_plots/nrows)
+    x_increment <- 1/plots_per_row
+    y_increment <- 1/nrows
+    x_adj <- x_pos * x_increment
+    y_adj <- y_pos * y_increment
+    
+    x_list <- if(plots_per_row == 1) {x_adj} else {seq(x_adj, (plots_per_row - 1) * x_increment, x_increment)}
+    y_list <- if(nrows == 1) {y_adj} else {rev(seq(y_adj, 1, y_increment))}
+    
+    plot_coords <- expand.grid(col = x_list, row = y_list) #first arg changes fastest
+    
+    
+    plot_annotations <- purrr::map(1:n_plots, function(i){
+      purrr::list_assign(plot_annotations[[i]], x = plot_coords$col[i], y = plot_coords$row[i])
+    })
+    
+  } else {
+    plot_annotations <- NULL #we did not have x,y
+  }
+  
+  p <- plotly::subplot(plots, 
+                  nrows = nrows,
+                  widths = widths,
+                  heights = heights,
+                  margin = margin,
+                  shareX = shareX,
+                  shareY = shareY,
+                  titleX = shareX,
+                  titleY = shareY,
+                  which_layout = which_layout) %>% 
+    plotly::layout(annotations = plot_annotations)
+  print(p)
   return(p)
 }
