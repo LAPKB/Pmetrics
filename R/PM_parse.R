@@ -85,9 +85,6 @@ make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", version) {
     showProgress = TRUE
   )
 
-  obs_raw <- obs_raw %>%
-    dplyr::rename(id = sub_num)
-
   op <- obs_raw %>%
     left_join(pred_raw, by = c("id", "time", "outeq")) %>%
     pivot_longer(cols = c(popMean, popMedian, postMean, postMedian)) %>%
