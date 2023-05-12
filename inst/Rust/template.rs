@@ -25,7 +25,7 @@ impl ode_solvers::System<State> for Model<'_> {
             }
         }
         </lag>
-        </diff_eq>
+        </eqn>
 
         for dose in &self.scenario.doses{
             if (t-dose.time).abs() < (STEP_SIZE/2. - 1.0e-07) {

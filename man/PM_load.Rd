@@ -13,11 +13,11 @@ simple as \code{run1 <- PM_load(1)}. There is no default value for this, and if
 missing, Pmetrics will only search the current working directory for output files.}
 
 \item{remote}{Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
-See \code{\link{NPrun}}. Currently remote runs are not configured for IT2B or the Simulator.}
+See \link{NPrun}. Currently remote runs are not configured for IT2B or the Simulator.}
 
 \item{server_address}{If missing, will use the default server address returned by getPMoptions().
 Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
-in \code{\link{NPrun}}.}
+in \link{NPrun}.}
 
 \item{file}{Optional name of an .Rdata file created by running the
 \verb{$save} method for a \link{PM_result} object. For example,
@@ -29,15 +29,15 @@ Pmetrics will attempt to find a "PMout.Rdata" or the older "NPAGout.Rdata" or
 specified) or the \code{run/outputs} folder, if \code{run} is provided.}
 }
 \value{
-An R6 \code{\link{PM_result}}.
+An R6 \link{PM_result}.
 }
 \description{
 Loads all the data from an \emph{NPAG} or \emph{IT2B} run.
 }
 \seealso{
-\code{\link{PMreport}}, \code{\link{NPparse}}, \code{\link{ITparse}},
-\code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}},
-\code{\link{makePop}}, \code{\link{makePost}}
+\link{PMreport}, \link{NPparse}, \link{ITparse},
+\link{makeFinal}, \link{makeCycle}, \link{makeOP}, \link{makeCov},
+\link{makePop}, \link{makePost}
 }
 \author{
 Michael Neely and Julian Otalvaro

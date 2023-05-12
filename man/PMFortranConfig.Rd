@@ -12,8 +12,7 @@
 \alias{PMdiag,}
 \alias{PMreadDefaults,}
 \alias{PMwriteDefaults,}
-\alias{makeNPDE,}
-\alias{PMupdate}
+\alias{makeNPDE}
 \title{Deprecated functions.}
 \usage{
 PMFortranConfig(...)
