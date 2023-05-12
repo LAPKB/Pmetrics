@@ -183,9 +183,6 @@ PM_Vmodel <- R6::R6Class("PM_model",
             }
           }
         } else if (x == "cov") {
-          cat("\n", sp(1), "$cov\n", paste0(sp(2), "[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = "\n "))
-          cat("\n")
-
           cat("\n", sp(1), "$cov\n")
           for (i in 1:length(mlist$cov)) {
             thisout <- mlist$cov[[i]]

@@ -117,19 +117,23 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
     data2 <- tryCatch(suppressWarnings(PMreadMatrix(data, quiet = T)), error = function(e) return(invisible(e)))
     data_orig <- NULL
     legacy <- attr(data2, "legacy") 
+    source <- "file"
   } else if (inherits(data, "PM_data")){
     cat("Running PMcheck on PM_data object, so using $standard_data.\n")
     data2 <- data$standard_data
     data_orig <- data$data
     legacy <- F
+    source <- "PM_data"
   } else if (is.list(data) & !is.data.frame(data)){ #data is a list coming from PM_data$private$validate
     data2 <- data$standard
     data_orig <- data$original
     legacy <- F 
+    source <- "list"
   } else { #data is a PMmatrix object
     data2 <- data
     data_orig <- NULL
     legacy <- attr(data2, "legacy") 
+    source <- "PMmatrix"
   }
   if (is.null(legacy)){ legacy <- F}
   
@@ -137,7 +141,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
   if (missing(model)) model <- NA
   
   #check for errors
-  err <- errcheck(data2, model = model, quiet = quiet)
+  err <- errcheck(data2, model = model, quiet = quiet, source = source)
   if (length(err) == 1) {
     cat("You must at least have id, evid, and time columns to proceed with the check.\n")
     flush.console()
@@ -195,7 +199,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
 # errcheck ----------------------------------------------------------------
 
 #Check for errors 
-errcheck <- function(data2, model, quiet = quiet) {
+errcheck <- function(data2, model, quiet, source) {
   
   #each list element has msg when OK, results for rows with errors, column, code for excel
   err <- list(colorder = list(msg = "OK - The first 14 columns are appropriately named and ordered.", results = NA, col = NA, code = NA),
@@ -401,7 +405,6 @@ errcheck <- function(data2, model, quiet = quiet) {
     
     if (numcov > 0) { covnames <- getCov(data2)$covnames } else { covnames <- NA }
     numeqt <- max(data2$outeq, na.rm = T)
-    
     modeltxt <- model
     #attempt to translate model file into separate fortran model file and instruction files
     engine <- list(alg = "NP", ncov = numcov, covnames = covnames, numeqt = numeqt, indpts = -99, limits = NA)
@@ -418,11 +421,11 @@ errcheck <- function(data2, model, quiet = quiet) {
       cat(trans$msg)
     }
     if (trans$status == 0) {
-      if (!inherits(data, "PMmatrix") & !quiet) cat(paste("Associated data file: ", data, sep = ""))
+      #if (source == "file" & !quiet) cat(paste("Associated data file: ", data, sep = ""))
       if (!quiet) cat("\nYou are using a Fortran model file rather than the new text format.\nThis is permitted, but see www.lapk.org/ModelTemp.php for details.\n")
     }
     if (trans$status == 1) {
-      if (!inherits(data, "PMmatrix") & !quiet) cat(paste("Associated data file: ", data, sep = ""))
+      #if (source == "file" & !quiet) cat(paste("Associated data file: ", data, sep = ""))
       if (!quiet) cat("\nExcellent - there were no errors found in your model file.\n")
       if (trans$model %in% Sys.glob("*", T)) {
         file.remove(trans$model)
