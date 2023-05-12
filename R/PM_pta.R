@@ -21,9 +21,11 @@ PM_pta <- R6::R6Class(
         #' @param simdata Output of `$sim` method for [PM_result] object 
         #' @param targets See [makePTA].
         #' @param target.type See [makePTA].
+        #' @param success See [makePTA]
         #' @param ... Other arguments passed to [makePTA].
-        initialize = function(simdata, targets, target.type, ...) {
-            pta <- makePTA(simdata, targets, target.type, ...)
+        initialize = function(simdata, targets, target.type, success, ...) {
+            pta <- makePTA(simdata = simdata, targets = targets, 
+                           target.type = target.type, success = success, ...)
             self$results <- pta$results
             self$outcome <- pta$outcome
             attr(self, "simlabels") <- attr(pta, "simlabels")

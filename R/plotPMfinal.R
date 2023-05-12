@@ -78,13 +78,13 @@
 
 plot.PM_final <- function(x, 
                           formula, 
-                          line = T,
-                          marker = T,
+                          line = TRUE,
+                          marker = TRUE,
                           density = F, 
                           standardize,
                           legend, 
                           log, 
-                          grid = T,
+                          grid = TRUE,
                           xlab, ylab, zlab,
                           title,
                           xlim, ylim,
@@ -94,7 +94,7 @@ plot.PM_final <- function(x,
   if(inherits(x,"NPAG")){
     type <- "NPAG"
     densityFormat <- amendLine(density, default = list(color = "black"))
-    if(inherits(density,"list")) density <- T
+    if(inherits(density,"list")) density <- TRUE
     bar <- amendMarker(marker, default = list(color = "dodgerblue", size = 5,
                                               width = 0.02, opacity = 0.5))
     line <- amendLine(line)
@@ -355,7 +355,7 @@ plot.PM_final <- function(x,
         dplyr::full_join(ab_alpha, by = "par") %>%
         dplyr::mutate(panel = list(uniPlot(par, data, min, max, type = "NPAG", 
                                            bar = bar, xlab = xlab, ylab = ylab, title = title))) %>%
-        plotly::subplot(margin = 0.02, nrows = nrow(.), titleX = T, titleY = T)
+        plotly::subplot(margin = 0.02, nrows = nrow(.), titleX =TRUE, titleY =TRUE)
       
     } else {
       #IT2B
@@ -380,7 +380,7 @@ plot.PM_final <- function(x,
         dplyr::full_join(ab_alpha, by = "par") %>%
         dplyr::mutate(panel = list(uniPlot(par, data, min, max, 
                                            type = "IT2B", xlab = xlab, ylab = ylab, title = title))) %>%
-        plotly::subplot(margin = 0.02, nrows = nrow(.), titleX = T, titleY = T)
+        plotly::subplot(margin = 0.02, nrows = nrow(.), titleX =TRUE, titleY =TRUE)
       
     }
   } else { #bivariate
