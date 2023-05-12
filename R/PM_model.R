@@ -201,8 +201,8 @@ PM_Vmodel <- R6::R6Class("PM_model",
         } else if (x == "sec") {
           cat("\n", sp(1), "$sec\n", paste0(sp(2), "[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = "\n "))
           cat("\n")
-        } else if (x == "dif") {
-          cat("\n", sp(1), "$dif\n", paste0(sp(2), "[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = "\n "))
+        } else if (x == "dif" | x == "eqn") {
+          cat("\n", sp(1), "$eqn\n", paste0(sp(2), "[", 1:length(mlist$eqn), "] \"", mlist$eqn, "\"", collapse = "\n "))
           cat("\n")
         } else if (x == "lag") {
           cat("\n", sp(1), "$lag\n", paste0(sp(2), "[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = "\n "))
@@ -460,7 +460,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
         lag <- "let t = t - self.lag;"
       }
       content <- gsub("</lag>", lag, content)
-      eqs <- self$model_list$dif %>% tolower()
+      eqs <- self$model_list$eqn %>% tolower()
       # gsub("\\(([0-9]))","[\\1]",tolower(eqs))
       # str_replace_all(tolower(eqs),"\\((\\d)\\)",function(a){a})
       # str_replace_all(tolower(eqs),"(?<=\\()\\d+(?=\\))",function(a){paste0("[",as.integer(a)-1,"]")})
@@ -471,7 +471,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
         paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
       }) %>%
         stringr::str_replace_all("xp", "dx")
-      content <- gsub("</diff_eq>", paste0(eqs %>% paste(collapse = ";\n"), ";"), content)
+      content <- gsub("</eqn>", paste0(eqs %>% paste(collapse = ";\n"), ";"), content)
       content <- gsub("</neqs>", neqs, content)
       content <- gsub("</seq>", "", content)
       content <- gsub("</model_params>", mp_lines %>% paste(collapse = ""), content)
@@ -501,7 +501,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
     },
     update = function(changes_list) {
       keys <- names(changes_list)
-      stopifnot(private$lower3(keys) %in% c("pri", "sec", "dif", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")) # TODO: add all supported blocks
+      stopifnot(private$lower3(keys) %in% c("pri", "sec", "dif", "eqn", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")) 
       self$model_list <- modifyList(self$model_list, changes_list)
     }
   ),
@@ -636,7 +636,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
             }
           )
         }
-      } else if (private$lower3(key) == "dif") {
+      } else if (private$lower3(key) == "dif" | private$lower3(key) == "eqn") {
         # names <- names(block)
         for (i in 1:length(block)) {
           # key <- toupper(names[i])
@@ -819,9 +819,14 @@ PM_model_file <- R6::R6Class("PM_model_file",
         model_list$lag <- blocks$lag
       }
 
-      # differential equations
+      # differential equations - legacy
       if (blocks$diffeq[1] != "") {
-        model_list$dif <- blocks$diffeq
+        model_list$eqn <- blocks$diffeq
+      }
+      
+      # model equations - will eventually replace diffeq above
+      if (blocks$eqn[1] != "") {
+        model_list$eqn <- blocks$eqn
       }
 
       # out/err
