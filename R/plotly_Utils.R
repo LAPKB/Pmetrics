@@ -54,7 +54,7 @@ amendLine <- function(.line, default){
 #amend title
 amendTitle <- function(.title, default){
   
-  default_font <- list(family = "Arial", color = "black", bold = T, size = 16)
+  default_font <- list(family = "Arial", color = "black", bold = TRUE, size = 16)
   if(!missing(default)){
     default_font <- modifyList(default_font, default)
   }
@@ -67,19 +67,19 @@ amendTitle <- function(.title, default){
       stop("Missing title text element.\nSee plotly::schema() > layout > layoutAttributes > title for help.\n")
     } 
     if(!is.null(purrr::pluck(.title,"size"))){
-      error <- T
+      error <- TRUE
       errors <- "size"
       default_font$size <- .title$size
       .title$size <- NULL
     } 
     if(!is.null(purrr::pluck(.title,"color"))){
-      error <- T
+      error <- TRUE
       errors <- c(errors, "color")
       default_font$color <- .title$color
       .title$color <- NULL
     } 
     if(!is.null(purrr::pluck(.title,"family"))){
-      error <- T
+      error <- TRUE
       errors <- c(errors, "family")
       default_font$family <- .title$family
       .title$family <- NULL
@@ -201,12 +201,12 @@ amendLegend <- function(.legend, default){
       .legend <- default_legend
     } else {
       .legend <- default_legend
-      .legend$showlegend <- T
+      .legend$showlegend <- TRUE
     }
   } else {
     if(inherits(.legend,"list")){
       .legend <- modifyList(default_legend, .legend)
-      .legend$showlegend <- T
+      .legend$showlegend <- TRUE
     }
   }
   return(.legend)
@@ -296,7 +296,7 @@ notNeeded <- function(x, f){
 #' #add to a new plot
 #' plotly::plot_ly(x = 1:10, y=1:10, type = "scatter", mode = "lines+markers") %>%
 #' layout(shapes = ab_line(h = 5, line = list(color = "red", dash = "solid")))
-ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = T){
+ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE){
   if(!is.null(a)){
     if(is.null(b)){
       stop(paste0("Specify both ", crayon::red("a"), " (intercept) and ", 

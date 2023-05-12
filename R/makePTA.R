@@ -107,7 +107,6 @@ makePTA <- function(simdata, simlabels, targets, target.type, success, outeq = 1
   
   ################### begining of makePTA ######################
   # initial checks
-  
   if (missing(simdata) | missing(targets) | missing(target.type) | missing(success)) 
     stop("Simulation output (simdata), targets, target.type, and success are all mandatory.\n")
   if (is.character(target.type) & !target.type %in% c("time", "auc", "peak", "min")) 
@@ -131,25 +130,29 @@ makePTA <- function(simdata, simlabels, targets, target.type, success, outeq = 1
   
   #what kind of object is simdata?
   #lists, characters are assumed to be simulations 
-  dataType <- switch(EXPR=class(simdata)[1], PM_sim = 0, PMsim = 1, 
-                     list = 2, character = 3, PMpost = 4, PMmatrix = 5 ,
-                     PMpta = 6, PM_data = 7, -1)
+  dataType <- switch(EXPR=class(simdata)[1], PM_sim = 0, PMsim = 1, PM_simlist = 2,
+                     list = 3, character = 4, PMpost = 5, PMmatrix = 6 ,
+                     PMpta = 7, PM_data = 8, -1)
   if(dataType==-1){
     stop("You must specify a PM_sim, PMsim (legacy), list of simulations, character vector of simulator output files, PMpost, PMmatrix (legacy), or PM_data object\n")
   }
   
-  if (dataType!=6) { #check if object passed as simdata is already a PMpta object
+  if (dataType!=7) { #check if object passed as simdata is already a PMpta object
     
     ########### new PTA calculation ##################  
     #need to get it into a list of PMsim objects
-    if (dataType==1 || dataType==0) { #single PMsim object
+    if (dataType==0 || dataType==1) { #single PM_sim/PMsim object
       simdata <- list(simdata)
       #class(simdata) <- c("PMsim", "list")
     }
     
-    #nothing to do for dataType=2, already in right format
+    if(dataType == 2){ #PM_simlist
+      simdata <- simdata$data #extract data
+    }
     
-    if (dataType==3) { #character vector of simulator output files
+    #nothing to do for dataType=3 already in right format
+    
+    if (dataType==4) { #character vector of simulator output files
       simfiles <- Sys.glob(simdata)
       if (length(simfiles) == 0) 
         stop("There are no files matching \"", simdata, "\".\n", sep = "")
@@ -159,15 +162,15 @@ makePTA <- function(simdata, simlabels, targets, target.type, success, outeq = 1
       }
     }
     
-    if(dataType==4){  #PMpost object
+    if(dataType==5){  #PMpost object
       simdata <- simdata %>% filter(icen == !!icen & block == !!block)
       #simdata <- simdata[simdata$icen==icen & simdata$block==block,]
       temp <- list(obs=data.frame(id=simdata$id,time=simdata$time,out=simdata$pred,outeq=simdata$outeq))
       simdata <- list(temp)
     }
     
-    if(dataType == 5 | dataType == 7){  #PMmatrix or PM_data object
-      if(dataType == 7){
+    if(dataType == 6 | dataType == 8){  #PMmatrix or PM_data object
+      if(dataType == 8){
         simdata <- simdata$data
       }
       simdata <- makePMmatrixBlock(simdata)
@@ -187,7 +190,7 @@ makePTA <- function(simdata, simlabels, targets, target.type, success, outeq = 1
     
     sim.labels <- paste("Regimen", 1:n_sim)
     
-    if (!is.null(simlabels)) { #replace generic labels with user labels
+    if (!missing(simlabels)) { #replace generic labels with user labels
       n_simlabels <- length(simlabels)
       if (n_simlabels < n_sim) warning("There are more simulations (n=",n_sim,") than labels (n=",n_simlabels,").", call.=F, immediate. = T)
       if (n_simlabels > n_sim) warning("There are fewer simulations (n=",n_sim,") than labels (n=",n_simlabels,"); some labels will be ignored.", call.=F, immediate. = T)
