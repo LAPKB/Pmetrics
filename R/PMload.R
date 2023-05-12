@@ -29,6 +29,18 @@
 
 PM_load <- function(run = 1, remote = F, server_address, file) {
   
+  #internal function to process list
+  output2List <- function(Out) {
+    result <- list()
+    for (i in 1:length(Out)) {
+      aux_list <- list(Out[[i]])
+      names(aux_list) <- names(Out)[i]
+      result <- append(result, aux_list)
+    }
+    
+    return(result)
+  }
+  
   #If Rust
   if (getPMoptions()$backend == "rust") {
     if (!missing(file) && file.exists(file)) {
@@ -51,13 +63,13 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
   IT2Bout <- NULL
 
   found <- FALSE
-  # check for NPAG output file
-  filename <- "NPAGout.Rdata"
-  if (is.numeric(run)) {
-    outfile <- paste(run, "outputs", filename, sep = "/")
-  } else {
-    outfile <- paste(run, filename, sep = "/")
-  }
+  # # check for NPAG output file
+  # filename <- "NPAGout.Rdata"
+  # if (is.numeric(run)) {
+  #   outfile <- paste(run, "outputs", filename, sep = "/")
+  # } else {
+  #   outfile <- paste(run, filename, sep = "/")
+  # }
   
   if (remote) { # only look on server
     if (missing(server_address)) server_address <- getPMoptions("server_address")
@@ -73,13 +85,13 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
   } else if (!missing(file)) { #file supplied, so look for it
     # try in current wd
     if (file.exists(file)) {
-      found <- T
+      found <- TRUE
     } else {
       # nope, try in an outputs folder
       if (!missing(run)) {
         file <- paste0(run, "/outputs/", file)
         if (file.exists(file)) {
-          found <- T
+          found <- TRUE
         }
       }
     }
@@ -89,7 +101,7 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
       for (i in file_list) {
         file <- paste0(run, "/outputs/", i)
         if (file.exists(file)) {
-          found <- T
+          found <- TRUE
           break
         }
       }
@@ -101,18 +113,6 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
     return(PM_result$new(result, quiet = T)) # no errors
   } else {
     stop(paste0("No Pmetrics output file found in ", getwd(), ".\n"))
-  }
-  
-  
-  output2List <- function(Out) {
-    result <- list()
-    for (i in 1:length(Out)) {
-      aux_list <- list(Out[[i]])
-      names(aux_list) <- names(Out)[i]
-      result <- append(result, aux_list)
-    }
-    
-    return(result)
   }
 }
 

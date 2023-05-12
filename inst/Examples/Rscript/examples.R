@@ -78,8 +78,8 @@ names(exData)
 
 # other examples of things that can be done with this object are
 exData # view the original data in the viewer
-exData$print(standard = T) # view the standardized data in the viewer
-exData$print(viewer = F) # view original data in console
+exData$print(standard = TRUE) # view the standardized data in the viewer
+exData$print(viewer = FALSE) # view original data in console
 
 # MODEL OBJECT
 # You can specify a model by reading a file or directl as an object. We'll do both.
@@ -95,14 +95,20 @@ mod1 <- PM_model$new(list(
     V = ab(30, 120),
     Tlag1 = ab(0, 4)
   ),
-  cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
+  cov = list(
+    covariate("WT"), 
+    covariate("AFRICA"), 
+    covariate("AGE"), 
+    covariate("GENDER"), 
+    covariate("HEIGHT")
+    ),
   lag = list("Tlag(1) = Tlag1"),
   out = list(
     Y1 = list(
       value = "X(2)/V",
       err = list(
         model = proportional(5),
-        assay = c(0.02, 0.05, -0.0002, 0)
+        assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
       )
     )
   )
@@ -169,7 +175,7 @@ exRes <- PM_load(1)
 
 # Plot the raw data using R6 with various options.  Type ?plot.PMmatrix in the R console for help.
 exRes$data$plot()
-exRes$data$plot(overlay = F, xlim = c(119, 145))
+exRes$data$plot(overlay = FALSE, xlim = c(119, 145))
 
 # The following are the older S3 method with plot(...) for the first two examples
 # You can use R6 or S3 for any Pmetrics object
@@ -183,7 +189,7 @@ exRes$data$summary()
 # Plot some observed vs. predicted data.  Type ?plot.PMop in the R console for help.
 exRes$op$plot()
 exRes$op$plot(pred.type = "pop")
-exRes$op$plot(line = list(lm = list(ci = 0, color = "red"), loess = F))
+exRes$op$plot(line = list(lm = list(ci = 0, color = "red"), loess = FALSE))
 
 # The OP plot can be disaggregated into a Tidy compatible format using the $data attribute (see https://www.tidyverse.org/)
 library(tidyverse)
@@ -215,7 +221,7 @@ exRes$op$summary(icen = "mean")
 exRes$final$plot()
 
 # add a kernel density curve
-exRes$final$plot(density = T)
+exRes$final$plot(density = TRUE)
 
 # A bivariate plot. Plotting formulae in R are of the form 'y~x'
 exRes$final$plot(Ke ~ V,
@@ -246,7 +252,7 @@ exRes$final$popMean
 exRes$final$summary()
 
 # Plot cycle information
-# Type ?plot.PMcycle in the R console for help.
+# Type ?plot.PM_cycle in the R console for help.
 exRes$cycle$plot()
 
 # names of the cycle object; ?makeCycle for help
@@ -263,7 +269,8 @@ exRes$cov$data %>%
   filter(age > 25) %>%
   plot(V ~ wt)
 
-exRes$cov$plot(Ke ~ age, lowess = F, reg = T, pch = 3)
+#will shortly be updated to plotly
+exRes$cov$plot(Ke ~ age, lowess = FALSE, reg = TRUE, pch = 3)
 
 # Same plot but with mean Bayesian posterior parameter and covariate values...
 # Remember the 'icen' argument?
@@ -367,7 +374,7 @@ valid_2$plot(type = "pcvpc")
 valid_2$plot(type = "npde")
 
 # Here is another way to generate a visual predicive check...
-npc_2 <- valid_2$simdata$plot(obs = exRes2$op, log = F, binSize = 1)
+npc_2 <- valid_2$simdata$plot(obs = exRes2$op, log = FALSE, binSize = 1)
 
 # The jagged appearance of the plot when binSize=0 is because different subjects have
 # different doses, covariates, and observation times, which are all combined in one simulation.
@@ -396,7 +403,7 @@ sim_new <- exRes2$sim(
   predInt = c(120, 144, 0.5)
 )
 
-sim_new$plot(log = F)
+sim_new$plot(log = FALSE)
 
 # Plot it; ?plot.PMsim for help
 simdata$plot()
@@ -412,7 +419,7 @@ plot(simdata$data[[3]])
 
 # Parse and combine multiple files and plot them.  Note that combining simulations from templates
 # with different simulated observation times can lead to unpredictable plots
-simdata2 <- exRes2$sim(include = 1:4, limits = NA, nsim = 100, combine = T)
+simdata2 <- exRes2$sim(include = 1:4, limits = NA, nsim = 100, combine = TRUE)
 simdata2$plot()
 
 # simulate with covariates
@@ -595,13 +602,13 @@ pta1_2$summary(ci = 0.8)
 # labels in the makePTA command, so generics are used here, but we move it to
 # the bottom left; ?legend for help on arguments to supply to the
 # legend list argument to plot.PMpta.
-pta1_2$plot(ylab = "Proportion with %T>MIC of at least 60%", grid = T, legend = list(x = "bottomleft"))
+pta1_2$plot(ylab = "Proportion with %T>MIC of at least 60%", grid = TRUE, legend = list(x = "bottomleft"))
 pta1b_2$summary()
 
 # Plot the second with covariates simulated. Note the regimen labels are included, but we move
 # the legend to the bottom left.
 pta1b_2$plot(
-  ylab = "Proportion with %T>MIC of at least 60%", grid = T,
+  ylab = "Proportion with %T>MIC of at least 60%", grid = TRUE,
   legend = list(x = "bottomleft")
 )
 
@@ -614,7 +621,7 @@ pta2_2 <- PM_pta$new(
 )
 summary(pta2_2)
 pta2_2$plot(
-  ylab = "Proportion with AUC/MIC of at least 100", grid = T,
+  ylab = "Proportion with AUC/MIC of at least 100", grid = TRUE,
   legend = list(x = "bottomleft")
 )
 
@@ -626,7 +633,7 @@ pta3_2 <- PM_pta$new(
   target.type = "peak", success = 10, start = 120, end = 144
 )
 pta3_2$summary()
-pta3_2$plot(ylab = "Proportion with peak/MIC of at least 10", grid = T)
+pta3_2$plot(ylab = "Proportion with peak/MIC of at least 10", grid = TRUE)
 
 # success = Cmin:MIC > 1
 pta4_2 <- PM_pta$new(
@@ -636,11 +643,11 @@ pta4_2 <- PM_pta$new(
   target.type = "min", success = 1, start = 120, end = 144
 )
 pta4_2$summary()
-pta4_2$plot(ylab = "Proportion with Cmin/MIC of at least 1", grid = T, legend = list(x = "bottomleft"))
+pta4_2$plot(ylab = "Proportion with Cmin/MIC of at least 1", grid = TRUE, legend = list(x = "bottomleft"))
 
 # now plot the PDI (pharmacodynamic index) of each regimen, rather than the proportion
 # of successful profiles.  A PDI plot is always available for PMpta objects.
-pta4_2$plot(type = "pdi", ylab = "Cmin:MIC", grid = T)
+pta4_2$plot(type = "pdi", ylab = "Cmin:MIC", grid = TRUE)
 
 # Each regimen has the 90% confidence interval PDI around the median curve,
 # in the corresponding, semi-transparent color.  Make the CI much narrower...
@@ -648,7 +655,7 @@ pta4_2$plot(type = "pdi", ci = 0.1)
 
 # ...or gone altogether, put back the grid, redefine the colors, and make lines narrower
 pta4_2$plot(
-  type = "pdi", ci = 0, grid = T,
+  type = "pdi", ci = 0, grid = TRUE,
   line = list(
     color = c("blue", "purple", "black", "brown"),
     width = 1
@@ -667,10 +674,10 @@ pta4b_2 <- PM_pta$new(
 )
 # plot it
 pta4b_2$plot(
-  grid = T, ylab = "Proportion with Cmin/MIC of at least 1",
+  grid = TRUE, ylab = "Proportion with Cmin/MIC of at least 1",
   marker = list(color = "red"), line = list(color = "black")
 )
-pta4b_2$plot(type = "pdi", grid = T, ylab = "Proportion with Cmin/MIC of at least 1")
+pta4b_2$plot(type = "pdi", grid = TRUE, ylab = "Proportion with Cmin/MIC of at least 1")
 
 # note that the plot changes since target MICs are no longer discrete
 # since most of the MICs are very low, the regimens all look very similar
@@ -682,7 +689,7 @@ pta5_2 <- PM_pta$new(
   targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = 123, success = 2, start = 120, end = 144
 )
 pta5_2$summary()
-pta5_2$plot(ylab = "Proportion with C3/MIC of at least 1", grid = T, legend = list(x = .3, y = 0.1))
+pta5_2$plot(ylab = "Proportion with C3/MIC of at least 1", grid = TRUE, legend = list(x = .3, y = 0.1))
 
 
 # success is trough >10
@@ -747,4 +754,5 @@ makeErrorPoly(obs = obs, sd = sd)
 # makeNCA() - non-compartmental analysis
 # NM2PM() - convert NONMEM data files to Pmetrics data files
 # qgrowth() - CDC growth charts
+# zBMI() - CDC Pediatric BMI z-scores and percentiles
 # ss.PK() - sample size for Phase 1 PK studies
