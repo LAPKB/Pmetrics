@@ -194,4 +194,29 @@
 "simEx"
 
 
+#' Model Library
+#'
+#' This is a tibble containing models in the Pmetrics library.
+#'
+#' @name modelLibrary
+#' @docType data
+#' @title Pmetrics Model Library
+#' @usage modelLibrary
+#' @format A tibble with the following columns
+#' * **ncomp** The number of compartments in the model, including any bolus
+#' depo compartment(s).
+#' * **par** Either "K" for parameterization with rate constants, or "CL" for
+#' clearances.
+#' * **bolus** Does the model contain a bolus input, e.g. oral?
+#' * **elim** List of compartment numbers with elimination
+#' * **ode** Does the model contain differential equations?
+#' * **mod** the [PM_model]
+#' * **name** Model name in plain English
+#' @author Michael Neely
+#' @keywords datasets
+#'
+
+"modelLibrary"
+
+
 
