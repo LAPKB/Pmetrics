@@ -5,11 +5,11 @@
 modelRow <- list()
 
 #function to add rows to row object in .GlobalEnv
-add_model_row <- function(ncomp, par, bolus, elim, mod, name){
+add_model_row <- function(ncomp, par, route, elim, mod, name){
   modelRow[[length(modelRow)+1]] <<- 
     tibble::as_tibble_row(list(ncomp = ncomp,
                                par = par,
-                               bolus = bolus,
+                               route = list(route),
                                elim = list(elim),
                                mod = list(mod),
                                name = name))
@@ -21,7 +21,7 @@ add_model_row <- function(ncomp, par, bolus, elim, mod, name){
 #Ke, V
 add_model_row(ncomp = 1, 
               par = "K",
-              bolus = FALSE,
+              route = "Intravenous",
               elim = 1,
               mod = PM_model$new(
                 list(
@@ -49,7 +49,7 @@ add_model_row(ncomp = 1,
 #Ka, Ke, V
 add_model_row(ncomp = 2, 
               par = "K",
-              bolus = TRUE,
+              route = c("Oral", "Intravenous"),
               elim = 2,
               mod = PM_model$new(
                 list(
@@ -73,14 +73,14 @@ add_model_row(ncomp = 2,
                   ) 
                 ) #end model list
               ),
-              name = "One comp, bolus: Ka, Ke, V"
+              name = "One comp, oral: Ka, Ke, V"
 )
 
 
 #Ke, V, KCP, KPC
 add_model_row(ncomp = 2, 
               par = "K",
-              bolus = FALSE,
+              route = "Intravenous",
               elim = 1,
               mod = PM_model$new(
                 list(
@@ -111,7 +111,7 @@ add_model_row(ncomp = 2,
 #Ka, Ke, V, KCP, KPC
 add_model_row(ncomp = 3, 
               par = "K",
-              bolus = TRUE,
+              route = c("Intravenous", "Oral"),
               elim = 2,
               mod = PM_model$new(
                 list(
@@ -138,7 +138,7 @@ add_model_row(ncomp = 3,
                   ) 
                 ) #end model list
               ),
-              name = "One comp, bolus: Ka, Ke, V"
+              name = "Three comp, oral: Ka, Ke, V, KCP, KPC"
 )
 
 # Assemble and use --------------------------------------------------------

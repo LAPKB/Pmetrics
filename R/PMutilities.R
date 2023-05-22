@@ -401,7 +401,7 @@ checkID <- function(id) {
 
 # extract pattern from strings
 strparse <- function(pattern, x) {
-  match <- regexpr(pattern, x)
+  match <- regexpr(pattern, x, ignore.case = T)
   start <- match[1]
   stop <- match[1] + attr(match, "match.length") - 1
   return(substr(x, start, stop))
@@ -488,9 +488,17 @@ chunks <- function(x, maxwidth = 60) {
   return(x)
 }
 
+#change dX[digit] to XP(digit) and X[digit] to X(digit)
+fortranize <- function(block){
+  block <- purrr::map_chr(block, ~ gsub("dX\\[(\\d+)\\]", "XP\\(\\1\\)", .x, ignore.case = T, perl = T))
+  block <-  purrr::map_chr(block, ~ gsub("BOLUS\\[\\d+\\]", "", .x, ignore.case = T, perl = T))
+  block <-  purrr::map_chr(block, ~ gsub("\\[(\\d+)\\]", "\\(\\1\\)", .x, ignore.case = T, perl = T))
+  return(block)
+}
+
 
 # convert new model template to model fortran file
-makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T, quiet = F) {
+makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = getPMoptions("backend"), write = T, quiet = F) {
   blocks <- parseBlocks(model)
   
   # check for reserved variable names
@@ -509,6 +517,8 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   maxwidth <- 60
   blocks <- chunks(x = blocks, maxwidth = maxwidth)
   
+  #ensure in fortran format: dX -> XP and [] -> ()
+  blocks <- purrr::map(blocks, fortranize)
   
   # primary variable definitions
   npvar <- length(blocks$primVar)
@@ -682,12 +692,12 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     }
   } else {
     # get number of equations and verify with data file
-    # find statements with XP(digit)
-    compLines <- grep("XP\\([[:digit:]]+\\)", blocks$eqn)
+    # find statements with XP(digit) or dX[digit]
+    compLines <- grep("XP\\([[:digit:]]+\\)|dX\\[[[:digit:]]+\\]", blocks$eqn, ignore.case = T)
     if (length(compLines) == 0) {
       N <- 0
     } else {
-      compStatements <- sapply(blocks$eqn[compLines], function(x) strparse("XP\\([[:digit:]]+\\)", x))
+      compStatements <- sapply(blocks$eqn[compLines], function(x) strparse("XP\\([[:digit:]]+\\)|dX\\[[[:digit:]]+\\]", x))
       compNumbers <- sapply(compStatements, function(x) strparse("[[:digit:]]+", x))
       # get max number
       N <- max(as.numeric(compNumbers))
@@ -724,13 +734,13 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   }
   
   # get number of equations and verify with data file
-  # find statements with Y(digit)
-  outputLines <- grep("Y\\([[:digit:]]+\\)", blocks$output)
+  # find statements with Y(digit) or Y[digit]
+  outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output, ignore.case = T)
   if (length(outputLines) == 0) {
-    return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y(1) = ...'\n"))
+    return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y[1] = ...'\n"))
   }
   # extract numbers
-  outputStatements <- sapply(blocks$output[outputLines], function(x) strparse("Y\\([[:digit:]]+\\)", x))
+  outputStatements <- sapply(blocks$output[outputLines], function(x) strparse("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", x))
   outputNumbers <- sapply(outputStatements, function(x) strparse("[[:digit:]]", x))
   # get max number
   modelnumeqt <- max(as.numeric(outputNumbers))

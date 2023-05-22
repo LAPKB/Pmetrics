@@ -1,14 +1,14 @@
 #' Plot PM_model objects
-#' 
+#'
 #' Plots a [PM_model] based on differential equations using network plots from tidygraph and ggraph packages.
-#' 
+#'
 #' @details
-#' This accepts a [PM_model] object with minimum of `$eqn` field and optionally an `$out` field within the 
-#' `$model_list` field. 
-#' 
+#' This accepts a [PM_model] object with minimum of `$eqn` field and optionally an `$out` field within the
+#' `$model_list` field.
+#'
 #' @method plot PM_model
-#' @param model The name of an [PM_model] object. 
-#' 
+#' @param model The name of an [PM_model] object.
+#'
 #' @return Plots the object.
 #' @author Markus Hovd, Julian Otalvaro, Michael Neely
 #' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
@@ -17,71 +17,99 @@
 #' #to be implemented: NPex$model$plot()
 #' @family PMplots
 
-plot.PM_model = function(model) {
+plot.PM_model <- function(model) {
   
   #TO DO: add customizations
   
-  #filter any equations that are not diffeq
-  model$model_list$eqn <- map(purrr::keep, stringr::str_detect, "dX\\[\\d+\\]|XP\\(\\d+\\)") %>% unlist()
-  tree <- parse(text = model$model_list$eqn)
-  if(length(tree)==0){stop("No differential equations detected. Use dX[i] for changes and X[i] for amounts.")}
+  #filter any equations that are not diffeq and make everything capital
+  this_model <- model$model_list$eqn %>% 
+    map(purrr::keep, stringr::str_detect, stringr::regex("dX\\[\\d+\\]|XP\\(\\d+\\)", ignore_case = TRUE)) %>% 
+    unlist() 
+  
+  tree <- parse(text = this_model)
+  if(length(tree)==0){stop("No differential equations detected. Use dX[i] for changes and X[i] for amounts (case insensitive).")}
+  index <- 0
   
   parse_arrows <- function(tree, arrows = list()) {
+    #browser()
     if (length(tree) == 3) {
-      op = tree[[1]]
-      lhs = tree[[2]]
-      rhs = tree[[3]]
-      
-      #check for distributions
-      if(length(lhs)>1 && lhs[[1]] == "("){
-        #expand distribution
-        nterms <- length(lhs[[2]])
-        lhs <- parse(text = paste(sapply(2:nterms,function(x) as.character(lhs[[2]][[x]])),
-                                  as.character(op),
-                                  deparse(rhs),
-                                  collapse = paste0(" ",as.character(lhs[[2]][[1]]), " ")))[[1]]
-        rhs <- ""
-      }
-      
-      if(length(rhs)>1 && rhs[[1]] == "("){
-        #expand distribution
-        nterms <- length(rhs[[2]])
-        rhs <- parse(text = paste(deparse(lhs),
-                                  as.character(op),
-                                  sapply(2:nterms,function(x) as.character(rhs[[2]][[x]])),
-                                  collapse = paste0(" ",as.character(rhs[[2]][[1]]), " ")))[[1]]
-        lhs <- ""
-      }
-      
-      
-      l = if (length(lhs) == 1) {
-        lhs
-      } else if(lhs[[1]] == "["){
-        lhs[[2]]
-      } else {
-        lhs[[1]]
-      }
-      r = if (length(rhs) == 1) {
-        rhs
-      } else if(rhs[[1]] == "["){
-        rhs[[2]]
-      } else {
-        rhs[[1]]
-      }
-      
-      
-      if (l == "X" || r == "X") {
-        arrows = append(arrows, tree)
-        return(arrows)
-      }
+      op <- tree[[1]]
+      lhs <- tree[[2]]
+      rhs <- tree[[3]]
+    } else if (length(tree[[1]]) == 3) {
+      op <- tree[[1]][[1]]
+      lhs <- tree[[1]][[2]]
+      rhs <- tree[[1]][[3]] 
+    } else {
+      return(arrows)
     }
     
-    if(is.call(lhs)) arrows = parse_arrows(lhs, arrows)
-    if(is.call(rhs)) arrows = parse_arrows(rhs, arrows)
+    #check for distributions
+    if(length(lhs)>1 && lhs[[1]] == "("){
+      #expand distribution
+      nterms <- length(lhs[[2]])
+      lhs <- parse(text = paste(sapply(2:nterms,function(x) as.character(lhs[[2]][[x]])),
+                                as.character(op),
+                                deparse(rhs),
+                                collapse = paste0(" ",as.character(lhs[[2]][[1]]), " ")))[[1]]
+      rhs <- ""
+    }
+    
+    if(length(rhs)>1 && rhs[[1]] == "("){
+      #expand distribution
+      nterms <- length(rhs[[2]])
+      rhs <- parse(text = paste(deparse(lhs),
+                                as.character(op),
+                                sapply(2:nterms,function(x) as.character(rhs[[2]][[x]])),
+                                collapse = paste0(" ",as.character(rhs[[2]][[1]]), " ")))[[1]]
+      lhs <- ""
+    }
+    
+    
+    l = if (length(lhs) == 1) {
+      lhs
+    } else if(lhs[[1]] == "["){
+      lhs[[2]]
+    } else if (is.call(lhs) & length(lhs)==3){
+      lhs[[3]]
+    } else {
+      lhs[[1]]
+    }
+    r = if (length(rhs) == 1) {
+      rhs
+    } else if(rhs[[1]] == "["){
+      rhs[[2]]
+    } else if (is.call(rhs) & length(rhs)==3){
+      rhs[[3]]
+    } else {
+      rhs[[1]]
+    }
+    #cat("index", index,"\n\nlhs= ",deparse(lhs),"\nrhs = ",deparse(rhs),"\nl = ",deparse(l),"\nr = ",deparse(r),"\ntree = ",deparse(tree),"\n________________\n")
+    
+    
+    if (l == "x" || r == "x" || l == "X" || r == "X") {
+      #cat("arrows before: ",paste0(as.character(arrows),collapse = ", "),"\n")
+      arrows = append(arrows, tree)
+      #cat(deparse(tree), "appended\n")
+      #cat("arrows after: ",paste0(as.character(arrows),collapse = ", "),"\n")
+      
+      return(arrows)
+    }
+    
+    index <<- index + 1
+    if(is.call(lhs)) {#cat("Calling from lhs...\n")
+      arrows <- parse_arrows(lhs, arrows)}
+    #cat("\nReturned lhs arrows: ", paste(as.character(arrows),collapse = ", "), "\n\n")
+    
+    if(is.call(rhs)) {#cat("Calling from rhs...\n")
+      arrows <- parse_arrows(rhs, arrows)}
+    #cat("\nReturned rhs arrows: ", paste(as.character(arrows),collapse = ", "), "\n\n")
+    
     return(arrows)
   }
   
   parse_inputs <- function(input, itree){
+    itree <- paste(itree, collapse = "")
     if(grepl(input, itree, ignore.case = TRUE)){
       type <- toupper(substr(input, 1, 1))
       number <- stringr::str_extract(itree,
@@ -95,7 +123,7 @@ plot.PM_model = function(model) {
   #process each compartment/equation
   parse_tree <- function(tree) {
     nodes = list()
-    if (length(tree) > 1 && class(tree) == "expression") {
+    if (class(tree) == "expression") {
       for (itree in tree) {
         op = itree[[1]]
         lhs = itree[[2]]
@@ -108,8 +136,8 @@ plot.PM_model = function(model) {
             bolus = parse_inputs("bolus", deparse(itree)),
             rateiv = parse_inputs("rateiv", deparse(itree))
           )))
-        } else {
-          stop("")
+        } else { #only one equation
+          as.character(parse_arrows(tree))
         }
       }
     }
@@ -120,7 +148,7 @@ plot.PM_model = function(model) {
   
   #clean up
   swap_if_needed <- function(obj){
-    if(grepl("X\\[|x\\[", obj[1])){
+    if(grepl("X\\[", obj[1], ignore.case = TRUE)){
       return(paste(obj[2], obj[1], sep = " * "))
     } else {
       return(paste(obj[1], obj[2], sep = " * "))
@@ -152,7 +180,7 @@ plot.PM_model = function(model) {
                  rateiv = node$rateiv)
     }) %>%
     bind_rows() %>%
-    dplyr::mutate(from = stringr::str_replace(node, "XP|dX", "")) %>%
+    dplyr::mutate(from = stringr::str_replace(node, stringr::regex("XP|dX", ignore_case = TRUE), "")) %>%
     dplyr::mutate(to = stringr::str_extract(string = arrow, pattern = "\\((\\d+)\\)|\\[(\\d+)\\]")) %>%
     dplyr::mutate(to = stringr::str_remove(to, pattern = "\\(|\\[")) %>%
     dplyr::mutate(to = stringr::str_remove(to, pattern = "\\)|\\]")) %>%
@@ -163,7 +191,7 @@ plot.PM_model = function(model) {
     dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = "^\\-|\\-\\w*$")) %>%
     dplyr::relocate(node, arrow, to, from) %>%
     dplyr::rename(to = from,
-           from = to)
+                  from = to)
   
   #pause to define inputs
   input_cmt <- layout %>% dplyr::select(to, bolus, rateiv) %>%
@@ -179,15 +207,15 @@ plot.PM_model = function(model) {
     dplyr::ungroup() %>%
     dplyr::mutate(from = ifelse(from == "", to, from)) %>%
     dplyr::mutate(to = ifelse(from == to, "", to)) %>%
-    dplyr::mutate(to = ifelse(to == "", as.numeric(max(to)) + 1,to)) %>%
-    dplyr::filter(arrow != "")
+    dplyr::mutate(to = ifelse(to == "", as.numeric(max(to)) + 1, to)) %>%
+    dplyr::mutate(to = ifelse(is.na(to), as.numeric(max(from)) + 1, to)) %>%
+    dplyr::filter(arrow != "") %>%
+    dplyr::mutate(across(everything(), as.character))
   
   #outputs
   if(!is.null(purrr::pluck(model,"model_list","out",1,"val"))){
-    output_cmt <- tibble::as_tibble(map(model$model_list$out, ~stringr::str_extract(.x$val, "\\d+")))
-    output_cmt <- dplyr::bind_cols(out = names(output_cmt), as_tibble(t(output_cmt)))
-    output_cmt$out <- toupper(output_cmt$out)
-    output_cmt <- output_cmt %>%  dplyr::rename(cmt = 2)
+    cmts <- map_chr(model$model_list$out, ~stringr::str_extract(.x$val, "\\d+"))
+    output_cmt <- tibble::tibble(out = paste0("Y",seq_along(cmts)), cmt = cmts)
   } else {
     output_cmt = tibble::tibble(out = "", cmt = "1")
   }
@@ -204,18 +232,19 @@ plot.PM_model = function(model) {
   
   
   
-  g <- ggraph::ggraph(graph, layout = "auto") +
+  
+  g <- ggraph::ggraph(graph, layout = "tree") +
     ggraph::geom_node_tile(aes(fill = position, linetype = position),
-                           width = .25, height = .25, alpha = 0.5, size = 12) +
-    ggraph::geom_node_text(aes(label = input), nudge_x = .07, nudge_y = .05, size = 6, color = "white") +
-    ggraph::geom_node_text(aes(label = out), nudge_x = -.07, nudge_y = .05, size = 6, color = "black") +
+                           width = .25, height = .25, alpha = 0.5) +
+    ggraph::geom_node_text(aes(label = input), nudge_x = .07, nudge_y = .05, color = "white") +
+    ggraph::geom_node_text(aes(label = out), nudge_x = -.07, nudge_y = .05, color = "black") +
     
     ggplot2::scale_fill_manual(values = c("dodgerblue", "grey80")) +
     ggraph::geom_edge_fan(
       arrow = grid::arrow(angle = 15, type = "closed",
                           length = unit(6, 'mm')),
-      end_cap = circle(3, 'mm'),
-      start_cap = circle(4, 'mm'),
+      end_cap = ggraph::circle(3, 'mm'),
+      start_cap = ggraph::circle(4, 'mm'),
       angle_calc = "across",
       label_push = unit(-4, 'mm'),
       edge_width = 1) +
@@ -225,11 +254,4 @@ plot.PM_model = function(model) {
   print(g)
   return(graph)
 }
-
-
-
-
-
-
-
 
