@@ -141,7 +141,7 @@ covariate <- function(name, constant = F) {
 
 
 # Virtual Class
-# it seems that protected does not exist in R
+# Here is where the model_list is printed to the console
 PM_Vmodel <- R6::R6Class("PM_model",
   public = list(
     name = NULL, # used by PM_model_legacy
@@ -183,9 +183,6 @@ PM_Vmodel <- R6::R6Class("PM_model",
             }
           }
         } else if (x == "cov") {
-          cat("\n", sp(1), "$cov\n", paste0(sp(2), "[", 1:length(mlist$cov), "] \"", mlist$cov, "\"", collapse = "\n "))
-          cat("\n")
-
           cat("\n", sp(1), "$cov\n")
           for (i in 1:length(mlist$cov)) {
             thisout <- mlist$cov[[i]]
@@ -255,6 +252,7 @@ PM_Vmodel <- R6::R6Class("PM_model",
 
 # private classes
 # TODO: Should I make these fields private?
+# This generates text which will be written to genmodel.txt
 PM_Vinput <- R6::R6Class(
   "PM_Vinput",
   public <- list(
@@ -672,7 +670,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
           lines <- append(
             lines,
             if (nchar(param) == 2) {
-              sprintf("%s(%s)=%s", substr(key, 1, 1), substr(key, 2, 2), block[[i]][1])
+              sprintf("%s[%s]=%s", substr(key, 1, 1), substr(key, 2, 2), block[[i]][1])
             } else {
               sprintf("%s", block[[i]][1])
             }
@@ -820,7 +818,7 @@ PM_model_file <- R6::R6Class("PM_model_file",
       }
 
       # differential equations - legacy
-      if (blocks$diffeq[1] != "") {
+      if (!is.null(blocks$diffeq) && blocks$diffeq[1] != "") {
         model_list$eqn <- blocks$diffeq
       }
       
@@ -831,16 +829,16 @@ PM_model_file <- R6::R6Class("PM_model_file",
 
       # out/err
       n_outputLines <- length(blocks$output)
-      outputLines <- grep("Y\\([[:digit:]]+\\)", blocks$output)
+      outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output)
       if (length(outputLines) == 0) {
-        return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y(1) = ...'\n"))
+        return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y[1] = ...'\n"))
       }
       otherLines <- (1:n_outputLines)[!(1:n_outputLines) %in% outputLines] # find other lines
       if (length(otherLines) > 0) {
         model_list$sec <- c(model_list$sec, blocks$output[otherLines]) # append to #sec block
       }
       output <- blocks$output[outputLines]
-      remParen <- stringr::str_replace(output, "Y\\((\\d+)\\)", "Y\\1")
+      remParen <- stringr::str_replace(output, "Y\\((\\d+)\\)|Y\\[(\\d+)\\]", "Y\\1")
       diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
       diffList <- sapply(diffeq, function(x) x[2])
       num_out <- length(diffList)
