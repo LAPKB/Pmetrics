@@ -136,10 +136,7 @@ ui <- fluidPage(
     #tabPanel: Covariates
     
     tabPanel("COVariates",
-             markdown("Covariates obtained from data file. To modify, edit the data file."),
-             markdown("Check any covariates which are constant between measurements.
-             Leave unchecked if covariate is linearly interpolated between measurements."),
-             hr(style = "border-top: 1px solid #FFFFFF;"),
+             htmlOutput("cov_instructions"),
              uiOutput("cov"),
              uiOutput("bottom_cov"),
              
@@ -252,12 +249,25 @@ ui <- fluidPage(
 ) #end ui
 
 server <- function(input, output, session) {
+  
+  #does object exist?
+  exist_obj <- function(obj){
+    tryCatch(length(obj), error = function(e) FALSE)
+  }
+  
   #note "data" can be passed as an argument in build_model()
   #variables
-  ninput <- max(data$standard_data$input, na.rm = TRUE)
   npar <- reactive({as.integer(input$nvar)})
-  cov_names <- Pmetrics:::getCov(data$standard_data)$covnames
-  ncov <- Pmetrics:::getCov(data$standard_data)$ncov
+  if(exist_obj(data)){
+    cov_names <- Pmetrics:::getCov(data$standard_data)$covnames
+    ncov <- Pmetrics:::getCov(data$standard_data)$ncov
+    ninput <- max(data$standard_data$input, na.rm = TRUE)
+  } else {
+    cov_names <- NULL
+    ncov <- 0
+    ninput <- 100 #set to something ridiculous
+  }
+  
   numeqt <- reactive({as.integer(input$nout)})
   blockNames <- c("pri","cov","sec","bol","ini","fa","lag","eqn","out")
   
@@ -277,10 +287,7 @@ server <- function(input, output, session) {
   #copy model
   copy_list <- reactiveVal()
   
-  #does object exist?
-  exist_obj <- function(obj){
-    tryCatch(length(obj), error = function(e) FALSE)
-  }
+  
   
   #extract secondary variables
   extract_sec <- reactive({
@@ -478,7 +485,7 @@ server <- function(input, output, session) {
                {
                  #grab model
                  model <- model()
-
+                 
                  npar <- length(model$pri)
                  updateNumericInput(inputId = "nvar", value = npar)
                  purrr::walk(1:npar,
@@ -595,6 +602,20 @@ server <- function(input, output, session) {
   
   
   #COVARIATE COMPONENT
+  
+  output$cov_instructions <- renderUI({
+    if(ncov > 0) {
+      tagList(p("Covariates obtained from data. To modify, edit the data.",
+                 "Check any covariates which are constant between measurements.",
+                 "Leave unchecked if covariate is linearly interpolated between measurements."),
+               hr(style = "border-top: 1px solid #FFFFFF;")
+      )
+    } else {
+      p("No data were loaded so there are no covariates available.",
+        "You can still type any covariate name you want in your model equations for building purposes.")
+    }
+  })
+  
   #set default covariate values based on data
   output$cov <- renderUI({
     purrr::map(cov_names, function(x){
