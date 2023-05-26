@@ -49,8 +49,19 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
   # declare variables to avoid R CMD Check flag
   NPAGout <- NULL
   IT2Bout <- NULL
-
   found <- FALSE
+  
+  #internal function
+  output2List <- function(Out) {
+    result <- list()
+    for (i in 1:length(Out)) {
+      aux_list <- list(Out[[i]])
+      names(aux_list) <- names(Out)[i]
+      result <- append(result, aux_list)
+    }
+    
+    return(result)
+  }
   # check for NPAG output file
   filename <- "NPAGout.Rdata"
   if (is.numeric(run)) {
@@ -102,19 +113,10 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
   } else {
     stop(paste0("No Pmetrics output file found in ", getwd(), ".\n"))
   }
-  
-  
-  output2List <- function(Out) {
-    result <- list()
-    for (i in 1:length(Out)) {
-      aux_list <- list(Out[[i]])
-      names(aux_list) <- names(Out)[i]
-      result <- append(result, aux_list)
-    }
-    
-    return(result)
-  }
 }
+
+
+
 
 #' Loads all the data from an \emph{NPAG} or \emph{IT2B} run
 #'
