@@ -733,6 +733,20 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     }
   }
   
+  #extract bolus inputs and create bolus block, then remove bolus[x] from equations
+  bolus <- purrr::map(blocks$eqn,~stringr::str_extract_all(.x,regex("B\\[\\d+|BOL\\[\\d+|BOLUS\\[\\d+", ignore_case = TRUE), simplify = FALSE))
+  blocks$bolus <- imap(bolus, \(x, idx){
+    if(length(x[[1]])>0){
+      paste0("NBCOMP(",stringr::str_extract(x[[1]],"\\d+$"),") = ",idx)
+    }
+  }) %>% unlist()
+  blocks$eqn <- purrr::map(blocks$eqn,\(x) stringr::str_replace_all(x,regex("(\\+*|-*|\\**)\\s*B\\[\\d+\\]|(\\+*|-*|\\**)\\s*BOL\\[\\d+\\]|(\\+*|-*|\\**)\\s*BOLUS\\[\\d+\\]", ignore_case = TRUE), "")) %>%
+    unlist()
+  
+  #replace R[x] or R(x) with RATEIV(x)
+  blocks$eqn <- purrr::map(blocks$eqn,\(x) stringr::str_replace_all(x,regex("R\\[(\\d+)\\]", ignore_case = TRUE), "RATEIV\\[\\1\\]")) %>%
+    unlist()
+  
   # get number of equations and verify with data file
   # find statements with Y(digit) or Y[digit]
   outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output, ignore.case = T)
