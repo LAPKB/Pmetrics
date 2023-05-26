@@ -32,7 +32,11 @@ ui <- fluidPage(
              markdown("INSTRUCTIONS: Choose a model from the library or load 
              one of your own previously created models to populate
              model fields. Using components to the left, you can edit the
-             fields, or define them yourself for any level of customization."),
+             fields, or define them yourself for any level of customization.
+             It's best to define relevant components in the menu order from
+                      top to bottom."),
+             markdown("If you don't wish to use a model from the library, and you
+                      don't have a prior model file, start with the PRImary tab."),
              hr(style = "border-top: 1px solid #FFFFFF;"),
              h2("Previous Model"),
              fileInput(
@@ -71,17 +75,9 @@ ui <- fluidPage(
                ),
                column(6,
                       h3("Description Search"),
-                      selectizeInput(
+                      textInput(
                         inputId = "searchme",
-                        label = "",
-                        multiple = FALSE,
-                        choices = c("", "One compartment", "Compartment one"),
-                        options = list(
-                          create = FALSE,
-                          maxItems = '1',
-                          onDropdownOpen = I("function($dropdown) {if (!this.lastQuery.length) {this.close(); this.settings.openOnFocus = false;}}"),
-                          onType = I("function (str) {if (str === \"\") {this.close();}}")
-                        )
+                        label = ""
                       )
                )
              ), #end fluid Row
@@ -212,13 +208,13 @@ ui <- fluidPage(
     #tabPanel: Equations
     tabPanel("EQUations",
              markdown(c("Write the differential equations for your model here.",
-                        "Use *dX[i]* for change in compartment amounts, where *i* is the compartment number, e.g. dX[1] or dX[2].",
-                        "Compartment amounts are referred to as *X[i]*, e.g. X[1] or X[2].",
-                        "Use *BOLUS[j]* for bolus input *j* and RATEIV[k] for infusion *k*.",
-                        "*j* and *k* correspond to the *INPUT* column in the data file, which is usually omitted and assumed to be 1 for all doses.",
-                        "The *DUR* column in the data file determines whether a dose is treated as a BOLUS (DUR = 0) or RATEIV (DUR > 0).",
+                        "Use `dX[i]` for change in compartment amounts, where i is the compartment number, e.g. dX[1] or dX[2].",
+                        "Compartment amounts are referred to as `X[i]`, e.g. X[1] or X[2].",
+                        "Use `BOLUS[j]` for bolus input j and `RATEIV[k]` for infusion k.",
+                        "j and k correspond to the INPUT column in the data file, which is usually omitted and assumed to be 1 for all doses.",
+                        "The DUR column in the data file determines whether a dose is treated as a BOLUS (DUR = 0) or RATEIV (DUR > 0).",
                         "Any variable defined in PRI, COV, or SEC may be used.",
-                        "Example: dX[1] = RATEIV[1] * WT - Ke * X[1]")),
+                        "Example: `dX[1] = RATEIV[1] * WT - Ke * X[1]`")),
              hr(style = "border-top: 1px solid #FFFFFF;"),
              textAreaInput("modEq",
                            "Model Equations:",
@@ -360,7 +356,7 @@ server <- function(input, output, session) {
   
   #make combined filter trigger
   filter_obj <- reactive({
-    list(input$mod_route, input$mod_ncomp, input$mod_elim, input$mod_kecl)
+    list(input$mod_route, input$mod_ncomp, input$mod_elim, input$mod_kecl, input$searchme)
   })
   
   #set compartments for elimination
@@ -378,15 +374,17 @@ server <- function(input, output, session) {
   
   #function to aid filtering
   find_x_in_y <- function(x, y){
-    all(x %in% y)
+    any(stringr::str_detect(y, stringr::regex(x,ignore_case = T)))
   }
+  
+  
   
   #if filter inputs change, execute this
   observeEvent(filter_obj(),{
     this_filter <- mods
     if(!is.null(input$mod_route) ){
       this_filter <- this_filter %>%
-        filter(map_lgl(route, ~find_x_in_y(tolower(input$mod_route), tolower(.x))))
+        filter(map_lgl(route, ~find_x_in_y(input$mod_route, .x)))
     }
     if(!is.na(input$mod_ncomp)){
       this_filter <- this_filter %>%
@@ -404,7 +402,19 @@ server <- function(input, output, session) {
       
     }
     
+    #if search box changes, execute this
+    if(input$searchme != ""){
+      #browser()
+      terms <- stringr::str_split(input$searchme, ",|;|\\s+") %>% unlist() %>% stringi::stri_remove_empty()
+      this_filter <- this_filter %>%
+        filter(map_lgl(name, ~find_x_in_y(terms, .x)))
+
+    }
+    
     #update the global filter results
+    if(nrow(this_filter)==0){
+      this_filter <- tibble(name = "None")
+    }
     mods_filter(this_filter)
     
   })
@@ -430,6 +440,7 @@ server <- function(input, output, session) {
            ),
            column(6,
                   h4("Model Snapshot"),
+                  markdown("B = Bolus, R = infusion Rate, Y = observation"),
                   plotOutput("model_snapshot")
            )
          ) #end fluidRow
@@ -442,7 +453,7 @@ server <- function(input, output, session) {
                ignoreNULL = TRUE,
                {
                  output$model_snapshot <- renderPlot({
-                   model <- modelLibrary$mod[which(modelLibrary$name == input$mod_list)][[1]]
+                   model <- tryCatch(modelLibrary$mod[which(modelLibrary$name == input$mod_list)][[1]], error = function(e) NA)
                    class(model) <- "PM_model"
                    #browser()
                    tryCatch(plot(model),
@@ -506,7 +517,7 @@ server <- function(input, output, session) {
                  purrr::walk(1:numeqt,
                              ~{
                                store[[paste0("out_eqn_",.x)]] <- model$out[[.x]]$val
-                               store[[paste0("out_assay_err_",.x)]] <- model$out[[.x]]$err$assay$coefficients
+                               store[[paste0("out_assay_err_",.x)]] <- paste0(model$out[[.x]]$err$assay$coefficients, collapse = ", ")
                                store[[paste0("out_assay_err_always_",.x)]] <- model$out[[.x]]$err$assay$constant
                                store[[paste0("out_model_err_type_",.x)]] <-
                                  dplyr::case_when(
@@ -606,13 +617,15 @@ server <- function(input, output, session) {
   output$cov_instructions <- renderUI({
     if(ncov > 0) {
       tagList(p("Covariates obtained from data. To modify, edit the data.",
-                 "Check any covariates which are constant between measurements.",
-                 "Leave unchecked if covariate is linearly interpolated between measurements."),
-               hr(style = "border-top: 1px solid #FFFFFF;")
+                "Check any covariates which are constant between measurements.",
+                "Leave unchecked if covariate is linearly interpolated between measurements."),
+              hr(style = "border-top: 1px solid #FFFFFF;")
       )
     } else {
       p("No data were loaded so there are no covariates available.",
-        "You can still type any covariate name you want in your model equations for building purposes.")
+        "You can still type any covariate name you want in your model equations for building purposes,
+        but it will not generate a functional model with an appropriate cov block. For that, start
+        with the data you want to model, and the covariates will be loaded automatically.")
     }
   })
   
@@ -939,9 +952,7 @@ server <- function(input, output, session) {
           ) #end map
           %>%
             unlist() %>% paste(collapse = ",<br>"),"<br>",
-          tab(4), ")<br>", #close out list
-          tab(2), ")<br>", #close model_list
-          ")" #close $new()
+          tab(4), ")<br>" #close out list
           ) #end paste0
         ) #end paste0
       
@@ -957,8 +968,8 @@ server <- function(input, output, session) {
                               #stringr::str_replace_all("\\\"","'") %>%
                             }
                  )
-               ), collapse = ",\n")
-               # "\n", tab(2),")\n",")"
+               ), collapse = ",\n"),
+               tab(2),")\n",")"
         )
       )
       
@@ -967,13 +978,15 @@ server <- function(input, output, session) {
         #tidy up html characters
         purrr::map(
           ~{
-            stringr::str_replace_all(.x, "<br>\\s+","") %>%
+            stringr::str_replace_all(.x, "<br>\\s*","") %>%
               stringr::str_replace_all("\\\"","'") %>%
               stringr::str_replace_all("^\\s+","")
           }
         ) %>%
         #parse
+        
         purrr::map(~tryCatch(eval(parse(text = .x)), error = function(e) "Error")) %>%
+        #browser()
         rlang::set_names(blockNames) %>%
         #remove empty
         purrr::compact()
@@ -986,7 +999,8 @@ server <- function(input, output, session) {
                   "PM_model$new(<br>",
                   tab(2), "list(<br>",
                   paste0(purrr::compact(all_blocks), collapse = ",<br>"),
-                  # "<br>)",
+                  tab(2), ")<br>",
+                  ")<br>",
                   "</pre>"
       )
       )
@@ -1064,6 +1078,7 @@ server <- function(input, output, session) {
               if(is.null(new_model())){
                 return()
               } else {
+                #browser()
                 incomplete_blocks <- sapply(new_model(), function(x) ifelse(is.list(x), FALSE, stringr::str_detect(x,"^Error")))
                 if(any(incomplete_blocks)){
                   incomplete_blocks <- paste0("#",names(new_model())[incomplete_blocks %>% unlist()], collapse = ", ")

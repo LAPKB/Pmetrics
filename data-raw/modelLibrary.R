@@ -73,7 +73,7 @@ add_model_row(ncomp = 2,
                   ) 
                 ) #end model list
               ),
-              name = "One comp, oral: Ka, Ke, V"
+              name = "Two comp, oral: Ka, Ke, V"
 )
 
 
