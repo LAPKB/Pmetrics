@@ -435,7 +435,7 @@ parseBlocks <- function(model) {
   extra <- blockStart[grep("#ext", headers)]
   
   if(length(diffeq) > 0) {eqn <- diffeq} #change diffeq block to eqn for more general
-  cat("Please update your model file. The #DIF block should be renamed as #EQN, which is short for EQuatioNs.\n")
+  #cat("Please update your model file. The #DIF block should be renamed as #EQN, which is short for EQuatioNs.\n")
   
   headerPresent <- which(c(
     length(primVar) > 0, length(covar) > 0, length(secVar) > 0, length(bolus) > 0, length(ini) > 0,
