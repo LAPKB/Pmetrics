@@ -838,7 +838,7 @@ PM_model_file <- R6::R6Class("PM_model_file",
         model_list$sec <- c(model_list$sec, blocks$output[otherLines]) # append to #sec block
       }
       output <- blocks$output[outputLines]
-      remParen <- stringr::str_replace(output, "Y\\((\\d+)\\)|Y\\[(\\d+)\\]", "Y\\1")
+      remParen <- stringr::str_replace(output, regex("Y(?:\\[|\\()(\\d+)(?:\\]|\\))", ignore_case = TRUE), "Y\\1")
       diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
       diffList <- sapply(diffeq, function(x) x[2])
       num_out <- length(diffList)
