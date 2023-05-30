@@ -119,7 +119,7 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
       system("cargo new template")
       setwd("template")
       # system("cd template")
-      system("cargo add --git https://github.com/Siel/ode-solvers --branch mut_state")
+      system("cargo add --git https://github.com/Siel/ode-solvers --branch mut_system")
       system("cargo add --git https://github.com/LAPKB/NPcore")
       system("cargo add eyre")
       system("cargo build --release")
