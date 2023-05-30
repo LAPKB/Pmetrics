@@ -109,9 +109,9 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
     }
   } else if (getPMoptions()$backend == "rust") {
     if (is_rustup_installed()) {
-      cat("Rustup was detected in your system, Ferching dependencies and building base project.\n")
-      system("rustup install nightly")
-      system("rustup default nightly")
+      cat("Rustup was detected in your system, Fetching dependencies and building base project.\n")
+      system("rustup install stable")
+      system("rustup default stable")
       cwd <- getwd()
       # This might not work if the folder is deleted afther the R Session is closed
       # If that is the case, we should create a folder inside the Pmetrics Package folder
