@@ -142,10 +142,6 @@ PM_fit <- R6::R6Class("PM_fit",
       }
       dir.create(newdir)
       setwd(newdir)
-
-
-
-
       # Include or exclude subjects according to
       data_filtered <- data_filtered <- self$data$data
       if (!is.symbol(arglist$include)) {
@@ -234,10 +230,14 @@ PM_fit <- R6::R6Class("PM_fit",
         "engine=\"NPAG\"",
         # "init_points={num_indpts}",
         "init_points=2129", # TO-DO: temporary """"hacky"""" fix
-        "seed=22",
+        "seed=347",
         "tui={use_tui}",
         "pmetrics_outputs=true",
+        "cache = true", # TO-DO: temporary """"hacky"""" fix
         "{parameter_block}",
+        "[error]",
+        "value = 0.0",
+        "class = \"additive\""
         .envir = arglist,
         .sep = "\n"
       )
