@@ -143,7 +143,7 @@ PM_fit <- R6::R6Class("PM_fit",
       dir.create(newdir)
       setwd(newdir)
       # Include or exclude subjects according to
-      data_filtered <- data_filtered <- self$data$data
+      data_filtered <- self$data$standard_data
       if (!is.symbol(arglist$include)) {
         data_filtered <- data_filtered %>%
           filter(id %in% arglist$include)
