@@ -237,7 +237,7 @@ PM_fit <- R6::R6Class("PM_fit",
         "{parameter_block}",
         "[error]",
         "value = 0.0",
-        "class = \"additive\""
+        "class = \"additive\"",
         .envir = arglist,
         .sep = "\n"
       )
