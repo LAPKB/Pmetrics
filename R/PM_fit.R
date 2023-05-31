@@ -273,6 +273,7 @@ PM_fit <- R6::R6Class("PM_fit",
       system(sprintf("mv main.rs %s/src/main.rs", getPMoptions()$rust_template))
       # compile the template folder
       setwd(getPMoptions()$rust_template)
+      system("cargo fmt")
       system("cargo build --release")
       if (!file.exists("target/release/template")) {
         setwd(cwd)

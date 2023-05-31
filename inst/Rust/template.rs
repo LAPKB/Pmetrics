@@ -8,6 +8,7 @@ use np_core::prelude::{
 };
 use ode_solvers::*;
 
+#[derive(Debug, Clone)]
 struct Model<'a> {
     </struct_params>
     _scenario: &'a Scenario,
@@ -15,11 +16,11 @@ struct Model<'a> {
     dose: Option<Dose>,
 }
 
-type State = SVector<f64, /neqs>;
+type State = SVector<f64, </neqs>>;
 type Time = f64;
 
 impl ode_solvers::System<State> for Model<'_> {
-    fn system(&mut self, t: Time, y: &mut State, dy: &mut State) {
+    fn system(&mut self, t: Time, x: &mut State, dx: &mut State) {
         </parameter_alias>
 
         let lag = 0.0;
@@ -34,7 +35,7 @@ impl ode_solvers::System<State> for Model<'_> {
         </diff_eq>
         if let Some(dose) = &self.dose {
             if t >= dose.time + lag {
-                dy[dose.compartment] += dose.amount;
+                dx[dose.compartment] += dose.amount;
                 self.dose = None;
             }
         }
@@ -49,12 +50,13 @@ impl Predict for Ode {
     fn predict(&self, params: Vec<f64>, scenario: &Scenario) -> Vec<f64> {
         let mut system = Model {
             </model_params>
+            _scenario: scenario,
             infusions: vec![],
             dose: None,
         };
         let lag = 0.0;
         let mut yout = vec![];
-        let mut y0 = State::new(0.0);
+        let mut x = State::new(0.0);
         let mut index: usize = 0;
         for block in &scenario.blocks {
             //if no code is needed here, remove the blocks from the codebase
@@ -81,13 +83,13 @@ impl Predict for Ode {
                     //obs
                     </v_alias>
                     </out_eqs>
-                    // yout.push(y0[event.outeq.unwrap() - 1] / params[1]);
+                    // yout.push(x[event.outeq.unwrap() - 1] / params[1]);
                 }
                 if let Some(next_time) = scenario.times.get(index + 1) {
-                    let mut stepper = Rk4::new(system.clone(), event.time, y0, *next_time, 0.1);
+                    let mut stepper = Rk4::new(system.clone(), event.time, x, *next_time, 0.1);
                     let _res = stepper.integrate();
                     let y = stepper.y_out();
-                    y0 = *y.last().unwrap();
+                    x = *y.last().unwrap();
                     index += 1;
                 }
             }
