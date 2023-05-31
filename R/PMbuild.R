@@ -195,6 +195,10 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
 
 is_rustup_installed <- function() {
   flag <- system("which rustup")
+  # Sometimes R does not find rustup even if it is installed,
+  # Fix: create a symlink to any of the folders watched by system("echo $PATH")
+  # for rustup and cargo
+  # We cannot do it automatically because it requires elevated permissions
   if (flag == 0) {
     return(T)
   } else {
