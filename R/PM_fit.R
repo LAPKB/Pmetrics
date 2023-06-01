@@ -176,7 +176,7 @@ PM_fit <- R6::R6Class("PM_fit",
       arglist$use_tui <- "false" # TO-DO: Convert TRUE -> "true", vice versa.
 
       #### Save PM_fit ####
-      self$data <- data_filtered
+      self$data <- PM_data$new(data_filtered, quiet = TRUE)
       self$arglist <- arglist
       save(self, file = "fit.Rdata")
 
