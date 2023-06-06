@@ -82,6 +82,9 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/PMFortranConfig.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/PM_batch.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PM_cov.html</loc>
   </url>
   <url>
@@ -106,6 +109,9 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/PM_op.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/PM_parse.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PM_pop.html</loc>
   </url>
   <url>
@@ -115,10 +121,16 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/PM_pta.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/PM_report.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PM_result.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PM_sim.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/PM_simlist.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PM_tutorial.html</loc>
@@ -214,13 +226,28 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/add_shapes.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/add_smooth.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/all_bmi.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/badData.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/cdc_bmi.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/dataEx.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/editPMoptions.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/export_plotly.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/ger_bmi.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/getPMoptions.html</loc>
@@ -280,16 +307,31 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/modEx.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/modelLibrary.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/movePMoptions.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/mtsknn.eq.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/pipe.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.MMopt.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_cycle.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_data.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_final.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_model.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_op.html</loc>
@@ -299,6 +341,9 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_simlist.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.html</loc>
@@ -329,6 +374,12 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/plot.PMvalid.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/plot.tidy_cov.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/plot.tidy_op.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/print.MMopt.html</loc>
@@ -362,6 +413,9 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/ss.PK.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/sub_plot.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/summary.PM_cov.html</loc>
