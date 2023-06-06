@@ -70,6 +70,14 @@ PM_model <- R6::R6Class("PM_Vmodel",
     #' }
     write = function(model_path = "genmodel.txt", engine = "npag") {
       return(invisible())
+    },
+    #' @description
+    #' Plot method
+    #' @details
+    #' See [plot.PM_model].
+    #' @param ... Arguments passed to [plot.PM_model]
+    plot = function(...) {
+      return(invisible())
     }
   )
 )
@@ -237,6 +245,9 @@ PM_Vmodel <- R6::R6Class("PM_model",
       }) # end sapply
 
       invisible(self)
+    },
+    plot = function(...) {
+      plot.PM_model(self, ...) 
     }
   ),
   private = list(

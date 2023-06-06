@@ -16,7 +16,7 @@
 #' \item{popCov }{The final cycle random parameter covariance matrix}
 #' \item{popCor }{The final cycle random parameter correlation matrix}
 #' \item{popMedian }{The final cycle median values for each random parameter}
-#' #' \item{postPoints}{(NPAG only) Dataframe of posterior population points for each of the first 100 subject,
+#' \item{postPoints}{(NPAG only) Dataframe of posterior population points for each of the first 100 subject,
 #' with columns id, point, parameters and probability.  The first column is the subject, the second column has the population
 #' point number, followed by the values for the parameters in that point and the probability.}
 #' \item{postMean }{A \emph{nsub} x \emph{npar} data frame containing 
@@ -31,13 +31,44 @@
 #' contains the correlations of the posterior distributions for each parameter and subject.}
 #' \item{postMed }{A \emph{nsub} x \emph{npar} data frame containing 
 #' the medians of the posterior distributions for each parameter.}
-#' \item{shrinkage }{A data frame with the shrinkage for each parameter.  \code{popVar}
-#' is comprised of variance(EBE) + variance(EBD), where EBE is the Emprical Bayes Estimate or mean of the posterior
-#' distribution for the parameter. EBD is the Empirical Bayes Distribution, or
-#' the full Bayesian posterior distribution. In other words, if Bayesian posterior distributions are wide
-#' for a given parameter due to sparse or uninformative sampling, then most of the population variance is due
-#' to this variance and shrinkage of the EBE variance is high because individual posterior estimates
-#' shrink towards the population mean.}
+#' \item{shrinkage }{A data frame with the shrinkage for each parameter.  
+#' The total population variance for a parameter 
+#' is comprised of variance(EBE) plus average variance(EBD), 
+#' where each subject's EBE is the Empirical Bayes Estimate or mean posterior value
+#' for the parameter. EBD is the Empirical Bayes Distribution, or
+#' the full Bayesian posterior parameter value distribution for each subject. 
+#' 
+#' The typical definition of \eqn{\eta} shrinkage is
+#' \eqn{[1 - \frac{SD(\eta)}{\omega}]} or \eqn{[1 - \frac{var(\eta)}{\omega^2}]}, 
+#' where \eqn{\eta} is the EBE and \eqn{\omega^2} is the population variance of \eqn{\eta}.
+#' 
+#' In parametric modeling approaches \eqn{\eta} is the interindividual variability around
+#' the typical (mean) value of the parameter in the population, usually referred to 
+#' as \eqn{\theta}. In nonparametric approaches, there is no assumption of normality, so 
+#' \eqn{\eta} simply becomes each subject's mean parameter value estimate.
+#' 
+#' Here is how Pmetrics derives and then calculates shrinkage for a given parameter.
+#' \deqn{popVar = var(EBE) + mean(var(EBD))}
+#' \deqn{1 = \frac{var(EBE)}{popVar} + \frac{mean(var(EBD)}{popVar}}
+#' \deqn{1 - \frac{var(EBE)}{popVar} = \frac{mean(var(EBD))}{popVar}}
+#' \deqn{shrinkage = \frac{mean(var(EBD))}{popVar}}
+#' Shrinkage is therefore a fraction between 0 and 1. If Bayesian posterior distributions are wide
+#' for a given parameter and \eqn{mean(var(EBD))} is high due to sparse or uninformative sampling, 
+#' then most of the population variance is due
+#' to this variance and shrinkage is high, i.e., individual posterior estimates (EBE)
+#' shrink towards the population mean. Be aware, however, that a Bayesian posterior
+#' parameter value distribution for a given subject who is sparsely sampled may also
+#' be a single support point with no variance. Therefore EBD under nonparametric 
+#' assumptions is not always large with uninformative sampling. This means that shrinkage
+#' is not as readily interpretable in nonparametric population modeling.
+#' 
+#' An alternative is to consider the number of support points relative to the number
+#' of subjects. Highly informed, distinct subjects will result in the maximum possible
+#' number of support points, *N*, which is the same as the number of subjects.
+#' In contrast, badly undersampled subjects can result in only one support point. 
+#' There is no formal criterion for this statistic, but it can be used in combination
+#' with shrinkage to assess the information content of the data.
+#' }
 #' \item{gridpts }{(NPAG only) Initial number of support points}
 #' \item{nsub }{Number of subjects}
 #' \item{ab }{Matrix of boundaries for random parameter values}
