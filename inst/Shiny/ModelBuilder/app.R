@@ -485,8 +485,6 @@ server <- function(input, output, session) {
                ignoreInit = TRUE,
                {
                  loaded <- tryCatch(PM_model$new(input$model_file$datapath), error = function(e) {print("Error loading model.");return()})
-                 #reset store
-                 #store <- purrr::map(store, ~NULL)
                  model(loaded$model_list)
                }
   )
@@ -937,13 +935,13 @@ server <- function(input, output, session) {
                                                 paste0(tab(10),"model = ",
                                                        dplyr::case_when(
                                                          input$out_model_err_type_1 == "Additive (lambda)" ~ paste0("additive(",input$out_model_err_val_1,"),<br>"),
-                                                         input$out_model_err_type_1 == "Additive Fixed" ~ paste0("additive(",input$out_model_err_val_1,", fixed = TRUE),<br>"),
+                                                         input$out_model_err_type_1 == "Additive Constant" ~ paste0("additive(",input$out_model_err_val_1,", constant = TRUE),<br>"),
                                                          input$out_model_err_type_1  == "Proportional (gamma)" ~ paste0("proportional(",input$out_model_err_val_1,"),<br>"),
-                                                         input$out_model_err_type_1 == "Proportional Fixed" ~ paste0("proportional(",input$out_model_err_val_1,", fixed = TRUE),<br>"),
+                                                         input$out_model_err_type_1 == "Proportional Constant" ~ paste0("proportional(",input$out_model_err_val_1,", constant = TRUE),<br>"),
                                                        )),
                                                 paste0(tab(10), "assay = ",
                                                        dplyr::case_when(
-                                                         input[[paste0("out_assay_err_always_",.x)]] == TRUE ~ paste0("errorPoly(c(",input[[paste0("out_assay_err_",.x)]],"), fixed = TRUE)<br>"),
+                                                         input[[paste0("out_assay_err_always_",.x)]] == TRUE ~ paste0("errorPoly(c(",input[[paste0("out_assay_err_",.x)]],"), constant = TRUE)<br>"),
                                                          input[[paste0("out_assay_err_always_",.x)]] == FALSE ~ paste0("errorPoly(c(",input[[paste0("out_assay_err_",.x)]],"))<br>"),
                                                        )),
                                                 tab(8), ")<br>", #close err list
