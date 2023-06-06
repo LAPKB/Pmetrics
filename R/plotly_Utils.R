@@ -578,7 +578,9 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
 #' @export
 #' @seealso [plotly::save_image()]
 #' @examples 
+#' \dontrun{
 #' NPex$op$plot(stats = list(x = 0.9)) %>% export_plotly(file = "op.png", width = 12, height = 6, units = "in")
+#' }
 #' @author Michael Neely
 
 
