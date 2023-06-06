@@ -1,11 +1,22 @@
+#' Launch Model Builder app
+#' 
+#' Opens the shiny model builder app.
 #'
+#' @param data Optional [PM_data] object which will be used to read
+#' covariates.
+#' @param ... Currently unused
+#' @return Launches the shiny app.
 #' @export
+#' @author Michael Neely
+#' @examplesIf
+#' ${1:interactive()}
+#' ${1:build_model(NPex$data)} 
 #' 
 build_model <- function(data, ...) {
   #if(missing(data) || !inherits(data,"PM_data")) stop("Please specify a PM_data object.\n")
   if(missing(data)) data <- NULL
-  #file_path <- system.file("Shiny/ModelBuilder/app.R", package = "Pmetrics")
-  file_path <- "inst/Shiny/ModelBuilder/app.R" #comment out this when installed
+  file_path <- system.file("Shiny/ModelBuilder/app.R", package = "Pmetrics")
+  #file_path <- "inst/Shiny/ModelBuilder/app.R" #comment out this when installed
   
   if (!nzchar(file_path)) stop("Shiny app not found")
   ui <- server <- NULL # avoid NOTE about undefined globals
