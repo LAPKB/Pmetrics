@@ -220,48 +220,37 @@ par_lims %>%
 ### Marginal plots
 Support points, dashed lines are limits
 
-<!-- ```{r} -->
-<!-- res$final$popPoints %>%  -->
-<!--   pivot_longer(cols = -prob) %>%  -->
-<!--   left_join(par_lims, by = "name") %>%  -->
-<!--   ggplot(aes(x = value, y = prob)) + -->
-<!--   geom_segment(aes(xend = value, yend = 0)) + -->
-<!--   geom_vline(aes(xintercept = lower), lty = "dashed", alpha = 0.5) + -->
-<!--   geom_vline(aes(xintercept = upper), lty = "dashed", alpha = 0.5) + -->
-<!--   facet_wrap(~name, scales = "free") + -->
-<!--   labs(x = "Parameter value", y = "Density") -->
-<!-- ``` -->
 ``` {r}
 res$final$plot()
 ```
 
-### Posterior parameter distributions
-Posterior parameter density estimates based on the mean and median icen.
+<!-- ### Posterior parameter distributions -->
+<!-- Posterior parameter density estimates based on the mean and median icen. -->
 
-```{r}
-pmean = res$final$postMean %>%
-  mutate(type = "Mean")
+<!-- ```{r} -->
+<!-- pmean = res$final$postMean %>% -->
+<!--   mutate(type = "Mean") -->
 
-pmedian = res$final$postMed %>%
-  mutate(type = "Median")
+<!-- pmedian = res$final$postMed %>% -->
+<!--   mutate(type = "Median") -->
 
-pmean %>% 
-  bind_rows(pmedian) %>%
-  pivot_longer(cols = -c(id, type)) %>%
-  left_join(par_lims, by = "name") %>%
-  ggplot(aes(x = value)) +
-  geom_density(aes(col = type, fill = type), alpha = 0.5) +
-  geom_vline(aes(xintercept = lower), 
-             lty = "dashed", alpha = 0.5) +
-  geom_vline(aes(xintercept = upper), 
-             lty = "dashed", alpha = 0.5) +
-  facet_wrap( ~ name, scales = "free") +
-  labs(x = "Parameter value",
-       y = "Density",
-       fill = NULL,
-       col = NULL) +
-  theme(legend.position = "bottom")
-```
+<!-- pmean %>%  -->
+<!--   bind_rows(pmedian) %>% -->
+<!--   pivot_longer(cols = -c(id, type)) %>% -->
+<!--   left_join(par_lims, by = "name") %>% -->
+<!--   ggplot(aes(x = value)) + -->
+<!--   geom_density(aes(col = type, fill = type), alpha = 0.5) + -->
+<!--   geom_vline(aes(xintercept = lower),  -->
+<!--              lty = "dashed", alpha = 0.5) + -->
+<!--   geom_vline(aes(xintercept = upper),  -->
+<!--              lty = "dashed", alpha = 0.5) + -->
+<!--   facet_wrap( ~ name, scales = "free") + -->
+<!--   labs(x = "Parameter value", -->
+<!--        y = "Density", -->
+<!--        fill = NULL, -->
+<!--        col = NULL) + -->
+<!--   theme(legend.position = "bottom") -->
+<!-- ``` -->
 
 ### Table of support points
 
