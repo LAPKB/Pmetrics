@@ -401,7 +401,7 @@ checkID <- function(id) {
 
 # extract pattern from strings
 strparse <- function(pattern, x) {
-  match <- regexpr(pattern, x)
+  match <- regexpr(pattern, x, ignore.case = T)
   start <- match[1]
   stop <- match[1] + attr(match, "match.length") - 1
   return(substr(x, start, stop))
@@ -429,19 +429,23 @@ parseBlocks <- function(model) {
   f <- blockStart[grep("#f", headers)]
   lag <- blockStart[grep("#lag", headers)]
   diffeq <- blockStart[grep("#dif", headers)]
+  eqn <- blockStart[grep("#eqn", headers)]
   output <- blockStart[grep("#out", headers)]
   error <- blockStart[grep("#err", headers)]
   extra <- blockStart[grep("#ext", headers)]
   
+  if(length(diffeq) > 0) {eqn <- diffeq} #change diffeq block to eqn for more general
+  #cat("Please update your model file. The #DIF block should be renamed as #EQN, which is short for EQuatioNs.\n")
+  
   headerPresent <- which(c(
     length(primVar) > 0, length(covar) > 0, length(secVar) > 0, length(bolus) > 0, length(ini) > 0,
-    length(f) > 0, length(lag) > 0, length(diffeq) > 0, length(output) > 0, length(error) > 0, length(extra) > 0
+    length(f) > 0, length(lag) > 0, length(eqn) > 0, length(output) > 0, length(error) > 0, length(extra) > 0
   ))
   if (any(!c(1, 9, 10) %in% headerPresent)) {
     return(list(status = -1, msg = "You must have #Primary, #Output, and #Error blocks at minimum"))
   }
   
-  headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, diffeq, output, error, extra)
+  headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, eqn, output, error, extra)
   blockStart <- blockStart[rank(headerOrder)]
   blockStop <- blockStop[rank(headerOrder)]
   
@@ -452,7 +456,7 @@ parseBlocks <- function(model) {
   headerPresent <- headerPresent[ok]
   
   # get blocks
-  blocks <- list(primVar = NA, covar = NA, secVar = NA, bolus = NA, ini = NA, f = NA, lag = NA, diffeq = NA, output = NA, error = NA, extra = NA)
+  blocks <- list(primVar = NA, covar = NA, secVar = NA, bolus = NA, ini = NA, f = NA, lag = NA, eqn = NA, output = NA, error = NA, extra = NA)
   for (i in 1:length(headerPresent)) {
     temp <- modelFile[(blockStart[i] + 1):blockStop[i]]
     allblank <- grep("^[[:blank:]]+$", temp)
@@ -484,9 +488,17 @@ chunks <- function(x, maxwidth = 60) {
   return(x)
 }
 
+#change dX[digit] to XP(digit) and X[digit] to X(digit)
+fortranize <- function(block){
+  block <- purrr::map_chr(block, ~ gsub("dX\\[(\\d+)\\]", "XP\\(\\1\\)", .x, ignore.case = T, perl = T))
+  block <-  purrr::map_chr(block, ~ gsub("BOLUS\\[\\d+\\]", "", .x, ignore.case = T, perl = T))
+  block <-  purrr::map_chr(block, ~ gsub("\\[(\\d+)\\]", "\\(\\1\\)", .x, ignore.case = T, perl = T))
+  return(block)
+}
+
 
 # convert new model template to model fortran file
-makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T, quiet = F) {
+makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = getPMoptions("backend"), write = T, quiet = F) {
   blocks <- parseBlocks(model)
   
   # check for reserved variable names
@@ -505,6 +517,8 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   maxwidth <- 60
   blocks <- chunks(x = blocks, maxwidth = maxwidth)
   
+  #ensure in fortran format: dX -> XP and [] -> ()
+  blocks <- purrr::map(blocks, fortranize)
   
   # primary variable definitions
   npvar <- length(blocks$primVar)
@@ -660,17 +674,17 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     svardef <- gsub("^&", "", svardef)
   }
   
-  # take out any extra declarations in diffeq to add to declarations in subroutine
-  diffdec <- grep("COMMON|EXTERNAL|DIMENSION", blocks$diffeq, ignore.case = T)
+  # take out any extra declarations in eqn to add to declarations in subroutine
+  diffdec <- grep("COMMON|EXTERNAL|DIMENSION", blocks$eqn, ignore.case = T)
   if (length(diffdec) > 0) {
-    diffstate <- blocks$diffeq[diffdec]
-    blocks$diffeq <- blocks$diffeq[-diffdec]
+    diffstate <- blocks$eqn[diffdec]
+    blocks$eqn <- blocks$eqn[-diffdec]
   } else {
     diffstate <- ""
   }
   
   # detect N
-  if (blocks$diffeq[1] == "") {
+  if (blocks$eqn[1] == "") {
     if ("KE" %in% toupper(secVarNames) | "KE" %in% toupper(blocks$primVar)) {
       N <- -1
     } else {
@@ -678,12 +692,12 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     }
   } else {
     # get number of equations and verify with data file
-    # find statements with XP(digit)
-    compLines <- grep("XP\\([[:digit:]]+\\)", blocks$diffeq)
+    # find statements with XP(digit) or dX[digit]
+    compLines <- grep("XP\\([[:digit:]]+\\)|dX\\[[[:digit:]]+\\]", blocks$eqn, ignore.case = T)
     if (length(compLines) == 0) {
       N <- 0
     } else {
-      compStatements <- sapply(blocks$diffeq[compLines], function(x) strparse("XP\\([[:digit:]]+\\)", x))
+      compStatements <- sapply(blocks$eqn[compLines], function(x) strparse("XP\\([[:digit:]]+\\)|dX\\[[[:digit:]]+\\]", x))
       compNumbers <- sapply(compStatements, function(x) strparse("[[:digit:]]+", x))
       # get max number
       N <- max(as.numeric(compNumbers))
@@ -719,14 +733,28 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     }
   }
   
+  #extract bolus inputs and create bolus block, then remove bolus[x] from equations
+  bolus <- purrr::map(blocks$eqn,~stringr::str_extract_all(.x,regex("B\\[\\d+|BOL\\[\\d+|BOLUS\\[\\d+", ignore_case = TRUE), simplify = FALSE))
+  blocks$bolus <- imap(bolus, \(x, idx){
+    if(length(x[[1]])>0){
+      paste0("NBCOMP(",stringr::str_extract(x[[1]],"\\d+$"),") = ",idx)
+    }
+  }) %>% unlist()
+  blocks$eqn <- purrr::map(blocks$eqn,\(x) stringr::str_replace_all(x,regex("(\\+*|-*|\\**)\\s*B\\[\\d+\\]|(\\+*|-*|\\**)\\s*BOL\\[\\d+\\]|(\\+*|-*|\\**)\\s*BOLUS\\[\\d+\\]", ignore_case = TRUE), "")) %>%
+    unlist()
+  
+  #replace R[x] or R(x) with RATEIV(x)
+  blocks$eqn <- purrr::map(blocks$eqn,\(x) stringr::str_replace_all(x,regex("R\\[(\\d+)\\]", ignore_case = TRUE), "RATEIV\\[\\1\\]")) %>%
+    unlist()
+  
   # get number of equations and verify with data file
-  # find statements with Y(digit)
-  outputLines <- grep("Y\\([[:digit:]]+\\)", blocks$output)
+  # find statements with Y(digit) or Y[digit]
+  outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output, ignore.case = T)
   if (length(outputLines) == 0) {
-    return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y(1) = ...'\n"))
+    return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y[1] = ...'\n"))
   }
   # extract numbers
-  outputStatements <- sapply(blocks$output[outputLines], function(x) strparse("Y\\([[:digit:]]+\\)", x))
+  outputStatements <- sapply(blocks$output[outputLines], function(x) strparse("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", x))
   outputNumbers <- sapply(outputStatements, function(x) strparse("[[:digit:]]", x))
   # get max number
   modelnumeqt <- max(as.numeric(outputNumbers))
@@ -943,9 +971,9 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
   
   blocks <- lapply(blocks, prespace)
   
-  fmod <- list(header = NA, diffeq = NA, output = NA, symbol = NA, getfa = NA, getix = NA, gettlag = NA, anal3 = NA)
+  fmod <- list(header = NA, eqn = NA, output = NA, symbol = NA, getfa = NA, getix = NA, gettlag = NA, anal3 = NA)
   fmod$header <- c("C  TSTMULTN.FOR                          NOV, 2014", blank(2))
-  fmod$diffeq <- c(
+  fmod$eqn <- c(
     space(5, "SUBROUTINE DIFFEQ(NDIM,T,X,XP,RPAR,IPAR)"),
     space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
     space(5, vardec),
@@ -970,7 +998,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, write = T,
     unlist(lapply(covardef, function(x) space(8, x))),
     unlist(lapply(svardef, function(x) space(8, x))),
     blank(1),
-    unlist(lapply(blocks$diffeq, function(x) space(8, x))),
+    unlist(lapply(blocks$eqn, function(x) space(8, x))),
     blank(1),
     space(5, "RETURN"),
     space(5, "END"),

@@ -70,6 +70,14 @@ PM_model <- R6::R6Class("PM_Vmodel",
     #' }
     write = function(model_path = "genmodel.txt", engine = "npag") {
       return(invisible())
+    },
+    #' @description
+    #' Plot method
+    #' @details
+    #' See [plot.PM_model].
+    #' @param ... Arguments passed to [plot.PM_model]
+    plot = function(...) {
+      return(invisible())
     }
   )
 )
@@ -141,7 +149,7 @@ covariate <- function(name, constant = F) {
 
 
 # Virtual Class
-# it seems that protected does not exist in R
+# Here is where the model_list is printed to the console
 PM_Vmodel <- R6::R6Class("PM_model",
   public = list(
     name = NULL, # used by PM_model_legacy
@@ -198,8 +206,8 @@ PM_Vmodel <- R6::R6Class("PM_model",
         } else if (x == "sec") {
           cat("\n", sp(1), "$sec\n", paste0(sp(2), "[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = "\n "))
           cat("\n")
-        } else if (x == "dif") {
-          cat("\n", sp(1), "$dif\n", paste0(sp(2), "[", 1:length(mlist$dif), "] \"", mlist$dif, "\"", collapse = "\n "))
+        } else if (x == "dif" | x == "eqn") {
+          cat("\n", sp(1), "$eqn\n", paste0(sp(2), "[", 1:length(mlist$eqn), "] \"", mlist$eqn, "\"", collapse = "\n "))
           cat("\n")
         } else if (x == "lag") {
           cat("\n", sp(1), "$lag\n", paste0(sp(2), "[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = "\n "))
@@ -237,6 +245,9 @@ PM_Vmodel <- R6::R6Class("PM_model",
       }) # end sapply
 
       invisible(self)
+    },
+    plot = function(...) {
+      plot.PM_model(self, ...) 
     }
   ),
   private = list(
@@ -252,6 +263,7 @@ PM_Vmodel <- R6::R6Class("PM_model",
 
 # private classes
 # TODO: Should I make these fields private?
+# This generates text which will be written to genmodel.txt
 PM_Vinput <- R6::R6Class(
   "PM_Vinput",
   public <- list(
@@ -457,7 +469,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
         lag <- "let t = t - self.lag;"
       }
       content <- gsub("</lag>", lag, content)
-      eqs <- self$model_list$dif %>% tolower()
+      eqs <- self$model_list$eqn %>% tolower()
       # gsub("\\(([0-9]))","[\\1]",tolower(eqs))
       # str_replace_all(tolower(eqs),"\\((\\d)\\)",function(a){a})
       # str_replace_all(tolower(eqs),"(?<=\\()\\d+(?=\\))",function(a){paste0("[",as.integer(a)-1,"]")})
@@ -468,7 +480,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
         paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
       }) %>%
         stringr::str_replace_all("xp", "dx")
-      content <- gsub("</diff_eq>", paste0(eqs %>% paste(collapse = ";\n"), ";"), content)
+      content <- gsub("</eqn>", paste0(eqs %>% paste(collapse = ";\n"), ";"), content)
       content <- gsub("</neqs>", neqs, content)
       content <- gsub("</seq>", "", content)
       content <- gsub("</model_params>", mp_lines %>% paste(collapse = ""), content)
@@ -498,7 +510,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
     },
     update = function(changes_list) {
       keys <- names(changes_list)
-      stopifnot(private$lower3(keys) %in% c("pri", "sec", "dif", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")) # TODO: add all supported blocks
+      stopifnot(private$lower3(keys) %in% c("pri", "sec", "dif", "eqn", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")) 
       self$model_list <- modifyList(self$model_list, changes_list)
     }
   ),
@@ -633,7 +645,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
             }
           )
         }
-      } else if (private$lower3(key) == "dif") {
+      } else if (private$lower3(key) == "dif" | private$lower3(key) == "eqn") {
         # names <- names(block)
         for (i in 1:length(block)) {
           # key <- toupper(names[i])
@@ -669,7 +681,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
           lines <- append(
             lines,
             if (nchar(param) == 2) {
-              sprintf("%s(%s)=%s", substr(key, 1, 1), substr(key, 2, 2), block[[i]][1])
+              sprintf("%s[%s]=%s", substr(key, 1, 1), substr(key, 2, 2), block[[i]][1])
             } else {
               sprintf("%s", block[[i]][1])
             }
@@ -816,23 +828,28 @@ PM_model_file <- R6::R6Class("PM_model_file",
         model_list$lag <- blocks$lag
       }
 
-      # differential equations
-      if (blocks$diffeq[1] != "") {
-        model_list$dif <- blocks$diffeq
+      # differential equations - legacy
+      if (!is.null(blocks$diffeq) && blocks$diffeq[1] != "") {
+        model_list$eqn <- blocks$diffeq
+      }
+      
+      # model equations - will eventually replace diffeq above
+      if (blocks$eqn[1] != "") {
+        model_list$eqn <- blocks$eqn
       }
 
       # out/err
       n_outputLines <- length(blocks$output)
-      outputLines <- grep("Y\\([[:digit:]]+\\)", blocks$output)
+      outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output)
       if (length(outputLines) == 0) {
-        return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y(1) = ...'\n"))
+        return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y[1] = ...'\n"))
       }
       otherLines <- (1:n_outputLines)[!(1:n_outputLines) %in% outputLines] # find other lines
       if (length(otherLines) > 0) {
         model_list$sec <- c(model_list$sec, blocks$output[otherLines]) # append to #sec block
       }
       output <- blocks$output[outputLines]
-      remParen <- stringr::str_replace(output, "Y\\((\\d+)\\)", "Y\\1")
+      remParen <- stringr::str_replace(output, regex("Y(?:\\[|\\()(\\d+)(?:\\]|\\))", ignore_case = TRUE), "Y\\1")
       diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
       diffList <- sapply(diffeq, function(x) x[2])
       num_out <- length(diffList)

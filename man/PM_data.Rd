@@ -43,6 +43,7 @@ conduct a non-compartmental analysis on the raw data using
 \itemize{
 \item \href{#method-PM_data-new}{\code{PM_data$new()}}
 \item \href{#method-PM_data-write}{\code{PM_data$write()}}
+\item \href{#method-PM_data-auc}{\code{PM_data$auc()}}
 \item \href{#method-PM_data-nca}{\code{PM_data$nca()}}
 \item \href{#method-PM_data-plot}{\code{PM_data$plot()}}
 \item \href{#method-PM_data-print}{\code{PM_data$print()}}
@@ -119,6 +120,27 @@ in the working directory.}
 \subsection{Details}{
 Writes a delimited file (e.g. comma-separated)
 from the \code{standard_data} field
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_data-auc"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-auc}{}}}
+\subsection{Method \code{auc()}}{
+Calculate AUC
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$auc(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{makeAUC}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{makeAUC}.
 }
 
 }
