@@ -64,7 +64,9 @@ Many of the arguments are the same as for \code{save_image} and are passed direc
 to that function.
 }
 \examples{
+\dontrun{
 NPex$op$plot(stats = list(x = 0.9)) \%>\% export_plotly(file = "op.png", width = 12, height = 6, units = "in")
+}
 }
 \seealso{
 \code{\link[plotly:save_image]{plotly::save_image()}}

@@ -52,7 +52,8 @@ makeAUC <- function(data,
     inherits(data, c("PMsim", "PM_sim", 
                      "PMop", "PM_op", 
                      "PMpop", "PM_pop",
-                     "PMpost", "PM_post"), which = T) > 0
+                     "PMpost", "PM_post",
+                     "PM_data", "PMmatrix"), which = T) > 0
   ) #will be all zeros except matching class, undefined if none
   
   if(length(data_class)>0){ #there was a match
@@ -65,6 +66,12 @@ makeAUC <- function(data,
                     data$data %>% mutate(out = pred), #PM_pop
                     data %>% mutate(out = pred), #PMpost
                     data$data %>% mutate(out = pred), #PM_post
+                    data$standard_data %>% 
+                      makePMmatrixBlock() %>%
+                      filter(!is.na(out)), #PM_data
+                    data %>% 
+                      makePMmatrixBlock() %>%
+                      filter(!is.na(out)), #PMmatrix
                     )
   } else { #class not matched, so needs formula
     if (missing(formula)) stop("\nPlease supply a formula of form 'out~time' for objects other than class PMsim, PMpost or PMop.")
