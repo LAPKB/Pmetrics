@@ -107,6 +107,7 @@ conduct a non-compartmental analysis on the raw data using
 
 <ul><li><p><a href="#method-PM_data-new"><code>PM_data$new()</code></a></p></li>
 <li><p><a href="#method-PM_data-write"><code>PM_data$write()</code></a></p></li>
+<li><p><a href="#method-PM_data-auc"><code>PM_data$auc()</code></a></p></li>
 <li><p><a href="#method-PM_data-nca"><code>PM_data$nca()</code></a></p></li>
 <li><p><a href="#method-PM_data-plot"><code>PM_data$plot()</code></a></p></li>
 <li><p><a href="#method-PM_data-print"><code>PM_data$print()</code></a></p></li>
@@ -190,15 +191,36 @@ from the <code>standard_data</code> field</p>
 </div>
 
 
-</div><p></p><hr><a id="method-PM_data-nca"></a><div class="section">
-<h3 id="method-nca-">Method <code>nca()</code><a class="anchor" aria-label="anchor" href="#method-nca-"></a></h3>
-<p>Perform non-compartmental analysis</p><div class="section">
+</div><p></p><hr><a id="method-PM_data-auc"></a><div class="section">
+<h3 id="method-auc-">Method <code>auc()</code><a class="anchor" aria-label="anchor" href="#method-auc-"></a></h3>
+<p>Calculate AUC</p><div class="section">
 <h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_data</span><span class="op">$</span><span class="fu">nca</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_data</span><span class="op">$</span><span class="fu">auc</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>...</code></dt>
+<dd><p>Arguments passed to <a href="makeAUC.html">makeAUC</a>.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="details-3">Details<a class="anchor" aria-label="anchor" href="#details-3"></a></h4>
+<p>See <a href="makeAUC.html">makeAUC</a>.</p>
+</div>
+
+
+</div><p></p><hr><a id="method-PM_data-nca"></a><div class="section">
+<h3 id="method-nca-">Method <code>nca()</code><a class="anchor" aria-label="anchor" href="#method-nca-"></a></h3>
+<p>Perform non-compartmental analysis</p><div class="section">
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_data</span><span class="op">$</span><span class="fu">nca</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>...</code></dt>
 <dd><p>Arguments passed to <a href="makeNCA.html">makeNCA</a>.</p></dd>
 
@@ -206,7 +228,7 @@ from the <code>standard_data</code> field</p>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="details-3">Details<a class="anchor" aria-label="anchor" href="#details-3"></a></h4>
+<h4 id="details-4">Details<a class="anchor" aria-label="anchor" href="#details-4"></a></h4>
 <p>See <a href="makeNCA.html">makeNCA</a>.</p>
 </div>
 
@@ -214,12 +236,12 @@ from the <code>standard_data</code> field</p>
 </div><p></p><hr><a id="method-PM_data-plot"></a><div class="section">
 <h3 id="method-plot-">Method <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code><a class="anchor" aria-label="anchor" href="#method-plot-"></a></h3>
 <p>Plot method</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_data</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>...</code></dt>
 <dd><p>Arguments passed to <a href="plot.PM_data.html">plot.PM_data</a></p></dd>
 
@@ -227,7 +249,7 @@ from the <code>standard_data</code> field</p>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="details-4">Details<a class="anchor" aria-label="anchor" href="#details-4"></a></h4>
+<h4 id="details-5">Details<a class="anchor" aria-label="anchor" href="#details-5"></a></h4>
 <p>See <a href="plot.PMmatrix.html">plot.PMmatrix</a>.</p>
 </div>
 
@@ -235,12 +257,12 @@ from the <code>standard_data</code> field</p>
 </div><p></p><hr><a id="method-PM_data-print"></a><div class="section">
 <h3 id="method-print-">Method <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code><a class="anchor" aria-label="anchor" href="#method-print-"></a></h3>
 <p>Print method</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_data</span><span class="op">$</span><span class="fu">print</span><span class="op">(</span>standard <span class="op">=</span> <span class="cn">F</span>, viewer <span class="op">=</span> <span class="cn">T</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>standard</code></dt>
 <dd><p>Display the standardized data if <code>TRUE</code>.
 Default is <code>FALSE</code>.</p></dd>
@@ -259,7 +281,7 @@ passed if <code>viewer = FALSE</code>.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="details-5">Details<a class="anchor" aria-label="anchor" href="#details-5"></a></h4>
+<h4 id="details-6">Details<a class="anchor" aria-label="anchor" href="#details-6"></a></h4>
 <p>Displays the PM_data object in a variety of ways.</p>
 </div>
 
@@ -267,12 +289,12 @@ passed if <code>viewer = FALSE</code>.</p></dd>
 </div><p></p><hr><a id="method-PM_data-summary"></a><div class="section">
 <h3 id="method-summary-">Method <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code><a class="anchor" aria-label="anchor" href="#method-summary-"></a></h3>
 <p>Summary method</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_data</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
+<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>...</code></dt>
 <dd><p>Arguments passed to <a href="summary.PMmatrix.html">summary.PMmatrix</a>.</p></dd>
 
@@ -280,7 +302,7 @@ passed if <code>viewer = FALSE</code>.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="details-6">Details<a class="anchor" aria-label="anchor" href="#details-6"></a></h4>
+<h4 id="details-7">Details<a class="anchor" aria-label="anchor" href="#details-7"></a></h4>
 <p>See <a href="summary.PMmatrix.html">summary.PMmatrix</a>.</p>
 </div>
 
@@ -288,12 +310,12 @@ passed if <code>viewer = FALSE</code>.</p></dd>
 </div><p></p><hr><a id="method-PM_data-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_data</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
+<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
