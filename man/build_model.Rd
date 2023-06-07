@@ -16,13 +16,10 @@ covariates.}
 Launches the shiny app.
 }
 \description{
-Opens the shiny model builder app.
+Open the shiny model builder app.
 }
-\examples{
-\dontshow{if () (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-${1:interactive()}
-${1:build_model(NPex$data)} 
-\dontshow{\}) # examplesIf}
+\details{
+The app will open in a separate window.
 }
 \author{
 Michael Neely
