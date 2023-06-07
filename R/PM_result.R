@@ -104,8 +104,8 @@ PM_result <- R6::R6Class(
     #' @param type Type of AUC based on class of object
     #' @param ... Summary-specific arguments
     auc = function(type, ...) {
-      if(!type %in% c("op", "pop", "post", "sim")){
-        stop("makeAUC is defined only for PMop, PMpop, PMpost, PMsim objects.\n")
+      if(!type %in% c("data", "op", "pop", "post", "sim")){
+        stop("makeAUC is defined only for PM_data, PM_op, PM_pop, PM_post, PM_sim objects.\n")
       }
       self[[type]]$auc(...)
     },
