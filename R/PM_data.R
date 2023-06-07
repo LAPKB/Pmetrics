@@ -81,6 +81,14 @@ PM_data <- R6::R6Class("PM_data",
       PMwriteMatrix(self$standard_data, file_name, ...)
     },
     #' @description
+    #' Calculate AUC
+    #' @details
+    #' See [makeAUC].
+    #' @param ... Arguments passed to [makeAUC].
+    auc = function(...) {
+      makeAUC(self, ...)
+    },
+    #' @description
     #' Perform non-compartmental analysis
     #' @details
     #' See [makeNCA].
