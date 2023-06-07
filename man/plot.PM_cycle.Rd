@@ -105,6 +105,7 @@ Other PMplots:
 \code{\link{plot.MMopt}()},
 \code{\link{plot.PM_data}()},
 \code{\link{plot.PM_final}()},
+\code{\link{plot.PM_model}()},
 \code{\link{plot.PM_op}()},
 \code{\link{plot.PM_pta}()},
 \code{\link{plot.PM_sim}()},

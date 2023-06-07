@@ -46,6 +46,7 @@ modEx$write("model.txt")
 \item \href{#method-PM_Vmodel-print}{\code{PM_model$print()}}
 \item \href{#method-PM_Vmodel-update}{\code{PM_model$update()}}
 \item \href{#method-PM_Vmodel-write}{\code{PM_model$write()}}
+\item \href{#method-PM_Vmodel-plot}{\code{PM_model$plot()}}
 \item \href{#method-PM_Vmodel-clone}{\code{PM_model$clone()}}
 }
 }
@@ -162,6 +163,27 @@ modEx$write("model.txt")
 }
 \if{html}{\out{</div>}}
 
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_Vmodel-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-plot}{}}}
+\subsection{Method \code{plot()}}{
+Plot method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$plot(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{plot.PM_model}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{plot.PM_model}.
 }
 
 }
