@@ -1,4 +1,3 @@
-
 # INTRODUCTION ------------------------------------------------------------
 
 # Lines that start with "#" are comments and ignored by R.  Follow the
@@ -96,12 +95,12 @@ mod1 <- PM_model$new(list(
     Tlag1 = ab(0, 4)
   ),
   cov = list(
-    covariate("WT"), 
-    covariate("AFRICA"), 
-    covariate("AGE"), 
-    covariate("GENDER"), 
+    covariate("WT"),
+    covariate("AFRICA"),
+    covariate("AGE"),
+    covariate("GENDER"),
     covariate("HEIGHT")
-    ),
+  ),
   lag = list("Tlag(1) = Tlag1"),
   out = list(
     Y1 = list(
@@ -269,7 +268,7 @@ exRes$cov$data %>%
   filter(age > 25) %>%
   plot(V ~ wt)
 
-#will shortly be updated to plotly
+# will shortly be updated to plotly
 exRes$cov$plot(Ke ~ age, lowess = FALSE, reg = TRUE, pch = 3)
 
 # Same plot but with mean Bayesian posterior parameter and covariate values...
@@ -467,8 +466,8 @@ simdata3$data[[1]]$parValues
 # PM_pta
 
 # Example - save the PM_result (exRes2) to the "2" folder
-exRes2$save("2/exres2.rds") # rds is the recommended file extension
-list.files("2")
+exRes2$save("2", "exres2.rds") # rds is the recommended file extension
+list.files("2/outputs")
 copy_exRes2 <- PM_result$load("2/exres2.rds")
 copy_exRes2
 
