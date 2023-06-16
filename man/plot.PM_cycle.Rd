@@ -103,6 +103,7 @@ NPex$cycle$plot(linetypes = "dash", colors = "Blues", marker = list(size = 1), l
 
 Other PMplots: 
 \code{\link{plot.MMopt}()},
+\code{\link{plot.PM_cov}()},
 \code{\link{plot.PM_data}()},
 \code{\link{plot.PM_final}()},
 \code{\link{plot.PM_model}()},

@@ -22,7 +22,7 @@ for the user to do.
 
 See \link{summary.PMcov}.
 
-See \link{plot.PMcov}.
+See \link{plot.PM_cov}.
 
 Print method for \emph{PM_cov}
 }
@@ -101,7 +101,7 @@ Plot method
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{plot.PMcov}}
+\item{\code{...}}{Arguments passed to \link{plot.PM_cov}}
 }
 \if{html}{\out{</div>}}
 }

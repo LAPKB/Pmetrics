@@ -34,6 +34,7 @@ for \link{plot.PMsim}.
 \link{plot.PM_sim}
 
 Other PMplots: 
+\code{\link{plot.PM_cov}()},
 \code{\link{plot.PM_cycle}()},
 \code{\link{plot.PM_data}()},
 \code{\link{plot.PM_final}()},
