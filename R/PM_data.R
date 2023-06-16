@@ -58,13 +58,14 @@ PM_data <- R6::R6Class("PM_data",
     #' relative times in the `PM_data$standard_data` field look correct.
     #' Other date/time formats are possible. See [lubridate::parse_date_time()] for these.
     #' @param quiet Quietly validate. Default is `FALSE`.
-    initialize = function(data, dt = NULL, quiet = F) {
+    #' @param validate Check for errors. Default is `TRUE`. Strongly recommended.
+    initialize = function(data = NULL, dt = NULL, quiet = FALSE, validate = TRUE) {
       self$data <- if (is.character(data)) {
         PMreadMatrix(data, quiet = T)
       } else {
         data
       }
-      if (!is.null(self$data)) {
+      if (!is.null(self$data) && validate) {
         self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)
       }
     },
@@ -78,7 +79,11 @@ PM_data <- R6::R6Class("PM_data",
     #' in the working directory.
     #' @param ... ARguments passed to PMwriteMatrix
     write = function(file_name, ...) {
-      PMwriteMatrix(self$standard_data, file_name, ...)
+      if(!is.null(self$standard_data)){
+        PMwriteMatrix(self$standard_data, file_name, ...)
+      } else {
+        cat("Create a validated PM_data object before writing.")
+      }
     },
     #' @description
     #' Calculate AUC
@@ -86,7 +91,12 @@ PM_data <- R6::R6Class("PM_data",
     #' See [makeAUC].
     #' @param ... Arguments passed to [makeAUC].
     auc = function(...) {
-      makeAUC(self, ...)
+      if(!is.null(self$data)){
+        makeAUC(self, ...)
+      } else {
+        cat("Data have not been defined.")
+      }
+      
     },
     #' @description
     #' Perform non-compartmental analysis
@@ -94,7 +104,11 @@ PM_data <- R6::R6Class("PM_data",
     #' See [makeNCA].
     #' @param ... Arguments passed to [makeNCA].
     nca = function(...) {
-      makeNCA(self, ...)
+      if(!is.null(self$data)){
+        makeNCA(self, ...)
+      } else {
+        cat("Data have not been defined.")
+      }
     },
     #' @description
     #' Plot method
@@ -102,7 +116,11 @@ PM_data <- R6::R6Class("PM_data",
     #' See [plot.PMmatrix].
     #' @param ... Arguments passed to [plot.PM_data]
     plot = function(...) {
-      plot.PM_data(self, ...)
+      if(!is.null(self$data)){
+        plot.PM_data(self, ...)
+      } else {
+        cat("Data have not been defined.")
+      }
     },
     #' @description
     #' Print method
@@ -139,7 +157,11 @@ PM_data <- R6::R6Class("PM_data",
     #' See [summary.PMmatrix].
     #' @param ... Arguments passed to [summary.PMmatrix].
     summary = function(...) {
-      summary.PMmatrix(self$standard_data, ...)
+      if(!is.null(self$standard_data)){
+        summary.PMmatrix(self$standard_data, ...)
+      } else {
+        cat("Create a validated PM_data object before summarizing.")
+      }
     }
   ), # end public
   private = list(
@@ -211,7 +233,7 @@ PM_data <- R6::R6Class("PM_data",
       addl_lines <- dataObj %>% filter(!is.na(addl) & addl > 0)
       if (nrow(addl_lines) > 0) {
         new_lines <- addl_lines %>%
-          tidyr::uncount(addl, .remove = F) %>%
+          tidyr::uncount(addl, .remove = FALSE) %>%
           group_by(id) %>%
           mutate(time = ii * row_number() + time)
 
@@ -233,7 +255,7 @@ PM_data <- R6::R6Class("PM_data",
         cat(msg)
       }
 
-      validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = T, quiet = quiet)
+      validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = TRUE, quiet = quiet)
       return(validData)
     } # end validate function
   ) # end private
