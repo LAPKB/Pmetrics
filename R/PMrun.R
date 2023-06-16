@@ -268,7 +268,7 @@
 
   fortSource <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
   # TODO: change this
-  if (!file.exists(fortSource)) {
+  if (!binaries.installed()) {
     PMbuild()
   }
   compiler <- getPMoptions()$compilation_statements

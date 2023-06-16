@@ -21,20 +21,8 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/data.html">Data objects</a>
-    <a class="dropdown-item" href="../articles/intro.html">Introduction</a>
-    <a class="dropdown-item" href="../articles/models.html">Models</a>
-    <a class="dropdown-item" href="../articles/objects.html">Created Objects</a>
-    <a class="dropdown-item" href="../articles/overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/plotly.html">How to use plotly in Pmetrics</a>
-    <a class="dropdown-item" href="../articles/pmetrics.html">Pmetrics</a>
-    <a class="dropdown-item" href="../articles/running.html">Running model fits</a>
-    <a class="dropdown-item" href="../articles/simulation.html">Simulation</a>
-    <a class="dropdown-item" href="../articles/workflow.html">Workflow</a>
-  </div>
+<li class="nav-item">
+  <a class="nav-link" href="../articles/index.html">Articles</a>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
@@ -63,7 +51,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">PM_load</span><span class="op">(</span>run <span class="op">=</span> <span class="fl">1</span>, remote <span class="op">=</span> <span class="cn">F</span>, <span class="va">server_address</span>, <span class="va">file</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">PM_load</span><span class="op">(</span><span class="va">run</span>, <span class="va">file</span>, remote <span class="op">=</span> <span class="cn">F</span>, <span class="va">server_address</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -75,17 +63,6 @@ simple as <code>run1 &lt;- PM_load(1)</code>. There is no default value for this
 missing, Pmetrics will only search the current working directory for output files.</p></dd>
 
 
-<dt>remote</dt>
-<dd><p>Default is <code>FALSE</code>.  Set to <code>TRUE</code> if loading results of an NPAG run on remote server.
-See <a href="NPrun.html">NPrun</a>. Currently remote runs are not configured for IT2B or the Simulator.</p></dd>
-
-
-<dt>server_address</dt>
-<dd><p>If missing, will use the default server address returned by getPMoptions().
-Pmetrics will prompt the user to set this address the first time the <code>remote</code> argument is set to <code>TRUE</code>
-in <a href="NPrun.html">NPrun</a>.</p></dd>
-
-
 <dt>file</dt>
 <dd><p>Optional name of an .Rdata file created by running the
 <code>$save</code> method for a <a href="PM_result.html">PM_result</a> object. For example,
@@ -95,6 +72,17 @@ current working directory, since <code>run</code> is missing. If <code>file</cod
 Pmetrics will attempt to find a "PMout.Rdata" or the older "NPAGout.Rdata" or
 "IT2Bout.Rdata" files in either the current working directory (if <code>run</code> is not
 specified) or the <code>run/outputs</code> folder, if <code>run</code> is provided.</p></dd>
+
+
+<dt>remote</dt>
+<dd><p>Default is <code>FALSE</code>.  Set to <code>TRUE</code> if loading results of an NPAG run on remote server.
+See <a href="NPrun.html">NPrun</a>. Currently remote runs are not configured for IT2B or the Simulator.</p></dd>
+
+
+<dt>server_address</dt>
+<dd><p>If missing, will use the default server address returned by getPMoptions().
+Pmetrics will prompt the user to set this address the first time the <code>remote</code> argument is set to <code>TRUE</code>
+in <a href="NPrun.html">NPrun</a>.</p></dd>
 
 </dl></div>
     <div class="section level2">

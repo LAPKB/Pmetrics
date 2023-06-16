@@ -45,20 +45,8 @@
 <li class="nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="active nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/data.html">Data objects</a>
-    <a class="dropdown-item" href="../articles/intro.html">Introduction</a>
-    <a class="dropdown-item" href="../articles/models.html">Models</a>
-    <a class="dropdown-item" href="../articles/objects.html">Created Objects</a>
-    <a class="dropdown-item" href="../articles/overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/plotly.html">How to use plotly in Pmetrics</a>
-    <a class="dropdown-item" href="../articles/pmetrics.html">Pmetrics</a>
-    <a class="dropdown-item" href="../articles/running.html">Running model fits</a>
-    <a class="dropdown-item" href="../articles/simulation.html">Simulation</a>
-    <a class="dropdown-item" href="../articles/workflow.html">Workflow</a>
-  </div>
+<li class="active nav-item">
+  <a class="nav-link" href="../articles/index.html">Articles</a>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -104,10 +92,12 @@ information.</p>
 <h2 id="r6-architecture">R6 architecture<a class="anchor" aria-label="anchor" href="#r6-architecture"></a>
 </h2>
 <p><strong>As of v. 2.0</strong>, Pmetrics shifted to an architecture
-less dependent on reading and writing files. Data files are unchanged
-and described later in this manual.</p>
+less dependent on reading and writing files. Data files are
+unchanged.</p>
 <p>Model files can now be defined as an R object, instead of in a text
-file. Pmetrics can suppoort legacy runs with the old-style text file
+file. The easiest way to accomplish this is with our model builder app,
+which is described in the article on Models.</p>
+<p>Pmetrics can suppoort legacy runs with the old-style text file
 models, but users are encouraged to change to the new methods.
 Throughout this manual we will indicate the new style with the <span class="r6">R6</span> designation to reflect the object-oriented R6 style
 of programming available in R that makes it more consistent with
@@ -165,18 +155,13 @@ algorithms used in IT2B or NPAG. For that, the user is directed to our
 <div class="section level2">
 <h2 id="getting-help-and-updates">Getting Help and Updates<a class="anchor" aria-label="anchor" href="#getting-help-and-updates"></a>
 </h2>
-<!--There is an active [LAPK forum](http://www.lapk.org) with all kinds
-of useful tips and help with Pmetrics. Register and feel free to post! 
--->
 <p>Within R, you can use <code>help("command")</code> or more simply
 just <code>?command</code> in the R console to see detailed help files
 for any Pmetrics command. Many commands have examples included in this
 documentation and you can execute the examples with
 <code>example(command)</code>.</p>
 <p>You can also type <code><a href="../reference/PMmanual.html">PMmanual()</a></code> to launch this website from
-within Pmetrics.
-<!--Finally, `PMnews()` will display the Pmetrics change log.
---></p>
+within Pmetrics.</p>
 <p>Pmetrics will check for updates automatically every time you load it
 with <code><a href="https://lapkb.github.io/Pmetrics/">library(Pmetrics)</a></code> and you are connected to the
 internet. If an update is available, it will provide a brief message to
@@ -204,15 +189,8 @@ Currently, the following GUIs are available: `PMcode("run")` and
 <h2 id="customizing-options">Customizing Options<a class="anchor" aria-label="anchor" href="#customizing-options"></a>
 </h2>
 <p>You can change global options in Pmetrics with
-<code><a href="../reference/setPMoptions.html">setPMoptions()</a></code>.</p>
-<p>Currently you can change three options: <code>sep</code> and
-<code>dec</code> will allow Pmetrics to read data files whose field
-separators are semicolons and decimal separators are commas,
-e.g. <code>setPMoptions(sep=";", dec=",")</code>. These options will
-persist from session to session until changed. The third option,
-<code>server_address</code>, allows you to specify the address of a
-remote server with Pmetrics installed, to allow remote runs.</p>
-<p><code><a href="../reference/getPMoptions.html">getPMoptions()</a></code> will return the current options.</p>
+<code><a href="../reference/setPMoptions.html">setPMoptions()</a></code>. The <code><a href="../reference/getPMoptions.html">getPMoptions()</a></code> function
+will return the current options.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

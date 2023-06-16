@@ -42,45 +42,37 @@ PM_result <- R6::R6Class(
     #' `$save` method on the augmented `PM_result` object to save it with the 
     #' new validation results.
     valid = NULL,
-
+    
     #' @description
     #' Create new object populated with data from previous run
     #' @details
     #' Creation of new `PM_result` objects is via [PM_load].
     #' @param out The parsed output from [PM_load].
     #' @param quiet Quietly validate. Default is `FALSE`.
-    #' @param backend Should the backend use Fortran ("fortran", default) or Rust ("rust")
-    initialize = function(out, quiet = T, backend = "fortran") {
-      if(backend == "fortran"){
-        if(!is.null(out$NPdata)){
-          self$NPdata <- out$NPdata
-          class(self$NPdata) <- c("NPAG", "list")
-        } else {self$NPdata <- NULL}
-        if(!is.null(out$ITdata)){
-          self$ITdata <- out$ITdata
-          class(self$ITdata) <- c("IT2B", "list")
-        } else {self$ITdata <- NULL}
-        self$pop <- if(is.null(out$pop)){NULL}else{PM_pop$new(out$pop)}
-        self$post <- if(is.null(out$pop)){NULL}else{PM_post$new(out$post)}
-        self$final <- PM_final$new(out$final)
-        self$cycle <- PM_cycle$new(out$cycle)
-        self$op <- PM_op$new(out$op)
-        self$cov <- PM_cov$new(out$cov)
-        self$data <- PM_data$new(data = out$data, quiet = quiet) # no need to report
-        self$model <- out$model
-        self$errfile <- out$errfile
-        self$success <- out$success
-      } else if (backend == "rust"){
-        self$NPdata <- out
-        self$op <- PM_op$new(out$op)
-        self$post <- PM_post$new(out$post)
-        self$pop <- PM_pop$new(out$pop)
-        self$cycle <- PM_cycle$new(out$cycle)
-        self$final <- PM_final$new(out$final)
-      }
-      
+    initialize = function(out, quiet = T) {
+      if(!is.null(out$NPdata)){
+        self$NPdata <- out$NPdata
+        class(self$NPdata) <- c("NPAG", "list")
+      } else {self$NPdata <- NULL}
+      if(!is.null(out$ITdata)){
+        self$ITdata <- out$ITdata
+        class(self$ITdata) <- c("IT2B", "list")
+      } else {self$ITdata <- NULL}
+      self$pop <- PM_pop$new(out$pop)
+      self$post <- PM_post$new(out$post)
+      self$final <- PM_final$new(out$final)
+      self$cycle <- PM_cycle$new(out$cycle)
+      self$op <- PM_op$new(out$op)
+      self$cov <- PM_cov$new(out$cov)
+      self$data <- PM_data$new(data = out$data, quiet = quiet) # no need to report
+      self$model <- out$model
+      self$errfile <- out$errfile
+      self$success <- out$success
+      if(!is.null(out$valid)){
+        self$valid <- out$valid
+      } else {self$valid <- NULL}
     },
-
+    
     #' @description
     #' Plot generic function based on type
     #' @param type Type of plot based on class of object
@@ -96,7 +88,7 @@ PM_result <- R6::R6Class(
     #' @param ... Summary-specific arguments
     summary = function(type, ...) {
       if(is.null(type)){stop("please provide the type of summary you want to obtain")
-        } else {self[[type]]$summary(...)} 
+      } else {self[[type]]$summary(...)} 
     },
     
     #' @description
@@ -104,8 +96,8 @@ PM_result <- R6::R6Class(
     #' @param type Type of AUC based on class of object
     #' @param ... Summary-specific arguments
     auc = function(type, ...) {
-      if(!type %in% c("data", "op", "pop", "post", "sim")){
-        stop("makeAUC is defined only for PM_data, PM_op, PM_pop, PM_post, PM_sim objects.\n")
+      if(!type %in% c("op", "pop", "post", "sim")){
+        stop("makeAUC is defined only for PMop, PMpop, PMpost, PMsim objects.\n")
       }
       self[[type]]$auc(...)
     },
@@ -149,13 +141,18 @@ PM_result <- R6::R6Class(
     #' subfolder of the "1" folder.
     #' @param file Custom file name. Default is "PMout.Rdata".
     save = function(run, file) {
-     if(missing(run)){run <- getwd()} else {
-       outputfolder <- paste0(run,"/outputs")
-       if(!file.exists(outputfolder)){
-         stop(paste0(outputfolder," does not exist from the current working directory./n"))
-       }
-     }
-     if(missing(file)){file <- "PMout.Rdata"}
+      if(missing(run)){
+        outputfolder <- getwd()
+      } else {
+        if(is.na(suppressWarnings(as.numeric(run)))){
+          stop("The run argument is not numeric. Do you need to say 'file = '? See help for PM_result.")
+        }
+        outputfolder <- paste0(run,"/outputs")
+        if(!file.exists(outputfolder)){
+          stop(paste0(outputfolder," does not exist from the current working directory./n"))
+        }
+      }
+      if(missing(file)){file <- "PMout.Rdata"} #need to update to include Rust
       PMout <- list(
         NPdata = self$NPdata,
         ITdata = self$ITdata,
@@ -213,18 +210,18 @@ PM_result <- R6::R6Class(
 #' 
 #' If the `$save` method has previously been invoked on a [PM_result] object that 
 #' was changed, for  example by using the `$validate` method, this function
-#' will load those results.
+#' will load those results. It is simply an alias for [PM_load].
 #' 
-#' The saved object is an .rds file. When loaded, it should be assigned to an R
-#' object, e.g. `run2 <- PM_result$load("filename")`. This contrasts with loading
-#' unmodified results after a run, which is accomplished with [PM_load].
+#' The saved object is an .Rdata file. When loaded, it should be assigned to an R
+#' object, e.g. `run2 <- PM_result$load("filename")`. An equivalent statment would
+#' be `run2 <- PM_load(file = "filename")`.
 #' 
-#' @param file_name The name of the .rds file to load.
+#' @param file_name The name of the .Rdata file to load. Default is "PMout.Rdata".
 #' @return A [PM_result] object
 #' @export
 #' @name PM_result
-PM_result$load <- function(file_name = "PMresult.rds") {
-  readRDS(file_name)
+PM_result$load <- function(file_name = "PMout.Rdata") {
+  PM_load(file = file_name)
 }
 
 #' Observed vs. predicted data
@@ -248,21 +245,34 @@ PM_result$load <- function(file_name = "PMresult.rds") {
 PM_op <- R6::R6Class(
   "PM_op",
   public <- list(
-    #' @field data A data frame with the following columns
-    #' * id Subject identification
-    #' * time observation time in relative units, usually hours
-    #' * obs observation
-    #' * pred prediction
-    #' * pred.type Population predictions based on Bayesian prior parameter value distribution,
+    #' @field id subject identification
+    id = NULL,
+    #' @field time observation time in relative units, usually hours
+    time = NULL,
+    #' @field obs observation
+    obs = NULL,
+    #' @field pred prediction
+    pred = NULL,
+    #' @field pred.type Population predictions based on Bayesian prior parameter value distribution,
     #' or individual predictions based on Bayesian posterior parameter value distributions
-    #' * icen Predictions based on mean or median of Bayesian `pred.type`parameter values
-    #' * outeq output equation number
-    #' * block dosing block number for each subject, as defined by dose resets (evid=4).
-    #' * obsSD standard deviation of the observation based on the assay error polynomial
-    #' * d prediction error, `pred` - `obs`
-    #' * ds squared prediction error
-    #' * wd weighted prediction error, which is the prediction error divided by the \code{obsSD}
-    #' * wds weighted squared prediction error
+    pred.type = NULL,
+    #' @field icen Predictions based on mean or median of Bayesian `pred.type`parameter values
+    icen = NULL,
+    #' @field outeq output equation number
+    outeq = NULL,
+    #' @field block dosing block number for each subject, as defined by dose resets (evid=4).
+    block = NULL,
+    #' @field obsSD standard deviation of the observation based on the assay error polynomial
+    obsSD = NULL,
+    #' @field d prediction error, `pred` - `obs`
+    d = NULL,
+    #' @field ds squared prediction error
+    ds = NULL,
+    #' @field wd weighted prediction error, which is the prediction error divided by the \code{obsSD}
+    wd = NULL,
+    #' @field wds weighted squared prediction error
+    wds = NULL,
+    #' @field data A data frame combining all the above fields as its columns
     data = NULL,
     #' @description
     #' Create new object populated with observed vs. predicted data
@@ -271,8 +281,20 @@ PM_op <- R6::R6Class(
     #' for the user to do.
     #' @param op The parsed output from [makeOP].
     initialize = function(op) {
-      class(op) <- append("tidy_op",class(op))
       self$data <- op
+      self$id <- op$id
+      self$time <- op$time
+      self$obs <- op$obs
+      self$pred <- op$pred
+      self$pred.type <- op$pred.type
+      self$icen <- op$icen
+      self$outeq <- op$outeq
+      self$block <- op$block
+      self$obsSD <- op$obsSD
+      self$d <- op$d
+      self$ds <- op$ds
+      self$wd <- op$wd
+      self$wds <- op$wds
     },
     #' @description
     #' Plot method
@@ -280,7 +302,7 @@ PM_op <- R6::R6Class(
     #' See [plot.PM_op].
     #' @param ... Arguments passed to [plot.PM_op]
     plot = function(...) {
-      plot.PM_op(self, ...)
+      plot.PM_op(self$data, ...)
     },
     #' @description
     #' Summary method
@@ -294,6 +316,7 @@ PM_op <- R6::R6Class(
     #' Calculate AUC
     #' @details 
     #' See [makeAUC]
+    #' @param data The object to use for AUC calculation
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       makeAUC(data = self$data, ...)
@@ -316,21 +339,6 @@ summary.PM_op <- function(obj, ...) {
   obj$summary(...)
 }
 
-#' Wrapper function for plot.PM_op
-#' 
-#' This redirects to plot.PM_op for tidy_op objects
-#' 
-#' See [plot.PM_op]. Alternative way to plot is
-#' `PM_result$op$plot()`.
-#' 
-#' @param x A *PMop* object with the *tidy_op* class to be plotted
-#' @param ... Arguments passed to [plot.PM_op]
-#' @return A [plot.PM_op] object
-#' @export
-plot.tidy_op <- function(x,...){
-  plot.PM_op(x,...)
-}
-
 #' Individual Bayesian posterior predictions at short intervals
 #' 
 #' Contains the Bayesian posterior predictions at short intervals 
@@ -349,19 +357,25 @@ plot.tidy_op <- function(x,...){
 #' you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
 #' into the R console and look online for instructions/tutorials in tidyverse, a
 #' powerful approach to data manipulation upon which Pmetrics is built.
-#' @author Michael Neely, Julian Otalvaro
+#' @author Michael Neely, Julian Otalvara
 #' @export
 PM_post <- R6::R6Class(
   "PM_post",
   public <- list(
-    #' @field data A data frame with the following columns
-    #' * id Subject id
-    #' * time Time of predictions in decimal hours
-    #' * icen Prediction based on mean or median of Bayesian posterior parameter distribution
-    #' * outeq Output equation number
-    #' * pred Predicted output for each outeq
-    #' * block Observation blocks within subjects as defined by *EVID=4* dosing events
-    data = NULL,    
+    #' @field id Subject id
+    id = NULL,
+    #' @field time Time of predictions in decimal hours
+    time = NULL,
+    #' @field icen Prediction based on mean or median of Bayesian posterior parameter distribution
+    icen = NULL,
+    #' @field outeq Output equation number
+    outeq = NULL,
+    #' @field pred Predicted output for each outeq
+    pred = NULL,
+    #' @field block Observation blocks within subjects as defined by *EVID=4* dosing events
+    block = NULL,
+    #' @field data A data frame combining all the above fields as its columns
+    data = NULL,
     #' @description
     #' Create new object populated with Bayesian posterior predicted data at 
     #' regular, frequent intervals
@@ -370,13 +384,19 @@ PM_post <- R6::R6Class(
     #' for the user to do.
     #' @param post The parsed output from [makePost].
     initialize = function(post) {
-      class(post) <- append("tidy_post",class(post))
       self$data <- post
+      self$id <- post$id
+      self$time <- post$time
+      self$icen <- post$icen
+      self$outeq <- post$outeq
+      self$pred <- post$pred
+      self$block <- post$block
     },
     #' @description
     #' Calculate AUC
     #' @details 
     #' See [makeAUC]
+    #' @param data The object to use for AUC calculation
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       makeAUC(data = self$data, ...)
@@ -475,7 +495,6 @@ PM_final <- R6::R6Class(
     #' for the user to do.
     #' @param final The parsed output from [makeFinal].
     initialize = function(final) {
-      class(final) <- append("tidy_final",class(final))
       self$data <- final
       self$popPoints <- final$popPoints
       self$popMean <- final$popMean
@@ -505,7 +524,7 @@ PM_final <- R6::R6Class(
     #' See [summary.PMfinal].
     #' @param ... Arguments passed to [summary.PMfinal]
     summary = function(...) {
-      summary.PMfinal(self$data, ...)
+      summary.PMfinal(self, ...)
     },
     #' @description
     #' Plot method
@@ -552,20 +571,29 @@ summary.PM_final <- function(obj, ...) {
 PM_cycle <- R6::R6Class(
   "PM_cycle",
   public <- list(
-    #' @field data A data frame with the following columns
-    #' * names Vector of names of the random parameters
-    #' * cynum Vector cycle numbers, which may start at numbers greater 
+    #' @field names Vector of names of the random parameters
+    names = NULL,
+    #' @field cynum Vector cycle numbers, which may start at numbers greater 
     #' than 1 if a non-uniform prior was specified for the run (NPAG only)
-    #' * ll Matrix of cycle number and -2*Log-likelihood at each cycle
-    #' * gamlam A matrix of cycle number and gamma or lambda at each cycle
-    #' * mean A matrix of cycle number and the mean of each random parameter 
+    cynum = NULL,
+    #' @field ll Matrix of cycle number and -2*Log-likelihood at each cycle
+    ll = NULL,
+    #' @field gamlam A matrix of cycle number and gamma or lambda at each cycle
+    gamlam = NULL,
+    #' @field mean A matrix of cycle number and the mean of each random parameter 
     #' at each cycle, normalized to initial mean
-    #' * sd A matrix of cycle number and the standard deviation of each random parameter
+    mean = NULL,
+    #' @field sd A matrix of cycle number and the standard deviation of each random parameter
     #' at each cycle,  normalized to initial standard deviation
-    #' * median A matrix of cycle number and the median of each random 
+    sd = NULL,
+    #' @field median A matrix of cycle number and the median of each random 
     #' parameter at each cycle,  normalized to initial median
-    #' * aic A matrix of cycle number and Akaike Information Criterion at each cycle
-    #' * bic A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle
+    median = NULL,
+    #' @field aic A matrix of cycle number and Akaike Information Criterion at each cycle
+    aic = NULL,
+    #' @field bic A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle
+    bic = NULL,
+    #' @field data A data frame combining all the above fields as its columns
     data = NULL,
     #' @description
     #' Create new object populated with  cycle information 
@@ -574,34 +602,27 @@ PM_cycle <- R6::R6Class(
     #' for the user to do.
     #' @param cycle The parsed output from [makeCycle].
     initialize = function(cycle) {
-      if(!is.null(cycle)) {class(cycle) <- append("tidy_cycle",class(cycle))}
       self$data <- cycle
+      self$names <- cycle$names
+      self$cynum <- cycle$cynum
+      self$ll <- cycle$ll
+      self$gamlam <- cycle$gamlam
+      self$mean <- cycle$mean
+      self$sd <- cycle$sd
+      self$median <- cycle$median
+      self$aic <- cycle$aic
+      self$bic <- cycle$bic
     },
     #' @description
     #' Plot method
     #' @details
-    #' See [plot.PM_cycle].
-    #' @param ... Arguments passed to [plot.PM_cycle]
+    #' See [plot.PMcycle].
+    #' @param ... Arguments passed to [plot.PMcycle]
     plot = function(...) {
-      plot.PM_cycle(self, ...) 
+      plot.PMcycle(self, ...)
     }
   )
 )
-
-# #' Wrapper function for plot.PM_cycle
-# #' 
-# #' This redirects to plot.PM_cycle for tidy_cycle objects
-# #' 
-# #' See [plot.PMcycle]. Alternative way to plot is
-# #' `PM_result$cycle$plot()`.
-# #' 
-# #' @param x A *PMcycle* object with the *tidy_cycle* class to be plotted
-# #' @param ... Arguments passed to [plot.PMcycle]
-# #' @return A [plot.PM_cycle] object
-# #' @export
-# plot.tidy_cycle <- function(x,...){
-#   plot.PMcycle(x,...)
-# }
 
 #' Population predictions at short intervals
 #' 
@@ -625,13 +646,19 @@ PM_cycle <- R6::R6Class(
 PM_pop <- R6::R6Class(
   "PM_pop",
   public <- list(
-    #' @field data A data frame with the following columns
-    #' * id Subject id
-    #' * time Time of predictions in decimal hours
-    #' * icen Prediction based on mean or median of Bayesian posterior parameter distribution
-    #' * outeq Output equation number
-    #' * pred Predicted output for each outeq
-    #' * block Observation blocks within subjects as defined by *EVID=4* dosing events
+    #' @field id Subject id
+    id = NULL,
+    #' @field time Time of predictions in decimal hours
+    time = NULL,
+    #' @field icen Prediction based on mean or median of Bayesian posterior parameter distribution
+    icen = NULL,
+    #' @field outeq Output equation number
+    outeq = NULL,
+    #' @field pred Predicted output for each outeq
+    pred = NULL,
+    #' @field block Observation blocks within subjects as defined by *EVID=4* dosing events
+    block = NULL,
+    #' @field data A data frame combining all the above fields as its columns
     data = NULL,
     #' @description
     #' Create new object populated with population predicted data at 
@@ -641,19 +668,19 @@ PM_pop <- R6::R6Class(
     #' for the user to do.
     #' @param pop The parsed output from [makePop].
     initialize = function(pop) {
-      class(pop) <- append("tidy_pop",class(pop))
       self$data <- pop
-      # self$id <- pop$id
-      # self$time <- pop$time
-      # self$icen <- pop$icen
-      # self$outeq <- pop$outeq
-      # self$pred <- pop$pred
-      # self$block <- pop$block
+      self$id <- pop$id
+      self$time <- pop$time
+      self$icen <- pop$icen
+      self$outeq <- pop$outeq
+      self$pred <- pop$pred
+      self$block <- pop$block
     },
     #' @description
     #' Calculate AUC
     #' @details 
     #' See [makeAUC]
+    #' @param data The object to use for AUC calculation
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       makeAUC(data = self$data, ...)
@@ -692,7 +719,6 @@ PM_cov <- R6::R6Class(
     #' for the user to do.
     #' @param cov The parsed output from [makeCov].
     initialize = function(cov) {
-      class(cov) <- append("tidy_cov",class(cov))
       self$data <- cov
     },
     #' @description
@@ -709,7 +735,7 @@ PM_cov <- R6::R6Class(
     #' See [plot.PMcov].
     #' @param ... Arguments passed to [plot.PMcov]
     plot = function(...) {
-      plot.PMcov(self$data, ...) #update to (self,...) when plot.PM_cov done
+      plot.PMcov(self$data, ...)
     },
     #' @description
     #' Print method
@@ -736,19 +762,4 @@ PM_cov <- R6::R6Class(
 #' @export
 summary.PM_cov <- function(obj, ...) {
   obj$summary(...)
-}
-
-#' Wrapper function for plot.PMcov
-#' 
-#' This redirects to plot.PMcov for tidy_cov objects
-#' 
-#' See [plot.PMcov]. Alternative way to plot is
-#' `PM_result$cov$plot()`.
-#' 
-#' @param x A *PMcov* object with the *tidy_cov* class to be plotted
-#' @param ... Arguments passed to [plot.PMcov]
-#' @return A [plot.PMcov] object
-#' @export
-plot.tidy_cov <- function(x,...){
-  plot.PMcov(x,...)
 }
