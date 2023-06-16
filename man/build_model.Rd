@@ -4,13 +4,14 @@
 \alias{build_model}
 \title{Launch Model Builder app}
 \usage{
-build_model(data, ...)
+build_model(...)
 }
 \arguments{
-\item{data}{Optional \link{PM_data} object which will be used to read
-covariates.}
-
-\item{...}{Currently unused}
+\item{...}{Optional \link{PM_data} and/or \link{PM_model} object(s). \emph{PM_data} objects
+supply covariates. \emph{PM_model} objects supply any other defined model element,
+and covariates only if there is no \emph{PM_data} object or it has no covariates.
+If the \emph{PM_model} object contains covariates, they will be superseded by those in
+the \emph{PM_data} object, if supplied.}
 }
 \value{
 Launches the shiny app.

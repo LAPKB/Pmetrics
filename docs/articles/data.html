@@ -45,20 +45,8 @@
 <li class="nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="active nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/data.html">Data objects</a>
-    <a class="dropdown-item" href="../articles/intro.html">Introduction</a>
-    <a class="dropdown-item" href="../articles/models.html">Models</a>
-    <a class="dropdown-item" href="../articles/objects.html">Created Objects</a>
-    <a class="dropdown-item" href="../articles/overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/plotly.html">How to use plotly in Pmetrics</a>
-    <a class="dropdown-item" href="../articles/pmetrics.html">Pmetrics</a>
-    <a class="dropdown-item" href="../articles/running.html">Running model fits</a>
-    <a class="dropdown-item" href="../articles/simulation.html">Simulation</a>
-    <a class="dropdown-item" href="../articles/workflow.html">Workflow</a>
-  </div>
+<li class="active nav-item">
+  <a class="nav-link" href="../articles/index.html">Articles</a>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -128,9 +116,9 @@ an argument to <code>PM_data$new()</code>.</p>
 <code class="sourceCode R"><span><span class="co">#assume df is data frame with at least these columns:</span></span>
 <span><span class="co">#id, time, dose, out</span></span>
 <span><span class="va">data1</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_data.html">PM_data</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></code></pre></div>
-<p>Once you have created the <code><a href="../reference/PM_data.html">PM_data()</a></code> object, you never
-need to create it again during your R session. You also don’t have to
-bother copying the data file to the Runs folder each time you run the
+<p>Once you have created the <code>PM_data</code> object, you never need
+to create it again during your R session. You also don’t have to bother
+copying the data file to the Runs folder each time you run the
 model.</p>
 <p><span class="legacy">Legacy</span></p>
 <p>You must always have the the data file in the current working

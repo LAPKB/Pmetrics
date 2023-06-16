@@ -7,7 +7,7 @@
 
 
 
-PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
+PMbuild <- function(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE) {
   if (getPMoptions()$backend == "fortran") {
     if (.check_and_install_gfortran(skipRegistration, autoyes)) {
       currwd <- getwd()
@@ -162,30 +162,30 @@ PMbuild <- function(skipRegistration = F, autoyes = F, rebuild = F) {
             cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
             cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.\n")
             cat("If the registration time outs, please run PMbuild(skipRegistration=T) ")
-            if (skipRegistration == F) {
+            if (skipRegistration == FALSE) {
               .PMremote_registerNewInstallation()
             }
-            return(T)
+            return(TRUE)
           } else {
             cat("ERROR: Pmetrics did not install gfortran automatically.\nPlease install gfortran manually and then run PMbuild().\nGo to http://www.lapk.org/Pmetrics_install.php for help.\n")
-            return(F)
+            return(FALSE)
           }
         } else {
           cat("You must have gfortran to run Pmetrics.\nPlease install gfortran manually and then run PMbuild().\nGo to http://www.lapk.org/Pmetrics_install.php for help.\n")
-          return(F)
+          return(FALSE)
         }
       } else {
         cat("Pmetrics has detected gfortran and will compile required binary files.\n")
-        cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.\n")
-        cat("If the registration time outs, please run PMbuild(skipRegistration=T) ")
-        if (skipRegistration == F) {
+        if (skipRegistration == FALSE) {
+          cat("If the registration time outs, please re-run PMbuild(skipRegistration = TRUE) ")
           .PMremote_registerNewInstallation()
+          cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.\n")
         }
-        return(T)
+        return(TRUE)
       }
     } else {
       cat("Pmetrics has found required compiled binary files.\n")
-      return(F)
+      return(FALSE)
     }
   } else {
     print("You are inside the development folder, skipping gfortran installation")

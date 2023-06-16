@@ -27,41 +27,30 @@
 #' @export
 
 
-PM_load <- function(run = 1, remote = F, server_address, file) {
+PM_load <- function(run, file, remote = F, server_address) {
   
-  #internal function to process list
-  output2List <- function(Out) {
-    result <- list()
-    for (i in 1:length(Out)) {
-      aux_list <- list(Out[[i]])
-      names(aux_list) <- names(Out)[i]
-      result <- append(result, aux_list)
-    }
-    
-    return(result)
-  }
+  # Code below replaced by general handling; MN 6/15/23
+  # #If Rust
+  # if (getPMoptions()$backend == "rust") {
+  #   if (!missing(file) && file.exists(file)) {
+  #     npcore_out <- file
+  #   } else {
+  #     npcore_out <- paste(run, "NPcore.Rdata", sep = "/")
+  #   }
+  #   if (file.exists(npcore_out)) {
+  #     load(npcore_out)
+  #     result <- get("NPcore")
+  #     return(PM_result$new(result, backend = "rust"))
+  #   } else {
+  #     stop(paste0("No NPcore.Rdata file found in ", run, ".\n"))
+  #   }
+  # }
   
-  #If Rust
-  if (getPMoptions()$backend == "rust") {
-    if (!missing(file) && file.exists(file)) {
-      npcore_out <- file
-    } else {
-      npcore_out <- paste(run, "NPcore.Rdata", sep = "/")
-    }
-    if (file.exists(npcore_out)) {
-      load(npcore_out)
-      result <- get("NPcore")
-      return(PM_result$new(result, backend = "rust"))
-    } else {
-      stop(paste0("No NPcore.Rdata file found in ", run, ".\n"))
-    }
-  }
-
-
+  
   # declare variables to avoid R CMD Check flag
   NPAGout <- NULL
   IT2Bout <- NULL
-  found <- FALSE
+  found <- ""
   
   #internal function
   output2List <- function(Out) {
@@ -74,16 +63,15 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
     
     return(result)
   }
-  # check for NPAG output file
-  filename <- "NPAGout.Rdata"
-  if (is.numeric(run)) {
-    outfile <- paste(run, "outputs", filename, sep = "/")
-  } else {
-    outfile <- paste(run, filename, sep = "/")
-  }
-
+  # # check for NPAG output file
+  # filename <- "NPAGout.Rdata"
+  # if (is.numeric(run)) {
+  #   outfile <- paste(run, "outputs", filename, sep = "/")
+  # } else {
+  #   outfile <- paste(run, filename, sep = "/")
+  # }
   
-  if (remote) { # only look on server
+  if (remote) { # only look on server - this needs to be updated
     if (missing(server_address)) server_address <- getPMoptions("server_address")
     status <- .remoteLoad(thisrun, server_address)
     if (status == "finished") {
@@ -94,42 +82,48 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
         cat()
       return(invisible(NULL))
     }
-  } else if (!missing(file)) { #file supplied, so look for it
-    # try in current wd
+  } else if (!missing(file)) { #not remote, file supplied, so look for it
+    # try from current wd
     if (file.exists(file)) {
-      found <- TRUE
+      found <- file
     } else {
       # nope, try in an outputs folder
       if (!missing(run)) {
         file <- paste0(run, "/outputs/", file)
         if (file.exists(file)) {
-          found <- TRUE
+          found <- file
         }
       }
     }
   } else { # didn't have file, so check for other outputs
-    if (!missing(run)) {
-      file_list <- c("PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
-      for (i in file_list) {
-        file <- paste0(run, "/outputs/", i)
-        if (file.exists(file)) {
-          found <- TRUE
-          break
-        }
+    if (missing(run)) {
+      wd <- "./" # we can only look in current directory
+    } else {
+      wd <- paste0(run, "/outputs/")
+    }
+    file_list <- c("NPcore.Rdata", "PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
+    for (i in file_list) {
+      file <- paste0(wd, i)
+      if (file.exists(file)) {
+        found <- file
+        break
       }
     }
   }
   
-  if (found) {
-    result <- output2List(Out = get(load(file)))
-    return(PM_result$new(result, quiet = T)) # no errors
+  if (found != "") {
+    if(basename(found) != "NPcore.Rdata"){ #not Rust
+      result <- output2List(Out = get(load(found)))
+      return(PM_result$new(result, quiet = TRUE)) # no errors
+    } else { #is Rust
+      load(found)
+      result <- get("NPcore")
+      return(PM_result$new(result, backend = "rust"))
+    }
   } else {
     stop(paste0("No Pmetrics output file found in ", getwd(), ".\n"))
   }
 }
-
-
-
 
 #' Loads all the data from an \emph{NPAG} or \emph{IT2B} run
 #'
@@ -137,14 +131,14 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
 #'
 #' @title Load Pmetrics NPAG or IT2B output (Legacy)
 #' @param run The numerical value of the folder number containing the run results.  This
-#' number will also be used to name objects uniquely by appending \dQuote{.\code{run}},
+#' number will also be used to name objects uniquely by appending \dQuote{.\code{run}}, 
 #' e.g. NPdata.1 or ITdata.1 if run=1. This parameter is \code{1} by default.
 #' @param \dots Additional runs to load if desired.
 #' @param remote Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
 #' See \code{\link{NPrun}}. Currently remote runs are not configured for IT2B or the Simulator.
-#' @param server_address If missing, will use the default server address returned by getPMoptions().
+#' @param server_address If missing, will use the default server address returned by getPMoptions(). 
 #' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
-#' in \code{\link{NPrun}}.
+#' in \code{\link{NPrun}}. 
 #' @return The following objects are loaded into R.
 #' \item{NPdata/ITdata }{List with all output from NPAG/IT2B}
 #' \item{pop }{ NPAG only: Population predictions for each output equation}
@@ -154,19 +148,20 @@ PM_load <- function(run = 1, remote = F, server_address, file) {
 #' \item{op }{List of observed vs. population and posterior predicted plots for each output equation}
 #' \item{cov }{Data frame of subject ID, covariate values, and Bayesian posterior parameter estimates}
 #' \item{mdata }{The original .csv data file used in the run}
-#' \item{valid }{If \code{\link{makeValid}} has been executed after a run, this object will be added to
+#' \item{valid }{If \code{\link{makeValid}} has been executed after a run, this object will be added to 
 #' the save data.  It contains the information required to plot visual predictive checks and normalized prediction
 #' error discrepancies via the npde code developed by Comets et al}
 #' @author Michael Neely
-#' @seealso \code{\link{PMreport}}, \code{\link{NPparse}}, \code{\link{ITparse}},
-#' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}},
+#' @seealso \code{\link{PMreport}}, \code{\link{NPparse}}, \code{\link{ITparse}}, 
+#' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}}, 
 #' \code{\link{makePop}}, \code{\link{makePost}}
 #' @export
 
 PMload <- function(run = 1, ..., remote = F, server_address) {
+  
   cat("This function is for legacy Pmetrics.\nPlease see documentation for R6 Pmetrics
       and PM_load\n")
-  # declare variables to avoid R CMD Check flag
+  #declare variables to avoid R CMD Check flag
   NPAGout <- NULL
   IT2Bout <- NULL
   
@@ -174,52 +169,67 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
   addlruns <- list(...)
   if (length(addlruns) > 0) {
     allruns <- c(run, unlist(addlruns))
-  } else {
-    allruns <- run
-  }
+  } else { allruns <- run }
   
   for (thisrun in allruns) {
-    # check for NPAG output file
-    filename <- "PMout.Rdata"
+    #check for NPAG output file
+    filename <- "NPAGout.Rdata"
     outfile <- paste(thisrun, "outputs", filename, sep = "/")
     
-    if (remote) { # only look on server
-      status <- .remoteLoad(thisrun, server_address)
+    if (remote) { #only look on server
+      status = .remoteLoad(thisrun, server_address)
       if (status == "finished") {
-        .splitOut(thisrun, NPAGout)
+        .splitOut(thisrun,NPAGout)
       } else {
         sprintf("Warning: Remote run #%d has not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
           cat()
       }
-    } else if (file.exists(outfile)) { # remote F, so look locally
+    } else if (file.exists(outfile)) { #remote F, so look locally
       # load(outfile, .GlobalEnv)
       load(outfile)
-      .splitOut(thisrun, get("NPAGout"))
+      .splitOut(thisrun,get("NPAGout"))
     } else {
-      # check for IT2B output file
+      #check for IT2B output file
       filename <- "IT2Bout.Rdata"
       outfile <- paste(thisrun, "outputs", filename, sep = "/")
       if (file.exists(outfile)) {
         load(outfile)
-        .splitOut(thisrun, get("IT2Bout"))
+        .splitOut(thisrun,get("IT2Bout"))
       } else {
         cat(paste(outfile, " not found in ", getwd(), "/", thisrun, "/outputs or ", getwd(), ".\n", sep = ""))
-        return(invisible(F)) # error, abort
+        return(invisible(F)) #error, abort
       }
     }
+    
   }
-  # end thisrun loop
+  #end thisrun loop
   
   
-  return(invisible(T)) # no errors
+  return(invisible(T)) #no errors
+  
 }
 
-.splitOut <- function(run, Out) {
+.splitOut <- function(run,Out) {
   newNames <- paste(names(Out), ".", as.character(run), sep = "")
   for (i in 1:length(newNames)) {
     assign(newNames[i], Out[[i]], pos = .GlobalEnv)
+    
   }
 }
+
+.remoteLoad <- function(run, server_address) {
+  status = ""
+  rid <- .getRemoteId(run)
+  status = .PMremote_check(rid = rid, server_address = server_address)
+  if (status == "finished") {
+    sprintf("Remote run #%d finished successfuly.\n", run) %>%
+      cat()
+    .PMremote_outdata(run, server_address)
+    
+  }
+  return(status)
+}
+
 .getRemoteId <- function(run) {
   run <- toString(run)
   fileName <- paste(run, "inputs", "id.txt", sep = "/")
@@ -231,14 +241,4 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
   }
 }
 
-.remoteLoad <- function(run, server_address) {
-  status <- ""
-  rid <- .getRemoteId(run)
-  status <- .PMremote_check(rid = rid, server_address = server_address)
-  if (status == "finished") {
-    sprintf("Remote run #%d finished successfuly.\n", run) %>%
-      cat()
-    .PMremote_outdata(run, server_address)
-  }
-  return(status)
-}
+

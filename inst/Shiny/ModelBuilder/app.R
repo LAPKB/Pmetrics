@@ -1,7 +1,9 @@
-library(shiny)
-library(Pmetrics)
-library(tidyverse)
-library(shinythemes)
+
+
+require(shiny)
+require(Pmetrics)
+require(tidyverse)
+require(shinythemes)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(

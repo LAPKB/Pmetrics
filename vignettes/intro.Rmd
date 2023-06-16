@@ -35,10 +35,12 @@ information.
 ## R6 architecture
 
 **As of v. 2.0**, Pmetrics shifted to an architecture less dependent on
-reading and writing files. Data files are unchanged and described later in
-this manual.
+reading and writing files. Data files are unchanged.
 
 Model files can now be defined as an R object, instead of in a text file. 
+The easiest way to accomplish this is with our model builder app, which is
+described in the article on Models.
+
 Pmetrics can suppoort legacy runs with the old-style text file models, but
 users are encouraged to change to the new methods. Throughout this manual we
 will indicate the new style with the <span class="r6">R6</span> designation to reflect the
@@ -89,15 +91,11 @@ algorithms used in IT2B or NPAG. For that, the user is directed to our
 
 ## Getting Help and Updates
 
-<!--There is an active [LAPK forum](http://www.lapk.org) with all kinds
-of useful tips and help with Pmetrics. Register and feel free to post! 
--->
+
 Within R, you can  use
 `help("command")` or more simply just `?command` in the R console to see detailed help files for any Pmetrics command. Many commands have examples included in this documentation and you can execute the examples with `example(command)`.
 
 You can also type `PMmanual()` to launch this website from within Pmetrics. 
-<!--Finally, `PMnews()` will display the Pmetrics change log.
--->
 
 Pmetrics will check for updates automatically every time you load it
 with `library(Pmetrics)` and you are connected to the internet. 
@@ -127,13 +125,5 @@ Currently, the following GUIs are available: `PMcode("run")` and
 ## Customizing Options
 
 You can change global options in Pmetrics with 
-`setPMoptions()`.
-
-Currently you can change three options: `sep` and `dec` will allow Pmetrics
-to read data files whose field separators are semicolons and decimal
-separators are commas, e.g. `setPMoptions(sep=";", dec=",")`. These
-options will persist from session to session until changed. The third
-option, `server_address`, allows you to specify the address of a remote
-server with Pmetrics installed, to allow remote runs.
-
-`getPMoptions()` will return the current options.
+`setPMoptions()`. The `getPMoptions()` function will return the 
+current options.

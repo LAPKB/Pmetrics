@@ -15,13 +15,17 @@ HEIGHT
 V=V0*(WT/55)
 C 55 is the mean weight in the population
 
-#Lag 
+#lag
 TLAG(1) = Tlag1
 
+#eqn
+{algebraic: Ka,Ke,V,2}
+dX[1] = BOLUS[1] - Ka*X[1]
+dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]
 
-#Out
-Y(1) = X(2)/V
+#out
+Y[1]=X[2]/V
 
-#Err
-G=5
-0.02, 0.05, -0.0002, 0
+#err
+G=5.000000
+0.020000, 0.050000, -0.000200, 0.000000

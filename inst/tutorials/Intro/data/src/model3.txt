@@ -1,0 +1,34 @@
+#Primary
+Ka, 0.1, 0.9
+CL, 0.001, 10
+V, 30, 120
+Tlag1, 0, 4
+KCP,0,5
+KPC,0,5
+
+#Cov
+WT
+AFRICA
+AGE
+GENDER
+HEIGHT
+
+#SEC
+Ke = CL/V
+
+
+#lag
+TLAG(1) = Tlag1
+
+#eqn
+{algebraic: Ka,Ke,KCP,KPC,V,2}
+dX[1] = BOLUS[1] - Ka*X[1]
+dX[2] = RATEIV[1] + Ka*X[1] - (Ke + KCP)*X[2] + KPC*X[3]
+dX[3] = KCP*X[2] - KPC*X[3]
+
+#out
+Y[1]=X[2]/V
+
+#err
+G=5.000000
+0.020000, 0.050000, -0.000200, 0.000000

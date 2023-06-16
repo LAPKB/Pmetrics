@@ -1,0 +1,31 @@
+#Primary
+Ka, 0.1, 0.9
+Ke, 0.001, 0.1
+V0, 30, 120
+Tlag1, 0, 4
+
+#Cov
+WT
+AFRICA
+AGE
+GENDER
+HEIGHT
+
+#Sec
+V=V0*(WT/55)
+C 55 is the mean weight in the population
+
+#lag
+TLAG(1) = Tlag1
+
+#eqn
+{algebraic: Ka,Ke,V,2}
+dX[1] = BOLUS[1] - Ka*X[1]
+dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]
+
+#out
+Y[1]=X[2]/V
+
+#err
+G=5.000000
+0.020000, 0.050000, -0.000200, 0.000000

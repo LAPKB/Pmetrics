@@ -4,7 +4,7 @@
 \alias{PM_result}
 \title{Results of a Pmetrics run}
 \arguments{
-\item{file_name}{The name of the .rds file to load.}
+\item{file_name}{The name of the .Rdata file to load. Default is "PMout.Rdata".}
 }
 \value{
 A \link{PM_result} object
@@ -12,7 +12,7 @@ A \link{PM_result} object
 \description{
 If the \verb{$save} method has previously been invoked on a \link{PM_result} object that
 was changed, for  example by using the \verb{$validate} method, this function
-will load those results.
+will load those results. It is simply an alias for \link{PM_load}.
 }
 \details{
 This object contains all of the results after a Pmetrics runs. It is created
@@ -30,9 +30,9 @@ See \link{makeNCA}.
 the object to the hard drive as an .rds file. This is the corresponding load
 function.
 
-The saved object is an .rds file. When loaded, it should be assigned to an R
-object, e.g. \code{run2 <- PM_result$load("filename")}. This contrasts with loading
-unmodified results after a run, which is accomplished with \link{PM_load}.
+The saved object is an .Rdata file. When loaded, it should be assigned to an R
+object, e.g. \code{run2 <- PM_result$load("filename")}. An equivalent statment would
+be \code{run2 <- PM_load(file = "filename")}.
 }
 \examples{
 
@@ -103,7 +103,7 @@ new validation results.}
 \subsection{Method \code{new()}}{
 Create new object populated with data from previous run
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$new(out, quiet = T, backend = "fortran")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$new(out, quiet = T)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -112,8 +112,6 @@ Create new object populated with data from previous run
 \item{\code{out}}{The parsed output from \link{PM_load}.}
 
 \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
-
-\item{\code{backend}}{Should the backend use Fortran ("fortran", default) or Rust ("rust")}
 }
 \if{html}{\out{</div>}}
 }

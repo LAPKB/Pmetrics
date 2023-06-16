@@ -1,0 +1,32 @@
+#Primary
+CL,0.01,0.04
+Vc,0.1,0.35
+Kg,0.5,3
+Kkm,0,10
+EC50s,0,50
+Hs,0,55
+POPMAX, 35000000000!
+
+#Cov
+IC
+
+#SEC
+Ke = CL/Vc
+EFF = Kkm * (X[1]/Vc)**Hs / (EC50s**Hs + (X[1]/Vc)**Hs)
+G = Kg*(1 – X[2]/POPMAX)
+
+#INI
+X[2] = IC
+
+#EQN
+dX[1] = RATEIV[1] - Ke * X[1]
+dX[2] = G*X[2] - EFF*X[2]
+
+#Out
+Y[1] = X[1]/Vc
+Y[2] = DLOG10(X[2])
+
+#Err
+L=0.9
+1,0.1,0,0
+1,0.1,0,0
