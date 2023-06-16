@@ -3407,7 +3407,9 @@ C  TSTMULTN.FOR                          NOV, 2014
          KCP=0            
          KPC=0            
                           
-                          
+         ! This model uses algebraic solutions. Differential equations provided here for reference only.                      
+         ! XP(1) =  - Ka*X(1)                      
+         ! XP(2) = RATEIV(1) + Ka*X(1) - Ke*X(2)   
                           
       RETURN              
       END                 
@@ -3462,7 +3464,6 @@ C  TSTMULTN.FOR                          NOV, 2014
          DO I = 1,7       
            NBCOMP(I) = I  
          END DO           
-                          
                           
        N=-1               
        NP=4               
@@ -3593,7 +3594,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          KCP=0            
          KPC=0            
                           
-         Tlag(1) = Tlag1  
+         TLAG(1) = Tlag1  
                           
       RETURN              
       END                 

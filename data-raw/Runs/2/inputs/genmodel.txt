@@ -12,12 +12,17 @@ GENDER
 HEIGHT
 
 #lag
-Tlag(1) = Tlag1
+TLAG(1) = Tlag1
+
+#eqn
+{algebraic: Ka,Ke,V,2}
+dX[1] = BOLUS[1] - Ka*X[1]
+dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]
 
 #out
-Y(1)=X(2)/V
+Y[1]=X[2]/V
 
 #err
 G=5.000000
-0.020000,0.050000,-0.000200,0.000000
+0.020000, 0.050000, -0.000200, 0.000000
 

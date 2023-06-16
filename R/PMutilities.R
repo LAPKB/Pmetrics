@@ -684,7 +684,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   }
   
   # detect N
-  if (blocks$eqn[1] == "") {
+  if (blocks$eqn[1] == "" | grepl("^\\{algebraic:", blocks$eqn[1])) {
     if ("KE" %in% toupper(secVarNames) | "KE" %in% toupper(blocks$primVar)) {
       N <- -1
     } else {
@@ -705,6 +705,14 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   }
   
   # figure out model if N = -1 and if so, assign values to required KA,KE,V,KCP,KPC
+  # in future, use {algebraic: xx} which is in model files now to select correct algebraic model
+  # for now, comment the eqn lines in fortran if present
+  if(length(grep("^\\{algebraic:", blocks$eqn[1]))>0){ 
+    blocks$eqn[1] <- "This model uses algebraic solutions. Differential equations provided here for reference only."
+    blocks$eqn <- purrr::map_chr(blocks$eqn, \(x) paste0("! ", x))
+    }
+  
+  
   reqVars <- c("KA", "KE", "KCP", "KPC", "V")
   matchVars <- match(reqVars, toupper(c(blocks$primVar, secVarNames)))
   if (N == -1) {
@@ -735,7 +743,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   
   #extract bolus inputs and create bolus block, then remove bolus[x] from equations
   bolus <- purrr::map(blocks$eqn,~stringr::str_extract_all(.x,regex("B\\[\\d+|BOL\\[\\d+|BOLUS\\[\\d+", ignore_case = TRUE), simplify = FALSE))
-  blocks$bolus <- imap(bolus, \(x, idx){
+  blocks$bolus <- purrr::imap(bolus, \(x, idx){
     if(length(x[[1]])>0){
       paste0("NBCOMP(",stringr::str_extract(x[[1]],"\\d+$"),") = ",idx)
     }

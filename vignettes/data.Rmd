@@ -55,7 +55,7 @@ You can also build an appropriate data frame in R and provide that as an argumen
 data1 <- PM_data$new(df)
 ```
 
-Once you have created the `PM_data()` object, you never need to create it again during your R session. You also don't have to bother copying the data file to the Runs folder each time you run the model.
+Once you have created the `PM_data` object, you never need to create it again during your R session. You also don't have to bother copying the data file to the Runs folder each time you run the model.
 
 <span class="legacy">Legacy</span> 
 
