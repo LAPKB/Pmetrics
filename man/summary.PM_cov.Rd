@@ -7,7 +7,7 @@
 \method{summary}{PM_cov}(obj, ...)
 }
 \arguments{
-\item{obj}{The \emph{PM_covl} object to summarize}
+\item{obj}{The \emph{PM_cov} object to summarize}
 
 \item{...}{Arguments passed to \link{summary.PMcov}}
 }
