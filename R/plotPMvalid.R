@@ -72,7 +72,7 @@
 #' @return Plots and returns the plotly object
 #' @author Michael Neely
 #' @seealso [makeValid]
-#' @importFrom dplyr summarise
+#' @importFrom dplyr reframe
 #' @importFrom dplyr quo
 #' @export
 #' @examples 
@@ -197,25 +197,26 @@ plot.PM_valid <- function(x,
   groupVar <- if(tad){quo(tadBinMedian)} else {quo(timeBinMedian)}
   quant_pcObs <- opDF %>%
     group_by(!!groupVar) %>%
-    summarise(value = quantile(pcObs, probs = c(lower$value,mid$value,upper$value),na.rm = T),
-              q = c(lower$value,mid$value,upper$value), .groups = "keep")
+    dplyr::reframe(value = quantile(pcObs, probs = c(lower$value,mid$value,upper$value),na.rm = T),
+              q = c(lower$value,mid$value,upper$value), .groups = "keep") %>% select (-.groups)
   names(quant_pcObs)[1] <- "time"
   
   #calculate lower, 50th and upper percentiles for Yij by time bin
   quant_Obs <- opDF %>%
     group_by(!!groupVar) %>%
-    summarise(value = quantile(obs, probs = c(lower$value,mid$value,upper$value),na.rm = T),
-              q = c(lower$value,mid$value,upper$value), .groups = "keep")
+    reframe(value = quantile(obs, probs = c(lower$value,mid$value,upper$value),na.rm = T),
+              q = c(lower$value,mid$value,upper$value), .groups = "keep") %>% select (-.groups)
   names(quant_Obs)[1] <- "time"
   
   #calculate median and CI for upper, median, and lower for each bin
   simGroupVar <- if(tad){quo(tadBinNum)} else {quo(timeBinNum)}
   simCI <- simdata %>% group_by(simnum, !!simGroupVar) %>% 
-    summarise(value = quantile(out, probs = c(lower$value,mid$value,upper$value),na.rm = T),
+    reframe(value = quantile(out, probs = c(lower$value,mid$value,upper$value),na.rm = T),
               q = c("lower","mid","upper"), .groups = "keep") %>%
     group_by(bin = !!simGroupVar, q) %>% 
-    summarise(value = quantile(value, probs = c(lower$value,upper$value),na.rm = T),
+    reframe(value = quantile(value, probs = c(lower$value,upper$value),na.rm = T),
                                                    ci = c(lower$value,upper$value), .groups = "keep") %>%
+    select (-.groups) %>%
     pivot_wider(names_from = ci, values_from = value, names_prefix = "q") 
   
   #arrange simCI in order of time, not bin
