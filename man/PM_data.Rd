@@ -57,7 +57,7 @@ conduct a non-compartmental analysis on the raw data using
 \subsection{Method \code{new()}}{
 Create new data object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_data$new(data, dt = NULL, quiet = F)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$new(data = NULL, dt = NULL, quiet = FALSE, validate = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -85,6 +85,8 @@ Other date/time formats are possible. See \code{\link[lubridate:parse_date_time]
 }}
 
 \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
+
+\item{\code{validate}}{Check for errors. Default is \code{TRUE}. Strongly recommended.}
 
 \item{\code{...}}{Arguments to be passed further}
 }
