@@ -732,10 +732,10 @@ PM_cov <- R6::R6Class(
     #' @description
     #' Plot method
     #' @details
-    #' See [plot.PMcov].
-    #' @param ... Arguments passed to [plot.PMcov]
+    #' See [plot.PM_cov].
+    #' @param ... Arguments passed to [plot.PM_cov]
     plot = function(...) {
-      plot.PMcov(self$data, ...)
+      plot.PM_cov(self$data, ...)
     },
     #' @description
     #' Print method
@@ -755,7 +755,7 @@ PM_cov <- R6::R6Class(
 #' See [summary.PMcov]. Alternative way to summarize is
 #' `PM_result$cov$summary()`.
 #' 
-#' @param obj The *PM_covl* object to summarize
+#' @param obj The *PM_cov* object to summarize
 #' @param ... Arguments passed to [summary.PMcov]
 #' @return A [summary.PMcov] object
 #' @author Michael Neely, Julian Otalvaro
