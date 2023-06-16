@@ -23,8 +23,8 @@ library(crayon)
 
 
 ```{r setup-extra}
-#res = params$res
-res <- Pmetrics::NPex
+res = params$res
+#res <- Pmetrics::NPex
 ```
 
 ## Summary

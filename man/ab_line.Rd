@@ -4,7 +4,7 @@
 \alias{ab_line}
 \title{Add lines to plotly plot}
 \usage{
-ab_line(a = NULL, b = NULL, h = NULL, v = NULL, line = T)
+ab_line(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE)
 }
 \arguments{
 \item{a}{Intercept y value in relative coordinates, i.e. 0 (bottom) to 1 (top).

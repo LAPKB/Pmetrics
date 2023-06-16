@@ -23,20 +23,8 @@ Pmetrics Run Cycle Information"><meta property="og:image" content="https://lapkb
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/data.html">Data objects</a>
-    <a class="dropdown-item" href="../articles/intro.html">Introduction</a>
-    <a class="dropdown-item" href="../articles/models.html">Models</a>
-    <a class="dropdown-item" href="../articles/objects.html">Created Objects</a>
-    <a class="dropdown-item" href="../articles/overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/plotly.html">How to use plotly in Pmetrics</a>
-    <a class="dropdown-item" href="../articles/pmetrics.html">Pmetrics</a>
-    <a class="dropdown-item" href="../articles/running.html">Running model fits</a>
-    <a class="dropdown-item" href="../articles/simulation.html">Simulation</a>
-    <a class="dropdown-item" href="../articles/workflow.html">Workflow</a>
-  </div>
+<li class="nav-item">
+  <a class="nav-link" href="../articles/index.html">Articles</a>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
@@ -78,25 +66,52 @@ into the R console and look online for instructions/tutorials in tidyverse, a
 powerful approach to data manipulation upon which Pmetrics is built.</p>
 <p>Creation of new <code>PM_cycle</code> object is automatic and not generally necessary
 for the user to do.</p>
-<p>See <a href="plot.PM_cycle.html">plot.PM_cycle</a>.</p>
+<p>See <a href="plot.PMcycle.html">plot.PMcycle</a>.</p>
     </div>
     <div class="section level2">
     <h2 id="public-fields">Public fields<a class="anchor" aria-label="anchor" href="#public-fields"></a></h2>
-    <p></p><div class="r6-fields"><dl><dt><code>data</code></dt>
-<dd><p>A data frame with the following columns</p><ul><li><p>names Vector of names of the random parameters</p></li>
-<li><p>cynum Vector cycle numbers, which may start at numbers greater
-than 1 if a non-uniform prior was specified for the run (NPAG only)</p></li>
-<li><p>ll Matrix of cycle number and -2*Log-likelihood at each cycle</p></li>
-<li><p>gamlam A matrix of cycle number and gamma or lambda at each cycle</p></li>
-<li><p>mean A matrix of cycle number and the mean of each random parameter
-at each cycle, normalized to initial mean</p></li>
-<li><p>sd A matrix of cycle number and the standard deviation of each random parameter
-at each cycle,  normalized to initial standard deviation</p></li>
-<li><p>median A matrix of cycle number and the median of each random
-parameter at each cycle,  normalized to initial median</p></li>
-<li><p>aic A matrix of cycle number and Akaike Information Criterion at each cycle</p></li>
-<li><p>bic A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle</p></li>
-</ul></dd>
+    <p></p><div class="r6-fields"><dl><dt><code>names</code></dt>
+<dd><p>Vector of names of the random parameters</p></dd>
+
+
+<dt><code>cynum</code></dt>
+<dd><p>Vector cycle numbers, which may start at numbers greater
+than 1 if a non-uniform prior was specified for the run (NPAG only)</p></dd>
+
+
+<dt><code>ll</code></dt>
+<dd><p>Matrix of cycle number and -2*Log-likelihood at each cycle</p></dd>
+
+
+<dt><code>gamlam</code></dt>
+<dd><p>A matrix of cycle number and gamma or lambda at each cycle</p></dd>
+
+
+<dt><code>mean</code></dt>
+<dd><p>A matrix of cycle number and the mean of each random parameter
+at each cycle, normalized to initial mean</p></dd>
+
+
+<dt><code>sd</code></dt>
+<dd><p>A matrix of cycle number and the standard deviation of each random parameter
+at each cycle,  normalized to initial standard deviation</p></dd>
+
+
+<dt><code>median</code></dt>
+<dd><p>A matrix of cycle number and the median of each random
+parameter at each cycle,  normalized to initial median</p></dd>
+
+
+<dt><code>aic</code></dt>
+<dd><p>A matrix of cycle number and Akaike Information Criterion at each cycle</p></dd>
+
+
+<dt><code>bic</code></dt>
+<dd><p>A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle</p></dd>
+
+
+<dt><code>data</code></dt>
+<dd><p>A data frame combining all the above fields as its columns</p></dd>
 
 
 </dl><p></p></div>
@@ -136,7 +151,7 @@ parameter at each cycle,  normalized to initial median</p></li>
 <div class="section">
 <h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>...</code></dt>
-<dd><p>Arguments passed to <a href="plot.PM_cycle.html">plot.PM_cycle</a></p></dd>
+<dd><p>Arguments passed to <a href="plot.PMcycle.html">plot.PMcycle</a></p></dd>
 
 
 </dl><p></p></div>

@@ -21,20 +21,8 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/data.html">Data objects</a>
-    <a class="dropdown-item" href="../articles/intro.html">Introduction</a>
-    <a class="dropdown-item" href="../articles/models.html">Models</a>
-    <a class="dropdown-item" href="../articles/objects.html">Created Objects</a>
-    <a class="dropdown-item" href="../articles/overview.html">Overview</a>
-    <a class="dropdown-item" href="../articles/plotly.html">How to use plotly in Pmetrics</a>
-    <a class="dropdown-item" href="../articles/pmetrics.html">Pmetrics</a>
-    <a class="dropdown-item" href="../articles/running.html">Running model fits</a>
-    <a class="dropdown-item" href="../articles/simulation.html">Simulation</a>
-    <a class="dropdown-item" href="../articles/workflow.html">Workflow</a>
-  </div>
+<li class="nav-item">
+  <a class="nav-link" href="../articles/index.html">Articles</a>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
@@ -63,18 +51,17 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_model</span><span class="op">(</span><span class="va">data</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_model</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>data</dt>
-<dd><p>Optional <a href="PM_data.html">PM_data</a> object which will be used to read
-covariates.</p></dd>
-
-
-<dt>...</dt>
-<dd><p>Currently unused</p></dd>
+    <dl><dt>...</dt>
+<dd><p>Optional <a href="PM_data.html">PM_data</a> and/or <a href="PM_model.html">PM_model</a> object(s). <em>PM_data</em> objects
+supply covariates. <em>PM_model</em> objects supply any other defined model element,
+and covariates only if there is no <em>PM_data</em> object or it has no covariates.
+If the <em>PM_model</em> object contains covariates, they will be superseded by those in
+the <em>PM_data</em> object, if supplied.</p></dd>
 
 </dl></div>
     <div class="section level2">

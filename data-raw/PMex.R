@@ -36,7 +36,7 @@ simEx <- PM_sim$load("sim.rds")
 usethis::use_data(simEx, overwrite = T)
 
 #NPex with valid field
-NPex_val <- PM_result$load("valid.rds")
+NPex_val <- PM_load(file = "valid.Rdata")
 usethis::use_data(NPex_val, overwrite = T)
 
 

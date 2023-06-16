@@ -1,4 +1,16 @@
 url: https://lapkb.github.io/Pmetrics/
 template:
   bootstrap: 5
-
+articles:
+- title: Articles
+  contents:
+  - intro
+  - pmetrics
+  - overview
+  - workflow
+  - data
+  - models
+  - running
+  - objects
+  - plotly
+  - simulation
