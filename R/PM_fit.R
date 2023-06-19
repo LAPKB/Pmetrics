@@ -251,7 +251,7 @@ PM_fit <- R6::R6Class("PM_fit",
         if (file.exists("meta_rust.csv")) {
           # Execution ended successfully
           PM_parse()
-          res <- PM_load(file = "NPcore.Rdata")
+          res <- PM_load(file = "outputs/NPcore.Rdata")
           PM_report(res, outfile = "report.html", template = "ggplot_rust")
         } else {
           setwd(cwd)
