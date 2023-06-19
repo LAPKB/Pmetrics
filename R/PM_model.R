@@ -486,15 +486,18 @@ PM_model_list <- R6::R6Class("PM_model_list",
       content <- gsub("</model_params>", mp_lines %>% paste(collapse = ""), content)
       content <- gsub("</init>", paste(rep("0.0", neqs), collapse = ","), content)
       content <- gsub("</v_alias>", va_lines %>% paste(collapse = "\n"), content)
+      out <- "yout.push(match event.outeq.unwrap() {"
+      n_out <- 1
       for (outeq in self$model_list$out) {
-        out <- c()
-        out <- append(out, "let y0: Vec<f64> = y.iter().map(|x|{")
+        out <- append(out, paste(n_out, " => "))
         out <- append(out, stringr::str_replace_all(tolower(outeq[[1]][[1]]), "\\((\\d)\\)", function(a) {
           paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
         }))
-        out <- append(out, "}).collect();")
-        out <- append(out, "yout.push(y0);")
+        out <- append(out, ",")
+        n_out <- n_out + 1
       }
+      out <- append(out, "_ => panic!(\"Invalid output equation\")")
+      out <- append(out, "})")
       content <- gsub("</out_eqs>", out %>% paste(collapse = "\n"), content)
       # ranges <- c()
       # for(val in self$model_list$pri){

@@ -368,6 +368,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     limits = limits), argsSIM)
   cat("Simulating outputs for each subject using population means...\n")
   flush.console()
+  system("echo 347 > SEEDTO.MON")
   do.call("SIMrun", argsSIM1)
   
   # read and format the results of the simulation
