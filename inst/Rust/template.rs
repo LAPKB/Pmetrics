@@ -56,7 +56,7 @@ impl Predict for Ode {
         };
         let lag = 0.0;
         let mut yout = vec![];
-        let mut x = State::new(0.0);
+        let mut x = State::new(</init>);
         let mut index: usize = 0;
         for block in &scenario.blocks {
             //if no code is needed here, remove the blocks from the codebase
