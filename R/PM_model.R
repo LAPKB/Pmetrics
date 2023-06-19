@@ -483,6 +483,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       content <- gsub("</eqn>", paste0(eqs %>% paste(collapse = ";\n"), ";"), content)
       content <- gsub("</neqs>", neqs, content)
       content <- gsub("</seq>", "", content)
+      content <- gsub("</init>", paste0(rep("0.0",neqs),collapse=","), content)
       content <- gsub("</model_params>", mp_lines %>% paste(collapse = ""), content)
       content <- gsub("</init>", paste(rep("0.0", neqs), collapse = ","), content)
       content <- gsub("</v_alias>", va_lines %>% paste(collapse = "\n"), content)
