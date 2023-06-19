@@ -58,7 +58,8 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
   class(NPcore) <- "PM_result"
 
   if (write) {
-    save(NPcore, file = "NPcore.Rdata")
+    system("mkdir outputs")
+    save(NPcore, file = "outputs/NPcore.Rdata")
     return(invisible(NPcore))
   }
 
