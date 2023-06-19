@@ -118,7 +118,7 @@ PM_load <- function(run, file, remote = F, server_address) {
     } else { #is Rust
       load(found)
       result <- get("NPcore")
-      return(PM_result$new(result, backend = "rust"))
+      return(result)
     }
   } else {
     stop(paste0("No Pmetrics output file found in ", getwd(), ".\n"))
