@@ -32,7 +32,7 @@ impl ode_solvers::System<State> for Model<'_> {
             }
         }
         </lag>
-        </diff_eq>
+        </eqn>
         if let Some(dose) = &self.dose {
             if t >= dose.time + lag {
                 dx[dose.compartment] += dose.amount;
