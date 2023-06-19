@@ -142,12 +142,8 @@ PM_fit <- R6::R6Class("PM_fit",
       }
       dir.create(newdir)
       setwd(newdir)
-
-
-
-
       # Include or exclude subjects according to
-      data_filtered <- data_filtered <- self$data$data
+      data_filtered <- self$data$standard_data
       if (!is.symbol(arglist$include)) {
         data_filtered <- data_filtered %>%
           filter(id %in% arglist$include)
@@ -180,7 +176,7 @@ PM_fit <- R6::R6Class("PM_fit",
       arglist$use_tui <- "false" # TO-DO: Convert TRUE -> "true", vice versa.
 
       #### Save PM_fit ####
-      self$data <- data_filtered
+      self$data <- PM_data$new(data_filtered, quiet = TRUE)
       self$arglist <- arglist
       save(self, file = "fit.Rdata")
 
@@ -234,10 +230,14 @@ PM_fit <- R6::R6Class("PM_fit",
         "engine=\"NPAG\"",
         # "init_points={num_indpts}",
         "init_points=2129", # TO-DO: temporary """"hacky"""" fix
-        "seed=22",
+        "seed=347",
         "tui={use_tui}",
         "pmetrics_outputs=true",
+        "cache = true", # TO-DO: temporary """"hacky"""" fix
         "{parameter_block}",
+        "[error]",
+        "value = 0.0",
+        "class = \"additive\"",
         .envir = arglist,
         .sep = "\n"
       )
@@ -273,6 +273,7 @@ PM_fit <- R6::R6Class("PM_fit",
       system(sprintf("mv main.rs %s/src/main.rs", getPMoptions()$rust_template))
       # compile the template folder
       setwd(getPMoptions()$rust_template)
+      system("cargo fmt")
       system("cargo build --release")
       if (!file.exists("target/release/template")) {
         setwd(cwd)
