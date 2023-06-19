@@ -177,7 +177,7 @@ PM_result <- R6::R6Class(
         success = self$success,
         valid = self$valid
       )
-      saveRDS(PMout, file = paste0(outputfolder, "/", file))
+      save(PMout, file = paste0(outputfolder, "/", file))
     },
 
     #' @description
