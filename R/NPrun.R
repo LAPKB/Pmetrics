@@ -2,7 +2,7 @@
 #'
 #' \code{NPrun} will execute an NPAG run.
 #'
-#' If all function arguments are default, the simplest execution of this command is 
+#' If all function arguments are default, the simplest execution of this command is
 #' \code{NPrun()}.  This will result in generation of a batch file.  On Unix (Mac) systems
 #' will be launched automatically in a terminal window.  On Windows systems, the user
 #' must execute the batch file from the current working directory, which will launch NPAG
@@ -12,14 +12,14 @@
 #' @title Execute an NPAG run.
 #' @param model Name of a suitable model file template in the working directory or
 #' an existing (previous) run number corresponding to a folder in the current working directory that used the same model file as will be used in the current run.
-#' If this is supplied, then the model file will be copied into the current 
-#' working directory for convenience.  If not supplied, 
+#' If this is supplied, then the model file will be copied into the current
+#' working directory for convenience.  If not supplied,
 #' the default is \dQuote{model.txt}.  This file will be converted to a fortran model file.
 #' If it is detected to already be a fortran file, then the analysis will proceed without any further
 #' file conversion.
 #' @param data Name of a suitable data file (see \code{\link{PMwriteMatrix}}) or
 #' an existing (previous) run number corresponding to a folder in the current working directory that used the same data file as will be used in the current run.
-#' If this is supplied, then previously made  '.ZMQ' files will be copied into the current 
+#' If this is supplied, then previously made  '.ZMQ' files will be copied into the current
 #' working directory, bypassing the need to re-convert the .csv file and speeding up the run..
 #' @param run Specify the run number of the output folder.  Default if missing is the next available number.
 #' @param include Vector of subject id values in the data file to include in the analysis.  The default (missing) is all.
@@ -30,10 +30,10 @@
 #' Default value is 0.01.
 #' @param salt Vector of salt fractions for each drug in the data file, default is 1 for each drug.  This is not the same as bioavailability.
 #' @param cycles Number of cycles to run. Default is 100.
-#' @param indpts Index of starting grid point number.  Default is missing, which allows NPAG to choose depending on the number of random parameters: 
+#' @param indpts Index of starting grid point number.  Default is missing, which allows NPAG to choose depending on the number of random parameters:
 #' 1 or 2 = index of 1; 3 = 3; 4 = 4, 5 = 6,
 #' 6 or more is 10+number of multiples for each parameter greater than 5, e.g. 6 = 101; 7 = 102, up to 108 for 13 or more parameters.
-#' @param icen Summary of parameter distributions to be used to calculate predictions in HTML report.  Default is "median", but could be "mean".  
+#' @param icen Summary of parameter distributions to be used to calculate predictions in HTML report.  Default is "median", but could be "mean".
 #' Predictions based on both summaries will be available in objects loaded by \code{\link{PMload}}.
 #' @param aucint Maintained for backwards compatibility and not used currently. Interval for AUC calculations.  Default is 24 hours if the number of intervals is not greater than 48; otherwise it defaults
 #' to the interval which allows for <= 48 intervals.
@@ -46,9 +46,9 @@
 #' \code{prior = 'DEN0001'}.
 #' @param auto If \code{auto} is \code{False} you can answer all questions about the run environment manually.  This might
 #' be helpful for beginners.  Default is \code{True}.
-#' @param intern MacOSX only: Run NPAG in the R console without a batch script.  Default is false.  
+#' @param intern MacOSX only: Run NPAG in the R console without a batch script.  Default is false.
 #' This will be ignored if on Windows systems.  On the latter, the behavior of cmd.exe (aka the \dQuote{DOS} window)
-#' with R is poor - it does not update until the end of execution, so you cannot see any output that indicates that NPAG is running.  
+#' with R is poor - it does not update until the end of execution, so you cannot see any output that indicates that NPAG is running.
 #' If \code{intern=T} the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
 #' and you can find the HTML summary page in the /outputs folder: NPAGreport.html.
 #' @param quiet Boolean operator controlling whether a model summary report is given.  Default is \code{TRUE}.
@@ -61,10 +61,10 @@
 #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
 #' @param alq For internal developer use only.  Should be set to \code{FALSE}.
 #' @param remote Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
-#' @param server_address If missing, will use the default server address returned by getPMoptions(). 
+#' @param server_address If missing, will use the default server address returned by getPMoptions().
 #' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}.
 #' @return A successful NPAG run will result in creation of a new folder in the working
-#' directory.  This folder will be named numerically and sequentially with respect to previous runs.  
+#' directory.  This folder will be named numerically and sequentially with respect to previous runs.
 #' Within this folder will be four subfolders: etc, inputs, outputs, and wrkcopy, described below.
 #' \itemize{
 #'  \item \bold{etc}   Control files for NPAG generally not needed by the user after a completed run.
@@ -81,9 +81,9 @@
 #' into R, and is the file read by the \code{\link{NPparse}} command.  Finally, there will also
 #' be an nplog.txt file containing additional run information.
 #' \item \bold{wrkcopy}    The working copy format which is used by NPAG.  Invisibly to the user,
-#' the .csv input file is converted to these text files, one file per subject.  
+#' the .csv input file is converted to these text files, one file per subject.
 #' }
-#' 
+#'
 #' @author Michael Neely
 #' @seealso \code{\link{NPparse}}, \code{\link{ITrun}}
 #' @export
@@ -93,9 +93,8 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
                   include, exclude, ode = -4, tol = 0.01, salt, cycles = 100,
                   indpts, icen = "median", aucint,
                   idelta = 12, prior,
-                  auto = T, intern = F, quiet = F, overwrite = F, nocheck = F, parallel = NA, 
-                  alq = F, remote = F, server_address, report = T) {
-  
+                  auto = TRUE, intern = FALSE, quiet = FALSE, overwrite = FALSE, nocheck = FALSE, parallel = NA,
+                  alq = FALSE, remote = FALSE, server_address, report = TRUE) {
   if (missing(run)) run <- NULL
   if (missing(include)) include <- NULL
   if (missing(exclude)) exclude <- NULL
@@ -104,19 +103,18 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
   if (missing(aucint)) aucint <- NULL
   if (missing(prior)) prior <- NULL
   if (missing(server_address)) server_address <- getPMoptions("server_address")
-  
+
   batch <- F
   if (remote == T) {
     return(.PMremote_run(model = model, data = data, server_address = server_address, run, overwrite))
   } else {
-    return(.PMrun(type = "NPAG", model = model, data = data, run = run,
-          include = include, exclude = exclude, ode = ode, tol = tol, salt = salt, cycles = cycles,
-          indpts = indpts, icen = icen, aucint = aucint,
-          idelta = idelta, prior = prior,
-          auto = auto, intern = intern, quiet = quiet, overwrite = overwrite, nocheck = nocheck, parallel = parallel, batch = batch,
-          alq = alq, report = report))
-
+    return(.PMrun(
+      type = "NPAG", model = model, data = data, run = run,
+      include = include, exclude = exclude, ode = ode, tol = tol, salt = salt, cycles = cycles,
+      indpts = indpts, icen = icen, aucint = aucint,
+      idelta = idelta, prior = prior,
+      auto = auto, intern = intern, quiet = quiet, overwrite = overwrite, nocheck = nocheck, parallel = parallel, batch = batch,
+      alq = alq, report = report
+    ))
   }
-
 }
-

@@ -1,12 +1,12 @@
 #' Results of a Pmetrics run
 #'
-#' This object contains all of the results after a Pmetrics runs. It is created 
+#' This object contains all of the results after a Pmetrics runs. It is created
 #' by using the [PM_load] function.
-#' 
+#'
 #' After a run completes, results are stored on your hard drive. They are loaded
 #' back into R with [PM_load] to create the [PM_result] object, which contains both
 #' the results and functions to analyze or plot the result.
-#' 
+#'
 #' @author Michael Neely, Julian Otalvaro
 #' @export
 PM_result <- R6::R6Class(
@@ -38,11 +38,11 @@ PM_result <- R6::R6Class(
     success = NULL,
     #' @field valid If the `$validate` method has been executed after a run, this object will be added to
     #' the `PM_result` object.  It contains the information required to plot visual predictive checks and normalized prediction
-    #' error discrepancies via the npde code developed by Comets et al. Use the 
-    #' `$save` method on the augmented `PM_result` object to save it with the 
+    #' error discrepancies via the npde code developed by Comets et al. Use the
+    #' `$save` method on the augmented `PM_result` object to save it with the
     #' new validation results.
     valid = NULL,
-    
+
     #' @description
     #' Create new object populated with data from previous run
     #' @details
@@ -50,14 +50,18 @@ PM_result <- R6::R6Class(
     #' @param out The parsed output from [PM_load].
     #' @param quiet Quietly validate. Default is `FALSE`.
     initialize = function(out, quiet = T) {
-      if(!is.null(out$NPdata)){
+      if (!is.null(out$NPdata)) {
         self$NPdata <- out$NPdata
         class(self$NPdata) <- c("NPAG", "list")
-      } else {self$NPdata <- NULL}
-      if(!is.null(out$ITdata)){
+      } else {
+        self$NPdata <- NULL
+      }
+      if (!is.null(out$ITdata)) {
         self$ITdata <- out$ITdata
         class(self$ITdata) <- c("IT2B", "list")
-      } else {self$ITdata <- NULL}
+      } else {
+        self$ITdata <- NULL
+      }
       self$pop <- PM_pop$new(out$pop)
       self$post <- PM_post$new(out$post)
       self$final <- PM_final$new(out$final)
@@ -68,40 +72,48 @@ PM_result <- R6::R6Class(
       self$model <- out$model
       self$errfile <- out$errfile
       self$success <- out$success
-      if(!is.null(out$valid)){
+      if (!is.null(out$valid)) {
         self$valid <- out$valid
-      } else {self$valid <- NULL}
+      } else {
+        self$valid <- NULL
+      }
     },
-    
+
     #' @description
     #' Plot generic function based on type
     #' @param type Type of plot based on class of object
     #' @param ... Plot-specific arguments
     plot = function(type, ...) {
-      if(is.null(type)){stop("Please provide the type of plot.")
-      } else {self[[type]]$plot(...)}
+      if (is.null(type)) {
+        stop("Please provide the type of plot.")
+      } else {
+        self[[type]]$plot(...)
+      }
     },
-    
+
     #' @description
     #' Summary generic function based on type
     #' @param type Type of summary based on class of object
     #' @param ... Summary-specific arguments
     summary = function(type, ...) {
-      if(is.null(type)){stop("please provide the type of summary you want to obtain")
-      } else {self[[type]]$summary(...)} 
+      if (is.null(type)) {
+        stop("please provide the type of summary you want to obtain")
+      } else {
+        self[[type]]$summary(...)
+      }
     },
-    
+
     #' @description
     #' AUC generic function based on type
     #' @param type Type of AUC based on class of object
     #' @param ... Summary-specific arguments
     auc = function(type, ...) {
-      if(!type %in% c("op", "pop", "post", "sim")){
+      if (!type %in% c("op", "pop", "post", "sim")) {
         stop("makeAUC is defined only for PMop, PMpop, PMpost, PMsim objects.\n")
       }
       self[[type]]$auc(...)
     },
-    
+
     #' @description
     #' Perform non-compartmental analysis
     #' @details
@@ -110,87 +122,89 @@ PM_result <- R6::R6Class(
     nca = function(...) {
       make_NCA(self, ...)
     },
-    
+
     #' @description
     #' Simulates using the self$final object.
     #' For parameter information refer to [SIMrun]. It will return a `PM_sim` object
     #' by running [SIMparse] at the end of the simulation.
     #' @param ... Parameters passed to [SIMrun]
     sim = function(...) {
-      #store copy of the final object
+      # store copy of the final object
       bk_final <- self$final$clone()
       sim <- PM_sim$run(self, ...)
       self$final <- bk_final
       sim
     },
-    
+
     #' @description
-    #' Save the current PM_result object to an .Rdata file. 
+    #' Save the current PM_result object to an .Rdata file.
     #' This is useful if you have updated the result in some way, for example you
-    #' have run the `$make_valid` method on the `PM_result` object, which returns 
+    #' have run the `$make_valid` method on the `PM_result` object, which returns
     #' an internal simulation based validation as a new `valid` field. To save this
     #' validation, use this `$save` method. Note that unless a `file` name is provided,
     #' the changes will overwrite the
     #' previous run results, although unchanged items will be preserved. This is the
     #' usual workflow. However, a custom file name may be useful to share the run
     #' results with someone. The files
-    #' can be loaded again with [PM_load]. 
+    #' can be loaded again with [PM_load].
     #' @param run The run output folder number to save the revised result. If missing,
     #' will save in the current working directory. For example, if folder "1" is in
     #' your current working directory, specify `run = 1` to save the result to the "outputs"
     #' subfolder of the "1" folder.
     #' @param file Custom file name. Default is "PMout.Rdata".
     save = function(run, file) {
-      if(missing(run)){
+      if (missing(run)) {
         outputfolder <- getwd()
       } else {
-        if(is.na(suppressWarnings(as.numeric(run)))){
+        if (is.na(suppressWarnings(as.numeric(run)))) {
           stop("The run argument is not numeric. Do you need to say 'file = '? See help for PM_result.")
         }
-        outputfolder <- paste0(run,"/outputs")
-        if(!file.exists(outputfolder)){
-          stop(paste0(outputfolder," does not exist from the current working directory./n"))
+        outputfolder <- paste0(run, "/outputs")
+        if (!file.exists(outputfolder)) {
+          stop(paste0(outputfolder, " does not exist from the current working directory./n"))
         }
       }
-      if(missing(file)){file <- "PMout.Rdata"} #need to update to include Rust
+      if (missing(file)) {
+        file <- "PMout.Rdata"
+      } # need to update to include Rust
       PMout <- list(
         NPdata = self$NPdata,
         ITdata = self$ITdata,
-        pop = self$pop$data, post = self$post$data, 
-        final = self$final$data, cycle = self$cycle$data, 
-        op = self$op$data, cov = self$cov$data, data = self$data$data, 
-        model = self$model, errfile = self$errfile, 
+        pop = self$pop$data, post = self$post$data,
+        final = self$final$data, cycle = self$cycle$data,
+        op = self$op$data, cov = self$cov$data, data = self$data$data,
+        model = self$model, errfile = self$errfile,
         success = self$success,
         valid = self$valid
       )
-      save(PMout, file = paste0(outputfolder,"/",file))
+      saveRDS(PMout, file = paste0(outputfolder, "/", file))
     },
-    
-    #' @description 
+
+    #' @description
     #' Validate the result by internal simulation methods.
     #' @param ... Arguments passed to [make_valid].
     validate = function(...) {
       self$valid <- PM_valid$new(self, ...)
       self$valid
     },
-    
-    #' @description 
+
+    #' @description
     #' Conduct stepwise linear regression of Bayesian posterior parameter values
     #' and covariates.
     #' @param ... Arguments passed to [PMstep].
     step = function(...) {
       PMstep(self$cov$data, ...)
     },
-    
-    #' @description 
+
+    #' @description
     #' Calculate optimal sample times from result and template data file.
     #' @param ... Arguments passed to [MM_opt].
     MM_opt = function(...) {
       MM_opt(self, ...)
     },
-    
+
     #' @description
-    #' This function loads an rds file created using the `$save` method on a 
+    #' This function loads an rds file created using the `$save` method on a
     #' `PM_result` object.
     #' @details
     #' `PM_result` objects contain a `save` method which invokes [saveRDS] to write
@@ -198,24 +212,24 @@ PM_result <- R6::R6Class(
     #' function.
     #' @param file_name Name of the file to be read, the default is "PMresult.rds".
     #' @return A `PM_result` object.
-    #' @examples 
+    #' @examples
     #' \dontrun{newRes <- PM_result$load("PMresult.rds")}
-    load = function(file_name){
+    load = function(file_name) {
       return(invisible)
     }
   ) # end public
 ) # end PM_result
 
 #' Load results of previously saved analyses
-#' 
-#' If the `$save` method has previously been invoked on a [PM_result] object that 
+#'
+#' If the `$save` method has previously been invoked on a [PM_result] object that
 #' was changed, for  example by using the `$validate` method, this function
 #' will load those results. It is simply an alias for [PM_load].
-#' 
+#'
 #' The saved object is an .Rdata file. When loaded, it should be assigned to an R
 #' object, e.g. `run2 <- PM_result$load("filename")`. An equivalent statment would
 #' be `run2 <- PM_load(file = "filename")`.
-#' 
+#'
 #' @param file_name The name of the .Rdata file to load. Default is "PMout.Rdata".
 #' @return A [PM_result] object
 #' @export
@@ -225,23 +239,23 @@ PM_result$load <- function(file_name = "PMout.Rdata") {
 }
 
 #' Observed vs. predicted data
-#' 
+#'
 #' Contains observed vs. predicted data after a run
-#' 
+#'
 #' @details
-#' Contains the results of [makeOP], which is a 
+#' Contains the results of [makeOP], which is a
 #' data frame suitable for analysis and plotting of observed vs. population or
 #' or individual predicted outputs. To provide a more traditional experience in R,
-#' the data frame is separated by columns into fields, e.g. `id` or `time`. This 
-#' allows you to access them in an S3 way, e.g. `run1$op$time` if `run1` is a 
-#' `PM_result` object. 
-#' 
+#' the data frame is separated by columns into fields, e.g. `id` or `time`. This
+#' allows you to access them in an S3 way, e.g. `run1$op$time` if `run1` is a
+#' `PM_result` object.
+#'
 #' However, if you wish to manipulate the entire data frame,
 #' use the `data` field, e.g. `trough <- run1$op$data %>% filter(time == 24)`. If
 #' you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
 #' into the R console and look online for instructions/tutorials in tidyverse, a
 #' powerful approach to data manipulation upon which Pmetrics is built.
-#' 
+#'
 PM_op <- R6::R6Class(
   "PM_op",
   public <- list(
@@ -314,7 +328,7 @@ PM_op <- R6::R6Class(
     },
     #' @description
     #' Calculate AUC
-    #' @details 
+    #' @details
     #' See [makeAUC]
     #' @param data The object to use for AUC calculation
     #' @param ... Arguments passed to [makeAUC]
@@ -325,12 +339,12 @@ PM_op <- R6::R6Class(
 )
 
 #' Wrapper function for summmary.PMop
-#' 
+#'
 #' This redirects to summary.PMop for PM_op R6 objects
-#' 
+#'
 #' See [summary.PMop]. Alternative way to summarize is
 #' `PM_result$op$summary()`.
-#' 
+#'
 #' @param obj The *PM_op* object to summarize
 #' @param ... Arguments passed to [summary.PMop]
 #' @return A [summary.PMop] object
@@ -340,18 +354,18 @@ summary.PM_op <- function(obj, ...) {
 }
 
 #' Individual Bayesian posterior predictions at short intervals
-#' 
-#' Contains the Bayesian posterior predictions at short intervals 
+#'
+#' Contains the Bayesian posterior predictions at short intervals
 #' specified as an argument to [PM_fit$run]. Default is every 12 minutes.
-#' 
+#'
 #' @details
-#' Contains the results of [makePost], which is a 
-#' data frame with Bayesian posterior predicted outputs for all subjects. 
+#' Contains the results of [makePost], which is a
+#' data frame with Bayesian posterior predicted outputs for all subjects.
 #' To provide a more traditional experience in R,
-#' the data frame is separated by columns into fields, e.g. `id` or `time`. This 
-#' allows you to access them in an S3 way, e.g. `run1$post$time` if `run1` is a 
-#' `PM_result` object. 
-#' 
+#' the data frame is separated by columns into fields, e.g. `id` or `time`. This
+#' allows you to access them in an S3 way, e.g. `run1$post$time` if `run1` is a
+#' `PM_result` object.
+#'
 #' However, if you wish to manipulate the entire data frame,
 #' use the `data` field, e.g. `trough <- run1$post$data %>% filter(time == 24)`. If
 #' you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
@@ -377,7 +391,7 @@ PM_post <- R6::R6Class(
     #' @field data A data frame combining all the above fields as its columns
     data = NULL,
     #' @description
-    #' Create new object populated with Bayesian posterior predicted data at 
+    #' Create new object populated with Bayesian posterior predicted data at
     #' regular, frequent intervals
     #' @details
     #' Creation of new `PM_post` object is automatic and not generally necessary
@@ -394,7 +408,7 @@ PM_post <- R6::R6Class(
     },
     #' @description
     #' Calculate AUC
-    #' @details 
+    #' @details
     #' See [makeAUC]
     #' @param data The object to use for AUC calculation
     #' @param ... Arguments passed to [makeAUC]
@@ -405,15 +419,15 @@ PM_post <- R6::R6Class(
 )
 
 #' Final Cycle Population Values
-#' 
+#'
 #' Contains final cycle information from run.
-#' 
+#'
 #' @details
-#' Contains the results of [makeFinal], which is a 
+#' Contains the results of [makeFinal], which is a
 #' list suitable for analysis and plotting of final cycle population values.
-#' 
+#'
 #' However, if you wish to manipulate the entire data frame,
-#' use the `data` field, e.g. `probs <- run1$final$data$popPoints %>% select(prob)`. 
+#' use the `data` field, e.g. `probs <- run1$final$data$popPoints %>% select(prob)`.
 #' This will select the probabilities of the support points. If
 #' you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
 #' into the R console and look online for instructions/tutorials in tidyverse, a
@@ -439,7 +453,7 @@ PM_final <- R6::R6Class(
     #' @field popCor The final cycle random parameter correlation matrix
     popCor = NULL,
     #' @field popMedian The final cycle median values for each random parameter,
-    #' i.e. those that have unknown mean and unknown variance, both of which are 
+    #' i.e. those that have unknown mean and unknown variance, both of which are
     #' fitted during the run
     popMedian = NULL,
     #' @field popRanFix The final cycle median values for each parameter that is
@@ -450,13 +464,13 @@ PM_final <- R6::R6Class(
     #' with columns id, point, parameters and probability.  The first column is the subject, the second column has the population
     #' point number, followed by the values for the parameters in that point and the probability.
     postPoints = NULL,
-    #' @field postMean A *nsub* x *npar* data frame containing 
+    #' @field postMean A *nsub* x *npar* data frame containing
     #' the means of the posterior distributions for each parameter.
     postMean = NULL,
-    #' @field postSD A *nsub* x *npar* data frame containing 
+    #' @field postSD A *nsub* x *npar* data frame containing
     #' the SDs of the posterior distributions for each parameter.
     postSD = NULL,
-    #' @field postVar A *nsub* x *npar* data frame containing 
+    #' @field postVar A *nsub* x *npar* data frame containing
     #' the variances of the posterior distributions for each parameter.
     postVar = NULL,
     #' @field postCov NPAG only: An array of dimensions *npar* x *npar* x *nsub* that
@@ -465,18 +479,18 @@ PM_final <- R6::R6Class(
     #' @field postCor NPAG only: An array of dimensions *npar* x *npar* x *nsub* that
     #' contains the correlations of the posterior distributions for each parameter and subject.
     postCor = NULL,
-    #' @field postMed A *nsub* x *npar* data frame containing 
+    #' @field postMed A *nsub* x *npar* data frame containing
     #' the medians of the posterior distributions for each parameter.*
     postMed = NULL,
     #' @field shrinkage A data frame with the shrinkage for each parameter.  `popVar`
-    #' is comprised of variance(EBE) + variance(EBD), where EBE is the Empirical 
+    #' is comprised of variance(EBE) + variance(EBD), where EBE is the Empirical
     #' Bayes Estimate or mean of the posterior
     #' distribution for the parameter. EBD is the Empirical Bayes Distribution, or
-    #' the full Bayesian posterior distribution. In other words, if Bayesian 
+    #' the full Bayesian posterior distribution. In other words, if Bayesian
     #' posterior distributions are wide
-    #' for a given parameter due to sparse or uninformative sampling, 
+    #' for a given parameter due to sparse or uninformative sampling,
     #' then most of the population variance is due
-    #' to this variance and shrinkage of the EBE variance is high because 
+    #' to this variance and shrinkage of the EBE variance is high because
     #' individual posterior estimates
     #' shrink towards the population mean.
     shrinkage = NULL,
@@ -489,7 +503,7 @@ PM_final <- R6::R6Class(
     #' @field data A data frame combining all the above fields as its columns
     data = NULL,
     #' @description
-    #' Create new object populated with final cycle information 
+    #' Create new object populated with final cycle information
     #' @details
     #' Creation of new `PM_final` object is automatic and not generally necessary
     #' for the user to do.
@@ -516,7 +530,7 @@ PM_final <- R6::R6Class(
       self$gridpts <- final$gridpts
       self$nsub <- final$nsub
       self$ab <- final$ab
-      class(self) <- c(c("NPAG", "IT2B")[1+as.numeric(is.null(self$popPoints))], class(self))
+      class(self) <- c(c("NPAG", "IT2B")[1 + as.numeric(is.null(self$popPoints))], class(self))
     },
     #' @description
     #' Summary method
@@ -538,12 +552,12 @@ PM_final <- R6::R6Class(
 )
 
 #' Wrapper function for summmary.PMfinal
-#' 
+#'
 #' This redirects to summary.PMfinal for PM_final R6 objects
-#' 
+#'
 #' See [summary.PMfinal]. Alternative way to summarize is
 #' `PM_result$final$summary()`.
-#' 
+#'
 #' @param obj The *PM_final* object to summarize
 #' @param ... Arguments passed to [summary.PMfinal]
 #' @return A [summary.PMfinal] object
@@ -554,14 +568,14 @@ summary.PM_final <- function(obj, ...) {
 
 
 #' Pmetrics Run Cycle Information
-#' 
+#'
 #' Contains the cycle information after a run.
-#' 
+#'
 #' @details
 #' This contains the output of [makeCycle] after a run, which
 #' generates information suitable for analysis and plotting of cycle information.
 #' Each field corresponds to a column in the complete data frame.
-#' 
+#'
 #' To manipulate the entire data frame,
 #' use the `data` field, e.g. `final <- run1$cycle$data %>% slice_tail(n=1)`. If
 #' you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
@@ -573,20 +587,20 @@ PM_cycle <- R6::R6Class(
   public <- list(
     #' @field names Vector of names of the random parameters
     names = NULL,
-    #' @field cynum Vector cycle numbers, which may start at numbers greater 
+    #' @field cynum Vector cycle numbers, which may start at numbers greater
     #' than 1 if a non-uniform prior was specified for the run (NPAG only)
     cynum = NULL,
     #' @field ll Matrix of cycle number and -2*Log-likelihood at each cycle
     ll = NULL,
     #' @field gamlam A matrix of cycle number and gamma or lambda at each cycle
     gamlam = NULL,
-    #' @field mean A matrix of cycle number and the mean of each random parameter 
+    #' @field mean A matrix of cycle number and the mean of each random parameter
     #' at each cycle, normalized to initial mean
     mean = NULL,
     #' @field sd A matrix of cycle number and the standard deviation of each random parameter
     #' at each cycle,  normalized to initial standard deviation
     sd = NULL,
-    #' @field median A matrix of cycle number and the median of each random 
+    #' @field median A matrix of cycle number and the median of each random
     #' parameter at each cycle,  normalized to initial median
     median = NULL,
     #' @field aic A matrix of cycle number and Akaike Information Criterion at each cycle
@@ -596,7 +610,7 @@ PM_cycle <- R6::R6Class(
     #' @field data A data frame combining all the above fields as its columns
     data = NULL,
     #' @description
-    #' Create new object populated with  cycle information 
+    #' Create new object populated with  cycle information
     #' @details
     #' Creation of new `PM_cycle` object is automatic and not generally necessary
     #' for the user to do.
@@ -625,17 +639,17 @@ PM_cycle <- R6::R6Class(
 )
 
 #' Population predictions at short intervals
-#' 
-#' Contains the population predictions at short intervals 
+#'
+#' Contains the population predictions at short intervals
 #' specified as an argument to [PM_fit$run]. Default is every 12 minutes.
-#' 
-#' Contains the results of [makePop], which is a 
-#' data frame with population predicted outputs for all subjects. 
+#'
+#' Contains the results of [makePop], which is a
+#' data frame with population predicted outputs for all subjects.
 #' To provide a more traditional experience in R,
-#' the data frame is separated by columns into fields, e.g. `id` or `time`. This 
-#' allows you to access them in an S3 way, e.g. `run1$pop$time` if `run1` is a 
-#' `PM_result` object. 
-#' 
+#' the data frame is separated by columns into fields, e.g. `id` or `time`. This
+#' allows you to access them in an S3 way, e.g. `run1$pop$time` if `run1` is a
+#' `PM_result` object.
+#'
 #' However, if you wish to manipulate the entire data frame,
 #' use the `data` field, e.g. `trough <- run1$pop$data %>% filter(time == 24)`. If
 #' you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
@@ -661,7 +675,7 @@ PM_pop <- R6::R6Class(
     #' @field data A data frame combining all the above fields as its columns
     data = NULL,
     #' @description
-    #' Create new object populated with population predicted data at 
+    #' Create new object populated with population predicted data at
     #' regular, frequent intervals
     #' @details
     #' Creation of new `PM_pop` object is automatic and not generally necessary
@@ -678,7 +692,7 @@ PM_pop <- R6::R6Class(
     },
     #' @description
     #' Calculate AUC
-    #' @details 
+    #' @details
     #' See [makeAUC]
     #' @param data The object to use for AUC calculation
     #' @param ... Arguments passed to [makeAUC]
@@ -689,11 +703,11 @@ PM_pop <- R6::R6Class(
 )
 
 #' Contains covariate data
-#' 
+#'
 #' Contains a data frame with subject-specific covariate data output
 #' from [makeCov]
-#' 
-#' For each subject, [makeCov] extracts covariate information and 
+#'
+#' For each subject, [makeCov] extracts covariate information and
 #' Bayesian posterior parameter estimates.
 #' This output of this function is suitable for exploration of covariate-
 #' parameter, covariate-time, or parameter-time relationships.
@@ -708,12 +722,12 @@ PM_cov <- R6::R6Class(
     #' * time Times of covariate observations
     #' * covnames... Columns with each covariate observations in the dataset for each subject and `time`
     #' * parnames... Columns with each parameter in the model and the `icen` summary
-    #' for each subject, replicated as necessary for covariate observation times and duplicated for Bayesian 
-    #' parameter means and medians 
+    #' for each subject, replicated as necessary for covariate observation times and duplicated for Bayesian
+    #' parameter means and medians
     #' * icen The type of summarized Bayesian posterior individual parameter values: mean or median
     data = NULL,
     #' @description
-    #' Create new object populated with covariate-parameter information 
+    #' Create new object populated with covariate-parameter information
     #' @details
     #' Creation of new `PM_cov` object is automatic and not generally necessary
     #' for the user to do.
@@ -749,12 +763,12 @@ PM_cov <- R6::R6Class(
 )
 
 #' Wrapper function for summmary.PMcov
-#' 
+#'
 #' This redirects to summary.PMcov for PM_final R6 objects
-#' 
+#'
 #' See [summary.PMcov]. Alternative way to summarize is
 #' `PM_result$cov$summary()`.
-#' 
+#'
 #' @param obj The *PM_cov* object to summarize
 #' @param ... Arguments passed to [summary.PMcov]
 #' @return A [summary.PMcov] object
