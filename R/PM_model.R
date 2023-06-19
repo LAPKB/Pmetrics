@@ -207,6 +207,10 @@ PM_Vmodel <- R6::R6Class("PM_model",
           cat("\n", sp(1), "$sec\n", paste0(sp(2), "[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = "\n "))
           cat("\n")
         } else if (x == "dif" | x == "eqn") {
+          if(is.null(mlist$eqn)){
+            cat("Please change the name of your #dif block to #eqn.")
+            mlist$eqn <- mlist$dif
+          }
           cat("\n", sp(1), "$eqn\n", paste0(sp(2), "[", 1:length(mlist$eqn), "] \"", mlist$eqn, "\"", collapse = "\n "))
           cat("\n")
         } else if (x == "lag") {
