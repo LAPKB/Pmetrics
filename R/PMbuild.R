@@ -109,9 +109,9 @@ PMbuild <- function(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE) 
     }
   } else if (getPMoptions()$backend == "rust") {
     if (is_rustup_installed()) {
-      cat("Rustup was detected in your system, Ferching dependencies and building base project.\n")
-      system("rustup install nightly")
-      system("rustup default nightly")
+      cat("Rustup was detected in your system, Fetching dependencies and building base project.\n")
+      system("rustup install stable")
+      system("rustup default stable")
       cwd <- getwd()
       # This might not work if the folder is deleted afther the R Session is closed
       # If that is the case, we should create a folder inside the Pmetrics Package folder
@@ -119,7 +119,7 @@ PMbuild <- function(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE) 
       system("cargo new template")
       setwd("template")
       # system("cd template")
-      system("cargo add --git https://github.com/Siel/ode-solvers --branch mut_state")
+      system("cargo add --git https://github.com/Siel/ode-solvers --branch mut_system")
       system("cargo add --git https://github.com/LAPKB/NPcore")
       system("cargo add eyre")
       system("cargo build --release")
@@ -195,6 +195,10 @@ PMbuild <- function(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE) 
 
 is_rustup_installed <- function() {
   flag <- system("which rustup")
+  # Sometimes R does not find rustup even if it is installed,
+  # Fix: create a symlink to any of the folders watched by system("echo $PATH")
+  # for rustup and cargo
+  # We cannot do it automatically because it requires elevated permissions
   if (flag == 0) {
     return(T)
   } else {
