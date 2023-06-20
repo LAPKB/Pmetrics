@@ -102,7 +102,6 @@ fn main() -> Result<()> {
     start(
         Engine::new(Ode {}),
         "config.toml".to_string(),
-        </c>,
     )?;
     Ok(())
 }
