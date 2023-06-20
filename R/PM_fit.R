@@ -218,7 +218,9 @@ PM_fit <- R6::R6Class("PM_fit",
       })
 
       arglist$parameter_block <- paste0(unlist(pars), collapse = "\n")
-
+      arglist$poly_coeff <-
+        self$model$model_list$out$Y1$err$assay$coefficients %>%
+        paste0(collapse = ",")
       #### Generate config.toml #####
       toml_template <- stringr::str_glue(
         "[paths]",
@@ -238,6 +240,7 @@ PM_fit <- R6::R6Class("PM_fit",
         "[error]",
         "value = 0.0",
         "class = \"additive\"",
+        "poly = [{poly_coeff}]",
         .envir = arglist,
         .sep = "\n"
       )
