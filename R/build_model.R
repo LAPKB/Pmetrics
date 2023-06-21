@@ -154,7 +154,7 @@ build_model <- function(...) {
                    column(5,
                           radioButtons("ab_msd_cv",
                                        "",
-                                       choices = c("Range", "Mean/SD", "Mean/CV%"),
+                                       choices = c("Range", "Mean/CV%", "Mean/SD"),
                                        inline = TRUE,
                                        selected = "Range"
                           )
@@ -630,8 +630,8 @@ build_model <- function(...) {
                      purrr::walk(1:npar,
                                  ~{
                                    store[[paste0("var_name_",.x)]] <- names(model$pri)[.x]
-                                   store[[paste0("var_a_",.x)]] <- ifelse(abmsd()=="Range", model$pri[[.x]]$min, model$pri[[.x]]$mean)
-                                   store[[paste0("var_b_",.x)]] <- ifelse(abmsd()=="Range", model$pri[[.x]]$max, model$pri[[.x]]$sd)
+                                   store[[paste0("var_a_",.x)]] <- ifelse(abmsdcv()=="Range" | abmsdcv()=="Mean/CV%", model$pri[[.x]]$min, model$pri[[.x]]$mean)
+                                   store[[paste0("var_b_",.x)]] <- ifelse(abmsdcv()=="Range" | abmsdcv()=="Mean/CV%", model$pri[[.x]]$max, model$pri[[.x]]$sd)
                                    store[[paste0("var_constant_",.x)]] <- model$pri[[.x]]$constant
                                    store[[paste0("var_gtz_",.x)]] <- model$pri[[.x]]$gtz
                                  })
@@ -965,9 +965,13 @@ build_model <- function(...) {
                                                     is.na(input[[paste0("var_b_",.x)]])  ~ paste0("fixed(", input[[paste0("var_a_",.x)]]),
                                                     abmsdcv() == "Range" ~ paste0("ab(",input[[paste0("var_a_",.x)]], ", ", input[[paste0("var_b_",.x)]]),
                                                     abmsdcv() == "Mean/SD" ~ paste0("msd(",input[[paste0("var_a_",.x)]], ", ", input[[paste0("var_b_",.x)]]),
-                                                    abmsdcv() == "Mean/CV%" ~ paste0("msd(",input[[paste0("var_a_",.x)]], ", ", 
-                                                                                     round(sqrt(log(((as.numeric(input[[paste0("var_b_",.x)]])/100))**2 + 1)),3)
-                                                    )
+                                                    abmsdcv() == "Mean/CV%" ~ {
+                                                      theta <- input[[paste0("var_a_",.x)]]
+                                                      omega <- sqrt(log(((as.numeric(input[[paste0("var_b_",.x)]])/100))**2 + 1))
+                                                      a <- round(theta * exp(-3*omega),3)
+                                                      b <- round(theta * exp(3*omega),3)
+                                                      paste0("ab(",a, ", ",b)
+                                                    }
                                                   ),
                                                   if(!is.null(input[[paste0("var_b_",.x)]]) &&
                                                      is.na(input[[paste0("var_b_",.x)]]) &&
@@ -1365,27 +1369,39 @@ build_model <- function(...) {
           list(
             h4("Primary Parameters"),
             markdown("
-            * Pmetrics will estimate distributions for these parameters alone.
+            * Pmetrics estimates distributions for primary parameters only.
                Choose the number of parameters, whether to parameterize as range,
-               mean/SD, or mean/CV% and enter names."),
-            HTML("<ul><li>"),
-            withMathJax("Mean/CV% aids extrapolation from
-                      parametric models reporting parameters as $\\theta$ and CV%,
-                      where $SD = \\omega = \\sqrt{log((\\frac{CV%}{100})^2 + 1)}$"),
-            HTML("</li></ul>"),
+               mean/CV%, or mean/SD and enter names.
+              * Range is the most common way to specify prior model parameter values
+                     with a nonparametric statistical approach."),
+            HTML("<ul><ul><li>"),
+            withMathJax("Mean/CV% is the most common way to specify prior model parameter values
+            with a parametric statistical approach. In this model, primary parameters are
+            described as a typical (mean) value $\\theta$ in the population, distributed with
+            interindividual variability, $\\eta$, assumed to be log-normally distributed with
+            variance $\\omega^2$, such that an individual j has a parameter value of 
+            $\\theta * e^{\\eta_j}$. 
+            When reported as CV%, $\\omega = \\sqrt{log((\\frac{CV%}{100})^2 + 1)}$,
+            from the entered $\\theta$ and CV%, Pmetrics will calculate a range 
+            for the parameter  as $[\\theta * e^{-3\\omega}, \\theta * e^{3\\omega}]$"),
+            HTML("</li><li>"),
+            withMathJax("Mean/SD is the least common way to specify prior model parameter values
+                        with a parameteric statistical approach because it implies an additive model
+                        such that individual j has a parameter value of $\\theta + \\eta_j$, which
+                        of course can be negative. For this reason, it is far more common to use
+                        the exponential prior, typically reported as mean/CV%."),
+            HTML("</li></ul></ul>"),
             markdown("
             * Parameters are assumed to be random
-               with unknown mean/variance. If a value is entered for either *Min* or *Mean*
-                 but *Max*/*SD*/*CV%* is blank, the parameter will be considered
-               as *Fixed*, which means the same but unknown value in the population
-               with unknown mean, zero variance. The entered value will be the starting
-               value for the optimization. When a parameter is fixed, checking
-               *Constant* will make the entered value the same for the population
-               and it will not be optimized, i.e., known mean, zero variance.
-               * Parameters can also
-               be marked as *GTZ* or greater than zero, if they are to be kept positive.
-               This is only relevant for parametric estimation, as nonparametric estimation
-               will strictly respect boundaries."
+            with unknown mean/variance. If a value is entered for either *Min* or *Mean*
+            but *Max*/*SD*/*CV%* is blank, the parameter will be considered
+            as *Fixed*, which means the same but unknown value in the population
+            with unknown mean, zero variance. The entered value will be the starting
+            value for the optimization. When a parameter is fixed, checking
+            *Constant* will make the entered value the same for the population
+            and it will not be optimized, i.e., known mean, zero variance.
+            * Parameters can also be marked as *GTZ* or greater than zero, if they are to be kept positive.
+            This is only relevant for parametric estimation, as nonparametric estimation will strictly respect boundaries."
                      
             )
           )
