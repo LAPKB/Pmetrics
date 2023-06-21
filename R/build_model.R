@@ -38,14 +38,23 @@ build_model <- function(...) {
       #Model components
       #  #Formatting
       tags$head(
-        tags$style(".alert {padding: 20px; background-color: #F44336; color: white;}",
-                   ".success {padding: 20px; background-color: #04AA6D; color: white;}",
-                   ".closebtn {margin-left: 12px; color: white; font-weight: bold; float: right; font-size: 22px; line-height: 20px; cursor: pointer; transition: 0.3s;}",
-                   ".closebtn:hover {color: black;}"
-                   
-        )
+        tags$style(HTML(
+          ".alert {padding: 20px; background-color: #F44336; color: white;}",
+          ".success {padding: 20px; background-color: #04AA6D; color: white;}",
+          ".info {padding: 5px 20px 5px 5px; background-color: #3498db; color: white; font-size: 16px;}",
+          ".closebtn {margin-left: 12px; color: white; font-weight: bold; float: right; font-size: 22px; line-height: 20px; cursor: pointer; transition: 0.3s;}",
+          ".closebtn:hover {color: black;}",
+          ".btn-help {display:block; color: white; padding: 2px 10px 2px 10px; text-align: center; border-radius: 100%; border: 1px solid DodgerBlue; }"
+          
+        )),
+        tags$div(HTML("<script type='text/x-mathjax-config'>
+                MathJax.Hub.Config({
+                tex2jax: {inlineMath: [['$','$']], processEscapes: true}
+                });
+                </script>
+                "))
+        
       ),
-      #uiOutput("msg"),
       
       
       navlistPanel(
@@ -53,19 +62,12 @@ build_model <- function(...) {
         widths = c(3, 9),
         #tabPanel: Model Library
         tabPanel("Model Library",
-                 markdown("INSTRUCTIONS: Choose a model from the library or load 
-             one of your own previously created models to populate
-             model fields. Using components to the left, you can edit the
-             fields, or define them yourself for any level of customization.
-             It's best to define relevant components in the menu order from
-                      top to bottom."),
-                 markdown("If you don't wish to use a model from the library, and you
-                      don't have a prior model file, start with the PRImary tab."),
-                 markdown("You can also load a data file, which will be used to determine
-                          the covariates and maximum number of inputs."),
-                 markdown("If you load both model and data files, covariates in the data file
-                          will be used."),
-                 hr(style = "border-top: 1px solid #FFFFFF;"),
+                 actionButton(
+                   "help_library",
+                   "",
+                   icon = icon("info"),
+                   class = "btn-help"
+                 ),
                  fluidRow(
                    column(6,
                           h2("Previous Model"),
@@ -130,22 +132,12 @@ build_model <- function(...) {
         ), #end tabPanel: Model Library
         #tabPanel: Primary
         tabPanel("PRImary",
-                 markdown("Pmetrics will estimate distributions for these parameters alone.
-                      Choose the number of parameters, whether to parameterize as ranges
-                      or means/SDs, and enter names."),
-                 markdown("Parameters are assumed to be random
-                      (unknown mean/variance). If a value is entered for either *Min* or *Mean*
-                      but *Max*/*SD* is blank (delete the contents) or contains `NA`, the parameter will be considered
-                      as *Fixed*, which means the same but unknown value in the population
-                      (unknown mean, zero variance). The entered value will be the starting
-                      value for the optimization. When a parameter is fixed, checking
-                      *Constant* will make the entered value the same for the population
-                      and it will not be optimized (known mean, zero variance)."),
-                 markdown("Parameters can also
-                      be marked as *GTZ* or greater than zero, if they are to be kept positive.
-                      This is only relevant for parametric estimation, as nonparametric estimation
-                      will strictly respect boundaries."),
-                 hr(style = "border-top: 1px solid #FFFFFF;"),
+                 actionButton(
+                   "help_pri",
+                   "",
+                   icon = icon("info"),
+                   class = "btn-help"
+                 ),
                  fluidRow(
                    column(4, h5("Number of primary parameters:")),
                    column(4, h5("Specify as:"))
@@ -160,9 +152,9 @@ build_model <- function(...) {
                           )
                    ),
                    column(5,
-                          radioButtons("ab_msd",
+                          radioButtons("ab_msd_cv",
                                        "",
-                                       choices = c("Range", "Mean/SD"),
+                                       choices = c("Range", "Mean/SD", "Mean/CV%"),
                                        inline = TRUE,
                                        selected = "Range"
                           )
@@ -177,7 +169,12 @@ build_model <- function(...) {
         #tabPanel: Covariates
         
         tabPanel("COVariates",
-                 htmlOutput("cov_instructions"),
+                 actionButton(
+                   "help_cov",
+                   "",
+                   icon = icon("info"),
+                   class = "btn-help"
+                 ),
                  uiOutput("cov"),
                  uiOutput("bottom_cov"),
                  
@@ -185,6 +182,12 @@ build_model <- function(...) {
         ), #end tabPanel: Covariates
         #tabPanel: Secondary
         tabPanel("SECondary",
+                 actionButton(
+                   "help_sec",
+                   "",
+                   icon = icon("info"),
+                   class = "btn-help"
+                 ),
                  textAreaInput("secVar",
                                "Secondary variable definitions:",
                                rows = NULL),
@@ -201,10 +204,12 @@ build_model <- function(...) {
         # ), #end tabPanel: Bolus
         #tabPanel: Initial Conditions
         tabPanel("INItial Conditions",
-                 markdown("If any Primary or Secondary parameters are initial conditions,
-                      choose them here and edit the code if needed. You can only
-                      select as many parameters as you have model compartments (e.g. equations)."),
-                 hr(style = "border-top: 1px solid #FFFFFF;"),
+                 actionButton(
+                   "help_ini",
+                   "",
+                   icon = icon("info"),
+                   class = "btn-help"
+                 ),
                  fluidRow(
                    uiOutput("ini"),
                    textAreaInput("iniCond",
@@ -218,10 +223,12 @@ build_model <- function(...) {
         ), #end tabPanel: Initial Conditions
         #tabPanel: FA (bioavailability)
         tabPanel("FA (bioavailability)",
-                 markdown("If any Primary or Secondary parameters are bioavailability,
-                      choose them here and edit the code if needed. You can only
-                      select as many parameters as you have inputs (e.g. drugs)."),
-                 hr(style = "border-top: 1px solid #FFFFFF;"),
+                 actionButton(
+                   "help_fa",
+                   "",
+                   icon = icon("info"),
+                   class = "btn-help"
+                 ),
                  fluidRow(
                    uiOutput("fa"),
                    textAreaInput("FA",
@@ -235,10 +242,12 @@ build_model <- function(...) {
         #tabPanel: Lag
         
         tabPanel("LAG time",
-                 markdown("If any Primary or Secondary parameters are lag times,
-                      choose them here and edit the code if needed. You can only
-                      select as many parameters as you have inputs (e.g. drugs)."),
-                 hr(style = "border-top: 1px solid #FFFFFF;"),
+                 actionButton(
+                   "help_lag",
+                   "",
+                   icon = icon("info"),
+                   class = "btn-help"
+                 ),
                  fluidRow(
                    uiOutput("lag"),
                    textAreaInput("lagTime",
@@ -252,15 +261,12 @@ build_model <- function(...) {
         ), #end tabPanel: Lag
         #tabPanel: Equations
         tabPanel("EQUations",
-                 markdown(c("Write the differential equations for your model here.",
-                            "Use `dX[i]` for change in compartment amounts, where i is the compartment number, e.g. dX[1] or dX[2].",
-                            "Compartment amounts are referred to as `X[i]`, e.g. X[1] or X[2].",
-                            "Use `BOLUS[j]` for bolus input j and `RATEIV[k]` for infusion k.",
-                            "j and k correspond to the INPUT column in the data file, which is usually omitted and assumed to be 1 for all doses.",
-                            "The DUR column in the data file determines whether a dose is treated as a BOLUS (DUR = 0) or RATEIV (DUR > 0).",
-                            "Any variable defined in PRI, COV, or SEC may be used.",
-                            "Example: `dX[1] = RATEIV[1] * WT - Ke * X[1]`")),
-                 hr(style = "border-top: 1px solid #FFFFFF;"),
+                 actionButton(
+                   "help_eqn",
+                   "",
+                   icon = icon("info"),
+                   class = "btn-help"
+                 ),
                  fluidRow(
                    column(4,
                           textAreaInput("modEq",
@@ -273,10 +279,12 @@ build_model <- function(...) {
         ), #end tabPanel: Equations
         #tabPanel: Outputs
         tabPanel("OUTputs",
-                 markdown("Outputs are referred to as *Y[i]*, where *i* is the output equation number, e.g. Y[1]."),
-                 markdown("Compartments are referred to as *X[j]*, where *j* is the compartment number, e.g. X[1]."),
-                 markdown("Any variable defined in PRI, COV, or SEC may be used, e.g. Y[1] = X[1]/V."),
-                 hr(style = "border-top: 1px solid #FFFFFF;"),
+                 actionButton(
+                   "help_out",
+                   "",
+                   icon = icon("info"),
+                   class = "btn-help"
+                 ),
                  numericInput("nout",
                               "Number of output equations:",
                               value = 1,
@@ -670,8 +678,8 @@ build_model <- function(...) {
       #PRIMARY PARAMETERS COMPONENT
       
       #get user choice for ab vs msd
-      abmsd <- reactive({
-        input$ab_msd
+      abmsdcv <- reactive({
+        input$ab_msd_cv
       })
       
       #save primary values
@@ -702,14 +710,20 @@ build_model <- function(...) {
                        column(2,
                               numericInput(
                                 paste0("var_a_",.x),
-                                ifelse(abmsd()=="Range","Min:","Mean:"),
+                                dplyr::case_when(
+                                  abmsdcv()=="Range" ~ "Min:",
+                                  abmsdcv()=="Mean/SD" ~ "Mean:",
+                                  abmsdcv()=="Mean/CV%" ~ "Mean:"),
                                 value = store[[paste0("var_a_",.x)]]
                               )
                        ),
                        column(2,
                               numericInput(
                                 paste0("var_b_",.x),
-                                ifelse(abmsd()=="Range","Max:","SD:"),
+                                dplyr::case_when(
+                                  abmsdcv()=="Range" ~ "Max:",
+                                  abmsdcv()=="Mean/SD" ~ "SD:",
+                                  abmsdcv()=="Mean/CV%" ~ "CV%:"),
                                 value = store[[paste0("var_b_",.x)]]
                               )
                        ),
@@ -738,26 +752,6 @@ build_model <- function(...) {
       
       
       #COVARIATE COMPONENT
-      
-      observe(observeEvent(ncov(),
-                           {
-                             output$cov_instructions <- renderUI({
-                               if(ncov() > 0) {
-                                 tagList(p(paste0(cov_source(),
-                                                  " Check any covariates which are constant between measurements.",
-                                                  " Leave unchecked if covariate is linearly interpolated between measurements.")),
-                                         hr(style = "border-top: 1px solid #FFFFFF;")
-                                 )
-                               } else {
-                                 p("No covariates available.",
-                                   " You can still type any covariate name you want in your model equations (Equation tab) for building purposes,
-        but it will not generate a functional model with an appropriate cov block. For that, start
-        with data or prior model, and the covariates will be loaded automatically.")
-                               }
-                             })
-                           }
-      )
-      )
       
       #set default covariate values based on data
       output$cov <- renderUI({
@@ -856,7 +850,6 @@ build_model <- function(...) {
       
       
       #EQN COMPONENT
-      
       
       observeEvent(input$modEq,{
         alg <- alg_mod()
@@ -970,8 +963,11 @@ build_model <- function(...) {
                                                   " = ",
                                                   dplyr::case_when(
                                                     is.na(input[[paste0("var_b_",.x)]])  ~ paste0("fixed(", input[[paste0("var_a_",.x)]]),
-                                                    abmsd() == "Range" ~ paste0("ab(",input[[paste0("var_a_",.x)]], ", ", input[[paste0("var_b_",.x)]]),
-                                                    abmsd() == "Mean/SD" ~ paste0("msd(",input[[paste0("var_a_",.x)]], ", ", input[[paste0("var_b_",.x)]])
+                                                    abmsdcv() == "Range" ~ paste0("ab(",input[[paste0("var_a_",.x)]], ", ", input[[paste0("var_b_",.x)]]),
+                                                    abmsdcv() == "Mean/SD" ~ paste0("msd(",input[[paste0("var_a_",.x)]], ", ", input[[paste0("var_b_",.x)]]),
+                                                    abmsdcv() == "Mean/CV%" ~ paste0("msd(",input[[paste0("var_a_",.x)]], ", ", 
+                                                                                     round(sqrt(log(((as.numeric(input[[paste0("var_b_",.x)]])/100))**2 + 1)),3)
+                                                    )
                                                   ),
                                                   if(!is.null(input[[paste0("var_b_",.x)]]) &&
                                                      is.na(input[[paste0("var_b_",.x)]]) &&
@@ -1291,6 +1287,7 @@ build_model <- function(...) {
       message <- reactiveVal("")
       alert_count <- reactiveVal(0)
       success_count <- reactiveVal(0)
+      help_count <- reactiveVal(0)
       
       #alerts
       observeEvent(alert_count(),
@@ -1306,6 +1303,8 @@ build_model <- function(...) {
                        )
                      )
                    })
+      
+      
       #success
       observeEvent(success_count(),
                    ignoreInit = TRUE,
@@ -1321,25 +1320,214 @@ build_model <- function(...) {
                      )
                    })
       
+      #help
+      observeEvent(help_count(),
+                   ignoreInit = TRUE,
+                   {
+                     showModal(
+                       modalDialog(
+                         size = "l",
+                         div(
+                           class = "info",
+                           message()
+                         ) #end div
+                       )
+                     )
+                   })
       
+      #help messages
+      observeEvent(input$help_library,{
+        message(
+          list(
+            h4("Model Library"),
+            markdown("
+             * Choose a model from the library or load 
+             one of your own previously created models to populate
+             model fields.
+             * Using components to the left, you can edit the
+             fields, or define them yourself for any level of customization.
+             It's best to define relevant components in the menu order from
+             top to bottom.
+             * If you don't wish to use a model from the library, and you
+             don't have a prior model file, start with the PRImary tab.
+             * You can also load a data file, which will be used to determine
+             the covariates and maximum number of inputs.
+             * If you load both model and data files, covariates in the data file
+             will be used.
+          ")
+          )
+        )
+        help_count(help_count() + 1)
+      })
       
+      observeEvent(input$help_pri,{
+        message(
+          list(
+            h4("Primary Parameters"),
+            markdown("
+            * Pmetrics will estimate distributions for these parameters alone.
+               Choose the number of parameters, whether to parameterize as range,
+               mean/SD, or mean/CV% and enter names."),
+            HTML("<ul><li>"),
+            withMathJax("Mean/CV% aids extrapolation from
+                      parametric models reporting parameters as $\\theta$ and CV%,
+                      where $SD = \\omega = \\sqrt{log((\\frac{CV%}{100})^2 + 1)}$"),
+            HTML("</li></ul>"),
+            markdown("
+            * Parameters are assumed to be random
+               with unknown mean/variance. If a value is entered for either *Min* or *Mean*
+                 but *Max*/*SD*/*CV%* is blank, the parameter will be considered
+               as *Fixed*, which means the same but unknown value in the population
+               with unknown mean, zero variance. The entered value will be the starting
+               value for the optimization. When a parameter is fixed, checking
+               *Constant* will make the entered value the same for the population
+               and it will not be optimized, i.e., known mean, zero variance.
+               * Parameters can also
+               be marked as *GTZ* or greater than zero, if they are to be kept positive.
+               This is only relevant for parametric estimation, as nonparametric estimation
+               will strictly respect boundaries."
+                     
+            )
+          )
+        )
+        help_count(help_count() + 1)
+      })
+      
+      observeEvent(input$help_cov,{
+        if(ncov() > 0) {
+          message(
+            list(
+              h4("Covariates"),
+              HTML("<ul><li>"),
+              cov_source(),
+              HTML("</li></ul>"),
+              markdown("
+                * Check any covariates which are constant between measurements.
+                * Leave unchecked if covariate is linearly interpolated between measurements         
+                "
+              )
+            )
+          )
+        } else {
+          message(
+            list(
+              h4("Covariates"),
+              markdown("
+              * No covariates available.
+              * You can still type any covariate name you want in your model equations (Equation tab) for building purposes,
+              but it will not generate a functional model with an appropriate cov block. For that, start
+              with data or prior model, and the covariates will be loaded automatically.
+              "
+              )
+            )
+          )
+        }
+        help_count(help_count() + 1)
+      })
+      
+      observeEvent(input$help_sec,{
+        message(
+          list(
+            h4("Secondary Parameters"),
+            markdown("
+            * Secondary variables are those that are defined by equations that are 
+            combinations of primary, covariates, and other secondary variables. 
+            * It is permissible to have conditional statements, but because expressions in
+            this block are translated into variable declarations, expressions other
+            than of the form `X = function(Y)` must be on a new line, prefixed by
+            `&` and contain only variables which have been previously defined in the
+            Primary, Covariate, or Secondary blocks.
+            * Examples: 
+              * `V = V0 * wt`
+              * `& IF(male == 1) CL = CL_m`
+            ")
+          )
+        )
+        help_count(help_count() + 1)
+      })
+      
+      observeEvent(input$help_ini,{
+        message(
+          list(
+            h4("Initial Conditions"),
+            markdown("
+            * If any Primary or Secondary parameters are initial conditions,
+            choose them here and edit the code if needed. 
+            * You can only select as many parameters as you have model compartments (e.g. equations).
+            ")
+          )
+        )
+        help_count(help_count() + 1)
+      })
+      
+      observeEvent(input$help_fa,{
+        message(
+          list(
+            h4("Bioavailability (FA)"),
+            markdown("
+            * If any Primary or Secondary parameters are bioavailability,
+            choose them here and edit the code if needed. 
+            * You can only select as many parameters as you have inputs (e.g. drugs).
+            "
+            )
+          )
+        )
+        help_count(help_count() + 1)
+      })
+      
+      observeEvent(input$help_lag,{
+        message(
+          list(
+            h4("Lag Time"),
+            markdown("
+            * If any Primary or Secondary parameters are lag times,
+            choose them here and edit the code if needed. 
+            * You can only select as many parameters as you have inputs (e.g. drugs).
+            "
+            )
+          )
+        )
+        help_count(help_count() + 1)
+      })
+      
+      observeEvent(input$help_eqn,{
+        message(
+          list(
+            h4("Equations"),
+            markdown("
+            * Write the differential equations for your model here.
+            * Use `dX[i]` for change in compartment amounts, where i is the compartment number, e.g. dX[1] or dX[2].
+            * Compartment amounts are referred to as `X[i]`, e.g. X[1] or X[2].
+            * Use `BOLUS[j]` for bolus input j and `RATEIV[k]` for infusion k.
+            * Indeces j and k correspond to the INPUT column in the data file, 
+            which is usually omitted and assumed to be 1 for all doses.
+            * The DUR column in the data file determines whether a dose is treated 
+            as a BOLUS (DUR = 0) or RATEIV (DUR > 0).
+            * Any variable defined in PRI, COV, or SEC may be used.
+            * Example: `dX[1] = RATEIV[1] * WT - Ke * X[1]`
+            "
+            )
+          )
+        )
+        help_count(help_count() + 1)
+      })
+      
+      observeEvent(input$help_out,{
+        message(
+          list(
+            h4("Outputs"),
+            markdown("
+            * Outputs are referred to as *Y[i]*, where *i* is the output equation number, e.g. Y[1]. 
+            * Compartments are referred to as *X[j]*, where *j* is the compartment number, e.g. X[1].
+            * Any variable defined in PRI, COV, or SEC may be used, e.g. Y[1] = X[1]/V.
+            "
+            )
+          )
+        )
+        help_count(help_count() + 1)
+      })
+      
+
     } #end server
   ) #end shinyApp
 } #end build_model
-
-
-
-
-#   file_path <- system.file("Shiny/ModelBuilder/app.R", package = "Pmetrics")
-#   #file_path <- "inst/Shiny/ModelBuilder/app.R" #comment out this when installed
-#   
-#   if (!nzchar(file_path)) stop("Shiny app not found")
-#   ui <- server <- NULL # avoid NOTE about undefined globals
-#   source(file_path, local = TRUE)
-#   server_env <- environment(server)
-#   server_env$data <- data
-#   
-#   app <- shiny::shinyApp(ui, server)
-#   shiny::runApp(app, ...)
-# }
-

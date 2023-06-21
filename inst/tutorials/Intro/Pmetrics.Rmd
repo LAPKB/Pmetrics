@@ -35,10 +35,14 @@ Try getting help for plot.PM_op().
 
 ```
 
-::: {#function-help-hint}
-**Hint:** You don't need to include the parentheses when asking for
-help.
-:::
+<!-- ::: {#function-help-hint} -->
+<!-- **Hint:** You don't need to include the parentheses when asking for -->
+<!-- help. -->
+<!-- ::: -->
+
+``` {r function_help-hint}
+You don't need to include the parentheses when asking for help.
+```
 
 ```{r function_help-solution}
 ?plot.PM_op
@@ -83,11 +87,11 @@ fit$run(intern = TRUE)
 
 run1 <- PM_load(1)
 # more code...
-# 
+
 # Run 2 - change parameter ranges.
-# 
+
 # more code...
-# 
+
 # Run 3...
 # ...
 )
@@ -95,8 +99,7 @@ run1 <- PM_load(1)
 
 Don't worry about the details now. We'll cover all this in the tutorial.
 In your scripts, including in the above example, you will need to tell R which 
-directory your files are
-in. This is called the "working directory" in R.
+directory your files are in. This is called the "working directory" in R.
 
 In this tutorial, you don't have to do this, but the command is:
 
