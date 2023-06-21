@@ -19,16 +19,16 @@ NPrun(
   aucint,
   idelta = 12,
   prior,
-  auto = T,
-  intern = F,
-  quiet = F,
-  overwrite = F,
-  nocheck = F,
+  auto = TRUE,
+  intern = FALSE,
+  quiet = FALSE,
+  overwrite = FALSE,
+  nocheck = FALSE,
   parallel = NA,
-  alq = F,
-  remote = F,
+  alq = FALSE,
+  remote = FALSE,
   server_address,
-  report = T
+  report = TRUE
 )
 }
 \arguments{
