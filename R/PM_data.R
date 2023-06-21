@@ -22,243 +22,329 @@
 #'
 #' There are a number of methods
 #' defined for a PM_data object, including to write the standard data back
-#' to a file for future use, to summarize and to plot the object, and to
+#' to a file for future use, to summarize and to plot the object, to
 #' conduct a non-compartmental analysis on the raw data using
-#' [makeNCA].
+#' [makeNCA], to calculate an AUC using [makeAUC], and to add event rows, which
+#' is particularly useful for making simulation templates on the fly.
 #'
 #' @export
 PM_data <- R6::R6Class("PM_data",
-  public <- list(
-    #' @field data Data frame containing the data to be modeled
-    data = NULL,
-    #' @field standard_data Data frame containing standardized version of the data
-    standard_data = NULL,
-    #' @description
-    #' Create new data object
-    #' @details
-    #' Creation of a new `PM_data` objects from a file or
-    #' a data frame. Data will be standardized and checked
-    #' automatically to a fully specified, valid data object.
-    #' @param ... Arguments to be passed further
-    #' @param data A quoted name of a file with full path if not
-    #' in the working directory, or an unquoted name of a data frame
-    #' in the current R environment.
-    #' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
-    #' them fail, use this parameter to specify the correct format as a
-    #' character vector whose
-    #' first element is date format and second is time. Use the following abbreviations:
-    #' * Y = 4 digit year
-    #' * y = 2 digit year
-    #' * m = decimal month (1, 2, ..., 12)
-    #' * d = decimal day (1, 2, ..., 31)
-    #' * H = hours (0-23)
-    #' * M = minutes (0-59)
-    #' Example: `format = c("myd", "mh")`. Not one of the tried combinations!
-    #' Always check to make sure that dates/times were parsed correctly and the
-    #' relative times in the `PM_data$standard_data` field look correct.
-    #' Other date/time formats are possible. See [lubridate::parse_date_time()] for these.
-    #' @param quiet Quietly validate. Default is `FALSE`.
-    #' @param validate Check for errors. Default is `TRUE`. Strongly recommended.
-    initialize = function(data = NULL, dt = NULL, quiet = FALSE, validate = TRUE) {
-      self$data <- if (is.character(data)) {
-        PMreadMatrix(data, quiet = T)
-      } else {
-        data
-      }
-      if (!is.null(self$data) && validate) {
-        self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)
-      }
-    },
-    #' @description
-    #' Write data to file
-    #' @details
-    #' Writes a delimited file (e.g. comma-separated)
-    #' from the `standard_data` field
-    #' @param file_name A quoted name of the file to create
-    #' with full path if not
-    #' in the working directory.
-    #' @param ... ARguments passed to PMwriteMatrix
-    write = function(file_name, ...) {
-      if(!is.null(self$standard_data)){
-        PMwriteMatrix(self$standard_data, file_name, ...)
-      } else {
-        cat("Create a validated PM_data object before writing.")
-      }
-    },
-    #' @description
-    #' Calculate AUC
-    #' @details
-    #' See [makeAUC].
-    #' @param ... Arguments passed to [makeAUC].
-    auc = function(...) {
-      if(!is.null(self$data)){
-        makeAUC(self, ...)
-      } else {
-        cat("Data have not been defined.")
-      }
-      
-    },
-    #' @description
-    #' Perform non-compartmental analysis
-    #' @details
-    #' See [makeNCA].
-    #' @param ... Arguments passed to [makeNCA].
-    nca = function(...) {
-      if(!is.null(self$data)){
-        makeNCA(self, ...)
-      } else {
-        cat("Data have not been defined.")
-      }
-    },
-    #' @description
-    #' Plot method
-    #' @details
-    #' See [plot.PMmatrix].
-    #' @param ... Arguments passed to [plot.PM_data]
-    plot = function(...) {
-      if(!is.null(self$data)){
-        plot.PM_data(self, ...)
-      } else {
-        cat("Data have not been defined.")
-      }
-    },
-    #' @description
-    #' Print method
-    #' @details
-    #' Displays the PM_data object in a variety of ways.
-    #' @param standard Display the standardized data if `TRUE`.
-    #' Default is `FALSE`.
-    #' @param viewer Display the Viewer if `TRUE`.
-    #' Default is \code{TRUE}.
-    #' @param ... Other arguments to [print.data.frame]. Only
-    #' passed if `viewer = FALSE`.
-    print = function(standard = F, viewer = T, ...) {
-      if (is.null(self$data)) {
-        cat("NULL data")
-        return(invisible(self))
-      }
-      if (standard) {
-        what <- self$standard_data
-        title <- "Standardized Data"
-      } else {
-        what <- self$data
-        title <- "Data"
-      }
-      if (viewer) {
-        View(what, title = title)
-      } else {
-        print(what, ...)
-      }
-      return(invisible(self))
-    },
-    #' @description
-    #' Summary method
-    #' @details
-    #' See [summary.PMmatrix].
-    #' @param ... Arguments passed to [summary.PMmatrix].
-    summary = function(...) {
-      if(!is.null(self$standard_data)){
-        summary.PMmatrix(self$standard_data, ...)
-      } else {
-        cat("Create a validated PM_data object before summarizing.")
-      }
-    }
-  ), # end public
-  private = list(
-    validate = function(dataObj, quiet, dt) {
-      dataObj_orig <- dataObj #keep the original to pass to PMcheck
-      dataNames <- names(dataObj)
-      standardNames <- getFixedColNames()
-
-      covNames <- dataNames[!dataNames %in% standardNames]
-      if ("date" %in% covNames) {
-        covNames <- covNames[-which(covNames == "date")]
-      }
-
-      mandatory <- c("id", "time", "dose", "out")
-      missingMandatory <- sapply(mandatory, function(x) !x %in% dataNames)
-      if (any(missingMandatory)) {
-        stop(paste0("Your data are missing these mandatory columns: ", mandatory[missingMandatory]))
-      }
-
-      msg <- c("DATA STANDARDIZATION REPORT:\n\n", "Data are in full format already.\n")
-
-      if (!"evid" %in% dataNames) {
-        dataObj$evid <- ifelse(is.na(dataObj$dose), 0, 1)
-        msg <- c(msg, "EVID inferred as 0 for observations, 1 for doses.\n")
-      }
-
-      if ("date" %in% dataNames) {
-        relTime <- PMmatrixRelTime(dataObj, format = dt)
-        dataObj$time <- relTime$relTime
-        dataObj <- dataObj %>% select(-date)
-        msg <- c(msg, paste0("Dates and clock times converted to relative decimal times using ", attr(relTime, "dt_format"), ".\n"))
-      }
-
-      if (!"dur" %in% dataNames) {
-        dataObj$dur <- ifelse(is.na(dataObj$dose), NA, 0)
-        msg <- c(msg, "All doses assumed to be oral (DUR = 0).\n")
-      }
-
-      if (!"addl" %in% dataNames) {
-        dataObj$addl <- NA
-        msg <- c(msg, "ADDL set to missing for all records.\n")
-      }
-
-      if (!"ii" %in% dataNames) {
-        dataObj$ii <- NA
-        msg <- c(msg, "II set to missing for all records.\n")
-      }
-
-      if (!"input" %in% dataNames) {
-        dataObj$input <- ifelse(is.na(dataObj$dose), NA, 1)
-        msg <- c(msg, "All doses assumed to be INPUT = 1.\n")
-      }
-
-      if (!"outeq" %in% dataNames) {
-        dataObj$outeq <- ifelse(is.na(dataObj$out), NA, 1)
-        msg <- c(msg, "All observations assumed to be OUTEQ = 1.\n")
-      }
-
-      errorCoef <- c("c0", "c1", "c2", "c3")
-      missingError <- sapply(errorCoef, function(x) !x %in% dataNames)
-      if (any(missingError)) {
-        dataObj$c0 <- dataObj$c1 <- dataObj$c2 <- dataObj$c3 <- NA
-        msg <- c(msg, "One or more error coefficients not specified. Error in model object will be used.\n")
-      }
-
-      # expand any ADDL > 0
-      # preserve original order (necessary for EVID=4)
-      dataObj$row <- 1:nrow(dataObj)
-      addl_lines <- dataObj %>% filter(!is.na(addl) & addl > 0)
-      if (nrow(addl_lines) > 0) {
-        new_lines <- addl_lines %>%
-          tidyr::uncount(addl, .remove = FALSE) %>%
-          group_by(id) %>%
-          mutate(time = ii * row_number() + time)
-
-        dataObj <- bind_rows(dataObj, new_lines) %>%
-          arrange(id, row, time) %>%
-          mutate(
-            addl = ifelse(addl == -1, -1, NA),
-            ii = ifelse(addl == -1, ii, NA)
-          ) %>%
-          select(!row)
-
-        msg <- c(msg, "ADDL > 0 rows expanded.\n")
-      }
-      dataObj <- dataObj %>% select(standardNames, all_of(covNames))
-      if (length(msg) > 2) {
-        msg <- msg[-2]
-      } # data were not in standard format, so remove that message
-      if (!quiet) {
-        cat(msg)
-      }
-
-      validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = TRUE, quiet = quiet)
-      return(validData)
-    } # end validate function
-  ) # end private
+                       public <- list(
+                         #' @field data Data frame containing the data to be modeled
+                         data = NULL,
+                         #' @field standard_data Data frame containing standardized version of the data
+                         standard_data = NULL,
+                         #' @description
+                         #' Create new data object
+                         #' @details
+                         #' Creation of a new `PM_data` objects from a file or
+                         #' a data frame. Data will be standardized and checked
+                         #' automatically to a fully specified, valid data object.
+                         #' @param ... Arguments to be passed further
+                         #' @param data A quoted name of a file with full path if not
+                         #' in the working directory, or an unquoted name of a data frame
+                         #' in the current R environment.
+                         #' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
+                         #' them fail, use this parameter to specify the correct format as a
+                         #' character vector whose
+                         #' first element is date format and second is time. Use the following abbreviations:
+                         #' * Y = 4 digit year
+                         #' * y = 2 digit year
+                         #' * m = decimal month (1, 2, ..., 12)
+                         #' * d = decimal day (1, 2, ..., 31)
+                         #' * H = hours (0-23)
+                         #' * M = minutes (0-59)
+                         #' Example: `format = c("myd", "mh")`. Not one of the tried combinations!
+                         #' Always check to make sure that dates/times were parsed correctly and the
+                         #' relative times in the `PM_data$standard_data` field look correct.
+                         #' Other date/time formats are possible. See [lubridate::parse_date_time()] for these.
+                         #' @param quiet Quietly validate. Default is `FALSE`.
+                         #' @param validate Check for errors. Default is `TRUE`. Strongly recommended.
+                         initialize = function(data = NULL, dt = NULL, quiet = FALSE, validate = TRUE) {
+                           self$data <- if (is.character(data)) {
+                             PMreadMatrix(data, quiet = T)
+                           } else {
+                             data
+                           }
+                           if (!is.null(self$data) && validate) {
+                             self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)
+                           }
+                         },
+                         #' @description
+                         #' Write data to file
+                         #' @details
+                         #' Writes a delimited file (e.g. comma-separated)
+                         #' from the `standard_data` field
+                         #' @param file_name A quoted name of the file to create
+                         #' with full path if not
+                         #' in the working directory.
+                         #' @param ... ARguments passed to PMwriteMatrix
+                         write = function(file_name, ...) {
+                           if(!is.null(self$standard_data)){
+                             PMwriteMatrix(self$standard_data, file_name, ...)
+                           } else {
+                             cat("Create a validated PM_data object before writing.")
+                           }
+                         },
+                         #' @description
+                         #' Calculate AUC
+                         #' @details
+                         #' See [makeAUC].
+                         #' @param ... Arguments passed to [makeAUC].
+                         auc = function(...) {
+                           if(!is.null(self$data)){
+                             makeAUC(self, ...)
+                           } else {
+                             cat("Data have not been defined.")
+                           }
+                           
+                         },
+                         #' @description
+                         #' Perform non-compartmental analysis
+                         #' @details
+                         #' See [makeNCA].
+                         #' @param ... Arguments passed to [makeNCA].
+                         nca = function(...) {
+                           if(!is.null(self$data)){
+                             makeNCA(self, ...)
+                           } else {
+                             cat("Data have not been defined.")
+                           }
+                         },
+                         #' @description
+                         #' Plot method
+                         #' @details
+                         #' See [plot.PMmatrix].
+                         #' @param ... Arguments passed to [plot.PM_data]
+                         plot = function(...) {
+                           if(!is.null(self$data)){
+                             plot.PM_data(self, ...)
+                           } else {
+                             cat("Data have not been defined.")
+                           }
+                         },
+                         #' @description
+                         #' Print method
+                         #' @details
+                         #' Displays the PM_data object in a variety of ways.
+                         #' @param standard Display the standardized data if `TRUE`.
+                         #' Default is `FALSE`.
+                         #' @param viewer Display the Viewer if `TRUE`.
+                         #' Default is \code{TRUE}.
+                         #' @param ... Other arguments to [print.data.frame]. Only
+                         #' passed if `viewer = FALSE`.
+                         print = function(standard = F, viewer = T, ...) {
+                           if (is.null(self$data)) {
+                             cat("NULL data")
+                             return(invisible(self))
+                           }
+                           if (standard) {
+                             what <- self$standard_data
+                             title <- "Standardized Data"
+                           } else {
+                             what <- self$data
+                             title <- "Data"
+                           }
+                           if (viewer) {
+                             View(what, title = title)
+                           } else {
+                             print(what, ...)
+                           }
+                           return(invisible(self))
+                         },
+                         #' @description
+                         #' Summary method
+                         #' @details
+                         #' See [summary.PMmatrix].
+                         #' @param ... Arguments passed to [summary.PMmatrix].
+                         summary = function(...) {
+                           if(!is.null(self$standard_data)){
+                             summary.PMmatrix(self$standard_data, ...)
+                           } else {
+                             cat("Create a validated PM_data object before summarizing.")
+                           }
+                         },
+                         #' @description
+                         #' Add events to PM_data object
+                         #' @details
+                         #' Add lines to a PM_data object by supplying named columns and values.
+                         #' `ID` and `time` are always required. Other values will be added as supplied
+                         #' or `NA` if missing. If the PM_data object already contains data, any columns
+                         #' added that are not in the original data will be added and set to `NA`.
+                         #' Adding covariates is supported, but since valid subject records in Pmetrics 
+                         #' with covariates must contain non-missing values at time 0, covariates should
+                         #' be included with the first call to `$addEvent()`. This method can
+                         #' be chained with `PM_data$new()` to create a blank data object and then add rows.
+                         #' This can be particularly useful for creating simulation templates.
+                         #' `ADDL` and `II` are supported. Multiple `$addEvent()` calls can also be chained.
+                         #' See the example.
+                         #' @param ... Column names and values.
+                         #' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
+                         #' them fail, use this parameter to specify the correct format as a
+                         #' character vector whose
+                         #' first element is date format and second is time. Use the following abbreviations:
+                         #' * Y = 4 digit year
+                         #' * y = 2 digit year
+                         #' * m = decimal month (1, 2, ..., 12)
+                         #' * d = decimal day (1, 2, ..., 31)
+                         #' * H = hours (0-23)
+                         #' * M = minutes (0-59)
+                         #' Example: `format = c("myd", "mh")`. Not one of the tried combinations!
+                         #' Always check to make sure that dates/times were parsed correctly and the
+                         #' relative times in the `PM_data$standard_data` field look correct.
+                         #' Other date/time formats are possible. See [lubridate::parse_date_time()] for these.
+                         #' @param quiet Quietly validate. Default is `FALSE`.
+                         #' @param validate Validate the new row or not. Default is `FALSE` as a new row
+                         #' added to a blank will result in a one-row data object, which is invalid. Also, 
+                         #' only one event type (dose or observation) should be added at a time, so if the 
+                         #' new object contains only doses while building, this would cause an error. You
+                         #' should set `validate = TRUE` for the final addition.
+                         #' @examples
+                         #' PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
+                         addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE){
+                           #browser()
+                           args <- list(...)
+                           arg_names <- tolower(names(args))
+                           
+                           if(!"id" %in% arg_names) stop("ID is required to add an event.")
+                           if(!"time" %in% arg_names) stop("Time is required to add an event.")
+                           to_add <- data.frame(args)
+                           
+                           if(!is.null(self$data)){ #existing data
+                             old_names <- names(self$data)
+                             missing_args <- arg_names[!arg_names %in% old_names]
+                             if(length(missing_args)>0){
+                               self$data[missing_args] <- NA
+                             }
+                             
+                           }
+                           #check for addl and if present, expand
+                           if("addl" %in% arg_names){
+                             addl_lines <- to_add %>% dplyr::filter(!is.na(addl) & addl > 0)
+                             if (nrow(addl_lines) > 0) {
+                               new_lines <- addl_lines %>%
+                                 tidyr::uncount(addl, .remove = F) %>%
+                                 dplyr::group_by(id) %>%
+                                 dplyr::mutate(time = ii * dplyr::row_number() + time)
+                               
+                               to_add <- dplyr::bind_rows(to_add, new_lines) %>%
+                                 dplyr::arrange(id, time) %>%
+                                 dplyr::mutate(
+                                   addl = ifelse(addl == -1, -1, NA),
+                                   ii = ifelse(addl == -1, ii, NA)
+                                 ) 
+                               
+                             }
+                           }
+                           
+                           new_data <- dplyr::bind_rows(self$data, to_add) %>% dplyr::arrange(id, time) 
+                           # %>%
+                           #   dplyr::select(where(~!all(is.na(.x))))
+                           
+                           self$data <- new_data
+                           if(validate){
+                             self$standard_data <- private$validate(self$data, dt = dt, quiet = quiet)
+                           } else {
+                             self$standard_data <- NULL
+                           }
+                           return(self)
+                         }
+                       ), # end public
+                       private = list(
+                         validate = function(dataObj, quiet, dt) {
+                           dataObj_orig <- dataObj #keep the original to pass to PMcheck
+                           dataNames <- names(dataObj)
+                           standardNames <- getFixedColNames()
+                           
+                           covNames <- dataNames[!dataNames %in% standardNames]
+                           if ("date" %in% covNames) {
+                             covNames <- covNames[-which(covNames == "date")]
+                           }
+                           
+                           mandatory <- c("id", "time", "dose", "out")
+                           missingMandatory <- sapply(mandatory, function(x) !x %in% dataNames)
+                           if (any(missingMandatory)) {
+                             stop(paste0("Your data are missing these mandatory columns: ", mandatory[missingMandatory]))
+                           }
+                           
+                           msg <- c("DATA STANDARDIZATION REPORT:\n\n", "Data are in full format already.\n")
+                           
+                           if (!"evid" %in% dataNames) {
+                             dataObj$evid <- ifelse(is.na(dataObj$dose), 0, 1)
+                             msg <- c(msg, "EVID inferred as 0 for observations, 1 for doses.\n")
+                           }
+                           
+                           if ("date" %in% dataNames) {
+                             relTime <- PMmatrixRelTime(dataObj, format = dt)
+                             dataObj$time <- relTime$relTime
+                             dataObj <- dataObj %>% select(-date)
+                             msg <- c(msg, paste0("Dates and clock times converted to relative decimal times using ", attr(relTime, "dt_format"), ".\n"))
+                           }
+                           
+                           if (!"dur" %in% dataNames) {
+                             dataObj$dur <- ifelse(is.na(dataObj$dose), NA, 0)
+                             msg <- c(msg, "All doses assumed to be oral (DUR = 0).\n")
+                           }
+                           
+                           if (!"addl" %in% dataNames) {
+                             dataObj$addl <- NA
+                             msg <- c(msg, "ADDL set to missing for all records.\n")
+                           }
+                           
+                           if (!"ii" %in% dataNames) {
+                             dataObj$ii <- NA
+                             msg <- c(msg, "II set to missing for all records.\n")
+                           }
+                           
+                           if (!"input" %in% dataNames) {
+                             dataObj$input <- ifelse(is.na(dataObj$dose), NA, 1)
+                             msg <- c(msg, "All doses assumed to be INPUT = 1.\n")
+                           }
+                           
+                           if (!"outeq" %in% dataNames) {
+                             dataObj$outeq <- ifelse(is.na(dataObj$out), NA, 1)
+                             msg <- c(msg, "All observations assumed to be OUTEQ = 1.\n")
+                           }
+                           
+                           errorCoef <- c("c0", "c1", "c2", "c3")
+                           missingError <- sapply(errorCoef, function(x) !x %in% dataNames)
+                           if (any(missingError)) {
+                             dataObj$c0 <- dataObj$c1 <- dataObj$c2 <- dataObj$c3 <- NA
+                             msg <- c(msg, "One or more error coefficients not specified. Error in model object will be used.\n")
+                           }
+                           
+                           # expand any ADDL > 0
+                           # preserve original order (necessary for EVID=4)
+                           dataObj$row <- 1:nrow(dataObj)
+                           addl_lines <- dataObj %>% filter(!is.na(addl) & addl > 0)
+                           if (nrow(addl_lines) > 0) {
+                             new_lines <- addl_lines %>%
+                               tidyr::uncount(addl, .remove = FALSE) %>%
+                               group_by(id) %>%
+                               mutate(time = ii * row_number() + time)
+                             
+                             dataObj <- bind_rows(dataObj, new_lines) %>%
+                               arrange(id, row, time) %>%
+                               mutate(
+                                 addl = ifelse(addl == -1, -1, NA),
+                                 ii = ifelse(addl == -1, ii, NA)
+                               ) %>%
+                               select(!row)
+                             
+                             msg <- c(msg, "ADDL > 0 rows expanded.\n")
+                           }
+                           dataObj <- dataObj %>% select(standardNames, all_of(covNames))
+                           if (length(msg) > 2) {
+                             msg <- msg[-2]
+                           } # data were not in standard format, so remove that message
+                           if (!quiet) {
+                             cat(msg)
+                           }
+                           
+                           validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = TRUE, quiet = quiet)
+                           return(validData)
+                         } # end validate function
+                       ) # end private
 ) # end PM_data
 
 #' Summarize a Pmetrics PM_data object

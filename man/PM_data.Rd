@@ -25,9 +25,18 @@ of each time and will appear that way in the copy of the original data.
 
 There are a number of methods
 defined for a PM_data object, including to write the standard data back
-to a file for future use, to summarize and to plot the object, and to
+to a file for future use, to summarize and to plot the object, to
 conduct a non-compartmental analysis on the raw data using
-\link{makeNCA}.
+\link{makeNCA}, to calculate an AUC using \link{makeAUC}, and to add event rows, which
+is particularly useful for making simulation templates on the fly.
+}
+\examples{
+
+## ------------------------------------------------
+## Method `PM_data$addEvent`
+## ------------------------------------------------
+
+PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -48,6 +57,7 @@ conduct a non-compartmental analysis on the raw data using
 \item \href{#method-PM_data-plot}{\code{PM_data$plot()}}
 \item \href{#method-PM_data-print}{\code{PM_data$print()}}
 \item \href{#method-PM_data-summary}{\code{PM_data$summary()}}
+\item \href{#method-PM_data-addEvent}{\code{PM_data$addEvent()}}
 \item \href{#method-PM_data-clone}{\code{PM_data$clone()}}
 }
 }
@@ -234,6 +244,70 @@ Summary method
 }
 \subsection{Details}{
 See \link{summary.PMmatrix}.
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_data-addEvent"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-addEvent}{}}}
+\subsection{Method \code{addEvent()}}{
+Add events to PM_data object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$addEvent(..., dt = NULL, quiet = FALSE, validate = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Column names and values.}
+
+\item{\code{dt}}{Pmetrics will try a variety of date/time formats. If all 16 of
+them fail, use this parameter to specify the correct format as a
+character vector whose
+first element is date format and second is time. Use the following abbreviations:
+\itemize{
+\item Y = 4 digit year
+\item y = 2 digit year
+\item m = decimal month (1, 2, ..., 12)
+\item d = decimal day (1, 2, ..., 31)
+\item H = hours (0-23)
+\item M = minutes (0-59)
+Example: \code{format = c("myd", "mh")}. Not one of the tried combinations!
+Always check to make sure that dates/times were parsed correctly and the
+relative times in the \code{PM_data$standard_data} field look correct.
+Other date/time formats are possible. See \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} for these.
+}}
+
+\item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
+
+\item{\code{validate}}{Validate the new row or not. Default is \code{FALSE} as a new row
+added to a blank will result in a one-row data object, which is invalid. Also,
+only one event type (dose or observation) should be added at a time, so if the
+new object contains only doses while building, this would cause an error. You
+should set \code{validate = TRUE} for the final addition.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Add lines to a PM_data object by supplying named columns and values.
+\code{ID} and \code{time} are always required. Other values will be added as supplied
+or \code{NA} if missing. If the PM_data object already contains data, any columns
+added that are not in the original data will be added and set to \code{NA}.
+Adding covariates is supported, but since valid subject records in Pmetrics
+with covariates must contain non-missing values at time 0, covariates should
+be included with the first call to \verb{$addEvent()}. This method can
+be chained with \code{PM_data$new()} to create a blank data object and then add rows.
+This can be particularly useful for creating simulation templates.
+\code{ADDL} and \code{II} are supported. Multiple \verb{$addEvent()} calls can also be chained.
+See the example.
+}
+
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
+}
+\if{html}{\out{</div>}}
+
 }
 
 }

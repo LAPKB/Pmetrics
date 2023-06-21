@@ -17,6 +17,7 @@ The output of \code{PM_parse} is a list containing the following elements
 \item{pop }{Written to the standard of PM_pop}
 \item{post }{Written to the standard of PM_post}
 \item{cycles }{Written to the standard of PM_cycle}
+\item{final }{Written to the standard of PM_final}
 }
 \description{
 A flexible parser for Pmetrics output
