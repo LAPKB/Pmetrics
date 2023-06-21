@@ -1,19 +1,18 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
-
 use eyre::Result;
 use np_core::prelude::{
-    datafile::{Dose, Infusion},
+    datafile::{CovLine, Infusion},
     *,
 };
 use ode_solvers::*;
-
+use std::collections::HashMap;
 #[derive(Debug, Clone)]
 struct Model<'a> {
     </struct_params>
     _scenario: &'a Scenario,
     infusions: Vec<Infusion>,
-    dose: Option<Dose>,
+    cov: Option<&'a HashMap<String, CovLine>>,
 }
 
 type State = SVector<f64, </neqs>>;
@@ -22,24 +21,15 @@ type Time = f64;
 impl ode_solvers::System<State> for Model<'_> {
     fn system(&mut self, t: Time, x: &mut State, dx: &mut State) {
         </parameter_alias>
-
-        let lag = 0.0;
-
-        let mut rateiv = [0.0];
+        </seq>
+        let mut rateiv = [0.0];//TODO: hardcoded
         for infusion in &self.infusions {
             if t >= infusion.time && t <= (infusion.dur + infusion.time) {
                 rateiv[infusion.compartment] = infusion.amount / infusion.dur;
             }
         }
-        </lag>
+        
         </eqn>
-        if let Some(dose) = &self.dose {
-            if t >= dose.time + lag {
-                dx[dose.compartment] += dose.amount;
-                self.dose = None;
-            }
-        }
-        </seq>
     }
 }
 
@@ -52,16 +42,16 @@ impl Predict for Ode {
             </model_params>
             _scenario: scenario,
             infusions: vec![],
-            dose: None,
+            cov: None
         };
-        let lag = 0.0;
+        </lag>
         let mut yout = vec![];
         let mut x = State::new(</init>);
         let mut index: usize = 0;
         for block in &scenario.blocks {
-            //if no code is needed here, remove the blocks from the codebase
-            //It seems that blocks is an abstractions we're going to end up not using
+            system.cov = Some(&block.covs);
             for event in &block.events {
+                let mut event_time = event.time;
                 if event.evid == 1 {
                     if event.dur.unwrap_or(0.0) > 0.0 {
                         //infusion
@@ -73,11 +63,15 @@ impl Predict for Ode {
                         });
                     } else {
                         //dose
-                        system.dose = Some(Dose {
-                            time: event.time + lag,
-                            amount: event.dose.unwrap(),
-                            compartment: event.input.unwrap() - 1,
-                        });
+                        if lag > 0.0 {
+                            event_time = event.time + lag;
+                            let mut stepper =
+                                Rk4::new(system.clone(), event.time, x, event_time, 0.1);
+                            let _int = stepper.integrate();
+                            let y = stepper.y_out();
+                            x = *y.last().unwrap();
+                        }
+                        x[event.input.unwrap() - 1] += event.dose.unwrap();
                     }
                 } else if event.evid == 0 {
                     //obs
