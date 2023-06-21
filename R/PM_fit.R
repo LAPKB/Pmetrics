@@ -174,6 +174,8 @@ PM_fit <- R6::R6Class("PM_fit",
 
       #### Other arguments ####
       arglist$use_tui <- "false" # TO-DO: Convert TRUE -> "true", vice versa.
+      arglist$cache <- "true"
+      arglist$seed <- 347
 
       #### Save PM_fit ####
       self$data <- PM_data$new(data_filtered, quiet = TRUE)
@@ -221,6 +223,17 @@ PM_fit <- R6::R6Class("PM_fit",
       arglist$poly_coeff <-
         self$model$model_list$out$Y1$err$assay$coefficients %>%
         paste0(collapse = ",")
+
+      if (!is.null(self$model$model_list$out$Y1$err$model$proportional)) {
+        self$error_class <- "proportional"
+        self$lamgam <- self$model$model_list$out$Y1$err$model$proportional
+      } else if (!is.null(self$model$model_list$out$Y1$err$model$additive)) {
+        self$error_class <- "additive"
+        self$lamgam <- self$model$model_list$out$Y1$err$model$additive
+      } else {
+        stop("Error model is not proportional or additive.")
+      }
+
       #### Generate config.toml #####
       toml_template <- stringr::str_glue(
         "[paths]",
@@ -230,16 +243,16 @@ PM_fit <- R6::R6Class("PM_fit",
         "[config]",
         "cycles={cycles}",
         "engine=\"NPAG\"",
-        # "init_points={num_indpts}",
-        "init_points=2129", # TO-DO: temporary """"hacky"""" fix
-        "seed=347",
+        "init_points={num_indpts}",
+        # "init_points=2129",
+        "seed={seed}",
         "tui={use_tui}",
         "pmetrics_outputs=true",
-        "cache = true", # TO-DO: temporary """"hacky"""" fix
+        "cache = {cache}",
         "{parameter_block}",
         "[error]",
-        "value = 0.0",
-        "class = \"additive\"",
+        "value = {lamgam}",
+        "class = {error_class}",
         "poly = [{poly_coeff}]",
         .envir = arglist,
         .sep = "\n"
