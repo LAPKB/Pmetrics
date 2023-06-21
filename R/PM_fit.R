@@ -218,7 +218,9 @@ PM_fit <- R6::R6Class("PM_fit",
       })
 
       arglist$parameter_block <- paste0(unlist(pars), collapse = "\n")
-
+      arglist$poly_coeff <-
+        self$model$model_list$out$Y1$err$assay$coefficients %>%
+        paste0(collapse = ",")
       #### Generate config.toml #####
       toml_template <- stringr::str_glue(
         "[paths]",
@@ -238,6 +240,7 @@ PM_fit <- R6::R6Class("PM_fit",
         "[error]",
         "value = 0.0",
         "class = \"additive\"",
+        "poly = [{poly_coeff}]",
         .envir = arglist,
         .sep = "\n"
       )
@@ -251,7 +254,7 @@ PM_fit <- R6::R6Class("PM_fit",
         if (file.exists("meta_rust.csv")) {
           # Execution ended successfully
           PM_parse()
-          res <- PM_load(file = "NPcore.Rdata")
+          res <- PM_load(file = "outputs/NPcore.Rdata")
           PM_report(res, outfile = "report.html", template = "ggplot_rust")
         } else {
           setwd(cwd)

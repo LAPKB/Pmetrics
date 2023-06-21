@@ -77,7 +77,7 @@ metrics <- function(icen, outeq) {
 ```
 
 ```{r, results = "asis"}
-for (i in 1:res$NPdata$numeqt) {
+for (i in 1:res$numeqt) {
   cat("### Outeq ", i, "{.tabset .tabset-pills}\n")
   cat("\n")
   cat("#### Median\n")
@@ -102,7 +102,7 @@ op_plot <- function(icen, pred.type, outeq) {
     pop = "Population",
     post = "Individual"
   )
-  p <- res$op$data %>%
+  p <- res$op %>%
     filter(icen == !!icen, pred.type == !!pred.type, outeq == !!outeq) %>%
     ggplot(aes(x = pred, y = obs)) +
     geom_abline(slope = 1, intercept = 0, lty = "dashed") +
@@ -118,7 +118,7 @@ op_plot <- function(icen, pred.type, outeq) {
 ```
 
 ```{r, results = "asis"}
-for (i in 1:res$NPdata$numeqt) {
+for (i in 1:res$numeqt) {
   p1 <- op_plot("median", "pop", i)
   p2 <- op_plot("median", "post", i)
   p3 <- op_plot("mean", "pop", i)
@@ -145,7 +145,7 @@ For how to interpret these plots, please review our [website](https://lapkb.gith
 
 ```{r}
 resid_plot <- function(x, y, icen, outeq) {
-  p <- res$op$data %>%
+  p <- res$op %>%
     filter(icen == !!icen, outeq == !!outeq, pred.type == "post") %>% # Posterior concentrations (not pop)
     ggplot(aes(x = {{ x }}, y = {{ y }})) +
     geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
@@ -158,7 +158,7 @@ resid_plot <- function(x, y, icen, outeq) {
 ```
 
 ```{r, results = "asis"}
-for (i in 1:res$NPdata$numeqt) {
+for (i in 1:res$numeqt) {
   p1 <- resid_plot(time, d, "median", i)
   p2 <- resid_plot(time, wd, "median", i)
   p3 <- resid_plot(time, d, "mean", i)
@@ -184,7 +184,7 @@ Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
 
 ```{r, results = "asis"}
-for (i in 1:res$NPdata$numeqt) {
+for (i in 1:res$numeqt) {
   p1 <- resid_plot(obs, d, "median", i)
   p2 <- resid_plot(obs, wd, "median", i)
   p3 <- resid_plot(obs, d, "mean", i)
@@ -299,11 +299,11 @@ res$final$popPoints %>%
 ## Cycle information
 ```{r}
 cycle_info <- data.frame(
-  cycle = res$cycle$data$cycnum,
-  ll = res$cycle$data$ll,
-  AIC = res$cycle$data$aic,
-  BIC = res$cycle$data$bic,
-  gamlam = res$cycle$data$gamlam
+  cycle = res$cycle$cycnum,
+  ll = res$cycle$ll,
+  AIC = res$cycle$aic,
+  BIC = res$cycle$bic,
+  gamlam = res$cycle$gamlam
 )
 
 cycle_info <- slice_tail(cycle_info, prop = 0.8)
@@ -342,7 +342,7 @@ plot_gamlam <- cycle_info %>%
   ggpubr::grids() +
   theme(legend.position = "bottom")
 
-plot_mean <- res$cycle$data$mean %>%
+plot_mean <- res$cycle$mean %>%
   data.frame() %>%
   slice_tail(prop = 0.8) %>%
   pivot_longer(cols = -cycle) %>%
@@ -356,7 +356,7 @@ plot_mean <- res$cycle$data$mean %>%
   ggpubr::grids() +
   theme(legend.position = "bottom")
 
-plot_sd <- res$cycle$data$sd %>%
+plot_sd <- res$cycle$sd %>%
   data.frame() %>%
   slice_tail(prop = 0.8) %>%
   pivot_longer(cols = -cycle) %>%
@@ -370,7 +370,7 @@ plot_sd <- res$cycle$data$sd %>%
   ggpubr::grids() +
   theme(legend.position = "bottom")
 
-plot_median <- res$cycle$data$median %>%
+plot_median <- res$cycle$median %>%
   data.frame() %>%
   slice_tail(prop = 0.8) %>%
   pivot_longer(cols = -cycle) %>%
