@@ -207,7 +207,7 @@ PM_Vmodel <- R6::R6Class("PM_model",
           cat("\n", sp(1), "$sec\n", paste0(sp(2), "[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = "\n "))
           cat("\n")
         } else if (x == "dif" | x == "eqn") {
-          if(is.null(mlist$eqn)){
+          if (is.null(mlist$eqn)) {
             cat("Please change the name of your #dif block to #eqn.")
             mlist$eqn <- mlist$dif
           }
@@ -251,7 +251,7 @@ PM_Vmodel <- R6::R6Class("PM_model",
       invisible(self)
     },
     plot = function(...) {
-      plot.PM_model(self, ...) 
+      plot.PM_model(self, ...)
     }
   ),
   private = list(
@@ -469,7 +469,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       content <- gsub("</parameter_alias>", pa_lines %>% paste(collapse = "\n"), content)
       lag <- ""
-      if (length(self$model_list$lag > 0)) {
+      if (length(self$model_list$lag) > 0) {
         lag <- "let t = t - self.lag;"
       }
       content <- gsub("</lag>", lag, content)
@@ -487,7 +487,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       content <- gsub("</eqn>", paste0(eqs %>% paste(collapse = ";\n"), ";"), content)
       content <- gsub("</neqs>", neqs, content)
       content <- gsub("</seq>", "", content)
-      content <- gsub("</init>", paste0(rep("0.0",neqs),collapse=","), content)
+      content <- gsub("</init>", paste0(rep("0.0", neqs), collapse = ","), content)
       content <- gsub("</model_params>", mp_lines %>% paste(collapse = ""), content)
       content <- gsub("</init>", paste(rep("0.0", neqs), collapse = ","), content)
       content <- gsub("</v_alias>", va_lines %>% paste(collapse = "\n"), content)
@@ -518,7 +518,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
     },
     update = function(changes_list) {
       keys <- names(changes_list)
-      stopifnot(private$lower3(keys) %in% c("pri", "sec", "dif", "eqn", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")) 
+      stopifnot(private$lower3(keys) %in% c("pri", "sec", "dif", "eqn", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext"))
       self$model_list <- modifyList(self$model_list, changes_list)
     }
   ),
@@ -840,7 +840,7 @@ PM_model_file <- R6::R6Class("PM_model_file",
       if (!is.null(blocks$diffeq) && blocks$diffeq[1] != "") {
         model_list$eqn <- blocks$diffeq
       }
-      
+
       # model equations - will eventually replace diffeq above
       if (blocks$eqn[1] != "") {
         model_list$eqn <- blocks$eqn
