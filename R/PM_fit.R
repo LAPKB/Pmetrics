@@ -168,6 +168,7 @@ PM_fit <- R6::R6Class("PM_fit",
       arglist$indpts <- ifelse(is.symbol(arglist$indpts), 1, arglist$indpts)
       arglist$num_indpts <- (2**num_ran_param) * arglist$indpts
       arglist$num_indpts <- format(arglist$num_indpts, scientific = FALSE)
+      arglist$num_indpts <- 2129 # TO-DO: Remove this line
 
       #### Format cycles #####
       arglist$cycles <- format(arglist$cycles, scientific = FALSE)
@@ -225,11 +226,11 @@ PM_fit <- R6::R6Class("PM_fit",
         paste0(collapse = ",")
 
       if (!is.null(self$model$model_list$out$Y1$err$model$proportional)) {
-        self$error_class <- "proportional"
-        self$lamgam <- self$model$model_list$out$Y1$err$model$proportional
+        arglist$error_class <- "proportional"
+        arglist$lamgam <- self$model$model_list$out$Y1$err$model$proportional
       } else if (!is.null(self$model$model_list$out$Y1$err$model$additive)) {
-        self$error_class <- "additive"
-        self$lamgam <- self$model$model_list$out$Y1$err$model$additive
+        arglist$error_class <- "additive"
+        arglist$lamgam <- self$model$model_list$out$Y1$err$model$additive
       } else {
         stop("Error model is not proportional or additive.")
       }
@@ -252,7 +253,7 @@ PM_fit <- R6::R6Class("PM_fit",
         "{parameter_block}",
         "[error]",
         "value = {lamgam}",
-        "class = {error_class}",
+        "class = \"{error_class}\"",
         "poly = [{poly_coeff}]",
         .envir = arglist,
         .sep = "\n"
