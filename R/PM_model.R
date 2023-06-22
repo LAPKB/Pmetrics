@@ -470,11 +470,11 @@ PM_model_list <- R6::R6Class("PM_model_list",
       content <- gsub("</parameter_alias>", pa_lines %>% paste(collapse = "\n"), content)
       lag <- "let lag = 0.0"
       if (length(self$model_list$lag) > 0) {
-        aux <- exRes$model$model_list$lag %>% strsplit(x = ., split = "=")
+        aux <- self$model_list$lag[[1]] %>% strsplit(x = ., split = "=")
         var <- aux[[1]][2] %>%
           gsub(" ", "", .) %>%
           tolower()
-        lag <- paste0("let lag = ", var, ";")
+        lag <- paste0("let lag = system.", var, ";")
       }
       content <- gsub("</lag>", lag, content)
       eqs <- self$model_list$eqn %>% tolower()
