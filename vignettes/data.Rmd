@@ -56,8 +56,25 @@ data1 <- PM_data$new(df)
 ```
 
 
-Lastly, you can take advantage of the `addEvent` method in `PM_data` objects to build a data object on the fly. This can be particularly useful
+Lastly, you can take advantage of the `addEvent` method in `PM_data` objects to build a data object on the fly. This can be particularly useful for making quick simulation templates. Start with an empty call to `PM_data$new()` and add successive rows. See [PM_data] for details under the `addEvent` method.
 
+```{r echo=TRUE, eval=TRUE}
+dat <- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)$addEvent(id = 1, time = 144, out = -1)
+dat$addEvent(id = 1, wt = 75, validate = TRUE) 
+```
+
+*Notes on the above statments:*
+
+1. Lack of time element in the last `addEvent` will add *wt=75* to all rows for id = 1
+2. Use `validate = TRUE` as an argument in the last `addEvent` to finalize creation
+3. Note that you can chain `addEvent` as shown in the first statement and also update existing `PM_data` objects as shown in the second statement.
+
+
+Here's what `dat$data` and `dat$standard_data` look like in the viewer.
+``` {r echo = FALSE, eval = TRUE}
+knitr::kable(dat$data)
+knitr::kable(dat$standard_data)
+```
 
 Once you have created the `PM_data` object, you never need to create it again during your R session. You also don't have to bother copying the data file to the Runs folder each time you run the model.
 
