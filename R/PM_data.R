@@ -78,7 +78,7 @@ PM_data <- R6::R6Class("PM_data",
                          #' @param file_name A quoted name of the file to create
                          #' with full path if not
                          #' in the working directory.
-                         #' @param ... ARguments passed to PMwriteMatrix
+                         #' @param ... Arguments passed to PMwriteMatrix
                          write = function(file_name, ...) {
                            if(!is.null(self$standard_data)){
                              PMwriteMatrix(self$standard_data, file_name, ...)
@@ -168,15 +168,35 @@ PM_data <- R6::R6Class("PM_data",
                          #' Add events to PM_data object
                          #' @details
                          #' Add lines to a PM_data object by supplying named columns and values.
-                         #' `ID` and `time` are always required. Other values will be added as supplied
-                         #' or `NA` if missing. If the PM_data object already contains data, any columns
-                         #' added that are not in the original data will be added and set to `NA`.
+                         #' `ID` is always required. `Time` is handled differently depending on
+                         #' the sequence of `addEvent` calls (see **Chaining** below).
+                         #' * It is required for the first call to `addEvent` and should be 0.
+                         #' For example: For example: `dat <- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)`
+                         #' * For subsequent calls to `addEvent` with specific times it should be included.
+                         #' For example: `dat <- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)$addEvent(id = 1, time = 144, out = -1)`
+                         #' Here, because `out` wasn't in the original call *and* the next call contains a value for
+                         #' `time`, an `out` value of -1 will be added at time 144 and `out` will be set to `NA` for all the 
+                         #' previous rows. 
+                         #' * In contrast, the behavior is different if you omit `time` when your
+                         #' data object already has rows. In this case
+                         #' the arguments in the call to `addEvent` (without a value for `time`)
+                         #' will add those arguments as columns in the prior data with the specified value
+                         #'  or *replace* values in those columns if they
+                         #' already exist.  Be sure this is what you want.
+                         #' For example, building on the prior example: `dat$addEvent(id = 1, dur = 0.5)`. 
+                         #' Note that we can chain to the previously created `dat` object. Here, a duration of 0.5 hours
+                         #' will be added to every previous row in `dat` to create the new `dat` object, but no new
+                         #' row is added since there is no `time` associated with it. 
+                         #' 
                          #' Adding covariates is supported, but since valid subject records in Pmetrics 
                          #' with covariates must contain non-missing values at time 0, covariates should
-                         #' be included with the first call to `$addEvent()`. This method can
-                         #' be chained with `PM_data$new()` to create a blank data object and then add rows.
+                         #' be included with the first call to `$addEvent()`. 
+                         #' 
+                         #' As we have seen in the examples above, `ADDL` and `II` are supported. 
+                         #' 
+                         #' **Chaining** Multiple `$addEvent()` calls can be chained with `PM_data$new()` 
+                         #' to create a blank data object and then add rows.
                          #' This can be particularly useful for creating simulation templates.
-                         #' `ADDL` and `II` are supported. Multiple `$addEvent()` calls can also be chained.
                          #' See the example.
                          #' @param ... Column names and values.
                          #' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
@@ -207,7 +227,6 @@ PM_data <- R6::R6Class("PM_data",
                            arg_names <- tolower(names(args))
                            
                            if(!"id" %in% arg_names) stop("ID is required to add an event.")
-                           if(!"time" %in% arg_names) stop("Time is required to add an event.")
                            to_add <- data.frame(args)
                            
                            if(!is.null(self$data)){ #existing data
@@ -216,7 +235,13 @@ PM_data <- R6::R6Class("PM_data",
                              if(length(missing_args)>0){
                                self$data[missing_args] <- NA
                              }
-                             
+                             if(!"time" %in% arg_names){
+                               to_add <- to_add %>% dplyr::slice(rep(1, each = nrow(self$data)))
+                               self$data[arg_names] <- to_add
+                               return(self)
+                             }
+                           } else {
+                             if(!"time" %in% arg_names) stop("Time is required to add the first event.")
                            }
                            #check for addl and if present, expand
                            if("addl" %in% arg_names){
@@ -236,7 +261,6 @@ PM_data <- R6::R6Class("PM_data",
                                
                              }
                            }
-                           
                            new_data <- dplyr::bind_rows(self$data, to_add) %>% dplyr::arrange(id, time) 
                            # %>%
                            #   dplyr::select(where(~!all(is.na(.x))))

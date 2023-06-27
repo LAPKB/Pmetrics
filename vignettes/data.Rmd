@@ -24,7 +24,7 @@ library(plotly)
 
 ## Introduction
 
-Pmetrics data  are either R6 objects loaded into memory or files, usually comma-separated (.csv). It is possible
+Pmetrics data objects are either R6 objects loaded into memory or files, usually comma-separated (.csv). It is possible
 to use other separators, like the semicolon, by setting the appropriate argument with `setPMoptions()`. 
 
 ```{r echo = T, eval = F}
@@ -54,6 +54,10 @@ You can also build an appropriate data frame in R and provide that as an argumen
 #id, time, dose, out
 data1 <- PM_data$new(df)
 ```
+
+
+Lastly, you can take advantage of the `addEvent` method in `PM_data` objects to build a data object on the fly. This can be particularly useful
+
 
 Once you have created the `PM_data` object, you never need to create it again during your R session. You also don't have to bother copying the data file to the Runs folder each time you run the model.
 
