@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,9 +84,9 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Pmetrics data are either R6 objects loaded into memory or files,
-usually comma-separated (.csv). It is possible to use other separators,
-like the semicolon, by setting the appropriate argument with
+<p>Pmetrics data objects are either R6 objects loaded into memory or
+files, usually comma-separated (.csv). It is possible to use other
+separators, like the semicolon, by setting the appropriate argument with
 <code><a href="../reference/setPMoptions.html">setPMoptions()</a></code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/setPMoptions.html">setPMoptions</a></span><span class="op">(</span>sep <span class="op">=</span> <span class="st">";"</span>, dec <span class="op">=</span> <span class="st">","</span><span class="op">)</span> </span>
@@ -116,6 +116,260 @@ an argument to <code>PM_data$new()</code>.</p>
 <code class="sourceCode R"><span><span class="co">#assume df is data frame with at least these columns:</span></span>
 <span><span class="co">#id, time, dose, out</span></span>
 <span><span class="va">data1</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_data.html">PM_data</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></code></pre></div>
+<p>Lastly, you can take advantage of the <code>addEvent</code> method in
+<code>PM_data</code> objects to build a data object on the fly. This can
+be particularly useful for making quick simulation templates. Start with
+an empty call to <code>PM_data$new()</code> and add successive rows. See
+[PM_data] for details under the <code>addEvent</code> method.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_data.html">PM_data</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="fu">addEvent</span><span class="op">(</span>id <span class="op">=</span> <span class="fl">1</span>, time <span class="op">=</span> <span class="fl">0</span>, dose <span class="op">=</span> <span class="fl">100</span>, addl <span class="op">=</span> <span class="fl">5</span>, ii <span class="op">=</span> <span class="fl">24</span><span class="op">)</span><span class="op">$</span><span class="fu">addEvent</span><span class="op">(</span>id <span class="op">=</span> <span class="fl">1</span>, time <span class="op">=</span> <span class="fl">144</span>, out <span class="op">=</span> <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">dat</span><span class="op">$</span><span class="fu">addEvent</span><span class="op">(</span>id <span class="op">=</span> <span class="fl">1</span>, wt <span class="op">=</span> <span class="fl">75</span>, validate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> </span>
+<span><span class="co">#&gt; DATA STANDARDIZATION REPORT:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  EVID inferred as 0 for observations, 1 for doses.</span></span>
+<span><span class="co">#&gt;  All doses assumed to be oral (DUR = 0).</span></span>
+<span><span class="co">#&gt;  ADDL set to missing for all records.</span></span>
+<span><span class="co">#&gt;  II set to missing for all records.</span></span>
+<span><span class="co">#&gt;  All doses assumed to be INPUT = 1.</span></span>
+<span><span class="co">#&gt;  All observations assumed to be OUTEQ = 1.</span></span>
+<span><span class="co">#&gt;  One or more error coefficients not specified. Error in model object will be used.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; DATA VALIDATION REPORT:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; No data errors found.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; FIX DATA REPORT:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; There were no errors to fix in you data file.</span></span></code></pre></div>
+<p><em>Notes on the above statments:</em></p>
+<ol style="list-style-type: decimal">
+<li>Lack of time element in the last <code>addEvent</code> will add
+<em>wt=75</em> to all rows for id = 1</li>
+<li>Use <code>validate = TRUE</code> as an argument in the last
+<code>addEvent</code> to finalize creation</li>
+<li>Note that you can chain <code>addEvent</code> as shown in the first
+statement and also update existing <code>PM_data</code> objects as shown
+in the second statement.</li>
+</ol>
+<p>Here’s what <code>dat$data</code> and <code>dat$standard_data</code>
+look like in the viewer.</p>
+<table class="table">
+<thead><tr class="header">
+<th align="right">id</th>
+<th align="right">time</th>
+<th align="right">dose</th>
+<th align="right">out</th>
+<th align="right">wt</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">100</td>
+<td align="right">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">24</td>
+<td align="right">100</td>
+<td align="right">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">48</td>
+<td align="right">100</td>
+<td align="right">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">72</td>
+<td align="right">100</td>
+<td align="right">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">96</td>
+<td align="right">100</td>
+<td align="right">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">120</td>
+<td align="right">100</td>
+<td align="right">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">144</td>
+<td align="right">NA</td>
+<td align="right">-1</td>
+<td align="right">75</td>
+</tr>
+</tbody>
+</table>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="4%">
+<col width="8%">
+<col width="8%">
+<col width="6%">
+<col width="8%">
+<col width="8%">
+<col width="4%">
+<col width="9%">
+<col width="6%">
+<col width="9%">
+<col width="4%">
+<col width="4%">
+<col width="4%">
+<col width="4%">
+<col width="4%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">id</th>
+<th align="right">evid</th>
+<th align="right">time</th>
+<th align="right">dur</th>
+<th align="right">dose</th>
+<th align="left">addl</th>
+<th align="left">ii</th>
+<th align="right">input</th>
+<th align="right">out</th>
+<th align="right">outeq</th>
+<th align="left">c0</th>
+<th align="left">c1</th>
+<th align="left">c2</th>
+<th align="left">c3</th>
+<th align="right">wt</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">100</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">24</td>
+<td align="right">0</td>
+<td align="right">100</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">48</td>
+<td align="right">0</td>
+<td align="right">100</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">72</td>
+<td align="right">0</td>
+<td align="right">100</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">96</td>
+<td align="right">0</td>
+<td align="right">100</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">120</td>
+<td align="right">0</td>
+<td align="right">100</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">1</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">75</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">144</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">NA</td>
+<td align="right">-1</td>
+<td align="right">1</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="right">75</td>
+</tr>
+</tbody>
+</table>
 <p>Once you have created the <code>PM_data</code> object, you never need
 to create it again during your R session. You also don’t have to bother
 copying the data file to the Runs folder each time you run the
@@ -125,7 +379,7 @@ model.</p>
 directory. You can manually copy it there from a previous run or some
 other folder or use the shortcut of providing a prior run number as an
 argument to <code><a href="../reference/NPrun.html">NPrun()</a></code> or <code><a href="../reference/ITrun.html">ITrun()</a></code>.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#Run 1 - ensure that data.csv is in the working directory</span></span>
 <span><span class="fu"><a href="../reference/NPrun.html">NPrun</a></span><span class="op">(</span><span class="st">"data.csv"</span>, <span class="st">"model.txt"</span><span class="op">)</span></span>
 <span></span>
