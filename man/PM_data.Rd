@@ -125,7 +125,7 @@ Write data to file
 with full path if not
 in the working directory.}
 
-\item{\code{...}}{ARguments passed to PMwriteMatrix}
+\item{\code{...}}{Arguments passed to PMwriteMatrix}
 }
 \if{html}{\out{</div>}}
 }
@@ -290,15 +290,37 @@ should set \code{validate = TRUE} for the final addition.}
 }
 \subsection{Details}{
 Add lines to a PM_data object by supplying named columns and values.
-\code{ID} and \code{time} are always required. Other values will be added as supplied
-or \code{NA} if missing. If the PM_data object already contains data, any columns
-added that are not in the original data will be added and set to \code{NA}.
+\code{ID} is always required. \code{Time} is handled differently depending on
+the sequence of \code{addEvent} calls (see \strong{Chaining} below).
+\itemize{
+\item It is required for the first call to \code{addEvent} and should be 0.
+For example: For example: \code{dat <- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)}
+\item For subsequent calls to \code{addEvent} with specific times it should be included.
+For example: \code{dat <- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)$addEvent(id = 1, time = 144, out = -1)}
+Here, because \code{out} wasn't in the original call \emph{and} the next call contains a value for
+\code{time}, an \code{out} value of -1 will be added at time 144 and \code{out} will be set to \code{NA} for all the
+previous rows.
+\item In contrast, the behavior is different if you omit \code{time} when your
+data object already has rows. In this case
+the arguments in the call to \code{addEvent} (without a value for \code{time})
+will add those arguments as columns in the prior data with the specified value
+or \emph{replace} values in those columns if they
+already exist.  Be sure this is what you want.
+For example, building on the prior example: \code{dat$addEvent(id = 1, dur = 0.5)}.
+Note that we can chain to the previously created \code{dat} object. Here, a duration of 0.5 hours
+will be added to every previous row in \code{dat} to create the new \code{dat} object, but no new
+row is added since there is no \code{time} associated with it.
+}
+
 Adding covariates is supported, but since valid subject records in Pmetrics
 with covariates must contain non-missing values at time 0, covariates should
-be included with the first call to \verb{$addEvent()}. This method can
-be chained with \code{PM_data$new()} to create a blank data object and then add rows.
+be included with the first call to \verb{$addEvent()}.
+
+As we have seen in the examples above, \code{ADDL} and \code{II} are supported.
+
+\strong{Chaining} Multiple \verb{$addEvent()} calls can be chained with \code{PM_data$new()}
+to create a blank data object and then add rows.
 This can be particularly useful for creating simulation templates.
-\code{ADDL} and \code{II} are supported. Multiple \verb{$addEvent()} calls can also be chained.
 See the example.
 }
 
