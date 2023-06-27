@@ -238,6 +238,12 @@ PM_data <- R6::R6Class("PM_data",
                              if(!"time" %in% arg_names){
                                to_add <- to_add %>% dplyr::slice(rep(1, each = nrow(self$data)))
                                self$data[arg_names] <- to_add
+                               if(validate){
+                                 self$data <- self$data %>% dplyr::select(where(~!all(is.na(.x)))) #clean up
+                                 self$standard_data <- private$validate(self$data, dt = dt, quiet = quiet)
+                               } else {
+                                 self$standard_data <- NULL
+                               }
                                return(self)
                              }
                            } else {
@@ -262,11 +268,11 @@ PM_data <- R6::R6Class("PM_data",
                              }
                            }
                            new_data <- dplyr::bind_rows(self$data, to_add) %>% dplyr::arrange(id, time) 
-                           # %>%
-                           #   dplyr::select(where(~!all(is.na(.x))))
+             
                            
                            self$data <- new_data
                            if(validate){
+                             self$data <- self$data %>% dplyr::select(where(~!all(is.na(.x))))
                              self$standard_data <- private$validate(self$data, dt = dt, quiet = quiet)
                            } else {
                              self$standard_data <- NULL
