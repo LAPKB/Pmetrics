@@ -353,7 +353,7 @@ build_model <- function(...) {
       } else if(!is.null(model_arg)){ #model supplied, but not data
         if(length(model_arg$model_list$cov)>0){ #model has covariates
           cov_names(purrr::map_chr(model_arg$model_list$cov, \(x) x$covariate))
-          ncov(length(cov_names()))
+          ncov(length(model_arg$model_list$cov))
           cov_source("Covariates obtained from model, since none were in the data.")
         } else {
           cov_names(NULL)
