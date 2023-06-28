@@ -328,7 +328,8 @@ build_model <- function(...) {
       #reactive object for data loaded from file or passed as argument
       data_obj <- reactiveVal()
       #reactive objects for covariates
-      cov_names <- reactiveVal()
+      cov_names <- reactiveVal() #supplied by model or data
+      cov_list <- reactiveVal() #supplied in app
       ncov <- reactiveVal()
       cov_source <- reactiveVal()
       
@@ -764,9 +765,18 @@ build_model <- function(...) {
             )
           })
         } else {
-          NULL
+          textAreaInput("cov_user",
+                        "Covariates",)
         }
         
+      })
+      
+      observe({
+        if(exist_obj(input$cov_user) && any(input$cov_user != "")){
+          cov_list(stringr::str_split(input$cov_user, "\n")[[1]])
+        } else {
+          cov_list("")
+        }
       })
       
       
@@ -776,7 +786,7 @@ build_model <- function(...) {
                        "Select the following parameters to be intial conditions:",
                        choices = list(`Primary` = map(1:npar(), ~input[[paste0("var_name_",.x)]]),
                                       `Secondary` = extract_sec(),
-                                      `Covariates` = as.list(cov_names)),
+                                      `Covariates` = as.list(c(cov_names(), gsub("!","",cov_list())))),
                        multiple = TRUE,
                        options = list(maxItems = numeqt())
         )
@@ -802,7 +812,7 @@ build_model <- function(...) {
                        "Select the following parameters to be bioavailability:",
                        choices = list(`Primary` = map(1:npar(), ~input[[paste0("var_name_",.x)]]),
                                       `Secondary` = extract_sec(),
-                                      `Covariates` = as.list(cov_names)),
+                                      `Covariates` = as.list(c(cov_names(), gsub("!","",cov_list())))),
                        multiple = TRUE,
                        options = list(maxItems = ninput)
         )
@@ -828,7 +838,7 @@ build_model <- function(...) {
                        "Select the following parameters to be lag times:",
                        choices = list(`Primary` = map(1:npar(), ~input[[paste0("var_name_",.x)]]),
                                       `Secondary` = extract_sec(),
-                                      `Covariates` = as.list(cov_names)),
+                                      `Covariates` = as.list(c(cov_names(), gsub("!","",cov_list())))),
                        multiple = TRUE,
                        options = list(maxItems = ninput)
         )
@@ -1001,6 +1011,29 @@ build_model <- function(...) {
                   unlist() %>% paste(collapse = ",<br>"),"<br>",
                 tab(4), ")"
               )
+          } else if(any(cov_list() != "")){
+            covs <- cov_list()
+            fixed_cov <- grepl("!",covs)
+            if(any(fixed_cov)){ #found fixed covariates
+              covs <- gsub("!","",covs)
+            }
+            all_blocks[[2]] <-
+              paste0(
+                tab(4), "cov = list(<br>",
+                paste0(purrr::map(1:length(covs), \(x) paste0(tab(6),
+                                                       "covariate(\"",
+                                                       covs[x],
+                                                       "\"",
+                                                       ifelse(
+                                                         fixed_cov[x],
+                                                         ", constant = TRUE)",
+                                                         ")"
+                                                       )
+                ))) %>%
+                  unlist() %>% paste(collapse = ",<br>"),"<br>",
+                tab(4), ")"
+              )
+            
           } else {
             all_blocks[[2]] <- NULL
           }
@@ -1389,7 +1422,8 @@ build_model <- function(...) {
                         with a parameteric statistical approach because it implies an additive model
                         such that individual j has a parameter value of $\\theta + \\eta_j$, which
                         of course can be negative. For this reason, it is far more common to use
-                        the exponential prior, typically reported as mean/CV%."),
+                        the exponential prior, typically reported as mean/CV%. However, if a parameter
+                        itself is log transformed, then mean/SD is an appropriate prior specification."),
             HTML("</li></ul></ul>"),
             markdown("
             * Parameters are assumed to be random
@@ -1429,11 +1463,9 @@ build_model <- function(...) {
             list(
               h4("Covariates"),
               markdown("
-              * No covariates available.
-              * You can still type any covariate name you want in your model equations (Equation tab) for building purposes,
-              but it will not generate a functional model with an appropriate cov block. For that, start
-              with data or prior model, and the covariates will be loaded automatically.
-              "
+              * No covariates available from model or data file.
+              * You can still type any covariate name you want into the box below. 
+              Use \"!\" to specify a piece-wise constant covariate, e.g. \"wt!\"."
               )
             )
           )
@@ -1543,7 +1575,7 @@ build_model <- function(...) {
         help_count(help_count() + 1)
       })
       
-
+      
     } #end server
   ) #end shinyApp
 } #end build_model
