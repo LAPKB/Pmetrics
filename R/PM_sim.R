@@ -56,31 +56,9 @@ PM_sim <- R6::R6Class(
     #' @description
     #' Estimates the Probability of Target Attaintment (PTA), based on the results
     #' of the current Simulation.
-    #' @param targets A vector of pharmacodynamic targets, such as
-    #' Minimum Inhibitory Concentrations (MICs), e.g. c(0.25, 0.5,1,2,4,8,16,32).
-    #' This can also be a sampled distribution using  [makePTAtarget].
-    #' @param target.type A numeric or character vector, length 1.  If numeric,
-    #' must correspond to an observation time common to all PMsim objects in
-    #' `simdata`, rounded to the nearest hour.  In this case, the target
-    #' statistic will be the ratio of observation at time `target.type`
-    #' to target.  This enables
-    #' testing of a specific timed concentration (e.g. one hour after a dose
-    #' or C1) which may be called a peak, but is not actually the maximum drug
-    #' concentration.  Be sure that the time in the simulated data is used,
-    #' e.g. 122 after a dose given at 120.  Character values may be one of
-    #' "time", "auc", "peak", or "min", for,
-    #' respectively, percent time above target within the time range
-    #' specified by `start` and `end`, ratio of area under the curve
-    #' within the time range to target, ratio of peak concentration within the time range
-    #' to target, or ratio of minimum concentration within the time range to target.
-    #'
     #' @param ... Additional parameters, refer to [makePTA]
-    pta = function(targets, target.type, ...) {
-      PM_pta$new(self,
-        targets = targets,
-        target.type = target.type,
-        ...
-      )
+    pta = function(...) {
+      PM_pta$new(self,...)
     },
     #' @description
     #' Calculate AUC
@@ -89,7 +67,41 @@ PM_sim <- R6::R6Class(
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       makeAUC(data = self, ...)
+    },
+    #' @description
+    #' Summarize simulation
+    #' @details
+    #' Choose whether to sim
+    #' @param type Quoted character value, one of
+    #' * obs for simulated observations
+    #' * amt for simulated amounts in each compartment
+    #' * parValues for simulated parameter values
+    #' @param by Optional quoted name of a column to group by
+    #' @return If `by` is ommitted, a data frame with columns for each data element except ID,
+    #' and rows in a "stat" column labeled as mean, sd, median, min and max. If `by` is specified,
+    #' return will be a list with named elements mean, sd, median, min and max, each containing 
+    #' the corresponding value for each group in `by`.
+    summary = function(type, by) {
+      summaries <- c("mean", "sd", "median", "min", "max")
+      dat <- self[[type]] 
+      if(!missing(by)){
+        dat <- dat %>% dplyr::group_by(!!!syms(by)) 
+        summ <- purrr::map(summaries, \(x) summarize(dat, across(everything(),!!!syms(x))))
+        names(summ) <- summaries
+        if("id" %in% names(summ[[1]])){
+          summ <- map(summ, \(x) x %>% select(-id))
+        }
+      } else {
+        summ <- purrr::map_df(summaries, \(x) summarize(dat, across(everything(),!!!syms(x))))
+        summ$stat <- summaries
+        if("id" %in% names(summ)){
+          summ <- summ %>% select(-id)
+        }
+      }
+
+      return(summ)
     }
+    
   )
 )
 
@@ -128,7 +140,7 @@ PM_sim$run <- function(poppar, ...) {
   combine <- if (exists("combine", where = dots)) {
     dots$combine
   } else {
-    F
+    FALSE
   }
   system("echo 347 > SEEDTO.MON") # TODO: look to fix the simulator without this
   SIMrun(poppar, ...)
@@ -182,14 +194,10 @@ PM_simlist <- R6::R6Class(
     },
     #' @description
     #' Estimates the Probability of Target Attaintment (PTA), based on the results
-    #' of the specified Simulation.
-    #' @param at Index of the PM_sim object to be plotted.
-    #' @param ... Arguments passed to [PM_pta$new].
-    pta = function(at = 1, ...) {
-      if (at > length(self$data)) {
-        stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
-      }
-      self$data[[at]]$pta(...)
+    #' of the specified Simulation.d.
+    #' @param ... Additional parameters, refer to [makePTA]
+    pta = function(...) {
+      PM_pta$new(self,...)
     },
     #' @description
     #' Calculates the AUC of the specified simulation
@@ -200,6 +208,18 @@ PM_simlist <- R6::R6Class(
         stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
       }
       self$data[[at]]$auc(...)
+    },
+    #' @description
+    #' Summarizes  the specified simulation
+    #' @param at Index of the PM_sim object to be summarized
+    #' @param ... Arguments passed to the `$summary` method for [PM_sim] objects.
+    summary = function(at = 1, ...) {
+      if (at > length(self$data)) {
+        stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
+      }
+      self$data[[at]]$summary(...)
     }
+    
+    
   )
 )

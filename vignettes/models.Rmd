@@ -362,7 +362,7 @@ ENDIF
 
 #### List
 
-Specify each variable equation as a character vector in the same way as for the app.
+Specify each variable equation as a list of unnamed character elements in the same way as for the app.
 In the example below, V0 is the primary parameter which will be estimated, but internally, 
 the model uses V as V0*wt, unless age is >18, in which case weight is capped at 75 kg. 
 It's the same for CL0. Note that the conditional statement is not named.
@@ -379,7 +379,7 @@ mod <- PM_model$new(
       covariate("wt"),
       covariate("age")
     ),
-    sec = c(
+    sec = list(
       "V = V0*wt",
       "&IF(age >18) V = V0 * 75",
       "CL = CL0 * wt"
@@ -414,7 +414,7 @@ in the section on [lag times](#mb-lag).
 
 #### List
 
-Initial conditions can be changed using a character vector named "ini". Each
+Initial conditions can be changed as a list called "ini", comprised of unnamed character elements. Each
 line of the vector specifies the compartment amount as 
 "X[.] = expression", where "." is the compartment number. 
 Primary and secondary variables and covariates may be used in the expression, 
@@ -434,7 +434,7 @@ mod <- PM_model$new(
       covariate("age"),
       covariate("IC2")
     ),
-    ini = c(
+    ini = list(
       "X[1] = IC2*V",
       "X[3] = IC3"
     )
@@ -480,7 +480,7 @@ in the section on [lag times](#mb-lag).
 #### List
 
 Bioavailability for any bolus input can be changed from the default value of 1.
-Use a character vector named "fa" where each line is of the form "FA[.] =
+Use  a list called "fa", comprised of unnamed character elements, where each line is of the form "FA[.] =
 expression", and "." is the input number. Primary and secondary
 variables and covariates may be used in the expression, as can
 conditional statements in Fortran code. An "&" continuation prefix is 
@@ -494,7 +494,7 @@ mod <- PM_model$new(
       V = msd(100, 30),
       FA1 = ab(0, 1)
     ),
-    fa = c(
+    fa = list(
       "FA[1] = FA1"
     )
   )
@@ -531,7 +531,7 @@ bioavailability in their tabs.
 
 #### List
 
-Use a character vector named "lag" where each element of the vector is of the form 
+Use a list called "lag", comprised of unnamed character elements, each of the form 
 "LAG[.] = expression", where "." is the input number. Primary and secondary 
 variables and covariates may be used in the expression, as can conditional statements 
 in Fortran code. An "&" continuation prefix is not necessary in this block 
@@ -545,7 +545,7 @@ mod <- PM_model$new(
       V = msd(100, 30),
       lag1 = ab(0, 4)
     ),
-    lag = c(
+    lag = list(
       "LAG[1] = lag1"
     )
   )
@@ -614,7 +614,7 @@ For example, if you wish to make volume dependent on weight, change `V` in the P
 
 #### List
 
-Specify a model as a character vector named "eqn" with each element an 
+Specify a model as a list called "eqn", comprised of unnamed character elements, with each element an 
 ordinary differential equation in the same R format
 as for the app. Additional equations can be included.
 
@@ -628,7 +628,7 @@ mod <- PM_model$new(
       Kcp = ab(0, 5),
       Kpc = ab(0, 5)
     ),
-    eqn = c(
+    eqn = list(
       "ktotal = Ke + Kcp",
       "dX[1] = BOLUS[1] -Ka * X[1]",
       "dX[2] = RATEIV[1] + Ka * X[1] - (ktotal) * X[2] + Kpc * X[3]",
@@ -710,7 +710,7 @@ mass spectrometer) that is always present.
 
 #### List
 
-The `out` list is a series of nested lists.  The outer list defines all the outputs. The next level defines each output equation, named as `Y1`, `Y2`, etc. Within the equation list is the equation and the error model. Within the error model for that output, is the last list comprising model and assay error specifications. In the examples below, we build this nested list structure gradually to make it more clear.
+The `out` list is a series of nested lists.  The outermost list groups all the outputs, which are themselves lists named as `Y1`, `Y2`, etc. Each of these output lists contains the value of the equation and the error model. Within the error model for that output, is the last list comprising model and assay error specifications. In the examples below, we build this nested list structure gradually to make it more clear.
 
 ```{r echo=T, eval=F}
 out = list(
