@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,14 +89,13 @@ smoothly integrated with Pmetrics inputs and outputs. Unlike NPAG and
 IT2B, it is run from within R. No batch file is created or terminal
 window opened. However, the actual simulator is a Fortran executable
 compiled and run in an OS shell.</p>
-<p><span class="r6">R6</span></p>
 <p>To complete a simulator run you must include data and a model object.
 These can be previously loaded objects with <code><a href="../reference/PM_data.html">PM_data()</a></code> and
 <code><a href="../reference/PM_model.html">PM_model()</a></code> or loaded on the fly by specifying file names of
-appropriate files in the current working directory (check with
-<code><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd()</a></code> and <code><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files()</a></code>), e.g., .csv for data
-and .txt for models, at the time of simulation. The model dictates the
-equations and the data file serves as the template specifying doses,
+appropriate files in the current working directory, which you can check
+with <code><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd()</a></code> and <code><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files()</a></code>, e.g., .csv for
+data and .txt for models, at the time of simulation. The model dictates
+the equations and the data file serves as the template specifying doses,
 observation times, covariates, etc.</p>
 <p>The other mandatory item is a prior probability distribution for all
 random parameter values in the model. This is referenced by the
@@ -107,35 +106,61 @@ random parameter values in the model. This is referenced by the
 objects. This takes <code>poppar</code> from the
 <code>PM_result$final</code> field and the model from the
 <code>PM_result$model</code> field, so only a data object needs to be
-specified at minimum.</li>
-<li>Use <code>PM_sim()$run</code>. This takes a manually specified
-values for <code>poppar</code>, <code>model</code>, and
-<code>data</code>. These can be other Pmetrics objects, or de novo,
-which can be useful for simulating from models reported in the
-literature.</li>
+specified at minimum. If no data object is specified, it will use the
+<code>PM_result$data</code> as a template, i.e. the same data used to
+fit the model. An example is below. You don’t have to supply the model
+or <code>poppar</code>, because they are included in <code>run1</code>,
+with <code>poppar</code> taken from the <code>run$final</code> field.
+Supplying a different <code>PM_data</code> object as <code>dat</code>
+allows you to use the model and population prior from <code>run1</code>
+with a different dosing and observation data template. If you omit
+<code>dat</code> in this example, the original data in <code>run1</code>
+would serve as the template.</li>
 </ul>
-<p><span class="legacy">Legacy</span></p>
-<p>To complete a simulator run you must include the names of a data and
-a model file in the working directory. The only way to run the simulator
-is with <code><a href="../reference/SIMrun.html">SIMrun()</a></code>. The <code>poppar</code> argument must
-also be supplied.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">run1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PM_load.html">PM_load</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">sim1</span> <span class="op">&lt;-</span> <span class="va">run1</span><span class="op">$</span><span class="fu">sim</span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>, nsim <span class="op">=</span> <span class="fl">100</span>, limits <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span></code></pre></div>
+<ul>
+<li>Use <code>PM_sim()$run</code>. This simulates without necessarily
+having completed a fitting run previously, i.e., there may be no
+<code><a href="../reference/PM_result.html">PM_result()</a></code> object. Here, you manually specify values for
+<code>poppar</code>, <code>model</code>, and <code>data</code>. These
+can be other Pmetrics objects, or de novo, which can be useful for
+simulating from models reported in the literature. An example is
+below.</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sim2</span> <span class="op">&lt;-</span> <span class="va">PM_sim</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>poppar <span class="op">=</span> <span class="va">run2</span><span class="op">$</span><span class="va">final</span>, data <span class="op">=</span> <span class="va">dat</span>, model <span class="op">=</span> <span class="va">mod1</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<p>Now you must include all three of the mandatory arguments:
+<code>model</code>, <code>data</code>, and <code>poppar</code>. In this
+case we used the <code><a href="../reference/PM_final.html">PM_final()</a></code> object from a different run
+(<code>run2</code>) as the <code>poppar</code>, but we could also
+specify <code>poppar</code> as a list, for example. See
+<code><a href="../reference/SIMrun.html">SIMrun()</a></code> for details on constructing a manual
+<code>poppar</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">poppar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>wt <span class="op">=</span> <span class="fl">1</span>, mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.7</span>, <span class="fl">100</span><span class="op">)</span>, covar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">900</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Under the hood, both of these calls to the simulator use the <span class="legacy">Legacy</span> <code><a href="../reference/SIMrun.html">SIMrun()</a></code> function, and thus
+all its arguments are available when using
+<code>PM_result$sim(...)</code> or <code>PM_sim$run(...)</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="model-and-data-details">Model and data details<a class="anchor" aria-label="anchor" href="#model-and-data-details"></a>
 </h2>
 <p>The structures of the model and data objects when used by the
 simulator are identical to those used by NPAG and IT2B. Of course, the
-model parameters must match the parameters in the <code>poppar</code>
-argument. Any covariates must match between model and data. The data
-object contains the template dosing and observation history as well as
-any covariates. Observation values (the OUT column) for EVID=0 events
-can be any number; they will be replaced with the simulated values.
-However, do not use -99, as this will simulate a missing value, which
-might be useful if you are testing the effects of such values. A good
-choice for the OUT value in the simulator data template is -1 to remind
-you that it is being simulated, but this choice is optional.</p>
+model primary (random) parameters must match the parameters in the
+<code>poppar</code> argument. Any covariates must match between model
+and data. The data object contains the template dosing and observation
+history as well as any covariates. Observation values (the
+<code>OUT</code> column) for <code>EVID=0</code> events can be any
+number; they will be replaced with the simulated values. However, do not
+use -99, as this will simulate a missing value, which might be useful if
+you are testing the effects of such values. A good choice for the OUT
+value in the simulator data template is -1 to remind you that it is
+being simulated, but this choice is optional.</p>
 <p>You can have any number of subject records within a data object, each
-with its own covariates if applicable. Each subject will cause the
+with its own covariate values if applicable. Each subject will cause the
 simulator to run one time, generating as many simulated profiles as you
 specify from each template subject. This is controlled by the
 <code>include</code>, <code>exclude</code>, and <code>nsim</code>
@@ -148,14 +173,14 @@ included subject.</p>
 <h2 id="simulation-options">Simulation options<a class="anchor" aria-label="anchor" href="#simulation-options"></a>
 </h2>
 <p>Details of all arguments available to modify simulations are
-available by typing <code><a href="../reference/SIMrun.html">?SIMrun</a></code> into the R console or following
-the hyperlink <code><a href="../reference/SIMrun.html">SIMrun()</a></code>. A few are highlighted here.</p>
+available by typing <code><a href="../reference/SIMrun.html">?SIMrun</a></code> into the R console or reading
+the documentation for <code><a href="../reference/SIMrun.html">SIMrun()</a></code>. A few are highlighted
+here.</p>
 <p>Simulation from a non-parametric prior distribution (from NPAG) can
 be done in one of two ways. The first is simply to take the mean and
 covariance matrix of the distribution and perform a standard Monte Carlo
 simulation. This is accomplished by setting <code>split = FALSE</code>
-as an argument to <code><a href="../reference/SIMrun.html">SIMrun()</a></code>, whether accessed directly or
-through an R6 method.</p>
+as an argument.</p>
 <p>The second way is what we call semi-parametric <span class="citation">(Goutelle et al. 2022)</span>. In this method, the
 non-parametric “support points” in the population model, each a vector
 of one value for each parameter in the model and the associated
@@ -175,13 +200,12 @@ values for the total number of simulated profiles needed to generate
 <code>nsim</code> profiles within the specified limits, as well as the
 means and standard deviations of the simulated parameters to check for
 simulator accuracy.</p>
-<p>Output from the simulator can be controlled by further arguments to
-<span class="r6">R6</span> <code>$sim</code>, <code>$run</code> or <span class="legacy">Legacy</span> <code><a href="../reference/SIMrun.html">SIMrun()</a></code>. If
-<code>makecsv</code> is not missing, a .csv file with the simulated
-profiles will be created with the name as specified by
-<code>makecsv</code>; otherwise, there will be no .csv file created. If
-<code>outname</code> is not missing, the simulated values and parameters
-will be saved in a .txt file whose name is that specified by
+<p>Output from the simulator can be controlled by further arguments
+passed to <code><a href="../reference/SIMrun.html">SIMrun()</a></code>. If <code>makecsv</code> is supplied, a
+.csv file with the simulated profiles will be created with the name as
+specified by <code>makecsv</code>; otherwise, there will be no .csv file
+created. If <code>outname</code> is supplied, the simulated values and
+parameters will be saved in a .txt file whose name is that specified by
 <code>outname</code>; otherwise the filename will be “simout”. In either
 case, integers 1 to the number of subjects will be appended to outname
 or “simout”, e.g. “simout1.txt”, “simout2.txt”.</p>
@@ -189,42 +213,94 @@ or “simout”, e.g. “simout1.txt”, “simout2.txt”.</p>
 <div class="section level2">
 <h2 id="simulation-output">Simulation output<a class="anchor" aria-label="anchor" href="#simulation-output"></a>
 </h2>
-<p><span class="r6">R6</span></p>
-<p>Simulation output files (e.g. <em>simout1.txt</em>,
-<em>simout2.txt</em>) are automatically read by <code><a href="../reference/SIMparse.html">SIMparse()</a></code>
-and returned as the new <code>PM_sim</code> object that was assigned to
-contain the results of the simulation. All files will remain on the hard
-drive.</p>
-<p><span class="legacy">Legacy</span></p>
-<p>Output files from the simulator can be read into R using the
-<code><a href="../reference/SIMparse.html">SIMparse()</a></code> command. Note that <code><a href="../reference/SIMparse.html">SIMparse()</a></code>
-returns the parsed output of a simulator run as a PMsim object, so use
-the command like this:</p>
-<p><code>simdata &lt;- SIMparse(...)</code></p>
-<p>so that simdata will contain the results. The arguments to
-<code><a href="../reference/SIMparse.html">SIMparse()</a></code> are detailed in the help for the function:
-<code>?SIMparse()</code>. <strong>NOTE</strong>: <code>combine</code> in
-<span class="r6">R6</span> becomes a argument to the simulator run
-methods, which is passed through to <code><a href="../reference/SIMparse.html">SIMparse()</a></code>, since the
-parsing function is no longer called by the user generally.</p>
+<p>In <span class="r6">R6</span>, simulation output files
+(e.g. <em>simout1.txt</em>, <em>simout2.txt</em>) are automatically read
+by <code><a href="../reference/SIMparse.html">SIMparse()</a></code> and returned as the new <code><a href="../reference/PM_sim.html">PM_sim()</a></code>
+object that was assigned to contain the results of the simulation. All
+files will remain on the hard drive. You no longer need to use
+<code><a href="../reference/SIMparse.html">SIMparse()</a></code> as Pmetrics will do it for you. This is unlike
+the <span class="legacy">Legacy</span> requirement for you to
+specifically read the output files from the simulator with
+<code><a href="../reference/SIMparse.html">SIMparse()</a></code>.</p>
+<p>If you simulated from a template with multiple subjects, you will
+have a simulation output from each template, and each will have
+<code>nsim</code> profiles. In this case, the object you assign the
+results to will be a <code><a href="../reference/PM_simlist.html">PM_simlist()</a></code> containing as many
+<code><a href="../reference/PM_sim.html">PM_sim()</a></code> objects as you had subjects in your template. If
+you wish to combine all the simulations into one <code><a href="../reference/PM_sim.html">PM_sim()</a></code>
+object, use the argument <code>combine</code> in your call to the
+simulator run methods. It will be passed to <code><a href="../reference/SIMparse.html">SIMparse()</a></code>
+during the post-simulation processing.</p>
+<p>So if our data template has 3 subjects…</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sim1</span> <span class="op">&lt;-</span> <span class="va">run1</span><span class="op">$</span><span class="fu">sim</span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span><span class="op">)</span> <span class="co">#sim1 is a PM_simlist with 3 PM_sim objects</span></span>
+<span><span class="va">sim2</span> <span class="op">&lt;-</span> <span class="va">run1</span><span class="op">$</span><span class="fu">sim</span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>, combine <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co">#sim2 is a PM_sim with combined results</span></span></code></pre></div>
+<p><code><a href="../reference/PM_sim.html">PM_sim()</a></code> objects have 6 data fields and 6 methods.</p>
+<div class="section level3">
+<h3 id="data-fields">Data fields<a class="anchor" aria-label="anchor" href="#data-fields"></a>
+</h3>
+<p>Data fields are accessed with <code>$</code>,
+e.g. <code>sim1$obs</code>.</p>
+<ul>
+<li>
+<strong>amt</strong> A data frame with the amount of drug in each
+compartment for each template subject at each time.</li>
+<li>
+<strong>obs</strong> A data frame with the simulated observations
+for each subject, time and output equation.</li>
+<li>
+<strong>parValues</strong> A data frame with the simulated parameter
+values for each subject.</li>
+<li>
+<strong>totalCov</strong> The covariance matrix of all simulated
+parameter values, including those that were discarded to be within any
+<code>limits</code> specified.</li>
+<li>
+<strong>totalMeans</strong> The means of all simulated parameter
+values, including those that were discarded to be within any
+<code>limits</code> specified.</li>
+<li>
+<strong>totalSets</strong> The number of simulated sets of parameter
+values, including those that were discarded to be within any
+<code>limits</code> specified. This number will always be ≥
+<code>nsim</code>.</li>
+</ul>
+<p>All of these are detailed further in <code><a href="../reference/SIMparse.html">SIMparse()</a></code>.</p>
 </div>
-<div class="section level2">
-<h2 id="plotting-simulation-output">Plotting simulation output<a class="anchor" aria-label="anchor" href="#plotting-simulation-output"></a>
-</h2>
-<p><span class="r6">R6</span></p>
-<p>Output from <code>PM_result$sim()</code> and
-<code>PM_sim$run()</code> is a <code>PM_sim</code> object. The object
-can be plotted with the attached plot method: <code>PM_sim$plot()</code>
-which in turn calls the <code><a href="../reference/plot.PM_sim.html">plot.PM_sim()</a></code> function. See the
-help for the function and <code><a href="../articles/plotly.html">vignette("plotly")</a></code> for further
-details.</p>
-<p><span class="legacy">Legacy</span></p>
-<p>Load the output of <code><a href="../reference/SIMrun.html">SIMrun()</a></code> with <code><a href="../reference/SIMparse.html">SIMparse()</a></code>
-as described above. This creates a <code>PMsim</code> object which can
-be plotted.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SIMparse.html">SIMparse</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sim</span><span class="op">)</span> <span class="co">#see plot.PMsim for help</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="methods">Methods<a class="anchor" aria-label="anchor" href="#methods"></a>
+</h3>
+<p>Methods are accessed with <code>$</code> and include parentheses to
+indicate a function, possibly with arguments
+e.g. <code>sim1$auc()</code> or <code>sim1$save("sim1.rds")</code>.</p>
+<ul>
+<li>
+<strong>auc</strong> Call <code><a href="../reference/makeAUC.html">makeAUC()</a></code> to calculate the
+area under the curve from the simulated data.</li>
+<li>
+<strong>pta</strong> Call <code><a href="../reference/makePTA.html">makePTA()</a></code> to perform a
+probability of target attainment analysis with the simulated data.</li>
+<li>
+<strong>plot</strong> Call <code><a href="../reference/plot.PM_sim.html">plot.PM_sim()</a></code> to plot the
+simulated data.</li>
+<li>
+<strong>summary</strong> Summarize any data field with or without
+grouping.</li>
+<li>
+<strong>save</strong> Save the simulation to your hard drive.</li>
+<li>
+<strong>clone</strong> Copy a simulation result.</li>
+</ul>
+<p>All of these are detailed further in <code><a href="../reference/PM_sim.html">PM_sim()</a></code>.</p>
+<p><code><a href="../reference/PM_simlist.html">PM_simlist()</a></code> objects have only one data field
+<code>data</code> which is a list of the <code><a href="../reference/PM_sim.html">PM_sim()</a></code> objects.
+All 6 methods in <code><a href="../reference/PM_sim.html">PM_sim()</a></code> objects are available in
+<code><a href="../reference/PM_simlist.html">PM_simlist()</a></code>. To apply them to one of the members of the
+<code>data</code> list use <code>at</code> followed by additional
+arguments to the method.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sim1</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span>at <span class="op">=</span> <span class="fl">2</span>,<span class="va">...</span><span class="op">)</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="citations">Citations<a class="anchor" aria-label="anchor" href="#citations"></a>
