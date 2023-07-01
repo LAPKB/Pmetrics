@@ -72,7 +72,7 @@ PM_sim <- R6::R6Class(
     #' Summarize simulation
     #' @details
     #' Choose whether to sim
-    #' @param type Quoted character value, one of
+    #' @param field Quoted character value, one of
     #' * obs for simulated observations
     #' * amt for simulated amounts in each compartment
     #' * parValues for simulated parameter values
@@ -81,9 +81,9 @@ PM_sim <- R6::R6Class(
     #' and rows in a "stat" column labeled as mean, sd, median, min and max. If `by` is specified,
     #' return will be a list with named elements mean, sd, median, min and max, each containing 
     #' the corresponding value for each group in `by`.
-    summary = function(type, by) {
+    summary = function(field, by) {
       summaries <- c("mean", "sd", "median", "min", "max")
-      dat <- self[[type]] 
+      dat <- self[[field]] 
       if(!missing(by)){
         dat <- dat %>% dplyr::group_by(!!!syms(by)) 
         summ <- purrr::map(summaries, \(x) summarize(dat, across(everything(),!!!syms(x))))
@@ -208,6 +208,12 @@ PM_simlist <- R6::R6Class(
         stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
       }
       self$data[[at]]$auc(...)
+    },
+    #' @description
+    #' Save the current PM_sim object into a .rds file.
+    #' @param file_name Name of the file to be created, the default is PMsim.rds
+    save = function(file_name = "PMsim.rds") {
+      saveRDS(self, file_name)
     },
     #' @description
     #' Summarizes  the specified simulation
