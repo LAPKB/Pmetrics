@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -412,11 +412,12 @@ ENDIF</code></pre>
 <div class="section level4">
 <h4 id="list-2">List<a class="anchor" aria-label="anchor" href="#list-2"></a>
 </h4>
-<p>Specify each variable equation as a character vector in the same way
-as for the app. In the example below, V0 is the primary parameter which
-will be estimated, but internally, the model uses V as V0*wt, unless age
-is &gt;18, in which case weight is capped at 75 kg. It’s the same for
-CL0. Note that the conditional statement is not named.</p>
+<p>Specify each variable equation as a list of unnamed character
+elements in the same way as for the app. In the example below, V0 is the
+primary parameter which will be estimated, but internally, the model
+uses V as V0*wt, unless age is &gt;18, in which case weight is capped at
+75 kg. It’s the same for CL0. Note that the conditional statement is not
+named.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -429,7 +430,7 @@ CL0. Note that the conditional statement is not named.</p>
 <span>      <span class="fu">covariate</span><span class="op">(</span><span class="st">"wt"</span><span class="op">)</span>,</span>
 <span>      <span class="fu">covariate</span><span class="op">(</span><span class="st">"age"</span><span class="op">)</span></span>
 <span>    <span class="op">)</span>,</span>
-<span>    sec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    sec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>      <span class="st">"V = V0*wt"</span>,</span>
 <span>      <span class="st">"&amp;IF(age &gt;18) V = V0 * 75"</span>,</span>
 <span>      <span class="st">"CL = CL0 * wt"</span></span>
@@ -464,13 +465,13 @@ variable, or covariate.</p>
 <div class="section level4">
 <h4 id="list-3">List<a class="anchor" aria-label="anchor" href="#list-3"></a>
 </h4>
-<p>Initial conditions can be changed using a character vector named
-“ini”. Each line of the vector specifies the compartment amount as “X[.]
-= expression”, where “.” is the compartment number. Primary and
-secondary variables and covariates may be used in the expression, as can
-conditional statements in Fortran code. An “&amp;” continuation prefix
-is not necessary in this block for any statement, although if present,
-will be ignored.</p>
+<p>Initial conditions can be changed as a list called “ini”, comprised
+of unnamed character elements. Each line of the vector specifies the
+compartment amount as “X[.] = expression”, where “.” is the compartment
+number. Primary and secondary variables and covariates may be used in
+the expression, as can conditional statements in Fortran code. An
+“&amp;” continuation prefix is not necessary in this block for any
+statement, although if present, will be ignored.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -484,7 +485,7 @@ will be ignored.</p>
 <span>      <span class="fu">covariate</span><span class="op">(</span><span class="st">"age"</span><span class="op">)</span>,</span>
 <span>      <span class="fu">covariate</span><span class="op">(</span><span class="st">"IC2"</span><span class="op">)</span></span>
 <span>    <span class="op">)</span>,</span>
-<span>    ini <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    ini <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>      <span class="st">"X[1] = IC2*V"</span>,</span>
 <span>      <span class="st">"X[3] = IC3"</span></span>
 <span>    <span class="op">)</span></span>
@@ -535,12 +536,12 @@ secondary variable, or covariate.</p>
 <h4 id="list-4">List<a class="anchor" aria-label="anchor" href="#list-4"></a>
 </h4>
 <p>Bioavailability for any bolus input can be changed from the default
-value of 1. Use a character vector named “fa” where each line is of the
-form “FA[.] = expression”, and “.” is the input number. Primary and
-secondary variables and covariates may be used in the expression, as can
-conditional statements in Fortran code. An “&amp;” continuation prefix
-is not necessary in this block for any statement, although if present,
-will be ignored.</p>
+value of 1. Use a list called “fa”, comprised of unnamed character
+elements, where each line is of the form “FA[.] = expression”, and “.”
+is the input number. Primary and secondary variables and covariates may
+be used in the expression, as can conditional statements in Fortran
+code. An “&amp;” continuation prefix is not necessary in this block for
+any statement, although if present, will be ignored.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -549,7 +550,7 @@ will be ignored.</p>
 <span>      V <span class="op">=</span> <span class="fu">msd</span><span class="op">(</span><span class="fl">100</span>, <span class="fl">30</span><span class="op">)</span>,</span>
 <span>      FA1 <span class="op">=</span> <span class="fu">ab</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span>    <span class="op">)</span>,</span>
-<span>    fa <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    fa <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>      <span class="st">"FA[1] = FA1"</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
@@ -585,8 +586,8 @@ their tabs.</p>
 <div class="section level4">
 <h4 id="list-5">List<a class="anchor" aria-label="anchor" href="#list-5"></a>
 </h4>
-<p>Use a character vector named “lag” where each element of the vector
-is of the form “LAG[.] = expression”, where “.” is the input number.
+<p>Use a list called “lag”, comprised of unnamed character elements,
+each of the form “LAG[.] = expression”, where “.” is the input number.
 Primary and secondary variables and covariates may be used in the
 expression, as can conditional statements in Fortran code. An “&amp;”
 continuation prefix is not necessary in this block for any statement,
@@ -599,7 +600,7 @@ although if present, will be ignored.</p>
 <span>      V <span class="op">=</span> <span class="fu">msd</span><span class="op">(</span><span class="fl">100</span>, <span class="fl">30</span><span class="op">)</span>,</span>
 <span>      lag1 <span class="op">=</span> <span class="fu">ab</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span></span>
 <span>    <span class="op">)</span>,</span>
-<span>    lag <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    lag <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>      <span class="st">"LAG[1] = lag1"</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
@@ -678,9 +679,10 @@ will know how to solve the algebraic model.</p>
 <div class="section level4">
 <h4 id="list-6">List<a class="anchor" aria-label="anchor" href="#list-6"></a>
 </h4>
-<p>Specify a model as a character vector named “eqn” with each element
-an ordinary differential equation in the same R format as for the app.
-Additional equations can be included.</p>
+<p>Specify a model as a list called “eqn”, comprised of unnamed
+character elements, with each element an ordinary differential equation
+in the same R format as for the app. Additional equations can be
+included.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -691,7 +693,7 @@ Additional equations can be included.</p>
 <span>      Kcp <span class="op">=</span> <span class="fu">ab</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span>,</span>
 <span>      Kpc <span class="op">=</span> <span class="fu">ab</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span>    <span class="op">)</span>,</span>
-<span>    eqn <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    eqn <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>      <span class="st">"ktotal = Ke + Kcp"</span>,</span>
 <span>      <span class="st">"dX[1] = BOLUS[1] -Ka * X[1]"</span>,</span>
 <span>      <span class="st">"dX[2] = RATEIV[1] + Ka * X[1] - (ktotal) * X[2] + Kpc * X[3]"</span>,</span>
@@ -800,11 +802,11 @@ present.</p>
 <div class="section level4">
 <h4 id="list-7">List<a class="anchor" aria-label="anchor" href="#list-7"></a>
 </h4>
-<p>The <code>out</code> list is a series of nested lists. The outer list
-defines all the outputs. The next level defines each output equation,
-named as <code>Y1</code>, <code>Y2</code>, etc. Within the equation list
-is the equation and the error model. Within the error model for that
-output, is the last list comprising model and assay error
+<p>The <code>out</code> list is a series of nested lists. The outermost
+list groups all the outputs, which are themselves lists named as
+<code>Y1</code>, <code>Y2</code>, etc. Each of these output lists
+contains the value of the equation and the error model. Within the error
+model for that output, is the last list comprising model and assay error
 specifications. In the examples below, we build this nested list
 structure gradually to make it more clear.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">

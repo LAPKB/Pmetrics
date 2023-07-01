@@ -43,6 +43,8 @@ for further details.
 
 See \link{makeAUC}
 
+Choose whether to sim
+
 The saved object is an .rds file. When loaded, it should be assigned to an R
 object, e.g. \code{sim1 <- PM_sim$load("filename")}.
 
@@ -76,6 +78,7 @@ any due to truncation limits}
 \item \href{#method-PM_sim-plot}{\code{PM_sim$plot()}}
 \item \href{#method-PM_sim-pta}{\code{PM_sim$pta()}}
 \item \href{#method-PM_sim-auc}{\code{PM_sim$auc()}}
+\item \href{#method-PM_sim-summary}{\code{PM_sim$summary()}}
 \item \href{#method-PM_sim-clone}{\code{PM_sim$clone()}}
 }
 }
@@ -138,31 +141,12 @@ Plot \code{PM_sim} object.
 Estimates the Probability of Target Attaintment (PTA), based on the results
 of the current Simulation.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$pta(targets, target.type, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$pta(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{targets}}{A vector of pharmacodynamic targets, such as
-Minimum Inhibitory Concentrations (MICs), e.g. c(0.25, 0.5,1,2,4,8,16,32).
-This can also be a sampled distribution using  \link{makePTAtarget}.}
-
-\item{\code{target.type}}{A numeric or character vector, length 1.  If numeric,
-must correspond to an observation time common to all PMsim objects in
-\code{simdata}, rounded to the nearest hour.  In this case, the target
-statistic will be the ratio of observation at time \code{target.type}
-to target.  This enables
-testing of a specific timed concentration (e.g. one hour after a dose
-or C1) which may be called a peak, but is not actually the maximum drug
-concentration.  Be sure that the time in the simulated data is used,
-e.g. 122 after a dose given at 120.  Character values may be one of
-"time", "auc", "peak", or "min", for,
-respectively, percent time above target within the time range
-specified by \code{start} and \code{end}, ratio of area under the curve
-within the time range to target, ratio of peak concentration within the time range
-to target, or ratio of minimum concentration within the time range to target.}
-
 \item{\code{...}}{Additional parameters, refer to \link{makePTA}}
 }
 \if{html}{\out{</div>}}
@@ -183,6 +167,36 @@ Calculate AUC
 \item{\code{...}}{Arguments passed to \link{makeAUC}}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_sim-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_sim-summary}{}}}
+\subsection{Method \code{summary()}}{
+Summarize simulation
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(type, by)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{type}}{Quoted character value, one of
+\itemize{
+\item obs for simulated observations
+\item amt for simulated amounts in each compartment
+\item parValues for simulated parameter values
+}}
+
+\item{\code{by}}{Optional quoted name of a column to group by}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+If \code{by} is ommitted, a data frame with columns for each data element except ID,
+and rows in a "stat" column labeled as mean, sd, median, min and max. If \code{by} is specified,
+return will be a list with named elements mean, sd, median, min and max, each containing
+the corresponding value for each group in \code{by}.
 }
 }
 \if{html}{\out{<hr>}}
