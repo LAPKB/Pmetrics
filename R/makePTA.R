@@ -147,7 +147,7 @@ makePTA <- function(simdata, simlabels, targets, target.type, success, outeq = 1
     }
     
     if(dataType == 2){ #PM_simlist
-      simdata <- simdata$data #extract data
+      simdata <- purrr::map(simdata$data, \(x) x$data) #extract data
     }
     
     #nothing to do for dataType=3 already in right format

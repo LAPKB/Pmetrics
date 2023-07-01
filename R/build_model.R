@@ -260,7 +260,7 @@ build_model <- function(...) {
                  
         ), #end tabPanel: Lag
         #tabPanel: Equations
-        tabPanel("EQUations",
+        tabPanel("EQuatioNs",
                  actionButton(
                    "help_eqn",
                    "",
@@ -1043,7 +1043,7 @@ build_model <- function(...) {
           if (input$secVar != ""){
             all_blocks[[3]] <-
               paste0(
-                tab(4), "sec = c(<br>",
+                tab(4), "sec = list(<br>",
                 paste0(tab(6), "\"", stringr::str_split_1(input$secVar, "\n"),
                        "\"", collapse = ",<br>"),
                 "<br>", tab(4), ")"
@@ -1069,7 +1069,7 @@ build_model <- function(...) {
           if (input$iniCond != ""){
             all_blocks[[5]] <-
               paste0(
-                tab(4), "ini = c(<br>",
+                tab(4), "ini = list(<br>",
                 paste0(tab(6), "\"", input$iniCond, "\"", collapse = ",<br>"),
                 "<br>", tab(4), ")"
               )
@@ -1081,7 +1081,7 @@ build_model <- function(...) {
           if (input$FA != ""){
             all_blocks[[6]] <-
               paste0(
-                tab(4), "fa = c(<br>",
+                tab(4), "fa = list(<br>",
                 paste0(tab(6), "\"", input$FA, "\"", collapse = ",<br>"),
                 "<br>", tab(4), ")"
               )
@@ -1093,7 +1093,7 @@ build_model <- function(...) {
           if (input$lagTime != ""){
             all_blocks[[7]] <-
               paste0(
-                tab(4), "lag = c(<br>",
+                tab(4), "lag = list(<br>",
                 paste0(tab(6), "\"", input$lagTime, "\"", collapse = ",<br>"),
                 "<br>", tab(4), ")"
               )
@@ -1108,7 +1108,7 @@ build_model <- function(...) {
             #browser()
             all_blocks[[8]] <-
               paste0(
-                tab(4), "eqn = c(<br>",
+                tab(4), "eqn = list(<br>",
                 if(!is.null(alg) && alg != ""){
                   paste0(tab(6), "\"{algebraic: ", alg, "}\",<br>")
                 },
