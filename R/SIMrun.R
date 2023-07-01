@@ -306,14 +306,18 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
                    makecsv, outname, clean = T, quiet = F, nocheck = F, overwrite = F, combine) {
   
   if (inherits(poppar, "PM_result")) {
-    is_res <- T
+    is_res <- TRUE
     res <- poppar$clone()
     poppar <- poppar$final$clone()
-  } else {
-    if(inherits(poppar, "PM_final")){
+    # number of random parameters
+    npar <- nrow(poppar$popCov)
+  } else if(inherits(poppar, "PM_final")){
       poppar <- poppar$clone()
-    }
-    is_res <- F
+      npar <- nrow(poppar$popCov)
+      is_res <- FALSE
+  } else {
+    npar <- nrow(poppar[[3]])
+    is_res <- FALSE
   }
   
   
@@ -397,8 +401,6 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
     }
   }
   
-  # number of random parameters
-    npar <- nrow(poppar$popCov)
 
   
   # deal with limits on parameter simulated values
