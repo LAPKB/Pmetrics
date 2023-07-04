@@ -54,7 +54,7 @@ Below is example code to create a PTA. Refer to [makePTA](https://lapkb.github.i
 #first define labels for simulated regimens
 simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid")
 
-#using a previously created simulation build into Pmetrics
+#using a previously created simulation built into Pmetrics
 pta1 <- simEx$pta(simlabels = simlabels,
   targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
   success = 0.6, start = 120, end = 144)
@@ -71,7 +71,6 @@ The object `pta1` is a `PM_pta()` object, which has two data fields:
   - *simnum* and *target* are as for 'results'. 
   - The *prop.success* column has the proportion with a pdi > 'success', as specified in the function call. 
   - The *pdi.mean* and *pdi.sd* columns have the mean and standard deviation of the target pharmacodynamic index (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.
-
 
 It also has several methods:
 
