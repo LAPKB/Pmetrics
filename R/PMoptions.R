@@ -162,7 +162,13 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
       PMopts$func_defaults <- modifyList(PMopts$func_defaults, func_defaults)
     }
   }
-  if (!missing(gfortran_path)) PMopts$gfortran_path <- gfortran_path
+  if (!missing(gfortran_path)) {
+    PMopts$gfortran_path <- gfortran_path
+    PMopts$compilation_statements <- c(
+      sprintf("%s -march=native -w -O3 -o <exec> <files>", PMopts$gfortran_path),
+      sprintf("%s -march=native -w -fopenmp -fmax-stack-var-size=32768 -O3 -o <exec> <files>", PMopts$gfortran_path)
+    )
+  }
 
   # set the options for everything except func_defaults...
   options(purrr::keep(PMopts, names(PMopts) != "func_defaults"))
