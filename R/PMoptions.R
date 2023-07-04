@@ -106,15 +106,6 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
   # set defaults
   loc <- substr(Sys.getlocale("LC_TIME"), 1, 2) # get system language
 
-  if (missing(gfortran_path)) {
-    gfortran_path <- if (getOS() == 1 && isM1()) {
-      "/opt/homebrew/bin/gfortran"
-    } else {
-      "gfortran"
-    }
-  }
-
-
   defaultOpts <- list(
     sep = ",",
     dec = ".",
@@ -127,6 +118,11 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
     backend = "fortran",
     rust_template = NULL,
     report_template = "plotly",
+    gfortran_path = if (getOS() == 1 && isM1()) {
+      "/opt/homebrew/bin/gfortran"
+    } else {
+      "gfortran"
+    },
     func_defaults = NULL
   )
 
@@ -166,6 +162,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
       PMopts$func_defaults <- modifyList(PMopts$func_defaults, func_defaults)
     }
   }
+  if (!missing(gfortran_path)) PMopts$gfortran_path <- gfortran_path
 
   # set the options for everything except func_defaults...
   options(purrr::keep(PMopts, names(PMopts) != "func_defaults"))
