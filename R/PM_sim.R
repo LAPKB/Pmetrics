@@ -76,22 +76,47 @@ PM_sim <- R6::R6Class(
     #' * obs for simulated observations
     #' * amt for simulated amounts in each compartment
     #' * parValues for simulated parameter values
-    #' @param by Optional quoted name of a column to group by
+    #' @param by Optional quoted column name(s) to group by, e.g. `by = "id"` or 
+    #' `by = c("id", "outeq")`.
+    #' @param individual If "id" is included within `by`, the summary statistics
+    #' will be calculated for each individual, i.e. each individual's mean, sd, median,
+    #' min and max observations. If `individual` is `FALSE` (the default), then those 
+    #' summaries will again be summarized to present, for example, the mean of
+    #' all subjects' mean observations, or the mean of their maximum observations. 
+    #' This argument will be ignored if "id" is not in `by`.
     #' @return If `by` is ommitted, a data frame with rows for each data element except ID,
     #' and columns labeled as mean, sd, median, min and max. If `by` is specified,
     #' return will be a list with named elements mean, sd, median, min and max, each containing 
     #' the corresponding value for each group in `by`.
-    summary = function(field, by) {
+    summary = function(field, by, individual = FALSE) {
       summaries <- c("mean", "sd", "median", "min", "max")
       dat <- self[[field]] 
       if(!missing(by)){
-        dat <- dat %>% dplyr::group_by(!!!syms(by)) 
-        summ <- purrr::map(summaries, \(x) summarize(dat, across(everything(),!!!syms(x))))
+        summ <- purrr::map(summaries, \(x) dplyr::summarize(dat, 
+                                                            dplyr::across(everything(),!!!rlang::syms(x)),
+                                                            .by = by
+        )
+        ) 
         names(summ) <- summaries
-        if("id" %in% names(summ[[1]])){
-          summ <- map(summ, \(x) x %>% select(-id))
+        if("id" %in% by){
+          if(!individual){
+            #group by individual, then summarize
+            by <- by %>% purrr::discard(\(x) x == "id") #remove id
+            if(length(by)==0) {by <- NULL} #set to NULL if character(0)
+            summ <- purrr::map(summ, \(x){
+              purrr::map_df(summaries, \(y) {
+                dplyr::summarize(x, 
+                                 dplyr::across(everything(),!!!rlang::syms(y)),
+                                 .by = by) %>%
+                  select(-id) }) %>%
+                t() %>% as.data.frame() %>% rename_with(~summaries)
+            })
+          }
+        } else {
+          #id is not in grouping, so just remove id column
+          summ <- purrr::map(summ, \(x) x %>% select(-id))
         }
-      } else {
+      } else { #no grouping
         summ <- purrr::map_df(summaries, \(x) summarize(dat, across(everything(),!!!syms(x)))) 
         if("id" %in% names(summ)){
           summ <- summ %>% select(-id)
@@ -99,7 +124,7 @@ PM_sim <- R6::R6Class(
         summ <- summ %>% t() %>% as.data.frame()
         names(summ) <- summaries
       }
-
+      
       return(summ)
     }
     
@@ -145,7 +170,7 @@ PM_sim$run <- function(poppar, ...) {
   }
   system("echo 347 > SEEDTO.MON") # TODO: look to fix the simulator without this
   SIMrun(poppar, ...)
-
+  
   # TODO: read files and fix the missing E problem
   sim_files <- list.files() %>% .[grepl("simout*", .)]
   if (length(sim_files) == 1) {
