@@ -175,13 +175,13 @@ Calculate AUC
 \subsection{Method \code{summary()}}{
 Summarize simulation
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(type, by)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(field, by)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{type}}{Quoted character value, one of
+\item{\code{field}}{Quoted character value, one of
 \itemize{
 \item obs for simulated observations
 \item amt for simulated amounts in each compartment
