@@ -193,8 +193,8 @@ Summarize simulation
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-If \code{by} is ommitted, a data frame with columns for each data element except ID,
-and rows in a "stat" column labeled as mean, sd, median, min and max. If \code{by} is specified,
+If \code{by} is ommitted, a data frame with rows for each data element except ID,
+and columns labeled as mean, sd, median, min and max. If \code{by} is specified,
 return will be a list with named elements mean, sd, median, min and max, each containing
 the corresponding value for each group in \code{by}.
 }
