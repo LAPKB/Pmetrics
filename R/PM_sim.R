@@ -77,8 +77,8 @@ PM_sim <- R6::R6Class(
     #' * amt for simulated amounts in each compartment
     #' * parValues for simulated parameter values
     #' @param by Optional quoted name of a column to group by
-    #' @return If `by` is ommitted, a data frame with columns for each data element except ID,
-    #' and rows in a "stat" column labeled as mean, sd, median, min and max. If `by` is specified,
+    #' @return If `by` is ommitted, a data frame with rows for each data element except ID,
+    #' and columns labeled as mean, sd, median, min and max. If `by` is specified,
     #' return will be a list with named elements mean, sd, median, min and max, each containing 
     #' the corresponding value for each group in `by`.
     summary = function(field, by) {
@@ -92,11 +92,12 @@ PM_sim <- R6::R6Class(
           summ <- map(summ, \(x) x %>% select(-id))
         }
       } else {
-        summ <- purrr::map_df(summaries, \(x) summarize(dat, across(everything(),!!!syms(x))))
-        summ$stat <- summaries
+        summ <- purrr::map_df(summaries, \(x) summarize(dat, across(everything(),!!!syms(x)))) 
         if("id" %in% names(summ)){
           summ <- summ %>% select(-id)
         }
+        summ <- summ %>% t() %>% as.data.frame()
+        names(summ) <- summaries
       }
 
       return(summ)
