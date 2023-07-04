@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -221,6 +221,7 @@ normally distributed normalized prediction errors.</p>
     <div class="dont-index"><p><a href="makeValid.html">makeValid</a></p>
 <p>Other PMplots: 
 <code><a href="plot.MMopt.html">plot.MMopt</a>()</code>,
+<code><a href="plot.PM_cov.html">plot.PM_cov</a>()</code>,
 <code><a href="plot.PM_cycle.html">plot.PM_cycle</a>()</code>,
 <code><a href="plot.PM_data.html">plot.PM_data</a>()</code>,
 <code><a href="plot.PM_final.html">plot.PM_final</a>()</code>,
@@ -241,13 +242,6 @@ normally distributed normalized prediction errors.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">#VPC</span></span></span>
 <span class="r-in"><span><span class="va">NPex_val</span><span class="op">$</span><span class="va">valid</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Returning more (or less) than 1 row per `summarise()` group was deprecated in</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> dplyr 1.1.0.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Please use `reframe()` instead.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> When switching from `summarise()` to `reframe()`, remember that `reframe()`</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>   always returns an ungrouped data frame and adjust accordingly.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">Pmetrics</span> package.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span>   Please report the issue at <span style="color: #0000BB; font-style: italic;">&lt;https://github.com/LAPKB/Pmetrics/issues&gt;</span>.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">#pcVPC</span></span></span>
 <span class="r-in"><span><span class="va">NPex_val</span><span class="op">$</span><span class="va">valid</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span>type <span class="op">=</span> <span class="st">"pcvpc"</span><span class="op">)</span></span></span>

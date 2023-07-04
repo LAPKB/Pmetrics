@@ -1,0 +1,86 @@
+---
+title: "Probability of Target Attainment"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Probability of Target Attainment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup}
+library(Pmetrics)
+```
+
+```{r, include = FALSE}
+#first define labels for simulated regimens
+simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid")
+
+#using a previously created simulation build into Pmetrics
+pta1 <- simEx$pta(simlabels = simlabels,
+  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+  success = 0.6, start = 120, end = 144)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Probability of target attainment (PTA) is a powerful application of simulated results. The idea is to calculate the proportion of simulated profiles corresponding to a particular dosage regimen which meet given criteria for "success". 
+
+For example, it could be a certain AUC or time above a threshold. Below is a simple figure showing 4 concentration-time profiles after a gven dosage. If the target is percent of the dosing interval > 4 mg/L of at least 60% (0.6), then only one of the 4 curves meets this threshold, and the PTA is 25%. We can also generate the mean (44%) and standard deviation (39%) of the % time above 4 mg/L, also called the pharmacodynamic index (PDI) for this dosage.
+
+```{r echo = F}
+knitr::include_graphics("images/pta1.png")
+```
+
+Of course we usually simulate far more than 4 profiles! Below is the same dosage and target for 1000 profiles.
+
+```{r echo = F}
+knitr::include_graphics("images/pta2.png")
+```
+
+Pmetrics allows you to create a PTA in two ways.
+
+* Use the `$pta()` method attached to `PM_sim()` and `PM_simlist()` objects.
+* Use `PM_pta$new()`.
+
+The only difference between these two is that with the first, you do not have to supply the name of your simulation object because you are operating upon it already. 
+
+Below is example code to create a PTA. Refer to [makePTA](https://lapkb.github.io/Pmetrics/reference/makePTA.html) for details on the arguments to the method.
+
+```{r echo = TRUE, eval = FALSE}
+#first define labels for simulated regimens
+simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid")
+
+#using a previously created simulation build into Pmetrics
+pta1 <- simEx$pta(simlabels = simlabels,
+  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+  success = 0.6, start = 120, end = 144)
+```
+
+The object `pta1` is a `PM_pta()` object, which has two data fields:
+
+* **results** A data frame with the following columns: *simnum*, *id*, *target*, *pdi.* 
+  - *simnum* is the number of the simulation
+  - *id* is the simulated profile number within each simulation
+  - *target* is the specified target
+  - *pdi* is the target pharmacodynamic index, e.g. time > target, auc:target, etc.
+* **outcome** A data frame summarizing the results with the following columns: *simnum*, *target*, *prop.success*, *pdi.mean*, and *pdi.sd.* If 'targets' was specified via `makePTAtarget()` to be a sampled distribution, then the target column will be missing from the outcome table. 
+  - *simnum* and *target* are as for 'results'. 
+  - The *prop.success* column has the proportion with a pdi > 'success', as specified in the function call. 
+  - The *pdi.mean* and *pdi.sd* columns have the mean and standard deviation of the target pharmacodynamic index (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.
+
+
+It also has several methods:
+
+* **clone()** to make a copy.
+* **save()** and **load()** to save/load as an .rds file.
+* **plot()** to call `plot.PM_pta()`.
+* **summary()** to call `summary.PMpta()`
+
+```{r echo = TRUE, eval = TRUE}
+pta1$plot()
+```
+

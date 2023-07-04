@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,11 +60,19 @@
 depo compartment(s).</p></li>
 <li><p><strong>par</strong> Either "K" for parameterization with rate constants, or "CL" for
 clearances.</p></li>
-<li><p><strong>bolus</strong> Does the model contain a bolus input, e.g. oral?</p></li>
+<li><p><strong>route</strong> Input route(s)</p></li>
 <li><p><strong>elim</strong> List of compartment numbers with elimination</p></li>
-<li><p><strong>ode</strong> Does the model contain differential equations?</p></li>
 <li><p><strong>mod</strong> the <a href="PM_model.html">PM_model</a></p></li>
 <li><p><strong>name</strong> Model name in plain English</p></li>
+<li><p><strong>algebraic</strong> Token indicating algebraic solution. Format is a character
+vector of 4 elements:</p><ul><li><p>P[]: primary parameters of at least Ke, V, and optionally Ka, KCP and KPC,
+e.g. PKe,V</p></li>
+<li><p>B[]: Bolus input compartment numbers, 0 for no bolus, e.g. B1</p></li>
+<li><p>R[]: RateIV inputs, 0 for no IV, e.g. R2</p></li>
+<li><p>O[]: Output compartments, e.g. O2
+For example, one compartment IV model with no oral input:
+"PKe,V, B0, R1, O1"</p></li>
+</ul></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
