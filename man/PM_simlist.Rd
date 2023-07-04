@@ -27,6 +27,7 @@ used as an argument to \code{PM_sim$run}, which is the default.
 \item \href{#method-PM_simlist-plot}{\code{PM_simlist$plot()}}
 \item \href{#method-PM_simlist-pta}{\code{PM_simlist$pta()}}
 \item \href{#method-PM_simlist-auc}{\code{PM_simlist$auc()}}
+\item \href{#method-PM_simlist-save}{\code{PM_simlist$save()}}
 \item \href{#method-PM_simlist-summary}{\code{PM_simlist$summary()}}
 \item \href{#method-PM_simlist-clone}{\code{PM_simlist$clone()}}
 }
@@ -100,6 +101,23 @@ Calculates the AUC of the specified simulation
 \item{\code{at}}{Index of the PM_sim object to be plotted.}
 
 \item{\code{...}}{Arguments passed to \link{makeAUC}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_simlist-save"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_simlist-save}{}}}
+\subsection{Method \code{save()}}{
+Save the current PM_sim object into a .rds file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_simlist$save(file_name = "PMsim.rds")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file_name}}{Name of the file to be created, the default is PMsim.rds}
 }
 \if{html}{\out{</div>}}
 }
