@@ -12,7 +12,7 @@ to process the data"><meta property="og:image" content="https://lapkb.github.io/
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,9 +71,10 @@ your clock times did not include seconds, they were appended as ":00" to the end
 of each time and will appear that way in the copy of the original data.</p>
 <p>There are a number of methods
 defined for a PM_data object, including to write the standard data back
-to a file for future use, to summarize and to plot the object, and to
+to a file for future use, to summarize and to plot the object, to
 conduct a non-compartmental analysis on the raw data using
-<a href="makeNCA.html">makeNCA</a>.</p>
+<a href="makeNCA.html">makeNCA</a>, to calculate an AUC using <a href="makeAUC.html">makeAUC</a>, and to add event rows, which
+is particularly useful for making simulation templates on the fly.</p>
     </div>
     <div class="section level2">
     <h2 id="public-fields">Public fields<a class="anchor" aria-label="anchor" href="#public-fields"></a></h2>
@@ -100,12 +101,13 @@ conduct a non-compartmental analysis on the raw data using
 <li><p><a href="#method-PM_data-plot"><code>PM_data$plot()</code></a></p></li>
 <li><p><a href="#method-PM_data-print"><code>PM_data$print()</code></a></p></li>
 <li><p><a href="#method-PM_data-summary"><code>PM_data$summary()</code></a></p></li>
+<li><p><a href="#method-PM_data-addEvent"><code>PM_data$addEvent()</code></a></p></li>
 <li><p><a href="#method-PM_data-clone"><code>PM_data$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-PM_data-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
 <p>Create new data object</p><div class="section">
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/PM_data.html">PM_data</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">data</span>, dt <span class="op">=</span> <span class="cn">NULL</span>, quiet <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/PM_data.html">PM_data</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>data <span class="op">=</span> <span class="cn">NULL</span>, dt <span class="op">=</span> <span class="cn">NULL</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span>, validate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -135,6 +137,10 @@ Other date/time formats are possible. See <code><a href="https://lubridate.tidyv
 
 <dt><code>quiet</code></dt>
 <dd><p>Quietly validate. Default is <code>FALSE</code>.</p></dd>
+
+
+<dt><code>validate</code></dt>
+<dd><p>Check for errors. Default is <code>TRUE</code>. Strongly recommended.</p></dd>
 
 
 <dt><code>...</code></dt>
@@ -167,7 +173,7 @@ in the working directory.</p></dd>
 
 
 <dt><code>...</code></dt>
-<dd><p>ARguments passed to PMwriteMatrix</p></dd>
+<dd><p>Arguments passed to PMwriteMatrix</p></dd>
 
 
 </dl><p></p></div>
@@ -295,15 +301,96 @@ passed if <code>viewer = FALSE</code>.</p></dd>
 </div>
 
 
-</div><p></p><hr><a id="method-PM_data-clone"></a><div class="section">
-<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
-<p>The objects of this class are cloneable with this method.</p><div class="section">
+</div><p></p><hr><a id="method-PM_data-addEvent"></a><div class="section">
+<h3 id="method-addevent-">Method <code>addEvent()</code><a class="anchor" aria-label="anchor" href="#method-addevent-"></a></h3>
+<p>Add events to PM_data object</p><div class="section">
 <h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_data</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_data</span><span class="op">$</span><span class="fu">addEvent</span><span class="op">(</span><span class="va">...</span>, dt <span class="op">=</span> <span class="cn">NULL</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span>, validate <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>...</code></dt>
+<dd><p>Column names and values.</p></dd>
+
+
+<dt><code>dt</code></dt>
+<dd><p>Pmetrics will try a variety of date/time formats. If all 16 of
+them fail, use this parameter to specify the correct format as a
+character vector whose
+first element is date format and second is time. Use the following abbreviations:</p><ul><li><p>Y = 4 digit year</p></li>
+<li><p>y = 2 digit year</p></li>
+<li><p>m = decimal month (1, 2, ..., 12)</p></li>
+<li><p>d = decimal day (1, 2, ..., 31)</p></li>
+<li><p>H = hours (0-23)</p></li>
+<li><p>M = minutes (0-59)
+Example: <code>format = c("myd", "mh")</code>. Not one of the tried combinations!
+Always check to make sure that dates/times were parsed correctly and the
+relative times in the <code>PM_data$standard_data</code> field look correct.
+Other date/time formats are possible. See <code><a href="https://lubridate.tidyverse.org/reference/parse_date_time.html" class="external-link">lubridate::parse_date_time()</a></code> for these.</p></li>
+</ul></dd>
+
+
+<dt><code>quiet</code></dt>
+<dd><p>Quietly validate. Default is <code>FALSE</code>.</p></dd>
+
+
+<dt><code>validate</code></dt>
+<dd><p>Validate the new row or not. Default is <code>FALSE</code> as a new row
+added to a blank will result in a one-row data object, which is invalid. Also,
+only one event type (dose or observation) should be added at a time, so if the
+new object contains only doses while building, this would cause an error. You
+should set <code>validate = TRUE</code> for the final addition.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="details-8">Details<a class="anchor" aria-label="anchor" href="#details-8"></a></h4>
+<p>Add lines to a PM_data object by supplying named columns and values.
+<code>ID</code> is always required. <code>Time</code> is handled differently depending on
+the sequence of <code>addEvent</code> calls (see <strong>Chaining</strong> below).</p><ul><li><p>It is required for the first call to <code>addEvent</code> and should be 0.
+For example: For example: <code>dat &lt;- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)</code></p></li>
+<li><p>For subsequent calls to <code>addEvent</code> with specific times it should be included.
+For example: <code>dat &lt;- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)$addEvent(id = 1, time = 144, out = -1)</code>
+Here, because <code>out</code> wasn't in the original call <em>and</em> the next call contains a value for
+<code>time</code>, an <code>out</code> value of -1 will be added at time 144 and <code>out</code> will be set to <code>NA</code> for all the
+previous rows.</p></li>
+<li><p>In contrast, the behavior is different if you omit <code>time</code> when your
+data object already has rows. In this case
+the arguments in the call to <code>addEvent</code> (without a value for <code>time</code>)
+will add those arguments as columns in the prior data with the specified value
+or <em>replace</em> values in those columns if they
+already exist.  Be sure this is what you want.
+For example, building on the prior example: <code>dat$addEvent(id = 1, dur = 0.5)</code>.
+Note that we can chain to the previously created <code>dat</code> object. Here, a duration of 0.5 hours
+will be added to every previous row in <code>dat</code> to create the new <code>dat</code> object, but no new
+row is added since there is no <code>time</code> associated with it.</p></li>
+</ul><p>Adding covariates is supported, but since valid subject records in Pmetrics
+with covariates must contain non-missing values at time 0, covariates should
+be included with the first call to <code>$addEvent()</code>.</p>
+<p>As we have seen in the examples above, <code>ADDL</code> and <code>II</code> are supported.</p>
+<p><strong>Chaining</strong> Multiple <code>$addEvent()</code> calls can be chained with <code>PM_data$new()</code>
+to create a blank data object and then add rows.
+This can be particularly useful for creating simulation templates.
+See the example.</p>
+</div>
+
+<div class="section">
+<h4 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a></h4>
+<p></p><div class="r example copy"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/PM_data.html">PM_data</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="fu">addEvent</span><span class="op">(</span>id <span class="op">=</span> <span class="fl">1</span>, time <span class="op">=</span> <span class="fl">0</span>, dose <span class="op">=</span> <span class="fl">100</span>, addl <span class="op">=</span> <span class="fl">4</span>, ii <span class="op">=</span> <span class="fl">12</span>, out <span class="op">=</span> <span class="cn">NA</span>, wt <span class="op">=</span> <span class="fl">75</span><span class="op">)</span><span class="op">$</span><span class="fu">addEvent</span><span class="op">(</span>id <span class="op">=</span> <span class="fl">1</span>, time <span class="op">=</span> <span class="fl">60</span>, out <span class="op">=</span> <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-PM_data-clone"></a><div class="section">
+<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
+<p>The objects of this class are cloneable with this method.</p><div class="section">
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_data</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
@@ -315,6 +402,16 @@ passed if <code>viewer = FALSE</code>.</p></dd>
 
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
+<span class="r-in"><span><span class="co">## Method `PM_data$addEvent`</span></span></span>
+<span class="r-in"><span><span class="co">## ------------------------------------------------</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">PM_data</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="fu">addEvent</span><span class="op">(</span>id <span class="op">=</span> <span class="fl">1</span>, time <span class="op">=</span> <span class="fl">0</span>, dose <span class="op">=</span> <span class="fl">100</span>, addl <span class="op">=</span> <span class="fl">4</span>, ii <span class="op">=</span> <span class="fl">12</span>, out <span class="op">=</span> <span class="cn">NA</span>, wt <span class="op">=</span> <span class="fl">75</span><span class="op">)</span><span class="op">$</span><span class="fu">addEvent</span><span class="op">(</span>id <span class="op">=</span> <span class="fl">1</span>, time <span class="op">=</span> <span class="fl">60</span>, out <span class="op">=</span> <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 

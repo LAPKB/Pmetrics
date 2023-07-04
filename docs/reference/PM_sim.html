@@ -16,7 +16,7 @@ of a model fitting run."><meta property="og:image" content="https://lapkb.github
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,6 +98,7 @@ simulation.</p>
 the results and return the PM_sim objects. See help on both of these functions
 for further details.</p>
 <p>See <a href="makeAUC.html">makeAUC</a></p>
+<p>Choose whether to sim</p>
 <p>The saved object is an .rds file. When loaded, it should be assigned to an R
 object, e.g. <code>sim1 &lt;- PM_sim$load("filename")</code>.</p>
 <p>Calling this function is equivalent to <code>PM_result$sim()</code>.</p>
@@ -146,6 +147,7 @@ any due to truncation limits</p></dd>
 <li><p><a href="#method-PM_sim-plot"><code>PM_sim$plot()</code></a></p></li>
 <li><p><a href="#method-PM_sim-pta"><code>PM_sim$pta()</code></a></p></li>
 <li><p><a href="#method-PM_sim-auc"><code>PM_sim$auc()</code></a></p></li>
+<li><p><a href="#method-PM_sim-summary"><code>PM_sim$summary()</code></a></p></li>
 <li><p><a href="#method-PM_sim-clone"><code>PM_sim$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-PM_sim-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
@@ -201,35 +203,12 @@ method for <a href="PM_result.html">PM_result</a></p><div class="section">
 <p>Estimates the Probability of Target Attaintment (PTA), based on the results
 of the current Simulation.</p><div class="section">
 <h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_sim</span><span class="op">$</span><span class="fu">pta</span><span class="op">(</span><span class="va">targets</span>, <span class="va">target.type</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_sim</span><span class="op">$</span><span class="fu">pta</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>targets</code></dt>
-<dd><p>A vector of pharmacodynamic targets, such as
-Minimum Inhibitory Concentrations (MICs), e.g. c(0.25, 0.5,1,2,4,8,16,32).
-This can also be a sampled distribution using  <a href="makePTAtarget.html">makePTAtarget</a>.</p></dd>
-
-
-<dt><code>target.type</code></dt>
-<dd><p>A numeric or character vector, length 1.  If numeric,
-must correspond to an observation time common to all PMsim objects in
-<code>simdata</code>, rounded to the nearest hour.  In this case, the target
-statistic will be the ratio of observation at time <code>target.type</code>
-to target.  This enables
-testing of a specific timed concentration (e.g. one hour after a dose
-or C1) which may be called a peak, but is not actually the maximum drug
-concentration.  Be sure that the time in the simulated data is used,
-e.g. 122 after a dose given at 120.  Character values may be one of
-"time", "auc", "peak", or "min", for,
-respectively, percent time above target within the time range
-specified by <code>start</code> and <code>end</code>, ratio of area under the curve
-within the time range to target, ratio of peak concentration within the time range
-to target, or ratio of minimum concentration within the time range to target.</p></dd>
-
-
-<dt><code>...</code></dt>
+<p></p><div class="arguments"><dl><dt><code>...</code></dt>
 <dd><p>Additional parameters, refer to <a href="makePTA.html">makePTA</a></p></dd>
 
 
@@ -252,15 +231,55 @@ to target, or ratio of minimum concentration within the time range to target.</p
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-PM_sim-clone"></a><div class="section">
-<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
-<p>The objects of this class are cloneable with this method.</p><div class="section">
+</div><p></p><hr><a id="method-PM_sim-summary"></a><div class="section">
+<h3 id="method-summary-">Method <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code><a class="anchor" aria-label="anchor" href="#method-summary-"></a></h3>
+<p>Summarize simulation</p><div class="section">
 <h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_sim</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_sim</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span><span class="va">field</span>, <span class="va">by</span>, individual <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>field</code></dt>
+<dd><p>Quoted character value, one of</p><ul><li><p>obs for simulated observations</p></li>
+<li><p>amt for simulated amounts in each compartment</p></li>
+<li><p>parValues for simulated parameter values</p></li>
+</ul></dd>
+
+
+<dt><code>by</code></dt>
+<dd><p>Optional quoted column name(s) to group by, e.g. <code>by = "id"</code> or
+<code>by = c("id", "outeq")</code>.</p></dd>
+
+
+<dt><code>individual</code></dt>
+<dd><p>If "id" is included within <code>by</code>, the summary statistics
+will be calculated for each individual, i.e. each individual's mean, sd, median,
+min and max observations. If <code>individual</code> is <code>FALSE</code> (the default), then those
+summaries will again be summarized to present, for example, the mean of
+all subjects' mean observations, or the mean of their maximum observations.
+This argument will be ignored if "id" is not in <code>by</code>.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns">Returns<a class="anchor" aria-label="anchor" href="#returns"></a></h4>
+<p>If <code>by</code> is ommitted, a data frame with rows for each data element except ID,
+and columns labeled as mean, sd, median, min and max. If <code>by</code> is specified,
+return will be a list with named elements mean, sd, median, min and max, each containing
+the corresponding value for each group in <code>by</code>.</p>
+</div>
+
+</div><p></p><hr><a id="method-PM_sim-clone"></a><div class="section">
+<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
+<p>The objects of this class are cloneable with this method.</p><div class="section">
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_sim</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

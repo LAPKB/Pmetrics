@@ -175,7 +175,7 @@ Calculate AUC
 \subsection{Method \code{summary()}}{
 Summarize simulation
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(field, by)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(field, by, individual = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -188,13 +188,21 @@ Summarize simulation
 \item parValues for simulated parameter values
 }}
 
-\item{\code{by}}{Optional quoted name of a column to group by}
+\item{\code{by}}{Optional quoted column name(s) to group by, e.g. \code{by = "id"} or
+\code{by = c("id", "outeq")}.}
+
+\item{\code{individual}}{If "id" is included within \code{by}, the summary statistics
+will be calculated for each individual, i.e. each individual's mean, sd, median,
+min and max observations. If \code{individual} is \code{FALSE} (the default), then those
+summaries will again be summarized to present, for example, the mean of
+all subjects' mean observations, or the mean of their maximum observations.
+This argument will be ignored if "id" is not in \code{by}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-If \code{by} is ommitted, a data frame with columns for each data element except ID,
-and rows in a "stat" column labeled as mean, sd, median, min and max. If \code{by} is specified,
+If \code{by} is ommitted, a data frame with rows for each data element except ID,
+and columns labeled as mean, sd, median, min and max. If \code{by} is specified,
 return will be a list with named elements mean, sd, median, min and max, each containing
 the corresponding value for each group in \code{by}.
 }

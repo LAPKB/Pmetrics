@@ -11,11 +11,21 @@ A tibble with the following columns
 depo compartment(s).
 \item \strong{par} Either "K" for parameterization with rate constants, or "CL" for
 clearances.
-\item \strong{bolus} Does the model contain a bolus input, e.g. oral?
+\item \strong{route} Input route(s)
 \item \strong{elim} List of compartment numbers with elimination
-\item \strong{ode} Does the model contain differential equations?
 \item \strong{mod} the \link{PM_model}
 \item \strong{name} Model name in plain English
+\item \strong{algebraic} Token indicating algebraic solution. Format is a character
+vector of 4 elements:
+\itemize{
+\item P[]: primary parameters of at least Ke, V, and optionally Ka, KCP and KPC,
+e.g. P\link{Ke,V}
+\item B[]: Bolus input compartment numbers, 0 for no bolus, e.g. B\link{1}
+\item R[]: RateIV inputs, 0 for no IV, e.g. R\link{2}
+\item O[]: Output compartments, e.g. O\link{2}
+For example, one compartment IV model with no oral input:
+"P\link{Ke,V}, B\link{0}, R\link{1}, O\link{1}"
+}
 }
 }
 \usage{
