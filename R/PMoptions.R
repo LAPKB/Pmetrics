@@ -111,8 +111,8 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
     dec = ".",
     lang = loc,
     compilation_statements = c(
-      sprintf("%s -march=native -w -O3 -o <exec> <files>", gfortran_path),
-      sprintf("%s -march=native -w -fopenmp -fmax-stack-var-size=32768 -O3 -o <exec> <files>", gfortran_path)
+      sprintf("%s -march=native -w -O3 -o <exec> <files>", PMopts$gfortran_path),
+      sprintf("%s -march=native -w -fopenmp -fmax-stack-var-size=32768 -O3 -o <exec> <files>", PMopts$gfortran_path)
     ),
     server_address = "http://localhost:5000",
     backend = "fortran",
