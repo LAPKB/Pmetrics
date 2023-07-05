@@ -413,7 +413,7 @@ plot.PMcov <- function(x,formula,icen="median",include,exclude,mult=1,log=F,squa
       data <- data.frame(id=as.character(id),t(temp3),row.names=1)
     } else {data <- data.frame(id=as.character(id),temp3,row.names=1:nrow(temp3))}
   }
-  browser()
+
   data2 <- model.frame(formula=formula,data=data)
   x <- data2[,2]
   y <- data2[,1]
