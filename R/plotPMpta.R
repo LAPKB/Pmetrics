@@ -31,7 +31,7 @@
 #' [ColorBrewer](https://colorbrewer2.org/#type=qualitative&scheme=Accent&n=6) site.
 #' Choosing the number of data classes to correspond to regimens, and qualitative data
 #' results in a distinct palette. Easiest importing into R is to copy/paste the Export 
-#' of JavaScript on the ColorBrewer website. The default is "Spectral". Palettes
+#' of JavaScript on the ColorBrewer website. The default is "Set1". Palettes
 #' with fewer colors than regimens will be recycled. A color can also be a character
 #' vector of color names, recycled as needed. For example, a print-friendly choice
 #' is `line = list(color = "black")`.
@@ -55,7 +55,7 @@
 #' `marker` list should be exactly named:
 #' * color Default marker color is the same as the line color. If line color is specified,
 #' marker color does not need to also be specified. Even if line plotting is suppressed
-#' with `line = F`, the default color value of "Spectral" will be applied to markers,
+#' with `line = F`, the default color value of "Set1" will be applied to markers,
 #' unless specified, e.g. `marker = list(color = "Blues")`.
 #' * symbol Maps to the [plot_ly] `symbols` argument to override default symbols
 #' applied to the markers for each regimen. If only one value is supplied for this,
@@ -138,7 +138,7 @@ plot.PM_pta <- function(x,
   
   
   #parse line
-  line <- amendLine(line, default = list(color = "Spectral", 
+  line <- amendLine(line, default = list(color = "Set1", 
                                          width = 2,
                                          dash = 1:nsim))
   
