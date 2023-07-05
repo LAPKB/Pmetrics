@@ -129,7 +129,7 @@ pta1$plot()
 pta2$plot()
 ```
 
-Notice the difference between the plots, according to whether `target` was discrete or from a distribution. The latter plot is also know as a "Cumulative Fractional Response" or CFR, which is the proportion of a population achieving a response for a give dosage with a distribution of target values in that population.
+Notice the difference between the plots, according to whether `target` was discrete or from a distribution. The latter plot is also known as a "Cumulative Fractional Response" or CFR, which is the proportion of a population achieving a response for a give dosage with a distribution of target values in that population.
 
 There are many ways to modify the plot, consistent with other Pmetrics plots which use the *plotly* package and all detailed in the help for `plot.PM_data()`. For example, 
 
