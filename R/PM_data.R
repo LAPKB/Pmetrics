@@ -352,8 +352,8 @@ PM_data <- R6::R6Class("PM_data",
           mutate(time = ii * row_number() + time)
 
         dataObj <- bind_rows(dataObj, new_lines) %>%
-          arrange(id, row, time) %>%
-          mutate(
+          dplyr::arrange(id, time) %>%
+          dplyr::mutate(
             addl = ifelse(addl == -1, -1, NA),
             ii = ifelse(addl == -1, ii, NA)
           ) %>%
@@ -362,7 +362,7 @@ PM_data <- R6::R6Class("PM_data",
         msg <- c(msg, "ADDL > 0 rows expanded.\n")
       }
       dataObj <- dataObj %>% select(standardNames, all_of(covNames))
-      dataObj <- dataObj %>% dplyr::arrange(id, time)
+      #dataObj <- dataObj %>% dplyr::arrange(id, time)
 
       if (length(msg) > 2) {
         msg <- msg[-2]
