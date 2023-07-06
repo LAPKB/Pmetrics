@@ -62,6 +62,10 @@ PM_result <- R6::R6Class(
       } else {
         self$ITdata <- NULL
       }
+      if (is.null(out$NPdata)){
+        self$NPdata <- out
+        class(self$NPdata) <- c("NPAG", "rust", "list")
+      }
       self$pop <- PM_pop$new(out$pop)
       self$post <- PM_post$new(out$post)
       self$final <- PM_final$new(out$final)

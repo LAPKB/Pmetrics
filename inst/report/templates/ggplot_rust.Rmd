@@ -20,7 +20,6 @@ library(Pmetrics)
 library(htmltools)
 ```
 
-
 ```{r setup-extra}
 res <- params$res
 # setwd("~/Prosjekter/Pmetrics_dev/Rust_parse_stuff/7")
@@ -33,7 +32,6 @@ res <- params$res
 did_converge <- ifelse(res$NPdata$converge == 1, "converged", "did not converge")
 ```
 
-
 The model includes `r res$NPdata$nsub` subjects, and a total of `r  sum(res$NPdata$nobs, na.rm = TRUE)` observations.
 
 After `r res$NPdata$icyctot`/`r res$NPdata$icycmax` cycles, the model `r did_converge`.
@@ -43,7 +41,7 @@ After `r res$NPdata$icyctot`/`r res$NPdata$icycmax` cycles, the model `r did_con
 ```{r}
 # summary function
 metrics <- function(icen, outeq) {
-  pe <- summary(res$op, icen = icen, outeq = outeq)$pe %>%
+  pe <- summary(res$op$data, icen = icen, outeq = outeq)$pe %>%
     rename(
       `Mean PE` = mpe,
       `Mean weighted PE` = mwpe,
@@ -77,7 +75,7 @@ metrics <- function(icen, outeq) {
 ```
 
 ```{r, results = "asis"}
-for (i in 1:res$numeqt) {
+for (i in 1:res$NPdata$numeqt) {
   cat("### Outeq ", i, "{.tabset .tabset-pills}\n")
   cat("\n")
   cat("#### Median\n")
@@ -91,7 +89,6 @@ for (i in 1:res$numeqt) {
 }
 ```
 
-
 ## Observed-predicted plot {.tabset .tabset-pills}
 
 Points should appear close to, and randomly distributed around, the (dashed) identity-line.
@@ -102,7 +99,7 @@ op_plot <- function(icen, pred.type, outeq) {
     pop = "Population",
     post = "Individual"
   )
-  p <- res$op %>%
+  p <- res$op$data %>%
     filter(icen == !!icen, pred.type == !!pred.type, outeq == !!outeq) %>%
     ggplot(aes(x = pred, y = obs)) +
     geom_abline(slope = 1, intercept = 0, lty = "dashed") +
@@ -118,7 +115,7 @@ op_plot <- function(icen, pred.type, outeq) {
 ```
 
 ```{r, results = "asis"}
-for (i in 1:res$numeqt) {
+for (i in 1:res$NPdata$numeqt) {
   p1 <- op_plot("median", "pop", i)
   p2 <- op_plot("median", "post", i)
   p3 <- op_plot("mean", "pop", i)
@@ -137,7 +134,6 @@ for (i in 1:res$numeqt) {
 }
 ```
 
-
 ## Posterior residuals by time {.tabset .tabset-pills}
 
 Residuals should be randomly distributed around zero, with no apparent trend.
@@ -145,7 +141,7 @@ For how to interpret these plots, please review our [website](https://lapkb.gith
 
 ```{r}
 resid_plot <- function(x, y, icen, outeq) {
-  p <- res$op %>%
+  p <- res$op$data %>%
     filter(icen == !!icen, outeq == !!outeq, pred.type == "post") %>% # Posterior concentrations (not pop)
     ggplot(aes(x = {{ x }}, y = {{ y }})) +
     geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
@@ -158,7 +154,7 @@ resid_plot <- function(x, y, icen, outeq) {
 ```
 
 ```{r, results = "asis"}
-for (i in 1:res$numeqt) {
+for (i in 1:res$NPdata$numeqt) {
   p1 <- resid_plot(time, d, "median", i)
   p2 <- resid_plot(time, wd, "median", i)
   p3 <- resid_plot(time, d, "mean", i)
@@ -177,14 +173,13 @@ for (i in 1:res$numeqt) {
 }
 ```
 
-
 ## Posterior residuals by concentration {.tabset}
 
 Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
 
 ```{r, results = "asis"}
-for (i in 1:res$numeqt) {
+for (i in 1:res$NPdata$numeqt) {
   p1 <- resid_plot(obs, d, "median", i)
   p2 <- resid_plot(obs, wd, "median", i)
   p3 <- resid_plot(obs, d, "mean", i)
@@ -203,10 +198,10 @@ for (i in 1:res$numeqt) {
 }
 ```
 
-
 ## Parameter values and distributions
 
 The model included the following primary parameters
+
 ```{r}
 par_lims <- data.frame(
   name = head(names(res$final$popPoints), -1),
@@ -233,6 +228,7 @@ par_lims %>%
 ```
 
 #### Marginal plots
+
 Support points, height correspond to probability
 
 ```{r}
@@ -247,8 +243,8 @@ res$final$popPoints %>%
   labs(x = "Parameter value", y = "Density")
 ```
 
-
 #### Posterior parameter distributions
+
 Posterior parameter density estimates based on the mean and median icen.
 
 ```{r}
@@ -283,6 +279,7 @@ pmean %>%
 #### Table of support points
 
 The following table lists the final support points, in order of decreasing probability
+
 ```{r}
 res$final$popPoints %>%
   arrange(desc(prob)) %>%
@@ -294,16 +291,15 @@ res$final$popPoints %>%
   datatable(options = list(pageLength = 10, searching = FALSE))
 ```
 
-
-
 ## Cycle information
+
 ```{r}
 cycle_info <- data.frame(
-  cycle = res$cycle$cycnum,
-  ll = res$cycle$ll,
-  AIC = res$cycle$aic,
-  BIC = res$cycle$bic,
-  gamlam = res$cycle$gamlam
+  cycle = res$cycle$data$cycnum,
+  ll = res$cycle$data$ll,
+  AIC = res$cycle$data$aic,
+  BIC = res$cycle$data$bic,
+  gamlam = res$cycle$data$gamlam
 )
 
 cycle_info <- slice_tail(cycle_info, prop = 0.8)
@@ -396,7 +392,8 @@ plot_ll + plot_aic_bic + plot_gamlam + plot_mean + plot_sd + plot_median +
 ```
 
 <!-- THE FOLLOWING SECTION CONTAINS JAVASCRPT SUPPORT FUNCTIONS -->
-```{js}
+
+````{js}
 // This code ensures that click "Mean" tab changes all tabs to "Mean"
 // Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943
 
@@ -435,5 +432,4 @@ this.value = 'Hide Output';
 });
 });
 $("input.hideshow").click()
-```
-
+````
