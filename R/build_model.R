@@ -82,7 +82,7 @@ build_model <- function(...) {
                           fileInput(
                             "data_file",
                             "Choose prior data file",
-                            accept = "text/plain"
+                            accept = c(".csv", ".ssv", "text/plain")
                           ),
                    )
                  ),
