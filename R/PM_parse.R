@@ -188,7 +188,7 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
   theta <- data.table::fread(
     input = theta_file,
     sep = ",",
-    header = FALSE,
+    header = TRUE,
     data.table = FALSE,
     dec = ".",
     showProgress = TRUE
@@ -203,12 +203,8 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
     showProgress = TRUE
   )
 
-  par_names <- RcppTOML::parseTOML(config_file)$random %>% names()
-
-  par_names <- c(par_names, "prob")
-
-  names(theta) <- par_names
-
+  par_names = names(theta)[names(theta) != "prob"]
+  
   # Pop
   popMean <- theta %>%
     summarise(across(.cols = -prob, .fns = function(x) {
@@ -234,8 +230,6 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
     }))
 
   # Posterior
-  post_names <- c("id", "point", par_names)
-  names(post) <- post_names
 
   postMean <- post %>%
     group_by(id) %>%
