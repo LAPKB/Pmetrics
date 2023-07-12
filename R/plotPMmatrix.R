@@ -50,14 +50,14 @@
 #' "BrBG", or "Set2". An example vector could be `c("red", "green", "blue")`. It is not
 #' necessary to specify the same number of colors as groups within `color`, as colors
 #' will be interpolated to generate the correct number. The default when `color`
-#' is specified is the "Spectral" palette.
+#' is specified is the "Set1" palette.
 #' @param names A character vector of names to label the **groups** if `legend = T`.
 #' This vector does need to be the same length as the number of groups within `color`.
 #' Example: `c("Male", "Female")` if `color = "gender"` and "gender" is a covariate
 #' in the data.
 #' @param mult `r template("mult")` 
-#' @param outeq `r template("outeq")` 
-#' @param block `r template("block")` Default is 1.
+#' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2`.
+#' @param block `r template("block")` Default is 1, but can be multiple if present in the data, e.g. `c(1, 3)`.
 #' @param tad `r template("tad")` 
 #' @param overlay Boolean operator to overlay all time concentration profiles in a single plot.
 #' The default is `TRUE`.
@@ -95,22 +95,24 @@
 #' @family PMplots
 
 plot.PM_data <- function(x, 
-                         include, exclude, 
-                         line,
-                         marker = T,
-                         color,
-                         colors,
-                         names,
+                         include = NA, 
+                         exclude = NA, 
+                         line = list(join = TRUE, pred = FALSE),
+                         marker = TRUE,
+                         color = NULL,
+                         colors = "Set1",
+                         names = NULL,
                          mult = 1, 
                          outeq = 1, 
                          block = 1,
-                         tad = F,
-                         overlay = T,
-                         legend = F, 
-                         log = F, 
-                         grid = F,
-                         xlab, ylab,
-                         title,
+                         tad = FALSE,
+                         overlay = TRUE,
+                         legend = FALSE, 
+                         log = FALSE, 
+                         grid = FALSE,
+                         xlab = "Time", 
+                         ylab = "Output",
+                         title = "",
                          xlim, ylim,...){
   
   
@@ -121,15 +123,11 @@ plot.PM_data <- function(x,
   marker <- amendMarker(marker)
   
   #process line
-  if(missing(line)){
-    line <- list(join = T, pred = F)
-  } else {
-    if(any(!base::names(line)%in% c("join", "pred"))){
-      cat(paste0(crayon::red("Warning: "),"<line> should be a list with at most two named elements: ",crayon::blue("<join>")," and/or ",crayon::blue("<pred>"),".\n See help(\"plot.PM_data\")."))
-    }
-    if(is.null(line$join)) {line$join <- F}
-    if(is.null(line$pred)) {line$pred <- F}
+  if(any(!base::names(line)%in% c("join", "pred"))){
+    cat(paste0(crayon::red("Warning: "),"<line> should be a list with at most two named elements: ",crayon::blue("<join>")," and/or ",crayon::blue("<pred>"),".\n See help(\"plot.PM_data\")."))
   }
+  if(is.null(line$join)) {line$join <- FALSE}
+  if(is.null(line$pred)) {line$pred <- FALSE}
   
   join <- amendLine(line$join)
   if(is.logical(line$pred) && !line$pred){ #if line$pred is FALSE
@@ -137,25 +135,7 @@ plot.PM_data <- function(x,
   }
   pred <- line$pred #process further later
   
-  
-  #process for groups
-  if(missing(color)){
-    color <- NULL
-  } else {
-    if(!color %in% base::names(x$standard_data)){
-      stop(paste0(crayon::red(color), " is not a column in the data.\n"))
-    }
-  }
-  
   palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
-  if(missing(colors)){
-    colors <- "Spectral"
-  }
-  
-  if(missing(names)){
-    names <- NULL
-  }
-  
   
   #get the rest of the dots
   layout <- amendDots(list(...))
@@ -170,9 +150,6 @@ plot.PM_data <- function(x,
   layout$yaxis <- setGrid(layout$yaxis, grid)
   
   #axis labels if needed
-  xlab <- if(missing(xlab)){"Time"} else {xlab}
-  ylab <- if(missing(ylab)){"Output"} else {ylab}
-  
   layout$xaxis$title <- amendTitle(xlab)
   if(is.character(ylab)){
     layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
@@ -191,30 +168,51 @@ plot.PM_data <- function(x,
   }
   
   #title
-  if(missing(title)){ title <- ""}
   layout$title <- amendTitle(title, default = list(size = 20))
   
   
   
   # Data processing ---------------------------------------------------------
-  
-  #filter & group by id
-  if(missing(include)) {include <- NA}
-  if(missing(exclude)) {exclude <- NA}
-  
-  presub <- x$standard_data %>% filter(outeq == !!outeq, block == !!block, evid == 0) %>% 
-    includeExclude(include,exclude) %>% 
-    group_by(id)
+  #make blocks
+  x$standard_data <- makePMmatrixBlock(x$standard_data)
   
   #time after dose
-  if(tad){presub$time <- calcTAD(presub)}
+  if(tad){x$standard_data$time <- calcTAD(x$standard_data)}
+  
+  #filter
+  presub <- x$standard_data %>% filter(outeq %in% !!outeq, block %in% !!block, evid == 0) %>% 
+    includeExclude(include,exclude) 
+
+  
+  
+  #make group column for colors
+  if(!is.null(color)){
+    if(!color %in% base::names(x$standard_data)){
+      stop(paste0(crayon::red(color), " is not a column in the data.\n"))
+    }
+    if(!is.null(names)){
+      presub$group <- factor(presub[[color]], labels = names)
+    } else {
+      presub$group <- presub[[color]] 
+    }
+  } else {
+    presub <- presub %>% mutate(group = "") 
+  }
+  if(length(outeq)>1){
+    presub <- presub %>% rowwise() %>%
+      mutate(group = paste0(group,", outeq ",outeq))
+  }
+  if(length(block)>1){
+    presub <- presub %>% rowwise() %>%
+      mutate(group = paste0(group,", block ",block))
+  }
+  
+  presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*","")
+ 
   
   #select relevant columns
-  sub <- presub %>% select(id, time, out)
-  if(!is.null(color)){
-    group <- presub %>% ungroup() %>% select(group = !!color) 
-    sub <- bind_cols(sub, group)
-  }
+  sub <- presub %>% select(id, time, out, group) %>% ungroup()
+  sub$group <- factor(sub$group)
   
   #add identifier
   sub$src <- "obs"
@@ -245,7 +243,7 @@ plot.PM_data <- function(x,
     }
     
     #filter and group by id
-    predsub <- predData %>% filter(outeq == !!outeq, block == !!block, icen == !!icen) %>% 
+    predsub <- predData %>% filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen) %>% 
       includeExclude(include,exclude) %>% group_by(id)
     
     #time after dose
@@ -255,10 +253,8 @@ plot.PM_data <- function(x,
     predsub <- predsub %>% select(id, time, out = pred) %>%
       filter(out !=-99)
     
-    #add group if needed
-    if(!is.null(color)){
-      predsub$group <- sub$group[match(predsub$id, sub$id)]
-    }
+    #add group
+    predsub$group <- sub$group[match(predsub$id, sub$id)]
     
     #add identifier
     predsub$src <- "pred"
@@ -280,27 +276,17 @@ plot.PM_data <- function(x,
       text <- ~id
     }
     
-    
-    if(!is.null(color)){ #there was grouping
-      if(!is.null(names)){
-        allsub$group <- factor(allsub$group, labels = names)
-      } else {
-        allsub$group <- factor(allsub$group)
-      }
+    if(any(allsub$group!="")){ #there was grouping
       
       if(length(colors)==1 && colors %in% palettes$name){
         max_colors <- palettes$maxcolors[match(colors, palettes$name)]
         n_colors <- length(levels(allsub$group))
         colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
       }
-      
-      # colorLevels <- allsub$group
-      # nameLevels <- allsub$group
+
       marker$color <- NULL
       join$color <- NULL
-    } else {
-      # colorLevels <- NULL
-      # nameLevels <- "Observed"
+    } else { # no grouping
       allsub$group <- factor(1,labels = "Observed")
     }
     
@@ -347,6 +333,7 @@ plot.PM_data <- function(x,
   
   #call the plot function and display appropriately 
   if(overlay){
+    allsub <- allsub %>% dplyr::group_by(id)
     p <- dataPlot(allsub, overlay = T, includePred)
     print(p)
   } else { #overlay = F, ie. split them
