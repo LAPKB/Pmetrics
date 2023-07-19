@@ -56,8 +56,8 @@
 #' Example: `c("Male", "Female")` if `color = "gender"` and "gender" is a covariate
 #' in the data.
 #' @param mult `r template("mult")` 
-#' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2`.
-#' @param block `r template("block")` Default is 1, but can be multiple if present in the data, e.g. `c(1, 3)`.
+#' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2` or `c(1, 3)`.
+#' @param block `r template("block")` Default is 1, but can be multiple if present in the data, as for `outeq`.
 #' @param tad `r template("tad")` 
 #' @param overlay Boolean operator to overlay all time concentration profiles in a single plot.
 #' The default is `TRUE`.
@@ -198,11 +198,11 @@ plot.PM_data <- function(x,
   } else {
     presub <- presub %>% mutate(group = "") 
   }
-  if(length(outeq)>1){
+  if(outeq[1]!=1 | length(outeq)>1 ){
     presub <- presub %>% rowwise() %>%
       mutate(group = paste0(group,", outeq ",outeq))
   }
-  if(length(block)>1){
+  if(block[1]!=1 | length(block)>1){
     presub <- presub %>% rowwise() %>%
       mutate(group = paste0(group,", block ",block))
   }
@@ -211,7 +211,7 @@ plot.PM_data <- function(x,
  
   
   #select relevant columns
-  sub <- presub %>% select(id, time, out, group) %>% ungroup()
+  sub <- presub %>% select(id, time, out, outeq, group) %>% ungroup()
   sub$group <- factor(sub$group)
   
   #add identifier
@@ -228,7 +228,7 @@ plot.PM_data <- function(x,
     } else {
       predData <- pred[[1]]$data
       if(length(pred)==1){ #default
-        predArgs <- T
+        predArgs <- TRUE
         icen <- "median"
       } else { #not default, but need to extract icen if present
         icen <- purrr::pluck(pred, "icen") #check if icen is in list
@@ -238,7 +238,7 @@ plot.PM_data <- function(x,
         predArgs <- pred[-1]
       }
       
-      predArgs <- amendLine(predArgs)
+      predArgs <- amendLine(predArgs, default = list(color = NULL))
       
     }
     
@@ -250,15 +250,16 @@ plot.PM_data <- function(x,
     if(tad){predsub$time <- calcTAD(predsub)}
     
     #select relevant columns and filter missing
-    predsub <- predsub %>% select(id, time, out = pred) %>%
+    predsub <- predsub %>% select(id, time, out = pred, outeq) %>%
       filter(out !=-99)
     
     #add group
-    predsub$group <- sub$group[match(predsub$id, sub$id)]
+    lookup <- dplyr::distinct(sub, id, outeq, group)
+    predsub <- predsub %>% dplyr::left_join(lookup, by = c("id", "outeq"))
     
     #add identifier
     predsub$src <- "pred"
-    
+
   } else {predsub <- NULL} #end pred processing
   
   
@@ -276,7 +277,7 @@ plot.PM_data <- function(x,
       text <- ~id
     }
     
-    if(any(allsub$group!="")){ #there was grouping
+    if(!all(is.na(allsub$group)) && any(allsub$group!="")){ #there was grouping
       
       if(length(colors)==1 && colors %in% palettes$name){
         max_colors <- palettes$maxcolors[match(colors, palettes$name)]
@@ -289,7 +290,7 @@ plot.PM_data <- function(x,
     } else { # no grouping
       allsub$group <- factor(1,labels = "Observed")
     }
-    
+
     p <- allsub %>% plotly::filter(src == "obs") %>%
       plotly::plot_ly(x = ~time, y = ~out * mult,
                       color = ~group,
@@ -303,9 +304,10 @@ plot.PM_data <- function(x,
     
     
     if(includePred){
-      if(!is.null(color)){ predArgs$color <- NULL}
+      #if(!is.null(color)){ predArgs$color <- NULL}
       p <- p %>% 
         plotly::add_lines(data = allsub[allsub$src == "pred",], x = ~time, y = ~out,
+                          color = ~group,
                           line = predArgs,
                           name = "Predicted",
                           showlegend = F)
@@ -323,6 +325,7 @@ plot.PM_data <- function(x,
   
   
   #if pred present, need to combine data and pred for proper display
+
   if(!is.null(predsub)){
     allsub <- dplyr::bind_rows(sub, predsub) %>% dplyr::arrange(id, time)
     includePred <- T
@@ -330,15 +333,16 @@ plot.PM_data <- function(x,
     allsub <- sub
     includePred <- F
   }
+
   
   #call the plot function and display appropriately 
   if(overlay){
     allsub <- allsub %>% dplyr::group_by(id)
-    p <- dataPlot(allsub, overlay = T, includePred)
+    p <- dataPlot(allsub, overlay = TRUE, includePred)
     print(p)
-  } else { #overlay = F, ie. split them
+  } else { #overlay = FALSE, ie. split them
     sub_split <- allsub %>% nest(data = -id) %>%
-      mutate(panel = trelliscopejs::map_plot(data, dataPlot, overlay = F, includePred = includePred))
+      mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = F, includePred = includePred)))
     p <- sub_split %>% ungroup() %>% trelliscopejs::trelliscope(name = "Data", self_contained = F)
     print(p)
   }
