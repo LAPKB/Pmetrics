@@ -77,7 +77,7 @@ impl Predict for Ode {
                 } else if event.evid == 0 {
                     //obs
                     </v_alias>
-                    </cov>
+                    </cov_out>
                     </seq>
                     </out_eqs>
                     // yout.push(x[event.outeq.unwrap() - 1] / params[1]);
