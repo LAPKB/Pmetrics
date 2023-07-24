@@ -499,11 +499,16 @@ PM_model_list <- R6::R6Class("PM_model_list",
         paste0("let ", lhs, " = ", rhs, ";\n")
       })
       content <- gsub("</seq>", seq %>% paste(collapse = ""), content)
-      cov <- self$model_list$cov %>% map(function(c){
-        val <-c$covariate
-        paste0("let ", val, " = self.cov.unwrap().get(\"",val,"\").unwrap().interp(t);\n")
+      cov <- self$model_list$cov %>% map(function(c) {
+        val <- c$covariate
+        paste0("let ", val, " = self.cov.unwrap().get(\"", val, "\").unwrap().interp(t);\n")
       })
-      content <- gsub("</cov>", cov %>% paste0(collapse=""), content)
+      content <- gsub("</cov>", cov %>% paste0(collapse = ""), content)
+      cov_out <- self$model_list$cov %>% map(function(c) {
+        val <- c$covariate
+        paste0("let ", val, " = system.cov.unwrap().get(\"", val, "\").unwrap().interp(event.time);\n")
+      })
+      content <- gsub("</cov_out>", cov_out %>% paste0(collapse = ""), content)
       content <- gsub("</init>", paste0(rep("0.0", neqs), collapse = ","), content)
       content <- gsub("</model_params>", mp_lines %>% paste(collapse = ""), content)
       content <- gsub("</init>", paste(rep("0.0", neqs), collapse = ","), content)
