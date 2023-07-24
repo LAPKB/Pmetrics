@@ -496,7 +496,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
         splited <- stringr::str_split(l, "=")[[1]]
         lhs <- splited[1]
         rhs <- splited[2]
-        paste0("let", lhs, " = ", rhs, ";\n")
+        paste0("let ", lhs, " = ", rhs, ";\n")
       })
       content <- gsub("</seq>", seq %>% paste(collapse = ""), content)
       content <- gsub("</init>", paste0(rep("0.0", neqs), collapse = ","), content)
