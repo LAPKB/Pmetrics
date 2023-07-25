@@ -494,19 +494,20 @@ PM_model_list <- R6::R6Class("PM_model_list",
         # This code ONLY supports secondary equations in the form
         # variable = expression
         splited <- stringr::str_split(l, "=")[[1]]
-        lhs <- splited[1]
-        rhs <- splited[2]
+        lhs <- splited[1] %>% tolower()
+        rhs <- splited[2] %>% tolower()
         paste0("let ", lhs, " = ", rhs, ";\n")
       })
       content <- gsub("</seq>", seq %>% paste(collapse = ""), content)
+
       cov <- self$model_list$cov %>% map(function(c) {
         val <- c$covariate
-        paste0("let ", val, " = self.cov.unwrap().get(\"", val, "\").unwrap().interp(t);\n")
+        paste0("let ", val %>% tolower(), " = self.cov.unwrap().get(\"", val, "\").unwrap().interp(t);\n")
       })
       content <- gsub("</cov>", cov %>% paste0(collapse = ""), content)
       cov_out <- self$model_list$cov %>% map(function(c) {
         val <- c$covariate
-        paste0("let ", val, " = system.cov.unwrap().get(\"", val, "\").unwrap().interp(event.time);\n")
+        paste0("let ", val %>% tolower(), " = system.cov.unwrap().get(\"", val, "\").unwrap().interp(event.time);\n")
       })
       content <- gsub("</cov_out>", cov_out %>% paste0(collapse = ""), content)
       content <- gsub("</init>", paste0(rep("0.0", neqs), collapse = ","), content)
