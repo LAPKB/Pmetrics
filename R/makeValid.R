@@ -342,7 +342,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   # FIXME
   # TEMPORARY FIX - @Julian: I have an example of a $valid call that generates dosis at unordered times, just want to get pass that
   fil_data <- mdataMedian[, 1:(ncol(mdataMedian) - 2)]
-  fil_data <- fild_data[order(fild_data$id, fild_data$time), ]
+  fil_data <- fil_data[order(fil_data$id, fil_data$time), ]
   # END TEMPORARY FIX
   medianData <- PM_data$new(fil_data, quiet = T)
   medianData$write(MedianDataFileName)
