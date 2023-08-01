@@ -1,16 +1,16 @@
 #' Creates a Pmetrics validation object
 #'
-#' This function will create an object suitable for plotting visual predictive 
+#' This function will create an object suitable for plotting visual predictive
 #' checks (VPCs) and prediction-corrected visual
 #' predictive checks (pcVPCs). The function will guide the user
-#' through appropriate clustering of doses, covariates and sample times for 
-#' prediction correction using the methods of Bergstrand et al (2011). 
+#' through appropriate clustering of doses, covariates and sample times for
+#' prediction correction using the methods of Bergstrand et al (2011).
 #' *NOTE:* Including `tad` is only
-#' valid if steady state conditions exist for each patient.  
+#' valid if steady state conditions exist for each patient.
 #' This means that dosing is stable and regular
-#' for each patient, without changes in amount or timing, and that 
+#' for each patient, without changes in amount or timing, and that
 #' sampling occurs after the average concentrations
-#' are the same from dose to dose.  Otherwise observations are *NOT* 
+#' are the same from dose to dose.  Otherwise observations are *NOT*
 #' superimposable and `tad` should
 #' *NOT* be used, i.e. should be set to `FALSE`.
 #'
@@ -19,7 +19,7 @@
 #' @param data An optional external [PM_data] object with the same covariates
 #' used in the model to test. If not specified, the original data will be obtained
 #' from the `result`.
-#' @param tad `r template("tad")` 
+#' @param tad `r template("tad")`
 #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
 #' model equations and which need to be binned.  For example `binCov='wt'` if "wt" is included in a
 #' model equation like V=V0*wt, or `binCov=c( 'wt', 'crcl')` if both "wt" and "crcl"
@@ -37,7 +37,7 @@
 #' as a template. See [SIMparse] This object will be automatically saved to the run, to be loaded with
 #' [PM_load] next time.
 #' * timeBinMedian A data frame with the median times for each cluster bin.
-#' * tadBinMedian A data frame with the median time after dose (tad) for each cluster bin.  
+#' * tadBinMedian A data frame with the median time after dose (tad) for each cluster bin.
 #' This will be `NA` if `tad = FALSE`.
 #' * opDF A data frame with observations, predicitons, and bin-corrected predictions for each subject.
 #' * ndpe An object with results of normalized distrubition of prediction errors analysis.
@@ -48,22 +48,21 @@
 
 
 make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
-  
   # verify packages used in this function
   # checkRequiredPackages("mclust")
-  
+
   # save current wd
   currwd <- getwd()
-  
-  
+
+
   # parse dots
   arglist <- list(...)
   namesSIM <- names(formals(SIMrun))
   # namesNPDE <- names(formals(autonpde))
   argsSIM <- arglist[which(names(arglist) %in% namesSIM)]
-  
+
   # Cluster raw data --------------------------------------------------------
-  
+
   # grab raw data file
 
   mdata <- result$data$standard_data
@@ -71,8 +70,8 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   # remove missing observations
   missObs <- obsStatus(mdata$out)$missing
   if (length(missObs) > 0) mdata <- mdata[-missObs, ]
-  
-  
+
+
   if ("include" %in% names(argsSIM)) {
     includeID <- argsSIM$include
     mdata <- mdata[mdata$id %in% includeID, ]
@@ -87,15 +86,15 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   } else {
     excludeID <- NA
   }
-  
+
   # get time after dose
   if (tad) {
     valTAD <- calcTAD(mdata)
   }
-  
+
   # number of subjects
   nsub <- length(unique(mdata$id))
-  
+
   # define covariates in model to be binned
   covData <- getCov(mdata)
   if (covData$ncov > 0) { # if there are any covariates...
@@ -116,7 +115,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   } else { # there are no covariates
     binCov <- NULL
   }
-  
+
   # set up data for clustering
   # fill in gaps for cluster analysis only for binning variables (always dose and time)
   dataSub <- mdata[, c("id", "evid", "time", "out", "dose", "out", all_of(binCov))]
@@ -127,13 +126,13 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     dataSub$tad <- NA
   }
   dataSub <- dataSub %>% select(c("id", "evid", "time", "tad", "out", "dose", all_of(binCov)))
-  
-  
+
+
   # restrict to doses for dose/covariate clustering (since covariates applied on doses)
   dataSubDC <- dataSub %>%
     filter(evid > 0) %>%
     select(c("id", "dose", all_of(binCov)))
-  
+
   # set zero doses (covariate changes) as missing
   dataSubDC$dose[dataSubDC$dose == 0] <- NA
   for (i in 1:nrow(dataSubDC)) {
@@ -156,7 +155,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   if (tad) {
     dataSubTad <- dataSub$tad[dataSub$evid == 0]
   }
-  
+
   # ELBOW PLOT for clustering if used
   elbow <- function(x) {
     set.seed(123)
@@ -167,7 +166,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     } else {
       k.max <- min(nrow(unique(x)), 15)
     }
-    
+
     wss <- sapply(
       2:k.max,
       function(k) {
@@ -177,20 +176,20 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     )
     wss
     plot(2:k.max, wss,
-         type = "b", pch = 19, frame = FALSE,
-         xlab = "Number of clusters",
-         ylab = "Total within-clusters sum of squares (WSS)"
+      type = "b", pch = 19, frame = FALSE,
+      xlab = "Number of clusters",
+      ylab = "Total within-clusters sum of squares (WSS)"
     )
   }
-  
-  
+
+
   if (missing(doseC)) {
     # DOSE/COVARIATES
     cat("Now optimizing clusters for dose/covariates.\n")
     cat("First step is a Gaussian mixture model analysis, followed by an elbow plot.\n")
     readline(paste("Press <Return> to start cluster analysis for ",
-                   paste(c("dose", binCov), collapse = ", ", sep = ""), ": ",
-                   sep = ""
+      paste(c("dose", binCov), collapse = ", ", sep = ""), ": ",
+      sep = ""
     ))
     cat("Now performing Gaussian mixture model analysis.")
     mod1 <- Mclust(dataSubDC)
@@ -202,7 +201,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     doseC <- as.numeric(readline(paste("Specify your dose/covariate cluster number, <Return> for ", mod1$G, ": ", sep = "")))
     if (is.na(doseC)) doseC <- mod1$G
   } # end if missing doseC
-  
+
   # function to cluster by time or tad
   timeCluster <- function(timevar) {
     if (timevar == "time") {
@@ -220,16 +219,16 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     readline("Press <Return> to see classification plot: ")
     plot(mod, "classification")
     readline("Press <Return> to see cluster plot: ")
-    
+
     timeClusterPlot <- function() {
       plot(timePlot, dataSub, xlab = timeLabel, ylab = "Observation", xlim = c(min(use.data), max(use.data)))
     }
-    
+
     # plot for user to see
     timeClusterPlot()
     timeClusters <- stats::kmeans(use.data, centers = mod$G, nstart = 50)
     abline(v = timeClusters$centers, col = "red")
-    
+
     # allow user to override
     readline("Press <Return> to see elbow plot: ")
     elbow(use.data)
@@ -266,7 +265,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     if (all(is.na(TclustNum))) TclustNum <- mod$G
     return(as.numeric(TclustNum))
   } # end timeCluster function
-  
+
   # cluster by time and tad if appropriate
   if (missing(timeC)) {
     cat("Now clustering for actual sample times...\n")
@@ -276,15 +275,15 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     cat("Now clustering for time after dose...\n")
     tadC <- timeCluster("tad")
   }
-  
+
   # now set the cluster bins
   dcClusters <- stats::kmeans(dataSubDC, centers = doseC, nstart = 50)
   dataSub$dcBin[dataSub$evid > 0] <- dcClusters$cluster # m=dose,covariate bins
-  
+
   timeClusters <- stats::kmeans(dataSubTime, centers = timeC, nstart = 50)
   # dataSub$timeBin[dataSub$evid == 0] <- sapply(timeClusters$cluster, function(x) which(order(timeClusters$centers) == x)) # n=ordered time bins
   dataSub$timeBin[dataSub$evid == 0] <- timeClusters$cluster
-  
+
   if (tad) {
     tadClusters <- stats::kmeans(dataSubTad, centers = tadC, nstart = 50)
     # dataSub$tadBin[dataSub$evid == 0] <- sapply(tadClusters$cluster, function(x) which(order(tadClusters$centers) == x)) # n=ordered time bins
@@ -292,29 +291,37 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   } else {
     dataSub$tadBin <- NA
   }
-  
+
   # Simulations -------------------------------------------------------------
   datafileName <- "gendata.csv"
   modelfile <- "genmodel.txt"
-  
+
   result$data$write(datafileName)
   result$model$write(modelfile)
-  
+
   # simulate PRED_bin from pop icen parameter values and median of each bin for each subject
   # first, calculate median of each bin
-  dcMedian <- dataSub %>% group_by(bin = dcBin) %>% filter(!is.na(dose)) %>%
-    summarize(dplyr::across(c(dose,!!binCov), median, na.rm=T))
-  
-  timeMedian <- dataSub %>% group_by(bin = timeBin) %>% filter(!is.na(timeBin)) %>%
-    summarize(time = median(time, na.rm=T)) %>% arrange(time)
-  
+  dcMedian <- dataSub %>%
+    group_by(bin = dcBin) %>%
+    filter(!is.na(dose)) %>%
+    summarize(dplyr::across(c(dose, !!binCov), median, na.rm = T))
+
+  timeMedian <- dataSub %>%
+    group_by(bin = timeBin) %>%
+    filter(!is.na(timeBin)) %>%
+    summarize(time = median(time, na.rm = T)) %>%
+    arrange(time)
+
   if (tad) {
-    tadMedian <- dataSub %>% group_by(bin = tadBin) %>% filter(!is.na(tadBin)) %>%
-      summarize(time = median(tad, na.rm=T)) %>% arrange(time)
+    tadMedian <- dataSub %>%
+      group_by(bin = tadBin) %>%
+      filter(!is.na(tadBin)) %>%
+      summarize(time = median(tad, na.rm = T)) %>%
+      arrange(time)
   } else {
     tadMedian <- NA
   }
-  
+
   # create  datafile based on mdata, but with covariates and doses replaced by medians
   # and sample times by bin times
   mdataMedian <- mdata
@@ -332,12 +339,17 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   }
   # write median file
   MedianDataFileName <- paste(substr(paste("m_", strsplit(datafileName, "\\.")[[1]][1], sep = ""), 0, 8), ".csv", sep = "")
-  medianData <- PM_data$new(mdataMedian[, 1:(ncol(mdataMedian) - 2)], quiet = T)
+  # FIXME
+  # TEMPORARY FIX - @Julian: I have an example of a $valid call that generates dosis at unordered times, just want to get pass that
+  fil_data <- mdataMedian[, 1:(ncol(mdataMedian) - 2)]
+  fil_data <- fild_data[order(fild_data$id, fild_data$time), ]
+  # END TEMPORARY FIX
+  medianData <- PM_data$new(fil_data, quiet = T)
   medianData$write(MedianDataFileName)
-  
+
   # remove old files
   invisible(file.remove(Sys.glob("sim*.txt")))
-  
+
   # get poppar and make one with zero covariance
   poppar <- result$final
   popparZero <- poppar
@@ -365,40 +377,41 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   argsSIM1 <- c(list(
     poppar = popparZero, data = MedianDataFileName, model = modelfile, nsim = 1,
     seed = runif(nsub, -100, 100), outname = "simMed",
-    limits = limits), argsSIM)
+    limits = limits
+  ), argsSIM)
   cat("Simulating outputs for each subject using population means...\n")
   flush.console()
   system("echo 347 > SEEDTO.MON")
   do.call("SIMrun", argsSIM1)
-  
+
   # read and format the results of the simulation
   PRED_bin <- SIMparse("simMed*", combine = T, quiet = T)
   PRED_bin$obs <- PRED_bin$obs %>% filter(!is.na(out))
-  
+
   # make tempDF subset of PMop for subject, time, non-missing obs, outeq, pop predictions (PREDij)
   tempDF <- if (inherits(result$op, "PM_op")) {
     result$op$data
   } else {
     result$op
   }
-  tempDF <- tempDF[obsStatus(tempDF$obs)$present, ] %>% 
+  tempDF <- tempDF[obsStatus(tempDF$obs)$present, ] %>%
     filter(time > 0, pred.type == "pop", icen == "median") %>%
     includeExclude(includeID, excludeID) %>%
     arrange(id, time, outeq)
-  
+
   if (tad) {
     tempDF$tad <- dataSub$tad[dataSub$evid == 0]
   } else {
     tempDF$tad <- NA
   }
-  
-  
+
+
   # add PRED_bin to tempDF
-  tempDF$PRED_bin <- PRED_bin$obs$out 
-  
+  tempDF$PRED_bin <- PRED_bin$obs$out
+
   # add pcYij column to tempDF as obs * PREDbin/PREDij
   tempDF$pcObs <- tempDF$obs * tempDF$PRED_bin / tempDF$pred
-  
+
   # bin pcYij by time and add to tempDF
   tempDF$timeBinNum <- dataSub$timeBin[dataSub$evid == 0]
   tempDF$timeBinMedian <- timeMedian$time[match(tempDF$timeBinNum, timeMedian$bin)]
@@ -409,18 +422,21 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
     tempDF$tadBinNum <- NA
     tempDF$tadBinMedian <- NA
   }
-  
-  
+
+
   # Now, simulate using full pop model
   # write the adjusted mdata file first
   fullData <- PM_data$new(mdata, quiet = T)
   fullData$write(datafileName)
-  
+
   set.seed(seed.start)
-  argsSIM2 <- c(list(
-    poppar = poppar, data = datafileName, model = modelfile, nsim = nsim,
-    seed = runif(nsub, -100, 100), outname = "full", limits = limits),
-    argsSIM)
+  argsSIM2 <- c(
+    list(
+      poppar = poppar, data = datafileName, model = modelfile, nsim = nsim,
+      seed = runif(nsub, -100, 100), outname = "full", limits = limits
+    ),
+    argsSIM
+  )
   if (!is.na(includeID[1])) {
     argsSIM2$include <- includeID
   }
@@ -433,153 +449,178 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   # take out observations at time 0 from evid=4
   simFull$obs <- simFull$obs %>% filter(time > 0)
   # take out missing observations
-  simFull$obs <- simFull$obs[obsStatus(simFull$obs$out)$present,]
+  simFull$obs <- simFull$obs[obsStatus(simFull$obs$out)$present, ]
 
   # add TAD for plotting options
   if (tad) {
-    simFull$obs$tad  <- dataSub %>% 
-      filter(evid == 0) %>% 
-      group_by(id) %>% 
-      group_map(~rep(.x$tad, nsim)) %>% unlist()
+    simFull$obs$tad <- dataSub %>%
+      filter(evid == 0) %>%
+      group_by(id) %>%
+      group_map(~ rep(.x$tad, nsim)) %>%
+      unlist()
   } else {
     simFull$obs$tad <- NA
   }
-  
+
 
   # pull in time bins from tempDF; only need median as tempDF contains median and mean,
   # but simulation is only from pop means
-    simFull$obs$timeBinNum <- dataSub %>% 
-    filter(evid == 0) %>% 
-    group_by(id) %>% 
-    group_map(~rep(.x$timeBin, nsim)) %>% 
+  simFull$obs$timeBinNum <- dataSub %>%
+    filter(evid == 0) %>%
+    group_by(id) %>%
+    group_map(~ rep(.x$timeBin, nsim)) %>%
     unlist()
-  
+
   # pull in tad bins from tempDF
-  simFull$obs$tadBinNum <- dataSub %>% 
-    filter(evid == 0) %>%  
-    group_by(id) %>% 
-    group_map(~rep(.x$tadBin, nsim)) %>% 
+  simFull$obs$tadBinNum <- dataSub %>%
+    filter(evid == 0) %>%
+    group_by(id) %>%
+    group_map(~ rep(.x$tadBin, nsim)) %>%
     unlist()
-  
-    # make simulation number 1:nsim
+
+  # make simulation number 1:nsim
   simFull$obs$simnum <- as.numeric(sapply(strsplit(simFull$obs$id, "\\."), function(x) x[1]))
   class(simFull) <- c("PMsim", "list")
-  
+
   # NPDE --------------------------------------------------------------------
-  
-  
+
+
   # get npde from github
   # checkRequiredPackages("npde", repos = "LAPKB/npde")
-  
+
   # prepare data for npde
   obs <- tempDF %>% select(id, time, tad, out = obs, outeq)
-  
-  
+
+
   # remove missing obs
   obs <- obs[obs$out != -99, ]
-  
+
   simobs <- simFull$obs
   # remove missing simulations
   simobs <- simobs[simobs$out != -99, ]
   simobs$id <- rep(obs$id, times = nsim)
-  
+
   simobs <- simobs %>% select(id, time, tad, out, outeq)
-  
-  
-  #get number of outeq
-  nout <- max(obs$outeq, na.rm=T)
+
+
+  # get number of outeq
+  nout <- max(obs$outeq, na.rm = T)
   npde <- list()
   npdeTAD <- list()
-  
-  for(thisout in 1:nout){
-    
-    obs_sub <- obs %>% filter(outeq == thisout) %>% 
-      select(id, time, out) %>% 
+
+  for (thisout in 1:nout) {
+    obs_sub <- obs %>%
+      filter(outeq == thisout) %>%
+      select(id, time, out) %>%
       arrange(id, time)
-    sim_sub <- simobs %>% filter(outeq == thisout, id %in% obs_sub$id) %>% 
-      select(id, time, out) %>% 
+    sim_sub <- simobs %>%
+      filter(outeq == thisout, id %in% obs_sub$id) %>%
+      select(id, time, out) %>%
       arrange(id, time)
     obs_sub <- data.frame(obs_sub)
     sim_sub <- data.frame(sim_sub)
-    
-    if(tad){
-      obs_sub2 <- obs %>% 
-        filter(outeq == thisout) %>% 
-        select(id, time = tad, out) %>% 
+
+    if (tad) {
+      obs_sub2 <- obs %>%
+        filter(outeq == thisout) %>%
+        select(id, time = tad, out) %>%
         arrange(id, time)
-      sim_sub2 <- simobs %>% filter(outeq == thisout, id %in% obs_sub$id) %>% 
-        select(id, time = tad, out) %>% 
+      sim_sub2 <- simobs %>%
+        filter(outeq == thisout, id %in% obs_sub$id) %>%
+        select(id, time = tad, out) %>%
         arrange(id, time)
       obs_sub2 <- data.frame(obs_sub2)
       sim_sub2 <- data.frame(sim_sub2)
     }
     # get NPDE decorr.method = "inverse",
-    npde[[thisout]] <- tryCatch(npde::autonpde(obs_sub, sim_sub,
-                                                  iid = "id", ix = "time", iy = "out",
-                                                  detect = F,
-                                                  verbose = F,
-                                                  boolsave = F), 
-                                   error = function(e) {e; return(e)})
-   
-     if(inherits(npde[[thisout]], "error")){ #error, often due to non pos-def matrix
-      npde[[thisout]] <- tryCatch(npde::autonpde(obs_sub, sim_sub,
-                                                    iid = "id", ix = "time", iy = "out",
-                                                    detect = F,
-                                                    verbose = F,
-                                                    boolsave = F,
-                                                    decorr.method = "inverse"), 
-                                     error = function(e) {e; return(e)})
-    
-        if(inherits(npde[[thisout]], "error")){ #still with error
-        errorMsg <- npde[[thisout]] 
-        npde[[thisout]] <- paste0("Unable to calculate NPDE for outeq ",thisout,": ",errorMsg)
+    npde[[thisout]] <- tryCatch(
+      npde::autonpde(obs_sub, sim_sub,
+        iid = "id", ix = "time", iy = "out",
+        detect = F,
+        verbose = F,
+        boolsave = F
+      ),
+      error = function(e) {
+        e
+        return(e)
+      }
+    )
+
+    if (inherits(npde[[thisout]], "error")) { # error, often due to non pos-def matrix
+      npde[[thisout]] <- tryCatch(
+        npde::autonpde(obs_sub, sim_sub,
+          iid = "id", ix = "time", iy = "out",
+          detect = F,
+          verbose = F,
+          boolsave = F,
+          decorr.method = "inverse"
+        ),
+        error = function(e) {
+          e
+          return(e)
+        }
+      )
+
+      if (inherits(npde[[thisout]], "error")) { # still with error
+        errorMsg <- npde[[thisout]]
+        npde[[thisout]] <- paste0("Unable to calculate NPDE for outeq ", thisout, ": ", errorMsg)
       } else {
         cat(paste0("NOTE: Due to numerical instability, for outeq ", thisout, " inverse decorrelation applied, not Cholesky (the default)."))
       }
-      
     }
-    
+
     # get NPDE for TAD
-    if(tad){
-      npdeTAD[[thisout]] <- tryCatch(npde::autonpde(obs_sub2, sim_sub2,
-                                                     iid = "id", ix = "time", iy = "out",
-                                                     detect = F,
-                                                     verbose = F,
-                                                     boolsave = F
-                                                     ), 
-                                      error = function(e) {e; return(e)})
-      
-      if(inherits(npdeTAD[[thisout]], "error")){ #error, often due to non pos-def matrix
-        npdeTAD[[thisout]] <- tryCatch(npde::autonpde(obs_sub2, sim_sub2,
-                                                       iid = "id", ix = "time", iy = "out",
-                                                       detect = F,
-                                                       verbose = F,
-                                                       boolsave = F,
-                                                       decorr.method = "inverse"), 
-                                        error = function(e) {e; return(e)})
-        
-        if(inherits(npdeTAD[[thisout]], "error")){ #still with error
-          errorMsg <- npdeTAD[[thisout]] 
-          npdeTAD[[thisout]] <- paste0("Unable to calculate NPDE with TAD for outeq ",thisout,": ",errorMsg)
+    if (tad) {
+      npdeTAD[[thisout]] <- tryCatch(
+        npde::autonpde(obs_sub2, sim_sub2,
+          iid = "id", ix = "time", iy = "out",
+          detect = F,
+          verbose = F,
+          boolsave = F
+        ),
+        error = function(e) {
+          e
+          return(e)
+        }
+      )
+
+      if (inherits(npdeTAD[[thisout]], "error")) { # error, often due to non pos-def matrix
+        npdeTAD[[thisout]] <- tryCatch(
+          npde::autonpde(obs_sub2, sim_sub2,
+            iid = "id", ix = "time", iy = "out",
+            detect = F,
+            verbose = F,
+            boolsave = F,
+            decorr.method = "inverse"
+          ),
+          error = function(e) {
+            e
+            return(e)
+          }
+        )
+
+        if (inherits(npdeTAD[[thisout]], "error")) { # still with error
+          errorMsg <- npdeTAD[[thisout]]
+          npdeTAD[[thisout]] <- paste0("Unable to calculate NPDE with TAD for outeq ", thisout, ": ", errorMsg)
         } else {
           cat(paste0("NOTE: Due to numerical instability, for outeq ", thisout, " and TAD, inverse decorrelation applied, not Cholesky (the default)."))
         }
-        
       }
     }
-    
   }
-  
+
   # Clean Up ----------------------------------------------------------------
-  
-  
-  valRes <- list(simdata = PM_sim$new(simFull), 
-                 timeBinMedian = timeMedian, 
-                 tadBinMedian = tadMedian, 
-                 opDF = tempDF, 
-                 npde = npde, npde_tad = npdeTAD)
+
+
+  valRes <- list(
+    simdata = PM_sim$new(simFull),
+    timeBinMedian = timeMedian,
+    tadBinMedian = tadMedian,
+    opDF = tempDF,
+    npde = npde, npde_tad = npdeTAD
+  )
   class(valRes) <- c("PMvalid", "list")
-  
+
   setwd(currwd)
   return(valRes)
 } # end function
@@ -587,10 +628,10 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 
 #' Creates a Pmetrics validation object
 #'
-#' `makeValid` will create an object suitable for plotting visual predictive 
+#' `makeValid` will create an object suitable for plotting visual predictive
 #' checks (VPCs) and prediction-corrected visual
 #' predictive checks (pcVPCs). The function will guide the user
-#' through appropriate clustering of doses, covariates and sample times for 
+#' through appropriate clustering of doses, covariates and sample times for
 #' prediction correction using the methods of Bergstrand et al (2011).
 #' *NOTE:* Including TAD is only
 #' valid if steady state conditions exist for each patient.  This means that dosing is stable and regular
@@ -601,7 +642,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 #' @title Create a Pmetrics validation object
 #' @param run When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
 #' which will typically be a number, e.g. 1.
-#' @param tad `r template("tad")` 
+#' @param tad `r template("tad")`
 #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
 #' model equations and which need to be binned.  For example `binCov='wt'` if "wt" is included in a
 #' model equation like V=V0*wt, or `binCov=c( 'wt', 'crcl')` if both "wt" and "crcl"
@@ -627,35 +668,34 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 #' @export
 
 makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
-  
   # verify packages used in this function
   # checkRequiredPackages("mclust")
-  
+
   # save current wd
   currwd <- getwd()
-  
+
   # get the run
   if (missing(run)) run <- readline("Enter the run number: ")
   PMload(run)
-  
+
   getName <- function(x) {
     return(get(paste(x, run, sep = ".")))
   }
-  
+
   # parse dots
   arglist <- list(...)
   namesSIM <- names(formals(SIMrun))
   # namesNPDE <- names(formals(autonpde))
   argsSIM <- arglist[which(names(arglist) %in% namesSIM)]
-  
+
   # Cluster raw data --------------------------------------------------------
-  
+
   # grab raw data file
   mdata <- getName("data")
   # remove missing observations
   missObs <- obsStatus(mdata$out)$missing
   if (length(missObs) > 0) mdata <- mdata[-missObs, ]
-  
+
   # #get input and output max
   # maxInput <- max(mdata$input,na.rm=T)
   # maxOuteq <- max(mdata$outeq,na.rm=T)
@@ -681,15 +721,15 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   } else {
     excludeID <- NA
   }
-  
+
   # get time after dose
   if (tad) {
     valTAD <- calcTAD(mdata)
   }
-  
+
   # number of subjects
   nsub <- length(unique(mdata$id))
-  
+
   # define covariates in model to be binned
   covData <- getCov(mdata)
   if (covData$ncov > 0) { # if there are any covariates...
@@ -710,7 +750,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   } else { # there are no covariates
     binCov <- NULL
   }
-  
+
   # set up data for clustering
   # fill in gaps for cluster analysis only for binning variables (always dose and time)
   dataSub <- mdata[, c("id", "evid", "time", "out", "dose", "out", binCov)]
@@ -721,13 +761,13 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
     dataSub$tad <- NA
   }
   dataSub <- dataSub %>% select(c("id", "evid", "time", "tad", "out", "dose", binCov))
-  
-  
+
+
   # restrict to doses for dose/covariate clustering (since covariates applied on doses)
   dataSubDC <- dataSub %>%
     filter(evid > 0) %>%
     select(c("id", "dose", binCov))
-  
+
   # set zero doses (covariate changes) as missing
   dataSubDC$dose[dataSubDC$dose == 0] <- NA
   for (i in 1:nrow(dataSubDC)) {
@@ -750,7 +790,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   if (tad) {
     dataSubTad <- dataSub$tad[dataSub$evid == 0]
   }
-  
+
   # ELBOW PLOT for clustering if used
   elbow <- function(x) {
     set.seed(123)
@@ -761,7 +801,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
     } else {
       k.max <- min(nrow(unique(x)), 15)
     }
-    
+
     wss <- sapply(
       2:k.max,
       function(k) {
@@ -771,20 +811,20 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
     )
     wss
     plot(2:k.max, wss,
-         type = "b", pch = 19, frame = FALSE,
-         xlab = "Number of clusters",
-         ylab = "Total within-clusters sum of squares (WSS)"
+      type = "b", pch = 19, frame = FALSE,
+      xlab = "Number of clusters",
+      ylab = "Total within-clusters sum of squares (WSS)"
     )
   }
-  
-  
+
+
   if (missing(doseC)) {
     # DOSE/COVARIATES
     cat("Now optimizing clusters for dose/covariates.\n")
     cat("First step is a Gaussian mixture model analysis, followed by an elbow plot.\n")
     readline(paste("Press <Return> to start cluster analysis for ",
-                   paste(c("dose", binCov), collapse = ", ", sep = ""), ": ",
-                   sep = ""
+      paste(c("dose", binCov), collapse = ", ", sep = ""), ": ",
+      sep = ""
     ))
     cat("Now performing Gaussian mixture model analysis.")
     mod1 <- Mclust(dataSubDC)
@@ -796,7 +836,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
     doseC <- as.numeric(readline(paste("Specify your dose/covariate cluster number, <Return> for ", mod1$G, ": ", sep = "")))
     if (is.na(doseC)) doseC <- mod1$G
   } # end if missing doseC
-  
+
   # function to cluster by time or tad
   timeCluster <- function(timevar) {
     if (timevar == "time") {
@@ -814,16 +854,16 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
     readline("Press <Return> to see classification plot: ")
     plot(mod, "classification")
     readline("Press <Return> to see cluster plot: ")
-    
+
     timeClusterPlot <- function() {
       plot(timePlot, dataSub, xlab = timeLabel, ylab = "Observation", xlim = c(min(use.data), max(use.data)))
     }
-    
+
     # plot for user to see
     timeClusterPlot()
     timeClusters <- stats::kmeans(use.data, centers = mod$G, nstart = 50)
     abline(v = timeClusters$centers, col = "red")
-    
+
     # allow user to override
     readline("Press <Return> to see elbow plot: ")
     elbow(use.data)
@@ -860,7 +900,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
     if (all(is.na(TclustNum))) TclustNum <- mod$G
     return(as.numeric(TclustNum))
   } # end timeCluster function
-  
+
   # cluster by time and tad if appropriate
   if (missing(timeC)) {
     cat("Now clustering for actual sample times...\n")
@@ -870,26 +910,26 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
     cat("Now clustering for time after dose...\n")
     tadC <- timeCluster("tad")
   }
-  
+
   # now set the cluster bins
   dcClusters <- stats::kmeans(dataSubDC, centers = doseC, nstart = 50)
   dataSub$dcBin[dataSub$evid > 0] <- dcClusters$cluster # m=dose,covariate bins
-  
+
   timeClusters <- stats::kmeans(dataSubTime, centers = timeC, nstart = 50)
   dataSub$timeBin[dataSub$evid == 0] <- sapply(timeClusters$cluster, function(x) which(order(timeClusters$centers) == x)) # n=ordered time bins
-  
+
   if (tad) {
     tadClusters <- stats::kmeans(dataSubTad, centers = tadC, nstart = 50)
     dataSub$tadBin[dataSub$evid == 0] <- sapply(tadClusters$cluster, function(x) which(order(tadClusters$centers) == x)) # n=ordered time bins
   } else {
     dataSub$tadBin <- NA
   }
-  
+
   # Simulations -------------------------------------------------------------
-  
+
   # create /vpc
   if (!file.exists(paste(run, "/vpc", sep = ""))) dir.create(paste(run, "/vpc", sep = ""))
-  
+
   # get model file
   instrfile <- suppressWarnings(tryCatch(readLines(paste(run, "etc/instr.inx", sep = "/")), error = function(e) NULL))
   if (length(grep("IVERIFY", instrfile)) == 0) { # not updated instruction file
@@ -907,10 +947,10 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
       stop("Model file not found.\n")
     }
   }
-  
+
   # copy this modelfile to new /vpc folder
   invisible(file.copy(from = paste(run, "/inputs/", modelfile, sep = ""), to = paste(run, "/vpc", sep = "")))
-  
+
   # now get the data file
   RFfile <- suppressWarnings(tryCatch(readLines(Sys.glob(paste(run, "outputs/??_RF0001.TXT", sep = "/"))), error = function(e) NULL))
   if (length(RFfile) > 0) {
@@ -922,24 +962,24 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   } else {
     stop("Data file not found\n")
   }
-  
+
   # change wd to new /vpc folder which now contains data and model files
   setwd(paste(run, "/vpc", sep = ""))
-  
+
   # simulate PRED_bin from pop icen parameter values and median of each bin for each subject
   # first, calculate median of each bin
   dcMedian <- aggregate(dataSub[, c("dose", binCov)], by = list(dataSub$dcBin), FUN = median, na.rm = T)
   names(dcMedian)[1] <- "bin"
   timeMedian <- aggregate(dataSub$time, by = list(dataSub$timeBin), FUN = median)
   names(timeMedian) <- c("bin", "time")
-  
+
   if (tad) {
     tadMedian <- aggregate(dataSub$tad, by = list(dataSub$tadBin), FUN = median)
     names(tadMedian) <- c("bin", "time")
   } else {
     tadMedian <- NA
   }
-  
+
   # create  datafile based on mdata, but with covariates and doses replaced by medians
   # and sample times by bin times
   mdataMedian <- mdata
@@ -958,10 +998,10 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   # write median file
   MedianDataFileName <- paste(substr(paste("m_", strsplit(datafileName, "\\.")[[1]][1], sep = ""), 0, 8), ".csv", sep = "")
   PMwriteMatrix(mdataMedian[, 1:(ncol(mdataMedian) - 2)], MedianDataFileName, override = T)
-  
+
   # remove old files
   invisible(file.remove(Sys.glob("sim*.txt")))
-  
+
   # get poppar and make one with zero covariance
   poppar <- getName("final")
   popparZero <- poppar
@@ -993,10 +1033,10 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   cat("Simulating outputs for each subject using population means...\n")
   flush.console()
   do.call("SIMrun", argsSIM1)
-  
+
   # read and format the results of the simulation
   PRED_bin <- SIMparse("simMed*", combine = T, quiet = T)
-  
+
   # make tempDF subset of PMop for subject, time, non-missing obs, outeq, pop predictions (PREDij)
   tempDF <- getName("op")
   tempDF <- tempDF[tempDF$pred.type == "pop", ]
@@ -1007,23 +1047,23 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   if (!is.na(excludeID[1])) {
     tempDF <- tempDF[!tempDF$id %in% excludeID, ]
   }
-  
+
   if (tad) {
     tempDF$tad <- rep(dataSub$tad[dataSub$evid == 0], 2)
   } else {
     tempDF$tad <- NA
   }
-  
-  
+
+
   # add PRED_bin to tempDF
   tempDF$PRED_bin <- rep(PRED_bin$obs$out[!is.na(PRED_bin$obs$out)], times = 2) # one for icen="median" and icen="mean"
-  
+
   # add pcYij column to tempDF as obs * PREDbin/PREDij
   tempDF$pcObs <- tempDF$obs * tempDF$PRED_bin / tempDF$pred
-  
+
   # #take out observations at time 0 (from evid=4 events)
   # tempDF <- tempDF[tempDF$time>0,]
-  
+
   # bin pcYij by time and add to tempDF
   tempDF$timeBinNum <- rep(dataSub$timeBin[dataSub$evid == 0], times = 2) # one for each icen
   tempDF$timeBinMedian <- timeMedian$time[match(tempDF$timeBinNum, timeMedian$bin)]
@@ -1034,12 +1074,12 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
     tempDF$tadBinNum <- NA
     tempDF$tadBinMedian <- NA
   }
-  
-  
+
+
   # Now, simulate using full pop model
   # write the adjusted mdata file first
   PMwriteMatrix(mdata, datafileName, override = T)
-  
+
   set.seed(seed.start)
   argsSIM2 <- c(list(
     poppar = poppar, data = datafileName, model = modelfile, nsim = nsim,
@@ -1060,37 +1100,37 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   if (tad) {
     simFull$obs$tad <- unlist(tapply(dataSub$tad[dataSub$evid == 0], dataSub$id[dataSub$evid == 0], function(x) rep(x, nsim)))
   }
-  
-  
-  
+
+
+
   # pull in time bins from tempDF; only need median as tempDF contains median and mean,
   # but simulation is only from pop means
-  
+
   simFull$obs$timeBinNum <- unlist(tapply(tempDF$timeBinNum[tempDF$icen == "median"], tempDF$id[tempDF$icen == "median"], function(x) rep(x, nsim)))
   # pull in tad bins from tempDF
   simFull$obs$tadBinNum <- unlist(tapply(tempDF$tadBinNum[tempDF$icen == "median"], tempDF$id[tempDF$icen == "median"], function(x) rep(x, nsim)))
   # make simulation number 1:nsim
   simFull$obs$simnum <- as.numeric(sapply(strsplit(simFull$obs$id, "\\."), function(x) x[1]))
   class(simFull) <- c("PMsim", "list")
-  
+
   # NPDE --------------------------------------------------------------------
-  
-  
+
+
   # get npde from github
   checkRequiredPackages("npde", repos = "LAPKB/npde")
-  
+
   # prepare data for npde
   obs <- tempDF[tempDF$icen == "mean", c("id", "time", "obs")]
-  
+
   # remove missing obs
   obs <- obs[obs$obs != -99, ]
   names(obs)[3] <- "out"
-  
+
   simobs <- simFull$obs
   # remove missing simulations
   simobs <- simobs[simobs$out != -99, ]
   simobs$id <- rep(obs$id, each = nsim)
-  
+
   # get NPDE
   assign("thisobs", obs, pos = 1)
   assign("thissim", simobs, pos = 1)
@@ -1098,17 +1138,17 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
     e
     return(NA)
   })
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
   # Clean Up ----------------------------------------------------------------
-  
+
   valRes <- list(simdata = simFull, timeBinMedian = timeMedian, tadBinMedian = tadMedian, opDF = tempDF, npde = npdeRes)
   class(valRes) <- c("PMvalid", "list")
-  
+
   # save it back to run so it can be loaded in the future
   NPAGout <- list(
     NPdata = getName("NPdata"),
@@ -1122,10 +1162,10 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
     valid = valRes
   )
   save(NPAGout, file = "../outputs/NPAGout.Rdata")
-  
+
   # #put sim in global environment
   # assign(paste("sim",as.character(run),sep="."),simFull,pos=1)
-  
+
   setwd(currwd)
   return(valRes)
 }
