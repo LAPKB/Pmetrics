@@ -490,7 +490,26 @@ PM_model_list <- R6::R6Class("PM_model_list",
         stringr::str_replace_all("xp", "dx")
       content <- gsub("</eqn>", paste0(eqs %>% paste(collapse = ";\n"), ";"), content)
       content <- gsub("</neqs>", neqs, content)
-      content <- gsub("</seq>", "", content)
+      seq <- self$model_list$sec %>% map(function(l) {
+        # This code ONLY supports secondary equations in the form
+        # variable = expression
+        splited <- stringr::str_split(l, "=")[[1]]
+        lhs <- splited[1] %>% tolower()
+        rhs <- splited[2] %>% tolower()
+        paste0("let ", lhs, " = ", rhs, ";\n")
+      })
+      content <- gsub("</seq>", seq %>% paste(collapse = ""), content)
+
+      cov <- self$model_list$cov %>% map(function(c) {
+        val <- c$covariate
+        paste0("let ", val %>% tolower(), " = self.cov.unwrap().get(\"", val, "\").unwrap().interp(t);\n")
+      })
+      content <- gsub("</cov>", cov %>% paste0(collapse = ""), content)
+      cov_out <- self$model_list$cov %>% map(function(c) {
+        val <- c$covariate
+        paste0("let ", val %>% tolower(), " = system.cov.unwrap().get(\"", val, "\").unwrap().interp(event.time);\n")
+      })
+      content <- gsub("</cov_out>", cov_out %>% paste0(collapse = ""), content)
       content <- gsub("</init>", paste0(rep("0.0", neqs), collapse = ","), content)
       content <- gsub("</model_params>", mp_lines %>% paste(collapse = ""), content)
       content <- gsub("</init>", paste(rep("0.0", neqs), collapse = ","), content)

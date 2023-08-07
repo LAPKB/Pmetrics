@@ -21,6 +21,7 @@ type Time = f64;
 impl ode_solvers::System<State> for Model<'_> {
     fn system(&mut self, t: Time, x: &mut State, dx: &mut State) {
         </parameter_alias>
+        </cov>
         </seq>
         let mut rateiv = [0.0];//TODO: hardcoded
         for infusion in &self.infusions {
@@ -76,6 +77,8 @@ impl Predict for Ode {
                 } else if event.evid == 0 {
                     //obs
                     </v_alias>
+                    </cov_out>
+                    </seq>
                     </out_eqs>
                     // yout.push(x[event.outeq.unwrap() - 1] / params[1]);
                 }
