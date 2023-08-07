@@ -77,7 +77,7 @@
 #' @family PMplots
 
 plot.PM_final <- function(x, 
-                          formula, 
+                          formula = NULL, 
                           line = TRUE,
                           marker = TRUE,
                           density = F, 
@@ -103,6 +103,13 @@ plot.PM_final <- function(x,
     line <- amendLine(line)
   }
   
+  
+  yCol <- tryCatch(as.character(attr(terms(formula),"variables")[2]),
+                   error = function(e) NULL)
+  xCol <- tryCatch(as.character(attr(terms(formula),"variables")[3]),
+                   error = function(e) NULL)
+  
+  
   #unnecessary arguments
   if(!missing(legend)){notNeeded("legend", "plot.PM_final")}
   if(!missing(log)){notNeeded("log", "plot.PM_final")}
@@ -117,9 +124,9 @@ plot.PM_final <- function(x,
   ab$par <- names(data$popMean)
   
   #plot functions for univariate
-  uniPlot <- function(.par, .data, .min, .max, type, bar, xlab, ylab, title){
+  uniPlot <- function(.data, .par, .min, .max, type, bar, xlab, ylab, title, .prior = NULL){
     p <- .data %>%
-      plotly::plot_ly(x = ~value , y = ~prob, height = 2000) 
+      plotly::plot_ly(x = ~value , y = ~prob) 
     
     if(type == "NPAG"){
       barWidth <- bar$width * (.max - .min) #normalize
@@ -130,16 +137,42 @@ plot.PM_final <- function(x,
           width = I(barWidth)
         ) 
       
-      if(density){
-        densList <- density(.data$value, weights = .data$prob)
-        dens <- data.frame(x=densList$x, y=densList$y)
-        normalize <- max(.data$prob)
+
+      if(!is.null(.prior)){
+        bar2 <- bar
+        bar2$color <- "black"
+        bar2$opacity <- 0.1
+        p <- p %>% 
+          plotly::add_bars(
+            x = ~value, y = ~prob,
+            data = .prior,
+            marker = bar2,
+            hovertemplate = "Value: %{x:0.3f}<br>Prob: %{y:0.3f}<extra></extra>",
+            width = I(barWidth)
+          ) 
         
-        p <- p %>% plotly::add_lines(data = dens, x = ~x, y = ~y/max(y) * I(normalize), 
-                                     line = densityFormat,
-                                     text = round(dens$y,2),
-                                     hovertemplate = "Value: %{x:0.2f}<br>Prob: %{text}<extra></extra>") 
       }
+      
+      if(density){
+        if(!is.null(.prior)){
+          denData <- .prior
+        } else {
+          denData <- .data
+        }
+        densList <- tryCatch(density(denData$value, weights = denData$prob, bw = density(denData$value, bw = "sj")$bw),
+                             error = function(e) NULL)
+        if(!is.null(densList)){
+          dens <- data.frame(x=densList$x, y=densList$y)
+          normalize <- max(denData$prob)
+          
+          p <- p %>% plotly::add_lines(data = dens, x = ~x, y = ~y/max(y) * I(normalize), 
+                                       line = densityFormat,
+                                       text = round(dens$y,2),
+                                       hovertemplate = "Value: %{x:0.2f}<br>Prob: %{text}<extra></extra>") 
+          
+        }
+      }
+      
     } else { #IT2B
       p <- p %>%
         plotly::add_lines(
@@ -210,9 +243,9 @@ plot.PM_final <- function(x,
   }
   
   
-  biPlot <- function(formula, x, xlab, ylab, zlab, title){
-    yCol <- as.character(attr(terms(formula),"variables")[2])
-    xCol <- as.character(attr(terms(formula),"variables")[3])
+  biPlot <- function(xCol, yCol, x, xlab, ylab, zlab, title){
+    #yCol <- as.character(attr(terms(formula),"variables")[2])
+    #xCol <- as.character(attr(terms(formula),"variables")[3])
     
     whichX <- which(ab$par == xCol)
     whichY <- which(ab$par == yCol)
@@ -345,17 +378,33 @@ plot.PM_final <- function(x,
   if(missing(zlab)){zlab <- NULL}
   if(missing(title)){title <- NULL}
   
-  if(missing(formula)){ #univariate
+  if(is.null(yCol) | xCol == "prob"){ #univariate or prob plot
     
-    #NPAG
+    #NPAG 
     if(type == "NPAG"){
-      ab_alpha <- ab %>% arrange(par)
-      p <- data$popPoints %>% pivot_longer(cols = !prob, names_to = "par") %>%
-        dplyr::nest_by(par) %>%
-        dplyr::full_join(ab_alpha, by = "par") %>%
-        dplyr::mutate(panel = list(uniPlot(par, data, min, max, type = "NPAG", 
-                                           bar = bar, xlab = xlab, ylab = ylab, title = title))) %>%
-        plotly::subplot(margin = 0.02, nrows = nrow(.), titleX =TRUE, titleY =TRUE)
+      if(is.null(xCol)){ #regular marginal
+        ab_alpha <- ab %>% arrange(par)
+        p <- data$popPoints %>% pivot_longer(cols = !prob, names_to = "par") %>%
+          dplyr::nest_by(par) %>%
+          dplyr::full_join(ab_alpha, by = "par") %>%
+          dplyr::mutate(panel = list(uniPlot(data, par, min, max, type = "NPAG", 
+                                             bar = bar, xlab = xlab, ylab = ylab, title = title))) %>%
+          plotly::subplot(margin = 0.02, nrows = nrow(.), titleX =TRUE, titleY =TRUE)
+      } else { #prob plot
+        ab_alpha <- ab %>% filter(par == yCol)
+        p1 <- data$popPoints %>% tidyr::pivot_longer(cols = !prob, names_to = "par") %>%
+          dplyr::filter(par == yCol) %>%
+          dplyr::nest_by(par) %>%
+          dplyr::full_join(ab_alpha, by = "par")
+        
+        p <- data$postPoints %>% select(id, point, value = !!yCol, prob) %>%
+          nest(data = -id) %>%
+          dplyr::mutate(panel = trelliscopejs::map_plot(data, \(x) uniPlot(x, yCol, ab_alpha$min, ab_alpha$max, type = "NPAG",
+                                                                           bar = bar, xlab = xlab, ylab = ylab, title = title, .prior = p1$data[[1]]))) %>%
+          trelliscopejs::trelliscope(name = "Posterior/Prior", self_contained = F)
+        
+      }
+      
       
     } else {
       #IT2B
@@ -378,13 +427,13 @@ plot.PM_final <- function(x,
         dplyr::bind_rows(.id = "par") %>%
         dplyr::nest_by(par) %>% 
         dplyr::full_join(ab_alpha, by = "par") %>%
-        dplyr::mutate(panel = list(uniPlot(par, data, min, max, 
+        dplyr::mutate(panel = list(uniPlot(data, par, min, max, 
                                            type = "IT2B", xlab = xlab, ylab = ylab, title = title))) %>%
         plotly::subplot(margin = 0.02, nrows = nrow(.), titleX =TRUE, titleY =TRUE)
       
     }
   } else { #bivariate
-    p <- biPlot(formula, x, xlab, ylab, zlab, title)
+    p <- biPlot(xCol, yCol, x, xlab, ylab, zlab, title)
   }
   print(p)
   return(p)

@@ -234,7 +234,7 @@ plot.PM_data <- function(x,
         icen <- purrr::pluck(pred, "icen") #check if icen is in list
         if(is.null(icen)){ #not in list so set default
           icen <- "median"
-        } else {pluck(predArgs, "icen") <- NULL} #was in list, so remove after extraction
+        } else {pluck(pred, "icen") <- NULL} #was in list, so remove after extraction
         predArgs <- pred[-1]
       }
       
