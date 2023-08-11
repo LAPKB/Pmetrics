@@ -378,7 +378,7 @@ plot.PM_final <- function(x,
   if(missing(zlab)){zlab <- NULL}
   if(missing(title)){title <- NULL}
   
-  if(is.null(yCol) | xCol == "prob"){ #univariate or prob plot
+  if(is.null(yCol) || xCol == "prob"){ #univariate or prob plot
     
     #NPAG 
     if(type == "NPAG"){
