@@ -59,8 +59,10 @@
 #' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2` or `c(1, 3)`.
 #' @param block `r template("block")` Default is 1, but can be multiple if present in the data, as for `outeq`.
 #' @param tad `r template("tad")` 
-#' @param overlay Boolean operator to overlay all time concentration profiles in a single plot.
-#' The default is `TRUE`.
+#' @param overlay Operator to overlay all time concentration profiles in a single plot.
+#' The default is `TRUE`. If `FALSE`, will trellisplot subjects one at a time. Can also be
+#' specified as a vector with number of rows and columns, e.g. `c(3, 2)` for 3 rows and
+#' 2 columns of subject splots to include in each trellis.
 #' @param legend `r template("legend")` Default is `FALSE`
 #' @param log `r template("log")` 
 #' @param grid `r template("grid")` 
@@ -170,7 +172,17 @@ plot.PM_data <- function(x,
   #title
   layout$title <- amendTitle(title, default = list(size = 20))
   
-  
+  #overlay
+  if(is.logical(overlay)){ #T/F
+    if(!overlay){ #F,default
+      nrows <- 1
+      ncols <- 1
+    } #if T, no need to set nrows or ncols
+  } else { #specified as c(rows, cols)
+    nrows <- overlay[1]
+    ncols <- overlay[2]
+    overlay <- FALSE
+  }
   
   # Data processing ---------------------------------------------------------
   #make blocks
@@ -343,7 +355,7 @@ plot.PM_data <- function(x,
   } else { #overlay = FALSE, ie. split them
     sub_split <- allsub %>% nest(data = -id) %>%
       mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = F, includePred = includePred)))
-    p <- sub_split %>% ungroup() %>% trelliscopejs::trelliscope(name = "Data", self_contained = F)
+    p <- sub_split %>% ungroup() %>% trelliscopejs::trelliscope(name = "Data", self_contained = F, nrow = nrows, ncol = ncols)
     print(p)
   }
   
