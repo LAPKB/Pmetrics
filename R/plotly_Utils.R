@@ -675,7 +675,7 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
 #' to each plot. For example, `title = c(0,1)` plots the titles in the upper
 #' left corner of each subplot and `title = c(1,0)` renders the titles in the 
 #' lower right corner. Title text and formatting will be grabbed from each 
-#' individual plot. To modfify these characteristics, modify the code that 
+#' individual plot. To modify these characteristics, modify the code that 
 #' generated the individual plot. 
 #' @param shareX, shareY Should the x- or y- axis be shared amongst the subplots?
 #' @param titleX, titleY Should x- or y- axis titles be retained?
@@ -711,7 +711,7 @@ sub_plot <- function(...,
   if(nrows > n_plots) nrows <- n_plots #sanity check
   
   #grab title lists from each plot and convert to annotations
-  plot_annotations <- purrr::map(plots, function(p) p$x$layoutAttrs[[2]]$title) %>%
+  plot_annotations <- purrr::map(plots, function(p) p$x$layoutAttrs[[length(p$x$layoutAttrs)]]$title) %>%
     purrr::map(function(title){
       list(
         text = title$text,
@@ -729,7 +729,7 @@ sub_plot <- function(...,
   
   #remove titles from plots
   plots <- purrr::map(plots, function(p){
-    purrr::modify_in(p, list("x","layoutAttrs",2,"title","text"), \(p) "" )
+    purrr::modify_in(p, list("x","layoutAttrs",length(p$x$layoutAttrs),"title","text"), \(p) "" )
   })
   
   #calculate relative x and y based on plot number and rows
