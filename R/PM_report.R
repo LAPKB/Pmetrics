@@ -20,6 +20,10 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
     stop("This function expects a valid PM_result object from PM_load\n")
   }
 
+  if (template == "none") {
+    return()
+  }
+
   templateFile <- switch(template,
     plotly = system.file("report/templates/plotly.Rmd", package = "Pmetrics"),
     ggplot = system.file("report/templates/ggplot.Rmd", package = "Pmetrics"),
