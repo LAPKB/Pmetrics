@@ -1070,7 +1070,8 @@ build_model <- function(...) {
             all_blocks[[5]] <-
               paste0(
                 tab(4), "ini = list(<br>",
-                paste0(tab(6), "\"", input$iniCond, "\"", collapse = ",<br>"),
+                paste0(tab(6), "\"", stringr::str_split_1(input$iniCond, "\n"), 
+                       "\"", collapse = ",<br>"),
                 "<br>", tab(4), ")"
               )
           } else {
@@ -1082,7 +1083,8 @@ build_model <- function(...) {
             all_blocks[[6]] <-
               paste0(
                 tab(4), "fa = list(<br>",
-                paste0(tab(6), "\"", input$FA, "\"", collapse = ",<br>"),
+                paste0(tab(6), "\"", stringr::str_split_1(input$FA, "\n"), 
+                       "\"", collapse = ",<br>"),
                 "<br>", tab(4), ")"
               )
           } else {
@@ -1094,7 +1096,7 @@ build_model <- function(...) {
             all_blocks[[7]] <-
               paste0(
                 tab(4), "lag = list(<br>",
-                paste0(tab(6), "\"", input$lagTime, "\"", collapse = ",<br>"),
+                paste0(tab(6), "\"", stringr::str_split_1(input$lagTime, "\n"), "\"", collapse = ",<br>"),
                 "<br>", tab(4), ")"
               )
           } else {
