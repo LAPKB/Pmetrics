@@ -124,9 +124,9 @@ plot.PM_final <- function(x,
   ab$par <- names(data$popMean)
   
   #plot functions for univariate
-  uniPlot <- function(.data, .par, .min, .max, type, bar, xlab, ylab, title, .prior = NULL){
+  uniPlot <- function(.data, .par, .min, .max, type, bar, xlab, ylab, title, .prior = NULL, height = NULL){
     p <- .data %>%
-      plotly::plot_ly(x = ~value , y = ~prob) 
+      plotly::plot_ly(x = ~value , y = ~prob, height = height) 
     
     if(type == "NPAG"){
       barWidth <- bar$width * (.max - .min) #normalize
@@ -388,8 +388,8 @@ plot.PM_final <- function(x,
           dplyr::nest_by(par) %>%
           dplyr::full_join(ab_alpha, by = "par") %>%
           dplyr::mutate(panel = list(uniPlot(data, par, min, max, type = "NPAG", 
-                                             bar = bar, xlab = xlab, ylab = ylab, title = title))) %>%
-          plotly::subplot(margin = 0.02, nrows = nrow(.), titleX =TRUE, titleY =TRUE)
+                                             bar = bar, xlab = xlab, ylab = ylab, title = title, height = 1500))) %>%
+          plotly::subplot(margin = 0.02, nrows = nrow(.), titleX =TRUE, titleY =TRUE) 
       } else { #prob plot
         ab_alpha <- ab %>% filter(par == yCol)
         p1 <- data$popPoints %>% tidyr::pivot_longer(cols = !prob, names_to = "par") %>%
