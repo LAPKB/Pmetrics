@@ -59,7 +59,7 @@ color names. One way to ensure reliable color palettes is to use the
 \href{https://colorbrewer2.org/#type=qualitative&scheme=Accent&n=6}{ColorBrewer} site.
 Choosing the number of data classes to correspond to regimens, and qualitative data
 results in a distinct palette. Easiest importing into R is to copy/paste the Export
-of JavaScript on the ColorBrewer website. The default is "Spectral". Palettes
+of JavaScript on the ColorBrewer website. The default is "Set1". Palettes
 with fewer colors than regimens will be recycled. A color can also be a character
 vector of color names, recycled as needed. For example, a print-friendly choice
 is \code{line = list(color = "black")}.
@@ -86,7 +86,7 @@ where each group corresponds to a simulated regimen. The possible elements of th
 \itemize{
 \item color Default marker color is the same as the line color. If line color is specified,
 marker color does not need to also be specified. Even if line plotting is suppressed
-with \code{line = F}, the default color value of "Spectral" will be applied to markers,
+with \code{line = F}, the default color value of "Set1" will be applied to markers,
 unless specified, e.g. \code{marker = list(color = "Blues")}.
 \item symbol Maps to the \link{plot_ly} \code{symbols} argument to override default symbols
 applied to the markers for each regimen. If only one value is supplied for this,
@@ -139,7 +139,9 @@ Example: \code{xlim = c(0,1)}}
 
 Example: \code{ylim = c(0,100)}}
 
-\item{`r}{template("dotsPlotly")`}
+\item{...}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
+
+Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
 }
 \value{
 Plots the object.

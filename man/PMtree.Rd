@@ -29,7 +29,9 @@ Sets up a directory tree for a new Pmetrics project
 This function will create a new project folder tree with appropriate subfolders and a skeleton R script.
 }
 \examples{
+\dontrun{
 PMtree("DrugX")
+}
 }
 \seealso{
 \code{\link{PMmanual}}

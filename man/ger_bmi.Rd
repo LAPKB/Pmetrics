@@ -21,7 +21,7 @@ supplemental data published by Gerhart et al:
 Gerhart, Jacqueline G., Fernando O. Carreño, Andrea N. Edginton, Jaydeep Sinha, Eliana M. Perrin,
 Karan R. Kumar, Aruna Rikhi, et al. “Development and Evaluation of a Virtual
 Population of Children with Obesity for Physiologically Based Pharmacokinetic Modeling.”
-Clinical Pharmacokinetics 61, no. 2 (February 2022): 307–20. \link{https://doi.org/10.1007/s40262-021-01072-4}.
+Clinical Pharmacokinetics 61, no. 2 (February 2022): 307–20. \href{https://doi.org/10.1007/s40262-021-01072-4}{}.
 These data are in the same format as \link{cdc_bmi} but are derived from more recent NHANES data.
 }
 \author{

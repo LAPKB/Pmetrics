@@ -26,11 +26,9 @@ this function.  Including this value will skip the clustering portion for observ
 this function.  Including this value will skip the clustering portion for time after dose. This argument
 will be ignored if \code{tad=FALSE}.}
 
-\item{\dots}{Other parameters to be passed to \link{SIMrun}, especially \code{limits}.}
+\item{limits}{Limits on simulated parameters. See \link{SIMrun}.}
 
-\item{data}{An optional external \link{PM_data} object with the same covariates
-used in the model to test. If not specified, the original data will be obtained
-from the \code{result}.}
+\item{\dots}{Other parameters to be passed to \link{SIMrun}, especially \code{limits}.}
 }
 \value{
 The output of \code{make_valid} is a list of class \code{PMvalid}, which is a list with the following.
@@ -63,6 +61,12 @@ sampling occurs after the average concentrations
 are the same from dose to dose.  Otherwise observations are \emph{NOT}
 superimposable and \code{tad} should
 \emph{NOT} be used, i.e. should be set to \code{FALSE}.
+}
+\examples{
+\dontrun{
+valid <- NPex$validate(limits = c(0, 3))
+}
+
 }
 \seealso{
 \link{SIMrun}, \link{plot.PMvalid}

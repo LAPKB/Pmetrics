@@ -6,6 +6,11 @@
 \usage{
 \method{summary}{PM_data}(x, ...)
 }
+\arguments{
+\item{x}{Data to be summarized}
+
+\item{...}{Arguments to pass to \link{summary.PMmatrix}}
+}
 \description{
 Summarize a PM_data object using S3 method.
 Calls \code{\link{summary.PMmatrix}}

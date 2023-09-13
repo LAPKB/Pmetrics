@@ -17,6 +17,9 @@
 \usage{
 PMFortranConfig(...)
 }
+\arguments{
+\item{...}{Not used}
+}
 \description{
 The following functions are deprecated in Pmetrics.
 }

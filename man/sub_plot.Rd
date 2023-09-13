@@ -30,7 +30,7 @@ this function.
 \item{nrows}{number of rows for laying out plots in a grid-like
 structure. Default is 1.}
 
-\item{widths, }{heights Vector of relative column widths or heights
+\item{widths, heights}{Vector of relative column widths or heights
 on a 0-1 scale. By default all columns have an equal relative width/height,
 i.e. \code{c(0.5, 0.5)} for two columns, \code{rep(0.25, 4)} for 4 columns.}
 
@@ -46,12 +46,12 @@ specified as vector of length 2, will be rendered as x and y values relative
 to each plot. For example, \code{title = c(0,1)} plots the titles in the upper
 left corner of each subplot and \code{title = c(1,0)} renders the titles in the
 lower right corner. Title text and formatting will be grabbed from each
-individual plot. To modfify these characteristics, modify the code that
+individual plot. To modify these characteristics, modify the code that
 generated the individual plot.}
 
-\item{shareX, }{shareY Should the x- or y- axis be shared amongst the subplots?}
+\item{shareX, shareY}{Should the x- or y- axis be shared amongst the subplots?}
 
-\item{titleX, }{titleY Should x- or y- axis titles be retained?}
+\item{titleX, titleY}{Should x- or y- axis titles be retained?}
 
 \item{which_layout}{Adopt the layout of which plot? If the default value of
 "merge" is used, layout options found later in the sequence of plots

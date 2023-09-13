@@ -7,9 +7,9 @@
 #' @details
 #' The Monte Carlo simulator in Pmetrics is a powerful tool for parametric or
 #' semi-parametric sampling.  There are three ways to execute the simulator.
-#' * [PM_result$sim]
-#' * [PM_sim$run]
-#' * SIMrun
+#' * **PM_result$sim**
+#' * **PM_sim$run**
+#' * **SIMrun**
 #' The first two are the preferred methods in R6 Pmetrics. They return fully 
 #' parsed simulator output as [PM_sim] objects in R. The third method is for 
 #' legacy Pmetrics or when a user-specified prior is necessary, i.e. not from

@@ -18,7 +18,7 @@
 #' Centers for Disease Control Pediatric and Adolescent BMI Table
 #'
 #' Coefficients to calculate sex-specific BMI z-scores and percentiles.  
-#' Downloaded from [https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf].
+#' Downloaded from [](https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf).
 #' Tables were last updated in 2000, based on data through 1994. Definitions of overweight
 #' and obese come from these data, based on BMI percentile >=85 for overweight and >=95 
 #' for obese. See [ger_bmi] for percentiles based on more modern NHANES data.
@@ -43,7 +43,7 @@
 #' Gerhart, Jacqueline G., Fernando O. Carreño, Andrea N. Edginton, Jaydeep Sinha, Eliana M. Perrin, 
 #' Karan R. Kumar, Aruna Rikhi, et al. “Development and Evaluation of a Virtual 
 #' Population of Children with Obesity for Physiologically Based Pharmacokinetic Modeling.” 
-#' Clinical Pharmacokinetics 61, no. 2 (February 2022): 307–20. [https://doi.org/10.1007/s40262-021-01072-4].
+#' Clinical Pharmacokinetics 61, no. 2 (February 2022): 307–20. [](https://doi.org/10.1007/s40262-021-01072-4).
 #' These data are in the same format as [cdc_bmi] but are derived from more recent NHANES data.
 #'
 #' @name ger_bmi
@@ -213,13 +213,13 @@
 #' * **name** Model name in plain English
 #' * **algebraic** Token indicating algebraic solution. Format is a character
 #' vector of 4 elements:
-#'   - P[]: primary parameters of at least Ke, V, and optionally Ka, KCP and KPC,
-#'   e.g. P[Ke,V]
-#'   - B[]: Bolus input compartment numbers, 0 for no bolus, e.g. B[1]
-#'   - R[]: RateIV inputs, 0 for no IV, e.g. R[2]
-#'   - O[]: Output compartments, e.g. O[2]
+#'   - P\[\]: primary parameters of at least Ke, V, and optionally Ka, KCP and KPC,
+#'   e.g. P\[Ke,V\]
+#'   - B\[\]: Bolus input compartment numbers, 0 for no bolus, e.g. B\[1\]
+#'   - R\[\]: RateIV inputs, 0 for no IV, e.g. R\[2\]
+#'   - O\[\]: Output compartments, e.g. O\[2\]
 #' For example, one compartment IV model with no oral input: 
-#' "P[Ke,V], B[0], R[1], O[1]"
+#' "P\[Ke,V\], B\[0\], R\[1\], O\[1\]"
 #' @author Michael Neely
 #' @keywords datasets
 #'

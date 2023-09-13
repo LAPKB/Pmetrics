@@ -24,7 +24,7 @@
 #' @param split If \emph{true}, \code{PMmatrixRelTime} will split every \code{id}
 #'  into id.block, where block is defined by a dose reset, or evid=4,
 #'  e.g. \code{id} 1.1, 1.2, 1.3, 2.1, 3.1, 3.2.
-#' @return Returns a dataframe with columns [id, evid, relTime].
+#' @return Returns a dataframe with columns *id, evid, relTime*.
 #'  If \code{split}=T all evid values that were previously 4 will be converted to 1.
 #' @author Michael Neely
 #' @seealso \code{\link{PMreadMatrix}}
@@ -97,7 +97,7 @@ PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCo
   }
   
   #calculate relative times
-  temp <- Pmetrics:::makePMmatrixBlock(temp) %>% dplyr::group_by(id, block) %>%
+  temp <- makePMmatrixBlock(temp) %>% dplyr::group_by(id, block) %>%
     dplyr::mutate(relTime = (dt - dt[1])/lubridate::dhours(1))
  
   temp$relTime <- round(temp$relTime,2) 

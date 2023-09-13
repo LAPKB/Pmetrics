@@ -43,6 +43,7 @@
 #' @param overwrite Overwrite existing run result folders.  Default is \code{FALSE}.
 #' @param nocheck Suppress the automatic checking of the data file with \code{\link{PMcheck}}.  Default is \code{FALSE}.
 #' @param alq For internal developer use only.  Should be set to \code{FALSE}.
+#' @param report Generate a report at the end of a run. Default is `TRUE`.
 #' @return A successful IT2B run will result in creation of a new folder in the working
 #' directory. This folder will be named numerically and sequentially with respect to previous runs.   
 #' Within this folder will be four subfolders: etc, inputs, outputs, and

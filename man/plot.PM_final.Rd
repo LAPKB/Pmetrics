@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{PM_final}(
   x,
-  formula,
+  formula = NULL,
   line = TRUE,
   marker = TRUE,
   density = F,
@@ -35,11 +35,11 @@ are two model parameters to plot in a 3-dimensional bivariate plot.  See details
 Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
 The \code{line} argument is used to format:
 \itemize{
-\item the density line drawn from an NPAG \link{PM_final object} if \code{density = T}
-\item the drop lines from an NPAG \link{PM_final object} when a \code{formula} is specified
+\item the density line drawn from an NPAG \link{PM_final} object if \code{density = T}
+\item the drop lines from an NPAG \link{PM_final} object when a \code{formula} is specified
 to generate a bivariate plot
 \item the lines drawing the normal distribution
-of parameter values from an IT2B \link{PM_Final} object.
+of parameter values from an IT2B \link[=PM_final]{PM_Final} object.
 }}
 
 \item{marker}{See details for which objects the \code{marker} argument controls.
@@ -76,6 +76,12 @@ See \link{density}.  Ignored for IT2B output.}
 \item{standardize}{Standardize the normal parameter distribution plots from IT2B to the same
 scale x-axis.  Ignored for NPAG output.}
 
+\item{legend}{Ignored for this plot.}
+
+\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type.
+
+Example: \code{log = T}}
+
 \item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized.
 
 Examples: \itemize{ \item{\code{grid = F}} \item{\code{grid = list(gridcolor = "black", gridwidth = 2)}} }}
@@ -99,6 +105,18 @@ to control formatting or default text, as for \code{xlab} and \code{zlab}.}
 
 Examples: \itemize{ \item{\code{title = "Observed vs. Predicted"}} \item{\code{title = list(text = "Raw Data", font = list(color = "red", family = "Arial", size = 10, bold = T))}} }
 Default is to have no title on plots.}
+
+\item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range.
+
+Example: \code{xlim = c(0,1)}}
+
+\item{ylim}{Limits of the y axis as a vector.   This argument maps to the   the yaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > range.
+
+Example: \code{ylim = c(0,100)}}
+
+\item{...}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
+
+Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
 }
 \value{
 Plots the object.

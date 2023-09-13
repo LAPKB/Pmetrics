@@ -4,10 +4,10 @@
 \alias{summary.PM_cov}
 \title{Wrapper function for summmary.PMcov}
 \usage{
-\method{summary}{PM_cov}(obj, ...)
+\method{summary}{PM_cov}(object, ...)
 }
 \arguments{
-\item{obj}{The \emph{PM_cov} object to summarize}
+\item{object}{The \emph{PM_cov} object to summarize}
 
 \item{...}{Arguments passed to \link{summary.PMcov}}
 }

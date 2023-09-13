@@ -23,7 +23,7 @@
 #' the parsed files into a single PMsim object.  This can be useful for making visual predictive
 #' checks, for example.  If \code{combine=F}, and multiple files are parsed, then the return object 
 #' will be a list of PMsim objects, which can be plotted or otherwise accessed using standard list
-#' referencing, e.g. simlist[[1]], simlist[[2]], etc.
+#' referencing, e.g. `simlist[[1]]`, `simlist[[2]]`, etc.
 #' @param quiet Suppress messages
 #' @param parallel Runs in parallel mode.  Defaults to true if multiple files are to be parsed, otherwise false.
 #' Can be overridden by specifying \code{TRUE} or \code{FALSE}.

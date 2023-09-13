@@ -138,7 +138,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
   }
 
   # add missing defaults
-  PMopts <- modifyList(defaultOpts, PMopts)
+  PMopts <- utils::modifyList(defaultOpts, PMopts)
 
   # update user values
   if (!missing(sep)) PMopts$sep <- sep
@@ -159,7 +159,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
     if (is.null(PMopts$func_defaults)) { # not previously defined
       PMopts$func_defaults <- func_defaults
     } else {
-      PMopts$func_defaults <- modifyList(PMopts$func_defaults, func_defaults)
+      PMopts$func_defaults <- utils::modifyList(PMopts$func_defaults, func_defaults)
     }
   }
   if (!missing(gfortran_path)) {
@@ -339,7 +339,7 @@ updateArgs <- function(args) {
     fargs <- formals(f)
 
     # update the arguments
-    fargs <- modifyList(fargs, args[[i]])
+    fargs <- utils::modifyList(fargs, args[[i]])
 
     # create new function
     formals(f) <- fargs

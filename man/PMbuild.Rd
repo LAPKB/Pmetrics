@@ -6,6 +6,13 @@
 \usage{
 PMbuild(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE)
 }
+\arguments{
+\item{skipRegistration}{Don't register. Default is \code{FALSE}.}
+
+\item{autoyes}{Automatically install without asking. Default is \code{FALSE}.}
+
+\item{rebuild}{Default is \code{FALSE}.}
+}
 \description{
 \code{PMBuild} will ensure all dependent packages are installed and compile
 Fortran source code for permanent Pmetrics modules

@@ -17,7 +17,7 @@ Centers for Disease Control Pediatric and Adolescent BMI Table
 }
 \details{
 Coefficients to calculate sex-specific BMI z-scores and percentiles.
-Downloaded from \link{https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf}.
+Downloaded from \href{https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf}{}.
 Tables were last updated in 2000, based on data through 1994. Definitions of overweight
 and obese come from these data, based on BMI percentile >=85 for overweight and >=95
 for obese. See \link{ger_bmi} for percentiles based on more modern NHANES data.

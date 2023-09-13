@@ -7,9 +7,9 @@
 \method{summary}{PMdopt}(object, ...)
 }
 \arguments{
-\item{object}{A PMdopt object made by \code{\link{Dopt}}.}
+\item{object}{A PMdopt object made by \link{Dopt}.}
 
-\item{\dots}{Other parameters which are not necessary.}
+\item{...}{Other parameters which are not necessary.}
 }
 \value{
 The weighted mean D-optimal times.
@@ -18,10 +18,10 @@ The weighted mean D-optimal times.
 Summarize a Pmetrics D-optimal object
 }
 \details{
-Summarize observations, predictions and errors in a PMdopt object made by \code{\link{Dopt}}.
+Summarize observations, predictions and errors in a PMdopt object made by \link{Dopt}.
 }
 \seealso{
-\code{\link{makeOP}}
+\link{makeOP}
 }
 \author{
 Michael Neely

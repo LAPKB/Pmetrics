@@ -36,7 +36,8 @@ is particularly useful for making simulation templates on the fly.
 ## Method `PM_data$addEvent`
 ## ------------------------------------------------
 
-PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
+PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, 
+out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -326,7 +327,8 @@ See the example.
 
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
+\preformatted{PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, 
+out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 }
 \if{html}{\out{</div>}}
 

@@ -4,15 +4,15 @@
 #'
 #' @title Summarize PMmatrix objects
 #' @method summary PMmatrix
-#' @param object A PMmatrix object loaded by \code{\link{PMreadMatrix}} or \code{\link{PMload}}.
-#' @param \dots Additional arguments to \code{FUN}, e.g. \code{na.rm=T} 
-#' @param formula Optional formula for specifying custom summaries.  See \code{\link{aggregate}}
-#' and \code{\link{formula}} for details on how to specify formulae in R. If, for example, the data contain
+#' @param object A PMmatrix object loaded by [PMreadMatrix] or [PM_load].
+#' @param formula Optional formula for specifying custom summaries.  See [aggregate]
+#' and [formula] for details on how to specify formulae in R. If, for example, the data contain
 #' a covariate for weight named 'wt', then to summarize the mean dose in mg/kg per subject specify 
-#' \code{formula=dose/wt~id, FUN=mean}.
-#' @param FUN The summary function to apply to \code{formula}, if specified.
-#' @param include A vector of subject IDs to include in the summary, e.g. c(1:3,5,15)
-#' @param exclude A vector of subject IDs to exclude in the summary, e.g. c(4,6:14,16:20)
+#' `formula = dose/wt ~ id` and  `FUN = mean`.
+#' @param FUN The summary function to apply to [formula], if specified.
+#' @param include A vector of subject IDs to include in the summary, e.g. `c(1:3,5,15)`
+#' @param exclude A vector of subject IDs to exclude in the summary, e.g. `c(4,6:14,16:20)`
+#' @param ... Additional arguments to `FUN`, e.g. `na.rm = TRUE` 
 #' @return A list of class \emph{summary.PMmatrix} with the summary of the PMmatrix object, 
 #' containing the following items:
 #' \item{nsub}{Number of subjects}
@@ -26,12 +26,12 @@
 #' \item{nobsXid}{Number of observations per outeq per subject}
 #' \item{doseXid}{Doses per input per subject}
 #' \item{obsXid}{Observations per outeq per subject}
-#' \item{formula}{Results of including \code{formula}} 
+#' \item{formula}{Results of including [formula]} 
 #' @author Michael Neely
-#' @seealso \code{\link{print.summary.PMmatrix}}, \code{\link{aggregate}}
+#' @seealso [aggregate]
 #' @export
 
-summary.PMmatrix <- function(object,...,formula,FUN,include,exclude){
+summary.PMmatrix <- function(object, formula, FUN, include, exclude, ...){
   
   #filter data if needed
   if(!missing(include)){

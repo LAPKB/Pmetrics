@@ -9,8 +9,8 @@ makePTAtarget(x)
 \arguments{
 \item{x}{A data.frame or name of .csv file in working directory whose first two
 columns are targets and the number of samples for each target.  An example can be
-seen for Staphylococcus aureus susceptibility to vancomycin at the
-\href{http://mic.eucast.org/Eucast2/regShow.jsp?Id=1214}{EUCAST} website.}
+seen for Staphylococcus aureus susceptibility to vancomycin at
+\href{http://mic.eucast.org/Eucast2/regShow.jsp?Id=1214}{EUCAST}.}
 }
 \value{
 A data frame with two columns named targets and n, of class \emph{PMpta.targ}.
@@ -19,9 +19,12 @@ A data frame with two columns named targets and n, of class \emph{PMpta.targ}.
 Make a Percent Target Attainment (PTA) Target
 }
 \details{
-\code{makePTAtarget} generates an object of class \emph{PMpta.targ} which can
-be used in the \code{\link{makePTA}} command for targets sampled from a distribution.
+Generates an object of class \emph{PMpta.targ} which can
+be used in the \link{makePTA} method for \link{PM_pta} or \link{PM_sim} for targets sampled from a distribution.
+}
+\examples{
+makePTAtarget(mic1)
 }
 \seealso{
-\code{\link{makePTA}}
+\link{makePTA}
 }

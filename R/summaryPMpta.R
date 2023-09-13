@@ -1,27 +1,27 @@
 #' Summarize a Pmetrics Percent Target Attainment Object
 #'
-#' Summarize target statistics and success proportions in a PMpta object made by \code{\link{makePTA}}.
+#' Summarize target statistics and success proportions in a *PMpta* object made by [makePTA].
 #'
 #' @title Summarize Percent Target Attainment
 #' @method summary PMpta
-#' @param object A PMpta object made by \code{\link{makePTA}}.
-#' @param \dots Other parameters which can be passed to \code{summary}.
+#' @param object A PMpta object made by [makePTA].
 #' @param ci Confidence interval for pharmacodynamic index reporting.  Default is 0.95.
+#' @param ... Not used.
 #' @return A list with two named objects: pta (probability of target attainment)
 #' and pti (pharmacodynamic index).
 #' \item{pta }{A data frame with the following columns: simnum, target, prop.success, pdi.mean, and pdi.sd  
-#' \emph{simnum} is the number of the simulation; \emph{target} is the specified target; 
-#' \emph{success}  has the proportion with a ratio > \code{prop.success}; \emph{pdi.mean} and \emph{pdi.sd} 
+#' *simnum* is the number of the simulation; *target* is the specified target; 
+#' *success*  has the proportion with a ratio > `prop.success`; *pdi.mean* and *pdi.sd* 
 #' are the mean and standard deviation of the pharmacodyamic index (e.g. AUC/MIC) for each simulation and target.}
 #' \item{pdi }{A data frame with the following columns: target, simnum, lowerCI, median, upperCI.
-#' \emph{target} and \emph{simnum} are as above. \emph{lowerCI}, \emph{median}, 
-#' and \emph{upperCI} are the lower limit, median, and upper limit of the confidence
-#' interval for the pdi whose width is specified by \code{ci}}  
+#' *target* and *simnum* are as above. *lowerCI*, *median*, 
+#' and *upperCI* are the lower limit, median, and upper limit of the confidence
+#' interval for the pdi whose width is specified by `ci`.}  
 #' @author Michael Neely
-#' @seealso \code{\link{makePTA}}
+#' @seealso [makePTA]
 #' @export
 
-summary.PMpta <- function(object,...,ci=0.95){
+summary.PMpta <- function(object, ci=0.95, ...){
   #require(reshape2)
   simTarg <- 1+as.numeric(attr(object,"simTarg")) #1 if missing or set, 2 if random
   if(length(simTarg)==0) simTarg <- 1

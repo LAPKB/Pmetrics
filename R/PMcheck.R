@@ -176,7 +176,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       if(!quiet) {cat("\nFIX DATA REPORT:\n\nThere were no errors to fix in you data file.\n")}
       return(invisible(data2))
     } else {
-      newdata <- errfix(data = data2, model = model, err = err, quiet = quiet)
+      newdata <- errfix(data2 = data2, model = model, err = err, quiet = quiet)
       err2 <- errcheck(newdata, model = NA, quiet = T)
       # Add a  Worksheet
       sheet <- openxlsx::addWorksheet(wb, sheetName = "After_Fix")
@@ -467,7 +467,7 @@ errfix <- function(data2, model, err, quiet) {
   if (length(grep("FAIL", err$obsMiss$msg)) > 0) {
     data2 <- data2[err$obsMiss$results, "out"] < -99
     report <- c(report, paste("Missing observations for evid=0 have been replaced with -99."))
-    err <- errcheck(data = data2, model = model, quiet = T)
+    err <- errcheck(data2 = data2, model = model, quiet = T)
   }
   #Check for DUR dose records
   if (length(grep("FAIL", err$doseDur$msg)) > 0) {
@@ -499,7 +499,7 @@ errfix <- function(data2, model, err, quiet) {
     data2 <- rbind(data2, T0)
     data2 <- data2[order(data2$id, data2$time),]
     report <- c(report, paste("Subjects with first time > 0 have had a dummy dose of 0 inserted at time 0."))
-    err <- errcheck(data = data2, model = model, quiet = T)
+    err <- errcheck(data2 = data2, model = model, quiet = T)
   }
   
   #Alert for missing covariate data
