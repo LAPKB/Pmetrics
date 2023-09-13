@@ -1,4 +1,4 @@
-#' `plot.PM_data` plots *PM_data* objects
+#' Plots *PM_data* objects
 #'
 #' This function will plot raw and fitted time and concentration data with a variety of options.
 #' By default markers are included and  have the following plotly properties:
@@ -10,7 +10,7 @@
 #'
 #' @title Plot PM_data Time-Output Data
 #' @method plot PM_data
-#' @param x The name of an `PM_data` data object created by [PM_data$new()] or loaded as a field
+#' @param x The name of an `PM_data` data object or loaded as a field
 #' in a [PM_result] object
 #' @param include `r template("include")` 
 #' @param exclude `r template("exclude")` 
@@ -78,22 +78,18 @@
 #' @export
 #' @examples 
 #' #basic spaghetti plot
-#' exData$plot()
-#' #plot by subject
-#' exData$plot(overlay = F)
+#' dataEx$plot()
 #' #format line and marker
-#' exData$plot(
+#' dataEx$plot(
 #' marker = list(color = "blue", symbol = "square", size = 12, opacity = 0.4),
-#' line = list(color = "orange"))
+#' line = list(join = list(color = "orange")))
 #' #include predictions with default format and suppress joining lines
-#' exData$plot(
-#' line = F,
-#' pred = NPex$pop,
+#' dataEx$plot(line = list(join = FALSE, pred = NPex$post),
 #' xlim = c(119,146))
 #' #customize prediction lines
-#' exData$plot(
-#' line = F,
-#' pred = list(NPex$post, color = "slategrey", dash = "dash"))
+#' dataEx$plot(
+#' line = list(pred = list(NPex$post, color = "slategrey", dash = "dash"),
+#' join = FALSE))
 #' @family PMplots
 
 plot.PM_data <- function(x, 
@@ -246,7 +242,7 @@ plot.PM_data <- function(x,
         icen <- purrr::pluck(pred, "icen") #check if icen is in list
         if(is.null(icen)){ #not in list so set default
           icen <- "median"
-        } else {pluck(pred, "icen") <- NULL} #was in list, so remove after extraction
+        } else {purrr::pluck(pred, "icen") <- NULL} #was in list, so remove after extraction
         predArgs <- pred[-1]
       }
       
@@ -312,7 +308,7 @@ plot.PM_data <- function(x,
                           text = text,
                           hovertemplate = hovertemplate) %>%
       plotly::add_lines(line = join,
-                        showlegend = F)
+                        showlegend = FALSE)
     
     
     if(includePred){
@@ -322,7 +318,7 @@ plot.PM_data <- function(x,
                           color = ~group,
                           line = predArgs,
                           name = "Predicted",
-                          showlegend = F)
+                          showlegend = FALSE)
     }
     p <- p %>% plotly::layout(xaxis = layout$xaxis,
                               yaxis = layout$yaxis,
@@ -506,20 +502,20 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
     
   } else {
     if(!identical(names(errbar),c("c0","c1","c2","c3"))) stop("\nSee plot.PMmatrix help for structure of errbar argument.\n")
-    if(any(sapply(errbar,length)!=max(obsdata$outeq,na.rm=T))) stop("\nSee plot.PMmatrix help for structure of errbar argument.\n")
+    if(any(sapply(errbar,length)!=max(obsdata$outeq,na.rm=TRUE))) stop("\nSee plot.PMmatrix help for structure of errbar argument.\n")
     ebar <- list(plot=T,id=obsdata$id,sd=errbar$c0[obsdata$outeq]+errbar$c1[obsdata$outeq]*obsdata$out+errbar$c2[obsdata$outeq]*obsdata$out^2+errbar$c3[obsdata$outeq]*obsdata$out^3,
                  outeq=obsdata$outeq)
   }
   
   if(!missing(legend)){        
-    if(class(legend)=="list"){
+    if(inherits(legend, "list")){
       legend$plot<- T
       if(is.null(legend$x)) legend$x <- "topright"
       if(is.null(legend$bg)) legend$bg <- "white"
     } else {
-      if(legend) legend <- {list(plot=T,x="topright",bg="white")} else {legend <- list(plot=F)}
+      if(legend) legend <- {list(plot=T,x="topright",bg="white")} else {legend <- list(plot=FALSE)}
     }
-  } else {legend <- list(plot=F)}
+  } else {legend <- list(plot=FALSE)}
   
   if(length(grep("SIM",data$id))>0) data$id <- as.numeric(gsub("[[:alpha:]]","",data$id))
   
@@ -539,7 +535,7 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
   if(log){
     logplot <- "y"
     yaxt <- "n"
-    if(any(data$out<=0,na.rm=T)){
+    if(any(data$out<=0,na.rm=TRUE)){
       cat("Observations <= 0 omitted from log plot.\n")
       data$out[data$out<=0] <- NA
     }
@@ -548,8 +544,8 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
     yaxt <- "s"
   }
   if(join){jointype <- "o"} else {jointype <- "p"}
-  ndrug <- max(data$input,na.rm=T)
-  numeqt <- max(data$outeq,na.rm=T)
+  ndrug <- max(data$input,na.rm=TRUE)
+  numeqt <- max(data$outeq,na.rm=TRUE)
   #make sure pch is long enough
   pch <- rep(pch,numeqt)
   
@@ -641,19 +637,19 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
   #don't overlay
   if(!overlay){
     par(mfrow=layout)
-    devAskNewPage(ask=T)
+    devAskNewPage(ask=TRUE)
     
     #predicted is supplied
     if(!is.null(pred)){
       for (i in unique(data$id)){      
         if (xlim.flag){
-          xlim <- base::range(c(data$time[data$id==i],pred$time[pred$id==i]),na.rm=T)
-          if(abs(xlim[1])==Inf | abs(xlim[2])==Inf) xlim <- base::range(data$time,na.rm=T)
+          xlim <- base::range(c(data$time[data$id==i],pred$time[pred$id==i]),na.rm=TRUE)
+          if(abs(xlim[1])==Inf | abs(xlim[2])==Inf) xlim <- base::range(data$time,na.rm=TRUE)
         }
         if (ylim.flag){
-          ylim <- base::range(c(data$out[data$id==i],pred$pred[pred$id==i]),na.rm=T)
-          if(abs(ylim[1])==Inf | abs(ylim[2])==Inf) ylim <- base::range(data$out,na.rm=T)
-          if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out[data$id==i],na.rm=T)}
+          ylim <- base::range(c(data$out[data$id==i],pred$pred[pred$id==i]),na.rm=TRUE)
+          if(abs(ylim[1])==Inf | abs(ylim[2])==Inf) ylim <- base::range(data$out,na.rm=TRUE)
+          if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out[data$id==i],na.rm=TRUE)}
         }
         if (main.flag) main <- paste("ID",i)
         plot(out~time,data=subset(data,data$id==i),xlab=xlab,ylab=ylab,main=main,xlim=xlim,ylim=ylim,log=logplot,type="n",yaxt=yaxt,...)
@@ -708,13 +704,13 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
       #case where there is no predicted
       for (i in unique(data$id)){
         if (xlim.flag){
-          xlim <- base::range(data$time[data$id==i],na.rm=T)
-          if(abs(xlim[1])==Inf | abs(xlim[2])==Inf) xlim <- base::range(data$time,na.rm=T)
+          xlim <- base::range(data$time[data$id==i],na.rm=TRUE)
+          if(abs(xlim[1])==Inf | abs(xlim[2])==Inf) xlim <- base::range(data$time,na.rm=TRUE)
         }
         if (ylim.flag){
-          ylim <- base::range(data$out[data$id==i],na.rm=T)
-          if(abs(ylim[1])==Inf | abs(ylim[2])==Inf) ylim <- base::range(data$out,na.rm=T)
-          if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out[data$id==i],na.rm=T)}
+          ylim <- base::range(data$out[data$id==i],na.rm=TRUE)
+          if(abs(ylim[1])==Inf | abs(ylim[2])==Inf) ylim <- base::range(data$out,na.rm=TRUE)
+          if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out[data$id==i],na.rm=TRUE)}
         }
         if (main.flag) main <- paste("ID",i)
         plot(out~time,data=subset(data,data$id==i),xlab=xlab,ylab=ylab,main=main,xlim=xlim,ylim=ylim,log=logplot,type="n",yaxt=yaxt,...)
@@ -765,15 +761,15 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
         if(legend$plot) do.call("legend",legend)
       }
     }   
-    devAskNewPage(ask=F)
+    devAskNewPage(ask=FALSE)
     
   } else {  #there is overlay
     #predicted suppplied
     if(!is.null(pred)){
-      if (xlim.flag) xlim <- base::range(c(data$time,pred$time),na.rm=T)
+      if (xlim.flag) xlim <- base::range(c(data$time,pred$time),na.rm=TRUE)
       if (ylim.flag){
-        ylim <- base::range(c(data$out,pred$pred),na.rm=T)
-        if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out,na.rm=T)}
+        ylim <- base::range(c(data$out,pred$pred),na.rm=TRUE)
+        if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out,na.rm=TRUE)}
       }
       
       if (main.flag){main <- ""}
@@ -816,10 +812,10 @@ plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq
       if(legend$plot) do.call("legend",legend)
       
     } else { #there is no predicted
-      if (xlim.flag) xlim <- base::range(data$time,na.rm=T)
+      if (xlim.flag) xlim <- base::range(data$time,na.rm=TRUE)
       if (ylim.flag){
-        ylim <- base::range(data$out,na.rm=T)
-        if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out,na.rm=T)}
+        ylim <- base::range(data$out,na.rm=TRUE)
+        if(log){ylim[1][ylim[1]==0] <- 0.5*min(data$out,na.rm=TRUE)}
       }     
       if (main.flag){main <- ""}
       plot(out~time,data=data,xlab=xlab,ylab=ylab,main=main,xlim=xlim,ylim=ylim,log=logplot,type="n",yaxt=yaxt,...)

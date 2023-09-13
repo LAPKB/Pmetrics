@@ -7,9 +7,9 @@
 \method{print}{PMerr}(x, ...)
 }
 \arguments{
-\item{x}{A PMerr object made by \code{\link{PMcheckMatrix}}.}
+\item{x}{A PMerr object made by validation in \link{PM_data}.}
 
-\item{\dots}{Other parameters which are not necessary.}
+\item{...}{Other parameters which are not necessary.}
 }
 \value{
 A printed object.
@@ -18,10 +18,10 @@ A printed object.
 Print a Pmetrics Error Object
 }
 \details{
-Print the errors in a Pmetrics data file or PMmatrix object.
+Print the errors in a Pmetrics data file or \link{PM_data} object.
 }
 \seealso{
-\code{\link{PMcheckMatrix}}
+\link{PM_data}
 }
 \author{
 Michael Neely

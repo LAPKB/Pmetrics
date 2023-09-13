@@ -4,6 +4,7 @@
 #' @title Deprecated functions.
 #' @aliases PMFortranConfig, PMcheckMatrix, PMfixMatrix, NPload, ITload, NPreport, ITreport,
 #' PMdiag, PMreadDefaults, PMwriteDefaults, makeNPDE
+#' @param ... Not used
 #' @author Michael Neely
 #' @export
 
@@ -24,12 +25,12 @@ PMfixMatrix <- function(...) {
 
 #' @export
 NPload <- function(...) {
-  cat("\nNPload is deprecated.  Use PMload() instead to load results of NPAG or IT2B runs.\n")
+  cat("\nNPload is deprecated.  Use PM_load() instead to load results of NPAG or IT2B runs.\n")
 }
 
 #' @export
 ITload <- function(...) {
-  cat("\nITload is deprecated.  Use PMload() instead to load results of NPAG or IT2B runs.\n")
+  cat("\nITload is deprecated.  Use PM_load() instead to load results of NPAG or IT2B runs.\n")
 }
 
 #' @export

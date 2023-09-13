@@ -11,7 +11,7 @@ export_plotly(
   height = NULL,
   scale = NULL,
   units = "px",
-  show = T
+  show = TRUE
 )
 }
 \arguments{
@@ -22,7 +22,7 @@ export_plotly(
 Unlike \code{save_image}, the \code{file} argument may include the full path and filename
 other than in the current working directory.}
 
-\item{width, }{height  The width/height of the exported image in pixels,
+\item{width, height}{The width/height of the exported image in pixels,
 mutliplied by \code{scale}.}
 
 \item{scale}{The scale factor to use when exporting the figure. Default is 1.0.
@@ -65,7 +65,8 @@ to that function.
 }
 \examples{
 \dontrun{
-NPex$op$plot(stats = list(x = 0.9)) \%>\% export_plotly(file = "op.png", width = 12, height = 6, units = "in")
+NPex$op$plot(stats = list(x = 0.9)) \%>\% 
+export_plotly(file = "op.png", width = 12, height = 6, units = "in")
 }
 }
 \seealso{

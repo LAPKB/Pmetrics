@@ -14,6 +14,8 @@ PMwriteMatrix(data, filename, override = F, version = "DEC_11", header = T)
 \item{override}{Boolean operator to write even if errors are detected.  Default is \code{False}.}
 
 \item{version}{Which matrix data format version to write.  Default is the current version.}
+
+\item{header}{Is there a header row? Default is \code{TRUE}.}
 }
 \value{
 Returns the error report (see \code{\link{PMcheck}} for details).

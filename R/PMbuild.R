@@ -2,6 +2,9 @@
 #' Fortran source code for permanent Pmetrics modules
 #'
 #' @title Build Pmetrics
+#' @param skipRegistration Don't register. Default is `FALSE`.
+#' @param autoyes Automatically install without asking. Default is `FALSE`.
+#' @param rebuild Default is `FALSE`.
 #' @author Michael Neely
 #' @export
 

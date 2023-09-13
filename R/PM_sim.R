@@ -3,8 +3,8 @@
 #' This object is created after a successful run of the simulator.
 #'
 #' There are two methods of creating a PM_sim object.
-#' * [PM_result$sim]
-#' * [PM_sim$run]
+#' * **PM_result$sim**
+#' * **PM_sim$run**
 #'
 #' These both call [SIMrun] to execute the simulation and [SIMparse] to process
 #' the results and return the PM_sim objects. See help on both of these functions

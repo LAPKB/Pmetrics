@@ -22,14 +22,19 @@ test_that("Model object creation",{
     V = ab(30, 120),
     Tlag1 = ab(0, 4)
   ),
-  cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
-  lag = list("Tlag(1) = Tlag1"),
+  cov = list(
+    covariate("WT"), 
+    covariate("AFRICA"),
+    covariate("AGE"),
+    covariate("GENDER"),
+    covariate("HEIGHT")),
+  lag = list("TLAG[1] = Tlag1"),
   out = list(
     Y1 = list(
-      val = "X(2)/V",
+      val = "X[2]/V",
       err = list(
         model = proportional(5),
-        assay = c(0.02, 0.05, -0.0002, 0)
+        assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
       )
     )
   )
@@ -40,63 +45,73 @@ expect_equal(mod1$model_list$pri$Ka$max, 0.9)
 expect_equal(mod1$model_list$pri$Ka$min, 0.1)
 expect_equal(mod1$model_list$pri$Ka$mean, 0.5)
 expect_equal(mod1$model_list$pri$Ka$sd, 0.133)
-expect_equal(mod1$model_list$pri$Ka$mode, "range")
-expect_equal(mod1$model_list$pri$Ka$gtz, F)
-expect_equal(ab(0.1,0.9,gtz=T)$gtz,T)
-expect_equal(mod1$model_list$cov, list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"))
-expect_equal(mod1$model_list$lag, list("Tlag(1) = Tlag1"))
+expect_equal(mod1$model_list$pri$Ka$mode, "ab")
+expect_equal(mod1$model_list$pri$Ka$gtz, FALSE)
+expect_equal(ab(0.1,0.9,gtz=T)$gtz,TRUE)
+expect_equal(purrr::map_chr(mod1$model_list$cov, \(x) x$covariate), c("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"))
+expect_equal(mod1$model_list$lag, list("TLAG[1] = Tlag1"))
 expect_equal(names(mod1$model_list$out), "Y1")
-expect_equal(mod1$model_list$out$Y1$val, "X(2)/V")
+expect_equal(mod1$model_list$out$Y1$val, "X[2]/V")
 expect_equal(mod1$model_list$out$Y1$err$model, proportional(5))
 expect_equal(mod1$model_list$out$Y1$err$model$proportional, 5)
-expect_equal(mod1$model_list$out$Y1$err$assay, c(0.02, 0.05, -0.0002, 0))
+expect_equal(mod1$model_list$out$Y1$err$assay$coefficients, c(0.02, 0.05, -0.0002, 0))
 
 })
 
 test_that("Object representation",{
   mod1 <- PM_model$new(list(
-  pri = list(
-    Ka = ab(0.1, 0.9),
-    Ke = ab(0.001, 0.1),
-    V = ab(30, 120),
-    Tlag1 = ab(0, 4)
-  ),
-  cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
-  lag = list("Tlag(1) = Tlag1"),
-  out = list(
-    Y1 = list(
-      value = "X(2)/V",
-      err = list(
-        model = proportional(5),
-        assay = c(0.02, 0.05, -0.0002, 0)
+    pri = list(
+      Ka = ab(0.1, 0.9),
+      Ke = ab(0.001, 0.1),
+      V = ab(30, 120),
+      Tlag1 = ab(0, 4)
+    ),
+    cov = list(
+      covariate("WT"), 
+      covariate("AFRICA"),
+      covariate("AGE"),
+      covariate("GENDER"),
+      covariate("HEIGHT")),
+    lag = list("TLAG[1] = Tlag1"),
+    out = list(
+      Y1 = list(
+        val = "X[2]/V",
+        err = list(
+          model = proportional(5),
+          assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
+        )
       )
     )
-  )
-))
+  ))
 mod1$write("mod1.txt")
 expect_equal(readLines("mod1.txt"),readLines("generated_model.txt"))
 })
 
 test_that("Object update",{
   mod1 <- PM_model$new(list(
-  pri = list(
-    Ka = ab(0.1, 0.9),
-    Ke = ab(0.001, 0.1),
-    V = ab(30, 120),
-    Tlag1 = ab(0, 4)
-  ),
-  cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
-  lag = list("Tlag(1) = Tlag1"),
-  out = list(
-    Y1 = list(
-      value = "X(2)/V",
-      err = list(
-        model = proportional(5),
-        assay = c(0.02, 0.05, -0.0002, 0)
+    pri = list(
+      Ka = ab(0.1, 0.9),
+      Ke = ab(0.001, 0.1),
+      V = ab(30, 120),
+      Tlag1 = ab(0, 4)
+    ),
+    cov = list(
+      covariate("WT"), 
+      covariate("AFRICA"),
+      covariate("AGE"),
+      covariate("GENDER"),
+      covariate("HEIGHT")),
+    lag = list("TLAG[1] = Tlag1"),
+    out = list(
+      Y1 = list(
+        val = "X[2]/V",
+        err = list(
+          model = proportional(5),
+          assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
+        )
       )
     )
-  )
-))
+  ))
 mod1$update(list(
   pri = list(
     Ka = ab(0.001, 5)
@@ -118,14 +133,19 @@ test_that("Fit object creation",{
       V = ab(30, 120),
       Tlag1 = ab(0, 4)
     ),
-    cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
-    lag = list("Tlag(1) = Tlag1"),
+    cov = list(
+      covariate("WT"), 
+      covariate("AFRICA"),
+      covariate("AGE"),
+      covariate("GENDER"),
+      covariate("HEIGHT")),
+    lag = list("TLAG[1] = Tlag1"),
     out = list(
       Y1 = list(
-        value = "X(2)/V",
+        val = "X[2]/V",
         err = list(
           model = proportional(5),
-          assay = c(0.02, 0.05, -0.0002, 0)
+          assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
         )
       )
     )
@@ -144,14 +164,19 @@ test_that("Basic model fitting", {
       V = ab(30, 120),
       Tlag1 = ab(0, 4)
     ),
-    cov = list("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
-    lag = list("Tlag(1) = Tlag1"),
+    cov = list(
+      covariate("WT"), 
+      covariate("AFRICA"),
+      covariate("AGE"),
+      covariate("GENDER"),
+      covariate("HEIGHT")),
+    lag = list("TLAG[1] = Tlag1"),
     out = list(
       Y1 = list(
-        value = "X(2)/V",
+        val = "X[2]/V",
         err = list(
           model = proportional(5),
-          assay = c(0.02, 0.05, -0.0002, 0)
+          assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
         )
       )
     )
@@ -165,21 +190,26 @@ test_that("Basic model fitting", {
 test_that("Load model",{
   exRes <- PM_load(1)
   expect_equal(exRes$data$data,PM_data$new(data = "ex.csv", quiet=T)$data, ignore_attr = T)
-  expect_equal(exRes$model$model_list,PM_model$new(list(
+  expect_equal(exRes$model$model_list, PM_model$new(list(
     pri = list(
       Ka = ab(0.1, 0.9),
       Ke = ab(0.001, 0.1),
       V = ab(30, 120),
       Tlag1 = ab(0, 4)
     ),
-    cov = c("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"),
-    lag = c("Tlag(1) = Tlag1"),
+    cov = list(
+      covariate("WT"), 
+      covariate("AFRICA"),
+      covariate("AGE"),
+      covariate("GENDER"),
+      covariate("HEIGHT")),
+    lag = list("TLAG[1] = Tlag1"),
     out = list(
       Y1 = list(
-        val = "X(2)/V",
+        val = "X[2]/V",
         err = list(
           model = proportional(5),
-          assay = c(0.02, 0.05, -0.0002, 0)
+          assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
         )
       )
     )

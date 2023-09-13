@@ -10,7 +10,7 @@ Individual Bayesian posterior predictions at short intervals
 }
 \details{
 Contains the Bayesian posterior predictions at short intervals
-specified as an argument to \link{PM_fit$run}. Default is every 12 minutes.
+specified as an argument to the $run method of \link{PM_fit}. Default is every 12 minutes.
 
 Contains the results of \link{makePost}, which is a
 data frame with Bayesian posterior predicted outputs for all subjects.

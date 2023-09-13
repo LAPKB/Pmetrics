@@ -21,11 +21,9 @@
 #' @author Michael Neely
 #' @seealso \code{\link{NPparse}}, \code{\link{ITparse}},  \code{\link{plot.PMcycle}}
 #' @examples
-#' data(NPdata.1)
-#' cycle <- makeCycle(NPdata.1)
+#' cycle <- makeCycle(NPex$NPdata)
 #' cycle
 #' names(cycle)
-#' plot(cycle)
 #' @export
 
 makeCycle <- function(data){

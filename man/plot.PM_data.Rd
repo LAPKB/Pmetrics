@@ -6,31 +6,31 @@
 \usage{
 \method{plot}{PM_data}(
   x,
-  include,
-  exclude,
-  line,
-  marker = T,
-  color,
-  colors,
-  names,
+  include = NA,
+  exclude = NA,
+  line = list(join = TRUE, pred = FALSE),
+  marker = TRUE,
+  color = NULL,
+  colors = "Set1",
+  names = NULL,
   mult = 1,
   outeq = 1,
   block = 1,
-  tad = F,
-  overlay = T,
-  legend = F,
-  log = F,
-  grid = F,
-  xlab,
-  ylab,
-  title,
+  tad = FALSE,
+  overlay = TRUE,
+  legend = FALSE,
+  log = FALSE,
+  grid = FALSE,
+  xlab = "Time",
+  ylab = "Output",
+  title = "",
   xlim,
   ylim,
   ...
 )
 }
 \arguments{
-\item{x}{The name of an \code{PM_data} data object created by \code{\link[=PM_data$new]{PM_data$new()}} or loaded as a field
+\item{x}{The name of an \code{PM_data} data object or loaded as a field
 in a \link{PM_result} object}
 
 \item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
@@ -82,7 +82,7 @@ For accepted palette names see \code{RColorBrewer::brewer.pal.info}. Examples in
 "BrBG", or "Set2". An example vector could be \code{c("red", "green", "blue")}. It is not
 necessary to specify the same number of colors as groups within \code{color}, as colors
 will be interpolated to generate the correct number. The default when \code{color}
-is specified is the "Spectral" palette.}
+is specified is the "Set1" palette.}
 
 \item{names}{A character vector of names to label the \strong{groups} if \code{legend = T}.
 This vector does need to be the same length as the number of groups within \code{color}.
@@ -91,15 +91,18 @@ in the data.}
 
 \item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
 
-\item{outeq}{Which output equation to plot. Default is 1.}
+\item{outeq}{Which output equation to plot. Default is 1.
+Default is 1, but can be multiple if present in the data, e.g. \code{1:2} or \code{c(1, 3)}.}
 
 \item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data.
-Default is 1.}
+Default is 1, but can be multiple if present in the data, as for \code{outeq}.}
 
 \item{tad}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
 
-\item{overlay}{Boolean operator to overlay all time concentration profiles in a single plot.
-The default is \code{TRUE}.}
+\item{overlay}{Operator to overlay all time concentration profiles in a single plot.
+The default is \code{TRUE}. If \code{FALSE}, will trellisplot subjects one at a time. Can also be
+specified as a vector with number of rows and columns, e.g. \code{c(3, 2)} for 3 rows and
+2 columns of subject splots to include in each trellis.}
 
 \item{legend}{Controls display of legend. This argument maps to the plotly layout showlegend and legend arguments. It is either a boolean operator (most common) or a list of parameters to be supplied to plotly. See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend for more details on the available options for formatting.  If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will be set to \code{TRUE} automatically.
 
@@ -144,7 +147,7 @@ Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black"
 Plots the object.
 }
 \description{
-\code{plot.PM_data} plots \emph{PM_data} objects
+Plots \emph{PM_data} objects
 }
 \details{
 This function will plot raw and fitted time and concentration data with a variety of options.
@@ -157,22 +160,18 @@ The grid and legend are omitted by default.
 }
 \examples{
 #basic spaghetti plot
-exData$plot()
-#plot by subject
-exData$plot(overlay = F)
+dataEx$plot()
 #format line and marker
-exData$plot(
+dataEx$plot(
 marker = list(color = "blue", symbol = "square", size = 12, opacity = 0.4),
-line = list(color = "orange"))
+line = list(join = list(color = "orange")))
 #include predictions with default format and suppress joining lines
-exData$plot(
-line = F,
-pred = NPex$pop,
+dataEx$plot(line = list(join = FALSE, pred = NPex$post),
 xlim = c(119,146))
 #customize prediction lines
-exData$plot(
-line = F,
-pred = list(NPex$post, color = "slategrey", dash = "dash"))
+dataEx$plot(
+line = list(pred = list(NPex$post, color = "slategrey", dash = "dash"),
+join = FALSE))
 }
 \seealso{
 \link{PM_data}, \link{PM_result}

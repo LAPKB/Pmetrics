@@ -4,13 +4,15 @@
 \alias{add_shapes}
 \title{Add shapes to plotly plot}
 \usage{
-add_shapes(p = plotly::last_plot(), shape)
+add_shapes(p = plotly::last_plot(), shapes)
 }
 \arguments{
 \item{p}{The plot to which the shape should be added. Default is the
 \code{last_plot()}.}
 
-\item{shapes}{A list of attributes that specify a shape.}
+\item{shapes}{A list of attributes that specify a shape. Note that only one
+shape can be added for each call, but to be consistent with the \code{shapes} argument
+to \code{\link[plotly:layout]{plotly::layout()}}, we use the same plural.}
 }
 \description{
 Modifies the layout object of an existing plot to include a new shape.
@@ -25,10 +27,10 @@ but must be done manually as outlined in the plotly schema documentation.
 An example of a circle shape is below in examples.
 }
 \examples{
-NPex$op$plot()
+NPex$op$plot() \%>\%
 add_shapes(shapes = ab_line(v = 12))
 
-NPex$data$plot()
+NPex$data$plot() \%>\%
 add_shapes(shapes = list(type = "circle", x0 = 125, y0 = 10, x1 = 135, y1 = 15))
 }
 \seealso{

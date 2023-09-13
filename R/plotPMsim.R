@@ -64,8 +64,6 @@
 #' @param legend `r template("legend")` Default is `FALSE`
 #' @param log `r template("log")` Default is `TRUE`.
 #' @param grid `r template("grid")` Default is `FALSE`
-#' @param overlay Boolean operator to overlay all time concentration profiles in a single plot.
-#' The default is `TRUE`.
 #' @param xlab `r template("xlab")` Default is "Time".
 #' @param ylab `r template("ylab")` Default is "Output".
 #' @param title `r template("title")` Default is to have no title.
@@ -95,7 +93,7 @@
 #' @export
 #' @examples 
 #' simEx$plot()
-#' simEx$plot(log = F, line = list(color = "orange"))
+#' simEx$plot(log = FALSE, line = list(color = "orange"))
 #' @family PMplots
 
 plot.PM_sim <- function(x, 
@@ -103,13 +101,13 @@ plot.PM_sim <- function(x,
                        ci = 0.95,
                        binSize = 0, 
                        outeq = 1,
-                       line = T,
-                       marker = F, 
+                       line = TRUE,
+                       marker = FALSE, 
                        obs,
-                       quiet = F,
-                       legend = F, 
-                       log = T, 
-                       grid = F,
+                       quiet = FALSE,
+                       legend = FALSE, 
+                       log = TRUE, 
+                       grid = FALSE,
                        xlab, ylab,
                        title,
                        xlim, ylim,
@@ -124,8 +122,8 @@ plot.PM_sim <- function(x,
                     width = rep(1, 5),
                     dash = rep("solid", 5)) #line = T
     } else { #line = F
-      lineList <- amendLine(F)
-      lineList$probs <- NULL #line was F, so probs = NULL -> no join lines or quantiles
+      lineList <- amendLine(FALSE)
+      lineList$probs <- NULL #line was FALSE, so probs = NULL -> no join lines or quantiles
       lineList$width <- 0
     }
   } else { #line was not T/F
@@ -207,10 +205,10 @@ plot.PM_sim <- function(x,
   #numerical check function
   NPsimInterp <- function(time, out, sim_sum, probs){
     if (min(sim_sum$time) <= time){
-      lower_time <- max(sim_sum$time[sim_sum$time <= time], na.rm = T)
+      lower_time <- max(sim_sum$time[sim_sum$time <= time], na.rm = TRUE)
     } else return(NA)
     if (max(sim_sum$time >= time)){
-      upper_time <- min(sim_sum$time[sim_sum$time >= time], na.rm = T)
+      upper_time <- min(sim_sum$time[sim_sum$time >= time], na.rm = TRUE)
     } else return(NA)
     sim_quantile <- 0
     for (i in probs){
@@ -250,12 +248,12 @@ plot.PM_sim <- function(x,
   #change <=0 to NA if log plot
   if(log){
     if(all(is.na(obs$obs))){
-      if(any(simout$obs<=0,na.rm=T)){
+      if(any(simout$obs<=0,na.rm=TRUE)){
         if(!quiet) {cat("Values <= 0 omitted from log plot.\n")}
         simout$obs[simout$obs <= 0] <- NA            
       }
     } else {
-      if(any(obs$obs<=0,na.rm=T) | any(simout$obs<=0,na.rm=T)){
+      if(any(obs$obs<=0,na.rm=TRUE) | any(simout$obs<=0,na.rm=TRUE)){
         if(!quiet){cat("Values <= 0 omitted from log plot.\n")}
         obs$obs[obs$obs <= 0] <- NA
         simout$obs[simout$obs <= 0] <- NA
@@ -273,12 +271,12 @@ plot.PM_sim <- function(x,
   
   #bin times if requested
   if(binSize > 0){
-    binned_sim_times <- seq(floor(min(sim_out$time,na.rm=T)),ceiling(max(sim_out$time,na.rm=T)),binSize)
-    sim_out$time <- binned_sim_times[.bincode(sim_out$time, binned_sim_times, include.lowest = T)]
+    binned_sim_times <- seq(floor(min(sim_out$time,na.rm=TRUE)),ceiling(max(sim_out$time,na.rm=TRUE)),binSize)
+    sim_out$time <- binned_sim_times[.bincode(sim_out$time, binned_sim_times, include.lowest = TRUE)]
     sim_out <- sim_out %>% group_by(id, time, outeq) %>% summarize(out = mean(out), .groups = "drop") 
     if(!all(is.na(obs$obs))){
-      binned_obs_times <- seq(floor(min(obs$time,na.rm=T)),ceiling(max(obs$time,na.rm=T)),binSize)
-      obs$time <- binned_obs_times[.bincode(obs$time, binned_obs_times, include.lowest = T)]
+      binned_obs_times <- seq(floor(min(obs$time,na.rm=TRUE)),ceiling(max(obs$time,na.rm=TRUE)),binSize)
+      obs$time <- binned_obs_times[.bincode(obs$time, binned_obs_times, include.lowest = TRUE)]
       obs <- obs %>% group_by(id, time) %>% summarize(obs = mean(obs), .groups = "drop") 
     }
   }
@@ -296,7 +294,7 @@ plot.PM_sim <- function(x,
     #make DF of time, quantile and value
     sim_quant_df <- sim %>% 
       group_by(time) %>% 
-      group_map(~quantile(.x$out, probs = probValues, na.rm = T)) %>%
+      group_map(~quantile(.x$out, probs = probValues, na.rm = TRUE)) %>%
       tibble() %>%
       tidyr::unnest_longer(1, indices_to = "quantile", values_to = "value") %>%
       mutate(time = rep(times, each = length(probValues)),
@@ -334,7 +332,7 @@ plot.PM_sim <- function(x,
                             color = I("grey"), opacity = 0.5,
                             line = list(width = 0),
                             hoverinfo = "none", 
-                            showlegend = F) 
+                            showlegend = FALSE) 
     }
     
     #add quantile lines, allowing for the independent formats 
@@ -361,7 +359,7 @@ plot.PM_sim <- function(x,
                         prop_less = rep(NA, length(probValues)),
                         pval = rep(NA, length(probValues)))
       for (i in 1:nrow(npc)){
-        success <- sum(as.numeric(obs$sim_quant < probValues[i]), na.rm = T)
+        success <- sum(as.numeric(obs$sim_quant < probValues[i]), na.rm = TRUE)
         
         pval <- tryCatch(binom.test(success, not.miss, probValues[i], 
                                     alternative = "two")$p.value,
@@ -377,7 +375,7 @@ plot.PM_sim <- function(x,
         between[i] <- ifelse(is.na(obs$obs[i]), NA,
                              NPsimInterp(obs$time[i], obs$obs[i], sim_quant_df, probs=c(0.05, 0.95)))
       }
-      success90 <- sum(as.numeric(between >= 0.05 & between < 0.95), na.rm = T)
+      success90 <- sum(as.numeric(between >= 0.05 & between < 0.95), na.rm = TRUE)
       attr(npc, "05-95") <- success90/not.miss
       attr(npc, "P-90") <- binom.test(success90, not.miss, 0.9, "two")$p.value
       
@@ -428,7 +426,9 @@ plot.PM_sim <- function(x,
 #' @param x The name of a *PM_simlist* object created when `combine = F`
 #' is used when parsing the results of a simulation with multiple subjects
 #' in the data template.
-#' @param \dots Parameters passsed to [plot.PM_sim].
+#' @param ... Parameters passsed to [plot.PM_sim].
+#' @examples 
+#' simEx$plot(at = 2)
 #' @export
 
 plot.PM_simlist <- function(x, ...){
@@ -499,13 +499,15 @@ plot.PM_simlist <- function(x, ...){
 #' \item{obs}{A dataframe similar to an PMop object made by \code{\link{makeOP}}
 #' with the addition of the quantile for each observation}
 #' @author Michael Neely
+#' @examples 
+#' plot(simEx$data[[1]]$data)
 #' @seealso \code{\link{SIMparse}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 
-plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0,outeq=1,
-                       pch=NA,join=T,x.qlab=0.4,cex.qlab=0.8,pos.qlab=1,ci=0.95,
+plot.PMsim <- function(x,mult=1,log=TRUE,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0,outeq=1,
+                       pch=NA,join=TRUE,x.qlab=0.4,cex.qlab=0.8,pos.qlab=1,ci=0.95,
                        cex.lab=1.2,xlab="Time (h)",ylab="Output",xlim,ylim,obs,
-                       grid,ocol="blue",add=F,out=NA,...){
+                       grid,ocol="blue",add=FALSE,out=NA,...){
   
   #choose output
   if(inherits(out,"list")){
@@ -519,10 +521,10 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
   #numerical check function
   NPsimInterp <- function(time,out,sim.sum,probs){
     if (min(sim.sum$time)<=time){
-      lower.time <- max(sim.sum$time[sim.sum$time<=time],na.rm=T)
+      lower.time <- max(sim.sum$time[sim.sum$time<=time],na.rm=TRUE)
     } else return(NA)
     if (max(sim.sum$time>=time)){
-      upper.time <- min(sim.sum$time[sim.sum$time>=time],na.rm=T)
+      upper.time <- min(sim.sum$time[sim.sum$time>=time],na.rm=TRUE)
     } else return(NA)
     sim.quantile <- 0
     for (i in probs){
@@ -553,12 +555,12 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
     logplot <- "y"
     yaxt <- "n"
     if(all(is.na(obs$obs))){
-      if(any(simout$obs<=0,na.rm=T)){
+      if(any(simout$obs<=0,na.rm=TRUE)){
         cat("Values <= 0 omitted from log plot.\n")
         simout$obs[simout$obs <= 0] <- NA            
       }
     } else {
-      if(any(obs$obs<=0,na.rm=T) | any(simout$obs<=0,na.rm=T)){
+      if(any(obs$obs<=0,na.rm=TRUE) | any(simout$obs<=0,na.rm=TRUE)){
         cat("Values <= 0 omitted from log plot.\n")
         obs$obs[obs$obs <= 0] <- NA
         simout$obs[simout$obs <= 0] <- NA
@@ -577,7 +579,7 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
   sim.out <- simout$obs[!is.na(simout$obs$out),]
   #bin times if requested
   if(binSize > 0){
-    binnedTimes <- seq(floor(min(sim.out$time,na.rm=T)),ceiling(max(sim.out$time,na.rm=T)),binSize)
+    binnedTimes <- seq(floor(min(sim.out$time,na.rm=TRUE)),ceiling(max(sim.out$time,na.rm=TRUE)),binSize)
     sim.out$time <- binnedTimes[.bincode(sim.out$time,binnedTimes)]
   }
   
@@ -590,7 +592,7 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
   nobs <- length(times)
   
   if(!all(is.na(probs)) & nsim>=10){
-    sim.quant <- tapply(sim$out,sim$time,quantile,probs=probs,na.rm=T)
+    sim.quant <- tapply(sim$out,sim$time,quantile,probs=probs,na.rm=TRUE)
     lower.confint <- function(nsim) {
       l.ci <- ceiling(nsim*probs - qnorm(1-(1-ci)/2)*sqrt(nsim*probs*(1-probs)))
       l.ci[l.ci==0] <- NA
@@ -608,8 +610,8 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
                           lower.confint=unlist(sim.lconfint),upper.confint=unlist(sim.uconfint),quantile=rep(probs,nobs))
     row.names(sim.sum) <- 1:nrow(sim.sum)
     
-    if (missing(ylim)){ylim <- c(min(c(sim.sum$out,obs$obs),na.rm=T),max(c(sim.sum$out,obs$obs),na.rm=T))}
-    if (missing(xlim)){xlim <- c(min(c(sim.sum$time,obs$time),na.rm=T),max(c(sim.sum$time,obs$time),na.rm=T))}
+    if (missing(ylim)){ylim <- c(min(c(sim.sum$out,obs$obs),na.rm=TRUE),max(c(sim.sum$out,obs$obs),na.rm=TRUE))}
+    if (missing(xlim)){xlim <- c(min(c(sim.sum$time,obs$time),na.rm=TRUE),max(c(sim.sum$time,obs$time),na.rm=TRUE))}
     
     if(!add){
       do.call("plot",args=c(list(out~time,data=sim.sum,type="n",log=logplot,xlab=xlab,ylab=ylab,cex.lab=cex.lab,xlim=xlim,ylim=ylim,yaxt=yaxt),otherArgs))
@@ -687,7 +689,7 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
       not.miss <- sum(!is.na(obs$sim.quant))
       npc <- data.frame(quantile=probs,prop.less=rep(NA,length(probs)),pval=rep(NA,length(probs)))
       for (i in 1:nrow(npc)){
-        success <- sum(as.numeric(obs$sim.quant<probs[i]),na.rm=T)
+        success <- sum(as.numeric(obs$sim.quant<probs[i]),na.rm=TRUE)
         
         pval <- binom.test(success,not.miss,probs[i],alternative="two")$p.value
         npc$prop.less[i] <- round(success/not.miss,3)
@@ -700,7 +702,7 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
       for (i in 1:nrow(obs)){
         between[i] <- ifelse(is.na(obs$obs[i]),NA,NPsimInterp(obs$time[i],obs$obs[i],sim.sum,probs=c(0.05,0.95)))
       }
-      success90 <- sum(as.numeric(between>=0.05 & between<0.95),na.rm=T)
+      success90 <- sum(as.numeric(between>=0.05 & between<0.95),na.rm=TRUE)
       attr(npc,"05-95") <- success90/not.miss
       attr(npc,"P-90") <- binom.test(success90,not.miss,0.9,"two")$p.value
       
@@ -721,8 +723,8 @@ plot.PMsim <- function(x,mult=1,log=T,probs=c(0.05,0.25,0.5,0.75,0.95),binSize=0
   } else {
     #probs are missing or nsim too low, plot all simulated profiles and skip numerical predictive check
     if(nsim<10) cat("\nQuantiles not calculated with fewer than 10 simulated profiles.\n")
-    if (missing(ylim)){ylim <- c(min(c(sim$out,obs$obs),na.rm=T),max(c(sim$out,obs$obs),na.rm=T))}
-    if (missing(xlim)){xlim <- c(min(c(sim$time,obs$time),na.rm=T),max(c(sim$time,obs$time),na.rm=T))}
+    if (missing(ylim)){ylim <- c(min(c(sim$out,obs$obs),na.rm=TRUE),max(c(sim$out,obs$obs),na.rm=TRUE))}
+    if (missing(xlim)){xlim <- c(min(c(sim$time,obs$time),na.rm=TRUE),max(c(sim$time,obs$time),na.rm=TRUE))}
     if(!add){
       do.call("plot",args=c(list(out~time,data=sim,type="n",log=logplot,xlab=xlab,ylab=ylab,cex.lab=cex.lab,xlim=xlim,ylim=ylim,yaxt=yaxt),otherArgs))
       if(missing(grid)){

@@ -26,7 +26,7 @@
 #' to target, or ratio of minimum concentration within the time range to target.  
 #' @param success A single value specifying the success statistic, e.g. 0.4 for proportion time (end-start) above target, or 100 for peak:target.
 #' @param outeq An integer specifying the number of the simulated output equation to use. Default is 1.
-#' @param free.fraction Proportion of free, active drug.  Default is 1, i.e. 100\% free drug or 0\% protein binding.
+#' @param free.fraction Proportion of free, active drug.  Default is 1, i.e. 100% free drug or 0% protein binding.
 #' @param start Specify the time to begin PTA calculations. Default is a vector with the first observation time for subjects
 #' in each element of `simdata`, e.g. dose regimen. If specified as a vector, values will be recycled as necessary.
 #' @param end Specify the time to end PTA calculations so that PTA is calculated
@@ -39,19 +39,30 @@
 #' @param block Which block to plot, where a new block is defined by dose resets (evid=4); default is 1.
 #' @return The output of `makePTA` is a list of class *PMpta*,
 #' which has 2 objects:
-#' \item{results }{A data frame with the following columns: simnum, id, target, pdi.  
-#' *simnum* is the number of the simulation; *id* is the simulated profile number
-#' within each simulation; *target* is the specified target; and *pdi* is
-#' the target pharmacodynamic index, e.g. time > target, auc:target, etc.}
-#' \item{outcome }{A data frame summarizing the results with the following columns: simnum, target, prop.success, pdi.mean, and pdi.sd.
+#' * **results** A data frame with the following columns: simnum, id, target, pdi.  
+#'   - *simnum* is the number of the simulation; *id* is the simulated profile number
+#' within each simulation; 
+#'   - *target* is the specified target; 
+#'   - *pdi* is the target pharmacodynamic index, e.g. time > target, auc:target, etc.
+#' * **outcome** A data frame summarizing the results with the following columns: 
+#' simnum, target, prop.success, pdi.mean, and pdi.sd.
 #' If `targets` was specified via [makePTAtarget] to be a sampled distribution, then
 #' the target column will be missing from the outcome table.
-#' *simnum* and *target* are as for `results`.  The *prop.success* column has the proportion with a pdi > `success`,
-#' as specified in the function call.  The *pdi.mean* and *pdi.sd* columns have the 
-#' mean and standard deviation of the target pharmacodynamic index (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.}  
-#' @noMd
+#'   - *simnum* and *target* are as for `results`.  
+#'   - *prop.success* is the proportion with a pdi > `success`, as specified in 
+#'   - *pdi.mean* and *pdi.sd* have the mean and standard deviation of the target pharmacodynamic index 
+#' (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.  
 #' @author Michael Neely and Jan Strojil
 #' @seealso [plot.PM_pta], [SIMparse]
+#' @examples
+#' \dontrun{pta1 <- simEx$pta(
+#' simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+#' targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+#' success = 0.6, start = 120, end = 144
+#' )
+#' pta1$summary()
+#' pta1$plot()
+#' }
 #' @export
 
 

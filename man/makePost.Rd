@@ -26,6 +26,13 @@ Returns the Bayesian posterior predictions at short intervals specified during t
 up to 12 minutes.  These results are contained separately from the main output of NPAG, in the
 PRTBxxxx file.
 }
+\examples{
+\dontrun{
+post <- makePost(run = 1)
+#would work if there is a complete run in folder 1
+}
+
+}
 \author{
 Michael Neely
 }

@@ -1,5 +1,5 @@
 Package: Pmetrics
-License: GPL (>= 2)
+License: GPL (>= 3)
 Title: Pmetrics for Population Modeling and Simulation
 Type: Package
 LazyLoad: yes

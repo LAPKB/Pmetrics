@@ -4,23 +4,23 @@
 \alias{summary.PMmatrix}
 \title{Summarize PMmatrix objects}
 \usage{
-\method{summary}{PMmatrix}(object, ..., formula, FUN, include, exclude)
+\method{summary}{PMmatrix}(object, formula, FUN, include, exclude, ...)
 }
 \arguments{
-\item{object}{A PMmatrix object loaded by \code{\link{PMreadMatrix}} or \code{\link{PMload}}.}
+\item{object}{A PMmatrix object loaded by \link{PMreadMatrix} or \link{PM_load}.}
 
-\item{\dots}{Additional arguments to \code{FUN}, e.g. \code{na.rm=T}}
-
-\item{formula}{Optional formula for specifying custom summaries.  See \code{\link{aggregate}}
-and \code{\link{formula}} for details on how to specify formulae in R. If, for example, the data contain
+\item{formula}{Optional formula for specifying custom summaries.  See \link{aggregate}
+and \link{formula} for details on how to specify formulae in R. If, for example, the data contain
 a covariate for weight named 'wt', then to summarize the mean dose in mg/kg per subject specify
-\code{formula=dose/wt~id, FUN=mean}.}
+\code{formula = dose/wt ~ id} and  \code{FUN = mean}.}
 
-\item{FUN}{The summary function to apply to \code{formula}, if specified.}
+\item{FUN}{The summary function to apply to \link{formula}, if specified.}
 
-\item{include}{A vector of subject IDs to include in the summary, e.g. c(1:3,5,15)}
+\item{include}{A vector of subject IDs to include in the summary, e.g. \code{c(1:3,5,15)}}
 
-\item{exclude}{A vector of subject IDs to exclude in the summary, e.g. c(4,6:14,16:20)}
+\item{exclude}{A vector of subject IDs to exclude in the summary, e.g. \code{c(4,6:14,16:20)}}
+
+\item{...}{Additional arguments to \code{FUN}, e.g. \code{na.rm = TRUE}}
 }
 \value{
 A list of class \emph{summary.PMmatrix} with the summary of the PMmatrix object,
@@ -36,7 +36,7 @@ containing the following items:
 \item{nobsXid}{Number of observations per outeq per subject}
 \item{doseXid}{Doses per input per subject}
 \item{obsXid}{Observations per outeq per subject}
-\item{formula}{Results of including \code{formula}}
+\item{formula}{Results of including \link{formula}}
 }
 \description{
 Summarize a Pmetrics PMmatrix object
@@ -45,7 +45,7 @@ Summarize a Pmetrics PMmatrix object
 Summarize the raw data used for a Pmetrics run.
 }
 \seealso{
-\code{\link{print.summary.PMmatrix}}, \code{\link{aggregate}}
+\link{aggregate}
 }
 \author{
 Michael Neely

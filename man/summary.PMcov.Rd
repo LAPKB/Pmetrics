@@ -4,14 +4,14 @@
 \alias{summary.PMcov}
 \title{Summarize Covariates and Bayesian Posterior Parameter Values}
 \usage{
-\method{summary}{PMcov}(object, ..., icen = "median")
+\method{summary}{PMcov}(object, icen = "median", ...)
 }
 \arguments{
-\item{object}{A PMcov object made by \code{\link{makeCov}}.}
-
-\item{\dots}{Other parameters which are not necessary.}
+\item{object}{A PMcov object made by \link{makeCov}.}
 
 \item{icen}{Summary function for covariates and posterior parameters. Default is \dQuote{median}, but can specify \dQuote{mean}.}
+
+\item{...}{Not used.}
 }
 \value{
 A data frame with the summary of the PMcov object for each subject's covariates and
@@ -24,7 +24,7 @@ Summarize a Pmetrics Covariate object
 Summarize covariates and Bayesian posterior parameter values for each subject.
 }
 \seealso{
-\code{\link{makeCov}}
+\link{makeCov}
 }
 \author{
 Michael Neely

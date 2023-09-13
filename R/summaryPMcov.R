@@ -4,16 +4,16 @@
 #'
 #' @title Summarize Covariates and Bayesian Posterior Parameter Values
 #' @method summary PMcov
-#' @param object A PMcov object made by \code{\link{makeCov}}.
-#' @param \dots Other parameters which are not necessary.
+#' @param object A PMcov object made by [makeCov].
 #' @param icen Summary function for covariates and posterior parameters. Default is \dQuote{median}, but can specify \dQuote{mean}.
+#' @param ... Not used.
 #' @return A data frame with the summary of the PMcov object for each subject's covariates and 
 #' Bayesian posterior parameter values.
 #' @author Michael Neely
-#' @seealso \code{\link{makeCov}}
+#' @seealso [makeCov]
 #' @export
 
-summary.PMcov <- function(object,...,icen="median"){
+summary.PMcov <- function(object, icen = "median", ...){
   if("icen" %in% names(object)){
     data <- object[object$icen==icen,]
     data <- subset(data,select=-icen) 

@@ -15,11 +15,15 @@
 #' \item{outeq}{ Output equation number}
 #' \item{block}{ Observation blocks within subjects as defined by EVID=4 dosing events}
 #' @author Michael Neely
+#' @examples
+#' \dontrun{
+#' post <- makePost(run = 1)
+#' #would work if there is a complete run in folder 1
+#' }
+#' 
 #' @export
 
 makePost <- function(run,NPdata) {
-  #require(utils)
-  #checkRequiredPackages("reshape2")
   #get data
   if (missing(run)){ #look in current wd
     run <- "."
@@ -29,9 +33,10 @@ makePost <- function(run,NPdata) {
     if (!file.exists(as.character(run))) stop(paste(run," not found in the current working directory.\n",sep=""))
     predfile <- paste(run,"outputs/PRTB0001",sep="/")
   } 
+  
   if(run !=".") { #run specified, so load corresponding objects
-    PMload(run)
-    NPdata <- get(paste("NPdata.",run,sep=""))
+    res <- PM_load(run)
+    NPdata <- res$NPdata
   }
   
   #read PRTB file  

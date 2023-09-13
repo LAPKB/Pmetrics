@@ -4,14 +4,14 @@
 \alias{summary.PMpta}
 \title{Summarize Percent Target Attainment}
 \usage{
-\method{summary}{PMpta}(object, ..., ci = 0.95)
+\method{summary}{PMpta}(object, ci = 0.95, ...)
 }
 \arguments{
-\item{object}{A PMpta object made by \code{\link{makePTA}}.}
-
-\item{\dots}{Other parameters which can be passed to \code{summary}.}
+\item{object}{A PMpta object made by \link{makePTA}.}
 
 \item{ci}{Confidence interval for pharmacodynamic index reporting.  Default is 0.95.}
+
+\item{...}{Not used.}
 }
 \value{
 A list with two named objects: pta (probability of target attainment)
@@ -23,16 +23,16 @@ are the mean and standard deviation of the pharmacodyamic index (e.g. AUC/MIC) f
 \item{pdi }{A data frame with the following columns: target, simnum, lowerCI, median, upperCI.
 \emph{target} and \emph{simnum} are as above. \emph{lowerCI}, \emph{median},
 and \emph{upperCI} are the lower limit, median, and upper limit of the confidence
-interval for the pdi whose width is specified by \code{ci}}
+interval for the pdi whose width is specified by \code{ci}.}
 }
 \description{
 Summarize a Pmetrics Percent Target Attainment Object
 }
 \details{
-Summarize target statistics and success proportions in a PMpta object made by \code{\link{makePTA}}.
+Summarize target statistics and success proportions in a \emph{PMpta} object made by \link{makePTA}.
 }
 \seealso{
-\code{\link{makePTA}}
+\link{makePTA}
 }
 \author{
 Michael Neely

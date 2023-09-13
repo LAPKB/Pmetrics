@@ -19,12 +19,12 @@ clearances.
 vector of 4 elements:
 \itemize{
 \item P[]: primary parameters of at least Ke, V, and optionally Ka, KCP and KPC,
-e.g. P\link{Ke,V}
-\item B[]: Bolus input compartment numbers, 0 for no bolus, e.g. B\link{1}
-\item R[]: RateIV inputs, 0 for no IV, e.g. R\link{2}
-\item O[]: Output compartments, e.g. O\link{2}
+e.g. P[Ke,V]
+\item B[]: Bolus input compartment numbers, 0 for no bolus, e.g. B[1]
+\item R[]: RateIV inputs, 0 for no IV, e.g. R[2]
+\item O[]: Output compartments, e.g. O[2]
 For example, one compartment IV model with no oral input:
-"P\link{Ke,V}, B\link{0}, R\link{1}, O\link{1}"
+"P[Ke,V], B[0], R[1], O[1]"
 }
 }
 }

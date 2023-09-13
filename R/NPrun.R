@@ -63,6 +63,7 @@
 #' @param remote Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
 #' @param server_address If missing, will use the default server address returned by getPMoptions().
 #' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}.
+#' @param report Generate a report at the end of a run. Default is `TRUE`.
 #' @return A successful NPAG run will result in creation of a new folder in the working
 #' directory.  This folder will be named numerically and sequentially with respect to previous runs.
 #' Within this folder will be four subfolders: etc, inputs, outputs, and wrkcopy, described below.

@@ -16,9 +16,6 @@
 #'
 #' @title Create a Pmetrics validation object
 #' @param result The result of a prior run, loaded with [PM_load].
-#' @param data An optional external [PM_data] object with the same covariates
-#' used in the model to test. If not specified, the original data will be obtained
-#' from the `result`.
 #' @param tad `r template("tad")`
 #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
 #' model equations and which need to be binned.  For example `binCov='wt'` if "wt" is included in a
@@ -31,6 +28,7 @@
 #' @param tadC An integer with the number of time after dose bins to cluster, if known from a previous run of
 #' this function.  Including this value will skip the clustering portion for time after dose. This argument
 #' will be ignored if \code{tad=FALSE}.
+#' @param limits Limits on simulated parameters. See [SIMrun].
 #' @param \dots Other parameters to be passed to [SIMrun], especially `limits`.
 #' @return The output of `make_valid` is a list of class `PMvalid`, which is a list with the following.
 #' * simdata The combined, simulated files for all subjects using the population mean values and each subject
@@ -43,6 +41,11 @@
 #' * ndpe An object with results of normalized distrubition of prediction errors analysis.
 #' * npde_tad NPDE with time after dose rather than absolute time, if `tad = TRUE`
 #' @author Michael Neely
+#' @examples
+#' \dontrun{
+#' valid <- NPex$validate(limits = c(0, 3))
+#' }
+#' 
 #' @export
 #' @seealso [SIMrun], [plot.PMvalid]
 
@@ -654,6 +657,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 #' @param tadC An integer with the number of time after dose bins to cluster, if known from a previous run of
 #' this function.  Including this value will skip the clustering portion for time after dose. This argument
 #' will be ignored if `tad=FALSE`.
+#' @param limits Limits on simulated parameters. See [SIMrun].
 #' @param \dots Other parameters to be passed to [SIMrun], especially `limits`.
 #' @return The output of `makeValid` is a list of class `PMvalid`, which is a list with the following.
 #' * simdata The combined, simulated files for all subjects using the population mean values and each subject

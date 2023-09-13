@@ -37,12 +37,9 @@ data.frame suitable for analysis and plotting of observed vs. population or
 or individual predicted outputs.
 }
 \examples{
-data(NPdata.1)
-op <- makeOP(NPdata.1)
+op <- makeOP(NPex$NPdata)
 op
 names(op)
-summary(op)
-plot(op)
 }
 \seealso{
 \code{\link{NPparse}}, \code{\link{ITparse}}, \code{\link{plot.PMop}}, \code{\link{summary.PMop}}

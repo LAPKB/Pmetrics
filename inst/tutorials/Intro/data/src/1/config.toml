@@ -1,9 +1,0 @@
-[paths]
-data="gendata.csv"
-log_out="run.log"
-[config]
-cycles=100
-engine="NPAG"
-init_points=1000
-seed=347
-tui=false

@@ -13,15 +13,17 @@
 #' \item{outeq}{ Output equation number}
 #' \item{block}{ Observation blocks within subjects as defined by EVID=4 dosing events}
 #' @author Michael Neely
+#' @examples
+#' pop <- makePop(NPdata = NPex$NPdata)
 #' @export
 
-makePop <- function(run,NPdata) {
+makePop <- function(run, NPdata) {
   #require(utils)
   #checkRequiredPackages("reshape2") 
   #get data
   if (!missing(run)){ #run specified, so load corresponding objects
-    PMload(run)
-    NPdata <- get(paste("NPdata.",run,sep=""))
+    res <- PM_load(run)
+    NPdata <- res$NPdata
   }
   
   #check for old ypredpopt object and update dimnames
@@ -37,13 +39,6 @@ makePop <- function(run,NPdata) {
     select(.data$id,.data$time,.data$icen,.data$pred,.data$outeq) %>%
     arrange(.data$icen,.data$id,.data$outeq)
   
-
-  # pop <- pop[!is.na(pop$pred),]
-  # 
-  # pop <- pop[,c("id","time","icen","pred","outeq")]
-  # #sort by icen, id, outeq
-  # pop <- pop[order(pop$icen,pop$id,pop$outeq),]
-  # 
 
   pop$id <- rep(unlist(lapply(1:NPdata$nsub,function(x) rep(NPdata$sdata$id[x],times=NPdata$numeqt*NPdata$numt[x]))),3)
   
