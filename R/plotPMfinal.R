@@ -42,8 +42,8 @@
 #'     - `width` Outline width. Default is 1.
 #' Example: `marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))`
 #' @param line `r template("line")` The `line` argument is used to format:
-#' * the density line drawn from an NPAG [PM_final object] if `density = T` 
-#' * the drop lines from an NPAG [PM_final object] when a `formula` is specified
+#' * the density line drawn from an NPAG [PM_final] object if `density = T` 
+#' * the drop lines from an NPAG [PM_final] object when a `formula` is specified
 #' to generate a bivariate plot
 #' * the lines drawing the normal distribution
 #' of parameter values from an IT2B [PM_Final] object. 
@@ -60,7 +60,12 @@
 #' to control formatting or default text, as for `xlab` and `zlab`.
 #' @param standardize Standardize the normal parameter distribution plots from IT2B to the same
 #' scale x-axis.  Ignored for NPAG output.
+#' @param legend Ignored for this plot.
+#' @param log `r template("log")`
 #' @param title `r template("title")` Default is to have no title on plots.
+#' @param xlim `r template("xlim")` 
+#' @param ylim `r template("ylim")` 
+#' @param ... `r template("dotsPlotly")` 
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso [PM_final], [schema]
@@ -69,7 +74,7 @@
 #' @examples
 #' #NPAG
 #' NPex$final$plot()
-#' NPex$final$plot(density = T)
+#' NPex$final$plot(density = TRUE)
 #' NPex$final$plot(Ke ~ V)
 #' #IT2B
 #' ITex$final$plot()
@@ -343,7 +348,7 @@ plot.PM_final <- function(x,
     } else { #NPAG
       
       data$popPoints$id <- seq_len(nrow(x$popPoints))
-      pp <- replicate(3, data$popPoints, simplify = F)
+      pp <- replicate(3, data$popPoints, simplify = FALSE)
       data$popPoints <- data$popPoints %>% select(-id) #undo modification
       
       #make object for drop lines
@@ -401,7 +406,7 @@ plot.PM_final <- function(x,
           nest(data = -id) %>%
           dplyr::mutate(panel = trelliscopejs::map_plot(data, \(x) uniPlot(x, yCol, ab_alpha$min, ab_alpha$max, type = "NPAG",
                                                                            bar = bar, xlab = xlab, ylab = ylab, title = title, .prior = p1$data[[1]]))) %>%
-          trelliscopejs::trelliscope(name = "Posterior/Prior", self_contained = F)
+          trelliscopejs::trelliscope(name = "Posterior/Prior", self_contained = FALSE)
         
       }
       
@@ -520,11 +525,9 @@ plot.PM_final <- function(x,
 #' @export
 #' @examples
 #' #NPAG
-#' data(final.1)
-#' plot(final.1)
+#' plot(NPex$final$data)
 #' #IT2B
-#' data(final.2)
-#' plot(final.2)
+#' plot(ITex$final$data)
 plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref,alpha.ref=0.5,pch,cex,lwd,lwd.ref,density=F,scale=20,bg,standard=F,
                          probs=c(0.05,0.25,0.5,0.75,0.95),legend=T,grid=T,layout,xlab,ylab,xlim,ylim,out=NA,add=F,...){
   #choose output
@@ -566,14 +569,14 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
     if(inherits(data,"IT2B")){
       for (i in 1:(length(data$popMean))){
         x <- seq(data$ab[i,1],data$ab[i,2],(data$ab[i,2]-data$ab[i,1])/1000)
-        y <- dnorm(x,mean=data$popMean[i],sd=data$popSD[i])
+        y <- dnorm(x,mean=data$popMean[1,i],sd=data$popSD[1,i])
         if (standard){xlim <- base::range(data$ab)} else {xlim <- data$ab[i,]}
         if(!add){
           plot(x=x,y=y,type="l",lwd=lwd,col=col,xlab=names(data$popMean)[i],xlim=xlim,
-               ,ylab="Probability",cex.lab=cex.lab,...)
+               ylab="Probability",cex.lab=cex.lab,...)
         } else {
           points(x=x,y=y,type="l",lwd=lwd,col=col,xlab=names(data$popMean)[i],xlim=xlim,
-                 ,ylab="Probability",cex.lab=cex.lab,...)
+                 ylab="Probability",cex.lab=cex.lab,...)
         }
         
         abline(v=data$ab[i,],lty=2,lwd=1,col="black")
@@ -610,13 +613,13 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
         if(missing(layout)){
           if(nsub>4){
             par(mfrow=c(2,2))
-            devAskNewPage(T)
+            devAskNewPage(TRUE)
           } else {
             par(mfrow=c(ceiling(nsub/2),ifelse(nsub>2,2,nsub)))
           }
         } else {
           par(mfrow=layout)
-          if(nsub>sum(layout)) {devAskNewPage(T)}
+          if(nsub>sum(layout)) {devAskNewPage(TRUE)}
         }
         par(mar=c(5,5,4,2)+0.1)
         
@@ -628,7 +631,7 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
           
           if(missing(col.ref)) col.ref <- "gray50"
           #make semi transparent
-          col.ref.rgb <- col2rgb(col.ref,T)/255
+          col.ref.rgb <- col2rgb(col.ref,TRUE)/255
           col.ref.trans <- rgb(col.ref.rgb[1,],col.ref.rgb[2,],col.ref.rgb[3,],alpha.ref)
           if(missing(lwd.ref)) lwd.ref <- 3
           if(missing(xlim)) xlim <- base::range(x.pop)
@@ -675,7 +678,7 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
         }
         ell <- array(NA,dim=c(length(probs),250,2))
         for(i in 1:length(probs)){
-          ell[i,,] <- ellipse(mu=c(data$popMean[xCol],data$popMean[yCol]),sigma=data$popCov[c(xCol,yCol),c(xCol,yCol)],type="l",alpha=probs[i],draw=F)
+          ell[i,,] <- ellipse(mu=c(data$popMean[xCol],data$popMean[yCol]),sigma=data$popCov[c(xCol,yCol),c(xCol,yCol)],type="l",alpha=probs[i],draw=FALSE)
         }
         graycols <- rev(gray.colors(n=length(probs),start=0,end=0.9))
         if(missing(xlim)) xlim <- base::range(ell[,,1])
@@ -683,16 +686,16 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
         if(missing(col)) col="white"
         if(missing(lwd)) lwd <- 1
         if(!missing(legend)){
-          if(class(legend)=="list"){
+          if(inherits(legend, "list")){
             legend$plot<- T
             if(is.null(legend$x)) legend$x <- "topright"
             if(is.null(legend$fill)) legend$fill <- graycols
             if(is.null(legend$legend)) legend$legend <- 1-probs
             if(is.null(legend$title)) legend$title <- "Quantile"
           } else {
-            if(legend) legend <- {list(plot=T,x="topright",legend=1-probs,fill=graycols,title="Quantile")} else {legend <- list(plot=F)}
+            if(legend) legend <- {list(plot=T,x="topright",legend=1-probs,fill=graycols,title="Quantile")} else {legend <- list(plot=FALSE)}
           }
-        } else {legend <- list(plot=F)}
+        } else {legend <- list(plot=FALSE)}
         
         plot(NA,cex.lab=cex.lab,xlim=xlim,ylim=ylim,type="n",xlab=xlab,ylab=ylab,...)
         
@@ -722,13 +725,13 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
         if(missing(layout)){
           if(nsub>4){
             par(mfrow=c(2,2))
-            devAskNewPage(T)
+            devAskNewPage(TRUE)
           } else {
             par(mfrow=c(ceiling(nsub/2),ifelse(nsub>2,2,nsub)))
           }
         } else {
           par(mfrow=layout)
-          if(nsub>sum(layout)) {devAskNewPage(T)}
+          if(nsub>sum(layout)) {devAskNewPage(TRUE)}
         }
         par(mar=c(5,5,4,2)+0.1)
         if(missing(ylim)) ylim <- c(0,max(data$postPoints$prob))
@@ -737,7 +740,7 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
           y.pop <- model.frame(formula=formula,data=data$popPoints)[,1] #prob
           if(missing(col.ref)) col.ref <- "gray50"
           #make semi transparent
-          col.ref.rgb <- col2rgb(col.ref,T)/255
+          col.ref.rgb <- col2rgb(col.ref,TRUE)/255
           col.ref.trans <- rgb(col.ref.rgb[1,],col.ref.rgb[2,],col.ref.rgb[3,],alpha.ref)
           if(missing(lwd.ref)) lwd.ref <- 3
           if(missing(xlim)) xlim <- base::range(x.pop)
@@ -782,7 +785,7 @@ plot.PMfinal <- function(x,formula,include,exclude,ref=T,cex.lab=1.2,col,col.ref
   if(inherits(out,"list")) dev.off()
   #restore layout
   par(.par)
-  devAskNewPage(F)
+  devAskNewPage(FALSE)
   return(invisible(1))
 }
 

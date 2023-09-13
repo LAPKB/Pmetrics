@@ -6,7 +6,7 @@
 #' This accepts a [PM_model] object and creates a network plot where nodes are compartments
 #' and edges are arrows connecting compartments.
 #' @method plot PM_model
-#' @param model The name of an [PM_model] object.
+#' @param x The name of an [PM_model] object.
 #' @param marker Controls the characteristics of the compartments (nodes). 
 #' It can be boolean or a list.
 #' `TRUE` will plot the compartments with default characteristics.
@@ -50,11 +50,12 @@
 #' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
 #' @export
 #' @examples
-#' #to be implemented: NPex$model$plot()
+#' NPex$model$plot()
 #' @family PMplots
 
-plot.PM_model <- function(model, marker = T, line = T, explicit, implicit) {
+plot.PM_model <- function(x, marker = T, line = T, explicit, implicit) {
   
+  model <- x
   marker <- if(marker != FALSE){
     amendMarker(marker, default = list(color = "dodgerblue", size = 0.25, line = list(width = 0.5)))
   } else {FALSE}
@@ -196,7 +197,7 @@ plot.PM_model <- function(model, marker = T, line = T, explicit, implicit) {
   #process each compartment/equation
   parse_tree <- function(tree) {
     nodes = list()
-    if (class(tree) == "expression") {
+    if (inherits(tree, "expression")) {
       for (itree in tree) {
         op = itree[[1]]
         lhs = itree[[2]]

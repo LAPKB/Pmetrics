@@ -43,7 +43,7 @@ into id.block, where block is defined by a dose reset, or evid=4,
 e.g. \code{id} 1.1, 1.2, 1.3, 2.1, 3.1, 3.2.}
 }
 \value{
-Returns a dataframe with columns \link{id, evid, relTime}.
+Returns a dataframe with columns \emph{id, evid, relTime}.
 If \code{split}=T all evid values that were previously 4 will be converted to 1.
 }
 \description{

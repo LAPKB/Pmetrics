@@ -17,7 +17,9 @@
 #' @author Michael Neely
 #' @seealso \code{\link{PMmanual}}
 #' @examples
+#' \dontrun{
 #' PMtree("DrugX")
+#' }
 #' @export
 
 PMtree <- function(project="NewProject",folder=getwd()){

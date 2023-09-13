@@ -10,7 +10,7 @@ Population predictions at short intervals
 }
 \details{
 Contains the population predictions at short intervals
-specified as an argument to \link{PM_fit$run}. Default is every 12 minutes.
+specified as an argument to the run method of \link{PM_fit}. Default is every 12 minutes.
 
 Contains the results of \link{makePop}, which is a
 data frame with population predicted outputs for all subjects.

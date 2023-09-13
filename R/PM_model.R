@@ -846,37 +846,37 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                  
                                  # secondary variables
                                  if (blocks$secVar[1] != "") {
-                                   model_list$sec <- blocks$secVar
+                                   model_list$sec <- as.list(blocks$secVar)
                                  }
                                  
                                  # bioavailability
                                  if (blocks$f[1] != "") {
-                                   model_list$fa <- blocks$f
+                                   model_list$fa <- as.list(blocks$f)
                                  }
                                  
                                  # bolus
                                  if (blocks$bol[1] != "") {
-                                   model_list$bol <- blocks$bol
+                                   model_list$bol <- as.list(blocks$bol)
                                  }
                                  
                                  # initial conditions
                                  if (blocks$ini[1] != "") {
-                                   model_list$ini <- blocks$ini
+                                   model_list$ini <- as.list(blocks$ini)
                                  }
                                  
                                  # lag time
                                  if (blocks$lag[1] != "") {
-                                   model_list$lag <- blocks$lag
+                                   model_list$lag <- as.list(blocks$lag)
                                  }
                                  
                                  # differential equations - legacy
                                  if (!is.null(blocks$diffeq) && blocks$diffeq[1] != "") {
-                                   model_list$eqn <- blocks$diffeq
+                                   model_list$eqn <- as.list(blocks$diffeq)
                                  }
                                  
                                  # model equations - will eventually replace diffeq above
                                  if (blocks$eqn[1] != "") {
-                                   model_list$eqn <- blocks$eqn
+                                   model_list$eqn <- as.list(blocks$eqn)
                                  }
                                  
                                  # out/err

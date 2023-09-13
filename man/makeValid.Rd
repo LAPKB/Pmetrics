@@ -27,6 +27,8 @@ this function.  Including this value will skip the clustering portion for observ
 this function.  Including this value will skip the clustering portion for time after dose. This argument
 will be ignored if \code{tad=FALSE}.}
 
+\item{limits}{Limits on simulated parameters. See \link{SIMrun}.}
+
 \item{\dots}{Other parameters to be passed to \link{SIMrun}, especially \code{limits}.}
 }
 \value{

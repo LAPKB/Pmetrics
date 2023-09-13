@@ -4,10 +4,10 @@
 \alias{summary.PM_op}
 \title{Wrapper function for summmary.PMop}
 \usage{
-\method{summary}{PM_op}(obj, ...)
+\method{summary}{PM_op}(object, ...)
 }
 \arguments{
-\item{obj}{The \emph{PM_op} object to summarize}
+\item{object}{The \emph{PM_op} object to summarize}
 
 \item{...}{Arguments passed to \link{summary.PMop}}
 }

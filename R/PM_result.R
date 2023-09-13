@@ -349,18 +349,18 @@ PM_op <- R6::R6Class(
 #' See [summary.PMop]. Alternative way to summarize is
 #' `PM_result$op$summary()`.
 #'
-#' @param obj The *PM_op* object to summarize
+#' @param object The *PM_op* object to summarize
 #' @param ... Arguments passed to [summary.PMop]
 #' @return A [summary.PMop] object
 #' @export
-summary.PM_op <- function(obj, ...) {
-  obj$summary(...)
+summary.PM_op <- function(object, ...) {
+  object$summary(...)
 }
 
 #' Individual Bayesian posterior predictions at short intervals
 #'
 #' Contains the Bayesian posterior predictions at short intervals
-#' specified as an argument to [PM_fit$run]. Default is every 12 minutes.
+#' specified as an argument to the $run method of [PM_fit]. Default is every 12 minutes.
 #'
 #' @details
 #' Contains the results of [makePost], which is a
@@ -562,12 +562,12 @@ PM_final <- R6::R6Class(
 #' See [summary.PMfinal]. Alternative way to summarize is
 #' `PM_result$final$summary()`.
 #'
-#' @param obj The *PM_final* object to summarize
+#' @param object The *PM_final* object to summarize
 #' @param ... Arguments passed to [summary.PMfinal]
 #' @return A [summary.PMfinal] object
 #' @export
-summary.PM_final <- function(obj, ...) {
-  obj$summary(...)
+summary.PM_final <- function(object, ...) {
+  object$summary(...)
 }
 
 
@@ -645,7 +645,7 @@ PM_cycle <- R6::R6Class(
 #' Population predictions at short intervals
 #'
 #' Contains the population predictions at short intervals
-#' specified as an argument to [PM_fit$run]. Default is every 12 minutes.
+#' specified as an argument to the run method of [PM_fit]. Default is every 12 minutes.
 #'
 #' Contains the results of [makePop], which is a
 #' data frame with population predicted outputs for all subjects.
@@ -740,6 +740,15 @@ PM_cov <- R6::R6Class(
       self$data <- cov
     },
     #' @description
+    #' Stepwise linear regression of covariates and Bayesian posterior
+    #' parameter values
+    #' @details
+    #' See [PMstep].
+    #' @param ... Arguments passed to [PMstep]
+    step = function(...) {
+      PMstep(self$data, ...)
+    },
+    #' @description
     #' Summary method
     #' @details
     #' See [summary.PMcov].
@@ -773,11 +782,11 @@ PM_cov <- R6::R6Class(
 #' See [summary.PMcov]. Alternative way to summarize is
 #' `PM_result$cov$summary()`.
 #'
-#' @param obj The *PM_cov* object to summarize
+#' @param object The *PM_cov* object to summarize
 #' @param ... Arguments passed to [summary.PMcov]
 #' @return A [summary.PMcov] object
 #' @author Michael Neely, Julian Otalvaro
 #' @export
-summary.PM_cov <- function(obj, ...) {
-  obj$summary(...)
+summary.PM_cov <- function(object, ...) {
+  object$summary(...)
 }

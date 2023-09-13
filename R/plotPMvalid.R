@@ -91,13 +91,13 @@
 
 plot.PM_valid <- function(x, 
                           type = "vpc", 
-                          tad = F, 
+                          tad = FALSE, 
                           outeq = 1,
-                          line = T,
-                          marker = T,
-                          legend = F, 
-                          log = F, 
-                          grid = T,
+                          line = TRUE,
+                          marker = TRUE,
+                          legend = FALSE, 
+                          log = FALSE, 
+                          grid = TRUE,
                           xlab, ylab,
                           title,
                           xlim, ylim,...){
@@ -117,9 +117,9 @@ plot.PM_valid <- function(x,
   #process CI lines
   if(is.logical(line)){
     if(line){
-      line <- list(lower = T, mid = T, upper = T)
+      line <- list(lower = TRUE, mid = TRUE, upper = TRUE)
     } else {
-      line <- list(lower = F, mid = F, upper = F)
+      line <- list(lower = FALSE, mid = FALSE, upper = FALSE)
     }
   } else {
     if(is.null(line$lower)) {line$lower <- T}
@@ -197,24 +197,24 @@ plot.PM_valid <- function(x,
   groupVar <- if(tad){quo(tadBinMedian)} else {quo(timeBinMedian)}
   quant_pcObs <- opDF %>%
     group_by(!!groupVar) %>%
-    dplyr::reframe(value = quantile(pcObs, probs = c(lower$value,mid$value,upper$value),na.rm = T),
+    dplyr::reframe(value = quantile(pcObs, probs = c(lower$value,mid$value,upper$value),na.rm = TRUE),
               q = c(lower$value,mid$value,upper$value), .groups = "keep") %>% select (-.groups)
   names(quant_pcObs)[1] <- "time"
   
   #calculate lower, 50th and upper percentiles for Yij by time bin
   quant_Obs <- opDF %>%
     group_by(!!groupVar) %>%
-    reframe(value = quantile(obs, probs = c(lower$value,mid$value,upper$value),na.rm = T),
+    reframe(value = quantile(obs, probs = c(lower$value,mid$value,upper$value),na.rm = TRUE),
               q = c(lower$value,mid$value,upper$value), .groups = "keep") %>% select (-.groups)
   names(quant_Obs)[1] <- "time"
   
   #calculate median and CI for upper, median, and lower for each bin
   simGroupVar <- if(tad){quo(tadBinNum)} else {quo(timeBinNum)}
   simCI <- simdata %>% group_by(simnum, !!simGroupVar) %>% 
-    reframe(value = quantile(out, probs = c(lower$value,mid$value,upper$value),na.rm = T),
+    reframe(value = quantile(out, probs = c(lower$value,mid$value,upper$value),na.rm = TRUE),
               q = c("lower","mid","upper"), .groups = "keep") %>%
     group_by(bin = !!simGroupVar, q) %>% 
-    reframe(value = quantile(value, probs = c(lower$value,upper$value),na.rm = T),
+    reframe(value = quantile(value, probs = c(lower$value,upper$value),na.rm = TRUE),
                                                    ci = c(lower$value,upper$value), .groups = "keep") %>%
     select (-.groups) %>%
     pivot_wider(names_from = ci, values_from = value, names_prefix = "q") 
@@ -270,7 +270,7 @@ plot.PM_valid <- function(x,
                           x = ~time, y = ~obs, marker = marker, 
                           hovertemplate = "Time: %{x}<br>Out: %{y}<br>ID: %{text}<extra></extra>",
                           text = ~id,
-                          inherit = F) %>%
+                          inherit = FALSE) %>%
       #add layout
       
       plotly::layout(xaxis = layout$xaxis,
@@ -284,11 +284,13 @@ plot.PM_valid <- function(x,
   }
   
   if(type=="npde"){
+    requireNamespace("npde", quietly = TRUE)
     if(!tad){
       if(is.null(x$npde)) stop("No npde object found.  Re-run makeValid.\n")
       if(inherits(x$npde[[outeq]], "NpdeObject")){
         npdeArgs <- c(x = x$npde[[outeq]], npdeOpts)
-        do.call(npde:::plot.NpdeObject, npdeArgs)
+        do.call(plot, npdeArgs)
+        # do.call(npde:::plot.NpdeObject, npdeArgs)
         par(mfrow=c(1,1))
       } else {
         cat(paste0("Unable to calculate NPDE for outeq ",outeq))
@@ -297,7 +299,8 @@ plot.PM_valid <- function(x,
       if(is.null(x$npde_tad)) stop("No npde_tad object found.  Re-run makeValid with tad = T.\n")
       if(inherits(x$npde_tad[[outeq]], "NpdeObject")){
         npdeArgs <- c(x = x$npde_tad[[outeq]], npdeOpts)
-        do.call(npde:::plot.NpdeObject, npdeArgs)
+        do.call(plot, npdeArgs)
+        # do.call(npde:::plot.NpdeObject, npdeArgs)
         par(mfrow=c(1,1))
       } else {
         cat(paste0("Unable to calculate NPDE with TAD for outeq ",outeq))
@@ -330,7 +333,9 @@ plot.PM_valid <- function(x,
 #' See \code{\link{points}} for other values of \code{pch}.
 #' @param col.obs Color for observations.  Default is black.
 #' @param cex.obs Size for observatins.  Default is 1.
-#' @param theme Default is \dQuote{color}, but could be \dQuote{grey} or \dQuote{gray}.
+#' @param data_theme Default is \dQuote{color}, but could be \dQuote{grey} or \dQuote{gray}.
+#' @param plot_theme Default is `theme_grey()` but could be any complete ggplot2 theme, e.g.
+#'  [ggplot2::theme_minimal()].
 #' @param col.obs.ci Color of the observation confidence interval (set by \code{lower} and \code{upper}).
 #' Default is blue.
 #' @param col.obs.med Color of the observation median.
@@ -341,16 +346,16 @@ plot.PM_valid <- function(x,
 #' Default is lightpink.
 #' @param xlab Label for x axis.  Default is \dQuote{Time}.
 #' @param ylab Label for y axis.  Default is \dQuote{Observation}.
-#' @param xlim Limits for x axis
-#' @param ylim Limits for y axis
+#' @param axis.x List of `$name` and `$limits`.
+#' @param axis.y List of `$name` and `$limits`.
 #' @param \dots Not currently used
 #' @return Plots the object using ggplot2.
 #' @author Michael Neely
 #' @seealso \code{\link{makeValid}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{points}}
 #' @export
 
-plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,upper=0.975,
-                         log=F,pch.obs = 1,col.obs="black",cex.obs=1,data_theme="color",plot_theme=theme_grey(),
+plot.PMvalid <- function(x,type="vpc",tad=FALSE,icen="median",outeq=1,lower=0.025,upper=0.975,
+                         log=FALSE,pch.obs = 1,col.obs="black",cex.obs=1,data_theme="color",plot_theme=theme_grey(),
                          col.obs.ci="blue",col.obs.med="red",col.sim.ci="dodgerblue",col.sim.med="lightpink",
                          axis.x = NULL,
                          axis.y = NULL
@@ -390,23 +395,23 @@ plot.PMvalid <- function(x,type="vpc",tad=F,icen="median",outeq=1,lower=0.025,up
   }
   
   #calculate lower, 50th and upper percentiles for pcYij by time bins
-  quant_pcObs <- tapply(x$opDF$pcObs,use.opTimeBinNum ,quantile,probs=c(lower,0.5,upper),na.rm=T)
+  quant_pcObs <- tapply(x$opDF$pcObs,use.opTimeBinNum ,quantile,probs=c(lower,0.5,upper),na.rm=TRUE)
   #calculate lower, 50th and upper percentiles for Yij by time bin
-  quant_Obs <- tapply(x$opDF$obs,use.opTimeBinNum,quantile,probs=c(lower,0.5,upper),na.rm=T)
+  quant_Obs <- tapply(x$opDF$obs,use.opTimeBinNum,quantile,probs=c(lower,0.5,upper),na.rm=TRUE)
   
   #find lower, median, upper percentiles by sim and bin
-  simMed <- tapply(x$simdata$obs$out,list(x$simdata$obs$simnum,use.simBinNum),FUN=median,na.rm=T) #nsim row, timeBinNum col
-  simLower <- tapply(x$simdata$obs$out,list(x$simdata$obs$simnum,use.simBinNum),FUN=quantile,na.rm=T,lower) #nsim row, timeBinNum col
-  simUpper <- tapply(x$simdata$obs$out,list(x$simdata$obs$simnum,use.simBinNum),FUN=quantile,na.rm=T,upper) #nsim row, timeBinNum col
+  simMed <- tapply(x$simdata$obs$out,list(x$simdata$obs$simnum,use.simBinNum),FUN=median,na.rm=TRUE) #nsim row, timeBinNum col
+  simLower <- tapply(x$simdata$obs$out,list(x$simdata$obs$simnum,use.simBinNum),FUN=quantile,na.rm=TRUE,lower) #nsim row, timeBinNum col
+  simUpper <- tapply(x$simdata$obs$out,list(x$simdata$obs$simnum,use.simBinNum),FUN=quantile,na.rm=TRUE,upper) #nsim row, timeBinNum col
   
   #calculate median and CI for upper, median, and lower for each bin
   
-  upperLower <- apply(simUpper,2,quantile,lower,na.rm=T)[order(use.timeBinMedian)]
-  upperUpper <- apply(simUpper,2,quantile,upper,na.rm=T)[order(use.timeBinMedian)]
-  medianLower <- apply(simMed,2,quantile,lower,na.rm=T)[order(use.timeBinMedian)]
-  medianUpper <- apply(simMed,2,quantile,upper,na.rm=T)[order(use.timeBinMedian)]
-  lowerLower <- apply(simLower,2,quantile,lower,na.rm=T)[order(use.timeBinMedian)]
-  lowerUpper <- apply(simLower,2,quantile,upper,na.rm=T)[order(use.timeBinMedian)]
+  upperLower <- apply(simUpper,2,quantile,lower,na.rm=TRUE)[order(use.timeBinMedian)]
+  upperUpper <- apply(simUpper,2,quantile,upper,na.rm=TRUE)[order(use.timeBinMedian)]
+  medianLower <- apply(simMed,2,quantile,lower,na.rm=TRUE)[order(use.timeBinMedian)]
+  medianUpper <- apply(simMed,2,quantile,upper,na.rm=TRUE)[order(use.timeBinMedian)]
+  lowerLower <- apply(simLower,2,quantile,lower,na.rm=TRUE)[order(use.timeBinMedian)]
+  lowerUpper <- apply(simLower,2,quantile,upper,na.rm=TRUE)[order(use.timeBinMedian)]
   
   #calculate time boundaries for each bin
   if(tad){

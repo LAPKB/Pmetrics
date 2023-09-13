@@ -59,7 +59,7 @@ used to appropriately weight that observation in the model building process.  Ob
 are weighted by the reciprocal of the variance, or squared standard deviation.
 }
 \examples{
-makeErrorPoly(obs=c(0,5,50,100,250,500,1000),sd=c(1,0.4,4.5,12,34,60,190))
+makeErrorPoly(obs = c(0,5,50,100,250,500,1000), sd = c(1,0.4,4.5,12,34,60,190))
 }
 \author{
 Michael Neely
