@@ -242,9 +242,9 @@ a template data file.
 The Monte Carlo simulator in Pmetrics is a powerful tool for parametric or
 semi-parametric sampling.  There are three ways to execute the simulator.
 \itemize{
-\item \link{PM_result$sim}
-\item \link{PM_sim$run}
-\item SIMrun
+\item \strong{PM_result$sim}
+\item \strong{PM_sim$run}
+\item \strong{SIMrun}
 The first two are the preferred methods in R6 Pmetrics. They return fully
 parsed simulator output as \link{PM_sim} objects in R. The third method is for
 legacy Pmetrics or when a user-specified prior is necessary, i.e. not from

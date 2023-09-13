@@ -4,16 +4,16 @@
 \alias{summary.PMfinal}
 \title{Summary Statistics for PMfinal Objects}
 \usage{
-\method{summary}{PMfinal}(object, ..., lower = 0.025, upper = 0.975)
+\method{summary}{PMfinal}(object, lower = 0.025, upper = 0.975, ...)
 }
 \arguments{
 \item{object}{The PMfinal object made after an NPAG or IT2B, e.g. final.1 after run 1.}
 
-\item{\dots}{Other parameters which are not necessary.}
-
 \item{lower}{Desired lower confidence interval boundary.  Default is 0.025. Ignored for IT2B objects.}
 
 \item{upper}{Desired upper confidence interval boundary.  Default is 0.975. Ignored for IT2B objects.}
+
+\item{...}{Not used.}
 }
 \value{
 The output is a data frame.
@@ -22,12 +22,13 @@ For NPAG this has 4 columns:
 \item{par }{The name of the parameter}
 \item{type }{Either \emph{WtMed} for weighted median, or \emph{MAWD} for MAWD (see details)}
 \item{quantile }{Requested \code{lower}, 0.5 (median), and \code{upper} quantiles}
-For IT2B this has 5 columns:
+For IT2B this has 6 columns:
 \item{mean }{Parameter mean value}
 \item{se.mean }{Standard error of the mean}
 \item{cv.mean }{Error of the mean divided by mean}
 \item{var }{Variance of the parameter values}
 \item{se.var }{Standard error of the variance}
+\item{summary}{Name of the summary statistic}
 }
 \description{
 Generates summary statistics of final population model parameters.
@@ -56,15 +57,11 @@ and the standard errors of these terms, using SE (mean) = SD/sqrt(nsub) and
 SE (var) = var * sqrt(2/(nsub-1)).
 }
 \examples{
-data(NPdata.1)
-final <- makeFinal(NPdata.1)
-summary(final)
-data(ITdata.2)
-final2 <- makeFinal(ITdata.2)
-summary(final2)
+NPex$final$summary()
+ITex$final
 }
 \seealso{
-\code{\link{makeFinal}}, \code{\link{ITparse}},  \code{\link{plot.PMfinal}}
+\link{makeFinal}, \link{ITparse}
 }
 \author{
 Michael Neely

@@ -107,6 +107,8 @@ machine.  Overall speed up for a run will therefore depend on the number of cycl
 
 \item{server_address}{If missing, will use the default server address returned by getPMoptions().
 Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}.}
+
+\item{report}{Generate a report at the end of a run. Default is \code{TRUE}.}
 }
 \value{
 A successful NPAG run will result in creation of a new folder in the working

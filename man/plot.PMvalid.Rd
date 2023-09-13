@@ -54,6 +54,11 @@ See \code{\link{points}} for other values of \code{pch}.}
 
 \item{cex.obs}{Size for observatins.  Default is 1.}
 
+\item{data_theme}{Default is \dQuote{color}, but could be \dQuote{grey} or \dQuote{gray}.}
+
+\item{plot_theme}{Default is \code{theme_grey()} but could be any complete ggplot2 theme, e.g.
+\code{\link[ggplot2:ggtheme]{ggplot2::theme_minimal()}}.}
+
 \item{col.obs.ci}{Color of the observation confidence interval (set by \code{lower} and \code{upper}).
 Default is blue.}
 
@@ -66,15 +71,13 @@ Default is dodgerblue.}
 \item{col.sim.med}{Color of the simulation median.
 Default is lightpink.}
 
-\item{theme}{Default is \dQuote{color}, but could be \dQuote{grey} or \dQuote{gray}.}
+\item{axis.x}{List of \verb{$name} and \verb{$limits}.}
+
+\item{axis.y}{List of \verb{$name} and \verb{$limits}.}
 
 \item{xlab}{Label for x axis.  Default is \dQuote{Time}.}
 
 \item{ylab}{Label for y axis.  Default is \dQuote{Observation}.}
-
-\item{xlim}{Limits for x axis}
-
-\item{ylim}{Limits for y axis}
 
 \item{\dots}{Not currently used}
 }

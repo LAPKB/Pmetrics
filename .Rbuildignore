@@ -12,3 +12,5 @@ compile.*
 ^\.github$
 ^Meta$
 ^doc$
+.nojekyll
+.gitkeep

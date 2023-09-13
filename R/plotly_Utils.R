@@ -191,7 +191,7 @@ setGrid <- function(.axis, grid = F, default){
 #amend the legend
 amendLegend <- function(.legend, default){
   
-  default_legend <- list(showlegend = F)
+  default_legend <- list(showlegend = FALSE)
   if(!missing(default)){
     default_legend <- modifyList(default_legend, default)
   }
@@ -290,12 +290,12 @@ notNeeded <- function(x, f){
 #' @seealso [add_shapes]
 #' @examples 
 #' #add to an existing plot
-#' NPex$op$plot()
+#' NPex$op$plot() %>%
 #' add_shapes(shapes = ab_line(v = 12))
 #' 
 #' #add to a new plot
 #' plotly::plot_ly(x = 1:10, y=1:10, type = "scatter", mode = "lines+markers") %>%
-#' layout(shapes = ab_line(h = 5, line = list(color = "red", dash = "solid")))
+#' plotly::layout(shapes = ab_line(h = 5, line = list(color = "red", dash = "solid")))
 ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE){
   if(!is.null(a)){
     if(is.null(b)){
@@ -355,27 +355,29 @@ ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE){
 #' 
 #' @param p The plot to which the shape should be added. Default is the
 #' `last_plot()`.
-#' @param shapes A list of attributes that specify a shape. 
+#' @param shapes A list of attributes that specify a shape. Note that only one
+#' shape can be added for each call, but to be consistent with the `shapes` argument
+#' to [plotly::layout()], we use the same plural.
 #' @export
 #' @seealso [ab_line]
 #' @examples 
-#' NPex$op$plot()
+#' NPex$op$plot() %>%
 #' add_shapes(shapes = ab_line(v = 12))
 #' 
-#' NPex$data$plot()
+#' NPex$data$plot() %>%
 #' add_shapes(shapes = list(type = "circle", x0 = 125, y0 = 10, x1 = 135, y1 = 15))
-add_shapes <- function(p = plotly::last_plot(), shape){
+add_shapes <- function(p = plotly::last_plot(), shapes){
   cur_data <- p$x$cur_data
   #try different locations
   if(is.null(p$x$layoutAttrs)){ #no layout attributes
-    p$x$layoutAttrs[[cur_data]] <- list(shapes = shape)
+    p$x$layoutAttrs[[cur_data]] <- list(shapes = shapes)
   } else {
     nAttrs <- length(p$x$layoutAttrs)
     shapPos <- which(sapply(p$x$layoutAttrs, function(x) which("shapes" %in% names(x))) == 1)
     if(length(shapPos)>0){ #found one
-      p$x$layoutAttrs[[shapPos]]$shapes <- append(list(p$x$layoutAttrs[[shapPos]]$shapes), list(shape))
+      p$x$layoutAttrs[[shapPos]]$shapes <- append(list(p$x$layoutAttrs[[shapPos]]$shapes), list(shapes))
     } else { #didn't find one
-      p$x$layoutAttrs[[1]]$shapes <- list(shape)
+      p$x$layoutAttrs[[1]]$shapes <- list(shapes)
     }
   }
   return(p)
@@ -419,9 +421,11 @@ add_shapes <- function(p = plotly::last_plot(), shape){
 #' @export
 #' @seealso [add_shapes]
 #' @examples 
-#' plotly::plot_ly(mtcars, x = ~hp, y = ~mpg, type = "scatter", mode = "markers", showlegend = F) %>%
+#' plotly::plot_ly(mtcars, x = ~hp, y = ~mpg, 
+#' type = "scatter", mode = "markers", showlegend = FALSE) %>%
 #'  add_smooth()
-#' plotly::plot_ly(iris, x = ~Sepal.Length, y = ~Petal.Length, type = "scatter", mode = "markers", showlegend = F) %>%
+#' plotly::plot_ly(iris, x = ~Sepal.Length, y = ~Petal.Length, 
+#' type = "scatter", mode = "markers", showlegend = FALSE) %>%
 #'  add_smooth(method = "loess", ci = 0.9, line = list(color = "red", dash = "dash"))
 
 add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
@@ -441,15 +445,16 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
       y <- model.frame(y, p$x$visdat[[1]]())
       
     } else {
-      x <- model.frame(p$x$attrs[[2]]$x, p$x$visdat[[1]]())[,1]
-      y <- model.frame(p$x$attrs[[2]]$y, p$x$visdat[[1]]())[,1]
+      length_x <- ifelse(length(p$x$attrs)>1,2,1)
+      x <- model.frame(p$x$attrs[[length_x]]$x, p$x$visdat[[1]]())[,1]
+      y <- model.frame(p$x$attrs[[length_x]]$y, p$x$visdat[[1]]())[,1]
     }
     
   }
   if(length(x) != length(y)){
     stop("Regression failed due to unequal x (n = ", length(x), ") and y (n = ", length(y), ").\n")
   }
-  vals <- dplyr::bind_cols(x, y) %>% dplyr::rename("x" = 1, "y" = 2)
+  vals <- dplyr::bind_cols(x = x, y = y)
   mod <- do.call(method, args = list(formula = y ~ x, data = vals))
   
   if(method == "lm"){
@@ -485,7 +490,7 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
   
   if(ci > 0){
     zVal <- qnorm(0.5 + ci/2)
-    seFit <- predict(mod, newdata = vals, se = T)
+    seFit <- predict(mod, newdata = vals, se = TRUE)
     upper <- seFit$fit + zVal * seFit$se.fit
     lower <- seFit$fit - zVal * seFit$se.fit
     
@@ -507,14 +512,14 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
     if(stats){
       statPlot <- T
     } else {statPlot <- F}
-    stats <- amendTitle("", default = list(size = 14, bold = F))
+    stats <- amendTitle("", default = list(size = 14, bold = FALSE))
     stats$x <- 0.8
     stats$y <- 0.1
   } else { #formatting supplied, set text to "" (will be replaced later)
     stats$text <- ""
     if(is.null(stats$x)){stats$x <- 0.8}
     if(is.null(stats$y)){stats$y <- 0.1}
-    stats <- amendTitle(stats, default = list(size = 14, bold = F))
+    stats <- amendTitle(stats, default = list(size = 14, bold = FALSE))
     statPlot <- T
   }
   
@@ -528,7 +533,7 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
         xref = "paper",
         yref = "paper",
         align = "left",
-        showarrow = F)
+        showarrow = FALSE)
       )
   }
   
@@ -560,7 +565,7 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
 #' @param file A file path with a suitable file extension (png, jpg, jpeg, webp, svg, or pdf).
 #' Unlike `save_image`, the `file` argument may include the full path and filename
 #' other than in the current working directory.
-#' @param width, height  The width/height of the exported image in pixels,
+#' @param width,height  The width/height of the exported image in pixels,
 #' mutliplied by `scale`. 
 #' @param scale The scale factor to use when exporting the figure. Default is 1.0.
 #' A scale factor larger than 1.0 will increase the image size, 
@@ -579,13 +584,14 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
 #' @seealso [plotly::save_image()]
 #' @examples 
 #' \dontrun{
-#' NPex$op$plot(stats = list(x = 0.9)) %>% export_plotly(file = "op.png", width = 12, height = 6, units = "in")
+#' NPex$op$plot(stats = list(x = 0.9)) %>% 
+#' export_plotly(file = "op.png", width = 12, height = 6, units = "in")
 #' }
 #' @author Michael Neely
 
 
 export_plotly <- function(p, file, width = NULL, height = NULL, 
-                          scale = NULL, units = "px", show = T){
+                          scale = NULL, units = "px", show = TRUE){
   
   if(missing(p)) p <- plotly::last_plot()
   if(!inherits(p,"plotly")) stop("Specify a plotly object to be exported.\n")
@@ -630,7 +636,7 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
              cat("The kaleido python package does not appear to be installed properly.\n")
              cat("Try following the installation instructions in the save_image() help page.\n")
              cat(paste0(crayon::red("Note - "),"Add one more line of code after the others: ",crayon::blue("reticulate::py_run_string('import sys')\n")))
-             stop("Plot not saved.\n",call. = F)
+             stop("Plot not saved.\n",call. = FALSE)
            }
   )
   if(show){
@@ -661,7 +667,7 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
 #' this function.
 #' @param nrows number of rows for laying out plots in a grid-like 
 #' structure. Default is 1.
-#' @param widths, heights Vector of relative column widths or heights
+#' @param widths,heights Vector of relative column widths or heights
 #' on a 0-1 scale. By default all columns have an equal relative width/height, 
 #' i.e. `c(0.5, 0.5)` for two columns, `rep(0.25, 4)` for 4 columns. 
 #' @param margin either a single value or a vector of four values (all between 0 and 1),
@@ -677,8 +683,8 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
 #' lower right corner. Title text and formatting will be grabbed from each 
 #' individual plot. To modify these characteristics, modify the code that 
 #' generated the individual plot. 
-#' @param shareX, shareY Should the x- or y- axis be shared amongst the subplots?
-#' @param titleX, titleY Should x- or y- axis titles be retained?
+#' @param shareX,shareY Should the x- or y- axis be shared amongst the subplots?
+#' @param titleX,titleY Should x- or y- axis titles be retained?
 #' @param which_layout Adopt the layout of which plot? If the default value of 
 #' "merge" is used, layout options found later in the sequence of plots 
 #' will override options found earlier in the sequence. This argument also 

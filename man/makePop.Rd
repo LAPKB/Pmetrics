@@ -24,6 +24,9 @@ A dataframe of class \emph{PMpop} with columns:
 Returns the Bayesian population prior predictions at short intervals specified during the NPAG run,
 up to 12 minutes.
 }
+\examples{
+pop <- makePop(NPdata = NPex$NPdata)
+}
 \author{
 Michael Neely
 }

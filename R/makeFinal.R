@@ -76,21 +76,15 @@
 #' @author Michael Neely
 #' @seealso \code{\link{NPparse}}, \code{\link{ITparse}},  \code{\link{plot.PMfinal}}
 #' @examples
-#' data(NPdata.1)
-#' final <- makeFinal(NPdata.1)
+#' final <- makeFinal(NPex$NPdata)
 #' final
 #' names(final)
-#' plot(final)
-#' data(ITdata.2)
-#' final2 <- makeFinal(ITdata.2)
+#' final2 <- makeFinal(ITex$ITdata)
 #' final2
 #' names(final2)
-#' plot(final2)
 #' @export
 
 makeFinal <- function(data){
-  #checkRequiredPackages("reshape2")
-  
   if(!inherits(data,"NPAG") & !inherits(data,"IT2B")) stop(paste("Use PMparse() to generate an Pmetrics NPAG or IT2B object.\n")) 
   if(inherits(data,"NPAG")){                                    
     #set the number of grid points at the beginning

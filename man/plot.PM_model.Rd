@@ -4,10 +4,10 @@
 \alias{plot.PM_model}
 \title{Plot PM_model objects}
 \usage{
-\method{plot}{PM_model}(model, marker = T, line = T, explicit, implicit)
+\method{plot}{PM_model}(x, marker = T, line = T, explicit, implicit)
 }
 \arguments{
-\item{model}{The name of an \link{PM_model} object.}
+\item{x}{The name of an \link{PM_model} object.}
 
 \item{marker}{Controls the characteristics of the compartments (nodes).
 It can be boolean or a list.
@@ -61,7 +61,7 @@ This accepts a \link{PM_model} object and creates a network plot where nodes are
 and edges are arrows connecting compartments.
 }
 \examples{
-#to be implemented: NPex$model$plot()
+NPex$model$plot()
 }
 \seealso{
 \link{PM_model}, \code{\link[ggraph:ggraph]{ggraph::ggraph()}}, \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}}

@@ -37,11 +37,11 @@ output equation or 1 if gamma was fixed to 1 for that output equation}
 \item{nobs }{Vector of the number of observations for each subject in the population}
 \item{nobsmax }{Maximum number of observation in any individual subject}
 \item{ypredpop }{Array of population model predictions for each subject at each observation time point.
-\emph{ypredpop\link{nsub,numeqt,time,type}} where \emph{type} is 1=mean, 2=median of the population prior used to calculate ypredpop}
+\verb{ypredpop[nsub,numeqt,time,type} where \emph{type} is 1=mean, 2=median of the population prior used to calculate ypredpop}
 \item{ypredbay }{Array of Bayesian posterior model predictions for each subject at each observation time point.
-\emph{ypredbay\link{nsub,numeqt,time,type}} where \emph{type} is 1=mean, 2=median of the population prior used to calculate ypredbay}
+\verb{ypredbay[nsub,numeqt,time,type} where \emph{type} is 1=mean, 2=median of the population prior used to calculate ypredbay}
 \item{parbay }{Array of Bayesian posterior parameter estimates for each subject,
-\emph{parbay\link{nsub,nvar,type}} where \emph{type} is 1=mean, 2=median of the population prior used to calculate parbay}
+\verb{parbay[nsub,nvar,type} where \emph{type} is 1=mean, 2=median of the population prior used to calculate parbay}
 \item{ic }{Data frame with one row and two columns for final cycle Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC)}
 \item{ilog }{Vector of cycle number and associated log-likelihood}
 \item{imean }{Matrix of cycle numbers and associated means for each random parameter}
@@ -55,7 +55,7 @@ based on population means from the next to last cycle.}
 based on population means from the next to last cycle.}
 \item{lcv }{Matrix of subjects in rows and CV of Bayesian posterior parameter distributions in columns for each parameter,
 based on population means from the next to last cycle.}
-\item{sdata }{Subject data consisting of 5 columns: \link{id,  nsub,  age,  sex,  ht},
+\item{sdata }{Subject data consisting of 5 columns: \emph{id,  nsub,  age,  sex,  ht},
 \emph{id} is the original identification number in the .csv matrix file;
 \emph{nsub} is the sequential subject number in the IT2B run; \emph{age},
 \emph{sex} and \emph{ht} will be missing for .csv input and present if included in .wrk input files}
@@ -63,7 +63,7 @@ based on population means from the next to last cycle.}
 \item{outputs }{Data frame with measured outputs for each subject and associated assay error polynomials.
 The order of the columns is nsub, time, numeqt, observation, c0, c1, c2, c3, where the last
 four columns are the coefficients of the assay error polynomial for that observation, such that
-SD\link{obs} = c0 + c1*\link{obs} + c2*\link{obs}*\emph{2 + c3}\link{obs}**3}
+\verb{SD[obs] = c0 + c1*[obs] + c2*[obs]**2 + c3*[obs]**3}}
 \item{negflag }{A flag indicating that some negative predictions were changed to missing.
 This means that the model may be misspecified.}
 \item{mdata }{The filename of the data used in the run.}

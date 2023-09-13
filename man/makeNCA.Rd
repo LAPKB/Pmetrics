@@ -81,7 +81,7 @@ or if only one dose, until the last observation}
 \item{k }{Slope by least-squares linear regression of the final 3 log-transformed observations vs. time.
 If the final 3 concentrations are not decreasing such that linear regression results in a positive slope,
 this value and all others that depend on \code{k} will be suppressed.}
-\item{auclast }{Area under the curve from the time of the last observation to infinity, calculated as \link{Final obs}/k.
+\item{auclast }{Area under the curve from the time of the last observation to infinity, calculated as \(Final obs\)/k.
 This value will be suppressed if start != 0.}
 \item{aumclast }{Area under the first moment curve from the time of the last observation to infinity.
 This value will be suppressed if start!=0.}
@@ -99,15 +99,19 @@ This value will be suppressed if start!=0.}
 Performs a non-compartmental analysis from observed concentrations in the raw data
 file or from an individual Bayesian posterior predicted
 time-observation profiles (PMpost object) generated automatically after an NPAG run
-by the \code{\link{makePost}} command and loaded with \code{\link{PMload}}.
+by the \link{makePost} command and loaded with \link{PM_load}.
 }
 \details{
-If concentrations from multiple dose intervals are included in the \code{start}-\code{end} time interval,
-\code{makeNCA} will superpose the concentrations using the time after dose.  An error will be generated if
+If concentrations from multiple dose intervals are included in the \code{start} to \code{end} time interval,
+the function will superpose the concentrations using the time after dose.  An error will be generated if
 different doses are within this interval as superposition would no longer be valid.
 
 A minimum of 5 concentrations must be available to perform NCA for any given subject.  Fewer than this will
 suppress all results for that subject.
+}
+\examples{
+makeNCA(NPex$data)
+
 }
 \author{
 Michael Neely

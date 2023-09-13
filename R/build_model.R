@@ -343,7 +343,7 @@ build_model <- function(...) {
       #covariates in data will supersede covariates in model
       if(!is.null(data_arg)){
         data_obj(data_arg) #update global 
-        cov_data <- Pmetrics:::getCov(data_arg$standard_data)
+        cov_data <- getCov(data_arg$standard_data)
         if(cov_data$ncov > 0){
           cov_names(cov_data$covnames)
           ncov(cov_data$ncov)
@@ -609,8 +609,8 @@ build_model <- function(...) {
       
       observeEvent(data_obj(), #the data object has changed, update covariates
                    {
-                     cov_names(Pmetrics:::getCov(data_obj()$standard_data)$covnames)
-                     ncov(Pmetrics:::getCov(data_obj()$standard_data)$ncov)
+                     cov_names(getCov(data_obj()$standard_data)$covnames)
+                     ncov(getCov(data_obj()$standard_data)$ncov)
                      #browser()
                      if(ncov()==0){
                        cov_source("Covariates obtained from data when available, but no covariates in this dataset.")
@@ -638,7 +638,7 @@ build_model <- function(...) {
                                  })
                      #browser()
                      if(!is.null(model$cov) && 
-                        !is.null(data_obj()) && Pmetrics:::getCov(data_obj()$standard_data)$ncov == 0){ #model has covariates, but none in app
+                        !is.null(data_obj()) && getCov(data_obj()$standard_data)$ncov == 0){ #model has covariates, but none in app
                        cov_names(purrr::map_chr(model$cov, \(x) x$covariate))
                        ncov(length(cov_names()))
                        cov_source("Covariates obtained from model.")

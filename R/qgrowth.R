@@ -57,8 +57,7 @@ qgrowth <- function(sex = "B", agemos = (seq(0,18)*12), percentile = 50){
 #'
 #' Will extract BMI z-scores based on a single age in months and sex. Overweight is 
 #' a z-score of >1.04, and obese is a z-score > 1.64. Calculations are based on
-#' CDC data/formulae as found here: 
-#' \link{https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf}
+#' [CDC formulae](https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf)
 #' 
 #' For a z-score > 3, which indicates an extreme BMI, consider using the modified
 #' z-score and percentile.

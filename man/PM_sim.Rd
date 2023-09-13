@@ -33,8 +33,8 @@ This object is created after a successful run of the simulator.
 
 There are two methods of creating a PM_sim object.
 \itemize{
-\item \link{PM_result$sim}
-\item \link{PM_sim$run}
+\item \strong{PM_result$sim}
+\item \strong{PM_sim$run}
 }
 
 These both call \link{SIMrun} to execute the simulation and \link{SIMparse} to process

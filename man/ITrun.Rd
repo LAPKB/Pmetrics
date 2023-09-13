@@ -75,6 +75,8 @@ and you can find the HTML summary page in the /outputs folder: IT2Breport.html.}
 \item{nocheck}{Suppress the automatic checking of the data file with \code{\link{PMcheck}}.  Default is \code{FALSE}.}
 
 \item{alq}{For internal developer use only.  Should be set to \code{FALSE}.}
+
+\item{report}{Generate a report at the end of a run. Default is \code{TRUE}.}
 }
 \value{
 A successful IT2B run will result in creation of a new folder in the working

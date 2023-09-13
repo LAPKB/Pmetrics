@@ -22,7 +22,7 @@ and fourth file, specify \code{include=c(1,4)}.}
 the parsed files into a single PMsim object.  This can be useful for making visual predictive
 checks, for example.  If \code{combine=F}, and multiple files are parsed, then the return object
 will be a list of PMsim objects, which can be plotted or otherwise accessed using standard list
-referencing, e.g. simlist[\link{1}], simlist[\link{2}], etc.}
+referencing, e.g. \code{simlist[[1]]}, \code{simlist[[2]]}, etc.}
 
 \item{quiet}{Suppress messages}
 

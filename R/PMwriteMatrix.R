@@ -10,6 +10,7 @@
 #' @param filename Name of file to create.
 #' @param override Boolean operator to write even if errors are detected.  Default is \code{False}.
 #' @param version Which matrix data format version to write.  Default is the current version.
+#' @param header Is there a header row? Default is `TRUE`.
 #' @return Returns the error report (see \code{\link{PMcheck}} for details).
 #' @author Michael Neely
 #' @seealso \code{\link{PMcheck}}, \code{\link{PMreadMatrix}}

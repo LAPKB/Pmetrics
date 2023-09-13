@@ -43,7 +43,7 @@
 #' quantile rnorm runif sd shapiro.test step
 #' t.test terms time var weighted.mean wilcox.test
 #' @importFrom utils compareVersion data flush.console glob2rx head 
-#' install.packages news packageVersion read.table setTxtProgressBar str
+#' install.packages modifyList news packageVersion read.table setTxtProgressBar str
 #' tail txtProgressBar write.csv write.table
 #' @importFrom httr add_headers content GET POST DELETE
 #' @importFrom base64enc base64decode

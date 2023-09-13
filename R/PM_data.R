@@ -219,7 +219,8 @@ PM_data <- R6::R6Class("PM_data",
     #' new object contains only doses while building, this would cause an error. You
     #' should set `validate = TRUE` for the final addition.
     #' @examples
-    #' PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
+    #' PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, 
+    #' out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
     addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
       # browser()
       args <- list(...)
@@ -243,7 +244,7 @@ PM_data <- R6::R6Class("PM_data",
           } else {
             self$standard_data <- NULL
           }
-          return(self)
+          return(invisible(self))
         }
       } else {
         if (!"time" %in% arg_names) stop("Time is required to add the first event.")
@@ -275,7 +276,7 @@ PM_data <- R6::R6Class("PM_data",
       } else {
         self$standard_data <- NULL
       }
-      return(self)
+      return(invisible(self))
     }
   ), # end public
   private = list(
@@ -381,6 +382,9 @@ PM_data <- R6::R6Class("PM_data",
 #'
 #' Summarize a PM_data object using S3 method.
 #' Calls \code{\link{summary.PMmatrix}}
+#' 
+#' @param x Data to be summarized
+#' @param ... Arguments to pass to [summary.PMmatrix]
 #'
 #' @export
 #'

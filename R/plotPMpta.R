@@ -77,12 +77,20 @@
 #' @param title `r template("title")` Default is to have no title.
 #' @param xlim `r template("xlim")`
 #' @param ylim `r template("ylim")`
-#' @param `r template("dotsPlotly")`
+#' @param ... `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso [makePTA]
 #' @importFrom plotly plotly_build
 #' @export
+#' #' \dontrun{pta1 <- simEx$pta(
+#' simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+#' targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+#' success = 0.6, start = 120, end = 144
+#' )
+#' pta1$summary()
+#' pta1$plot()
+#' }
 #' @family PMplots
 
 plot.PM_pta <- function(x,
@@ -90,12 +98,12 @@ plot.PM_pta <- function(x,
                         type = "pta",
                         mult = 1, 
                         outeq = 1,
-                        line = T, 
-                        marker = T,
+                        line = TRUE, 
+                        marker = TRUE,
                         ci = 0.9,
-                        legend = T, 
-                        log = F, 
-                        grid = T,
+                        legend = TRUE, 
+                        log = FALSE, 
+                        grid = TRUE,
                         xlab, ylab,
                         title,
                         xlim, ylim,...) {
@@ -166,8 +174,8 @@ plot.PM_pta <- function(x,
   layout$yaxis <- setGrid(layout$yaxis, grid)
   
   #axis labels if needed
-  xtitle <- pluck(layout$xaxis, "title")
-  ytitle <- pluck(layout$yaxis, "title")
+  xtitle <- purrr::pluck(layout$xaxis, "title")
+  ytitle <- purrr::pluck(layout$yaxis, "title")
   if(is.null(xtitle)){
     if (missing(xlab)) {
       # choose xlab as Target if targets were set or Regimen if targets were simulated
@@ -214,9 +222,9 @@ plot.PM_pta <- function(x,
     if (simTarg == 1) { # set targets
       p <- pta$results %>% 
         nest_by(simnum,target) %>% 
-        mutate(lower = quantile(data$pdi, probs = 0.5 - ci / 2, na.rm = T),
+        mutate(lower = quantile(data$pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
                median = median(data$pdi),
-               upper = quantile(data$pdi, probs = 0.5 + ci / 2, na.rm = T)) %>%
+               upper = quantile(data$pdi, probs = 0.5 + ci / 2, na.rm = TRUE)) %>%
         ungroup() %>% 
         mutate(simnum = factor(simnum, labels = simLabels)) %>% 
         group_by(simnum) %>%
@@ -234,7 +242,7 @@ plot.PM_pta <- function(x,
                         line = list(width = line$width)) %>%
         plotly::add_ribbons(ymin = ~lower, ymax = ~upper,
                             opacity = 0.5, line = list(width = 0), 
-                            marker = list(size = .01), showlegend = F)
+                            marker = list(size = .01), showlegend = FALSE)
       
       layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~target, type = "log"))
       p <- p %>% plotly::layout(xaxis = layout$xaxis,
@@ -246,11 +254,11 @@ plot.PM_pta <- function(x,
     } else { # random targets
       
       p <- pta$results %>% nest_by(simnum) %>% 
-        mutate(lower = quantile(data$pdi, probs = 0.5 - ci / 2, na.rm = T),
+        mutate(lower = quantile(data$pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
                median = median(data$pdi),
-               upper = quantile(data$pdi, probs = 0.5 + ci / 2, na.rm = T)) %>%
+               upper = quantile(data$pdi, probs = 0.5 + ci / 2, na.rm = TRUE)) %>%
         plotly::plot_ly(x = ~simnum, y = ~median) %>%
-        add_markers(error_y = list(symmetric = F,
+        add_markers(error_y = list(symmetric = FALSE,
                                    array = ~(upper - median),
                                    arrayminus = ~(median - lower),
                                    color = line$color),
@@ -259,7 +267,7 @@ plot.PM_pta <- function(x,
       layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~simnum, ticktext = ~simLabels))
       p <- p %>% plotly::layout(xaxis = layout$xaxis,
                                 yaxis = layout$yaxis,
-                                showlegend = F,
+                                showlegend = FALSE,
                                 legend = layout$legend,
                                 title = layout$title) 
     }
@@ -298,7 +306,7 @@ plot.PM_pta <- function(x,
       layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~simnum, ticktext = ~simLabels))
       p <- p %>% plotly::layout(xaxis = layout$xaxis,
                                 yaxis = layout$yaxis,
-                                showlegend = F,
+                                showlegend = FALSE,
                                 legend = layout$legend,
                                 title = layout$title) 
       
@@ -367,12 +375,20 @@ plot.PM_pta <- function(x,
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso \code{\link{makePTA}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
-#' @export
+#' \dontrun{pta1 <- simEx$pta(
+#' simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+#' targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+#' success = 0.6, start = 120, end = 144
+#' )
+#' pta1$summary()
+#' pta1$plot()
+#' }
+#' #' @export
 
 
-plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = T, pch,
+plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
                        grid, xlab, ylab, col, lty, lwd = 4,
-                       legend = T, ci = 0.9, out = NA, ...) {
+                       legend = TRUE, ci = 0.9, out = NA, ...) {
 
   # choose output
   if (inherits(out, "list")) {
@@ -443,7 +459,7 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = T, pch,
   } else {
     lty <- rep(lty, nsim)
   }
-  if (class(legend) == "list") {
+  if (inherits(legend, "list")) {
     legend$plot <- T
     if (is.null(legend$x)) legend$x <- "topright"
     if (is.null(legend$bg)) legend$bg <- "white"
@@ -459,9 +475,9 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = T, pch,
     if (legend) {
       legendText <- attr(x, "simlabels")
       if (is.null(legendText)) legendText <- paste("Regimen", simnum)
-      legend <- list(plot = T, x = "topright", bg = "white", col = col, lty = lty, pch = pch, legend = legendText)
+      legend <- list(plot = TRUE, x = "topright", bg = "white", col = col, lty = lty, pch = pch, legend = legendText)
     } else {
-      legend <- list(plot = F)
+      legend <- list(plot = FALSE)
     }
   }
 
@@ -469,17 +485,17 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = T, pch,
 
 
     if (simTarg == 1) { # set targets
-      pdi.median <- tapply(x$results$pdi, list(x$results$target, x$results$simnum), median, na.rm = T)
-      pdi.lower <- tapply(x$results$pdi, list(x$results$target, x$results$simnum), quantile, probs = 0.5 - ci / 2, na.rm = T)
-      pdi.upper <- tapply(x$results$pdi, list(x$results$target, x$results$simnum), quantile, probs = 0.5 + ci / 2, na.rm = T)
+      pdi.median <- tapply(x$results$pdi, list(x$results$target, x$results$simnum), median, na.rm = TRUE)
+      pdi.lower <- tapply(x$results$pdi, list(x$results$target, x$results$simnum), quantile, probs = 0.5 - ci / 2, na.rm = TRUE)
+      pdi.upper <- tapply(x$results$pdi, list(x$results$target, x$results$simnum), quantile, probs = 0.5 + ci / 2, na.rm = TRUE)
       targets <- as.numeric(row.names(pdi.median))
-      plot(x = base::range(targets), y = base::range(c(pdi.lower[, simnum], pdi.upper[, simnum]), na.rm = T), type = "n", xlab = xlab, ylab = ylab, log = logscale, xaxt = "n", ...)
+      plot(x = base::range(targets), y = base::range(c(pdi.lower[, simnum], pdi.upper[, simnum]), na.rm = TRUE), type = "n", xlab = xlab, ylab = ylab, log = logscale, xaxt = "n", ...)
       axis(side = 1, at = targets, labels = targets, lwd = 1, ...)
     } else { # random targets
-      pdi.median <- tapply(x$results$pdi, x$results$simnum, median, na.rm = T)
-      pdi.lower <- tapply(x$results$pdi, x$results$simnum, quantile, probs = 0.5 - ci / 2, na.rm = T)
-      pdi.upper <- tapply(x$results$pdi, x$results$simnum, quantile, probs = 0.5 + ci / 2, na.rm = T)
-      plot(x = base::range(1:nsim), y = base::range(c(pdi.lower[simnum], pdi.upper[simnum]), na.rm = T), type = "n", xlab = xlab, ylab = ylab, log = logscale, xaxt = "n", ...)
+      pdi.median <- tapply(x$results$pdi, x$results$simnum, median, na.rm = TRUE)
+      pdi.lower <- tapply(x$results$pdi, x$results$simnum, quantile, probs = 0.5 - ci / 2, na.rm = TRUE)
+      pdi.upper <- tapply(x$results$pdi, x$results$simnum, quantile, probs = 0.5 + ci / 2, na.rm = TRUE)
+      plot(x = base::range(1:nsim), y = base::range(c(pdi.lower[simnum], pdi.upper[simnum]), na.rm = TRUE), type = "n", xlab = xlab, ylab = ylab, log = logscale, xaxt = "n", ...)
       axisLabels <- attr(x, "simlabels")
       if (is.null(axisLabels)) axisLabels <- paste("Regimen", simnum)
       axis(side = 1, at = 1:nsim, labels = axisLabels, lwd = 1, ...)

@@ -68,7 +68,7 @@ If a PM_pop, PM_post, PM_op, or PMsim object is specified,
 }
 \examples{
 NPex$op$auc()
-Indometh \%>\% mutate(id = Subject) \%>\% makeAUC(conc ~ time)
+Indometh \%>\% dplyr::mutate(id = Subject) \%>\% makeAUC(conc ~ time)
 }
 \seealso{
 \link{PM_result}, \link{PM_sim}, \link{PM_op}

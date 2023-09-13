@@ -25,46 +25,44 @@
 #' @title Summary Statistics for PMfinal Objects
 #' @method summary PMfinal
 #' @param object The PMfinal object made after an NPAG or IT2B, e.g. final.1 after run 1.
-#' @param \dots Other parameters which are not necessary.
 #' @param lower Desired lower confidence interval boundary.  Default is 0.025. Ignored for IT2B objects.
 #' @param upper Desired upper confidence interval boundary.  Default is 0.975. Ignored for IT2B objects.
+#' @param ... Not used.
 #' @return The output is a data frame.
 #' For NPAG this has 4 columns:
 #' \item{value }{The value of the summary statistic}
 #' \item{par }{The name of the parameter}
-#' \item{type }{Either \emph{WtMed} for weighted median, or \emph{MAWD} for MAWD (see details)}
-#' \item{quantile }{Requested \code{lower}, 0.5 (median), and \code{upper} quantiles}
-#' For IT2B this has 5 columns:
+#' \item{type }{Either *WtMed* for weighted median, or *MAWD* for MAWD (see details)}
+#' \item{quantile }{Requested `lower`, 0.5 (median), and `upper` quantiles}
+#' For IT2B this has 6 columns:
 #' \item{mean }{Parameter mean value}
 #' \item{se.mean }{Standard error of the mean}
 #' \item{cv.mean }{Error of the mean divided by mean}
 #' \item{var }{Variance of the parameter values}
 #' \item{se.var }{Standard error of the variance}
+#' \item{summary}{Name of the summary statistic}
 #' @author Michael Neely
-#' @seealso \code{\link{makeFinal}}, \code{\link{ITparse}},  \code{\link{plot.PMfinal}}
+#' @seealso [makeFinal], [ITparse]
 #' @export
 #' @examples
-#' data(NPdata.1)
-#' final <- makeFinal(NPdata.1)
-#' summary(final)
-#' data(ITdata.2)
-#' final2 <- makeFinal(ITdata.2)
-#' summary(final2)
+#' NPex$final$summary()
+#' ITex$final
 
 
-summary.PMfinal <- function(object,...,lower=0.025,upper=0.975){
-  # checkRequiredPackages("reshape2")
-
+summary.PMfinal <- function(object, lower = 0.025, upper = 0.975, ...){
   if(inherits(object,"IT2B")){ #IT2B object
     if(is.null(object$nsub)){
       nsub <- as.numeric(readline("Update your IT2B PMfinal object with makeFinal() or PMreport() (see help).\nFor now, enter the number of subjects. "))
     }else{nsub <- object$nsub}
-    mean=object$popMean
-    se.mean=object$popSD/sqrt(nsub)
-    cv.mean=se.mean/mean
-    var=object$popVar
-    se.var=object$popVar*sqrt(2/(nsub-1))
-    sumstat <- data.frame(mean,se.mean,cv.mean,var,se.var)
+    mean <- object$popMean
+    se.mean <- object$popSD/sqrt(nsub)
+    cv.mean <- se.mean/mean
+    var <- object$popVar
+    se.var <- object$popVar*sqrt(2/(nsub-1))
+    sumstat <- dplyr::bind_rows(mean, se.mean, 
+                          cv.mean, 
+                          var, se.var) %>% 
+      dplyr::mutate(summary = c("Mean","StdErr Mean", "CV% Mean", "Variance", "StdErr Var"))
     return(sumstat)
   }else{ #NPAG object
     medMAD <- function(x){

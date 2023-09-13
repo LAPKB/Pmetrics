@@ -37,7 +37,7 @@
 #' will generate a loess regression of the form obs ~ pred.
 #' The list elements and default values in the `loess` list are the
 #' same as for `lm` except the default style is "dash".
-#' Example: `line = list(lm = F, loess = T)`
+#' Example: `line = list(lm = FALSE, loess = TRUE)`
 #' * `ref` If set to `TRUE` or a list of plotly line attributes,
 #' will generate a reference line with slope = 1 and intercept = 0.
 #' The default values for the elements of the `ref` list are:
@@ -45,13 +45,14 @@
 #'     - `width` 1.
 #'     - `dash` "dot".
 #' Note that there is no *ci* argument for the *ref* list.
-#' Example: `line = list(lm = F, loess = T, ref = list(color = "lightgrey"))`
+#' Example: `line = list(lm = FALSE, loess = TRUE, ref = list(color = "lightgrey"))`
 #' If the `line` argument is missing, it will be set to
-#' `line = list(lm = T, loess = F, ref = T)`, i.e. there will be a linear
+#' `line = list(lm = TRUE, loess = FALSE, ref = TRUE)`, i.e. there will be a linear
 #' regression with reference line, but no loess regression. However, if `resid = T`,
-#' the default will become `line = list(lm = F, loess = T, ref = T)`, i.e.,
+#' the default will become `line = list(lm = FALSE, loess = TRUE, ref = TRUE)`, i.e.,
 #' loess regression with reference line, but no linear regression.
 #' @param mult `r template("mult")` 
+#' @param legend Ignored for this plot.
 #' @param resid Boolean operator to generate a plot of weighted prediction error vs. time,
 #' a plot of weighted prediction error vs. prediction. Prediction error is
 #' pred - obs. By default a loess regression will indicate deviation from
@@ -69,10 +70,10 @@
 #' @param title `r template("title")` Default is to have no title.
 #' @param stats Add the statistics from linear regression to the plot. If 
 #' `FALSE`, will be suppressed. Default is `TRUE` which results in default format of 
-#' `list(x= 0.8, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 14))`.
+#' `list(x= 0.8, y = 0.1, bold = FALSE, font = list(color = "black", family = "Arial", size = 14))`.
 #' The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
 #' argument maps to `plotly::add_text()`. 
-#' @param \dots `r template("dotsPlotly")`
+#' @param ... `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso [makeOP], [PM_result], [schema]
@@ -80,27 +81,26 @@
 #' @examples
 #' NPex$op$plot()
 #' NPex$op$plot(pred.type = "pop")
-#' NPex$op$plot(line = list(lm = T, ref = T, loess = F))
+#' NPex$op$plot(line = list(lm = TRUE, ref = TRUE, loess = FALSE))
 #' NPex$op$plot(line = list(loess = list(ci = 0.9, color = "green")))
 #' NPex$op$plot(marker = list(color = "blue"))
-#' NPex$op$plot(resid = T)
-#' NPex$op$plot(stats = T)
+#' NPex$op$plot(resid = TRUE)
 #' NPex$op$plot(stats = list(x = 0.5, y = 0.2, font = list(size = 7, color = "blue")))
 #' 
 #' @family PMplots
 plot.PM_op <- function(x,  
                        line = list(lm = NULL, loess = NULL, ref = NULL),
-                       marker = T,
-                       resid = F,                      
+                       marker = TRUE,
+                       resid = FALSE,                      
                        icen = "median", pred.type = "post", outeq = 1, block,
                        include, exclude, 
                        mult = 1,
                        legend,
-                       log = F, 
-                       grid = T,
+                       log = FALSE, 
+                       grid = TRUE,
                        xlab, ylab,
                        title,
-                       stats = T,
+                       stats = TRUE,
                        xlim, ylim,...){
   
   x <- if(inherits(x, "PM_op")) {x$data}else{x}
@@ -166,7 +166,7 @@ plot.PM_op <- function(x,
   layout <- amendDots(list(...))
   
   #legend - not needed for this function
-  layout <- modifyList(layout, list(showlegend = F))
+  layout <- modifyList(layout, list(showlegend = FALSE))
   
   #grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
@@ -204,7 +204,7 @@ plot.PM_op <- function(x,
     
     #make square
     #define anchor axis as the one with largest
-    if(max(x$obs, na.rm = T) > max(x$pred, na.rm = T)){ #anchor is y axis
+    if(max(x$obs, na.rm = TRUE) > max(x$pred, na.rm = TRUE)){ #anchor is y axis
       layout$xaxis <- modifyList(layout$xaxis, list(matches = "y"))
     } else { #anchor is x axis
       layout$yaxis <- modifyList(layout$yaxis, list(matches = "x"))
@@ -227,7 +227,7 @@ plot.PM_op <- function(x,
         lmLine$ci <- NULL #remove to allow only formatting arguments below
       }
       
-      p <- p %>% add_smooth(x = ~pred, y = ~obs, ci = ci, line = lmLine, stats = stats)
+      p <- p %>% add_smooth(ci = ci, line = lmLine, stats = stats)
     } 
     
     if(loessLine$plot){ #loess regression
@@ -238,7 +238,7 @@ plot.PM_op <- function(x,
         ci <- loessLine$ci
         loessLine$ci <- NULL #remove to allow only formatting arguments below
       }
-      p <- p %>% add_smooth(x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
+      p <- p %>% add_smooth(ci = ci, line = loessLine, method = "loess")
     } 
     
     if(refLine$plot){ #reference line
@@ -305,8 +305,8 @@ plot.PM_op <- function(x,
         ci <- lmLine$ci
         lmLine$ci <- NULL #remove to allow only formatting arguments below
       }
-      p1 <- p1 %>% add_smooth(x = ~time, y = ~wd, ci = ci, line = lmLine, stats = stats)
-      p2 <- p2 %>% add_smooth(x = ~pred, y = ~wd, ci = ci, line = lmLine, stats = stats)
+      p1 <- p1 %>% add_smooth(ci = ci, line = lmLine, stats = stats)
+      p2 <- p2 %>% add_smooth(ci = ci, line = lmLine, stats = stats)
       
     } 
     
@@ -318,8 +318,8 @@ plot.PM_op <- function(x,
         ci <- loessLine$ci
         loessLine$ci <- NULL #remove to allow only formatting arguments below
       }
-      p1 <- p1 %>% add_smooth(x = ~time, y = ~wd, ci = ci, line = loessLine, method = "loess")
-      p2 <- p2 %>% add_smooth(x = ~pred, y = ~wd, ci = ci, line = loessLine, method = "loess")
+      p1 <- p1 %>% add_smooth(ci = ci, line = loessLine, method = "loess")
+      p2 <- p2 %>% add_smooth(ci = ci, line = loessLine, method = "loess")
       
     }
     #set layout
@@ -338,7 +338,7 @@ plot.PM_op <- function(x,
     
     #final residual plot
     p <- subplot(p1, p2, nrows = 1,
-                 shareY = T, shareX = F, titleX = T)
+                 shareY = TRUE, shareX = FALSE, titleX = TRUE)
     print(p)
     return(p)
     
@@ -414,7 +414,7 @@ plot.PM_op <- function(x,
 #' @seealso \code{\link{makeOP}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 
-plot.PMop <- function(x,include,exclude,pred.type="post",icen="median",outeq=1,mult=1,resid=F,log=F,square=T,ref=T,lowess=F,reg=T,grid,ident=F,ci=0.95,cex=1,
+plot.PMop <- function(x,include,exclude,pred.type="post",icen="median",outeq=1,mult=1,resid=FALSE,log=FALSE,square=TRUE,ref=TRUE,lowess=FALSE,reg=TRUE,grid,ident=FALSE,ci=0.95,cex=1,
                       cex.lab=1.2,x.stat=0.4,y.stat=0.1,col.stat="black",cex.stat=1.2,lwd=2,col="red",
                       xlim,ylim,xlab,ylab,out=NA,...){ 
   
@@ -479,8 +479,8 @@ plot.PMop <- function(x,include,exclude,pred.type="post",icen="median",outeq=1,m
   if(!resid){
     #this is not a residual plot
     
-    if (missing(xlim)){xlim <- base::range(data$pred,na.rm=T)}
-    if (missing(ylim)){ylim <- base::range(data$obs,na.rm=T)}
+    if (missing(xlim)){xlim <- base::range(data$pred,na.rm=TRUE)}
+    if (missing(ylim)){ylim <- base::range(data$obs,na.rm=TRUE)}
     
     if (missing(xlab)) xlab <- "Predicted"
     if (missing(ylab)) ylab <- "Observed"
@@ -548,7 +548,7 @@ plot.PMop <- function(x,include,exclude,pred.type="post",icen="median",outeq=1,m
     #this is a residual plot
     par(mfrow=c(1,3))
     if(missing(ylim)){
-      ylim <- base::range(pretty(base::range(data$wd,na.rm=T)))
+      ylim <- base::range(pretty(base::range(data$wd,na.rm=TRUE)))
     }
     par(mar=c(5,5,4,2)+0.1)
     plot(wd~pred,data,xlab="Predicted",ylab="Weighted residual error (pred - obs)",type="n",ylim=ylim,...)
@@ -597,16 +597,16 @@ plot.PMop <- function(x,include,exclude,pred.type="post",icen="median",outeq=1,m
     if(reg) {text(x=min(data$time)+x.stat*diff(base::range(data$time)),y=min(data$wd)+y.stat*diff(base::range(data$wd)),
                   labels=paste("Mean: ",round(mean(data$wd),2)," (P",p.txt,"), SD: ",round(sd(data$wd),2),sep=""),adj=0,cex=cex.stat,col=col.stat)}
     
-    resid.hist <- hist(data$wd,breaks=30,plot=F)
+    resid.hist <- hist(data$wd,breaks=30,plot=FALSE)
     plot(resid.hist,col="gray",xlab="Weighted residual error",main="",xlim=c(floor(min(c(min(resid.hist$mids),-3))),ceiling(max(c(max(resid.hist$mids),3)))),
          cex.lab=cex.lab)
     if(ref) {
-      xref <- min(data$wd,na.rm=T) + c(0:100)/100 * (max(data$wd,na.rm=T) - min(data$wd,na.rm=T))
+      xref <- min(data$wd,na.rm=TRUE) + c(0:100)/100 * (max(data$wd,na.rm=TRUE) - min(data$wd,na.rm=TRUE))
       yref <- dnorm(xref)
-      yref <- yref/max(yref,na.rm=T) * max(resid.hist$counts,na.rm=T)
+      yref <- yref/max(yref,na.rm=TRUE) * max(resid.hist$counts,na.rm=TRUE)
       lines(xref,yref,col="black",lty=2,lwd=2)
     }
-    ks <- ks.test(x=data$wd,y="pnorm",mean(data$wd,na.rm=T),var(data$wd,na.rm=T))
+    ks <- ks.test(x=data$wd,y="pnorm",mean(data$wd,na.rm=TRUE),var(data$wd,na.rm=TRUE))
     agostino.test <- function (x, alternative = c("two.sided", "less", "greater")){
       DNAME <- deparse(substitute(x))
       x <- sort(x[complete.cases(x)])

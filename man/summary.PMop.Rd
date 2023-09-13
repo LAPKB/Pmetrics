@@ -6,17 +6,15 @@
 \usage{
 \method{summary}{PMop}(
   object,
-  ...,
   digits = max(3, getOption("digits") - 3),
   pred.type = "post",
   icen = "median",
-  outeq = 1
+  outeq = 1,
+  ...
 )
 }
 \arguments{
-\item{object}{A PMop object made by \code{\link{makeOP}}.}
-
-\item{\dots}{Other parameters which can be passed to \code{summary}.}
+\item{object}{A PMop object made by \link{makeOP}.}
 
 \item{digits}{Integer, used for number of digits to print.}
 
@@ -26,6 +24,8 @@
 distributions, or "mean".  Default is "median".}
 
 \item{outeq}{Output equation number.  Default is 1.}
+
+\item{...}{Not used.}
 }
 \value{
 A list with two xs.  The first component of the list is a

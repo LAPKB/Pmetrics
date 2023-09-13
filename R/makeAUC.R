@@ -32,7 +32,7 @@
 #' @seealso [PM_result], [PM_sim], [PM_op]
 #' @examples
 #' NPex$op$auc()
-#' Indometh %>% mutate(id = Subject) %>% makeAUC(conc ~ time)
+#' Indometh %>% dplyr::mutate(id = Subject) %>% makeAUC(conc ~ time)
 #' @export
 
 makeAUC <- function(data,
