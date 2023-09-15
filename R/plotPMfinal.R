@@ -451,6 +451,10 @@ plot.PM_final <- function(x,
 #' Plot objects made by [makeFinal].
 #'
 #' @details
+#' *PMfinal* objects can be
+#' accessed as the `$data` object within the `$final` field of a [PM_result] object, e.g.
+#' `PM_result$final$data`.  It is largely now a legacy plotting function, with a variety of options.
+#' 
 #' If `formula` is omitted, this will generate a marginal plot for each parameter.  
 #' For NPAG data, this will be a histogram of marginal values for each parameter and the associated probability
 #' of that value.  For IT2B, this will be a series of normal distributions with mean and standard deviation

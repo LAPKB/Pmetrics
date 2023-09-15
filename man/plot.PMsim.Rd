@@ -7,12 +7,12 @@
 \method{plot}{PMsim}(
   x,
   mult = 1,
-  log = T,
+  log = TRUE,
   probs = c(0.05, 0.25, 0.5, 0.75, 0.95),
   binSize = 0,
   outeq = 1,
   pch = NA,
-  join = T,
+  join = TRUE,
   x.qlab = 0.4,
   cex.qlab = 0.8,
   pos.qlab = 1,
@@ -25,7 +25,7 @@
   obs,
   grid,
   ocol = "blue",
-  add = F,
+  add = FALSE,
   out = NA,
   ...
 )
@@ -112,11 +112,17 @@ with lower and upper confidence intervals}
 with the addition of the quantile for each observation}
 }
 \description{
-Plots \emph{PMsim} objects with the option to perform a visual and numerical predictive check
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 }
 \details{
-Simulated observations are plotted as quantiles on the y-axis vs. time on the x.axis.  If measured
+Plots \emph{PMsim} objects with the option to perform a visual and numerical predictive check
+
+This is largely now a legacy plotting function,
+with a variety of options. It has been superseded by \link{plot.PM_sim}.Simulated observations are plotted as quantiles on the y-axis vs. time on the x.axis.  If measured
 observations are included, a visual and numerical predictive check will be performed.
+}
+\examples{
+plot(simEx$data[[1]]$data)
 }
 \seealso{
 \code{\link{SIMparse}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}

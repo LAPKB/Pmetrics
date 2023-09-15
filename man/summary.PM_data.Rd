@@ -4,10 +4,10 @@
 \alias{summary.PM_data}
 \title{Summarize a Pmetrics PM_data object}
 \usage{
-\method{summary}{PM_data}(x, ...)
+\method{summary}{PM_data}(object, ...)
 }
 \arguments{
-\item{x}{Data to be summarized}
+\item{object}{Data to be summarized}
 
 \item{...}{Arguments to pass to \link{summary.PMmatrix}}
 }

@@ -82,10 +82,10 @@ PM_pta$load <- function(file_name = "PMpta.rds") {
 #' See [summary.PMpta]. Alternative way to summarize is
 #' `PM_pta$summary()`.
 #' 
-#' @param obj The *PM_pta* object to summarize
+#' @param object The *PM_pta* object to summarize
 #' @param ... Arguments passed to [summary.PMpta]
 #' @return A [summary.PMpta] object
 #' @export
-summary.PM_pta <- function(obj, ...) {
-    obj$summary(...)
+summary.PM_pta <- function(object, ...) {
+    object$summary(...)
 }

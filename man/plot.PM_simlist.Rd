@@ -11,7 +11,7 @@
 is used when parsing the results of a simulation with multiple subjects
 in the data template.}
 
-\item{\dots}{Parameters passsed to \link{plot.PM_sim}.}
+\item{...}{Parameters passsed to \link{plot.PM_sim}.}
 }
 \description{
 Plots a list of \emph{PM_sim} objects created when \code{combine = F}.
@@ -21,4 +21,7 @@ When simulating from a data template with multiple subjects, the
 default is to create a list of \link{PM_sim} objects of class \emph{PM_simlist}.
 This function passes that list to \link{plot.PM_sim}. If the 'simnum' argument
 is not chosen, the first object will be plotted.
+}
+\examples{
+simEx$plot(at = 2)
 }

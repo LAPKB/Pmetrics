@@ -7,12 +7,12 @@
 \method{plot}{PMvalid}(
   x,
   type = "vpc",
-  tad = F,
+  tad = FALSE,
   icen = "median",
   outeq = 1,
   lower = 0.025,
   upper = 0.975,
-  log = F,
+  log = FALSE,
   pch.obs = 1,
   col.obs = "black",
   cex.obs = 1,
@@ -23,7 +23,8 @@
   col.sim.ci = "dodgerblue",
   col.sim.med = "lightpink",
   axis.x = NULL,
-  axis.y = NULL
+  axis.y = NULL,
+  ...
 )
 }
 \arguments{
@@ -71,21 +72,23 @@ Default is dodgerblue.}
 \item{col.sim.med}{Color of the simulation median.
 Default is lightpink.}
 
-\item{axis.x}{List of \verb{$name} and \verb{$limits}.}
+\item{axis.x}{List of \verb{$name} and \verb{$limits}. Default name is \dQuote{Time}.}
 
-\item{axis.y}{List of \verb{$name} and \verb{$limits}.}
+\item{axis.y}{List of \verb{$name} and \verb{$limits}. Default name is \dQuote{Observation}.}
 
-\item{xlab}{Label for x axis.  Default is \dQuote{Time}.}
-
-\item{ylab}{Label for y axis.  Default is \dQuote{Observation}.}
-
-\item{\dots}{Not currently used}
+\item{...}{Not currently used}
 }
 \value{
 Plots the object using ggplot2.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+}
+\details{
 Plot PMvalid objects
+
+This is largely now a legacy plotting function,
+with a variety of options. It has been superseded by \link{plot.PM_valid}.
 }
 \seealso{
 \code{\link{makeValid}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{points}}

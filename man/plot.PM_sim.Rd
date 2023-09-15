@@ -10,13 +10,13 @@
   ci = 0.95,
   binSize = 0,
   outeq = 1,
-  line = T,
-  marker = F,
+  line = TRUE,
+  marker = FALSE,
   obs,
-  quiet = F,
-  legend = F,
-  log = T,
-  grid = F,
+  quiet = FALSE,
+  legend = FALSE,
+  log = TRUE,
+  grid = FALSE,
   xlab,
   ylab,
   title,
@@ -168,7 +168,7 @@ and double clicking will hide all other quantiles.
 }
 \examples{
 simEx$plot()
-simEx$plot(log = F, line = list(color = "orange"))
+simEx$plot(log = FALSE, line = list(color = "orange"))
 }
 \seealso{
 \link{PM_sim}, \link{plot_ly}, \link{schema}
