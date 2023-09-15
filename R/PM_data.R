@@ -78,7 +78,7 @@ PM_data <- R6::R6Class("PM_data",
     #' @param file_name A quoted name of the file to create
     #' with full path if not
     #' in the working directory.
-    #' @param ... Arguments passed to PMwriteMatrix
+    #' @param ... Arguments passed to [PMwriteMatrix]
     write = function(file_name, ...) {
       if (!is.null(self$standard_data)) {
         PMwriteMatrix(self$standard_data, file_name, ...)
@@ -383,11 +383,11 @@ PM_data <- R6::R6Class("PM_data",
 #' Summarize a PM_data object using S3 method.
 #' Calls \code{\link{summary.PMmatrix}}
 #' 
-#' @param x Data to be summarized
+#' @param object Data to be summarized
 #' @param ... Arguments to pass to [summary.PMmatrix]
 #'
 #' @export
 #'
-summary.PM_data <- function(x, ...) {
-  x$summary(...)
+summary.PM_data <- function(object, ...) {
+  object$summary(...)
 }

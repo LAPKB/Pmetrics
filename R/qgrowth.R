@@ -65,21 +65,21 @@ qgrowth <- function(sex = "B", agemos = (seq(0,18)*12), percentile = 50){
 #' @param agemos The age in months.  Should be between 24 and 240.5.
 #' @param sex A single quoted character: "M" for males, "F" for females.  Default is "M".
 #' @param bmi The individual's BMI. If specified, `wt` and `ht` are not necessary
-#' and will be ingnored.
+#' and will be ignored.
 #' @param wt  The individual's weight in kg as an alternative to specifying `BMI`. 
 #' Will be ignored if `BMI` is specified.
 #' @param ht  The individual's height in centimeters. Required if `wt` is specified
 #' and `BMI` is not. Ignored if `BMI` is specified.
 #' @param data Source data for calculations. Default is "CDC" which uses the [cdc_bmi]
 #' dataset. The alternative is "NHANES", which uses the [ger_bmi] dataset.
-#' @return A list with objects calculated for \code{agemos} and \code{sex}.
+#' @return A list with objects calculated for `agemos` and `sex`.
 #'  * z Z-score
 #'  * mod_z Modified Z-score for extreme BMI
 #'  * per BMI percentile
 #'  * mod_per Modified BMI percentile
 #' @author Michael Neely
 #' @examples 
-#' zBMI(36, 15)
+#' zBMI(agemos = 36, bmi = 15)
 #' 
 #' @export
 
@@ -92,7 +92,7 @@ zBMI <- function(agemos, sex, bmi, wt, ht, data = "CDC"){
     agemos <- floor(agemos) + 0.5
   } else {agemos <- floor(agemos)}
   
- 
+  all_bmi <- NULL #avoid CRAN check
   if(tolower(data)=="cdc"){
     all_bmi <- cdc_bmi
   } else {all_bmi <- ger_bmi}

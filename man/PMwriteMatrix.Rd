@@ -23,6 +23,8 @@ Returns the error report (see \code{\link{PMcheck}} for details).
 \description{
 \code{PMwriteMatrix} is the companion function to \code{\link{PMreadMatrix}}.
 It will write an appropriate R data object to a formatted .csv file.
+This is now largely an internal function accessed with the \verb{$write()} method
+for \link{PM_data} objects.
 }
 \details{
 \code{PMwriteMatrix} will first run \code{\link{PMcheck}} to determine
@@ -31,11 +33,8 @@ fails, the file will not be written and a message will be printed on the console
 }
 \examples{
 \dontrun{
-data(mdata.1)
 #write to the current directory
-PMwriteMatrix(mdata.1,"PMex1.csv")
-#read it back
-mdata <- PMreadMatrix("PMex1.csv")
+NPex$data$write("data.csv")
 }
 }
 \seealso{

@@ -9,7 +9,7 @@
   include,
   exclude,
   plot.type = "pta",
-  log = T,
+  log = TRUE,
   pch,
   grid,
   xlab,
@@ -17,7 +17,7 @@
   col,
   lty,
   lwd = 4,
-  legend = T,
+  legend = TRUE,
   ci = 0.9,
   out = NA,
   ...
@@ -74,16 +74,21 @@ large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Defaul
 output will go to the current graphic device (usually the monitor). For example, to output an eps file,
 out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.}
 
-\item{\dots}{Other parameters as found in \code{\link{plot.default}}.}
+\item{...}{Other parameters as found in \code{\link{plot.default}}.}
 }
 \value{
 Plots the object.
 }
 \description{
-Plots PMpta objects
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 }
 \details{
-This function will plot the percent target attainment for objects made with the \code{\link{makePTA}} function.
+Plots PMpta objects
+
+This function will plot the percent target attainment for objects made with the
+\code{\link{makePTA}} function. It is largely now a legacy plotting function,
+with a variety of options. It has been superseded by \link{plot.PM_pta}.
+
 For the legend, defaults that are different that the standard are:
 \itemize{
 \item x Default \dQuote{topright}
@@ -95,6 +100,16 @@ This default can be overridden by a supplied character vector of regimen names.
 \item pch The plotting character for each Regimen plot as specified by the default plotting characters or \code{pch}
 \item lty The line type of each Regimen plot as specified by the default line types or \code{lty}
 \item bg Default \dQuote{white}
+}
+}
+\examples{
+\dontrun{
+pta1 <- simEx$pta(
+simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+success = 0.6, start = 120, end = 144)
+pta1$summary()
+pta1$plot()
 }
 }
 \seealso{

@@ -11,12 +11,12 @@
   type = "pta",
   mult = 1,
   outeq = 1,
-  line = T,
-  marker = T,
+  line = TRUE,
+  marker = TRUE,
   ci = 0.9,
-  legend = T,
-  log = F,
-  grid = T,
+  legend = TRUE,
+  log = FALSE,
+  grid = TRUE,
   xlab,
   ylab,
   title,
@@ -151,6 +151,17 @@ Plots PM_pta objects
 }
 \details{
 This function will plot the percent target attainment for objects made with the \link{makePTA} function.
+}
+\examples{
+\dontrun{
+pta1 <- simEx$pta(
+simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+success = 0.6, start = 120, end = 144
+)
+pta1$summary()
+pta1$plot()
+}
 }
 \seealso{
 \link{makePTA}

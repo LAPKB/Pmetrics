@@ -140,7 +140,9 @@ Plots the object.
 \code{plot.PMmatrix} plots \emph{PMmatrix} objects
 }
 \details{
-This function will plot raw and fitted time and concentration data with a variety of options.
+This function will plot raw and fitted time and concentration data, which can be
+accessed as the \verb{$data} object within the \verb{$data} field of a \link{PM_data} object, e.g.
+\code{PM_data$data$data}.  It is largely now a legacy plotting function, with a variety of options.
 For the legend, defaults that are different that the standard are:
 \itemize{
 \item x Default \dQuote{topright}
@@ -152,8 +154,7 @@ can be overridden by a supplied character vector of output names.
 }
 }
 \examples{
-data(mdata.1)
-plot(mdata.1)
+plot(NPex$data$data)
 }
 \seealso{
 \code{\link{PMreadMatrix}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
