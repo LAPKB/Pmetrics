@@ -126,7 +126,7 @@ Write data to file
 with full path if not
 in the working directory.}
 
-\item{\code{...}}{Arguments passed to PMwriteMatrix}
+\item{\code{...}}{Arguments passed to \link{PMwriteMatrix}}
 }
 \if{html}{\out{</div>}}
 }

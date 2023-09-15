@@ -9,27 +9,30 @@ PMtest <- function() {
   tempwd <- tempdir()
   setwd(tempwd)
   # define global variable to avoid R CMD check flag
-  mdata.1 <- NULL
+  #mdata.1 <- NULL
   # replace with value
-  data(mdata.1, envir = environment())
-  PMwriteMatrix(mdata.1[mdata.1$id == 1, ], "data.csv", override = T)
+  NPex$data$write("data.csv")
+  #data(mdata.1, envir = environment())
+  #PMwriteMatrix(mdata.1[mdata.1$id == 1, ], "data.csv", override = T)
   msg <- "Congratulations; you have successfully installed all components of Pmetrics.\n"
-  modeltxt <- c(
-    "#Primary",
-    "Ka, 0.1, 0.9",
-    "Ke, 0.001, 0.1",
-    "V, 30, 120",
-    "Tlag1, 0, 4",
-    "#Lag",
-    "TLAG(1) = Tlag1",
-    "#Out",
-    "Y(1) = X(2)/V",
-    "#Err",
-    "G=5",
-    "0.02, 0.05, -0.0002, 0"
-  )
+  # modeltxt <- c(
+  #   "#Primary",
+  #   "Ka, 0.1, 0.9",
+  #   "Ke, 0.001, 0.1",
+  #   "V, 30, 120",
+  #   "Tlag1, 0, 4",
+  #   "#Lag",
+  #   "TLAG(1) = Tlag1",
+  #   "#Out",
+  #   "Y(1) = X(2)/V",
+  #   "#Err",
+  #   "G=5",
+  #   "0.02, 0.05, -0.0002, 0"
+  # )
 
-  writeLines(modeltxt, "model.txt")
+  #writeLines(modeltxt, "model.txt")
+  data(NPex)
+  NPex$model$write("model.txt")
 
   engine <- list(
     alg = "NP", nsubtot = 1, nsub = 1, activesub = 1, ncov = 5, covnames = c("wt", "africa", "age", "gender", "height"),

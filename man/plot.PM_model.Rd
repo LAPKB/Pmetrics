@@ -4,7 +4,7 @@
 \alias{plot.PM_model}
 \title{Plot PM_model objects}
 \usage{
-\method{plot}{PM_model}(x, marker = T, line = T, explicit, implicit)
+\method{plot}{PM_model}(x, marker = T, line = T, explicit, implicit, ...)
 }
 \arguments{
 \item{x}{The name of an \link{PM_model} object.}
@@ -49,6 +49,8 @@ to the plot indicating implicit transfer between
 compartments. For each row, the \code{from} column contains the compartment number of the arrow origin, and the
 \code{to} column contains the compartment number of the arrow destination. Use 0 to indicate
 a destination to the external sink. e.g., \code{implicit = data.frame(from = 2, to = 4)}}
+
+\item{...}{Not used.}
 }
 \value{
 Plots the object.

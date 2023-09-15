@@ -20,6 +20,8 @@ parameter, covariate-time, or parameter-time relationships.
 Creation of new \code{PM_cov} object is automatic and not generally necessary
 for the user to do.
 
+See \link{PMstep}.
+
 See \link{summary.PMcov}.
 
 See \link{plot.PM_cov}.
@@ -49,6 +51,7 @@ parameter means and medians
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-PM_cov-new}{\code{PM_cov$new()}}
+\item \href{#method-PM_cov-step}{\code{PM_cov$step()}}
 \item \href{#method-PM_cov-summary}{\code{PM_cov$summary()}}
 \item \href{#method-PM_cov-plot}{\code{PM_cov$plot()}}
 \item \href{#method-PM_cov-print}{\code{PM_cov$print()}}
@@ -68,6 +71,24 @@ Create new object populated with covariate-parameter information
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{cov}}{The parsed output from \link{makeCov}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_cov-step"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cov-step}{}}}
+\subsection{Method \code{step()}}{
+Stepwise linear regression of covariates and Bayesian posterior
+parameter values
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cov$step(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{PMstep}}
 }
 \if{html}{\out{</div>}}
 }

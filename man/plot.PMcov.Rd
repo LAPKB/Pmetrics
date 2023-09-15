@@ -116,15 +116,18 @@ Plots the object.
 Plot PMcov objects
 }
 \details{
-This method will plot any two columns, specified using a formula, of a PMcov object, which contains covariate and Bayesian posterior parameter information
-for each subject.  Specifiying any two variables that do not include time will result in a scatter plot with optional regression and reference lines.  If
+This method will plot any two columns, specified using a formula, of a \emph{PMcov} object,
+which contains covariate and Bayesian posterior parameter information
+for each subject.  \emph{PMcov} objects can be
+accessed as the \verb{$data} object within the \verb{$cov} field of a \link{PM_result} object, e.g.
+\code{PM_result$cov$data}.  It is largely now a legacy plotting function, with a variety of options.
+Specifying any two variables that do not include time will result in a scatter plot with optional regression and reference lines.  If
 time is included as the x variable, the y variable will be plotted vs. time, aggregated by subject.  This can be useful to see time varying parameters,
 although a formula within formula approach may be required, e.g. plot(cov.1,I(cl_0*wt**0.75)~time) in order to see the change in cl over time according to
 the change in wt over time, even though cl_0 is constant for a given subject.
 }
 \examples{
-data(cov.1)
-plot(cov.1,V~wt)
+plot(NPex$cov$data,V~wt)
 }
 \seealso{
 \code{\link{makeCov}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}

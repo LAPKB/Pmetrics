@@ -1,5 +1,7 @@
 #' \code{PMwriteMatrix} is the companion function to \code{\link{PMreadMatrix}}.
 #'  It will write an appropriate R data object to a formatted .csv file.
+#'  This is now largely an internal function accessed with the `$write()` method
+#'  for [PM_data] objects.
 #'
 #' \code{PMwriteMatrix} will first run \code{\link{PMcheck}} to determine
 #'  if there are any errors in the structure of  \code{data}.  If the error check
@@ -16,13 +18,9 @@
 #' @seealso \code{\link{PMcheck}}, \code{\link{PMreadMatrix}}
 #' @examples
 #' \dontrun{
-#' data(mdata.1)
 #' #write to the current directory
-#' PMwriteMatrix(mdata.1,"PMex1.csv")
-#' #read it back
-#' mdata <- PMreadMatrix("PMex1.csv")
+#' NPex$data$write("data.csv")
 #' }
-
 
 PMwriteMatrix <- function(data,filename,override=F,version="DEC_11",header=T){
   

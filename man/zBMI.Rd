@@ -12,7 +12,7 @@ zBMI(agemos, sex, bmi, wt, ht, data = "CDC")
 \item{sex}{A single quoted character: "M" for males, "F" for females.  Default is "M".}
 
 \item{bmi}{The individual's BMI. If specified, \code{wt} and \code{ht} are not necessary
-and will be ingnored.}
+and will be ignored.}
 
 \item{wt}{The individual's weight in kg as an alternative to specifying \code{BMI}.
 Will be ignored if \code{BMI} is specified.}
@@ -42,7 +42,7 @@ For a z-score > 3, which indicates an extreme BMI, consider using the modified
 z-score and percentile.
 }
 \examples{
-zBMI(36, 15)
+zBMI(agemos = 36, bmi = 15)
 
 }
 \author{

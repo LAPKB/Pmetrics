@@ -83,7 +83,9 @@
 #' @seealso [makePTA]
 #' @importFrom plotly plotly_build
 #' @export
-#' #' \dontrun{pta1 <- simEx$pta(
+#' @examples
+#' \dontrun{
+#' pta1 <- simEx$pta(
 #' simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
 #' targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
 #' success = 0.6, start = 120, end = 144
@@ -318,9 +320,14 @@ plot.PM_pta <- function(x,
   
 }
 
+#' `r lifecycle::badge('superseded')`
+#' 
 #' Plots PMpta objects
 #' 
-#' This function will plot the percent target attainment for objects made with the \code{\link{makePTA}} function.
+#' This function will plot the percent target attainment for objects made with the 
+#' \code{\link{makePTA}} function. It is largely now a legacy plotting function, 
+#' with a variety of options. It has been superseded by [plot.PM_pta].
+#'
 #' For the legend, defaults that are different that the standard are:
 #' \itemize{
 #'   \item x Default \dQuote{topright}
@@ -371,19 +378,20 @@ plot.PM_pta <- function(x,
 #' large files at publication quality dots per inch (DPI), e.g. 800 or 1200. Default value is \code{NA} which means the
 #' output will go to the current graphic device (usually the monitor). For example, to output an eps file,
 #' out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.
-#' @param \dots Other parameters as found in \code{\link{plot.default}}.
+#' @param ... Other parameters as found in \code{\link{plot.default}}.
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso \code{\link{makePTA}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
-#' \dontrun{pta1 <- simEx$pta(
+#' @examples
+#' \dontrun{
+#' pta1 <- simEx$pta(
 #' simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
 #' targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
-#' success = 0.6, start = 120, end = 144
-#' )
+#' success = 0.6, start = 120, end = 144)
 #' pta1$summary()
 #' pta1$plot()
 #' }
-#' #' @export
+#' @export
 
 
 plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
