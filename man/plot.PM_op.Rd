@@ -7,8 +7,8 @@
 \method{plot}{PM_op}(
   x,
   line = list(lm = NULL, loess = NULL, ref = NULL),
-  marker = T,
-  resid = F,
+  marker = TRUE,
+  resid = FALSE,
   icen = "median",
   pred.type = "post",
   outeq = 1,
@@ -17,12 +17,12 @@
   exclude,
   mult = 1,
   legend,
-  log = F,
-  grid = T,
+  log = FALSE,
+  grid = TRUE,
   xlab,
   ylab,
   title,
-  stats = T,
+  stats = TRUE,
   xlim,
   ylim,
   ...
@@ -56,7 +56,7 @@ Example: \code{line = list(lm = list(color = "red", dash = "longdash", width = 2
 will generate a loess regression of the form obs ~ pred.
 The list elements and default values in the \code{loess} list are the
 same as for \code{lm} except the default style is "dash".
-Example: \code{line = list(lm = F, loess = T)}
+Example: \code{line = list(lm = FALSE, loess = TRUE)}
 \item \code{ref} If set to \code{TRUE} or a list of plotly line attributes,
 will generate a reference line with slope = 1 and intercept = 0.
 The default values for the elements of the \code{ref} list are:
@@ -65,11 +65,11 @@ The default values for the elements of the \code{ref} list are:
 \item \code{width} 1.
 \item \code{dash} "dot".
 Note that there is no \emph{ci} argument for the \emph{ref} list.
-Example: \code{line = list(lm = F, loess = T, ref = list(color = "lightgrey"))}
+Example: \code{line = list(lm = FALSE, loess = TRUE, ref = list(color = "lightgrey"))}
 If the \code{line} argument is missing, it will be set to
-\code{line = list(lm = T, loess = F, ref = T)}, i.e. there will be a linear
+\code{line = list(lm = TRUE, loess = FALSE, ref = TRUE)}, i.e. there will be a linear
 regression with reference line, but no loess regression. However, if \code{resid = T},
-the default will become \code{line = list(lm = F, loess = T, ref = T)}, i.e.,
+the default will become \code{line = list(lm = FALSE, loess = TRUE, ref = TRUE)}, i.e.,
 loess regression with reference line, but no linear regression.
 }
 }}
@@ -130,7 +130,7 @@ Default is to have no title.}
 
 \item{stats}{Add the statistics from linear regression to the plot. If
 \code{FALSE}, will be suppressed. Default is \code{TRUE} which results in default format of
-\code{list(x= 0.8, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 14))}.
+\code{list(x= 0.8, y = 0.1, bold = FALSE, font = list(color = "black", family = "Arial", size = 14))}.
 The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
 argument maps to \code{plotly::add_text()}.}
 
@@ -160,11 +160,10 @@ median of the Bayesian posterior distributions for each subject.
 \examples{
 NPex$op$plot()
 NPex$op$plot(pred.type = "pop")
-NPex$op$plot(line = list(lm = T, ref = T, loess = F))
+NPex$op$plot(line = list(lm = TRUE, ref = TRUE, loess = FALSE))
 NPex$op$plot(line = list(loess = list(ci = 0.9, color = "green")))
 NPex$op$plot(marker = list(color = "blue"))
-NPex$op$plot(resid = T)
-NPex$op$plot(stats = T)
+NPex$op$plot(resid = TRUE)
 NPex$op$plot(stats = list(x = 0.5, y = 0.2, font = list(size = 7, color = "blue")))
 
 }

@@ -362,7 +362,9 @@ plot.PM_data <- function(x,
 
 #' \code{plot.PMmatrix} plots \emph{PMmatrix} objects
 #'
-#' This function will plot raw and fitted time and concentration data with a variety of options.
+#' This function will plot raw and fitted time and concentration data, which can be
+#' accessed as the `$data` object within the `$data` field of a [PM_data] object, e.g.
+#' `PM_data$data$data`.  It is largely now a legacy plotting function, with a variety of options.
 #' For the legend, defaults that are different that the standard are:
 #' \itemize{
 #'   \item x Default \dQuote{topright}
@@ -445,8 +447,8 @@ plot.PM_data <- function(x,
 #' @seealso \code{\link{PMreadMatrix}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 #' @examples
-#' data(mdata.1)
-#' plot(mdata.1)
+#' plot(NPex$data$data)
+
 
 plot.PMmatrix <- function(x,include,exclude,pred=NULL,icen="median",mult=1,outeq,group,block=1,
                           layout=c(3,3),log=F,pch=NA,errbar=F,doses=F,tad=F,

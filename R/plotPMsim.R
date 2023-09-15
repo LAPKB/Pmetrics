@@ -436,9 +436,12 @@ plot.PM_simlist <- function(x, ...){
 }
 
 
+#' `r lifecycle::badge('superseded')`
+#' 
 #' Plots \emph{PMsim} objects with the option to perform a visual and numerical predictive check
 #'
-#' Simulated observations are plotted as quantiles on the y-axis vs. time on the x.axis.  If measured
+#' This is largely now a legacy plotting function, 
+#' with a variety of options. It has been superseded by [plot.PM_sim].Simulated observations are plotted as quantiles on the y-axis vs. time on the x.axis.  If measured
 #' observations are included, a visual and numerical predictive check will be performed.
 #'
 #' @title Plot Pmetrics Simulation Objects

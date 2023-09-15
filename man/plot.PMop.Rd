@@ -12,14 +12,14 @@
   icen = "median",
   outeq = 1,
   mult = 1,
-  resid = F,
-  log = F,
-  square = T,
-  ref = T,
-  lowess = F,
-  reg = T,
+  resid = FALSE,
+  log = FALSE,
+  square = TRUE,
+  ref = TRUE,
+  lowess = FALSE,
+  reg = TRUE,
   grid,
-  ident = F,
+  ident = FALSE,
   ci = 0.95,
   cex = 1,
   cex.lab = 1.2,
@@ -126,11 +126,16 @@ out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.}
 Plots the object.
 }
 \description{
-Plot Legacy Pmetrics Observed vs. Predicted Objects
+Plot Pmetrics Observed vs. Predicted Objects
 }
 \details{
-This function is for legacy Pmetrics objects loaded with \link{PMload} prior to
-Pmetrics version 2.
+This function is for \emph{PMop} objects which can be
+accessed as the \verb{$data} object within the \verb{$op} field of a \link{PM_result} object, e.g.
+\code{PM_result$op$data}.  It is largely now a legacy plotting function, with a variety of options.
+}
+\examples{
+plot(NPex$op$data)
+
 }
 \seealso{
 \code{\link{makeOP}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}

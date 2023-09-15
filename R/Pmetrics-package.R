@@ -52,6 +52,9 @@
 #' @importFrom plotly filter mutate plot_ly add_markers add_lines layout 
 #' ggplotly subplot add_annotations add_bars
 #' @importFrom trelliscopejs trelliscope map_plot
-
+## usethis namespace: start
+#' @importFrom lifecycle deprecated
+## usethis namespace: end
 NULL
+
 

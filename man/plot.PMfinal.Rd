@@ -123,6 +123,10 @@ Plots the object.
 Plot objects made by \link{makeFinal}.
 }
 \details{
+\emph{PMfinal} objects can be
+accessed as the \verb{$data} object within the \verb{$final} field of a \link{PM_result} object, e.g.
+\code{PM_result$final$data}.  It is largely now a legacy plotting function, with a variety of options.
+
 If \code{formula} is omitted, this will generate a marginal plot for each parameter.
 For NPAG data, this will be a histogram of marginal values for each parameter and the associated probability
 of that value.  For IT2B, this will be a series of normal distributions with mean and standard deviation
@@ -140,11 +144,9 @@ of each plotted variable and surrounding quantiles of the bivariate distribution
 }
 \examples{
 #NPAG
-data(final.1)
-plot(final.1)
+plot(NPex$final$data)
 #IT2B
-data(final.2)
-plot(final.2)
+plot(ITex$final$data)
 }
 \seealso{
 \link{makeFinal}, \link{plot}, \link{par}, \link{axis}

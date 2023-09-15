@@ -140,7 +140,7 @@ of each plotted variable and surrounding quantiles of the bivariate distribution
 \examples{
 #NPAG
 NPex$final$plot()
-NPex$final$plot(density = T)
+NPex$final$plot(density = TRUE)
 NPex$final$plot(Ke ~ V)
 #IT2B
 ITex$final$plot()

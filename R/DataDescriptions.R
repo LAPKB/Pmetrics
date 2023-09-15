@@ -102,6 +102,28 @@
 
 "NPex"
 
+#' Example output from an NPAG run with validation.
+#'
+#' This is an R6 Pmetrics [PM_result] object created with [PM_load] after an NPAG run.
+#' The run consisted of a model with an absorptive compartment and a central compartment.
+#' There were 4 parameters in the model: lag time of absorption (Tlag1),
+#' rate constant of absorption (Ka), volume (V) with weight as a covariate, and 
+#' rate constant of elmination (Ke).
+#' There were 20 subjects in the dataset.  The run was
+#' 100 cycles long and did not converge. It was then validated with the `$validate`
+#' method for [PM_result] objects.
+#'
+#' @name NPex_val
+#' @docType data
+#' @title Example NPAG Output with validation
+#' @usage NPex_val
+#' @format R6 [PM_result]
+#' @author Michael Neely
+#' @keywords datasets
+#'
+
+"NPex_val"
+
 #' Example output from an IT2B run.
 #'
 #' This is an R6 Pmetrics [PM_result] object created with [PM_load] after an NPAG run.
@@ -226,5 +248,23 @@
 
 "modelLibrary"
 
+#' @name locales
+#' @docType data
+#' @title Pmetrics locales
+#' @usage locales
+#' @format Dataframe with languages and iso693 two- and three-letter codes.
+#' @author Michael Neely
+#' @keywords datasets
+
+"locales"
 
 
+#' @name model
+#' @docType data
+#' @title Pmetrics model
+#' @usage model
+#' @format Sample model text
+#' @author Michael Neely
+#' @keywords datasets
+
+"model"

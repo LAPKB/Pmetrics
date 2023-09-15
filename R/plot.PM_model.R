@@ -44,7 +44,7 @@
 #' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the 
 #' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
 #' a destination to the external sink. e.g., `implicit = data.frame(from = 2, to = 4)`
-#'
+#' @param ... Not used.
 #' @return Plots the object.
 #' @author Markus Hovd, Julian Otalvaro, Michael Neely
 #' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
@@ -53,7 +53,7 @@
 #' NPex$model$plot()
 #' @family PMplots
 
-plot.PM_model <- function(x, marker = T, line = T, explicit, implicit) {
+plot.PM_model <- function(x, marker = T, line = T, explicit, implicit,...) {
   
   model <- x
   marker <- if(marker != FALSE){
@@ -355,12 +355,12 @@ plot.PM_model <- function(x, marker = T, line = T, explicit, implicit) {
       ggraph::geom_edge_fan(
         aes(linetype = as.numeric(implicit)+1),
         arrow = grid::arrow(angle = 15, type = "closed",
-                            length = unit(6, 'mm')),
+                            length = grid::unit(6, 'mm')),
         end_cap = ggraph::circle(3, 'mm'),
         start_cap = ggraph::circle(4, 'mm'),
         angle_calc = "across",
         edge_color = line$color,
-        label_push = unit(-4, 'mm'),
+        label_push = grid::unit(-4, 'mm'),
         edge_width = line$width) 
   }
   g <- g +
