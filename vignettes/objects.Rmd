@@ -41,9 +41,8 @@ plotting and other analysis.
 
 
 ```{r echo = F, results = 'asis'}
-library(knitr)
 tabObj <- read.csv("Data/ObjectsR6.csv",na.strings=".")
-kable(tabObj)
+knitr::kable(tabObj)
 ```
 
 To access the fields in a `PM_result` object, use the "$". 
@@ -70,9 +69,8 @@ res1$op$plot()
 
 
 ```{r echo = F, results = 'asis'}
-library(knitr)
 tabObj <- read.csv("Data/ObjectsLegacy.csv",na.strings=".")
-kable(tabObj)
+knitr::kable(tabObj)
 ```
 
 

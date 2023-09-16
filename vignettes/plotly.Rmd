@@ -16,7 +16,8 @@ knitr::opts_chunk$set(
 
 ```{r setup, echo=F, message=F}
 library(Pmetrics)
-library(tidyverse)
+library(magrittr)
+library(dplyr)
 library(plotly)
 ```
 
@@ -316,7 +317,9 @@ NPex$data$plot() %>%
 
 ### Images 
 
-Although the plotly team is working on methods to export plots to images via scripting, they require installation of additional components and are not yet stable. However, exporting a plotly plot to a static image can be accomplished in two ways.
+Although the plotly team is working on methods to export plots to images via scripting, they require installation of additional components =. So Pmetrics includes a wrapper function `export_plotly()` which you can use to install the necessary components and export images. 
+
+Exporting a plotly plot to a static image can be accomplished in two additional ways.
 
 The first is to select the Export button from the Viewer window in Rstudio when the desired plot is displayed. This gives the option to save the plot as a .png, .jpeg, or .tiff. You cannot save as a .pdf with this method.
 
@@ -332,7 +335,8 @@ This gives you the option to download and save the file as a .png.
 
 ### PDFs
 
-To export to a .pdf, open the plot in a browser.
+To export to a .pdf, you can also use `export_plotly()` in Pmetrics. You can also
+open the plot in a browser.
 
 ![Open in browser](Images/plotBrowser.png)
 
