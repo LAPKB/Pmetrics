@@ -8,12 +8,9 @@ PMtest <- function() {
   currwd <- getwd()
   tempwd <- tempdir()
   setwd(tempwd)
-  # define global variable to avoid R CMD check flag
-  #mdata.1 <- NULL
-  # replace with value
+  NPex <- NULL #avoid R CMD check flag
+  data(NPex, package = "Pmetrics", envir = environment())
   NPex$data$write("data.csv")
-  #data(mdata.1, envir = environment())
-  #PMwriteMatrix(mdata.1[mdata.1$id == 1, ], "data.csv", override = T)
   msg <- "Congratulations; you have successfully installed all components of Pmetrics.\n"
   # modeltxt <- c(
   #   "#Primary",
@@ -31,7 +28,6 @@ PMtest <- function() {
   # )
 
   #writeLines(modeltxt, "model.txt")
-  data(NPex)
   NPex$model$write("model.txt")
 
   engine <- list(

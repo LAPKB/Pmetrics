@@ -700,7 +700,7 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet){
   } #end errors for loop
   
   #Add summaries to each column with errors
-  sum_errors <- as_tibble(table(error_summary$column, error_summary$code, dnn = c("column", "code"))) %>% 
+  sum_errors <- dplyr::as_tibble(table(error_summary$column, error_summary$code, dnn = c("column", "code"))) %>% 
     group_by(column) %>%
     summarize(n_err = sum(n))
   

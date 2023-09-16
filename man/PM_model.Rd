@@ -4,6 +4,8 @@
 \alias{PM_model}
 \title{Defines the PM_model class}
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 PM_model objects contain the variables, covariates, equations and error models
 necessary to run a population analysis.
 }

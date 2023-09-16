@@ -2,31 +2,29 @@
 % Please edit documentation in R/PM_pta.R
 \name{PM_pta}
 \alias{PM_pta}
-\title{Define object for PTA}
-\arguments{
-\item{file_name}{The name of the .rds file to load.}
-}
-\value{
-A \link{PM_pta} object
-}
+\title{Create Probability of Target Attainment (PTA) object}
 \description{
-If the \verb{$save} method has previously been invoked on a \link{PM_pta}
-object, this function will load those results.
-}
-\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 This object class contains results of simulations and a probability of
 target attainment analysis.
+}
+\details{
+#' There are two ways of creating a \emph{PM_pta} object.
+\itemize{
+\item \strong{PM_sim$pta()} This way uses the simulation method directly from
+a \link{PM_sim} object.
+\item \strong{PM_pta$new()} This way takes an external \link{PM_sim} result as an argument
+and creates the PTA. It is described here.
+}
 
-Creating this object first requires a simulation of appropriate regimens
-from a model using the \verb{$sim} method for a \link{PM_result} object. That simulation
-result is passed to the \link{makePTA} function when a new \code{PM_pta} is created.
-
-The saved object is an .rds file. When loaded, it should be assigned to an R
-object, e.g. \code{pta1 <- PM_pta$load("filename")}.
+Both methods require the prior creation of a simulation of
+appropriate regimens. They use \link{makePTA} to create the \emph{PM_pta} object.
 }
 \author{
 Julian Otalvaro and Michael Neely
 }
+\keyword{internal}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -51,15 +49,23 @@ Julian Otalvaro and Michael Neely
 \if{html}{\out{<a id="method-PM_pta-new"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_pta-new}{}}}
 \subsection{Method \code{new()}}{
-Create a new \code{PM_pta} object
+Create a new \code{PM_pta} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_pta$new(simdata, targets, target.type, success, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_pta$new(x, targets, target.type, success, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{simdata}}{Output of \verb{$sim} method for \link{PM_result} object}
+\item{\code{x}}{One of two possibilities:
+\itemize{
+\item A \link{PM_sim} object, which typically will contain the results of
+multiple simulations OR
+\item The quoted filename of a previously saved .rds file
+(saved with the \verb{$save} method below) in the current
+working directory (or the path plus filename) with results of a prior
+PTA analysis.
+}}
 
 \item{\code{targets}}{See \link{makePTA}.}
 
@@ -127,15 +133,18 @@ Plot the \code{PM_pta} object. See \link{plot.PM_pta}.
 \if{html}{\out{<a id="method-PM_pta-load"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_pta-load}{}}}
 \subsection{Method \code{load()}}{
-Returns a PM_pta object based on the information found in a specified rds file.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+Deprecated method to load a prior PTA Replaced by \code{PM_pta$new()} to be
+consistent with R6.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_pta$load(file_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_pta$load(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file_name}}{Name of the file to be read, the default is PMpta.rds}
+\item{\code{...}}{Not used.}
 }
 \if{html}{\out{</div>}}
 }

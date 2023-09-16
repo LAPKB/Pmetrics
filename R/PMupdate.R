@@ -25,7 +25,7 @@ PMupdate <- function(force = F){
     return(invisible(FALSE))
   } else {
     #check for devtools
-    devtools_installed <- require(devtools)
+    devtools_installed <- requireNamespace("devtools")
     if(!devtools_installed){
       cat("The devtools package is required to install from github.\n")
       cat(paste0("Enter ",crayon::blue("<1>"), " to install devtools or ",

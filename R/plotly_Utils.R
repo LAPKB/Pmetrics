@@ -435,12 +435,12 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
   
   if(!is.null(data)){
     if(is.null(x) | is.null(y)) stop("Missing x or y with data.\n")
-    if(!rlang::is_formula(x) | !rlang::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
+    if(!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
     x <- model.frame(x, data)
     y <- model.frame(y, data)
   } else { #data is null
     if(!is.null(x) | !is.null(y)){
-      if(!rlang::is_formula(x) | !rlang::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
+      if(!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
       x <- model.frame(x, p$x$visdat[[1]]())
       y <- model.frame(y, p$x$visdat[[1]]())
       
@@ -604,7 +604,7 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
     if (confirm == 2) {
       return(invisible(NULL))
     }
-    if(!rlang::is_installed("reticulate")){
+    if(!"reticulate" %in% utils::installed.packages()[,1]){
       install.packages('reticulate')
     }
     if(reticulate::miniconda_path() == ""){

@@ -79,7 +79,6 @@ update_gfortran <- function() {
     script <- paste(system.file("", package = "Pmetrics"), "mac/install_homebrew.sh", sep = "/")
     system(paste("chmod +x ", script))
     system(paste0("open -a Terminal.app '", script, "'"))
-    # system("ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"")
     cat("A new terminal will open and ask for permission to install.  Enter your computer password.\n")
     input <- readline(prompt = "Press any key when Homebrew installation is complete.\n")
   } else {
@@ -87,7 +86,7 @@ update_gfortran <- function() {
     cat("Pmetrics found Homebrew found and will ensure latest version is installed.\n")
     system(paste0(brew_path, " update"))
   }
-  return(T)
+  return(TRUE)
 }
 
 .installOrUpdateGCC <- function(OS) {

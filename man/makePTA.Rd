@@ -81,8 +81,20 @@ the target column will be missing from the outcome table.
 (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.
 }
 }
+
+There are several attributes for this object that reflect the conditions used
+to create it. Access the values of these attributes with \code{attr(x, which)}
+as detailed in \code{\link[base:attr]{base::attr()}}.
+\itemize{
+\item \emph{simlabels} Values for the \code{simlabels}
+\item \emph{simTarg} Values for the \code{targets}
+\item \emph{success} Value for \code{success} threshold
+\item \emph{type} Value for \code{target.type}
+}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Calculates the Percent Target Attainment (PTA)
 }
 \details{
@@ -93,7 +105,8 @@ If a \emph{PMpta} object is passed to the function as the \code{simdata}, the on
 If desired, a new set of simlabels can be specified; all other parameters will be ignored.
 }
 \examples{
-\dontrun{pta1 <- simEx$pta(
+\dontrun{
+pta1 <- simEx$pta(
 simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
 targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
 success = 0.6, start = 120, end = 144
@@ -103,7 +116,7 @@ pta1$plot()
 }
 }
 \seealso{
-\link{plot.PM_pta}, \link{SIMparse}
+\link{plot.PM_pta}, \link{PM_sim}
 }
 \author{
 Michael Neely and Jan Strojil
