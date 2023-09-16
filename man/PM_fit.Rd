@@ -5,6 +5,7 @@
 \title{Object to define and run a model and data in Pmetrics}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 \code{PM_fit} objects comprise a \code{PM_data} and \code{PM_model} object ready for analysis
 }
 \details{

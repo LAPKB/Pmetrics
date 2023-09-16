@@ -63,6 +63,8 @@ The user preferences file will be updated.  This will persist from session to se
 and if stored in the external location, through Pmetrics versions.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Set user options for Pmetrics
 }
 \details{

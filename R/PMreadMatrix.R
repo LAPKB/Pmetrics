@@ -1,6 +1,14 @@
+#' @title Read a Pmetrics data file
+#' @description
+#' `r lifecycle::badge("superseded")`
+#' 
 #' Reads a Pmetrics .csv matrix input file into R.
-#'
-#' As of Pmetrics version 2, the structure of a valid .csv file has relaxed.  
+#' This function is largely superseded as the function is called automatically
+#' when data are intialized as a [PM_data] object with `PM_data$new()`. There
+#' is rarely need to call `PMreadMatrix()` directly any longer.
+#' 
+#' @details
+#' As of Pmetrics version 2, the structure of a valid .csv file relaxed.  
 #' Minimal required columns are id, time, dose, and out. This function is now included
 #' as part of the [PM_data] R6 object to create new `PM_data` objects. Users should
 #' rarely have a need to call `PMreadMatrix` as a standalone function unless they
@@ -10,7 +18,6 @@
 #' There are a number of other options for columns in the data input.  Details can
 #' be found in the [documentation](https://lapkb.github.io/Pmetrics/articles/data.html).
 #'
-#' @title Read a Pmetrics data file
 #' @param file The name of the file to be loaded, including the full path if not
 #'  in the current working directory (check with [getwd]).
 #' @param sep Delimiter between columns, which is a comma by default, but can be changed with

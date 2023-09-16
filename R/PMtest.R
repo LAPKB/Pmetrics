@@ -1,6 +1,9 @@
-#' \code{PMtest} will check Pmetrics installation
-#'
 #' @title Test Pmetrics
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
+#' Check Pmetrics fortran installation by trying to compile sample files
+#'
 #' @author Michael Neely
 #' @export
 #'
@@ -12,20 +15,7 @@ PMtest <- function() {
   data(NPex, package = "Pmetrics", envir = environment())
   NPex$data$write("data.csv")
   msg <- "Congratulations; you have successfully installed all components of Pmetrics.\n"
-  # modeltxt <- c(
-  #   "#Primary",
-  #   "Ka, 0.1, 0.9",
-  #   "Ke, 0.001, 0.1",
-  #   "V, 30, 120",
-  #   "Tlag1, 0, 4",
-  #   "#Lag",
-  #   "TLAG(1) = Tlag1",
-  #   "#Out",
-  #   "Y(1) = X(2)/V",
-  #   "#Err",
-  #   "G=5",
-  #   "0.02, 0.05, -0.0002, 0"
-  # )
+
 
   #writeLines(modeltxt, "model.txt")
   NPex$model$write("model.txt")
@@ -43,6 +33,8 @@ PMtest <- function() {
   # TODO: change this
   if (!file.exists(fortSource)) {
     msg <- c(msg, "You must run PMbuild().\n")
+  } else {
+    msg <- c(msg, "You have the Fortran source files.\n")
   }
 
   compiler <- getPMoptions()$compilation_statements
@@ -77,6 +69,8 @@ PMtest <- function() {
       errormsg <- readLines("error.txt")
       if (length(grep("command not found", errormsg[1])) > 0) {
         msg <- c(msg, "You have not installed a fortran compiler or have chosen the wrong compiler.\nRe-install, or tell Pmetrics the correct compiler in setPMoptions().\n")
+      } else {
+        msg <- c(msg, "Your fortran compiler appears to be functional.\n")
       }
     } else {
       # ok np_prep compiled
@@ -91,6 +85,8 @@ PMtest <- function() {
       errormsg <- readLines("error.txt")
       if (length(grep("is not recognized", errormsg[1])) > 0) {
         msg <- c(msg, "You have not installed a fortran compiler or have chosen the wrong compiler.\nRe-install, or tell Pmetrics the correct compiler in setPMoptions().\n")
+      } else {
+        msg <- c(msg, "Your fortran compiler appears to be functional.\n")
       }
     } else {
       # ok np_prep compiled

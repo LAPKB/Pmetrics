@@ -1,8 +1,11 @@
+#' @title Get Pmetrics User Options
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Get user options for Pmetrics
-#'
+#' @details
 #' This function will get user options for Pmetrics.
 #'
-#' @title Get Pmetrics User Options
 #' @param opt The option to retrieve.  If omitted, all option values will be returned.
 #' @param warn Warn if options file doesn't exist. Default `TRUE`.
 #' @param quiet Suppress warning messages. Default `FALSE`.
@@ -44,8 +47,12 @@ getPMoptions <- function(opt, warn = T, quiet = F) {
   }
 }
 
+#' @title Set Pmetrics User Options
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Set user options for Pmetrics
-#'
+#' @details
 #' When the Pmetrics package is first loaded with `library(Pmetrics)`,
 #' this function will be called. It will obtain
 #' the user's locale from system information and set the appropriate
@@ -61,7 +68,6 @@ getPMoptions <- function(opt, warn = T, quiet = F) {
 #' file by calling [getPMoptions], set them for the session and update any
 #' missing options with default values.
 #'
-#' @title Set Pmetrics User Options
 #' @param sep The field separator character; "," by default, but could be ";" or another separator.
 #' @param dec The decimal separator character; "." by default, but could be "," for example.
 #' @param server_address Specify address of server for remote runs.  Server must be set up separately.

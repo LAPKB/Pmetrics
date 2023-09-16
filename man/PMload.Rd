@@ -2,7 +2,7 @@
 % Please edit documentation in R/PMload.R
 \name{PMload}
 \alias{PMload}
-\title{Load Pmetrics NPAG or IT2B output (Legacy)}
+\title{Load Pmetrics NPAG or IT2B output}
 \usage{
 PMload(run = 1, ..., remote = F, server_address)
 }
@@ -35,7 +35,12 @@ the save data.  It contains the information required to plot visual predictive c
 error discrepancies via the npde code developed by Comets et al}
 }
 \description{
-Loads all the data from an \emph{NPAG} or \emph{IT2B} run
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
+Loads all the data from an \emph{NPAG} or \emph{IT2B} run.
+This function has been superseded by \link{PM_load}, which returns objects.
+In contrast, \emph{PMload} loads them directly into the Global environment, which
+is not best-practice programming.
 }
 \seealso{
 \code{\link{PMreport}}, \code{\link{NPparse}}, \code{\link{ITparse}},

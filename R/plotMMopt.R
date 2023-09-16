@@ -1,6 +1,7 @@
 #' @title Plot Pmetrics Multiple-Model Optimal Sampling Objects
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Plots *MMopt* objects 
 #' @details
 #' Simulated observations are plotted on the y-axis vs. time on the x.axis.  

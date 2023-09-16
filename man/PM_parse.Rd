@@ -21,6 +21,7 @@ The output of \code{PM_parse} is a list containing the following elements
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 A flexible parser for Pmetrics output
 }
 \details{

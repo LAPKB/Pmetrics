@@ -1,31 +1,34 @@
-#' Perform a stepwise linear regression on all covariates and Bayesian posterior parameters
-#'
-#' This function will perform stepwise linear regressions on a PMcov object loaded by \code{\link{PMload}},
-#' or made by \code{\link{makeCov}}.  Every covariate in the model will be tested in a stepwise linear regression for their relationships
+#' @title Stepwise covariate-parameter regressions
+#' @description
+#' `r lifecycle::badge("superseded")`
+#' 
+#' This function is largely superseded as it is accessed through the `$step` methods
+#' for [PM_result] and [PM_cov] objects. There is rarely a need to call it directly
+#' any longer. 
+#' @details It will perform stepwise linear regressions on a [PM_cov] object or
+#' to maintain backwards compatibility on a *PMcov* object made by [makeCov].
+#' Every covariate in the model will be tested in a stepwise linear regression for their relationships
 #' to each parameter in the model.  Bayesian posterior parameters and individual covariates are used.
 #'
-#' @title Stepwise covariate-parameter regressions
-#' @param x A PMcov object loaded by \code{\link{PMload}}
-#' or made by \code{\link{makeCov}}.
-#' @param icen A character vector to summarize covariate values.  Default is \dQuote{median}, but can also be 
-#' \dQuote{mean}.  
-#' @param direction The direction for covariate elmination can be \dQuote{backward}, \dQuote{forward}, or \dQuote{both}.  
-#' \emph{backward} is the default.
+#' @param x A PMcov object which is the `$data` field of a [PM_cov] object
+#' @param icen A character vector to summarize covariate values.  Default is "median", but can also be 
+#' "mean".  
+#' @param direction The direction for covariate elmination can be "backward" (default), "forward", or "both".  
 #' @return A matrix with covariates in the rows and parameters in the columns.  Values for the matrix are the multi-variate P-values.
-#' A value of \code{NA} indicates that the variable was not retained in the final model.
+#' A value of `NA` indicates that the variable was not retained in the final model.
 #' @author Michael Neely
-#' @seealso \code{\link{step}}
+#' @seealso [stats::step()]
 #' @export
 
 PMstep <- function(x,icen="median",direction="backward"){
-  if(!inherits(x,"PMcov")) stop("Please supply a PMcov object made by makeCov or loaded with NPload or ITload.\n")
+  if(!inherits(x,"PMcov")) stop("Please supply a PMcov object made by makeCov, usually the $data field of a PM_cov object.\n")
   ncov <- attr(x,"ncov")
   if(is.null(ncov)){
     ncov <- as.numeric(readline("Your covariate object is from a previous version of Pmetrics.  Enter the number of covariates: "))
   }
   if(ncov==0) stop("\nThere are no covariates in the data.\n")
   if(!"icen" %in% names(x)){
-    cat("Please update your PMcov object with makeCov and PMsave.\n")
+    cat("Please update your PMcov object with makeCov.\n")
     x$icen <- icen
   }
   nvar <- ncol(x)-ncov-3

@@ -7,28 +7,30 @@
 PMwriteMatrix(data, filename, override = F, version = "DEC_11", header = T)
 }
 \arguments{
-\item{data}{Must be a data.frame with appropriate structure (see \code{\link{PMcheck}}.}
+\item{data}{Must be a data.frame with appropriate structure (see \link{PMcheck}).}
 
 \item{filename}{Name of file to create.}
 
-\item{override}{Boolean operator to write even if errors are detected.  Default is \code{False}.}
+\item{override}{Boolean operator to write even if errors are detected.  Default is \code{FALSE}.}
 
 \item{version}{Which matrix data format version to write.  Default is the current version.}
 
 \item{header}{Is there a header row? Default is \code{TRUE}.}
 }
 \value{
-Returns the error report (see \code{\link{PMcheck}} for details).
+Returns the error report (see \link{PMcheck} for details).
 }
 \description{
-\code{PMwriteMatrix} is the companion function to \code{\link{PMreadMatrix}}.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
+This function is largely superseded as the function is accessed with
+the \verb{$write()} method for \link{PM_data} objects. There is rarely a need to call
+it directly. It is the companion function to \link{PMreadMatrix}.
 It will write an appropriate R data object to a formatted .csv file.
-This is now largely an internal function accessed with the \verb{$write()} method
-for \link{PM_data} objects.
 }
 \details{
-\code{PMwriteMatrix} will first run \code{\link{PMcheck}} to determine
-if there are any errors in the structure of  \code{data}.  If the error check
+\emph{PMwriteMatrix} will first run \link{PMcheck} to determine
+if there are any errors in the structure of \code{data}.  If the error check
 fails, the file will not be written and a message will be printed on the console.
 }
 \examples{
@@ -38,7 +40,7 @@ NPex$data$write("data.csv")
 }
 }
 \seealso{
-\code{\link{PMcheck}}, \code{\link{PMreadMatrix}}
+\link{PM_data}, \link{PMcheck}, \link{PMreadMatrix}
 }
 \author{
 Michael Neely

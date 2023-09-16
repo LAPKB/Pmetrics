@@ -30,6 +30,7 @@ A plot method exists in \code{\link{plot}} for \emph{PMop} objects.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Generates an observed vs. predicted data.frame from an \emph{NPAG} or \emph{IT2B} object
 }
 \details{

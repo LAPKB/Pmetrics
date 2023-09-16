@@ -5,6 +5,7 @@
 \title{Contains covariate data}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Contains a data frame with subject-specific covariate data output
 from \link{makeCov}
 }

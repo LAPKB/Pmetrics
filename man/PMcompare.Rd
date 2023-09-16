@@ -46,10 +46,12 @@ A data frame with the following objects for each model to analyze:
 \item{pval }{P-value for each model compared to the first. See details.}
 }
 \description{
-Compare NPAG or IT2B runs
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
+Compare NPAG or IT2B runs. his function is superseded by \link{PM_compare}.
 }
 \details{
-Objects can be specified separated by commas, e.g. PMcompare(1,2,3) followed by
+For backwards compatibility, objects can be specified separated by commas, e.g. PMcompare(1,2,3) followed by
 any arguments you wish to \code{\link{plot.PMop}}, \code{\link{mtsknn.eq}}. P-values are based on comparison using the nearest neighbors
 approach if all models are non-parametrics.  Models may only be compared on parameters that are included
 in the first model.  The P-value is the comparison between each model and the first model in

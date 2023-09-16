@@ -7,7 +7,9 @@
 PMtest()
 }
 \description{
-\code{PMtest} will check Pmetrics installation
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
+Check Pmetrics fortran installation by trying to compile sample files
 }
 \author{
 Michael Neely

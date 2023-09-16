@@ -1,14 +1,15 @@
-#' Print a Pmetrics PMdopt Object
-#'
-#' Print a Pmetrics D-optimal object, made by \code{Dopt}.
-#'
 #' @title Print PMdopt
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
+#' Print a Pmetrics PMdopt Object made by [Dopt].
+#'
 #' @method print PMdopt
-#' @param x A PMdopt object made by \code{\link{Dopt}}.
-#' @param \dots Other parameters which are not necessary.
+#' @param x A PMdopt object made by [Dopt].
+#' @param ... Not used.
 #' @return A printed object.
 #' @author Michael Neely
-#' @seealso \code{\link{Dopt}}
+#' @seealso [Dopt]
 #' @export
 
 print.PMdopt <- function(x,...){

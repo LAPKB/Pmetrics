@@ -366,12 +366,13 @@ plot.PM_data <- function(x,
 #' @description
 #' `r lifecycle::badge("superseded")`
 #' 
-#' \code{plot.PMmatrix} plots \emph{PMmatrix} objects
+#' Plots *PMmatrix* objects. It is largely now a 
+#' legacy plotting function, replaced
+#' by [plot.PM_data].
 #' @details
 #' This function will plot raw and fitted time and concentration data, which can be
 #' accessed as the `$data` object within the `$data` field of a [PM_data] object, e.g.
-#' `PM_data$data$data`.  It is largely now a legacy plotting function, replaced
-#' by [plot.PM_data].
+#' `PM_data$data$data`.  
 #' For the legend, defaults that are different that the standard are:
 #' \itemize{
 #'   \item x Default \dQuote{topright}

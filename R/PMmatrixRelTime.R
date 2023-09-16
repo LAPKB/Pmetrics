@@ -1,9 +1,18 @@
+#' @title Convert Absolute Dates and Times to Relative Hours
+#' @description
+#' `r lifecycle::badge("superseded")`
+#' 
+#' Convert dates/times to relative times.
+#' This function is largely superseded as it is called automatically when data
+#' are initialized as a [PM_data] object. There is rarely a need to call it directly
+#' any longer.
+#' 
+#' @details
 #' \code{PMmatrixRelTime} will convert absolute dates and times in a dataset
 #' into relative hours, suitable for Pmetrics analysis.  Additionally, the user has
 #' the option to split subjects into pseudosubjects every time a dose reset (evid=4)
 #' is encountered.
 #'
-#' @title Convert Absolute Dates and Times to Relative Hours
 #' @param data The name of an R data object.
 #' @param idCol A character vector with the name
 #'  of the id column in \code{data} or the number of the id column, default is \dQuote{id}

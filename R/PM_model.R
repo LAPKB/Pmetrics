@@ -110,6 +110,7 @@ PM_model$new <- function(model, ..., julia = FALSE) {
 #' @title Additive error model
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Create an additive (lambda) error model
 #' @param add Initial value for lambda
 #' @param constant Estimate if `FALSE` (default).
@@ -121,6 +122,7 @@ additive <- function(add, constant = FALSE) {
 #' @title Proportional error model
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Create an proportional (gamma) error model
 #' @param prop Initial value for gamma
 #' @param constant Estimate if `FALSE` (default).
@@ -133,6 +135,7 @@ proportional <- function(prop, constant = FALSE) {
 #' @title Combination error model
 #' @description
 #' `r lifecycle::badge("experimental")`
+#' 
 #' Create a combination additive (lambda) and proportional error model
 #' @details
 #' This function is not yet implemented.
@@ -147,6 +150,7 @@ combination <- function(add, prop, constant = FALSE) {
 #' @title Assay error coefficients
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Specify the coefficients for the assay error polynomial.
 #' @param coeffs Vector of up to four values for C0, C1, C2, C3, 
 #' e.g. `c(0.15, 0.1, 0, 0)`
@@ -160,6 +164,7 @@ errorPoly <- function(coeffs, constant = FALSE) {
 #' @title Initial range for primary parameter values
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Define primary model parameter initial values as range. For nonparametric,
 #' this range will be absolutely respected. For parametric, the range serves
 #' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
@@ -178,6 +183,7 @@ ab <- function(min, max, gtz = FALSE) {
 #' @title Initial mean/SD for primary parameter values
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Define primary model parameter initial values as mean and standard
 #' deviation, which translate to a range. The mean serves as the midpoint 
 #' of the range, with 3 standard deviations above and below the mean to define
@@ -198,6 +204,7 @@ msd <- function(mean, sd, gtz = FALSE) {
 #' @title Fixed primary parameter values
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Fix parameter values to be the same in the population. 
 #' @param fixed The starting value for the fixed parameter.
 #' @param constant If `FALSE` (default), the value for `fixed` will serve
@@ -218,6 +225,7 @@ fixed <- function(fixed, constant = FALSE, gtz = FALSE) {
 #' @title Model covariate declaration
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Declare covariates in the model that are in the data. Order in the model
 #' should be the same as the order in the data.
 #' @param name Name of the covariate in quotation marks.

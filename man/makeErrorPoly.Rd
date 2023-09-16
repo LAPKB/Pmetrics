@@ -53,6 +53,7 @@ first, second, and third order coefficients
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Estimate coefficients for the polynomial to describe assay error.
 }
 \details{

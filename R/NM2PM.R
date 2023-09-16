@@ -1,6 +1,7 @@
 #' @title Convert NONMEM to Pmetrics Data Files
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' \code{NM2PM} will convert NONMEM .csv data files to Pmetrics csv data files.
 #' @details
 #' The format of NONMEM and Pmetrics data .csv files are similar, but not quite identical.

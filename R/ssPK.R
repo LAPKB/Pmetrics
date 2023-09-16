@@ -1,26 +1,26 @@
-#' Sample size calculations for Phase 1 PK study design
-#'
+#' @title Sample size calculations for Phase 1 PK study design
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' This function calculates sample size based on a desired standard error of the mean,
 #' to a specified confidence, for a given mean and standard deviation.
-#' 
-#' The formula is n = qnorm((1+ci)/2)**2 * sd**2 / (precision*mean)**2
-#' 
-#'   
+#' @details
+#' The formula is `n = qnorm((1+ci)/2)**2 * sd**2 / (precision*mean)**2`
 #'
 #' @param n Sample size.  This value can be missing if sample size is desired, or 
-#' specified to calculate the maximum sd for given \code{mean}, \code{precision}, and \code{ci}.
+#' specified to calculate the maximum sd for given `mean`, `precision`, and `ci.
 #' @param mean Mean prameter value.  User value is mandatory.
-#' @param sd Standard deviation of parameter values.  If present, the function will return \code{n}.
-#' If missing and \code{n} is specified, will return the maximum sd as detailed above.
-#' @param precision Desired width of the standard error of the mean (SEM).  Default is 0.2, i.e. 20\% or
-#' 10\% below and 10\% above the mean.  If missing, and \code{mean}, \code{sd} and \code{n} are specified,
-#' \code{precision} will be calculated.
+#' @param sd Standard deviation of parameter values.  If present, the function will return `n.
+#' If missing and `n` is specified, will return the maximum sd as detailed above.
+#' @param precision Desired width of the standard error of the mean (SEM).  Default is 0.2, i.e. 20% or
+#' 10% below and 10% above the mean.  If missing, and `mean`, `sd` and `n` are specified,
+#' `precision`  will be calculated.
 #' @param ci Confidence for the desired width of the SEM.  Default is 0.95.
-#' @return The missing argument: \code{n}, \code{sd} or \code{precision}.
+#' @return The missing argument: `n`, `sd` or `precision.`
 #' @author Michael Neely
 #' @export
 
-ss.PK <- function(n,mean,sd,precision,ci=0.95){
+ss.PK <- function(n, mean, sd, precision, ci = 0.95){
   
   if(missing(mean)){stop("\nYou must supply a mean.\n")}
   if(missing(n)){

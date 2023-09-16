@@ -47,6 +47,14 @@ Returns a dataframe with columns \emph{id, evid, relTime}.
 If \code{split}=T all evid values that were previously 4 will be converted to 1.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
+Convert dates/times to relative times.
+This function is largely superseded as it is called automatically when data
+are initialized as a \link{PM_data} object. There is rarely a need to call it directly
+any longer.
+}
+\details{
 \code{PMmatrixRelTime} will convert absolute dates and times in a dataset
 into relative hours, suitable for Pmetrics analysis.  Additionally, the user has
 the option to split subjects into pseudosubjects every time a dose reset (evid=4)

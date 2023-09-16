@@ -16,6 +16,7 @@ A \link{summary.PMop} object
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 This redirects to summary.PMop for PM_op R6 objects
 }
 \details{

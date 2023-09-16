@@ -1,6 +1,7 @@
 #' @title Calculation of AUCs
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Calculates AUC from a variety of inputs
 #' @details
 #' Calculates the area under the time concentration curve using the

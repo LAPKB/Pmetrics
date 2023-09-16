@@ -1,6 +1,7 @@
 #' @title Make a Percent Target Attainment (PTA) Target
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Generates an object of class *PMpta.targ* which can
 #' be used in the [makePTA] method for [PM_pta] or [PM_sim] for targets sampled from a distribution.
 #'

@@ -1,7 +1,10 @@
+#' @title Load Pmetrics NPAG or IT2B output
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Loads all the data from an \emph{NPAG} or \emph{IT2B} run.
 #'
 #'
-#' @title Load Pmetrics NPAG or IT2B output
 #' @param run The numerical value of the folder number containing the run results.
 #' Loading results of a prior standard run in folder "1" are as
 #' simple as `run1 <- PM_load(1)`. There is no default value for this, and if
@@ -125,11 +128,14 @@ PM_load <- function(run, file, remote = F, server_address) {
   }
 }
 
-#' Loads all the data from an \emph{NPAG} or \emph{IT2B} run
-#'
-#'
-#'
-#' @title Load Pmetrics NPAG or IT2B output (Legacy)
+#' @title Load Pmetrics NPAG or IT2B output
+#' @description
+#' `r lifecycle::badge("superseded")`
+#' 
+#' Loads all the data from an \emph{NPAG} or \emph{IT2B} run.
+#' This function has been superseded by [PM_load], which returns objects. 
+#' In contrast, *PMload* loads them directly into the Global environment, which 
+#' is not best-practice programming.
 #' @param run The numerical value of the folder number containing the run results.  This
 #' number will also be used to name objects uniquely by appending \dQuote{.\code{run}}, 
 #' e.g. NPdata.1 or ITdata.1 if run=1. This parameter is \code{1} by default.
