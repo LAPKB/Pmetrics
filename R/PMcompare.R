@@ -194,9 +194,13 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
 }
 
 
-#' Compare NPAG or IT2B runs
-#'
-#' Objects can be specified separated by commas, e.g. PMcompare(1,2,3) followed by
+#' @title Compare NPAG or IT2B runs
+#' @description
+#' `r lifecycle::badge("superseded")`
+#' 
+#' Compare NPAG or IT2B runs. his function is superseded by [PM_compare].
+#' @details
+#' For backwards compatibility, objects can be specified separated by commas, e.g. PMcompare(1,2,3) followed by
 #' any arguments you wish to \code{\link{plot.PMop}}, \code{\link{mtsknn.eq}}. P-values are based on comparison using the nearest neighbors
 #' approach if all models are non-parametrics.  Models may only be compared on parameters that are included
 #' in the first model.  The P-value is the comparison between each model and the first model in
@@ -205,7 +209,6 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
 #' hypothesis should be rejected, i.e. the joint distributions between the two compared models are
 #' significantly different.
 #'
-#' @title Compare NPAG or IT2B runs
 #' @param x The run number of the first object you wish to compare. This should be a folder in your
 #' working directory. To avoid confusion, this function does not use objects
 #' already loaded with \code{\link{PMload}}.

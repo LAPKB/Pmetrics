@@ -1,6 +1,7 @@
 #' @title Compute MM-optimal Sample Times
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Computes 1 to 4 MM-optimal sampling times.
 #' @details
 #' Based on the mulitple-model optimization algorithm.

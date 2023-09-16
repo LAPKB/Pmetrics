@@ -15,6 +15,8 @@
 The weighted mean D-optimal times.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Summarize a Pmetrics D-optimal object
 }
 \details{

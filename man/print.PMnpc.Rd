@@ -7,7 +7,7 @@
 \method{print}{PMnpc}(x, ...)
 }
 \arguments{
-\item{x}{A PMnpc object made by \code{\link{plot.PMsim}}.}
+\item{x}{A PMnpc object made by \link{plot.PM_sim}.}
 
 \item{\dots}{Other parameters which are not necessary.}
 }
@@ -15,13 +15,12 @@
 A printed object.
 }
 \description{
-Print a Pmetrics NPC Object
-}
-\details{
-Print a Pmetrics NPC (Numerical Predictive Check) object, made by \code{plot.PMsim}.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
+Print a Pmetrics NPC (Numerical Predictive Check) object, made by \link{plot.PM_sim}.
 }
 \seealso{
-\code{\link{plot.PMsim}}
+\link{plot.PM_sim}
 }
 \author{
 Michael Neely

@@ -38,13 +38,16 @@ squared prediction error, the bias-adjusted mean squared prediction error, and t
 adjusted mean weighted squared prediction error (imprecision).
 }
 \description{
-Summarize a Pmetrics Observed vs. Predicted x
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
+Summarize observations, predictions and errors in a PMop object made by \link{makeOP},
+usually in the \verb{$data} field of a \link{PM_op} object.
 }
 \details{
-Summarize observations, predictions and errors in a PMop x made by \code{\link{makeOP}}.
+Summarize a Pmetrics Observed vs. Predicted x
 }
 \seealso{
-\code{\link{makeOP}}
+\link{makeOP}, \link{PM_op}
 }
 \author{
 Michael Neely

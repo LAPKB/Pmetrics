@@ -1,15 +1,20 @@
+#' @title Print Summary of Observations and Predictions
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Print a Pmetrics Observed vs. Predicted Summary Object
-#'
-#' Print a summary of observations, predictions and errors in a summary.PMop object made by \code{\link{summary.PMop}}.
+#' @details
+#' Print a summary of observations, predictions and errors in a summary.PMop object 
+#' made by [summary.PMop] and aliased by [summary.PM_op].
 #'
 #' @title Print Summary of Observations and Predictions
 #' @method print summary.PMop
-#' @param x A summary.PMop object made by \code{\link{summary.PMop}}.
+#' @param x An object made by [summary.PMop].
 #' @param digits Integer, used for number of digits to print.
-#' @param \dots Other parameters which are not necessary.
+#' @param ... Not used.
 #' @return A printed object.
 #' @author Michael Neely
-#' @seealso \code{\link{summary.PMop}}
+#' @seealso [summary.PMop], [summary.PM_op]
 #' @export
 
 print.summary.PMop <- function(x, digits=max(3,getOption("digits")-3),...){

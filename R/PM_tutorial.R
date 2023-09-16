@@ -1,6 +1,7 @@
 #' @title Pmetrics tutorial
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Introductory tutorial to Pmetrics
 #' @details
 #' This function will create an Examples folder in the current working

@@ -32,6 +32,7 @@ For IT2B this has 6 columns:
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Generates summary statistics of final population model parameters.
 }
 \details{

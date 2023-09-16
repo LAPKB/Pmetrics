@@ -4,22 +4,18 @@
 \alias{qgrowth}
 \title{Extract CDC pediatric growth charts}
 \usage{
-qgrowth(
-  sex = c("M", "F", "B"),
-  percentile = c(5, 10, 25, 50, 75, 90, 95),
-  agemos = (seq(0, 18) * 12)
-)
+qgrowth(sex = "B", agemos = (seq(0, 18) * 12), percentile = 50)
 }
 \arguments{
 \item{sex}{A single quoted character: "M" for males, "F" for
 females, or "B" for both.  Default is "B".}
 
-\item{percentile}{An integer vector of the percentile for each age/sex to return.
-Default is 50, but could be, for example \code{c(5, 10, 25, 50, 75, 90, 95)}.}
-
 \item{agemos}{A vector of ages in months to return.  The default is
 \code{seq(0,18)*12}, i.e. 0 to 216 months in increments of 12, which is
 1 to 18 years. Values do not have to be multiples of 12.}
+
+\item{percentile}{An integer vector of the percentile for each age/sex to return.
+Default is 50, but could be, for example \code{c(5, 10, 25, 50, 75, 90, 95)}.}
 }
 \value{
 A dataframe with columns
@@ -34,6 +30,8 @@ A dataframe with columns
 }
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Will extract height, weight, and BMI for boys, girls or both for a given range of ages in months and percentiles. This can be useful for
 simulations in Pmetrics.
 }

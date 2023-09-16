@@ -3,6 +3,7 @@
 #' @title Parse Pmetrics IT2B Output
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Processes the output from an IT2B run into a list.
 #' @details
 #' This function can take some time to process the RFILE, depending on the number of subjects,

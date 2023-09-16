@@ -2,6 +2,7 @@
 #' Object to contain results of simulation
 #' @description 
 #' ` r lifecycle::badge("stable")`
+#' 
 #' This object is created after a successful run of the simulator.
 #' 
 #' @details

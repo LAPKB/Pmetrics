@@ -33,11 +33,12 @@ A list with objects calculated for \code{agemos} and \code{sex}.
 }
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Will extract BMI z-scores based on a single age in months and sex. Overweight is
 a z-score of >1.04, and obese is a z-score > 1.64. Calculations are based on
 \href{https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf}{CDC formulae}
-}
-\details{
+
 For a z-score > 3, which indicates an extreme BMI, consider using the modified
 z-score and percentile.
 }

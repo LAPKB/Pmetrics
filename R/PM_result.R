@@ -240,6 +240,7 @@ PM_result$load <- function(...) {
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Contains observed vs. predicted data after a run
 #'
 #' @details
@@ -342,6 +343,7 @@ PM_op <- R6::R6Class(
 #'
 #' @description 
 #' `r lifecycle::badge("stable")`
+#' 
 #' This redirects to summary.PMop for PM_op R6 objects
 #'
 #' @details See [summary.PMop]. Alternative way to summarize is
@@ -359,6 +361,7 @@ summary.PM_op <- function(object, ...) {
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Contains the Bayesian posterior predictions at short intervals
 #' specified as an argument to the $run method of [PM_fit]. Default is every 12 minutes.
 #'
@@ -426,6 +429,7 @@ PM_post <- R6::R6Class(
 #'
 #' @description 
 #' `r lifecycle::badge("stable")`
+#' 
 #' Contains final cycle information from run.
 #'
 #' @details
@@ -561,6 +565,7 @@ PM_final <- R6::R6Class(
 #'
 #' @description 
 #' `r lifecycle::badge("stable")`
+#' 
 #' This redirects to summary.PMfinal for PM_final R6 objects
 #'
 #' @details
@@ -580,6 +585,7 @@ summary.PM_final <- function(object, ...) {
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Contains the cycle information after a run.
 #'
 #' @details
@@ -653,6 +659,7 @@ PM_cycle <- R6::R6Class(
 #'
 #' @description 
 #' `r lifecycle::badge("stable")`
+#' 
 #' Contains the population predictions at short intervals
 #' specified as an argument to the run method of [PM_fit]. Default is every 12 minutes.
 #'
@@ -720,6 +727,7 @@ PM_pop <- R6::R6Class(
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Contains a data frame with subject-specific covariate data output
 #' from [makeCov]
 #'
@@ -792,6 +800,7 @@ PM_cov <- R6::R6Class(
 #'
 #' @description 
 #' `r lifecycle::badge("stable")`
+#' 
 #' This redirects to summary.PMcov for PM_final R6 objects
 #'
 #' @details

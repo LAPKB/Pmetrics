@@ -5,6 +5,7 @@
 \title{Final Cycle Population Values}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Contains final cycle information from run.
 }
 \details{

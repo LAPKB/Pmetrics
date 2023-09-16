@@ -1,6 +1,7 @@
 #' @title Generate a report
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Generates a report from a specified Rmd template
 #'
 #' @param PM_result A `PM_result` object obtained from \code{PM_load(x)}, where `x` is the run number.

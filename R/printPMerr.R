@@ -1,11 +1,12 @@
-#' Print a Pmetrics Error Object
-#'
+#' @title Print Data Errors
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Print the errors in a Pmetrics data file or [PM_data] object.
 #'
-#' @title Print Data Errors
 #' @method print PMerr
 #' @param x A PMerr object made by validation in [PM_data].
-#' @param ... Other parameters which are not necessary.
+#' @param ... Not used.
 #' @return A printed object.
 #' @author Michael Neely
 #' @seealso [PM_data]

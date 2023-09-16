@@ -114,10 +114,11 @@ Plots the object.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
-Plot PMcov objects
+
+This method is largely superseded by \link{plot.PM_cov}.
 }
 \details{
-This method is largely superseded by \link{plot.PM_cov}. It will plot any two columns, specified using a formula, of a \emph{PMcov} object,
+It will plot any two columns, specified using a formula, of a \emph{PMcov} object,
 which contains covariate and Bayesian posterior parameter information
 for each subject.  \emph{PMcov} objects can be
 accessed as the \verb{$data} object within the \verb{$cov} field of a \link{PM_result} object, e.g.
@@ -132,22 +133,7 @@ plot(NPex$cov$data,V~wt)
 }
 \seealso{
 \code{\link{makeCov}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
-
-Other PMplots: 
-\code{\link{plot.MMopt}()},
-\code{\link{plot.PM_cov}()},
-\code{\link{plot.PM_cycle}()},
-\code{\link{plot.PM_data}()},
-\code{\link{plot.PM_final}()},
-\code{\link{plot.PM_model}()},
-\code{\link{plot.PM_op}()},
-\code{\link{plot.PM_pta}()},
-\code{\link{plot.PM_sim}()},
-\code{\link{plot.PM_valid}()},
-\code{\link{plot.PMcycle}()},
-\code{\link{plot.PMdopt}()}
 }
 \author{
 Michael Neely
 }
-\concept{PMplots}

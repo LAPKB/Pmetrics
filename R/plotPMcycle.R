@@ -297,7 +297,7 @@ plot.PM_cycle <- function(x,
 #' @examples
 #' plot(NPex$cycle$data)
 #' plot(NPex$cycle$data,omit=0)
-#' @family PMplots
+
 
 
 

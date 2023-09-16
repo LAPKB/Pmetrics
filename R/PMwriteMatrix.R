@@ -1,21 +1,24 @@
-#' \code{PMwriteMatrix} is the companion function to \code{\link{PMreadMatrix}}.
-#'  It will write an appropriate R data object to a formatted .csv file.
-#'  This is now largely an internal function accessed with the `$write()` method
-#'  for [PM_data] objects.
-#'
-#' \code{PMwriteMatrix} will first run \code{\link{PMcheck}} to determine
-#'  if there are any errors in the structure of  \code{data}.  If the error check
-#'  fails, the file will not be written and a message will be printed on the console.
-#'
 #' @title Write a Pmetrics .csv Matrix File
-#' @param data Must be a data.frame with appropriate structure (see \code{\link{PMcheck}}.
+#' @description
+#' `r lifecycle::badge("superseded")`
+#' 
+#' This function is largely superseded as the function is accessed with 
+#' the `$write()` method for [PM_data] objects. There is rarely a need to call
+#' it directly. It is the companion function to [PMreadMatrix].
+#' It will write an appropriate R data object to a formatted .csv file.
+#' @details
+#' *PMwriteMatrix* will first run [PMcheck] to determine
+#' if there are any errors in the structure of `data`.  If the error check
+#' fails, the file will not be written and a message will be printed on the console.
+#'
+#' @param data Must be a data.frame with appropriate structure (see [PMcheck]).
 #' @param filename Name of file to create.
-#' @param override Boolean operator to write even if errors are detected.  Default is \code{False}.
+#' @param override Boolean operator to write even if errors are detected.  Default is `FALSE`.
 #' @param version Which matrix data format version to write.  Default is the current version.
 #' @param header Is there a header row? Default is `TRUE`.
-#' @return Returns the error report (see \code{\link{PMcheck}} for details).
+#' @return Returns the error report (see [PMcheck] for details).
 #' @author Michael Neely
-#' @seealso \code{\link{PMcheck}}, \code{\link{PMreadMatrix}}
+#' @seealso [PM_data], [PMcheck], [PMreadMatrix]
 #' @examples
 #' \dontrun{
 #' #write to the current directory

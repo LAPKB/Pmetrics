@@ -1,16 +1,19 @@
-#' Print a Pmetrics Final Summary Object
-#'
-#' Print a summary of parameter medians and MAWD, with point estimates and credibilty intervals
-#' from a summary.PMfinal object made by \code{\link{summary.PMfinal}}.
-#'
 #' @title Print Summary of Parameter Values and Credibility Intervals
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
+#' Print a Pmetrics Final Summary Object
+#' @details
+#' Print a summary of parameter medians and MAWD, with point estimates and credibilty intervals
+#' from an object made by [summary.PM_final].
+#'
 #' @method print summary.PMfinal
-#' @param x A summary.PMfinal object made by \code{\link{summary.PMfinal}}.
+#' @param x A summary.PMfinal object made by [summary.PM_final].
 #' @param digits Integer, used for number of digits to print.
-#' @param \dots Other parameters which are not necessary.
+#' @param ... Not used. 
 #' @return A printed object.
 #' @author Michael Neely
-#' @seealso \code{\link{summary.PMfinal}}
+#' @seealso [summary.PM_final]
 #' @export
 
 print.summary.PMfinal <- function(x, digits=max(3,getOption("digits")-3),...){

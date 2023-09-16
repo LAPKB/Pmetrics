@@ -12,6 +12,7 @@ Default is current working directory.}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Introductory tutorial to Pmetrics
 }
 \details{

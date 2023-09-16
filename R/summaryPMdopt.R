@@ -1,8 +1,11 @@
+#' @title Summarize PMdopt objects
+#' @description 
+#' `r lifecycle::badge("stable")`
+#' 
 #' Summarize a Pmetrics D-optimal object
-#'
+#' @details
 #' Summarize observations, predictions and errors in a PMdopt object made by [Dopt].
 #'
-#' @title Summarize PMdopt objects
 #' @method summary PMdopt
 #' @param object A PMdopt object made by [Dopt].
 #' @param ... Other parameters which are not necessary.

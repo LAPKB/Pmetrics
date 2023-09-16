@@ -18,6 +18,7 @@ for details on this.}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Declare covariates in the model that are in the data. Order in the model
 should be the same as the order in the data.
 }

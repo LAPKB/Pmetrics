@@ -127,13 +127,14 @@ Plots the object.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
-Plot PM_op objects
+
+It is largely now a legacy plotting function,
+replaced by \link{plot.PM_op}.
 }
 \details{
 This function is for \emph{PMop} objects which can be
 accessed as the \verb{$data} object within the \verb{$op} field of a \link{PM_result} object, e.g.
-\code{PM_result$op$data}.  It is largely now a legacy plotting function,
-replaced by \link{plot.PM_op}.
+\code{PM_result$op$data}.
 }
 \examples{
 plot(NPex$op$data)

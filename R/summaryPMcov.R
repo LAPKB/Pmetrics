@@ -1,16 +1,19 @@
+#' @title Summarize Covariates and Bayesian Posterior Parameter Values
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Summarize a Pmetrics Covariate object
-#'
+#' @details
 #' Summarize covariates and Bayesian posterior parameter values for each subject.
 #'
-#' @title Summarize Covariates and Bayesian Posterior Parameter Values
 #' @method summary PMcov
 #' @param object A PMcov object made by [makeCov].
-#' @param icen Summary function for covariates and posterior parameters. Default is \dQuote{median}, but can specify \dQuote{mean}.
+#' @param icen Summary function for covariates and posterior parameters. Default is "median", but can specify "mean".
 #' @param ... Not used.
 #' @return A data frame with the summary of the PMcov object for each subject's covariates and 
 #' Bayesian posterior parameter values.
 #' @author Michael Neely
-#' @seealso [makeCov]
+#' @seealso [makeCov], [PM_cov]
 #' @export
 
 summary.PMcov <- function(object, icen = "median", ...){

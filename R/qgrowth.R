@@ -1,5 +1,8 @@
+#' @title
 #' Extract CDC pediatric growth charts
-#'
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Will extract height, weight, and BMI for boys, girls or both for a given range of ages in months and percentiles. This can be useful for 
 #' simulations in Pmetrics.
 #'
@@ -53,8 +56,10 @@ qgrowth <- function(sex = "B", agemos = (seq(0,18)*12), percentile = 50){
   return(sub2)  
 }
 
-#' Extract CDC pediatric BMI z-scores
-#'
+#' @title Extract CDC pediatric BMI z-scores
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Will extract BMI z-scores based on a single age in months and sex. Overweight is 
 #' a z-score of >1.04, and obese is a z-score > 1.64. Calculations are based on
 #' [CDC formulae](https://www.cdc.gov/nccdphp/dnpa/growthcharts/resources/biv-cutoffs.pdf)
@@ -125,52 +130,3 @@ zBMI <- function(agemos, sex, bmi, wt, ht, data = "CDC"){
   
   
 }
-
-
-
-
-qgrowth <- function(sex=c("M","F","B"),percentile=c(5, 10, 25, 50, 75, 90, 95),agemos=(seq(0,18)*12)){
-  
-  growth <- NULL
-  data(growth,envir = environment())
-  sex <- match.arg(sex)
-  if(sex=="b" | sex=="B") {sex <- c("M","F")} else{sex <- toupper(sex)}
-  final <- data.frame(age=NA,wt=NA,ht=NA,sex=NA,percentile=NA)
-  
-  sub1 <- purrr::map2_df(sex[1], percentile, function(x, y){
-    growth %>% filter(SEX == x, (CHART =="wt  x age" | CHART == "length x age"
-                                 | CHART == "ht x age"), PERCENTILE==y) %>%
-      rename(agecat = AGE, percentile = PERCENTILE, sex = SEX)
-  })
-  
-  if(length(sex)==2){
-    sub1b <- purrr::map2_df(sex[2], percentile, function(x, y){
-      growth %>% filter(SEX == x, (CHART =="wt  x age" | CHART == "length x age"
-                                   | CHART == "ht x age"), PERCENTILE==y) %>%
-        rename(agecat = AGE, percentile = PERCENTILE, sex = SEX)
-    })
-    sub1 <- dplyr::bind_rows(sub1, sub1b)
-  }
-  
-  sub2 <- tidyr::crossing(agemos,sex,percentile) %>% #all combinations
-    mutate(agecat = ifelse(agemos<=36,"0-36 mos","2-18 years")) %>% #categorize age
-    inner_join(., sub1, by = c("agecat", "sex", "percentile"),
-               relationship = "many-to-many") %>% #lookup combinations in CDC table
-    group_by(agemos, sex, percentile, CHART) %>%
-    filter(KNOT <= agemos) %>% 
-    slice_tail(n=1) %>% #choose the maximum KNOT which is < agemos for each combination
-    ungroup() %>%
-    group_by(CHART) %>%
-    rowwise() %>%
-    mutate(corr_age = agemos - KNOT, measure = A + B1 * corr_age + B2 * corr_age**2 + B3 * corr_age**3) %>% #calculate appropriate measure
-    ungroup() %>%
-    mutate(across(CHART, \(x) stringr::str_replace(x, "length", "ht"))) %>% #tidy labels
-    mutate(across(CHART, \(x) stringr::str_replace(x, stringr::regex("\\s+x age"), ""))) %>%
-    select(agemos, sex, percentile, CHART, measure) %>%
-    pivot_wider(id_cols = 1:3, names_from = CHART, values_from = measure) %>% #reform the data frame
-    mutate(ageyrs = agemos/12, bmi = wt/(ht/100)**2) %>% #add age in years and BMI
-    select(agemos, ageyrs, wt, ht, bmi, sex, percentile) #final form
-  
-  return(sub2)  
-}
-

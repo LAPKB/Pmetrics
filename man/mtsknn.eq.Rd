@@ -29,6 +29,7 @@ normalized Z score and corresponding P value.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Multivariate two-sample test based on k-nearest neighbors
 }
 \details{

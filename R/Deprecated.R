@@ -1,73 +1,158 @@
-#' `r lifecycle::badge('deprecated')`
+
+#' @title Configure Fortran
+#' @description
+#' `r lifecycle::badge("deprecated")`
 #' 
-#' These functions are deprecated in Pmetrics.
-#'
-#' @title Deprecated functions.
+#' Use setPMoptions() instead.
 #' @param ... Not used
 #' @author Michael Neely
+#' @keywords internal
 #' @export
-
 PMFortranConfig <- function(...) {
-  cat("\nPMFortranConfig is deprecated.  Use setPMoptions() instead to change the compilation arguments.\n")
+  lifecycle::deprecate_warn("2.1.0", "PMFortranConfig()", details = "See ?setPMoptions.")
 }
 
-#' @rdname PMFortranConfig
+#' @title Check data matrix
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#' 
+#' Use PM_data$new() and PM_model$new() instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
 #' @export
 PMcheckMatrix <- function(...) {
-  cat("\nPMcheckMatrix is deprecated.  Use PM_data$new() and PM_model$new() instead to check data and model files.\n")
+  lifecycle::deprecate_warn("1.3.0", "PMcheckMatrix()", details = "See ?PM_data and ?PMcheck.")
 }
 
-#' @rdname PMFortranConfig
+#' @title Fix data matrix
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#' 
+#' Use PM_data$new() and PM_model$new() instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
 #' @export
 PMfixMatrix <- function(...) {
-  cat("\nPMfixMatrix is deprecated.  Use PM_data$new() instead to check data files.\n")
+  lifecycle::deprecate_warn("1.3.0", "PMfixMatrix()", details = "See ?PM_data and ?PMcheck.")
 }
 
-#' @rdname PMFortranConfig
+#' @title Load NPAG run
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#' 
+#' Use PM_load() instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
 #' @export
 NPload <- function(...) {
-  cat("\nNPload is deprecated.  Use PM_load() instead to load results of NPAG or IT2B runs.\n")
+  lifecycle::deprecate_warn("1.3.0", "NPload()", details = "See ?PM_load.")
 }
 
-#' @rdname PMFortranConfig
+#' @title Load IT2B run
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#' 
+#' Use PM_load() instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
 #' @export
 ITload <- function(...) {
-  cat("\nITload is deprecated.  Use PM_load() instead to load results of NPAG or IT2B runs.\n")
+  lifecycle::deprecate_warn("1.3.0", "ITload()", details = "See ?PM_load.")
 }
 
-#' @rdname PMFortranConfig
+#' @title NPAG run report
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#' 
+#' Use PMreport() instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
 #' @export
 NPreport <- function(...) {
-  cat("\nNPreport is deprecated.  Use PMreport() instead to process completed NPAG or IT2B runs.\n")
+  lifecycle::deprecate_warn("1.5.0", "NPreport()", details = "See ?PMreport.")
 }
 
-#' @rdname PMFortranConfig
+#' @title IT2B run report
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#' 
+#' Use PMreport() instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
 #' @export
 ITreport <- function(...) {
-  cat("\nITreport is deprecated.  Use PMreport() instead to process completed NPAG or IT2B runs.\n")
+  lifecycle::deprecate_warn("1.5.0", "ITreport()", details = "See ?PMreport.")
 }
 
-#' @rdname PMFortranConfig
+#' @title Diagnostics
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#' 
+#' Use $validate() on a PM_result object or make_valid() instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
 #' @export
 PMdiag <- function(...) {
-  cat("\nPMdiag is deprecated.  Use $validate() on a PM_result object or makeValid() instead.\n")
+  lifecycle::deprecate_warn("1.5.0", "PMdiag()", details = "See ?PM_result or ?make_valid.")
 }
 
-#' @rdname PMFortranConfig
+#' @title Read Defaults
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#' 
+#' Use getPMoptions() instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
 #' @export
 PMreadDefaults <- function(...) {
-  cat("\nPMreadDefaults is deprecated.  Use getPMoptions() instead to read Pmetrics options.\n")
+  lifecycle::deprecate_warn("1.5.0", "PMreadDefaults()", details = "See ?getPMoptions.")
 }
 
-#' @rdname PMFortranConfig
+#' @title Write Defaults
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#' 
+#' Use setPMoptions() instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
 #' @export
 PMwriteDefaults <- function(...) {
-  cat("\nPMwriteDefaults is deprecated.  Use setPMoptions() instead to set Pmetrics options.\n")
+  lifecycle::deprecate_warn("1.5.0", "PMwriteDefaults()", details = "See ?setPMoptions.")
 }
 
-#' @rdname PMFortranConfig
+#' @title makeNPDE
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#' 
+#' Use $validate() on a PM_result object or make_valid() instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
 #' @export
 makeNPDE <- function(...) {
-  cat("\nmakeNPDE is deprecated.  Use $validate() on a PM_result object or makeValid() instead.\n")
+  lifecycle::deprecate_warn("2.0.0", "makeNPDE()", details = "See ?PM_result or ?make_valid.")
+}
+
+#' @title Save Pmetrics objects
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#' 
+#' No longer applies as Pmetrics R6 objects have their own save methods.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @seealso [PM_result], [PM_sim], [PM_pta]
+#' @export
+PMsave <- function(...){
+  lifecycle::deprecate_warn("2.1.0", "PMsave()", details = "See ?PM_result, ?PM_sim, or ?PM_pta for current save methods.")
 }
 

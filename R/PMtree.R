@@ -1,8 +1,11 @@
+#' @title Create a new Pmetrics folder tree
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Sets up a directory tree for a new Pmetrics project
-#'
+#' @details
 #' This function will create a new project folder tree with appropriate subfolders and a skeleton R script.
 #'
-#' @title Create a new Pmetrics folder tree
 #' @param project A character string of a new project name, e.g. "DrugX"
 #' @param folder The full path to the root folder for the new project.  Default is the
 #' current working directory.
@@ -15,7 +18,7 @@
 #' \item{src }{The folder for source data files in their original format, to preserve
 #' integrity and for audit purposes.}
 #' @author Michael Neely
-#' @seealso \code{\link{PMmanual}}
+#' @seealso [PMmanual]
 #' @examples
 #' \dontrun{
 #' PMtree("DrugX")

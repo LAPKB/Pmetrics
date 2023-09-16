@@ -14,8 +14,12 @@ PMbuild(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE)
 \item{rebuild}{Default is \code{FALSE}.}
 }
 \description{
-\code{PMBuild} will ensure all dependent packages are installed and compile
-Fortran source code for permanent Pmetrics modules
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
+Compile Fortran or Rust source code for permanent Pmetrics modules.
+}
+\details{
+Choice of back end language specified as option in \link{setPMoptions}.
 }
 \author{
 Michael Neely

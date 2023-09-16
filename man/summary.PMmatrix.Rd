@@ -7,7 +7,8 @@
 \method{summary}{PMmatrix}(object, formula, FUN, include, exclude, ...)
 }
 \arguments{
-\item{object}{A PMmatrix object loaded by \link{PMreadMatrix} or \link{PM_load}.}
+\item{object}{A PMmatrix object which is the \verb{$data} field of a \link{PM_data} object,
+but can also be loaded by \link{PMreadMatrix} or \link{PM_load}.}
 
 \item{formula}{Optional formula for specifying custom summaries.  See \link{aggregate}
 and \link{formula} for details on how to specify formulae in R. If, for example, the data contain
@@ -39,9 +40,10 @@ containing the following items:
 \item{formula}{Results of including \link{formula}}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Summarize a Pmetrics PMmatrix object
-}
-\details{
+
 Summarize the raw data used for a Pmetrics run.
 }
 \seealso{

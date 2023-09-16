@@ -70,6 +70,7 @@ This means that the model may be misspecified.}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Processes the output from an IT2B run into a list.
 }
 \details{

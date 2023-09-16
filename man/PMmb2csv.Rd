@@ -14,13 +14,14 @@ This could be easily obtained with \code{\link{list.files}}.}
 }
 \value{
 A new file will be created with the name equal to \code{newFile} and
-an extension of \dQuote{csv}.
+an extension of "csv".
 }
 \description{
-\code{PMmb2csv} will convert old style, single drug .mb or USC*PACK files into
-a single .csv matrix file.
-}
-\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
+Convert old style, single drug .mb or USC*PACK files into
+a \link{PM_data} object and write a .csv file to the current working directory.
+
 IDs will be suffixed with .1 to .9 for <10 subjects, .01 to .99 for <100 subjects and .001 to .999 for <1000 subjects,
 as needed to ensure unique ID numbers.
 }

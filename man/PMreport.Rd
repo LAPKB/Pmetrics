@@ -38,6 +38,8 @@ the data file for the run read by \code{\link{PMreadMatrix}}.
 This file can be loaded using \code{\link{PMload}}.}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Generates a summary of a Pmetrics NPAG or IT2B run
 }
 \details{
