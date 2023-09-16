@@ -1,5 +1,9 @@
+#' @title Plot PM_data Time-Output Data
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Plots *PM_data* objects
-#'
+#' @details
 #' This function will plot raw and fitted time and concentration data with a variety of options.
 #' By default markers are included and  have the following plotly properties:
 #' `list(symbol = "circle", color = "red", size = 10, opacity = 0.5, line = list(color = "black", width = 1))`. 
@@ -8,7 +12,6 @@
 #' `list(color = "dodgerblue", width = 1, dash = "solid"`.
 #' The grid and legend are omitted by default.
 #'
-#' @title Plot PM_data Time-Output Data
 #' @method plot PM_data
 #' @param x The name of an `PM_data` data object or loaded as a field
 #' in a [PM_result] object
@@ -359,12 +362,16 @@ plot.PM_data <- function(x,
 }
 
 
-
+#' @title Plot PMmatrix Time-Output Data
+#' @description
+#' `r lifecycle::badge("superseded")`
+#' 
 #' \code{plot.PMmatrix} plots \emph{PMmatrix} objects
-#'
+#' @details
 #' This function will plot raw and fitted time and concentration data, which can be
 #' accessed as the `$data` object within the `$data` field of a [PM_data] object, e.g.
-#' `PM_data$data$data`.  It is largely now a legacy plotting function, with a variety of options.
+#' `PM_data$data$data`.  It is largely now a legacy plotting function, replaced
+#' by [plot.PM_data].
 #' For the legend, defaults that are different that the standard are:
 #' \itemize{
 #'   \item x Default \dQuote{topright}
@@ -375,7 +382,6 @@ plot.PM_data <- function(x,
 #'   \item bg Default \dQuote{white}
 #' }
 #'
-#' @title Plot PMmatrix Time-Output Data
 #' @method plot PMmatrix
 #' @param x The name of an \emph{PMmatrix} data object read by \code{\link{PMreadMatrix}}
 #' @param include A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)

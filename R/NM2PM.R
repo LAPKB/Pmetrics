@@ -1,5 +1,8 @@
+#' @title Convert NONMEM to Pmetrics Data Files
+#' @description
+#' `r lifecycle::badge("stable")`
 #' \code{NM2PM} will convert NONMEM .csv data files to Pmetrics csv data files.
-#'
+#' @details
 #' The format of NONMEM and Pmetrics data .csv files are similar, but not quite identical.
 #' A major difference is that the order of the columns are fixed in Pmetrics (not including covariates),
 #' while they are user-determined in NONMEM, and specified in a control (.ctl) file.
@@ -34,7 +37,6 @@
 #' }
 #' It is strongly suggested to run \code{\link{PMcheck}} on the returned object for final adjusting.
 #'
-#' @title Convert NONMEM to Pmetrics Data Files
 #' @param data The name and extension of a NONMEM data (e.g. .csv) file in the working directory, or the full path to a file.
 #' @param ctl  The name and extension of a NONMEM control (e.g. .ctl) file in the working directory, or the full path to a file.
 #' @return A Pmetrics style PMmatrix data.frame.

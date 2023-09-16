@@ -58,6 +58,7 @@ A dataframe of class \emph{PMauc}, which has 2 columns:
 }
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Calculates AUC from a variety of inputs
 }
 \details{

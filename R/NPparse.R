@@ -1,8 +1,11 @@
-#' Parse Pmetrics NPAG Output
+#' @title Parse Pmetrics NPAG Output
+#' @description
+#' `r lifecycle::badge("stable")`
 #' 
 #' \code{NPparse} processes the output from an NPAG run into a list.
-#'
-#' This function can take some time to process the RFILE, depending on the number of subjects,
+#' @details
+#' This function is called automatically at the end of a run. It can take 
+#' some time to complete, depending on the number of subjects,
 #'  doses, observations, etc.  Typical wait times are a few seconds up to 5 minutes.
 #'  When processing is complete a summary of the extracted data will be reported on the console.
 #'

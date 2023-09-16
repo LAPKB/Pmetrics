@@ -44,7 +44,10 @@ as a template. See \link{SIMparse}. This object will be automatically saved to t
 }
 }
 \description{
-Creates a Pmetrics validation object
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
+This function is largely a legacy function, replaced by \link{make_valid}, which is
+typically called with the \verb{$validate} method for a \link{PM_result} object.
 }
 \details{
 \code{makeValid} will create an object suitable for plotting visual predictive

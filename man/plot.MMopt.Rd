@@ -16,19 +16,20 @@ dashed red line. r template("line")`}
 
 \item{...}{Other parameters to pass to \link{plot.PM_sim}.}
 
-\item{probs}{Default is NA. See \link{plot.PMsim} for details.}
+\item{probs}{Default is NA. See \link{plot.PM_sim} for details.}
 }
 \value{
 Plots the simulation profiles with MMoptimal times indicated as vertical lines.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Plots \emph{MMopt} objects
 }
 \details{
 Simulated observations are plotted on the y-axis vs. time on the x.axis.
 Optimal sampling times are indicated as vertical lines. Defaults for optimal
 sample times are red, dash, width 2. Defaults for the \code{line} format are as
-for \link{plot.PMsim}.
+for \link{plot.PM_sim}.
 }
 \seealso{
 \link{plot.PM_sim}

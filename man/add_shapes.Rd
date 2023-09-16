@@ -15,6 +15,8 @@ shape can be added for each call, but to be consistent with the \code{shapes} ar
 to \code{\link[plotly:layout]{plotly::layout()}}, we use the same plural.}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Modifies the layout object of an existing plot to include a new shape.
 }
 \details{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/PM_tutorial.R
 \name{PM_tutorial}
 \alias{PM_tutorial}
-\title{Introductory tutorial to Pmetrics}
+\title{Pmetrics tutorial}
 \usage{
 PM_tutorial(wd = getwd())
 }
@@ -10,12 +10,13 @@ PM_tutorial(wd = getwd())
 \item{wd}{The working directory in which to create the Examples folder.
 Default is current working directory.}
 }
-\value{
-NULL.
-}
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Introductory tutorial to Pmetrics
+}
+\details{
 This function will create an Examples folder in the current working
 directory. The folder will contain all files and folder necessary to
 conduct the tutorial. After the Examples folder is created, open the
-examples.R script to begin the tutorial.
+\emph{examples.R} script to begin the tutorial.
 }

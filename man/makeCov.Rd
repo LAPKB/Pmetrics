@@ -21,6 +21,7 @@ parameter means and medians }
 \item{icen}{The type of summarized Bayesian posterior individual parameter values: mean or median.}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Generates an data.frame with subject-specific covariate data from an \emph{NPAG} or \emph{IT2B} object
 }
 \details{

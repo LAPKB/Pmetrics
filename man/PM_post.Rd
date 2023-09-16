@@ -4,6 +4,7 @@
 \alias{PM_post}
 \title{Individual Bayesian posterior predictions at short intervals}
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Contains the Bayesian posterior predictions at short intervals
 specified as an argument to the $run method of \link{PM_fit}. Default is every 12 minutes.
 }
