@@ -1,7 +1,10 @@
-#' Calculation of PTAs
+#' @title Calculation of PTAs
+#' @description
+#' `r lifecycle::badge("stable")`
 #' 
 #' Calculates the Percent Target Attainment (PTA)
-#'
+#' 
+#' @details
 #' `makePTA` will calculate the PTA for any number of simulations, targets and definitions of success.
 #' Simulations typically differ by dose, but may differ by other features such as children vs. adults. This function will also
 #' accept data from real subjects either in the form of a *PMpost* or a *PMmatrix* object.
@@ -52,10 +55,21 @@
 #'   - *prop.success* is the proportion with a pdi > `success`, as specified in 
 #'   - *pdi.mean* and *pdi.sd* have the mean and standard deviation of the target pharmacodynamic index 
 #' (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.  
+#' 
+#' There are several attributes for this object that reflect the conditions used
+#' to create it. Access the values of these attributes with `attr(x, which)` 
+#' as detailed in [base::attr()].
+#' 
+#' * *simlabels* Values for the `simlabels` 
+#' * *simTarg* Values for the `targets` 
+#' * *success* Value for `success` threshold
+#' * *type* Value for `target.type`
+#' 
 #' @author Michael Neely and Jan Strojil
-#' @seealso [plot.PM_pta], [SIMparse]
+#' @seealso [plot.PM_pta], [PM_sim]
 #' @examples
-#' \dontrun{pta1 <- simEx$pta(
+#' \dontrun{
+#' pta1 <- simEx$pta(
 #' simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
 #' targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
 #' success = 0.6, start = 120, end = 144
@@ -152,9 +166,16 @@ makePTA <- function(simdata, simlabels, targets, target.type, success, outeq = 1
     
     ########### new PTA calculation ##################  
     #need to get it into a list of PMsim objects
-    if (dataType==0 || dataType==1) { #single PM_sim/PMsim object
+    if (dataType==0) { #PM_sim object
+      if(inherits(simdata$data, "PM_simlist")){ #multiple sims
+        simdata <- simdata$data
+      } else {  #just one sim
+        simmdata <- list(simdata$data)
+      }
+    }
+    
+    if (dataType==1) { #PMsim object
       simdata <- list(simdata)
-      #class(simdata) <- c("PMsim", "list")
     }
     
     if(dataType == 2){ #PM_simlist
@@ -386,7 +407,7 @@ makePTA <- function(simdata, simlabels, targets, target.type, success, outeq = 1
 
     resultDF <- results %>%  
       as.tbl_cube(met_name="pdi") %>%
-      as_tibble() %>%
+      dplyr::as_tibble() %>%
       select(.data$simnum,.data$id,.data$target,.data$pdi)
     
 

@@ -16,11 +16,8 @@
 #' 
 build_model <- function(...) {
   
-  require(shiny)
-  require(Pmetrics)
-  require(tidyverse)
-  require(shinythemes)
-  
+  requireNamespace("shiny")
+
   obj <- list(...)
   data_arg <- purrr::detect(obj, \(x) inherits(x, "PM_data"))
   model_arg <- purrr::detect(obj, \(x) inherits(x, "PM_model"))
@@ -391,7 +388,7 @@ build_model <- function(...) {
       #extract secondary variables
       extract_sec <- reactive({
         if(input$secVar != ""){
-          map(input$secVar,function(x){
+          purrr::map(input$secVar,function(x){
             eqn <- parse(text = x)
             dplyr::case_when(
               class(eqn[[1]]) == "=" ~ deparse(eqn[[1]][[2]]),
@@ -488,40 +485,42 @@ build_model <- function(...) {
         this_filter <- mods
         if(!is.null(input$mod_route) ){
           this_filter <- this_filter %>%
-            filter(map_lgl(route, ~find_x_in_y(input$mod_route, .x)))
+            dplyr::filter(purrr::map_lgl(route, ~find_x_in_y(input$mod_route, .x)))
         }
         if(!is.na(input$mod_ncomp)){
           this_filter <- this_filter %>%
-            filter(map_lgl(ncomp, ~input$mod_ncomp == .x))
+            dplyr::filter(purrr::map_lgl(ncomp, ~input$mod_ncomp == .x))
         }
         if(!is.null(input$mod_elim) && input$mod_elim != ""){
           this_filter <- this_filter %>%
-            filter(map_lgl(elim, ~find_x_in_y(input$mod_elim, .x)))
+            dplyr::filter(purrr::map_lgl(elim, ~find_x_in_y(input$mod_elim, .x)))
           
         }
         if(length(input$mod_kecl)>0){
           if(input$mod_kecl == "Rate constants"){key <- "K" } else {key <- "CL"}
           this_filter <- this_filter %>%
-            filter(par == key)
+            dplyr::filter(par == key)
           
         }
         if(input$mod_alg){
           this_filter <- this_filter %>%
-            filter(algebraic != "")
+            dplyr::filter(algebraic != "")
         }
         
         #if search box changes, execute this
         if(input$searchme != ""){
           #browser()
-          terms <- stringr::str_split(input$searchme, ",|;|\\s+") %>% unlist() %>% stringi::stri_remove_empty()
+          # terms <- stringr::str_split(input$searchme, ",|;|\\s+") %>% unlist() %>% stringi::stri_remove_empty()
+          terms <- stringr::str_split(input$searchme, ",|;|\\s+") %>% unlist()
+          terms <- terms[nzchar(terms)]
           this_filter <- this_filter %>%
-            filter(map_lgl(name, ~find_x_in_y(terms, .x)))
+            dplyr::filter(purrr::map_lgl(name, ~find_x_in_y(terms, .x)))
           
         }
         
         #update the global filter results
         if(nrow(this_filter)==0){
-          this_filter <- tibble(name = "None")
+          this_filter <- dplyr::tibble(name = "None")
         }
         mods_filter(this_filter)
         
@@ -685,7 +684,7 @@ build_model <- function(...) {
       
       #save primary values
       observeEvent(npar(), {
-        map(1:npar(),
+        purrr::map(1:npar(),
             ~{
               if(exist_obj(input[[paste0("var_name_",.x)]])) store[[paste0("var_name_",.x)]] <- input[[paste0("var_name_",.x)]]
               if(exist_obj(input[[paste0("var_a_",.x)]])) store[[paste0("var_a_",.x)]] <- input[[paste0("var_a_",.x)]]
@@ -798,7 +797,7 @@ build_model <- function(...) {
         if(nini > 0){
           updateTextAreaInput(
             inputId = "iniCond",
-            value = map(1:nini,
+            value = purrr::map(1:nini,
                         ~paste0("X[",.x,"] = ",input$special_ini[.x])) %>%
               unlist() %>% paste(collapse = "\n")
             
@@ -824,7 +823,7 @@ build_model <- function(...) {
         if(nfa > 0){
           updateTextAreaInput(
             inputId = "FA",
-            value = map(1:nfa,
+            value = purrr::map(1:nfa,
                         ~paste0("FA[",.x,"] = ",input$special_fa[.x])) %>%
               unlist() %>% paste(collapse = "\n")
             
@@ -850,7 +849,7 @@ build_model <- function(...) {
         if(nlag > 0){
           updateTextAreaInput(
             inputId = "lagTime",
-            value = map(1:nlag,
+            value = purrr::map(1:nlag,
                         ~paste0("LAG[",.x,"] = ",input$special_lag[.x])) %>%
               unlist() %>% paste(collapse = "\n")
             
@@ -881,7 +880,7 @@ build_model <- function(...) {
       
       ##save outputs values
       observeEvent(numeqt(), {
-        map(1:numeqt(),
+        purrr::map(1:numeqt(),
             ~{
               if(exist_obj(input[[paste0("out_eqn_",.x)]])) store[[paste0("out_eqn_",.x)]] <- input[[paste0("out_eqn_",.x)]]
               if(exist_obj(input[[paste0("out_assay_err_",.x)]])) store[[paste0("out_assay_err_",.x)]] <- input[[paste0("out_assay_err_",.x)]]
@@ -1182,7 +1181,7 @@ build_model <- function(...) {
             #parse
             
             purrr::map(~tryCatch(eval(parse(text = .x)), error = function(e) "Error")) %>%
-            rlang::set_names(blockNames) %>%
+            purrr::set_names(blockNames) %>%
             #remove empty
             purrr::compact()
           
@@ -1209,14 +1208,14 @@ build_model <- function(...) {
       purrr::map(blockNames, function(x){
         output[[paste0("model_diagram_",x)]] <- renderPlot({
           mod <- list(model_list = list(eqn = stringr::str_split(input$modEq, "\n") %>% unlist(),
-                                        out = rlang::set_names(paste0("Y",1:numeqt())) %>% map2(1:numeqt(), ~list(val = input[[paste0("out_eqn_",.y)]]))))
+                                        out = purrr::set_names(paste0("Y",1:numeqt())) %>% map2(1:numeqt(), ~list(val = input[[paste0("out_eqn_",.y)]]))))
           class(mod) <- "PM_model"
           #browser()
           tryCatch(plot(mod),
                    error = function(e) {
                      ggplot2::ggplot(data = data.frame(x = c(0,1), y = c(0,1)),
                                      aes(x, y)) +
-                       annotate("label", x = 0.5, y = 0.5, label = "Model building in progress...") +
+                       ggplot2::annotate("label", x = 0.5, y = 0.5, label = "Model building in progress...") +
                        ggraph::theme_graph()
                    }
           )
@@ -1263,7 +1262,7 @@ build_model <- function(...) {
       
       # save the model
       observe({
-        map(blockNames,
+        purrr::map(blockNames,
             ~{
               observeEvent(
                 input[[paste0("save_model_list_",.x)]],
@@ -1304,7 +1303,7 @@ build_model <- function(...) {
       
       # copy the model
       observe({
-        map(blockNames,
+        purrr::map(blockNames,
             ~{
               observeEvent(
                 input[[paste0("copy_model_list_",.x)]],

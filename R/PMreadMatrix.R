@@ -61,9 +61,9 @@ PMreadMatrix <- function(file,
   args <- modifyList(args1, args2)
 
   if(quiet){
-    data <- suppressWarnings(rlang::exec(readr::read_delim, !!!args))
+    data <- suppressWarnings(purrr::exec(readr::read_delim, !!!args))
   } else {
-    data <- rlang::exec(readr::read_delim, !!!args)
+    data <- purrr::exec(readr::read_delim, !!!args)
   }
   
   #remove commented headers and lines

@@ -1,8 +1,14 @@
-#' Plots PM_pta objects
-#'
-#' This function will plot the percent target attainment for objects made with the [makePTA] function.
-#' 
 #' @title Plot PM_pta Percent Target Attainment objects
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
+#' This function will plot the percent target attainment for associated with
+#' simulations.
+#' 
+#' @details
+#' [PM_pta] objects are made with the `$pta` method for [PM_sim]  or
+#' with `PM_pta$new()`. Under the hood, either method uses the [makePTA] function.
+#' 
 #' @method plot PM_pta
 #' @param x The name of an *PM_pta* data object read by [makePTA]
 #' @param include `r template("include")`
@@ -320,14 +326,15 @@ plot.PM_pta <- function(x,
   
 }
 
+#' @title Plot PMpta Percent Target Attainment objects
+#' @description
 #' `r lifecycle::badge('superseded')`
-#' 
-#' Plots PMpta objects
 #' 
 #' This function will plot the percent target attainment for objects made with the 
 #' \code{\link{makePTA}} function. It is largely now a legacy plotting function, 
-#' with a variety of options. It has been superseded by [plot.PM_pta].
-#'
+#' superseded by [plot.PM_pta].
+#' 
+#' @details
 #' For the legend, defaults that are different that the standard are:
 #' \itemize{
 #'   \item x Default \dQuote{topright}
@@ -341,7 +348,6 @@ plot.PM_pta <- function(x,
 #'   \item bg Default \dQuote{white}
 #' }
 #' 
-#' @title Plot PMpta Percent Target Attainment objects
 #' @method plot PMpta
 #' @param x The name of an \emph{PMpta} data object read by \code{\link{makePTA}}
 #' @param include A vector of simulations (regimens) to include in the plot, e.g. c(1,3)

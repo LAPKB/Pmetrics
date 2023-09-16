@@ -1,6 +1,8 @@
 ---
 title: "Probability of Target Attainment"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    css: style.css
 vignette: >
   %\VignetteIndexEntry{Probability of Target Attainment}
   %\VignetteEngine{knitr::rmarkdown}
@@ -58,7 +60,7 @@ knitr::include_graphics("images/pta2.png")
 
 Pmetrics allows you to create a PTA in two ways.
 
-* Use the `$pta()` method attached to `PM_sim()` and `PM_simlist()` objects.
+* Use the `$pta()` method attached to `PM_sim()` objects.
 * Use `PM_pta$new()`.
 
 The only difference between these two is that with the first, you do not have to supply the name of your simulation object because you are operating upon it already. 
@@ -92,7 +94,7 @@ pta2 <- simEx$pta(simlabels = simlabels,
 
 **Some things to point out...**
 
-We'll say again that you must supply simulation data, which has been previously generated. If you use the `PM_sim$pta()` method, the simulation data are embedded in the object. If you use `PM_pta$new()`, you have to supply the name of a `PM_simlist()` object yourself.
+We'll say again that you must supply simulation data, which has been previously generated. If you use the `PM_sim$pta()` method, the simulation data are embedded in the object. If you use `PM_pta$new()`, you have to supply the name of a `PM_sim` object or a previously saved .rds file yourself.
 
 Details of key arguments follow.
 
@@ -116,7 +118,7 @@ The created object `pta1` is a `PM_pta()` object, which has two data fields:
 It also has several methods:
 
 * **clone()** to make a copy.
-* **save()** and **load()** to save/load as an .rds file.
+* **save()** to save as an .rds file. Load a previously saved file with `PM_pta$new()` and supply the filename as the argument.
 * **plot()** to call `plot.PM_pta()`.
 * **summary()** to call `summary.PMpta()`
 

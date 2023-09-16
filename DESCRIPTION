@@ -4,6 +4,7 @@ Title: Pmetrics for Population Modeling and Simulation
 Type: Package
 LazyLoad: yes
 LazyData: yes
+LazyDataCompression: bzip2
 Roxygen: list(markdown = TRUE)
 Description: Parametric and non-parametric
     pharmacometric modeling and simulation software package.
@@ -32,9 +33,9 @@ BugReports: https://github.com/LAPKB/Pmetrics/issues
 Depends: 
     R (>= 4.0.0)
 Imports:
-    askpass,
-    base64enc,
     chron,
+    clipr,
+    crayon,
     cubelyr,
     data.table,
     doParallel,
@@ -42,51 +43,44 @@ Imports:
     foreach,
     ggplot2,
     ggraph,
+    htmlwidgets,
     httr,
     jsonlite,
+    lifecycle,
+    lubridate,
+    magrittr,
     Matrix,
+    matrixStats,
     mclust,
-    methods,
+    mvtnorm,
+    npde,
     openxlsx,
+    pander,
     parallel,
+    plotly,
     purrr,
-    gridExtra,
-    rlang,
+    R6,
+    RColorBrewer,
+    RcppTOML,
+    readr,
     shiny,
     shinythemes,
     stats,
     stringr,
-    tibble,
+    tidygraph,
     tidyr,
-    tidyselect,
-    utils,
-    plotly,
-    readr,
     trelliscopejs,
-    npde,
-    lubridate,
-    mvtnorm,
-    R6,
-    magrittr,
-    pander,
-    rmarkdown,
-    knitr,
-    pandoc,
-    RcppTOML,
-    matrixStats,
-    lifecycle,
-    RColorBrewer,
-    clipr,
-    crayon,
+    utils
+Suggests:
+    askpass,
+    base64enc,
     curl,
     devtools,
-    htmlwidgets,
+    knitr,
+    pandoc,
     progress,
     reticulate,
-    stringi,
-    tidygraph,
-    vctrs
-Suggests:
+    rmarkdown,
     testthat
 RoxygenNote: 7.2.3
 Encoding: UTF-8

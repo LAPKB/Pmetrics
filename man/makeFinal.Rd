@@ -80,6 +80,7 @@ with shrinkage to assess the information content of the data.
 A plot method exists in \code{\link{plot}} for \emph{PMfinal} objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Extracts final cycle information from NPAG or IT2B run.
 }
 \details{
