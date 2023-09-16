@@ -3,48 +3,21 @@
 \name{PM_result}
 \alias{PM_result}
 \title{Results of a Pmetrics run}
-\arguments{
-\item{file_name}{The name of the .Rdata file to load. Default is "PMout.Rdata".}
-}
-\value{
-A \link{PM_result} object
-}
 \description{
-If the \verb{$save} method has previously been invoked on a \link{PM_result} object that
-was changed, for  example by using the \verb{$validate} method, this function
-will load those results. It is simply an alias for \link{PM_load}.
-}
-\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 This object contains all of the results after a Pmetrics runs. It is created
 by using the \link{PM_load} function.
-
+}
+\details{
 After a run completes, results are stored on your hard drive. They are loaded
 back into R with \link{PM_load} to create the \link{PM_result} object, which contains both
 the results and functions to analyze or plot the result.
-
-Creation of new \code{PM_result} objects is via \link{PM_load}.
-
-See \link{makeNCA}.
-
-\code{PM_result} objects contain a \code{save} method which invokes \link{saveRDS} to write
-the object to the hard drive as an .rds file. This is the corresponding load
-function.
-
-The saved object is an .Rdata file. When loaded, it should be assigned to an R
-object, e.g. \code{run2 <- PM_result$load("filename")}. An equivalent statment would
-be \code{run2 <- PM_load(file = "filename")}.
-}
-\examples{
-
-## ------------------------------------------------
-## Method `PM_result$load`
-## ------------------------------------------------
-
-\dontrun{newRes <- PM_result$load("PMresult.rds")}
 }
 \author{
 Michael Neely, Julian Otalvaro
 }
+\keyword{internal}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -103,18 +76,23 @@ new validation results.}
 \subsection{Method \code{new()}}{
 Create new object populated with data from previous run
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$new(out, quiet = T)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$new(out, quiet = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{out}}{The parsed output from \link{PM_load}.}
+\item{\code{out}}{The parsed output from \link{PM_load}, which is
+automatically generated. This is not a user-modifiable.}
 
 \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+Creation of new \code{PM_result} objects is via \link{PM_load}.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-plot"></a>}}
@@ -189,6 +167,10 @@ Perform non-compartmental analysis
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+See \link{makeNCA}.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-sim"></a>}}
@@ -214,15 +196,6 @@ by running \link{SIMparse} at the end of the simulation.
 \if{latex}{\out{\hypertarget{method-PM_result-save}{}}}
 \subsection{Method \code{save()}}{
 Save the current PM_result object to an .Rdata file.
-This is useful if you have updated the result in some way, for example you
-have run the \verb{$make_valid} method on the \code{PM_result} object, which returns
-an internal simulation based validation as a new \code{valid} field. To save this
-validation, use this \verb{$save} method. Note that unless a \code{file} name is provided,
-the changes will overwrite the
-previous run results, although unchanged items will be preserved. This is the
-usual workflow. However, a custom file name may be useful to share the run
-results with someone. The files
-can be loaded again with \link{PM_load}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_result$save(run, file)}\if{html}{\out{</div>}}
 }
@@ -239,6 +212,21 @@ subfolder of the "1" folder.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+This is useful if you have updated the result in some way, for example you
+have run the \verb{$make_valid} method on the \code{PM_result} object, which returns
+an internal simulation based validation as a new \code{valid} field. To save this
+validation, use this \verb{$save} method. Note that unless a \code{file} name is provided,
+the changes will overwrite the
+previous run results, although unchanged items will be preserved. This is the
+usual workflow. However, a custom file name may be useful to share the run
+results with someone.
+
+The saved object is an .Rdata file. When loaded, it should be assigned to an R
+object, e.g. \code{run2 <- PM_result$new("filename")}. An equivalent statement would
+be \code{run2 <- PM_load(file = "filename")}.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-validate"></a>}}
@@ -296,30 +284,21 @@ Calculate optimal sample times from result and template data file.
 \if{html}{\out{<a id="method-PM_result-load"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-load}{}}}
 \subsection{Method \code{load()}}{
-This function loads an rds file created using the \verb{$save} method on a
-\code{PM_result} object.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+Deprecated method to load prior results saved with the \verb{$save} method.
+Replaced by \link{PM_load}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$load(file_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$load(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file_name}}{Name of the file to be read, the default is "PMresult.rds".}
+\item{\code{...}}{Not used.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A \code{PM_result} object.
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{newRes <- PM_result$load("PMresult.rds")}
-}
-\if{html}{\out{</div>}}
-
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-clone"></a>}}
