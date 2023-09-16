@@ -18,8 +18,6 @@ knitr::opts_chunk$set(
 
 ```{r setup, echo=F, message=F}
 library(Pmetrics)
-library(tidyverse)
-library(plotly)
 ```
 
 ## Introduction
@@ -134,11 +132,10 @@ A full example data file is below, with details following.
 
 ***POPDATA DEC\_11***
 ```{r echo=F, results='asis'}
-library(knitr)
 tab <- read.csv("Data/mdata.csv")
 names(tab)[1] <- "#ID"
 tab$OUT <- as.character(tab$OUT)
-kable(tab)
+knitr::kable(tab)
 ```
 
 * ***POPDATA DEC\_11*** This is the fixed header for the file and must be
@@ -297,7 +294,6 @@ crash. Running `PMcheck()` afterwards is a good idea.
 ## Summary of R6 and Legacy Data Differences
 
 ```{r echo=F, results='asis'}
-library(knitr)
 tab <- read.csv("Data/RLcomp_data.csv")
-kable(tab)
+knitr::kable(tab)
 ```
