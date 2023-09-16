@@ -133,10 +133,12 @@ the .csv input file is converted to these text files, one file per subject.
 }
 }
 \description{
-Runs NPAG
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
+\code{NPrun} will execute an NPAG run.
 }
 \details{
-\code{NPrun} will execute an NPAG run.
+This is largely superseded by the \verb{$run} method for \link{PM_fit} objects.
 
 If all function arguments are default, the simplest execution of this command is
 \code{NPrun()}.  This will result in generation of a batch file.  On Unix (Mac) systems

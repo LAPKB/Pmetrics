@@ -113,14 +113,15 @@ out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.}
 Plots the object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 Plot PMcov objects
 }
 \details{
-This method will plot any two columns, specified using a formula, of a \emph{PMcov} object,
+This method is largely superseded by \link{plot.PM_cov}. It will plot any two columns, specified using a formula, of a \emph{PMcov} object,
 which contains covariate and Bayesian posterior parameter information
 for each subject.  \emph{PMcov} objects can be
 accessed as the \verb{$data} object within the \verb{$cov} field of a \link{PM_result} object, e.g.
-\code{PM_result$cov$data}.  It is largely now a legacy plotting function, with a variety of options.
+\code{PM_result$cov$data}.
 Specifying any two variables that do not include time will result in a scatter plot with optional regression and reference lines.  If
 time is included as the x variable, the y variable will be plotted vs. time, aggregated by subject.  This can be useful to see time varying parameters,
 although a formula within formula approach may be required, e.g. plot(cov.1,I(cl_0*wt**0.75)~time) in order to see the change in cl over time according to

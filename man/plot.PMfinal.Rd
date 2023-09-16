@@ -120,6 +120,8 @@ out=list("eps") will generate a 7x7 inch (default) graphic.}
 Plots the object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
 Plot objects made by \link{makeFinal}.
 }
 \details{

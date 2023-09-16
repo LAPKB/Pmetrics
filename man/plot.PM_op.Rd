@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotPMop.R
 \name{plot.PM_op}
 \alias{plot.PM_op}
-\title{Plot PM_op objects}
+\title{Plot Pmetrics Observed vs. Predicted Objects}
 \usage{
 \method{plot}{PM_op}(
   x,
@@ -150,7 +150,8 @@ Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black"
 Plots the object.
 }
 \description{
-Plot Pmetrics Observed vs. Predicted Objects
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Plot PM_op objects
 }
 \details{
 Generates a plot of Observed vs. Predicted observations. The default

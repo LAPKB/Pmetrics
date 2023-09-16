@@ -29,6 +29,7 @@ in \code{\link{NPrun}}.}
 Generates an HTML-report in the current working directory.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Generates a report from a specified Rmd template
 }
 \seealso{

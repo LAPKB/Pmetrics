@@ -44,6 +44,8 @@ Plot \code{p} will be exported to \code{file} with format determined by the
 extension for \code{file}.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Wrapper around \code{\link[plotly:save_image]{plotly::save_image()}}.
 }
 \details{

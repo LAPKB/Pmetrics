@@ -39,6 +39,7 @@ optimal time}
 Plots the object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Plot PMdopt objects
 }
 \details{

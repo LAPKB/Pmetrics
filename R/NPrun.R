@@ -1,7 +1,11 @@
-#' Runs NPAG
-#'
+#' @title Execute an NPAG run.
+#' @description
+#' `r lifecycle::badge("superseded")`
+#' 
 #' \code{NPrun} will execute an NPAG run.
-#'
+#' @details
+#' This is largely superseded by the `$run` method for [PM_fit] objects. 
+#' 
 #' If all function arguments are default, the simplest execution of this command is
 #' \code{NPrun()}.  This will result in generation of a batch file.  On Unix (Mac) systems
 #' will be launched automatically in a terminal window.  On Windows systems, the user
@@ -9,7 +13,6 @@
 #' in a command prompt (DOS-like) window.  In either case, NPAG will run independently of R
 #' so that R can be used for other purposes if desired.
 #'
-#' @title Execute an NPAG run.
 #' @param model Name of a suitable model file template in the working directory or
 #' an existing (previous) run number corresponding to a folder in the current working directory that used the same model file as will be used in the current run.
 #' If this is supplied, then the model file will be copied into the current

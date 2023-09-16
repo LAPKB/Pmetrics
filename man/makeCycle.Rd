@@ -25,6 +25,7 @@ at each cycle,  normalized to initial standard deviation}
 A plot method exists in \code{\link{plot}} for \emph{PMcycle} objects.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Parses the cycle information from an NPAG or an IT2B object.
 }
 \details{

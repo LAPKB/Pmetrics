@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotPMop.R
 \name{plot.PMop}
 \alias{plot.PMop}
-\title{Plot PMop objects}
+\title{Plot Pmetrics Observed vs. Predicted Objects}
 \usage{
 \method{plot}{PMop}(
   x,
@@ -126,12 +126,14 @@ out=list(\dQuote{eps}) will generate a 7x7 inch (default) graphic.}
 Plots the object.
 }
 \description{
-Plot Pmetrics Observed vs. Predicted Objects
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+Plot PM_op objects
 }
 \details{
 This function is for \emph{PMop} objects which can be
 accessed as the \verb{$data} object within the \verb{$op} field of a \link{PM_result} object, e.g.
-\code{PM_result$op$data}.  It is largely now a legacy plotting function, with a variety of options.
+\code{PM_result$op$data}.  It is largely now a legacy plotting function,
+replaced by \link{plot.PM_op}.
 }
 \examples{
 plot(NPex$op$data)

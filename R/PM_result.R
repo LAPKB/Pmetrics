@@ -239,6 +239,7 @@ PM_result$load <- function(...) {
 #' @title Observed vs. predicted data
 #'
 #' @description
+#' `r lifecycle::badge("stable")`
 #' Contains observed vs. predicted data after a run
 #'
 #' @details
@@ -339,7 +340,9 @@ PM_op <- R6::R6Class(
 
 #' @title Wrapper function for summmary.PMop
 #'
-#' @description This redirects to summary.PMop for PM_op R6 objects
+#' @description 
+#' `r lifecycle::badge("stable")`
+#' This redirects to summary.PMop for PM_op R6 objects
 #'
 #' @details See [summary.PMop]. Alternative way to summarize is
 #' `PM_result$op$summary()`.
@@ -355,6 +358,7 @@ summary.PM_op <- function(object, ...) {
 #' @title Individual Bayesian posterior predictions at short intervals
 #'
 #' @description
+#' `r lifecycle::badge("stable")`
 #' Contains the Bayesian posterior predictions at short intervals
 #' specified as an argument to the $run method of [PM_fit]. Default is every 12 minutes.
 #'
@@ -421,6 +425,7 @@ PM_post <- R6::R6Class(
 #' @title Final Cycle Population Values
 #'
 #' @description 
+#' `r lifecycle::badge("stable")`
 #' Contains final cycle information from run.
 #'
 #' @details
@@ -555,6 +560,7 @@ PM_final <- R6::R6Class(
 #' @title Wrapper function for summmary.PMfinal
 #'
 #' @description 
+#' `r lifecycle::badge("stable")`
 #' This redirects to summary.PMfinal for PM_final R6 objects
 #'
 #' @details
@@ -573,6 +579,7 @@ summary.PM_final <- function(object, ...) {
 #' @title Pmetrics Run Cycle Information
 #'
 #' @description
+#' `r lifecycle::badge("stable")`
 #' Contains the cycle information after a run.
 #'
 #' @details
@@ -645,6 +652,7 @@ PM_cycle <- R6::R6Class(
 #' @title Population predictions at short intervals
 #'
 #' @description 
+#' `r lifecycle::badge("stable")`
 #' Contains the population predictions at short intervals
 #' specified as an argument to the run method of [PM_fit]. Default is every 12 minutes.
 #'
@@ -711,6 +719,7 @@ PM_pop <- R6::R6Class(
 #' @title Contains covariate data
 #'
 #' @description
+#' `r lifecycle::badge("stable")`
 #' Contains a data frame with subject-specific covariate data output
 #' from [makeCov]
 #'
@@ -782,6 +791,7 @@ PM_cov <- R6::R6Class(
 #' @title Wrapper function for summmary.PMcov
 #'
 #' @description 
+#' `r lifecycle::badge("stable")`
 #' This redirects to summary.PMcov for PM_final R6 objects
 #'
 #' @details

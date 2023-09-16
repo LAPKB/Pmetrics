@@ -56,6 +56,8 @@ a destination to the external sink. e.g., \code{implicit = data.frame(from = 2, 
 Plots the object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Plots a \link{PM_model} based on differential equations using network plots from tidygraph and ggraph packages.
 }
 \details{

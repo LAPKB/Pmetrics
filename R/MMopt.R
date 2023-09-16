@@ -1,12 +1,13 @@
+#' @title Compute MM-optimal Sample Times
+#' @description
+#' `r lifecycle::badge("stable")`
 #' Computes 1 to 4 MM-optimal sampling times.
-#'
+#' @details
 #' Based on the mulitple-model optimization algorithm.
 #' Bayard, David S., and Michael Neely. "Experiment Design for Nonparametric 
 #' Models Based on Minimizing Bayes Risk: Application to Voriconazole." 
 #' Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017): 
 #' 95–111. https://doi.org/10.1007/s10928-016-9498-5.
-#' 
-#' @title Compute MM-optimal Sample Times
 #' 
 #' @param poppar An object of class *PMfinal* (see [makeFinal])
 #' @param model Name of a suitable model file template in the working directory.
