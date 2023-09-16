@@ -5,6 +5,7 @@
 \title{Population predictions at short intervals}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Contains the population predictions at short intervals
 specified as an argument to the run method of \link{PM_fit}. Default is every 12 minutes.
 }

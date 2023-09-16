@@ -32,6 +32,8 @@ in \link{NPrun}.}
 An R6 \link{PM_result}.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Loads all the data from an \emph{NPAG} or \emph{IT2B} run.
 }
 \seealso{

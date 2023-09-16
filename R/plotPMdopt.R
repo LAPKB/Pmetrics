@@ -1,6 +1,7 @@
 #' @title Plot Pmetrics D-optimal Times
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Plot PMdopt objects
 #' @details
 #' This function will plot the output of the \code{\link{Dopt}} function.  A histogram is generated
@@ -24,7 +25,7 @@
 #' @author Michael Neely
 #' @seealso \code{\link{Dopt}}, \code{\link{summary.PMdopt}}
 #' @export
-#' @family PMplots
+
 
 plot.PMdopt <- function(x,col.mean="red",lwd.mean=4,ticksize.mean=0.1,xlab="Time",ylab="Probability",layout=c(1,1),...){
   .par <- par("mfrow") #save current layout

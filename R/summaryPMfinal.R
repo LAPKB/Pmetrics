@@ -1,6 +1,7 @@
 #' @title Summary Statistics for PMfinal Objects
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Generates summary statistics of final population model parameters.
 #' @details
 #' For NPAG runs, this function will generate weighted medians as central tendencies of the

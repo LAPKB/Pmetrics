@@ -1,5 +1,9 @@
+#' @title Add Jelliffe Creatinine Clearance
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Gets creatinine clearance as estimated by the Jelliffe equation.
-#'
+#' @details
 #' The equation depends on age, sex, weight, and serum creatinine.
 #' ESS = wt * (29.3 - (0.203 * age)) for males
 #' ESS = wt * (25.1 - (0.175 * age)) for females
@@ -8,8 +12,7 @@
 #' E = ESS_cor - 4 * wt * (Scr2 - Scr1) / (time2 - time1)
 #' CRCL = E / (14.4 * scrAve) in ml/min/1.73m^2
 #'
-#' @title Add Jelliffe Creatinine Clearance
-#' @param mdata A Pmetrics matrix data object
+#' @param mdata A [PM_data] data object
 #' @param idCol A character vector with the name
 #'  of the id column in \code{mdata}. The default is \dQuote{id}.
 #' @param wtCol A character vector with the name of the weight
@@ -28,6 +31,8 @@
 #' @export
 
 PMgetCRCL <- function(mdata,idCol="id",wtCol="wt",maleCol="male",ageCol="age",scrCol="scr",SI=F){
+  if(!inherits(mdata,"PM_data")) stop("Please supply a PM_data object.")
+  mdata <- mdata$data
   dataCols <- names(mdata)  #check to make sure names ok
   if(!all(c(idCol,wtCol,maleCol,ageCol,scrCol) %in% dataCols)){stop("Please provide column names for id, wt, male, age and scr\n")}
   if(SI) mdata[,scrCol] <- mdata[,scrCol]/88.4 #convert

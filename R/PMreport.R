@@ -1,9 +1,12 @@
+#' @title Summarize NPAG or IT2B Run
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Generates a summary of a Pmetrics NPAG or IT2B run
-#'
+#' @details
 #' Creates an HTML page and several files summarizing an NPAG or IT2B run.  This report is generated
 #' automatically at the end of a successful run.
 #'
-#' @title Summarize NPAG or IT2B Run
 #'
 #' @param wd The working directory containing the NP_RFxxxx.TXT or IT_RFxxxx.TXT file
 #' @param rdata The processed output of an IT2B or NPAG run, depending on local or server runs.

@@ -1,4 +1,12 @@
-#' This function will check a .csv file or a data frame containing a
+#' @title Check Pmetrics Inputs for Errors
+#' @description
+#' `r lifecycle::badge("superseded")`
+#' 
+#' This function is largely superseded as it is called automatically when
+#' data are initialized as a [PM_data] object. It can still be called
+#' independently of this route and will check for data and optionally model errors.
+#' @details
+#' It  will check a .csv file or a data frame containing a
 #' previously loaded .csv file (the output of [PMreadMatrix] for errors
 #' which would cause the analysis to fail.  If a model file is provided, and the data
 #' file has no errors, it will also check the model file for errors. Note that as of 
@@ -58,7 +66,6 @@
 #'  These are EVID, TIME, DUR, DOSE, ADDL, II, INPUT, OUT, OUTEQ, C0, C1, C2, and C3.  
 #'  Covariate columns are fixed separately (see above).
 #' 
-#' @title Check Pmetrics Inputs for Errors
 #' @param data The name of a Pmetrics .csv matrix file in the current working directory,
 #' the full path to one not in the current working directory, or a data.frame containing 
 #' the output of a previous [PMreadMatrix] command.

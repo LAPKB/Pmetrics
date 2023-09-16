@@ -1,14 +1,15 @@
-#' Print a Pmetrics NPC Object
-#'
-#' Print a Pmetrics NPC (Numerical Predictive Check) object, made by \code{plot.PMsim}.
-#'
 #' @title Print NPC
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
+#' Print a Pmetrics NPC (Numerical Predictive Check) object, made by [plot.PM_sim].
+#'
 #' @method print PMnpc
-#' @param x A PMnpc object made by \code{\link{plot.PMsim}}.
+#' @param x A PMnpc object made by [plot.PM_sim].
 #' @param \dots Other parameters which are not necessary.
 #' @return A printed object.
 #' @author Michael Neely
-#' @seealso \code{\link{plot.PMsim}}
+#' @seealso [plot.PM_sim]
 #' @export
 
 print.PMnpc <- function(x,...){

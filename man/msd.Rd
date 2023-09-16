@@ -18,6 +18,7 @@ controlled by the range.}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Define primary model parameter initial values as mean and standard
 deviation, which translate to a range. The mean serves as the midpoint
 of the range, with 3 standard deviations above and below the mean to define

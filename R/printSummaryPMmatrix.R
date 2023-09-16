@@ -1,14 +1,18 @@
-#' Print the summary of a Pmetrics PMmatrix object
+#' @title Summarize Covariates and Bayesian Posterior Parameter Values
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
+#' @details
+#' Print the summary of [PM_data] object.
 #'
 #' Summarize the raw data used for a Pmetrics run.
 #'
-#' @title Summarize Covariates and Bayesian Posterior Parameter Values
 #' @method print summary.PMmatrix
-#' @param x A summary.PMmatrix object made by \code{\link{summary.PMmatrix}} 
-#' @return A formatted printing of a \emph{summary.PMmatrix} object
+#' @param x An object made by [summary.PMmatrix], aliased by [summary.PM_data].
+#' @return A formatted printing of a [summary.PMmatrix] object
 #' @author Michael Neely
-#' @param \dots Other parameters which are not necessary.
-#' @seealso \code{\link{summary.PMmatrix}}
+#' @param ... Not used.
+#' @seealso [summary.PMmatrix], [summary.PM_data]
 #' @export
 
 print.summary.PMmatrix <- function(x,...){

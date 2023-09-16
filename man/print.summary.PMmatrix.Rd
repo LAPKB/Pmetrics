@@ -7,21 +7,23 @@
 \method{print}{summary.PMmatrix}(x, ...)
 }
 \arguments{
-\item{x}{A summary.PMmatrix object made by \code{\link{summary.PMmatrix}}}
+\item{x}{An object made by \link{summary.PMmatrix}, aliased by \link{summary.PM_data}.}
 
-\item{\dots}{Other parameters which are not necessary.}
+\item{...}{Not used.}
 }
 \value{
-A formatted printing of a \emph{summary.PMmatrix} object
+A formatted printing of a \link{summary.PMmatrix} object
 }
 \description{
-Print the summary of a Pmetrics PMmatrix object
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 }
 \details{
+Print the summary of \link{PM_data} object.
+
 Summarize the raw data used for a Pmetrics run.
 }
 \seealso{
-\code{\link{summary.PMmatrix}}
+\link{summary.PMmatrix}, \link{summary.PM_data}
 }
 \author{
 Michael Neely

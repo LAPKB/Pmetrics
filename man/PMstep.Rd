@@ -7,29 +7,32 @@
 PMstep(x, icen = "median", direction = "backward")
 }
 \arguments{
-\item{x}{A PMcov object loaded by \code{\link{PMload}}
-or made by \code{\link{makeCov}}.}
+\item{x}{A PMcov object which is the \verb{$data} field of a \link{PM_cov} object}
 
-\item{icen}{A character vector to summarize covariate values.  Default is \dQuote{median}, but can also be
-\dQuote{mean}.}
+\item{icen}{A character vector to summarize covariate values.  Default is "median", but can also be
+"mean".}
 
-\item{direction}{The direction for covariate elmination can be \dQuote{backward}, \dQuote{forward}, or \dQuote{both}.
-\emph{backward} is the default.}
+\item{direction}{The direction for covariate elmination can be "backward" (default), "forward", or "both".}
 }
 \value{
 A matrix with covariates in the rows and parameters in the columns.  Values for the matrix are the multi-variate P-values.
 A value of \code{NA} indicates that the variable was not retained in the final model.
 }
 \description{
-Perform a stepwise linear regression on all covariates and Bayesian posterior parameters
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
+This function is largely superseded as it is accessed through the \verb{$step} methods
+for \link{PM_result} and \link{PM_cov} objects. There is rarely a need to call it directly
+any longer.
 }
 \details{
-This function will perform stepwise linear regressions on a PMcov object loaded by \code{\link{PMload}},
-or made by \code{\link{makeCov}}.  Every covariate in the model will be tested in a stepwise linear regression for their relationships
+It will perform stepwise linear regressions on a \link{PM_cov} object or
+to maintain backwards compatibility on a \emph{PMcov} object made by \link{makeCov}.
+Every covariate in the model will be tested in a stepwise linear regression for their relationships
 to each parameter in the model.  Bayesian posterior parameters and individual covariates are used.
 }
 \seealso{
-\code{\link{step}}
+\code{\link[stats:step]{stats::step()}}
 }
 \author{
 Michael Neely

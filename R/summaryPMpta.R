@@ -1,8 +1,12 @@
-#' Summarize a Pmetrics Percent Target Attainment Object
-#'
-#' Summarize target statistics and success proportions in a *PMpta* object made by [makePTA].
-#'
 #' @title Summarize Percent Target Attainment
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
+#' Summarize a Pmetrics Percent Target Attainment Object
+#' @details
+#' Summarize target statistics and success proportions in a *PMpta* object made by [makePTA]
+#' and usually found in a [PM_pta] object.
+#'
 #' @method summary PMpta
 #' @param object A PMpta object made by [makePTA].
 #' @param ci Confidence interval for pharmacodynamic index reporting.  Default is 0.95.
@@ -18,7 +22,7 @@
 #' and *upperCI* are the lower limit, median, and upper limit of the confidence
 #' interval for the pdi whose width is specified by `ci`.}  
 #' @author Michael Neely
-#' @seealso [makePTA]
+#' @seealso [makePTA], [PM_pta]
 #' @export
 
 summary.PMpta <- function(object, ci=0.95, ...){

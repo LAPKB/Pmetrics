@@ -2,49 +2,19 @@
 % Please edit documentation in R/Deprecated.R
 \name{PMFortranConfig}
 \alias{PMFortranConfig}
-\alias{PMcheckMatrix}
-\alias{PMfixMatrix}
-\alias{NPload}
-\alias{ITload}
-\alias{NPreport}
-\alias{ITreport}
-\alias{PMdiag}
-\alias{PMreadDefaults}
-\alias{PMwriteDefaults}
-\alias{makeNPDE}
-\title{Deprecated functions.}
+\title{Configure Fortran}
 \usage{
 PMFortranConfig(...)
-
-PMcheckMatrix(...)
-
-PMfixMatrix(...)
-
-NPload(...)
-
-ITload(...)
-
-NPreport(...)
-
-ITreport(...)
-
-PMdiag(...)
-
-PMreadDefaults(...)
-
-PMwriteDefaults(...)
-
-makeNPDE(...)
 }
 \arguments{
 \item{...}{Not used}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
-}
-\details{
-These functions are deprecated in Pmetrics.
+
+Use setPMoptions() instead.
 }
 \author{
 Michael Neely
 }
+\keyword{internal}

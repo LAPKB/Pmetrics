@@ -1,7 +1,8 @@
+#' @title Print Pmetrics Multiple-Model Optimal Sampling Objects
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Print *MMopt* objects 
-#'
-#' Simulated observations are plotted on the y-axis vs. time on the x.axis.  
-#' Optimal sampling times are indicated as vertical lines.
 #' 
 #' @title Print Pmetrics Multiple-Model Optimal Sampling Objects
 #' @method print MMopt
@@ -11,7 +12,6 @@
 #' @author Michael Neely
 #' @seealso [MM_opt]
 #' @export
-
 
 print.MMopt <- function(x,...){
 

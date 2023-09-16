@@ -14,6 +14,8 @@ the current, e.g. \dQuote{0.21}.  Use \dQuote{all} for all versions.}
 The changelog for the requested version.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 See changelog for Pmetrics
 }
 \examples{

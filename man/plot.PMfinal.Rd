@@ -122,12 +122,13 @@ Plots the object.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 
-Plot objects made by \link{makeFinal}.
+Plot objects made by \link{makeFinal}. It is largely now a legacy plotting function,
+replaced by \link{plot.PM_final}.
 }
 \details{
 \emph{PMfinal} objects can be
 accessed as the \verb{$data} object within the \verb{$final} field of a \link{PM_result} object, e.g.
-\code{PM_result$final$data}.  It is largely now a legacy plotting function, with a variety of options.
+\code{PM_result$final$data}.
 
 If \code{formula} is omitted, this will generate a marginal plot for each parameter.
 For NPAG data, this will be a histogram of marginal values for each parameter and the associated probability

@@ -17,11 +17,13 @@ Does not have to be specified.}
 }
 \value{
 A new file will be created with the name equal to \code{prefix} and
-an extension of \dQuote{csv}.
+an extension of "csv".
 }
 \description{
-\code{PMwrk2csv} will convert old style, single drug working copy files into
-a single .csv matrix file.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
+Convert old-style, USC*PACK single drug working copy files into
+a \link{PM_data} object and write a .csv file to the current working directory.
 }
 \details{
 This function will determine if the working copy files are old and convert them.

@@ -179,10 +179,7 @@ Other PMplots:
 \code{\link{plot.PM_model}()},
 \code{\link{plot.PM_op}()},
 \code{\link{plot.PM_sim}()},
-\code{\link{plot.PM_valid}()},
-\code{\link{plot.PMcov}()},
-\code{\link{plot.PMcycle}()},
-\code{\link{plot.PMdopt}()}
+\code{\link{plot.PM_valid}()}
 }
 \author{
 Michael Neely

@@ -1,5 +1,12 @@
-#' Parses the output of the Pmetrics simulator
-#'
+#' @title Parse Pmetrics Simulator Output
+#' @description
+#' `r lifecycle::badge("superseded")`
+#' 
+#' Parses the output of the Pmetrics simulator. 
+#' This is largely superseded as it is automatically called by either of the simulation
+#' methods: `PM_result$sim()` or `PM_sim$new()`. There is rarely a need any longer to call this
+#' function directly.
+#' @details
 #' For \code{file} specification \dQuote{?} will be matched by just a single numeral or character; \dQuote{*} will be
 #' matched by any number of consecutive alphanumeric characters.  Examples include \code{file='simout1.txt,simout2.txt,simout3.txt'},
 #' \code{file='simout?.txt'} and \code{file='sim*.txt'}.All three will find the files simout1.txt,
@@ -10,7 +17,6 @@
 #' strange plots since not all profiles have the same observations. 
 #' For parallel execution, the function requires packages 'doParallel' and 'foreach'. If not installed, it will try to install, failing that it will run in serial mode. 
 #'
-#' @title Parse Pmetrics Simulator Output
 #' @param file An output file or files of the simulator in the current working directory, or the full
 #' pathname to the file.  To load and combine multiple outputs, specify files separated by commas
 #' or using wild cards.  See details. 
@@ -48,7 +54,7 @@
 #' For more than one file parsed, this will be the weighted averages for all simulations.}
 #' A plot method exists in \code{\link{plot.PMsim}} for \emph{PMsim} objects.
 #' @author Michael Neely
-#' @seealso \code{\link{SIMrun}}
+#' @seealso [PM_result], [PM_sim], [SIMrun]
 #' @export
 
 SIMparse <- function(file,include,exclude,combine=F,quiet=F, parallel){

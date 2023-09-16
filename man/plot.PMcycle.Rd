@@ -52,22 +52,7 @@ plot(NPex$cycle$data,omit=0)
 }
 \seealso{
 \link{makeCycle}, \link{plot}, \link{par}, \link{axis}
-
-Other PMplots: 
-\code{\link{plot.MMopt}()},
-\code{\link{plot.PM_cov}()},
-\code{\link{plot.PM_cycle}()},
-\code{\link{plot.PM_data}()},
-\code{\link{plot.PM_final}()},
-\code{\link{plot.PM_model}()},
-\code{\link{plot.PM_op}()},
-\code{\link{plot.PM_pta}()},
-\code{\link{plot.PM_sim}()},
-\code{\link{plot.PM_valid}()},
-\code{\link{plot.PMcov}()},
-\code{\link{plot.PMdopt}()}
 }
 \author{
 Michael Neely
 }
-\concept{PMplots}

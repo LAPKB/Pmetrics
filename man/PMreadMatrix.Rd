@@ -35,10 +35,15 @@ Note that this function converts the column headers in the
 \code{file} from upper to lowercase for convenient referencing in R.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
 Reads a Pmetrics .csv matrix input file into R.
+This function is largely superseded as the function is called automatically
+when data are intialized as a \link{PM_data} object with \code{PM_data$new()}. There
+is rarely need to call \code{PMreadMatrix()} directly any longer.
 }
 \details{
-As of Pmetrics version 2, the structure of a valid .csv file has relaxed.
+As of Pmetrics version 2, the structure of a valid .csv file relaxed.
 Minimal required columns are id, time, dose, and out. This function is now included
 as part of the \link{PM_data} R6 object to create new \code{PM_data} objects. Users should
 rarely have a need to call \code{PMreadMatrix} as a standalone function unless they

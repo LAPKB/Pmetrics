@@ -15,7 +15,7 @@ PMgetCRCL(
 )
 }
 \arguments{
-\item{mdata}{A Pmetrics matrix data object}
+\item{mdata}{A \link{PM_data} data object}
 
 \item{idCol}{A character vector with the name
 of the id column in \code{mdata}. The default is \dQuote{id}.}
@@ -40,6 +40,8 @@ A vector of length \code{nrow(mdata)} with Jelliffe CRCL values for every dose i
 for observation events in \code{mdata} are NA.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Gets creatinine clearance as estimated by the Jelliffe equation.
 }
 \details{

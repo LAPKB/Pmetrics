@@ -234,17 +234,24 @@ No value is returned, but simulated file(s) will be in the working
 directory.
 }
 \description{
-Generates randomly sampled sets of parameters from the \emph{#PRIMARY} block of
-a model according to a prior distribution and calculates outputs based upon
-a template data file.
+\code{lifecycle::badge("superseded")}
+
+This is largely superseded as it is automatically called by either of the simulation
+methods: \code{PM_result$sim()} or \code{PM_sim$new()}. There is rarely a need any longer to call this
+function directly.
 }
 \details{
-The Monte Carlo simulator in Pmetrics is a powerful tool for parametric or
+The Monte Carlo simulator in Pmetrics generates randomly sampled sets of
+parameters from the \emph{#PRIMARY} block of
+a model according to a prior distribution and calculates outputs based upon
+a template data file. It is a powerful tool for parametric or
 semi-parametric sampling.  There are three ways to execute the simulator.
 \itemize{
 \item \strong{PM_result$sim}
 \item \strong{PM_sim$run}
 \item \strong{SIMrun}
+}
+
 The first two are the preferred methods in R6 Pmetrics. They return fully
 parsed simulator output as \link{PM_sim} objects in R. The third method is for
 legacy Pmetrics or when a user-specified prior is necessary, i.e. not from
@@ -252,7 +259,6 @@ a prior NPAG or IT2B run. In this case, the output of the simulation is one
 or more files on your hard drive, which must be read into R using  \link{SIMparse}.
 \link{SIMparse} is not necessary with the first two methods, as R includes a call
 to that function at the end of the simulation.
-}
 
 Via the first two methods of calling SIMrun, NPAG or IT2B final objects
 can easily be used as

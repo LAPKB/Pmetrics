@@ -1,8 +1,12 @@
 #' Summarize a Pmetrics Observed vs. Predicted x
 #'
-#' Summarize observations, predictions and errors in a PMop x made by \code{\link{makeOP}}.
-#'
 #' @title Summarize Observations and Predictions
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
+#' Summarize observations, predictions and errors in a PMop object made by [makeOP],
+#' usually in the `$data` field of a [PM_op] object.
+#'
 #' @method summary PMop
 #' @param object A PMop object made by [makeOP].
 #' @param digits Integer, used for number of digits to print.
@@ -21,7 +25,7 @@
 #' squared prediction error, the bias-adjusted mean squared prediction error, and the bias-
 #' adjusted mean weighted squared prediction error (imprecision).  
 #' @author Michael Neely
-#' @seealso \code{\link{makeOP}}
+#' @seealso [makeOP], [PM_op]
 #' @export
 
 summary.PMop <- function(object, digits = max(3, getOption("digits")-3),

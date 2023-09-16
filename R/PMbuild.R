@@ -1,7 +1,11 @@
-#' \code{PMBuild} will ensure all dependent packages are installed and compile
-#' Fortran source code for permanent Pmetrics modules
-#'
 #' @title Build Pmetrics
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
+#' Compile Fortran or Rust source code for permanent Pmetrics modules.
+#' @details 
+#' Choice of back end language specified as option in [setPMoptions].
+#'
 #' @param skipRegistration Don't register. Default is `FALSE`.
 #' @param autoyes Automatically install without asking. Default is `FALSE`.
 #' @param rebuild Default is `FALSE`.

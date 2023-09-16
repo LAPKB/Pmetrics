@@ -3,6 +3,7 @@
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' `PM_fit` objects comprise a `PM_data` and `PM_model` object ready for analysis
 #'
 #' @details

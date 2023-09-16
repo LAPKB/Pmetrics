@@ -8,28 +8,29 @@ ss.PK(n, mean, sd, precision, ci = 0.95)
 }
 \arguments{
 \item{n}{Sample size.  This value can be missing if sample size is desired, or
-specified to calculate the maximum sd for given \code{mean}, \code{precision}, and \code{ci}.}
+specified to calculate the maximum sd for given \code{mean}, \code{precision}, and `ci.}
 
 \item{mean}{Mean prameter value.  User value is mandatory.}
 
-\item{sd}{Standard deviation of parameter values.  If present, the function will return \code{n}.
-If missing and \code{n} is specified, will return the maximum sd as detailed above.}
+\item{sd}{Standard deviation of parameter values.  If present, the function will return \verb{n. If missing and }n` is specified, will return the maximum sd as detailed above.}
 
-\item{precision}{Desired width of the standard error of the mean (SEM).  Default is 0.2, i.e. 20\\% or
-10\\% below and 10\\% above the mean.  If missing, and \code{mean}, \code{sd} and \code{n} are specified,
-\code{precision} will be calculated.}
+\item{precision}{Desired width of the standard error of the mean (SEM).  Default is 0.2, i.e. 20\% or
+10\% below and 10\% above the mean.  If missing, and \code{mean}, \code{sd} and \code{n} are specified,
+\code{precision}  will be calculated.}
 
 \item{ci}{Confidence for the desired width of the SEM.  Default is 0.95.}
 }
 \value{
-The missing argument: \code{n}, \code{sd} or \code{precision}.
+The missing argument: \code{n}, \code{sd} or \code{precision.}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 This function calculates sample size based on a desired standard error of the mean,
 to a specified confidence, for a given mean and standard deviation.
 }
 \details{
-The formula is n = qnorm((1+ci)/2)\strong{2 * sd}2 / (precision*mean)**2
+The formula is \code{n = qnorm((1+ci)/2)**2 * sd**2 / (precision*mean)**2}
 }
 \author{
 Michael Neely

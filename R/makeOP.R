@@ -1,6 +1,7 @@
 #' @title Generated observed vs. predicted data
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Generates an observed vs. predicted data.frame from an \emph{NPAG} or \emph{IT2B} object
 #' @details
 #' \code{makeOP} will parse the output of \code{\link{NPparse}} or \code{\link{ITparse}} to generate a

@@ -15,5 +15,6 @@ missing, use values in model. If \code{TRUE}, use values in model regardless.}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Specify the coefficients for the assay error polynomial.
 }

@@ -1,6 +1,7 @@
 #' @title Individual Bayesian posterior predictions at short intervals
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Returns the Bayesian posterior predictions at short intervals specified during the NPAG run,
 #' up to 12 minutes.  These results are contained separately from the main output of NPAG, in the
 #' PRTBxxxx file.

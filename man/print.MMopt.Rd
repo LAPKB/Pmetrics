@@ -15,11 +15,9 @@
 Prints the optimal sampling times and Bayes Risk.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Print \emph{MMopt} objects
-}
-\details{
-Simulated observations are plotted on the y-axis vs. time on the x.axis.
-Optimal sampling times are indicated as vertical lines.
 }
 \seealso{
 \link{MM_opt}

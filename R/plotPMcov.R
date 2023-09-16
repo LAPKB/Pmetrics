@@ -1,6 +1,7 @@
 #' @title Plot Pmetrics Covariate objects
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Plot PMcov objects
 #' @details
 #' This method will plot any two columns, specified using a formula, of a PMcov object, which contains covariate and Bayesian posterior parameter information
@@ -309,9 +310,10 @@ plot.PM_cov <- function(x,
 #' @title Plot Pmetrics Covariate objects
 #' @description
 #' `r lifecycle::badge("superseded")`
-#' Plot PMcov objects
+#' 
+#' This method is largely superseded by [plot.PM_cov]. 
 #' @details
-#' This method is largely superseded by [plot.PM_cov]. It will plot any two columns, specified using a formula, of a *PMcov* object, 
+#' It will plot any two columns, specified using a formula, of a *PMcov* object, 
 #' which contains covariate and Bayesian posterior parameter information
 #' for each subject.  *PMcov* objects can be
 #' accessed as the `$data` object within the `$cov` field of a [PM_result] object, e.g.
@@ -373,7 +375,7 @@ plot.PM_cov <- function(x,
 #' @export
 #' @examples
 #' plot(NPex$cov$data,V~wt)
-#' @family PMplots
+
 
 
 
