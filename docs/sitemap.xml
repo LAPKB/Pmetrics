@@ -58,7 +58,13 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/ITex.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/ITload.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/ITparse.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/ITreport.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/ITrun.html</loc>
@@ -76,7 +82,13 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/NPex_val.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/NPload.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/NPparse.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/NPreport.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/NPrun.html</loc>
@@ -148,10 +160,19 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/PMcheck.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/PMcheckMatrix.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PMcode.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PMcompare.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/PMdiag.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/PMfixMatrix.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PMgetCRCL.html</loc>
@@ -181,6 +202,9 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/PMpatch.html</loc>
   </url>
   <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/PMreadDefaults.html</loc>
+  </url>
+  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PMreadMatrix.html</loc>
   </url>
   <url>
@@ -203,6 +227,9 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PMupdate.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/PMwriteDefaults.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/PMwriteMatrix.html</loc>
@@ -296,6 +323,9 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/makeNCA.html</loc>
+  </url>
+  <url>
+    <loc>https://lapkb.github.io/Pmetrics/reference/makeNPDE.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/makeOP.html</loc>
