@@ -1,6 +1,8 @@
+#' @title Generate a report
+#' @description
+#' `r lifecycle::badge("stable")`
 #' Generates a report from a specified Rmd template
 #'
-#' @title Generate a report
 #' @param PM_result A `PM_result` object obtained from \code{PM_load(x)}, where `x` is the run number.
 #' @param template The filename of a report template in the current working directory,
 #' or the full path/filename of a template in another directory.

@@ -1,6 +1,7 @@
-#' Pmetrics validation object
+#' @title Pmetrics validation object
 #' 
 #' @description 
+#' `r lifecycle::badge("stable")`
 #' Contains results of internal validation by simulation to permit generation of
 #' visual predictive checks (VPCs), prediction corrected visual predictive checks, 
 #' (pcVPCs), normalized prediction distribution errors (NPDE), and 

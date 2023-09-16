@@ -1,8 +1,13 @@
-#' Creates a Pmetrics validation object
-#'
+#' @title Create a Pmetrics validation object
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' This function will create an object suitable for plotting visual predictive
 #' checks (VPCs) and prediction-corrected visual
-#' predictive checks (pcVPCs). The function will guide the user
+#' predictive checks (pcVPCs). 
+#' 
+#' @details
+#' The function will guide the user
 #' through appropriate clustering of doses, covariates and sample times for
 #' prediction correction using the methods of Bergstrand et al (2011).
 #' *NOTE:* Including `tad` is only
@@ -14,7 +19,6 @@
 #' superimposable and `tad` should
 #' *NOT* be used, i.e. should be set to `FALSE`.
 #'
-#' @title Create a Pmetrics validation object
 #' @param result The result of a prior run, loaded with [PM_load].
 #' @param tad `r template("tad")`
 #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
@@ -629,8 +633,14 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 } # end function
 
 
-#' Creates a Pmetrics validation object
-#'
+#' @title Create a Pmetrics validation object
+#' @description
+#' `r lifecycle::badge("superseded")`
+#' 
+#' This function is largely a legacy function, replaced by [make_valid], which is
+#' typically called with the `$validate` method for a [PM_result] object.
+#' 
+#' @details
 #' `makeValid` will create an object suitable for plotting visual predictive
 #' checks (VPCs) and prediction-corrected visual
 #' predictive checks (pcVPCs). The function will guide the user
@@ -642,7 +652,6 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 #' are the same from dose to dose.  Otherwise observations are *NOT* superimposable and `tad` should
 #' *NOT* be used, i.e. should be set to `FALSE`.
 #'
-#' @title Create a Pmetrics validation object
 #' @param run When the current working directory is the Runs folder, the folder name of a previous run that you wish to use for the npde,
 #' which will typically be a number, e.g. 1.
 #' @param tad `r template("tad")`

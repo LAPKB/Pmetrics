@@ -113,12 +113,12 @@ with the addition of the quantile for each observation}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
+Plots \emph{PMsim} objects with the option to perform a visual and numerical predictive check
 }
 \details{
-Plots \emph{PMsim} objects with the option to perform a visual and numerical predictive check
-
 This is largely now a legacy plotting function,
-with a variety of options. It has been superseded by \link{plot.PM_sim}.Simulated observations are plotted as quantiles on the y-axis vs. time on the x.axis.  If measured
+replaced by \link{plot.PM_sim}. Simulated observations are plotted as quantiles on the y-axis vs. time on the x.axis.  If measured
 observations are included, a visual and numerical predictive check will be performed.
 }
 \examples{

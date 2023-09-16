@@ -448,7 +448,9 @@ plot.PM_final <- function(x,
 }
 
 
-#' Plot Pmetrics Final Cycle Parameter Value Distributions
+#' @title Plot Pmetrics Final Cycle Parameter Value Distributions
+#' @description
+#' `r lifecycle::badge("superseded")`
 #' 
 #' Plot objects made by [makeFinal].
 #'

@@ -15,6 +15,7 @@
 A \link{summary.PMfinal} object
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 This redirects to summary.PMfinal for PM_final R6 objects
 }
 \details{

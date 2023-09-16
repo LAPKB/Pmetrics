@@ -264,10 +264,12 @@ notNeeded <- function(x, f){
 }
 
 
-#' Add lines to plotly plot
+#' @title Add lines to plotly plot
+#' @description
+#' `r lifecycle::badge("stable")`
 #' 
 #' Analogous to [abline], draws horizontal, vertical or sloped reference lines.
-#' 
+#' @details
 #' This function creates a line shape that can be added a plotly plot.
 #' See schema() > layout > layoutAttributes > shapes for details. Use only one 
 #' of the following:
@@ -341,10 +343,12 @@ ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE){
 }
 
 
-#' Add shapes to plotly plot
+#' @title Add shapes to plotly plot
+#' @description
+#' `r lifecycle::badge("stable")`
 #' 
 #' Modifies the layout object of an existing plot to include a new shape.
-#' 
+#' @details
 #' This function adds a shape to the layout element of a plotly plot.
 #' Type `schema()` in the console and expand the list for 
 #' layout > layoutAttributes > shapes for details on how
@@ -383,10 +387,12 @@ add_shapes <- function(p = plotly::last_plot(), shapes){
   return(p)
 }
 
-#' Add regression to plotly plot
+#' @title Add regression to plotly plot
+#' @description
+#' `r lifecycle::badge("stable")`
 #' 
 #' Modifies an existing plot to include a regression line with  confidence interval.
-#' 
+#' @details
 #' This function adds a regression line to an existing  plotly plot.
 #' The default is to use the x and y values in the plot, but this can be overridden
 #' by specifying a data object. If another `data` object is used, values for `x` and `y`
@@ -540,10 +546,12 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
   return(p)
 }
 
-#' Export plotly plot
+#' @title Export plotly plot
+#' @description
+#' `r lifecycle::badge("stable")`
 #' 
 #' Wrapper around [plotly::save_image()].
-#' 
+#' @details
 #' This function improves the experience with the native plotly method of exporting
 #' plots to static images. Much of the online documentation points towards using
 #' the orca package, but the R help indicates that this method has been superseded
@@ -650,10 +658,12 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
 }
 
 
-#' Display multiple plotly plots
+#' @title Display multiple plotly plots
+#' @description
+#' `r lifecycle::badge("stable")`
 #' 
 #' Wrapper around [plotly::subplot()].
-#' 
+#' @details
 #' This function addresses the deficiency with the native plotly method of combining
 #' multiple plots that prevents individualized titling of subplots. The function
 #' has identical arguments to [plotly::subplot()] with the addition of a `titles`

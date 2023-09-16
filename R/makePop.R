@@ -1,7 +1,11 @@
-#' Individual Bayesian population prior predictions at short intervals
-#'
+#' @title Individual Bayesian population prior predictions at short intervals
+#' @description
+#' `r lifecycle::badge("stable")`
 #' Returns the Bayesian population prior predictions at short intervals specified during the NPAG run,
 #' up to 12 minutes.
+#' @details Predictions are calculated using the median (default) or mean of the 
+#' Bayesian prior parameter values and each subject's dosing, sampling, and covariate
+#' (if relevant) information.
 #'
 #' @param run The number of the folder that contains the relevant run.  If missing, \code{NPdata} will be used.
 #' @param NPdata Optional name of NPdata object if run is missing.

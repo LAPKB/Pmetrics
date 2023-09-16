@@ -1,5 +1,7 @@
-#' Plot PM_model objects
-#'
+#' @title Plot PM_model objects
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Plots a [PM_model] based on differential equations using network plots from tidygraph and ggraph packages.
 #'
 #' @details

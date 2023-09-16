@@ -52,6 +52,10 @@ A plot of the measured observations and fitted polynomial curves and a list with
 first, second, and third order coefficients
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Estimate coefficients for the polynomial to describe assay error.
+}
+\details{
 This function plots first, second, and third order polynomial functions fitted
 to pairs of observations and associated standard deviations for a given output assay.
 In this way, the standard deviation associated with any observation may be calculated and

@@ -1,11 +1,13 @@
+#' @title Calculation of AUCs
+#' @description
+#' `r lifecycle::badge("stable")`
 #' Calculates AUC from a variety of inputs
-#'
+#' @details
 #' Calculates the area under the time concentration curve using the
 #' trapezoidal approximation from a variety of inputs.  
 #' If a PM_pop, PM_post, PM_op, or PMsim object is specified, 
 #' `formula` is not required.
 #'
-#' @title Calculation of AUCs
 #' @param formula A formula of the form `obs ~ time`.  
 #' This is only required with data that is not of class PM_pop, PM_post, PM_op or PM_sim.
 #' @param data A suitable data object, i.e. [PM_pop], [PM_post], [PM_op],

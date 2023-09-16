@@ -67,6 +67,7 @@ is more useful for comparisons between sampling strategies, with minimization th
 \item{mmInt }{A list with the \code{mmInt} values, \code{NULL} if \code{mmInt} is missing.}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Computes 1 to 4 MM-optimal sampling times.
 }
 \details{

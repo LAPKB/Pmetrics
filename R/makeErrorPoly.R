@@ -1,10 +1,14 @@
+#' @title Assay error polynomial coefficients
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Estimate coefficients for the polynomial to describe assay error.
+#' @details
 #' This function plots first, second, and third order polynomial functions fitted
 #' to pairs of observations and associated standard deviations for a given output assay.
 #' In this way, the standard deviation associated with any observation may be calculated and
 #' used to appropriately weight that observation in the model building process.  Observations
 #' are weighted by the reciprocal of the variance, or squared standard deviation.
 #'
-#' @title Assay error polynomial coefficients
 #' @param obs A vector of observations
 #' @param sd A vector of standard deviations obtained from repeated measurements at each
 #' observation in \code{obs}

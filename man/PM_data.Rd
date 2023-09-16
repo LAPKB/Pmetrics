@@ -4,6 +4,7 @@
 \alias{PM_data}
 \title{Defines the PM_data object}
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 PM_data R6 objects containing raw, standardized and valid data, and methods
 to process the data
 }

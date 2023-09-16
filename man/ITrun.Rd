@@ -100,10 +100,11 @@ the .csv input file is converted to these text files, one file per subject.
 }
 }
 \description{
-Runs IT2B
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+Runs a parametric IT2B search for parameter values.
 }
 \details{
-\code{ITrun} will execute an IT2B run.
+This is largely superseded by the \verb{$run} method for \link{PM_fit} objects.
 
 If all function arguments are default, the simplest execution of this command is
 \code{ITrun()}.  This will result in generation of a batch file.  On Unix (Mac) systems
