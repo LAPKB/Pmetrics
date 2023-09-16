@@ -81,14 +81,12 @@ Plots the object.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
-}
-\details{
-Plots PMpta objects
 
 This function will plot the percent target attainment for objects made with the
 \code{\link{makePTA}} function. It is largely now a legacy plotting function,
-with a variety of options. It has been superseded by \link{plot.PM_pta}.
-
+superseded by \link{plot.PM_pta}.
+}
+\details{
 For the legend, defaults that are different that the standard are:
 \itemize{
 \item x Default \dQuote{topright}

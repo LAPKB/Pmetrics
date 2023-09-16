@@ -1,9 +1,11 @@
+#' @title Summarize NPAG or IT2B Final Cycle Population Values
+#' @description
+#' `r lifecycle::badge("stable")`
 #' Extracts final cycle information from NPAG or IT2B run.
-#'
+#' @details
 #' This function will parse the output of \code{\link{NPparse}} or \code{\link{ITparse}} to generate a
 #' list suitable for analysis and plotting of NPAG  or IT2B final cycle population values.
 #'
-#' @title Summarize NPAG or IT2B Final Cycle Population Values
 #' @param data A suitable data object of the \emph{NPAG} or \emph{IT2B} class (see \code{\link{NPparse}} or \code{\link{ITparse}}).
 #' @return The output of \code{makeFinal} is a list of class \emph{PMfinal}, which contains the following:
 #' \item{popPoints }{(NPAG only) Dataframe of the final cycle joint population density of grid points
@@ -133,7 +135,7 @@ makeFinal <- function(data){
       
       postPoints <- data$postden %>%
         cubelyr::as.tbl_cube(met_name = "value") %>%
-        as_tibble() %>%
+        dplyr::as_tibble() %>%
         pivot_wider(names_from = density) %>%
         arrange(.data$subj,.data$nactvepost) %>%
         filter(!is.na(.data$prob)) 

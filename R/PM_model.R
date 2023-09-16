@@ -2,6 +2,8 @@
 #' Defines the PM_model class
 #'
 #' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' PM_model objects contain the variables, covariates, equations and error models
 #' necessary to run a population analysis.
 #'
@@ -84,7 +86,7 @@ PM_model <- R6::R6Class("PM_Vmodel",
 
 
 #' @export
-PM_model$new <- function(model, ..., julia = F) {
+PM_model$new <- function(model, ..., julia = FALSE) {
   # print(model)
   # Now we have multiple options for the model:
   # The model can be a String -> legacy run
@@ -105,43 +107,128 @@ PM_model$new <- function(model, ..., julia = F) {
   }
 }
 
+#' @title Additive error model
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Create an additive (lambda) error model
+#' @param add Initial value for lambda
+#' @param constant Estimate if `FALSE` (default).
 #' @export
-additive <- function(add, constant = F) {
+additive <- function(add, constant = FALSE) {
   PM_Vinput$new(add, add, "additive", constant)
 }
 
+#' @title Proportional error model
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Create an proportional (gamma) error model
+#' @param prop Initial value for gamma
+#' @param constant Estimate if `FALSE` (default).
 #' @export
-proportional <- function(prop, constant = F) {
+#' @export
+proportional <- function(prop, constant = FALSE) {
   PM_Vinput$new(prop, prop, "proportional", constant)
 }
 
+#' @title Combination error model
+#' @description
+#' `r lifecycle::badge("experimental")`
+#' Create a combination additive (lambda) and proportional error model
+#' @details
+#' This function is not yet implemented.
+#' @param add Initial value for lambda
+#' @param prop  Initial value for gamma
+#' @param constant Estimate if `FALSE` (default).
 #' @export
-combination <- function(add, prop, constant = F) {
+combination <- function(add, prop, constant = FALSE) {
   PM_Vinput$new(add, prop, "combination", constant)
 }
 
+#' @title Assay error coefficients
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Specify the coefficients for the assay error polynomial.
+#' @param coeffs Vector of up to four values for C0, C1, C2, C3, 
+#' e.g. `c(0.15, 0.1, 0, 0)`
+#' @param constant If `FALSE` (default), use values in data first, but if
+#' missing, use values in model. If `TRUE`, use values in model regardless.
 #' @export
-errorPoly <- function(coeffs, constant = F) {
+errorPoly <- function(coeffs, constant = FALSE) {
   PM_Vinput$new(coeffs, NULL, "coefficients", constant)
 }
 
+#' @title Initial range for primary parameter values
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Define primary model parameter initial values as range. For nonparametric,
+#' this range will be absolutely respected. For parametric, the range serves
+#' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
+#' initial parameter value distribution.
+#' @param min Minimum value.
+#' @param max Maximum value.
+#' @param gtz Greater than zero. If `FALSE` (default), ensure parameter values 
+#' remain positive by discarding negative values. Only relevant for parametric
+#' analyses, since lower limit of parameter values for nonparametric are strictly
+#' controlled by [ab].
 #' @export
-ab <- function(min, max, gtz = F) {
-  PM_Vinput$new(min, max, "ab", constant = F, gtz)
+ab <- function(min, max, gtz = FALSE) {
+  PM_Vinput$new(min, max, "ab", constant = FALSE, gtz)
 }
 
+#' @title Initial mean/SD for primary parameter values
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Define primary model parameter initial values as mean and standard
+#' deviation, which translate to a range. The mean serves as the midpoint 
+#' of the range, with 3 standard deviations above and below the mean to define
+#' the min and max of the range. For nonparametric,
+#' this range will be absolutely respected. For parametric, 
+#' values can be estimated beyond the range.
+#' @param mean Initial mean.
+#' @param sd Initial standard deviation.
+#' @param gtz Greater than zero. If `FALSE` (default), ensure parameter values 
+#' remain positive by discarding negative values. Only relevant for parametric
+#' analyses, since lower limit of parameter values for nonparametric are strictly
+#' controlled by the range.
 #' @export
-msd <- function(mean, sd, gtz = F) {
-  PM_Vinput$new(mean, sd, "msd", constant = F, gtz)
+msd <- function(mean, sd, gtz = FALSE) {
+  PM_Vinput$new(mean, sd, "msd", constant = FALSE, gtz)
 }
 
+#' @title Fixed primary parameter values
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Fix parameter values to be the same in the population. 
+#' @param fixed The starting value for the fixed parameter.
+#' @param constant If `FALSE` (default), the value for `fixed` will serve
+#' as the initial estimate for a parameter with unknown mean and zero variance.
+#' The parameter value will be updated to a final value at convergence
+#' or when the maximum number of cycles is reached. If `TRUE`, the value for
+#' `fixed` will remain unchanged, creating a parameter with known mean and zero
+#' variance, i.e. a constant value in the population.
+#' @param gtz Greater than zero. If `FALSE` (default), ensure parameter values 
+#' remain positive by discarding negative values. Only relevant for parametric
+#' analyses, since lower limit of parameter values for nonparametric are strictly
+#' controlled by the range.
 #' @export
-fixed <- function(fixed, constant = F, gtz = F) {
+fixed <- function(fixed, constant = FALSE, gtz = FALSE) {
   PM_Vinput$new(fixed, fixed, "fixed", constant, gtz)
 }
 
+#' @title Model covariate declaration
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Declare covariates in the model that are in the data. Order in the model
+#' should be the same as the order in the data.
+#' @param name Name of the covariate in quotation marks.
+#' @param constant If `FALSE` (default), allow the covariate value to be 
+#' linearly interpolated between values. **NOTE** that covariate values
+#' are only applied at the times of doses. Values on observation rows are
+#' ignored because a covariate value is an input, not an output. See the
+#' [Data Objects](https://lapkb.github.io/Pmetrics/articles/data.html) article
+#' for details on this.
 #' @export
-covariate <- function(name, constant = F) {
+covariate <- function(name, constant = FALSE) {
   PM_Vinput$new(name, mode = "covariate", constant = constant)
 }
 
@@ -284,7 +371,7 @@ PM_Vinput <- R6::R6Class(
     coefficients = NULL,
     covariate = NULL,
     gtz = NULL,
-    initialize = function(a, b, mode, constant = F, gtz = F) {
+    initialize = function(a, b, mode, constant = FALSE, gtz = FALSE) {
       stopifnot(mode %in% c(
         "ab", "msd", "fixed", "additive",
         "proportional", "combination",
@@ -798,11 +885,11 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                    const_pos <- any(grepl("\\+", x))
                                    if (const_pos) {
                                      x <- gsub("\\+", "", x)
-                                     gtz <- T
+                                     gtz <- TRUE
                                      msg <- c(msg, "Truncating variables to positive ranges is not recommended.\n
                Consider log transformation instead.\n")
                                    } else {
-                                     gtz <- F
+                                     gtz <- FALSE
                                    }
                                    
                                    # find out if constant

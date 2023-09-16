@@ -1,10 +1,13 @@
+#' @title
 #' Object to contain results of simulation
-#'
+#' @description 
+#' ` r lifecycle::badge("stable")`
 #' This object is created after a successful run of the simulator.
-#'
+#' 
+#' @details
 #' There are two methods of creating a PM_sim object.
-#' * **PM_result$sim**
-#' * **PM_sim$run**
+#' * **PM_result$sim()**
+#' * **PM_sim$new()**
 #'
 #' These both call [SIMrun] to execute the simulation and [SIMparse] to process
 #' the results and return the PM_sim objects. See help on both of these functions
@@ -13,10 +16,10 @@
 #' @export
 PM_sim <- R6::R6Class(
   "PM_sim",
-  public <- list(
-    #' @field obs Observations
+  public = list(
+    #' @field obs Observations for each output
     obs = NULL,
-    #' @field amt Amounts
+    #' @field amt Amounts in each model compartment
     amt = NULL,
     #' @field parValues Retained simulated parameter values after discarding
     #' any due to truncation limits
@@ -27,20 +30,80 @@ PM_sim <- R6::R6Class(
     totalMeans = NULL,
     #' @field totalCov Covariance of all simulated parameter values
     totalCov = NULL,
-    #' @field data A matrix that contains all the above elements as columns
+    #' @field data A list that contains all the above elements 
     data = NULL,
-    #' @description Create new simulation objects with results of `$sim`
-    #' method for [PM_result]
-    #' @usage PM_sim$run
-    #' @param list List of output passed by `$sim`.
-    initialize = function(list) {
-      self$obs <- list$obs
-      self$amt <- list$amt
-      self$parValues <- list$parValues
-      self$totalMeans <- list$totalMeans
-      self$totalCov <- list$totalCov
-      self$data <- list
+    
+    #' @description
+    #' This is a wrapper function that combines [SIMrun] and [SIMparse] in R6. 
+    #' It can be called directly
+    #' or via the `$sim` method for [PM_result] objects.
+    #' @param x One of four things:
+    #' * Population prior parameters as a [PM_final] object found in 
+    #' `PM_result$final`. Normally these would be supplied by calling the
+    #' `$sim` method for a [PM_result] object, e.g. `NPex$sim(...)`.
+    #' * A manually specified prior, see [SIMrun] for more details.
+    #' * The name of a previously saved simulation via the `$save` method. The
+    #' file will be loaded.
+    #' * The results of running [SIMparse] on a prior simulation.
+    #' @param ... Additional parameters to be passed to [SIMrun] and optionally,
+    #' `combine = TRUE` as an argument will be passed to [SIMparse].
+    #' @return A `PM_sim` object created by calling [SIMparse] at the completion of the
+    #' simulation.
+    initialize = function(x, ...) {
+      dots <- list(...)
+      combine <- if (exists("combine", where = dots)) {
+        dots$combine
+      } else {
+        FALSE
+      }
+      clean <- if (exists("clean", where = dots)) {
+        dots$clean
+      } else {
+        TRUE
+      }
+      outname <- if (exists("outname", where = dots)) {
+        dots$outname
+      } else {
+        "simout"
+      }
+      if(inherits(x, c("PM_result", "PM_final", "PMfinal"))){
+        poppar <- x #SIMrun will handle any of these
+      } else if(inherits(x, "PMsim")){ #from SIMparse
+        private$populate(x)
+        return(self)
+      } else if(inherits(x,"list")){
+        poppar <- x #PMfinal and PMsim are lists, so needs to be after those for manual list
+      } else { #try it as a filename
+        if(file.exists(x)){
+          private$populate(readRDS(x)) #open and return saved object
+          return(self)
+        } else {
+          stop(paste0(x, " does not exist in the current working directory.\n"))
+        }
+      }
+      
+      system("echo 347 > SEEDTO.MON") # TODO: look to fix the simulator without this
+      SIMrun(poppar, ...)
+      
+      # TODO: read files and fix the missing E problem
+      sim_files <- list.files() %>% .[grepl(paste0(outname,"*"), .)]
+      if (length(sim_files) == 1) {
+        parseRes <- SIMparse(file = paste0(outname,"*")) %>% private$populate()
+      } else {
+        if (combine) {
+          parseRes <- SIMparse(file = paste0(outname,"*"), combine = T) %>% private$populate()
+        } else {
+          parseRes <- list()
+          for (i in seq_len(length(sim_files))) {
+            parseRes[[i]] <- SIMparse(file = sprintf("simout%i.txt", i))
+          }
+          private$populate(parseRes, list = TRUE)
+        }
+      }
+      if(clean) system(paste0("rm ",outname,"*"))
+      return(self)
     },
+    #'
     #' @description
     #' Save the current PM_sim object into a .rds file.
     #' @param file_name Name of the file to be created, the default is PMsim.rds
@@ -49,29 +112,44 @@ PM_sim <- R6::R6Class(
     },
     #' @description
     #' Plot `PM_sim` object.
-    #' @param ... Arguments passed to [plot.PMsim].
-    plot = function(...) {
-      plot.PM_sim(self, ...)
+    #' @param at Index of the PM_sim object to be plotted. Default is 1.
+    #' result.  
+    #' @param ... Arguments passed to [plot.PM_sim].
+    plot = function(at = 1, ...) {
+      if(inherits(self$data, "PM_simlist")){
+        if (at > length(self$data)) {
+          stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
+        }
+        plot.PM_sim(self$data[[at]],...)
+      } else {
+        plot.PM_sim(self$data,...)
+      }
+      
     },
     #' @description
     #' Estimates the Probability of Target Attaintment (PTA), based on the results
     #' of the current Simulation.
     #' @param ... Additional parameters, refer to [makePTA]
     pta = function(...) {
-      PM_pta$new(self,...)
+      PM_pta$new(self$data,...)
     },
     #' @description
-    #' Calculate AUC
-    #' @details
-    #' See [makeAUC]
-    #' @param ... Arguments passed to [makeAUC]
-    auc = function(...) {
-      makeAUC(data = self, ...)
+    #' Calculates the AUC of the specified simulation
+    #' @param at Index of the PM_sim object to use. Default is 1.
+    #' @param ... Arguments passed to [makeAUC].
+    auc = function(at = 1, ...) {
+      if(inherits(self$data, "PM_simlist")){
+        if (at > length(self$data)) {
+          stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
+        }
+        makeAUC(self$data[[at]],...)
+      } else {
+        makeAUC(self$data,...)
+      }
     },
     #' @description
     #' Summarize simulation
-    #' @details
-    #' Choose whether to sim
+    #' @param at Index of the PM_sim object to be summarized. Default is 1.
     #' @param field Quoted character value, one of
     #' * obs for simulated observations
     #' * amt for simulated amounts in each compartment
@@ -88,14 +166,24 @@ PM_sim <- R6::R6Class(
     #' and columns labeled as mean, sd, median, min and max. If `by` is specified,
     #' return will be a list with named elements mean, sd, median, min and max, each containing 
     #' the corresponding value for each group in `by`.
-    summary = function(field, by, individual = FALSE) {
+    summary = function(at = 1, field, by, individual = FALSE) {
       summaries <- c("mean", "sd", "median", "min", "max")
-      dat <- self[[field]] 
+      #get the right data
+      if(inherits(self$data, "PM_simlist")){
+        if (at > length(self$data)) {
+          stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
+        }
+        dat <- self$data[[at]][[field]] 
+      } else {
+        dat <- self$data[[field]] 
+      }
+      
       if(!missing(by)){
-        summ <- purrr::map(summaries, \(x) dplyr::summarize(dat, 
-                                                            dplyr::across(everything(),!!!rlang::syms(x)),
-                                                            .by = by
-        )
+        summ <- purrr::map(summaries, 
+                           \(x) dplyr::summarize(dat, 
+                                                 dplyr::across(everything(),!!!dplyr::syms(x)),
+                                                 .by = by
+                           )
         ) 
         names(summ) <- summaries
         if("id" %in% by){
@@ -106,7 +194,7 @@ PM_sim <- R6::R6Class(
             summ <- purrr::map(summ, \(x){
               purrr::map_df(summaries, \(y) {
                 dplyr::summarize(x, 
-                                 dplyr::across(everything(),!!!rlang::syms(y)),
+                                 dplyr::across(everything(),!!!dplyr::syms(y)),
                                  .by = by) %>%
                   select(-id) }) %>%
                 t() %>% as.data.frame() %>% rename_with(~summaries)
@@ -126,132 +214,70 @@ PM_sim <- R6::R6Class(
       }
       
       return(summ)
+    },
+    #' @description
+    #' `r lifecycle::badge("deprecated")`
+    #' 
+    #' Deprecated method to run a simulation. Replaced by `PM_sim$new()` to be
+    #' consistent with R6.
+    #' @param ... Not used.
+    #' @keywords internal
+    run = function(...) {
+      lifecycle::deprecate_warn("2.1.0", "PM_sim$run()", details = "PM_sim$run() is deprecated. Please use PM_sim$new() instead.")
+    },
+    #' @description
+    #' `r lifecycle::badge("deprecated")`
+    #' 
+    #' Deprecated method to load a prior simulation. Replaced by `PM_sim$new()` to be
+    #' consistent with R6.
+    #' @param ... Not used.
+    #' @keywords internal
+    load = function(...) {
+      lifecycle::deprecate_warn("2.1.0", "PM_sim$load()", details = "PM_sim$load() is deprecated. Please use PM_sim$new() instead.")
     }
     
-  )
+  ), #end public
+  private = list(
+    # Create new simulation objects with results of simulation
+    populate = function(simout, list = FALSE) {
+      if(!list){
+        self$obs <- simout$obs
+        self$amt <- simout$amt
+        self$parValues <- simout$parValues
+        self$totalMeans <- simout$totalMeans
+        self$totalCov <- simout$totalCov
+        self$data <- simout
+        class(self$data) <- c("PMsim", "list")
+        return(self)
+      } else {
+        purrr::map(1:length(simout), \(x){
+          self$obs[[x]] = simout[[x]]$obs
+          self$amt[[x]] = simout[[x]]$amt
+          self$parValues[[x]] = simout[[x]]$parValues
+          self$totalMeans[[x]] = simout[[x]]$totalMeans
+          self$totalCov[[x]] = simout[[x]]$totalCov
+          self$data[[x]] = simout[[x]]
+          class(self$data[[x]]) <- c("PMsim", "list")
+        })
+        class(self$data) <- c("PM_simlist", "list")
+        return(self)
+      }
+      
+    }
+  ) #end private
 )
 
-#' Read results of previously saved simulation.
-#'
-#' If the `$save` method has previously been invoked on a [PM_sim]
-#' object, this function will load those results.
-#'
-#' The saved object is an .rds file. When loaded, it should be assigned to an R
-#' object, e.g. `sim1 <- PM_sim$load("filename")`.
-#' @param file_name The name of the .rds file to load.
-#' @return A [PM_sim] object
-#' @export
+
+#' @keywords internal
 #' @name PM_sim
-PM_sim$load <- function(file_name = "PMsim.rds") {
-  readRDS(file_name)
+#' @export
+PM_sim$run <- function(...) {
+  lifecycle::deprecate_warn("2.1.0", "PM_sim$run()", details = "Please use PM_sim$new() instead. ?PM_sim for details.")
 }
 
-#' Wrapper function for SIMrun in R6
-#'
-#' Provides an alternative method to call the simulator directly from output
-#' of a model fitting run.
-#'
-#' Calling this function is equivalent to `PM_result$sim()`.
-#'
-#' @param poppar A population parameter result, which is a PM_final object. This
-#' can be found in `PM_result$final$data`.
-#' @param ... Additional parameters to be passed to [SIMrun] and optionally,
-#' "combine = T" as an argument will be passed to [SIMparse].
-#' @return A `PM_sim` object created by calling [SIMparse] at the completion of the
-#' simulation.
-#' @export
+#' @keywords internal
 #' @name PM_sim
-PM_sim$run <- function(poppar, ...) {
-  dots <- list(...)
-  combine <- if (exists("combine", where = dots)) {
-    dots$combine
-  } else {
-    FALSE
-  }
-  system("echo 347 > SEEDTO.MON") # TODO: look to fix the simulator without this
-  SIMrun(poppar, ...)
-  
-  # TODO: read files and fix the missing E problem
-  sim_files <- list.files() %>% .[grepl("simout*", .)]
-  if (length(sim_files) == 1) {
-    parseRes <- SIMparse(file = "simout*") %>% PM_sim$new()
-  } else {
-    if (combine) {
-      parseRes <- SIMparse(file = "simout*", combine = T) %>% PM_sim$new()
-    } else {
-      parseRes <- list()
-      for (i in seq_len(length(sim_files))) {
-        parseRes <- append(parseRes, SIMparse(file = sprintf("simout%i.txt", i)) %>% PM_sim$new())
-      }
-      parseRes <- PM_simlist$new(parseRes) # Returns a PM_simlist object
-    }
-  }
-  system("rm simout*")
-  return(parseRes)
-}
-
-#' Object to contain list of results of simulation
-#'
-#' This object is created after a successful run of the simulator when
-#' there are multiple subjects in the data template and `combine = F` is
-#' used as an argument to `PM_sim$run`, which is the default.
-#'
 #' @export
-
-PM_simlist <- R6::R6Class(
-  "PM_simlist",
-  public <- list(
-    #' @field data List of all the individual [PM_sim] objects
-    data = NULL,
-    #' @description Create new PM_simlist.
-    #' @param data The list of PM_sim objects.
-    initialize = function(data) {
-      self$data <- data
-    },
-    #' @description
-    #' Plot `PM_sim` object.
-    #' @param at Index of the PM_sim object to be plotted.
-    #' @param ... Arguments passed to [plot.PM_sim].
-    plot = function(at = 1, ...) {
-      if (at > length(self$data)) {
-        stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
-      }
-      self$data[[at]]$plot(...)
-    },
-    #' @description
-    #' Estimates the Probability of Target Attaintment (PTA), based on the results
-    #' of the specified Simulation.d.
-    #' @param ... Additional parameters, refer to [makePTA]
-    pta = function(...) {
-      PM_pta$new(self,...)
-    },
-    #' @description
-    #' Calculates the AUC of the specified simulation
-    #' @param at Index of the PM_sim object to be plotted.
-    #' @param ... Arguments passed to [makeAUC].
-    auc = function(at = 1, ...) {
-      if (at > length(self$data)) {
-        stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
-      }
-      self$data[[at]]$auc(...)
-    },
-    #' @description
-    #' Save the current PM_sim object into a .rds file.
-    #' @param file_name Name of the file to be created, the default is PMsim.rds
-    save = function(file_name = "PMsim.rds") {
-      saveRDS(self, file_name)
-    },
-    #' @description
-    #' Summarizes  the specified simulation
-    #' @param at Index of the PM_sim object to be summarized
-    #' @param ... Arguments passed to the `$summary` method for [PM_sim] objects.
-    summary = function(at = 1, ...) {
-      if (at > length(self$data)) {
-        stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
-      }
-      self$data[[at]]$summary(...)
-    }
-    
-    
-  )
-)
+PM_sim$load <- function(...) {
+  lifecycle::deprecate_warn("2.1.0", "PM_sim$load()", details = "Please use PM_sim$new() instead. ?PM_sim for details.")
+}

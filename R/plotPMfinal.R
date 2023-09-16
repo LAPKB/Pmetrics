@@ -1,4 +1,6 @@
-#' Plot Pmetrics Final Cycle Parameter Value Distributions
+#' @title Plot Pmetrics Final Cycle Parameter Value Distributions
+#' @description
+#' `r lifecycle::badge("stable")`
 #' 
 #' Plot R6 [PM_final] objects made by [makeFinal] and loaded as a field in the
 #' [PM_result] object, e.g. `PM_result$final`.
@@ -426,7 +428,7 @@ plot.PM_final <- function(x,
       }
       ab_alpha <- ab %>% arrange(par)
       p <- data.frame(mean = purrr::as_vector(data$popMean), sd = purrr::as_vector(data$popSD), min = ab[,1], max = ab[,2]) %>%
-        purrr::pmap(.f = function(mean, sd, min, max){tibble::tibble(value = seq(min, max, (max-min)/1000),
+        purrr::pmap(.f = function(mean, sd, min, max){dplyr::tibble(value = seq(min, max, (max-min)/1000),
                                                                      prob = dnorm(value, mean, sd))}) %>% 
         purrr::set_names(names(data$popMean)) %>%
         dplyr::bind_rows(.id = "par") %>%

@@ -2,7 +2,8 @@
 % Please edit documentation in R/PMmanual.R
 \name{PMmanual}
 \alias{PMmanual}
-\title{Open user and function manuals.}
+\title{Open user and function manuals.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}}
 \usage{
 PMmanual()
 }

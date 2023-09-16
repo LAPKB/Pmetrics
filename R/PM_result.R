@@ -135,9 +135,9 @@ PM_result <- R6::R6Class(
     sim = function(...) {
       # store copy of the final object
       bk_final <- self$final$clone()
-      sim <- PM_sim$run(self, ...)
+      sim <- PM_sim$new(x = self, ...)
       self$final <- bk_final
-      sim
+      return(sim)
     },
 
     #' @description

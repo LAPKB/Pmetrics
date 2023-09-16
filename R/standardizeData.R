@@ -61,7 +61,7 @@ standardize_data <- function(dataObj){
     msg <- c(msg, "One or more error coefficients not specified. Error in model object will be used.\n")
   }
   
-  dataObj <- dataObj %>% select(standardNames, all_of(covNames))
+  dataObj <- dataObj %>% select(standardNames, dplyr::all_of(covNames))
   cat(msg)
 
   

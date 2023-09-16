@@ -1,5 +1,8 @@
+#' @title Summary Statistics for PMfinal Objects
+#' @description
+#' `r lifecycle::badge("stable")`
 #' Generates summary statistics of final population model parameters.
-#'
+#' @details
 #' For NPAG runs, this function will generate weighted medians as central tendencies of the
 #' population points with a 95\% confidence interval (95\% CI) around the median, 
 #' and the median absolute weighted deviation (MAWD) from the median as a measure 
@@ -22,7 +25,6 @@
 #' and the standard errors of these terms, using SE (mean) = SD/sqrt(nsub) and 
 #' SE (var) = var * sqrt(2/(nsub-1)).
 #'
-#' @title Summary Statistics for PMfinal Objects
 #' @method summary PMfinal
 #' @param object The PMfinal object made after an NPAG or IT2B, e.g. final.1 after run 1.
 #' @param lower Desired lower confidence interval boundary.  Default is 0.025. Ignored for IT2B objects.
@@ -94,7 +96,7 @@ summary.PMfinal <- function(object, lower = 0.025, upper = 0.975, ...){
     sumstat <- apply(popPoints[,1:nvar],2,function(x) mcsim(x,popPoints[,nvar+1]))
  
     
-    sumstat2 <- sumstat %>% as_tibble() %>% unnest(cols=names(sumstat)) 
+    sumstat2 <- sumstat %>% dplyr::as_tibble() %>% unnest(cols=names(sumstat)) 
     sumstat2$percentile <- rep(c(lower,0.5,upper),2)
     sumstat2$parameter <- rep(c("WtMed","MAWD"),each=3)
  

@@ -249,11 +249,12 @@ wmmopt1 <- function(Mu, time, pH, cassay, nsamp, nsubs, nout, Cbar) {
   search_grid <- data.frame(t(combn(1:nout,nsamp))) %>% dplyr::rowwise()
   pb <- progress::progress_bar$new(total = nrow(search_grid))
   Perror <- search_grid %>%
-    dplyr::summarise(val = perrorc1(pH, Kall, nvec = dplyr::c_across(tidyselect::everything()), Cbar, pb))
+    dplyr::summarise(val = perrorc1(pH, Kall, nvec = dplyr::c_across(dplyr::everything()), Cbar, pb))
   
   nopt <- search_grid[which(Perror$val == min(Perror$val)),] %>%
     purrr::as_vector(nopt[1,]) %>%
-    vctrs::vec_sort()
+    sort()
+    #vctrs::vec_sort()
   
   # Compute Output Values
   
