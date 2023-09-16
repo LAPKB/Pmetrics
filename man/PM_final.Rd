@@ -4,13 +4,9 @@
 \alias{PM_final}
 \title{Final Cycle Population Values}
 \description{
-Final Cycle Population Values
-
-Final Cycle Population Values
+Contains final cycle information from run.
 }
 \details{
-Contains final cycle information from run.
-
 Contains the results of \link{makeFinal}, which is a
 list suitable for analysis and plotting of final cycle population values.
 
@@ -20,13 +16,6 @@ This will select the probabilities of the support points. If
 you are unfamiliar with the \verb{\%>\%} pipe function, please type \code{help("\%>\%", "magrittr")}
 into the R console and look online for instructions/tutorials in tidyverse, a
 powerful approach to data manipulation upon which Pmetrics is built.
-
-Creation of new \code{PM_final} object is automatic and not generally necessary
-for the user to do.
-
-See \link{summary.PMfinal}.
-
-See \link{plot.PMfinal}.
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -124,6 +113,11 @@ Create new object populated with final cycle information
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+Creation of new \code{PM_final} object is automatic and not generally necessary
+for the user to do.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_final-summary"></a>}}
@@ -141,6 +135,10 @@ Summary method
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+See \link{summary.PMfinal}.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_final-plot"></a>}}
@@ -158,6 +156,10 @@ Plot method
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+See \link{plot.PMfinal}.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_final-clone"></a>}}

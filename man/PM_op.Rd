@@ -4,13 +4,9 @@
 \alias{PM_op}
 \title{Observed vs. predicted data}
 \description{
-Observed vs. predicted data
-
-Observed vs. predicted data
+Contains observed vs. predicted data after a run
 }
 \details{
-Contains observed vs. predicted data after a run
-
 Contains the results of \link{makeOP}, which is a
 data frame suitable for analysis and plotting of observed vs. population or
 or individual predicted outputs. To provide a more traditional experience in R,
@@ -23,15 +19,6 @@ use the \code{data} field, e.g. \code{trough <- run1$op$data \%>\% filter(time =
 you are unfamiliar with the \verb{\%>\%} pipe function, please type \code{help("\%>\%", "magrittr")}
 into the R console and look online for instructions/tutorials in tidyverse, a
 powerful approach to data manipulation upon which Pmetrics is built.
-
-Creation of new \code{PM_op} object is automatic and not generally necessary
-for the user to do.
-
-See \link{plot.PM_op}.
-
-See \link{summary.PMop}.
-
-See \link{makeAUC}
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -93,6 +80,11 @@ Create new object populated with observed vs. predicted data
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+Creation of new \code{PM_op} object is automatic and not generally necessary
+for the user to do.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_op-plot"></a>}}
@@ -110,6 +102,10 @@ Plot method
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+See \link{plot.PM_op}.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_op-summary"></a>}}
@@ -127,6 +123,10 @@ Summary method
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+See \link{summary.PMop}.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_op-auc"></a>}}
@@ -146,6 +146,10 @@ Calculate AUC
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+See \link{makeAUC}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_op-clone"></a>}}

@@ -4,13 +4,9 @@
 \alias{PM_cycle}
 \title{Pmetrics Run Cycle Information}
 \description{
-Pmetrics Run Cycle Information
-
-Pmetrics Run Cycle Information
+Contains the cycle information after a run.
 }
 \details{
-Contains the cycle information after a run.
-
 This contains the output of \link{makeCycle} after a run, which
 generates information suitable for analysis and plotting of cycle information.
 Each field corresponds to a column in the complete data frame.
@@ -20,11 +16,6 @@ use the \code{data} field, e.g. \code{final <- run1$cycle$data \%>\% slice_tail(
 you are unfamiliar with the \verb{\%>\%} pipe function, please type \code{help("\%>\%", "magrittr")}
 into the R console and look online for instructions/tutorials in tidyverse, a
 powerful approach to data manipulation upon which Pmetrics is built.
-
-Creation of new \code{PM_cycle} object is automatic and not generally necessary
-for the user to do.
-
-See \link{plot.PMcycle}.
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -79,6 +70,11 @@ Create new object populated with  cycle information
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+Creation of new \code{PM_cycle} object is automatic and not generally necessary
+for the user to do.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_cycle-plot"></a>}}
@@ -96,6 +92,10 @@ Plot method
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+See \link{plot.PMcycle}.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_cycle-clone"></a>}}
