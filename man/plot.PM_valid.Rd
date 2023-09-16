@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotPMvalid.R
 \name{plot.PM_valid}
 \alias{plot.PM_valid}
-\title{Plot PM_valid objects}
+\title{Plot Pmetrics Validation Objects}
 \usage{
 \method{plot}{PM_valid}(
   x,
@@ -111,7 +111,8 @@ for the \code{type} argument above.}
 Plots and returns the plotly object
 }
 \description{
-Plot Pmetrics Validation Objects
+#' \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Plot \link{PM_valid} objects.
 }
 \details{
 Generates a plot of outputs (typically concentrations) on the y axis and time

@@ -121,20 +121,20 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 
   # set up data for clustering
   # fill in gaps for cluster analysis only for binning variables (always dose and time)
-  dataSub <- mdata[, c("id", "evid", "time", "out", "dose", "out", all_of(binCov))]
+  dataSub <- mdata[, c("id", "evid", "time", "out", "dose", "out", dplyr::all_of(binCov))]
   # add time after dose
   if (tad) {
     dataSub$tad <- valTAD
   } else {
     dataSub$tad <- NA
   }
-  dataSub <- dataSub %>% select(c("id", "evid", "time", "tad", "out", "dose", all_of(binCov)))
+  dataSub <- dataSub %>% select(c("id", "evid", "time", "tad", "out", "dose", dplyr::all_of(binCov)))
 
 
   # restrict to doses for dose/covariate clustering (since covariates applied on doses)
   dataSubDC <- dataSub %>%
     filter(evid > 0) %>%
-    select(c("id", "dose", all_of(binCov)))
+    select(c("id", "dose", dplyr::all_of(binCov)))
 
   # set zero doses (covariate changes) as missing
   dataSubDC$dose[dataSubDC$dose == 0] <- NA

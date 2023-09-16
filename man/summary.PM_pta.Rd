@@ -2,7 +2,7 @@
 % Please edit documentation in R/PM_pta.R
 \name{summary.PM_pta}
 \alias{summary.PM_pta}
-\title{Wrapper function for summmary.PMpta}
+\title{Summarize PM_pta}
 \usage{
 \method{summary}{PM_pta}(object, ...)
 }
@@ -15,9 +15,11 @@
 A \link{summary.PMpta} object
 }
 \description{
-This redirects to summary.PMpta for PM_pta R6 objects
+`r lifecycle::badge("stable")
+
+Wrapper function for summmary.PMpta
 }
 \details{
-See \link{summary.PMpta}. Alternative way to summarize is
-\code{PM_pta$summary()}.
+This redirects to \link{summary.PMpta} for PM_pta R6 objects
+The R6 method to summarize is \code{PM_pta$summary()}.
 }

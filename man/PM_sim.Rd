@@ -3,59 +3,28 @@
 \name{PM_sim}
 \alias{PM_sim}
 \title{Object to contain results of simulation}
-\usage{
-PM_sim$run
-}
-\arguments{
-\item{file_name}{The name of the .rds file to load.}
-
-\item{poppar}{A population parameter result, which is a PM_final object. This
-can be found in \code{PM_result$final$data}.}
-
-\item{...}{Additional parameters to be passed to \link{SIMrun} and optionally,
-"combine = T" as an argument will be passed to \link{SIMparse}.}
-}
-\value{
-A \link{PM_sim} object
-
-A \code{PM_sim} object created by calling \link{SIMparse} at the completion of the
-simulation.
-}
 \description{
-If the \verb{$save} method has previously been invoked on a \link{PM_sim}
-object, this function will load those results.
-
-Provides an alternative method to call the simulator directly from output
-of a model fitting run.
+\verb{ r lifecycle::badge("stable")}
+This object is created after a successful run of the simulator.
 }
 \details{
-This object is created after a successful run of the simulator.
-
 There are two methods of creating a PM_sim object.
 \itemize{
-\item \strong{PM_result$sim}
-\item \strong{PM_sim$run}
+\item \strong{PM_result$sim()}
+\item \strong{PM_sim$new()}
 }
 
 These both call \link{SIMrun} to execute the simulation and \link{SIMparse} to process
 the results and return the PM_sim objects. See help on both of these functions
 for further details.
-
-See \link{makeAUC}
-
-Choose whether to sim
-
-The saved object is an .rds file. When loaded, it should be assigned to an R
-object, e.g. \code{sim1 <- PM_sim$load("filename")}.
-
-Calling this function is equivalent to \code{PM_result$sim()}.
 }
+\keyword{internal}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{obs}}{Observations}
+\item{\code{obs}}{Observations for each output}
 
-\item{\code{amt}}{Amounts}
+\item{\code{amt}}{Amounts in each model compartment}
 
 \item{\code{parValues}}{Retained simulated parameter values after discarding
 any due to truncation limits}
@@ -66,7 +35,7 @@ any due to truncation limits}
 
 \item{\code{totalCov}}{Covariance of all simulated parameter values}
 
-\item{\code{data}}{A matrix that contains all the above elements as columns}
+\item{\code{data}}{A list that contains all the above elements}
 }
 \if{html}{\out{</div>}}
 }
@@ -79,6 +48,8 @@ any due to truncation limits}
 \item \href{#method-PM_sim-pta}{\code{PM_sim$pta()}}
 \item \href{#method-PM_sim-auc}{\code{PM_sim$auc()}}
 \item \href{#method-PM_sim-summary}{\code{PM_sim$summary()}}
+\item \href{#method-PM_sim-run}{\code{PM_sim$run()}}
+\item \href{#method-PM_sim-load}{\code{PM_sim$load()}}
 \item \href{#method-PM_sim-clone}{\code{PM_sim$clone()}}
 }
 }
@@ -86,18 +57,35 @@ any due to truncation limits}
 \if{html}{\out{<a id="method-PM_sim-new"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-new}{}}}
 \subsection{Method \code{new()}}{
-Create new simulation objects with results of \verb{$sim}
-method for \link{PM_result}
+This is a wrapper function that combines \link{SIMrun} and \link{SIMparse} in R6.
+It can be called directly
+or via the \verb{$sim} method for \link{PM_result} objects.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$new(list)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$new(x, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{list}}{List of output passed by \verb{$sim}.}
+\item{\code{x}}{One of four things:
+\itemize{
+\item Population prior parameters as a \link{PM_final} object found in
+\code{PM_result$final}. Normally these would be supplied by calling the
+\verb{$sim} method for a \link{PM_result} object, e.g. \code{NPex$sim(...)}.
+\item A manually specified prior, see \link{SIMrun} for more details.
+\item The name of a previously saved simulation via the \verb{$save} method. The
+file will be loaded.
+\item The results of running \link{SIMparse} on a prior simulation.
+}}
+
+\item{\code{...}}{Additional parameters to be passed to \link{SIMrun} and optionally,
+\code{combine = TRUE} as an argument will be passed to \link{SIMparse}.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{PM_sim} object created by calling \link{SIMparse} at the completion of the
+simulation.
 }
 }
 \if{html}{\out{<hr>}}
@@ -123,13 +111,16 @@ Save the current PM_sim object into a .rds file.
 \subsection{Method \code{plot()}}{
 Plot \code{PM_sim} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$plot(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$plot(at = 1, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{plot.PMsim}.}
+\item{\code{at}}{Index of the PM_sim object to be plotted. Default is 1.
+result.}
+
+\item{\code{...}}{Arguments passed to \link{plot.PM_sim}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -156,15 +147,17 @@ of the current Simulation.
 \if{html}{\out{<a id="method-PM_sim-auc"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-auc}{}}}
 \subsection{Method \code{auc()}}{
-Calculate AUC
+Calculates the AUC of the specified simulation
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$auc(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$auc(at = 1, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{makeAUC}}
+\item{\code{at}}{Index of the PM_sim object to use. Default is 1.}
+
+\item{\code{...}}{Arguments passed to \link{makeAUC}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -175,12 +168,14 @@ Calculate AUC
 \subsection{Method \code{summary()}}{
 Summarize simulation
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(field, by, individual = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(at = 1, field, by, individual = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{at}}{Index of the PM_sim object to be summarized. Default is 1.}
+
 \item{\code{field}}{Quoted character value, one of
 \itemize{
 \item obs for simulated observations
@@ -205,6 +200,46 @@ If \code{by} is ommitted, a data frame with rows for each data element except ID
 and columns labeled as mean, sd, median, min and max. If \code{by} is specified,
 return will be a list with named elements mean, sd, median, min and max, each containing
 the corresponding value for each group in \code{by}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_sim-run"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_sim-run}{}}}
+\subsection{Method \code{run()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+Deprecated method to run a simulation. Replaced by \code{PM_sim$new()} to be
+consistent with R6.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$run(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Not used.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_sim-load"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_sim-load}{}}}
+\subsection{Method \code{load()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+Deprecated method to load a prior simulation. Replaced by \code{PM_sim$new()} to be
+consistent with R6.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$load(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Not used.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}

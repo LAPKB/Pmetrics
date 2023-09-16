@@ -154,6 +154,7 @@ with the addition of the quantile for each observation
 }
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Plots \emph{PM_sim} objects with the option to perform a visual and numerical predictive check
 }
 \details{

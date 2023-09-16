@@ -147,10 +147,14 @@ Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black"
 Plots the object.
 }
 \description{
-Plots PM_pta objects
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
+This function will plot the percent target attainment for associated with
+simulations.
 }
 \details{
-This function will plot the percent target attainment for objects made with the \link{makePTA} function.
+\link{PM_pta} objects are made with the \verb{$pta} method for \link{PM_sim}  or
+with \code{PM_pta$new()}. Under the hood, either method uses the \link{makePTA} function.
 }
 \examples{
 \dontrun{

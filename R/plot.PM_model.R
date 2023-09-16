@@ -292,9 +292,9 @@ plot.PM_model <- function(x, marker = T, line = T, explicit, implicit,...) {
   #outputs
   if(!is.null(purrr::pluck(model,"model_list","out",1,"val"))){
     cmts <- map_chr(model$model_list$out, ~stringr::str_extract(.x$val, "\\d+"))
-    output_cmt <- tibble::tibble(out = paste0("Y",seq_along(cmts)), cmt = cmts)
+    output_cmt <- dplyr::tibble(out = paste0("Y",seq_along(cmts)), cmt = cmts)
   } else {
-    output_cmt = tibble::tibble(out = "", cmt = "1")
+    output_cmt = dplyr::tibble(out = "", cmt = "1")
   }
   
   #add explicit arrows from user

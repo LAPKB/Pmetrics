@@ -39,9 +39,12 @@ standard deviation of the population distribution for each parameter at each cyc
 the normalized median parameter values at each cycle.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
 Plot \emph{PMcycle} objects, which can be
 accessed as the \verb{$data} object within the \verb{$cycle} field of a \link{PM_result} object, e.g.
-\code{PM_result$cycle$data}.  It is largely now a legacy plotting function, with a variety of options.
+\code{PM_result$cycle$data}.  It is largely now a legacy plotting function and should generally
+be replaced by \link{plot.PM_cycle}.
 }
 \examples{
 plot(NPex$cycle$data)
