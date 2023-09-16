@@ -45,12 +45,14 @@ This will be \code{NA} if \code{tad = FALSE}.
 }
 }
 \description{
-Creates a Pmetrics validation object
-}
-\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 This function will create an object suitable for plotting visual predictive
 checks (VPCs) and prediction-corrected visual
-predictive checks (pcVPCs). The function will guide the user
+predictive checks (pcVPCs).
+}
+\details{
+The function will guide the user
 through appropriate clustering of doses, covariates and sample times for
 prediction correction using the methods of Bergstrand et al (2011).
 \emph{NOTE:} Including \code{tad} is only

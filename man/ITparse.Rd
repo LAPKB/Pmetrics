@@ -69,7 +69,8 @@ This means that the model may be misspecified.}
 \item{mdata }{The filename of the data used in the run.}
 }
 \description{
-\code{ITparse} processes the output from an IT2B run into a list.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Processes the output from an IT2B run into a list.
 }
 \details{
 This function can take some time to process the RFILE, depending on the number of subjects,

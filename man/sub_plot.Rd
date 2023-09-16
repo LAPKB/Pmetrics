@@ -63,6 +63,8 @@ A plot and plotly object combining all the plots in \code{...},
 which can be further modified.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Wrapper around \code{\link[plotly:subplot]{plotly::subplot()}}.
 }
 \details{

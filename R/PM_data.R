@@ -1,6 +1,7 @@
-#' Defines the PM_data object
+#' @title Defines the PM_data object
 #'
 #' @description
+#' `r lifecycle::badge("stable")`
 #' PM_data R6 objects containing raw, standardized and valid data, and methods
 #' to process the data
 #'

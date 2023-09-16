@@ -89,10 +89,13 @@ where 4=2.5\%; 5=25\%;
  \item{mdata }{The filename of the data used in the run.}
 }
 \description{
+`r lifecycle::badge("stable")`
+
 \code{NPparse} processes the output from an NPAG run into a list.
 }
 \details{
-This function can take some time to process the RFILE, depending on the number of subjects,
+This function is called automatically at the end of a run. It can take 
+some time to complete, depending on the number of subjects,
  doses, observations, etc.  Typical wait times are a few seconds up to 5 minutes.
  When processing is complete a summary of the extracted data will be reported on the console.
 }

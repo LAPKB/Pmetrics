@@ -1,10 +1,14 @@
-#' \code{ITparse} processes the output from an IT2B run into a list.
-#'
-#' This function can take some time to process the RFILE, depending on the number of subjects,
-#'  doses, observations, etc.  Typical wait times are a few seconds up to 5 minutes.
-#'  When processing is complete a summary of the extracted data will be reported on the console.
-#'
+
+
 #' @title Parse Pmetrics IT2B Output
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Processes the output from an IT2B run into a list.
+#' @details
+#' This function can take some time to process the RFILE, depending on the number of subjects,
+#' doses, observations, etc.  Typical wait times are a few seconds up to 5 minutes.
+#' When processing is complete a summary of the extracted data will be reported on the console.
+#'
 #' @param outfile This is the filename of the output from IT2B. Typically,
 #' the file will be called IT_RF0001.txt, and this is the default.
 #' @return The output of \code{ITparse} is a list with the following objects and

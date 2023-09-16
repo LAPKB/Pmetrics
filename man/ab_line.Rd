@@ -23,6 +23,8 @@ Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
 Default is \code{line = list(color = "black", width = 1, dash = "dash")}.}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Analogous to \link{abline}, draws horizontal, vertical or sloped reference lines.
 }
 \details{

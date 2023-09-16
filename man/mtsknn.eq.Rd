@@ -2,7 +2,7 @@
 % Please edit documentation in R/mtsknn.R
 \name{mtsknn.eq}
 \alias{mtsknn.eq}
-\title{Multivariate two-sample test based on k-nearest neighbors}
+\title{Compare discrete distributions}
 \usage{
 mtsknn.eq(x, y, k, clevel = 0.05, getpval = TRUE, print = TRUE)
 }
@@ -28,7 +28,8 @@ A list consists of the test statistics,
 normalized Z score and corresponding P value.
 }
 \description{
-Compare discrete distributions
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Multivariate two-sample test based on k-nearest neighbors
 }
 \details{
 This function tests whether two samples share the same underlying

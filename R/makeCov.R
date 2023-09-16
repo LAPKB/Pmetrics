@@ -1,9 +1,11 @@
+#' @title Extract covariate data
+#' @description
+#' `r lifecycle::badge("stable")`
 #' Generates an data.frame with subject-specific covariate data from an \emph{NPAG} or \emph{IT2B} object
-#'
+#' @details
 #' For each subject, \code{makeCov} extracts covariate information and Bayesian posterior parameter estimates.
 #' This output of this function is suitable for exploration of covariate-parameter, covariate-time, or parameter-time relationships.
 #'
-#' @title Extract covariate data
 #' @param data A suitable data object of the \emph{NPAG} or \emph{IT2B} class (see \code{\link{NPparse}} or \code{\link{ITparse}}).
 #' @return The output of \code{makeCov} is a dataframe of class \emph{PMcov},
 #' which has the following columns:

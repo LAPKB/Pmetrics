@@ -21,8 +21,14 @@ A dataframe of class \emph{PMpop} with columns:
 \item{block}{ Observation blocks within subjects as defined by EVID=4 dosing events}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Returns the Bayesian population prior predictions at short intervals specified during the NPAG run,
 up to 12 minutes.
+}
+\details{
+Predictions are calculated using the median (default) or mean of the
+Bayesian prior parameter values and each subject's dosing, sampling, and covariate
+(if relevant) information.
 }
 \examples{
 pop <- makePop(NPdata = NPex$NPdata)

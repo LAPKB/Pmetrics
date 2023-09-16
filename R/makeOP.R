@@ -1,10 +1,12 @@
+#' @title Generated observed vs. predicted data
+#' @description
+#' `r lifecycle::badge("stable")`
 #' Generates an observed vs. predicted data.frame from an \emph{NPAG} or \emph{IT2B} object
-#'
+#' @details
 #' \code{makeOP} will parse the output of \code{\link{NPparse}} or \code{\link{ITparse}} to generate a
 #' data.frame suitable for analysis and plotting of observed vs. population or
 #' or individual predicted outputs.
 #'
-#' @title Generated observed vs. predicted data
 #' @param data A suitable data object of the \emph{NPAG} or \emph{IT2B} class (see \code{\link{NPparse}} or \code{\link{ITparse}}).
 #' @return The output of \code{makeOP} is a data frame of class \emph{PMop}, which has a population and posterior
 #' prediction object (also class \emph{PMop}) for each output equation.  Each of these has 13 columns:

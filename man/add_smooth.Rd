@@ -51,6 +51,8 @@ is \code{TRUE}. If specified as a
 Pmetrics option, it can be overridden for specific plots by supplying a value.}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Modifies an existing plot to include a regression line with  confidence interval.
 }
 \details{

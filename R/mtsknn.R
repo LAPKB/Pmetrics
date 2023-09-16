@@ -1,5 +1,9 @@
-#' Compare discrete distributions
-#' 
+#' @title Compare discrete distributions
+#' @description 
+#' `r lifecycle::badge("stable")`
+#' Multivariate two-sample test based on k-nearest neighbors
+#'
+#' @details
 #' This function tests whether two samples share the same underlying 
 #' distribution based on k-nearest-neighbors approach.
 #' Matrices or data frames x and y are the two samples to be tested. 
@@ -7,7 +11,6 @@
 #' The integer k is the number of nearest neighbors to choose in the 
 #' testing procedure. This approach is robust in the unbalanced case.
 #' 
-#' @title Multivariate two-sample test based on k-nearest neighbors
 #' @param x A matrix or data frame.
 #' @param y A matrix or data frame.
 #' @param k k An integer.

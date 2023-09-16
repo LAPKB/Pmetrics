@@ -1,9 +1,11 @@
+#' @title Summarize Pmetrics Run Cycle Information
+#' @description
+#' `r lifecycle::badge("stable")`
 #' Parses the cycle information from an NPAG or an IT2B object.
-#'
+#' @details
 #' This function will parse the output of \code{\link{NPparse}} or \code{\link{ITparse}} to generate a
 #' list suitable for analysis and plotting of NPAG or IT2B cycle information.
 #'
-#' @title Summarize Pmetrics Run Cycle Information
 #' @param data A suitable data object of the \emph{NPAG} or \emph{IT2B} class (see \code{\link{NPparse}} or \code{\link{ITparse}}).
 #' @return The output of \code{makeCycle} is a list of class \emph{PMcycle},
 #' which has 8 objects from NPAG or 6 objects from IT2B :
