@@ -52,7 +52,12 @@ For more than one file parsed, this will be the weighted averages for all simula
 A plot method exists in \code{\link{plot.PMsim}} for \emph{PMsim} objects.
 }
 \description{
-Parses the output of the Pmetrics simulator
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
+Parses the output of the Pmetrics simulator.
+This is largely superseded as it is automatically called by either of the simulation
+methods: \code{PM_result$sim()} or \code{PM_sim$new()}. There is rarely a need any longer to call this
+function directly.
 }
 \details{
 For \code{file} specification \dQuote{?} will be matched by just a single numeral or character; \dQuote{*} will be
@@ -66,7 +71,7 @@ strange plots since not all profiles have the same observations.
 For parallel execution, the function requires packages 'doParallel' and 'foreach'. If not installed, it will try to install, failing that it will run in serial mode.
 }
 \seealso{
-\code{\link{SIMrun}}
+\link{PM_result}, \link{PM_sim}, \link{SIMrun}
 }
 \author{
 Michael Neely

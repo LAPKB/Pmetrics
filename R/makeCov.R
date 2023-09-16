@@ -1,6 +1,7 @@
 #' @title Extract covariate data
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Generates an data.frame with subject-specific covariate data from an \emph{NPAG} or \emph{IT2B} object
 #' @details
 #' For each subject, \code{makeCov} extracts covariate information and Bayesian posterior parameter estimates.

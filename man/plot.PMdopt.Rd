@@ -40,6 +40,7 @@ Plots the object.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Plot PMdopt objects
 }
 \details{
@@ -49,22 +50,7 @@ and the weighted mean for that time.
 }
 \seealso{
 \code{\link{Dopt}}, \code{\link{summary.PMdopt}}
-
-Other PMplots: 
-\code{\link{plot.MMopt}()},
-\code{\link{plot.PM_cov}()},
-\code{\link{plot.PM_cycle}()},
-\code{\link{plot.PM_data}()},
-\code{\link{plot.PM_final}()},
-\code{\link{plot.PM_model}()},
-\code{\link{plot.PM_op}()},
-\code{\link{plot.PM_pta}()},
-\code{\link{plot.PM_sim}()},
-\code{\link{plot.PM_valid}()},
-\code{\link{plot.PMcov}()},
-\code{\link{plot.PMcycle}()}
 }
 \author{
 Michael Neely
 }
-\concept{PMplots}

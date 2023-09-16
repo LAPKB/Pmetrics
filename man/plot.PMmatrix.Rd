@@ -139,13 +139,14 @@ Plots the object.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 
-\code{plot.PMmatrix} plots \emph{PMmatrix} objects
+Plots \emph{PMmatrix} objects. It is largely now a
+legacy plotting function, replaced
+by \link{plot.PM_data}.
 }
 \details{
 This function will plot raw and fitted time and concentration data, which can be
 accessed as the \verb{$data} object within the \verb{$data} field of a \link{PM_data} object, e.g.
-\code{PM_data$data$data}.  It is largely now a legacy plotting function, replaced
-by \link{plot.PM_data}.
+\code{PM_data$data$data}.
 For the legend, defaults that are different that the standard are:
 \itemize{
 \item x Default \dQuote{topright}

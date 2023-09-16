@@ -1,6 +1,7 @@
 #' @title Plot Pmetrics Validation Objects
 #' @description
 #' #' `r lifecycle::badge('stable')`
+#' 
 #' Plot [PM_valid] objects.
 #' @details
 #' Generates a plot of outputs (typically concentrations) on the y axis and time 
@@ -319,8 +320,7 @@ plot.PM_valid <- function(x,
 #' @title Plot Pmetrics Validation Objects
 #' @description
 #' `r lifecycle::badge('superseded')`
-#' Plot PMvalid objects
-#' @details
+#' 
 #' This is largely now a legacy plotting function, 
 #' with a variety of options. It has been superseded by [plot.PM_valid].
 #' @method plot PMvalid

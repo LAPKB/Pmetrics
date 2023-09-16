@@ -26,13 +26,16 @@ and \emph{upperCI} are the lower limit, median, and upper limit of the confidenc
 interval for the pdi whose width is specified by \code{ci}.}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Summarize a Pmetrics Percent Target Attainment Object
 }
 \details{
-Summarize target statistics and success proportions in a \emph{PMpta} object made by \link{makePTA}.
+Summarize target statistics and success proportions in a \emph{PMpta} object made by \link{makePTA}
+and usually found in a \link{PM_pta} object.
 }
 \seealso{
-\link{makePTA}
+\link{makePTA}, \link{PM_pta}
 }
 \author{
 Michael Neely

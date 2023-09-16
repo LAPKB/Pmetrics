@@ -1,6 +1,7 @@
 #' @title Assay error polynomial coefficients
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Estimate coefficients for the polynomial to describe assay error.
 #' @details
 #' This function plots first, second, and third order polynomial functions fitted

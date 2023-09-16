@@ -1,15 +1,23 @@
-#' Run the Pmetrics Simulator
-#'
-#' Generates randomly sampled sets of parameters from the *#PRIMARY* block of
-#' a model according to a prior distribution and calculates outputs based upon
-#' a template data file.
+#' @title Run the Pmetrics Simulator
+#' @description
+#' `lifecycle::badge("superseded")`
+#' 
+#' This is largely superseded as it is automatically called by either of the simulation
+#' methods: `PM_result$sim()` or `PM_sim$new()`. There is rarely a need any longer to call this
+#' function directly.
 #' 
 #' @details
-#' The Monte Carlo simulator in Pmetrics is a powerful tool for parametric or
+#' 
+#' The Monte Carlo simulator in Pmetrics generates randomly sampled sets of 
+#' parameters from the *#PRIMARY* block of
+#' a model according to a prior distribution and calculates outputs based upon
+#' a template data file. It is a powerful tool for parametric or
 #' semi-parametric sampling.  There are three ways to execute the simulator.
+#' 
 #' * **PM_result$sim**
 #' * **PM_sim$run**
 #' * **SIMrun**
+#' 
 #' The first two are the preferred methods in R6 Pmetrics. They return fully 
 #' parsed simulator output as [PM_sim] objects in R. The third method is for 
 #' legacy Pmetrics or when a user-specified prior is necessary, i.e. not from

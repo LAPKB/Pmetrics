@@ -22,6 +22,7 @@ A dataframe of class \emph{PMpop} with columns:
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Returns the Bayesian population prior predictions at short intervals specified during the NPAG run,
 up to 12 minutes.
 }

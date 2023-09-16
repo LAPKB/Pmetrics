@@ -1,6 +1,7 @@
 #' @title Compare discrete distributions
 #' @description 
 #' `r lifecycle::badge("stable")`
+#' 
 #' Multivariate two-sample test based on k-nearest neighbors
 #'
 #' @details

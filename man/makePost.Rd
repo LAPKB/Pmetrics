@@ -23,6 +23,7 @@ A dataframe of class \emph{PMpost} with columns:
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Returns the Bayesian posterior predictions at short intervals specified during the NPAG run,
 up to 12 minutes.  These results are contained separately from the main output of NPAG, in the
 PRTBxxxx file.

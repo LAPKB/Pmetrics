@@ -9,7 +9,7 @@
 \arguments{
 \item{object}{A PMcov object made by \link{makeCov}.}
 
-\item{icen}{Summary function for covariates and posterior parameters. Default is \dQuote{median}, but can specify \dQuote{mean}.}
+\item{icen}{Summary function for covariates and posterior parameters. Default is "median", but can specify "mean".}
 
 \item{...}{Not used.}
 }
@@ -18,13 +18,15 @@ A data frame with the summary of the PMcov object for each subject's covariates 
 Bayesian posterior parameter values.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Summarize a Pmetrics Covariate object
 }
 \details{
 Summarize covariates and Bayesian posterior parameter values for each subject.
 }
 \seealso{
-\link{makeCov}
+\link{makeCov}, \link{PM_cov}
 }
 \author{
 Michael Neely

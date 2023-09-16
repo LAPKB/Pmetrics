@@ -9,15 +9,14 @@
 \arguments{
 \item{x}{A PMerr object made by validation in \link{PM_data}.}
 
-\item{...}{Other parameters which are not necessary.}
+\item{...}{Not used.}
 }
 \value{
 A printed object.
 }
 \description{
-Print a Pmetrics Error Object
-}
-\details{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Print the errors in a Pmetrics data file or \link{PM_data} object.
 }
 \seealso{

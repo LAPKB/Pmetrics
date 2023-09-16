@@ -83,9 +83,7 @@ Plots the object using ggplot2.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
-Plot PMvalid objects
-}
-\details{
+
 This is largely now a legacy plotting function,
 with a variety of options. It has been superseded by \link{plot.PM_valid}.
 }

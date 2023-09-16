@@ -23,6 +23,8 @@ model file in this directory prior to each run.}
 integrity and for audit purposes.}
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Sets up a directory tree for a new Pmetrics project
 }
 \details{
@@ -34,7 +36,7 @@ PMtree("DrugX")
 }
 }
 \seealso{
-\code{\link{PMmanual}}
+\link{PMmanual}
 }
 \author{
 Michael Neely

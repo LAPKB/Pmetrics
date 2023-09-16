@@ -1,6 +1,7 @@
 #' @title Parse Pmetrics output
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' A flexible parser for Pmetrics output
 #' @details
 #' Currently written for the Rust implementation of NPAG

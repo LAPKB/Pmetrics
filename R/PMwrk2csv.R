@@ -1,19 +1,22 @@
-#' \code{PMwrk2csv} will convert old style, single drug working copy files into
-#'  a single .csv matrix file.
-#'
+#' @title Convert Old .wrk Files to .csv Matrix File
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
+#' Convert old-style, USC*PACK single drug working copy files into
+#'  a [PM_data] object and write a .csv file to the current working directory.
+#' @details
 #' This function will determine if the working copy files are old and convert them.
 #' New, multi-drug working copy files will be ignored. IDs will be suffixed with
 #' .1 to .9 for <10 subjects, .01 to .99 for <100 subjects and .001 to .999 for <1000 subjects,
 #' as needed to ensure unique ID numbers.
 #'
-#' @title Convert Old .wrk Files to .csv Matrix File
 #' @param prefix The alphabetic prefix of the working copy files to be converted,
 #'  as a character vector.
 #' @param ext The extension of the working copy files files, if it exists.
 #'  Does not have to be specified.
 #' @param nsub The number of subjects, or working copy files to read.
-#' @return A new file will be created with the name equal to \code{prefix} and
-#'  an extension of \dQuote{csv}.
+#' @return A new file will be created with the name equal to `prefix` and
+#'  an extension of "csv".
 #' @author Michael Neely
 #' @export
 
@@ -158,10 +161,10 @@ PMwrk2csv <- function(prefix,ext=NULL,nsub){
     } else {stop("This function is only for old working copy (single drug) files.\n")}
     new <- rbind(new,temp)
   }
+  new_data <- PM_data$new(new)
   #write the new file
-  PMwriteMatrix(data=new,filename=paste(prefix,".csv",sep=""),override=T)
-  class(new) <- c("PMmatrix","data.frame")
-  return(new)
+  new_data$write(file_name=paste(prefix,".csv",sep=""),override = TRUE)
+  return(new_data)
 }
 
 

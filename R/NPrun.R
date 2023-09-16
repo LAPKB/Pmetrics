@@ -2,10 +2,10 @@
 #' @description
 #' `r lifecycle::badge("superseded")`
 #' 
-#' \code{NPrun} will execute an NPAG run.
-#' @details
 #' This is largely superseded by the `$run` method for [PM_fit] objects. 
 #' 
+#' \code{NPrun} will execute an NPAG run.
+#' @details
 #' If all function arguments are default, the simplest execution of this command is
 #' \code{NPrun()}.  This will result in generation of a batch file.  On Unix (Mac) systems
 #' will be launched automatically in a terminal window.  On Windows systems, the user

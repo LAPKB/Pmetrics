@@ -7,23 +7,26 @@
 \method{print}{summary.PMop}(x, digits = max(3, getOption("digits") - 3), ...)
 }
 \arguments{
-\item{x}{A summary.PMop object made by \code{\link{summary.PMop}}.}
+\item{x}{An object made by \link{summary.PMop}.}
 
 \item{digits}{Integer, used for number of digits to print.}
 
-\item{\dots}{Other parameters which are not necessary.}
+\item{...}{Not used.}
 }
 \value{
 A printed object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Print a Pmetrics Observed vs. Predicted Summary Object
 }
 \details{
-Print a summary of observations, predictions and errors in a summary.PMop object made by \code{\link{summary.PMop}}.
+Print a summary of observations, predictions and errors in a summary.PMop object
+made by \link{summary.PMop} and aliased by \link{summary.PM_op}.
 }
 \seealso{
-\code{\link{summary.PMop}}
+\link{summary.PMop}, \link{summary.PM_op}
 }
 \author{
 Michael Neely

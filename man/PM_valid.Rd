@@ -5,6 +5,7 @@
 \title{Pmetrics validation object}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Contains results of internal validation by simulation to permit generation of
 visual predictive checks (VPCs), prediction corrected visual predictive checks,
 (pcVPCs), normalized prediction distribution errors (NPDE), and

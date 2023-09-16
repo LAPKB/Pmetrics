@@ -23,6 +23,7 @@ Plots the simulation profiles with MMoptimal times indicated as vertical lines.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Plots \emph{MMopt} objects
 }
 \details{
@@ -43,10 +44,7 @@ Other PMplots:
 \code{\link{plot.PM_op}()},
 \code{\link{plot.PM_pta}()},
 \code{\link{plot.PM_sim}()},
-\code{\link{plot.PM_valid}()},
-\code{\link{plot.PMcov}()},
-\code{\link{plot.PMcycle}()},
-\code{\link{plot.PMdopt}()}
+\code{\link{plot.PM_valid}()}
 }
 \author{
 Michael Neely

@@ -1,6 +1,7 @@
 #' @title Summarize Pmetrics Run Cycle Information
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Parses the cycle information from an NPAG or an IT2B object.
 #' @details
 #' This function will parse the output of \code{\link{NPparse}} or \code{\link{ITparse}} to generate a

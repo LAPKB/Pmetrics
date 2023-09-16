@@ -1,11 +1,11 @@
 #' @title Execute an IT2B run.
 #' @description
 #' `r lifecycle::badge("superseded")`
-#' Runs a parametric IT2B search for parameter values.
-#'
-#' @details
-#' This is largely superseded by the `$run` method for [PM_fit] objects. 
 #' 
+#' Runs a parametric IT2B search for parameter values.
+#' This is largely superseded by the `$run` method for [PM_fit] objects. 
+
+#' @details
 #' If all function arguments are default, the simplest execution of this command is 
 #' \code{ITrun()}.  This will result in generation of a batch file.  On Unix (Mac) systems
 #' will be launched automatically in a terminal window.  On Windows systems, the user

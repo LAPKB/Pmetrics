@@ -1,10 +1,14 @@
+#' @title Summarize PMmatrix objects
+#' @description
+#' `r lifecycle::badge("stable")`
+#' 
 #' Summarize a Pmetrics PMmatrix object
 #'
 #' Summarize the raw data used for a Pmetrics run.
 #'
-#' @title Summarize PMmatrix objects
 #' @method summary PMmatrix
-#' @param object A PMmatrix object loaded by [PMreadMatrix] or [PM_load].
+#' @param object A PMmatrix object which is the `$data` field of a [PM_data] object,
+#' but can also be loaded by [PMreadMatrix] or [PM_load].
 #' @param formula Optional formula for specifying custom summaries.  See [aggregate]
 #' and [formula] for details on how to specify formulae in R. If, for example, the data contain
 #' a covariate for weight named 'wt', then to summarize the mean dose in mg/kg per subject specify 

@@ -1,6 +1,7 @@
 #' @title Summarize NPAG or IT2B Final Cycle Population Values
 #' @description
 #' `r lifecycle::badge("stable")`
+#' 
 #' Extracts final cycle information from NPAG or IT2B run.
 #' @details
 #' This function will parse the output of \code{\link{NPparse}} or \code{\link{ITparse}} to generate a

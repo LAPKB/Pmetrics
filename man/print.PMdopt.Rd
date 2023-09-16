@@ -7,21 +7,20 @@
 \method{print}{PMdopt}(x, ...)
 }
 \arguments{
-\item{x}{A PMdopt object made by \code{\link{Dopt}}.}
+\item{x}{A PMdopt object made by \link{Dopt}.}
 
-\item{\dots}{Other parameters which are not necessary.}
+\item{...}{Not used.}
 }
 \value{
 A printed object.
 }
 \description{
-Print a Pmetrics PMdopt Object
-}
-\details{
-Print a Pmetrics D-optimal object, made by \code{Dopt}.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
+Print a Pmetrics PMdopt Object made by \link{Dopt}.
 }
 \seealso{
-\code{\link{Dopt}}
+\link{Dopt}
 }
 \author{
 Michael Neely

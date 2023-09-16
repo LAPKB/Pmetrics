@@ -56,7 +56,14 @@ The second object (\verb{$results}) is a vector of the row numbers that contain 
 }
 }
 \description{
-This function will check a .csv file or a data frame containing a
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
+
+This function is largely superseded as it is called automatically when
+data are initialized as a \link{PM_data} object. It can still be called
+independently of this route and will check for data and optionally model errors.
+}
+\details{
+It  will check a .csv file or a data frame containing a
 previously loaded .csv file (the output of \link{PMreadMatrix} for errors
 which would cause the analysis to fail.  If a model file is provided, and the data
 file has no errors, it will also check the model file for errors. Note that as of
@@ -64,8 +71,7 @@ Pmetrics Version 2, this function is called automatically when a new \link{PM_da
 object is created, and users generally no longer need to call the function directly.
 In \code{PM_data$new()}, the data object is first standardized to contain all required columns,
 since only "ID", "TIME", "DOSE" and "OUT" are required at minimum, and then checked with PMcheck.
-}
-\details{
+
 If calling PMcheck directly, either a filename or a Pmetrics data object in memory are accepted as \code{data}.
 Because there is no standardization with direct calls, in this case the format of the .csv matrix file is fairly rigid.
 It must have the following features.  Text is case-sensitive.

@@ -7,24 +7,26 @@
 \method{print}{summary.PMfinal}(x, digits = max(3, getOption("digits") - 3), ...)
 }
 \arguments{
-\item{x}{A summary.PMfinal object made by \code{\link{summary.PMfinal}}.}
+\item{x}{A summary.PMfinal object made by \link{summary.PM_final}.}
 
 \item{digits}{Integer, used for number of digits to print.}
 
-\item{\dots}{Other parameters which are not necessary.}
+\item{...}{Not used.}
 }
 \value{
 A printed object.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
 Print a Pmetrics Final Summary Object
 }
 \details{
 Print a summary of parameter medians and MAWD, with point estimates and credibilty intervals
-from a summary.PMfinal object made by \code{\link{summary.PMfinal}}.
+from an object made by \link{summary.PM_final}.
 }
 \seealso{
-\code{\link{summary.PMfinal}}
+\link{summary.PM_final}
 }
 \author{
 Michael Neely
