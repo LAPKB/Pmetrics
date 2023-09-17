@@ -16,3 +16,4 @@ compile.*
 .gitkeep
 ^man-roxygen
 ^README\.Rmd$
+logo.png
