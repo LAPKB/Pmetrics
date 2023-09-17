@@ -1,5 +1,4 @@
-Pmetrics
-========
+# Pmetrics <a href="https://lapkb.github.io/Pmetrics/"><img src="man/figures/logo.png" align="right" height="135" alt="Pmetrics website" /></a>
 
 Thank you for your interest in Pmetrics. Pmetrics is a library package for R to perform non-parametric and parametric pharmacokinetic-pharmacodynamic population and individual modeling and simulation. It is primarily designed for pharmacometric researchers.
 
