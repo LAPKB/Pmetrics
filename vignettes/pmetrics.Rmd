@@ -28,7 +28,7 @@ Pmetrics is a population modeling and simulation package for R. It can model dat
 It's easy and *all free*!
 
 1. Install [R](https://cran.r-project.org)
-2. Install [Rstudio](https://www.rstudio.com), which will soon be rebranded as [posit](https://posit.co).
+2. Install [Rstudio](https://www.rstudio.com), from [posit](https://posit.co).
 3. Install the *devtools* package into Rstudio. The easiest way is to click the Install button on the Packages tab, and search the CRAN repository for *devtools*.
 
 
