@@ -6,7 +6,7 @@
 ,,"covariates...Covariate values for each subject at each time, extracted from the raw data file"
 ,,"parameters...Mean, median, or mode of Bayesian posterior distribution for each random parameter in the model.  Mode summaries are available for NPAG output only, and the default is median.  Values are recycled for each row within a given subject, with the number of rows driven by the number of covariate entries"
 ,,icen: Median (default) or mean of the covariates and parameter value distributions.
-,\$initialize,"Method: Called by PM_cov$new(), creates new PM_cov object, happens automatically at end of run, generally not a user function"
+,\$initialize,"Method: Called by PM_cov\$new(), creates new PM_cov object, happens automatically at end of run, generally not a user function"
 ,\$plot,Method: Plot the PM_cov object with plot.PMcov()
 ,\$print,Method: display the PM_cov object as a data frame
 ,\$summary,"Method: summarize the PM_cov object with summary.PMcov(), same function as for Legacy"
@@ -14,7 +14,7 @@
 ,\$bic,A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle
 ,\$clone,Method: Create copy of PM_cycle object
 ,\$gamlam,A matrix of cycle number and gamma or lambda at each cycle (see item #16 under NPAG Runs below for a discussion of gamma and lambda)
-,\$initialize,"Method: Called by PM_cycle$new(), creates new PM_cycle object, happens automatically at end of run, generally not a user function"
+,\$initialize,"Method: Called by PM_cycle\$new(), creates new PM_cycle object, happens automatically at end of run, generally not a user function"
 ,\$ll,Matrix of cycle number and -2*Log-likelihood at each cycle
 ,\$mean,"A matrix of cycle number and the mean of each random parameter at each cycle, normalized to initial mean"
 ,\$median,"A matrix of cycle number and the median of each random parameter at each cycle, normalized to initial standard deviation"
@@ -26,7 +26,7 @@
 ,\$clone,Method: Create copy of PM_final object
 ,\$data,"Data frame with all data fields, class: PMfinal, same as Legacy"
 ,\$gridpts,(NPAG only) The initial number of support points
-,\$initialize,"Method: Called by PM_fiinal$new(), creates new PM_final object, happens automatically at end of run, generally not a user function"
+,\$initialize,"Method: Called by PM_fiinal\$new(), creates new PM_final object, happens automatically at end of run, generally not a user function"
 ,\$nsub,Number of subjects
 ,\$plot,Method: Plot the PM_final object with plot.PM_final()
 ,\$popCor,The final cycle correlation matrix for each random parameter distribution
@@ -60,7 +60,7 @@
 ,\$ds,Squared difference between pred and obs
 ,\$icen,Median (default) or mean of the parameter distributions used to calculate the predicted values.
 ,\$id,Subject identification
-,\$initialize,"Method: Called by PM_op$new(), creates new PM_op object, happens automatically at end of run, generally not a user function"
+,\$initialize,"Method: Called by PM_op\$new(), creates new PM_op object, happens automatically at end of run, generally not a user function"
 ,\$obs,Observation
 ,\$obsSD,Calculated standard deviation (error) of the observation based on the assay error polynomial
 ,\$outeq,
@@ -77,7 +77,7 @@ NPAG only,\$clone,Method: Create copy of PM_pop or PM_post object
 ,\$data,"Data frame with all data fields, class: PMpop or PMpost, same as Legacy"
 ,\$icen,Median (default) or mean of the parameter distributions used to calculate the predicted values.
 ,\$id,Subject identification
-,\$initialize,"Method: Called by PM_pop$new() or PM_post$new(), creates new PM_pop or PM_post object, happens automatically at end of run, generally not a user function"
+,\$initialize,"Method: Called by PM_pop\$new() or PM_post\$new(), creates new PM_pop or PM_post object, happens automatically at end of run, generally not a user function"
 ,\$outeq,Output equation for each prediction
 ,\$pred,Population prior (PMpop) or Bayesian posterior (PMpost) predictions for each output equation
 ,\$time,"Time of each prediction at a frequency specified in the NPrun() command, with a default of 12 minutes."
