@@ -167,20 +167,56 @@ parameter value distributions.</td>
 <tr class="even">
 <td align="left"></td>
 <td align="left">$initialize</td>
-<td align="left">Method: Called by PM_cov<span class="math inline">\(new(), creates new PM_cov object, happens
-automatically at end of run, generally not a user function | | |\$plot
-|Method: Plot the PM_cov object with plot.PMcov() | | |\$print |Method:
-display the PM_cov object as a data frame | | |\$summary |Method:
-summarize the PM_cov object with summary.PMcov(), same function as for
-Legacy | |cycle (class: PM_cycle, R6) |\$aic |A matrix of cycle number
-and Akaike Information Criterion at each cycle | | |\$bic |A matrix of
-cycle number and Bayesian (Schwartz) Information Criterion at each cycle
-| | |\$clone |Method: Create copy of PM_cycle object | | |\$gamlam |A
-matrix of cycle number and gamma or lambda at each cycle (see item #16
-under NPAG Runs below for a discussion of gamma and lambda) | |
-|\$initialize |Method: Called by PM_cycle\)</span>new(), creates new
-PM_cycle object, happens automatically at end of run, generally not a
-user function</td>
+<td align="left">Method: Called by PM_cov$new(), creates new PM_cov
+object, happens automatically at end of run, generally not a user
+function</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$plot</td>
+<td align="left">Method: Plot the PM_cov object with plot.PMcov()</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$print</td>
+<td align="left">Method: display the PM_cov object as a data frame</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$summary</td>
+<td align="left">Method: summarize the PM_cov object with
+summary.PMcov(), same function as for Legacy</td>
+</tr>
+<tr class="even">
+<td align="left">cycle (class: PM_cycle, R6)</td>
+<td align="left">$aic</td>
+<td align="left">A matrix of cycle number and Akaike Information
+Criterion at each cycle</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$bic</td>
+<td align="left">A matrix of cycle number and Bayesian (Schwartz)
+Information Criterion at each cycle</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$clone</td>
+<td align="left">Method: Create copy of PM_cycle object</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$gamlam</td>
+<td align="left">A matrix of cycle number and gamma or lambda at each
+cycle (see item #16 under NPAG Runs below for a discussion of gamma and
+lambda)</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$initialize</td>
+<td align="left">Method: Called by PM_cycle$new(), creates new PM_cycle
+object, happens automatically at end of run, generally not a user
+function</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>
@@ -250,52 +286,210 @@ as Legacy</td>
 <tr class="even">
 <td align="left"></td>
 <td align="left">$initialize</td>
-<td align="left">Method: Called by PM_fiinal<span class="math inline">\(new(), creates new PM_final object, happens
-automatically at end of run, generally not a user function | | |\$nsub
-|Number of subjects | | |\$plot |Method: Plot the PM_final object with
-plot.PM_final() | | |\$popCor |The final cycle correlation matrix for
-each random parameter distribution | | |\$popCov |The final cycle
-covariance matrix for each random parameter distribution | | |\$popCV
-|The final cycle coefficient of variation for each random parameter
-distribution | | |\$popMean |The final cycle mean for each random
-parameter distribution | | |\$popMedian |The final cycle median for each
-random parameter distribution | | |\$popPoints |(NPAG only) Data frame
-of the final cycle joint population density of grid points with column
-names equal to the name of each random parameter plus \$prob for the
-associated probability of that point | | |\$popRanFix |The final cycle
-values for all fixed but random parameters | | |\$popSD |The final cycle
-standard deviation for each random parameter distribution | | |\$popVar
-|The final cycle variance for each random parameter distribution | |
-|\$postCor |An array of correlation matrices for posterior parameter
-values for each subject | | |\$postCov |An array of covariance matrices
-for posterior parameter values for each subject | | |\$postMean |A
-matrix of means of posterior distributions for each subject and
-parameter | | |\$postPoints |(NPAG only) Data frame of the Bayesian
-posterior parameter points for each of the first 100 subjects, with the
-following columns: | | | |id: subject ID | | | |point: point number for
-that subject | | | |parameters: parameters in the model | | | |prob:
-probability of each point in the posterior for each patient | |
-|\$postSD |A matrix of SDs of posterior distributions for each subject
-and parameter | | |\$postVar |A matrix of variances of posterior
-distributions for each subject and parameter | | |\$shrinkage |Shrinkage
-values for each random population parameter | | |\$summary |Method:
-summarize the PM_final object with summary.PMfinal(), same function as
-for Legacy | |ITdata (class: IT2B, list) | |Raw data used to make the
-above objects. Please use ?ITparse in R for discussion of the data
-contained in these objects | |NPdata (class: NPAG, list) | |Raw data
-used to make the above objects. Please use ?NPparse in R for discussion
-of the data contained in these objects | |op (class: PM_op, R6) |\$auc
-|Method: makeAUC() to calculate area under time concentration curve | |
-|\$block |Dosing block, usually 1 unless data file contains EVID=4 dose
-reset events, in which case each such reset within a given ID will
-increment the dosing block by 1 for that ID | | |\$clone |Method: Create
-copy of PM_op object | | |\$d |Difference between pred and obs | |
-|\$data |Data frame with all data fields, class: PMop, same as Legacy |
-| |\$ds |Squared difference between pred and obs | | |\$icen |Median
-(default) or mean of the parameter distributions used to calculate the
-predicted values. | | |\$id |Subject identification | | |\$initialize
-|Method: Called by PM_op\)</span>new(), creates new PM_op object,
-happens automatically at end of run, generally not a user function</td>
+<td align="left">Method: Called by PM_fiinal$new(), creates new PM_final
+object, happens automatically at end of run, generally not a user
+function</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$nsub</td>
+<td align="left">Number of subjects</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$plot</td>
+<td align="left">Method: Plot the PM_final object with
+plot.PM_final()</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$popCor</td>
+<td align="left">The final cycle correlation matrix for each random
+parameter distribution</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$popCov</td>
+<td align="left">The final cycle covariance matrix for each random
+parameter distribution</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$popCV</td>
+<td align="left">The final cycle coefficient of variation for each
+random parameter distribution</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$popMean</td>
+<td align="left">The final cycle mean for each random parameter
+distribution</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$popMedian</td>
+<td align="left">The final cycle median for each random parameter
+distribution</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$popPoints</td>
+<td align="left">(NPAG only) Data frame of the final cycle joint
+population density of grid points with column names equal to the name of
+each random parameter plus $prob for the associated probability of that
+point</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$popRanFix</td>
+<td align="left">The final cycle values for all fixed but random
+parameters</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$popSD</td>
+<td align="left">The final cycle standard deviation for each random
+parameter distribution</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$popVar</td>
+<td align="left">The final cycle variance for each random parameter
+distribution</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$postCor</td>
+<td align="left">An array of correlation matrices for posterior
+parameter values for each subject</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$postCov</td>
+<td align="left">An array of covariance matrices for posterior parameter
+values for each subject</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$postMean</td>
+<td align="left">A matrix of means of posterior distributions for each
+subject and parameter</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$postPoints</td>
+<td align="left">(NPAG only) Data frame of the Bayesian posterior
+parameter points for each of the first 100 subjects, with the following
+columns:</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">id: subject ID</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">point: point number for that subject</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">parameters: parameters in the model</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left"></td>
+<td align="left">prob: probability of each point in the posterior for
+each patient</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$postSD</td>
+<td align="left">A matrix of SDs of posterior distributions for each
+subject and parameter</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$postVar</td>
+<td align="left">A matrix of variances of posterior distributions for
+each subject and parameter</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$shrinkage</td>
+<td align="left">Shrinkage values for each random population
+parameter</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$summary</td>
+<td align="left">Method: summarize the PM_final object with
+summary.PMfinal(), same function as for Legacy</td>
+</tr>
+<tr class="even">
+<td align="left">ITdata (class: IT2B, list)</td>
+<td align="left"></td>
+<td align="left">Raw data used to make the above objects. Please use
+?ITparse in R for discussion of the data contained in these objects</td>
+</tr>
+<tr class="odd">
+<td align="left">NPdata (class: NPAG, list)</td>
+<td align="left"></td>
+<td align="left">Raw data used to make the above objects. Please use
+?NPparse in R for discussion of the data contained in these objects</td>
+</tr>
+<tr class="even">
+<td align="left">op (class: PM_op, R6)</td>
+<td align="left">$auc</td>
+<td align="left">Method: makeAUC() to calculate area under time
+concentration curve</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$block</td>
+<td align="left">Dosing block, usually 1 unless data file contains
+EVID=4 dose reset events, in which case each such reset within a given
+ID will increment the dosing block by 1 for that ID</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$clone</td>
+<td align="left">Method: Create copy of PM_op object</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$d</td>
+<td align="left">Difference between pred and obs</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$data</td>
+<td align="left">Data frame with all data fields, class: PMop, same as
+Legacy</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$ds</td>
+<td align="left">Squared difference between pred and obs</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$icen</td>
+<td align="left">Median (default) or mean of the parameter distributions
+used to calculate the predicted values.</td>
+</tr>
+<tr class="odd">
+<td align="left"></td>
+<td align="left">$id</td>
+<td align="left">Subject identification</td>
+</tr>
+<tr class="even">
+<td align="left"></td>
+<td align="left">$initialize</td>
+<td align="left">Method: Called by PM_op$new(), creates new PM_op
+object, happens automatically at end of run, generally not a user
+function</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>
@@ -386,9 +580,9 @@ used to calculate the predicted values.</td>
 <tr class="odd">
 <td align="left"></td>
 <td align="left">$initialize</td>
-<td align="left">Method: Called by PM_pop<span class="math inline">\(new() or PM_post\)</span>new(), creates new PM_pop
-or PM_post object, happens automatically at end of run, generally not a
-user function</td>
+<td align="left">Method: Called by PM_pop$new() or PM_post$new(),
+creates new PM_pop or PM_post object, happens automatically at end of
+run, generally not a user function</td>
 </tr>
 <tr class="even">
 <td align="left"></td>
