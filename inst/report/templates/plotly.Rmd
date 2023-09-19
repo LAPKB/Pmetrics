@@ -12,31 +12,39 @@ params:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
-
-library(tidyverse)
-library(patchwork)
-library(DT)
-library(Pmetrics)
-library(htmltools)
-library(crayon)
+library(dplyr)
 ```
 
 
 ```{r setup-extra}
 res = params$res
-#res <- Pmetrics::NPex
+#res = Pmetrics::ITex
 ```
 
 ## Summary
 
 ```{r}
-did_converge <- ifelse(res$NPdata$converge == 1, "converged", "did not converge")
+all_res <- nsub <- nobs <- numeqt <- icyctot <- icycmax <- NULL #declare for CRAN check
+
+if(is.null(res$ITdata)){
+  all_res <- res$NPdata
+  np <- TRUE
+} else {
+  all_res <- res$ITdata
+  np <- FALSE
+}
+did_converge <- ifelse(all_res$converge == 1, "converged.", "did not converge.")
+nsub <- all_res$nsub
+nobs <- sum(all_res$nobs, na.rm = TRUE)
+numeqt <- all_res$numeqt
+icyctot <- all_res$icyctot
+icycmax <- all_res$icycmax
 ```
 
 
-The data had `r res$NPdata$nsub` subjects and a total of `r  sum(res$NPdata$nobs, na.rm = TRUE)` observations.
+The data had `r nsub` subjects and a total of `r  nobs` observations.
 
-After `r res$NPdata$icyctot`/`r res$NPdata$icycmax` cycles, the model `r did_converge`.
+After `r paste0(icyctot, " of ", icycmax, " cycles, the model ", did_converge)`
 
 ## Observed-predicted plot {.tabset .tabset-pills}
 
@@ -88,23 +96,20 @@ p <- lapply(1:numeqt, function(i) {
 ^Same units as observations and predictions. Others are squared or dimensionless.
 ```{r}
 #summary function
-metrics <- function(icen, outeq){
-  pe <- res$op$summary(icen = icen, outeq = outeq)$pe %>%
-    rename(`Mean PE (prediction - observation)*^` = mpe,
-           `Mean weighted PE*^` = mwpe,
-           `Mean squared PE` = mspe,
-           `Mean weighted squared PE` = mwspe,
-           `Root mean squared PE^` = rmse,
-           `Root mean squared PE (%)` = percent_rmse,
-           `Bias-adjusted mean squared PE` = bamspe,
-           `Bias-adjusted mean weighted squared PE` = bamwspe
+metrics <- function(icen, pred.type, outeq){
+  pe <- res$op$summary(icen = icen,  pred.type = pred.type, outeq = outeq)$pe %>%
+    dplyr::rename(`Mean PE (prediction - observation)*^` = mpe,
+                  `Mean weighted PE*^` = mwpe,
+                  `Mean squared PE` = mspe,
+                  `Mean weighted squared PE` = mwspe,
+                  `Root mean squared PE^` = rmse,
+                  `Root mean squared PE (%)` = percent_rmse,
+                  `Bias-adjusted mean squared PE` = bamspe,
+                  `Bias-adjusted mean weighted squared PE` = bamwspe
     ) %>% 
-    mutate(across(.cols = everything(),
-                  .fns = function(x) {
-                    round(x, digits = 3)
-                  })) %>% 
+    dplyr::mutate(across(everything(), \(x) round(x, 3))) %>% 
     t() %>% 
-    datatable(
+    DT::datatable(
       colnames = c("Metric", "Value"),
       options = list(
         searching = FALSE,
@@ -121,22 +126,42 @@ metrics <- function(icen, outeq){
 
 ```
 
-```{r, results = "asis"}
+```{r include = FALSE}
 
-for(i in 1:res$NPdata$numeqt){
-  cat("### Outeq ",i,"{.tabset .tabset-pills}\n")
-  cat("\n")
-  cat("#### Median\n")
-  cat("\n")
-  print(tagList(metrics("median", i)))
-  cat("\n")
-  cat("#### Mean\n")
-  cat("\n")
-  print(tagList(metrics("mean", i)))
-  cat("\n")
-}
+template <- c(
+   "### Outeq {{outeq}} {.tabset .tabset-pills}\n",
+  "#### Population {.tabset .tabset-pills}\n",
+  "##### Median\n",
+  "```{r message = F}\n",
+  "metrics(icen = 'median', pred.type = 'pop', outeq = {{outeq}})\n",
+  "```\n",
+  "##### Mean\n",
+  "```{r message = F}\n",
+  "metrics(icen = 'mean', pred.type = 'pop', outeq = {{outeq}})\n",
+  "```\n",
+  "#### Posterior {.tabset .tabset-pills}\n",
+  "##### Median\n",
+  "```{r message = F}\n",
+  "metrics(icen = 'median', pred.type = 'post', outeq = {{outeq}})\n",
+  "```\n",
+  "##### Mean\n",
+  "```{r message = F}\n",
+  "metrics(icen = 'mean', pred.type = 'post', outeq = {{outeq}})\n",
+  "```\n",
+  "\n"
+)
+
+
+numeqt <- max(res$op$data$outeq)
+p <- lapply(1:numeqt, function(i) {
+  knitr::knit_expand(
+    outeq = i,
+    text = template)
+})
+
 
 ```
+`r knitr::knit_child(text = unlist(p))`
 
 ## Prediction residuals {.tabset .tabset-pills}
 
@@ -193,18 +218,18 @@ par_lims <- data.frame(
   cv = t(res$final$popCV),
   shrink = 100*t(res$final$shrinkage)
 ) %>%
-  mutate(across(4:8,round,3))
+  dplyr::mutate(across(4:8,\(x) round(x, 3)))
 
 par_lims %>% 
-  rename(`Parameter` = name,
-         `Lower limit` = lower,
-         `Upper limit` = upper,
-         `Mean` = ave,
-         `Median` = X2, #no idea why this gets named X2
-         `SD` = sd,
-         `CV%` = cv,
-         `%shrink` = shrink) %>% 
-  datatable(
+  dplyr::rename(`Parameter` = name,
+                `Lower limit` = lower,
+                `Upper limit` = upper,
+                `Mean` = ave,
+                `Median` = med,
+                `SD` = sd,
+                `CV%` = cv,
+                `%shrink` = shrink) %>% 
+  DT::datatable(
     options = list(
       searching = FALSE,
       pageLength = 10,
@@ -218,7 +243,7 @@ par_lims %>%
 ```
 
 ### Marginal plots
-Support points, dashed lines are limits
+Probability distributions, dashed lines are limits.
 
 ``` {r}
 res$final$plot()
@@ -252,18 +277,21 @@ res$final$plot()
 <!--   theme(legend.position = "bottom") -->
 <!-- ``` -->
 
-### Table of support points
+```{r, conditional-text, eval = np, echo = FALSE}
+knitr::asis_output("### Table of support points\n\n
+The following table lists the final support points, in order of decreasing probability.\n")
+```
 
-The following table lists the final support points, in order of decreasing probability
 ```{r}
-res$final$popPoints %>% 
-  arrange(desc(prob)) %>% 
-  mutate(across(.cols = everything(), .fns = function(x) {
-    round(x, digits = 4)
-  })) %>% 
-  mutate(`Cumulative Probability` = cumsum(prob)) %>% 
-  rename(Probability = prob) %>% 
-  datatable(options = list(pageLength = 10, searching = FALSE))
+if(np){
+  res$final$popPoints %>% 
+    dplyr::arrange(desc(prob)) %>% 
+    dplyr::mutate(across(everything(), \(x) round(x, 3)
+    )) %>% 
+    dplyr::mutate(`Cumulative Probability` = cumsum(prob)) %>% 
+    dplyr::rename(Probability = prob) %>% 
+    DT::datatable(options = list(pageLength = 10, searching = FALSE))
+}
 ```
 
 ## Cycle information

@@ -36,13 +36,30 @@ makePop <- function(run, NPdata) {
     dimnames(NPdata$ypredpopt) <- list(id=1:NPdata$nsub,outeq=1:NPdata$numeqt,time=NPdata$ttpred[which(NPdata$numt==max(NPdata$numt))[1],],icen=c("mean","median","mode")) 
   }
   #pop <- melt(NPdata$ypredpopt,value.name="pred")
+  # 
+  # pop <- NPdata$ypredpopt %>% 
+  #   cubelyr::as.tbl_cube(met_name="pred") %>%
+  #   dplyr::as_tibble() %>%
+  #   filter(!is.na(pred)) %>%
+  #   select(id, time, icen, pred, outeq) %>%
+  #   arrange(icen, id, outeq)
   
-  pop <- NPdata$ypredpopt %>% 
-    as.tbl_cube(met_name="pred") %>%
-    dplyr::as_tibble() %>%
-    filter(!is.na(.data$pred)) %>%
-    select(.data$id,.data$time,.data$icen,.data$pred,.data$outeq) %>%
-    arrange(.data$icen,.data$id,.data$outeq)
+  pop <- purrr::array_tree(NPdata$ypredpopt, margin = 1:2) %>% 
+    purrr::map(\(x) {
+      purrr::map(x, \(y) {as.data.frame(y) %>%
+        dplyr::mutate(time = row.names(y)) %>%
+          dplyr:bind_rows(.id = "outeq") %>%
+          tidyr::pivot_longer(starts_with("m"), names_to = "icen", values_to = "pred") %>%
+          dplyr:arrange(icen, outeq) %>%
+          dplyr:relocate(time, icen, pred, outeq)
+        }) %>%
+        dplyr:bind_rows()
+      }) %>% 
+    dplyr::bind_rows(.id = "id") %>% 
+    dplyr::mutate(id = as.integer(id),
+                  time = as.numeric(time),
+                  outeq = as.integer(outeq)) %>%
+    dplyr::filter(if_all(everything(), \(x) !is.na(x))) 
   
 
   pop$id <- rep(unlist(lapply(1:NPdata$nsub,function(x) rep(NPdata$sdata$id[x],times=NPdata$numeqt*NPdata$numt[x]))),3)
