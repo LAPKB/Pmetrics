@@ -38,7 +38,7 @@ PM_sim <- R6::R6Class(
     #' This is a wrapper function that combines [SIMrun] and [SIMparse] in R6. 
     #' It can be called directly
     #' or via the `$sim` method for [PM_result] objects.
-    #' @param x One of four things:
+    #' @param poppar One of four things:
     #' * Population prior parameters as a [PM_final] object found in 
     #' `PM_result$final`. Normally these would be supplied by calling the
     #' `$sim` method for a [PM_result] object, e.g. `NPex$sim(...)`.
@@ -50,7 +50,7 @@ PM_sim <- R6::R6Class(
     #' `combine = TRUE` as an argument will be passed to [SIMparse].
     #' @return A `PM_sim` object created by calling [SIMparse] at the completion of the
     #' simulation.
-    initialize = function(x, ...) {
+    initialize = function(poppar, ...) {
       dots <- list(...)
       combine <- if (exists("combine", where = dots)) {
         dots$combine
@@ -67,19 +67,19 @@ PM_sim <- R6::R6Class(
       } else {
         "simout"
       }
-      if(inherits(x, c("PM_result", "PM_final", "PMfinal"))){
-        poppar <- x #SIMrun will handle any of these
-      } else if(inherits(x, "PMsim")){ #from SIMparse
-        private$populate(x)
+      if(inherits(poppar, c("PM_result", "PM_final", "PMfinal"))){
+        poppar <- poppar #SIMrun will handle any of these
+      } else if(inherits(poppar, "PMsim")){ #from SIMparse
+        private$populate(poppar)
         return(self)
-      } else if(inherits(x,"list")){
-        poppar <- x #PMfinal and PMsim are lists, so needs to be after those for manual list
+      } else if(inherits(poppar,"list")){
+        poppar <- poppar #PMfinal and PMsim are lists, so needs to be after those for manual list
       } else { #try it as a filename
-        if(file.exists(x)){
-          private$populate(readRDS(x)) #open and return saved object
+        if(file.exists(poppar)){
+          private$populate(readRDS(poppar)) #open and return saved object
           return(self)
         } else {
-          stop(paste0(x, " does not exist in the current working directory.\n"))
+          stop(paste0(poppar, " does not exist in the current working directory.\n"))
         }
       }
       

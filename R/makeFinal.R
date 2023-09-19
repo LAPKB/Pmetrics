@@ -134,17 +134,26 @@ makeFinal <- function(data){
       # temp1 <- melt(data$postden)
       # postPoints <- dcast(temp1,subj+nactvepost~density,value.var="value")
       
-      postPoints <- data$postden %>%
-        cubelyr::as.tbl_cube(met_name = "value") %>%
-        dplyr::as_tibble() %>%
-        pivot_wider(names_from = density) %>%
-        arrange(.data$subj,.data$nactvepost) %>%
-        filter(!is.na(.data$prob)) 
+      # postPoints <- data$postden %>%
+      #   cubelyr::as.tbl_cube(met_name = "value") %>%
+      #   dplyr::as_tibble() %>%
+      #   pivot_wider(names_from = density) %>%
+      #   arrange(.data$subj,.data$nactvepost) %>%
+      #   filter(!is.na(.data$prob)) 
+      
+      postPoints <- purrr::array_tree(data$postden, margin = 1) %>% 
+        purrr::map(\(x) as.data.frame(x)) %>% 
+        dplyr::bind_rows(.id = "id") %>% 
+        dplyr::mutate(id = as.numeric(id)) %>%
+        dplyr::filter(if_all(everything(), \(x) !is.na(x))) %>%
+        dplyr::group_by(id) %>%
+        dplyr::mutate(point = dplyr::row_number(id)) %>%
+        dplyr::relocate(point, .after = id)
       
       postPoints$prob <- postPoints$prob*wParVol
       
       # postPoints <- postPoints[!is.na(postPoints$prob),]
-      names(postPoints)[1:2] <- c("id","point")
+      # names(postPoints)[1:2] <- c("id","point")
       postPoints$id <- data$sdata$id[postPoints$id]
     } else { postPoints <- NA}
     
@@ -152,9 +161,10 @@ makeFinal <- function(data){
     
     
     pointSum <- data.frame(summary.PMfinal(popPoints))
-    popMedian <- pointSum[pointSum$parameter=="WtMed" & pointSum$percentile==0.5,1:length(data$par)]
-    names(popMedian) <- data$par
-    
+    popMedian <- pointSum %>% 
+      filter(parameter == "WtMed" & percentile == 0.5) %>%
+      select(1:length(data$par))
+
     popVar <- data.frame(t(diag(popCov)))
     names(popVar) <- data$par
     
