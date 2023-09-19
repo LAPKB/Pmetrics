@@ -24,7 +24,7 @@ build_model <- function(...) {
   
   
   # Define UI for application that draws a histogram
-  shinyApp(
+  shiny::shinyApp(
     ui <- fluidPage(
       theme = shinythemes::shinytheme("slate"),
       

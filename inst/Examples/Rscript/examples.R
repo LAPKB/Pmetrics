@@ -51,8 +51,10 @@ setwd(wd)
 # create our first data object
 
 # The working directory we want to move to can be specified as an absolute
-# path (Line 44) or as a relative path (Line 56)
-setwd(paste(wd, "/src", sep = ""))
+# path or as a relative path 
+
+# absolute: setwd(paste(wd, "/src", sep = ""))
+setwd("src") #relative
 
 # list the files inside the current working directory
 list.files()
@@ -79,20 +81,25 @@ names(exData)
 exData # view the original data in the viewer
 exData$print(standard = TRUE) # view the standardized data in the viewer
 exData$print(viewer = FALSE) # view original data in console
+exData$plot() #plot the raw data; more on that later
 
 # MODEL OBJECT
-# You can specify a model by reading a file or directl as an object. We'll do both.
+# You can specify a model by reading a file or directly as an object. We'll do both.
 # The following code creates the same model as in /src/model.txt file.
 # See PMmanual() for details on creating models in R compared to text files.
 # The advantage of creating them in R is that one does not need to copy model
-# files into folders to provide necessary inputs.
+# files into folders to provide necessary inputs. Note that the model below
+# has differential equations solely for the purpose of plotting it. The
+# algebraic token in {} within the equation block tells Pmetrics that this can
+# be solved algebraically without using the differential equations. Again,
+# see PMmanual() and the article on models for details on this.
 
 mod1 <- PM_model$new(list(
   pri = list(
     Ka = ab(0.1, 0.9),
     Ke = ab(0.001, 0.1),
     V = ab(30, 120),
-    Tlag1 = ab(0, 4)
+    lag = ab(0, 4)
   ),
   cov = list(
     covariate("WT"),
@@ -101,7 +108,12 @@ mod1 <- PM_model$new(list(
     covariate("GENDER"),
     covariate("HEIGHT")
   ),
-  lag = list("Tlag(1) = Tlag1"),
+  eqn = c(
+    "{algebraic: P[Ka,Ke,V], B[1], R[2], O[2]}",
+    "XP(1) = -Ka*X(1)",
+    "XP(2) = Ka*X(1) - Ke*X(2)"
+  ),
+  lag = list("Tlag(1) = lag"),
   out = list(
     Y1 = list(
       value = "X(2)/V",
@@ -114,6 +126,10 @@ mod1 <- PM_model$new(list(
 ))
 # look at it
 mod1
+
+#plot it
+mod1$plot()
+
 
 # in the working directory we have another file "model.txt" that contains the old
 # representation of the same model we previously presented, let's take a look at it.
@@ -139,6 +155,10 @@ mod1b <- mod1$clone()
 # as R6 objects use reference semantics. For more details you can refer to
 # https://adv-r.hadley.nz/r6.html, Section 14.4.
 
+#lastly, use the app! PMmanual() and the article on models for details on this.
+build_model() #start from scratch
+build_model(exData) #start with data to match covariates
+build_model(mod1) #start with a model and update it
 
 # FIT OBJECT
 # Now we define a new fit to be run as the combination of a dataset and a suitable model.
@@ -153,16 +173,21 @@ exFit$check()
 
 # To keep everything tidy, let's move to another folder specific to store the runs
 # notice that we didn't have to move any files...
-setwd(paste(wd, "/Runs", sep = ""))
-exFit$run() # execute the run with default arguments
+setwd(wd)
+dir.create("Runs")
+setwd("Runs")
 
-# A terminal window will open and run; don't worry about pauses; the program has not crashed"
+exFit$run(intern = TRUE) # execute the run internally in the R console
 
+# If intern = FALSE, a terminal window will open and the run will happen
+# there.
+# 
 # After the run is complete you need get the extracted information back into R.
 # They will be sequentially numbered as /1, /2, /3,... in your working directory.
 
 # One benefit of having this fit object is that it is possible to run multiple
-# fittings without needing to move datafiles around
+# fittings without needing to move data files around
+
 getwd()
 list.files()
 
@@ -268,10 +293,11 @@ exRes$cov$data %>%
   filter(age > 25) %>%
   plot(V ~ wt)
 
-# will shortly be updated to plotly
-exRes$cov$plot(Ke ~ age, lowess = FALSE, reg = TRUE, pch = 3)
+# Plot
+exRes$cov$plot(Ke ~ age, line = list(loess = FALSE, lm = TRUE),
+               marker = list(symbol = 3))
 
-# Same plot but with mean Bayesian posterior parameter and covariate values...
+# Another plot with mean Bayesian posterior parameter and covariate values...
 # Remember the 'icen' argument?
 exRes$cov$plot(V ~ wt, icen = "mean")
 
@@ -293,6 +319,8 @@ exRes$cov$summary(icen = "mean")
 # Look at all possible covariate-parameter relationships by multiple linear regression with forward
 # and backward elimination - type ?PMstep in the R console for help.
 exRes$step()
+# or on the cov object directly
+exRes$cov$step()
 # icen works here too....
 exRes$step(icen = "median")
 # forward elimination only
@@ -326,7 +354,7 @@ exFit2 <- PM_fit$new(data = exData, model = mod2)
 # exFit2 <- PM_fit$new(data = "../src/ex.csv", model = "../src/model2.txt")
 
 exFit2$check()
-exFit2$run()
+exFit2$run(intern = TRUE)
 
 list.files()
 exRes2 <- PM_load(2)
@@ -388,11 +416,27 @@ npc_2
 
 # EXERCISE 5 - SIMULATOR RUN ----------------------------------------------
 
+setwd(wd)
+dir.create("Sim")
+setwd("Sim")
+
 # The following will simulate 100 sets of parameters/concentrations using the
 # first subject in the data file as a template.
 # Limits are put on the simulated parameter ranges to be the same as in the model.
 # The population parameter values from the NPAG run in exercise 2 are used for the Monte Carlo Simulation.
 simdata <- exRes2$sim(include = 1, limits = NA, nsim = 100)
+
+# Below is the alternate way to simulate, which is particularly useful if you define 
+# your own population parameters. See ?SIMrun for details on this as well as
+# the article on simulation linked by PMmanual().
+poppar <- list(
+  wt = 1,
+  mean = c(0.6, 0.05, 77.8, 1.2),
+  cov = diag(c(0.07, 0.0004, 830, 0.45))
+)
+
+simOther <- PM_sim$new(poppar = poppar, data = exData, model = mod1,
+                       include = 1, limits = NA, nsim = 100)
 
 
 # simulate from a model with new data
@@ -402,10 +446,12 @@ sim_new <- exRes2$sim(
   predInt = c(120, 144, 0.5)
 )
 
-sim_new$plot(log = FALSE)
 
-# Plot it; ?plot.PMsim for help
+
+# Plot them; ?plot.PM_sim for help
 simdata$plot()
+simOther$plot()
+sim_new$plot(log = FALSE)
 
 # Simulate using multiple subjects as templates
 simdata <- exRes2$sim(include = 1:4, limits = NA, nsim = 100)
@@ -441,7 +487,8 @@ covariate <- list(
 simdata3 <- exRes2$sim(include = 1:4, limits = NA, nsim = 100, covariate = covariate)
 
 # compare difference in simulations without covariates simulated...
-# PM_simlist's plot function defaults to the first simulation
+# PM_sim's plot function defaults to the first simulation if there
+# are multiple simulations and "at" is not specified.
 simdata$plot()
 
 # ...and with covariates simulated
@@ -452,12 +499,17 @@ simdata3$plot()
 # with simulated PK parameters
 simdata3$data[[1]]$parValues
 
+# We can summarize simulations too. See ?summary.PM_sim for help.
+simdata3$summary(at = 2, field = "obs")
+
 # look in the working directory and find the "c_simdata.csv" and "c_simmodel.txt" files
 # which were made when you simulated with covariates.  Compare to original
 # "simdata.csv" and "simmoddel.txt" files to note that simulated covariates become
 # Primary block variables, and are removed from the template data file.
 
 # EXERCISE 6 - SAVING PMETRICS OBJECTS ------------------------------------
+
+setwd(paste0(wd,"/Runs"))
 
 # The following objects have methods to save them to or load them from files:
 # PM_fit
@@ -489,13 +541,12 @@ load("2/workspace.Rdata")
 # Example of a run with a non-uniform density
 # This is a good way to continue a previous run,
 # in this case it continues where run 1 left off
-setwd(paste(wd, "/Runs", sep = ""))
 
 # note that we can supply a run number to model, data, and prior arguments.  The numbers do not
 # have to be the same.  This will copy the appropriate files from the specified run to be used
 # in the current run.  By specifying a prior, we are starting with the non-uniform density from the
 # end of the specified fun.
-exFit2$run(prior = 2)
+exFit2$run(prior = 2, intern = TRUE)
 exRes3 <- PM_load(3)
 
 # We could also generate Bayesian posterior parameter estimates for a new population this
@@ -517,7 +568,7 @@ exRes3 <- PM_load(3)
 # Run IT2B.  Type ?ITrun in the R console for help.
 # Remember how we created a PM_fit object way back in exercise 1?
 # Now we can use it again, but change the engine.
-exFit$run(engine = "IT2B")
+exFit$run(engine = "IT2B", intern = TRUE)
 
 # Type ?PM_load in the R console for help on PM_load.
 # If you have done extra runs, you may be at more than 4 by now.
@@ -702,6 +753,9 @@ pta6_2$summary()
 
 # EXERCISE 10 - OPTIMAL SAMPLE TIMES --------------------------------------
 
+setwd(wd)
+dir.create("MMopt")
+setwd("MMopt")
 
 # calculate MM-optimal sample times for Run 2, and the 1200 mg once daily dose in the PTA
 # By specifying the predInt to start and stop at 120 and 144 hours, with an interval of 1 hour,

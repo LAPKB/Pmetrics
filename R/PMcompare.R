@@ -104,6 +104,8 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
   })
   
   if (plot) {
+    
+    
     if (!"resid" %in% names(argsPlot)) {
       if (nobj <= 3) {
         par(mfrow = c(nobj, 2))

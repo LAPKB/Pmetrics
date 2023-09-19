@@ -62,13 +62,13 @@ This is a wrapper function that combines \link{SIMrun} and \link{SIMparse} in R6
 It can be called directly
 or via the \verb{$sim} method for \link{PM_result} objects.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$new(x, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$new(poppar, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{x}}{One of four things:
+\item{\code{poppar}}{One of four things:
 \itemize{
 \item Population prior parameters as a \link{PM_final} object found in
 \code{PM_result$final}. Normally these would be supplied by calling the
