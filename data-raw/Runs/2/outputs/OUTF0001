@@ -27,7 +27,7 @@ gendata.csv
                           
  V          :   30.00000000       TO     120.0000000         YES            
                           
- Tlag1      :   0.000000000       TO     4.000000000         YES            
+ lag        :   0.000000000       TO     4.000000000         YES            
                           
                           
  NO FIXED PARAMETER VALUES.                        
@@ -81,10 +81,10 @@ gendata.csv
  (THE 1ST ROW GIVES THE MEANS; THE NEXT 4 ROWS GIVE THE                     
  COVARIANCE MATRIX):      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.500000     0.505000E-01  75.0000      2.00000   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.160000                 
   0.00000     0.245025E-02
   0.00000      0.00000      2025.00                
@@ -114,11 +114,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.681962     0.501539E-01  85.1462      1.21554   
  0.703752     0.425718E-01  69.6754      1.17507   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.172730                 
  -.460175E-02 0.722409E-03
   11.3549     -.692002      2388.25                
@@ -126,13 +126,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.415608     0.268777E-01  48.8697      1.01144   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.411953      1.00000    
  0.559064     -.526837      1.00000                
@@ -141,7 +141,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   60.9430      53.5904      57.3950      83.2095   
                           
                           
@@ -170,11 +170,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.710576     0.477921E-01  84.2681      1.24507   
  0.694992     0.430702E-01  71.2300      1.18439   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.143082                 
  -.321555E-02 0.370499E-03
   9.67792     -.421439      1779.97                
@@ -182,13 +182,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.378261     0.192483E-01  42.1897     0.753551   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.441641      1.00000    
  0.606434     -.518961      1.00000                
@@ -197,7 +197,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   53.2330      40.2752      50.0661      60.5226   
                           
                           
@@ -226,11 +226,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.744035     0.469078E-01  84.1868      1.28323   
  0.726413     0.434871E-01  71.0389      1.23116   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.128680                 
  -.271502E-02 0.294660E-03
   9.02590     -.332383      1586.33                
@@ -238,13 +238,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.358720     0.171657E-01  39.8288     0.669817   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.440917      1.00000    
  0.631739     -.486163      1.00000                
@@ -253,7 +253,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   48.2129      36.5945      47.3100      52.1977   
                           
                           
@@ -282,11 +282,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.776096     0.464885E-01  84.2398      1.32529   
  0.743552     0.436803E-01  73.0270      1.35942   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.120654                 
  -.267829E-02 0.270111E-03
   8.63874     -.294823      1491.00                
@@ -294,13 +294,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.347353     0.164351E-01  38.6135     0.629417   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.469154      1.00000    
  0.644081     -.464570      1.00000                
@@ -309,7 +309,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   44.7565      35.3529      45.8376      47.4928   
                           
                           
@@ -338,11 +338,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.800967     0.462646E-01  84.3298      1.34525   
  0.780329     0.436791E-01  73.7532      1.40770   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.117308                 
  -.273687E-02 0.260807E-03
   8.55181     -.277567      1438.82                
@@ -350,13 +350,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.342503     0.161495E-01  37.9317     0.605654   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.494799      1.00000    
  0.658250     -.453112      1.00000                
@@ -365,7 +365,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   42.7612      34.9069      44.9802      45.0217   
                           
                           
@@ -394,11 +394,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.824664     0.460717E-01  84.5278      1.36482   
  0.814527     0.434634E-01  74.3270      1.43290   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.117829                 
  -.284550E-02 0.257526E-03
   8.68286     -.271582      1418.31                
@@ -406,13 +406,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.343262     0.160476E-01  37.6605     0.593066   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.516562      1.00000    
  0.671663     -.449371      1.00000                
@@ -421,7 +421,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   41.6245      34.8319      44.5539      43.4539   
                           
                           
@@ -450,11 +450,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.843613     0.459750E-01  84.6616      1.37535   
  0.841364     0.434627E-01  74.7924      1.44956   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.119639                 
  -.297240E-02 0.256457E-03
   8.88644     -.269331      1410.60                
@@ -462,13 +462,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.345889     0.160143E-01  37.5579     0.583649   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.536615      1.00000    
  0.684052     -.447794      1.00000                
@@ -477,7 +477,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   41.0009      34.8326      44.3624      42.4365   
                           
                           
@@ -506,11 +506,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.859891     0.459153E-01  84.7659      1.38262   
  0.861416     0.434377E-01  75.1115      1.46150   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.121760                 
  -.311638E-02 0.256685E-03
   9.13572     -.269327      1409.46                
@@ -518,13 +518,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.348942     0.160214E-01  37.5428     0.567597   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.557438      1.00000    
  0.697370     -.447769      1.00000                
@@ -533,7 +533,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   40.5798      34.8934      44.2900      41.0522   
                           
                           
@@ -562,11 +562,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.874970     0.458715E-01  84.8727      1.38956   
  0.880152     0.433804E-01  75.4691      1.46823   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.124291                 
  -.325427E-02 0.257545E-03
   9.37290     -.270522      1411.64                
@@ -574,13 +574,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.352550     0.160482E-01  37.5718     0.559396   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.575182      1.00000    
  0.707607     -.448656      1.00000                
@@ -589,7 +589,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   40.2928      34.9852      44.2684      40.2571   
                           
                           
@@ -618,11 +618,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.888519     0.458380E-01  84.9638      1.39503   
  0.896958     0.433292E-01  75.7555      1.47573   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.127077                 
  -.338528E-02 0.258516E-03
   9.59850     -.271888      1414.29                
@@ -630,13 +630,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.356479     0.160784E-01  37.6071     0.554114   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.590632      1.00000    
  0.715979     -.449652      1.00000                
@@ -645,7 +645,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   40.1206      35.0766      44.2625      39.7207   
                           
                           
@@ -674,11 +674,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.907916     0.456481E-01  85.1813      1.41791   
  0.912155     0.432831E-01  75.9679      1.48278   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.128755                 
  -.340599E-02 0.256050E-03
   9.68981     -.269877      1416.14                
@@ -686,13 +686,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.358824     0.160016E-01  37.6316     0.541932   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.593196      1.00000    
  0.717597     -.448178      1.00000                
@@ -701,7 +701,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.5218      35.0542      44.1782      38.2205   
                           
                           
@@ -730,11 +730,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.923279     0.455555E-01  85.3336      1.42801   
  0.930013     0.431932E-01  76.4508      1.49039   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.131359                 
  -.345366E-02 0.253921E-03
   9.78898     -.267787      1414.08                
@@ -742,13 +742,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.362435     0.159349E-01  37.6043     0.532813   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.597998      1.00000    
  0.718241     -.446893      1.00000                
@@ -757,7 +757,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.2552      34.9791      44.0673      37.3116   
                           
                           
@@ -786,11 +786,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.937066     0.455056E-01  85.4394      1.43468   
  0.946565     0.431261E-01  76.7973      1.49586   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.134893                 
  -.352985E-02 0.253418E-03
   9.93240     -.267658      1415.48                
@@ -798,13 +798,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.367278     0.159191E-01  37.6229     0.526710   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.603730      1.00000    
  0.718798     -.446899      1.00000                
@@ -813,7 +813,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.1945      34.9827      44.0346      36.7128   
                           
                           
@@ -842,11 +842,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.950163     0.454567E-01  85.5413      1.43990   
  0.962223     0.430727E-01  77.0801      1.50132   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.138853                 
  -.361057E-02 0.253216E-03
   10.0828     -.267610      1416.86                
@@ -854,13 +854,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.372630     0.159128E-01  37.6412     0.522350   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.608910      1.00000    
  0.718855     -.446780      1.00000                
@@ -869,7 +869,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.2174      35.0064      44.0036      36.2768   
                           
                           
@@ -898,11 +898,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.962702     0.454242E-01  85.6142      1.44433   
  0.977108     0.430278E-01  77.3046      1.50695   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.143033                 
  -.369340E-02 0.253361E-03
   10.2374     -.268153      1419.39                
@@ -910,13 +910,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.378197     0.159173E-01  37.6748     0.519043   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.613535      1.00000    
  0.718492     -.447160      1.00000                
@@ -925,7 +925,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.2849      35.0415      44.0053      35.9365   
                           
                           
@@ -954,11 +954,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.974781     0.453966E-01  85.6797      1.44823   
  0.991520     0.429867E-01  77.4822      1.51276   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.147403                 
  -.377590E-02 0.253597E-03
   10.3917     -.268753      1422.05                
@@ -966,13 +966,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.383931     0.159247E-01  37.7100     0.516392   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.617584      1.00000    
  0.717756     -.447533      1.00000                
@@ -981,7 +981,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.3864      35.0791      44.0128      35.6567   
                           
                           
@@ -1010,11 +1010,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.986468     0.453718E-01  85.7381      1.45176   
   1.00543     0.429490E-01  77.6265      1.51853   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.151902                 
  -.385644E-02 0.253823E-03
   10.5434     -.269330      1424.78                
@@ -1022,13 +1022,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.389746     0.159318E-01  37.7462     0.514184   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.621068      1.00000    
  0.716678     -.447864      1.00000                
@@ -1037,7 +1037,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.5092      35.1139      44.0250      35.4181   
                           
                           
@@ -1066,11 +1066,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.997822     0.453491E-01  85.7909      1.45500   
   1.01893     0.429141E-01  77.7447      1.52421   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.156490                 
  -.393429E-02 0.254009E-03
   10.6908     -.269852      1427.51                
@@ -1078,13 +1078,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.395588     0.159376E-01  37.7823     0.512287   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.624021      1.00000    
  0.715287     -.448139      1.00000                
@@ -1093,7 +1093,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.6451      35.1443      44.0400      35.2087   
                           
                           
@@ -1122,11 +1122,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00888     0.453280E-01  85.8386      1.45803   
   1.03204     0.428816E-01  77.8428      1.52980   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.161142                 
  -.400906E-02 0.254138E-03
   10.8333     -.270299      1430.17                
@@ -1134,13 +1134,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.401425     0.159417E-01  37.8177     0.510617   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.626474      1.00000    
  0.713608     -.448348      1.00000                
@@ -1149,7 +1149,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.7890      35.1696      44.0567      35.0210   
                           
                           
@@ -1188,11 +1188,11 @@ gendata.csv
  THE MEANS; THE 2ND ROW GIVES THE MEDIANS; THE NEXT 4 ROWS                  
  GIVE THE COVARIANCE MATRIX):                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.01972     0.453050E-01  85.8860      1.46089   
   1.04484     0.428514E-01  77.9248      1.53526   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.165836                 
  -.407951E-02 0.254133E-03
   10.9684     -.270523      1432.52                
@@ -1200,13 +1200,13 @@ gendata.csv
                           
  THE STANDARD DEVIATION ESTIMATES ARE:             
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.407229     0.159415E-01  37.8487     0.509122   
                           
  THE ESTIMATE OF THE CORRELATION COEFFICIENT MATRIX
  IS, IN LOWER-TRI FORM:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.628404      1.00000    
  0.711629     -.448357      1.00000                
@@ -1215,7 +1215,7 @@ gendata.csv
  THE ESTIMATE OF THE % COEFFICIENTS OF VARIATIONS  
  FOR THE VARIABLES ARE:   
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.9355      35.1872      44.0685      34.8501   
                           
                           
@@ -1236,7 +1236,7 @@ gendata.csv
                           
  V          :  0.1000000000E-07  TO    275.1293673 
                           
- Tlag1      :  0.1000000000E-07  TO    4.006502352 
+ lag        :  0.1000000000E-07  TO    4.006502352 
                           
                           
  THIS RUN STOPPED BECAUSE ...                      
@@ -1273,12 +1273,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.12999     0.205478E-01  76.5444      1.62666   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.898390E-01             
  -.108075E-02 0.319811E-04
   3.51823     -.103470      346.991                
@@ -1286,12 +1286,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.299732     0.565518E-02  18.6277     0.270160   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.637598      1.00000    
  0.630134     -.982216      1.00000                
@@ -1299,7 +1299,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   26.5251      27.5221      24.3358      16.6082   
                           
                           
@@ -1308,12 +1308,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.35723     0.324923E-01  147.715     0.543685   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.102618                 
  -.110052E-02 0.249317E-04
   5.12169     -.107457      516.879                
@@ -1321,12 +1321,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.320341     0.499317E-02  22.7350     0.242290   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.688036      1.00000    
  0.703244     -.946595      1.00000                
@@ -1334,7 +1334,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   23.6026      15.3673      15.3911      44.5644   
                           
                           
@@ -1343,12 +1343,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.41829     0.450661E-01  99.9225      2.07456   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.722201E-01             
  -.111284E-02 0.355740E-04
   2.78506     -.845186E-01  225.616                
@@ -1356,12 +1356,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.268738     0.596440E-02  15.0205     0.572197E-01                        
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.694285      1.00000    
  0.689953     -.943411      1.00000                
@@ -1369,7 +1369,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   18.9481      13.2348      15.0322      2.75816   
                           
                           
@@ -1378,12 +1378,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.15094     0.518714E-01  130.258     0.766163   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.874547E-01             
  -.132379E-02 0.396060E-04
   3.79626     -.102870      313.112                
@@ -1391,12 +1391,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.295727     0.629333E-02  17.6950     0.123142   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.711289      1.00000    
  0.725463     -.923757      1.00000                
@@ -1404,7 +1404,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   25.6945      12.1326      13.5846      16.0726   
                           
                           
@@ -1413,12 +1413,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.59156     0.438692E-01  167.307     0.850261   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.102603                 
  -.135131E-02 0.317585E-04
   5.33673     -.110299      455.345                
@@ -1426,12 +1426,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.320317     0.563546E-02  21.3388     0.935929E-01                        
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.748589      1.00000    
  0.780772     -.917217      1.00000                
@@ -1439,7 +1439,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   20.1260      12.8461      12.7543      11.0075   
                           
                           
@@ -1448,12 +1448,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00647     0.389694E-01  62.8183      1.93897   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.622534E-01             
  -.932824E-03 0.355460E-04
   1.60032     -.614890E-01  115.552                
@@ -1461,12 +1461,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.249506     0.596204E-02  10.7495     0.100919   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.627080      1.00000    
  0.596674     -.959430      1.00000                
@@ -1474,7 +1474,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   24.7903      15.2993      17.1121      5.20479   
                           
                           
@@ -1483,12 +1483,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.963543     0.488749E-01  59.6357      2.03000   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.739615E-01             
  -.691633E-03 0.335616E-04
   1.03622     -.480407E-01  76.5365                
@@ -1496,12 +1496,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.271959     0.579324E-02  8.74851     0.360692   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.438987      1.00000    
  0.435525     -.947881      1.00000                
@@ -1509,7 +1509,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   28.2249      11.8532      14.6699      17.7681   
                           
                           
@@ -1518,12 +1518,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.03252     0.391828E-01  63.9842      1.98243   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.621311E-01             
  -.953646E-03 0.361046E-04
   1.65553     -.628829E-01  119.119                
@@ -1531,12 +1531,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.249261     0.600871E-02  10.9142     0.930868E-01                        
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.636724      1.00000    
  0.608544     -.958872      1.00000                
@@ -1544,7 +1544,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   24.1410      15.3351      17.0576      4.69558   
                           
                           
@@ -1553,12 +1553,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.14576     0.417743E-01  105.973      1.23249   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.849137E-01             
  -.919764E-03 0.337985E-04
   2.67714     -.926219E-01  280.224                
@@ -1566,12 +1566,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.291400     0.581365E-02  16.7399     0.303963   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.542924      1.00000    
  0.548820     -.951727      1.00000                
@@ -1579,7 +1579,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   25.4328      13.9168      15.7964      24.6624   
                           
                           
@@ -1588,12 +1588,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.858861     0.537188E-01  70.6835      1.31095   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.775537E-01             
  -.901047E-03 0.430780E-04
   1.36782     -.659602E-01  112.777                
@@ -1601,12 +1601,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.278485     0.656339E-02  10.6197     0.291509   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.492968      1.00000    
  0.462508     -.946332      1.00000                
@@ -1614,7 +1614,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   32.4249      12.2180      15.0242      22.2365   
                           
                           
@@ -1623,12 +1623,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.849380     0.624143E-01  80.8237      1.47538   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.776599E-01             
  -.996813E-03 0.428119E-04
   1.48784     -.655705E-01  116.844                
@@ -1636,12 +1636,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.278675     0.654308E-02  10.8094     0.222333   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.546679      1.00000    
  0.493916     -.927091      1.00000                
@@ -1649,7 +1649,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   32.8093      10.4833      13.3741      15.0696   
                           
                           
@@ -1658,12 +1658,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.35447     0.262502E-01  106.299      1.59515   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.945767E-01             
  -.107219E-02 0.291271E-04
   4.20736     -.111140      449.312                
@@ -1671,12 +1671,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.307533     0.539695E-02  21.1970     0.276385   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.646000      1.00000    
  0.645422     -.971512      1.00000                
@@ -1684,7 +1684,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   22.7050      20.5597      19.9408      17.3266   
                           
                           
@@ -1693,12 +1693,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.257586     0.744322E-01  39.2744      1.61098   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.101919E-01             
  -.111616E-02 0.167001E-03
  0.599477     -.942052E-01  57.2383                
@@ -1706,12 +1706,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.100955     0.129229E-01  7.56560     0.191195   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.855540      1.00000    
  0.784879     -.963544      1.00000                
@@ -1719,7 +1719,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.1927      17.3620      19.2634      11.8683   
                           
                           
@@ -1728,12 +1728,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.05936     0.418335E-01  123.781     0.716939   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.921923E-01             
  -.127977E-02 0.352121E-04
   4.16798     -.106271      361.537                
@@ -1741,12 +1741,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.303632     0.593398E-02  19.0141     0.173800   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.710298      1.00000    
  0.721943     -.941875      1.00000                
@@ -1754,7 +1754,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   28.6617      14.1848      15.3611      24.2420   
                           
                           
@@ -1763,12 +1763,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.05715     0.311889E-01  79.3053      1.45924   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.842625E-01             
  -.994169E-03 0.357469E-04
   2.62038     -.927589E-01  255.066                
@@ -1776,12 +1776,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.290280     0.597887E-02  15.9708     0.280998   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.572828      1.00000    
  0.565224     -.971426      1.00000                
@@ -1789,7 +1789,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   27.4587      19.1699      20.1384      19.2565   
                           
                           
@@ -1798,12 +1798,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.10832     0.344111E-01  90.2250      1.37961   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.850215E-01             
  -.969333E-03 0.343785E-04
   2.72842     -.940659E-01  275.640                
@@ -1811,12 +1811,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.291584     0.586331E-02  16.6024     0.286461   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.566977      1.00000    
  0.563606     -.966314      1.00000                
@@ -1824,7 +1824,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   26.3087      17.0390      18.4011      20.7639   
                           
                           
@@ -1833,12 +1833,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.755282     0.700918E-01  67.5731      1.18066   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.743105E-01             
  -.923061E-03 0.460521E-04
   1.04580     -.546772E-01  76.2627                
@@ -1846,12 +1846,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.272600     0.678617E-02  8.73285     0.322003   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.498977      1.00000    
  0.439308     -.922626      1.00000                
@@ -1859,7 +1859,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   36.0924      9.68183      12.9236      27.2730   
                           
                           
@@ -1868,12 +1868,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.01316     0.282763E-01  62.9503      1.79179   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.781360E-01             
  -.111896E-02 0.383866E-04
   2.44339     -.843376E-01  194.402                
@@ -1881,12 +1881,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.279528     0.619569E-02  13.9428     0.184843   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.646098      1.00000    
  0.626928     -.976295      1.00000                
@@ -1894,7 +1894,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   27.5896      21.9112      22.1489      10.3161   
                           
                           
@@ -1903,12 +1903,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.570312     0.628438E-01  30.6302      1.90190   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.511417E-01             
  -.116897E-02 0.581571E-04
  0.557690     -.315371E-01  19.4721                
@@ -1916,12 +1916,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.226145     0.762608E-02  4.41272     0.106226   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.677820      1.00000    
  0.558855     -.937161      1.00000                
@@ -1929,7 +1929,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.6529      12.1350      14.4064      5.58523   
                           
                           
@@ -1938,12 +1938,12 @@ gendata.csv
                           
  THE PARAMETER ESTIMATES ARE:                      
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.714180     0.579909E-01  52.0175      1.75000   
                           
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:                        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.812334E-01             
  -.115611E-02 0.467902E-04
   1.28908     -.528592E-01  66.8607                
@@ -1951,12 +1951,12 @@ gendata.csv
                           
  THE CORRESPONDING STANDARD DEVIATIONS ARE:        
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
  0.285015     0.684034E-02  8.17684     0.359555   
                           
  THE CORRESPONDING CORRELATION MATRIX IS:          
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   1.00000                 
  -.592997      1.00000    
  0.553128     -.945057      1.00000                
@@ -1964,7 +1964,7 @@ gendata.csv
                           
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:     
                           
-     Ka           Ke           V            Tlag1  
+     Ka           Ke           V            lag    
   39.9080      11.7955      15.7194      20.5460   
                           
                           
@@ -1983,7 +1983,7 @@ gendata.csv
  THE NUMBER OF PARAMETERS IS  4                    
                           
  THE PARAMETERS ARE:      
-Ka          Ke          V           Tlag1          
+Ka          Ke          V           lag            
                           
  THE CORRESPONDING BOUNDARIES ARE:                 
    1.0000000000000000E-008   3.0558655096807663    
@@ -2404,16 +2404,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        21.000000000000000        1.0000000000000000        160.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2430,7 +2430,8 @@ WT                   46.70000        46.70000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  21.00000        21.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             160.00000       160.00000       -99.00000               
+HEIGHT              160.00000       160.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2452,16 +2453,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        66.500000000000000        1.0000000000000000        30.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2478,7 +2479,8 @@ WT                   66.50000        66.50000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  30.00000        30.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             174.00000       174.00000       -99.00000               
+HEIGHT              174.00000       174.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2500,16 +2502,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        46.700000000000003        1.0000000000000000        24.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2526,7 +2528,8 @@ WT                   46.70000        46.70000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  24.00000        24.00000       -99.00000               
 GENDER                0.00000         0.00000       -99.00000               
- HEIGHT             164.00000       164.00000       -99.00000               
+HEIGHT              164.00000       164.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2548,16 +2551,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        50.799999999999997        1.0000000000000000        25.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2574,7 +2577,8 @@ WT                   50.80000        50.80000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  25.00000        25.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             165.00000       165.00000       -99.00000               
+HEIGHT              165.00000       165.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2596,16 +2600,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        65.799999999999997        1.0000000000000000        22.000000000000000        1.0000000000000000        181.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2622,7 +2626,8 @@ WT                   65.80000        65.80000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  22.00000        22.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             181.00000       181.00000       -99.00000               
+HEIGHT              181.00000       181.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2644,16 +2649,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        65.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        177.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2670,7 +2675,8 @@ WT                   65.00000        65.00000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  23.00000        23.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             177.00000       177.00000       -99.00000               
+HEIGHT              177.00000       177.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2692,16 +2698,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        51.700000000000003        1.0000000000000000        27.000000000000000        0.0000000000000000        161.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2718,7 +2724,8 @@ WT                   51.70000        51.70000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  27.00000        27.00000       -99.00000               
 GENDER                0.00000         0.00000       -99.00000               
- HEIGHT             161.00000       161.00000       -99.00000               
+HEIGHT              161.00000       161.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2740,16 +2747,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        51.200000000000003        1.0000000000000000        22.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2766,7 +2773,8 @@ WT                   51.20000        51.20000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  22.00000        22.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             163.00000       163.00000       -99.00000               
+HEIGHT              163.00000       163.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2788,16 +2796,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        55.000000000000000        1.0000000000000000        23.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2814,7 +2822,8 @@ WT                   55.00000        55.00000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  23.00000        23.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             174.00000       174.00000       -99.00000               
+HEIGHT              174.00000       174.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2836,16 +2845,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        52.100000000000001        1.0000000000000000        32.000000000000000        1.0000000000000000        163.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2862,7 +2871,8 @@ WT                   52.10000        52.10000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  32.00000        32.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             163.00000       163.00000       -99.00000               
+HEIGHT              163.00000       163.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2884,16 +2894,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        56.500000000000000        1.0000000000000000        34.000000000000000        1.0000000000000000        165.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2910,7 +2920,8 @@ WT                   56.50000        56.50000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  34.00000        34.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             165.00000       165.00000       -99.00000               
+HEIGHT              165.00000       165.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2932,16 +2943,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        47.899999999999999        1.0000000000000000        54.000000000000000        0.0000000000000000        160.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -2958,7 +2969,8 @@ WT                   47.90000        47.90000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  54.00000        54.00000       -99.00000               
 GENDER                0.00000         0.00000       -99.00000               
- HEIGHT             160.00000       160.00000       -99.00000               
+HEIGHT              160.00000       160.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -2980,16 +2992,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        60.500000000000000        1.0000000000000000        24.000000000000000        1.0000000000000000        180.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -3006,7 +3018,8 @@ WT                   60.50000        60.50000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  24.00000        24.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             180.00000       180.00000       -99.00000               
+HEIGHT              180.00000       180.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -3028,16 +3041,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        59.200000000000003        1.0000000000000000        26.000000000000000        1.0000000000000000        174.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -3054,7 +3067,8 @@ WT                   59.20000        59.20000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  26.00000        26.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             174.00000       174.00000       -99.00000               
+HEIGHT              174.00000       174.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -3076,16 +3090,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
-   24.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
-   48.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
-   72.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
-   96.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
-   120.00000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000                       
+   0.0000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        450.00000000000000        43.000000000000000        1.0000000000000000        19.000000000000000        0.0000000000000000        150.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -3102,7 +3116,8 @@ WT                   43.00000        43.00000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  19.00000        19.00000       -99.00000               
 GENDER                0.00000         0.00000       -99.00000               
- HEIGHT             150.00000       150.00000       -99.00000               
+HEIGHT              150.00000       150.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -3124,16 +3139,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        64.400000000000006        1.0000000000000000        25.000000000000000        1.0000000000000000        173.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -3150,7 +3165,8 @@ WT                   64.40000        64.40000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  25.00000        25.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             173.00000       173.00000       -99.00000               
+HEIGHT              173.00000       173.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -3172,16 +3188,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        54.799999999999997        1.0000000000000000        23.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -3198,7 +3214,8 @@ WT                   54.80000        54.80000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  23.00000        23.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             170.00000       170.00000       -99.00000               
+HEIGHT              170.00000       170.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -3220,16 +3237,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
-   24.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
-   48.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
-   72.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
-   96.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
-   120.00000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000                       
+   0.0000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        450.00000000000000        44.299999999999997        1.0000000000000000        20.000000000000000        0.0000000000000000        164.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -3246,7 +3263,8 @@ WT                   44.30000        44.30000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  20.00000        20.00000       -99.00000               
 GENDER                0.00000         0.00000       -99.00000               
- HEIGHT             164.00000       164.00000       -99.00000               
+HEIGHT              164.00000       164.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -3268,16 +3286,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        50.000000000000000        1.0000000000000000        36.000000000000000        1.0000000000000000        168.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      7 ... NO. OF OBSERVED VALUE TIMES             
@@ -3294,7 +3312,8 @@ WT                   50.00000        50.00000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  36.00000        36.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             168.00000       168.00000       -99.00000               
+HEIGHT              168.00000       168.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -3316,16 +3335,16 @@ CCR ML/MIN/    0.00 150.00
 HOURS    MG     MG/HR    MCG/ML KG       MG/DL    60  .00                   
                           
      1 ... NO. OF DRUGS   
-     5 ... NO. OF ADDITIONAL COVARIATES            
+     6 ... NO. OF ADDITIONAL COVARIATES            
      6 ... NO. OF DOSE EVENTS                      
                           
     TIME, IV/PO FOR EACH DRUG; ADDITIONAL COVARIATES IF ANY                 
-   0.0000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
-   24.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
-   48.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
-   72.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
-   96.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
-   120.00000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000                       
+   0.0000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
+   24.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
+   48.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
+   72.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
+   96.000000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
+   120.00000000000000        0.0000000000000000        600.00000000000000        59.000000000000000        1.0000000000000000        31.000000000000000        1.0000000000000000        170.00000000000000        1.0000000000000000                      
                           
      1 ... NO. OF TOTAL OUTPUT EQUATIONS           
      6 ... NO. OF OBSERVED VALUE TIMES             
@@ -3341,7 +3360,8 @@ WT                   59.00000        59.00000       -99.00000
 AFRICA                1.00000         1.00000       -99.00000               
 AGE                  31.00000        31.00000       -99.00000               
 GENDER                1.00000         1.00000       -99.00000               
- HEIGHT             170.00000       170.00000       -99.00000               
+HEIGHT              170.00000       170.00000       -99.00000               
+ BLOCK                1.00000         1.00000       -99.00000               
                           
 ASSAY COEFFICIENTS FOLLOW, ONE SET FOR EACH OUTPUT EQUATION:                
       0.02000000        0.05000000       -0.00020000        0.00000000      
@@ -3377,7 +3397,7 @@ C  TSTMULTN.FOR                          NOV, 2014
                           
       SUBROUTINE DIFFEQ(NDIM,T,X,XP,RPAR,IPAR)     
       IMPLICIT REAL*8(A-H,O-Z)                     
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT                
       COMMON /PARAMD/ P   
       COMMON /INPUT/ R,B  
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG       
@@ -3398,7 +3418,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)          
          Ke=P(2)          
          V=P(3)           
-         Tlag1=P(4)       
+         lag=P(4)         
          WT=CV(1)         
          AFRICA=CV(2)     
          AGE=CV(3)        
@@ -3408,8 +3428,8 @@ C  TSTMULTN.FOR                          NOV, 2014
          KPC=0            
                           
          ! This model uses algebraic solutions. Differential equations provided here for reference only.                      
-         ! XP(1) =  - Ka*X(1)                      
-         ! XP(2) = RATEIV(1) + Ka*X(1) - Ke*X(2)   
+         ! XP(1) = -Ka*X(1)                        
+         ! XP(2) = Ka*X(1) - Ke*X(2)               
                           
       RETURN              
       END                 
@@ -3418,7 +3438,7 @@ C  TSTMULTN.FOR                          NOV, 2014
                           
       SUBROUTINE OUTPUT(T,Y)                       
       IMPLICIT REAL*8(A-H,O-Z)                     
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT                
       COMMON /PARAMD/ P   
       COMMON /STATE/ X    
       COMMON /INPUT/ R,B  
@@ -3436,7 +3456,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)          
          Ke=P(2)          
          V=P(3)           
-         Tlag1=P(4)       
+         lag=P(4)         
          WT=CV(1)         
          AFRICA=CV(2)     
          AGE=CV(3)        
@@ -3454,7 +3474,7 @@ C  TSTMULTN.FOR                          NOV, 2014
                           
       SUBROUTINE SYMBOL   
       IMPLICIT REAL*8(A-H,O-Z)                     
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT                
       CHARACTER PSYM(32)*11                        
       COMMON /CNST/ N,ND,NI,NUP,NUIC,NP            
       COMMON/BOLUSCOMP/NBCOMP                      
@@ -3470,7 +3490,7 @@ C  TSTMULTN.FOR                          NOV, 2014
        PSYM(1)='Ka'       
        PSYM(2)='Ke'       
        PSYM(3)='V'        
-       PSYM(4)='Tlag1'    
+       PSYM(4)='lag'      
                           
       RETURN              
       END                 
@@ -3479,7 +3499,7 @@ C  TSTMULTN.FOR                          NOV, 2014
                           
       SUBROUTINE GETFA(FA)
       IMPLICIT REAL*8(A-H,O-Z)                     
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT                
       COMMON /PARAMD/ P   
       COMMON /INPUT/ R,B  
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG       
@@ -3500,7 +3520,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)          
          Ke=P(2)          
          V=P(3)           
-         Tlag1=P(4)       
+         lag=P(4)         
          WT=CV(1)         
          AFRICA=CV(2)     
          AGE=CV(3)        
@@ -3518,7 +3538,7 @@ C  TSTMULTN.FOR                          NOV, 2014
                           
       SUBROUTINE GETIX(N,X)                        
       IMPLICIT REAL*8(A-H,O-Z)                     
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT                
       COMMON /PARAMD/ P   
       COMMON /INPUT/ R,B  
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG       
@@ -3546,7 +3566,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)          
          Ke=P(2)          
          V=P(3)           
-         Tlag1=P(4)       
+         lag=P(4)         
          WT=CV(1)         
          AFRICA=CV(2)     
          AGE=CV(3)        
@@ -3564,7 +3584,7 @@ C  TSTMULTN.FOR                          NOV, 2014
                           
       SUBROUTINE GETTLAG(TLAG)                     
       IMPLICIT REAL*8(A-H,O-Z)                     
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT                
       COMMON /PARAMD/ P   
       COMMON /INPUT/ R,B  
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG       
@@ -3585,7 +3605,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)          
          Ke=P(2)          
          V=P(3)           
-         Tlag1=P(4)       
+         lag=P(4)         
          WT=CV(1)         
          AFRICA=CV(2)     
          AGE=CV(3)        
@@ -3594,7 +3614,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          KCP=0            
          KPC=0            
                           
-         TLAG(1) = Tlag1  
+         TLAG(1) = lag    
                           
       RETURN              
       END                 
@@ -3603,7 +3623,7 @@ C  TSTMULTN.FOR                          NOV, 2014
                           
       SUBROUTINE ANAL3(X,TIN,TOUT)                 
       IMPLICIT REAL*8(A-H,O-Z)                     
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT              
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT                
                           
       COMMON /PARAMD/ P   
       COMMON /INPUT/ R,B  
@@ -3620,7 +3640,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)          
          Ke=P(2)          
          V=P(3)           
-         Tlag1=P(4)       
+         lag=P(4)         
          WT=CV(1)         
          AFRICA=CV(2)     
          AGE=CV(3)        

@@ -24,12 +24,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.12999     0.205478E-01  76.5444      1.62666    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.898390E-01
  -.108075E-02 0.319811E-04
   3.51823     -.103470      346.991    
@@ -37,12 +37,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.299732     0.565518E-02  18.6277     0.270160    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.637598      1.00000    
  0.630134     -.982216      1.00000    
@@ -50,7 +50,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   26.5251      27.5221      24.3358      16.6082    
 
 
@@ -59,12 +59,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.35723     0.324923E-01  147.715     0.543685    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.102618    
  -.110052E-02 0.249317E-04
   5.12169     -.107457      516.879    
@@ -72,12 +72,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.320341     0.499317E-02  22.7350     0.242290    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.688036      1.00000    
  0.703244     -.946595      1.00000    
@@ -85,7 +85,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   23.6026      15.3673      15.3911      44.5644    
 
 
@@ -94,12 +94,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.41829     0.450661E-01  99.9225      2.07456    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.722201E-01
  -.111284E-02 0.355740E-04
   2.78506     -.845186E-01  225.616    
@@ -107,12 +107,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.268738     0.596440E-02  15.0205     0.572197E-01
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.694285      1.00000    
  0.689953     -.943411      1.00000    
@@ -120,7 +120,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   18.9481      13.2348      15.0322      2.75816    
 
 
@@ -129,12 +129,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.15094     0.518714E-01  130.258     0.766163    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.874547E-01
  -.132379E-02 0.396060E-04
   3.79626     -.102870      313.112    
@@ -142,12 +142,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.295727     0.629333E-02  17.6950     0.123142    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.711289      1.00000    
  0.725463     -.923757      1.00000    
@@ -155,7 +155,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   25.6945      12.1326      13.5846      16.0726    
 
 
@@ -164,12 +164,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.59156     0.438692E-01  167.307     0.850261    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.102603    
  -.135131E-02 0.317585E-04
   5.33673     -.110299      455.345    
@@ -177,12 +177,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.320317     0.563546E-02  21.3388     0.935929E-01
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.748589      1.00000    
  0.780772     -.917217      1.00000    
@@ -190,7 +190,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   20.1260      12.8461      12.7543      11.0075    
 
 
@@ -199,12 +199,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00647     0.389694E-01  62.8183      1.93897    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.622534E-01
  -.932824E-03 0.355460E-04
   1.60032     -.614890E-01  115.552    
@@ -212,12 +212,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.249506     0.596204E-02  10.7495     0.100919    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.627080      1.00000    
  0.596674     -.959430      1.00000    
@@ -225,7 +225,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   24.7903      15.2993      17.1121      5.20479    
 
 
@@ -234,12 +234,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.963543     0.488749E-01  59.6357      2.03000    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.739615E-01
  -.691633E-03 0.335616E-04
   1.03622     -.480407E-01  76.5365    
@@ -247,12 +247,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.271959     0.579324E-02  8.74851     0.360692    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.438987      1.00000    
  0.435525     -.947881      1.00000    
@@ -260,7 +260,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   28.2249      11.8532      14.6699      17.7681    
 
 
@@ -269,12 +269,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.03252     0.391828E-01  63.9842      1.98243    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.621311E-01
  -.953646E-03 0.361046E-04
   1.65553     -.628829E-01  119.119    
@@ -282,12 +282,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.249261     0.600871E-02  10.9142     0.930868E-01
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.636724      1.00000    
  0.608544     -.958872      1.00000    
@@ -295,7 +295,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   24.1410      15.3351      17.0576      4.69558    
 
 
@@ -304,12 +304,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.14576     0.417743E-01  105.973      1.23249    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.849137E-01
  -.919764E-03 0.337985E-04
   2.67714     -.926219E-01  280.224    
@@ -317,12 +317,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.291400     0.581365E-02  16.7399     0.303963    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.542924      1.00000    
  0.548820     -.951727      1.00000    
@@ -330,7 +330,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   25.4328      13.9168      15.7964      24.6624    
 
 
@@ -339,12 +339,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.858861     0.537188E-01  70.6835      1.31095    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.775537E-01
  -.901047E-03 0.430780E-04
   1.36782     -.659602E-01  112.777    
@@ -352,12 +352,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.278485     0.656339E-02  10.6197     0.291509    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.492968      1.00000    
  0.462508     -.946332      1.00000    
@@ -365,7 +365,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   32.4249      12.2180      15.0242      22.2365    
 
 
@@ -374,12 +374,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.849380     0.624143E-01  80.8237      1.47538    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.776599E-01
  -.996813E-03 0.428119E-04
   1.48784     -.655705E-01  116.844    
@@ -387,12 +387,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.278675     0.654308E-02  10.8094     0.222333    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.546679      1.00000    
  0.493916     -.927091      1.00000    
@@ -400,7 +400,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   32.8093      10.4833      13.3741      15.0696    
 
 
@@ -409,12 +409,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.35447     0.262502E-01  106.299      1.59515    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.945767E-01
  -.107219E-02 0.291271E-04
   4.20736     -.111140      449.312    
@@ -422,12 +422,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.307533     0.539695E-02  21.1970     0.276385    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.646000      1.00000    
  0.645422     -.971512      1.00000    
@@ -435,7 +435,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   22.7050      20.5597      19.9408      17.3266    
 
 
@@ -444,12 +444,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.257586     0.744322E-01  39.2744      1.61098    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.101919E-01
  -.111616E-02 0.167001E-03
  0.599477     -.942052E-01  57.2383    
@@ -457,12 +457,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.100955     0.129229E-01  7.56560     0.191195    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.855540      1.00000    
  0.784879     -.963544      1.00000    
@@ -470,7 +470,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   39.1927      17.3620      19.2634      11.8683    
 
 
@@ -479,12 +479,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.05936     0.418335E-01  123.781     0.716939    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.921923E-01
  -.127977E-02 0.352121E-04
   4.16798     -.106271      361.537    
@@ -492,12 +492,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.303632     0.593398E-02  19.0141     0.173800    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.710298      1.00000    
  0.721943     -.941875      1.00000    
@@ -505,7 +505,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   28.6617      14.1848      15.3611      24.2420    
 
 
@@ -514,12 +514,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.05715     0.311889E-01  79.3053      1.45924    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.842625E-01
  -.994169E-03 0.357469E-04
   2.62038     -.927589E-01  255.066    
@@ -527,12 +527,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.290280     0.597887E-02  15.9708     0.280998    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.572828      1.00000    
  0.565224     -.971426      1.00000    
@@ -540,7 +540,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   27.4587      19.1699      20.1384      19.2565    
 
 
@@ -549,12 +549,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.10832     0.344111E-01  90.2250      1.37961    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.850215E-01
  -.969333E-03 0.343785E-04
   2.72842     -.940659E-01  275.640    
@@ -562,12 +562,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.291584     0.586331E-02  16.6024     0.286461    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.566977      1.00000    
  0.563606     -.966314      1.00000    
@@ -575,7 +575,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   26.3087      17.0390      18.4011      20.7639    
 
 
@@ -584,12 +584,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.755282     0.700918E-01  67.5731      1.18066    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.743105E-01
  -.923061E-03 0.460521E-04
   1.04580     -.546772E-01  76.2627    
@@ -597,12 +597,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.272600     0.678617E-02  8.73285     0.322003    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.498977      1.00000    
  0.439308     -.922626      1.00000    
@@ -610,7 +610,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   36.0924      9.68183      12.9236      27.2730    
 
 
@@ -619,12 +619,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.01316     0.282763E-01  62.9503      1.79179    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.781360E-01
  -.111896E-02 0.383866E-04
   2.44339     -.843376E-01  194.402    
@@ -632,12 +632,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.279528     0.619569E-02  13.9428     0.184843    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.646098      1.00000    
  0.626928     -.976295      1.00000    
@@ -645,7 +645,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   27.5896      21.9112      22.1489      10.3161    
 
 
@@ -654,12 +654,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.570312     0.628438E-01  30.6302      1.90190    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.511417E-01
  -.116897E-02 0.581571E-04
  0.557690     -.315371E-01  19.4721    
@@ -667,12 +667,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.226145     0.762608E-02  4.41272     0.106226    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.677820      1.00000    
  0.558855     -.937161      1.00000    
@@ -680,7 +680,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   39.6529      12.1350      14.4064      5.58523    
 
 
@@ -689,12 +689,12 @@
 
  THE PARAMETER ESTIMATES ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.714180     0.579909E-01  52.0175      1.75000    
 
   THE COVARIANCE MATRIX EST. OF THESE ESTIMATES ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.812334E-01
  -.115611E-02 0.467902E-04
   1.28908     -.528592E-01  66.8607    
@@ -702,12 +702,12 @@
 
  THE CORRESPONDING STANDARD DEVIATIONS ARE: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
  0.285015     0.684034E-02  8.17684     0.359555    
 
  THE CORRESPONDING CORRELATION MATRIX IS: 
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   1.00000    
  -.592997      1.00000    
  0.553128     -.945057      1.00000    
@@ -715,7 +715,7 @@
 
  THE CORRESPONDING % COEFF. OF VARIATIONS ARE:
 
-     Ka           Ke           V            Tlag1      
+     Ka           Ke           V            lag        
   39.9080      11.7955      15.7194      20.5460    
 
 
@@ -734,7 +734,7 @@
  THE NUMBER OF PARAMETERS IS  4
 
  THE PARAMETERS ARE: 
-Ka          Ke          V           Tlag1      
+Ka          Ke          V           lag        
 
  THE CORRESPONDING BOUNDARIES ARE: 
    1.0000000000000000E-008   3.0558655096807663     

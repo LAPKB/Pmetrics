@@ -21,7 +21,7 @@ For NPAG this has 4 columns:
 \item{value }{The value of the summary statistic}
 \item{par }{The name of the parameter}
 \item{type }{Either \emph{WtMed} for weighted median, or \emph{MAWD} for MAWD (see details)}
-\item{quantile }{Requested \code{lower}, 0.5 (median), and \code{upper} quantiles}
+\item{percentile }{Requested \code{lower}, 0.5 (median), and \code{upper} quantiles}
 For IT2B this has 6 columns:
 \item{mean }{Parameter mean value}
 \item{se.mean }{Standard error of the mean}

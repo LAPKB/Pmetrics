@@ -16,7 +16,6 @@
 #' @importFrom dplyr select arrange filter mutate transmute group_by row_number
 #' group_map ungroup bind_cols bind_rows nest_by rowwise rename inner_join
 #' slice_tail slice_head slice across tibble as_tibble .data
-#' @importFrom cubelyr as.tbl_cube 
 #' @importFrom foreach %dopar%
 #' @importFrom readr read_file write_file
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon geom_hline

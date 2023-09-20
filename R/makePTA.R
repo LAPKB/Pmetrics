@@ -404,13 +404,21 @@ makePTA <- function(simdata, simlabels, targets, target.type, success, outeq = 1
     close(pb)
     cat("\nProcessing results...")
     
-
-    resultDF <- results %>%  
-      as.tbl_cube(met_name="pdi") %>%
-      dplyr::as_tibble() %>%
-      select(.data$simnum,.data$id,.data$target,.data$pdi)
+    # resultDF <- results %>%  
+    #   cubelyr::as.tbl_cube(met_name="pdi") %>%
+    #   dplyr::as_tibble() %>%
+    #   select(.data$simnum,.data$id,.data$target,.data$pdi)
     
-
+    resultDF <- results %>% purrr::array_tree(margin = 1) %>%
+      purrr::map(\(x) {
+        as.data.frame(t(x)) %>%
+                   dplyr::mutate(id = row_number()) %>%
+                   tidyr::pivot_longer(!id,names_to = "target", values_to = "pdi")
+      }) %>%
+      dplyr::bind_rows(.id = "simnum") %>%
+      dplyr::mutate(simnum = as.integer(simnum), target = as.integer(target)) %>%
+      dplyr::arrange(id, target)
+    
     #resultsDF <- melt(results,value.name="pdi")
     #names(resultDF) <- c("target", "id", "pdi", "simnum")
     
