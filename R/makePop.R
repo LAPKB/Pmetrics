@@ -37,7 +37,7 @@ makePop <- function(run, NPdata) {
   }
   #pop <- melt(NPdata$ypredpopt,value.name="pred")
   # 
-  # pop <- NPdata$ypredpopt %>% 
+  # pop <- NPdata$ypredpopt %>%
   #   cubelyr::as.tbl_cube(met_name="pred") %>%
   #   dplyr::as_tibble() %>%
   #   filter(!is.na(pred)) %>%
@@ -48,18 +48,19 @@ makePop <- function(run, NPdata) {
     purrr::map(\(x) {
       purrr::map(x, \(y) {as.data.frame(y) %>%
         dplyr::mutate(time = row.names(y)) %>%
-          dplyr:bind_rows(.id = "outeq") %>%
+          dplyr::bind_rows(.id = "outeq") %>%
           tidyr::pivot_longer(starts_with("m"), names_to = "icen", values_to = "pred") %>%
-          dplyr:arrange(icen, outeq) %>%
-          dplyr:relocate(time, icen, pred, outeq)
+          # dplyr::arrange(icen, outeq) %>%
+          dplyr::relocate(time, icen, pred, outeq)
         }) %>%
-        dplyr:bind_rows()
+        dplyr::bind_rows()
       }) %>% 
     dplyr::bind_rows(.id = "id") %>% 
     dplyr::mutate(id = as.integer(id),
                   time = as.numeric(time),
                   outeq = as.integer(outeq)) %>%
-    dplyr::filter(if_all(everything(), \(x) !is.na(x))) 
+    dplyr::filter(if_all(everything(), \(x) !is.na(x))) %>%
+    dplyr::arrange(icen, id, outeq)
   
 
   pop$id <- rep(unlist(lapply(1:NPdata$nsub,function(x) rep(NPdata$sdata$id[x],times=NPdata$numeqt*NPdata$numt[x]))),3)
