@@ -123,7 +123,7 @@ Simulated observations are plotted as quantiles on the y-axis vs. time on the x.
 observations are included, a visual and numerical predictive check will be performed.
 }
 \examples{
-plot(simEx$data[[1]]$data)
+plot(simEx$data[[1]])
 }
 \seealso{
 \code{\link{SIMparse}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}

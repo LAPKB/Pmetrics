@@ -32,11 +32,16 @@ usethis::use_data(ITex, overwrite = T)
 setwd("..")
 
 #simulator example
-simEx <- PM_sim$load("sim.rds")
+simEx <- NPex$sim(
+  limits = c(0, 3), data = "ptaex1.csv",
+  predInt = c(120, 144, 0.5), seed = rep(-17, 4)
+)
 usethis::use_data(simEx, overwrite = T)
 
 #NPex with valid field
-NPex_val <- PM_load(file = "valid.Rdata")
+setwd("Valid")
+NPex$validate()
+NPex_val <- NPex
 usethis::use_data(NPex_val, overwrite = T)
 
 

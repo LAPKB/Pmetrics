@@ -507,7 +507,7 @@ plot.PM_simlist <- function(x, ...){
 #' with the addition of the quantile for each observation}
 #' @author Michael Neely
 #' @examples 
-#' plot(simEx$data[[1]]$data)
+#' plot(simEx$data[[1]])
 #' @seealso \code{\link{SIMparse}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 

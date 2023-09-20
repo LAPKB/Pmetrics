@@ -3,7 +3,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE DIFFEQ(NDIM,T,X,XP,RPAR,IPAR)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
       COMMON /PARAMD/ P
       COMMON /INPUT/ R,B
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG
@@ -24,7 +24,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)
          Ke=P(2)
          V=P(3)
-         Tlag1=P(4)
+         lag=P(4)
          WT=CV(1)
          AFRICA=CV(2)
          AGE=CV(3)
@@ -34,8 +34,8 @@ C  TSTMULTN.FOR                          NOV, 2014
          KPC=0
 
          ! This model uses algebraic solutions. Differential equations provided here for reference only.
-         ! XP(1) =  - Ka*X(1)
-         ! XP(2) = RATEIV(1) + Ka*X(1) - Ke*X(2)
+         ! XP(1) = -Ka*X(1)
+         ! XP(2) = Ka*X(1) - Ke*X(2)
 
       RETURN
       END
@@ -44,7 +44,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE OUTPUT(T,Y)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
       COMMON /PARAMD/ P
       COMMON /STATE/ X
       COMMON /INPUT/ R,B
@@ -62,7 +62,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)
          Ke=P(2)
          V=P(3)
-         Tlag1=P(4)
+         lag=P(4)
          WT=CV(1)
          AFRICA=CV(2)
          AGE=CV(3)
@@ -80,7 +80,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE SYMBOL
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
       CHARACTER PSYM(32)*11
       COMMON /CNST/ N,ND,NI,NUP,NUIC,NP
       COMMON/BOLUSCOMP/NBCOMP
@@ -96,7 +96,7 @@ C  TSTMULTN.FOR                          NOV, 2014
        PSYM(1)='Ka'
        PSYM(2)='Ke'
        PSYM(3)='V'
-       PSYM(4)='Tlag1'
+       PSYM(4)='lag'
 
       RETURN
       END
@@ -105,7 +105,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE GETFA(FA)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
       COMMON /PARAMD/ P
       COMMON /INPUT/ R,B
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG
@@ -126,7 +126,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)
          Ke=P(2)
          V=P(3)
-         Tlag1=P(4)
+         lag=P(4)
          WT=CV(1)
          AFRICA=CV(2)
          AGE=CV(3)
@@ -144,7 +144,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE GETIX(N,X)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
       COMMON /PARAMD/ P
       COMMON /INPUT/ R,B
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG
@@ -172,7 +172,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)
          Ke=P(2)
          V=P(3)
-         Tlag1=P(4)
+         lag=P(4)
          WT=CV(1)
          AFRICA=CV(2)
          AGE=CV(3)
@@ -190,7 +190,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE GETTLAG(TLAG)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
       COMMON /PARAMD/ P
       COMMON /INPUT/ R,B
       COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG
@@ -211,7 +211,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)
          Ke=P(2)
          V=P(3)
-         Tlag1=P(4)
+         lag=P(4)
          WT=CV(1)
          AFRICA=CV(2)
          AGE=CV(3)
@@ -220,7 +220,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          KCP=0
          KPC=0
 
-         TLAG(1) = Tlag1
+         TLAG(1) = lag
 
       RETURN
       END
@@ -229,7 +229,7 @@ C  TSTMULTN.FOR                          NOV, 2014
 
       SUBROUTINE ANAL3(X,TIN,TOUT)
       IMPLICIT REAL*8(A-H,O-Z)
-      REAL*8 Ka,Ke,V,Tlag1,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
+      REAL*8 Ka,Ke,V,lag,KCP,KPC,WT,AFRICA,AGE,GENDER,HEIGHT
 
       COMMON /PARAMD/ P
       COMMON /INPUT/ R,B
@@ -246,7 +246,7 @@ C  TSTMULTN.FOR                          NOV, 2014
          Ka=P(1)
          Ke=P(2)
          V=P(3)
-         Tlag1=P(4)
+         lag=P(4)
          WT=CV(1)
          AFRICA=CV(2)
          AGE=CV(3)
