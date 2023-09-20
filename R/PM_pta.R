@@ -28,7 +28,7 @@ PM_pta <- R6::R6Class(
     outcome = NULL,
     #' @description 
     #' Create a new `PM_pta` object.
-    #' @param x One of two possibilities:
+    #' @param simdata One of two possibilities:
     #' * A [PM_sim] object, which typically will contain the results of 
     #' multiple simulations OR
     #' * The quoted filename of a previously saved .rds file 
@@ -39,13 +39,13 @@ PM_pta <- R6::R6Class(
     #' @param target.type See [makePTA].
     #' @param success See [makePTA]
     #' @param ... Other arguments passed to [makePTA].
-    initialize = function(x, targets, target.type, success, ...) {
-      if(!inherits(x, "character")){
-        pta <- makePTA(simdata = x, targets = targets, 
+    initialize = function(simdata, targets, target.type, success, ...) {
+      if(!inherits(simdata, "character")){
+        pta <- makePTA(simdata = simdata, targets = targets, 
                        target.type = target.type, success = success, ...)
         private$populate(pta)
       } else { #try as filename
-        pta <- readRDS(x)
+        pta <- readRDS(simdata)
         private$populate(pta)
       }
     },

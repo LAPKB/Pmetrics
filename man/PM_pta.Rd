@@ -51,13 +51,13 @@ Julian Otalvaro and Michael Neely
 \subsection{Method \code{new()}}{
 Create a new \code{PM_pta} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_pta$new(x, targets, target.type, success, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_pta$new(simdata, targets, target.type, success, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{x}}{One of two possibilities:
+\item{\code{simdata}}{One of two possibilities:
 \itemize{
 \item A \link{PM_sim} object, which typically will contain the results of
 multiple simulations OR

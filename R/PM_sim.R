@@ -132,7 +132,7 @@ PM_sim <- R6::R6Class(
     #' of the current Simulation.
     #' @param ... Additional parameters, refer to [makePTA]
     pta = function(...) {
-      PM_pta$new(self$data,...)
+      PM_pta$new(self,...)
     },
     #' @description
     #' Calculates the AUC of the specified simulation

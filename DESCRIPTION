@@ -36,7 +36,6 @@ Imports:
     chron,
     clipr,
     crayon,
-    cubelyr,
     data.table,
     doParallel,
     dplyr,
