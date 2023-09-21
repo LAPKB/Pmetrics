@@ -116,7 +116,7 @@ Lastly, sections which are specific to model files:
 ### Model Library {#mb-lib}
 
 ```{r echo = FALSE, out.width="100%", out.height="100%"}
-knitr::include_graphics("images/model_builder/front.png")
+knitr::include_graphics("Images/model_builder/front.png")
 ```
 
 Here you can choose from pre-existing models, either which you have
@@ -138,7 +138,7 @@ Model, model components will be appropriately populated.
 #### App
 
 ```{r echo = FALSE, out.width="100%", out.height="100%"}
-knitr::include_graphics("images/model_builder/primary.png")
+knitr::include_graphics("Images/model_builder/primary.png")
 ```
 
 In this tab, you can choose the number and names of the primary
@@ -264,7 +264,7 @@ on the way you define the model as described below.
 #### App
 
 ```{r echo = FALSE, out.width="100%", out.height="100%"}
-knitr::include_graphics("images/model_builder/covariates.png")
+knitr::include_graphics("Images/model_builder/covariates.png")
 ```
 
 If you launch the Model Builder with a `PM_data` object as an argument,
@@ -330,7 +330,7 @@ They are only used internally to define the model.
 #### App
 
 ```{r echo = FALSE, out.width="100%", out.height="100%"}
-knitr::include_graphics("images/model_builder/secondary.png")
+knitr::include_graphics("Images/model_builder/secondary.png")
 ```
 
 If using secondary variables, define them first within this tab. 
@@ -516,7 +516,7 @@ The lag time is a delay in absorption for a bolus input.
 #### App
 
 ```{r echo = FALSE, out.width="100%", out.height="100%"}
-knitr::include_graphics("images/model_builder/lag.png")
+knitr::include_graphics("Images/model_builder/lag.png")
 ```
 
 You can change the default delay in absorption of any bolus
@@ -573,7 +573,7 @@ choose the correct model. Details below.
 #### App
 
 ```{r echo = FALSE, out.width="100%", out.height="100%"}
-knitr::include_graphics("images/model_builder/eqn.png")
+knitr::include_graphics("Images/model_builder/eqn.png")
 ```
 
 If you have not loaded a prior model file or selected a model from the library,
@@ -676,7 +676,7 @@ error block is distinct from but correlates with the output block.
 #### App
 
 ```{r echo = FALSE, out.width="100%", out.height="100%"}
-knitr::include_graphics("images/model_builder/output.png")
+knitr::include_graphics("Images/model_builder/output.png")
 ```
 
 On this tab, you can choose the number of output equations and define the equation for each output. You do not need to specify "Y[.] =" in the equations. Simply include the right side of the equation in the field. 
@@ -960,7 +960,7 @@ The comment line "C this weight is in kg" will be ignored.
 ## Saving and copying models from the app
 
 ```{r echo = FALSE, out.width="100%", out.height="100%"}
-knitr::include_graphics("images/model_builder/output2.png")
+knitr::include_graphics("Images/model_builder/output2.png")
 ```
 
 The Model List tab in the bottom window of the app shows the 

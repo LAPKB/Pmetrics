@@ -1,7 +1,7 @@
 #' @title Parse Pmetrics output
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' A flexible parser for Pmetrics output
 #' @details
 #' Currently written for the Rust implementation of NPAG
@@ -17,13 +17,10 @@
 #' @seealso \code{\link{NPparse}}
 #' @import dplyr
 #' @import tidyr
-#' @importFrom data.table fread
 #' @importFrom dplyr select rename mutate relocate left_join case_when first across
-#' @importFrom RcppTOML parseTOML
 #' @export
 
 PM_parse <- function(wd = getwd(), write = TRUE) {
-  
   # Default paths
   pred_file <- paste(wd, "pred.csv", sep = "/")
   obs_file <- paste(wd, "obs.csv", sep = "/")
@@ -90,9 +87,9 @@ make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", config_file = 
     dec = ".",
     showProgress = TRUE
   )
-  
-  config = RcppTOML::parseTOML(config_file)
-  poly = config$error$poly
+
+  config <- RcppTOML::parseTOML(config_file)
+  poly <- config$error$poly
 
   op <- obs_raw %>%
     left_join(pred_raw, by = c("id", "time", "outeq")) %>%
@@ -117,9 +114,9 @@ make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", config_file = 
     dplyr::rename(pred = value) %>%
     mutate(d = pred - obs) %>%
     mutate(ds = d * d) %>%
-    mutate(obsSD = poly[1] + poly[2]*obs + poly[3]*(obs^2) + poly[4]*(obs^3)) %>% 
-    mutate(wd = d/obsSD) %>% 
-    mutate(wds = wd * wd) %>% 
+    mutate(obsSD = poly[1] + poly[2] * obs + poly[3] * (obs^2) + poly[4] * (obs^3)) %>%
+    mutate(wd = d / obsSD) %>%
+    mutate(wds = wd * wd) %>%
     # HARDCODED
     mutate(block = 1)
 
@@ -205,8 +202,8 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
     showProgress = TRUE
   )
 
-  par_names = names(theta)[names(theta) != "prob"]
-  
+  par_names <- names(theta)[names(theta) != "prob"]
+
   # Pop
   popMean <- theta %>%
     summarise(across(.cols = -prob, .fns = function(x) {
@@ -253,7 +250,7 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
 
   postMed <- post %>%
     group_by(id) %>%
-    summarise(across(-c(point, prob), \(x) weighted_median(x, prob))) #in PMutilities
+    summarise(across(-c(point, prob), \(x) weighted_median(x, prob))) # in PMutilities
 
   # TODO: Calculate shrinkage
   shrinkage <- 1
@@ -289,7 +286,6 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
 
 # CYCLES
 make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config_file = "config.toml", version) {
-  
   raw <- data.table::fread(
     input = cycle_file,
     sep = ",",
@@ -298,7 +294,7 @@ make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config_f
     dec = ".",
     showProgress = TRUE
   )
-  
+
   obs_raw <- data.table::fread(
     input = obs_file,
     sep = ",",

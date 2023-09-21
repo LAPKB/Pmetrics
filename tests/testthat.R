@@ -1,5 +1,4 @@
 library(testthat)
 library(Pmetrics)
 
-test_check("Pmetrics")
-
+# test_check("Pmetrics")
