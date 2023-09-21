@@ -34,7 +34,6 @@ Depends:
     R (>= 4.0.0)
 Imports:
     crayon,
-    data.table,
     doParallel,
     dplyr,
     foreach,
@@ -56,7 +55,6 @@ Imports:
     purrr,
     R6,
     RColorBrewer,
-    RcppTOML,
     readr,
     shiny,
     shinythemes,
@@ -70,10 +68,12 @@ Suggests:
     askpass,
     base64enc,
     curl,
+    data.table,
     devtools,
     knitr,
     pandoc,
     progress,
+    RcppTOML,
     reticulate,
     rmarkdown,
     testthat
