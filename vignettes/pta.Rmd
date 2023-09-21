@@ -47,13 +47,13 @@ Probability of target attainment (PTA) is a powerful application of simulated re
 For example, it could be a certain AUC or time above a threshold. Below is a simple figure showing 4 concentration-time profiles after a gven dosage. If the target is percent of the dosing interval > 4 mg/L of at least 60% (0.6), then only one of the 4 curves meets this threshold, and the PTA is 25%. We can also generate the mean (44%) and standard deviation (39%) of the % time above 4 mg/L, also called the pharmacodynamic index (PDI) for this dosage.
 
 ```{r echo = F}
-knitr::include_graphics("images/pta1.png")
+knitr::include_graphics("Images/pta1.png")
 ```
 
 Of course we usually simulate far more than 4 profiles! Below is the same dosage and target for 1000 profiles.
 
 ```{r echo = F}
-knitr::include_graphics("images/pta2.png")
+knitr::include_graphics("Images/pta2.png")
 ```
 
 ## Creation
