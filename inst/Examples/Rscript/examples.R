@@ -518,9 +518,9 @@ setwd(paste0(wd,"/Runs"))
 # PM_pta
 
 # Example - save the PM_result (exRes2) to the "2" folder
-exRes2$save("2", "exres2.rds") # rds is the recommended file extension
+exRes2$save(file = "2/outputs/exres2.rds") # rds is the recommended file extension
 list.files("2/outputs")
-copy_exRes2 <- PM_result$load("2/exres2.rds")
+copy_exRes2 <- PM_load(file = "2/outputs/exres2.rds")
 copy_exRes2
 
 # If you want to save multiple objects into one single file, R provides the
@@ -552,7 +552,7 @@ exRes3 <- PM_load(3)
 # We could also generate Bayesian posterior parameter estimates for a new population this
 # way, and with 0 cycles:
 # exFit3 <- PM_fit(data=PM_data("newPop.csv"), mod2)
-# exFit3$run(prior = 2, cycles = 0)
+# exFit3$run(prior = 2, cycles = 0, intern = TRUE)
 # This won't run because we don't have a newPop.csv file,
 # but shows you how it could be done.
 

@@ -169,6 +169,44 @@ rmnorm <- function(n, mean, sigma) {
   retval
 }
 
+# density function for the multivariate normal distribution, code from mvtnorm package
+dmv_norm <- function (x, mean = rep(0, p), sigma = diag(p), log = FALSE, 
+                      checkSymmetry = TRUE) 
+{
+  if (is.vector(x)) 
+    x <- matrix(x, ncol = length(x))
+  p <- ncol(x)
+  if (!missing(mean)) {
+    if (!is.null(dim(mean))) 
+      dim(mean) <- NULL
+    if (length(mean) != p) 
+      stop("x and mean have non-conforming size")
+  }
+  if (!missing(sigma)) {
+    if (p != ncol(sigma)) 
+      stop("x and sigma have non-conforming size")
+    if (checkSymmetry && !isSymmetric(sigma, tol = sqrt(.Machine$double.eps), 
+                                      check.attributes = FALSE)) 
+      stop("sigma must be a symmetric matrix")
+  }
+  dec <- tryCatch(base::chol(sigma), error = function(e) e)
+  if (inherits(dec, "error")) {
+    x.is.mu <- colSums(t(x) != mean) == 0
+    logretval <- rep.int(-Inf, nrow(x))
+    logretval[x.is.mu] <- Inf
+  }
+  else {
+    tmp <- backsolve(dec, t(x) - mean, transpose = TRUE)
+    rss <- colSums(tmp^2)
+    logretval <- -sum(log(diag(dec))) - 0.5 * p * log(2 * 
+                                                        pi) - 0.5 * rss
+  }
+  names(logretval) <- rownames(x)
+  if (log) 
+    logretval
+  else exp(logretval)
+}
+
 openHTML <- function(x) pander::openFileInOS(x)
 
 # parse NP_RF file only for final cycle information; used for bootstrapping
@@ -1899,4 +1937,41 @@ template <- function(name){
   insert <- c(insert, "  \n")
   insert <- paste(insert, collapse = " ")
   return(insert)
+}
+
+#weighted median
+#ChatGPT prompt: "Write a function in R to calculate weighted median with interpolation."
+weighted_median <- function(values, weights) {
+  # Combine values and weights into a data frame
+  data <- data.frame(values = values, weights = weights)
+  
+  # Sort the data by values
+  data <- data[order(data$values), ]
+  
+  # Calculate the cumulative sum of weights
+  data$cum_weights <- cumsum(data$weights)
+  
+  # Find the median value
+  total_weight <- sum(weights)
+  median_value <- NULL
+  
+  for (i in 1:nrow(data)) {
+    if (data$cum_weights[i] >= total_weight / 2) {
+      if (data$cum_weights[i] == total_weight / 2) {
+        # If exactly at the midpoint, return the value
+        median_value <- data$values[i]
+      } else {
+        # Interpolate the median value
+        prev_cum_weight <- data$cum_weights[i - 1]
+        prev_value <- data$values[i - 1]
+        
+        # Calculate the weighted median using linear interpolation
+        median_value <- prev_value + (0.5 * total_weight - prev_cum_weight) *
+          (data$values[i] - prev_value) / (data$cum_weights[i] - prev_cum_weight)
+      }
+      break
+    }
+  }
+  
+  return(median_value)
 }

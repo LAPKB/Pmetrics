@@ -1313,8 +1313,14 @@ build_model <- function(...) {
                   if(is.null(new_model())){
                     return()
                   } else {
-                    #print(output[[paste0("model_list_",.x)]])
-                    clipr::write_clip(copy_list())
+                    OS <- getOS()
+                    if(OS != 2){ #Mac or Linux
+                      clip <- pipe("pbcopy", "w")
+                      writeLines(copy_list(), clip)
+                      close(clip)
+                    } else { # Windows
+                      writeClipboard(copy_list())
+                    }
                   } 
                 }
               ) #end observeEvent
