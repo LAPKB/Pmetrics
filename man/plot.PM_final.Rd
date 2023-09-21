@@ -138,6 +138,7 @@ On the other hand, if \code{formula} is two parameters, e.g. CL~V, this will gen
 For NPAG data, it will be support point with size proportional to the probability
 of each point.  For IT2B, it will be an elliptical distribution of a bivariate normal distribution centered at the mean
 of each plotted variable and surrounding quantiles of the bivariate distribution plotted in decreasing shades of grey.
+Mulitvariate normal density code is borrowed from the mvtnorm package.
 }
 \examples{
 #NPAG

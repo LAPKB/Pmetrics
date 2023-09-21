@@ -33,8 +33,6 @@ BugReports: https://github.com/LAPKB/Pmetrics/issues
 Depends: 
     R (>= 4.0.0)
 Imports:
-    chron,
-    clipr,
     crayon,
     data.table,
     doParallel,
@@ -48,8 +46,6 @@ Imports:
     lifecycle,
     lubridate,
     magrittr,
-    Matrix,
-    matrixStats,
     mclust,
     mvtnorm,
     npde,
