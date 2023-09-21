@@ -16,6 +16,7 @@
 #' For NPAG data, it will be support point with size proportional to the probability
 #' of each point.  For IT2B, it will be an elliptical distribution of a bivariate normal distribution centered at the mean
 #' of each plotted variable and surrounding quantiles of the bivariate distribution plotted in decreasing shades of grey.
+#' Mulitvariate normal density code is borrowed from the mvtnorm package.
 #' @method plot PM_final
 #' @param x The name of an [PM_final] data object as a field in a [PM_result] R6
 #' object, e.g `PM_result$final`. 
@@ -332,7 +333,8 @@ plot.PM_final <- function(x,
                                    (rangeY[2] - rangeY[1])/100)) %>%
         tidyr::expand(x,y)
       
-      z <- mvtnorm::dmvnorm(coords,mean=as.numeric(data$popMean[1,c(whichX,whichY)]),
+      # dmv_norm in PMutilities
+      z <- dmv_norm(coords,mean=as.numeric(data$popMean[1,c(whichX,whichY)]),
                             sigma=as.matrix(data$popCov[c(whichX,whichY),c(whichX,whichY)])
       )
       z <- matrix(z, nrow=101)

@@ -869,8 +869,11 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
       ans <- readline("\nChoose one of the following:\n1) end simulation\n2) fix covariance\n3) set covariances to 0\n ")
       if (ans == 1) stop()
       if (ans == 2) {
-        # checkRequiredPackages("matrix")
-        pop.cov <- as.matrix(Matrix::nearPD(as.matrix(pop.cov), keepDiag = T)$mat)
+        # eigendecomposition to fix the matrix
+        eigen_values <- eigen(pop.cov)$values
+        eigen_vectors <- eigen(pop.cov)$vectors
+        pop.cov <- eigen_vectors %*% diag(pmax(eigen_values, 0)) %*% t(eigen_vectors)
+        #pop.cov <- as.matrix(Matrix::nearPD(as.matrix(pop.cov), keepDiag = T)$mat)
       }
       if (ans == 3) {
         pop.cov2 <- diag(0, nrow(pop.cov))

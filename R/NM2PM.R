@@ -184,12 +184,15 @@ NM2PM <- function(data,ctl){
       if(is.null(dateFormat)){ #no date format so indicated that times are already decimal
         clockTime <- F
       } else { #there was a date format, so convert all h.h to hh:mm
-        #dataDF[,TIMEcol] <- sapply(dataDF[,TIMEcol],decimal2Clock)  
         dataDF[,TIMEcol] <- as.numeric(dataDF[,TIMEcol])/24
-        dt <- chron::chron(dataDF[,DATEcol],dataDF[,TIMEcol])
-        dataDF[,TIMEcol] <- paste(sprintf("%02i",chron::hours(dt)),":",sprintf("%02i",chron::minutes(dt)),sep="")
-        dataDF[,DATEcol] <- chron::dates(dt)
-        clockTime <- T
+        dt <- lubridate::parse_date_time(paste(dataDF[,DATEcol],dataDF[,TIMEcol]), orders = paste(dateFormat,"H:M"))
+        # dt <- chron::chron(dataDF[,DATEcol],dataDF[,TIMEcol])
+        # dataDF[,TIMEcol] <- paste(sprintf("%02i",chron::hours(dt)),":",sprintf("%02i",chron::minutes(dt)),sep="")
+        # dataDF[,DATEcol] <- chron::dates(dt)
+        
+        dataDF[,TIMEcol] <- paste(sprintf("%02i",lubridate::hour(dt)),":",sprintf("%02i",lubridate::minute(dt)),sep="")
+        dataDF[,DATEcol] <- lubridate::date(dt)
+        clockTime <- TRUE
       }
     }
   } #end time block

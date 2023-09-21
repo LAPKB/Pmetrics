@@ -20,7 +20,6 @@
 #' @importFrom data.table fread
 #' @importFrom dplyr select rename mutate relocate left_join case_when first across
 #' @importFrom RcppTOML parseTOML
-#' @importFrom matrixStats weightedMedian
 #' @export
 
 PM_parse <- function(wd = getwd(), write = TRUE) {
@@ -228,9 +227,7 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
     cor()
 
   popMedian <- theta %>%
-    summarise(across(.cols = -prob, .fns = function(x) {
-      median(x)
-    }))
+    summarise(across(-prob, \(x) median(x)))
 
   # Posterior
 
@@ -256,9 +253,7 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
 
   postMed <- post %>%
     group_by(id) %>%
-    summarise(across(.cols = -c(point, prob), .fns = function(x) {
-      weightedMedian(x = x, w = prob, interpolate = TRUE)
-    }))
+    summarise(across(-c(point, prob), \(x) weighted_median(x, prob))) #in PMutilities
 
   # TODO: Calculate shrinkage
   shrinkage <- 1
