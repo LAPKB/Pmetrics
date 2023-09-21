@@ -16,8 +16,7 @@ knitr::opts_chunk$set(
 
 ```{r setup, echo=F, message=F}
 library(Pmetrics)
-library(magrittr)
-library(dplyr)
+library(tidyverse)
 library(plotly)
 ```
 
@@ -179,8 +178,8 @@ NPex$data$plot(legend = T)
 
 ...and a more complex one.
 ```{r, echo = T, eval = T}
-NPex$data$plot(line = list(join = F, 
-                           pred = list(NPex$post, color = "navy")), 
+NPex$data$plot(pred = list(NPex$post, color = "navy"), 
+               line = F, 
                legend = list(
                  x = 0.75,
                  y = 0.85,
@@ -206,8 +205,6 @@ map to `xaxis = list(title = list(text = xlab))` and the same for the y axis. Ho
         - `color` Color of the text
         - `family` The HTML font family, e.g. "Arial" or "Times New Roman"
         - `size` Size in points
-        
-If you only specify a list for `xlab` it will be applied to `ylab`. To format them independently, specify a list for both.
 
 ``` {r echo = T, eval = T}
 NPex$data$plot(xlab = "Time (h)", ylab = "Rifapentine (mg/L)")
@@ -215,20 +212,17 @@ NPex$data$plot(xlab = "Time (h)", ylab = "Rifapentine (mg/L)")
 
 ``` {r echo = T, eval = T}
 NPex$data$plot(xlab = list(text = "Time (h)", font = list(color = "slategrey", family = "Times New Roman", size = 18)))
-#notice that ylab is also formatted in the same way
 ```
 
-For greater control over the axes, e.g. tick placement, coloring, etc., the "..." argument in plots is coded to pass arguments to the xaxis and yaxis lists. This allows access to any attribute. If axis attributes are passed through ... in a named list, e.g. `xaxis = list(linecolor = "red")`, then they will be specific to that axis. However, if the attributes are passed through ... directly, without inclusion in an `xaxis` or `yaxis` list, they will apply to both the axes, e.g. `$plot(...,`linecolor = "red")` will color the xaxis and yaxis lines red.
+For greater control over the axes, e.g. tick placement, coloring, etc., the "..." argument in plots is coded to pass arguments to the xaxis and yaxis lists. This allows access to any attribute. If axis attributes are passed through ... in a named list, e.g. `xaxis = list(linecolor = "red")`, then they will be specific to that axis. However, if the attributes are passed through ... by themselves, they will apply to both the axes, e.g. `linecolor = "red"`.
 
 ``` {r echo = T, eval = T}
 NPex$data$plot(xaxis = list(linecolor = "firebrick", ticks = "inside"))
-#only affects x axis since formatting within xaxis list
 ```
 
 
 ``` {r echo = T, eval = T}
 NPex$data$plot(linecolor = "dodgerblue", ticks = "outside")
-#formatting affects both axes since arguments are outside xaxis or yaxis lists
 ```
 
 ### Title
@@ -317,9 +311,7 @@ NPex$data$plot() %>%
 
 ### Images 
 
-Although the plotly team is working on methods to export plots to images via scripting, they require installation of additional components =. So Pmetrics includes a wrapper function `export_plotly()` which you can use to install the necessary components and export images. 
-
-Exporting a plotly plot to a static image can be accomplished in two additional ways.
+Although the plotly team is working on methods to export plots to images via scripting, they require installation of additional components and are not yet stable. However, exporting a plotly plot to a static image can be accomplished in two ways.
 
 The first is to select the Export button from the Viewer window in Rstudio when the desired plot is displayed. This gives the option to save the plot as a .png, .jpeg, or .tiff. You cannot save as a .pdf with this method.
 
@@ -335,8 +327,7 @@ This gives you the option to download and save the file as a .png.
 
 ### PDFs
 
-To export to a .pdf, you can also use `export_plotly()` in Pmetrics. You can also
-open the plot in a browser.
+To export to a .pdf, open the plot in a browser.
 
 ![Open in browser](Images/plotBrowser.png)
 
