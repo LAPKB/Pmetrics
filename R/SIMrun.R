@@ -808,8 +808,8 @@ SIMrun <- function(poppar, limits = NULL, model, data, split,
   # get prior density
   getSimPrior <- function(i) {
     # get prior density
-    if (inherits(poppar, "PM_final")) {
-      if (split & inherits(poppar, "NPAG")) {
+    if (inherits(poppar, "NPAG")) {
+      if (split) {
         popPoints <- poppar$popPoints
         ndist <- nrow(popPoints)
         if (ndist > 30) {
