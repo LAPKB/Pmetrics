@@ -27,7 +27,7 @@ Authors@R: c(
   person("David", "Bayard", email = "", role = "ctb"),
   person("Robert", "Leary", email = "", role = "ctb")
     )
-Version: 2.1
+Version: 2.1.1
 URL: https://lapkb.github.io/Pmetrics/
 BugReports: https://github.com/LAPKB/Pmetrics/issues
 Depends: 
@@ -46,7 +46,6 @@ Imports:
     lubridate,
     magrittr,
     mclust,
-    mvtnorm,
     npde,
     openxlsx,
     pander,

@@ -1,7 +1,7 @@
 ^renv$
 ^renv\.lock$
 ^data-raw$
-^other$
+^other$g
 ^.*\.Rproj$
 ^\.Rproj\.user$
 compile.*
