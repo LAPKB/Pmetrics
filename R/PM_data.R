@@ -351,8 +351,8 @@ PM_data <- R6::R6Class("PM_data",
       if (nrow(addl_lines) > 0) {
         new_lines <- addl_lines %>%
           tidyr::uncount(addl, .remove = FALSE) %>%
-          group_by(id) %>%
-          mutate(time = ii * row_number() + time)
+          group_by(id, time) %>%
+          mutate(time = ii * row_number() + time) %>% ungroup()
 
         dataObj <- bind_rows(dataObj, new_lines) %>%
           dplyr::arrange(id, time) %>%
