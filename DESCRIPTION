@@ -57,6 +57,7 @@ Imports:
     purrr,
     R6,
     RColorBrewer,
+    mvtnorm,
     readr,
     shiny,
     shinythemes,
