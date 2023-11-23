@@ -2,7 +2,7 @@
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' PM_data R6 objects containing raw, standardized and valid data, and methods
 #' to process the data
 #'
@@ -221,7 +221,7 @@ PM_data <- R6::R6Class("PM_data",
     #' new object contains only doses while building, this would cause an error. You
     #' should set `validate = TRUE` for the final addition.
     #' @examples
-    #' PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, 
+    #' PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12,
     #' out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
     addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
       # browser()
@@ -352,7 +352,8 @@ PM_data <- R6::R6Class("PM_data",
         new_lines <- addl_lines %>%
           tidyr::uncount(addl, .remove = FALSE) %>%
           group_by(id, time) %>%
-          mutate(time = ii * row_number() + time) %>% ungroup()
+          mutate(time = ii * row_number() + time) %>%
+          ungroup()
 
         dataObj <- bind_rows(dataObj, new_lines) %>%
           dplyr::arrange(id, time) %>%
@@ -365,7 +366,7 @@ PM_data <- R6::R6Class("PM_data",
         msg <- c(msg, "ADDL > 0 rows expanded.\n")
       }
       dataObj <- dataObj %>% select(standardNames, dplyr::all_of(covNames))
-      #dataObj <- dataObj %>% dplyr::arrange(id, time)
+      # dataObj <- dataObj %>% dplyr::arrange(id, time)
 
       if (length(msg) > 2) {
         msg <- msg[-2]
@@ -384,7 +385,7 @@ PM_data <- R6::R6Class("PM_data",
 #'
 #' Summarize a PM_data object using S3 method.
 #' Calls \code{\link{summary.PMmatrix}}
-#' 
+#'
 #' @param object Data to be summarized
 #' @param ... Arguments to pass to [summary.PMmatrix]
 #'
