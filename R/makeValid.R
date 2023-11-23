@@ -1,11 +1,11 @@
 #' @title Create a Pmetrics validation object
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' This function will create an object suitable for plotting visual predictive
 #' checks (VPCs) and prediction-corrected visual
-#' predictive checks (pcVPCs). 
-#' 
+#' predictive checks (pcVPCs).
+#'
 #' @details
 #' The function will guide the user
 #' through appropriate clustering of doses, covariates and sample times for
@@ -49,7 +49,7 @@
 #' \dontrun{
 #' valid <- NPex$validate(limits = c(0, 3))
 #' }
-#' 
+#'
 #' @export
 #' @seealso [SIMrun], [plot.PMvalid]
 
@@ -636,10 +636,10 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 #' @title Create a Pmetrics validation object
 #' @description
 #' `r lifecycle::badge("superseded")`
-#' 
+#'
 #' This function is largely a legacy function, replaced by [make_valid], which is
 #' typically called with the `$validate` method for a [PM_result] object.
-#' 
+#'
 #' @details
 #' `makeValid` will create an object suitable for plotting visual predictive
 #' checks (VPCs) and prediction-corrected visual

@@ -1,9 +1,9 @@
 #' @title Build Pmetrics
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Compile Fortran or Rust source code for permanent Pmetrics modules.
-#' @details 
+#' @details
 #' Choice of back end language specified as option in [setPMoptions].
 #'
 #' @param skipRegistration Don't register. Default is `FALSE`.
