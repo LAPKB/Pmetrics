@@ -32,6 +32,7 @@ impl Model {
 
 impl ode_solvers::System<State> for Model<'_> {
     fn system(&mut self, t: Time, x: &mut State, dx: &mut State) {
+        // let ke = self.get_param("ke");
         </parameter_alias>
         </cov>
         </seq>
@@ -51,15 +52,20 @@ struct Ode {}
 impl Predict for Ode {
     type Model = Model;
     type State = State;
-    fn initial_system(&self, params: &Vec<f64>, scenario: Scenario) -> Self::Model {
-        //let params = HashMap::from([("ke".to_string(), params[0]), ("v".to_string(), params[1])]);
+    fn initial_system(&self, params: &Vec<f64>, scenario: Scenario) -> (Self::Model,Scenario) {
+        let mut params = HashMap::new();
+        // params.insert("ke".to_string(), params[0].clone());
+        // params.insert("v".to_string(), params[1].clone());
         </parameter_definition>
-        Model {
+        (Model {
             params,
-            _scenario: scenario,
+            _scenario: scenario.clone(),//TODO remove
             infusions: vec![],
             cov: None,
-        }
+        },
+        // scenario.reorder_with_lag(vec![(0.0, 1)]))
+        </lags>
+        )
     }
     fn get_output(&self, x: &Self::State, system: &Self::Model, outeq: usize) -> f64 {
         // let v = system.get_param("v");
@@ -67,8 +73,8 @@ impl Predict for Ode {
         //     1 => x[0] / v,
         //     _ => panic!("Invalid output equation"),
         // }
-        </v_alias>
-        </cov_out>
+        </parameter_alias>
+        </cov>
         </seq>
         </out_eqs>
     }
