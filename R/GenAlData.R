@@ -1,9 +1,12 @@
-.safeExecution <- function(exec_function, error_function = function(e) { e <- NULL; cat("Generic error") }) {
+.safeExecution <- function(exec_function, error_function = function(e) {
+                             e <- NULL
+                             cat("Generic error")
+                           }) {
   return(suppressWarnings(tryCatch(exec_function, error = error_function)))
 }
 
 GenAlData <- function(wd) {
-  #checkRequiredPackages("jsonlite")
+  # checkRequiredPackages("jsonlite")
   setwd(wd)
   filename <- "alquimiaData.json"
   data <- data.frame("ver" = NA)
