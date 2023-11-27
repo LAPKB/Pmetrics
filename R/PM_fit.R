@@ -293,6 +293,10 @@ PM_fit <- R6::R6Class("PM_fit",
       self$model$write_rust()
 
       # copy model and config to the template project
+      if (length(getPMoptions()$rust_template) == 0) {
+        # PMbuild has not bee executed
+        PMbuild()
+      }
       system(sprintf("mv main.rs %s/src/main.rs", getPMoptions()$rust_template))
       # compile the template folder
       setwd(getPMoptions()$rust_template)
