@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
+#![allow(unused_imports)]
 use std::collections::HashMap;
 
 use eyre::Result;
@@ -30,10 +31,10 @@ impl Model {
     }
 }
 
-impl ode_solvers::System<State> for Model<'_> {
+impl ode_solvers::System<State> for Model {
     fn system(&mut self, t: Time, x: &mut State, dx: &mut State) {
         // let ke = self.get_param("ke");
-        </parameter_alias>
+        </self_parameter_alias>
         </cov>
         </seq>
         let mut rateiv = [0.0];//TODO: hardcoded
@@ -49,20 +50,24 @@ impl ode_solvers::System<State> for Model<'_> {
 #[derive(Debug, Clone)]
 struct Ode {}
 
-impl Predict for Ode {
+impl Predict<'_> for Ode {
     type Model = Model;
     type State = State;
-    fn initial_system(&self, params: &Vec<f64>, scenario: Scenario) -> (Self::Model,Scenario) {
+    fn initial_system(&self, parameters: &Vec<f64>, scenario: Scenario) -> (Self::Model,Scenario) {
         let mut params = HashMap::new();
         // params.insert("ke".to_string(), params[0].clone());
         // params.insert("v".to_string(), params[1].clone());
         </parameter_definition>
-        (Model {
+        let system = Model {
             params,
             _scenario: scenario.clone(),//TODO remove
             infusions: vec![],
             cov: None,
-        },
+        };
+        </parameter_alias>
+        </cov>
+        </seq>
+        (system,
         // scenario.reorder_with_lag(vec![(0.0, 1)]))
         </lags>
         )
