@@ -549,15 +549,18 @@ PM_model_list <- R6::R6Class("PM_model_list",
       model_file <- system.file("Rust/template.rs", package = "Pmetrics")
       content <- readr::read_file(model_file)
       parameter_alias <- c()
+      self_parameter_alias <- c()
       parameter_definition <- c()
       index <- 0
       for (key in tolower(names(self$model_list$pri))) {
-        parameter_alias <- append(parameter_alias, sprintf("let %s = self.get_param(\"%s\");", key, key))
-        parameter_definition <- append(parameter_definition, sprintf("params.insert(\"%s\".to_string(), params[%i].clone())", key, index))
+        parameter_alias <- append(parameter_alias, sprintf("let %s = system.get_param(\"%s\");", key, key))
+        self_parameter_alias <- append(self_parameter_alias, sprintf("let %s = self.get_param(\"%s\");", key, key))
+        parameter_definition <- append(parameter_definition, sprintf("params.insert(\"%s\".to_string(), parameters[%i].clone());", key, index))
         index <- index + 1
       }
-      content <- gsub("</parameter_alias>", pa_lines %>% paste(collapse = "\n"), content)
-      content <- gsub("</parameter_definition>", pa_lines %>% paste(collapse = "\n"), content)
+      content <- gsub("</parameter_alias>", parameter_alias %>% paste(collapse = "\n"), content)
+      content <- gsub("</self_parameter_alias>", self_parameter_alias %>% paste(collapse = "\n"), content)
+      content <- gsub("</parameter_definition>", parameter_definition %>% paste(collapse = "\n"), content)
 
       eqs <- self$model_list$eqn %>% tolower()
       neqs <- stringr::str_extract_all(eqs, "xp\\((\\d)\\)") %>%
@@ -592,7 +595,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       lags <- "scenario.reorder_with_lag(vec!["
       for (line in self$model_list$lag %>% tolower()) {
         match <- stringr::str_match(line, "tlag\\((\\d+)\\)\\s*=\\s*(\\w+)")
-        lags <- append(lags, sprintf("(%s,%i)", match[3], strtoi(match[2])))
+        lags <- append(lags, sprintf("(%s,%i),", match[3], strtoi(match[2])))
       }
       lags <- append(lags, "])")
       lags <- if (self$model_list$lag %>% length() > 0) {
