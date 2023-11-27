@@ -34,11 +34,7 @@ impl Model {
 impl ode_solvers::System<State> for Model {
     fn system(&mut self, t: Time, x: &mut State, dx: &mut State) {
         // let ke = self.get_param("ke");
-<<<<<<< HEAD
         </self_parameter_alias>
-=======
-        </parameter_alias>
->>>>>>> daaa014 (WIP, parsing the information into the new template)
         </cov>
         </seq>
         let mut rateiv = [0.0];//TODO: hardcoded
@@ -57,33 +53,21 @@ struct Ode {}
 impl Predict<'_> for Ode {
     type Model = Model;
     type State = State;
-<<<<<<< HEAD
     fn initial_system(&self, parameters: &Vec<f64>, scenario: Scenario) -> (Self::Model,Scenario) {
-=======
-    fn initial_system(&self, params: &Vec<f64>, scenario: Scenario) -> (Self::Model,Scenario) {
->>>>>>> daaa014 (WIP, parsing the information into the new template)
         let mut params = HashMap::new();
         // params.insert("ke".to_string(), params[0].clone());
         // params.insert("v".to_string(), params[1].clone());
         </parameter_definition>
-<<<<<<< HEAD
         let system = Model {
-=======
-        (Model {
->>>>>>> daaa014 (WIP, parsing the information into the new template)
             params,
             _scenario: scenario.clone(),//TODO remove
             infusions: vec![],
             cov: None,
-<<<<<<< HEAD
         };
         </parameter_alias>
         </cov>
         </seq>
         (system,
-=======
-        },
->>>>>>> daaa014 (WIP, parsing the information into the new template)
         // scenario.reorder_with_lag(vec![(0.0, 1)]))
         </lags>
         )
