@@ -826,7 +826,7 @@ NPparse <- function(outfile="NP_RF0001.TXT"){
                                    density=c(par,"prob")))
     temp1 <-  as.numeric(sub("D","E",scan(outfile,skip=toc[7],n=sum(nactvepost[1:npost]*(nvar+1)),quiet=T,what="")))
     count <- 1
-    cat("\nBaesian posterior densities for each subject.\n")
+    cat("\nBayesian posterior densities for each subject.\n")
     flush.console()
     if(npost>1) pb <- txtProgressBar(min = 1, max = npost, style = 3)
     for (jsub in 1:npost){
@@ -1069,7 +1069,7 @@ NPparse <- function(outfile="NP_RF0001.TXT"){
                                    density=c(par,"prob")))
     temp1 <-  as.numeric(sub("D","E",scan(outfile,skip=toc[7],n=sum(nactvepost[1:npost]*(nvar+1)),quiet=T,what="")))
     count <- 1
-    cat("\nBaesian posterior densities for each subject.\n")
+    cat("\nBayesian posterior densities for each subject.\n")
     flush.console()
     if(npost>1) pb <- txtProgressBar(min = 1, max = npost, style = 3)
     for (jsub in 1:npost){
@@ -1327,7 +1327,7 @@ NPparse <- function(outfile="NP_RF0001.TXT"){
                                    density=c(par,"prob")))
     temp1 <-  as.numeric(sub("D","E",scan(outfile,skip=toc[9],n=sum(nactvepost[1:npost]*(nvar+1)),quiet=T,what="")))
     count <- 1
-    cat("\nBaesian posterior densities for each subject.\n")
+    cat("\nBayesian posterior densities for each subject.\n")
     flush.console()
     if(npost>1) pb <- txtProgressBar(min = 1, max = npost, style = 3)
     for (jsub in 1:npost){
