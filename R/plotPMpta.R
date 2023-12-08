@@ -11,6 +11,12 @@
 #' 
 #' @method plot PM_pta
 #' @param x The name of an *PM_pta* data object read by [makePTA]
+#' @param at Which object in the *PM_pta* result list to plot. By default "intersect" if
+#' an intersection is present due to creation of the object with multiple target types, or
+#' 1 if no intersection is present, which means only 1 target type was selected. If
+#' "intersect" is present in the object, the default can be overridden with a number to 
+#' plot one of the individual PTAs, e.g. `at = 2` to plot the second PTA rather than the
+#' intersection of all the PTAs. 
 #' @param include `r template("include")`
 #' @param exclude `r template("exclude")`
 #' @param type Character vector controlling type of plot.
@@ -102,6 +108,7 @@
 #' @family PMplots
 
 plot.PM_pta <- function(x,
+                        at = "intersect",
                         include, exclude,
                         type = "pta",
                         mult = 1, 
@@ -118,14 +125,35 @@ plot.PM_pta <- function(x,
   
   
   #clone to avoid changes
-  pta <- x$clone()
+  pta <- x$clone()$results
+  
+  #select correct object to plot
+  if(at == "intersect"){
+    if(length(pta$intersect)>1){
+      pta <- pta$intersect %>%
+        mutate(target = as.numeric(stringr::str_extract(target, "\\d+\\.*\\d*")))
+    } else {
+      pta <- pta[[1]] #no intersect, plot first
+    }
+  } else {
+    at <- suppressWarnings(tryCatch(as.numeric(at), error = function(e) NA))
+    if(!is.na(at)){
+      if(at > length(pta)){
+        stop("'at' is greater than the number of PTAs.")
+      } else {
+        pta <- pta[[at]]
+      }
+    } else {
+      stop("'at' should be either \"intersect\" or the number of one of the objects to plot.")
+    }
+    
+  }
   
   #vector of regimens
-  simnum <- 1:max(pta$outcome$simnum)
+  simnum <- 1:max(pta$sim_num)
   
   #names of regimens
-  simLabels <- attr(x, "simlabels")
-  if (is.null(simLabels)) simLabels <- paste("Regimen", simnum)
+  simLabels <- unique(pta$label)
   
   # check input
   if (!missing(include)) {
@@ -146,27 +174,31 @@ plot.PM_pta <- function(x,
   }
   
   #filter by include/exclude
-  pta$outcome <- pta$outcome %>% filter(simnum %in% !!simnum)
-  pta$results <- pta$results %>% filter(simnum %in% !!simnum)
+  pta <- pta %>% filter(sim_num %in% simnum)
   
-  nsim <- length(simnum)
+  n_sim <- length(simnum)
   
   
   
   #parse line
   line <- amendLine(line, default = list(color = "Set1", 
                                          width = 2,
-                                         dash = 1:nsim))
+                                         dash = 1:n_sim))
   
   #parse marker
   marker <- amendMarker(marker, default = list(color = line$color, 
                                                size = 12,
-                                               symbol = 1:nsim))
+                                               symbol = 1:n_sim))
   
   
   #simulated or discrete targets
-  simTarg <- 1 + as.numeric(attr(x, "simTarg")) # 1 if missing or set, 2 if random
-  if (length(simTarg) == 0) simTarg <- 1
+  if(is.list(pta$target) || all(stringr::str_detect(pta$target, "sim"))){
+    simTarg <- 2
+  } else {
+    simTarg <- 1
+  }
+  
+  
   
   #process dots
   layout <- amendDots(list(...))
@@ -226,26 +258,27 @@ plot.PM_pta <- function(x,
   
   #PLOTS
   if (type == "pdi") { # pdi plot
-    
-    if (simTarg == 1) { # set targets
-      p <- pta$results %>% 
-        nest_by(simnum,target) %>% 
-        mutate(lower = quantile(data$pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
-               median = median(data$pdi),
-               upper = quantile(data$pdi, probs = 0.5 + ci / 2, na.rm = TRUE)) %>%
+    if(at == "intersect") stop("PDI plot not possible on intersection. Choose an individual PTA with at = 1, for example.")
+    if (simTarg == 1) { # discrete targets
+      p <- pta %>% 
+        group_by(sim_num,target) %>% 
+        rowwise() %>%
+        mutate(lower = quantile(pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
+               median = median(pdi),
+               upper = quantile(pdi, probs = 0.5 + ci / 2, na.rm = TRUE)) %>%
         ungroup() %>% 
-        mutate(simnum = factor(simnum, labels = simLabels)) %>% 
-        group_by(simnum) %>%
+        mutate(label = factor(label)) %>% 
+        group_by(label) %>%
         plotly::plot_ly(x = ~target, y = ~median, 
-                        type = "scatter", mode = "lines+markers",
+                        type = 'scatter', mode = 'markers+lines',
                         colors = marker$color,
                         symbols = marker$symbol,
                         linetypes = line$dash,
                         strokes = line$color,
-                        color = ~simnum,
-                        stroke = ~simnum,
-                        linetype = ~simnum,
-                        symbol = ~simnum,
+                        color = ~label,
+                        stroke = ~label,
+                        linetype = ~label,
+                        symbol = ~label,
                         marker = list(size = marker$size),
                         line = list(width = line$width)) %>%
         plotly::add_ribbons(ymin = ~lower, ymax = ~upper,
@@ -261,12 +294,15 @@ plot.PM_pta <- function(x,
       
     } else { # random targets
       
-      p <- pta$results %>% nest_by(simnum) %>% 
-        mutate(lower = quantile(data$pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
-               median = median(data$pdi),
-               upper = quantile(data$pdi, probs = 0.5 + ci / 2, na.rm = TRUE)) %>%
+      p <- pta %>% 
+        mutate(simnum = factor(sim_num, labels=simLabels)) %>% 
+        group_by(simnum) %>% 
+        rowwise() %>%
+        mutate(lower = quantile(pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
+               median = median(pdi),
+               upper = quantile(pdi, probs = 0.5 + ci / 2, na.rm = TRUE)) %>%
         plotly::plot_ly(x = ~simnum, y = ~median) %>%
-        add_markers(error_y = list(symmetric = FALSE,
+        plotly::add_markers(error_y = list(symmetric = FALSE,
                                    array = ~(upper - median),
                                    arrayminus = ~(median - lower),
                                    color = line$color),
@@ -282,8 +318,10 @@ plot.PM_pta <- function(x,
   } else { # pta plot
     
     if (simTarg == 1) { # set targets
-      p <- pta$outcome %>% mutate(simnum = factor(simnum, labels=simLabels)) %>% group_by(simnum) %>%
-        plotly::plot_ly(x = ~target, y = ~prop.success, 
+      p <- pta %>% 
+        mutate(simnum = factor(sim_num, labels=simLabels)) %>% 
+        group_by(simnum) %>%
+        plotly::plot_ly(x = ~target, y = ~prop_success, 
                         type = "scatter", mode = "lines+markers",
                         colors = marker$color,
                         symbols = marker$symbol,
@@ -306,8 +344,9 @@ plot.PM_pta <- function(x,
       
     } else { # random targets
       
-      p <- pta$outcome %>%
-        plotly::plot_ly(x = ~simnum, y = ~prop.success,
+      p <- pta %>%
+        mutate(simnum = factor(sim_num, labels=simLabels)) %>% 
+        plotly::plot_ly(x = ~simnum, y = ~prop_success,
                         type = "scatter", mode = "lines+markers",
                         line = list(color = line$color, width = line$width, dash = line$dash),
                         marker = list(color = marker$color, symbol = marker$symbol, size = marker$size)) 
@@ -403,7 +442,7 @@ plot.PM_pta <- function(x,
 plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
                        grid, xlab, ylab, col, lty, lwd = 4,
                        legend = TRUE, ci = 0.9, out = NA, ...) {
-
+  
   # choose output
   if (inherits(out, "list")) {
     if (out$type == "eps") {
@@ -416,9 +455,9 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
       do.call(out$type, list())
     }
   }
-
+  
   if (!(inherits(x, "PMpta") || inherits(x, "PM_pta"))) stop("Please supply a PMpta object made by makePTA(), PM_pta$new or PM_sim$pta().\n")
-
+  
   # check input
   simnum <- 1:max(x$outcome$simnum)
   if (!missing(include)) {
@@ -435,7 +474,7 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
       simnum <- simnum[-exclude]
     }
   }
-
+  
   # choose xlab as Target if targets were set or Regimen if targets were simulated
   simTarg <- 1 + as.numeric(attr(x, "simTarg")) # 1 if missing or set, 2 if random
   if (length(simTarg) == 0) simTarg <- 1
@@ -494,10 +533,10 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
       legend <- list(plot = FALSE)
     }
   }
-
+  
   if (plot.type == "pdi") { # pdi plot
-
-
+    
+    
     if (simTarg == 1) { # set targets
       pdi.median <- tapply(x$results$pdi, list(x$results$target, x$results$simnum), median, na.rm = TRUE)
       pdi.lower <- tapply(x$results$pdi, list(x$results$target, x$results$simnum), quantile, probs = 0.5 - ci / 2, na.rm = TRUE)
@@ -514,7 +553,7 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
       if (is.null(axisLabels)) axisLabels <- paste("Regimen", simnum)
       axis(side = 1, at = 1:nsim, labels = axisLabels, lwd = 1, ...)
     }
-
+    
     # make grid if necessary
     if (missing(grid)) {
       grid <- list(x = NA, y = NA)
@@ -533,7 +572,7 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
     }
     abline(v = grid$x, lty = 1, col = "lightgray")
     abline(h = grid$y, lty = 1, col = "lightgray")
-
+    
     if (simTarg == 1) { # set targets
       if (ci > 0) {
         for (i in simnum) {
@@ -566,7 +605,7 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
       }
     }
   } else { # pta plot
-
+    
     temp <- x$outcome[x$outcome$simnum %in% simnum, ]
     if (simTarg == 1) { # set targets
       plot(prop.success ~ target, temp, type = "n", xlab = xlab, ylab = ylab, log = logscale, xaxt = "n", ...)
@@ -589,7 +628,7 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
       }
       abline(v = grid$x, lty = 1, col = "lightgray")
       abline(h = grid$y, lty = 1, col = "lightgray")
-
+      
       # draw plot
       for (i in 1:nsim) {
         lines(prop.success ~ target, temp[temp$simnum == simnum[i], ], type = "o", lty = lty[i], lwd = lwd, col = col[i], pch = pch[i], ...)
@@ -619,13 +658,13 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
       }
       abline(v = grid$x, lty = 1, col = "lightgray")
       abline(h = grid$y, lty = 1, col = "lightgray")
-
+      
       # draw plot
       lines(prop.success ~ simnum, temp, type = "o", ...)
     }
   }
-
-
+  
+  
   # close device if necessary
   if (inherits(out, "list")) dev.off()
 }
