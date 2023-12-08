@@ -41,17 +41,22 @@ corresponding to a \code{target_type} of "max": \code{target = list(c(0.25, 0.5,
 distribution made with \link{makePTAtarget}.
 }}
 
-\item{target_type}{A vector of the type for each \code{target}.  Available types:
+\item{target_type}{A vector of the type for each \code{target}.  For any, place a minus sign
+in front to make the success less than the target ratio, e.g. \code{target_type = c("min", "-min")}. Available types:
 \itemize{
 \item "time" is percent time above \code{target} within the time range specified by \code{start} and \code{end}
 \item "auc" is ratio of area under the curve within the time range to \code{target}
-\item "peak" or "max", ratio of peak/max (synonymous) concentration to \code{target} within the time range
-\item "min", is the ratio of minimum concentration to \code{target} within the time range
+\item "peak" or "max", ratio of peak/max (synonymous) concentration to \code{target} within the time range. Place a minus sign
+in front to make the success less than the target ratio.
+\item "min", is the ratio of minimum concentration to \code{target} within the time range. Place a minus sign
+in front to make the success less than the target ratio.
 \item A single numeric value, which must correspond to an observation time common to all PMsim objects in
 \code{simdata}, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at that time to \code{target}.
+}
+
 This enables testing of a specific timed concentration (e.g. one hour after a dose or C1).  Be sure that the time in the simulated data is used,
-e.g., 122 after a dose given at 120.
-}}
+e.g., 122 after a dose given at 120. Place a minus sign
+in front to make the success less than the target ratio.}
 
 \item{success}{A vector specifying the success statistics, e.g. 0.4 for proportion time (end-start) above target, and/or 100 for max:target.
 For example \code{success = 0.4} or \code{success = c(0.4, 100)}. The length must be the same as for \code{target} and \code{target_type}.}
@@ -78,7 +83,8 @@ distributions, or "mean".  Default is "median".}
 \value{
 The output of \code{makePTA} is a list of class \emph{PMpta},
 which is a list with each \code{target_type} as an element, followed by a final \code{intersection} element showing the results
-for profiles which meet ALL the conditions (intersection). The individual elements are tibbles with all possible combinations
+for profiles which meet ALL the conditions (intersection) or \code{NA} if only one \code{target_type} was specified.
+The individual elements are tibbles with all possible combinations
 of \code{target}s and simulated regimens for a given \code{target_type}. The tibbles have the following columns:
 \itemize{
 \item \strong{sim_num} The simulation number in \code{simdata}.
