@@ -20,7 +20,7 @@ simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid")
 
 #using a previously created simulation build into Pmetrics
 pta1 <- simEx$pta(simlabels = simlabels,
-                  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32, 64), target.type = "time",
+                  target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32, 64), target_type = "time",
                   success = 0.6, start = 120, end = 144)
 
 pip_ecoli <- data.frame(
@@ -30,7 +30,7 @@ pip_ecoli <- data.frame(
 
 pta2 <- simEx$pta(simlabels = simlabels,
                   targets = makePTAtarget(pip_ecoli),
-                  target.type = "time",
+                  target_type = "time",
                   success = 0.6, start = 120, end = 144)
 
 
@@ -44,7 +44,7 @@ knitr::opts_chunk$set(
 
 Probability of target attainment (PTA) is a powerful application of simulated results. The idea is to calculate the proportion of simulated profiles corresponding to a particular dosage regimen which meet given criteria for "success". 
 
-For example, it could be a certain AUC or time above a threshold. Below is a simple figure showing 4 concentration-time profiles after a gven dosage. If the target is percent of the dosing interval > 4 mg/L of at least 60% (0.6), then only one of the 4 curves meets this threshold, and the PTA is 25%. We can also generate the mean (44%) and standard deviation (39%) of the % time above 4 mg/L, also called the pharmacodynamic index (PDI) for this dosage.
+For example, it could be a certain AUC or time above a threshold. Below is a simple figure showing 4 concentration-time profiles after a given dosage. If the target is percent of the dosing interval > 4 mg/L of at least 60% (0.6), then only one of the 4 curves meets this threshold, and the PTA is 25%. We can also generate the mean (44%) and standard deviation (39%) of the % time above 4 mg/L, also called the pharmacodynamic index (PDI) for this dosage.
 
 ```{r echo = F}
 knitr::include_graphics("Images/pta1.png")
@@ -73,7 +73,7 @@ simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid")
 
 #using a previously created simulation built into Pmetrics
 pta1 <- simEx$pta(simlabels = simlabels,
-                  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32, 64), target.type = "time",
+                  target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32, 64), target_type = "time",
                   success = 0.6, start = 120, end = 144)
 
 #using a sampled distribution of MICs from EUCAST
@@ -87,8 +87,32 @@ pip_ecoli <- data.frame(
 
 pta2 <- simEx$pta(simlabels = simlabels,
                   targets = makePTAtarget(pip_ecoli),
-                  target.type = "time",
+                  target_type = "time",
                   success = 0.6, start = 120, end = 144)
+
+#combined targets with minimum concentration >5 and <10
+pta3 <- PM_pta$new(simEx,
+                 simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+                 target = list(5,10),
+                 target_type = c("min", "-min"),
+                 success = c(1,1),
+                 start = 120, end = 144)
+
+#AUC:MIC >200 for distribution of MICs
+pta4 <- PM_pta$new(simEx,
+                 simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+                 target = makePTAtarget(pip_ecoli),
+                 target_type = "auc",
+                 success = 200,
+                 start = 120, end = 144)
+
+#Combined target with AUC:MIC >200 for distribution of MICs and minimum concentration >1
+pta5 <- PM_pta$new(simdata = simEx,
+                 simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+                 target = list(makePTAtarget(pip_ecoli),5),
+                 target_type = c("auc","min"),
+                 success = c(200,1),
+                 start = 120, end = 144)
 
 ```
 
@@ -99,21 +123,52 @@ We'll say again that you must supply simulation data, which has been previously 
 Details of key arguments follow.
 
 * **simlabels** Optional character vector of labels for each simulation (i.e. subject in the data template). Default is `c("Regimen 1", "Regimen 2",...)`.
-* **targets** A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. 'c(0.25, 0.5,1,2,4,8,16,32)'. This can also be a sampled rather than the discrete distribution using `makePTAtarget()`.
-* **target.type** A numeric or character vector, length 1. If numeric, must correspond to an observation time common to all the `PM_sim()` objects in the simulation data, rounded to the nearest hour. In this case, the target statistic will be the ratio of observation at time `target.type` to `target`. This enables testing of a specific timed concentration (e.g. one hour after a dose or C1) which may be called a peak, but is not actually the maximum drug concentration. Be sure that the time in the simulated data is used, e.g. 122 after a dose given at 120. Character values may be one of "time", "auc", "peak", or "min", for, respectively, percent time above target within the time range specified by 'start' and 'end', ratio of area under the curve within the time range to target, ratio of peak concentration within the time range to target, or ratio of minimum concentration within the time range to target.
-* **success** A single value specifying the success statistic, e.g. 0.4 for proportion time (end-start) above target, or 100 for peak:target.
+* **target** One of several options.
+  - A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. `c(0.25, 0.5, 1, 2, 4, 8, 16, 32)`.
+  - A single numerical value such as a concentration, e.g. 10.
+  - A sampled distribution using `makePTAtarget()`. 
+  - A list of multiple targets combining the above if multiple `target_type`s are used. If so, the first `target` can be a vector, 
+but subsequent targets must be single values to avoid factorial expansion of combinations. For example, the first target could be a vector of MICs corresponding
+ to a `target_type` of "time", the second target a value of 10 corresponding to a `target_type` of "min", and the third target a value of 50
+ corresponding to a `target_type` of "max": `target = list(c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 10, 50)`. The first value can also be a sampled
+ distribution made with [makePTAtarget]. For any, place a minus sign
+in front to make the success less than the target ratio, e.g. `target_type = c("min", "-min")`.
 
-The created object `pta1` is a `PM_pta()` object, which has two data fields:
+* **target_type** A vector of the type for each `target`.  Available types:
+* "time" is percent time above `target` within the time range specified by `start` and `end`
+* "auc" is ratio of area under the curve within the time range to `target`
+* "peak" or "max", ratio of peak/max (synonymous) concentration to `target` within the time range. 
+* "min", is the ratio of minimum concentration to `target` within the time range. 
+* A single numeric value, which must correspond to an observation time common to all PMsim objects in
+`simdata`, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at that time to `target`.
+This enables testing of a specific timed concentration (e.g. one hour after a dose or C1).  Be sure that the time in the simulated data is used,
+e.g., 122 after a dose given at 120. 
+* **success** A vector specifying the success statistics, e.g. 0.4 for proportion time (end-start) above target, and/or 100 for max:target.
+For example `success = 0.4` or `success = c(0.4, 100)`. The length must be the same as for `target` and `target_type`.
 
-* **results** A data frame with the following columns: *simnum*, *id*, *target*, *pdi.* 
-- *simnum* is the number of the simulation
-- *id* is the simulated profile number within each simulation
-- *target* is the specified target
-- *pdi* is the target pharmacodynamic index, e.g. time > target, auc:target, etc.
-* **outcome** A data frame summarizing the results with the following columns: *simnum*, *target*, *prop.success*, *pdi.mean*, and *pdi.sd.* If 'targets' was specified via `makePTAtarget()` to be a sampled distribution, then the target column will be missing from the outcome table. 
-- *simnum* and *target* are as for 'results'. 
-- The *prop.success* column has the proportion with a pdi > 'success', as specified in the function call. 
-- The *pdi.mean* and *pdi.sd* columns have the mean and standard deviation of the target pharmacodynamic index (e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.
+The created object `pta1` is a `PM_pta()` object, which has one data field named "results", 
+which is a list of class *PMpta*,
+and each `target_type` is an element of the list, followed by a final `intersection` element showing the results
+for profiles which meet ALL the conditions (intersection) or `NA` if only one `target_type` was specified. 
+The individual elements are tibbles with all possible combinations
+of `target`s and simulated regimens for a given `target_type`. The tibbles have the following columns:
+* **sim_num** The simulation number in `simdata`.
+* **label** Annotation of the simulation, supplied by the `simlabels` argument.
+* **target** is the specified `target` for the results row. If a distribution created by `makePTAtarget()`,
+this will be a tibble with  the simulated targets
+* **type** is the specified `target_type` for the results row
+* **success_ratio** The specified `success` metric for the results row
+* **prop_success** The proportion of profiles meeting the `success_ratio` for the results row
+* **success** A tibble of success (1) or not (0) for each profile for the results row
+* **pdi** A tibble of the pharmacodynamic index, i.e. the ratio or time above for each profile for the results row
+* **start** The start time used for the results row
+* **end** The end time used for the results row.
+For the `$intersect` item in the return list, the columns are the same, but the
+`target` and `target_type` will reflect all requested values expressed in
+parenthetical multiplication format to emphasize intersection, e.g., (auc)(min).
+Simulated (rather than discrete) targets made with `makePTAtarget()` will be
+abbreviated as "(sim)", e.g. (sim)(5) for a combination of simulated targets and
+a single concentration target of 5.
 
 It also has several methods:
 
@@ -128,10 +183,11 @@ The most basic plot is achieved with a simple call to the method.
 
 ```{r echo = TRUE, eval = TRUE}
 pta1$plot()
-pta2$plot()
+pta2$plot(at = 1)
 ```
 
-Notice the difference between the plots, according to whether `target` was discrete or from a distribution. The latter plot is also known as a "Cumulative Fractional Response" or CFR, which is the proportion of a population achieving a response for a give dosage with a distribution of target values in that population.
+The `at` argument controls which object in the list is plotted, by default the intersection, or the first object (`at = 1`) if
+there is no intersection. Notice the difference between the plots, according to whether `target` was discrete or from a distribution. The latter plot is also known as a "Cumulative Fractional Response" or CFR, which is the proportion of a population achieving a response for a give dosage with a distribution of target values in that population.
 
 There are many ways to modify the plot, consistent with other Pmetrics plots which use the *plotly* package and all detailed in the help for `plot.PM_data()`. For example, 
 
@@ -170,20 +226,23 @@ Like most created Pmetrics objects, `PM_pta()` objects can be summarized.
 
 ```{r echo = TRUE, eval = TRUE}
 pta1$summary()
-pta2$summary()
+pta2$summary(at = 1)
 ```
 
-The output is a list with two named objects: 
-
-* **pta** A data frame with the following columns: *simnum*, *target*, *prop.success*, *pdi.mean*, and *pdi.sd* 
-- simnum is the number of the simulation
-- target is the specified target
-- success has the proportion with a ratio > prop.success
-- pdi.mean and pdi.sd are the mean and standard deviation of the pharmacodyamic index (e.g. AUC/MIC) for each simulation and target.
-
-* **pdi**	A data frame with the following columns: *target*, *simnum*, *lowerCI*, *median*, *upperCI.* 
-- target and simnum are as above. 
-- lowerCI, median, and upperCI are the lower limit, median, and upper limit of the confidence interval for the pdi whose width is specified by an argument `ci` to the summary method. The default for `ci` is 0.95, but this can be changed.
+Here the default for at is 1, because this function prouduces a summary of the pharmacodynamic index values,
+which cannot be calculated for the intersection when there is more than one `target_type`. The output is a tibble 
+with the following columns (only the first three if `at = "intersect"`):
+* **sim_num** is the number of the simulation
+* **target** is the target for the row, if targets are discrete, not used for simulated targets
+* **label** is the simulation label, for reference
+* **prop_success** is the proportion of simulated profiles that met the success definition
+* **median** is the median parmacodynamic index (PDI), i.e. the proportion or ratio depending on the target type
+* **lower** is the lower bound of the interval defined by `ci`
+* **upper** is the upper bound of the interval defined by `ci`
+* **mean** is the mean of the PDI
+* **sd** is the standard deviation of the PDI
+* **min** is the minimum PDI
+* **max** is the maximum PDI
 
 ```{r echo = TRUE, eval = TRUE}
 pta1$summary(ci = 0.9)

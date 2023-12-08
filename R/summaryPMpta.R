@@ -15,6 +15,7 @@
 #' @param ci Width of the interval for pharmacodynamic index reporting.  Default is 0.95, i.e. 2.5th to 97.5th percentile.
 #' @param ... Not used.
 #' @return A tibble with the following columns (only the first three if `at = "intersect"`):
+#' 
 #' * **sim_num** is the number of the simulation
 #' * **target** is the target for the row, if targets are discrete, not used for simulated targets
 #' * **label** is the simulation label, for reference
@@ -26,6 +27,7 @@
 #' * **sd** is the standard deviation of the PDI
 #' * **min** is the minimum PDI
 #' * **max** is the maximum PDI
+#' 
 #' @author Michael Neely
 #' @seealso [makePTA], [PM_pta]
 #' @export

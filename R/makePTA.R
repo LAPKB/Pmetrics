@@ -19,6 +19,7 @@
 #' also allowed.
 #' @param simlabels Optional character vector of labels for each simulation.  Default is `c('Regimen 1', 'Regimen 2',...)`.
 #' @param target One of several options.
+#' 
 #' * A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. `c(0.25, 0.5, 1, 2, 4, 8, 16, 32)`.
 #' * A single numerical value such as a concentration, e.g. 10.
 #' * A sampled distribution using  [makePTAtarget]. 
@@ -27,15 +28,22 @@
 #' to a `target_type` of "time", the second target a value of 10 corresponding to a `target_type` of "min", and the third target a value of 50
 #' corresponding to a `target_type` of "max": `target = list(c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 10, 50)`. The first value can also be a sampled
 #' distribution made with [makePTAtarget].
-#' @param target_type A vector of the type for each `target`.  Available types:
+#' 
+#' @param target_type A vector of the type for each `target`.  For any, place a minus sign
+#' in front to make the success less than the target ratio, e.g. `target_type = c("min", "-min")`. Available types:
+#' 
 #' * "time" is percent time above `target` within the time range specified by `start` and `end`
 #' * "auc" is ratio of area under the curve within the time range to `target`
-#' * "peak" or "max", ratio of peak/max (synonymous) concentration to `target` within the time range 
-#' * "min", is the ratio of minimum concentration to `target` within the time range 
+#' * "peak" or "max", ratio of peak/max (synonymous) concentration to `target` within the time range. Place a minus sign
+#' in front to make the success less than the target ratio.
+#' * "min", is the ratio of minimum concentration to `target` within the time range. Place a minus sign
+#' in front to make the success less than the target ratio. 
 #' * A single numeric value, which must correspond to an observation time common to all PMsim objects in
 #' `simdata`, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at that time to `target`.
+#' 
 #' This enables testing of a specific timed concentration (e.g. one hour after a dose or C1).  Be sure that the time in the simulated data is used, 
-#' e.g., 122 after a dose given at 120.   
+#' e.g., 122 after a dose given at 120. Place a minus sign
+#' in front to make the success less than the target ratio.
 #' @param success A vector specifying the success statistics, e.g. 0.4 for proportion time (end-start) above target, and/or 100 for max:target.
 #' For example `success = 0.4` or `success = c(0.4, 100)`. The length must be the same as for `target` and `target_type`.
 #' @param outeq An integer specifying the number of the simulated output equation to use. Default is 1.
@@ -53,7 +61,8 @@
 #' @param block Which block to plot, where a new block is defined by dose resets (evid = 4); default is 1.
 #' @return The output of `makePTA` is a list of class *PMpta*,
 #' which is a list with each `target_type` as an element, followed by a final `intersection` element showing the results
-#' for profiles which meet ALL the conditions (intersection). The individual elements are tibbles with all possible combinations
+#' for profiles which meet ALL the conditions (intersection) or `NA` if only one `target_type` was specified. 
+#' The individual elements are tibbles with all possible combinations
 #' of `target`s and simulated regimens for a given `target_type`. The tibbles have the following columns:
 #' * **sim_num** The simulation number in `simdata`.
 #' * **label** Annotation of the simulation, supplied by the `simlabels` argument.
@@ -215,8 +224,9 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
   }
   
   #check for valid arguments
+  target_type <- stringr::str_replace_all(target_type,"peak","max")
   invalid_types <- purrr::map_lgl(target_type, \(x){
-    !x %in% c("time", "auc", "max", "peak", "min", "-max", "-peak", "-min") &&
+    !x %in% c("time", "auc", "max", "peak", "min", "-time", "-auc", "-max", "-peak", "-min") &&
       suppressWarnings(is.na(as.numeric(x)))
   })
   
@@ -262,10 +272,10 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
   if (stringr::str_detect(success[1],"%")){ # if passed as percents convert to a number
     success[1] <- as.numeric(stringr::str_replace(success[1],"%",""))/100
   }
-  if (success[1] <= 0 | (target_type[1] == "time" & success[1] > 100)) stop("Invalid success threshold value. Aborting.", call.=F)
+  if (success[1] <= 0 | ((target_type[1] == "time" | target_type[1] == "-time") & success[1] > 100)) stop("Invalid success threshold value. Aborting.", call.=F)
   if (target_type[1] =="time" & success[1] > 1 & success[1] <= 100) {
     cat("Your specified success threshold for time above target of ", success[1], " is bigger than 1.", sep="")
-    ans <- readline(cat("\nWhat would you like to do?\n1) set success to ",success[1]/100," (i.e. ",success[1],"% of time above target)\n2) end ", sep=""))
+    ans <- readline(cat("\nWhat would you like to do?\n1) set success to ",success[1]/100," (i.e. ",success[1],"% of time relative to target)\n2) end ", sep=""))
     if (ans == 1) {
       success[1] = success[1]/100
       cat("Success threshold for time was set to ",success[1],".",sep="")
