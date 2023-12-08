@@ -7,15 +7,16 @@
 makePTA(
   simdata,
   simlabels,
-  targets,
-  target.type,
+  target,
+  target_type,
   success,
   outeq = 1,
-  free.fraction = 1,
-  start,
-  end,
+  free_fraction = 1,
+  start = 0,
+  end = Inf,
   icen = "median",
-  block = 1
+  block = 1,
+  ...
 )
 }
 \arguments{
@@ -28,22 +29,37 @@ also allowed.}
 
 \item{simlabels}{Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.}
 
-\item{targets}{A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. \code{c(0.25, 0.5,1,2,4,8,16,32)}.
-This can also be a sampled distribution using  \link{makePTAtarget}.}
+\item{target}{One of several options.
+\itemize{
+\item A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. \code{c(0.25, 0.5, 1, 2, 4, 8, 16, 32)}.
+\item A single numerical value such as a concentration, e.g. 10.
+\item A sampled distribution using  \link{makePTAtarget}.
+\item A list of multiple targets combining the above if multiple \code{target_type}s are used. If so, the first \code{target} can be a vector,
+but subsequent targets must be single values to avoid factorial expansion of combinations. For example, the first target could be a vector of MICs corresponding
+to a \code{target_type} of "time", the second target a value of 10 corresponding to a \code{target_type} of "min", and the third target a value of 50
+corresponding to a \code{target_type} of "max": \code{target = list(c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 10, 50)}. The first value can also be a sampled
+distribution made with \link{makePTAtarget}.
+}}
 
-\item{target.type}{A numeric or character vector, length 1.  If numeric, must correspond to an observation time common to all PMsim objects in
-\code{simdata}, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at time \code{target.type} to target.  This enables
-testing of a specific timed concentration (e.g. one hour after a dose or C1) which may be called a peak, but is not actually the maximum drug
-concentration.  Be sure that the time in the simulated data is used, e.g. 122 after a dose given at 120.  Character values may be one of
-"time", "auc", "peak", or "min", for, respectively, percent time above target within the time range
-specified by \code{start} and \code{end}, ratio of area under the curve within the time range to target, ratio of peak concentration within the time range
-to target, or ratio of minimum concentration within the time range to target.}
+\item{target_type}{A vector of the type for each \code{target}.  Available types:
+\itemize{
+\item "time" is percent time above \code{target} within the time range specified by \code{start} and \code{end}
+\item "auc" is ratio of area under the curve within the time range to \code{target}
+\item "peak" or "max", ratio of peak/max (synonymous) concentration to \code{target} within the time range
+\item "min", is the ratio of minimum concentration to \code{target} within the time range
+\item A single numeric value, which must correspond to an observation time common to all PMsim objects in
+\code{simdata}, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at that time to \code{target}.
+This enables testing of a specific timed concentration (e.g. one hour after a dose or C1).  Be sure that the time in the simulated data is used,
+e.g., 122 after a dose given at 120.
+}}
 
-\item{success}{A single value specifying the success statistic, e.g. 0.4 for proportion time (end-start) above target, or 100 for peak:target.}
+\item{success}{A vector specifying the success statistics, e.g. 0.4 for proportion time (end-start) above target, and/or 100 for max:target.
+For example \code{success = 0.4} or \code{success = c(0.4, 100)}. The length must be the same as for \code{target} and \code{target_type}.}
 
 \item{outeq}{An integer specifying the number of the simulated output equation to use. Default is 1.}
 
-\item{free.fraction}{Proportion of free, active drug.  Default is 1, i.e. 100\% free drug or 0\% protein binding.}
+\item{free_fraction}{Proportion of free, active drug, expressed as a numeric value >=0 and <=1.  Default is 1, i.e.,
+100\% free drug or 0\% protein binding.}
 
 \item{start}{Specify the time to begin PTA calculations. Default is a vector with the first observation time for subjects
 in each element of \code{simdata}, e.g. dose regimen. If specified as a vector, values will be recycled as necessary.}
@@ -57,39 +73,31 @@ Ideally then, the simulated datset should contain sufficient observations within
 \item{icen}{Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
 distributions, or "mean".  Default is "median".}
 
-\item{block}{Which block to plot, where a new block is defined by dose resets (evid=4); default is 1.}
+\item{block}{Which block to plot, where a new block is defined by dose resets (evid = 4); default is 1.}
 }
 \value{
 The output of \code{makePTA} is a list of class \emph{PMpta},
-which has 2 objects:
+which is a list with each \code{target_type} as an element, followed by a final \code{intersection} element showing the results
+for profiles which meet ALL the conditions (intersection). The individual elements are tibbles with all possible combinations
+of \code{target}s and simulated regimens for a given \code{target_type}. The tibbles have the following columns:
 \itemize{
-\item \strong{results} A data frame with the following columns: simnum, id, target, pdi.
-\itemize{
-\item \emph{simnum} is the number of the simulation; \emph{id} is the simulated profile number
-within each simulation;
-\item \emph{target} is the specified target;
-\item \emph{pdi} is the target pharmacodynamic index, e.g. time > target, auc:target, etc.
-}
-\item \strong{outcome} A data frame summarizing the results with the following columns:
-simnum, target, prop.success, pdi.mean, and pdi.sd.
-If \code{targets} was specified via \link{makePTAtarget} to be a sampled distribution, then
-the target column will be missing from the outcome table.
-\itemize{
-\item \emph{simnum} and \emph{target} are as for \code{results}.
-\item \emph{prop.success} is the proportion with a pdi > \code{success}, as specified in
-\item \emph{pdi.mean} and \emph{pdi.sd} have the mean and standard deviation of the target pharmacodynamic index
-(e.g. proportion end-start above target, ratio of Cmax to target) for each simulation and target.
-}
-}
-
-There are several attributes for this object that reflect the conditions used
-to create it. Access the values of these attributes with \code{attr(x, which)}
-as detailed in \code{\link[base:attr]{base::attr()}}.
-\itemize{
-\item \emph{simlabels} Values for the \code{simlabels}
-\item \emph{simTarg} Values for the \code{targets}
-\item \emph{success} Value for \code{success} threshold
-\item \emph{type} Value for \code{target.type}
+\item \strong{sim_num} The simulation number in \code{simdata}.
+\item \strong{label} Annotation of the simulation, supplied by the \code{simlabels} argument.
+\item \strong{target} is the specified \code{target} for the results row. If a distribution created by \link{makePTAtarget},
+this will be a tibble with  the simulated targets
+\item \strong{type} is the specified \code{target_type} for the results row
+\item \strong{success_ratio} The specified \code{success} metric for the results row
+\item \strong{prop_success} The proportion of profiles meeting the \code{success_ratio} for the results row
+\item \strong{success} A tibble of success (1) or not (0) for each profile for the results row
+\item \strong{pdi} A tibble of the pharmacodynamic index, i.e. the ratio or time above for each profile for the results row
+\item \strong{start} The start time used for the results row
+\item \strong{end} The end time used for the results row.
+For the \verb{$intersect} item in the return list, the columns are the same, but the
+\code{target} and \code{target_type} will reflect all requested values expressed in
+parenthetical multiplication format to emphasize intersection, e.g., (auc)(min).
+Simulated (rather than discrete) targets made with \link{makePTAtarget} will be
+abbreviated as "(sim)", e.g. (sim)(5) for a combination of simulated targets and
+a single concentration target of 5.
 }
 }
 \description{
@@ -105,15 +113,39 @@ If a \emph{PMpta} object is passed to the function as the \code{simdata}, the on
 If desired, a new set of simlabels can be specified; all other parameters will be ignored.
 }
 \examples{
-\dontrun{
-pta1 <- simEx$pta(
-simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
-targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
-success = 0.6, start = 120, end = 144
-)
-pta1$summary()
-pta1$plot()
-}
+pta1 <- PM_pta$new(simEx, 
+                 simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+                 target = list(2^(-2:6), 1, 50),
+                 target_type = c("time", 144, "-max"),
+                 success = c(0.6, 1, 1),
+                 start = 120, end = 144)
+
+pta2 <- PM_pta$new(simEx,
+                 target = c(2^(-2:6)),
+                 target_type = "time",
+                 success = 0.6,
+                 start = 120, end = 144)
+
+pta3 <- PM_pta$new(simEx,
+                 simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+                 target = list(5,10),
+                 target_type = c("min", "-min"),
+                 success = c(1,1),
+                 start = 120, end = 144)
+
+pta4 <- PM_pta$new(simEx,
+                 simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+                 target = makePTAtarget(mic1),
+                 target_type = "auc",
+                 success = 200,
+                 start = 120, end = 144)
+
+pta5 <- PM_pta$new(simdata = simEx,
+                 simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+                 target = list(makePTAtarget(mic1),5),
+                 target_type = c("auc","min"),
+                 success = c(200,1),
+                 start = 120, end = 144)
 }
 \seealso{
 \link{plot.PM_pta}, \link{PM_sim}
