@@ -4,26 +4,32 @@
 \alias{summary.PMpta}
 \title{Summarize Percent Target Attainment}
 \usage{
-\method{summary}{PMpta}(object, ci = 0.95, ...)
+\method{summary}{PMpta}(object, at = 1, ci = 0.95, ...)
 }
 \arguments{
 \item{object}{A PMpta object made by \link{makePTA}.}
 
-\item{ci}{Confidence interval for pharmacodynamic index reporting.  Default is 0.95.}
+\item{at}{Which object in the \emph{PM_pta} result list to plot. By default 1.}
+
+\item{ci}{Width of the interval for pharmacodynamic index reporting.  Default is 0.95, i.e. 2.5th to 97.5th percentile.}
 
 \item{...}{Not used.}
 }
 \value{
-A list with two named objects: pta (probability of target attainment)
-and pti (pharmacodynamic index).
-\item{pta }{A data frame with the following columns: simnum, target, prop.success, pdi.mean, and pdi.sd
-\emph{simnum} is the number of the simulation; \emph{target} is the specified target;
-\emph{success}  has the proportion with a ratio > \code{prop.success}; \emph{pdi.mean} and \emph{pdi.sd}
-are the mean and standard deviation of the pharmacodyamic index (e.g. AUC/MIC) for each simulation and target.}
-\item{pdi }{A data frame with the following columns: target, simnum, lowerCI, median, upperCI.
-\emph{target} and \emph{simnum} are as above. \emph{lowerCI}, \emph{median},
-and \emph{upperCI} are the lower limit, median, and upper limit of the confidence
-interval for the pdi whose width is specified by \code{ci}.}
+A tibble with the following columns (only the first three if \code{at = "intersect"}):
+\itemize{
+\item \strong{sim_num} is the number of the simulation
+\item \strong{target} is the target for the row, if targets are discrete, not used for simulated targets
+\item \strong{label} is the simulation label, for reference
+\item \strong{prop_success} is the proportion of simulated profiles that met the success definition
+\item \strong{median} is the median parmacodynamic index (PDI), i.e. the proportion or ratio depending on the target type
+\item \strong{lower} is the lower bound of the interval defined by \code{ci}
+\item \strong{upper} is the upper bound of the interval defined by \code{ci}
+\item \strong{mean} is the mean of the PDI
+\item \strong{sd} is the standard deviation of the PDI
+\item \strong{min} is the minimum PDI
+\item \strong{max} is the maximum PDI
+}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -31,8 +37,10 @@ interval for the pdi whose width is specified by \code{ci}.}
 Summarize a Pmetrics Percent Target Attainment Object
 }
 \details{
-Summarize target statistics and success proportions in a \emph{PMpta} object made by \link{makePTA}
-and usually found in a \link{PM_pta} object.
+Summarize Pharmacodynamic Index (PDI) statistics and success proportions in a \emph{PMpta} object made by \link{makePTA}
+and usually found in a \link{PM_pta} object. The PDI is the metric calculated by the target type and target, e.g. AUC/Target,
+or \%time>target. Since a PDI cannot be calculated for intersections, summarizing the intersection object only
+provides the success proportion per simulation/target.
 }
 \seealso{
 \link{makePTA}, \link{PM_pta}

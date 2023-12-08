@@ -6,6 +6,7 @@
 \usage{
 \method{plot}{PM_pta}(
   x,
+  at = "intersect",
   include,
   exclude,
   type = "pta",
@@ -27,6 +28,13 @@
 }
 \arguments{
 \item{x}{The name of an \emph{PM_pta} data object read by \link{makePTA}}
+
+\item{at}{Which object in the \emph{PM_pta} result list to plot. By default "intersect" if
+an intersection is present due to creation of the object with multiple target types, or
+1 if no intersection is present, which means only 1 target type was selected. If
+"intersect" is present in the object, the default can be overridden with a number to
+plot one of the individual PTAs, e.g. \code{at = 2} to plot the second PTA rather than the
+intersection of all the PTAs.}
 
 \item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
 

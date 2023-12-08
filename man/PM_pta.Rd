@@ -29,8 +29,6 @@ Julian Otalvaro and Michael Neely
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
 \item{\code{results}}{Contains the raw results. See \link{makePTA}.}
-
-\item{\code{outcome}}{Contains summary of raw results. See \link{makePTA}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -51,7 +49,7 @@ Julian Otalvaro and Michael Neely
 \subsection{Method \code{new()}}{
 Create a new \code{PM_pta} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_pta$new(simdata, targets, target.type, success, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_pta$new(simdata, target, target_type, success, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -67,9 +65,9 @@ working directory (or the path plus filename) with results of a prior
 PTA analysis.
 }}
 
-\item{\code{targets}}{See \link{makePTA}.}
+\item{\code{target}}{See \link{makePTA}.}
 
-\item{\code{target.type}}{See \link{makePTA}.}
+\item{\code{target_type}}{See \link{makePTA}.}
 
 \item{\code{success}}{See \link{makePTA}}
 

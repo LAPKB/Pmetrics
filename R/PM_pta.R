@@ -24,8 +24,6 @@ PM_pta <- R6::R6Class(
   public <- list(
     #' @field results Contains the raw results. See [makePTA].
     results = NULL,
-    #' @field outcome Contains summary of raw results. See [makePTA].
-    outcome = NULL,
     #' @description 
     #' Create a new `PM_pta` object.
     #' @param simdata One of two possibilities:
@@ -35,14 +33,14 @@ PM_pta <- R6::R6Class(
     #' (saved with the `$save` method below) in the current
     #' working directory (or the path plus filename) with results of a prior
     #' PTA analysis.
-    #' @param targets See [makePTA].
-    #' @param target.type See [makePTA].
+    #' @param target See [makePTA].
+    #' @param target_type See [makePTA].
     #' @param success See [makePTA]
     #' @param ... Other arguments passed to [makePTA].
-    initialize = function(simdata, targets, target.type, success, ...) {
+    initialize = function(simdata, target, target_type, success, ...) {
       if(!inherits(simdata, "character")){
-        pta <- makePTA(simdata = simdata, targets = targets, 
-                       target.type = target.type, success = success, ...)
+        pta <- makePTA(simdata = simdata, target = target, 
+                       target_type = target_type, success = success, ...)
         private$populate(pta)
       } else { #try as filename
         pta <- readRDS(simdata)
@@ -80,12 +78,7 @@ PM_pta <- R6::R6Class(
   ), #end public
   private = list(
     populate = function(pta){
-      self$results <- pta$results
-      self$outcome <- pta$outcome
-      attr(self, "simlabels") <- attr(pta, "simlabels")
-      attr(self, "simTarg") <- attr(pta, "simTarg")
-      attr(self, "success") <- attr(pta, "success")
-      attr(self, "type") <- attr(pta, "type")
+      self$results <- pta
       return(self)
     }
     
