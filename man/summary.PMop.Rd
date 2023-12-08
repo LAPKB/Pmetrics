@@ -28,14 +28,26 @@ distributions, or "mean".  Default is "median".}
 \item{...}{Not used.}
 }
 \value{
-A list with two xs.  The first component of the list is a
-matrix with the minimum, first quartile, median, third quartile, maximum,
+A list with three elements.
+\itemize{
+\item sumstat A data frame with the minimum, first quartile, median, third quartile, maximum,
 mean and standard deviation for times, observations and predictions in \code{x}.
-The second contains the mean prediction error,
-the mean weighted prediction error (bias), the mean squared prediction error, root mean sqaured error (RMSE),
-percent root mean squared error (\%RMSE), the mean weighted
-squared prediction error, the bias-adjusted mean squared prediction error, and the bias-
-adjusted mean weighted squared prediction error (imprecision).
+\item pe A named vector with mean prediction error (mpe),
+the mean weighted prediction error (mwpe), the mean squared prediction error (mspe), root mean sqaured error (rmse),
+percent root mean squared error (percent_rmse), the mean weighted
+squared prediction error (mwspe), the bias-adjusted mean squared prediction error (bamspe), and the bias-
+adjusted mean weighted squared prediction error (bamwspe).  The mwpe is bias and the bamwspe is imprecision on
+plots of PM_op objects.
+\item wtd.t A list of 6 elements based on a t test that the weighted mean prediction bias is different than zero
+}
+\itemize{
+\item estimate: the weighted mean of the prediction bias for each observation
+\item se: the standard error of the estimate
+\item conf.int: the 95\% confidence interval of the mean
+\item statistic: the t statistic of the standardized difference between mean and zero
+\item df: degrees of freedom equal to number of observations minus one
+\item p.value: the probability that the weighted mean is different than zero
+}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

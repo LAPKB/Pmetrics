@@ -11,19 +11,27 @@
 #' @param object A PMop object made by [makeOP].
 #' @param digits Integer, used for number of digits to print.
 #' @param pred.type Either 'post' for a posterior object or 'pop' for a population object.  Default is 'post'.
-#' @param icen Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
+#' @param icen Can be either "median" for the predictions based on medians of `pred.type` parameter value
 #' distributions, or "mean".  Default is "median".
 #' @param outeq Output equation number.  Default is 1.
 #' @param ... Not used.
 
-#' @return A list with two xs.  The first component of the list is a
-#' matrix with the minimum, first quartile, median, third quartile, maximum,
-#' mean and standard deviation for times, observations and predictions in \code{x}.
-#' The second contains the mean prediction error,
-#' the mean weighted prediction error (bias), the mean squared prediction error, root mean sqaured error (RMSE),
-#' percent root mean squared error (%RMSE), the mean weighted
-#' squared prediction error, the bias-adjusted mean squared prediction error, and the bias-
-#' adjusted mean weighted squared prediction error (imprecision).  
+#' @return A list with three elements.  
+#' * sumstat A data frame with the minimum, first quartile, median, third quartile, maximum,
+#' mean and standard deviation for times, observations and predictions in `x`.
+#' * pe A named vector with mean prediction error (mpe),
+#' the mean weighted prediction error (mwpe), the mean squared prediction error (mspe), root mean sqaured error (rmse),
+#' percent root mean squared error (percent_rmse), the mean weighted
+#' squared prediction error (mwspe), the bias-adjusted mean squared prediction error (bamspe), and the bias-
+#' adjusted mean weighted squared prediction error (bamwspe).  The mwpe is bias and the bamwspe is imprecision on 
+#' plots of PM_op objects.
+#' * wtd.t A list of 6 elements based on a t test that the weighted mean prediction bias is different than zero
+#'  - estimate: the weighted mean of the prediction bias for each observation
+#'  - se: the standard error of the estimate
+#'  - conf.int: the 95% confidence interval of the mean
+#'  - statistic: the t statistic of the standardized difference between mean and zero
+#'  - df: degrees of freedom equal to number of observations minus one
+#'  - p.value: the probability that the weighted mean is different than zero
 #' @author Michael Neely
 #' @seealso [makeOP], [PM_op]
 #' @export
