@@ -34,7 +34,12 @@ Generates an HTML-report in the current working directory.
 Generates a report from a specified Rmd template
 }
 \seealso{
-\code{\link{PM_load}}
+\code{\link{PM_load}}'
+\subsection{PACKAGE IMPORTS FOR REPORT TEMPLATES}{
+}
+
+\subsection{ggplot}{
+}
 }
 \author{
 Markus Hovd and Julian Otalvaro
