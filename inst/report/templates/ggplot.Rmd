@@ -301,7 +301,7 @@ res$final$popPoints %>%
 
 ## Cycle information
 ```{r}
-if (is.null(res$cycle$cycnum)) {
+if (is.null(res$cycle$AIC)) {
   ggplot() +
   annotate("text",
            x = 1,
