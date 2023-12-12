@@ -301,7 +301,16 @@ res$final$popPoints %>%
 
 ## Cycle information
 ```{r}
-cycle_info = data.frame(
+if (is.null(res$cycle$cycnum)) {
+  ggplot() +
+  annotate("text",
+           x = 1,
+           y = 1,
+           size = 8,
+           label = "No cycles") + 
+  theme_void()
+} else {
+  cycle_info = data.frame(
   cycle = res$cycle$data$cycnum,
   ll = res$cycle$data$ll,
   AIC = res$cycle$data$aic,
@@ -388,6 +397,7 @@ EF
 plot_ll + plot_aic_bic + plot_gamlam + plot_mean + plot_sd + plot_median +
   plot_layout(design = plot_design, guides = "collect") &
   theme(legend.position = "bottom")
+}
 ```
 
 <!-- THE FOLLOWING SECTION CONTAINS JAVASCRPT SUPPORT FUNCTIONS -->
