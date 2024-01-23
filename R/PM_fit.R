@@ -90,8 +90,8 @@ PM_fit <- R6::R6Class("PM_fit",
             Pmetrics::ITrun(model_path, self$data$standard_data, ...)
           }
         }
-      } else if (self$backend == "rust") {
-        private$run_rust(...)
+      } else if (getPMoptions()$backend == "rust") {
+        private$run_rust(..., engine = engine)
       } else {
         setwd(wd)
         stop("Error: unsupported backend, check your PMoptions")
@@ -130,9 +130,10 @@ PM_fit <- R6::R6Class("PM_fit",
   ),
   private = list(
     binary_path = NULL,
-    run_rust = function(...) {
+    run_rust = function(..., engine) {
       arglist <- list(...)
       cwd <- getwd()
+      engine <- toupper(engine)
       # First read default values from NPrun, then modify with arglist
       default_NPrun <- formals(NPrun)
       arglist <- modifyList(default_NPrun, arglist)
@@ -171,6 +172,10 @@ PM_fit <- R6::R6Class("PM_fit",
         unlist() %>%
         sum()
 
+      arglist$engine <- ifelse(engine %>% is.null(), "NPAG", engine)
+      if (!engine %in% c("NPAG", "NPOD")) {
+        stop("Invalid engine.")
+      }
       arglist$indpts <- ifelse(is.symbol(arglist$indpts), 1, arglist$indpts)
       arglist$num_indpts <- (2**num_ran_param) * arglist$indpts
       arglist$num_indpts <- format(arglist$num_indpts, scientific = FALSE)
@@ -183,6 +188,7 @@ PM_fit <- R6::R6Class("PM_fit",
       arglist$use_tui <- "false" # TO-DO: Convert TRUE -> "true", vice versa.
       arglist$cache <- "true"
       arglist$seed <- 347
+
 
       #### Save PM_fit ####
       self$data <- PM_data$new(data_filtered, quiet = TRUE)
@@ -249,7 +255,7 @@ PM_fit <- R6::R6Class("PM_fit",
         "#prior_list=\"Optional\"",
         "[config]",
         "cycles={cycles}",
-        "engine=\"NPAG\"",
+        "engine=\"{engine}\"",
         "init_points={num_indpts}",
         # "init_points=2129",
         "seed={seed}",
@@ -270,7 +276,7 @@ PM_fit <- R6::R6Class("PM_fit",
       # check if the file exists
       file.copy(private$binary_path, "NPcore")
       if (arglist$intern) {
-        system2("./NPcore")
+        system2("./NPcore", wait = TRUE)
         if (file.exists("meta_rust.csv")) {
           # Execution ended successfully
           PM_parse()
