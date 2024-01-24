@@ -1,0 +1,47 @@
+---
+title: "Fit models"
+tutorial:
+    id: "fit-models"
+output: 
+    learnr::tutorial:
+        progressive: true
+        allow_skip: false
+runtime: shiny_prerendered
+drescription: >
+    Learn how to create, fit and interact with PM_model objects.
+---
+```{r setup, context="server"}
+library(learnr)
+5+5
+```
+## Welcome
+Welcome to the Pmetrics model fitting tutorial. In this tutorial, you will learn how to:
+
+* Create and maipulate `PM_data` and `PM_model` objects.
+* Use those objects to create a `PM_fit` object.
+* Learn how to interact with the `PM_fit` object and execute it.
+* Interact with the `PM_result` object.
+
+### Gfortran
+The first step to get Pmetrics up and running is to get Gfortran installed in your system. The prefered way to accomplish this is to use Built-in Pmetrics function `PM_build()`: This function will detect your OS and will try to install gfortran on it . If you are using windows and this fails close/re-open Rstudio and try again, windows has some problems to detech environment variables once they change.
+If this option fails, here you have other options based on your OS:
+
+* Windows: Install [Chocolatey](https://chocolatey.org/install), and then install [mingw](https://community.chocolatey.org/packages/mingw) using this command: `choco install mingw`. Remember to restart Rstudio after doing this.
+* Linux: There are multiple ways to install gfotran on Linux, depending on the specific distribution you're using the name of the package might be different. In the case of Ubuntu and Ubuntu-like distributions gfotran is included in the build-essentials package `sudo apt install build-essentials`.
+* Mac: The easiest way to get gfotran installed on a MacOs computer is to use [Homebrew](https://brew.sh/) using this command: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`, and then install gcc using this command: `brew install gcc`.
+
+After installing Gfotran run `PMbuild()`. You should be seeing a message like this one:
+
+```
+Compiling 1 of 9: NPprep...
+Compiling 2 of 9: NPeng...
+Compiling 3 of 9: ITprep...
+Compiling 4 of 9: ITeng...
+Compiling 5 of 9: ITerr...
+Compiling 6 of 9: SIMeng...
+Compiling 7 of 9: DOprep...
+Compiling 8 of 9: DOeng...
+Compiling 9 of 9: mb2csv...
+All packages installed and permanent Fortran modules compiled.
+```
+
