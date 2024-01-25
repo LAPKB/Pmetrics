@@ -10,10 +10,7 @@ runtime: shiny_prerendered
 drescription: >
     Learn how to create, fit and interact with PM_model objects.
 ---
-```{r setup, context="server"}
-library(learnr)
-5+5
-```
+
 ## Welcome
 Welcome to the Pmetrics model fitting tutorial. In this tutorial, you will learn how to:
 
@@ -44,4 +41,61 @@ Compiling 8 of 9: DOeng...
 Compiling 9 of 9: mb2csv...
 All packages installed and permanent Fortran modules compiled.
 ```
+
+### R Basics
+
+This is by no means an exhaustive R [tutorial](https://www.w3schools.com/r/), this section will only cover the basics needed to execute pmetrics and to go through the tutorial.
+
+R is a [interpreded](https://en.wikipedia.org/wiki/Scripting_language), dynamic-typed, object oriented programming language, it is mainly used by data scientist an researches all around the world to perform data-analysis, statistical-inference and even artificial intelligence, between other uses.
+
+To write R code you can directly use the console (usually located in the lower left corner in Rstudio) to type the command and then press return to execute it, let's try it! go to Rstudio and execute this little program: `print(paste("2 + 2 equals", 2+2))`.
+
+```{r}
+print(paste("2 + 2 equals", 2+2))
+```
+
+To write bigger (and to be able to organize them properly) R programmers write their programs in scripts. An script is a plain text file with a .R extension. Those scripts are then read by the R interpreted and get executed line-by-line. The script editor in Rstudio is usually located in the upper right corner of the interface. If it is closed, you can open it by clicking File>New File>R Script.
+
+Let's write a basic script, open the script editor and paste the following content:
+
+```{r}
+my_daily_steps <- c(5220,4803,3981,6299,6003,4967,1238)
+# Lines that start with a `#` are ignored by the interpreter and are called comments.
+# `X <- Y` is the assignment operator, it can be read as `set X to the value of Y`. 
+mean_steps <- mean(my_daily_steps)
+# In the previous line we are calling a function, a function is a procedure provided by R or by a third-party by using a library.
+# You can always access the manual for an specific function by using the `?` operator i.e. `?mean`
+# Plotting (`?plot`)
+plot(my_daily_steps)
+```
+You can also use the [pipe operator](https://www.tidyverse.org/blog/2023/04/base-vs-magrittr-pipe/) to execute functions sequentially.
+```{r}
+
+# This is equivalent to print(mean(my_daily_steps))
+my_daily_steps|>
+mean()|>
+print()
+```
+
+### Data Object
+
+For this tutorial we will be following the `PM_tutorial` function.
+
+Let's start by including the relevant libraries
+```{r setup, context="server"}
+library(learnr)
+library(Pmetrics)
+wd<-tempdir()
+setwd(wd)
+PM_tutorial(auto_confirm=TRUE)
+```
+The `PM_tutorial` function creates a folder named `Examples` inside your current working directory, because this is an example we are creating that file inside a temporary folder.
+Let's look at one of the example data files provided by the Pmetrics tutorial `ex.csv`
+```{r}
+setwd(wd)
+setwd("Examples/src")
+read.csv("ex.csv") |>
+head()
+```
+What you are seeing is a csv file with the minimal Pmetrics' data format, further information can be found [here](https://lapkb.github.io/Pmetrics/articles/data.html).
 
