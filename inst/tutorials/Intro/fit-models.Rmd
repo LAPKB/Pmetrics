@@ -77,7 +77,7 @@ mean()|>
 print()
 ```
 
-### Data Object
+### PM_tutorial
 
 For this tutorial we will be following the `PM_tutorial` function.
 
@@ -97,5 +97,47 @@ setwd("Examples/src")
 read.csv("ex.csv") |>
 head()
 ```
-What you are seeing is a csv file with the minimal Pmetrics' data format, further information can be found [here](https://lapkb.github.io/Pmetrics/articles/data.html).
+This is an example of the minimal Pmetrics' data format, further information can be found [here](https://lapkb.github.io/Pmetrics/articles/data.html). `PM_tutorial` contains multiple examples across the majority of Pmetrics' functionalities, we invite you to give it a look!
 
+### PM_data
+
+A [`PM_data`](https://lapkb.github.io/Pmetrics/reference/PM_data.html) object is used in Pmetrics as the representation of your data file, it encompasses the data and some functionality that operates over that data, this is a patter you will see among the major Pmetrics objects and it is one of the characteristics of R we mentioned before (Object Oriented).
+
+Let's look at an example!
+
+```{R}
+setwd(wd)
+setwd("Examples/src")
+exData<-PM_data$new(data = "ex.csv")
+#The `$` symbol allow us to access the inner data structures within the object.
+exData$data
+#This is the standard Pmetrics' data format. It gets expanded from the minimal version we showed above 
+exData$standard_data
+#Using the `$` symbol we can also access the methods attached to the object. Note that such methods always have `()` at the end of their name.
+exData$summary()
+#Or
+exData$plot()
+```
+You can always look at the different methods and data structures that a specific object provides by looking at its [documentation](https://lapkb.github.io/Pmetrics/reference/PM_data.html#methods).
+
+### PM_model
+
+[`PM_model`](https://lapkb.github.io/Pmetrics/reference/PM_model.html) objects are used as a representation of one specific model we want to fit to the data. It also contains some methods attached to it, but in this tutorial we will mainly concentrate on the different ways to create them.
+
+The classic way of creating such objects is by having/[downloading](https://www.lapk.org/ModelLib.php)/writing a `model.txt`. In our case we will use one of the models provided by `PM_tutorial`. Such models are written using a specifig format, more details [here](https://lapkb.github.io/Pmetrics/articles/models.html).
+
+```{r}
+setwd(wd)
+setwd("Examples/src")
+library(readr)
+cat(read_file("model.txt"))
+```
+
+To create a `PM_data` object using the `.txt` representation, we just have to use the `PM_model$new()` function.
+
+```{r}
+setwd(wd)
+setwd("Examples/src")
+exModel<-PM_model$new("model.txt")
+
+```
