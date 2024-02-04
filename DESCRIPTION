@@ -62,6 +62,7 @@ Imports:
     tidygraph,
     tidyr,
     trelliscopejs,
+    mvtnorm,
     utils
 Suggests:
     askpass,
