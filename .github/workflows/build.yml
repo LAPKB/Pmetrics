@@ -20,10 +20,10 @@ jobs:
       with:
         use-public-rspm: true  # Use RStudio's public package manager for faster installs
 
-    - name: Install dependencies
+    - name: Install R package dependencies
       run: |
-        install.packages("remotes")
-        remotes::install_deps(dependencies = TRUE)
+        Rscript -e "install.packages('remotes')"
+        Rscript -e "remotes::install_deps(dependencies = TRUE)"
 
     - name: Check package
       run: |
