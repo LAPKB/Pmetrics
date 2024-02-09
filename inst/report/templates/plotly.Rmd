@@ -205,7 +205,7 @@ p <- lapply(1:numeqt, function(i) {
 
 ## Parameter values and distributions
 
-### Parameter summmaries
+### Parameter summaries
 The model included the following primary parameters
 ```{r}
 par_lims <- data.frame(
