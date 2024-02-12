@@ -6,10 +6,11 @@
 \usage{
 \method{plot}{PM_final}(
   x,
+  y,
   formula = NULL,
   line = TRUE,
   marker = TRUE,
-  density = F,
+  density = FALSE,
   standardize,
   legend,
   log,
