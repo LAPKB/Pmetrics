@@ -84,11 +84,11 @@
 #' ITex$final$plot(Ke ~ V)
 #' @family PMplots
 
-plot.PM_final <- function(x, 
+plot.PM_final <- function(x, y, 
                           formula = NULL, 
                           line = TRUE,
                           marker = TRUE,
-                          density = F, 
+                          density = FALSE, 
                           standardize,
                           legend, 
                           log, 
@@ -125,7 +125,7 @@ plot.PM_final <- function(x,
   #process dots
   layout <- amendDots(list(...))
   
-  data<-if(inherits(x, "PM_final")) {x$data}else{x}
+  data <- if(inherits(x, "PM_final")) {x$data}else{x}
   #ranges
   ab <- data.frame(data$ab)
   names(ab) <- c("min","max")
@@ -254,7 +254,6 @@ plot.PM_final <- function(x,
   biPlot <- function(xCol, yCol, x, xlab, ylab, zlab, title){
     #yCol <- as.character(attr(terms(formula),"variables")[2])
     #xCol <- as.character(attr(terms(formula),"variables")[3])
-    
     whichX <- which(ab$par == xCol)
     whichY <- which(ab$par == yCol)
     
@@ -318,9 +317,9 @@ plot.PM_final <- function(x,
       layout$yaxis$title <- amendTitle(ylb)
     }
     if(is.character(zlb)){
-      layout$yaxis$title <- amendTitle(zlb, layout$xaxis$title$font)
+      layout$zaxis$title <- amendTitle(zlb, layout$xaxis$title$font)
     } else {
-      layout$yaxis$title <- amendTitle(zlb)
+      layout$zaxis$title <- amendTitle(zlb)
     }
     
     
