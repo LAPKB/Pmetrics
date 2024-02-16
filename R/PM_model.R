@@ -290,9 +290,8 @@ PM_Vmodel <- R6::R6Class("PM_model",
           for (i in 1:length(mlist$cov)) {
             thisout <- mlist$cov[[i]]
             cat(paste0(
-              sp(2), "$covariate: ", thisout, "\n",
-              # sp(2), "$covariate: ", thisout$covariate, "\n",
-              # sp(3), "$constant: ", thisout$constant, "\n",
+              sp(2), "$covariate: ", thisout$covariate, "\n",
+              sp(3), "$constant: ", thisout$constant, "\n",
               "\n"
             ))
           }
