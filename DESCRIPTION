@@ -35,6 +35,7 @@ Depends:
 Imports:
     crayon,
     doParallel,
+    DT,
     dplyr,
     foreach,
     ggplot2,
