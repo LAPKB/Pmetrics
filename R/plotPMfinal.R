@@ -45,13 +45,16 @@
 #'     - `width` Outline width. Default is 1.
 #' Example: `marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))`
 #' @param line `r template("line")` The `line` argument is used to format:
-#' * the density line drawn from an NPAG [PM_final] object if `density = T` 
-#' * the drop lines from an NPAG [PM_final] object when a `formula` is specified
-#' to generate a bivariate plot
-#' * the lines drawing the normal distribution
-#' of parameter values from an IT2B [PM_Final] object. 
-#' @param density Boolean operator to plot a kernel density function overlying the histogram
-#' of a univariate marginal parameter distribution from NPAG; the default is `FALSE`.
+#' * the density line drawn over an NPAG [PM_final] object. Default is `FALSE`, 
+#' which means no density line will be drawn. Use `TRUE` to draw the default line,
+#' which is black, solid, and of width 1, or specify as a list to control these
+#' elements, e.g. `line = list(color = "red", width = 2, dash = "dash")` 
+#' * the drop lines from point to lower surface when a `formula` is specified
+#' to generate a bivariate plot from an NPAG [PM_final] object. 
+#' In this case, default is `line = TRUE`. The default
+#' format is black, dashed, and of width 1.
+#' * the lines drawing the normal distribution of parameter values from an IT2B [PM_Final] object. 
+#' Again, here the default is `line = TRUE`, and the format is black, solid, of width 1.
 #' See [density].  Ignored for IT2B output.
 #' @param grid `r template("grid")`
 #' @param xlab `r template("xlab")` Default is the name of the plotted x-variable.
@@ -86,9 +89,8 @@
 
 plot.PM_final <- function(x, y, 
                           formula = NULL, 
-                          line = TRUE,
+                          line,
                           marker = TRUE,
-                          density = FALSE, 
                           standardize,
                           legend, 
                           log, 
@@ -101,14 +103,31 @@ plot.PM_final <- function(x, y,
   #housekeeping
   if(inherits(x,"NPAG")){
     type <- "NPAG"
-    densityFormat <- amendLine(density, default = list(color = "black"))
-    if(inherits(density,"list")) density <- TRUE
+    
+    if(missing(formula)){ #univariate
+      if(missing(line)){
+        line <- amendLine(FALSE) #no density
+        density <- FALSE
+      } else {
+        line <- amendLine(line, default = list(color = "black")) #density
+        density <- TRUE
+      }
+    } else { #bivariate
+      density <- FALSE
+      if(missing(line)){
+        line <- amendLine(TRUE, default = list(color = "black", dash = "dash")) #bivariate, need drop lines
+      } else {
+        line <- amendLine(line, default = list(color = "black", dash = "dash"))
+      }
+    }
+    
     bar <- amendMarker(marker, default = list(color = "dodgerblue", size = 5,
                                               width = 0.02, opacity = 0.5))
-    line <- amendLine(line)
   } else {
     type <- "IT2B"
+    if(missing(line)) line <- TRUE
     line <- amendLine(line)
+    
   }
   
   
@@ -145,7 +164,7 @@ plot.PM_final <- function(x, y,
           width = I(barWidth)
         ) 
       
-
+      
       if(!is.null(.prior)){
         bar2 <- bar
         bar2$color <- "black"
@@ -174,7 +193,7 @@ plot.PM_final <- function(x, y,
           normalize <- max(denData$prob)
           
           p <- p %>% plotly::add_lines(data = dens, x = ~x, y = ~y/max(y) * I(normalize), 
-                                       line = densityFormat,
+                                       line = line,
                                        text = round(dens$y,2),
                                        hovertemplate = "Value: %{x:0.2f}<br>Prob: %{text}<extra></extra>") 
           
@@ -334,7 +353,7 @@ plot.PM_final <- function(x, y,
       
       # dmv_norm in PMutilities
       z <- dmv_norm(coords,mean=as.numeric(data$popMean[1,c(whichX,whichY)]),
-                            sigma=as.matrix(data$popCov[c(whichX,whichY),c(whichX,whichY)])
+                    sigma=as.matrix(data$popCov[c(whichX,whichY),c(whichX,whichY)])
       )
       z <- matrix(z, nrow=101)
       
@@ -364,9 +383,13 @@ plot.PM_final <- function(x, y,
       p <- data$popPoints %>% select(x=whichX[1], y=whichY[1], prob=prob) %>%
         plotly::plot_ly(x = ~x, y = ~y, z = ~prob,
                         hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
-        plotly::add_markers(marker = bar) %>% 
-        plotly::add_paths(data = pp2, x = ~x, y = ~y, z = ~prob,
-                          line = line) %>%
+        plotly::add_markers(marker = bar) 
+      
+      if(line$width > 0){
+        p <- p %>% plotly::add_paths(data = pp2, x = ~x, y = ~y, z = ~prob,
+                                     line = line)
+      }
+      p <- p %>%
         plotly::layout(showlegend = F,
                        scene = list( 
                          xaxis = layout$xaxis,
@@ -430,7 +453,7 @@ plot.PM_final <- function(x, y,
       ab_alpha <- ab %>% arrange(par)
       p <- data.frame(mean = purrr::as_vector(data$popMean), sd = purrr::as_vector(data$popSD), min = ab[,1], max = ab[,2]) %>%
         purrr::pmap(.f = function(mean, sd, min, max){dplyr::tibble(value = seq(min, max, (max-min)/1000),
-                                                                     prob = dnorm(value, mean, sd))}) %>% 
+                                                                    prob = dnorm(value, mean, sd))}) %>% 
         purrr::set_names(names(data$popMean)) %>%
         dplyr::bind_rows(.id = "par") %>%
         dplyr::nest_by(par) %>% 

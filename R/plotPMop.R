@@ -72,7 +72,7 @@
 #' @param title `r template("title")` Default is to have no title.
 #' @param stats Add the statistics from linear regression to the plot. If 
 #' `FALSE`, will be suppressed. Default is `TRUE` which results in default format of 
-#' `list(x= 0.8, y = 0.1, bold = FALSE, font = list(color = "black", family = "Arial", size = 14))`.
+#' `list(x= 0.8, y = 0.1, font = list(color = "black", family = "Arial", size = 14, bold = FALSE))`.
 #' The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
 #' argument maps to `plotly::add_text()`. 
 #' @param ... `r template("dotsPlotly")`
@@ -124,7 +124,7 @@ plot.PM_op <- function(x,
   if(!missing(legend)){notNeeded("legend", "plot.PM_op")}
   
   #process reference lines
-  if(any(!names(line)%in% c("lm", "loess", "ref"))){ #ref/pred?
+  if(any(!names(line)%in% c("lm", "loess", "ref"))){ 
     cat(paste0(crayon::red("Warning: "),crayon::blue("line")," should be a list with at most three named elements: ",crayon::blue("lm"),", ",crayon::blue("loess"), " and/or ",crayon::blue("ref"),".\n See help(\"plot.PM_op\")."))
   }
   if(!is.list(line)){
