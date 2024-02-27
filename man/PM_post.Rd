@@ -24,7 +24,7 @@ into the R console and look online for instructions/tutorials in tidyverse, a
 powerful approach to data manipulation upon which Pmetrics is built.
 }
 \author{
-Michael Neely, Julian Otalvara
+Michael Neely, Julian Otalvaro
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
