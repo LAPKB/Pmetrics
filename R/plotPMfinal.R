@@ -87,7 +87,7 @@
 #' ITex$final$plot(Ke ~ V)
 #' @family PMplots
 
-plot.PM_final <- function(x, y, 
+plot.PM_final <- function(x, 
                           formula = NULL, 
                           line,
                           marker = TRUE,
@@ -122,7 +122,7 @@ plot.PM_final <- function(x, y,
     }
     
     bar <- amendMarker(marker, default = list(color = "dodgerblue", size = 5,
-                                              width = 0.02, opacity = 0.5))
+                                              symbol = "circle", width = 0.02, opacity = 0.5))
   } else {
     type <- "IT2B"
     if(missing(line)) line <- TRUE
@@ -270,7 +270,7 @@ plot.PM_final <- function(x, y,
   }
   
   
-  biPlot <- function(xCol, yCol, x, xlab, ylab, zlab, title){
+  biPlot <- function(xCol, yCol, x, xlab, ylab, zlab, title, bar){
     #yCol <- as.character(attr(terms(formula),"variables")[2])
     #xCol <- as.character(attr(terms(formula),"variables")[3])
     whichX <- which(ab$par == xCol)
@@ -379,7 +379,6 @@ plot.PM_final <- function(x, y,
       pp2[pp2$key == 3,] <- NA
       pp2 <- pp2 %>%
         dplyr::select(x=whichX[1]+1, y=whichY[1]+1, prob=prob)
-      
       p <- data$popPoints %>% select(x=whichX[1], y=whichY[1], prob=prob) %>%
         plotly::plot_ly(x = ~x, y = ~y, z = ~prob,
                         hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
@@ -464,7 +463,7 @@ plot.PM_final <- function(x, y,
       
     }
   } else { #bivariate
-    p <- biPlot(xCol, yCol, x, xlab, ylab, zlab, title)
+    p <- biPlot(xCol, yCol, x, xlab, ylab, zlab, title, bar)
   }
   print(p)
   return(p)
