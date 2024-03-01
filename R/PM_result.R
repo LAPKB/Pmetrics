@@ -2,7 +2,7 @@
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' This object contains all of the results after a Pmetrics runs. It is created
 #' by using the [PM_load] function.
 #'
@@ -45,13 +45,13 @@ PM_result <- R6::R6Class(
     #' `$save` method on the augmented `PM_result` object to save it with the
     #' new validation results.
     valid = NULL,
-    
+
     #' @description
     #' Create new object populated with data from previous run
     #' @details
-    #' Creation of new `PM_result` objects is via [PM_load]. 
-    #' @param out The parsed output from [PM_load], which is 
-    #' automatically generated. This is not a user-modifiable. 
+    #' Creation of new `PM_result` objects is via [PM_load].
+    #' @param out The parsed output from [PM_load], which is
+    #' automatically generated. This is not a user-modifiable.
     #' @param quiet Quietly validate. Default is `FALSE`.
     initialize = function(out, quiet = TRUE) {
       if (!is.null(out$NPdata)) {
@@ -66,7 +66,7 @@ PM_result <- R6::R6Class(
       } else {
         self$ITdata <- NULL
       }
-      if (is.null(out$NPdata)){
+      if (is.null(out$NPdata)) {
         self$NPdata <- out
         class(self$NPdata) <- c("NPAG", "rust", "list")
       }
@@ -87,7 +87,7 @@ PM_result <- R6::R6Class(
       }
       return(self)
     },
-    
+
     #' @description
     #' Plot generic function based on type
     #' @param type Type of plot based on class of object
@@ -99,7 +99,7 @@ PM_result <- R6::R6Class(
         self[[type]]$plot(...)
       }
     },
-    
+
     #' @description
     #' Summary generic function based on type
     #' @param type Type of summary based on class of object
@@ -111,7 +111,7 @@ PM_result <- R6::R6Class(
         self[[type]]$summary(...)
       }
     },
-    
+
     #' @description
     #' AUC generic function based on type
     #' @param type Type of AUC based on class of object
@@ -122,7 +122,7 @@ PM_result <- R6::R6Class(
       }
       self[[type]]$auc(...)
     },
-    
+
     #' @description
     #' Perform non-compartmental analysis
     #' @details
@@ -131,7 +131,7 @@ PM_result <- R6::R6Class(
     nca = function(...) {
       make_NCA(self, ...)
     },
-    
+
     #' @description
     #' Simulates using the self$final object.
     #' For parameter information refer to [SIMrun]. It will return a `PM_sim` object
@@ -144,7 +144,7 @@ PM_result <- R6::R6Class(
       self$final <- bk_final
       return(sim)
     },
-    
+
     #' @description
     #' Save the current PM_result object to an .Rdata file.
     #' @details
@@ -155,8 +155,8 @@ PM_result <- R6::R6Class(
     #' the changes will overwrite the
     #' previous run results, although unchanged items will be preserved. This is the
     #' usual workflow. However, a custom file name may be useful to share the run
-    #' results with someone. 
-    #' 
+    #' results with someone.
+    #'
     #' The saved object is an .Rdata file. When loaded, it should be assigned to an R
     #' object, e.g. `run2 <- PM_result$new("filename")`. An equivalent statement would
     #' be `run2 <- PM_load(file = "filename")`.
@@ -192,7 +192,7 @@ PM_result <- R6::R6Class(
       )
       save(PMout, file = paste0(outputfolder, "/", file))
     },
-    
+
     #' @description
     #' Validate the result by internal simulation methods.
     #' @param ... Arguments passed to [make_valid].
@@ -200,7 +200,7 @@ PM_result <- R6::R6Class(
       self$valid <- PM_valid$new(self, ...)
       self$valid
     },
-    
+
     #' @description
     #' Conduct stepwise linear regression of Bayesian posterior parameter values
     #' and covariates.
@@ -208,18 +208,18 @@ PM_result <- R6::R6Class(
     step = function(...) {
       PMstep(self$cov$data, ...)
     },
-    
+
     #' @description
     #' Calculate optimal sample times from result and template data file.
     #' @param ... Arguments passed to [MM_opt].
     MM_opt = function(...) {
       MM_opt(self, ...)
     },
-    
+
     #' @description
     #' `r lifecycle::badge("deprecated")`
-    #' 
-    #' Deprecated method to load prior results saved with the `$save` method. 
+    #'
+    #' Deprecated method to load prior results saved with the `$save` method.
     #' Replaced by [PM_load].
     #' @param ... Not used.
     #' @keywords internal
@@ -240,7 +240,7 @@ PM_result$load <- function(...) {
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Contains observed vs. predicted data after a run
 #'
 #' @details
@@ -341,9 +341,9 @@ PM_op <- R6::R6Class(
 
 #' @title Wrapper function for summmary.PMop
 #'
-#' @description 
+#' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' This redirects to summary.PMop for PM_op R6 objects
 #'
 #' @details See [summary.PMop]. Alternative way to summarize is
@@ -361,7 +361,7 @@ summary.PM_op <- function(object, ...) {
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Contains the Bayesian posterior predictions at short intervals
 #' specified as an argument to the $run method of [PM_fit]. Default is every 12 minutes.
 #'
@@ -378,7 +378,7 @@ summary.PM_op <- function(object, ...) {
 #' you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
 #' into the R console and look online for instructions/tutorials in tidyverse, a
 #' powerful approach to data manipulation upon which Pmetrics is built.
-#' @author Michael Neely, Julian Otalvara
+#' @author Michael Neely, Julian Otalvaro
 #' @export
 PM_post <- R6::R6Class(
   "PM_post",
@@ -427,9 +427,9 @@ PM_post <- R6::R6Class(
 
 #' @title Final Cycle Population Values
 #'
-#' @description 
+#' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Contains final cycle information from run.
 #'
 #' @details
@@ -563,9 +563,9 @@ PM_final <- R6::R6Class(
 
 #' @title Wrapper function for summmary.PMfinal
 #'
-#' @description 
+#' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' This redirects to summary.PMfinal for PM_final R6 objects
 #'
 #' @details
@@ -585,7 +585,7 @@ summary.PM_final <- function(object, ...) {
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Contains the cycle information after a run.
 #'
 #' @details
@@ -657,13 +657,13 @@ PM_cycle <- R6::R6Class(
 
 #' @title Population predictions at short intervals
 #'
-#' @description 
+#' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Contains the population predictions at short intervals
 #' specified as an argument to the run method of [PM_fit]. Default is every 12 minutes.
 #'
-#' @details 
+#' @details
 #' Contains the results of [makePop], which is a
 #' data frame with population predicted outputs for all subjects.
 #' To provide a more traditional experience in R,
@@ -727,7 +727,7 @@ PM_pop <- R6::R6Class(
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Contains a data frame with subject-specific covariate data output
 #' from [makeCov]
 #'
@@ -798,9 +798,9 @@ PM_cov <- R6::R6Class(
 
 #' @title Wrapper function for summmary.PMcov
 #'
-#' @description 
+#' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' This redirects to summary.PMcov for PM_final R6 objects
 #'
 #' @details
