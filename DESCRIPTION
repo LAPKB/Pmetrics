@@ -27,12 +27,13 @@ Authors@R: c(
   person("David", "Bayard", email = "", role = "ctb"),
   person("Robert", "Leary", email = "", role = "ctb")
     )
-Version: 2.1.1
+Version: 2.1.2
 URL: https://lapkb.github.io/Pmetrics/
 BugReports: https://github.com/LAPKB/Pmetrics/issues
 Depends: 
     R (>= 4.0.0)
 Imports:
+    bslib,
     crayon,
     doParallel,
     dplyr,
