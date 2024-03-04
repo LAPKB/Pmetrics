@@ -6,12 +6,12 @@
 \usage{
 \method{plot}{PM_cycle}(
   x,
-  line = T,
-  marker = T,
+  line = TRUE,
+  marker = TRUE,
   colors,
   linetypes,
   omit,
-  grid = T,
+  grid = TRUE,
   xlab,
   ylab,
   ...
