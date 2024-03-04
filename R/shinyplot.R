@@ -4,25 +4,39 @@
 #' 
 #' @details
 #' The app will open in a separate window.
+#' @param x Optional object to plot
 #'
 #' @return Launches the shiny app.
 #' @export
 #' @author Michael Neely
 #' 
 
-build_plot <- function(...) {
+build_plot <- function(x,...) {
   
   requireNamespace("shiny")
   requireNamespace("bslib")
   requireNamespace("plotly")
   
   
+  if(!missing(x)){
+    choices_user <- tryCatch(deparse(substitute(x)), error = function(e) NULL)
+    if(is.null(get(choices_user))){
+      choices_user <- NULL
+    }
+  } else {
+    choices_user <- NULL
+  }
   
   ClassFilter <- function(x) any(grepl("^PM_result|^PM_model|^PM_data|^PM_sim|^PM_pta|^PM_cov|^PM_final",class(get(x))))
-  choices <- Filter(ClassFilter,ls(globalenv()))
+  choices2 <- Filter(ClassFilter,ls(globalenv()))
+  
+  choices <- unique(c(choices_user, choices2))
+  
   if(length(choices)==0) {
     choices <- Filter(ClassFilter,ls("package:Pmetrics")) #load examples if none already loaded
   }
+
+
   
   shiny::shinyApp(
     
