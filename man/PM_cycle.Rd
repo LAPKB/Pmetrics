@@ -90,12 +90,12 @@ Plot method
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{plot.PMcycle}}
+\item{\code{...}}{Arguments passed to \link{plot.PM_cycle}}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{plot.PMcycle}.
+See \link{plot.PM_cycle}.
 }
 
 }
