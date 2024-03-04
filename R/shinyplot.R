@@ -10,7 +10,7 @@
 #' @author Michael Neely
 #' 
 
-#build_plot <- function(...) {
+build_plot <- function(...) {
 
 requireNamespace("shiny")
 requireNamespace("bslib")
@@ -710,7 +710,6 @@ shiny::shinyApp(
             accordion(
               accordion_panel(
                 "Line Options",
- 
                   bslib::nav_panel(
                     "Line",
                     checkboxInput("line", "Include?", TRUE),
@@ -1974,7 +1973,7 @@ shiny::shinyApp(
   
           ) #end shiny App
           
-          #} #end function
-          #
-          shinyApp(ui, server)
+          } #end function
+
+          # shinyApp(ui, server)
           
