@@ -72,12 +72,12 @@
 
 
 plot.PM_cycle <- function(x, 
-                          line = T,
-                          marker = T,
+                          line = TRUE,
+                          marker = TRUE,
                           colors,
                           linetypes,
                           omit, 
-                          grid = T,
+                          grid = TRUE,
                           xlab, ylab,
                           ...){
   
@@ -102,6 +102,8 @@ plot.PM_cycle <- function(x,
                                                size = 4, line = list(width = 0))) 
   if(missing(colors)){
     colors <- "Spectral"
+  } else {
+    colors <- rep(colors, nvar) #ensure long enough
   }
   
   if(missing(linetypes)){

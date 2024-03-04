@@ -18,7 +18,7 @@
   block = 1,
   tad = FALSE,
   overlay = TRUE,
-  legend = FALSE,
+  legend,
   log = FALSE,
   grid = FALSE,
   xlab = "Time",
@@ -107,7 +107,7 @@ specified as a vector with number of rows and columns, e.g. \code{c(3, 2)} for 3
 \item{legend}{Controls display of legend. This argument maps to the plotly layout showlegend and legend arguments. It is either a boolean operator (most common) or a list of parameters to be supplied to plotly. See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend for more details on the available options for formatting.  If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will be set to \code{TRUE} automatically.
 
 Examples: \itemize{ \item{\code{legend = T}} \item{\code{legend = list(orientation = "h", font = list(color = "blue"))}} }
-Default is \code{FALSE}}
+Default is \code{FALSE} unless groups are specified with \code{color}above.}
 
 \item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type.
 

@@ -8,10 +8,10 @@
 #'
 #' @name Pmetrics-package
 #' @aliases Pmetrics
-#' @docType package
 #' @author Michael Neely MD
 #' \url{http://www.lapk.org}
-#' @keywords package
+#' @keywords internal
+#' "_PACKAGE"
 #'
 #' @importFrom dplyr select arrange filter mutate transmute group_by row_number
 #' group_map ungroup bind_cols bind_rows nest_by rowwise rename inner_join
@@ -51,7 +51,9 @@
 #' textInput uiOutput actionButton hr textAreaInput reactiveVal reactive
 #' observeEvent updateSelectizeInput updateTextAreaInput updateNumericInput
 #' updateSelectInput renderUI markdown plotOutput div HTML htmlOutput
-#' showModal modalDialog icon shinyApp textOutput
+#' showModal modalDialog icon shinyApp textOutput helpText conditionalPanel
+#' @importFrom bslib accordion accordion_panel card navset_card_tab
+#' nav_panel
 #' @importFrom trelliscopejs trelliscope map_plot 
 ## usethis namespace: start
 #' @importFrom lifecycle deprecated

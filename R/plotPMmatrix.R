@@ -66,7 +66,7 @@
 #' The default is `TRUE`. If `FALSE`, will trellisplot subjects one at a time. Can also be
 #' specified as a vector with number of rows and columns, e.g. `c(3, 2)` for 3 rows and
 #' 2 columns of subject splots to include in each trellis.
-#' @param legend `r template("legend")` Default is `FALSE`
+#' @param legend `r template("legend")` Default is `FALSE` unless groups are specified with `color`above.
 #' @param log `r template("log")` 
 #' @param grid `r template("grid")` 
 #' @param xlim `r template("xlim")` 
@@ -108,7 +108,7 @@ plot.PM_data <- function(x,
                          block = 1,
                          tad = FALSE,
                          overlay = TRUE,
-                         legend = FALSE, 
+                         legend, 
                          log = FALSE, 
                          grid = FALSE,
                          xlab = "Time", 
@@ -142,6 +142,12 @@ plot.PM_data <- function(x,
   layout <- amendDots(list(...))
   
   #legend
+  if(missing(legend)){
+    if(is.null(color)){
+      legend <- FALSE
+    } else {legend <- TRUE}
+  }
+  
   legendList <- amendLegend(legend)
   layout <- modifyList(layout, list(showlegend = legendList$showlegend))
   if(length(legendList)>1){layout <- modifyList(layout, list(legend = within(legendList,rm(showlegend))))}

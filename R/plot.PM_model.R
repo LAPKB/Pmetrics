@@ -55,13 +55,13 @@
 #' NPex$model$plot()
 #' @family PMplots
 
-plot.PM_model <- function(x, marker = T, line = T, explicit, implicit,...) {
+plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit,...) {
   
   model <- x
-  marker <- if(marker != FALSE){
+  marker <- if(is.list(marker) || marker){
     amendMarker(marker, default = list(color = "dodgerblue", size = 0.25, line = list(width = 0.5)))
   } else {FALSE}
-  line <- if(line != FALSE){
+  line <- if(is.list(line) || line){
     amendLine(line, default = list(color = "black"))
   } else {FALSE}
   

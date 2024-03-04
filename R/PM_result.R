@@ -647,10 +647,10 @@ PM_cycle <- R6::R6Class(
     #' @description
     #' Plot method
     #' @details
-    #' See [plot.PMcycle].
-    #' @param ... Arguments passed to [plot.PMcycle]
+    #' See [plot.PM_cycle].
+    #' @param ... Arguments passed to [plot.PM_cycle]
     plot = function(...) {
-      plot.PMcycle(self, ...)
+      plot.PM_cycle(self, ...)
     }
   )
 )
