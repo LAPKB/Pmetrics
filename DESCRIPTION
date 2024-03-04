@@ -37,6 +37,7 @@ Imports:
     crayon,
     doParallel,
     dplyr,
+    DT,
     foreach,
     ggplot2,
     ggraph,
