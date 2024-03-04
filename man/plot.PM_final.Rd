@@ -6,11 +6,9 @@
 \usage{
 \method{plot}{PM_final}(
   x,
-  y,
   formula = NULL,
-  line = TRUE,
+  line,
   marker = TRUE,
-  density = FALSE,
   standardize,
   legend,
   log,
@@ -36,11 +34,17 @@ are two model parameters to plot in a 3-dimensional bivariate plot.  See details
 Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
 The \code{line} argument is used to format:
 \itemize{
-\item the density line drawn from an NPAG \link{PM_final} object if \code{density = T}
-\item the drop lines from an NPAG \link{PM_final} object when a \code{formula} is specified
-to generate a bivariate plot
-\item the lines drawing the normal distribution
-of parameter values from an IT2B \link[=PM_final]{PM_Final} object.
+\item the density line drawn over an NPAG \link{PM_final} object. Default is \code{FALSE},
+which means no density line will be drawn. Use \code{TRUE} to draw the default line,
+which is black, solid, and of width 1, or specify as a list to control these
+elements, e.g. \code{line = list(color = "red", width = 2, dash = "dash")}
+\item the drop lines from point to lower surface when a \code{formula} is specified
+to generate a bivariate plot from an NPAG \link{PM_final} object.
+In this case, default is \code{line = TRUE}. The default
+format is black, dashed, and of width 1.
+\item the lines drawing the normal distribution of parameter values from an IT2B \link[=PM_final]{PM_Final} object.
+Again, here the default is \code{line = TRUE}, and the format is black, solid, of width 1.
+See \link{density}.  Ignored for IT2B output.
 }}
 
 \item{marker}{See details for which objects the \code{marker} argument controls.
@@ -69,10 +73,6 @@ univariate NPAG plots or markers in bivariate NPAG plots. Ignored for IT2B plots
 Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}
 }
 }}
-
-\item{density}{Boolean operator to plot a kernel density function overlying the histogram
-of a univariate marginal parameter distribution from NPAG; the default is \code{FALSE}.
-See \link{density}.  Ignored for IT2B output.}
 
 \item{standardize}{Standardize the normal parameter distribution plots from IT2B to the same
 scale x-axis.  Ignored for NPAG output.}

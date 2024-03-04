@@ -15,7 +15,7 @@
 #' and loaded with [PM_load] as a [PM_result], e.g. `PM_result$cov`.
 #' @param formula This is a mandatory formula of the form \code{y ~ x}, where \code{y} and \code{x}
 #' are the two \code{data} parameters to plot.
-#' @param legend `r template("legend")`
+#' @param legend Not used for this function.
 #' @param include `r template("include")`
 #' @param exclude `r template("exclude")`
 #' @param icen `r template("icen")`

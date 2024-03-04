@@ -4,7 +4,7 @@
 \alias{plot.PM_model}
 \title{Plot PM_model objects}
 \usage{
-\method{plot}{PM_model}(x, marker = T, line = T, explicit, implicit, ...)
+\method{plot}{PM_model}(x, marker = TRUE, line = TRUE, explicit, implicit, ...)
 }
 \arguments{
 \item{x}{The name of an \link{PM_model} object.}
