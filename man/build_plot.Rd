@@ -4,7 +4,10 @@
 \alias{build_plot}
 \title{Launch Plot Builder app}
 \usage{
-build_plot(...)
+build_plot(x, ...)
+}
+\arguments{
+\item{x}{Optional object to plot}
 }
 \value{
 Launches the shiny app.
