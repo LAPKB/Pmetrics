@@ -255,9 +255,9 @@ shiny::shinyApp(
       if(!is.null(input$data) && inherits(get(input$data),"PM_sim")){
         x <- get(input$data)$data
         if(inherits(x, "PM_simlist")){
-          n_sims <- length(x)
+          simlist_sims <- length(x)
         } else {
-          simlist_sims <- NA
+          simlist_sims <- 0
         }
         OPFilter <- function(x) any(grepl("^PM_result",class(get(x))))
         OPchoices <- Filter(OPFilter,ls(globalenv()))
@@ -265,6 +265,12 @@ shiny::shinyApp(
         
         
         return(list(
+          conditionalPanel(
+            condition = "input.simlist_sims > 0",
+            numericInput("simChooser","Which simulation?", value = 1, 
+                         min = 1, max = simlist_sims,
+                         step = 1)
+          ),
           selectInput("outeq","Output equation:",choices=1:max(x$obs[[1]]$outeq,na.rm=T),selected=1),
           selectInput("obs","Observed (for VPC)",choices=OPchoices)
         )) #end list
