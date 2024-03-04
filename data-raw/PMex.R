@@ -44,6 +44,7 @@ usethis::use_data(simEx, overwrite = T)
 
 # NPex with valid field
 setwd("Valid")
-NPex$validate()
 NPex_val <- NPex
+NPex_val$validate()
+
 usethis::use_data(NPex_val, overwrite = T)

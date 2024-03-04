@@ -130,7 +130,7 @@ Default is to have no title.}
 
 \item{stats}{Add the statistics from linear regression to the plot. If
 \code{FALSE}, will be suppressed. Default is \code{TRUE} which results in default format of
-\code{list(x= 0.8, y = 0.1, bold = FALSE, font = list(color = "black", family = "Arial", size = 14))}.
+\code{list(x= 0.8, y = 0.1, font = list(color = "black", family = "Arial", size = 14, bold = FALSE))}.
 The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
 argument maps to \code{plotly::add_text()}.}
 
