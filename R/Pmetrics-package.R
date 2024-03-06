@@ -21,7 +21,7 @@
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon geom_hline
 #' scale_x_log10 scale_x_continuous scale_y_log10 scale_y_continuous xlab ylab
 #' theme ggtitle element_blank geom_segment aes_string aes_string theme_bw theme_grey
-#' @importFrom purrr map map2 reduce map_chr keep pluck map_lgl
+#' @importFrom purrr map map2 reduce map_chr keep pluck map_lgl map_df
 #' @importFrom magrittr %>%
 # #' @importFrom tibble as_tibble tibble
 #' @importFrom tidyr pivot_longer pivot_wider nest unnest extract separate fill crossing
