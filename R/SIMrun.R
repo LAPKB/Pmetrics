@@ -1,6 +1,6 @@
 #' @title Run the Pmetrics Simulator
 #' @description
-#' `lifecycle::badge("superseded")`
+#' `r lifecycle::badge("superseded")`
 #'
 #' This is largely superseded as it is automatically called by either of the simulation
 #' methods: `PM_result$sim()` or `PM_sim$new()`. There is rarely a need any longer to call this
