@@ -22,6 +22,8 @@ PM_fit <- R6::R6Class("PM_fit",
     model = NULL,
     #' @field arglist Arguments passed to rust engine
     arglist = NULL,
+    #' @field backend Backend used for calculations; default is value in PMoptions.
+    backend = NULL,
 
     #' @description
     #' Create a new object
@@ -36,9 +38,10 @@ PM_fit <- R6::R6Class("PM_fit",
     #' in the current working directory. Again, if created on the fly,
     #' the object will not be available to other
     #' methods or other instances of `PM_fit`.
+    #' @param backend Backend used for calculations; default is value in PMoptions.
     #' @param ... Other parameters passed to `PM_data` or `PM_model` if created
     #' from a filename
-    initialize = function(data = data, model = model, ...) {
+    initialize = function(data = data, model = model, backend = getPMoptions()$backend, ...) {
       if (is.character(data)) {
         data <- PM_data$new(data, ...)
       }
@@ -49,8 +52,9 @@ PM_fit <- R6::R6Class("PM_fit",
       stopifnot(inherits(model, "PM_model"))
       self$data <- data
       self$model <- model
+      self$backend <- backend
 
-      if (getPMoptions()$backend == "rust") {
+      if (backend == "rust") {
         private$setup_rust_execution()
       }
     },
@@ -66,7 +70,7 @@ PM_fit <- R6::R6Class("PM_fit",
       setwd(rundir)
       engine <- tolower(engine)
 
-      if (getPMoptions()$backend == "fortran") {
+      if (self$backend == "fortran") {
         if (inherits(self$model, "PM_model_legacy")) {
           cat(sprintf("Runing Legacy"))
           if (engine == "npag") {
@@ -86,7 +90,7 @@ PM_fit <- R6::R6Class("PM_fit",
             Pmetrics::ITrun(model_path, self$data$standard_data, ...)
           }
         }
-      } else if (getPMoptions()$backend == "rust") {
+      } else if (self$backend == "rust") {
         private$run_rust(...)
       } else {
         setwd(wd)
