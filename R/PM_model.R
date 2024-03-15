@@ -566,6 +566,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       neqs <- stringr::str_extract_all(eqs, "xp\\((\\d)\\)") %>%
         unique() %>%
         length()
+      if (neqs == 0) {stop("Error: PMcore does not support analityc equations, provide a eqn block.")}
       content <- gsub("</neqs>", neqs, content)
 
       cov <- self$model_list$cov %>% map(function(c) {
