@@ -1,9 +1,9 @@
 #' @title Execute an NPAG run.
 #' @description
 #' `r lifecycle::badge("superseded")`
-#' 
-#' This is largely superseded by the `$run` method for [PM_fit] objects. 
-#' 
+#'
+#' This is largely superseded by the `$run` method for [PM_fit] objects.
+#'
 #' \code{NPrun} will execute an NPAG run.
 #' @details
 #' If all function arguments are default, the simplest execution of this command is

@@ -1,9 +1,9 @@
 #' @title Build Pmetrics
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Compile Fortran or Rust source code for permanent Pmetrics modules.
-#' @details 
+#' @details
 #' Choice of back end language specified as option in [setPMoptions].
 #'
 #' @param skipRegistration Don't register. Default is `FALSE`.
@@ -126,8 +126,8 @@ PMbuild <- function(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE) 
       system("cargo new template")
       setwd("template")
       # system("cd template")
-      system("cargo add --git https://github.com/Siel/ode-solvers --branch mut_system")
-      system("cargo add --git https://github.com/LAPKB/NPcore")
+      system("cargo add ode_solvers")
+      system("cargo add --git https://github.com/LAPKB/PMcore --branch main")
       system("cargo add eyre")
       system("cargo build --release")
       setPMoptions(rust_template = getwd())

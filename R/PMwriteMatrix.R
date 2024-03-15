@@ -1,8 +1,8 @@
 #' @title Write a Pmetrics .csv Matrix File
 #' @description
 #' `r lifecycle::badge("superseded")`
-#' 
-#' This function is largely superseded as the function is accessed with 
+#'
+#' This function is largely superseded as the function is accessed with
 #' the `$write()` method for [PM_data] objects. There is rarely a need to call
 #' it directly. It is the companion function to [PMreadMatrix].
 #' It will write an appropriate R data object to a formatted .csv file.
@@ -21,34 +21,48 @@
 #' @seealso [PM_data], [PMcheck], [PMreadMatrix]
 #' @examples
 #' \dontrun{
-#' #write to the current directory
+#' # write to the current directory
 #' NPex$data$write("data.csv")
 #' }
-
-PMwriteMatrix <- function(data,filename,override=F,version="DEC_11",header=T){
-  
-  if(!override){
-    err <- PMcheck(data, quiet=T)
-    if(length(grep("FAIL",err))>0){
+PMwriteMatrix <- function(data, filename, override = F, version = "DEC_11", header = T) {
+  if (!override) {
+    err <- PMcheck(data, quiet = T)
+    if (length(grep("FAIL", err)) > 0) {
       cat("Write failed; returning errors.")
       return(invisible(err))
     }
-  } else {err <- NULL}
-  versionNum <- as.numeric(substr(version,5,7)) + switch(substr(version,1,3),JAN=1,FEB=2,MAR=3,APR=4,MAY=5,JUN=6,JUL=7,AUG=8,SEP=9,OCT=10,NOV=11,DEC=12)/100 
-  if(versionNum < 11.12){
-    if(tolower(names(data)[6])=="addl") data <- data[,c(-6,-7)]
+  } else {
+    err <- NULL
+  }
+  versionNum <- as.numeric(substr(version, 5, 7)) + switch(substr(version, 1, 3),
+    JAN = 1,
+    FEB = 2,
+    MAR = 3,
+    APR = 4,
+    MAY = 5,
+    JUN = 6,
+    JUL = 7,
+    AUG = 8,
+    SEP = 9,
+    OCT = 10,
+    NOV = 11,
+    DEC = 12
+  ) / 100
+  if (versionNum < 11.12) {
+    if (tolower(names(data)[6]) == "addl") data <- data[, c(-6, -7)]
   }
   OS <- getOS()
-  eol <- c("\r\n","\n","\r\n")[OS]  
-  f <- file(filename,"w")  
-  if (header){
-    writeLines(paste("POPDATA ",version,"\n#",sep=""),f,sep="")
+  eol <- c("\r\n", "\n", "\r\n")[OS]
+  f <- file(filename, "w")
+  if (header) {
+    writeLines(paste("POPDATA ", version, "\n#", sep = ""), f, sep = "")
   }
-  writeLines(toupper(names(data)[-ncol(data)]),sep=getPMoptions("sep"),f)
-  writeLines(toupper(names(data)[ncol(data)]),f)
-  write.table(data,f,row.names=F,na=".",quote=F,sep=getPMoptions("sep"),
-              dec=getPMoptions("dec"),col.names=F,eol=eol)
+  writeLines(toupper(names(data)[-ncol(data)]), sep = getPMoptions("sep"), f)
+  writeLines(toupper(names(data)[ncol(data)]), f)
+  write.table(data, f,
+    row.names = F, na = ".", quote = F, sep = getPMoptions("sep"),
+    dec = getPMoptions("dec"), col.names = F, eol = eol
+  )
   close(f)
   return(invisible(err))
 }
-
