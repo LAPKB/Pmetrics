@@ -8,13 +8,13 @@
 #' the stop buttton in Rstudio (upper left corner of console window) or ESC or CTRL-C may work when the R window is active.
 #'
 #' @title Pmetrics GUI Tutor
-#' @param func Quoted name of a function family used in Pmetrics.  Currently, these are limited to \dQuote{run}, 
+#' @param func Quoted name of a function family used in Pmetrics.  Currently, these are limited to \dQuote{run},
 #' for \code{\link{NPrun}}, \code{\link{ITrun}} and \dQuote{plot}.  For the first two, make sure that the model and data files are in your
-#' working directory before calling the function.  
+#' working directory before calling the function.
 #' @return Nothing is returned, but the user interface is launched in the default browser.  Appropriate R code to execute
 #' Pmetrics commands is generated depending on defaults and user-selected input.  For plotting, the resulting plot is previewed
 #' directly in the browser.
-#' 
+#'
 #' @author Michael Neely
 #' @export
 
@@ -29,7 +29,9 @@ PMcode <- function(func) {
   # }
 
   run <- grep("run", tolower(func))
-  if (length(run) > 0) { func <- "run" }
+  if (length(run) > 0) {
+    func <- "run"
+  }
 
   ShinyAppDir <- paste(normalizePath(getPMpath(), winslash = "/"), "/Pmetrics/PMcode/", func, sep = "")
 
@@ -39,5 +41,4 @@ PMcode <- function(func) {
   } else {
     shiny::runApp(ShinyAppDir)
   }
-
 }

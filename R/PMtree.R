@@ -1,7 +1,7 @@
 #' @title Create a new Pmetrics folder tree
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Sets up a directory tree for a new Pmetrics project
 #' @details
 #' This function will create a new project folder tree with appropriate subfolders and a skeleton R script.
@@ -25,11 +25,11 @@
 #' }
 #' @export
 
-PMtree <- function(project="NewProject",folder=getwd()){
-  newFolder <- paste(folder,project,sep="/")
+PMtree <- function(project = "NewProject", folder = getwd()) {
+  newFolder <- paste(folder, project, sep = "/")
   current <- getwd()
-  if(file.exists(newFolder)){
-    stop(paste(project," exists already.\nDelete it if you are certain, and rerun PMtree.\n"))
+  if (file.exists(newFolder)) {
+    stop(paste(project, " exists already.\nDelete it if you are certain, and rerun PMtree.\n"))
   }
   dir.create(newFolder)
   setwd(newFolder)
@@ -37,33 +37,36 @@ PMtree <- function(project="NewProject",folder=getwd()){
   dir.create("Rscript")
   dir.create("Sim")
   dir.create("src")
-  writeLines(c("#Use PMmanual() for help",
-               "library(Pmetrics)",
-               "",
-               "#Run 1 - add your run description here",
-               "",
-               paste("setwd(\"",newFolder,"/Runs\")",sep=""),
-               "#Ensure your model and data files are in the /Runs folder",
-               "#Make the data object",
-               "dat <- PM_data$new(\"[replace with your data file name]\")",
-               "#Make the model object",
-               "mod1 <- PM_model$new(\"[replace with your model file name]\")",
-               "#Make the fit object",
-               "fit1 <- PM_fit$new(dat, mod1)",
-               "#Run fit1",
-               "fit1$run()",
-               "#Load the results after it completes",
-               "run1 <- PM_load(1)",
-               "",
-               "#Plots",
-               "run1$op$plot()",
-               "run1$op$plot(pred.type=\"pop\")",
-               "run1$final$plot()",
-               "",
-               "#Summaries",
-               "run1$op$summary()",
-               "run1$final$summary()"
-               ),
-             con=paste(newFolder,"/Rscript/",project,".R",sep=""))
-  setwd(current) 
+  writeLines(
+    c(
+      "#Use PMmanual() for help",
+      "library(Pmetrics)",
+      "",
+      "#Run 1 - add your run description here",
+      "",
+      paste("setwd(\"", newFolder, "/Runs\")", sep = ""),
+      "#Ensure your model and data files are in the /Runs folder",
+      "#Make the data object",
+      "dat <- PM_data$new(\"[replace with your data file name]\")",
+      "#Make the model object",
+      "mod1 <- PM_model$new(\"[replace with your model file name]\")",
+      "#Make the fit object",
+      "fit1 <- PM_fit$new(dat, mod1)",
+      "#Run fit1",
+      "fit1$run()",
+      "#Load the results after it completes",
+      "run1 <- PM_load(1)",
+      "",
+      "#Plots",
+      "run1$op$plot()",
+      "run1$op$plot(pred.type=\"pop\")",
+      "run1$final$plot()",
+      "",
+      "#Summaries",
+      "run1$op$summary()",
+      "run1$final$summary()"
+    ),
+    con = paste(newFolder, "/Rscript/", project, ".R", sep = "")
+  )
+  setwd(current)
 }

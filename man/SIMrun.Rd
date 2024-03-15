@@ -234,7 +234,7 @@ No value is returned, but simulated file(s) will be in the working
 directory.
 }
 \description{
-\code{lifecycle::badge("superseded")}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 
 This is largely superseded as it is automatically called by either of the simulation
 methods: \code{PM_result$sim()} or \code{PM_sim$new()}. There is rarely a need any longer to call this

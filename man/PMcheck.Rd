@@ -77,11 +77,15 @@ Because there is no standardization with direct calls, in this case the format o
 It must have the following features.  Text is case-sensitive.
 \itemize{
 \item A header in row 1 with the appropriate version, currently "POPDATA DEC_11"
+\itemize{
 \item Column headers in row 2.  These headers are: #ID, EVID, TIME, DUR, DOSE, ADDL, II, INPUT, OUT, OUTEQ,
 C0, C1, C2, C3.
+}
 \item No cell should be empty.  It should either contain a value or "." as a placeholder.
+\itemize{
 \item Columns after C3 are interpreted as covariates.
 \item All subject records must begin with TIME=0.
+}
 \item All dose events (EVID=1) must have entries in ID, EVID, TIME, DUR, DOSE and INPUT.  ADDL and II are optional, but if ADDL is not 0 or
 missing, then II is mandatory.
 \item All observation events (EVID=0) must have entries in ID, EVID, TIME, OUT, OUTEQ.
@@ -130,11 +134,11 @@ Covariate columns are fixed separately (see above).
 \examples{
 \dontrun{
 err <- PMcheck(badData)
-#look at the errors.xlsx file in the working directory
-#try to automatically fix what can be fixed
-goodData <- PMcheck(badCSV,fix=T)
+# look at the errors.xlsx file in the working directory
+# try to automatically fix what can be fixed
+goodData <- PMcheck(badCSV, fix = T)
 PMcheck(goodData)
-#you have to fix manually problems which require data entry
+# you have to fix manually problems which require data entry
 }
 }
 \seealso{
