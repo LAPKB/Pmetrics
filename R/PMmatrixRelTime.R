@@ -1,12 +1,12 @@
 #' @title Convert Absolute Dates and Times to Relative Hours
 #' @description
 #' `r lifecycle::badge("superseded")`
-#' 
+#'
 #' Convert dates/times to relative times.
 #' This function is largely superseded as it is called automatically when data
 #' are initialized as a [PM_data] object. There is rarely a need to call it directly
 #' any longer.
-#' 
+#'
 #' @details
 #' \code{PMmatrixRelTime} will convert absolute dates and times in a dataset
 #' into relative hours, suitable for Pmetrics analysis.  Additionally, the user has
@@ -39,81 +39,88 @@
 #' @seealso \code{\link{PMreadMatrix}}
 #' @export
 
-PMmatrixRelTime <- function(data,idCol="id",dateCol="date",timeCol="time",evidCol="evid",
-                            format, split = F){
-  
+PMmatrixRelTime <- function(data, idCol = "id", dateCol = "date", timeCol = "time", evidCol = "evid",
+                            format, split = F) {
   dataCols <- names(data)
-  #convert numeric if necessary
-  if(is.numeric(idCol)) idCol <- dataCols[idCol]
-  if(is.numeric(dateCol)) dateCol <- dataCols[dateCol]
-  if(is.numeric(timeCol)) timeCol <- dataCols[timeCol]
-  if(is.numeric(evidCol)) evidCol <- dataCols[evidCol]
-  
-  #all reasonable combinations
-  dt_df <- tidyr::crossing(date = c("dmy", "mdy", "ymd", "ydm"),time = c("HM", "HMS", "IMOp", "IMSOp")) 
+  # convert numeric if necessary
+  if (is.numeric(idCol)) idCol <- dataCols[idCol]
+  if (is.numeric(dateCol)) dateCol <- dataCols[dateCol]
+  if (is.numeric(timeCol)) timeCol <- dataCols[timeCol]
+  if (is.numeric(evidCol)) evidCol <- dataCols[evidCol]
+
+  # all reasonable combinations
+  dt_df <- tidyr::crossing(date = c("dmy", "mdy", "ymd", "ydm"), time = c("HM", "HMS", "IMOp", "IMSOp"))
   dt_formats <- paste(dt_df$date, dt_df$time)
 
-  if(!all(c(idCol,dateCol,timeCol,evidCol) %in% dataCols)){stop("Please provide column names for id, date, time and evid.\n")}
-  temp <- data.frame(id=data[,idCol],date=data[,dateCol],time=data[,timeCol],evid=data[,evidCol])
+  if (!all(c(idCol, dateCol, timeCol, evidCol) %in% dataCols)) {
+    stop("Please provide column names for id, date, time and evid.\n")
+  }
+  temp <- data.frame(id = data[, idCol], date = data[, dateCol], time = data[, timeCol], evid = data[, evidCol])
   temp$date <- as.character(temp$date)
   temp$time <- as.character(temp$time)
-  temp$time <- unlist(lapply(temp$time,function(x) ifelse(length(gregexpr(":",x)[[1]])==1,paste(x,":00",sep=""),x)))
+  temp$time <- unlist(lapply(temp$time, function(x) ifelse(length(gregexpr(":", x)[[1]]) == 1, paste(x, ":00", sep = ""), x)))
 
-  get_dt_format <- function(test){
+  get_dt_format <- function(test) {
     found_formats <- table(suppressWarnings(lubridate::guess_formats(paste(temp$date, temp$time), test)))
     format_str <- names(found_formats)[which(found_formats == max(found_formats))]
-    O_str <- grep("O",format_str)
-    if(length(O_str)>0){format_str <- format_str[-O_str]}
-    the_format <- gsub("%","",format_str)
+    O_str <- grep("O", format_str)
+    if (length(O_str) > 0) {
+      format_str <- format_str[-O_str]
+    }
+    the_format <- gsub("%", "", format_str)
     return(the_format)
   }
-  
-  
+
+
   dt <- NA
-  if(!missing(format) && !is.null(format)){
-    if(format[2]=="HM") format[2] <- "HMS"
+  if (!missing(format) && !is.null(format)) {
+    if (format[2] == "HM") format[2] <- "HMS"
     format <- paste(format, collapse = " ")
-    dt <- tryCatch(suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, format)), 
-                   error = function(e) e) #try with specific format
+    dt <- tryCatch(suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, format)),
+      error = function(e) e
+    ) # try with specific format
     found_format <- get_dt_format(format)
   }
-  if(all(is.na(dt))){ #didn't parse yet, try automatic parsing
-    dt <- tryCatch(suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, dt_formats)), 
-                   error = function(e) e)
+  if (all(is.na(dt))) { # didn't parse yet, try automatic parsing
+    dt <- tryCatch(suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, dt_formats)),
+      error = function(e) e
+    )
     found_format <- get_dt_format(dt_formats)
   }
-  
-  if(all(is.na(dt))){stop("All dates/times failed to parse. Please specify correct format. ")}
 
-  
-  temp$dt <- dt #didn't have to stop, so at least some parsed
-  
-  if(split){
-    #calculate PK event numbers for each patient
-    for (i in unique(temp$id)){
+  if (all(is.na(dt))) {
+    stop("All dates/times failed to parse. Please specify correct format. ")
+  }
+
+
+  temp$dt <- dt # didn't have to stop, so at least some parsed
+
+  if (split) {
+    # calculate PK event numbers for each patient
+    for (i in unique(temp$id)) {
       pk.no <- 1
-      temp2 <- subset(temp,temp$id==i)
-      for (j in 1:nrow(temp2)){
-        if (temp2$evid[j]==4) {pk.no <- pk.no + 1}
+      temp2 <- subset(temp, temp$id == i)
+      for (j in 1:nrow(temp2)) {
+        if (temp2$evid[j] == 4) {
+          pk.no <- pk.no + 1
+        }
         temp2$pk.no[j] <- pk.no
       }
-      temp$pk.no[temp$id==i] <- temp2$pk.no
-    }  
-    #make new ID of form xxxxx.x for each PK event per patient
-    temp$id <- temp$id + temp$pk.no/10
-    temp$evid[temp$evid==4] <- 1
-    
+      temp$pk.no[temp$id == i] <- temp2$pk.no
+    }
+    # make new ID of form xxxxx.x for each PK event per patient
+    temp$id <- temp$id + temp$pk.no / 10
+    temp$evid[temp$evid == 4] <- 1
   }
-  
-  #calculate relative times
-  temp <- makePMmatrixBlock(temp) %>% dplyr::group_by(id, block) %>%
-    dplyr::mutate(relTime = (dt - dt[1])/lubridate::dhours(1))
- 
-  temp$relTime <- round(temp$relTime,2) 
-  temp <- temp[,c("id","evid","relTime")]
-  attr(temp,"dt_format") <- found_format
-  
-  return(temp)
-  
-}
 
+  # calculate relative times
+  temp <- makePMmatrixBlock(temp) %>%
+    dplyr::group_by(id, block) %>%
+    dplyr::mutate(relTime = (dt - dt[1]) / lubridate::dhours(1))
+
+  temp$relTime <- round(temp$relTime, 2)
+  temp <- temp[, c("id", "evid", "relTime")]
+  attr(temp, "dt_format") <- found_format
+
+  return(temp)
+}

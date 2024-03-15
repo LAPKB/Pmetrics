@@ -1,14 +1,14 @@
 #' @title Plot PM_pta Percent Target Attainment objects
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' This function will plot the percent target attainment for associated with
 #' simulations.
-#' 
+#'
 #' @details
 #' [PM_pta] objects are made with the `$pta` method for [PM_sim]  or
 #' with `PM_pta$new()`. Under the hood, either method uses the [makePTA] function.
-#' 
+#'
 #' @method plot PM_pta
 #' @param x The name of an *PM_pta* data object read by [makePTA]
 #' @param at Which object in the *PM_pta* result list to plot. By default "intersect" if
@@ -26,7 +26,7 @@
 #' @param mult `r template("mult")`
 #' @param log `r template("log")`
 #' @param outeq `r template("outeq")`
-#' @param line Controls characteristics of lines. 
+#' @param line Controls characteristics of lines.
 #' This argument maps to the plotly line object.
 #' It can be boolean or a list.
 #' `TRUE` will plot the line with default characteristics for each simulated regimen.
@@ -39,23 +39,23 @@
 #' * color Maps to the [plot_ly] `colors` argument to override default colors
 #' applied to the lines for each regimen. This can be a named palette, which
 #' can be obtained with `RColorBrewer::display.brewer.all()` or a vector of hexadecimal
-#' color names. One way to ensure reliable color palettes is to use the 
+#' color names. One way to ensure reliable color palettes is to use the
 #' [ColorBrewer](https://colorbrewer2.org/#type=qualitative&scheme=Accent&n=6) site.
 #' Choosing the number of data classes to correspond to regimens, and qualitative data
-#' results in a distinct palette. Easiest importing into R is to copy/paste the Export 
+#' results in a distinct palette. Easiest importing into R is to copy/paste the Export
 #' of JavaScript on the ColorBrewer website. The default is "Set1". Palettes
 #' with fewer colors than regimens will be recycled. A color can also be a character
 #' vector of color names, recycled as needed. For example, a print-friendly choice
 #' is `line = list(color = "black")`.
 #' * width Maps to the [plot_ly] `width` argument to override default widths
-#' applied to the lines for each regimen. All lines will have the same width. 
+#' applied to the lines for each regimen. All lines will have the same width.
 #' The default value is 2.
 #' * dash Maps to the [plot_ly] `linetypes` argument to override default styles
 #' applied to the lines for each regimen. If numeric, will map to `lty` [par] values.
 #' It can also be a character vector of dash names as listed in [plot_ly].
 #' Example: `line = list(color = "Blues", width = 1, dash = 2)`, whicb will result
 #' in dotted lines (dash  = 2) all with width 1 but in different shades of blue.
-#' @param marker Controls the plotting symbol. 
+#' @param marker Controls the plotting symbol.
 #' This argument maps to the plotly marker object.
 #' It can be boolean or a list.
 #' `TRUE` will plot the profiles with default characteristics for each simulated regimen.
@@ -71,11 +71,11 @@
 #' unless specified, e.g. `marker = list(color = "Blues")`.
 #' * symbol Maps to the [plot_ly] `symbols` argument to override default symbols
 #' applied to the markers for each regimen. If only one value is supplied for this,
-#' it will be recycled for each regimen, i.e. all will have the same symbol. 
+#' it will be recycled for each regimen, i.e. all will have the same symbol.
 #' See `plotly::schema()`, traces > scatter > attributes > marker > symbol > values
 #' for options.
 #' * size Maps to the [plot_ly] `size` argument to override default size
-#' applied to the markers for each regimen. All markers will have the same size. 
+#' applied to the markers for each regimen. All markers will have the same size.
 #' The default value is 12.
 #' @param grid `r template("grid")`
 #' @param legend `r template("legend")` Default will be the labeled regimen names supplied during [makePTA],
@@ -98,9 +98,9 @@
 #' @examples
 #' \dontrun{
 #' pta1 <- simEx$pta(
-#' simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
-#' targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
-#' success = 0.6, start = 120, end = 144
+#'   simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+#'   targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+#'   success = 0.6, start = 120, end = 144
 #' )
 #' pta1$summary()
 #' pta1$plot()
@@ -111,13 +111,13 @@ plot.PM_pta <- function(x,
                         at = "intersect",
                         include, exclude,
                         type = "pta",
-                        mult = 1, 
+                        mult = 1,
                         outeq = 1,
-                        line = TRUE, 
+                        line = TRUE,
                         marker = TRUE,
                         ci = 0.9,
-                        legend = TRUE, 
-                        log = FALSE, 
+                        legend = TRUE,
+                        log = FALSE,
                         grid = TRUE,
                         xlab, ylab,
                         title,
@@ -202,61 +202,69 @@ plot.PM_pta <- function(x,
   
   #process dots
   layout <- amendDots(list(...))
-  
-  
-  #legend
+
+
+  # legend
   legendList <- amendLegend(legend, default = list(xanchor = "right", title = list(text = "<b>Regimen</b>")))
   layout <- modifyList(layout, list(showlegend = legendList$showlegend))
-  if(length(legendList)>1){layout <- modifyList(layout, list(legend = within(legendList,rm(showlegend))))}
-  
-  #grid
+  if (length(legendList) > 1) {
+    layout <- modifyList(layout, list(legend = within(legendList, rm(showlegend))))
+  }
+
+  # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-  
-  #axis labels if needed
+
+  # axis labels if needed
   xtitle <- purrr::pluck(layout$xaxis, "title")
   ytitle <- purrr::pluck(layout$yaxis, "title")
-  if(is.null(xtitle)){
+  if (is.null(xtitle)) {
     if (missing(xlab)) {
       # choose xlab as Target if targets were set or Regimen if targets were simulated
-      
+
       xlab <- switch(simTarg,
-                     "Target",
-                     "Regimen"
+        "Target",
+        "Regimen"
       )
     }
     layout$xaxis$title <- amendTitle(xlab)
   }
-  if(is.null(ytitle)){
+  if (is.null(ytitle)) {
     if (missing(ylab)) {
       ylab <- switch(type,
-                     pdi = "Pharmacodynamic Index",
-                     pta = "Proportion with success",
-                     "Proportion with success"
+        pdi = "Pharmacodynamic Index",
+        pta = "Proportion with success",
+        "Proportion with success"
       )
     }
-    if(is.character(ylab)){
+    if (is.character(ylab)) {
       layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
     } else {
       layout$yaxis$title <- amendTitle(ylab)
     }
-  }  
-  
-  #axis ranges
-  if(!missing(xlim)){layout$xaxis <- modifyList(layout$xaxis, list(range = xlim)) }
-  if(!missing(ylim)){layout$yaxis <- modifyList(layout$yaxis, list(range = ylim)) }
-  
-  #log y axis
-  if(log){
+  }
+
+  # axis ranges
+  if (!missing(xlim)) {
+    layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
+  }
+  if (!missing(ylim)) {
+    layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
+  }
+
+  # log y axis
+  if (log) {
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
-  
-  #title
-  if(missing(title)){ title <- ""}
+
+  # title
+  if (missing(title)) {
+    title <- ""
+  }
   layout$title <- amendTitle(title, default = list(size = 20))
-  
-  
-  #PLOTS
+
+
+  # PLOTS
   if (type == "pdi") { # pdi plot
     if(at == "intersect") stop("PDI plot not possible on intersection. Choose an individual PTA with at = 1, for example.")
     if (simTarg == 1) { # discrete targets
@@ -286,12 +294,13 @@ plot.PM_pta <- function(x,
                             marker = list(size = .01), showlegend = FALSE)
       
       layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~target, type = "log"))
-      p <- p %>% plotly::layout(xaxis = layout$xaxis,
-                                yaxis = layout$yaxis,
-                                showlegend = layout$showlegend,
-                                legend = layout$legend,
-                                title = layout$title) 
-      
+      p <- p %>% plotly::layout(
+        xaxis = layout$xaxis,
+        yaxis = layout$yaxis,
+        showlegend = layout$showlegend,
+        legend = layout$legend,
+        title = layout$title
+      )
     } else { # random targets
       
       p <- pta %>% 
@@ -309,14 +318,16 @@ plot.PM_pta <- function(x,
                     marker = list(color = marker$color, size = marker$size, symbol = marker$symbol))
       
       layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~simnum, ticktext = ~simLabels))
-      p <- p %>% plotly::layout(xaxis = layout$xaxis,
-                                yaxis = layout$yaxis,
-                                showlegend = FALSE,
-                                legend = layout$legend,
-                                title = layout$title) 
+      p <- p %>% plotly::layout(
+        xaxis = layout$xaxis,
+        yaxis = layout$yaxis,
+        showlegend = FALSE,
+        legend = layout$legend,
+        title = layout$title
+      )
     }
   } else { # pta plot
-    
+
     if (simTarg == 1) { # set targets
       p <- pta %>% 
         mutate(simnum = factor(sim_num, labels=simLabels)) %>% 
@@ -335,13 +346,13 @@ plot.PM_pta <- function(x,
                         line = list(width = line$width))
       
       layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~target, type = "log"))
-      p <- p %>% plotly::layout(xaxis = layout$xaxis,
-                                yaxis = layout$yaxis,
-                                showlegend = layout$showlegend,
-                                legend = layout$legend,
-                                title = layout$title) 
-      
-      
+      p <- p %>% plotly::layout(
+        xaxis = layout$xaxis,
+        yaxis = layout$yaxis,
+        showlegend = layout$showlegend,
+        legend = layout$legend,
+        title = layout$title
+      )
     } else { # random targets
       
       p <- pta %>%
@@ -351,28 +362,28 @@ plot.PM_pta <- function(x,
                         line = list(color = line$color, width = line$width, dash = line$dash),
                         marker = list(color = marker$color, symbol = marker$symbol, size = marker$size)) 
       layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~simnum, ticktext = ~simLabels))
-      p <- p %>% plotly::layout(xaxis = layout$xaxis,
-                                yaxis = layout$yaxis,
-                                showlegend = FALSE,
-                                legend = layout$legend,
-                                title = layout$title) 
-      
+      p <- p %>% plotly::layout(
+        xaxis = layout$xaxis,
+        yaxis = layout$yaxis,
+        showlegend = FALSE,
+        legend = layout$legend,
+        title = layout$title
+      )
     }
   }
   p <- suppressMessages(plotly::plotly_build(p))
   print(p)
   return(p)
-  
 }
 
 #' @title Plot PMpta Percent Target Attainment objects
 #' @description
 #' `r lifecycle::badge('superseded')`
-#' 
-#' This function will plot the percent target attainment for objects made with the 
-#' \code{\link{makePTA}} function. It is largely now a legacy plotting function, 
+#'
+#' This function will plot the percent target attainment for objects made with the
+#' \code{\link{makePTA}} function. It is largely now a legacy plotting function,
 #' superseded by [plot.PM_pta].
-#' 
+#'
 #' @details
 #' For the legend, defaults that are different that the standard are:
 #' \itemize{
@@ -386,7 +397,7 @@ plot.PM_pta <- function(x,
 #'   \item lty The line type of each Regimen plot as specified by the default line types or \code{lty}
 #'   \item bg Default \dQuote{white}
 #' }
-#' 
+#'
 #' @method plot PMpta
 #' @param x The name of an \emph{PMpta} data object read by \code{\link{makePTA}}
 #' @param include A vector of simulations (regimens) to include in the plot, e.g. c(1,3)
@@ -430,9 +441,10 @@ plot.PM_pta <- function(x,
 #' @examples
 #' \dontrun{
 #' pta1 <- simEx$pta(
-#' simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
-#' targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
-#' success = 0.6, start = 120, end = 144)
+#'   simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+#'   targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+#'   success = 0.6, start = 120, end = 144
+#' )
 #' pta1$summary()
 #' pta1$plot()
 #' }
@@ -480,15 +492,15 @@ plot.PMpta <- function(x, include, exclude, plot.type = "pta", log = TRUE, pch,
   if (length(simTarg) == 0) simTarg <- 1
   if (missing(xlab)) {
     xlab <- switch(simTarg,
-                   "Target",
-                   "Regimen"
+      "Target",
+      "Regimen"
     )
   }
   if (missing(ylab)) {
     ylab <- switch(plot.type,
-                   pdi = "Pharmacodynamic Index",
-                   pta = "Proportion with success",
-                   "Proportion with success"
+      pdi = "Pharmacodynamic Index",
+      pta = "Proportion with success",
+      "Proportion with success"
     )
   }
   if (simTarg == 1) {
