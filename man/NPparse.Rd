@@ -60,7 +60,7 @@ solution (algabraic)}
  \item{isd }{Matrix of cycle numbers and associated standard deviations for each random parameter}
  \item{iaddl }{Array of additional information for each random parameter in each cycle,
  of the form \emph{iaddl[info, nvar, cycle]},  where info is a value from 1 to 12:
- 1= mode; 2= skewness; 3= kurtosis; 4-8 give percentiles of the distribution 
+ 1= mode; 2= skewness; 3= kurtosis; 4-8 give percentiles of the distribution
 where 4=2.5\%; 5=25\%;
  6=50\% (median);  7=75\%; 8=97.5\%; 9= the standard deviation of a normal distribution
  with the same interquartile range; 10=the standard deviation of a normal distribution
@@ -94,7 +94,7 @@ where 4=2.5\%; 5=25\%;
 \code{NPparse} processes the output from an NPAG run into a list.
 }
 \details{
-This function is called automatically at the end of a run. It can take 
+This function is called automatically at the end of a run. It can take
 some time to complete, depending on the number of subjects,
  doses, observations, etc.  Typical wait times are a few seconds up to 5 minutes.
  When processing is complete a summary of the extracted data will be reported on the console.

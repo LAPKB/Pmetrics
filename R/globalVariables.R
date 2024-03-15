@@ -1,5 +1,5 @@
 utils::globalVariables(
-".groups A AGE Agemos B1 B2 B3 CHART HTML KNOT PERCENTILE SEX Sex
+  ".groups A AGE Agemos B1 B2 B3 CHART HTML KNOT PERCENTILE SEX Sex
     actionButton ageyrs aic algebraic annotate arrow assignInNamespace
     bic block bmi bolus browseURL browseVignettes cdc_bmi checkboxInput
     ci cmt code colorRampPalette column combn corr_age cyc cycle d dcBin
@@ -17,9 +17,8 @@ utils::globalVariables(
     textOutput thisobs thisrun thissim timeBin timeBinMedian timeBinNum
     titlePanel to type uiOutput unit updateNumericInput updateSelectInput
     updateSelectizeInput updateTextAreaInput upperCI value wd withMathJax
-    wt x y ." %>% 
-  stringr::str_replace_all("\n\\s+", " ") %>% 
-  stringr::str_split(" ") %>% 
-  unlist() 
+    wt x y ." %>%
+    stringr::str_replace_all("\n\\s+", " ") %>%
+    stringr::str_split(" ") %>%
+    unlist()
 )
-
