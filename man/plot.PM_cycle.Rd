@@ -99,10 +99,14 @@ when \link{PM_load} is run.
 \examples{
 NPex$cycle$plot()
 NPex$cycle$plot(omit = 0, marker = list(symbol = "cross"), line = list(width = 1))
-NPex$cycle$plot(linetypes = "dash", colors = "Blues", marker = list(size = 1), 
-line = list(width = 3))
-NPex$cycle$plot(grid = F, 
-xlab = list(bold = F, font = list(color = "red", family = "Arial", size = 10)))
+NPex$cycle$plot(
+  linetypes = "dash", colors = "Blues", marker = list(size = 1),
+  line = list(width = 3)
+)
+NPex$cycle$plot(
+  grid = F,
+  xlab = list(bold = F, font = list(color = "red", family = "Arial", size = 10))
+)
 }
 \seealso{
 \link{makeCycle}, \link{PM_result}, \link{schema}
