@@ -17,39 +17,12 @@ type Time = f64;
 
 // This is the main structure for the model
 // It holds the parameters (defined in config.toml), the scenarios (i.e. datafile), the (possible) infusions and the covariates if any
-#![allow(unused_imports)]
-use pmcore::prelude::*;
-
-// Constants for the absolute and relative tolerance for the dynamic steps used for solving the ODEs
-const ATOL: f64 = 1e-4;
-const RTOL: f64 = 1e-4;
-
-// Define the state vector, which must be equal to the number of compartments in the model
-// These are re-exported from the `nalgebra`-crate by `ode_solvers`, see https://github.com/srenevey/ode-solvers?tab=readme-ov-file#type-alias-definition
-// In brief, for up to 6 compartments, use VectorN<f64>, N being the number of compartments.
-// For more than 6 compartments, use `nalgebra::SVector<f64, N>`, where N is the number of compartments.
-type State = SVector<f64, </neqs>>;
-// Time uses f64 precision
-type Time = f64;
-
-// This is the main structure for the model
-// It holds the parameters (defined in config.toml), the scenarios (i.e. datafile), the (possible) infusions and the covariates if any
 #[derive(Debug, Clone)]
-struct Model {
-    params: HashMap<String, f64>,
-    _scenario: Scenario,
 struct Model {
     params: HashMap<String, f64>,
     _scenario: Scenario,
     infusions: Vec<Infusion>,
     cov: Option<HashMap<String, CovLine>>,
-    cov: Option<HashMap<String, CovLine>>,
-}
-// This is a helper function to get the parameter value by name
-impl Model {
-    pub fn get_param(&self, str: &str) -> f64 {
-        *self.params.get(str).unwrap()
-    }
 }
 // This is a helper function to get the parameter value by name
 impl Model {
@@ -91,20 +64,7 @@ impl<'a> Predict<'a> for Ode {
         let system = Model {
             params,
             _scenario: scenario.clone(),//TODO remove
-impl<'a> Predict<'a> for Ode {
-    type Model = Model;
-    type State = State;
-    // This function is used initialize the system by setting parameter names and initial empty structs.
-    fn initial_system(&self, parameters: &Vec<f64>, scenario: Scenario) -> (Self::Model,Scenario) {
-        let mut params = HashMap::new();
-        // params.insert("ke".to_string(), params[0].clone());
-        // params.insert("v".to_string(), params[1].clone());
-        </parameter_definition>
-        let system = Model {
-            params,
-            _scenario: scenario.clone(),//TODO remove
             infusions: vec![],
-            cov: None,
             cov: None,
         };
         </parameter_alias>
