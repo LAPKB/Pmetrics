@@ -161,19 +161,25 @@ the joining lines will have the following properties:
 The grid and legend are omitted by default.
 }
 \examples{
-#basic spaghetti plot
+# basic spaghetti plot
 dataEx$plot()
-#format line and marker
+# format line and marker
 dataEx$plot(
-marker = list(color = "blue", symbol = "square", size = 12, opacity = 0.4),
-line = list(join = list(color = "orange")))
-#include predictions with default format and suppress joining lines
-dataEx$plot(line = list(join = FALSE, pred = NPex$post),
-xlim = c(119,146))
-#customize prediction lines
+  marker = list(color = "blue", symbol = "square", size = 12, opacity = 0.4),
+  line = list(join = list(color = "orange"))
+)
+# include predictions with default format and suppress joining lines
 dataEx$plot(
-line = list(pred = list(NPex$post, color = "slategrey", dash = "dash"),
-join = FALSE))
+  line = list(join = FALSE, pred = NPex$post),
+  xlim = c(119, 146)
+)
+# customize prediction lines
+dataEx$plot(
+  line = list(
+    pred = list(NPex$post, color = "slategrey", dash = "dash"),
+    join = FALSE
+  )
+)
 }
 \seealso{
 \link{PM_data}, \link{PM_result}

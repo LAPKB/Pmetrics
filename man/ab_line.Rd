@@ -42,13 +42,13 @@ with \link{add_shapes}. If used for a new plot, it can be included as an element
 in the layout list.
 }
 \examples{
-#add to an existing plot
+# add to an existing plot
 NPex$op$plot() \%>\%
-add_shapes(shapes = ab_line(v = 12))
+  add_shapes(shapes = ab_line(v = 12))
 
-#add to a new plot
-plotly::plot_ly(x = 1:10, y=1:10, type = "scatter", mode = "lines+markers") \%>\%
-plotly::layout(shapes = ab_line(h = 5, line = list(color = "red", dash = "solid")))
+# add to a new plot
+plotly::plot_ly(x = 1:10, y = 1:10, type = "scatter", mode = "lines+markers") \%>\%
+  plotly::layout(shapes = ab_line(h = 5, line = list(color = "red", dash = "solid")))
 }
 \seealso{
 \link{add_shapes}

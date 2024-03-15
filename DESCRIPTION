@@ -57,7 +57,6 @@ Imports:
     purrr,
     R6,
     RColorBrewer,
-    mvtnorm,
     readr,
     shiny,
     shinythemes,
@@ -80,9 +79,6 @@ Suggests:
     RcppTOML,
     reticulate,
     rmarkdown,
-    patchwork,
-    ggpubr,
-    DT,
     testthat
 RoxygenNote: 7.3.1
 Encoding: UTF-8
