@@ -1,17 +1,17 @@
 #' @title Pmetrics validation object
-#' 
-#' @description 
+#'
+#' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Contains results of internal validation by simulation to permit generation of
-#' visual predictive checks (VPCs), prediction corrected visual predictive checks, 
-#' (pcVPCs), normalized prediction distribution errors (NPDE), and 
+#' visual predictive checks (VPCs), prediction corrected visual predictive checks,
+#' (pcVPCs), normalized prediction distribution errors (NPDE), and
 #' numerical predictive checks.
-#' 
+#'
 #' @details
-#' This object is created by running the `make_valid` method in a 
+#' This object is created by running the `make_valid` method in a
 #' [PM_result] object. It contains all the information necessary
-#' to internally validate the result by simulation methods. 
+#' to internally validate the result by simulation methods.
 #' @seealso [PM_result], [makeValid]
 #' @export
 PM_valid <- R6::R6Class("PM_valid",
@@ -26,10 +26,10 @@ PM_valid <- R6::R6Class("PM_valid",
         opDF = NULL,
         #' @field npde Data for Normalized Prediction Distribution Error
         npde = NULL,
-        #' @field npde_tad Data for Normalized Prediction Distribution Error 
+        #' @field npde_tad Data for Normalized Prediction Distribution Error
         #' using Time After Dose if available
         npde_tad = NULL,
-        #' @description 
+        #' @description
         #' Create a new PM_valid object from a PM_result
         #' @param result The PM_result object
         #' @param ... Additional arguments to ultimately pass to makeValid
@@ -43,7 +43,7 @@ PM_valid <- R6::R6Class("PM_valid",
             self$npde <- valRes$npde
             self$npde_tad <- valRes$npde_tad
         },
-        #' @description 
+        #' @description
         #' Plot method. Calls [plot.PM_valid].
         #' @param ... Arguments to pass to \[plot.PM_valid].
         plot = function(...) {

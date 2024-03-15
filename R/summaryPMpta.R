@@ -1,7 +1,7 @@
 #' @title Summarize Percent Target Attainment
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Summarize a Pmetrics Percent Target Attainment Object
 #' @details
 #' Summarize Pharmacodynamic Index (PDI) statistics and success proportions in a *PMpta* object made by [makePTA]

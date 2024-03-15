@@ -48,7 +48,7 @@ be replaced by \link{plot.PM_cycle}.
 }
 \examples{
 plot(NPex$cycle$data)
-plot(NPex$cycle$data,omit=0)
+plot(NPex$cycle$data, omit = 0)
 }
 \seealso{
 \link{makeCycle}, \link{plot}, \link{par}, \link{axis}

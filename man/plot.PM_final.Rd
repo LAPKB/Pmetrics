@@ -142,11 +142,11 @@ of each plotted variable and surrounding quantiles of the bivariate distribution
 Mulitvariate normal density code is borrowed from the mvtnorm package.
 }
 \examples{
-#NPAG
+# NPAG
 NPex$final$plot()
 NPex$final$plot(density = TRUE)
 NPex$final$plot(Ke ~ V)
-#IT2B
+# IT2B
 ITex$final$plot()
 ITex$final$plot(Ke ~ V)
 }

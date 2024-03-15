@@ -36,7 +36,7 @@ Bayesian posterior parameter values and each subject's dosing, sampling, and cov
 \examples{
 \dontrun{
 post <- makePost(run = 1)
-#would work if there is a complete run in folder 1
+# would work if there is a complete run in folder 1
 }
 
 }

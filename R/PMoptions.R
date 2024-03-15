@@ -1,7 +1,7 @@
 #' @title Get Pmetrics User Options
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Get user options for Pmetrics
 #' @details
 #' This function will get user options for Pmetrics.
@@ -50,7 +50,7 @@ getPMoptions <- function(opt, warn = T, quiet = F) {
 #' @title Set Pmetrics User Options
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Set user options for Pmetrics
 #' @details
 #' When the Pmetrics package is first loaded with `library(Pmetrics)`,
