@@ -15,7 +15,14 @@
 #' in \code{\link{NPrun}}.
 #' @return Generates an HTML-report in the current working directory.
 #' @author Markus Hovd and Julian Otalvaro
-#' @seealso \code{\link{PM_load}}
+#' @seealso \code{\link{PM_load}}'
+#' #### PACKAGE IMPORTS FOR REPORT TEMPLATES
+#' ## ggplot
+#' @importFrom DT datatable
+#' @import patchwork
+#' @import htmltools
+#' @import knitr
+#' @import rmarkdown
 #' @export
 
 PM_report <- function(PM_result, template = getPMoptions("report_template"), outfile, show = TRUE) {
