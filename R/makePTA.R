@@ -1,21 +1,21 @@
 #' @title Calculation of PTAs
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Calculates the Percent Target Attainment (PTA)
-#' 
+#'
 #' @details
 #' `makePTA` will calculate the PTA for any number of simulations, targets and definitions of success.
 #' Simulations typically differ by dose, but may differ by other features such as children vs. adults. This function will also
 #' accept data from real subjects either in the form of a *PMpost* or a *PMmatrix* object.
-#' If a *PMpta* object is passed to the function as the `simdata`, the only other parameter required is success. 
+#' If a *PMpta* object is passed to the function as the `simdata`, the only other parameter required is success.
 #' If desired, a new set of simlabels can be specified; all other parameters will be ignored.
 #'
 #' @param simdata Can be one of multiple inputs.  Typically it is a vector of simulator output filenames, e.g. c("simout1.txt","simout2.txt"),
 #' with wildcard support, e.g. "simout*" or "simout?", or
 #' a list of PMsim objects made by `simdata` with suitable simulated regimens and observations.  The number and times of simulated
 #' observations does not have to be the same in all objects.  It can also be a *PMpta* object previously made with
-#' `makePTA` can be passed for recalculation with a new success value or simlabels.  Finally, *PMpost* and *PMmatrix* objects are 
+#' `makePTA` can be passed for recalculation with a new success value or simlabels.  Finally, *PMpost* and *PMmatrix* objects are
 #' also allowed.
 #' @param simlabels Optional character vector of labels for each simulation.  Default is `c('Regimen 1', 'Regimen 2',...)`.
 #' @param target One of several options.
@@ -161,40 +161,41 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
         simdata <- list(simdata$data)
       }
     }
-    
-    if (dataType==1) { #PMsim object
+
+    if (dataType == 1) { # PMsim object
       simdata <- list(simdata)
     }
-    
-    if(dataType == 2){ #PM_simlist
-      simdata <- purrr::map(simdata$data, \(x) x$data) #extract data
+
+    if (dataType == 2) { # PM_simlist
+      simdata <- purrr::map(simdata$data, \(x) x$data) # extract data
     }
-    
-    #nothing to do for dataType=3 already in right format
-    
-    if (dataType==4) { #character vector of simulator output files
+
+    # nothing to do for dataType=3 already in right format
+
+    if (dataType == 4) { # character vector of simulator output files
       simfiles <- Sys.glob(simdata)
-      if (length(simfiles) == 0) 
+      if (length(simfiles) == 0) {
         stop("There are no files matching \"", simdata, "\".\n", sep = "")
+      }
       simdata <- list()
       for (i in 1:length(simfiles)) {
         simdata[[i]] <- tryCatch(SIMparse(simfiles[i]), error = function(e) stop(paste(simfiles[i], "is not a PMsim object.\n")))
       }
     }
-    
-    if(dataType==5){  #PMpost object
+
+    if (dataType == 5) { # PMpost object
       simdata <- simdata %>% filter(icen == !!icen & block == !!block)
       temp <- list(obs=data.frame(id=simdata$id,time=simdata$time,out=simdata$pred,outeq=simdata$outeq))
       simdata <- list(temp)
     }
-    
-    if(dataType == 6 | dataType == 8){  #PMmatrix or PM_data object
-      if(dataType == 8){
+
+    if (dataType == 6 | dataType == 8) { # PMmatrix or PM_data object
+      if (dataType == 8) {
         simdata <- simdata$data
       }
       simdata <- makePMmatrixBlock(simdata)
-      simdata <- simdata %>% filter(evid==0 & block== !!block)
-      temp <- list(obs=data.frame(id=simdata$id,time=simdata$time,out=simdata$out,outeq=simdata$outeq))
+      simdata <- simdata %>% filter(evid == 0 & block == !!block)
+      temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$out, outeq = simdata$outeq))
       simdata <- list(temp)
     }
   }

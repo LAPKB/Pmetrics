@@ -1,33 +1,33 @@
 #' @title Compare NPAG or IT2B runs
 #' @description
 #' ` r lifecycle::badge("stable")`
-#' 
+#'
 #' Compare parameters, convergence, -2*log likelihood, AIC and  bias
 #' and imprecision of population and posterior predictions.
 #' @details
-#' Objects can be specified separated by commas, e.g. `PM_compare(run1, run2, run3)` 
-#' followed by any arguments you wish to [plot.PMop], [mtsknn.eq]. 
+#' Objects can be specified separated by commas, e.g. `PM_compare(run1, run2, run3)`
+#' followed by any arguments you wish to [plot.PMop], [mtsknn.eq].
 #' P-values are based on comparison using the nearest neighbors
-#' approach if all models are non-parametrics.  Models may only be compared on 
-#' parameters that are included in the first model.  The P-value is the 
+#' approach if all models are non-parametrics.  Models may only be compared on
+#' parameters that are included in the first model.  The P-value is the
 #' comparison between each model and the first model in
-#' the list.  Missing P-values are when a model has no parameter names 
-#' in common with the first model, and for the first model compared to itself, 
-#' or when models from IT2B runs are included.  Significant P-values indicate 
-#' that the null hypothesis should be rejected, i.e. the joint distributions 
+#' the list.  Missing P-values are when a model has no parameter names
+#' in common with the first model, and for the first model compared to itself,
+#' or when models from IT2B runs are included.  Significant P-values indicate
+#' that the null hypothesis should be rejected, i.e. the joint distributions
 #' between the two compared models for that parameter are significantly different.
 #'
 #' @param x The first [PM_result] object you wish to compare. Unlike the legacy
 #' [PMcompare] this function only uses objects already loaded with [PM_load].
 #' This will serve as the reference output for P-value testing (see details).
 #' @param y The second [PM_result] object to compare.
-#' @param ... Additional [PM_result] objects to compare.  See details.  
+#' @param ... Additional [PM_result] objects to compare.  See details.
 #' Also, parameters to be passed to [plot.PM_op]
 #' if `plot` is true as well as to [mtsknn.eq].  Order does not matter.
-#' @param icen Can be either "median" for the predictions based on medians of 
+#' @param icen Can be either "median" for the predictions based on medians of
 #' `pred.type` parameter value distributions, or "mean".  Default is "median".
 #' @param outeq Number of the output equation to compare; default is 1
-#' @param plot Boolean operator selecting whether to generate observed vs. 
+#' @param plot Boolean operator selecting whether to generate observed vs.
 #' predicted plots for each data object as in [plot.PM_op].
 #' @return A data frame with the following objects for each model to analyze:
 #'  \item{run }{The run number of the data}
@@ -54,8 +54,8 @@
 PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
   if (missing(x) | missing(y)) stop("You must specify at least two PM_result objects for PM_compare.\n")
   stopifnot("Please specify your PM_result objects.  See help." = inherits(x, "PM_result"))
-  
-  
+
+
   # parse dots
   arglist <- list(...)
   namesPlot <- names(formals(plot.PM_op))
@@ -77,35 +77,37 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
   } else {
     argsPM <- NULL
   }
-  
+
   if (length(argsPM) == 0) obj <- list(x, y)
   if (length(argsPM) >= 1) obj <- c(list(x, y), arglist[argsPM])
-  
+
   # declare global variables to avoid problems with R CMD Check
   # NPAGout <- NULL
   # get each obj
   nobj <- length(obj)
   allObj <- purrr::map(obj, function(x) {
-    if(!is.null(x$NPdata)){x$NPdata} else {x$ITdata}
+    if (!is.null(x$NPdata)) {
+      x$NPdata
+    } else {
+      x$ITdata
+    }
   })
-  
+
   objClass <- purrr::map(allObj, function(x) class(x)[1])
   # check for non-Pmetrics data objects and remove them if found
   yesPM <- which(objClass %in% c("NPAG", "IT2B"))
   allObj <- allObj[yesPM]
   objClass <- objClass[yesPM]
-  
+
   # check for zero cycle objects
   cycles <- unlist(sapply(allObj, function(x) x$icyctot))
   if (any(cycles == 0)) stop(paste("Do not include 0-cycle runs: item(s) ", paste(which(cycles == 0), collapse = ", "), "\n", sep = ""))
-  
+
   op <- purrr::map(obj, function(x) {
     x$op$data
   })
-  
+
   if (plot) {
-    
-    
     if (!"resid" %in% names(argsPlot)) {
       if (nobj <= 3) {
         par(mfrow = c(nobj, 2))
@@ -135,19 +137,19 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
     par(mfrow = c(1, 1))
     devAskNewPage(ask = F)
   }
-  
+
   # get summaries of op for outeq
   sumobjPop <- mapply(summary.PMop, op, MoreArgs = list(outeq = outeq, pred.type = "pop", icen = icen), SIMPLIFY = F)
   sumobjPost <- mapply(summary.PMop, op, MoreArgs = list(outeq = outeq, pred.type = "post", icen = icen), SIMPLIFY = F)
-  
-  
+
+
   popBias <- sapply(sumobjPop, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$mwpe))
   postBias <- sapply(sumobjPost, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$mwpe))
   popImp <- sapply(sumobjPop, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$bamwspe))
   postImp <- sapply(sumobjPost, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$bamwspe))
   popPercent_RMSE <- sapply(sumobjPop, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$percent_rmse))
   postPercent_RMSE <- sapply(sumobjPost, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$percent_rmse))
-  
+
   # get population points
   final <- purrr::map(obj, function(x) {
     x$final$data
@@ -169,12 +171,14 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
     }
     signif(t, 3)
   })
-  
+
   t <- c(NA, t)
   results <- data.frame(
     run = seq(1:nobj),
     type = unlist(objClass),
-    nsub = unlist(purrr::map(obj,function(x){x$final$nsub})),
+    nsub = unlist(purrr::map(obj, function(x) {
+      x$final$nsub
+    })),
     nvar = mapply(function(x) x$nvar, allObj),
     par = mapply(function(x) paste(x$par, collapse = " "), allObj),
     converge = mapply(function(x) x$converge == 1, allObj),
@@ -199,7 +203,7 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
 #' @title Compare NPAG or IT2B runs
 #' @description
 #' `r lifecycle::badge("superseded")`
-#' 
+#'
 #' Compare NPAG or IT2B runs. his function is superseded by [PM_compare].
 #' @details
 #' For backwards compatibility, objects can be specified separated by commas, e.g. PMcompare(1,2,3) followed by
@@ -415,4 +419,3 @@ PMcompare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
   row.names(results) <- 1:nobj
   results
 }
-

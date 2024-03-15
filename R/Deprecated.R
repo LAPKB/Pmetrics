@@ -1,8 +1,7 @@
-
 #' @title Configure Fortran
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' Use setPMoptions() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -15,7 +14,7 @@ PMFortranConfig <- function(...) {
 #' @title Check data matrix
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' Use PM_data$new() and PM_model$new() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -28,7 +27,7 @@ PMcheckMatrix <- function(...) {
 #' @title Fix data matrix
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' Use PM_data$new() and PM_model$new() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -41,7 +40,7 @@ PMfixMatrix <- function(...) {
 #' @title Load NPAG run
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' Use PM_load() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -54,7 +53,7 @@ NPload <- function(...) {
 #' @title Load IT2B run
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' Use PM_load() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -67,7 +66,7 @@ ITload <- function(...) {
 #' @title NPAG run report
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' Use PMreport() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -80,7 +79,7 @@ NPreport <- function(...) {
 #' @title IT2B run report
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' Use PMreport() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -93,7 +92,7 @@ ITreport <- function(...) {
 #' @title Diagnostics
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' Use $validate() on a PM_result object or make_valid() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -106,7 +105,7 @@ PMdiag <- function(...) {
 #' @title Read Defaults
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' Use getPMoptions() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -119,7 +118,7 @@ PMreadDefaults <- function(...) {
 #' @title Write Defaults
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' Use setPMoptions() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -132,7 +131,7 @@ PMwriteDefaults <- function(...) {
 #' @title makeNPDE
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' Use $validate() on a PM_result object or make_valid() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -145,14 +144,13 @@ makeNPDE <- function(...) {
 #' @title Save Pmetrics objects
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#' 
+#'
 #' No longer applies as Pmetrics R6 objects have their own save methods.
 #' @param ... Not used
 #' @author Michael Neely
 #' @keywords internal
 #' @seealso [PM_result], [PM_sim], [PM_pta]
 #' @export
-PMsave <- function(...){
+PMsave <- function(...) {
   lifecycle::deprecate_warn("2.1.0", "PMsave()", details = "See ?PM_result, ?PM_sim, or ?PM_pta for current save methods.")
 }
-
