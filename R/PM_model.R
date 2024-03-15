@@ -563,9 +563,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       content <- gsub("</parameter_definition>", parameter_definition %>% paste(collapse = "\n"), content)
 
       eqs <- self$model_list$eqn %>% tolower()
-      neqs <- stringr::str_extract_all(eqs, "xp\\((\\d)\\)") %>%
-        unique() %>%
-        length()
+      neqs <- sum(sapply(stringr::str_extract_all(eqs, "xp\\[(\\d)\\]"), function(x) length(x) > 0))
       if (neqs == 0) {stop("Error: PMcore does not support analytic equations, provide a eqn block.")}
       content <- gsub("</neqs>", neqs, content)
 
