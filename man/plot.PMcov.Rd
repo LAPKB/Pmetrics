@@ -129,7 +129,7 @@ although a formula within formula approach may be required, e.g. plot(cov.1,I(cl
 the change in wt over time, even though cl_0 is constant for a given subject.
 }
 \examples{
-plot(NPex$cov$data,V~wt)
+plot(NPex$cov$data, V ~ wt)
 }
 \seealso{
 \code{\link{makeCov}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}

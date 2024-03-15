@@ -167,9 +167,9 @@ with \code{PM_pta$new()}. Under the hood, either method uses the \link{makePTA} 
 \examples{
 \dontrun{
 pta1 <- simEx$pta(
-simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
-targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
-success = 0.6, start = 120, end = 144
+  simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+  success = 0.6, start = 120, end = 144
 )
 pta1$summary()
 pta1$plot()

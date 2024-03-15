@@ -142,17 +142,20 @@ variability in the data. For an npde plot, one expects to see approximately
 normally distributed normalized prediction errors.
 }
 \examples{
-#VPC
+# VPC
 NPex_val$valid$plot()
 
-#pcVPC
+# pcVPC
 NPex_val$valid$plot(type = "pcvpc")
 
-#modify median line and marker
+# modify median line and marker
 NPex_val$valid$plot(
-line = list(mid = list(color = "orange", dash = "dashdot")),
-marker = list(color = "blue", size = 12, symbol = "diamond",
-line = list(color = "navy")))
+  line = list(mid = list(color = "orange", dash = "dashdot")),
+  marker = list(
+    color = "blue", size = 12, symbol = "diamond",
+    line = list(color = "navy")
+  )
+)
 }
 \seealso{
 \link{makeValid}
