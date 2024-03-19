@@ -106,9 +106,11 @@ impl<'a> Predict<'a> for Ode {
     // Perform a "step" of the model, i.e. solve the ODEs from the current time to the next time
     // In the next step, we use this result as the initial state
     fn state_step(&self, x: &mut Self::State, system: &Self::Model, time: f64, next_time: f64) {
-        // if time >= next_time {
-        //     panic!("time error")
-        // }
+        if time > next_time {
+            panic!("time error")
+        } else if time == next_time {
+            return;
+        }
         let mut stepper = Dopri5::new(system.clone(), time, next_time, 1e-3, *x, RTOL, ATOL);
         let _res = stepper.integrate();
         let y = stepper.y_out();
