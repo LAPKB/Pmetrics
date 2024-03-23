@@ -42,12 +42,17 @@ makeCycle <- function(data) {
 
   if (inherits(data, "NPAG")) {
     cycle <- list(
-      names = data$par, cycnum = data$icycst:(data$icycst + data$icyctot - 1), ll = -2 * data$ilog, gamlam = data$igamlam, mean = t(t(data$imean) / data$imean[1, ]),
+      names = data$par, 
+      cycnum = data$icycst:(data$icycst + data$icyctot - 1), 
+      ll = -2 * data$ilog, 
+      gamlam = data$igamlam, 
+      mean = t(t(data$imean) / data$imean[1, ]),
       sd = t(t(data$isd) / data$isd[1, ]), median = t(data$iaddl[6, , ] / data$iaddl[6, , 1]),
       aic = data$iic[, 1], bic = data$iic[, 2]
     )
-    class(cycle) <- c("PMcycle", "list")
-    return(cycle)
+   
+    
+    
   }
   if (inherits(data, "IT2B")) {
     cycle <- list(
@@ -55,7 +60,25 @@ makeCycle <- function(data) {
       sd = t(t(data$isd) / data$isd[1, ]), median = t(t(data$imed) / data$imed[1, ]),
       aic = data$iic[, 1], bic = data$iic[, 2]
     )
-    class(cycle) <- c("PMcycle", "list")
-    return(cycle)
+
   }
+  
+  #update format as of v 2.2
+  cycle$gamlam <- tibble::as_tibble(cycle$gamlam, .name_repair = "minimal") 
+  if(ncol(cycle$gamlam) == 1 & n_out > 1){cycle$gamlam <- cbind(cycle$gamlam, replicate((n_out-1),cycle$gamlam[,1]))} 
+  names(cycle$gamlam) <- as.character(1:ncol(cycle$gamlam))
+  cycle$gamlam <- cycle$gamlam %>% pivot_longer(cols = everything(), 
+                                                values_to = "value", names_to = "outeq") %>%
+    mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
+    select(cycle, value, outeq)
+  
+  cycle$mean <- tibble::tibble(cycle = 1:n_cyc) %>% 
+    dplyr::bind_cols(tidyr::as_tibble(cycle$mean))
+  cycle$median <- tibble::tibble(cycle = 1:n_cyc) %>% 
+    dplyr::bind_cols(tidyr::as_tibble(cycle$median))
+  cycle$sd <- tibble::tibble(cycle = 1:n_cyc) %>% 
+    dplyr::bind_cols(tidyr::as_tibble(cycle$sd))
+  
+  class(cycle) <- c("PMcycle", "list")
+  return(cycle)
 }
