@@ -18,13 +18,12 @@ library(dplyr)
 
 ```{r setup-extra}
 res = params$res
-#res = Pmetrics::ITex
 ```
 
 ## Summary
 
 ```{r}
-all_res <- nsub <- nobs <- numeqt <- icyctot <- icycmax <- NULL #declare for CRAN check
+all_res <- nsub <- nobs <- numeqt <- icyctot <- NULL #declare for CRAN check
 
 if(is.null(res$ITdata)){
   all_res <- res$NPdata
@@ -33,18 +32,26 @@ if(is.null(res$ITdata)){
   all_res <- res$ITdata
   np <- FALSE
 }
-did_converge <- ifelse(all_res$converge == 1, "converged.", "did not converge.")
-nsub <- all_res$nsub
-nobs <- sum(all_res$nobs, na.rm = TRUE)
-numeqt <- all_res$numeqt
-icyctot <- all_res$icyctot
-icycmax <- all_res$icycmax
+
+if(is.null(all_res$backend)){ #fortran
+  nsub <- all_res$nsub
+  icyctot <- all_res$icyctot
+} else { #rust
+  nsub <- all_res$final$nsub
+  icyctot <- max(all_res$cycle$cycnum)
+}
+
+
+
+did_converge <- ifelse(all_res$converge | all_res$converge == 1, "converged.", "did not converge.")
+numeqt <- max(res$op$data$outeq, na.rm = TRUE)
+
 ```
 
 
-The data had `r nsub` subjects and a total of `r  nobs` observations.
+The data had `r nsub` subjects.
 
-After `r paste0(icyctot, " of ", icycmax, " cycles, the model ", did_converge)`
+After `r paste0(icyctot, " cycles, the model ", did_converge)`
 
 ## Observed-predicted plot {.tabset .tabset-pills}
 
@@ -79,7 +86,6 @@ template <- c(
   "\n"
 )
 
-numeqt <- max(res$op$data$outeq)
 p <- lapply(1:numeqt, function(i) {
   knitr::knit_expand(
     outeq = i,
@@ -152,7 +158,7 @@ template <- c(
 )
 
 
-numeqt <- max(res$op$data$outeq)
+#numeqt <- max(res$op$data$outeq)
 p <- lapply(1:numeqt, function(i) {
   knitr::knit_expand(
     outeq = i,
@@ -193,7 +199,7 @@ template <- c(
   "\n"
 )
 
-numeqt <- max(res$op$data$outeq)
+#numeqt <- max(res$op$data$outeq)
 p <- lapply(1:numeqt, function(i) {
   knitr::knit_expand(
     outeq = i,
@@ -216,7 +222,8 @@ par_lims <- data.frame(
   med = t(res$final$popMedian),
   sd = t(res$final$popSD),
   cv = t(res$final$popCV),
-  shrink = 100*t(res$final$shrinkage)
+  shrink = ifelse(!is.null(res$final$shrinkage), 100*t(res$final$shrinkage), NA)
+
 ) %>%
   dplyr::mutate(across(4:8,\(x) round(x, 3)))
 

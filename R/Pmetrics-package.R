@@ -24,7 +24,7 @@
 #' @importFrom purrr map map2 reduce map_chr keep pluck map_lgl map_df
 #' @importFrom magrittr %>%
 # #' @importFrom tibble as_tibble tibble
-#' @importFrom tidyr pivot_longer pivot_wider nest unnest extract separate fill crossing
+#' @importFrom tidyr pivot_longer pivot_wider nest unnest extract separate fill crossing separate_wider_delim
 #' @importFrom stringr str_replace regex
 #' @importFrom mclust Mclust mclustBIC
 #' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg
