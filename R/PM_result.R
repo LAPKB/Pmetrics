@@ -66,7 +66,7 @@ PM_result <- R6::R6Class(
       } else {
         self$ITdata <- NULL
       }
-      if (is.null(out$NPdata)) {
+      if(is.null(out$NPdata)) {
         self$NPdata <- out
         class(self$NPdata) <- c("NPAG", "rust", "list")
       }
@@ -178,8 +178,12 @@ PM_result <- R6::R6Class(
         }
       }
       if (missing(file)) {
-        file <- "PMout.Rdata"
-      } # need to update to include Rust
+        if(is.null(self$NPdata$backend)){
+          file <- "PMout.Rdata"
+        } else {
+          file <- "NPcore.Rdata"
+        }
+      } 
       PMout <- list(
         NPdata = self$NPdata,
         ITdata = self$ITdata,
@@ -606,23 +610,23 @@ PM_cycle <- R6::R6Class(
     names = NULL,
     #' @field cynum Vector cycle numbers, which may start at numbers greater
     #' than 1 if a non-uniform prior was specified for the run (NPAG only)
-    cynum = NULL,
-    #' @field ll Matrix of cycle number and -2*Log-likelihood at each cycle
+    cycnum = NULL,
+    #' @field ll Vector of -2*Log-likelihood at each cycle
     ll = NULL,
-    #' @field gamlam A matrix of cycle number and gamma or lambda at each cycle
+    #' @field gamlam A tibble of cycle number and gamma or lambda at each cycle for each output equation
     gamlam = NULL,
-    #' @field mean A matrix of cycle number and the mean of each random parameter
+    #' @field mean A tibble of cycle number and the mean of each random parameter
     #' at each cycle, normalized to initial mean
     mean = NULL,
-    #' @field sd A matrix of cycle number and the standard deviation of each random parameter
-    #' at each cycle,  normalized to initial standard deviation
-    sd = NULL,
-    #' @field median A matrix of cycle number and the median of each random
+    #' @field median A tibble of cycle number and the median of each random
     #' parameter at each cycle,  normalized to initial median
     median = NULL,
-    #' @field aic A matrix of cycle number and Akaike Information Criterion at each cycle
+    #' @field sd A tibble of cycle number and the standard deviation of each random parameter
+    #' at each cycle,  normalized to initial standard deviation
+    sd = NULL,
+    #' @field aic A vector of Akaike Information Criterion at each cycle
     aic = NULL,
-    #' @field bic A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle
+    #' @field bic A vector of Bayesian (Schwartz) Information Criterion at each cycle
     bic = NULL,
     #' @field data A data frame combining all the above fields as its columns
     data = NULL,
@@ -635,7 +639,7 @@ PM_cycle <- R6::R6Class(
     initialize = function(cycle) {
       self$data <- cycle
       self$names <- cycle$names
-      self$cynum <- cycle$cynum
+      self$cycnum <- cycle$cycnum
       self$ll <- cycle$ll
       self$gamlam <- cycle$gamlam
       self$mean <- cycle$mean

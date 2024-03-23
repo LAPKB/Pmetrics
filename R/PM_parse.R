@@ -280,7 +280,8 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
     nsub = length(unique(post$id)),
     ab = ab
   )
-
+  class(final) <- c("PMfinal", "NPAG", "list")
+  
   return(final)
 }
 
@@ -356,6 +357,6 @@ make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config_f
     aic = aic,
     bic = bic
   )
-
+  class(res) <- c("PMcycle", "list")
   return(res)
 }

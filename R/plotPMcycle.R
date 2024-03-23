@@ -22,7 +22,7 @@
 #' "BrBG", or "Set2". An example vector could be `c("red", "green", "blue")`. It is not
 #' necessary to specify the same number of colors parameters to be plotted, as colors
 #' will be interpolated to generate the correct number. The default when `color`
-#' is not specified is the "Spectral" palette.
+#' is not specified is the "Set2" palette.
 #' @param linetypes to use for normalized parameter value line traces.
 #' See `plotly::schema()`, traces > scatter >
 #' attributes > line > dash > values.
@@ -91,13 +91,12 @@ plot.PM_cycle <- function(x,
   } else {
     stop("Please supply a PM_cycle or PMcycle object to plot.\n")
   }
-
-
+  
+  
   # housekeeping
-
-  nvar <- ncol(data$mean)
-  nout <- ncol(data$gamlam)
-
+  
+  nvar <- ncol(data$mean %>% select(-cycle))
+  
   line <- amendLine(line, default = list(color = "dodgerblue", width = 2))
   marker <- amendMarker(marker, default = list(
     symbol = "circle",
@@ -105,27 +104,27 @@ plot.PM_cycle <- function(x,
     size = 4, line = list(width = 0)
   ))
   if (missing(colors)) {
-    colors <- "Spectral"
+    colors <- "Set2"
   } else {
     colors <- rep(colors, nvar) #ensure long enough
   }
-
+  
   if (missing(linetypes)) {
     linetypes <- rep("solid", nvar)
   } else {
     linetypes <- rep(linetypes, nvar) # ensure long enough
   }
-
+  
   # process dots
   layout <- amendDots(list(...))
-
+  
   # legend - not needed for this function
   layout <- modifyList(layout, list(showlegend = F))
-
+  
   # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-
+  
   # axis label formatting if needed
   xlab <- if (missing(xlab)) {
     "Cycle Number"
@@ -137,15 +136,15 @@ plot.PM_cycle <- function(x,
   } else {
     modifyList(ylab, list(text = ""))
   }
-
+  
   layout$xaxis$title <- amendTitle(xlab)
   if (is.character(ylab)) {
     layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
   } else {
     layout$yaxis$title <- amendTitle(ylab)
   }
-
-
+  
+  
   numcycles <- nrow(data$mean)
   if (missing(omit)) {
     omit <- floor(0.2 * numcycles)
@@ -153,25 +152,25 @@ plot.PM_cycle <- function(x,
     omit <- floor(omit * numcycles)
   }
   if (omit == 0) omit <- 1
-
+  
   include <- omit:numcycles
   if (length(data$cycnum) == 0) {
     cycnum <- include
   } else {
     cycnum <- data$cycnum[include]
   }
-
-
+  
+  
   # LL
-  graph_data <- dplyr::tibble(cyc = include, ll = data$ll[include])
-
+  graph_data <- dplyr::tibble(cycle = include, ll = data$ll[include])
+  
   layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-    "<b>-2 * Log-Likelihood</b>",
-    "-2 * Log-Likelihood"
+                                    "<b>-2 * Log-Likelihood</b>",
+                                    "-2 * Log-Likelihood"
   )
   p1 <- graph_data %>%
     plotly::plot_ly(
-      x = ~cyc, y = ~ll,
+      x = ~cycle, y = ~ll,
       type = "scatter",
       mode = "markers+lines",
       line = line,
@@ -183,124 +182,142 @@ plot.PM_cycle <- function(x,
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
-
+  
   # AIC/BIC
   graph_data$aic <- data$aic[include]
   graph_data$bic <- data$bic[include]
-
+  
   layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-    "<b>AIC</b>",
-    "AIC"
+                                    "<b>AIC/BIC</b>",
+                                    "AIC/BIC"
   )
-
-  p2 <- graph_data %>%
+  
+  p2 <- tibble::tibble(cycle = 1:numcycles, aic = data$aic, bic = data$bic) %>%
+    pivot_longer(cols = -cycle, names_to = "type", values_to = "value") %>%
+    filter(cycle %in% include) %>%
     plotly::plot_ly(
-      x = ~cyc, y = ~aic, type = "scatter", mode = "lines+markers",
-      name = "AIC",
-      line = line,
-      marker = marker,
-      text = ~bic,
-      hovertemplate = "Cycle: %{x:i}<br>AIC: %{y:.3f}<br>BIC: %{text:.3f}<extra></extra>",
+      x = ~cycle, y = ~value, type = "scatter", mode = "lines+markers",
+      color = ~type,
+      colors = colors,
+      line = list(width = line$width),
+      linetype = ~type,
+      linetypes = linetypes,
+      text = ~toupper(type),
+      marker = list(size = marker$size, symbol = marker$symbol),
+      hovertemplate = "Cycle: %{x:i}<br>%{text}: %{y:.3f}<extra></extra>",
       showlegend = F
     ) %>%
     layout(
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
-
+  
   # gamma/lambda
-  graph_data$gamlam <- data$gamlam[include, ]
   layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-    "<b>Gamma/Lambda</b>",
-    "Gamma/Lambda"
+                                    "<b>Gamma/Lambda</b>",
+                                    "Gamma/Lambda"
   )
-
-  p3 <- graph_data %>%
+  
+  if(max(data$gamlam$outeq) > 1){
+    all_equal <- data$gamlam %>% group_by(outeq) %>% 
+      summarize(checksum = sum(value)) %>% distinct(checksum) %>%
+      nrow(.) %>% magrittr::equals(1) 
+  } else {
+    all_equal <- FALSE
+  }
+  
+  p3 <- data$gamlam %>% filter(cycle %in% include) %>%
     plotly::plot_ly(
-      x = ~cyc, y = ~gamlam, type = "scatter", mode = "lines+markers",
-      line = line,
-      marker = marker,
-      hovertemplate = "Cycle: %{x:i}<br>Gam/Lam: %{y:.3f}<extra></extra>",
-      showlegend = F
+      x = ~cycle, y = ~value, type = "scatter", mode = "lines+markers",
+      color = ~outeq,
+      colors = colors,
+      line = list(width = line$width),
+      linetype = ~outeq,
+      linetypes = linetypes,
+      marker = list(size = marker$size, symbol = marker$symbol),
+      text = ifelse(all_equal, "All", ~outeq),
+      hovertemplate = "Cycle: %{x:i}<br>Gam/Lam: %{y:.3f}<br>Outeq: %{text}<extra></extra>",
+      showlegend = FALSE
     ) %>%
     layout(
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
 
-  # normalized plots
 
-  normalized_plot <- function(.par, range) {
-    layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-      paste0("<b>Normalized ", .par, "</b>"),
-      paste0("Normalized ", .par)
+# normalized plots
+
+normalized_plot <- function(.par, range) {
+  layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
+                                    paste0("<b>Normalized ", .par, "</b>"),
+                                    paste0("Normalized ", .par)
+  )
+  layout$yaxis$range <- range
+  
+  .p <- graph_data[[.par]] %>%
+    pivot_longer(cols = -cycle, names_to = "par") %>%
+    plot_ly(
+      x = ~cycle, y = ~value, type = "scatter", mode = "markers+lines",
+      color = ~par,
+      colors = colors,
+      line = list(width = line$width),
+      linetype = ~par,
+      linetypes = linetypes,
+      marker = list(size = marker$size, symbol = marker$symbol),
+      text = ~par,
+      hovertemplate = paste0("Cycle: %{x:i}<br>Parameter: %{text}<br>", .par, ": %{y:.3f}<br><extra></extra>"),
+      showlegend = FALSE,
+      legendgroup = "Normalized"
+    ) %>%
+    layout(
+      xaxis = layout$xaxis,
+      yaxis = layout$yaxis
     )
-    layout$yaxis$range <- range
+  return(.p)
+}
+graph_data$Mean <- data$mean[include, ] 
+graph_data$Median <- data$median[include, ] 
+graph_data$SD <- data$sd[include,  ]
 
-    .p <- graph_data[[.par]] %>%
-      bind_cols(cyc = graph_data$cyc) %>%
-      pivot_longer(cols = -cyc, names_to = "par") %>%
-      plot_ly(
-        x = ~cyc, y = ~value, type = "scatter", mode = "markers+lines",
-        color = ~par,
-        colors = colors,
-        line = list(width = line$width),
-        linetype = ~par,
-        linetypes = linetypes,
-        marker = list(size = marker$size, symbol = marker$symbol),
-        hovertemplate = paste0("Cycle: %{x:i}<br>", .par, ": %{y:.3f}<extra></extra>"),
-        showlegend = ifelse(.par == "Mean", T, F),
-        legendgroup = "Normalized"
-      ) %>%
-      layout(
-        xaxis = layout$xaxis,
-        yaxis = layout$yaxis
-      )
-    return(.p)
-  }
-  graph_data$Mean <- data.frame(data$mean[include, ])
-  graph_data$Median <- data.frame(data$median[include, ])
-  graph_data$SD <- data.frame(data$sd[include, ])
-
-  graph_range <- range(graph_data$Mean, graph_data$Median, graph_data$SD)
+graph_range <- range(graph_data$Mean[,-1], graph_data$Median[,-1], graph_data$SD[,-1])
 
 
-  p4 <- normalized_plot("Mean", graph_range)
-  p5 <- normalized_plot("Median", graph_range)
+p4 <- normalized_plot("Mean", graph_range)
+p5 <- normalized_plot("Median", graph_range)
 
-  if (!all(is.na(data$sd))) {
-    p6 <- normalized_plot("SD", graph_range)
-  } else {
-    p6 <- plotly::plotly_empty(type = "scatter", mode = "markers", showlegend = F) %>%
-      layout(title = list(
-        text = "Initial standard deviation = 0.\nAssay error may be too large.",
-        yref = "paper",
-        y = 0.5
-      ))
-  }
+if (!all(is.na(data$sd))) {
+  p6 <- normalized_plot("SD", graph_range)
+} else {
+  p6 <- plotly::plotly_empty(type = "scatter", mode = "markers", showlegend = F) %>%
+    layout(title = list(
+      text = "Initial standard deviation = 0.\nAssay error may be too large.",
+      yref = "paper",
+      y = 0.5
+    ))
+}
 
 
 
-  p_r1 <- plotly::subplot(p1, p2, p3,
-    nrows = 1,
-    titleX = F, titleY = T,
-    margin = c(0.05, 0.05, 0, 0.05)
-  )
-  p_r2 <- plotly::subplot(p4, p5, p6,
-    nrows = 1,
-    titleX = T, titleY = T,
-    margin = c(0.05, 0.05, 0, 0.05)
-  )
-  p <- plotly::subplot(p_r1, p_r2,
-    nrows = 2,
-    titleX = T, shareX = F,
-    titleY = T,
-    margin = c(0.05, 0.05, 0, 0.05)
-  ) %>%
-    layout(legend = list(y = 0.4))
+p_r1 <- plotly::subplot(p1, p2, p3,
+                        nrows = 1,
+                        titleX = F, titleY = T,
+                        margin = c(0.05, 0.05, 0, 0.05)
+)
+p_r2 <- plotly::subplot(p4, p5, p6,
+                        nrows = 1,
+                        titleX = T, titleY = T,
+                        margin = c(0.05, 0.05, 0, 0.05)
+)
+p <- plotly::subplot(p_r1, p_r2,
+                     nrows = 2,
+                     titleX = T, shareX = F,
+                     titleY = T,
+                     margin = c(0.05, 0.05, 0, 0.05)
+) %>%
+  layout(legend = list(y = 0.4))
 
-  print(p)
-  return(p)
+print(p)
+return(p)
 }
 
 #' @title Plot NPAG Cycle Information
@@ -354,7 +371,7 @@ plot.PMcycle <- function(x, x.leg = 0, y.leg = 1, cex.leg = 1.2, omit, col, out 
       do.call(out$type, list())
     }
   }
-
+  
   # data <- x
   numcycles <- nrow(data$mean)
   if (missing(omit)) {
@@ -377,7 +394,7 @@ plot.PMcycle <- function(x, x.leg = 0, y.leg = 1, cex.leg = 1.2, omit, col, out 
   # establish windows
   # par(mfrow=c(3,2))
   # This is an example
-
+  
   # -2 x log-likelihood
   # plot(y=data$ll[omit:numcycles],x=x,type="l",xlab="Cycle",ylab="",main="-2 x Log likelihood",xaxt="n")
   graph_data <- data.frame(
@@ -389,7 +406,7 @@ plot.PMcycle <- function(x, x.leg = 0, y.leg = 1, cex.leg = 1.2, omit, col, out 
     ggplot2::ylab("-2 x Log likelihood") +
     ggplot2::xlab("Cycle")
   # qplot(y=data$ll[omit:numcycles], x=x, geom=c("point", "line"), xlab = "Cycle", ylab = "") + ylab("-2 x Log likelihood")
-
+  
   # axis(1,at=x,labels=cycnum)
   # AIC and BIC
   # aicbic <- c(data$aic[omit:numcycles],data$bic[omit:numcycles])
@@ -408,8 +425,8 @@ plot.PMcycle <- function(x, x.leg = 0, y.leg = 1, cex.leg = 1.2, omit, col, out 
     ggplot2::theme(legend.title = ggplot2::element_blank()) +
     ggplot2::ylab("AIC/BIC") +
     ggplot2::xlab("Cycle")
-
-
+  
+  
   # gamma/lambda
   graph_data$gamma_lambda <- data$gamlam[omit:numcycles, ]
   if (is.null(nout)) {
@@ -432,34 +449,34 @@ plot.PMcycle <- function(x, x.leg = 0, y.leg = 1, cex.leg = 1.2, omit, col, out 
     #         legend=paste("Output",1:nout),col=col[1:nvar],lty=lnty[1:nvar],lwd=2,bg="white",cex=cex.leg,
     #         x.intersp=0.8,y.intersp=0.8)
     # }
-
+    
     p3 <- ggplot2::ggplot(data = graph_data) +
       ggplot2::geom_line(ggplot2::aes(x = x, y = gamma_lambda)) +
       ggplot2::ylab("Gamma/Lambda") +
       ggplot2::xlab("Cycle")
   }
-
-
+  
+  
   # standardized means
   # plot(y=data$mean[omit:numcycles,],x=rep(x,nvar),xlab="Cycle",ylab="",main="Normalized Mean",type="n",xaxt="n")
   # axis(1,at=x,labels=cycnum)
-
-
+  
+  
   # for(i in 1:nvar){
   # lines(y=data$mean[omit:numcycles,i],x=x,col=col[i],lty=lnty[i])
   # }
   graph_data$mean <- data$mean[omit:numcycles, ]
   p4 <- purrr::reduce(1:nvar, ~ .x + ggplot2::geom_line(ggplot2::aes(x = x, y = mean[, .y], colour = data$names[.y])), .init = ggplot2::ggplot(data = graph_data) +
-    ggplot2::theme(legend.title = ggplot2::element_blank()) +
-    ggplot2::ylab("Normalized Mean") +
-    ggplot2::xlab("Cycle"))
+                        ggplot2::theme(legend.title = ggplot2::element_blank()) +
+                        ggplot2::ylab("Normalized Mean") +
+                        ggplot2::xlab("Cycle"))
   # legend(x=x.leg*max(x)+omit,y=min(data$mean[omit:numcycles,])+y.leg*(max(data$mean[omit:numcycles,])-min(data$mean[omit:numcycles,])),
   #       legend=data$names,col=col[1:nvar],lty=lnty[1:nvar],lwd=2,bg="white",cex=cex.leg,
   #       x.intersp=0.8,y.intersp=0.8)
-
-
-
-
+  
+  
+  
+  
   # standardized SD
   if (!all(is.na(data$sd))) {
     # plot(y=data$sd[omit:numcycles,],x=rep(x,nvar),xlab="Cycle",ylab="",main="Normalized SD",type="n",xaxt="n",...)
@@ -472,9 +489,9 @@ plot.PMcycle <- function(x, x.leg = 0, y.leg = 1, cex.leg = 1.2, omit, col, out 
     #       x.intersp=0.8,y.intersp=0.8)
     graph_data$sd <- data$sd[omit:numcycles, ]
     p5 <- purrr::reduce(1:nvar, ~ .x + ggplot2::geom_line(ggplot2::aes(x = x, y = sd[, .y], colour = data$names[.y])), .init = ggplot2::ggplot(data = graph_data) +
-      ggplot2::theme(legend.title = ggplot2::element_blank()) +
-      ggplot2::ylab("Normalized SD") +
-      ggplot2::xlab("Cycle"))
+                          ggplot2::theme(legend.title = ggplot2::element_blank()) +
+                          ggplot2::ylab("Normalized SD") +
+                          ggplot2::xlab("Cycle"))
   } else {
     # plot(y=data$median[omit:numcycles,],x=rep(x,nvar),xlab="Cycle",ylab="",main="Normalized SD",type="n",xaxt="n",...)
     # axis(1,at=x,labels=cycnum)
@@ -487,9 +504,9 @@ plot.PMcycle <- function(x, x.leg = 0, y.leg = 1, cex.leg = 1.2, omit, col, out 
         panel.grid.minor = ggplot2::element_blank()
       )
   }
-
-
-
+  
+  
+  
   # standardized median
   # plot(y=data$median[omit:numcycles,],x=rep(x,nvar),xlab="Cycle",ylab="",main="Normalized Median",type="n",xaxt="n",...)
   # axis(1,at=x,labels=cycnum)
@@ -499,15 +516,15 @@ plot.PMcycle <- function(x, x.leg = 0, y.leg = 1, cex.leg = 1.2, omit, col, out 
   # legend(x=x.leg*max(x)+omit,y=min(data$median[omit:numcycles,])+y.leg*(max(data$median[omit:numcycles,])-min(data$median[omit:numcycles,])),
   #       legend=data$names,col=col[1:nvar],lty=lnty[1:nvar],lwd=2,bg="white",cex=cex.leg,
   #       x.intersp=0.8,y.intersp=0.8)
-
+  
   # par(mfrow=c(1,1))
   graph_data$median <- data$median[omit:numcycles, ]
   p6 <- purrr::reduce(1:nvar, ~ .x + ggplot2::geom_line(ggplot2::aes(x = x, y = median[, .y], colour = data$names[.y])), .init = ggplot2::ggplot(data = graph_data) +
-    ggplot2::theme(legend.title = ggplot2::element_blank()) +
-    ggplot2::ylab("Normalized Median") +
-    ggplot2::xlab("Cycle"))
-
-
+                        ggplot2::theme(legend.title = ggplot2::element_blank()) +
+                        ggplot2::ylab("Normalized Median") +
+                        ggplot2::xlab("Cycle"))
+  
+  
   # #close device if necessary
   # if(inherits(out,"list")) dev.off()
   p <- plotly::subplot(p1, p2, p3, p4, p5, p6, nrows = 3, titleX = T, titleY = T, margin = c(0.05, 0.05, 0, 0.05))
