@@ -47,13 +47,13 @@ PM_load <- function(run, file, remote = F, server_address) {
   #     stop(paste0("No NPcore.Rdata file found in ", run, ".\n"))
   #   }
   # }
-
-
+  
+  
   # declare variables to avoid R CMD Check flag
   NPAGout <- NULL
   IT2Bout <- NULL
   found <- ""
-
+  
   # internal function
   output2List <- function(Out) {
     result <- list()
@@ -62,17 +62,10 @@ PM_load <- function(run, file, remote = F, server_address) {
       names(aux_list) <- names(Out)[i]
       result <- append(result, aux_list)
     }
-
+    
     return(result)
   }
-  # # check for NPAG output file
-  # filename <- "NPAGout.Rdata"
-  # if (is.numeric(run)) {
-  #   outfile <- paste(run, "outputs", filename, sep = "/")
-  # } else {
-  #   outfile <- paste(run, filename, sep = "/")
-  # }
-
+  
   if (remote) { # only look on server - this needs to be updated
     if (missing(server_address)) server_address <- getPMoptions("server_address")
     status <- .remoteLoad(thisrun, server_address)
@@ -112,20 +105,81 @@ PM_load <- function(run, file, remote = F, server_address) {
       }
     }
   }
-
+  
   if (found != "") {
-    if (basename(found) != "NPcore.Rdata") { # not Rust
-      result <- output2List(Out = get(load(found)))
-      return(PM_result$new(result, quiet = TRUE)) # no errors
-    } else { # is Rust
-      load(found)
-      result <- get("NPcore")
-      return(PM_result$new(result, quiet = TRUE))
-    }
+    result <- output2List(Out = get(load(found)))
+    #update
+    result2 <- update(result, found)
+    return(PM_result$new(result2, quiet = TRUE))
+    
+    
   } else {
     stop(paste0("No Pmetrics output file found in ", getwd(), ".\n"))
   }
 }
+
+
+#internal update function
+update <- function(res, found){
+  msg <- NULL
+  #CYCLE
+  if(!is.null(res$cycle)){
+    dat <- res$cycle
+    if(
+      !tibble::is_tibble(dat$gamlam) #version prior to 2.2, add next update via or join
+    ){ 
+      #start conversion
+      n_cyc <- nrow(dat$mean)
+      n_out <- max(res$op$outeq)
+      dat$gamlam <- tibble::as_tibble(dat$gamlam, .name_repair = "minimal") 
+      if(ncol(dat$gamlam) == 1 & n_out > 1){dat$gamlam <- cbind(dat$gamlam, replicate((n_out-1),dat$gamlam[,1]))} 
+      names(dat$gamlam) <- as.character(1:ncol(dat$gamlam))
+      dat$gamlam <- dat$gamlam %>% pivot_longer(cols = everything(), 
+                                                values_to = "value", names_to = "outeq") %>%
+        mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
+        select(cycle, value, outeq)
+      if(is.matrix(dat$mean)){ #old fortran format, but not rust format
+        dat$mean <- tibble::tibble(cycle = 1:n_cyc) %>% 
+          dplyr::bind_cols(tidyr::as_tibble(dat$mean))
+        dat$median <- tibble::tibble(cycle = 1:n_cyc) %>% 
+          dplyr::bind_cols(tidyr::as_tibble(dat$median))
+        dat$sd <- tibble::tibble(cycle = 1:n_cyc) %>% 
+          dplyr::bind_cols(tidyr::as_tibble(dat$sd))
+      }
+      msg <- c(msg, "cycle")
+      res$cycle <- dat
+    }
+  }
+  
+  ####### DONE PROCESSING, INFORM #########
+  if(!is.null(msg)){
+    cat(crayon::blue("NOTE: "), 
+        "The", 
+        crayon::green(dplyr::case_when(
+          length(msg)==1 ~ msg,
+          length(msg)==2 ~ paste(msg, collapse = " and "),
+          length(msg)>2 ~ paste(msg, collapse = ", ")
+        )[1]),
+        ifelse(length(msg)>1, "fields", "field"), 
+        "in your PM_result object",
+        ifelse(length(msg)>1, "have", "has"),
+        "been updated",
+        "to the most current format.",
+        "\n\n",
+        crayon::blue("1"), "Save the updates\n",
+        crayon::blue("2"), "Do not save updates\n ")
+    flush.console()
+    ans <- readline(" ")
+    if(ans == 1){
+      temp <- PM_result$new(res)
+      temp$save(file = found)
+      cat("Results saved\n")
+    }
+  }
+  
+  return(res)
+}
+
 
 #' @title Load Pmetrics NPAG or IT2B output
 #' @description
@@ -168,7 +222,7 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
   # declare variables to avoid R CMD Check flag
   NPAGout <- NULL
   IT2Bout <- NULL
-
+  
   if (missing(server_address)) server_address <- getPMoptions("server_address")
   addlruns <- list(...)
   if (length(addlruns) > 0) {
@@ -176,12 +230,12 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
   } else {
     allruns <- run
   }
-
+  
   for (thisrun in allruns) {
     # check for NPAG output file
     filename <- "NPAGout.Rdata"
     outfile <- paste(thisrun, "outputs", filename, sep = "/")
-
+    
     if (remote) { # only look on server
       status <- .remoteLoad(thisrun, server_address)
       if (status == "finished") {
@@ -208,8 +262,8 @@ PMload <- function(run = 1, ..., remote = F, server_address) {
     }
   }
   # end thisrun loop
-
-
+  
+  
   return(invisible(T)) # no errors
 }
 

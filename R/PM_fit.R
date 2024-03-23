@@ -281,7 +281,7 @@ PM_fit <- R6::R6Class("PM_fit",
           # Execution ended successfully
           PM_parse()
           res <- PM_load(file = "outputs/NPcore.Rdata")
-          PM_report(res, outfile = "report.html", template = "ggplot_rust")
+          PM_report(res, outfile = "report.html", template = "plotly")
         } else {
           setwd(cwd)
           stop("Error: Execution failed")
