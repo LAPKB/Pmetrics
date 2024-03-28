@@ -62,6 +62,8 @@
 #' in the first cycle, with a speed-up of approximately 80\% of the number of available cores on your machine, e.g. an 8-core machine
 #' will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\%, e.g. 4-fold increase on an 8-core
 #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
+#' @param artifacts Default is \code{TRUE}.  Set to \code{FALSE} to suppress creating the \code{etc} folder. This folder
+#' will contain all the compilation artifacts created during the compilation and run steps.
 #' @param alq For internal developer use only.  Should be set to \code{FALSE}.
 #' @param remote Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
 #' @param server_address If missing, will use the default server address returned by getPMoptions().
@@ -98,7 +100,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
                   indpts, icen = "median", aucint,
                   idelta = 12, prior,
                   auto = TRUE, intern = FALSE, quiet = FALSE, overwrite = FALSE, nocheck = FALSE, parallel = NA,
-                  alq = FALSE, remote = FALSE, server_address, report = TRUE) {
+                  alq = FALSE, remote = FALSE, server_address, report = TRUE, artifacts = TRUE) {
   if (missing(run)) run <- NULL
   if (missing(include)) include <- NULL
   if (missing(exclude)) exclude <- NULL
