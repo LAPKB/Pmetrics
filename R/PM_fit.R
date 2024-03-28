@@ -149,6 +149,14 @@ PM_fit <- R6::R6Class("PM_fit",
       }
       dir.create(newdir)
       setwd(newdir)
+      ### Move temp folder to ect/PMcore ###
+      # check if temp folder exist, create if not
+      if (arglist$artifacts) {
+        if (!file.exists("etc")) {
+          dir.create("etc")
+        }
+        system(sprintf("cp -R %s etc/PMcore", getPMoptions()$rust_template))
+      }
       # Include or exclude subjects according to
       data_filtered <- self$data$standard_data
       if (!is.symbol(arglist$include)) {
@@ -288,6 +296,7 @@ PM_fit <- R6::R6Class("PM_fit",
         }
       } else {
         system2("./NPcore", args = "&")
+        # TODO: The code to generate the report is missing here
       }
       setwd(cwd)
     },
