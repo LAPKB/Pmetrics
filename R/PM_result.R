@@ -76,8 +76,8 @@ PM_result <- R6::R6Class(
       self$cycle <- PM_cycle$new(out$cycle)
       self$op <- PM_op$new(out$op)
       self$cov <- PM_cov$new(out$cov)
-      self$data <- PM_data$new(data = out$data, quiet = quiet) # no need to report
-      self$model <- out$model
+      self$data <- out$data #already saved as PM_data
+      self$model <- out$model #already saved as PM_model
       self$errfile <- out$errfile
       self$success <- out$success
       if (!is.null(out$valid)) {
@@ -178,11 +178,11 @@ PM_result <- R6::R6Class(
         }
       }
       if (missing(file)) {
-        if(is.null(self$NPdata$backend)){
+        # if(is.null(self$NPdata$backend)){
           file <- "PMout.Rdata"
-        } else {
-          file <- "NPcore.Rdata"
-        }
+        # } else {
+        #   file <- "NPcore.Rdata"
+        # }
       } 
       PMout <- list(
         NPdata = self$NPdata,

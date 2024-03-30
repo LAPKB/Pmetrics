@@ -62,7 +62,7 @@ PM_fit <- R6::R6Class("PM_fit",
     #' @param ... Other arguments passed to [NPrun]
     #' @param engine "NPAG" (default) or "IT2B"
     #' @param rundir This argument specifies an *existing* folder that will store the run inside.
-    run = function(..., engine = "NPAG", rundir = getwd()) {
+    run = function(..., engine = "NPAG", rundir = getwd(), backend = getPMoptions()$backend) {
       wd <- getwd()
       if (!dir.exists(rundir)) {
         stop("You have specified a directory that does not exist, please create it first.")
@@ -288,7 +288,7 @@ PM_fit <- R6::R6Class("PM_fit",
         if (file.exists("meta_rust.csv")) {
           # Execution ended successfully
           PM_parse()
-          res <- PM_load(file = "outputs/NPcore.Rdata")
+          res <- PM_load(file = "outputs/PMout.Rdata")
           PM_report(res, outfile = "report.html", template = "plotly")
         } else {
           setwd(cwd)
@@ -301,17 +301,17 @@ PM_fit <- R6::R6Class("PM_fit",
       setwd(cwd)
     },
     setup_rust_execution = function() {
-      if (is.null(getPMoptions()$rust_template)) {
-        stop("Rust has not been built, execute PMbuild()")
+      if (!file.exists(getPMoptions()$rust_template)) {
+        stop("Rust has not been built, execute PMbuild() for this Pmetrics installation.")
       }
       cwd <- getwd()
       self$model$write_rust()
 
-      # copy model and config to the template project
-      if (length(getPMoptions()$rust_template) == 0) {
-        # PMbuild has not bee executed
-        PMbuild()
-      }
+      # # copy model and config to the template project
+      # if (length(getPMoptions()$rust_template) == 0) {
+      #   # PMbuild has not been executed
+      #   PMbuild()
+      # }
       system(sprintf("mv main.rs %s/src/main.rs", getPMoptions()$rust_template))
       # compile the template folder
       setwd(getPMoptions()$rust_template)

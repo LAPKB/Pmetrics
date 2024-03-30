@@ -1958,7 +1958,7 @@ weighted_median <- function(values, weights) {
   data <- data.frame(values = values, weights = weights)
 
   # Sort the data by values
-  data <- data[order(data$values), ]
+  data <- data[order(data$values, decreasing = TRUE), ]
 
   # Calculate the cumulative sum of weights
   data$cum_weights <- cumsum(data$weights)

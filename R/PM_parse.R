@@ -29,12 +29,15 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
   cycle_file <- paste(wd, "cycles.csv", sep = "/")
   theta_file <- paste(wd, "theta.csv", sep = "/")
   post_file <- paste(wd, "posterior.csv", sep = "/")
+  fit <- get(load("fit.Rdata"))
+  #need to load fit.Rdata to get model and data
 
   op <- make_OP(pred_file = pred_file, obs_file = obs_file, config_file = config_file)
   post <- make_Post(pred_file = pred_file)
   pop <- make_Pop(pred_file = pred_file)
   final <- make_Final(theta_file = theta_file, config_file = config_file, post_file = post_file)
   cycle <- make_Cycle(cycle_file = cycle_file, config_file = config_file)
+  cov <- make_Cov(final = final, data = fit$data)
 
   meta_rust <- data.table::fread(
     input = meta_rust_file,
@@ -44,8 +47,9 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
     dec = ".",
     showProgress = TRUE
   )
-
   NPcore <- list(
+    data = fit$data,
+    model = fit$model,
     op = op,
     post = post,
     pop = pop,
@@ -61,7 +65,7 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
 
   if (write) {
     system("mkdir outputs")
-    save(NPcore, file = "outputs/NPcore.Rdata")
+    save(NPcore, file = "outputs/PMout.Rdata")
     return(invisible(NPcore))
   }
 
@@ -249,8 +253,9 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
   # TODO: Add postCov, postCor, Post
 
   postMed <- post %>%
-    group_by(id) %>%
-    summarise(across(-c(point, prob), \(x) weighted_median(x, prob))) # in PMutilities
+    #group_by(id) %>% 
+    filter(id==6) %>%
+    reframe(across(-c(point, prob), \(x) weighted_median(x, prob))) # in PMutilities
 
   # TODO: Calculate shrinkage
   shrinkage <- 1
@@ -272,7 +277,6 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
     popCov = popCov,
     popCor = popCor,
     popMedian = popMedian,
-    #
     postMean = postMean,
     postSD = postSD,
     postMed = postMed,
@@ -345,12 +349,24 @@ make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config_f
     mutate(across(.cols = -cycle, .fns = function(x) {
       x / first(x)
     }))
+  
+  n_out <- max(obs_raw$outeq)
+  n_cyc <- max(cycle_data$cycle)
+  gamlam <- tibble::as_tibble(raw$gamlam, .name_repair = "minimal") 
+  if(ncol(gamlam) == 1 & n_out > 1){gamlam <- cbind(gamlam, replicate((n_out-1),gamlam[,1]))} 
+  names(gamlam) <- as.character(1:ncol(gamlam))
+  gamlam <- gamlam %>% pivot_longer(cols = everything(), 
+                                                values_to = "value", names_to = "outeq") %>%
+    mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
+    select(cycle, value, outeq)
+  
+  
 
   res <- list(
     names = c(names(config$random), names(config$fixed), names(config$constant)),
     cycnum = raw$cycle,
     ll = raw$neg2ll,
-    gamlam = raw$gamlam,
+    gamlam = gamlam,
     mean = mean,
     sd = sd,
     median = median,
@@ -359,4 +375,25 @@ make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config_f
   )
   class(res) <- c("PMcycle", "list")
   return(res)
+}
+
+#COV
+
+make_Cov <- function(final = final, data = fit$data){
+  data1 <- data$data %>% filter(!is.na(dose)) %>% 
+    select(id, time, !!getCov(.)$covnames) %>% #in PMutitlities
+    tidyr::fill(-id, -time) %>%
+    dplyr::left_join(final$postMean, by = "id") %>% 
+    mutate(icen = "mean") 
+  data2 <- data$data %>% filter(!is.na(dose)) %>% 
+    select(id, time, !!getCov(.)$covnames) %>% 
+    tidyr::fill(-id, -time) %>%
+    dplyr::left_join(final$postMed, by = "id") %>% 
+    mutate(icen = "median") 
+  
+  res <- bind_rows(data1, data2)
+  class(res) <- c("PMcov", "data.frame")
+  
+  return(res)
+  
 }
