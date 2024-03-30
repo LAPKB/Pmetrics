@@ -168,7 +168,7 @@ build_plot <- function(x,...) {
                       multiple = TRUE, selectize = FALSE),
           selectInput("outeq","Output equation:", choices = 1:max(data_obj$outeq, na.rm = TRUE), selected = 1),
           numericInput("block","Block number:", 1, min = 1, step = 1),
-          selectInput("group","Grouping factor",choices = c("None" = "none", Pmetrics:::getCov(data_obj)$covnames))
+          selectInput("group","Grouping factor",choices = c("None" = "none", getCov(data_obj)$covnames)) #in PMutilities
         ))
       }
       
