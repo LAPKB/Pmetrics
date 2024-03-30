@@ -56,13 +56,20 @@ makeCycle <- function(data) {
   }
   if (inherits(data, "IT2B")) {
     cycle <- list(
-      names = data$par, cycnum = 1:data$icyctot, ll = -2 * data$ilog, gamlam = data$igamlam, mean = t(t(data$imean) / t(data$imean)[1, ]),
+      names = data$par, 
+      cycnum = 1:data$icyctot, 
+      ll = -2 * data$ilog, 
+      gamlam = data$igamlam, 
+      mean = t(t(data$imean) / t(data$imean)[1, ]),
       sd = t(t(data$isd) / data$isd[1, ]), median = t(t(data$imed) / data$imed[1, ]),
       aic = data$iic[, 1], bic = data$iic[, 2]
     )
 
   }
   
+  n_cyc <- max(cycle$cycnum)
+  n_out <- data$numeqt
+
   #update format as of v 2.2
   cycle$gamlam <- tibble::as_tibble(cycle$gamlam, .name_repair = "minimal") 
   if(ncol(cycle$gamlam) == 1 & n_out > 1){cycle$gamlam <- cbind(cycle$gamlam, replicate((n_out-1),cycle$gamlam[,1]))} 

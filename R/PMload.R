@@ -31,24 +31,7 @@
 
 
 PM_load <- function(run, file, remote = F, server_address) {
-  # Code below replaced by general handling; MN 6/15/23
-  # #If Rust
-  # if (getPMoptions()$backend == "rust") {
-  #   if (!missing(file) && file.exists(file)) {
-  #     npcore_out <- file
-  #   } else {
-  #     npcore_out <- paste(run, "NPcore.Rdata", sep = "/")
-  #   }
-  #   if (file.exists(npcore_out)) {
-  #     load(npcore_out)
-  #     result <- get("NPcore")
-  #     return(PM_result$new(result, backend = "rust"))
-  #   } else {
-  #     stop(paste0("No NPcore.Rdata file found in ", run, ".\n"))
-  #   }
-  # }
-  
-  
+
   # declare variables to avoid R CMD Check flag
   NPAGout <- NULL
   IT2Bout <- NULL
@@ -96,7 +79,9 @@ PM_load <- function(run, file, remote = F, server_address) {
     } else {
       wd <- paste0(run, "/outputs/")
     }
-    file_list <- c("NPcore.Rdata", "PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
+    #file_list <- c("NPcore.Rdata", "PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
+    file_list <- c("PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
+    
     for (i in file_list) {
       file <- paste0(wd, i)
       if (file.exists(file)) {
