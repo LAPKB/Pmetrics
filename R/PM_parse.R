@@ -1,12 +1,13 @@
 #' @title Parse Pmetrics output
 #' @description
-#' `r lifecycle::badge("stable")`
+#' `r lifecycle::badge("experimental")`
 #'
 #' A flexible parser for Pmetrics output
 #' @details
 #' Currently written for the Rust implementation of NPAG
 #' @param wd The directory containing the output from the Rust-implementation of NPAG
 #' @param write A logical value indicating if the results should be returned (`FALSE`, default) or written to disk (`TRUE`)
+#' @param fit Either a \code{PM_fit} object or the absolute path to a "fit.Rdata"
 #' @return The output of \code{PM_parse} is a list containing the following elements
 #' \item{op }{Written to the standard of PM_op}
 #' \item{pop }{Written to the standard of PM_pop}
@@ -18,35 +19,42 @@
 #' @import dplyr
 #' @import tidyr
 #' @importFrom dplyr select rename mutate relocate left_join case_when first across
+#' @importFrom jsonlite fromJSON
 #' @export
 
-PM_parse <- function(wd = getwd(), write = TRUE) {
+PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
   # Default paths
   pred_file <- paste(wd, "pred.csv", sep = "/")
   obs_file <- paste(wd, "obs.csv", sep = "/")
-  meta_rust_file <- paste(wd, "meta_rust.csv", sep = "/")
-  config_file <- paste(wd, "config.toml", sep = "/")
+  config_file <- paste(wd, "settings.json", sep = "/")
   cycle_file <- paste(wd, "cycles.csv", sep = "/")
   theta_file <- paste(wd, "theta.csv", sep = "/")
   post_file <- paste(wd, "posterior.csv", sep = "/")
-  fit <- get(load("fit.Rdata"))
-  #need to load fit.Rdata to get model and data
+  
+  if(any(class(fit) == "PM_fit")) {
+    # fit is a PM_fit object, use it directly
+    fit_object <- fit
+  } else if(is.character(fit) && file.exists(fit)) {
+    # fit is a character string pointing to a file, load it
+    fit_object <- get(load(fit))
+  } else {
+    # fit does not meet any of the above conditions, set to NULL
+    fit_object <- NULL
+  }
 
-  op <- make_OP(pred_file = pred_file, obs_file = obs_file, config_file = config_file)
+  config = make_Config(config_file)
+  op <- make_OP(pred_file = pred_file, obs_file = obs_file, config = config)
   post <- make_Post(pred_file = pred_file)
   pop <- make_Pop(pred_file = pred_file)
-  final <- make_Final(theta_file = theta_file, config_file = config_file, post_file = post_file)
-  cycle <- make_Cycle(cycle_file = cycle_file, config_file = config_file)
-  cov <- make_Cov(final = final, data = fit$data)
+  final <- make_Final(theta_file = theta_file, config = config, post_file = post_file)
+  cycle <- make_Cycle(cycle_file = cycle_file, config = config)
+  
+  cov <- NULL
+  if (!is.null(fit)) {
+    cov <- make_Cov(final = final, data = fit$data)
+  }
+  
 
-  meta_rust <- data.table::fread(
-    input = meta_rust_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
   NPcore <- list(
     data = fit$data,
     model = fit$model,
@@ -58,14 +66,14 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
     backend = "rust",
     algorithm = "NPAG",
     numeqt = 1,
-    converge = meta_rust$converged
+    converge = cycle$converged,
+    config = config
   )
 
   class(NPcore) <- "PM_result"
 
   if (write) {
-    system("mkdir outputs")
-    save(NPcore, file = "outputs/PMout.Rdata")
+    save(NPcore, file = "PMout.Rdata")
     return(invisible(NPcore))
   }
 
@@ -73,7 +81,7 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
 }
 
 # DATA
-make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", config_file = "config.toml", version) {
+make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", config, version) {
   pred_raw <- data.table::fread(
     input = pred_file,
     sep = ",",
@@ -92,7 +100,6 @@ make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", config_file = 
     showProgress = TRUE
   )
 
-  config <- RcppTOML::parseTOML(config_file)
   poly <- config$error$poly
 
   op <- obs_raw %>%
@@ -187,7 +194,7 @@ make_Pop <- function(pred_file = "pred.csv", version) {
 }
 
 # FINAL
-make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", post_file = "posterior.csv") {
+make_Final <- function(theta_file = "theta.csv", config, post_file = "posterior.csv") {
   theta <- data.table::fread(
     input = theta_file,
     sep = ",",
@@ -262,11 +269,11 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
   # varEBD <- apply(postVar[,-1],2,mean) # Mean postVar / popVar
   # sh <- varEBD/popVar
 
-  ab <- RcppTOML::parseTOML(config_file)$random %>%
+  ab <- config$random %>%
     unlist() %>%
-    matrix(ncol = 2, byrow = T)
+    matrix(ncol = 2, byrow = TRUE)
 
-  gridpts <- RcppTOML::parseTOML(config_file)$config$init_points
+  gridpts <- config$config$init_points
 
   final <- list(
     popPoints = theta,
@@ -290,7 +297,7 @@ make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", po
 }
 
 # CYCLES
-make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config_file = "config.toml", version) {
+make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config, version) {
   raw <- data.table::fread(
     input = cycle_file,
     sep = ",",
@@ -308,9 +315,6 @@ make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config_f
     dec = ".",
     showProgress = TRUE
   )
-
-
-  config <- RcppTOML::parseTOML(config_file)
 
   cycle_data <- raw %>%
     pivot_longer(cols = ends_with(c("mean", "median", "sd"))) %>%
@@ -360,8 +364,8 @@ make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config_f
     mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
     select(cycle, value, outeq)
   
+  converged <- any(cycle_data$converged)
   
-
   res <- list(
     names = c(names(config$random), names(config$fixed), names(config$constant)),
     cycnum = raw$cycle,
@@ -371,16 +375,19 @@ make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config_f
     sd = sd,
     median = median,
     aic = aic,
-    bic = bic
+    bic = bic,
+    converged = converged
   )
   class(res) <- c("PMcycle", "list")
   return(res)
 }
 
 #COV
-
 make_Cov <- function(final = final, data = fit$data){
-  data1 <- data$data %>% filter(!is.na(dose)) %>% 
+  if (is.null(fit)) {
+    return(NULL)
+  }
+  data1 <- data$data %>% filter(!is.na(dose)) %>%
     select(id, time, !!getCov(.)$covnames) %>% #in PMutitlities
     tidyr::fill(-id, -time) %>%
     dplyr::left_join(final$postMean, by = "id") %>% 
@@ -396,4 +403,9 @@ make_Cov <- function(final = final, data = fit$data){
   
   return(res)
   
+}
+
+# CONFIG
+make_Config <- function(settings_file) {
+  fromJSON(settings_file)
 }

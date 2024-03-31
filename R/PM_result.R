@@ -608,7 +608,7 @@ PM_cycle <- R6::R6Class(
   public <- list(
     #' @field names Vector of names of the random parameters
     names = NULL,
-    #' @field cynum Vector cycle numbers, which may start at numbers greater
+    #' @field cycnum Vector cycle numbers, which may start at numbers greater
     #' than 1 if a non-uniform prior was specified for the run (NPAG only)
     cycnum = NULL,
     #' @field ll Vector of -2*Log-likelihood at each cycle
