@@ -4,10 +4,12 @@
 \alias{PM_parse}
 \title{Parse Pmetrics output}
 \usage{
-PM_parse(wd = getwd(), write = TRUE)
+PM_parse(wd = getwd(), fit = "fit.Rdata", write = TRUE)
 }
 \arguments{
 \item{wd}{The directory containing the output from the Rust-implementation of NPAG}
+
+\item{fit}{Either a \code{PM_fit} object or the absolute path to a "fit.Rdata"}
 
 \item{write}{A logical value indicating if the results should be returned (\code{FALSE}, default) or written to disk (\code{TRUE})}
 }
@@ -20,7 +22,7 @@ The output of \code{PM_parse} is a list containing the following elements
 \item{final }{Written to the standard of PM_final}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
 
 A flexible parser for Pmetrics output
 }
