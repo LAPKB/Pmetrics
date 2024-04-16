@@ -1,8 +1,12 @@
 # Run this code to prepare `modelLibrary` 
 # whenever models added
 # 
-# format for algebraic string: parameters in alpha order, elimination compartment
-# separated by commas
+# format for algebraic string: 
+# P[] = parameters in alpha order 
+# B[] = bolus compartments (0 for none)
+# R[] = rate infusion compartment (0 for none)
+# O[] = output compartment
+# e.g. "P[Ke, V], B[0], R[1], O[1]"
 
 #initialize row object 
 modelRow <- list()
