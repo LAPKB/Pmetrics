@@ -23,20 +23,34 @@ for further details.
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{obs}}{Observations for each output}
+\item{\code{obs}}{Observations for each output as a data frame with columns
+\emph{id}, \emph{time}, \emph{out}, \emph{outeq}, or in the case of multiple regimens
+in the template data file, a list of such data frames}
 
-\item{\code{amt}}{Amounts in each model compartment}
+\item{\code{amt}}{Amounts in each compartment as a data frame with columns
+\emph{id}, \emph{time}, \emph{out}, \emph{comp}, or in the case of multiple regimens
+in the template data file, a list of such data frames}
 
 \item{\code{parValues}}{Retained simulated parameter values after discarding
-any due to truncation limits}
+any due to truncation limits, as a data frame with columns
+\emph{id} and parameters for each simulated subject, or in the case of multiple regimens
+in the template data file, a list of such data frames}
 
-\item{\code{totalSets}}{Number of all simulated parameter values}
+\item{\code{totalSets}}{Number of all simulated parameter values needed to obtain the
+requested number of simulated sets within any limits}
 
-\item{\code{totalMeans}}{Mean of all simulated parameter values}
+\item{\code{totalMeans}}{Vector of means of all simulated parameter values,
+or in the case of multiple regimens
+in the template data file, a list of such vectors}
 
-\item{\code{totalCov}}{Covariance of all simulated parameter values}
+\item{\code{totalCov}}{Covariance matrix for all simulated parameter values,
+or in the case of multiple regimens
+in the template data file, a list of such matrices}
 
-\item{\code{data}}{A list that contains all the above elements}
+\item{\code{data}}{For one simulation regimen in the template data, a list of class \emph{PMsim} that
+contains all the above elements. For multiple simulation regimens, a list of
+class \emph{PM_simlist} that contains as many \emph{PMsim} objects as regimens in the
+template data file used for the simulation, i.e \code{data} will be a list of lists.}
 }
 \if{html}{\out{</div>}}
 }

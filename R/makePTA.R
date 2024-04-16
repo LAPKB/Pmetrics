@@ -6,17 +6,19 @@
 #'
 #' @details
 #' `makePTA` will calculate the PTA for any number of simulations, targets and definitions of success.
-#' Simulations typically differ by dose, but may differ by other features such as children vs. adults. This function will also
-#' accept data from real subjects either in the form of a *PMpost* or a *PMmatrix* object.
-#' If a *PMpta* object is passed to the function as the `simdata`, the only other parameter required is success.
-#' If desired, a new set of simlabels can be specified; all other parameters will be ignored.
+#' Simulations typically differ by dose, but may differ by other features such as children vs. adults. 
 #'
-#' @param simdata Can be one of multiple inputs.  Typically it is a vector of simulator output filenames, e.g. c("simout1.txt","simout2.txt"),
-#' with wildcard support, e.g. "simout*" or "simout?", or
-#' a list of PMsim objects made by `simdata` with suitable simulated regimens and observations.  The number and times of simulated
-#' observations does not have to be the same in all objects.  It can also be a *PMpta* object previously made with
-#' `makePTA` can be passed for recalculation with a new success value or simlabels.  Finally, *PMpost* and *PMmatrix* objects are
-#' also allowed.
+#' @param simdata Can be one of multiple inputs as shown in the examples below using.
+#' 
+#' * `simEx #PM_sim`
+#' * `simEx$data #PM_simlist`
+#' * `simEx$data[[1]] #PMsim`
+#' * `NPex$post #PM_post`
+#' * `NPex$post$data #PMpost`
+#' * `NPex$data #PM_data`
+#' * `NPex$data$data #PMmatrix`
+#' * `"simout.txt" #matches files with wildcard ability, see [SIMparse]`
+#' 
 #' @param simlabels Optional character vector of labels for each simulation.  Default is `c('Regimen 1', 'Regimen 2',...)`.
 #' @param target One of several options.
 #' 
@@ -132,7 +134,7 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
   which_deprecated <- which(deprecated_args %in% names(extraArgs))
   if(length(which_deprecated)>0){
     stop("The following arguments have been deprecated: ",paste0(deprecated_args[which_deprecated], collapse = ", "),
-         ". Use the following instead: ", paste0(new_args[which_deprecated], collapse = ", "),".")
+         ". Use these instead: ", paste0(new_args[which_deprecated], collapse = ", "),".")
   }
   
   
@@ -144,13 +146,14 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
   #what kind of object is simdata?
   #lists, characters are assumed to be simulations 
   dataType <- switch(EXPR=class(simdata)[1], PM_sim = 0, PMsim = 1, PM_simlist = 2,
-                     list = 3, character = 4, PMpost = 5, PMmatrix = 6 ,
-                     PMpta = 7, PM_data = 8, -1)
+                     list = 3, character = 4, PM_post = 5, PMpost = 6, PMmatrix = 7,
+                     PM_data = 8,  -1)
   if(dataType==-1){
-    stop("You must specify a PM_sim, PMsim (legacy), list of simulations, character vector of simulator output files, PMpost, PMmatrix (legacy), or PM_data object\n")
+    stop("You must specify a PM_sim, PMsim (legacy), PM_post, PMpost (legacy), PM_data, PMmatrix (legacy),
+         or character vector of simulator output files. See help for makePTA.\n")
   }
   
-  if (dataType!=7) { #if simdata is not already a PMpta object
+
     
     ########### new PTA calculation ##################  
     #need to get it into a list of PMsim objects
@@ -183,13 +186,19 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
       }
     }
 
-    if (dataType == 5) { # PMpost object
+    if (dataType == 5) { # PM_post object
+      simdata <- simdata$data %>% filter(icen == !!icen & block == !!block)
+      temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$pred, outeq = simdata$outeq))
+      simdata <- list(temp)
+    }
+    
+    if (dataType == 6) { # PMpost object
       simdata <- simdata %>% filter(icen == !!icen & block == !!block)
-      temp <- list(obs=data.frame(id=simdata$id,time=simdata$time,out=simdata$pred,outeq=simdata$outeq))
+      temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$pred, outeq = simdata$outeq))
       simdata <- list(temp)
     }
 
-    if (dataType == 6 | dataType == 8) { # PMmatrix or PM_data object
+    if (dataType == 7 | dataType == 8) { # PMmatrix or PM_data object
       if (dataType == 8) {
         simdata <- simdata$data
       }
@@ -198,7 +207,7 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
       temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$out, outeq = simdata$outeq))
       simdata <- list(temp)
     }
-  }
+  
   
   if (is.numeric(target) | inherits(target,"PMpta.targ")){
     target <- list(target) #make a list
@@ -206,7 +215,7 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
   
   #define some global variables
   n_sim <- length(simdata) # number of regimens
-  n_id <- max(sapply(simdata,function(x) nrow(x$parValues))) #number of simulated id per regimen (usually 1000)
+  n_id <- sapply(simdata, function(x) length(unique(x$obs$id))) #number of id per regimen 
   n_type <- length(target_type)
   n_success <- length(success)
   n_target <- length(target) #length of the whole list, should correspond with n_type, success
@@ -323,12 +332,12 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
   
   
   ###### MAKE THE PTA OBJECT
-  master_pta <- map_df(1:n_type, \(x) expand_grid(sim_num = 1:n_sim, 
+  master_pta <- purrr::map2(1:n_type, 1:n_sim, \(x, y) expand_grid(sim_num = y, 
                                                   target = if(simTarg){ #simulated targets
                                                     if(x == 1) {
                                                       list(
-                                                        tidyr::tibble(id = 1:n_id,
-                                                                      target = sample(x = target[[x]]$target, size = n_id[x], replace = T, prob = target[[x]]$n)
+                                                        tidyr::tibble(id = unique(simdata[[sim_num]]$obs$id),
+                                                                      target = sample(x = target[[x]]$target, size = n_id[y], replace = T, prob = target[[x]]$n)
                                                         ))
                                                     } else {
                                                       target[x]
@@ -339,6 +348,7 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
                                                   success_ratio = success[[x]],
                                                   start = start[x],
                                                   end = end[x])) %>%
+    purrr::list_rbind() %>%
     mutate(type = stringr::str_replace_all(type,"\\d+", "specific")) %>%
     rowwise() %>%
     mutate(pdi = list(do.call(paste0("pta_",stringr::str_replace_all(type, "-","")), 

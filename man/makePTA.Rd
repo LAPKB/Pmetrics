@@ -20,12 +20,17 @@ makePTA(
 )
 }
 \arguments{
-\item{simdata}{Can be one of multiple inputs.  Typically it is a vector of simulator output filenames, e.g. c("simout1.txt","simout2.txt"),
-with wildcard support, e.g. "simout*" or "simout?", or
-a list of PMsim objects made by \code{simdata} with suitable simulated regimens and observations.  The number and times of simulated
-observations does not have to be the same in all objects.  It can also be a \emph{PMpta} object previously made with
-\code{makePTA} can be passed for recalculation with a new success value or simlabels.  Finally, \emph{PMpost} and \emph{PMmatrix} objects are
-also allowed.}
+\item{simdata}{Can be one of multiple inputs as shown in the examples below using.
+\itemize{
+\item \code{simEx #PM_sim}
+\item \code{simEx$data #PM_simlist}
+\item \code{simEx$data[[1]] #PMsim}
+\item \code{NPex$post #PM_post}
+\item \code{NPex$post$data #PMpost}
+\item \code{NPex$data #PM_data}
+\item \code{NPex$data$data #PMmatrix}
+\item \code{"simout.txt" #matches files with wildcard ability, see [SIMparse]}
+}}
 
 \item{simlabels}{Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.}
 
@@ -113,10 +118,7 @@ Calculates the Percent Target Attainment (PTA)
 }
 \details{
 \code{makePTA} will calculate the PTA for any number of simulations, targets and definitions of success.
-Simulations typically differ by dose, but may differ by other features such as children vs. adults. This function will also
-accept data from real subjects either in the form of a \emph{PMpost} or a \emph{PMmatrix} object.
-If a \emph{PMpta} object is passed to the function as the \code{simdata}, the only other parameter required is success.
-If desired, a new set of simlabels can be specified; all other parameters will be ignored.
+Simulations typically differ by dose, but may differ by other features such as children vs. adults.
 }
 \examples{
 pta1 <- PM_pta$new(simEx, 
