@@ -55,6 +55,7 @@ Imports:
     pander,
     parallel,
     plotly,
+    PmetricsData,
     purrr,
     R6,
     RColorBrewer,

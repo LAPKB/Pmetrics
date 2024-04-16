@@ -28,7 +28,8 @@ NPrun(
   alq = FALSE,
   remote = FALSE,
   server_address,
-  report = TRUE
+  report = TRUE,
+  artifacts = TRUE
 )
 }
 \arguments{
@@ -109,6 +110,9 @@ machine.  Overall speed up for a run will therefore depend on the number of cycl
 Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}.}
 
 \item{report}{Generate a report at the end of a run. Default is \code{TRUE}.}
+
+\item{artifacts}{Default is \code{TRUE}.  Set to \code{FALSE} to suppress creating the \code{etc} folder. This folder
+will contain all the compilation artifacts created during the compilation and run steps.}
 }
 \value{
 A successful NPAG run will result in creation of a new folder in the working

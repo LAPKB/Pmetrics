@@ -18,20 +18,34 @@
 PM_sim <- R6::R6Class(
   "PM_sim",
   public = list(
-    #' @field obs Observations for each output
+    #' @field obs Observations for each output as a data frame with columns 
+    #' *id*, *time*, *out*, *outeq*, or in the case of multiple regimens
+    #' in the template data file, a list of such data frames
     obs = NULL,
-    #' @field amt Amounts in each model compartment
+    #' @field amt Amounts in each compartment as a data frame with columns 
+    #' *id*, *time*, *out*, *comp*, or in the case of multiple regimens
+    #' in the template data file, a list of such data frames
     amt = NULL,
     #' @field parValues Retained simulated parameter values after discarding
-    #' any due to truncation limits
+    #' any due to truncation limits, as a data frame with columns 
+    #' *id* and parameters for each simulated subject, or in the case of multiple regimens
+    #' in the template data file, a list of such data frames
     parValues = NULL,
-    #' @field totalSets Number of all simulated parameter values
+    #' @field totalSets Number of all simulated parameter values needed to obtain the
+    #' requested number of simulated sets within any limits
     totalSets = NULL,
-    #' @field totalMeans Mean of all simulated parameter values
+    #' @field totalMeans Vector of means of all simulated parameter values, 
+    #' or in the case of multiple regimens
+    #' in the template data file, a list of such vectors
     totalMeans = NULL,
-    #' @field totalCov Covariance of all simulated parameter values
+    #' @field totalCov Covariance matrix for all simulated parameter values, 
+    #' or in the case of multiple regimens
+    #' in the template data file, a list of such matrices
     totalCov = NULL,
-    #' @field data A list that contains all the above elements
+    #' @field data For one simulation regimen in the template data, a list of class *PMsim* that 
+    #' contains all the above elements. For multiple simulation regimens, a list of
+    #' class *PM_simlist* that contains as many *PMsim* objects as regimens in the 
+    #' template data file used for the simulation, i.e `data` will be a list of lists.
     data = NULL,
 
     #' @description
