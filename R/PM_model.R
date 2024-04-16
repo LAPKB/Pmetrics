@@ -566,13 +566,13 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  # look for xp() or dx[]
                                  neqs <- sum(sapply(stringr::str_extract_all(eqs, "xp\\(\\d+\\)|dx\\[\\d+\\]"), function(x) length(x) > 0))
                                  if (neqs == 0) {
-                                   stop("Error: PMcore does not support analytic equations, provide a eqn block.")
+                                   stop("Error: PMcore does not support analytic equations, provide an eqn block.")
                                  }
                                  content <- gsub("</neqs>", neqs, content)
                                  
                                  cov <- self$model_list$cov %>% purrr::map(function(c) {
-                                   val <- c$covariate
-                                   paste0("let ", val %>% tolower(), " = cov.get(\"", val, "\").unwrap().interp(t);\n")
+                                   val <- c$covariate 
+                                   paste0("let ", tolower(val), " = cov.get(\"", toupper(val), "\").unwrap().interp(t);\n")
                                  })
                                  content <- gsub("</cov>", cov %>% paste0(collapse = ""), content)
                                  
@@ -657,7 +657,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  .l <- gsub("log", "ln", .l) # log in R and Fortran is ln in Rust
                                  
                                  # deal with exponents
-                                 pattern2 <- "[\\*\\^]+([+-]?([0-9]*[.])?[0-9]+)"
+                                 pattern2 <- "[*^]+(\\((.+?)\\)+|-?\\d*\\.?\\d+)"
                                  replace2 <- "\\.powf\\(\\1\\)"
                                  .l <- gsub(pattern2, replace2, .l, perl = TRUE)
                                  
