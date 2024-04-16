@@ -31,7 +31,7 @@ Can be overridden by specifying \code{TRUE} or \code{FALSE}.}
 }
 \value{
 If one file is parsed or multiple files are parsed and combined, the return will be a list with five items, of class \emph{PMsim}.
-If multiple files are parsed and not combined, then the return will be a list of \emph{PMsim} objects.
+If multiple files are parsed and not combined, then the return will be a \emph{PM_simlist} of \emph{PMsim} objects.
 \item{obs }{An data frame of simulated observations with 4 columns: id, time, out, outeq.
 \emph{id} is the number of the simulated subject, which will have a unique ending appended
 if simulations are combined, such that \emph{id} will become x.y with x being the simulated profile

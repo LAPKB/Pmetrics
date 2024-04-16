@@ -62,6 +62,8 @@ PM_fit <- R6::R6Class("PM_fit",
     #' @param ... Other arguments passed to [NPrun]
     #' @param engine "NPAG" (default) or "IT2B"
     #' @param rundir This argument specifies an *existing* folder that will store the run inside.
+    #' @param backend Backend used for calculations; default is value in PMoptions.
+
     run = function(..., engine = "NPAG", rundir = getwd(), backend = getPMoptions()$backend) {
       wd <- getwd()
       if (!dir.exists(rundir)) {

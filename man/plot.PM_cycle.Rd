@@ -43,7 +43,7 @@ For accepted palette names see \code{RColorBrewer::brewer.pal.info}. Examples in
 "BrBG", or "Set2". An example vector could be \code{c("red", "green", "blue")}. It is not
 necessary to specify the same number of colors parameters to be plotted, as colors
 will be interpolated to generate the correct number. The default when \code{color}
-is not specified is the "Spectral" palette.}
+is not specified is the "Set2" palette.}
 
 \item{linetypes}{to use for normalized parameter value line traces.
 See \code{plotly::schema()}, traces > scatter >
