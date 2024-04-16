@@ -69,15 +69,30 @@ PM_sim <- R6::R6Class(
       }
       if (inherits(poppar, c("PM_result", "PM_final", "PMfinal"))) {
         poppar <- poppar # SIMrun will handle any of these
-      } else if (inherits(poppar, "PMsim")) { # from SIMparse
-        private$populate(poppar)
-        return(self)
+      } else if (inherits(poppar, "PMsim")) { # from SIMparse as single
+        private$populate(poppar, type = "sim")
+        return(self) #end, we have loaded a prior sim
+      } else if (inherits(poppar, "PM_simlist")) { # from SIMparse as list
+        private$populate(poppar, type = "simlist")
+        return(self) #end, we have loaded a prior sim
+      } else if (inherits(poppar, "PM_sim")) { # from R6
+        private$populate(poppar, type = "R6sim")
+        return(self) #end, we have loaded a prior sim
       } else if (inherits(poppar, "list")) {
         poppar <- poppar # PMfinal and PMsim are lists, so needs to be after those for manual list
       } else { # try it as a filename
         if (file.exists(poppar)) {
-          private$populate(readRDS(poppar)) # open and return saved object
-          return(self)
+          sim <- readRDS(poppar) #open saved object
+          if(inherits(sim, "PMsim")) {
+            private$populate(sim, type = "sim")
+          } else if(inherits(sim, "PM_simlist")){
+            private$populate(sim, type = "simlist")
+          } else if(inherits(sim, "PM_sim")){
+            private$populate(sim, type = "R6sim")
+          } else {
+            stop(paste0(poppar, " is not a Pmetrics simulation."))
+          }
+          return(self) #end, we have loaded a prior sim
         } else {
           stop(paste0(poppar, " does not exist in the current working directory.\n"))
         }
@@ -89,16 +104,16 @@ PM_sim <- R6::R6Class(
       # TODO: read files and fix the missing E problem
       sim_files <- list.files() %>% .[grepl(paste0(outname, "*"), .)]
       if (length(sim_files) == 1) {
-        parseRes <- SIMparse(file = paste0(outname, "*")) %>% private$populate()
+        parseRes <- SIMparse(file = paste0(outname, "*")) %>% private$populate(type = "sim")
       } else {
         if (combine) {
-          parseRes <- SIMparse(file = paste0(outname, "*"), combine = T) %>% private$populate()
+          parseRes <- SIMparse(file = paste0(outname, "*"), combine = T) %>% private$populate(type = "sim")
         } else {
           parseRes <- list()
           for (i in seq_len(length(sim_files))) {
             parseRes[[i]] <- SIMparse(file = sprintf("simout%i.txt", i))
           }
-          private$populate(parseRes, list = TRUE)
+          private$populate(parseRes, type = "simlist")
         }
       }
       if (clean) system(paste0("rm ", outname, "*"))
@@ -247,8 +262,8 @@ PM_sim <- R6::R6Class(
   ), # end public
   private = list(
     # Create new simulation objects with results of simulation
-    populate = function(simout, list = FALSE) {
-      if (!list) {
+    populate = function(simout, type) {
+      if (type == "sim") {
         self$obs <- simout$obs
         self$amt <- simout$amt
         self$parValues <- simout$parValues
@@ -256,8 +271,7 @@ PM_sim <- R6::R6Class(
         self$totalCov <- simout$totalCov
         self$data <- simout
         class(self$data) <- c("PMsim", "list")
-        return(self)
-      } else {
+      } else if (type == "simlist") {
         purrr::map(1:length(simout), \(x){
           self$obs[[x]] <- simout[[x]]$obs
           self$amt[[x]] <- simout[[x]]$amt
@@ -268,8 +282,15 @@ PM_sim <- R6::R6Class(
           class(self$data[[x]]) <- c("PMsim", "list")
         })
         class(self$data) <- c("PM_simlist", "list")
-        return(self)
+      } else if (type == "R6sim"){
+        self$obs <- simout$obs
+        self$amt <- simout$amt
+        self$parValues <- simout$parValues
+        self$totalMeans <- simout$totalMeans
+        self$totalCov <- simout$totalCov
+        self$data <- simout$data
       }
+      return(self)
     }
   ) # end private
 )
