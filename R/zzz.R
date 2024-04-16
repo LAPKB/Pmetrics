@@ -55,6 +55,11 @@
   if (!binaries.installed()) {
     packageStartupMessage(paste0("\n", crayon::red("CRITICAL: "), "Execute PMbuild() in R to complete Pmetrics installation.\n"))
   }
+  
+  # check for PmetricsData
+  if (!suppressWarnings(suppressMessages(require(PmetricsData)))){
+    packageStartupMessage(paste0(crayon::green("Important: "), "PmetricsData package required for examples. Run getPMdata() to install from github.\n"))
+  } 
 
   # set user options for the session
   setPMoptions()
