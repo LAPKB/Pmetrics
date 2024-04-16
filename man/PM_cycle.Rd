@@ -24,25 +24,25 @@ powerful approach to data manipulation upon which Pmetrics is built.
 \describe{
 \item{\code{names}}{Vector of names of the random parameters}
 
-\item{\code{cynum}}{Vector cycle numbers, which may start at numbers greater
+\item{\code{cycnum}}{Vector cycle numbers, which may start at numbers greater
 than 1 if a non-uniform prior was specified for the run (NPAG only)}
 
-\item{\code{ll}}{Matrix of cycle number and -2*Log-likelihood at each cycle}
+\item{\code{ll}}{Vector of -2*Log-likelihood at each cycle}
 
-\item{\code{gamlam}}{A matrix of cycle number and gamma or lambda at each cycle}
+\item{\code{gamlam}}{A tibble of cycle number and gamma or lambda at each cycle for each output equation}
 
-\item{\code{mean}}{A matrix of cycle number and the mean of each random parameter
+\item{\code{mean}}{A tibble of cycle number and the mean of each random parameter
 at each cycle, normalized to initial mean}
 
-\item{\code{sd}}{A matrix of cycle number and the standard deviation of each random parameter
-at each cycle,  normalized to initial standard deviation}
-
-\item{\code{median}}{A matrix of cycle number and the median of each random
+\item{\code{median}}{A tibble of cycle number and the median of each random
 parameter at each cycle,  normalized to initial median}
 
-\item{\code{aic}}{A matrix of cycle number and Akaike Information Criterion at each cycle}
+\item{\code{sd}}{A tibble of cycle number and the standard deviation of each random parameter
+at each cycle,  normalized to initial standard deviation}
 
-\item{\code{bic}}{A matrix of cycle number and Bayesian (Schwartz) Information Criterion at each cycle}
+\item{\code{aic}}{A vector of Akaike Information Criterion at each cycle}
+
+\item{\code{bic}}{A vector of Bayesian (Schwartz) Information Criterion at each cycle}
 
 \item{\code{data}}{A data frame combining all the above fields as its columns}
 }
