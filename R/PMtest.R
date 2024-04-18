@@ -12,7 +12,7 @@ PMtest <- function() {
   tempwd <- tempdir()
   setwd(tempwd)
   NPex <- NULL # avoid R CMD check flag
-  data(NPex, package = "Pmetrics", envir = environment())
+  data(NPex, package = "PmetricsData", envir = environment())
   NPex$data$write("data.csv")
   msg <- "Congratulations; you have successfully installed all components of Pmetrics.\n"
 

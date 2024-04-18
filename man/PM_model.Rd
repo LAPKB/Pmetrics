@@ -20,7 +20,7 @@ directly in R, or by reading a model text file in the current working directory.
 ## Method `PM_model$update`
 ## ------------------------------------------------
 
-mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+mod2 <- PmetricsData::modEx$clone() #create an independent copy of modEx called mod2
 mod2$update(list(
   pri = list(
    Ke = ab(0, 1), #change the range
@@ -31,14 +31,14 @@ mod2$update(list(
 ))
 #note that they are different now
 mod2
-modEx
+PmetricsData::modEx
 
 ## ------------------------------------------------
 ## Method `PM_model$write`
 ## ------------------------------------------------
 
 \dontrun{
-modEx$write("model.txt")
+PmetricsData::modEx$write("model.txt")
 }
 }
 \section{Methods}{
@@ -120,7 +120,7 @@ first if you want to create a copied, yet independent new model.}
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+\preformatted{mod2 <- PmetricsData::modEx$clone() #create an independent copy of modEx called mod2
 mod2$update(list(
   pri = list(
    Ke = ab(0, 1), #change the range
@@ -131,7 +131,7 @@ mod2$update(list(
 ))
 #note that they are different now
 mod2
-modEx
+PmetricsData::modEx
 }
 \if{html}{\out{</div>}}
 
@@ -160,7 +160,7 @@ relative to the current working directory}
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
-modEx$write("model.txt")
+PmetricsData::modEx$write("model.txt")
 }
 }
 \if{html}{\out{</div>}}

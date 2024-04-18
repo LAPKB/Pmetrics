@@ -12,7 +12,7 @@ amendMarker <- function(.marker, default) {
   if (!missing(default)) {
     default_marker <- modifyList(default_marker, default)
   }
-
+  
   if (inherits(.marker, "logical")) {
     if (!.marker) {
       .marker <- default_marker
@@ -21,7 +21,7 @@ amendMarker <- function(.marker, default) {
       .marker <- default_marker
     }
   }
-
+  
   if (inherits(.marker, "list")) {
     .marker <- modifyList(default_marker, .marker)
   }
@@ -31,11 +31,11 @@ amendMarker <- function(.marker, default) {
 # amend lines
 amendLine <- function(.line, default) {
   default_line <- list(color = "dodgerblue", width = 1, dash = "solid")
-
+  
   if (!missing(default)) {
     default_line <- modifyList(default_line, default)
   }
-
+  
   if (inherits(.line, "logical")) {
     if (!.line) {
       .line <- default_line
@@ -44,7 +44,7 @@ amendLine <- function(.line, default) {
       .line <- default_line
     }
   }
-
+  
   if (inherits(.line, "list")) {
     .line <- modifyList(default_line, .line)
   }
@@ -58,10 +58,10 @@ amendTitle <- function(.title, default) {
   if (!missing(default)) {
     default_font <- modifyList(default_font, default)
   }
-
+  
   errors <- NULL
-  error <- F
-
+  error <- FALSE
+  
   if (is.list(.title)) {
     if (is.null(purrr::pluck(.title, "text"))) {
       stop("Missing title text element.\nSee plotly::schema() > layout > layoutAttributes > title for help.\n")
@@ -84,13 +84,13 @@ amendTitle <- function(.title, default) {
       default_font$family <- .title$family
       .title$family <- NULL
     }
-
+    
     if (!is.null(purrr::pluck(.title, "bold"))) {
       # don't report error, since not standard plotly
       default_font$bold <- .title$bold
       .title$bold <- NULL
     }
-
+    
     if (is.null(purrr::pluck(.title, "font"))) {
       .title$font <- default_font
     } else {
@@ -99,27 +99,27 @@ amendTitle <- function(.title, default) {
   } else { # title is simply a name
     .title <- list(text = .title, font = default_font)
   }
-
+  
   if (.title$font$bold) {
     .title$text <- paste0("<b>", .title$text, "</b>")
   }
-
-
+  
+  
   if (error) {
     cat(paste0(crayon::red("Note: "), paste(errors, collapse = " and "), " should be within a font list.\nSee plotly::schema() > layout > layoutAttributes > title/xaxis/yaxis for help.\n"))
   }
-
+  
   return(.title)
 }
 
 # amend CI
 amendCI <- function(.ci, default) {
   default_ci <- list(color = "dodgerblue", dash = "dash", width = 1, opacity = 0.4)
-
+  
   if (!missing(default)) {
     default_ci <- modifyList(default_ci, default)
   }
-
+  
   if (inherits(.ci, "logical")) {
     if (!.ci) {
       .ci <- modifyList(default_ci, list(opacity = 0, width = 0))
@@ -127,7 +127,7 @@ amendCI <- function(.ci, default) {
       .ci <- default_ci
     }
   }
-
+  
   if (inherits(.ci, "list")) {
     .ci <- modifyList(default_ci, .ci)
   }
@@ -137,11 +137,11 @@ amendCI <- function(.ci, default) {
 # amend bar
 amendBar <- function(.bar, color = "dodgerblue", default) {
   default_bar <- list(color = color, width = .02, opacity = 0.75)
-
+  
   if (!missing(default)) {
     default_bar <- modifyList(default_bar, default)
   }
-
+  
   if (inherits(.bar, "logical")) {
     if (!.bar) {
       .bar <- default_bar
@@ -150,7 +150,7 @@ amendBar <- function(.bar, color = "dodgerblue", default) {
       .bar <- default_bar
     }
   }
-
+  
   if (inherits(.bar, "list")) {
     .bar <- modifyList(default_bar, .bar)
   }
@@ -159,12 +159,12 @@ amendBar <- function(.bar, color = "dodgerblue", default) {
 
 
 # make grid lines
-setGrid <- function(.axis, grid = F, default) {
+setGrid <- function(.axis, grid = FALSE, default) {
   default_grid <- list(gridcolor = "grey50", gridwidth = 1)
   if (!missing(default)) {
     default_grid <- modifyList(default_grid, default)
   }
-
+  
   if (inherits(grid, "logical")) {
     if (grid) {
       grid <- default_grid
@@ -174,13 +174,13 @@ setGrid <- function(.axis, grid = F, default) {
       grid$gridwidth <- 0
     }
   }
-
+  
   if (inherits(grid, "list")) {
     grid <- modifyList(default_grid, grid)
   }
-
+  
   .axis <- modifyList(.axis, grid)
-
+  
   return(.axis)
 }
 
@@ -192,7 +192,7 @@ amendLegend <- function(.legend, default) {
   if (!missing(default)) {
     default_legend <- modifyList(default_legend, default)
   }
-
+  
   if (inherits(.legend, "logical")) {
     if (!.legend) {
       .legend <- default_legend
@@ -212,7 +212,7 @@ amendLegend <- function(.legend, default) {
 # amend dots
 amendDots <- function(dots) {
   axesAttr <- names(plotly::schema(F)$layout$layoutAttributes$xaxis)
-
+  
   xaxis <- purrr::pluck(dots, "xaxis") # check for additional changes
   if (is.null(xaxis)) {
     xaxis <- list()
@@ -227,17 +227,17 @@ amendDots <- function(dots) {
     yaxis <- dots$yaxis
     dots$yaxis <- NULL # take it out of dots
   }
-
+  
   otherArgs <- purrr::map_lgl(names(dots), function(x) x %in% axesAttr)
   if (any(otherArgs)) {
     xaxis <- modifyList(xaxis, dots[otherArgs])
     yaxis <- modifyList(yaxis, dots[otherArgs])
   }
-
+  
   if (!all(otherArgs)) { # some are false
     cat(crayon::red("Warning: "), "Attributes other than xaxis/yaxis in dots are currently ignored.")
   }
-
+  
   layout <- list(xaxis = xaxis, yaxis = yaxis)
   return(layout)
 }
@@ -252,7 +252,7 @@ includeExclude <- function(.data, include, exclude) {
   if (nrow(.data) == 0) {
     stop("Include/exclude criteria result in zero subjects.")
   }
-
+  
   return(.data)
 }
 
@@ -290,6 +290,7 @@ notNeeded <- function(x, f) {
 #' @seealso [add_shapes]
 #' @examples
 #' # add to an existing plot
+#' library(PmetricsData)
 #' NPex$op$plot() %>%
 #'   add_shapes(shapes = ab_line(v = 12))
 #'
@@ -327,7 +328,7 @@ ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE) {
     y1 <- h
     yref <- "y"
   }
-
+  
   if (!is.null(v)) {
     x0 <- v
     x1 <- v
@@ -368,6 +369,7 @@ ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE) {
 #' @export
 #' @seealso [ab_line]
 #' @examples
+#' library(PmetricsData)
 #' NPex$op$plot() %>%
 #'   add_shapes(shapes = ab_line(v = 12))
 #'
@@ -443,7 +445,7 @@ add_shapes <- function(p = plotly::last_plot(), shapes) {
 add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
                        data = NULL, method = "lm", line = T, ci = 0.95, stats) {
   line <- amendLine(line, default = list(color = "blue", width = 2))
-
+  
   if (!is.null(data)) {
     if (is.null(x) | is.null(y)) stop("Missing x or y with data.\n")
     if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
@@ -484,9 +486,9 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
     p_data <- plotly::plotly_data(p)
     if (inherits(p_data, c("PM_op", "PMop"))) { # this is a PM_op object
       sumStat <- summary(p_data,
-        outeq = p_data$outeq[1],
-        pred.type = p_data$pred.type[1],
-        icen = p_data$icen[1]
+                         outeq = p_data$outeq[1],
+                         pred.type = p_data$pred.type[1],
+                         icen = p_data$icen[1]
       )
       regStat <- paste0(
         regStat, "<br>",
@@ -494,7 +496,7 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
         "Imprecision  = ", format(sumStat$pe$bamwspe, digits = 3)
       )
     }
-
+    
     p <- p %>% plotly::add_lines(
       x = vals$x, y = fitted(mod),
       hoverinfo = "text",
@@ -508,13 +510,13 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
       line = line
     )
   }
-
+  
   if (ci > 0) {
     zVal <- qnorm(0.5 + ci / 2)
     seFit <- predict(mod, newdata = vals, se = TRUE)
     upper <- seFit$fit + zVal * seFit$se.fit
     lower <- seFit$fit - zVal * seFit$se.fit
-
+    
     p <- p %>%
       plotly::add_ribbons(
         x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper,
@@ -531,13 +533,13 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
         )
       )
   }
-  if (missing(stats)) stats <- T
-
+  if (missing(stats)) stats <- TRUE
+  
   if (is.logical(stats)) { # default formatting
     if (stats) {
-      statPlot <- T
+      statPlot <- TRUE
     } else {
-      statPlot <- F
+      statPlot <- FALSE
     }
     stats <- amendTitle("", default = list(size = 14, bold = FALSE))
     stats$x <- 0.8
@@ -551,9 +553,9 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
       stats$y <- 0.1
     }
     stats <- amendTitle(stats, default = list(size = 14, bold = FALSE))
-    statPlot <- T
+    statPlot <- TRUE
   }
-
+  
   if (statPlot & method == "lm") { # add statistics
     p <- p %>%
       plotly::layout(annotations = list(
@@ -567,7 +569,7 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
         showarrow = FALSE
       ))
   }
-
+  
   return(p)
 }
 
@@ -617,6 +619,7 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
 #' @seealso [plotly::save_image()]
 #' @examples
 #' \dontrun{
+#' library(PmetricsData)
 #' NPex$op$plot(stats = list(x = 0.9)) %>%
 #'   export_plotly(file = "op.png", width = 12, height = 6, units = "in")
 #' }
@@ -628,7 +631,7 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
   if (missing(p)) p <- plotly::last_plot()
   if (!inherits(p, "plotly")) stop("Specify a plotly object to be exported.\n")
   if (missing(file)) stop("Provide a file name. The extension will determine the type of export.\n")
-
+  
   if (Sys.which("kaleido") == "") { # not installed
     cat("Pmetrics needs to install/update the kaleido python package.\n")
     cat("See ?kaleido for more information.\n")
@@ -647,16 +650,16 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
     reticulate::use_miniconda("r-reticulate")
     reticulate::py_run_string("import sys")
   }
-
+  
   currwd <- getwd()
-
+  
   if (grepl(.Platform$file.sep, file)) { # file is a path
     setwd(dirname(file))
     filename <- basename(file)
   } else {
     filename <- file
   }
-
+  
   correction <- dplyr::case_when(
     units == "px" ~ 1,
     units == "in" ~ 72,
@@ -664,14 +667,14 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
   )
   width <- if (!is.null(width)) width * correction
   height <- if (!is.null(height)) height * correction
-
+  
   tryCatch(plotly::save_image(p = p, file = filename, width = width, height = height, scale = scale),
-    error = function(e) {
-      cat("The kaleido python package does not appear to be installed properly.\n")
-      cat("Try following the installation instructions in the save_image() help page.\n")
-      cat(paste0(crayon::red("Note - "), "Add one more line of code after the others: ", crayon::blue("reticulate::py_run_string('import sys')\n")))
-      stop("Plot not saved.\n", call. = FALSE)
-    }
+           error = function(e) {
+             cat("The kaleido python package does not appear to be installed properly.\n")
+             cat("Try following the installation instructions in the save_image() help page.\n")
+             cat(paste0(crayon::red("Note - "), "Add one more line of code after the others: ", crayon::blue("reticulate::py_run_string('import sys')\n")))
+             stop("Plot not saved.\n", call. = FALSE)
+           }
   )
   if (show) {
     if (!grepl("\\.pdf$", file)) { # not pdf
@@ -730,6 +733,7 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
 #' @export
 #' @seealso [plotly::subplot()]
 #' @examples
+#' library(PmetricsData)
 #' plot1 <- NPex$op$plot(title = "Posterior")
 #' plot2 <- NPex$op$plot(pred.type = "pop", title = "Population")
 #' sub_plot(plot1, plot2, titles = c(0, 0.95), nrows = 2)
@@ -750,7 +754,7 @@ sub_plot <- function(...,
   plots <- list(...)
   n_plots <- length(plots)
   if (nrows > n_plots) nrows <- n_plots # sanity check
-
+  
   # grab title lists from each plot and convert to annotations
   plot_annotations <- purrr::map(plots, function(p) p$x$layoutAttrs[[length(p$x$layoutAttrs)]]$title) %>%
     purrr::map(function(title) {
@@ -767,12 +771,12 @@ sub_plot <- function(...,
         showarrow = FALSE
       )
     })
-
+  
   # remove titles from plots
   plots <- purrr::map(plots, function(p) {
     purrr::modify_in(p, list("x", "layoutAttrs", length(p$x$layoutAttrs), "title", "text"), \(p) "")
   })
-
+  
   # calculate relative x and y based on plot number and rows
   if (!is.null(titles) && length(titles) == 2) { # we have x and y
     x_pos <- titles[1]
@@ -782,7 +786,7 @@ sub_plot <- function(...,
     y_increment <- 1 / nrows
     x_adj <- x_pos * x_increment
     y_adj <- y_pos * y_increment
-
+    
     x_list <- if (plots_per_row == 1) {
       x_adj
     } else {
@@ -793,29 +797,52 @@ sub_plot <- function(...,
     } else {
       rev(seq(y_adj, 1, y_increment))
     }
-
+    
     plot_coords <- expand.grid(col = x_list, row = y_list) # first arg changes fastest
-
-
+    
+    
     plot_annotations <- purrr::map(1:n_plots, function(i) {
       purrr::list_assign(plot_annotations[[i]], x = plot_coords$col[i], y = plot_coords$row[i])
     })
   } else {
     plot_annotations <- NULL # we did not have x,y
   }
-
+  
   p <- plotly::subplot(plots,
-    nrows = nrows,
-    widths = widths,
-    heights = heights,
-    margin = margin,
-    shareX = shareX,
-    shareY = shareY,
-    titleX = shareX,
-    titleY = shareY,
-    which_layout = which_layout
+                       nrows = nrows,
+                       widths = widths,
+                       heights = heights,
+                       margin = margin,
+                       shareX = shareX,
+                       shareY = shareY,
+                       titleX = shareX,
+                       titleY = shareY,
+                       which_layout = which_layout
   ) %>%
     plotly::layout(annotations = plot_annotations)
   print(p)
   return(p)
+}
+
+
+#get RColorBrewerPalettes
+getPalettes <- function(){
+  if (requireNamespace("RColorBrewer", quietly = TRUE)) {
+    palettes <- rownames(RColorBrewer::brewer.pal.info)
+  } else {
+    palettes <- c("BrBG", "PiYG", "PRGn", "PuOr", "RdBu", "RdGy", "RdYlBu", 
+                  "RdYlGn", "Spectral", "Accent", "Dark2", "Paired", "Pastel1", 
+                  "Pastel2", "Set1", "Set2", "Set3", "Blues", "BuGn", "BuPu", 
+                  "GnBu", "Greens","Greys", "Oranges", "OrRd", "PuBu", "PuBuGn", 
+                  "PuRd", "Purples", "RdPu", "Reds", "YlGn", "YlGnBu", 
+                  "YlOrBr", "YlOrRd")
+  }
+  return(palettes)
+}
+
+#create list of n default colors
+getDefaultColors <- function(n){
+  choices <- c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")
+  selection <- rep(choices, n)[1:n]
+  return(selection)
 }

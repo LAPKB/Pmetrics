@@ -383,8 +383,8 @@ make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config, 
 }
 
 #COV
-make_Cov <- function(final = final, data = fit$data){
-  if (is.null(fit)) {
+make_Cov <- function(final, data){
+  if (is.null(data) | is.null(final)) {
     return(NULL)
   }
   data1 <- data$data %>% filter(!is.na(dose)) %>%

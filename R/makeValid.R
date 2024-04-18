@@ -47,6 +47,7 @@
 #' @author Michael Neely
 #' @examples
 #' \dontrun{
+#' library(PmetricsData)
 #' valid <- NPex$validate(limits = c(0, 3))
 #' }
 #'
@@ -56,7 +57,9 @@
 
 make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   # verify packages used in this function
-  # checkRequiredPackages("mclust")
+  if(!requireNamespace("mclust", quietly = TRUE)){
+    stop("Install mclust package to perform clustering for validation.\n")
+  }
 
   # save current wd
   currwd <- getwd()
@@ -682,7 +685,9 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 
 makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   # verify packages used in this function
-  # checkRequiredPackages("mclust")
+  if(!requireNamespace("mclust", quietly = TRUE)){
+    stop("Install mclust package to perform clustering for validation.\n")
+  }
 
   # save current wd
   currwd <- getwd()

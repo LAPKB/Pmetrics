@@ -8,6 +8,8 @@ build_plot(x, ...)
 }
 \arguments{
 \item{x}{Optional object to plot}
+
+\item{\dots}{Not currently used}
 }
 \value{
 Launches the shiny app.

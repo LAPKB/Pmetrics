@@ -43,6 +43,7 @@ in the layout list.
 }
 \examples{
 # add to an existing plot
+library(PmetricsData)
 NPex$op$plot() \%>\%
   add_shapes(shapes = ab_line(v = 12))
 

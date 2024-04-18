@@ -89,6 +89,7 @@ This function will parse the output of \code{\link{NPparse}} or \code{\link{ITpa
 list suitable for analysis and plotting of NPAG  or IT2B final cycle population values.
 }
 \examples{
+library(PmetricsData)
 final <- makeFinal(NPex$NPdata)
 final
 names(final)

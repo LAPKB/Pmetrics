@@ -61,6 +61,7 @@
 #' @param icen Can be either "median" for the predictions based on medians of `pred.type` parameter value
 #' distributions, or "mean".  Default is "median".
 #' @param block Which block to plot, where a new block is defined by dose resets (evid = 4); default is 1.
+#' @param \dots Not currently used
 #' @return The output of `makePTA` is a list of class *PMpta*,
 #' which is a list with each `target_type` as an element, followed by a final `intersection` element showing the results
 #' for profiles which meet ALL the conditions (intersection) or `NA` if only one `target_type` was specified. 
@@ -87,6 +88,7 @@
 #' @author Michael Neely and Jan Strojil
 #' @seealso [plot.PM_pta], [PM_sim]
 #' @examples
+#' library(PmetricsData)
 #' pta1 <- PM_pta$new(simEx, 
 #'                  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
 #'                  target = list(2^(-2:6), 1, 50),
@@ -332,49 +334,56 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
   
   
   ###### MAKE THE PTA OBJECT
-  master_pta <- purrr::map2(1:n_type, 1:n_sim, \(x, y) expand_grid(sim_num = y, 
+  master_pta <- purrr::map(1:n_sim, \(x){
+    purrr::map(1:n_type, \(y) tidyr::expand_grid(sim_num = x, 
                                                   target = if(simTarg){ #simulated targets
-                                                    if(x == 1) {
+                                                    if(y == 1) {
                                                       list(
-                                                        tidyr::tibble(id = unique(simdata[[sim_num]]$obs$id),
-                                                                      target = sample(x = target[[x]]$target, size = n_id[y], replace = T, prob = target[[x]]$n)
+                                                        tidyr::tibble(id = unique(simdata[[x]]$obs$id),
+                                                                      target = sample(x = target[[y]]$target, 
+                                                                                      size = n_id[x], replace = T, 
+                                                                                      prob = target[[y]]$n)
                                                         ))
                                                     } else {
-                                                      target[x]
+                                                      target[y]
                                                     }
-                                                  } else {target[[x]]}, #discrete targets
-                                                  this_type = x,
-                                                  type = target_type[[x]], 
-                                                  success_ratio = success[[x]],
-                                                  start = start[x],
-                                                  end = end[x])) %>%
+                                                  } else {target[[y]]}, #discrete targets
+                                                  this_type = y,
+                                                  type = target_type[[y]], 
+                                                  success_ratio = success[[y]],
+                                                  start = start[y],
+                                                  end = end[y])) %>%  #end inner map
+      purrr::list_rbind()
+   }) %>% #end outer map
     purrr::list_rbind() %>%
-    mutate(type = stringr::str_replace_all(type,"\\d+", "specific")) %>%
+    mutate(type = stringr::str_replace_all(.data$type,"\\d+", "specific")) %>%
     rowwise() %>%
-    mutate(pdi = list(do.call(paste0("pta_",stringr::str_replace_all(type, "-","")), 
-                              list(sims = simdata[[sim_num]]$obs, 
-                                   .target = target,
+    mutate(pdi = list(do.call(paste0("pta_",stringr::str_replace_all(.data$type, "-","")), 
+                              list(sims = simdata[[.data$sim_num]]$obs, 
+                                   .target = .data$target,
                                    .simTarg = simTarg,
-                                   .start = start, 
-                                   .end = end,
+                                   .start = .data$start, 
+                                   .end = .data$end,
                                    .pb = pb)))) %>%
-    mutate(success = list(purrr::map_dbl(pdi, \(x) {
-      if(str_detect(type, "-")){
-        x <= success_ratio #will return NA is x is NA
+    mutate(success = list(purrr::map_dbl(.data$pdi, \(x) {
+      if(stringr::str_detect(.data$type, "-")){
+        x <= .data$success_ratio #will return NA is x is NA
       } else {
-        x >= success_ratio
+        x >= .data$success_ratio
       }
     }))) %>%
-    mutate(prop_success = sum(success)/length(success)) %>%
-    mutate(label = sim_labels[sim_num]) %>%
-    relocate(sim_num, label, target, type, success_ratio, prop_success, success, pdi, start, end) %>%
+    mutate(prop_success = sum(.data$success)/length(.data$success)) %>%
+    mutate(label = sim_labels[.data$sim_num]) %>%
+    relocate(sim_num, label, target, type, 
+             success_ratio, prop_success, success, pdi, 
+             start, end) %>%
     ungroup() #remove rowwise
   
   #add intersection if multiple target types
   #browser()
   if(n_type > 1){
     master_pta <- split(master_pta, master_pta$this_type) %>% #split by target type number
-      .[order(match(names(.),target_type))] 
+      .[order(match(names(.), target_type))] 
     master_pta <- map(master_pta, \(x) {x$this_type = NULL; x})
     names(master_pta) <- NULL
     master_pta$intersect <- master_pta[[1]] %>% select(sim_num, target, success_1 = success, label) #get primary success
@@ -392,13 +401,14 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
       mutate(type = paste0("(",target_type,")", collapse = "")) %>%
       mutate(success_ratio = paste0("(",success,")", collapse = "")) %>%
       mutate(success = list(total_success)) %>%
-      select(sim_num, label, target, type, success_ratio, prop_success, success) %>%
+      select(sim_num, label, target, type, 
+             success_ratio, prop_success, success) %>%
       ungroup()
     
   } else { #only one target_type
     master_pta <- master_pta %>% 
-      select(-this_type) %>%
-      list(., intersect = NA)
+      select(-.data$this_type) %>%
+      list(.data, intersect = NA)
   }
   
   class(master_pta) <- c("PMpta", "list")
@@ -411,8 +421,8 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
 
 pta_auc <- function(sims, .target, .simTarg, .start, .end, .pb){
   
-  cycle <- getTxtProgressBar(.pb)
-  setTxtProgressBar(.pb, cycle+1)
+  cycle <- utils::getTxtProgressBar(.pb)
+  utils::setTxtProgressBar(.pb, cycle+1)
   
   auc <- tryCatch(makeAUC(sims, out ~ time, start = .start, end = .end), error = function(e) NA)
   if(nrow(auc)>0){
@@ -430,8 +440,8 @@ pta_auc <- function(sims, .target, .simTarg, .start, .end, .pb){
 
 pta_min <- function(sims, .target, .simTarg, .start, .end, .pb){
   
-  cycle <- getTxtProgressBar(.pb)
-  setTxtProgressBar(.pb, cycle+1)
+  cycle <- utils::getTxtProgressBar(.pb)
+  utils::setTxtProgressBar(.pb, cycle+1)
   
   mins <- sims %>% group_by(id) %>% filter(time >= .start, time <= .end)
   if(.simTarg & length(.target) > 1){
@@ -452,8 +462,8 @@ pta_min <- function(sims, .target, .simTarg, .start, .end, .pb){
 
 pta_max <- function(sims, .target, .simTarg, .start, .end, .pb){
   
-  cycle <- getTxtProgressBar(.pb)
-  setTxtProgressBar(.pb, cycle+1)
+  cycle <- utils::getTxtProgressBar(.pb)
+  utils::setTxtProgressBar(.pb, cycle+1)
   
   maxes <- sims %>% group_by(id) %>% filter(time >= .start, time <= .end) 
   if(.simTarg & length(.target) > 1){
@@ -474,8 +484,8 @@ pta_max <- function(sims, .target, .simTarg, .start, .end, .pb){
 
 pta_specific <- function(sims, .target, .simTarg, .start, .end, .pb){
   
-  cycle <- getTxtProgressBar(.pb)
-  setTxtProgressBar(.pb, cycle+1)
+  cycle <- utils::getTxtProgressBar(.pb)
+  utils::setTxtProgressBar(.pb, cycle+1)
   
   concs <- sims %>% group_by(id) %>% filter(time == .start) 
   if(.simTarg & length(.target) > 1){
@@ -493,8 +503,8 @@ pta_specific <- function(sims, .target, .simTarg, .start, .end, .pb){
 
 pta_time <- function(sims, .target, .simTarg, .start, .end, .pb){
   
-  cycle <- getTxtProgressBar(.pb)
-  setTxtProgressBar(.pb, cycle+1)
+  cycle <- utils::getTxtProgressBar(.pb)
+  utils::setTxtProgressBar(.pb, cycle+1)
   
   interval <- diff(sims$time)[1] #will be regular for sims
   
@@ -506,8 +516,8 @@ pta_time <- function(sims, .target, .simTarg, .start, .end, .pb){
   }
   if(nrow(times)>0){
     times <- times %>%
-      mutate(above = interval * (out>target)) %>%
-      mutate(cross = above - dplyr::lag(above, n = 1))
+      mutate(above = interval * (.data$out > .data$target)) %>%
+      mutate(cross = .data$above - dplyr::lag(.data$above, n = 1))
     
     crossing_rows <- which(times$cross == 0.5 | times$cross == -0.5)
     if(length(crossing_rows)>0){
@@ -515,28 +525,28 @@ pta_time <- function(sims, .target, .simTarg, .start, .end, .pb){
         arrange(id, time) %>%
         ungroup() %>%
         mutate(pair = rep(seq_along(1:(0.5*n())),each = 2)) %>%
-        group_by(pair) 
+        group_by(.data$pair) 
       
       crossing2 <- crossing1 %>%
         summarize( above = interval / (out[2] - out[1]) *
                      (target[1] - out[1]))
       
       crossing3 <- crossing1 %>%
-        filter(above == interval) %>%
+        filter(.data$above == interval) %>%
         ungroup() %>%
         mutate(above = crossing2$above)
       
       times2 <- times %>%
-        filter(is.na(cross) | cross == 0)
+        filter(is.na(.data$cross) | .data$cross == 0)
       
       pdi <- bind_rows(times2, crossing3) %>%
         group_by(id) %>%
-        summarize(sum = sum(above[-1])/24) %>%
+        summarize(sum = sum(.data$above[-1])/24) %>%
         pull(sum)
     } else {
       pdi <- times %>% 
         group_by(id) %>%
-        summarize(sum = sum(above[-1])/24) %>%
+        summarize(sum = sum(.data$above[-1])/24) %>%
         pull(sum)
     }
     pdi[pdi>1] <- 1 #in case of rounding errors

@@ -39,6 +39,7 @@ data.frame suitable for analysis and plotting of observed vs. population or
 or individual predicted outputs.
 }
 \examples{
+library(PmetricsData)
 op <- makeOP(NPex$NPdata)
 op
 names(op)

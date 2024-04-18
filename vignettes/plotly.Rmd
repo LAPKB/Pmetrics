@@ -19,6 +19,7 @@ library(Pmetrics)
 library(magrittr)
 library(dplyr)
 library(plotly)
+NPex <- PmetricsData::NPex
 ```
 
 ## Overview

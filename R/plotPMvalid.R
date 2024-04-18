@@ -78,6 +78,7 @@
 #' @importFrom dplyr quo
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' # VPC
 #' NPex_val$valid$plot()
 #'

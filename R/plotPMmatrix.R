@@ -80,6 +80,7 @@
 #' @seealso [PM_data], [PM_result]
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' # basic spaghetti plot
 #' dataEx$plot()
 #' # format line and marker
@@ -122,10 +123,10 @@ plot.PM_data <- function(x,
                          title = "",
                          xlim, ylim, ...) {
   # Plot parameters ---------------------------------------------------------
-
+  
   # process marker
   marker <- amendMarker(marker)
-
+  
   # process line
   if (any(!base::names(line) %in% c("join", "pred"))) {
     cat(paste0(crayon::red("Warning: "), "<line> should be a list with at most two named elements: ", crayon::blue("<join>"), " and/or ", crayon::blue("<pred>"), ".\n See help(\"plot.PM_data\")."))
@@ -136,15 +137,14 @@ plot.PM_data <- function(x,
   if (is.null(line$pred)) {
     line$pred <- FALSE
   }
-
+  
   join <- amendLine(line$join)
   if (is.logical(line$pred) && !line$pred) { # if line$pred is FALSE
     line$pred <- NULL
   }
   pred <- line$pred # process further later
-
-  palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
-
+  
+  
   # get the rest of the dots
   layout <- amendDots(list(...))
   
@@ -160,11 +160,11 @@ plot.PM_data <- function(x,
   if (length(legendList) > 1) {
     layout <- modifyList(layout, list(legend = within(legendList, rm(showlegend))))
   }
-
+  
   # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-
+  
   # axis labels if needed
   layout$xaxis$title <- amendTitle(xlab)
   if (is.character(ylab)) {
@@ -172,8 +172,8 @@ plot.PM_data <- function(x,
   } else {
     layout$yaxis$title <- amendTitle(ylab)
   }
-
-
+  
+  
   # axis ranges
   if (!missing(xlim)) {
     layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
@@ -181,15 +181,15 @@ plot.PM_data <- function(x,
   if (!missing(ylim)) {
     layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
   }
-
+  
   # log y axis
   if (log) {
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
-
+  
   # title
   layout$title <- amendTitle(title, default = list(size = 20))
-
+  
   # overlay
   if (is.logical(overlay)) { # T/F
     if (!overlay) { # F,default
@@ -201,23 +201,23 @@ plot.PM_data <- function(x,
     ncols <- overlay[2]
     overlay <- FALSE
   }
-
+  
   # Data processing ---------------------------------------------------------
   # make blocks
   x$standard_data <- makePMmatrixBlock(x$standard_data)
-
+  
   # time after dose
   if (tad) {
     x$standard_data$time <- calcTAD(x$standard_data)
   }
-
+  
   # filter
   presub <- x$standard_data %>%
     filter(outeq %in% !!outeq, block %in% !!block, evid == 0) %>%
     includeExclude(include, exclude)
-
-
-
+  
+  
+  
   # make group column for colors
   if (!is.null(color)) {
     if (!color %in% base::names(x$standard_data)) {
@@ -241,22 +241,22 @@ plot.PM_data <- function(x,
       rowwise() %>%
       mutate(group = paste0(group, ", block ", block))
   }
-
+  
   presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
-
-
+  
+  
   # select relevant columns
   sub <- presub %>%
     select(id, time, out, outeq, group) %>%
     ungroup()
   sub$group <- factor(sub$group)
-
+  
   # add identifier
   sub$src <- "obs"
-
+  
   # remove missing
   sub <- sub %>% filter(out != -99)
-
+  
   # now process pred data if there
   if (!is.null(pred)) {
     if (inherits(pred, c("PM_post", "PM_pop"))) {
@@ -278,40 +278,40 @@ plot.PM_data <- function(x,
         } # was in list, so remove after extraction
         predArgs <- pred[-1]
       }
-
+      
       predArgs <- amendLine(predArgs, default = list(color = NULL))
     }
-
+    
     # filter and group by id
     predsub <- predData %>%
       filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen) %>%
       includeExclude(include, exclude) %>%
       group_by(id)
-
+    
     # time after dose
     if (tad) {
       predsub$time <- calcTAD(predsub)
     }
-
+    
     # select relevant columns and filter missing
     predsub <- predsub %>%
       select(id, time, out = pred, outeq) %>%
       filter(out != -99)
-
+    
     # add group
     lookup <- dplyr::distinct(sub, id, outeq, group)
     predsub <- predsub %>% dplyr::left_join(lookup, by = c("id", "outeq"))
-
+    
     # add identifier
     predsub$src <- "pred"
   } else {
     predsub <- NULL
   } # end pred processing
-
-
-
+  
+  
+  
   # Plot function ----------------------------------------------------------
-
+  
   dataPlot <- function(allsub, overlay, includePred) {
     # set appropriate pop up text
     if (!overlay) {
@@ -321,21 +321,26 @@ plot.PM_data <- function(x,
       hovertemplate <- "Time: %{x}<br>Out: %{y}<br>ID: %{text}<extra></extra>"
       text <- ~id
     }
-
+    
     if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
-
-      if (length(colors) == 1 && colors %in% palettes$name) {
-        max_colors <- palettes$maxcolors[match(colors, palettes$name)]
-        n_colors <- length(levels(allsub$group))
-        colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
+      n_colors <- length(levels(allsub$group))
+      if(requireNamespace("RColorBrewer", quietly = TRUE)){
+        palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
+        if (length(colors) == 1 && colors %in% palettes$name) {
+          max_colors <- palettes$maxcolors[match(colors, palettes$name)]
+          colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
+        }
+      } else {
+        cat(paste0(crayon::green("Note: "), "Group colors are better with RColorBrewer package installed.\n"))
+        colors <- getDefaultColors(n_colors) #in plotly_Utils
       }
-
+      
       marker$color <- NULL
       join$color <- NULL
     } else { # no grouping
       allsub$group <- factor(1, labels = "Observed")
     }
-
+    
     p <- allsub %>%
       plotly::filter(src == "obs") %>%
       plotly::plot_ly(
@@ -353,8 +358,8 @@ plot.PM_data <- function(x,
         line = join,
         showlegend = FALSE
       )
-
-
+    
+    
     if (includePred) {
       # if(!is.null(color)){ predArgs$color <- NULL}
       p <- p %>%
@@ -375,13 +380,13 @@ plot.PM_data <- function(x,
     )
     return(p)
   } # end dataPlot
-
-
+  
+  
   # Call plot ---------------------------------------------------------------
-
-
+  
+  
   # if pred present, need to combine data and pred for proper display
-
+  
   if (!is.null(predsub)) {
     allsub <- dplyr::bind_rows(sub, predsub) %>% dplyr::arrange(id, time)
     includePred <- T
@@ -389,14 +394,17 @@ plot.PM_data <- function(x,
     allsub <- sub
     includePred <- F
   }
-
-
+  
+  
   # call the plot function and display appropriately
   if (overlay) {
     allsub <- allsub %>% dplyr::group_by(id)
     p <- dataPlot(allsub, overlay = TRUE, includePred)
     print(p)
   } else { # overlay = FALSE, ie. split them
+    if(!requireNamespace("trelliscopejs", quietly = TRUE)){
+      stop(paste0("Package trelliscopejs required to plot when overlay = ", crayon::red("FALSE")))
+    }
     sub_split <- allsub %>%
       nest(data = -id) %>%
       mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = F, includePred = includePred)))
@@ -405,7 +413,7 @@ plot.PM_data <- function(x,
       trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
     print(p)
   }
-
+  
   return(p)
 }
 
@@ -514,7 +522,7 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
     }
     arrows(x, y + upper, x, y - lower, angle = 90, code = 3, length = length, ...)
   }
-
+  
   # choose output
   if (inherits(out, "list")) {
     if (out$type == "eps") {
@@ -527,9 +535,9 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
       do.call(out$type, list())
     }
   }
-
+  
   data <- x
-
+  
   # switch to time after dose if requested
   if (tad) {
     for (i in 1:nrow(data)) {
@@ -544,7 +552,7 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
     }
     data <- data[order(data$id, data$time, -data$evid), ]
   }
-
+  
   if (!missing(include)) {
     data <- subset(data, sub("[[:space:]]+", "", as.character(data$id)) %in% as.character(include))
     if (!is.null(pred)) pred <- pred[sub("[[:space:]]+", "", as.character(pred$id)) %in% as.character(include), ]
@@ -553,9 +561,9 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
     data <- subset(data, !sub("[[:space:]]+", "", as.character(data$id)) %in% as.character(exclude))
     if (!is.null(pred)) pred <- pred[!sub("[[:space:]]+", "", as.character(pred$id)) %in% as.character(exclude), ]
   }
-
+  
   if (missing(col)) col <- c("black", "red", "blue", "green", "purple", "orange", "pink", "gray50")
-
+  
   # make error bar object
   obsdata <- data[data$evid == 0, ]
   if (is.logical(errbar)) {
@@ -571,7 +579,7 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
       outeq = obsdata$outeq
     )
   }
-
+  
   if (!missing(legend)) {
     if (inherits(legend, "list")) {
       legend$plot <- T
@@ -589,9 +597,9 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
   } else {
     legend <- list(plot = FALSE)
   }
-
+  
   if (length(grep("SIM", data$id)) > 0) data$id <- as.numeric(gsub("[[:alpha:]]", "", data$id))
-
+  
   if (!is.null(pred)) {
     # remove SIM prefix from simulated IDs if necessary
     if (length(grep("SIM", pred$id)) > 0) pred$id <- as.numeric(gsub("[[:alpha:]]", "", pred$id))
@@ -604,7 +612,7 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
     # multiply by mult
     pred$pred <- pred$pred * mult
   }
-
+  
   data$out[data$out == -99] <- NA
   data$out <- data$out * mult
   if (log) {
@@ -627,19 +635,19 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
   numeqt <- max(data$outeq, na.rm = TRUE)
   # make sure pch is long enough
   pch <- rep(pch, numeqt)
-
+  
   # make event blocks, delimited by evid=4
   data <- makePMmatrixBlock(data)
-
+  
   # filter data and predictions (if present) by block
   data <- data[data$block == block, ]
   if (!is.null(pred)) {
     pred <- pred[pred$block == block, ]
   }
-
+  
   # set outeq if missing to all
   if (missing(outeq)) outeq <- 1:numeqt
-
+  
   # if length of outeq is only 1
   if (length(outeq) == 1) {
     omit <- which(!is.na(data$outeq) & data$outeq != outeq)
@@ -680,7 +688,7 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
       if (is.null(legend$legend)) legend$legend <- paste("Output", outeq)
       if (is.null(legend$fill)) legend$fill <- col[outeq]
       if (is.na(legend$fill[1])) legend$fill <- NULL
-
+      
       # color predicted if supplied
       if (!is.null(pred)) {
         if (!missing(col.pred)) {
@@ -701,7 +709,7 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
     if (is.null(legend$legend)) legend$legend <- paste("Output", outeq)
     if (is.null(legend$fill)) legend$fill <- col[outeq]
     if (is.na(legend$fill[1])) legend$fill <- NULL
-
+    
     # color predicted if supplied
     if (!is.null(pred)) {
       if (!missing(col.pred)) {
@@ -717,7 +725,7 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
       }
     }
   }
-
+  
   if (missing(xlim)) {
     xlim.flag <- T
   } else {
@@ -733,14 +741,14 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
   } else {
     main.flag <- F
   }
-
+  
   # PLOTS -------------------------------------------------------------------
-
+  
   # don't overlay
   if (!overlay) {
     par(mfrow = layout)
     devAskNewPage(ask = TRUE)
-
+    
     # predicted is supplied
     if (!is.null(pred)) {
       for (i in unique(data$id)) {
@@ -837,7 +845,7 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
             if (is.null(grid$y) | all(!is.na(grid$y))) grid$y <- axTicks(2)
           }
         }
-
+        
         if (yaxt == "n") logAxis(2, grid = !all(is.na(grid$y)))
         abline(v = grid$x, lty = 1, col = "lightgray")
         abline(h = grid$y, lty = 1, col = "lightgray")
@@ -883,7 +891,7 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
           ylim[1][ylim[1] == 0] <- 0.5 * min(data$out, na.rm = TRUE)
         }
       }
-
+      
       if (main.flag) {
         main <- ""
       }
@@ -978,7 +986,7 @@ plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mul
       if (legend$plot) do.call("legend", legend)
     }
   }
-
+  
   # clean up
   par(mfrow = c(1, 1))
   # close device if necessary

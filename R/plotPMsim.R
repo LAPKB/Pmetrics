@@ -95,6 +95,7 @@
 #' @importFrom dplyr summarize
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' simEx$plot()
 #' simEx$plot(log = FALSE, line = list(color = "orange"))
 #' @family PMplots

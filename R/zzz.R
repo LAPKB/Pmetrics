@@ -57,7 +57,7 @@
   }
   
   # check for PmetricsData
-  if (!suppressWarnings(suppressMessages(require(PmetricsData)))){
+  if (!suppressWarnings(suppressMessages(requireNamespace("PmetricsData")))){
     packageStartupMessage(paste0(crayon::green("Important: "), "PmetricsData package required for examples. Run getPMdata() to install from github.\n"))
   } 
 

@@ -22,6 +22,7 @@ Generates an object of class \emph{PMpta.targ} which can
 be used in the \link{makePTA} method for \link{PM_pta} or \link{PM_sim} for targets sampled from a distribution.
 }
 \examples{
+library(PmetricsData)
 makePTAtarget(mic1)
 }
 \seealso{

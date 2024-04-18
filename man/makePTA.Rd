@@ -84,6 +84,8 @@ Ideally then, the simulated datset should contain sufficient observations within
 distributions, or "mean".  Default is "median".}
 
 \item{block}{Which block to plot, where a new block is defined by dose resets (evid = 4); default is 1.}
+
+\item{\dots}{Not currently used}
 }
 \value{
 The output of \code{makePTA} is a list of class \emph{PMpta},
@@ -121,6 +123,7 @@ Calculates the Percent Target Attainment (PTA)
 Simulations typically differ by dose, but may differ by other features such as children vs. adults.
 }
 \examples{
+library(PmetricsData)
 pta1 <- PM_pta$new(simEx, 
                  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
                  target = list(2^(-2:6), 1, 50),

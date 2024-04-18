@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, echo = F, message = F}
+```{r setup, echo=F, message=F}
 library(Pmetrics)
 ```
 

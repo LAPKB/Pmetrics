@@ -81,6 +81,7 @@
 #' @seealso [makeOP], [PM_result], [schema]
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' NPex$op$plot()
 #' NPex$op$plot(pred.type = "pop")
 #' NPex$op$plot(line = list(lm = TRUE, ref = TRUE, loess = FALSE))

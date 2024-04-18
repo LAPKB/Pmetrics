@@ -15,7 +15,13 @@
 #' @author Michael Neely
 #'
 build_model <- function(...) {
-  requireNamespace("shiny")
+  if(!requireNamespace("shiny", quietly = TRUE)){ #suggests
+    stop("The shiny package must be installed to run build_plot().\n")
+  }
+  if(!requireNamespace("bslib", quietly = TRUE)){ #suggests
+    stop("The bslib package must be installed to run build_plot().\n")
+  }
+  requireNamespace("plotly") #imports
 
   obj <- list(...)
   data_arg <- purrr::detect(obj, \(x) inherits(x, "PM_data"))
@@ -24,12 +30,19 @@ build_model <- function(...) {
 
   # Define UI for application that draws a histogram
   shiny::shinyApp(
-    ui <- fluidPage(
-      theme = shinythemes::shinytheme("slate"),
+    
+    ui <- bslib::page_fluid(
+      theme = bslib::bs_theme(bootswatch = "slate"),
+      title = "Pmetrics Model Builder App",
+      widths = c(3, 9),
 
-      # Application title
-      titlePanel("Pmetrics Model Builder App"),
-      # Layout
+
+    # ui <- fluidPage(
+    #   theme = shinythemes::shinytheme("slate"),
+    # 
+    #   # Application title
+    #   titlePanel("Pmetrics Model Builder App"),
+    #   # Layout
 
       # Model components
       #  #Formatting
@@ -49,11 +62,14 @@ build_model <- function(...) {
                 </script>
                 "))
       ),
-      navlistPanel(
+      # navlistPanel(
+      bslib::navset_pill_list(
+        
         "Model Components",
         widths = c(3, 9),
         # tabPanel: Model Library
-        tabPanel(
+        # tabPanel(
+        bslib::nav_panel(
           "Model Library",
           actionButton(
             "help_library",
@@ -128,7 +144,8 @@ build_model <- function(...) {
           uiOutput("bottom_library")
         ), # end tabPanel: Model Library
         # tabPanel: Primary
-        tabPanel(
+        # tabPanel(
+        bslib::nav_panel(
           "PRImary",
           actionButton(
             "help_pri",
@@ -165,7 +182,8 @@ build_model <- function(...) {
         ), # end tabPanel: Primary
         # tabPanel: Covariates
 
-        tabPanel(
+        # tabPanel(
+        bslib::nav_panel(
           "COVariates",
           actionButton(
             "help_cov",
@@ -177,7 +195,8 @@ build_model <- function(...) {
           uiOutput("bottom_cov"),
         ), # end tabPanel: Covariates
         # tabPanel: Secondary
-        tabPanel(
+        # tabPanel(
+        bslib::nav_panel(
           "SECondary",
           actionButton(
             "help_sec",
@@ -191,16 +210,9 @@ build_model <- function(...) {
           ),
           uiOutput("bottom_sec")
         ), # end tabPanel: Secondary
-        # tabPanel: Bolus
-        # tabPanel("BOLus",
-        #          textAreaInput("bolComp",
-        #                        "Bolus compartments:",
-        #                        rows = NULL),
-        #          uiOutput("bottom_bol")
-        #
-        # ), #end tabPanel: Bolus
-        # tabPanel: Initial Conditions
-        tabPanel(
+        
+        # tabPanel(
+        bslib::nav_panel(
           "INItial Conditions",
           actionButton(
             "help_ini",
@@ -219,7 +231,8 @@ build_model <- function(...) {
           uiOutput("bottom_ini")
         ), # end tabPanel: Initial Conditions
         # tabPanel: FA (bioavailability)
-        tabPanel(
+        # tabPanel(
+        bslib::nav_panel(
           "FA (bioavailability)",
           actionButton(
             "help_fa",
@@ -239,7 +252,8 @@ build_model <- function(...) {
         ), # end tabPanel: F
         # tabPanel: Lag
 
-        tabPanel(
+        # tabPanel(
+        bslib::nav_panel(
           "LAG time",
           actionButton(
             "help_lag",
@@ -258,7 +272,8 @@ build_model <- function(...) {
           uiOutput("bottom_lag")
         ), # end tabPanel: Lag
         # tabPanel: Equations
-        tabPanel(
+        # tabPanel(
+        bslib::nav_panel(
           "EQuatioNs",
           actionButton(
             "help_eqn",
@@ -279,7 +294,8 @@ build_model <- function(...) {
           uiOutput("bottom_eqn")
         ), # end tabPanel: Equations
         # tabPanel: Outputs
-        tabPanel(
+        # tabPanel(
+        bslib::nav_panel(
           "OUTputs",
           actionButton(
             "help_out",
