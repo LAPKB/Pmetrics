@@ -24,6 +24,7 @@
 #' @author Michael Neely
 #' @seealso \code{\link{NPparse}}, \code{\link{ITparse}},  \code{\link{plot.PMcycle}}
 #' @examples
+#' library(PmetricsData)
 #' cycle <- makeCycle(NPex$NPdata)
 #' cycle
 #' names(cycle)

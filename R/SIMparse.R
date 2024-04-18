@@ -235,20 +235,7 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
   }
 
   if (parallel) {
-    # if (length(grep("doParallel", installed.packages()[, 1])) == 0) {
-    #   install.packages("doParallel", repos = "http://cran.rstudio.com", dependencies = T)
-    # }
-    # if (length(grep("foreach", installed.packages()[, 1])) == 0) {
-    #   install.packages("foreach", repos = "http://cran.rstudio.com", dependencies = T)
-    # }
-    # doParallel.installed <- require(doParallel, warn.conflicts = F, quietly = T)
-    # foreach.installed <- require(foreach, warn.conflicts = F, quietly = T)
-    # if (!doParallel.installed | !foreach.installed) {
-    #   warning("Required package failed to be installed. SIMparse will run in serial mode.\n", call. = F, immediate. = !quiet)
-    #   parallel <- F
-    # } else {
     no_cores <- parallel::detectCores()
-    # }
   }
 
   # initialize return objects
@@ -262,6 +249,24 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
   if (!quiet & !parallel) {
     pb <- txtProgressBar(min = 0, max = nfiles, style = 3)
   }
+  
+  
+  par1 <- requireNamespace("doParallel", quietly = TRUE)
+  par2 <- requireNamespace("foreach", quietly = TRUE)
+  par3 <- requireNamespace("parallel", quietly = TRUE)
+  
+  if(!all(c(par1, par2, par3))){ #if any above packages are missing
+    
+    cat(paste0(crayon::green("NOTE: "), "Install the following package(s) for parallel processing: ",
+               crayon::blue(paste(c("doParallel", "foreach", "parallel")[c(!par1, !par2, !par3)], collapse = ", ")),
+               ".\n"))
+    
+    parallel <- FALSE
+    
+  }
+
+  
+  
 
   if (parallel) {
     cl <- parallel::makeCluster(no_cores, setup_timeout = 0.5)

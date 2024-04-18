@@ -20,6 +20,7 @@
 #' @author Michael Neely
 #' @seealso \code{\link{NPparse}}, \code{\link{ITparse}}, \code{\link{plot.PMcov}}, \code{\link{summary.PMcov}}
 #' @examples
+#' library(PmetricsData)
 #' cov <- makeCov(NPex$NPdata)
 #' cov
 #' names(cov)

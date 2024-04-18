@@ -13,6 +13,7 @@
 #' @return A data frame with two columns named targets and n, of class *PMpta.targ*.
 #' @seealso [makePTA]
 #' @examples
+#' library(PmetricsData)
 #' makePTAtarget(mic1)
 #' @export
 

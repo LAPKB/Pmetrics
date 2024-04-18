@@ -30,6 +30,7 @@ For each subject, \code{makeCov} extracts covariate information and Bayesian pos
 This output of this function is suitable for exploration of covariate-parameter, covariate-time, or parameter-time relationships.
 }
 \examples{
+library(PmetricsData)
 cov <- makeCov(NPex$NPdata)
 cov
 names(cov)

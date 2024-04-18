@@ -8,6 +8,7 @@ compile.*
 .vscode
 ^_pkgdown\.yml$
 ^docs$
+^doc$
 ^pkgdown$
 ^\.github$
 ^Meta$

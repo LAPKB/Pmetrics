@@ -97,6 +97,7 @@
 #' @export
 #' @examples
 #' \dontrun{
+#' library(PmetricsData)
 #' pta1 <- simEx$pta(
 #'   simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
 #'   targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
@@ -174,7 +175,7 @@ plot.PM_pta <- function(x,
   }
   
   #filter by include/exclude
-  pta <- pta %>% filter(sim_num %in% simnum)
+  pta <- pta %>% filter(.data$sim_num %in% simnum)
   
   n_sim <- length(simnum)
   
@@ -269,11 +270,11 @@ plot.PM_pta <- function(x,
     if(at == "intersect") stop("PDI plot not possible on intersection. Choose an individual PTA with at = 1, for example.")
     if (simTarg == 1) { # discrete targets
       p <- pta %>% 
-        group_by(sim_num,target) %>% 
+        group_by(.data$sim_num,.data$target) %>% 
         rowwise() %>%
-        mutate(lower = quantile(pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
-               median = median(pdi),
-               upper = quantile(pdi, probs = 0.5 + ci / 2, na.rm = TRUE)) %>%
+        mutate(lower = quantile(.data$pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
+               median = median(.data$pdi),
+               upper = quantile(.data$pdi, probs = 0.5 + ci / 2, na.rm = TRUE)) %>%
         ungroup() %>% 
         mutate(label = factor(label)) %>% 
         group_by(label) %>%
@@ -304,12 +305,12 @@ plot.PM_pta <- function(x,
     } else { # random targets
       
       p <- pta %>% 
-        mutate(simnum = factor(sim_num, labels=simLabels)) %>% 
+        mutate(simnum = factor(.data$sim_num, labels=simLabels)) %>% 
         group_by(simnum) %>% 
         rowwise() %>%
-        mutate(lower = quantile(pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
-               median = median(pdi),
-               upper = quantile(pdi, probs = 0.5 + ci / 2, na.rm = TRUE)) %>%
+        mutate(lower = quantile(.data$pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
+               median = median(.data$pdi),
+               upper = quantile(.data$pdi, probs = 0.5 + ci / 2, na.rm = TRUE)) %>%
         plotly::plot_ly(x = ~simnum, y = ~median) %>%
         plotly::add_markers(error_y = list(symmetric = FALSE,
                                    array = ~(upper - median),
@@ -330,7 +331,7 @@ plot.PM_pta <- function(x,
 
     if (simTarg == 1) { # set targets
       p <- pta %>% 
-        mutate(simnum = factor(sim_num, labels=simLabels)) %>% 
+        mutate(simnum = factor(.data$sim_num, labels=simLabels)) %>% 
         group_by(simnum) %>%
         plotly::plot_ly(x = ~target, y = ~prop_success, 
                         type = "scatter", mode = "lines+markers",
@@ -356,7 +357,7 @@ plot.PM_pta <- function(x,
     } else { # random targets
       
       p <- pta %>%
-        mutate(simnum = factor(sim_num, labels=simLabels)) %>% 
+        mutate(simnum = factor(.data$sim_num, labels=simLabels)) %>% 
         plotly::plot_ly(x = ~simnum, y = ~prop_success,
                         type = "scatter", mode = "lines+markers",
                         line = list(color = line$color, width = line$width, dash = line$dash),

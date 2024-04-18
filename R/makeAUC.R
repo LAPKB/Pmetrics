@@ -34,6 +34,7 @@
 #' @author Michael Neely
 #' @seealso [PM_result], [PM_sim], [PM_op]
 #' @examples
+#' library(PmetricsData)
 #' NPex$op$auc()
 #' Indometh %>%
 #'   dplyr::mutate(id = Subject) %>%

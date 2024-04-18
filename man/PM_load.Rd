@@ -37,7 +37,7 @@ An R6 \link{PM_result}.
 Loads all the data from an \emph{NPAG} or \emph{IT2B} run.
 }
 \seealso{
-\link{PMreport}, \link{NPparse}, \link{ITparse},
+\link{NPparse}, \link{ITparse},
 \link{makeFinal}, \link{makeCycle}, \link{makeOP}, \link{makeCov},
 \link{makePop}, \link{makePost}
 }

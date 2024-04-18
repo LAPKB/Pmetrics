@@ -112,7 +112,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
 
   batch <- F
   if (remote == T) {
-    return(.PMremote_run(model = model, data = data, server_address = server_address, run, overwrite))
+    #return(.PMremote_run(model = model, data = data, server_address = server_address, run, overwrite))
   } else {
     return(.PMrun(
       type = "NPAG", model = model, data = data, run = run,

@@ -142,6 +142,7 @@ variability in the data. For an npde plot, one expects to see approximately
 normally distributed normalized prediction errors.
 }
 \examples{
+library(PmetricsData)
 # VPC
 NPex_val$valid$plot()
 

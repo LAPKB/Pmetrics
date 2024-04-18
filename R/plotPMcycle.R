@@ -62,6 +62,7 @@
 #' @seealso [makeCycle], [PM_result], [schema]
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' NPex$cycle$plot()
 #' NPex$cycle$plot(omit = 0, marker = list(symbol = "cross"), line = list(width = 1))
 #' NPex$cycle$plot(
@@ -69,8 +70,8 @@
 #'   line = list(width = 3)
 #' )
 #' NPex$cycle$plot(
-#'   grid = F,
-#'   xlab = list(bold = F, font = list(color = "red", family = "Arial", size = 10))
+#'   grid = FALSE,
+#'   xlab = list(bold = FALSE, font = list(color = "red", family = "Arial", size = 10))
 #' )
 #' @family PMplots
 
@@ -95,7 +96,11 @@ plot.PM_cycle <- function(x,
   
   # housekeeping
   
-  nvar <- ncol(data$mean %>% select(-cycle))
+  nvar <- if(inherits(data$mean, "matrix")){
+    ncol(data$mean)
+  } else {
+    ncol(data$mean %>% select(-cycle))
+  }
   
   line <- amendLine(line, default = list(color = "dodgerblue", width = 2))
   marker <- amendMarker(marker, default = list(
@@ -103,10 +108,14 @@ plot.PM_cycle <- function(x,
     color = "dodgerblue",
     size = 4, line = list(width = 0)
   ))
+  
   if (missing(colors)) {
     colors <- "Set2"
   } else {
-    colors <- rep(colors, nvar) #ensure long enough
+    palettes <- getPalettes() #in plotly_Utils
+    if(length(colors) == 1 && !colors %in% palettes){
+      colors <- rep(colors, nvar) #ensure long enough
+    } 
   }
   
   if (missing(linetypes)) {
@@ -218,14 +227,28 @@ plot.PM_cycle <- function(x,
                                     "Gamma/Lambda"
   )
   
-  if(max(data$gamlam$outeq) > 1){
-    all_equal <- data$gamlam %>% group_by(outeq) %>% 
-      summarize(checksum = sum(value)) %>% distinct(checksum) %>%
-      nrow(.) %>% magrittr::equals(1) 
-  } else {
-    all_equal <- FALSE
+  #amend older versions of gamma if needed
+  if(is.matrix(data$gamlam)){
+    n_cyc <- max(data$cycnum)
+    n_out <- 1
+    data$gamlam <- tibble::as_tibble(data$gamlam, .name_repair = "minimal") 
+    if(ncol(data$gamlam) == 1 & n_out > 1){data$gamlam <- cbind(data$gamlam, replicate((n_out-1),data$gamlam[,1]))} 
+    names(data$gamlam) <- as.character(1:ncol(data$gamlam))
+    data$gamlam <- data$gamlam %>% pivot_longer(cols = everything(), 
+                                                  values_to = "value", names_to = "outeq") %>%
+      mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
+      select(cycle, value, outeq)
   }
+ 
   
+ # if(max(data$gamlam$outeq) > 1){
+    # all_equal <- data$gamlam %>% group_by(outeq) %>% 
+    #   summarize(checksum = sum(value)) %>% distinct(.data$checksum) %>%
+    #   nrow(.) %>% magrittr::equals(1) 
+  # } else {
+  #   all_equal <- FALSE
+  # }
+  # 
   p3 <- data$gamlam %>% filter(cycle %in% include) %>%
     plotly::plot_ly(
       x = ~cycle, y = ~value, type = "scatter", mode = "lines+markers",
@@ -235,7 +258,7 @@ plot.PM_cycle <- function(x,
       linetype = ~outeq,
       linetypes = linetypes,
       marker = list(size = marker$size, symbol = marker$symbol),
-      text = ifelse(all_equal, "All", ~outeq),
+      text = ~outeq,
       hovertemplate = "Cycle: %{x:i}<br>Gam/Lam: %{y:.3f}<br>Outeq: %{text}<extra></extra>",
       showlegend = FALSE
     ) %>%
@@ -243,81 +266,94 @@ plot.PM_cycle <- function(x,
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
-
-
-# normalized plots
-
-normalized_plot <- function(.par, range) {
-  layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-                                    paste0("<b>Normalized ", .par, "</b>"),
-                                    paste0("Normalized ", .par)
-  )
-  layout$yaxis$range <- range
   
-  .p <- graph_data[[.par]] %>%
-    pivot_longer(cols = -cycle, names_to = "par") %>%
-    plot_ly(
-      x = ~cycle, y = ~value, type = "scatter", mode = "markers+lines",
-      color = ~par,
-      colors = colors,
-      line = list(width = line$width),
-      linetype = ~par,
-      linetypes = linetypes,
-      marker = list(size = marker$size, symbol = marker$symbol),
-      text = ~par,
-      hovertemplate = paste0("Cycle: %{x:i}<br>Parameter: %{text}<br>", .par, ": %{y:.3f}<br><extra></extra>"),
-      showlegend = FALSE,
-      legendgroup = "Normalized"
-    ) %>%
-    layout(
-      xaxis = layout$xaxis,
-      yaxis = layout$yaxis
+  
+  # normalized plots
+  
+  normalized_plot <- function(.par, range) {
+    layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
+                                      paste0("<b>Normalized ", .par, "</b>"),
+                                      paste0("Normalized ", .par)
     )
-  return(.p)
-}
-graph_data$Mean <- data$mean[include, ] 
-graph_data$Median <- data$median[include, ] 
-graph_data$SD <- data$sd[include,  ]
+    layout$yaxis$range <- range
+    
+    .p <- graph_data[[.par]] %>%
+      pivot_longer(cols = -cycle, names_to = "par") %>%
+      plot_ly(
+        x = ~cycle, y = ~value, type = "scatter", mode = "markers+lines",
+        color = ~par,
+        colors = colors,
+        line = list(width = line$width),
+        linetype = ~par,
+        linetypes = linetypes,
+        marker = list(size = marker$size, symbol = marker$symbol),
+        text = ~par,
+        hovertemplate = paste0("Cycle: %{x:i}<br>Parameter: %{text}<br>", .par, ": %{y:.3f}<br><extra></extra>"),
+        showlegend = FALSE,
+        legendgroup = "Normalized"
+      ) %>%
+      layout(
+        xaxis = layout$xaxis,
+        yaxis = layout$yaxis
+      )
+    return(.p)
+  }
+  
+  #update objects if needed
+  if(is.matrix(data$mean)){
+    n_cyc <- max(data$cycnum)
+    data$mean <- tibble::tibble(cycle = 1:n_cyc) %>% 
+      dplyr::bind_cols(tidyr::as_tibble(data$mean))
+    data$median <- tibble::tibble(cycle = 1:n_cyc) %>% 
+      dplyr::bind_cols(tidyr::as_tibble(data$median))
+    data$sd <- tibble::tibble(cycle = 1:n_cyc) %>% 
+      dplyr::bind_cols(tidyr::as_tibble(data$sd))
+  }
 
-graph_range <- range(graph_data$Mean[,-1], graph_data$Median[,-1], graph_data$SD[,-1])
-
-
-p4 <- normalized_plot("Mean", graph_range)
-p5 <- normalized_plot("Median", graph_range)
-
-if (!all(is.na(data$sd))) {
-  p6 <- normalized_plot("SD", graph_range)
-} else {
-  p6 <- plotly::plotly_empty(type = "scatter", mode = "markers", showlegend = F) %>%
-    layout(title = list(
-      text = "Initial standard deviation = 0.\nAssay error may be too large.",
-      yref = "paper",
-      y = 0.5
-    ))
-}
-
-
-
-p_r1 <- plotly::subplot(p1, p2, p3,
-                        nrows = 1,
-                        titleX = F, titleY = T,
-                        margin = c(0.05, 0.05, 0, 0.05)
-)
-p_r2 <- plotly::subplot(p4, p5, p6,
-                        nrows = 1,
-                        titleX = T, titleY = T,
-                        margin = c(0.05, 0.05, 0, 0.05)
-)
-p <- plotly::subplot(p_r1, p_r2,
-                     nrows = 2,
-                     titleX = T, shareX = F,
-                     titleY = T,
-                     margin = c(0.05, 0.05, 0, 0.05)
-) %>%
-  layout(legend = list(y = 0.4))
-
-print(p)
-return(p)
+  
+  graph_data$Mean <- data$mean[include, ] 
+  graph_data$Median <- data$median[include, ] 
+  graph_data$SD <- data$sd[include,  ]
+  
+  graph_range <- range(graph_data$Mean[,-1], graph_data$Median[,-1], graph_data$SD[,-1])
+  
+  
+  p4 <- normalized_plot("Mean", graph_range)
+  p5 <- normalized_plot("Median", graph_range)
+  
+  if (!all(is.na(data$sd))) {
+    p6 <- normalized_plot("SD", graph_range)
+  } else {
+    p6 <- plotly::plotly_empty(type = "scatter", mode = "markers", showlegend = F) %>%
+      layout(title = list(
+        text = "Initial standard deviation = 0.\nAssay error may be too large.",
+        yref = "paper",
+        y = 0.5
+      ))
+  }
+  
+  
+  
+  p_r1 <- plotly::subplot(p1, p2, p3,
+                          nrows = 1,
+                          titleX = F, titleY = T,
+                          margin = c(0.05, 0.05, 0, 0.05)
+  )
+  p_r2 <- plotly::subplot(p4, p5, p6,
+                          nrows = 1,
+                          titleX = T, titleY = T,
+                          margin = c(0.05, 0.05, 0, 0.05)
+  )
+  p <- plotly::subplot(p_r1, p_r2,
+                       nrows = 2,
+                       titleX = T, shareX = F,
+                       titleY = T,
+                       margin = c(0.05, 0.05, 0, 0.05)
+  ) %>%
+    layout(legend = list(y = 0.4))
+  
+  print(p)
+  return(p)
 }
 
 #' @title Plot NPAG Cycle Information

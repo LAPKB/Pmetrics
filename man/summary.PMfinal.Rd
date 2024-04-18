@@ -59,6 +59,7 @@ and the standard errors of these terms, using SE (mean) = SD/sqrt(nsub) and
 SE (var) = var * sqrt(2/(nsub-1)).
 }
 \examples{
+library(PmetricsData)
 NPex$final$summary()
 ITex$final
 }

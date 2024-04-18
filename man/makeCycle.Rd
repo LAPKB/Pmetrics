@@ -34,6 +34,7 @@ This function will parse the output of \code{\link{NPparse}} or \code{\link{ITpa
 list suitable for analysis and plotting of NPAG or IT2B cycle information.
 }
 \examples{
+library(PmetricsData)
 cycle <- makeCycle(NPex$NPdata)
 cycle
 names(cycle)

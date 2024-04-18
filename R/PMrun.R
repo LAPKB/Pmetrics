@@ -5,7 +5,7 @@
                    auto, intern, quiet, overwrite, nocheck, parallel, batch,
                    alq, report) {
   currwd <- getwd() # set the current working directory to go back to it at the end
-  if (missing(alq)) alq <- F
+  if (missing(alq)) alq <- FALSE
   if (missing(batch)) batch <- F
   if (Sys.getenv("env") == "docker") intern <- T
 
@@ -571,7 +571,7 @@
       ), "repScript.R",
       sep = ""
     )
-    alquimia_data_script <- paste(normalizePath(getPMpath(), winslash = "/"), "/report/genAlquimiaData.R", sep = "")
+    #alquimia_data_script <- paste(normalizePath(getPMpath(), winslash = "/"), "/report/genAlquimiaData.R", sep = "")
     outpath <- c(
       paste(workdir, "/outputs", sep = ""),
       paste(workdir, "\\outputs", sep = ""),
