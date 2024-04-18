@@ -63,6 +63,19 @@ ITload <- function(...) {
   lifecycle::deprecate_warn("1.3.0", "ITload()", details = "See ?PM_load.")
 }
 
+#' @title Pmetrics run report
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' Use PM_report() instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @export
+PMreport <- function(...) {
+  lifecycle::deprecate_warn("2.0.0", "PMreport()", details = "See ?PM_report.")
+}
+
 #' @title NPAG run report
 #' @description
 #' `r lifecycle::badge("deprecated")`

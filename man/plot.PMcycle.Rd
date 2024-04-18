@@ -47,6 +47,7 @@ accessed as the \verb{$data} object within the \verb{$cycle} field of a \link{PM
 be replaced by \link{plot.PM_cycle}.
 }
 \examples{
+library(PmetricsData)
 plot(NPex$cycle$data)
 plot(NPex$cycle$data, omit = 0)
 }

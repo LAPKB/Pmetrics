@@ -158,6 +158,7 @@ can be overridden by a supplied character vector of output names.
 }
 }
 \examples{
+library(PmetricsData)
 plot(NPex$data$data)
 }
 \seealso{
