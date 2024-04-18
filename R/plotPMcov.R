@@ -84,6 +84,7 @@
 #' @seealso [makeCov], [PM_result], [schema]
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' NPex$cov$plot(V ~ wt)
 #' NPex$cov$plot(Ke ~ wt, line = list(lm = TRUE, ref = FALSE, loess = FALSE))
 #' NPex$cov$plot(Ke ~ wt, line = list(loess = list(ci = 0.9, color = "green")))
@@ -165,7 +166,6 @@ plot.PM_cov <- function(x,
   loessLine <- amendLine(line$loess, default = list(color = "dodgerblue", dash = "dash"))
   refLine <- amendLine(line$ref, default = list(color = "grey", dash = "dot"))
 
-  palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
   if (missing(colors)) {
     colors <- "Spectral"
   }
@@ -303,14 +303,25 @@ plot.PM_cov <- function(x,
   } else { # timearg plot
     marker$color <- NULL
     loessLine$color <- NULL
-    max_colors <- palettes$maxcolors[match(colors, palettes$name)]
+    
+    
     n_colors <- length(unique(dat$id))
-    # expand colors as needed
-    if (all(colors %in% palettes$name)) {
-      colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
+    if(requireNamespace("RColorBrewer", quietly = TRUE)){
+      palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
+      max_colors <- palettes$maxcolors[match(colors, palettes$name)]
+      # expand colors as needed
+      if (all(colors %in% palettes$name)) {
+        colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
+      } else {
+        colors <- colorRampPalette(colors)(n_colors)
+      }
     } else {
-      colors <- colorRampPalette(colors)(n_colors)
+      cat(paste0(crayon::green("Note: "), "Colors are better with RColorBrewer package installed.\n"))
+      colors <- getDefaultColors(n_colors) #in plotly_Utils
     }
+    
+    
+    
     p <- dat %>%
       group_by(id) %>%
       plotly::plot_ly(

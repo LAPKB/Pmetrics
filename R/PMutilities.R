@@ -1997,11 +1997,11 @@ weighted_median <- function(values, weights) {
 #'
 #' @details
 #' This function installs the **PmetricsData** package available on github. 
-#' The repository URL is [https://github.com/LAPKB/PmetricsData]. These data
+#' The repository URL is [https://github.com/LAPKB/PmetricsData](https://github.com/LAPKB/PmetricsData). These data
 #' are used in all Pmetrics examples.
 #'
 #' @export
 getPMdata <- function(){
     remotes::install_github("LAPKB/PmetricsData")
-  require(PmetricsData)
+  requireNamespace("PmetricsData")
 }

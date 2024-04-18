@@ -36,6 +36,7 @@ fails, the file will not be written and a message will be printed on the console
 \examples{
 \dontrun{
 # write to the current directory
+library(PmetricsData)
 NPex$data$write("data.csv")
 }
 }

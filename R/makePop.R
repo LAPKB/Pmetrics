@@ -19,6 +19,7 @@
 #' \item{block}{ Observation blocks within subjects as defined by EVID=4 dosing events}
 #' @author Michael Neely
 #' @examples
+#' library(PmetricsData)
 #' pop <- makePop(NPdata = NPex$NPdata)
 #' @export
 

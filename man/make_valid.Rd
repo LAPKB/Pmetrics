@@ -66,6 +66,7 @@ superimposable and \code{tad} should
 }
 \examples{
 \dontrun{
+library(PmetricsData)
 valid <- NPex$validate(limits = c(0, 3))
 }
 

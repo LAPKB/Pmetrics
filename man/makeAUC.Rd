@@ -69,6 +69,7 @@ If a PM_pop, PM_post, PM_op, or PMsim object is specified,
 \code{formula} is not required.
 }
 \examples{
+library(PmetricsData)
 NPex$op$auc()
 Indometh \%>\%
   dplyr::mutate(id = Subject) \%>\%

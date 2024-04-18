@@ -47,7 +47,7 @@ PM_model <- R6::R6Class("PM_Vmodel",
                           #' will update the other. To avoid this behavior, use the $clone() function
                           #' first if you want to create a copied, yet independent new model.
                           #' @examples
-                          #' mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+                          #' mod2 <- PmetricsData::modEx$clone() #create an independent copy of modEx called mod2
                           #' mod2$update(list(
                           #'   pri = list(
                           #'    Ke = ab(0, 1), #change the range
@@ -58,7 +58,7 @@ PM_model <- R6::R6Class("PM_Vmodel",
                           #' ))
                           #' #note that they are different now
                           #' mod2
-                          #' modEx
+                          #' PmetricsData::modEx
                           update = function(changes_list) {
                             return(invisible())
                           },
@@ -68,7 +68,7 @@ PM_model <- R6::R6Class("PM_Vmodel",
                           #' @param engine Currently only "npag".
                           #' @examples
                           #' \dontrun{
-                          #' modEx$write("model.txt")
+                          #' PmetricsData::modEx$write("model.txt")
                           #' }
                           write = function(model_path = "genmodel.txt", engine = "npag") {
                             return(invisible())

@@ -22,6 +22,7 @@
 #' @examples
 #' \dontrun{
 #' # write to the current directory
+#' library(PmetricsData)
 #' NPex$data$write("data.csv")
 #' }
 PMwriteMatrix <- function(data, filename, override = F, version = "DEC_11", header = T) {

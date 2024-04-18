@@ -52,6 +52,7 @@
 #' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' NPex$model$plot()
 #' @family PMplots
 

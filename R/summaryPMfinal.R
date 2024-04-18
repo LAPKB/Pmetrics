@@ -48,6 +48,7 @@
 #' @seealso [makeFinal], [ITparse]
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' NPex$final$summary()
 #' ITex$final
 summary.PMfinal <- function(object, lower = 0.025, upper = 0.975, ...) {

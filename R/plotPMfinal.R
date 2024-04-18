@@ -75,12 +75,12 @@
 #' @return Plots the object.
 #' @author Michael Neely
 #' @seealso [PM_final], [schema]
-#' @importFrom mvtnorm dmvnorm
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' # NPAG
 #' NPex$final$plot()
-#' NPex$final$plot(density = TRUE)
+#' NPex$final$plot(line = TRUE)
 #' NPex$final$plot(Ke ~ V)
 #' # IT2B
 #' ITex$final$plot()
@@ -126,6 +126,7 @@ plot.PM_final <- function(x,
     type <- "IT2B"
     if(missing(line)) line <- TRUE
     line <- amendLine(line)
+    bar <- NULL
     
   }
   
@@ -276,8 +277,7 @@ plot.PM_final <- function(x,
   
   
   biPlot <- function(xCol, yCol, x, xlab, ylab, zlab, title, bar){
-    #yCol <- as.character(attr(terms(formula),"variables")[2])
-    #xCol <- as.character(attr(terms(formula),"variables")[3])
+
     whichX <- which(ab$par == xCol)
     whichY <- which(ab$par == yCol)
 
@@ -495,6 +495,7 @@ plot.PM_final <- function(x,
     }
   } else { #bivariate
     p <- biPlot(xCol, yCol, x, xlab, ylab, zlab, title, bar)
+    
   }
   print(p)
   return(p)

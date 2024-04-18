@@ -169,6 +169,7 @@ clicking on a quantile item in the legend will hide it in the plot,
 and double clicking will hide all other quantiles.
 }
 \examples{
+library(PmetricsData)
 simEx$plot()
 simEx$plot(log = FALSE, line = list(color = "orange"))
 }

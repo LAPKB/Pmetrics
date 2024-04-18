@@ -29,6 +29,7 @@ but must be done manually as outlined in the plotly schema documentation.
 An example of a circle shape is below in examples.
 }
 \examples{
+library(PmetricsData)
 NPex$op$plot() \%>\%
   add_shapes(shapes = ab_line(v = 12))
 

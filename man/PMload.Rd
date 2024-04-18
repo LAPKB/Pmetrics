@@ -43,7 +43,7 @@ In contrast, \emph{PMload} loads them directly into the Global environment, whic
 is not best-practice programming.
 }
 \seealso{
-\code{\link{PMreport}}, \code{\link{NPparse}}, \code{\link{ITparse}},
+\code{\link{NPparse}}, \code{\link{ITparse}},
 \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}},
 \code{\link{makePop}}, \code{\link{makePost}}
 }

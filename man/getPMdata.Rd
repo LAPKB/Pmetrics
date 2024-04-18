@@ -13,6 +13,6 @@ Get the data and examples for the Pmetrics package.
 }
 \details{
 This function installs the \strong{PmetricsData} package available on github.
-The repository URL is \link{https://github.com/LAPKB/PmetricsData}. These data
+The repository URL is \url{https://github.com/LAPKB/PmetricsData}. These data
 are used in all Pmetrics examples.
 }

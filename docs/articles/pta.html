@@ -34,7 +34,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,8 +84,9 @@
 
 
 
-<script src="pta_files/htmlwidgets-1.6.2/htmlwidgets.js"></script><script src="pta_files/plotly-binding-4.10.2/plotly.js"></script><script src="pta_files/typedarray-0.1/typedarray.min.js"></script><link href="pta_files/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet">
-<script src="pta_files/crosstalk-1.2.0/js/crosstalk.min.js"></script><link href="pta_files/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+<link href="pta_files/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="pta_files/htmlwidgets-1.6.4/htmlwidgets.js"></script><script src="pta_files/plotly-binding-4.10.4/plotly.js"></script><script src="pta_files/typedarray-0.1/typedarray.min.js"></script><link href="pta_files/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet">
+<script src="pta_files/crosstalk-1.2.1/js/crosstalk.min.js"></script><link href="pta_files/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
 <script src="pta_files/plotly-main-2.11.1/plotly-latest.min.js"></script><div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Probability of Target Attainment</h1>
@@ -98,7 +99,8 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lapkb.github.io/Pmetrics/">Pmetrics</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lapkb.github.io/Pmetrics/">Pmetrics</a></span><span class="op">)</span></span>
+<span><span class="va">simEx</span> <span class="op">&lt;-</span> <span class="fu">PmetricsData</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/PmetricsData/man/simEx.html" class="external-link">simEx</a></span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -108,8 +110,8 @@ profiles corresponding to a particular dosage regimen which meet given
 criteria for “success”.</p>
 <p>For example, it could be a certain AUC or time above a threshold.
 Below is a simple figure showing 4 concentration-time profiles after a
-gven dosage. If the target is percent of the dosing interval &gt; 4 mg/L
-of at least 60% (0.6), then only one of the 4 curves meets this
+given dosage. If the target is percent of the dosing interval &gt; 4
+mg/L of at least 60% (0.6), then only one of the 4 curves meets this
 threshold, and the PTA is 25%. We can also generate the mean (44%) and
 standard deviation (39%) of the % time above 4 mg/L, also called the
 pharmacodynamic index (PDI) for this dosage.</p>
@@ -138,7 +140,7 @@ for details on the arguments to the method.</p>
 <span></span>
 <span><span class="co">#using a previously created simulation built into Pmetrics</span></span>
 <span><span class="va">pta1</span> <span class="op">&lt;-</span> <span class="va">simEx</span><span class="op">$</span><span class="fu">pta</span><span class="op">(</span>simlabels <span class="op">=</span> <span class="va">simlabels</span>,</span>
-<span>                  targets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span>, <span class="fl">16</span>, <span class="fl">32</span>, <span class="fl">64</span><span class="op">)</span>, target.type <span class="op">=</span> <span class="st">"time"</span>,</span>
+<span>                  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span>, <span class="fl">16</span>, <span class="fl">32</span>, <span class="fl">64</span><span class="op">)</span>, target_type <span class="op">=</span> <span class="st">"time"</span>,</span>
 <span>                  success <span class="op">=</span> <span class="fl">0.6</span>, start <span class="op">=</span> <span class="fl">120</span>, end <span class="op">=</span> <span class="fl">144</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#using a sampled distribution of MICs from EUCAST</span></span>
@@ -151,9 +153,33 @@ for details on the arguments to the method.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">pta2</span> <span class="op">&lt;-</span> <span class="va">simEx</span><span class="op">$</span><span class="fu">pta</span><span class="op">(</span>simlabels <span class="op">=</span> <span class="va">simlabels</span>,</span>
-<span>                  targets <span class="op">=</span> <span class="fu"><a href="../reference/makePTAtarget.html">makePTAtarget</a></span><span class="op">(</span><span class="va">pip_ecoli</span><span class="op">)</span>,</span>
-<span>                  target.type <span class="op">=</span> <span class="st">"time"</span>,</span>
-<span>                  success <span class="op">=</span> <span class="fl">0.6</span>, start <span class="op">=</span> <span class="fl">120</span>, end <span class="op">=</span> <span class="fl">144</span><span class="op">)</span></span></code></pre></div>
+<span>                  target <span class="op">=</span> <span class="fu"><a href="../reference/makePTAtarget.html">makePTAtarget</a></span><span class="op">(</span><span class="va">pip_ecoli</span><span class="op">)</span>,</span>
+<span>                  target_type <span class="op">=</span> <span class="st">"time"</span>,</span>
+<span>                  success <span class="op">=</span> <span class="fl">0.6</span>, start <span class="op">=</span> <span class="fl">120</span>, end <span class="op">=</span> <span class="fl">144</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#combined targets with minimum concentration &gt;5 and &lt;10</span></span>
+<span><span class="va">pta3</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_pta.html">PM_pta</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">simEx</span>,</span>
+<span>                 simlabels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"600 mg daily"</span>, <span class="st">"1200 mg daily"</span>, <span class="st">"300 mg bid"</span>, <span class="st">"600 mg bid"</span><span class="op">)</span>,</span>
+<span>                 target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">10</span><span class="op">)</span>,</span>
+<span>                 target_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"min"</span>, <span class="st">"-min"</span><span class="op">)</span>,</span>
+<span>                 success <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>,</span>
+<span>                 start <span class="op">=</span> <span class="fl">120</span>, end <span class="op">=</span> <span class="fl">144</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#AUC:MIC &gt;200 for distribution of MICs</span></span>
+<span><span class="va">pta4</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_pta.html">PM_pta</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">simEx</span>,</span>
+<span>                 simlabels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"600 mg daily"</span>, <span class="st">"1200 mg daily"</span>, <span class="st">"300 mg bid"</span>, <span class="st">"600 mg bid"</span><span class="op">)</span>,</span>
+<span>                 target <span class="op">=</span> <span class="fu"><a href="../reference/makePTAtarget.html">makePTAtarget</a></span><span class="op">(</span><span class="va">pip_ecoli</span><span class="op">)</span>,</span>
+<span>                 target_type <span class="op">=</span> <span class="st">"auc"</span>,</span>
+<span>                 success <span class="op">=</span> <span class="fl">200</span>,</span>
+<span>                 start <span class="op">=</span> <span class="fl">120</span>, end <span class="op">=</span> <span class="fl">144</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#Combined target with AUC:MIC &gt;200 for distribution of MICs and minimum concentration &gt;1</span></span>
+<span><span class="va">pta5</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_pta.html">PM_pta</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>simdata <span class="op">=</span> <span class="va">simEx</span>,</span>
+<span>                 simlabels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"600 mg daily"</span>, <span class="st">"1200 mg daily"</span>, <span class="st">"300 mg bid"</span>, <span class="st">"600 mg bid"</span><span class="op">)</span>,</span>
+<span>                 target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="../reference/makePTAtarget.html">makePTAtarget</a></span><span class="op">(</span><span class="va">pip_ecoli</span><span class="op">)</span>,<span class="fl">5</span><span class="op">)</span>,</span>
+<span>                 target_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auc"</span>,<span class="st">"min"</span><span class="op">)</span>,</span>
+<span>                 success <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">200</span>,<span class="fl">1</span><span class="op">)</span>,</span>
+<span>                 start <span class="op">=</span> <span class="fl">120</span>, end <span class="op">=</span> <span class="fl">144</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Some things to point out…</strong></p>
 <p>We’ll say again that you must supply simulation data, which has been
 previously generated. If you use the <code>PM_sim$pta()</code> method,
@@ -167,63 +193,87 @@ the simulation data are embedded in the object. If you use
 each simulation (i.e. subject in the data template). Default is
 <code>c("Regimen 1", "Regimen 2",...)</code>.</li>
 <li>
-<strong>targets</strong> A vector of pharmacodynamic targets, such
-as Minimum Inhibitory Concentrations (MICs), e.g. ‘c(0.25,
-0.5,1,2,4,8,16,32)’. This can also be a sampled rather than the discrete
-distribution using <code><a href="../reference/makePTAtarget.html">makePTAtarget()</a></code>.</li>
-<li>
-<strong>target.type</strong> A numeric or character vector, length
-1. If numeric, must correspond to an observation time common to all the
-<code><a href="../reference/PM_sim.html">PM_sim()</a></code> objects in the simulation data, rounded to the
-nearest hour. In this case, the target statistic will be the ratio of
-observation at time <code>target.type</code> to <code>target</code>.
-This enables testing of a specific timed concentration (e.g. one hour
-after a dose or C1) which may be called a peak, but is not actually the
-maximum drug concentration. Be sure that the time in the simulated data
-is used, e.g. 122 after a dose given at 120. Character values may be one
-of “time”, “auc”, “peak”, or “min”, for, respectively, percent time
-above target within the time range specified by ‘start’ and ‘end’, ratio
-of area under the curve within the time range to target, ratio of peak
-concentration within the time range to target, or ratio of minimum
-concentration within the time range to target.</li>
-<li>
-<strong>success</strong> A single value specifying the success
-statistic, e.g. 0.4 for proportion time (end-start) above target, or 100
-for peak:target.</li>
-</ul>
-<p>The created object <code>pta1</code> is a <code><a href="../reference/PM_pta.html">PM_pta()</a></code>
-object, which has two data fields:</p>
+<strong>target</strong> One of several options.
 <ul>
-<li>
-<strong>results</strong> A data frame with the following columns:
-<em>simnum</em>, <em>id</em>, <em>target</em>, <em>pdi.</em>
+<li>A vector of pharmacodynamic targets, such as Minimum Inhibitory
+Concentrations (MICs),
+e.g. <code>c(0.25, 0.5, 1, 2, 4, 8, 16, 32)</code>.</li>
+<li>A single numerical value such as a concentration, e.g. 10.</li>
+<li>A sampled distribution using <code><a href="../reference/makePTAtarget.html">makePTAtarget()</a></code>.</li>
+<li>A list of multiple targets combining the above if multiple
+<code>target_type</code>s are used. If so, the first <code>target</code>
+can be a vector, but subsequent targets must be single values to avoid
+factorial expansion of combinations. For example, the first target could
+be a vector of MICs corresponding to a <code>target_type</code> of
+“time”, the second target a value of 10 corresponding to a
+<code>target_type</code> of “min”, and the third target a value of 50
+corresponding to a <code>target_type</code> of “max”:
+<code>target = list(c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 10, 50)</code>.
+The first value can also be a sampled distribution made with
+[makePTAtarget]. For any, place a minus sign in front to make the
+success less than the target ratio,
+e.g. <code>target_type = c("min", "-min")</code>.</li>
+</ul>
 </li>
 <li>
-<em>simnum</em> is the number of the simulation</li>
+<strong>target_type</strong> A vector of the type for each
+<code>target</code>. Available types:</li>
+<li>“time” is percent time above <code>target</code> within the time
+range specified by <code>start</code> and <code>end</code>
+</li>
+<li>“auc” is ratio of area under the curve within the time range to
+<code>target</code>
+</li>
+<li>“peak” or “max”, ratio of peak/max (synonymous) concentration to
+<code>target</code> within the time range.</li>
+<li>“min”, is the ratio of minimum concentration to <code>target</code>
+within the time range.</li>
+<li>A single numeric value, which must correspond to an observation time
+common to all PMsim objects in <code>simdata</code>, rounded to the
+nearest hour. In this case, the target statistic will be the ratio of
+observation at that time to <code>target</code>. This enables testing of
+a specific timed concentration (e.g. one hour after a dose or C1). Be
+sure that the time in the simulated data is used, e.g., 122 after a dose
+given at 120.</li>
 <li>
-<em>id</em> is the simulated profile number within each
-simulation</li>
-<li>
-<em>target</em> is the specified target</li>
-<li>
-<em>pdi</em> is the target pharmacodynamic index, e.g. time &gt;
-target, auc:target, etc.</li>
-<li>
-<strong>outcome</strong> A data frame summarizing the results with
-the following columns: <em>simnum</em>, <em>target</em>,
-<em>prop.success</em>, <em>pdi.mean</em>, and <em>pdi.sd.</em> If
-‘targets’ was specified via <code><a href="../reference/makePTAtarget.html">makePTAtarget()</a></code> to be a sampled
-distribution, then the target column will be missing from the outcome
-table.</li>
-<li>
-<em>simnum</em> and <em>target</em> are as for ‘results’.</li>
-<li>The <em>prop.success</em> column has the proportion with a pdi &gt;
-‘success’, as specified in the function call.</li>
-<li>The <em>pdi.mean</em> and <em>pdi.sd</em> columns have the mean and
-standard deviation of the target pharmacodynamic index (e.g. proportion
-end-start above target, ratio of Cmax to target) for each simulation and
-target.</li>
+<strong>success</strong> A vector specifying the success statistics,
+e.g. 0.4 for proportion time (end-start) above target, and/or 100 for
+max:target. For example <code>success = 0.4</code> or
+<code>success = c(0.4, 100)</code>. The length must be the same as for
+<code>target</code> and <code>target_type</code>.</li>
 </ul>
+<p>The created object <code>pta1</code> is a <code><a href="../reference/PM_pta.html">PM_pta()</a></code>
+object, which has one data field named “results”, which is a list of
+class <em>PMpta</em>, and each <code>target_type</code> is an element of
+the list, followed by a final <code>intersection</code> element showing
+the results for profiles which meet ALL the conditions (intersection) or
+<code>NA</code> if only one <code>target_type</code> was specified. The
+individual elements are tibbles with all possible combinations of
+<code>target</code>s and simulated regimens for a given
+<code>target_type</code>. The tibbles have the following columns: *
+<strong>sim_num</strong> The simulation number in <code>simdata</code>.
+* <strong>label</strong> Annotation of the simulation, supplied by the
+<code>simlabels</code> argument. * <strong>target</strong> is the
+specified <code>target</code> for the results row. If a distribution
+created by <code><a href="../reference/makePTAtarget.html">makePTAtarget()</a></code>, this will be a tibble with the
+simulated targets * <strong>type</strong> is the specified
+<code>target_type</code> for the results row *
+<strong>success_ratio</strong> The specified <code>success</code> metric
+for the results row * <strong>prop_success</strong> The proportion of
+profiles meeting the <code>success_ratio</code> for the results row *
+<strong>success</strong> A tibble of success (1) or not (0) for each
+profile for the results row * <strong>pdi</strong> A tibble of the
+pharmacodynamic index, i.e. the ratio or time above for each profile for
+the results row * <strong>start</strong> The start time used for the
+results row * <strong>end</strong> The end time used for the results
+row. For the <code>$intersect</code> item in the return list, the
+columns are the same, but the <code>target</code> and
+<code>target_type</code> will reflect all requested values expressed in
+parenthetical multiplication format to emphasize intersection, e.g.,
+(auc)(min). Simulated (rather than discrete) targets made with
+<code><a href="../reference/makePTAtarget.html">makePTAtarget()</a></code> will be abbreviated as “(sim)”,
+e.g. (sim)(5) for a combination of simulated targets and a single
+concentration target of 5.</p>
 <p>It also has several methods:</p>
 <ul>
 <li>
@@ -245,15 +295,18 @@ argument.</li>
 <p>The most basic plot is achieved with a simple call to the method.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pta1</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="plotly html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7626164dfbc67e0b491f" style="width:700px;height:432.632880098888px;"></div>
-<script type="application/json" data-for="htmlwidget-7626164dfbc67e0b491f">{"x":{"visdat":{"a024c2d60b1":["function () ","plotlyVisDat"]},"cur_data":"a024c2d60b1","attrs":{"a024c2d60b1":{"x":{},"y":{},"mode":"lines+markers","marker":{"size":12},"line":{"width":2},"color":{},"stroke":{},"symbol":{},"linetype":{},"colors":"Set1","strokes":"Set1","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"symbols":[1,2,3,4],"linetypes":[1,2,3,4],"type":"scatter"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"xaxis":{"domain":[0,1],"automargin":true,"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>Target<\/b>","font":{"family":"Arial","color":"black","bold":true,"size":16}},"tickvals":[0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64],"type":"log"},"yaxis":{"domain":[0,1],"automargin":true,"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>Proportion with success<\/b>","font":{"family":"Arial","color":"black","bold":true,"size":16}}},"showlegend":true,"legend":{"xanchor":"right","title":{"text":"<b>Regimen<\/b>"}},"title":{"text":"<b><\/b>","font":{"family":"Arial","color":"black","bold":true,"size":20}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,0.879,0.373,0.025999999999999999,0,0],"mode":"lines+markers","marker":{"color":"rgba(228,26,28,1)","symbol":"circle-open","size":12,"line":{"color":"rgba(228,26,28,1)","width":1}},"line":{"color":"rgba(228,26,28,1)","dash":"solid","width":2},"type":"scatter","name":"600 mg daily","error_y":{"color":"rgba(228,26,28,1)","thickness":1},"error_x":{"color":"rgba(228,26,28,1)","thickness":1},"textfont":{"color":"rgba(228,26,28,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,1,0.879,0.373,0.025999999999999999,0],"mode":"lines+markers","marker":{"color":"rgba(55,126,184,1)","symbol":"triangle-up-open","size":12,"line":{"color":"rgba(55,126,184,1)","width":1}},"line":{"color":"rgba(55,126,184,1)","dash":"dash","width":2},"type":"scatter","name":"1200 mg daily","error_y":{"color":"rgba(55,126,184,1)","thickness":1},"error_x":{"color":"rgba(55,126,184,1)","thickness":1},"textfont":{"color":"rgba(55,126,184,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,0.92900000000000005,0.41299999999999998,0.034000000000000002,0,0],"mode":"lines+markers","marker":{"color":"rgba(77,175,74,1)","symbol":"cross-thin-open","size":12,"line":{"color":"rgba(77,175,74,1)","width":1}},"line":{"color":"rgba(77,175,74,1)","dash":"dot","width":2},"type":"scatter","name":"300 mg bid","error_y":{"color":"rgba(77,175,74,1)","thickness":1},"error_x":{"color":"rgba(77,175,74,1)","thickness":1},"textfont":{"color":"rgba(77,175,74,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,1,0.92900000000000005,0.41299999999999998,0.034000000000000002,0],"mode":"lines+markers","marker":{"color":"rgba(152,78,163,1)","symbol":"x-thin-open","size":12,"line":{"color":"rgba(152,78,163,1)","width":1}},"line":{"color":"rgba(152,78,163,1)","dash":"dashdot","width":2},"type":"scatter","name":"600 mg bid","error_y":{"color":"rgba(152,78,163,1)","thickness":1},"error_x":{"color":"rgba(152,78,163,1)","thickness":1},"textfont":{"color":"rgba(152,78,163,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pta2</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="plotly html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-7ebf981797121e29a4c3" style="width:700px;height:432.632880098888px;"></div>
-<script type="application/json" data-for="htmlwidget-7ebf981797121e29a4c3">{"x":{"visdat":{"a02424302e30":["function () ","plotlyVisDat"]},"cur_data":"a02424302e30","attrs":{"a02424302e30":{"x":{},"y":{},"mode":"lines+markers","line":{"color":"Set1","width":2,"dash":[1,2,3,4]},"marker":{"color":"Set1","symbol":[1,2,3,4],"size":12},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"xaxis":{"domain":[0,1],"automargin":true,"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>Regimen<\/b>","font":{"family":"Arial","color":"black","bold":true,"size":16}},"tickvals":[1,2,3,4],"ticktext":["600 mg daily","1200 mg daily","300 mg bid","600 mg bid"]},"yaxis":{"domain":[0,1],"automargin":true,"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>Proportion with success<\/b>","font":{"family":"Arial","color":"black","bold":true,"size":16}}},"showlegend":false,"legend":{"xanchor":"right","title":{"text":"<b>Regimen<\/b>"}},"title":{"text":"<b><\/b>","font":{"family":"Arial","color":"black","bold":true,"size":20}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[1,2,3,4],"y":[0.78400000000000003,0.81799999999999995,0.78400000000000003,0.82599999999999996],"mode":"lines+markers","line":{"color":"Set1","width":2,"dash":[1,2,3,4]},"marker":{"color":"Set1","symbol":[1,2,3,4],"size":12,"line":{"color":"rgba(31,119,180,1)"}},"type":"scatter","error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script><p>Notice the difference between the plots, according to whether
-<code>target</code> was discrete or from a distribution. The latter plot
-is also known as a “Cumulative Fractional Response” or CFR, which is the
-proportion of a population achieving a response for a give dosage with a
-distribution of target values in that population.</p>
+<div class="plotly html-widget html-fill-item" id="htmlwidget-a66e22506ee63cdcb28e" style="width:700px;height:432.632880098888px;"></div>
+<script type="application/json" data-for="htmlwidget-a66e22506ee63cdcb28e">{"x":{"visdat":{"1718b7606d656":["function () ","plotlyVisDat"]},"cur_data":"1718b7606d656","attrs":{"1718b7606d656":{"x":{},"y":{},"mode":"lines+markers","marker":{"size":12},"line":{"width":2},"color":{},"stroke":{},"symbol":{},"linetype":{},"colors":"Set1","strokes":"Set1","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"symbols":[1,2,3,4],"linetypes":[1,2,3,4],"type":"scatter"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"xaxis":{"domain":[0,1],"automargin":true,"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>Target<\/b>","font":{"family":"Arial","color":"black","bold":true,"size":16}},"tickvals":[0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64],"type":"log"},"yaxis":{"domain":[0,1],"automargin":true,"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>Proportion with success<\/b>","font":{"family":"Arial","color":"black","bold":true,"size":16}}},"showlegend":true,"legend":{"xanchor":"right","title":{"text":"<b>Regimen<\/b>"}},"title":{"text":"<b><\/b>","font":{"family":"Arial","color":"black","bold":true,"size":20}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,0.999,0.871,0.41199999999999998,0.021000000000000001,0,0],"mode":"lines+markers","marker":{"color":"rgba(228,26,28,1)","symbol":"circle-open","size":12,"line":{"color":"rgba(228,26,28,1)","width":1}},"line":{"color":"rgba(228,26,28,1)","dash":"solid","width":2},"type":"scatter","name":"600 mg daily","error_y":{"color":"rgba(228,26,28,1)","thickness":1},"error_x":{"color":"rgba(228,26,28,1)","thickness":1},"textfont":{"color":"rgba(228,26,28,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,0.999,0.871,0.41199999999999998,0.021000000000000001,0],"mode":"lines+markers","marker":{"color":"rgba(55,126,184,1)","symbol":"triangle-up-open","size":12,"line":{"color":"rgba(55,126,184,1)","width":1}},"line":{"color":"rgba(55,126,184,1)","dash":"dash","width":2},"type":"scatter","name":"1200 mg daily","error_y":{"color":"rgba(55,126,184,1)","thickness":1},"error_x":{"color":"rgba(55,126,184,1)","thickness":1},"textfont":{"color":"rgba(55,126,184,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,0.94099999999999995,0.47799999999999998,0.039,0,0],"mode":"lines+markers","marker":{"color":"rgba(77,175,74,1)","symbol":"cross-thin-open","size":12,"line":{"color":"rgba(77,175,74,1)","width":1}},"line":{"color":"rgba(77,175,74,1)","dash":"dot","width":2},"type":"scatter","name":"300 mg bid","error_y":{"color":"rgba(77,175,74,1)","thickness":1},"error_x":{"color":"rgba(77,175,74,1)","thickness":1},"textfont":{"color":"rgba(77,175,74,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,1,0.94099999999999995,0.47799999999999998,0.039,0],"mode":"lines+markers","marker":{"color":"rgba(152,78,163,1)","symbol":"x-thin-open","size":12,"line":{"color":"rgba(152,78,163,1)","width":1}},"line":{"color":"rgba(152,78,163,1)","dash":"dashdot","width":2},"type":"scatter","name":"600 mg bid","error_y":{"color":"rgba(152,78,163,1)","thickness":1},"error_x":{"color":"rgba(152,78,163,1)","thickness":1},"textfont":{"color":"rgba(152,78,163,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pta2</span><span class="op">$</span><span class="fu">plot</span><span class="op">(</span>at <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<div class="plotly html-widget html-fill-item" id="htmlwidget-d0e3de68d8eaac819d21" style="width:700px;height:432.632880098888px;"></div>
+<script type="application/json" data-for="htmlwidget-d0e3de68d8eaac819d21">{"x":{"visdat":{"1718b4469a788":["function () ","plotlyVisDat"]},"cur_data":"1718b4469a788","attrs":{"1718b4469a788":{"x":{},"y":{},"mode":"lines+markers","line":{"color":"Set1","width":2,"dash":[1,2,3,4]},"marker":{"color":"Set1","symbol":[1,2,3,4],"size":12},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"xaxis":{"domain":[0,1],"automargin":true,"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>Regimen<\/b>","font":{"family":"Arial","color":"black","bold":true,"size":16}},"tickvals":["600 mg daily","1200 mg daily","300 mg bid","600 mg bid"],"ticktext":["600 mg daily","1200 mg daily","300 mg bid","600 mg bid"]},"yaxis":{"domain":[0,1],"automargin":true,"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>Proportion with success<\/b>","font":{"family":"Arial","color":"black","bold":true,"size":16}}},"showlegend":false,"legend":{"xanchor":"right","title":{"text":"<b>Regimen<\/b>"}},"title":{"text":"<b><\/b>","font":{"family":"Arial","color":"black","bold":true,"size":20}},"hovermode":"closest"},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["600 mg daily","1200 mg daily","300 mg bid","600 mg bid"],"y":[0.77100000000000002,0.82899999999999996,0.80100000000000005,0.82999999999999996],"mode":"lines+markers","line":{"color":"Set1","width":2,"dash":[1,2,3,4]},"marker":{"color":"Set1","symbol":[1,2,3,4],"size":12,"line":{"color":"rgba(31,119,180,1)"}},"type":"scatter","error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script><p>The <code>at</code> argument controls which object in the list is
+plotted, by default the intersection, or the first object
+(<code>at = 1</code>) if there is no intersection. Notice the difference
+between the plots, according to whether <code>target</code> was discrete
+or from a distribution. The latter plot is also known as a “Cumulative
+Fractional Response” or CFR, which is the proportion of a population
+achieving a response for a give dosage with a distribution of target
+values in that population.</p>
 <p>There are many ways to modify the plot, consistent with other
 Pmetrics plots which use the <em>plotly</em> package and all detailed in
 the help for <code><a href="../reference/plot.PM_data.html">plot.PM_data()</a></code>. For example,</p>
@@ -286,8 +339,8 @@ plotly!</p>
 <span>         yaxis <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>title <span class="op">=</span> </span>
 <span>                        <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">"&lt;b&gt;Proportion with %T&gt;MIC ≥ 60%&lt;br&gt;&lt;span style='color:Dodgerblue; opacity:0.6'&gt;MIC Frequency&lt;/span&gt;&lt;/b&gt;"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>         font <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="plotly html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5a72516921c8f0386ca3" style="width:700px;height:432.632880098888px;"></div>
-<script type="application/json" data-for="htmlwidget-5a72516921c8f0386ca3">{"x":{"visdat":{"a0242b877714":["function () ","plotlyVisDat"],"a0242a056fb7":["function () ","data"]},"cur_data":"a0242a056fb7","attrs":{"a0242b877714":{"x":{},"y":{},"mode":"lines+markers","marker":{"size":16},"line":{"width":3},"color":{},"stroke":{},"symbol":{},"linetype":{},"colors":"Set1","strokes":"Set1","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"symbols":[1,2,3,4],"linetypes":[1,2,3,4],"type":"scatter"},"a0242a056fb7":{"x":{},"y":{},"type":"bar","marker":{"opacity":0.59999999999999998,"color":"Dodgerblue"},"name":"MIC","width":{},"showlegend":false,"inherit":false}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"xaxis":{"domain":[0,1],"automargin":true,"tickfont":{"size":18},"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>MIC mg/L<\/b>","font":{"family":"Arial","color":"black","bold":true,"size":20}},"tickvals":[0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64],"type":"log"},"yaxis":{"domain":[0,1],"automargin":true,"tickfont":{"size":18},"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>Proportion with %T>MIC ≥ 60%<br><span style='color:Dodgerblue; opacity:0.6'>MIC Frequency<\/span><\/b>","font":{"family":"Arial","color":"black","bold":true,"size":20}}},"showlegend":true,"legend":{"xanchor":"right","title":{"text":"<b>Regimen<\/b>"},"font":{"size":18}},"title":{"text":"<b><\/b>","font":{"family":"Arial","color":"black","bold":true,"size":20}},"hovermode":"closest","font":{"size":10}},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,0.879,0.373,0.025999999999999999,0,0],"mode":"lines+markers","marker":{"color":"rgba(228,26,28,1)","symbol":"circle-open","size":16,"line":{"color":"rgba(228,26,28,1)","width":1}},"line":{"color":"rgba(228,26,28,1)","dash":"solid","width":3},"type":"scatter","name":"600 mg daily","error_y":{"color":"rgba(228,26,28,1)","thickness":1},"error_x":{"color":"rgba(228,26,28,1)","thickness":1},"textfont":{"color":"rgba(228,26,28,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,1,0.879,0.373,0.025999999999999999,0],"mode":"lines+markers","marker":{"color":"rgba(55,126,184,1)","symbol":"triangle-up-open","size":16,"line":{"color":"rgba(55,126,184,1)","width":1}},"line":{"color":"rgba(55,126,184,1)","dash":"dash","width":3},"type":"scatter","name":"1200 mg daily","error_y":{"color":"rgba(55,126,184,1)","thickness":1},"error_x":{"color":"rgba(55,126,184,1)","thickness":1},"textfont":{"color":"rgba(55,126,184,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,0.92900000000000005,0.41299999999999998,0.034000000000000002,0,0],"mode":"lines+markers","marker":{"color":"rgba(77,175,74,1)","symbol":"cross-thin-open","size":16,"line":{"color":"rgba(77,175,74,1)","width":1}},"line":{"color":"rgba(77,175,74,1)","dash":"dot","width":3},"type":"scatter","name":"300 mg bid","error_y":{"color":"rgba(77,175,74,1)","thickness":1},"error_x":{"color":"rgba(77,175,74,1)","thickness":1},"textfont":{"color":"rgba(77,175,74,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,1,0.92900000000000005,0.41299999999999998,0.034000000000000002,0],"mode":"lines+markers","marker":{"color":"rgba(152,78,163,1)","symbol":"x-thin-open","size":16,"line":{"color":"rgba(152,78,163,1)","width":1}},"line":{"color":"rgba(152,78,163,1)","dash":"dashdot","width":3},"type":"scatter","name":"600 mg bid","error_y":{"color":"rgba(152,78,163,1)","thickness":1},"error_x":{"color":"rgba(152,78,163,1)","thickness":1},"textfont":{"color":"rgba(152,78,163,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[0,0.02,0.28999999999999998,0.40999999999999998,0.070000000000000007,0.02,0.050000000000000003,0.080000000000000002,0.070000000000000007],"type":"bar","marker":{"color":"Dodgerblue","opacity":0.59999999999999998,"line":{"color":"rgba(31,119,180,1)"}},"name":"MIC","width":[0.050000000000000003,0.10000000000000001,0.20000000000000001,0.40000000000000002,0.80000000000000004,1.6000000000000001,3.2000000000000002,6.4000000000000004,12.800000000000001],"showlegend":false,"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<div class="plotly html-widget html-fill-item" id="htmlwidget-ead9cad8c3336be987d0" style="width:700px;height:432.632880098888px;"></div>
+<script type="application/json" data-for="htmlwidget-ead9cad8c3336be987d0">{"x":{"visdat":{"1718b7007cb5d":["function () ","plotlyVisDat"],"1718b475f78c8":["function () ","data"]},"cur_data":"1718b475f78c8","attrs":{"1718b7007cb5d":{"x":{},"y":{},"mode":"lines+markers","marker":{"size":16},"line":{"width":3},"color":{},"stroke":{},"symbol":{},"linetype":{},"colors":"Set1","strokes":"Set1","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"symbols":[1,2,3,4],"linetypes":[1,2,3,4],"type":"scatter"},"1718b475f78c8":{"x":{},"y":{},"type":"bar","marker":{"opacity":0.59999999999999998,"color":"Dodgerblue"},"name":"MIC","width":{},"showlegend":false,"inherit":false}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"xaxis":{"domain":[0,1],"automargin":true,"tickfont":{"size":18},"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>MIC mg/L<\/b>","font":{"family":"Arial","color":"black","bold":true,"size":20}},"tickvals":[0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64,0.25,0.5,1,2,4,8,16,32,64],"type":"log"},"yaxis":{"domain":[0,1],"automargin":true,"tickfont":{"size":18},"gridcolor":"grey50","gridwidth":1,"title":{"text":"<b>Proportion with %T>MIC ≥ 60%<br><span style='color:Dodgerblue; opacity:0.6'>MIC Frequency<\/span><\/b>","font":{"family":"Arial","color":"black","bold":true,"size":20}}},"showlegend":true,"legend":{"xanchor":"right","title":{"text":"<b>Regimen<\/b>"},"font":{"size":18}},"title":{"text":"<b><\/b>","font":{"family":"Arial","color":"black","bold":true,"size":20}},"hovermode":"closest","font":{"size":10}},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,0.999,0.871,0.41199999999999998,0.021000000000000001,0,0],"mode":"lines+markers","marker":{"color":"rgba(228,26,28,1)","symbol":"circle-open","size":16,"line":{"color":"rgba(228,26,28,1)","width":1}},"line":{"color":"rgba(228,26,28,1)","dash":"solid","width":3},"type":"scatter","name":"600 mg daily","error_y":{"color":"rgba(228,26,28,1)","thickness":1},"error_x":{"color":"rgba(228,26,28,1)","thickness":1},"textfont":{"color":"rgba(228,26,28,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,0.999,0.871,0.41199999999999998,0.021000000000000001,0],"mode":"lines+markers","marker":{"color":"rgba(55,126,184,1)","symbol":"triangle-up-open","size":16,"line":{"color":"rgba(55,126,184,1)","width":1}},"line":{"color":"rgba(55,126,184,1)","dash":"dash","width":3},"type":"scatter","name":"1200 mg daily","error_y":{"color":"rgba(55,126,184,1)","thickness":1},"error_x":{"color":"rgba(55,126,184,1)","thickness":1},"textfont":{"color":"rgba(55,126,184,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,0.94099999999999995,0.47799999999999998,0.039,0,0],"mode":"lines+markers","marker":{"color":"rgba(77,175,74,1)","symbol":"cross-thin-open","size":16,"line":{"color":"rgba(77,175,74,1)","width":1}},"line":{"color":"rgba(77,175,74,1)","dash":"dot","width":3},"type":"scatter","name":"300 mg bid","error_y":{"color":"rgba(77,175,74,1)","thickness":1},"error_x":{"color":"rgba(77,175,74,1)","thickness":1},"textfont":{"color":"rgba(77,175,74,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[1,1,1,1,1,0.94099999999999995,0.47799999999999998,0.039,0],"mode":"lines+markers","marker":{"color":"rgba(152,78,163,1)","symbol":"x-thin-open","size":16,"line":{"color":"rgba(152,78,163,1)","width":1}},"line":{"color":"rgba(152,78,163,1)","dash":"dashdot","width":3},"type":"scatter","name":"600 mg bid","error_y":{"color":"rgba(152,78,163,1)","thickness":1},"error_x":{"color":"rgba(152,78,163,1)","thickness":1},"textfont":{"color":"rgba(152,78,163,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0.25,0.5,1,2,4,8,16,32,64],"y":[0,0.02,0.28999999999999998,0.40999999999999998,0.070000000000000007,0.02,0.050000000000000003,0.080000000000000002,0.070000000000000007],"type":"bar","marker":{"color":"Dodgerblue","opacity":0.59999999999999998,"line":{"color":"rgba(31,119,180,1)"}},"name":"MIC","width":[0.050000000000000003,0.10000000000000001,0.20000000000000001,0.40000000000000002,0.80000000000000004,1.6000000000000001,3.2000000000000002,6.4000000000000004,12.800000000000001],"showlegend":false,"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 </div>
 <div class="section level2">
 <h2 id="summarizing">Summarizing<a class="anchor" aria-label="anchor" href="#summarizing"></a>
@@ -296,153 +349,64 @@ plotly!</p>
 be summarized.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pta1</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $pta</span></span>
-<span><span class="co">#&gt;    simnum target prop.success   pdi.mean     pdi.sd</span></span>
-<span><span class="co">#&gt; 1       1   0.25        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 2       1   0.50        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 3       1   1.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 4       1   2.00        1.000 0.99591026 0.02221332</span></span>
-<span><span class="co">#&gt; 5       1   4.00        0.879 0.85620556 0.20199631</span></span>
-<span><span class="co">#&gt; 6       1   8.00        0.373 0.44156374 0.36955150</span></span>
-<span><span class="co">#&gt; 7       1  16.00        0.026 0.04902755 0.15782507</span></span>
-<span><span class="co">#&gt; 8       1  32.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 9       1  64.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 10      2   0.25        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 11      2   0.50        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 12      2   1.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 13      2   2.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 14      2   4.00        1.000 0.99590659 0.02222990</span></span>
-<span><span class="co">#&gt; 15      2   8.00        0.879 0.85617157 0.20201155</span></span>
-<span><span class="co">#&gt; 16      2  16.00        0.373 0.44154185 0.36953289</span></span>
-<span><span class="co">#&gt; 17      2  32.00        0.026 0.04902579 0.15781792</span></span>
-<span><span class="co">#&gt; 18      2  64.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 19      3   0.25        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 20      3   0.50        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 21      3   1.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 22      3   2.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 23      3   4.00        0.929 0.92541324 0.20283774</span></span>
-<span><span class="co">#&gt; 24      3   8.00        0.413 0.42693722 0.44444392</span></span>
-<span><span class="co">#&gt; 25      3  16.00        0.034 0.03606188 0.16692368</span></span>
-<span><span class="co">#&gt; 26      3  32.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 27      3  64.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 28      4   0.25        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 29      4   0.50        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 30      4   1.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 31      4   2.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 32      4   4.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 33      4   8.00        0.929 0.92540442 0.20284833</span></span>
-<span><span class="co">#&gt; 34      4  16.00        0.413 0.42692964 0.44444172</span></span>
-<span><span class="co">#&gt; 35      4  32.00        0.034 0.03606147 0.16692192</span></span>
-<span><span class="co">#&gt; 36      4  64.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $pdi</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 36 × 5</span></span></span>
-<span><span class="co">#&gt;    target simnum lowerCI median upperCI</span></span>
-<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>   0.25 1            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>   0.25 2            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>   0.25 3            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>   0.25 4            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>   0.5  1            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>   0.5  2            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>   0.5  3            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>   0.5  4            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>   1    1            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>   1    2            1      1       1</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 36 × 11</span></span></span>
+<span><span class="co">#&gt;    sim_num target label    prop_success median lower upper    mean      sd   min</span></span>
+<span><span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>       1   0.25 600 mg …        1      1     1     1     1   <span style="color: #949494;">e</span>+0 0           1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>       1   0.5  600 mg …        1      1     1     1     1   <span style="color: #949494;">e</span>+0 0           1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>       1   1    600 mg …        1      1     1     1     1   <span style="color: #949494;">e</span>+0 0           1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>       1   2    600 mg …        0.999  1     0.928 1     9.95<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> 0.038<span style="text-decoration: underline;">0</span>      0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>       1   4    600 mg …        0.871  1     0.289 1     8.48<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> 0.221       0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>       1   8    600 mg …        0.412  0.465 0     1     4.57<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> 0.375       0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>       1  16    600 mg …        0.021  0     0     0.551 5.37<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.157       0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>       1  32    600 mg …        0      0     0     0     2.80<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.007<span style="text-decoration: underline;">43</span>     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>       1  64    600 mg …        0      0     0     0     0   <span style="color: #949494;"> </span>   0           0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>       2   0.25 1200 mg…        1      1     1     1     1   <span style="color: #949494;">e</span>+0 0           1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 26 more rows</span></span></span>
-<span><span class="va">pta2</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $pta</span></span>
-<span><span class="co">#&gt;   simnum prop.success  pdi.mean    pdi.sd</span></span>
-<span><span class="co">#&gt; 1      1        0.784 0.7821113 0.3995824</span></span>
-<span><span class="co">#&gt; 2      2        0.818 0.8237767 0.3692204</span></span>
-<span><span class="co">#&gt; 3      3        0.784 0.7846817 0.4060330</span></span>
-<span><span class="co">#&gt; 4      4        0.826 0.8268796 0.3739297</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $pdi</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 4</span></span></span>
-<span><span class="co">#&gt;   simnum lowerCI median upperCI</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1            0      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2            0      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3            0      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 4            0      1       1</span></span></code></pre></div>
-<p>The output is a list with two named objects:</p>
-<ul>
-<li><p><strong>pta</strong> A data frame with the following columns:
-<em>simnum</em>, <em>target</em>, <em>prop.success</em>,
-<em>pdi.mean</em>, and <em>pdi.sd</em></p></li>
-<li><p>simnum is the number of the simulation</p></li>
-<li><p>target is the specified target</p></li>
-<li><p>success has the proportion with a ratio &gt;
-prop.success</p></li>
-<li><p>pdi.mean and pdi.sd are the mean and standard deviation of the
-pharmacodyamic index (e.g. AUC/MIC) for each simulation and
-target.</p></li>
-<li><p><strong>pdi</strong> A data frame with the following columns:
-<em>target</em>, <em>simnum</em>, <em>lowerCI</em>, <em>median</em>,
-<em>upperCI.</em></p></li>
-<li><p>target and simnum are as above.</p></li>
-<li><p>lowerCI, median, and upperCI are the lower limit, median, and
-upper limit of the confidence interval for the pdi whose width is
-specified by an argument <code>ci</code> to the summary method. The
-default for <code>ci</code> is 0.95, but this can be changed.</p></li>
-</ul>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: max &lt;dbl&gt;</span></span></span>
+<span><span class="va">pta2</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span>at <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 10</span></span></span>
+<span><span class="co">#&gt;   sim_num label         prop_success median lower upper  mean    sd   min   max</span></span>
+<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       1 600 mg daily         0.771      1     0     1 0.768 0.408     0     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       2 1200 mg daily        0.829      1     0     1 0.830 0.364     0     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       3 300 mg bid           0.801      1     0     1 0.802 0.394     0     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       4 600 mg bid           0.83       1     0     1 0.831 0.372     0     1</span></span></code></pre></div>
+<p>Here the default for at is 1, because this function prouduces a
+summary of the pharmacodynamic index values, which cannot be calculated
+for the intersection when there is more than one
+<code>target_type</code>. The output is a tibble with the following
+columns (only the first three if <code>at = "intersect"</code>): *
+<strong>sim_num</strong> is the number of the simulation *
+<strong>target</strong> is the target for the row, if targets are
+discrete, not used for simulated targets * <strong>label</strong> is the
+simulation label, for reference * <strong>prop_success</strong> is the
+proportion of simulated profiles that met the success definition *
+<strong>median</strong> is the median parmacodynamic index (PDI),
+i.e. the proportion or ratio depending on the target type *
+<strong>lower</strong> is the lower bound of the interval defined by
+<code>ci</code> * <strong>upper</strong> is the upper bound of the
+interval defined by <code>ci</code> * <strong>mean</strong> is the mean
+of the PDI * <strong>sd</strong> is the standard deviation of the PDI *
+<strong>min</strong> is the minimum PDI * <strong>max</strong> is the
+maximum PDI</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pta1</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span>ci <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $pta</span></span>
-<span><span class="co">#&gt;    simnum target prop.success   pdi.mean     pdi.sd</span></span>
-<span><span class="co">#&gt; 1       1   0.25        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 2       1   0.50        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 3       1   1.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 4       1   2.00        1.000 0.99591026 0.02221332</span></span>
-<span><span class="co">#&gt; 5       1   4.00        0.879 0.85620556 0.20199631</span></span>
-<span><span class="co">#&gt; 6       1   8.00        0.373 0.44156374 0.36955150</span></span>
-<span><span class="co">#&gt; 7       1  16.00        0.026 0.04902755 0.15782507</span></span>
-<span><span class="co">#&gt; 8       1  32.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 9       1  64.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 10      2   0.25        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 11      2   0.50        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 12      2   1.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 13      2   2.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 14      2   4.00        1.000 0.99590659 0.02222990</span></span>
-<span><span class="co">#&gt; 15      2   8.00        0.879 0.85617157 0.20201155</span></span>
-<span><span class="co">#&gt; 16      2  16.00        0.373 0.44154185 0.36953289</span></span>
-<span><span class="co">#&gt; 17      2  32.00        0.026 0.04902579 0.15781792</span></span>
-<span><span class="co">#&gt; 18      2  64.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 19      3   0.25        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 20      3   0.50        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 21      3   1.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 22      3   2.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 23      3   4.00        0.929 0.92541324 0.20283774</span></span>
-<span><span class="co">#&gt; 24      3   8.00        0.413 0.42693722 0.44444392</span></span>
-<span><span class="co">#&gt; 25      3  16.00        0.034 0.03606188 0.16692368</span></span>
-<span><span class="co">#&gt; 26      3  32.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 27      3  64.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 28      4   0.25        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 29      4   0.50        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 30      4   1.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 31      4   2.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 32      4   4.00        1.000 1.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; 33      4   8.00        0.929 0.92540442 0.20284833</span></span>
-<span><span class="co">#&gt; 34      4  16.00        0.413 0.42692964 0.44444172</span></span>
-<span><span class="co">#&gt; 35      4  32.00        0.034 0.03606147 0.16692192</span></span>
-<span><span class="co">#&gt; 36      4  64.00        0.000 0.00000000 0.00000000</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $pdi</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 36 × 5</span></span></span>
-<span><span class="co">#&gt;    target simnum lowerCI median upperCI</span></span>
-<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>   0.25 1            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>   0.25 2            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>   0.25 3            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>   0.25 4            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>   0.5  1            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>   0.5  2            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>   0.5  3            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>   0.5  4            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>   1    1            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>   1    2            1      1       1</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 26 more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 36 × 11</span></span></span>
+<span><span class="co">#&gt;    sim_num target label    prop_success median lower upper    mean      sd   min</span></span>
+<span><span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>       1   0.25 600 mg …        1      1     1     1     1   <span style="color: #949494;">e</span>+0 0           1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>       1   0.5  600 mg …        1      1     1     1     1   <span style="color: #949494;">e</span>+0 0           1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>       1   1    600 mg …        1      1     1     1     1   <span style="color: #949494;">e</span>+0 0           1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>       1   2    600 mg …        0.999  1     0.974 1     9.95<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> 0.038<span style="text-decoration: underline;">0</span>      0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>       1   4    600 mg …        0.871  1     0.413 1     8.48<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> 0.221       0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>       1   8    600 mg …        0.412  0.465 0     1     4.57<span style="color: #949494;">e</span><span style="color: #BB0000;">-1</span> 0.375       0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>       1  16    600 mg …        0.021  0     0     0.435 5.37<span style="color: #949494;">e</span><span style="color: #BB0000;">-2</span> 0.157       0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>       1  32    600 mg …        0      0     0     0     2.80<span style="color: #949494;">e</span><span style="color: #BB0000;">-4</span> 0.007<span style="text-decoration: underline;">43</span>     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>       1  64    600 mg …        0      0     0     0     0   <span style="color: #949494;"> </span>   0           0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>       2   0.25 1200 mg…        1      1     1     1     1   <span style="color: #949494;">e</span>+0 0           1</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 26 more rows</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: max &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

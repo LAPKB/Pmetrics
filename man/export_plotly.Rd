@@ -67,6 +67,7 @@ to that function.
 }
 \examples{
 \dontrun{
+library(PmetricsData)
 NPex$op$plot(stats = list(x = 0.9)) \%>\%
   export_plotly(file = "op.png", width = 12, height = 6, units = "in")
 }
