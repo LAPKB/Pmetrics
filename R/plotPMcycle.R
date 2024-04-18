@@ -6,7 +6,7 @@
 #' when [PM_load] is run.
 #'
 #' @method plot PM_cycle
-#' @param x The name of a [PM_cycle]  object, e.g. `NPex$cycle`.
+#' @param x The name of a [PM_cycle]  object, e.g. `PmetricsData::NPex$cycle`.
 #' @param line `r template("line")` Default = `list(color = "dodgerblue", width = 2, dash = "solid")`.
 #' **Note** The width will apply to all plots, but `color` and `dash` will only apply
 #' to the first three plots (log-likelihood, AIC, gamma/lambda). Use `colors` and `linetypes`
@@ -391,6 +391,7 @@ plot.PM_cycle <- function(x,
 #' @seealso [makeCycle], [plot], [par], [axis]
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' plot(NPex$cycle$data)
 #' plot(NPex$cycle$data, omit = 0)
 plot.PMcycle <- function(x, x.leg = 0, y.leg = 1, cex.leg = 1.2, omit, col, out = NA, ...) {

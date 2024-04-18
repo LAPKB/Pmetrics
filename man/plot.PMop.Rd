@@ -137,6 +137,7 @@ accessed as the \verb{$data} object within the \verb{$op} field of a \link{PM_re
 \code{PM_result$op$data}.
 }
 \examples{
+library(PmetricsData)
 plot(NPex$op$data)
 
 }

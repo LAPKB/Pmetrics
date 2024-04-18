@@ -464,6 +464,7 @@ plot.PM_op <- function(x,
 #' @author Michael Neely
 #' @seealso \code{\link{makeOP}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @examples
+#' library(PmetricsData)
 #' plot(NPex$op$data)
 #'
 #' @export

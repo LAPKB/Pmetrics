@@ -23,5 +23,6 @@ This function passes that list to \link{plot.PM_sim}. If the 'simnum' argument
 is not chosen, the first object will be plotted.
 }
 \examples{
+library(PmetricsData)
 simEx$plot(at = 2)
 }

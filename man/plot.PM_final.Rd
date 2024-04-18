@@ -145,7 +145,7 @@ Mulitvariate normal density code is borrowed from the mvtnorm package.
 library(PmetricsData)
 # NPAG
 NPex$final$plot()
-NPex$final$plot(density = TRUE)
+NPex$final$plot(line = TRUE)
 NPex$final$plot(Ke ~ V)
 # IT2B
 ITex$final$plot()

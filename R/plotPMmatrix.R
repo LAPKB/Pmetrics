@@ -510,6 +510,7 @@ plot.PM_data <- function(x,
 #' @seealso \code{\link{PMreadMatrix}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' plot(NPex$data$data)
 plot.PMmatrix <- function(x, include, exclude, pred = NULL, icen = "median", mult = 1, outeq, group, block = 1,
                           layout = c(3, 3), log = F, pch = NA, errbar = F, doses = F, tad = F,

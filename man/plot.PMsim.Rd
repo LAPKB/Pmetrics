@@ -123,6 +123,7 @@ Simulated observations are plotted as quantiles on the y-axis vs. time on the x.
 observations are included, a visual and numerical predictive check will be performed.
 }
 \examples{
+library(PmetricsData)
 plot(simEx$data[[1]])
 }
 \seealso{
