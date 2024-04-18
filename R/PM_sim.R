@@ -55,7 +55,7 @@ PM_sim <- R6::R6Class(
     #' @param poppar One of four things:
     #' * Population prior parameters as a [PM_final] object found in
     #' `PM_result$final`. Normally these would be supplied by calling the
-    #' `$sim` method for a [PM_result] object, e.g. `NPex$sim(...)`.
+    #' `$sim` method for a [PM_result] object, e.g. `PmetricsData::NPex$sim(...)`.
     #' * A manually specified prior, see [SIMrun] for more details.
     #' * The name of a previously saved simulation via the `$save` method. The
     #' file will be loaded.

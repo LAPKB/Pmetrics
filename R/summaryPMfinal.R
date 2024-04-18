@@ -54,7 +54,7 @@
 summary.PMfinal <- function(object, lower = 0.025, upper = 0.975, ...) {
   if (inherits(object, "IT2B")) { # IT2B object
     if (is.null(object$nsub)) {
-      nsub <- as.numeric(readline("Update your IT2B PMfinal object with makeFinal() or PMreport() (see help).\nFor now, enter the number of subjects. "))
+      nsub <- as.numeric(readline("Update your IT2B PMfinal object with makeFinal() or PM_report() (see help).\nFor now, enter the number of subjects. "))
     } else {
       nsub <- object$nsub
     }

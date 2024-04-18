@@ -587,6 +587,7 @@ plot.PM_final <- function(x,
 #' @seealso [makeFinal], [plot], [par], [axis]
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' # NPAG
 #' plot(NPex$final$data)
 #' # IT2B

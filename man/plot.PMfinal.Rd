@@ -146,6 +146,7 @@ of each point.  For IT2B, it will be an elliptical distribution of a bivariate n
 of each plotted variable and surrounding quantiles of the bivariate distribution plotted in decreasing shades of grey.
 }
 \examples{
+library(PmetricsData)
 # NPAG
 plot(NPex$final$data)
 # IT2B

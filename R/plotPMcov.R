@@ -423,6 +423,7 @@ plot.PM_cov <- function(x,
 #' @seealso \code{\link{makeCov}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export
 #' @examples
+#' library(PmetricsData)
 #' plot(NPex$cov$data, V ~ wt)
 plot.PMcov <- function(x, formula, icen = "median", include, exclude, mult = 1, log = F, square = F, ref = F, lowess = F, grid = F, ident = F, reg = F, ci = 0.95, cex = 1,
                        cex.lab = 1.2, x.stat = 0.6, y.stat = 0.1, col.stat = "black", cex.stat = 0.8, lwd = 2, col = "red",
