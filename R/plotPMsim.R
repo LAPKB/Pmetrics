@@ -494,6 +494,7 @@ plot.PM_sim <- function(x,
 #' in the data template.
 #' @param ... Parameters passsed to [plot.PM_sim].
 #' @examples
+#' library(PmetricsData)
 #' simEx$plot(at = 2)
 #' @export
 
@@ -570,6 +571,7 @@ plot.PM_simlist <- function(x, ...) {
 #' with the addition of the quantile for each observation}
 #' @author Michael Neely
 #' @examples
+#' library(PmetricsData)
 #' plot(simEx$data[[1]])
 #' @seealso \code{\link{SIMparse}}, \code{\link{plot}}, \code{\link{par}}, \code{\link{axis}}
 #' @export

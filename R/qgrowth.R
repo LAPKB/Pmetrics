@@ -3,7 +3,8 @@
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
-#' Will extract height, weight, and BMI for boys, girls or both for a given range of ages in months and percentiles. This can be useful for
+#' Will extract height, weight, and BMI for boys, girls or both for a given 
+#' range of ages in months and percentiles. This can be useful for
 #' simulations in Pmetrics.
 #'
 #' @param sex A single quoted character: "M" for males, "F" for
@@ -25,8 +26,6 @@
 #' @export
 
 qgrowth <- function(sex = "B", agemos = (seq(0, 18) * 12), percentile = 50) {
-  growth <- NULL
-  data(growth, envir = environment())
   sex <- match.arg(sex)
   if (sex == "b" | sex == "B") {
     sex <- c("M", "F")
@@ -35,7 +34,7 @@ qgrowth <- function(sex = "B", agemos = (seq(0, 18) * 12), percentile = 50) {
   }
 
   sub1 <- purrr::map2_df(sex, percentile, function(x, y) {
-    growth %>%
+    PmetricsData::growth %>%
       filter(SEX == x, (CHART == "wt  x age" | CHART == "length x age" |
         CHART == "ht x age"), PERCENTILE == y) %>%
       rename(agecat = AGE, percentile = PERCENTILE, sex = SEX)
@@ -107,9 +106,9 @@ zBMI <- function(agemos, sex, bmi, wt, ht, data = "CDC") {
 
   all_bmi <- NULL # avoid CRAN check
   if (tolower(data) == "cdc") {
-    all_bmi <- cdc_bmi
+    all_bmi <- PmetricsData::cdc_bmi
   } else {
-    all_bmi <- ger_bmi
+    all_bmi <- PmetricsData::ger_bmi
   }
 
   if (missing(sex)) {
