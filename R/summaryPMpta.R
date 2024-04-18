@@ -11,7 +11,12 @@
 #'
 #' @method summary PMpta
 #' @param object A PMpta object made by [makePTA].
-#' @param at Which object in the *PM_pta* result list to plot. By default 1.
+#' @param at Which object in the *PM_pta* result list to summarize. By default "intersect" if
+#' an intersection is present due to creation of the object with multiple target types, or
+#' 1 if no intersection is present, which means only 1 target type was selected. If
+#' "intersect" is present in the object, the default can be overridden with a number to 
+#' summarize one of the individual PTAs, e.g. `at = 2` to summarize the second PTA rather than the
+#' intersection of all the PTAs. 
 #' @param ci Width of the interval for pharmacodynamic index reporting.  Default is 0.95, i.e. 2.5th to 97.5th percentile.
 #' @param ... Not used.
 #' @return A tibble with the following columns (only the first three if `at = "intersect"`):
@@ -32,7 +37,7 @@
 #' @seealso [makePTA], [PM_pta]
 #' @export
 
-summary.PMpta <- function(object, at = 1, ci=0.95, ...){
+summary.PMpta <- function(object, at = "intersect", ci=0.95, ...){
   
   pta <- object$clone()$results
   
@@ -41,7 +46,7 @@ summary.PMpta <- function(object, at = 1, ci=0.95, ...){
       pta <- pta$intersect %>%
         mutate(target = as.numeric(stringr::str_extract(target, "\\d+\\.*\\d*")))
     } else {
-      pta <- pta[[1]] #no intersect, plot first
+      pta <- pta[[1]] #no intersect, summarize first
     }
   } else {
     at <- suppressWarnings(tryCatch(as.numeric(at), error = function(e) NA))
@@ -52,7 +57,7 @@ summary.PMpta <- function(object, at = 1, ci=0.95, ...){
         pta <- pta[[at]]
       }
     } else {
-      stop("'at' should be either \"intersect\" or the number of one of the objects to plot.")
+      stop("'at' should be either \"intersect\" or the number of one of the objects to summarize.")
     }
     
   }
@@ -62,16 +67,16 @@ summary.PMpta <- function(object, at = 1, ci=0.95, ...){
   
   if(simTarg==1){ #set targets
     
-    pdi <- pta %>% group_by(sim_num, target) 
+    pdi <- pta %>% group_by(.data$sim_num, .data$target) 
     
   } else { #random targets
-    pdi <- pta %>% group_by(sim_num)
+    pdi <- pta %>% group_by(.data$sim_num)
     
   }
   
   if(at != "intersect"){
     pdi <- pdi %>% transmute(
-      label = label, prop_success = prop_success,
+      label = .data$label, prop_success = .data$prop_success,
       median = median(unlist(pdi), na.rm = TRUE),
       lower = quantile(unlist(pdi), probs = 0.5 - ci/2, na.rm = TRUE),
       upper = quantile(unlist(pdi), probs = 0.5 + ci/2, na.rm = TRUE),

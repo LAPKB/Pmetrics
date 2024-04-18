@@ -12,6 +12,7 @@ vignette: >
 
 ```{r setup}
 library(Pmetrics)
+simEx <- PmetricsData::simEx
 ```
 
 ```{r, include = FALSE}
@@ -29,7 +30,7 @@ pip_ecoli <- data.frame(
 )
 
 pta2 <- simEx$pta(simlabels = simlabels,
-                  targets = makePTAtarget(pip_ecoli),
+                  target = makePTAtarget(pip_ecoli),
                   target_type = "time",
                   success = 0.6, start = 120, end = 144)
 
@@ -86,7 +87,7 @@ pip_ecoli <- data.frame(
 )
 
 pta2 <- simEx$pta(simlabels = simlabels,
-                  targets = makePTAtarget(pip_ecoli),
+                  target = makePTAtarget(pip_ecoli),
                   target_type = "time",
                   success = 0.6, start = 120, end = 144)
 

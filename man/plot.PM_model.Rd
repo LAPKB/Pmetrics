@@ -65,6 +65,7 @@ This accepts a \link{PM_model} object and creates a network plot where nodes are
 and edges are arrows connecting compartments.
 }
 \examples{
+library(PmetricsData)
 NPex$model$plot()
 }
 \seealso{

@@ -4,12 +4,17 @@
 \alias{summary.PMpta}
 \title{Summarize Percent Target Attainment}
 \usage{
-\method{summary}{PMpta}(object, at = 1, ci = 0.95, ...)
+\method{summary}{PMpta}(object, at = "intersect", ci = 0.95, ...)
 }
 \arguments{
 \item{object}{A PMpta object made by \link{makePTA}.}
 
-\item{at}{Which object in the \emph{PM_pta} result list to plot. By default 1.}
+\item{at}{Which object in the \emph{PM_pta} result list to summarize. By default "intersect" if
+an intersection is present due to creation of the object with multiple target types, or
+1 if no intersection is present, which means only 1 target type was selected. If
+"intersect" is present in the object, the default can be overridden with a number to
+summarize one of the individual PTAs, e.g. \code{at = 2} to summarize the second PTA rather than the
+intersection of all the PTAs.}
 
 \item{ci}{Width of the interval for pharmacodynamic index reporting.  Default is 0.95, i.e. 2.5th to 97.5th percentile.}
 

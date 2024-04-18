@@ -32,6 +32,7 @@ Bayesian prior parameter values and each subject's dosing, sampling, and covaria
 (if relevant) information.
 }
 \examples{
+library(PmetricsData)
 pop <- makePop(NPdata = NPex$NPdata)
 }
 \author{

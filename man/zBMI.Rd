@@ -20,8 +20,8 @@ Will be ignored if \code{BMI} is specified.}
 \item{ht}{The individual's height in centimeters. Required if \code{wt} is specified
 and \code{BMI} is not. Ignored if \code{BMI} is specified.}
 
-\item{data}{Source data for calculations. Default is "CDC" which uses the \link{cdc_bmi}
-dataset. The alternative is "NHANES", which uses the \link{ger_bmi} dataset.}
+\item{data}{Source data for calculations. Default is "CDC" which uses the \link[PmetricsData:cdc_bmi]{PmetricsData::cdc_bmi}
+dataset. The alternative is "NHANES", which uses the \link[PmetricsData:ger_bmi]{PmetricsData::ger_bmi} dataset.}
 }
 \value{
 A list with objects calculated for \code{agemos} and \code{sex}.

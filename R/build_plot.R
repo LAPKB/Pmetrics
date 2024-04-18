@@ -5,6 +5,7 @@
 #' @details
 #' The app will open in a separate window.
 #' @param x Optional object to plot
+#' @param \dots Not currently used
 #'
 #' @return Launches the shiny app.
 #' @export
@@ -13,9 +14,13 @@
 
 build_plot <- function(x,...) {
   
-  requireNamespace("shiny")
-  requireNamespace("bslib")
-  requireNamespace("plotly")
+  if(!requireNamespace("shiny", quietly = TRUE)){ #suggests
+    stop("The shiny package must be installed to run build_plot().\n")
+  }
+  if(!requireNamespace("bslib", quietly = TRUE)){ #suggests
+    stop("The bslib package must be installed to run build_plot().\n")
+  }
+  requireNamespace("plotly") #imports
   
   
   if(!missing(x)){
@@ -63,10 +68,10 @@ build_plot <- function(x,...) {
       
       
       h3("Copy and paste the code below into your R script to reproduce the plot:"),
-      helpText("Note: If you accepted the default value for an argument,",
+      shiny::helpText("Note: If you accepted the default value for an argument,",
                "it is not necessary to include that argument in the call to plot",
                "and it has been omitted here, following standard R practice."),
-      helpText(htmlOutput("help")),
+      shiny::helpText(htmlOutput("help")),
       card(textOutput("plotCode"),
            max_height = "100px"),
       card(uiOutput("plotPM")),
@@ -161,7 +166,7 @@ build_plot <- function(x,...) {
         }
         
         return(list(
-          helpText("Use Shift or CTRL (Windows) or CMD (Mac) + Click to (de)select subjects."),
+          shiny::helpText("Use Shift or CTRL (Windows) or CMD (Mac) + Click to (de)select subjects."),
           radioButtons("data_include","", c("Include subjects" = "yes", "Exclude subjects" = "no"), selected = "yes"),
           selectInput("data_select", "", choices = unique(data_obj$id),
                       selected = unique(data_obj$id),
@@ -213,7 +218,7 @@ build_plot <- function(x,...) {
               radioButtons("pred.type","",c("Posterior Predictions" = "post","Population Predictions" = "pop"), selected = "post"),      
               checkboxInput("resid","Residual Plot",FALSE),
               selectInput("icen","Predictions based on:",choices=c("mean","median"),"median"),
-              helpText("Use Shift or CTRL (Windows) or CMD (Mac) + Click to (de)select subjects."),
+              shiny::helpText("Use Shift or CTRL (Windows) or CMD (Mac) + Click to (de)select subjects."),
               radioButtons("op_include","",c("Include subjects" = "yes", "Exclude subjects" = "no"), selected = "yes"),
               selectInput("op_select", "", choices=unique(get(input$data)$op$id), selected=unique(get(input$data)$op$id), 
                           multiple = TRUE, selectize = FALSE),
@@ -250,7 +255,7 @@ build_plot <- function(x,...) {
               selectInput("covX", "X-axis", 
                           choices=c("Select",names(get(input$data)$cov$data)[names(get(input$data)$cov$data) != "icen"]), 
                           selected = "Select"),      
-              helpText("Use Shift or CTRL (Windows) or CMD (Mac) + Click to (de)select subjects."),
+              shiny::helpText("Use Shift or CTRL (Windows) or CMD (Mac) + Click to (de)select subjects."),
               radioButtons("cov_include", "", c("Include subjects" = "yes", "Exclude subjects" = "no"), selected = "yes"),
               selectInput("cov_select","", choices = unique(get(input$data)$cov$data$id),
                           selected = unique(get(input$data)$cov$data$id), multiple = T, selectize = FALSE),
@@ -367,7 +372,7 @@ build_plot <- function(x,...) {
                 "Plot Options",
                 checkboxInput("log","Log-log plot", FALSE),
                 checkboxInput("grid","Grid", TRUE),
-                helpText("Only relevant for linear regression"),
+                shiny::helpText("Only relevant for linear regression"),
                 checkboxInput("def_stats_fmt","Use default statistics formatting", TRUE),
                 conditionalPanel(
                   condition = "!input.def_stats_fmt",
@@ -546,7 +551,7 @@ build_plot <- function(x,...) {
                 numericInput("mult","Multiplication factor for axes:","1"),
                 checkboxInput("log","Log-log plot", FALSE),
                 checkboxInput("grid","Grid", TRUE),
-                helpText("Only relevant for linear regression"),
+                shiny::helpText("Only relevant for linear regression"),
                 checkboxInput("def_stats_fmt","Use default statistics formatting", TRUE),
                 conditionalPanel(
                   condition = "!input.def_stats_fmt",
@@ -585,27 +590,27 @@ build_plot <- function(x,...) {
                   bslib::navset_card_tab(
                     bslib::nav_panel(
                       "Both Rows",
-                      helpText("Applies to all plots"),
+                      shiny::helpText("Applies to all plots"),
                       numericInput("ab_lwd", "Line width", 1, step = 0.5),
                     ),
                     bslib::nav_panel(
                       "Row A",
-                      helpText("Applies to LL, AIC, gamma/lambda"),
+                      shiny::helpText("Applies to LL, AIC, gamma/lambda"),
                       textInput("a_col", "Color:", "dodgerblue"),
                       selectInput("a_dash", "Dash style:", choices = c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"))
                     ),
                     bslib::nav_panel(
                       "Row B",
-                      helpText("Applies to normalized parameter statistics"),
-                      helpText("Choose colors for each parameter trace. Select 'Other' for custom."),
+                      shiny::helpText("Applies to normalized parameter statistics"),
+                      shiny::helpText("Choose colors for each parameter trace. Select 'Other' for custom."),
                       selectInput("b_col", "Color palette:",
-                                  choices = c(row.names(RColorBrewer::brewer.pal.info), "Other"), selected = "Spectral"),
+                                  choices = c(getPalettes(), "Other"), selected = "Spectral"),
                       conditionalPanel(
                         condition = "input.b_col == 'Other'",
-                        helpText("Enter color names separated by commas. Values will be recycled as needed."),
+                        shiny::helpText("Enter color names separated by commas. Values will be recycled as needed."),
                         textInput("b_custom_colors", "Custom Colors:", value = "")
                       ),
-                      helpText("Choose dash styles for each parameter trace. Values will be recycled if needed."),
+                      shiny::helpText("Choose dash styles for each parameter trace. Values will be recycled if needed."),
                       selectInput("b_dash", "Dash style:", choices = c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"), selected = "dash", multiple = TRUE)
                     ) #end nav_panel
                   ) #end navset_card_tab
@@ -701,17 +706,17 @@ build_plot <- function(x,...) {
                 "Group Options",
                 conditionalPanel(
                   condition = "input.group !== 'none'",
-                  helpText("One name per group, separate by commas"),
+                  shiny::helpText("One name per group, separate by commas"),
                   textInput("group_names","Group Names:",
                             value = paste(unique(get(input$data)$data$data[[input$group]]), collapse = ", ")
                   ),
                   checkboxInput("legend","Legend", value = ifelse(input$group != 'none', TRUE, FALSE)),
                   selectInput("group_col", "Color palette for groups:",
-                              choices = row.names(RColorBrewer::brewer.pal.info), selected = "Set1")
+                              choices = getPalettes(), selected = "Set1")
                 ),
                 conditionalPanel(
                   condition = "input.group == 'none'",
-                  helpText("Define groups in data")
+                  shiny::helpText("Define groups in data")
                 )
               ) #end accordion panel
             ) #end accordion
@@ -1233,17 +1238,17 @@ build_plot <- function(x,...) {
           
           ############### Plot and Code: PM_result$final, IT2B #####################
           
-          if(!is.null(input$res_sub) &&
-             (input$res_sub == "fin" & inherits(get(input$data)$final,"IT2B"))){
-            
-            x <- get(input$data)
-            args <- list(x=x,formula=getFormula(choices=names(get(input$data)$popMean)),cex.lab=input$cex.lab,col=getFinalPlotType()$col,
-                         pch=input$pch,cex=input$cex,lwd=getFinalPlotType()$lwd,probs=getProbs(),standard=input$standard,legend=input$legend,
-                         grid=input$grid,xlim=getXlim(),ylim=getYlim(),xlab=getXlab(),ylab=getYlab())
-            if(getFinalPlotType()$ptype=="uni"){args$formula <- NULL} #reset formula
-            args <- args[which(sapply(args,function(x) length(x)>0),arr.ind=T)]
-            do.call(plot.PMfinal,args)
-          } #end PMfinal, IT2B
+          # if(!is.null(input$res_sub) &&
+          #    (input$res_sub == "fin" & inherits(get(input$data)$final,"IT2B"))){
+          #   
+          #   x <- get(input$data)
+          #   args <- list(x=x,formula=getFormula(choices=names(get(input$data)$popMean)),cex.lab=input$cex.lab,col=getFinalPlotType()$col,
+          #                pch=input$pch,cex=input$cex,lwd=getFinalPlotType()$lwd,probs=getProbs(),standard=input$standard,legend=input$legend,
+          #                grid=input$grid,xlim=getXlim(),ylim=getYlim(),xlab=getXlab(),ylab=getYlab())
+          #   if(getFinalPlotType()$ptype=="uni"){args$formula <- NULL} #reset formula
+          #   args <- args[which(sapply(args,function(x) length(x)>0),arr.ind=T)]
+          #   do.call(plot.PMfinal,args)
+          # } #end PMfinal, IT2B
           
           ############### Plot and Code: PM_result$op #####################
           

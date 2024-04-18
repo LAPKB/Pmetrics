@@ -79,6 +79,7 @@
 #' @author Michael Neely
 #' @seealso \code{\link{NPparse}}, \code{\link{ITparse}},  \code{\link{plot.PMfinal}}
 #' @examples
+#' library(PmetricsData)
 #' final <- makeFinal(NPex$NPdata)
 #' final
 #' names(final)

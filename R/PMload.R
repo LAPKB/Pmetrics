@@ -24,7 +24,7 @@
 #' in [NPrun].
 #' @return An R6 [PM_result].
 #' @author Michael Neely and Julian Otalvaro
-#' @seealso [PMreport], [NPparse], [ITparse],
+#' @seealso [NPparse], [ITparse],
 #' [makeFinal], [makeCycle], [makeOP], [makeCov],
 #' [makePop], [makePost]
 #' @export
@@ -196,7 +196,7 @@ update <- function(res, found){
 #' the save data.  It contains the information required to plot visual predictive checks and normalized prediction
 #' error discrepancies via the npde code developed by Comets et al}
 #' @author Michael Neely
-#' @seealso \code{\link{PMreport}}, \code{\link{NPparse}}, \code{\link{ITparse}},
+#' @seealso  \code{\link{NPparse}}, \code{\link{ITparse}},
 #' \code{\link{makeFinal}}, \code{\link{makeCycle}}, \code{\link{makeOP}}, \code{\link{makeCov}},
 #' \code{\link{makePop}}, \code{\link{makePost}}
 #' @export

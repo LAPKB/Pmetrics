@@ -29,6 +29,7 @@
 #' @author Michael Neely
 #' @seealso \code{\link{NPparse}}, \code{\link{ITparse}}, \code{\link{plot.PMop}}, \code{\link{summary.PMop}}
 #' @examples
+#' library(PmetricsData)
 #' op <- makeOP(NPex$NPdata)
 #' op
 #' names(op)

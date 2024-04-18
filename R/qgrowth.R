@@ -81,8 +81,8 @@ qgrowth <- function(sex = "B", agemos = (seq(0, 18) * 12), percentile = 50) {
 #' Will be ignored if `BMI` is specified.
 #' @param ht  The individual's height in centimeters. Required if `wt` is specified
 #' and `BMI` is not. Ignored if `BMI` is specified.
-#' @param data Source data for calculations. Default is "CDC" which uses the [cdc_bmi]
-#' dataset. The alternative is "NHANES", which uses the [ger_bmi] dataset.
+#' @param data Source data for calculations. Default is "CDC" which uses the [PmetricsData::cdc_bmi]
+#' dataset. The alternative is "NHANES", which uses the [PmetricsData::ger_bmi] dataset.
 #' @return A list with objects calculated for `agemos` and `sex`.
 #'  * z Z-score
 #'  * mod_z Modified Z-score for extreme BMI
