@@ -55,9 +55,6 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/ERRrun.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/ITex.html</loc>
-  </url>
-  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/ITload.html</loc>
   </url>
   <url>
@@ -74,12 +71,6 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/NM2PM.html</loc>
-  </url>
-  <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/NPex.html</loc>
-  </url>
-  <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/NPex_val.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/NPload.html</loc>
@@ -262,25 +253,16 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/additive.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/badData.html</loc>
-  </url>
-  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/build_model.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/build_plot.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/cdc_bmi.html</loc>
-  </url>
-  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/combination.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/covariate.html</loc>
-  </url>
-  <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/dataEx.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/editPMoptions.html</loc>
@@ -295,22 +277,13 @@
     <loc>https://lapkb.github.io/Pmetrics/reference/fixed.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/ger_bmi.html</loc>
-  </url>
-  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/getPMdata.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/getPMoptions.html</loc>
   </url>
   <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/growth.html</loc>
-  </url>
-  <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/locales.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/makeAUC.html</loc>
@@ -356,18 +329,6 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/make_valid.html</loc>
-  </url>
-  <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/mic1.html</loc>
-  </url>
-  <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/modEx.html</loc>
-  </url>
-  <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/model.html</loc>
-  </url>
-  <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/modelLibrary.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/movePMoptions.html</loc>
@@ -470,9 +431,6 @@
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/setPMoptions.html</loc>
-  </url>
-  <url>
-    <loc>https://lapkb.github.io/Pmetrics/reference/simEx.html</loc>
   </url>
   <url>
     <loc>https://lapkb.github.io/Pmetrics/reference/ss.PK.html</loc>
