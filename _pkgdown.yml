@@ -42,7 +42,7 @@ home:
 reference:
 - title: R6 objects
   desc: Create Pmetrics R6 objects
-- contents: 
+- contents:
   - starts_with("PM_")
   - ab
   - additive
@@ -53,6 +53,7 @@ reference:
   - msd
   - proportional
   - build_model
+  - build_plot
 - title: Make functions
   desc: Functions for making Pmetrics objects
 - contents:
@@ -65,7 +66,7 @@ reference:
   - MM_opt
 - title: Plot
   desc: Functions for plotting Pmetrics output
-- contents: 
+- contents:
   - starts_with("plot")
   - ab_line
   - add_shapes
@@ -129,6 +130,7 @@ reference:
   - editPMoptions
   - movePMoptions
   - update_gfortran
+  - getPMdata
 - title: Reference
   desc: Reference functions
 - contents:
