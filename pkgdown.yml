@@ -1,0 +1,20 @@
+pandoc: 3.1.11
+pkgdown: 2.0.8
+pkgdown_sha: ~
+articles:
+  data: data.html
+  intro: intro.html
+  models: models.html
+  objects: objects.html
+  overview: overview.html
+  plotly: plotly.html
+  pmetrics: pmetrics.html
+  pta: pta.html
+  running: running.html
+  simulation: simulation.html
+  workflow: workflow.html
+last_built: 2024-04-19T06:38Z
+urls:
+  reference: https://lapkb.github.io/Pmetrics/reference
+  article: https://lapkb.github.io/Pmetrics/articles
+
