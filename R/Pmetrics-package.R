@@ -15,17 +15,16 @@
 #'
 #' @importFrom dplyr select arrange filter mutate transmute group_by row_number
 #' group_map ungroup bind_cols bind_rows nest_by rowwise rename inner_join
-#' slice_tail slice_head slice across tibble as_tibble .data
-# #' @importFrom foreach %dopar%
+#' slice_tail slice_head slice across tibble as_tibble 
 #' @importFrom readr read_file write_file
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon geom_hline
 #' scale_x_log10 scale_x_continuous scale_y_log10 scale_y_continuous xlab ylab
 #' theme ggtitle element_blank geom_segment aes_string aes_string theme_bw theme_grey
-#' @importFrom purrr map map2 reduce map_chr keep pluck map_lgl map_df
+#' @importFrom purrr map map2 reduce map_chr keep pluck map_lgl map_df 
 #' @importFrom magrittr %>%
 # #' @importFrom tibble as_tibble tibble
 #' @importFrom tidyr pivot_longer pivot_wider nest unnest extract separate fill 
-#' crossing separate_wider_delim
+#' crossing separate_wider_delim   
 #' @importFrom rlang .data
 #' @importFrom stringr str_replace regex
 # #' @importFrom mclust Mclust 
