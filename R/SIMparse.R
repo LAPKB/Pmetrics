@@ -31,8 +31,6 @@
 #' will be a list of PMsim objects, which can be plotted or otherwise accessed using standard list
 #' referencing, e.g. `simlist[[1]]`, `simlist[[2]]`, etc.
 #' @param quiet Suppress messages
-#' @param parallel Runs in parallel mode.  Defaults to true if multiple files are to be parsed, otherwise false.
-#' Can be overridden by specifying \code{TRUE} or \code{FALSE}.
 #' @return If one file is parsed or multiple files are parsed and combined, the return will be a list with five items, of class \emph{PMsim}.
 #' If multiple files are parsed and not combined, then the return will be a *PM_simlist* of \emph{PMsim} objects.
 #' \item{obs }{An data frame of simulated observations with 4 columns: id, time, out, outeq.
@@ -57,28 +55,28 @@
 #' @seealso [PM_result], [PM_sim], [SIMrun]
 #' @export
 
-SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
+SIMparse <- function(file, include, exclude, combine = F, quiet = F) {
   processfile <- function(n) {
     out <- readLines(allfiles[n])
-    nsim <- as.numeric(strparse("[[:digit:]]+", out[grep(" THE NO. OF SIMULATED SUBJECTS", out)]))
-    nout <- as.numeric(strparse("[[:digit:]]+", out[grep(" THE NO. OF OUTPUT EQUATIONS", out)]))
-    nobs <- as.numeric(strparse("[[:digit:]]+", out[grep(" VALUES FOR EACH OUTPUT EQUATION", out)]))
+    nsim <- as.numeric(stringr::str_extract(out[grep(" THE NO. OF SIMULATED SUBJECTS", out)], "[[:digit:]]+"))
+    nout <- as.numeric(stringr::str_extract(out[grep(" THE NO. OF OUTPUT EQUATIONS", out)], "[[:digit:]]+"))
+    nobs <- as.numeric(stringr::str_extract(out[grep(" VALUES FOR EACH OUTPUT EQUATION", out)], "[[:digit:]]+"))
     i <- grep("CONTAIN THE SIMULATED OBSERVED$", out)
     times <- as.numeric(scan(allfiles[n], skip = i + 6, n = nobs + 1, what = "character", quiet = T)[-1])
-
-
+    
+    
     # get compartment amounts and outeq concentrations for each output
     # places for compartment amounts
     amtlines <- grep("COMPARTMENT NO", out) + 1
     # number of compartments
     ncomp <- length(amtlines)
-
-
+    
+    
     # places for observations
     obslines <- grep("OUTPUT EQUATION NO", out) + 1
     # skip observed assay noise
     obslines <- obslines[-(1:nout)]
-
+    
     # id is a block of 1:nsim repeated for each observation, all repeated for each compartment
     # time is a block of the times repeated for each subject, all repeated for each compartment
     # amt all amounts
@@ -95,7 +93,7 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
     } else {
       amt <- NA
     }
-
+    
     # id is a block of 1:nsim repeated for each observation, all repeated for each output
     # time is a block of the times repeated for each subject, all repeated for each output
     # out is all observations
@@ -109,10 +107,10 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
       outeq = rep(1:nout, each = nsim * nobs)
     )
     obs$out[obs$out == -99] <- NA
-
-
+    
+    
     # get simulated parameter values
-
+    
     i <- grep("PARAMETER VALUES FOR ALL THE SUBJECTS.", out)
     parNames <- unlist(strsplit(out[i + 2], " +"))[-1]
     parValues <- t(sapply(
@@ -122,10 +120,10 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
     parValues <- data.frame(parValues)
     names(parValues) <- parNames
     names(parValues)[names(parValues) == "SUBJ."] <- "id"
-
-
+    
+    
     # get means and covariances of entire simulated set
-
+    
     i <- grep("BECAUSE OF PARAMETER BOUNDARY RESTRICTIONS", out)
     if (length(i) > 0) {
       totalSets <- as.numeric(scan(allfiles[1], what = "character", skip = i, nlines = 1, quiet = T, strip.white = T)[1])
@@ -152,15 +150,15 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
     }
     names(totalMeans) <- parNames[-1]
     if (length(parValues) > 2) dimnames(totalCov) <- list(parNames[-1], parNames[-1])
-
+    
     return(list(obs = obs, amt = amt, parValues = parValues, totalSets = totalSets, totalMeans = totalMeans, totalCov = totalCov))
   } # end of processfile function
-
-  #  starttime <- proc.time()
+  
   if (missing(file)) {
     cat("Please provide filename of Pmetrics simulation output file(s).\n")
     return()
   }
+  
   # extract pattern from strings
   strparse <- function(pattern, x) {
     match <- regexpr(pattern, x, perl = T) # perl=T required for the lookahead
@@ -168,13 +166,13 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
     stop <- match[1] + attr(match, "match.length") - 1
     return(substr(x, start, stop))
   }
-
+  
   # separate files if more than one
   files <- unlist(strsplit(file, ","))
   # remove leading and trailing spaces
   files <- sub("^[[:blank:]]*", "", files)
   files <- sub("[[:blank:]]*$", "", files)
-
+  
   # check that wildcard-generated list does not include outdated files
   # if out-of-order files are found, the user has the option to include them, exclude them, or abort
   nfilepar <- length(files)
@@ -209,7 +207,7 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
       } # end of check list of files generated by wildcard block
     } # end of IF wildcard used block
   } # end of filecheck cycle
-
+  
   allfiles <- unique(Sys.glob(files)) # unique to exclude duplicates
   simnum <- as.numeric(sapply(allfiles, function(x) strparse("([[:digit:]]+)(?!.*[[:digit:]])", x)))
   # new reg exp matches the last number in filename rather than the first; "run5out1.txt" will now return 1 rather than 5
@@ -221,73 +219,24 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
     allfiles <- allfiles[-exclude]
   }
   allfiles <- setdiff(allfiles, tobeignored) # delete files that are to be ignored from the date check
-
+  
   nfiles <- length(allfiles)
   if (nfiles == 0) {
     stop("No files found.\n")
   }
-  if (missing(parallel)) {
-    if (nfiles > 1) {
-      parallel <- T
-    } else {
-      parallel <- F
-    }
-  }
+  
+  
+  # process return objects
 
-  if (parallel) {
-    no_cores <- parallel::detectCores()
-  }
-
-  # initialize return objects
-  simlist <- list()
   if (!quiet) {
-    cat(paste("\nProcessing ", nfiles, " simulated data file(s)", sep = ""))
-    if (parallel) cat(" in parallel on ", no_cores, " cores.", sep = "")
-    cat("\n")
+    cat(paste("\nProcessing ", nfiles, " simulated data file(s).\n", sep = ""))
     flush.console()
   }
-  if (!quiet & !parallel) {
-    pb <- txtProgressBar(min = 0, max = nfiles, style = 3)
-  }
+  
+  #map through files in pseudo-parallel; full parallel removed as actually longer
+  simlist <- purrr::pmap(list(1:nfiles), processfile, .progress = list(type = "tasks", name = "Files") )
   
   
-  par1 <- requireNamespace("doParallel", quietly = TRUE)
-  par2 <- requireNamespace("foreach", quietly = TRUE)
-  par3 <- requireNamespace("parallel", quietly = TRUE)
-  
-  if(!all(c(par1, par2, par3))){ #if any above packages are missing
-    
-    cat(paste0(crayon::green("NOTE: "), "Install the following package(s) for parallel processing: ",
-               crayon::blue(paste(c("doParallel", "foreach", "parallel")[c(!par1, !par2, !par3)], collapse = ", ")),
-               ".\n"))
-    
-    parallel <- FALSE
-    
-  }
-
-  
-  
-
-  if (parallel) {
-    cl <- parallel::makeCluster(no_cores, setup_timeout = 0.5)
-    # May 8, 2020 remove the second argument when bug fixed in Rstudio
-    doParallel::registerDoParallel(cl)
-    simlist <- foreach::foreach(n = 1:nfiles, .verbose = F) %dopar% {
-      processfile(n)
-    }
-    parallel::stopCluster(cl)
-  } else {
-    for (n in 1:nfiles) {
-      simlist[[n]] <- processfile(n)
-      if (!quiet) {
-        setTxtProgressBar(pb, n)
-      }
-    }
-    if (!quiet) {
-      close(pb)
-    }
-  }
-
   # combine obs if requested
   if (combine & nfiles > 1) {
     if (!quiet) {
@@ -299,7 +248,7 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
       simlist[[x]]$obs$id <- paste(simlist[[x]]$obs$id, sprintf("%02d", x), sep = ".")
       simlist[[x]]
     })
-
+    
     obs <- do.call(rbind, lapply(simlist, function(x) x$obs))
     amt <- do.call(rbind, lapply(simlist, function(x) x$amt))
     parValues <- do.call(rbind, lapply(simlist, function(x) x$parValues))
@@ -309,7 +258,7 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
     totalCov <- Reduce("+", lapply(simlist, function(x) x$totalCov * x$totalSets)) / totalSets
     simlist <- list(obs = obs, amt = amt, parValues = parValues, totalSets = totalSets, totalMeans = totalMeans, totalCov = totalCov)
   }
-
+  
   # return simlist
   if (nfiles > 1) { # more than one file
     if (combine) { # combined
@@ -329,9 +278,6 @@ SIMparse <- function(file, include, exclude, combine = F, quiet = F, parallel) {
     message <- paste(paste("\nThe following file was successfully parsed: ", paste(allfiles, collapse = ", "), "\n", sep = ""))
   }
 
-  utils::Rprof(NULL)
-  #  runningtime <- proc.time()-starttime
   if (!quiet) cat(message)
-  #  if(!quiet) cat(message,"Running time: ", runningtime[3], sep="")
   return(simlist)
 }

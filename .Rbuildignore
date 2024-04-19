@@ -8,7 +8,6 @@ compile.*
 .vscode
 ^_pkgdown\.yml$
 ^docs$
-^doc$
 ^pkgdown$
 ^\.github$
 ^Meta$
@@ -18,3 +17,4 @@ compile.*
 ^man-roxygen
 ^README\.Rmd$
 logo.png
+^vignettes/articles$
