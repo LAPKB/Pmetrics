@@ -75,3 +75,8 @@ ERRreport <- function(wd, icen, type) {
     cat("ASS0001 is not in the current directory.\n")
   }
 } # end function
+
+writeHTML <- function(x) {
+  .HTMLfile <- get(".HTMLfile", pos = parent.frame())
+  cat(c(paste(x, collapse = "\n"), "\n"), file = .HTMLfile, append = T)
+}

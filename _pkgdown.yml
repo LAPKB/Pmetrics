@@ -4,8 +4,15 @@ template:
   bootswatch: flatly
 navbar:
   structure:
-      left:  [intro, reference, articles, tutorials, news]
-      right: [search, github]
+    left:
+    - intro
+    - reference
+    - articles
+    - tutorials
+    - news
+    right:
+    - search
+    - github
   components:
     intro:
       text: Start Here
@@ -13,27 +20,33 @@ navbar:
     articles:
       text: Articles
       menu:
-        - text: Introduction
-          href: articles/intro.html
-        - text: Overview
-          href: articles/overview.html
-        - text: Workflow
-          href: articles/workflow.html
-        - text: Data Objects
-          href: articles/data.html
-        - text: Model Objects
-          href: articles/models.html
-        - text: Running the fit
-          href: articles/running.html
-        - text: Created Objects
-          href: articles/objects.html
-        - text: Simulation
-          href: articles/simulation.html
-        - text: Plotly plots
-          href: articles/plotly.html
+      - text: Introduction
+        href: articles/intro.html
+      - text: Overview
+        href: articles/overview.html
+      - text: Workflow
+        href: articles/workflow.html
+      - text: Data Objects
+        href: articles/data.html
+      - text: Model Objects
+        href: articles/models.html
+      - text: Running the fit
+        href: articles/running.html
+      - text: Created Objects
+        href: articles/objects.html
+      - text: Simulation
+        href: articles/simulation.html
+      - text: Plotly plots
+        href: articles/plotly.html
 home:
   sidebar:
-    structure: [links, license, community, citation, authors, dev]
+    structure:
+    - links
+    - license
+    - community
+    - citation
+    - authors
+    - dev
     components:
       custom:
         title: Discussion
@@ -138,3 +151,4 @@ reference:
   - PMmanual
   - PMnews
   - Pmetrics-package
+

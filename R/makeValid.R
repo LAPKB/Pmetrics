@@ -202,7 +202,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
       sep = ""
     ))
     cat("Now performing Gaussian mixture model analysis.")
-    mod1 <- Mclust(dataSubDC)
+    mod1 <- mclust::Mclust(dataSubDC)
     cat(paste("Most likely number of clusters is ", mod1$G, ".", sep = ""))
     readline("Press <Return> to see classification plot: ")
     plot(mod1, "classification")
@@ -224,7 +224,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
       timePlot <- as.formula(out ~ tad)
     }
     readline("Press <Return> to start cluster analysis for sample times: ")
-    mod <- Mclust(use.data)
+    mod <- mclust::Mclust(use.data)
     cat(paste("Most likely number of clusters is ", mod$G, ".\n", sep = ""))
     readline("Press <Return> to see classification plot: ")
     plot(mod, "classification")
@@ -250,7 +250,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
       confirm <- 2
       while (confirm != 1) {
         TclustNum <- readline("Specify your sample time cluster number \n")
-        mod <- Mclust(use.data, G = TclustNum)
+        mod <- mclust::Mclust(use.data, G = TclustNum)
         timeClusterPlot()
         timeClusters <- kmeans(use.data, centers = mod$G, nstart = 50)
         abline(v = timeClusters$centers, col = "red")
@@ -845,7 +845,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
       sep = ""
     ))
     cat("Now performing Gaussian mixture model analysis.")
-    mod1 <- Mclust(dataSubDC)
+    mod1 <- mclust::Mclust(dataSubDC)
     cat(paste("Most likely number of clusters is ", mod1$G, ".", sep = ""))
     readline("Press <Return> to see classification plot: ")
     plot(mod1, "classification")
@@ -867,7 +867,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
       timePlot <- as.formula(out ~ tad)
     }
     readline("Press <Return> to start cluster analysis for sample times: ")
-    mod <- Mclust(use.data)
+    mod <- mclust::Mclust(use.data)
     cat(paste("Most likely number of clusters is ", mod$G, ".\n", sep = ""))
     readline("Press <Return> to see classification plot: ")
     plot(mod, "classification")
@@ -893,7 +893,7 @@ makeValid <- function(run, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
       confirm <- 2
       while (confirm != 1) {
         TclustNum <- readline("Specify your sample time cluster number \n")
-        mod <- Mclust(use.data, G = TclustNum)
+        mod <- mclust::Mclust(use.data, G = TclustNum)
         timeClusterPlot()
         timeClusters <- kmeans(use.data, centers = mod$G, nstart = 50)
         abline(v = timeClusters$centers, col = "red")
