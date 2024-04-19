@@ -594,9 +594,9 @@
       paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
     )[OS]
     if (report) {
-      if (alq) {
-        PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
-      } else {
+      # if (alq) {
+      #   PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
+      # } else {
         PMscript[getNext(PMscript)] <- c(
           paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0("pander::openFileInOS(", shQuote(paste0(gsub("/", rep, outpath), "/", type, "report.html")), ")")), " ; fi", sep = ""),
           # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('pander::openFileInOS(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
@@ -609,7 +609,7 @@
         #     paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
         #     paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
         #   )[OS]
-      }
+      # }
     } else { # close if statement if report = F
       PMscript[getNext(PMscript)] <- c("fi", "", "fi")[OS]
     }
@@ -856,5 +856,106 @@
       pander::openFileInOS(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))
     }
     return(outpath)
+  }
+}
+
+
+makeRdata <- function(wd, remote, reportType) {
+  setwd(wd)
+  errfile <- list.files(pattern = "^ERROR")
+  # error <- length(errfile) > 0
+  # see if NP_RF or IT_RF made anyway (i.e. is >1MB in size)
+  success <- file.info(c("NP_RF0001.TXT", "IT_RF0001.TXT")[reportType])$size >= 1000
+  
+  if (success) {
+    # run completed
+    # open and parse the output
+    if (reportType == 1) {
+      # NPAG
+      PMdata <- suppressWarnings(tryCatch(NPparse(), error = function(e) {
+        e <- NULL
+        cat("\nWARNING: The run did not complete successfully.\n")
+      }))
+      # make the posterior predictions
+      post <- suppressWarnings(tryCatch(makePost(NPdata = PMdata), error = function(e) {
+        e <- NULL
+        cat("\nWARNING: error in extraction of posterior Bayesian predictions at time ttpred; 'PMpost' object not saved.\n\n")
+      }))
+      # make the population predictions
+      pop <- suppressWarnings(tryCatch(makePop(NPdata = PMdata), error = function(e) {
+        e <- NULL
+        cat("\nWARNING: error in extraction of population predictions at time tpred; 'PMpop' object not saved.\n\n")
+      }))
+    } else { # IT2B
+      PMdata <- suppressWarnings(tryCatch(ITparse(), error = function(e) {
+        e <- NULL
+        cat("\nWARNING: The run did not complete successfully.\n")
+      }))
+    }
+    # both NPAG and IT2B
+    cat("\n\n")
+    flush.console()
+    if (is.null(PMdata$nranfix)) PMdata$nranfix <- 0
+    op <- suppressWarnings(tryCatch(makeOP(PMdata), error = function(e) {
+      e <- NULL
+      cat("\nWARNING: error in extraction of observed vs. population predicted data; 'PMop' object not saved.\n\n")
+    }))
+    cycle <- suppressWarnings(tryCatch(makeCycle(PMdata), error = function(e) {
+      e <- NULL
+      cat("\nWARNING: error in extraction of cycle information; 'PMcycle' object not saved.\n\n")
+    }))
+    final <- suppressWarnings(tryCatch(makeFinal(PMdata), error = function(e) {
+      e <- NULL
+      cat("\nWARNING: error in extraction of final cycle parameter values; 'PMfinal' object not saved.\n\n")
+    }))
+    if (PMdata$mdata != "NA") {
+      mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T)
+    } else {
+      mdata <- NA
+    }
+    cov <- suppressWarnings(tryCatch(makeCov(PMdata), error = function(e) {
+      e <- NULL
+      cat("\nWARNING: error in extraction of covariate-parameter data; 'PMcov' object not saved.\n\n")
+    }))
+    if (PMdata$mdata != "NA") {
+      mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T)
+    } else {
+      mdata <- NA
+    }
+    model <- list.files("../inputs") %>%
+      .[grepl(".txt$", .)] %>%
+      paste0("../inputs/", .) %>%
+      .[[1]] %>%
+      PM_model$new(.)
+    cat(paste("\n\n\nSaving R data objects to ", wd, "......\n\n", sep = ""))
+    cat("\nUse PM_load() to load them.\n")
+    cat("\nThe following objects have been saved:\n")
+    cat(c("\nNPdata: All output from NPAG\n", "\nITdata: All output from IT2B\n")[reportType])
+    if (reportType == 1 && !all(is.null(pop))) cat("pop: Population predictions at regular, frequent intervals\n")
+    if (reportType == 1 && !all(is.null(post))) cat("post: Posterior predictions at regular, frequent inteverals\n")
+    if (!all(is.null(final))) cat("final: Final cycle parameters and summary statistics\n")
+    if (!all(is.null(cycle))) cat("cycle: Cycle information\n")
+    if (!all(is.null(op))) cat("op: Observed vs. population and posterior predicted\n")
+    if (!all(is.null(cov))) cat("cov: Individual covariates and Bayesian posterior parameters\n")
+    if (length(mdata) > 1) cat("mdata: The data file used for the run\n")
+    
+    
+    if (reportType == 1) {
+      NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, data = mdata, model = model, errfile = errfile, success = success)
+      save(NPAGout, file = "PMout.Rdata")
+      # Hacky return to deal with Rservex bug T.T
+      if (remote) {
+        return("ok")
+      }
+      return(NPAGout)
+    }
+    if (reportType == 2) {
+      IT2Bout <- list(ITdata = PMdata, final = final, cycle = cycle, op = op, cov = cov, data = mdata, model = model, errfile = errfile, success = success)
+      save(IT2Bout, file = "PMout.Rdata")
+      if (remote) {
+        return("ok")
+      }
+      return(IT2Bout)
+    }
   }
 }
