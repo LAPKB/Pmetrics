@@ -70,8 +70,6 @@ getPMoptions <- function(opt, warn = T, quiet = F) {
 #'
 #' @param sep The field separator character; "," by default, but could be ";" or another separator.
 #' @param dec The decimal separator character; "." by default, but could be "," for example.
-#' @param server_address Specify address of server for remote runs.  Server must be set up separately.
-#' This functionality is coming soon.
 #' @param compilation_statements a vector with tho string elements that defines the compilation arguments for
 #' single thread and parallel executions. Custom compile commands should be entered using `<exec>` as a placeholder
 #' for the executable filename, and `<files>` as a placeholder for the files to be linked and compiled.
@@ -157,7 +155,6 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
       PMopts$compilation_statements <- compilation_statements
     }
   }
-  if (!missing(server_address)) PMopts$server_address <- server_address
   if (!missing(backend)) PMopts$backend <- backend
   if (!missing(rust_template)) PMopts$rust_template <- rust_template
   if (!missing(report_template)) PMopts$report_template <- report_template

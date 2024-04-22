@@ -64,10 +64,6 @@
 #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
 #' @param artifacts Default is \code{TRUE}.  Set to \code{FALSE} to suppress creating the \code{etc} folder. This folder
 #' will contain all the compilation artifacts created during the compilation and run steps.
-#' @param alq For internal developer use only.  Should be set to \code{FALSE}.
-#' @param remote Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
-#' @param server_address If missing, will use the default server address returned by getPMoptions().
-#' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}.
 #' @param report Generate a report at the end of a run. Default is `TRUE`.
 #' @return A successful NPAG run will result in creation of a new folder in the working
 #' directory.  This folder will be named numerically and sequentially with respect to previous runs.
@@ -100,7 +96,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
                   indpts, icen = "median", aucint,
                   idelta = 12, prior,
                   auto = TRUE, intern = FALSE, quiet = FALSE, overwrite = FALSE, nocheck = FALSE, parallel = NA,
-                  alq = FALSE, remote = FALSE, server_address, report = TRUE, artifacts = TRUE) {
+                  report = TRUE, artifacts = TRUE) {
   if (missing(run)) run <- NULL
   if (missing(include)) include <- NULL
   if (missing(exclude)) exclude <- NULL
@@ -108,19 +104,15 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
   if (missing(indpts)) indpts <- NULL
   if (missing(aucint)) aucint <- NULL
   if (missing(prior)) prior <- NULL
-  if (missing(server_address)) server_address <- getPMoptions("server_address")
 
   batch <- F
-  if (remote == T) {
-    #return(.PMremote_run(model = model, data = data, server_address = server_address, run, overwrite))
-  } else {
-    return(.PMrun(
-      type = "NPAG", model = model, data = data, run = run,
-      include = include, exclude = exclude, ode = ode, tol = tol, salt = salt, cycles = cycles,
-      indpts = indpts, icen = icen, aucint = aucint,
-      idelta = idelta, prior = prior,
-      auto = auto, intern = intern, quiet = quiet, overwrite = overwrite, nocheck = nocheck, parallel = parallel, batch = batch,
-      alq = alq, report = report
-    ))
-  }
+
+  return(.PMrun(
+    type = "NPAG", model = model, data = data, run = run,
+    include = include, exclude = exclude, ode = ode, tol = tol, salt = salt, cycles = cycles,
+    indpts = indpts, icen = icen, aucint = aucint,
+    idelta = idelta, prior = prior,
+    auto = auto, intern = intern, quiet = quiet, overwrite = overwrite, nocheck = nocheck, parallel = parallel, batch = batch,
+    report = report
+  ))
 }
