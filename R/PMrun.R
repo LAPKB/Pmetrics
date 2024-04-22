@@ -3,9 +3,8 @@
                    indpts, icen, aucint,
                    idelta, prior, xdev, search,
                    auto, intern, quiet, overwrite, nocheck, parallel, batch,
-                   alq, report) {
+                   report) {
   currwd <- getwd() # set the current working directory to go back to it at the end
-  if (missing(alq)) alq <- FALSE
   if (missing(batch)) batch <- F
   if (Sys.getenv("env") == "docker") intern <- T
 
@@ -594,22 +593,13 @@
       paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
     )[OS]
     if (report) {
-      # if (alq) {
-      #   PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
-      # } else {
+
         PMscript[getNext(PMscript)] <- c(
           paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0("pander::openFileInOS(", shQuote(paste0(gsub("/", rep, outpath), "/", type, "report.html")), ")")), " ; fi", sep = ""),
           # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('pander::openFileInOS(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
           paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
           paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0("pander::openFileInOS(", shQuote(paste0(gsub("/", rep, outpath), "/", type, "report.html")), ")")), " ; fi", sep = "")
         )[OS]
-        #   PMscript[getNext(PMscript)] <-
-        #   c(
-        #     paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
-        #     paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
-        #     paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
-        #   )[OS]
-      # }
     } else { # close if statement if report = F
       PMscript[getNext(PMscript)] <- c("fi", "", "fi")[OS]
     }
@@ -860,7 +850,7 @@
 }
 
 
-makeRdata <- function(wd, remote, reportType) {
+makeRdata <- function(wd, reportType) {
   setwd(wd)
   errfile <- list.files(pattern = "^ERROR")
   # error <- length(errfile) > 0
@@ -944,17 +934,11 @@ makeRdata <- function(wd, remote, reportType) {
       NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, data = mdata, model = model, errfile = errfile, success = success)
       save(NPAGout, file = "PMout.Rdata")
       # Hacky return to deal with Rservex bug T.T
-      if (remote) {
-        return("ok")
-      }
       return(NPAGout)
     }
     if (reportType == 2) {
       IT2Bout <- list(ITdata = PMdata, final = final, cycle = cycle, op = op, cov = cov, data = mdata, model = model, errfile = errfile, success = success)
       save(IT2Bout, file = "PMout.Rdata")
-      if (remote) {
-        return("ok")
-      }
       return(IT2Bout)
     }
   }
