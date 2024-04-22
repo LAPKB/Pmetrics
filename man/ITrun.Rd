@@ -21,7 +21,6 @@ ITrun(
   quiet = F,
   overwrite = F,
   nocheck = F,
-  alq = F,
   report = T
 )
 }
@@ -73,8 +72,6 @@ and you can find the HTML summary page in the /outputs folder: IT2Breport.html.}
 \item{overwrite}{Overwrite existing run result folders.  Default is \code{FALSE}.}
 
 \item{nocheck}{Suppress the automatic checking of the data file with \code{\link{PMcheck}}.  Default is \code{FALSE}.}
-
-\item{alq}{For internal developer use only.  Should be set to \code{FALSE}.}
 
 \item{report}{Generate a report at the end of a run. Default is \code{TRUE}.}
 }
