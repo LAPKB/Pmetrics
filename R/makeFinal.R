@@ -176,8 +176,9 @@ makeFinal <- function(data) {
 
     pointSum <- data.frame(summary.PMfinal(popPoints))
     popMedian <- pointSum %>%
-      filter(.data$parameter == "WtMed", .data$percentile == 0.5) %>%
-      select(1:length(data$par))
+      filter(.$parameter == "WtMed", .$percentile == 0.5) %>%
+      select(-percentile, - parameter)
+
 
     popVar <- data.frame(t(diag(popCov)))
     names(popVar) <- data$par

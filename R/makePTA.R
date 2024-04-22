@@ -375,7 +375,7 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
     mutate(prop_success = sum(.data$success)/length(.data$success)) %>%
     mutate(label = sim_labels[.data$sim_num]) %>%
     relocate(sim_num, label, target, type, 
-             success_ratio, prop_success, success, pdi, 
+             .data$success_ratio, .data$prop_success, success, .data$pdi, 
              start, end) %>%
     ungroup() #remove rowwise
   
@@ -383,7 +383,7 @@ makePTA <- function(simdata, simlabels, target, target_type, success, outeq = 1,
   #browser()
   if(n_type > 1){
     master_pta <- split(master_pta, master_pta$this_type) %>% #split by target type number
-      .[order(match(names(.), target_type))] 
+      .data[order(match(names(.data), target_type))] 
     master_pta <- map(master_pta, \(x) {x$this_type = NULL; x})
     names(master_pta) <- NULL
     master_pta$intersect <- master_pta[[1]] %>% select(sim_num, target, success_1 = success, label) #get primary success
