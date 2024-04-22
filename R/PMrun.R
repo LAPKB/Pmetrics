@@ -825,7 +825,7 @@
     # make report
     if (type == "NPAG" || type == "IT2B") {
       reportType <- which(c("NPAG", "IT2B") == type)
-      makeRdata(paste(currwd, newdir, "outputs", sep = "/"), F, reportType)
+      makeRdata(paste(currwd, newdir, "outputs", sep = "/"), reportType)
       res <- PM_load(file = paste(currwd, newdir, "outputs", "PMout.Rdata", sep = "/"))
       PM_report(res, outfile = "NPreport.html")
       setwd(currwd)

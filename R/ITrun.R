@@ -46,7 +46,6 @@
 #' @param quiet Boolean operator controlling whether a model summary report is given.  Default is \code{True}.
 #' @param overwrite Overwrite existing run result folders.  Default is \code{FALSE}.
 #' @param nocheck Suppress the automatic checking of the data file with \code{\link{PMcheck}}.  Default is \code{FALSE}.
-#' @param alq For internal developer use only.  Should be set to \code{FALSE}.
 #' @param report Generate a report at the end of a run. Default is `TRUE`.
 #' @return A successful IT2B run will result in creation of a new folder in the working
 #' directory. This folder will be named numerically and sequentially with respect to previous runs.
@@ -76,7 +75,7 @@
 ITrun <- function(model = "model.txt", data = "data.csv", run,
                   include, exclude, ode = -4, tol = 0.001, salt, cycles = 100,
                   xdev = 5, icen = "median",
-                  auto = T, intern = F, quiet = F, overwrite = F, nocheck = F, alq = F, report = T) {
+                  auto = T, intern = F, quiet = F, overwrite = F, nocheck = F, report = T) {
   if (missing(run)) run <- NULL
   if (missing(include)) include <- NULL
   if (missing(exclude)) exclude <- NULL
@@ -87,7 +86,7 @@ ITrun <- function(model = "model.txt", data = "data.csv", run,
     type = "IT2B", model = model, data = data, run = run,
     include = include, exclude = exclude, ode = ode, tol = tol, salt = salt, cycles = cycles, icen = icen,
     xdev = xdev,
-    auto = auto, intern = intern, quiet = quiet, overwrite = overwrite, nocheck = nocheck, parallel = F, batch = batch, alq = alq,
+    auto = auto, intern = intern, quiet = quiet, overwrite = overwrite, nocheck = nocheck, parallel = F, batch = batch,
     report = report
   )
   return(outpath)

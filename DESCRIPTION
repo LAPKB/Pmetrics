@@ -48,7 +48,6 @@ Imports:
     R6,
     readr,
     remotes,
-    rlang,
     rmarkdown,
     shiny,
     stats,
