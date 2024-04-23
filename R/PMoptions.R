@@ -101,7 +101,7 @@ getPMoptions <- function(opt, warn = T, quiet = F) {
 #' @author Michael Neely
 #' @export
 
-setPMoptions <- function(sep, dec, server_address, compilation_statements,
+setPMoptions <- function(sep, dec, compilation_statements,
                          backend, rust_template, report_template,
                          gfortran_path,
                          #func_defaults, 
@@ -120,7 +120,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
       sprintf("%s -march=native -w -O3 -o <exec> <files>", PMopts$gfortran_path),
       sprintf("%s -march=native -w -fopenmp -fmax-stack-var-size=32768 -O3 -o <exec> <files>", PMopts$gfortran_path)
     ),
-    server_address = "http://localhost:5000",
+    #server_address = "http://localhost:5000",
     backend = "fortran",
     rust_template = NULL,
     report_template = "plotly",
