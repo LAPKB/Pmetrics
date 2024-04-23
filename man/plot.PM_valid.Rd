@@ -159,7 +159,7 @@ NPex_val$valid$plot(
 )
 }
 \seealso{
-\link{makeValid}
+\link{make_valid}
 
 Other PMplots: 
 \code{\link{plot.MMopt}()},
