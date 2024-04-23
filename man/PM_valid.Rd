@@ -17,7 +17,7 @@ This object is created by running the \code{make_valid} method in a
 to internally validate the result by simulation methods.
 }
 \seealso{
-\link{PM_result}, \link{makeValid}
+\link{PM_result}, \link{make_valid}
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}

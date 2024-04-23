@@ -38,7 +38,7 @@ the default is \dQuote{model.txt}.  This file will be converted to a fortran mod
 If it is detected to already be a fortran file, then the analysis will proceed without any further
 file conversion.}
 
-\item{data}{Name of a suitable data file (see \code{\link{PMwriteMatrix}}) or
+\item{data}{Name of a suitable data file (see \link{PM_data}) or
 an existing (previous) run number corresponding to a folder in the current working directory that used the same data file as will be used in the current run.
 If this is supplied, then previously made  '.ZMQ' files will be copied into the current
 working directory, bypassing the need to re-convert the .csv file and speeding up the run..}
@@ -64,14 +64,14 @@ Default value is 0.01.}
 6 or more is 10+number of multiples for each parameter greater than 5, e.g. 6 = 101; 7 = 102, up to 108 for 13 or more parameters.}
 
 \item{icen}{Summary of parameter distributions to be used to calculate predictions in HTML report.  Default is "median", but could be "mean".
-Predictions based on both summaries will be available in objects loaded by \code{\link{PMload}}.}
+Predictions based on both summaries will be available in objects loaded by \link{PM_load}.}
 
 \item{aucint}{Maintained for backwards compatibility and not used currently. Interval for AUC calculations.  Default is 24 hours if the number of intervals is not greater than 48; otherwise it defaults
 to the interval which allows for <= 48 intervals.}
 
 \item{idelta}{Interval in 1/60 time unit, typically minutes, for predictions at times other than observations.  Default is 12.}
 
-\item{prior}{Name of a suitable NPAG output object from a prior run loaded with \code{\link{PMload}},
+\item{prior}{Name of a suitable NPAG output object from a prior run loaded with \link{PM_load},
 i.e. the \emph{NPdata} object.  A \code{prior} may be specified if the user wishes to
 start from a non-uniform prior distribution for the NPAG run. The default value is -99,
 which translates in NPAG to a uniform prior distribution.  An alternative is to include a DEN0001 file from the prior
@@ -79,19 +79,19 @@ NPAG run in the working directory of the new run, and specify this as the value 
 \code{prior = 'DEN0001'}.}
 
 \item{auto}{If \code{auto} is \code{False} you can answer all questions about the run environment manually.  This might
-be helpful for beginners.  Default is \code{True}.}
+be helpful for beginners.  Default is \code{TRUE}.}
 
 \item{intern}{MacOSX only: Run NPAG in the R console without a batch script.  Default is false.
-This will be ignored if on Windows systems.  On the latter, the behavior of cmd.exe (aka the \dQuote{DOS} window)
+This will be ignored if on Windows systems.  On the latter, the behavior of cmd.exe (aka the DOS window)
 with R is poor - it does not update until the end of execution, so you cannot see any output that indicates that NPAG is running.
-If \code{intern=T} the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
+If \code{intern=TRUE} the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
 and you can find the HTML summary page in the /outputs folder: NPAGreport.html.}
 
 \item{quiet}{Boolean operator controlling whether a model summary report is given.  Default is \code{TRUE}.}
 
 \item{overwrite}{Overwrite existing run result folders.  Default is \code{FALSE}.}
 
-\item{nocheck}{Suppress the automatic checking of the data file with \code{\link{PMcheck}}.  Default is \code{FALSE}.}
+\item{nocheck}{Suppress the automatic checking of the data file with \link{PM_data}.  Default is \code{FALSE}.}
 
 \item{parallel}{Run NPAG in parallel.  Default is \code{NA}, which will be set to \code{TRUE} for models that use
 differential equations, and \code{FALSE} for algebraic/explicit models.  The majority of the benefit for parallelization comes
@@ -120,7 +120,7 @@ OUT and OUTT are full and truncated textfiles containing all output of NPAG.  OU
 density file.  PRTB contains Bayesian posterior individual predictions for each subject and
 output at timepoints specified in the NPAG instructions (e.g. every 2, 4, 8, 12 minutes) as well
 as predictions at each observation time.  RFILE contains NPAG output formatted for easy import
-into R, and is the file read by the \code{\link{NPparse}} command.  Finally, there will also
+into R, and is the file read by the \link{NPparse} command.  Finally, there will also
 be an nplog.txt file containing additional run information.
 \item \bold{wrkcopy}    The working copy format which is used by NPAG.  Invisibly to the user,
 the .csv input file is converted to these text files, one file per subject.
@@ -142,7 +142,7 @@ in a command prompt (DOS-like) window.  In either case, NPAG will run independen
 so that R can be used for other purposes if desired.
 }
 \seealso{
-\code{\link{NPparse}}, \code{\link{ITrun}}
+\link{NPparse}, \link{ITrun}
 }
 \author{
 Michael Neely

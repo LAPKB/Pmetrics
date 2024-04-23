@@ -63,7 +63,5 @@
 
   # set user options for the session
   setPMoptions()
-  
-  #global declaration for tidyverse to avoid CRAN errors
-  utils::globalVariables(".data")
+
 }

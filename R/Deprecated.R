@@ -167,3 +167,56 @@ makeNPDE <- function(...) {
 PMsave <- function(...) {
   lifecycle::deprecate_warn("2.1.0", "PMsave()", details = "See ?PM_result, ?PM_sim, or ?PM_pta for current save methods.")
 }
+
+
+
+#' @title Load Pmetrics NPAG or IT2B output
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' Loaded Pmetrics objects from prior run into user's global environment, which was 
+#' unsafe programming practice and causes warnings in CRAN.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @seealso [PM_result]
+#' @export
+PMload <- function(...) {
+  lifecycle::deprecate_warn("2.2.0", what = "PMload()", with = "PM_load()")
+}
+
+
+#' @title Compare NPAG or IT2B runs
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' Compare NPAG or IT2B runs, based on objects loaded by [PMload], which
+#' is now deprecated, because it loaded Pmetrics objects from a prior run into 
+#' user's global environment, which was 
+#' unsafe programming practice and caused warnings in CRAN.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @seealso [PM_load]
+#' @export
+PMcompare <- function(...) {
+  lifecycle::deprecate_warn("2.2.0", what = "PMcompare()", with = "PM_compare()")
+}
+
+#' @title Create a Pmetrics validation object
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' This function is replaced by [make_valid], which is
+#' typically called with the `$validate` method for a [PM_result] object,
+#' but can be called directly on a [PM_result] object.
+#'
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @seealso [make_valid]
+#' @export
+makeValid <- function(...) {
+  lifecycle::deprecate_warn("2.2.0", what = "makeValid()", with = "make_valid()")
+}
+

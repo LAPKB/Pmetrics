@@ -38,7 +38,7 @@ Default is 0.95, i.e. 95th percentile with tails of 2.5 percent above and below 
 \item{binSize}{Width of binning interval for simulated concentrations, in time units, e.g. hours.
 A \code{binSize} of 0.5 will pull all simulated concentrations +/- 0.5 hours into
 the same time.  This is useful
-for plotting PMsim objects made during \link{makeValid}. The default is 0, i.e. no binning.
+for plotting PMsim objects made during \link{make_valid}. The default is 0, i.e. no binning.
 If an \code{obs} object is provided, it will be binned similarly.}
 
 \item{outeq}{Which output equation to plot. Default is 1.}

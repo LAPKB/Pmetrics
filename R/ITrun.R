@@ -18,10 +18,10 @@
 #' an existing (previous) run number corresponding to a folder in the current working directory that used the same model file as will be used in the current run.
 #' If this is supplied, then the model file will be copied into the current
 #' working directory for convenience.  If not supplied,
-#' the default is \dQuote{model.txt}.  This file will be converted to a fortran model file.
+#' the default is "model.txt".  This file will be converted to a fortran model file.
 #' If it is detected to already be a fortran file, then the analysis will proceed without any further
 #' file conversion.
-#' @param data Name of a suitable data file (see \code{\link{PMwriteMatrix}}) or
+#' @param data Name of a suitable data file (see [PM_data]) or
 #' an existing (previous) run number corresponding to a folder in the current working directory that used the same data file as will be used in the current run.
 #' If this is supplied, then previously made  '.ZMQ' files will be copied into the current
 #' working directory, bypassing the need to re-convert the .csv file and speeding up the run..
@@ -35,17 +35,17 @@
 #' @param cycles Number of cycles to run. Default is 100.
 #' @param xdev Multiple of standard deviations for parameters to be sent to NPAG as a range.  Default is 5.
 #' @param icen Summary of parameter distributions to be used to calculate predictions in HTML report.  Default is "median", but could be "mean".
-#' #Predictions based on both summaries will be available in objects loaded by \code{\link{PMload}}.
-#' @param auto If \code{auto} is \code{False} you can answer all questions about the run environment manually.  This might
-#' be helpful for beginners.  Default is \code{True}.
+#' #Predictions based on both summaries will be available in objects loaded by [PM_load].
+#' @param auto If `auto` is `FALSE` you can answer all questions about the run environment manually.  This might
+#' be helpful for beginners.  Default is `TRUE`.
 #' @param intern MacOSX only: Run IT2B in the R console without a batch script.  Default is false.
-#' This will be ignored on Windows systems.  On the latter, the behavior of cmd.exe (aka the \dQuote{DOS} window)
+#' This will be ignored on Windows systems.  On the latter, the behavior of cmd.exe (DOS window)
 #' with R is poor - it does not update until the end of execution, so you cannot see any output that indicates that IT2B is running.
-#' If \code{intern=T} the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
+#' If `intern=TRUE` the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
 #' and you can find the HTML summary page in the /outputs folder: IT2Breport.html.
-#' @param quiet Boolean operator controlling whether a model summary report is given.  Default is \code{True}.
-#' @param overwrite Overwrite existing run result folders.  Default is \code{FALSE}.
-#' @param nocheck Suppress the automatic checking of the data file with \code{\link{PMcheck}}.  Default is \code{FALSE}.
+#' @param quiet Boolean operator controlling whether a model summary report is given.  Default is `TRUE`.
+#' @param overwrite Overwrite existing run result folders.  Default is `FALSE`.
+#' @param nocheck Suppress the automatic checking of the data file with [PM_data].  Default is `FALSE`.
 #' @param report Generate a report at the end of a run. Default is `TRUE`.
 #' @return A successful IT2B run will result in creation of a new folder in the working
 #' directory. This folder will be named numerically and sequentially with respect to previous runs.
@@ -61,14 +61,14 @@
 #' density file.  LAST contains last cycle Bayesian posterior parameters and predictions for
 #' each subject.  FROM contains estimated parameter ranges which can be passed to IT2B.
 #' RFILE contains IT2B output formatted for easy import into R, and is the file read by
-#' the \code{\link{ITparse}} command.  Finally, there will also be an itlog.txt file
+#' the [ITparse] command.  Finally, there will also be an itlog.txt file
 #' containing additional run information.
 #' \item \bold{wrkcopy}    The working copy format which is used by IT2B.  Invisibly to the user,
 #' the .csv input file is converted to these text files, one file per subject.
 #' }
 #'
 #' @author Michael Neely
-#' @seealso \code{\link{ITparse}}, \code{\link{NPrun}}
+#' @seealso [ITparse], [NPrun]
 #' @export
 
 

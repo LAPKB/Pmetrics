@@ -23,16 +23,16 @@ makeNCA(
 \arguments{
 \item{x}{Data to analyze.  This can be specified in a number of ways.
 \itemize{
-\item It can be the run number, e.g. 3, that has been previously loaded with \code{\link{PMload}}.
+\item It can be the run number, e.g. 3, that has been previously loaded with \link{PM_load}.
 Either the mdata file from the run (NPAG or IT2B) can be used (default) or
-the post object can be used (NPAG only) by specifying \code{postPred = T} below.  If \code{x} is a run number that corresponds
-to both an NPAG and IT2B run which have been previously loaded into memory with \code{PMload}, the NPAG run will be used.
-\item It can be the run number of a run that has \emph{not} been previously loaded with \code{\link{PMload}}.
-In this case, the current working directory should be the Runs folder as \code{makeNCA} will call \code{PMload}.
-\item It can be the specific name of an mdata.x file already loaded into memory with \code{\link{PMload}}, e.g. mdata.3.  Note
+the post object can be used (NPAG only) by specifying \code{postPred = T} below.  If \link{x} is a run number that corresponds
+to both an NPAG and IT2B run which have been previously loaded into memory with \link{PM_load}, the NPAG run will be used.
+\item It can be the run number of a run that has \emph{not} been previously loaded with \link{PM_load}.
+In this case, the current working directory should be the Runs folder as \link{makeNCA} will call \link{PM_load}.
+\item It can be the specific name of an mdata.x file already loaded into memory with \link{PM_load}, e.g. mdata.3.  Note
 that quotation marks are not necessary since mdata.3 is an object, not a label/character vector.
 \item Finally, it can be the name of a Pmetrics data file in the current working directory, which will be loaded with
-\code{\link{PMreadMatrix}} and analyzed, e.g. \dQuote{data.csv}.  In this case, quotation marks are reqired, because \code{x}
+\link{PMreadMatrix} and analyzed, e.g. "data.csv".  In this case, quotation marks are reqired, because \code{x}
 is now a character vector specifying the filename of the file to load.
 }}
 
@@ -42,7 +42,8 @@ used to supply the raw data file.}
 
 \item{include}{A vector of subject IDs to include in the NCA, e.g. c(1:3,5,15)}
 
-\item{exclude}{A vector of subject IDs to exclude in the NCA, e.g. c(4,6:14,16:20). When \code{postPred} is \code{TRUE}, any subject(s) excluded from the IT2B/NPAG run will be excluded as well.}
+\item{exclude}{A vector of subject IDs to exclude in the NCA, e.g. c(4,6:14,16:20).
+When \code{postPred} is \code{TRUE}, any subject(s) excluded from the IT2B/NPAG run will be excluded as well.}
 
 \item{input}{The number of the input (e.g. drug) to analyze; default 1.}
 

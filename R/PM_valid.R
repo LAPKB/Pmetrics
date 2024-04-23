@@ -12,7 +12,7 @@
 #' This object is created by running the `make_valid` method in a
 #' [PM_result] object. It contains all the information necessary
 #' to internally validate the result by simulation methods.
-#' @seealso [PM_result], [makeValid]
+#' @seealso [PM_result], [make_valid]
 #' @export
 PM_valid <- R6::R6Class("PM_valid",
     public = list(
