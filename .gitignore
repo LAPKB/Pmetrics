@@ -49,7 +49,6 @@ rsconnect/
 # other
 .DS_Store
 Pmetrics.Rcheck/
-Archived
 PACKAGES.gz
 PACKAGES.rds
 PMchangelog.html
