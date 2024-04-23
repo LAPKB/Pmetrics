@@ -1,0 +1,194 @@
+
+body { font-family: "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif; font-size: 16px; font-style: normal;
+font-weight: 200; color: rgba(2,8,100,0.8); background-color: rgba(2,8,100,0.1); text-align: left}
+
+hr {
+    color:rgba(2,8,100,1);
+    background-color:rgba(2,8,100,1);
+    height:3px
+    }
+
+h1 { font-family: Georgia, serif; font-size: 24px; font-style: normal; font-weight: 300;
+color: #FFFFFF; background-color: rgba(2,8,100,0.8); text-align: center; padding:7px}
+h2 { font-size: 18px; font-style: normal; font-weight: 300; color: rgba(2,8,100,0.8);text-align: left}
+h3 { font-size: 18px; font-style: normal; font-weight: 300; color: #808080}
+h4 { font-size: 10px; font-style: normal; font-weight: 300; color: white; text-align: left}
+
+span.emphasize {
+    font-size:18px;
+    font-weight:300;
+    color:rgba(2,8,100,1);
+    border-radius: 10px;
+    padding:5px
+    }
+    
+span.alert {
+    color:rgba(145,17,16,1);
+}
+
+li { font-family: Arial, Helvetica, sans-serif; font-size: 14px; text-align:left }
+
+a {
+    text-decoration:none;
+    color:rgba(145,17,16,1);
+}
+
+p { font-family: "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif; font-size: 16px; color: rgba(2,8,100,0.8); background-color:transparent; text-align:left}
+
+div.highlight {
+    background-color:rgba(145,17,16,1);
+    border-radius: 20px;
+    margin: 48px auto;
+    width:400px;
+    padding:3px;
+}
+
+div.center
+{
+    text-align: center;
+    background-color:transparent;
+}
+div.center table 
+{
+    margin: 0 auto; 
+    text-align: left;
+}
+div.center p
+{
+    margin:0 auto;
+    text-align: center;
+    padding:3px;
+}
+
+div.container {
+    margin:auto;
+    overflow:auto;
+}
+
+/* resize images */
+div.container img {
+    width: auto;
+    height: 65%;
+}
+
+img.pmetrics {
+    height:50%;
+}
+
+
+
+div.wrap {
+    width:100%;
+    left:auto
+}
+
+div.leftcol {
+ float:left;
+ width : 50%;
+ font: inherit;
+ }
+ 
+div.rightcol {
+ float:right;
+ width:50%;
+ font: inherit;
+ }
+ 
+div.fullrightcol{
+    float:right;
+    width:auto;
+    text-align:right;
+}
+ 
+div.header
+{
+    width: 100%;
+    background-color: #808080;
+    height: 80px;
+    text-align: left;
+    position: relative;
+    top:0px;
+    padding:5px;
+}
+
+
+table
+{
+    border-collapse:collapse;
+    border-color:rgba(2,8,100,0.8);
+    border-width:1px;
+    border-style:solid;
+}
+th, td
+{
+    border-width:1px;
+    border-color:rgba(2,8,100,0.8);
+    border-style:solid
+}
+
+tr {font-family: "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif; font-size: 14px; font-style: normal  ; padding:0 0}
+tr.firstline {background-color:rgba(2,8,100,1); color:rgba(255,255,255,0.8);text-align:center; font-weight:200}
+tr.ListBackTitle {color: #FFFFFF; background-color: #4F4F4F;text-align: left;font-weight:normal}
+td {background-color: #FFFFFF; padding:0 0}
+td.ListBackMain{background-color: #E0E0E0; padding:0 0}
+td.firstcolumn{padding:5 10; color:#FFFFFF; background-color: #808080; text-align: right}
+td.cellinside{padding:5 10; background-color: #FFFFFF; text-align: right}
+
+.tabs input[type=radio] {
+position: absolute;
+top: -9999px;
+left: -9999px;
+}
+.tabs {
+float: none;
+list-style: none;
+position: relative;
+padding: 0;
+/*margin: 75px auto;*/
+}
+.tabs li{
+float: left;
+}
+.tabs label {
+display: block;
+padding: 10px 20px;
+border-radius: 10px;
+color: rgba(2,8,100,1);
+font-size: 18px;
+font-weight: 200;
+font-family: "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif;
+cursor: pointer;
+position: relative;
+top: 3px;
+}
+
+
+.tabs label:hover {
+background: rgba(255,255,255,0.5);
+top: 0;
+}
+
+
+[id^=tab]:checked + label {
+background: rgba(2,8,100,1);
+color: white;
+top: 0;
+}
+
+
+[id^=tab]:checked ~ [id^=tab-content] {
+display: block;
+}
+.tab-content{
+z-index: 2;
+display: none;
+text-align: left;
+width: 100%;
+padding-top: 10px;
+padding: 15px;
+position: absolute;
+top: 53px;
+left: 0;
+box-sizing: border-box;
+}
+

@@ -18,3 +18,4 @@ compile.*
 ^README\.Rmd$
 logo.png
 ^vignettes/articles$
+^Archived/
