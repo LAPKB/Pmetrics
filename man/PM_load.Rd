@@ -4,7 +4,7 @@
 \alias{PM_load}
 \title{Load Pmetrics NPAG or IT2B output}
 \usage{
-PM_load(run, file, remote = F, server_address)
+PM_load(run, file)
 }
 \arguments{
 \item{run}{The numerical value of the folder number containing the run results.
@@ -19,13 +19,7 @@ for a file named "other.Rdata". \code{PM_load(file = "other.Rdata")} will look i
 current working directory, since \code{run} is missing. If \code{file} is missing,
 Pmetrics will attempt to find a "PMout.Rdata" or the older "NPAGout.Rdata" or
 "IT2Bout.Rdata" files in either the current working directory (if \code{run} is not
-specified) or the \code{run/outputs} folder, if \code{run} is provided.}
-
-\item{remote}{Default is \code{FALSE}.  Set to \code{TRUE} if loading results of an NPAG run on remote server.
-See \link{NPrun}. Currently remote runs are not configured for IT2B or the Simulator.}
-
-\item{server_address}{If missing, will use the default server address returned by getPMoptions().
-Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
+specified) or the \code{run/outputs} folder, if \code{run} is provided.
 in \link{NPrun}.}
 }
 \value{

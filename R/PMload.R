@@ -17,10 +17,10 @@
 #' Pmetrics will attempt to find a "PMout.Rdata" or the older "NPAGout.Rdata" or
 #' "IT2Bout.Rdata" files in either the current working directory (if `run` is not
 #' specified) or the `run/outputs` folder, if `run` is provided.
-#' @param remote Default is `FALSE`.  Set to `TRUE` if loading results of an NPAG run on remote server.
-#' See [NPrun]. Currently remote runs are not configured for IT2B or the Simulator.
-#' @param server_address If missing, will use the default server address returned by getPMoptions().
-#' Pmetrics will prompt the user to set this address the first time the `remote` argument is set to `TRUE`
+# #' @param remote Default is `FALSE`.  Set to `TRUE` if loading results of an NPAG run on remote server.
+# #' See [NPrun]. Currently remote runs are not configured for IT2B or the Simulator.
+# #' @param server_address If missing, will use the default server address returned by getPMoptions().
+# #' Pmetrics will prompt the user to set this address the first time the `remote` argument is set to `TRUE`
 #' in [NPrun].
 #' @return An R6 [PM_result].
 #' @author Michael Neely and Julian Otalvaro
@@ -30,7 +30,7 @@
 #' @export
 
 
-PM_load <- function(run, file, remote = F, server_address) {
+PM_load <- function(run, file) {
 
   # declare variables to avoid R CMD Check flag
   NPAGout <- NULL
@@ -49,18 +49,20 @@ PM_load <- function(run, file, remote = F, server_address) {
     return(result)
   }
   
-  if (remote) { # only look on server - this needs to be updated
-    if (missing(server_address)) server_address <- getPMoptions("server_address")
-    status <- .remoteLoad(thisrun, server_address)
-    if (status == "finished") {
-      result <- output2List(Out = NPAGout)
-      return(PM_result$new(result, quiet = T)) # no errors
-    } else {
-      sprintf("Warning: Remote run #%d has not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
-        cat()
-      return(invisible(NULL))
-    }
-  } else if (!missing(file)) { # not remote, file supplied, so look for it
+  # if (remote) { # only look on server - this needs to be updated
+  #   if (missing(server_address)) server_address <- getPMoptions("server_address")
+  #   status <- .remoteLoad(thisrun, server_address)
+  #   if (status == "finished") {
+  #     result <- output2List(Out = NPAGout)
+  #     return(PM_result$new(result, quiet = T)) # no errors
+  #   } else {
+  #     sprintf("Warning: Remote run #%d has not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
+  #       cat()
+  #     return(invisible(NULL))
+  #   }
+  # } else 
+    
+    if (!missing(file)) { # not remote, file supplied, so look for it
     # try from current wd
     if (file.exists(file)) {
       found <- file
@@ -165,35 +167,3 @@ update <- function(res, found){
   return(res)
 }
 
-
-
-
-.splitOut <- function(run, Out) {
-  newNames <- paste(names(Out), ".", as.character(run), sep = "")
-  for (i in 1:length(newNames)) {
-    assign(newNames[i], Out[[i]], pos = .GlobalEnv)
-  }
-}
-
-.remoteLoad <- function(run, server_address) {
-  status <- ""
-  rid <- .getRemoteId(run)
-  status <- .PMremote_check(rid = rid, server_address = server_address)
-  if (status == "finished") {
-    sprintf("Remote run #%d finished successfuly.\n", run) %>%
-      cat()
-    .PMremote_outdata(run, server_address)
-  }
-  return(status)
-}
-
-.getRemoteId <- function(run) {
-  run <- toString(run)
-  fileName <- paste(run, "inputs", "id.txt", sep = "/")
-  if (file.exists(fileName)) {
-    return(readChar(fileName, file.info(fileName)$size) %>% gsub("\n", "", .data))
-  } else {
-    stop(sprintf("File id.txt not found in /%s/outputs.\n", run))
-    return(NULL)
-  }
-}
