@@ -42,7 +42,7 @@ and numerical predictive checking will be suppressed}
 
 \item{binSize}{Width of binning interval for simulated concentrations, in time units, e.g. hours.  For example,
 a \code{binSize} of 0.5 will pull all simulated concentrations +/- 0.5 hours into the same time.  This is useful
-for plotting PMsim objects made during \code{\link{makeValid}}. The default is 0, i.e. no binning.}
+for plotting PMsim objects made during \code{\link{make_valid}}. The default is 0, i.e. no binning.}
 
 \item{outeq}{Which output equation to plot if more than 1}
 
