@@ -26,8 +26,8 @@ Dopt <- function(run, data, clean = T) {
     if (!file.exists(paste(run, "/dopt", sep = ""))) dir.create(paste(run, "/dopt", sep = ""))
 
     # check to make sure run is NPAG
-    PMload(run)
-    final <- get(paste("final", run, sep = "."))
+    res <- PM_load(run)
+    final <- res$final$data
     if (!inherits(final, "NPAG")) stop(paste("Run ", run, " does not contain an NPAG run.\n", sep = ""))
 
     # get output file

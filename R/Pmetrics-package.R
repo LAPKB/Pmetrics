@@ -25,7 +25,6 @@
 # #' @importFrom tibble as_tibble tibble
 #' @importFrom tidyr pivot_longer pivot_wider nest unnest extract separate fill
 #' crossing separate_wider_delim
-#' @importFrom rlang .data
 #' @importFrom stringr str_replace regex
 # #' @importFrom mclust Mclust
 #' @importFrom grDevices col2rgb dev.off devAskNewPage gray.colors jpeg
@@ -44,6 +43,7 @@
 #' tail txtProgressBar write.csv write.table getTxtProgressBar
 # #' @importFrom base64enc base64decode
 #' @importFrom R6 R6Class
+#' @importFrom rlang .data
 #' @importFrom plotly filter mutate plot_ly add_markers add_lines layout
 #' ggplotly subplot add_annotations add_bars renderPlotly
 #' @importFrom shiny fluidPage titlePanel tags navlistPanel tabPanel fluidRow

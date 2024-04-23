@@ -13,7 +13,6 @@ setPMoptions(
   rust_template,
   report_template,
   gfortran_path,
-  func_defaults,
   quiet = F
 )
 }
@@ -36,9 +35,7 @@ Currently, only NPAG is available in rust.}
 \item{report_template}{Format of the plots included in the summary report presented at the end of a run.
 Default is to use "plotly", but can be set to "ggplot".}
 
-\item{gfortran_path}{Path to gfortran compiler.}
-
-\item{func_defaults}{Change the default argument value for any Pmetrics function or method.
+\item{gfortran_path}{Path to gfortran compiler.
 \code{func_defaults} should be a list, with each item itself a list of function name = list(arg1 = value, arg2 = value,...).
 For example: \code{func_defaults = list(plot.PM_op = list(stats = T, marker = list(color = "red")), qgrowth = list(percentile = 50))}.
 This is an incredibly powerful tool to customize your Pmetrics experience. If you store your
