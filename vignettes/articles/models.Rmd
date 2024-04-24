@@ -37,7 +37,12 @@ the three model pathways, and we'll cover the details in this document.
 
 ### Model Builder App
 
-To launch the app, type the following into your console: `build_model()`. 
+To launch the app, type the following into your console: 
+
+```{r echo = T, eval = F}
+library(PmetricsApps)
+build_model()
+``` 
 You can supply a `PM_data` and/or a `PM_model` as optional arguments to
 the function, e.g. `build_model(NPex$data)` or `build_model(NPex$model)` or
 even `build_model(NPex$data, NPex$model)`. The order of data and/or model

@@ -324,7 +324,7 @@ plot.PM_data <- function(x,
     
     if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
       n_colors <- length(levels(allsub$group))
-      if(requireNamespace("RColorBrewer", quietly = TRUE)){
+      if(checkRequiredPackages("RColorBrewer")){
         palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
         if (length(colors) == 1 && colors %in% palettes$name) {
           max_colors <- palettes$maxcolors[match(colors, palettes$name)]
@@ -402,7 +402,8 @@ plot.PM_data <- function(x,
     p <- dataPlot(allsub, overlay = TRUE, includePred)
     print(p)
   } else { # overlay = FALSE, ie. split them
-    if(!requireNamespace("trelliscopejs", quietly = TRUE)){
+    
+    if(!checkRequiredPackages("trelliscopejs")){
       stop(paste0("Package trelliscopejs required to plot when overlay = ", crayon::red("FALSE")))
     }
     sub_split <- allsub %>%
