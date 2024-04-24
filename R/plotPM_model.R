@@ -58,6 +58,9 @@
 
 plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit,...) {
   
+  if(!checkRequiredPackages("PmetricsApps", repos = "LAPKB/PmetricsApps", quietly = FALSE)){
+    return(invisible(NULL))
+  }
   model <- x
   marker <- if(is.list(marker) || marker){
     amendMarker(marker, default = list(color = "dodgerblue", size = 0.25, line = list(width = 0.5)))

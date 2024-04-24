@@ -1804,8 +1804,28 @@ makePMmatrixBlock <- function(mdata) {
 
 # getCov ------------------------------------------------------------------
 
-# function to get covariate information from PMmatrix object
+#' @title Extract covariate information 
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Extracts covariate information from a Pmetrics data objects.
+#' @details
+#' When given a [PM_data] or *PMmatrix* object, will return a list 
+#' with the number of covariates, their names, and the starting and
+#' ending column numbers 
+#' @param mdata A [PM_data] or *PMmatrix* object
+#' @return A list with named items: *ncov, covnames, covstart, covend*.
+#' 
+#' @export
+#' @examples
+#' library(PmetricsData)
+#' getCov(dataEx)
+#' @author Michael Neely
+
 getCov <- function(mdata) {
+  if(inherits(mdata, "PM_data")){
+    mdata <- mdata$data
+  }
   nfixed <- getFixedColNum()
   ncolData <- ncol(mdata)
   ncov <- ncolData - nfixed
@@ -1849,21 +1869,18 @@ getOSname <- function() {
 
 # check for installed packages --------------------------------------------
 
-checkRequiredPackages <- function(pkg, repos = "CRAN") {
+checkRequiredPackages <- function(pkg, repos = "CRAN", quietly = TRUE) {
   managePkgs <- function(thisPkg) {
-    # if (length(grep(thisPkg, installed.packages()[, 1])) == 0) {
-    #   install.packages(thisPkg, dependencies = T)
-    # }
-    if (requireNamespace(thisPkg, quietly = T)) {
+    if (requireNamespace(thisPkg, quietly = TRUE)) {
       return("ok") # package is installed
     } else { # package is not installed
       cat(paste0("The package ", thisPkg, " is required and will be installed.\n"))
       if (repos == "CRAN") {
-        install.packages(thisPkg, dependencies = T, quiet = T) # try to install
+       install.packages(thisPkg, dependencies = TRUE, verbose = FALSE, quiet = TRUE) # try to install
       } else {
-        devtools::install_github(repos)
+        tryCatch(remotes::install_github(repos), error = function(e) FALSE)
       }
-      if (requireNamespace(thisPkg, quietly = T)) { # check again
+      if (requireNamespace(thisPkg, quietly = TRUE)) { # check again
         return("ok") # now it is installed and ok
       } else {
         return(thisPkg)
@@ -1871,13 +1888,19 @@ checkRequiredPackages <- function(pkg, repos = "CRAN") {
     }
   }
 
-  pkg %>%
+  msg <- pkg %>%
     map_chr(managePkgs) %>%
-    keep(~ . != "ok") %>%
-    map_chr(~ if (length(.) > 0) {
-      stop(paste("The following required packages did not successfully install: ", ., sep = "", collapse = ", "))
-    })
-  return(invisible())
+    keep(~ . != "ok")
+
+  if(length(msg)>0){
+    if(!quietly){cat(crayon::red("\nError:"), "The following packages needed for this function did not install:",
+        paste(msg, collapse = ", "))
+    }
+    return(invisible(FALSE))
+  }
+  else {
+    return(invisible(TRUE)) #all packages present or installed
+  }
 }
 
 
@@ -1988,20 +2011,3 @@ weighted_median <- function(values, weights) {
   return(median_value)
 }
 
-
-#' @title Get Pmetrics package example data 
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Get the data and examples for the Pmetrics package.
-#'
-#' @details
-#' This function installs the **PmetricsData** package available on github. 
-#' The repository URL is [https://github.com/LAPKB/PmetricsData](https://github.com/LAPKB/PmetricsData). These data
-#' are used in all Pmetrics examples.
-#'
-#' @export
-getPMdata <- function(){
-    remotes::install_github("LAPKB/PmetricsData")
-  requireNamespace("PmetricsData")
-}

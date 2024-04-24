@@ -27,12 +27,12 @@ PMupdate <- function(force = F) {
     cat("You have the most current version of Pmetrics.\n")
     return(invisible(FALSE))
   } else {
-    # check for devtools
-    devtools_installed <- requireNamespace("devtools")
-    if (!devtools_installed) {
-      cat("The devtools package is required to install from github.\n")
+    # check for remotes
+    remotes_installed <- requireNamespace("remotes", quietly = TRUE)
+    if (!remotes_installed) {
+      cat("The remotes package is required to install from github.\n")
       cat(paste0(
-        "Enter ", crayon::blue("<1>"), " to install devtools or ",
+        "Enter ", crayon::blue("<1>"), " to install remotes or ",
         crayon::blue("<2>"), " to abort.\n"
       ))
       ans <- ""
@@ -40,7 +40,7 @@ PMupdate <- function(force = F) {
         ans <- readline("Response: ")
       }
       if (ans == "1") {
-        install.packages("devtools")
+        install.packages("remotes")
       } else {
         cat("Pmetrics update aborted.\n")
         return(invisible(FALSE))
@@ -74,7 +74,7 @@ PMupdate <- function(force = F) {
     # update
     OS <- getOS()
     if (OS != 2) { # Mac/Linux
-      Pmetrics_installed <- tryCatch(devtools::install_github(repo = "LAPKB/Pmetrics", force = force),
+      Pmetrics_installed <- tryCatch(remotes::install_github(repo = "LAPKB/Pmetrics", force = force),
         error = function(e) -1
       )
       if (Pmetrics_installed != -1) {
@@ -85,9 +85,9 @@ PMupdate <- function(force = F) {
       cat(paste0(crayon::blue("NOTE: "), "Windows is unable to update loaded packages.\nPlease do the following.\n"))
       cat("\n1. Paste the following into the R console: detach(\"package:Pmetrics\", unload = TRUE)\n")
       if (force) {
-        cat("2. Paste the following into the R console: devtools::install_packages(repo = \"LAPKB/Pmetrics\", force = T)\n")
+        cat("2. Paste the following into the R console: remotes::install_packages(repo = \"LAPKB/Pmetrics\", force = T)\n")
       } else {
-        cat("2. Paste the following into the R console: devtools::install_packages(repo = \"LAPKB/Pmetrics\")\n")
+        cat("2. Paste the following into the R console: remotes::install_packages(repo = \"LAPKB/Pmetrics\")\n")
       }
       cat("3. Allow Rstudio to restart session.\n")
       cat("4. Rstudio will complete installation.\n")
