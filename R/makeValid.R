@@ -57,8 +57,8 @@
 
 make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
   # verify packages used in this function
-  if(!requireNamespace("mclust", quietly = TRUE)){
-    stop("Install mclust package to perform clustering for validation.\n")
+  if(!checkRequiredPackages(c("mclust", "npde"), quietly = FALSE)){
+    return(invisible(NULL))
   }
 
   # save current wd

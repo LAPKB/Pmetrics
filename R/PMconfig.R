@@ -17,6 +17,20 @@ getBits <- function() {
   }
 }
 
+# getFixedColNames ------------------------------------------------------------------
+
+#' @title Names of fixed columns  
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Returns the names of fixed columns (non-covariate) in Pmetrics data objects.
+#' @return A vector of fixed column names: 
+#' `c("id", "evid", "time", "dur", "dose", "addl", "ii", "input", "out", "outeq", "c0", "c1", "c2", "c3")`
+#' 
+#' @export
+#' @examples
+#' getFixedColNames()
+#' @author Michael Neely
 getFixedColNames <- function() {
   # set current names of fixed columns in data file
 
@@ -26,6 +40,20 @@ getFixedColNames <- function() {
   )
 }
 
+
+# getFixedColNum ------------------------------------------------------------------
+
+#' @title Number of fixed columns  
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Returns the number of fixed columns (non-covariate) in Pmetrics data objects.
+#' @return An integer with the number of fixed columns.
+#' 
+#' @export
+#' @examples
+#' getFixedColNum()
+#' @author Michael Neely
 getFixedColNum <- function() {
   # set current number of fixed columns in data file
   length(getFixedColNames())

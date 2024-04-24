@@ -65,8 +65,6 @@ reference:
   - fixed
   - msd
   - proportional
-  - build_model
-  - build_plot
 - title: Make functions
   desc: Functions for making Pmetrics objects
 - contents:
@@ -96,10 +94,9 @@ reference:
   desc: Run functions for modeling or simulating data
 - contents: ends_with("run")
 - title: Parse/load
-  desc: Parse functions for loading modeled or simulated data
+  desc: Parse functions for modeled or simulated data
 - contents:
   - ends_with("parse")
-  - PMload
 - title: Auxilliary
   desc: Auxilliary functions
 - contents:
@@ -107,7 +104,7 @@ reference:
   - zBMI
   - ss.PK
   - mtsknn.eq
-  - PMcompare
+  - PM_compare
   - PMgetCRCL
   - PMstep
 - title: Datasets
@@ -133,11 +130,9 @@ reference:
   - PMlogout
   - PMpatch
   - PMregister
-  - PMreport
   - ERRreport
   - PMsave
   - PMtest
-  - PMupdate
   - getPMoptions
   - setPMoptions
   - editPMoptions

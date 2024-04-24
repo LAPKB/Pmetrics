@@ -825,9 +825,22 @@ sub_plot <- function(...,
 }
 
 
-#get RColorBrewerPalettes
+#' @title Get color palette
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Generate list of palettes for plots.
+#' @details
+#' If RColorBrewer package is installed, will return the list of palette names from
+#' RColorBrewer::brewer.pal.info. If not, will return the current list as of April 2024.
+#' @return A character vector of palette names.
+#' @export
+#' @examples
+#' getPalettes()
+#' @author Michael Neely
+
 getPalettes <- function(){
-  if (requireNamespace("RColorBrewer", quietly = TRUE)) {
+  if (checkRequiredPackages("RColorBrewer")) {
     palettes <- rownames(RColorBrewer::brewer.pal.info)
   } else {
     palettes <- c("BrBG", "PiYG", "PRGn", "PuOr", "RdBu", "RdGy", "RdYlBu", 
@@ -840,7 +853,23 @@ getPalettes <- function(){
   return(palettes)
 }
 
-#create list of n default colors
+
+#' @title Get a list of default colors
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Generate list of default color names.
+#' @details
+#' Used for Pmetrics plots. The following list is recycled as necessary to generate the
+#' requested number of colors. 
+#' `c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")`
+#' @param n The number of colors to return from the list.
+#' @return A character vector of color names, which is recycled as needed. 
+#' 
+#' @export
+#' @examples
+#' getDefaultColors(6)
+#' @author Michael Neely
 getDefaultColors <- function(n){
   choices <- c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")
   selection <- rep(choices, n)[1:n]
