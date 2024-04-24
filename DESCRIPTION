@@ -17,6 +17,7 @@ Description: Parametric and non-parametric
 Authors@R: c(
   person("Michael", "Neely", email = "mneely@usc.edu", role = c("aut", "cre")),
   person("Julián", "Otálvaro", email = "juliandavid347@gmail.com", role = "aut"),
+  person("Markus", "Hovd", email = "", role = "ctb"),
   person("Walter", "Yamada", email = "", role= "ctb"),
   person("Alan", "Schumitzky", email = "", role = "ctb"),
   person("Rong", "Chen", email = "", role = "ctb"),
@@ -40,7 +41,6 @@ Imports:
     lifecycle,
     lubridate,
     magrittr,
-    npde,
     openxlsx,
     pander,
     plotly,
@@ -58,13 +58,13 @@ Imports:
     tidyr,
     utils
 Suggests:
-    curl,
     data.table,
     devtools,
     ggpubr,
     htmltools,
     knitr,
     mclust,
+    npde,
     pandoc,
     patchwork,
     PmetricsData,

@@ -58,7 +58,7 @@
 
   # check for PmetricsData
   if (!suppressWarnings(suppressMessages(requireNamespace("PmetricsData")))) {
-    packageStartupMessage(paste0(crayon::green("Important: "), "PmetricsData package required for examples. Run getPMdata() to install from github.\n"))
+    packageStartupMessage(paste0(crayon::green("Important: "), "PmetricsData package required for examples. Run remotes::install_github('LAPKB/PmetricsData') to install.\n"))
   }
 
   # set user options for the session

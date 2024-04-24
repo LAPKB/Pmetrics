@@ -353,7 +353,9 @@ plot.PM_valid <- function(x,
   }
 
   if (type == "npde") {
-    requireNamespace("npde", quietly = TRUE)
+    if(!checkRequiredPackages("npde", quietly = FALSE)){
+      return(invisible(NULL))
+    }
     if (!tad) {
       if (is.null(x$npde)) stop("No npde object found.  Re-run $validate or make_valid.\n")
       if (inherits(x$npde[[outeq]], "NpdeObject")) {
