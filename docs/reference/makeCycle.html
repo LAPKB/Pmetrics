@@ -136,7 +136,7 @@ list suitable for analysis and plotting of NPAG or IT2B cycle information.</p>
 <span class="r-in"><span><span class="va">cycle</span> <span class="op">&lt;-</span> <span class="fu">makeCycle</span><span class="op">(</span><span class="va">NPex</span><span class="op">$</span><span class="va">NPdata</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cycle</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $names</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ka"  "Ke"  "V"   "lag"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Ka"    "Ke"    "V"     "Tlag1"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $cycnum</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   [1]   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18</span>
@@ -179,7 +179,7 @@ list suitable for analysis and plotting of NPAG or IT2B cycle information.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $mean</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 100 × 5</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    cycle    Ka    Ke     V   lag</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    cycle    Ka    Ke     V Tlag1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>     1 1      1    1     1    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>     2 1.01   1.00 0.993 0.997</span>
@@ -195,7 +195,7 @@ list suitable for analysis and plotting of NPAG or IT2B cycle information.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $sd</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 100 × 5</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    cycle    Ka    Ke     V   lag</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    cycle    Ka    Ke     V Tlag1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>     1  1     1    1      1   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>     2  1.03  1.00 0.982  1.00</span>
@@ -211,7 +211,7 @@ list suitable for analysis and plotting of NPAG or IT2B cycle information.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $median</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 100 × 5</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    cycle    Ka    Ke     V   lag</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    cycle    Ka    Ke     V Tlag1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>     1  1     1     1    1    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>     2  1.04  1.00  1.00 1.04 </span>

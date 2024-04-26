@@ -71,13 +71,11 @@ Set user options for Pmetrics"><meta property="og:image" content="https://lapkb.
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">setPMoptions</span><span class="op">(</span></span>
 <span>  <span class="va">sep</span>,</span>
 <span>  <span class="va">dec</span>,</span>
-<span>  <span class="va">server_address</span>,</span>
 <span>  <span class="va">compilation_statements</span>,</span>
 <span>  <span class="va">backend</span>,</span>
 <span>  <span class="va">rust_template</span>,</span>
 <span>  <span class="va">report_template</span>,</span>
 <span>  <span class="va">gfortran_path</span>,</span>
-<span>  <span class="va">func_defaults</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">F</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -90,11 +88,6 @@ Set user options for Pmetrics"><meta property="og:image" content="https://lapkb.
 
 <dt>dec</dt>
 <dd><p>The decimal separator character; "." by default, but could be "," for example.</p></dd>
-
-
-<dt>server_address</dt>
-<dd><p>Specify address of server for remote runs.  Server must be set up separately.
-This functionality is coming soon.</p></dd>
 
 
 <dt>compilation_statements</dt>
@@ -120,11 +113,7 @@ Default is to use "plotly", but can be set to "ggplot".</p></dd>
 
 
 <dt>gfortran_path</dt>
-<dd><p>Path to gfortran compiler.</p></dd>
-
-
-<dt>func_defaults</dt>
-<dd><p>Change the default argument value for any Pmetrics function or method.
+<dd><p>Path to gfortran compiler.
 <code>func_defaults</code> should be a list, with each item itself a list of function name = list(arg1 = value, arg2 = value,...).
 For example: <code>func_defaults = list(plot.PM_op = list(stats = T, marker = list(color = "red")), qgrowth = list(percentile = 50))</code>.
 This is an incredibly powerful tool to customize your Pmetrics experience. If you store your

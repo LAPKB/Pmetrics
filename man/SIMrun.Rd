@@ -316,11 +316,12 @@ sim1 <- run1$sim(...)
 # The second uses the population prior and model in run1, and a new template
 # data file in the working directory
 
-sim2 <- PM_sim$run(poppar = run1, data = newfile.csv, ...)
+sim2 <- PM_sim$new(poppar = run1, data = newfile.csv, ...)
 
 # These methods are entirely interchangeable. The first can accept a different
 # data template. The difference is that poppar must be explicitly
-# declared when using PM_sim$run.
+# declared when using PM_sim$new. This makes it the method to use when poppar 
+# is derived from th literature.
 
 # An example of a manual prior
 # make 1 lognormal distribution for each parameter
@@ -330,13 +331,13 @@ cov <- matrix(rep(0, length(mean)**2), ncol = length(mean))
 diag(cov) <- (c(0.15, 0.15, 0.15) * mean)**2
 # make the prior for the simulation
 poppar <- list(weights, mean, cov)
+
 # run simulation, assuming temp1.csv and model.txt are in working directory
-SIMrun(poppar, "temp1.csv",
-  nsim = 15, model = "model.txt", include = 1:4,
+
+sim1 <- PM_sim$new(poppar, "temp1.csv",
+  nsim = 15, model = "model.txt", include = 1:4, limits = NA,
   obsNoise = c(0.02, 0.1, 0, 0)
 )
-# extract results of simulation
-simout <- SIMparse("simout.txt")
 }
 }
 \seealso{
