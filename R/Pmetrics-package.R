@@ -14,8 +14,8 @@
 #' "_PACKAGE"
 #'
 #' @importFrom dplyr select arrange filter mutate transmute group_by row_number
-#' group_map ungroup bind_cols bind_rows nest_by rowwise rename inner_join
-#' slice_tail slice_head slice across tibble as_tibble
+#' group_map ungroup bind_cols bind_rows nest_by rowwise rename reframe inner_join
+#' slice_tail slice_head slice across tibble as_tibble quo
 #' @importFrom readr read_file write_file
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon geom_hline
 #' scale_x_log10 scale_x_continuous scale_y_log10 scale_y_continuous xlab ylab
