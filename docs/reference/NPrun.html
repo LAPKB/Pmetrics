@@ -92,9 +92,6 @@ NPrun will execute an NPAG run."><meta property="og:image" content="https://lapk
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  nocheck <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  parallel <span class="op">=</span> <span class="cn">NA</span>,</span>
-<span>  alq <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  remote <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  <span class="va">server_address</span>,</span>
 <span>  report <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  artifacts <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -113,7 +110,7 @@ file conversion.</p></dd>
 
 
 <dt>data</dt>
-<dd><p>Name of a suitable data file (see <code><a href="PMwriteMatrix.html">PMwriteMatrix</a></code>) or
+<dd><p>Name of a suitable data file (see <a href="PM_data.html">PM_data</a>) or
 an existing (previous) run number corresponding to a folder in the current working directory that used the same data file as will be used in the current run.
 If this is supplied, then previously made  '.ZMQ' files will be copied into the current
 working directory, bypassing the need to re-convert the .csv file and speeding up the run..</p></dd>
@@ -157,7 +154,7 @@ Default value is 0.01.</p></dd>
 
 <dt>icen</dt>
 <dd><p>Summary of parameter distributions to be used to calculate predictions in HTML report.  Default is "median", but could be "mean".
-Predictions based on both summaries will be available in objects loaded by <code><a href="PMload.html">PMload</a></code>.</p></dd>
+Predictions based on both summaries will be available in objects loaded by <a href="PM_load.html">PM_load</a>.</p></dd>
 
 
 <dt>aucint</dt>
@@ -170,7 +167,7 @@ to the interval which allows for &lt;= 48 intervals.</p></dd>
 
 
 <dt>prior</dt>
-<dd><p>Name of a suitable NPAG output object from a prior run loaded with <code><a href="PMload.html">PMload</a></code>,
+<dd><p>Name of a suitable NPAG output object from a prior run loaded with <a href="PM_load.html">PM_load</a>,
 i.e. the <em>NPdata</em> object.  A <code>prior</code> may be specified if the user wishes to
 start from a non-uniform prior distribution for the NPAG run. The default value is -99,
 which translates in NPAG to a uniform prior distribution.  An alternative is to include a DEN0001 file from the prior
@@ -180,14 +177,14 @@ NPAG run in the working directory of the new run, and specify this as the value 
 
 <dt>auto</dt>
 <dd><p>If <code>auto</code> is <code>False</code> you can answer all questions about the run environment manually.  This might
-be helpful for beginners.  Default is <code>True</code>.</p></dd>
+be helpful for beginners.  Default is <code>TRUE</code>.</p></dd>
 
 
 <dt>intern</dt>
 <dd><p>MacOSX only: Run NPAG in the R console without a batch script.  Default is false.
-This will be ignored if on Windows systems.  On the latter, the behavior of cmd.exe (aka the “DOS” window)
+This will be ignored if on Windows systems.  On the latter, the behavior of cmd.exe (aka the DOS window)
 with R is poor - it does not update until the end of execution, so you cannot see any output that indicates that NPAG is running.
-If <code>intern=T</code> the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
+If <code>intern=TRUE</code> the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
 and you can find the HTML summary page in the /outputs folder: NPAGreport.html.</p></dd>
 
 
@@ -200,7 +197,7 @@ and you can find the HTML summary page in the /outputs folder: NPAGreport.html.<
 
 
 <dt>nocheck</dt>
-<dd><p>Suppress the automatic checking of the data file with <code><a href="PMcheck.html">PMcheck</a></code>.  Default is <code>FALSE</code>.</p></dd>
+<dd><p>Suppress the automatic checking of the data file with <a href="PM_data.html">PM_data</a>.  Default is <code>FALSE</code>.</p></dd>
 
 
 <dt>parallel</dt>
@@ -209,19 +206,6 @@ differential equations, and <code>FALSE</code> for algebraic/explicit models.  T
 in the first cycle, with a speed-up of approximately 80\<!-- % of the number of available cores on your machine, e.g. an 8-core machine -->
 will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\<!-- %, e.g. 4-fold increase on an 8-core -->
 machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.</p></dd>
-
-
-<dt>alq</dt>
-<dd><p>For internal developer use only.  Should be set to <code>FALSE</code>.</p></dd>
-
-
-<dt>remote</dt>
-<dd><p>Default is <code>FALSE</code>.  Set to <code>TRUE</code> if loading results of an NPAG run on remote server.</p></dd>
-
-
-<dt>server_address</dt>
-<dd><p>If missing, will use the default server address returned by getPMoptions().
-Pmetrics will prompt the user to set this address the first time the <code>remote</code> argument is set to <code>TRUE</code>.</p></dd>
 
 
 <dt>report</dt>
@@ -250,7 +234,7 @@ OUT and OUTT are full and truncated textfiles containing all output of NPAG.  OU
 density file.  PRTB contains Bayesian posterior individual predictions for each subject and
 output at timepoints specified in the NPAG instructions (e.g. every 2, 4, 8, 12 minutes) as well
 as predictions at each observation time.  RFILE contains NPAG output formatted for easy import
-into R, and is the file read by the <code><a href="NPparse.html">NPparse</a></code> command.  Finally, there will also
+into R, and is the file read by the <a href="NPparse.html">NPparse</a> command.  Finally, there will also
 be an nplog.txt file containing additional run information.</p></li>
 <li><p><b>wrkcopy</b>    The working copy format which is used by NPAG.  Invisibly to the user,
 the .csv input file is converted to these text files, one file per subject.</p></li>
@@ -266,7 +250,7 @@ so that R can be used for other purposes if desired.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="NPparse.html">NPparse</a></code>, <code><a href="ITrun.html">ITrun</a></code></p></div>
+    <div class="dont-index"><p><a href="NPparse.html">NPparse</a>, <a href="ITrun.html">ITrun</a></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

@@ -88,7 +88,6 @@ This is largely superseded by the <code>$run</code> method for <a href="PM_fit.h
 <span>  quiet <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  nocheck <span class="op">=</span> <span class="cn">F</span>,</span>
-<span>  alq <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  report <span class="op">=</span> <span class="cn">T</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -100,13 +99,13 @@ This is largely superseded by the <code>$run</code> method for <a href="PM_fit.h
 an existing (previous) run number corresponding to a folder in the current working directory that used the same model file as will be used in the current run.
 If this is supplied, then the model file will be copied into the current
 working directory for convenience.  If not supplied,
-the default is “model.txt”.  This file will be converted to a fortran model file.
+the default is "model.txt".  This file will be converted to a fortran model file.
 If it is detected to already be a fortran file, then the analysis will proceed without any further
 file conversion.</p></dd>
 
 
 <dt>data</dt>
-<dd><p>Name of a suitable data file (see <code><a href="PMwriteMatrix.html">PMwriteMatrix</a></code>) or
+<dd><p>Name of a suitable data file (see <a href="PM_data.html">PM_data</a>) or
 an existing (previous) run number corresponding to a folder in the current working directory that used the same data file as will be used in the current run.
 If this is supplied, then previously made  '.ZMQ' files will be copied into the current
 working directory, bypassing the need to re-convert the .csv file and speeding up the run..</p></dd>
@@ -147,24 +146,24 @@ runs, but parameter estimates may not be as accurate.</p></dd>
 
 <dt>icen</dt>
 <dd><p>Summary of parameter distributions to be used to calculate predictions in HTML report.  Default is "median", but could be "mean".
-#Predictions based on both summaries will be available in objects loaded by <code><a href="PMload.html">PMload</a></code>.</p></dd>
+#Predictions based on both summaries will be available in objects loaded by <a href="PM_load.html">PM_load</a>.</p></dd>
 
 
 <dt>auto</dt>
-<dd><p>If <code>auto</code> is <code>False</code> you can answer all questions about the run environment manually.  This might
-be helpful for beginners.  Default is <code>True</code>.</p></dd>
+<dd><p>If <code>auto</code> is <code>FALSE</code> you can answer all questions about the run environment manually.  This might
+be helpful for beginners.  Default is <code>TRUE</code>.</p></dd>
 
 
 <dt>intern</dt>
 <dd><p>MacOSX only: Run IT2B in the R console without a batch script.  Default is false.
-This will be ignored on Windows systems.  On the latter, the behavior of cmd.exe (aka the “DOS” window)
+This will be ignored on Windows systems.  On the latter, the behavior of cmd.exe (DOS window)
 with R is poor - it does not update until the end of execution, so you cannot see any output that indicates that IT2B is running.
-If <code>intern=T</code> the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
+If <code>intern=TRUE</code> the HTML summary page will not be automatically loaded at the end of the run, but all post-run processing will occur normally,
 and you can find the HTML summary page in the /outputs folder: IT2Breport.html.</p></dd>
 
 
 <dt>quiet</dt>
-<dd><p>Boolean operator controlling whether a model summary report is given.  Default is <code>True</code>.</p></dd>
+<dd><p>Boolean operator controlling whether a model summary report is given.  Default is <code>TRUE</code>.</p></dd>
 
 
 <dt>overwrite</dt>
@@ -172,11 +171,7 @@ and you can find the HTML summary page in the /outputs folder: IT2Breport.html.<
 
 
 <dt>nocheck</dt>
-<dd><p>Suppress the automatic checking of the data file with <code><a href="PMcheck.html">PMcheck</a></code>.  Default is <code>FALSE</code>.</p></dd>
-
-
-<dt>alq</dt>
-<dd><p>For internal developer use only.  Should be set to <code>FALSE</code>.</p></dd>
+<dd><p>Suppress the automatic checking of the data file with <a href="PM_data.html">PM_data</a>.  Default is <code>FALSE</code>.</p></dd>
 
 
 <dt>report</dt>
@@ -199,7 +194,7 @@ OUTF and OUFF are full and truncated textfiles containing all output of IT2B.  O
 density file.  LAST contains last cycle Bayesian posterior parameters and predictions for
 each subject.  FROM contains estimated parameter ranges which can be passed to IT2B.
 RFILE contains IT2B output formatted for easy import into R, and is the file read by
-the <code><a href="ITparse.html">ITparse</a></code> command.  Finally, there will also be an itlog.txt file
+the <a href="ITparse.html">ITparse</a> command.  Finally, there will also be an itlog.txt file
 containing additional run information.</p></li>
 <li><p><b>wrkcopy</b>    The working copy format which is used by IT2B.  Invisibly to the user,
 the .csv input file is converted to these text files, one file per subject.</p></li>
@@ -215,7 +210,7 @@ so that R can be used for other purposes if desired.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="ITparse.html">ITparse</a></code>, <code><a href="NPrun.html">NPrun</a></code></p></div>
+    <div class="dont-index"><p><a href="ITparse.html">ITparse</a>, <a href="NPrun.html">NPrun</a></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>

@@ -72,7 +72,7 @@ valid <- NPex$validate(limits = c(0, 3))
 
 }
 \seealso{
-\link{SIMrun}, \link{plot.PMvalid}
+\link{SIMrun}, \link{plot.PM_valid}
 }
 \author{
 Michael Neely

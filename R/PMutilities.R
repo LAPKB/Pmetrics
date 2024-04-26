@@ -1808,12 +1808,15 @@ makePMmatrixBlock <- function(mdata) {
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
-#' Extracts covariate information from a Pmetrics data objects.
+#' Extracts covariate information from a Pmetrics data object. 
 #' @details
-#' When given a [PM_data] or *PMmatrix* object, will return a list 
+#' The function subtracts the number of fixed columns in a standard data format,
+#' currently 14, from the total number of columns in `mdata` and queries
+#' the remaining columns.  When given a [PM_data] object, will return a list 
 #' with the number of covariates, their names, and the starting and
 #' ending column numbers 
-#' @param mdata A [PM_data] or *PMmatrix* object
+#' @param mdata A [PM_data] object. It can be other data frames but the results
+#' will likely not be meaningful.
 #' @return A list with named items: *ncov, covnames, covstart, covend*.
 #' 
 #' @export
@@ -1825,9 +1828,7 @@ makePMmatrixBlock <- function(mdata) {
 getCov <- function(mdata) {
   if(inherits(mdata, "PM_data")){
     mdata <- mdata$standard_data
-  } else if (!inherits(mdata, "PMmatrix")){
-    stop("Invalid data object passed to getCov().\n")
-  }
+  } 
   nfixed <- getFixedColNum()
   ncolData <- ncol(mdata)
   ncov <- ncolData - nfixed
