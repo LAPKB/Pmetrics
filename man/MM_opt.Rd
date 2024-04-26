@@ -13,15 +13,15 @@ MM_opt(
   predInt = 0.5,
   mmInt,
   outeq = 1,
+  clean = TRUE,
   ...
 )
 }
 \arguments{
-\item{poppar}{An object of class \emph{PMfinal} (see \link{makeFinal})}
+\item{poppar}{A \link{PM_result} object created by loading results of a prior NPAG run with \link{PM_load} or a \emph{PMfinal} object made in legacy Pmetrics.}
 
-\item{model}{Name of a suitable model file template in the working directory.
-The default is "model.txt".  This file will be converted to a fortran model file.
-If it is detected to already be a fortran file, then the simulation will proceed without any further file conversion.}
+\item{model}{If \code{poppar} is  a \link{PM_result}, the embedded model will be used and this argument is not required. For a legacy \emph{PMfinal} \code{poppar}, \code{model} should be the name of a suitable model file in the working directory.
+The default is "model.txt".}
 
 \item{data}{Either a \link{PM_data} object or character vector with the filename
 of a Pmetrics data file
@@ -39,7 +39,8 @@ can be coded as any number(s) other than -99.  The number(s) will be replaced in
 }
 Any combination of AUC, max, and min can be chosen.  If "none" is specified, other
 weight types will be ignored and the relative value will be set to 1.
-For example,\code{list(auc = 0.5,max = 0.5)} or \code{list(auc = 0.2, min = 0.8)}.}
+For example,\code{list(auc = 0.5,max = 0.5)} or \code{list(auc = 0.2, min = 0.8)}.
+The default is \code{list(none = 1)}.}
 
 \item{predInt}{The interval in fractional hours for simulated predicted outputs at times other than those specified in the template \code{data}.
 The default is 0.5, which means there will be simulated outputs every 30 minutes from time 0 up
@@ -47,7 +48,7 @@ to the maximal time in the template file.  You may also specify \code{predInt}
 as a vector of 3 values, e.g. \code{c(1,4,1)}, similar to the R command \link{seq}, where the
 first value is the start time, the second is the stop time, and the third is the
 step value.  Outputs for times specified in the template file will also be simulated.
-To simulate outputs \emph{only} at the output times in the template data (i.e. EVID=0 events), use \code{predInt=0}.
+To simulate outputs \emph{only} at the output times in the template data (i.e. EVID=0 events), use \code{predInt = 0}.
 Note that the maximum number of predictions total is 594, so the interval must be sufficiently large to accommodate this for a given
 number of output equations and total time to simulate over.  If \code{predInt} is set so that this cap is exceeded, predictions will be truncated.}
 
@@ -56,6 +57,10 @@ These should only include simulated times specified by \code{predInt}.}
 
 \item{outeq}{Output equation to optimize}
 
+\item{clean}{Boolean parameter to specify whether temporary files made in the
+course of the simulation run should be deleted. Defaults to \code{TRUE}.
+This is primarily used for debugging.}
+
 \item{\dots}{Other parameters to pass to \link{SIMrun}, which are not usually necessary.}
 }
 \value{
@@ -63,13 +68,13 @@ A object of class \emph{MMopt} with 3 items.
 \item{sampleTime }{The MM-optimal sample times}
 \item{bayesRisk }{The Bayesian risk of mis-classifying a subject based on the sample times.  This
 is more useful for comparisons between sampling strategies, with minimization the goal.}
-\item{simdata }{A \emph{PMsim} object with the simulated profiles}
+\item{simdata }{A \link{PM_sim} object with the simulated profiles}
 \item{mmInt }{A list with the \code{mmInt} values, \code{NULL} if \code{mmInt} is missing.}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
-Computes 1 to 4 MM-optimal sampling times.
+Computes 1 or more MM-optimal sampling times.
 }
 \details{
 Based on the mulitple-model optimization algorithm.
@@ -79,7 +84,7 @@ Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017):
 95–111. https://doi.org/10.1007/s10928-016-9498-5.
 }
 \seealso{
-\link{SIMrun}, \link{plot.MMopt}, \link{print.MMopt}
+\link{SIMrun}, \link{PM_sim}, \link{plot.MMopt}, \link{print.MMopt}
 }
 \author{
 Michael Neely

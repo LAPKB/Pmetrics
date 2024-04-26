@@ -113,9 +113,12 @@ pathways, and we’ll cover the details in this document.</p>
 <div class="section level3">
 <h3 id="model-builder-app">Model Builder App<a class="anchor" aria-label="anchor" href="#model-builder-app"></a>
 </h3>
-<p>To launch the app, type the following into your console:
-<code><a href="../reference/build_model.html">build_model()</a></code>. You can supply a <code>PM_data</code> and/or
-a <code>PM_model</code> as optional arguments to the function,
+<p>To launch the app, type the following into your console:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">PmetricsApps</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/PmetricsApps/man/build_model.html" class="external-link">build_model</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>You can supply a <code>PM_data</code> and/or a <code>PM_model</code>
+as optional arguments to the function,
 e.g. <code>build_model(NPex$data)</code> or
 <code>build_model(NPex$model)</code> or even
 <code>build_model(NPex$data, NPex$model)</code>. The order of data
@@ -139,7 +142,7 @@ used in <code>PM_model$new(copied_list)</code>. Once in R,
 0.4. You can write the file by hand, or use the app to create a model
 and then save it to a file. Once you have a file, it can be loaded in to
 R with <code>PM_model$new("file")</code>.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod1</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"model.txt"</span><span class="op">)</span> </span>
 <span><span class="co">#assumes model.txt is in working directory</span></span>
 <span><span class="co">#check with list.files() and/or getwd()</span></span></code></pre></div>
@@ -257,7 +260,7 @@ for <code>ab</code>. For both specifying functions, <code>gtz</code> is
 an argument to force the parameter value to be positive,
 i.e. <code>gtz=T</code>, which is the default. To allow negative
 parameters, set <code>gtz=F</code>.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -342,7 +345,7 @@ below.</p>
 an argument, the covariate tab will be pre-populated with the covariates
 in the data file, as above. The same is true if you include a
 <code>PM_model</code> object as an argument to
-<code><a href="../reference/build_model.html">build_model()</a></code>. If you include both, the covariates in the
+<code><a href="https://rdrr.io/pkg/PmetricsApps/man/build_model.html" class="external-link">build_model()</a></code>. If you include both, the covariates in the
 <code>PM_data</code> object will take precedence. You can select any of
 them to make them piece-wise constant, i.e. the value is held constant
 between measurements. If left unchecked, covariate values will be
@@ -359,7 +362,7 @@ means that missing covariate values for subsequent dose events are
 linearly interpolated between existing values, or carried forward if the
 first value is the only non-missing entry. Set this argument to
 <code>TRUE</code> to make a covariate piece-wise constant.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span>,</span>
@@ -433,7 +436,7 @@ primary parameter which will be estimated, but internally, the model
 uses V as V0*wt, unless age is &gt;18, in which case weight is capped at
 75 kg. It’s the same for CL0. Note that the conditional statement is not
 named.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -487,7 +490,7 @@ number. Primary and secondary variables and covariates may be used in
 the expression, as can conditional statements in Fortran code. An
 “&amp;” continuation prefix is not necessary in this block for any
 statement, although if present, will be ignored.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -557,7 +560,7 @@ is the input number. Primary and secondary variables and covariates may
 be used in the expression, as can conditional statements in Fortran
 code. An “&amp;” continuation prefix is not necessary in this block for
 any statement, although if present, will be ignored.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -607,7 +610,7 @@ Primary and secondary variables and covariates may be used in the
 expression, as can conditional statements in Fortran code. An “&amp;”
 continuation prefix is not necessary in this block for any statement,
 although if present, will be ignored.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -698,7 +701,7 @@ will know how to solve the algebraic model.</p>
 character elements, with each element an ordinary differential equation
 in the same R format as for the app. Additional equations can be
 included.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PM_model.html">PM_model</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    pri <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -824,13 +827,13 @@ contains the value of the equation and the error model. Within the error
 model for that output, is the last list comprising model and assay error
 specifications. In the examples below, we build this nested list
 structure gradually to make it more clear.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  Y1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>The output equation is a character vector named “val” followed by an
 error list.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  Y1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    val <span class="op">=</span> <span class="st">"X[1]/V"</span>,</span>
@@ -856,7 +859,7 @@ coefficients in the data file will be used if present, and the ones here
 in the model definition will be used only if none are available for an
 observation in the data. If <code>constant = TRUE</code>, the model
 coefficients will be used regardless of what is in the data file.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  Y1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    val <span class="op">=</span> <span class="st">"X(1)/V"</span>,</span>
@@ -866,56 +869,56 @@ coefficients will be used regardless of what is in the data file.</p>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>out <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>  <span class="at">Y1 =</span> <span class="fu">list</span>(</span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>    <span class="at">val =</span> <span class="st">"X(1)/V"</span>,</span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>    <span class="at">err =</span> <span class="fu">list</span>(</span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>      <span class="at">model =</span> <span class="fu">additive</span>(<span class="dv">1</span>, <span class="at">fixed =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>      <span class="at">assay =</span> <span class="fu">errorPoly</span>(<span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="at">constant =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>    )</span>
-<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>  )</span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>out <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>  <span class="at">Y1 =</span> <span class="fu">list</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>    <span class="at">val =</span> <span class="st">"X(1)/V"</span>,</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>    <span class="at">err =</span> <span class="fu">list</span>(</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>      <span class="at">model =</span> <span class="fu">additive</span>(<span class="dv">1</span>, <span class="at">fixed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>      <span class="at">assay =</span> <span class="fu">errorPoly</span>(<span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="at">constant =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>    )</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>  )</span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>)</span></code></pre></div>
 <p>More complete examples.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>mod <span class="ot">&lt;-</span> PM_model<span class="sc">$</span><span class="fu">new</span>(</span>
-<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>  <span class="fu">list</span>(</span>
-<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>    <span class="at">pri =</span> <span class="fu">list</span>(</span>
-<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>      <span class="at">Ke =</span> <span class="fu">ab</span>(<span class="dv">0</span>, <span class="dv">5</span>),</span>
-<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>      <span class="at">V =</span> <span class="fu">msd</span>(<span class="dv">100</span>, <span class="dv">30</span>),</span>
-<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>    ),</span>
-<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>    <span class="at">out =</span> <span class="fu">list</span>(</span>
-<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>      <span class="at">y1 =</span> <span class="fu">list</span>(</span>
-<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>        <span class="at">val =</span> <span class="st">"X(1)/V"</span>,</span>
-<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>        <span class="at">err =</span> <span class="fu">list</span>(</span>
-<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>          <span class="at">model =</span> <span class="fu">proportional</span>(<span class="dv">5</span>),</span>
-<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a>          <span class="at">assay =</span> <span class="fu">errorPoly</span>(<span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
-<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a>        )</span>
-<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a>      )</span>
-<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a>    )</span>
-<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a>  )</span>
-<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a>)</span>
-<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a></span>
-<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a>mod2 <span class="ot">&lt;-</span> PM_model<span class="sc">$</span><span class="fu">new</span>(</span>
-<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a>  <span class="fu">list</span>(</span>
-<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a>    <span class="at">pri =</span> <span class="fu">list</span>(</span>
-<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a>      <span class="at">kin =</span> <span class="fu">ab</span>(<span class="dv">0</span>, <span class="dv">5</span>),</span>
-<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a>      <span class="at">kout =</span> <span class="fu">ab</span>(<span class="dv">0</span>, <span class="dv">5</span>),</span>
-<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a>      <span class="at">tpd =</span> <span class="fu">ab</span>(<span class="dv">0</span>, <span class="dv">5</span>),</span>
-<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a>      <span class="at">V =</span> <span class="fu">msd</span>(<span class="dv">100</span>, <span class="dv">30</span>),</span>
-<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a>    ),</span>
-<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a>    <span class="at">sec =</span> <span class="fu">c</span>(</span>
-<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a>      <span class="st">"RES = B(1) * KIN/(KIN-KOUT) * (EXP(-KOUT*TPD)-EXP(-KIN*TPD))"</span></span>
-<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a>    ),</span>
-<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a>    <span class="at">out =</span> <span class="fu">list</span>(</span>
-<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a>      <span class="at">y1 =</span> <span class="fu">list</span>(</span>
-<span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a>        <span class="at">val =</span> <span class="st">"RES/V"</span>,</span>
-<span id="cb14-33"><a href="#cb14-33" tabindex="-1"></a>        <span class="at">err =</span> <span class="fu">list</span>(</span>
-<span id="cb14-34"><a href="#cb14-34" tabindex="-1"></a>          <span class="at">model =</span> <span class="fu">combination</span>(<span class="fl">0.4</span>, <span class="dv">3</span>) <span class="co">#additive, proportional</span></span>
-<span id="cb14-35"><a href="#cb14-35" tabindex="-1"></a>          <span class="at">assay =</span> <span class="fu">errorPoly</span>(<span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.15</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
-<span id="cb14-36"><a href="#cb14-36" tabindex="-1"></a>        )</span>
-<span id="cb14-37"><a href="#cb14-37" tabindex="-1"></a>      )</span>
-<span id="cb14-38"><a href="#cb14-38" tabindex="-1"></a>    )</span>
-<span id="cb14-39"><a href="#cb14-39" tabindex="-1"></a>  )</span>
-<span id="cb14-40"><a href="#cb14-40" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>mod <span class="ot">&lt;-</span> PM_model<span class="sc">$</span><span class="fu">new</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>    <span class="at">pri =</span> <span class="fu">list</span>(</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>      <span class="at">Ke =</span> <span class="fu">ab</span>(<span class="dv">0</span>, <span class="dv">5</span>),</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>      <span class="at">V =</span> <span class="fu">msd</span>(<span class="dv">100</span>, <span class="dv">30</span>),</span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>    ),</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>    <span class="at">out =</span> <span class="fu">list</span>(</span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>      <span class="at">y1 =</span> <span class="fu">list</span>(</span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>        <span class="at">val =</span> <span class="st">"X(1)/V"</span>,</span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>        <span class="at">err =</span> <span class="fu">list</span>(</span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a>          <span class="at">model =</span> <span class="fu">proportional</span>(<span class="dv">5</span>),</span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a>          <span class="at">assay =</span> <span class="fu">errorPoly</span>(<span class="fu">c</span>(<span class="fl">0.05</span>, <span class="fl">0.1</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a>        )</span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a>      )</span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a>    )</span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a>  )</span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a>)</span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a></span>
+<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a>mod2 <span class="ot">&lt;-</span> PM_model<span class="sc">$</span><span class="fu">new</span>(</span>
+<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a>    <span class="at">pri =</span> <span class="fu">list</span>(</span>
+<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a>      <span class="at">kin =</span> <span class="fu">ab</span>(<span class="dv">0</span>, <span class="dv">5</span>),</span>
+<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a>      <span class="at">kout =</span> <span class="fu">ab</span>(<span class="dv">0</span>, <span class="dv">5</span>),</span>
+<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a>      <span class="at">tpd =</span> <span class="fu">ab</span>(<span class="dv">0</span>, <span class="dv">5</span>),</span>
+<span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a>      <span class="at">V =</span> <span class="fu">msd</span>(<span class="dv">100</span>, <span class="dv">30</span>),</span>
+<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a>    ),</span>
+<span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a>    <span class="at">sec =</span> <span class="fu">c</span>(</span>
+<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a>      <span class="st">"RES = B(1) * KIN/(KIN-KOUT) * (EXP(-KOUT*TPD)-EXP(-KIN*TPD))"</span></span>
+<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a>    ),</span>
+<span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a>    <span class="at">out =</span> <span class="fu">list</span>(</span>
+<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a>      <span class="at">y1 =</span> <span class="fu">list</span>(</span>
+<span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a>        <span class="at">val =</span> <span class="st">"RES/V"</span>,</span>
+<span id="cb15-33"><a href="#cb15-33" tabindex="-1"></a>        <span class="at">err =</span> <span class="fu">list</span>(</span>
+<span id="cb15-34"><a href="#cb15-34" tabindex="-1"></a>          <span class="at">model =</span> <span class="fu">combination</span>(<span class="fl">0.4</span>, <span class="dv">3</span>) <span class="co">#additive, proportional</span></span>
+<span id="cb15-35"><a href="#cb15-35" tabindex="-1"></a>          <span class="at">assay =</span> <span class="fu">errorPoly</span>(<span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.15</span>, <span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb15-36"><a href="#cb15-36" tabindex="-1"></a>        )</span>
+<span id="cb15-37"><a href="#cb15-37" tabindex="-1"></a>      )</span>
+<span id="cb15-38"><a href="#cb15-38" tabindex="-1"></a>    )</span>
+<span id="cb15-39"><a href="#cb15-39" tabindex="-1"></a>  )</span>
+<span id="cb15-40"><a href="#cb15-40" tabindex="-1"></a>)</span></code></pre></div>
 <p>This last example is known as the Bateman equation for a model with
 linear absorption (KIN) into and elimination (KOUT) from a central
 compartment, and a time post-dose (TPD) or lag time. Here B(1) is the
@@ -1092,7 +1095,7 @@ before you can save it.</p>
 <p>You can update an existing model in one of two ways in the app:</p>
 <ul>
 <li>Pass the <code>PM_model</code> object to the app as an argument to
-<code><a href="../reference/build_model.html">build_model()</a></code>, for example,
+<code><a href="https://rdrr.io/pkg/PmetricsApps/man/build_model.html" class="external-link">build_model()</a></code>, for example,
 <code>build_model(NPex$model)</code>. Then, edit the appropriate fields
 in the app. Save the model as a new model and/or copy it into R. Note
 that the app saves all models as “model.txt” so be sure not to overwrite
@@ -1112,20 +1115,20 @@ objects.</p>
 environment are in the same environment and changes to one will change
 them all. This means the following code will likely not work as
 intended.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod2</span> <span class="op">&lt;-</span> <span class="va">mod1</span></span>
 <span><span class="va">mod2</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>
 <p>When <em>mod2</em> is updated, <em>mod1</em> will update as they are
 in the same environment. The way to create an independent copy of an R6
 object, which does not share the same environment, is to use the
 <code>$clone()</code> method available for all R6 objects.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod2</span> <span class="op">&lt;-</span> <span class="va">mod1</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">mod2</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>
 <p>Now changes to mod2 do not propagate to mod1.</p>
 <p>To update a model, simply supply the list items you wish to change
 with the new values.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">mod2</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>

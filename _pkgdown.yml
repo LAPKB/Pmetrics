@@ -107,6 +107,7 @@ reference:
   - PM_compare
   - PMgetCRCL
   - PMstep
+  - starts_with("get")
 - title: Datasets
   desc: Pmetrics datasets
 - contents: has_keyword("datasets")
@@ -126,10 +127,7 @@ reference:
   - PMbuild
   - PMcheck
   - PMcode
-  - PMlogin
-  - PMlogout
   - PMpatch
-  - PMregister
   - ERRreport
   - PMsave
   - PMtest
@@ -138,7 +136,6 @@ reference:
   - editPMoptions
   - movePMoptions
   - update_gfortran
-  - getPMdata
 - title: Reference
   desc: Reference functions
 - contents:
