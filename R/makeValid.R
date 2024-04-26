@@ -52,7 +52,7 @@
 #' }
 #'
 #' @export
-#' @seealso [SIMrun], [plot.PMvalid]
+#' @seealso [SIMrun], [plot.PM_valid]
 
 
 make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
@@ -60,6 +60,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
   if(!checkRequiredPackages(c("mclust", "npde"), quietly = FALSE)){
     return(invisible(NULL))
   }
+  require(mclust)
 
   # save current wd
   currwd <- getwd()
@@ -110,6 +111,7 @@ make_valid <- function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)
 
   # number of subjects
   nsub <- length(unique(mdata$id))
+
 
   # define covariates in model to be binned
   covData <- getCov(mdata)

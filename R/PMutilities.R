@@ -1824,7 +1824,9 @@ makePMmatrixBlock <- function(mdata) {
 
 getCov <- function(mdata) {
   if(inherits(mdata, "PM_data")){
-    mdata <- mdata$data
+    mdata <- mdata$standard_data
+  } else if (!inherits(mdata, "PMmatrix")){
+    stop("Invalid data object passed to getCov().\n")
   }
   nfixed <- getFixedColNum()
   ncolData <- ncol(mdata)

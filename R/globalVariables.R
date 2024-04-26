@@ -3,11 +3,11 @@ utils::globalVariables(
     actionButton ageyrs aic algebraic annotate arrow assignInNamespace
     bic block bmi bolus browseURL browseVignettes cdc_bmi checkboxInput
     ci cmt code colorRampPalette column combn corr_age cyc cycle d dcBin
-    div dose elim evid fileInput final fitted fluidPage fluidRow from
+    div dose elim evid fileInput final fitted fluidPage fluidRow found from
     gamma_lambda ger_bmi getFromNamespace group h2 h3 h4 h5 hr ht
-    htmlOutput icen icon input is isS3method key label locales lowerCI
+    htmlOutput icen icon input is isS3method IT2bout key label locales lowerCI
     m_two_ll map2 map_lgl markdown measure modalDialog modelLibrary
-    na.exclude name navlistPanel ncomp node numericInput obs obsSD
+    na.exclude name navlistPanel ncomp NPAGout node numericInput obs obsSD
     observe observeEvent out outeq parameter percentile pcObs pk plotOutput
     point popMean popMedian position postMean postMedian pred pred.type
     prob prop_success radioButtons rateiv reactive reactiveVal reactiveValues
