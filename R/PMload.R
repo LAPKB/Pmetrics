@@ -32,11 +32,6 @@
 
 PM_load <- function(run, file) {
 
-  # declare variables to avoid R CMD Check flag
-  NPAGout <- NULL
-  IT2Bout <- NULL
-  found <- ""
-  
   # internal function
   output2List <- function(Out) {
     result <- list()

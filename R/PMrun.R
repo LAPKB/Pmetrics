@@ -626,7 +626,7 @@
     if (OS == 1) {
       # Mac
       system(paste("chmod +x ", scriptFileName))
-      if (compareVersion("22.0.0", Sys.info()[2]) <= 0) { # running Ventura
+      if (compareVersion("22.0.0", Sys.info()[2]) == 0) { # running Ventura
         if (!file.exists("/Applications/iTerm.app")) {
           message <- paste(
             "As of Ventura, there is a bug that prevents running a script in Terminal.\n",
@@ -637,7 +637,9 @@
         } else {
           if (!batch) system(paste("open -a iTerm.app ", shQuote(paste(getwd(), "/", scriptFileName, sep = "")), sep = ""))
         }
-      }
+      } else { #not running Ventura
+        if (!batch) system(paste("open -a Terminal.app ", shQuote(paste(getwd(), "/", scriptFileName, sep = "")), sep = ""))
+      } 
     }
     if (OS == 2 & !batch) {
       # Create a wrapper script
@@ -890,33 +892,34 @@ makeRdata <- function(wd, reportType) {
       e <- NULL
       cat("\nWARNING: error in extraction of observed vs. population predicted data; 'PMop' object not saved.\n\n")
     }))
+    
     cycle <- suppressWarnings(tryCatch(makeCycle(PMdata), error = function(e) {
       e <- NULL
       cat("\nWARNING: error in extraction of cycle information; 'PMcycle' object not saved.\n\n")
     }))
+    
     final <- suppressWarnings(tryCatch(makeFinal(PMdata), error = function(e) {
       e <- NULL
       cat("\nWARNING: error in extraction of final cycle parameter values; 'PMfinal' object not saved.\n\n")
     }))
+    
     if (PMdata$mdata != "NA") {
-      mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T)
+      mdata <- PM_data$new(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T)
     } else {
       mdata <- NA
     }
+    
     cov <- suppressWarnings(tryCatch(makeCov(PMdata), error = function(e) {
       e <- NULL
       cat("\nWARNING: error in extraction of covariate-parameter data; 'PMcov' object not saved.\n\n")
     }))
-    if (PMdata$mdata != "NA") {
-      mdata <- PMreadMatrix(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T)
-    } else {
-      mdata <- NA
-    }
+
     model <- list.files("../inputs") %>%
       .[grepl(".txt$", .)] %>%
       paste0("../inputs/", .) %>%
       .[[1]] %>%
       PM_model$new(.)
+    
     cat(paste("\n\n\nSaving R data objects to ", wd, "......\n\n", sep = ""))
     cat("\nUse PM_load() to load them.\n")
     cat("\nThe following objects have been saved:\n")
