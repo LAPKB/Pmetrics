@@ -94,16 +94,16 @@ by the <a href="makePost.html">makePost</a> command and loaded with <a href="PM_
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>x</dt>
-<dd><p>Data to analyze.  This can be specified in a number of ways.</p><ul><li><p>It can be the run number, e.g. 3, that has been previously loaded with <code><a href="PMload.html">PMload</a></code>.
+<dd><p>Data to analyze.  This can be specified in a number of ways.</p><ul><li><p>It can be the run number, e.g. 3, that has been previously loaded with <a href="PM_load.html">PM_load</a>.
 Either the mdata file from the run (NPAG or IT2B) can be used (default) or
-the post object can be used (NPAG only) by specifying <code>postPred = T</code> below.  If <code>x</code> is a run number that corresponds
-to both an NPAG and IT2B run which have been previously loaded into memory with <code>PMload</code>, the NPAG run will be used.</p></li>
-<li><p>It can be the run number of a run that has <em>not</em> been previously loaded with <code><a href="PMload.html">PMload</a></code>.
-In this case, the current working directory should be the Runs folder as <code>makeNCA</code> will call <code>PMload</code>.</p></li>
-<li><p>It can be the specific name of an mdata.x file already loaded into memory with <code><a href="PMload.html">PMload</a></code>, e.g. mdata.3.  Note
+the post object can be used (NPAG only) by specifying <code>postPred = T</code> below.  If x is a run number that corresponds
+to both an NPAG and IT2B run which have been previously loaded into memory with <a href="PM_load.html">PM_load</a>, the NPAG run will be used.</p></li>
+<li><p>It can be the run number of a run that has <em>not</em> been previously loaded with <a href="PM_load.html">PM_load</a>.
+In this case, the current working directory should be the Runs folder as makeNCA will call <a href="PM_load.html">PM_load</a>.</p></li>
+<li><p>It can be the specific name of an mdata.x file already loaded into memory with <a href="PM_load.html">PM_load</a>, e.g. mdata.3.  Note
 that quotation marks are not necessary since mdata.3 is an object, not a label/character vector.</p></li>
 <li><p>Finally, it can be the name of a Pmetrics data file in the current working directory, which will be loaded with
-<code><a href="PMreadMatrix.html">PMreadMatrix</a></code> and analyzed, e.g. “data.csv”.  In this case, quotation marks are reqired, because <code>x</code>
+<a href="PMreadMatrix.html">PMreadMatrix</a> and analyzed, e.g. "data.csv".  In this case, quotation marks are reqired, because <code>x</code>
 is now a character vector specifying the filename of the file to load.</p></li>
 </ul></dd>
 
@@ -119,7 +119,8 @@ used to supply the raw data file.</p></dd>
 
 
 <dt>exclude</dt>
-<dd><p>A vector of subject IDs to exclude in the NCA, e.g. c(4,6:14,16:20). When <code>postPred</code> is <code>TRUE</code>, any subject(s) excluded from the IT2B/NPAG run will be excluded as well.</p></dd>
+<dd><p>A vector of subject IDs to exclude in the NCA, e.g. c(4,6:14,16:20).
+When <code>postPred</code> is <code>TRUE</code>, any subject(s) excluded from the IT2B/NPAG run will be excluded as well.</p></dd>
 
 
 <dt>input</dt>

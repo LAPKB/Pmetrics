@@ -68,7 +68,7 @@ Loads all the data from an NPAG or IT2B run."><meta property="og:image" content=
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">PM_load</span><span class="op">(</span><span class="va">run</span>, <span class="va">file</span>, remote <span class="op">=</span> <span class="cn">F</span>, <span class="va">server_address</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">PM_load</span><span class="op">(</span><span class="va">run</span>, <span class="va">file</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -88,17 +88,7 @@ for a file named "other.Rdata". <code>PM_load(file = "other.Rdata")</code> will 
 current working directory, since <code>run</code> is missing. If <code>file</code> is missing,
 Pmetrics will attempt to find a "PMout.Rdata" or the older "NPAGout.Rdata" or
 "IT2Bout.Rdata" files in either the current working directory (if <code>run</code> is not
-specified) or the <code>run/outputs</code> folder, if <code>run</code> is provided.</p></dd>
-
-
-<dt>remote</dt>
-<dd><p>Default is <code>FALSE</code>.  Set to <code>TRUE</code> if loading results of an NPAG run on remote server.
-See <a href="NPrun.html">NPrun</a>. Currently remote runs are not configured for IT2B or the Simulator.</p></dd>
-
-
-<dt>server_address</dt>
-<dd><p>If missing, will use the default server address returned by getPMoptions().
-Pmetrics will prompt the user to set this address the first time the <code>remote</code> argument is set to <code>TRUE</code>
+specified) or the <code>run/outputs</code> folder, if <code>run</code> is provided.
 in <a href="NPrun.html">NPrun</a>.</p></dd>
 
 </dl></div>

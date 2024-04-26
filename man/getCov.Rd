@@ -7,7 +7,8 @@
 getCov(mdata)
 }
 \arguments{
-\item{mdata}{A \link{PM_data} or \emph{PMmatrix} object}
+\item{mdata}{A \link{PM_data} object. It can be other data frames but the results
+will likely not be meaningful.}
 }
 \value{
 A list with named items: \emph{ncov, covnames, covstart, covend}.
@@ -15,10 +16,12 @@ A list with named items: \emph{ncov, covnames, covstart, covend}.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
-Extracts covariate information from a Pmetrics data objects.
+Extracts covariate information from a Pmetrics data object.
 }
 \details{
-When given a \link{PM_data} or \emph{PMmatrix} object, will return a list
+The function subtracts the number of fixed columns in a standard data format,
+currently 14, from the total number of columns in \code{mdata} and queries
+the remaining columns.  When given a \link{PM_data} object, will return a list
 with the number of covariates, their names, and the starting and
 ending column numbers
 }
