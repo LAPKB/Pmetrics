@@ -76,9 +76,9 @@ PM_fit <- R6::R6Class("PM_fit",
         if (inherits(self$model, "PM_model_legacy")) {
           cat(sprintf("Runing Legacy"))
           if (engine == "npag") {
-            Pmetrics::NPrun(self$model$legacy_file_path, self$data$standard_data, ...)
+            NPrun(self$model$legacy_file_path, self$data$standard_data, ...)
           } else if (engine == "it2b") {
-            Pmetrics::ITrun(self$model$legacy_file_path, self$data$standard_data, ...)
+            ITrun(self$model$legacy_file_path, self$data$standard_data, ...)
           } else {
             endNicely(paste0("Unknown engine: ", engine, ". \n"))
           }
@@ -87,9 +87,9 @@ PM_fit <- R6::R6Class("PM_fit",
           model_path <- self$model$write(engine = engine)
           cat(sprintf("Creating model file at: %s\n", model_path))
           if (engine == "npag") {
-            Pmetrics::NPrun(model_path, self$data$standard_data, ...)
+            NPrun(model_path, self$data$standard_data, ...)
           } else {
-            Pmetrics::ITrun(model_path, self$data$standard_data, ...)
+            ITrun(model_path, self$data$standard_data, ...)
           }
         }
       } else if (getPMoptions()$backend == "rust") {

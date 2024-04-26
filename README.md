@@ -1,5 +1,6 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- update README.md with devtools::build_readme() -->
 
 # Overview <a href="https://lapkb.github.io/Pmetrics/"><img src="man/figures/logo.png" align="right" height="139" alt="Pmetrics website" /></a>
 

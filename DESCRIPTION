@@ -3,17 +3,7 @@ License: GPL (>= 3)
 Title: Pmetrics for Population Modeling and Simulation
 Type: Package
 Roxygen: list(markdown = TRUE)
-Description: Parametric and non-parametric
-    pharmacometric modeling and simulation software package.
-    This package contains functions to run and
-    analyze the output from all three components of the
-    Pmetrics software suite for population pharmacometric
-    data analysis: 1) IT2B (Iterative Two-Stage Bayesian)
-    for parametric models; 2) NPAG (Non-parametric Adaptive
-    Grid) for non-paramametric models; 3) Simulator for
-    semi-parametric Monte-Carlo simulations. It includes
-    source code from the NPDE package by Emanuelle Comets, et al,
-    which used to be available on CRAN.
+Description: Pmetrics is short for pharmacometrics, the discipline of modeling drug kinetics and effects on biologic systems, including disease progression. Models can be used to simulate novel therapeutic dosing regimens and/or populations, informing trial design and dosing strategies. The package supports primarily non-parametric but also parametric pharmacometric modeling and simulation with functions to run and analyze the output from all three components of the Pmetrics software suite for population pharmacometric data analysis: 1) IT2B (Iterative Two-Stage Bayesian) for parametric models; 2) NPAG (Non-parametric Adaptive Grid) for non-paramametric models; 3) Simulator for semi-parametric Monte-Carlo simulations. 
 Authors@R: c(
   person("Michael", "Neely", email = "mneely@usc.edu", role = c("aut", "cre")),
   person("Julián", "Otálvaro", email = "juliandavid347@gmail.com", role = "aut"),
