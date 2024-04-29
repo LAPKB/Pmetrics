@@ -156,11 +156,11 @@ PM_data <- R6::R6Class("PM_data",
     #' @description
     #' Summary method
     #' @details
-    #' See [summary.PMmatrix].
-    #' @param ... Arguments passed to [summary.PMmatrix].
+    #' See [summary.PM_data].
+    #' @param ... Arguments passed to [summary.PM_data].
     summary = function(...) {
       if (!is.null(self$standard_data)) {
-        summary.PMmatrix(self$standard_data, ...)
+        summary.PM_data(self, ...)
       } else {
         cat("Create a validated PM_data object before summarizing.")
       }

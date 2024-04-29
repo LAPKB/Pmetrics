@@ -28,7 +28,7 @@ Julian Otalvaro and Michael Neely
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{results}}{Contains the raw results. See \link{makePTA}.}
+\item{\code{data}}{Contains the raw results. See \link{makePTA}.}
 }
 \if{html}{\out{</div>}}
 }

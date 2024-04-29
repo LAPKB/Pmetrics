@@ -1,3 +1,10 @@
+
+
+
+
+# PM_parse ----------------------------------------------------------------
+
+
 #' @title Parse Pmetrics output
 #' @description
 #' `r lifecycle::badge("experimental")`
@@ -14,6 +21,7 @@
 #' \item{post }{Written to the standard of PM_post}
 #' \item{cycles }{Written to the standard of PM_cycle}
 #' \item{final }{Written to the standard of PM_final}
+#' \item{cov }{Written to the standard of PM_cov}
 #'
 #' @seealso \code{\link{NPparse}}
 #' @import dplyr
@@ -80,7 +88,9 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
   return(NPcore)
 }
 
-# DATA
+
+# make_OP -----------------------------------------------------------------
+
 make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", config, version) {
   pred_raw <- data.table::fread(
     input = pred_file,
@@ -136,7 +146,9 @@ make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", config, versio
   return(op)
 }
 
-# POST
+
+# make_Post ---------------------------------------------------------------
+
 make_Post <- function(pred_file = "pred.csv", version) {
   raw <- data.table::fread(
     input = pred_file,
@@ -166,7 +178,10 @@ make_Post <- function(pred_file = "pred.csv", version) {
   return(post)
 }
 
-# POP
+
+
+# make_Pop ----------------------------------------------------------------
+
 make_Pop <- function(pred_file = "pred.csv", version) {
   raw <- data.table::fread(
     input = pred_file,
@@ -193,7 +208,7 @@ make_Pop <- function(pred_file = "pred.csv", version) {
   return(pop)
 }
 
-# FINAL
+# make_Final --------------------------------------------------------------
 make_Final <- function(theta_file = "theta.csv", config, post_file = "posterior.csv") {
   theta <- data.table::fread(
     input = theta_file,
@@ -203,6 +218,7 @@ make_Final <- function(theta_file = "theta.csv", config, post_file = "posterior.
     dec = ".",
     showProgress = TRUE
   )
+  
 
   post <- data.table::fread(
     input = post_file,
@@ -296,7 +312,9 @@ make_Final <- function(theta_file = "theta.csv", config, post_file = "posterior.
   return(final)
 }
 
-# CYCLES
+
+# make_Cycle --------------------------------------------------------------
+
 make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config, version) {
   raw <- data.table::fread(
     input = cycle_file,
@@ -382,7 +400,9 @@ make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config, 
   return(res)
 }
 
-#COV
+
+# make_Cov ----------------------------------------------------------------
+
 make_Cov <- function(final, data){
   if (is.null(data) | is.null(final)) {
     return(NULL)
@@ -405,7 +425,9 @@ make_Cov <- function(final, data){
   
 }
 
-# CONFIG
+
+# make_Config -------------------------------------------------------------
+
 make_Config <- function(settings_file) {
   fromJSON(settings_file)
 }
