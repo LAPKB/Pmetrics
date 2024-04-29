@@ -20,6 +20,7 @@ The output of \code{PM_parse} is a list containing the following elements
 \item{post }{Written to the standard of PM_post}
 \item{cycles }{Written to the standard of PM_cycle}
 \item{final }{Written to the standard of PM_final}
+\item{cov }{Written to the standard of PM_cov}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}

@@ -133,7 +133,7 @@ Summary method
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{summary.PMfinal}}
+\item{\code{...}}{Arguments passed to \link{summary.PM_final}}
 }
 \if{html}{\out{</div>}}
 }
@@ -154,7 +154,7 @@ Plot method
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{plot.PMfinal}}
+\item{\code{...}}{Arguments passed to \link{plot.PM_final}}
 }
 \if{html}{\out{</div>}}
 }
