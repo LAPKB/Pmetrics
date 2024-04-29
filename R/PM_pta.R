@@ -22,8 +22,8 @@
 PM_pta <- R6::R6Class(
   "PM_pta",
   public <- list(
-    #' @field results Contains the raw results. See [makePTA].
-    results = NULL,
+    #' @field data Contains the raw results. See [makePTA].
+    data = NULL,
     #' @description 
     #' Create a new `PM_pta` object.
     #' @param simdata One of two possibilities:
@@ -57,7 +57,7 @@ PM_pta <- R6::R6Class(
     #' Summarize the `PM_pta` object. See [summary.PMpta].
     #' @param ... Arguments passed to [summary.PMpta]
     summary = function(...) {
-      summary.PMpta(self, ...)
+      summary.PM_pta(self, ...)
     },
     #' @description
     #' Plot the `PM_pta` object. See [plot.PM_pta].
@@ -78,18 +78,13 @@ PM_pta <- R6::R6Class(
   ), # end public
   private = list(
     populate = function(pta){
-      self$results <- pta
+      self$data <- pta
       return(self)
     }
   ) # end private
 )
 
-#' @keywords internal
-#' @name PM_pta
-#' @export
-PM_pta$load <- function(file_name = "PMpta.rds") {
-  lifecycle::deprecate_warn("2.1.0", "PM_pta$load()", details = "Please use PM_pta$new() instead. ?PM_pta for details.")
-}
+
 
 #' @title Summarize PM_pta
 #' @description
@@ -107,4 +102,11 @@ PM_pta$load <- function(file_name = "PMpta.rds") {
 #' @export
 summary.PM_pta <- function(object, ...) {
   object$summary(...)
+}
+
+#' @keywords internal
+#' @name PM_pta
+#' @export
+PM_pta$load <- function(file_name = "PMpta.rds") {
+  lifecycle::deprecate_warn("2.1.0", "PM_pta$load()", details = "Please use PM_pta$new() instead. ?PM_pta for details.")
 }

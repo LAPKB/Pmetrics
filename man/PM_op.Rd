@@ -126,7 +126,7 @@ Summary method
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{summary.PMop}.
+See \link{summary.PM_op}.
 }
 
 }

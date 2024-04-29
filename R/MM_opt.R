@@ -2,29 +2,29 @@
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
-#' Computes 1 or more MM-optimal sampling times.
+#' Method for [PM_result] objects to computes 1 or more MM-optimal sampling times.
 #' @details
-#' Based on the mulitple-model optimization algorithm.
+#' Based on the multiple-model optimization algorithm, this method computes *nsamp* times where the concentration time profiles are the most separated, thereby minimizing the risk of choosing the incorrect Bayesian posterior for an individual. The algorithm was published as 
 #' Bayard, David S., and Michael Neely. "Experiment Design for Nonparametric
 #' Models Based on Minimizing Bayes Risk: Application to Voriconazole."
 #' Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017):
 #' 95–111. https://doi.org/10.1007/s10928-016-9498-5.
 #'
-#' @param poppar A [PM_result] object created by loading results of a prior NPAG run with [PM_load] or a *PMfinal* object made in legacy Pmetrics.
-#' @param model If `poppar` is  a [PM_result], the embedded model will be used and this argument is not required. For a legacy *PMfinal* `poppar`, `model` should be the name of a suitable model file in the working directory.
-#' The default is "model.txt".  
-#' @param data Either a [PM_data] object or character vector with the filename
-#' of a Pmetrics data file
-#' that contains template regimens and observation times.  The value for outputs
+#' @param poppar A [PM_result] object created by loading results of a prior NPAG run with [PM_load], which is used to supply population parameters.
+#' @param data One of two choices which will provide the template dosage and sampling regimens:
+#' * [PM_data] object
+#' * Character vector with the filename of a Pmetrics data file
+#' that contains template regimens and observation times.   
+#' 
+#' If `data` is missing, the default value of "data.csv" will be used and Pmetrics will try to open a so-named filed in teh current working directory. In either choice, the value for outputs
 #' can be coded as any number(s) other than -99.  The number(s) will be replaced in the simulator output with the simulated values.
 #' @param nsamp The number of MM-optimal sample times to compute; default is 1, but can be any number.  Values >4 will take an exponentially longer time.
 #' @param weight List whose names indicate the type of weighting, and values indicate the relative weight. Values should sum to 1.  Names can be any of the following:
-#' \itemize{
-#' \item `none` The default. MMopt times will be chosen to maximally discriminate all responses at all times.
-#' \item `AUC` MMopt times will be chosen to maximally discriminate AUC, regardless of the shape of the response profile.
-#' \item `max` MMopt times will be chosen to maximally discriminate maximum, regardless of the shape of the response profile.
-#' \item `min` MMopt times will be chosen to maximally discriminate minimum, regardless of the shape of the response profile.
-#' }
+#' * **none** The default. MMopt times will be chosen to maximally discriminate all responses at all times.
+#' * **AUC** MMopt times will be chosen to maximally discriminate AUC, regardless of the shape of the response profile.
+#' * **max** MMopt times will be chosen to maximally discriminate maximum, regardless of the shape of the response profile.
+#' * **min** MMopt times will be chosen to maximally discriminate minimum, regardless of the shape of the response profile.
+#'
 #' Any combination of AUC, max, and min can be chosen.  If "none" is specified, other
 #' weight types will be ignored and the relative value will be set to 1.
 #' For example,`list(auc = 0.5,max = 0.5)` or `list(auc = 0.2, min = 0.8)`.
@@ -45,66 +45,43 @@
 #' course of the simulation run should be deleted. Defaults to `TRUE`.
 #' This is primarily used for debugging.
 #' @param \dots Other parameters to pass to [SIMrun], which are not usually necessary.
-#' @return A object of class *MMopt* with 3 items.
-#' \item{sampleTime }{The MM-optimal sample times}
-#' \item{bayesRisk }{The Bayesian risk of mis-classifying a subject based on the sample times.  This
-#' is more useful for comparisons between sampling strategies, with minimization the goal.}
-#' \item{simdata }{A [PM_sim] object with the simulated profiles}
-#' \item{mmInt }{A list with the `mmInt` values, `NULL` if `mmInt` is missing.}
+#' @return A object of class *MM_opt* with 3 items.
+#' * **sampleTime** The MM-optimal sample times
+#' * **bayesRisk** The Bayesian risk of mis-classifying a subject based on the sample times.  This
+#' is more useful for comparisons between sampling strategies, with minimization the goal.
+#' * **simdata** A [PM_sim] object with the simulated profiles
+#' * **mmInt** A list with the `mmInt` values, `NULL` if `mmInt` is missing.
 #' @author Michael Neely
-#' @seealso [SIMrun], [PM_sim], [plot.MMopt], [print.MMopt]
-#' @export
+#' @seealso [PM_result], [PM_sim], [plot.MM_opt]
 
 
-MM_opt <- function(poppar, model, data, nsamp = 1, weight = list(none = 1),
+
+make_mmopt <- function(poppar, model, data, nsamp = 1, weight = list(none = 1),
                    predInt = 0.5, mmInt, outeq = 1, clean = TRUE, ...) {
-  if (inherits(poppar, "PM_result")) {
-    if (!inherits(poppar$final, "NPAG")) {
-      stop("Prior must be NPAG result.")
-    }
-    PMres <- TRUE
-    popPoints <- poppar$final$popPoints
-  } else {
-    if (!inherits(poppar, "NPAG")) {
-      stop("Prior must be NPAG result.")
-    }
-    PMres <- FALSE
-    popPoints <- poppar$popPoints
-    if (missing(model)) {
-      model <- "model.txt"
-    }
+  if (!inherits(poppar, "PM_result")) {
+    stop("Poppar must be a PM_result object obtained with PM_load().")
+  }
+  if (!inherits(poppar$final, "NPAG")) {
+    stop("Prior must be NPAG result.")
   }
   
+  popPoints <- poppar$final$popPoints
+  model <- poppar$model
+  
   if (missing(data)) {
-    data <- "data.txt"
+    data <- "data.csv"
   }
   
   # remove prior simulations if they exist
   old <- Sys.glob("MMsim*.txt")
   invisible(file.remove(old))
   # simulate each point
+  simdata <- poppar$sim(data = data, nsim = 0, 
+                        predInt = predInt, obsNoise = NA, 
+                        outname = "MMsim", quiet = TRUE, 
+                        combine = TRUE,
+                        clean = FALSE)
   
-  if(PMres){
-    simdata <- poppar$sim(data = data, nsim = 0, 
-                          predInt = predInt, obsNoise = NA, 
-                          outname = "MMsim", quiet = TRUE, 
-                          combine = TRUE,
-                          clean = FALSE)
-  } else {
-    simdata <- PM_sim$new(poppar = poppar, 
-                          data = data, model = model,
-                          nsim = 0, 
-                          predInt = predInt, obsNoise = NA, 
-                          outname = "MMsim", quiet = TRUE, 
-                          combine = TRUE )
-  }
-  # SIMrun(
-  #   poppar = poppar, model = model, data = data, nsim = 0,
-  #   predInt = predInt, obsNoise = NA, outname = "MMsim", quiet = T, ...
-  # )
-  # # parse the simulated output
-  # simdata <- SIMparse("MMsim*.txt", combine = T, quiet = T)
-  # simdata$obs <- simdata$obs[simdata$obs$outeq == outeq, ]
   
   simdata$obs <- simdata$obs %>% filter(outeq == !!outeq)
   
@@ -204,7 +181,7 @@ MM_opt <- function(poppar, model, data, nsamp = 1, weight = list(none = 1),
     bayesRisk = brisk[nsamp], Cbar = Cbar,
     simdata = simdata_full, mmInt = mmInt
   )
-  class(mmopt) <- c("MMopt", "list")
+  class(mmopt) <- c("MM_opt", "list")
   
   if (clean) {
     invisible(file.remove(Sys.glob(c("fort.*", "*.Z3Q", "*.ZMQ", 

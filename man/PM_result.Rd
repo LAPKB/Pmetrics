@@ -65,7 +65,7 @@ new validation results.}
 \item \href{#method-PM_result-save}{\code{PM_result$save()}}
 \item \href{#method-PM_result-validate}{\code{PM_result$validate()}}
 \item \href{#method-PM_result-step}{\code{PM_result$step()}}
-\item \href{#method-PM_result-MM_opt}{\code{PM_result$MM_opt()}}
+\item \href{#method-PM_result-mmopt}{\code{PM_result$mmopt()}}
 \item \href{#method-PM_result-load}{\code{PM_result$load()}}
 \item \href{#method-PM_result-clone}{\code{PM_result$clone()}}
 }
@@ -264,20 +264,38 @@ and covariates.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_result-MM_opt"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_result-MM_opt}{}}}
-\subsection{Method \code{MM_opt()}}{
-Calculate optimal sample times from result and template data file.
+\if{html}{\out{<a id="method-PM_result-mmopt"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-mmopt}{}}}
+\subsection{Method \code{mmopt()}}{
+Compute 1 or more MM-optimal sampling times.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$MM_opt(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$mmopt(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{MM_opt}.}
+\item{\code{...}}{Parameters to pass to \link{make_mmopt}}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Based on the multiple-model optimization algorithm, this method computes \emph{nsamp} times where the concentration time profiles are the most separated, thereby minimizing the risk of choosing the incorrect Bayesian posterior for an individual. The algorithm was published as
+Bayard, David S., and Michael Neely. "Experiment Design for Nonparametric
+Models Based on Minimizing Bayes Risk: Application to Voriconazole."
+Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017):
+95–111. https://doi.org/10.1007/s10928-016-9498-5.
+}
+
+\subsection{Returns}{
+A object of class \emph{MM_opt} with 3 items.
+\itemize{
+\item \strong{sampleTime} The MM-optimal sample times
+\item \strong{bayesRisk} The Bayesian risk of mis-classifying a subject based on the sample times.  This
+is more useful for comparisons between sampling strategies, with minimization the goal.
+\item \strong{simdata} A \link{PM_sim} object with the simulated profiles
+\item \strong{mmInt} A list with the \code{mmInt} values, \code{NULL} if \code{mmInt} is missing.
+}
 }
 }
 \if{html}{\out{<hr>}}
