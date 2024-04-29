@@ -1,3 +1,10 @@
+#Use menu item Code -> Jump To... for rapid navigation
+
+
+
+# PM_result ---------------------------------------------------------------
+
+
 #' @title Results of a Pmetrics run
 #'
 #' @description
@@ -45,7 +52,7 @@ PM_result <- R6::R6Class(
     #' `$save` method on the augmented `PM_result` object to save it with the
     #' new validation results.
     valid = NULL,
-
+    
     #' @description
     #' Create new object populated with data from previous run
     #' @details
@@ -87,7 +94,7 @@ PM_result <- R6::R6Class(
       }
       return(self)
     },
-
+    
     #' @description
     #' Plot generic function based on type
     #' @param type Type of plot based on class of object
@@ -99,7 +106,7 @@ PM_result <- R6::R6Class(
         self[[type]]$plot(...)
       }
     },
-
+    
     #' @description
     #' Summary generic function based on type
     #' @param type Type of summary based on class of object
@@ -111,7 +118,7 @@ PM_result <- R6::R6Class(
         self[[type]]$summary(...)
       }
     },
-
+    
     #' @description
     #' AUC generic function based on type
     #' @param type Type of AUC based on class of object
@@ -122,7 +129,7 @@ PM_result <- R6::R6Class(
       }
       self[[type]]$auc(...)
     },
-
+    
     #' @description
     #' Perform non-compartmental analysis
     #' @details
@@ -131,7 +138,7 @@ PM_result <- R6::R6Class(
     nca = function(...) {
       make_NCA(self, ...)
     },
-
+    
     #' @description
     #' Simulates using the self$final object.
     #' For parameter information refer to [SIMrun]. It will return a `PM_sim` object
@@ -144,7 +151,7 @@ PM_result <- R6::R6Class(
       self$final <- bk_final
       return(sim)
     },
-
+    
     #' @description
     #' Save the current PM_result object to an .Rdata file.
     #' @details
@@ -179,7 +186,7 @@ PM_result <- R6::R6Class(
       }
       if (missing(file)) {
         # if(is.null(self$NPdata$backend)){
-          file <- "PMout.Rdata"
+        file <- "PMout.Rdata"
         # } else {
         #   file <- "NPcore.Rdata"
         # }
@@ -196,7 +203,7 @@ PM_result <- R6::R6Class(
       )
       save(PMout, file = paste0(outputfolder, "/", file))
     },
-
+    
     #' @description
     #' Validate the result by internal simulation methods.
     #' @param ... Arguments passed to [make_valid].
@@ -204,7 +211,7 @@ PM_result <- R6::R6Class(
       self$valid <- PM_valid$new(self, ...)
       self$valid
     },
-
+    
     #' @description
     #' Conduct stepwise linear regression of Bayesian posterior parameter values
     #' and covariates.
@@ -212,14 +219,27 @@ PM_result <- R6::R6Class(
     step = function(...) {
       PMstep(self$cov$data, ...)
     },
-
+    
     #' @description
-    #' Calculate optimal sample times from result and template data file.
-    #' @param ... Arguments passed to [MM_opt].
-    MM_opt = function(...) {
-      MM_opt(self, ...)
+    #' Compute 1 or more MM-optimal sampling times.
+    #' @details
+    #' Based on the multiple-model optimization algorithm, this method computes *nsamp* times where the concentration time profiles are the most separated, thereby minimizing the risk of choosing the incorrect Bayesian posterior for an individual. The algorithm was published as 
+    #' Bayard, David S., and Michael Neely. "Experiment Design for Nonparametric
+    #' Models Based on Minimizing Bayes Risk: Application to Voriconazole."
+    #' Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017):
+    #' 95–111. https://doi.org/10.1007/s10928-016-9498-5.
+    #'
+    #' @param ... Parameters to pass to [make_mmopt]
+    #' @return A object of class *MM_opt* with 3 items.
+    #' * **sampleTime** The MM-optimal sample times
+    #' * **bayesRisk** The Bayesian risk of mis-classifying a subject based on the sample times.  This
+    #' is more useful for comparisons between sampling strategies, with minimization the goal.
+    #' * **simdata** A [PM_sim] object with the simulated profiles
+    #' * **mmInt** A list with the `mmInt` values, `NULL` if `mmInt` is missing.
+    mmopt = function(...) {
+      make_mmopt(self, ...)
     },
-
+    
     #' @description
     #' `r lifecycle::badge("deprecated")`
     #'
@@ -239,6 +259,10 @@ PM_result <- R6::R6Class(
 PM_result$load <- function(...) {
   lifecycle::deprecate_warn("2.1.0", "PM_result$load()", details = "Please use PM_load() instead. ?PM_load for details.")
 }
+
+
+# PM_op -------------------------------------------------------------------
+
 
 #' @title Observed vs. predicted data
 #'
@@ -326,10 +350,10 @@ PM_op <- R6::R6Class(
     #' @description
     #' Summary method
     #' @details
-    #' See [summary.PMop].
+    #' See [summary.PM_op].
     #' @param ... Arguments passed to [summary.PMop]
     summary = function(...) {
-      summary.PMop(self$data, ...)
+      summary.PM_op(self$data, ...)
     },
     #' @description
     #' Calculate AUC
@@ -343,23 +367,27 @@ PM_op <- R6::R6Class(
   )
 )
 
-#' @title Wrapper function for summmary.PMop
-#'
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' This redirects to summary.PMop for PM_op R6 objects
-#'
-#' @details See [summary.PMop]. Alternative way to summarize is
-#' `PM_result$op$summary()`.
-#'
-#' @param object The *PM_op* object to summarize
-#' @param ... Arguments passed to [summary.PMop]
-#' @return A [summary.PMop] object
-#' @export
-summary.PM_op <- function(object, ...) {
-  object$summary(...)
-}
+#' #' @title Wrapper function for summmary.PMop
+#' #'
+#' #' @description
+#' #' `r lifecycle::badge("stable")`
+#' #'
+#' #' This redirects to summary.PMop for PM_op R6 objects
+#' #'
+#' #' @details See [summary.PMop]. Alternative way to summarize is
+#' #' `PM_result$op$summary()`.
+#' #'
+#' #' @param object The *PM_op* object to summarize
+#' #' @param ... Arguments passed to [summary.PMop]
+#' #' @return A [summary.PMop] object
+#' #' @export
+#' summary.PM_op <- function(object, ...) {
+#'   object$summary(...)
+#' }
+
+
+# PM_post -----------------------------------------------------------------
+
 
 #' @title Individual Bayesian posterior predictions at short intervals
 #'
@@ -428,6 +456,10 @@ PM_post <- R6::R6Class(
     }
   )
 )
+
+
+# PM_final ----------------------------------------------------------------
+
 
 #' @title Final Cycle Population Values
 #'
@@ -550,39 +582,42 @@ PM_final <- R6::R6Class(
     #' Summary method
     #' @details
     #' See [summary.PMfinal].
-    #' @param ... Arguments passed to [summary.PMfinal]
+    #' @param ... Arguments passed to [summary.PM_final]
     summary = function(...) {
-      summary.PMfinal(self, ...)
+      summary.PM_final(self, ...)
     },
     #' @description
     #' Plot method
     #' @details
     #' See [plot.PMfinal].
-    #' @param ... Arguments passed to [plot.PMfinal]
+    #' @param ... Arguments passed to [plot.PM_final]
     plot = function(...) {
       plot.PM_final(self, ...)
     }
   )
 )
 
-#' @title Wrapper function for summmary.PMfinal
-#'
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' This redirects to summary.PMfinal for PM_final R6 objects
-#'
-#' @details
-#' See [summary.PMfinal]. Alternative way to summarize is
-#' `PM_result$final$summary()`.
-#'
-#' @param object The *PM_final* object to summarize
-#' @param ... Arguments passed to [summary.PMfinal]
-#' @return A [summary.PMfinal] object
-#' @export
-summary.PM_final <- function(object, ...) {
-  object$summary(...)
-}
+#' #' @title Wrapper function for summmary.PMfinal
+#' #'
+#' #' @description
+#' #' `r lifecycle::badge("stable")`
+#' #'
+#' #' This redirects to summary.PMfinal for PM_final R6 objects
+#' #'
+#' #' @details
+#' #' See [summary.PMfinal]. Alternative way to summarize is
+#' #' `PM_result$final$summary()`.
+#' #'
+#' #' @param object The *PM_final* object to summarize
+#' #' @param ... Arguments passed to [summary.PMfinal]
+#' #' @return A [summary.PMfinal] object
+#' #' @export
+#' summary.PM_final <- function(object, ...) {
+#'   object$summary(...)
+#' }
+
+
+# PM_cycle ----------------------------------------------------------------
 
 
 #' @title Pmetrics Run Cycle Information
@@ -659,6 +694,10 @@ PM_cycle <- R6::R6Class(
   )
 )
 
+
+# PM_pop ------------------------------------------------------------------
+
+
 #' @title Population predictions at short intervals
 #'
 #' @description
@@ -727,6 +766,10 @@ PM_pop <- R6::R6Class(
   )
 )
 
+
+# PM_cov ------------------------------------------------------------------
+
+
 #' @title Contains covariate data
 #'
 #' @description
@@ -776,10 +819,10 @@ PM_cov <- R6::R6Class(
     #' @description
     #' Summary method
     #' @details
-    #' See [summary.PMcov].
-    #' @param ... Arguments passed to [summary.PMcov]
+    #' See [summary.PM_cov].
+    #' @param ... Arguments passed to [summary.PM_cov]
     summary = function(...) {
-      summary.PMcov(self$data, ...)
+      summary.PM_cov(self$data, ...)
     },
     #' @description
     #' Plot method
@@ -800,22 +843,22 @@ PM_cov <- R6::R6Class(
   )
 )
 
-#' @title Wrapper function for summmary.PMcov
-#'
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' This redirects to summary.PMcov for PM_final R6 objects
-#'
-#' @details
-#' See [summary.PMcov]. Alternative way to summarize is
-#' `PM_result$cov$summary()`.
-#'
-#' @param object The *PM_cov* object to summarize
-#' @param ... Arguments passed to [summary.PMcov]
-#' @return A [summary.PMcov] object
-#' @author Michael Neely, Julian Otalvaro
-#' @export
-summary.PM_cov <- function(object, ...) {
-  object$summary(...)
-}
+#' #' @title Wrapper function for summmary.PMcov
+#' #'
+#' #' @description
+#' #' `r lifecycle::badge("stable")`
+#' #'
+#' #' This redirects to summary.PMcov for PM_final R6 objects
+#' #'
+#' #' @details
+#' #' See [summary.PMcov]. Alternative way to summarize is
+#' #' `PM_result$cov$summary()`.
+#' #'
+#' #' @param object The *PM_cov* object to summarize
+#' #' @param ... Arguments passed to [summary.PMcov]
+#' #' @return A [summary.PMcov] object
+#' #' @author Michael Neely, Julian Otalvaro
+#' #' @export
+#' summary.PM_cov <- function(object, ...) {
+#'   object$summary(...)
+#' }

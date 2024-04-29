@@ -101,12 +101,12 @@ Summary method
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{summary.PMcov}}
+\item{\code{...}}{Arguments passed to \link{summary.PM_cov}}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{summary.PMcov}.
+See \link{summary.PM_cov}.
 }
 
 }

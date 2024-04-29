@@ -241,12 +241,12 @@ Summary method
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{summary.PMmatrix}.}
+\item{\code{...}}{Arguments passed to \link{summary.PM_data}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{summary.PMmatrix}.
+See \link{summary.PM_data}.
 }
 
 }
