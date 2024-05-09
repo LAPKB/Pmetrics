@@ -32,14 +32,14 @@
 
 PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
   # Default paths
-  pred_file <- paste(wd, "pred.csv", sep = "/")
-  obs_file <- paste(wd, "obs.csv", sep = "/")
-  config_file <- paste(wd, "settings.json", sep = "/")
-  cycle_file <- paste(wd, "cycles.csv", sep = "/")
-  theta_file <- paste(wd, "theta.csv", sep = "/")
-  post_file <- paste(wd, "posterior.csv", sep = "/")
+  # pred_file <- paste(wd, "pred.csv", sep = "/")
+  # obs_file <- paste(wd, "obs.csv", sep = "/")
+  # config_file <- paste(wd, "settings.json", sep = "/")
+  # cycle_file <- paste(wd, "cycles.csv", sep = "/")
+  # theta_file <- paste(wd, "theta.csv", sep = "/")
+  # post_file <- paste(wd, "posterior.csv", sep = "/")
   
-  if(any(class(fit) == "PM_fit")) {
+  if(inherits(fit,"PM_fit")) {
     # fit is a PM_fit object, use it directly
     fit_object <- fit
   } else if(is.character(fit) && file.exists(fit)) {
@@ -50,16 +50,16 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
     fit_object <- NULL
   }
 
-  config = make_Config(config_file)
-  op <- make_OP(pred_file = pred_file, obs_file = obs_file, config = config)
-  post <- make_Post(pred_file = pred_file)
-  pop <- make_Pop(pred_file = pred_file)
-  final <- make_Final(theta_file = theta_file, config = config, post_file = post_file)
-  cycle <- make_Cycle(cycle_file = cycle_file, config = config)
+  # config = make_Config(config_file)
   
+  op <- PM_op$new() #assumes pred.csv, obs.csv, and settings.json are in wd
+  final <- PM_final$new() #assumes theta.csv and posterior.csv are in wd
+  cycle <- PM_cycle$new() #asumes cycles.csv, obs.csv, and settings.json are in wd
+  pop <- PM_pop$new() #assumes pred.csv is in wd
+  post <- PM_post$new() #assumes pred.csv is in wd
   cov <- NULL
   if (!is.null(fit)) {
-    cov <- make_Cov(final = final, data = fit$data)
+    cov <- PM_cov$new(list(final = final, data = fit$data))
   }
   
 
@@ -67,6 +67,7 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
     data = fit$data,
     model = fit$model,
     op = op,
+    cov = cov,
     post = post,
     pop = pop,
     cycle = cycle,
@@ -89,341 +90,9 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
 }
 
 
-# make_OP -----------------------------------------------------------------
-
-make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", config, version) {
-  pred_raw <- data.table::fread(
-    input = pred_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  obs_raw <- data.table::fread(
-    input = obs_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  poly <- config$error$poly
-
-  op <- obs_raw %>%
-    left_join(pred_raw, by = c("id", "time", "outeq")) %>%
-    pivot_longer(cols = c(popMean, popMedian, postMean, postMedian)) %>%
-    mutate(
-      icen = case_when(
-        name == "popMean" ~ "mean",
-        name == "popMedian" ~ "median",
-        name == "postMean" ~ "mean",
-        name == "postMedian" ~ "median",
-      )
-    ) %>%
-    mutate(
-      pred.type = case_when(
-        name == "popMean" ~ "pop",
-        name == "popMedian" ~ "pop",
-        name == "postMean" ~ "post",
-        name == "postMedian" ~ "post",
-      )
-    ) %>%
-    select(-name) %>%
-    dplyr::rename(pred = value) %>%
-    mutate(d = pred - obs) %>%
-    mutate(ds = d * d) %>%
-    mutate(obsSD = poly[1] + poly[2] * obs + poly[3] * (obs^2) + poly[4] * (obs^3)) %>%
-    mutate(wd = d / obsSD) %>%
-    mutate(wds = wd * wd) %>%
-    # HARDCODED
-    mutate(block = 1)
-
-
-  class(op) <- c("PMop", "data.frame")
-  return(op)
-}
-
-
-# make_Post ---------------------------------------------------------------
-
-make_Post <- function(pred_file = "pred.csv", version) {
-  raw <- data.table::fread(
-    input = pred_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  post <- raw %>%
-    select(-popMedian, -popMean) %>%
-    pivot_longer(
-      cols = c(postMedian, postMean),
-      values_to = "pred"
-    ) %>%
-    dplyr::rename(icen = name) %>%
-    mutate(icen = case_when(
-      icen == "postMedian" ~ "median",
-      icen == "postMean" ~ "mean"
-    )) %>%
-    # Hardcoded for now
-    mutate(block = 1) %>%
-    relocate(id, time, icen, outeq, pred, block)
-
-  class(post) <- c("PMpost", "data.frame")
-  return(post)
-}
 
 
 
-# make_Pop ----------------------------------------------------------------
-
-make_Pop <- function(pred_file = "pred.csv", version) {
-  raw <- data.table::fread(
-    input = pred_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  pop <- raw %>%
-    select(-postMedian, -postMean) %>%
-    pivot_longer(cols = c(popMedian, popMean), values_to = "pred") %>%
-    dplyr::rename(icen = name) %>%
-    mutate(icen = case_when(
-      icen == "popMedian" ~ "median",
-      icen == "popMean" ~ "mean"
-    )) %>%
-    # Hardcoded for now
-    mutate(block = 1) %>%
-    relocate(id, time, icen, outeq, pred, block)
-
-  class(pop) <- c("PMpop", "data.frame")
-  return(pop)
-}
-
-# make_Final --------------------------------------------------------------
-make_Final <- function(theta_file = "theta.csv", config, post_file = "posterior.csv") {
-  theta <- data.table::fread(
-    input = theta_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-  
-
-  post <- data.table::fread(
-    input = post_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  par_names <- names(theta)[names(theta) != "prob"]
-
-  # Pop
-  popMean <- theta %>%
-    summarise(across(.cols = -prob, .fns = function(x) {
-      mean(x)
-    }))
-
-  popSD <- theta %>%
-    summarise(across(.cols = -prob, .fns = function(x) {
-      sd(x)
-    }))
-
-  popCov <- theta %>%
-    select(-prob) %>%
-    cov()
-
-  popCor <- theta %>%
-    select(-prob) %>%
-    cor()
-
-  popMedian <- theta %>%
-    summarise(across(-prob, \(x) median(x)))
-
-  # Posterior
-
-  postMean <- post %>%
-    group_by(id) %>%
-    summarise(across(.cols = -c(point, prob), .fns = function(x) {
-      weighted.mean(x = x, w = prob)
-    }))
-
-  postSD <- post %>%
-    group_by(id) %>%
-    summarise(across(.cols = -c(point, prob), .fns = function(x) {
-      sd(x)
-    }))
-
-  postVar <- post %>%
-    group_by(id) %>%
-    summarise(across(.cols = -c(point, prob), .fns = function(x) {
-      sd(x)**2
-    }))
-
-  # TODO: Add postCov, postCor, Post
-
-  postMed <- post %>%
-    #group_by(id) %>% 
-    filter(id==6) %>%
-    reframe(across(-c(point, prob), \(x) weighted_median(x, prob))) # in PMutilities
-
-  # TODO: Calculate shrinkage
-  shrinkage <- 1
-  # varEBD <- apply(postVar[,-1],2,mean) # Mean postVar / popVar
-  # sh <- varEBD/popVar
-
-  ab <- config$random %>%
-    unlist() %>%
-    matrix(ncol = 2, byrow = TRUE)
-
-  gridpts <- config$config$init_points
-
-  final <- list(
-    popPoints = theta,
-    popMean = popMean,
-    popSD = popSD,
-    popCV = popSD / popMean,
-    popVar = popSD**2,
-    popCov = popCov,
-    popCor = popCor,
-    popMedian = popMedian,
-    postMean = postMean,
-    postSD = postSD,
-    postMed = postMed,
-    gridpts = gridpts,
-    nsub = length(unique(post$id)),
-    ab = ab
-  )
-  class(final) <- c("PMfinal", "NPAG", "list")
-  
-  return(final)
-}
-
-
-# make_Cycle --------------------------------------------------------------
-
-make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config, version) {
-  raw <- data.table::fread(
-    input = cycle_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  obs_raw <- data.table::fread(
-    input = obs_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  cycle_data <- raw %>%
-    pivot_longer(cols = ends_with(c("mean", "median", "sd"))) %>%
-    separate_wider_delim(name, delim = ".", names = c("parameter", "statistic"))
-
-  num_params <- length(names(config$random)) + length(names(config$fixed))
-
-  aic <- 2 * num_params + raw$neg2ll
-  names(aic) <- raw$cycle
-  bic <- num_params * log(length(unique(obs_raw$id))) + raw$neg2ll
-  names(bic) <- raw$cycle
-
-  mean <- cycle_data %>%
-    filter(statistic == "mean") %>%
-    select(cycle, value, parameter) %>%
-    pivot_wider(names_from = parameter, values_from = value) %>%
-    arrange(cycle) %>%
-    mutate(across(.cols = -cycle, .fns = function(x) {
-      x / first(x)
-    }))
-
-  sd <- cycle_data %>%
-    filter(statistic == "sd") %>%
-    select(cycle, value, parameter) %>%
-    pivot_wider(names_from = parameter, values_from = value) %>%
-    arrange(cycle) %>%
-    mutate(across(.cols = -cycle, .fns = function(x) {
-      x / first(x)
-    }))
-
-  median <- cycle_data %>%
-    filter(statistic == "median") %>%
-    select(cycle, value, parameter) %>%
-    pivot_wider(names_from = parameter, values_from = value) %>%
-    arrange(cycle) %>%
-    mutate(across(.cols = -cycle, .fns = function(x) {
-      x / first(x)
-    }))
-  
-  n_out <- max(obs_raw$outeq)
-  n_cyc <- max(cycle_data$cycle)
-  gamlam <- tibble::as_tibble(raw$gamlam, .name_repair = "minimal") 
-  if(ncol(gamlam) == 1 & n_out > 1){gamlam <- cbind(gamlam, replicate((n_out-1),gamlam[,1]))} 
-  names(gamlam) <- as.character(1:ncol(gamlam))
-  gamlam <- gamlam %>% pivot_longer(cols = everything(), 
-                                                values_to = "value", names_to = "outeq") %>%
-    mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
-    select(cycle, value, outeq)
-  
-  converged <- any(cycle_data$converged)
-  
-  res <- list(
-    names = c(names(config$random), names(config$fixed), names(config$constant)),
-    cycnum = raw$cycle,
-    ll = raw$neg2ll,
-    gamlam = gamlam,
-    mean = mean,
-    sd = sd,
-    median = median,
-    aic = aic,
-    bic = bic,
-    converged = converged
-  )
-  class(res) <- c("PMcycle", "list")
-  return(res)
-}
-
-
-# make_Cov ----------------------------------------------------------------
-
-make_Cov <- function(final, data){
-  if (is.null(data) | is.null(final)) {
-    return(NULL)
-  }
-  data1 <- data$data %>% filter(!is.na(dose)) %>%
-    select(id, time, !!getCov(.)$covnames) %>% #in PMutitlities
-    tidyr::fill(-id, -time) %>%
-    dplyr::left_join(final$postMean, by = "id") %>% 
-    mutate(icen = "mean") 
-  data2 <- data$data %>% filter(!is.na(dose)) %>% 
-    select(id, time, !!getCov(.)$covnames) %>% 
-    tidyr::fill(-id, -time) %>%
-    dplyr::left_join(final$postMed, by = "id") %>% 
-    mutate(icen = "median") 
-  
-  res <- bind_rows(data1, data2)
-  class(res) <- c("PMcov", "data.frame")
-  
-  return(res)
-  
-}
 
 
 # make_Config -------------------------------------------------------------

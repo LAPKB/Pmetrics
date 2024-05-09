@@ -254,12 +254,12 @@
 
   # if parallel not specified, choose serial for algebraic/exact or parallel for ODE
   if (is.na(parallel)) {
-    parallel <- c(T, F)[1 + as.numeric(trans$N <= 0)]
+    parallel <- c(TRUE, FALSE)[1 + as.numeric(trans$N <= 0)]
   }
 
   # if parallel is true and in 32-bit, choose serial and warn
   if (parallel & getBits() == "32") {
-    parallel <- F
+    parallel <- FALSE
     cat("\nNote: Parallel processing is not available for 32-bit systems.\n")
   }
 
@@ -869,12 +869,12 @@ makeRdata <- function(wd, reportType) {
         cat("\nWARNING: The run did not complete successfully.\n")
       }))
       # make the posterior predictions
-      post <- suppressWarnings(tryCatch(makePost(NPdata = PMdata), error = function(e) {
+      post <- suppressWarnings(tryCatch(PM_post$new(PMdata), error = function(e) {
         e <- NULL
         cat("\nWARNING: error in extraction of posterior Bayesian predictions at time ttpred; 'PMpost' object not saved.\n\n")
       }))
       # make the population predictions
-      pop <- suppressWarnings(tryCatch(makePop(NPdata = PMdata), error = function(e) {
+      pop <- suppressWarnings(tryCatch(PM_pop$new(PMdata), error = function(e) {
         e <- NULL
         cat("\nWARNING: error in extraction of population predictions at time tpred; 'PMpop' object not saved.\n\n")
       }))
@@ -888,17 +888,17 @@ makeRdata <- function(wd, reportType) {
     cat("\n\n")
     flush.console()
     if (is.null(PMdata$nranfix)) PMdata$nranfix <- 0
-    op <- suppressWarnings(tryCatch(makeOP(PMdata), error = function(e) {
+    op <- suppressWarnings(tryCatch(PM_op$new(PMdata), error = function(e) {
       e <- NULL
-      cat("\nWARNING: error in extraction of observed vs. population predicted data; 'PMop' object not saved.\n\n")
+      cat("\nWARNING: error in extraction of observed vs. population predicted data; 'PM_op' object not saved.\n\n")
     }))
     
-    cycle <- suppressWarnings(tryCatch(makeCycle(PMdata), error = function(e) {
+    cycle <- suppressWarnings(tryCatch(PM_cycle$new(PMdata), error = function(e) {
       e <- NULL
       cat("\nWARNING: error in extraction of cycle information; 'PMcycle' object not saved.\n\n")
     }))
     
-    final <- suppressWarnings(tryCatch(makeFinal(PMdata), error = function(e) {
+    final <- suppressWarnings(tryCatch(PM_final$new(PMdata), error = function(e) {
       e <- NULL
       cat("\nWARNING: error in extraction of final cycle parameter values; 'PMfinal' object not saved.\n\n")
     }))
@@ -909,7 +909,7 @@ makeRdata <- function(wd, reportType) {
       mdata <- NA
     }
     
-    cov <- suppressWarnings(tryCatch(makeCov(PMdata), error = function(e) {
+    cov <- suppressWarnings(tryCatch(PM_cov$new(PMdata), error = function(e) {
       e <- NULL
       cat("\nWARNING: error in extraction of covariate-parameter data; 'PMcov' object not saved.\n\n")
     }))
