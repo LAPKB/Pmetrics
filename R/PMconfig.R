@@ -10,10 +10,10 @@ getPMpath <- function() {
 
 getBits <- function() {
   # figure out 32 or 64 bit
-  if (length(grep("64-bit", utils::sessionInfo())) > 0) {
-    return(64)
-  } else {
+  if (length(grep("32-bit", utils::sessionInfo())) > 0) {
     return(32)
+  } else {
+    return(64)
   }
 }
 

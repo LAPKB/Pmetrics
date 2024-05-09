@@ -1,3 +1,10 @@
+#Use menu item Code -> Jump To... for rapid navigation
+#Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
+
+
+# R6 ----------------------------------------------------------------------
+
+
 #' @title
 #' Object to define and run a model and data in Pmetrics
 #'
@@ -14,7 +21,8 @@
 #' @importFrom stringr str_glue
 #' @export
 
-PM_fit <- R6::R6Class("PM_fit",
+PM_fit <- R6::R6Class(
+  "PM_fit",
   public = list(
     #' @field data [PM_data] object
     data = NULL,

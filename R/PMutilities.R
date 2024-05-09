@@ -1686,8 +1686,8 @@ weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.side
       conf.level < 0 || conf.level > 1)) {
     stop("'conf.level' must be a single number between 0 and 1")
   }
-  # see if x is PMop$pop or PMop$post object
-  if (all(inherits(x, c("PMop", "data.frame"), which = T))) {
+  # see if x came from PM_op object
+  if (all(inherits(x, c("PM_op_data", "data.frame"), which = T))) {
     w <- 1 / x$obsSD**2
     x <- x$d
     mu <- 0
@@ -1954,9 +1954,9 @@ binaries.installed <- function() {
   # map(exists) %>% unlist() %>% all() %>% return()
 
   exists <- function(name) {
-    file.exists(paste(system.file("", package = "Pmetrics"), "compiledFortran", name, sep = "/"))
+    file.exists(paste0(system.file("", package = "Pmetrics"), "compiledFortran/", name))
   }
-  installed <- T
+  installed <- TRUE
   for (binary in c(
     "DOprep.exe", "mb2csv.exe", "pNPeng.o",
     "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",

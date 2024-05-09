@@ -58,23 +58,19 @@ PmetricsData::modEx$write("model.txt")
 \subsection{Method \code{new()}}{
 Build a new PM_model from a variety of inputs.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$new(model, ..., julia = F)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$new(model, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{model}}{This can be a quoted name of a model text file in the
-working directory which will be read and passed to Fortran engines unless
-\code{julia = TRUE} in which case is will be passed as a Julia model.
-It can be a list of lists that defines the model directly in R. Similarly,
-it can be a function that defines a Julia model directly in R. See the user
+working directory which will be read and passed to Fortran engines.
+It can be a list of lists that defines the model directly in R. It
+can also be a \link{PM_model} object, which will simply rebuild it. See the user
 manual for more help on directly defining models in R.}
 
-\item{\code{...}}{Additional arguments passed to creation of new Julia model.}
-
-\item{\code{julia}}{Controls whether a filename defines a Fortran or Julia model.
-Default is \code{FALSE}, i.e. using Fortran.}
+\item{\code{...}}{Not currently used.}
 }
 \if{html}{\out{</div>}}
 }

@@ -47,6 +47,14 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \item{\code{data}}{Data frame containing the data to be modeled}
 
 \item{\code{standard_data}}{Data frame containing standardized version of the data}
+
+\item{\code{pop}}{The \verb{$data} field from a \link{PM_pop} object. This makes it easy to add population predictions to a raw data plot. This field will be \code{NULL} until the \link{PM_data} object is added to the \link{PM_result} after a run. As examples:
+\itemize{
+\item \code{dat <- PM_data$new("data.csv")}. Here, \code{dat$pop} will be \code{NULL}.
+\item \code{run1 <- PM_load(1)}. Here, \code{run1$data$pop} will be the same as \code{run1$pop$data}.
+}}
+
+\item{\code{post}}{The \verb{$data} field from a \link{PM_post} object. See details in the \code{pop} argument above.}
 }
 \if{html}{\out{</div>}}
 }
@@ -77,8 +85,8 @@ Create new data object
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{data}}{A quoted name of a file with full path if not
-in the working directory, or an unquoted name of a data frame
-in the current R environment.}
+in the working directory, an unquoted name of a data frame
+in the current R environment, or a \link{PM_data} object, which will rebuild it.}
 
 \item{\code{dt}}{Pmetrics will try a variety of date/time formats. If all 16 of
 them fail, use this parameter to specify the correct format as a
@@ -100,13 +108,11 @@ Other date/time formats are possible. See \code{\link[lubridate:parse_date_time]
 \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
 
 \item{\code{validate}}{Check for errors. Default is \code{TRUE}. Strongly recommended.}
-
-\item{\code{...}}{Arguments to be passed further}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-Creation of a new \code{PM_data} objects from a file or
+Creation of a new \link{PM_data} objects from a file or
 a data frame. Data will be standardized and checked
 automatically to a fully specified, valid data object.
 }

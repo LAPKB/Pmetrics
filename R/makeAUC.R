@@ -54,11 +54,11 @@ makeAUC <- function(data,
 
   data_class <- which(
     inherits(data, c(
-      "PMsim", "PM_sim",
-      "PMop", "PM_op",
-      "PMpop", "PM_pop",
-      "PMpost", "PM_post",
-      "PM_data", "PMmatrix"
+      "PM_sim_data", "PM_sim",
+      "PM_op_data", "PM_op",
+      "PM_pop_data", "PM_pop",
+      "PM_post_data", "PM_post",
+      "PM_data_data", "PM_data"
     ), which = T) > 0
   ) # will be all zeros except matching class, undefined if none
 
@@ -72,15 +72,15 @@ makeAUC <- function(data,
       data$data %>% mutate(out = pred), # PM_pop
       data %>% mutate(out = pred), # PMpost
       data$data %>% mutate(out = pred), # PM_post
-      data$standard_data %>%
-        makePMmatrixBlock() %>%
-        filter(!is.na(out)), # PM_data
       data %>%
         makePMmatrixBlock() %>%
-        filter(!is.na(out)), # PMmatrix
+        filter(!is.na(out)), # PM_data_data
+      data$standard_data %>%
+        makePMmatrixBlock() %>%
+        filter(!is.na(out)) # PM_data
     )
   } else { # class not matched, so needs formula
-    if (missing(formula)) stop("\nPlease supply a formula of form 'out~time' for objects other than class PMsim, PMpost or PMop.")
+    if (missing(formula)) stop("\nPlease supply a formula of form 'out~time' for objects other than class PM_sim, PM_op, PM_pop, PM_post, or PM_data.")
     y.name <- as.character(attr(terms(formula), "variables")[2])
     x.name <- as.character(attr(terms(formula), "variables")[3])
     if (length(grep(y.name, names(data))) == 0) {
