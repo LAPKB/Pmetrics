@@ -14,6 +14,18 @@ After a run completes, results are stored on your hard drive. They are loaded
 back into R with \link{PM_load} to create the \link{PM_result} object, which contains both
 the results and functions to analyze or plot the result.
 }
+\examples{
+
+## ------------------------------------------------
+## Method `PM_result$mmopt`
+## ------------------------------------------------
+
+library(PmetricsData)
+mmopt1 <- NPex$mmopt(data = exData, limits = NA)
+mmopt1$summary()
+mmopt1$plot()
+
+}
 \author{
 Michael Neely, Julian Otalvaro
 }
@@ -37,7 +49,7 @@ Michael Neely, Julian Otalvaro
 
 \item{\code{cov}}{A \link{PM_cov} object}
 
-\item{\code{data}}{\link{PM_data} object representing the original .csv data file used in the run}
+\item{\code{data}}{\link{PM_data} object representing the original .csv data file used in the run. The predictions contained in the \verb{$data} fields from \verb{$pop} and \verb{$post} will be added to this \link{PM_data} object to permit easy addition of such predictions to raw data plots. See \link{plot.PM_data} for more details.}
 
 \item{\code{model}}{text string representing the original model file used in the run}
 
@@ -267,15 +279,70 @@ and covariates.
 \if{html}{\out{<a id="method-PM_result-mmopt"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-mmopt}{}}}
 \subsection{Method \code{mmopt()}}{
-Compute 1 or more MM-optimal sampling times.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
+Method to compute 1 or more MM-optimal sampling times.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$mmopt(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$mmopt(
+  data = NULL,
+  nsamp = 1,
+  weight = list(none = 1),
+  predInt = 0.5,
+  mmInt = NULL,
+  outeq = 1,
+  clean = TRUE,
+  ...
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Parameters to pass to \link{make_mmopt}}
+\item{\code{data}}{One of two choices which will provide the template dosage and sampling regimens:
+\itemize{
+\item \link{PM_data} object
+\item Character vector with the filename of a Pmetrics data file
+that contains template regimens and observation times.
+}
+
+If \code{data} is missing, the default value of "data.csv" will be used and Pmetrics will try to open a so-named filed in teh current working directory. In either choice, the value for outputs
+can be coded as any number(s) other than -99.  The number(s) will be replaced in the simulator output with the simulated values.}
+
+\item{\code{nsamp}}{The number of MM-optimal sample times to compute; default is 1, but can be any number.  Values >4 will take an exponentially longer time.}
+
+\item{\code{weight}}{List whose names indicate the type of weighting, and values indicate the relative weight. Values should sum to 1.  Names can be any of the following:
+\itemize{
+\item \strong{none} The default. MMopt times will be chosen to maximally discriminate all responses at all times.
+\item \strong{AUC} MMopt times will be chosen to maximally discriminate AUC, regardless of the shape of the response profile.
+\item \strong{max} MMopt times will be chosen to maximally discriminate maximum, regardless of the shape of the response profile.
+\item \strong{min} MMopt times will be chosen to maximally discriminate minimum, regardless of the shape of the response profile.
+}
+
+Any combination of AUC, max, and min can be chosen.  If "none" is specified, other
+weight types will be ignored and the relative value will be set to 1.
+For example,\code{list(auc = 0.5,max = 0.5)} or \code{list(auc = 0.2, min = 0.8)}.
+The default is \code{list(none = 1)}.}
+
+\item{\code{predInt}}{The interval in fractional hours for simulated predicted outputs at times other than those specified in the template \code{data}.
+The default is 0.5, which means there will be simulated outputs every 30 minutes from time 0 up
+to the maximal time in the template file.  You may also specify \code{predInt}
+as a vector of 3 values, e.g. \code{c(1,4,1)}, similar to the R command \link{seq}, where the
+first value is the start time, the second is the stop time, and the third is the
+step value.  Outputs for times specified in the template file will also be simulated.
+To simulate outputs \emph{only} at the output times in the template data (i.e. EVID=0 events), use \code{predInt = 0}.
+Note that the maximum number of predictions total is 594, so the interval must be sufficiently large to accommodate this for a given
+number of output equations and total time to simulate over.  If \code{predInt} is set so that this cap is exceeded, predictions will be truncated.}
+
+\item{\code{mmInt}}{Specify the time intervals from which MMopt times can be selected.
+These should only include simulated times specified by \code{predInt}.}
+
+\item{\code{outeq}}{Output equation to optimize}
+
+\item{\code{clean}}{Boolean parameter to specify whether temporary files made in the
+course of the simulation run should be deleted. Defaults to \code{TRUE}.
+This is primarily used for debugging.}
+
+\item{\code{...}}{Other parameters to pass to \link{SIMrun}, which are not usually necessary.}
 }
 \if{html}{\out{</div>}}
 }
@@ -297,6 +364,18 @@ is more useful for comparisons between sampling strategies, with minimization th
 \item \strong{mmInt} A list with the \code{mmInt} values, \code{NULL} if \code{mmInt} is missing.
 }
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{library(PmetricsData)
+mmopt1 <- NPex$mmopt(data = exData, limits = NA)
+mmopt1$summary()
+mmopt1$plot()
+
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-load"></a>}}

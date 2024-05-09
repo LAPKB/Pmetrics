@@ -1,0 +1,1196 @@
+#Use menu item Code -> Jump To... for rapid navigation
+#Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
+
+# R6 ----------------------------------------------------------------
+
+
+#' @title Final Cycle Population Values
+#'
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Contains final cycle information from run.
+#'
+#' @details
+#' The [PM_final] object is both a data field within a [PM_result], and itself an R6 object
+#' comprising data fields and associated methods suitable for analysis and plotting of 
+#' final cycle parameters. 
+#' 
+#' Because [PM_final] objects are automatically added to the [PM_result] at the end of a
+#' successful run, it is generally not necessary for users to generate [PM_final] objects
+#' themselves.
+#' 
+#' The main results are contained in the `$data` field,
+#' and it is this field which is passed to the `$plot` and `$summary` methods.
+#' You can use this `$data` field for custom manipulations, e.g. `probs <- run1$final$data$popPoints %>% select(prob)`.
+#' This will select the probabilities of the support points. 
+#' If you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
+#' into the R console and look online for instructions/tutorials in tidyverse, a
+#' powerful approach to data manipulation upon which Pmetrics is built.
+#' 
+#' To provide a more traditional experience in R,
+#' the `$data` field is also separated by list items into the other data fields within the R6 object, 
+#' e.g. `popMean` or `nsub`. This
+#' allows you to access them in an S3 way, e.g. `run1$final$popMean` if `run1` is a
+#' [PM_result] object.
+#'
+#' @author Michael Neely, Julian Otalvaro
+#' @export
+
+PM_final <- R6::R6Class(
+  "PM_final",
+  public = list(
+    #' @field popPoints (NPAG only) Data frame of the final cycle joint population density of grid points
+    #'  with column names equal to the name of each random parameter plus *prob* for the
+    #'  associated probability of that point
+    popPoints = NULL,
+    #' @field popMean The final cycle mean for each random parameter distribution
+    popMean = NULL,
+    #' @field popSD The final cycle standard deviation for each random parameter distribution
+    popSD = NULL,
+    #' @field popCV The final cycle coefficient of variation (SD/Mean) for each random parameter distribution
+    popCV = NULL,
+    #' @field popVar The final cycle variance for each random parameter distribution
+    popVar = NULL,
+    #' @field popCov The final cycle random parameter covariance matrix
+    popCov = NULL,
+    #' @field popCor The final cycle random parameter correlation matrix
+    popCor = NULL,
+    #' @field popMedian The final cycle median values for each random parameter,
+    #' i.e. those that have unknown mean and unknown variance, both of which are
+    #' fitted during the run
+    popMedian = NULL,
+    #' @field popRanFix The final cycle median values for each parameter that is
+    #' random but fixed to be the same for all subjects, i.e. unknown mean, zero
+    #' variance, with only mean fitted in the run
+    popRanFix = NULL,
+    #' @field postPoints (NPAG only) Data frame of posterior population points for each of the first 100 subject,
+    #' with columns id, point, parameters and probability.  The first column is the subject, the second column has the population
+    #' point number, followed by the values for the parameters in that point and the probability.
+    postPoints = NULL,
+    #' @field postMean A *nsub* x *npar* data frame containing
+    #' the means of the posterior distributions for each parameter.
+    postMean = NULL,
+    #' @field postSD A *nsub* x *npar* data frame containing
+    #' the SDs of the posterior distributions for each parameter.
+    postSD = NULL,
+    #' @field postVar A *nsub* x *npar* data frame containing
+    #' the variances of the posterior distributions for each parameter.
+    postVar = NULL,
+    #' @field postCov NPAG only: An array of dimensions *npar* x *npar* x *nsub* that
+    #' contains the covariances of the posterior distributions for each parameter and subject.*
+    postCov = NULL,
+    #' @field postCor NPAG only: An array of dimensions *npar* x *npar* x *nsub* that
+    #' contains the correlations of the posterior distributions for each parameter and subject.
+    postCor = NULL,
+    #' @field postMed A *nsub* x *npar* data frame containing
+    #' the medians of the posterior distributions for each parameter.*
+    postMed = NULL,
+    #' @field shrinkage A data frame with the shrinkage for each parameter.
+    #' The total population variance for a parameter
+    #' is comprised of variance(EBE) plus average variance(EBD),
+    #' where each subject's EBE is the Empirical Bayes Estimate or mean posterior value
+    #' for the parameter. EBD is the Empirical Bayes Distribution, or
+    #' the full Bayesian posterior parameter value distribution for each subject.
+    #'
+    #' The typical definition of \eqn{\eta} shrinkage is
+    #' \eqn{[1 - \frac{SD(\eta)}{\omega}]} or \eqn{[1 - \frac{var(\eta)}{\omega^2}]},
+    #' where \eqn{\eta} is the EBE and \eqn{\omega^2} is the population variance of \eqn{\eta}.
+    #'
+    #' In parametric modeling approaches \eqn{\eta} is the interindividual variability around
+    #' the typical (mean) value of the parameter in the population, usually referred to
+    #' as \eqn{\theta}. In nonparametric approaches, there is no assumption of normality, so
+    #' \eqn{\eta} simply becomes each subject's mean parameter value estimate.
+    #'
+    #' Here is how Pmetrics derives and then calculates shrinkage for a given parameter.
+    #' \deqn{popVar = var(EBE) + mean(var(EBD))}
+    #' \deqn{1 = \frac{var(EBE)}{popVar} + \frac{mean(var(EBD)}{popVar}}
+    #' \deqn{1 - \frac{var(EBE)}{popVar} = \frac{mean(var(EBD))}{popVar}}
+    #' \deqn{shrinkage = \frac{mean(var(EBD))}{popVar}}
+    #' Shrinkage is therefore a fraction between 0 and 1. If Bayesian posterior distributions are wide
+    #' for a given parameter and \eqn{mean(var(EBD))} is high due to sparse or uninformative sampling,
+    #' then most of the population variance is due
+    #' to this variance and shrinkage is high, i.e., individual posterior estimates (EBE)
+    #' shrink towards the population mean. Be aware, however, that a Bayesian posterior
+    #' parameter value distribution for a given subject who is sparsely sampled may also
+    #' be a single support point with no variance. Therefore EBD under nonparametric
+    #' assumptions is not always large with uninformative sampling. This means that shrinkage
+    #' is not as readily interpretable in nonparametric population modeling.
+    #'
+    #' An alternative is to consider the number of support points relative to the number
+    #' of subjects. Highly informed, distinct subjects will result in the maximum possible
+    #' number of support points, *N*, which is the same as the number of subjects.
+    #' In contrast, badly undersampled subjects can result in only one support point.
+    #' There is no formal criterion for this statistic, but it can be used in combination
+    #' with shrinkage to assess the information content of the data.
+    shrinkage = NULL,
+    #' @field gridpts (NPAG only) Initial number of support points
+    gridpts = NULL,
+    #' @field nsub Number of subjects
+    nsub = NULL,
+    #' @field ab Matrix of boundaries for random parameter values
+    ab = NULL,
+    #' @field data A data frame combining all the above fields as its columns
+    data = NULL,
+    #' @description
+    #' Create new object populated with final cycle information
+    #' @details
+    #' Creation of new `PM_final` object is automatic and not generally necessary
+    #' for the user to do.
+    #' @param PMdata If backend is Fortran, the parsed output from [NPparse] or [ITparse]. Not needed when the backend is Rust.
+    #' @param ... Not currently used.
+    initialize = function(PMdata,...) {
+      final <- private$make(PMdata)
+      self$data <- final
+      if(length(final)>1){ #all the objects were made
+      self$popPoints <- final$popPoints
+      self$popMean <- final$popMean
+      self$popSD <- final$popSD
+      self$popCV <- final$popCV
+      self$popVar <- final$popVar
+      self$popCov <- final$popCov
+      self$popCor <- final$popCor
+      self$popMedian <- final$popMedian
+      self$popRanFix <- final$popRanFix
+      self$postPoints <- final$postPoints
+      self$postMean <- final$postMean
+      self$postSD <- final$postSD
+      self$postVar <- final$postVar
+      self$postCov <- final$postCov
+      self$postCor <- final$postCor
+      self$postMed <- final$postMed
+      self$shrinkage <- final$shrinkage
+      self$gridpts <- final$gridpts
+      self$nsub <- final$nsub
+      self$ab <- final$ab
+      }
+      class(self) <- c(c("NPAG", "IT2B")[1 + as.numeric(is.null(self$popPoints))], class(self))
+    },
+    #' @description
+    #' Plot method
+    #' @details
+    #' See [plot.PM_final].
+    #' @param ... Arguments passed to [plot.PM_final]
+    plot = function(...) {
+      tryCatch(plot.PM_final(self, ...), error = function(e){
+        cat(crayon::red("Error:"), e$message, "\n")
+      }
+      )
+    },
+    #' @description
+    #' Summary method
+    #' @details
+    #' See [summary.PM_final].
+    #' @param ... Arguments passed to [summary.PM_final]
+    summary = function(...) {
+      tryCatch(summary.PM_final(self, ...), error = function(e){
+        cat(crayon::red("Error:"), e$message, "\n")
+      }
+      )
+    }
+  ), #end public
+  private = list(
+    make = function(data) {
+      if(getPMoptions("backend") == "rust"){
+        
+        theta <- tryCatch(readr::read_csv(file = "theta.csv", show_col_types = FALSE),
+                             error = function(e) {cat(crayon::red("Error:"),
+                                                      "The run did not complete and the theta.csv file was not created.\n")})
+        post <- tryCatch(readr::obs_csv(file = "posterior.csv", show_col_types = FALSE),
+                            error = function(e) {cat(crayon::red("Error:"),
+                                                     "The run did not complete and the posterior.csv file was not created.\n")})
+        config <- tryCatch(jsonlite::fromJSON("settings.json"),
+                           error = function(e) {
+                             e <- NULL
+                             cat(crayon::red("Error:"),
+                                 "The run did not complete and the settings.json file was not created.\n")
+                           })
+        
+        if(any(purrr::map_lgl(list(theta, post, config),is.null))){
+          return(NA)
+        }
+        
+        par_names <- names(theta)[names(theta) != "prob"]
+        
+        # Pop
+        popMean <- theta %>%
+          summarise(across(.cols = -prob, .fns = function(x) {
+            mean(x)
+          }))
+        
+        popSD <- theta %>%
+          summarise(across(.cols = -prob, .fns = function(x) {
+            sd(x)
+          }))
+        
+        popCov <- theta %>%
+          select(-prob) %>%
+          cov()
+        
+        popCor <- theta %>%
+          select(-prob) %>%
+          cor()
+        
+        popMedian <- theta %>%
+          summarise(across(-prob, \(x) median(x)))
+        
+        # Posterior
+        
+        postMean <- post %>%
+          group_by(id) %>%
+          summarise(across(.cols = -c(point, prob), .fns = function(x) {
+            weighted.mean(x = x, w = prob)
+          }))
+        
+        postSD <- post %>%
+          group_by(id) %>%
+          summarise(across(.cols = -c(point, prob), .fns = function(x) {
+            sd(x)
+          }))
+        
+        postVar <- post %>%
+          group_by(id) %>%
+          summarise(across(.cols = -c(point, prob), .fns = function(x) {
+            sd(x)**2
+          }))
+        
+        # TODO: Add postCov, postCor, Post
+        
+        postMed <- post %>%
+          #group_by(id) %>% 
+          filter(id==6) %>%
+          reframe(across(-c(point, prob), \(x) weighted_median(x, prob))) # in PMutilities
+        
+        # TODO: Calculate shrinkage
+        shrinkage <- 1
+        # varEBD <- apply(postVar[,-1],2,mean) # Mean postVar / popVar
+        # sh <- varEBD/popVar
+        
+        ab <- config$random %>%
+          unlist() %>%
+          matrix(ncol = 2, byrow = TRUE)
+        
+        gridpts <- config$config$init_points
+        
+        final <- list(
+          popPoints = theta,
+          popMean = popMean,
+          popSD = popSD,
+          popCV = popSD / popMean,
+          popVar = popSD**2,
+          popCov = popCov,
+          popCor = popCor,
+          popMedian = popMedian,
+          postMean = postMean,
+          postSD = postSD,
+          postMed = postMed,
+          gridpts = gridpts,
+          nsub = length(unique(post$id)),
+          ab = ab
+        )
+        class(final) <- c("PM_final_data", "NPAG", "list")
+        
+        return(final)
+        
+      } else { # fortran
+        
+        if(inherits(data,"PMfinal")){ #old format
+          return(data) #nothing to do
+        }
+        
+        if(inherits(data,"PM_final")){ #R6 format
+          return(data$data) #return raw to rebuild
+        }
+        
+        if (!inherits(data, "NPAG") & !inherits(data, "IT2B")){
+          cat(crayon::red("Error:"), "Final object: Run did not complete. Check model and data for errors.\n")
+          return(NA)
+        } 
+        
+        if (inherits(data, "NPAG")) {
+          # set the number of grid points at the beginning
+          gridpts <- switch(data$indpts,
+                            2129,
+                            5003,
+                            10007,
+                            20011,
+                            40009,
+                            80021
+          )
+          if (is.null(gridpts)) {
+            gridpts <- (data$indpts - 100) * 80021
+          }
+          # summarize weighted corden
+          wParVol <- prod(data$ab[, 2] - data$ab[, 1]) / gridpts
+          if (nrow(data$corden) > 1) {
+            popMean <- colSums(data$corden[, 1:data$nvar] * data$corden[, data$nvar + 1]) * wParVol
+          } else {
+            popMean <- data$corden[1:data$nvar] * data$corden[data$nvar + 1] * wParVol
+          }
+          
+          names(popMean) <- data$par
+          
+          if (nrow(data$corden) > 1) {
+            popCov <- matrix(NA, ncol = data$nvar, nrow = data$nvar)
+            for (i in 1:data$nvar) {
+              for (k in 1:data$nvar) {
+                popCov[i, k] <- sum(data$corden[, i] * data$corden[, k] * data$corden[, data$nvar + 1] * wParVol) - popMean[i] * popMean[k]
+              }
+            }
+            if (any(popCov == 0)) {
+              popCor <- NA
+            } else {
+              popCor <- cov2cor(popCov)
+            }
+          } else {
+            popCov <- matrix(rep(0, data$nvar**2), nrow = data$nvar)
+            popCor <- matrix(rep(NA, data$nvar**2), nrow = data$nvar)
+            diag(popCor) <- rep(1, data$nvar)
+          }
+          popMean <- data.frame(t(popMean))
+
+          popPoints <- data.frame(data$corden)
+          names(popPoints) <- c(data$par, "prob")
+          popPoints$prob <- popPoints$prob * wParVol
+          class(popPoints) <- c("popPoints", "data.frame")
+
+          if (length(data$postden) > 0) {
+
+            postPoints <- purrr::array_tree(data$postden, margin = 1) %>%
+              purrr::map(\(x) as.data.frame(x)) %>%
+              dplyr::bind_rows(.id = "id") %>%
+              dplyr::mutate(id = as.numeric(id)) %>%
+              dplyr::filter(if_all(everything(), \(x) !is.na(x))) %>%
+              dplyr::group_by(id) %>%
+              dplyr::mutate(point = dplyr::row_number(id)) %>%
+              dplyr::relocate(point, .after = id)
+            
+            postPoints$prob <- postPoints$prob * wParVol
+            postPoints$id <- data$sdata$id[postPoints$id]
+          } else {
+            postPoints <- NA
+          }
+
+          pointSum <- data.frame(summary.PM_final(popPoints))
+          popMedian <- pointSum %>%
+            filter(parameter == "WtMed", percentile == 0.5) %>%
+            select(-percentile, -parameter)
+
+          popVar <- data.frame(t(diag(popCov)))
+          names(popVar) <- data$par
+          
+          popSD <- sqrt(popVar)
+          names(popSD) <- data$par
+          
+          popCV <- abs(100 * (popSD / popMean))
+          names(popCV) <- data$par
+          
+          postMean <- data.frame(id = data$sdata$id, data$bmean)
+          
+          postSD <- data.frame(id = data$sdata$id, data$bsd)
+          
+          postVar <- data.frame(id = data$sdata$id, data$bsd^2)
+          
+          if (!all(is.na(postPoints))) {
+            nsub <- min(data$nsub, 100)
+            postCov <- array(NA,
+                             dim = c(data$nvar, data$nvar, nsub),
+                             dimnames = list(par1 = data$par, par2 = data$par, subj = unique(data$sd$id)[1:nsub])
+            )
+            postCor <- array(NA,
+                             dim = c(data$nvar, data$nvar, nsub),
+                             dimnames = list(par1 = data$par, par2 = data$par, subj = unique(data$sd$id)[1:nsub])
+            )
+            for (i in 1:nsub) {
+              temp2 <- postPoints[postPoints$id == data$sdata$id[i], ]
+              ret <- cov.wt(temp2[, 3:(2 + data$nvar)], wt = temp2$prob, cor = T, method = "ML")
+              postCov[, , i] <- ret$cov
+              postCor[, , i] <- ret$cor
+            }
+          }
+          
+          postMed <- data.frame(id = data$sdata$id, t(data$baddl[6, , ]))
+          
+          
+          # shrinkage
+          varEBD <- apply(postVar[, -1], 2, mean)
+          sh <- varEBD / popVar
+          sh.DF <- data.frame(sh)
+          
+          if (is.null(data$nranfix)) data$nranfix <- 0
+          if (data$nranfix > 0) {
+            popRanFix <- data$valranfix
+            names(popRanFix) <- data$parranfix
+          } else {
+            popRanFix <- NULL
+          }
+          
+          popCov <- data.frame(popCov, row.names = data$par)
+          if (!all(is.na(popCor))) {
+            popCor <- data.frame(popCor, row.names = data$par)
+          }
+          names(popCov) <- data$par
+          if (all(!is.na(popCor))) names(popCor) <- data$par
+          
+          
+          outlist <- list(
+            popPoints = popPoints, popMean = popMean, popSD = popSD, popCV = popCV, popVar = popVar,
+            popCov = popCov, popCor = popCor, popMedian = popMedian, popRanFix = popRanFix, postPoints = postPoints,
+            postMean = postMean, postSD = postSD, postVar = postVar, postCov = postCov, postCor = postCor,
+            postMed = postMed, shrinkage = sh.DF, gridpts = gridpts, nsub = data$nsub, ab = data$ab
+          )
+          class(outlist) <- c("PM_final_data", "NPAG", "list")
+          return(outlist)
+        }
+        if (inherits(data, "IT2B")) {
+          popMean <- data$imean[data$icyctot, ]
+          names(popMean) <- data$par
+          popMean <- data.frame(t(popMean))
+          
+          
+          popSD <- data$isd[data$icyctot, ]
+          names(popSD) <- data$par
+          popSD <- data.frame(t(popSD))
+          
+          
+          popVar <- popSD**2
+          names(popVar) <- data$par
+          
+          popCV <- abs(data$icv[data$icyctot, ])
+          names(popCV) <- data$par
+          popCV <- data.frame(t(popCV))
+          
+          popCov <- cov(data$lpar)
+          dimnames(popCov) <- list(data$par, data$par)
+          
+          popCor <- cor(data$lpar)
+          dimnames(popCor) <- list(data$par, data$par)
+          
+          popMedian <- data$imed[data$icyctot, ]
+          names(popMedian) <- data$par
+          popMedian <- data.frame(t(popMedian))
+          
+          postMean <- data.frame(id = data$sdata$id, data$lpar)
+          
+          postSD <- data.frame(id = data$sdata$id, data$lsd)
+          
+          postVar <- data.frame(id = data$sdata$id, data$lsd^2)
+          
+          postMed <- data.frame(id = data$sdata$id, data$parbay[, , 2])
+          
+          # shrinkage
+          varEBD <- apply(postVar[, -1], 2, mean)
+          sh <- varEBD / popVar
+          sh.DF <- data.frame(sh)
+          
+          popCov <- data.frame(popCov, row.names = data$par)
+          popCor <- data.frame(popCor, row.names = data$par)
+          names(popCov) <- data$par
+          if (all(!is.na(popCor))) names(popCor) <- data$par
+          
+          
+          outlist <- list(
+            popMean = popMean, popSD = popSD, popCV = popCV, popVar = popVar,
+            popCov = popCov, popCor = popCor, popMedian = popMedian, postMean = postMean, postSD = postSD, postVar = postVar,
+            postMed = postMed, shrinkage = sh.DF, nsub = data$nsub, ab = data$ab
+          )
+          class(outlist) <- c("PM_final_data", "IT2B", "list")
+          return(outlist)
+        } 
+        
+      }
+      
+    }
+  ) #end private
+)
+
+
+
+# PLOT --------------------------------------------------------------------
+#' @title Plot Pmetrics Final Cycle Parameter Value Distributions
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Plot R6 [PM_final] objects loaded as a field in the
+#' [PM_result] object, e.g. `PM_result$final`.
+#'
+#' @details
+#' This is a function usually called by the `$plot()` method for [PM_final] objects
+#' within a [PM_result] to generate a plot the parameter value probability densities
+#' after completion of a model fitting.
+#' The function can be called directly on a [PM_final] object. 
+#' 
+#' If `formula` is omitted, this will generate a marginal plot for each parameter.
+#' For NPAG data, this will be a histogram of marginal values for each parameter and the associated probability
+#' of that value.  For IT2B, this will be a series of normal distributions with mean and standard deviation
+#' equal to the mean and standard deviation of each parameter marginal distribution.  
+#'
+#' On the other hand, if `formula` is specified as two parameters, e.g. CL~V, this will generate a bivariate plot.
+#' For NPAG data, it will be support point with size proportional to the probability
+#' of each point.  For IT2B, it will be an elliptical distribution of a bivariate normal distribution centered at the mean
+#' of each plotted variable and surrounding quantiles of the bivariate distribution plotted in decreasing shades of grey.
+#' Mulitvariate normal density code is borrowed from the mvtnorm package.
+#' @method plot PM_final
+#' @param x The name of an [PM_final] data object as a field in a [PM_result] R6
+#' object, e.g `PM_result$final`.
+#' @param formula An optional formula of the form `y ~ x`, where `y` and `x`
+#' are two model parameters to plot in a 3-dimensional bivariate plot.  See details.
+#' @param marker See details for which objects the `marker` argument controls.
+#' This argument maps to the plotly marker object.
+#' It can be boolean or a list.
+#' `TRUE` will plot the marker with default characteristics.
+#' `FALSE` will suppress marker plotting.
+#' If a list, can control many marker characteristics, including overriding defaults.
+#' Use the plotly `plotly::schema()` command in the console and navigate
+#' to traces > scatter > attributes > marker to see all the ways the marker
+#' can be formatted. Most common will be:
+#' * `color` Fill color for NPAG bars, marker color for bivariate NPAG plots.
+#' Ignored for IT2B plots.
+#' * `symbol` Plotting character. See `plotly::schema()`, traces > scatter >
+#' attributes > marker > symbol > values. Only relevant for bivariate NPAG plots.
+#' * `size` Character size in points. Only relevant for bivariate NPAG plots.
+#' * `opacity` Bar fill color for univariate NPAG plots or marker opacity for
+#' bivariate NPAG plots. Ignored for IT2B plots.
+#' Ranges between 0 (fully transparent) to 1 (fully opaque).
+#' * `line` A list of  additional attributes governing the outline for bars in
+#' univariate NPAG plots or markers in bivariate NPAG plots. Ignored for IT2B plots.
+#'     - `color` Outline color. Default is "black".
+#'     - `width` Outline width. Default is 1.
+#' Example: `marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))`
+#' @param line `r template("line")` The `line` argument is used to format:
+#' * the density line drawn over an NPAG [PM_final] object. Default is `FALSE`, 
+#' which means no density line will be drawn. Use `TRUE` to draw the default line,
+#' which is black, solid, and of width 1, or specify as a list to control these
+#' elements, e.g. `line = list(color = "red", width = 2, dash = "dash")` 
+#' * the drop lines from point to lower surface when a `formula` is specified
+#' to generate a bivariate plot from an NPAG [PM_final] object. 
+#' In this case, default is `line = TRUE`. The default
+#' format is black, dashed, and of width 1.
+#' * the lines drawing the normal distribution of parameter values from an IT2B [PM_Final] object. 
+#' Again, here the default is `line = TRUE`, and the format is black, solid, of width 1.
+#' See [density].  Ignored for IT2B output.
+#' @param grid `r template("grid")`
+#' @param xlab `r template("xlab")` Default is the name of the plotted x-variable.
+#' Formatting can be controlled, but the text is recommended to not be changed.
+#' @param ylab `r template("ylab")` Default is "Probability" for univariate plots,
+#' and the name of the plotted y-variable for bivariate plots.
+#' Formatting can be controlled, but the text is recommended to not be changed.
+#' @param zlab Only for bivariate plots. Default is "Probability". Can be a list
+#' to control formatting or default text, as for `xlab` and `zlab`.
+#' @param standardize Standardize the normal parameter distribution plots from IT2B to the same
+#' scale x-axis.  Ignored for NPAG output.
+#' @param legend Ignored for this plot.
+#' @param log `r template("log")`
+#' @param title `r template("title")` Default is to have no title on plots.
+#' @param xlim `r template("xlim")`
+#' @param ylim `r template("ylim")`
+#' @param ... `r template("dotsPlotly")`
+#' @return Plots the object.
+#' @author Michael Neely
+#' @seealso [PM_final], [schema]
+#' @export
+#' @examples
+#' library(PmetricsData)
+#' # NPAG
+#' NPex$final$plot()
+#' NPex$final$plot(line = TRUE)
+#' NPex$final$plot(Ke ~ V)
+#' # IT2B
+#' ITex$final$plot()
+#' ITex$final$plot(Ke ~ V)
+#' @family PMplots
+
+plot.PM_final <- function(x, 
+                          formula = NULL, 
+                          line,
+                          marker = TRUE,
+                          standardize,
+                          legend,
+                          log,
+                          grid = TRUE,
+                          xlab, ylab, zlab,
+                          title,
+                          xlim, ylim,
+                          ...) {
+  # housekeeping
+  if (inherits(x, "NPAG")) {
+    type <- "NPAG"
+    
+    if(missing(formula)){ #univariate
+      if(missing(line)){
+        line <- amendLine(FALSE) #no density
+        density <- FALSE
+      } else {
+        line <- amendLine(line, default = list(color = "black")) #density
+        density <- TRUE
+      }
+    } else { #bivariate
+      density <- FALSE
+      if(missing(line)){
+        line <- amendLine(TRUE, default = list(color = "black", dash = "dash")) #bivariate, need drop lines
+      } else {
+        line <- amendLine(line, default = list(color = "black", dash = "dash"))
+      }
+    }
+    
+    bar <- amendMarker(marker, default = list(color = "dodgerblue", size = 5,
+                                              symbol = "circle", width = 0.02, opacity = 0.5))
+  } else {
+    type <- "IT2B"
+    if(missing(line)) line <- TRUE
+    line <- amendLine(line)
+    bar <- NULL
+    
+  }
+  
+  
+  yCol <- tryCatch(as.character(attr(terms(formula),"variables")[2]),
+                   error = function(e) NULL)
+  xCol <- tryCatch(as.character(attr(terms(formula),"variables")[3]),
+                   error = function(e) NULL)
+  
+  
+  #unnecessary arguments
+  if(!missing(legend)){notNeeded("legend", "plot.PM_final")}
+  if(!missing(log)){notNeeded("log", "plot.PM_final")}
+  
+  #process dots
+  layout <- amendDots(list(...))
+  
+  data <- if(inherits(x, "PM_final")) {x$data}else{x}
+  #ranges
+  ab <- data.frame(data$ab)
+  names(ab) <- c("min", "max")
+  ab$par <- names(data$popMean)
+  
+  # plot functions for univariate
+  uniPlot <- function(.data, .par, .min, .max, type, bar, xlab, ylab, title, .prior = NULL, height = NULL) {
+    p <- .data %>%
+      plotly::plot_ly(x = ~value, y = ~prob, height = height)
+    
+    if (type == "NPAG") {
+      barWidth <- bar$width * (.max - .min) # normalize
+      p <- p %>%
+        plotly::add_bars(
+          marker = bar,
+          hovertemplate = "Value: %{x:0.3f}<br>Prob: %{y:0.3f}<extra></extra>",
+          width = I(barWidth)
+        ) 
+      
+      
+      if(!is.null(.prior)){
+        bar2 <- bar
+        bar2$color <- "black"
+        bar2$opacity <- 0.1
+        p <- p %>%
+          plotly::add_bars(
+            x = ~value, y = ~prob,
+            data = .prior,
+            marker = bar2,
+            hovertemplate = "Value: %{x:0.3f}<br>Prob: %{y:0.3f}<extra></extra>",
+            width = I(barWidth)
+          )
+      }
+      
+      if (density) {
+        if (!is.null(.prior)) {
+          denData <- .prior
+        } else {
+          denData <- .data
+        }
+        densList <- tryCatch(density(denData$value, weights = denData$prob, bw = density(denData$value, bw = "sj")$bw),
+                             error = function(e) NULL
+        )
+        if (!is.null(densList)) {
+          dens <- data.frame(x = densList$x, y = densList$y)
+          normalize <- max(denData$prob)
+          
+          p <- p %>% plotly::add_lines(data = dens, x = ~x, y = ~y/max(y) * I(normalize), 
+                                       line = line,
+                                       text = round(dens$y,2),
+                                       hovertemplate = "Value: %{x:0.2f}<br>Prob: %{text}<extra></extra>") 
+          
+        }
+      }
+    } else { # IT2B
+      p <- p %>%
+        plotly::add_lines(
+          line = line,
+          hovertemplate = "Value: %{x:0.2f}<br>Prob: %{y:0.2f}<extra></extra>"
+        )
+    }
+    
+    # common to both
+    
+    # axis labels
+    if (is.null(xlab)) {
+      xlb <- .par
+    } else {
+      if (is.character(xlab)) { # specified as fixed character, not recommended
+        xlb <- list(text = xlab)
+      } else { # specified as list,likely to update formatting
+        if (is.null(purrr::pluck(xlab, "text"))) { # text not included in list
+          xlb <- modifyList(xlab, list(text = .par)) # so add it
+        }
+      }
+    }
+    
+    if (is.null(ylab)) {
+      ylb <- "Probability"
+    } else {
+      if (is.character(ylab)) {
+        ylb <- list(text = ylab)
+      } else { # specified as list,likely to update formatting
+        if (is.null(purrr::pluck(ylab, "text"))) { # text not included in list
+          ylb <- modifyList(ylab, list(text = "Probability")) # so add it
+        }
+      }
+    }
+    
+    # title
+    if (is.null(title)) {
+      titl <- ""
+    } else {
+      if (is.character(title)) {
+        titl <- list(text = title)
+      } else { # specified as list,likely to update formatting
+        if (is.null(purrr::pluck(title, "text"))) { # text not included in list
+          titl <- modifyList(title, list(text = "Marginal")) # so add it
+        } else {
+          titl <- title
+        }
+      }
+    }
+    
+    layout$title <- amendTitle(titl, default = list(size = 20))
+    layout$xaxis$title <- amendTitle(xlb)
+    layout$yaxis$title <- amendTitle(ylb)
+    if (is.character(ylb)) {
+      layout$yaxis$title <- amendTitle(ylb, layout$xaxis$title$font)
+    } else {
+      layout$yaxis$title <- amendTitle(ylb)
+    }
+    
+    
+    p <- p %>%
+      plotly::layout(
+        showlegend = F,
+        xaxis = layout$xaxis,
+        yaxis = layout$yaxis,
+        shapes = list(
+          ab_line(v = .min, line = list(width = 3, dash = "dash")),
+          ab_line(v = .max, line = list(width = 3, dash = "dash"))
+        ),
+        barmode = "overlay",
+        title = layout$title
+      )
+    
+    return(p)
+  }
+  
+  
+  biPlot <- function(xCol, yCol, x, xlab, ylab, zlab, title, bar){
+    
+    whichX <- which(ab$par == xCol)
+    whichY <- which(ab$par == yCol)
+    
+    # axes labels
+    if (is.null(xlab)) {
+      xlb <- xCol
+    } else {
+      if (is.character(xlab)) { # specified as fixed character
+        xlb <- list(text = xlab)
+      } else { # specified as list,likely to update formatting
+        if (is.null(purrr::pluck(xlab, "text"))) { # text not included in list
+          xlb <- modifyList(xlab, list(text = xCol)) # so add it
+        }
+      }
+    }
+    
+    if (is.null(ylab)) {
+      ylb <- yCol
+    } else {
+      if (is.character(ylab)) {
+        ylb <- list(text = ylab)
+      } else { # specified as list,likely to update formatting
+        if (is.null(purrr::pluck(ylab, "text"))) { # text not included in list
+          ylb <- modifyList(ylab, list(text = yCol)) # so add it
+        }
+      }
+    }
+    
+    if (is.null(zlab)) {
+      zlb <- "Probability"
+    } else {
+      if (is.character(zlab)) {
+        zlb <- list(text = zlab)
+      } else { # specified as list,likely to update formatting
+        if (is.null(purrr::pluck(zlab, "text"))) { # text not included in list
+          zlb <- modifyList(zlab, list(text = "Probability")) # so add it
+        }
+      }
+    }
+    
+    # title
+    if (is.null(title)) {
+      titl <- ""
+    } else {
+      if (is.character(title)) {
+        titl <- list(text = title)
+      } else { # specified as list,likely to update formatting
+        if (is.null(purrr::pluck(title, "text"))) { # text not included in list
+          titl <- modifyList(title, list(text = paste0(yCol, " x ", xCol))) # so add it
+        } else {
+          titl <- title
+        }
+      }
+    }
+    
+    layout$title <- amendTitle(titl, default = list(size = 20))
+    layout$xaxis$title <- amendTitle(xlb)
+    layout$yaxis$title <- amendTitle(ylb)
+    layout$zaxis$title <- amendTitle(zlb)
+    if (is.character(ylb)) {
+      layout$yaxis$title <- amendTitle(ylb, layout$xaxis$title$font)
+    } else {
+      layout$yaxis$title <- amendTitle(ylb)
+    }
+    if(is.character(zlb)){
+      layout$zaxis$title <- amendTitle(zlb, layout$xaxis$title$font)
+    } else {
+      layout$zaxis$title <- amendTitle(zlb)
+    }
+    
+    
+    if (type == "IT2B") {
+      rangeX <- as.numeric(ab[whichX, 1:2])
+      rangeY <- as.numeric(ab[whichY, 1:2])
+      coords <- data.frame(
+        x = seq(
+          rangeX[1], rangeX[2],
+          (rangeX[2] - rangeX[1]) / 100
+        ),
+        y = seq(
+          rangeY[1], rangeY[2],
+          (rangeY[2] - rangeY[1]) / 100
+        )
+      ) %>%
+        tidyr::expand(x, y)
+      
+      # dmv_norm in PMutilities
+      z <- dmv_norm(coords,mean=as.numeric(data$popMean[1,c(whichX,whichY)]),
+                    sigma=as.matrix(data$popCov[c(whichX,whichY),c(whichX,whichY)])
+      )
+      z <- matrix(z, nrow = 101)
+      
+      p <- plot_ly(x = ~ unique(coords$x), y = ~ unique(coords$y), z = ~z) %>%
+        plotly::add_surface(
+          hovertemplate = paste0(xlab, ": %{x:0.2f}<br>", ylab, ":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")
+        ) %>%
+        plotly::layout(
+          scene = list(
+            xaxis = layout$xaxis,
+            yaxis = layout$yaxis,
+            zaxis = layout$zaxis
+          ),
+          title = layout$title
+        ) %>%
+        plotly::hide_colorbar()
+      return(p)
+    } else { # NPAG
+      
+      data$popPoints$id <- seq_len(nrow(x$popPoints))
+      pp <- replicate(3, data$popPoints, simplify = FALSE)
+      data$popPoints <- data$popPoints %>% select(-id) # undo modification
+      
+      # make object for drop lines
+      pp[[2]]$prob <- min(pp[[1]]$prob)
+      pp2 <- dplyr::bind_rows(pp, .id = "key") %>% dplyr::arrange(id, key)
+      pp2[pp2$key == 3, ] <- NA
+      pp2 <- pp2 %>%
+        dplyr::select(x=whichX[1]+1, y=whichY[1]+1, prob=prob)
+      p <- data$popPoints %>% select(x=whichX[1], y=whichY[1], prob=prob) %>%
+        plotly::plot_ly(x = ~x, y = ~y, z = ~prob,
+                        hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
+        plotly::add_markers(marker = bar) 
+      
+      if(line$width > 0){
+        p <- p %>% plotly::add_paths(data = pp2, x = ~x, y = ~y, z = ~prob,
+                                     line = line)
+      }
+      p <- p %>%
+        plotly::layout(showlegend = F,
+                       scene = list( 
+                         xaxis = layout$xaxis,
+                         yaxis = layout$yaxis,
+                         zaxis = layout$zaxis),
+                       title = layout$title)
+      return(p)
+    }
+  } # end bivariate plot function
+  
+  
+  # set up the plots
+  
+  
+  if (missing(xlab)) {
+    xlab <- NULL
+  }
+  if (missing(ylab)) {
+    ylab <- NULL
+  }
+  if (missing(zlab)) {
+    zlab <- NULL
+  }
+  if (missing(title)) {
+    title <- NULL
+  }
+  
+  if (is.null(yCol) || xCol == "prob") { # univariate or prob plot
+    
+    # NPAG
+    if (type == "NPAG") {
+      if (is.null(xCol)) { # regular marginal
+        ab_alpha <- ab %>% arrange(par)
+        p <- data$popPoints %>%
+          pivot_longer(cols = !prob, names_to = "par") %>%
+          dplyr::nest_by(par) %>%
+          dplyr::full_join(ab_alpha, by = "par") %>%
+          dplyr::mutate(panel = list(uniPlot(data, par, min, max,
+                                             type = "NPAG",
+                                             bar = bar, xlab = xlab, ylab = ylab, title = title, height = 1500
+          ))) %>%
+          plotly::subplot(margin = 0.02, nrows = nrow(.), titleX = TRUE, titleY = TRUE)
+      } else { # prob plot
+        ab_alpha <- ab %>% filter(par == yCol)
+        p1 <- data$popPoints %>%
+          tidyr::pivot_longer(cols = !prob, names_to = "par") %>%
+          dplyr::filter(par == yCol) %>%
+          dplyr::nest_by(par) %>%
+          dplyr::full_join(ab_alpha, by = "par")
+        
+        p <- data$postPoints %>%
+          select(id, point, value = !!yCol, prob) %>%
+          nest(data = -id) %>%
+          dplyr::mutate(panel = trelliscopejs::map_plot(data, \(x) uniPlot(x, yCol, ab_alpha$min, ab_alpha$max,
+                                                                           type = "NPAG",
+                                                                           bar = bar, xlab = xlab, ylab = ylab, title = title, .prior = p1$data[[1]]
+          ))) %>%
+          trelliscopejs::trelliscope(name = "Posterior/Prior", self_contained = FALSE)
+      }
+    } else {
+      # IT2B
+      if (!missing(standardize)) { # standardize plot
+        if (tolower(standardize[1]) == "all") {
+          to_standardize <- 1:nrow(ab)
+        } else {
+          to_standardize <- which(names(data$popMean) %in% standardize)
+        }
+        if (length(to_standardize) > 0) {
+          ab[to_standardize, 1] <- min(ab[to_standardize, 1])
+          ab[to_standardize, 2] <- max(ab[to_standardize, 2])
+        } else {
+          stop("Requested standardization parameters are not in model.")
+        }
+      }
+      ab_alpha <- ab %>% arrange(par)
+      p <- data.frame(mean = purrr::as_vector(data$popMean), sd = purrr::as_vector(data$popSD), min = ab[,1], max = ab[,2]) %>%
+        purrr::pmap(.f = function(mean, sd, min, max){dplyr::tibble(value = seq(min, max, (max-min)/1000),
+                                                                    prob = dnorm(value, mean, sd))}) %>% 
+        purrr::set_names(names(data$popMean)) %>%
+        dplyr::bind_rows(.id = "par") %>%
+        dplyr::nest_by(par) %>%
+        dplyr::full_join(ab_alpha, by = "par") %>%
+        dplyr::mutate(panel = list(uniPlot(data, par, min, max,
+                                           type = "IT2B", xlab = xlab, ylab = ylab, title = title
+        ))) %>%
+        plotly::subplot(margin = 0.02, nrows = nrow(.), titleX = TRUE, titleY = TRUE)
+    }
+  } else { #bivariate
+    p <- biPlot(xCol, yCol, x, xlab, ylab, zlab, title, bar)
+    
+  }
+  print(p)
+  return(p)
+}
+
+# SUMMARY -----------------------------------------------------------------
+
+#' @title Summary Statistics for Final Cycle
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Generates summary statistics of final population model parameters.
+#'
+#' @details
+#' #' This is a function usually called by the `$summary()` method for [PM_final] objects
+#' within a [PM_result]. The function can be called directly on a [PM_final] object. 
+#' For NPAG runs, this function will generate weighted medians as central tendencies of the
+#' population points with a 95% confidence interval (95% CI) around the median,
+#' and the median absolute weighted deviation (MAWD) from the median as a measure
+#' of the variance, with its 95% CI.  These estimates correspond to weighted mean,
+#' 95% CI of the mean, variance, and 95% CI of the variance, respectively, for a
+#' sample from a normal distribution.  
+#' 
+#' To estimate these non-parametric summaries,
+#' the function uses a Monte Carlo simulation approach, creating  1000 x npoint samples
+#' with replacement from the weighted marginal distribution of each parameter,
+#' where npoint is the number of support points in the model.  As an example,
+#' if there are 100 support points, npoint = 100, and for Ka, there will be
+#' 1000 sets of 100 samples drawn from the weighted marginal distribution of the
+#' values for Ka.  For each of the 1,000 sets of npoint values, the median and MAWD are
+#' calculated, with MAWD equal to the median absolute difference between each point
+#' and the median of that set.  The output is npoint estimates of the weighted median
+#' and npoint estimates of the MAWD for each parameter, from which the median, 2.5th,
+#' and 97.5th percentiles can be found as point estimates and 95% confidence
+#' interval limits, respectively, of both the weighted median and MAWD.
+#'
+#' For IT2B runs, the function will return the mean and variance of each parameter,
+#' and the standard errors of these terms, using
+#' \deqn{SE_mean = SD/\sqrt(nsub)} 
+#' \deqn{SE_var = var * \sqrt(2/(nsub-1))}.
+#'
+#' @method summary PM_final
+#' @param object The PM_final object made after an NPAG or IT2B run
+#' @param lower Desired lower confidence interval boundary.  Default is 0.025. Ignored for IT2B objects.
+#' @param upper Desired upper confidence interval boundary.  Default is 0.975. Ignored for IT2B objects.
+#' @param ... Not used.
+#' @return The output is a data frame.
+#' For NPAG this has 4 columns:
+#' * **value** The value of the summary statistic
+#' * **par** The name of the parameter
+#' * **type** Either *WtMed* for weighted median, or *MAWD* for MAWD (see details)
+#' * **percentile** Requested `lower`, 0.5 (median), and `upper` quantiles
+#' For IT2B this has 6 columns:
+#' * **mean** Parameter mean value
+#' * **se.mean** Standard error of the mean
+#' * **cv.mean** Error of the mean divided by mean
+#' * **var** Variance of the parameter values
+#' * **se.var** Standard error of the variance
+#' * **summary** Name of the summary statistic
+#' @author Michael Neely
+#' @seealso [PM_final]
+#' @examples
+#' library(PmetricsData)
+#' NPex$final$summary() #preferred
+#' ITex$final$summary()
+#' summary(NPex$final) #alternate
+#' @export
+
+summary.PM_final <- function(object, lower = 0.025, upper = 0.975, ...) {
+  
+  if(inherits(object, "PM_final")){ #user called summary(PM_final)
+    object <- object$data
+  }
+  
+  if (inherits(object, "IT2B")) { # IT2B object
+    if (is.null(object$nsub)) {
+      nsub <- as.numeric(readline("Your IT2B run is very old. Please re-run.\nFor now, enter the number of subjects. "))
+    } else {
+      nsub <- object$nsub
+    }
+    mean <- object$popMean
+    se.mean <- object$popSD / sqrt(nsub)
+    cv.mean <- se.mean / mean
+    var <- object$popVar
+    se.var <- object$popVar * sqrt(2 / (nsub - 1))
+    sumstat <- dplyr::bind_rows(
+      mean, se.mean,
+      cv.mean,
+      var, se.var
+    ) %>%
+      dplyr::mutate(summary = c("Mean", "StdErr Mean", "CV% Mean", "Variance", "StdErr Var"))
+    return(sumstat)
+  } else { # NPAG object
+    medMAD <- function(x) {
+      med <- median(x)
+      MAD <- median(abs(x - med))
+      # MAD <- sqrt(sum((x-med)^2)/length(x))
+      return(list(med, MAD))
+    }
+    
+    mcsim <- function(x, prob) {
+      set.seed(17)
+      sim <- apply(matrix(sample(x, replace = T, 10^3 * length(x), prob = prob), nrow = 10^3), 1, medMAD)
+      ciMed <- quantile(sapply(sim, function(x) x[[1]]), c(lower, 0.5, upper))
+      ciMAD <- quantile(sapply(sim, function(x) x[[2]]), c(lower, 0.5, upper))
+      return(list(ciMed, ciMAD))
+    }
+    if (inherits(object, "NPAG") || inherits(object, "PM_final")) {
+      popPoints <- object$popPoints
+    } else {
+      popPoints <- object
+    }
+    
+    nvar <- ncol(popPoints) - 1
+    
+    # trick it if there is only one point
+    if (nrow(popPoints) == 1) {
+      popPoints <- rbind(popPoints, popPoints)
+      popPoints$prob <- c(0.5, 0.5)
+    }
+    
+    sumstat <- apply(popPoints[, 1:nvar], 2, function(x) mcsim(x, popPoints[, nvar + 1]))
+    
+    
+    sumstat2 <- sumstat %>%
+      dplyr::as_tibble() %>%
+      unnest(cols = names(sumstat))
+    sumstat2$percentile <- rep(c(lower, 0.5, upper), 2)
+    sumstat2$parameter <- rep(c("WtMed", "MAWD"), each = 3)
+    
+    
+    # sumstat2 <- melt(sumstat)[,c(1,3)]
+    # names(sumstat2) <- c("value","par")
+    # sumstat2$type <- rep(c("WtMed","MAWD"),each=3,times=nvar)
+    # sumstat2$quantile <- rep(c(lower,0.5,upper),times=2*nvar)
+    # sumstat2 <- sumstat2[,c("par","type","quantile","value")]
+    class(sumstat2) <- c("summary.PM_final", "tbl_df", "tbl", "data.frame")
+    return(sumstat2)
+  }
+}
+
+# PRINT SUMMARY ----------------------------------------------------------------
+
+
+#' @title Print Summary of Parameter Values and Credibility Intervals
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Print a Pmetrics Final Summary Object
+#' @details
+#' Print a summary of parameter medians and MAWD, with point estimates and credibilty intervals
+#' from an object made by [summary.PM_final]. Users do not normally need to call this
+#' function directly, as it will be the default method to display the object.
+#'
+#' @method print summary.PM_final
+#' @param x A summary.PM_final object made by [summary.PM_final].
+#' @param digits Integer, used for number of digits to print.
+#' @param ... Not used.
+#' @return A printed object.
+#' @author Michael Neely
+#' @seealso [summary.PM_final]
+#' @examples
+#' library(PmetricsData)
+#' NPex$final$summary
+#' @export
+
+print.summary.PM_final <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+  x <- data.frame(x) # convert from tibble
+  cat(paste("\nWeighted Medians (", 100 * (max(x$percentile) - min(x$percentile)),
+            "% credibility interval)\n",
+            sep = ""
+  ))
+  for (i in 1:(ncol(x) - 2)) {
+    cat(paste(colnames(x[i]), ": ", round(x[2, i], digits), " (", round(x[1, i], digits), " - ", round(x[3, i], digits), ")\n", sep = ""))
+  }
+  
+  cat(paste("\nMedian Absolute Weighed Differences (dispersion measure) (", 100 * (max(x$percentile) - min(x$percentile)),
+            "% credibility interval)\n",
+            sep = ""
+  ))
+  
+  for (i in 1:(ncol(x) - 2)) {
+    cat(paste(colnames(x[i]), ": ", round(x[5, i], digits), " (", round(x[4, i], digits), " - ", round(x[6, i], digits), ")\n", sep = ""))
+  }
+}
