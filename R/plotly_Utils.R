@@ -484,8 +484,8 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
                       "Slope = ",slope," (",ci*100,"%CI ",ci.slope[1]," to ",ci.slope[2],")","<br>")
     
     p_data <- plotly::plotly_data(p)
-    if (inherits(p_data, c("PM_op", "PMop"))) { # this is a PM_op object
-      sumStat <- summary(p_data,
+    if (inherits(p_data, "PM_op_data")) { # this came from a PM_op object
+      sumStat <- summary.PM_op(p_data,
                          outeq = p_data$outeq[1],
                          pred.type = p_data$pred.type[1],
                          icen = p_data$icen[1]
