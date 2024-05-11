@@ -128,11 +128,11 @@ PM_sim <- R6::R6Class(
         parseRes <- SIMparse(file = paste0(outname, "*")) %>% private$populate(type = "sim")
       } else {
         if (combine) {
-          parseRes <- SIMparse(file = paste0(outname, "*"), combine = T) %>% private$populate(type = "sim")
+          parseRes <- SIMparse(file = paste0(outname, "*"), combine = TRUE) %>% private$populate(type = "sim")
         } else {
           parseRes <- list()
           for (i in seq_len(length(sim_files))) {
-            parseRes[[i]] <- SIMparse(file = sprintf("simout%i.txt", i))
+            parseRes[[i]] <- SIMparse(file = sprintf("%s%i.txt", outname, i))
           }
           private$populate(parseRes, type = "simlist")
         }
