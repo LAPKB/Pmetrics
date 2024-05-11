@@ -2103,13 +2103,15 @@ print.summary.PM_data <- function(x, ...) {
 #' @return Returns the error report (see [PMcheck] for details).
 #' @author Michael Neely
 #' @seealso [PM_data], [PMcheck], [PMreadMatrix]
+#' @export
 #' @examples
 #' \dontrun{
 #' # write to the current directory
 #' library(PmetricsData)
 #' NPex$data$write("data.csv")
 #' }
-PMwriteMatrix <- function(data, filename, override = F, version = "DEC_11", header = T) {
+PMwriteMatrix <- function(data, filename, override = F, 
+                          version = "DEC_11", header = T) {
   if (!override) {
     err <- PMcheck(data, quiet = T)
     if (length(grep("FAIL", err)) > 0) {
