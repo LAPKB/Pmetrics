@@ -45,12 +45,19 @@ PM_result <- R6::R6Class(
     errfile = NULL,
     #' @field success Boolean if successful run
     success = NULL,
-    #' @field valid If the `$validate` method has been executed after a run, this object will be added to
-    #' the `PM_result` object.  It contains the information required to plot visual predictive checks and normalized prediction
+    #' @field valid If the `$validate` method has been executed after a run, 
+    #' this field will contain the information required to plot 
+    #' visual predictive checks and normalized prediction
     #' error discrepancies via the npde code developed by Comets et al. Use the
     #' `$save` method on the augmented `PM_result` object to save it with the
     #' new validation results.
     valid = NULL,
+    #' @field opt_samp If the `$opt` method has been executed after a run, this
+    #' field will contain a [PM_opt] object which has optimal sampling times
+    #' and methods to plot them.
+    #' Use the `$save` method on the augmented `PM_result` object to save it with the
+    #' new optimal sampling results.
+    opt_samp = NULL,
     
     #' @description
     #' Create new object populated with data from previous run
@@ -236,7 +243,7 @@ PM_result <- R6::R6Class(
     #' @param ... Arguments passed to [make_valid].
     validate = function(...) {
       self$valid <- PM_valid$new(self, ...)
-      self$valid
+      return(self)
     },
     
     #' @description
@@ -248,67 +255,19 @@ PM_result <- R6::R6Class(
     },
     
     #' @description
-    #' `r lifecycle::badge("stable")`
+    #' Calculate optimal sampling times.
     #'
-    #' Method to compute 1 or more MM-optimal sampling times.
+    #' Method to compute optimal sampling times.
     #' @details
-    #' Based on the multiple-model optimization algorithm, this method computes *nsamp* times where the concentration time profiles are the most separated, thereby minimizing the risk of choosing the incorrect Bayesian posterior for an individual. The algorithm was published as 
-    #' Bayard, David S., and Michael Neely. "Experiment Design for Nonparametric
-    #' Models Based on Minimizing Bayes Risk: Application to Voriconazole."
-    #' Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017):
-    #' 95–111. https://doi.org/10.1007/s10928-016-9498-5.
+    #' See [PM_opt] for details.
     #'
-    #' @param data One of two choices which will provide the template dosage and sampling regimens:
-    #' * [PM_data] object
-    #' * Character vector with the filename of a Pmetrics data file
-    #' that contains template regimens and observation times.   
-    #' 
-    #' If `data` is missing, the default value of "data.csv" will be used and Pmetrics will try to open a so-named filed in teh current working directory. In either choice, the value for outputs
-    #' can be coded as any number(s) other than -99.  The number(s) will be replaced in the simulator output with the simulated values.
-    #' @param nsamp The number of MM-optimal sample times to compute; default is 1, but can be any number.  Values >4 will take an exponentially longer time.
-    #' @param weight List whose names indicate the type of weighting, and values indicate the relative weight. Values should sum to 1.  Names can be any of the following:
-    #' * **none** The default. MMopt times will be chosen to maximally discriminate all responses at all times.
-    #' * **AUC** MMopt times will be chosen to maximally discriminate AUC, regardless of the shape of the response profile.
-    #' * **max** MMopt times will be chosen to maximally discriminate maximum, regardless of the shape of the response profile.
-    #' * **min** MMopt times will be chosen to maximally discriminate minimum, regardless of the shape of the response profile.
-    #'
-    #' Any combination of AUC, max, and min can be chosen.  If "none" is specified, other
-    #' weight types will be ignored and the relative value will be set to 1.
-    #' For example,`list(auc = 0.5,max = 0.5)` or `list(auc = 0.2, min = 0.8)`.
-    #' The default is `list(none = 1)`.
-    #' @param predInt The interval in fractional hours for simulated predicted outputs at times other than those specified in the template `data`.
-    #' The default is 0.5, which means there will be simulated outputs every 30 minutes from time 0 up
-    #' to the maximal time in the template file.  You may also specify `predInt`
-    #' as a vector of 3 values, e.g. `c(1,4,1)`, similar to the R command [seq], where the
-    #' first value is the start time, the second is the stop time, and the third is the
-    #' step value.  Outputs for times specified in the template file will also be simulated.
-    #' To simulate outputs *only* at the output times in the template data (i.e. EVID=0 events), use `predInt = 0`.
-    #' Note that the maximum number of predictions total is 594, so the interval must be sufficiently large to accommodate this for a given
-    #' number of output equations and total time to simulate over.  If `predInt` is set so that this cap is exceeded, predictions will be truncated.
-    #' @param mmInt Specify the time intervals from which MMopt times can be selected.
-    #' These should only include simulated times specified by `predInt`.
-    #' @param outeq Output equation to optimize
-    #' @param clean Boolean parameter to specify whether temporary files made in the
-    #' course of the simulation run should be deleted. Defaults to `TRUE`.
-    #' This is primarily used for debugging.
-    #' @param ... Other parameters to pass to [SIMrun], which are not usually necessary.
-    #' @return A object of class *MM_opt* with 3 items.
-    #' * **sampleTime** The MM-optimal sample times
-    #' * **bayesRisk** The Bayesian risk of mis-classifying a subject based on the sample times.  This
-    #' is more useful for comparisons between sampling strategies, with minimization the goal.
-    #' * **simdata** A [PM_sim] object with the simulated profiles
-    #' * **mmInt** A list with the `mmInt` values, `NULL` if `mmInt` is missing.
-    #' @examples
-    #' library(PmetricsData)
-    #' mmopt1 <- NPex$mmopt(data = exData, limits = NA)
-    #' mmopt1$summary()
-    #' mmopt1$plot()
-    #' 
-    mmopt = function(data = NULL, nsamp = 1, weight = list(none = 1),
-                     predInt = 0.5, mmInt = NULL, outeq = 1, clean = TRUE,...) {
-      make_mmopt(poppar = self, data = data, nsamp = nsamp, weight = weight,
-                 predInt = predInt, mmInt = mmInt, outeq = outeq, 
-                 clean = clean,...)
+    #' @param ... Parameters to pass to [PM_opt].
+    opt = function(...) {
+      self$opt_samp <- tryCatch(PM_opt$new(self, ...), error = function(e){
+        cat(crayon::red("Error:"), e$message, "\n")
+      }
+      )
+      return(self)
     },
     
     #' @description
