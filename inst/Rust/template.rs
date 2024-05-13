@@ -11,8 +11,14 @@ fn main() -> Result<()> {
             </seq>
             </eqn>
         },
-        |_p| lag! {</lag>},
-        |_p| fa! {</fa>},
+        |p| {
+            fetch_params!(p, </params>);
+            lag! {</lag>}
+        },
+        |p| {
+            fetch_params!(p, </params>);
+            fa! {</fa>}
+        },
         |_p, _t, _cov, _x| {</init>},
         |x, p, t, cov, y| {
             fetch_params!(p, </params>);
