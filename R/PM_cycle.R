@@ -1,5 +1,5 @@
-#Use menu item Code -> Jump To... for rapid navigation
-#Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
+# Use menu item Code -> Jump To... for rapid navigation
+# Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
 
 # R6 ----------------------------------------------------------------
 
@@ -12,27 +12,27 @@
 #'
 #' @details
 #' The [PM_cycle] object is both a data field within a [PM_result], and itself an R6 object
-#' comprising data fields and associated methods suitable for analysis and plotting of 
-#' cycle information generated during the run. 
-#' 
+#' comprising data fields and associated methods suitable for analysis and plotting of
+#' cycle information generated during the run.
+#'
 #' Because [PM_cycle] objects are automatically added to the [PM_result] at the end of a
 #' successful run, it is generally not necessary for users to generate [PM_cycle] objects
 #' themselves.
-#'  
+#'
 #' The main results are contained in the `$data` field,
 #' and it is this field which is passed to the `$plot` and `$summary` methods.
 #' You can use this `$data` field for custom manipulations, e.g. `last <- run1$cycle$data$aic %>% tail(1)`.
-#' This will report the last cycle aic. 
+#' This will report the last cycle aic.
 #' If you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
 #' into the R console and look online for instructions/tutorials in tidyverse, a
 #' powerful approach to data manipulation upon which Pmetrics is built.
-#' 
+#'
 #' To provide a more traditional experience in R,
-#' the `$data` field is also separated by list items into the other data fields within the R6 object, 
+#' the `$data` field is also separated by list items into the other data fields within the R6 object,
 #' e.g. `mean` or `gamlam`. This
 #' allows you to access them in an S3 way, e.g. `run1$cycle$mean` if `run1` is a
 #' [PM_result] object.
-#' 
+#'
 #' @author Michael Neely, Julian Otalvaro
 #' @export
 
@@ -70,11 +70,11 @@ PM_cycle <- R6::R6Class(
     #' for the user to do.
     #' @param PMdata If backend is Fortran, the parsed output from [NPparse] or [ITparse]. Not needed when the backend is Rust.
     #' @param ... Not currently used.
-    
-    initialize = function(PMdata,...) {
+
+    initialize = function(PMdata, ...) {
       cycle <- private$make(PMdata)
       self$data <- cycle
-      if(length(cycle)>1){ #all the objects were made
+      if (length(cycle) > 1) { # all the objects were made
         self$names <- cycle$names
         self$cycnum <- cycle$cycnum
         self$ll <- cycle$ll
@@ -91,11 +91,10 @@ PM_cycle <- R6::R6Class(
     #' @details
     #' See [plot.PM_cycle].
     #' @param ... Arguments passed to [plot.PM_cycle]
-    plot = function(...){
-      tryCatch(plot.PM_cycle(self, ...), error = function(e){
+    plot = function(...) {
+      tryCatch(plot.PM_cycle(self, ...), error = function(e) {
         cat(crayon::red("Error:"), e$message, "\n")
-      }
-      )
+      })
     },
     #' @description
     #' Summary method
@@ -103,44 +102,55 @@ PM_cycle <- R6::R6Class(
     #' See [summary.PM_cycle].
     #' @param ... Arguments passed to [summary.PM_cycle]
     summary = function(...) {
-      tryCatch(summary.PM_cycle(self, ...), error = function(e){
+      tryCatch(summary.PM_cycle(self, ...), error = function(e) {
         cat(crayon::red("Error:"), e$message, "\n")
-      }
-      )
+      })
     }
-  ), #end public
+  ), # end public
   private = list(
     make = function(data) {
-      if(getPMoptions("backend") == "rust"){
-        
+      if (getPMoptions("backend") == "rust") {
         raw <- tryCatch(readr::read_csv(file = "cycles.csv", show_col_types = FALSE),
-                        error = function(e) {cat(crayon::red("Error:"),
-                                                 "The run did not complete and the cycle.csv file was not created.\n")})
+          error = function(e) {
+            cat(
+              crayon::red("Error:"),
+              "The run did not complete and the cycle.csv file was not created.\n"
+            )
+          }
+        )
         obs_raw <- tryCatch(readr::obs_csv(file = "obs.csv", show_col_types = FALSE),
-                            error = function(e) {cat(crayon::red("Error:"),
-                                                     "The run did not complete and the obs.csv file was not created.\n")})
+          error = function(e) {
+            cat(
+              crayon::red("Error:"),
+              "The run did not complete and the obs.csv file was not created.\n"
+            )
+          }
+        )
         config <- tryCatch(jsonlite::fromJSON("settings.json"),
-                           error = function(e) {
-                             e <- NULL
-                             cat(crayon::red("Error:"),
-                                 "The run did not complete and the settings.json file was not created.\n")
-                           })
-        
-        if(any(purrr::map_lgl(list(raw, obs_raw, config),is.null))){
+          error = function(e) {
+            e <- NULL
+            cat(
+              crayon::red("Error:"),
+              "The run did not complete and the settings.json file was not created.\n"
+            )
+          }
+        )
+
+        if (any(purrr::map_lgl(list(raw, obs_raw, config), is.null))) {
           return(NA)
         }
-        
+
         cycle_data <- raw %>%
           pivot_longer(cols = ends_with(c("mean", "median", "sd"))) %>%
           separate_wider_delim(name, delim = ".", names = c("parameter", "statistic"))
-        
+
         num_params <- length(names(config$random)) + length(names(config$fixed))
-        
+
         aic <- 2 * num_params + raw$neg2ll
         names(aic) <- raw$cycle
         bic <- num_params * log(length(unique(obs_raw$id))) + raw$neg2ll
         names(bic) <- raw$cycle
-        
+
         mean <- cycle_data %>%
           filter(statistic == "mean") %>%
           select(cycle, value, parameter) %>%
@@ -149,7 +159,7 @@ PM_cycle <- R6::R6Class(
           mutate(across(.cols = -cycle, .fns = function(x) {
             x / first(x)
           }))
-        
+
         sd <- cycle_data %>%
           filter(statistic == "sd") %>%
           select(cycle, value, parameter) %>%
@@ -158,7 +168,7 @@ PM_cycle <- R6::R6Class(
           mutate(across(.cols = -cycle, .fns = function(x) {
             x / first(x)
           }))
-        
+
         median <- cycle_data %>%
           filter(statistic == "median") %>%
           select(cycle, value, parameter) %>%
@@ -167,19 +177,24 @@ PM_cycle <- R6::R6Class(
           mutate(across(.cols = -cycle, .fns = function(x) {
             x / first(x)
           }))
-        
+
         n_out <- max(obs_raw$outeq)
         n_cyc <- max(cycle_data$cycle)
-        gamlam <- tibble::as_tibble(raw$gamlam, .name_repair = "minimal") 
-        if(ncol(gamlam) == 1 & n_out > 1){gamlam <- cbind(gamlam, replicate((n_out-1),gamlam[,1]))} 
+        gamlam <- tibble::as_tibble(raw$gamlam, .name_repair = "minimal")
+        if (ncol(gamlam) == 1 & n_out > 1) {
+          gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
+        }
         names(gamlam) <- as.character(1:ncol(gamlam))
-        gamlam <- gamlam %>% pivot_longer(cols = everything(), 
-                                          values_to = "value", names_to = "outeq") %>%
+        gamlam <- gamlam %>%
+          pivot_longer(
+            cols = everything(),
+            values_to = "value", names_to = "outeq"
+          ) %>%
           mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
           select(cycle, value, outeq)
-        
+
         converged <- any(cycle_data$converged)
-        
+
         res <- list(
           names = c(names(config$random), names(config$fixed), names(config$constant)),
           cycnum = raw$cycle,
@@ -194,41 +209,39 @@ PM_cycle <- R6::R6Class(
         )
         class(res) <- c("PM_cycle_data", "list")
         return(res)
-        
-        
-      } else { #fortran
-        
-        if(inherits(data,"PMcycle")){ #old format
-          return(data) #nothing to do
+      } else { # fortran
+
+        if (inherits(data, "PMcycle")) { # old format
+          return(data) # nothing to do
         }
-        
-        if(inherits(data,"PM_cycle")){ #R6 format
-          return(data$data) #return raw to rebuild
+
+        if (inherits(data, "PM_cycle")) { # R6 format
+          return(data$data) # return raw to rebuild
         }
-        
-        if (!inherits(data, "NPAG") & !inherits(data, "IT2B")){
+
+        if (!inherits(data, "NPAG") & !inherits(data, "IT2B")) {
           cat(crayon::red("Error:"), "Cycle object: Run did not complete. Check model and data for errors.\n")
           return(NA)
-        } 
-        
+        }
+
         # warning and end if no cycles
-        if (data$icyctot == 0){
+        if (data$icyctot == 0) {
           cat(crayon::orange("Warning:"), "This run had no cycles.\n")
           return(NA)
         }
         # remove zero rows
         data$isd <- data$isd[apply(data$isd, 1, function(x) all(x != 0)), ]
-        
+
         # make sure still matrix if only one row left
         # if(class(data$isd)=="numeric") TODO: This is crashing on R 4.2.0
         # data$isd <- matrix(data$isd,nrow=1)
-        
+
         if (inherits(data, "NPAG")) {
           cycle <- list(
-            names = data$par, 
-            cycnum = data$icycst:(data$icycst + data$icyctot - 1), 
-            ll = -2 * data$ilog, 
-            gamlam = data$igamlam, 
+            names = data$par,
+            cycnum = data$icycst:(data$icycst + data$icyctot - 1),
+            ll = -2 * data$ilog,
+            gamlam = data$igamlam,
             mean = t(t(data$imean) / data$imean[1, ]),
             sd = t(t(data$isd) / data$isd[1, ]), median = t(data$iaddl[6, , ] / data$iaddl[6, , 1]),
             aic = data$iic[, 1], bic = data$iic[, 2]
@@ -236,10 +249,10 @@ PM_cycle <- R6::R6Class(
         }
         if (inherits(data, "IT2B")) {
           cycle <- list(
-            names = data$par, 
-            cycnum = 1:data$icyctot, 
-            ll = -2 * data$ilog, 
-            gamlam = data$igamlam, 
+            names = data$par,
+            cycnum = 1:data$icyctot,
+            ll = -2 * data$ilog,
+            gamlam = data$igamlam,
             mean = t(t(data$imean) / t(data$imean)[1, ]),
             sd = t(t(data$isd) / data$isd[1, ]), median = t(t(data$imed) / data$imed[1, ]),
             aic = data$iic[, 1], bic = data$iic[, 2]
@@ -247,29 +260,34 @@ PM_cycle <- R6::R6Class(
         }
         n_cyc <- max(cycle$cycnum)
         n_out <- data$numeqt
-        
-        #update format as of v 2.2
-        cycle$gamlam <- tibble::as_tibble(cycle$gamlam, .name_repair = "minimal") 
-        if(ncol(cycle$gamlam) == 1 & n_out > 1){cycle$gamlam <- cbind(cycle$gamlam, replicate((n_out-1),cycle$gamlam[,1]))} 
+
+        # update format as of v 2.2
+        cycle$gamlam <- tibble::as_tibble(cycle$gamlam, .name_repair = "minimal")
+        if (ncol(cycle$gamlam) == 1 & n_out > 1) {
+          cycle$gamlam <- cbind(cycle$gamlam, replicate((n_out - 1), cycle$gamlam[, 1]))
+        }
         names(cycle$gamlam) <- as.character(1:ncol(cycle$gamlam))
-        cycle$gamlam <- cycle$gamlam %>% pivot_longer(cols = everything(), 
-                                                      values_to = "value", names_to = "outeq") %>%
+        cycle$gamlam <- cycle$gamlam %>%
+          pivot_longer(
+            cols = everything(),
+            values_to = "value", names_to = "outeq"
+          ) %>%
           mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
           select(cycle, value, outeq)
-        
-        cycle$mean <- tibble::tibble(cycle = 1:n_cyc) %>% 
+
+        cycle$mean <- tibble::tibble(cycle = 1:n_cyc) %>%
           dplyr::bind_cols(tidyr::as_tibble(cycle$mean))
-        cycle$median <- tibble::tibble(cycle = 1:n_cyc) %>% 
+        cycle$median <- tibble::tibble(cycle = 1:n_cyc) %>%
           dplyr::bind_cols(tidyr::as_tibble(cycle$median))
-        cycle$sd <- tibble::tibble(cycle = 1:n_cyc) %>% 
+        cycle$sd <- tibble::tibble(cycle = 1:n_cyc) %>%
           dplyr::bind_cols(tidyr::as_tibble(cycle$sd))
-        
+
         class(cycle) <- c("PM_cycle_data", "list")
         return(cycle)
       }
     }
-  ) #end private
-) #end R6
+  ) # end private
+) # end R6
 
 # PLOT --------------------------------------------------------------------
 
@@ -350,12 +368,12 @@ PM_cycle <- R6::R6Class(
 #' )
 #' @family PMplots
 
-plot.PM_cycle <- function(x, 
+plot.PM_cycle <- function(x,
                           line = TRUE,
                           marker = TRUE,
                           colors,
                           linetypes,
-                          omit, 
+                          omit,
                           grid = TRUE,
                           xlab, ylab,
                           ...) {
@@ -364,48 +382,48 @@ plot.PM_cycle <- function(x,
   } else {
     stop("Please supply a PM_cycle object to plot.\n")
   }
-  
-  
+
+
   # housekeeping
-  
-  nvar <- if(inherits(data$mean, "matrix")){
+
+  nvar <- if (inherits(data$mean, "matrix")) {
     ncol(data$mean)
   } else {
     ncol(data$mean %>% select(-cycle))
   }
-  
+
   line <- amendLine(line, default = list(color = "dodgerblue", width = 2))
   marker <- amendMarker(marker, default = list(
     symbol = "circle",
     color = "dodgerblue",
     size = 4, line = list(width = 0)
   ))
-  
+
   if (missing(colors)) {
     colors <- "Set2"
   } else {
-    palettes <- getPalettes() #in plotly_Utils
-    if(length(colors) == 1 && !colors %in% palettes){
-      colors <- rep(colors, nvar) #ensure long enough
-    } 
+    palettes <- getPalettes() # in plotly_Utils
+    if (length(colors) == 1 && !colors %in% palettes) {
+      colors <- rep(colors, nvar) # ensure long enough
+    }
   }
-  
+
   if (missing(linetypes)) {
     linetypes <- rep("solid", nvar)
   } else {
     linetypes <- rep(linetypes, nvar) # ensure long enough
   }
-  
+
   # process dots
   layout <- amendDots(list(...))
-  
+
   # legend - not needed for this function
   layout <- modifyList(layout, list(showlegend = F))
-  
+
   # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-  
+
   # axis label formatting if needed
   xlab <- if (missing(xlab)) {
     "Cycle Number"
@@ -417,15 +435,15 @@ plot.PM_cycle <- function(x,
   } else {
     modifyList(ylab, list(text = ""))
   }
-  
+
   layout$xaxis$title <- amendTitle(xlab)
   if (is.character(ylab)) {
     layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
   } else {
     layout$yaxis$title <- amendTitle(ylab)
   }
-  
-  
+
+
   numcycles <- nrow(data$mean)
   if (missing(omit)) {
     omit <- floor(0.2 * numcycles)
@@ -433,21 +451,21 @@ plot.PM_cycle <- function(x,
     omit <- floor(omit * numcycles)
   }
   if (omit == 0) omit <- 1
-  
+
   include <- omit:numcycles
   if (length(data$cycnum) == 0) {
     cycnum <- include
   } else {
     cycnum <- data$cycnum[include]
   }
-  
-  
+
+
   # LL
   graph_data <- dplyr::tibble(cycle = include, ll = data$ll[include])
-  
+
   layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-                                    "<b>-2 * Log-Likelihood</b>",
-                                    "-2 * Log-Likelihood"
+    "<b>-2 * Log-Likelihood</b>",
+    "-2 * Log-Likelihood"
   )
   p1 <- graph_data %>%
     plotly::plot_ly(
@@ -463,16 +481,16 @@ plot.PM_cycle <- function(x,
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
-  
+
   # AIC/BIC
   graph_data$aic <- data$aic[include]
   graph_data$bic <- data$bic[include]
-  
+
   layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-                                    "<b>AIC/BIC</b>",
-                                    "AIC/BIC"
+    "<b>AIC/BIC</b>",
+    "AIC/BIC"
   )
-  
+
   p2 <- tibble::tibble(cycle = 1:numcycles, aic = data$aic, bic = data$bic) %>%
     pivot_longer(cols = -cycle, names_to = "type", values_to = "value") %>%
     filter(cycle %in% include) %>%
@@ -483,7 +501,7 @@ plot.PM_cycle <- function(x,
       line = list(width = line$width),
       linetype = ~type,
       linetypes = linetypes,
-      text = ~toupper(type),
+      text = ~ toupper(type),
       marker = list(size = marker$size, symbol = marker$symbol),
       hovertemplate = "Cycle: %{x:i}<br>%{text}: %{y:.3f}<extra></extra>",
       showlegend = F
@@ -492,36 +510,42 @@ plot.PM_cycle <- function(x,
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
-  
+
   # gamma/lambda
   layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-                                    "<b>Gamma/Lambda</b>",
-                                    "Gamma/Lambda"
+    "<b>Gamma/Lambda</b>",
+    "Gamma/Lambda"
   )
-  
-  #amend older versions of gamma if needed
-  if(is.matrix(data$gamlam)){
+
+  # amend older versions of gamma if needed
+  if (is.matrix(data$gamlam)) {
     n_cyc <- max(data$cycnum)
     n_out <- 1
-    data$gamlam <- tibble::as_tibble(data$gamlam, .name_repair = "minimal") 
-    if(ncol(data$gamlam) == 1 & n_out > 1){data$gamlam <- cbind(data$gamlam, replicate((n_out-1),data$gamlam[,1]))} 
+    data$gamlam <- tibble::as_tibble(data$gamlam, .name_repair = "minimal")
+    if (ncol(data$gamlam) == 1 & n_out > 1) {
+      data$gamlam <- cbind(data$gamlam, replicate((n_out - 1), data$gamlam[, 1]))
+    }
     names(data$gamlam) <- as.character(1:ncol(data$gamlam))
-    data$gamlam <- data$gamlam %>% pivot_longer(cols = everything(), 
-                                                values_to = "value", names_to = "outeq") %>%
+    data$gamlam <- data$gamlam %>%
+      pivot_longer(
+        cols = everything(),
+        values_to = "value", names_to = "outeq"
+      ) %>%
       mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
       select(cycle, value, outeq)
   }
-  
-  
+
+
   # if(max(data$gamlam$outeq) > 1){
-  # all_equal <- data$gamlam %>% group_by(outeq) %>% 
+  # all_equal <- data$gamlam %>% group_by(outeq) %>%
   #   summarize(checksum = sum(value)) %>% distinct(.data$checksum) %>%
-  #   nrow(.) %>% magrittr::equals(1) 
+  #   nrow(.) %>% magrittr::equals(1)
   # } else {
   #   all_equal <- FALSE
   # }
-  # 
-  p3 <- data$gamlam %>% filter(cycle %in% include) %>%
+  #
+  p3 <- data$gamlam %>%
+    filter(cycle %in% include) %>%
     plotly::plot_ly(
       x = ~cycle, y = ~value, type = "scatter", mode = "lines+markers",
       color = ~outeq,
@@ -538,17 +562,17 @@ plot.PM_cycle <- function(x,
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
-  
-  
+
+
   # normalized plots
-  
+
   normalized_plot <- function(.par, range) {
     layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-                                      paste0("<b>Normalized ", .par, "</b>"),
-                                      paste0("Normalized ", .par)
+      paste0("<b>Normalized ", .par, "</b>"),
+      paste0("Normalized ", .par)
     )
     layout$yaxis$range <- range
-    
+
     .p <- graph_data[[.par]] %>%
       pivot_longer(cols = -cycle, names_to = "par") %>%
       plot_ly(
@@ -570,29 +594,29 @@ plot.PM_cycle <- function(x,
       )
     return(.p)
   }
-  
-  #update objects if needed
-  if(is.matrix(data$mean)){
+
+  # update objects if needed
+  if (is.matrix(data$mean)) {
     n_cyc <- max(data$cycnum)
-    data$mean <- tibble::tibble(cycle = 1:n_cyc) %>% 
+    data$mean <- tibble::tibble(cycle = 1:n_cyc) %>%
       dplyr::bind_cols(tidyr::as_tibble(data$mean))
-    data$median <- tibble::tibble(cycle = 1:n_cyc) %>% 
+    data$median <- tibble::tibble(cycle = 1:n_cyc) %>%
       dplyr::bind_cols(tidyr::as_tibble(data$median))
-    data$sd <- tibble::tibble(cycle = 1:n_cyc) %>% 
+    data$sd <- tibble::tibble(cycle = 1:n_cyc) %>%
       dplyr::bind_cols(tidyr::as_tibble(data$sd))
   }
-  
-  
-  graph_data$Mean <- data$mean[include, ] 
-  graph_data$Median <- data$median[include, ] 
-  graph_data$SD <- data$sd[include,  ]
-  
-  graph_range <- range(graph_data$Mean[,-1], graph_data$Median[,-1], graph_data$SD[,-1])
-  
-  
+
+
+  graph_data$Mean <- data$mean[include, ]
+  graph_data$Median <- data$median[include, ]
+  graph_data$SD <- data$sd[include, ]
+
+  graph_range <- range(graph_data$Mean[, -1], graph_data$Median[, -1], graph_data$SD[, -1])
+
+
   p4 <- normalized_plot("Mean", graph_range)
   p5 <- normalized_plot("Median", graph_range)
-  
+
   if (!all(is.na(data$sd))) {
     p6 <- normalized_plot("SD", graph_range)
   } else {
@@ -603,27 +627,27 @@ plot.PM_cycle <- function(x,
         y = 0.5
       ))
   }
-  
-  
-  
+
+
+
   p_r1 <- plotly::subplot(p1, p2, p3,
-                          nrows = 1,
-                          titleX = F, titleY = T,
-                          margin = c(0.05, 0.05, 0, 0.05)
+    nrows = 1,
+    titleX = F, titleY = T,
+    margin = c(0.05, 0.05, 0, 0.05)
   )
   p_r2 <- plotly::subplot(p4, p5, p6,
-                          nrows = 1,
-                          titleX = T, titleY = T,
-                          margin = c(0.05, 0.05, 0, 0.05)
+    nrows = 1,
+    titleX = T, titleY = T,
+    margin = c(0.05, 0.05, 0, 0.05)
   )
   p <- plotly::subplot(p_r1, p_r2,
-                       nrows = 2,
-                       titleX = T, shareX = F,
-                       titleY = T,
-                       margin = c(0.05, 0.05, 0, 0.05)
+    nrows = 2,
+    titleX = T, shareX = F,
+    titleY = T,
+    margin = c(0.05, 0.05, 0, 0.05)
   ) %>%
     layout(legend = list(y = 0.4))
-  
+
   print(p)
   return(p)
 }
@@ -658,16 +682,16 @@ plot.PM_cycle <- function(x,
 #' @author Michael Neely
 #' @examples
 #' library(PmetricsData)
-#' NPex$cycle$summary() #preferred
-#' summary(NPex$cycle) #alternative
+#' NPex$cycle$summary() # preferred
+#' summary(NPex$cycle) # alternative
 #' @seealso [PM_cycle]
 #' @export
 
-summary.PM_cycle <- function(object, cycle, digits = 3, ...){
-  if(inherits(object, "PM_cycle")){ 
+summary.PM_cycle <- function(object, cycle, digits = 3, ...) {
+  if (inherits(object, "PM_cycle")) {
     object <- object$data
   }
-  if(missing(cycle)){
+  if (missing(cycle)) {
     cyc <- max(object$cycnum)
   } else {
     cyc <- cycle
@@ -675,13 +699,13 @@ summary.PM_cycle <- function(object, cycle, digits = 3, ...){
   ret <- list(
     cycle = cyc,
     max_cycle = max(object$cycnum),
-    ll = round(object$ll[cyc],digits),
-    aic = round(object$aic[cyc],digits),
-    bic = round(object$bic[cyc],digits),
-    gamlam = object$gamlam %>% filter(cycle ==cyc) %>% mutate(value = round(value,digits)),
-    mean = round(object$mean[cyc,],digits),
-    sd = round(object$sd[cyc,],digits),
-    median = round(object$median[cyc,],digits)
+    ll = round(object$ll[cyc], digits),
+    aic = round(object$aic[cyc], digits),
+    bic = round(object$bic[cyc], digits),
+    gamlam = object$gamlam %>% filter(cycle == cyc) %>% mutate(value = round(value, digits)),
+    mean = round(object$mean[cyc, ], digits),
+    sd = round(object$sd[cyc, ], digits),
+    median = round(object$median[cyc, ], digits)
   )
   class(ret) <- c("summary.PM_cycle", "list")
   return(ret)
@@ -694,7 +718,7 @@ summary.PM_cycle <- function(object, cycle, digits = 3, ...){
 #' `r lifecycle::badge("stable")`
 #'
 #' Print a Pmetrics Cycle Summary Object
-#' 
+#'
 #' @details
 #' Print a summary a summary.PM_cycle object
 #' made by [summary.PM_cycle]. Users do not normally need to call this
@@ -712,16 +736,14 @@ summary.PM_cycle <- function(object, cycle, digits = 3, ...){
 #' NPex$cycle$summary()
 #' @export
 
-print.summary.PM_cycle <- function(x, ...){
+print.summary.PM_cycle <- function(x, ...) {
   cat("Cycle number:", crayon::blue(x$cycle), "of", crayon::blue(x$max_cycle), "\n")
-  cat("Log-likelihood:", crayon::blue(x$ll),"\n")
-  cat("AIC:", crayon::blue(x$aic),"\n")
-  cat("BIC:", crayon::blue(x$bic),"\n")
-  cat("Gamlam", paste0("outeq ",x$gamlam$outeq,": ",crayon::blue(x$gamlam$value),collapse = "; "),"\n")
+  cat("Log-likelihood:", crayon::blue(x$ll), "\n")
+  cat("AIC:", crayon::blue(x$aic), "\n")
+  cat("BIC:", crayon::blue(x$bic), "\n")
+  cat("Gamlam", paste0("outeq ", x$gamlam$outeq, ": ", crayon::blue(x$gamlam$value), collapse = "; "), "\n")
   cat("Normalized parameter values:\n")
   par_tbl <- bind_rows(x$mean, x$sd, x$median)
-  cat(paste0(rep("------", ncol(par_tbl)), collapse = "-"),"\n")
+  cat(paste0(rep("------", ncol(par_tbl)), collapse = "-"), "\n")
   print(par_tbl)
-  
 }
-
