@@ -12,11 +12,14 @@ getBits <- function() {
   # figure out 32 or 64 bit
   if (length(grep("32-bit", utils::sessionInfo())) > 0) {
     return(32)
+  } else if (length(grep("64-bit", utils::sessionInfo())) > 0) {
+    return(64)
   } else {
+    cat(crayon::yellow("Warning:"),"Processor bits not detected. Default 64 bits used.\n",
+        "Compiler may fail. If so, please post issue on github.\n")
     return(64)
   }
 }
-
 # getFixedColNames ------------------------------------------------------------------
 
 #' @title Names of fixed columns  
