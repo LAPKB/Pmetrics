@@ -118,7 +118,7 @@ PM_cycle <- R6::R6Class(
             )
           }
         )
-        obs_raw <- tryCatch(readr::obs_csv(file = "obs.csv", show_col_types = FALSE),
+        obs_raw <- tryCatch(readr::read_csv(file = "obs.csv", show_col_types = FALSE),
           error = function(e) {
             cat(
               crayon::red("Error:"),
