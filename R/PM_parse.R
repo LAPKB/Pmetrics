@@ -1,7 +1,3 @@
-
-
-
-
 # PM_parse ----------------------------------------------------------------
 
 
@@ -38,11 +34,11 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
   # cycle_file <- paste(wd, "cycles.csv", sep = "/")
   # theta_file <- paste(wd, "theta.csv", sep = "/")
   # post_file <- paste(wd, "posterior.csv", sep = "/")
-  
-  if(inherits(fit,"PM_fit")) {
+
+  if (inherits(fit, "PM_fit")) {
     # fit is a PM_fit object, use it directly
     fit_object <- fit
-  } else if(is.character(fit) && file.exists(fit)) {
+  } else if (is.character(fit) && file.exists(fit)) {
     # fit is a character string pointing to a file, load it
     fit_object <- get(load(fit))
   } else {
@@ -50,19 +46,36 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
     fit_object <- NULL
   }
 
-  # config = make_Config(config_file)
-  
-  op <- PM_op$new() #assumes pred.csv, obs.csv, and settings.json are in wd
-  final <- PM_final$new() #assumes theta.csv and posterior.csv are in wd
-  cycle <- PM_cycle$new() #asumes cycles.csv, obs.csv, and settings.json are in wd
-  pop <- PM_pop$new() #assumes pred.csv is in wd
-  post <- PM_post$new() #assumes pred.csv is in wd
-  cov <- NULL
-  if (!is.null(fit)) {
-    cov <- PM_cov$new(list(final = final, data = fit$data))
-  }
-  
 
+  # config = make_Config(config_file)
+
+  cwd <- getwd()
+  setwd(wd)
+
+  tryCatch(
+    {
+      op <- PM_op$new() # assumes pred.csv, obs.csv, and settings.json are in wd
+      final <- PM_final$new() # assumes theta.csv and posterior.csv are in wd
+      cycle <- PM_cycle$new() # asumes cycles.csv, obs.csv, and settings.json are in wd
+      pop <- PM_pop$new() # assumes pred.csv is in wd
+      post <- PM_post$new() # assumes pred.csv is in wd
+      cov <- NULL
+      if (!is.null(fit)) {
+        cov <- PM_cov$new(list(final = final, data = fit$data))
+      }
+      setwd(cwd)
+    },
+    error = function(e) {
+      e <- NULL
+      setwd(cwd)
+      cat(
+        crayon::red("Error:"),
+        "There was an error parsing the output files.\n"
+      )
+      # Hard stop execution
+      stop()
+    }
+  )
   NPcore <- list(
     data = fit$data,
     model = fit$model,

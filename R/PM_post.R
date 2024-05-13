@@ -1,5 +1,5 @@
-#Use menu item Code -> Jump To... for rapid navigation
-#Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
+# Use menu item Code -> Jump To... for rapid navigation
+# Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
 
 # R6 -----------------------------------------------------------------
 
@@ -14,17 +14,17 @@
 #'
 #' @details
 #' #' The [PM_post] object is both a data field within a [PM_result], and itself an R6 object
-#' comprising data fields and associated methods suitable for 
-#' analysis and plotting of posterior predictions generated during the run. 
-#' 
+#' comprising data fields and associated methods suitable for
+#' analysis and plotting of posterior predictions generated during the run.
+#'
 #' Because [PM_post] objects are automatically added to the [PM_result] at the end of a
 #' successful run, it is generally not necessary for users to generate [PM_post] objects
 #' themselves.
-#'  
+#'
 #' The main results are contained in the `$data` field,
 #' and it is this field which is passed to the `$plot` and `$summary` methods.
 #' data frame with population predicted outputs for all subjects.
-#' 
+#'
 #' To provide a more traditional experience in R,
 #' the data frame is separated by columns into fields, e.g. `id` or `time`. This
 #' allows you to access them in an S3 way, e.g. `run1$post$time` if `run1` is a
@@ -65,10 +65,10 @@ PM_post <- R6::R6Class(
     #' posterior predictions. If missing, will look for this file in working
     #' directory. Not needed when the backend is Rust.
     #' @param ... Not currently used.
-    initialize = function(PMdata, run, ...) {
+    initialize = function(PMdata = NULL, run, ...) {
       post <- private$make(PMdata, run)
       self$data <- post
-      if(length(post)>1){ #all the objects were made
+      if (length(post) > 1) { # all the objects were made
         self$id <- post$id
         self$time <- post$time
         self$icen <- post$icen
@@ -82,11 +82,10 @@ PM_post <- R6::R6Class(
     #' @details
     #' See [plot.PM_pop].
     #' @param ... Arguments passed to [plot.PM_pop]
-    plot = function(...){
-      tryCatch(plot.PM_post(self, ...), error = function(e){
+    plot = function(...) {
+      tryCatch(plot.PM_post(self, ...), error = function(e) {
         cat(crayon::red("Error:"), e$message, "\n")
-      }
-      )
+      })
     },
     #' @description
     #' Summary method
@@ -94,10 +93,9 @@ PM_post <- R6::R6Class(
     #' See [summary.PM_post].
     #' @param ... Arguments passed to [summary.PM_pop]
     summary = function(...) {
-      tryCatch(summary.PM_pop(self, ...), error = function(e){
+      tryCatch(summary.PM_pop(self, ...), error = function(e) {
         cat(crayon::red("Error:"), e$message, "\n")
-      }
-      )
+      })
     },
     #' @description
     #' Calculate AUC
@@ -111,20 +109,22 @@ PM_post <- R6::R6Class(
   ), # end public
   private = list(
     make = function(data, run) {
-      if(getPMoptions("backend") == "rust"){
-        
+      if (getPMoptions("backend") == "rust") {
         raw <- tryCatch(readr::read_csv(file = "pred.csv", show_col_types = FALSE),
-                             error = function(e) {
-                               e <- NULL
-                               cat(crayon::red("Error:"),
-                                   "The run did not complete and the pred.csv file was not created.\n")
-                             })
-       
-        
-        if(is.null(raw)){
+          error = function(e) {
+            e <- NULL
+            cat(
+              crayon::red("Error:"),
+              "The run did not complete and the pred.csv file was not created.\n"
+            )
+          }
+        )
+
+
+        if (is.null(raw)) {
           return(NA)
         }
-        
+
         post <- raw %>%
           select(-popMedian, -popMean) %>%
           pivot_longer(
@@ -139,20 +139,19 @@ PM_post <- R6::R6Class(
           # Hardcoded for now
           mutate(block = 1) %>%
           relocate(id, time, icen, outeq, pred, block)
-        
+
         class(post) <- c("PM_post_data", "data.frame")
         return(post)
-        
-      } else { #fortran
-        
-        if(inherits(data,"PMpost")){ #old format
-          return(data) #nothing to do
+      } else { # fortran
+
+        if (inherits(data, "PMpost")) { # old format
+          return(data) # nothing to do
         }
-        
-        if(inherits(data,"PM_post")){ #R6 format
-          return(data$data) #return raw to rebuild
+
+        if (inherits(data, "PM_post")) { # R6 format
+          return(data$data) # return raw to rebuild
         }
-        
+
         # get data
         if (missing(run)) { # look in current wd
           # run <- "."
@@ -162,14 +161,14 @@ PM_post <- R6::R6Class(
           if (!file.exists(as.character(run))) stop(paste(run, " not found in the current working directory.\n", sep = ""))
           predfile <- paste(run, "outputs/PRTB0001", sep = "/")
         }
-        
-        
+
+
         # read PRTB file
         preddata <- readLines(predfile)
-        
-        
+
+
         predLines <- grep("[[:space:]]*TIMES[[:space:]]+PREDICTED VALUES", preddata)
-        
+
         if (length(predLines) > 0) { # we are dealing with the old format
           stop("Rerun NPAG to generate current format.\n")
         } else { # we are dealing with the new format
@@ -185,19 +184,19 @@ PM_post <- R6::R6Class(
             raw[[i]]$id <- data$sdata$id[i]
           }
           totalRaw <- do.call(rbind, raw)
-          
+
           # add blocks
           blocks <- totalRaw %>%
             group_by(.data$id) %>%
             filter(.data$time == 0) %>%
             transmute(blocknum = row_number())
-          
-          
+
+
           totalRaw$block <- NA
           totalRaw$block[totalRaw$time == 0] <- blocks$blocknum
           totalRaw <- fill(totalRaw, block)
-          
-          
+
+
           post <- totalRaw %>%
             pivot_longer(cols = c(-time, -id, -block), names_to = "icen", values_to = "pred") %>%
             arrange(.data$id, .data$icen, .data$block, .data$time) %>%
@@ -206,25 +205,24 @@ PM_post <- R6::R6Class(
             select(.data$id, .data$time, .data$icen, .data$outeq, .data$pred, .data$block) %>%
             filter(.data$icen != "mode") # suppress mode
         }
-        
+
         # add predictions at observed times
         op <- PM_op$new(data)$data
         opPost <- op[op$pred.type == "post", ]
         post <- rbind(post, opPost[, c("id", "time", "icen", "outeq", "pred", "block")])
-        
+
         # remove duplicates
         dupTime <- which(duplicated(post[, c("id", "time", "icen", "outeq", "block")]))
         if (length(dupTime) > 0) post <- post[-dupTime, ]
-        
+
         # sort by icen, id, block, time, outeq
         post <- post[order(post$icen, post$id, post$block, post$time, post$outeq), ]
-        
+
         # assign class
         class(post) <- c("PM_post_data", "data.frame")
-        
+
         return(post)
       }
-      
     }
   ) # end private
 )
@@ -269,7 +267,7 @@ PM_post <- R6::R6Class(
 #' line > dash > values. Default is "solid".
 #' Example: `line = list(color = "red", dash = "longdash", width = 2)`
 #' @param marker Formats the symbols plotting observations. `r template("marker")`
-#' @param colors to use for **groups** when there are multiple `outeq`, `block`, or `icen`. 
+#' @param colors to use for **groups** when there are multiple `outeq`, `block`, or `icen`.
 #' This can be a palette or a vector of colors.
 #' For accepted palette names see `RColorBrewer::brewer.pal.info`. Examples include
 #' "BrBG", or "Set2". An example vector could be `c("red", "green", "blue")`. It is not
@@ -280,7 +278,7 @@ PM_post <- R6::R6Class(
 #' This vector does need to be the same length as the number of groups.
 #' Example: `c("Mean", "Median")` if `icen = c("mean", "median")`.
 #' @param mult `r template("mult")`
-#' @param icen Can be "median" for the predictions based on median of 
+#' @param icen Can be "median" for the predictions based on median of
 #' parameter value distributions, "mean", or both.  Default is "median".
 #' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2` or `c(1, 3)`.
 #' @param block `r template("block")` Default is 1, but can be multiple if present in the data, as for `outeq`.
@@ -289,10 +287,10 @@ PM_post <- R6::R6Class(
 #' specified as a vector with number of rows and columns, e.g. `c(3, 2)` for 3 rows and
 #' 2 columns of subject splots to include in each trellis.
 #' @param legend Not used for this plot.
-#' @param log `r template("log")` 
-#' @param grid `r template("grid")` 
-#' @param xlim `r template("xlim")` 
-#' @param ylim `r template("ylim")` 
+#' @param log `r template("log")`
+#' @param grid `r template("grid")`
+#' @param xlim `r template("xlim")`
+#' @param ylim `r template("ylim")`
 #' @param xlab `r template("xlab")` Default is "Time".
 #' @param ylab `r template("ylab")` Default is "Output".
 #' @param title `r template("title")` Default is to have no title.
@@ -310,58 +308,58 @@ PM_post <- R6::R6Class(
 #'   marker = list(color = "blue", symbol = "square", size = 12, opacity = 0.4),
 #'   line = list(color = "orange")
 #' )
-#' 
+#'
 #' @family PMplots
 
 plot.PM_post <- function(x,
-                        include = NA,
-                        exclude = NA,
-                        line = TRUE,
-                        marker = TRUE,
-                        color = NULL,
-                        colors = "Set1",
-                        names = NULL,
-                        mult = 1,
-                        icen = "median",
-                        outeq = 1,
-                        block = 1,
-                        overlay = TRUE,
-                        legend = FALSE, 
-                        log = FALSE, 
-                        grid = FALSE,
-                        xlab = "Time",
-                        ylab = "Output",
-                        title = "",
-                        xlim, ylim, ...) {
+                         include = NA,
+                         exclude = NA,
+                         line = TRUE,
+                         marker = TRUE,
+                         color = NULL,
+                         colors = "Set1",
+                         names = NULL,
+                         mult = 1,
+                         icen = "median",
+                         outeq = 1,
+                         block = 1,
+                         overlay = TRUE,
+                         legend = FALSE,
+                         log = FALSE,
+                         grid = FALSE,
+                         xlab = "Time",
+                         ylab = "Output",
+                         title = "",
+                         xlim, ylim, ...) {
   # Plot parameters ---------------------------------------------------------
-  
+
   x <- if (inherits(x, "PM_post")) {
     x$data
   } else {
     stop("Please supply a PM_post object for plotting.\n")
   }
-  
+
   # process marker
   marker <- amendMarker(marker)
-  
+
   # process line
   line <- amendLine(line)
-  
-  
+
+
   # get the rest of the dots
   layout <- amendDots(list(...))
-  
-  #legend
+
+  # legend
   legendList <- amendLegend(legend)
   layout <- modifyList(layout, list(showlegend = legendList$showlegend))
   if (length(legendList) > 1) {
     layout <- modifyList(layout, list(legend = within(legendList, rm(showlegend))))
   }
-  
+
   # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-  
+
   # axis labels if needed
   layout$xaxis$title <- amendTitle(xlab)
   if (is.character(ylab)) {
@@ -369,8 +367,8 @@ plot.PM_post <- function(x,
   } else {
     layout$yaxis$title <- amendTitle(ylab)
   }
-  
-  
+
+
   # axis ranges
   if (!missing(xlim)) {
     layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
@@ -378,15 +376,15 @@ plot.PM_post <- function(x,
   if (!missing(ylim)) {
     layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
   }
-  
+
   # log y axis
   if (log) {
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
-  
+
   # title
   layout$title <- amendTitle(title, default = list(size = 20))
-  
+
   # overlay
   if (is.logical(overlay)) { # T/F
     if (!overlay) { # F,default
@@ -398,16 +396,16 @@ plot.PM_post <- function(x,
     ncols <- overlay[2]
     overlay <- FALSE
   }
-  
+
   # Data processing ---------------------------------------------------------
-  
-  
+
+
   # filter
   presub <- x %>%
     filter(outeq %in% !!outeq, block %in% !!block, icen %in% !!icen) %>%
     mutate(group = "") %>%
-    includeExclude(include, exclude) 
-  
+    includeExclude(include, exclude)
+
   # group
   if (outeq[1] != 1 | length(outeq) > 1) {
     presub <- presub %>%
@@ -419,33 +417,33 @@ plot.PM_post <- function(x,
       rowwise() %>%
       mutate(group = paste0(group, ", block: ", block))
   }
-  
+
   if (length(icen) > 1) {
     presub <- presub %>%
       rowwise() %>%
       mutate(group = paste0(group, ", ", icen))
   }
-  
+
   presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
   if (!is.null(names)) {
     presub$group <- factor(presub$group, labels = names)
   } else {
     presub$group <- factor(presub$group)
   }
-  
+
   # select relevant columns
   sub <- presub %>%
     select(id, time, pred, outeq, group) %>%
     ungroup()
   sub$group <- factor(sub$group)
-  
+
   # remove missing
   sub <- sub %>% filter(pred != -99)
-  
-  
-  
+
+
+
   # Plot function ----------------------------------------------------------
-  
+
   dataPlot <- function(allsub, overlay) {
     # set appropriate pop up text
     if (!overlay) {
@@ -455,10 +453,10 @@ plot.PM_post <- function(x,
       hovertemplate <- "Time: %{x}<br>Pred: %{y}<br>ID: %{text}<extra></extra>"
       text <- ~id
     }
-    
+
     if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
       n_colors <- length(levels(allsub$group))
-      if(checkRequiredPackages("RColorBrewer")){
+      if (checkRequiredPackages("RColorBrewer")) {
         palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
         if (length(colors) == 1 && colors %in% palettes$name) {
           max_colors <- palettes$maxcolors[match(colors, palettes$name)]
@@ -466,21 +464,22 @@ plot.PM_post <- function(x,
         }
       } else {
         cat(paste0(crayon::green("Note: "), "Group colors are better with RColorBrewer package installed.\n"))
-        colors <- getDefaultColors(n_colors) #in plotly_Utils
+        colors <- getDefaultColors(n_colors) # in plotly_Utils
       }
-      
+
       marker$color <- NULL
       line$color <- NULL
     } else { # no grouping
       allsub$group <- factor(1, labels = "Predicted")
     }
-    
+
     p <- allsub %>%
       plotly::plot_ly(
         x = ~time, y = ~ pred * mult,
         color = ~group,
         colors = colors,
-        name = ~group) %>%
+        name = ~group
+      ) %>%
       plotly::add_markers(
         marker = marker,
         text = text,
@@ -499,18 +498,18 @@ plot.PM_post <- function(x,
     )
     return(p)
   } # end dataPlot
-  
-  
+
+
   # Call plot ---------------------------------------------------------------
-  
+
   # call the plot function and display appropriately
   if (overlay) {
     sub <- sub %>% dplyr::group_by(id)
     p <- dataPlot(sub, overlay = TRUE)
     print(p)
   } else { # overlay = FALSE, ie. split them
-    
-    if(!checkRequiredPackages("trelliscopejs")){
+
+    if (!checkRequiredPackages("trelliscopejs")) {
       stop(paste0("Package trelliscopejs required to plot when overlay = ", crayon::red("FALSE")))
     }
     sub_split <- x %>%
@@ -521,7 +520,7 @@ plot.PM_post <- function(x,
       trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
     print(p)
   }
-  
+
   return(p)
 }
 
@@ -540,7 +539,7 @@ plot.PM_post <- function(x,
 #' be called directly on a [PM_op] object. See examples.
 #'
 #' @method summary PM_post
-#' @param object A [PM_post] object 
+#' @param object A [PM_post] object
 #' @param digits Integer, used for number of digits to print.
 #' @param icen Can be either "median" for the predictions based on medians of the posterior parameter value
 #' distributions, or "mean".  Default is "median".
@@ -548,47 +547,46 @@ plot.PM_post <- function(x,
 #' @param ... Not used.
 #' @return A data frame with the minimum, first quartile, median, third quartile, maximum,
 #' mean and standard deviation for times and predictions in `x`.
-#' 
+#'
 #' @author Michael Neely
 #' @examples
 #' library(PmetricsData)
-#' NPex$post$summary() #preferred
-#' summary(NPex$post) #alternative
+#' NPex$post$summary() # preferred
+#' summary(NPex$post) # alternative
 #' @seealso [PM_post]
 #' @export
 
 summary.PM_post <- function(object, digits = max(3, getOption("digits") - 3),
-                          icen = "median",
-                          outeq = 1, ...) {
-
+                            icen = "median",
+                            outeq = 1, ...) {
   sumWrk <- function(data) {
     sumstat <- matrix(NA, nrow = 7, ncol = 2, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Pred")))
     # min
-    sumstat[1, ] <- round(apply(data[, c(2,5)], 2, min, na.rm = T), digits)
+    sumstat[1, ] <- round(apply(data[, c(2, 5)], 2, min, na.rm = T), digits)
     # 25th percentile
-    sumstat[2, ] <- round(apply(data[, c(2,5)], 2, quantile, 0.25, na.rm = T), digits)
+    sumstat[2, ] <- round(apply(data[, c(2, 5)], 2, quantile, 0.25, na.rm = T), digits)
     # median
-    sumstat[3, ] <- round(apply(data[, c(2,5)], 2, median, na.rm = T), digits)
+    sumstat[3, ] <- round(apply(data[, c(2, 5)], 2, median, na.rm = T), digits)
     # 75th percentil
-    sumstat[4, ] <- round(apply(data[, c(2,5)], 2, quantile, 0.75, na.rm = T), digits)
+    sumstat[4, ] <- round(apply(data[, c(2, 5)], 2, quantile, 0.75, na.rm = T), digits)
     # max
-    sumstat[5, ] <- round(apply(data[, c(2,5)], 2, max, na.rm = T), digits)
+    sumstat[5, ] <- round(apply(data[, c(2, 5)], 2, max, na.rm = T), digits)
     # mean
-    sumstat[6, ] <- round(apply(data[, c(2,5)], 2, mean, na.rm = T), digits)
+    sumstat[6, ] <- round(apply(data[, c(2, 5)], 2, mean, na.rm = T), digits)
     # SD
-    sumstat[7, ] <- round(apply(data[, c(2,5)], 2, sd, na.rm = T), digits)
+    sumstat[7, ] <- round(apply(data[, c(2, 5)], 2, sd, na.rm = T), digits)
     sumstat <- data.frame(sumstat)
     # N
     N <- length(data$pred[!is.na(data$pred)])
-    
+
     return(sumstat)
   } # end sumWrk
-  
+
   # make summary
-  if(inherits(object, "PM_post")){ 
+  if (inherits(object, "PM_post")) {
     object <- object$data
-  }  
-  
+  }
+
   object <- object %>% filter(outeq == !!outeq, icen == !!icen)
   if (all(is.na(object$pred))) {
     result <- NA
