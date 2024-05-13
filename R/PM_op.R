@@ -136,7 +136,7 @@ PM_op <- R6::R6Class(
             )
           }
         )
-        obs_raw <- tryCatch(readr::obs_csv(file = "pred.csv", show_col_types = FALSE),
+        obs_raw <- tryCatch(readr::read_csv(file = "obs.csv", show_col_types = FALSE),
           error = function(e) {
             e <- NULL
             cat(
@@ -182,13 +182,13 @@ PM_op <- R6::R6Class(
           ) %>%
           select(-name) %>%
           dplyr::rename(pred = value) %>%
+          dplyr::rename(obs = out) %>%
           mutate(d = pred - obs) %>%
           mutate(ds = d * d) %>%
           mutate(obsSD = poly[1] + poly[2] * obs + poly[3] * (obs^2) + poly[4] * (obs^3)) %>%
           mutate(wd = d / obsSD) %>%
           mutate(wds = wd * wd) %>%
-          # HARDCODED - need to add block to rust output files
-          mutate(block = 1)
+          mutate(block = block)
         class(op) <- c("PM_op_data", "data.frame")
         return(op)
       } else { # fortran
