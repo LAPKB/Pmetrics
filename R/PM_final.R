@@ -198,7 +198,7 @@ PM_final <- R6::R6Class(
             )
           }
         )
-        post <- tryCatch(readr::obs_csv(file = "posterior.csv", show_col_types = FALSE),
+        post <- tryCatch(readr::read_csv(file = "posterior.csv", show_col_types = FALSE),
           error = function(e) {
             cat(
               crayon::red("Error:"),
