@@ -71,7 +71,7 @@ PM_cycle <- R6::R6Class(
     #' @param PMdata If backend is Fortran, the parsed output from [NPparse] or [ITparse]. Not needed when the backend is Rust.
     #' @param ... Not currently used.
 
-    initialize = function(PMdata, ...) {
+    initialize = function(PMdata = NULL, ...) {
       cycle <- private$make(PMdata)
       self$data <- cycle
       if (length(cycle) > 1) { # all the objects were made
