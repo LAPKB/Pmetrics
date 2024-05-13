@@ -1,5 +1,5 @@
-#Use menu item Code -> Jump To... for rapid navigation
-#Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
+# Use menu item Code -> Jump To... for rapid navigation
+# Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
 
 # R6 ----------------------------------------------------------------
 
@@ -13,23 +13,23 @@
 #'
 #' @details
 #' The [PM_final] object is both a data field within a [PM_result], and itself an R6 object
-#' comprising data fields and associated methods suitable for analysis and plotting of 
-#' final cycle parameters. 
-#' 
+#' comprising data fields and associated methods suitable for analysis and plotting of
+#' final cycle parameters.
+#'
 #' Because [PM_final] objects are automatically added to the [PM_result] at the end of a
 #' successful run, it is generally not necessary for users to generate [PM_final] objects
 #' themselves.
-#' 
+#'
 #' The main results are contained in the `$data` field,
 #' and it is this field which is passed to the `$plot` and `$summary` methods.
 #' You can use this `$data` field for custom manipulations, e.g. `probs <- run1$final$data$popPoints %>% select(prob)`.
-#' This will select the probabilities of the support points. 
+#' This will select the probabilities of the support points.
 #' If you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
 #' into the R console and look online for instructions/tutorials in tidyverse, a
 #' powerful approach to data manipulation upon which Pmetrics is built.
-#' 
+#'
 #' To provide a more traditional experience in R,
-#' the `$data` field is also separated by list items into the other data fields within the R6 object, 
+#' the `$data` field is also separated by list items into the other data fields within the R6 object,
 #' e.g. `popMean` or `nsub`. This
 #' allows you to access them in an S3 way, e.g. `run1$final$popMean` if `run1` is a
 #' [PM_result] object.
@@ -139,30 +139,30 @@ PM_final <- R6::R6Class(
     #' for the user to do.
     #' @param PMdata If backend is Fortran, the parsed output from [NPparse] or [ITparse]. Not needed when the backend is Rust.
     #' @param ... Not currently used.
-    initialize = function(PMdata,...) {
+    initialize = function(PMdata = NULL, ...) {
       final <- private$make(PMdata)
       self$data <- final
-      if(length(final)>1){ #all the objects were made
-      self$popPoints <- final$popPoints
-      self$popMean <- final$popMean
-      self$popSD <- final$popSD
-      self$popCV <- final$popCV
-      self$popVar <- final$popVar
-      self$popCov <- final$popCov
-      self$popCor <- final$popCor
-      self$popMedian <- final$popMedian
-      self$popRanFix <- final$popRanFix
-      self$postPoints <- final$postPoints
-      self$postMean <- final$postMean
-      self$postSD <- final$postSD
-      self$postVar <- final$postVar
-      self$postCov <- final$postCov
-      self$postCor <- final$postCor
-      self$postMed <- final$postMed
-      self$shrinkage <- final$shrinkage
-      self$gridpts <- final$gridpts
-      self$nsub <- final$nsub
-      self$ab <- final$ab
+      if (length(final) > 1) { # all the objects were made
+        self$popPoints <- final$popPoints
+        self$popMean <- final$popMean
+        self$popSD <- final$popSD
+        self$popCV <- final$popCV
+        self$popVar <- final$popVar
+        self$popCov <- final$popCov
+        self$popCor <- final$popCor
+        self$popMedian <- final$popMedian
+        self$popRanFix <- final$popRanFix
+        self$postPoints <- final$postPoints
+        self$postMean <- final$postMean
+        self$postSD <- final$postSD
+        self$postVar <- final$postVar
+        self$postCov <- final$postCov
+        self$postCor <- final$postCor
+        self$postMed <- final$postMed
+        self$shrinkage <- final$shrinkage
+        self$gridpts <- final$gridpts
+        self$nsub <- final$nsub
+        self$ab <- final$ab
       }
       class(self) <- c(c("NPAG", "IT2B")[1 + as.numeric(is.null(self$popPoints))], class(self))
     },
@@ -172,10 +172,9 @@ PM_final <- R6::R6Class(
     #' See [plot.PM_final].
     #' @param ... Arguments passed to [plot.PM_final]
     plot = function(...) {
-      tryCatch(plot.PM_final(self, ...), error = function(e){
+      tryCatch(plot.PM_final(self, ...), error = function(e) {
         cat(crayon::red("Error:"), e$message, "\n")
-      }
-      )
+      })
     },
     #' @description
     #' Summary method
@@ -183,95 +182,106 @@ PM_final <- R6::R6Class(
     #' See [summary.PM_final].
     #' @param ... Arguments passed to [summary.PM_final]
     summary = function(...) {
-      tryCatch(summary.PM_final(self, ...), error = function(e){
+      tryCatch(summary.PM_final(self, ...), error = function(e) {
         cat(crayon::red("Error:"), e$message, "\n")
-      }
-      )
+      })
     }
-  ), #end public
+  ), # end public
   private = list(
     make = function(data) {
-      if(getPMoptions("backend") == "rust"){
-        
+      if (getPMoptions("backend") == "rust") {
         theta <- tryCatch(readr::read_csv(file = "theta.csv", show_col_types = FALSE),
-                             error = function(e) {cat(crayon::red("Error:"),
-                                                      "The run did not complete and the theta.csv file was not created.\n")})
+          error = function(e) {
+            cat(
+              crayon::red("Error:"),
+              "The run did not complete and the theta.csv file was not created.\n"
+            )
+          }
+        )
         post <- tryCatch(readr::obs_csv(file = "posterior.csv", show_col_types = FALSE),
-                            error = function(e) {cat(crayon::red("Error:"),
-                                                     "The run did not complete and the posterior.csv file was not created.\n")})
+          error = function(e) {
+            cat(
+              crayon::red("Error:"),
+              "The run did not complete and the posterior.csv file was not created.\n"
+            )
+          }
+        )
         config <- tryCatch(jsonlite::fromJSON("settings.json"),
-                           error = function(e) {
-                             e <- NULL
-                             cat(crayon::red("Error:"),
-                                 "The run did not complete and the settings.json file was not created.\n")
-                           })
-        
-        if(any(purrr::map_lgl(list(theta, post, config),is.null))){
+          error = function(e) {
+            e <- NULL
+            cat(
+              crayon::red("Error:"),
+              "The run did not complete and the settings.json file was not created.\n"
+            )
+          }
+        )
+
+        if (any(purrr::map_lgl(list(theta, post, config), is.null))) {
           return(NA)
         }
-        
+
         par_names <- names(theta)[names(theta) != "prob"]
-        
+
         # Pop
         popMean <- theta %>%
           summarise(across(.cols = -prob, .fns = function(x) {
             mean(x)
           }))
-        
+
         popSD <- theta %>%
           summarise(across(.cols = -prob, .fns = function(x) {
             sd(x)
           }))
-        
+
         popCov <- theta %>%
           select(-prob) %>%
           cov()
-        
+
         popCor <- theta %>%
           select(-prob) %>%
           cor()
-        
+
         popMedian <- theta %>%
           summarise(across(-prob, \(x) median(x)))
-        
+
         # Posterior
-        
+
         postMean <- post %>%
           group_by(id) %>%
           summarise(across(.cols = -c(point, prob), .fns = function(x) {
             weighted.mean(x = x, w = prob)
           }))
-        
+
         postSD <- post %>%
           group_by(id) %>%
           summarise(across(.cols = -c(point, prob), .fns = function(x) {
             sd(x)
           }))
-        
+
         postVar <- post %>%
           group_by(id) %>%
           summarise(across(.cols = -c(point, prob), .fns = function(x) {
             sd(x)**2
           }))
-        
+
         # TODO: Add postCov, postCor, Post
-        
+
         postMed <- post %>%
-          #group_by(id) %>% 
-          filter(id==6) %>%
+          # group_by(id) %>%
+          filter(id == 6) %>%
           reframe(across(-c(point, prob), \(x) weighted_median(x, prob))) # in PMutilities
-        
+
         # TODO: Calculate shrinkage
         shrinkage <- 1
         # varEBD <- apply(postVar[,-1],2,mean) # Mean postVar / popVar
         # sh <- varEBD/popVar
-        
+
         ab <- config$random %>%
           unlist() %>%
           matrix(ncol = 2, byrow = TRUE)
-        
+
         gridpts <- config$config$init_points
-        
+
         final <- list(
           popPoints = theta,
           popMean = popMean,
@@ -289,33 +299,32 @@ PM_final <- R6::R6Class(
           ab = ab
         )
         class(final) <- c("PM_final_data", "NPAG", "list")
-        
+
         return(final)
-        
       } else { # fortran
-        
-        if(inherits(data,"PMfinal")){ #old format
-          return(data) #nothing to do
+
+        if (inherits(data, "PMfinal")) { # old format
+          return(data) # nothing to do
         }
-        
-        if(inherits(data,"PM_final")){ #R6 format
-          return(data$data) #return raw to rebuild
+
+        if (inherits(data, "PM_final")) { # R6 format
+          return(data$data) # return raw to rebuild
         }
-        
-        if (!inherits(data, "NPAG") & !inherits(data, "IT2B")){
+
+        if (!inherits(data, "NPAG") & !inherits(data, "IT2B")) {
           cat(crayon::red("Error:"), "Final object: Run did not complete. Check model and data for errors.\n")
           return(NA)
-        } 
-        
+        }
+
         if (inherits(data, "NPAG")) {
           # set the number of grid points at the beginning
           gridpts <- switch(data$indpts,
-                            2129,
-                            5003,
-                            10007,
-                            20011,
-                            40009,
-                            80021
+            2129,
+            5003,
+            10007,
+            20011,
+            40009,
+            80021
           )
           if (is.null(gridpts)) {
             gridpts <- (data$indpts - 100) * 80021
@@ -327,9 +336,9 @@ PM_final <- R6::R6Class(
           } else {
             popMean <- data$corden[1:data$nvar] * data$corden[data$nvar + 1] * wParVol
           }
-          
+
           names(popMean) <- data$par
-          
+
           if (nrow(data$corden) > 1) {
             popCov <- matrix(NA, ncol = data$nvar, nrow = data$nvar)
             for (i in 1:data$nvar) {
@@ -355,7 +364,6 @@ PM_final <- R6::R6Class(
           class(popPoints) <- c("popPoints", "data.frame")
 
           if (length(data$postden) > 0) {
-
             postPoints <- purrr::array_tree(data$postden, margin = 1) %>%
               purrr::map(\(x) as.data.frame(x)) %>%
               dplyr::bind_rows(.id = "id") %>%
@@ -364,7 +372,7 @@ PM_final <- R6::R6Class(
               dplyr::group_by(id) %>%
               dplyr::mutate(point = dplyr::row_number(id)) %>%
               dplyr::relocate(point, .after = id)
-            
+
             postPoints$prob <- postPoints$prob * wParVol
             postPoints$id <- data$sdata$id[postPoints$id]
           } else {
@@ -378,28 +386,28 @@ PM_final <- R6::R6Class(
 
           popVar <- data.frame(t(diag(popCov)))
           names(popVar) <- data$par
-          
+
           popSD <- sqrt(popVar)
           names(popSD) <- data$par
-          
+
           popCV <- abs(100 * (popSD / popMean))
           names(popCV) <- data$par
-          
+
           postMean <- data.frame(id = data$sdata$id, data$bmean)
-          
+
           postSD <- data.frame(id = data$sdata$id, data$bsd)
-          
+
           postVar <- data.frame(id = data$sdata$id, data$bsd^2)
-          
+
           if (!all(is.na(postPoints))) {
             nsub <- min(data$nsub, 100)
             postCov <- array(NA,
-                             dim = c(data$nvar, data$nvar, nsub),
-                             dimnames = list(par1 = data$par, par2 = data$par, subj = unique(data$sd$id)[1:nsub])
+              dim = c(data$nvar, data$nvar, nsub),
+              dimnames = list(par1 = data$par, par2 = data$par, subj = unique(data$sd$id)[1:nsub])
             )
             postCor <- array(NA,
-                             dim = c(data$nvar, data$nvar, nsub),
-                             dimnames = list(par1 = data$par, par2 = data$par, subj = unique(data$sd$id)[1:nsub])
+              dim = c(data$nvar, data$nvar, nsub),
+              dimnames = list(par1 = data$par, par2 = data$par, subj = unique(data$sd$id)[1:nsub])
             )
             for (i in 1:nsub) {
               temp2 <- postPoints[postPoints$id == data$sdata$id[i], ]
@@ -408,15 +416,15 @@ PM_final <- R6::R6Class(
               postCor[, , i] <- ret$cor
             }
           }
-          
+
           postMed <- data.frame(id = data$sdata$id, t(data$baddl[6, , ]))
-          
-          
+
+
           # shrinkage
           varEBD <- apply(postVar[, -1], 2, mean)
           sh <- varEBD / popVar
           sh.DF <- data.frame(sh)
-          
+
           if (is.null(data$nranfix)) data$nranfix <- 0
           if (data$nranfix > 0) {
             popRanFix <- data$valranfix
@@ -424,15 +432,15 @@ PM_final <- R6::R6Class(
           } else {
             popRanFix <- NULL
           }
-          
+
           popCov <- data.frame(popCov, row.names = data$par)
           if (!all(is.na(popCor))) {
             popCor <- data.frame(popCor, row.names = data$par)
           }
           names(popCov) <- data$par
           if (all(!is.na(popCor))) names(popCor) <- data$par
-          
-          
+
+
           outlist <- list(
             popPoints = popPoints, popMean = popMean, popSD = popSD, popCV = popCV, popVar = popVar,
             popCov = popCov, popCor = popCor, popMedian = popMedian, popRanFix = popRanFix, postPoints = postPoints,
@@ -446,49 +454,49 @@ PM_final <- R6::R6Class(
           popMean <- data$imean[data$icyctot, ]
           names(popMean) <- data$par
           popMean <- data.frame(t(popMean))
-          
-          
+
+
           popSD <- data$isd[data$icyctot, ]
           names(popSD) <- data$par
           popSD <- data.frame(t(popSD))
-          
-          
+
+
           popVar <- popSD**2
           names(popVar) <- data$par
-          
+
           popCV <- abs(data$icv[data$icyctot, ])
           names(popCV) <- data$par
           popCV <- data.frame(t(popCV))
-          
+
           popCov <- cov(data$lpar)
           dimnames(popCov) <- list(data$par, data$par)
-          
+
           popCor <- cor(data$lpar)
           dimnames(popCor) <- list(data$par, data$par)
-          
+
           popMedian <- data$imed[data$icyctot, ]
           names(popMedian) <- data$par
           popMedian <- data.frame(t(popMedian))
-          
+
           postMean <- data.frame(id = data$sdata$id, data$lpar)
-          
+
           postSD <- data.frame(id = data$sdata$id, data$lsd)
-          
+
           postVar <- data.frame(id = data$sdata$id, data$lsd^2)
-          
+
           postMed <- data.frame(id = data$sdata$id, data$parbay[, , 2])
-          
+
           # shrinkage
           varEBD <- apply(postVar[, -1], 2, mean)
           sh <- varEBD / popVar
           sh.DF <- data.frame(sh)
-          
+
           popCov <- data.frame(popCov, row.names = data$par)
           popCor <- data.frame(popCor, row.names = data$par)
           names(popCov) <- data$par
           if (all(!is.na(popCor))) names(popCor) <- data$par
-          
-          
+
+
           outlist <- list(
             popMean = popMean, popSD = popSD, popCV = popCV, popVar = popVar,
             popCov = popCov, popCor = popCor, popMedian = popMedian, postMean = postMean, postSD = postSD, postVar = postVar,
@@ -496,12 +504,10 @@ PM_final <- R6::R6Class(
           )
           class(outlist) <- c("PM_final_data", "IT2B", "list")
           return(outlist)
-        } 
-        
+        }
       }
-      
     }
-  ) #end private
+  ) # end private
 )
 
 
@@ -518,12 +524,12 @@ PM_final <- R6::R6Class(
 #' This is a function usually called by the `$plot()` method for [PM_final] objects
 #' within a [PM_result] to generate a plot the parameter value probability densities
 #' after completion of a model fitting.
-#' The function can be called directly on a [PM_final] object. 
-#' 
+#' The function can be called directly on a [PM_final] object.
+#'
 #' If `formula` is omitted, this will generate a marginal plot for each parameter.
 #' For NPAG data, this will be a histogram of marginal values for each parameter and the associated probability
 #' of that value.  For IT2B, this will be a series of normal distributions with mean and standard deviation
-#' equal to the mean and standard deviation of each parameter marginal distribution.  
+#' equal to the mean and standard deviation of each parameter marginal distribution.
 #'
 #' On the other hand, if `formula` is specified as two parameters, e.g. CL~V, this will generate a bivariate plot.
 #' For NPAG data, it will be support point with size proportional to the probability
@@ -558,15 +564,15 @@ PM_final <- R6::R6Class(
 #'     - `width` Outline width. Default is 1.
 #' Example: `marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))`
 #' @param line `r template("line")` The `line` argument is used to format:
-#' * the density line drawn over an NPAG [PM_final] object. Default is `FALSE`, 
+#' * the density line drawn over an NPAG [PM_final] object. Default is `FALSE`,
 #' which means no density line will be drawn. Use `TRUE` to draw the default line,
 #' which is black, solid, and of width 1, or specify as a list to control these
-#' elements, e.g. `line = list(color = "red", width = 2, dash = "dash")` 
+#' elements, e.g. `line = list(color = "red", width = 2, dash = "dash")`
 #' * the drop lines from point to lower surface when a `formula` is specified
-#' to generate a bivariate plot from an NPAG [PM_final] object. 
+#' to generate a bivariate plot from an NPAG [PM_final] object.
 #' In this case, default is `line = TRUE`. The default
 #' format is black, dashed, and of width 1.
-#' * the lines drawing the normal distribution of parameter values from an IT2B [PM_Final] object. 
+#' * the lines drawing the normal distribution of parameter values from an IT2B [PM_Final] object.
 #' Again, here the default is `line = TRUE`, and the format is black, solid, of width 1.
 #' See [density].  Ignored for IT2B output.
 #' @param grid `r template("grid")`
@@ -600,8 +606,8 @@ PM_final <- R6::R6Class(
 #' ITex$final$plot(Ke ~ V)
 #' @family PMplots
 
-plot.PM_final <- function(x, 
-                          formula = NULL, 
+plot.PM_final <- function(x,
+                          formula = NULL,
                           line,
                           marker = TRUE,
                           standardize,
@@ -615,59 +621,70 @@ plot.PM_final <- function(x,
   # housekeeping
   if (inherits(x, "NPAG")) {
     type <- "NPAG"
-    
-    if(missing(formula)){ #univariate
-      if(missing(line)){
-        line <- amendLine(FALSE) #no density
+
+    if (missing(formula)) { # univariate
+      if (missing(line)) {
+        line <- amendLine(FALSE) # no density
         density <- FALSE
       } else {
-        line <- amendLine(line, default = list(color = "black")) #density
+        line <- amendLine(line, default = list(color = "black")) # density
         density <- TRUE
       }
-    } else { #bivariate
+    } else { # bivariate
       density <- FALSE
-      if(missing(line)){
-        line <- amendLine(TRUE, default = list(color = "black", dash = "dash")) #bivariate, need drop lines
+      if (missing(line)) {
+        line <- amendLine(TRUE, default = list(color = "black", dash = "dash")) # bivariate, need drop lines
       } else {
         line <- amendLine(line, default = list(color = "black", dash = "dash"))
       }
     }
-    
-    bar <- amendMarker(marker, default = list(color = "dodgerblue", size = 5,
-                                              symbol = "circle", width = 0.02, opacity = 0.5))
+
+    bar <- amendMarker(marker, default = list(
+      color = "dodgerblue", size = 5,
+      symbol = "circle", width = 0.02, opacity = 0.5
+    ))
   } else {
     type <- "IT2B"
-    if(missing(line)) line <- TRUE
+    if (missing(line)) line <- TRUE
     line <- amendLine(line)
     bar <- NULL
-    
   }
-  
-  
-  yCol <- tryCatch(as.character(attr(terms(formula),"variables")[2]),
-                   error = function(e) NULL)
-  xCol <- tryCatch(as.character(attr(terms(formula),"variables")[3]),
-                   error = function(e) NULL)
-  
-  
-  #unnecessary arguments
-  if(!missing(legend)){notNeeded("legend", "plot.PM_final")}
-  if(!missing(log)){notNeeded("log", "plot.PM_final")}
-  
-  #process dots
+
+
+  yCol <- tryCatch(as.character(attr(terms(formula), "variables")[2]),
+    error = function(e) NULL
+  )
+  xCol <- tryCatch(as.character(attr(terms(formula), "variables")[3]),
+    error = function(e) NULL
+  )
+
+
+  # unnecessary arguments
+  if (!missing(legend)) {
+    notNeeded("legend", "plot.PM_final")
+  }
+  if (!missing(log)) {
+    notNeeded("log", "plot.PM_final")
+  }
+
+  # process dots
   layout <- amendDots(list(...))
-  
-  data <- if(inherits(x, "PM_final")) {x$data}else{x}
-  #ranges
+
+  data <- if (inherits(x, "PM_final")) {
+    x$data
+  } else {
+    x
+  }
+  # ranges
   ab <- data.frame(data$ab)
   names(ab) <- c("min", "max")
   ab$par <- names(data$popMean)
-  
+
   # plot functions for univariate
   uniPlot <- function(.data, .par, .min, .max, type, bar, xlab, ylab, title, .prior = NULL, height = NULL) {
     p <- .data %>%
       plotly::plot_ly(x = ~value, y = ~prob, height = height)
-    
+
     if (type == "NPAG") {
       barWidth <- bar$width * (.max - .min) # normalize
       p <- p %>%
@@ -675,10 +692,10 @@ plot.PM_final <- function(x,
           marker = bar,
           hovertemplate = "Value: %{x:0.3f}<br>Prob: %{y:0.3f}<extra></extra>",
           width = I(barWidth)
-        ) 
-      
-      
-      if(!is.null(.prior)){
+        )
+
+
+      if (!is.null(.prior)) {
         bar2 <- bar
         bar2$color <- "black"
         bar2$opacity <- 0.1
@@ -691,7 +708,7 @@ plot.PM_final <- function(x,
             width = I(barWidth)
           )
       }
-      
+
       if (density) {
         if (!is.null(.prior)) {
           denData <- .prior
@@ -699,17 +716,18 @@ plot.PM_final <- function(x,
           denData <- .data
         }
         densList <- tryCatch(density(denData$value, weights = denData$prob, bw = density(denData$value, bw = "sj")$bw),
-                             error = function(e) NULL
+          error = function(e) NULL
         )
         if (!is.null(densList)) {
           dens <- data.frame(x = densList$x, y = densList$y)
           normalize <- max(denData$prob)
-          
-          p <- p %>% plotly::add_lines(data = dens, x = ~x, y = ~y/max(y) * I(normalize), 
-                                       line = line,
-                                       text = round(dens$y,2),
-                                       hovertemplate = "Value: %{x:0.2f}<br>Prob: %{text}<extra></extra>") 
-          
+
+          p <- p %>% plotly::add_lines(
+            data = dens, x = ~x, y = ~ y / max(y) * I(normalize),
+            line = line,
+            text = round(dens$y, 2),
+            hovertemplate = "Value: %{x:0.2f}<br>Prob: %{text}<extra></extra>"
+          )
         }
       }
     } else { # IT2B
@@ -719,9 +737,9 @@ plot.PM_final <- function(x,
           hovertemplate = "Value: %{x:0.2f}<br>Prob: %{y:0.2f}<extra></extra>"
         )
     }
-    
+
     # common to both
-    
+
     # axis labels
     if (is.null(xlab)) {
       xlb <- .par
@@ -734,7 +752,7 @@ plot.PM_final <- function(x,
         }
       }
     }
-    
+
     if (is.null(ylab)) {
       ylb <- "Probability"
     } else {
@@ -746,7 +764,7 @@ plot.PM_final <- function(x,
         }
       }
     }
-    
+
     # title
     if (is.null(title)) {
       titl <- ""
@@ -761,7 +779,7 @@ plot.PM_final <- function(x,
         }
       }
     }
-    
+
     layout$title <- amendTitle(titl, default = list(size = 20))
     layout$xaxis$title <- amendTitle(xlb)
     layout$yaxis$title <- amendTitle(ylb)
@@ -770,8 +788,8 @@ plot.PM_final <- function(x,
     } else {
       layout$yaxis$title <- amendTitle(ylb)
     }
-    
-    
+
+
     p <- p %>%
       plotly::layout(
         showlegend = F,
@@ -784,16 +802,15 @@ plot.PM_final <- function(x,
         barmode = "overlay",
         title = layout$title
       )
-    
+
     return(p)
   }
-  
-  
-  biPlot <- function(xCol, yCol, x, xlab, ylab, zlab, title, bar){
-    
+
+
+  biPlot <- function(xCol, yCol, x, xlab, ylab, zlab, title, bar) {
     whichX <- which(ab$par == xCol)
     whichY <- which(ab$par == yCol)
-    
+
     # axes labels
     if (is.null(xlab)) {
       xlb <- xCol
@@ -806,7 +823,7 @@ plot.PM_final <- function(x,
         }
       }
     }
-    
+
     if (is.null(ylab)) {
       ylb <- yCol
     } else {
@@ -818,7 +835,7 @@ plot.PM_final <- function(x,
         }
       }
     }
-    
+
     if (is.null(zlab)) {
       zlb <- "Probability"
     } else {
@@ -830,7 +847,7 @@ plot.PM_final <- function(x,
         }
       }
     }
-    
+
     # title
     if (is.null(title)) {
       titl <- ""
@@ -845,7 +862,7 @@ plot.PM_final <- function(x,
         }
       }
     }
-    
+
     layout$title <- amendTitle(titl, default = list(size = 20))
     layout$xaxis$title <- amendTitle(xlb)
     layout$yaxis$title <- amendTitle(ylb)
@@ -855,13 +872,13 @@ plot.PM_final <- function(x,
     } else {
       layout$yaxis$title <- amendTitle(ylb)
     }
-    if(is.character(zlb)){
+    if (is.character(zlb)) {
       layout$zaxis$title <- amendTitle(zlb, layout$xaxis$title$font)
     } else {
       layout$zaxis$title <- amendTitle(zlb)
     }
-    
-    
+
+
     if (type == "IT2B") {
       rangeX <- as.numeric(ab[whichX, 1:2])
       rangeY <- as.numeric(ab[whichY, 1:2])
@@ -876,13 +893,14 @@ plot.PM_final <- function(x,
         )
       ) %>%
         tidyr::expand(x, y)
-      
+
       # dmv_norm in PMutilities
-      z <- dmv_norm(coords,mean=as.numeric(data$popMean[1,c(whichX,whichY)]),
-                    sigma=as.matrix(data$popCov[c(whichX,whichY),c(whichX,whichY)])
+      z <- dmv_norm(coords,
+        mean = as.numeric(data$popMean[1, c(whichX, whichY)]),
+        sigma = as.matrix(data$popCov[c(whichX, whichY), c(whichX, whichY)])
       )
       z <- matrix(z, nrow = 101)
-      
+
       p <- plot_ly(x = ~ unique(coords$x), y = ~ unique(coords$y), z = ~z) %>%
         plotly::add_surface(
           hovertemplate = paste0(xlab, ": %{x:0.2f}<br>", ylab, ":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")
@@ -898,41 +916,49 @@ plot.PM_final <- function(x,
         plotly::hide_colorbar()
       return(p)
     } else { # NPAG
-      
+
       data$popPoints$id <- seq_len(nrow(x$popPoints))
       pp <- replicate(3, data$popPoints, simplify = FALSE)
       data$popPoints <- data$popPoints %>% select(-id) # undo modification
-      
+
       # make object for drop lines
       pp[[2]]$prob <- min(pp[[1]]$prob)
       pp2 <- dplyr::bind_rows(pp, .id = "key") %>% dplyr::arrange(id, key)
       pp2[pp2$key == 3, ] <- NA
       pp2 <- pp2 %>%
-        dplyr::select(x=whichX[1]+1, y=whichY[1]+1, prob=prob)
-      p <- data$popPoints %>% select(x=whichX[1], y=whichY[1], prob=prob) %>%
-        plotly::plot_ly(x = ~x, y = ~y, z = ~prob,
-                        hovertemplate = paste0(xlab,": %{x:0.2f}<br>",ylab,":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")) %>%
-        plotly::add_markers(marker = bar) 
-      
-      if(line$width > 0){
-        p <- p %>% plotly::add_paths(data = pp2, x = ~x, y = ~y, z = ~prob,
-                                     line = line)
+        dplyr::select(x = whichX[1] + 1, y = whichY[1] + 1, prob = prob)
+      p <- data$popPoints %>%
+        select(x = whichX[1], y = whichY[1], prob = prob) %>%
+        plotly::plot_ly(
+          x = ~x, y = ~y, z = ~prob,
+          hovertemplate = paste0(xlab, ": %{x:0.2f}<br>", ylab, ":%{y:0.2f}<br>Prob: %{z:0.2f}<extra></extra>")
+        ) %>%
+        plotly::add_markers(marker = bar)
+
+      if (line$width > 0) {
+        p <- p %>% plotly::add_paths(
+          data = pp2, x = ~x, y = ~y, z = ~prob,
+          line = line
+        )
       }
       p <- p %>%
-        plotly::layout(showlegend = F,
-                       scene = list( 
-                         xaxis = layout$xaxis,
-                         yaxis = layout$yaxis,
-                         zaxis = layout$zaxis),
-                       title = layout$title)
+        plotly::layout(
+          showlegend = F,
+          scene = list(
+            xaxis = layout$xaxis,
+            yaxis = layout$yaxis,
+            zaxis = layout$zaxis
+          ),
+          title = layout$title
+        )
       return(p)
     }
   } # end bivariate plot function
-  
-  
+
+
   # set up the plots
-  
-  
+
+
   if (missing(xlab)) {
     xlab <- NULL
   }
@@ -945,9 +971,9 @@ plot.PM_final <- function(x,
   if (missing(title)) {
     title <- NULL
   }
-  
+
   if (is.null(yCol) || xCol == "prob") { # univariate or prob plot
-    
+
     # NPAG
     if (type == "NPAG") {
       if (is.null(xCol)) { # regular marginal
@@ -957,8 +983,8 @@ plot.PM_final <- function(x,
           dplyr::nest_by(par) %>%
           dplyr::full_join(ab_alpha, by = "par") %>%
           dplyr::mutate(panel = list(uniPlot(data, par, min, max,
-                                             type = "NPAG",
-                                             bar = bar, xlab = xlab, ylab = ylab, title = title, height = 1500
+            type = "NPAG",
+            bar = bar, xlab = xlab, ylab = ylab, title = title, height = 1500
           ))) %>%
           plotly::subplot(margin = 0.02, nrows = nrow(.), titleX = TRUE, titleY = TRUE)
       } else { # prob plot
@@ -968,13 +994,13 @@ plot.PM_final <- function(x,
           dplyr::filter(par == yCol) %>%
           dplyr::nest_by(par) %>%
           dplyr::full_join(ab_alpha, by = "par")
-        
+
         p <- data$postPoints %>%
           select(id, point, value = !!yCol, prob) %>%
           nest(data = -id) %>%
           dplyr::mutate(panel = trelliscopejs::map_plot(data, \(x) uniPlot(x, yCol, ab_alpha$min, ab_alpha$max,
-                                                                           type = "NPAG",
-                                                                           bar = bar, xlab = xlab, ylab = ylab, title = title, .prior = p1$data[[1]]
+            type = "NPAG",
+            bar = bar, xlab = xlab, ylab = ylab, title = title, .prior = p1$data[[1]]
           ))) %>%
           trelliscopejs::trelliscope(name = "Posterior/Prior", self_contained = FALSE)
       }
@@ -994,21 +1020,24 @@ plot.PM_final <- function(x,
         }
       }
       ab_alpha <- ab %>% arrange(par)
-      p <- data.frame(mean = purrr::as_vector(data$popMean), sd = purrr::as_vector(data$popSD), min = ab[,1], max = ab[,2]) %>%
-        purrr::pmap(.f = function(mean, sd, min, max){dplyr::tibble(value = seq(min, max, (max-min)/1000),
-                                                                    prob = dnorm(value, mean, sd))}) %>% 
+      p <- data.frame(mean = purrr::as_vector(data$popMean), sd = purrr::as_vector(data$popSD), min = ab[, 1], max = ab[, 2]) %>%
+        purrr::pmap(.f = function(mean, sd, min, max) {
+          dplyr::tibble(
+            value = seq(min, max, (max - min) / 1000),
+            prob = dnorm(value, mean, sd)
+          )
+        }) %>%
         purrr::set_names(names(data$popMean)) %>%
         dplyr::bind_rows(.id = "par") %>%
         dplyr::nest_by(par) %>%
         dplyr::full_join(ab_alpha, by = "par") %>%
         dplyr::mutate(panel = list(uniPlot(data, par, min, max,
-                                           type = "IT2B", xlab = xlab, ylab = ylab, title = title
+          type = "IT2B", xlab = xlab, ylab = ylab, title = title
         ))) %>%
         plotly::subplot(margin = 0.02, nrows = nrow(.), titleX = TRUE, titleY = TRUE)
     }
-  } else { #bivariate
+  } else { # bivariate
     p <- biPlot(xCol, yCol, x, xlab, ylab, zlab, title, bar)
-    
   }
   print(p)
   return(p)
@@ -1024,14 +1053,14 @@ plot.PM_final <- function(x,
 #'
 #' @details
 #' #' This is a function usually called by the `$summary()` method for [PM_final] objects
-#' within a [PM_result]. The function can be called directly on a [PM_final] object. 
+#' within a [PM_result]. The function can be called directly on a [PM_final] object.
 #' For NPAG runs, this function will generate weighted medians as central tendencies of the
 #' population points with a 95% confidence interval (95% CI) around the median,
 #' and the median absolute weighted deviation (MAWD) from the median as a measure
 #' of the variance, with its 95% CI.  These estimates correspond to weighted mean,
 #' 95% CI of the mean, variance, and 95% CI of the variance, respectively, for a
-#' sample from a normal distribution.  
-#' 
+#' sample from a normal distribution.
+#'
 #' To estimate these non-parametric summaries,
 #' the function uses a Monte Carlo simulation approach, creating  1000 x npoint samples
 #' with replacement from the weighted marginal distribution of each parameter,
@@ -1047,7 +1076,7 @@ plot.PM_final <- function(x,
 #'
 #' For IT2B runs, the function will return the mean and variance of each parameter,
 #' and the standard errors of these terms, using
-#' \deqn{SE_mean = SD/\sqrt(nsub)} 
+#' \deqn{SE_mean = SD/\sqrt(nsub)}
 #' \deqn{SE_var = var * \sqrt(2/(nsub-1))}.
 #'
 #' @method summary PM_final
@@ -1072,17 +1101,16 @@ plot.PM_final <- function(x,
 #' @seealso [PM_final]
 #' @examples
 #' library(PmetricsData)
-#' NPex$final$summary() #preferred
+#' NPex$final$summary() # preferred
 #' ITex$final$summary()
-#' summary(NPex$final) #alternate
+#' summary(NPex$final) # alternate
 #' @export
 
 summary.PM_final <- function(object, lower = 0.025, upper = 0.975, ...) {
-  
-  if(inherits(object, "PM_final")){ #user called summary(PM_final)
+  if (inherits(object, "PM_final")) { # user called summary(PM_final)
     object <- object$data
   }
-  
+
   if (inherits(object, "IT2B")) { # IT2B object
     if (is.null(object$nsub)) {
       nsub <- as.numeric(readline("Your IT2B run is very old. Please re-run.\nFor now, enter the number of subjects. "))
@@ -1108,7 +1136,7 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, ...) {
       # MAD <- sqrt(sum((x-med)^2)/length(x))
       return(list(med, MAD))
     }
-    
+
     mcsim <- function(x, prob) {
       set.seed(17)
       sim <- apply(matrix(sample(x, replace = T, 10^3 * length(x), prob = prob), nrow = 10^3), 1, medMAD)
@@ -1121,25 +1149,25 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, ...) {
     } else {
       popPoints <- object
     }
-    
+
     nvar <- ncol(popPoints) - 1
-    
+
     # trick it if there is only one point
     if (nrow(popPoints) == 1) {
       popPoints <- rbind(popPoints, popPoints)
       popPoints$prob <- c(0.5, 0.5)
     }
-    
+
     sumstat <- apply(popPoints[, 1:nvar], 2, function(x) mcsim(x, popPoints[, nvar + 1]))
-    
-    
+
+
     sumstat2 <- sumstat %>%
       dplyr::as_tibble() %>%
       unnest(cols = names(sumstat))
     sumstat2$percentile <- rep(c(lower, 0.5, upper), 2)
     sumstat2$parameter <- rep(c("WtMed", "MAWD"), each = 3)
-    
-    
+
+
     # sumstat2 <- melt(sumstat)[,c(1,3)]
     # names(sumstat2) <- c("value","par")
     # sumstat2$type <- rep(c("WtMed","MAWD"),each=3,times=nvar)
@@ -1178,18 +1206,18 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, ...) {
 print.summary.PM_final <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   x <- data.frame(x) # convert from tibble
   cat(paste("\nWeighted Medians (", 100 * (max(x$percentile) - min(x$percentile)),
-            "% credibility interval)\n",
-            sep = ""
+    "% credibility interval)\n",
+    sep = ""
   ))
   for (i in 1:(ncol(x) - 2)) {
     cat(paste(colnames(x[i]), ": ", round(x[2, i], digits), " (", round(x[1, i], digits), " - ", round(x[3, i], digits), ")\n", sep = ""))
   }
-  
+
   cat(paste("\nMedian Absolute Weighed Differences (dispersion measure) (", 100 * (max(x$percentile) - min(x$percentile)),
-            "% credibility interval)\n",
-            sep = ""
+    "% credibility interval)\n",
+    sep = ""
   ))
-  
+
   for (i in 1:(ncol(x) - 2)) {
     cat(paste(colnames(x[i]), ": ", round(x[5, i], digits), " (", round(x[4, i], digits), " - ", round(x[6, i], digits), ")\n", sep = ""))
   }
