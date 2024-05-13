@@ -1,5 +1,5 @@
-#Use menu item Code -> Jump To... for rapid navigation
-#Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
+# Use menu item Code -> Jump To... for rapid navigation
+# Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
 
 
 # R6 ----------------------------------------------------------------------
@@ -295,15 +295,10 @@ PM_fit <- R6::R6Class(
       file.copy(private$binary_path, "NPcore")
       if (arglist$intern) {
         system2("./NPcore", wait = TRUE)
-        if (file.exists("meta_rust.csv")) {
-          # Execution ended successfully
-          PM_parse()
-          res <- PM_load(file = "outputs/PMout.Rdata")
-          PM_report(res, outfile = "report.html", template = "plotly")
-        } else {
-          setwd(cwd)
-          stop("Error: Execution failed")
-        }
+
+        PM_parse("outputs")
+        res <- PM_load(file = "outputs/PMout.Rdata")
+        PM_report(res, outfile = "report.html", template = "plotly")
       } else {
         system2("./NPcore", args = "&")
         # TODO: The code to generate the report is missing here
