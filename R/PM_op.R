@@ -383,7 +383,7 @@ PM_op <- R6::R6Class(
 #' @param ... `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
-#' @seealso [makeOP], [PM_result], [schema]
+#' @seealso [PM_result], [PM_op], [schema]
 #' @export
 #' @examples
 #' library(PmetricsData)
