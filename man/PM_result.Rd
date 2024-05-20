@@ -183,9 +183,10 @@ See \link{makeNCA}.
 \if{html}{\out{<a id="method-PM_result-sim"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-sim}{}}}
 \subsection{Method \code{sim()}}{
-Simulates using the self$final object.
-For parameter information refer to \link{SIMrun}. It will return a \code{PM_sim} object
-by running \link{SIMparse} at the end of the simulation.
+Calls \link{PM_sim}. Default is to use the \verb{$final}, \verb{$model}, and \verb{$data} objects
+within the \link{PM_result}. It is common to supply a different \code{data} template.
+Occasionally it is necessary to use a different \code{model} with the \verb{$final} field,
+or vice versa. If all three are different, use \code{PM_sim$new()} instead.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_result$sim(...)}\if{html}{\out{</div>}}
 }
@@ -193,7 +194,10 @@ by running \link{SIMparse} at the end of the simulation.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Parameters passed to \link{SIMrun}}
+\item{\code{...}}{Parameters passed to \link{PM_sim}. If using the \verb{$final}, \verb{$model}, and
+\verb{$data} fields, it is not necessary to specify these. Alternates for any of these
+should be specified. Other parameters for \link{PM_sim} should be passed as named
+arguments, e.g. \verb{$sim(include = 1:2, predInt = 1, limits = NA)}.}
 }
 \if{html}{\out{</div>}}
 }
