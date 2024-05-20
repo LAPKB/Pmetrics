@@ -83,7 +83,7 @@ or individual predictions based on Bayesian posterior parameter value distributi
 \subsection{Method \code{new()}}{
 Create new object populated with observed vs. predicted data
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_op$new(PMdata, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_op$new(PMdata = NULL, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

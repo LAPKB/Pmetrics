@@ -67,9 +67,9 @@ and the standard errors of these terms, using
 }
 \examples{
 library(PmetricsData)
-NPex$final$summary() #preferred
+NPex$final$summary() # preferred
 ITex$final$summary()
-summary(NPex$final) #alternate
+summary(NPex$final) # alternate
 }
 \seealso{
 \link{PM_final}

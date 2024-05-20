@@ -78,7 +78,7 @@ at each cycle,  normalized to initial standard deviation}
 \subsection{Method \code{new()}}{
 Create new object populated with  cycle information
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_cycle$new(PMdata, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_cycle$new(PMdata = NULL, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

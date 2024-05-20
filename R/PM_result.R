@@ -174,14 +174,31 @@ PM_result <- R6::R6Class(
     },
     
     #' @description
-    #' Simulates using the self$final object.
-    #' For parameter information refer to [SIMrun]. It will return a `PM_sim` object
-    #' by running [SIMparse] at the end of the simulation.
-    #' @param ... Parameters passed to [SIMrun]
+    #' Calls [PM_sim]. Default is to use the `$final`, `$model`, and `$data` objects
+    #' within the [PM_result]. It is common to supply a different `data` template.
+    #' Occasionally it is necessary to use a different `model` with the `$final` field,
+    #' or vice versa. If all three are different, use `PM_sim$new()` instead.
+    #' @param ...  Parameters passed to [PM_sim]. If using the `$final`, `$model`, and
+    #' `$data` fields, it is not necessary to specify these. Alternates for any of these
+    #' should be specified. Other parameters for [PM_sim] should be passed as named 
+    #' arguments, e.g. `$sim(include = 1:2, predInt = 1, limits = NA)`.
     sim = function(...) {
+      dots <- list(...)
+      if(!"poppar" %in% names(dots)){
+        dots$poppar <- self$final
+      }
+      
+      if(!"data" %in% names(dots)){
+        dots$data <- self$data$standard_data
+      }
+      
+      if(!"model" %in% names(dots)){
+        dots$model <- self$model
+      }
+      
       # store copy of the final object
       bk_final <- self$final$clone()
-      sim <- PM_sim$new(poppar = self, ...)
+      sim <- do.call(PM_sim$new, dots)
       self$final <- bk_final
       return(sim)
     },
