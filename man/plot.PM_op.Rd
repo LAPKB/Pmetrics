@@ -173,7 +173,7 @@ NPex$op$plot(stats = list(x = 0.5, y = 0.2, font = list(size = 7, color = "blue"
 
 }
 \seealso{
-\link{makeOP}, \link{PM_result}, \link{schema}
+\link{PM_result}, \link{PM_op}, \link{schema}
 
 Other PMplots: 
 \code{\link{plot.PM_cov}()},

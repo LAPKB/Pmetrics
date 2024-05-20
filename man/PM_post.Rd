@@ -72,7 +72,7 @@ Michael Neely, Julian Otalvaro
 Create new object populated with Bayesian posterior predicted data at
 regular, frequent intervals
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_post$new(PMdata, run, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_post$new(PMdata = NULL, run, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
