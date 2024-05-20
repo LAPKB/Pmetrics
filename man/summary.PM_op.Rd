@@ -61,8 +61,8 @@ be called directly on a \link{PM_op} object. See examples.
 }
 \examples{
 library(PmetricsData)
-NPex$op$summary() #preferred
-summary(NPex$op) #alternative
+NPex$op$summary() # preferred
+summary(NPex$op) # alternative
 }
 \seealso{
 \link{PM_op}

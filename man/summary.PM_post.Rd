@@ -40,8 +40,8 @@ be called directly on a \link{PM_op} object. See examples.
 }
 \examples{
 library(PmetricsData)
-NPex$post$summary() #preferred
-summary(NPex$post) #alternative
+NPex$post$summary() # preferred
+summary(NPex$post) # alternative
 }
 \seealso{
 \link{PM_post}
