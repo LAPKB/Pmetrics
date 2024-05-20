@@ -72,7 +72,7 @@ Michael Neely, Julian Otalvaro
 Create new object populated with population predicted data at
 regular, frequent intervals
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_pop$new(PMdata, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_pop$new(PMdata = NULL, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -41,8 +41,8 @@ be called directly on a \link{PM_cycle} object. See examples.
 }
 \examples{
 library(PmetricsData)
-NPex$cycle$summary() #preferred
-summary(NPex$cycle) #alternative
+NPex$cycle$summary() # preferred
+summary(NPex$cycle) # alternative
 }
 \seealso{
 \link{PM_cycle}

@@ -146,7 +146,7 @@ with shrinkage to assess the information content of the data.}
 \subsection{Method \code{new()}}{
 Create new object populated with final cycle information
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_final$new(PMdata, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_final$new(PMdata = NULL, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

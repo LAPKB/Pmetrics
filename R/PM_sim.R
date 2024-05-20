@@ -700,9 +700,7 @@ PM_sim <- R6::R6Class(
         mod_obj$write("simmodel.txt")
         model_file_src <- TRUE # used a file as source
       }
-      
-      
-      
+
       if (inherits(data, "PM_data")) {
         data$write("simdata.csv") # write the PM_data to "simdata.csv" file
         data_file_src <- FALSE # did not use a file as source
@@ -984,7 +982,7 @@ PM_sim <- R6::R6Class(
       if (length(obsNoise) == 0) {
         # obsNoise was NULL, set to 0 for all outeq or NA (will use model file values) if makecsv
         obsNoise <- rep(0, 4 * numeqt)
-        if (!missing(makecsv)) {
+        if (!is.null(makecsv)) {
           obsNoise <- rep(NA, 4 * numeqt)
           cat("Setting obsNoise to model file assay error.  When making a csv file, you must specify obsNoise.\n")
           flush.console()
@@ -1092,7 +1090,7 @@ PM_sim <- R6::R6Class(
       enginecompile <- sub("<exec>", "montbig.exe", compiler)
       enginecompile <- sub("<files>", enginefiles, enginecompile, fixed = T)
       
-      if (missing(makecsv)) {
+      if (is.null(makecsv)) {
         makecsv <- 0
       } else {
         if (nsim > 50) {
