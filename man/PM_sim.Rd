@@ -153,13 +153,21 @@ or via the \verb{$sim} method for \link{PM_result} objects.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{poppar}}{One of three things:
+\item{\code{poppar}}{One of four things:
 \itemize{
 \item Population prior parameters as a \link{PM_final} object found in
 \code{PM_result$final}. Normally these would be supplied by calling the
 \verb{$sim} method for a \link{PM_result} object, e.g. \code{PmetricsData::NPex$sim(...)}.
 \item The name of a previously saved simulation via the \verb{$save} method. The
-file will be loaded.
+file will be loaded. This filename should have the ".rds" extension, e.g. "sim.rds".
+\item The file name(s) of previous simulator output. Wildcards are permissible.
+** \strong{?} will be matched by just a single numeral or character
+** \strong{\}*  will be matched by any number of consecutive alphanumeric characters.
+Examples include \code{poppar = "simout1.txt, simout2.txt, simout3.txt"},
+\code{poppar = "simout?.txt"} and \code{poppar = "sim*.txt"}. All three will find
+the files \emph{simout1.txt}, \emph{simout2.txt}, and \emph{simout3.txt} in the working directory.
+The second example would also find \emph{simout4.txt}, etc.  The third
+example would also find \emph{sim_1.txt} if that existed.
 \item A manually specified prior as a list containing three items in this order,
 but of any name: 1) vector of weights; 2) vector of mean parameter values;
 and 3) a covariance matrix. If only one distribution is to be specified the

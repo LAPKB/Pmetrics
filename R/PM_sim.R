@@ -117,7 +117,14 @@ PM_sim <- R6::R6Class(
     #' `$sim` method for a [PM_result] object, e.g. `PmetricsData::NPex$sim(...)`.
     #' * The name of a previously saved simulation via the `$save` method. The
     #' file will be loaded. This filename should have the ".rds" extension, e.g. "sim.rds".
-    #' * The file names
+    #' * The file name(s) of previous simulator output. Wildcards are permissible.
+    #' ** **?** will be matched by just a single numeral or character
+    #' ** **\***  will be matched by any number of consecutive alphanumeric characters.  
+    #' Examples include `poppar = "simout1.txt, simout2.txt, simout3.txt"`,
+    #' `poppar = "simout?.txt"` and `poppar = "sim*.txt"`. All three will find 
+    #' the files *simout1.txt*, *simout2.txt*, and *simout3.txt* in the working directory. 
+    #' The second example would also find *simout4.txt*, etc.  The third
+    #' example would also find *sim_1.txt* if that existed.
     #' * A manually specified prior as a list containing three items in this order,
     #' but of any name: 1) vector of weights; 2) vector of mean parameter values; 
     #' and 3) a covariance matrix. If only one distribution is to be specified the
@@ -425,8 +432,13 @@ PM_sim <- R6::R6Class(
         }
       } else { # try it as a filename
         if (file.exists(poppar)) {
-          sim <- readRDS(poppar) #open saved object
-          if(inherits(sim, "PMsim")) {
+          if(grepl("rds$", poppar, perl = TRUE)){ #poppar is rds filename
+            sim <- readRDS(poppar) 
+          } else { #poppar is a simout.txt name
+            sim <- private$SIMparse(poppar, combine = combine)
+          }
+          #now populate
+          if(inherits(sim, c("PMsim", "PM_sim_data"))) {
             private$populate(sim, type = "sim")
           } else if(inherits(sim, "PM_simlist")){
             private$populate(sim, type = "simlist")
@@ -441,7 +453,7 @@ PM_sim <- R6::R6Class(
         }
       }
       
-
+      
       system("echo 347 > SEEDTO.MON") # TODO: look to fix the simulator without this
       
       # set default  values 
@@ -702,7 +714,7 @@ PM_sim <- R6::R6Class(
         mod_obj$write("simmodel.txt")
         model_file_src <- TRUE # used a file as source
       }
-
+      
       if (inherits(data, "PM_data")) {
         data$write("simdata.csv") # write the PM_data to "simdata.csv" file
         data_file_src <- FALSE # did not use a file as source
@@ -729,7 +741,7 @@ PM_sim <- R6::R6Class(
       data <- "simdata.csv" # working name for data file
       dataFile <- PM_data$new("simdata.csv")$standard_data # the data
       
-  
+      
       # deal with limits on parameter simulated values
       if (all(is.null(limits))) {
         # limits are omitted altogether
@@ -773,7 +785,7 @@ PM_sim <- R6::R6Class(
       if (!is.null(covariate)) {
         if (length(postToUse) > 0) endNicely("\nYou cannot simulate from posteriors while simulating covariates.\n", model, data)
         simWithCov <- TRUE
-
+        
         # get mean of each covariate and Bayesian posterior parameter
         CVsum <- summary(covariate$cov, "mean")
         # take out fixed covariates not to be simulated
@@ -1136,13 +1148,13 @@ PM_sim <- R6::R6Class(
           } else {
             if (length(postToUse) == 0) {
               pop.weight <- 1
-              pop.mean <- data.frame(t(poppar$popMean))
+              pop.mean <- poppar$popMean
               pop.cov <- poppar$popCov
               ndist <- 1
             } else {
               thisPost <- which(poppar$postMean$id == toInclude[i])
               pop.weight <- 1
-              pop.mean <- data.frame(poppar$postMean[thisPost, -1])
+              pop.mean <- poppar$postMean[thisPost, -1]
               pop.cov <- poppar$postCov[, , thisPost]
               ndist <- 1
             }
@@ -1186,14 +1198,25 @@ PM_sim <- R6::R6Class(
           if (ans == 1) stop()
           if (ans == 2) {
             # eigendecomposition to fix the matrix
-            eigen_values <- eigen(pop.cov)$values
-            eigen_vectors <- eigen(pop.cov)$vectors
-            pop.cov <- eigen_vectors %*% diag(pmax(eigen_values, 0)) %*% t(eigen_vectors)
-            # pop.cov <- as.matrix(Matrix::nearPD(as.matrix(pop.cov), keepDiag = T)$mat)
+            for(j in 1:5){ #try up to 5 times
+              eigen_values <- eigen(pop.cov)$values
+              eigen_vectors <- eigen(pop.cov)$vectors
+              pop.cov <- eigen_vectors %*% diag(pmax(eigen_values, 0)) %*% t(eigen_vectors)
+              posdef <- eigen(signif(pop.cov, 15))
+              if(all(posdef$values >= 0)){ #success, break out of loop
+                break 
+              }
+            }
+            posdef <- eigen(signif(pop.cov, 15)) #last check
+            if (any(posdef$values < 0)) {
+              stop("Unable to fix covariance.\n")
+            }
           }
           if (ans == 3) {
             pop.cov2 <- diag(0, nrow(pop.cov))
-            diag(pop.cov2) <- diag(pop.cov)
+            diag(pop.cov2) <- diag(as.matrix(pop.cov))
+            pop.cov2 <- data.frame(pop.cov2)
+            names(pop.cov2) <- names(pop.cov)
             pop.cov <- pop.cov2
           }
         }
@@ -1415,7 +1438,7 @@ PM_sim <- R6::R6Class(
         if (length(postToUse) > 0) {
           thisPrior <- getSimPrior(i)
         } else {
-          if (i == 1) thisPrior <- getSimPrior(i)
+          if (i == 1) {thisPrior <- getSimPrior(i)} #only need to grab once
         }
         
         # build the control stream
@@ -1448,7 +1471,7 @@ PM_sim <- R6::R6Class(
           # skip explanation of noisy values
           # other error information is correct
           thisPrior$confirm, # confirm answers
-          rep("1", 4), # common confimations
+          rep("1", 4), # common confirmations
           # output file is correct
           # confirm .wrk file generation
           # confirm starting seed
@@ -1460,7 +1483,7 @@ PM_sim <- R6::R6Class(
         writeLines(simControl, f, sep = "\r\n")
         close(f)
         
-
+        
         # make seed file and run
         if (OS == 1 | OS == 3) {
           system(paste("echo", seed[i], "> seedto.mon"))
@@ -1537,7 +1560,7 @@ PM_sim <- R6::R6Class(
         }
       }
     },
-   
+    
     SIMparse = function(file, combine, quiet = FALSE) {
       processfile <- function(n) {
         out <- readLines(allfiles[n])
