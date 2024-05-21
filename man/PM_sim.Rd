@@ -93,9 +93,9 @@ in the template data file, a list of such vectors}
 or in the case of multiple regimens
 in the template data file, a list of such matrices}
 
-\item{\code{data}}{For one simulation regimen in the template data, a list of class \emph{PMsim} that
+\item{\code{data}}{For one simulation regimen in the template data, a list of class \emph{PM_sim} that
 contains all the above elements. For multiple simulation regimens, a list of
-class \emph{PM_simlist} that contains as many \emph{PMsim} objects as regimens in the
+class \emph{PM_simlist} that contains as many \emph{PM_sim} objects as regimens in the
 template data file used for the simulation, i.e \code{data} will be a list of lists.}
 }
 \if{html}{\out{</div>}}
