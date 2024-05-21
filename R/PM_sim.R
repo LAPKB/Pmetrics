@@ -47,9 +47,9 @@ PM_sim <- R6::R6Class(
     #' or in the case of multiple regimens
     #' in the template data file, a list of such matrices
     totalCov = NULL,
-    #' @field data For one simulation regimen in the template data, a list of class *PMsim* that 
+    #' @field data For one simulation regimen in the template data, a list of class *PM_sim* that 
     #' contains all the above elements. For multiple simulation regimens, a list of
-    #' class *PM_simlist* that contains as many *PMsim* objects as regimens in the 
+    #' class *PM_simlist* that contains as many *PM_sim* objects as regimens in the 
     #' template data file used for the simulation, i.e `data` will be a list of lists.
     data = NULL,
     
@@ -111,12 +111,13 @@ PM_sim <- R6::R6Class(
     #' Output may also be directed to a new Pmetrics .csv data file 
     #' using the `makecsv` argument.
     #'
-    #' @param poppar One of three things:
+    #' @param poppar One of four things:
     #' * Population prior parameters as a [PM_final] object found in
     #' `PM_result$final`. Normally these would be supplied by calling the
     #' `$sim` method for a [PM_result] object, e.g. `PmetricsData::NPex$sim(...)`.
     #' * The name of a previously saved simulation via the `$save` method. The
-    #' file will be loaded.
+    #' file will be loaded. This filename should have the ".rds" extension, e.g. "sim.rds".
+    #' * The file names
     #' * A manually specified prior as a list containing three items in this order,
     #' but of any name: 1) vector of weights; 2) vector of mean parameter values; 
     #' and 3) a covariance matrix. If only one distribution is to be specified the
@@ -440,6 +441,7 @@ PM_sim <- R6::R6Class(
         }
       }
       
+
       system("echo 347 > SEEDTO.MON") # TODO: look to fix the simulator without this
       
       # set default  values 
@@ -759,7 +761,7 @@ PM_sim <- R6::R6Class(
         if (length(poppar$postPoints) == 0) endNicely("\nPlease remake your final object with makeFinal() and save with PMsave().\n", model, data)
         postToUse <- unique(poppar$postPoints$id)
         if (split) {
-          split <- F
+          split <- FALSE
           cat("\nsplit set to FALSE for simulations from posteriors.\n")
           flush.console()
         }
@@ -1004,6 +1006,16 @@ PM_sim <- R6::R6Class(
           }
         }
         obsNoise <- unlist(lapply(1:numeqt, function(x) checkObsNoise(obsNoiseNotMiss[[x]], x)))
+      }
+      
+      if (length(doseNoise) == 0){
+        doseNoise <- rep(0,4)
+      }
+      if (length(doseTimeNoise) == 0){
+        doseTimeNoise <- rep(0,4)
+      }
+      if (length(obsTimeNoise) == 0){
+        obsTimeNoise <- rep(0,4)
       }
       
       
@@ -1448,6 +1460,7 @@ PM_sim <- R6::R6Class(
         writeLines(simControl, f, sep = "\r\n")
         close(f)
         
+
         # make seed file and run
         if (OS == 1 | OS == 3) {
           system(paste("echo", seed[i], "> seedto.mon"))
@@ -1758,7 +1771,7 @@ PM_sim <- R6::R6Class(
           self$totalMeans[[x]] <- simout[[x]]$totalMeans
           self$totalCov[[x]] <- simout[[x]]$totalCov
           self$data[[x]] <- simout[[x]]
-          class(self$data[[x]]) <- c("PMsim", "list")
+          class(self$data[[x]]) <- c("PM_sim_data", "list")
         })
         class(self$data) <- c("PM_simlist", "list")
       } else if (type == "R6sim"){
@@ -2059,7 +2072,7 @@ plot.PM_sim <- function(x,
   }
   
   
-  if (!inherits(simout, c("PM_sim", "PMsim"))) {
+  if (!inherits(simout, c("PM_sim", "PM_sim_data"))) {
     stop("Use PM_sim$run() to make object of class PM_sim.\n")
   }
   if (!missing(obs)) {
