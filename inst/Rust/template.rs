@@ -28,6 +28,6 @@ fn main() -> Result<()> {
         },
         (</neqs>, </nouteqs>),
     );
-    let _result = start(eq, "config.toml".to_string())?;
+    let _result = fit(eq, "config.toml".to_string())?;
     Ok(())
 }
