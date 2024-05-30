@@ -38,7 +38,7 @@ PMwrk2csv <- function(prefix, ext = NULL, nsub) {
     data <- data[which(data != "")]
 
 
-    if (length(grep("RATES", data) > 0)) {
+    if (length(grep("RATES", data)) > 0) {
       oldFlag <- T
     }
     idLine <- grep("CHART NUMBER", data)

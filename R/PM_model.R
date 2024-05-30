@@ -555,7 +555,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       content <- gsub("</params>", params %>% paste(collapse = ","), content)
 
       covs <- c()
-      for (key in tolower(names(self$model_list$cov))) {
+      for (key in tolower(map_chr(self$model_list$cov, \(x) x$covariate))) {
         covs <- append(covs, sprintf("%s", key))
       }
       content <- gsub("</covs>", covs %>% paste(collapse = ","), content)
