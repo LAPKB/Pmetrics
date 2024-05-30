@@ -653,7 +653,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       .l <- gsub("log", "ln", .l) # log in R and Fortran is ln in Rust
 
       # deal with exponents
-      pattern2 <- "[*^]+(\\((.+?)\\)+|-?\\d*\\.?\\d+)"
+      pattern2 <- "[*^]{2,}(\\((.+?)\\)+|-?\\d*\\.?\\d+)"
       replace2 <- "\\.powf\\(\\1\\)"
       .l <- gsub(pattern2, replace2, .l, perl = TRUE)
 
