@@ -310,7 +310,11 @@ plot.PM_cov <- function(x,
   if (missing(include)) include <- unique(x$id)
   if (missing(exclude)) exclude <- NA
   
-  if (missing(formula)) stop("Please supply a formula of the form y ~ x")
+  if (missing(formula)){
+    choices <- paste(x %>% select(!c(id, icen)) %>% names(), collapse = ", ")
+    cat(paste0(crayon::red("Error: "),"Please supply a formula of the form y ~ x.\nValues for (x, y) include: ", crayon::blue(choices), "."))
+    return(invisible(NULL))
+  } 
   
   
   vars <- names(get_all_vars(formula = formula, data = x))
