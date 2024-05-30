@@ -164,7 +164,7 @@ file will be loaded. This filename should have the ".rds" extension, e.g. "sim.r
 ** \strong{?} will be matched by just a single numeral or character
 ** \strong{\}*  will be matched by any number of consecutive alphanumeric characters.
 Examples include \code{poppar = "simout1.txt, simout2.txt, simout3.txt"},
-\code{poppar = "simout?.txt"} and \code{poppar = "sim*.txt"}. All three will find
+\code{poppar = "simout?.txt"} and \code{poppar = "sim\\*.txt"}. All three will find
 the files \emph{simout1.txt}, \emph{simout2.txt}, and \emph{simout3.txt} in the working directory.
 The second example would also find \emph{simout4.txt}, etc.  The third
 example would also find \emph{sim_1.txt} if that existed.
@@ -575,7 +575,7 @@ Calculates the AUC of the specified simulation
 \subsection{Method \code{summary()}}{
 Summarize simulation
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(at = 1, field, by, individual = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
