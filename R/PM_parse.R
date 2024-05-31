@@ -34,7 +34,7 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
   # cycle_file <- paste(wd, "cycles.csv", sep = "/")
   # theta_file <- paste(wd, "theta.csv", sep = "/")
   # post_file <- paste(wd, "posterior.csv", sep = "/")
-
+  
   if (inherits(fit, "PM_fit")) {
     # fit is a PM_fit object, use it directly
     fit_object <- fit
@@ -45,40 +45,91 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
     # fit does not meet any of the above conditions, set to NULL
     fit_object <- NULL
   }
-
-
-  # config = make_Config(config_file)
-
+  
   cwd <- getwd()
   setwd(wd)
-
-  tryCatch(
-    {
-      op <- PM_op$new() # assumes pred.csv, obs.csv, and settings.json are in wd
-      final <- PM_final$new() # assumes theta.csv and posterior.csv are in wd
-      cycle <- PM_cycle$new() # asumes cycles.csv, obs.csv, and settings.json are in wd
-      pop <- PM_pop$new() # assumes pred.csv is in wd
-      post <- PM_post$new() # assumes pred.csv is in wd
-      cov <- NULL
-      if (!is.null(fit)) {
-        cov <- PM_cov$new(list(final = final, data = fit$data))
-      }
-      setwd(cwd)
-    },
-    error = function(e) {
-      e <- NULL
-      setwd(cwd)
-      cat(
-        crayon::red("Error:"),
-        "There was an error parsing the output files.\n"
-      )
-      # Hard stop execution
-      stop()
-    }
+  
+  # assumes pred.csv, obs.csv, and settings.json are in wd
+  tryCatch({ op <- PM_op$new() },
+           error = function(e) {
+             e <- NULL
+             cat(
+               crayon::red("Error:"),
+               "There was an error parsing pred.csv, obs.csv, and/or settings.json for the observed/predicted information.\n"
+             )
+             return(NULL)
+           }
   )
+  
+  # assumes theta.csv and posterior.csv are in wd
+  tryCatch({ final <- PM_final$new() },
+           error = function(e) {
+             e <- NULL
+             cat(
+               crayon::red("Error:"),
+               "There was an error parsing theta.csv and/or posterior.csv for the final parameter information.\n"
+             )
+             return(NULL)
+           }
+  )
+  
+  # assumes cycles.csv, obs.csv, and settings.json are in wd
+  tryCatch({ cycle <- PM_cycle$new() }, 
+           error = function(e) {
+             e <- NULL
+             cat(
+               crayon::red("Error:"),
+               "There was an error parsing cycles.csv, obs.csv, and/or settings.json for cycle information.\n"
+             )
+             return(NULL)
+           }
+  )
+  
+  # assumes pred.csv is in wd
+  tryCatch({ pop <- PM_pop$new() }, 
+           error = function(e) {
+             e <- NULL
+             cat(
+               crayon::red("Error:"),
+               "There was an error parsing pred.csv for population predictions\n"
+             )
+             return(NULL)
+           }
+  )
+  
+  # assumes pred.csv is in wd
+  tryCatch({ post <- PM_post$new() }, 
+           error = function(e) {
+             e <- NULL
+             cat(
+               crayon::red("Error:"),
+               "There was an error parsing pred.csv for posterior predictions\n"
+             )
+             return(NULL)
+           }
+  )  
+  
+  
+  cov <- NULL
+  tryCatch({ 
+    if (!is.null(fit)) {
+      cov <- PM_cov$new(list(final = final, data = fit_object$data))
+    } 
+  }, 
+  error = function(e) {
+    e <- NULL
+    cat(
+      crayon::red("Error:"),
+      "There was an error parsing parameters and data for covariate-parameter relationships.\n"
+    )
+    return(NULL)
+  }
+  ) 
+
+  
   NPcore <- list(
-    data = fit$data,
-    model = fit$model,
+    data = fit_object$data,
+    model = fit_object$model,
     op = op,
     cov = cov,
     post = post,
@@ -89,15 +140,17 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
     algorithm = "NPAG",
     numeqt = 1,
     converge = cycle$converged,
-    config = config
+    config = fromJSON(readLines("settings.json", warn = FALSE))
   )
-
+  
   class(NPcore) <- "PM_result"
-
+  setwd(cwd)
+  
   if (write) {
     save(NPcore, file = "PMout.Rdata")
     return(invisible(NPcore))
   }
+  
 
   return(NPcore)
 }
