@@ -118,8 +118,8 @@ PM_sim <- R6::R6Class(
     #' * The name of a previously saved simulation via the `$save` method. The
     #' file will be loaded. This filename should have the ".rds" extension, e.g. "sim.rds".
     #' * The file name(s) of previous simulator output. Wildcards are permissible.
-    #' ** **?** will be matched by just a single numeral or character
-    #' ** ***** will be matched by any number of consecutive alphanumeric characters.  
+    #    #' ** **?** will be matched by just a single numeral or character
+    #    #' ** ***** will be matched by any number of consecutive alphanumeric characters.  
     #' Examples include `poppar = "simout1.txt, simout2.txt, simout3.txt"`,
     #' `poppar = "simout?.txt"` and `poppar = "sim*.txt"`. All three will find 
     #' the files *simout1.txt*, *simout2.txt*, and *simout3.txt* in the working directory. 
@@ -586,27 +586,21 @@ PM_sim <- R6::R6Class(
     },
     #' @description
     #' Summarize simulation
-    #' @param at Index of the PM_sim object to be summarized. Default is 1.
-    #' @param field Quoted character value, one of
-    #' * obs for simulated observations
-    #' * amt for simulated amounts in each compartment
-    #' * parValues for simulated parameter values
-    #' @param by Optional quoted column name(s) to group by, e.g. `by = "id"` or
-    #' `by = c("id", "outeq")`.
-    #' @param individual If "id" is included within `by`, the summary statistics
-    #' will be calculated for each individual, i.e. each individual's mean, sd, median,
-    #' min and max observations. If `individual` is `FALSE` (the default), then those
-    #' summaries will again be summarized to present, for example, the mean of
-    #' all subjects' mean observations, or the mean of their maximum observations.
-    #' This argument will be ignored if "id" is not in `by`.
-    #' @return If `by` is ommitted, a data frame with rows for each data element except ID,
-    #' and columns labeled as mean, sd, median, min and max. If `by` is specified,
-    #' return will be a list with named elements mean, sd, median, min and max, each containing
-    #' the corresponding value for each group in `by`.
-    summary = function(...) {
-      tryCatch(summary.PM_sim(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+    #' @param at Index of the PM_sim object to use. Default is 1.
+    #' @param ... Parameters passed to [summary.PM_sim].
+    summary = function(at = 1, ...) {
+      if (inherits(self$data, "PM_simlist")) {
+        if (at > length(self$data)) {
+          stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
+        }
+        tryCatch(summary.PM_sim(self$data[[at]], ...), error = function(e) {
+          cat(crayon::red("Error:"), e$message, "\n")
+        })
+      } else {
+        tryCatch(summary.PM_sim(self$data, ...), error = function(e) {
+          cat(crayon::red("Error:"), e$message, "\n")
+        })      }
+      
     },
     #' @description
     #' `r lifecycle::badge("deprecated")`
@@ -1750,6 +1744,13 @@ PM_sim <- R6::R6Class(
         self$parValues <- simout$parValues
         self$totalMeans <- simout$totalMeans
         self$totalCov <- simout$totalCov
+        if(inherits(simout$data, "PM_simlist")){
+          purrr::map(1:length(simout$data), \(x){
+            class(simout$data[[x]]) <- c("PM_sim_data", "list") #ensure class is correct
+          })
+        } else {
+          class(simout$data) <- c("PM_sim_data", "list") #ensure class is correct
+        }
         self$data <- simout$data
       }
       return(self)
@@ -1851,7 +1852,7 @@ PM_sim$load <- function(...) {
 #' i.e., a list of [PM_sim] objects created when more than one
 #' subject is included in a simultation data template and
 #' `combine = F` (the default) when parsing the results of a simulation.
-#' @param \dots `r template("dotsPlotly")`
+#' @param ... `r template("dotsPlotly")`
 #' @return Plots the simulation object.  If `obs` is included, a list will be returned with
 #' the folowing items:
 #' * *npc* A dataframe with three columns: quantile, prop_less, pval.
@@ -2257,7 +2258,8 @@ plot.PM_sim <- function(x,
 }
 
 # SUMMARY -----------------------------------------------------------------
-#' @title Plot Pmetrics Simulation Objects
+
+#' @title Summarize Pmetrics Simulation Objects
 #' @description
 #' `r lifecycle::badge('stable')`
 #'
@@ -2269,7 +2271,9 @@ plot.PM_sim <- function(x,
 #' Default statistics reported
 #' are mean, sd, median, min, max, but could include individual quantiles. See
 #' `statistics` below.
-#' @param at Index of the PM_sim object to be summarized. Default is 1.
+#' @method summary PM_sim
+#' @param object The simulation object to summarize
+#' @param at If `object` is a `PM_simlist`, which simulation to use. Default is 1.
 #' @param field Quoted character value, one of
 #' * **obs** for simulated observations (the default)
 #' * **amt** for simulated amounts in each compartment
@@ -2280,51 +2284,63 @@ plot.PM_sim <- function(x,
 #' Default is  `c("mean", "sd", "median", "min", "max")`, but
 #' can be any subset of these and can also include specific quantiles, e.g. `c(25, "median", 75)`.
 #' @param digits Integer, used for number of digits to print.
+#' @param ... Not used.
 #' @return If `by` is omitted, a data frame with rows for each data element except ID,
 #' and columns labeled according to the selected `statistics`. If `by` is specified,
 #' return will be a list with named elements according to the selected `statistics`, 
 #' each containing a data frame with the summaries for each group in `by`.
-summary.PM_sim <- function(object, at = 1, field = "obs", group, individual = FALSE,
+#' @author Michael Neely
+#' @examples
+#' library(PmetricsData)
+#' simEx$summary() # preferred
+#' summary(simEx) # alternative
+#' simEx$summary(at = 2, field = "amt", group = "comp") #group amounts by compartment
+#' @seealso [PM_sim]
+#' @export
+summary.PM_sim <- function(object, at = 1, field = "obs", group = NULL, 
                            statistics = c("mean", "sd", "median", "min", "max"),
-                           summaries = c("mean", "sd", "median", "min", "max"),
-                           digits = max(3, getOption("digits") - 3)) {
-  
-  # get the right data
-  if (inherits(object$data, "PM_simlist")) {
-    if (at > length(object$data)) {
-      stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(object$data)))
+                           digits = max(3, getOption("digits") - 3),...) {
+  # get the right data 
+  if(inherits(object, "PM_sim")){
+    if(inherits(object$data, "PM_simlist")){
+      dat <- object$data[[at]][[field]]
+    } else { 
+      dat <- object$data[[field]]
     }
-    dat <- object$data[[at]][[field]]
+  } else if (inherits(object, "PM_sim_data")) {
+    dat <- object[[field]]
   } else {
-    dat <- object$data[[field]]
+    cat(crayon::red("Error:"), "Object does not appear to be a simulation.\n")
+    return(invisible(NULL))
   }
   
-
-
-    
-    summ <- purrr::map(
-      statistics,
-      \(x) {
-        if(!is.na(suppressWarnings(as.numeric(x)))){
-          dplyr::summarize(dat,
-                           dplyr::across(everything(), \(y) quantile(y, probs = as.numeric(x)/100)), .by = all_of(!!group))
-        } else {
-          dplyr::summarize(dat,
-                           dplyr::across(everything(), !!!dplyr::syms(x)), .by = all_of(!!group))
-        }
-        
+  
+  # loop through all the statistics
+  summ <- purrr::map(
+    statistics,
+    \(x) {
+      if(!is.na(suppressWarnings(as.numeric(x)))){
+        dplyr::summarize(dat,
+                         dplyr::across(everything(), \(y) quantile(y, probs = as.numeric(x)/100)), .by = all_of(!!group))
+      } else {
+        dplyr::summarize(dat,
+                         dplyr::across(everything(), !!!dplyr::syms(x)), .by = all_of(!!group))
       }
-    )
-    names(summ) <- as.character(statistics)
-    summ <- summ %>% list_rbind(names_to = "stat") %>% mutate(across(where(is.numeric), \(x) round(x, digits)))
-    if(length(group)>0){
-      attr(summ, "group") <- group
+      
     }
-    class(summ) <- c("PM_sim_summary", "data.frame")
-    
+  )
+  names(summ) <- as.character(statistics)
+  summ <- summ %>% list_rbind(names_to = "stat") %>% mutate(across(where(is.numeric), \(x) round(x, digits)))
+  if(length(group)>0){
+    attr(summ, "group") <- group
+  }
+  class(summ) <- c("summary.PM_sim", "data.frame")
   
   return(summ)
 }
+
+
+# PRINT SUMMARY -----------------------------------------------------------
 
 
 #' @title Print Summary of Simulations
@@ -2334,24 +2350,23 @@ summary.PM_sim <- function(object, at = 1, field = "obs", group, individual = FA
 #' Print a Pmetrics Observed vs. Predicted Summary Object
 #'
 #' @details
-#' Print a summary of observations, predictions and errors in a [summary.PM_op] object
-#' made by [summary.PM_op]. Users do not normally need to call this
+#' Print a summary of simulations 
+#' made by [summary.PM_sim]. Users do not normally need to call this print
 #' function directly, as it will be the default method to display the object.
 #'
-#' @title Print Summary of Observations and Predictions
-#' @method print summary.PM_op
-#' @param x An object made by [summary.PM_op].
-#' @param digits Integer, used for number of digits to print.
+#' @title Print Summary of Simulations
+#' @method print summary.PM_sim
+#' @param x An object made by [summary.PM_sim].
 #' @param ... Not used.
 #' @return A printed object.
 #' @author Michael Neely
-#' @seealso [summary.PM_op]
+#' @seealso [summary.PM_sim]
 #' @examples
 #' library(PmetricsData)
-#' NPex$op$summary()
+#' simEx$summary()
 #' @export
 
-print.PM_sim_summary <- function(x){
+print.summary.PM_sim <- function(x,...){
   print.data.frame(x)
   if(!is.null(attr(x,"group"))){
     cat("\n", "Grouped by:", paste(crayon::blue(attr(x,"group")), collapse = ", "),"\n")

@@ -161,10 +161,8 @@ or via the \verb{$sim} method for \link{PM_result} objects.
 \item The name of a previously saved simulation via the \verb{$save} method. The
 file will be loaded. This filename should have the ".rds" extension, e.g. "sim.rds".
 \item The file name(s) of previous simulator output. Wildcards are permissible.
-** \strong{?} will be matched by just a single numeral or character
-** \strong{\}*  will be matched by any number of consecutive alphanumeric characters.
 Examples include \code{poppar = "simout1.txt, simout2.txt, simout3.txt"},
-\code{poppar = "simout?.txt"} and \code{poppar = "sim\\*.txt"}. All three will find
+\code{poppar = "simout?.txt"} and \code{poppar = "sim*.txt"}. All three will find
 the files \emph{simout1.txt}, \emph{simout2.txt}, and \emph{simout3.txt} in the working directory.
 The second example would also find \emph{simout4.txt}, etc.  The third
 example would also find \emph{sim_1.txt} if that existed.
@@ -575,38 +573,17 @@ Calculates the AUC of the specified simulation
 \subsection{Method \code{summary()}}{
 Summarize simulation
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(at = 1, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{at}}{Index of the PM_sim object to be summarized. Default is 1.}
+\item{\code{at}}{Index of the PM_sim object to use. Default is 1.}
 
-\item{\code{field}}{Quoted character value, one of
-\itemize{
-\item obs for simulated observations
-\item amt for simulated amounts in each compartment
-\item parValues for simulated parameter values
-}}
-
-\item{\code{by}}{Optional quoted column name(s) to group by, e.g. \code{by = "id"} or
-\code{by = c("id", "outeq")}.}
-
-\item{\code{individual}}{If "id" is included within \code{by}, the summary statistics
-will be calculated for each individual, i.e. each individual's mean, sd, median,
-min and max observations. If \code{individual} is \code{FALSE} (the default), then those
-summaries will again be summarized to present, for example, the mean of
-all subjects' mean observations, or the mean of their maximum observations.
-This argument will be ignored if "id" is not in \code{by}.}
+\item{\code{...}}{Parameters passed to \link{summary.PM_sim}.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-If \code{by} is ommitted, a data frame with rows for each data element except ID,
-and columns labeled as mean, sd, median, min and max. If \code{by} is specified,
-return will be a list with named elements mean, sd, median, min and max, each containing
-the corresponding value for each group in \code{by}.
 }
 }
 \if{html}{\out{<hr>}}

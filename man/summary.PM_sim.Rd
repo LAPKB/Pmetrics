@@ -2,19 +2,22 @@
 % Please edit documentation in R/PM_sim.R
 \name{summary.PM_sim}
 \alias{summary.PM_sim}
-\title{Plot Pmetrics Simulation Objects}
+\title{Summarize Pmetrics Simulation Objects}
 \usage{
 \method{summary}{PM_sim}(
   object,
   at = 1,
   field = "obs",
-  by,
-  individual = FALSE,
-  statistics = c("mean", "sd", "median", "min", "max")
+  group = NULL,
+  statistics = c("mean", "sd", "median", "min", "max"),
+  digits = max(3, getOption("digits") - 3),
+  ...
 )
 }
 \arguments{
-\item{at}{Index of the PM_sim object to be summarized. Default is 1.}
+\item{object}{The simulation object to summarize}
+
+\item{at}{If \code{object} is a \code{PM_simlist}, which simulation to use. Default is 1.}
 
 \item{field}{Quoted character value, one of
 \itemize{
@@ -23,24 +26,22 @@
 \item \strong{parValues} for simulated parameter values
 }}
 
-\item{by}{Optional quoted column name(s) to group by, e.g. \code{by = "id"} or
-\code{by = c("id", "outeq")}.}
+\item{group}{Optional quoted values to group by, e.g. \code{group = "outeq"} or
+\code{group = c("id", "outeq")}.}
 
-\item{individual}{If "id" is included within \code{by}, the summary statistics
-will be calculated for each individual, i.e. each individual's mean, sd, median,
-min and max observations. If \code{individual} is \code{FALSE} (the default), then those
-summaries will again be summarized to present, for example, the mean of
-all subjects' mean observations, or the mean of their maximum observations.
-This argument will be ignored if "id" is not in \code{by}.}
+\item{statistics}{The summary statistics to report.
+Default is  \code{c("mean", "sd", "median", "min", "max")}, but
+can be any subset of these and can also include specific quantiles, e.g. \code{c(25, "median", 75)}.}
 
-\item{statistics}{Default is  \code{c("mean", "sd", "median", "min", "max")}, but
-can include specific quantiles, e.g. \code{c(25, "median", 75)}.}
+\item{digits}{Integer, used for number of digits to print.}
+
+\item{...}{Not used.}
 }
 \value{
-If \code{by} is ommitted, a data frame with rows for each data element except ID,
-and columns labeled as mean, sd, median, min and max. If \code{by} is specified,
-return will be a list with named elements mean, sd, median, min and max, each containing
-the corresponding value for each group in \code{by}.
+If \code{by} is omitted, a data frame with rows for each data element except ID,
+and columns labeled according to the selected \code{statistics}. If \code{by} is specified,
+return will be a list with named elements according to the selected \code{statistics},
+each containing a data frame with the summaries for each group in \code{by}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -54,4 +55,16 @@ outeq, or both, as well as summary statistics for each individual.
 Default statistics reported
 are mean, sd, median, min, max, but could include individual quantiles. See
 \code{statistics} below.
+}
+\examples{
+library(PmetricsData)
+simEx$summary() # preferred
+summary(simEx) # alternative
+simEx$summary(at = 2, field = "amt", group = "comp") #group amounts by compartment
+}
+\seealso{
+\link{PM_sim}
+}
+\author{
+Michael Neely
 }
