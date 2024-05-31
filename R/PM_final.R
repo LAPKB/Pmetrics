@@ -77,11 +77,11 @@ PM_final <- R6::R6Class(
     #' @field postVar A *nsub* x *npar* data frame containing
     #' the variances of the posterior distributions for each parameter.
     postVar = NULL,
-    #' @field postCov NPAG only: An array of dimensions *npar* x *npar* x *nsub* that
-    #' contains the covariances of the posterior distributions for each parameter and subject.*
+    #' @field postCov NPAG only: An list of length *nsub*, each element with an *npar* x *npar* data frame
+    #' that contains the posterior parameter value covariances for that subject.
     postCov = NULL,
-    #' @field postCor NPAG only: An array of dimensions *npar* x *npar* x *nsub* that
-    #' contains the correlations of the posterior distributions for each parameter and subject.
+    #' @field postCor NPAG only: An list of length *nsub*, each element with an *npar* x *npar* data frame
+    #' that contains the posterior parameter value correlations for that subject.
     postCor = NULL,
     #' @field postMed A *nsub* x *npar* data frame containing
     #' the medians of the posterior distributions for each parameter.*
@@ -263,19 +263,30 @@ PM_final <- R6::R6Class(
           summarise(across(.cols = -c(point, prob), .fns = function(x) {
             sd(x)**2
           }))
-
-        # TODO: Add postCov, postCor, Post
-
+        
+        cov_cor <- post %>%
+          split(post$id) %>%
+          map(\(x){
+            wt <- x$prob
+            mat <- x %>% select(-c(point, prob))
+            cov.wt(mat, wt, cor = TRUE)
+          })
+        
+        postCov <- cov_cor %>%
+          map(\(x) as.data.frame(x$cov)) 
+        
+        postCor <- cov_cor %>%
+          map(\(x) as.data.frame(x$cor)) 
+        
         postMed <- post %>%
-          # group_by(id) %>%
-          filter(id == 6) %>%
+          group_by(id) %>%
           reframe(across(-c(point, prob), \(x) weighted_median(x, prob))) # in PMutilities
 
-        # TODO: Calculate shrinkage
-        shrinkage <- 1
-        # varEBD <- apply(postVar[,-1],2,mean) # Mean postVar / popVar
-        # sh <- varEBD/popVar
+        # shrinkage
+        varEBD <- postVar %>% summarize(across(-id, \(x) mean(x, na.rm = TRUE)))
+        sh <- varEBD/popSD**2
 
+        # ranges
         ab <- config$random %>%
           unlist() %>%
           matrix(ncol = 2, byrow = TRUE)
@@ -284,6 +295,7 @@ PM_final <- R6::R6Class(
 
         final <- list(
           popPoints = theta,
+          postPoints = post,
           popMean = popMean,
           popSD = popSD,
           popCV = popSD / popMean,
@@ -294,9 +306,12 @@ PM_final <- R6::R6Class(
           postMean = postMean,
           postSD = postSD,
           postMed = postMed,
+          postCov = postCov,
+          postCor = postCor,
           gridpts = gridpts,
           nsub = length(unique(post$id)),
-          ab = ab
+          ab = ab,
+          shrinkage = sh
         )
         class(final) <- c("PM_final_data", "NPAG", "list")
 
@@ -412,12 +427,17 @@ PM_final <- R6::R6Class(
             for (i in 1:nsub) {
               temp2 <- postPoints[postPoints$id == data$sdata$id[i], ]
               ret <- cov.wt(temp2[, 3:(2 + data$nvar)], wt = temp2$prob, cor = T, method = "ML")
-              postCov[, , i] <- ret$cov
+              postCov2[, , i] <- ret$cov
               postCor[, , i] <- ret$cor
             }
           }
+          
+          #convert to same format as rust
+          postCov <- apply(postCov, 3, as.data.frame, simplify = FALSE)
+          postCor <- apply(postCor, 3, as.data.frame, simplify = FALSE)
+          
 
-          postMed <- data.frame(id = data$sdata$id, t(data$baddl[6, , ]))
+          epostMed <- data.frame(id = data$sdata$id, t(data$baddl[6, , ]))
 
 
           # shrinkage

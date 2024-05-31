@@ -104,18 +104,19 @@ PM_cov <- R6::R6Class(
       
       if(getPMoptions("backend") == "rust"){
         
-        data <- data$data
         final <- data$final
+        data <- data$data
+        
         
         if (is.null(data) | is.null(final)) {
           return(NULL)
         }
-        data1 <- data$data %>% filter(!is.na(dose)) %>%
+        data1 <- data$standard_data %>% filter(!is.na(dose)) %>%
           select(id, time, !!getCov(.)$covnames) %>% #in PMutilities
           tidyr::fill(-id, -time) %>%
           dplyr::left_join(final$postMean, by = "id") %>% 
           mutate(icen = "mean") 
-        data2 <- data$data %>% filter(!is.na(dose)) %>% 
+        data2 <- data$standard_data %>% filter(!is.na(dose)) %>% 
           select(id, time, !!getCov(.)$covnames) %>% 
           tidyr::fill(-id, -time) %>%
           dplyr::left_join(final$postMed, by = "id") %>% 
