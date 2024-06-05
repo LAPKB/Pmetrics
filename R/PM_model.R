@@ -652,9 +652,9 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       .l <- gsub("log", "ln", .l) # log in R and Fortran is ln in Rust
 
-      # deal with exponents
-      pattern2 <- "[*^]{2,}(\\((.+?)\\)+|-?\\d*\\.?\\d+)"
-      replace2 <- "\\.powf\\(\\1\\)"
+      # deal with exponents - not bullet proof. Need to separate closing ) with space if not part of exponent
+      pattern2 <- "\\*{2,}(\\(*(.+?)[\\s^)])"
+      replace2 <- "\\.powf\\(\\2\\) "
       .l <- gsub(pattern2, replace2, .l, perl = TRUE)
 
       # deal with integers, exclude [x] and alphax
@@ -698,6 +698,11 @@ PM_model_list <- R6::R6Class("PM_model_list",
       # fix if and if-else blocks
       for (i in c("if", "else if", "else", "end if")) {
         .l <- if_fix(i, .l)
+      }
+      
+      # deal with secondary equations, which don't have xp or dx
+      if(stringr::str_detect(.l, stringr::regex("^(?!.*(?:xp|dx)).*\\s*=\\s*.*", ignore_case = TRUE))){
+        .l <- paste0("let ",.l,";")
       }
 
       return(.l)
