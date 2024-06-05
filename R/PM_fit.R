@@ -82,9 +82,9 @@ PM_fit <- R6::R6Class("PM_fit",
           model_path <- self$model$write(engine = engine)
           cat(sprintf("Creating model file at: %s\n", model_path))
           if (engine == "npag") {
-            Pmetrics::NPrun(model_path, self$data$standard_data, ...)
+            out <- Pmetrics::NPrun(model_path, self$data$standard_data, ...)
           } else {
-            Pmetrics::ITrun(model_path, self$data$standard_data, ...)
+            out <- Pmetrics::ITrun(model_path, self$data$standard_data, ...)
           }
         }
       } else if (getPMoptions()$backend == "rust") {
