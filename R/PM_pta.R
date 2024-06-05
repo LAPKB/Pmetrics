@@ -28,13 +28,15 @@
 PM_pta <- R6::R6Class(
   "PM_pta",
   public <- list(
-    #' @field data Contains the raw results. See [makePTA].
+    #' @field data Contains the raw results.
     data = NULL,
     #' @description 
     #' Create a new `PM_pta` object.
     #' @details
-    #' `makePTA` will calculate the PTA for any number of simulations, targets and definitions of success.
-    #' Simulations typically differ by dose, but may differ by other features such as children vs. adults. 
+    #' This function will calculate the probability of target attainment (PTA) 
+    #' for any number of simulations, targets and definitions of success.
+    #' Simulations typically differ by dose, but may differ by other features 
+    #' such as children vs. adults. 
     #'
     #' @param simdata Can be one of multiple inputs as shown in the examples below using.
     #' 
@@ -93,9 +95,10 @@ PM_pta <- R6::R6Class(
     #' distributions, or "mean".  Default is "median".
     #' @param block Which block to plot, where a new block is defined by dose resets (evid = 4); default is 1.
     #' @param ... Not currently used
-    #' @return The output of `makePTA` is a list of class *PMpta*,
-    #' which is a list with each `target_type` as an element, followed by a final `intersection` element showing the results
-    #' for profiles which meet ALL the conditions (intersection) or `NA` if only one `target_type` was specified. 
+    #' @return A list of class *PM_pta_data*, included in the `data` field of the [PM_pta] object.
+    #' The list contains each `target_type` as an element, followed by a final `intersection` 
+    #' element showing the results for profiles which meet ALL the conditions (intersection) 
+    #' or `NA` if only one `target_type` was specified. 
     #' The individual elements are tibbles with all possible combinations
     #' of `target`s and simulated regimens for a given `target_type`. The tibbles have the following columns:
     #' * **sim_num** The simulation number in `simdata`.
@@ -426,7 +429,7 @@ PM_pta <- R6::R6Class(
                                                          list(
                                                            tidyr::tibble(id = unique(simdata[[x]]$obs$id),
                                                                          target = sample(x = target[[y]]$target, 
-                                                                                         size = n_id[x], replace = T, 
+                                                                                         size = n_id[x], replace = TRUE, 
                                                                                          prob = target[[y]]$n)
                                                            ))
                                                        } else {
@@ -829,15 +832,21 @@ plot.PM_pta <- function(x,
       pta <- pta[[1]] #no intersect, plot first
     }
   } else {
+    
     at <- suppressWarnings(tryCatch(as.numeric(at), error = function(e) NA))
     if(!is.na(at)){
       if(at > length(pta)){
-        stop("'at' is greater than the number of PTAs.")
-      } else {
+        cat(crayon::red("Error:"),"at =", at, "is greater than the number of PTAs.")
+        return(invisible(NULL))
+      } else if(length(pta[[at]]) == 0 || all(is.na(pta[[at]]))) {
+        cat(crayon::red("Error:"),"at =", at, "does not return a valid PTA.")
+        return(invisible(NULL))
+      } else {  
         pta <- pta[[at]]
       }
     } else {
-      stop("'at' should be either \"intersect\" or the number of one of the objects to plot.")
+      cat(crayon::red("Error:"), "'at' should be either \"intersect\" or the number of one of the objects to plot.")
+      return(invisible(NULL))
     }
     
   }
@@ -1126,12 +1135,17 @@ summary.PM_pta <- function(object, at = "intersect", ci = 0.95, ...){
     at <- suppressWarnings(tryCatch(as.numeric(at), error = function(e) NA))
     if(!is.na(at)){
       if(at > length(pta)){
-        stop("'at' is greater than the number of PTAs.")
-      } else {
+        cat(crayon::red("Error:"),"at =", at, "is greater than the number of PTAs.")
+        return(invisible(NULL))
+      } else if(length(pta[[at]]) == 0 || all(is.na(pta[[at]]))) {
+        cat(crayon::red("Error:"),"at =", at, "does not return a valid PTA.")
+        return(invisible(NULL))
+      } else {  
         pta <- pta[[at]]
       }
     } else {
-      stop("'at' should be either \"intersect\" or the number of one of the objects to summarize.")
+      cat(crayon::red("Error:"), "'at' should be either \"intersect\" or the number of one of the objects to plot.")
+      return(invisible(NULL))
     }
     
   }
