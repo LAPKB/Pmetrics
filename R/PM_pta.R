@@ -21,7 +21,7 @@
 #' and creates the PTA. It is described here.
 #'
 #' Both methods require the prior creation of a simulation of
-#' appropriate regimens. They use [makePTA] to create the *PM_pta* object.
+#' appropriate regimens. 
 #'
 #' @author Julian Otalvaro and Michael Neely
 #' @export
@@ -38,14 +38,14 @@ PM_pta <- R6::R6Class(
     #'
     #' @param simdata Can be one of multiple inputs as shown in the examples below using.
     #' 
-    #' * `simEx #PM_sim`
-    #' * `simEx$data #PM_simlist`
-    #' * `simEx$data[[1]] #PM_sim_data`
-    #' * `NPex$post #PM_post`
-    #' * `NPex$post$data #PM_post_data`
-    #' * `NPex$data #PM_data`
-    #' * `NPex$data$standard_data #PM_data_data`
-    #' * `"simout.txt" #matches files with wildcard ability, see [PM_sim]`
+    #' * `simEx` *PM_sim*
+    #' * `simEx$data` *PM_simlist*
+    #' * `simEx$data[[1]]` *PM_sim_data*
+    #' * `NPex$post` *PM_post*
+    #' * `NPex$post$data` *PM_post_data*
+    #' * `NPex$data` *PM_data*
+    #' * `NPex$data$standard_data` *PM_data_data*
+    #' * `"simout.txt"` matches files with wildcard ability, see [PM_sim]
     #' 
     #' @param simlabels Optional character vector of labels for each simulation.  Default is `c('Regimen 1', 'Regimen 2',...)`.
     #' @param target One of several options.
@@ -56,24 +56,27 @@ PM_pta <- R6::R6Class(
     #' * A list of multiple targets combining the above if multiple `target_type`s are used. If so, the first `target` can be a vector, 
     #' but subsequent targets must be single values to avoid factorial expansion of combinations. For example, the first target could be a vector of MICs corresponding
     #' to a `target_type` of "time", the second target a value of 10 corresponding to a `target_type` of "min", and the third target a value of 50
-    #' corresponding to a `target_type` of "max": `target = list(c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 10, 50)`. The first value can also be a sampled
+    #' corresponding to a `target_type` of "max" as in this example:
+    #'  `target = list(c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 10, 50)`. The first value can also be a sampled
     #' distribution made with [makePTAtarget].
     #' 
     #' @param target_type A vector of the type for each `target`.  For any, place a minus sign
-    #' in front to make the success less than the target ratio, e.g. `target_type = c("min", "-min")`. Available types:
+    #' in front to make the success less than the target ratio, e.g. `target_type = c("min", "-min")`. 
+    #' Available types:
     #' 
-    #' * "time" is percent time above `target` within the time range specified by `start` and `end`
+    #' * "time" is percent time above `target` within the time range specified by `start` and `end`.
+    #' Use "-time" for percent time below `target`.
     #' * "auc" is ratio of area under the curve within the time range to `target`
-    #' * "peak" or "max", ratio of peak/max (synonymous) concentration to `target` within the time range. Place a minus sign
-    #' in front to make the success less than the target ratio.
-    #' * "min", is the ratio of minimum concentration to `target` within the time range. Place a minus sign
-    #' in front to make the success less than the target ratio. 
+    #' * "peak" or "max", ratio of peak or max (synonymous) concentration to `target` within the time range. 
+    #' Use "-max" or "-peak" to make the success less than the target ratio.
+    #' * "min", is the ratio of minimum concentration to `target` within the time range. 
+    #' Use "-min" to make the success less than the target ratio. 
     #' * A single numeric value, which must correspond to an observation time common to all PMsim objects in
     #' `simdata`, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at that time to `target`.
     #' 
     #' This enables testing of a specific timed concentration (e.g. one hour after a dose or C1).  Be sure that the time in the simulated data is used, 
-    #' e.g., 122 after a dose given at 120. Place a minus sign
-    #' in front to make the success less than the target ratio.
+    #' e.g., 122 after a dose given at 120. As for the other target types, make the number negative
+    #' to make the success less than the target ratio, eg -122.
     #' @param success A vector specifying the success statistics, e.g. 0.4 for proportion time (end-start) above target, and/or 100 for max:target.
     #' For example `success = 0.4` or `success = c(0.4, 100)`. The length must be the same as for `target` and `target_type`.
     #' @param outeq An integer specifying the number of the simulated output equation to use. Default is 1.
@@ -89,7 +92,7 @@ PM_pta <- R6::R6Class(
     #' @param icen Can be either "median" for the predictions based on medians of `pred.type` parameter value
     #' distributions, or "mean".  Default is "median".
     #' @param block Which block to plot, where a new block is defined by dose resets (evid = 4); default is 1.
-    #' @param \dots Not currently used
+    #' @param ... Not currently used
     #' @return The output of `makePTA` is a list of class *PMpta*,
     #' which is a list with each `target_type` as an element, followed by a final `intersection` element showing the results
     #' for profiles which meet ALL the conditions (intersection) or `NA` if only one `target_type` was specified. 
@@ -815,7 +818,7 @@ plot.PM_pta <- function(x,
   
   
   #clone to avoid changes
-  pta <- x$clone()$results
+  pta <- x$clone()$data
   
   #select correct object to plot
   if(at == "intersect"){
@@ -848,7 +851,7 @@ plot.PM_pta <- function(x,
   # check input
   if (!missing(include)) {
     if (any(include > max(simnum))) {
-      stop(paste("PMpta object does not have ", max(simnum), " simulations.\n", sep = ""))
+      stop(paste("PM_pta object does not have ", max(simnum), " simulations.\n", sep = ""))
     } else {
       simnum <- simnum[include]
       simLabels <- simLabels[include]
