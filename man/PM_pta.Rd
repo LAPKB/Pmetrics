@@ -19,7 +19,7 @@ and creates the PTA. It is described here.
 }
 
 Both methods require the prior creation of a simulation of
-appropriate regimens. They use \link{makePTA} to create the \emph{PM_pta} object.
+appropriate regimens.
 }
 \examples{
 
@@ -116,14 +116,14 @@ Create a new \code{PM_pta} object.
 \describe{
 \item{\code{simdata}}{Can be one of multiple inputs as shown in the examples below using.
 \itemize{
-\item \code{simEx #PM_sim}
-\item \code{simEx$data #PM_simlist}
-\item \code{simEx$data[[1]] #PM_sim_data}
-\item \code{NPex$post #PM_post}
-\item \code{NPex$post$data #PM_post_data}
-\item \code{NPex$data #PM_data}
-\item \code{NPex$data$standard_data #PM_data_data}
-\item \code{"simout.txt" #matches files with wildcard ability, see [PM_sim]}
+\item \code{simEx} \emph{PM_sim}
+\item \code{simEx$data} \emph{PM_simlist}
+\item \code{simEx$data[[1]]} \emph{PM_sim_data}
+\item \code{NPex$post} \emph{PM_post}
+\item \code{NPex$post$data} \emph{PM_post_data}
+\item \code{NPex$data} \emph{PM_data}
+\item \code{NPex$data$standard_data} \emph{PM_data_data}
+\item \code{"simout.txt"} matches files with wildcard ability, see \link{PM_sim}
 }}
 
 \item{\code{simlabels}}{Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.}
@@ -136,26 +136,29 @@ Create a new \code{PM_pta} object.
 \item A list of multiple targets combining the above if multiple \code{target_type}s are used. If so, the first \code{target} can be a vector,
 but subsequent targets must be single values to avoid factorial expansion of combinations. For example, the first target could be a vector of MICs corresponding
 to a \code{target_type} of "time", the second target a value of 10 corresponding to a \code{target_type} of "min", and the third target a value of 50
-corresponding to a \code{target_type} of "max": \code{target = list(c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 10, 50)}. The first value can also be a sampled
+corresponding to a \code{target_type} of "max" as in this example:
+\code{target = list(c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 10, 50)}. The first value can also be a sampled
 distribution made with \link{makePTAtarget}.
 }}
 
 \item{\code{target_type}}{A vector of the type for each \code{target}.  For any, place a minus sign
-in front to make the success less than the target ratio, e.g. \code{target_type = c("min", "-min")}. Available types:
+in front to make the success less than the target ratio, e.g. \code{target_type = c("min", "-min")}.
+Available types:
 \itemize{
-\item "time" is percent time above \code{target} within the time range specified by \code{start} and \code{end}
+\item "time" is percent time above \code{target} within the time range specified by \code{start} and \code{end}.
+Use "-time" for percent time below \code{target}.
 \item "auc" is ratio of area under the curve within the time range to \code{target}
-\item "peak" or "max", ratio of peak/max (synonymous) concentration to \code{target} within the time range. Place a minus sign
-in front to make the success less than the target ratio.
-\item "min", is the ratio of minimum concentration to \code{target} within the time range. Place a minus sign
-in front to make the success less than the target ratio.
+\item "peak" or "max", ratio of peak or max (synonymous) concentration to \code{target} within the time range.
+Use "-max" or "-peak" to make the success less than the target ratio.
+\item "min", is the ratio of minimum concentration to \code{target} within the time range.
+Use "-min" to make the success less than the target ratio.
 \item A single numeric value, which must correspond to an observation time common to all PMsim objects in
 \code{simdata}, rounded to the nearest hour.  In this case, the target statistic will be the ratio of observation at that time to \code{target}.
 }
 
 This enables testing of a specific timed concentration (e.g. one hour after a dose or C1).  Be sure that the time in the simulated data is used,
-e.g., 122 after a dose given at 120. Place a minus sign
-in front to make the success less than the target ratio.}
+e.g., 122 after a dose given at 120. As for the other target types, make the number negative
+to make the success less than the target ratio, eg -122.}
 
 \item{\code{success}}{A vector specifying the success statistics, e.g. 0.4 for proportion time (end-start) above target, and/or 100 for max:target.
 For example \code{success = 0.4} or \code{success = c(0.4, 100)}. The length must be the same as for \code{target} and \code{target_type}.}
@@ -179,7 +182,7 @@ distributions, or "mean".  Default is "median".}
 
 \item{\code{block}}{Which block to plot, where a new block is defined by dose resets (evid = 4); default is 1.}
 
-\item{\code{\dots}}{Not currently used}
+\item{\code{...}}{Not currently used}
 }
 \if{html}{\out{</div>}}
 }
