@@ -104,7 +104,7 @@ getPMoptions <- function(opt, warn = T, quiet = F) {
 setPMoptions <- function(sep, dec, compilation_statements,
                          backend, rust_template, report_template,
                          gfortran_path,
-                         #func_defaults, 
+                         # func_defaults,
                          quiet = F) {
   # read old values first
   PMopts <- getPMoptions(warn = F)
@@ -120,7 +120,7 @@ setPMoptions <- function(sep, dec, compilation_statements,
       sprintf("%s -march=native -w -O3 -o <exec> <files>", PMopts$gfortran_path),
       sprintf("%s -march=native -w -fopenmp -fmax-stack-var-size=32768 -O3 -o <exec> <files>", PMopts$gfortran_path)
     ),
-    #server_address = "http://localhost:5000",
+    # server_address = "http://localhost:5000",
     backend = "fortran",
     rust_template = NULL,
     report_template = "plotly",
@@ -129,7 +129,7 @@ setPMoptions <- function(sep, dec, compilation_statements,
     } else {
       "gfortran"
     }
-#    func_defaults = NULL
+    #    func_defaults = NULL
   )
 
 
@@ -139,7 +139,7 @@ setPMoptions <- function(sep, dec, compilation_statements,
   }
 
   if (!identical(loc, PMopts$lang)) {
-    language <- locales$language[which(locales$iso639_2 == loc)]
+    language <- PmetricsData::locales$language[which(PmetricsData::locales$iso639_2 == loc)]
     if (!quiet) cat(paste0("Language has changed. Based on system, setting default language to ", language, "."))
   }
 
@@ -326,29 +326,29 @@ editPMoptions <- function() {
 
 # updateArgs <- function(args) {
 #   funcs <- names(args)
-# 
+#
 #   for (i in seq(funcs)) {
 #     # check if function is in Pmetrics
 #     e <- tryCatch(environment(getFromNamespace(funcs[i], ns = "Pmetrics")),
 #       error = function(e) NA
 #     )
 #     if (!is.environment(e)) next # move to next one
-# 
+#
 #     # check if S3 method
 #     S3method <- isS3method(funcs[i], envir = e)
-# 
+#
 #     # obtain the function
 #     f <- getFromNamespace(funcs[i], ns = "Pmetrics")
-# 
+#
 #     # obtain the arguments
 #     fargs <- formals(f)
-# 
+#
 #     # update the arguments
 #     fargs <- utils::modifyList(fargs, args[[i]])
-# 
+#
 #     # create new function
 #     formals(f) <- fargs
-# 
+#
 #     if (S3method) {
 #       assignInNamespace(funcs[i], f, ns = "Pmetrics")
 #     } else {
