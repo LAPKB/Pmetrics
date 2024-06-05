@@ -8,6 +8,7 @@ fn main() -> Result<()> {
         |x, p, t, dx, rateiv, cov| {
             fetch_params!(p, </params>);
             fetch_cov!(cov, t, </covs>);
+            </constant>
             </seq>
             </eqn>
         },
@@ -23,6 +24,7 @@ fn main() -> Result<()> {
         |x, p, t, cov, y| {
             fetch_params!(p, </params>);
             fetch_cov!(cov, t, </covs>);
+            </constant>
             </seq>
             </out_eqs>
         },
