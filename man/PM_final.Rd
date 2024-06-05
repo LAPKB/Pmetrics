@@ -74,11 +74,11 @@ the SDs of the posterior distributions for each parameter.}
 \item{\code{postVar}}{A \emph{nsub} x \emph{npar} data frame containing
 the variances of the posterior distributions for each parameter.}
 
-\item{\code{postCov}}{NPAG only: An array of dimensions \emph{npar} x \emph{npar} x \emph{nsub} that
-contains the covariances of the posterior distributions for each parameter and subject.*}
+\item{\code{postCov}}{NPAG only: An list of length \emph{nsub}, each element with an \emph{npar} x \emph{npar} data frame
+that contains the posterior parameter value covariances for that subject.}
 
-\item{\code{postCor}}{NPAG only: An array of dimensions \emph{npar} x \emph{npar} x \emph{nsub} that
-contains the correlations of the posterior distributions for each parameter and subject.}
+\item{\code{postCor}}{NPAG only: An list of length \emph{nsub}, each element with an \emph{npar} x \emph{npar} data frame
+that contains the posterior parameter value correlations for that subject.}
 
 \item{\code{postMed}}{A \emph{nsub} x \emph{npar} data frame containing
 the medians of the posterior distributions for each parameter.*}
