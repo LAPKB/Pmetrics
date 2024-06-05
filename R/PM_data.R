@@ -1158,6 +1158,10 @@ errfix <- function(data2, model, err, quiet) {
     T0$time <- 0
     T0$evid <- 1
     T0$dose <- 0
+    T0$dur <- 0
+    T0$input <- 1
+    T0$addl <- NA
+    T0$ii <- NA
     data2 <- rbind(data2, T0)
     data2 <- data2[order(data2$id, data2$time), ]
     report <- c(report, paste("Subjects with first time > 0 have had a dummy dose of 0 inserted at time 0."))

@@ -500,46 +500,53 @@ PM_sim <- R6::R6Class(
       
       
       #call the simulator
-      private$SIMrun(poppar = final, limits = limits, model = model, 
-                     data = data, split = split,
-                     include = include, exclude = exclude, nsim = nsim, 
-                     predInt = predInt, 
-                     covariate = covariate, usePost = usePost,
-                     seed = seed, ode = ode,
-                     obsNoise = obsNoise, doseTimeNoise = doseTimeNoise, 
-                     doseNoise = doseNoise, obsTimeNoise = obsTimeNoise,
-                     makecsv = makecsv, outname = outname, clean = clean, 
-                     quiet = quiet, 
-                     nocheck = nocheck, overwrite = overwrite, combine = combine)
-      
-      # TODO: read files and fix the missing E problem
-      
-      parseRes <- private$SIMparse(file = paste0(outname, "*"), quiet = quiet, combine = combine) 
-      if(inherits(parseRes, "PM_simlist")){
-        parseRes %>% private$populate(type = "simlist")
-      } else {
-        parseRes %>% private$populate(type = "sim")
+      if(getPMoptions("backend")=="rust"){
+        
+        
+        
+        rmnorm(n = 10, mean = NPex$final$popMean, sigma = NPex$final$popCov)
+        
+        #get number of random parameters
+        #define limits for each if any
+        #determine type for 'final'
+        #if PM_final, use support points or popMean and popCov, depending on split and NPAG/IT2B
+        #simulate nsim
+        #flag any rows with values outside limits
+        #remove rows (store) and simulate that number again
+        #repeat until no rows removed
+        #write theta.csv with nsim sets of simulated parameter values
+        #report totalSets, totalMeans, totalCov for all simulated sets (kept and dropped)
+        #
+        #will need to add code to process other SIMrun arguments like predInt, covariate, include, exclude,
+        #usePost, others
+        
+        
+        
+      } else { #fortran
+        private$SIMrun(poppar = final, limits = limits, model = model, 
+                       data = data, split = split,
+                       include = include, exclude = exclude, nsim = nsim, 
+                       predInt = predInt, 
+                       covariate = covariate, usePost = usePost,
+                       seed = seed, ode = ode,
+                       obsNoise = obsNoise, doseTimeNoise = doseTimeNoise, 
+                       doseNoise = doseNoise, obsTimeNoise = obsTimeNoise,
+                       makecsv = makecsv, outname = outname, clean = clean, 
+                       quiet = quiet, 
+                       nocheck = nocheck, overwrite = overwrite, combine = combine)
+        
+        # TODO: read files and fix the missing E problem
+        
+        parseRes <- private$SIMparse(file = paste0(outname, "*"), quiet = quiet, combine = combine) 
+        if(inherits(parseRes, "PM_simlist")){
+          parseRes %>% private$populate(type = "simlist")
+        } else {
+          parseRes %>% private$populate(type = "sim")
+        }
+        if (clean) system(paste0("rm ", outname, "*"))
+        return(self)
       }
-      
-      
-      # sim_files <- list.files() %>% .[grepl(paste0(outname, "*"), .)]
-      # if (length(sim_files) == 1) {
-      #   parseRes <- private$SIMparse(file = paste0(outname, "*"), quiet = quiet) %>% private$populate(type = "sim")
-      # } else {
-      #   if (combine) {
-      #     parseRes <- private$SIMparse(file = paste0(outname, "*"), combine = TRUE, quiet = quiet) %>% private$populate(type = "sim")
-      #   } else {
-      #     parseRes <- list()
-      #     for (i in seq_len(length(sim_files))) {
-      #       parseRes[[i]] <- private$SIMparse(file = sprintf("%s%i.txt", outname, i), quiet = quiet)
-      #     }
-      #     private$populate(parseRes, type = "simlist")
-      #   }
-      # }
-      
-      
-      if (clean) system(paste0("rm ", outname, "*"))
-      return(self)
+
     },
     #'
     #' @description
