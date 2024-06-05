@@ -3,7 +3,7 @@
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' `PM_fit` objects comprise a `PM_data` and `PM_model` object ready for analysis
 #'
 #' @details
@@ -65,14 +65,15 @@ PM_fit <- R6::R6Class("PM_fit",
       }
       setwd(rundir)
       engine <- tolower(engine)
+      out <- getwd()
 
       if (getPMoptions()$backend == "fortran") {
         if (inherits(self$model, "PM_model_legacy")) {
           cat(sprintf("Runing Legacy"))
           if (engine == "npag") {
-            Pmetrics::NPrun(self$model$legacy_file_path, self$data$standard_data, ...)
+            out <- Pmetrics::NPrun(self$model$legacy_file_path, self$data$standard_data, ...)
           } else if (engine == "it2b") {
-            Pmetrics::ITrun(self$model$legacy_file_path, self$data$standard_data, ...)
+            out <- Pmetrics::ITrun(self$model$legacy_file_path, self$data$standard_data, ...)
           } else {
             endNicely(paste0("Unknown engine: ", engine, ". \n"))
           }
@@ -94,6 +95,7 @@ PM_fit <- R6::R6Class("PM_fit",
       }
 
       setwd(wd)
+      out
     },
     #' @description
     #' Save the current PM_fit object to a .rds file.
