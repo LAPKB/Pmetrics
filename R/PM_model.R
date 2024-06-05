@@ -548,11 +548,27 @@ PM_model_list <- R6::R6Class("PM_model_list",
       model_file <- system.file("Rust/template.rs", package = "Pmetrics")
       content <- readr::read_file(model_file)
 
+      constant_parameter <- c()
+      random_parameter <- c()
+      for (i in 1:length(model$model_list$pri)) {
+        if (model$model_list$pri[[i]]$constant) {
+          constant_parameter <- c(constant_parameter, names(model$model_list$pri)[[i]])
+        } else {
+          random_parameter <- c(random_parameter, names(model$model_list$pri)[[i]])
+        }
+      }
+
       params <- c()
-      for (key in tolower(names(self$model_list$pri))) {
-        params <- append(params, sprintf("%s", key))
+      for (key in random_parameter) {
+        params <- append(params, sprintf("%s", tolower(key)))
       }
       content <- gsub("</params>", params %>% paste(collapse = ","), content)
+
+      constant <- c()
+      for (key in constant_parameter) {
+        constant <- append(constant, sprintf("let %s = %s;", tolower(key), private$rust_up(model$model_list$pri[key][[1]]$fixed)))
+      }
+      content <- gsub("</constant>", constant %>% paste(collapse = "\n"), content)
 
       covs <- c()
       for (key in tolower(map_chr(self$model_list$cov, \(x) x$covariate))) {
@@ -587,8 +603,11 @@ PM_model_list <- R6::R6Class("PM_model_list",
           paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
         }) %>%
         stringr::str_replace_all("xp", "dx") %>%
-        purrr::map(\(l) private$rust_up(l))
-      content <- gsub("</eqn>", paste0(eqs %>% paste(collapse = ";\n"), ";"), content)
+        purrr::map(\(l) private$rust_up(l)) %>%
+        trimws() %>%
+        paste(collapse = ";\n") %>%
+        paste0(";")
+      content <- gsub("</eqn>", eqs, content)
 
       lag <- ""
       for (line in self$model_list$lag %>% tolower()) {
@@ -699,10 +718,10 @@ PM_model_list <- R6::R6Class("PM_model_list",
       for (i in c("if", "else if", "else", "end if")) {
         .l <- if_fix(i, .l)
       }
-      
+
       # deal with secondary equations, which don't have xp or dx
-      if(stringr::str_detect(.l, stringr::regex("^(?!.*(?:xp|dx)).*\\s*=\\s*.*", ignore_case = TRUE))){
-        .l <- paste0("let ",.l,";")
+      if (stringr::str_detect(.l, stringr::regex("^(?!.*(?:xp|dx)).*\\s*=\\s*.*", ignore_case = TRUE))) {
+        .l <- paste0("let ", .l)
       }
 
       return(.l)
