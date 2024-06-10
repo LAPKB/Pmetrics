@@ -614,7 +614,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
         match <- stringr::str_match(line, "tlag\\((\\d+)\\)\\s*=\\s*(\\w+)")
         lag <- append(lag, sprintf("%i=>%s,", strtoi(match[2]), match[3]))
       }
-      # lag <- lag %>% purrr::map(\(l) private$rust_up(l))
+      lag <- lag %>% purrr::map(\(l) private$rust_up(l))
       content <- gsub("</lag>", lag %>% paste0(collapse = ""), content)
 
       fa <- ""
@@ -622,7 +622,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
         match <- stringr::str_match(line, "fa\\((\\d+)\\)\\s*=\\s*(\\w+)")
         fa <- append(fa, sprintf("%i=>%s,", strtoi(match[2]), match[3]))
       }
-      # fa <- fa %>% purrr::map(\(l) private$rust_up(l))
+      fa <- fa %>% purrr::map(\(l) private$rust_up(l))
       content <- gsub("</fa>", fa %>% paste0(collapse = ""), content)
 
       out_eqs <- ""
@@ -631,7 +631,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
           tolower() %>%
           stringr::str_replace_all("[\\(\\[](\\d+)[\\)\\]]", function(a) {
             paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
-          }) # %>% purrr::map(\(l) private$rust_up(l))
+          })  %>% purrr::map(\(l) private$rust_up(l))
         number <- as.numeric(stringr::str_extract(key, "\\d+"))
         key <- paste0(tolower(stringr::str_sub(key, 1, 1)), "[", number - 1, "]")
         out_eqs <- append(out_eqs, sprintf("%s = %s;\n", key, rhs))
@@ -645,9 +645,9 @@ PM_model_list <- R6::R6Class("PM_model_list",
       init <- self$model_list$ini %>%
         str_split("\n") %>%
         unlist() %>%
-        str_trim() %>%
-        discard(~ .x == "") %>%
-        map(function(x) {
+        stringr::str_trim() %>%
+        purrr::discard(~ .x == "") %>%
+        purrr::map(function(x) {
           aux <- x %>%
             tolower() %>%
             stringr::str_replace_all("[\\(\\[](\\d+)[\\)\\]]", function(a) {
