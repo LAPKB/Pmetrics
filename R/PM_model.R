@@ -642,7 +642,25 @@ PM_model_list <- R6::R6Class("PM_model_list",
       content <- gsub("</nouteqs>", n_out, content)
 
       # TODO: init not supported yet
-      content <- gsub("</init>", "", content)
+      init <- self$model_list$ini %>%
+        str_split("\n") %>%
+        unlist() %>%
+        str_trim() %>%
+        discard(~ .x == "") %>%
+        map(function(x) {
+          aux <- x %>%
+            tolower() %>%
+            stringr::str_replace_all("[\\(\\[](\\d+)[\\)\\]]", function(a) {
+              paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
+            }) %>%
+            stringr::str_split("=")
+          lhs <- aux[[1]][1]
+          rhs <- aux[[1]][2]
+          paste0("let ", lhs, "=", private$rust_up(rhs), ";")
+        }) %>%
+        unlist() %>%
+        paste0(collapse = "\n")
+      content <- gsub("</init>", init, content)
 
 
       readr::write_file(content, "main.rs")
