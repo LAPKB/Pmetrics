@@ -644,7 +644,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       # TODO: init not supported yet
       init <- self$model_list$ini %>%
-        str_split("\n") %>%
+        stringr::str_split("\n") %>%
         unlist() %>%
         stringr::str_trim() %>%
         purrr::discard(~ .x == "") %>%
