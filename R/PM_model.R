@@ -631,7 +631,8 @@ PM_model_list <- R6::R6Class("PM_model_list",
           tolower() %>%
           stringr::str_replace_all("[\\(\\[](\\d+)[\\)\\]]", function(a) {
             paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
-          })  %>% purrr::map(\(l) private$rust_up(l))
+          }) %>%
+          purrr::map(\(l) private$rust_up(l))
         number <- as.numeric(stringr::str_extract(key, "\\d+"))
         key <- paste0(tolower(stringr::str_sub(key, 1, 1)), "[", number - 1, "]")
         out_eqs <- append(out_eqs, sprintf("%s = %s;\n", key, rhs))
@@ -656,7 +657,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
             stringr::str_split("=")
           lhs <- aux[[1]][1]
           rhs <- aux[[1]][2]
-          paste0("let ", lhs, "=", private$rust_up(rhs), ";")
+          paste0(lhs, "=", private$rust_up(rhs), ";")
         }) %>%
         unlist() %>%
         paste0(collapse = "\n")
