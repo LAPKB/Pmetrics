@@ -550,11 +550,11 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       constant_parameter <- c()
       random_parameter <- c()
-      for (i in 1:length(model$model_list$pri)) {
-        if (model$model_list$pri[[i]]$constant) {
-          constant_parameter <- c(constant_parameter, names(model$model_list$pri)[[i]])
+      for (i in 1:length(self$model_list$pri)) {
+        if (self$model_list$pri[[i]]$constant) {
+          constant_parameter <- c(constant_parameter, names(self$model_list$pri)[[i]])
         } else {
-          random_parameter <- c(random_parameter, names(model$model_list$pri)[[i]])
+          random_parameter <- c(random_parameter, names(self$model_list$pri)[[i]])
         }
       }
 
@@ -566,12 +566,12 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       constant <- c()
       for (key in constant_parameter) {
-        constant <- append(constant, sprintf("let %s = %s;", tolower(key), private$rust_up(model$model_list$pri[key][[1]]$fixed)))
+        constant <- append(constant, sprintf("let %s = %s;", tolower(key), private$rust_up(self$model_list$pri[key][[1]]$fixed)))
       }
       content <- gsub("</constant>", constant %>% paste(collapse = "\n"), content)
 
       covs <- c()
-      for (key in tolower(map_chr(self$model_list$cov, \(x) x$covariate))) {
+      for (key in tolower(purrr::map_chr(self$model_list$cov, \(x) x$covariate))) {
         covs <- append(covs, sprintf("%s", key))
       }
       content <- gsub("</covs>", covs %>% paste(collapse = ","), content)
