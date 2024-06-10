@@ -20,7 +20,12 @@ fn main() -> Result<()> {
             fetch_params!(p, </params>);
             fa! {</fa>}
         },
-        |_p, _t, _cov, _x| {</init>},
+        |p, t, cov, x| {
+            fetch_params!(p, </params>);
+            fetch_cov!(cov, t, </covs>);
+            </constant>
+            </init>
+        },
         |x, p, t, cov, y| {
             fetch_params!(p, </params>);
             fetch_cov!(cov, t, </covs>);
