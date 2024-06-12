@@ -54,6 +54,8 @@ Example: \code{line = list(color = "red", dash = "longdash", width = 2)}}
 
 Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}}
 
+\item{color}{Character vector naming a column to \strong{group} by, e.g. "outeq" or "icen".}
+
 \item{colors}{to use for \strong{groups} when there are multiple \code{outeq}, \code{block}, or \code{icen}.
 This can be a palette or a vector of colors.
 For accepted palette names see \code{RColorBrewer::brewer.pal.info}. Examples include
@@ -69,7 +71,7 @@ Example: \code{c("Mean", "Median")} if \code{icen = c("mean", "median")}.}
 \item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
 
 \item{icen}{Can be "median" for the predictions based on median of
-parameter value distributions, "mean", or both.  Default is "median".}
+parameter value distributions, "mean", or both, e.g. \code{c("mean", "median")}.  Default is "median".}
 
 \item{outeq}{Which output equation to plot. Default is 1.
 Default is 1, but can be multiple if present in the data, e.g. \code{1:2} or \code{c(1, 3)}.}
