@@ -342,9 +342,9 @@ PM_result$load <- function(...) {
 #' in [NPrun].
 #' @return An R6 [PM_result].
 #' @author Michael Neely and Julian Otalvaro
-#' @seealso [NPparse], [ITparse],
-#' [makeFinal], [makeCycle], [makeOP], [makeCov],
-#' [makePop], [makePost]
+#' @seealso [PM_final],
+#' [PM_cycle], [PM_op], [PM_cov],
+#' [PM_pop], [PM_post]
 #' @export
 
 

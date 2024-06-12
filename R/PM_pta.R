@@ -272,8 +272,8 @@ PM_pta <- R6::R6Class(
       saveRDS(self, file_name)
     },
     #' @description
-    #' Summarize the `PM_pta` object. See [summary.PMpta].
-    #' @param ... Arguments passed to [summary.PMpta]
+    #' Summarize the `PM_pta` object. See [summary.PM_pta].
+    #' @param ... Arguments passed to [summary.PM_pta]
     summary = function(...) {
       summary.PM_pta(self, ...)
     },

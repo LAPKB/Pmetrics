@@ -74,7 +74,7 @@ Michael Neely and Jan Strojil
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{data}}{Contains the raw results. See \link{makePTA}.}
+\item{\code{data}}{Contains the raw results.}
 }
 \if{html}{\out{</div>}}
 }
@@ -187,14 +187,17 @@ distributions, or "mean".  Default is "median".}
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-\code{makePTA} will calculate the PTA for any number of simulations, targets and definitions of success.
-Simulations typically differ by dose, but may differ by other features such as children vs. adults.
+This function will calculate the probability of target attainment (PTA)
+for any number of simulations, targets and definitions of success.
+Simulations typically differ by dose, but may differ by other features
+such as children vs. adults.
 }
 
 \subsection{Returns}{
-The output of \code{makePTA} is a list of class \emph{PMpta},
-which is a list with each \code{target_type} as an element, followed by a final \code{intersection} element showing the results
-for profiles which meet ALL the conditions (intersection) or \code{NA} if only one \code{target_type} was specified.
+A list of class \emph{PM_pta_data}, included in the \code{data} field of the \link{PM_pta} object.
+The list contains each \code{target_type} as an element, followed by a final \code{intersection}
+element showing the results for profiles which meet ALL the conditions (intersection)
+or \code{NA} if only one \code{target_type} was specified.
 The individual elements are tibbles with all possible combinations
 of \code{target}s and simulated regimens for a given \code{target_type}. The tibbles have the following columns:
 \itemize{

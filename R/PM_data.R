@@ -131,7 +131,7 @@ PM_data <- R6::R6Class("PM_data",
                          #' @description
                          #' Plot method
                          #' @details
-                         #' See [plot.PMmatrix].
+                         #' See [plot.PM_data].
                          #' @param ... Arguments passed to [plot.PM_data]
                          plot = function(...) {
                            if (!is.null(self$data)) {
