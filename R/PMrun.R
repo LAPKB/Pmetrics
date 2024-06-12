@@ -424,7 +424,7 @@
         if (inherits(prior, "NPAG")) {
           nvar <- trans$nvar
           prior$ab <- as.matrix(trans$ab)
-          prior$popPoints <- makeFinal(prior)$popPoints
+          prior$popPoints <- PM_final$new(prior)$popPoints
           for (i in 1:nvar) {
             if (prior$ab[i, 1] > min(prior$popPoints[, i])) endNicely(paste("You have changed ", prior$par[i], " so that the minimum range of ", prior$ab[i, 1], " is greater than the minimum prior point value of ", min(prior$popPoints[, i]), "\nThis will cause NPAG to crash.\n", sep = ""), model, data)
             if (prior$ab[i, 2] < max(prior$popPoints[, i])) endNicely(paste("You have changed ", prior$par[i], " so that the maximum range of ", prior$ab[i, 2], "is less than the maximum prior point value of ", max(prior$popPoints[, i]), "\nThis will cause NPAG to crash.\n", sep = ""), model, data)
