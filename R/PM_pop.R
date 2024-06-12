@@ -242,6 +242,7 @@ PM_pop <- R6::R6Class(
 #' line > dash > values. Default is "solid".
 #' Example: `line = list(color = "red", dash = "longdash", width = 2)`
 #' @param marker Formats the symbols plotting observations. `r template("marker")`
+#' @param color Character vector naming a column to **group** by, e.g. "outeq" or "icen".
 #' @param colors to use for **groups** when there are multiple `outeq`, `block`, or `icen`.
 #' This can be a palette or a vector of colors.
 #' For accepted palette names see `RColorBrewer::brewer.pal.info`. Examples include
@@ -254,7 +255,7 @@ PM_pop <- R6::R6Class(
 #' Example: `c("Mean", "Median")` if `icen = c("mean", "median")`.
 #' @param mult `r template("mult")`
 #' @param icen Can be "median" for the predictions based on median of
-#' parameter value distributions, "mean", or both.  Default is "median".
+#' parameter value distributions, "mean", or both, e.g. `c("mean", "median")`.  Default is "median".
 #' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2` or `c(1, 3)`.
 #' @param block `r template("block")` Default is 1, but can be multiple if present in the data, as for `outeq`.
 #' @param overlay Operator to overlay all time prediction profiles in a single plot.
