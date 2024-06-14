@@ -427,7 +427,7 @@ PM_final <- R6::R6Class(
             for (i in 1:nsub) {
               temp2 <- postPoints[postPoints$id == data$sdata$id[i], ]
               ret <- cov.wt(temp2[, 3:(2 + data$nvar)], wt = temp2$prob, cor = T, method = "ML")
-              postCov2[, , i] <- ret$cov
+              postCov[, , i] <- ret$cov
               postCor[, , i] <- ret$cor
             }
           }
@@ -437,7 +437,7 @@ PM_final <- R6::R6Class(
           postCor <- apply(postCor, 3, as.data.frame, simplify = FALSE)
           
 
-          epostMed <- data.frame(id = data$sdata$id, t(data$baddl[6, , ]))
+          postMed <- data.frame(id = data$sdata$id, t(data$baddl[6, , ]))
 
 
           # shrinkage

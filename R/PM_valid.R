@@ -464,12 +464,12 @@ PM_valid <- R6::R6Class(
       argsSIM1 <- c(list(
         poppar = popparZero, data = MedianDataFileName, model = modelfile, nsim = 1,
         seed = runif(nsub, -100, 100), outname = "simMed",
-        limits = limits
+        limits = limits, combine = TRUE, quiet = TRUE
       ), argsSIM)
       cat("Simulating outputs for each subject using population means...\n")
       flush.console()
       system("echo 347 > SEEDTO.MON")
-      PRED_bin <- do.call(PM_sim$new, argsSIM1, combine = TRUE, quiet = TRUE)
+      PRED_bin <- do.call(PM_sim$new, argsSIM1)
       PRED_bin$obs <- PRED_bin$obs %>% filter(!is.na(out))
       
       # make tempDF subset of PM_op for subject, time, non-missing obs, outeq, pop predictions (PREDij)
@@ -517,7 +517,8 @@ PM_valid <- R6::R6Class(
       argsSIM2 <- c(
         list(
           poppar = poppar, data = datafileName, model = modelfile, nsim = nsim,
-          seed = runif(nsub, -100, 100), outname = "full", limits = limits
+          seed = runif(nsub, -100, 100), outname = "full", limits = limits,
+          combine = TRUE, quiet = TRUE
         ),
         argsSIM
       )
@@ -527,7 +528,7 @@ PM_valid <- R6::R6Class(
       if (!is.na(excludeID[1])) {
         argsSIM2$exclude <- excludeID
       }
-      simFull <- do.call(PM_sim$new, argsSIM2, combine = TRUE, quiet = TRUE)
+      simFull <- do.call(PM_sim$new, argsSIM2)
       # take out observations at time 0 from evid=4
       simFull$obs <- simFull$obs %>% filter(time > 0)
       # take out missing observations
