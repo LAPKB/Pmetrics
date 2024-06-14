@@ -155,13 +155,14 @@ PM_fit <- R6::R6Class(
         exclude = NULL,
         cycles = 100,
         prior = "uniform", 
-        sampler = "sobol"
+        sampler = "sobol",
+        intern = TRUE
       )
       arglist <- modifyList(arglist_default, arglist)
       
       # Create a new directory for this run if needed
-      run <- arglist$run
-      if(length(run)==0){ #run was not specified
+      run <- format(arglist$run, scientific = FALSE)
+      if(run == "NULL"){ #run was not specified
         olddir <- list.dirs(recursive = F)
         olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
         olddir <- sub("^\\./", "", olddir)
@@ -171,10 +172,12 @@ PM_fit <- R6::R6Class(
           newdir <- "1"
         }
       } else { #run was specified
-        if(dir.exists(run) & !overwrite){ #abort if the folder exists and overwrite is FALSE
+        if(dir.exists(run) & !arglist$overwrite){ #abort if the folder exists and overwrite is FALSE
           cat(paste0(crayon::red("Error: "), "The \"", run, "\" folder already exists. Use ", crayon::blue("overwrite = TRUE"), " to replace."))
           setwd(cwd)
           return(invisible(NULL))
+        } else {
+          unlink(run)
         }
         newdir <- run
       }
@@ -220,16 +223,16 @@ PM_fit <- R6::R6Class(
         unlist() %>%
         sum()
     
-      arglist$indpts <- ifelse(length(arglist$indpts)==0, num_ran_param, arglist$indpts)
+      indpts <- ifelse(length(arglist$indpts)==0, num_ran_param, arglist$indpts)
       #convert index into number of grid points
       arglist$num_gridpoints <- dplyr::case_when(
-        num_ran_param == 1 ~ 2129,
-        num_ran_param == 2 ~ 5003,
-        num_ran_param == 3 ~ 10007,
-        num_ran_param == 4 ~ 20011,
-        num_ran_param == 5 ~ 40009,
-        num_ran_param == 6 ~ 80021,
-        num_ran_param > 6 ~ 80021 + (min(num_ran_param, 16) - 6) * 80021
+        indpts == 1 ~ 2129,
+        indpts == 2 ~ 5003,
+        indpts == 3 ~ 10007,
+        indpts == 4 ~ 20011,
+        indpts == 5 ~ 40009,
+        indpts == 6 ~ 80021,
+        indpts > 6 ~ 80021 + (min(indpts, 16) - 6) * 80021
       ) %>% format(scientific = FALSE)
       
       
