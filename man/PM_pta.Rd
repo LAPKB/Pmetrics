@@ -283,7 +283,7 @@ Save the current PM_pta object into a .rds file.
 \if{html}{\out{<a id="method-PM_pta-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_pta-summary}{}}}
 \subsection{Method \code{summary()}}{
-Summarize the \code{PM_pta} object. See \link{summary.PMpta}.
+Summarize the \code{PM_pta} object. See \link{summary.PM_pta}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_pta$summary(...)}\if{html}{\out{</div>}}
 }
@@ -291,7 +291,7 @@ Summarize the \code{PM_pta} object. See \link{summary.PMpta}.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{summary.PMpta}}
+\item{\code{...}}{Arguments passed to \link{summary.PM_pta}}
 }
 \if{html}{\out{</div>}}
 }

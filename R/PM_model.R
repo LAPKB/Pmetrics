@@ -679,7 +679,8 @@ PM_model_list <- R6::R6Class("PM_model_list",
       pattern1 <- "(\\((?:[^)(]+|(?1))*+\\))"
       # this pattern recursively finds nested parentheses
       # and returns contents of outer
-      for (x in c("abs", "exp", "ln", "log", "log10", "sqrt")) {
+      for (x in c("abs", "exp", "ln", "log10", "log", "sqrt")) {
+        .l <- gsub("dlog10", "log10", .l)
         .l <- gsub(
           pattern = paste0("(?<!\\.)", x, pattern1), # add negative look behind to exclude .fn()
           replacement = paste0("\\1\\.", x, "\\(\\)"),
@@ -688,7 +689,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
         )
       }
 
-      .l <- gsub("log", "ln", .l) # log in R and Fortran is ln in Rust
+      .l <- gsub("log\\(", "ln\\(", .l) # log in R and Fortran is ln in Rust
 
       # deal with exponents - not bullet proof. Need to separate closing ) with space if not part of exponent
       pattern2 <- "\\*{2,}(\\(*(.+?)[\\s^)])"

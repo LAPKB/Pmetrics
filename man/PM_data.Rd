@@ -203,7 +203,7 @@ Plot method
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{plot.PMmatrix}.
+See \link{plot.PM_data}.
 }
 
 }
