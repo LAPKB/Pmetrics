@@ -445,11 +445,11 @@ PM_sim <- R6::R6Class(
           } else if(inherits(sim, "PM_sim")){
             private$populate(sim, type = "R6sim")
           } else {
-            stop(paste0(poppar, " is not a Pmetrics simulation."))
+            cli::cli_abort(c("x"= "{poppar} is not a Pmetrics simulation."))
           }
           return(self) #end, we have loaded a prior sim
         } else {
-          stop(paste0(poppar, " does not exist in the current working directory.\n"))
+          cli::cli_abort(c("x"="{poppar} does not exist in the current working directory."))
         }
       }
       
@@ -546,7 +546,7 @@ PM_sim <- R6::R6Class(
         if (clean) system(paste0("rm ", outname, "*"))
         return(self)
       }
-
+      
     },
     #'
     #' @description
@@ -563,7 +563,7 @@ PM_sim <- R6::R6Class(
     plot = function(at = 1, ...) {
       if (inherits(self$data, "PM_simlist")) {
         if (at > length(self$data)) {
-          stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
+          cli::cli_abort(c("x"="Error: Index is out of bounds. index: {at}, length(simlist): {length(self$data)}"))
         }
         plot.PM_sim(self$data[[at]], ...)
       } else {
@@ -584,7 +584,7 @@ PM_sim <- R6::R6Class(
     auc = function(at = 1, ...) {
       if (inherits(self$data, "PM_simlist")) {
         if (at > length(self$data)) {
-          stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
+          cli::cli_abort(c("x"="Error: Index is out of bounds. index: {at}, length(simlist): {length(self$data)}"))
         }
         makeAUC(self$data[[at]], ...)
       } else {
@@ -598,15 +598,12 @@ PM_sim <- R6::R6Class(
     summary = function(at = 1, ...) {
       if (inherits(self$data, "PM_simlist")) {
         if (at > length(self$data)) {
-          stop(sprintf("Error: Index is out of bounds. index: %i , length(simlist): %i", at, length(self$data)))
+          cli::cli_abort(c("x"="Error: Index is out of bounds. index: {at}, length(simlist): {length(self$data)}"))
         }
-        tryCatch(summary.PM_sim(self$data[[at]], ...), error = function(e) {
-          cat(crayon::red("Error:"), e$message, "\n")
-        })
+        summary.PM_sim(self$data[[at]], ...)
       } else {
-        tryCatch(summary.PM_sim(self$data, ...), error = function(e) {
-          cat(crayon::red("Error:"), e$message, "\n")
-        })      }
+        summary.PM_sim(self$data, ...) 
+      }
       
     },
     #' @description
@@ -1072,7 +1069,7 @@ PM_sim <- R6::R6Class(
             return()
           }
         }
-        if (makecsv == "simdata.csv") stop(paste0(crayon::red("simdata.csv "), "is reserved. Use another name for ", crayon::green("makecsv"), "."))
+        if (makecsv == "simdata.csv") cli::cli_abort(c("x"="{.var simdata.csv} is reserved. Use another name for {.var makecsv}."))
         if (file.exists(makecsv)) file.remove(makecsv)
         orig.makecsv <- makecsv
         makecsv <- c("1", "abcde.csv")
@@ -1112,7 +1109,9 @@ PM_sim <- R6::R6Class(
             whichfix <- trans$blocks$primVar[ptype == "f"]
             whichrand <- trans$blocks$primVar[ptype == "r"]
             modelpar <- names(pop.mean)
-            if (!all(modelpar %in% c(whichfix, whichrand))) stop("Primary parameters in simulation model file do not match parameters\nin the PM_final object used as a simulation prior.\n")
+            if (!all(modelpar %in% c(whichfix, whichrand))){ 
+              cli::cli_abort(c("x"="Primary parameters in simulation model file do not match parameters\fin the {.cls PM_final} object used as a simulation prior."))
+            }
             tofix <- which(modelpar %in% whichfix)
             if (length(tofix) > 0) {
               pop.mean <- pop.mean[, -tofix]
@@ -1143,7 +1142,10 @@ PM_sim <- R6::R6Class(
         if (any(posdef$values < 0)) {
           cat("Warning: your covariance matrix is not positive definite.\nThis is typically due to small population size.\n")
           ans <- readline("\nChoose one of the following:\n1) end simulation\n2) fix covariance\n3) set covariances to 0\n ")
-          if (ans == 1) stop()
+          if (ans == 1) {
+            cli::cli_inform("Aborting.")
+            return(invisible(NULL))
+          }
           if (ans == 2) {
             # eigendecomposition to fix the matrix
             for(j in 1:5){ #try up to 5 times
@@ -1157,7 +1159,7 @@ PM_sim <- R6::R6Class(
             }
             posdef <- eigen(signif(pop.cov, 15)) #last check
             if (any(posdef$values < 0)) {
-              stop("Unable to fix covariance.\n")
+              cli::cli_abort(c("x"="Unable to fix covariance."))
             }
           }
           if (ans == 3) {
@@ -1235,7 +1237,9 @@ PM_sim <- R6::R6Class(
         # apply limits as necessary
         # this will result in string with "f" or "r,1" or "r,0,a,b" for fixed, random no limits,
         # or random with limits a and b, respectively
-        if (sum(ptype == "r") > ncol(pop.mean)) stop("You have specified variables to be random in your model file\nthat were not random in poppar.\n")
+        if (sum(ptype == "r") > ncol(pop.mean)) {
+          cli::cli_abort(c("x"="You have specified variables to be random in your model file\fthat were not random in {.var poppar}."))
+        }
         varDF <- data.frame(ptype = ptype, limit = ifelse(ptype == "r", apply(limits, 1, function(x) ifelse(all(is.na(x)), 1, 0)), NA))
         varDF$a[varDF$ptype == "r"] <- limits[, 1]
         varDF$b[varDF$ptype == "r"] <- limits[, 2]
@@ -1273,7 +1277,8 @@ PM_sim <- R6::R6Class(
           } else if (ans == 2) {
             file.rename(oldfiles, paste("old_", oldfiles, sep = ""))
           } else {
-            stop("Function aborted, please re-run with a different output name.", call. = F)
+            cli::cli_inform(c("x"="Function aborted; please re-run with a different output name."))
+            return(invisible(NULL))
           }
         }
       }
@@ -1326,7 +1331,7 @@ PM_sim <- R6::R6Class(
         if (is.list(predInt)) {
           # predInt is a list of (start,end,interval)
           if (any(sapply(predInt, length) != 3)) {
-            stop("If a list, each element of predInt must be of the form c(start,end,interval).\n")
+            cli::cli_abort(c("x"="If a list, each element of predInt must be of the form {.code c(start,end,interval)}."))
           }
           predTimes <- sapply(predInt, function(x) rep(seq(x[1], x[2], x[3]), each = numeqt))
           # catenate columns into single vector
@@ -1345,7 +1350,8 @@ PM_sim <- R6::R6Class(
             if (length(predInt) == 3) {
               predTimes <- rep(seq(predInt[1], predInt[2], predInt[3]), each = numeqt)
             } else {
-              stop("\npredInt is misspecified.  See help for PM_sim\n")
+              cli::cli_abort(c("x"="{.var predInt} is misspecified.",
+                               "i" = "See help for {.fn PM_sim}."))
             }
           }
         }
@@ -1471,7 +1477,9 @@ PM_sim <- R6::R6Class(
           temp <- getBackCov(temp, 1)
         }
         
-        if (any(unlist(lapply(as.character(unique(temp$id)), function(x) nchar(x) > 11)))) stop("Shorten all template id values to 6 characters or fewer.\n")
+        if (any(unlist(lapply(as.character(unique(temp$id)), function(x) nchar(x) > 11)))) {
+          cli::cli_abort(c("x"="Shorten all template id values to 6 characters or fewer."))
+        }
         if (nsub > 1) {
           for (j in 2:nsub) {
             curTemp <- PMreadMatrix(paste("abcde", j, ".csv", sep = ""), quiet = T)
@@ -1480,7 +1488,9 @@ PM_sim <- R6::R6Class(
             if (simWithCov) {
               curTemp <- getBackCov(curTemp, j)
             }
-            if (any(unlist(lapply(as.character(unique(curTemp$id)), function(x) nchar(x) > 11)))) stop("Shorten all template id values to 6 characters or fewer.\n")
+            if (any(unlist(lapply(as.character(unique(curTemp$id)), function(x) nchar(x) > 11)))) {
+              cli::cli_abort(c("x"="Shorten all template id values to 6 characters or fewer."))
+            }
             temp <- rbind(temp, curTemp)
           }
         }
@@ -1648,7 +1658,8 @@ PM_sim <- R6::R6Class(
                   tobeignored <- append(tobeignored, workfiles[n:nworkfiles])
                   break
                 } else {
-                  stop("Function aborted.", call. = F)
+                  cli::cli_inform(c("i"="Function aborted."))
+                  return(invisible(NULL))
                 }
               } # end of IF older
             }
@@ -1664,7 +1675,7 @@ PM_sim <- R6::R6Class(
       
       nfiles <- length(allfiles)
       if (nfiles == 0) {
-        stop("No files found.\n")
+        cli::cli_abort(c("x"="No files found."))
       }
       
       
@@ -2052,10 +2063,13 @@ plot.PM_sim <- function(x,
   
   
   if (!inherits(simout, c("PM_sim", "PM_sim_data", "PMsim"))) {
-    stop("Use PM_sim$run() to make object of class PM_sim.\n")
+    cli::cli_abort(c("x"="Use {.fn PM_sim$run} to make a {.cls PM_sim} object.",
+                     "i" = "See help for {.fn PM_sim}."))
   }
   if (!missing(obs)) {
-    if (!inherits(obs, c("PM_result", "PM_op"))) stop("Supply a PM_result or PM_op object for the obs argument.")
+    if (!inherits(obs, c("PM_result", "PM_op"))) {
+      cli::cli_abort(c("x"="Supply a {.cls PM_result} or {.cls PM_op} object for the {.code obs} argument."))
+    }
     if (inherits(obs, "PM_result")) {
       obs <- obs$op$data
     }

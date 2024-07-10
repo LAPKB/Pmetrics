@@ -20,7 +20,7 @@
 
 PM_report <- function(PM_result, template = getPMoptions("report_template"), outfile, show = TRUE) {
   if (!is(PM_result, "PM_result")) {
-    stop("This function expects a valid PM_result object from PM_load\n")
+    cli::cli_abort(c("x" = "This function expects a valid PM_result object from PM_load."))
   }
 
   if (template == "none") {

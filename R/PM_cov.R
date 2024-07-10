@@ -73,10 +73,7 @@ PM_cov <- R6::R6Class(
     #' See [summary.PM_cov].
     #' @param ... Arguments passed to [summary.PM_cov]
     summary = function(...) {
-      tryCatch(summary.PM_cov(self, ...), error = function(e){
-        cat(crayon::red("Error:"), e$message, "\n")
-      }
-      )
+      summary.PM_cov(self, ...)
     },
     #' @description
     #' Plot method
@@ -84,10 +81,7 @@ PM_cov <- R6::R6Class(
     #' See [plot.PM_cov].
     #' @param ... Arguments passed to [plot.PM_cov]
     plot = function(...) {
-      tryCatch(plot.PM_cov(self, ...), error = function(e){
-        cat(crayon::red("Error:"), e$message, "\n")
-      }
-      )
+      plot.PM_cov(self, ...)
     },
     #' @description
     #' Print method
@@ -107,8 +101,11 @@ PM_cov <- R6::R6Class(
         data <- data$data
         
         
-        if (is.null(data) | is.null(final)) {
-          return(NULL)
+        if (is.null(data)) {
+          cli::cli_abort(c("x" = "Missing subject data; unable to create {.cls PM_cov} object"))
+        }
+        if (is.null(final)) {
+          cli::cli_abort(c("x" = "Missing parameter values; unable to create {.cls PM_cov} object"))
         }
         data1 <- data$standard_data %>% filter(!is.na(dose)) %>%
           select(id, time, !!getCov(.)$covnames) %>% #in PMutilities
@@ -312,8 +309,7 @@ plot.PM_cov <- function(x,
   
   if (missing(formula)){
     choices <- paste(x %>% select(!c(id, icen)) %>% names(), collapse = ", ")
-    cat(paste0(crayon::red("Error: "),"Please supply a formula of the form y ~ x.\nValues for (x, y) include: ", crayon::blue(choices), "."))
-    return(invisible(NULL))
+    cli::cli_abort(c("x" = "Missing formula", "i" = "Use the form {.code y ~ x}.\fValues for {.var (x, y)} include: {.var {choices}}."))
   } 
   
   
@@ -338,11 +334,14 @@ plot.PM_cov <- function(x,
   
   
   # process reference lines
-  if (any(!names(line) %in% c("lm", "loess", "ref"))) { # ref/pred?
-    cat(paste0(crayon::red("Warning: "), crayon::blue("line"), " should be a list with at most three named elements: ", crayon::blue("lm"), ", ", crayon::blue("loess"), " and/or ", crayon::blue("ref"), ".\n See help(\"plot.PM_op\")."))
+  if (any(!names(line) %in% c("lm", "loess", "ref"))) {
+    cli::cli_warn(c("!" = "{.code line} should be a list with at most three named elements: {.code lm}, {.code loess}, and/or {.code ref}.", "i" = "See {.fn Pmetrics::plot.PM_cov}.")
+    )
   }
   if (!is.list(line)) {
-    cat(paste0(crayon::red("Error: "), crayon::blue("line"), " should be a list(). See help(\"plot.PM_op\")."))
+    cli::cli_warn(c("!" = "{.code line} should be a list.", "i" = "See {.fn Pmetrics::plot.PM_cov}.")
+    )
+    line <- list()
   }
   
   # defaults
@@ -635,9 +634,9 @@ PM_step <- function(x, icen = "median", direction = "backward") {
   if (is.null(ncov)) {
     ncov <- as.numeric(readline("Your covariate object is from a previous version of Pmetrics.  Enter the number of covariates: "))
   }
-  if (ncov == 0) stop("\nThere are no covariates in the data.\n")
+  if (ncov == 0) { cli::cli_abort("There are no covariates in the data.") }
   if (!"icen" %in% names(x)) {
-    cat("Please update your PMcov object with PM_cov$new().\n")
+    cli::cli_inform("Please update your PMcov object with {.fn PM_cov$new}.")
     x$icen <- icen
   }
   nvar <- ncol(x) - ncov - 3
