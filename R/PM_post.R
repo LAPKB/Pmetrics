@@ -83,9 +83,7 @@ PM_post <- R6::R6Class(
     #' See [plot.PM_pop].
     #' @param ... Arguments passed to [plot.PM_pop]
     plot = function(...) {
-      tryCatch(plot.PM_post(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      plot.PM_post(self, ...)
     },
     #' @description
     #' Summary method
@@ -93,9 +91,7 @@ PM_post <- R6::R6Class(
     #' See [summary.PM_post].
     #' @param ... Arguments passed to [summary.PM_pop]
     summary = function(...) {
-      tryCatch(summary.PM_pop(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      summary.PM_pop(self, ...)
     },
     #' @description
     #' Calculate AUC
@@ -110,21 +106,19 @@ PM_post <- R6::R6Class(
   private = list(
     make = function(data, run) {
       if (getPMoptions("backend") == "rust") {
-        raw <- tryCatch(readr::read_csv(file = "pred.csv", show_col_types = FALSE),
-          error = function(e) {
-            e <- NULL
-            cat(
-              crayon::red("Error:"),
-              "The run did not complete and the pred.csv file was not created.\n"
-            )
-          }
-        )
-
-
+        
+        
+        if(file.exists("pred.csv")){
+          raw <- readr::read_csv(file = "pred.csv", show_col_types = FALSE)
+        } else {
+          cli::cli_abort(c("x" = "{.file {getwd()}/pred.csv} does not exist."))
+        }
+        
+        
         if (is.null(raw)) {
           return(NA)
         }
-
+        
         post <- raw %>%
           select(-popMedian, -popMean) %>%
           pivot_longer(
@@ -139,38 +133,40 @@ PM_post <- R6::R6Class(
           # Hardcoded for now
           mutate(block = 1) %>%
           relocate(id, time, icen, outeq, pred, block)
-
+        
         class(post) <- c("PM_post_data", "data.frame")
         return(post)
       } else { # fortran
-
+        
         if (inherits(data, "PMpost")) { # old format
           return(data) # nothing to do
         }
-
+        
         if (inherits(data, "PM_post")) { # R6 format
           return(data$data) # return raw to rebuild
         }
-
+        
         # get data
         if (missing(run)) { # look in current wd
           # run <- "."
           # predfile <- paste(run, "PRTB0001", sep = "/")
           predfile <- "PRTB0001"
         } else { # look in run folder/outputs
-          if (!file.exists(as.character(run))) stop(paste(run, " not found in the current working directory.\n", sep = ""))
+          if (!file.exists(as.character(run))) {
+            cli::cli_abort(c("x" = "{.file {getwd()}/{run}} does not exist."))
+          }
           predfile <- paste(run, "outputs/PRTB0001", sep = "/")
         }
-
-
+        
+        
         # read PRTB file
         preddata <- readLines(predfile)
-
-
+        
+        
         predLines <- grep("[[:space:]]*TIMES[[:space:]]+PREDICTED VALUES", preddata)
-
+        
         if (length(predLines) > 0) { # we are dealing with the old format
-          stop("Rerun NPAG to generate current format.\n")
+          cli::cli_abort(c("x" = "Rerun NPAG to generate current format."))
         } else { # we are dealing with the new format
           predLines <- grep("BASED, IN ORDER, ON THE POSTERIOR MEANS, MEDIANS, AND MODES:", preddata)
           raw <- list()
@@ -184,19 +180,19 @@ PM_post <- R6::R6Class(
             raw[[i]]$id <- data$sdata$id[i]
           }
           totalRaw <- do.call(rbind, raw)
-
+          
           # add blocks
           blocks <- totalRaw %>%
             group_by(.data$id) %>%
             filter(.data$time == 0) %>%
             transmute(blocknum = row_number())
-
-
+          
+          
           totalRaw$block <- NA
           totalRaw$block[totalRaw$time == 0] <- blocks$blocknum
           totalRaw <- fill(totalRaw, block)
-
-
+          
+          
           post <- totalRaw %>%
             pivot_longer(cols = c(-time, -id, -block), names_to = "icen", values_to = "pred") %>%
             arrange(.data$id, .data$icen, .data$block, .data$time) %>%
@@ -205,22 +201,22 @@ PM_post <- R6::R6Class(
             select(.data$id, .data$time, .data$icen, .data$outeq, .data$pred, .data$block) %>%
             filter(.data$icen != "mode") # suppress mode
         }
-
+        
         # add predictions at observed times
         op <- PM_op$new(data)$data
         opPost <- op[op$pred.type == "post", ]
         post <- rbind(post, opPost[, c("id", "time", "icen", "outeq", "pred", "block")])
-
+        
         # remove duplicates
         dupTime <- which(duplicated(post[, c("id", "time", "icen", "outeq", "block")]))
         if (length(dupTime) > 0) post <- post[-dupTime, ]
-
+        
         # sort by icen, id, block, time, outeq
         post <- post[order(post$icen, post$id, post$block, post$time, post$outeq), ]
-
+        
         # assign class
         class(post) <- c("PM_post_data", "data.frame")
-
+        
         return(post)
       }
     }
@@ -333,34 +329,32 @@ plot.PM_post <- function(x,
                          title = "",
                          xlim, ylim, ...) {
   # Plot parameters ---------------------------------------------------------
-
+  
   x <- if (inherits(x, "PM_post")) {
     x$data
-  } else {
-    stop("Please supply a PM_post object for plotting.\n")
-  }
-
+  } 
+  
   # process marker
   marker <- amendMarker(marker)
-
+  
   # process line
   line <- amendLine(line)
-
-
+  
+  
   # get the rest of the dots
   layout <- amendDots(list(...))
-
+  
   # legend
   legendList <- amendLegend(legend)
   layout <- modifyList(layout, list(showlegend = legendList$showlegend))
   if (length(legendList) > 1) {
     layout <- modifyList(layout, list(legend = within(legendList, rm(showlegend))))
   }
-
+  
   # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-
+  
   # axis labels if needed
   layout$xaxis$title <- amendTitle(xlab)
   if (is.character(ylab)) {
@@ -368,8 +362,8 @@ plot.PM_post <- function(x,
   } else {
     layout$yaxis$title <- amendTitle(ylab)
   }
-
-
+  
+  
   # axis ranges
   if (!missing(xlim)) {
     layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
@@ -377,15 +371,15 @@ plot.PM_post <- function(x,
   if (!missing(ylim)) {
     layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
   }
-
+  
   # log y axis
   if (log) {
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
-
+  
   # title
   layout$title <- amendTitle(title, default = list(size = 20))
-
+  
   # overlay
   if (is.logical(overlay)) { # T/F
     if (!overlay) { # F,default
@@ -397,16 +391,15 @@ plot.PM_post <- function(x,
     ncols <- overlay[2]
     overlay <- FALSE
   }
-
+  
   # Data processing ---------------------------------------------------------
-
-
+  
   # filter
   presub <- x %>%
     filter(outeq %in% !!outeq, block %in% !!block, icen %in% !!icen) %>%
     mutate(group = "") %>%
-    includeExclude(include, exclude)
-
+    includeExclude(include = !!include, exclude = !!exclude)
+  
   # group
   if (outeq[1] != 1 | length(outeq) > 1) {
     presub <- presub %>%
@@ -418,33 +411,33 @@ plot.PM_post <- function(x,
       rowwise() %>%
       mutate(group = paste0(group, ", block: ", block))
   }
-
+  
   if (length(icen) > 1) {
     presub <- presub %>%
       rowwise() %>%
       mutate(group = paste0(group, ", ", icen))
   }
-
+  
   presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
   if (!is.null(names)) {
     presub$group <- factor(presub$group, labels = names)
   } else {
     presub$group <- factor(presub$group)
   }
-
+  
   # select relevant columns
   sub <- presub %>%
     select(id, time, pred, outeq, group) %>%
     ungroup()
   sub$group <- factor(sub$group)
-
+  
   # remove missing
   sub <- sub %>% filter(pred != -99)
-
-
-
+  
+  
+  
   # Plot function ----------------------------------------------------------
-
+  
   dataPlot <- function(allsub, overlay) {
     # set appropriate pop up text
     if (!overlay) {
@@ -454,7 +447,7 @@ plot.PM_post <- function(x,
       hovertemplate <- "Time: %{x}<br>Pred: %{y}<br>ID: %{text}<extra></extra>"
       text <- ~id
     }
-
+    
     if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
       n_colors <- length(levels(allsub$group))
       if (checkRequiredPackages("RColorBrewer")) {
@@ -464,16 +457,16 @@ plot.PM_post <- function(x,
           colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
         }
       } else {
-        cat(paste0(crayon::green("Note: "), "Group colors are better with RColorBrewer package installed.\n"))
+        cli::cli_inform(c("i" = "Group colors are better with RColorBrewer package installed."))
         colors <- getDefaultColors(n_colors) # in plotly_Utils
       }
-
+      
       marker$color <- NULL
       line$color <- NULL
     } else { # no grouping
       allsub$group <- factor(1, labels = "Predicted")
     }
-
+    
     p <- allsub %>%
       plotly::plot_ly(
         x = ~time, y = ~ pred * mult,
@@ -499,19 +492,19 @@ plot.PM_post <- function(x,
     )
     return(p)
   } # end dataPlot
-
-
+  
+  
   # Call plot ---------------------------------------------------------------
-
+  
   # call the plot function and display appropriately
   if (overlay) {
     sub <- sub %>% dplyr::group_by(id)
     p <- dataPlot(sub, overlay = TRUE)
     print(p)
   } else { # overlay = FALSE, ie. split them
-
+    
     if (!checkRequiredPackages("trelliscopejs")) {
-      stop(paste0("Package trelliscopejs required to plot when overlay = ", crayon::red("FALSE")))
+      cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
     }
     sub_split <- x %>%
       nest(data = -id) %>%
@@ -521,7 +514,7 @@ plot.PM_post <- function(x,
       trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
     print(p)
   }
-
+  
   return(p)
 }
 
@@ -579,15 +572,15 @@ summary.PM_post <- function(object, digits = max(3, getOption("digits") - 3),
     sumstat <- data.frame(sumstat)
     # N
     N <- length(data$pred[!is.na(data$pred)])
-
+    
     return(sumstat)
   } # end sumWrk
-
+  
   # make summary
   if (inherits(object, "PM_post")) {
     object <- object$data
   }
-
+  
   object <- object %>% filter(outeq == !!outeq, icen == !!icen)
   if (all(is.na(object$pred))) {
     result <- NA

@@ -50,7 +50,9 @@ makeAUC <- function(data,
                     method = "linear",
                     addZero = F) {
   # handle objects
-  if (missing(data)) stop("Please supply a data object.\n")
+  if (missing(data)){
+    cli::cli_abort("Please supply a data object to calculate AUC.")
+  }
 
   data_class <- which(
     inherits(data, c(
@@ -84,10 +86,10 @@ makeAUC <- function(data,
     y.name <- as.character(attr(terms(formula), "variables")[2])
     x.name <- as.character(attr(terms(formula), "variables")[3])
     if (length(grep(y.name, names(data))) == 0) {
-      stop(paste("\n'", y.name, "' is not a variable in the data.", sep = ""))
+      cli::cli_abort("{.var y.name} is not a variable in the data.")
     }
     if (length(grep(x.name, names(data))) == 0) {
-      stop(paste("\n'", x.name, "' is not a variable in the data.", sep = ""))
+      cli::cli_abort("{.var x.name} is not a variable in the data.")
     }
     data2 <- data %>% dplyr::mutate(time = get(x.name), out = get(y.name))
   }
@@ -114,6 +116,11 @@ makeAUC <- function(data,
     ) %>%
     dplyr::select(id, time, out) %>%
     dplyr::group_by(id)
+  
+  if (nrow(data3) < 2) {
+    cli_warn(c("!" = "You have selected fewer than 2 rows in your data.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, {.code block}, {.code start}, and {.code end}."))
+  }
+  
 
   # auc function
   get_auc <- function(df, addZero, method) {

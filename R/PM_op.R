@@ -98,9 +98,8 @@ PM_op <- R6::R6Class(
     #' See [plot.PM_op].
     #' @param ... Arguments passed to [plot.PM_op]
     plot = function(...) {
-      tryCatch(plot.PM_op(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      plot.PM_op(self,...)
+      
     },
     #' @description
     #' Summary method
@@ -108,9 +107,7 @@ PM_op <- R6::R6Class(
     #' See [summary.PM_op].
     #' @param ... Arguments passed to [summary.PM_op]
     summary = function(...) {
-      tryCatch(summary.PM_op(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      summary.PM_op(self, ...)
     },
     #' @description
     #' Calculate AUC
@@ -119,48 +116,30 @@ PM_op <- R6::R6Class(
     #' @param data The object to use for AUC calculation
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
-      tryCatch(makeAUC(data = self$data, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      makeAUC(data = self$data, ...)
     }
   ), # end public
   private = list(
     make = function(data) {
       if (getPMoptions("backend") == "rust") {
-        pred_raw <- tryCatch(readr::read_csv(file = "pred.csv", show_col_types = FALSE),
-          error = function(e) {
-            e <- NULL
-            cat(
-              crayon::red("Error:"),
-              "The run did not complete and the pred.csv file was not created.\n"
-            )
-          }
-        )
-        obs_raw <- tryCatch(readr::read_csv(file = "obs.csv", show_col_types = FALSE),
-          error = function(e) {
-            e <- NULL
-            cat(
-              crayon::red("Error:"),
-              "The run did not complete and the obs.csv file was not created.\n"
-            )
-          }
-        )
-        config <- tryCatch(jsonlite::fromJSON("settings.json"),
-          error = function(e) {
-            e <- NULL
-            cat(
-              crayon::red("Error:"),
-              "The run did not complete and the settings.json file was not created.\n"
-            )
-          }
-        )
-
-        if (any(purrr::map_lgl(list(pred_raw, obs_raw, config), is.null))) {
-          return(NA)
+        if(file.exists("pred.csv")){
+          pred_raw <- readr::read_csv(file = "pred.csv", show_col_types = FALSE)
+        } else {
+          cli::cli_abort(c("x" = "{.file {getwd()}/pred.csv} does not exist."))
         }
-
+        if(file.exists("obs.csv")){
+          obs_raw <- readr::read_csv(file = "obs.csv", show_col_types = FALSE)
+        } else {
+          cli::cli_abort(c("x" = "{.file {getwd()}/obs.csv} does not exist."))
+        }
+        if(file.exists("settings.json")){
+          config <- jsonlite::fromJSON("settings.json")
+        } else {
+          cli::cli_abort(c("x" = "{.file {getwd()}/settings.json} does not exist."))
+        }
+        
         poly <- config$error$poly
-
+        
         op <- obs_raw %>%
           left_join(pred_raw, by = c("id", "time", "outeq")) %>%
           pivot_longer(cols = c(popMean, popMedian, postMean, postMedian)) %>%
@@ -183,6 +162,8 @@ PM_op <- R6::R6Class(
           select(-name) %>%
           dplyr::rename(pred = value) %>%
           dplyr::rename(obs = out) %>%
+          dplyr::mutate(outeq = outeq + 1, block = block + 1) %>%
+          dplyr::mutate(obs = na_if(obs, -99)) %>%
           mutate(d = pred - obs) %>%
           mutate(ds = d * d) %>%
           mutate(obsSD = poly[1] + poly[2] * obs + poly[3] * (obs^2) + poly[4] * (obs^3)) %>%
@@ -192,37 +173,37 @@ PM_op <- R6::R6Class(
         class(op) <- c("PM_op_data", "data.frame")
         return(op)
       } else { # fortran
-
+        
         if (inherits(data, "PMop")) { # old format
           return(data) # nothing to do
         }
-
+        
         if (inherits(data, "PM_op")) { # R6 format
           return(data$data) # return raw to rebuild
         }
-
+        
         if (!inherits(data, "NPAG") & !inherits(data, "IT2B")) {
           cat(crayon::red("Error:"), "OP object: Run did not complete. Check model and data for errors.\n")
           return(NA)
         }
-
+        
         # subsidiary function
         makeOPwrk <- function(data, icen, pred.type, outeq) {
           # create data frame of observations by subject and output, including times
           vernum <- 1 + as.numeric(ncol(data$outputs) == 8)
           icen.index <- switch(icen,
-            mean = 1,
-            median = 2,
-            mode = 3,
-            2
+                               mean = 1,
+                               median = 2,
+                               mode = 3,
+                               2
           ) # default is median
           if (vernum > 1) {
             data$outputs <- data$outputs[data$outputs[, 3] == outeq, ]
           }
           obspred <- data.frame(id = rep(data$sdata$id, times = data$nobs), time = data$outputs[, 2])
           obspred$obs <- switch(1 + as.numeric(vernum > 1),
-            data$outputs[, outeq + 2],
-            data$outputs[, 4]
+                                data$outputs[, outeq + 2],
+                                data$outputs[, 4]
           )
           if (pred.type == "post") {
             pred <- c(t(data$ypredbay[, outeq, , icen.index]))
@@ -239,10 +220,10 @@ PM_op <- R6::R6Class(
           obspred$icen <- icen
           obspred$outeq <- outeq
           obspred$block <- 1
-
-
+          
+          
           # add block numbers for dose resets
-
+          
           for (i in unique(obspred$id)) {
             reset.row <- which(obspred$time[obspred$id == i] == 0 & obspred$obs[obspred$id == i] == -99)
             reset.blocks <- c(1, reset.row, length(obspred$time[obspred$id == i]))
@@ -253,15 +234,15 @@ PM_op <- R6::R6Class(
           }
           obspred$obs[obspred$obs == -99] <- NA
           obspred$pred[obspred$pred == -99] <- NA
-
+          
           if (vernum > 1) {
             c0 <- c(data$outputs[, 5])
             c1 <- c(data$outputs[, 6])
             c2 <- c(data$outputs[, 7])
             c3 <- c(data$outputs[, 8])
-
+            
             obspred$obsSD <- c0 + c1 * obspred$obs + c2 * obspred$obs**2 + c3 * obspred$obs**3
-
+            
             if (data$ERRmod == 2) { # SD*gamma
               obspred$obsSD <- obspred$obsSD * rep(tail(data$igamlam, 1), length(obspred$obsSD))
             }
@@ -278,7 +259,7 @@ PM_op <- R6::R6Class(
           }
           return(obspred)
         } # end makeOPwrk()
-
+        
         # here's the code to make the OP object
         op <- list()
         j <- 1
@@ -291,7 +272,7 @@ PM_op <- R6::R6Class(
         }
         allOp <- do.call(rbind, op)
         class(allOp) <- c("PM_op_data", "data.frame")
-
+        
         return(allOp)
       } # end fortran
     }
@@ -412,15 +393,24 @@ plot.PM_op <- function(x,
                        xlim, ylim, ...) {
   if (inherits(x, "PM_op")) {
     x <- x$data
-  }
-
+  } 
+  
   # include/exclude
   if (missing(include)) include <- unique(x$id)
   if (missing(exclude)) exclude <- NA
   if (missing(block)) {
     block <- unique(x$block)
   }
-
+  
+  if(outeq > max(x$outeq)){
+    cli_abort(c("x" = "{.cls PM_op} object does not have {outeq} output equation{?s}.",
+                "i" = "Choose {max(x$outeq)} or fewer for {.code outeq}."))
+  }
+  if(block > max(x$block)){
+    cli_abort(c("x" = "{.cls PM_op} object does not have {block} blocks.",
+                "i" = "Choose {max(x$block)} or fewer for {.code block}."))  
+  }
+  
   sub1 <- x %>%
     dplyr::filter(
       icen == !!icen, outeq == !!outeq, pred.type == !!pred.type,
@@ -430,21 +420,28 @@ plot.PM_op <- function(x,
     dplyr::filter(!is.na(obs)) %>%
     dplyr::mutate(pred = pred * mult, obs = obs * mult) %>%
     dplyr::arrange(id, time)
-
-
+  
+  if (nrow(sub1) == 0) {
+    cli_abort(c("x" = "You have selected <0> rows in your {.cls PM_op} object.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, and {.code block}."))
+  }
+  
+  
   # unnecessary arguments for consistency with other plot functions
   if (!missing(legend)) {
     notNeeded("legend", "plot.PM_op")
   }
-
+  
   # process reference lines
   if (any(!names(line) %in% c("lm", "loess", "ref"))) {
-    cat(paste0(crayon::red("Warning: "), crayon::blue("line"), " should be a list with at most three named elements: ", crayon::blue("lm"), ", ", crayon::blue("loess"), " and/or ", crayon::blue("ref"), ".\n See help(\"plot.PM_op\")."))
+    cli::cli_warn(c("!" = "{.code line} should be a list with at most three named elements: {.code lm}, {.code loess}, and/or {.code ref}.", "i" = "See {.fn Pmetrics::plot.PM_op}.")
+    )
   }
   if (!is.list(line)) {
-    cat(paste0(crayon::red("Error: "), crayon::blue("line"), " should be a list(). See help(\"plot.PM_op\")."))
+    cli::cli_warn(c("!" = "{.code line} should be a list.", "i" = "See {.fn Pmetrics::plot.PM_op}.")
+    )
+    line <- list()
   }
-
+  
   if (!resid) { # defaults
     if (is.null(line$lm)) {
       line$lm <- T
@@ -470,36 +467,36 @@ plot.PM_op <- function(x,
   lmLine <- amendLine(line$lm, default = list(color = "dodgerblue", dash = "solid"))
   loessLine <- amendLine(line$loess, default = list(color = "dodgerblue", dash = "dash"))
   refLine <- amendLine(line$ref, default = list(color = "grey", dash = "dot"))
-
+  
   if (is.logical(line$lm)) {
     lmLine$plot <- line$lm
   } else {
     lmLine$plot <- T
   }
-
+  
   if (is.logical(line$loess)) {
     loessLine$plot <- line$loess
   } else {
     loessLine$plot <- T
   }
-
+  
   if (is.logical(line$ref)) {
     refLine$plot <- line$ref
   } else {
     refLine$plot <- T
   }
-
-
+  
+  
   # process dots
   layout <- amendDots(list(...))
-
+  
   # legend - not needed for this function
   layout <- modifyList(layout, list(showlegend = FALSE))
-
+  
   # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-
+  
   # axis ranges
   if (!missing(xlim)) {
     layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
@@ -507,18 +504,18 @@ plot.PM_op <- function(x,
   if (!missing(ylim)) {
     layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
   }
-
+  
   # title
   if (missing(title)) {
     title <- ""
   }
   layout$title <- amendTitle(title, default = list(size = 20))
-
-
-
+  
+  
+  
   # PLOTS -------------------------------------------------------------------
   if (!resid) { # default plot
-
+    
     # axis labels
     xlab <- if (missing(xlab)) {
       "Predicted"
@@ -530,20 +527,20 @@ plot.PM_op <- function(x,
     } else {
       ylab
     }
-
+    
     layout$xaxis$title <- amendTitle(xlab)
     if (is.character(ylab)) {
       layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
     } else {
       layout$yaxis$title <- amendTitle(ylab)
     }
-
+    
     # log axes
     if (log) {
       layout$xaxis <- modifyList(layout$xaxis, list(type = "log"))
       layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
     }
-
+    
     # make square
     # define anchor axis as the one with largest
     if (max(x$obs, na.rm = TRUE) > max(x$pred, na.rm = TRUE)) { # anchor is y axis
@@ -551,8 +548,8 @@ plot.PM_op <- function(x,
     } else { # anchor is x axis
       layout$yaxis <- modifyList(layout$yaxis, list(matches = "x"))
     }
-
-
+    
+    
     p <- sub1 %>%
       plotly::plot_ly(x = ~pred) %>%
       plotly::add_markers(
@@ -561,7 +558,7 @@ plot.PM_op <- function(x,
         text = ~id,
         hovertemplate = "Pred: %{x:.2f}<br>Obs: %{y:.2f}<br>ID: %{text}<extra></extra>"
       )
-
+    
     if (lmLine$plot) { # linear regression
       lmLine$plot <- NULL # remove to allow only formatting arguments below
       if (is.null(purrr::pluck(lmLine$ci))) {
@@ -570,10 +567,10 @@ plot.PM_op <- function(x,
         ci <- lmLine$ci
         lmLine$ci <- NULL # remove to allow only formatting arguments below
       }
-
+      
       p <- p %>% add_smooth(ci = ci, line = lmLine, stats = stats)
     }
-
+    
     if (loessLine$plot) { # loess regression
       loessLine$plot <- NULL # remove to allow only formatting arguments below
       if (is.null(purrr::pluck(loessLine$ci))) {
@@ -584,7 +581,7 @@ plot.PM_op <- function(x,
       }
       p <- p %>% add_smooth(ci = ci, line = loessLine, method = "loess")
     }
-
+    
     if (refLine$plot) { # reference line
       refLine$plot <- NULL # remove to allow only formatting arguments below
       layout$refLine <- list(
@@ -598,7 +595,7 @@ plot.PM_op <- function(x,
         line = refLine
       )
     }
-
+    
     # set layout
     p <- p %>%
       plotly::layout(
@@ -608,7 +605,7 @@ plot.PM_op <- function(x,
         shapes = layout$refLine,
         title = layout$title
       )
-
+    
     print(p)
     return(p)
   } else { # residual plot
@@ -620,11 +617,11 @@ plot.PM_op <- function(x,
       ylab <- "Population weighted residuals (pred - obs)"
       pointLab <- "PWRES"
     }
-
+    
     layout$yaxis$title <- amendTitle(ylab)
     # amend xaxis title later
-
-
+    
+    
     # res vs. time
     p1 <- sub1 %>%
       plotly::plot_ly(x = ~time) %>%
@@ -634,8 +631,8 @@ plot.PM_op <- function(x,
         text = ~id,
         hovertemplate = paste0("Time: %{x:.2f}<br>", pointLab, ": %{y:.2f}<br>ID: %{text}<extra></extra>")
       )
-
-
+    
+    
     # res vs. pred
     p2 <- sub1 %>%
       plotly::plot_ly(x = ~pred) %>%
@@ -645,7 +642,7 @@ plot.PM_op <- function(x,
         text = ~id,
         hovertemplate = paste0("Pred: %{x:.2f}<br>", pointLab, ": %{y:.2f}<br>ID: %{text}<extra></extra>")
       )
-
+    
     # add reference lines
     if (lmLine$plot) {
       lmLine$plot <- NULL # remove to allow only formatting arguments below
@@ -658,7 +655,7 @@ plot.PM_op <- function(x,
       p1 <- p1 %>% add_smooth(ci = ci, line = lmLine, stats = stats)
       p2 <- p2 %>% add_smooth(ci = ci, line = lmLine, stats = stats)
     }
-
+    
     if (loessLine$plot) {
       loessLine$plot <- NULL # remove to allow only formatting arguments below
       if (is.null(purrr::pluck(loessLine$ci))) {
@@ -678,7 +675,7 @@ plot.PM_op <- function(x,
         yaxis = layout$yaxis,
         showlegend = layout$showlegend
       )
-
+    
     layout$xaxis$title <- amendTitle("Predicted")
     p2 <- p2 %>%
       plotly::layout(
@@ -687,11 +684,11 @@ plot.PM_op <- function(x,
         showlegend = layout$showlegend,
         title = layout$title
       )
-
+    
     # final residual plot
     p <- subplot(p1, p2,
-      nrows = 1,
-      shareY = TRUE, shareX = FALSE, titleX = TRUE
+                 nrows = 1,
+                 shareY = TRUE, shareX = FALSE, titleX = TRUE
     )
     print(p)
     return(p)
@@ -748,10 +745,10 @@ summary.PM_op <- function(object, digits = max(3, getOption("digits") - 3),
                           outeq = 1, ...) {
   argList <- list(...)
   if ("type" %in% names(argList)) {
-    cat("The 'type' argument has been updated to 'pred.type'.\nPlease update your script.\n")
+    cli::cli_inform(c("i" = "{.code type} has been updated to {.code pred.type}.\fPlease update your script."))
     return(invisible())
   }
-
+  
   sumPMopWrk <- function(data) {
     sumstat <- matrix(NA, nrow = 7, ncol = 3, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Obs", "Pred")))
     # min
@@ -788,19 +785,19 @@ summary.PM_op <- function(object, digits = max(3, getOption("digits") - 3),
     bamspe <- mspe - mpe**2
     # imprecision - bias-adjusted mean weighted squared error
     bamwspe <- mwspe - mwpe**2
-
+    
     pe <- data.frame(mpe = mpe, mwpe = mwpe, mspe = mspe, rmse = rmse, percent_rmse = percent_rmse, mwspe = mwspe, bamspe = bamspe, bamwspe = bamwspe)
     wtd.t <- weighted.t.test(data)
-
+    
     result <- list(sumstat = sumstat, pe = pe, wtd.t = wtd.t)
     return(result)
   } # end sumPMopWrk
-
+  
   # make summary
   if (inherits(object, "PM_op")) {
     object <- object$data
   }
-
+  
   object <- object %>% filter(outeq == !!outeq, pred.type == !!pred.type, icen == !!icen)
   if (all(is.na(object$obs))) {
     sumstat <- NA
@@ -812,7 +809,7 @@ summary.PM_op <- function(object, digits = max(3, getOption("digits") - 3),
   } else {
     sumresult <- sumPMopWrk(object)
   }
-
+  
   class(sumresult) <- c("summary.PM_op", "list")
   attr(sumresult, "pred.type") <- pred.type
   return(sumresult)
