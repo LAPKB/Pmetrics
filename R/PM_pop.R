@@ -80,9 +80,7 @@ PM_pop <- R6::R6Class(
     #' See [plot.PM_pop].
     #' @param ... Arguments passed to [plot.PM_pop]
     plot = function(...) {
-      tryCatch(plot.PM_pop(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      plot.PM_pop(self, ...)
     },
     #' @description
     #' Summary method
@@ -90,9 +88,7 @@ PM_pop <- R6::R6Class(
     #' See [summary.PM_pop].
     #' @param ... Arguments passed to [summary.PM_pop]
     summary = function(...) {
-      tryCatch(summary.PM_pop(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      summary.PM_pop(self, ...)
     },
     #' @description
     #' Calculate AUC
@@ -107,15 +103,12 @@ PM_pop <- R6::R6Class(
   private = list(
     make = function(data) {
       if (getPMoptions("backend") == "rust") {
-        raw <- tryCatch(readr::read_csv(file = "pred.csv", show_col_types = FALSE),
-          error = function(e) {
-            e <- NULL
-            cat(
-              crayon::red("Error:"),
-              "The run did not complete and the pred.csv file was not created.\n"
-            )
-          }
-        )
+        
+        if(file.exists("pred.csv")){
+          raw <- readr::read_csv(file = "pred.csv", show_col_types = FALSE)
+        } else {
+          cli::cli_abort(c("x" = "{.file {getwd()}/pred.csv} does not exist."))
+        }
 
 
         if (is.null(raw)) {
@@ -311,9 +304,7 @@ plot.PM_pop <- function(x,
 
   x <- if (inherits(x, "PM_pop")) {
     x$data
-  } else {
-    stop("Please supply a PM_pop object for plotting.\n")
-  }
+  } 
 
   # process marker
   marker <- amendMarker(marker)
@@ -439,7 +430,7 @@ plot.PM_pop <- function(x,
           colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
         }
       } else {
-        cat(paste0(crayon::green("Note: "), "Group colors are better with RColorBrewer package installed.\n"))
+        cli::cli_inform(c("i" = "Group colors are better with RColorBrewer package installed."))
         colors <- getDefaultColors(n_colors) # in plotly_Utils
       }
 
@@ -486,7 +477,7 @@ plot.PM_pop <- function(x,
   } else { # overlay = FALSE, ie. split them
 
     if (!checkRequiredPackages("trelliscopejs")) {
-      stop(paste0("Package trelliscopejs required to plot when overlay = ", crayon::red("FALSE")))
+      cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
     }
     sub_split <- x %>%
       nest(data = -id) %>%

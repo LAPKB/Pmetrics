@@ -172,9 +172,7 @@ PM_final <- R6::R6Class(
     #' See [plot.PM_final].
     #' @param ... Arguments passed to [plot.PM_final]
     plot = function(...) {
-      tryCatch(plot.PM_final(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      tplot.PM_final(self, ...)
     },
     #' @description
     #' Summary method
@@ -182,42 +180,27 @@ PM_final <- R6::R6Class(
     #' See [summary.PM_final].
     #' @param ... Arguments passed to [summary.PM_final]
     summary = function(...) {
-      tryCatch(summary.PM_final(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      summary.PM_final(self, ...)
     }
   ), # end public
   private = list(
     make = function(data) {
       if (getPMoptions("backend") == "rust") {
-        theta <- tryCatch(readr::read_csv(file = "theta.csv", show_col_types = FALSE),
-          error = function(e) {
-            cat(
-              crayon::red("Error:"),
-              "The run did not complete and the theta.csv file was not created.\n"
-            )
-          }
-        )
-        post <- tryCatch(readr::read_csv(file = "posterior.csv", show_col_types = FALSE),
-          error = function(e) {
-            cat(
-              crayon::red("Error:"),
-              "The run did not complete and the posterior.csv file was not created.\n"
-            )
-          }
-        )
-        config <- tryCatch(jsonlite::fromJSON("settings.json"),
-          error = function(e) {
-            e <- NULL
-            cat(
-              crayon::red("Error:"),
-              "The run did not complete and the settings.json file was not created.\n"
-            )
-          }
-        )
-
-        if (any(purrr::map_lgl(list(theta, post, config), is.null))) {
-          return(NA)
+        
+        if(file.exists("theta.csv")){
+          theta <- readr::read_csv(file = "theta.csv", show_col_types = FALSE)
+        } else {
+          cli::cli_abort(c("x" = "{.file {getwd()}/theta.csv} does not exist."))
+        }
+        if(file.exists("obs.csv")){
+          post <- readr::read_csv(file = "posterior.csv", show_col_types = FALSE)
+        } else {
+          cli::cli_abort(c("x" = "{.file {getwd()}/posterior.csv} does not exist."))
+        }
+        if(file.exists("settings.json")){
+          config <- jsonlite::fromJSON("settings.json")
+        } else {
+          cli::cli_abort(c("x" = "{.file {getwd()}/settings.json} does not exist."))
         }
 
         par_names <- names(theta)[names(theta) != "prob"]
@@ -639,6 +622,10 @@ plot.PM_final <- function(x,
                           xlim, ylim,
                           ...) {
   # housekeeping
+  
+  if (inherits(x, "PM_final")) {
+    x <- x$data
+  } 
   if (inherits(x, "NPAG")) {
     type <- "NPAG"
 

@@ -27,13 +27,6 @@
 #' @export
 
 PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
-  # Default paths
-  # pred_file <- paste(wd, "pred.csv", sep = "/")
-  # obs_file <- paste(wd, "obs.csv", sep = "/")
-  # config_file <- paste(wd, "settings.json", sep = "/")
-  # cycle_file <- paste(wd, "cycles.csv", sep = "/")
-  # theta_file <- paste(wd, "theta.csv", sep = "/")
-  # post_file <- paste(wd, "posterior.csv", sep = "/")
   
   if (inherits(fit, "PM_fit")) {
     # fit is a PM_fit object, use it directly
@@ -47,85 +40,54 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
   }
   
   cwd <- getwd()
-  setwd(wd)
+  setwd(wd) #will be /outputs by default
   
   # assumes pred.csv, obs.csv, and settings.json are in wd
-  tryCatch({ op <- PM_op$new() },
-           error = function(e) {
-             e <- NULL
-             cat(
-               crayon::red("Error:"),
-               "There was an error parsing pred.csv, obs.csv, and/or settings.json for the observed/predicted information.\n"
-             )
-             return(NULL)
-           }
+  op <- rlang::try_fetch(PM_op$new(),
+                         error = function(e){
+                           cli::cli_warn("Unable to create {.cls PM_op} object", parent = e)
+                           return(NULL)
+                         }
   )
   
   # assumes theta.csv and posterior.csv are in wd
-  tryCatch({ final <- PM_final$new() },
-           error = function(e) {
-             e <- NULL
-             cat(
-               crayon::red("Error:"),
-               "There was an error parsing theta.csv and/or posterior.csv for the final parameter information.\n"
-             )
-             return(NULL)
-           }
+  final <- rlang::try_fetch(PM_final$new(),
+                            error = function(e){
+                              cli::cli_warn("Unable to create {.cls PM_final} object", parent = e)
+                              return(NULL)
+                            }
   )
   
   # assumes cycles.csv, obs.csv, and settings.json are in wd
-  tryCatch({ cycle <- PM_cycle$new() }, 
-           error = function(e) {
-             e <- NULL
-             cat(
-               crayon::red("Error:"),
-               "There was an error parsing cycles.csv, obs.csv, and/or settings.json for cycle information.\n"
-             )
-             return(NULL)
-           }
+  cycle <- rlang::try_fetch(PM_cycle$new(),
+                            error = function(e){
+                              cli::cli_warn("Unable to create {.cls PM_cycle} object", parent = e)
+                              return(NULL)
+                            }
   )
   
   # assumes pred.csv is in wd
-  tryCatch({ pop <- PM_pop$new() }, 
-           error = function(e) {
-             e <- NULL
-             cat(
-               crayon::red("Error:"),
-               "There was an error parsing pred.csv for population predictions\n"
-             )
-             return(NULL)
-           }
+  pop <- rlang::try_fetch(PM_pop$new(),
+                          error = function(e){
+                            cli::cli_warn("Unable to create {.cls PM_pop} object", parent = e)
+                            return(NULL)
+                          }
   )
   
   # assumes pred.csv is in wd
-  tryCatch({ post <- PM_post$new() }, 
-           error = function(e) {
-             e <- NULL
-             cat(
-               crayon::red("Error:"),
-               "There was an error parsing pred.csv for posterior predictions\n"
-             )
-             return(NULL)
-           }
-  )  
+  post <- rlang::try_fetch(PM_post$new(),
+                           error = function(e){
+                             cli::cli_warn("Unable to create {.cls PM_post} object", parent = e)
+                             return(NULL)
+                           }
+  )
   
-  
-  cov <- NULL
-  tryCatch({ 
-    if (!is.null(fit)) {
-      cov <- PM_cov$new(list(final = final, data = fit_object$data))
-    } 
-  }, 
-  error = function(e) {
-    e <- NULL
-    cat(
-      crayon::red("Error:"),
-      "There was an error parsing parameters and data for covariate-parameter relationships.\n"
-    )
-    return(NULL)
-  }
-  ) 
-
+  cov <- rlang::try_fetch(PM_cov$new(),
+                          error = function(e){
+                            cli::cli_warn("Unable to create {.cls PM_cov} object", parent = e)
+                            return(NULL)
+                          }
+  )
   
   NPcore <- list(
     data = fit_object$data,
@@ -140,18 +102,23 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
     algorithm = "NPAG",
     numeqt = 1,
     converge = cycle$converged,
-    config = fromJSON(readLines("settings.json", warn = FALSE))
+    config = rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines("settings.json", warn = FALSE))),
+                              error = function(e){
+                                cli::cli_warn(c("!" = "Unable to read {.file settings.json}"))
+                                return(NULL)
+                              }
+    )
   )
   
   class(NPcore) <- "PM_result"
-  setwd(cwd)
+  
   
   if (write) {
     save(NPcore, file = "PMout.Rdata")
     return(invisible(NPcore))
   }
   
-
+  setwd(cwd) #should be run folder
   return(NPcore)
 }
 
