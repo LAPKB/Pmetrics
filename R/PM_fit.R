@@ -375,7 +375,6 @@ PM_fit <- R6::R6Class(
       file.copy(private$binary_path, "NPcore")
       if (arglist$intern) {
         system2("./NPcore", wait = TRUE)
-        
         PM_parse("outputs")
         res <- PM_load(file = "outputs/PMout.Rdata")
         PM_report(res, outfile = "report.html", template = "plotly")

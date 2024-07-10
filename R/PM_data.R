@@ -77,7 +77,12 @@ PM_data <- R6::R6Class("PM_data",
                                                quiet = FALSE, 
                                                validate = TRUE) {
                            if (is.character(data)) { #filename
-                             self$data <- PMreadMatrix(data, quiet = T)
+                             #self$data <- PMreadMatrix(data, quiet = T)
+                             self$data <- rlang::try_fetch(Pmetrics:::PMreadMatrix(data, quiet = T),
+                                              error = function(e){
+                                                cli::cli_warn("Unable to create {.cls PM_data} object", parent = e)
+                                                return(NULL)
+                                              })
                            } else if (inherits(data, "PM_data")){ #R6
                                self$data <- data$data
                            } else { #something else
@@ -101,7 +106,7 @@ PM_data <- R6::R6Class("PM_data",
                            if (!is.null(self$standard_data)) {
                              PMwriteMatrix(self$standard_data, file_name, ...)
                            } else {
-                             cat("Create a validated PM_data object before writing.")
+                             cli::cli_warn("Create a validated {.cls PM_data} object before writing.")
                            }
                          },
                          #' @description
@@ -113,7 +118,7 @@ PM_data <- R6::R6Class("PM_data",
                            if (!is.null(self$data)) {
                              makeAUC(self, ...)
                            } else {
-                             cat("Data have not been defined.")
+                             cli::cli_warn("Data have not been defined.")
                            }
                          },
                          #' @description
@@ -125,7 +130,7 @@ PM_data <- R6::R6Class("PM_data",
                            if (!is.null(self$data)) {
                              makeNCA(self, ...)
                            } else {
-                             cat("Data have not been defined.")
+                             cli::cli_warn("Data have not been defined.")
                            }
                          },
                          #' @description
@@ -135,12 +140,9 @@ PM_data <- R6::R6Class("PM_data",
                          #' @param ... Arguments passed to [plot.PM_data]
                          plot = function(...) {
                            if (!is.null(self$data)) {
-                             tryCatch(plot.PM_data(self, ...), error = function(e){
-                               cat(crayon::red("Error:"), e$message, "\n")
-                             }
-                             )
+                            plot.PM_data(self, ...)
                            } else {
-                             cat("Data have not been defined.")
+                             cli::cli_warn("Data have not been defined.")
                            }
                          },
                          #' @description
@@ -181,7 +183,7 @@ PM_data <- R6::R6Class("PM_data",
                            if (!is.null(self$standard_data)) {
                              summary.PM_data(self, ...)
                            } else {
-                             cat("Create a validated PM_data object before summarizing.")
+                             cli::cli_warn("Create a validated PM_data object before summarizing.")
                            }
                          },
                          #' @description
@@ -247,7 +249,9 @@ PM_data <- R6::R6Class("PM_data",
                            args <- list(...)
                            arg_names <- tolower(names(args))
                            
-                           if (!"id" %in% arg_names) stop("ID is required to add an event.")
+                           if (!"id" %in% arg_names){
+                             cli::cli_abort(c("x" = "ID is required to add an event."))
+                           } 
                            to_add <- data.frame(args)
                            
                            if (!is.null(self$data)) { # existing data
@@ -268,7 +272,9 @@ PM_data <- R6::R6Class("PM_data",
                                return(invisible(self))
                              }
                            } else {
-                             if (!"time" %in% arg_names) stop("Time is required to add the first event.")
+                             if (!"time" %in% arg_names){
+                               cli::cli_abort(c("x" = "Time is required to add the first event."))
+                             } 
                            }
                            # check for addl and if present, expand
                            if ("addl" %in% arg_names) {
@@ -314,7 +320,7 @@ PM_data <- R6::R6Class("PM_data",
                            mandatory <- c("id", "time", "dose", "out")
                            missingMandatory <- sapply(mandatory, function(x) !x %in% dataNames)
                            if (any(missingMandatory)) {
-                             stop(paste0("Your data are missing these mandatory columns: ", mandatory[missingMandatory]))
+                             cli::cli_abort(c("x" = "Your data are missing these mandatory columns: {mandatory[missingMandatory]}"))
                            }
                            
                            msg <- c("DATA STANDARDIZATION REPORT:\n\n", "Data are in full format already.\n")
@@ -446,12 +452,10 @@ PMreadMatrix <- function(file,
                          quiet = F, ...) {
   # get data
   if (missing(file)) {
-    warning("Please provide filename of Pmetrics data file.\n")
-    return(invisible())
+    cli::cli_abort(c("x" = "Please provide filename of Pmetrics data file."))
   }
   if (!file.exists(file)) {
-    warning(paste("The file ", sQuote(file), " was not found in the current working directory:\n", getwd(), "\n", sep = ""))
-    return(invisible(NULL))
+    cli::cli_abort(c("x" = "The file {sQuote(file)} was not found in the current working directory: {getwd()}."))
   }
   
   # read the first line to understand the format
@@ -460,12 +464,10 @@ PMreadMatrix <- function(file,
                   sep = sep, dec = dec, strip.white = T
   )
   if (grepl(",", headers)[1]) {
-    stop("Your .csv delimiter is not a comma. Use setPMoptions(sep = \";\"), for example.")
+    cli::cli_abort(c("x" = "Your .csv delimiter is not a comma. Use {.code setPMoptions(sep = \";\")}, for example."))
   }
   headers <- headers[headers != ""]
   skip <- ifelse(grepl("POPDATA .*", headers[1]), 1, 0) # 0 if current, 1 if legacy
-  
-  
   
   args1 <- list(
     file = file, delim = sep, col_names = T, na = ".",
@@ -595,7 +597,7 @@ PMmatrixRelTime <- function(data, idCol = "id", dateCol = "date", timeCol = "tim
   }
   
   if (all(is.na(dt))) {
-    stop("All dates/times failed to parse. Please specify correct format. ")
+    cli::cli_abort(c("x" = "All dates/times failed to parse. Please specify correct format. "))
   }
   
   
@@ -753,8 +755,9 @@ PMmatrixRelTime <- function(data, idCol = "id", dateCol = "date", timeCol = "tim
 PMcheck <- function(data, model, fix = F, quiet = F) {
   # get the data
   if (is.character(data)) { # data is a filename
-    data2 <- tryCatch(suppressWarnings(PMreadMatrix(data, quiet = T)), error = function(e) {
-      return(invisible(e))
+    data2 <- tryCatch(Pmetrics:::PMreadMatrix(data, quiet = T), error = function(e) {
+      #return(invisible(e))
+      cli::cli_abort(c("x" = "Unable to find {data} in current working directory, {getwd()}."))
     })
     data_orig <- NULL
     legacy <- attr(data2, "legacy")
@@ -786,9 +789,7 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
   # check for errors
   err <- errcheck(data2, model = model, quiet = quiet, source = source)
   if (length(err) == 1) {
-    cat("You must at least have id, evid, and time columns to proceed with the check.\n")
-    flush.console()
-    return(invisible(NULL))
+    cli::cli_abort(c("x" = "You must at least have id, evid, and time columns to proceed with the check."))
   }
   
   # report errors in errors.xlsx
@@ -808,16 +809,15 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
   # Provide warning on console about maximum time
   maxTime <- tryCatch(max(data2$time, na.rm = T), error = function(e) NA)
   if (!is.na(maxTime) && !is.character(maxTime) && maxTime > 24 * 48 & !quiet) {
-    cat(paste0(crayon::red("Warning: "), "The maximum number of AUC intervals in NPAG is 48.\nYour longest event horizon is ", maxTime, " hours.\nPmetrics will automatically choose an AUC interval of at least ", ceiling(maxTime / 48), " hours during an NPAG run.\nYou can calculate AUCs for other intervals after the run using makeAUC().\n\n"))
+    cli::cli_warn(c("!" = "The maximum number of AUC intervals in NPAG is 48.\fYour longest event horizon is {maxTime} hours.\fPmetrics will automatically choose an AUC interval of at least {ceiling(maxTime / 48)} hours during an NPAG run.\fYou can calculate AUCs for other intervals after the run using {.code makeAUC()}."))
   }
-  flush.console()
-  
+
   
   # try to fix errors if asked
   if (fix) {
     if (attr(err, "error") == 0) {
       if (!quiet) {
-        cat("\nFIX DATA REPORT:\n\nThere were no errors to fix in you data file.\n")
+        cli::cli_inform(c("i" = "FIX DATA REPORT:\fThere were no errors to fix in you data file."))
       }
       return(invisible(data2))
     } else {
@@ -1609,7 +1609,8 @@ plot.PM_data <- function(x,
   
   # process line
   if (any(!base::names(line) %in% c("join", "pred"))) {
-    cat(paste0(crayon::red("Warning: "), "<line> should be a list with at most two named elements: ", crayon::blue("<join>"), " and/or ", crayon::blue("<pred>"), ".\n See help(\"plot.PM_data\")."))
+    cli::cli_warn(c("!" = "{.code line} should be a list with at most two named elements: {.code join}, {.code loess}, and/or {.code pred}.", "i" = "See {.fn Pmetrics::plot.PM_data}.")
+    )
   }
   if (is.null(line$join)) {
     line$join <- FALSE
@@ -1701,7 +1702,7 @@ plot.PM_data <- function(x,
   # make group column for colors
   if (!is.null(color)) {
     if (!color %in% base::names(x$standard_data)) {
-      stop(paste0(crayon::red(color), " is not a column in the data.\n"))
+      cli::cli_abort(c("x" = "{color} is not a column in the data."))
     }
     if (!is.null(names)) {
       presub$group <- factor(presub[[color]], labels = names)
@@ -1746,20 +1747,15 @@ plot.PM_data <- function(x,
       if(pred[[1]] == "pop" | pred[[1]] == "post"){
         thisPred <- pred[[1]]
         if(is.null(x[[thisPred]])){ #plotting PM_data not PM_result$data
-          cat(paste0(crayon::red("Warning: "),
-                     "\"",
-                     thisPred,
-                     "\" can only be used as a shortcut when plotting PM_data from a PM_result. Supply a PM_result$",
-                     thisPred,
-                     ", e.g. line = list(pred = run1$",
-                     thisPred,
-                     "),  if you wish to add predictions.\n"))
+          cli::cli_warn(c("!" = "{.code pred = {thisPred}} can only be used as a shortcut when plotting {.cls PM_data} from a {.cls PM_result}.",
+                          "i" = "Supply a {.cls PM_result} object, e.g. {.code line = list(pred = run2$post)}, if you wish to add predictions otherwise."))
           pred <- NULL
         } else { #plotting PM_result$data
           pred[[1]] <- x[[thisPred]]
         }
       } else { # pred[[1]] was not "pop", "post", PM_result$pop, or PM_result$post
-        cat(paste0(crayon::red("Warning: "), "The first element of ", crayon::blue("pred"), " must be a PM_pop or PM_post object.\n"))
+        cli::cli_warn(c("!" = "The {.var pred} argument is mis-specified.",
+                        "i" = "See the help for {.code plot.PM_data}."))
         pred <- NULL
       }
     } else {
@@ -1834,7 +1830,7 @@ plot.PM_data <- function(x,
           colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
         }
       } else {
-        cat(paste0(crayon::green("Note: "), "Group colors are better with RColorBrewer package installed.\n"))
+        cli::cli_inform(c("i" = "Group colors are better with RColorBrewer package installed."))
         colors <- getDefaultColors(n_colors) #in plotly_Utils
       }
       
@@ -1907,7 +1903,7 @@ plot.PM_data <- function(x,
   } else { # overlay = FALSE, ie. split them
     
     if(!checkRequiredPackages("trelliscopejs")){
-      stop(paste0("Package trelliscopejs required to plot when overlay = ", crayon::red("FALSE")))
+      cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
     }
     sub_split <- allsub %>%
       nest(data = -id) %>%
@@ -2119,7 +2115,7 @@ PMwriteMatrix <- function(data, filename, override = F,
   if (!override) {
     err <- PMcheck(data, quiet = T)
     if (length(grep("FAIL", err)) > 0) {
-      cat("Write failed; returning errors.")
+      cli::cli_warn(c("!" = "Write failed; returning errors."))
       return(invisible(err))
     }
   } else {

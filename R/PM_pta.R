@@ -166,14 +166,14 @@ PM_pta <- R6::R6Class(
       new_args <- c("target", "target_type", "free_fraction")
       which_deprecated <- which(deprecated_args %in% names(extraArgs))
       if(length(which_deprecated)>0){
-        stop("The following arguments have been deprecated: ",paste0(deprecated_args[which_deprecated], collapse = ", "),
-             ". Use these instead: ", paste0(new_args[which_deprecated], collapse = ", "),".")
+        cli::cli_abort(c("x" = "The following argument{?s} {?has/have} been deprecated: {paste0(deprecated_args[which_deprecated], collapse = ', ')}.", 
+                         "i" = "Instead, use {?this/these instead}: {paste0(new_args[which_deprecated], collapse = ', ')}."))
       }
       
       
       # initial check
       if (missing(simdata) | missing(target) | missing(target_type) | missing(success)){
-        stop("Simulation output (simdata), target, target_type, and success are all mandatory.\n")
+        cli::cli_abort(c("x" = "Simulation output ({.code simdata}), {.code target}, {.code target_type}, and {.code success} are all mandatory."))
       }
       
       if(missing(simlabels)){
@@ -188,11 +188,12 @@ PM_pta <- R6::R6Class(
                            list = 3, character = 4, PM_post = 5, PM_post_data = 6, 
                            PM_data_data = 7, PM_data = 8,  -1)
         if(dataType==-1){
-          stop("You must specify a PM_sim, PM_sim_data, PM_simlist, PM_post, PM_post_data, 
-          PM_data, PM_data_data, or character vector of simulator output files. 
-          See help for makePTA.\n")
+          cli::cli_abort(c("x" = "You must specify a {.cls PM_sim}, {.cls PM_sim_data}, {.cls PM_simlist}, {.cls PM_post}, 
+          {.cls PM_post_data}, 
+          {.cls PM_data}, {.cls PM_data_data}, or character vector of simulator output files.", 
+                           "i" = "See help for {.fn PM_pta}."))
         }
-
+        
         ########### new PTA calculation ##################  
         #need to get it into a list of PMsim objects
         if (dataType==0) { #PM_sim object
@@ -216,14 +217,11 @@ PM_pta <- R6::R6Class(
         if (dataType == 4) { # character vector of simulator output files
           simfiles <- Sys.glob(simdata)
           if (length(simfiles) == 0) {
-            stop("There are no files matching \"", simdata, "\".\n", sep = "")
+            cli::cli_abort(c("x" = "There are no files matching \"{simdata}\"."))
           }
           
           simdata <- PM_sim$new(simfiles)$data
-          # simdata <- list()
-          # for (i in 1:length(simfiles)) {
-          #   simdata[[i]] <- tryCatch(SIMparse(simfiles[i]), error = function(e) stop(paste(simfiles[i], "is not a PMsim object.\n")))
-          # }
+          
         }
         
         if (dataType == 5) { # PM_post object
@@ -331,7 +329,9 @@ PM_pta <- R6::R6Class(
       })
       
       if (any(invalid_types)){
-        stop("Please specify target_type as a numerical value corresponding to a common\ntime in all simulated datasets, or a character value of 'time', 'auc', 'max' or 'min'.\n")
+        cli::cli_abort(c("x" = "Please specify {.code target_type} as a numerical value corresponding to a common time in 
+                         all simulated datasets,\for a character value of 'time', 'auc', 'max' or 'min'.",
+                         "i" = "See help for {.fn PM_pta}."))
       }
       
       #adjust start and end for any specific times
@@ -355,12 +355,13 @@ PM_pta <- R6::R6Class(
           length(x) > 1
         })
         if (any(invalid_sec_type)){
-          stop("For multiple target_types, types after the first cannot have more than one target, i.e., they are typically are min, max, or specific.\n")
+          cli::cli_abort(c("x" = "For multiple {.code target_type}, types after the first cannot have more than one target",
+                           "i" = "They typically are {.code min}, {.code max}, or a specific time."))
         }
       }
       
       if (!identical(n_target, n_type, n_success)){
-        stop("Target, target_type, and success vectors must all be the same length for discrete targets.\n")
+        cli::cli_abort(c("x" = "{.code target}, {.code target_type}, and {.code success} vectors must all be the same length for discrete targets."))
       } 
       
       if (stringr::str_detect(free_fraction,"%")){ # if passed as percents convert to a number
@@ -372,21 +373,21 @@ PM_pta <- R6::R6Class(
       if (stringr::str_detect(success[1],"%")){ # if passed as percents convert to a number
         success[1] <- as.numeric(stringr::str_replace(success[1],"%",""))/100
       }
-      if (success[1] <= 0 | ((target_type[1] == "time" | target_type[1] == "-time") & success[1] > 100)) stop("Invalid success threshold value. Aborting.", call.=F)
+      if (success[1] <= 0 | ((target_type[1] == "time" | target_type[1] == "-time") & success[1] > 100)) cli::cli_abort(c("x" = "Invalid success threshold value. Aborting."))
       if (target_type[1] =="time" & success[1] > 1 & success[1] <= 100) {
         cat("Your specified success threshold for time above target of ", success[1], " is bigger than 1.", sep="")
         ans <- readline(cat("\nWhat would you like to do?\n1) set success to ",success[1]/100," (i.e. ",success[1],"% of time relative to target)\n2) end ", sep=""))
         if (ans == 1) {
           success[1] = success[1]/100
           cat("Success threshold for time was set to ",success[1],".",sep="")
-        } else stop("Function aborted.", call.=F)
+        } else cli::cli_abort(c("x" = "Function aborted."))
       }
       
       #### PREPARE DATA 
       
       #check outeq
       if (!outeq %in% simdata[[1]]$obs$outeq) {
-        stop("There are no simulated outputs for output equation ", outeq, ". Aborting.", call. = F)
+        cli::cli_abort(c("x" = "There are no simulated outputs for output equation {outeq}. Aborting."))
       }
       
       #filter and multiply free fraction
@@ -685,7 +686,7 @@ makePTAtarget <- function(x) {
   if (is.character(x)) {
     ptaTarg <- read.table(x, sep = ",")
   } else {
-    if (!is.data.frame(ptaTarg)) stop("PTA target must be a data frame.\n")
+    if (!is.data.frame(ptaTarg)) cli::cli_abort(c("x" = "PTA target must be a data frame."))
   }
   names(ptaTarg)[1:2] <- c("target", "n")
   class(ptaTarg) <- c("PMpta.targ", "data.frame")
@@ -860,7 +861,7 @@ plot.PM_pta <- function(x,
   # check input
   if (!missing(include)) {
     if (any(include > max(simnum))) {
-      stop(paste("PM_pta object does not have ", max(simnum), " simulations.\n", sep = ""))
+      cli::cli_abort(c("x" = "PM_pta object does not have {max(simnum)} simulations."))
     } else {
       simnum <- simnum[include]
       simLabels <- simLabels[include]
@@ -868,7 +869,7 @@ plot.PM_pta <- function(x,
   }
   if (!missing(exclude)) {
     if (any(exclude > max(simnum))) {
-      stop(paste("PMpta object does not have ", max(simnum), " simulations.\n", sep = ""))
+      cli::cli_abort(c("x" = "PMpta object does not have {max(simnum)} simulations."))
     } else {
       simnum <- simnum[-exclude]
       simLabels <- simLabels[-exclude]
@@ -968,7 +969,8 @@ plot.PM_pta <- function(x,
   
   # PLOTS
   if (type == "pdi") { # pdi plot
-    if(at == "intersect") stop("PDI plot not possible on intersection. Choose an individual PTA with at = 1, for example.")
+    if(at == "intersect") cli::cli_abort(c("x" = "PDI plot not possible on intersection.",
+                                           "i" = "Choose an individual PTA with {.code at = 1}, for example."))
     if (simTarg == 1) { # discrete targets
       p <- pta %>% 
         group_by(.data$sim_num,.data$target) %>% 

@@ -92,9 +92,7 @@ PM_cycle <- R6::R6Class(
     #' See [plot.PM_cycle].
     #' @param ... Arguments passed to [plot.PM_cycle]
     plot = function(...) {
-      tryCatch(plot.PM_cycle(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      plot.PM_cycle(self, ...)
     },
     #' @description
     #' Summary method
@@ -102,42 +100,26 @@ PM_cycle <- R6::R6Class(
     #' See [summary.PM_cycle].
     #' @param ... Arguments passed to [summary.PM_cycle]
     summary = function(...) {
-      tryCatch(summary.PM_cycle(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      summary.PM_cycle(self, ...)
     }
   ), # end public
   private = list(
     make = function(data) {
       if (getPMoptions("backend") == "rust") {
-        raw <- tryCatch(readr::read_csv(file = "cycles.csv", show_col_types = FALSE),
-          error = function(e) {
-            cat(
-              crayon::red("Error:"),
-              "The run did not complete and the cycle.csv file was not created.\n"
-            )
-          }
-        )
-        obs_raw <- tryCatch(readr::read_csv(file = "obs.csv", show_col_types = FALSE),
-          error = function(e) {
-            cat(
-              crayon::red("Error:"),
-              "The run did not complete and the obs.csv file was not created.\n"
-            )
-          }
-        )
-        config <- tryCatch(jsonlite::fromJSON("settings.json"),
-          error = function(e) {
-            e <- NULL
-            cat(
-              crayon::red("Error:"),
-              "The run did not complete and the settings.json file was not created.\n"
-            )
-          }
-        )
-
-        if (any(purrr::map_lgl(list(raw, obs_raw, config), is.null))) {
-          return(NA)
+        if(file.exists("cycles.csv")){
+          raw <- readr::read_csv(file = "cycles.csv", show_col_types = FALSE)
+        } else {
+          cli::cli_abort(c("x" = "{.file {getwd()}/cycles.csv} does not exist."))
+        }
+        if(file.exists("obs.csv")){
+          obs_raw <- readr::read_csv(file = "obs.csv", show_col_types = FALSE)
+        } else {
+          cli::cli_abort(c("x" = "{.file {getwd()}/obs.csv} does not exist."))
+        }
+        if(file.exists("settings.json")){
+          config <- jsonlite::fromJSON("settings.json")
+        } else {
+          cli::cli_abort(c("x" = "{.file {getwd()}/settings.json} does not exist."))
         }
 
         cycle_data <- raw %>%
@@ -379,11 +361,8 @@ plot.PM_cycle <- function(x,
                           ...) {
   if (inherits(x, "PM_cycle")) {
     data <- x$data
-  } else {
-    stop("Please supply a PM_cycle object to plot.\n")
-  }
-
-
+  } 
+  
   # housekeeping
 
   nvar <- if (inherits(data$mean, "matrix")) {
@@ -688,9 +667,11 @@ plot.PM_cycle <- function(x,
 #' @export
 
 summary.PM_cycle <- function(object, cycle, digits = 3, ...) {
+  
   if (inherits(object, "PM_cycle")) {
     object <- object$data
   }
+  
   if (missing(cycle)) {
     cyc <- max(object$cycnum)
   } else {

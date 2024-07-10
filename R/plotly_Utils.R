@@ -250,7 +250,7 @@ includeExclude <- function(.data, include, exclude) {
     .data <- .data %>% filter(!id %in% exclude)
   }
   if (nrow(.data) == 0) {
-    stop("Include/exclude criteria result in zero subjects.")
+    cli::cli_abort("Include/exclude criteria result in zero subjects.")
   }
   
   return(.data)
