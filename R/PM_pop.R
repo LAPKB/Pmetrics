@@ -97,7 +97,11 @@ PM_pop <- R6::R6Class(
     #' @param data The object to use for AUC calculation
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
-      makeAUC(data = self$data, ...)
+      rlang::try_fetch(makeAUC(self, ...),
+                       error = function(e){
+                         cli::cli_warn("Unable to generate AUC.", parent = e)
+                         return(NULL)
+                       })
     }
   ), # end public
   private = list(

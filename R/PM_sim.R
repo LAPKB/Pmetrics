@@ -586,9 +586,17 @@ PM_sim <- R6::R6Class(
         if (at > length(self$data)) {
           cli::cli_abort(c("x"="Error: Index is out of bounds. index: {at}, length(simlist): {length(self$data)}"))
         }
-        makeAUC(self$data[[at]], ...)
+        rlang::try_fetch(makeAUC(self$data[[at]], ...),
+                         error = function(e){
+                           cli::cli_warn("Unable to generate AUC.", parent = e)
+                           return(NULL)
+                         })
       } else {
-        makeAUC(self$data, ...)
+        rlang::try_fetch(makeAUC(self$data, ...),
+                         error = function(e){
+                           cli::cli_warn("Unable to generate AUC.", parent = e)
+                           return(NULL)
+                         })
       }
     },
     #' @description

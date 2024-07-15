@@ -1023,7 +1023,7 @@ plot.PM_final <- function(x,
           ab[to_standardize, 1] <- min(ab[to_standardize, 1])
           ab[to_standardize, 2] <- max(ab[to_standardize, 2])
         } else {
-          stop("Requested standardization parameters are not in model.")
+          cli::cli_abort(c("x"="Requested standardization parameters are not in model."))
         }
       }
       ab_alpha <- ab %>% arrange(par)
