@@ -104,7 +104,7 @@ PM_model$new <- function(model, ...) {
   } else if (inherits(model, "PM_model")) {
     return(PM_model_list$new(model$model_list)) # rebuild
   } else {
-    stop(sprintf("Non supported model type: %s", typeof(model)))
+    cli::cli_abort(c("x" = "Non supported model type: {typeof(model)}"))
   }
 }
 
@@ -250,7 +250,7 @@ PM_Vmodel <- R6::R6Class("PM_model",
     name = NULL, # used by PM_model_legacy
     # error = NULL,
     initialize = function() {
-      stop("Unable to initialize abstract class")
+      cli::cli_abort(c("x" = "Unable to initialize abstract class"))
     },
     print = function(...) {
       cat("$model_list\n")
@@ -381,11 +381,14 @@ PM_Vinput <- R6::R6Class(
     covariate = NULL,
     gtz = NULL,
     initialize = function(a, b, mode, constant = FALSE, gtz = FALSE) {
-      stopifnot(mode %in% c(
+      if(!mode %in% c(
         "ab", "msd", "fixed", "additive",
         "proportional", "combination",
         "coefficients", "covariate"
-      ))
+      )){
+        cli_abort(c("x"="{mode} is not a valid term.",
+                    "i"="See help for {.fn PM_model}."))
+      }
       self$gtz <- gtz
       self$constant <- constant
       self$mode <- mode
@@ -407,7 +410,7 @@ PM_Vinput <- R6::R6Class(
       } else if (mode == "proportional") {
         self$proportional <- a
       } else if (mode == "combination") {
-        stop(sprintf("Combination error models are not supported yet"))
+        cli::cli_abort(c("x" = "Combination error models are not supported yet"))
         self$additive <- a
         self$proportional <- b
       } else if (mode == "coefficients") {
@@ -433,7 +436,7 @@ PM_Vinput <- R6::R6Class(
           }
         } else if (self$mode == "additive") {
           if (engine == "it2b") {
-            stop("Lambda is not defined in IT2B.")
+            cli::cli_abort(c("x" = "Lambda is not defined in IT2B."))
           }
           if (self$constant) {
             return(sprintf("L=%f!", self$additive))
@@ -510,22 +513,22 @@ PM_model_list <- R6::R6Class("PM_model_list",
       names(model_list) <- private$lower3(names(model_list))
       model_blocks <- names(model_list)
       if (!identical(model_blocks, orig_names)) cat("Model block names standardized to 3 lowercase characters.\n")
-      if (!"pri" %in% model_blocks) stop("Model must have a PRImary block.")
-      if (!"out" %in% model_blocks) stop("Model must have an OUTput block.")
+      if (!"pri" %in% model_blocks) cli::cli_abort(c("x" = "Model must have a PRImary block."))
+      if (!"out" %in% model_blocks) cli::cli_abort(c("x" = "Model must have an OUTput block."))
       n_out <- length(names(model_list$out))
       for (i in 1:n_out) {
         out_names <- private$lower3(names(model_list$out[[i]]))
         names(model_list$out[[i]]) <- out_names
         if (!"err" %in% out_names) {
-          stop("Ensure all outputs have an ERRor block.")
+          cli::cli_abort(c("x" = "Ensure all outputs have an ERRor block."))
         }
         if (!"model" %in% names(model_list$out[[i]]$err) ||
           !"assay" %in% names(model_list$out[[i]]$err)) {
-          stop("ERRor blocks need 'model' and 'assay' components.")
+          cli::cli_abort(c("x" = "ERRor blocks need {.code model} and {.code assay} components."))
         }
         if (!"proportional" %in% names(model_list$out[[i]]$err$model) ||
           !"additive" %in% names(model_list$out[[i]]$err$model)) {
-          stop("ERRor model block must be either proportional or additive.")
+          cli::cli_abort(c("x" = "ERRor model block must be either {.code proportional} or {.code additive}."))
         }
       }
 
@@ -594,7 +597,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       # look for xp() or dx[]
       neqs <- sum(sapply(stringr::str_extract_all(eqs, "xp\\(\\d+\\)|dx\\[\\d+\\]"), function(x) length(x) > 0))
       if (neqs == 0) {
-        stop("Error: PMcore does not support analytic equations, provide an eqn block.")
+        cli::cli_abort(c("x" = "PMcore does not support analytic equations, provide an {.code eqn} block."))
       }
       content <- gsub("</neqs>", neqs, content)
 
@@ -668,7 +671,10 @@ PM_model_list <- R6::R6Class("PM_model_list",
     },
     update = function(changes_list) {
       keys <- names(changes_list)
-      stopifnot(private$lower3(keys) %in% c("pri", "sec", "dif", "eqn", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext"))
+      if(!private$lower3(keys) %in% c("pri", "sec", "dif", "eqn", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")){
+        cli::cli_abort(c("x" = "Invalid block name: {keys}",
+                         "i" = "See help for {.fn PM_model}."))
+      }
       self$model_list <- modifyList(self$model_list, changes_list)
     }
   ),
@@ -781,7 +787,9 @@ PM_model_list <- R6::R6Class("PM_model_list",
           )
         }
       } else if (private$lower3(key) %in% c("bol", "ext")) {
-        stopifnot(is.null(names(block)))
+        if(!is.null(names(block))){
+          cli::cli_abort(c("x"="The {key} block should be quoted equations"))
+        }
         for (i in 1:length(block)) {
           lines <- append(lines, sprintf("%s", block[[i]]))
         }
@@ -813,12 +821,12 @@ PM_model_list <- R6::R6Class("PM_model_list",
                 if (!is.na(rhs)) {
                   rhs <- stringr::str_replace_all(rhs, " ", "")
                 } else { # no "=" detected
-                  stop(sprintf("Error: No equation detected for lag expression: %s", block[[i]][1]))
+                  cli::cli_abort(c("x" = "No equation detected for lag expression: {block[[i]][1]}"))
                 }
                 lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
                 eqn <- stringr::str_extract(lhs, "\\d+")
                 if (is.na(eqn)) { # no number in lhs
-                  stop(sprintf("Error: No equation number detected for lag expression: %s", block[[i]][1]))
+                  cli::cli_abort(c("x" = "No equation number detected for lag expression: {block[[i]][1]}"))
                 }
                 sprintf("TLAG[%s] = %s", eqn, rhs)
               }
@@ -842,12 +850,12 @@ PM_model_list <- R6::R6Class("PM_model_list",
                 if (!is.na(rhs)) {
                   rhs <- stringr::str_replace_all(rhs, " ", "")
                 } else { # no "=" detected
-                  stop(sprintf("Error: No equation detected for initial conditions: %s", block[[i]][1]))
+                  cli::cli_abort(c("x" = "No equation detected for initial conditions: {block[[i]][1]}"))
                 }
                 lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
                 eqn <- stringr::str_extract(lhs, "\\d+")
                 if (is.na(eqn)) { # no number in lhs
-                  stop(sprintf("Error: No equation number detected for initial conditions: %s", block[[i]][1]))
+                  cli::cli_abort(c("x" = "No equation number detected for initial conditions: {block[[i]][1]}"))
                 }
                 sprintf("X[%s] = %s", eqn, rhs)
               }
@@ -871,12 +879,12 @@ PM_model_list <- R6::R6Class("PM_model_list",
                 if (!is.na(rhs)) {
                   rhs <- stringr::str_replace_all(rhs, " ", "")
                 } else { # no "=" detected
-                  stop(sprintf("Error: No equation detected for bioavailability: %s", block[[i]][1]))
+                  cli::cli_abort(c("x" = "No equation detected for bioavailability: {block[[i]][1]}"))
                 }
                 lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
                 eqn <- stringr::str_extract(lhs, "\\d+")
                 if (is.na(eqn)) { # no number in lhs
-                  stop(sprintf("Error: No equation number detected for bioavailabilty: %s", block[[i]][1]))
+                  cli::cli_abort(c("x" = "No equation number detected for bioavailabilty: {block[[i]][1]}"))
                 }
                 sprintf("FA[%s] = %s", eqn, rhs)
               }
@@ -899,12 +907,12 @@ PM_model_list <- R6::R6Class("PM_model_list",
             #   if (!is.na(rhs)) {
             #     rhs <- stringr::str_replace_all(rhs, " ", "")
             #   } else { # no "=" detected
-            #     stop(sprintf("Error: No differential equation(s) detected for: %s", block[[i]][1]))
+            #     cli::cli_abort(c("x" = sprintf("Error: No differential equation(s) detected for: %s", block[[i]][1])))
             #   }
             #   lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
             #   eqn <- stringr::str_extract(lhs, "\\d+")
             #   if (is.na(eqn)) { # no number in lhs
-            #     stop(sprintf("Error: No differential equation number detected for: %s", block[[i]][1]))
+            #     cli::cli_abort(c("x" = sprintf("Error: No differential equation number detected for: %s", block[[i]][1])))
             #   }
             #   sprintf("XP(%s) = %s", eqn, rhs)
             # } else { # named list
@@ -917,7 +925,9 @@ PM_model_list <- R6::R6Class("PM_model_list",
         i <- 1 # keep track of the first outeq
         err_lines <- "#err"
         for (param in names(block)) {
-          stopifnot(nchar(param) == 2 || nchar(param) == 0)
+          if(nchar(param) != 2 && nchar(param) != 0){
+            cli::cli_abort(c("x"="Name output lists as {.code Y1}, {.code Y2}, etc."))
+          }
           key <- toupper(names(block)[i])
           lines <- append(
             lines,
@@ -938,7 +948,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
         lines <- append(lines, "")
         lines <- append(lines, err_lines)
       } else {
-        stop(sprintf("Error: Unsupported block named: %s", key))
+        cli::cli_abort(c("x" = "Unsupported block named: {key}"))
       }
       lines <- append(lines, "")
       return(lines)
@@ -1256,7 +1266,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
 
   tree <- parse(text = this_model)
   if (length(tree) == 0) {
-    stop("No differential equations detected. Use dX[i] for changes and X[i] for amounts (case insensitive).")
+    cli::cli_abort(c("x" = "No differential equations detected. Use {.code dX[i]} for changes and {.code X[i]} for amounts (case insensitive)."))
   }
   index <- 0
 
@@ -1489,7 +1499,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     max_to <- max(as.numeric(layout$to))
 
     if (!all(names(explicit) %in% c("from", "to"))) {
-      stop("explicit should be a data frame with names from and to")
+      cli::cli_abort(c("x" = "{.code explicit} should be a data frame with names {.code from} and {.code to}"))
     }
     imp <- explicit %>%
       dplyr::mutate(to = ifelse(to == 0, max_to, to)) %>%
@@ -1505,7 +1515,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     max_to <- max(as.numeric(layout$to))
 
     if (!all(names(implicit) %in% c("from", "to"))) {
-      stop("implicit should be a data frame with names from and to")
+      cli::cli_abort(c("x" = "{.code implicit} should be a data frame with names {.code from} and {.code to}"))
     }
     imp <- implicit %>%
       dplyr::mutate(to = ifelse(to == 0, max_to, to)) %>%

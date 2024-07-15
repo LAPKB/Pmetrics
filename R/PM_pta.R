@@ -527,7 +527,12 @@ pta_auc <- function(sims, .target, .simTarg, .start, .end, .pb){
   cycle <- utils::getTxtProgressBar(.pb)
   utils::setTxtProgressBar(.pb, cycle+1)
   
-  auc <- tryCatch(makeAUC(sims, out ~ time, start = .start, end = .end), error = function(e) NA)
+  auc <- rlang::try_fetch(makeAUC(sims, out ~ time, start = .start, end = .end),
+                          error = function(e){
+                            cli::cli_warn("Unable to generate AUC.", parent = e)
+                            return(NA)
+                          })
+    
   if(nrow(auc)>0){
     if(.simTarg & length(.target) > 1){
       auc <- dplyr::left_join(auc, .target, by = "id")

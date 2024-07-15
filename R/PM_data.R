@@ -116,7 +116,11 @@ PM_data <- R6::R6Class("PM_data",
                          #' @param ... Arguments passed to [makeAUC].
                          auc = function(...) {
                            if (!is.null(self$data)) {
-                             makeAUC(self, ...)
+                             rlang::try_fetch(makeAUC(self, ...),
+                                              error = function(e){
+                                                cli::cli_warn("Unable to generate AUC.", parent = e)
+                                                return(NULL)
+                                              })
                            } else {
                              cli::cli_warn("Data have not been defined.")
                            }
@@ -561,7 +565,7 @@ PMmatrixRelTime <- function(data, idCol = "id", dateCol = "date", timeCol = "tim
   dt_formats <- paste(dt_df$date, dt_df$time)
   
   if (!all(c(idCol, dateCol, timeCol, evidCol) %in% dataCols)) {
-    stop("Please provide column names for id, date, time and evid.\n")
+    cli::cli_abort(c("x" = "Please provide column names for id, date, time and evid."))
   }
   temp <- data.frame(id = data[, idCol], date = data[, dateCol], time = data[, timeCol], evid = data[, evidCol])
   temp$date <- as.character(temp$date)
