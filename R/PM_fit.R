@@ -56,8 +56,12 @@ PM_fit <- R6::R6Class(
       if (is.character(model)) {
         model <- PM_model$new(model, ...)
       }
-      stopifnot(inherits(data, "PM_data"))
-      stopifnot(inherits(model, "PM_model"))
+      if(!inherits(data, "PM_data")){
+        cli::cli_abort(c("x"="{.code data} must be a {.cls PM_data} object"))
+      }
+      if(!inherits(model, "PM_model")){
+        cli::cli_abort(c("x"="{.code model} must be a {.cls PM_model} object"))
+      }
       self$data <- data
       self$model <- model
       self$backend <- backend
@@ -75,7 +79,7 @@ PM_fit <- R6::R6Class(
     run = function(..., engine = "NPAG", rundir = getwd(), backend = getPMoptions()$backend) {
       wd <- getwd()
       if (!dir.exists(rundir)) {
-        stop("You have specified a directory that does not exist, please create it first.")
+        cli::cli_abort(c("x"="You have specified a directory that does not exist, please create it first."))
       }
       setwd(rundir)
       engine <- tolower(engine)
@@ -104,7 +108,9 @@ PM_fit <- R6::R6Class(
         private$run_rust(..., engine = engine)
       } else {
         setwd(wd)
-        stop("Error: unsupported backend, check your PMoptions")
+        cli::cli_abort(c("x"="Error: unsupported backend.",
+                         "i"="See help for {.fn setPMoptions}"))
+        
       }
       
       setwd(wd)
@@ -143,7 +149,7 @@ PM_fit <- R6::R6Class(
     run_rust = function(..., engine) {
       arglist <- list(...)
       cwd <- getwd()
-
+      
       # set defaults then update with any supplied arguments
       arglist_default <- list(
         indpts = NULL,
@@ -193,7 +199,7 @@ PM_fit <- R6::R6Class(
         }
         system(sprintf("cp -R %s etc/PMcore", getPMoptions()$rust_template))
       }
-     
+      
       #### Include or exclude subjects ####
       
       data_filtered <- self$data$standard_data
@@ -212,7 +218,7 @@ PM_fit <- R6::R6Class(
         setwd(cwd)
         return(invisible(NULL))
       }
-
+      
       data_new <- PM_data$new(data_filtered, quiet = TRUE)
       data_new$write("gendata.csv", header = FALSE)
       
@@ -222,7 +228,7 @@ PM_fit <- R6::R6Class(
       ) %>%
         unlist() %>%
         sum()
-    
+      
       indpts <- ifelse(length(arglist$indpts)==0, num_ran_param, arglist$indpts)
       #convert index into number of grid points
       arglist$num_gridpoints <- dplyr::case_when(
@@ -342,7 +348,8 @@ PM_fit <- R6::R6Class(
         arglist$error_class <- "additive"
         arglist$lamgam <- self$model$model_list$out$Y1$err$model$additive
       } else {
-        stop("Error model is not proportional or additive.")
+        cli::cli_abort(c("x"="Error model is misspecified.",
+                         "i"="Choose {.code proportional} or {.code additive}."))
       }
       
       #### Generate config.toml #####
@@ -386,7 +393,8 @@ PM_fit <- R6::R6Class(
     },
     setup_rust_execution = function() {
       if (!file.exists(getPMoptions()$rust_template)) {
-        stop("Rust has not been built, execute PMbuild() for this Pmetrics installation.")
+        cli::cli_abort(c("x"="Rust has not been built.", 
+                         "i" = "Execute {.fn PMbuild} for this Pmetrics installation."))
       }
       cwd <- getwd()
       self$model$write_rust()
@@ -403,7 +411,7 @@ PM_fit <- R6::R6Class(
       system("cargo build --release")
       if (!file.exists("target/release/template")) {
         setwd(cwd)
-        stop("Error: Compilation failed")
+        cli::cli_abort(c("x"="Error: Compilation failed"))
       }
       compiled_binary_path <- paste0(getwd(), "/target/release/template")
       # Save the binary somewhere

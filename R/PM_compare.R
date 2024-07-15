@@ -51,8 +51,13 @@
 #' @export
 
 PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
-  if (missing(x) | missing(y)) stop("You must specify at least two PM_result objects for PM_compare.\n")
-  stopifnot("Please specify your PM_result objects.  See help." = inherits(x, "PM_result"))
+  if (missing(x) | missing(y)){
+    cli::cli_abort(c("x"="You must specify at least two {.cls PM_result} objects for {.fn PM_compare}."))
+  }
+  if(!all(purrr::map_lgl(list(x,y,...), \(i) inherits(i, "PM_result")))){
+    cli::cli_abort(c("x"="All objects to compare must be of class {.cls PM_result}", 
+                     "i" = "Load them beforehand with with {.fn PM_load}."))
+  }
 
 
   # parse dots
@@ -100,7 +105,9 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
 
   # check for zero cycle objects
   cycles <- unlist(sapply(allObj, function(x) x$icyctot))
-  if (any(cycles == 0)) stop(paste("Do not include 0-cycle runs: item(s) ", paste(which(cycles == 0), collapse = ", "), "\n", sep = ""))
+  if (any(cycles == 0)){
+    cli::cli_abort(c("x"="Do not include 0-cycle runs: {paste(which(cycles == 0), collapse = ', '), '\n', sep = '')}"))
+  }
 
   op <- purrr::map(obj, function(x) {
     x$op$data

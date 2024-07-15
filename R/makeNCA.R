@@ -399,12 +399,23 @@ makeNCA <- function(x, postPred = F, include, exclude, input = 1, icen = "median
     NCA[i, 11] <- temp$tad[which(temp$out == NCA[i, 10])][1] # tmax
 
     # AUC
-    auc <- makeAUC(temp, out ~ tad, icen = icen, outeq = outeq, block = block)$tau
+    auc <- rlang::try_fetch(makeAUC(temp, out ~ tad, icen = icen, outeq = outeq, block = block)$tau,
+                            error = function(e){
+                              cli::cli_warn("Unable to generate AUC.", parent = e)
+                              return(NULL)
+                            })
+      
     NCA[i, 2] <- ifelse(length(auc) == 0, NA, auc)
 
     # AUMC
     temp2 <- data.frame(id = temp$id, tad = temp$tad, out = temp$tad * temp$out)
-    aumc <- makeAUC(temp2, out ~ tad, icen = icen, outeq = outeq, block = block)$tau
+    aumc <- rlang::try_fetch(makeAUC(temp2, out ~ tad, icen = icen, outeq = outeq, block = block)$tau,
+                             error = function(e){
+                               cli::cli_warn("Unable to generate AUC.", parent = e)
+                               return(NULL)
+                             })
+    
+      
     NCA[i, 3] <- ifelse(length(aumc) == 0, NA, aumc)
 
     if (nrow(temp) >= 5) {

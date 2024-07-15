@@ -102,19 +102,7 @@ PM_result <- R6::R6Class(
                       }
                     }
                   })
-      # self$pop <- out$pop
-      # self$post <- out$post
-      # self$final <- out$final
-      # self$cycle <- out$cycle
-      # self$op <- out$op
-      # self$cov <- out$cov
-      # self$data <- out$data
-      # self$model <- out$model 
-      # if (!is.null(out$valid)) {
-      #   self$valid <- out$valid
-      # } else {
-      #   self$valid <- NULL
-      # }
+
       #these are diagnostics, not R6
       self$errfile <- out$errfile
       self$success <- out$success
@@ -135,7 +123,7 @@ PM_result <- R6::R6Class(
     #' @param ... Plot-specific arguments
     plot = function(type, ...) {
       if (is.null(type)) {
-        stop("Please provide the type of plot.")
+        cli::cli_abort(c("x" = "Please provide the type of plot."))
       } else {
         self[[type]]$plot(...)
       }
@@ -147,7 +135,7 @@ PM_result <- R6::R6Class(
     #' @param ... Summary-specific arguments
     summary = function(type, ...) {
       if (is.null(type)) {
-        stop("please provide the type of summary you want to obtain")
+        cli::cli_abort(c("x" = "Please provide the type of summary you want to obtain"))
       } else {
         self[[type]]$summary(...)
       }
@@ -159,7 +147,7 @@ PM_result <- R6::R6Class(
     #' @param ... Summary-specific arguments
     auc = function(type, ...) {
       if (!type %in% c("op", "pop", "post", "sim")) {
-        stop("makeAUC is defined only for PM_op, PM_pop, PM_post, PM_sim objects.\n")
+        cli::cli_abort(c("x" = "{.fn makeAUC} is defined only for {.cls PM_op}, {.cls PM_pop}, {.cls PM_post}, and {.cls PM_sim} objects."))
       }
       self[[type]]$auc(...)
     },
@@ -228,11 +216,11 @@ PM_result <- R6::R6Class(
         outputfolder <- getwd()
       } else {
         if (is.na(suppressWarnings(as.numeric(run)))) {
-          stop("The run argument is not numeric. Do you need to say 'file = '? See help for PM_result.")
+          cli::cli_abort(c("x" = "The {.code run} argument is not numeric. Do you need to say {.code file = }? See help for {.fn PM_result}."))
         }
         outputfolder <- paste0(run, "/outputs")
         if (!file.exists(outputfolder)) {
-          stop(paste0(outputfolder, " does not exist from the current working directory./n"))
+          cli::cli_abort(c("x" = "{outputfolder} does not exist in the current working directory."))
         }
       }
       if (missing(file)) {
@@ -414,7 +402,7 @@ PM_load <- function(run, file) {
     
     
   } else {
-    stop(paste0("No Pmetrics output file found in ", getwd(), ".\n"))
+    cli::cli_abort(c("x" = "No Pmetrics output file found in {getwd()}."))
   }
 }
 

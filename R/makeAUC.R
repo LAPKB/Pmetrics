@@ -82,7 +82,9 @@ makeAUC <- function(data,
         filter(!is.na(out)) # PM_data
     )
   } else { # class not matched, so needs formula
-    if (missing(formula)) stop("\nPlease supply a formula of form 'out~time' for objects other than class PM_sim, PM_op, PM_pop, PM_post, or PM_data.")
+    if (missing(formula)) {
+      cli::cli_abort(c("x" = "Please supply a formula of form {.code out~time} for objects other than class {.cls PM_sim}, {.cls PM_op}, {.cls PM_pop}, {.cls PM_post}, or {.cls PM_data}."))
+    }
     y.name <- as.character(attr(terms(formula), "variables")[2])
     x.name <- as.character(attr(terms(formula), "variables")[3])
     if (length(grep(y.name, names(data))) == 0) {
