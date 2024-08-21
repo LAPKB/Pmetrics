@@ -172,7 +172,7 @@ PM_final <- R6::R6Class(
     #' See [plot.PM_final].
     #' @param ... Arguments passed to [plot.PM_final]
     plot = function(...) {
-      tplot.PM_final(self, ...)
+      plot.PM_final(self, ...)
     },
     #' @description
     #' Summary method
@@ -620,6 +620,7 @@ plot.PM_final <- function(x,
                           xlab, ylab, zlab,
                           title,
                           xlim, ylim,
+                          static = FALSE,
                           ...) {
   # housekeeping
   
@@ -687,7 +688,7 @@ plot.PM_final <- function(x,
   names(ab) <- c("min", "max")
   ab$par <- names(data$popMean)
 
-  # plot functions for univariate
+  #plot functions for univariate
   uniPlot <- function(.data, .par, .min, .max, type, bar, xlab, ylab, title, .prior = NULL, height = NULL) {
     p <- .data %>%
       plotly::plot_ly(x = ~value, y = ~prob, height = height)
@@ -812,7 +813,6 @@ plot.PM_final <- function(x,
 
     return(p)
   }
-
 
   biPlot <- function(xCol, yCol, x, xlab, ylab, zlab, title, bar) {
     whichX <- which(ab$par == xCol)
