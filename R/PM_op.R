@@ -406,11 +406,11 @@ plot.PM_op <- function(x,
     block <- unique(x$block)
   }
   
-  if(outeq > max(x$outeq)){
+  if(max(outeq) > max(x$outeq)){
     cli_abort(c("x" = "{.cls PM_op} object does not have {outeq} output equation{?s}.",
                 "i" = "Choose {max(x$outeq)} or fewer for {.code outeq}."))
   }
-  if(block > max(x$block)){
+  if(max(block) > max(x$block)){
     cli_abort(c("x" = "{.cls PM_op} object does not have {block} blocks.",
                 "i" = "Choose {max(x$block)} or fewer for {.code block}."))  
   }
