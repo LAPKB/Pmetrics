@@ -19,6 +19,7 @@
   title,
   xlim,
   ylim,
+  static = FALSE,
   ...
 )
 }

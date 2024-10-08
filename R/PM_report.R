@@ -64,13 +64,13 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
   #   }
   # }
 
-  # rmarkdown::render(
-  #   input = templateFile,
-  #   output_file = outfile,
-  #   params = list(res = PM_result),
-  #   clean = TRUE,
-  #   quiet = TRUE
-  # )
+  rmarkdown::render(
+    input = templateFile,
+    output_file = outfile,
+    params = list(res = PM_result),
+    clean = TRUE,
+    quiet = TRUE
+  )
   
   quarto::quarto_render(
     input = templateFile,
