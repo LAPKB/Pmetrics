@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 #![allow(unused_imports)]
-use pmcore::prelude::{simulator::Equation, *};
+use pmcore::prelude::*;
 
 fn main() -> Result<()> {
-    let eq = Equation::new_ode(
+    let eq = equation::ODE::new(
         |x, p, t, dx, rateiv, cov| {
             fetch_params!(p, </params>);
             fetch_cov!(cov, t, </covs>);
@@ -35,6 +35,7 @@ fn main() -> Result<()> {
         },
         (</neqs>, </nouteqs>),
     );
-    let _result = fit(eq, "config.toml".to_string())?;
-    Ok(())
+    let settings = settings::read("config.toml").unwrap();
+    let data = data::read_pmetrics("gendata.csv").unwrap();
+    let _result = fit(eq, data, settings);
 }
