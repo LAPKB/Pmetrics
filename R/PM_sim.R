@@ -153,7 +153,7 @@ PM_sim <- R6::R6Class(
     #' model file.  If length 1, then the lower limits will be the same as in the
     #' model file, and the upper limits will be multiplied by value specified.  If
     #' length 2, then the lower and upper limits will be multiplied by the
-    #' specified values.  If this option is used, `popppar` must be a
+    #' specified values.  If this option is used, `poppar` must be a
     #' `PM_final` object. 4) The fourth option for limits is a fully
     #' customized matrix of limits for simulated values for each parameter which
     #' will overwrite any limits in the model file.  If specified, it should be a
