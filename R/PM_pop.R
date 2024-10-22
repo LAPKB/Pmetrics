@@ -108,10 +108,10 @@ PM_pop <- R6::R6Class(
     make = function(data) {
       if (getPMoptions("backend") == "rust") {
         
-        if(file.exists("pred.csv")){
-          raw <- readr::read_csv(file = "pred.csv", show_col_types = FALSE)
+        if(file.exists("op.csv")){
+          raw <- readr::read_csv(file = "op.csv", show_col_types = FALSE)
         } else {
-          cli::cli_abort(c("x" = "{.file {getwd()}/pred.csv} does not exist."))
+          cli::cli_abort(c("x" = "{.file {getwd()}/op.csv} does not exist."))
         }
 
 

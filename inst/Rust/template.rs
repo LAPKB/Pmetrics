@@ -3,7 +3,7 @@
 #![allow(unused_imports)]
 use pmcore::prelude::*;
 
-fn main() -> Result<()> {
+fn main() {
     let eq = equation::ODE::new(
         |x, p, t, dx, rateiv, cov| {
             fetch_params!(p, </params>);

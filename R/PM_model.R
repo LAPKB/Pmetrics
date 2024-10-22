@@ -392,12 +392,12 @@ PM_Vinput <- R6::R6Class(
       self$gtz <- gtz
       self$constant <- constant
       self$mode <- mode
-      if (mode %in% c("ab")) {
+      if (mode == "ab") {
         self$min <- a
         self$max <- b
         self$mean <- a + round((b - a) / 2, 3)
         self$sd <- round((b - a) / 6, 3)
-      } else if (mode %in% c("msd")) {
+      } else if (mode == "msd") {
         self$mean <- a
         self$sd <- b
         self$min <- a - 3 * b
@@ -646,7 +646,6 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  n_out <- length(self$model_list$out)
                                  content <- gsub("</nouteqs>", n_out, content)
                                  
-                                 # TODO: init not supported yet
                                  init <- self$model_list$ini %>%
                                    stringr::str_split("\n") %>%
                                    unlist() %>%
@@ -699,8 +698,8 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  .l <- gsub("log\\(", "ln\\(", .l) # log in R and Fortran is ln in Rust
                                  
                                  # deal with exponents - not bullet proof. Need to separate closing ) with space if not part of exponent
-                                 pattern2 <- "\\*{2,}(\\(*(.+?)[\\s^)])"
-                                 replace2 <- "\\.powf\\(\\2\\) "
+                                 pattern2 <- "\\*{2}\\(([^)]+)\\)|\\*{2}([\\d.]+)"
+                                 replace2 <- "\\.powf\\(\\1\\2\\) " #will use first match if complex, second if simple
                                  .l <- gsub(pattern2, replace2, .l, perl = TRUE)
                                  
                                  # deal with integers, exclude [x] and alphax
@@ -747,7 +746,9 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  }
                                  
                                  # deal with secondary equations, which don't have xp or dx
-                                 if (stringr::str_detect(.l, stringr::regex("^(?!.*(?:xp|dx)).*\\s*=\\s*.*", ignore_case = TRUE))) {
+                                 .l2 <- stringr::str_replace_all(.l, "\\s*", "") #eliminate any spaces to make pattern matching easier
+                                 pattern4 <- "^[^=]*(?<!(xp|dx)(\\(|\\[)\\d{1,2}(\\)|\\]))=.*" #match everything left of "=" that doesn't have xp or dx followed by () or [] with one or two digits
+                                 if (stringr::str_detect(.l2, stringr::regex(pattern4, ignore_case = TRUE))) {
                                    .l <- paste0("let ", .l)
                                  }
                                  

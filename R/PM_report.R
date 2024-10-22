@@ -4,7 +4,7 @@
 #'
 #' Generates a report from a specified Rmd template
 #'
-#' @param PM_result A `PM_result` object obtained from \code{PM_load(x)}, where `x` is the run number.
+#' @param x A `PM_result` object obtained from \code{PM_load(x)}, where `x` is the run number.
 #' @param template The filename of a report template in the current working directory,
 #' or the full path/filename of a template in another directory.
 #' If not specified, the default Pmetrics report template as specified in [getPMoptions]
@@ -18,8 +18,8 @@
 #' @seealso [PM_load]
 #' @export
 
-PM_report <- function(PM_result, template = getPMoptions("report_template"), outfile, show = TRUE) {
-  if (!is(PM_result, "PM_result")) {
+PM_report <- function(x, template = getPMoptions("report_template"), outfile, show = TRUE) {
+  if (!is(x, "PM_result")) {
     cli::cli_abort(c("x" = "This function expects a valid PM_result object from PM_load."))
   }
 
@@ -67,17 +67,18 @@ PM_report <- function(PM_result, template = getPMoptions("report_template"), out
   rmarkdown::render(
     input = templateFile,
     output_file = outfile,
-    params = list(res = PM_result),
+    params = list(res = x),
     clean = TRUE,
     quiet = TRUE
   )
   
-  quarto::quarto_render(
-    input = templateFile,
-    output_file = outfile,
-    execute_params = list(res = PM_result),
-    quiet = TRUE
-  )
+  # quarto::quarto_render(
+  #   input = templateFile,
+  #   output_file = outfile,
+  #   execute_params = list(res = x),
+  #   quiet = TRUE,
+  #   debug = TRUE
+  # )
 
   if (show & file.exists(outfile)) {
     pander::openFileInOS(outfile)
