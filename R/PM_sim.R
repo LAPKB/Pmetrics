@@ -1091,7 +1091,7 @@ PM_sim <- R6::R6Class(
           if (split) {
             popPoints <- poppar$popPoints
             # if fortran and >30 points, take the 30 most probable points as there are max 30 distributions in simulator
-            ndist <- ifelse(usingFortran, max(nrow(popPoints),30), nrow(popPoints))
+            ndist <- ifelse(usingFortran, min(nrow(popPoints),30), nrow(popPoints))
             popPointsOrdered <- popPoints[order(popPoints$prob), ]
             pop.weight <- popPointsOrdered$prob[1:ndist]
             pop.mean <- popPointsOrdered[1:ndist, 1:(ncol(popPointsOrdered) - 1)]
@@ -1126,7 +1126,7 @@ PM_sim <- R6::R6Class(
           }
         } else { #manually specified prior or from IT2B
           pop.weight <- poppar[[1]]
-          ndist <- ifelse(usingFortran, max(length(pop.weight),30), length(pop.weight))
+          ndist <- ifelse(usingFortran, min(length(pop.weight),30), length(pop.weight))
           if (inherits(poppar[[2]], "numeric")) {
             pop.mean <- data.frame(t(poppar[[2]]))
           } else {
@@ -1192,11 +1192,7 @@ PM_sim <- R6::R6Class(
           pop.cov <- pop.cov[!is.na(pop.cov)]
           # divide it by the number of points (max 30); if split=F, ndist=1
           pop.cov <- pop.cov / ndist
-        }
         
-        
-        
-        if(usingFortran){
           # if nsim=0 then we will use each population point to simulate a single
           # output based on the template; otherwise, we will use the specified prior
           if (nsim == 0 & inherits(poppar, "NPAG")) {
@@ -1248,8 +1244,8 @@ PM_sim <- R6::R6Class(
             confirm <- c("0", rep("go", ndist), rep("1", 2))
             
             
-          } # end of block to make distribution when nsim>0
-        }
+          } # end of block to make distribution when nsim>0 
+        } # end of block when using fortran
         
         # apply limits as necessary
         # this will result in string with "f" or "r,1" or "r,0,a,b" for fixed, random no limits,
@@ -1268,10 +1264,11 @@ PM_sim <- R6::R6Class(
           
           #returns list that can be transformed into simulator instructions
           return(list(varVec = varVec, priorSource = priorSource, confirm = confirm))
-        } else {
+        } else { #using rust
           
           #for rust, need to create data.frame which can be written to theta.csv
           #from ChatGPT, prompt "Write R code to generate random samples from multivariate, multimodal normal distribution."
+          #maybe use tmvtnorm::rtmvnorm()
           #
           generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix) {
             if (length(weights) != length(means)) {
@@ -1291,6 +1288,8 @@ PM_sim <- R6::R6Class(
           }
           
           #generate samples for theta
+          #TODO: add ability to specify one manual point with zero covariance by setting cov = 0 if missing, manually create thetas, as private field with setter function?
+          #
           set.seed(seed)
           thetas <- generate_multimodal_samples(nsim, pop.weight, list(pop.mean), pop.cov)
           
@@ -1325,7 +1324,7 @@ PM_sim <- R6::R6Class(
           total.sd <- apply(rbind(thetas,discarded), 2, sd)[1:ncol(pop.cov)]
           total.nsim <- nrow(thetas) + nrow(discarded)
           
-          return(list(thetas = thetas, total.means = total.means, total.sd = total.sd, total.nsim = total.nsim))
+          return(list(thetas = thetas, total_means = total.means, total_sd = total.sd, total_nsim = total.nsim))
           
  
         }
@@ -1465,6 +1464,7 @@ PM_sim <- R6::R6Class(
           temp <- temp[order(temp$time, temp$outeq), ]
         }
         
+        #TODO: make this a PM_data object, not a file
         PMwriteMatrix(temp, "ZMQtemp.csv", override = T, version = "DEC_11")
         if (length(makecsv) == 2) makecsv[2] <- paste("abcde", i, ".csv", sep = "")
         outfile <- paste(outname, i, ".txt", sep = "")
@@ -1481,6 +1481,8 @@ PM_sim <- R6::R6Class(
           if (i == 1) {thisPrior <- getSimPrior(i, seed[i])} #only need to grab once
         }
         
+        
+        #TODO: add obsNoise, doseNoise, doseTimeNoise, obsTimeNoise as functions in PM_data
         
         ##### FORTRAN ONLY
         if(usingFortran){
@@ -1535,12 +1537,21 @@ PM_sim <- R6::R6Class(
             shell(paste("echo", seed[i], "> seedto.mon"))
             shell("montbig.exe DOS < simControl.txt", invisible = T)
           }
-        } else { #using Rust
+        } else {
+          
+          #WRITE RUST CALL HERE
           #run Rust simulator
-          #thisPrior is a list with thetas, total.means, total.sd, total.nsim
+          #thisPrior is a list with thetas, total_means, total_sd, total_nsim
+          #will have PM_data template
+          #need to handle use case when usePost = TRUE. Otherwise always, all thetas are used for each template subject
+          #USING EXTENDR
+          
+          #END RUST CALL
         }
 
       } #end subject for loop
+      
+      
       
       
       # clean up csv files if made
