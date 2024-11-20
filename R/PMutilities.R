@@ -102,7 +102,7 @@ logAxis <- function(side, grid = F, ...) {
   }
   axis(side, ticksat1, labels = labels, tcl = -0.5, lwd = 0, lwd.ticks = 1, ...)
   axis(side, ticksat2, labels = NA, tcl = -0.25, lwd = 0, lwd.ticks = 1, ...)
-
+  
   if (grid & (side == 1 | side == 3)) abline(v = ticksat2, col = "lightgray", lty = 1)
   if (grid & (side == 2 | side == 4)) abline(h = ticksat2, col = "lightgray", lty = 1)
 }
@@ -119,7 +119,7 @@ makeDen <- function(NPdata, bootstrap = F) {
     cat("Please enter the numerical value of N in your model file.")
     NPdata$ndim <- as.numeric(readline("(-1 for analytic, 0 for calculated output, or the number of differential equations): "))
   }
-
+  
   # resample, i.e. jitter the population prior if bootstrapping
   if (bootstrap) {
     final <- makeFinal(NPdata)
@@ -189,8 +189,8 @@ dmv_norm <- function(x, mean = rep(0, p), sigma = diag(p), log = FALSE,
       stop("x and sigma have non-conforming size")
     }
     if (checkSymmetry && !isSymmetric(sigma,
-      tol = sqrt(.Machine$double.eps),
-      check.attributes = FALSE
+                                      tol = sqrt(.Machine$double.eps),
+                                      check.attributes = FALSE
     )) {
       stop("sigma must be a symmetric matrix")
     }
@@ -204,7 +204,7 @@ dmv_norm <- function(x, mean = rep(0, p), sigma = diag(p), log = FALSE,
     tmp <- backsolve(dec, t(x) - mean, transpose = TRUE)
     rss <- colSums(tmp^2)
     logretval <- -sum(log(diag(dec))) - 0.5 * p * log(2 *
-      pi) - 0.5 * rss
+                                                        pi) - 0.5 * rss
   }
   names(logretval) <- rownames(x)
   if (log) {
@@ -224,23 +224,23 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
   if (!file.exists(outfile)) {
     stop(paste(outfile, "not found.\n", sep = " "))
   }
-
+  
   setwd(dirname(outfile))
-
+  
   negflag <- F
   RFver <- readLines(outfile, n = 1)
   vernum <- switch(RFver,
-    " VERSION 1.1 - JAN 2011 " = 1,
-    " VERSION 1.2 - APR 2011 " = 2,
-    " VERSION 1.3 - JUL 2011 " = 3,
-    " VERSION 1.4 - AUG 2011 " = 4,
-    4
+                   " VERSION 1.1 - JAN 2011 " = 1,
+                   " VERSION 1.2 - APR 2011 " = 2,
+                   " VERSION 1.3 - JUL 2011 " = 3,
+                   " VERSION 1.4 - AUG 2011 " = 4,
+                   4
   )
   dimlines <- switch(vernum,
-    9,
-    9,
-    15,
-    15
+                     9,
+                     9,
+                     15,
+                     15
   )
   NPdims <- scan(outfile, quiet = T, skip = 3, nlines = dimlines, , what = "character", comment.char = "#")
   # number of subjects
@@ -251,7 +251,7 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
   nvar <- as.numeric(NPdims[3])
   # index of grid points
   indpts <- as.numeric(NPdims[6])
-
+  
   # if version 1.2 or less
   if (vernum < 3) {
     # final cycle number
@@ -289,12 +289,12 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
   iaddl <- array(data = as.numeric(sub("D", "E", scan(outfile, skip = toc[17], n = icyctot * nvar * 12, quiet = T, what = ""))), dim = c(12, nvar, icyctot))
   # set the number of grid points at the beginning
   gridpts <- switch(indpts,
-    2129,
-    5003,
-    10007,
-    20011,
-    40009,
-    80021
+                    2129,
+                    5003,
+                    10007,
+                    20011,
+                    40009,
+                    80021
   )
   if (is.null(gridpts)) {
     gridpts <- (indpts - 100) * 80021
@@ -306,7 +306,7 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
   } else {
     popMean <- corden[1:nvar] * corden[nvar + 1] * wParVol
   }
-
+  
   if (nrow(corden) > 1) {
     popCov <- matrix(NA, ncol = nvar, nrow = nvar)
     for (i in 1:nvar) {
@@ -324,14 +324,14 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
     popCor <- matrix(rep(NA, nvar**2), nrow = nvar)
     diag(popCor) <- rep(1, nvar)
   }
-
+  
   popPoints <- data.frame(corden)
   names(popPoints) <- c(par, "prob")
   popPoints$prob <- popPoints$prob * wParVol
   names(popMean) <- par
   dimnames(popCov) <- list(par, par)
   if (all(!is.na(popCor))) dimnames(popCor) <- list(par, par)
-
+  
   if (icyctot > 0) {
     popMedian <- iaddl[6, , icyctot]
   } else {
@@ -352,17 +352,17 @@ getFinal <- function(outfile = "NP_RF0001.TXT") {
     popMedian <- apply(popPoints[, 1:(ncol(popPoints) - 1)], 2, calcWtMed, popPoints$prob)
   }
   names(popMedian) <- par
-
+  
   popVar <- diag(popCov)
   names(popVar) <- par
-
+  
   popSD <- sqrt(popVar)
   names(popSD) <- par
-
+  
   popCV <- abs(100 * (popSD / popMean))
   names(popCV) <- par
-
-
+  
+  
   outlist <- list(
     popPoints = popPoints, popMean = popMean, popSD = popSD, popCV = popCV, popVar = popVar,
     popCov = popCov, popCor = popCor, popMedian = popMedian, gridpts = gridpts, ab = ab
@@ -478,12 +478,12 @@ parseBlocks <- function(model) {
   output <- blockStart[grep("#out", headers)]
   error <- blockStart[grep("#err", headers)]
   extra <- blockStart[grep("#ext", headers)]
-
+  
   if (length(diffeq) > 0) {
     eqn <- diffeq
   } # change diffeq block to eqn for more general
   # cat("Please update your model file. The #DIF block should be renamed as #EQN, which is short for EQuatioNs.\n")
-
+  
   headerPresent <- which(c(
     length(primVar) > 0, length(covar) > 0, length(secVar) > 0, length(bolus) > 0, length(ini) > 0,
     length(f) > 0, length(lag) > 0, length(eqn) > 0, length(output) > 0, length(error) > 0, length(extra) > 0
@@ -491,17 +491,17 @@ parseBlocks <- function(model) {
   if (any(!c(1, 9, 10) %in% headerPresent)) {
     return(list(status = -1, msg = "You must have #Primary, #Output, and #Error blocks at minimum"))
   }
-
+  
   headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, eqn, output, error, extra)
   blockStart <- blockStart[rank(headerOrder)]
   blockStop <- blockStop[rank(headerOrder)]
-
+  
   # remove headers that have no information
   ok <- mapply(function(x, y) x != y, blockStart, blockStop)
   blockStart <- blockStart[ok]
   blockStop <- blockStop[ok]
   headerPresent <- headerPresent[ok]
-
+  
   # get blocks
   blocks <- list(primVar = NA, covar = NA, secVar = NA, bolus = NA, ini = NA, f = NA, lag = NA, eqn = NA, output = NA, error = NA, extra = NA)
   for (i in 1:length(headerPresent)) {
@@ -547,7 +547,7 @@ fortranize <- function(block) {
 # convert new model template to model fortran file
 makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = getPMoptions("backend"), write = T, quiet = F) {
   blocks <- parseBlocks(model)
-
+  
   # check for reserved variable names
   reserved <- c(
     "ndim", "t", "x", "xp", "rpar", "ipar", "p", "r", "b", "npl", "numeqt", "ndrug", "nadd", "rateiv", "cv",
@@ -559,14 +559,14 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
     return(list(status = -1, msg = msg))
   }
-
+  
   # check all blocks statements for more than maxwidth characters and insert line break if necessary
   maxwidth <- 60
   blocks <- chunks(x = blocks, maxwidth = maxwidth)
-
+  
   # ensure in fortran format: dX -> XP and [] -> ()
   blocks <- purrr::map(blocks, fortranize)
-
+  
   # primary variable definitions
   npvar <- length(blocks$primVar)
   psym <- vector("character", npvar)
@@ -582,51 +582,51 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n"))
     }
   }
-
+  
   # find out if any are fixed to be positive only for IT2B
   fixedpos <- grep("\\+", blocks$primVar)
   if (length(fixedpos) > 0) blocks$primVar <- gsub("\\+", "", blocks$primVar)
-
+  
   # find out if any are to be fixed (constant)
   fixcon <- grep("!", blocks$primVar)
   nofix <- length(fixcon)
   if (nofix > 0) blocks$primVar <- gsub("!", "", blocks$primVar)
-
-
+  
+  
   # get limits [a,b] on primary variables
   splitprimVar <- strsplit(blocks$primVar, sep)
   a <- as.numeric(unlist(lapply(splitprimVar, function(x) x[2])))
   b <- as.numeric(unlist(lapply(splitprimVar, function(x) x[3])))
-
+  
   # set parameter type: 1 for random, 0 for constant, -1 for random but pos (IT2B only) and 2 for fixed random
   ptype <- c(1, 2)[1 + as.numeric(is.na(b))]
   # if any fixed constant variables are present, set ptype to 0
   if (nofix > 0) ptype[fixcon] <- 0
-
+  
   # npvar is total number of parameters
   # nvar is number of random (estimated) parameters
   # nranfix is number of fixed (but unknown) parameters
   # nofix is number of constant parameters
   nranfix <- sum(as.numeric(is.na(b))) - nofix
   nvar <- npvar - nofix - nranfix
-
+  
   if ((engine$alg == "IT" | engine$alg == "ERR") & length(fixedpos) > 0) ptype[fixedpos] <- -1
-
+  
   if (nofix > 0) {
     valfix <- a[which(ptype == 0)]
   } else {
     valfix <- NA
   }
-
+  
   if (nranfix > 0) {
     valranfix <- a[which(ptype == 2)]
   } else {
     valranfix <- NA
   }
-
+  
   ab.df <- data.frame(a = a[which(ptype == 1)], b = b[which(ptype == 1)])
-
-
+  
+  
   # replace a,b with SIM limits argument if it is present
   if (engine$alg == "SIM" & !all(is.na(engine$limits))) {
     if (nrow(engine$limits) == nvar) {
@@ -639,30 +639,30 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       return(list(status = -1, msg = "Your limit block does not have the same number of parameters as the model file.\n"))
     }
   }
-
+  
   if (nofix > 0 & any(is.na(valfix))) {
     return(list(status = -1, msg = "One or more variables did not have any boundaries.\n"))
   }
   if (nranfix > 0 & any(is.na(valranfix))) {
     return(list(status = -1, msg = "One or more variables did not have any boundaries.\n"))
   }
-
+  
   # set grid point index for NPAG if not supplied
   if (engine$indpts == -99) {
     indpts <- switch(nvar,
-      1,
-      1,
-      3,
-      4,
-      6
+                     1,
+                     1,
+                     3,
+                     4,
+                     6
     )
     if (is.null(indpts)) indpts <- 100 + nvar - 5
     if (indpts > 108) indpts <- 108
   } else {
     indpts <- engine$indpts
   }
-
-
+  
+  
   # transform ab
   if (nrow(ab.df) > 0) {
     ab <- paste(t(as.matrix(ab.df)))
@@ -671,15 +671,15 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     ab[seq(2, 2 * nvar, 2)] <- sub("t", "\n", ab[seq(2, 2 * nvar, 2)])
     ab <- paste(ab, collapse = "")
   }
-
+  
   blocks$primVar <- unlist(lapply(splitprimVar, function(x) x[1]))
-
+  
   for (i in 1:npvar) {
     psym[i] <- paste("PSYM(", i, ")='", blocks$primVar[i], "'", sep = "")
     pvardef[i] <- paste(blocks$primVar[i], "=P(", i, ")", sep = "")
   }
-
-
+  
+  
   # covariate definitions
   if (blocks$covar[1] != "") {
     ncov <- length(blocks$covar)
@@ -703,10 +703,10 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   }
   # set covariate type based on number of covariates in data file, default is 2, interpolated
   if (length(interpol) > 0) ctype[interpol] <- 1 # change those in model file with "!" to constant
-
+  
   # secondary variable definitions
   svardef <- blocks$secVar
-
+  
   # get secondary variables and remove continuation lines beginning with "&"
   secVarNames <- gsub("[[:blank:]]", "", unlist(lapply(strsplit(svardef, "="), function(x) x[1])))
   secVarNames[is.na(secVarNames)] <- ""
@@ -715,12 +715,12 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     return(list(status = -1, msg = "\nThe model file format has changed.  Please replace '+' with '&' in all continuation lines.\n"))
   }
   contLines <- grep("^&", secVarNames)
-
+  
   if (length(contLines) > 0) {
     secVarNames <- secVarNames[-contLines]
     svardef <- gsub("^&", "", svardef)
   }
-
+  
   # take out any extra declarations in eqn to add to declarations in subroutine
   diffdec <- grep("COMMON|EXTERNAL|DIMENSION", blocks$eqn, ignore.case = T)
   if (length(diffdec) > 0) {
@@ -729,7 +729,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   } else {
     diffstate <- ""
   }
-
+  
   # detect N
   if (blocks$eqn[1] == "" | grepl("^\\{algebraic:", blocks$eqn[1])) {
     if ("KE" %in% toupper(secVarNames) | "KE" %in% toupper(blocks$primVar)) {
@@ -750,7 +750,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       N <- max(as.numeric(compNumbers))
     }
   }
-
+  
   # figure out model if N = -1 and if so, assign values to required KA,KE,V,KCP,KPC
   # in future, use {algebraic: xx} which is in model files now to select correct algebraic model
   # for now, comment the eqn lines in fortran if present
@@ -758,8 +758,8 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     blocks$eqn[1] <- "This model uses algebraic solutions. Differential equations provided here for reference only."
     blocks$eqn <- purrr::map_chr(blocks$eqn, \(x) paste0("! ", x))
   }
-
-
+  
+  
   reqVars <- c("KA", "KE", "KCP", "KPC", "V")
   matchVars <- match(reqVars, toupper(c(blocks$primVar, secVarNames)))
   if (N == -1) {
@@ -787,7 +787,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       missVars <- NA
     }
   }
-
+  
   # extract bolus inputs and create bolus block, then remove bolus[x] from equations
   bolus <- purrr::map(blocks$eqn, ~ stringr::str_extract_all(.x, regex("B[\\[\\(]\\d+|BOL[\\[\\(]\\d+|BOLUS[\\[\\(]\\d+", ignore_case = TRUE), simplify = FALSE))
   blocks$bolus <- purrr::imap(bolus, \(x, idx){
@@ -797,11 +797,11 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   }) %>% unlist()
   blocks$eqn <- purrr::map(blocks$eqn, \(x) stringr::str_replace_all(x, regex("(\\+*|-*|\\**)\\s*B[\\[\\(]\\d+[\\]\\)]|(\\+*|-*|\\**)\\s*BOL[\\[\\(]\\d+[\\]\\)]|(\\+*|-*|\\**)\\s*BOLUS[\\[\\(]\\d+[\\]\\)]", ignore_case = TRUE), "")) %>%
     unlist()
-
+  
   # replace R[x] or R(x) with RATEIV(x)
   blocks$eqn <- purrr::map(blocks$eqn, \(x) stringr::str_replace_all(x, regex("R[\\[\\(](\\d+)[\\]\\)]", ignore_case = TRUE), "RATEIV\\(\\1\\)")) %>%
     unlist()
-
+  
   # get number of equations and verify with data file
   # find statements with Y(digit) or Y[digit]
   outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output, ignore.case = T)
@@ -816,7 +816,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   if (modelnumeqt != engine$numeqt) {
     return(list(status = -1, msg = "\nThe number of output equations in the model file\ndoes not match the maximum value of outeq in your datafile.\n"))
   }
-
+  
   # remove leading ampersands from getfa, getix, gettlag if present
   oldContLines <- grep("^\\+", c(blocks$f, blocks$ini, blocks$lag))
   if (length(oldContLines > 0)) {
@@ -825,7 +825,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   if (length(grep("^&", blocks$f) > 0)) blocks$f <- gsub("^&", "", blocks$f)
   if (length(grep("^&", blocks$ini) > 0)) blocks$ini <- gsub("^&", "", blocks$ini)
   if (length(grep("^&", blocks$lag) > 0)) blocks$lag <- gsub("^&", "", blocks$lag)
-
+  
   # variable declarations for fortran and make sure not >maxwidth characters
   if (secVarNames[1] != "") {
     vardec <- paste("REAL*8 ", paste(blocks$primVar, collapse = ","), ",", paste(secVarNames, collapse = ","), sep = "")
@@ -838,18 +838,18 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   if (nchar(vardec) > maxwidth) {
     vardec <- paste(unlist(strsplit(vardec, ",")), collapse = ",\n     &  ")
   }
-
+  
   # error
   blocks$error <- tolower(gsub("[[:space:]]", "", blocks$error))
   # check to make sure coefficient lines are the same number as outputs
   nErrCoeff <- length(blocks$error) - 1
   if (nErrCoeff != modelnumeqt) {
     return(list(status = -1, msg = paste("\nThere ", c("is", "are")[1 + as.numeric(nErrCoeff > 1)], " ",
-      nErrCoeff, c(" line", " lines")[1 + as.numeric(nErrCoeff > 1)],
-      " of error coefficients in the model file, but ",
-      modelnumeqt, " output ", c("equation", "equations")[1 + as.numeric(modelnumeqt > 1)],
-      ".\nThese must be the same.\n",
-      sep = ""
+                                         nErrCoeff, c(" line", " lines")[1 + as.numeric(nErrCoeff > 1)],
+                                         " of error coefficients in the model file, but ",
+                                         modelnumeqt, " output ", c("equation", "equations")[1 + as.numeric(modelnumeqt > 1)],
+                                         ".\nThese must be the same.\n",
+                                         sep = ""
     )))
   }
   # get assay error only if SIMrun
@@ -870,7 +870,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       fixed <- grep("!", blocks$error[gamlam[1]])
       ierr <- unlist(strsplit(blocks$error[gamlam[1]], "="))
       ierrtype <- gsub("[[:space:]]", "", tolower(substr(ierr[1], 1, 1)))
-
+      
       # NPAG error parameters
       # IERRMOD
       # 1 SD WITH GAMMA(IEQ) FIXED
@@ -883,7 +883,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       # 2 IF ONE SET OF ABOVE Cs USED FOR ALL PATIENTS;
       # 1 IF Cs ALREADY IN PATIENT FILES WILL BE USED; IF A
       # PATIENT HAS NO C'S, THEN POPULATION C'S WILL BE USED.
-
+      
       if (engine$alg == "NP") {
         if (length(fixed) > 0) {
           # gamma is fixed (error for lambda)
@@ -903,8 +903,8 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
         } else {
           # gamma/lambda are to be estimated
           ierrmod <- switch(ierrtype,
-            g = 2,
-            l = 3
+                            g = 2,
+                            l = 3
           )
           gamlam0 <- as.numeric(ierr[2])
           asserr <- gsub(sep, "  ", blocks$error[-gamlam])
@@ -918,7 +918,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
         asserr <- paste(gsub("!", "", asserr), collapse = "\n") # clean up asserr
         iass <- paste(iass, collapse = "     ") # clean up iass
       }
-
+      
       # IT2B error parameters
       # IERRMOD
       # 1 IF GAMMA(IEQ) IS TO REMAIN 1.0 THROUGHOUT THE ANALYSIS;
@@ -931,7 +931,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       # 2 IF ONE SET OF ABOVE Cs USED FOR ALL PATIENTS;
       # 1 IF Cs ALREADY IN PATIENT FILES WILL BE USED; IF A
       # PATIENT HAS NO C'S, THEN POPULATION C'S WILL BE USED.
-
+      
       # IQVAL
       # 0 IF OUTPUT EQ. HAS ITS Cs ENTERED BY USER (NOT
       # ESTIMATED BY assbigxx.exe) AND IERRTYPE(IEQ) = 1
@@ -939,7 +939,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       # ESTIMATED BY assbigxx.exe) AND IERRTYPE(IEQ) = 0
       # 4 IF OUTPUT EQ. HAD ITS Cs ESTIMATED PREVIOUSLY
       # BY assbigxx.exe.
-
+      
       if (engine$alg == "IT") {
         if (ierrtype == "l") {
           return(list(status = -1, msg = "\nLambda is not currently implemented in IT2B\nPlease correct the error block in your model file.\n"))
@@ -981,9 +981,9 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       return(list(status = -1, msg = "Please specify a gamma or lambda error model in your\nmodel file error block."))
     }
   }
-
+  
   # build the fortran model file
-
+  
   # function to add blank lines
   blank <- function(n) {
     x <- rep("", n)
@@ -1012,8 +1012,8 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     }
     return(x)
   }
-
-
+  
+  
   space <- function(n, x) {
     if (length(grep("^@", x)) == 0) {
       # not a preserve format line
@@ -1023,582 +1023,588 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     }
     return(y)
   }
-
+  
   blocks <- lapply(blocks, prespace)
-
-  fmod <- list(header = NA, eqn = NA, output = NA, symbol = NA, getfa = NA, getix = NA, gettlag = NA, anal3 = NA)
-  fmod$header <- c("C  TSTMULTN.FOR                          NOV, 2014", blank(2))
-  fmod$eqn <- c(
-    space(5, "SUBROUTINE DIFFEQ(NDIM,T,X,XP,RPAR,IPAR)"),
-    space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
-    space(5, vardec),
-    space(5, "COMMON /PARAMD/ P"),
-    space(5, "COMMON /INPUT/ R,B"),
-    space(5, "COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG"),
-    space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
-    space(5, "DIMENSION X(NDIM),XP(NDIM),P(32),R(37),B(20),CV(26),RATEIV(7)"),
-    "!$omp Threadprivate(/PARAMD/,/INPUT/)  ",
-    blank(1),
-    unlist(lapply(diffstate, function(x) space(5, x))),
-    blank(1),
-    space(8, "DO I = 1,NDRUG"),
-    space(10, "RATEIV(I) = R(2*I - 1)"),
-    space(8, "END DO"),
-    blank(1),
-    space(8, "DO I = 1, NADD"),
-    space(10, "CV(I) = R(2*NDRUG + I)"),
-    space(8, "END DO"),
-    blank(1),
-    unlist(lapply(pvardef, function(x) space(8, x))),
-    unlist(lapply(covardef, function(x) space(8, x))),
-    unlist(lapply(svardef, function(x) space(8, x))),
-    blank(1),
-    unlist(lapply(blocks$eqn, function(x) space(8, x))),
-    blank(1),
-    space(5, "RETURN"),
-    space(5, "END"),
-    blank(3)
-  )
-  fmod$output <- c(
-    space(5, "SUBROUTINE OUTPUT(T,Y)"),
-    space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
-    space(5, vardec),
-    space(5, "COMMON /PARAMD/ P"),
-    space(5, "COMMON /STATE/ X"),
-    space(5, "COMMON /INPUT/ R,B"),
-    space(5, "COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG"),
-    space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
-    space(5, "PARAMETER(MAXNUMEQ=7)"),
-    space(5, "DIMENSION X(20),P(32),Y(MAXNUMEQ),R(37),B(20),CV(26)"),
-    "!$omp Threadprivate(/PARAMD/,/INPUT/,/STATE/) ",
-    blank(2),
-    space(8, "DO I = 1, NADD"),
-    space(10, "CV(I) = R(2*NDRUG + I)"),
-    space(8, "END DO"),
-    blank(1),
-    unlist(lapply(pvardef, function(x) space(8, x))),
-    unlist(lapply(covardef, function(x) space(8, x))),
-    unlist(lapply(svardef, function(x) space(8, x))),
-    blank(1),
-    unlist(lapply(blocks$output, function(x) space(8, x))),
-    blank(1),
-    space(5, "RETURN"),
-    space(5, "END"),
-    blank(3)
-  )
-  fmod$symbol <- c(
-    space(5, "SUBROUTINE SYMBOL"),
-    space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
-    space(5, vardec),
-    space(5, "CHARACTER PSYM(32)*11"),
-    space(5, "COMMON /CNST/ N,ND,NI,NUP,NUIC,NP"),
-    space(5, "COMMON/BOLUSCOMP/NBCOMP"),
-    space(5, "DIMENSION NBCOMP(7)"),
-    blank(2),
-    space(8, "DO I = 1,7"),
-    space(10, "NBCOMP(I) = I"),
-    space(8, "END DO"),
-    blank(1),
-    unlist(lapply(blocks$bolus, function(x) space(8, x))),
-    space(6, paste("N=", N, sep = "")),
-    space(6, paste("NP=", npvar, sep = "")),
-    unlist(lapply(psym, function(x) space(6, x))),
-    blank(1),
-    space(5, "RETURN"),
-    space(5, "END"),
-    blank(3)
-  )
-  fmod$getfa <- c(
-    space(5, "SUBROUTINE GETFA(FA)"),
-    space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
-    space(5, vardec),
-    space(5, "COMMON /PARAMD/ P"),
-    space(5, "COMMON /INPUT/ R,B"),
-    space(5, "COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG"),
-    space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
-    space(5, "COMMON /STATE/ X"),
-    space(5, "DIMENSION P(32),R(37),B(20),CV(26),FA(7),X(20)"),
-    "!$omp Threadprivate(/PARAMD/,/INPUT/)  ",
-    blank(2),
-    space(8, "DO I = 1, NADD"),
-    space(10, "CV(I) = R(2*NDRUG + I)"),
-    space(8, "END DO"),
-    blank(1),
-    space(8, "DO I = 1,NDRUG"),
-    space(10, "FA(I) = 1.D0"),
-    space(8, "END DO"),
-    blank(1),
-    unlist(lapply(pvardef, function(x) space(8, x))),
-    unlist(lapply(covardef, function(x) space(8, x))),
-    unlist(lapply(svardef, function(x) space(8, x))),
-    blank(1),
-    unlist(lapply(blocks$f, function(x) space(8, x))),
-    blank(1),
-    space(5, "RETURN"),
-    space(5, "END"),
-    blank(3)
-  )
-  fmod$getix <- c(
-    space(5, "SUBROUTINE GETIX(N,X)"),
-    space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
-    space(5, vardec),
-    space(5, "COMMON /PARAMD/ P"),
-    space(5, "COMMON /INPUT/ R,B"),
-    space(5, "COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG"),
-    space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
-    space(5, "DIMENSION P(32),R(37),B(20),CV(26),X(20)"),
-    "!$omp Threadprivate(/PARAMD/,/INPUT/)  ",
-    blank(2),
-    space(8, "DO I = 1, NADD"),
-    space(10, "CV(I) = R(2*NDRUG + I)"),
-    space(8, "END DO"),
-    blank(1),
-    space(8, "IF(N .GT. 0) THEN"),
-    space(10, "DO I = 1,N"),
-    space(12, "X(I) = 0.D0 "),
-    space(10, "END DO"),
-    space(8, "ENDIF"),
-    blank(1),
-    space(8, "IF(N .EQ. -1) THEN"),
-    space(10, "DO I = 1,3"),
-    space(12, "X(I) = 0.D0 "),
-    space(10, "END DO"),
-    space(8, "ENDIF"),
-    blank(1),
-    unlist(lapply(pvardef, function(x) space(8, x))),
-    unlist(lapply(covardef, function(x) space(8, x))),
-    unlist(lapply(svardef, function(x) space(8, x))),
-    blank(1),
-    unlist(lapply(blocks$ini, function(x) space(8, x))),
-    blank(1),
-    space(5, "RETURN"),
-    space(5, "END"),
-    blank(3)
-  )
-  fmod$gettlag <- c(
-    space(5, "SUBROUTINE GETTLAG(TLAG)"),
-    space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
-    space(5, vardec),
-    space(5, "COMMON /PARAMD/ P"),
-    space(5, "COMMON /INPUT/ R,B"),
-    space(5, "COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG"),
-    space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
-    space(5, "COMMON /STATE/ X"),
-    space(5, "DIMENSION P(32),R(37),B(20),CV(26),TLAG(7),X(20)"),
-    "!$omp Threadprivate(/PARAMD/,/INPUT/)  ",
-    blank(2),
-    space(8, "DO I = 1, NADD"),
-    space(10, "CV(I) = R(2*NDRUG + I)"),
-    space(8, "END DO"),
-    blank(1),
-    space(8, "DO I = 1,NDRUG"),
-    space(10, "TLAG(I) = 0.D0"),
-    space(8, "END DO"),
-    blank(1),
-    unlist(lapply(pvardef, function(x) space(8, x))),
-    unlist(lapply(covardef, function(x) space(8, x))),
-    unlist(lapply(svardef, function(x) space(8, x))),
-    blank(1),
-    unlist(lapply(blocks$lag, function(x) space(8, x))),
-    blank(1),
-    space(5, "RETURN"),
-    space(5, "END"),
-    blank(3)
-  )
-  fmod$anal3 <- c(
-    space(5, "SUBROUTINE ANAL3(X,TIN,TOUT)"),
-    space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
-    space(5, vardec),
-    c("", space(5, paste("REAL*8 ", paste(missVars, collapse = ","), sep = "")))[1 + as.numeric(N > 0 & !is.na(missVars[1]))],
-    space(5, "COMMON /PARAMD/ P"),
-    space(5, "COMMON /INPUT/ R,B"),
-    space(5, "COMMON /RATESV/ KE,KA,KCP,KPC,V"),
-    space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
-    space(5, "DIMENSION X(20),P(32),R(37),B(20),CV(26)"),
-    "!$omp Threadprivate(/PARAMD/,/INPUT/,/RATESV/)   ",
-    blank(2),
-    space(8, "DO I = 1, NADD"),
-    space(10, "CV(I) = R(2*NDRUG + I)"),
-    space(8, "END DO"),
-    blank(1),
-    unlist(lapply(pvardef, function(x) space(8, x))),
-    unlist(lapply(covardef, function(x) space(8, x))),
-    unlist(lapply(svardef, function(x) space(8, x))),
-    blank(1),
-    space(8, "T=TOUT-TIN"),
-    space(8, "IF(KCP.EQ.0.0D0.AND.KPC.EQ.0.0D0) THEN"),
-    space(10, "IF(KA.EQ.0.0D0) ICASE=1"),
-    space(10, "IF(KA.NE.0.0D0) ICASE=2"),
-    space(8, "ELSE"),
-    space(10, "IF(KA.EQ.0.0D0) ICASE=3"),
-    space(10, "IF(KA.NE.0.0D0) ICASE=4"),
-    space(8, "ENDIF"),
-    space(8, "GO TO (100,200,300,400), ICASE"),
-    "C  CASE 1 SOLUTION - 1 COMP. NO 1ST ORDER INPUT",
-    "100     CALL CASE1(X(1),T)",
-    space(8, "TIN=TOUT"),
-    space(8, "RETURN"),
-    "C  CASE 2 SOLUTION - 1 COMP. + 1ST ORDER INPUT",
-    "200     CALL CASE2(X(1),X(2),T)",
-    space(8, "TIN=TOUT"),
-    space(8, "RETURN"),
-    "C  CASE 3 SOLUTION - 2 COMPARTMENT NO 1ST ORDER INPUT",
-    "300     CALL CASE3(X(1),X(2),T)",
-    space(8, "TIN=TOUT"),
-    space(8, "RETURN"),
-    "C CASE 4 SOLUTION - 2 COMP. + 1ST ORDER INPUT",
-    "400     CALL CASE4(X,T)",
-    space(8, "TIN=TOUT"),
-    space(8, "RETURN"),
-    space(8, "END"),
-    blank(1),
-    space(8, "SUBROUTINE CASE1(X2,T)"),
-    space(8, "IMPLICIT REAL*8(A-H,O-Z)"),
-    space(8, "REAL*8 KE,KA,KCP,KPC"),
-    space(8, "DIMENSION R(37),B(20)"),
-    space(8, "COMMON /RATESV/ KE,KA,KCP,KPC,V"),
-    space(8, "COMMON /INPUT/ R,B"),
-    "!$omp Threadprivate(/RATESV/,/INPUT/)  ",
-    space(8, "IF(KE.NE.0.0D0) GO TO 10"),
-    space(8, "X2=T*R(1)+X2"),
-    space(8, "RETURN"),
-    "10      EKET=DEXP(-KE*T)",
-    space(8, "X2=R(1)*(1.0D0-EKET)/KE+X2*EKET"),
-    space(8, "RETURN"),
-    space(8, "END"),
-    blank(1),
-    space(8, "SUBROUTINE CASE2(X1,X2,T)"),
-    space(8, "IMPLICIT REAL*8(A-H,O-Z)"),
-    space(8, "REAL*8 KE,KA,KCP,KPC"),
-    space(8, "COMMON /RATESV/ KE,KA,KCP,KPC,V"),
-    space(8, "COMMON /INPUT/ R,B"),
-    space(8, "DIMENSION R(37),B(20)"),
-    "!$omp Threadprivate(/RATESV/,/INPUT/)  ",
-    space(8, "IF(KA.NE.KE) GO TO 30"),
-    space(8, "EKT=DEXP(-KE*T)"),
-    space(8, "X2=(X2-R(1)/KE)*EKT+R(1)/KE+KE*X1*T*EKT"),
-    space(8, "X1=X1*DEXP(-KA*T)"),
-    space(8, "RETURN"),
-    "30      IF(KE.NE.0.0D0) GO TO 50",
-    space(8, "EKAT=DEXP(-KA*T)"),
-    space(8, "X2=X2+T*R(1)+X1*(1.0D0-EKAT)"),
-    space(8, "X1=X1*EKAT"),
-    space(8, "RETURN"),
-    "50      EKET=DEXP(-KE*T)",
-    space(8, "EKAT=DEXP(-KA*T)"),
-    space(8, "X2=X2*EKET+R(1)*(1.0D0-EKET)/KE+"),
-    space(4, "X    KA*X1*(EKET-EKAT)/(KA-KE)"),
-    space(8, "X1=X1*EKAT"),
-    space(8, "RETURN"),
-    space(8, "END"),
-    blank(1),
-    space(8, "SUBROUTINE CASE3(X2,X3,T)"),
-    space(8, "IMPLICIT REAL*8(A-H,O-Z)"),
-    space(8, "REAL*8 KE,KA,KCP,KPC,L1,L2"),
-    space(8, "COMMON /RATESV/ KE,KA,KCP,KPC,V"),
-    space(8, "COMMON /INPUT/ R,B"),
-    space(8, "DIMENSION EA(2,2),R(37),B(20)"),
-    "!$omp Threadprivate(/RATESV/,/INPUT/)  ",
-    space(8, "T1=KE+KCP+KPC"),
-    space(8, "T2=DSQRT(T1*T1-4.0D0*KE*KPC)"),
-    space(8, "L1=0.5D0*(T1+T2)"),
-    space(8, "L2=0.5D0*(T1-T2)"),
-    space(8, "IF(L2.NE.0.0D0) GO TO 200"),
-    space(8, "EL1T=DEXP(-L1*T)"),
-    space(8, "OEL1T=1.0D0-EL1T"),
-    space(8, "EA(1,1)=(L1-KPC)*EL1T+KPC"),
-    space(8, "EA(1,2)=KPC*OEL1T"),
-    space(8, "EA(2,1)=KCP*OEL1T"),
-    space(8, "EA(2,2)=(L1-KE-KCP)*EL1T+KE+KCP"),
-    space(8, "P1=R(1)*((1.0D0-KPC/L1)*OEL1T+KPC*T)"),
-    space(8, "P2=R(1)*((-KCP/L1)*OEL1T+KCP*T)"),
-    space(8, "C1=EA(1,1)*X2+EA(1,2)*X3+P1"),
-    space(8, "C2=EA(2,1)*X2+EA(2,2)*X3+P2"),
-    space(8, "X2=C1/L1"),
-    space(8, "X3=C2/L1"),
-    space(8, "RETURN"),
-    "200     CONTINUE",
-    space(8, "EL1T=DEXP(-L1*T) "),
-    space(8, "EL2T=DEXP(-L2*T)"),
-    space(8, "OEL1T=1.0D0-EL1T"),
-    space(8, "OEL2T=1.0D0-EL2T"),
-    space(8, "DEL2L1=EL2T-EL1T"),
-    space(8, "EA(1,1)=(L1-KPC)*EL1T+(KPC-L2)*EL2T"),
-    space(8, "EA(1,2)=KPC*DEL2L1"),
-    space(8, "EA(2,1)=KCP*DEL2L1"),
-    space(8, "EA(2,2)=(L1-KE-KCP)*EL1T+(KE+KCP-L2)*EL2T"),
-    space(8, "P1=R(1)*((1.0D0-KPC/L1)*OEL1T+(KPC/L2-1.0D0)*OEL2T)"),
-    space(8, "P2=R(1)*((-KCP/L1)*OEL1T+(KCP/L2)*OEL2T)"),
-    space(8, "D=L1-L2"),
-    space(8, "C1=EA(1,1)*X2+EA(1,2)*X3+P1"),
-    space(8, "C2=EA(2,1)*X2+EA(2,2)*X3+P2"),
-    space(8, "X2=C1/D"),
-    space(8, "X3=C2/D"),
-    space(8, "RETURN"),
-    space(8, "END"),
-    blank(1),
-    space(8, "SUBROUTINE CASE4(X,T)"),
-    space(8, "IMPLICIT REAL*8(A-H,O-Z)"),
-    space(8, "REAL*8 KE,KA,KCP,KPC,L1,L2"),
-    space(8, "COMMON /RATESV/ KE,KA,KCP,KPC,V"),
-    space(8, "COMMON /INPUT/ R,B"),
-    space(8, "DIMENSION EA(2,2),R(37),B(20),X(20)"),
-    "!$omp Threadprivate(/RATESV/,/INPUT/)  ",
-    space(8, "T1=KE+KCP+KPC"),
-    space(8, "T2=DSQRT(T1*T1-4.0D0*KE*KPC)"),
-    space(8, "L1=0.5D0*(T1+T2)"),
-    space(8, "L2=0.5D0*(T1-T2)"),
-    space(8, "IF(L2.NE.0.0D0) GO TO 200"),
-    space(8, "EL1T=DEXP(-L1*T)"),
-    space(8, "OEL1T=1.0D0-EL1T"),
-    space(8, "EA(1,1)=(L1-KPC)*EL1T+KPC"),
-    space(8, "EA(1,2)=KPC*OEL1T"),
-    space(8, "EA(2,1)=KCP*OEL1T"),
-    space(8, "EA(2,2)=(L1-KE-KCP)*EL1T+KE+KCP"),
-    space(8, "P1A=R(1)*((1.0D0-KPC/L1)*OEL1T+KPC*T)"),
-    space(8, "P2A=R(1)*((-KCP/L1)*OEL1T+KCP*T)"),
-    space(8, "EKAT=DEXP(-KA*T)"),
-    space(8, "RL1=(EL1T-EKAT)/(KA-L1)"),
-    space(8, "RKA=(1.0D0-EKAT)/KA"),
-    space(8, "P1B=KA*X(1)*((L1-KPC)*RL1+KPC*RKA)"),
-    space(8, "P2B=KA*X(1)*(-KCP*RL1+KCP*RKA)"),
-    space(8, "C1=EA(1,1)*X(2)+EA(1,2)*X(3)+P1A+P1B"),
-    space(8, "C2=EA(2,1)*X(2)+EA(2,2)*X(3)+P2A+P2B"),
-    space(8, "X(1)=X(1)*EKAT"),
-    space(8, "X(2)=C1/L1"),
-    space(8, "X(3)=C2/L1"),
-    space(8, "RETURN"),
-    "200     CONTINUE",
-    space(8, "EL1T=DEXP(-L1*T)"),
-    space(8, "EL2T=DEXP(-L2*T)"),
-    space(8, "EKAT=DEXP(-KA*T)"),
-    space(8, "OEL1T=1.0D0-EL1T"),
-    space(8, "OEL2T=1.0D0-EL2T"),
-    space(8, "DEL2L1=EL2T-EL1T"),
-    space(8, "EA(1,1)=(L1-KPC)*EL1T+(KPC-L2)*EL2T"),
-    space(8, "EA(1,2)=KPC*DEL2L1"),
-    space(8, "EA(2,1)=KCP*DEL2L1"),
-    space(8, "EA(2,2)=(L1-KE-KCP)*EL1T+(KE+KCP-L2)*EL2T"),
-    space(8, "P1A=R(1)*((1.0D0-KPC/L1)*OEL1T+(KPC/L2-1.0D0)*OEL2T)"),
-    space(8, "P2A=R(1)*((-KCP/L1)*OEL1T+(KCP/L2)*OEL2T)"),
-    space(8, "IF(KA.NE.L1) GO TO 240"),
-    space(8, "RL=DEL2L1/(L1-L2)"),
-    space(8, "P1B=L1*X(1)*(T*(L1-KPC)*EL1T+(KPC-L2)*RL)"),
-    space(8, "P2B=L1*X(1)*(-T*KCP*EL1T+KCP*RL)"),
-    space(8, "GO TO 300"),
-    "240     IF(KA.NE.L2) GO TO 280",
-    space(8, "RL=DEL2L1/(L1-L2)"),
-    space(8, "P1B=L2*X(1)*((L1-KPC)*RL+T*(KPC-L2)*EL2T)"),
-    space(8, "P2B=L2*X(1)*(-KCP*RL+T*KCP*EL2T)"),
-    space(8, "GO TO 300 "),
-    "280     RL1KA=(EL1T-EKAT)/(KA-L1)",
-    space(8, "RL2KA=(EL2T-EKAT)/(KA-L2)"),
-    space(8, "P1B=KA*X(1)*((L1-KPC)*RL1KA+(KPC-L2)*RL2KA)"),
-    space(8, "P2B=KA*X(1)*(-KCP*RL1KA+KCP*RL2KA)"),
-    "300     D=L1-L2",
-    space(8, "C1=EA(1,1)*X(2)+EA(1,2)*X(3)+P1A+P1B"),
-    space(8, "C2=EA(2,1)*X(2)+EA(2,2)*X(3)+P2A+P2B"),
-    space(8, "X(1)=X(1)*EKAT"),
-    space(8, "X(2)=C1/D"),
-    space(8, "X(3)=C2/D"),
-    space(8, "RETURN "),
-    space(8, "END")
-  )
-
-  fmod$extra <- c(blank(2), unlist(lapply(blocks$extra, function(x) space(6, x))))
-
-  modelFor <- paste(unlist(strsplit(model, "\\."))[1], "for", sep = ".")
-  writeLines(unlist(fmod), modelFor)
-  # check model file for errors
-  OS <- getOS()
-  compiler <- getPMoptions()$compilation_statements
-
-  # build syntax check statement and check model if possible
-  fortran <- strsplit(compiler, " ")[[1]][1]
-  syntaxcheck <- NA
-  if (length(grep("gfortran", fortran) > 0)) {
-    syntaxcheck <- paste(fortran, "-fsyntax-only", modelFor)
-  }
-  # fortran syntax different for Windows and UNIX
-  if (length(grep("ifort", fortran) > 0)) {
-    if (OS == 1 | OS == 3) {
+  
+  if(getPMoptions("backend") == "fortran"){
+    
+    
+    
+    fmod <- list(header = NA, eqn = NA, output = NA, symbol = NA, getfa = NA, getix = NA, gettlag = NA, anal3 = NA)
+    fmod$header <- c("C  TSTMULTN.FOR                          NOV, 2014", blank(2))
+    fmod$eqn <- c(
+      space(5, "SUBROUTINE DIFFEQ(NDIM,T,X,XP,RPAR,IPAR)"),
+      space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
+      space(5, vardec),
+      space(5, "COMMON /PARAMD/ P"),
+      space(5, "COMMON /INPUT/ R,B"),
+      space(5, "COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG"),
+      space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
+      space(5, "DIMENSION X(NDIM),XP(NDIM),P(32),R(37),B(20),CV(26),RATEIV(7)"),
+      "!$omp Threadprivate(/PARAMD/,/INPUT/)  ",
+      blank(1),
+      unlist(lapply(diffstate, function(x) space(5, x))),
+      blank(1),
+      space(8, "DO I = 1,NDRUG"),
+      space(10, "RATEIV(I) = R(2*I - 1)"),
+      space(8, "END DO"),
+      blank(1),
+      space(8, "DO I = 1, NADD"),
+      space(10, "CV(I) = R(2*NDRUG + I)"),
+      space(8, "END DO"),
+      blank(1),
+      unlist(lapply(pvardef, function(x) space(8, x))),
+      unlist(lapply(covardef, function(x) space(8, x))),
+      unlist(lapply(svardef, function(x) space(8, x))),
+      blank(1),
+      unlist(lapply(blocks$eqn, function(x) space(8, x))),
+      blank(1),
+      space(5, "RETURN"),
+      space(5, "END"),
+      blank(3)
+    )
+    fmod$output <- c(
+      space(5, "SUBROUTINE OUTPUT(T,Y)"),
+      space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
+      space(5, vardec),
+      space(5, "COMMON /PARAMD/ P"),
+      space(5, "COMMON /STATE/ X"),
+      space(5, "COMMON /INPUT/ R,B"),
+      space(5, "COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG"),
+      space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
+      space(5, "PARAMETER(MAXNUMEQ=7)"),
+      space(5, "DIMENSION X(20),P(32),Y(MAXNUMEQ),R(37),B(20),CV(26)"),
+      "!$omp Threadprivate(/PARAMD/,/INPUT/,/STATE/) ",
+      blank(2),
+      space(8, "DO I = 1, NADD"),
+      space(10, "CV(I) = R(2*NDRUG + I)"),
+      space(8, "END DO"),
+      blank(1),
+      unlist(lapply(pvardef, function(x) space(8, x))),
+      unlist(lapply(covardef, function(x) space(8, x))),
+      unlist(lapply(svardef, function(x) space(8, x))),
+      blank(1),
+      unlist(lapply(blocks$output, function(x) space(8, x))),
+      blank(1),
+      space(5, "RETURN"),
+      space(5, "END"),
+      blank(3)
+    )
+    fmod$symbol <- c(
+      space(5, "SUBROUTINE SYMBOL"),
+      space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
+      space(5, vardec),
+      space(5, "CHARACTER PSYM(32)*11"),
+      space(5, "COMMON /CNST/ N,ND,NI,NUP,NUIC,NP"),
+      space(5, "COMMON/BOLUSCOMP/NBCOMP"),
+      space(5, "DIMENSION NBCOMP(7)"),
+      blank(2),
+      space(8, "DO I = 1,7"),
+      space(10, "NBCOMP(I) = I"),
+      space(8, "END DO"),
+      blank(1),
+      unlist(lapply(blocks$bolus, function(x) space(8, x))),
+      space(6, paste("N=", N, sep = "")),
+      space(6, paste("NP=", npvar, sep = "")),
+      unlist(lapply(psym, function(x) space(6, x))),
+      blank(1),
+      space(5, "RETURN"),
+      space(5, "END"),
+      blank(3)
+    )
+    fmod$getfa <- c(
+      space(5, "SUBROUTINE GETFA(FA)"),
+      space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
+      space(5, vardec),
+      space(5, "COMMON /PARAMD/ P"),
+      space(5, "COMMON /INPUT/ R,B"),
+      space(5, "COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG"),
+      space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
+      space(5, "COMMON /STATE/ X"),
+      space(5, "DIMENSION P(32),R(37),B(20),CV(26),FA(7),X(20)"),
+      "!$omp Threadprivate(/PARAMD/,/INPUT/)  ",
+      blank(2),
+      space(8, "DO I = 1, NADD"),
+      space(10, "CV(I) = R(2*NDRUG + I)"),
+      space(8, "END DO"),
+      blank(1),
+      space(8, "DO I = 1,NDRUG"),
+      space(10, "FA(I) = 1.D0"),
+      space(8, "END DO"),
+      blank(1),
+      unlist(lapply(pvardef, function(x) space(8, x))),
+      unlist(lapply(covardef, function(x) space(8, x))),
+      unlist(lapply(svardef, function(x) space(8, x))),
+      blank(1),
+      unlist(lapply(blocks$f, function(x) space(8, x))),
+      blank(1),
+      space(5, "RETURN"),
+      space(5, "END"),
+      blank(3)
+    )
+    fmod$getix <- c(
+      space(5, "SUBROUTINE GETIX(N,X)"),
+      space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
+      space(5, vardec),
+      space(5, "COMMON /PARAMD/ P"),
+      space(5, "COMMON /INPUT/ R,B"),
+      space(5, "COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG"),
+      space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
+      space(5, "DIMENSION P(32),R(37),B(20),CV(26),X(20)"),
+      "!$omp Threadprivate(/PARAMD/,/INPUT/)  ",
+      blank(2),
+      space(8, "DO I = 1, NADD"),
+      space(10, "CV(I) = R(2*NDRUG + I)"),
+      space(8, "END DO"),
+      blank(1),
+      space(8, "IF(N .GT. 0) THEN"),
+      space(10, "DO I = 1,N"),
+      space(12, "X(I) = 0.D0 "),
+      space(10, "END DO"),
+      space(8, "ENDIF"),
+      blank(1),
+      space(8, "IF(N .EQ. -1) THEN"),
+      space(10, "DO I = 1,3"),
+      space(12, "X(I) = 0.D0 "),
+      space(10, "END DO"),
+      space(8, "ENDIF"),
+      blank(1),
+      unlist(lapply(pvardef, function(x) space(8, x))),
+      unlist(lapply(covardef, function(x) space(8, x))),
+      unlist(lapply(svardef, function(x) space(8, x))),
+      blank(1),
+      unlist(lapply(blocks$ini, function(x) space(8, x))),
+      blank(1),
+      space(5, "RETURN"),
+      space(5, "END"),
+      blank(3)
+    )
+    fmod$gettlag <- c(
+      space(5, "SUBROUTINE GETTLAG(TLAG)"),
+      space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
+      space(5, vardec),
+      space(5, "COMMON /PARAMD/ P"),
+      space(5, "COMMON /INPUT/ R,B"),
+      space(5, "COMMON /DESCR/ AGE,HEIGHT,ISEX,IETHFLG"),
+      space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
+      space(5, "COMMON /STATE/ X"),
+      space(5, "DIMENSION P(32),R(37),B(20),CV(26),TLAG(7),X(20)"),
+      "!$omp Threadprivate(/PARAMD/,/INPUT/)  ",
+      blank(2),
+      space(8, "DO I = 1, NADD"),
+      space(10, "CV(I) = R(2*NDRUG + I)"),
+      space(8, "END DO"),
+      blank(1),
+      space(8, "DO I = 1,NDRUG"),
+      space(10, "TLAG(I) = 0.D0"),
+      space(8, "END DO"),
+      blank(1),
+      unlist(lapply(pvardef, function(x) space(8, x))),
+      unlist(lapply(covardef, function(x) space(8, x))),
+      unlist(lapply(svardef, function(x) space(8, x))),
+      blank(1),
+      unlist(lapply(blocks$lag, function(x) space(8, x))),
+      blank(1),
+      space(5, "RETURN"),
+      space(5, "END"),
+      blank(3)
+    )
+    fmod$anal3 <- c(
+      space(5, "SUBROUTINE ANAL3(X,TIN,TOUT)"),
+      space(5, "IMPLICIT REAL*8(A-H,O-Z)"),
+      space(5, vardec),
+      c("", space(5, paste("REAL*8 ", paste(missVars, collapse = ","), sep = "")))[1 + as.numeric(N > 0 & !is.na(missVars[1]))],
+      space(5, "COMMON /PARAMD/ P"),
+      space(5, "COMMON /INPUT/ R,B"),
+      space(5, "COMMON /RATESV/ KE,KA,KCP,KPC,V"),
+      space(5, "COMMON /CNST2/ NPL,NUMEQT,NDRUG,NADD"),
+      space(5, "DIMENSION X(20),P(32),R(37),B(20),CV(26)"),
+      "!$omp Threadprivate(/PARAMD/,/INPUT/,/RATESV/)   ",
+      blank(2),
+      space(8, "DO I = 1, NADD"),
+      space(10, "CV(I) = R(2*NDRUG + I)"),
+      space(8, "END DO"),
+      blank(1),
+      unlist(lapply(pvardef, function(x) space(8, x))),
+      unlist(lapply(covardef, function(x) space(8, x))),
+      unlist(lapply(svardef, function(x) space(8, x))),
+      blank(1),
+      space(8, "T=TOUT-TIN"),
+      space(8, "IF(KCP.EQ.0.0D0.AND.KPC.EQ.0.0D0) THEN"),
+      space(10, "IF(KA.EQ.0.0D0) ICASE=1"),
+      space(10, "IF(KA.NE.0.0D0) ICASE=2"),
+      space(8, "ELSE"),
+      space(10, "IF(KA.EQ.0.0D0) ICASE=3"),
+      space(10, "IF(KA.NE.0.0D0) ICASE=4"),
+      space(8, "ENDIF"),
+      space(8, "GO TO (100,200,300,400), ICASE"),
+      "C  CASE 1 SOLUTION - 1 COMP. NO 1ST ORDER INPUT",
+      "100     CALL CASE1(X(1),T)",
+      space(8, "TIN=TOUT"),
+      space(8, "RETURN"),
+      "C  CASE 2 SOLUTION - 1 COMP. + 1ST ORDER INPUT",
+      "200     CALL CASE2(X(1),X(2),T)",
+      space(8, "TIN=TOUT"),
+      space(8, "RETURN"),
+      "C  CASE 3 SOLUTION - 2 COMPARTMENT NO 1ST ORDER INPUT",
+      "300     CALL CASE3(X(1),X(2),T)",
+      space(8, "TIN=TOUT"),
+      space(8, "RETURN"),
+      "C CASE 4 SOLUTION - 2 COMP. + 1ST ORDER INPUT",
+      "400     CALL CASE4(X,T)",
+      space(8, "TIN=TOUT"),
+      space(8, "RETURN"),
+      space(8, "END"),
+      blank(1),
+      space(8, "SUBROUTINE CASE1(X2,T)"),
+      space(8, "IMPLICIT REAL*8(A-H,O-Z)"),
+      space(8, "REAL*8 KE,KA,KCP,KPC"),
+      space(8, "DIMENSION R(37),B(20)"),
+      space(8, "COMMON /RATESV/ KE,KA,KCP,KPC,V"),
+      space(8, "COMMON /INPUT/ R,B"),
+      "!$omp Threadprivate(/RATESV/,/INPUT/)  ",
+      space(8, "IF(KE.NE.0.0D0) GO TO 10"),
+      space(8, "X2=T*R(1)+X2"),
+      space(8, "RETURN"),
+      "10      EKET=DEXP(-KE*T)",
+      space(8, "X2=R(1)*(1.0D0-EKET)/KE+X2*EKET"),
+      space(8, "RETURN"),
+      space(8, "END"),
+      blank(1),
+      space(8, "SUBROUTINE CASE2(X1,X2,T)"),
+      space(8, "IMPLICIT REAL*8(A-H,O-Z)"),
+      space(8, "REAL*8 KE,KA,KCP,KPC"),
+      space(8, "COMMON /RATESV/ KE,KA,KCP,KPC,V"),
+      space(8, "COMMON /INPUT/ R,B"),
+      space(8, "DIMENSION R(37),B(20)"),
+      "!$omp Threadprivate(/RATESV/,/INPUT/)  ",
+      space(8, "IF(KA.NE.KE) GO TO 30"),
+      space(8, "EKT=DEXP(-KE*T)"),
+      space(8, "X2=(X2-R(1)/KE)*EKT+R(1)/KE+KE*X1*T*EKT"),
+      space(8, "X1=X1*DEXP(-KA*T)"),
+      space(8, "RETURN"),
+      "30      IF(KE.NE.0.0D0) GO TO 50",
+      space(8, "EKAT=DEXP(-KA*T)"),
+      space(8, "X2=X2+T*R(1)+X1*(1.0D0-EKAT)"),
+      space(8, "X1=X1*EKAT"),
+      space(8, "RETURN"),
+      "50      EKET=DEXP(-KE*T)",
+      space(8, "EKAT=DEXP(-KA*T)"),
+      space(8, "X2=X2*EKET+R(1)*(1.0D0-EKET)/KE+"),
+      space(4, "X    KA*X1*(EKET-EKAT)/(KA-KE)"),
+      space(8, "X1=X1*EKAT"),
+      space(8, "RETURN"),
+      space(8, "END"),
+      blank(1),
+      space(8, "SUBROUTINE CASE3(X2,X3,T)"),
+      space(8, "IMPLICIT REAL*8(A-H,O-Z)"),
+      space(8, "REAL*8 KE,KA,KCP,KPC,L1,L2"),
+      space(8, "COMMON /RATESV/ KE,KA,KCP,KPC,V"),
+      space(8, "COMMON /INPUT/ R,B"),
+      space(8, "DIMENSION EA(2,2),R(37),B(20)"),
+      "!$omp Threadprivate(/RATESV/,/INPUT/)  ",
+      space(8, "T1=KE+KCP+KPC"),
+      space(8, "T2=DSQRT(T1*T1-4.0D0*KE*KPC)"),
+      space(8, "L1=0.5D0*(T1+T2)"),
+      space(8, "L2=0.5D0*(T1-T2)"),
+      space(8, "IF(L2.NE.0.0D0) GO TO 200"),
+      space(8, "EL1T=DEXP(-L1*T)"),
+      space(8, "OEL1T=1.0D0-EL1T"),
+      space(8, "EA(1,1)=(L1-KPC)*EL1T+KPC"),
+      space(8, "EA(1,2)=KPC*OEL1T"),
+      space(8, "EA(2,1)=KCP*OEL1T"),
+      space(8, "EA(2,2)=(L1-KE-KCP)*EL1T+KE+KCP"),
+      space(8, "P1=R(1)*((1.0D0-KPC/L1)*OEL1T+KPC*T)"),
+      space(8, "P2=R(1)*((-KCP/L1)*OEL1T+KCP*T)"),
+      space(8, "C1=EA(1,1)*X2+EA(1,2)*X3+P1"),
+      space(8, "C2=EA(2,1)*X2+EA(2,2)*X3+P2"),
+      space(8, "X2=C1/L1"),
+      space(8, "X3=C2/L1"),
+      space(8, "RETURN"),
+      "200     CONTINUE",
+      space(8, "EL1T=DEXP(-L1*T) "),
+      space(8, "EL2T=DEXP(-L2*T)"),
+      space(8, "OEL1T=1.0D0-EL1T"),
+      space(8, "OEL2T=1.0D0-EL2T"),
+      space(8, "DEL2L1=EL2T-EL1T"),
+      space(8, "EA(1,1)=(L1-KPC)*EL1T+(KPC-L2)*EL2T"),
+      space(8, "EA(1,2)=KPC*DEL2L1"),
+      space(8, "EA(2,1)=KCP*DEL2L1"),
+      space(8, "EA(2,2)=(L1-KE-KCP)*EL1T+(KE+KCP-L2)*EL2T"),
+      space(8, "P1=R(1)*((1.0D0-KPC/L1)*OEL1T+(KPC/L2-1.0D0)*OEL2T)"),
+      space(8, "P2=R(1)*((-KCP/L1)*OEL1T+(KCP/L2)*OEL2T)"),
+      space(8, "D=L1-L2"),
+      space(8, "C1=EA(1,1)*X2+EA(1,2)*X3+P1"),
+      space(8, "C2=EA(2,1)*X2+EA(2,2)*X3+P2"),
+      space(8, "X2=C1/D"),
+      space(8, "X3=C2/D"),
+      space(8, "RETURN"),
+      space(8, "END"),
+      blank(1),
+      space(8, "SUBROUTINE CASE4(X,T)"),
+      space(8, "IMPLICIT REAL*8(A-H,O-Z)"),
+      space(8, "REAL*8 KE,KA,KCP,KPC,L1,L2"),
+      space(8, "COMMON /RATESV/ KE,KA,KCP,KPC,V"),
+      space(8, "COMMON /INPUT/ R,B"),
+      space(8, "DIMENSION EA(2,2),R(37),B(20),X(20)"),
+      "!$omp Threadprivate(/RATESV/,/INPUT/)  ",
+      space(8, "T1=KE+KCP+KPC"),
+      space(8, "T2=DSQRT(T1*T1-4.0D0*KE*KPC)"),
+      space(8, "L1=0.5D0*(T1+T2)"),
+      space(8, "L2=0.5D0*(T1-T2)"),
+      space(8, "IF(L2.NE.0.0D0) GO TO 200"),
+      space(8, "EL1T=DEXP(-L1*T)"),
+      space(8, "OEL1T=1.0D0-EL1T"),
+      space(8, "EA(1,1)=(L1-KPC)*EL1T+KPC"),
+      space(8, "EA(1,2)=KPC*OEL1T"),
+      space(8, "EA(2,1)=KCP*OEL1T"),
+      space(8, "EA(2,2)=(L1-KE-KCP)*EL1T+KE+KCP"),
+      space(8, "P1A=R(1)*((1.0D0-KPC/L1)*OEL1T+KPC*T)"),
+      space(8, "P2A=R(1)*((-KCP/L1)*OEL1T+KCP*T)"),
+      space(8, "EKAT=DEXP(-KA*T)"),
+      space(8, "RL1=(EL1T-EKAT)/(KA-L1)"),
+      space(8, "RKA=(1.0D0-EKAT)/KA"),
+      space(8, "P1B=KA*X(1)*((L1-KPC)*RL1+KPC*RKA)"),
+      space(8, "P2B=KA*X(1)*(-KCP*RL1+KCP*RKA)"),
+      space(8, "C1=EA(1,1)*X(2)+EA(1,2)*X(3)+P1A+P1B"),
+      space(8, "C2=EA(2,1)*X(2)+EA(2,2)*X(3)+P2A+P2B"),
+      space(8, "X(1)=X(1)*EKAT"),
+      space(8, "X(2)=C1/L1"),
+      space(8, "X(3)=C2/L1"),
+      space(8, "RETURN"),
+      "200     CONTINUE",
+      space(8, "EL1T=DEXP(-L1*T)"),
+      space(8, "EL2T=DEXP(-L2*T)"),
+      space(8, "EKAT=DEXP(-KA*T)"),
+      space(8, "OEL1T=1.0D0-EL1T"),
+      space(8, "OEL2T=1.0D0-EL2T"),
+      space(8, "DEL2L1=EL2T-EL1T"),
+      space(8, "EA(1,1)=(L1-KPC)*EL1T+(KPC-L2)*EL2T"),
+      space(8, "EA(1,2)=KPC*DEL2L1"),
+      space(8, "EA(2,1)=KCP*DEL2L1"),
+      space(8, "EA(2,2)=(L1-KE-KCP)*EL1T+(KE+KCP-L2)*EL2T"),
+      space(8, "P1A=R(1)*((1.0D0-KPC/L1)*OEL1T+(KPC/L2-1.0D0)*OEL2T)"),
+      space(8, "P2A=R(1)*((-KCP/L1)*OEL1T+(KCP/L2)*OEL2T)"),
+      space(8, "IF(KA.NE.L1) GO TO 240"),
+      space(8, "RL=DEL2L1/(L1-L2)"),
+      space(8, "P1B=L1*X(1)*(T*(L1-KPC)*EL1T+(KPC-L2)*RL)"),
+      space(8, "P2B=L1*X(1)*(-T*KCP*EL1T+KCP*RL)"),
+      space(8, "GO TO 300"),
+      "240     IF(KA.NE.L2) GO TO 280",
+      space(8, "RL=DEL2L1/(L1-L2)"),
+      space(8, "P1B=L2*X(1)*((L1-KPC)*RL+T*(KPC-L2)*EL2T)"),
+      space(8, "P2B=L2*X(1)*(-KCP*RL+T*KCP*EL2T)"),
+      space(8, "GO TO 300 "),
+      "280     RL1KA=(EL1T-EKAT)/(KA-L1)",
+      space(8, "RL2KA=(EL2T-EKAT)/(KA-L2)"),
+      space(8, "P1B=KA*X(1)*((L1-KPC)*RL1KA+(KPC-L2)*RL2KA)"),
+      space(8, "P2B=KA*X(1)*(-KCP*RL1KA+KCP*RL2KA)"),
+      "300     D=L1-L2",
+      space(8, "C1=EA(1,1)*X(2)+EA(1,2)*X(3)+P1A+P1B"),
+      space(8, "C2=EA(2,1)*X(2)+EA(2,2)*X(3)+P2A+P2B"),
+      space(8, "X(1)=X(1)*EKAT"),
+      space(8, "X(2)=C1/D"),
+      space(8, "X(3)=C2/D"),
+      space(8, "RETURN "),
+      space(8, "END")
+    )
+    
+    fmod$extra <- c(blank(2), unlist(lapply(blocks$extra, function(x) space(6, x))))
+    
+    modelFor <- paste(unlist(strsplit(model, "\\."))[1], "for", sep = ".")
+    writeLines(unlist(fmod), modelFor)
+    # check model file for errors
+    OS <- getOS()
+    compiler <- getPMoptions()$compilation_statements
+    
+    # build syntax check statement and check model if possible
+    fortran <- strsplit(compiler, " ")[[1]][1]
+    syntaxcheck <- NA
+    if (length(grep("gfortran", fortran) > 0)) {
       syntaxcheck <- paste(fortran, "-fsyntax-only", modelFor)
-    } else {
-      syntaxcheck <- paste(fortran, "/syntax-only", modelFor)
     }
-  }
-  if (length(grep("g95", fortran) > 0)) {
-    syntaxcheck <- paste(fortran, "-fsyntax-only", modelFor)
-  }
-
-  if (!is.na(syntaxcheck)) {
-    if (OS == 1 | OS == 3) {
-      modelErr <- system(syntaxcheck, intern = T)
-    } else {
-      modelErr <- shell(syntaxcheck, intern = T)
-    }
-    if (length(attr(modelErr, "status")) > 0) {
-      return(list(status = -1, msg = "\nYou have Fortran syntax errors in your model statments, as detailed above.\n"))
-    }
-  } else {
-    cat("\nYour fortran compiler does not support model syntax checking.\n")
-  }
-  # end of model file creation
-
-  # start instruction file creation if not SIM
-  if (engine$alg != "SIM" & write) {
-    instr <- vector("character")
-    if (engine$alg == "NP") {
-      instr[getNext(instr)] <- "REM_BAK OCT_15"
-    } else {
-      instr[getNext(instr)] <- "REM_FRN JUL_13"
-    }
-    if (length(engine$salt > 1)) engine$salt <- paste(engine$salt, collapse = "     ")
-    instr[getNext(instr)] <- " IVERIFY: 1 --> YES; 0 --> NO"
-    instr[getNext(instr)] <- 0
-    instr[getNext(instr)] <- " FORTRAN MODEL FILE"
-    instr[getNext(instr)] <- modelFor
-    instr[getNext(instr)] <- " NDIM"
-    instr[getNext(instr)] <- N
-    instr[getNext(instr)] <- " NP"
-    instr[getNext(instr)] <- npvar
-    instr[getNext(instr)] <- " IRAN INDICES"
-    instr[getNext(instr)] <- paste(ptype, collapse = "    ")
-    instr[getNext(instr)] <- " NVAR"
-    instr[getNext(instr)] <- nvar
-    instr[getNext(instr)] <- " PAR(I),I=1,NVAR"
-    instr[getNext(instr)] <- paste(blocks$primVar[which(abs(ptype) == 1)], collapse = "\n")
-    instr[getNext(instr)] <- " AB ARRAY"
-    instr[getNext(instr)] <- ab
-    instr[getNext(instr)] <- " NOFIX"
-    instr[getNext(instr)] <- nofix
-    instr[getNext(instr)] <- " PARFIX(I),I=1,NOFIX, IF NOFIX > 0"
-    if (any(ptype == 0)) {
-      instr[getNext(instr)] <- paste(blocks$primVar[which(ptype == 0)], collapse = "\n")
-    }
-    instr[getNext(instr)] <- " VALFIX ARRAY IF NOFIX > 0"
-    if (length(valfix) > 1) {
-      instr[getNext(instr)] <- paste(valfix, collapse = "    ")
-    } else {
-      instr[getNext(instr)] <- valfix
-    }
-    if (engine$alg == "NP") {
-      instr[getNext(instr)] <- "NRANFIX"
-      instr[getNext(instr)] <- nranfix
-      instr[getNext(instr)] <- " PARRANFIX(I),I=1,NRANFIX, IF NRANFIX > 0"
-      if (any(ptype == 2)) {
-        instr[getNext(instr)] <- paste(blocks$primVar[which(ptype == 2)], collapse = "\n")
-      }
-      instr[getNext(instr)] <- " RANFIXEST ARRAY IF NRANFIX > 0"
-      if (length(valranfix) > 1) {
-        instr[getNext(instr)] <- paste(valranfix, collapse = "    ")
+    # fortran syntax different for Windows and UNIX
+    if (length(grep("ifort", fortran) > 0)) {
+      if (OS == 1 | OS == 3) {
+        syntaxcheck <- paste(fortran, "-fsyntax-only", modelFor)
       } else {
-        instr[getNext(instr)] <- valranfix
+        syntaxcheck <- paste(fortran, "/syntax-only", modelFor)
       }
     }
-    instr[getNext(instr)] <- " O.D.E. TOLERANCE"
-    instr[getNext(instr)] <- 10**engine$ode
-    instr[getNext(instr)] <- " IFORMT"
-    if (!engine$wrkFlag) {
-      # not using old working copy files
-      instr[getNext(instr)] <- 1
-      instr[getNext(instr)] <- " BLOCKPAT"
-      instr[getNext(instr)] <- data
-      instr[getNext(instr)] <- " NCOVA"
-      instr[getNext(instr)] <- engine$ncov
-      instr[getNext(instr)] <- " COVNAME(I),I=1,NCOVA, IF NCOVA > 0"
-      instr[getNext(instr)] <- ifelse(engine$ncov > 0, paste(engine$covnames, collapse = "\n"), NA)
-      instr[getNext(instr)] <- " ICOVTYPE ARRAY IF NCOVA > 0"
-      instr[getNext(instr)] <- ifelse(engine$ncov > 0, paste(ctype, collapse = "    "), NA)
+    if (length(grep("g95", fortran) > 0)) {
+      syntaxcheck <- paste(fortran, "-fsyntax-only", modelFor)
+    }
+    
+    if (!is.na(syntaxcheck)) {
+      if (OS == 1 | OS == 3) {
+        modelErr <- system(syntaxcheck, intern = T)
+      } else {
+        modelErr <- shell(syntaxcheck, intern = T)
+      }
+      if (length(attr(modelErr, "status")) > 0) {
+        return(list(status = -1, msg = "\nYou have Fortran syntax errors in your model statments, as detailed above.\n"))
+      }
     } else {
-      # using old working copy files
-      instr[getNext(instr)] <- 2
-      instr[getNext(instr)] <- " PREFIX"
-      instr[getNext(instr)] <- "XQZPJ"
-      instr[getNext(instr)] <- " EXT"
-      instr[getNext(instr)] <- "ZMQ"
+      cat("\nYour fortran compiler does not support model syntax checking.\n")
     }
-
-    instr[getNext(instr)] <- " NSUBTOT"
-    instr[getNext(instr)] <- engine$nsubtot
-    instr[getNext(instr)] <- " NSUB"
-    instr[getNext(instr)] <- engine$nsub
-    instr[getNext(instr)] <- " ACTIVE PATIENT NUMBERS, FOLLOWED BY A LINE WITH 0"
-    instr[getNext(instr)] <- paste(engine$activesub, collapse = "\n")
-
-
-    if (engine$alg == "NP") {
-      # create NPAG instruction file
-      instr[getNext(instr)] <- " NUMEQT"
-      instr[getNext(instr)] <- engine$numeqt
-      instr[getNext(instr)] <- " NUMEQT LINES OF ASSAY COEFFICIENTS"
-      instr[getNext(instr)] <- asserr
-      instr[getNext(instr)] <- " IERRMOD"
-      instr[getNext(instr)] <- ierrmod
-      instr[getNext(instr)] <- " GAMLAM0"
-      instr[getNext(instr)] <- gamlam0
-      instr[getNext(instr)] <- " IASS(I),I=1,NUMEQT"
-      instr[getNext(instr)] <- iass
-      instr[getNext(instr)] <- " NDRUG"
-      instr[getNext(instr)] <- engine$ndrug
-      instr[getNext(instr)] <- " AF(I),I=1,NDRUG"
-      instr[getNext(instr)] <- engine$salt
-      instr[getNext(instr)] <- " INDPTS"
-      instr[getNext(instr)] <- indpts
-      instr[getNext(instr)] <- " MAXCYC"
-      instr[getNext(instr)] <- engine$cycles
-      instr[getNext(instr)] <- " JSTOP"
-      instr[getNext(instr)] <- 3
-      instr[getNext(instr)] <- " IF JSTOP .NE. 1, TOLC IS ON NEXT LINE"
-      instr[getNext(instr)] <- engine$tol
-      instr[getNext(instr)] <- " IDELTA"
-      instr[getNext(instr)] <- engine$idelta
-      instr[getNext(instr)] <- " XMIC"
-      instr[getNext(instr)] <- engine$xmic
-      instr[getNext(instr)] <- " ICENT, WHICH IS NOW IRRELEVANT"
-      instr[getNext(instr)] <- switch(engine$icen,
-        mean = 1,
-        median = 2,
-        mode = 3,
-        2
-      )
-      instr[getNext(instr)] <- " AUCINT"
-      instr[getNext(instr)] <- engine$aucint
-      instr[getNext(instr)] <- " INPRI"
-      instr[getNext(instr)] <- engine$priorString[1]
-      instr[getNext(instr)] <- " NAME OF APRIORI DENSITY FILE IF INPRI = 0"
-      instr[getNext(instr)] <- engine$priorString[2]
+    # end of model file creation
+    
+    # start instruction file creation if not SIM
+    if (engine$alg != "SIM" & write) {
+      instr <- vector("character")
+      if (engine$alg == "NP") {
+        instr[getNext(instr)] <- "REM_BAK OCT_15"
+      } else {
+        instr[getNext(instr)] <- "REM_FRN JUL_13"
+      }
+      if (length(engine$salt > 1)) engine$salt <- paste(engine$salt, collapse = "     ")
+      instr[getNext(instr)] <- " IVERIFY: 1 --> YES; 0 --> NO"
+      instr[getNext(instr)] <- 0
+      instr[getNext(instr)] <- " FORTRAN MODEL FILE"
+      instr[getNext(instr)] <- modelFor
+      instr[getNext(instr)] <- " NDIM"
+      instr[getNext(instr)] <- N
+      instr[getNext(instr)] <- " NP"
+      instr[getNext(instr)] <- npvar
+      instr[getNext(instr)] <- " IRAN INDICES"
+      instr[getNext(instr)] <- paste(ptype, collapse = "    ")
+      instr[getNext(instr)] <- " NVAR"
+      instr[getNext(instr)] <- nvar
+      instr[getNext(instr)] <- " PAR(I),I=1,NVAR"
+      instr[getNext(instr)] <- paste(blocks$primVar[which(abs(ptype) == 1)], collapse = "\n")
+      instr[getNext(instr)] <- " AB ARRAY"
+      instr[getNext(instr)] <- ab
+      instr[getNext(instr)] <- " NOFIX"
+      instr[getNext(instr)] <- nofix
+      instr[getNext(instr)] <- " PARFIX(I),I=1,NOFIX, IF NOFIX > 0"
+      if (any(ptype == 0)) {
+        instr[getNext(instr)] <- paste(blocks$primVar[which(ptype == 0)], collapse = "\n")
+      }
+      instr[getNext(instr)] <- " VALFIX ARRAY IF NOFIX > 0"
+      if (length(valfix) > 1) {
+        instr[getNext(instr)] <- paste(valfix, collapse = "    ")
+      } else {
+        instr[getNext(instr)] <- valfix
+      }
+      if (engine$alg == "NP") {
+        instr[getNext(instr)] <- "NRANFIX"
+        instr[getNext(instr)] <- nranfix
+        instr[getNext(instr)] <- " PARRANFIX(I),I=1,NRANFIX, IF NRANFIX > 0"
+        if (any(ptype == 2)) {
+          instr[getNext(instr)] <- paste(blocks$primVar[which(ptype == 2)], collapse = "\n")
+        }
+        instr[getNext(instr)] <- " RANFIXEST ARRAY IF NRANFIX > 0"
+        if (length(valranfix) > 1) {
+          instr[getNext(instr)] <- paste(valranfix, collapse = "    ")
+        } else {
+          instr[getNext(instr)] <- valranfix
+        }
+      }
+      instr[getNext(instr)] <- " O.D.E. TOLERANCE"
+      instr[getNext(instr)] <- 10**engine$ode
+      instr[getNext(instr)] <- " IFORMT"
+      if (!engine$wrkFlag) {
+        # not using old working copy files
+        instr[getNext(instr)] <- 1
+        instr[getNext(instr)] <- " BLOCKPAT"
+        instr[getNext(instr)] <- data
+        instr[getNext(instr)] <- " NCOVA"
+        instr[getNext(instr)] <- engine$ncov
+        instr[getNext(instr)] <- " COVNAME(I),I=1,NCOVA, IF NCOVA > 0"
+        instr[getNext(instr)] <- ifelse(engine$ncov > 0, paste(engine$covnames, collapse = "\n"), NA)
+        instr[getNext(instr)] <- " ICOVTYPE ARRAY IF NCOVA > 0"
+        instr[getNext(instr)] <- ifelse(engine$ncov > 0, paste(ctype, collapse = "    "), NA)
+      } else {
+        # using old working copy files
+        instr[getNext(instr)] <- 2
+        instr[getNext(instr)] <- " PREFIX"
+        instr[getNext(instr)] <- "XQZPJ"
+        instr[getNext(instr)] <- " EXT"
+        instr[getNext(instr)] <- "ZMQ"
+      }
+      
+      instr[getNext(instr)] <- " NSUBTOT"
+      instr[getNext(instr)] <- engine$nsubtot
+      instr[getNext(instr)] <- " NSUB"
+      instr[getNext(instr)] <- engine$nsub
+      instr[getNext(instr)] <- " ACTIVE PATIENT NUMBERS, FOLLOWED BY A LINE WITH 0"
+      instr[getNext(instr)] <- paste(engine$activesub, collapse = "\n")
+      
+      
+      if (engine$alg == "NP") {
+        # create NPAG instruction file
+        instr[getNext(instr)] <- " NUMEQT"
+        instr[getNext(instr)] <- engine$numeqt
+        instr[getNext(instr)] <- " NUMEQT LINES OF ASSAY COEFFICIENTS"
+        instr[getNext(instr)] <- asserr
+        instr[getNext(instr)] <- " IERRMOD"
+        instr[getNext(instr)] <- ierrmod
+        instr[getNext(instr)] <- " GAMLAM0"
+        instr[getNext(instr)] <- gamlam0
+        instr[getNext(instr)] <- " IASS(I),I=1,NUMEQT"
+        instr[getNext(instr)] <- iass
+        instr[getNext(instr)] <- " NDRUG"
+        instr[getNext(instr)] <- engine$ndrug
+        instr[getNext(instr)] <- " AF(I),I=1,NDRUG"
+        instr[getNext(instr)] <- engine$salt
+        instr[getNext(instr)] <- " INDPTS"
+        instr[getNext(instr)] <- indpts
+        instr[getNext(instr)] <- " MAXCYC"
+        instr[getNext(instr)] <- engine$cycles
+        instr[getNext(instr)] <- " JSTOP"
+        instr[getNext(instr)] <- 3
+        instr[getNext(instr)] <- " IF JSTOP .NE. 1, TOLC IS ON NEXT LINE"
+        instr[getNext(instr)] <- engine$tol
+        instr[getNext(instr)] <- " IDELTA"
+        instr[getNext(instr)] <- engine$idelta
+        instr[getNext(instr)] <- " XMIC"
+        instr[getNext(instr)] <- engine$xmic
+        instr[getNext(instr)] <- " ICENT, WHICH IS NOW IRRELEVANT"
+        instr[getNext(instr)] <- switch(engine$icen,
+                                        mean = 1,
+                                        median = 2,
+                                        mode = 3,
+                                        2
+        )
+        instr[getNext(instr)] <- " AUCINT"
+        instr[getNext(instr)] <- engine$aucint
+        instr[getNext(instr)] <- " INPRI"
+        instr[getNext(instr)] <- engine$priorString[1]
+        instr[getNext(instr)] <- " NAME OF APRIORI DENSITY FILE IF INPRI = 0"
+        instr[getNext(instr)] <- engine$priorString[2]
+      }
+      if (engine$alg == "IT" | engine$alg == "ERR") {
+        # create IT2B/ERR instruction file
+        instr[getNext(instr)] <- " XSIG"
+        instr[getNext(instr)] <- engine$xsig
+        instr[getNext(instr)] <- " NUMEQT"
+        instr[getNext(instr)] <- engine$numeqt
+        instr[getNext(instr)] <- " NUMEQT SETS OF IGAMMA,Cs,IASS,IQVAL"
+        instr[getNext(instr)] <- comberr
+        instr[getNext(instr)] <- " NDRUG"
+        instr[getNext(instr)] <- engine$ndrug
+        instr[getNext(instr)] <- " AF(I),I=1,NDRUG"
+        instr[getNext(instr)] <- engine$salt
+        instr[getNext(instr)] <- " TOL"
+        instr[getNext(instr)] <- engine$tol
+        instr[getNext(instr)] <- " MAXIT"
+        instr[getNext(instr)] <- engine$cycles
+        instr[getNext(instr)] <- " XDEV"
+        instr[getNext(instr)] <- engine$xdev
+      }
+      instr <- instr[!is.na(instr)]
+      writeLines(instr, "instr.inx")
     }
-    if (engine$alg == "IT" | engine$alg == "ERR") {
-      # create IT2B/ERR instruction file
-      instr[getNext(instr)] <- " XSIG"
-      instr[getNext(instr)] <- engine$xsig
-      instr[getNext(instr)] <- " NUMEQT"
-      instr[getNext(instr)] <- engine$numeqt
-      instr[getNext(instr)] <- " NUMEQT SETS OF IGAMMA,Cs,IASS,IQVAL"
-      instr[getNext(instr)] <- comberr
-      instr[getNext(instr)] <- " NDRUG"
-      instr[getNext(instr)] <- engine$ndrug
-      instr[getNext(instr)] <- " AF(I),I=1,NDRUG"
-      instr[getNext(instr)] <- engine$salt
-      instr[getNext(instr)] <- " TOL"
-      instr[getNext(instr)] <- engine$tol
-      instr[getNext(instr)] <- " MAXIT"
-      instr[getNext(instr)] <- engine$cycles
-      instr[getNext(instr)] <- " XDEV"
-      instr[getNext(instr)] <- engine$xdev
-    }
-    instr <- instr[!is.na(instr)]
-    writeLines(instr, "instr.inx")
-  }
-  # end instruction file creation
-
+    # end instruction file creation
+    # 
+  } #end if backend is fortran
+  
   # write report
   if (!quiet) {
     cat(paste("\nModel solver mode: ", switch(letters[N + 2],
-      a = "Algebraic",
-      b = "Exact",
-      "ODE"
+                                              a = "Algebraic",
+                                              b = "Exact",
+                                              "ODE"
     ), sep = ""))
     if (N > 0) {
       numcomp <- N
@@ -1635,15 +1641,25 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     cat(paste("\nCovariates used in model file: ", c(paste(blocks$covar, collapse = ", "), "None")[1 + as.numeric(blocks$covar[1] == "")]))
     cat(paste("\nSecondary Variables: ", paste(secVarNames, collapse = ", "), sep = ""))
     cat(paste("\nModel conditions: ", c("bioavailability term defined, ", "no bioavailability term defined, ")[1 + as.numeric(blocks$f[1] == "")],
-      c("initial conditions are not zero, ", "initial conditions are zero, ")[1 + as.numeric(blocks$ini[1] == "")],
-      c("lag term defined", "no lag term defined")[1 + as.numeric(blocks$lag[1] == "")],
-      sep = ""
+              c("initial conditions are not zero, ", "initial conditions are zero, ")[1 + as.numeric(blocks$ini[1] == "")],
+              c("lag term defined", "no lag term defined")[1 + as.numeric(blocks$lag[1] == "")],
+              sep = ""
     ))
     if (engine$alg != "SIM") cat(paste("\nNumber of cycles to run:", engine$cycles))
     cat("\n\n")
   }
   # end if quiet
-  return(list(status = 1, modelFor = modelFor, N = N, ptype = ptype, ctype = ctype, nvar = nvar, nofix = nofix, nranfix = nranfix, valfix = valfix, ab = ab.df, indpts = indpts, asserr = asserr, blocks = blocks))
+  if(getPMoptions("backend") == "rust"){
+    model_file <- "main.rs"
+  } else {
+    model_file <- modelFor
+  }
+  
+  ret_list <- list(status = 1, N = N, ptype = ptype, model = model_file,
+                   ctype = ctype, nvar = nvar, nofix = nofix, nranfix = nranfix, 
+                   valfix = valfix, ab = ab.df, indpts = indpts, 
+                   asserr = asserr, blocks = blocks)
+  return(ret_list)
 }
 # end makeModel function
 
@@ -1662,7 +1678,7 @@ endNicely <- function(message, model = -99, data = -99) {
     "it2b*.*", "itas*.*", "it_prep*", "it_run*", "itlog.txt", "ITcontrol", "itscript*", "instr.inx",
     "assdriv.f", "err_prep*", "err_run*", "ERRcontrol", "errscript*", "errlog.txt"
   ))
-
+  
   if (length(cleanUp) > 0) file.remove(cleanUp)
   stop(message, call. = F)
 }
@@ -1682,8 +1698,8 @@ var.wt <- function(x, w, na.rm = FALSE) {
 # weighted t test
 weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.sided", na.rm = TRUE) {
   if (!missing(conf.level) &
-    (length(conf.level) != 1 || !is.finite(conf.level) ||
-      conf.level < 0 || conf.level > 1)) {
+      (length(conf.level) != 1 || !is.finite(conf.level) ||
+       conf.level < 0 || conf.level > 1)) {
     stop("'conf.level' must be a single number between 0 and 1")
   }
   # see if x came from PM_op object
@@ -1692,29 +1708,29 @@ weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.side
     x <- x$d
     mu <- 0
   }
-
+  
   if (na.rm) {
     w <- w[i <- !is.na(x)]
     x <- x[i]
   }
-
+  
   # to achieve consistent behavior in loops, return NA-structure in case of complete missings
   if (sum(is.na(x)) == length(x)) {
     return(list(estimate = NA, se = NA, conf.int = NA, statistic = NA, df = NA, p.value = NA))
   }
-
+  
   # if only one value is present: this is the best estimate, no significance test provided
   if (sum(!is.na(x)) == 1) {
     warning("Warning weighted.t.test: only one value provided; this value is returned without test of significance!", call. = FALSE)
     return(list(estimate = x[which(!is.na(x))], se = NA, conf.int = NA, statistic = NA, df = NA, p.value = NA))
   }
-
+  
   x.w <- weighted.mean(x, w, na.rm = na.rm)
   var.w <- var.wt(x, w, na.rm = na.rm)
   df <- length(x) - 1
   t.value <- sqrt(length(x)) * ((x.w - mu) / sqrt(var.w))
   se <- sqrt(var.w) / sqrt(length(x))
-
+  
   if (alternative == "less") {
     pval <- pt(t.value, df)
     cint <- c(-Inf, x.w + se * qt(conf.level, df))
@@ -1726,7 +1742,7 @@ weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.side
     alpha <- 1 - conf.level
     cint <- x.w + se * qt(1 - alpha / 2, df) * c(-1, 1)
   }
-
+  
   names(t.value) <- "t"
   return(list(estimate = x.w, se = se, conf.int = cint, statistic = t.value, df = df, p.value = pval))
 }
@@ -1753,9 +1769,9 @@ FileExists <- function(filename) {
     while (!file.exists(filename)) { # oops, filename doesn't exist
       cat(paste0(filename, " does not exist in ", getwd(), ".\n"))
       filename <- tryCatch(readline("Enter another filename or 'ESC' to quit: \n"),
-        interrupt = function(e) {
-          stop("No filename. Function aborted.\n", call. = F)
-        }
+                           interrupt = function(e) {
+                             stop("No filename. Function aborted.\n", call. = F)
+                           }
       )
     }
   }
@@ -1767,9 +1783,9 @@ FileExists <- function(filename) {
 
 getOS <- function() {
   OS <- switch(Sys.info()[1],
-    Darwin = 1,
-    Windows = 2,
-    Linux = 3
+               Darwin = 1,
+               Windows = 2,
+               Linux = 3
   )
   return(OS)
 }
@@ -1841,7 +1857,7 @@ getCov <- function(mdata) {
     covstart <- NA
     covend <- NA
   }
-
+  
   return(list(ncov = ncov, covnames = covnames, covstart = covstart, covend = covend))
 }
 
@@ -1879,7 +1895,7 @@ checkRequiredPackages <- function(pkg, repos = "CRAN", quietly = TRUE) {
     } else { # package is not installed
       cat(paste0("The package ", thisPkg, " is required and will be installed.\n"))
       if (repos == "CRAN") {
-       install.packages(thisPkg, dependencies = TRUE, verbose = FALSE, quiet = TRUE) # try to install
+        install.packages(thisPkg, dependencies = TRUE, verbose = FALSE, quiet = TRUE) # try to install
       } else {
         tryCatch(remotes::install_github(repos), error = function(e) FALSE)
       }
@@ -1890,14 +1906,14 @@ checkRequiredPackages <- function(pkg, repos = "CRAN", quietly = TRUE) {
       } # nope, still didn't install
     }
   }
-
+  
   msg <- pkg %>%
     map_chr(managePkgs) %>%
     keep(~ . != "ok")
-
+  
   if(length(msg)>0){
     if(!quietly){cat(crayon::red("\nError:"), "The following packages needed for this function did not install:",
-        paste(msg, collapse = ", "))
+                     paste(msg, collapse = ", "))
     }
     return(invisible(FALSE))
   }
@@ -1941,7 +1957,7 @@ obsStatus <- function(data) {
 
 binaries.installed <- function() {
   # checkRequiredPackages("purrr")
-
+  
   # #library(purrr)
   # exists <- function(name) {
   #   paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/") %>%
@@ -1952,7 +1968,7 @@ binaries.installed <- function() {
   #   "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
   #   "sNPeng.o", "sNPprep.o", "sSIMeng.o") %>%
   # map(exists) %>% unlist() %>% all() %>% return()
-
+  
   exists <- function(name) {
     file.exists(paste0(system.file("", package = "Pmetrics"), "compiledFortran/", name))
   }
@@ -1982,17 +1998,17 @@ template <- function(name) {
 weighted_median <- function(values, weights) {
   # Combine values and weights into a data frame
   data <- data.frame(values = values, weights = weights)
-
+  
   # Sort the data by values
   data <- data[order(data$values, decreasing = TRUE), ]
-
+  
   # Calculate the cumulative sum of weights
   data$cum_weights <- cumsum(data$weights)
-
+  
   # Find the median value
   total_weight <- sum(weights)
   median_value <- NULL
-
+  
   for (i in 1:nrow(data)) {
     if (data$cum_weights[i] >= total_weight / 2) {
       if (data$cum_weights[i] == total_weight / 2) {
@@ -2002,7 +2018,7 @@ weighted_median <- function(values, weights) {
         # Interpolate the median value
         prev_cum_weight <- data$cum_weights[i - 1]
         prev_value <- data$values[i - 1]
-
+        
         # Calculate the weighted median using linear interpolation
         median_value <- prev_value + (0.5 * total_weight - prev_cum_weight) *
           (data$values[i] - prev_value) / (data$cum_weights[i] - prev_cum_weight)
@@ -2010,7 +2026,7 @@ weighted_median <- function(values, weights) {
       break
     }
   }
-
+  
   return(median_value)
 }
 
