@@ -41,7 +41,7 @@ sim2 <- PM_sim$new(poppar = run1, data = "newfile.csv", ...)
 
 # These methods are entirely interchangeable. The first can accept a different
 # data template. The difference is that poppar must be explicitly
-# declared when using PM_sim$new. This makes it the method to use when poppar 
+# declared when using PM_sim$new. This makes it the method to use when poppar
 # is derived from the literature.
 
 # An example of a manual prior
@@ -195,7 +195,7 @@ file. 3) The third option is a numeric vector of length 1 or 2, e.g. \code{limit
 model file.  If length 1, then the lower limits will be the same as in the
 model file, and the upper limits will be multiplied by value specified.  If
 length 2, then the lower and upper limits will be multiplied by the
-specified values.  If this option is used, \code{popppar} must be a
+specified values.  If this option is used, \code{poppar} must be a
 \code{PM_final} object. 4) The fourth option for limits is a fully
 customized matrix of limits for simulated values for each parameter which
 will overwrite any limits in the model file.  If specified, it should be a
@@ -467,7 +467,7 @@ sim2 <- PM_sim$new(poppar = run1, data = "newfile.csv", ...)
 
 # These methods are entirely interchangeable. The first can accept a different
 # data template. The difference is that poppar must be explicitly
-# declared when using PM_sim$new. This makes it the method to use when poppar 
+# declared when using PM_sim$new. This makes it the method to use when poppar
 # is derived from the literature.
 
 # An example of a manual prior
