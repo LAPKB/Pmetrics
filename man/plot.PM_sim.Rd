@@ -62,6 +62,20 @@ Example: \code{line = list(probs = c(0.25, 0.5, 0.75))}.
 \item \code{color} Vector of color names whose order corresponds to \code{probs}.
 If shorter than \code{probs}, will be recycled. Default is "dodgerblue".
 Examples: \code{line = list(color = "red")} or \code{line = list(color = c("red", "blue"))}.
+\item \code{fill} Fill color between quantile lines. Can be specified in several ways:
+\itemize{
+\item \code{FALSE} (the default) will not fill between lines.
+\item \code{TRUE} will fill between lines with a default color of "dodgerblue", opacity 0.2.
+\item A list with the following elements:
+\itemize{
+\item \code{color} Fill color name. Default is "dodgerblue", e.g., \code{fill = list(color = "red")}.
+\item \code{opacity} Fill opacity. Default is 0.2 e.g., \code{fill = list(opacity = 0.3)}.
+\item \code{probs} Vector of paired quantiles to fill between. Default is the minimum and maximum
+quantile specified in \code{probs}, or \code{fill = list(probs = c(0.05, 0.95))} if not specified.
+This can be pairs of values to fill between, e.g., \code{fill = list(probs = c(0.25, 0.5, 0.75, 0.95))},
+which will color between 0.25 and 0.5, and again between 0.75 and 0.95.
+}
+}
 \item \code{width} Vector of widths in pixels, as for \code{color}. Default is 1.
 Example: \code{line = list(width = 2)}.
 \item \code{dash} Vector of dash types, as for color. Default is "solid".

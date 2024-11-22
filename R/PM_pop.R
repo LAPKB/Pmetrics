@@ -98,17 +98,17 @@ PM_pop <- R6::R6Class(
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       rlang::try_fetch(makeAUC(self, ...),
-                       error = function(e){
-                         cli::cli_warn("Unable to generate AUC.", parent = e)
-                         return(NULL)
-                       })
+        error = function(e) {
+          cli::cli_warn("Unable to generate AUC.", parent = e)
+          return(NULL)
+        }
+      )
     }
   ), # end public
   private = list(
     make = function(data) {
       if (getPMoptions("backend") == "rust") {
-        
-        if(file.exists("op.csv")){
+        if (file.exists("op.csv")) {
           raw <- readr::read_csv(file = "op.csv", show_col_types = FALSE)
         } else {
           cli::cli_abort(c("x" = "{.file {getwd()}/op.csv} does not exist."))
@@ -308,7 +308,7 @@ plot.PM_pop <- function(x,
 
   x <- if (inherits(x, "PM_pop")) {
     x$data
-  } 
+  }
 
   # process marker
   marker <- amendMarker(marker)

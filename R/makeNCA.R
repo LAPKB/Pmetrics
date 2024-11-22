@@ -30,7 +30,7 @@
 #' concentrations.  Default is `FALSE`. Ignored if an IT2B run is
 #' used to supply the raw data file.
 #' @param include A vector of subject IDs to include in the NCA, e.g. c(1:3,5,15)
-#' @param exclude A vector of subject IDs to exclude in the NCA, e.g. c(4,6:14,16:20). 
+#' @param exclude A vector of subject IDs to exclude in the NCA, e.g. c(4,6:14,16:20).
 #' When `postPred` is `TRUE`, any subject(s) excluded from the IT2B/NPAG run will be excluded as well.
 #' @param input The number of the input (e.g. drug) to analyze; default 1.
 #' @param icen If `postPred` is `TRUE`, use predictions based on median or mean of each
@@ -400,22 +400,24 @@ makeNCA <- function(x, postPred = F, include, exclude, input = 1, icen = "median
 
     # AUC
     auc <- rlang::try_fetch(makeAUC(temp, out ~ tad, icen = icen, outeq = outeq, block = block)$tau,
-                            error = function(e){
-                              cli::cli_warn("Unable to generate AUC.", parent = e)
-                              return(NULL)
-                            })
-      
+      error = function(e) {
+        cli::cli_warn("Unable to generate AUC.", parent = e)
+        return(NULL)
+      }
+    )
+
     NCA[i, 2] <- ifelse(length(auc) == 0, NA, auc)
 
     # AUMC
     temp2 <- data.frame(id = temp$id, tad = temp$tad, out = temp$tad * temp$out)
     aumc <- rlang::try_fetch(makeAUC(temp2, out ~ tad, icen = icen, outeq = outeq, block = block)$tau,
-                             error = function(e){
-                               cli::cli_warn("Unable to generate AUC.", parent = e)
-                               return(NULL)
-                             })
-    
-      
+      error = function(e) {
+        cli::cli_warn("Unable to generate AUC.", parent = e)
+        return(NULL)
+      }
+    )
+
+
     NCA[i, 3] <- ifelse(length(aumc) == 0, NA, aumc)
 
     if (nrow(temp) >= 5) {

@@ -13,11 +13,12 @@ PMtest <- function() {
   setwd(tempwd)
   # check for PmetricsData
   if (!requireNamespace("PmetricsData", quietly = TRUE)) {
-    cat(crayon::red("Error: "), "PmetricsData package required for PMtest()\n",
-        "Run remotes::install_github('LAPKB/PmetricsData') to install.\n",
-        "Aborting test.\n")
+    cat(
+      crayon::red("Error: "), "PmetricsData package required for PMtest()\n",
+      "Run remotes::install_github('LAPKB/PmetricsData') to install.\n",
+      "Aborting test.\n"
+    )
     return(invisible(NULL))
-    
   }
   NPex <- NULL # avoid R CMD check flag
   data(NPex, package = "PmetricsData", envir = environment())
