@@ -21,5 +21,8 @@ file_exists <- function(path) .Call(wrap__file_exists, path)
 #'@export
 simulate <- function(data_path, model_path, spp) .Call(wrap__simulate, data_path, model_path, spp)
 
+#'@export
+compile_model <- function(model_path, output_path, params) invisible(.Call(wrap__compile_model, model_path, output_path, params))
+
 
 # nolint end
