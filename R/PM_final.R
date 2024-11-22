@@ -186,18 +186,17 @@ PM_final <- R6::R6Class(
   private = list(
     make = function(data) {
       if (getPMoptions("backend") == "rust") {
-        
-        if(file.exists("theta.csv")){
+        if (file.exists("theta.csv")) {
           theta <- readr::read_csv(file = "theta.csv", show_col_types = FALSE)
         } else {
           cli::cli_abort(c("x" = "{.file {getwd()}/theta.csv} does not exist."))
         }
-        if(file.exists("obs.csv")){
+        if (file.exists("obs.csv")) {
           post <- readr::read_csv(file = "posterior.csv", show_col_types = FALSE)
         } else {
           cli::cli_abort(c("x" = "{.file {getwd()}/posterior.csv} does not exist."))
         }
-        if(file.exists("settings.json")){
+        if (file.exists("settings.json")) {
           config <- jsonlite::fromJSON("settings.json")
         } else {
           cli::cli_abort(c("x" = "{.file {getwd()}/settings.json} does not exist."))
@@ -246,7 +245,7 @@ PM_final <- R6::R6Class(
           summarise(across(.cols = -c(point, prob), .fns = function(x) {
             sd(x)**2
           }))
-        
+
         cov_cor <- post %>%
           split(post$id) %>%
           map(\(x){
@@ -254,20 +253,20 @@ PM_final <- R6::R6Class(
             mat <- x %>% select(-c(point, prob))
             cov.wt(mat, wt, cor = TRUE)
           })
-        
+
         postCov <- cov_cor %>%
-          map(\(x) as.data.frame(x$cov)) 
-        
+          map(\(x) as.data.frame(x$cov))
+
         postCor <- cov_cor %>%
-          map(\(x) as.data.frame(x$cor)) 
-        
+          map(\(x) as.data.frame(x$cor))
+
         postMed <- post %>%
           group_by(id) %>%
           reframe(across(-c(point, prob), \(x) weighted_median(x, prob))) # in PMutilities
 
         # shrinkage
         varEBD <- postVar %>% summarize(across(-id, \(x) mean(x, na.rm = TRUE)))
-        sh <- varEBD/popSD**2
+        sh <- varEBD / popSD**2
 
         # ranges
         ab <- config$random %>%
@@ -414,11 +413,11 @@ PM_final <- R6::R6Class(
               postCor[, , i] <- ret$cor
             }
           }
-          
-          #convert to same format as rust
+
+          # convert to same format as rust
           postCov <- apply(postCov, 3, as.data.frame, simplify = FALSE)
           postCor <- apply(postCor, 3, as.data.frame, simplify = FALSE)
-          
+
 
           postMed <- data.frame(id = data$sdata$id, t(data$baddl[6, , ]))
 
@@ -623,10 +622,10 @@ plot.PM_final <- function(x,
                           static = FALSE,
                           ...) {
   # housekeeping
-  
+
   if (inherits(x, "PM_final")) {
     x <- x$data
-  } 
+  }
   if (inherits(x, "NPAG")) {
     type <- "NPAG"
 
@@ -688,7 +687,7 @@ plot.PM_final <- function(x,
   names(ab) <- c("min", "max")
   ab$par <- names(data$popMean)
 
-  #plot functions for univariate
+  # plot functions for univariate
   uniPlot <- function(.data, .par, .min, .max, type, bar, xlab, ylab, title, .prior = NULL, height = NULL) {
     p <- .data %>%
       plotly::plot_ly(x = ~value, y = ~prob, height = height)
@@ -1023,7 +1022,7 @@ plot.PM_final <- function(x,
           ab[to_standardize, 1] <- min(ab[to_standardize, 1])
           ab[to_standardize, 2] <- max(ab[to_standardize, 2])
         } else {
-          cli::cli_abort(c("x"="Requested standardization parameters are not in model."))
+          cli::cli_abort(c("x" = "Requested standardization parameters are not in model."))
         }
       }
       ab_alpha <- ab %>% arrange(par)
