@@ -30,7 +30,6 @@ pub(crate) fn execute(
     assert!(meta.get_params().len() == support_point.len());
     SimulationRow::from_subject_predictions(
         eq.estimate_predictions(subject, support_point),
-        0,
         subject.id(),
     )
 }

@@ -69,3 +69,8 @@ extendr_module! {
     fn compile_model;
     fn dummy_compile;
 }
+
+// To generate the exported function in R, run the following command:
+// rextendr::document()
+// Optional: reload Pmetrics
+// devtools::load_all()

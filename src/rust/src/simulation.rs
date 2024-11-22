@@ -9,7 +9,6 @@ use pmcore::prelude::{
 #[derive(Debug, IntoDataFrameRow)]
 pub struct SimulationRow {
     id: String,
-    spp_index: usize,
     time: f64,
     out: f64,
     outeq: usize,
@@ -20,7 +19,6 @@ pub struct SimulationRow {
 impl SimulationRow {
     pub fn new(
         id: &str,
-        spp_index: usize,
         time: f64,
         out: f64,
         outeq: usize,
@@ -29,7 +27,6 @@ impl SimulationRow {
     ) -> Self {
         Self {
             id: id.to_string(),
-            spp_index,
             time,
             out,
             outeq,
@@ -40,12 +37,11 @@ impl SimulationRow {
 }
 
 impl SimulationRow {
-    fn from_prediction(prediction: &Prediction, spp_index: usize, id: &str) -> Vec<Self> {
+    fn from_prediction(prediction: &Prediction, id: &str) -> Vec<Self> {
         let mut rows = Vec::new();
         for (i, state) in prediction.state().iter().enumerate() {
             rows.push(Self::new(
                 id,
-                spp_index,
                 prediction.time(),
                 prediction.prediction(),
                 prediction.outeq(),
@@ -58,12 +54,11 @@ impl SimulationRow {
 
     pub fn from_subject_predictions(
         subject_predictions: SubjectPredictions,
-        spp_index: usize,
         id: &str,
     ) -> Vec<Self> {
         let mut rows = Vec::new();
         for prediction in subject_predictions.get_predictions().iter() {
-            rows.extend(Self::from_prediction(prediction, spp_index, id));
+            rows.extend(Self::from_prediction(prediction, id));
         }
         rows
     }
