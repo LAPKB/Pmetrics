@@ -1,3 +1,4 @@
+mod compile;
 mod execute;
 mod simulation;
 
@@ -35,6 +36,13 @@ fn simulate(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<Simulat
     rows.into_dataframe().unwrap()
 }
 
+///@export
+#[extendr]
+fn compile_model(model_path: &str, output_path: &str, params: Strings) {
+    let params: Vec<String> = params.iter().map(|x| x.to_string()).collect();
+    compile::compile(model_path.into(), Some(output_path.into()), params.to_vec());
+}
+
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
 // See corresponding C code in `entrypoint.c`.
@@ -43,4 +51,5 @@ extendr_module! {
     fn hello_world;
     fn file_exists;
     fn simulate;
+    fn compile_model;
 }
