@@ -19,3 +19,4 @@ compile.*
 logo.png
 ^vignettes/articles$
 ^Archived/
+^src/\.cargo$
