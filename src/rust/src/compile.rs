@@ -132,14 +132,6 @@ fn create_template() -> Result<PathBuf, io::Error> {
         io::stderr().write_all(&output.stderr)?;
         io::stdout().write_all(&output.stdout)?;
 
-        // if !template_dir.join("src/lib.rs").exists() {
-        //     fs::create_dir_all(template_dir.join("src"))?;
-        //     fs::write(
-        //         template_dir.join("src/lib.rs"),
-        //         "// Empty library file for the initial template",
-        //     )?;
-        // }
-
         let cargo_toml_path = template_dir.join("Cargo.toml");
         let cargo_toml_content = r#"
         [package]
