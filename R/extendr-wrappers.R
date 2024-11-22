@@ -11,19 +11,19 @@
 NULL
 
 #' Simulates the first subject in the data set using the model at the given path.
-#'@export
+#' @export
 simulate_one <- function(data_path, model_path, spp) .Call(wrap__simulate_one, data_path, model_path, spp)
 
 #' Simulates all subjects in the data set using the model at the given path.
-#'@export
+#' @export
 simulate_all <- function(data_path, model_path, spp) .Call(wrap__simulate_all, data_path, model_path, spp)
 
 #' Compiles the text representation of a model into a binary file.
-#'@export
+#' @export
 compile_model <- function(model_path, output_path, params) invisible(.Call(wrap__compile_model, model_path, output_path, params))
 
 #' Dummy function to cache compilation artifacts.
-#'@export
+#' @export
 dummy_compile <- function() invisible(.Call(wrap__dummy_compile))
 
 
