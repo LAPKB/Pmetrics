@@ -28,7 +28,7 @@ appropriate regimens.
 ## ------------------------------------------------
 
 library(PmetricsData)
-pta1 <- PM_pta$new(simEx, 
+pta1 <- PM_pta$new(simEx,
                  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
                  target = list(2^(-2:6), 1, 50),
                  target_type = c("time", 144, "-max"),
@@ -223,7 +223,7 @@ a single concentration target of 5.
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{library(PmetricsData)
-pta1 <- PM_pta$new(simEx, 
+pta1 <- PM_pta$new(simEx,
                  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
                  target = list(2^(-2:6), 1, 50),
                  target_type = c("time", 144, "-max"),
