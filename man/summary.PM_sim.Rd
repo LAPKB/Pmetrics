@@ -60,7 +60,7 @@ are mean, sd, median, min, max, but could include individual quantiles. See
 library(PmetricsData)
 simEx$summary() # preferred
 summary(simEx) # alternative
-simEx$summary(at = 2, field = "amt", group = "comp") #group amounts by compartment
+simEx$summary(at = 2, field = "amt", group = "comp") # group amounts by compartment
 }
 \seealso{
 \link{PM_sim}
