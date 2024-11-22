@@ -6,20 +6,6 @@ use extendr_api::prelude::*;
 use pmcore::prelude::data::read_pmetrics;
 use simulation::SimulationRow;
 
-/// Return string `"Hello rust!"` to R.
-/// @export
-#[extendr]
-fn hello_world() -> &'static str {
-    "Hello rust!"
-}
-
-/// Receives a path to a CSV file and returns true if the file exists.
-/// @export
-#[extendr]
-fn file_exists(path: &str) -> bool {
-    std::path::Path::new(path).exists()
-}
-
 ///@export
 #[extendr]
 fn simulate(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<SimulationRow> {
@@ -43,13 +29,18 @@ fn compile_model(model_path: &str, output_path: &str, params: Strings) {
     compile::compile(model_path.into(), Some(output_path.into()), params.to_vec());
 }
 
+//@export
+#[extendr]
+fn dummy_compile() {
+    compile::dummy_compile().unwrap();
+}
+
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
 // See corresponding C code in `entrypoint.c`.
 extendr_module! {
     mod Pmetrics;
-    fn hello_world;
-    fn file_exists;
     fn simulate;
     fn compile_model;
+    fn dummy_compile;
 }
