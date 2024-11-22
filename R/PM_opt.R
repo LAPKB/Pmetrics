@@ -1,4 +1,3 @@
-
 # R6 ----------------------------------------------------------------------
 
 #' @title Optimal Sample Times
@@ -8,15 +7,15 @@
 #' Contains optimal sampling times for a given model and dosage regimen.
 #' @details
 #' This object contains
-#' the methods to create and results from optimal sampling algorithms. 
-#' Currently the only option multiple-model optimization. 
-#' This algorithm was published as 
+#' the methods to create and results from optimal sampling algorithms.
+#' Currently the only option multiple-model optimization.
+#' This algorithm was published as
 #' Bayard, David S., and Michael Neely. "Experiment Design for Nonparametric
 #' Models Based on Minimizing Bayes Risk: Application to Voriconazole."
 #' Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017):
-#' 95–111. https://doi.org/10.1007/s10928-016-9498-5. It calculates the 
-#' requested number of sample times where the concentration time profiles 
-#' are the most separated, thereby minimizing the risk of choosing the incorrect 
+#' 95–111. https://doi.org/10.1007/s10928-016-9498-5. It calculates the
+#' requested number of sample times where the concentration time profiles
+#' are the most separated, thereby minimizing the risk of choosing the incorrect
 #' Bayesian posterior for an individual. Future updates will add D-optimal
 #' sampling times.
 #' @author Michael Neely
@@ -28,8 +27,8 @@ PM_opt <- R6::R6Class(
     #' argument to `$new` creation method.
     sampleTime = NULL,
     #' @field bayesRisk Only present for MM-optimal sampling.
-    #' The Bayesian risk of mis-classifying a subject based on 
-    #' the sample times.  This is more useful for comparisons between sampling 
+    #' The Bayesian risk of mis-classifying a subject based on
+    #' the sample times.  This is more useful for comparisons between sampling
     #' strategies, with minimization the goal.
     bayesRisk = NULL,
     #' @field simdata A [PM_sim] object with the simulated profiles
@@ -40,9 +39,9 @@ PM_opt <- R6::R6Class(
     #' @description
     #' `r lifecycle::badge("stable")`
     #'
-    #' Determine optimal sample times which are the most informative about the 
+    #' Determine optimal sample times which are the most informative about the
     #' model parameters.
-    #' 
+    #'
     #' @details
     #' Currently, the only option is the multiple-model optimization algorithm.
     #'
@@ -61,28 +60,28 @@ PM_opt <- R6::R6Class(
     #' single distribution, or a matrix with `length(weights)` rows and
     #' number of columns equal to the number of parameters.
     #' @param model One of three choices:
-    #' * [PM_model] object 
+    #' * [PM_model] object
     #' * Character vector with the filename of a Pmetrics model in the working directory.
     #' * If `model` is missing, there are two possibilities:
-    #' **  When `poppar` is a [PM_result] with a valid `$model` field,  
-    #' the model in `poppar` will be used. 
-    #' ** In the absence of a `poppar` with a valid model field, 
+    #' **  When `poppar` is a [PM_result] with a valid `$model` field,
+    #' the model in `poppar` will be used.
+    #' ** In the absence of a `poppar` with a valid model field,
     #' look for a file called "model.txt" in the working directory.
     #' @param data One of three choices:
-    #' * [PM_data] object 
+    #' * [PM_data] object
     #' * Character vector with the filename of a Pmetrics data in the working directory.
     #' * If `data` is missing, there are two possibilities:
-    #' **  When `poppar` is a [PM_result] with a valid `$data` field,  
-    #' the data in `poppar` will be used. 
-    #' ** In the absence of a `poppar` with a valid data field, 
+    #' **  When `poppar` is a [PM_result] with a valid `$data` field,
+    #' the data in `poppar` will be used.
+    #' ** In the absence of a `poppar` with a valid data field,
     #' look for a file called "data.csv" in the working directory.
     #' In either choice, the value for outputs
-    #' can be coded as any number(s) other than -99.  
+    #' can be coded as any number(s) other than -99.
     #' The number(s) will be replaced in the simulator output with the simulated values.
-    #' @param nsamp The number of MM-optimal sample times to compute; default 
+    #' @param nsamp The number of MM-optimal sample times to compute; default
     #' is 1, but can be any number.  Values >4 will take an exponentially longer time.
-    #' @param weight List whose names indicate the type of weighting, and 
-    #' values indicate the relative weight. Values should sum to 1.  
+    #' @param weight List whose names indicate the type of weighting, and
+    #' values indicate the relative weight. Values should sum to 1.
     #' Names can be any of the following:
     #' * **none** The default. MMopt times will be chosen to maximally discriminate all responses at all times.
     #' * **AUC** MMopt times will be chosen to maximally discriminate AUC, regardless of the shape of the response profile.
@@ -111,11 +110,11 @@ PM_opt <- R6::R6Class(
     #' course of the simulation run should be deleted. Defaults to `TRUE`.
     #' This is primarily used for debugging.
     #' @param ... Other parameters to pass to [PM_sim]$new(). Most are not necessary,
-    #' but `usePost = TRUE` can be used to calculate individual MMopt times. 
-    #' In this case, the number of posterior distributions contained in 
+    #' but `usePost = TRUE` can be used to calculate individual MMopt times.
+    #' In this case, the number of posterior distributions contained in
     #' `poppar$final$postPoints` needs to match the number of subjects in `data`.
-    #' You can also pass `include` and `exclude` to limit the subjects used in 
-    #' `data`. This will work whether `usePost` is `TRUE` or `FALSE`. 
+    #' You can also pass `include` and `exclude` to limit the subjects used in
+    #' `data`. This will work whether `usePost` is `TRUE` or `FALSE`.
     #' Note that the following arguments to [PM_sim]$new cannot be modified.
     #' * `nsim` is zero
     #' * `outname` is "MMsim"
@@ -123,33 +122,34 @@ PM_opt <- R6::R6Class(
     initialize = function(poppar, model, data, nsamp = 1, weight = list(none = 1),
                           predInt = 0.5, mmInt, algorithm = "mm",
                           outeq = 1, ...) {
-      if(missing(poppar)){
+      if (missing(poppar)) {
         cat(crayon::red("Error:"), "poppar is required.\n")
         return(NULL)
       }
-      if(missing(model)){
+      if (missing(model)) {
         model <- NULL
       }
-      if(missing(data)){
+      if (missing(data)) {
         data <- NULL
       }
-      if(missing(mmInt)){
+      if (missing(mmInt)) {
         mmInt <- NULL
       }
-      
-      tryCatch(private$make(poppar = poppar, 
-                            model = model, 
-                            data = data, 
-                            nsamp = nsamp, 
-                            weight = weight,
-                            predInt = predInt, 
-                            mmInt = mmInt, 
-                            algorithm = algorithm,
-                            outeq = outeq, 
-                            ...,), error = function(e){
-                              cat(crayon::red("Error:"), e$message, "\n")
-                            }
-      )
+
+      tryCatch(private$make(
+        poppar = poppar,
+        model = model,
+        data = data,
+        nsamp = nsamp,
+        weight = weight,
+        predInt = predInt,
+        mmInt = mmInt,
+        algorithm = algorithm,
+        outeq = outeq,
+        ...,
+      ), error = function(e) {
+        cat(crayon::red("Error:"), e$message, "\n")
+      })
     },
     #' @description
     #' Plot method
@@ -157,10 +157,9 @@ PM_opt <- R6::R6Class(
     #' See [plot.PM_opt].
     #' @param ... Arguments passed to [plot.PM_opt]
     plot = function(...) {
-      tryCatch(plot.PM_opt(self, ...), error = function(e){
+      tryCatch(plot.PM_opt(self, ...), error = function(e) {
         cat(crayon::red("Error:"), e$message, "\n")
-      }
-      )
+      })
     },
     #' @description
     #' Print method
@@ -174,93 +173,92 @@ PM_opt <- R6::R6Class(
       }
       cat(paste("\nBayes Risk: ", self$bayesRisk, "\n", sep = ""))
     }
-  ), #end public
+  ), # end public
   private = list(
     make = function(poppar, model, data, nsamp = 1, weight = list(none = 1),
-                    predInt = 0.5, mmInt, outeq = 1, 
-                    algorithm = "mm", clean = TRUE,...) {
-      
-      #get defaults for PM_sim$new() arguments
-      #browser()
+                    predInt = 0.5, mmInt, outeq = 1,
+                    algorithm = "mm", clean = TRUE, ...) {
+      # get defaults for PM_sim$new() arguments
+      # browser()
       arglist <- list(...)
       arglist$usePost <- ifelse(is.null(arglist$usePost), FALSE, arglist$usePost)
       arglist$quiet <- ifelse(is.null(arglist$quiet), TRUE, arglist$quiet)
       arglist$obsNoise <- ifelse(is.null(arglist$obsNoise), NA, arglist$obsNoise)
-      if(!is.null(arglist$clean)){
+      if (!is.null(arglist$clean)) {
         clean_opt <- arglist$clean
         arglist$clean <- FALSE
       } else {
         clean_opt <- TRUE
         arglist$clean <- FALSE
       }
-      
+
       if (inherits(poppar, "PM_result")) {
         if (!inherits(poppar$final, "NPAG")) {
           cat(crayon::red("Error:"), "Prior run must be NPAG.")
           return(NULL)
         }
-        popPoints <- if(usePost){
+        popPoints <- if (usePost) {
           poppar$final$postPoints
         } else {
           poppar$final$popPoints
-        }  
-        model <- if(is.null(model)){
+        }
+        model <- if (is.null(model)) {
           poppar$model
         } else {
           "model.txt"
-        } 
-        data <- if(is.null(data)){
+        }
+        data <- if (is.null(data)) {
           poppar$data
         } else {
           "data.csv"
         }
-      } else if (all(c("NPAG", "PM_final") %in% class(poppar))) { 
-        popPoints <- if(usePost){
+      } else if (all(c("NPAG", "PM_final") %in% class(poppar))) {
+        popPoints <- if (usePost) {
           poppar$postPoints
         } else {
           poppar$popPoints
-        }  
-        model <- if(is.null(model)){
+        }
+        model <- if (is.null(model)) {
           "model.txt"
         } else {
           model
-        } 
-        data <- if(is.null(data)){
+        }
+        data <- if (is.null(data)) {
           "data.csv"
         } else {
           data
         }
-      } else { #poppar was a list
-        
-        model <- if(is.null(model)){
+      } else { # poppar was a list
+
+        model <- if (is.null(model)) {
           "model.txt"
         } else {
           model
-        } 
-        data <- if(is.null(data)){
+        }
+        data <- if (is.null(data)) {
           "data.csv"
         } else {
           data
         }
       }
-      
+
       # remove prior simulations if they exist
       old <- Sys.glob("MMsim*.txt")
       invisible(file.remove(old))
       # simulate each point
-      simdata <- do.call(PM_sim$new, (c(poppar = poppar,
-                            model = model,
-                            data = data, nsim = 0, 
-                            predInt = predInt,
-                            outname = "MMsim",
-                            combine = TRUE,
-                            arglist #the other args
-                            ))
-      )
-      
-      
+      simdata <- do.call(PM_sim$new, (c(
+        poppar = poppar,
+        model = model,
+        data = data, nsim = 0,
+        predInt = predInt,
+        outname = "MMsim",
+        combine = TRUE,
+        arglist # the other args
+      )))
+
+
       simdata$obs <- simdata$obs %>% filter(outeq == !!outeq)
-      
+
       # transform into format for MMopt
       # nsubs is the number of subjects
       nsubs <- length(unique(simdata$obs$id))
@@ -279,14 +277,14 @@ PM_opt <- R6::R6Class(
         mmInt <- NULL
         simdata_full <- simdata
       }
-      
+
       # time is the simulated times
       time <- unique(simdata$obs$time)
       # nout is the number of simulated times (outputs)
       nout <- length(time)
       # Mu is a matrix of nout rows x nsubs columns containing the outputs at each time
       Mu <- t(matrix(simdata$obs$out, nrow = nsubs, byrow = T))
-      
+
       # pH is the vector of probabilities of each population point
       pH <- popPoints[, ncol(popPoints)]
       # replicate pH and normalize based on number of simulation templates
@@ -298,14 +296,14 @@ PM_opt <- R6::R6Class(
       simout <- readLines("MMsim1.txt")
       errLine <- grep(" EQUATIONS, IN ORDER, WERE:", simout)
       cassay <- scan("MMsim1.txt", n = 4, skip = errLine + numeqt - 1, quiet = T)
-      
+
       # make the weighting Matrix
       wtnames <- names(weight)
       Cbar0 <- array(NA,
-                     dim = c(nsubs, nsubs, 4),
-                     dimnames = list(a = 1:nsubs, b = 1:nsubs, type = c("none", "auc", "cmax", "cmin"))
+        dim = c(nsubs, nsubs, 4),
+        dimnames = list(a = 1:nsubs, b = 1:nsubs, type = c("none", "auc", "cmax", "cmin"))
       )
-      
+
       # default is no penalties (diag=0, off-diag=1)
       if ("none" %in% wtnames) {
         Cbar0[, , 1] <- matrix(1, nrow = nsubs, ncol = nsubs)
@@ -320,14 +318,14 @@ PM_opt <- R6::R6Class(
             cbar <- cbar_make1(sqdiff)
             Cbar0[, , 2] <- weight$auc * cbar / mean(cbar)
           }
-          
+
           if ("max" %in% wtnames) {
             maxi <- unlist(tapply(simdata$obs$out, simdata$obs$id, max))
             sqdiff <- matrix(sapply(1:nsubs, function(x) (maxi[x] - maxi)^2), nrow = nsubs)
             cbar <- cbar_make1(sqdiff)
             Cbar0[, , 3] <- weight$max * cbar / mean(cbar)
           }
-          
+
           if ("min" %in% wtnames) {
             mini <- unlist(tapply(simdata$obs$out, simdata$obs$id, min))
             sqdiff <- matrix(sapply(1:nsubs, function(x) (mini[x] - mini)^2), nrow = nsubs)
@@ -342,29 +340,33 @@ PM_opt <- R6::R6Class(
       }
       # find max value over all selected weights (condense to nsubs x nsubs matrix)
       Cbar <- apply(Cbar0, c(1, 2), max, na.rm = T)
-      
+
       # Call MMMOPT1 routine to compute optimal sampling times
       mmopt1 <- private$wmmopt1(Mu, time, pH, cassay, nsamp, nsubs, nout, Cbar)
       optsamp <- mmopt1$optsamp
       brisk <- mmopt1$brisk_cob
       optindex <- mmopt1$optindex
-      
-      
-      
+
+
+
       # -------------------------
-      
-      
+
+
       if (clean_opt) {
-        invisible(file.remove(Sys.glob(c("fort.*", "*.Z3Q", "*.ZMQ", 
-                                         "montbig.exe", "ZMQtemp.csv", 
-                                         "simControl.txt", "seedto.mon", 
-                                         "abcde*.csv",
-                                         "MMsim*.txt",
-                                         "*.for")),
-                              "simmodel.txt",
-                              "simdata.csv"))
+        invisible(file.remove(
+          Sys.glob(c(
+            "fort.*", "*.Z3Q", "*.ZMQ",
+            "montbig.exe", "ZMQtemp.csv",
+            "simControl.txt", "seedto.mon",
+            "abcde*.csv",
+            "MMsim*.txt",
+            "*.for"
+          )),
+          "simmodel.txt",
+          "simdata.csv"
+        ))
       }
-      
+
       self <- list(
         sampleTime = optsamp[1:nsamp, nsamp],
         bayesRisk = brisk[nsamp],
@@ -402,24 +404,23 @@ PM_opt <- R6::R6Class(
     #' * ptindex - 4x4, indices of optimal sample times from time=(nt)x1
     #' @noRd
     wmmopt1 = function(Mu, time, pH, cassay, nsamp, nsubs, nout, Cbar) {
-      
       # Initialize all entries with -1
       optsamp <- matrix(-1, nsamp, nsamp)
       optindex <- matrix(-1, nsamp, nsamp)
       brisk <- matrix(-1, nsamp, 1)
       nopt <- matrix(-1, nsamp, 1)
-      
-      
+
+
       # -------------------------------
       # Extract needed quantities
-      
+
       c0 <- cassay[1]
       # additive noise
       c1 <- cassay[2]
       c2 <- cassay[3]
       c3 <- cassay[4]
-      
-      
+
+
       # BEGIN MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
       # FULL SCRIPT VERSION OF MMOPT ALGORITHM
       # -----------------------------------
@@ -427,21 +428,21 @@ PM_opt <- R6::R6Class(
       kallijn <- private$kall_ijn(Mu, c0, c1, c2, c3, nsubs, nout)
       Kall <- kallijn$Kall
       skall <- kallijn$skall
-      
-      
+
+
       # Vectorized optimization for any number of samples
       search_grid <- data.frame(t(combn(1:nout, nsamp))) %>% dplyr::rowwise()
       pb <- progress::progress_bar$new(total = nrow(search_grid))
       Perror <- search_grid %>%
         dplyr::summarise(val = private$perrorc1(pH, Kall, nvec = dplyr::c_across(dplyr::everything()), Cbar, pb))
-      
+
       nopt <- search_grid[which(Perror$val == min(Perror$val)), ] %>%
         purrr::as_vector(nopt[1, ]) %>%
         sort()
       # vctrs::vec_sort()
-      
+
       # Compute Output Values
-      
+
       optsamp[1:nsamp, nsamp] <- time[nopt]
       optindex[1:nsamp, nsamp] <- nopt
       brisk_cob <- rep(-1, nsamp)
@@ -460,7 +461,7 @@ PM_opt <- R6::R6Class(
       # n = n'th time in horizon, n=1,...,nt
       # nsubs = # subjects
       # nout=nt = # times in time horizon
-      
+
       # INPUTS
       # -------
       # Mu = (nout)X(nsubs), Mean of Assay for nout=# output values, nsubs=#subjects
@@ -477,7 +478,7 @@ PM_opt <- R6::R6Class(
       #
       #
       # --------------
-      
+
       # Make full K matrix
       Kall <- array(0, dim = c(nsubs, nsubs, nout))
       skall <- matrix(0, nout, 1)
@@ -548,14 +549,14 @@ PM_opt <- R6::R6Class(
       #   }
       # -------------
       # @@ FAST VECTORIZED REPLACEMENT
-      
+
       Sig2plus <- Sig2 %*% matrix(1, 1, nsubs) + matrix(1, nsubs, 1) %*% t(Sig2)
       Sig2prod <- (Sig2 %*% matrix(1, 1, nsubs)) * (matrix(1, nsubs, 1) %*% t(Sig2))
       Mun <- yout_n
       # column vector
       Mun_minus <- Mun %*% matrix(1, 1, nsubs) - matrix(1, nsubs, 1) %*% t(Mun)
       Kijn <- (1 / 4) * (Mun_minus^2) / Sig2plus + (1 / 2) * log(.5 * Sig2plus) - (1 / 4) * log(Sig2prod)
-      
+
       # ------------------------
       # Create output variable
       Kn <- Kijn
@@ -596,7 +597,7 @@ PM_opt <- R6::R6Class(
       # Create Kallall
       # Example: For nsamp=4 sampling times [n1,n2,n3,n4] we have
       #         Kallall=Kall(:,:,n1)+Kall(:,:,n2)+Kall(:,:,n3)+Kall(:,:,n4);
-      
+
       # Replace following statement with ONE statement below
       # ----------------
       # @@ LOOP APPROACH
@@ -650,8 +651,8 @@ PM_opt <- R6::R6Class(
       Cbar <- apply(array(c(C, t(C)), dim = c(nsubs, nsubs, 2)), c(1, 2), max)
       return(Cbar)
     }
-  ) #end private
-) #end PM_opt
+  ) # end private
+) # end PM_opt
 
 
 # PLOT --------------------------------------------------------------------
@@ -684,15 +685,15 @@ PM_opt <- R6::R6Class(
 
 plot.PM_opt <- function(x, line = list(probs = NA), times = T, ...) {
   mm_format <- amendLine(times, default = list(color = "red", dash = "dash", width = 2))
-  
+
   # parse dots
   arglist <- list(...)
   arglist$quiet <- T
   arglist$line <- line
-  
+
   p <- do.call(plot.PM_sim, c(list(x$simdata), arglist))$p
-  
-  
+
+
   if (!is.null(x$mmInt)) { # add MM interval times
     shapeList <- lapply(x$mmInt, function(m) {
       list(
@@ -711,16 +712,15 @@ plot.PM_opt <- function(x, line = list(probs = NA), times = T, ...) {
   } else {
     shapeList <- list()
   }
-  
+
   shapeList <- append(shapeList, lapply(
     x$sampleTime,
     function(t) {
       ab_line(v = t, line = mm_format)
     }
   ))
-  
+
   p <- p %>% layout(shapes = shapeList)
-  
+
   print(p)
 }
-

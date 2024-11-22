@@ -106,17 +106,17 @@ PM_cycle <- R6::R6Class(
   private = list(
     make = function(data) {
       if (getPMoptions("backend") == "rust") {
-        if(file.exists("cycles.csv")){
+        if (file.exists("cycles.csv")) {
           raw <- readr::read_csv(file = "cycles.csv", show_col_types = FALSE)
         } else {
           cli::cli_abort(c("x" = "{.file {getwd()}/cycles.csv} does not exist."))
         }
-        if(file.exists("obs.csv")){
+        if (file.exists("obs.csv")) {
           obs_raw <- readr::read_csv(file = "obs.csv", show_col_types = FALSE)
         } else {
           cli::cli_abort(c("x" = "{.file {getwd()}/obs.csv} does not exist."))
         }
-        if(file.exists("settings.json")){
+        if (file.exists("settings.json")) {
           config <- jsonlite::fromJSON("settings.json")
         } else {
           cli::cli_abort(c("x" = "{.file {getwd()}/settings.json} does not exist."))
@@ -361,8 +361,8 @@ plot.PM_cycle <- function(x,
                           ...) {
   if (inherits(x, "PM_cycle")) {
     data <- x$data
-  } 
-  
+  }
+
   # housekeeping
 
   nvar <- if (inherits(data$mean, "matrix")) {
@@ -667,11 +667,10 @@ plot.PM_cycle <- function(x,
 #' @export
 
 summary.PM_cycle <- function(object, cycle, digits = 3, ...) {
-  
   if (inherits(object, "PM_cycle")) {
     object <- object$data
   }
-  
+
   if (missing(cycle)) {
     cyc <- max(object$cycnum)
   } else {
