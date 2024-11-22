@@ -308,6 +308,17 @@ PM_data <- R6::R6Class("PM_data",
                              self$standard_data <- NULL
                            }
                            return(invisible(self))
+                         },
+                         makeNoise(col = "out", c0 = 0, c1 = 0, c2 = 0, c3 = 0){
+                           if (!is.null(self$data)) {
+                             
+                             self$data <- self$data %>% dplyr::mutate(
+                               ifelse(!is.na(out), out + rnorm(1, 0, sd = c0 + c1 * out + c2 * out^2 + c3 * out^3), NA)
+                             )
+                             self$standard_data <- private$validate(self$data, quiet = TRUE)
+                           } else {
+                             cli::cli_warn("Data have not been defined.")
+                           }
                          }
                        ), # end public
                        private = list(
