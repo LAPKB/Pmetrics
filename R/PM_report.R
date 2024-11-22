@@ -49,16 +49,16 @@ PM_report <- function(x, template = getPMoptions("report_template"), outfile, sh
 
   # # Check if pandoc is exposed to Rstudio
   # not necessary since pandoc ships with Rstudio
-  # 
+  #
   # if (!rmarkdown::pandoc_available()) {
   #   # Check if pandoc is installed
   #   if (!pandoc::pandoc_available()) {
   #     pandoc::pandoc_install()
   #   }
-  # 
+  #
   #   # Set the correct environmental variable for use in shell
   #   Sys.setenv(RSTUDIO_PANDOC = pandoc::pandoc_locate())
-  # 
+  #
   #   if (!rmarkdown::pandoc_available()) {
   #     stop("Unable to install pandoc, or expose it to Rmarkdown.")
   #   }
@@ -71,7 +71,7 @@ PM_report <- function(x, template = getPMoptions("report_template"), outfile, sh
     clean = TRUE,
     quiet = TRUE
   )
-  
+
   # quarto::quarto_render(
   #   input = templateFile,
   #   output_file = outfile,

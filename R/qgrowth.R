@@ -3,7 +3,7 @@
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
-#' Will extract height, weight, and BMI for boys, girls or both for a given 
+#' Will extract height, weight, and BMI for boys, girls or both for a given
 #' range of ages in months and percentiles. This can be useful for
 #' simulations in Pmetrics.
 #'

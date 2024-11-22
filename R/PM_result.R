@@ -1,5 +1,5 @@
-#Use menu item Code -> Jump To... for rapid navigation
-#Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
+# Use menu item Code -> Jump To... for rapid navigation
+# Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
 
 # R6 ---------------------------------------------------------------
 
@@ -45,8 +45,8 @@ PM_result <- R6::R6Class(
     errfile = NULL,
     #' @field success Boolean if successful run
     success = NULL,
-    #' @field valid If the `$validate` method has been executed after a run, 
-    #' this field will contain the information required to plot 
+    #' @field valid If the `$validate` method has been executed after a run,
+    #' this field will contain the information required to plot
     #' visual predictive checks and normalized prediction
     #' error discrepancies via the npde code developed by Comets et al. Use the
     #' `$save` method on the augmented `PM_result` object to save it with the
@@ -58,7 +58,7 @@ PM_result <- R6::R6Class(
     #' Use the `$save` method on the augmented `PM_result` object to save it with the
     #' new optimal sampling results.
     opt_samp = NULL,
-    
+
     #' @description
     #' Create new object populated with data from previous run
     #' @details
@@ -81,42 +81,44 @@ PM_result <- R6::R6Class(
       } else {
         self$ITdata <- NULL
       }
-      if(is.null(out$NPdata)) {
+      if (is.null(out$NPdata)) {
         self$NPdata <- out
         class(self$NPdata) <- c("NPAG", "rust", "list")
         allData <- "NPdata"
       }
-      #the following were saved as R6 objects
-      purrr::walk(c("pop", "post", "final", "cycle", "op", "cov", "data", "model", "valid"),
-                  \(x){
-                    self[[x]] <- NULL
-                    if(!is.null(out[[x]])){ #if the object is loaded...
-                      if(!inherits(out[[x]], "R6")){ #older save
-                        if(inherits(out[[x]], paste0("PM",x))){
-                          self[[x]] <- get(paste0("PM_",x))$new(out[[x]]) #...make the R6 from old PMxxx
-                        } else {
-                          self[[x]] <- get(paste0("PM_",x))$new(out[[allData]]) #...make the R6 from raw
-                        }
-                      } else {
-                        self[[x]] <- get(paste0("PM_",x))$new(out[[x]], quiet = TRUE) #was saved in R6 format, but remake to update if needed
-                      }
-                    }
-                  })
+      # the following were saved as R6 objects
+      purrr::walk(
+        c("pop", "post", "final", "cycle", "op", "cov", "data", "model", "valid"),
+        \(x){
+          self[[x]] <- NULL
+          if (!is.null(out[[x]])) { # if the object is loaded...
+            if (!inherits(out[[x]], "R6")) { # older save
+              if (inherits(out[[x]], paste0("PM", x))) {
+                self[[x]] <- get(paste0("PM_", x))$new(out[[x]]) # ...make the R6 from old PMxxx
+              } else {
+                self[[x]] <- get(paste0("PM_", x))$new(out[[allData]]) # ...make the R6 from raw
+              }
+            } else {
+              self[[x]] <- get(paste0("PM_", x))$new(out[[x]], quiet = TRUE) # was saved in R6 format, but remake to update if needed
+            }
+          }
+        }
+      )
 
-      #these are diagnostics, not R6
+      # these are diagnostics, not R6
       self$errfile <- out$errfile
       self$success <- out$success
-      
-      #add the pop/post data to data
-      if(is.null(self$data$pop) | is.null(self$data$post)){
+
+      # add the pop/post data to data
+      if (is.null(self$data$pop) | is.null(self$data$post)) {
         self$data <- PM_data$new(self$data$data, quiet = TRUE)
         self$data$pop <- self$pop$data
         self$data$post <- self$post$data
       }
-      
+
       return(self)
     },
-    
+
     #' @description
     #' Plot generic function based on type
     #' @param type Type of plot based on class of object
@@ -128,7 +130,7 @@ PM_result <- R6::R6Class(
         self[[type]]$plot(...)
       }
     },
-    
+
     #' @description
     #' Summary generic function based on type
     #' @param type Type of summary based on class of object
@@ -140,7 +142,7 @@ PM_result <- R6::R6Class(
         self[[type]]$summary(...)
       }
     },
-    
+
     #' @description
     #' AUC generic function based on type
     #' @param type Type of AUC based on class of object
@@ -151,7 +153,7 @@ PM_result <- R6::R6Class(
       }
       self[[type]]$auc(...)
     },
-    
+
     #' @description
     #' Perform non-compartmental analysis
     #' @details
@@ -160,7 +162,7 @@ PM_result <- R6::R6Class(
     nca = function(...) {
       make_NCA(self, ...)
     },
-    
+
     #' @description
     #' Calls [PM_sim]. Default is to use the `$final`, `$model`, and `$data` objects
     #' within the [PM_result]. It is common to supply a different `data` template.
@@ -168,29 +170,29 @@ PM_result <- R6::R6Class(
     #' or vice versa. If all three are different, use `PM_sim$new()` instead.
     #' @param ...  Parameters passed to [PM_sim]. If using the `$final`, `$model`, and
     #' `$data` fields, it is not necessary to specify these. Alternates for any of these
-    #' should be specified. Other parameters for [PM_sim] should be passed as named 
+    #' should be specified. Other parameters for [PM_sim] should be passed as named
     #' arguments, e.g. `$sim(include = 1:2, predInt = 1, limits = NA)`.
     sim = function(...) {
       dots <- list(...)
-      if(!"poppar" %in% names(dots)){
+      if (!"poppar" %in% names(dots)) {
         dots$poppar <- self$final
       }
-      
-      if(!"data" %in% names(dots)){
+
+      if (!"data" %in% names(dots)) {
         dots$data <- self$data$standard_data
       }
-      
-      if(!"model" %in% names(dots)){
+
+      if (!"model" %in% names(dots)) {
         dots$model <- self$model
       }
-      
+
       # store copy of the final object
       bk_final <- self$final$clone()
       sim <- do.call(PM_sim$new, dots)
       self$final <- bk_final
       return(sim)
     },
-    
+
     #' @description
     #' Save the current PM_result object to an .Rdata file.
     #' @details
@@ -229,7 +231,7 @@ PM_result <- R6::R6Class(
         # } else {
         #   file <- "NPcore.Rdata"
         # }
-      } 
+      }
       PMout <- list(
         NPdata = self$NPdata,
         ITdata = self$ITdata,
@@ -242,7 +244,7 @@ PM_result <- R6::R6Class(
       )
       save(PMout, file = paste0(outputfolder, "/", file))
     },
-    
+
     #' @description
     #' Validate the result by internal simulation methods.
     #' @param ... Arguments passed to [make_valid].
@@ -250,7 +252,7 @@ PM_result <- R6::R6Class(
       self$valid <- PM_valid$new(self, ...)
       return(self)
     },
-    
+
     #' @description
     #' Conduct stepwise linear regression of Bayesian posterior parameter values
     #' and covariates.
@@ -258,7 +260,7 @@ PM_result <- R6::R6Class(
     step = function(...) {
       PMstep(self$cov$data, ...)
     },
-    
+
     #' @description
     #' Calculate optimal sampling times.
     #'
@@ -268,13 +270,12 @@ PM_result <- R6::R6Class(
     #'
     #' @param ... Parameters to pass to [PM_opt].
     opt = function(...) {
-      self$opt_samp <- tryCatch(PM_opt$new(self, ...), error = function(e){
+      self$opt_samp <- tryCatch(PM_opt$new(self, ...), error = function(e) {
         cat(crayon::red("Error:"), e$message, "\n")
-      }
-      )
+      })
       return(self)
     },
-    
+
     #' @description
     #' `r lifecycle::badge("deprecated")`
     #'
@@ -337,7 +338,6 @@ PM_result$load <- function(...) {
 
 
 PM_load <- function(run, file) {
-  
   # internal function
   output2List <- function(Out) {
     result <- list()
@@ -346,10 +346,10 @@ PM_load <- function(run, file) {
       names(aux_list) <- names(Out)[i]
       result <- append(result, aux_list)
     }
-    
+
     return(result)
   }
-  
+
   # if (remote) { # only look on server - this needs to be updated
   #   if (missing(server_address)) server_address <- getPMoptions("server_address")
   #   status <- .remoteLoad(thisrun, server_address)
@@ -361,8 +361,8 @@ PM_load <- function(run, file) {
   #       cat()
   #     return(invisible(NULL))
   #   }
-  # } else 
-  
+  # } else
+
   if (!missing(file)) { # not remote, file supplied, so look for it
     # try from current wd
     if (file.exists(file)) {
@@ -382,9 +382,9 @@ PM_load <- function(run, file) {
     } else {
       wd <- paste0(run, "/outputs/")
     }
-    #file_list <- c("NPcore.Rdata", "PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
+    # file_list <- c("NPcore.Rdata", "PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
     file_list <- c("PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
-    
+
     for (i in file_list) {
       file <- paste0(wd, i)
       if (file.exists(file)) {
@@ -393,87 +393,82 @@ PM_load <- function(run, file) {
       }
     }
   }
-  
+
   if (found != "") {
     result <- output2List(Out = get(load(found)))
-    #update
+    # update
     result2 <- update(result, found)
     return(PM_result$new(result2, quiet = TRUE))
-    
-    
   } else {
     cli::cli_abort(c("x" = "No Pmetrics output file found in {getwd()}."))
   }
 }
 
 
-#internal update function
-update <- function(res, found){
+# internal update function
+update <- function(res, found) {
   msg <- NULL
-  #CYCLE
-  if(!is.null(res$cycle)){
+  # CYCLE
+  if (!is.null(res$cycle)) {
     dat <- res$cycle
-    if(
-      !tibble::is_tibble(dat$gamlam) #version prior to 2.2, add next update via or join
-    ){ 
-      #start conversion
+    if (
+      !tibble::is_tibble(dat$gamlam) # version prior to 2.2, add next update via or join
+    ) {
+      # start conversion
       n_cyc <- nrow(dat$mean)
       n_out <- max(res$op$outeq)
-      dat$gamlam <- tibble::as_tibble(dat$gamlam, .name_repair = "minimal") 
-      if(ncol(dat$gamlam) == 1 & n_out > 1){dat$gamlam <- cbind(dat$gamlam, replicate((n_out-1),dat$gamlam[,1]))} 
+      dat$gamlam <- tibble::as_tibble(dat$gamlam, .name_repair = "minimal")
+      if (ncol(dat$gamlam) == 1 & n_out > 1) {
+        dat$gamlam <- cbind(dat$gamlam, replicate((n_out - 1), dat$gamlam[, 1]))
+      }
       names(dat$gamlam) <- as.character(1:ncol(dat$gamlam))
-      dat$gamlam <- dat$gamlam %>% pivot_longer(cols = everything(), 
-                                                values_to = "value", names_to = "outeq") %>%
+      dat$gamlam <- dat$gamlam %>%
+        pivot_longer(
+          cols = everything(),
+          values_to = "value", names_to = "outeq"
+        ) %>%
         mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
         select(cycle, value, outeq)
-      if(is.matrix(dat$mean)){ #old fortran format, but not rust format
-        dat$mean <- tibble::tibble(cycle = 1:n_cyc) %>% 
+      if (is.matrix(dat$mean)) { # old fortran format, but not rust format
+        dat$mean <- tibble::tibble(cycle = 1:n_cyc) %>%
           dplyr::bind_cols(tidyr::as_tibble(dat$mean))
-        dat$median <- tibble::tibble(cycle = 1:n_cyc) %>% 
+        dat$median <- tibble::tibble(cycle = 1:n_cyc) %>%
           dplyr::bind_cols(tidyr::as_tibble(dat$median))
-        dat$sd <- tibble::tibble(cycle = 1:n_cyc) %>% 
+        dat$sd <- tibble::tibble(cycle = 1:n_cyc) %>%
           dplyr::bind_cols(tidyr::as_tibble(dat$sd))
       }
       msg <- c(msg, "cycle")
       res$cycle <- dat
     }
   }
-  
+
   ####### DONE PROCESSING, INFORM #########
-  if(!is.null(msg)){
-    cat(crayon::blue("NOTE: "), 
-        "The", 
-        crayon::green(dplyr::case_when(
-          length(msg)==1 ~ msg,
-          length(msg)==2 ~ paste(msg, collapse = " and "),
-          length(msg)>2 ~ paste(msg, collapse = ", ")
-        )[1]),
-        ifelse(length(msg)>1, "fields", "field"), 
-        "in your PM_result object",
-        ifelse(length(msg)>1, "have", "has"),
-        "been updated",
-        "to the most current format.",
-        "\n\n",
-        crayon::blue("1"), "Save the updates\n",
-        crayon::blue("2"), "Do not save updates\n ")
+  if (!is.null(msg)) {
+    cat(
+      crayon::blue("NOTE: "),
+      "The",
+      crayon::green(dplyr::case_when(
+        length(msg) == 1 ~ msg,
+        length(msg) == 2 ~ paste(msg, collapse = " and "),
+        length(msg) > 2 ~ paste(msg, collapse = ", ")
+      )[1]),
+      ifelse(length(msg) > 1, "fields", "field"),
+      "in your PM_result object",
+      ifelse(length(msg) > 1, "have", "has"),
+      "been updated",
+      "to the most current format.",
+      "\n\n",
+      crayon::blue("1"), "Save the updates\n",
+      crayon::blue("2"), "Do not save updates\n "
+    )
     flush.console()
     ans <- readline(" ")
-    if(ans == 1){
+    if (ans == 1) {
       temp <- PM_result$new(res)
       temp$save(file = found)
       cat("Results saved\n")
     }
   }
-  
+
   return(res)
 }
-
-
-
-
-
-
-
-
-
-
