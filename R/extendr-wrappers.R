@@ -10,9 +10,16 @@
 #' @useDynLib Pmetrics, .registration = TRUE
 NULL
 
-#' Return string `"Hello world!"` to R.
+#' Return string `"Hello rust!"` to R.
 #' @export
 hello_world <- function() .Call(wrap__hello_world)
+
+#' Receives a path to a CSV file and returns true if the file exists.
+#' @export
+file_exists <- function(path) .Call(wrap__file_exists, path)
+
+#'@export
+simulate <- function(data_path, model_path, spp) .Call(wrap__simulate, data_path, model_path, spp)
 
 
 # nolint end
