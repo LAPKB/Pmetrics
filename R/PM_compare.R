@@ -36,11 +36,11 @@
 #' * **par** Names of random parameters
 #' * **cycles** Number of cycles run
 #' * **converge** Boolean value if convergence occurred.
-#' * **ll** Final cycle -2*Log-likelihood 
+#' * **ll** Final cycle -2*Log-likelihood
 #' * **aic** Final cycle Akaike Information Criterion
-#' * **bic** Final cycle Bayesian (Schwartz) Information Criterion 
+#' * **bic** Final cycle Bayesian (Schwartz) Information Criterion
 #' * **popBias** Bias, or mean weighted prediction error of predictions based on population parameters minus observations
-#' * **popImp** Imprecision, or bias-adjusted mean weighted squared error of predictions based on population parameters minus observations 
+#' * **popImp** Imprecision, or bias-adjusted mean weighted squared error of predictions based on population parameters minus observations
 #' * **popPerRMSE** Percent root mean squared error of predictions based on population parameters minus observations
 #' * **postBias** Bias, or mean weighted prediction error of predictions - observations  based on posterior parameters
 #' * **postImp** Imprecision, or bias-adjusted mean weighted squared error of predictions - observations based on posterior parameters
@@ -51,12 +51,14 @@
 #' @export
 
 PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
-  if (missing(x) | missing(y)){
-    cli::cli_abort(c("x"="You must specify at least two {.cls PM_result} objects for {.fn PM_compare}."))
+  if (missing(x) | missing(y)) {
+    cli::cli_abort(c("x" = "You must specify at least two {.cls PM_result} objects for {.fn PM_compare}."))
   }
-  if(!all(purrr::map_lgl(list(x,y,...), \(i) inherits(i, "PM_result")))){
-    cli::cli_abort(c("x"="All objects to compare must be of class {.cls PM_result}", 
-                     "i" = "Load them beforehand with with {.fn PM_load}."))
+  if (!all(purrr::map_lgl(list(x, y, ...), \(i) inherits(i, "PM_result")))) {
+    cli::cli_abort(c(
+      "x" = "All objects to compare must be of class {.cls PM_result}",
+      "i" = "Load them beforehand with with {.fn PM_load}."
+    ))
   }
 
 
@@ -105,8 +107,8 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
 
   # check for zero cycle objects
   cycles <- unlist(sapply(allObj, function(x) x$icyctot))
-  if (any(cycles == 0)){
-    cli::cli_abort(c("x"="Do not include 0-cycle runs: {paste(which(cycles == 0), collapse = ', '), '\n', sep = '')}"))
+  if (any(cycles == 0)) {
+    cli::cli_abort(c("x" = "Do not include 0-cycle runs: {paste(which(cycles == 0), collapse = ', '), '\n', sep = '')}"))
   }
 
   op <- purrr::map(obj, function(x) {
@@ -204,6 +206,3 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
   row.names(results) <- 1:nobj
   results
 }
-
-
-

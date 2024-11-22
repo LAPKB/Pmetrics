@@ -50,7 +50,7 @@ makeAUC <- function(data,
                     method = "linear",
                     addZero = F) {
   # handle objects
-  if (missing(data)){
+  if (missing(data)) {
     cli::cli_abort("Please supply a data object to calculate AUC.")
   }
 
@@ -118,11 +118,11 @@ makeAUC <- function(data,
     ) %>%
     dplyr::select(id, time, out) %>%
     dplyr::group_by(id)
-  
+
   if (nrow(data3) < 2) {
     cli_warn(c("!" = "You have selected fewer than 2 rows in your data.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, {.code block}, {.code start}, and {.code end}."))
   }
-  
+
 
   # auc function
   get_auc <- function(df, addZero, method) {

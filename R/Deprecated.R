@@ -174,7 +174,7 @@ PMsave <- function(...) {
 #' @description
 #' `r lifecycle::badge("deprecated")`
 #'
-#' Loaded Pmetrics objects from prior run into user's global environment, which was 
+#' Loaded Pmetrics objects from prior run into user's global environment, which was
 #' unsafe programming practice and causes warnings in CRAN.
 #' @param ... Not used
 #' @author Michael Neely
@@ -191,8 +191,8 @@ PMload <- function(...) {
 #' `r lifecycle::badge("deprecated")`
 #'
 #' Compare NPAG or IT2B runs, based on objects loaded by [PMload], which
-#' is now deprecated, because it loaded Pmetrics objects from a prior run into 
-#' user's global environment, which was 
+#' is now deprecated, because it loaded Pmetrics objects from a prior run into
+#' user's global environment, which was
 #' unsafe programming practice and caused warnings in CRAN.
 #' @param ... Not used
 #' @author Michael Neely
@@ -219,6 +219,3 @@ PMcompare <- function(...) {
 makeValid <- function(...) {
   lifecycle::deprecate_warn("2.2.0", what = "makeValid()", with = "make_valid()")
 }
-
-
-

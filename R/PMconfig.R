@@ -10,8 +10,8 @@ getPMpath <- function() {
 
 getBits <- function() {
   # figure out 32 or 64 bit
-  Rver <- numeric_version(paste(R.version$major, R.version$minor,sep = "."))
-  if(Rver < numeric_version("4.4.0")){
+  Rver <- numeric_version(paste(R.version$major, R.version$minor, sep = "."))
+  if (Rver < numeric_version("4.4.0")) {
     if (length(grep("64-bit", utils::sessionInfo())) > 0) {
       return(64)
     } else {
@@ -27,21 +27,21 @@ getBits <- function() {
 }
 # getFixedColNames ------------------------------------------------------------------
 
-#' @title Names of fixed columns  
+#' @title Names of fixed columns
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
 #' Returns the names of fixed columns (non-covariate) in Pmetrics data objects.
-#' @return A vector of fixed column names: 
+#' @return A vector of fixed column names:
 #' `c("id", "evid", "time", "dur", "dose", "addl", "ii", "input", "out", "outeq", "c0", "c1", "c2", "c3")`
-#' 
+#'
 #' @export
 #' @examples
 #' getFixedColNames()
 #' @author Michael Neely
 getFixedColNames <- function() {
   # set current names of fixed columns in data file
-  
+
   c(
     "id", "evid", "time", "dur", "dose", "addl",
     "ii", "input", "out", "outeq", "c0", "c1", "c2", "c3"
@@ -51,13 +51,13 @@ getFixedColNames <- function() {
 
 # getFixedColNum ------------------------------------------------------------------
 
-#' @title Number of fixed columns  
+#' @title Number of fixed columns
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
 #' Returns the number of fixed columns (non-covariate) in Pmetrics data objects.
 #' @return An integer with the number of fixed columns.
-#' 
+#'
 #' @export
 #' @examples
 #' getFixedColNum()
