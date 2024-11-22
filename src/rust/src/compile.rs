@@ -10,10 +10,17 @@ use std::thread;
 
 pub(crate) fn compile(path: PathBuf, _output: Option<PathBuf>, params: Vec<String>) {
     let model_txt = fs::read_to_string(&path).expect("Failed to read model file");
-    let template_path = match create_template(model_txt, params) {
+    let _template_path = match create_template() {
         Ok(path) => path,
         Err(e) => {
             eprintln!("Failed to create template: {}", e);
+            return;
+        }
+    };
+    let template_path = match inject_model(model_txt, params) {
+        Ok(path) => path,
+        Err(e) => {
+            eprintln!("Failed to inject model: {}", e);
             return;
         }
     };
@@ -31,6 +38,13 @@ pub(crate) fn compile(path: PathBuf, _output: Option<PathBuf>, params: Vec<Strin
 
     fs::copy(&dynlib_path, &output_path).expect("Failed to copy dynamic library to output path");
 }
+
+pub(crate) fn dummy_compile() -> Result<(), io::Error> {
+    let template_path = create_template()?;
+    build_template(template_path)?;
+    Ok(())
+}
+
 fn stream_output<R: Read + Send + 'static>(
     reader: R,
     mut writer: impl Write + Send + 'static,
@@ -97,7 +111,7 @@ fn build_template(template_path: PathBuf) -> Result<PathBuf, io::Error> {
         .join(dynlib_name))
 }
 
-fn create_template(model_txt: String, params: Vec<String>) -> Result<PathBuf, io::Error> {
+fn create_template() -> Result<PathBuf, io::Error> {
     let temp_dir = env::temp_dir().join("exa_tmp");
     let template_dir = temp_dir.join("template");
 
@@ -112,6 +126,14 @@ fn create_template(model_txt: String, params: Vec<String>) -> Result<PathBuf, io
             .output()
             .expect("Failed to create cargo project");
 
+        if !template_dir.join("src/lib.rs").exists() {
+            fs::create_dir_all(template_dir.join("src"))?;
+            fs::write(
+                template_dir.join("src/lib.rs"),
+                "// Empty library file for the initial template",
+            )?;
+        }
+
         let cargo_toml_path = template_dir.join("Cargo.toml");
         let cargo_toml_content = r#"
         [package]
@@ -123,12 +145,15 @@ fn create_template(model_txt: String, params: Vec<String>) -> Result<PathBuf, io
         crate-type = ["cdylib"]
 
         [dependencies]
-        // pmcore = "0.7.1"
         pmcore = { path = "/Users/jotalvaro/code/LAPKB/PMcore" }
         "#;
         fs::write(cargo_toml_path, cargo_toml_content)?;
-    }
+    };
+    Ok(template_dir)
+}
 
+fn inject_model(model_txt: String, params: Vec<String>) -> Result<PathBuf, io::Error> {
+    let template_dir = env::temp_dir().join("exa_tmp").join("template");
     let lib_rs_path = template_dir.join("src").join("lib.rs");
     let lib_rs_content = format!(
         r#"
@@ -164,6 +189,5 @@ fn create_template(model_txt: String, params: Vec<String>) -> Result<PathBuf, io
         .current_dir(&template_dir)
         .output()
         .expect("Failed to format cargo project");
-
     Ok(template_dir)
 }
