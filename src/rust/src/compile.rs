@@ -113,12 +113,15 @@ fn build_template(template_path: PathBuf) -> Result<PathBuf, io::Error> {
 
 fn create_template() -> Result<PathBuf, io::Error> {
     let temp_dir = env::temp_dir().join("exa_tmp");
+    if !temp_dir.exists() {
+        fs::create_dir_all(&temp_dir)?;
+    }
     let template_dir = temp_dir.join("template");
 
     if !template_dir.exists() {
-        fs::create_dir_all(&template_dir)?;
+        // fs::create_dir_all(&template_dir)?;
 
-        Command::new("cargo")
+        let output = Command::new("cargo")
             .arg("new")
             .arg("template")
             .arg("--lib")
@@ -126,13 +129,16 @@ fn create_template() -> Result<PathBuf, io::Error> {
             .output()
             .expect("Failed to create cargo project");
 
-        if !template_dir.join("src/lib.rs").exists() {
-            fs::create_dir_all(template_dir.join("src"))?;
-            fs::write(
-                template_dir.join("src/lib.rs"),
-                "// Empty library file for the initial template",
-            )?;
-        }
+        io::stderr().write_all(&output.stderr)?;
+        io::stdout().write_all(&output.stdout)?;
+
+        // if !template_dir.join("src/lib.rs").exists() {
+        //     fs::create_dir_all(template_dir.join("src"))?;
+        //     fs::write(
+        //         template_dir.join("src/lib.rs"),
+        //         "// Empty library file for the initial template",
+        //     )?;
+        // }
 
         let cargo_toml_path = template_dir.join("Cargo.toml");
         let cargo_toml_content = r#"
