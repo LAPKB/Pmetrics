@@ -117,10 +117,22 @@ fn create_template() -> Result<PathBuf, io::Error> {
         fs::create_dir_all(&temp_dir)?;
     }
     let template_dir = temp_dir.join("template");
+    let cargo_toml_path = template_dir.join("Cargo.toml");
+
+    let cargo_toml_content = r#"
+        [package]
+        name = "model_lib"
+        version = "0.1.0"
+        edition = "2021"
+
+        [lib]
+        crate-type = ["cdylib"]
+
+        [dependencies]
+        pmcore = { git = "https://github.com/LAPKB/PMcore.git", branch = "dev" }
+        "#;
 
     if !template_dir.exists() {
-        // fs::create_dir_all(&template_dir)?;
-
         let output = Command::new("cargo")
             .arg("new")
             .arg("template")
@@ -132,19 +144,8 @@ fn create_template() -> Result<PathBuf, io::Error> {
         io::stderr().write_all(&output.stderr)?;
         io::stdout().write_all(&output.stdout)?;
 
-        let cargo_toml_path = template_dir.join("Cargo.toml");
-        let cargo_toml_content = r#"
-        [package]
-        name = "model_lib"
-        version = "0.1.0"
-        edition = "2021"
-
-        [lib]
-        crate-type = ["cdylib"]
-
-        [dependencies]
-        pmcore = { path = "/Users/jotalvaro/code/LAPKB/PMcore" }
-        "#;
+        fs::write(cargo_toml_path, cargo_toml_content)?;
+    } else if !cargo_toml_path.exists() {
         fs::write(cargo_toml_path, cargo_toml_content)?;
     };
     Ok(template_dir)
