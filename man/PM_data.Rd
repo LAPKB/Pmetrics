@@ -69,6 +69,7 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \item \href{#method-PM_data-print}{\code{PM_data$print()}}
 \item \href{#method-PM_data-summary}{\code{PM_data$summary()}}
 \item \href{#method-PM_data-addEvent}{\code{PM_data$addEvent()}}
+\item \href{#method-PM_data-makeNoise}{\code{PM_data$makeNoise()}}
 \item \href{#method-PM_data-clone}{\code{PM_data$clone()}}
 }
 }
@@ -340,6 +341,20 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 }
 \if{html}{\out{</div>}}
 
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_data-makeNoise"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-makeNoise}{}}}
+\subsection{Method \code{makeNoise()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$makeNoise(
+  target = NULL,
+  conditions = NULL,
+  mode = "add",
+  coeff = list(c0 = 0, c1 = 0, c2 = 0, c3 = 0)
+)}\if{html}{\out{</div>}}
 }
 
 }
