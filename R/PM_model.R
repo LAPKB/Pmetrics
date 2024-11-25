@@ -109,7 +109,7 @@ PM_model$new <- function(model, ...) {
   if (getPMoptions()$backend == "rust") {
     temp_dir <- tempdir()
     model$write_rust(file.path(temp_dir, "tmp_model.txt"))
-    model_path <- file.path(temp_dir, "model.pmx")
+    model_path <- tempfile(pattern = "model_", fileext = ".pmx")
     tryCatch(
       {
         compile_model(
@@ -267,7 +267,6 @@ covariate <- function(name, constant = FALSE) {
 PM_Vmodel <- R6::R6Class("PM_model",
   public = list(
     name = NULL, # used by PM_model_legacy
-    binary_path = NULL, # Path to the compiled model binary. Used by the rust backend.
     # error = NULL,
     initialize = function() {
       cli::cli_abort(c("x" = "Unable to initialize abstract class"))
@@ -532,6 +531,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
   inherit = PM_Vmodel,
   public = list(
     model_list = NULL,
+    binary_path = NULL, # Path to the compiled model binary. Used by the rust backend.
     initialize = function(model_list) {
       # guarantees primary keys are lowercase and max first 3 characters
       orig_names <- names(model_list)
