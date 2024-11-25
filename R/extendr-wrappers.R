@@ -24,7 +24,7 @@ compile_model <- function(model_path, output_path, params) invisible(.Call(wrap_
 
 #' Dummy function to cache compilation artifacts.
 #'@export
-dummy_compile <- function() invisible(.Call(wrap__dummy_compile))
+dummy_compile <- function() .Call(wrap__dummy_compile)
 
 #'@export
 is_cargo_installed <- function() .Call(wrap__is_cargo_installed)

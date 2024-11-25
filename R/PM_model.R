@@ -98,14 +98,33 @@ PM_model$new <- function(model, ...) {
   # List
   # PM_model object
   if (is.character(model) && length(model) == 1) {
-    return(PM_model_file$new(model))
+    model <- PM_model_file$new(model)
   } else if (is.list(model)) {
-    return(PM_model_list$new(model))
+    model <- PM_model_list$new(model)
   } else if (inherits(model, "PM_model")) {
-    return(PM_model_list$new(model$model_list)) # rebuild
+    model <- PM_model_list$new(model$model_list)
   } else {
     cli::cli_abort(c("x" = "Non supported model type: {typeof(model)}"))
   }
+  if (getPMoptions()$backend == "rust") {
+    temp_dir <- tempdir()
+    model$write_rust(file.path(temp_dir, "tmp_model.txt"))
+    model_path <- file.path(temp_dir, "model.pmx")
+    tryCatch(
+      {
+        compile_model(
+          file.path(temp_dir, "tmp_model.txt"),
+          model_path, model$get_primary()
+        )
+        model$binary_path <- model_path
+      },
+      error = function(e) {
+        cli::cli_abort(c("x" = "Model compilation failed: {e$message}"))
+      }
+    )
+    file.remove(file.path(temp_dir, "tmp_model.txt"))
+  }
+  return(model)
 }
 
 #' @title Additive error model
@@ -248,6 +267,7 @@ covariate <- function(name, constant = FALSE) {
 PM_Vmodel <- R6::R6Class("PM_model",
   public = list(
     name = NULL, # used by PM_model_legacy
+    binary_path = NULL, # Path to the compiled model binary. Used by the rust backend.
     # error = NULL,
     initialize = function() {
       cli::cli_abort(c("x" = "Unable to initialize abstract class"))
@@ -349,6 +369,9 @@ PM_Vmodel <- R6::R6Class("PM_model",
       tryCatch(plot.PM_model(self, ...), error = function(e) {
         cat(crayon::red("Error:"), e$message, "\n")
       })
+    },
+    get_primary = function() {
+      return(names(self$model_list$pri))
     }
   ),
   private = list(
@@ -549,7 +572,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       return(model_path)
     },
-    write_rust = function() {
+    write_rust = function(file_name = "parsed_model.txt") {
       model_file <- system.file("Rust/template.rs", package = "Pmetrics")
       content <- readr::read_file(model_file)
 
@@ -669,7 +692,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       content <- gsub("</init>", init, content)
 
 
-      readr::write_file(content, "main.rs")
+      readr::write_file(content, file_name)
     },
     update = function(changes_list) {
       keys <- names(changes_list)
