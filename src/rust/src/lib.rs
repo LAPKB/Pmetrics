@@ -1,5 +1,5 @@
-mod compile;
-mod execute;
+mod compiler;
+mod executor;
 mod simulation;
 
 use std::process::Command;
@@ -24,7 +24,7 @@ fn simulate_one(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<Sim
     validate_paths(data_path, model_path);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
     let subjects = data.get_subjects();
-    let rows = execute::execute(model_path.into(), subjects.first().unwrap(), &spp.to_vec());
+    let rows = executor::execute(model_path.into(), subjects.first().unwrap(), &spp.to_vec());
     rows.into_dataframe().unwrap()
 }
 
@@ -37,7 +37,7 @@ fn simulate_all(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<Sim
     let subjects = data.get_subjects();
     let mut rows = Vec::new();
     for subject in subjects.iter() {
-        rows.append(&mut execute::execute(
+        rows.append(&mut executor::execute(
             model_path.into(),
             subject,
             &spp.to_vec(),
@@ -51,14 +51,15 @@ fn simulate_all(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<Sim
 #[extendr]
 fn compile_model(model_path: &str, output_path: &str, params: Strings) {
     let params: Vec<String> = params.iter().map(|x| x.to_string()).collect();
-    compile::compile(model_path.into(), Some(output_path.into()), params.to_vec());
+    compiler::compile(model_path.into(), Some(output_path.into()), params.to_vec());
 }
 
 /// Dummy function to cache compilation artifacts.
 ///@export
 #[extendr]
-fn dummy_compile() {
-    compile::dummy_compile().unwrap();
+fn dummy_compile() -> String {
+    let build_path = compiler::dummy_compile().unwrap();
+    build_path
 }
 
 ///@export
