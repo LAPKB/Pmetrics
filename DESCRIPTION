@@ -18,6 +18,7 @@ Authors@R: c(
 Version: 2.1.2
 URL: https://lapkb.github.io/Pmetrics/
 BugReports: https://github.com/LAPKB/Pmetrics/issues
+SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc
 Depends: 
     R (>= 4.0.0)
 Imports:

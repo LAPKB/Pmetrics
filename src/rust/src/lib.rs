@@ -1,4 +1,4 @@
-mod compiler;
+mod build;
 mod executor;
 mod simulation;
 
@@ -51,14 +51,14 @@ fn simulate_all(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<Sim
 #[extendr]
 fn compile_model(model_path: &str, output_path: &str, params: Strings) {
     let params: Vec<String> = params.iter().map(|x| x.to_string()).collect();
-    compiler::compile(model_path.into(), Some(output_path.into()), params.to_vec());
+    build::compile(model_path.into(), Some(output_path.into()), params.to_vec());
 }
 
 /// Dummy function to cache compilation artifacts.
 ///@export
 #[extendr]
 fn dummy_compile() -> String {
-    let build_path = compiler::dummy_compile().unwrap();
+    let build_path = build::dummy_compile().unwrap();
     build_path
 }
 
