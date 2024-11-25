@@ -370,7 +370,7 @@ PM_Vmodel <- R6::R6Class("PM_model",
       })
     },
     get_primary = function() {
-      return(names(self$model_list$pri))
+      return(tolower(names(self$model_list$pri)))
     }
   ),
   private = list(
