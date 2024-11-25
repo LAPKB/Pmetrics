@@ -26,5 +26,8 @@ compile_model <- function(model_path, output_path, params) invisible(.Call(wrap_
 #'@export
 dummy_compile <- function() invisible(.Call(wrap__dummy_compile))
 
+#'@export
+is_cargo_installed <- function() .Call(wrap__is_cargo_installed)
+
 
 # nolint end

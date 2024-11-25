@@ -2,6 +2,8 @@ mod compile;
 mod execute;
 mod simulation;
 
+use std::process::Command;
+
 use extendr_api::prelude::*;
 use pmcore::prelude::data::read_pmetrics;
 use simulation::SimulationRow;
@@ -59,6 +61,12 @@ fn dummy_compile() {
     compile::dummy_compile().unwrap();
 }
 
+///@export
+#[extendr]
+fn is_cargo_installed() -> bool {
+    Command::new("cargo").arg("--version").output().is_ok()
+}
+
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
 // See corresponding C code in `entrypoint.c`.
@@ -68,6 +76,7 @@ extendr_module! {
     fn simulate_all;
     fn compile_model;
     fn dummy_compile;
+    fn is_cargo_installed;
 }
 
 // To generate the exported function in R, run the following command:

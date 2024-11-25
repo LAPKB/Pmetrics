@@ -349,12 +349,7 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \if{latex}{\out{\hypertarget{method-PM_data-makeNoise}{}}}
 \subsection{Method \code{makeNoise()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_data$makeNoise(
-  target = NULL,
-  conditions = NULL,
-  mode = "add",
-  coeff = list(c0 = 0, c1 = 0, c2 = 0, c3 = 0)
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$makeNoise(col = "out", c0 = 0, c1 = 0, c2 = 0, c3 = 0)}\if{html}{\out{</div>}}
 }
 
 }
