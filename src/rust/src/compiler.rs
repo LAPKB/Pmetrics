@@ -39,10 +39,10 @@ pub(crate) fn compile(path: PathBuf, _output: Option<PathBuf>, params: Vec<Strin
     fs::copy(&dynlib_path, &output_path).expect("Failed to copy dynamic library to output path");
 }
 
-pub(crate) fn dummy_compile() -> Result<(), io::Error> {
+pub(crate) fn dummy_compile() -> Result<String, io::Error> {
     let template_path = create_template()?;
-    build_template(template_path)?;
-    Ok(())
+    build_template(template_path.clone())?;
+    Ok(template_path.to_string_lossy().to_string())
 }
 
 fn stream_output<R: Read + Send + 'static>(

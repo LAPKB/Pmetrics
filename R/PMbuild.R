@@ -116,24 +116,11 @@ PMbuild <- function(autoyes = FALSE, rebuild = FALSE) {
     }
   } else if (getPMoptions()$backend == "rust") {
     if (is_rustup_installed()) {
-      cat("Rustup was detected in your system, Fetching dependencies and building base project.\n")
-      system("rustup install stable")
-      system("rustup default stable")
-      cwd <- getwd()
-      # This might not work if the folder is deleted afther the R Session is closed
-      # If that is the case, we should create a folder inside the Pmetrics Package folder
-      setwd(system.file("Rust", package = "Pmetrics"))
-      system("cargo new template")
-      setwd("template")
-      # system("cd template")
-      system("cargo add ode_solvers")
-      system("cargo add --git https://github.com/LAPKB/PMcore --branch main")
-      system("cargo add eyre")
-      system("cargo build --release")
-      setPMoptions(rust_template = getwd())
-      setwd(cwd)
+      cat("Rust was detected in your system, Fetching dependencies and building base project.\n")
+      template <- dummy_compile()
+      setPMoptions(rust_template = template)
     } else {
-      cat("\n Rustup was not detected in your system, this can be caused by multiple reasons:\n")
+      cat("\n Rust was not detected in your system, this can be caused by multiple reasons:\n")
       cat("* You have not installed rustup in your system, Follow the installation instructions at https://www.rust-lang.org/tools/install\n")
       cat("* You might have rustup installed in your system but your $PATH has not been updated (Windows), try closing and re-opening your R session, and/or Rstudio.\n")
       cat("* If you are using linux/MacOS and this error persists after installing rust, try using this command in your terminal: sudo ln -s ~/.cargo/bin/* /usr/local/sbin \n")
@@ -202,15 +189,11 @@ PMbuild <- function(autoyes = FALSE, rebuild = FALSE) {
 }
 
 is_rustup_installed <- function() {
-  flag <- system("which rustup")
+  flag <- is_cargo_installed()
   # Sometimes R does not find rustup even if it is installed,
   # Fix: create a symlink to any of the folders watched by system("echo $PATH")
   # sudo ln -s ~/.cargo/bin/* /usr/local/sbin
   # for rustup and cargo
   # We cannot do it automatically because it requires elevated permissions
-  if (flag == 0) {
-    return(T)
-  } else {
-    return(F)
-  }
+  return(flag)
 }
