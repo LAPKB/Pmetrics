@@ -156,6 +156,8 @@ fn inject_model(model_txt: String, params: Vec<String>) -> Result<PathBuf, io::E
     let lib_rs_path = template_dir.join("src").join("lib.rs");
     let lib_rs_content = format!(
         r#"
+        #![allow(dead_code)]
+        #![allow(unused_variables)]
         use std::ffi::c_void;
         use pmcore::prelude::*;
     
