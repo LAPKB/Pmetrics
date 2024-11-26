@@ -195,10 +195,11 @@ PM_fit <- R6::R6Class(
       ### Move temp folder to ect/PMcore ###
       # check if temp folder exist, create if not
       if (arglist$artifacts) {
-        if (!dir.exists("etc")) {
-          dir.create("etc")
-        }
-        system(sprintf("cp -R %s etc/PMcore", getPMoptions()$rust_template))
+        # if (!dir.exists("etc")) {
+        #   dir.create("etc")
+        # }
+        # system(sprintf("cp -R %s etc/PMcore", getPMoptions()$rust_template))
+        self$model$write_rust("model.txt")
       }
 
       #### Include or exclude subjects ####
@@ -223,224 +224,238 @@ PM_fit <- R6::R6Class(
       data_new <- PM_data$new(data_filtered, quiet = TRUE)
       data_new$write("gendata.csv", header = FALSE)
 
-      #### Determine indpts #####
-      num_ran_param <- purrr::map(self$model$model_list$pri, \(x)
-      is.null(x$fixed)) %>%
-        unlist() %>%
-        sum()
+      # #### Determine indpts #####
+      # num_ran_param <- purrr::map(self$model$model_list$pri, \(x)
+      # is.null(x$fixed)) %>%
+      #   unlist() %>%
+      #   sum()
 
-      indpts <- ifelse(length(arglist$indpts) == 0, num_ran_param, arglist$indpts)
-      # convert index into number of grid points
-      arglist$num_gridpoints <- dplyr::case_when(
-        indpts == 1 ~ 2129,
-        indpts == 2 ~ 5003,
-        indpts == 3 ~ 10007,
-        indpts == 4 ~ 20011,
-        indpts == 5 ~ 40009,
-        indpts == 6 ~ 80021,
-        indpts > 6 ~ 80021 + (min(indpts, 16) - 6) * 80021
-      ) %>% format(scientific = FALSE)
-
-
-      # arglist$num_indpts <- (2**num_ran_param) * arglist$indpts
-      # arglist$num_indpts <- format(arglist$num_indpts, scientific = FALSE)
-      # arglist$num_indpts <- 2129 # TO-DO: Remove this line
-
-      #### Format cycles #####
-      arglist$cycles <- format(arglist$cycles, scientific = FALSE)
-
-      ### Prior ###
-      if (arglist$prior != "uniform") {
-        prior <- arglist$prior
-        if (inherits(prior, "PM_result")) { # PM_result
-          write.csv(prior$final$popPoints, "theta.csv")
-          prior <- "theta.csv"
-        } else if (!is.na(suppressWarnings(as.numeric(prior)))) { # numeric
-          prior <- paste(prior, "outputs/theta.csv", sep = "/")
-          if (!file.exists(prior)) {
-            cat(paste0(crayon::red("Error: "), crayon::blue(prior), " does not exist.\n"))
-            setwd(cwd)
-            return(invisible(nullfile()))
-          }
-        } else if (!file.exists(prior)) { # if file doesn't exist, error; otherwise prior will be an existing filename
-          cat(paste0(crayon::red("Error: "), crayon::blue(prior), " is not in the current working directory:\n", crayon::blue(getwd(), "\n")))
-          setwd(cwd)
-          return(invisible(NULL))
-        }
-      }
-
-      ### Sampler ###
-      arglist$sampler <- tolower(arglist$sampler)
-      if (!arglist$sampler %in% c("sobol", "osat")) {
-        cat(paste0(
-          crayon::red("Error: "), " Only \"sobol\" or \"osat\" are valid for the ",
-          crayon::blue("sampler"), " argument.\n"
-        ))
-        setwd(cwd)
-        return(invisible(NULL))
-      }
-
-      #### Verify engine ###
-      arglist$engine <- toupper(arglist$engine)
-      if (!arglist$engine %in% c("NPAG", "NPOD")) {
-        cat(paste0(
-          crayon::red("Error: "), " Only \"NPAG\" or \"NPOD\" are valid for the ",
-          crayon::blue("engine"), " argument.\n"
-        ))
-        setwd(cwd)
-        return(invisible(NULL))
-      }
+      # indpts <- ifelse(length(arglist$indpts) == 0, num_ran_param, arglist$indpts)
+      # # convert index into number of grid points
+      # arglist$num_gridpoints <- dplyr::case_when(
+      #   indpts == 1 ~ 2129,
+      #   indpts == 2 ~ 5003,
+      #   indpts == 3 ~ 10007,
+      #   indpts == 4 ~ 20011,
+      #   indpts == 5 ~ 40009,
+      #   indpts == 6 ~ 80021,
+      #   indpts > 6 ~ 80021 + (min(indpts, 16) - 6) * 80021
+      # ) %>% format(scientific = FALSE)
 
 
-      #### Other arguments ####
-      arglist$use_tui <- "false" # TO-DO: Convert TRUE -> "true", vice versa.
-      arglist$cache <- "true"
-      arglist$seed <- 347
+      # # arglist$num_indpts <- (2**num_ran_param) * arglist$indpts
+      # # arglist$num_indpts <- format(arglist$num_indpts, scientific = FALSE)
+      # # arglist$num_indpts <- 2129 # TO-DO: Remove this line
+
+      # #### Format cycles #####
+      # arglist$cycles <- format(arglist$cycles, scientific = FALSE)
+
+      # ### Prior ###
+      # if (arglist$prior != "uniform") {
+      #   prior <- arglist$prior
+      #   if (inherits(prior, "PM_result")) { # PM_result
+      #     write.csv(prior$final$popPoints, "theta.csv")
+      #     prior <- "theta.csv"
+      #   } else if (!is.na(suppressWarnings(as.numeric(prior)))) { # numeric
+      #     prior <- paste(prior, "outputs/theta.csv", sep = "/")
+      #     if (!file.exists(prior)) {
+      #       cat(paste0(crayon::red("Error: "), crayon::blue(prior), " does not exist.\n"))
+      #       setwd(cwd)
+      #       return(invisible(nullfile()))
+      #     }
+      #   } else if (!file.exists(prior)) { # if file doesn't exist, error; otherwise prior will be an existing filename
+      #     cat(paste0(crayon::red("Error: "), crayon::blue(prior), " is not in the current working directory:\n", crayon::blue(getwd(), "\n")))
+      #     setwd(cwd)
+      #     return(invisible(NULL))
+      #   }
+      # }
+
+      # ### Sampler ###
+      # arglist$sampler <- tolower(arglist$sampler)
+      # if (!arglist$sampler %in% c("sobol", "osat")) {
+      #   cat(paste0(
+      #     crayon::red("Error: "), " Only \"sobol\" or \"osat\" are valid for the ",
+      #     crayon::blue("sampler"), " argument.\n"
+      #   ))
+      #   setwd(cwd)
+      #   return(invisible(NULL))
+      # }
+
+      # #### Verify engine ###
+      # arglist$engine <- toupper(arglist$engine)
+      # if (!arglist$engine %in% c("NPAG", "NPOD")) {
+      #   cat(paste0(
+      #     crayon::red("Error: "), " Only \"NPAG\" or \"NPOD\" are valid for the ",
+      #     crayon::blue("engine"), " argument.\n"
+      #   ))
+      #   setwd(cwd)
+      #   return(invisible(NULL))
+      # }
 
 
-      #### Save PM_fit ####
-      self$data <- PM_data$new(data_filtered, quiet = TRUE)
-      self$arglist <- arglist
-      save(self, file = "fit.Rdata")
+      # #### Other arguments ####
+      # arglist$use_tui <- "false" # TO-DO: Convert TRUE -> "true", vice versa.
+      # arglist$cache <- "true"
+      # arglist$seed <- 347
 
-      #### Parameter info ####
-      pars <- list(
-        random = "[random]",
-        fixed = "[fixed]",
-        constant = "[constant]"
-      )
 
-      temp <- lapply(seq_along(names(self$model$model_list$pri)), function(i) {
-        pri <- self$model$model_list$pri[i]
-        name <- names(pri)
-        pri <- self$model$model_list$pri[[i]]
+      # #### Save PM_fit ####
+      # self$data <- PM_data$new(data_filtered, quiet = TRUE)
+      # self$arglist <- arglist
+      # save(self, file = "fit.Rdata")
 
-        # Constant parameter
-        if (pri$constant) {
-          value <- format(pri$fixed, scientific = FALSE, nsmall = 1)
-          str <- paste0(name, " = ", value)
-          pars$constant <<- paste(pars$constant, str, sep = "\n")
-        }
+      # #### Parameter info ####
+      # pars <- list(
+      #   random = "[random]",
+      #   fixed = "[fixed]",
+      #   constant = "[constant]"
+      # )
 
-        # Fixed parameter
-        if (!pri$constant & !is.null(pri$fixed)) {
-          value <- format(pri$fixed, scientific = FALSE, nsmall = 1)
-          str <- paste0(name, " = ", value)
-          pars$fixed <<- paste(pars$fixed, str, sep = "\n")
-        }
+      # temp <- lapply(seq_along(names(self$model$model_list$pri)), function(i) {
+      #   pri <- self$model$model_list$pri[i]
+      #   name <- names(pri)
+      #   pri <- self$model$model_list$pri[[i]]
 
-        # Random parameter
-        if (!pri$constant & is.null(pri$fixed)) {
-          min <- format(pri$min, scientific = FALSE, nsmall = 1)
-          max <- format(pri$max, scientific = FALSE, nsmall = 1)
-          str <- paste0(name, " = [", min, ",", max, "]")
-          pars$random <<- paste(pars$random, str, sep = "\n")
-        }
+      #   # Constant parameter
+      #   if (pri$constant) {
+      #     value <- format(pri$fixed, scientific = FALSE, nsmall = 1)
+      #     str <- paste0(name, " = ", value)
+      #     pars$constant <<- paste(pars$constant, str, sep = "\n")
+      #   }
 
-        return()
+      #   # Fixed parameter
+      #   if (!pri$constant & !is.null(pri$fixed)) {
+      #     value <- format(pri$fixed, scientific = FALSE, nsmall = 1)
+      #     str <- paste0(name, " = ", value)
+      #     pars$fixed <<- paste(pars$fixed, str, sep = "\n")
+      #   }
+
+      #   # Random parameter
+      #   if (!pri$constant & is.null(pri$fixed)) {
+      #     min <- format(pri$min, scientific = FALSE, nsmall = 1)
+      #     max <- format(pri$max, scientific = FALSE, nsmall = 1)
+      #     str <- paste0(name, " = [", min, ",", max, "]")
+      #     pars$random <<- paste(pars$random, str, sep = "\n")
+      #   }
+
+      #   return()
+      # })
+
+      # arglist$parameter_block <- paste0(unlist(pars), collapse = "\n")
+      # arglist$poly_coeff <-
+      #   self$model$model_list$out$Y1$err$assay$coefficients %>%
+      #   paste0(collapse = ",")
+
+      # if (!is.null(self$model$model_list$out$Y1$err$model$proportional)) {
+      #   arglist$error_class <- "proportional"
+      #   arglist$lamgam <- self$model$model_list$out$Y1$err$model$proportional
+      # } else if (!is.null(self$model$model_list$out$Y1$err$model$additive)) {
+      #   arglist$error_class <- "additive"
+      #   arglist$lamgam <- self$model$model_list$out$Y1$err$model$additive
+      # } else {
+      #   cli::cli_abort(c(
+      #     "x" = "Error model is misspecified.",
+      #     "i" = "Choose {.code proportional} or {.code additive}."
+      #   ))
+      # }
+
+      # #### Generate config.toml #####
+      # toml_template <- stringr::str_glue(
+      #   # "[paths]",
+      #   # "data = \"gendata.csv\"",
+      #   # "log = \"run.log\"",
+      #   # "prior = \"{prior}\"",
+      #   "[config]",
+      #   "cycles = {cycles}",
+      #   "algorithm = \"{engine}\"",
+      #   # "engine = \"{engine}\"",
+      #   # "init_points = {num_gridpoints}",
+      #   # "seed = {seed}",
+      #   # "sampler = \"{sampler}\"",
+      #   # "tui = {use_tui}",
+      #   # "output = true",
+      #   # "cache = {cache}",
+      #   "{parameter_block}",
+      #   "[error]",
+      #   "value = {lamgam}",
+      #   "class = \"{error_class}\"",
+      #   "poly = [{poly_coeff}]",
+      #   .envir = arglist,
+      #   .sep = "\n"
+      # )
+
+      # writeLines(text = toml_template, con = "config.toml")
+
+      # # check if the file exists
+      # file.copy(private$binary_path, "NPcore")
+      ranges <- lapply(self$model$model_list$pri, function(x) {
+        c(x$min,x$max)
       })
-
-      arglist$parameter_block <- paste0(unlist(pars), collapse = "\n")
-      arglist$poly_coeff <-
-        self$model$model_list$out$Y1$err$assay$coefficients %>%
-        paste0(collapse = ",")
-
-      if (!is.null(self$model$model_list$out$Y1$err$model$proportional)) {
-        arglist$error_class <- "proportional"
-        arglist$lamgam <- self$model$model_list$out$Y1$err$model$proportional
-      } else if (!is.null(self$model$model_list$out$Y1$err$model$additive)) {
-        arglist$error_class <- "additive"
-        arglist$lamgam <- self$model$model_list$out$Y1$err$model$additive
-      } else {
-        cli::cli_abort(c(
-          "x" = "Error model is misspecified.",
-          "i" = "Choose {.code proportional} or {.code additive}."
-        ))
-      }
-
-      #### Generate config.toml #####
-      toml_template <- stringr::str_glue(
-        # "[paths]",
-        # "data = \"gendata.csv\"",
-        # "log = \"run.log\"",
-        # "prior = \"{prior}\"",
-        "[config]",
-        "cycles = {cycles}",
-        "algorithm = \"{engine}\"",
-        # "engine = \"{engine}\"",
-        # "init_points = {num_gridpoints}",
-        # "seed = {seed}",
-        # "sampler = \"{sampler}\"",
-        # "tui = {use_tui}",
-        # "output = true",
-        # "cache = {cache}",
-        "{parameter_block}",
-        "[error]",
-        "value = {lamgam}",
-        "class = \"{error_class}\"",
-        "poly = [{poly_coeff}]",
-        .envir = arglist,
-        .sep = "\n"
-      )
-
-      writeLines(text = toml_template, con = "config.toml")
-
-      # check if the file exists
-      file.copy(private$binary_path, "NPcore")
+      names(ranges) <- tolower(names(ranges))
       if (arglist$intern) {
-        system2("./NPcore", wait = TRUE)
+        # system2("./NPcore", wait = TRUE)
+        out_path <- file.path(getwd(), "outputs")
+        fit(self$model$binary_path, "gendata.csv", ranges, out_path)
         PM_parse("outputs")
-        res <- PM_load(file = "outputs/PMout.Rdata")
+        res <- PM_load(file = "PMout.Rdata")
         PM_report(res, outfile = "report.html", template = "plotly")
       } else {
-        system2("./NPcore", args = "&")
+        cli::cli_abort(c(
+          "x" = "Error: Right no the rust engine only supports internal runs.",
+          "i" = "This is a temporary limitation."
+        ))
+        # system2("./NPcore", args = "&")
         # TODO: The code to generate the report is missing here
       }
       setwd(cwd)
     },
     setup_rust_execution = function() {
-      if (!file.exists(getPMoptions()$rust_template)) {
-        cli::cli_abort(c(
-          "x" = "Rust has not been built.",
-          "i" = "Execute {.fn PMbuild} for this Pmetrics installation."
-        ))
+      
+      if (!file.exists(self$model$binary_path)) {
+        self$model$compile()
+        if (!file.exists(self$model$binary_path)) {
+          cli::cli_abort(c(
+            "x" = "Rust has not been built.",
+            "i" = "Make sure the model was built correcly when calling {.fn PM_model$new}"
+          ))
+        }
       }
-      cwd <- getwd()
-      self$model$write_rust()
+      # cwd <- getwd()
+      # self$model$write_rust()
 
-      # # copy model and config to the template project
-      # if (length(getPMoptions()$rust_template) == 0) {
-      #   # PMbuild has not been executed
-      #   PMbuild()
+      # # # copy model and config to the template project
+      # # if (length(getPMoptions()$rust_template) == 0) {
+      # #   # PMbuild has not been executed
+      # #   PMbuild()
+      # # }
+      # system(sprintf("mv main.rs %s/src/main.rs", getPMoptions()$rust_template))
+      # # compile the template folder
+      # setwd(getPMoptions()$rust_template)
+      # system("cargo fmt")
+      # system("cargo build --release")
+      # if (!file.exists("target/release/template")) {
+      #   setwd(cwd)
+      #   cli::cli_abort(c("x" = "Error: Compilation failed"))
       # }
-      system(sprintf("mv main.rs %s/src/main.rs", getPMoptions()$rust_template))
-      # compile the template folder
-      setwd(getPMoptions()$rust_template)
-      system("cargo fmt")
-      system("cargo build --release")
-      if (!file.exists("target/release/template")) {
-        setwd(cwd)
-        cli::cli_abort(c("x" = "Error: Compilation failed"))
-      }
-      compiled_binary_path <- paste0(getwd(), "/target/release/template")
-      # Save the binary somewhere
-      setwd(tempdir())
-      olddir <- list.dirs(recursive = F)
-      olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
-      olddir <- sub("^\\./", "", olddir)
-      if (length(olddir) > 0) {
-        newdir <- as.character(max(as.numeric(olddir)) + 1)
-      } else {
-        newdir <- "1"
-      }
-      dir.create(newdir)
-      setwd(newdir)
-      cat("\nMoving compiled binary to a temp folder\n")
-      system(sprintf("cp %s NPcore", compiled_binary_path))
-      private$binary_path <- paste0(getwd(), "/NPcore")
-      setwd(cwd)
-      # TODO: I think it might be necessary to implement a re_build() method
-      # In case the binary the temp folder gets deleted
+      # compiled_binary_path <- paste0(getwd(), "/target/release/template")
+      # # Save the binary somewhere
+      # setwd(tempdir())
+      # olddir <- list.dirs(recursive = F)
+      # olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
+      # olddir <- sub("^\\./", "", olddir)
+      # if (length(olddir) > 0) {
+      #   newdir <- as.character(max(as.numeric(olddir)) + 1)
+      # } else {
+      #   newdir <- "1"
+      # }
+      # dir.create(newdir)
+      # setwd(newdir)
+      # cat("\nMoving compiled binary to a temp folder\n")
+      # system(sprintf("cp %s NPcore", compiled_binary_path))
+      # private$binary_path <- paste0(getwd(), "/NPcore")
+      # setwd(cwd)
+      # # TODO: I think it might be necessary to implement a re_build() method
+      # # In case the binary the temp folder gets deleted
     }
   )
 )
