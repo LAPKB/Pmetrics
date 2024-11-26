@@ -1,12 +1,12 @@
 #' @title Build Pmetrics
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Compile Fortran or Rust source code for permanent Pmetrics modules.
-#' @details 
+#' @details
 #' Choice of back end language specified as option in [setPMoptions].
 #'
-#' @param skipRegistration Don't register. Default is `FALSE`.
+# #' @param skipRegistration Don't register. Default is `FALSE`.
 #' @param autoyes Automatically install without asking. Default is `FALSE`.
 #' @param rebuild Default is `FALSE`.
 #' @author Michael Neely
@@ -14,9 +14,9 @@
 
 
 
-PMbuild <- function(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE) {
+PMbuild <- function(autoyes = FALSE, rebuild = FALSE) {
   if (getPMoptions()$backend == "fortran") {
-    if (.check_and_install_gfortran(skipRegistration, autoyes)) {
+    if (.check_and_install_gfortran(autoyes)) {
       currwd <- getwd()
       OS <- getOS()
 
@@ -116,24 +116,11 @@ PMbuild <- function(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE) 
     }
   } else if (getPMoptions()$backend == "rust") {
     if (is_rustup_installed()) {
-      cat("Rustup was detected in your system, Fetching dependencies and building base project.\n")
-      system("rustup install stable")
-      system("rustup default stable")
-      cwd <- getwd()
-      # This might not work if the folder is deleted afther the R Session is closed
-      # If that is the case, we should create a folder inside the Pmetrics Package folder
-      setwd(system.file("Rust", package = "Pmetrics"))
-      system("cargo new template")
-      setwd("template")
-      # system("cd template")
-      system("cargo add --git https://github.com/Siel/ode-solvers --branch mut_system")
-      system("cargo add --git https://github.com/LAPKB/NPcore")
-      system("cargo add eyre")
-      system("cargo build --release")
-      setPMoptions(rust_template = getwd())
-      setwd(cwd)
+      cat("Rust was detected in your system, Fetching dependencies and building base project.\n")
+      template <- dummy_compile()
+      setPMoptions(rust_template = template)
     } else {
-      cat("\n Rustup was not detected in your system, this can be caused by multiple reasons:\n")
+      cat("\n Rust was not detected in your system, this can be caused by multiple reasons:\n")
       cat("* You have not installed rustup in your system, Follow the installation instructions at https://www.rust-lang.org/tools/install\n")
       cat("* You might have rustup installed in your system but your $PATH has not been updated (Windows), try closing and re-opening your R session, and/or Rstudio.\n")
       cat("* If you are using linux/MacOS and this error persists after installing rust, try using this command in your terminal: sudo ln -s ~/.cargo/bin/* /usr/local/sbin \n")
@@ -144,7 +131,7 @@ PMbuild <- function(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE) 
   }
 }
 
-.check_and_install_gfortran <- function(skipRegistration, autoyes) {
+.check_and_install_gfortran <- function(autoyes) {
   # restore user defaults - deprecated
   # if(length(system.file(package="Defaults"))==1){PMreadDefaults()}
   sch_str <- c("which -s gfortran", "where gfortran", "which gfortran")
@@ -168,11 +155,11 @@ PMbuild <- function(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE) 
         if (substr(input, 1, 1) == "y") {
           if (.installOrUpdateGfortran()) {
             cat("Pmetrics has installed gfortran and will now compile required binary files.\n")
-            cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.\n")
-            cat("If the registration time outs, please run PMbuild(skipRegistration=T) ")
-            if (skipRegistration == FALSE) {
-              .PMremote_registerNewInstallation()
-            }
+            # cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.\n")
+            # cat("If the registration time outs, please run PMbuild(skipRegistration=T) ")
+            # if (skipRegistration == FALSE) {
+            #   .PMremote_registerNewInstallation()
+            # }
             return(TRUE)
           } else {
             cat("ERROR: Pmetrics did not install gfortran automatically.\nPlease install gfortran manually and then run PMbuild().\nGo to http://www.lapk.org/Pmetrics_install.php for help.\n")
@@ -184,11 +171,11 @@ PMbuild <- function(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE) 
         }
       } else {
         cat("Pmetrics has detected gfortran and will compile required binary files.\n")
-        if (skipRegistration == FALSE) {
-          cat("If the registration time outs, please re-run PMbuild(skipRegistration = TRUE) ")
-          .PMremote_registerNewInstallation()
-          cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.\n")
-        }
+        # if (skipRegistration == FALSE) {
+        #   cat("If the registration time outs, please re-run PMbuild(skipRegistration = TRUE) ")
+        #   .PMremote_registerNewInstallation()
+        #   cat("Pmetrics has anonymously registered your installation of this version.\nLAPKB does not collect or store any personal or identifying information.\n")
+        # }
         return(TRUE)
       }
     } else {
@@ -197,20 +184,16 @@ PMbuild <- function(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE) 
     }
   } else {
     print("You are inside the development folder, skipping gfortran installation")
-    return(F)
+    return(FALSE)
   }
 }
 
 is_rustup_installed <- function() {
-  flag <- system("which rustup")
+  flag <- is_cargo_installed()
   # Sometimes R does not find rustup even if it is installed,
   # Fix: create a symlink to any of the folders watched by system("echo $PATH")
   # sudo ln -s ~/.cargo/bin/* /usr/local/sbin
   # for rustup and cargo
   # We cannot do it automatically because it requires elevated permissions
-  if (flag == 0) {
-    return(T)
-  } else {
-    return(F)
-  }
+  return(flag)
 }

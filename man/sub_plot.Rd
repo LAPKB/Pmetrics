@@ -78,6 +78,7 @@ argument. In addition to \code{subplot}, the behavior of this function is two-fo
 }
 }
 \examples{
+library(PmetricsData)
 plot1 <- NPex$op$plot(title = "Posterior")
 plot2 <- NPex$op$plot(pred.type = "pop", title = "Population")
 sub_plot(plot1, plot2, titles = c(0, 0.95), nrows = 2)

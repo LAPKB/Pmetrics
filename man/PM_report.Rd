@@ -4,15 +4,10 @@
 \alias{PM_report}
 \title{Generate a report}
 \usage{
-PM_report(
-  PM_result,
-  template = getPMoptions("report_template"),
-  outfile,
-  show = TRUE
-)
+PM_report(x, template = getPMoptions("report_template"), outfile, show = TRUE)
 }
 \arguments{
-\item{PM_result}{A \code{PM_result} object obtained from \code{PM_load(x)}, where \code{x} is the run number.}
+\item{x}{A \code{PM_result} object obtained from \code{PM_load(x)}, where \code{x} is the run number.}
 
 \item{template}{The filename of a report template in the current working directory,
 or the full path/filename of a template in another directory.
@@ -34,12 +29,7 @@ Generates an HTML-report in the current working directory.
 Generates a report from a specified Rmd template
 }
 \seealso{
-\code{\link{PM_load}}'
-\subsection{PACKAGE IMPORTS FOR REPORT TEMPLATES}{
-}
-
-\subsection{ggplot}{
-}
+\link{PM_load}
 }
 \author{
 Markus Hovd and Julian Otalvaro
