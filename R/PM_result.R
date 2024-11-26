@@ -163,6 +163,10 @@ PM_result <- R6::R6Class(
       make_NCA(self, ...)
     },
 
+    report = function(template = getPMoptions("report_template"), outfile, show = TRUE) {
+      PM_report(self, template, outfile, show)
+    },
+
     #' @description
     #' Calls [PM_sim]. Default is to use the `$final`, `$model`, and `$data` objects
     #' within the [PM_result]. It is common to supply a different `data` template.
