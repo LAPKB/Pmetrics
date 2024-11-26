@@ -398,7 +398,12 @@ PM_load <- function(run, file) {
     result <- output2List(Out = get(load(found)))
     # update
     result2 <- update(result, found)
-    return(PM_result$new(result2, quiet = TRUE))
+    #In order to rebuild correctly the wd must be set to inside the outputs folder
+    cwd <- getwd()
+    setwd(dirname(found))
+    rebuild <- PM_result$new(result2, quiet = TRUE)
+    setwd(cwd)
+    return(rebuild)
   } else {
     cli::cli_abort(c("x" = "No Pmetrics output file found in {getwd()}."))
   }
