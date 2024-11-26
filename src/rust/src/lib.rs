@@ -37,13 +37,20 @@ fn simulate_all(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<Sim
     let subjects = data.get_subjects();
     let mut rows = Vec::new();
     for subject in subjects.iter() {
-        rows.append(&mut executor::execute(
+        rows.append(&mut executor::simulate(
             model_path.into(),
             subject,
             &spp.to_vec(),
         ));
     }
     rows.into_dataframe().unwrap()
+}
+
+///@export
+#[extendr]
+pub fn execute(model_path: &str, data: &str) {
+    validate_paths(data, model_path);
+    executor::fit(model_path.into(), data.into());
 }
 
 /// Compiles the text representation of a model into a binary file.
