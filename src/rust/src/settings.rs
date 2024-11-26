@@ -15,6 +15,7 @@ pub(crate) fn settings(ranges: List, params: &Vec<String>, output_path: &str) ->
         write: true,
         path: output_path.to_string(),
     };
+    settings.config.algorithm = "NPAG".to_string();
     settings
 }
 

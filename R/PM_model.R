@@ -107,22 +107,7 @@ PM_model$new <- function(model, ...) {
     cli::cli_abort(c("x" = "Non supported model type: {typeof(model)}"))
   }
   if (getPMoptions()$backend == "rust") {
-    temp_model <- file.path(tempdir(), "temp_model.txt")
-    model$write_rust(temp_model)
-    model_path <- tempfile(pattern = "model_", fileext = ".pmx")
-    tryCatch(
-      {
-        compile_model(
-          temp_model,
-          model_path, model$get_primary()
-        )
-        model$binary_path <- model_path
-      },
-      error = function(e) {
-        cli::cli_abort(c("x" = "Model compilation failed: {e$message}"))
-      }
-    )
-    file.remove(temp_model)
+    model$compile()
   }
   return(model)
 }
@@ -138,6 +123,8 @@ PM_model$new <- function(model, ...) {
 additive <- function(add, constant = FALSE) {
   PM_Vinput$new(add, add, "additive", constant)
 }
+
+
 
 #' @title Proportional error model
 #' @description
@@ -703,6 +690,45 @@ PM_model_list <- R6::R6Class("PM_model_list",
         ))
       }
       self$model_list <- modifyList(self$model_list, changes_list)
+    },
+    #' @title Compile PM_model object
+    #' @description
+    #' Compiles a PM_model object using the Rust backend.
+    #' 
+    #' @details
+    #' This function compiles a PM_model object into a binary format using the Rust backend.
+    #' It writes the model to a temporary file, compiles it, and stores the path to the compiled binary.
+    #' 
+    #' @note
+    #' This function can only be used with the Rust backend. If the backend is not set to "rust",
+    #' an error will be thrown.
+    #' 
+    #' @examples
+    #' \dontrun{
+    #' model$compile()
+    #' }
+    #' 
+    #' @export
+    compile = function(){
+      if (getPMoptions()$backend != "rust") {
+        cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
+      }
+      temp_model <- file.path(tempdir(), "temp_model.txt")
+        self$write_rust(temp_model)
+        model_path <- tempfile(pattern = "model_", fileext = ".pmx")
+        tryCatch(
+          {
+            compile_model(
+              temp_model,
+              model_path, self$get_primary()
+            )
+            self$binary_path <- model_path
+          },
+          error = function(e) {
+            cli::cli_abort(c("x" = "Model compilation failed: {e$message}"))
+          }
+        )
+        file.remove(temp_model)
     }
   ),
   private = list(
