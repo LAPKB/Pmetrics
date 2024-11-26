@@ -9,5 +9,7 @@ name = 'pm_rs'
 
 [dependencies]
 extendr-api = '*'
+indexmap = "2.6.0"
 libloading = "0.8.5"
 pmcore = { git = "https://github.com/LAPKB/pmcore.git", branch = "dev"}
+toml = { version = "0.8.14", features = ["preserve_order"] }
