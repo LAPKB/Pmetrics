@@ -4,7 +4,7 @@
 \alias{PM_parse}
 \title{Parse Pmetrics output}
 \usage{
-PM_parse(wd = getwd(), fit = "fit.Rdata", write = TRUE)
+PM_parse(wd = getwd(), fit = "../fit.Rdata", write = TRUE)
 }
 \arguments{
 \item{wd}{The directory containing the output from the Rust-implementation of NPAG}

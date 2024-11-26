@@ -123,7 +123,7 @@ setPMoptions <- function(sep, dec, compilation_statements,
     # server_address = "http://localhost:5000",
     backend = "fortran",
     rust_template = NULL,
-    report_template = "ggplot",
+    report_template = "plotly",
     gfortran_path = if (getOS() == 1 && isM1()) {
       "/opt/homebrew/bin/gfortran"
     } else {
