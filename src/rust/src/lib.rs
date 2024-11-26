@@ -24,7 +24,7 @@ fn simulate_one(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<Sim
     validate_paths(data_path, model_path);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
     let subjects = data.get_subjects();
-    let rows = executor::execute(model_path.into(), subjects.first().unwrap(), &spp.to_vec());
+    let rows = executor::simulate(model_path.into(), subjects.first().unwrap(), &spp.to_vec());
     rows.into_dataframe().unwrap()
 }
 
