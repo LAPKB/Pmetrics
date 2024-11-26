@@ -107,13 +107,13 @@ PM_model$new <- function(model, ...) {
     cli::cli_abort(c("x" = "Non supported model type: {typeof(model)}"))
   }
   if (getPMoptions()$backend == "rust") {
-    temp_dir <- tempdir()
-    model$write_rust(file.path(temp_dir, "tmp_model.txt"))
+    temp_model <- file.path(tempdir(), "temp_model.txt")
+    model$write_rust(temp_model)
     model_path <- tempfile(pattern = "model_", fileext = ".pmx")
     tryCatch(
       {
         compile_model(
-          file.path(temp_dir, "tmp_model.txt"),
+          temp_model,
           model_path, model$get_primary()
         )
         model$binary_path <- model_path
@@ -122,7 +122,7 @@ PM_model$new <- function(model, ...) {
         cli::cli_abort(c("x" = "Model compilation failed: {e$message}"))
       }
     )
-    file.remove(file.path(temp_dir, "tmp_model.txt"))
+    file.remove(temp_model)
   }
   return(model)
 }
