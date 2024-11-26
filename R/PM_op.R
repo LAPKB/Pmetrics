@@ -126,16 +126,12 @@ PM_op <- R6::R6Class(
   private = list(
     make = function(data) {
       if (getPMoptions("backend") == "rust") {
-        if (file.exists("pred.csv")) {
+        if (file.exists("op.csv")) {
           op_raw <- readr::read_csv(file = "op.csv", show_col_types = FALSE)
         } else {
           cli::cli_abort(c("x" = "{.file {getwd()}/op.csv} does not exist."))
         }
-        # if(file.exists("obs.csv")){
-        #   obs_raw <- readr::read_csv(file = "obs.csv", show_col_types = FALSE)
-        # } else {
-        #   cli::cli_abort(c("x" = "{.file {getwd()}/obs.csv} does not exist."))
-        # }
+
         if (file.exists("settings.json")) {
           config <- jsonlite::fromJSON("settings.json")
         } else {
@@ -143,36 +139,33 @@ PM_op <- R6::R6Class(
         }
 
         poly <- config$error$poly
-
+        
         op <- op_raw %>%
           # left_join(pred_raw, by = c("id", "time", "outeq")) %>%
-          pivot_longer(cols = c(popMean, popMedian, postMean, postMedian)) %>%
+          pivot_longer(cols = c(pop_mean, pop_median, post_mean, post_median)) %>%
           mutate(
             icen = case_when(
-              name == "popMean" ~ "mean",
-              name == "popMedian" ~ "median",
-              name == "postMean" ~ "mean",
-              name == "postMedian" ~ "median",
+              name == "pop_mean" ~ "mean",
+              name == "pop_median" ~ "median",
+              name == "post_mean" ~ "mean",
+              name == "post_median" ~ "median",
             )
           ) %>%
           mutate(
             pred.type = case_when(
-              name == "popMean" ~ "pop",
-              name == "popMedian" ~ "pop",
-              name == "postMean" ~ "post",
-              name == "postMedian" ~ "post",
+              name == "pop_mean" ~ "pop",
+              name == "pop_median" ~ "pop",
+              name == "post_mean" ~ "post",
+              name == "post_median" ~ "post",
             )
           ) %>%
           select(-name) %>%
           dplyr::rename(pred = value) %>%
-          # dplyr::rename(obs = out) %>%
-          dplyr::mutate(block = 1) %>%
-          .() ### NEEDS TO BE UPDATED when op.csv contains block
-        dplyr::mutate(outeq = outeq + 1) %>%
+          dplyr::mutate(outeq = outeq + 1) %>%
           dplyr::mutate(obs = na_if(obs, -99)) %>%
           mutate(d = pred - obs) %>%
           mutate(ds = d * d) %>%
-          mutate(obsSD = poly[1] + poly[2] * obs + poly[3] * (obs^2) + poly[4] * (obs^3)) %>%
+          mutate(obsSD = poly[1] + poly[2] * obs + poly[3] * (obs ^ 2) + poly[4] * (obs ^ 3)) %>%
           mutate(wd = d / obsSD) %>%
           mutate(wds = wd * wd)
         class(op) <- c("PM_op_data", "data.frame")

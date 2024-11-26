@@ -160,7 +160,7 @@ PM_cycle <- R6::R6Class(
             x / first(x)
           }))
 
-        n_out <- max(obs_raw$outeq)
+        n_out <- length(unique(obs_raw$outeq))
         n_cyc <- max(cycle_data$cycle)
         gamlam <- tibble::as_tibble(raw$gamlam, .name_repair = "minimal")
         if (ncol(gamlam) == 1 & n_out > 1) {
@@ -249,6 +249,7 @@ PM_cycle <- R6::R6Class(
           cycle$gamlam <- cbind(cycle$gamlam, replicate((n_out - 1), cycle$gamlam[, 1]))
         }
         names(cycle$gamlam) <- as.character(1:ncol(cycle$gamlam))
+        
         cycle$gamlam <- cycle$gamlam %>%
           pivot_longer(
             cols = everything(),

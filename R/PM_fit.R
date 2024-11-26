@@ -299,10 +299,10 @@ PM_fit <- R6::R6Class(
       # arglist$seed <- 347
 
 
-      # #### Save PM_fit ####
-      # self$data <- PM_data$new(data_filtered, quiet = TRUE)
-      # self$arglist <- arglist
-      # save(self, file = "fit.Rdata")
+       #### Save PM_fit ####
+       self$data <- PM_data$new(data_filtered, quiet = TRUE)
+       self$arglist <- arglist
+       save(self, file = "fit.Rdata")
 
       # #### Parameter info ####
       # pars <- list(
