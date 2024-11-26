@@ -32,6 +32,7 @@ PM_report <- function(x, template = getPMoptions("report_template"), outfile, sh
     ggplot = system.file("report/templates/ggplot.Rmd", package = "Pmetrics"),
     ggplot_rust = system.file("report/templates/ggplot_rust.Rmd", package = "Pmetrics")
   )
+  templateFile = system.file("report/templates/ggplot.Rmd", package = "Pmetrics")
 
   if (is.null(templateFile)) {
     if (!file.exists(templateFile)) stop(crayon::red("ERROR: "), templateFile, " does not exist.\n")
