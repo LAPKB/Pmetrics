@@ -37,7 +37,7 @@ Michael Neely, Julian Otalvaro
 
 \item{\code{cov}}{A \link{PM_cov} object}
 
-\item{\code{data}}{\link{PM_data} object representing the original .csv data file used in the run}
+\item{\code{data}}{\link{PM_data} object representing the original .csv data file used in the run. The predictions contained in the \verb{$data} fields from \verb{$pop} and \verb{$post} will be added to this \link{PM_data} object to permit easy addition of such predictions to raw data plots. See \link{plot.PM_data} for more details.}
 
 \item{\code{model}}{text string representing the original model file used in the run}
 
@@ -45,11 +45,18 @@ Michael Neely, Julian Otalvaro
 
 \item{\code{success}}{Boolean if successful run}
 
-\item{\code{valid}}{If the \verb{$validate} method has been executed after a run, this object will be added to
-the \code{PM_result} object.  It contains the information required to plot visual predictive checks and normalized prediction
+\item{\code{valid}}{If the \verb{$validate} method has been executed after a run,
+this field will contain the information required to plot
+visual predictive checks and normalized prediction
 error discrepancies via the npde code developed by Comets et al. Use the
 \verb{$save} method on the augmented \code{PM_result} object to save it with the
 new validation results.}
+
+\item{\code{opt_samp}}{If the \verb{$opt} method has been executed after a run, this
+field will contain a \link{PM_opt} object which has optimal sampling times
+and methods to plot them.
+Use the \verb{$save} method on the augmented \code{PM_result} object to save it with the
+new optimal sampling results.}
 }
 \if{html}{\out{</div>}}
 }
@@ -65,7 +72,7 @@ new validation results.}
 \item \href{#method-PM_result-save}{\code{PM_result$save()}}
 \item \href{#method-PM_result-validate}{\code{PM_result$validate()}}
 \item \href{#method-PM_result-step}{\code{PM_result$step()}}
-\item \href{#method-PM_result-MM_opt}{\code{PM_result$MM_opt()}}
+\item \href{#method-PM_result-opt}{\code{PM_result$opt()}}
 \item \href{#method-PM_result-load}{\code{PM_result$load()}}
 \item \href{#method-PM_result-clone}{\code{PM_result$clone()}}
 }
@@ -176,9 +183,10 @@ See \link{makeNCA}.
 \if{html}{\out{<a id="method-PM_result-sim"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-sim}{}}}
 \subsection{Method \code{sim()}}{
-Simulates using the self$final object.
-For parameter information refer to \link{SIMrun}. It will return a \code{PM_sim} object
-by running \link{SIMparse} at the end of the simulation.
+Calls \link{PM_sim}. Default is to use the \verb{$final}, \verb{$model}, and \verb{$data} objects
+within the \link{PM_result}. It is common to supply a different \code{data} template.
+Occasionally it is necessary to use a different \code{model} with the \verb{$final} field,
+or vice versa. If all three are different, use \code{PM_sim$new()} instead.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_result$sim(...)}\if{html}{\out{</div>}}
 }
@@ -186,7 +194,10 @@ by running \link{SIMparse} at the end of the simulation.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Parameters passed to \link{SIMrun}}
+\item{\code{...}}{Parameters passed to \link{PM_sim}. If using the \verb{$final}, \verb{$model}, and
+\verb{$data} fields, it is not necessary to specify these. Alternates for any of these
+should be specified. Other parameters for \link{PM_sim} should be passed as named
+arguments, e.g. \verb{$sim(include = 1:2, predInt = 1, limits = NA)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -264,21 +275,27 @@ and covariates.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_result-MM_opt"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_result-MM_opt}{}}}
-\subsection{Method \code{MM_opt()}}{
-Calculate optimal sample times from result and template data file.
+\if{html}{\out{<a id="method-PM_result-opt"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-opt}{}}}
+\subsection{Method \code{opt()}}{
+Calculate optimal sampling times.
+
+Method to compute optimal sampling times.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$MM_opt(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$opt(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{MM_opt}.}
+\item{\code{...}}{Parameters to pass to \link{PM_opt}.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+See \link{PM_opt} for details.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-load"></a>}}

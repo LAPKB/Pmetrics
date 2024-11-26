@@ -3,9 +3,8 @@
                    indpts, icen, aucint,
                    idelta, prior, xdev, search,
                    auto, intern, quiet, overwrite, nocheck, parallel, batch,
-                   alq, report) {
+                   report) {
   currwd <- getwd() # set the current working directory to go back to it at the end
-  if (missing(alq)) alq <- F
   if (missing(batch)) batch <- F
   if (Sys.getenv("env") == "docker") intern <- T
 
@@ -255,12 +254,12 @@
 
   # if parallel not specified, choose serial for algebraic/exact or parallel for ODE
   if (is.na(parallel)) {
-    parallel <- c(T, F)[1 + as.numeric(trans$N <= 0)]
+    parallel <- c(TRUE, FALSE)[1 + as.numeric(trans$N <= 0)]
   }
 
   # if parallel is true and in 32-bit, choose serial and warn
   if (parallel & getBits() == "32") {
-    parallel <- F
+    parallel <- FALSE
     cat("\nNote: Parallel processing is not available for 32-bit systems.\n")
   }
 
@@ -425,7 +424,7 @@
         if (inherits(prior, "NPAG")) {
           nvar <- trans$nvar
           prior$ab <- as.matrix(trans$ab)
-          prior$popPoints <- makeFinal(prior)$popPoints
+          prior$popPoints <- PM_final$new(prior)$popPoints
           for (i in 1:nvar) {
             if (prior$ab[i, 1] > min(prior$popPoints[, i])) endNicely(paste("You have changed ", prior$par[i], " so that the minimum range of ", prior$ab[i, 1], " is greater than the minimum prior point value of ", min(prior$popPoints[, i]), "\nThis will cause NPAG to crash.\n", sep = ""), model, data)
             if (prior$ab[i, 2] < max(prior$popPoints[, i])) endNicely(paste("You have changed ", prior$par[i], " so that the maximum range of ", prior$ab[i, 2], "is less than the maximum prior point value of ", max(prior$popPoints[, i]), "\nThis will cause NPAG to crash.\n", sep = ""), model, data)
@@ -571,7 +570,7 @@
       ), "repScript.R",
       sep = ""
     )
-    alquimia_data_script <- paste(normalizePath(getPMpath(), winslash = "/"), "/report/genAlquimiaData.R", sep = "")
+    # alquimia_data_script <- paste(normalizePath(getPMpath(), winslash = "/"), "/report/genAlquimiaData.R", sep = "")
     outpath <- c(
       paste(workdir, "/outputs", sep = ""),
       paste(workdir, "\\outputs", sep = ""),
@@ -594,22 +593,12 @@
       paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
     )[OS]
     if (report) {
-      if (alq) {
-        PMscript[getNext(PMscript)] <- paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(alquimia_data_script), " ", shQuote(outpath), " ; fi", sep = "")
-      } else {
-        PMscript[getNext(PMscript)] <- c(
-          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0("pander::openFileInOS(", shQuote(paste0(gsub("/", rep, outpath), "/", type, "report.html")), ")")), " ; fi", sep = ""),
-          # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('pander::openFileInOS(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
-          paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
-          paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0("pander::openFileInOS(", shQuote(paste0(gsub("/", rep, outpath), "/", type, "report.html")), ")")), " ; fi", sep = "")
-        )[OS]
-        #   PMscript[getNext(PMscript)] <-
-        #   c(
-        #     paste("open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = ""),
-        #     paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
-        #     paste("xdg-open ", shQuote(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = "")), " ; fi", sep = "")
-        #   )[OS]
-      }
+      PMscript[getNext(PMscript)] <- c(
+        paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0("pander::openFileInOS(", shQuote(paste0(gsub("/", rep, outpath), "/", type, "report.html")), ")")), " ; fi", sep = ""),
+        # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('pander::openFileInOS(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
+        paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
+        paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0("pander::openFileInOS(", shQuote(paste0(gsub("/", rep, outpath), "/", type, "report.html")), ")")), " ; fi", sep = "")
+      )[OS]
     } else { # close if statement if report = F
       PMscript[getNext(PMscript)] <- c("fi", "", "fi")[OS]
     }
@@ -636,7 +625,7 @@
     if (OS == 1) {
       # Mac
       system(paste("chmod +x ", scriptFileName))
-      if (compareVersion("22.0.0", Sys.info()[2]) <= 0) { # running Ventura
+      if (compareVersion("22.0.0", Sys.info()[2]) == 0) { # running Ventura
         if (!file.exists("/Applications/iTerm.app")) {
           message <- paste(
             "As of Ventura, there is a bug that prevents running a script in Terminal.\n",
@@ -647,6 +636,8 @@
         } else {
           if (!batch) system(paste("open -a iTerm.app ", shQuote(paste(getwd(), "/", scriptFileName, sep = "")), sep = ""))
         }
+      } else { # not running Ventura
+        if (!batch) system(paste("open -a Terminal.app ", shQuote(paste(getwd(), "/", scriptFileName, sep = "")), sep = ""))
       }
     }
     if (OS == 2 & !batch) {
@@ -835,7 +826,7 @@
     # make report
     if (type == "NPAG" || type == "IT2B") {
       reportType <- which(c("NPAG", "IT2B") == type)
-      makeRdata(paste(currwd, newdir, "outputs", sep = "/"), F, reportType)
+      makeRdata(paste(currwd, newdir, "outputs", sep = "/"), reportType)
       res <- PM_load(file = paste(currwd, newdir, "outputs", "PMout.Rdata", sep = "/"))
       PM_report(res, outfile = "NPreport.html")
       setwd(currwd)
@@ -856,5 +847,101 @@
       pander::openFileInOS(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))
     }
     return(outpath)
+  }
+}
+
+
+makeRdata <- function(wd, reportType) {
+  setwd(wd)
+  errfile <- list.files(pattern = "^ERROR")
+  # error <- length(errfile) > 0
+  # see if NP_RF or IT_RF made anyway (i.e. is >1MB in size)
+  success <- file.info(c("NP_RF0001.TXT", "IT_RF0001.TXT")[reportType])$size >= 1000
+
+  if (success) {
+    # run completed
+    # open and parse the output
+    if (reportType == 1) {
+      # NPAG
+      PMdata <- suppressWarnings(tryCatch(NPparse(), error = function(e) {
+        e <- NULL
+        cat("\nWARNING: The run did not complete successfully.\n")
+      }))
+      # make the posterior predictions
+      post <- suppressWarnings(tryCatch(PM_post$new(PMdata), error = function(e) {
+        e <- NULL
+        cat("\nWARNING: error in extraction of posterior Bayesian predictions at time ttpred; 'PMpost' object not saved.\n\n")
+      }))
+      # make the population predictions
+      pop <- suppressWarnings(tryCatch(PM_pop$new(PMdata), error = function(e) {
+        e <- NULL
+        cat("\nWARNING: error in extraction of population predictions at time tpred; 'PMpop' object not saved.\n\n")
+      }))
+    } else { # IT2B
+      PMdata <- suppressWarnings(tryCatch(ITparse(), error = function(e) {
+        e <- NULL
+        cat("\nWARNING: The run did not complete successfully.\n")
+      }))
+    }
+    # both NPAG and IT2B
+    cat("\n\n")
+    flush.console()
+    if (is.null(PMdata$nranfix)) PMdata$nranfix <- 0
+    op <- suppressWarnings(tryCatch(PM_op$new(PMdata), error = function(e) {
+      e <- NULL
+      cat("\nWARNING: error in extraction of observed vs. population predicted data; 'PM_op' object not saved.\n\n")
+    }))
+
+    cycle <- suppressWarnings(tryCatch(PM_cycle$new(PMdata), error = function(e) {
+      e <- NULL
+      cat("\nWARNING: error in extraction of cycle information; 'PMcycle' object not saved.\n\n")
+    }))
+
+    final <- suppressWarnings(tryCatch(PM_final$new(PMdata), error = function(e) {
+      e <- NULL
+      cat("\nWARNING: error in extraction of final cycle parameter values; 'PMfinal' object not saved.\n\n")
+    }))
+
+    if (PMdata$mdata != "NA") {
+      mdata <- PM_data$new(paste("../inputs/", PMdata$mdata, sep = ""), quiet = T)
+    } else {
+      mdata <- NA
+    }
+
+    cov <- suppressWarnings(tryCatch(PM_cov$new(PMdata), error = function(e) {
+      e <- NULL
+      cat("\nWARNING: error in extraction of covariate-parameter data; 'PMcov' object not saved.\n\n")
+    }))
+
+    model <- list.files("../inputs") %>%
+      .[grepl(".txt$", .)] %>%
+      paste0("../inputs/", .) %>%
+      .[[1]] %>%
+      PM_model$new(.)
+
+    cat(paste("\n\n\nSaving R data objects to ", wd, "......\n\n", sep = ""))
+    cat("\nUse PM_load() to load them.\n")
+    cat("\nThe following objects have been saved:\n")
+    cat(c("\nNPdata: All output from NPAG\n", "\nITdata: All output from IT2B\n")[reportType])
+    if (reportType == 1 && !all(is.null(pop))) cat("pop: Population predictions at regular, frequent intervals\n")
+    if (reportType == 1 && !all(is.null(post))) cat("post: Posterior predictions at regular, frequent inteverals\n")
+    if (!all(is.null(final))) cat("final: Final cycle parameters and summary statistics\n")
+    if (!all(is.null(cycle))) cat("cycle: Cycle information\n")
+    if (!all(is.null(op))) cat("op: Observed vs. population and posterior predicted\n")
+    if (!all(is.null(cov))) cat("cov: Individual covariates and Bayesian posterior parameters\n")
+    if (length(mdata) > 1) cat("mdata: The data file used for the run\n")
+
+
+    if (reportType == 1) {
+      NPAGout <- list(NPdata = PMdata, pop = pop, post = post, final = final, cycle = cycle, op = op, cov = cov, data = mdata, model = model, errfile = errfile, success = success)
+      save(NPAGout, file = "PMout.Rdata")
+      # Hacky return to deal with Rservex bug T.T
+      return(NPAGout)
+    }
+    if (reportType == 2) {
+      IT2Bout <- list(ITdata = PMdata, final = final, cycle = cycle, op = op, cov = cov, data = mdata, model = model, errfile = errfile, success = success)
+      save(IT2Bout, file = "PMout.Rdata")
+      return(IT2Bout)
+    }
   }
 }

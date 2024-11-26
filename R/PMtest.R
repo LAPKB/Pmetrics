@@ -1,7 +1,7 @@
 #' @title Test Pmetrics
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Check Pmetrics fortran installation by trying to compile sample files
 #'
 #' @author Michael Neely
@@ -11,13 +11,22 @@ PMtest <- function() {
   currwd <- getwd()
   tempwd <- tempdir()
   setwd(tempwd)
-  NPex <- NULL #avoid R CMD check flag
-  data(NPex, package = "Pmetrics", envir = environment())
+  # check for PmetricsData
+  if (!requireNamespace("PmetricsData", quietly = TRUE)) {
+    cat(
+      crayon::red("Error: "), "PmetricsData package required for PMtest()\n",
+      "Run remotes::install_github('LAPKB/PmetricsData') to install.\n",
+      "Aborting test.\n"
+    )
+    return(invisible(NULL))
+  }
+  NPex <- NULL # avoid R CMD check flag
+  data(NPex, package = "PmetricsData", envir = environment())
   NPex$data$write("data.csv")
   msg <- "Congratulations; you have successfully installed all components of Pmetrics.\n"
 
 
-  #writeLines(modeltxt, "model.txt")
+  # writeLines(modeltxt, "model.txt")
   NPex$model$write("model.txt")
 
   engine <- list(
