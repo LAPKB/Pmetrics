@@ -1567,7 +1567,6 @@ name = "pm_rs"
 version = "0.1.0"
 dependencies = [
  "extendr-api",
- "indexmap 2.6.0",
  "libloading",
  "pmcore",
  "toml",
