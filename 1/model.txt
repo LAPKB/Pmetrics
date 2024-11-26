@@ -1,0 +1,32 @@
+equation::ODE::new(
+        |x, p, t, dx, rateiv, cov| {
+            fetch_params!(p, ke,v);
+            fetch_cov!(cov, t, );
+            
+            
+            dx[0] = - ke*x[0] + rateiv[0];
+        },
+        |p| {
+            fetch_params!(p, ke,v);
+            lag! {}
+        },
+        |p| {
+            fetch_params!(p, ke,v);
+            fa! {}
+        },
+        |p, t, cov, x| {
+            fetch_params!(p, ke,v);
+            fetch_cov!(cov, t, );
+            
+            
+        },
+        |x, p, t, cov, y| {
+            fetch_params!(p, ke,v);
+            fetch_cov!(cov, t, );
+            
+            
+            y[0] = x[0]/v;
+
+        },
+        (1, 1),
+    )
