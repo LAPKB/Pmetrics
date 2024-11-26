@@ -43,7 +43,7 @@ pub(crate) fn fit(model_path: PathBuf, data: PathBuf) {
     let lib = unsafe { Library::new(model_path).expect("Failed to load library") };
     let (eq, meta) = unsafe { load_ode(&lib) };
     dbg!(meta);
-    let settings = settings();
+    let settings = settings(IndexMap::new());
     setup_log(&settings).unwrap();
     let data = data::read_pmetrics(data.to_str().unwrap()).expect("Failed to read data");
     let mut algorithm = dispatch_algorithm(settings, eq, data).unwrap();
