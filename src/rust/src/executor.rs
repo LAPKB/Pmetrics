@@ -2,7 +2,9 @@ use crate::settings::settings;
 use extendr_api::List;
 use libloading::{Library, Symbol};
 use logger::setup_log;
+use output::OutputFile;
 use pmcore::prelude::*;
+use settings::write_settings_to_file;
 use std::path::PathBuf;
 
 use crate::simulation::SimulationRow;
@@ -44,6 +46,7 @@ pub(crate) fn fit(model_path: PathBuf, data: PathBuf, params: List, output_path:
     // dbg!(&meta);
     let settings = settings(params, meta.get_params(), output_path.to_str().unwrap());
     let _ = setup_log(&settings);
+    write_settings_to_file(&settings).unwrap();
     let data = data::read_pmetrics(data.to_str().unwrap()).expect("Failed to read data");
     let mut algorithm = dispatch_algorithm(settings, eq, data).unwrap();
     let result = algorithm.fit().unwrap();
