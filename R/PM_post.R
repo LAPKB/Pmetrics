@@ -123,15 +123,14 @@ PM_post <- R6::R6Class(
         }
 
         post <- raw %>%
-          select(-popMedian, -popMean) %>%
           pivot_longer(
-            cols = c(postMedian, postMean),
+            cols = c(post_median, post_mean),
             values_to = "pred"
           ) %>%
           dplyr::rename(icen = name) %>%
           mutate(icen = case_when(
-            icen == "postMedian" ~ "median",
-            icen == "postMean" ~ "mean"
+            icen == "post_median" ~ "median",
+            icen == "post_mean" ~ "mean"
           )) %>%
           # Hardcoded for now
           mutate(block = 1) %>%
