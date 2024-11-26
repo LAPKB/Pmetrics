@@ -26,7 +26,7 @@
 #' @importFrom jsonlite fromJSON
 #' @export
 
-PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
+PM_parse <- function(wd = getwd(), fit = "../fit.Rdata", write = TRUE) {
   if (inherits(fit, "PM_fit")) {
     # fit is a PM_fit object, use it directly
     fit_object <- fit
@@ -81,12 +81,13 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
     }
   )
 
-  cov <- rlang::try_fetch(PM_cov$new(),
-    error = function(e) {
-      cli::cli_warn("Unable to create {.cls PM_cov} object", parent = e)
-      return(NULL)
-    }
-  )
+  cov <- NULL
+  # cov <- rlang::try_fetch(PM_cov$new(list(final = final, data = fit_object$data)),
+  #   error = function(e) {
+  #     cli::cli_warn("Unable to create {.cls PM_cov} object", parent = e)
+  #     return(NULL)
+  #   }
+  # )
 
   NPcore <- list(
     data = fit_object$data,

@@ -105,17 +105,22 @@ PM_cov <- R6::R6Class(
         if (is.null(final)) {
           cli::cli_abort(c("x" = "Missing parameter values; unable to create {.cls PM_cov} object"))
         }
+
+        
         data1 <- data$standard_data %>%
           filter(!is.na(dose)) %>%
-          select(id, time, !!getCov(.)$covnames) %>% # in PMutilities
+         # select(id, time, !!getCov(.)$covnames) %>% # in PMutilities
+          select(-c(evid, dur, dose, addl, ii, input, out, outeq, c0, c1, c2, c3)) %>% 
           tidyr::fill(-id, -time) %>%
-          dplyr::left_join(final$postMean, by = "id") %>%
+          dplyr::left_join(final$post_mean, by = "id") %>%
           mutate(icen = "mean")
+        
         data2 <- data$standard_data %>%
           filter(!is.na(dose)) %>%
-          select(id, time, !!getCov(.)$covnames) %>%
+          # select(id, time, !!getCov(.)$covnames) %>% # in PMutilities
+          select(-c(evid, dur, dose, addl, ii, input, out, outeq, c0, c1, c2, c3)) %>% 
           tidyr::fill(-id, -time) %>%
-          dplyr::left_join(final$postMed, by = "id") %>%
+          dplyr::left_join(final$post_median, by = "id") %>%
           mutate(icen = "median")
 
         res <- bind_rows(data1, data2)
