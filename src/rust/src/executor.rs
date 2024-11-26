@@ -4,7 +4,7 @@ use libloading::{Library, Symbol};
 use logger::setup_log;
 use output::OutputFile;
 use pmcore::prelude::*;
-use settings::write_settings_to_file;
+use settings::{write_settings_to_file, Settings};
 use std::path::PathBuf;
 
 use crate::simulation::SimulationRow;
@@ -45,10 +45,23 @@ pub(crate) fn fit(model_path: PathBuf, data: PathBuf, params: List, output_path:
     let (eq, meta) = unsafe { load_ode(&lib) };
     // dbg!(&meta);
     let settings = settings(params, meta.get_params(), output_path.to_str().unwrap());
-    let _ = setup_log(&settings);
     write_settings_to_file(&settings).unwrap();
+    initialize_logging(&settings);
     let data = data::read_pmetrics(data.to_str().unwrap()).expect("Failed to read data");
     let mut algorithm = dispatch_algorithm(settings, eq, data).unwrap();
     let result = algorithm.fit().unwrap();
     result.write_outputs().unwrap();
+}
+
+use std::sync::Once;
+
+static INIT: Once = Once::new();
+
+pub fn initialize_logging(settings: &Settings) {
+    INIT.call_once(|| {
+        if let Err(e) = setup_log(settings) {
+            eprintln!("Failed to initialize logging: {}", e);
+            // Handle the error as needed, possibly panic or log to stderr
+        }
+    });
 }
