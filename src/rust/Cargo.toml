@@ -1,0 +1,13 @@
+[package]
+name = 'pm_rs'
+version = '0.1.0'
+edition = '2021'
+
+[lib]
+crate-type = [ 'staticlib' ]
+name = 'pm_rs'
+
+[dependencies]
+extendr-api = '*'
+libloading = "0.8.5"
+pmcore = { git = "https://github.com/LAPKB/pmcore.git", branch = "dev"}

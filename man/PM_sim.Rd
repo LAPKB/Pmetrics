@@ -15,28 +15,88 @@ There are two methods of creating a PM_sim object.
 \item \strong{PM_sim$new()}
 }
 
-These both call \link{SIMrun} to execute the simulation and \link{SIMparse} to process
-the results and return the PM_sim objects. See help on both of these functions
-for further details.
+They return fully parsed simulator output as \link{PM_sim} objects in R. Details
+can be found in the documentation for \verb{$new} method below.
+}
+\examples{
+
+## ------------------------------------------------
+## Method `PM_sim$new`
+## ------------------------------------------------
+
+\dontrun{
+# Load results of NPAG run
+run1 <- PM_load(1)
+
+# Two methods to simulate
+# The first uses the population prior, data, and model in run1, with "..."
+# as additional parameters passed to the simulator, e.g. limits, nsim, etc.
+
+sim1 <- run1$sim(...)
+
+# The second uses the population prior and model in run1, and a new template
+# data file in the working directory
+
+sim2 <- PM_sim$new(poppar = run1, data = "newfile.csv", ...)
+
+# These methods are entirely interchangeable. The first can accept a different
+# data template. The difference is that poppar must be explicitly
+# declared when using PM_sim$new. This makes it the method to use when poppar
+# is derived from the literature.
+
+# An example of a manual prior
+# make 1 lognormal distribution for each parameter
+weights <- 1
+mean <- log(c(0.7, 0.05, 100))
+cov <- matrix(rep(0, length(mean)**2), ncol = length(mean))
+diag(cov) <- (c(0.15, 0.15, 0.15) * mean)**2
+# make the prior for the simulation
+poppar <- list(weights, mean, cov)
+
+# run simulation, assuming temp1.csv and model.txt are in working directory
+
+sim1 <- PM_sim$new(poppar, "temp1.csv",
+  nsim = 15, model = "model.txt", include = 1:4, limits = NA,
+  obsNoise = c(0.02, 0.1, 0, 0)
+)
+}
+
+}
+\author{
+Michael Neely
 }
 \keyword{internal}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{obs}}{Observations for each output}
+\item{\code{obs}}{Observations for each output as a data frame with columns
+\emph{id}, \emph{time}, \emph{out}, \emph{outeq}, or in the case of multiple regimens
+in the template data file, a list of such data frames}
 
-\item{\code{amt}}{Amounts in each model compartment}
+\item{\code{amt}}{Amounts in each compartment as a data frame with columns
+\emph{id}, \emph{time}, \emph{out}, \emph{comp}, or in the case of multiple regimens
+in the template data file, a list of such data frames}
 
 \item{\code{parValues}}{Retained simulated parameter values after discarding
-any due to truncation limits}
+any due to truncation limits, as a data frame with columns
+\emph{id} and parameters for each simulated subject, or in the case of multiple regimens
+in the template data file, a list of such data frames}
 
-\item{\code{totalSets}}{Number of all simulated parameter values}
+\item{\code{totalSets}}{Number of all simulated parameter values needed to obtain the
+requested number of simulated sets within any limits}
 
-\item{\code{totalMeans}}{Mean of all simulated parameter values}
+\item{\code{totalMeans}}{Vector of means of all simulated parameter values,
+or in the case of multiple regimens
+in the template data file, a list of such vectors}
 
-\item{\code{totalCov}}{Covariance of all simulated parameter values}
+\item{\code{totalCov}}{Covariance matrix for all simulated parameter values,
+or in the case of multiple regimens
+in the template data file, a list of such matrices}
 
-\item{\code{data}}{A list that contains all the above elements}
+\item{\code{data}}{For one simulation regimen in the template data, a list of class \emph{PM_sim} that
+contains all the above elements. For multiple simulation regimens, a list of
+class \emph{PM_simlist} that contains as many \emph{PM_sim} objects as regimens in the
+template data file used for the simulation, i.e \code{data} will be a list of lists.}
 }
 \if{html}{\out{</div>}}
 }
@@ -58,11 +118,36 @@ any due to truncation limits}
 \if{html}{\out{<a id="method-PM_sim-new"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-new}{}}}
 \subsection{Method \code{new()}}{
-This is a wrapper function that combines \link{SIMrun} and \link{SIMparse} in R6.
+This function simulates outputs from given inputs and a model.
 It can be called directly
 or via the \verb{$sim} method for \link{PM_result} objects.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$new(poppar, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$new(
+  poppar,
+  limits = NULL,
+  model,
+  data,
+  split,
+  include = NA,
+  exclude = NA,
+  nsim = 1000,
+  predInt = 0,
+  covariate = NULL,
+  usePost = FALSE,
+  seed = -17,
+  ode = -4,
+  obsNoise = NULL,
+  doseTimeNoise = NULL,
+  doseNoise = NULL,
+  obsTimeNoise = NULL,
+  makecsv = NULL,
+  outname = "simout",
+  clean = TRUE,
+  quiet = FALSE,
+  nocheck = FALSE,
+  overwrite = FALSE,
+  combine = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -72,22 +157,341 @@ or via the \verb{$sim} method for \link{PM_result} objects.
 \itemize{
 \item Population prior parameters as a \link{PM_final} object found in
 \code{PM_result$final}. Normally these would be supplied by calling the
-\verb{$sim} method for a \link{PM_result} object, e.g. \code{NPex$sim(...)}.
-\item A manually specified prior, see \link{SIMrun} for more details.
+\verb{$sim} method for a \link{PM_result} object, e.g. \code{PmetricsData::NPex$sim(...)}.
 \item The name of a previously saved simulation via the \verb{$save} method. The
-file will be loaded.
-\item The results of running \link{SIMparse} on a prior simulation.
+file will be loaded. This filename should have the ".rds" extension, e.g. "sim.rds".
+\item The file name(s) of previous simulator output. Wildcards are permissible.
+Examples include \code{poppar = "simout1.txt, simout2.txt, simout3.txt"},
+\code{poppar = "simout?.txt"} and \code{poppar = "sim*.txt"}. All three will find
+the files \emph{simout1.txt}, \emph{simout2.txt}, and \emph{simout3.txt} in the working directory.
+The second example would also find \emph{simout4.txt}, etc.  The third
+example would also find \emph{sim_1.txt} if that existed.
+\item A manually specified prior as a list containing three items in this order,
+but of any name: 1) vector of weights; 2) vector of mean parameter values;
+and 3) a covariance matrix. If only one distribution is to be specified the
+\code{weights} vector should be of length 1 and contain a 1. If multiple
+distributions are to be sampled, the \code{weights} vector should be of
+length equal to the number of distributions and its values should sum to 1,
+e.g. \code{c(0.25,0.05,0.7)}.  The means element may be a vector for a
+single distribution, or a matrix with \code{length(weights)} rows and
+number of columns equal to the number of parameters. The
+covariance matrix will be divided by \code{length(weights)} and applied to
+each distribution. For example:
+\verb{poppar = list(wt = c(0.25, 0.75), mean = matrix(c(0.5, 1, 100, 200), cov = diag(c(0.25, 2500)))}
+indicates two distributions with weights 0.25 and 0.75. There are two parameters,
+and the means of the first distribution are 0.5 and 100. The means of the
+second distribution are 1 and 200. The covariance matrix has diagonal values
+of 0.25 and 2500 and off-diagonal values of zero.
 }}
 
-\item{\code{...}}{Additional parameters to be passed to \link{SIMrun} and optionally,
-\code{combine = TRUE} as an argument will be passed to \link{SIMparse}.}
+\item{\code{limits}}{If limits are specified, each simulated parameter set that
+contains a value outside of the limits will be ignored and another set will
+be generated.  Four options exist for limits.  1) The default \code{NULL}
+indicates that no limits are to be applied to simulated parameters. 2) The
+second option is to set \code{limits} to \code{NA}. This will use the
+parameter limits on the primary parameters that are specified in the model
+file. 3) The third option is a numeric vector of length 1 or 2, e.g. \code{limits = 3} or
+\code{limits = c(0.5, 4)}, which specifies what to multiply the columns of the limits in the
+model file.  If length 1, then the lower limits will be the same as in the
+model file, and the upper limits will be multiplied by value specified.  If
+length 2, then the lower and upper limits will be multiplied by the
+specified values.  If this option is used, \code{poppar} must be a
+\code{PM_final} object. 4) The fourth option for limits is a fully
+customized matrix of limits for simulated values for each parameter which
+will overwrite any limits in the model file.  If specified, it should be a
+data.frame or matrix with number of rows equal to the number of random
+paramters and 2 columns, corresponding to the minimum and maximum values.
+For example, a final$ab object, or a directly coded matrix, e.g.
+\code{matrix(c(0, 5, 0, 5, 0.01, 100), nrow = 3,ncol = 2, byrow = T)} for 3 parameters with
+limits of (0, 5), (0, 5) and (0.01, 100), respectively.  It is possible to
+convert a parameter to fixed by omitting the second limit. Means and
+covariances of the total number of simulated sets will be returned to
+verify the simulation, but only those sets within the specified limits will
+be used to generate output(s) and the means and covariances of the retained
+sets may (and likely will be) different than those specified by
+\code{poppar}.}
+
+\item{\code{model}}{Name of a suitable \link{PM_model} object or a model file template
+in the working directory. If missing, and \code{poppar} is a \link{PM_result},
+the model within the \verb{$model} field of the \link{PM_result} object will be used.
+If \code{model} is missing and \code{poppar} is not a \link{PM_result}, then
+Pmetrics will attempt to load a model file in the working directory
+called "model.txt" as the default name.}
+
+\item{\code{data}}{Either a \link{PM_data} object or a character vector
+with the file name of a Pmetrics data file in the working directory
+that contains template regimens and observation times.
+The value for outputs can be coded as any number(s) other than -99.  The
+number(s) will be replaced in the simulator output with the simulated
+values. Outputs equal to -99 will be simulated as missing. If \code{data} is
+missing, and \code{poppar} is a \link{PM_result},
+the data within the \verb{$data} field of the \link{PM_result} object will be used.
+If \code{data} is missing and \code{poppar} is not a \link{PM_result}, then
+Pmetrics will attempt to load a data template file in the working directory
+called "data.csv" as the default name.}
+
+\item{\code{split}}{Boolean operator controlling whether to split an NPAG
+\link{PM_final} object into one distribution per support point, with means
+equal to the vector of parameter values for that point, and covariance
+equal to the population covariance divided by the number of support points.
+Default for NPAG \link{PM_final} objects is \code{TRUE}, otherwise
+\code{FALSE}.}
+
+\item{\code{include}}{A vector of subject IDs in the \code{data} to iterate
+through, with each subject serving as the source of an independent
+simulation.  Default is \code{NA} and all subjects in the data file will be used.}
+
+\item{\code{exclude}}{A vector of subject IDs to exclude in the simulation, e.g.
+\code{exclude = c(4, 6:14, 16:20)}. Default is \code{NA} and
+all subjects in the data file will be used, i.e. none excluded.
+Using both \code{include} and \code{exclude} criteria may result in conflicts.}
+
+\item{\code{nsim}}{The number of simulated profiles to create, per subject.  Default
+is 1000.  Entering 0 will result in one profile being simulated from each
+point in the non-parametric prior (for NPAG final objects only).}
+
+\item{\code{predInt}}{The interval in fractional hours for simulated predicted
+outputs at times other than those specified in the template \code{data}.
+The default is 0, which means there will be simulated outputs only at times
+specified in the data file (see below).  Values greater than 0 result in
+simulated outputs at the specified value, e.g. every 15 minutes
+for \code{predInt = 0.25} from time 0 up to the maximal time in the template file,
+per subject if nsub > 1.  You may also specify \code{predInt} as a vector
+of 3 values, e.g. \code{predInt = c(1, 4, 1)}, similar to the R command
+\link{seq}, where the first value is the start time, the second is
+the stop time, and the third is the step value.  Finally, you can have
+multiple such intervals by specifying \code{predInt} as a list of such
+vectors, e.g. \code{predInt = list(c(0, 24, 1), c(72, 96, 1))}.  Outputs for times
+specified in the template file will also be simulated. To simulate outputs
+\emph{only} at the output times in the template data (i.e. EVID=0 events),
+use \code{predInt = 0}, which is the default. Note that the maximum number of
+predictions is 594, so the prediction interval must be sufficiently long to
+accommodate this for a given number of output equations and total time to
+simulate over.  If \code{predInt} is set so that this cap is exceeded,
+predictions will be truncated.}
+
+\item{\code{covariate}}{If you are using a \link{PM_result} or \link{PM_final} object
+as \code{poppar}, then you can also
+simulate with covariates. This argument is a list with the following names.
+\itemize{
+\item \code{cov} If \code{poppar} is a \link{PM_result}, Pmetrics will use the \verb{$cov} field
+within that object to obtain covariate information and you can skip this
+element of the \code{covariate} list. If \code{poppar} is
+a \link{PM_final}, you will need to supply the name of a \link{PM_result}
+or \link{PM_cov} object as the value for this element.
+Pmetrics will use this covariate object to calculate the correlation
+matrix between all covariates and Bayesian posterior parameter values.
+\item \code{mean} A named list that allows you to specify a different mean
+for one or more of the covariates. Each named item in the list is the name
+of a covariate in your data that is to have a different mean. If this
+argument is missing then the mean covariate values in the population will
+be used for simulation. The same applies to any covariates that are not
+named in this list.  Example:
+\verb{run1 <- PM_load(1); covariate = list(mean = list(wt = 50))}.
+\item \code{sd} This functions just as the mean list argument does - allowing you to
+specify different standard deviations for covariates in the simulation. If
+it, or any covariate in the sd list is missing, then the standard
+deviations of the covariates in the population are used. Example:
+\code{covariate = list(sd = list(wt = 10))}.
+\item \code{limits} This is a bit different than the limits for population
+parameters above. Here,
+\code{limits} is similar to \code{mean} and \code{sd} for covariates in
+that it is a named list with the minimum and maximum allowable simulated
+values for each covariate.  If it is missing altogether, then no limits
+will apply.  If it is specified, then named covariates will have the
+indicated limits, and covariates not in the list will have limits that are
+the same as in the original population.  If you want some to be limited and
+some to be unlimited, then specify the unlimited ones as items in this list
+with very large ranges.  Example:
+\code{covariate = list(limits = list( wt = c(10, 70)))}.
+\item \code{fix} A character vector (not a list) of covariates to fix and not simulate.  In
+this case values in the template data file will be used and not simulated.
+Example: \code{fix = c("wt", "age")}.  Whether you use the means and
+standard deviations in the population or specify your own, the covariance
+matrix in \code{poppar} will be augmented by the covariate covariances for any
+non-fixed covariates. The parameter plus covariate means and this augmented
+covariance matrix will be used for simulations. In effect, all non-fixed
+covariates are moved into the \strong{#Primary} block of the model file to become
+parameters that are simulated. In fact, a copy of your model file is made
+with a "c" prepended to the model name (e.g. "model.txt" ->
+"c_model.txt").
+}}
+
+\item{\code{usePost}}{Boolean argument.  Only applicable when \code{poppar} contains an
+NPAG \link{PM_final} object. If so, and \code{usePost} is \code{TRUE}, the
+posterior for each subject (modified by \code{include} or \code{exclude})
+in \code{poppar} will be used to simulate rather than the population prior.
+The number of subjects in the template \code{data} file must be the same.
+Normally one uses the same data file as used to make the model final
+parameter distribution in \code{poppar}, but if different templates are
+desired, the number must be equivalent to the number of included subjects
+from whom the posteriors are obtained.}
+
+\item{\code{seed}}{The seed for the random number generator.  For \code{nsub} > 1,
+should be a vector of length equal to \code{nsub}. Shorter vectors will be
+recycled as necessary.  Default is -17.}
+
+\item{\code{ode}}{Ordinary Differential Equation solver log tolerance or stiffness.
+Default is -4, i.e. 0.0001.  Higher values will result in faster runs, but
+simulated concentrations may not be as accurate.}
+
+\item{\code{obsNoise}}{The noise added to each simulated concentration for each
+output equation, where the noise is randomly drawn from a normal
+distribution with mean 0 and SD = C0 + C1\*conc + C2\*conc^2 + C3\*conc^3.
+Default values are 0 for all coefficients (i.e.) no noise. If present will
+override any other values in the data file or model file. Specify as a
+vector of length 4 times the number of output equations, e.g.
+\code{c(0.1,0.1,0,0)} for one output and \code{c(0.1,0.1,0,0,0.01,0.2,-0.001,0)} for two
+output equations. If specified as \code{NA}, values in the data file will
+be used (similar to \code{limits}, above).  If they are missing, values in
+the model file will be used. The default is \code{NULL}, which is no noise.}
+
+\item{\code{doseTimeNoise}}{A vector of length four to specify dose time error
+polynomial coefficients.  The default is \code{NULL}, which is no noise.}
+
+\item{\code{doseNoise}}{A vector of length four to specify dose amount error
+polynomial coefficients.  The default is \code{NULL}, which is no noise.}
+
+\item{\code{obsTimeNoise}}{A vector of length four to specify observation timing
+error polynomial coefficients.  The default is \code{NULL}, which is no noise.}
+
+\item{\code{makecsv}}{A character vector for the name of the single .csv file to be
+made for all simulated "subjects".  If missing, no files will be
+made. If a \code{makecsv} filename is supplied, ID numbers will
+be of the form nsub.nsim, e.g. 1.001 through 1.1 for the first subject,
+2.001 through 2.1 for the second subject, etc. if 100 simulations are made
+from each subject.}
+
+\item{\code{outname}}{The name for the output file(s) without an extension.  Numbers
+1 to \code{nsub} will be appended to the files. The default is
+"simout".}
+
+\item{\code{clean}}{Boolean parameter to specify whether temporary files made in the
+course of the simulation run should be deleted. Defaults to \code{TRUE}.
+This is primarily used for debugging.}
+
+\item{\code{quiet}}{Boolean operator controlling whether a model summary report is
+given.  Default is \code{FALSE}.}
+
+\item{\code{nocheck}}{Suppress the automatic checking of the data file with
+\link{PMcheck}.  Default is \code{FALSE}.}
+
+\item{\code{overwrite}}{Cleans up any old output files without asking before
+creating new output. Default is \code{FALSE}.}
+
+\item{\code{combine}}{Boolean parameter, default \code{FALSE},
+which specifies whether you wish to combine
+the parsed files into a single \link{PM_sim} object.  This can be useful
+for making visual predictive
+checks, for example.  If \code{combine = FALSE}, and there were multiple
+subjects in the simulation data template,
+then the return object
+will be a list of \link{PM_sim} objects.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A \code{PM_sim} object created by calling \link{SIMparse} at the completion of the
-simulation.
+\subsection{Details}{
+The Monte Carlo simulator in Pmetrics generates randomly sampled sets of
+parameters from the \emph{#PRIMARY} block of
+a model according to a prior distribution and calculates outputs based upon
+a template data file. It is a powerful tool for parametric or
+semi-parametric sampling.  There are two ways to execute the simulator.
+\itemize{
+\item \strong{PM_result$sim()}
+\item \strong{PM_sim$new()}
 }
+
+They return fully parsed simulator output as \link{PM_sim} objects in R.
+NPAG or IT2B final objects can easily be used as
+the prior distributions for sampling. Prior distributions
+may be manually
+specified.  Prior distributions may be unimodal-multivariate (parametric
+sampling), or multimodal-multivariate (semi-parametric sampling). For priors
+from NPAG, this can be accomplished with the \code{split} argument.
+
+It is also possible to simulate with covariates if they are included as part
+of the model. By specifying a covariate list argument, Pmetrics will first
+calculate the correlation matrix between the covariates and the Bayesian
+posterior parameter values for each subject in the population model.  Using
+either the mean and standard deviation of each covariate in the population,
+or a user-specified mean and/or standard deviation, Pmetrics will then
+calculate an augmented covariance matrix to be used in simulations.  Pmetrics
+will make a copy of the model file with all covariates moved into the primary
+block as parameters to be simulated.
+
+Noise can be applied to the simulated observations. Noise may also be applied
+to the observation times, to the dose times, or to the dose amounts.
+
+Limits on the simulated parameter sets can also be specified using the limits
+on primary parameters in the model file or by specifying them manually as an
+argument. Limits can also be applied to simulated covariates.
+
+It is permissible to fix a parameter for simulation that was a random
+parameter in the model prior by changing the range in the model file to a
+single value for that parameter.
+
+The same model and data structures are used for the simulator as for any
+other Pmetrics functions.  In this case, the data object will serve as the
+template for the information regarding dosing, covariate values, and
+observations.  Template data may have more than one subject in them, in
+which case the simulator will use each subject specified by the
+\code{include} argument (default is all subjects) to generate \code{nsim}
+parameter sets and corresponding observations.
+
+Simulator output is directed to text files prefixed according to the
+\code{outfile} value (default "simout"), one for each template subject,
+which are read back into R to populate the \link{PM_sim} object.
+Output may also be directed to a new Pmetrics .csv data file
+using the \code{makecsv} argument.
+}
+
+\subsection{Returns}{
+A \link{PM_sim} object.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# Load results of NPAG run
+run1 <- PM_load(1)
+
+# Two methods to simulate
+# The first uses the population prior, data, and model in run1, with "..."
+# as additional parameters passed to the simulator, e.g. limits, nsim, etc.
+
+sim1 <- run1$sim(...)
+
+# The second uses the population prior and model in run1, and a new template
+# data file in the working directory
+
+sim2 <- PM_sim$new(poppar = run1, data = "newfile.csv", ...)
+
+# These methods are entirely interchangeable. The first can accept a different
+# data template. The difference is that poppar must be explicitly
+# declared when using PM_sim$new. This makes it the method to use when poppar
+# is derived from the literature.
+
+# An example of a manual prior
+# make 1 lognormal distribution for each parameter
+weights <- 1
+mean <- log(c(0.7, 0.05, 100))
+cov <- matrix(rep(0, length(mean)**2), ncol = length(mean))
+diag(cov) <- (c(0.15, 0.15, 0.15) * mean)**2
+# make the prior for the simulation
+poppar <- list(weights, mean, cov)
+
+# run simulation, assuming temp1.csv and model.txt are in working directory
+
+sim1 <- PM_sim$new(poppar, "temp1.csv",
+  nsim = 15, model = "model.txt", include = 1:4, limits = NA,
+  obsNoise = c(0.02, 0.1, 0, 0)
+)
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_sim-save"></a>}}
@@ -169,38 +573,17 @@ Calculates the AUC of the specified simulation
 \subsection{Method \code{summary()}}{
 Summarize simulation
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(at = 1, field, by, individual = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(at = 1, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{at}}{Index of the PM_sim object to be summarized. Default is 1.}
+\item{\code{at}}{Index of the PM_sim object to use. Default is 1.}
 
-\item{\code{field}}{Quoted character value, one of
-\itemize{
-\item obs for simulated observations
-\item amt for simulated amounts in each compartment
-\item parValues for simulated parameter values
-}}
-
-\item{\code{by}}{Optional quoted column name(s) to group by, e.g. \code{by = "id"} or
-\code{by = c("id", "outeq")}.}
-
-\item{\code{individual}}{If "id" is included within \code{by}, the summary statistics
-will be calculated for each individual, i.e. each individual's mean, sd, median,
-min and max observations. If \code{individual} is \code{FALSE} (the default), then those
-summaries will again be summarized to present, for example, the mean of
-all subjects' mean observations, or the mean of their maximum observations.
-This argument will be ignored if "id" is not in \code{by}.}
+\item{\code{...}}{Parameters passed to \link{summary.PM_sim}.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-If \code{by} is ommitted, a data frame with rows for each data element except ID,
-and columns labeled as mean, sd, median, min and max. If \code{by} is specified,
-return will be a list with named elements mean, sd, median, min and max, each containing
-the corresponding value for each group in \code{by}.
 }
 }
 \if{html}{\out{<hr>}}

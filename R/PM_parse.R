@@ -1,52 +1,98 @@
+# PM_parse ----------------------------------------------------------------
+
+
 #' @title Parse Pmetrics output
 #' @description
-#' `r lifecycle::badge("stable")`
+#' `r lifecycle::badge("experimental")`
 #'
 #' A flexible parser for Pmetrics output
 #' @details
 #' Currently written for the Rust implementation of NPAG
 #' @param wd The directory containing the output from the Rust-implementation of NPAG
 #' @param write A logical value indicating if the results should be returned (`FALSE`, default) or written to disk (`TRUE`)
+#' @param fit Either a \code{PM_fit} object or the absolute path to a "fit.Rdata"
 #' @return The output of \code{PM_parse} is a list containing the following elements
 #' \item{op }{Written to the standard of PM_op}
 #' \item{pop }{Written to the standard of PM_pop}
 #' \item{post }{Written to the standard of PM_post}
 #' \item{cycles }{Written to the standard of PM_cycle}
 #' \item{final }{Written to the standard of PM_final}
+#' \item{cov }{Written to the standard of PM_cov}
 #'
 #' @seealso \code{\link{NPparse}}
 #' @import dplyr
 #' @import tidyr
 #' @importFrom dplyr select rename mutate relocate left_join case_when first across
+#' @importFrom jsonlite fromJSON
 #' @export
 
-PM_parse <- function(wd = getwd(), write = TRUE) {
-  # Default paths
-  pred_file <- paste(wd, "pred.csv", sep = "/")
-  obs_file <- paste(wd, "obs.csv", sep = "/")
-  meta_rust_file <- paste(wd, "meta_rust.csv", sep = "/")
-  config_file <- paste(wd, "config.toml", sep = "/")
-  cycle_file <- paste(wd, "cycles.csv", sep = "/")
-  theta_file <- paste(wd, "theta.csv", sep = "/")
-  post_file <- paste(wd, "posterior.csv", sep = "/")
+PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
+  if (inherits(fit, "PM_fit")) {
+    # fit is a PM_fit object, use it directly
+    fit_object <- fit
+  } else if (is.character(fit) && file.exists(fit)) {
+    # fit is a character string pointing to a file, load it
+    fit_object <- get(load(fit))
+  } else {
+    # fit does not meet any of the above conditions, set to NULL
+    fit_object <- NULL
+  }
 
-  op <- make_OP(pred_file = pred_file, obs_file = obs_file, config_file = config_file)
-  post <- make_Post(pred_file = pred_file)
-  pop <- make_Pop(pred_file = pred_file)
-  final <- make_Final(theta_file = theta_file, config_file = config_file, post_file = post_file)
-  cycle <- make_Cycle(cycle_file = cycle_file, config_file = config_file)
+  cwd <- getwd()
+  setwd(wd) # will be /outputs by default
 
-  meta_rust <- data.table::fread(
-    input = meta_rust_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
+  # assumes pred.csv, obs.csv, and settings.json are in wd
+  op <- rlang::try_fetch(PM_op$new(),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_op} object", parent = e)
+      return(NULL)
+    }
+  )
+
+  # assumes theta.csv and posterior.csv are in wd
+  final <- rlang::try_fetch(PM_final$new(),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_final} object", parent = e)
+      return(NULL)
+    }
+  )
+
+  # assumes cycles.csv, obs.csv, and settings.json are in wd
+  cycle <- rlang::try_fetch(PM_cycle$new(),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_cycle} object", parent = e)
+      return(NULL)
+    }
+  )
+
+  # assumes pred.csv is in wd
+  pop <- rlang::try_fetch(PM_pop$new(),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_pop} object", parent = e)
+      return(NULL)
+    }
+  )
+
+  # assumes pred.csv is in wd
+  post <- rlang::try_fetch(PM_post$new(),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_post} object", parent = e)
+      return(NULL)
+    }
+  )
+
+  cov <- rlang::try_fetch(PM_cov$new(),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_cov} object", parent = e)
+      return(NULL)
+    }
   )
 
   NPcore <- list(
+    data = fit_object$data,
+    model = fit_object$model,
     op = op,
+    cov = cov,
     post = post,
     pop = pop,
     cycle = cycle,
@@ -54,308 +100,35 @@ PM_parse <- function(wd = getwd(), write = TRUE) {
     backend = "rust",
     algorithm = "NPAG",
     numeqt = 1,
-    converge = meta_rust$converged
+    converge = cycle$converged,
+    config = rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines("settings.json", warn = FALSE))),
+      error = function(e) {
+        cli::cli_warn(c("!" = "Unable to read {.file settings.json}"))
+        return(NULL)
+      }
+    )
   )
 
   class(NPcore) <- "PM_result"
 
+
   if (write) {
-    system("mkdir outputs")
-    save(NPcore, file = "outputs/NPcore.Rdata")
+    save(NPcore, file = "PMout.Rdata")
     return(invisible(NPcore))
   }
 
+  setwd(cwd) # should be run folder
   return(NPcore)
 }
 
-# DATA
-make_OP <- function(pred_file = "pred.csv", obs_file = "obs.csv", config_file = "config.toml", version) {
-  pred_raw <- data.table::fread(
-    input = pred_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  obs_raw <- data.table::fread(
-    input = obs_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  config <- RcppTOML::parseTOML(config_file)
-  poly <- config$error$poly
-
-  op <- obs_raw %>%
-    left_join(pred_raw, by = c("id", "time", "outeq")) %>%
-    pivot_longer(cols = c(popMean, popMedian, postMean, postMedian)) %>%
-    mutate(
-      icen = case_when(
-        name == "popMean" ~ "mean",
-        name == "popMedian" ~ "median",
-        name == "postMean" ~ "mean",
-        name == "postMedian" ~ "median",
-      )
-    ) %>%
-    mutate(
-      pred.type = case_when(
-        name == "popMean" ~ "pop",
-        name == "popMedian" ~ "pop",
-        name == "postMean" ~ "post",
-        name == "postMedian" ~ "post",
-      )
-    ) %>%
-    select(-name) %>%
-    dplyr::rename(pred = value) %>%
-    mutate(d = pred - obs) %>%
-    mutate(ds = d * d) %>%
-    mutate(obsSD = poly[1] + poly[2] * obs + poly[3] * (obs^2) + poly[4] * (obs^3)) %>%
-    mutate(wd = d / obsSD) %>%
-    mutate(wds = wd * wd) %>%
-    # HARDCODED
-    mutate(block = 1)
 
 
-  class(op) <- c("PMop", "data.frame")
-  return(op)
-}
-
-# POST
-make_Post <- function(pred_file = "pred.csv", version) {
-  raw <- data.table::fread(
-    input = pred_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  post <- raw %>%
-    select(-popMedian, -popMean) %>%
-    pivot_longer(
-      cols = c(postMedian, postMean),
-      values_to = "pred"
-    ) %>%
-    dplyr::rename(icen = name) %>%
-    mutate(icen = case_when(
-      icen == "postMedian" ~ "median",
-      icen == "postMean" ~ "mean"
-    )) %>%
-    # Hardcoded for now
-    mutate(block = 1) %>%
-    relocate(id, time, icen, outeq, pred, block)
-
-  class(post) <- c("PMpost", "data.frame")
-  return(post)
-}
-
-# POP
-make_Pop <- function(pred_file = "pred.csv", version) {
-  raw <- data.table::fread(
-    input = pred_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  pop <- raw %>%
-    select(-postMedian, -postMean) %>%
-    pivot_longer(cols = c(popMedian, popMean), values_to = "pred") %>%
-    dplyr::rename(icen = name) %>%
-    mutate(icen = case_when(
-      icen == "popMedian" ~ "median",
-      icen == "popMean" ~ "mean"
-    )) %>%
-    # Hardcoded for now
-    mutate(block = 1) %>%
-    relocate(id, time, icen, outeq, pred, block)
-
-  class(pop) <- c("PMpop", "data.frame")
-  return(pop)
-}
-
-# FINAL
-make_Final <- function(theta_file = "theta.csv", config_file = "config.toml", post_file = "posterior.csv") {
-  theta <- data.table::fread(
-    input = theta_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  post <- data.table::fread(
-    input = post_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  par_names <- names(theta)[names(theta) != "prob"]
-
-  # Pop
-  popMean <- theta %>%
-    summarise(across(.cols = -prob, .fns = function(x) {
-      mean(x)
-    }))
-
-  popSD <- theta %>%
-    summarise(across(.cols = -prob, .fns = function(x) {
-      sd(x)
-    }))
-
-  popCov <- theta %>%
-    select(-prob) %>%
-    cov()
-
-  popCor <- theta %>%
-    select(-prob) %>%
-    cor()
-
-  popMedian <- theta %>%
-    summarise(across(-prob, \(x) median(x)))
-
-  # Posterior
-
-  postMean <- post %>%
-    group_by(id) %>%
-    summarise(across(.cols = -c(point, prob), .fns = function(x) {
-      weighted.mean(x = x, w = prob)
-    }))
-
-  postSD <- post %>%
-    group_by(id) %>%
-    summarise(across(.cols = -c(point, prob), .fns = function(x) {
-      sd(x)
-    }))
-
-  postVar <- post %>%
-    group_by(id) %>%
-    summarise(across(.cols = -c(point, prob), .fns = function(x) {
-      sd(x)**2
-    }))
-
-  # TODO: Add postCov, postCor, Post
-
-  postMed <- post %>%
-    group_by(id) %>%
-    summarise(across(-c(point, prob), \(x) weighted_median(x, prob))) # in PMutilities
-
-  # TODO: Calculate shrinkage
-  shrinkage <- 1
-  # varEBD <- apply(postVar[,-1],2,mean) # Mean postVar / popVar
-  # sh <- varEBD/popVar
-
-  ab <- RcppTOML::parseTOML(config_file)$random %>%
-    unlist() %>%
-    matrix(ncol = 2, byrow = T)
-
-  gridpts <- RcppTOML::parseTOML(config_file)$config$init_points
-
-  final <- list(
-    popPoints = theta,
-    popMean = popMean,
-    popSD = popSD,
-    popCV = popSD / popMean,
-    popVar = popSD**2,
-    popCov = popCov,
-    popCor = popCor,
-    popMedian = popMedian,
-    #
-    postMean = postMean,
-    postSD = postSD,
-    postMed = postMed,
-    gridpts = gridpts,
-    nsub = length(unique(post$id)),
-    ab = ab
-  )
-
-  return(final)
-}
-
-# CYCLES
-make_Cycle <- function(cycle_file = "cycles.csv", obs_file = "obs.csv", config_file = "config.toml", version) {
-  raw <- data.table::fread(
-    input = cycle_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
-
-  obs_raw <- data.table::fread(
-    input = obs_file,
-    sep = ",",
-    header = TRUE,
-    data.table = FALSE,
-    dec = ".",
-    showProgress = TRUE
-  )
 
 
-  config <- RcppTOML::parseTOML(config_file)
 
-  cycle_data <- raw %>%
-    pivot_longer(cols = ends_with(c("mean", "median", "sd"))) %>%
-    separate_wider_delim(name, delim = ".", names = c("parameter", "statistic"))
 
-  num_params <- length(names(config$random)) + length(names(config$fixed))
+# make_Config -------------------------------------------------------------
 
-  aic <- 2 * num_params + raw$neg2ll
-  names(aic) <- raw$cycle
-  bic <- num_params * log(length(unique(obs_raw$id))) + raw$neg2ll
-  names(bic) <- raw$cycle
-
-  mean <- cycle_data %>%
-    filter(statistic == "mean") %>%
-    select(cycle, value, parameter) %>%
-    pivot_wider(names_from = parameter, values_from = value) %>%
-    arrange(cycle) %>%
-    mutate(across(.cols = -cycle, .fns = function(x) {
-      x / first(x)
-    }))
-
-  sd <- cycle_data %>%
-    filter(statistic == "sd") %>%
-    select(cycle, value, parameter) %>%
-    pivot_wider(names_from = parameter, values_from = value) %>%
-    arrange(cycle) %>%
-    mutate(across(.cols = -cycle, .fns = function(x) {
-      x / first(x)
-    }))
-
-  median <- cycle_data %>%
-    filter(statistic == "median") %>%
-    select(cycle, value, parameter) %>%
-    pivot_wider(names_from = parameter, values_from = value) %>%
-    arrange(cycle) %>%
-    mutate(across(.cols = -cycle, .fns = function(x) {
-      x / first(x)
-    }))
-
-  res <- list(
-    names = c(names(config$random), names(config$fixed), names(config$constant)),
-    cycnum = raw$cycle,
-    ll = raw$neg2ll,
-    gamlam = raw$gamlam,
-    mean = mean,
-    sd = sd,
-    median = median,
-    aic = aic,
-    bic = bic
-  )
-
-  return(res)
+make_Config <- function(settings_file) {
+  fromJSON(settings_file)
 }

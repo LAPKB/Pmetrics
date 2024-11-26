@@ -20,7 +20,7 @@ directly in R, or by reading a model text file in the current working directory.
 ## Method `PM_model$update`
 ## ------------------------------------------------
 
-mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+mod2 <- PmetricsData::modEx$clone() #create an independent copy of modEx called mod2
 mod2$update(list(
   pri = list(
    Ke = ab(0, 1), #change the range
@@ -31,14 +31,14 @@ mod2$update(list(
 ))
 #note that they are different now
 mod2
-modEx
+PmetricsData::modEx
 
 ## ------------------------------------------------
 ## Method `PM_model$write`
 ## ------------------------------------------------
 
 \dontrun{
-modEx$write("model.txt")
+PmetricsData::modEx$write("model.txt")
 }
 }
 \section{Methods}{
@@ -58,23 +58,19 @@ modEx$write("model.txt")
 \subsection{Method \code{new()}}{
 Build a new PM_model from a variety of inputs.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$new(model, ..., julia = F)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$new(model, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{model}}{This can be a quoted name of a model text file in the
-working directory which will be read and passed to Fortran engines unless
-\code{julia = TRUE} in which case is will be passed as a Julia model.
-It can be a list of lists that defines the model directly in R. Similarly,
-it can be a function that defines a Julia model directly in R. See the user
+working directory which will be read and passed to Fortran engines.
+It can be a list of lists that defines the model directly in R. It
+can also be a \link{PM_model} object, which will simply rebuild it. See the user
 manual for more help on directly defining models in R.}
 
-\item{\code{...}}{Additional arguments passed to creation of new Julia model.}
-
-\item{\code{julia}}{Controls whether a filename defines a Fortran or Julia model.
-Default is \code{FALSE}, i.e. using Fortran.}
+\item{\code{...}}{Not currently used.}
 }
 \if{html}{\out{</div>}}
 }
@@ -120,7 +116,7 @@ first if you want to create a copied, yet independent new model.}
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+\preformatted{mod2 <- PmetricsData::modEx$clone() #create an independent copy of modEx called mod2
 mod2$update(list(
   pri = list(
    Ke = ab(0, 1), #change the range
@@ -131,7 +127,7 @@ mod2$update(list(
 ))
 #note that they are different now
 mod2
-modEx
+PmetricsData::modEx
 }
 \if{html}{\out{</div>}}
 
@@ -160,7 +156,7 @@ relative to the current working directory}
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
-modEx$write("model.txt")
+PmetricsData::modEx$write("model.txt")
 }
 }
 \if{html}{\out{</div>}}

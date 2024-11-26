@@ -38,7 +38,7 @@ is particularly useful for making simulation templates on the fly.
 ## Method `PM_data$addEvent`
 ## ------------------------------------------------
 
-PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, 
+PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12,
 out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 }
 \section{Public fields}{
@@ -47,6 +47,14 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \item{\code{data}}{Data frame containing the data to be modeled}
 
 \item{\code{standard_data}}{Data frame containing standardized version of the data}
+
+\item{\code{pop}}{The \verb{$data} field from a \link{PM_pop} object. This makes it easy to add population predictions to a raw data plot. This field will be \code{NULL} until the \link{PM_data} object is added to the \link{PM_result} after a run. As examples:
+\itemize{
+\item \code{dat <- PM_data$new("data.csv")}. Here, \code{dat$pop} will be \code{NULL}.
+\item \code{run1 <- PM_load(1)}. Here, \code{run1$data$pop} will be the same as \code{run1$pop$data}.
+}}
+
+\item{\code{post}}{The \verb{$data} field from a \link{PM_post} object. See details in the \code{pop} argument above.}
 }
 \if{html}{\out{</div>}}
 }
@@ -61,6 +69,7 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \item \href{#method-PM_data-print}{\code{PM_data$print()}}
 \item \href{#method-PM_data-summary}{\code{PM_data$summary()}}
 \item \href{#method-PM_data-addEvent}{\code{PM_data$addEvent()}}
+\item \href{#method-PM_data-makeNoise}{\code{PM_data$makeNoise()}}
 \item \href{#method-PM_data-clone}{\code{PM_data$clone()}}
 }
 }
@@ -77,8 +86,8 @@ Create new data object
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{data}}{A quoted name of a file with full path if not
-in the working directory, or an unquoted name of a data frame
-in the current R environment.}
+in the working directory, an unquoted name of a data frame
+in the current R environment, or a \link{PM_data} object, which will rebuild it.}
 
 \item{\code{dt}}{Pmetrics will try a variety of date/time formats. If all 16 of
 them fail, use this parameter to specify the correct format as a
@@ -100,13 +109,11 @@ Other date/time formats are possible. See \code{\link[lubridate:parse_date_time]
 \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
 
 \item{\code{validate}}{Check for errors. Default is \code{TRUE}. Strongly recommended.}
-
-\item{\code{...}}{Arguments to be passed further}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-Creation of a new \code{PM_data} objects from a file or
+Creation of a new \link{PM_data} objects from a file or
 a data frame. Data will be standardized and checked
 automatically to a fully specified, valid data object.
 }
@@ -197,7 +204,7 @@ Plot method
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{plot.PMmatrix}.
+See \link{plot.PM_data}.
 }
 
 }
@@ -241,12 +248,12 @@ Summary method
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{summary.PMmatrix}.}
+\item{\code{...}}{Arguments passed to \link{summary.PM_data}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{summary.PMmatrix}.
+See \link{summary.PM_data}.
 }
 
 }
@@ -329,11 +336,20 @@ See the example.
 
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, 
+\preformatted{PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12,
 out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 }
 \if{html}{\out{</div>}}
 
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_data-makeNoise"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-makeNoise}{}}}
+\subsection{Method \code{makeNoise()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$makeNoise(col = "out", c0 = 0, c1 = 0, c2 = 0, c3 = 0)}\if{html}{\out{</div>}}
 }
 
 }
