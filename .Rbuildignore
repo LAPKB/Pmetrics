@@ -17,3 +17,6 @@ compile.*
 ^man-roxygen
 ^README\.Rmd$
 logo.png
+^vignettes/articles$
+^Archived/
+^src/\.cargo$

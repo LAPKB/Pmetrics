@@ -2,24 +2,12 @@ Package: Pmetrics
 License: GPL (>= 3)
 Title: Pmetrics for Population Modeling and Simulation
 Type: Package
-LazyLoad: yes
-LazyData: yes
-LazyDataCompression: bzip2
 Roxygen: list(markdown = TRUE)
-Description: Parametric and non-parametric
-    pharmacometric modeling and simulation software package.
-    This package contains functions to run and
-    analyze the output from all three components of the
-    Pmetrics software suite for population pharmacometric
-    data analysis: 1) IT2B (Iterative Two-Stage Bayesian)
-    for parametric models; 2) NPAG (Non-parametric Adaptive
-    Grid) for non-paramametric models; 3) Simulator for
-    semi-parametric Monte-Carlo simulations. It includes
-    source code from the NPDE package by Emanuelle Comets, et al,
-    which used to be available on CRAN.
+Description: Pmetrics is short for pharmacometrics, the discipline of modeling drug kinetics and effects on biologic systems, including disease progression. Models can be used to simulate novel therapeutic dosing regimens and/or populations, informing trial design and dosing strategies. The package supports primarily non-parametric but also parametric pharmacometric modeling and simulation with functions to run and analyze the output from all three components of the Pmetrics software suite for population pharmacometric data analysis: 1) IT2B (Iterative Two-Stage Bayesian) for parametric models; 2) NPAG (Non-parametric Adaptive Grid) for non-paramametric models; 3) Simulator for semi-parametric Monte-Carlo simulations. 
 Authors@R: c(
   person("Michael", "Neely", email = "mneely@usc.edu", role = c("aut", "cre")),
   person("Julián", "Otálvaro", email = "juliandavid347@gmail.com", role = "aut"),
+  person("Markus", "Hovd", email = "", role = "ctb"),
   person("Walter", "Yamada", email = "", role= "ctb"),
   person("Alan", "Schumitzky", email = "", role = "ctb"),
   person("Rong", "Chen", email = "", role = "ctb"),
@@ -27,39 +15,38 @@ Authors@R: c(
   person("David", "Bayard", email = "", role = "ctb"),
   person("Robert", "Leary", email = "", role = "ctb")
     )
-Version: 2.1.1
+Version: 2.1.2
 URL: https://lapkb.github.io/Pmetrics/
 BugReports: https://github.com/LAPKB/Pmetrics/issues
+SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc
 Depends: 
     R (>= 4.0.0)
 Imports:
+    bslib,
     crayon,
     doParallel,
     DT,
     dplyr,
-    foreach,
+    DT,
     ggplot2,
     ggraph,
-    htmlwidgets,
-    httr,
     jsonlite,
     lifecycle,
     lubridate,
     magrittr,
-    mclust,
-    npde,
     openxlsx,
     pander,
-    parallel,
     plotly,
     purrr,
     R6,
-    RColorBrewer,
     readr,
+    remotes,
+    rlang,
+    rmarkdown,
     shiny,
-    shinythemes,
     stats,
     stringr,
+    tibble,
     tidygraph,
     tidyr,
     trelliscopejs,
@@ -67,19 +54,25 @@ Imports:
     mvtnorm,
     utils
 Suggests:
-    askpass,
-    base64enc,
-    curl,
     data.table,
     devtools,
+    ggpubr,
+    htmltools,
     knitr,
+    mclust,
+    npde,
     pandoc,
+    patchwork,
+    PmetricsData,
     progress,
+    RColorBrewer,
     RcppTOML,
     reticulate,
-    rmarkdown,
-    testthat
-RoxygenNote: 7.2.3
+    testthat,
+    trelliscopejs
+Remotes: LAPKB/PmetricsData
+RoxygenNote: 7.3.2
 Encoding: UTF-8
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+Config/rextendr/version: 0.3.1

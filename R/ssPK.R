@@ -1,13 +1,13 @@
 #' @title Sample size calculations for Phase 1 PK study design
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' This function calculates sample size based on a desired standard error of the mean,
 #' to a specified confidence, for a given mean and standard deviation.
 #' @details
 #' The formula is `n = qnorm((1+ci)/2)**2 * sd**2 / (precision*mean)**2`
 #'
-#' @param n Sample size.  This value can be missing if sample size is desired, or 
+#' @param n Sample size.  This value can be missing if sample size is desired, or
 #' specified to calculate the maximum sd for given `mean`, `precision`, and `ci.
 #' @param mean Mean prameter value.  User value is mandatory.
 #' @param sd Standard deviation of parameter values.  If present, the function will return `n.
@@ -20,36 +20,44 @@
 #' @author Michael Neely
 #' @export
 
-ss.PK <- function(n, mean, sd, precision, ci = 0.95){
-  
-  if(missing(mean)){stop("\nYou must supply a mean.\n")}
-  if(missing(n)){
-    if(missing(sd)){stop("\nYou must supply sd to calculate n.\n")}
-    if(missing(precision)){
+ss.PK <- function(n, mean, sd, precision, ci = 0.95) {
+  if (missing(mean)) {
+    stop("\nYou must supply a mean.\n")
+  }
+  if (missing(n)) {
+    if (missing(sd)) {
+      stop("\nYou must supply sd to calculate n.\n")
+    }
+    if (missing(precision)) {
       cat("\nDefault precision of 0.2 (20%) applied.\n")
       precision <- 0.2
     }
-    
-    n <- ceiling(qnorm((1+ci)/2)**2 * sd**2 / (precision*mean)**2)
-    cat(paste("n: ",n,"\n",sep=""))
+
+    n <- ceiling(qnorm((1 + ci) / 2)**2 * sd**2 / (precision * mean)**2)
+    cat(paste("n: ", n, "\n", sep = ""))
     return(invisible(n))
   }
-  if(missing(sd)){
-    if(missing(n)){stop("\nYou must supply n to calculate sd.\n")}
-    if(missing(precision)){
+  if (missing(sd)) {
+    if (missing(n)) {
+      stop("\nYou must supply n to calculate sd.\n")
+    }
+    if (missing(precision)) {
       cat("\nDefault precision of 20% applied.\n")
       precision <- 0.2
     }
-    sd <- sqrt(n * (precision*mean)**2 / qnorm((1+ci)/2)**2)
-    cat(paste("SD: ",sd,"\n",sep=""))
+    sd <- sqrt(n * (precision * mean)**2 / qnorm((1 + ci) / 2)**2)
+    cat(paste("SD: ", sd, "\n", sep = ""))
     return(invisible(sd))
   }
-  if(missing(precision)){
-    if(missing(n)){stop("\nYou must supply n to calculate precision.\n")}
-    if(missing(sd)){stop("\nYou must supply sd to calculate precision.\n")}
-    precision <- sqrt(qnorm((1+ci)/2)**2 * sd**2 / n)/mean
-    cat(paste("\nPrecision: ",round(precision,2)," (",round(precision*100,0),"%)\n",sep=""))
+  if (missing(precision)) {
+    if (missing(n)) {
+      stop("\nYou must supply n to calculate precision.\n")
+    }
+    if (missing(sd)) {
+      stop("\nYou must supply sd to calculate precision.\n")
+    }
+    precision <- sqrt(qnorm((1 + ci) / 2)**2 * sd**2 / n) / mean
+    cat(paste("\nPrecision: ", round(precision, 2), " (", round(precision * 100, 0), "%)\n", sep = ""))
     return(invisible(precision))
   }
-
-} #end function
+} # end function
