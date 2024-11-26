@@ -103,7 +103,7 @@ extendr_module! {
     fn compile_model;
     fn dummy_compile;
     fn is_cargo_installed;
-    fn test_funky;
+    fn test_robj_to_hashmap;
 }
 
 // To generate the exported function in R, run the following command:
