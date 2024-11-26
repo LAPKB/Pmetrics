@@ -1,13 +1,12 @@
 mod build;
 mod executor;
+mod settings;
 mod simulation;
 
-use std::{hash::Hash, process::Command};
-
-use extendr_api::{prelude::*, ToVectorValue, TryFromRobj};
-use pmcore::prelude::{data::read_pmetrics, settings::Settings};
+use extendr_api::prelude::*;
+use pmcore::prelude::data::read_pmetrics;
 use simulation::SimulationRow;
-use std::collections::HashMap;
+use std::process::Command;
 
 fn validate_paths(data_path: &str, model_path: &str) {
     if !std::path::Path::new(data_path).exists() {
@@ -49,9 +48,9 @@ fn simulate_all(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<Sim
 
 ///@export
 #[extendr]
-pub fn execute(model_path: &str, data: &str) {
+pub fn fit(model_path: &str, data: &str, params: List, output_path: &str) {
     validate_paths(data, model_path);
-    executor::fit(model_path.into(), data.into());
+    executor::fit(model_path.into(), data.into(), params, output_path.into());
 }
 
 /// Compiles the text representation of a model into a binary file.
@@ -76,23 +75,6 @@ fn is_cargo_installed() -> bool {
     Command::new("cargo").arg("--version").output().is_ok()
 }
 
-fn robj_to_hashmap(list: List) -> HashMap<String, (f64, f64)> {
-    let mut map: HashMap<String, (f64, f64)> = HashMap::new();
-    list.iter().for_each(|x| {
-        let name = x.0.to_owned();
-        let ranges = x.1.as_real_slice().unwrap();
-        map.insert(name, (ranges[0], ranges[1]));
-    });
-    map
-}
-
-///@export
-#[extendr]
-fn test_robj_to_hashmap(list: List) {
-    let a = robj_to_hashmap(list);
-    dbg!(a);
-}
-
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
 // See corresponding C code in `entrypoint.c`.
@@ -103,7 +85,7 @@ extendr_module! {
     fn compile_model;
     fn dummy_compile;
     fn is_cargo_installed;
-    fn test_robj_to_hashmap;
+    fn fit;
 }
 
 // To generate the exported function in R, run the following command:
