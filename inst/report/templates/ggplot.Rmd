@@ -315,7 +315,7 @@ if (is.null(res$cycle$aic)) {
   ll = res$cycle$data$ll,
   AIC = res$cycle$data$aic,
   BIC = res$cycle$data$bic,
-  gamlam = res$cycle$data$gamlam
+  gamlam = res$cycle$data$gamlam$value
   
 )
 
