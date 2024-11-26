@@ -24,6 +24,8 @@ Depends:
 Imports:
     bslib,
     crayon,
+    doParallel,
+    DT,
     dplyr,
     DT,
     ggplot2,
@@ -47,6 +49,9 @@ Imports:
     tibble,
     tidygraph,
     tidyr,
+    trelliscopejs,
+    patchwork,
+    mvtnorm,
     utils
 Suggests:
     data.table,
