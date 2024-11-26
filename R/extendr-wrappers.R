@@ -29,5 +29,8 @@ dummy_compile <- function() .Call(wrap__dummy_compile)
 #'@export
 is_cargo_installed <- function() .Call(wrap__is_cargo_installed)
 
+#'@export
+test_funky <- function(list) invisible(.Call(wrap__test_funky, list))
+
 
 # nolint end
