@@ -343,6 +343,7 @@ PM_sim <- R6::R6Class(
     #' subjects in the simulation data template,
     #' then the return object
     #' will be a list of [PM_sim] objects.
+    #' @param ... Not currently used
     #' @return A [PM_sim] object.
     #' @author Michael Neely
     #' @examples
@@ -388,12 +389,29 @@ PM_sim <- R6::R6Class(
                           seed = -17, ode = -4,
                           obsNoise = NULL, doseTimeNoise = NULL,
                           doseNoise = NULL, obsTimeNoise = NULL,
+                          otherNoise = NULL,
                           makecsv = NULL, outname = "simout",
                           clean = TRUE, quiet = FALSE,
-                          nocheck = FALSE, overwrite = FALSE, combine = FALSE) {
+                          nocheck = FALSE, overwrite = FALSE, combine = FALSE,...) {
+      
+      # handle deprecated arguments
+      extraArgs <- list(...)
+      deprecated_args <- c("obsNoise", "doseTimeNoise", "doseNoise", "obsTimeNoise")
+      new_args <- rep("noise", 4)
+      which_deprecated <- which(deprecated_args %in% names(extraArgs))
+      if (length(which_deprecated) > 0) {
+        cli::cli_abort(c(
+          "x" = "The following argument{?s} {?has/have} been deprecated: {paste0(deprecated_args[which_deprecated], collapse = ', ')}.",
+          "i" = "Instead, use {?this/these instead}: {paste0(new_args[which_deprecated], collapse = ', ')}."
+        ))
+      }
+      
+      
       if (missing(poppar)) {
-        cat(crayon::red("Error:"), "poppar is required.\n")
-        return(invisible(NULL))
+        cli::cli_abort(c(
+          "x" = "The poppar argument is required.",
+          "i" = "See ?PM_sim for help."
+        ))
       }
 
       if (inherits(poppar, "PM_result")) {
@@ -941,17 +959,32 @@ PM_sim <- R6::R6Class(
       postToUse <- postToUse[postToUse %in% toInclude] # subset the posteriors if applicable
       if (length(postToUse) > 0 && length(postToUse) != nsub) endNicely(paste("\nYou have ", length(postToUse), " posteriors and ", nsub, " selected subjects in the data file.  These must be equal.\n", sep = ""), model, data)
 
+      ### Deal with noise
+      
       if (length(obsNoise) == 0) {
         # obsNoise was NULL, set to 0 for all outeq or NA (will use model file values) if makecsv
-        obsNoise <- rep(0, 4 * numeqt)
+        obsNoise <- list(.col = "out", .coeff = rep(0, 4 * numeqt))
         if (!is.null(makecsv)) {
-          obsNoise <- rep(NA, 4 * numeqt)
+          obsNoise$.coeff <- rep(NA, 4 * numeqt)
           cat("Setting obsNoise to model file assay error.  When making a csv file, you must specify obsNoise.\n")
           flush.console()
         }
-      }
-      if (all(is.na(obsNoise))) {
-        # obsNoise set to NA, so get coefficients from data file; if missing will grab from model file later
+      } else if (is.list(obsNoise)){
+        # obsNoise was a list, so check for missing values
+        if (length(obsNoise$.col) == 0) {
+          obsNoise$.col <- "out"
+        }
+        if (length(obsNoise$.coeff) == 0) {
+          obsNoise$.coeff <- rep(0, 4 * numeqt)
+        }
+      } else if (length(obsNoise) > 1) {
+        # obsNoise was a vector, so make list
+          obsNoise <- list(.col = "out", .coeff = obsNoise)
+      } 
+      
+      # check for .coeff set to NA
+      if (all(is.na(obsNoise$.coeff))) {
+        # obsNoise$.coeff set to NA, so get coefficients from data file; if missing will grab from model file later
         obsNoiseNotMiss <- lapply(1:numeqt, function(x) which(!is.na(dataFile$c0) & dataFile$outeq == x)[1]) # get non-missing coefficients for each output
 
         checkObsNoise <- function(x, outeq) {
@@ -965,7 +998,7 @@ PM_sim <- R6::R6Class(
             return(c(dataFile$c0[x], dataFile$c1[x], dataFile$c2[x], dataFile$c3[x]))
           }
         }
-        obsNoise <- unlist(lapply(1:numeqt, function(x) checkObsNoise(obsNoiseNotMiss[[x]], x)))
+        obsNoise$.coeff <- unlist(lapply(1:numeqt, function(x) checkObsNoise(obsNoiseNotMiss[[x]], x)))
       }
 
       if (length(doseNoise) == 0) {
@@ -1439,7 +1472,7 @@ PM_sim <- R6::R6Class(
         # now, if predInt was specified in any way, predTimes will not be NA
         if (!is.na(predTimes[1])) {
           predTimes <- predTimes[predTimes > 0] # remove predictions at time 0
-          predTimes <- predTimes[!predTimes %in% dataFile$time[dataFile$evid == 0]] # remove prediction times at times that are specified in template
+          predTimes <- predTimes[!predTimes %in% temp$time[temp$evid == 0]] # remove prediction times at times that are specified in template
           numPred <- length(predTimes)
           maxsim <- 594 - length(temp$evid[temp$evid == 0])
           if (numPred > maxsim) {
@@ -1462,6 +1495,8 @@ PM_sim <- R6::R6Class(
 
         # TODO: make this a PM_data object, not a file
         PMwriteMatrix(temp, "ZMQtemp.csv", override = T, version = "DEC_11")
+        
+        
         if (length(makecsv) == 2) makecsv[2] <- paste("abcde", i, ".csv", sep = "")
         outfile <- paste(outname, i, ".txt", sep = "")
         if (file.exists(outfile)) {

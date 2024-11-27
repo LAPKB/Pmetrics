@@ -617,10 +617,10 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       lag <- ""
       for (line in self$model_list$lag %>% tolower()) {
-        match <- stringr::str_match(line, "tlag\\((\\d+)\\)\\s*=\\s*(\\w+)")
-        lag <- append(lag, sprintf("%i=>%s,", strtoi(match[2]), match[3]))
+        match <- stringr::str_match(line, "tlag[\\(\\[](\\d+)[\\)\\]]\\s*=\\s*(.+)")
+        lag <- append(lag, sprintf("%i=>%s,", strtoi(match[2])-1, private$rust_up(match[3])))
       }
-      lag <- lag %>% purrr::map(\(l) private$rust_up(l))
+      #lag <- lag %>% purrr::map(\(l) private$rust_up(l))
       content <- gsub("</lag>", lag %>% paste0(collapse = ""), content)
 
       fa <- ""
