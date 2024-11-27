@@ -806,6 +806,62 @@ PM_model_list <- R6::R6Class("PM_model_list",
     #' }
     #'
     #' @export
+    simulate_all = function(data, theta){
+      if (!inherits(data, "PM_data")) {
+        cli::cli_abort(c("x" = "Data must be a PM_data object."))
+      }
+      if (!is.matrix(theta)) {
+        cli::cli_abort(c("x" = "theta must be a matrix."))
+      }
+      if (!is.numeric(theta)) {
+        cli::cli_abort(c("x" = "theta must be a matrix of numeric values."))
+      }
+      if (ncol(theta) != length(self$parameters())) {
+        cli::cli_abort(c("x" = "theta must have the same number of columns as the number of parameters."))
+      }
+      
+      temp_csv <- tempfile(fileext = ".csv")
+      data$write(temp_csv, header = FALSE)
+      if (getPMoptions()$backend == "rust") {
+        if (is.null(self$binary_path)) {
+          self$compile()
+          if (is.null(self$binary_path)) {
+          cli::cli_abort(c("x" = "Model must be compiled before simulating."))
+        }
+        }
+        sim <- simulate_all(temp_csv, self$binary_path, theta)
+      } else {
+        cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
+      }
+      sim
+    },
+    #' @title Get Model Parameters
+    #' @description
+    #' Retrieves the list of model parameters from the compiled version of the model.
+    #' 
+    #' @details
+    #' This function returns a list of the model parameters in the compiled version of the model.
+    #' It only works with the Rust backend. If the backend is not set to "rust", an error will be thrown.
+    #' 
+    #' @return A list of model parameters.
+    #' 
+    #' @examples
+    #' \dontrun{
+    #' model$parameters()
+    #' }
+    #' 
+    #' @export
+    parameters = function(){
+      if (getPMoptions()$backend != "rust") {
+        cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
+      }
+      model_parameters(self$binary_path)
+    }
+  ),
+  private = list(
+    # converts fortran/R to rust
+    rust_up = function(.l) {
+      # sequentially modify for operators
       pattern1 <- "(\\((?:[^)(]+|(?1))*+\\))"
       # this pattern recursively finds nested parentheses
       # and returns contents of outer
