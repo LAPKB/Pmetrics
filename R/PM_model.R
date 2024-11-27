@@ -628,9 +628,9 @@ PM_model_list <- R6::R6Class("PM_model_list",
       lag <- ""
       for (line in self$model_list$lag %>% tolower()) {
         match <- stringr::str_match(line, "tlag\\((\\d+)\\)\\s*=\\s*(\\w+)")
-        lag <- append(lag, sprintf("%i=>%s,", strtoi(match[2]), match[3]))
+        lag <- append(lag, sprintf("%i=>%s,", strtoi(match[2])-1, private$rust_up(match[3])))
       }
-      lag <- lag %>% purrr::map(\(l) private$rust_up(l))
+      # lag <- lag %>% purrr::map(\(l) private$rust_up(l))
       content <- gsub("</lag>", lag %>% paste0(collapse = ""), content)
 
       fa <- ""
@@ -751,6 +751,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       .l <- gsub("log\\(", "ln\\(", .l) # log in R and Fortran is ln in Rust
 
       # deal with exponents - not bullet proof. Need to separate closing ) with space if not part of exponent
+      #TODO: There is a bug here when the exponent is a variable not between parentheses
       pattern2 <- "\\*{2}\\(([^)]+)\\)|\\*{2}([\\d.]+)|\\^\\(([^)]+)\\)|\\^([\\d.]+)"
       replace2 <- "\\.powf\\(\\1\\2\\) " # will use first match if complex, second if simple
       .l <- gsub(pattern2, replace2, .l, perl = TRUE)
