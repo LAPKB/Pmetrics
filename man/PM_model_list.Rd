@@ -7,6 +7,10 @@
 Compile PM_model object
 
 Compile PM_model object
+
+Simulate One Scenario
+
+Get Model Parameters
 }
 \note{
 This function can only be used with the Rust backend. If the backend is not set to "rust",
@@ -22,6 +26,26 @@ an error will be thrown.
 model$compile()
 }
 
+
+## ------------------------------------------------
+## Method `PM_model_list$simulate_one`
+## ------------------------------------------------
+
+\dontrun{
+data <- PM_data$new(...)
+spp <- c(1.0, 2.0, 3.0)
+result <- model$simulate_one(data, spp)
+}
+
+
+## ------------------------------------------------
+## Method `PM_model_list$parameters`
+## ------------------------------------------------
+
+\dontrun{
+model$parameters()
+}
+
 }
 \section{Super class}{
 \code{\link[Pmetrics:PM_model]{Pmetrics::PM_model}} -> \code{PM_model_list}
@@ -34,6 +58,8 @@ model$compile()
 \item \href{#method-PM_model_list-write_rust}{\code{PM_model_list$write_rust()}}
 \item \href{#method-PM_model_list-update}{\code{PM_model_list$update()}}
 \item \href{#method-PM_model_list-compile}{\code{PM_model_list$compile()}}
+\item \href{#method-PM_model_list-simulate_one}{\code{PM_model_list$simulate_one()}}
+\item \href{#method-PM_model_list-parameters}{\code{PM_model_list$parameters()}}
 \item \href{#method-PM_model_list-clone}{\code{PM_model_list$clone()}}
 }
 }
@@ -100,6 +126,80 @@ It writes the model to a temporary file, compiles it, and stores the path to the
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
 model$compile()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_model_list-simulate_one"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model_list-simulate_one}{}}}
+\subsection{Method \code{simulate_one()}}{
+Simulates a single scenario using the provided data and parameter values.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model_list$simulate_one(data, spp)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{A \code{PM_data} object containing the data for the simulation.}
+
+\item{\code{spp}}{A numeric vector representing the parameter values for the simulation.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+This function simulates a single scenario using the provided data and parameter values.
+It requires the data to be a \code{PM_data} object and the parameter values to be a numeric vector.
+The length of the parameter vector must match the number of parameters in the model.
+The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
+If the model is not already compiled, it will be compiled before the simulation.
+
+If the data contains more than one scenario, only the first scenario will be used for the simulation.
+}
+
+\subsection{Returns}{
+The result of the simulation.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+data <- PM_data$new(...)
+spp <- c(1.0, 2.0, 3.0)
+result <- model$simulate_one(data, spp)
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_model_list-parameters"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model_list-parameters}{}}}
+\subsection{Method \code{parameters()}}{
+Retrieves the list of model parameters from the compiled version of the model.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model_list$parameters()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+This function returns a list of the model parameters in the compiled version of the model.
+It only works with the Rust backend. If the backend is not set to "rust", an error will be thrown.
+}
+
+\subsection{Returns}{
+A list of model parameters.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+model$parameters()
 }
 
 }

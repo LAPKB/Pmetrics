@@ -32,5 +32,8 @@ is_cargo_installed <- function() .Call(wrap__is_cargo_installed)
 #'@export
 fit <- function(model_path, data, params, output_path) invisible(.Call(wrap__fit, model_path, data, params, output_path))
 
+#'@export
+model_parameters <- function(model_path) .Call(wrap__model_parameters, model_path)
+
 
 # nolint end
