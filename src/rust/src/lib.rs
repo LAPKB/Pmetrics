@@ -24,24 +24,32 @@ fn simulate_one(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<Sim
     validate_paths(data_path, model_path);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
     let subjects = data.get_subjects();
-    let rows = executor::simulate(model_path.into(), subjects.first().unwrap(), &spp.to_vec());
+    let rows = executor::simulate(
+        model_path.into(),
+        subjects.first().unwrap(),
+        &spp.to_vec(),
+        0,
+    );
     rows.into_dataframe().unwrap()
 }
 
 /// Simulates all subjects in the data set using the model at the given path.
 ///@export
 #[extendr]
-fn simulate_all(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<SimulationRow> {
+fn simulate_all(
+    data_path: &str,
+    model_path: &str,
+    theta: RMatrix<f64>,
+) -> Dataframe<SimulationRow> {
     validate_paths(data_path, model_path);
+    let theta = parse_theta(theta);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
     let subjects = data.get_subjects();
     let mut rows = Vec::new();
-    for subject in subjects.iter() {
-        rows.append(&mut executor::simulate(
-            model_path.into(),
-            subject,
-            &spp.to_vec(),
-        ));
+    for (i, spp) in theta.iter().enumerate() {
+        for subject in subjects.iter() {
+            rows.append(&mut executor::simulate(model_path.into(), subject, spp, i));
+        }
     }
     rows.into_dataframe().unwrap()
 }
@@ -51,6 +59,26 @@ fn simulate_all(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<Sim
 pub fn fit(model_path: &str, data: &str, params: List, output_path: &str) {
     validate_paths(data, model_path);
     executor::fit(model_path.into(), data.into(), params, output_path.into());
+}
+
+///@export
+#[extendr]
+fn test_receive_matrix(matrix: RMatrix<f64>) {
+    let theta = parse_theta(matrix);
+    dbg!(&theta);
+}
+
+fn parse_theta(matrix: RMatrix<f64>) -> Vec<Vec<f64>> {
+    let nspp = matrix.nrows();
+    let ndim = matrix.ncols();
+    let real_vector = matrix.as_real_vector().unwrap();
+    let mut theta = vec![vec![0.0; ndim]; nspp];
+    for i in 0..nspp {
+        for j in 0..ndim {
+            theta[i][j] = real_vector[i + j * nspp];
+        }
+    }
+    theta
 }
 
 /// Compiles the text representation of a model into a binary file.
@@ -93,6 +121,7 @@ extendr_module! {
     fn is_cargo_installed;
     fn fit;
     fn model_parameters;
+    fn test_receive_matrix;
 }
 
 // To generate the exported function in R, run the following command:
