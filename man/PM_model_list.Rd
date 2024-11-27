@@ -10,6 +10,8 @@ Compile PM_model object
 
 Simulate One Scenario
 
+Simulate All Scenarios
+
 Get Model Parameters
 }
 \note{
@@ -35,6 +37,17 @@ model$compile()
 data <- PM_data$new(...)
 spp <- c(1.0, 2.0, 3.0)
 result <- model$simulate_one(data, spp)
+}
+
+
+## ------------------------------------------------
+## Method `PM_model_list$simulate_all`
+## ------------------------------------------------
+
+\dontrun{
+data <- PM_data$new(...)
+theta <- matrix(c(1.0, 20.0, 2.0, 70.0), nrow = 2, byrow = TRUE)
+result <- model$simulate_all(data, theta)
 }
 
 
@@ -164,7 +177,7 @@ If the data contains more than one scenario, only the first scenario will be use
 }
 
 \subsection{Returns}{
-The result of the simulation.
+A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
@@ -184,8 +197,42 @@ result <- model$simulate_one(data, spp)
 \if{html}{\out{<a id="method-PM_model_list-simulate_all"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model_list-simulate_all}{}}}
 \subsection{Method \code{simulate_all()}}{
+Simulates multiple scenarios using the provided data and parameter values.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_model_list$simulate_all(data, theta)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{A \code{PM_data} object containing the data for the simulation.}
+
+\item{\code{theta}}{A matrix of numeric values representing the parameter values for the simulation.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+This function simulates multiple scenarios using the provided data and parameter values.
+It requires the data to be a \code{PM_data} object and the parameter values to be a numeric matrix.
+The number of columns in the parameter matrix must match the number of parameters in the model.
+The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
+If the model is not already compiled, it will be compiled before the simulation.
+}
+
+\subsection{Returns}{
+A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+data <- PM_data$new(...)
+theta <- matrix(c(1.0, 20.0, 2.0, 70.0), nrow = 2, byrow = TRUE)
+result <- model$simulate_all(data, theta)
+}
+
+}
+\if{html}{\out{</div>}}
+
 }
 
 }

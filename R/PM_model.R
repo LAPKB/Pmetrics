@@ -746,7 +746,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
     #' 
     #' If the data contains more than one scenario, only the first scenario will be used for the simulation.
     #'
-    #' @return The result of the simulation.
+    #' @return A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
     #'
     #' @examples
     #' \dontrun{
@@ -796,7 +796,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
     #' The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
     #' If the model is not already compiled, it will be compiled before the simulation.
     #'
-    #' @return The result of the simulation.
+    #' @return A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
     #'
     #' @examples
     #' \dontrun{
