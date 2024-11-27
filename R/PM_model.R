@@ -729,6 +729,28 @@ PM_model_list <- R6::R6Class("PM_model_list",
           }
         )
         file.remove(temp_model)
+    },
+    simulate_one = function(data, spp){
+      if (!inherits(data, "PM_data")) {
+        cli::cli_abort(c("x" = "Data must be a PM_data object."))
+      }
+      if (!is.numeric(spp) || !is.vector(spp)) {
+        cli::cli_abort(c("x" = "spp must be a numeric vector."))
+      }
+      temp_csv <- tempfile(fileext = ".csv")
+      data$write(temp_csv, header = FALSE)
+      if (getPMoptions()$backend == "rust") {
+        if (is.null(self$binary_path)) {
+          self$compile()
+          if (is.null(self$binary_path)) {
+          cli::cli_abort(c("x" = "Model must be compiled before simulating."))
+        }
+        }
+        sim <- simulate_one(temp_csv, self$binary_path, spp)
+      } else {
+        cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
+      }
+      sim
     }
   ),
   private = list(
