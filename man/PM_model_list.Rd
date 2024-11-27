@@ -59,6 +59,7 @@ model$parameters()
 \item \href{#method-PM_model_list-update}{\code{PM_model_list$update()}}
 \item \href{#method-PM_model_list-compile}{\code{PM_model_list$compile()}}
 \item \href{#method-PM_model_list-simulate_one}{\code{PM_model_list$simulate_one()}}
+\item \href{#method-PM_model_list-simulate_all}{\code{PM_model_list$simulate_all()}}
 \item \href{#method-PM_model_list-parameters}{\code{PM_model_list$parameters()}}
 \item \href{#method-PM_model_list-clone}{\code{PM_model_list$clone()}}
 }
@@ -176,6 +177,15 @@ result <- model$simulate_one(data, spp)
 }
 \if{html}{\out{</div>}}
 
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_model_list-simulate_all"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model_list-simulate_all}{}}}
+\subsection{Method \code{simulate_all()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model_list$simulate_all(data, theta)}\if{html}{\out{</div>}}
 }
 
 }

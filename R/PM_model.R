@@ -782,33 +782,30 @@ PM_model_list <- R6::R6Class("PM_model_list",
       }
       sim
     },
-    #' @title Get Model Parameters
+    #' @title Simulate All Scenarios
     #' @description
-    #' Retrieves the list of model parameters from the compiled version of the model.
-    #' 
+    #' Simulates multiple scenarios using the provided data and parameter values.
+    #'
+    #' @param data A `PM_data` object containing the data for the simulation.
+    #' @param theta A matrix of numeric values representing the parameter values for the simulation.
+    #'
     #' @details
-    #' This function returns a list of the model parameters in the compiled version of the model.
-    #' It only works with the Rust backend. If the backend is not set to "rust", an error will be thrown.
-    #' 
-    #' @return A list of model parameters.
-    #' 
+    #' This function simulates multiple scenarios using the provided data and parameter values.
+    #' It requires the data to be a `PM_data` object and the parameter values to be a numeric matrix.
+    #' The number of columns in the parameter matrix must match the number of parameters in the model.
+    #' The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
+    #' If the model is not already compiled, it will be compiled before the simulation.
+    #'
+    #' @return The result of the simulation.
+    #'
     #' @examples
     #' \dontrun{
-    #' model$parameters()
+    #' data <- PM_data$new(...)
+    #' theta <- matrix(c(1.0, 20.0, 2.0, 70.0), nrow = 2, byrow = TRUE)
+    #' result <- model$simulate_all(data, theta)
     #' }
-    #' 
+    #'
     #' @export
-    parameters = function(){
-      if (getPMoptions()$backend != "rust") {
-        cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
-      }
-      model_parameters(self$binary_path)
-    }
-  ),
-  private = list(
-    # converts fortran/R to rust
-    rust_up = function(.l) {
-      # sequentially modify for operators
       pattern1 <- "(\\((?:[^)(]+|(?1))*+\\))"
       # this pattern recursively finds nested parentheses
       # and returns contents of outer
