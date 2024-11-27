@@ -61,13 +61,6 @@ pub fn fit(model_path: &str, data: &str, params: List, output_path: &str) {
     executor::fit(model_path.into(), data.into(), params, output_path.into());
 }
 
-///@export
-#[extendr]
-fn test_receive_matrix(matrix: RMatrix<f64>) {
-    let theta = parse_theta(matrix);
-    dbg!(&theta);
-}
-
 fn parse_theta(matrix: RMatrix<f64>) -> Vec<Vec<f64>> {
     let nspp = matrix.nrows();
     let ndim = matrix.ncols();
@@ -121,7 +114,6 @@ extendr_module! {
     fn is_cargo_installed;
     fn fit;
     fn model_parameters;
-    fn test_receive_matrix;
 }
 
 // To generate the exported function in R, run the following command:
