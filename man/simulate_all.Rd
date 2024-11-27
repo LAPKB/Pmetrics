@@ -4,7 +4,7 @@
 \alias{simulate_all}
 \title{Simulates all subjects in the data set using the model at the given path.}
 \usage{
-simulate_all(data_path, model_path, spp)
+simulate_all(data_path, model_path, theta)
 }
 \description{
 Simulates all subjects in the data set using the model at the given path.

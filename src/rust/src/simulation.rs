@@ -14,6 +14,7 @@ pub struct SimulationRow {
     outeq: usize,
     state: f64,
     state_index: usize,
+    spp_index: usize,
 }
 
 impl SimulationRow {
@@ -24,6 +25,7 @@ impl SimulationRow {
         outeq: usize,
         state: f64,
         state_index: usize,
+        spp_index: usize,
     ) -> Self {
         Self {
             id: id.to_string(),
@@ -32,12 +34,13 @@ impl SimulationRow {
             outeq,
             state,
             state_index,
+            spp_index,
         }
     }
 }
 
 impl SimulationRow {
-    fn from_prediction(prediction: &Prediction, id: &str) -> Vec<Self> {
+    fn from_prediction(prediction: &Prediction, id: &str, spp_index: usize) -> Vec<Self> {
         let mut rows = Vec::new();
         for (i, state) in prediction.state().iter().enumerate() {
             rows.push(Self::new(
@@ -47,6 +50,7 @@ impl SimulationRow {
                 prediction.outeq(),
                 *state,
                 i,
+                spp_index,
             ));
         }
         rows
@@ -55,10 +59,11 @@ impl SimulationRow {
     pub fn from_subject_predictions(
         subject_predictions: SubjectPredictions,
         id: &str,
+        spp_index: usize,
     ) -> Vec<Self> {
         let mut rows = Vec::new();
         for prediction in subject_predictions.get_predictions().iter() {
-            rows.extend(Self::from_prediction(prediction, id));
+            rows.extend(Self::from_prediction(prediction, id, spp_index));
         }
         rows
     }
