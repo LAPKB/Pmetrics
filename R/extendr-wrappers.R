@@ -40,3 +40,4 @@ test_receive_matrix <- function(matrix) invisible(.Call(wrap__test_receive_matri
 
 
 # nolint end
+
