@@ -730,6 +730,32 @@ PM_model_list <- R6::R6Class("PM_model_list",
         )
         file.remove(temp_model)
     },
+    #' @title Simulate One Scenario
+    #' @description
+    #' Simulates a single scenario using the provided data and parameter values.
+    #'
+    #' @param data A `PM_data` object containing the data for the simulation.
+    #' @param spp A numeric vector representing the parameter values for the simulation.
+    #'
+    #' @details
+    #' This function simulates a single scenario using the provided data and parameter values.
+    #' It requires the data to be a `PM_data` object and the parameter values to be a numeric vector.
+    #' The length of the parameter vector must match the number of parameters in the model.
+    #' The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
+    #' If the model is not already compiled, it will be compiled before the simulation.
+    #' 
+    #' If the data contains more than one scenario, only the first scenario will be used for the simulation.
+    #'
+    #' @return The result of the simulation.
+    #'
+    #' @examples
+    #' \dontrun{
+    #' data <- PM_data$new(...)
+    #' spp <- c(1.0, 2.0, 3.0)
+    #' result <- model$simulate_one(data, spp)
+    #' }
+    #'
+    #' @export
     simulate_one = function(data, spp){
       if (!inherits(data, "PM_data")) {
         cli::cli_abort(c("x" = "Data must be a PM_data object."))
@@ -737,6 +763,10 @@ PM_model_list <- R6::R6Class("PM_model_list",
       if (!is.numeric(spp) || !is.vector(spp)) {
         cli::cli_abort(c("x" = "spp must be a numeric vector."))
       }
+      if (length(spp) != length(self$parameters())) {
+        cli::cli_abort(c("x" = "spp must have the same length as the number of parameters."))
+      }
+      
       temp_csv <- tempfile(fileext = ".csv")
       data$write(temp_csv, header = FALSE)
       if (getPMoptions()$backend == "rust") {
@@ -751,6 +781,28 @@ PM_model_list <- R6::R6Class("PM_model_list",
         cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
       }
       sim
+    },
+    #' @title Get Model Parameters
+    #' @description
+    #' Retrieves the list of model parameters from the compiled version of the model.
+    #' 
+    #' @details
+    #' This function returns a list of the model parameters in the compiled version of the model.
+    #' It only works with the Rust backend. If the backend is not set to "rust", an error will be thrown.
+    #' 
+    #' @return A list of model parameters.
+    #' 
+    #' @examples
+    #' \dontrun{
+    #' model$parameters()
+    #' }
+    #' 
+    #' @export
+    parameters = function(){
+      if (getPMoptions()$backend != "rust") {
+        cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
+      }
+      model_parameters(self$binary_path)
     }
   ),
   private = list(
@@ -1651,3 +1703,99 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
   print(g)
   return(invisible(graph))
 }
+# convert_r_to_rust <- function(r_code) {
+#   # Helper functions
+#   add_float_notation <- function(text) {
+#     # Add `.0_f64` to integers
+#     gsub("\\b(\\d+)(?!\\.\\d*|\\w)", "\\1.0_f64", text, perl = TRUE)
+#   }
+  
+#   convert_assignment <- function(text) {
+#     # Replace `<-` or `=` with `=` for assignments
+#     text <- gsub("<-|=", "=", text)
+#     if (grepl("^\\s*[a-zA-Z][a-zA-Z0-9_]*\\s*=", text) && 
+#         !grepl("^\\s*(if|else|for)", text)) {
+#       text <- paste0("let ", text)
+#     }
+#     text
+#   }
+  
+#   convert_operators <- function(text) {
+#     # Convert `**` to `.powf()`
+#     gsub("(\\w+|\\d+(?:\\.\\d+)?_f64?)\\s*\\*\\*\\s*(\\w+|\\d+(?:\\.\\d+)?_f64?)", 
+#          "\\1.powf(\\2)", text)
+#   }
+  
+#   convert_math_functions <- function(text) {
+#     # Replace math functions (handles nested expressions)
+#     text <- gsub("sqrt\\(([^)]+)\\)", "\\1.sqrt()", text)
+#     text <- gsub("log\\(([^)]+)\\)", "\\1.ln()", text)
+#     text
+#   }
+  
+#   convert_control_structures <- function(text) {
+#     # Convert for loop
+#     text <- gsub("for\\s*\\((\\w+)\\s+in\\s+(\\d+):(\\d+)\\)", 
+#                  "for \\1 in \\2.0_f64..\\3.0_f64", text)
+#     # Convert if condition
+#     text <- gsub("if\\s*\\((.+?)\\)", "if (\\1)", text)
+#     text
+#   }
+  
+#   add_semicolon <- function(text) {
+#     # Add semicolon if it's a standalone expression or assignment
+#     if (!grepl("[{}]$", text) && 
+#         !grepl("^\\s*(if|else|for|while)", trimws(text))) {
+#       paste0(text, ";")
+#     } else {
+#       text
+#     }
+#   }
+  
+#   process_line <- function(line) {
+#     if (trimws(line) == "") return("")
+    
+#     line <- trimws(line)
+#     line <- add_float_notation(line)
+#     line <- convert_operators(line)
+#     line <- convert_math_functions(line)
+#     line <- convert_control_structures(line)
+#     line <- convert_assignment(line)
+#     line <- add_semicolon(line)
+    
+#     line
+#   }
+  
+#   # Process each line
+#   lines <- strsplit(r_code, "\n")[[1]]
+#   processed <- vapply(lines, process_line, character(1))
+#   processed <- processed[processed != ""]
+  
+#   # Add braces for control structures
+#   processed <- gsub("if \\((.+?)\\)", "if (\\1) {", processed)
+#   processed <- gsub("else$", "} else {", processed)
+#   processed <- gsub("for (\\w+ in .+)", "\\1 {", processed)
+#   processed <- gsub("}$", "}", processed) # Close braces
+  
+#   # Join processed lines
+#   paste(processed, collapse = "\n")
+# }
+
+# r_code <- "
+# a <- 3
+# b = 4
+# c <- a**b
+# c1 <- 3.0**b
+# c2 <- a**4.1
+# if (c > 10) {
+#   d <- sqrt(c)
+# } else {
+#   d <- log(c)
+# }
+# for (i in 1:10) {
+#   print(i)
+# }
+# e = 3.14
+# "
+
+# cat(convert_r_to_rust(r_code))

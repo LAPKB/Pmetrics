@@ -75,6 +75,12 @@ fn is_cargo_installed() -> bool {
     Command::new("cargo").arg("--version").output().is_ok()
 }
 
+///@export
+#[extendr]
+fn model_parameters(model_path: &str) -> Vec<String> {
+    executor::model_parameters(model_path.into())
+}
+
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
 // See corresponding C code in `entrypoint.c`.
@@ -86,6 +92,7 @@ extendr_module! {
     fn dummy_compile;
     fn is_cargo_installed;
     fn fit;
+    fn model_parameters;
 }
 
 // To generate the exported function in R, run the following command:

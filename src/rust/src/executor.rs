@@ -2,7 +2,6 @@ use crate::settings::settings;
 use extendr_api::List;
 use libloading::{Library, Symbol};
 use logger::setup_log;
-use output::OutputFile;
 use pmcore::prelude::*;
 use settings::{write_settings_to_file, Settings};
 use std::path::PathBuf;
@@ -24,6 +23,12 @@ unsafe fn load_ode(lib: &Library) -> (ODE, Meta) {
             (&*(meta_ptr as *mut equation::Meta)).clone(),
         )
     }
+}
+
+pub(crate) fn model_parameters(model_path: PathBuf) -> Vec<String> {
+    let lib = unsafe { Library::new(model_path).expect("Failed to load library") };
+    let (_, meta) = unsafe { load_ode(&lib) };
+    meta.get_params().clone()
 }
 
 pub(crate) fn simulate(

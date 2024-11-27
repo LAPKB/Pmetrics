@@ -68,6 +68,7 @@ new optimal sampling results.}
 \item \href{#method-PM_result-summary}{\code{PM_result$summary()}}
 \item \href{#method-PM_result-auc}{\code{PM_result$auc()}}
 \item \href{#method-PM_result-nca}{\code{PM_result$nca()}}
+\item \href{#method-PM_result-report}{\code{PM_result$report()}}
 \item \href{#method-PM_result-sim}{\code{PM_result$sim()}}
 \item \href{#method-PM_result-save}{\code{PM_result$save()}}
 \item \href{#method-PM_result-validate}{\code{PM_result$validate()}}
@@ -176,6 +177,19 @@ Perform non-compartmental analysis
 }
 \subsection{Details}{
 See \link{makeNCA}.
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_result-report"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-report}{}}}
+\subsection{Method \code{report()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$report(
+  template = getPMoptions("report_template"),
+  outfile,
+  show = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 }
