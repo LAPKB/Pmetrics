@@ -35,9 +35,5 @@ fit <- function(model_path, data, params, output_path) invisible(.Call(wrap__fit
 #'@export
 model_parameters <- function(model_path) .Call(wrap__model_parameters, model_path)
 
-#'@export
-test_receive_matrix <- function(matrix) invisible(.Call(wrap__test_receive_matrix, matrix))
-
 
 # nolint end
-
