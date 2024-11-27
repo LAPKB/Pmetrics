@@ -16,7 +16,7 @@ simulate_one <- function(data_path, model_path, spp) .Call(wrap__simulate_one, d
 
 #' Simulates all subjects in the data set using the model at the given path.
 #'@export
-simulate_all <- function(data_path, model_path, spp) .Call(wrap__simulate_all, data_path, model_path, spp)
+simulate_all <- function(data_path, model_path, theta) .Call(wrap__simulate_all, data_path, model_path, theta)
 
 #' Compiles the text representation of a model into a binary file.
 #'@export
@@ -34,6 +34,9 @@ fit <- function(model_path, data, params, output_path) invisible(.Call(wrap__fit
 
 #'@export
 model_parameters <- function(model_path) .Call(wrap__model_parameters, model_path)
+
+#'@export
+test_receive_matrix <- function(matrix) invisible(.Call(wrap__test_receive_matrix, matrix))
 
 
 # nolint end

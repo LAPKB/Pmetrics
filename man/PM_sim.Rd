@@ -140,6 +140,7 @@ or via the \verb{$sim} method for \link{PM_result} objects.
   doseTimeNoise = NULL,
   doseNoise = NULL,
   obsTimeNoise = NULL,
+  otherNoise = NULL,
   makecsv = NULL,
   outname = "simout",
   clean = TRUE,
@@ -387,6 +388,8 @@ checks, for example.  If \code{combine = FALSE}, and there were multiple
 subjects in the simulation data template,
 then the return object
 will be a list of \link{PM_sim} objects.}
+
+\item{\code{...}}{Not currently used}
 }
 \if{html}{\out{</div>}}
 }

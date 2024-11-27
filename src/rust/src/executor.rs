@@ -35,6 +35,7 @@ pub(crate) fn simulate(
     model_path: PathBuf,
     subject: &Subject,
     support_point: &Vec<f64>,
+    spp_index: usize,
 ) -> Vec<SimulationRow> {
     let lib = unsafe { Library::new(model_path).expect("Failed to load library") };
     let (eq, meta) = unsafe { load_ode(&lib) };
@@ -42,6 +43,7 @@ pub(crate) fn simulate(
     SimulationRow::from_subject_predictions(
         eq.estimate_predictions(subject, support_point),
         subject.id(),
+        spp_index,
     )
 }
 
