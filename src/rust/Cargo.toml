@@ -11,4 +11,5 @@ name = 'pm_rs'
 extendr-api = '*'
 libloading = "0.8.5"
 pmcore = { git = "https://github.com/LAPKB/pmcore.git", branch = "dev"}
+rayon = "1.10.0"
 toml = { version = "0.8.14", features = ["preserve_order"] }
