@@ -41,16 +41,24 @@ fn simulate_all(
     model_path: &str,
     theta: RMatrix<f64>,
 ) -> Dataframe<SimulationRow> {
+    use rayon::prelude::*;
+
     validate_paths(data_path, model_path);
     let theta = parse_theta(theta);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
     let subjects = data.get_subjects();
-    let mut rows = Vec::new();
-    for (i, spp) in theta.iter().enumerate() {
-        for subject in subjects.iter() {
-            rows.append(&mut executor::simulate(model_path.into(), subject, spp, i));
-        }
-    }
+
+    let rows: Vec<_> = theta
+        .par_iter()
+        .enumerate()
+        .flat_map(|(i, spp)| {
+            subjects
+                .par_iter()
+                .flat_map(|subject| executor::simulate(model_path.into(), subject, spp, i))
+                .collect::<Vec<_>>()
+        })
+        .collect();
+
     rows.into_dataframe().unwrap()
 }
 
