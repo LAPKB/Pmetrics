@@ -111,6 +111,21 @@ fn build_template(template_path: PathBuf) -> Result<PathBuf, io::Error> {
         .join(dynlib_name))
 }
 
+pub(crate) fn template_path() -> String {
+    env::temp_dir()
+        .join("exa_tmp")
+        .join("template")
+        .to_string_lossy()
+        .to_string()
+}
+
+pub(crate) fn clear_build() {
+    let temp_dir = env::temp_dir().join("exa_tmp");
+    if temp_dir.exists() {
+        fs::remove_dir_all(temp_dir).expect("Failed to remove temporary directory");
+    }
+}
+
 fn create_template() -> Result<PathBuf, io::Error> {
     let temp_dir = env::temp_dir().join("exa_tmp");
     if !temp_dir.exists() {
@@ -129,7 +144,7 @@ fn create_template() -> Result<PathBuf, io::Error> {
         crate-type = ["cdylib"]
 
         [dependencies]
-        pmcore = { git = "https://github.com/LAPKB/PMcore.git", branch = "dev" }
+        pmcore = { git = "https://github.com/LAPKB/PMcore.git", rev="b865eb863e9b44ddb2df41e64ce83d65838c72ea" }
         "#;
 
     if !template_dir.exists() {
