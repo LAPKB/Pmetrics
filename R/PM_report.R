@@ -5,10 +5,8 @@
 #' Generates a report from a specified Rmd template
 #'
 #' @param x A `PM_result` object obtained from \code{PM_load(x)}, where `x` is the run number.
-#' @param template The filename of a report template in the current working directory,
-#' or the full path/filename of a template in another directory.
-#' If not specified, the default Pmetrics report template as specified in [getPMoptions]
-#' is used.
+#' @param template If missing, the default Pmetrics report template as specified in [getPMoptions]
+#' is used. Otherwise can be "plotly", "ggplot", or "none".
 #' @param outfile The location of the generated report, defaults to a temporary file.
 #' @param show Controls if the report should be automatically opened on generation, defaults to `TRUE`
 #' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
@@ -18,9 +16,13 @@
 #' @seealso [PM_load]
 #' @export
 
-PM_report <- function(x, template = getPMoptions("report_template"), outfile, show = TRUE) {
+PM_report <- function(x, template, outfile, show = TRUE) {
   if (!is(x, "PM_result")) {
     cli::cli_abort(c("x" = "This function expects a valid PM_result object from PM_load."))
+  }
+  
+  if(missing(template)){
+    template <- getPMoptions("report_template")
   }
 
   if (template == "none") {
@@ -32,7 +34,7 @@ PM_report <- function(x, template = getPMoptions("report_template"), outfile, sh
     ggplot = system.file("report/templates/ggplot.Rmd", package = "Pmetrics"),
     ggplot_rust = system.file("report/templates/ggplot_rust.Rmd", package = "Pmetrics")
   )
-  templateFile = system.file("report/templates/ggplot.Rmd", package = "Pmetrics")
+  #templateFile = system.file("report/templates/ggplot.Rmd", package = "Pmetrics")
 
   if (is.null(templateFile)) {
     if (!file.exists(templateFile)) stop(crayon::red("ERROR: "), templateFile, " does not exist.\n")

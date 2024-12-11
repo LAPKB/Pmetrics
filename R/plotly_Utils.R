@@ -466,9 +466,12 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
     stop("Regression failed due to unequal x (n = ", length(x), ") and y (n = ", length(y), ").\n")
   }
   vals <- dplyr::bind_cols(x = x, y = y)
-  mod <- suppressWarnings(do.call(method, args = list(formula = y ~ x, data = vals)))
-  if (all(mod$residuals == 0)) {
-    cat("Regression failed.\n")
+  mod <- tryCatch(suppressWarnings(do.call(method, args = list(formula = y ~ x, data = vals))),
+                  error = function(e) {
+                    NA
+                  })
+  if (any(is.na(mod))) {
+    cli::cli_inform(c("i" = "Regression failed."))
     flush.console()
     return(p)
   }

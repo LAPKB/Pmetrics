@@ -76,7 +76,8 @@ PM_fit <- R6::R6Class(
     #' @param rundir This argument specifies an *existing* folder that will store the run inside.
     #' @param backend Backend used for calculations; default is value in PMoptions.
 
-    run = function(..., engine = "NPAG", rundir = getwd(), backend = getPMoptions()$backend) {
+    run = function(..., engine = "NPAG", rundir = getwd(),
+                   backend = getPMoptions()$backend) {
       wd <- getwd()
       if (!dir.exists(rundir)) {
         cli::cli_abort(c("x" = "You have specified a directory that does not exist, please create it first."))
@@ -163,6 +164,7 @@ PM_fit <- R6::R6Class(
         cycles = 100,
         prior = "uniform",
         sampler = "sobol",
+        report = getPMoptions("report_template"),
         intern = TRUE
       )
       arglist <- modifyList(arglist_default, arglist)
@@ -184,7 +186,7 @@ PM_fit <- R6::R6Class(
           setwd(cwd)
           return(invisible(NULL))
         } else {
-          unlink(run)
+          unlink(run, recursive = TRUE)
         }
         newdir <- run
       }
@@ -398,10 +400,10 @@ PM_fit <- R6::R6Class(
         fit(self$model$binary_path, "gendata.csv", ranges, out_path)
         PM_parse("outputs")
         res <- PM_load(file = "PMout.Rdata")
-        PM_report(res, outfile = "report.html", template = "plotly")
+        PM_report(res, outfile = "report.html", template = arglist$report)
       } else {
         cli::cli_abort(c(
-          "x" = "Error: Right no the rust engine only supports internal runs.",
+          "x" = "Error: Currently, the rust engine only supports internal runs.",
           "i" = "This is a temporary limitation."
         ))
         # system2("./NPcore", args = "&")
