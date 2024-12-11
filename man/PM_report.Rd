@@ -4,15 +4,13 @@
 \alias{PM_report}
 \title{Generate a report}
 \usage{
-PM_report(x, template = getPMoptions("report_template"), outfile, show = TRUE)
+PM_report(x, template, outfile, show = TRUE)
 }
 \arguments{
 \item{x}{A \code{PM_result} object obtained from \code{PM_load(x)}, where \code{x} is the run number.}
 
-\item{template}{The filename of a report template in the current working directory,
-or the full path/filename of a template in another directory.
-If not specified, the default Pmetrics report template as specified in \link{getPMoptions}
-is used.}
+\item{template}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
+is used. Otherwise can be "plotly", "ggplot", or "none".}
 
 \item{outfile}{The location of the generated report, defaults to a temporary file.}
 

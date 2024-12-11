@@ -10,7 +10,7 @@
 #' Currently written for the Rust implementation of NPAG
 #' @param wd The directory containing the output from the Rust-implementation of NPAG
 #' @param write A logical value indicating if the results should be returned (`FALSE`, default) or written to disk (`TRUE`)
-#' @param fit Either a \code{PM_fit} object or the absolute path to a "fit.Rdata"
+#' @param fit Either a \code{PM_fit} object or the relative path to a "fit.Rdata"
 #' @return The output of \code{PM_parse} is a list containing the following elements
 #' \item{op }{Written to the standard of PM_op}
 #' \item{pop }{Written to the standard of PM_pop}
@@ -26,7 +26,7 @@
 #' @importFrom jsonlite fromJSON
 #' @export
 
-PM_parse <- function(wd = getwd(), fit = "../fit.Rdata", write = TRUE) {
+PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
   if (inherits(fit, "PM_fit")) {
     # fit is a PM_fit object, use it directly
     fit_object <- fit

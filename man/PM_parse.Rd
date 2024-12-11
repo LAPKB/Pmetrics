@@ -4,12 +4,12 @@
 \alias{PM_parse}
 \title{Parse Pmetrics output}
 \usage{
-PM_parse(wd = getwd(), fit = "../fit.Rdata", write = TRUE)
+PM_parse(wd = getwd(), fit = "fit.Rdata", write = TRUE)
 }
 \arguments{
 \item{wd}{The directory containing the output from the Rust-implementation of NPAG}
 
-\item{fit}{Either a \code{PM_fit} object or the absolute path to a "fit.Rdata"}
+\item{fit}{Either a \code{PM_fit} object or the relative path to a "fit.Rdata"}
 
 \item{write}{A logical value indicating if the results should be returned (\code{FALSE}, default) or written to disk (\code{TRUE})}
 }

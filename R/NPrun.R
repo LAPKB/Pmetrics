@@ -64,7 +64,8 @@
 #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
 #' @param artifacts Default is `TRUE`.  Set to `FALSE` to suppress creating the `etc` folder. This folder
 #' will contain all the compilation artifacts created during the compilation and run steps.
-#' @param report Generate a report at the end of a run. Default is `TRUE`.
+#' @param report If missing, the default Pmetrics report template as specified in [getPMoptions]
+#' is used. Otherwise can be "plotly", "ggplot", or "none".
 #' @return A successful NPAG run will result in creation of a new folder in the working
 #' directory.  This folder will be named numerically and sequentially with respect to previous runs.
 #' Within this folder will be four subfolders: etc, inputs, outputs, and wrkcopy, described below.
@@ -96,7 +97,7 @@ NPrun <- function(model = "model.txt", data = "data.csv", run,
                   indpts, icen = "median", aucint,
                   idelta = 12, prior,
                   auto = TRUE, intern = FALSE, quiet = FALSE, overwrite = FALSE, nocheck = FALSE, parallel = NA,
-                  report = TRUE, artifacts = TRUE) {
+                  report = report, artifacts = TRUE) {
   if (missing(run)) run <- NULL
   if (missing(include)) include <- NULL
   if (missing(exclude)) exclude <- NULL
