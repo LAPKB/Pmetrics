@@ -25,7 +25,7 @@ NPrun(
   overwrite = FALSE,
   nocheck = FALSE,
   parallel = NA,
-  report = TRUE,
+  report = report,
   artifacts = TRUE
 )
 }
@@ -99,7 +99,8 @@ in the first cycle, with a speed-up of approximately 80\\% of the number of avai
 will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\\%, e.g. 4-fold increase on an 8-core
 machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.}
 
-\item{report}{Generate a report at the end of a run. Default is \code{TRUE}.}
+\item{report}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
+is used. Otherwise can be "plotly", "ggplot", or "none".}
 
 \item{artifacts}{Default is \code{TRUE}.  Set to \code{FALSE} to suppress creating the \code{etc} folder. This folder
 will contain all the compilation artifacts created during the compilation and run steps.}

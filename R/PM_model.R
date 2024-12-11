@@ -1454,7 +1454,6 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
   index <- 0
 
   parse_arrows <- function(tree, arrows = list()) {
-    # browser()
     if (length(tree) == 3) {
       op <- tree[[1]]
       lhs <- tree[[2]]

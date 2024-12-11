@@ -592,14 +592,14 @@
       paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript", sep = "")), " ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = ""),
       paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript ", shQuote(reportscript), " ", shQuote(outpath), " ", icen, " ", parallel, sep = "")
     )[OS]
-    if (report) {
+    if (report != "none") {
       PMscript[getNext(PMscript)] <- c(
         paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0("pander::openFileInOS(", shQuote(paste0(gsub("/", rep, outpath), "/", type, "report.html")), ")")), " ; fi", sep = ""),
         # paste(shQuote(paste(gsub("/", rep, normalizePath(R.home("bin"), winslash = "/")), "\\Rscript -e ", sep = "")), shQuote(paste0('pander::openFileInOS(',shQuote(paste0(gsub('/', rep, outpath), '/', type, 'report.html')),')')), " ",  ")", sep = ""),
         paste("start ", shQuote(paste(type, "Report")), " ", shQuote(paste(gsub("/", rep, outpath), "\\", type, "report.html", sep = "")), ")", sep = ""),
         paste(normalizePath(R.home("bin"), winslash = "/"), "/Rscript -e ", shQuote(paste0("pander::openFileInOS(", shQuote(paste0(gsub("/", rep, outpath), "/", type, "report.html")), ")")), " ; fi", sep = "")
       )[OS]
-    } else { # close if statement if report = F
+    } else { # close if statement if report = "none"
       PMscript[getNext(PMscript)] <- c("fi", "", "fi")[OS]
     }
 
@@ -828,7 +828,7 @@
       reportType <- which(c("NPAG", "IT2B") == type)
       makeRdata(paste(currwd, newdir, "outputs", sep = "/"), reportType)
       res <- PM_load(file = paste(currwd, newdir, "outputs", "PMout.Rdata", sep = "/"))
-      PM_report(res, outfile = "NPreport.html")
+      PM_report(res, template = report, outfile = "NPreport.html")
       setwd(currwd)
       return(res)
       # PMreport(paste(currwd, newdir, "outputs", sep = "/"), icen = icen, type = type, parallel = parallel)
@@ -843,7 +843,7 @@
     # file.remove(Sys.glob("*.*"))
     # system("mv *.* inputs/")
     # outpath <- paste(currwd, newdir, "outputs", sep = "/")
-    if (report) {
+    if (report != "none") {
       pander::openFileInOS(paste(gsub("/", rep, outpath), "/", type, "report.html", sep = ""))
     }
     return(outpath)
