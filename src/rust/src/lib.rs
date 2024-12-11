@@ -110,6 +110,18 @@ fn model_parameters(model_path: &str) -> Vec<String> {
     executor::model_parameters(model_path.into())
 }
 
+//@export
+#[extendr]
+fn template_path() -> String {
+    build::template_path()
+}
+
+//@export
+#[extendr]
+fn clear_build() {
+    build::clear_build();
+}
+
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
 // See corresponding C code in `entrypoint.c`.
@@ -122,6 +134,8 @@ extendr_module! {
     fn is_cargo_installed;
     fn fit;
     fn model_parameters;
+    fn template_path;
+    fn clear_build;
 }
 
 // To generate the exported function in R, run the following command:
