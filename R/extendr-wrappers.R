@@ -35,5 +35,9 @@ fit <- function(model_path, data, params, output_path) invisible(.Call(wrap__fit
 #'@export
 model_parameters <- function(model_path) .Call(wrap__model_parameters, model_path)
 
+template_path <- function() .Call(wrap__template_path)
+
+clear_build <- function() invisible(.Call(wrap__clear_build))
+
 
 # nolint end
