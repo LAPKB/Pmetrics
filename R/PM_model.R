@@ -627,7 +627,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       lag <- ""
       for (line in self$model_list$lag %>% tolower()) {
-        match <- stringr::str_match(line, "tlag\\((\\d+)\\)\\s*=\\s*(\\w+)")
+        match <- stringr::str_match(line, "tlag[\\(\\[](\\d+)[\\)\\]]\\s*=\\s*(\\w+)")
         lag <- append(lag, sprintf("%i=>%s,", strtoi(match[2])-1, private$rust_up(match[3])))
       }
       # lag <- lag %>% purrr::map(\(l) private$rust_up(l))
@@ -635,7 +635,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       fa <- ""
       for (line in self$model_list$fa %>% tolower()) {
-        match <- stringr::str_match(line, "fa\\((\\d+)\\)\\s*=\\s*(\\w+)")
+        match <- stringr::str_match(line, "fa[\\(\\[]\\d+)[\\)\\]]\\s*=\\s*(\\w+)")
         fa <- append(fa, sprintf("%i=>%s,", strtoi(match[2]), match[3]))
       }
       fa <- fa %>% purrr::map(\(l) private$rust_up(l))
@@ -890,10 +890,11 @@ PM_model_list <- R6::R6Class("PM_model_list",
 
       # deal with if statements
       if_fix <- function(code, .l) {
+        if(is.na(.l)) {return(.l)}
         if (code == "if" | code == "else if") {
           pattern <- paste0("^&*", code, "(\\((?:[^)(]+|(?1))*+\\))")
           n_found <- regexpr(pattern = pattern, text = .l, perl = TRUE)
-          if (n_found > -1) { # found something
+          if (attr(n_found, "match.length") > -1) { # found something
             found <- regmatches(x = .l, m = n_found)
             repl <- paste(gsub("[()]", " ", regmatches(x = .l, m = n_found)), "{")
             .l <- gsub(pattern = found, replacement = repl, x = .l, fixed = TRUE)
@@ -929,7 +930,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       # deal with secondary equations, which don't have xp or dx
       .l2 <- stringr::str_replace_all(.l, "\\s*", "") # eliminate any spaces to make pattern matching easier
       pattern4 <- "^[^=]*(?<!(xp|dx)(\\(|\\[)\\d{1,2}(\\)|\\]))=.*" # match everything left of "=" that doesn't have xp or dx followed by () or [] with one or two digits
-      if (stringr::str_detect(.l2, stringr::regex(pattern4, ignore_case = TRUE))) {
+      if (!is.na(.l2) && stringr::str_detect(.l2, stringr::regex(pattern4, ignore_case = TRUE))) {
         .l <- paste0("let ", .l)
       }
 
