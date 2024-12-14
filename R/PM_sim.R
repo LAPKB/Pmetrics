@@ -23,19 +23,7 @@
 PM_sim <- R6::R6Class(
   "PM_sim",
   public = list(
-    #' @field obs Observations for each output as a data frame with columns
-    #' *id*, *time*, *out*, *outeq*, or in the case of multiple regimens
-    #' in the template data file, a list of such data frames
-    obs = NULL,
-    #' @field amt Amounts in each compartment as a data frame with columns
-    #' *id*, *time*, *out*, *comp*, or in the case of multiple regimens
-    #' in the template data file, a list of such data frames
-    amt = NULL,
-    #' @field parValues Retained simulated parameter values after discarding
-    #' any due to truncation limits, as a data frame with columns
-    #' *id* and parameters for each simulated subject, or in the case of multiple regimens
-    #' in the template data file, a list of such data frames
-    parValues = NULL,
+    
     #' @field totalSets Number of all simulated parameter values needed to obtain the
     #' requested number of simulated sets within any limits
     totalSets = NULL,
@@ -516,8 +504,9 @@ PM_sim <- R6::R6Class(
         covariate <- NULL
       }
       
-      # call the simulator, which will have forks for rust
-      res <- private$SIMrun(
+      # call the simulator
+      # for Rust, updates self$data
+      private$SIMrun(
         poppar = final, limits = limits, model = model,
         data = data, split = split,
         include = include, exclude = exclude, nsim = nsim,
@@ -532,19 +521,112 @@ PM_sim <- R6::R6Class(
       )
       
       # TODO: read files and fix the missing E problem
-      if(getPMoptions("backend") == "rust") {
-        self$data <- res
-        return(self)
+      if(getPMoptions("backend") == "fortran") {
+        parseRes <- private$SIMparse(file = paste0(outname, "*"), quiet = quiet, combine = combine)
+        if (inherits(parseRes, "PM_simlist")) {
+          parseRes %>% private$populate(type = "simlist")
+        } else {
+          parseRes %>% private$populate(type = "sim")
+        }
+        if (clean) system(paste0("rm ", outname, "*"))
       }
       
-      parseRes <- private$SIMparse(file = paste0(outname, "*"), quiet = quiet, combine = combine)
-      if (inherits(parseRes, "PM_simlist")) {
-        parseRes %>% private$populate(type = "simlist")
-      } else {
-        parseRes %>% private$populate(type = "sim")
-      }
-      if (clean) system(paste0("rm ", outname, "*"))
       return(self)
+      
+      
+    }, # end initialize
+    #' @description
+    #' Extract simulated concentrations
+    #' @param at Which simulated templates in the PM_sim object to extract. Values are the same as the ID values
+    #' in the simulation data template.
+    #' @param ... Additional parameters passed to [dplyr::filter], for criteria in 
+    #' any of the columns: `nsim`, `time`, `out`, or `outeq.` For example `sim$obs(1, time < 10, outeq == 1)`.
+    #' @return A list of data frames with columns ,`nsim`, `time`, `out`, and `outeq`.
+    #' There will be one such data frame for each template selected by 'at'. Note
+    #' that if only one template is selected, the list will have length 1, e.g. use 
+    #' `sim$obs(1)[[1]]` or `sim$obs(1:3)[[2]]`  to access individual elements of a data frame.
+    obs = function(at,
+                   ...){
+      
+      if (inherits(self$data, "tbl_df")) {
+        if(missing(at)){
+          at <- self$data$id[1]
+        }
+        if (!all(at %in% self$data$id)) {
+          bad_at <- which(!at %in% self$data$id)
+          cli::cli_abort(c("x" = "The following values of {.var at} are not in the data: {paste(bad_at, collapse = ', ')}"))
+          
+        }
+        dataSub <- self$data %>% 
+          dplyr::filter(id %in% at) %>% 
+          pull(obs, name = id) %>%
+          map(\(x) {dplyr::filter(x, ...)})
+      
+        return(dataSub)
+      } 
+    },
+    #' @description
+    #' Extract simulated amounts
+    #' @param at Which simulated templates in the PM_sim object to extract. Values are the same as the ID values
+    #' in the simulation data template.
+    #' @param ... Additional parameters passed to [dplyr::filter], for criteria in 
+    #' any of the columns: `nsim`, `time`, `amt`, or `comp` For example `sim$amt(1, time < 10, comp == 2)`.
+    #' @return A list of data frames with columns ,`nsim`, `time`, `amt`, and `comp`.
+    #' There will be one such data frame for each template selected by 'at'. Note
+    #' that if only one template is selected, the list will have length 1, e.g. use 
+    #' `sim$amt(1)[[1]]` or `sim$amt(1:3)[[2]]`  to access individual elements of a data frame.
+    amt = function(at,
+                   ...){
+      
+      if (inherits(self$data, "tbl_df")) {
+        if(missing(at)){
+          at <- self$data$id[1]
+        }
+        if (!all(at %in% self$data$id)) {
+          bad_at <- which(!at %in% self$data$id)
+          cli::cli_abort(c("x" = "The following values of {.var at} are not in the data: {paste(bad_at, collapse = ', ')}"))
+          
+        }
+        dataSub <- self$data %>% 
+          dplyr::filter(id %in% at) %>% 
+          pull(amt, name = id) %>%
+          map(\(x) {dplyr::filter(x, ...)})
+        
+        return(dataSub)
+      } 
+    },
+    #' @description
+    #' Extract simulated parameter values
+    #' @param at Which simulated templates in the PM_sim object to extract. Values are the same as the ID values
+    #' in the simulation data template.
+    #' @param ... Additional parameters passed to [dplyr::filter], for criteria in 
+    #' any of the columns, which are the parameter names. For example `sim$parValues(2, Ka > 10)`.
+    #' Omit any filters to see all the simulated parameter values for a given template. If `usePost` was set
+    #' to `FALSE` during the simulation (the default) and the population parameter value means and
+    #' covariances were used, then the simulated parameter values will be the same for each template, e.g.
+    #' `identical(sim$parValues(1)[[1]], sim$parValues(2))[[1]]` will return `TRUE`.
+    #' @return A list of data frames with parameter values, one for each template selected by 'at'. Note
+    #' that if only one template is selected, the list will have length 1, e.g. use 
+    #' `sim$parValues(1)[[1]]` to access individual elements of a data frame.
+    parValues = function(at,
+                         ...){
+      
+      if (inherits(self$data, "tbl_df")) {
+        if(missing(at)){
+          at <- self$data$id[1]
+        }
+        if (!all(at %in% self$data$id)) {
+          bad_at <- which(!at %in% self$data$id)
+          cli::cli_abort(c("x" = "The following values of {.var at} are not in the data: {paste(bad_at, collapse = ', ')}"))
+          
+        }
+        dataSub <- self$data %>% 
+          dplyr::filter(id %in% at) %>% 
+          pull(parValues, name = id) %>%
+          map(\(x) {dplyr::filter(x, ...)})
+        
+        return(dataSub)
+      } 
     },
     #'
     #' @description
@@ -564,6 +646,12 @@ PM_sim <- R6::R6Class(
           cli::cli_abort(c("x" = "Error: Index is out of bounds. index: {at}, length(simlist): {length(self$data)}"))
         }
         plot.PM_sim(self$data[[at]], ...)
+      } else if(inherits(self$obs, "tbl.df")){ #rust output
+        if (at > length(self$data)) {
+          cli::cli_abort(c("x" = "Error: Index is out of bounds. index: {at}, length(simlist): {length(self$data)}"))
+        }
+        plot.PM_sim(self$obs[[at]], ...)
+        
       } else {
         plot.PM_sim(self$data, ...)
       }
@@ -1311,7 +1399,7 @@ PM_sim <- R6::R6Class(
             
             # Determine number of samples from each mode
             samples_per_mode <- stats::rmultinom(1, size = num_samples, prob = weights)
-
+            
             # Generate samples for each mode
             samples <- do.call(rbind, lapply(1:length(weights), function(i) {
               tryCatch(suppressWarnings(MASS::mvrnorm(n = samples_per_mode[i], mu = as.matrix(means[[i]], nrow = 1), Sigma = cov_matrix)),
@@ -1357,12 +1445,11 @@ PM_sim <- R6::R6Class(
             }
             thetas$prob <- 1 / nrow(thetas)
           } # end loop to fix thetas out of range
-          
           total.means <- apply(rbind(thetas, discarded), 2, mean)[1:ncol(pop.cov)]
-          total.sd <- apply(rbind(thetas, discarded), 2, sd)[1:ncol(pop.cov)]
+          total.cov <- bind_rows(thetas,discarded) %>% select(-prob) %>% cov()
           total.nsim <- nrow(thetas) + nrow(discarded)
           
-          return(list(thetas = thetas, total_means = total.means, total_sd = total.sd, total_nsim = total.nsim))
+          return(list(thetas = thetas, total_means = total.means, total_cov = total.cov, total_nsim = total.nsim))
         }
       } # end getSimPrior function
       
@@ -1576,12 +1663,15 @@ PM_sim <- R6::R6Class(
       } else { # using Rust, not fortran
         
         # logic here is to simulate all the subjects at once unless usePost = TRUE
+        # 
+        # first, add temporary index to ensure id order remains the same
+        dat2 <- dat$standard_data %>% 
+          mutate(.id = dense_rank(id))
         
-        # first, add predInt if necessary
+        # second, add predInt if necessary
         if (!is.na(predTimes[1])) {
           predTimes <- predTimes[predTimes > 0] # remove predictions at time 0
-          dat2 <- dat$standard_data %>% 
-            mutate(.id = dense_rank(id)) %>% #add numeric id to ensure order preserved
+          dat3 <- dat2 %>% 
             group_by(.id) %>% 
             group_map( ~ {
               theseTimes <- predTimes[!predTimes %in% .x$time[.x$evid == 0]] # remove prediction times at times that are specified in template
@@ -1596,12 +1686,13 @@ PM_sim <- R6::R6Class(
               newPred[, 11] <- rep(1:numeqt, numPred / numeqt) # outeq
               newPred
             }) %>% bind_rows() 
-          new_dat <- bind_rows(dat$data %>% mutate(.id = dense_rank(id)), dat2) %>% 
+          new_dat <- bind_rows(dat2, dat3) %>% 
             arrange(.id, time, outeq) %>% 
             select(-.id)
         } else { # predInt was not specified
-          new_dat <- dat$data
+          new_dat <- dat$standard_data #the original data without .id
         }
+        new_dat <- new_dat %>% mutate(out = ifelse(evid == 0, -1, NA)) #replace all obs with -1 since simulating
         new_dat <- PM_data$new(new_dat, quiet = TRUE)
         
         if (length(postToUse) > 0) {
@@ -1613,14 +1704,28 @@ PM_sim <- R6::R6Class(
           # set theta as nsim rows drawn from prior
           thisPrior <- getSimPrior(1, seed[1])
           thetas <- thisPrior$thetas %>% select(-prob) %>% as.matrix()
-          sim <- mod$simulate_all(new_dat, thetas)
-          return(sim)
+          sim_res <- mod$simulate_all(new_dat, thetas)
+          sim_res$.id <- dat2$.id[match(sim_res$id, dat2$id)]
+          sim_res <- sim_res %>% rename(comp = state_index, nsim = spp_index, amt = state) %>%
+            mutate(across(c(outeq, comp, nsim), \(x) x = x + 1)) %>%
+            arrange(.id, comp, nsim, time, outeq) %>%
+            select(-.id)
+          
+          obs <- sim_res  %>%
+            nest(data = c(nsim, time, out, outeq), .by = id) %>% rename("obs" = "data")
+          
+          amt <- sim_res  %>%
+            nest(data = c(nsim, time, amt, comp), .by = id) %>% rename("amt" = "data")
+          
+          self$data <- dplyr::full_join(obs, amt, by = "id") %>% 
+            mutate(parValues = list(thisPrior$thetas %>% select(-prob)),
+                   totalSets = thisPrior$total_nsim,
+                   totalMeans = list(thisPrior$total_means),
+                   totalCov = list(thisPrior$total_cov))
+          
         }
         
       }
-      
-      
-      
       
       
       # clean up csv files if made
@@ -1683,19 +1788,24 @@ PM_sim <- R6::R6Class(
       
       if (clean) {
         # what files need to be removed after RUST simulation?
-        invisible(file.remove(Sys.glob(c("fort.*", "*.Z3Q", "*.ZMQ", "montbig.exe", "ZMQtemp.csv", "simControl.txt", "seedto.mon", "abcde*.csv"))))
-        
-        if (usingFortran && !modelfor) {
-          invisible(file.remove(model))
-        }
-        if (!model_file_src) {
-          invisible(file.remove("simmodel.txt"))
-        }
-        if (!data_file_src) {
-          invisible(file.remove("simdata.csv"))
-        }
+        to_remove <- c(
+          Sys.glob(c("fort.*", "*.Z3Q", "*.ZMQ", "montbig.exe", "ZMQtemp.csv", "simControl.txt", "seedto.mon", "abcde*.csv")),
+          model,
+          "simmodel.txt",
+          "simdata.csv"
+        )
+        purrr::walk(to_remove, \(x){
+          tryCatch(supressWarnings(file.remove(x)), error = function(e) NULL)
+        })
       }
-    },
+      
+      if(!usingFortran){
+        return(self)
+      } else {
+        return(NULL)
+      }
+    }, # end of SIMrun
+    
     SIMparse = function(file, combine, quiet = FALSE) {
       processfile <- function(n) {
         out <- readLines(allfiles[n])
@@ -2257,7 +2367,7 @@ plot.PM_sim <- function(x,
   # process x
   if (inherits(x, "PM_simlist")) {
     if (missing(simnum)) {
-      cat("Plotting first object in the PM_simlist.\nUse simnum argument to choose different PM_sim object in PM_simlist.\n")
+      cli::cli_inform("Plotting first object in the PM_simlist.\nUse simnum argument to choose different PM_sim object in PM_simlist.\n")
       simout <- x[[1]]
     } else {
       simout <- x[[simnum]]
@@ -2265,6 +2375,8 @@ plot.PM_sim <- function(x,
   } else {
     simout <- x
   }
+  
+  
   
   
   if (!inherits(simout, c("PM_sim", "PM_sim_data", "PMsim"))) {
