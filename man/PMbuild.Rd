@@ -4,11 +4,9 @@
 \alias{PMbuild}
 \title{Build Pmetrics}
 \usage{
-PMbuild(skipRegistration = FALSE, autoyes = FALSE, rebuild = FALSE)
+PMbuild(autoyes = FALSE, rebuild = FALSE)
 }
 \arguments{
-\item{skipRegistration}{Don't register. Default is \code{FALSE}.}
-
 \item{autoyes}{Automatically install without asking. Default is \code{FALSE}.}
 
 \item{rebuild}{Default is \code{FALSE}.}

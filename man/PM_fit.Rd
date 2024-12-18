@@ -22,6 +22,8 @@ run the analysis.
 \item{\code{model}}{\link{PM_model} object}
 
 \item{\code{arglist}}{Arguments passed to rust engine}
+
+\item{\code{backend}}{Backend used for calculations; default is value in PMoptions.}
 }
 \if{html}{\out{</div>}}
 }
@@ -42,7 +44,7 @@ run the analysis.
 \subsection{Method \code{new()}}{
 Create a new object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_fit$new(data = data, model = model, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_fit$new(data = data, model = model, backend = getPMoptions()$backend, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -61,6 +63,8 @@ in the current working directory. Again, if created on the fly,
 the object will not be available to other
 methods or other instances of \code{PM_fit}.}
 
+\item{\code{backend}}{Backend used for calculations; default is value in PMoptions.}
+
 \item{\code{...}}{Other parameters passed to \code{PM_data} or \code{PM_model} if created
 from a filename}
 }
@@ -73,7 +77,12 @@ from a filename}
 \subsection{Method \code{run()}}{
 Fit the model to the data
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_fit$run(..., engine = "NPAG", rundir = getwd())}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_fit$run(
+  ...,
+  engine = "NPAG",
+  rundir = getwd(),
+  backend = getPMoptions()$backend
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -84,6 +93,8 @@ Fit the model to the data
 \item{\code{engine}}{"NPAG" (default) or "IT2B"}
 
 \item{\code{rundir}}{This argument specifies an \emph{existing} folder that will store the run inside.}
+
+\item{\code{backend}}{Backend used for calculations; default is value in PMoptions.}
 }
 \if{html}{\out{</div>}}
 }
