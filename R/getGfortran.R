@@ -61,9 +61,9 @@ update_gfortran <- function() {
 
 .installOrUpdateBrew <- function() {
   if (isM1()) {
-    #gfortran_path <- "/opt/R/arm64/gfortran/bin"
+    # gfortran_path <- "/opt/R/arm64/gfortran/bin"
     gfortran_path <- "/opt/homebrew/bin/gfortran"
-    
+
     brew_path <- "/opt/homebrew/bin/brew"
   } else {
     gfortran_path <- "gfortran"

@@ -1,7 +1,7 @@
 #' @title Get Pmetrics User Options
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Get user options for Pmetrics
 #' @details
 #' This function will get user options for Pmetrics.
@@ -50,7 +50,7 @@ getPMoptions <- function(opt, warn = T, quiet = F) {
 #' @title Set Pmetrics User Options
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Set user options for Pmetrics
 #' @details
 #' When the Pmetrics package is first loaded with `library(Pmetrics)`,
@@ -70,8 +70,6 @@ getPMoptions <- function(opt, warn = T, quiet = F) {
 #'
 #' @param sep The field separator character; "," by default, but could be ";" or another separator.
 #' @param dec The decimal separator character; "." by default, but could be "," for example.
-#' @param server_address Specify address of server for remote runs.  Server must be set up separately.
-#' This functionality is coming soon.
 #' @param compilation_statements a vector with tho string elements that defines the compilation arguments for
 #' single thread and parallel executions. Custom compile commands should be entered using `<exec>` as a placeholder
 #' for the executable filename, and `<files>` as a placeholder for the files to be linked and compiled.
@@ -83,7 +81,7 @@ getPMoptions <- function(opt, warn = T, quiet = F) {
 #' @param report_template Format of the plots included in the summary report presented at the end of a run.
 #' Default is to use "plotly", but can be set to "ggplot".
 #' @param gfortran_path Path to gfortran compiler.
-#' @param func_defaults Change the default argument value for any Pmetrics function or method.
+# #' @param func_defaults Change the default argument value for any Pmetrics function or method.
 #' `func_defaults` should be a list, with each item itself a list of function name = list(arg1 = value, arg2 = value,...).
 #' For example: `func_defaults = list(plot.PM_op = list(stats = T, marker = list(color = "red")), qgrowth = list(percentile = 50))`.
 #' This is an incredibly powerful tool to customize your Pmetrics experience. If you store your
@@ -103,9 +101,11 @@ getPMoptions <- function(opt, warn = T, quiet = F) {
 #' @author Michael Neely
 #' @export
 
-setPMoptions <- function(sep, dec, server_address, compilation_statements,
+setPMoptions <- function(sep, dec, compilation_statements,
                          backend, rust_template, report_template,
-                         gfortran_path, func_defaults, quiet = F) {
+                         gfortran_path,
+                         # func_defaults,
+                         quiet = F) {
   # read old values first
   PMopts <- getPMoptions(warn = F)
 
@@ -120,7 +120,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
       sprintf("%s -march=native -w -O3 -o <exec> <files>", PMopts$gfortran_path),
       sprintf("%s -march=native -w -fopenmp -fmax-stack-var-size=32768 -O3 -o <exec> <files>", PMopts$gfortran_path)
     ),
-    server_address = "http://localhost:5000",
+    # server_address = "http://localhost:5000",
     backend = "fortran",
     rust_template = NULL,
     report_template = "plotly",
@@ -128,8 +128,8 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
       "/opt/homebrew/bin/gfortran"
     } else {
       "gfortran"
-    },
-    func_defaults = NULL
+    }
+    #    func_defaults = NULL
   )
 
 
@@ -137,6 +137,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
   if (PMopts[[1]] == -1) {
     PMopts <- defaultOpts
   }
+
 
   # add missing defaults
   PMopts <- utils::modifyList(defaultOpts, PMopts)
@@ -152,17 +153,16 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
       PMopts$compilation_statements <- compilation_statements
     }
   }
-  if (!missing(server_address)) PMopts$server_address <- server_address
   if (!missing(backend)) PMopts$backend <- backend
   if (!missing(rust_template)) PMopts$rust_template <- rust_template
   if (!missing(report_template)) PMopts$report_template <- report_template
-  if (!missing(func_defaults)) {
-    if (is.null(PMopts$func_defaults)) { # not previously defined
-      PMopts$func_defaults <- func_defaults
-    } else {
-      PMopts$func_defaults <- utils::modifyList(PMopts$func_defaults, func_defaults)
-    }
-  }
+  # if (!missing(func_defaults)) {
+  #   if (is.null(PMopts$func_defaults)) { # not previously defined
+  #     PMopts$func_defaults <- func_defaults
+  #   } else {
+  #     PMopts$func_defaults <- utils::modifyList(PMopts$func_defaults, func_defaults)
+  #   }
+  # }
   if (!missing(gfortran_path)) {
     PMopts$gfortran_path <- gfortran_path
     PMopts$compilation_statements <- c(
@@ -175,7 +175,7 @@ setPMoptions <- function(sep, dec, server_address, compilation_statements,
   options(purrr::keep(PMopts, names(PMopts) != "func_defaults"))
 
   # ...which are handled through updateArgs
-  updateArgs(PMopts$func_defaults)
+  # updateArgs(PMopts$func_defaults)
 
   # store the options
   opt_dir <- dplyr::case_when(
@@ -320,43 +320,43 @@ editPMoptions <- function() {
 }
 
 
-updateArgs <- function(args) {
-  funcs <- names(args)
-
-  for (i in seq(funcs)) {
-    # check if function is in Pmetrics
-    e <- tryCatch(environment(getFromNamespace(funcs[i], ns = "Pmetrics")),
-      error = function(e) NA
-    )
-    if (!is.environment(e)) next # move to next one
-
-    # check if S3 method
-    S3method <- isS3method(funcs[i], envir = e)
-
-    # obtain the function
-    f <- getFromNamespace(funcs[i], ns = "Pmetrics")
-
-    # obtain the arguments
-    fargs <- formals(f)
-
-    # update the arguments
-    fargs <- utils::modifyList(fargs, args[[i]])
-
-    # create new function
-    formals(f) <- fargs
-
-    if (S3method) {
-      assignInNamespace(funcs[i], f, ns = "Pmetrics")
-    } else {
-      locked <- bindingIsLocked(funcs[i], e)
-      if (locked) {
-        unlockBinding(funcs[i], e)
-      }
-      assign(funcs[i], f, e) # update in package
-      assign(funcs[i], f, .GlobalEnv) # also in global
-      if (locked) {
-        lockBinding(funcs[i], e)
-      }
-    }
-  } # end for loop
-} # end updateArgs
+# updateArgs <- function(args) {
+#   funcs <- names(args)
+#
+#   for (i in seq(funcs)) {
+#     # check if function is in Pmetrics
+#     e <- tryCatch(environment(getFromNamespace(funcs[i], ns = "Pmetrics")),
+#       error = function(e) NA
+#     )
+#     if (!is.environment(e)) next # move to next one
+#
+#     # check if S3 method
+#     S3method <- isS3method(funcs[i], envir = e)
+#
+#     # obtain the function
+#     f <- getFromNamespace(funcs[i], ns = "Pmetrics")
+#
+#     # obtain the arguments
+#     fargs <- formals(f)
+#
+#     # update the arguments
+#     fargs <- utils::modifyList(fargs, args[[i]])
+#
+#     # create new function
+#     formals(f) <- fargs
+#
+#     if (S3method) {
+#       assignInNamespace(funcs[i], f, ns = "Pmetrics")
+#     } else {
+#       locked <- bindingIsLocked(funcs[i], e)
+#       if (locked) {
+#         unlockBinding(funcs[i], e)
+#       }
+#       assign(funcs[i], f, e) # update in package
+#       assign(funcs[i], f, .GlobalEnv) # also in global
+#       if (locked) {
+#         lockBinding(funcs[i], e)
+#       }
+#     }
+#   } # end for loop
+# } # end updateArgs
