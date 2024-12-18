@@ -23,18 +23,6 @@
 PM_sim <- R6::R6Class(
   "PM_sim",
   public = list(
-    
-    #' @field totalSets Number of all simulated parameter values needed to obtain the
-    #' requested number of simulated sets within any limits
-    totalSets = NULL,
-    #' @field totalMeans Vector of means of all simulated parameter values,
-    #' or in the case of multiple regimens
-    #' in the template data file, a list of such vectors
-    totalMeans = NULL,
-    #' @field totalCov Covariance matrix for all simulated parameter values,
-    #' or in the case of multiple regimens
-    #' in the template data file, a list of such matrices
-    totalCov = NULL,
     #' @field data For one simulation regimen in the template data, a list of class *PM_sim* that
     #' contains all the above elements. For multiple simulation regimens, a list of
     #' class *PM_simlist* that contains as many *PM_sim* objects as regimens in the
@@ -535,99 +523,6 @@ PM_sim <- R6::R6Class(
       
       
     }, # end initialize
-    #' @description
-    #' Extract simulated concentrations
-    #' @param at Which simulated templates in the PM_sim object to extract. Values are the same as the ID values
-    #' in the simulation data template.
-    #' @param ... Additional parameters passed to [dplyr::filter], for criteria in 
-    #' any of the columns: `nsim`, `time`, `out`, or `outeq.` For example `sim$obs(1, time < 10, outeq == 1)`.
-    #' @return A list of data frames with columns ,`nsim`, `time`, `out`, and `outeq`.
-    #' There will be one such data frame for each template selected by 'at'. Note
-    #' that if only one template is selected, the list will have length 1, e.g. use 
-    #' `sim$obs(1)[[1]]` or `sim$obs(1:3)[[2]]`  to access individual elements of a data frame.
-    obs = function(at,
-                   ...){
-      
-      if (inherits(self$data, "tbl_df")) {
-        if(missing(at)){
-          at <- self$data$id[1]
-        }
-        if (!all(at %in% self$data$id)) {
-          bad_at <- which(!at %in% self$data$id)
-          cli::cli_abort(c("x" = "The following values of {.var at} are not in the data: {paste(bad_at, collapse = ', ')}"))
-          
-        }
-        dataSub <- self$data %>% 
-          dplyr::filter(id %in% at) %>% 
-          pull(obs, name = id) %>%
-          map(\(x) {dplyr::filter(x, ...)})
-      
-        return(dataSub)
-      } 
-    },
-    #' @description
-    #' Extract simulated amounts
-    #' @param at Which simulated templates in the PM_sim object to extract. Values are the same as the ID values
-    #' in the simulation data template.
-    #' @param ... Additional parameters passed to [dplyr::filter], for criteria in 
-    #' any of the columns: `nsim`, `time`, `amt`, or `comp` For example `sim$amt(1, time < 10, comp == 2)`.
-    #' @return A list of data frames with columns ,`nsim`, `time`, `amt`, and `comp`.
-    #' There will be one such data frame for each template selected by 'at'. Note
-    #' that if only one template is selected, the list will have length 1, e.g. use 
-    #' `sim$amt(1)[[1]]` or `sim$amt(1:3)[[2]]`  to access individual elements of a data frame.
-    amt = function(at,
-                   ...){
-      
-      if (inherits(self$data, "tbl_df")) {
-        if(missing(at)){
-          at <- self$data$id[1]
-        }
-        if (!all(at %in% self$data$id)) {
-          bad_at <- which(!at %in% self$data$id)
-          cli::cli_abort(c("x" = "The following values of {.var at} are not in the data: {paste(bad_at, collapse = ', ')}"))
-          
-        }
-        dataSub <- self$data %>% 
-          dplyr::filter(id %in% at) %>% 
-          pull(amt, name = id) %>%
-          map(\(x) {dplyr::filter(x, ...)})
-        
-        return(dataSub)
-      } 
-    },
-    #' @description
-    #' Extract simulated parameter values
-    #' @param at Which simulated templates in the PM_sim object to extract. Values are the same as the ID values
-    #' in the simulation data template.
-    #' @param ... Additional parameters passed to [dplyr::filter], for criteria in 
-    #' any of the columns, which are the parameter names. For example `sim$parValues(2, Ka > 10)`.
-    #' Omit any filters to see all the simulated parameter values for a given template. If `usePost` was set
-    #' to `FALSE` during the simulation (the default) and the population parameter value means and
-    #' covariances were used, then the simulated parameter values will be the same for each template, e.g.
-    #' `identical(sim$parValues(1)[[1]], sim$parValues(2))[[1]]` will return `TRUE`.
-    #' @return A list of data frames with parameter values, one for each template selected by 'at'. Note
-    #' that if only one template is selected, the list will have length 1, e.g. use 
-    #' `sim$parValues(1)[[1]]` to access individual elements of a data frame.
-    parValues = function(at,
-                         ...){
-      
-      if (inherits(self$data, "tbl_df")) {
-        if(missing(at)){
-          at <- self$data$id[1]
-        }
-        if (!all(at %in% self$data$id)) {
-          bad_at <- which(!at %in% self$data$id)
-          cli::cli_abort(c("x" = "The following values of {.var at} are not in the data: {paste(bad_at, collapse = ', ')}"))
-          
-        }
-        dataSub <- self$data %>% 
-          dplyr::filter(id %in% at) %>% 
-          pull(parValues, name = id) %>%
-          map(\(x) {dplyr::filter(x, ...)})
-        
-        return(dataSub)
-      } 
-    },
     #'
     #' @description
     #' Save the current PM_sim object into a .rds file.
@@ -640,21 +535,18 @@ PM_sim <- R6::R6Class(
     #' @param at Index of the PM_sim object to be plotted. Default is 1.
     #' result.
     #' @param ... Arguments passed to [plot.PM_sim].
-    plot = function(at = 1, ...) {
-      if (inherits(self$data, "PM_simlist")) {
-        if (at > length(self$data)) {
-          cli::cli_abort(c("x" = "Error: Index is out of bounds. index: {at}, length(simlist): {length(self$data)}"))
-        }
-        plot.PM_sim(self$data[[at]], ...)
-      } else if(inherits(self$obs, "tbl.df")){ #rust output
-        if (at > length(self$data)) {
-          cli::cli_abort(c("x" = "Error: Index is out of bounds. index: {at}, length(simlist): {length(self$data)}"))
-        }
-        plot.PM_sim(self$obs[[at]], ...)
-        
-      } else {
-        plot.PM_sim(self$data, ...)
-      }
+    plot = function(...) {
+      
+      # if(missing(at)){
+      #   at <- self$data$id[1]
+      # }
+      # if (!all(at %in% self$data$id)) {
+      #   bad_at <- which(!at %in% self$data$id)
+      #   cli::cli_abort(c("x" = "The following values of {.var at} are not in the data: {paste(bad_at, collapse = ', ')}"))
+      #   
+      # }
+      plot.PM_sim(self$data, ...)
+      
     },
     #' @description
     #' Estimates the Probability of Target Attaintment (PTA), based on the results
@@ -665,9 +557,8 @@ PM_sim <- R6::R6Class(
     },
     #' @description
     #' Calculates the AUC of the specified simulation
-    #' @param at Index of the PM_sim object to use. Default is 1.
     #' @param ... Arguments passed to [makeAUC].
-    auc = function(at = 1, ...) {
+    auc = function(...) {
       if (inherits(self$data, "PM_simlist")) {
         if (at > length(self$data)) {
           cli::cli_abort(c("x" = "Error: Index is out of bounds. index: {at}, length(simlist): {length(self$data)}"))
@@ -689,9 +580,8 @@ PM_sim <- R6::R6Class(
     },
     #' @description
     #' Summarize simulation
-    #' @param at Index of the PM_sim object to use. Default is 1.
     #' @param ... Parameters passed to [summary.PM_sim].
-    summary = function(at = 1, ...) {
+    summary = function(...) {
       if (inherits(self$data, "PM_simlist")) {
         if (at > length(self$data)) {
           cli::cli_abort(c("x" = "Error: Index is out of bounds. index: {at}, length(simlist): {length(self$data)}"))
@@ -722,6 +612,27 @@ PM_sim <- R6::R6Class(
       lifecycle::deprecate_warn("2.1.0", "PM_sim$load()", details = "PM_sim$load() is deprecated. Please use PM_sim$new() instead.")
     }
   ), # end public
+  active = list(
+    obs = function(){
+      self$data$obs
+    },
+    amt = function(){
+      self$data$amt
+    },
+    parValues = function(){
+      self$data$parValues
+    },
+    totalSets = function(){
+      self$data$totalSets
+    },
+    totalMeans = function(){
+      self$data$totalMeans
+    },
+    totalCov = function(){
+      self$data$totalCov
+    }
+    
+  ), # end active
   private = list(
     # run the simulator
     SIMrun = function(poppar, limits, model, data, split,
@@ -1710,20 +1621,23 @@ PM_sim <- R6::R6Class(
             mutate(across(c(outeq, comp, nsim), \(x) x = x + 1)) %>%
             arrange(.id, comp, nsim, time, outeq) %>%
             select(-.id)
-          
+
           obs <- sim_res  %>%
-            nest(data = c(nsim, time, out, outeq), .by = id) %>% rename("obs" = "data")
+            select(id, nsim, time, out, outeq)
           
           amt <- sim_res  %>%
-            nest(data = c(nsim, time, amt, comp), .by = id) %>% rename("amt" = "data")
+            select(id,nsim, time, out, comp)
           
-          self$data <- dplyr::full_join(obs, amt, by = "id") %>% 
-            mutate(parValues = list(thisPrior$thetas %>% select(-prob)),
-                   totalSets = thisPrior$total_nsim,
-                   totalMeans = list(thisPrior$total_means),
-                   totalCov = list(thisPrior$total_cov))
-          
+          self$data <- list(
+            obs = obs,
+            amt = amt,
+            parValues = thisPrior$thetas %>% select(-prob),
+            totalSets = thisPrior$total_nsim,
+            totalMeans = thisPrior$total_means,
+            totalCov = thisPrior$total_cov)
         }
+        
+        class(self$data) <- c("PM_sim_data", class(self$data)) # add PM_sim_data class to data
         
       }
       
@@ -2020,7 +1934,7 @@ PM_sim <- R6::R6Class(
       
       if (!quiet) cat(message)
       return(simlist)
-    },
+    }, # end SIMparse
     
     # Create new simulation objects with results of simulation
     populate = function(simout, type) {
@@ -2033,16 +1947,25 @@ PM_sim <- R6::R6Class(
         self$data <- simout
         class(self$data) <- c("PM_sim_data", "list")
       } else if (type == "simlist") {
-        purrr::map(1:length(simout), \(x){
-          self$obs[[x]] <- simout[[x]]$obs
-          self$amt[[x]] <- simout[[x]]$amt
-          self$parValues[[x]] <- simout[[x]]$parValues
-          self$totalMeans[[x]] <- simout[[x]]$totalMeans
-          self$totalCov[[x]] <- simout[[x]]$totalCov
-          self$data[[x]] <- simout[[x]]
-          class(self$data[[x]]) <- c("PM_sim_data", "list")
-        })
-        class(self$data) <- c("PM_simlist", "list")
+        N <- length(simout) #number of templates
+        nsim <- max(simout[[1]]$obs$id)
+        obs <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 1)), names_to = "id2") %>% rename(nsim = id, id = id2)
+        amt <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 2)), names_to = "id2") %>% rename(nsim = id, id = id2)
+        parValues <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 3)), names_to = "id2") %>% rename(nsim = id, id = id2)
+        totalSets <- map(1:N, \(x) simout[[x]]$totalSets)
+        totalMeans <- map(1:N, \(x) pluck(simout, x, 5))
+        totalCov <- map(1:N, \(x) data.frame(pluck(simout, x, 6)))
+        self$data <- list(
+          obs = obs,
+          amt = amt,
+          parValues = parValues,
+          totalSets = totalSets,
+          totalMeans = totalMeans,
+          totalCov = totalCov
+        )
+        
+        
+        
       } else if (type == "R6sim") {
         self$obs <- simout$obs
         self$amt <- simout$amt
@@ -2096,6 +2019,7 @@ PM_sim$load <- function(...) {
 #'
 #' @method plot PM_sim
 #' @param x The name of an *PM_sim* data object generated by [PM_sim]
+#' @param include `r template("include")`. 
 #' @param mult `r template("mult")`
 #' @param ci Width of confidence interval bands around simulated quantiles,
 #' from 0 to 1.  If 0, or *nsim*<100, will not plot.
@@ -2192,6 +2116,8 @@ PM_sim$load <- function(...) {
 #' @family PMplots
 
 plot.PM_sim <- function(x,
+                        include,
+                        exclude,
                         mult = 1,
                         ci = 0.95,
                         binSize = 0,
@@ -2379,12 +2305,19 @@ plot.PM_sim <- function(x,
   
   
   
+  
   if (!inherits(simout, c("PM_sim", "PM_sim_data", "PMsim"))) {
     cli::cli_abort(c(
       "x" = "Use {.fn PM_sim$run} to make a {.cls PM_sim} object.",
       "i" = "See help for {.fn PM_sim}."
     ))
   }
+  
+  # include/exclude template ids
+  if (missing(include)) include <- unique(simout$obs$id)
+  if (missing(exclude)) exclude <- NA
+  simout$obs <- simout$obs %>% includeExclude(include, exclude)
+  
   if (!missing(obs)) {
     if (!inherits(obs, c("PM_result", "PM_op"))) {
       cli::cli_abort(c("x" = "Supply a {.cls PM_result} or {.cls PM_op} object for the {.code obs} argument."))
@@ -2637,7 +2570,7 @@ plot.PM_sim <- function(x,
 #' simEx$summary(at = 2, field = "amt", group = "comp") # group amounts by compartment
 #' @seealso [PM_sim]
 #' @export
-summary.PM_sim <- function(object, at = 1, field = "obs", group = NULL,
+summary.PM_sim <- function(object, include, exclude, field = "obs", group = NULL,
                            statistics = c("mean", "sd", "median", "min", "max"),
                            digits = max(3, getOption("digits") - 3), ...) {
   # get the right data
@@ -2648,10 +2581,12 @@ summary.PM_sim <- function(object, at = 1, field = "obs", group = NULL,
       dat <- object$data[[field]]
     }
   } else if (inherits(object, "PM_sim_data")) {
-    dat <- object[[field]]
+    # include/exclude template ids
+    if (missing(include)) include <- unique(object[[field]]$id)
+    if (missing(exclude)) exclude <- NA
+    dat <- object[[field]] %>% includeExclude(include, exclude)
   } else {
-    cat(crayon::red("Error:"), "Object does not appear to be a simulation.\n")
-    return(invisible(NULL))
+    cli::cli_abort(c("x" = "Object does not appear to be a simulation."))
   }
   
   
@@ -2661,18 +2596,23 @@ summary.PM_sim <- function(object, at = 1, field = "obs", group = NULL,
     \(x) {
       if (!is.na(suppressWarnings(as.numeric(x)))) {
         dplyr::summarize(dat,
-                         dplyr::across(everything(), \(y) quantile(y, probs = as.numeric(x) / 100)),
+                         dplyr::across(-nsim, \(y) quantile(y, probs = as.numeric(x) / 100)),
                          .by = all_of(!!group)
         )
       } else {
         dplyr::summarize(dat,
-                         dplyr::across(everything(), !!!dplyr::syms(x)),
+                         dplyr::across(-nsim, \(y) suppressWarnings(do.call(x, args = list(y, na.rm = TRUE)))),
                          .by = all_of(!!group)
         )
       }
     }
   )
+  
+  
   names(summ) <- as.character(statistics)
+  if(!"id" %in% group){
+    summ <- purrr::map(summ, \(x) {x$id <- NULL; x})
+  }
   summ <- summ %>%
     list_rbind(names_to = "stat") %>%
     mutate(across(where(is.numeric), \(x) round(x, digits)))
