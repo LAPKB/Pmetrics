@@ -63,16 +63,16 @@ makeAUC <- function(data,
       "PM_data_data", "PM_data"
     ), which = T) > 0
   ) # will be all zeros except matching class, undefined if none
-
+ 
   if (length(data_class) > 0) { # there was a match
     data2 <- switch(data_class,
-      data$obs, # PMsim
+      data$obs, # PM_sim_data
       data$obs, # PM_sim
-      data %>% mutate(out = obs), # PMop
+      data %>% mutate(out = obs), # PM_op_data
       data$data %>% mutate(out = obs), # PM_op
-      data %>% mutate(out = pred), # PMpop
+      data %>% mutate(out = pred), # PM_pop_data
       data$data %>% mutate(out = pred), # PM_pop
-      data %>% mutate(out = pred), # PMpost
+      data %>% mutate(out = pred), # PM_post_data
       data$data %>% mutate(out = pred), # PM_post
       data %>%
         makePMmatrixBlock() %>%
@@ -120,7 +120,7 @@ makeAUC <- function(data,
     dplyr::group_by(id)
 
   if (nrow(data3) < 2) {
-    cli_warn(c("!" = "You have selected fewer than 2 rows in your data.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, {.code block}, {.code start}, and {.code end}."))
+    cli::cli_warn(c("!" = "You have selected fewer than 2 rows in your data.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, {.code block}, {.code start}, and {.code end}."))
   }
 
 
