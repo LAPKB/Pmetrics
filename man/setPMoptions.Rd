@@ -7,13 +7,11 @@
 setPMoptions(
   sep,
   dec,
-  server_address,
   compilation_statements,
   backend,
   rust_template,
   report_template,
   gfortran_path,
-  func_defaults,
   quiet = F
 )
 }
@@ -21,9 +19,6 @@ setPMoptions(
 \item{sep}{The field separator character; "," by default, but could be ";" or another separator.}
 
 \item{dec}{The decimal separator character; "." by default, but could be "," for example.}
-
-\item{server_address}{Specify address of server for remote runs.  Server must be set up separately.
-This functionality is coming soon.}
 
 \item{compilation_statements}{a vector with tho string elements that defines the compilation arguments for
 single thread and parallel executions. Custom compile commands should be entered using \verb{<exec>} as a placeholder
@@ -39,9 +34,7 @@ Currently, only NPAG is available in rust.}
 \item{report_template}{Format of the plots included in the summary report presented at the end of a run.
 Default is to use "plotly", but can be set to "ggplot".}
 
-\item{gfortran_path}{Path to gfortran compiler.}
-
-\item{func_defaults}{Change the default argument value for any Pmetrics function or method.
+\item{gfortran_path}{Path to gfortran compiler.
 \code{func_defaults} should be a list, with each item itself a list of function name = list(arg1 = value, arg2 = value,...).
 For example: \code{func_defaults = list(plot.PM_op = list(stats = T, marker = list(color = "red")), qgrowth = list(percentile = 50))}.
 This is an incredibly powerful tool to customize your Pmetrics experience. If you store your
