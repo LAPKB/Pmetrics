@@ -138,10 +138,6 @@ setPMoptions <- function(sep, dec, compilation_statements,
     PMopts <- defaultOpts
   }
 
-  if (!identical(loc, PMopts$lang)) {
-    language <- PmetricsData::locales$language[which(PmetricsData::locales$iso639_2 == loc)]
-    if (!quiet) cat(paste0("Language has changed. Based on system, setting default language to ", language, "."))
-  }
 
   # add missing defaults
   PMopts <- utils::modifyList(defaultOpts, PMopts)
