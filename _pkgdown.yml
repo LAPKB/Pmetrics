@@ -4,8 +4,15 @@ template:
   bootswatch: flatly
 navbar:
   structure:
-      left:  [intro, reference, articles, tutorials, news]
-      right: [search, github]
+    left:
+    - intro
+    - reference
+    - articles
+    - tutorials
+    - news
+    right:
+    - search
+    - github
   components:
     intro:
       text: Start Here
@@ -13,27 +20,33 @@ navbar:
     articles:
       text: Articles
       menu:
-        - text: Introduction
-          href: articles/intro.html
-        - text: Overview
-          href: articles/overview.html
-        - text: Workflow
-          href: articles/workflow.html
-        - text: Data Objects
-          href: articles/data.html
-        - text: Model Objects
-          href: articles/models.html
-        - text: Running the fit
-          href: articles/running.html
-        - text: Created Objects
-          href: articles/objects.html
-        - text: Simulation
-          href: articles/simulation.html
-        - text: Plotly plots
-          href: articles/plotly.html
+      - text: Introduction
+        href: articles/intro.html
+      - text: Overview
+        href: articles/overview.html
+      - text: Workflow
+        href: articles/workflow.html
+      - text: Data Objects
+        href: articles/data.html
+      - text: Model Objects
+        href: articles/models.html
+      - text: Running the fit
+        href: articles/running.html
+      - text: Created Objects
+        href: articles/objects.html
+      - text: Simulation
+        href: articles/simulation.html
+      - text: Plotly plots
+        href: articles/plotly.html
 home:
   sidebar:
-    structure: [links, license, community, citation, authors, dev]
+    structure:
+    - links
+    - license
+    - community
+    - citation
+    - authors
+    - dev
     components:
       custom:
         title: Discussion
@@ -42,7 +55,7 @@ home:
 reference:
 - title: R6 objects
   desc: Create Pmetrics R6 objects
-- contents: 
+- contents:
   - starts_with("PM_")
   - ab
   - additive
@@ -52,7 +65,6 @@ reference:
   - fixed
   - msd
   - proportional
-  - build_model
 - title: Make functions
   desc: Functions for making Pmetrics objects
 - contents:
@@ -65,7 +77,7 @@ reference:
   - MM_opt
 - title: Plot
   desc: Functions for plotting Pmetrics output
-- contents: 
+- contents:
   - starts_with("plot")
   - ab_line
   - add_shapes
@@ -82,10 +94,9 @@ reference:
   desc: Run functions for modeling or simulating data
 - contents: ends_with("run")
 - title: Parse/load
-  desc: Parse functions for loading modeled or simulated data
+  desc: Parse functions for modeled or simulated data
 - contents:
   - ends_with("parse")
-  - PMload
 - title: Auxilliary
   desc: Auxilliary functions
 - contents:
@@ -93,9 +104,10 @@ reference:
   - zBMI
   - ss.PK
   - mtsknn.eq
-  - PMcompare
+  - PM_compare
   - PMgetCRCL
   - PMstep
+  - starts_with("get")
 - title: Datasets
   desc: Pmetrics datasets
 - contents: has_keyword("datasets")
@@ -115,15 +127,10 @@ reference:
   - PMbuild
   - PMcheck
   - PMcode
-  - PMlogin
-  - PMlogout
   - PMpatch
-  - PMregister
-  - PMreport
   - ERRreport
   - PMsave
   - PMtest
-  - PMupdate
   - getPMoptions
   - setPMoptions
   - editPMoptions
@@ -136,3 +143,4 @@ reference:
   - PMmanual
   - PMnews
   - Pmetrics-package
+
