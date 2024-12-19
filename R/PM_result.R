@@ -21,11 +21,6 @@
 PM_result <- R6::R6Class(
   "PM_result",
   public <- list(
-    #' @field NPdata List with all output from NPAG, made by [NPparse]
-    NPdata = NULL,
-    #' @field ITdata List with all output from IT2B, made by [ITparse]
-    ITdata = NULL,
-    #' @field pop A [PM_pop] object
     pop = NULL,
     #' @field post A [PM_post] object
     post = NULL,
@@ -67,25 +62,6 @@ PM_result <- R6::R6Class(
     #' automatically generated. This is not a user-modifiable.
     #' @param quiet Quietly validate. Default is `FALSE`.
     initialize = function(out, quiet = TRUE) {
-      if (!is.null(out$NPdata)) {
-        self$NPdata <- out$NPdata
-        class(self$NPdata) <- c("NPAG", "list")
-        allData <- "NPdata"
-      } else {
-        self$NPdata <- NULL
-      }
-      if (!is.null(out$ITdata)) {
-        self$ITdata <- out$ITdata
-        class(self$ITdata) <- c("IT2B", "list")
-        allData <- "ITdata"
-      } else {
-        self$ITdata <- NULL
-      }
-      if (is.null(out$NPdata)) {
-        self$NPdata <- out
-        class(self$NPdata) <- c("NPAG", "rust", "list")
-        allData <- "NPdata"
-      }
       # the following were saved as R6 objects
       purrr::walk(
         c("pop", "post", "final", "cycle", "op", "cov", "data", "model", "valid"),
@@ -237,8 +213,6 @@ PM_result <- R6::R6Class(
         # }
       }
       PMout <- list(
-        NPdata = self$NPdata,
-        ITdata = self$ITdata,
         pop = self$pop$data, post = self$post$data,
         final = self$final$data, cycle = self$cycle$data,
         op = self$op$data, cov = self$cov$data, data = self$data$data,

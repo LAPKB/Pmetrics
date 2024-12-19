@@ -19,8 +19,8 @@ C 55 is the mean weight in the population
 TLAG(1) = Tlag1
 
 #eqn
-{algebraic: Ka,Ke,V,2}
-dX[1] = BOLUS[1] - Ka*X[1]
+C {algebraic: Ka,Ke,V,2}
+dX[1] = - Ka*X[1]
 dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]
 
 #out

@@ -6,8 +6,8 @@
 \usage{
 \method{plot}{PM_post}(
   x,
-  include = NA,
-  exclude = NA,
+  include = NULL,
+  exclude = NULL,
   line = TRUE,
   marker = TRUE,
   color = NULL,

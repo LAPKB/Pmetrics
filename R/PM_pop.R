@@ -59,7 +59,7 @@ PM_pop <- R6::R6Class(
     #' @details
     #' Creation of new `PM_pop` object is automatic and not generally necessary
     #' for the user to do.
-    #' @param PMdata If backend is Fortran, the parsed output from [NPparse] or [ITparse]. Not needed when the backend is Rust.
+    #' @param PMdata include `r template("PMdata")`. 
     #' @param ... Not currently used.
     initialize = function(PMdata = NULL, ...) {
       pop <- private$make(PMdata)
@@ -98,105 +98,41 @@ PM_pop <- R6::R6Class(
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       rlang::try_fetch(makeAUC(self, ...),
-        error = function(e) {
-          cli::cli_warn("Unable to generate AUC.", parent = e)
-          return(NULL)
-        }
+                       error = function(e) {
+                         cli::cli_warn("Unable to generate AUC.", parent = e)
+                         return(NULL)
+                       }
       )
     }
   ), # end public
   private = list(
     make = function(data) {
-      if (getPMoptions("backend") == "rust") {
-        if (file.exists("op.csv")) {
-          raw <- readr::read_csv(file = "op.csv", show_col_types = FALSE)
-        } else {
-          cli::cli_abort(c("x" = "{.file {getwd()}/op.csv} does not exist."))
-        }
-
-
-        if (is.null(raw)) {
-          return(NA)
-        }
-
-        pop <- raw %>%
-          select(-post_median, -post_mean) %>%
-          pivot_longer(cols = c(pop_median, pop_mean), values_to = "pred") %>%
-          dplyr::rename(icen = name) %>%
-          mutate(icen = case_when(
-            icen == "pop_median" ~ "median",
-            icen == "pop_mean" ~ "mean"
-          )) %>%
-          # Hardcoded for now
-          mutate(block = 1) %>%
-          relocate(id, time, icen, outeq, pred, block)
-
-        class(pop) <- c("PM_pop_data", "data.frame")
-        return(pop)
-      } else { # fortran
-
-        if (inherits(data, "PMpop")) { # old format
-          return(data) # nothing to do
-        }
-
-        if (inherits(data, "PM_pop")) { # R6 format
-          return(data$data) # return raw to rebuild
-        }
-
-        # check for old ypredpopt object and update dimnames
-        if (is.null(dimnames(data$ypredpopt))) {
-          dimnames(data$ypredpopt) <- list(id = 1:data$nsub, outeq = 1:data$numeqt, time = data$ttpred[which(data$numt == max(data$numt))[1], ], icen = c("mean", "median", "mode"))
-        }
-        pop <- purrr::array_tree(data$ypredpopt, margin = 1:2) %>%
-          purrr::map(\(x) {
-            purrr::map(x, \(y) {
-              as.data.frame(y) %>%
-                dplyr::mutate(time = row.names(y)) %>%
-                dplyr::bind_rows(.id = "outeq") %>%
-                tidyr::pivot_longer(starts_with("m"), names_to = "icen", values_to = "pred") %>%
-                # dplyr::arrange(icen, outeq) %>%
-                dplyr::relocate(time, icen, pred, outeq)
-            }) %>%
-              dplyr::bind_rows()
-          }) %>%
-          dplyr::bind_rows(.id = "id") %>%
-          dplyr::mutate(
-            id = as.integer(id),
-            time = as.numeric(time),
-            outeq = as.integer(outeq)
-          ) %>%
-          dplyr::filter(if_all(everything(), \(x) !is.na(x))) %>%
-          dplyr::arrange(icen, id, outeq)
-
-        pop$id <- rep(unlist(lapply(1:data$nsub, function(x) rep(data$sdata$id[x], times = data$numeqt * data$numt[x]))), 3)
-
-        # count 0 times per subject, icen, and outeq - should be at least 1 for each
-        blocks <- tapply(pop$time, list(pop$id, pop$icen, pop$outeq), function(x) sum(x == 0))
-
-        blocks2 <- unlist(mapply(function(x) 1:x, blocks))
-        time0 <- c(which(pop$time == 0), 1 + nrow(pop))
-        blocks3 <- rep(blocks2, times = diff(time0))
-        pop$block <- blocks3
-
-        # suppress mode for NPAG
-        pop <- pop[pop$icen != "mode", ]
-
-        # add predictions at observed times
-        op <- PM_op$new(data)$data
-        opPop <- op[op$pred.type == "pop", ]
-        pop <- rbind(pop, opPop[, c("id", "time", "icen", "pred", "outeq", "block")])
-
-        # remove duplicates
-        dupTime <- which(duplicated(pop[, c("id", "time", "icen", "outeq", "block")]))
-        if (length(dupTime) > 0) pop <- pop[-dupTime, ]
-
-        # sort by icen, id, time, outeq
-        pop <- pop[order(pop$icen, pop$id, pop$time, pop$outeq), ]
-
-        class(pop) <- c("PM_pop_data", "data.frame")
-
-        return(pop)
+      if (file.exists("op.csv")) {
+        raw <- readr::read_csv(file = "op.csv", show_col_types = FALSE)
+      } else {
+        cli::cli_abort(c("x" = "{.file {getwd()}/op.csv} does not exist."))
       }
+      
+      
+      if (is.null(raw)) {
+        return(NA)
+      }
+      
+      pop <- raw %>%
+        select(-post_median, -post_mean) %>%
+        pivot_longer(cols = c(pop_median, pop_mean), values_to = "pred") %>%
+        dplyr::rename(icen = name) %>%
+        mutate(icen = case_when(
+          icen == "pop_median" ~ "median",
+          icen == "pop_mean" ~ "mean"
+        )) %>%
+        # Hardcoded for now
+        mutate(block = block + 1) %>%
+        mutate(outeq = outeq + 1) %>%
+        relocate(id, time, icen, outeq, pred, block)
+      
+      class(pop) <- c("PM_pop_data", "data.frame")
+      return(pop)
     }
   ) # end private
 )
@@ -285,8 +221,8 @@ PM_pop <- R6::R6Class(
 #' @family PMplots
 
 plot.PM_pop <- function(x,
-                        include = NA,
-                        exclude = NA,
+                        include = NULL,
+                        exclude = NULL,
                         line = TRUE,
                         marker = TRUE,
                         color = NULL,
@@ -305,32 +241,32 @@ plot.PM_pop <- function(x,
                         title = "",
                         xlim, ylim, ...) {
   # Plot parameters ---------------------------------------------------------
-
+  
   x <- if (inherits(x, "PM_pop")) {
     x$data
   }
-
+  
   # process marker
   marker <- amendMarker(marker)
-
+  
   # process line
   line <- amendLine(line)
-
-
+  
+  
   # get the rest of the dots
   layout <- amendDots(list(...))
-
+  
   # legend
   legendList <- amendLegend(legend)
   layout <- modifyList(layout, list(showlegend = legendList$showlegend))
   if (length(legendList) > 1) {
     layout <- modifyList(layout, list(legend = within(legendList, rm(showlegend))))
   }
-
+  
   # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-
+  
   # axis labels if needed
   layout$xaxis$title <- amendTitle(xlab)
   if (is.character(ylab)) {
@@ -338,8 +274,8 @@ plot.PM_pop <- function(x,
   } else {
     layout$yaxis$title <- amendTitle(ylab)
   }
-
-
+  
+  
   # axis ranges
   if (!missing(xlim)) {
     layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
@@ -347,15 +283,15 @@ plot.PM_pop <- function(x,
   if (!missing(ylim)) {
     layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
   }
-
+  
   # log y axis
   if (log) {
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
-
+  
   # title
   layout$title <- amendTitle(title, default = list(size = 20))
-
+  
   # overlay
   if (is.logical(overlay)) { # T/F
     if (!overlay) { # F,default
@@ -367,16 +303,16 @@ plot.PM_pop <- function(x,
     ncols <- overlay[2]
     overlay <- FALSE
   }
-
+  
   # Data processing ---------------------------------------------------------
-
-
+  
+  
   # filter
   presub <- x %>%
     filter(outeq %in% !!outeq, block %in% !!block, icen %in% !!icen) %>%
     mutate(group = "") %>%
     includeExclude(include, exclude)
-
+  
   # group
   if (outeq[1] != 1 | length(outeq) > 1) {
     presub <- presub %>%
@@ -388,33 +324,33 @@ plot.PM_pop <- function(x,
       rowwise() %>%
       mutate(group = paste0(group, ", block: ", block))
   }
-
+  
   if (length(icen) > 1) {
     presub <- presub %>%
       rowwise() %>%
       mutate(group = paste0(group, ", ", icen))
   }
-
+  
   presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
   if (!is.null(names)) {
     presub$group <- factor(presub$group, labels = names)
   } else {
     presub$group <- factor(presub$group)
   }
-
+  
   # select relevant columns
   sub <- presub %>%
     select(id, time, pred, outeq, group) %>%
     ungroup()
   sub$group <- factor(sub$group)
-
+  
   # remove missing
   sub <- sub %>% filter(pred != -99)
-
-
-
+  
+  
+  
   # Plot function ----------------------------------------------------------
-
+  
   dataPlot <- function(allsub, overlay) {
     # set appropriate pop up text
     if (!overlay) {
@@ -424,7 +360,7 @@ plot.PM_pop <- function(x,
       hovertemplate <- "Time: %{x}<br>Pred: %{y}<br>ID: %{text}<extra></extra>"
       text <- ~id
     }
-
+    
     if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
       n_colors <- length(levels(allsub$group))
       if (checkRequiredPackages("RColorBrewer")) {
@@ -437,13 +373,13 @@ plot.PM_pop <- function(x,
         cli::cli_inform(c("i" = "Group colors are better with RColorBrewer package installed."))
         colors <- getDefaultColors(n_colors) # in plotly_Utils
       }
-
+      
       marker$color <- NULL
       line$color <- NULL
     } else { # no grouping
       allsub$group <- factor(1, labels = "Predicted")
     }
-
+    
     p <- allsub %>%
       plotly::plot_ly(
         x = ~time, y = ~ pred * mult,
@@ -469,17 +405,17 @@ plot.PM_pop <- function(x,
     )
     return(p)
   } # end dataPlot
-
-
+  
+  
   # Call plot ---------------------------------------------------------------
-
+  
   # call the plot function and display appropriately
   if (overlay) {
     sub <- sub %>% dplyr::group_by(id)
     p <- dataPlot(sub, overlay = TRUE)
     print(p)
   } else { # overlay = FALSE, ie. split them
-
+    
     if (!checkRequiredPackages("trelliscopejs")) {
       cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
     }
@@ -491,7 +427,7 @@ plot.PM_pop <- function(x,
       trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
     print(p)
   }
-
+  
   return(p)
 }
 
@@ -549,15 +485,15 @@ summary.PM_pop <- function(object, digits = max(3, getOption("digits") - 3),
     sumstat <- data.frame(sumstat)
     # N
     N <- length(data$pred[!is.na(data$pred)])
-
+    
     return(sumstat)
   } # end sumWrk
-
+  
   # make summary
   if (inherits(object, "PM_pop")) {
     object <- object$data
   }
-
+  
   object <- object %>% filter(outeq == !!outeq, icen == !!icen)
   if (all(is.na(object$pred))) {
     result <- NA
