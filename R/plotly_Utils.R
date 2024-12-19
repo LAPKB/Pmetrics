@@ -242,11 +242,11 @@ amendDots <- function(dots) {
   return(layout)
 }
 
-includeExclude <- function(.data, include, exclude) {
-  if (!is.na(include[1])) {
+includeExclude <- function(.data, include = NULL, exclude = NULL) {
+  if (!is.null(include)) {
     .data <- .data %>% filter(id %in% include)
   }
-  if (!is.na(exclude[1])) {
+  if (!is.null(exclude)) {
     .data <- .data %>% filter(!id %in% exclude)
   }
   if (nrow(.data) == 0) {

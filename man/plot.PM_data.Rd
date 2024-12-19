@@ -6,8 +6,8 @@
 \usage{
 \method{plot}{PM_data}(
   x,
-  include = NA,
-  exclude = NA,
+  include = NULL,
+  exclude = NULL,
   line = list(join = TRUE, pred = FALSE),
   marker = TRUE,
   color = NULL,
