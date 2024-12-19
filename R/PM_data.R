@@ -1714,8 +1714,8 @@ createInstructions <- function(wb) {
 #' @family PMplots
 
 plot.PM_data <- function(x,
-                         include = NA,
-                         exclude = NA,
+                         include = NULL,
+                         exclude = NULL,
                          line = list(join = TRUE, pred = FALSE),
                          marker = TRUE,
                          color = NULL,

@@ -53,7 +53,7 @@ PM_cov <- R6::R6Class(
     #' @details
     #' Creation of new `PM_cov` object is automatic and not generally necessary
     #' for the user to do.
-    #' @param PMdata If backend is Fortran, the parsed output from [NPparse] or [ITparse]. Not needed when the backend is Rust.
+    #' @param PMdata include `r template("PMdata")`. 
     #' @param ... Not currently used.
     initialize = function(PMdata, ...) {
       self$data <- private$make(PMdata)
@@ -94,96 +94,39 @@ PM_cov <- R6::R6Class(
   ), # end public
   private = list(
     make = function(data) {
-      if (getPMoptions("backend") == "rust") {
-        final <- data$final
-        data <- data$data
-
-
-        if (is.null(data)) {
-          cli::cli_abort(c("x" = "Missing subject data; unable to create {.cls PM_cov} object"))
-        }
-        if (is.null(final)) {
-          cli::cli_abort(c("x" = "Missing parameter values; unable to create {.cls PM_cov} object"))
-        }
-
-        
-        data1 <- data$standard_data %>%
-          filter(!is.na(dose)) %>%
-         # select(id, time, !!getCov(.)$covnames) %>% # in PMutilities
-          select(-c(evid, dur, dose, addl, ii, input, out, outeq, c0, c1, c2, c3)) %>% 
-          tidyr::fill(-id, -time) %>%
-          dplyr::left_join(final$post_mean, by = "id") %>%
-          mutate(icen = "mean")
-        
-        data2 <- data$standard_data %>%
-          filter(!is.na(dose)) %>%
-          # select(id, time, !!getCov(.)$covnames) %>% # in PMutilities
-          select(-c(evid, dur, dose, addl, ii, input, out, outeq, c0, c1, c2, c3)) %>% 
-          tidyr::fill(-id, -time) %>%
-          dplyr::left_join(final$post_median, by = "id") %>%
-          mutate(icen = "median")
-
-        res <- bind_rows(data1, data2)
-        class(res) <- c("PM_cov_data", "data.frame")
-
-        return(res)
-      } else { # fortran
-
-        if (inherits(data, "PMcov")) { # old format
-          return(data) # nothing to do
-        }
-
-        if (inherits(data, "PM_cov")) { # R6 format
-          return(data$data) # return raw to rebuild
-        }
-
-        if (!inherits(data, "NPAG") & !inherits(data, "IT2B")) stop(paste("Use NPparse() or ITparse() to generate an Pmetrics NPAG or IT2B object.\n"))
-        ncov <- data$ncov
-        nvar <- data$nvar
-        nsub <- data$nsub
-        ndrug <- data$ndrug
-        if (ncov > 0) {
-          cov <- data$dosecov[, c(2, (3 + ndrug * 2):(2 + ndrug * 2 + ncov))]
-        } else {
-          cov <- data$dosecov[, 2]
-        }
-        cov <- data.frame(cov)
-        cov <- cbind(data$sdata$id[data$dosecov[, 1]], cov)
-
-        # get mean Bayesian parameter values
-        if (inherits(data, "NPAG")) {
-          par1 <- matrix(as.numeric(data$bmean), ncol = nvar)
-        }
-        if (inherits(data, "IT2B")) {
-          par1 <- matrix(as.numeric(data$parbay[, , 1]), ncol = nvar)
-        }
-        par.exp1 <- par1[rep(1:nsub, table(data$dosecov[, 1])), ]
-        cov1 <- cbind(cov, par.exp1)
-        cov1$icen <- "mean"
-
-        # get median Bayesian parameter values
-        if (inherits(data, "NPAG")) {
-          par2 <- matrix(as.numeric(t(data$baddl[6, , ])), ncol = nvar)
-        }
-        if (inherits(data, "IT2B")) {
-          par2 <- matrix(as.numeric(data$parbay[, , 2]), ncol = nvar)
-        }
-        par.exp2 <- par2[rep(1:nsub, table(data$dosecov[, 1])), ]
-        cov2 <- cbind(cov, par.exp2)
-        cov2$icen <- "median"
-
-        # put them together
-        cov <- rbind(cov1, cov2)
-
-        if (ncov > 0) {
-          names(cov) <- c("id", "time", tolower(data$covnames), data$par, "icen")
-        } else {
-          names(cov) <- c("id", "time", data$par, "icen")
-        }
-        class(cov) <- c("PM_cov_data", "data.frame")
-        attr(cov, "ncov") <- ncov
-        return(cov)
+      final <- data$final
+      data <- data$data
+      
+      
+      if (is.null(data)) {
+        cli::cli_abort(c("x" = "Missing subject data; unable to create {.cls PM_cov} object"))
       }
+      if (is.null(final)) {
+        cli::cli_abort(c("x" = "Missing parameter values; unable to create {.cls PM_cov} object"))
+      }
+      
+      
+      data1 <- data$standard_data %>%
+        filter(!is.na(dose)) %>%
+        # select(id, time, !!getCov(.)$covnames) %>% # in PMutilities
+        select(-c(evid, dur, dose, addl, ii, input, out, outeq, c0, c1, c2, c3)) %>% 
+        tidyr::fill(-id, -time) %>%
+        dplyr::left_join(final$post_mean, by = "id") %>%
+        mutate(icen = "mean")
+      
+      data2 <- data$standard_data %>%
+        filter(!is.na(dose)) %>%
+        # select(id, time, !!getCov(.)$covnames) %>% # in PMutilities
+        select(-c(evid, dur, dose, addl, ii, input, out, outeq, c0, c1, c2, c3)) %>% 
+        tidyr::fill(-id, -time) %>%
+        dplyr::left_join(final$post_median, by = "id") %>%
+        mutate(icen = "median")
+      
+      res <- bind_rows(data1, data2)
+      class(res) <- c("PM_cov_data", "data.frame")
+      
+      return(res)
+      
     }
   ) # end private
 )
@@ -305,20 +248,20 @@ plot.PM_cov <- function(x,
   if (inherits(x, "PM_cov")) {
     x <- x$data
   }
-
+  
   # include/exclude
   if (missing(include)) include <- unique(x$id)
   if (missing(exclude)) exclude <- NA
-
+  
   if (missing(formula)) {
     choices <- paste(x %>% select(!c(id, icen)) %>% names(), collapse = ", ")
     cli::cli_abort(c("x" = "Missing formula", "i" = "Use the form {.code y ~ x}.\fValues for {.var (x, y)} include: {.var {choices}}."))
   }
-
-
+  
+  
   vars <- names(get_all_vars(formula = formula, data = x))
   timearg <- "time" %in% vars
-
+  
   if (!timearg) { # if time is not part of the formula, collapse to summary
     x <- summary.PM_cov(x, icen = icen) %>%
       includeExclude(include, exclude) %>%
@@ -330,12 +273,12 @@ plot.PM_cov <- function(x,
       dplyr::arrange(id, time) %>%
       select(-icen)
   }
-
+  
   # final data, calling columns x and y
   dat <- x %>% select(id, x = vars[2], y = vars[1])
-
-
-
+  
+  
+  
   # process reference lines
   if (any(!names(line) %in% c("lm", "loess", "ref"))) {
     cli::cli_warn(c("!" = "{.code line} should be a list with at most three named elements: {.code lm}, {.code loess}, and/or {.code ref}.", "i" = "See {.fn Pmetrics::plot.PM_cov}."))
@@ -344,7 +287,7 @@ plot.PM_cov <- function(x,
     cli::cli_warn(c("!" = "{.code line} should be a list.", "i" = "See {.fn Pmetrics::plot.PM_cov}."))
     line <- list()
   }
-
+  
   # defaults
   if (is.null(line$lm)) {
     line$lm <- FALSE
@@ -355,45 +298,45 @@ plot.PM_cov <- function(x,
   if (is.null(line$ref)) {
     line$ref <- FALSE
   }
-
+  
   marker <- amendMarker(marker, default = list(color = "orange"))
   lmLine <- amendLine(line$lm, default = list(color = "dodgerblue", dash = "solid"))
   loessLine <- amendLine(line$loess, default = list(color = "dodgerblue", dash = "dash"))
   refLine <- amendLine(line$ref, default = list(color = "grey", dash = "dot"))
-
+  
   if (missing(colors)) {
     colors <- "Spectral"
   }
-
+  
   if (is.logical(line$lm)) {
     lmLine$plot <- line$lm
   } else {
     lmLine$plot <- T
   }
-
+  
   if (is.logical(line$loess)) {
     loessLine$plot <- line$loess
   } else {
     loessLine$plot <- T
   }
-
+  
   if (is.logical(line$ref)) {
     refLine$plot <- line$ref
   } else {
     refLine$plot <- T
   }
-
-
+  
+  
   # process dots
   layout <- amendDots(list(...))
-
+  
   # legend - not needed for this function
   layout <- modifyList(layout, list(showlegend = F))
-
+  
   # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-
+  
   # axis ranges
   if (!missing(xlim)) {
     layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
@@ -401,13 +344,13 @@ plot.PM_cov <- function(x,
   if (!missing(ylim)) {
     layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
   }
-
+  
   # title
   if (missing(title)) {
     title <- ""
   }
   layout$title <- amendTitle(title, default = list(size = 20))
-
+  
   # axis labels
   xlab <- if (missing(xlab)) {
     vars[2]
@@ -419,23 +362,23 @@ plot.PM_cov <- function(x,
   } else {
     ylab
   }
-
+  
   layout$xaxis$title <- amendTitle(xlab)
   if (is.character(ylab)) {
     layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
   } else {
     layout$yaxis$title <- amendTitle(ylab)
   }
-
+  
   # log axes
   if (log) {
     layout$xaxis <- modifyList(layout$xaxis, list(type = "log"))
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
-
+  
   # PLOTS -------------------------------------------------------------------
   if (!timearg) { # default plot
-
+    
     p <- dat %>%
       plotly::plot_ly(x = ~x) %>%
       plotly::add_markers(
@@ -444,7 +387,7 @@ plot.PM_cov <- function(x,
         text = ~id,
         hovertemplate = paste0(vars[2], ": %{x:.2f}<br>", vars[1], ": %{y:.2f}<br>ID: %{text}<extra></extra>")
       )
-
+    
     if (lmLine$plot) { # linear regression
       lmLine$plot <- NULL # remove to allow only formatting arguments below
       if (is.null(purrr::pluck(lmLine$ci))) {
@@ -453,10 +396,10 @@ plot.PM_cov <- function(x,
         ci <- lmLine$ci
         lmLine$ci <- NULL # remove to allow only formatting arguments below
       }
-
+      
       p <- p %>% add_smooth(x = ~x, y = ~y, ci = ci, line = lmLine, stats = stats)
     }
-
+    
     if (loessLine$plot) { # loess regression
       loessLine$plot <- NULL # remove to allow only formatting arguments below
       if (is.null(purrr::pluck(loessLine$ci))) {
@@ -467,7 +410,7 @@ plot.PM_cov <- function(x,
       }
       p <- p %>% add_smooth(x = ~x, y = ~y, ci = ci, line = loessLine, method = "loess")
     }
-
+    
     if (refLine$plot) { # reference line
       refLine$plot <- NULL # remove to allow only formatting arguments below
       # get ref line
@@ -482,7 +425,7 @@ plot.PM_cov <- function(x,
         line = refLine
       )
     }
-
+    
     # set layout
     p <- p %>%
       plotly::layout(
@@ -492,13 +435,13 @@ plot.PM_cov <- function(x,
         shapes = layout$refLine,
         title = layout$title
       )
-
+    
     print(p)
     return(p)
   } else { # timearg plot
     marker$color <- NULL
     loessLine$color <- NULL
-
+    
     n_colors <- length(unique(dat$id))
     if (checkRequiredPackages("RColorBrewer")) {
       palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
@@ -513,7 +456,7 @@ plot.PM_cov <- function(x,
       cat(paste0(crayon::green("Note: "), "Colors are better with RColorBrewer package installed.\n"))
       colors <- getDefaultColors(n_colors) # in plotly_Utils
     }
-
+    
     p <- dat %>%
       group_by(id) %>%
       plotly::plot_ly(
@@ -531,7 +474,7 @@ plot.PM_cov <- function(x,
         y = ~y,
         line = loessLine
       )
-
+    
     # set layout
     p <- p %>%
       plotly::layout(
@@ -541,7 +484,7 @@ plot.PM_cov <- function(x,
         shapes = layout$refLine,
         title = layout$title
       )
-
+    
     print(p)
     return(p)
   }
@@ -583,7 +526,7 @@ summary.PM_cov <- function(object, icen = "median", ...) {
   if (inherits(object, "PM_cov")) { # user called summary(PM_cov)
     object <- object$data
   }
-
+  
   if ("icen" %in% names(object)) {
     data <- object[object$icen == icen, ]
     data <- subset(data, select = -icen)
@@ -647,12 +590,12 @@ PM_step <- function(x, icen = "median", direction = "backward") {
   covEnd <- 2 + ncov
   parStart <- covEnd + 1
   parEnd <- ncol(x) - 1 # leave out icen column
-
+  
   # summarize cov object by icen
   sumX <- summary(x, icen)
-
+  
   cov.cross <- data.frame(matrix(NA, ncol = nvar, nrow = ncov, dimnames = list(cov = names(sumX)[covStart:covEnd], par = names(sumX)[parStart:parEnd])))
-
+  
   for (i in 1:ncol(cov.cross)) {
     temp <- data.frame(cbind(sumX[, (parStart + i - 1)], sumX[, covStart:covEnd]))
     names(temp) <- c(names(sumX)[parStart + i - 1], names(sumX)[covStart:covEnd])

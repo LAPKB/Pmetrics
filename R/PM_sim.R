@@ -361,7 +361,7 @@ PM_sim <- R6::R6Class(
     #' )
     #' }
     initialize = function(poppar, limits = NULL, model, data, split,
-                          include = NA, exclude = NA, nsim = 1000, predInt = 0,
+                          include = NULL, exclude = NULL, nsim = 1000, predInt = 0,
                           covariate = NULL, usePost = FALSE,
                           seed = -17, ode = -4,
                           obsNoise = NULL, doseTimeNoise = NULL,
