@@ -987,7 +987,7 @@ PM_sim <- R6::R6Class(
           noise1 <- noise
           noise2 <- NULL
         }
-
+        
         if(length(noise1)>0){
           template <- private$makeNoise(template, noise1)
         }
@@ -1002,7 +1002,7 @@ PM_sim <- R6::R6Class(
       # CALL SIMULATOR ----------------------------------------------------------------
       template <- PM_data$new(template, quiet = TRUE)
       mod <- PM_model$new(mod_list, quiet = TRUE)
-
+      
       if (length(postToUse) > 0) {
         # simulating from posteriors, each posterior matched to a subject
         # need to set theta as the posterior mean or median for each subject
@@ -1035,7 +1035,7 @@ PM_sim <- R6::R6Class(
           obs <- private$makeNoise(obs, noise2)
           #now need to convert amts but now way to do this in R since we
           #don't know which term is volume
-     
+          
           
         }
         
@@ -1200,7 +1200,7 @@ PM_sim <- R6::R6Class(
           return(invisible(NULL))
         }
         if (ans == 2) {
-          # eigendecomposition to fix the matrix
+          # eigen decomposition to fix the matrix
           for (j in 1:5) { # try up to 5 times
             eigen_values <- eigen(pop_cov)$values
             eigen_vectors <- eigen(pop_cov)$vectors
@@ -1213,297 +1213,298 @@ PM_sim <- R6::R6Class(
           posdef <- eigen(signif(pop_cov, 15)) # last check
           if (any(posdef$values < 0)) {
             cli::cli_abort(c("x" = "Unable to fix covariance."))
-        
-        }
-        if (ans == 3) {
-          pop_cov2 <- diag(0, nrow(pop_cov))
-          diag(pop_cov2) <- diag(as.matrix(pop_cov))
-          pop_cov2 <- data.frame(pop_cov2)
-          names(pop_cov2) <- names(pop_cov)
-          pop_cov <- pop_cov2
-        }
-      }
-      
-      if (nsim <= 1 && simWithCov) {
-        # can't simulate from each point with covariate sim
-        cli::cli_inform(c("i" = "You cannot simulate covariates with nsim <= 1. Each subject supplies only one set of relevant covariates."))
-        simWithCov <- FALSE
-      }
-      
-      
-      # generate random samples from multivariate, multimodal normal distribution
-      generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix) {
-        means <- split(means, 1:nrow(means))
-        if (length(weights) != length(means)) {
-          cli::cli_abort("Weights and means must have the same length.")
-        }
-        
-        # Determine number of samples from each mode
-        samples_per_mode <- stats::rmultinom(1, size = num_samples, prob = weights)
-        
-        # Generate samples for each mode
-        samples <- do.call(rbind, lapply(1:length(weights), function(i) {
-          tryCatch(suppressWarnings(MASS::mvrnorm(n = samples_per_mode[i], mu = as.matrix(means[[i]], nrow = 1), Sigma = cov_matrix)),
-                   error = function(e) NULL )
-        })) %>%
-          tibble::as_tibble(.name_repair = "unique") %>%
-          dplyr::mutate(prob = 1 / dplyr::n())
-        
-        return(samples)
-      }
-      
-      # generate samples for theta
-      
-      set.seed(seed[i])
-      thetas <- generate_multimodal_samples(nsim, pop_weight, pop_mean, pop_cov)
-      
-      # cycle through samples, moving any row with any parameter outside limits
-      # into a second tibble, and replacing that row with a new sample
-      
-      # returns true if any parameter in row i is outside limits
-      outside_check <- function(x, i) {
-        any(x[i, ] - limits[, 1] < 0) | # any parameter < lower limit
-          any(x[i, ] - limits[, 2] > 0) # any parameter > upper limit
-      }
-      discarded <- NULL
-      if(!all(is.null(limits))){
-        
-        for (i in 1:nrow(thetas)) {
-          cycle_num <- 0
-          outside <- outside_check(thetas %>% dplyr::select(-prob), i)
-          while (outside && cycle_num < 10) {
-            new_sample <- generate_multimodal_samples(1, pop_weight, pop_mean, pop_cov)
-            cycle_num <- cycle_num + 1
-            outside <- outside_check(new_sample %>% dplyr::select(-prob), 1)
+            
           }
-          if (outside) {
-            cli::cli_abort(c("x" = "Unable to generate simulated parameters within limits after 10 attempts per row."))
+        }
+          if (ans == 3) {
+            pop_cov2 <- diag(0, nrow(pop_cov))
+            diag(pop_cov2) <- diag(as.matrix(pop_cov))
+            pop_cov2 <- data.frame(pop_cov2)
+            names(pop_cov2) <- names(pop_cov)
+            pop_cov <- pop_cov2
           }
-          if (cycle_num > 0) {
-            discarded <- rbind(discarded, thetas[i, ])
-            thetas[i, ] <- new_sample
+        }
+        
+        if (nsim <= 1 && simWithCov) {
+          # can't simulate from each point with covariate sim
+          cli::cli_inform(c("i" = "You cannot simulate covariates with nsim <= 1. Each subject supplies only one set of relevant covariates."))
+          simWithCov <- FALSE
+        }
+        
+        
+        # generate random samples from multivariate, multimodal normal distribution
+        generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix) {
+          means <- split(means, 1:nrow(means))
+          if (length(weights) != length(means)) {
+            cli::cli_abort("Weights and means must have the same length.")
           }
-          thetas$prob <- 1 / nrow(thetas)
-        } # end loop to fix thetas out of range
-        
-      }
-      
-      
-      total_means <- apply(rbind(thetas, discarded), 2, mean)[1:ncol(pop_cov)]
-      total_cov <- bind_rows(thetas,discarded) %>% select(-prob) %>% cov()
-      total_nsim <- nrow(thetas) + nrow(discarded)
-      
-      return(list(thetas = thetas, total_means = total_means, 
-                  total_cov = total_cov, 
-                  total_nsim = total_nsim))
-      
-    }, # end getSimPrior function'
-    
-    # Create new simulation objects with results of simulation
-    populate = function(simout, type) {
-      if (type == "sim") {
-        self$obs <- simout$obs
-        self$amt <- simout$amt
-        self$parValues <- simout$parValues
-        self$totalMeans <- simout$totalMeans
-        self$totalCov <- simout$totalCov
-        self$data <- simout
-        class(self$data) <- c("PM_sim_data", "list")
-      } else if (type == "simlist") {
-        N <- length(simout) #number of templates
-        nsim <- max(simout[[1]]$obs$id)
-        obs <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 1)), names_to = "id2") %>% rename(nsim = id, id = id2)
-        amt <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 2)), names_to = "id2") %>% rename(nsim = id, id = id2)
-        parValues <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 3)), names_to = "id2") %>% rename(nsim = id, id = id2)
-        totalSets <- map(1:N, \(x) simout[[x]]$totalSets)
-        totalMeans <- map(1:N, \(x) pluck(simout, x, 5))
-        totalCov <- map(1:N, \(x) data.frame(pluck(simout, x, 6)))
-        self$data <- list(
-          obs = obs,
-          amt = amt,
-          parValues = parValues,
-          totalSets = totalSets,
-          totalMeans = totalMeans,
-          totalCov = totalCov
-        )
-        
-        
-        
-      } else if (type == "R6sim") {
-        self$obs <- simout$obs
-        self$amt <- simout$amt
-        self$parValues <- simout$parValues
-        self$totalMeans <- simout$totalMeans
-        self$totalCov <- simout$totalCov
-        if (inherits(simout$data, "PM_simlist")) {
-          purrr::map(1:length(simout$data), \(x){
-            class(simout$data[[x]]) <- c("PM_sim_data", "list") # ensure class is correct
-          })
-        } else {
-          class(simout$data) <- c("PM_sim_data", "list") # ensure class is correct
-        }
-        self$data <- simout$data
-      }
-      return(self)
-    }, # end populate
-    
-    makeNoise = function(template, noise){
- 
-      if(!is.list(noise)){
-        cli::cli_warn(c("!" = "Noise arguments should be a list.",
-                        "i" = "See ?PM_data for details on how to add noise."))
-        return(invisible(template))
-      }
-      
-      for(i in 1:length(noise)){
-        this <- noise[[i]]
-        this$.col <- names(noise)[i]
-        this$.coeff <- this[[1]]
-        if(is.null(this$.mode)){
-          this$.mode <- "add"
+          
+          # Determine number of samples from each mode
+          samples_per_mode <- stats::rmultinom(1, size = num_samples, prob = weights)
+          
+          # Generate samples for each mode
+          samples <- do.call(rbind, lapply(1:length(weights), function(i) {
+            tryCatch(suppressWarnings(MASS::mvrnorm(n = samples_per_mode[i], mu = as.matrix(means[[i]], nrow = 1), Sigma = cov_matrix)),
+                     error = function(e) NULL )
+          })) %>%
+            tibble::as_tibble(.name_repair = "unique") %>%
+            dplyr::mutate(prob = 1 / dplyr::n())
+          
+          return(samples)
         }
         
-        # add zeros to coefficients if needed to make up to length 4
-        if (length(this$.coeff) < 4){
-          this$.coeff <- c(this$.coeff, rep(0, 4 - length(this$.coeff)))
+        # generate samples for theta
+        
+        set.seed(seed[i])
+        thetas <- generate_multimodal_samples(nsim, pop_weight, pop_mean, pop_cov)
+        
+        # cycle through samples, moving any row with any parameter outside limits
+        # into a second tibble, and replacing that row with a new sample
+        
+        # returns true if any parameter in row i is outside limits
+        outside_check <- function(x, i) {
+          any(x[i, ] - limits[, 1] < 0) | # any parameter < lower limit
+            any(x[i, ] - limits[, 2] > 0) # any parameter > upper limit
+        }
+        discarded <- NULL
+        if(!all(is.null(limits))){
+          
+          for (i in 1:nrow(thetas)) {
+            cycle_num <- 0
+            outside <- outside_check(thetas %>% dplyr::select(-prob), i)
+            while (outside && cycle_num < 10) {
+              new_sample <- generate_multimodal_samples(1, pop_weight, pop_mean, pop_cov)
+              cycle_num <- cycle_num + 1
+              outside <- outside_check(new_sample %>% dplyr::select(-prob), 1)
+            }
+            if (outside) {
+              cli::cli_abort(c("x" = "Unable to generate simulated parameters within limits after 10 attempts per row."))
+            }
+            if (cycle_num > 0) {
+              discarded <- rbind(discarded, thetas[i, ])
+              thetas[i, ] <- new_sample
+            }
+            thetas$prob <- 1 / nrow(thetas)
+          } # end loop to fix thetas out of range
+          
         }
         
-        # Ensure target is a column in standard_data
-        if (!this$.col %in% names(template)) {
-          cli::cli_abort(c("x" = "{.arg {this$.col}} is not a column in your data.",
-                           "i" = "Example: {.code noise = list(dose = list(.coeff = c(0.1, 0.1)))}"))
-        }
         
-        # make temporary row index to preserve order later
-        template$index_ <- 1:nrow(template)
+        total_means <- apply(rbind(thetas, discarded), 2, mean)[1:ncol(pop_cov)]
+        total_cov <- bind_rows(thetas,discarded) %>% select(-prob) %>% cov()
+        total_nsim <- nrow(thetas) + nrow(discarded)
         
-        # Dynamically apply the filter
-        if(!is.null(this$.filter)){
-          filter_status <- "filtered"
-          filter_exprs <- rlang::parse_expr(this$.filter)
-          filtered_data <- template %>%
-            filter(!!filter_exprs)
-          # Keep the rest
-          remaining_data <- template %>%
-            filter(magrittr::not(!!!filter_exprs))
-        } else {
-          filter_status <- ""
-          filtered_data <- template
-          remaining_data <- NULL
-        }
+        return(list(thetas = thetas, total_means = total_means, 
+                    total_cov = total_cov, 
+                    total_nsim = total_nsim))
         
-        # Get the target
-        target_col <- filtered_data %>% select(all_of(this$.col))
-        
-        # Remove temp row index
-        template <- template %>% select(-index_)
-        
-        # Add noise
-        new_target <- data.frame(1:nrow(target_col))
-        names(new_target) <- this$.col
-        set.seed(-17)
-        if(this$.mode == "add"){
-          target_col <- target_col %>% mutate(noisy = ifelse(!is.na(out),
-                                               out + rnorm(1, mean = 0, 
-                                                           sd = this$.coeff[[1]] + 
-                                                             this$.coeff[[2]] * target_col[i,] +
-                                                             this$.coeff[[3]] * target_col[i,]^2 +
-                                                             this$.coeff[[4]] * target_col[i,]^3),
-                                               NA))                        
-        } else if(this$.mode == "exp"){
-          target_col <- target_col %>% mutate(noisy = ifelse(!is.na(out),
-                                               out * exp(rnorm(1, mean = 0, 
-                                                           sd = this$.coeff[[1]] + 
-                                                             this$.coeff[[2]] * target_col[i,] +
-                                                             this$.coeff[[3]] * target_col[i,]^2 +
-                                                             this$.coeff[[4]] * target_col[i,]^3)),
-                                               NA)) 
-        } else {
-          cli::cli_abort("x" = "Mode must be 'add' or 'exp'.")
-        }
-        
-        #put back the new noisy column
-        filtered_data[[this$.col]] <- target_col$noisy
-        
-        combined <- bind_rows(filtered_data, remaining_data) %>% arrange(index_) %>% select(-index_) 
-        #Fix initial times to be 0 in case they were mutated
-        combined[!duplicated(combined$id), "time"] <- 0
-        
-        template <- combined
-
-      } # end for loop for each noise element
+      }, # end getSimPrior function'
       
-      return(template)
-      
-    }, # end makeNoise function
-    
-    makePredInt = function(template, predInt){
-      
-      predTimes <- NA
-      if (is.list(predInt)) {
-        # predInt is a list of (start,end,interval)
-        if (any(sapply(predInt, length) != 3)) {
-          cli::cli_abort(c("x" = "If a list, each element of predInt must be of the form {.code c(start, end, interval)}."))
-        }
-        predTimes <- sapply(predInt, function(x) rep(seq(x[1], x[2], x[3]), each = numeqt))
-        # catenate columns into single vector
-        predTimes <- unlist(predTimes)
-      } else {
-        # predTimes is not a list
-        if (length(predInt) == 1) {
-          # predInt is a single value
-          if (predInt != 0) {
-            # it is not zero
-            predTimes <- rep(seq(0, ceiling(max(template$time, na.rm = T)), predInt)[-1], each = numeqt)
-          }
-          # it was 0 so do nothing
-        } else {
-          # predInt is a single vector of c(start,stop,interval)
-          if (length(predInt) == 3) {
-            predTimes <- rep(seq(predInt[1], predInt[2], predInt[3]), each = numeqt)
+      # Create new simulation objects with results of simulation
+      populate = function(simout, type) {
+        if (type == "sim") {
+          self$obs <- simout$obs
+          self$amt <- simout$amt
+          self$parValues <- simout$parValues
+          self$totalMeans <- simout$totalMeans
+          self$totalCov <- simout$totalCov
+          self$data <- simout
+          class(self$data) <- c("PM_sim_data", "list")
+        } else if (type == "simlist") {
+          N <- length(simout) #number of templates
+          nsim <- max(simout[[1]]$obs$id)
+          obs <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 1)), names_to = "id2") %>% rename(nsim = id, id = id2)
+          amt <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 2)), names_to = "id2") %>% rename(nsim = id, id = id2)
+          parValues <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 3)), names_to = "id2") %>% rename(nsim = id, id = id2)
+          totalSets <- map(1:N, \(x) simout[[x]]$totalSets)
+          totalMeans <- map(1:N, \(x) pluck(simout, x, 5))
+          totalCov <- map(1:N, \(x) data.frame(pluck(simout, x, 6)))
+          self$data <- list(
+            obs = obs,
+            amt = amt,
+            parValues = parValues,
+            totalSets = totalSets,
+            totalMeans = totalMeans,
+            totalCov = totalCov
+          )
+          
+          
+          
+        } else if (type == "R6sim") {
+          self$obs <- simout$obs
+          self$amt <- simout$amt
+          self$parValues <- simout$parValues
+          self$totalMeans <- simout$totalMeans
+          self$totalCov <- simout$totalCov
+          if (inherits(simout$data, "PM_simlist")) {
+            purrr::map(1:length(simout$data), \(x){
+              class(simout$data[[x]]) <- c("PM_sim_data", "list") # ensure class is correct
+            })
           } else {
-            cli::cli_abort(c(
-              "x" = "{.var predInt} is misspecified.",
-              "i" = "See help for {.fn PM_sim}."
-            ))
+            class(simout$data) <- c("PM_sim_data", "list") # ensure class is correct
+          }
+          self$data <- simout$data
+        }
+        return(self)
+      }, # end populate
+      
+      makeNoise = function(template, noise){
+        
+        if(!is.list(noise)){
+          cli::cli_warn(c("!" = "Noise arguments should be a list.",
+                          "i" = "See ?PM_data for details on how to add noise."))
+          return(invisible(template))
+        }
+        
+        for(i in 1:length(noise)){
+          this <- noise[[i]]
+          this$.col <- names(noise)[i]
+          this$.coeff <- this[[1]]
+          if(is.null(this$.mode)){
+            this$.mode <- "add"
+          }
+          
+          # add zeros to coefficients if needed to make up to length 4
+          if (length(this$.coeff) < 4){
+            this$.coeff <- c(this$.coeff, rep(0, 4 - length(this$.coeff)))
+          }
+          
+          # Ensure target is a column in standard_data
+          if (!this$.col %in% names(template)) {
+            cli::cli_abort(c("x" = "{.arg {this$.col}} is not a column in your data.",
+                             "i" = "Example: {.code noise = list(dose = list(.coeff = c(0.1, 0.1)))}"))
+          }
+          
+          # make temporary row index to preserve order later
+          template$index_ <- 1:nrow(template)
+          
+          # Dynamically apply the filter
+          if(!is.null(this$.filter)){
+            filter_status <- "filtered"
+            filter_exprs <- rlang::parse_expr(this$.filter)
+            filtered_data <- template %>%
+              filter(!!filter_exprs)
+            # Keep the rest
+            remaining_data <- template %>%
+              filter(magrittr::not(!!!filter_exprs))
+          } else {
+            filter_status <- ""
+            filtered_data <- template
+            remaining_data <- NULL
+          }
+          
+          # Get the target
+          target_col <- filtered_data %>% select(all_of(this$.col))
+          
+          # Remove temp row index
+          template <- template %>% select(-index_)
+          
+          # Add noise
+          new_target <- data.frame(1:nrow(target_col))
+          names(new_target) <- this$.col
+          set.seed(-17)
+          if(this$.mode == "add"){
+            target_col <- target_col %>% mutate(noisy = ifelse(!is.na(out),
+                                                               out + rnorm(1, mean = 0, 
+                                                                           sd = this$.coeff[[1]] + 
+                                                                             this$.coeff[[2]] * target_col[i,] +
+                                                                             this$.coeff[[3]] * target_col[i,]^2 +
+                                                                             this$.coeff[[4]] * target_col[i,]^3),
+                                                               NA))                        
+          } else if(this$.mode == "exp"){
+            target_col <- target_col %>% mutate(noisy = ifelse(!is.na(out),
+                                                               out * exp(rnorm(1, mean = 0, 
+                                                                               sd = this$.coeff[[1]] + 
+                                                                                 this$.coeff[[2]] * target_col[i,] +
+                                                                                 this$.coeff[[3]] * target_col[i,]^2 +
+                                                                                 this$.coeff[[4]] * target_col[i,]^3)),
+                                                               NA)) 
+          } else {
+            cli::cli_abort("x" = "Mode must be 'add' or 'exp'.")
+          }
+          
+          #put back the new noisy column
+          filtered_data[[this$.col]] <- target_col$noisy
+          
+          combined <- bind_rows(filtered_data, remaining_data) %>% arrange(index_) %>% select(-index_) 
+          #Fix initial times to be 0 in case they were mutated
+          combined[!duplicated(combined$id), "time"] <- 0
+          
+          template <- combined
+          
+        } # end for loop for each noise element
+        
+        return(template)
+        
+      }, # end makeNoise function
+      
+      makePredInt = function(template, predInt){
+        
+        predTimes <- NA
+        if (is.list(predInt)) {
+          # predInt is a list of (start,end,interval)
+          if (any(sapply(predInt, length) != 3)) {
+            cli::cli_abort(c("x" = "If a list, each element of predInt must be of the form {.code c(start, end, interval)}."))
+          }
+          predTimes <- sapply(predInt, function(x) rep(seq(x[1], x[2], x[3]), each = numeqt))
+          # catenate columns into single vector
+          predTimes <- unlist(predTimes)
+        } else {
+          # predTimes is not a list
+          if (length(predInt) == 1) {
+            # predInt is a single value
+            if (predInt != 0) {
+              # it is not zero
+              predTimes <- rep(seq(0, ceiling(max(template$time, na.rm = T)), predInt)[-1], each = numeqt)
+            }
+            # it was 0 so do nothing
+          } else {
+            # predInt is a single vector of c(start,stop,interval)
+            if (length(predInt) == 3) {
+              predTimes <- rep(seq(predInt[1], predInt[2], predInt[3]), each = numeqt)
+            } else {
+              cli::cli_abort(c(
+                "x" = "{.var predInt} is misspecified.",
+                "i" = "See help for {.fn PM_sim}."
+              ))
+            }
           }
         }
-      }
-      
-      # first, add temporary index to ensure id order remains the same
-      dat2 <- template %>% 
-        mutate(.id = dense_rank(id))
-      
-      # second, add predInt if necessary
-      if (!is.na(predTimes[1])) {
-        predTimes <- predTimes[predTimes > 0] # remove predictions at time 0
-        dat3 <- dat2 %>% 
-          group_by(.id) %>% 
-          group_map( ~ {
-            theseTimes <- predTimes[!predTimes %in% .x$time[.x$evid == 0]] # remove prediction times at times that are specified in template
-            numPred <- length(theseTimes)
-            newPred <- data.frame(matrix(NA, nrow = numPred, ncol = 1+ncol(.x)))
-            names(newPred) <- c(".id", names(.x))
-            newPred[, 1] <- .y # .id
-            newPred[, 2] <- .x$id[1] # original id
-            newPred[, 3] <- 0 # evid
-            newPred[, 4] <- theseTimes # time
-            newPred[, 10] <- 1 # out
-            newPred[, 11] <- rep(1:numeqt, numPred / numeqt) # outeq
-            newPred
-          }) %>% bind_rows() 
-        new_dat <- bind_rows(dat2, dat3) %>% 
-          arrange(.id, time, outeq) %>% 
-          select(-.id)
-      } else { # predInt was not specified
-        new_dat <- template #the original data without .id
-      }
-      new_dat <- new_dat %>% mutate(out = ifelse(evid == 0, -1, NA)) #replace all obs with -1 since simulating
-      return(new_dat)
-      
-    } # end makePredInt function
-  ) # end private
-) # end PM_sim
+        
+        # first, add temporary index to ensure id order remains the same
+        dat2 <- template %>% 
+          mutate(.id = dense_rank(id))
+        
+        # second, add predInt if necessary
+        if (!is.na(predTimes[1])) {
+          predTimes <- predTimes[predTimes > 0] # remove predictions at time 0
+          dat3 <- dat2 %>% 
+            group_by(.id) %>% 
+            group_map( ~ {
+              theseTimes <- predTimes[!predTimes %in% .x$time[.x$evid == 0]] # remove prediction times at times that are specified in template
+              numPred <- length(theseTimes)
+              newPred <- data.frame(matrix(NA, nrow = numPred, ncol = 1+ncol(.x)))
+              names(newPred) <- c(".id", names(.x))
+              newPred[, 1] <- .y # .id
+              newPred[, 2] <- .x$id[1] # original id
+              newPred[, 3] <- 0 # evid
+              newPred[, 4] <- theseTimes # time
+              newPred[, 10] <- 1 # out
+              newPred[, 11] <- rep(1:numeqt, numPred / numeqt) # outeq
+              newPred
+            }) %>% bind_rows() 
+          new_dat <- bind_rows(dat2, dat3) %>% 
+            arrange(.id, time, outeq) %>% 
+            select(-.id)
+        } else { # predInt was not specified
+          new_dat <- template #the original data without .id
+        }
+        new_dat <- new_dat %>% mutate(out = ifelse(evid == 0, -1, NA)) #replace all obs with -1 since simulating
+        return(new_dat)
+        
+      } # end makePredInt function
+      ) # end private
+  ) # end PM_sim
 
 
 #' @keywords internal
