@@ -7,16 +7,15 @@
 PM_report(x, template, outfile, show = TRUE)
 }
 \arguments{
-\item{x}{A \code{PM_result} object obtained from \code{PM_load(x)}, where \code{x} is the run number.}
+\item{x}{A \link{PM_result} object obtained from \link{PM_load}.}
 
 \item{template}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
-is used. Otherwise can be "plotly", "ggplot", or "none".}
+is used. It can be changed with \link{setPMoptions}. Otherwise, the value for \code{template}
+can be "plotly", "ggplot", or "none".}
 
 \item{outfile}{The location of the generated report, defaults to a temporary file.}
 
-\item{show}{Controls if the report should be automatically opened on generation, defaults to \code{TRUE}
-Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
-in \code{\link{NPrun}}.}
+\item{show}{Controls if the report should be automatically opened on generation, defaults to \code{TRUE}}
 }
 \value{
 Generates an HTML-report in the current working directory.
@@ -30,5 +29,5 @@ Generates a report from a specified Rmd template
 \link{PM_load}
 }
 \author{
-Markus Hovd and Julian Otalvaro
+Markus Hovd, Julian Otalvaro, and Michael Neely
 }

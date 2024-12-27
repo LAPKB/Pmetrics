@@ -4,7 +4,7 @@
 \alias{summary.PM_final}
 \title{Summary Statistics for Final Cycle}
 \usage{
-\method{summary}{PM_final}(object, lower = 0.025, upper = 0.975, ...)
+\method{summary}{PM_final}(object, lower = 0.025, upper = 0.975, file = NULL, ...)
 }
 \arguments{
 \item{object}{The PM_final object made after an NPAG or IT2B run}

@@ -21,10 +21,6 @@ Michael Neely, Julian Otalvaro
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{NPdata}}{List with all output from NPAG, made by \link{NPparse}}
-
-\item{\code{ITdata}}{List with all output from IT2B, made by \link{ITparse}}
-
 \item{\code{pop}}{A \link{PM_pop} object}
 
 \item{\code{post}}{A \link{PM_post} object}
@@ -184,14 +180,18 @@ See \link{makeNCA}.
 \if{html}{\out{<a id="method-PM_result-report"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-report}{}}}
 \subsection{Method \code{report()}}{
+Re-generate the report
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$report(
-  template = getPMoptions("report_template"),
-  outfile,
-  show = TRUE
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$report(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Parameters passed to \link{PM_report}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-sim"></a>}}

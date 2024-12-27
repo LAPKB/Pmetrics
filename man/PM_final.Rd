@@ -37,6 +37,49 @@ Michael Neely, Julian Otalvaro
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
+\item{\code{data}}{A list with the following elements, which can also be extracted by name.
+\itemize{
+\item \strong{popPoints} (NPAG only) Data frame of the final cycle joint population density of grid points
+with column names equal to the name of each random parameter plus \emph{prob} for the
+associated probability of that point
+\item \strong{popMean} The final cycle mean for each random parameter distribution
+\item \strong{popSD} The final cycle standard deviation for each random parameter distribution
+\item \strong{popCV} The final cycle coefficient of variation (SD/Mean) for each random parameter distribution
+\item \strong{popVar} The final cycle variance for each random parameter distribution
+\item \strong{popCov} The final cycle random parameter covariance matrix
+\item \strong{popCor} The final cycle random parameter correlation matrix
+\item \strong{popMedian} The final cycle median values for each random parameter,
+i.e. those that have unknown mean and unknown variance, both of which are
+fitted during the run
+\item \strong{popRanFix} The final cycle median values for each parameter that is
+random but fixed to be the same for all subjects, i.e. unknown mean, zero
+variance, with only mean fitted in the run
+\item \strong{postPoints} (NPAG only) Data frame of posterior population points for each of the first 100 subject,
+with columns id, point, parameters and probability.  The first column is the subject, the second column has the population
+point number, followed by the values for the parameters in that point and the probability.
+\item \strong{postMean} A \emph{nsub} x \emph{npar} data frame containing
+the means of the posterior distributions for each parameter.
+\item \strong{postSD} A \emph{nsub} x \emph{npar} data frame containing
+the SDs of the posterior distributions for each parameter.
+\item \strong{postVar} A \emph{nsub} x \emph{npar} data frame containing
+the variances of the posterior distributions for each parameter.
+\item \strong{postCov} NPAG only: An list of length \emph{nsub}, each element with an \emph{npar} x \emph{npar} data frame
+that contains the posterior parameter value covariances for that subject.
+\item \strong{postCor} NPAG only: An list of length \emph{nsub}, each element with an \emph{npar} x \emph{npar} data frame
+that contains the posterior parameter value correlations for that subject.
+\item \strong{postMed} A \emph{nsub} x \emph{npar} data frame containing
+the medians of the posterior distributions for each parameter.
+\item \strong{shrinkage} A data frame with the shrinkage for each parameter.
+\item \strong{gridpts} (NPAG only) Initial number of support points
+\item \strong{nsub} Number of subjects
+\item \strong{ab} Matrix of boundaries for random parameter values
+}}
+}
+\if{html}{\out{</div>}}
+}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
 \item{\code{popPoints}}{(NPAG only) Data frame of the final cycle joint population density of grid points
 with column names equal to the name of each random parameter plus \emph{prob} for the
 associated probability of that point}
@@ -126,8 +169,6 @@ with shrinkage to assess the information content of the data.}
 \item{\code{nsub}}{Number of subjects}
 
 \item{\code{ab}}{Matrix of boundaries for random parameter values}
-
-\item{\code{data}}{A data frame combining all the above fields as its columns}
 }
 \if{html}{\out{</div>}}
 }
@@ -152,7 +193,8 @@ Create new object populated with final cycle information
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{PMdata}}{If backend is Fortran, the parsed output from \link{NPparse} or \link{ITparse}. Not needed when the backend is Rust.}
+\item{\code{PMdata}}{include Future development.
+.}
 
 \item{\code{...}}{Not currently used.}
 }

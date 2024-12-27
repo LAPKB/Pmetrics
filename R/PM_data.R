@@ -77,7 +77,6 @@ PM_data <- R6::R6Class("PM_data",
                         quiet = FALSE, 
                         validate = TRUE) {
     if (is.character(data)) { #filename
-      #self$data <- PMreadMatrix(data, quiet = T)
       self$data <- rlang::try_fetch(Pmetrics:::PMreadMatrix(data, quiet = T),
                                     error = function(e){
                                       cli::cli_warn("Unable to create {.cls PM_data} object", parent = e)
@@ -308,134 +307,8 @@ PM_data <- R6::R6Class("PM_data",
       self$standard_data <- NULL
     }
     return(invisible(self))
-  },
-  makeNoise = function(.col = NULL, .filter = NULL, .mode = "add",
-                      .coeff = list(c0 = 0, c1 = 0, c2 = 0, c3 = 0)){
-    if (!is.null(self$standard_data)) {
-      
-      #Ensure target is a column in standard_data
-      if (!.col %in% names(self$standard_data)) {
-        cli::cli_abort(c("x" = "{.col} is not a column in your data.",
-                        "i" = "Example: .col = \"out\""))
-      }
-      
-      # Ensure the filter is a list of conditions
-      if (!is.null(.filter) && !is.list(.filter)) {
-        cli::cli_abort(c("x" = ".filter must be a list of conditions.",
-                        "i" = "Example: .filter = list(\"id == 1\", \"time > 0\")"))
-      }
-      
-      
-      # Ensure the coeff is a list 
-      # if (!is.list(.coeff)) {
-      #   cli::cli_abort(c("x" = ".coeff must be a vector specifying at least c0. ",
-      #                  "i" = "Examples: .coeff = 0.1 or .coeff = c(0.1, 0.08)"))
-      # }
-      
-      # names(coeff) <- c("c0", "c1", "c2", "c3")[1:length(coeff)]
-      # coeff <- modifyList(list(c0 = 0, c1 = 0, c2 = 0, c3 = 0), coeff)
-      
-      
-      
-      # make temporary row index to preserve order later
-      self$standard_data$index_ <- 1:nrow(self$standard_data)
-      
-      # Dynamically apply the filter
-      if(!is.null(.filter)){
-        filter_status <- "filtered"
-        filter_exprs <- purrr::map(.filter, ~ rlang::parse_expr(.x))
-        filtered_data <- self$standard_data %>%
-          filter(!!!filter_exprs)
-        # Keep the rest
-        remaining_data <- self$standard_data %>%
-          filter(magrittr::not(!!!filter_exprs))
-      } else {
-        filter_status <- ""
-        filtered_data <- self$standard_data
-        remaining_data <- NULL
-      }
-      
-      # Deal with outeq and coeff
-      if (.col == "out"){
-        if(is.list(.coeff)){
-          n_coeff <- length(.coeff)
-        } else {
-          n_coeff <- 1
-          .coeff <- list(.coeff)
-          
-        }
-        kept_outeq <- unique(filtered_data$outeq)
-        
-        if (length(kept_outeq) > n_coeff && n_coeff == 1){
-          cli::cli_inform(c("i" = "The 1 set of noise coefficients will be applied to {length(kept_outeq)} outputs."))
-          .coeff <- rep(.coeff, length(kept_outeq))
-        } else if (length(kept_outeq) < n_coeff){
-          cli::cli_inform(c("i" = "For the {filter_status} data, the {length(kept_outeq)} {?output/outputs} will use the corresponding sets of coefficients."))
-          .coeff <- .coeff[1:length(kept_outeq)]
-        } else {
-          cli::cli_abort(c("x" = "There number of output equations in your {filter_status} data is {length(kept_outeq)}. You specifed {n_coeff} {?set/sets} of coefficents.",
-                          "i" = "Specify the same number of coefficients as the number of output equations, in list form. E.g., .coeff = list(c(0.1, 0.1), c(0.05, 0.08, 0.001))."))
-          
-        }
-      }
-      
-      
-      # Get the target
-      target_col <- filtered_data %>% select(all_of(.col))
-      
-      
-      # Remove temp row index
-      self$standard_data <- self$standard_data %>% select(-index_)
-      
-      # Add noise
-      new_target <- data.frame(1:nrow(target_col))
-      names(new_target) <- target
-      if(mode == "add"){
-        for(i in 1:nrow(target_col)){
-          new_target[i,] <- ifelse(!is.na(target_col[i,]),
-                                  target_col[i,] + rnorm(1, mean = 0, 
-                                                          sd = coeff$c0 + 
-                                                            coeff$c1 * target_col[i,] +
-                                                            coeff$c2 * target_col[i,]^2 +
-                                                            coeff$c3 * target_col[i,]^3),
-                                  NA)
-          
-          
-        }                               
-      } else if(mode == "exp"){
-        for(i in 1:nrow(target_col)){
-          new_target[i,] <- ifelse(!is.na(target_col[i,]),
-                                  target_col[i,] * exp(rnorm(1, mean = 0, 
-                                                              sd = coeff$c0 + 
-                                                                coeff$c1 * target_col[i,] +
-                                                                coeff$c2 * target_col[i,]^2 +
-                                                                coeff$c3 * target_col[i,]^3)),
-                                  NA)
-          
-          
-        }        
-      } else {
-        cli::cli_abort("x" = "Mode must be 'add' or 'exp'.")
-      }
-      
-    } else {
-      cli::cli_warn("Create a validated PM_data object before adding noise.")
-    }
-    
-    #put back
-    filtered_data[[target]] <- new_target
-    
-    combined <- bind_rows(filtered_data, remaining_data) %>% arrange(index_) %>% select(-index_) 
-    # if(any(combined[[target]] < 0)){
-    #   cli::cli_warn("Negative values were generated. Check the noise coefficients.")
-    # }
-    # 
-    #Fix initial times to be 0 in case they were mutated
-    combined[!duplicated(combined$id), "time"] <- 0
-    
-    
-    self$standard_data <- combined
-  }
+  } # end addEvent
+
 ), # end public
 private = list(
   validate = function(dataObj, quiet, dt) {

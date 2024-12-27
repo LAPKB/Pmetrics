@@ -93,9 +93,9 @@ PM_valid <- R6::R6Class(
     initialize = function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
       # ensure data correct form
       if (!inherits(result, "PM_result")) {
-        stop(paste(
-          "Please supply a PM_result object to validate.\n",
-          "PM_result objects are created with", crayon::green("PM_load().")
+        cli::cli_abort(c(
+          "x" = "Please supply a PM_result object to validate.",
+          "i" = "PM_result objects are created by {.fn PM_load}."
         ))
       }
       if (missing(binCov)) {

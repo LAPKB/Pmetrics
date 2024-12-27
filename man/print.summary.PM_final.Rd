@@ -4,7 +4,7 @@
 \alias{print.summary.PM_final}
 \title{Print Summary of Parameter Values and Credibility Intervals}
 \usage{
-\method{print}{summary.PM_final}(x, digits = max(3, getOption("digits") - 3), ...)
+\method{print}{summary.PM_final}(x, digits = 3, ...)
 }
 \arguments{
 \item{x}{A summary.PM_final object made by \link{summary.PM_final}.}
