@@ -4,7 +4,7 @@
 \alias{PM_step}
 \title{Stepwise covariate-parameter regressions}
 \usage{
-PM_step(x, icen = "median", direction = "backward")
+PM_step(x, icen = "median", direction = "both")
 }
 \arguments{
 \item{x}{A PMcov object which is the \verb{$data} field of a \link{PM_cov} object}
@@ -12,7 +12,7 @@ PM_step(x, icen = "median", direction = "backward")
 \item{icen}{A character vector to summarize covariate values.  Default is "median", but can also be
 "mean".}
 
-\item{direction}{The direction for covariate elmination can be "backward" (default), "forward", or "both".}
+\item{direction}{The direction for covariate elmination can be "backward", "forward", or "both" (default).}
 }
 \value{
 A matrix with covariates in the rows and parameters in the columns.  Values for the matrix are the multi-variate P-values.

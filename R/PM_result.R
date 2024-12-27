@@ -21,6 +21,7 @@
 PM_result <- R6::R6Class(
   "PM_result",
   public <- list(
+    #' @field pop A [PM_pop] object
     pop = NULL,
     #' @field post A [PM_post] object
     post = NULL,
@@ -69,11 +70,7 @@ PM_result <- R6::R6Class(
           self[[x]] <- NULL
           if (!is.null(out[[x]])) { # if the object is loaded...
             if (!inherits(out[[x]], "R6")) { # older save
-              if (inherits(out[[x]], paste0("PM", x))) {
-                self[[x]] <- get(paste0("PM_", x))$new(out[[x]]) # ...make the R6 from old PMxxx
-              } else {
-                self[[x]] <- get(paste0("PM_", x))$new(out[[allData]]) # ...make the R6 from raw
-              }
+              cli::cli_abort(c("x" = "The object was saved in an older format. Please re-run the analysis."))
             } else {
               self[[x]] <- get(paste0("PM_", x))$new(out[[x]], quiet = TRUE) # was saved in R6 format, but remake to update if needed
             }
@@ -138,11 +135,11 @@ PM_result <- R6::R6Class(
     nca = function(...) {
       make_NCA(self, ...)
     },
-
-    report = function(template = getPMoptions("report_template"), outfile, show = TRUE) {
-      PM_report(self, template, outfile, show)
+    #' @description Re-generate the report
+    #' @param ... Parameters passed to [PM_report].
+    report = function(...) {
+      PM_report(...)
     },
-
     #' @description
     #' Calls [PM_sim]. Default is to use the `$final`, `$model`, and `$data` objects
     #' within the [PM_result]. It is common to supply a different `data` template.

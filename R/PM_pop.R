@@ -39,19 +39,13 @@
 PM_pop <- R6::R6Class(
   "PM_pop",
   public = list(
-    #' @field id Subject id
-    id = NULL,
-    #' @field time Time of predictions in decimal hours
-    time = NULL,
-    #' @field icen Prediction based on mean or median of Bayesian posterior parameter distribution
-    icen = NULL,
-    #' @field outeq Output equation number
-    outeq = NULL,
-    #' @field pred Predicted output for each outeq
-    pred = NULL,
-    #' @field block Observation blocks within subjects as defined by *EVID=4* dosing events
-    block = NULL,
-    #' @field data A data frame combining all the above fields as its columns
+    #' @field data A data frame with the following columns:
+    #' * **id** Subject id
+    #' * **time** Time of predictions in decimal hours
+    #' * **icen** Prediction based on mean or median of Bayesian posterior parameter distribution
+    #' * **outeq** Output equation number
+    #' * **pred** Predicted output for each outeq
+    #' * **block** Observation blocks within subjects as defined by *EVID=4* dosing events
     data = NULL,
     #' @description
     #' Create new object populated with population predicted data at
@@ -62,17 +56,7 @@ PM_pop <- R6::R6Class(
     #' @param PMdata include `r template("PMdata")`. 
     #' @param ... Not currently used.
     initialize = function(PMdata = NULL, ...) {
-      pop <- private$make(PMdata)
-      self$data <- pop
-      if (length(pop) > 1) { # all the objects were made
-        self$data <- pop
-        self$id <- pop$id
-        self$time <- pop$time
-        self$icen <- pop$icen
-        self$outeq <- pop$outeq
-        self$pred <- pop$pred
-        self$block <- pop$block
-      }
+      self$data <- private$make(PMdata)
     },
     #' @description
     #' Plot method
@@ -109,10 +93,14 @@ PM_pop <- R6::R6Class(
     make = function(data) {
       if (file.exists("op.csv")) {
         raw <- readr::read_csv(file = "op.csv", show_col_types = FALSE)
+      } else if (inherits(data, "PM_pop")){ #file not there, and already PM_pop
+        class(data$data) <- c("PM_pop_data", "data.frame")
+        return(data$data)
       } else {
-        cli::cli_abort(c("x" = "{.file {getwd()}/op.csv} does not exist."))
+        cli::cli_warn(c("!" = "Unable to generate pop pred information.",
+                        "i" = "Result does not have valid {.code PM_pop} object, and {.file {getwd()}/op.csv} does not exist."))
+        return(NULL)
       }
-      
       
       if (is.null(raw)) {
         return(NA)
@@ -126,7 +114,6 @@ PM_pop <- R6::R6Class(
           icen == "pop_median" ~ "median",
           icen == "pop_mean" ~ "mean"
         )) %>%
-        # Hardcoded for now
         mutate(block = block + 1) %>%
         mutate(outeq = outeq + 1) %>%
         relocate(id, time, icen, outeq, pred, block)
@@ -466,6 +453,7 @@ plot.PM_pop <- function(x,
 summary.PM_pop <- function(object, digits = max(3, getOption("digits") - 3),
                            icen = "median",
                            outeq = 1, ...) {
+  
   sumWrk <- function(data) {
     sumstat <- matrix(NA, nrow = 7, ncol = 2, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Pred")))
     # min

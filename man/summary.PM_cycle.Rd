@@ -4,7 +4,7 @@
 \alias{summary.PM_cycle}
 \title{Summarize Final Cycle Statistics}
 \usage{
-\method{summary}{PM_cycle}(object, cycle, digits = 3, ...)
+\method{summary}{PM_cycle}(object, cycle = NULL, digits = 3, ...)
 }
 \arguments{
 \item{object}{A \link{PM_cycle} object}

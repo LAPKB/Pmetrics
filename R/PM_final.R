@@ -40,52 +40,150 @@
 PM_final <- R6::R6Class(
   "PM_final",
   public = list(
+    #' @field data A list with the following elements, which can also be extracted by name.
+    #' * **popPoints** (NPAG only) Data frame of the final cycle joint population density of grid points
+    #' with column names equal to the name of each random parameter plus *prob* for the
+    #' associated probability of that point
+    #' * **popMean** The final cycle mean for each random parameter distribution
+    #' * **popSD** The final cycle standard deviation for each random parameter distribution
+    #' * **popCV** The final cycle coefficient of variation (SD/Mean) for each random parameter distribution
+    #' * **popVar** The final cycle variance for each random parameter distribution
+    #' * **popCov** The final cycle random parameter covariance matrix
+    #' * **popCor** The final cycle random parameter correlation matrix
+    #' * **popMedian** The final cycle median values for each random parameter,
+    #' i.e. those that have unknown mean and unknown variance, both of which are
+    #' fitted during the run
+    #' * **popRanFix** The final cycle median values for each parameter that is
+    #' random but fixed to be the same for all subjects, i.e. unknown mean, zero
+    #' variance, with only mean fitted in the run
+    #' * **postPoints** (NPAG only) Data frame of posterior population points for each of the first 100 subject,
+    #' with columns id, point, parameters and probability.  The first column is the subject, the second column has the population
+    #' point number, followed by the values for the parameters in that point and the probability.
+    #' * **postMean** A *nsub* x *npar* data frame containing
+    #' the means of the posterior distributions for each parameter.
+    #' * **postSD** A *nsub* x *npar* data frame containing
+    #' the SDs of the posterior distributions for each parameter.
+    #' * **postVar** A *nsub* x *npar* data frame containing
+    #' the variances of the posterior distributions for each parameter.
+    #' * **postCov** NPAG only: An list of length *nsub*, each element with an *npar* x *npar* data frame
+    #' that contains the posterior parameter value covariances for that subject.
+    #' * **postCor** NPAG only: An list of length *nsub*, each element with an *npar* x *npar* data frame
+    #' that contains the posterior parameter value correlations for that subject.
+    #' * **postMed** A *nsub* x *npar* data frame containing
+    #' the medians of the posterior distributions for each parameter.
+    #' * **shrinkage** A data frame with the shrinkage for each parameter.
+    #' * **gridpts** (NPAG only) Initial number of support points
+    #' * **nsub** Number of subjects
+    #' * **ab** Matrix of boundaries for random parameter values
+    #' 
+    data = NULL,
+    #' @description
+    #' Create new object populated with final cycle information
+    #' @details
+    #' Creation of new `PM_final` object is automatic and not generally necessary
+    #' for the user to do.
+    #' @param PMdata include `r template("PMdata")`. 
+    #' @param ... Not currently used.
+    initialize = function(PMdata = NULL, ...) {
+      self$data <- private$make(PMdata)
+      class(self) <- c(c("NPAG", "IT2B")[1 + as.numeric(is.null(self$popPoints))], class(self))
+    },
+    #' @description
+    #' Plot method
+    #' @details
+    #' See [plot.PM_final].
+    #' @param ... Arguments passed to [plot.PM_final]
+    plot = function(...) {
+      plot.PM_final(self, ...)
+    },
+    #' @description
+    #' Summary method
+    #' @details
+    #' See [summary.PM_final].
+    #' @param ... Arguments passed to [summary.PM_final]
+    summary = function(...) {
+      summary.PM_final(self, ...)
+    }
+  ), # end public
+  active = list(
     #' @field popPoints (NPAG only) Data frame of the final cycle joint population density of grid points
     #'  with column names equal to the name of each random parameter plus *prob* for the
     #'  associated probability of that point
-    popPoints = NULL,
+    popPoints = function(){
+      self$data$popPoints
+    },
     #' @field popMean The final cycle mean for each random parameter distribution
-    popMean = NULL,
+    popMean = function(){
+      self$data$popMean
+    },
     #' @field popSD The final cycle standard deviation for each random parameter distribution
-    popSD = NULL,
+    popSD = function(){
+      self$data$popSD
+    },
     #' @field popCV The final cycle coefficient of variation (SD/Mean) for each random parameter distribution
-    popCV = NULL,
+    popCV = function(){
+      self$data$popCV
+    },
     #' @field popVar The final cycle variance for each random parameter distribution
-    popVar = NULL,
+    popVar = function(){
+      self$data$popVar
+    },
     #' @field popCov The final cycle random parameter covariance matrix
-    popCov = NULL,
+    popCov = function(){
+      self$data$popCov
+    },
     #' @field popCor The final cycle random parameter correlation matrix
-    popCor = NULL,
+    popCor = function(){
+      self$data$popCor
+    },
     #' @field popMedian The final cycle median values for each random parameter,
     #' i.e. those that have unknown mean and unknown variance, both of which are
     #' fitted during the run
-    popMedian = NULL,
+    popMedian = function(){
+      self$data$popMedian
+    },
     #' @field popRanFix The final cycle median values for each parameter that is
     #' random but fixed to be the same for all subjects, i.e. unknown mean, zero
     #' variance, with only mean fitted in the run
-    popRanFix = NULL,
+    popRanFix = function(){
+      self$data$popRanFix
+    },
     #' @field postPoints (NPAG only) Data frame of posterior population points for each of the first 100 subject,
     #' with columns id, point, parameters and probability.  The first column is the subject, the second column has the population
     #' point number, followed by the values for the parameters in that point and the probability.
-    postPoints = NULL,
+    postPoints = function(){
+      self$data$postPoints
+    },
     #' @field postMean A *nsub* x *npar* data frame containing
     #' the means of the posterior distributions for each parameter.
-    postMean = NULL,
+    postMean = function(){
+      self$data$postMean
+    },
     #' @field postSD A *nsub* x *npar* data frame containing
     #' the SDs of the posterior distributions for each parameter.
-    postSD = NULL,
+    postSD = function(){
+      self$data$postSD
+    },
     #' @field postVar A *nsub* x *npar* data frame containing
     #' the variances of the posterior distributions for each parameter.
-    postVar = NULL,
+    postVar = function(){
+      self$data$postVar
+    },
     #' @field postCov NPAG only: An list of length *nsub*, each element with an *npar* x *npar* data frame
     #' that contains the posterior parameter value covariances for that subject.
-    postCov = NULL,
+    postCov = function(){
+      self$data$postCov
+    },
     #' @field postCor NPAG only: An list of length *nsub*, each element with an *npar* x *npar* data frame
     #' that contains the posterior parameter value correlations for that subject.
-    postCor = NULL,
+    postCor = function(){
+      self$data$postCor
+    },
     #' @field postMed A *nsub* x *npar* data frame containing
     #' the medians of the posterior distributions for each parameter.*
-    postMed = NULL,
+    postMed = function(){
+      
+    },
     #' @field shrinkage A data frame with the shrinkage for each parameter.
     #' The total population variance for a parameter
     #' is comprised of variance(EBE) plus average variance(EBD),
@@ -123,82 +221,55 @@ PM_final <- R6::R6Class(
     #' In contrast, badly undersampled subjects can result in only one support point.
     #' There is no formal criterion for this statistic, but it can be used in combination
     #' with shrinkage to assess the information content of the data.
-    shrinkage = NULL,
+    shrinkage = function(){
+      self$data$shrinkage
+    },
     #' @field gridpts (NPAG only) Initial number of support points
-    gridpts = NULL,
+    gridpts = function(){
+      self$data$gridpts
+    },
     #' @field nsub Number of subjects
-    nsub = NULL,
+    nsub = function(){
+      self$data$nsub
+    },
     #' @field ab Matrix of boundaries for random parameter values
-    ab = NULL,
-    #' @field data A data frame combining all the above fields as its columns
-    data = NULL,
-    #' @description
-    #' Create new object populated with final cycle information
-    #' @details
-    #' Creation of new `PM_final` object is automatic and not generally necessary
-    #' for the user to do.
-    #' @param PMdata include `r template("PMdata")`. 
-    #' @param ... Not currently used.
-    initialize = function(PMdata = NULL, ...) {
-      final <- private$make(PMdata)
-      self$data <- final
-      if (length(final) > 1) { # all the objects were made
-        self$popPoints <- final$popPoints
-        self$popMean <- final$popMean
-        self$popSD <- final$popSD
-        self$popCV <- final$popCV
-        self$popVar <- final$popVar
-        self$popCov <- final$popCov
-        self$popCor <- final$popCor
-        self$popMedian <- final$popMedian
-        self$popRanFix <- final$popRanFix
-        self$postPoints <- final$postPoints
-        self$postMean <- final$postMean
-        self$postSD <- final$postSD
-        self$postVar <- final$postVar
-        self$postCov <- final$postCov
-        self$postCor <- final$postCor
-        self$postMed <- final$postMed
-        self$shrinkage <- final$shrinkage
-        self$gridpts <- final$gridpts
-        self$nsub <- final$nsub
-        self$ab <- final$ab
-      }
-      class(self) <- c(c("NPAG", "IT2B")[1 + as.numeric(is.null(self$popPoints))], class(self))
-    },
-    #' @description
-    #' Plot method
-    #' @details
-    #' See [plot.PM_final].
-    #' @param ... Arguments passed to [plot.PM_final]
-    plot = function(...) {
-      plot.PM_final(self, ...)
-    },
-    #' @description
-    #' Summary method
-    #' @details
-    #' See [summary.PM_final].
-    #' @param ... Arguments passed to [summary.PM_final]
-    summary = function(...) {
-      summary.PM_final(self, ...)
+    ab = function(){
+      self$data$ab
     }
-  ), # end public
+  ), # end active
   private = list(
     make = function(data) {
         if (file.exists("theta.csv")) {
           theta <- readr::read_csv(file = "theta.csv", show_col_types = FALSE)
-        } else {
-          cli::cli_abort(c("x" = "{.file {getwd()}/theta.csv} does not exist."))
+        } else if(inherits(data, "PM_final")){ #file not there, and already PM_final
+          class(data$data) <- c("PM_final_data", "list")
+          return(data$data)
+        } else{
+          cli::cli_warn(c("!" = "Unable to generate final cycle information.",
+                          "i" = "Result does not have valid {.code PM_final} object, and {.file {getwd()}/theta.csv} does not exist."))
+          return(NULL)
         }
-        if (file.exists("obs.csv")) {
+      
+        if (file.exists("posterior.csv")) {
           post <- readr::read_csv(file = "posterior.csv", show_col_types = FALSE)
-        } else {
-          cli::cli_abort(c("x" = "{.file {getwd()}/posterior.csv} does not exist."))
+        } else if(inherits(data, "PM_final")){ #file not there, and already PM_final
+          class(data$data) <- c("PM_final_data", "data.frame")
+          return(data$data)
+        } else{
+          cli::cli_warn(c("!" = "Unable to generate final cycle information.",
+                          "i" = "Result does not have valid {.code PM_final} object, and {.file {getwd()}/posterior.csv} does not exist."))
+          return(NULL)
         }
+      
         if (file.exists("settings.json")) {
           config <- jsonlite::fromJSON("settings.json")
-        } else {
-          cli::cli_abort(c("x" = "{.file {getwd()}/settings.json} does not exist."))
+        } else if(inherits(data, "PM_final")){ #file not there, and already PM_final
+          class(data$data) <- c("PM_final_data", "data.frame")
+          return(data$data)
+        } else{
+          cli::cli_warn(c("!" = "Unable to generate final cycle information.",
+                          "i" = "Result does not have valid {.code PM_final} object, and {.file {getwd()}/settings.json} does not exist."))
+          return(NULL)
         }
 
         par_names <- names(theta)[names(theta) != "prob"]
@@ -223,7 +294,7 @@ PM_final <- R6::R6Class(
           cor()
 
         popMedian <- theta %>%
-          summarise(across(-prob, \(x) median(x)))
+          summarise(across(-prob, \(x) weighted_median(x, prob))) #in PMutilities
 
         # Posterior
 
@@ -289,10 +360,10 @@ PM_final <- R6::R6Class(
           postMed = postMed,
           postCov = postCov,
           postCor = postCor,
+          shrinkage = sh,
           gridpts = gridpts,
           nsub = length(unique(post$id)),
-          ab = ab,
-          shrinkage = sh
+          ab = ab
         )
         class(final) <- c("PM_final_data", "NPAG", "list")
 
@@ -901,7 +972,7 @@ plot.PM_final <- function(x,
 #' summary(NPex$final) # alternate
 #' @export
 
-summary.PM_final <- function(object, lower = 0.025, upper = 0.975, ...) {
+summary.PM_final <- function(object, lower = 0.025, upper = 0.975, file = NULL, ...) {
   if (inherits(object, "PM_final")) { # user called summary(PM_final)
     object <- object$data
   }
@@ -934,7 +1005,7 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, ...) {
 
     mcsim <- function(x, prob) {
       set.seed(17)
-      sim <- apply(matrix(sample(x, replace = T, 10^3 * length(x), prob = prob), nrow = 10^3), 1, medMAD)
+      sim <- apply(matrix(sample(x, replace = TRUE, size = 10^3 * length(x), prob = prob), nrow = 10^3), 1, medMAD)
       ciMed <- quantile(sapply(sim, function(x) x[[1]]), c(lower, 0.5, upper))
       ciMAD <- quantile(sapply(sim, function(x) x[[2]]), c(lower, 0.5, upper))
       return(list(ciMed, ciMAD))
@@ -945,7 +1016,7 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, ...) {
       popPoints <- object
     }
 
-    nvar <- ncol(popPoints) - 1
+    nvar <- ncol(popPoints) - 1 # subtract prob
 
     # trick it if there is only one point
     if (nrow(popPoints) == 1) {
@@ -953,23 +1024,18 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, ...) {
       popPoints$prob <- c(0.5, 0.5)
     }
 
-    sumstat <- apply(popPoints[, 1:nvar], 2, function(x) mcsim(x, popPoints[, nvar + 1]))
-
-
-    sumstat2 <- sumstat %>%
+    sumstat <- apply(popPoints[, 1:nvar], 2, function(x) mcsim(x, popPoints$prob)) %>%
       dplyr::as_tibble() %>%
-      unnest(cols = names(sumstat))
-    sumstat2$percentile <- rep(c(lower, 0.5, upper), 2)
-    sumstat2$parameter <- rep(c("WtMed", "MAWD"), each = 3)
+      unnest(cols = everything()) %>%
+      mutate(percentile = rep(c(lower, 0.5, upper), 2)) %>%
+      mutate(parameter = rep(c("WtMed", "MAWD"), each = 3))
+    
+    attr(sumstat,"CI") <- c(lower,upper)
+    attr(sumstat, "file") <- file
 
 
-    # sumstat2 <- melt(sumstat)[,c(1,3)]
-    # names(sumstat2) <- c("value","par")
-    # sumstat2$type <- rep(c("WtMed","MAWD"),each=3,times=nvar)
-    # sumstat2$quantile <- rep(c(lower,0.5,upper),times=2*nvar)
-    # sumstat2 <- sumstat2[,c("par","type","quantile","value")]
-    class(sumstat2) <- c("summary.PM_final", "tbl_df", "tbl", "data.frame")
-    return(sumstat2)
+    class(sumstat) <- c("summary.PM_final", "tbl_df", "tbl", "data.frame")
+    return(sumstat)
   }
 }
 
@@ -998,22 +1064,47 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, ...) {
 #' NPex$final$summary
 #' @export
 
-print.summary.PM_final <- function(x, digits = max(3, getOption("digits") - 3), ...) {
-  x <- data.frame(x) # convert from tibble
-  cat(paste("\nWeighted Medians (", 100 * (max(x$percentile) - min(x$percentile)),
-    "% credibility interval)\n",
-    sep = ""
-  ))
-  for (i in 1:(ncol(x) - 2)) {
-    cat(paste(colnames(x[i]), ": ", round(x[2, i], digits), " (", round(x[1, i], digits), " - ", round(x[3, i], digits), ")\n", sep = ""))
-  }
-
-  cat(paste("\nMedian Absolute Weighed Differences (dispersion measure) (", 100 * (max(x$percentile) - min(x$percentile)),
-    "% credibility interval)\n",
-    sep = ""
-  ))
-
-  for (i in 1:(ncol(x) - 2)) {
-    cat(paste(colnames(x[i]), ": ", round(x[5, i], digits), " (", round(x[4, i], digits), " - ", round(x[6, i], digits), ")\n", sep = ""))
-  }
+print.summary.PM_final <- function(x, 
+                                   digits = 3,
+                                   ...) {
+  
+  
+  keys <- c("lo", "med", "up")
+  values <- c(attr(x,"CI")[1], 0.5, attr(x,"CI")[2])
+  ci <- 100*(values[3] - values[1])
+  
+  df <- x %>% 
+    mutate(percentile = dplyr::case_when(
+      percentile == values[1] ~ "lo",
+      percentile == 0.5 ~ "med",
+      percentile == values[3] ~ "up"
+      
+    )) %>%
+    tidyr::pivot_longer(cols = c(-percentile, -parameter)) %>%
+    tidyr::pivot_wider(id_cols = c(name), values_from = value, names_from = c(parameter,percentile)) %>%
+    dplyr::mutate(across(-name, ~round(.x, digits = digits))) 
+  
+  ret <- tibble::tibble(
+    Parameter = df$name,
+    Median = glue::glue("{df$WtMed_med} ({df$WtMed_lo} - {df$WtMed_up})"),
+    MAWD = glue::glue("{df$MAWD_med} ({df$MAWD_lo} - {df$MAWD_up})")
+  ) 
+  
+  flextable::set_flextable_defaults(font.family = "Arial")
+  ft <- flextable::flextable(ret) %>% 
+    flextable::set_header_labels(values = list(Median = glue::glue("Median ({ci}% CI)"), MAWD = glue::glue("MAWD ({ci}% CI)"))) %>%
+    flextable::set_table_properties(width = .5) %>%
+    flextable::footnote(i = 1, j = 3, 
+             value = as_paragraph("MAWD: Mean Absolute Weighted Deviation, a nonparametric measure of dispersion similar to variance"),
+             ref_symbols = "1",
+             part = "header") %>%
+    flextable::theme_zebra() %>%
+    flextable::bold(bold = FALSE, part = "footer") %>%
+    flextable::align_text_col(align = "center", header = TRUE, footer = FALSE) %>%
+    flextable::autofit()
+  
+  print(ft)
+  save_flextable(ft) #will only save if file specified in summary, function in PMutilities
+  
+  
 }

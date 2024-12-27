@@ -4,15 +4,14 @@
 #'
 #' Generates a report from a specified Rmd template
 #'
-#' @param x A `PM_result` object obtained from \code{PM_load(x)}, where `x` is the run number.
+#' @param x A [PM_result] object obtained from [PM_load].
 #' @param template If missing, the default Pmetrics report template as specified in [getPMoptions]
-#' is used. Otherwise can be "plotly", "ggplot", or "none".
+#' is used. It can be changed with [setPMoptions]. Otherwise, the value for `template` 
+#' can be "plotly", "ggplot", or "none".
 #' @param outfile The location of the generated report, defaults to a temporary file.
 #' @param show Controls if the report should be automatically opened on generation, defaults to `TRUE`
-#' Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
-#' in \code{\link{NPrun}}.
 #' @return Generates an HTML-report in the current working directory.
-#' @author Markus Hovd and Julian Otalvaro
+#' @author Markus Hovd, Julian Otalvaro, and Michael Neely
 #' @seealso [PM_load]
 #' @export
 
