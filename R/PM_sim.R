@@ -1213,7 +1213,7 @@ PM_sim <- R6::R6Class(
           posdef <- eigen(signif(pop_cov, 15)) # last check
           if (any(posdef$values < 0)) {
             cli::cli_abort(c("x" = "Unable to fix covariance."))
-          }
+        
         }
         if (ans == 3) {
           pop_cov2 <- diag(0, nrow(pop_cov))
