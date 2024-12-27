@@ -6,7 +6,8 @@
 \usage{
 \method{summary}{PM_sim}(
   object,
-  at = 1,
+  include,
+  exclude,
   field = "obs",
   group = NULL,
   statistics = c("mean", "sd", "median", "min", "max"),
@@ -16,8 +17,6 @@
 }
 \arguments{
 \item{object}{The simulation object to summarize}
-
-\item{at}{If \code{object} is a \code{PM_simlist}, which simulation to use. Default is 1.}
 
 \item{field}{Quoted character value, one of
 \itemize{
@@ -36,6 +35,8 @@ can be any subset of these and can also include specific quantiles, e.g. \code{c
 \item{digits}{Integer, used for number of digits to print.}
 
 \item{...}{Not used.}
+
+\item{at}{If \code{object} is a \code{PM_simlist}, which simulation to use. Default is 1.}
 }
 \value{
 If \code{by} is omitted, a data frame with rows for each data element except ID,

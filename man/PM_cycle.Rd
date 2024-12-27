@@ -37,12 +37,24 @@ Michael Neely, Julian Otalvaro
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
+\item{\code{data}}{A list with the following elements, which can also be extracted by name.
+e.e. \code{run1$cycle$objective}, which is equivalent to \code{run1$cycle$data$objective}.
+\strong{names} Vector of names of the random parameters
+\strong{objective} A tibble of -2*Log-likelihood, AIC and BIC at each cycle
+\strong{gamlam} A tibble of cycle number and gamma or lambda at each cycle for each output equation
+\strong{mean} A tibble of cycle number and the mean of each random parameter at each cycle, normalized to initial mean
+\strong{median} A tibble of cycle number and the median of each random parameter at each cycle, normalized to initial median
+\strong{sd} A tibble of cycle number and the standard deviation of each random parameter at each cycle, normalized to initial standard deviation
+\strong{converged} Boolean value if convergence occurred}
+}
+\if{html}{\out{</div>}}
+}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
 \item{\code{names}}{Vector of names of the random parameters}
 
-\item{\code{cycnum}}{Vector cycle numbers, which may start at numbers greater
-than 1 if a non-uniform prior was specified for the run (NPAG only)}
-
-\item{\code{ll}}{Vector of -2*Log-likelihood at each cycle}
+\item{\code{objective}}{A tibble of -2*Log-likelihood, AIC and BIC at each cycle}
 
 \item{\code{gamlam}}{A tibble of cycle number and gamma or lambda at each cycle for each output equation}
 
@@ -54,12 +66,6 @@ parameter at each cycle,  normalized to initial median}
 
 \item{\code{sd}}{A tibble of cycle number and the standard deviation of each random parameter
 at each cycle,  normalized to initial standard deviation}
-
-\item{\code{aic}}{A vector of Akaike Information Criterion at each cycle}
-
-\item{\code{bic}}{A vector of Bayesian (Schwartz) Information Criterion at each cycle}
-
-\item{\code{data}}{A data frame combining all the above fields as its columns}
 }
 \if{html}{\out{</div>}}
 }
@@ -84,7 +90,8 @@ Create new object populated with  cycle information
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{PMdata}}{If backend is Fortran, the parsed output from \link{NPparse} or \link{ITparse}. Not needed when the backend is Rust.}
+\item{\code{PMdata}}{include Future development.
+.}
 
 \item{\code{...}}{Not currently used.}
 }

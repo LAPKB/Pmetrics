@@ -39,19 +39,15 @@ Michael Neely, Julian Otalvaro
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{id}}{Subject id}
-
-\item{\code{time}}{Time of predictions in decimal hours}
-
-\item{\code{icen}}{Prediction based on mean or median of Bayesian posterior parameter distribution}
-
-\item{\code{outeq}}{Output equation number}
-
-\item{\code{pred}}{Predicted output for each outeq}
-
-\item{\code{block}}{Observation blocks within subjects as defined by \emph{EVID=4} dosing events}
-
-\item{\code{data}}{A data frame combining all the above fields as its columns}
+\item{\code{data}}{A data frame with the following columns:
+\itemize{
+\item \strong{id} Subject id
+\item \strong{time} Time of predictions in decimal hours
+\item \strong{icen} Prediction based on mean or median of Bayesian posterior parameter distribution
+\item \strong{outeq} Output equation number
+\item \strong{pred} Predicted output for each outeq
+\item \strong{block} Observation blocks within subjects as defined by \emph{EVID=4} dosing events
+}}
 }
 \if{html}{\out{</div>}}
 }
@@ -78,7 +74,8 @@ regular, frequent intervals
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{PMdata}}{If backend is Fortran, the parsed output from \link{NPparse} or \link{ITparse}. Not needed when the backend is Rust.}
+\item{\code{PMdata}}{include Future development.
+.}
 
 \item{\code{run}}{If backend is Fortran, run number to find PRTB0001 file with
 posterior predictions. If missing, will look for this file in working

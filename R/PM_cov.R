@@ -94,36 +94,46 @@ PM_cov <- R6::R6Class(
   ), # end public
   private = list(
     make = function(data) {
-      final <- data$final
-      data <- data$data
       
-      
-      if (is.null(data)) {
-        cli::cli_abort(c("x" = "Missing subject data; unable to create {.cls PM_cov} object"))
+      if (file.exists("posterior.csv")) {
+        posts <- readr::read_csv(file = "posterior.csv", show_col_types = FALSE)
+      } else if(inherits(data, "PM_cov")){ #file not there, and already PM_cov
+        class(data$data) <- c("PM_cov_data", "data.frame")
+        return(data$data)
+      } else{
+        cli::cli_warn(c("!" = "Unable to generate covariate-posterior information.",
+                        "i" = "Result does not have valid {.code PM_cov} object, and {.file {getwd()}/posterior.csv} does not exist."))
+        return(NULL)
       }
-      if (is.null(final)) {
-        cli::cli_abort(c("x" = "Missing parameter values; unable to create {.cls PM_cov} object"))
+      
+      if (file.exists("covs.csv")) {
+        covs <- readr::read_csv(file = "covs.csv", show_col_types = FALSE)
+      } else{
+        cli::cli_warn(c("!" = "Unable to generate covariate-posterior information.",
+                         "i" = "Result does not have valid {.code PM_cov} object, and {.file {getwd()}/covs.csv} does not exist."))
+        return(NULL)
       }
       
+      covs <- covs %>% mutate(block = block + 1)
       
-      data1 <- data$standard_data %>%
-        filter(!is.na(dose)) %>%
-        # select(id, time, !!getCov(.)$covnames) %>% # in PMutilities
-        select(-c(evid, dur, dose, addl, ii, input, out, outeq, c0, c1, c2, c3)) %>% 
-        tidyr::fill(-id, -time) %>%
-        dplyr::left_join(final$post_mean, by = "id") %>%
+      
+      post_mean <- posts %>%
+        group_by(id) %>%
+        summarise(across(-c(point, prob), \(x) weighted.mean(x = x, w = prob))) %>%
         mutate(icen = "mean")
       
-      data2 <- data$standard_data %>%
-        filter(!is.na(dose)) %>%
-        # select(id, time, !!getCov(.)$covnames) %>% # in PMutilities
-        select(-c(evid, dur, dose, addl, ii, input, out, outeq, c0, c1, c2, c3)) %>% 
-        tidyr::fill(-id, -time) %>%
-        dplyr::left_join(final$post_median, by = "id") %>%
+      post_med <- posts %>%
+        group_by(id) %>%
+        reframe(across(-c(point, prob), \(x) weighted_median(x, prob))) %>%
         mutate(icen = "median")
       
-      res <- bind_rows(data1, data2)
+      
+      
+      res <- bind_rows(dplyr::left_join(covs, post_mean, by = "id"),
+                       dplyr::left_join(covs, post_med, by = "id")) 
+      
       class(res) <- c("PM_cov_data", "data.frame")
+      attr(res, "ncov") <- ncol(covs) - 3 # subtract id, time, block
       
       return(res)
       
@@ -237,7 +247,7 @@ plot.PM_cov <- function(x,
                         marker = TRUE,
                         colors,
                         icen = "median",
-                        include, exclude,
+                        include = NULL, exclude = NULL,
                         legend,
                         log = FALSE,
                         grid = TRUE,
@@ -245,13 +255,14 @@ plot.PM_cov <- function(x,
                         title,
                         stats = TRUE,
                         xlim, ylim, ...) {
-  if (inherits(x, "PM_cov")) {
+ 
+   if (inherits(x, "PM_cov")) {
     x <- x$data
   }
   
   # include/exclude
-  if (missing(include)) include <- unique(x$id)
-  if (missing(exclude)) exclude <- NA
+  # if (missing(include)) include <- unique(x$id)
+  # if (missing(exclude)) exclude <- NA
   
   if (missing(formula)) {
     choices <- paste(x %>% select(!c(id, icen)) %>% names(), collapse = ", ")
@@ -264,8 +275,8 @@ plot.PM_cov <- function(x,
   
   if (!timearg) { # if time is not part of the formula, collapse to summary
     x <- summary.PM_cov(x, icen = icen) %>%
-      includeExclude(include, exclude) %>%
-      dplyr::arrange(id, time)
+      includeExclude(include, exclude) 
+    
   } else { # time is part of formula, so select icen but don't summarize
     x <- x %>%
       filter(icen == !!icen) %>%
@@ -528,22 +539,17 @@ summary.PM_cov <- function(object, icen = "median", ...) {
   }
   
   if ("icen" %in% names(object)) {
-    data <- object[object$icen == icen, ]
-    data <- subset(data, select = -icen)
+    data <- object %>% filter(icen == !!icen) %>% select(-icen) 
   } else {
     data <- object
   }
-  # get order of ID in case non-numeric
-  allID <- unique(data$id)
-  orderID <- rank(allID)
-  sumCov <- aggregate(data[, -1], list(data$id), match.fun(icen), na.rm = T)
-  # reorder in ID order
-  sumCov <- sumCov[orderID, ]
-  # replace the first grouping column with ID again
-  sumCov[, 1] <- allID
-  names(sumCov)[1] <- "id"
-  # set the attribute to be the type of summary
-  attr(sumCov, "icen") <- icen
+  
+  
+  sumCov <- data %>%
+    group_by(id) %>%
+    summarise(across(c(-time,-block), ~ purrr::exec(icen, x = .x, na.rm = TRUE) )) %>%
+    mutate(icen = !!icen)
+  
   return(sumCov)
 }
 
@@ -565,14 +571,19 @@ summary.PM_cov <- function(object, icen = "median", ...) {
 #' @param x A PMcov object which is the `$data` field of a [PM_cov] object
 #' @param icen A character vector to summarize covariate values.  Default is "median", but can also be
 #' "mean".
-#' @param direction The direction for covariate elmination can be "backward" (default), "forward", or "both".
+#' @param direction The direction for covariate elmination can be "backward", "forward", or "both" (default).
 #' @return A matrix with covariates in the rows and parameters in the columns.  Values for the matrix are the multi-variate P-values.
 #' A value of `NA` indicates that the variable was not retained in the final model.
 #' @author Michael Neely
 #' @seealso [stats::step()]
 #' @export
 
-PM_step <- function(x, icen = "median", direction = "backward") {
+PM_step <- function(x, icen = "median", direction = "both") {
+  
+  if (inherits(x, "PM_cov")) {
+    x <- x$data
+  }
+  
   ncov <- attr(x, "ncov")
   if (is.null(ncov)) {
     ncov <- as.numeric(readline("Your covariate object is from a previous version of Pmetrics.  Enter the number of covariates: "))
@@ -584,16 +595,18 @@ PM_step <- function(x, icen = "median", direction = "backward") {
     cli::cli_inform("Please update your PMcov object with {.fn PM_cov$new}.")
     x$icen <- icen
   }
-  nvar <- ncol(x) - ncov - 3
-  # get start and end column numbers for covariates and par
-  covStart <- 3
-  covEnd <- 2 + ncov
-  parStart <- covEnd + 1
-  parEnd <- ncol(x) - 1 # leave out icen column
   
   # summarize cov object by icen
-  sumX <- summary(x, icen)
+  sumX <- summary.PM_cov(x, icen = icen)
   
+  nvar <- ncol(sumX) - ncov - 2 # subtract id, icen
+  # get start and end column numbers for covariates and par
+  covStart <- 2
+  covEnd <- 1 + ncov
+  parStart <- covEnd + 1
+  parEnd <- ncol(sumX) - 1 # leave out icen column
+  
+
   cov.cross <- data.frame(matrix(NA, ncol = nvar, nrow = ncov, dimnames = list(cov = names(sumX)[covStart:covEnd], par = names(sumX)[parStart:parEnd])))
   
   for (i in 1:ncol(cov.cross)) {
@@ -602,7 +615,7 @@ PM_step <- function(x, icen = "median", direction = "backward") {
     fo <- as.formula(paste(names(temp)[1], " ~ ", paste(names(temp)[-1], collapse = " + "), sep = ""))
     lm.temp <- eval(substitute(lm(fo, temp)))
     step.temp <- step(lm.temp, direction = direction, trace = 0)
-    p.val <- summary(step.temp)$coefficients[, 4]
+    p.val <- round(summary(step.temp)$coefficients[, 4], 3)
     cov.cross[, i] <- sapply(row.names(cov.cross), function(x) p.val[match(x, names(p.val))])
   }
   return(cov.cross)

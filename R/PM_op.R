@@ -127,14 +127,21 @@ PM_op <- R6::R6Class(
     make = function(data) {
         if (file.exists("op.csv")) {
           op_raw <- readr::read_csv(file = "op.csv", show_col_types = FALSE)
-        } else {
-          cli::cli_abort(c("x" = "{.file {getwd()}/op.csv} does not exist."))
+        } else if(inherits(data, "PM_op")){ #file not there, and already PM_op
+          class(data$data) <- c("PM_op_data", "data.frame")
+          return(data$data)
+        } else{
+          cli::cli_warn(c("!" = "Unable to generate obs-pred information.",
+                          "i" = "Result does not have valid {.code PM_op} object, and {.file {getwd()}/op.csv} does not exist."))
+          return(NULL)
         }
 
         if (file.exists("settings.json")) {
           config <- jsonlite::fromJSON("settings.json")
-        } else {
-          cli::cli_abort(c("x" = "{.file {getwd()}/settings.json} does not exist."))
+        } else{
+          cli::cli_warn(c("!" = "Unable to generate obs-pred information.",
+                          "i" = "Result does not have valid {.code PM_op} object, and {.file {getwd()}/settings.json} does not exist."))
+          return(NULL)
         }
 
         poly <- config$error$poly
