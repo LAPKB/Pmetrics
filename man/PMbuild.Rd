@@ -4,21 +4,13 @@
 \alias{PMbuild}
 \title{Build Pmetrics}
 \usage{
-PMbuild(autoyes = FALSE, rebuild = FALSE)
-}
-\arguments{
-\item{autoyes}{Automatically install without asking. Default is \code{FALSE}.}
-
-\item{rebuild}{Default is \code{FALSE}.}
+PMbuild()
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
-Compile Fortran or Rust source code for permanent Pmetrics modules.
-}
-\details{
-Choice of back end language specified as option in \link{setPMoptions}.
+Compile Rust source code used by Pmetrics.
 }
 \author{
-Michael Neely
+Michael Neely and Julian Otalvaro
 }
