@@ -40,19 +40,13 @@
 PM_post <- R6::R6Class(
   "PM_post",
   public = list(
-    #' @field id Subject id
-    id = NULL,
-    #' @field time Time of predictions in decimal hours
-    time = NULL,
-    #' @field icen Prediction based on mean or median of Bayesian posterior parameter distribution
-    icen = NULL,
-    #' @field outeq Output equation number
-    outeq = NULL,
-    #' @field pred Predicted output for each outeq
-    pred = NULL,
-    #' @field block Observation blocks within subjects as defined by *EVID=4* dosing events
-    block = NULL,
-    #' @field data A data frame combining all the above fields as its columns
+    #' @field data A data frame with the following columns:
+    #' * **id** Subject id
+    #' * **time** Time of predictions in decimal hours
+    #' * **icen** Prediction based on mean or median of Bayesian posterior parameter distribution
+    #' * **outeq** Output equation number
+    #' * **pred** Predicted output for each outeq
+    #' * **block** Observation blocks within subjects as defined by *EVID=4* dosing events
     data = NULL,
     #' @description
     #' Create new object populated with Bayesian posterior predicted data at
@@ -66,16 +60,7 @@ PM_post <- R6::R6Class(
     #' directory. Not needed when the backend is Rust.
     #' @param ... Not currently used.
     initialize = function(PMdata = NULL, run, ...) {
-      post <- private$make(PMdata, run)
-      self$data <- post
-      if (length(post) > 1) { # all the objects were made
-        self$id <- post$id
-        self$time <- post$time
-        self$icen <- post$icen
-        self$outeq <- post$outeq
-        self$pred <- post$pred
-        self$block <- post$block
-      }
+      self$data <- private$make(PMdata, run)
     },
     #' @description
     #' Plot method
@@ -112,10 +97,14 @@ PM_post <- R6::R6Class(
     make = function(data, run) {
       if (file.exists("pred.csv")) {
         raw <- readr::read_csv(file = "pred.csv", show_col_types = FALSE)
-      } else {
-        cli::cli_abort(c("x" = "{.file {getwd()}/pred.csv} does not exist."))
+      } else if(inherits(data, "PM_post")){ #file not there, and already PM_post
+        class(data$data) <- c("PM_post_data", "data.frame")
+        return(data$data)
+      } else{
+        cli::cli_warn(c("!" = "Unable to generate post pred information.",
+                        "i" = "Result does not have valid {.code PM_post} object, and {.file {getwd()}/pred.csv} does not exist."))
+        return(NULL)
       }
-      
       
       if (is.null(raw)) {
         return(NA)

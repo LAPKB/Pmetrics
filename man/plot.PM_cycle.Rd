@@ -93,7 +93,7 @@ the normalized median parameter values at each cycle.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
-Plot PM_cycle objects. These objects are created by \link{makeCycle} as part of a \link{PM_result} object
+Plot PM_cycle objects. These objects are created by as part of a \link{PM_result} object
 when \link{PM_load} is run.
 }
 \examples{

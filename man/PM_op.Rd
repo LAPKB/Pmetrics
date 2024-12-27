@@ -89,7 +89,8 @@ Create new object populated with observed vs. predicted data
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{PMdata}}{If backend is Fortran, the parsed output from \link{NPparse} or \link{ITparse}. Not needed when the backend is Rust.}
+\item{\code{PMdata}}{include Future development.
+.}
 
 \item{\code{...}}{Not currently used.}
 }

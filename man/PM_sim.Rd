@@ -69,34 +69,59 @@ Michael Neely
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{obs}}{Observations for each output as a data frame with columns
-\emph{id}, \emph{time}, \emph{out}, \emph{outeq}, or in the case of multiple regimens
-in the template data file, a list of such data frames}
+\item{\code{data}}{A list of class \emph{PM_sim} that contains the following elements.
+\itemize{
+\item \strong{obs} Observations for all simulated templates as a data frame with these columns:
+\itemize{
+\item \emph{id} Template ID, corresponding to the ID in the template data file
+\item \emph{nsim} The simulated profile number, from 1 to the value for \code{nsim}
+specified when the simulation was run.
+\item \emph{time} Time of the simulated observation.
+\item \emph{out} The simulated observation.
+\item \emph{outeq} The output equation number.
+}
+\item \strong{amt} Compartment amounts for each simulated template as a data frame with these columns:
+\itemize{
+\item \emph{id} As for \code{obs}.
+\item \emph{nsim} As for \code{obs}.
+\item \emph{time} As for \code{obs}.
+\item \emph{out} The simulated amount.
+\item \emph{comp} The compartment number that contains the \code{out} amount.
+}
+\item \strong{parValues}  A list of data frames with retained simulated parameter
+values after discarding any due to truncation limits. Each data frame has columns
+\emph{id} and the parameters for each simulated subject.
+\item \strong{totalSets} Number of all simulated parameter values needed to obtain the
+requested number of simulated sets within any \code{limits} specified.
+\item \strong{totalMeans} A list of vectors with the means of simulated parameter values
+for each subject in the template \code{data} file. If \code{usePost} is \code{FALSE}, which
+is typical, then each element in this list will be the same, since a single
+distribution for \code{poppar}, which may be multimodal and complex if \code{split} is \code{TRUE},
+is used for all templates in the \code{data} file.
+This can be useful to check against the original values in \code{poppar}, since the
+mean of the \code{parValues} may be different due to truncation.
+\item \strong{totalCov} Similar to \code{totalMeans}, a list of covariance matrices
+for simulated parameter values from each template. Again, every element
+of this list will be the same if \code{usePost} is \code{FALSE}, and \code{totalCov} can
+be useful as a check against the original values in \code{poppar}.
+}}
+}
+\if{html}{\out{</div>}}
+}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{obs}}{Same as \code{obs} element in the \code{data} field.}
 
-\item{\code{amt}}{Amounts in each compartment as a data frame with columns
-\emph{id}, \emph{time}, \emph{out}, \emph{comp}, or in the case of multiple regimens
-in the template data file, a list of such data frames}
+\item{\code{amt}}{Same as \code{amt} element in the \code{data} field.}
 
-\item{\code{parValues}}{Retained simulated parameter values after discarding
-any due to truncation limits, as a data frame with columns
-\emph{id} and parameters for each simulated subject, or in the case of multiple regimens
-in the template data file, a list of such data frames}
+\item{\code{parValues}}{Same as \code{parValues} element in the \code{data} field.}
 
-\item{\code{totalSets}}{Number of all simulated parameter values needed to obtain the
-requested number of simulated sets within any limits}
+\item{\code{totalSets}}{Same as \code{totalSets} element in the \code{data} field.}
 
-\item{\code{totalMeans}}{Vector of means of all simulated parameter values,
-or in the case of multiple regimens
-in the template data file, a list of such vectors}
+\item{\code{totalMeans}}{Same as \code{totalMeans} element in the \code{data} field.}
 
-\item{\code{totalCov}}{Covariance matrix for all simulated parameter values,
-or in the case of multiple regimens
-in the template data file, a list of such matrices}
-
-\item{\code{data}}{For one simulation regimen in the template data, a list of class \emph{PM_sim} that
-contains all the above elements. For multiple simulation regimens, a list of
-class \emph{PM_simlist} that contains as many \emph{PM_sim} objects as regimens in the
-template data file used for the simulation, i.e \code{data} will be a list of lists.}
+\item{\code{totalCov}}{Same as \code{totalCov} element in the \code{data} field.}
 }
 \if{html}{\out{</div>}}
 }
@@ -140,7 +165,6 @@ or via the \verb{$sim} method for \link{PM_result} objects.
   doseTimeNoise = NULL,
   doseNoise = NULL,
   obsTimeNoise = NULL,
-  otherNoise = NULL,
   makecsv = NULL,
   outname = "simout",
   clean = TRUE,
@@ -318,9 +342,10 @@ with a "c" prepended to the model name (e.g. "model.txt" ->
 "c_model.txt").
 }}
 
-\item{\code{usePost}}{Boolean argument.  Only applicable when \code{poppar} contains an
-NPAG \link{PM_final} object. If so, and \code{usePost} is \code{TRUE}, the
-posterior for each subject (modified by \code{include} or \code{exclude})
+\item{\code{usePost}}{Boolean, default \code{FALSE}. Only applicable when \code{poppar} contains an
+NPAG \link{PM_final} object. If \code{TRUE}, the mean
+posterior parameter values and covariances for each subject,
+modified by \code{include} or \code{exclude},
 in \code{poppar} will be used to simulate rather than the population prior.
 The number of subjects in the template \code{data} file must be the same.
 Normally one uses the same data file as used to make the model final
@@ -519,16 +544,16 @@ Save the current PM_sim object into a .rds file.
 \subsection{Method \code{plot()}}{
 Plot \code{PM_sim} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$plot(at = 1, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$plot(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{...}}{Arguments passed to \link{plot.PM_sim}.}
+
 \item{\code{at}}{Index of the PM_sim object to be plotted. Default is 1.
 result.}
-
-\item{\code{...}}{Arguments passed to \link{plot.PM_sim}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -557,14 +582,12 @@ of the current Simulation.
 \subsection{Method \code{auc()}}{
 Calculates the AUC of the specified simulation
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$auc(at = 1, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$auc(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{at}}{Index of the PM_sim object to use. Default is 1.}
-
 \item{\code{...}}{Arguments passed to \link{makeAUC}.}
 }
 \if{html}{\out{</div>}}
@@ -576,14 +599,12 @@ Calculates the AUC of the specified simulation
 \subsection{Method \code{summary()}}{
 Summarize simulation
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(at = 1, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{at}}{Index of the PM_sim object to use. Default is 1.}
-
 \item{\code{...}}{Parameters passed to \link{summary.PM_sim}.}
 }
 \if{html}{\out{</div>}}

@@ -14,14 +14,15 @@ or created on the fly when making a new PM_fit object. PM_fit objects contain
 methods to cross-check data and model objects for compatibility, as well as to
 run the analysis.
 }
+\author{
+Michael Neely
+}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
 \item{\code{data}}{\link{PM_data} object}
 
 \item{\code{model}}{\link{PM_model} object}
-
-\item{\code{arglist}}{Arguments passed to rust engine}
 
 \item{\code{backend}}{Backend used for calculations; default is value in PMoptions.}
 }
@@ -52,20 +53,20 @@ Create a new object
 \describe{
 \item{\code{data}}{Either the name of a  \link{PM_data}
 object in memory or the quoted name of a Pmetrics
-data file in the current working directory, which will crate a \code{PM_data}
+data file in the current working directory, which will crate a \link{PM_data}
 object on the fly. However, if created on the fly, this object
 will not be available to other
-methods or other instances of \code{PM_fit}.}
+methods or other instances of \link{PM_fit}.}
 
 \item{\code{model}}{Similarly, this is either the name of a \link{PM_model}
 object in memory or the quoted name of a Pmetrics text model file
 in the current working directory. Again, if created on the fly,
 the object will not be available to other
-methods or other instances of \code{PM_fit}.}
+methods or other instances of \link{PM_fit}.}
 
 \item{\code{backend}}{Backend used for calculations; default is value in PMoptions.}
 
-\item{\code{...}}{Other parameters passed to \code{PM_data} or \code{PM_model} if created
+\item{\code{...}}{Other parameters passed to \link{PM_data} or \link{PM_model} if created
 from a filename}
 }
 \if{html}{\out{</div>}}
@@ -78,25 +79,68 @@ from a filename}
 Fit the model to the data
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_fit$run(
-  ...,
+  run = NULL,
+  include = NULL,
+  exclude = NULL,
+  cycles = 100,
+  indpts = NULL,
+  prior = "uniform",
+  intern = TRUE,
+  overwrite = FALSE,
   engine = "NPAG",
-  rundir = getwd(),
-  backend = getPMoptions()$backend
+  sampler = "sobol",
+  report = getPMoptions("report_template"),
+  artifacts = TRUE
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Other arguments passed to \link{NPrun}}
+\item{\code{run}}{Specify the run number of the output folder.  Default if missing is the next available number.}
 
-\item{\code{engine}}{"NPAG" (default) or "IT2B"}
+\item{\code{include}}{Vector of subject id values in the data file to include in the analysis.  The default (missing) is all.}
 
-\item{\code{rundir}}{This argument specifies an \emph{existing} folder that will store the run inside.}
+\item{\code{exclude}}{A vector of subject IDs to exclude in the analysis, e.g. c(4,6:14,16:20)}
 
-\item{\code{backend}}{Backend used for calculations; default is value in PMoptions.}
+\item{\code{cycles}}{Number of cycles to run. Default is 100.}
+
+\item{\code{indpts}}{Index of starting grid point number.  Default is missing, which allows NPAG to choose depending on the number of random parameters:}
+
+\item{\code{prior}}{Either "uniform" (default) or the name of a suitable \link{PM_result} object from a prior run loaded with \link{PM_load}.
+A \code{prior} may be specified if the user wishes to
+start from a non-uniform prior distribution for the NPAG run. This is useful for continuing a previous
+run which did not converge, e.g., \code{fit1$run(prior = run1)}, assuming \code{run1} is a \link{PM_result} object
+that was loaded with \link{PM_load}.}
+
+\item{\code{intern}}{Run NPAG in the R console without a batch script.  Default is TRUE.}
+
+\item{\code{overwrite}}{Boolean operator to overwrite existing run result folders.  Default is \code{FALSE}.}
+
+\item{\code{engine}}{The engine to use for the run.  Default is "NPAG". Alternatives: "NPOD".}
+
+\item{\code{sampler}}{The pseudo-random sampler to use for the initial distribution of grid points when
+\code{prior = "uniform"}.}
+
+\item{\code{report}}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
+is used. Otherwise can be "plotly", "ggplot", or "none".}
+
+\item{\code{artifacts}}{Default is \code{TRUE}.  Set to \code{FALSE} to suppress creating the \code{etc} folder. This folder
+will contain all the compilation artifacts created during the compilation and run steps.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Details}{
+This function will fit the model contained in the \code{model} field to the data
+in the \code{data} field, using the engine specified by the \code{engine} argument and
+modified by other arguments. If all function arguments are default,
+the simplest execution of this method is
+\verb{$run()}.
+}
+
+\subsection{Returns}{
+A successful run will result in creation of a new folder in the working
+directory with the results inside the folder.
 }
 }
 \if{html}{\out{<hr>}}
