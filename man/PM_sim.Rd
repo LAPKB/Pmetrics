@@ -152,7 +152,7 @@ or via the \verb{$sim} method for \link{PM_result} objects.
   limits = NULL,
   model,
   data,
-  split,
+  split = NULL,
   include = NULL,
   exclude = NULL,
   nsim = 1000,
@@ -160,18 +160,14 @@ or via the \verb{$sim} method for \link{PM_result} objects.
   covariate = NULL,
   usePost = FALSE,
   seed = -17,
-  ode = -4,
-  obsNoise = NULL,
-  doseTimeNoise = NULL,
-  doseNoise = NULL,
-  obsTimeNoise = NULL,
+  noise = NULL,
   makecsv = NULL,
   outname = "simout",
   clean = TRUE,
   quiet = FALSE,
   nocheck = FALSE,
   overwrite = FALSE,
-  combine = FALSE
+  ...
 )}\if{html}{\out{</div>}}
 }
 
@@ -185,12 +181,6 @@ or via the \verb{$sim} method for \link{PM_result} objects.
 \verb{$sim} method for a \link{PM_result} object, e.g. \code{PmetricsData::NPex$sim(...)}.
 \item The name of a previously saved simulation via the \verb{$save} method. The
 file will be loaded. This filename should have the ".rds" extension, e.g. "sim.rds".
-\item The file name(s) of previous simulator output. Wildcards are permissible.
-Examples include \code{poppar = "simout1.txt, simout2.txt, simout3.txt"},
-\code{poppar = "simout?.txt"} and \code{poppar = "sim*.txt"}. All three will find
-the files \emph{simout1.txt}, \emph{simout2.txt}, and \emph{simout3.txt} in the working directory.
-The second example would also find \emph{simout4.txt}, etc.  The third
-example would also find \emph{sim_1.txt} if that existed.
 \item A manually specified prior as a list containing three items in this order,
 but of any name: 1) vector of weights; 2) vector of mean parameter values;
 and 3) a covariance matrix. If only one distribution is to be specified the
@@ -211,20 +201,22 @@ of 0.25 and 2500 and off-diagonal values of zero.
 
 \item{\code{limits}}{If limits are specified, each simulated parameter set that
 contains a value outside of the limits will be ignored and another set will
-be generated.  Four options exist for limits.  1) The default \code{NULL}
-indicates that no limits are to be applied to simulated parameters. 2) The
-second option is to set \code{limits} to \code{NA}. This will use the
-parameter limits on the primary parameters that are specified in the model
-file. 3) The third option is a numeric vector of length 1 or 2, e.g. \code{limits = 3} or
+be generated.  Four options exist for limits.
+\itemize{
+\item The default \code{NULL} indicates that no limits are to be applied to simulated parameters.
+\item The second option is to set \code{limits} to \code{NA}. This will use the
+parameter limits on the primary parameters that are specified in the \link{PM_model} object.
+\item The third option is a numeric vector of length 1 or 2, e.g. \code{limits = 3} or
 \code{limits = c(0.5, 4)}, which specifies what to multiply the columns of the limits in the
 model file.  If length 1, then the lower limits will be the same as in the
 model file, and the upper limits will be multiplied by value specified.  If
 length 2, then the lower and upper limits will be multiplied by the
 specified values.  If this option is used, \code{poppar} must be a
-\code{PM_final} object. 4) The fourth option for limits is a fully
+\code{PM_final} object.
+\item The fourth option for limits is a fully
 customized matrix of limits for simulated values for each parameter which
 will overwrite any limits in the model file.  If specified, it should be a
-data.frame or matrix with number of rows equal to the number of random
+data frame or matrix with number of rows equal to the number of random
 paramters and 2 columns, corresponding to the minimum and maximum values.
 For example, a final$ab object, or a directly coded matrix, e.g.
 \code{matrix(c(0, 5, 0, 5, 0.01, 100), nrow = 3,ncol = 2, byrow = T)} for 3 parameters with
@@ -234,7 +226,8 @@ covariances of the total number of simulated sets will be returned to
 verify the simulation, but only those sets within the specified limits will
 be used to generate output(s) and the means and covariances of the retained
 sets may (and likely will be) different than those specified by
-\code{poppar}.}
+\code{poppar}.
+}}
 
 \item{\code{model}}{Name of a suitable \link{PM_model} object or a model file template
 in the working directory. If missing, and \code{poppar} is a \link{PM_result},
@@ -357,29 +350,35 @@ from whom the posteriors are obtained.}
 should be a vector of length equal to \code{nsub}. Shorter vectors will be
 recycled as necessary.  Default is -17.}
 
-\item{\code{ode}}{Ordinary Differential Equation solver log tolerance or stiffness.
-Default is -4, i.e. 0.0001.  Higher values will result in faster runs, but
-simulated concentrations may not be as accurate.}
-
-\item{\code{obsNoise}}{The noise added to each simulated concentration for each
-output equation, where the noise is randomly drawn from a normal
-distribution with mean 0 and SD = C0 + C1\*conc + C2\*conc^2 + C3\*conc^3.
-Default values are 0 for all coefficients (i.e.) no noise. If present will
-override any other values in the data file or model file. Specify as a
-vector of length 4 times the number of output equations, e.g.
-\code{c(0.1,0.1,0,0)} for one output and \code{c(0.1,0.1,0,0,0.01,0.2,-0.001,0)} for two
-output equations. If specified as \code{NA}, values in the data file will
-be used (similar to \code{limits}, above).  If they are missing, values in
-the model file will be used. The default is \code{NULL}, which is no noise.}
-
-\item{\code{doseTimeNoise}}{A vector of length four to specify dose time error
-polynomial coefficients.  The default is \code{NULL}, which is no noise.}
-
-\item{\code{doseNoise}}{A vector of length four to specify dose amount error
-polynomial coefficients.  The default is \code{NULL}, which is no noise.}
-
-\item{\code{obsTimeNoise}}{A vector of length four to specify observation timing
-error polynomial coefficients.  The default is \code{NULL}, which is no noise.}
+\item{\code{noise}}{A named list to add noise to any template data field.
+The default is \code{NULL}, which means no noise will be added.
+The name of each element in the list should correspond to
+a column in the data to which you wish to add noise.
+Each element in the list should be another list with the following named arguments:
+\itemize{
+\item \strong{.coeff} Mandatory. A vector of up to 4 coefficients for the noise model. They
+correspond to C0, C1, C2, and C3 for the assay noise model (as in \link{PM_model}). See the 'mode' argument
+for details on how these values are used to generate noise. Examples:
+\code{.coeff = c(0.1, 0.1)} or \code{.coeff = c(5, 0.15, -0.01, 0.003)}.
+\item \strong{.filter} Optional. A quoted expression to filter the data. For example, \code{.filter = "dose > 0.1"} or
+\code{.filter = "outeq == 1 & time < 120"}.
+\item \strong{.mode} Optional. The mode of the noise. Default is \code{add}. Options are \code{add} or \code{exp}.
+\itemize{
+\item \code{add} An additive noise model. The new value is generated as
+\code{value + noise}, where noise is a random number from a normal distribution,
+with mean of 0 and \code{SD = C0 + C1*value + C2*value^2 + C3*value^3}, and \emph{value} is the
+original value in each row of the target column.
+\item \code{exp} An exponential noise model. The new values is generated as
+\code{value * exp(noise)}, where noise is a random number from a normal distribution,
+with mean of 0 and \code{SD = C0 + C1*value + C2*value^2 + C3*value^3}, and \emph{value} is the
+original value in each row of the target column.
+@examples
+\dontrun{
+ exDat$makeNoise(list(dose = list(.coeff = c(0.1, 0.1), .filter = "dose > 100 & time < 200", .mode = "add"),
+ out = list(.coeff = c(0.01, 0.01), .mode = "exp")))
+ }
+}
+}}
 
 \item{\code{makecsv}}{A character vector for the name of the single .csv file to be
 made for all simulated "subjects".  If missing, no files will be
@@ -405,16 +404,27 @@ given.  Default is \code{FALSE}.}
 \item{\code{overwrite}}{Cleans up any old output files without asking before
 creating new output. Default is \code{FALSE}.}
 
-\item{\code{combine}}{Boolean parameter, default \code{FALSE},
-which specifies whether you wish to combine
-the parsed files into a single \link{PM_sim} object.  This can be useful
-for making visual predictive
-checks, for example.  If \code{combine = FALSE}, and there were multiple
-subjects in the simulation data template,
-then the return object
-will be a list of \link{PM_sim} objects.}
+\item{\code{...}}{Catch deprecated arguments.}
 
-\item{\code{...}}{Not currently used}
+\item{\code{obsNoise}}{The noise added to each simulated concentration for each
+output equation, where the noise is randomly drawn from a normal
+distribution with mean 0 and SD = C0 + C1\*conc + C2\*conc^2 + C3\*conc^3.
+Default values are 0 for all coefficients (i.e.) no noise. If present will
+override any other values in the data file or model file. Specify as a
+vector of length 4 times the number of output equations, e.g.
+\code{c(0.1,0.1,0,0)} for one output and \code{c(0.1,0.1,0,0,0.01,0.2,-0.001,0)} for two
+output equations. If specified as \code{NA}, values in the data file will
+be used (similar to \code{limits}, above).  If they are missing, values in
+the model file will be used. The default is \code{NULL}, which is no noise.}
+
+\item{\code{doseTimeNoise}}{A vector of length four to specify dose time error
+polynomial coefficients.  The default is \code{NULL}, which is no noise.}
+
+\item{\code{doseNoise}}{A vector of length four to specify dose amount error
+polynomial coefficients.  The default is \code{NULL}, which is no noise.}
+
+\item{\code{obsTimeNoise}}{A vector of length four to specify observation timing
+error polynomial coefficients.  The default is \code{NULL}, which is no noise.}
 }
 \if{html}{\out{</div>}}
 }
@@ -525,6 +535,7 @@ sim1 <- PM_sim$new(poppar, "temp1.csv",
 \if{html}{\out{<a id="method-PM_sim-save"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-save}{}}}
 \subsection{Method \code{save()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Save the current PM_sim object into a .rds file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_sim$save(file_name = "PMsim.rds")}\if{html}{\out{</div>}}
@@ -542,6 +553,7 @@ Save the current PM_sim object into a .rds file.
 \if{html}{\out{<a id="method-PM_sim-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-plot}{}}}
 \subsection{Method \code{plot()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Plot \code{PM_sim} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_sim$plot(...)}\if{html}{\out{</div>}}
@@ -562,6 +574,7 @@ result.}
 \if{html}{\out{<a id="method-PM_sim-pta"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-pta}{}}}
 \subsection{Method \code{pta()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Estimates the Probability of Target Attaintment (PTA), based on the results
 of the current Simulation.
 \subsection{Usage}{
@@ -580,6 +593,7 @@ of the current Simulation.
 \if{html}{\out{<a id="method-PM_sim-auc"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-auc}{}}}
 \subsection{Method \code{auc()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Calculates the AUC of the specified simulation
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_sim$auc(...)}\if{html}{\out{</div>}}
@@ -597,6 +611,7 @@ Calculates the AUC of the specified simulation
 \if{html}{\out{<a id="method-PM_sim-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-summary}{}}}
 \subsection{Method \code{summary()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Summarize simulation
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(...)}\if{html}{\out{</div>}}
@@ -615,7 +630,6 @@ Summarize simulation
 \if{latex}{\out{\hypertarget{method-PM_sim-run}{}}}
 \subsection{Method \code{run()}}{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
-
 Deprecated method to run a simulation. Replaced by \code{PM_sim$new()} to be
 consistent with R6.
 \subsection{Usage}{
@@ -635,7 +649,6 @@ consistent with R6.
 \if{latex}{\out{\hypertarget{method-PM_sim-load}{}}}
 \subsection{Method \code{load()}}{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
-
 Deprecated method to load a prior simulation. Replaced by \code{PM_sim$new()} to be
 consistent with R6.
 \subsection{Usage}{
