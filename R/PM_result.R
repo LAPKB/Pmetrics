@@ -357,7 +357,6 @@ PM_load <- function(run, file) {
     } else {
       wd <- paste0(run, "/outputs/")
     }
-    # file_list <- c("NPcore.Rdata", "PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
     file_list <- c("PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
 
     for (i in file_list) {

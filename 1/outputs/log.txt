@@ -13,14 +13,14 @@
 00h 00m 01s  INFO {Cycle=13}: pmcore::algorithms::npag: Objective function = 474.1612
 00h 00m 01s  INFO {Cycle=14}: pmcore::algorithms::npag: Objective function = 470.8664
 00h 00m 01s  INFO {Cycle=15}: pmcore::algorithms::npag: Objective function = 470.2052
-00h 00m 01s  INFO {Cycle=16}: pmcore::algorithms::npag: Objective function = 469.4483
-00h 00m 01s  INFO {Cycle=17}: pmcore::algorithms::npag: Objective function = 469.4433
-00h 00m 01s  INFO {Cycle=18}: pmcore::algorithms::npag: Objective function = 469.4317
-00h 00m 01s  INFO {Cycle=19}: pmcore::algorithms::npag: Objective function = 469.4156
-00h 00m 01s  INFO {Cycle=20}: pmcore::algorithms::npag: Objective function = 469.4105
-00h 00m 01s  INFO {Cycle=21}: pmcore::algorithms::npag: Objective function = 469.4105
-00h 00m 01s  INFO {Cycle=22}: pmcore::algorithms::npag: Objective function = 467.1264
-00h 00m 01s  INFO {Cycle=23}: pmcore::algorithms::npag: Objective function = 465.6323
+00h 00m 02s  INFO {Cycle=16}: pmcore::algorithms::npag: Objective function = 469.4483
+00h 00m 02s  INFO {Cycle=17}: pmcore::algorithms::npag: Objective function = 469.4433
+00h 00m 02s  INFO {Cycle=18}: pmcore::algorithms::npag: Objective function = 469.4317
+00h 00m 02s  INFO {Cycle=19}: pmcore::algorithms::npag: Objective function = 469.4156
+00h 00m 02s  INFO {Cycle=20}: pmcore::algorithms::npag: Objective function = 469.4105
+00h 00m 02s  INFO {Cycle=21}: pmcore::algorithms::npag: Objective function = 469.4105
+00h 00m 02s  INFO {Cycle=22}: pmcore::algorithms::npag: Objective function = 467.1264
+00h 00m 02s  INFO {Cycle=23}: pmcore::algorithms::npag: Objective function = 465.6323
 00h 00m 02s  INFO {Cycle=24}: pmcore::algorithms::npag: Objective function = 465.0523
 00h 00m 02s  INFO {Cycle=25}: pmcore::algorithms::npag: Objective function = 464.7215
 00h 00m 02s  INFO {Cycle=26}: pmcore::algorithms::npag: Objective function = 464.2844
@@ -57,19 +57,19 @@
 00h 00m 02s  INFO {Cycle=57}: pmcore::algorithms::npag: Objective function = 461.0893
 00h 00m 02s  INFO {Cycle=58}: pmcore::algorithms::npag: Objective function = 461.0437
 00h 00m 02s  INFO {Cycle=59}: pmcore::algorithms::npag: Objective function = 461.0019
-00h 00m 02s  INFO {Cycle=60}: pmcore::algorithms::npag: Objective function = 461.0019
-00h 00m 02s  INFO {Cycle=61}: pmcore::algorithms::npag: Objective function = 460.3306
-00h 00m 02s  INFO {Cycle=62}: pmcore::algorithms::npag: Objective function = 460.0289
-00h 00m 02s  INFO {Cycle=63}: pmcore::algorithms::npag: Objective function = 459.8340
-00h 00m 02s  INFO {Cycle=64}: pmcore::algorithms::npag: Objective function = 459.7339
-00h 00m 02s  INFO {Cycle=65}: pmcore::algorithms::npag: Objective function = 459.6819
-00h 00m 02s  INFO {Cycle=66}: pmcore::algorithms::npag: Objective function = 459.4953
-00h 00m 02s  INFO {Cycle=67}: pmcore::algorithms::npag: Objective function = 459.3722
-00h 00m 02s  INFO {Cycle=68}: pmcore::algorithms::npag: Objective function = 459.2861
-00h 00m 02s  INFO {Cycle=69}: pmcore::algorithms::npag: Objective function = 459.2100
-00h 00m 02s  INFO {Cycle=70}: pmcore::algorithms::npag: Objective function = 459.1259
-00h 00m 02s  INFO {Cycle=71}: pmcore::algorithms::npag: Objective function = 459.0354
-00h 00m 02s  INFO {Cycle=72}: pmcore::algorithms::npag: Objective function = 458.9428
+00h 00m 03s  INFO {Cycle=60}: pmcore::algorithms::npag: Objective function = 461.0019
+00h 00m 03s  INFO {Cycle=61}: pmcore::algorithms::npag: Objective function = 460.3306
+00h 00m 03s  INFO {Cycle=62}: pmcore::algorithms::npag: Objective function = 460.0289
+00h 00m 03s  INFO {Cycle=63}: pmcore::algorithms::npag: Objective function = 459.8340
+00h 00m 03s  INFO {Cycle=64}: pmcore::algorithms::npag: Objective function = 459.7339
+00h 00m 03s  INFO {Cycle=65}: pmcore::algorithms::npag: Objective function = 459.6819
+00h 00m 03s  INFO {Cycle=66}: pmcore::algorithms::npag: Objective function = 459.4953
+00h 00m 03s  INFO {Cycle=67}: pmcore::algorithms::npag: Objective function = 459.3722
+00h 00m 03s  INFO {Cycle=68}: pmcore::algorithms::npag: Objective function = 459.2861
+00h 00m 03s  INFO {Cycle=69}: pmcore::algorithms::npag: Objective function = 459.2100
+00h 00m 03s  INFO {Cycle=70}: pmcore::algorithms::npag: Objective function = 459.1259
+00h 00m 03s  INFO {Cycle=71}: pmcore::algorithms::npag: Objective function = 459.0354
+00h 00m 03s  INFO {Cycle=72}: pmcore::algorithms::npag: Objective function = 458.9428
 00h 00m 03s  INFO {Cycle=73}: pmcore::algorithms::npag: Objective function = 458.8542
 00h 00m 03s  INFO {Cycle=74}: pmcore::algorithms::npag: Objective function = 458.7710
 00h 00m 03s  INFO {Cycle=75}: pmcore::algorithms::npag: Objective function = 458.6819
@@ -87,22 +87,22 @@
 00h 00m 03s  INFO {Cycle=87}: pmcore::algorithms::npag: Objective function = 457.6580
 00h 00m 03s  INFO {Cycle=88}: pmcore::algorithms::npag: Objective function = 457.5459
 00h 00m 03s  INFO {Cycle=89}: pmcore::algorithms::npag: Objective function = 457.4132
-00h 00m 03s  INFO {Cycle=90}: pmcore::algorithms::npag: Objective function = 457.3786
-00h 00m 03s  INFO {Cycle=91}: pmcore::algorithms::npag: Objective function = 457.2976
-00h 00m 03s  INFO {Cycle=92}: pmcore::algorithms::npag: Objective function = 457.2540
-00h 00m 03s  INFO {Cycle=93}: pmcore::algorithms::npag: Objective function = 457.2052
-00h 00m 03s  INFO {Cycle=94}: pmcore::algorithms::npag: Objective function = 457.1486
-00h 00m 03s  INFO {Cycle=95}: pmcore::algorithms::npag: Objective function = 457.1211
-00h 00m 03s  INFO {Cycle=96}: pmcore::algorithms::npag: Objective function = 457.1039
-00h 00m 03s  INFO {Cycle=97}: pmcore::algorithms::npag: Objective function = 457.0925
-00h 00m 03s  INFO {Cycle=98}: pmcore::algorithms::npag: Objective function = 457.0083
-00h 00m 03s  INFO {Cycle=99}: pmcore::algorithms::npag: Objective function = 456.9862
-00h 00m 03s  INFO {Cycle=100}: pmcore::algorithms::npag: Objective function = 456.9314
-00h 00m 03s  WARN {Cycle=100}: pmcore::algorithms::npag: Maximum number of cycles reached
-00h 00m 03s  INFO pmcore::algorithms::routines::output: Cycles written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/cycles.csv"
-00h 00m 03s  INFO pmcore::algorithms::routines::output: Observations written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/obs.csv"
-00h 00m 03s  INFO pmcore::algorithms::routines::output: Population parameter distribution written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/theta.csv"
-00h 00m 03s  INFO pmcore::algorithms::routines::output: Observations with predictions written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/op.csv"
-00h 00m 04s  INFO pmcore::algorithms::routines::output: Predictions written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/pred.csv"
-00h 00m 04s  INFO pmcore::algorithms::routines::output: Covariates written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/covs.csv"
-00h 00m 04s  INFO pmcore::algorithms::routines::output: Posterior parameters written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/posterior.csv"
+00h 00m 04s  INFO {Cycle=90}: pmcore::algorithms::npag: Objective function = 457.3786
+00h 00m 04s  INFO {Cycle=91}: pmcore::algorithms::npag: Objective function = 457.2976
+00h 00m 04s  INFO {Cycle=92}: pmcore::algorithms::npag: Objective function = 457.2540
+00h 00m 04s  INFO {Cycle=93}: pmcore::algorithms::npag: Objective function = 457.2052
+00h 00m 04s  INFO {Cycle=94}: pmcore::algorithms::npag: Objective function = 457.1486
+00h 00m 04s  INFO {Cycle=95}: pmcore::algorithms::npag: Objective function = 457.1211
+00h 00m 04s  INFO {Cycle=96}: pmcore::algorithms::npag: Objective function = 457.1039
+00h 00m 04s  INFO {Cycle=97}: pmcore::algorithms::npag: Objective function = 457.0925
+00h 00m 04s  INFO {Cycle=98}: pmcore::algorithms::npag: Objective function = 457.0083
+00h 00m 04s  INFO {Cycle=99}: pmcore::algorithms::npag: Objective function = 456.9862
+00h 00m 04s  INFO {Cycle=100}: pmcore::algorithms::npag: Objective function = 456.9314
+00h 00m 04s  WARN {Cycle=100}: pmcore::algorithms::npag: Maximum number of cycles reached
+00h 00m 04s  INFO pmcore::algorithms::routines::output: Cycles written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/cycles.csv"
+00h 00m 04s  INFO pmcore::algorithms::routines::output: Observations written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/obs.csv"
+00h 00m 04s  INFO pmcore::algorithms::routines::output: Population parameter distribution written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/theta.csv"
+00h 00m 04s  INFO pmcore::algorithms::routines::output: Observations with predictions written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/op.csv"
+00h 00m 05s  INFO pmcore::algorithms::routines::output: Predictions written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/pred.csv"
+00h 00m 05s  INFO pmcore::algorithms::routines::output: Covariates written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/covs.csv"
+00h 00m 05s  INFO pmcore::algorithms::routines::output: Posterior parameters written to "/Users/mneely/LAPK/Development/Pmetrics_rust/1/outputs/posterior.csv"
