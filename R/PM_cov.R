@@ -119,12 +119,12 @@ PM_cov <- R6::R6Class(
       
       post_mean <- posts %>%
         group_by(id) %>%
-        summarise(across(-c(point, prob), \(x) weighted.mean(x = x, w = prob))) %>%
+        summarise(across(-c(point, prob), \(x) wtd.mean(x = x, weights = prob))) %>%
         mutate(icen = "mean")
       
       post_med <- posts %>%
         group_by(id) %>%
-        reframe(across(-c(point, prob), \(x) weighted_median(x, prob))) %>%
+        reframe(across(-c(point, prob), \(x) wtd.quantile(x, prob, 0.5))) %>%
         mutate(icen = "median")
       
       

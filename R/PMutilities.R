@@ -1131,42 +1131,166 @@ template <- function(name) {
   return(insert)
 }
 
-# weighted median
-# ChatGPT prompt: "Write a function in R to calculate weighted median with interpolation."
-weighted_median <- function(values, weights) {
-  # Combine values and weights into a data frame
-  data <- data.frame(values = values, weights = weights)
+
+
+
+# WEIGHTED SUMMARY FUNCTIONS ---------------------------------------------------------------
+
+# modified from Hmisc functions
+
+wtd.table <- function (x, weights = NULL, 
+                       type = c("list", "table"), 
+                       normwt = TRUE, 
+                       na.rm = TRUE){
   
-  # Sort the data by values
-  data <- data[order(data$values, decreasing = TRUE), ]
-  
-  # Calculate the cumulative sum of weights
-  data$cum_weights <- cumsum(data$weights)
-  
-  # Find the median value
-  total_weight <- sum(weights)
-  median_value <- NULL
-  
-  for (i in 1:nrow(data)) {
-    if (data$cum_weights[i] >= total_weight / 2) {
-      if (data$cum_weights[i] == total_weight / 2) {
-        # If exactly at the midpoint, return the value
-        median_value <- data$values[i]
-      } else {
-        # Interpolate the median value
-        prev_cum_weight <- data$cum_weights[i - 1]
-        prev_value <- data$values[i - 1]
-        
-        # Calculate the weighted median using linear interpolation
-        median_value <- prev_value + (0.5 * total_weight - prev_cum_weight) *
-          (data$values[i] - prev_value) / (data$cum_weights[i] - prev_cum_weight)
-      }
-      break
+  type <- match.arg(type)
+  if (!length(weights)) 
+    weights <- rep(1, length(x))
+  isdate <- lubridate::is.Date(x)
+  ax <- attributes(x)
+  ax$names <- NULL
+  if (is.character(x)) 
+    x <- as.factor(x)
+  lev <- levels(x)
+  x <- unclass(x)
+  if (na.rm) {
+    s <- !is.na(x + weights)
+    x <- x[s, drop = FALSE]
+    weights <- weights[s]
+  }
+  n <- length(x)
+  if (normwt) 
+    weights <- weights * length(x)/sum(weights)
+  i <- order(x)
+  x <- x[i]
+  weights <- weights[i]
+  if (anyDuplicated(x)) {
+    weights <- tapply(weights, x, sum)
+    if (length(lev)) {
+      levused <- lev[sort(unique(x))]
+      if ((length(weights) > length(levused)) && any(is.na(weights))) 
+        weights <- weights[!is.na(weights)]
+      if (length(weights) != length(levused)) 
+        stop("program logic error")
+      names(weights) <- levused
     }
+    if (!length(names(weights))) 
+      stop("program logic error")
+    if (type == "table") 
+      return(weights)
+    x <- all.is.numeric(names(weights), "vector")
+    if (isdate) 
+      attributes(x) <- c(attributes(x), ax)
+    names(weights) <- NULL
+    return(list(x = x, sum.of.weights = weights))
+  }
+  xx <- x
+  if (isdate) 
+    attributes(xx) <- c(attributes(xx), ax)
+  if (type == "list") 
+    list(x = if (length(lev)) lev[x] else xx, sum.of.weights = weights)
+  else {
+    names(weights) <- if (length(lev)) 
+      lev[x]
+    else xx
+    weights
+  }
+}
+
+wtd.mean <- function (x, weights = NULL, normwt = "ignored", na.rm = TRUE) 
+{
+  if (!length(weights)) 
+    return(mean(x, na.rm = na.rm))
+  if (na.rm) {
+    s <- !is.na(x + weights)
+    x <- x[s]
+    weights <- weights[s]
+  }
+  sum(weights * x)/sum(weights)
+}
+
+
+wtd.quantile <- function (x, weights = NULL, probs = c(0, 0.25, 0.5, 0.75, 1), 
+                       normwt = TRUE, 
+                       na.rm = TRUE){
+  
+  if (!length(weights)) 
+    return(quantile(x, probs = probs, na.rm = na.rm))
+  
+  if (any(probs < 0 | probs > 1)) 
+    cli::cli_abort("Probabilities must be between 0 and 1 inclusive")
+  nams <- paste(format(round(probs * 100, if (length(probs) > 
+                                              1) 2 - log10(diff(range(probs))) else 2)), "%", sep = "")
+  i <- is.na(weights) | weights == 0
+  if (any(i)) {
+    x <- x[!i]
+    weights <- weights[!i]
   }
   
-  return(median_value)
+  w <- wtd.table(x, weights, na.rm = na.rm, normwt = normwt, 
+                 type = "list")
+  x <- w$x
+  wts <- w$sum.of.weights
+  n <- sum(wts)
+  order <- 1 + (n - 1) * probs
+  low <- pmax(floor(order), 1)
+  high <- pmin(low + 1, n)
+  order <- order%%1
+  allq <- approx(cumsum(wts), x, xout = c(low, high), method = "constant", 
+                 f = 1, rule = 2)$y
+  k <- length(probs)
+  quantiles <- (1 - order) * allq[1:k] + order * allq[-(1:k)]
+  names(quantiles) <- nams
+  return(quantiles)
+  
 }
+
+wtd.var <- function (x, weights = NULL, 
+                     normwt = TRUE, 
+                     na.rm = TRUE, 
+                     method = c("unbiased", "ML")) {
+  
+  if(any(weights == 1)){
+    return(0)
+  }
+  
+  method <- match.arg(method)
+  if (!length(weights)) {
+    if (na.rm) 
+      x <- x[!is.na(x)]
+    return(var(x))
+  }
+  if (na.rm) {
+    s <- !is.na(x + weights)
+    x <- x[s]
+    weights <- weights[s]
+  }
+  if (normwt) 
+    weights <- weights * length(x)/sum(weights)
+  if (normwt || method == "ML") 
+    return(as.numeric(stats::cov.wt(cbind(x), weights, method = method)$cov))
+  sw <- sum(weights)
+  if (sw <= 1) 
+    cli::cli_warn("only one effective observation; variance estimate undefined")
+  xbar <- sum(weights * x)/sw
+  sum(weights * ((x - xbar)^2))/(sw - 1)
+}
+
+all.is.numeric <- function (x, what = c("test", "vector", "nonnum"), extras = c(".", 
+                                                              "NA")) 
+{
+  what <- match.arg(what)
+  x <- sub("[[:space:]]+$", "", x)
+  x <- sub("^[[:space:]]+", "", x)
+  xs <- x[!x %in% c("", extras)]
+  if (!length(xs) || all(is.na(x))) 
+    return(switch(what, test = FALSE, vector = x, nonnum = x[0]))
+  isnon <- suppressWarnings(!is.na(xs) & is.na(as.numeric(xs)))
+  isnum <- !any(isnon)
+  switch(what, test = isnum, vector = if (isnum) suppressWarnings(as.numeric(x)) else x, 
+         nonnum = xs[isnon])
+}
+
 
 
 

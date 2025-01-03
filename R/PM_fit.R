@@ -393,8 +393,7 @@ PM_fit <- R6::R6Class(
           "x" = "Error: Currently, the rust engine only supports internal runs.",
           "i" = "This is a temporary limitation."
         ))
-        # system2("./NPcore", args = "&")
-        # TODO: The code to generate the report is missing here
+
       }
       setwd(cwd)
     },
