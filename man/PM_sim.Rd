@@ -149,9 +149,9 @@ or via the \verb{$sim} method for \link{PM_result} objects.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_sim$new(
   poppar,
-  limits = NULL,
   model,
   data,
+  limits = NULL,
   split = NULL,
   include = NULL,
   exclude = NULL,
@@ -160,13 +160,13 @@ or via the \verb{$sim} method for \link{PM_result} objects.
   covariate = NULL,
   usePost = FALSE,
   seed = -17,
+  obsNoise = NULL,
+  obsTimeNoise = NULL,
+  doseNoise = NULL,
+  doseTimeNoise = NULL,
   noise = NULL,
   makecsv = NULL,
-  outname = "simout",
-  clean = TRUE,
   quiet = FALSE,
-  nocheck = FALSE,
-  overwrite = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -199,6 +199,25 @@ second distribution are 1 and 200. The covariance matrix has diagonal values
 of 0.25 and 2500 and off-diagonal values of zero.
 }}
 
+\item{\code{model}}{Name of a suitable \link{PM_model} object or a model file template
+in the working directory. If missing, and \code{poppar} is a \link{PM_result},
+the model within the \verb{$model} field of the \link{PM_result} object will be used.
+If \code{model} is missing and \code{poppar} is not a \link{PM_result}, then
+Pmetrics will attempt to load a model file in the working directory
+called "model.txt" as the default name.}
+
+\item{\code{data}}{Either a \link{PM_data} object or a character vector
+with the file name of a Pmetrics data file in the working directory
+that contains \strong{template} regimens and observation times.
+The value for outputs can be coded as any number(s) other than -99.  The
+number(s) will be replaced in the simulator output with the simulated
+values. Outputs equal to -99 will be simulated as missing. If \code{data} is
+missing, and \code{poppar} is a \link{PM_result},
+the data within the \verb{$data} field of the \link{PM_result} object will be used.
+If \code{data} is missing and \code{poppar} is not a \link{PM_result}, then
+Pmetrics will attempt to load a data template file in the working directory
+called "data.csv" as the default name.}
+
 \item{\code{limits}}{If limits are specified, each simulated parameter set that
 contains a value outside of the limits will be ignored and another set will
 be generated.  Four options exist for limits.
@@ -228,25 +247,6 @@ be used to generate output(s) and the means and covariances of the retained
 sets may (and likely will be) different than those specified by
 \code{poppar}.
 }}
-
-\item{\code{model}}{Name of a suitable \link{PM_model} object or a model file template
-in the working directory. If missing, and \code{poppar} is a \link{PM_result},
-the model within the \verb{$model} field of the \link{PM_result} object will be used.
-If \code{model} is missing and \code{poppar} is not a \link{PM_result}, then
-Pmetrics will attempt to load a model file in the working directory
-called "model.txt" as the default name.}
-
-\item{\code{data}}{Either a \link{PM_data} object or a character vector
-with the file name of a Pmetrics data file in the working directory
-that contains template regimens and observation times.
-The value for outputs can be coded as any number(s) other than -99.  The
-number(s) will be replaced in the simulator output with the simulated
-values. Outputs equal to -99 will be simulated as missing. If \code{data} is
-missing, and \code{poppar} is a \link{PM_result},
-the data within the \verb{$data} field of the \link{PM_result} object will be used.
-If \code{data} is missing and \code{poppar} is not a \link{PM_result}, then
-Pmetrics will attempt to load a data template file in the working directory
-called "data.csv" as the default name.}
 
 \item{\code{split}}{Boolean operator controlling whether to split an NPAG
 \link{PM_final} object into one distribution per support point, with means
@@ -350,19 +350,43 @@ from whom the posteriors are obtained.}
 should be a vector of length equal to \code{nsub}. Shorter vectors will be
 recycled as necessary.  Default is -17.}
 
-\item{\code{noise}}{A named list to add noise to any template data field.
+\item{\code{obsNoise}}{= \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}. Use \code{noise} instead.}
+
+\item{\code{obsTimeNoise}}{= \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}. Use \code{noise} instead.}
+
+\item{\code{doseNoise}}{= \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}. Use \code{noise} instead.}
+
+\item{\code{doseTimeNoise}}{= \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}. Use \code{noise} instead.}
+
+\item{\code{noise}}{A named list to add noise to most template data fields,
+including covariates.
 The default is \code{NULL}, which means no noise will be added.
 The name of each element in the list should correspond to
-a column in the data to which you wish to add noise.
-Each element in the list should be another list with the following named arguments:
+a column in the data to which you wish to add noise, typically
+\code{time}, \code{dose}, or \code{out}. Note that noise is added to the \code{out} column
+\emph{after} simulation but \emph{before} simulation for all other columns. Noise
+on the \code{out} column is best thought of as measurement error on the true,
+simulated value. Thus, in the simulated output, the \code{amt} values for a given
+template id, simulation number, time, and output equation will no longer be
+exactly related to the corresponding \code{out} value by the volume term in the model.
+
+These columns may not have noise added: \code{id}, \code{evid}, \code{addl}, \code{ii}, \code{input}, \code{outeq}, \code{c0},
+\code{c1}, \code{c2}, and \code{c3}. See \link{PM_data} for further details on these columns.
+
+Each element in the \code{noise} list should be another list with the following arguments.
+The \code{coeff} argument is mandatory, and should be the first argument. It can be named or
+unnamed. The \code{filter} and \code{mode} arguments are optional and should always be named
+in the list.
 \itemize{
-\item \strong{.coeff} Mandatory. A vector of up to 4 coefficients for the noise model. They
-correspond to C0, C1, C2, and C3 for the assay noise model (as in \link{PM_model}). See the 'mode' argument
-for details on how these values are used to generate noise. Examples:
-\code{.coeff = c(0.1, 0.1)} or \code{.coeff = c(5, 0.15, -0.01, 0.003)}.
-\item \strong{.filter} Optional. A quoted expression to filter the data. For example, \code{.filter = "dose > 0.1"} or
-\code{.filter = "outeq == 1 & time < 120"}.
-\item \strong{.mode} Optional. The mode of the noise. Default is \code{add}. Options are \code{add} or \code{exp}.
+\item \strong{coeff} Mandatory. A vector of up to 4 coefficients for the noise model. They
+correspond to \emph{C0}, \emph{C1}, \emph{C2}, and \emph{C3} for the assay noise model (as in \link{PM_model}).
+See the 'mode' argument for details on how these values are used to generate noise.
+Examples:
+\verb{noise = list(out = list(coeff = c(0.1, 0.1))} or \code{noise = list(dose = list(coeff = c(5, 0.15, -0.01, 0.003)))}.
+\item \strong{filter} Optional. A quoted expression to filter the data. For example,
+\code{noise = list(dose = list(c(0.1, 0.1), filter = "dose > 0.1"))} or
+\code{noise = list(out = list(c(0.05, 0.15), filter = "outeq == 1 & time < 120"))}.
+\item \strong{mode} Optional. The mode (method) of the noise. Default is \code{add}. Options are \code{add} or \code{exp}.
 \itemize{
 \item \code{add} An additive noise model. The new value is generated as
 \code{value + noise}, where noise is a random number from a normal distribution,
@@ -374,63 +398,32 @@ with mean of 0 and \code{SD = C0 + C1*value + C2*value^2 + C3*value^3}, and \emp
 original value in each row of the target column.
 @examples
 \dontrun{
- exDat$makeNoise(list(dose = list(.coeff = c(0.1, 0.1), .filter = "dose > 100 & time < 200", .mode = "add"),
- out = list(.coeff = c(0.01, 0.01), .mode = "exp")))
+ exDat$makeNoise(list(dose = list(coeff = c(0.1, 0.1), filter = "dose > 100 & time < 200", mode = "add"),
+ out = list(c(0.1, 0.001), mode = "exp")))
  }
 }
 }}
 
 \item{\code{makecsv}}{A character vector for the name of the single .csv file to be
-made for all simulated "subjects".  If missing, no files will be
+made for all simulated "subjects".  If missing, no file will be
 made. If a \code{makecsv} filename is supplied, ID numbers will
 be of the form nsub.nsim, e.g. 1.001 through 1.1 for the first subject,
 2.001 through 2.1 for the second subject, etc. if 100 simulations are made
 from each subject.}
 
-\item{\code{outname}}{The name for the output file(s) without an extension.  Numbers
-1 to \code{nsub} will be appended to the files. The default is
-"simout".}
-
-\item{\code{clean}}{Boolean parameter to specify whether temporary files made in the
-course of the simulation run should be deleted. Defaults to \code{TRUE}.
-This is primarily used for debugging.}
-
 \item{\code{quiet}}{Boolean operator controlling whether a model summary report is
 given.  Default is \code{FALSE}.}
 
-\item{\code{nocheck}}{Suppress the automatic checking of the data file with
-\link{PMcheck}.  Default is \code{FALSE}.}
-
-\item{\code{overwrite}}{Cleans up any old output files without asking before
-creating new output. Default is \code{FALSE}.}
-
 \item{\code{...}}{Catch deprecated arguments.}
 
-\item{\code{obsNoise}}{The noise added to each simulated concentration for each
-output equation, where the noise is randomly drawn from a normal
-distribution with mean 0 and SD = C0 + C1\*conc + C2\*conc^2 + C3\*conc^3.
-Default values are 0 for all coefficients (i.e.) no noise. If present will
-override any other values in the data file or model file. Specify as a
-vector of length 4 times the number of output equations, e.g.
-\code{c(0.1,0.1,0,0)} for one output and \code{c(0.1,0.1,0,0,0.01,0.2,-0.001,0)} for two
-output equations. If specified as \code{NA}, values in the data file will
-be used (similar to \code{limits}, above).  If they are missing, values in
-the model file will be used. The default is \code{NULL}, which is no noise.}
-
-\item{\code{doseTimeNoise}}{A vector of length four to specify dose time error
-polynomial coefficients.  The default is \code{NULL}, which is no noise.}
-
-\item{\code{doseNoise}}{A vector of length four to specify dose amount error
-polynomial coefficients.  The default is \code{NULL}, which is no noise.}
-
-\item{\code{obsTimeNoise}}{A vector of length four to specify observation timing
-error polynomial coefficients.  The default is \code{NULL}, which is no noise.}
+\item{\code{nocheck}}{Suppress the automatic checking of the data file with
+\link{PMcheck}.  Default is \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
 The Monte Carlo simulator in Pmetrics generates randomly sampled sets of
-parameters from the \emph{#PRIMARY} block of
+parameters from the \emph{PRIMARY} block of
 a model according to a prior distribution and calculates outputs based upon
 a template data file. It is a powerful tool for parametric or
 semi-parametric sampling.  There are two ways to execute the simulator.
@@ -457,8 +450,8 @@ calculate an augmented covariance matrix to be used in simulations.  Pmetrics
 will make a copy of the model file with all covariates moved into the primary
 block as parameters to be simulated.
 
-Noise can be applied to the simulated observations. Noise may also be applied
-to the observation times, to the dose times, or to the dose amounts.
+Noise can be applied to most columns in the data template, typically
+simulated observations, observation times, dose times, or dose amounts.
 
 Limits on the simulated parameter sets can also be specified using the limits
 on primary parameters in the model file or by specifying them manually as an
