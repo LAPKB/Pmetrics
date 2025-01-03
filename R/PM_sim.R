@@ -768,7 +768,6 @@ PM_sim <- R6::R6Class(
       # SEED --------------------------------------------------------------------
       
       
-      if (length(seed) < nsub) seed <- rep(seed, nsub)
       seed <- floor(seed) # ensure that seed is a vector of integers
       
       
@@ -814,7 +813,6 @@ PM_sim <- R6::R6Class(
       # 
       # THIS MIGHT NO LONGER BE A PROBLEM
       if (!is.null(covariate) && nsim > 1) {
-        # browser()
         if (length(postToUse) > 0){
           cli::cli_abort(c("x" = "Conflicting simulation arguments.",
                            "i" = "You cannot simulate from posteriors while simulating covariates."))
@@ -1001,9 +999,11 @@ PM_sim <- R6::R6Class(
       
       
       # PRED INT ----------------------------------------------------------------
+      
       template <- if(!all(is.null(predInt))) {private$makePredInt(template, predInt)}
       
       # CALL SIMULATOR ----------------------------------------------------------------
+      
       template <- PM_data$new(template, quiet = TRUE)
       mod <- PM_model$new(mod_list, quiet = TRUE)
       
@@ -1011,6 +1011,57 @@ PM_sim <- R6::R6Class(
         # simulating from posteriors, each posterior matched to a subject
         # need to set theta as the posterior mean or median for each subject
         # code here...
+        
+        ans <- NULL
+        data_list <- list()
+        for(i in 1:nsub){
+          # get the prior for this subject
+          thisPrior <- private$getSimPrior(i = i, 
+                                           poppar = poppar, 
+                                           split = split, 
+                                           postToUse = postToUse[i], 
+                                           limits = limits, 
+                                           seed = seed[1],
+                                           nsim = nsim,
+                                           toInclude = toInclude, ans = ans)
+          # get the template for this subject
+          sub_template <- PM_data$new(template$standard_data %>% filter(id == toInclude[i]), quiet = TRUE)
+          
+          # add the simulated values to the list
+          data_list <- append(data_list, list(private$getSim(thisPrior, sub_template, mod, noise2)))
+          ans <- thisPrior$ans
+          
+        }
+        
+        # combine the output
+        obs <- purrr::list_rbind(map(data_list, \(x) x$obs))
+        amt <- purrr::list_rbind(map(data_list, \(x) x$amt))
+        
+        parValues <- purrr::list_rbind(map(data_list, \(x) x$parValues)) %>%
+          mutate(id = rep(toInclude, each = !!nsim), nsim = rep(1:!!nsim, nsub)) %>%
+          relocate(id, nsim)
+        total_means <- dplyr::bind_rows(map(data_list, \(x) x$totalMeans)) %>%
+          mutate(id = toInclude) %>%
+          relocate(id)
+        total_cov <- dplyr::bind_rows(map(data_list, \(x) data.frame(x$totalCov, row.names = NULL))) %>%
+          mutate(id = rep(toInclude, each = npar),
+                 par = rep(names(poppar$popMean), !!nsub)) %>%
+          relocate(id, par)
+        total_nsim <- tibble::tibble(id = toInclude, n = purrr::map_dbl(data_list, \(x) x$totalSets)) 
+        
+        ret <- list(
+          obs = obs,
+          amt = amt,
+          parValues = parValues,
+          totalSets = total_nsim,
+          totalMeans = total_means,
+          totalCov = total_cov,
+          template = template,
+          model = mod)
+        
+        
+        class(ret) <- c("PM_sim_data", class(self$data))
+        self$data <- ret
         
       } else {
         # set theta as nsim rows drawn from prior
@@ -1020,39 +1071,11 @@ PM_sim <- R6::R6Class(
                                          postToUse = NULL, 
                                          limits = limits, 
                                          seed = seed[1],
-                                         nsim = nsim)
-        thetas <- thisPrior$thetas %>% select(-prob) %>% as.matrix()
-        sim_res <- mod$simulate_all(template, thetas)
-        sim_res$.id <- template$data$id[match(sim_res$id, template$data$id)]
-        sim_res <- sim_res %>% rename(comp = state_index, nsim = spp_index, amt = state) %>%
-          mutate(across(c(outeq, comp, nsim), \(x) x = x + 1)) %>%
-          arrange(.id, comp, nsim, time, outeq) %>%
-          select(-.id)
+                                         nsim = nsim,
+                                         toInclude = toInclude)
         
-        obs <- sim_res  %>% filter(comp == 1) %>% #obs are duplicated in every compartment
-          select(id, nsim, time, out, outeq)
-        
-        amt <- sim_res  %>%
-          select(id, nsim, time, out = amt, comp)
-        
-        #add output noise if specified
-        if(!all(is.null(noise2))){
-          obs <- private$makeNoise(obs, noise2)
-        }
-        
-        self$data <- list(
-          obs = obs,
-          amt = amt,
-          parValues = thisPrior$thetas %>% select(-prob),
-          totalSets = thisPrior$total_nsim,
-          totalMeans = thisPrior$total_means,
-          totalCov = thisPrior$total_cov,
-          template = template,
-          model = mod)
-        
-        
-        class(self$data) <- c("PM_sim_data", class(self$data)) # add PM_sim_data class to data
-        
+        self$data <- private$getSim(thisPrior, template, mod, noise2)
+  
       }
       
       
@@ -1104,7 +1127,7 @@ PM_sim <- R6::R6Class(
     }, # end of SIMrun
     
     # get prior density
-    getSimPrior = function(i, poppar, split, postToUse, limits, seed, nsim) {
+    getSimPrior = function(i, poppar, split, postToUse, limits, seed, nsim, toInclude, ans = NULL) {
       # get prior density
       if (inherits(poppar, "NPAG")) {
         if (split) {
@@ -1114,16 +1137,15 @@ PM_sim <- R6::R6Class(
           pop_cov <- poppar$popCov
           ndist <- nrow(popPoints)
         } else { # not split
-          if (length(postToUse) == 0) { # not simulating from posteriors
+          if (is.null(postToUse)) { # not simulating from posteriors
             pop_weight <- 1
             pop_mean <- poppar$popMean
             pop_cov <- poppar$popCov
             ndist <- 1
           } else { # simulating from posteriors
-            thisPost <- which(poppar$postMean$id == toInclude[i])
             pop_weight <- 1
-            pop_mean <- poppar$postMean[thisPost, -1]
-            pop_cov <- poppar$postCov[, , thisPost]
+            pop_mean <- poppar$postMean[postToUse, ] %>% select(-id)
+            pop_cov <- poppar$postCov[[postToUse]]
             ndist <- 1
           }
         }
@@ -1145,10 +1167,14 @@ PM_sim <- R6::R6Class(
       }
       
       # check to make sure pop_cov (within 15 sig digits, which is in file) is pos-def and fix if necessary
-      posdef <- eigen(signif(pop_cov, 15))
+      posdef <- rlang::try_fetch(eigen(signif(pop_cov, 15)),
+                                 error = function(e) {
+                                   return(list(values = 0))
+                                 }
+      )
+
       if (any(posdef$values < 0)) {
-        cli::cli_warn(c("!" = "Warning: your covariance matrix is not positive definite. This is typically due to small population size."))
-        ans <- readline("\nChoose one of the following:\n1) end simulation\n2) fix covariance\n3) set covariances to 0\n ")
+        if(is.null(ans)) { ans <- cli_ask("Warning: your covariance matrix is not positive definite. This is typically due to small population size.\nChoose one of the following:\n1) end simulation\n2) fix covariances\n3) set covariances to 0\n ") }
         if (ans == 1) {
           cli::cli_inform("Aborting.")
           return(invisible(NULL))
@@ -1156,19 +1182,28 @@ PM_sim <- R6::R6Class(
         if (ans == 2) {
           # eigen decomposition to fix the matrix
           for (j in 1:5) { # try up to 5 times
+
             eigen_values <- eigen(pop_cov)$values
             eigen_vectors <- eigen(pop_cov)$vectors
             pop_cov <- eigen_vectors %*% diag(pmax(eigen_values, 0)) %*% t(eigen_vectors)
             posdef <- eigen(signif(pop_cov, 15))
+            
             if (all(posdef$values >= 0)) { # success, break out of loop
               break
             }
           }
           posdef <- eigen(signif(pop_cov, 15)) # last check
           if (any(posdef$values < 0)) {
-            cli::cli_abort(c("x" = "Unable to fix covariance."))
-            
+            if(is.null(postToUse)) {
+              cli::cli_abort(c("x" = "Unable to fix covariance."))
+            } else {
+              cli::cli_abort(c("x" = "Unable to fix covariance for template  {.code id = {toInclude[i]}}."))
+              
+            }
           }
+          pop_cov <- data.frame(pop_cov)
+          names(pop_cov) <- names(pop_mean)
+          row.names(pop_cov) <- names(pop_mean)
         }
         if (ans == 3) {
           pop_cov2 <- diag(0, nrow(pop_cov))
@@ -1187,10 +1222,18 @@ PM_sim <- R6::R6Class(
       # 
       
       # generate random samples from multivariate, multimodal normal distribution
-      generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix) {
+      generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix, i) {
+        
         means <- split(means, 1:nrow(means))
         if (length(weights) != length(means)) {
           cli::cli_abort("Weights and means must have the same length.")
+        }
+        
+        # handle malformed covariance
+        if(any(is.na(cov_matrix))){
+          cov_matrix[is.na(cov_matrix)] <- 0
+          cli::cli_warn(c("!" = "Covariance for {.code id = {i}} is undefined.",
+                          "i" = "Values were set to 0, resulting in identical simulations."))
         }
         
         # Determine number of samples from each mode
@@ -1209,8 +1252,8 @@ PM_sim <- R6::R6Class(
       
       # generate samples for theta
       
-      set.seed(seed[i])
-      thetas <- generate_multimodal_samples(nsim, pop_weight, pop_mean, pop_cov)
+      set.seed(seed)
+      thetas <- generate_multimodal_samples(nsim, pop_weight, pop_mean, pop_cov, toInclude[i])
       # cycle through samples, moving any row with any parameter outside limits
       # into a second tibble, and replacing that row with a new sample
       
@@ -1245,13 +1288,51 @@ PM_sim <- R6::R6Class(
       
       total_means <- apply(rbind(thetas, discarded), 2, mean)[1:ncol(pop_cov)]
       total_cov <- bind_rows(thetas,discarded) %>% select(-prob) %>% cov()
-      total_nsim <- nrow(thetas) + nrow(discarded)
+      total_nsim <- sum(nrow(thetas), nrow(discarded)) #sum will ignore NULL values
       
       return(list(thetas = thetas, total_means = total_means, 
                   total_cov = total_cov, 
-                  total_nsim = total_nsim))
+                  total_nsim = total_nsim, ans = ans))
       
     }, # end getSimPrior function'
+    
+    # call simulator and process results
+    getSim = function(thisPrior, template, mod, noise2){
+      thetas <- thisPrior$thetas %>% select(-prob) %>% as.matrix()
+      sim_res <- mod$simulate_all(template, thetas)
+      sim_res$.id <- template$standard_data$id[match(sim_res$id, template$standard_data$id)]
+      sim_res <- sim_res %>% rename(comp = state_index, nsim = spp_index, amt = state) %>%
+        mutate(across(c(outeq, comp, nsim), \(x) x = x + 1)) %>%
+        arrange(.id, comp, nsim, time, outeq) %>%
+        select(-.id)
+      
+      obs <- sim_res  %>% filter(comp == 1) %>% #obs are duplicated in every compartment
+        select(id, nsim, time, out, outeq)
+      
+      amt <- sim_res  %>%
+        select(id, nsim, time, out = amt, comp)
+      
+      #add output noise if specified
+      if(!all(is.null(noise2))){
+        obs <- private$makeNoise(obs, noise2)
+      }
+      
+      ret <- list(
+        obs = obs,
+        amt = amt,
+        parValues = thisPrior$thetas %>% select(-prob) %>%
+          mutate(nsim = 1:n()) %>% relocate(nsim),
+        totalSets = thisPrior$total_nsim,
+        totalMeans = thisPrior$total_means,
+        totalCov = thisPrior$total_cov,
+        template = template,
+        model = mod)
+      
+      
+      class(ret) <- c("PM_sim_data", class(self$data)) # add PM_sim_data class to data
+      return(ret)
+      
+    }, # end .sim function
     
     # Create new simulation objects with results of simulation
     populate = function(simout, type) {

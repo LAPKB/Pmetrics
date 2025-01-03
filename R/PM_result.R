@@ -203,11 +203,8 @@ PM_result <- R6::R6Class(
         }
       }
       if (missing(file)) {
-        # if(is.null(self$NPdata$backend)){
         file <- "PMout.Rdata"
-        # } else {
-        #   file <- "NPcore.Rdata"
-        # }
+  
       }
       PMout <- list(
         pop = self$pop$data, post = self$post$data,
