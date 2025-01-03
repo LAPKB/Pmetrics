@@ -114,7 +114,7 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
   
   if (write) {
     save(core, file = "PMout.Rdata")
-    return(invisible(NPcore))
+    return(invisible(core))
   }
   
   setwd(cwd) # should be run folder

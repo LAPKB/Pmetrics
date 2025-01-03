@@ -23,28 +23,14 @@ res = params$res
 ## Summary
 
 ```{r}
-all_res <- nsub <- nobs <- numeqt <- icyctot <- NULL #declare for CRAN check
+nsub <- nobs <- numeqt <- icyctot <- NULL #declare for CRAN check
 
-if(is.null(res$ITdata)){
-  all_res <- res$NPdata
-  np <- TRUE
-} else {
-  all_res <- res$ITdata
-  np <- FALSE
-}
+nsub <- res$final$nsub
+icyctot <- max(res$cycle$objective$cycle)
 
-if(is.null(all_res$backend)){ #fortran
-  nsub <- all_res$nsub
-  icyctot <- all_res$icyctot
-} else { #rust
-  nsub <- all_res$final$nsub
-  icyctot <- max(all_res$cycle$cycnum)
-}
-
-
-
-did_converge <- ifelse(all_res$converge | all_res$converge == 1, "converged.", "did not converge.")
+did_converge <- ifelse(res$cycle$converged | res$cycle$converged == 1, "converged.", "did not converge.")
 numeqt <- max(res$op$data$outeq, na.rm = TRUE)
+np <- TRUE
 
 ```
 
@@ -135,7 +121,7 @@ metrics <- function(icen, pred.type, outeq){
 ```{r include = FALSE}
 
 template <- c(
-   "### Outeq {{outeq}} {.tabset .tabset-pills}\n",
+  "### Outeq {{outeq}} {.tabset .tabset-pills}\n",
   "#### Population {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
@@ -223,7 +209,7 @@ par_lims <- data.frame(
   sd = t(res$final$popSD),
   cv = t(res$final$popCV),
   shrink = ifelse(!is.null(res$final$shrinkage), 100*t(res$final$shrinkage), NA)
-
+  
 ) %>%
   dplyr::mutate(across(4:8,\(x) round(x, 3)))
 
