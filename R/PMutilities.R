@@ -1349,8 +1349,6 @@ save_flextable <- function(x) {
 #' @param prompt The prompt preceding user input. Default is ">>".
 #' @param ... Additional parameters which could be passed to [cli::cli_alert_warning].
 #' @return The value of the user response
-#' @example
-#' cli_ask("Do you wish to proceed?")
 #' @export
 #'
 cli_ask <- function(text, prompt = ">> ", ...) {
