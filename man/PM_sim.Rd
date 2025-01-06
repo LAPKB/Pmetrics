@@ -88,22 +88,31 @@ specified when the simulation was run.
 \item \emph{out} The simulated amount.
 \item \emph{comp} The compartment number that contains the \code{out} amount.
 }
-\item \strong{parValues}  A list of data frames with retained simulated parameter
-values after discarding any due to truncation limits. Each data frame has columns
-\emph{id} and the parameters for each simulated subject.
-\item \strong{totalSets} Number of all simulated parameter values needed to obtain the
-requested number of simulated sets within any \code{limits} specified.
-\item \strong{totalMeans} A list of vectors with the means of simulated parameter values
-for each subject in the template \code{data} file. If \code{usePost} is \code{FALSE}, which
-is typical, then each element in this list will be the same, since a single
-distribution for \code{poppar}, which may be multimodal and complex if \code{split} is \code{TRUE},
-is used for all templates in the \code{data} file.
-This can be useful to check against the original values in \code{poppar}, since the
+\item \strong{parValues}  A data frame with retained simulated parameter
+values after discarding any due to truncation limits. The data frame has these columns:
+\itemize{
+\item \emph{id} This column is only present if \code{usePost = TRUE}, since in that case
+the \code{nsim} profiles for each template are created by sampling from a different prior
+joint parameter probability distribution for each template. When \code{usePost = FALSE},
+the same prior is used for every template, so there is no \code{id} column.
+\item \emph{nsim} The simulation number, from 1 to the value for \code{nsim} specified when the simulation was run.
+\item a column for each random parameter in the model with the simulated values
+}
+\item \strong{totalSets} When \code{usePost = FALSE}, the number of all simulated parameter values needed to obtain the
+requested number of simulated sets within any \code{limits} specified. When \code{usePost = TRUE},
+a data frame with the same number for each template in the \code{data} file, since each template
+is simulated from a different prior distribution (see \code{parValues:id} above).
+\item \strong{totalMeans} If \code{usePost = FALSE}, this is a vector with the means of
+all simulated parameter values, including those discarded for being outside
+\code{limits}. If \code{usePost = TRUE}, this is a data frame of vectors, one for each template in the \code{data} file,
+and an \code{id} column to identify the template in the \code{data} source.
+This can be useful to check against the original means in \code{poppar}, since the
 mean of the \code{parValues} may be different due to truncation.
-\item \strong{totalCov} Similar to \code{totalMeans}, a list of covariance matrices
-for simulated parameter values from each template. Again, every element
-of this list will be the same if \code{usePost} is \code{FALSE}, and \code{totalCov} can
-be useful as a check against the original values in \code{poppar}.
+\item \strong{totalCov} Similar to \code{totalMeans}, either a single covariance matrix
+for all simulated parameter values when \code{usePost = FALSE} . If \code{usePost = TRUE},
+this is a data frame of such matrices, one for each template in the \code{data} file,
+and an \code{id} column to identify the template in the \code{data} source.
+Again, this can be useful as a check against the original covariance in \code{poppar}.
 }}
 }
 \if{html}{\out{</div>}}
@@ -405,11 +414,15 @@ original value in each row of the target column.
 }}
 
 \item{\code{makecsv}}{A character vector for the name of the single .csv file to be
-made for all simulated "subjects".  If missing, no file will be
+made for all simulated "subjects".  If no file extension is included, ".csv"
+will be added, e.g. "simout" will become "simout.csv". If an extension is included,
+Pmetrics will use it, e.g. "simout.ssv" will save under that name.
+If missing, no file will be
 made. If a \code{makecsv} filename is supplied, ID numbers will
-be of the form nsub.nsim, e.g. 1.001 through 1.1 for the first subject,
-2.001 through 2.1 for the second subject, etc. if 100 simulations are made
-from each subject.}
+be of the form \emph{id_nsim}, e.g. 1_1 through 1_10 through for the first
+data template id,
+2_1 through 2_10 for the second template id, etc. if 10 simulations are made
+from each subject in the data template.}
 
 \item{\code{quiet}}{Boolean operator controlling whether a model summary report is
 given.  Default is \code{FALSE}.}
