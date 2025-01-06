@@ -371,7 +371,6 @@ PM_Vmodel <- R6::R6Class("PM_model",
 
 
 # private classes
-# TODO: Should I make these fields private?
 # This generates text which will be written to genmodel.txt
 PM_Vinput <- R6::R6Class(
   "PM_Vinput",
@@ -512,7 +511,6 @@ PM_Vinput <- R6::R6Class(
 
 
 # PM_model_list -----------------------------------------------------------
-
 
 PM_model_list <- R6::R6Class("PM_model_list",
   inherit = PM_Vmodel,

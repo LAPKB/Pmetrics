@@ -1099,7 +1099,7 @@ print.summary.PM_final <- function(x,
     flextable::set_header_labels(values = list(Median = glue::glue("Median ({ci}% CI)"), MAWD = glue::glue("MAWD ({ci}% CI)"))) %>%
     flextable::set_table_properties(width = .5) %>%
     flextable::footnote(i = 1, j = 3, 
-                        value = as_paragraph("MAWD: Mean Absolute Weighted Deviation, a nonparametric measure of dispersion similar to variance"),
+                        value = flextable::as_paragraph("MAWD: Mean Absolute Weighted Deviation, a nonparametric measure of dispersion similar to variance"),
                         ref_symbols = "1",
                         part = "header") %>%
     flextable::theme_zebra() %>%

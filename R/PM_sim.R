@@ -38,22 +38,29 @@ PM_sim <- R6::R6Class(
     #'   - *time* As for `obs`.
     #'   - *out* The simulated amount.
     #'   - *comp* The compartment number that contains the `out` amount.
-    #' * **parValues**  A list of data frames with retained simulated parameter 
-    #' values after discarding any due to truncation limits. Each data frame has columns
-    #' *id* and the parameters for each simulated subject.
-    #' * **totalSets** Number of all simulated parameter values needed to obtain the
-    #' requested number of simulated sets within any `limits` specified.
-    #' * **totalMeans** A list of vectors with the means of simulated parameter values
-    #' for each subject in the template `data` file. If `usePost` is `FALSE`, which
-    #' is typical, then each element in this list will be the same, since a single
-    #' distribution for `poppar`, which may be multimodal and complex if `split` is `TRUE`,
-    #' is used for all templates in the `data` file.
-    #' This can be useful to check against the original values in `poppar`, since the
+    #' * **parValues**  A data frame with retained simulated parameter 
+    #' values after discarding any due to truncation limits. The data frame has these columns:
+    #'   - *id* This column is only present if `usePost = TRUE`, since in that case
+    #'   the `nsim` profiles for each template are created by sampling from a different prior 
+    #'   joint parameter probability distribution for each template. When `usePost = FALSE`,
+    #'   the same prior is used for every template, so there is no `id` column.
+    #'   - *nsim* The simulation number, from 1 to the value for `nsim` specified when the simulation was run.
+    #'   - a column for each random parameter in the model with the simulated values
+    #' * **totalSets** When `usePost = FALSE`, the number of all simulated parameter values needed to obtain the
+    #' requested number of simulated sets within any `limits` specified. When `usePost = TRUE`,
+    #' a data frame with the same number for each template in the `data` file, since each template
+    #' is simulated from a different prior distribution (see `parValues:id` above).
+    #' * **totalMeans** If `usePost = FALSE`, this is a vector with the means of 
+    #' all simulated parameter values, including those discarded for being outside
+    #' `limits`. If `usePost = TRUE`, this is a data frame of vectors, one for each template in the `data` file,
+    #' and an `id` column to identify the template in the `data` source.
+    #' This can be useful to check against the original means in `poppar`, since the
     #' mean of the `parValues` may be different due to truncation.
-    #' * **totalCov** Similar to `totalMeans`, a list of covariance matrices 
-    #' for simulated parameter values from each template. Again, every element
-    #' of this list will be the same if `usePost` is `FALSE`, and `totalCov` can
-    #' be useful as a check against the original values in `poppar`.
+    #' * **totalCov** Similar to `totalMeans`, either a single covariance matrix  
+    #' for all simulated parameter values when `usePost = FALSE` . If `usePost = TRUE`, 
+    #' this is a data frame of such matrices, one for each template in the `data` file,
+    #' and an `id` column to identify the template in the `data` source.
+    #' Again, this can be useful as a check against the original covariance in `poppar`.
     data = NULL,
     
     #' @description
