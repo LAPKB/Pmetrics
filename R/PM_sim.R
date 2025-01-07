@@ -1017,7 +1017,6 @@ PM_sim <- R6::R6Class(
       if (length(postToUse) > 0) {
         # simulating from posteriors, each posterior matched to a subject
         # need to set theta as the posterior mean or median for each subject
-        # code here...
         
         ans <- NULL
         data_list <- list()
@@ -1306,6 +1305,7 @@ PM_sim <- R6::R6Class(
     # call simulator and process results
     getSim = function(thisPrior, template, mod, noise2){
       thetas <- thisPrior$thetas %>% select(-prob) %>% as.matrix()
+      mod$compile() # check if compiled and if not, do so
       sim_res <- mod$simulate_all(template, thetas)
       sim_res$.id <- template$standard_data$id[match(sim_res$id, template$standard_data$id)]
       sim_res <- sim_res %>% rename(comp = state_index, nsim = spp_index, amt = state) %>%
