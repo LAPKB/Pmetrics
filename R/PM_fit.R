@@ -430,15 +430,18 @@ PM_fit <- R6::R6Class(
     binary_path = NULL,
     setup_rust_execution = function() {
       
-      if (!file.exists(self$model$binary_path)) {
-        self$model$compile()
-        if (!file.exists(self$model$binary_path)) {
-          cli::cli_abort(c(
-            "x" = "Rust has not been built.",
-            "i" = "Make sure the model was built correcly when calling {.fn PM_model$new}"
-          ))
-        }
-      }
+      # check if compiled and if not, do so
+      self$model$compile()
+      
+      # if (is.null(self$model$binary_path)) {
+      #   self$model$compile()
+      #   if (!file.exists(self$model$binary_path)) {
+      #     cli::cli_abort(c(
+      #       "x" = "Rust has not been built.",
+      #       "i" = "Make sure the model was built correcly when calling {.fn PM_model$new}"
+      #     ))
+      #   }
+      # }
       # cwd <- getwd()
       # self$model$write_rust()
 
