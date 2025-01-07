@@ -3,7 +3,8 @@ equation::ODE::new(
             fetch_params!(p, </params>);
             fetch_cov!(cov, t, </covs>);
             </constant>
-            </seq>
+            </sec>
+            //</tem>
             </eqn>
         },
         |p| {
@@ -24,7 +25,7 @@ equation::ODE::new(
             fetch_params!(p, </params>);
             fetch_cov!(cov, t, </covs>);
             </constant>
-            </seq>
+            </sec>
             </out_eqs>
         },
         (</neqs>, </nouteqs>),
