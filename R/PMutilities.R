@@ -220,6 +220,7 @@ parseBlocks <- function(model) {
   ini <- blockStart[grep("#ini", headers)]
   f <- blockStart[grep("#f", headers)]
   lag <- blockStart[grep("#lag", headers)]
+  tem <- blockStart[grep("#tem", headers)]
   diffeq <- blockStart[grep("#dif", headers)]
   eqn <- blockStart[grep("#eqn", headers)]
   output <- blockStart[grep("#out", headers)]
@@ -233,13 +234,13 @@ parseBlocks <- function(model) {
   
   headerPresent <- which(c(
     length(primVar) > 0, length(covar) > 0, length(secVar) > 0, length(bolus) > 0, length(ini) > 0,
-    length(f) > 0, length(lag) > 0, length(eqn) > 0, length(output) > 0, length(error) > 0, length(extra) > 0
+    length(f) > 0, length(lag) > 0, length(tem) > 0, length(eqn) > 0, length(output) > 0, length(error) > 0, length(extra) > 0
   ))
-  if (any(!c(1, 9, 10) %in% headerPresent)) {
+  if (any(!c(1, 10, 11) %in% headerPresent)) {
     return(list(status = -1, msg = "You must have #Primary, #Output, and #Error blocks at minimum"))
   }
   
-  headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, eqn, output, error, extra)
+  headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, tem, eqn, output, error, extra)
   blockStart <- blockStart[rank(headerOrder)]
   blockStop <- blockStop[rank(headerOrder)]
   
@@ -250,7 +251,7 @@ parseBlocks <- function(model) {
   headerPresent <- headerPresent[ok]
   
   # get blocks
-  blocks <- list(primVar = NA, covar = NA, secVar = NA, bolus = NA, ini = NA, f = NA, lag = NA, eqn = NA, output = NA, error = NA, extra = NA)
+  blocks <- list(primVar = NA, covar = NA, secVar = NA, bolus = NA, ini = NA, f = NA, lag = NA, tem = NA, eqn = NA, output = NA, error = NA, extra = NA)
   for (i in 1:length(headerPresent)) {
     temp <- modelFile[(blockStart[i] + 1):blockStop[i]]
     allblank <- grep("^[[:blank:]]+$", temp)
@@ -260,7 +261,7 @@ parseBlocks <- function(model) {
   emptyHeaders <- which(is.na(blocks))
   if (length(emptyHeaders) > 0) blocks[emptyHeaders] <- ""
   return(blocks)
-}
+} # end parseBlocks
 
 # check all blocks statements for more than maxwidth characters and insert line break if necessary
 chunks <- function(x, maxwidth = 60) {
@@ -280,7 +281,7 @@ chunks <- function(x, maxwidth = 60) {
     }
   }
   return(x)
-}
+} # end chunks
 
 # change dX[digit] to XP(digit) and X[digit] to X(digit)
 fortranize <- function(block) {

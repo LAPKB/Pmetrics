@@ -88,11 +88,7 @@ exData$plot() #plot the raw data; more on that later
 # The following code creates the same model as in /src/model.txt file.
 # See PMmanual() for details on creating models in R compared to text files.
 # The advantage of creating them in R is that one does not need to copy model
-# files into folders to provide necessary inputs. Note that the model below
-# has differential equations solely for the purpose of plotting it. The
-# algebraic token in {} within the equation block tells Pmetrics that this can
-# be solved algebraically without using the differential equations. Again,
-# see PMmanual() and the article on models for details on this.
+# files into folders to provide necessary inputs. 
 
 mod1 <- PM_model$new(list(
   pri = list(
@@ -108,15 +104,15 @@ mod1 <- PM_model$new(list(
     covariate("GENDER"),
     covariate("HEIGHT")
   ),
-  eqn = c(
-    "{algebraic: P[Ka,Ke,V], B[1], R[2], O[2]}",
-    "XP(1) = -Ka*X(1)",
-    "XP(2) = Ka*X(1) - Ke*X(2)"
+  eqn = mod("one_comp_IV"),
+  eqn = list(
+    "dX[1] = -Ka*X[1]",
+    "dX[2] = Ka*X[1] - Ke*X[2]"
   ),
-  lag = list("Tlag(1) = lag"),
+  lag = list("Tlag[1] = lag"),
   out = list(
     Y1 = list(
-      value = "X(2)/V",
+      value = "X[2]/V",
       err = list(
         model = proportional(5),
         assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
