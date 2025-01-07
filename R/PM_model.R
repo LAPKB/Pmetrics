@@ -106,9 +106,9 @@ PM_model$new <- function(model, ...) {
   } else {
     cli::cli_abort(c("x" = "Non supported model type: {typeof(model)}"))
   }
-  if (getPMoptions()$backend == "rust") {
-    model$compile()
-  }
+  # if (getPMoptions()$backend == "rust") {
+  #   model$compile()
+  # }
   return(model)
 }
 
@@ -789,7 +789,6 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
                                    return()
                                  }
-                                 
                                  temp_model <- file.path(tempdir(), "temp_model.txt")
                                  self$write_rust(temp_model)
                                  model_path <- tempfile(pattern = "model_", fileext = ".pmx")
