@@ -229,6 +229,7 @@ parseBlocks <- function(model) {
   
   if (length(diffeq) > 0) {
     eqn <- diffeq
+    tem <- "ode"
   } # change diffeq block to eqn for more general
   # cat("Please update your model file. The #DIF block should be renamed as #EQN, which is short for EQuatioNs.\n")
   
