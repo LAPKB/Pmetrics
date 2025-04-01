@@ -90,6 +90,10 @@ PM_model <- R6::R6Class("PM_Vmodel",
 
 
 #' @export
+
+
+##### This function creates a new model depending on input given
+
 PM_model$new <- function(model, ...) {
   # print(model)
   # Now we have multiple options for the model:
@@ -111,6 +115,8 @@ PM_model$new <- function(model, ...) {
   # }
   return(model)
 }
+
+##### These functions create various model components
 
 #' @title Additive error model
 #' @description
@@ -514,7 +520,8 @@ PM_Vinput <- R6::R6Class(
 
 
 # PM_model_list -----------------------------------------------------------
-
+# This creates the model from a model_list object
+# 
 PM_model_list <- R6::R6Class("PM_model_list",
                              inherit = PM_Vmodel,
                              public = list(
@@ -547,7 +554,70 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                    }
                                  }
                                  
+                                 ### check template/equation blocks
                                  
+                                 # TEMPLATE
+                                 tem <- model_list$tem %>% tolower() 
+                                 
+                                 # EQUATIONS
+                                 eqs <- model_list$eqn %>% tolower()
+                                 
+                                 # no equations found
+                                 if (length(eqs) == 0) { 
+                                   if (length(tem) > 0 && tem != "ode"){ # get equations from model library
+                                     model_list$eqn <- model_lib(tem) # these are only for plotting purposes
+                                   } else { # try to parse like old Pmetrics
+                                     key_vars <- c("ke", "v", "ka", "kcp", "kpc")
+                                     pri <- names(model_list$pri)
+                                     found_pri_keys <- key_vars %in% tolower(pri)
+                                     
+                                     if (!is.null(model_list$sec)) {
+                                       found_sec_keys <- purrr::map_lgl(key_vars, \(x) {
+                                         any(stringr::str_detect(model_list$sec,
+                                                                 stringr::regex(x, ignore_case = TRUE)))
+                                       })
+                                     } else {
+                                       found_sec_keys <- rep(NA, 5)
+                                     }
+                                     
+                                     found_keys <- key_vars[found_pri_keys | found_sec_keys] %>% na.exclude()
+                                     
+                                     if(length(found_keys)>0){ # we found key variable names
+                                       
+                                       if(all(found_keys %in% c("ke", "v"))){
+                                         model_list$eqn <- "dX[1] = RATEIV[1] - Ke*X[1]"
+                                         model_list$tem <- tem <- "one_comp_iv"
+                                       } else if(all(found_keys %in% c("ke", "v", "ka"))){  
+                                         model_list$eqn <- c("dX[1] = BOLUS[1] - Ka*X[1]", "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]")
+                                         model_list$tem <- tem <- "two_comp_bolus"
+                                       } else if(all(found_keys %in% c("ke", "v", "kcp", "kpc"))){
+                                         model_list$eqn <- c("dX[1] = RATEIV[1] - (Ke+KCP)*X[1] + KPC*X[2]", "dX[2] = KCP*X[1] - KPC*X[2]")
+                                         model_list$tem <- tem <- "two_comp_iv"
+                                       } else if(all(found_keys %in% c("ke",
+                                                                       "v",
+                                                                       "ka",
+                                                                       "kcp",
+                                                                       "kpc"))){
+                                         model_list$eqn <- c("dX[1] = BOLUS[1] - Ka*X[1]",
+                                                                  "dX[2] = RATEIV[1] + Ka*X[1] - (Ke+KCP)*X[2] + KPC*X[3]",
+                                                                  "dX[3] = KCP*X[2] - KPC*X[3]")
+                                         model_list$tem <- tem <- "three_comp_bolus"
+                                       } else {
+                                         cli::cli_abort(c("x" = "Provide a valid {.code tem} or an {.code eqn} block to define the model equations.",
+                                                          "i" = "See help for {.fn PM_model}."))
+                                       }
+                                       
+                                       
+                                       
+                                     } else {  # we did not find key variable names                                 
+                                       cli::cli_abort(c("x" = "Provide a {.code tem} or an {.code eqn} block to define the model equations.",
+                                                        "i" = "See help for {.fn PM_model}."))
+                                     }
+                                     
+                                   }
+                                 } else { # length of equations > 0
+                                   model_list$tem <- tem <- "ode"
+                                 }
                                  
                                  self$model_list <- private$order(model_list)
                                },
@@ -615,67 +685,9 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  
                                  # TEMPLATE
                                  tem <- self$model_list$tem %>% tolower() 
-                                 #content <- gsub("</tem>", paste0(tem,";"), content)
-                                 
+
                                  # EQUATIONS
                                  eqs <- self$model_list$eqn %>% tolower()
-                                 
-                                 # no equations found
-                                 if (length(eqs) == 0) { 
-                                   if (length(tem)>0 && tem != "ode"){ # get equations from model library
-                                     self$model_list$eqn <- model_lib(tem) # these are only for plotting purposes
-                                   } else { # try to parse like old Pmetrics
-                                     key_vars <- c("ke", "v", "ka", "kcp", "kpc")
-                                     pri <- names(self$model_list$pri)
-                                     found_pri_keys <- key_vars %in% tolower(pri)
-                                     
-                                     if (!is.null(self$model_list$sec)) {
-                                       found_sec_keys <- purrr::map_lgl(key_vars, \(x) {
-                                         any(stringr::str_detect(self$model_list$sec,
-                                                                 stringr::regex(x, ignore_case = TRUE)))
-                                       })
-                                     } else {
-                                       found_sec_keys <- rep(NA, 5)
-                                     }
-                                     
-                                     found_keys <- key_vars[found_pri_keys | found_sec_keys] %>% na.exclude()
-                                     
-                                     if(length(found_keys)>0){ # we found key variable names
-                                       
-                                       if(all(found_keys %in% c("ke", "v"))){
-                                         self$model_list$eqn <- "dX[1] = RATEIV[1] - Ke*X[1]"
-                                         self$model_list$tem <- tem <- "one_comp_iv"
-                                       } else if(all(found_keys %in% c("ke", "v", "ka"))){  
-                                         self$model_list$eqn <- c("dX[1] = BOLUS[1] - Ka*X[1]", "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]")
-                                         self$model_list$tem <- tem <- "two_comp_bolus"
-                                       } else if(all(found_keys %in% c("ke", "v", "kcp", "kpc"))){
-                                         self$model_list$eqn <- c("dX[1] = RATEIV[1] - (Ke+KCP)*X[1] + KPC*X[2]", "dX[2] = KCP*X[1] - KPC*X[2]")
-                                         self$model_list$tem <- tem <- "two_comp_iv"
-                                       } else if(all(found_keys %in% c("ke",
-                                                                       "v",
-                                                                       "ka",
-                                                                       "kcp",
-                                                                       "kpc"))){
-                                         self$model_list$eqn <- c("dX[1] = BOLUS[1] - Ka*X[1]",
-                                                                  "dX[2] = RATEIV[1] + Ka*X[1] - (Ke+KCP)*X[2] + KPC*X[3]",
-                                                                  "dX[3] = KCP*X[2] - KPC*X[3]")
-                                         self$model_list$tem <- tem <- "three_comp_bolus"
-                                       } else {
-                                         cli::cli_abort(c("x" = "Provide a valid {.code tem} or an {.code eqn} block to define the model equations.",
-                                                          "i" = "See help for {.fn PM_model}."))
-                                       }
-                                       
-                                       
-                                       
-                                     } else {  # we did not find key variable names                                 
-                                       cli::cli_abort(c("x" = "Provide a {.code tem} or an {.code eqn} block to define the model equations.",
-                                                        "i" = "See help for {.fn PM_model}."))
-                                     }
-                                     
-                                   }
-                                 } else { # length of equations > 0
-                                   self$model_list$tem <- tem <- "ode"
-                                 }
                                  
                                  # count the number of equations by looking for xp() or dx[]
                                  eqs <- tolower(self$model_list$eqn)
@@ -1334,6 +1346,8 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                  # extra
                                  if (blocks$extra[1] != "") {
                                    model_list$ext <- blocks$extra
+                                 } else {
+                                   model_list$extra <- NULL
                                  }
                                  
                                  # secondary variables
@@ -1344,36 +1358,50 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                  # bioavailability
                                  if (blocks$f[1] != "") {
                                    model_list$fa <- as.list(blocks$f)
+                                 } else {
+                                   model_list$f <- NULL
                                  }
                                  
                                  # bolus
                                  if (blocks$bol[1] != "") {
                                    model_list$bol <- as.list(blocks$bol)
+                                 } else {
+                                   model_list$bol <- NULL
                                  }
                                  
                                  # initial conditions
                                  if (blocks$ini[1] != "") {
                                    model_list$ini <- as.list(blocks$ini)
+                                 } else {
+                                   model_list$ini <- NULL
                                  }
                                  
                                  # lag time
                                  if (blocks$lag[1] != "") {
                                    model_list$lag <- as.list(blocks$lag)
+                                 } else {
+                                   model_list$lag <- NULL
                                  }
                                  
                                  # analytic model name
                                  if (blocks$tem[1] != "") {
                                    model_list$tem <- blocks$tem
+                                 } else {
+                                   model_list$tem <- NULL
                                  }
                                  
                                  # differential equations - legacy
                                  if (!is.null(blocks$diffeq) && blocks$diffeq[1] != "") {
                                    model_list$eqn <- as.list(blocks$diffeq)
+                                 } else {
+                                   model_list$diffeq <- NULL
                                  }
                                  
                                  # model equations - will eventually replace diffeq above
                                  if (blocks$eqn[1] != "") {
                                    model_list$eqn <- as.list(blocks$eqn)
+                                 } else {
+                                   model_list$eqn <- NULL
                                  }
                                  
                                  # out/err
@@ -1421,6 +1449,7 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                  
                                  cat(msg)
                                  flush.console()
+                                 model_list <- PM_model_list$new(model_list)$model_list
                                  return(model_list)
                                }
                              ) # end private list
