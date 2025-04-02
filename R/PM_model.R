@@ -587,12 +587,21 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                        if(all(found_keys %in% c("ke", "v"))){
                                          model_list$eqn <- "dX[1] = RATEIV[1] - Ke*X[1]"
                                          model_list$tem <- tem <- "one_comp_iv"
+                                       } else if(all(found_keys %in% c("cl", "v"))){
+                                         model_list$eqn <- "dX[1] = RATEIV[1] - CL/V*X[1]"
+                                         model_list$tem <- tem <- "one_comp_iv_cl"
                                        } else if(all(found_keys %in% c("ke", "v", "ka"))){  
                                          model_list$eqn <- c("dX[1] = BOLUS[1] - Ka*X[1]", "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]")
                                          model_list$tem <- tem <- "two_comp_bolus"
+                                       } else if(all(found_keys %in% c("cl", "v", "ka"))){  
+                                         model_list$eqn <- c("dX[1] = BOLUS[1] - Ka*X[1]", "dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]")
+                                         model_list$tem <- tem <- "two_comp_bolus_cl"
                                        } else if(all(found_keys %in% c("ke", "v", "kcp", "kpc"))){
                                          model_list$eqn <- c("dX[1] = RATEIV[1] - (Ke+KCP)*X[1] + KPC*X[2]", "dX[2] = KCP*X[1] - KPC*X[2]")
                                          model_list$tem <- tem <- "two_comp_iv"
+                                       } else if(all(found_keys %in% c("cl", "v1", "q", "v2"))){
+                                         model_list$eqn <- c("dX[1] = RATEIV[1] - (CL + Q)/V1*X[1] + Q/V2*X[2]", "dX[2] = Q/V1*X[1] - Q/V2*X[2]")
+                                         model_list$tem <- tem <- "two_comp_iv_cl"
                                        } else if(all(found_keys %in% c("ke",
                                                                        "v",
                                                                        "ka",
@@ -602,6 +611,15 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                                                   "dX[2] = RATEIV[1] + Ka*X[1] - (Ke+KCP)*X[2] + KPC*X[3]",
                                                                   "dX[3] = KCP*X[2] - KPC*X[3]")
                                          model_list$tem <- tem <- "three_comp_bolus"
+                                       } else if(all(found_keys %in% c("cl",
+                                                                       "v2",
+                                                                       "ka",
+                                                                       "q",
+                                                                       "v3"))){
+                                         model_list$eqn <- c("dX[1] = BOLUS[1] - Ka*X[1]",
+                                                             "dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/V2*X[2] + Q/V3*X[3]",
+                                                             "dX[3] = Q/V2*X[2] - Q/V3*X[3]")
+                                         model_list$tem <- tem <- "three_comp_bolus_cl"
                                        } else {
                                          cli::cli_abort(c("x" = "Provide a valid {.code tem} or an {.code eqn} block to define the model equations.",
                                                           "i" = "See help for {.fn PM_model}."))
@@ -685,6 +703,8 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  
                                  # TEMPLATE
                                  tem <- self$model_list$tem %>% tolower() 
+                                 #content <- gsub("</tem>", tem, content)
+                                 
 
                                  # EQUATIONS
                                  eqs <- self$model_list$eqn %>% tolower()
