@@ -1,10 +1,11 @@
-mod build;
+// mod build;
 mod executor;
 mod settings;
 mod simulation;
 
+use anyhow::Result;
 use extendr_api::prelude::*;
-use pmcore::prelude::data::read_pmetrics;
+use pmcore::prelude::{data::read_pmetrics, pharmsol::exa::build};
 use simulation::SimulationRow;
 use std::process::Command;
 
@@ -64,9 +65,10 @@ fn simulate_all(
 
 ///@export
 #[extendr]
-pub fn fit(model_path: &str, data: &str, params: List, output_path: &str) {
+pub fn fit(model_path: &str, data: &str, params: List, output_path: &str) -> Result<()> {
     validate_paths(data, model_path);
-    executor::fit(model_path.into(), data.into(), params, output_path.into());
+    executor::fit(model_path.into(), data.into(), params, output_path.into())?;
+    Ok(())
 }
 
 fn parse_theta(matrix: RMatrix<f64>) -> Vec<Vec<f64>> {
@@ -85,17 +87,27 @@ fn parse_theta(matrix: RMatrix<f64>) -> Vec<Vec<f64>> {
 /// Compiles the text representation of a model into a binary file.
 ///@export
 #[extendr]
-fn compile_model(model_path: &str, output_path: &str, params: Strings) {
+fn compile_model(model_path: &str, output_path: &str, params: Strings) -> Result<()> {
     let params: Vec<String> = params.iter().map(|x| x.to_string()).collect();
-    build::compile(model_path.into(), Some(output_path.into()), params.to_vec());
+    build::compile(
+        model_path.into(),
+        Some(output_path.into()),
+        params.to_vec(),
+        |_key, val| {
+            print!("{}", val);
+        },
+    )?;
+    Ok(())
 }
 
 /// Dummy function to cache compilation artifacts.
 ///@export
 #[extendr]
-fn dummy_compile() -> String {
-    let build_path = build::dummy_compile().unwrap();
-    build_path
+fn dummy_compile() -> Result<String> {
+    let build_path = build::dummy_compile(|_key, val| {
+        print!("{}", val);
+    })?;
+    Ok(build_path)
 }
 
 ///@export
