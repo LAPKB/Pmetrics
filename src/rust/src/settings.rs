@@ -21,6 +21,7 @@ pub(crate) fn settings(ranges: List, params: &Vec<String>, output_path: &str) ->
 
 fn robj_to_hashmap(list: List) -> HashMap<String, (f64, f64)> {
     let mut map: HashMap<String, (f64, f64)> = HashMap::new();
+
     list.iter().for_each(|x| {
         let name = x.0.to_owned();
         let ranges = x.1.as_real_slice().unwrap();
