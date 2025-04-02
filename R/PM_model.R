@@ -663,6 +663,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       content <- gsub("</params>", params %>% paste(collapse = ","), content)
 
 
+
       cat(params, "\n")
 
       constant <- c()
@@ -679,6 +680,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       }
       content <- gsub("</covs>", covs %>% paste(collapse = ","), content)
 
+
       # SECONDARY
       sec <- self$model_list$sec %>% purrr::map(function(l) {
         l <- private$rust_up(l) # convert fortran/R to rust
@@ -694,6 +696,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       }) # end line by line mapping of sec
       content <- gsub("</sec>", sec %>% paste(collapse = ""), content)
 
+
       # TEMPLATE
       tem <- self$model_list$tem %>% tolower()
 
@@ -706,6 +709,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       content <- gsub("</neqs>", neqs, content)
 
 
+
       eqs <- eqs %>%
         stringr::str_replace_all("[\\(\\[](\\d+)[\\)\\]]", function(a) {
           paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
@@ -716,7 +720,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
         paste(collapse = ";\n") %>%
         paste0(";")
       content <- gsub("</eqn>", eqs, content)
-      cat(eqs, "\n")
+
 
       # LAG
       lag <- ""
@@ -726,6 +730,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       }
       content <- gsub("</lag>", lag %>% paste0(collapse = ""), content)
 
+
       # FA
       fa <- ""
       for (line in self$model_list$fa %>% tolower()) {
@@ -734,6 +739,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       }
       fa <- fa %>% purrr::map(\(l) private$rust_up(l))
       content <- gsub("</fa>", fa %>% paste0(collapse = ""), content)
+
 
       # INITIAL CONDITIONS
       init <- self$model_list$ini %>%
@@ -756,6 +762,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
         paste0(collapse = "\n")
       content <- gsub("</init>", init, content)
 
+
       # OUTPUTS
       out_eqs <- ""
       for (key in names(self$model_list$out)) {
@@ -771,11 +778,14 @@ PM_model_list <- R6::R6Class("PM_model_list",
       }
       content <- gsub("</out_eqs>", out_eqs %>% paste(collapse = ""), content)
 
+
       n_out <- length(self$model_list$out)
       content <- gsub("</nouteqs>", n_out, content)
 
 
+
       self$model_list <- private$order(self$model_list)
+      cat(file_name, "\n")
       readr::write_file(content, file_name)
     },
     update = function(changes_list) {
