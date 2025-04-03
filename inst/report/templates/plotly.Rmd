@@ -207,8 +207,8 @@ par_lims <- data.frame(
   ave = t(res$final$popMean),
   med = t(res$final$popMedian),
   sd = t(res$final$popSD),
-  cv = t(res$final$popCV),
-  shrink = ifelse(!is.null(res$final$shrinkage), 100*t(res$final$shrinkage), NA)
+  cv = 100*t(res$final$popCV),
+  shrink = 100*t(res$final$shrinkage)
   
 ) %>%
   dplyr::mutate(across(4:8,\(x) round(x, 3)))

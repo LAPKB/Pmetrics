@@ -124,7 +124,7 @@ PM_cov <- R6::R6Class(
       
       post_med <- posts %>%
         group_by(id) %>%
-        reframe(across(-c(point, prob), \(x) wtd.quantile(x, prob, 0.5))) %>%
+        suppressWarnings(reframe(across(-c(point, prob), \(x) wtd.quantile(x, prob, 0.5)))) %>%
         mutate(icen = "median")
       
       
