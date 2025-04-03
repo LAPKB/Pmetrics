@@ -335,7 +335,7 @@ PM_final <- R6::R6Class(
       
       postMed <- post %>%
         group_by(id) %>%
-        reframe(across(-c(point, prob), \(x) wtd.quantile(x, prob, 0.5))) # in PMutilities
+        suppressWarnings(reframe(across(-c(point, prob), \(x) wtd.quantile(x, prob, 0.5)))) # in PMutilities
       
       
       # shrinkage
@@ -343,11 +343,12 @@ PM_final <- R6::R6Class(
       sh <- varEBD / popSD**2
       
       # ranges
-      ab <- config$random %>%
-        unlist() %>%
-        matrix(ncol = 2, byrow = TRUE)
+      ab <- config$parameters[[1]] %>%
+        filter(fixed == FALSE) %>%
+        select(lower, upper) %>%
+        as.matrix()
       
-      gridpts <- config$config$init_points
+      gridpts <- config$prior$Sobol[1]
       
       final <- list(
         popPoints = theta,
