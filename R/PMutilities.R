@@ -1278,6 +1278,34 @@ wtd.var <- function (x, weights = NULL,
   sum(weights * ((x - xbar)^2))/(sw - 1)
 }
 
+
+
+# Check if all values numeric ---------------------------------------------
+
+#' @title Check if all values are numeric
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Checks if all values in a vector are numeric.
+#' @details
+#' The function checks if all values in a vector are numeric.
+#' It can be used to check if a vector contains only numeric values.
+#' It can also be used to check if a vector contains any non-numeric values.
+#' @param x A vector to check.
+#' @param what A character string indicating what to return.
+#' Can be "test", "vector", or "nonnum".
+#' The default is "test".
+#' @param extras A character vector of extra values to exclude from the check.
+#' The default is c(".", "NA").
+#' @return A logical value indicating if all values are numeric.
+#' If `what` is "vector", a numeric vector is returned.
+#' If `what` is "nonnum", a character vector of non-numeric values is returned.
+#' If `what` is "test", a logical value is returned.
+#' @export
+#' @examples
+#' all.is.numeric(c("1", "2", "3"))
+#' all.is.numeric(c("1", "2", "a"))
+#' all.is.numeric(c("1", "2", "3"), what = "vector")
+#' all.is.numeric(c("1", "2", "a"), what = "nonnum")0
 all.is.numeric <- function (x, what = c("test", "vector", "nonnum"), extras = c(".", 
                                                               "NA")) 
 {
