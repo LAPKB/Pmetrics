@@ -2,23 +2,25 @@
 % Please edit documentation in R/PM_model.R
 \name{PM_model_list}
 \alias{PM_model_list}
-\title{Compile PM_model object}
+\title{Create PM_model from list of lists}
 \description{
-Compile PM_model object
+Create PM_model from list of lists
 
-Compile PM_model object
-
-Simulate One Scenario
-
-Simulate All Scenarios
-
-Get Model Parameters
+Create PM_model from list of lists
 }
 \note{
 This function can only be used with the Rust backend. If the backend is not set to "rust",
 an error will be thrown.
 }
 \examples{
+
+## ------------------------------------------------
+## Method `PM_model_list$update`
+## ------------------------------------------------
+
+\dontrun{
+model$update(list(pri = list(ka = c(0.1, 0.2)), out = list(Y1 = list(val = "C1"))))
+}
 
 ## ------------------------------------------------
 ## Method `PM_model_list$compile`
@@ -63,6 +65,15 @@ model$parameters()
 \section{Super class}{
 \code{\link[Pmetrics:PM_model]{Pmetrics::PM_model}} -> \code{PM_model_list}
 }
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{model_list}}{The model list object}
+
+\item{\code{binary_path}}{The path to the compiled model binary. Used by the rust backend.}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
@@ -90,35 +101,82 @@ model$parameters()
 \if{html}{\out{<a id="method-PM_model_list-new"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model_list-new}{}}}
 \subsection{Method \code{new()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Generates a model from a list of lists.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_model_list$new(model_list)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{model_list}}{The appropriate list.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model_list-write"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model_list-write}{}}}
 \subsection{Method \code{write()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Transforms model list in to a text file
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_model_list$write(model_path = "genmodel.txt", engine = "npag")}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{model_path}}{Name of the file to be created.}
+
+\item{\code{engine}}{Currently only "npag".}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model_list-write_rust"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model_list-write_rust}{}}}
 \subsection{Method \code{write_rust()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Fills in the template file with the model information
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_model_list$write_rust(file_name = "parsed_model.txt")}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file_name}}{Name of the file to be created.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model_list-update"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model_list-update}{}}}
 \subsection{Method \code{update()}}{
+Updates the PM_model object with new values.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_model_list$update(changes_list)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{changes_list}}{A list of changes to be made to the model.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+model$update(list(pri = list(ka = c(0.1, 0.2)), out = list(Y1 = list(val = "C1"))))
+}
+}
+\if{html}{\out{</div>}}
+
 }
 
 }
