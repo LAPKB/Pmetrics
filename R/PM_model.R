@@ -705,7 +705,6 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  tem <- self$model_list$tem %>% tolower() 
                                  #content <- gsub("</tem>", tem, content)
                                  
-
                                  # EQUATIONS
                                  eqs <- self$model_list$eqn %>% tolower()
                                  
@@ -1270,6 +1269,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  return(model_list)
                                }
                              ) # end private
+
 )
 
 
