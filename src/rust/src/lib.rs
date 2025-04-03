@@ -91,8 +91,9 @@ fn parse_theta(matrix: RMatrix<f64>) -> Vec<Vec<f64>> {
 #[extendr]
 fn compile_model(model_path: &str, output_path: &str, params: Strings) -> Result<()> {
     let params: Vec<String> = params.iter().map(|x| x.to_string()).collect();
+    let model_txt = std::fs::read_to_string(model_path).expect("Failed to read model file");
     build::compile(
-        model_path.into(),
+        model_txt,
         Some(output_path.into()),
         params.to_vec(),
         |_key, val| {
