@@ -1,23 +1,17 @@
 use crate::settings::settings;
 use extendr_api::List;
-
+ 
 use pmcore::prelude::{pharmsol::exa::load::load_ode, *};
-
+ 
 use std::path::PathBuf;
-
+ 
 use crate::simulation::SimulationRow;
-
+ 
 pub(crate) fn model_parameters(model_path: PathBuf) -> Vec<String> {
     let (_lib, (_ode, meta)) = unsafe { load_ode(model_path) };
     meta.get_params().clone()
 }
-
-pub(crate) fn model_parameters(model_path: PathBuf) -> Vec<String> {
-    let lib = unsafe { Library::new(model_path).expect("Failed to load library") };
-    let (_, meta) = unsafe { load_ode(&lib) };
-    meta.get_params().clone()
-}
-
+ 
 pub(crate) fn simulate(
     model_path: PathBuf,
     subject: &Subject,
@@ -32,8 +26,7 @@ pub(crate) fn simulate(
         spp_index,
     )
 }
-
-
+ 
 pub(crate) fn fit(
     model_path: PathBuf,
     data: PathBuf,
@@ -46,6 +39,7 @@ pub(crate) fn fit(
     let mut algorithm = dispatch_algorithm(settings, eq, data).unwrap();
     let result = algorithm.fit().unwrap();
     result.write_outputs().unwrap();
-
     Ok(())
 }
+ 
+ 
