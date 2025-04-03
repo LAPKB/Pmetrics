@@ -525,8 +525,16 @@ PM_Vinput <- R6::R6Class(
 PM_model_list <- R6::R6Class("PM_model_list",
                              inherit = PM_Vmodel,
                              public = list(
+                               #' @field model_list The model list object
                                model_list = NULL,
-                               binary_path = NULL, # Path to the compiled model binary. Used by the rust backend.
+                               #' @field binary_path The path to the compiled model binary. Used by the rust backend.
+                               binary_path = NULL, 
+                               #' @title Create PM_model from list of lists
+                               #' @description
+                               #' `r lifecycle::badge("stable")`
+                               #' Generates a model from a list of lists.
+                               #' @param model_list The appropriate list.
+                               #' @export
                                initialize = function(model_list) {
                                  # guarantees primary keys are lowercase and max first 3 characters
                                  orig_names <- names(model_list)
@@ -564,10 +572,10 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  
                                  # no equations found
                                  if (length(eqs) == 0) { 
-                                   if (length(tem) > 0 && tem != "ode"){ # get equations from model library
-                                     model_list$eqn <- model_lib(tem) # these are only for plotting purposes
-                                   } else { # try to parse like old Pmetrics
-                                     key_vars <- c("ke", "v", "ka", "kcp", "kpc")
+                                   if (length(tem) > 0 && tem != "ode"){ # found template, so get equations from model library
+                                     model_list$eqn <- model_lib(name = tem, show = FALSE) # these are only for plotting purposes
+                                   } else { # no equations or template, so try to parse like old Pmetrics and look for key variable names
+                                     key_vars <- c("ka", "ke", "v", "kcp", "kpc", "cl", "vc", "q", "vp")
                                      pri <- names(model_list$pri)
                                      found_pri_keys <- key_vars %in% tolower(pri)
                                      
@@ -577,68 +585,52 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                                                  stringr::regex(x, ignore_case = TRUE)))
                                        })
                                      } else {
-                                       found_sec_keys <- rep(NA, 5)
+                                       found_sec_keys <- rep(NA, 9)
                                      }
                                      
                                      found_keys <- key_vars[found_pri_keys | found_sec_keys] %>% na.exclude()
                                      
-                                     if(length(found_keys)>0){ # we found key variable names
+                                     if(length(found_keys) > 0){ # we found key variable names
                                        
-                                       if(all(found_keys %in% c("ke", "v"))){
-                                         model_list$eqn <- "dX[1] = RATEIV[1] - Ke*X[1]"
-                                         model_list$tem <- tem <- "one_comp_iv"
-                                       } else if(all(found_keys %in% c("cl", "v"))){
-                                         model_list$eqn <- "dX[1] = RATEIV[1] - CL/V*X[1]"
-                                         model_list$tem <- tem <- "one_comp_iv_cl"
-                                       } else if(all(found_keys %in% c("ke", "v", "ka"))){  
-                                         model_list$eqn <- c("dX[1] = BOLUS[1] - Ka*X[1]", "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]")
-                                         model_list$tem <- tem <- "two_comp_bolus"
-                                       } else if(all(found_keys %in% c("cl", "v", "ka"))){  
-                                         model_list$eqn <- c("dX[1] = BOLUS[1] - Ka*X[1]", "dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]")
-                                         model_list$tem <- tem <- "two_comp_bolus_cl"
-                                       } else if(all(found_keys %in% c("ke", "v", "kcp", "kpc"))){
-                                         model_list$eqn <- c("dX[1] = RATEIV[1] - (Ke+KCP)*X[1] + KPC*X[2]", "dX[2] = KCP*X[1] - KPC*X[2]")
-                                         model_list$tem <- tem <- "two_comp_iv"
-                                       } else if(all(found_keys %in% c("cl", "v1", "q", "v2"))){
-                                         model_list$eqn <- c("dX[1] = RATEIV[1] - (CL + Q)/V1*X[1] + Q/V2*X[2]", "dX[2] = Q/V1*X[1] - Q/V2*X[2]")
-                                         model_list$tem <- tem <- "two_comp_iv_cl"
-                                       } else if(all(found_keys %in% c("ke",
-                                                                       "v",
-                                                                       "ka",
-                                                                       "kcp",
-                                                                       "kpc"))){
-                                         model_list$eqn <- c("dX[1] = BOLUS[1] - Ka*X[1]",
-                                                                  "dX[2] = RATEIV[1] + Ka*X[1] - (Ke+KCP)*X[2] + KPC*X[3]",
-                                                                  "dX[3] = KCP*X[2] - KPC*X[3]")
-                                         model_list$tem <- tem <- "three_comp_bolus"
-                                       } else if(all(found_keys %in% c("cl",
-                                                                       "v2",
-                                                                       "ka",
-                                                                       "q",
-                                                                       "v3"))){
-                                         model_list$eqn <- c("dX[1] = BOLUS[1] - Ka*X[1]",
-                                                             "dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/V2*X[2] + Q/V3*X[3]",
-                                                             "dX[3] = Q/V2*X[2] - Q/V3*X[3]")
-                                         model_list$tem <- tem <- "three_comp_bolus_cl"
-                                       } else {
-                                         cli::cli_abort(c("x" = "Provide a valid {.code tem} or an {.code eqn} block to define the model equations.",
-                                                          "i" = "See help for {.fn PM_model}."))
-                                       }
+                                       model_list$tem <- tem <- dplyr::case_when(
+                                         all(found_keys %in% c("ke", "v")) ~ "one_comp_iv",
+                                         all(found_keys %in% c("cl", "v")) ~ "one_comp_iv_cl",
+                                         all(found_keys %in% c("ka", "ke", "v")) ~ "two_comp_bolus",
+                                         all(found_keys %in% c("ka", "cl", "v")) ~ "two_comp_bolus_cl",
+                                         all(found_keys %in% c("ke", "v", "kcp", "kpc")) ~ "two_comp_iv",
+                                         all(found_keys %in% c("cl", "vc", "q", "vp")) ~ "two_comp_iv_cl",
+                                         all(found_keys %in% c("ka", "ke", "v", "kcp", "kpc")) ~ "three_comp_bolus",
+                                         all(found_keys %in% c("ka", "cl", "vc", "q", "vp")) ~ "three_comp_bolus_cl",
+                                         .default = "error"
+                                       )
                                        
-                                       
-                                       
-                                     } else {  # we did not find key variable names                                 
-                                       cli::cli_abort(c("x" = "Provide a {.code tem} or an {.code eqn} block to define the model equations.",
+                                     }
+                                     
+                                     # if we didn't find any keys or match a template, then we need to abort
+                                     if(length(found_keys) == 0 || tem == "error"){
+                                       cli::cli_abort(c("x" = "Provide a valid {.code tem} or an {.code eqn} block to define the model equations.",
                                                         "i" = "See help for {.fn PM_model}."))
                                      }
                                      
+                                     # we found a template, then we need to get the equations from the model library
+                                     model_list$eqn <- model_lib(name = tem, show = FALSE)
                                    }
+                                   
                                  } else { # length of equations > 0
-                                   model_list$tem <- tem <- "ode"
+                                   if(length(tem) == 0){ # equations present, but no template
+                                     model_list$tem <- tem <- "ode"
+                                   } 
+                                   # otherwise don't need to do anything since model_list$tem is already set
                                  }
                                  
                                  self$model_list <- private$order(model_list)
                                },
+                               #' @description
+                               #' `r lifecycle::badge("stable")`
+                               #' Transforms model list in to a text file
+                               #' @param model_path Name of the file to be created.
+                               #' @param engine Currently only "npag".
+                               #' @export
                                write = function(model_path = "genmodel.txt", engine = "npag") {
                                  engine <- tolower(engine)
                                  keys <- names(self$model_list)
@@ -652,6 +644,11 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  
                                  return(model_path)
                                },
+                               #' @description
+                               #' `r lifecycle::badge("stable")`
+                               #' Fills in the template file with the model information
+                               #' @param file_name Name of the file to be created.
+                               #' @export
                                write_rust = function(file_name = "parsed_model.txt") {
                                  model_file <- system.file("Rust/template.rs", package = "Pmetrics")
                                  content <- readr::read_file(model_file)
@@ -785,6 +782,14 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  self$model_list <- private$order(self$model_list)
                                  readr::write_file(content, file_name)
                                },
+                               #' @description
+                               #' Updates the PM_model object with new values.
+                               #' @param changes_list A list of changes to be made to the model.
+                               #' @examples
+                                                              #' \dontrun{
+                                                              #' model$update(list(pri = list(ka = c(0.1, 0.2)), out = list(Y1 = list(val = "C1"))))
+                                                              #' }
+                               #' @export
                                update = function(changes_list) {
                                  keys <- names(changes_list)
                                  if (!private$lower3(keys) %in% c("pri", "sec", "tem", "dif", "eqn", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")) {
@@ -795,7 +800,6 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  }
                                  self$model_list <- modifyList(self$model_list, changes_list)
                                },
-                               #' @title Compile PM_model object
                                #' @description
                                #' Compiles a PM_model object using the Rust backend.
                                #' 
@@ -837,7 +841,6 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  )
                                  file.remove(temp_model)
                                },
-                               #' @title Simulate One Scenario
                                #' @description
                                #' Simulates a single scenario using the provided data and parameter values.
                                #'
@@ -889,7 +892,6 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  }
                                  sim
                                },
-                               #' @title Simulate All Scenarios
                                #' @description
                                #' Simulates multiple scenarios using the provided data and parameter values.
                                #'
@@ -942,7 +944,6 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  }
                                  sim
                                },
-                               #' @title Get Model Parameters
                                #' @description
                                #' Retrieves the list of model parameters from the compiled version of the model.
                                #' 
@@ -963,8 +964,9 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                    cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
                                  }
                                  model_parameters(self$binary_path)
-                               }
-                             ),
+                               } #end parameters method
+                               
+                             ), #end public list
                              private = list(
                                # converts R to rust
                                rust_up = function(.l) {
@@ -1269,7 +1271,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  return(model_list)
                                }
                              ) # end private
-
+                             
 )
 
 
@@ -1926,300 +1928,73 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
 #' model_lib() 
 #' model_lib("one_comp_iv")
 
-model_lib <- function(name = NULL, add = NULL, show = TRUE){
+model_lib <- function(name = NULL, show = TRUE){
   
-  mod_list <- list(
-    list(
-      src = "Pmetrics",
-      mode = "algebraic",
-      primary_name = "one_comp_iv",
-      alt_names = "advan1\nadvan1-trans1",
-      compartments = "1 = C",
-      mod = PM_model$new(list(
-        pri = list(
-          Ke = ab(0, 5),
-          V = ab(0.01, 100)
-        ),
-        eqn = list(
-          "dX[1] = RATEIV[1] - Ke * X[1]"
-        ),
-        out = list(
-          y1 = list(
-            val = "X[1]/V",
-            err = list(
-              model = additive(0.1),
-              assay = errorPoly(c(0.1, 0.1, 0, 0))
-            )
-          )
-        )
-      ) 
-      )
-    ), # end one_comp_iv
-    list(
-      src = "Pmetrics",
-      mode = "algebraic",
-      primary_name = "one_comp_iv_cl",
-      alt_names = "advan1\nadvan1-trans2",
-      compartments = "1 = C",
-      mod = PM_model$new(list(
-        pri = list(
-          CL = ab(0, 5),
-          V = ab(0.01, 100)
-        ),
-        eqn = list(
-          "dX[1] = RATEIV[1] - CL/V * X[1]"
-        ),
-        out = list(
-          y1 = list(
-            val = "X[1]/V",
-            err = list(
-              model = additive(0.1),
-              assay = errorPoly(c(0.1, 0.1, 0, 0))
-            )
-          )
-        )
-      )
-      )
-    ), # end one_comp_iv_cl
-    list(
-      src = "Pmetrics",
-      mode = "algebraic",
-      primary_name = "two_comp_bolus",
-      alt_names = "advan2\nadvan2-trans1",
-      compartments = "1 = B\n2 = C",
-      mod = PM_model$new(list(
-        pri = list(
-          Ka = ab(0, 5),
-          Ke = ab(0, 5),
-          V = ab(0.01, 100)
-        ),
-        eqn = list(
-          "dX[1] = BOLUS[1] - Ka * X[1]",
-          "dX[2] = RATEIV[1] + Ka * X[1] - Ke * X[2]"
-        ),
-        out = list(
-          y1 = list(
-            val = "X[2]/V",
-            err = list(
-              model = additive(0.1),
-              assay = errorPoly(c(0.1, 0.1, 0, 0))
-            )
-          )
-        )
-      ) 
-      )
-    ), # end two_comp_bolus
-    list(
-      src = "Pmetrics",
-      mode = "algebraic",
-      primary_name = "two_comp_bolus_cl",
-      alt_names = "advan2\nadvan2-trans2",
-      compartments = "1 = B\n2 = C",
-      mod = PM_model$new(list(
-        pri = list(
-          Ka = ab(0, 5),
-          CL = ab(0, 5),
-          V = ab(0.01, 100)
-        ),
-        eqn = list(
-          "dX[1] = BOLUS[1] - Ka * X[1]",
-          "dX[2] = RATEIV[1] + Ka * X[1] - CL/V * X[2]"
-        ),
-        out = list(
-          y1 = list(
-            val = "X[2]/V",
-            err = list(
-              model = additive(0.1),
-              assay = errorPoly(c(0.1, 0.1, 0, 0))
-            )
-          )
-        )
-      ) 
-      )
-    ), # end two_comp_bolus_cl
-    list(
-      src = "Pmetrics",
-      mode = "algebraic",
-      primary_name = "two_comp_iv",
-      alt_names = "advan3\nadvan3-trans1",
-      compartments = "1 = C\n2 = P",
-      mod = PM_model$new(list(
-        pri = list(
-          Ke = ab(0, 5),
-          V = ab(0.01, 100),
-          KCP = ab(0, 5),
-          KPC = ab(0, 5)
-        ),
-        eqn = list(
-          "dX[1] = RATEIV[1] - (Ke + KCP) * X[1] + KPC * X[2]",
-          "dX[2] = KCP * X[1] - KPC * X[2]"
-        ),
-        out = list(
-          y1 = list(
-            val = "X[2]/V",
-            err = list(
-              model = additive(0.1),
-              assay = errorPoly(c(0.1, 0.1, 0, 0))
-            )
-          )
-        )
-      ) 
-      )
-    ), # end two_comp_iv
-    list(
-      src = "Pmetrics",
-      mode = "algebraic",
-      primary_name = "two_comp_iv_cl",
-      alt_names = "advan3\nadvan3-trans4",
-      compartments = "1 = C\n2 = P",
-      mod = PM_model$new(list(
-        pri = list(
-          CL = ab(0, 5),
-          V1 = ab(0.01, 100),
-          Q = ab(0, 5),
-          V2 = ab(0.01, 100)
-        ),
-        eqn = list(
-          "dX[1] = RATEIV[1] - (CL + Q)/V1 * X[1] + Q/V2 * X[2]",
-          "dX[2] = Q/V1 * X[1] - Q/V2 * X[2]"
-        ),
-        out = list(
-          y1 = list(
-            val = "X[2]/V1",
-            err = list(
-              model = additive(0.1),
-              assay = errorPoly(c(0.1, 0.1, 0, 0))
-            )
-          )
-        )
-      ) 
-      )
-    ), # end two_comp_iv_cl
-    list(
-      src = "Pmetrics",
-      mode = "algebraic",
-      primary_name = "three_comp_bolus",
-      alt_names = "advan4\nadvan4-trans1",
-      compartments = "1 = B\n2 = C\n3 = P",
-      mod = PM_model$new(list(
-        pri = list(
-          Ka = ab(0, 5),
-          Ke = ab(0, 5),
-          V = ab(0.01, 100),
-          KCP = ab(0, 5),
-          KPC = ab(0, 5)
-        ),
-        eqn = list(
-          "dX[1] = BOLUS[1] - Ka * X[1]",
-          "dX[2] = RATEIV[1] + Ka * X[1] - (Ke + KCP) * X[2] + KPC * X[3]",
-          "dX[3] = KCP * X[2] - KPC * X[3]"
-        ),
-        out = list(
-          y1 = list(
-            val = "X[2]/V",
-            err = list(
-              model = additive(0.1),
-              assay = errorPoly(c(0.1, 0.1, 0, 0))
-            )
-          )
-        )
-      ) 
-      )
-    ), # end three_comp_bolus
-    list(
-      src = "Pmetrics",
-      mode = "algebraic",
-      primary_name = "three_comp_bolus_cl",
-      alt_names = "advan4\nadvan4-trans4",
-      compartments = "1 = B\n2 = C\n3 = P",
-      mod = PM_model$new(list(
-        pri = list(
-          Ka = ab(0, 5),
-          CL = ab(0, 5),
-          V2 = ab(0.01, 100),
-          Q = ab(0, 5),
-          V3 = ab(0.01, 100)
-        ),
-        eqn = list(
-          "dX[1] = BOLUS[1] - Ka * X[1]",
-          "dX[2] = RATEIV[1] + Ka * X[1] - (CL + Q)/V2 * X[2] + Q/V3 * X[3]",
-          "dX[3] = Q/V2 * X[2] - Q/V3 * X[3]"
-        ),
-        out = list(
-          y1 = list(
-            val = "X[2]/V2",
-            err = list(
-              model = additive(0.1),
-              assay = errorPoly(c(0.1, 0.1, 0, 0))
-            )
-          )
-        )
-      ) 
-      )
-    ) # end three_comp_bolus_cl
-  )
   
-  if(!is.null(add)){
-    if(!inherits(add, "PM_model")){
-      cli::cli_abort(c("x" = "Trying to add invalid model object.",
-                       "i" = "Use the {.code $add_to_library} method for a {.fn PM_model} to add a model to the library."))
-    }
-    
-    default_name <- as.character(substitute(add))
-    ans1 <- cli_ask(paste0("Provide a name for your model. It should not contain spaces. Press <Return> to use '", default_name, "'."))
-    if(ans1 == ""){
-      ans1 <- default_name
-    }
-    
-    mod_list <- append(mod_list, list(list(
-
-      src = "User",
-      mode = "ode",
-      primary_name = ans1,
-      alt_names = "",
-      compartments = "",
-      mod = add
+  mod_table <- matrix(
+    c(
+      
+      "one_comp_iv", "advan1\nadvan1-trans1", "One compartment IV input, Ke", "1 = Central", "Ke, V",
+      "one_comp_iv_cl", "advan1\nadvan1-trans2", "One compartment IV input, CL", "1 = Central", "CL, V",
+      
+      "two_comp_bolus", "advan2\nadvan2-trans1", "Two compartment bolus input, Ke", "1 = Bolus\n2 = Central", "Ka, Ke, V",
+      "two_comp_bolus_cl", "advan2\nadvan2-trans2", "Two compartment bolus input, CL", "1 = Bolus\n2 = Central", "Ka, CL, V",
+      
+      "two_comp_iv", "advan3\nadvan3-trans1", "Two compartment IV input, Ke", "1 = Central\n2 = Peripheral", "Ke, V, KCP, KPC",
+      "two_comp_iv_cl", "advan3\nadvan3-trans4", "Two compartment IV input, CL", "1 = Central\n2 = Peripheral", "CL, V1, Q, V2",
+      
+      "three_comp_bolus", "advan4\nadvan4-trans1", "Three compartment bolus input, Ke", "1 = Bolus\n2 = Central\n3 = Peripheral", "Ka, Ke, V, KCP, KPC",
+      "three_comp_bolus_cl", "advan4\nadvan4-trans4", "Three compartment bolus input, CL", "1 = Bolus\n2 = Central\n3 = Peripheral", "Ka, CL, V2, Q, V3"
+    ),
+    ncol = 5, byrow = TRUE
+  ) %>%
+    as.data.frame() %>%
+    stats::setNames(c("Primary Name", "Alt Names", "Description", "Compartments", "Parameters")) %>%
+    tibble::as_tibble()
+  
+  
+  mod_table$ODE <- list(
+    list(
+      "dX[1] = RATEIV[1] - Ke*X[1]"
+    ),
+    list(
+      "dX[1] = RATEIV[1] - CL/V*X[1]"
+    ),
+    list(
+      "dX[1] = BOLUS[1] - Ka*X[1]",
+      "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]"
+    ),
+    list(
+      "dX[1] = BOLUS[1] - Ka*X[1]",
+      "dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]"
+    ),
+    list(
+      "dX[1] = RATEIV[1] - (Ke + KCP)*X[1] + KPC*X[2]",
+      "dX[2] = KCP*X[1] - KPC*X[2]"
+    ),
+    list(
+      "dX[1] = RATEIV[1] - (CL + Q)/V1*X[1] + Q/V2*X[2]",
+      "dX[2] = Q/V1*X[1] - Q/V2*X[2]"
+    ),
+    list(
+      "dX[1] = BOLUS[1] - Ka*X[1]",
+      "dX[2] = RATEIV[1] + Ka*X[1] - (Ke + KCP)*X[2] + KPC*X[3]",
+      "dX[3] = KCP*X[2] - KPC*X[3]"
+    ),
+    list(
+      "dX[1] = BOLUS[1] - Ka*X[1]",
+      "dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/V2*X[2] + Q/V3*X[3]",
+      "dX[3] = Q/V2*X[2] - Q/V3*X[3]"
     )
-    ))
-    
-    
-  } # end add 
-  
-  
-  built_in <- tibble::tibble(
-    
-    'Primary Name' = purrr::map_chr(mod_list, ~ .x$primary_name), 
-    'Alt Names' = purrr::map_chr(mod_list, ~ .x$alt_names), 
-    Compartments = purrr::map_chr(mod_list, ~ .x$compartments), 
-    Parameters = purrr::map_chr(mod_list, ~ paste(names(.x$mod$model_list$pri), collapse = ", ")),
-    Outputs = purrr::map(mod_list, \(x) purrr::map_chr(x$mod$model_list$out, \(y) y$val) %>% paste(collapse = "\n")) %>% unlist(),
-    ODE = purrr::map_chr(mod_list, ~ paste(.x$mod$model_list$eqn, collapse = "\n")),
-    Source = purrr::map_chr(mod_list, ~ .x$src)
   )
+  
   
   if(is.null(name)){
-    print(built_in %>%
-            flextable::as_grouped_data(groups = "Source") %>%
-            flextable::as_flextable(hide_grouplabel = TRUE) %>% 
-            flextable::set_header_labels(what = "") %>%
-            flextable::bold(bold = TRUE, part = "header") %>%
-            flextable::align(i = ~ !is.na(Source), align = "center") %>% 
-            flextable::bold(i = ~ !is.na(Source)) %>%
-            flextable::footnote(
-              i = 1, j = c(3:6),
-              value = as_paragraph(c(
-                "C = Central; B = Bolus; P = Peripheral",
-                "Parameters should be included in the PRImary block of your model. Ke/CL are elimination rate/clearance from the central compartment; Ka is absorption rate from the bolus compartment; Vx are volumes; KCP/KPC/Q are intercompartment transfer rates or clearance.",
-                "Output equations should be included in the OUTput block of your model. Corresponding errors are included in the ERRor block in the file format or as part of the OUT block in list format. See help for 'PM_model' for more details.",
-                "ODE are for plotting models and for informational purposes. Pmetrics uses built-in algebraic solutions to solve each model in the table."
-              )), 
-              ref_symbols = letters[1:4],
-              part = "header") %>%
-            flextable::set_caption(
-              as_paragraph(as_chunk("Pmetrics Models with Algebraic Solutions", props = officer::fp_text(color = "dodgerblue", font.size = 14))),
-              align_with_table = FALSE
-            ) %>%
-            
+    print(mod_table %>%
+            dplyr::rowwise() %>%
+            dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>% 
+            flextable::flextable() %>% 
+            flextable::set_header_labels(ODE = "Corresponding ODE") %>%
             flextable::autofit())
     return(invisible(NULL))
   }
@@ -2242,110 +2017,12 @@ model_lib <- function(name = NULL, add = NULL, show = TRUE){
   }
   
   if(show){
-    print(built_in %>% filter(`Primary Name` == name) %>% 
-            mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>% 
-            flextable() %>% 
-            set_header_labels(ODE = "Corresponding ODE") %>%
-            autofit())
+    print(mod_table %>% dplyr::filter(`Primary Name` == name) %>% 
+            dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>% 
+            flextable::flextable() %>% 
+            flextable::set_header_labels(ODE = "Corresponding ODE") %>%
+            flextable::autofit())
   }
   
-  return(invisible(built_in %>% filter(`Primary Name` == name) %>% select(ODE) %>% stringr::str_split("\n") %>% unlist()  ))
+  return(invisible(mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1,1) %>% unlist()  ))
 }
-
-
-# convert_r_to_rust <- function(r_code) {
-#   # Helper functions
-#   add_float_notation <- function(text) {
-#     # Add `.0_f64` to integers
-#     gsub("\\b(\\d+)(?!\\.\\d*|\\w)", "\\1.0_f64", text, perl = TRUE)
-#   }
-
-#   convert_assignment <- function(text) {
-#     # Replace `<-` or `=` with `=` for assignments
-#     text <- gsub("<-|=", "=", text)
-#     if (grepl("^\\s*[a-zA-Z][a-zA-Z0-9_]*\\s*=", text) && 
-#         !grepl("^\\s*(if|else|for)", text)) {
-#       text <- paste0("let ", text)
-#     }
-#     text
-#   }
-
-#   convert_operators <- function(text) {
-#     # Convert `**` to `.powf()`
-#     gsub("(\\w+|\\d+(?:\\.\\d+)?_f64?)\\s*\\*\\*\\s*(\\w+|\\d+(?:\\.\\d+)?_f64?)", 
-#          "\\1.powf(\\2)", text)
-#   }
-
-#   convert_math_functions <- function(text) {
-#     # Replace math functions (handles nested expressions)
-#     text <- gsub("sqrt\\(([^)]+)\\)", "\\1.sqrt()", text)
-#     text <- gsub("log\\(([^)]+)\\)", "\\1.ln()", text)
-#     text
-#   }
-
-#   convert_control_structures <- function(text) {
-#     # Convert for loop
-#     text <- gsub("for\\s*\\((\\w+)\\s+in\\s+(\\d+):(\\d+)\\)", 
-#                  "for \\1 in \\2.0_f64..\\3.0_f64", text)
-#     # Convert if condition
-#     text <- gsub("if\\s*\\((.+?)\\)", "if (\\1)", text)
-#     text
-#   }
-
-#   add_semicolon <- function(text) {
-#     # Add semicolon if it's a standalone expression or assignment
-#     if (!grepl("[{}]$", text) && 
-#         !grepl("^\\s*(if|else|for|while)", trimws(text))) {
-#       paste0(text, ";")
-#     } else {
-#       text
-#     }
-#   }
-
-#   process_line <- function(line) {
-#     if (trimws(line) == "") return("")
-
-#     line <- trimws(line)
-#     line <- add_float_notation(line)
-#     line <- convert_operators(line)
-#     line <- convert_math_functions(line)
-#     line <- convert_control_structures(line)
-#     line <- convert_assignment(line)
-#     line <- add_semicolon(line)
-
-#     line
-#   }
-
-#   # Process each line
-#   lines <- strsplit(r_code, "\n")[[1]]
-#   processed <- vapply(lines, process_line, character(1))
-#   processed <- processed[processed != ""]
-
-#   # Add braces for control structures
-#   processed <- gsub("if \\((.+?)\\)", "if (\\1) {", processed)
-#   processed <- gsub("else$", "} else {", processed)
-#   processed <- gsub("for (\\w+ in .+)", "\\1 {", processed)
-#   processed <- gsub("}$", "}", processed) # Close braces
-
-#   # Join processed lines
-#   paste(processed, collapse = "\n")
-# }
-
-# r_code <- "
-# a <- 3
-# b = 4
-# c <- a**b
-# c1 <- 3.0**b
-# c2 <- a**4.1
-# if (c > 10) {
-#   d <- sqrt(c)
-# } else {
-#   d <- log(c)
-# }
-# for (i in 1:10) {
-#   print(i)
-# }
-# e = 3.14
-# "
-
-# cat(convert_r_to_rust(r_code))
