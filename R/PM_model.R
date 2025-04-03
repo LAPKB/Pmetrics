@@ -110,9 +110,9 @@ PM_model$new <- function(model, ...) {
   } else {
     cli::cli_abort(c("x" = "Non supported model type: {typeof(model)}"))
   }
-  # if (getPMoptions()$backend == "rust") {
-  #   model$compile()
-  # }
+  if (getPMoptions()$backend == "rust") {
+    model$compile()
+  }
   return(model)
 }
 
@@ -267,7 +267,7 @@ PM_Vmodel <- R6::R6Class("PM_model",
                            print = function(...) {
                              cat("$model_list\n")
                              mlist <- self$model_list
-                             blockNames <- names(mlist) 
+                             blockNames <- names(mlist)
                              
                              # internal function to add space blocks
                              sp <- function(n) {
@@ -313,7 +313,7 @@ PM_Vmodel <- R6::R6Class("PM_model",
                                } else if (x == "sec") {
                                  cat("\n", sp(1), "$sec\n", paste0(sp(2), "[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = "\n "))
                                  cat("\n")
-                               } else if (x == "tem"){
+                               } else if (x == "tem") {
                                  cat("\n", sp(1), "$tem\n", paste0(sp(2), "[1] \"", mlist$tem, "\"", collapse = "\n "))
                                  cat("\n")
                                } else if (x == "dif" | x == "eqn") {
@@ -521,7 +521,7 @@ PM_Vinput <- R6::R6Class(
 
 # PM_model_list -----------------------------------------------------------
 # This creates the model from a model_list object
-# 
+#
 PM_model_list <- R6::R6Class("PM_model_list",
                              inherit = PM_Vmodel,
                              public = list(
@@ -786,9 +786,9 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                #' Updates the PM_model object with new values.
                                #' @param changes_list A list of changes to be made to the model.
                                #' @examples
-                                                              #' \dontrun{
-                                                              #' model$update(list(pri = list(ka = c(0.1, 0.2)), out = list(Y1 = list(val = "C1"))))
-                                                              #' }
+                               #' \dontrun{
+                               #' model$update(list(pri = list(ka = c(0.1, 0.2)), out = list(Y1 = list(val = "C1"))))
+                               #' }
                                #' @export
                                update = function(changes_list) {
                                  keys <- names(changes_list)
@@ -1925,7 +1925,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
 #' @seealso [PM_model]
 #' @export
 #' @examples
-#' model_lib() 
+#' model_lib()
 #' model_lib("one_comp_iv")
 
 model_lib <- function(name = NULL, show = TRUE){
@@ -1996,23 +1996,24 @@ model_lib <- function(name = NULL, show = TRUE){
             flextable::flextable() %>% 
             flextable::set_header_labels(ODE = "Corresponding ODE") %>%
             flextable::autofit())
+    
     return(invisible(NULL))
   }
   
-  if(! tolower(name) %in% 
-     c(
-       glue::glue("one_comp_iv{c('','_cl')}"),
-       glue::glue("two_comp_bolus{c('','_cl')}"),
-       glue::glue("two_comp_iv{c('','_cl')}"),
-       glue::glue("three_comp_bolus{c('','_cl')}"),
-       glue::glue("advan{1:4}"),
-       glue::glue("advan{1:4}-trans1"),
-       glue::glue("advan{1:2}-trans2"),
-       "advan3-trans4",
-       "advan4-trans4"
-     )
-     
-  ){
+  if (!tolower(name) %in%
+      c(
+        glue::glue("one_comp_iv{c('','_cl')}"),
+        glue::glue("two_comp_bolus{c('','_cl')}"),
+        glue::glue("two_comp_iv{c('','_cl')}"),
+        glue::glue("three_comp_bolus{c('','_cl')}"),
+        glue::glue("advan{1:4}"),
+        glue::glue("advan{1:4}-trans1"),
+        glue::glue("advan{1:2}-trans2"),
+        "advan3-trans4",
+        "advan4-trans4"
+      )
+      
+  ) {
     cli::cli_abort(c("x" = "Invalid model name"))
   }
   
@@ -2026,3 +2027,4 @@ model_lib <- function(name = NULL, show = TRUE){
   
   return(invisible(mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1,1) %>% unlist()  ))
 }
+

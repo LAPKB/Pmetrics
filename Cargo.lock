@@ -1305,9 +1305,9 @@ dependencies = [
 
 [[package]]
 name = "pmcore"
-version = "0.10.1-rc2"
+version = "0.10.3-rc2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9f89e2c230735dae3021fe41e4e89f0db724e2e81b77644a8c5f4dde1c8112e"
+checksum = "17e3d91f4baa97c4146c958f69edfced0690cbd6af0194aa4bafe51dc1d5e114"
 dependencies = [
  "anyhow",
  "argmin",
