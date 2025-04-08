@@ -71,77 +71,76 @@ PM_fit <- R6::R6Class(
     #' @description Fit the model to the data
     #' @details
     #' This function will fit the model contained in the `model` field to the data
-    #' in the `data` field, using the engine specified by the `engine` argument and 
-    #' modified by other arguments. If all function arguments are default, 
+    #' in the `data` field, using the engine specified by the `engine` argument and
+    #' modified by other arguments. If all function arguments are default,
     #' the simplest execution of this method is
-    #' `$run()`.  
+    #' `$run()`.
     #' @param run Specify the run number of the output folder.  Default if missing is the next available number.
     #' @param include Vector of subject id values in the data file to include in the analysis.  The default (missing) is all.
     #' @param exclude A vector of subject IDs to exclude in the analysis, e.g. c(4,6:14,16:20)
-#    #' @param ode Ordinary Differential Equation solver log tolerance or stiffness.  Default is -4, i.e. 0.0001.  Higher values will result in faster
-#    #' runs, but parameter estimates may not be as accurate.
-#    #' @param tol Tolerance for convergence of NPAG.  Smaller numbers make it harder to converge.
-#    #' Default value is 0.01.
-#    #' @param salt Vector of salt fractions for each drug in the data file, default is 1 for each drug.  This is not the same as bioavailability.
+    #    #' @param ode Ordinary Differential Equation solver log tolerance or stiffness.  Default is -4, i.e. 0.0001.  Higher values will result in faster
+    #    #' runs, but parameter estimates may not be as accurate.
+    #    #' @param tol Tolerance for convergence of NPAG.  Smaller numbers make it harder to converge.
+    #    #' Default value is 0.01.
+    #    #' @param salt Vector of salt fractions for each drug in the data file, default is 1 for each drug.  This is not the same as bioavailability.
     #' @param cycles Number of cycles to run. Default is 100.
     #' @param indpts Index of starting grid point number.  Default is missing, which allows NPAG to choose depending on the number of random parameters:
-#    #' 1 or 2 = index of 1; 3 = 3; 4 = 4, 5 = 6,
-#    #' 6 or more is 10+number of multiples for each parameter greater than 5, e.g. 6 = 101; 7 = 102, up to 108 for 13 or more parameters.
-#    #' @param icen Summary of parameter distributions to be used to calculate predictions in HTML report.  Default is "median", but could be "mean".
-#    #' Predictions based on both summaries will be available in objects loaded by [PM_load].
-#    #' @param aucint Maintained for backwards compatibility and not used currently. Interval for AUC calculations.  Default is 24 hours if the number of intervals is not greater than 48; otherwise it defaults
-#    #' to the interval which allows for <= 48 intervals.
-#    #' @param idelta Interval in 1/60 time unit, typically minutes, for predictions at times other than observations.  Default is 12.
+    #    #' 1 or 2 = index of 1; 3 = 3; 4 = 4, 5 = 6,
+    #    #' 6 or more is 10+number of multiples for each parameter greater than 5, e.g. 6 = 101; 7 = 102, up to 108 for 13 or more parameters.
+    #    #' @param icen Summary of parameter distributions to be used to calculate predictions in HTML report.  Default is "median", but could be "mean".
+    #    #' Predictions based on both summaries will be available in objects loaded by [PM_load].
+    #    #' @param aucint Maintained for backwards compatibility and not used currently. Interval for AUC calculations.  Default is 24 hours if the number of intervals is not greater than 48; otherwise it defaults
+    #    #' to the interval which allows for <= 48 intervals.
+    #    #' @param idelta Interval in 1/60 time unit, typically minutes, for predictions at times other than observations.  Default is 12.
     #' @param prior Either "uniform" (default) or the name of a suitable [PM_result] object from a prior run loaded with [PM_load].
     #' A `prior` may be specified if the user wishes to
     #' start from a non-uniform prior distribution for the NPAG run. This is useful for continuing a previous
     #' run which did not converge, e.g., `fit1$run(prior = run1)`, assuming `run1` is a [PM_result] object
-    #' that was loaded with [PM_load].  
+    #' that was loaded with [PM_load].
     #' @param intern Run NPAG in the R console without a batch script.  Default is TRUE.
-#    #' @param quiet Boolean operator controlling whether a model summary report is given.  Default is `TRUE`.
+    #    #' @param quiet Boolean operator controlling whether a model summary report is given.  Default is `TRUE`.
     #' @param overwrite Boolean operator to overwrite existing run result folders.  Default is `FALSE`.
-#    #' @param nocheck Suppress the automatic checking of the data file with [PM_data].  Default is `FALSE`.
-#    #' @param parallel Run NPAG in parallel.  Default is `NA`, which will be set to `TRUE` for models that use
-#    #' differential equations, and `FALSE` for algebraic/explicit models.  The majority of the benefit for parallelization comes
-#    #' in the first cycle, with a speed-up of approximately 80\% of the number of available cores on your machine, e.g. an 8-core machine
-#    #' will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\%, e.g. 4-fold increase on an 8-core
-#    #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
+    #    #' @param nocheck Suppress the automatic checking of the data file with [PM_data].  Default is `FALSE`.
+    #    #' @param parallel Run NPAG in parallel.  Default is `NA`, which will be set to `TRUE` for models that use
+    #    #' differential equations, and `FALSE` for algebraic/explicit models.  The majority of the benefit for parallelization comes
+    #    #' in the first cycle, with a speed-up of approximately 80\% of the number of available cores on your machine, e.g. an 8-core machine
+    #    #' will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\%, e.g. 4-fold increase on an 8-core
+    #    #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
     #' @param engine The engine to use for the run.  Default is "NPAG". Alternatives: "NPOD".
-    #' @param sampler The pseudo-random sampler to use for the initial distribution of grid points when 
-    #' `prior = "uniform"`. 
+    #' @param sampler The pseudo-random sampler to use for the initial distribution of grid points when
+    #' `prior = "uniform"`.
     #' @param report If missing, the default Pmetrics report template as specified in [getPMoptions]
     #' is used. Otherwise can be "plotly", "ggplot", or "none".
     #' @param artifacts Default is `TRUE`.  Set to `FALSE` to suppress creating the `etc` folder. This folder
     #' will contain all the compilation artifacts created during the compilation and run steps.
-    #' 
+    #'
     #' @return A successful run will result in creation of a new folder in the working
-    #' directory with the results inside the folder.  
+    #' directory with the results inside the folder.
     #'
     #' @author Michael Neely
     #' @export
 
     run = function(run = NULL,
-                   include = NULL, exclude = NULL, 
-                   #ode, tol, salt, 
+                   include = NULL, exclude = NULL,
+                   # ode, tol, salt,
                    cycles = 100,
-                   indpts = NULL, 
-                   #icen, aucint,
-                   #idelta, 
-                   prior = "uniform", 
-                   #xdev, search,
-                   #auto, 
-                   intern = TRUE, 
-                   #quiet, 
-                   overwrite = FALSE, 
-                   #nocheck, parallel, batch,
+                   indpts = NULL,
+                   # icen, aucint,
+                   # idelta,
+                   prior = "uniform",
+                   # xdev, search,
+                   # auto,
+                   intern = TRUE,
+                   # quiet,
+                   overwrite = FALSE,
+                   # nocheck, parallel, batch,
                    engine = "NPAG",
                    sampler = "sobol",
                    report = getPMoptions("report_template"),
                    artifacts = TRUE) {
-      
       cwd <- getwd()
 
-      
+
       # make new output directory
       if (is.null(run)) {
         olddir <- list.dirs(recursive = FALSE)
@@ -159,29 +158,31 @@ PM_fit <- R6::R6Class(
           newdir <- as.character(run)
         }
       }
-      
+
       if (file.exists(newdir)) {
         if (overwrite) {
           unlink(newdir, recursive = TRUE)
         } else {
-          cli::cli_abort(c("x" = "A directory named '{newdir}' exists already.",
-          "i" = "Set {.arg overwrite = TRUE} to overwrite it."))
+          cli::cli_abort(c(
+            "x" = "A directory named '{newdir}' exists already.",
+            "i" = "Set {.arg overwrite = TRUE} to overwrite it."
+          ))
         }
       }
       dir.create(newdir)
       setwd(newdir)
-      
+
       engine <- tolower(engine)
 
-      if  (getPMoptions()$backend != "rust") {
+      if (getPMoptions()$backend != "rust") {
         setwd(cwd)
         cli::cli_abort(c(
           "x" = "Error: unsupported backend.",
           "i" = "See help for {.fn setPMoptions}"
         ))
       }
-      
-     
+
+
 
       ### Move temp folder to ect/PMcore ###
       # check if temp folder exist, create if not
@@ -192,25 +193,25 @@ PM_fit <- R6::R6Class(
         # system(sprintf("cp -R %s etc/PMcore", getPMoptions()$rust_template))
         self$model$write_rust("model.txt")
       }
-      
+
       #### Include or exclude subjects ####
       if (is.null(include)) include <- unique(self$data$standard_data$id)
       if (is.null(exclude)) exclude <- NA
       data_filtered <- self$data$standard_data %>% includeExclude(include, exclude)
-      
+
       if (nrow(data_filtered) == 0) {
         cli::cli_abort("x" = "No subjects remain after filtering.")
         setwd(cwd)
         return(invisible(NULL))
       }
-      
-      
+
+
       # #### Determine indpts #####
       # num_ran_param <- purrr::map(self$model$model_list$pri, \(x)
       # is.null(x$fixed)) %>%
       #   unlist() %>%
       #   sum()
-      
+
       # indpts <- ifelse(length(arglist$indpts) == 0, num_ran_param, arglist$indpts)
       # # convert index into number of grid points
       # arglist$num_gridpoints <- dplyr::case_when(
@@ -222,15 +223,15 @@ PM_fit <- R6::R6Class(
       #   indpts == 6 ~ 80021,
       #   indpts > 6 ~ 80021 + (min(indpts, 16) - 6) * 80021
       # ) %>% format(scientific = FALSE)
-      
-      
+
+
       # arglist$num_indpts <- (2**num_ran_param) * arglist$indpts
       # arglist$num_indpts <- format(arglist$num_indpts, scientific = FALSE)
       # arglist$num_indpts <- 2129 # TO-DO: Remove this line
-      
+
       # #### Format cycles #####
       # arglist$cycles <- format(arglist$cycles, scientific = FALSE)
-      
+
       # ### Prior ###
       # if (arglist$prior != "uniform") {
       #   prior <- arglist$prior
@@ -250,7 +251,7 @@ PM_fit <- R6::R6Class(
       #     return(invisible(NULL))
       #   }
       # }
-      
+
       # ### Sampler ###
       # arglist$sampler <- tolower(arglist$sampler)
       # if (!arglist$sampler %in% c("sobol", "osat")) {
@@ -261,7 +262,7 @@ PM_fit <- R6::R6Class(
       #   setwd(cwd)
       #   return(invisible(NULL))
       # }
-      
+
       # #### Verify engine ###
       # arglist$engine <- toupper(arglist$engine)
       # if (!arglist$engine %in% c("NPAG", "NPOD")) {
@@ -272,45 +273,45 @@ PM_fit <- R6::R6Class(
       #   setwd(cwd)
       #   return(invisible(NULL))
       # }
-      
-      
+
+
       # #### Other arguments ####
       # arglist$use_tui <- "false" # TO-DO: Convert TRUE -> "true", vice versa.
       # arglist$cache <- "true"
       # arglist$seed <- 347
-      
-      
+
+
       #### Save objects ####
       self$data <- PM_data$new(data_filtered, quiet = TRUE)
       self$data$write("gendata.csv", header = FALSE)
       save(self, file = "fit.Rdata")
-      
+
       # #### Parameter info ####
       # pars <- list(
       #   random = "[random]",
       #   fixed = "[fixed]",
       #   constant = "[constant]"
       # )
-      
+
       # temp <- lapply(seq_along(names(self$model$model_list$pri)), function(i) {
       #   pri <- self$model$model_list$pri[i]
       #   name <- names(pri)
       #   pri <- self$model$model_list$pri[[i]]
-      
+
       #   # Constant parameter
       #   if (pri$constant) {
       #     value <- format(pri$fixed, scientific = FALSE, nsmall = 1)
       #     str <- paste0(name, " = ", value)
       #     pars$constant <<- paste(pars$constant, str, sep = "\n")
       #   }
-      
+
       #   # Fixed parameter
       #   if (!pri$constant & !is.null(pri$fixed)) {
       #     value <- format(pri$fixed, scientific = FALSE, nsmall = 1)
       #     str <- paste0(name, " = ", value)
       #     pars$fixed <<- paste(pars$fixed, str, sep = "\n")
       #   }
-      
+
       #   # Random parameter
       #   if (!pri$constant & is.null(pri$fixed)) {
       #     min <- format(pri$min, scientific = FALSE, nsmall = 1)
@@ -318,15 +319,15 @@ PM_fit <- R6::R6Class(
       #     str <- paste0(name, " = [", min, ",", max, "]")
       #     pars$random <<- paste(pars$random, str, sep = "\n")
       #   }
-      
+
       #   return()
       # })
-      
+
       # arglist$parameter_block <- paste0(unlist(pars), collapse = "\n")
       # arglist$poly_coeff <-
       #   self$model$model_list$out$Y1$err$assay$coefficients %>%
       #   paste0(collapse = ",")
-      
+
       # if (!is.null(self$model$model_list$out$Y1$err$model$proportional)) {
       #   arglist$error_class <- "proportional"
       #   arglist$lamgam <- self$model$model_list$out$Y1$err$model$proportional
@@ -339,7 +340,7 @@ PM_fit <- R6::R6Class(
       #     "i" = "Choose {.code proportional} or {.code additive}."
       #   ))
       # }
-      
+
       # #### Generate config.toml #####
       # toml_template <- stringr::str_glue(
       #   # "[paths]",
@@ -364,27 +365,41 @@ PM_fit <- R6::R6Class(
       #   .envir = arglist,
       #   .sep = "\n"
       # )
-      
+
       # writeLines(text = toml_template, con = "config.toml")
-      
+
       # # check if the file exists
       # file.copy(private$binary_path, "NPcore")
       ranges <- lapply(self$model$model_list$pri, function(x) {
-        c(x$min,x$max)
+        c(x$min, x$max)
       })
       names(ranges) <- tolower(names(ranges))
       if (intern) {
-        
         ### CALL RUST
         out_path <- file.path(getwd(), "outputs")
-        
-        rlang::try_fetch(fit(self$model$binary_path, "gendata.csv", ranges, out_path),
-                         error = function(e) {
-                           cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
-                           return(NULL)
-                         }
+
+        rlang::try_fetch(
+          fit(
+            self$model$binary_path,
+            "gendata.csv",
+            list(
+              ranges = ranges,
+              algorithm = "NPOD",
+              gamlam = 0.6,
+              error_type = "additive",
+              error_coefficients = c(0.0, 0.4, 0.0, 0.0),
+              max_cycles = 1001,
+              prior = "sobol",
+              ind_points = 2029,
+              seed = 23
+            ), out_path
+          ),
+          error = function(e) {
+            cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
+            return(NULL)
+          }
         )
-        
+
         PM_parse("outputs")
         res <- PM_load(file = "PMout.Rdata")
         PM_report(res, outfile = "report.html", template = report)
@@ -393,7 +408,6 @@ PM_fit <- R6::R6Class(
           "x" = "Error: Currently, the rust engine only supports internal runs.",
           "i" = "This is a temporary limitation."
         ))
-
       }
       setwd(cwd)
     },
@@ -429,10 +443,9 @@ PM_fit <- R6::R6Class(
   private = list(
     binary_path = NULL,
     setup_rust_execution = function() {
-      
       # check if compiled and if not, do so
       self$model$compile()
-      
+
       # if (is.null(self$model$binary_path)) {
       #   self$model$compile()
       #   if (!file.exists(self$model$binary_path)) {
