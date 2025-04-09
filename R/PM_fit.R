@@ -191,7 +191,7 @@ PM_fit <- R6::R6Class(
         #   dir.create("etc")
         # }
         # system(sprintf("cp -R %s etc/PMcore", getPMoptions()$rust_template))
-        self$model$write_rust("model.txt")
+        self$model$write("model.txt")
       }
 
       #### Include or exclude subjects ####
@@ -341,35 +341,7 @@ PM_fit <- R6::R6Class(
       #   ))
       # }
 
-      # #### Generate config.toml #####
-      # toml_template <- stringr::str_glue(
-      #   # "[paths]",
-      #   # "data = \"gendata.csv\"",
-      #   # "log = \"run.log\"",
-      #   # "prior = \"{prior}\"",
-      #   "[config]",
-      #   "cycles = {cycles}",
-      #   "algorithm = \"{engine}\"",
-      #   # "engine = \"{engine}\"",
-      #   # "init_points = {num_gridpoints}",
-      #   # "seed = {seed}",
-      #   # "sampler = \"{sampler}\"",
-      #   # "tui = {use_tui}",
-      #   # "output = true",
-      #   # "cache = {cache}",
-      #   "{parameter_block}",
-      #   "[error]",
-      #   "value = {lamgam}",
-      #   "class = \"{error_class}\"",
-      #   "poly = [{poly_coeff}]",
-      #   .envir = arglist,
-      #   .sep = "\n"
-      # )
-
-      # writeLines(text = toml_template, con = "config.toml")
-
-      # # check if the file exists
-      # file.copy(private$binary_path, "NPcore")
+     
       ranges <- lapply(self$model$model_list$pri, function(x) {
         c(x$min, x$max)
       })
