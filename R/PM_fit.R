@@ -30,7 +30,7 @@ PM_fit <- R6::R6Class(
     model = NULL,
     #' @field backend Backend used for calculations; default is value in PMoptions.
     backend = NULL,
-
+    
     #' @description
     #' Create a new object
     #' @param data Either the name of a  [PM_data]
@@ -63,7 +63,7 @@ PM_fit <- R6::R6Class(
       self$data <- data
       self$model <- model
       self$backend <- backend
-
+      
       if (backend == "rust") {
         private$setup_rust_execution()
       }
@@ -119,28 +119,29 @@ PM_fit <- R6::R6Class(
     #'
     #' @author Michael Neely
     #' @export
-
+    
     run = function(run = NULL,
                    include = NULL, exclude = NULL,
                    # ode, tol, salt,
                    cycles = 100,
-                   indpts = NULL,
+                   density0 = NULL,
                    # icen, aucint,
                    # idelta,
-                   prior = "uniform",
+                   prior = "sobol",
+                   seed = 23,
                    # xdev, search,
                    # auto,
-                   intern = TRUE,
+                   # intern = TRUE,
                    # quiet,
                    overwrite = FALSE,
                    # nocheck, parallel, batch,
-                   engine = "NPAG",
-                   sampler = "sobol",
+                   algorithm = "NPAG",
                    report = getPMoptions("report_template"),
                    artifacts = TRUE) {
       cwd <- getwd()
-
-
+      intern <- TRUE #always true until (if) rust can run separately from R
+      
+      
       # make new output directory
       if (is.null(run)) {
         olddir <- list.dirs(recursive = FALSE)
@@ -158,7 +159,7 @@ PM_fit <- R6::R6Class(
           newdir <- as.character(run)
         }
       }
-
+      
       if (file.exists(newdir)) {
         if (overwrite) {
           unlink(newdir, recursive = TRUE)
@@ -171,9 +172,9 @@ PM_fit <- R6::R6Class(
       }
       dir.create(newdir)
       setwd(newdir)
-
+      
       engine <- tolower(engine)
-
+      
       if (getPMoptions()$backend != "rust") {
         setwd(cwd)
         cli::cli_abort(c(
@@ -181,189 +182,103 @@ PM_fit <- R6::R6Class(
           "i" = "See help for {.fn setPMoptions}"
         ))
       }
-
-
-
-      ### Move temp folder to ect/PMcore ###
-      # check if temp folder exist, create if not
+      
       if (artifacts) {
-        # if (!dir.exists("etc")) {
-        #   dir.create("etc")
-        # }
-        # system(sprintf("cp -R %s etc/PMcore", getPMoptions()$rust_template))
         self$model$write("model.txt")
       }
-
+      
       #### Include or exclude subjects ####
       if (is.null(include)) include <- unique(self$data$standard_data$id)
       if (is.null(exclude)) exclude <- NA
       data_filtered <- self$data$standard_data %>% includeExclude(include, exclude)
-
+      
       if (nrow(data_filtered) == 0) {
         cli::cli_abort("x" = "No subjects remain after filtering.")
         setwd(cwd)
         return(invisible(NULL))
       }
-
-
-      # #### Determine indpts #####
-      # num_ran_param <- purrr::map(self$model$model_list$pri, \(x)
-      # is.null(x$fixed)) %>%
-      #   unlist() %>%
-      #   sum()
-
-      # indpts <- ifelse(length(arglist$indpts) == 0, num_ran_param, arglist$indpts)
-      # # convert index into number of grid points
-      # arglist$num_gridpoints <- dplyr::case_when(
-      #   indpts == 1 ~ 2129,
-      #   indpts == 2 ~ 5003,
-      #   indpts == 3 ~ 10007,
-      #   indpts == 4 ~ 20011,
-      #   indpts == 5 ~ 40009,
-      #   indpts == 6 ~ 80021,
-      #   indpts > 6 ~ 80021 + (min(indpts, 16) - 6) * 80021
-      # ) %>% format(scientific = FALSE)
-
-
-      # arglist$num_indpts <- (2**num_ran_param) * arglist$indpts
-      # arglist$num_indpts <- format(arglist$num_indpts, scientific = FALSE)
-      # arglist$num_indpts <- 2129 # TO-DO: Remove this line
-
-      # #### Format cycles #####
-      # arglist$cycles <- format(arglist$cycles, scientific = FALSE)
-
-      # ### Prior ###
-      # if (arglist$prior != "uniform") {
-      #   prior <- arglist$prior
-      #   if (inherits(prior, "PM_result")) { # PM_result
-      #     write.csv(prior$final$popPoints, "theta.csv")
-      #     prior <- "theta.csv"
-      #   } else if (!is.na(suppressWarnings(as.numeric(prior)))) { # numeric
-      #     prior <- paste(prior, "outputs/theta.csv", sep = "/")
-      #     if (!file.exists(prior)) {
-      #       cat(paste0(crayon::red("Error: "), crayon::blue(prior), " does not exist.\n"))
-      #       setwd(cwd)
-      #       return(invisible(nullfile()))
-      #     }
-      #   } else if (!file.exists(prior)) { # if file doesn't exist, error; otherwise prior will be an existing filename
-      #     cat(paste0(crayon::red("Error: "), crayon::blue(prior), " is not in the current working directory:\n", crayon::blue(getwd(), "\n")))
-      #     setwd(cwd)
-      #     return(invisible(NULL))
-      #   }
-      # }
-
-      # ### Sampler ###
-      # arglist$sampler <- tolower(arglist$sampler)
-      # if (!arglist$sampler %in% c("sobol", "osat")) {
-      #   cat(paste0(
-      #     crayon::red("Error: "), " Only \"sobol\" or \"osat\" are valid for the ",
-      #     crayon::blue("sampler"), " argument.\n"
-      #   ))
-      #   setwd(cwd)
-      #   return(invisible(NULL))
-      # }
-
-      # #### Verify engine ###
-      # arglist$engine <- toupper(arglist$engine)
-      # if (!arglist$engine %in% c("NPAG", "NPOD")) {
-      #   cat(paste0(
-      #     crayon::red("Error: "), " Only \"NPAG\" or \"NPOD\" are valid for the ",
-      #     crayon::blue("engine"), " argument.\n"
-      #   ))
-      #   setwd(cwd)
-      #   return(invisible(NULL))
-      # }
-
-
-      # #### Other arguments ####
-      # arglist$use_tui <- "false" # TO-DO: Convert TRUE -> "true", vice versa.
-      # arglist$cache <- "true"
-      # arglist$seed <- 347
-
-
+      
+      
+      
+      
+      
       #### Save objects ####
       self$data <- PM_data$new(data_filtered, quiet = TRUE)
       self$data$write("gendata.csv", header = FALSE)
       save(self, file = "fit.Rdata")
-
-      # #### Parameter info ####
-      # pars <- list(
-      #   random = "[random]",
-      #   fixed = "[fixed]",
-      #   constant = "[constant]"
-      # )
-
-      # temp <- lapply(seq_along(names(self$model$model_list$pri)), function(i) {
-      #   pri <- self$model$model_list$pri[i]
-      #   name <- names(pri)
-      #   pri <- self$model$model_list$pri[[i]]
-
-      #   # Constant parameter
-      #   if (pri$constant) {
-      #     value <- format(pri$fixed, scientific = FALSE, nsmall = 1)
-      #     str <- paste0(name, " = ", value)
-      #     pars$constant <<- paste(pars$constant, str, sep = "\n")
-      #   }
-
-      #   # Fixed parameter
-      #   if (!pri$constant & !is.null(pri$fixed)) {
-      #     value <- format(pri$fixed, scientific = FALSE, nsmall = 1)
-      #     str <- paste0(name, " = ", value)
-      #     pars$fixed <<- paste(pars$fixed, str, sep = "\n")
-      #   }
-
-      #   # Random parameter
-      #   if (!pri$constant & is.null(pri$fixed)) {
-      #     min <- format(pri$min, scientific = FALSE, nsmall = 1)
-      #     max <- format(pri$max, scientific = FALSE, nsmall = 1)
-      #     str <- paste0(name, " = [", min, ",", max, "]")
-      #     pars$random <<- paste(pars$random, str, sep = "\n")
-      #   }
-
-      #   return()
-      # })
-
-      # arglist$parameter_block <- paste0(unlist(pars), collapse = "\n")
-      # arglist$poly_coeff <-
-      #   self$model$model_list$out$Y1$err$assay$coefficients %>%
-      #   paste0(collapse = ",")
-
-      # if (!is.null(self$model$model_list$out$Y1$err$model$proportional)) {
-      #   arglist$error_class <- "proportional"
-      #   arglist$lamgam <- self$model$model_list$out$Y1$err$model$proportional
-      # } else if (!is.null(self$model$model_list$out$Y1$err$model$additive)) {
-      #   arglist$error_class <- "additive"
-      #   arglist$lamgam <- self$model$model_list$out$Y1$err$model$additive
-      # } else {
-      #   cli::cli_abort(c(
-      #     "x" = "Error model is misspecified.",
-      #     "i" = "Choose {.code proportional} or {.code additive}."
-      #   ))
-      # }
-
-     
+      
+      # Get ranges and calculate points
+      
       ranges <- lapply(self$model$model_list$pri, function(x) {
         c(x$min, x$max)
       })
       names(ranges) <- tolower(names(ranges))
+      
+      vol <- prod(sapply(ranges, function(x) x[2] - x[1]))
+      
+      if (is.null(density0)) {
+        points <- ceiling(0.01 * vol)
+      } else {
+        points <- ceiling(density0 * vol)
+      }
+      
+      
+      # set prior
+      if(prior != "sobol"){
+        if(is.numeric(prior)){  # prior specified as a run number
+          if ( !file.exists(glue::glue({prior},"/outputs/theta.csv"))){
+            cli::cli_abort(c(
+              "x" = "Error: {.arg prior} file does not exist.",
+              "i" = "Check the file path."
+            ))
+          } 
+          file.copy(glue::glue({prior},"/outputs/theta.csv"), "theta.csv")
+          prior <- "theta.csv"
+          
+          
+        } else if (is.character(prior)) {  # prior specified as a filename
+          if (!file.exists(prior)) {
+            cli::cli_abort(c(
+              "x" = "Error: {.arg prior} file does not exist.",
+              "i" = "Check the file path."
+            ))
+          }
+          file.copy(prior, overwrite = TRUE) #ensure in current working directory
+          
+        } else {
+          cli::cli_abort(c(
+            "x" = "Error: {.arg prior} must be a numeric run number or character filename.",
+            "i" = "Check the value."
+          ))
+        }
+      } else {
+        prior <- "sobol"
+      }
+      
       if (intern) {
         ### CALL RUST
         out_path <- file.path(getwd(), "outputs")
-
+        
         rlang::try_fetch(
           fit(
             self$model$binary_path,
             "gendata.csv",
             list(
               ranges = ranges,
-              algorithm = "NPOD",
-              gamlam = 0.6,
-              error_type = "additive",
-              error_coefficients = c(0.0, 0.4, 0.0, 0.0),
-              max_cycles = 1001,
-              prior = "sobol",
-              ind_points = 2029,
-              seed = 23
+              algorithm = algorithm,
+              gamlam = c(self$model$model_list$out$Y1$err$model$additive, self$model$model_list$out$Y1$err$model$proportional),
+              error_type = c("additive","proportional")[1+is.null(self$model$model_list$out$Y1$err$model$additive)],
+              error_coefficients = t(sapply(self$model$model_list$out, function(x) {
+                y <- x$err$assay$coefficients
+                if(length(y) < 6){
+                  y <- c(y,0,0)
+                }
+                y}
+              )), # matrix numeqt x 6
+              max_cycles = cycles,
+              prior = prior,
+              ind_points = points,
+              seed = seed
             ), out_path
           ),
           error = function(e) {
@@ -371,7 +286,7 @@ PM_fit <- R6::R6Class(
             return(NULL)
           }
         )
-
+        
         PM_parse("outputs")
         res <- PM_load(file = "PMout.Rdata")
         PM_report(res, outfile = "report.html", template = report)
@@ -390,7 +305,7 @@ PM_fit <- R6::R6Class(
     save = function(file_name = "PMfit.rds") {
       saveRDS(self, file_name)
     },
-
+    
     #' @description
     #' `PM_fit` objects contain a `save` method which invokes [saveRDS] to write
     #' the object to the hard drive as an .rds file. This is the corresponding load
@@ -417,55 +332,10 @@ PM_fit <- R6::R6Class(
     setup_rust_execution = function() {
       # check if compiled and if not, do so
       self$model$compile()
-
-      # if (is.null(self$model$binary_path)) {
-      #   self$model$compile()
-      #   if (!file.exists(self$model$binary_path)) {
-      #     cli::cli_abort(c(
-      #       "x" = "Rust has not been built.",
-      #       "i" = "Make sure the model was built correcly when calling {.fn PM_model$new}"
-      #     ))
-      #   }
-      # }
-      # cwd <- getwd()
-      # self$model$write_rust()
-
-      # # # copy model and config to the template project
-      # # if (length(getPMoptions()$rust_template) == 0) {
-      # #   # PMbuild has not been executed
-      # #   PMbuild()
-      # # }
-      # system(sprintf("mv main.rs %s/src/main.rs", getPMoptions()$rust_template))
-      # # compile the template folder
-      # setwd(getPMoptions()$rust_template)
-      # system("cargo fmt")
-      # system("cargo build --release")
-      # if (!file.exists("target/release/template")) {
-      #   setwd(cwd)
-      #   cli::cli_abort(c("x" = "Error: Compilation failed"))
-      # }
-      # compiled_binary_path <- paste0(getwd(), "/target/release/template")
-      # # Save the binary somewhere
-      # setwd(tempdir())
-      # olddir <- list.dirs(recursive = F)
-      # olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
-      # olddir <- sub("^\\./", "", olddir)
-      # if (length(olddir) > 0) {
-      #   newdir <- as.character(max(as.numeric(olddir)) + 1)
-      # } else {
-      #   newdir <- "1"
-      # }
-      # dir.create(newdir)
-      # setwd(newdir)
-      # cat("\nMoving compiled binary to a temp folder\n")
-      # system(sprintf("cp %s NPcore", compiled_binary_path))
-      # private$binary_path <- paste0(getwd(), "/NPcore")
-      # setwd(cwd)
-      # # TODO: I think it might be necessary to implement a re_build() method
-      # # In case the binary the temp folder gets deleted
-    }
+      
+      
+      )
   )
-)
 
 
 
@@ -478,6 +348,6 @@ PM_fit$load <- function(file_name = "PMfit.rds") {
   if (!is.logical(bool)) {
     stop("This functions expects a logical value")
   }
-
+  
   rust_logical <- ifelse(bool, "true", "false")
 }
