@@ -173,7 +173,7 @@ PM_fit <- R6::R6Class(
       dir.create(newdir)
       setwd(newdir)
       
-      engine <- tolower(engine)
+      algorithm <- tolower(algorithm)
       
       if (getPMoptions()$backend != "rust") {
         setwd(cwd)
