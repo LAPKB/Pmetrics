@@ -332,10 +332,10 @@ PM_fit <- R6::R6Class(
     setup_rust_execution = function() {
       # check if compiled and if not, do so
       self$model$compile()
-      
-      
-      )
-  )
+    }
+    
+  ) # end private
+) # end PM_fit
 
 
 
