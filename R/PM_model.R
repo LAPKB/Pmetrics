@@ -780,6 +780,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  
                                  
                                  self$model_list <- private$order(self$model_list)
+                                 browser()
                                  readr::write_file(content, file_name)
                                },
                                #' @description
@@ -995,11 +996,71 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  
                                  .l <- gsub("log\\(", "ln\\(", .l) # log in R and Fortran is ln in Rust
                                  
-                                 # deal with exponents - not bullet proof. Need to separate closing ) with space if not part of exponent
-                                 #TODO: There is a bug here when the exponent is a variable not between parentheses
-                                 pattern2 <- "\\*{2}\\(([^)]+)\\)|\\*{2}([\\d.]+)|\\^\\(([^)]+)\\)|\\^([\\d.]+)"
-                                 replace2 <- "\\.powf\\(\\1\\2\\) " # will use first match if complex, second if simple
-                                 .l <- gsub(pattern2, replace2, .l, perl = TRUE)
+                                 # deal with exponents: **, ^, and exp(). Very tricky. This code was made by chatGPT after about 10 tries.
+                                 exponents <- function(eq) {
+                                   # Remove whitespace
+                                   eq <- gsub("\\s+", "", eq)
+                                   
+                                   # Step 1: Replace exp(...) with placeholders (using a loop)
+                                   exp_counter <- 0
+                                   exp_map <- list()
+                                   
+                                   extract_exp <- function(text) {
+                                     pattern <- "exp\\(([^()]+(?:\\([^()]*\\)[^()]*)*)\\)"
+                                     m <- regexpr(pattern, text, perl = TRUE)
+                                     while (m[1] != -1) {
+                                       match_start <- m[1]
+                                       match_len <- attr(m, "match.length")
+                                       matched <- substr(text, match_start, match_start + match_len - 1)
+                                       inner <- sub("exp\\((.*)\\)", "\\1", matched)
+                                       exp_counter <<- exp_counter + 1
+                                       placeholder <- paste0("__EXP", exp_counter, "__")
+                                       exp_map[[placeholder]] <<- paste0("(", inner, ").exp()")
+                                       text <- paste0(
+                                         substr(text, 1, match_start - 1),
+                                         placeholder,
+                                         substr(text, match_start + match_len, nchar(text))
+                                       )
+                                       m <- regexpr(pattern, text, perl = TRUE)
+                                     }
+                                     return(text)
+                                   }
+                                   
+                                   eq <- extract_exp(eq)
+                                   
+                                   # Step 2: Replace ** and ^ with .powf()
+                                   eq <- gsub("(\\([^()]+\\)|[A-Za-z0-9_\\.]+)\\*\\*\\(?([^\\)\\+\\*/\\-]+)\\)?",
+                                              "\\1.powf(\\2)", eq, perl = TRUE)
+                                   eq <- gsub("(\\([^()]+\\)|[A-Za-z0-9_\\.]+)\\^(\\([^\\)]+\\)|[A-Za-z0-9_\\.]+)",
+                                              "\\1.powf(\\2)", eq, perl = TRUE)
+                                   
+                                   # Step 3: Restore exp placeholders
+                                   for (ph in names(exp_map)) {
+                                     eq <- gsub_fixed(ph, exp_map[[ph]], eq)
+                                   }
+                                   
+                                   return(eq)
+                                 }
+                                 
+                                 # Helper functions for literal substitution
+                                 sub_fixed <- function(pattern, replacement, x) {
+                                   pos <- regexpr(pattern, x, fixed = TRUE)[1]
+                                   if (pos == -1) return(x)
+                                   paste0(substr(x, 1, pos - 1), replacement, substr(x, pos + nchar(pattern), nchar(x)))
+                                 }
+                                 
+                                 gsub_fixed <- function(pattern, replacement, x) {
+                                   while (grepl(pattern, x, fixed = TRUE)) {
+                                     x <- sub_fixed(pattern, replacement, x)
+                                   }
+                                   x
+                                 }
+                                 
+                                 # pattern2 <- "\\*{2}\\(([^)]+)\\)|\\*{2}([\\d.]+)|\\^\\(([^)]+)\\)|\\^([\\d.]+)"
+                                 # replace2 <- "\\.powf\\(\\1\\2\\) " # will use first match if complex, second if simple
+                                 # .l <- gsub(pattern2, replace2, .l, perl = TRUE)
+                                 
+                                 .l <- exponents(.l)
                                  
                                  # deal with integers, exclude [x] and alphax
                                  pattern3 <- "(?<![\\.\\w\\[])(\\d+)(?![\\.\\]\\d])"

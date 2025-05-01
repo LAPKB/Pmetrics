@@ -229,7 +229,7 @@ parseBlocks <- function(model) {
   
   if (length(diffeq) > 0) {
     eqn <- diffeq
-    tem <- "ode"
+    #tem <- "ode"
   } # change diffeq block to eqn for more general
   # cat("Please update your model file. The #DIF block should be renamed as #EQN, which is short for EQuatioNs.\n")
   
@@ -241,7 +241,7 @@ parseBlocks <- function(model) {
     return(list(status = -1, msg = "You must have #Primary, #Output, and #Error blocks at minimum"))
   }
   
-  headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, tem, eqn, output, error, extra)
+  headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, eqn, output, error, extra)
   blockStart <- blockStart[rank(headerOrder)]
   blockStop <- blockStop[rank(headerOrder)]
   
