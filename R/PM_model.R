@@ -780,7 +780,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  
                                  
                                  self$model_list <- private$order(self$model_list)
-                                 browser()
+                                 #browser()
                                  readr::write_file(content, file_name)
                                },
                                #' @description
