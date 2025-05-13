@@ -18,7 +18,7 @@ pub(crate) fn settings(
         .as_str()
         .unwrap()
         .to_string();
-    let algorithm = match algorithm.as_str() {
+    let algorithm = match algorithm.as_str().to_lowercase().as_str() {
         "NPAG" => pmcore::prelude::Algorithm::NPAG,
         "NPOD" => pmcore::prelude::Algorithm::NPOD,
         _ => return Err(anyhow::anyhow!("Algorithm {} not supported", algorithm)),
