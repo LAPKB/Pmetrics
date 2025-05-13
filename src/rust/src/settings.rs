@@ -19,8 +19,8 @@ pub(crate) fn settings(
         .unwrap()
         .to_string();
     let algorithm = match algorithm.as_str().to_lowercase().as_str() {
-        "NPAG" => pmcore::prelude::Algorithm::NPAG,
-        "NPOD" => pmcore::prelude::Algorithm::NPOD,
+        "npag" => pmcore::prelude::Algorithm::NPAG,
+        "npod" => pmcore::prelude::Algorithm::NPOD,
         _ => return Err(anyhow::anyhow!("Algorithm {} not supported", algorithm)),
     };
     let gamlam = settings
