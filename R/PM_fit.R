@@ -60,6 +60,35 @@ PM_fit <- R6::R6Class(
       if (!inherits(model, "PM_model")) {
         cli::cli_abort(c("x" = "{.code model} must be a {.cls PM_model} object"))
       }
+      
+      #### checks
+      
+      # covariates
+      dataCov <- tolower(getCov(data)$covnames)
+      modelCov <- tolower(sapply(model$model_list$cov, function(x) x$covariate))
+      if(!identical(dataCov, modelCov)){
+        cli::cli_abort(c(
+          "x" = "Error: Covariates in data and model do not match.",
+          "i" = "Check the names of the covariates in the data and model."
+        ))
+      }
+      
+      #output equations
+      browser()
+      if (!is.null(data$standard_data$outeq)) {
+        dataOut <- max(data$standard_data$outeq, na.rm = TRUE)
+      } else {
+        dataOut <- 1
+      }
+      
+      modelOut <- length(model$model_list$out)
+      if(dataOut != modelOut){
+        cli::cli_abort(c(
+          "x" = "Error: Number of output equations in data and model do not match.",
+          "i" = "Check the number of output equations in the data and model."
+        ))
+      }
+      
       self$data <- data
       self$model <- model
       self$backend <- backend

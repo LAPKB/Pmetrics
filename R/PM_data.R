@@ -2128,6 +2128,11 @@ PMwriteMatrix <- function(data, filename, override = F,
   } else {
     err <- NULL
   }
+  # remove the block column if added during run
+  if(!is.null(data$block)){
+    data <- data %>% dplyr::select(-block)
+  }
+  
   versionNum <- as.numeric(substr(version, 5, 7)) + switch(substr(version, 1, 3),
     JAN = 1,
     FEB = 2,
