@@ -1,0 +1,38 @@
+#pri
+Ka, 0.000000, 0.300000
+Ke, 0.000000, 1.500000
+Vint, 0.000000, 40.000000
+Vsl, 0.000000, 5.000000
+
+#cov
+wt
+ht
+male
+scr
+ast
+alt
+wbc
+rbc
+plt
+ic
+
+#sec
+V = Vint + Vsl*wt
+
+#ini
+X[1] = IC*V
+
+#tem
+two_comp_bolus
+
+#eqn
+dX[1] = BOLUS[1] - Ka*X[1]
+dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]
+
+#out
+Y[1]=X(1)/V
+
+#err
+G=5.000000
+0.200000, 0.100000, 0.000000, 0.000000
+

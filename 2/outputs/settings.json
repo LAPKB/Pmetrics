@@ -1,0 +1,75 @@
+{
+  "config": {
+    "cycles": 10,
+    "algorithm": "NPAG",
+    "cache": true,
+    "progress": true
+  },
+  "parameters": {
+    "parameters": [
+      {
+        "name": "ka",
+        "lower": 0.0,
+        "upper": 0.3,
+        "fixed": false
+      },
+      {
+        "name": "ke",
+        "lower": 0.0,
+        "upper": 1.5,
+        "fixed": false
+      },
+      {
+        "name": "vint",
+        "lower": 0.0,
+        "upper": 40.0,
+        "fixed": false
+      },
+      {
+        "name": "vsl",
+        "lower": 0.0,
+        "upper": 5.0,
+        "fixed": false
+      }
+    ]
+  },
+  "error": {
+    "value": 5.0,
+    "model": "Additive",
+    "poly": [
+      0.2,
+      0.1,
+      0.0,
+      0.0
+    ]
+  },
+  "predictions": {
+    "idelta": 0.12,
+    "tad": 0.0
+  },
+  "log": {
+    "level": "INFO",
+    "write": true,
+    "stdout": true
+  },
+  "prior": {
+    "Sobol": [
+      1,
+      23
+    ]
+  },
+  "output": {
+    "write": true,
+    "path": "/Users/mneely/Library/CloudStorage/OneDrive-ChildrensHospitalLosAngeles/Documents/LAPK/Development/Pmetrics_rust/2/outputs"
+  },
+  "convergence": {
+    "likelihood": 0.0001,
+    "pyl": 0.01,
+    "eps": 0.01
+  },
+  "advanced": {
+    "min_distance": 0.0001,
+    "nm_steps": 100,
+    "tolerance": 1e-6
+  }
+}
