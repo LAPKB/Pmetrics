@@ -66,15 +66,21 @@ PM_fit <- R6::R6Class(
       # covariates
       dataCov <- tolower(getCov(data)$covnames)
       modelCov <- tolower(sapply(model$model_list$cov, function(x) x$covariate))
-      if(!identical(dataCov, modelCov)){
-        cli::cli_abort(c(
-          "x" = "Error: Covariates in data and model do not match.",
-          "i" = "Check the names of the covariates in the data and model."
-        ))
+      if(length(modelCov)==0){
+        modelCov <- NA
       }
+      if(!all(is.na(dataCov)) && !all(is.na(modelCov))){ # if there are covariates
+        if(!identical(dataCov, modelCov)){ # if not identical, abort
+          msg <- glue::glue("Model covariates: {paste(modelCov, collapse = ', ')}; Data covariates: {paste(dataCov, collapse = ', ')}")
+          cli::cli_abort(c(
+            "x" = "Error: Covariates in data and model do not match.",
+            "i" = msg
+          ))
+        }
+      }  
       
       #output equations
-      browser()
+      
       if (!is.null(data$standard_data$outeq)) {
         dataOut <- max(data$standard_data$outeq, na.rm = TRUE)
       } else {
