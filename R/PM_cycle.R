@@ -271,7 +271,6 @@ PM_cycle <- R6::R6Class(
 #' @seealso [PM_result], [schema]
 #' @export
 #' @examples
-#' library(PmetricsData)
 #' NPex$cycle$plot()
 #' NPex$cycle$plot(omit = 0, marker = list(symbol = "cross"), line = list(width = 1))
 #' NPex$cycle$plot(
@@ -586,7 +585,6 @@ plot.PM_cycle <- function(x,
 #' * **median** Normalized median parameter values compared to initial value
 #' @author Michael Neely
 #' @examples
-#' library(PmetricsData)
 #' NPex$cycle$summary() # preferred
 #' summary(NPex$cycle) # alternative
 #' @seealso [PM_cycle]
@@ -642,7 +640,6 @@ summary.PM_cycle <- function(object, cycle = NULL, digits = 3, ...) {
 #' @author Michael Neely
 #' @seealso [summary.PM_cycle]
 #' @examples
-#' library(PmetricsData)
 #' NPex$cycle$summary()
 #' @export
 

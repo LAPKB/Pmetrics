@@ -168,7 +168,6 @@ the joining lines will have the following properties:
 The grid and legend are omitted by default.
 }
 \examples{
-library(PmetricsData)
 # basic spaghetti plot
 dataEx$plot()
 # format line and marker

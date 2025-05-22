@@ -26,7 +26,6 @@ with the number of covariates, their names, and the starting and
 ending column numbers
 }
 \examples{
-library(PmetricsData)
 getCov(dataEx)
 }
 \author{

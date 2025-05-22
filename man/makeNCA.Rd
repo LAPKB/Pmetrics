@@ -111,7 +111,6 @@ A minimum of 5 concentrations must be available to perform NCA for any given sub
 suppress all results for that subject.
 }
 \examples{
-library(PmetricsData)
 makeNCA(NPex$data)
 
 }
