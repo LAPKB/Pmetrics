@@ -1,0 +1,5 @@
+ IT2B  run initiated at 14:40 on 2024 Apr 24. 
+PREP FILES: /Users/mneely/Library/R/arm64/4.3/library/Pmetrics/compiledFortran/sITprep.o 
+ENGINE FILES: /Users/mneely/Library/R/arm64/4.3/library/Pmetrics/compiledFortran/sITeng.o 
+
+

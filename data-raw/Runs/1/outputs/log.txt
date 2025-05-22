@@ -1,0 +1,5 @@
+ NPAG  run initiated at 14:39 on 2024 Apr 24. 
+PREP FILES: /Users/mneely/Library/R/arm64/4.3/library/Pmetrics/compiledFortran/sNPprep.o 
+ENGINE FILES: /Users/mneely/Library/R/arm64/4.3/library/Pmetrics//compiledFortran/sNPpatch_120.o /Users/mneely/Library/R/arm64/4.3/library/Pmetrics//compiledFortran/sNPeng.o 
+
+
