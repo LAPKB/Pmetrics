@@ -12,3 +12,6 @@ extendr-api = '*'
 pmcore = {version ="=0.10.3-rc4", features = ["exa"]}
 rayon = "1.10.0"
 anyhow = "1.0.97"
+
+[profile.release]
+panic = "unwind" 
