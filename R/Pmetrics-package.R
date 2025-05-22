@@ -58,5 +58,11 @@
 ## usethis namespace: start
 #' @importFrom lifecycle deprecated
 #' @importFrom DT datatable
+#' @importFrom shiny fluidPage titlePanel tags navlistPanel tabPanel fluidRow
+#' column h2 h3 h4 h5 fileInput selectInput numericInput radioButtons checkboxInput
+#' textInput uiOutput actionButton hr textAreaInput reactiveVal reactive
+#' observeEvent updateSelectizeInput updateTextAreaInput updateNumericInput
+#' updateSelectInput renderUI markdown plotOutput div HTML htmlOutput
+#' showModal modalDialog icon shinyApp textOutput helpText conditionalPanel
 ## usethis namespace: end
 NULL
