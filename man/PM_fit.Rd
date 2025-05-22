@@ -84,7 +84,7 @@ Fit the model to the data
   exclude = NULL,
   cycles = 100,
   prior = "sobol",
-  density0 = NULL,
+  density0 = 0.01,
   seed = 23,
   overwrite = FALSE,
   algorithm = "NPAG",
@@ -98,9 +98,10 @@ Fit the model to the data
 \describe{
 \item{\code{run}}{Specify the run number of the output folder.  Default if missing is the next available number.}
 
-\item{\code{include}}{Vector of subject id values in the data file to include in the analysis.  The default (missing) is all.}
+\item{\code{include}}{Vector of subject id values in the data file to include in the analysis.
+The default (missing) is all.}
 
-\item{\code{exclude}}{A vector of subject IDs to exclude in the analysis, e.g. c(4,6:14,16:20)}
+\item{\code{exclude}}{A vector of subject IDs to exclude in the analysis, e.g. \code{c(4,6:14,16:20)}}
 
 \item{\code{cycles}}{Number of cycles to run. Default is 100.}
 
@@ -119,13 +120,7 @@ covergence with the new data.
 \itemize{
 \item The name of a suitable \link{PM_result} object from a prior run loaded with \link{PM_load}.
 This starts from the non-uniform, informative distribution obtained at the end of a prior NPAG run.
-Example:
-}
-
-\code{run1 <- PM_load(1)}
-
-\code{fit1$run(prior = run1)}
-\itemize{
+Example: \verb{run1 <- PM_load(1); fit1$run(prior = run1)}.
 \item A character string with the filename of a csv file containing a prior distribution with
 format as for 'theta.csv' in the output folder of a prior run: column headers are parameter
 names, and rows are the support point values. A final column with probabilities
@@ -135,13 +130,9 @@ names of the primary variables in the model. Example: \code{fit1$run(prior = "my
 \item The number of a previous run with \code{theta.csv} in the output folder which will be read
 as for the filename option above. Example: \code{fit1$run(prior = 2)}.
 \item A data frame obtained from reading an approriate file, such that the data frame
-is in the required format described in the filename option above.
-Example:
-}
-
-\code{mytheta <- read_csv("mytheta.csv")}
-
-\code{fit1$run(prior = mytheta)}.}
+is in the required format described in the filename option above. Example:
+\verb{mytheta <- read_csv("mytheta.csv"); fit1$run(prior = mytheta)}.
+}}
 
 \item{\code{density0}}{The proportion of the volume of the model parameter
 hyperspace used to calculate the initial number of support points if one of
@@ -150,7 +141,7 @@ above. The initial points are
 spread through that hyperspace and begin the search for the optimal
 parameter value distribution (support points) in the population.
 The volume of the parameter space is the product of the ranges for all parameters.
-For example if using two parameters \code{Ke} and \code{V}, with ranges of \link{0, 5} and \link{10, 100},
+For example if using two parameters \code{Ke} and \code{V}, with ranges of [0, 5] and [10, 100],
 the volume is (5 - 0) x (100 - 10) = 450 The default value of \code{density0} is 0.01, so the initial
 number of support points will be 0.01 x 450 = 4.5, increased to the nearest integer,
 which is 5. The greater the initial number of points, the less chance of

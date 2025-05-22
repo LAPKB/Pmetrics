@@ -111,9 +111,11 @@ PM_fit <- R6::R6Class(
     #' the simplest execution of this method is
     #' `$run()`.
     #' @param run Specify the run number of the output folder.  Default if missing is the next available number.
-    #' @param include Vector of subject id values in the data file to include in the analysis.  The default (missing) is all.
-    #' @param exclude A vector of subject IDs to exclude in the analysis, e.g. c(4,6:14,16:20)
-    #    #' @param ode Ordinary Differential Equation solver log tolerance or stiffness.  Default is -4, i.e. 0.0001.  Higher values will result in faster
+    #' @param include Vector of subject id values in the data file to include in the analysis.  
+    #' The default (missing) is all.
+    #' @param exclude A vector of subject IDs to exclude in the analysis, e.g. `c(4,6:14,16:20)`
+    #    #' @param ode Ordinary Differential Equation solver log tolerance or stiffness.  
+    #    Default is -4, i.e. 0.0001.  Higher values will result in faster
     #    #' runs, but parameter estimates may not be as accurate.
     #    #' @param tol Tolerance for convergence of NPAG.  Smaller numbers make it harder to converge.
     #    #' Default value is 0.01.
@@ -131,11 +133,8 @@ PM_fit <- R6::R6Class(
     #' covergence with the new data.
     #' * The name of a suitable [PM_result] object from a prior run loaded with [PM_load].
     #' This starts from the non-uniform, informative distribution obtained at the end of a prior NPAG run. 
-    #' Example: 
+    #' Example: `run1 <- PM_load(1); fit1$run(prior = run1)`.
     #' 
-    #' `run1 <- PM_load(1)`
-    #' 
-    #' `fit1$run(prior = run1)`
     #' * A character string with the filename of a csv file containing a prior distribution with
     #' format as for 'theta.csv' in the output folder of a prior run: column headers are parameter
     #' names, and rows are the support point values. A final column with probabilities
@@ -145,12 +144,9 @@ PM_fit <- R6::R6Class(
     #' * The number of a previous run with `theta.csv` in the output folder which will be read
     #' as for the filename option above. Example: `fit1$run(prior = 2)`.
     #' * A data frame obtained from reading an approriate file, such that the data frame
-    #' is in the required format described in the filename option above. 
-    #' Example:
+    #' is in the required format described in the filename option above. Example:
+    #' `mytheta <- read_csv("mytheta.csv"); fit1$run(prior = mytheta)`.
     #' 
-    #' `mytheta <- read_csv("mytheta.csv")`
-    #' 
-    #' `fit1$run(prior = mytheta)`.
     #' @param density0 The proportion of the volume of the model parameter 
     #' hyperspace used to calculate the initial number of support points if one of
     #' the semi-random, uniform distributions are selected in the `prior` argument
@@ -158,7 +154,7 @@ PM_fit <- R6::R6Class(
     #' spread through that hyperspace and begin the search for the optimal
     #' parameter value distribution (support points) in the population.
     #' The volume of the parameter space is the product of the ranges for all parameters.
-    #' For example if using two parameters `Ke` and `V`, with ranges of [0, 5] and [10, 100],
+    #' For example if using two parameters `Ke` and `V`, with ranges of \[0, 5\] and \[10, 100\],
     #' the volume is (5 - 0) x (100 - 10) = 450 The default value of `density0` is 0.01, so the initial
     #' number of support points will be 0.01 x 450 = 4.5, increased to the nearest integer,
     #' which is 5. The greater the initial number of points, the less chance of 
@@ -200,7 +196,7 @@ PM_fit <- R6::R6Class(
                    # ode, tol, salt,
                    cycles = 100,
                    prior = "sobol",
-                   density0 = NULL,
+                   density0 = 0.01,
                    # icen, aucint,
                    # idelta,
                    seed = 23,
@@ -289,13 +285,11 @@ PM_fit <- R6::R6Class(
       })
       names(ranges) <- tolower(names(ranges))
       
-      vol <- prod(sapply(ranges, function(x) x[2] - x[1]))
+      # Set initial grid points (only applies for sobol)
       
-      if (is.null(density0)) {
-        points <- ceiling(0.01 * vol)
-      } else {
-        points <- ceiling(density0 * vol)
-      }
+      vol <- prod(sapply(ranges, function(x) x[2] - x[1]))
+      points <- ceiling(density0 * vol)
+      
       
       
       # set prior
