@@ -1,0 +1,184 @@
+language,iso639_2,Iso639_3
+Afar,aa,aar
+Abkhazian,ab,abk
+Afrikaans,af,afr
+Akan,ak,aka
+Amharic,am,amh
+Arabic,ar,ara
+Aragonese,an,arg
+Assamese,as,asm
+Avaric,av,ava
+Avestan,ae,ave
+Aymara,ay,aym
+Azerbaijani,az,aze
+Bashkir,ba,bak
+Bambara,bm,bam
+Belarusian,be,bel
+Bengali,bn,ben
+Bislama,bi,bis
+Tibetan,bo,bod
+Bosnian,bs,bos
+Breton,br,bre
+Bulgarian,bg,bul
+"Catalan, Valencian",ca,cat
+Czech,cs,ces
+Chamorro,ch,cha
+Chechen,ce,che
+"Church Slavic, Old Slavonic, Church Slavonic, Old Bulgarian, Old Church Slavonic",cu,chu
+Chuvash,cv,chv
+Cornish,kw,cor
+Corsican,co,cos
+Cree,cr,cre
+Welsh,cy,cym
+Danish,da,dan
+German,de,deu
+"Divehi, Dhivehi, Maldivian",dv,div
+Dzongkha,dz,dzo
+"Greek, Modern (1453–)",el,ell
+English,en,eng
+Esperanto,eo,epo
+Estonian,et,est
+Basque,eu,eus
+Ewe,ee,ewe
+Faroese,fo,fao
+Persian,fa,fas
+Fijian,fj,fij
+Finnish,fi,fin
+French,fr,fra
+Western Frisian,fy,fry
+Fulah,ff,ful
+"Gaelic, Scottish Gaelic",gd,gla
+Irish,ga,gle
+Galician,gl,glg
+Manx,gv,glv
+Guarani,gn,grn
+Gujarati,gu,guj
+"Haitian, Haitian Creole",ht,hat
+Hausa,ha,hau
+Hebrew,he,heb
+Herero,hz,her
+Hindi,hi,hin
+Hiri Motu,ho,hmo
+Croatian,hr,hrv
+Hungarian,hu,hun
+Armenian,hy,hye
+Igbo,ig,ibo
+Ido,io,ido
+"Sichuan Yi, Nuosu",ii,iii
+Inuktitut,iu,iku
+"Interlingue, Occidental",ie,ile
+Interlingua (International Auxiliary Language Association),ia,ina
+Indonesian,id,ind
+Inupiaq,ik,ipk
+Icelandic,is,isl
+Italian,it,ita
+Javanese,jv,jav
+Japanese,ja,jpn
+"Kalaallisut, Greenlandic",kl,kal
+Kannada,kn,kan
+Kashmiri,ks,kas
+Georgian,ka,kat
+Kanuri,kr,kau
+Kazakh,kk,kaz
+Central Khmer,km,khm
+"Kikuyu, Gikuyu",ki,kik
+Kinyarwanda,rw,kin
+"Kirghiz, Kyrgyz",ky,kir
+Komi,kv,kom
+Kongo,kg,kon
+Korean,ko,kor
+"Kuanyama, Kwanyama",kj,kua
+Kurdish,ku,kur
+Lao,lo,lao
+Latin,la,lat
+Latvian,lv,lav
+"Limburgan, Limburger, Limburgish",li,lim
+Lingala,ln,lin
+Lithuanian,lt,lit
+"Luxembourgish, Letzeburgesch",lb,ltz
+Luba-Katanga,lu,lub
+Ganda,lg,lug
+Marshallese,mh,mah
+Malayalam,ml,mal
+Marathi,mr,mar
+Macedonian,mk,mkd
+Malagasy,mg,mlg
+Maltese,mt,mlt
+Mongolian,mn,mon
+Maori,mi,mri
+Malay,ms,msa
+Burmese,my,mya
+Nauru,na,nau
+"Navajo, Navaho",nv,nav
+South Ndebele,nr,nbl
+North Ndebele,nd,nde
+Ndonga,ng,ndo
+Nepali,ne,nep
+"Dutch, Flemish",nl,nld
+Norwegian Nynorsk,nn,nno
+Norwegian Bokmål,nb,nob
+Norwegian,no,nor
+"Chichewa, Chewa, Nyanja",ny,nya
+Occitan,oc,oci
+Ojibwa,oj,oji
+Oriya,or,ori
+Oromo,om,orm
+"Ossetian, Ossetic",os,oss
+"Punjabi, Panjabi",pa,pan
+Pali,pi,pli
+Polish,pl,pol
+Portuguese,pt,por
+"Pashto, Pushto",ps,pus
+Quechua,qu,que
+Romansh,rm,roh
+"Romanian, Moldavian, Moldovan",ro,ron
+Rundi,rn,run
+Russian,ru,rus
+Sango,sg,sag
+Sanskrit,sa,san
+"Sinhala, Sinhalese",si,sin
+Slovak,sk,slk
+Slovenian,sl,slv
+Northern Sami,se,sme
+Samoan,sm,smo
+Shona,sn,sna
+Sindhi,sd,snd
+Somali,so,som
+Southern Sotho,st,sot
+"Spanish, Castilian",es,spa
+Albanian,sq,sqi
+Sardinian,sc,srd
+Serbian,sr,srp
+Swati,ss,ssw
+Sundanese,su,sun
+Swahili,sw,swa
+Swedish,sv,swe
+Tahitian,ty,tah
+Tamil,ta,tam
+Tatar,tt,tat
+Telugu,te,tel
+Tajik,tg,tgk
+Tagalog,tl,tgl
+Thai,th,tha
+Tigrinya,ti,tir
+Tonga (Tonga Islands),to,ton
+Tswana,tn,tsn
+Tsonga,ts,tso
+Turkmen,tk,tuk
+Turkish,tr,tur
+Twi,tw,twi
+"Uighur, Uyghur",ug,uig
+Ukrainian,uk,ukr
+Urdu,ur,urd
+Uzbek,uz,uzb
+Venda,ve,ven
+Vietnamese,vi,vie
+Volapük,vo,vol
+Walloon,wa,wln
+Wolof,wo,wol
+Xhosa,xh,xho
+Yiddish,yi,yid
+Yoruba,yo,yor
+"Zhuang, Chuang",za,zha
+Chinese,zh,zho
+Zulu,zu,zul
