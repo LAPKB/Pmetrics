@@ -30,7 +30,7 @@
 )
 }
 \arguments{
-\item{x}{The name of a \link{PM_pop}  object, e.g. \code{PmetricsData::NPex$pop}.
+\item{x}{The name of a \link{PM_pop}  object, e.g. \code{NPex$pop}.
 in a \link{PM_result} object}
 
 \item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
@@ -141,7 +141,6 @@ the joining lines will have the following properties:
 The grid and legend are omitted by default.
 }
 \examples{
-library(PmetricsData)
 # basic spaghetti plot
 NPex$pop$plot()
 # format line and marker

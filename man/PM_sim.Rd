@@ -187,7 +187,7 @@ or via the \verb{$sim} method for \link{PM_result} objects.
 \itemize{
 \item Population prior parameters as a \link{PM_final} object found in
 \code{PM_result$final}. Normally these would be supplied by calling the
-\verb{$sim} method for a \link{PM_result} object, e.g. \code{PmetricsData::NPex$sim(...)}.
+\verb{$sim} method for a \link{PM_result} object, e.g. \code{NPex$sim(...)}.
 \item The name of a previously saved simulation via the \verb{$save} method. The
 file will be loaded. This filename should have the ".rds" extension, e.g. "sim.rds".
 \item A manually specified prior as a list containing three items in this order,

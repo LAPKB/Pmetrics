@@ -20,7 +20,7 @@ A tibble with the model equations.
 This function provides a list of available pharmacokinetic models.
 }
 \examples{
-model_lib() 
+model_lib()
 model_lib("one_comp_iv")
 }
 \seealso{

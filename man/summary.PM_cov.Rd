@@ -30,7 +30,6 @@ values for each subject. The function can
 be called directly on a \link{PM_cov} object. See examples.Summarize .
 }
 \examples{
-library(PmetricsData)
 NPex$cov$summary() # preferred
 summary(NPex$cov) # alternative
 NPex$cov$summary(icen = "mean") # use mean as summary

@@ -97,7 +97,6 @@ Plot PM_cycle objects. These objects are created by as part of a \link{PM_result
 when \link{PM_load} is run.
 }
 \examples{
-library(PmetricsData)
 NPex$cycle$plot()
 NPex$cycle$plot(omit = 0, marker = list(symbol = "cross"), line = list(width = 1))
 NPex$cycle$plot(

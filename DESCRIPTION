@@ -63,14 +63,12 @@ Suggests:
     npde,
     pandoc,
     patchwork,
-    PmetricsData,
     progress,
     RColorBrewer,
     RcppTOML,
     reticulate,
     testthat,
     trelliscopejs
-Remotes: LAPKB/PmetricsData
 RoxygenNote: 7.3.2
 Encoding: UTF-8
 Config/testthat/edition: 3

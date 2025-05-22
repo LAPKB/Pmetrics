@@ -83,12 +83,11 @@ Fit the model to the data
   include = NULL,
   exclude = NULL,
   cycles = 100,
-  indpts = NULL,
-  prior = "uniform",
-  intern = TRUE,
+  prior = "sobol",
+  density0 = NULL,
+  seed = 23,
   overwrite = FALSE,
-  engine = "NPAG",
-  sampler = "sobol",
+  algorithm = "NPAG",
   report = getPMoptions("report_template"),
   artifacts = TRUE
 )}\if{html}{\out{</div>}}
@@ -105,28 +104,72 @@ Fit the model to the data
 
 \item{\code{cycles}}{Number of cycles to run. Default is 100.}
 
-\item{\code{indpts}}{Index of starting grid point number.  Default is missing, which allows NPAG to choose depending on the number of random parameters:}
+\item{\code{prior}}{The distribution for the initial support points, which can be
+one of several options.
+\itemize{
+\item The default is "sobol", which is a semi-random distribution. This is the distribution
+typically used when fitting a new model to the data.
+}
 
-\item{\code{prior}}{Either "uniform" (default) or the name of a suitable \link{PM_result} object from a prior run loaded with \link{PM_load}.
-A \code{prior} may be specified if the user wishes to
-start from a non-uniform prior distribution for the NPAG run. This is useful for continuing a previous
-run which did not converge, e.g., \code{fit1$run(prior = run1)}, assuming \code{run1} is a \link{PM_result} object
-that was loaded with \link{PM_load}.}
+The following all specify non-random, informative prior distributions. They
+are useful for either continuing a previous
+run which did not converge or for fitting a model to new data, whether to simply
+calculate Bayesian posteriors with \code{cycles = 0} or to revise the model to a new
+covergence with the new data.
+\itemize{
+\item The name of a suitable \link{PM_result} object from a prior run loaded with \link{PM_load}.
+This starts from the non-uniform, informative distribution obtained at the end of a prior NPAG run.
+Example:
+}
 
-\item{\code{intern}}{Run NPAG in the R console without a batch script.  Default is TRUE.}
+\code{run1 <- PM_load(1)}
+
+\code{fit1$run(prior = run1)}
+\itemize{
+\item A character string with the filename of a csv file containing a prior distribution with
+format as for 'theta.csv' in the output folder of a prior run: column headers are parameter
+names, and rows are the support point values. A final column with probabilities
+for each support point is not necessary, but if present will be ignored, as these
+probabilities are calculated by the engine. Note that the parameter names must match the
+names of the primary variables in the model. Example: \code{fit1$run(prior = "mytheta.csv")}.
+\item The number of a previous run with \code{theta.csv} in the output folder which will be read
+as for the filename option above. Example: \code{fit1$run(prior = 2)}.
+\item A data frame obtained from reading an approriate file, such that the data frame
+is in the required format described in the filename option above.
+Example:
+}
+
+\code{mytheta <- read_csv("mytheta.csv")}
+
+\code{fit1$run(prior = mytheta)}.}
+
+\item{\code{density0}}{The proportion of the volume of the model parameter
+hyperspace used to calculate the initial number of support points if one of
+the semi-random, uniform distributions are selected in the \code{prior} argument
+above. The initial points are
+spread through that hyperspace and begin the search for the optimal
+parameter value distribution (support points) in the population.
+The volume of the parameter space is the product of the ranges for all parameters.
+For example if using two parameters \code{Ke} and \code{V}, with ranges of \link{0, 5} and \link{10, 100},
+the volume is (5 - 0) x (100 - 10) = 450 The default value of \code{density0} is 0.01, so the initial
+number of support points will be 0.01 x 450 = 4.5, increased to the nearest integer,
+which is 5. The greater the initial number of points, the less chance of
+missing the globally maximally likely parameter value distribution,
+but the slower the run.}
+
+\item{\code{seed}}{Seed used if \code{prior = "sobol"}. Ignored otherwise.}
 
 \item{\code{overwrite}}{Boolean operator to overwrite existing run result folders.  Default is \code{FALSE}.}
 
-\item{\code{engine}}{The engine to use for the run.  Default is "NPAG". Alternatives: "NPOD".}
-
-\item{\code{sampler}}{The pseudo-random sampler to use for the initial distribution of grid points when
-\code{prior = "uniform"}.}
+\item{\code{algorithm}}{The algorithm to use for the run.  Default is "NPAG". Alternatives: "NPOD".}
 
 \item{\code{report}}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
 is used. Otherwise can be "plotly", "ggplot", or "none".}
 
 \item{\code{artifacts}}{Default is \code{TRUE}.  Set to \code{FALSE} to suppress creating the \code{etc} folder. This folder
 will contain all the compilation artifacts created during the compilation and run steps.}
+
+\item{\code{intern}}{Run NPAG in the R console without a batch script.  Default is TRUE.}
 }
 \if{html}{\out{</div>}}
 }
