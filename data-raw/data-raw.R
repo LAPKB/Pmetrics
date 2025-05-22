@@ -59,23 +59,23 @@ usethis::use_data(badData, overwrite = T)
 
 setwd("Runs")
 # NPAG
-fitEx$run(run = 1, overwrite = TRUE, intern = TRUE)
+fitEx$run(run = 1, overwrite = TRUE)
 
 NPex <- PM_load(1)
-NPex$validate(limits = NA)
-usethis::use_data(NPex, overwrite = T)
+# NPex$validate(limits = NA)
+# usethis::use_data(NPex, overwrite = T)
 
 # IT2B
-fitEx$run(run = 2, engine = "IT2B", overwrite = TRUE, intern = TRUE)
+# fitEx$run(run = 2, engine = "IT2B", overwrite = TRUE, intern = TRUE)
 
-ITex <- PM_load(2)
-usethis::use_data(ITex, overwrite = TRUE)
+# ITex <- PM_load(2)
+# usethis::use_data(ITex, overwrite = TRUE)
 
-setwd("..")
+#setwd("..")
 
 # simulator example
 simEx <- NPex$sim(
-  limits = c(0, 3), data = "ptaex1.csv",
+  limits = c(0, 3), data = PM_data$new("ptaex1.csv"),
   predInt = c(120, 144, 0.5), seed = rep(-17, 4)
 )
 usethis::use_data(simEx, overwrite = TRUE)
