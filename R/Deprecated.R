@@ -219,3 +219,17 @@ PMcompare <- function(...) {
 makeValid <- function(...) {
   lifecycle::deprecate_warn("2.2.0", what = "makeValid()", with = "make_valid()")
 }
+
+
+#' @title Build Fortran
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' Use PM_build instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @export
+PMbuild <- function(...) {
+  lifecycle::deprecate_warn("2.1.0", "PMbuild()", details = "Use PM_build() to compile Rust.")
+}
