@@ -23,7 +23,6 @@ to internally validate the result by simulation methods.
 ## ------------------------------------------------
 
 \dontrun{
-library(PmetricsData)
 valid <- NPex$validate(limits = c(0, 3))
 }
 
@@ -132,7 +131,6 @@ This will be \code{NA} if \code{tad = FALSE}.
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
-library(PmetricsData)
 valid <- NPex$validate(limits = c(0, 3))
 }
 

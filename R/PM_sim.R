@@ -125,7 +125,7 @@ PM_sim <- R6::R6Class(
     #' 
     #' * Population prior parameters as a [PM_final] object found in
     #' `PM_result$final`. Normally these would be supplied by calling the
-    #' `$sim` method for a [PM_result] object, e.g. `PmetricsData::NPex$sim(...)`.
+    #' `$sim` method for a [PM_result] object, e.g. `NPex$sim(...)`.
     #' * The name of a previously saved simulation via the `$save` method. The
     #' file will be loaded. This filename should have the ".rds" extension, e.g. "sim.rds".
     #' * A manually specified prior as a list containing three items in this order,
@@ -1672,7 +1672,6 @@ PM_sim$load <- function(...) {
 #' @importFrom dplyr summarize
 #' @export
 #' @examples
-#' library(PmetricsData)
 #' simEx$plot()
 #' simEx$plot(log = FALSE, line = list(color = "orange"))
 #' @family PMplots
@@ -2126,7 +2125,6 @@ plot.PM_sim <- function(x,
 #' each containing a data frame with the summaries for each group in `by`.
 #' @author Michael Neely
 #' @examples
-#' library(PmetricsData)
 #' simEx$summary() # preferred
 #' summary(simEx) # alternative
 #' simEx$summary(at = 2, field = "amt", group = "comp") # group amounts by compartment
@@ -2209,7 +2207,6 @@ summary.PM_sim <- function(object, include, exclude, field = "obs", group = NULL
 #' @author Michael Neely
 #' @seealso [summary.PM_sim]
 #' @examples
-#' library(PmetricsData)
 #' simEx$summary()
 #' @export
 

@@ -85,7 +85,6 @@ PM_valid <- R6::R6Class(
     #' @author Michael Neely
     #' @examples
     #' \dontrun{
-    #' library(PmetricsData)
     #' valid <- NPex$validate(limits = c(0, 3))
     #' }
     #'
@@ -793,7 +792,6 @@ PM_valid <- R6::R6Class(
 #' @seealso [make_valid]
 #' @export
 #' @examples
-#' library(PmetricsData)
 #' # VPC
 #' NPex$valid$plot()
 #'

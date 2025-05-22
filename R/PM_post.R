@@ -153,7 +153,7 @@ PM_post <- R6::R6Class(
 #' The grid and legend are omitted by default.
 #'
 #' @method plot PM_post
-#' @param x The name of a [PM_post]  object, e.g. `PmetricsData::NPex$post`.
+#' @param x The name of a [PM_post]  object, e.g. `NPex$post`.
 #' in a [PM_result] object
 #' @param include `r template("include")`
 #' @param exclude `r template("exclude")`
@@ -204,7 +204,6 @@ PM_post <- R6::R6Class(
 #' @seealso [PM_post], [PM_result]
 #' @export
 #' @examples
-#' library(PmetricsData)
 #' # basic spaghetti plot
 #' NPex$post$plot()
 #' # format line and marker
@@ -451,7 +450,6 @@ plot.PM_post <- function(x,
 #'
 #' @author Michael Neely
 #' @examples
-#' library(PmetricsData)
 #' NPex$post$summary() # preferred
 #' summary(NPex$post) # alternative
 #' @seealso [PM_post]

@@ -1564,7 +1564,6 @@ createInstructions <- function(wb) {
 #' @seealso [PM_data], [PM_result]
 #' @export
 #' @examples
-#' library(PmetricsData)
 #' # basic spaghetti plot
 #' dataEx$plot()
 #' # format line and marker
@@ -2024,7 +2023,6 @@ summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
 #' @param ... Not used.
 #' @seealso [summary.PM_data]
 #' @examples
-#' library(PmetricsData)
 #' dataEx$summary()
 #' @export
 
@@ -2114,7 +2112,6 @@ print.summary.PM_data <- function(x, ...) {
 #' @examples
 #' \dontrun{
 #' # write to the current directory
-#' library(PmetricsData)
 #' NPex$data$write("data.csv")
 #' }
 PMwriteMatrix <- function(data, filename, override = F,

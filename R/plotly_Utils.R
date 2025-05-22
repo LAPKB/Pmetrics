@@ -290,7 +290,6 @@ notNeeded <- function(x, f) {
 #' @seealso [add_shapes]
 #' @examples
 #' # add to an existing plot
-#' library(PmetricsData)
 #' NPex$op$plot() %>%
 #'   add_shapes(shapes = ab_line(v = 12))
 #'
@@ -369,7 +368,6 @@ ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE) {
 #' @export
 #' @seealso [ab_line]
 #' @examples
-#' library(PmetricsData)
 #' NPex$op$plot() %>%
 #'   add_shapes(shapes = ab_line(v = 12))
 #'
@@ -632,7 +630,6 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
 #' @seealso [plotly::save_image()]
 #' @examples
 #' \dontrun{
-#' library(PmetricsData)
 #' NPex$op$plot(stats = list(x = 0.9)) %>%
 #'   export_plotly(file = "op.png", width = 12, height = 6, units = "in")
 #' }
@@ -746,7 +743,6 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
 #' @export
 #' @seealso [plotly::subplot()]
 #' @examples
-#' library(PmetricsData)
 #' plot1 <- NPex$op$plot(title = "Posterior")
 #' plot2 <- NPex$op$plot(pred.type = "pop", title = "Population")
 #' sub_plot(plot1, plot2, titles = c(0, 0.95), nrows = 2)

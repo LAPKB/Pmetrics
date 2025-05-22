@@ -975,7 +975,6 @@ makePMmatrixBlock <- function(mdata) {
 #'
 #' @export
 #' @examples
-#' library(PmetricsData)
 #' getCov(dataEx)
 #' @author Michael Neely
 

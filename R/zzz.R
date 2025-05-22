@@ -56,15 +56,6 @@
     packageStartupMessage(paste0("\n", crayon::red("CRITICAL: "), "Execute PMbuild() in R to complete Pmetrics installation.\n"))
   }
 
-  # check for PmetricsData
-  if (!requireNamespace("PmetricsData", quietly = TRUE)) {
-    packageStartupMessage(paste0(
-      crayon::green("Important: "),
-      "PmetricsData package required for examples and PMtest().\n",
-      "Run remotes::install_github('LAPKB/PmetricsData') to install.\n"
-    ))
-  }
-
   # set user options for the session
   setPMoptions()
 }

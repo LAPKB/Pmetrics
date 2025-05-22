@@ -46,7 +46,6 @@ Summarize Pharmacodynamic Index (PDI) statistics and success proportions in a \l
 or \%time>target. Since a PDI cannot be calculated for intersections, summarizing the intersection object only provides the success proportion per simulation/target.
 }
 \examples{
-library(PmetricsData)
 ptaEx$summary()
 }
 \seealso{
