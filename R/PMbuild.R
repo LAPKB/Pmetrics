@@ -10,7 +10,7 @@
 
 
 PM_build <- function() {
-  clear_build() #clean prior template/artifacts
+  clear_build() # clean prior template/artifacts
   if (is_rustup_installed()) {
     cat("Rust was detected in your system, Fetching dependencies and building base project.\n")
     template <- dummy_compile()

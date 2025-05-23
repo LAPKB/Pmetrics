@@ -118,7 +118,7 @@ For the Simulator, the `$sim` method for a `PM_result` object will execute the
 program directly within R and return a `PM_sim` object. 
 
 ```{r echo=T, eval=FALSE}
-run1 <- PM_load(1) 
+run1 <- PM_load(1)
 sim1 <- run1$sim(data = "new.csv")
 ```
 
@@ -128,7 +128,7 @@ An equivalent method is to run a new `PM_sim()` directly with `PM_sim$run()`. It
 also returns a `PM_sim()` object, i.e. there is no longer any need to run `SIMparse()`.
 
 ```{r echo=T, eval=FALSE}
-sim1 <- PM_sim$run(poppar = list(...), model = "model.txt", data = "new.csv") 
+sim1 <- PM_sim$run(poppar = list(...), model = "model.txt", data = "new.csv")
 ```
 
 See `vignette("simulation")` for details on specifying `poppar` this way.
@@ -269,19 +269,19 @@ and process and plot extracted data.
 
 ### Data manipulation
 ```{r echo=F}
-data_comp <- read.csv("Data/RLcomp_data.csv",na.strings=".")
+data_comp <- read.csv("Data/RLcomp_data.csv", na.strings = ".")
 knitr::kable(data_comp)
 ```
 
 ### Model selection and diagnostics
 ```{r echo=F}
-mod_comp <- read.csv("Data/RLcomp_valid.csv",na.strings=".")
+mod_comp <- read.csv("Data/RLcomp_valid.csv", na.strings = ".")
 knitr::kable(mod_comp)
 ```
 
 ### Other functions
 ```{r echo=F}
-oth_comp <- read.csv("Data/RLcomp_other.csv",na.strings=".")
+oth_comp <- read.csv("Data/RLcomp_other.csv", na.strings = ".")
 knitr::kable(oth_comp)
 ```
 
