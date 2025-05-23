@@ -825,10 +825,16 @@ PM_model_list <- R6::R6Class("PM_model_list",
     compile = function() {
       if (getPMoptions()$backend != "rust") {
         cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
+        
       }
-      if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
-        return()
+
+      if (!is.null(self$binary_path)) {
+        if (file.exists(self$binary_path)){
+          return()
+        }
       }
+     
+
       temp_model <- file.path(tempdir(), "temp_model.txt")
       self$write_rust(temp_model)
       model_path <- tempfile(pattern = "model_", fileext = ".pmx")
