@@ -141,6 +141,7 @@ the joining lines will have the following properties:
 The grid and legend are omitted by default.
 }
 \examples{
+\dontrun{
 # basic spaghetti plot
 NPex$pop$plot()
 # format line and marker
@@ -148,7 +149,7 @@ NPex$pop$plot(
   marker = list(color = "blue", symbol = "square", size = 12, opacity = 0.4),
   line = list(color = "orange")
 )
-
+}
 }
 \seealso{
 \link{PM_pop}, \link{PM_result}

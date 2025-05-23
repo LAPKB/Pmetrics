@@ -65,6 +65,7 @@ selected for regression by omitting the \code{data} argument and specifying new 
 \code{ggplot::geom_smooth()}.
 }
 \examples{
+\dontrun{
 plotly::plot_ly(mtcars,
   x = ~hp, y = ~mpg,
   type = "scatter", mode = "markers", showlegend = FALSE
@@ -75,6 +76,7 @@ plotly::plot_ly(iris,
   type = "scatter", mode = "markers", showlegend = FALSE
 ) \%>\%
   add_smooth(method = "loess", ci = 0.9, line = list(color = "red", dash = "dash"))
+}
 }
 \seealso{
 \link{add_shapes}

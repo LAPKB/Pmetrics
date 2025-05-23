@@ -65,7 +65,9 @@ This accepts a \link{PM_model} object and creates a network plot where nodes are
 and edges are arrows connecting compartments.
 }
 \examples{
+\dontrun{
 NPex$model$plot()
+}
 }
 \seealso{
 \link{PM_model}, \code{\link[ggraph:ggraph]{ggraph::ggraph()}}, \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}}

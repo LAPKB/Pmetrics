@@ -29,11 +29,14 @@ but must be done manually as outlined in the plotly schema documentation.
 An example of a circle shape is below in examples.
 }
 \examples{
+#'
+\dontrun{
 NPex$op$plot() \%>\%
   add_shapes(shapes = ab_line(v = 12))
 
 NPex$data$plot() \%>\%
   add_shapes(shapes = list(type = "circle", x0 = 125, y0 = 10, x1 = 135, y1 = 15))
+}
 }
 \seealso{
 \link{ab_line}

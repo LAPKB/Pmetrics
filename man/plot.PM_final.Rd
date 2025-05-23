@@ -147,6 +147,7 @@ of each plotted variable and surrounding quantiles of the bivariate distribution
 Mulitvariate normal density code is borrowed from the mvtnorm package.
 }
 \examples{
+\dontrun{
 # NPAG
 NPex$final$plot()
 NPex$final$plot(line = TRUE)
@@ -154,6 +155,7 @@ NPex$final$plot(Ke ~ V)
 # IT2B
 ITex$final$plot()
 ITex$final$plot(Ke ~ V)
+}
 }
 \seealso{
 \link{PM_final}, \link{schema}

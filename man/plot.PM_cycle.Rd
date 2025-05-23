@@ -97,6 +97,7 @@ Plot PM_cycle objects. These objects are created by as part of a \link{PM_result
 when \link{PM_load} is run.
 }
 \examples{
+\dontrun{
 NPex$cycle$plot()
 NPex$cycle$plot(omit = 0, marker = list(symbol = "cross"), line = list(width = 1))
 NPex$cycle$plot(
@@ -107,6 +108,7 @@ NPex$cycle$plot(
   grid = FALSE,
   xlab = list(bold = FALSE, font = list(color = "red", family = "Arial", size = 10))
 )
+}
 }
 \seealso{
 \link{PM_result}, \link{schema}
