@@ -27,7 +27,6 @@ Imports:
     doParallel,
     DT,
     dplyr,
-    DT,
     ggplot2,
     ggraph,
     jsonlite,
@@ -62,13 +61,10 @@ Suggests:
     mclust,
     npde,
     pandoc,
-    patchwork,
     progress,
     RColorBrewer,
     RcppTOML,
-    reticulate,
-    testthat,
-    trelliscopejs
+    testthat
 RoxygenNote: 7.3.2
 Encoding: UTF-8
 Config/testthat/edition: 3
