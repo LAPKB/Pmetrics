@@ -1,3 +1,7 @@
+# Use menu item Code -> Jump To... for rapid navigation
+# Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
+
+
 # R6 ----------------------------------------------------------------------
 
 #' @title Optimal Sample Times
@@ -9,16 +13,18 @@
 #' This object contains
 #' the methods to create and results from optimal sampling algorithms.
 #' Currently the only option multiple-model optimization.
-#' This algorithm was published as
-#' Bayard, David S., and Michael Neely. "Experiment Design for Nonparametric
-#' Models Based on Minimizing Bayes Risk: Application to Voriconazole."
-#' Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017):
-#' 95–111. [https://doi.org/10.1007/s10928-016-9498-5]. It calculates the
+#' This algorithm calculates the
 #' requested number of sample times where the concentration time profiles
 #' are the most separated, thereby minimizing the risk of choosing the incorrect
 #' Bayesian posterior for an individual. Future updates will add D-optimal
 #' sampling times.
 #' @author Michael Neely
+#' @references Bayard, David S. & and Neely, Michael. (2017). Experiment 
+#' Design for Nonparametric
+#' Models Based on Minimizing Bayes Risk: Application to Voriconazole.
+#' \emph{Journal of Pharmacokinetics and Pharmacodynamics}, \bold{44}(2): 95–111.
+#' \url{https://doi.org/10.1007/s10928-016-9498-5}.
+#' 
 #' @export
 PM_opt <- R6::R6Class(
   "PM_opt",
@@ -135,7 +141,7 @@ PM_opt <- R6::R6Class(
       if (missing(mmInt)) {
         mmInt <- NULL
       }
-
+      
       tryCatch(private$make(
         poppar = poppar,
         model = model,
@@ -179,7 +185,6 @@ PM_opt <- R6::R6Class(
                     predInt = 0.5, mmInt, outeq = 1,
                     algorithm = "mm", clean = TRUE, ...) {
       # get defaults for PM_sim$new() arguments
-      # browser()
       arglist <- list(...)
       arglist$usePost <- ifelse(is.null(arglist$usePost), FALSE, arglist$usePost)
       arglist$quiet <- ifelse(is.null(arglist$quiet), TRUE, arglist$quiet)
@@ -191,7 +196,7 @@ PM_opt <- R6::R6Class(
         clean_opt <- TRUE
         arglist$clean <- FALSE
       }
-
+      
       if (inherits(poppar, "PM_result")) {
         if (!inherits(poppar$final, "NPAG")) {
           cat(crayon::red("Error:"), "Prior run must be NPAG.")
@@ -229,7 +234,7 @@ PM_opt <- R6::R6Class(
           data
         }
       } else { # poppar was a list
-
+        
         model <- if (is.null(model)) {
           "model.txt"
         } else {
@@ -241,7 +246,7 @@ PM_opt <- R6::R6Class(
           data
         }
       }
-
+      
       # remove prior simulations if they exist
       old <- Sys.glob("MMsim*.txt")
       invisible(file.remove(old))
@@ -255,10 +260,10 @@ PM_opt <- R6::R6Class(
         combine = TRUE,
         arglist # the other args
       )))
-
-
+      
+      
       simdata$obs <- simdata$obs %>% filter(outeq == !!outeq)
-
+      
       # transform into format for MMopt
       # nsubs is the number of subjects
       nsubs <- length(unique(simdata$obs$id))
@@ -277,14 +282,14 @@ PM_opt <- R6::R6Class(
         mmInt <- NULL
         simdata_full <- simdata
       }
-
+      
       # time is the simulated times
       time <- unique(simdata$obs$time)
       # nout is the number of simulated times (outputs)
       nout <- length(time)
       # Mu is a matrix of nout rows x nsubs columns containing the outputs at each time
       Mu <- t(matrix(simdata$obs$out, nrow = nsubs, byrow = T))
-
+      
       # pH is the vector of probabilities of each population point
       pH <- popPoints[, ncol(popPoints)]
       # replicate pH and normalize based on number of simulation templates
@@ -296,14 +301,14 @@ PM_opt <- R6::R6Class(
       simout <- readLines("MMsim1.txt")
       errLine <- grep(" EQUATIONS, IN ORDER, WERE:", simout)
       cassay <- scan("MMsim1.txt", n = 4, skip = errLine + numeqt - 1, quiet = T)
-
+      
       # make the weighting Matrix
       wtnames <- names(weight)
       Cbar0 <- array(NA,
-        dim = c(nsubs, nsubs, 4),
-        dimnames = list(a = 1:nsubs, b = 1:nsubs, type = c("none", "auc", "cmax", "cmin"))
+                     dim = c(nsubs, nsubs, 4),
+                     dimnames = list(a = 1:nsubs, b = 1:nsubs, type = c("none", "auc", "cmax", "cmin"))
       )
-
+      
       # default is no penalties (diag=0, off-diag=1)
       if ("none" %in% wtnames) {
         Cbar0[, , 1] <- matrix(1, nrow = nsubs, ncol = nsubs)
@@ -318,14 +323,14 @@ PM_opt <- R6::R6Class(
             cbar <- cbar_make1(sqdiff)
             Cbar0[, , 2] <- weight$auc * cbar / mean(cbar)
           }
-
+          
           if ("max" %in% wtnames) {
             maxi <- unlist(tapply(simdata$obs$out, simdata$obs$id, max))
             sqdiff <- matrix(sapply(1:nsubs, function(x) (maxi[x] - maxi)^2), nrow = nsubs)
             cbar <- cbar_make1(sqdiff)
             Cbar0[, , 3] <- weight$max * cbar / mean(cbar)
           }
-
+          
           if ("min" %in% wtnames) {
             mini <- unlist(tapply(simdata$obs$out, simdata$obs$id, min))
             sqdiff <- matrix(sapply(1:nsubs, function(x) (mini[x] - mini)^2), nrow = nsubs)
@@ -340,18 +345,18 @@ PM_opt <- R6::R6Class(
       }
       # find max value over all selected weights (condense to nsubs x nsubs matrix)
       Cbar <- apply(Cbar0, c(1, 2), max, na.rm = T)
-
+      
       # Call MMMOPT1 routine to compute optimal sampling times
       mmopt1 <- private$wmmopt1(Mu, time, pH, cassay, nsamp, nsubs, nout, Cbar)
       optsamp <- mmopt1$optsamp
       brisk <- mmopt1$brisk_cob
       optindex <- mmopt1$optindex
-
-
-
+      
+      
+      
       # -------------------------
-
-
+      
+      
       if (clean_opt) {
         invisible(file.remove(
           Sys.glob(c(
@@ -366,7 +371,7 @@ PM_opt <- R6::R6Class(
           "simdata.csv"
         ))
       }
-
+      
       self <- list(
         sampleTime = optsamp[1:nsamp, nsamp],
         bayesRisk = brisk[nsamp],
@@ -374,53 +379,53 @@ PM_opt <- R6::R6Class(
       )
       return(self)
     },
-    #' @details
-    #' This routine computes the MMOPT 1,2,3 and 4-sample optimal sample designs taking into account an additional weighting matrix C
-    #' @author David S. Bayard, February 22,2015, Alona Kryshchenko, Michael Neely
-    #' @param Mu (nt)x(nsubs), Simulated output responses for all models (no noise)
-    #'            nt=# time points
-    #'              nsubs=# subjects
-    #'              Matrix Structure: Time response down, model index across
-    #' @param time (nt)x1, time axis
-    #' @param pH (ns)x1, Bayesian Prior probabilities (sum(pH)=1)
-    #' @param cassay 4x1, coefficients in assay polynomial:
-    #'        1-sigma assay error = \eqn{c0 + c1 * y + c2 * y^2 + c3 * y^3}
-    #' @param nsamp desired # of samples in experiment design
-    #' @param nsubs Number of subjects
-    #' @param nout Number of output equations
-    #' @param Cbar (nsubs)x(nsubs), Matrix of elements [cbar_ij] derived from matrix where c_ij is cost incurred from
-    #'        mistaking i'th support point (truth) to be j'th support point
-    #'        (wrong classification). Intuitively, you are giving jth subject's
-    #'         dose with response a_j to
-    #'         ith subject with response a_ij, so that the control cost is
-    #'              c_ij=w_ij*(a_ij-a_j)^2,  where w_ij can be an arbitrary
-    #'              additional weighting function of i and j
-    #'         Key property: c_ii=0 for 1=1,...,nsubs, i.e., there is no cost for
-    #'           getting classification correct
-    #'         cbar_ij is the max(cbar_ij, t(cbar_ij)), or max(cbar_ij,cbar_ji)
-    #' @return A list with the following elements
-    #' * optsamp - 4x4, optimal samples times by column. Column i contains the optimal design for i samples, "-1" indicates "not applicable"
-    #' * brisk_cob - 4x1, Bayes risk cost overbound; brisk_cob(i) is the Bayes Risk cost overbound associated with using the optimal design having i samples; "-1" indicates "not applicable".
-    #' * ptindex - 4x4, indices of optimal sample times from time=(nt)x1
-    #' @noRd
+    # 
+    # This routine computes the MMOPT 1,2,3 and 4-sample optimal sample designs taking into account an additional weighting matrix C
+    #  David S. Bayard, February 22,2015, Alona Kryshchenko, Michael Neely
+    #  Mu (nt)x(nsubs), Simulated output responses for all models (no noise)
+    #            nt=# time points
+    #              nsubs=# subjects
+    #              Matrix Structure: Time response down, model index across
+    # @param time (nt)x1, time axis
+    # @param pH (ns)x1, Bayesian Prior probabilities (sum(pH)=1)
+    # @param cassay 4x1, coefficients in assay polynomial:
+    #        1-sigma assay error = \eqn{c0 + c1 * y + c2 * y^2 + c3 * y^3}
+    # @param nsamp desired # of samples in experiment design
+    # @param nsubs Number of subjects
+    # @param nout Number of output equations
+    # @param Cbar (nsubs)x(nsubs), Matrix of elements [cbar_ij] derived from matrix where c_ij is cost incurred from
+    #        mistaking i'th support point (truth) to be j'th support point
+    #        (wrong classification). Intuitively, you are giving jth subject's
+    #         dose with response a_j to
+    #         ith subject with response a_ij, so that the control cost is
+    #              c_ij=w_ij*(a_ij-a_j)^2,  where w_ij can be an arbitrary
+    #              additional weighting function of i and j
+    #         Key property: c_ii=0 for 1=1,...,nsubs, i.e., there is no cost for
+    #           getting classification correct
+    #         cbar_ij is the max(cbar_ij, t(cbar_ij)), or max(cbar_ij,cbar_ji)
+    # @return A list with the following elements
+    # * optsamp - 4x4, optimal samples times by column. Column i contains the optimal design for i samples, "-1" indicates "not applicable"
+    # * brisk_cob - 4x1, Bayes risk cost overbound; brisk_cob(i) is the Bayes Risk cost overbound associated with using the optimal design having i samples; "-1" indicates "not applicable".
+    # * ptindex - 4x4, indices of optimal sample times from time=(nt)x1
+    # @noRd
     wmmopt1 = function(Mu, time, pH, cassay, nsamp, nsubs, nout, Cbar) {
       # Initialize all entries with -1
       optsamp <- matrix(-1, nsamp, nsamp)
       optindex <- matrix(-1, nsamp, nsamp)
       brisk <- matrix(-1, nsamp, 1)
       nopt <- matrix(-1, nsamp, 1)
-
-
+      
+      
       # -------------------------------
       # Extract needed quantities
-
+      
       c0 <- cassay[1]
       # additive noise
       c1 <- cassay[2]
       c2 <- cassay[3]
       c3 <- cassay[4]
-
-
+      
+      
       # BEGIN MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
       # FULL SCRIPT VERSION OF MMOPT ALGORITHM
       # -----------------------------------
@@ -428,21 +433,21 @@ PM_opt <- R6::R6Class(
       kallijn <- private$kall_ijn(Mu, c0, c1, c2, c3, nsubs, nout)
       Kall <- kallijn$Kall
       skall <- kallijn$skall
-
-
+      
+      
       # Vectorized optimization for any number of samples
       search_grid <- data.frame(t(combn(1:nout, nsamp))) %>% dplyr::rowwise()
       pb <- progress::progress_bar$new(total = nrow(search_grid))
       Perror <- search_grid %>%
         dplyr::summarise(val = private$perrorc1(pH, Kall, nvec = dplyr::c_across(dplyr::everything()), Cbar, pb))
-
+      
       nopt <- search_grid[which(Perror$val == min(Perror$val)), ] %>%
         purrr::as_vector(nopt[1, ]) %>%
         sort()
       # vctrs::vec_sort()
-
+      
       # Compute Output Values
-
+      
       optsamp[1:nsamp, nsamp] <- time[nopt]
       optindex[1:nsamp, nsamp] <- nopt
       brisk_cob <- rep(-1, nsamp)
@@ -461,7 +466,7 @@ PM_opt <- R6::R6Class(
       # n = n'th time in horizon, n=1,...,nt
       # nsubs = # subjects
       # nout=nt = # times in time horizon
-
+      
       # INPUTS
       # -------
       # Mu = (nout)X(nsubs), Mean of Assay for nout=# output values, nsubs=#subjects
@@ -478,7 +483,7 @@ PM_opt <- R6::R6Class(
       #
       #
       # --------------
-
+      
       # Make full K matrix
       Kall <- array(0, dim = c(nsubs, nsubs, nout))
       skall <- matrix(0, nout, 1)
@@ -549,14 +554,14 @@ PM_opt <- R6::R6Class(
       #   }
       # -------------
       # @@ FAST VECTORIZED REPLACEMENT
-
+      
       Sig2plus <- Sig2 %*% matrix(1, 1, nsubs) + matrix(1, nsubs, 1) %*% t(Sig2)
       Sig2prod <- (Sig2 %*% matrix(1, 1, nsubs)) * (matrix(1, nsubs, 1) %*% t(Sig2))
       Mun <- yout_n
       # column vector
       Mun_minus <- Mun %*% matrix(1, 1, nsubs) - matrix(1, nsubs, 1) %*% t(Mun)
       Kijn <- (1 / 4) * (Mun_minus^2) / Sig2plus + (1 / 2) * log(.5 * Sig2plus) - (1 / 4) * log(Sig2prod)
-
+      
       # ------------------------
       # Create output variable
       Kn <- Kijn
@@ -597,7 +602,7 @@ PM_opt <- R6::R6Class(
       # Create Kallall
       # Example: For nsamp=4 sampling times [n1,n2,n3,n4] we have
       #         Kallall=Kall(:,:,n1)+Kall(:,:,n2)+Kall(:,:,n3)+Kall(:,:,n4);
-
+      
       # Replace following statement with ONE statement below
       # ----------------
       # @@ LOOP APPROACH
@@ -659,6 +664,7 @@ PM_opt <- R6::R6Class(
 
 
 #' @title Plot Pmetrics Multiple-Model Optimal Sampling Objects
+#' 
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
@@ -682,18 +688,17 @@ PM_opt <- R6::R6Class(
 #' @export
 #' @family PMplots
 
-
 plot.PM_opt <- function(x, line = list(probs = NA), times = T, ...) {
   mm_format <- amendLine(times, default = list(color = "red", dash = "dash", width = 2))
-
+  
   # parse dots
   arglist <- list(...)
   arglist$quiet <- T
   arglist$line <- line
-
+  
   p <- do.call(plot.PM_sim, c(list(x$simdata), arglist))$p
-
-
+  
+  
   if (!is.null(x$mmInt)) { # add MM interval times
     shapeList <- lapply(x$mmInt, function(m) {
       list(
@@ -712,15 +717,15 @@ plot.PM_opt <- function(x, line = list(probs = NA), times = T, ...) {
   } else {
     shapeList <- list()
   }
-
+  
   shapeList <- append(shapeList, lapply(
     x$sampleTime,
     function(t) {
       ab_line(v = t, line = mm_format)
     }
   ))
-
+  
   p <- p %>% layout(shapes = shapeList)
-
+  
   print(p)
 }
