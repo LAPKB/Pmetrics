@@ -27,9 +27,9 @@ usethis::use_data(locales, overwrite = TRUE)
 
 # MIC ---------------------------------------------------------------------
 
-#copied table from http://mic.eucast.org/Eucast2/regShow.jsp?Id=1214 to csv file
+# copied table from http://mic.eucast.org/Eucast2/regShow.jsp?Id=1214 to csv file
 mic1 <- read_csv("mic1.csv")
-names(mic1) <- c("mic","n")
+names(mic1) <- c("mic", "n")
 usethis::use_data(mic1, overwrite = TRUE)
 
 
@@ -55,7 +55,7 @@ usethis::use_data(dataEx, overwrite = T)
 badData <- PM_data$new("bad.csv")
 usethis::use_data(badData, overwrite = T)
 
-#do the run
+# do the run
 
 setwd("Runs")
 # NPAG
@@ -71,7 +71,7 @@ usethis::use_data(NPex, overwrite = T)
 # ITex <- PM_load(2)
 # usethis::use_data(ITex, overwrite = TRUE)
 
-#setwd("..")
+# setwd("..")
 
 # simulator example
 simEx <- NPex$sim(
@@ -82,5 +82,3 @@ usethis::use_data(simEx, overwrite = TRUE)
 
 
 setwd(wd)
-
-

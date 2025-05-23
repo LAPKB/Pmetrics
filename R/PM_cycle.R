@@ -54,9 +54,9 @@ PM_cycle <- R6::R6Class(
     #' @details
     #' Creation of new `PM_cycle` object is automatic and not generally necessary
     #' for the user to do.
-    #' @param PMdata include `r template("PMdata")`. 
+    #' @param PMdata include `r template("PMdata")`.
     #' @param ... Not currently used.
-    
+
     initialize = function(PMdata = NULL, ...) {
       self$data <- private$make(PMdata)
     },
@@ -79,73 +79,79 @@ PM_cycle <- R6::R6Class(
   ), # end public
   active = list(
     #' @field names Vector of names of the random parameters
-    names = function(){
+    names = function() {
       self$data$names
     },
     #' @field objective A tibble of -2*Log-likelihood, AIC and BIC at each cycle
-    objective = function(){
+    objective = function() {
       self$data$objective
     },
     #' @field gamlam A tibble of cycle number and gamma or lambda at each cycle for each output equation
-    gamlam = function(){
+    gamlam = function() {
       self$data$gamlam
     },
     #' @field mean A tibble of cycle number and the mean of each random parameter
     #' at each cycle, normalized to initial mean
-    mean = function(){
+    mean = function() {
       self$data$mean
     },
     #' @field median A tibble of cycle number and the median of each random
     #' parameter at each cycle,  normalized to initial median
-    median = function(){
+    median = function() {
       self$data$median
     },
     #' @field sd A tibble of cycle number and the standard deviation of each random parameter
     #' at each cycle,  normalized to initial standard deviation
-    sd = function(){
+    sd = function() {
       self$data$sd
     }
-  ), #end active
+  ), # end active
   private = list(
     make = function(data) {
       if (file.exists("cycles.csv")) {
         raw <- readr::read_csv(file = "cycles.csv", show_col_types = FALSE)
-      } else if (inherits(data, "PM_cycle")){ #file not there, and already PM_cycle
+      } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_cycle
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)
-      } else{
-        cli::cli_warn(c("!" = "Unable to generate cycle information.",
-                        "i" = "Result does not have valid {.code PM_cycle} object, and {.file {getwd()}/cycles.csv} does not exist."))
+      } else {
+        cli::cli_warn(c(
+          "!" = "Unable to generate cycle information.",
+          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {getwd()}/cycles.csv} does not exist."
+        ))
         return(NULL)
       }
-      
+
       if (file.exists("obs.csv")) {
         obs_raw <- readr::read_csv(file = "obs.csv", show_col_types = FALSE)
-      } else{
-        cli::cli_warn(c("!" = "Unable to generate cycle information.",
-                        "i" = "Result does not have valid {.code PM_cycle} object, and {.file {getwd()}/obs.csv} does not exist."))
+      } else {
+        cli::cli_warn(c(
+          "!" = "Unable to generate cycle information.",
+          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {getwd()}/obs.csv} does not exist."
+        ))
         return(NULL)
       }
-      
+
       if (file.exists("settings.json")) {
         config <- jsonlite::fromJSON("settings.json")
-      } else{
-        cli::cli_warn(c("!" = "Unable to generate cycle information.",
-                        "i" = "Result does not have valid {.code PM_cycle} object, and {.file {getwd()}/settings.json} does not exist."))
+      } else {
+        cli::cli_warn(c(
+          "!" = "Unable to generate cycle information.",
+          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {getwd()}/settings.json} does not exist."
+        ))
         return(NULL)
       }
-      
+
       cycle_data <- raw %>%
         pivot_longer(cols = ends_with(c("mean", "median", "sd"))) %>%
         separate_wider_delim(name, delim = ".", names = c("parameter", "statistic"))
-      
+
       num_params <- length(names(config$random)) + length(names(config$fixed))
-      
+
       aic <- 2 * num_params + raw$neg2ll
       names(aic) <- raw$cycle
       bic <- num_params * log(length(unique(obs_raw$id))) + raw$neg2ll
       names(bic) <- raw$cycle
-      
+
       mean <- cycle_data %>%
         filter(statistic == "mean") %>%
         select(cycle, value, parameter) %>%
@@ -154,7 +160,7 @@ PM_cycle <- R6::R6Class(
         mutate(across(.cols = -cycle, .fns = function(x) {
           x / first(x)
         }))
-      
+
       sd <- cycle_data %>%
         filter(statistic == "sd") %>%
         select(cycle, value, parameter) %>%
@@ -163,7 +169,7 @@ PM_cycle <- R6::R6Class(
         mutate(across(.cols = -cycle, .fns = function(x) {
           x / first(x)
         }))
-      
+
       median <- cycle_data %>%
         filter(statistic == "median") %>%
         select(cycle, value, parameter) %>%
@@ -172,7 +178,7 @@ PM_cycle <- R6::R6Class(
         mutate(across(.cols = -cycle, .fns = function(x) {
           x / first(x)
         }))
-      
+
       n_out <- length(unique(obs_raw$outeq))
       n_cyc <- max(cycle_data$cycle)
       gamlam <- tibble::as_tibble(raw$gamlam, .name_repair = "minimal")
@@ -187,9 +193,9 @@ PM_cycle <- R6::R6Class(
         ) %>%
         mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
         select(cycle, value, outeq)
-      
+
       converged <- any(cycle_data$converged)
-      
+
       res <- list(
         names = c(names(config$random), names(config$fixed), names(config$constant)),
         objective = raw %>% select(cycle, neg2ll) %>% mutate(aic = aic, bic = bic),
@@ -271,6 +277,7 @@ PM_cycle <- R6::R6Class(
 #' @seealso [PM_result], [schema]
 #' @export
 #' @examples
+#' \dontrun{
 #' NPex$cycle$plot()
 #' NPex$cycle$plot(omit = 0, marker = list(symbol = "cross"), line = list(width = 1))
 #' NPex$cycle$plot(
@@ -281,6 +288,8 @@ PM_cycle <- R6::R6Class(
 #'   grid = FALSE,
 #'   xlab = list(bold = FALSE, font = list(color = "red", family = "Arial", size = 10))
 #' )
+#' }
+
 #' @family PMplots
 
 plot.PM_cycle <- function(x,
@@ -292,26 +301,25 @@ plot.PM_cycle <- function(x,
                           grid = TRUE,
                           xlab, ylab,
                           ...) {
-  
   if (inherits(x, "PM_cycle")) {
     data <- x$data
   }
-  
+
   # housekeeping
-  
+
   nvar <- if (inherits(data$mean, "matrix")) {
     ncol(data$mean)
   } else {
     ncol(data$mean %>% select(-cycle))
   }
-  
+
   line <- amendLine(line, default = list(color = "dodgerblue", width = 2))
   marker <- amendMarker(marker, default = list(
     symbol = "circle",
     color = "dodgerblue",
     size = 4, line = list(width = 0)
   ))
-  
+
   if (missing(colors)) {
     colors <- "Set2"
   } else {
@@ -320,23 +328,23 @@ plot.PM_cycle <- function(x,
       colors <- rep(colors, nvar) # ensure long enough
     }
   }
-  
+
   if (missing(linetypes)) {
     linetypes <- rep("solid", nvar)
   } else {
     linetypes <- rep(linetypes, nvar) # ensure long enough
   }
-  
+
   # process dots
   layout <- amendDots(list(...))
-  
+
   # legend - not needed for this function
   layout <- modifyList(layout, list(showlegend = F))
-  
+
   # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-  
+
   # axis label formatting if needed
   xlab <- if (missing(xlab)) {
     "Cycle Number"
@@ -348,15 +356,15 @@ plot.PM_cycle <- function(x,
   } else {
     modifyList(ylab, list(text = ""))
   }
-  
+
   layout$xaxis$title <- amendTitle(xlab)
   if (is.character(ylab)) {
     layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
   } else {
     layout$yaxis$title <- amendTitle(ylab)
   }
-  
-  
+
+
   numcycles <- nrow(data$mean)
   if (missing(omit)) {
     omit <- floor(0.2 * numcycles)
@@ -364,22 +372,22 @@ plot.PM_cycle <- function(x,
     omit <- floor(omit * numcycles)
   }
   if (omit == 0) omit <- 1
-  
+
   include <- omit:numcycles
-  
+
   # if (length(data$cycnum) == 0) {
   #   cycnum <- include
   # } else {
   #   cycnum <- data$cycnum[include]
   # }
-  # 
-  
+  #
+
   # LL
-  graph_data <- data$objective[include,]
+  graph_data <- data$objective[include, ]
 
   layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-                                    "<b>-2 * Log-Likelihood</b>",
-                                    "-2 * Log-Likelihood"
+    "<b>-2 * Log-Likelihood</b>",
+    "-2 * Log-Likelihood"
   )
   p1 <- graph_data %>%
     plotly::plot_ly(
@@ -395,16 +403,17 @@ plot.PM_cycle <- function(x,
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
-  
+
   # AIC/BIC
 
-  
+
   layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-                                    "<b>AIC/BIC</b>",
-                                    "AIC/BIC"
+    "<b>AIC/BIC</b>",
+    "AIC/BIC"
   )
-  
-  p2 <- graph_data %>% select(-neg2ll) %>%
+
+  p2 <- graph_data %>%
+    select(-neg2ll) %>%
     pivot_longer(cols = -cycle, names_to = "type", values_to = "value") %>%
     plotly::plot_ly(
       x = ~cycle, y = ~value, type = "scatter", mode = "lines+markers",
@@ -422,13 +431,13 @@ plot.PM_cycle <- function(x,
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
-  
+
   # gamma/lambda
   layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-                                    "<b>Gamma/Lambda</b>",
-                                    "Gamma/Lambda"
+    "<b>Gamma/Lambda</b>",
+    "Gamma/Lambda"
   )
-  
+
   # amend older versions of gamma if needed
   if (is.matrix(data$gamlam)) {
     n_cyc <- max(data$cycnum)
@@ -446,7 +455,7 @@ plot.PM_cycle <- function(x,
       mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
       select(cycle, value, outeq)
   }
-  
+
 
   p3 <- data$gamlam %>%
     filter(cycle %in% include) %>%
@@ -466,17 +475,17 @@ plot.PM_cycle <- function(x,
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
-  
-  
+
+
   # normalized plots
-  
+
   normalized_plot <- function(.par, range) {
     layout$yaxis$title$text <- ifelse(layout$yaxis$title$font$bold,
-                                      paste0("<b>Normalized ", .par, "</b>"),
-                                      paste0("Normalized ", .par)
+      paste0("<b>Normalized ", .par, "</b>"),
+      paste0("Normalized ", .par)
     )
     layout$yaxis$range <- range
-    
+
     .p <- graph_data[[.par]] %>%
       pivot_longer(cols = -cycle, names_to = "par") %>%
       plot_ly(
@@ -498,7 +507,7 @@ plot.PM_cycle <- function(x,
       )
     return(.p)
   }
-  
+
   # update objects if needed
   if (is.matrix(data$mean)) {
     n_cyc <- max(data$cycnum)
@@ -509,18 +518,18 @@ plot.PM_cycle <- function(x,
     data$sd <- tibble::tibble(cycle = 1:n_cyc) %>%
       dplyr::bind_cols(tidyr::as_tibble(data$sd))
   }
-  
-  
+
+
   graph_data$Mean <- data$mean[include, ]
   graph_data$Median <- data$median[include, ]
   graph_data$SD <- data$sd[include, ]
-  
+
   graph_range <- range(graph_data$Mean[, -1], graph_data$Median[, -1], graph_data$SD[, -1])
-  
-  
+
+
   p4 <- normalized_plot("Mean", graph_range)
   p5 <- normalized_plot("Median", graph_range)
-  
+
   if (!all(is.na(data$sd))) {
     p6 <- normalized_plot("SD", graph_range)
   } else {
@@ -531,27 +540,27 @@ plot.PM_cycle <- function(x,
         y = 0.5
       ))
   }
-  
-  
-  
+
+
+
   p_r1 <- plotly::subplot(p1, p2, p3,
-                          nrows = 1,
-                          titleX = F, titleY = T,
-                          margin = c(0.05, 0.05, 0, 0.05)
+    nrows = 1,
+    titleX = F, titleY = T,
+    margin = c(0.05, 0.05, 0, 0.05)
   )
   p_r2 <- plotly::subplot(p4, p5, p6,
-                          nrows = 1,
-                          titleX = T, titleY = T,
-                          margin = c(0.05, 0.05, 0, 0.05)
+    nrows = 1,
+    titleX = T, titleY = T,
+    margin = c(0.05, 0.05, 0, 0.05)
   )
   p <- plotly::subplot(p_r1, p_r2,
-                       nrows = 2,
-                       titleX = T, shareX = F,
-                       titleY = T,
-                       margin = c(0.05, 0.05, 0, 0.05)
+    nrows = 2,
+    titleX = T, shareX = F,
+    titleY = T,
+    margin = c(0.05, 0.05, 0, 0.05)
   ) %>%
     layout(legend = list(y = 0.4))
-  
+
   print(p)
   return(p)
 }
@@ -585,8 +594,12 @@ plot.PM_cycle <- function(x,
 #' * **median** Normalized median parameter values compared to initial value
 #' @author Michael Neely
 #' @examples
+#' #'
+#' \dontrun{
 #' NPex$cycle$summary() # preferred
 #' summary(NPex$cycle) # alternative
+#' }
+
 #' @seealso [PM_cycle]
 #' @export
 
@@ -594,16 +607,16 @@ summary.PM_cycle <- function(object, cycle = NULL, digits = 3, ...) {
   if (inherits(object, "PM_cycle")) {
     object <- object$data
   }
-  
+
   if (is.null(cycle)) {
     cyc <- max(object$objective$cycle)
   } else {
     cyc <- cycle
   }
-  if(cyc > max(object$objective$cycle)) {
+  if (cyc > max(object$objective$cycle)) {
     cli::cli_abort(c("x" = "Cycle number exceeds maximum cycle number."))
   }
-  
+
   ret <- list(
     cycle = cyc,
     max_cycle = max(object$objective$cycle),
@@ -640,7 +653,11 @@ summary.PM_cycle <- function(object, cycle = NULL, digits = 3, ...) {
 #' @author Michael Neely
 #' @seealso [summary.PM_cycle]
 #' @examples
+#' #'
+#' \dontrun{
 #' NPex$cycle$summary()
+#' }
+
 #' @export
 
 print.summary.PM_cycle <- function(x, ...) {
@@ -653,10 +670,10 @@ print.summary.PM_cycle <- function(x, ...) {
   par_tbl <- bind_rows(x$mean, x$sd, x$median) %>% mutate(stat = c("mean", "sd", "median"))
   cat(paste0(rep("------", ncol(par_tbl)), collapse = "-"), "\n")
   print(par_tbl)
-  
+
   # flextable::set_flextable_defaults(font.family = "Arial")
-  # ft <- flextable::flextable(par_tbl) %>% 
-  # 
+  # ft <- flextable::flextable(par_tbl) %>%
+  #
   #   add_header_lines(values = list(
   #     glue::glue("Cycle number: {x$cycle} of {x$max_cycle}")
   #   ))
@@ -665,8 +682,4 @@ print.summary.PM_cycle <- function(x, ...) {
   #   flextable::bold(bold = FALSE, part = "footer") %>%
   #   flextable::align_text_col(align = "center", header = TRUE, footer = FALSE) %>%
   #   flextable::autofit()
-  
-  
-  
-  
 }

@@ -37,7 +37,10 @@ getBits <- function() {
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' getFixedColNames()
+#' }
+
 #' @author Michael Neely
 getFixedColNames <- function() {
   # set current names of fixed columns in data file
@@ -60,7 +63,10 @@ getFixedColNames <- function() {
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' getFixedColNum()
+#' }
+
 #' @author Michael Neely
 getFixedColNum <- function() {
   # set current number of fixed columns in data file

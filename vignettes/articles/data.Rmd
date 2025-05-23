@@ -26,9 +26,9 @@ Pmetrics data objects are either R6 objects loaded into memory or files, usually
 to use other separators, like the semicolon, by setting the appropriate argument with `setPMoptions()`. 
 
 ```{r echo = T, eval = F}
-setPMoptions(sep = ";", dec = ",") 
-#changes field separator to ";" from default ","
-#and decimal separator from "." to ","
+setPMoptions(sep = ";", dec = ",")
+# changes field separator to ";" from default ","
+# and decimal separator from "." to ","
 ```
 
 Examples of programs that can save .csv files are any text editor (e.g. TextEdit on Mac, Notepad on Windows) or spreadsheet program (e.g. Excel). **Please keep the number of characters in the file name ≤ 8.**
@@ -41,15 +41,15 @@ R6 Pmetrics introduces a new concept, the data object. The idea of this object i
 All its behaviour is represented by the class `PM_data`. This class allows datasets to be checked, plotted, written to disk and more. Use `PM_data$new("filename")` to create a `PM_data()` object by reading the file.
 
 ```{r echo=T, eval=FALSE}
-#assume that data.csv is in the working directory
+# assume that data.csv is in the working directory
 data1 <- PM_data$new("data.csv")
 ```
 
 You can also build an appropriate data frame in R and provide that as an argument to `PM_data$new()`.
 
 ```{r echo=T, eval=FALSE}
-#assume df is data frame with at least these columns:
-#id, time, dose, out
+# assume df is data frame with at least these columns:
+# id, time, dose, out
 data1 <- PM_data$new(df)
 ```
 
@@ -58,7 +58,7 @@ Lastly, you can take advantage of the `addEvent` method in `PM_data` objects to 
 
 ```{r echo=TRUE, eval=TRUE}
 dat <- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)$addEvent(id = 1, time = 144, out = -1)
-dat$addEvent(id = 1, wt = 75, validate = TRUE) 
+dat$addEvent(id = 1, wt = 75, validate = TRUE)
 ```
 
 *Notes on the above statments:*
@@ -81,11 +81,11 @@ Once you have created the `PM_data` object, you never need to create it again du
 You must always have the the data file in the current working directory. You can manually copy it there from a previous run or some other folder or use the shortcut of providing a prior run number as an argument to `NPrun()` or `ITrun()`.
 
 ```{r echo=T, eval=FALSE}
-#Run 1 - ensure that data.csv is in the working directory
+# Run 1 - ensure that data.csv is in the working directory
 NPrun("data.csv", "model.txt")
 
-#run 2 - use the data from run 1 in this run
-#note that the file model.txt still has to be copied
+# run 2 - use the data from run 1 in this run
+# note that the file model.txt still has to be copied
 # into the working directory in this example
 NPrun(data = 1, "model.txt")
 ```

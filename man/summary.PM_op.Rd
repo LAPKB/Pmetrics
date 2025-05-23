@@ -60,8 +60,10 @@ within a \link{PM_result} to summarize observations, predictions and errors. The
 be called directly on a \link{PM_op} object. See examples.
 }
 \examples{
+\dontrun{
 NPex$op$summary() # preferred
 summary(NPex$op) # alternative
+}
 }
 \seealso{
 \link{PM_op}

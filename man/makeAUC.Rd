@@ -69,10 +69,16 @@ If a PM_pop, PM_post, PM_op, or PMsim object is specified,
 \code{formula} is not required.
 }
 \examples{
-NPex$op$auc()
-Indometh \%>\%
-  dplyr::mutate(id = Subject) \%>\%
-  makeAUC(conc ~ time)
+\dontrun{
+NPex$cov$plot(V ~ wt)
+NPex$cov$plot(Ke ~ wt, line = list(lm = TRUE, ref = FALSE, loess = FALSE))
+NPex$cov$plot(Ke ~ wt, line = list(loess = list(ci = 0.9, color = "green")))
+NPex$cov$plot(V ~ time, marker = list(color = "blue"))
+NPex$cov$plot(V ~ wt,
+  line = list(lm = TRUE, loess = FALSE),
+  stats = list(x = 0.5, y = 0.2, font = list(size = 7, color = "blue"))
+)
+}
 }
 \seealso{
 \link{PM_result}, \link{PM_sim}, \link{PM_op}

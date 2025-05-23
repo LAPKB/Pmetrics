@@ -34,10 +34,16 @@
 #' @author Michael Neely
 #' @seealso [PM_result], [PM_sim], [PM_op]
 #' @examples
-#' NPex$op$auc()
-#' Indometh %>%
-#'   dplyr::mutate(id = Subject) %>%
-#'   makeAUC(conc ~ time)
+#' \dontrun{
+#' NPex$cov$plot(V ~ wt)
+#' NPex$cov$plot(Ke ~ wt, line = list(lm = TRUE, ref = FALSE, loess = FALSE))
+#' NPex$cov$plot(Ke ~ wt, line = list(loess = list(ci = 0.9, color = "green")))
+#' NPex$cov$plot(V ~ time, marker = list(color = "blue"))
+#' NPex$cov$plot(V ~ wt,
+#'   line = list(lm = TRUE, loess = FALSE),
+#'   stats = list(x = 0.5, y = 0.2, font = list(size = 7, color = "blue"))
+#' )
+#' }
 #' @export
 
 makeAUC <- function(data,
@@ -62,7 +68,7 @@ makeAUC <- function(data,
       "PM_data_data", "PM_data"
     ), which = T) > 0
   ) # will be all zeros except matching class, undefined if none
- 
+
   if (length(data_class) > 0) { # there was a match
     data2 <- switch(data_class,
       data$obs, # PM_sim_data

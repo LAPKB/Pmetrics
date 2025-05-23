@@ -9,7 +9,10 @@
 #' @return The changelog for the requested version.
 #' @author Michael Neely
 #' @examples
+#' \dontrun{
 #' PMnews()
+#' }
+
 #' @export
 
 PMnews <- function(PMversion = packageVersion("Pmetrics")) {

@@ -23,7 +23,9 @@ Print the summary of \link{PM_data} object.
 Summarize the raw data used for a Pmetrics run.
 }
 \examples{
+\dontrun{
 dataEx$summary()
+}
 }
 \seealso{
 \link{summary.PM_data}

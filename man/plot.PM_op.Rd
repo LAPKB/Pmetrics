@@ -162,6 +162,7 @@ is to generate an observed vs. predicted plot of predictions based on the
 median of the Bayesian posterior distributions for each subject.
 }
 \examples{
+\dontrun{
 NPex$op$plot()
 NPex$op$plot(pred.type = "pop")
 NPex$op$plot(line = list(lm = TRUE, ref = TRUE, loess = FALSE))
@@ -169,7 +170,7 @@ NPex$op$plot(line = list(loess = list(ci = 0.9, color = "green")))
 NPex$op$plot(marker = list(color = "blue"))
 NPex$op$plot(resid = TRUE)
 NPex$op$plot(stats = list(x = 0.5, y = 0.2, font = list(size = 7, color = "blue")))
-
+}
 }
 \seealso{
 \link{PM_result}, \link{PM_op}, \link{schema}

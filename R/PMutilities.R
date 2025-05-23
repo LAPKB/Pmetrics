@@ -102,7 +102,7 @@ logAxis <- function(side, grid = F, ...) {
   }
   axis(side, ticksat1, labels = labels, tcl = -0.5, lwd = 0, lwd.ticks = 1, ...)
   axis(side, ticksat2, labels = NA, tcl = -0.25, lwd = 0, lwd.ticks = 1, ...)
-  
+
   if (grid & (side == 1 | side == 3)) abline(v = ticksat2, col = "lightgray", lty = 1)
   if (grid & (side == 2 | side == 4)) abline(h = ticksat2, col = "lightgray", lty = 1)
 }
@@ -141,8 +141,8 @@ dmv_norm <- function(x, mean = rep(0, p), sigma = diag(p), log = FALSE,
       stop("x and sigma have non-conforming size")
     }
     if (checkSymmetry && !isSymmetric(sigma,
-                                      tol = sqrt(.Machine$double.eps),
-                                      check.attributes = FALSE
+      tol = sqrt(.Machine$double.eps),
+      check.attributes = FALSE
     )) {
       stop("sigma must be a symmetric matrix")
     }
@@ -156,7 +156,7 @@ dmv_norm <- function(x, mean = rep(0, p), sigma = diag(p), log = FALSE,
     tmp <- backsolve(dec, t(x) - mean, transpose = TRUE)
     rss <- colSums(tmp^2)
     logretval <- -sum(log(diag(dec))) - 0.5 * p * log(2 *
-                                                        pi) - 0.5 * rss
+      pi) - 0.5 * rss
   }
   names(logretval) <- rownames(x)
   if (log) {
@@ -226,13 +226,13 @@ parseBlocks <- function(model) {
   output <- blockStart[grep("#out", headers)]
   error <- blockStart[grep("#err", headers)]
   extra <- blockStart[grep("#ext", headers)]
-  
+
   if (length(diffeq) > 0) {
     eqn <- diffeq
-    #tem <- "ode"
+    # tem <- "ode"
   } # change diffeq block to eqn for more general
   # cat("Please update your model file. The #DIF block should be renamed as #EQN, which is short for EQuatioNs.\n")
-  
+
   headerPresent <- which(c(
     length(primVar) > 0, length(covar) > 0, length(secVar) > 0, length(bolus) > 0, length(ini) > 0,
     length(f) > 0, length(lag) > 0, length(tem) > 0, length(eqn) > 0, length(output) > 0, length(error) > 0, length(extra) > 0
@@ -240,17 +240,17 @@ parseBlocks <- function(model) {
   if (any(!c(1, 10, 11) %in% headerPresent)) {
     return(list(status = -1, msg = "You must have #Primary, #Output, and #Error blocks at minimum"))
   }
-  
+
   headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, tem, eqn, output, error, extra)
   blockStart <- blockStart[rank(headerOrder)]
   blockStop <- blockStop[rank(headerOrder)]
-  
+
   # remove headers that have no information
   ok <- mapply(function(x, y) x != y, blockStart, blockStop)
   blockStart <- blockStart[ok]
   blockStop <- blockStop[ok]
   headerPresent <- headerPresent[ok]
-  
+
   # get blocks
   blocks <- list(primVar = NA, covar = NA, secVar = NA, bolus = NA, ini = NA, f = NA, lag = NA, tem = NA, eqn = NA, output = NA, error = NA, extra = NA)
   for (i in 1:length(headerPresent)) {
@@ -296,7 +296,7 @@ fortranize <- function(block) {
 # convert new model template to model fortran file
 makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = getPMoptions("backend"), write = T, quiet = F) {
   blocks <- parseBlocks(model)
-  
+
   # check for reserved variable names
   reserved <- c(
     "ndim", "t", "x", "xp", "rpar", "ipar", "p", "r", "b", "npl", "numeqt", "ndrug", "nadd", "rateiv", "cv",
@@ -308,14 +308,14 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
     return(list(status = -1, msg = msg))
   }
-  
+
   # check all blocks statements for more than maxwidth characters and insert line break if necessary
   maxwidth <- 60
   blocks <- chunks(x = blocks, maxwidth = maxwidth)
-  
+
   # ensure in fortran format: dX -> XP and [] -> ()
   blocks <- purrr::map(blocks, fortranize)
-  
+
   # primary variable definitions
   npvar <- length(blocks$primVar)
   psym <- vector("character", npvar)
@@ -331,51 +331,51 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n"))
     }
   }
-  
+
   # find out if any are fixed to be positive only for IT2B
   fixedpos <- grep("\\+", blocks$primVar)
   if (length(fixedpos) > 0) blocks$primVar <- gsub("\\+", "", blocks$primVar)
-  
+
   # find out if any are to be fixed (constant)
   fixcon <- grep("!", blocks$primVar)
   nofix <- length(fixcon)
   if (nofix > 0) blocks$primVar <- gsub("!", "", blocks$primVar)
-  
-  
+
+
   # get limits [a,b] on primary variables
   splitprimVar <- strsplit(blocks$primVar, sep)
   a <- as.numeric(unlist(lapply(splitprimVar, function(x) x[2])))
   b <- as.numeric(unlist(lapply(splitprimVar, function(x) x[3])))
-  
+
   # set parameter type: 1 for random, 0 for constant, -1 for random but pos (IT2B only) and 2 for fixed random
   ptype <- c(1, 2)[1 + as.numeric(is.na(b))]
   # if any fixed constant variables are present, set ptype to 0
   if (nofix > 0) ptype[fixcon] <- 0
-  
+
   # npvar is total number of parameters
   # nvar is number of random (estimated) parameters
   # nranfix is number of fixed (but unknown) parameters
   # nofix is number of constant parameters
   nranfix <- sum(as.numeric(is.na(b))) - nofix
   nvar <- npvar - nofix - nranfix
-  
+
   if ((engine$alg == "IT" | engine$alg == "ERR") & length(fixedpos) > 0) ptype[fixedpos] <- -1
-  
+
   if (nofix > 0) {
     valfix <- a[which(ptype == 0)]
   } else {
     valfix <- NA
   }
-  
+
   if (nranfix > 0) {
     valranfix <- a[which(ptype == 2)]
   } else {
     valranfix <- NA
   }
-  
+
   ab.df <- data.frame(a = a[which(ptype == 1)], b = b[which(ptype == 1)])
-  
-  
+
+
   # replace a,b with SIM limits argument if it is present
   if (engine$alg == "SIM" & !all(is.na(engine$limits))) {
     if (nrow(engine$limits) == nvar) {
@@ -388,30 +388,30 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       return(list(status = -1, msg = "Your limit block does not have the same number of parameters as the model file.\n"))
     }
   }
-  
+
   if (nofix > 0 & any(is.na(valfix))) {
     return(list(status = -1, msg = "One or more variables did not have any boundaries.\n"))
   }
   if (nranfix > 0 & any(is.na(valranfix))) {
     return(list(status = -1, msg = "One or more variables did not have any boundaries.\n"))
   }
-  
+
   # set grid point index for NPAG if not supplied
   if (engine$indpts == -99) {
     indpts <- switch(nvar,
-                     1,
-                     1,
-                     3,
-                     4,
-                     6
+      1,
+      1,
+      3,
+      4,
+      6
     )
     if (is.null(indpts)) indpts <- 100 + nvar - 5
     if (indpts > 108) indpts <- 108
   } else {
     indpts <- engine$indpts
   }
-  
-  
+
+
   # transform ab
   if (nrow(ab.df) > 0) {
     ab <- paste(t(as.matrix(ab.df)))
@@ -420,15 +420,15 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     ab[seq(2, 2 * nvar, 2)] <- sub("t", "\n", ab[seq(2, 2 * nvar, 2)])
     ab <- paste(ab, collapse = "")
   }
-  
+
   blocks$primVar <- unlist(lapply(splitprimVar, function(x) x[1]))
-  
+
   for (i in 1:npvar) {
     psym[i] <- paste("PSYM(", i, ")='", blocks$primVar[i], "'", sep = "")
     pvardef[i] <- paste(blocks$primVar[i], "=P(", i, ")", sep = "")
   }
-  
-  
+
+
   # covariate definitions
   if (blocks$covar[1] != "") {
     ncov <- length(blocks$covar)
@@ -452,10 +452,10 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   }
   # set covariate type based on number of covariates in data file, default is 2, interpolated
   if (length(interpol) > 0) ctype[interpol] <- 1 # change those in model file with "!" to constant
-  
+
   # secondary variable definitions
   svardef <- blocks$secVar
-  
+
   # get secondary variables and remove continuation lines beginning with "&"
   secVarNames <- gsub("[[:blank:]]", "", unlist(lapply(strsplit(svardef, "="), function(x) x[1])))
   secVarNames[is.na(secVarNames)] <- ""
@@ -464,12 +464,12 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     return(list(status = -1, msg = "\nThe model file format has changed.  Please replace '+' with '&' in all continuation lines.\n"))
   }
   contLines <- grep("^&", secVarNames)
-  
+
   if (length(contLines) > 0) {
     secVarNames <- secVarNames[-contLines]
     svardef <- gsub("^&", "", svardef)
   }
-  
+
   # take out any extra declarations in eqn to add to declarations in subroutine
   diffdec <- grep("COMMON|EXTERNAL|DIMENSION", blocks$eqn, ignore.case = T)
   if (length(diffdec) > 0) {
@@ -478,7 +478,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   } else {
     diffstate <- ""
   }
-  
+
   # detect N
   if (blocks$eqn[1] == "" | grepl("^\\{algebraic:", blocks$eqn[1])) {
     if ("KE" %in% toupper(secVarNames) | "KE" %in% toupper(blocks$primVar)) {
@@ -499,7 +499,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       N <- max(as.numeric(compNumbers))
     }
   }
-  
+
   # figure out model if N = -1 and if so, assign values to required KA,KE,V,KCP,KPC
   # in future, use {algebraic: xx} which is in model files now to select correct algebraic model
   # for now, comment the eqn lines in fortran if present
@@ -507,8 +507,8 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     blocks$eqn[1] <- "This model uses algebraic solutions. Differential equations provided here for reference only."
     blocks$eqn <- purrr::map_chr(blocks$eqn, \(x) paste0("! ", x))
   }
-  
-  
+
+
   reqVars <- c("KA", "KE", "KCP", "KPC", "V")
   matchVars <- match(reqVars, toupper(c(blocks$primVar, secVarNames)))
   if (N == -1) {
@@ -536,7 +536,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       missVars <- NA
     }
   }
-  
+
   # extract bolus inputs and create bolus block, then remove bolus[x] from equations
   bolus <- purrr::map(blocks$eqn, ~ stringr::str_extract_all(.x, regex("B[\\[\\(]\\d+|BOL[\\[\\(]\\d+|BOLUS[\\[\\(]\\d+", ignore_case = TRUE), simplify = FALSE))
   blocks$bolus <- purrr::imap(bolus, \(x, idx){
@@ -546,11 +546,11 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   }) %>% unlist()
   blocks$eqn <- purrr::map(blocks$eqn, \(x) stringr::str_replace_all(x, regex("(\\+*|-*|\\**)\\s*B[\\[\\(]\\d+[\\]\\)]|(\\+*|-*|\\**)\\s*BOL[\\[\\(]\\d+[\\]\\)]|(\\+*|-*|\\**)\\s*BOLUS[\\[\\(]\\d+[\\]\\)]", ignore_case = TRUE), "")) %>%
     unlist()
-  
+
   # replace R[x] or R(x) with RATEIV(x)
   blocks$eqn <- purrr::map(blocks$eqn, \(x) stringr::str_replace_all(x, regex("R[\\[\\(](\\d+)[\\]\\)]", ignore_case = TRUE), "RATEIV\\(\\1\\)")) %>%
     unlist()
-  
+
   # get number of equations and verify with data file
   # find statements with Y(digit) or Y[digit]
   outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output, ignore.case = T)
@@ -565,7 +565,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   if (modelnumeqt != engine$numeqt) {
     return(list(status = -1, msg = "\nThe number of output equations in the model file\ndoes not match the maximum value of outeq in your datafile.\n"))
   }
-  
+
   # remove leading ampersands from getfa, getix, gettlag if present
   oldContLines <- grep("^\\+", c(blocks$f, blocks$ini, blocks$lag))
   if (length(oldContLines > 0)) {
@@ -574,7 +574,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   if (length(grep("^&", blocks$f) > 0)) blocks$f <- gsub("^&", "", blocks$f)
   if (length(grep("^&", blocks$ini) > 0)) blocks$ini <- gsub("^&", "", blocks$ini)
   if (length(grep("^&", blocks$lag) > 0)) blocks$lag <- gsub("^&", "", blocks$lag)
-  
+
   # variable declarations for fortran and make sure not >maxwidth characters
   if (secVarNames[1] != "") {
     vardec <- paste("REAL*8 ", paste(blocks$primVar, collapse = ","), ",", paste(secVarNames, collapse = ","), sep = "")
@@ -587,18 +587,18 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   if (nchar(vardec) > maxwidth) {
     vardec <- paste(unlist(strsplit(vardec, ",")), collapse = ",\n     &  ")
   }
-  
+
   # error
   blocks$error <- tolower(gsub("[[:space:]]", "", blocks$error))
   # check to make sure coefficient lines are the same number as outputs
   nErrCoeff <- length(blocks$error) - 1
   if (nErrCoeff != modelnumeqt) {
     return(list(status = -1, msg = paste("\nThere ", c("is", "are")[1 + as.numeric(nErrCoeff > 1)], " ",
-                                         nErrCoeff, c(" line", " lines")[1 + as.numeric(nErrCoeff > 1)],
-                                         " of error coefficients in the model file, but ",
-                                         modelnumeqt, " output ", c("equation", "equations")[1 + as.numeric(modelnumeqt > 1)],
-                                         ".\nThese must be the same.\n",
-                                         sep = ""
+      nErrCoeff, c(" line", " lines")[1 + as.numeric(nErrCoeff > 1)],
+      " of error coefficients in the model file, but ",
+      modelnumeqt, " output ", c("equation", "equations")[1 + as.numeric(modelnumeqt > 1)],
+      ".\nThese must be the same.\n",
+      sep = ""
     )))
   }
   # get assay error only if SIMrun
@@ -619,7 +619,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       fixed <- grep("!", blocks$error[gamlam[1]])
       ierr <- unlist(strsplit(blocks$error[gamlam[1]], "="))
       ierrtype <- gsub("[[:space:]]", "", tolower(substr(ierr[1], 1, 1)))
-      
+
       # NPAG error parameters
       # IERRMOD
       # 1 SD WITH GAMMA(IEQ) FIXED
@@ -632,7 +632,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       # 2 IF ONE SET OF ABOVE Cs USED FOR ALL PATIENTS;
       # 1 IF Cs ALREADY IN PATIENT FILES WILL BE USED; IF A
       # PATIENT HAS NO C'S, THEN POPULATION C'S WILL BE USED.
-      
+
       if (engine$alg == "NP") {
         if (length(fixed) > 0) {
           # gamma is fixed (error for lambda)
@@ -652,8 +652,8 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
         } else {
           # gamma/lambda are to be estimated
           ierrmod <- switch(ierrtype,
-                            g = 2,
-                            l = 3
+            g = 2,
+            l = 3
           )
           gamlam0 <- as.numeric(ierr[2])
           asserr <- gsub(sep, "  ", blocks$error[-gamlam])
@@ -667,7 +667,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
         asserr <- paste(gsub("!", "", asserr), collapse = "\n") # clean up asserr
         iass <- paste(iass, collapse = "     ") # clean up iass
       }
-      
+
       # IT2B error parameters
       # IERRMOD
       # 1 IF GAMMA(IEQ) IS TO REMAIN 1.0 THROUGHOUT THE ANALYSIS;
@@ -680,7 +680,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       # 2 IF ONE SET OF ABOVE Cs USED FOR ALL PATIENTS;
       # 1 IF Cs ALREADY IN PATIENT FILES WILL BE USED; IF A
       # PATIENT HAS NO C'S, THEN POPULATION C'S WILL BE USED.
-      
+
       # IQVAL
       # 0 IF OUTPUT EQ. HAS ITS Cs ENTERED BY USER (NOT
       # ESTIMATED BY assbigxx.exe) AND IERRTYPE(IEQ) = 1
@@ -688,7 +688,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       # ESTIMATED BY assbigxx.exe) AND IERRTYPE(IEQ) = 0
       # 4 IF OUTPUT EQ. HAD ITS Cs ESTIMATED PREVIOUSLY
       # BY assbigxx.exe.
-      
+
       if (engine$alg == "IT") {
         if (ierrtype == "l") {
           return(list(status = -1, msg = "\nLambda is not currently implemented in IT2B\nPlease correct the error block in your model file.\n"))
@@ -730,17 +730,17 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
       return(list(status = -1, msg = "Please specify a gamma or lambda error model in your\nmodel file error block."))
     }
   }
-  
-  
-  
-  
-  
+
+
+
+
+
   # write report
   if (!quiet) {
     cat(paste("\nModel solver mode: ", switch(letters[N + 2],
-                                              a = "Algebraic",
-                                              b = "Exact",
-                                              "ODE"
+      a = "Algebraic",
+      b = "Exact",
+      "ODE"
     ), sep = ""))
     if (N > 0) {
       numcomp <- N
@@ -777,9 +777,9 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
     cat(paste("\nCovariates used in model file: ", c(paste(blocks$covar, collapse = ", "), "None")[1 + as.numeric(blocks$covar[1] == "")]))
     cat(paste("\nSecondary Variables: ", paste(secVarNames, collapse = ", "), sep = ""))
     cat(paste("\nModel conditions: ", c("bioavailability term defined, ", "no bioavailability term defined, ")[1 + as.numeric(blocks$f[1] == "")],
-              c("initial conditions are not zero, ", "initial conditions are zero, ")[1 + as.numeric(blocks$ini[1] == "")],
-              c("lag term defined", "no lag term defined")[1 + as.numeric(blocks$lag[1] == "")],
-              sep = ""
+      c("initial conditions are not zero, ", "initial conditions are zero, ")[1 + as.numeric(blocks$ini[1] == "")],
+      c("lag term defined", "no lag term defined")[1 + as.numeric(blocks$lag[1] == "")],
+      sep = ""
     ))
     if (engine$alg != "SIM") cat(paste("\nNumber of cycles to run:", engine$cycles))
     cat("\n\n")
@@ -790,7 +790,7 @@ makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = 
   } else {
     model_file <- modelFor
   }
-  
+
   ret_list <- list(
     status = 1, N = N, ptype = ptype, model = model_file,
     ctype = ctype, nvar = nvar, nofix = nofix, nranfix = nranfix,
@@ -816,7 +816,7 @@ endNicely <- function(message, model = -99, data = -99) {
     "it2b*.*", "itas*.*", "it_prep*", "it_run*", "itlog.txt", "ITcontrol", "itscript*", "instr.inx",
     "assdriv.f", "err_prep*", "err_run*", "ERRcontrol", "errscript*", "errlog.txt"
   ))
-  
+
   if (length(cleanUp) > 0) file.remove(cleanUp)
   stop(message, call. = F)
 }
@@ -836,8 +836,8 @@ var.wt <- function(x, w, na.rm = FALSE) {
 # weighted t test
 weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.sided", na.rm = TRUE) {
   if (!missing(conf.level) &
-      (length(conf.level) != 1 || !is.finite(conf.level) ||
-       conf.level < 0 || conf.level > 1)) {
+    (length(conf.level) != 1 || !is.finite(conf.level) ||
+      conf.level < 0 || conf.level > 1)) {
     stop("'conf.level' must be a single number between 0 and 1")
   }
   # see if x came from PM_op object
@@ -846,29 +846,29 @@ weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.side
     x <- x$d
     mu <- 0
   }
-  
+
   if (na.rm) {
     w <- w[i <- !is.na(x)]
     x <- x[i]
   }
-  
+
   # to achieve consistent behavior in loops, return NA-structure in case of complete missings
   if (sum(is.na(x)) == length(x)) {
     return(list(estimate = NA, se = NA, conf.int = NA, statistic = NA, df = NA, p.value = NA))
   }
-  
+
   # if only one value is present: this is the best estimate, no significance test provided
   if (sum(!is.na(x)) == 1) {
     warning("Warning weighted.t.test: only one value provided; this value is returned without test of significance!", call. = FALSE)
     return(list(estimate = x[which(!is.na(x))], se = NA, conf.int = NA, statistic = NA, df = NA, p.value = NA))
   }
-  
+
   x.w <- weighted.mean(x, w, na.rm = na.rm)
   var.w <- var.wt(x, w, na.rm = na.rm)
   df <- length(x) - 1
   t.value <- sqrt(length(x)) * ((x.w - mu) / sqrt(var.w))
   se <- sqrt(var.w) / sqrt(length(x))
-  
+
   if (alternative == "less") {
     pval <- pt(t.value, df)
     cint <- c(-Inf, x.w + se * qt(conf.level, df))
@@ -880,7 +880,7 @@ weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.side
     alpha <- 1 - conf.level
     cint <- x.w + se * qt(1 - alpha / 2, df) * c(-1, 1)
   }
-  
+
   names(t.value) <- "t"
   return(list(estimate = x.w, se = se, conf.int = cint, statistic = t.value, df = df, p.value = pval))
 }
@@ -907,9 +907,9 @@ FileExists <- function(filename) {
     while (!file.exists(filename)) { # oops, filename doesn't exist
       cat(paste0(filename, " does not exist in ", getwd(), ".\n"))
       filename <- tryCatch(readline("Enter another filename or 'ESC' to quit: \n"),
-                           interrupt = function(e) {
-                             stop("No filename. Function aborted.\n", call. = F)
-                           }
+        interrupt = function(e) {
+          stop("No filename. Function aborted.\n", call. = F)
+        }
       )
     }
   }
@@ -921,9 +921,9 @@ FileExists <- function(filename) {
 
 getOS <- function() {
   OS <- switch(Sys.info()[1],
-               Darwin = 1,
-               Windows = 2,
-               Linux = 3
+    Darwin = 1,
+    Windows = 2,
+    Linux = 3
   )
   return(OS)
 }
@@ -975,7 +975,10 @@ makePMmatrixBlock <- function(mdata) {
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' getCov(dataEx)
+#' }
+
 #' @author Michael Neely
 
 getCov <- function(mdata) {
@@ -994,7 +997,7 @@ getCov <- function(mdata) {
     covstart <- NA
     covend <- NA
   }
-  
+
   return(list(ncov = ncov, covnames = covnames, covstart = covstart, covend = covend))
 }
 
@@ -1043,11 +1046,11 @@ checkRequiredPackages <- function(pkg, repos = "CRAN", quietly = TRUE) {
       } # nope, still didn't install
     }
   }
-  
+
   msg <- pkg %>%
     map_chr(managePkgs) %>%
     keep(~ . != "ok")
-  
+
   if (length(msg) > 0) {
     if (!quietly) {
       cat(
@@ -1101,7 +1104,7 @@ obsStatus <- function(data) {
 
 binaries.installed <- function() {
   # checkRequiredPackages("purrr")
-  
+
   # #library(purrr)
   # exists <- function(name) {
   #   paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/") %>%
@@ -1112,7 +1115,7 @@ binaries.installed <- function() {
   #   "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
   #   "sNPeng.o", "sNPprep.o", "sSIMeng.o") %>%
   # map(exists) %>% unlist() %>% all() %>% return()
-  
+
   exists <- function(name) {
     file.exists(paste0(system.file("", package = "Pmetrics"), "compiledFortran/", name))
   }
@@ -1144,19 +1147,20 @@ template <- function(name) {
 
 # modified from Hmisc functions
 
-wtd.table <- function (x, weights = NULL, 
-                       type = c("list", "table"), 
-                       normwt = TRUE, 
-                       na.rm = TRUE){
-  
+wtd.table <- function(x, weights = NULL,
+                      type = c("list", "table"),
+                      normwt = TRUE,
+                      na.rm = TRUE) {
   type <- match.arg(type)
-  if (!length(weights)) 
+  if (!length(weights)) {
     weights <- rep(1, length(x))
+  }
   isdate <- lubridate::is.Date(x)
   ax <- attributes(x)
   ax$names <- NULL
-  if (is.character(x)) 
+  if (is.character(x)) {
     x <- as.factor(x)
+  }
   lev <- levels(x)
   x <- unclass(x)
   if (na.rm) {
@@ -1165,8 +1169,9 @@ wtd.table <- function (x, weights = NULL,
     weights <- weights[s]
   }
   n <- length(x)
-  if (normwt) 
-    weights <- weights * length(x)/sum(weights)
+  if (normwt) {
+    weights <- weights * length(x) / sum(weights)
+  }
   i <- order(x)
   x <- x[i]
   weights <- weights[i]
@@ -1174,96 +1179,112 @@ wtd.table <- function (x, weights = NULL,
     weights <- tapply(weights, x, sum)
     if (length(lev)) {
       levused <- lev[sort(unique(x))]
-      if ((length(weights) > length(levused)) && any(is.na(weights))) 
+      if ((length(weights) > length(levused)) && any(is.na(weights))) {
         weights <- weights[!is.na(weights)]
-      if (length(weights) != length(levused)) 
+      }
+      if (length(weights) != length(levused)) {
         stop("program logic error")
+      }
       names(weights) <- levused
     }
-    if (!length(names(weights))) 
+    if (!length(names(weights))) {
       stop("program logic error")
-    if (type == "table") 
+    }
+    if (type == "table") {
       return(weights)
+    }
     x <- all.is.numeric(names(weights), "vector")
-    if (isdate) 
+    if (isdate) {
       attributes(x) <- c(attributes(x), ax)
+    }
     names(weights) <- NULL
     return(list(x = x, sum.of.weights = weights))
   }
   xx <- x
-  if (isdate) 
+  if (isdate) {
     attributes(xx) <- c(attributes(xx), ax)
-  if (type == "list") 
+  }
+  if (type == "list") {
     list(x = if (length(lev)) lev[x] else xx, sum.of.weights = weights)
-  else {
-    names(weights) <- if (length(lev)) 
+  } else {
+    names(weights) <- if (length(lev)) {
       lev[x]
-    else xx
+    } else {
+      xx
+    }
     weights
   }
 }
 
-wtd.mean <- function (x, weights = NULL, normwt = "ignored", na.rm = TRUE) 
-{
-  if (!length(weights)) 
+wtd.mean <- function(x, weights = NULL, normwt = "ignored", na.rm = TRUE) {
+  if (!length(weights)) {
     return(mean(x, na.rm = na.rm))
+  }
   if (na.rm) {
     s <- !is.na(x + weights)
     x <- x[s]
     weights <- weights[s]
   }
-  sum(weights * x)/sum(weights)
+  sum(weights * x) / sum(weights)
 }
 
 
-wtd.quantile <- function (x, weights = NULL, probs = c(0, 0.25, 0.5, 0.75, 1), 
-                       normwt = TRUE, 
-                       na.rm = TRUE){
-  
-  if (!length(weights)) 
+wtd.quantile <- function(x, weights = NULL, probs = c(0, 0.25, 0.5, 0.75, 1),
+                         normwt = TRUE,
+                         na.rm = TRUE) {
+  if (!length(weights)) {
     return(quantile(x, probs = probs, na.rm = na.rm))
-  
-  if (any(probs < 0 | probs > 1)) 
+  }
+
+  if (any(probs < 0 | probs > 1)) {
     cli::cli_abort("Probabilities must be between 0 and 1 inclusive")
-  nams <- paste(format(round(probs * 100, if (length(probs) > 
-                                              1) 2 - log10(diff(range(probs))) else 2)), "%", sep = "")
+  }
+  nams <- paste(format(round(probs * 100, if (length(probs) >
+    1) {
+    2 - log10(diff(range(probs)))
+  } else {
+    2
+  })), "%", sep = "")
   i <- is.na(weights) | weights == 0
   if (any(i)) {
     x <- x[!i]
     weights <- weights[!i]
   }
-  
-  w <- wtd.table(x, weights, na.rm = na.rm, normwt = normwt, 
-                 type = "list")
+
+  w <- wtd.table(x, weights,
+    na.rm = na.rm, normwt = normwt,
+    type = "list"
+  )
   x <- w$x
   wts <- w$sum.of.weights
   n <- sum(wts)
   order <- 1 + (n - 1) * probs
   low <- pmax(floor(order), 1)
   high <- pmin(low + 1, n)
-  order <- order%%1
-  allq <- approx(cumsum(wts), x, xout = c(low, high), method = "constant", 
-                 f = 1, rule = 2)$y
+  order <- order %% 1
+  allq <- approx(cumsum(wts), x,
+    xout = c(low, high), method = "constant",
+    f = 1, rule = 2
+  )$y
   k <- length(probs)
   quantiles <- (1 - order) * allq[1:k] + order * allq[-(1:k)]
   names(quantiles) <- nams
   return(quantiles)
-  
 }
 
-wtd.var <- function (x, weights = NULL, 
-                     normwt = TRUE, 
-                     na.rm = TRUE, 
-                     method = c("unbiased", "ML")) {
-  
-  if(any(weights == 1)){
+wtd.var <- function(x, weights = NULL,
+                    normwt = TRUE,
+                    na.rm = TRUE,
+                    method = c("unbiased", "ML")) {
+  if (any(weights == 1)) {
     return(0)
   }
-  
+
   method <- match.arg(method)
   if (!length(weights)) {
-    if (na.rm) 
+    if (na.rm) {
       x <- x[!is.na(x)]
+    }
     return(var(x))
   }
   if (na.rm) {
@@ -1271,15 +1292,18 @@ wtd.var <- function (x, weights = NULL,
     x <- x[s]
     weights <- weights[s]
   }
-  if (normwt) 
-    weights <- weights * length(x)/sum(weights)
-  if (normwt || method == "ML") 
+  if (normwt) {
+    weights <- weights * length(x) / sum(weights)
+  }
+  if (normwt || method == "ML") {
     return(as.numeric(stats::cov.wt(cbind(x), weights, method = method)$cov))
+  }
   sw <- sum(weights)
-  if (sw <= 1) 
+  if (sw <= 1) {
     cli::cli_warn("only one effective observation; variance estimate undefined")
-  xbar <- sum(weights * x)/sw
-  sum(weights * ((x - xbar)^2))/(sw - 1)
+  }
+  xbar <- sum(weights * x) / sw
+  sum(weights * ((x - xbar)^2)) / (sw - 1)
 }
 
 
@@ -1306,23 +1330,34 @@ wtd.var <- function (x, weights = NULL,
 #' If `what` is "test", a logical value is returned.
 #' @export
 #' @examples
+#' \dontrun{
 #' all.is.numeric(c("1", "2", "3"))
 #' all.is.numeric(c("1", "2", "a"))
 #' all.is.numeric(c("1", "2", "3"), what = "vector")
-#' all.is.numeric(c("1", "2", "a"), what = "nonnum")0
-all.is.numeric <- function (x, what = c("test", "vector", "nonnum"), extras = c(".", 
-                                                              "NA")) 
-{
+#' all.is.numeric(c("1", "2", "a"), what = "nonnum")
+#' }
+all.is.numeric <- function(x, what = c("test", "vector", "nonnum"), extras = c(
+                             ".",
+                             "NA"
+                           )) {
   what <- match.arg(what)
   x <- sub("[[:space:]]+$", "", x)
   x <- sub("^[[:space:]]+", "", x)
   xs <- x[!x %in% c("", extras)]
-  if (!length(xs) || all(is.na(x))) 
-    return(switch(what, test = FALSE, vector = x, nonnum = x[0]))
+  if (!length(xs) || all(is.na(x))) {
+    return(switch(what,
+      test = FALSE,
+      vector = x,
+      nonnum = x[0]
+    ))
+  }
   isnon <- suppressWarnings(!is.na(xs) & is.na(as.numeric(xs)))
   isnum <- !any(isnon)
-  switch(what, test = isnum, vector = if (isnum) suppressWarnings(as.numeric(x)) else x, 
-         nonnum = xs[isnon])
+  switch(what,
+    test = isnum,
+    vector = if (isnum) suppressWarnings(as.numeric(x)) else x,
+    nonnum = xs[isnon]
+  )
 }
 
 
@@ -1345,12 +1380,12 @@ save_flextable <- function(x) {
   if (!inherits(x, "flextable")) {
     cli::cli_abort("{.arg x} must be a flextable object.")
   }
-  
+
   file <- attr(x, "file")
-  if(!is.null(file)){
+  if (!is.null(file)) {
     # get file extension
     ext <- stringr::str_match(file, "\\.(.*)$")[2]
-    
+
     # save flextable based on file extension
     if (ext %in% c("docx", "doc")) {
       flextable::save_as_docx(x, path = file)
@@ -1363,13 +1398,11 @@ save_flextable <- function(x) {
     } else {
       cli::cli_abort("File type not recognized. Choose from 'docx', 'pptx', 'html', 'png', or 'svg'.")
     }
-    
+
     cli::cli_inform(paste("The file", file, "was saved to", getwd(), "."))
   }
-  
+
   return(invisible(x))
-  
-  
 }
 
 
@@ -1390,4 +1423,3 @@ cli_ask <- function(text, prompt = ">> ", ...) {
   ans <- readline(prompt = prompt)
   return(ans)
 }
-

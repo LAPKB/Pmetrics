@@ -25,7 +25,9 @@ made by \link{summary.PM_sim}. Users do not normally need to call this print
 function directly, as it will be the default method to display the object.
 }
 \examples{
+\dontrun{
 simEx$summary()
+}
 }
 \seealso{
 \link{summary.PM_sim}
