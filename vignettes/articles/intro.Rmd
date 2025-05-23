@@ -28,24 +28,34 @@ Southern California. Please see our website at
 [[http://www.lapk.org]{.underline}](http://www.lapk.org) for more
 information.
 
+## Rust 
+
+**As of v. 3.0**, Pmetrics uses Rust for the core of the package and no longer
+uses Fortran. This is for several reasons, including the fact that Rust is a modern
+programming language that is more efficient and easier to maintain than Fortran.
+Rust is memory safe, which means that it prevents common programming errors that can lead to
+memory leaks and crashes. This makes it a more reliable choice for high-performance computing tasks.
+Additionally, Rust has a growing ecosystem of libraries and tools that make it easier to work with
+data and perform complex computations. This makes it a more flexible choice for a wide range of applications.
 
 ## R6 architecture
 
-**As of v. 2.0**, Pmetrics shifted to an architecture less dependent on
-reading and writing files. Data files are unchanged.
+**As of v. 2.0**, Pmetrics uses an "R6" architecture less dependent on
+reading and writing files, preserving hard drive space and speeding execution, 
+since file I/O is slow. The goal is to simplfy work within a session by 
+eliminating the need to repeatedly copy and paste files from one folder to the next
+whenever a new fit is executed. Storing critical objects in memory means they
+can be used without accessing files. 
 
-Model files can now be defined as an R object, instead of in a text file. 
-The easiest way to accomplish this is with our model builder app, which is
-described in the article on Models.
+However, data and model files are still used for longer term storage
+and preserving work from one session to another. The format of those files,
+both data and model, will be familiar to long term Pmetrics users.
 
-Pmetrics can suppoort legacy runs with the old-style text file models, but
-users are encouraged to change to the new methods. Throughout this manual we
-will indicate the new style with the <span class="r6">R6</span> designation to reflect the
-object-oriented R6 style of programming available in R that makes it more
-consistent with object-oriented languages such as Python. We will indicate
-old-style approaches with <span class="legacy">Legacy</span>.
-
-Functions and classes in <span class="r6">R6</span> are generally named with "PM_" as the prefix, e.g. `PM_load()` or `PM_final()`. In <span class="legacy">Legacy</span>, functions and classes are prefixed without the underscore "_", such as `PMload()`, and `PMfinal()`.
+Data files are generally .csv and the format is detailed in `vignette("data")`.
+A model can be read from a text file or can be defined directly in R.
+The easiest way to accomplish this is with our model builder app. Whether choosing
+to define models in R, with the builder app, or in a .txt file, details can be 
+found in `vignette("models")`
 
 **Tips for using this guide.**
 
@@ -83,7 +93,7 @@ so please feel free to contact us at any time, preferably through the
 [Pmetrics Disussions](https://github.com/LAPKB/Pmetrics/discussions). You can report [issues](https://github.com/LAPKB/Pmetrics/issues) online as well.
 
 This manual is also not intended to be a theoretical treatise on the
-algorithms used in IT2B or NPAG. For that, the user is directed to our
+algorithms Pmetrics uses. For that, the user is directed to our
 [website](http://www.lapk.org/publications.php).
 
 ## Getting Help and Updates
