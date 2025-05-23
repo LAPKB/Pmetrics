@@ -15,7 +15,6 @@
 #' @author Michael Neely
 #'
 build_model <- function(...) {
-
   obj <- list(...)
   data_arg <- purrr::detect(obj, \(x) inherits(x, "PM_data"))
   model_arg <- purrr::detect(obj, \(x) inherits(x, "PM_model"))
@@ -23,19 +22,18 @@ build_model <- function(...) {
 
   # Define UI for application that draws a histogram
   shiny::shinyApp(
-    
     ui <- bslib::page_fluid(
       theme = bslib::bs_theme(bootswatch = "slate"),
       title = "Pmetrics Model Builder App",
       widths = c(3, 9),
 
 
-    # ui <- fluidPage(
-    #   theme = shinythemes::shinytheme("slate"),
-    # 
-    #   # Application title
-    #   titlePanel("Pmetrics Model Builder App"),
-    #   # Layout
+      # ui <- fluidPage(
+      #   theme = shinythemes::shinytheme("slate"),
+      #
+      #   # Application title
+      #   titlePanel("Pmetrics Model Builder App"),
+      #   # Layout
 
       # Model components
       #  #Formatting
@@ -57,7 +55,7 @@ build_model <- function(...) {
       ),
       # navlistPanel(
       bslib::navset_pill_list(
-        
+
         "Model Components",
         widths = c(3, 9),
         # tabPanel: Model Library
@@ -203,7 +201,7 @@ build_model <- function(...) {
           ),
           uiOutput("bottom_sec")
         ), # end tabPanel: Secondary
-        
+
         # tabPanel(
         bslib::nav_panel(
           "INItial Conditions",

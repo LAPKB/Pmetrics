@@ -149,8 +149,10 @@ to specify attributes of the outline for a marker.
 
 
 ```{r, echo = T, eval = T}
-NPex$op$plot(marker = list(color = "slategray", size = 12, 
-                           opacity = 0.5, line = list(color = "navy")))
+NPex$op$plot(marker = list(
+  color = "slategray", size = 12,
+  opacity = 0.5, line = list(color = "navy")
+))
 ```
 
 
@@ -180,15 +182,19 @@ NPex$data$plot(legend = T)
 
 ...and a more complex one.
 ```{r, echo = T, eval = T}
-NPex$data$plot(line = list(join = F, 
-                           pred = list(NPex$post, color = "navy")), 
-               legend = list(
-                 x = 0.75,
-                 y = 0.85,
-                 borderwidth = 1,
-                 bgcolor = "antiquewhite"
-               ),
-               xlim = c(119, 146))
+NPex$data$plot(
+  line = list(
+    join = F,
+    pred = list(NPex$post, color = "navy")
+  ),
+  legend = list(
+    x = 0.75,
+    y = 0.85,
+    borderwidth = 1,
+    bgcolor = "antiquewhite"
+  ),
+  xlim = c(119, 146)
+)
 ```
 
 ### X axis and Y axis 
@@ -216,20 +222,20 @@ NPex$data$plot(xlab = "Time (h)", ylab = "Rifapentine (mg/L)")
 
 ``` {r echo = T, eval = T}
 NPex$data$plot(xlab = list(text = "Time (h)", font = list(color = "slategrey", family = "Times New Roman", size = 18)))
-#notice that ylab is also formatted in the same way
+# notice that ylab is also formatted in the same way
 ```
 
 For greater control over the axes, e.g. tick placement, coloring, etc., the "..." argument in plots is coded to pass arguments to the xaxis and yaxis lists. This allows access to any attribute. If axis attributes are passed through ... in a named list, e.g. `xaxis = list(linecolor = "red")`, then they will be specific to that axis. However, if the attributes are passed through ... directly, without inclusion in an `xaxis` or `yaxis` list, they will apply to both the axes, e.g. `$plot(...,`linecolor = "red")` will color the xaxis and yaxis lines red.
 
 ``` {r echo = T, eval = T}
 NPex$data$plot(xaxis = list(linecolor = "firebrick", ticks = "inside"))
-#only affects x axis since formatting within xaxis list
+# only affects x axis since formatting within xaxis list
 ```
 
 
 ``` {r echo = T, eval = T}
 NPex$data$plot(linecolor = "dodgerblue", ticks = "outside")
-#formatting affects both axes since arguments are outside xaxis or yaxis lists
+# formatting affects both axes since arguments are outside xaxis or yaxis lists
 ```
 
 ### Title
@@ -265,8 +271,10 @@ It is possible to add other shapes, but it will require more manual effort as th
 
 ```{r echo = T, eval = T}
 NPex$data$plot() %>%
-  add_shapes(shape = list(type = "circle", x0 = 122, x1 = 132,
-                                y0 = 15, y1 = 22))
+  add_shapes(shape = list(
+    type = "circle", x0 = 122, x1 = 132,
+    y0 = 15, y1 = 22
+  ))
 ```
 
 The values for x0 and x1 determine the left and right extent, and for y0 and y1 the bottom and top of the circle. Coordinates are absolute, unless you include `xref = "paper"` and/or `yref = "paper"` An additional line list can control formatting.
@@ -285,7 +293,7 @@ Annotations with connecting arrows...
 
 ```{r echo = T, eval = T}
 NPex$data$plot() %>%
-  add_annotations(text = ~id) #the tilde tells plotly to use the contents of the id column
+  add_annotations(text = ~id) # the tilde tells plotly to use the contents of the id column
 ```
 
 
@@ -293,8 +301,10 @@ Text without arrows...
 
 ```{r echo = T, eval = T}
 NPex$data$plot() %>%
-  add_text(text = ~id, textposition = "top right", 
-           textfont = list(color = "green", size = 12))
+  add_text(
+    text = ~id, textposition = "top right",
+    textfont = list(color = "green", size = 12)
+  )
 ```
 
 A single text item...
