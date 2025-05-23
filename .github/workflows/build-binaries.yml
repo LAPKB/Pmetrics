@@ -1,0 +1,72 @@
+name: Build Package Binaries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build-binary:
+    runs-on: ${{ matrix.config.os }}
+    name: Build ${{ matrix.config.os }} Binary
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: windows-latest, r: 'release', binary-type: 'zip', rust-target: 'x86_64-pc-windows-gnu'}
+          - {os: macOS-latest, r: 'release', binary-type: 'tgz', rust-target: 'x86_64-apple-darwin'}
+          - {os: ubuntu-latest, r: 'release', binary-type: 'tgz', rust-target: 'x86_64-unknown-linux-gnu'}
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up R ${{ matrix.config.r }}
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: true
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.config.rust-target }}
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libharfbuzz-dev libfribidi-dev
+
+      - name: Install R package dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          needs: check
+
+      - name: Build binary package
+        run: |
+          pkg_file <- pkgbuild::build(binary = TRUE)
+          dir.create("build")
+          file.copy(pkg_file, "build")
+        shell: Rscript {0}
+
+      - name: Upload binary package
+        uses: actions/upload-artifact@v3
+        with:
+          name: Pmetrics-${{ runner.os }}-binary
+          path: build/
+          
+      - name: Upload binary to release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: build/*.${{ matrix.config.binary-type }}
+          asset_name: Pmetrics-${{ runner.os }}.${{ matrix.config.binary-type }}
+          asset_content_type: application/octet-stream
