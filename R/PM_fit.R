@@ -30,7 +30,7 @@ PM_fit <- R6::R6Class(
     model = NULL,
     #' @field backend Backend used for calculations; default is value in PMoptions.
     backend = NULL,
-    
+
     #' @description
     #' Create a new object
     #' @param data Either the name of a  [PM_data]
@@ -60,45 +60,45 @@ PM_fit <- R6::R6Class(
       if (!inherits(model, "PM_model")) {
         cli::cli_abort(c("x" = "{.code model} must be a {.cls PM_model} object"))
       }
-      
+
       #### checks
-      
+
       # covariates
       dataCov <- tolower(getCov(data)$covnames)
       modelCov <- tolower(sapply(model$model_list$cov, function(x) x$covariate))
-      if(length(modelCov)==0){
+      if (length(modelCov) == 0) {
         modelCov <- NA
       }
-      if(!all(is.na(dataCov)) && !all(is.na(modelCov))){ # if there are covariates
-        if(!identical(dataCov, modelCov)){ # if not identical, abort
+      if (!all(is.na(dataCov)) && !all(is.na(modelCov))) { # if there are covariates
+        if (!identical(dataCov, modelCov)) { # if not identical, abort
           msg <- glue::glue("Model covariates: {paste(modelCov, collapse = ', ')}; Data covariates: {paste(dataCov, collapse = ', ')}")
           cli::cli_abort(c(
             "x" = "Error: Covariates in data and model do not match.",
             "i" = msg
           ))
         }
-      }  
-      
-      #output equations
-      
+      }
+
+      # output equations
+
       if (!is.null(data$standard_data$outeq)) {
         dataOut <- max(data$standard_data$outeq, na.rm = TRUE)
       } else {
         dataOut <- 1
       }
-      
+
       modelOut <- length(model$model_list$out)
-      if(dataOut != modelOut){
+      if (dataOut != modelOut) {
         cli::cli_abort(c(
           "x" = "Error: Number of output equations in data and model do not match.",
           "i" = "Check the number of output equations in the data and model."
         ))
       }
-      
+
       self$data <- data
       self$model <- model
       self$backend <- backend
-      
+
       if (backend == "rust") {
         private$setup_rust_execution()
       }
@@ -111,10 +111,10 @@ PM_fit <- R6::R6Class(
     #' the simplest execution of this method is
     #' `$run()`.
     #' @param run Specify the run number of the output folder.  Default if missing is the next available number.
-    #' @param include Vector of subject id values in the data file to include in the analysis.  
+    #' @param include Vector of subject id values in the data file to include in the analysis.
     #' The default (missing) is all.
     #' @param exclude A vector of subject IDs to exclude in the analysis, e.g. `c(4,6:14,16:20)`
-    #    #' @param ode Ordinary Differential Equation solver log tolerance or stiffness.  
+    #    #' @param ode Ordinary Differential Equation solver log tolerance or stiffness.
     #    Default is -4, i.e. 0.0001.  Higher values will result in faster
     #    #' runs, but parameter estimates may not be as accurate.
     #    #' @param tol Tolerance for convergence of NPAG.  Smaller numbers make it harder to converge.
@@ -126,16 +126,16 @@ PM_fit <- R6::R6Class(
     #' * The default is "sobol", which is a semi-random distribution. This is the distribution
     #' typically used when fitting a new model to the data. An example of this is
     #' on our [website](https://www.lapk.org/images/sobol_3d_plot.html).
-    #' 
+    #'
     #' The following all specify non-random, informative prior distributions. They
     #' are useful for either continuing a previous
     #' run which did not converge or for fitting a model to new data, whether to simply
     #' calculate Bayesian posteriors with `cycles = 0` or to revise the model to a new
     #' covergence with the new data.
     #' * The name of a suitable [PM_result] object from a prior run loaded with [PM_load].
-    #' This starts from the non-uniform, informative distribution obtained at the end of a prior NPAG run. 
+    #' This starts from the non-uniform, informative distribution obtained at the end of a prior NPAG run.
     #' Example: `run1 <- PM_load(1); fit1$run(prior = run1)`.
-    #' 
+    #'
     #' * A character string with the filename of a csv file containing a prior distribution with
     #' format as for 'theta.csv' in the output folder of a prior run: column headers are parameter
     #' names, and rows are the support point values. A final column with probabilities
@@ -147,21 +147,21 @@ PM_fit <- R6::R6Class(
     #' * A data frame obtained from reading an approriate file, such that the data frame
     #' is in the required format described in the filename option above. Example:
     #' `mytheta <- read_csv("mytheta.csv"); fit1$run(prior = mytheta)`.
-    #' 
-    #' @param density0 The proportion of the volume of the model parameter 
+    #'
+    #' @param density0 The proportion of the volume of the model parameter
     #' hyperspace used to calculate the initial number of support points if one of
     #' the semi-random, uniform distributions are selected in the `prior` argument
-    #' above. The initial points are 
+    #' above. The initial points are
     #' spread through that hyperspace and begin the search for the optimal
     #' parameter value distribution (support points) in the population.
     #' The volume of the parameter space is the product of the ranges for all parameters.
     #' For example if using two parameters `Ke` and `V`, with ranges of \[0, 5\] and \[10, 100\],
     #' the volume is (5 - 0) x (100 - 10) = 450 The default value of `density0` is 0.01, so the initial
     #' number of support points will be 0.01 x 450 = 4.5, increased to the nearest integer,
-    #' which is 5. The greater the initial number of points, the less chance of 
-    #' missing the globally maximally likely parameter value distribution, 
+    #' which is 5. The greater the initial number of points, the less chance of
+    #' missing the globally maximally likely parameter value distribution,
     #' but the slower the run.
-    #' 
+    #'
     #    #' @param indpts Index of starting grid point number.  Default is missing, which allows NPAG to choose depending on the number of random parameters:
     #    #' 1 or 2 = index of 1; 3 = 3; 4 = 4, 5 = 6,
     #    #' 6 or more is 10+number of multiples for each parameter greater than 5, e.g. 6 = 101; 7 = 102, up to 108 for 13 or more parameters.
@@ -191,7 +191,7 @@ PM_fit <- R6::R6Class(
     #'
     #' @author Michael Neely
     #' @export
-    
+
     run = function(run = NULL,
                    include = NULL, exclude = NULL,
                    # ode, tol, salt,
@@ -211,9 +211,9 @@ PM_fit <- R6::R6Class(
                    report = getPMoptions("report_template"),
                    artifacts = TRUE) {
       cwd <- getwd()
-      intern <- TRUE #always true until (if) rust can run separately from R
-      
-      
+      intern <- TRUE # always true until (if) rust can run separately from R
+
+
       # make new output directory
       if (is.null(run)) {
         olddir <- list.dirs(recursive = FALSE)
@@ -231,7 +231,7 @@ PM_fit <- R6::R6Class(
           newdir <- as.character(run)
         }
       }
-      
+
       if (file.exists(newdir)) {
         if (overwrite) {
           unlink(newdir, recursive = TRUE)
@@ -244,9 +244,9 @@ PM_fit <- R6::R6Class(
       }
       dir.create(newdir)
       setwd(newdir)
-      
+
       algorithm <- tolower(algorithm)
-      
+
       if (getPMoptions()$backend != "rust") {
         setwd(cwd)
         cli::cli_abort(c(
@@ -254,67 +254,74 @@ PM_fit <- R6::R6Class(
           "i" = "See help for {.fn setPMoptions}"
         ))
       }
-      
+
       if (artifacts) {
         self$model$write("model.txt")
       }
-      
+
       #### Include or exclude subjects ####
       if (is.null(include)) include <- unique(self$data$standard_data$id)
       if (is.null(exclude)) exclude <- NA
       data_filtered <- self$data$standard_data %>% includeExclude(include, exclude)
-      
+
       if (nrow(data_filtered) == 0) {
         cli::cli_abort("x" = "No subjects remain after filtering.")
         setwd(cwd)
         return(invisible(NULL))
       }
-      
-      
-      
-      
-      
+
+
+
+
+
       #### Save objects ####
       self$data <- PM_data$new(data_filtered, quiet = TRUE)
       self$data$write("gendata.csv", header = FALSE)
       save(self, file = "fit.Rdata")
-      
+
       # Get ranges and calculate points
-      
+
       ranges <- lapply(self$model$model_list$pri, function(x) {
         c(x$min, x$max)
       })
       names(ranges) <- tolower(names(ranges))
-      
+
       # Set initial grid points (only applies for sobol)
-      
+
       vol <- prod(sapply(ranges, function(x) x[2] - x[1]))
       points <- ceiling(density0 * vol)
-      
-      
-      
+
+
+
       # set prior
-      if(prior != "sobol"){
-        if(is.numeric(prior)){  # prior specified as a run number
-          if ( !file.exists(glue::glue({prior},"/outputs/theta.csv"))){
+      if (prior != "sobol") {
+        if (is.numeric(prior)) { # prior specified as a run number
+          if (!file.exists(glue::glue(
+            {
+              prior
+            },
+            "/outputs/theta.csv"
+          ))) {
             cli::cli_abort(c(
               "x" = "Error: {.arg prior} file does not exist.",
               "i" = "Check the file path."
             ))
-          } 
-          file.copy(glue::glue({prior},"/outputs/theta.csv"), "theta.csv")
+          }
+          file.copy(glue::glue(
+            {
+              prior
+            },
+            "/outputs/theta.csv"
+          ), "theta.csv")
           prior <- "theta.csv"
-          
-          
-        } else if (is.character(prior)) {  # prior specified as a filename
+        } else if (is.character(prior)) { # prior specified as a filename
           if (!file.exists(prior)) {
             cli::cli_abort(c(
               "x" = "Error: {.arg prior} file does not exist.",
               "i" = "Check the file path."
             ))
           }
-          file.copy(prior, overwrite = TRUE) #ensure in current working directory
-          
+          file.copy(prior, overwrite = TRUE) # ensure in current working directory
         } else {
           cli::cli_abort(c(
             "x" = "Error: {.arg prior} must be a numeric run number or character filename.",
@@ -324,11 +331,11 @@ PM_fit <- R6::R6Class(
       } else {
         prior <- "sobol"
       }
-      
+
       if (intern) {
         ### CALL RUST
         out_path <- file.path(getwd(), "outputs")
-        
+
         rlang::try_fetch(
           fit(
             self$model$binary_path,
@@ -337,14 +344,14 @@ PM_fit <- R6::R6Class(
               ranges = ranges,
               algorithm = algorithm,
               gamlam = c(self$model$model_list$out$Y1$err$model$additive, self$model$model_list$out$Y1$err$model$proportional),
-              error_type = c("additive","proportional")[1+is.null(self$model$model_list$out$Y1$err$model$additive)],
+              error_type = c("additive", "proportional")[1 + is.null(self$model$model_list$out$Y1$err$model$additive)],
               error_coefficients = t(sapply(self$model$model_list$out, function(x) {
                 y <- x$err$assay$coefficients
-                if(length(y) < 6){
-                  y <- c(y,0,0)
+                if (length(y) < 6) {
+                  y <- c(y, 0, 0)
                 }
-                y}
-              )), # matrix numeqt x 6
+                y
+              })), # matrix numeqt x 6
               max_cycles = cycles,
               prior = prior,
               ind_points = points,
@@ -356,7 +363,7 @@ PM_fit <- R6::R6Class(
             return(NULL)
           }
         )
-        
+
         PM_parse("outputs")
         res <- PM_load(file = "PMout.Rdata")
         PM_report(res, outfile = "report.html", template = report)
@@ -375,7 +382,7 @@ PM_fit <- R6::R6Class(
     save = function(file_name = "PMfit.rds") {
       saveRDS(self, file_name)
     },
-    
+
     #' @description
     #' `PM_fit` objects contain a `save` method which invokes [saveRDS] to write
     #' the object to the hard drive as an .rds file. This is the corresponding load
@@ -403,7 +410,6 @@ PM_fit <- R6::R6Class(
       # check if compiled and if not, do so
       self$model$compile()
     }
-    
   ) # end private
 ) # end PM_fit
 
@@ -418,6 +424,6 @@ PM_fit$load <- function(file_name = "PMfit.rds") {
   if (!is.logical(bool)) {
     stop("This functions expects a logical value")
   }
-  
+
   rust_logical <- ifelse(bool, "true", "false")
 }

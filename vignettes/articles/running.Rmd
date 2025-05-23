@@ -67,29 +67,27 @@ To bring these together, use the `PM_fit$new()` object creator. It only needs tw
 in memory loaded via the Legacy `PMreadMatrix()`and a model object. `PM_fit()` will accept a model object created by `PM_model` or the name of a model file in Legacy format and in the working directory.
 
 ``` {r echo=T, eval=F}
-
-#Example 1 - data and model objects
+# Example 1 - data and model objects
 dat <- PM_data$new("data.csv")
 mod1 <- PM_model$new(list(...))
 fit1 <- PM_fit$new(dat, mod1)
 
-#Example 2 - data file and PM_model object
+# Example 2 - data file and PM_model object
 fit2 <- PM_fit$new(data = "data.csv", model = mod1)
 
-#Example 3 - data object and model file
+# Example 3 - data object and model file
 PMdata <- PMreadMatrix("data.csv")
 fit3 <- PM_fit$new(data = PMdata, model = "model.txt")
-
 ```
 
 The fit object also contains a couple of methods attached to it.
 
 ```{r echo=T, eval=F}
-fit1$check() #This will check the consistency between the model and the data
+fit1$check() # This will check the consistency between the model and the data
 
-fit2$save("fit2.rds") #This will save the fit to a file in your working directory
+fit2$save("fit2.rds") # This will save the fit to a file in your working directory
 
-fit2_again <- PM_fit$load("fit2.rds") #This will load the fit again from disk
+fit2_again <- PM_fit$load("fit2.rds") # This will load the fit again from disk
 ```
 
 To see the full list of methods available see `?PM_fit`.
@@ -115,13 +113,13 @@ the correct format for use by IT2B, NPAG, or the Simulator.
 Once the `PM_fit()` object is created the `$run()` method will execute the fit. Arguments for this method can be found in the help for `NPrun()` and `ITrun()`.
 
 ``` {r echo=T, eval=F}
-#default run parameters
+# default run parameters
 fit3$run()
 
-#change the cycle number from default 100
-fit3$run(cycles=500)
+# change the cycle number from default 100
+fit3$run(cycles = 500)
 
-#change the engine from default NPAG
+# change the engine from default NPAG
 fit3$run(engine = "IT2B")
 ```
 
@@ -133,11 +131,10 @@ run IT2B or NPAG are as follows. Recall that the "\#" character is a
 comment character.
 
 ``` {r echo=T, eval=F}
-
 library(Pmetrics)
-#Run 1 - add your run description here
+# Run 1 - add your run description here
 setwd("working directory")
-NPrun() #for NPAG or ITrun() for IT2B
+NPrun() # for NPAG or ITrun() for IT2B
 ```
 
 
@@ -163,17 +160,17 @@ both of the appropriate Pmetrics data.csv and model.txt files are in the working
 directory, i.e. the Runs subdirectory of the project directory. The names are supplied as arguments to `NPrun`, `ITrun`, and `ERRrun`. A shorthand notation is to supply the  number of a previous run for either the data, model or both files so that you do not have to manually copy them into the working directory.
 
 ``` {r echo=T, eval=F}
-#Using default names data.csv and model.txt
+# Using default names data.csv and model.txt
 NPrun()
 
-#Using custom names
+# Using custom names
 ITrun(model = "model1.txt", data = "mydata.csv")
 
-#Grab data from run 1 and use default model.txt
-NPrun(data=1)
+# Grab data from run 1 and use default model.txt
+NPrun(data = 1)
 
-#Use model and data from run 2 and continue where run 2 ended
-NPrun(data=2, model=2, prior=2, cycles=1000)
+# Use model and data from run 2 and continue where run 2 ended
+NPrun(data = 2, model = 2, prior = 2, cycles = 1000)
 ```
 
 You can also download sample data and scripts from the [Pmetrics
@@ -197,12 +194,14 @@ After that, that object can be used to access the different elements of the resu
 
 ``` {r echo=T, eval=F}
 exRes <- PM_load(1)
-exRes$final$plot() #see ?plot.PM_final
-exRes$op$plot(type="pop") #see ?plot.PM_op,
-exRes$data$plot(overlay = F, 
-                line = list(pred = list(exRes$post, color = "green"), join = F),
-                marker = list(symbol = "diamond-open", color = "blue"), 
-                log = T) # see ?plot.PM_data
+exRes$final$plot() # see ?plot.PM_final
+exRes$op$plot(type = "pop") # see ?plot.PM_op,
+exRes$data$plot(
+  overlay = F,
+  line = list(pred = list(exRes$post, color = "green"), join = F),
+  marker = list(symbol = "diamond-open", color = "blue"),
+  log = T
+) # see ?plot.PM_data
 ```
 
 
@@ -223,9 +222,9 @@ script to process the data, such as the following.
 ``` {r echo=T, eval=F}
 plot(final.1)
 plot(cycle.1)
-plot(op.1,type="pop") #or plot(op.1$pop1)
-plot(op.1) #default is to plot posterior predictions for output 1
-plot(op.1,type="pop",resid=T)
+plot(op.1, type = "pop") # or plot(op.1$pop1)
+plot(op.1) # default is to plot posterior predictions for output 1
+plot(op.1, type = "pop", resid = T)
 ```
 
 Of course, the full power of R can be used in scripts to analyze data,
@@ -239,9 +238,9 @@ comments liberally to distinguish runs, as shown below.
 
 ``` {r echo=T, eval=F}
 library(Pmetrics)
-#Run 1 - Ka, Kel, V, all subjects
+# Run 1 - Ka, Kel, V, all subjects
 setwd("working directory")
-NPrun() #assumes model="model.txt" and data="data.csv"
+NPrun() # assumes model="model.txt" and data="data.csv"
 PMload(1)
 ```
 
