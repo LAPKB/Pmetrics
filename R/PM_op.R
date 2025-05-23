@@ -268,7 +268,6 @@ PM_op <- R6::R6Class(
 #' @seealso [PM_result], [PM_op], [schema]
 #' @export
 #' @examples
-#' library(PmetricsData)
 #' NPex$op$plot()
 #' NPex$op$plot(pred.type = "pop")
 #' NPex$op$plot(line = list(lm = TRUE, ref = TRUE, loess = FALSE))
@@ -637,7 +636,6 @@ plot.PM_op <- function(x,
 #'  - p.value: the probability that the weighted mean is different than zero
 #' @author Michael Neely
 #' @examples
-#' library(PmetricsData)
 #' NPex$op$summary() # preferred
 #' summary(NPex$op) # alternative
 #' @seealso [PM_op]
@@ -739,7 +737,6 @@ summary.PM_op <- function(object, digits = max(3, getOption("digits") - 3),
 #' @author Michael Neely
 #' @seealso [summary.PM_op]
 #' @examples
-#' library(PmetricsData)
 #' NPex$op$summary()
 #' @export
 

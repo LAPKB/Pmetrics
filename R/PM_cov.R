@@ -229,7 +229,6 @@ PM_cov <- R6::R6Class(
 #' @seealso [PM_cov], [PM_result], [schema]
 #' @export
 #' @examples
-#' library(PmetricsData)
 #' NPex$cov$plot(V ~ wt)
 #' NPex$cov$plot(Ke ~ wt, line = list(lm = TRUE, ref = FALSE, loess = FALSE))
 #' NPex$cov$plot(Ke ~ wt, line = list(loess = list(ci = 0.9, color = "green")))
@@ -526,7 +525,6 @@ plot.PM_cov <- function(x,
 #' @author Michael Neely
 #' @seealso [PM_cov]
 #' @examples
-#' library(PmetricsData)
 #' NPex$cov$summary() # preferred
 #' summary(NPex$cov) # alternative
 #' NPex$cov$summary(icen = "mean") # use mean as summary

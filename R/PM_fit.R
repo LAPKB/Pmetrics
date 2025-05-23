@@ -111,15 +111,58 @@ PM_fit <- R6::R6Class(
     #' the simplest execution of this method is
     #' `$run()`.
     #' @param run Specify the run number of the output folder.  Default if missing is the next available number.
-    #' @param include Vector of subject id values in the data file to include in the analysis.  The default (missing) is all.
-    #' @param exclude A vector of subject IDs to exclude in the analysis, e.g. c(4,6:14,16:20)
-    #    #' @param ode Ordinary Differential Equation solver log tolerance or stiffness.  Default is -4, i.e. 0.0001.  Higher values will result in faster
+    #' @param include Vector of subject id values in the data file to include in the analysis.  
+    #' The default (missing) is all.
+    #' @param exclude A vector of subject IDs to exclude in the analysis, e.g. `c(4,6:14,16:20)`
+    #    #' @param ode Ordinary Differential Equation solver log tolerance or stiffness.  
+    #    Default is -4, i.e. 0.0001.  Higher values will result in faster
     #    #' runs, but parameter estimates may not be as accurate.
     #    #' @param tol Tolerance for convergence of NPAG.  Smaller numbers make it harder to converge.
     #    #' Default value is 0.01.
     #    #' @param salt Vector of salt fractions for each drug in the data file, default is 1 for each drug.  This is not the same as bioavailability.
     #' @param cycles Number of cycles to run. Default is 100.
-    #' @param indpts Index of starting grid point number.  Default is missing, which allows NPAG to choose depending on the number of random parameters:
+    #' @param prior The distribution for the initial support points, which can be
+    #' one of several options.
+    #' * The default is "sobol", which is a semi-random distribution. This is the distribution
+    #' typically used when fitting a new model to the data. An example of this is
+    #' on our [website](https://www.lapk.org/images/sobol_3d_plot.html).
+    #' 
+    #' The following all specify non-random, informative prior distributions. They
+    #' are useful for either continuing a previous
+    #' run which did not converge or for fitting a model to new data, whether to simply
+    #' calculate Bayesian posteriors with `cycles = 0` or to revise the model to a new
+    #' covergence with the new data.
+    #' * The name of a suitable [PM_result] object from a prior run loaded with [PM_load].
+    #' This starts from the non-uniform, informative distribution obtained at the end of a prior NPAG run. 
+    #' Example: `run1 <- PM_load(1); fit1$run(prior = run1)`.
+    #' 
+    #' * A character string with the filename of a csv file containing a prior distribution with
+    #' format as for 'theta.csv' in the output folder of a prior run: column headers are parameter
+    #' names, and rows are the support point values. A final column with probabilities
+    #' for each support point is not necessary, but if present will be ignored, as these
+    #' probabilities are calculated by the engine. Note that the parameter names must match the
+    #' names of the primary variables in the model. Example: `fit1$run(prior = "mytheta.csv")`.
+    #' * The number of a previous run with `theta.csv` in the output folder which will be read
+    #' as for the filename option above. Example: `fit1$run(prior = 2)`.
+    #' * A data frame obtained from reading an approriate file, such that the data frame
+    #' is in the required format described in the filename option above. Example:
+    #' `mytheta <- read_csv("mytheta.csv"); fit1$run(prior = mytheta)`.
+    #' 
+    #' @param density0 The proportion of the volume of the model parameter 
+    #' hyperspace used to calculate the initial number of support points if one of
+    #' the semi-random, uniform distributions are selected in the `prior` argument
+    #' above. The initial points are 
+    #' spread through that hyperspace and begin the search for the optimal
+    #' parameter value distribution (support points) in the population.
+    #' The volume of the parameter space is the product of the ranges for all parameters.
+    #' For example if using two parameters `Ke` and `V`, with ranges of \[0, 5\] and \[10, 100\],
+    #' the volume is (5 - 0) x (100 - 10) = 450 The default value of `density0` is 0.01, so the initial
+    #' number of support points will be 0.01 x 450 = 4.5, increased to the nearest integer,
+    #' which is 5. The greater the initial number of points, the less chance of 
+    #' missing the globally maximally likely parameter value distribution, 
+    #' but the slower the run.
+    #' 
+    #    #' @param indpts Index of starting grid point number.  Default is missing, which allows NPAG to choose depending on the number of random parameters:
     #    #' 1 or 2 = index of 1; 3 = 3; 4 = 4, 5 = 6,
     #    #' 6 or more is 10+number of multiples for each parameter greater than 5, e.g. 6 = 101; 7 = 102, up to 108 for 13 or more parameters.
     #    #' @param icen Summary of parameter distributions to be used to calculate predictions in HTML report.  Default is "median", but could be "mean".
@@ -127,11 +170,7 @@ PM_fit <- R6::R6Class(
     #    #' @param aucint Maintained for backwards compatibility and not used currently. Interval for AUC calculations.  Default is 24 hours if the number of intervals is not greater than 48; otherwise it defaults
     #    #' to the interval which allows for <= 48 intervals.
     #    #' @param idelta Interval in 1/60 time unit, typically minutes, for predictions at times other than observations.  Default is 12.
-    #' @param prior Either "uniform" (default) or the name of a suitable [PM_result] object from a prior run loaded with [PM_load].
-    #' A `prior` may be specified if the user wishes to
-    #' start from a non-uniform prior distribution for the NPAG run. This is useful for continuing a previous
-    #' run which did not converge, e.g., `fit1$run(prior = run1)`, assuming `run1` is a [PM_result] object
-    #' that was loaded with [PM_load].
+    #' @param seed Seed used if `prior = "sobol"`. Ignored otherwise.
     #' @param intern Run NPAG in the R console without a batch script.  Default is TRUE.
     #    #' @param quiet Boolean operator controlling whether a model summary report is given.  Default is `TRUE`.
     #' @param overwrite Boolean operator to overwrite existing run result folders.  Default is `FALSE`.
@@ -141,9 +180,7 @@ PM_fit <- R6::R6Class(
     #    #' in the first cycle, with a speed-up of approximately 80\% of the number of available cores on your machine, e.g. an 8-core machine
     #    #' will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\%, e.g. 4-fold increase on an 8-core
     #    #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
-    #' @param engine The engine to use for the run.  Default is "NPAG". Alternatives: "NPOD".
-    #' @param sampler The pseudo-random sampler to use for the initial distribution of grid points when
-    #' `prior = "uniform"`.
+    #' @param algorithm The algorithm to use for the run.  Default is "NPAG". Alternatives: "NPOD".
     #' @param report If missing, the default Pmetrics report template as specified in [getPMoptions]
     #' is used. Otherwise can be "plotly", "ggplot", or "none".
     #' @param artifacts Default is `TRUE`.  Set to `FALSE` to suppress creating the `etc` folder. This folder
@@ -159,10 +196,10 @@ PM_fit <- R6::R6Class(
                    include = NULL, exclude = NULL,
                    # ode, tol, salt,
                    cycles = 100,
-                   density0 = NULL,
+                   prior = "sobol",
+                   density0 = 0.01,
                    # icen, aucint,
                    # idelta,
-                   prior = "sobol",
                    seed = 23,
                    # xdev, search,
                    # auto,
@@ -249,13 +286,11 @@ PM_fit <- R6::R6Class(
       })
       names(ranges) <- tolower(names(ranges))
       
-      vol <- prod(sapply(ranges, function(x) x[2] - x[1]))
+      # Set initial grid points (only applies for sobol)
       
-      if (is.null(density0)) {
-        points <- ceiling(0.01 * vol)
-      } else {
-        points <- ceiling(density0 * vol)
-      }
+      vol <- prod(sapply(ranges, function(x) x[2] - x[1]))
+      points <- ceiling(density0 * vol)
+      
       
       
       # set prior

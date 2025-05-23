@@ -13,7 +13,7 @@
 #' Bayard, David S., and Michael Neely. "Experiment Design for Nonparametric
 #' Models Based on Minimizing Bayes Risk: Application to Voriconazole."
 #' Journal of Pharmacokinetics and Pharmacodynamics 44, no. 2 (April 2017):
-#' 95–111. https://doi.org/10.1007/s10928-016-9498-5. It calculates the
+#' 95–111. [https://doi.org/10.1007/s10928-016-9498-5]. It calculates the
 #' requested number of sample times where the concentration time profiles
 #' are the most separated, thereby minimizing the risk of choosing the incorrect
 #' Bayesian posterior for an individual. Future updates will add D-optimal
@@ -22,7 +22,7 @@
 #' @export
 PM_opt <- R6::R6Class(
   "PM_opt",
-  public <- list(
+  public = list(
     #' @field sampleTime The optimal sample times, based on requested `type`
     #' argument to `$new` creation method.
     sampleTime = NULL,

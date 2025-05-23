@@ -11,17 +11,8 @@ PMtest <- function() {
   currwd <- getwd()
   tempwd <- tempdir()
   setwd(tempwd)
-  # check for PmetricsData
-  if (!requireNamespace("PmetricsData", quietly = TRUE)) {
-    cat(
-      crayon::red("Error: "), "PmetricsData package required for PMtest()\n",
-      "Run remotes::install_github('LAPKB/PmetricsData') to install.\n",
-      "Aborting test.\n"
-    )
-    return(invisible(NULL))
-  }
   NPex <- NULL # avoid R CMD check flag
-  data(NPex, package = "PmetricsData", envir = environment())
+  #data(NPex, package = "PmetricsData", envir = environment())
   NPex$data$write("data.csv")
   msg <- "Congratulations; you have successfully installed all components of Pmetrics.\n"
 
@@ -41,7 +32,7 @@ PMtest <- function() {
   fortSource <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
   # TODO: change this
   if (!file.exists(fortSource)) {
-    msg <- c(msg, "You must run PMbuild().\n")
+    msg <- c(msg, "You must run PM_build().\n")
   } else {
     msg <- c(msg, "You have the Fortran source files.\n")
   }

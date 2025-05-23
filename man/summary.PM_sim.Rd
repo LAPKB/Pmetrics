@@ -58,7 +58,6 @@ are mean, sd, median, min, max, but could include individual quantiles. See
 \code{statistics} below.
 }
 \examples{
-library(PmetricsData)
 simEx$summary() # preferred
 summary(simEx) # alternative
 simEx$summary(at = 2, field = "amt", group = "comp") # group amounts by compartment

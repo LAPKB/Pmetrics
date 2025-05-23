@@ -147,7 +147,6 @@ of each plotted variable and surrounding quantiles of the bivariate distribution
 Mulitvariate normal density code is borrowed from the mvtnorm package.
 }
 \examples{
-library(PmetricsData)
 # NPAG
 NPex$final$plot()
 NPex$final$plot(line = TRUE)

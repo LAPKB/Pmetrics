@@ -463,7 +463,6 @@ PM_final <- R6::R6Class(
 #' @seealso [PM_final], [schema]
 #' @export
 #' @examples
-#' library(PmetricsData)
 #' # NPAG
 #' NPex$final$plot()
 #' NPex$final$plot(line = TRUE)
@@ -971,7 +970,6 @@ plot.PM_final <- function(x,
 #' @author Michael Neely
 #' @seealso [PM_final]
 #' @examples
-#' library(PmetricsData)
 #' NPex$final$summary() # preferred
 #' ITex$final$summary()
 #' summary(NPex$final) # alternate
@@ -1065,7 +1063,6 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, file = NULL, 
 #' @author Michael Neely
 #' @seealso [summary.PM_final]
 #' @examples
-#' library(PmetricsData)
 #' NPex$final$summary
 #' @export
 
