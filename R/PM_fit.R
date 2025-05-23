@@ -124,7 +124,8 @@ PM_fit <- R6::R6Class(
     #' @param prior The distribution for the initial support points, which can be
     #' one of several options.
     #' * The default is "sobol", which is a semi-random distribution. This is the distribution
-    #' typically used when fitting a new model to the data.
+    #' typically used when fitting a new model to the data. An example of this is
+    #' on our [website](https://www.lapk.org/images/sobol_3d_plot.html).
     #' 
     #' The following all specify non-random, informative prior distributions. They
     #' are useful for either continuing a previous
