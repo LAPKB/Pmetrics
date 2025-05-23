@@ -953,7 +953,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
       } else {
         cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
       }
-      sim
+      return(sim)
     },
     #' @description
     #' Retrieves the list of model parameters from the compiled version of the model.
@@ -1996,7 +1996,8 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
 #' This function provides a list of available pharmacokinetic models.
 #' @param name The name of the model to display. If `NULL`, the entire list is displayed.
 #' @param show If `TRUE`, the model is displayed in the console. If `FALSE`, the model is only returned as a tibble.
-#' @return A tibble with the model equations.
+#' @return If `name` is not `NULL`, a tibble with the model equations; otherwise the
+#' function returns `NULL` and only displays the entire library in tabular format.
 #' @author Michael Neely
 #' @seealso [PM_model]
 #' @export
