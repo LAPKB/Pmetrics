@@ -490,10 +490,8 @@ PM_valid <- R6::R6Class(
         seed = runif(nsub, -100, 100),
         limits = limits, combine = TRUE, quiet = TRUE
       ), argsSIM)
-
-      cat("Simulating outputs for each subject using population means...\n")
-      flush.console()
-      system("echo 347 > SEEDTO.MON")
+      
+      cli::cli_inform(c("i" = "Simulating one version of each subject using medians of binned data..."))
 
       PRED_bin <- do.call(PM_sim$new, argsSIM1)
       PRED_bin$data$obs <- PRED_bin$data$obs %>% filter(!is.na(out))
@@ -555,7 +553,8 @@ PM_valid <- R6::R6Class(
       if (length(excludeID) > 0) {
         argsSIM2$exclude <- excludeID
       }
-
+      
+      cli::cli_inform(c("i" = "Simulating {nsim} versions of each subject using original data..."))
       simFull <- do.call(PM_sim$new, argsSIM2)
       # take out observations at time 0 from evid=4 and missing outputs
       simFull$data$obs <- simFull$data$obs %>% filter(time > 0, out != -99)
@@ -639,27 +638,29 @@ PM_valid <- R6::R6Class(
           sim_sub2 <- data.frame(sim_sub2)
         }
         # get NPDE decorr.method = "inverse",
-        npde[[thisout]] <- tryCatch(
-          npde::autonpde(obs_sub, sim_sub,
-            iid = "id", ix = "time", iy = "out",
-            detect = F,
-            verbose = F,
-            boolsave = F
-          ),
+
+        
+        npde[[thisout]] <- suppressMessages(tryCatch(
+          suppressWarnings(npde::autonpde(obs_sub, sim_sub,
+                         iid = "id", ix = "time", iy = "out",
+                         detect = FALSE,
+                         verbose = FALSE,
+                         boolsave = FALSE
+          )),
           error = function(e) {
             e
             return(e)
           }
-        )
-
+        ))
+        
         if (inherits(npde[[thisout]], "error")) { # error, often due to non pos-def matrix
           npde[[thisout]] <- tryCatch(
             npde::autonpde(obs_sub, sim_sub,
-              iid = "id", ix = "time", iy = "out",
-              detect = F,
-              verbose = F,
-              boolsave = F,
-              decorr.method = "inverse"
+                           iid = "id", ix = "time", iy = "out",
+                           detect = FALSE,
+                           verbose = FALSE,
+                           boolsave = FALSE,
+                           decorr.method = "inverse"
             ),
             error = function(e) {
               e
@@ -679,10 +680,10 @@ PM_valid <- R6::R6Class(
         if (tad) {
           npdeTAD[[thisout]] <- tryCatch(
             npde::autonpde(obs_sub2, sim_sub2,
-              iid = "id", ix = "time", iy = "out",
-              detect = F,
-              verbose = F,
-              boolsave = F
+                           iid = "id", ix = "time", iy = "out",
+                           detect = FALSE,
+                           verbose = FALSE,
+                           boolsave = FALSE
             ),
             error = function(e) {
               e

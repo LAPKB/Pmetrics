@@ -1026,13 +1026,7 @@ PM_sim <- R6::R6Class(
 
         ans <- NULL
         data_list <- list()
-        pb <- progress::progress_bar$new(
-          format = "  Simulating subjects [:bar] :percent eta: :eta",
-          total = nsub, clear = FALSE, width = 60
-        )
-
-        for (i in 1:nsub) {
-          pb$tick()
+        for(i in 1:nsub){
           # get the prior for this subject
           thisPrior <- private$getSimPrior(
             i = i,
@@ -1084,7 +1078,7 @@ PM_sim <- R6::R6Class(
 
         class(ret) <- c("PM_sim_data", class(self$data))
         self$data <- ret
-      } else {
+      } else { # postToUse is false
         # set theta as nsim rows drawn from prior
         thisPrior <- private$getSimPrior(
           i = 1,
