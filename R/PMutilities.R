@@ -1309,7 +1309,7 @@ wtd.var <- function (x, weights = NULL,
 #' all.is.numeric(c("1", "2", "3"))
 #' all.is.numeric(c("1", "2", "a"))
 #' all.is.numeric(c("1", "2", "3"), what = "vector")
-#' all.is.numeric(c("1", "2", "a"), what = "nonnum")0
+#' all.is.numeric(c("1", "2", "a"), what = "nonnum")
 all.is.numeric <- function (x, what = c("test", "vector", "nonnum"), extras = c(".", 
                                                               "NA")) 
 {
