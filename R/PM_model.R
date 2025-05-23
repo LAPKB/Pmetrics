@@ -939,11 +939,12 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                        cli::cli_abort(c("x" = "Model must be compiled before simulating."))
                                      }
                                    }
+                                   #cli::cli_inform(c("i" = "Simulating {nrow(theta)} subjects."))
                                    sim <- simulate_all(temp_csv, self$binary_path, theta)
                                  } else {
                                    cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
                                  }
-                                 sim
+                                 return(sim)
                                },
                                #' @description
                                #' Retrieves the list of model parameters from the compiled version of the model.
