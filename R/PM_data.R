@@ -77,7 +77,7 @@ PM_data <- R6::R6Class("PM_data",
                         quiet = FALSE, 
                         validate = TRUE) {
     if (is.character(data)) { #filename
-      self$data <- rlang::try_fetch(Pmetrics:::PMreadMatrix(data, quiet = T),
+      self$data <- rlang::try_fetch(Pmetrics:::PMreadMatrix(data, quiet = TRUE),
                                     error = function(e){
                                       cli::cli_warn("Unable to create {.cls PM_data} object", parent = e)
                                       return(NULL)
@@ -248,7 +248,6 @@ PM_data <- R6::R6Class("PM_data",
   #' PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12,
   #' out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
   addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
-    # browser()
     args <- list(...)
     arg_names <- tolower(names(args))
     
@@ -400,6 +399,7 @@ private = list(
     if (length(msg) > 2) {
       msg <- msg[-2]
     } # data were not in standard format, so remove that message
+    
     if (!quiet) {
       cat(msg)
     }
@@ -453,7 +453,7 @@ private = list(
 PMreadMatrix <- function(file,
                          sep = getPMoptions("sep"),
                          dec = getPMoptions("dec"),
-                         quiet = F, ...) {
+                         quiet = FALSE, ...) {
   # get data
   if (missing(file)) {
     cli::cli_abort(c("x" = "Please provide filename of Pmetrics data file."))
@@ -464,7 +464,7 @@ PMreadMatrix <- function(file,
 
   # read the first line to understand the format
   headers <- scan(file,
-    what = "character", quiet = T, nlines = 1,
+    what = "character", quiet = TRUE, nlines = 1,
     sep = sep, dec = dec, strip.white = T
   )
   if (grepl(",", headers)[1]) {
@@ -474,9 +474,9 @@ PMreadMatrix <- function(file,
   skip <- ifelse(grepl("POPDATA .*", headers[1]), 1, 0) # 0 if current, 1 if legacy
 
   args1 <- list(
-    file = file, delim = sep, col_names = T, na = ".",
+    file = file, delim = sep, col_names = TRUE, na = ".",
     locale = readr::locale(decimal_mark = dec),
-    skip = skip, show_col_types = F, progress = F, num_threads = 1
+    skip = skip, show_col_types = FALSE, progress = FALSE, num_threads = 1
   )
   args2 <- list(...)
 
@@ -505,7 +505,7 @@ PMreadMatrix <- function(file,
     cat("\n")
   }
 
-  attr(data, "legacy") <- ifelse(skip == 1, T, F) # if skip = 1, set attribute to TRUE
+  attr(data, "legacy") <- ifelse(skip == 1, TRUE, FALSE) # if skip = 1, set attribute to TRUE
   class(data) <- c("PM_data_data", "data.frame")
   return(data)
 }
@@ -756,10 +756,10 @@ PMmatrixRelTime <- function(data, idCol = "id", dateCol = "date", timeCol = "tim
 #' }
 #' @export
 
-PMcheck <- function(data, model, fix = F, quiet = F) {
+PMcheck <- function(data, model, fix = FALSE, quiet = FALSE) {
   # get the data
   if (is.character(data)) { # data is a filename
-    data2 <- tryCatch(Pmetrics:::PMreadMatrix(data, quiet = T), error = function(e) {
+    data2 <- tryCatch(Pmetrics:::PMreadMatrix(data, quiet = TRUE), error = function(e) {
       # return(invisible(e))
       cli::cli_abort(c("x" = "Unable to find {data} in current working directory, {getwd()}."))
     })
@@ -770,12 +770,12 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
     cat("Running PMcheck on PM_data object, so using $standard_data.\n")
     data2 <- data$standard_data
     data_orig <- data$data
-    legacy <- F
+    legacy <- FALSE
     source <- "PM_data"
   } else if (is.list(data) & !is.data.frame(data)) { # data is a list coming from PM_data$private$validate
     data2 <- data$standard
     data_orig <- data$original
-    legacy <- F
+    legacy <- FALSE
     source <- "list"
   } else { # data is a PMmatrix object
     data2 <- data
@@ -826,13 +826,13 @@ PMcheck <- function(data, model, fix = F, quiet = F) {
       return(invisible(data2))
     } else {
       newdata <- errfix(data2 = data2, model = model, err = err, quiet = quiet)
-      err2 <- errcheck(newdata, model = NA, quiet = T)
+      err2 <- errcheck(newdata, model = NA, quiet = TRUE)
       # Add a  Worksheet
       sheet <- openxlsx::addWorksheet(wb, sheetName = "After_Fix")
       wb <- writeErrorFile(newdata, err2, legacy = legacy, wb, sheet)
       # Save the workbook ...
       wb <- createInstructions(wb)
-      openxlsx::saveWorkbook(wb, file = "errors.xlsx", overwrite = T)
+      openxlsx::saveWorkbook(wb, file = "errors.xlsx", overwrite = TRUE)
       return(invisible(newdata))
     }
   } else {
@@ -2117,7 +2117,7 @@ print.summary.PM_data <- function(x, ...) {
 PMwriteMatrix <- function(data, filename, override = F,
                           version = "DEC_11", header = T) {
   if (!override) {
-    err <- PMcheck(data, quiet = T)
+    err <- PMcheck(data, quiet = TRUE)
     if (length(grep("FAIL", err)) > 0) {
       cli::cli_warn(c("!" = "Write failed; returning errors."))
       return(invisible(err))

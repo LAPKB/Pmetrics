@@ -53,7 +53,7 @@
 
   # check for binary fortran files
   if (!binaries.installed()) {
-    packageStartupMessage(paste0("\n", crayon::red("CRITICAL: "), "Execute PMbuild() in R to complete Pmetrics installation.\n"))
+    packageStartupMessage(paste0("\n", crayon::red("CRITICAL: "), "Execute PM_build() in R to complete Pmetrics installation.\n"))
   }
 
   # set user options for the session

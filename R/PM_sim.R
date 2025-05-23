@@ -358,9 +358,9 @@ PM_sim <- R6::R6Class(
     #' 
     #' @param quiet Boolean operator controlling whether a model summary report is
     #' given.  Default is `FALSE`.
-    #'
-    #' @param nocheck Suppress the automatic checking of the data file with
-    #' [PMcheck].  Default is `FALSE`.
+    #' 
+    #' @param combine When there are multiple subjects in the template `data`,
+    #' combine the simulated results into a single object. Default is `FALSE`.
     #'
     #' @param ... Catch deprecated arguments.
     #' @return A [PM_sim] object.
@@ -418,6 +418,7 @@ PM_sim <- R6::R6Class(
                           noise = NULL,
                           makecsv = NULL, 
                           quiet = FALSE, 
+                          combine = FALSE,
                           ...) {
       
       # handle deprecated arguments
@@ -445,12 +446,12 @@ PM_sim <- R6::R6Class(
         if (missing(model)) {
           model <- poppar$model
         } else {
-          model <- PM_model$new(model)
+          model <- PM_model$new(model) # will make PM_model whether model is filename or PM_model already
         }
         if (missing(data)) {
           data <- poppar$data
         } else {
-          data <- PM_data$new(data)
+          data <- PM_data$new(data, quiet = quiet) # will make PM_data whether data is filename or PM_data already
         }
         
         # CASE 2 - poppar is PM_final
@@ -461,7 +462,7 @@ PM_sim <- R6::R6Class(
           model <- PM_model$new("model.txt")
         }
         if (missing(data)) {
-          data <- PM_data$new("data.csv")
+          data <- PM_data$new("data.csv", quiet = quiet)
         }
         
         # CASE 3 - poppar is old PMsim
@@ -492,9 +493,9 @@ PM_sim <- R6::R6Class(
           model <- PM_model$new(model)
         }
         if (missing(data)) {
-          data <- PM_data$new("data.csv")
+          data <- PM_data$new("data.csv", quiet = quiet)
         } else {
-          data <- PM_data$new(data)
+          data <- PM_data$new(data, quiet = quiet)
         }
         # not returning because going on to simulate below
         
@@ -1020,7 +1021,13 @@ PM_sim <- R6::R6Class(
         
         ans <- NULL
         data_list <- list()
+        pb <- progress::progress_bar$new(
+          format = "  Simulating subjects [:bar] :percent eta: :eta",
+          total = nsub, clear = FALSE, width = 60
+        )
+        
         for(i in 1:nsub){
+          pb$tick()
           # get the prior for this subject
           thisPrior <- private$getSimPrior(i = i, 
                                            poppar = poppar, 
@@ -1249,9 +1256,10 @@ PM_sim <- R6::R6Class(
         samples <- do.call(rbind, lapply(1:length(weights), function(i) {
           tryCatch(suppressWarnings(MASS::mvrnorm(n = samples_per_mode[i], mu = as.matrix(means[[i]], nrow = 1), Sigma = cov_matrix)),
                    error = function(e) NULL )
-        })) %>%
-          tibble::as_tibble(.name_repair = "unique") %>%
-          dplyr::mutate(prob = 1 / dplyr::n())
+        })) %>% 
+          tibble::as_tibble(.name_repair = "minimal") %>%
+          rlang::set_names(names(means[[1]])) %>% 
+          mutate(prob = 1 / dplyr::n())
         
         return(samples)
       }
@@ -1290,7 +1298,6 @@ PM_sim <- R6::R6Class(
         } # end loop to fix thetas out of range
         
       }
-      
       
       total_means <- apply(rbind(thetas, discarded), 2, mean)[1:ncol(pop_cov)]
       total_cov <- bind_rows(thetas,discarded) %>% select(-prob) %>% cov()
@@ -1344,11 +1351,11 @@ PM_sim <- R6::R6Class(
     # Create new simulation objects with results of simulation
     populate = function(simout, type) {
       if (type == "sim") {
-        self$obs <- simout$obs
-        self$amt <- simout$amt
-        self$parValues <- simout$parValues
-        self$totalMeans <- simout$totalMeans
-        self$totalCov <- simout$totalCov
+        # self$obs <- simout$obs
+        # self$amt <- simout$amt
+        # self$parValues <- simout$parValues
+        # self$totalMeans <- simout$totalMeans
+        # self$totalCov <- simout$totalCov
         self$data <- simout
         class(self$data) <- c("PM_sim_data", "list")
       } else if (type == "simlist") {
@@ -1372,11 +1379,11 @@ PM_sim <- R6::R6Class(
         
         
       } else if (type == "R6sim") {
-        self$obs <- simout$obs
-        self$amt <- simout$amt
-        self$parValues <- simout$parValues
-        self$totalMeans <- simout$totalMeans
-        self$totalCov <- simout$totalCov
+        # self$obs <- simout$data$obs
+        # self$amt <- simout$data$amt
+        # self$parValues <- simout$data$parValues
+        # self$totalMeans <- simout$data$totalMeans
+        # self$totalCov <- simout$data$totalCov
         if (inherits(simout$data, "PM_simlist")) {
           purrr::map(1:length(simout$data), \(x){
             class(simout$data[[x]]) <- c("PM_sim_data", "list") # ensure class is correct
@@ -1652,7 +1659,7 @@ PM_sim$load <- function(...) {
 #' @param simnum Choose which object to plot in a PM_simlist,
 #' i.e., a list of [PM_sim] objects created when more than one
 #' subject is included in a simultation data template and
-#' `combine = F` (the default) when parsing the results of a simulation.
+#' `combine = FALSE` (the default) when parsing the results of a simulation.
 #' @param ... `r template("dotsPlotly")`
 #' @return Plots the simulation object.  If `obs` is included, a list will be returned with
 #' the folowing items:
