@@ -16,23 +16,27 @@ simEx <- PmetricsData::simEx
 ```
 
 ```{r, include = FALSE}
-#first define labels for simulated regimens
+# first define labels for simulated regimens
 simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid")
 
-#using a previously created simulation build into Pmetrics
-pta1 <- simEx$pta(simlabels = simlabels,
-                  target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32, 64), target_type = "time",
-                  success = 0.6, start = 120, end = 144)
+# using a previously created simulation build into Pmetrics
+pta1 <- simEx$pta(
+  simlabels = simlabels,
+  target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32, 64), target_type = "time",
+  success = 0.6, start = 120, end = 144
+)
 
 pip_ecoli <- data.frame(
   mic = c(0.25, 0.5, 1, 2, 4, 8, 16, 32, 64),
   n = c(38, 312, 4820, 6883, 1214, 382, 776, 1335, 1137)
 )
 
-pta2 <- simEx$pta(simlabels = simlabels,
-                  target = makePTAtarget(pip_ecoli),
-                  target_type = "time",
-                  success = 0.6, start = 120, end = 144)
+pta2 <- simEx$pta(
+  simlabels = simlabels,
+  target = makePTAtarget(pip_ecoli),
+  target_type = "time",
+  success = 0.6, start = 120, end = 144
+)
 
 
 knitr::opts_chunk$set(
@@ -69,52 +73,59 @@ The only difference between these two is that with the first, you do not have to
 Below is example code to create a PTA. Refer to [makePTA](https://lapkb.github.io/Pmetrics/reference/makePTA.html) for details on the arguments to the method.
 
 ```{r echo = TRUE, eval = FALSE}
-#first define labels for simulated regimens
+# first define labels for simulated regimens
 simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid")
 
-#using a previously created simulation built into Pmetrics
-pta1 <- simEx$pta(simlabels = simlabels,
-                  target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32, 64), target_type = "time",
-                  success = 0.6, start = 120, end = 144)
+# using a previously created simulation built into Pmetrics
+pta1 <- simEx$pta(
+  simlabels = simlabels,
+  target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32, 64), target_type = "time",
+  success = 0.6, start = 120, end = 144
+)
 
-#using a sampled distribution of MICs from EUCAST
-#for E.coli and piperacillin
-#https://mic.eucast.org/search/
+# using a sampled distribution of MICs from EUCAST
+# for E.coli and piperacillin
+# https://mic.eucast.org/search/
 
 pip_ecoli <- data.frame(
   mic = c(0.25, 0.5, 1, 2, 4, 8, 16, 32, 64),
   n = c(38, 312, 4820, 6883, 1214, 382, 776, 1335, 1137)
 )
 
-pta2 <- simEx$pta(simlabels = simlabels,
-                  target = makePTAtarget(pip_ecoli),
-                  target_type = "time",
-                  success = 0.6, start = 120, end = 144)
+pta2 <- simEx$pta(
+  simlabels = simlabels,
+  target = makePTAtarget(pip_ecoli),
+  target_type = "time",
+  success = 0.6, start = 120, end = 144
+)
 
-#combined targets with minimum concentration >5 and <10
+# combined targets with minimum concentration >5 and <10
 pta3 <- PM_pta$new(simEx,
-                 simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
-                 target = list(5,10),
-                 target_type = c("min", "-min"),
-                 success = c(1,1),
-                 start = 120, end = 144)
+  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+  target = list(5, 10),
+  target_type = c("min", "-min"),
+  success = c(1, 1),
+  start = 120, end = 144
+)
 
-#AUC:MIC >200 for distribution of MICs
+# AUC:MIC >200 for distribution of MICs
 pta4 <- PM_pta$new(simEx,
-                 simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
-                 target = makePTAtarget(pip_ecoli),
-                 target_type = "auc",
-                 success = 200,
-                 start = 120, end = 144)
+  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+  target = makePTAtarget(pip_ecoli),
+  target_type = "auc",
+  success = 200,
+  start = 120, end = 144
+)
 
-#Combined target with AUC:MIC >200 for distribution of MICs and minimum concentration >1
-pta5 <- PM_pta$new(simdata = simEx,
-                 simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
-                 target = list(makePTAtarget(pip_ecoli),5),
-                 target_type = c("auc","min"),
-                 success = c(200,1),
-                 start = 120, end = 144)
-
+# Combined target with AUC:MIC >200 for distribution of MICs and minimum concentration >1
+pta5 <- PM_pta$new(
+  simdata = simEx,
+  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+  target = list(makePTAtarget(pip_ecoli), 5),
+  target_type = c("auc", "min"),
+  success = c(200, 1),
+  start = 120, end = 144
+)
 ```
 
 **Some things to point out...**
@@ -193,32 +204,38 @@ there is no intersection. Notice the difference between the plots, according to 
 There are many ways to modify the plot, consistent with other Pmetrics plots which use the *plotly* package and all detailed in the help for `plot.PM_data()`. For example, 
 
 ```{r echo = TRUE, eval = TRUE}
-p <- pta1$plot(line = list(color = "Set1", width = 3),
-               xlab = list(text = "MIC mg/L", font = list(size = 20)),
-               ylab = "Proportion with %T>MIC ≥ 60%",
-               xaxis = list(tickfont = list(size = 18)),
-               yaxis = list(tickfont = list(size = 18)),
-               legend = list(font = list(size = 18)),
-               marker = list(size = 16))
+p <- pta1$plot(
+  line = list(color = "Set1", width = 3),
+  xlab = list(text = "MIC mg/L", font = list(size = 20)),
+  ylab = "Proportion with %T>MIC ≥ 60%",
+  xaxis = list(tickfont = list(size = 18)),
+  yaxis = list(tickfont = list(size = 18)),
+  legend = list(font = list(size = 18)),
+  marker = list(size = 16)
+)
 ```
 
 Here's more advanced plotly. Here we take the previous plot `p` and add bars to it to represent the frequency distribution of piperacillin MICs for E. Coli from EUCAST. We use our `pip_ecoli` data frame, the MICs for the x-axis, and the normalized counts for frequencies. We re-define the y-axis labels using some CSS/HTML to color individual portions. This is quite advanced plotly!
 
 ```{r echo = TRUE, eval = TRUE}
-p %>% plotly::add_bars(x = ~mic, 
-                       y = ~round(n/sum(n),2), 
-                       marker = list(opacity = 0.6, color = "Dodgerblue"),
-                       name = "MIC",
-                       data = pip_ecoli,
-                       width = ~mic*0.2,
-                       showlegend = FALSE,
-                       inherit = FALSE
-                       ) %>%
+p %>%
+  plotly::add_bars(
+    x = ~mic,
+    y = ~ round(n / sum(n), 2),
+    marker = list(opacity = 0.6, color = "Dodgerblue"),
+    name = "MIC",
+    data = pip_ecoli,
+    width = ~ mic * 0.2,
+    showlegend = FALSE,
+    inherit = FALSE
+  ) %>%
   plotly::layout(
-         yaxis = list(title = 
-                        list(text = "<b>Proportion with %T>MIC ≥ 60%<br><span style='color:Dodgerblue; opacity:0.6'>MIC Frequency</span></b>")),
-         font = list(size = 10))
-
+    yaxis = list(
+      title =
+        list(text = "<b>Proportion with %T>MIC ≥ 60%<br><span style='color:Dodgerblue; opacity:0.6'>MIC Frequency</span></b>")
+    ),
+    font = list(size = 10)
+  )
 ```
 
 ## Summarizing

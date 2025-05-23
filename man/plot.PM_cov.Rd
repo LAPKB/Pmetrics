@@ -155,6 +155,8 @@ although a formula within formula approach may be required, e.g. \verb{$plot(I(c
 the change in wt over time, even though cl_0 is constant for a given subject.
 }
 \examples{
+#'
+\dontrun{
 NPex$cov$plot(V ~ wt)
 NPex$cov$plot(Ke ~ wt, line = list(lm = TRUE, ref = FALSE, loess = FALSE))
 NPex$cov$plot(Ke ~ wt, line = list(loess = list(ci = 0.9, color = "green")))
@@ -163,7 +165,7 @@ NPex$cov$plot(V ~ wt,
   line = list(lm = TRUE, loess = FALSE),
   stats = list(x = 0.5, y = 0.2, font = list(size = 7, color = "blue"))
 )
-
+}
 }
 \seealso{
 \link{PM_cov}, \link{PM_result}, \link{schema}

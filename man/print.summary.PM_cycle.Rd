@@ -25,7 +25,10 @@ made by \link{summary.PM_cycle}. Users do not normally need to call this
 function directly, as it will be the default method to display the object.
 }
 \examples{
+#'
+\dontrun{
 NPex$cycle$summary()
+}
 }
 \seealso{
 \link{summary.PM_cycle}

@@ -27,7 +27,9 @@ from an object made by \link{summary.PM_final}. Users do not normally need to ca
 function directly, as it will be the default method to display the object.
 }
 \examples{
+\dontrun{
 NPex$final$summary
+}
 }
 \seealso{
 \link{summary.PM_final}

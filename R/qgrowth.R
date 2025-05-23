@@ -89,8 +89,9 @@ qgrowth <- function(sex = "B", agemos = (seq(0, 18) * 12), percentile = 50) {
 #'  * mod_per Modified BMI percentile
 #' @author Michael Neely
 #' @examples
+#' \dontrun{
 #' zBMI(agemos = 36, bmi = 15)
-#'
+#' }
 #' @export
 
 zBMI <- function(agemos, sex, bmi, wt, ht, data = "CDC") {

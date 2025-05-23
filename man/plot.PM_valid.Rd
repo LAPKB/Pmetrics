@@ -142,6 +142,7 @@ variability in the data. For an npde plot, one expects to see approximately
 normally distributed normalized prediction errors.
 }
 \examples{
+\dontrun{
 # VPC
 NPex$valid$plot()
 
@@ -156,6 +157,7 @@ NPex$valid$plot(
     line = list(color = "navy")
   )
 )
+}
 }
 \seealso{
 \link{make_valid}
