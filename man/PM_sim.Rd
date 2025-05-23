@@ -176,6 +176,7 @@ or via the \verb{$sim} method for \link{PM_result} objects.
   noise = NULL,
   makecsv = NULL,
   quiet = FALSE,
+  combine = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -427,10 +428,10 @@ from each subject in the data template.}
 \item{\code{quiet}}{Boolean operator controlling whether a model summary report is
 given.  Default is \code{FALSE}.}
 
-\item{\code{...}}{Catch deprecated arguments.}
+\item{\code{combine}}{When there are multiple subjects in the template \code{data},
+combine the simulated results into a single object. Default is \code{FALSE}.}
 
-\item{\code{nocheck}}{Suppress the automatic checking of the data file with
-\link{PMcheck}.  Default is \code{FALSE}.}
+\item{\code{...}}{Catch deprecated arguments.}
 }
 \if{html}{\out{</div>}}
 }

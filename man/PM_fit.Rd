@@ -109,7 +109,8 @@ The default (missing) is all.}
 one of several options.
 \itemize{
 \item The default is "sobol", which is a semi-random distribution. This is the distribution
-typically used when fitting a new model to the data.
+typically used when fitting a new model to the data. An example of this is
+on our \href{https://www.lapk.org/images/sobol_3d_plot.html}{website}.
 }
 
 The following all specify non-random, informative prior distributions. They

@@ -69,7 +69,7 @@ This function will create an object suitable for plotting visual predictive
 checks (VPCs) and prediction-corrected visual
 predictive checks (pcVPCs).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_valid$new(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_valid$new(result, tad = FALSE, binCov, doseC, timeC, tadC, limits, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
