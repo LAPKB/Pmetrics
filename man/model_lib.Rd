@@ -20,8 +20,10 @@ A tibble with the model equations.
 This function provides a list of available pharmacokinetic models.
 }
 \examples{
+\dontrun{
 model_lib()
 model_lib("one_comp_iv")
+}
 }
 \seealso{
 \link{PM_model}

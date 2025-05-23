@@ -71,7 +71,7 @@ PM_op <- R6::R6Class(
     #' @details
     #' Creation of new `PM_op` object is automatic at the end of a run and not generally necessary
     #' for the user to do.
-    #' @param PMdata include `r template("PMdata")`. 
+    #' @param PMdata include `r template("PMdata")`.
     #' @param ... Not currently used.
     initialize = function(PMdata = NULL, ...) {
       op <- private$make(PMdata)
@@ -125,57 +125,61 @@ PM_op <- R6::R6Class(
   ), # end public
   private = list(
     make = function(data) {
-        if (file.exists("op.csv")) {
-          op_raw <- readr::read_csv(file = "op.csv", show_col_types = FALSE)
-        } else if(inherits(data, "PM_op")){ #file not there, and already PM_op
-          class(data$data) <- c("PM_op_data", "data.frame")
-          return(data$data)
-        } else{
-          cli::cli_warn(c("!" = "Unable to generate obs-pred information.",
-                          "i" = "Result does not have valid {.code PM_op} object, and {.file {getwd()}/op.csv} does not exist."))
-          return(NULL)
-        }
+      if (file.exists("op.csv")) {
+        op_raw <- readr::read_csv(file = "op.csv", show_col_types = FALSE)
+      } else if (inherits(data, "PM_op")) { # file not there, and already PM_op
+        class(data$data) <- c("PM_op_data", "data.frame")
+        return(data$data)
+      } else {
+        cli::cli_warn(c(
+          "!" = "Unable to generate obs-pred information.",
+          "i" = "Result does not have valid {.code PM_op} object, and {.file {getwd()}/op.csv} does not exist."
+        ))
+        return(NULL)
+      }
 
-        if (file.exists("settings.json")) {
-          config <- jsonlite::fromJSON("settings.json")
-        } else{
-          cli::cli_warn(c("!" = "Unable to generate obs-pred information.",
-                          "i" = "Result does not have valid {.code PM_op} object, and {.file {getwd()}/settings.json} does not exist."))
-          return(NULL)
-        }
+      if (file.exists("settings.json")) {
+        config <- jsonlite::fromJSON("settings.json")
+      } else {
+        cli::cli_warn(c(
+          "!" = "Unable to generate obs-pred information.",
+          "i" = "Result does not have valid {.code PM_op} object, and {.file {getwd()}/settings.json} does not exist."
+        ))
+        return(NULL)
+      }
 
-        poly <- config$error$poly
-        
-        op <- op_raw %>%
-          # left_join(pred_raw, by = c("id", "time", "outeq")) %>%
-          pivot_longer(cols = c(pop_mean, pop_median, post_mean, post_median)) %>%
-          mutate(
-            icen = case_when(
-              name == "pop_mean" ~ "mean",
-              name == "pop_median" ~ "median",
-              name == "post_mean" ~ "mean",
-              name == "post_median" ~ "median",
-            )
-          ) %>%
-          mutate(
-            pred.type = case_when(
-              name == "pop_mean" ~ "pop",
-              name == "pop_median" ~ "pop",
-              name == "post_mean" ~ "post",
-              name == "post_median" ~ "post",
-            )
-          ) %>%
-          select(-name) %>%
-          dplyr::rename(pred = value) %>%
-          dplyr::mutate(outeq = outeq + 1) %>%
-          dplyr::mutate(obs = na_if(obs, -99)) %>%
-          mutate(d = pred - obs) %>%
-          mutate(ds = d * d) %>%
-          mutate(obsSD = poly[1] + poly[2] * obs + poly[3] * (obs ^ 2) + poly[4] * (obs ^ 3)) %>%
-          mutate(wd = d / obsSD) %>%
-          mutate(wds = wd * wd)
-        class(op) <- c("PM_op_data", "data.frame")
-        return(op)
+      poly <- config$error$poly
+
+      op <- op_raw %>%
+        # left_join(pred_raw, by = c("id", "time", "outeq")) %>%
+        pivot_longer(cols = c(pop_mean, pop_median, post_mean, post_median)) %>%
+        mutate(
+          icen = case_when(
+            name == "pop_mean" ~ "mean",
+            name == "pop_median" ~ "median",
+            name == "post_mean" ~ "mean",
+            name == "post_median" ~ "median",
+          )
+        ) %>%
+        mutate(
+          pred.type = case_when(
+            name == "pop_mean" ~ "pop",
+            name == "pop_median" ~ "pop",
+            name == "post_mean" ~ "post",
+            name == "post_median" ~ "post",
+          )
+        ) %>%
+        select(-name) %>%
+        dplyr::rename(pred = value) %>%
+        dplyr::mutate(outeq = outeq + 1) %>%
+        dplyr::mutate(obs = na_if(obs, -99)) %>%
+        mutate(d = pred - obs) %>%
+        mutate(ds = d * d) %>%
+        mutate(obsSD = poly[1] + poly[2] * obs + poly[3] * (obs^2) + poly[4] * (obs^3)) %>%
+        mutate(wd = d / obsSD) %>%
+        mutate(wds = wd * wd)
+      class(op) <- c("PM_op_data", "data.frame")
+      return(op)
     } # end make
   ) # end private
 )
@@ -268,6 +272,7 @@ PM_op <- R6::R6Class(
 #' @seealso [PM_result], [PM_op], [schema]
 #' @export
 #' @examples
+#' \dontrun{
 #' NPex$op$plot()
 #' NPex$op$plot(pred.type = "pop")
 #' NPex$op$plot(line = list(lm = TRUE, ref = TRUE, loess = FALSE))
@@ -275,7 +280,7 @@ PM_op <- R6::R6Class(
 #' NPex$op$plot(marker = list(color = "blue"))
 #' NPex$op$plot(resid = TRUE)
 #' NPex$op$plot(stats = list(x = 0.5, y = 0.2, font = list(size = 7, color = "blue")))
-#'
+#' }
 #' @family PMplots
 plot.PM_op <- function(x,
                        line = list(lm = NULL, loess = NULL, ref = NULL),
@@ -636,8 +641,11 @@ plot.PM_op <- function(x,
 #'  - p.value: the probability that the weighted mean is different than zero
 #' @author Michael Neely
 #' @examples
+#' \dontrun{
 #' NPex$op$summary() # preferred
 #' summary(NPex$op) # alternative
+#' }
+
 #' @seealso [PM_op]
 #' @export
 
@@ -737,7 +745,9 @@ summary.PM_op <- function(object, digits = max(3, getOption("digits") - 3),
 #' @author Michael Neely
 #' @seealso [summary.PM_op]
 #' @examples
+#' \dontrun{
 #' NPex$op$summary()
+#' }
 #' @export
 
 print.summary.PM_op <- function(x, digits = max(3, getOption("digits") - 3), ...) {

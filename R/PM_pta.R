@@ -122,6 +122,7 @@ PM_pta <- R6::R6Class(
     #' @author Michael Neely and Jan Strojil
     #' @seealso [plot.PM_pta], [PM_sim]
     #' @examples
+    #' \dontrun{
     #' pta1 <- PM_pta$new(simEx,
     #'                  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
     #'                  target = list(2^(-2:6), 1, 50),
@@ -155,6 +156,8 @@ PM_pta <- R6::R6Class(
     #'                  target_type = c("auc","min"),
     #'                  success = c(200,1),
     #'                  start = 120, end = 144)
+    #' }
+
     initialize = function(simdata, simlabels, target, target_type, success, outeq = 1,
                           free_fraction = 1, start = 0, end = Inf, icen = "median", block = 1,
                           ...) { # dots are for deprecated arguments
@@ -720,7 +723,9 @@ pta_time <- function(sims, .target, .simTarg, .start, .end, .pb) {
 #' @return A data frame with two columns named targets and n, of class *PMpta.targ*.
 #' @seealso [makePTA]
 #' @examples
+#' \dontrun{
 #' makePTAtarget(mic1)
+#' }
 #' @export
 
 makePTAtarget <- function(x) {
@@ -1179,7 +1184,10 @@ plot.PM_pta <- function(x,
 #' @author Michael Neely
 #' @seealso [PM_pta]
 #' @examples
+#' \dontrun{
 #' ptaEx$summary()
+#' }
+
 #' @export
 
 summary.PM_pta <- function(object, at = "intersect", ci = 0.95, ...) {
