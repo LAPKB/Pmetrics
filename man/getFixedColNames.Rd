@@ -16,7 +16,9 @@ A vector of fixed column names:
 Returns the names of fixed columns (non-covariate) in Pmetrics data objects.
 }
 \examples{
+\dontrun{
 getFixedColNames()
+}
 }
 \author{
 Michael Neely

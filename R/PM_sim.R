@@ -23,8 +23,8 @@
 PM_sim <- R6::R6Class(
   "PM_sim",
   public = list(
-    #' @field data A list of class *PM_sim* that contains the following elements. 
-    #' 
+    #' @field data A list of class *PM_sim* that contains the following elements.
+    #'
     #' * **obs** Observations for all simulated templates as a data frame with these columns:
     #'    - *id* Template ID, corresponding to the ID in the template data file
     #'    - *nsim* The simulated profile number, from 1 to the value for `nsim`
@@ -38,10 +38,10 @@ PM_sim <- R6::R6Class(
     #'   - *time* As for `obs`.
     #'   - *out* The simulated amount.
     #'   - *comp* The compartment number that contains the `out` amount.
-    #' * **parValues**  A data frame with retained simulated parameter 
+    #' * **parValues**  A data frame with retained simulated parameter
     #' values after discarding any due to truncation limits. The data frame has these columns:
     #'   - *id* This column is only present if `usePost = TRUE`, since in that case
-    #'   the `nsim` profiles for each template are created by sampling from a different prior 
+    #'   the `nsim` profiles for each template are created by sampling from a different prior
     #'   joint parameter probability distribution for each template. When `usePost = FALSE`,
     #'   the same prior is used for every template, so there is no `id` column.
     #'   - *nsim* The simulation number, from 1 to the value for `nsim` specified when the simulation was run.
@@ -50,19 +50,19 @@ PM_sim <- R6::R6Class(
     #' requested number of simulated sets within any `limits` specified. When `usePost = TRUE`,
     #' a data frame with the same number for each template in the `data` file, since each template
     #' is simulated from a different prior distribution (see `parValues:id` above).
-    #' * **totalMeans** If `usePost = FALSE`, this is a vector with the means of 
+    #' * **totalMeans** If `usePost = FALSE`, this is a vector with the means of
     #' all simulated parameter values, including those discarded for being outside
     #' `limits`. If `usePost = TRUE`, this is a data frame of vectors, one for each template in the `data` file,
     #' and an `id` column to identify the template in the `data` source.
     #' This can be useful to check against the original means in `poppar`, since the
     #' mean of the `parValues` may be different due to truncation.
-    #' * **totalCov** Similar to `totalMeans`, either a single covariance matrix  
-    #' for all simulated parameter values when `usePost = FALSE` . If `usePost = TRUE`, 
+    #' * **totalCov** Similar to `totalMeans`, either a single covariance matrix
+    #' for all simulated parameter values when `usePost = FALSE` . If `usePost = TRUE`,
     #' this is a data frame of such matrices, one for each template in the `data` file,
     #' and an `id` column to identify the template in the `data` source.
     #' Again, this can be useful as a check against the original covariance in `poppar`.
     data = NULL,
-    
+
     #' @description
     #' This function simulates outputs from given inputs and a model.
     #' It can be called directly
@@ -96,7 +96,7 @@ PM_sim <- R6::R6Class(
     #' will make a copy of the model file with all covariates moved into the primary
     #' block as parameters to be simulated.
     #'
-    #' Noise can be applied to most columns in the data template, typically 
+    #' Noise can be applied to most columns in the data template, typically
     #' simulated observations, observation times, dose times, or dose amounts.
     #'
     #' Limits on the simulated parameter sets can also be specified using the limits
@@ -122,7 +122,7 @@ PM_sim <- R6::R6Class(
     #' using the `makecsv` argument.
     #'
     #' @param poppar One of four things:
-    #' 
+    #'
     #' * Population prior parameters as a [PM_final] object found in
     #' `PM_result$final`. Normally these would be supplied by calling the
     #' `$sim` method for a [PM_result] object, e.g. `NPex$sim(...)`.
@@ -167,7 +167,7 @@ PM_sim <- R6::R6Class(
     #' @param limits If limits are specified, each simulated parameter set that
     #' contains a value outside of the limits will be ignored and another set will
     #' be generated.  Four options exist for limits.
-    #' 
+    #'
     #' * The default `NULL` indicates that no limits are to be applied to simulated parameters.
     #' * The second option is to set `limits` to `NA`. This will use the
     #' parameter limits on the primary parameters that are specified in the [PM_model] object.
@@ -177,7 +177,7 @@ PM_sim <- R6::R6Class(
     #' model file, and the upper limits will be multiplied by value specified.  If
     #' length 2, then the lower and upper limits will be multiplied by the
     #' specified values.  If this option is used, `poppar` must be a
-    #' `PM_final` object. 
+    #' `PM_final` object.
     #' * The fourth option for limits is a fully
     #' customized matrix of limits for simulated values for each parameter which
     #' will overwrite any limits in the model file.  If specified, it should be a
@@ -296,14 +296,14 @@ PM_sim <- R6::R6Class(
     #    #' @param ode Ordinary Differential Equation solver log tolerance or stiffness.
     #    #' Default is -4, i.e. 0.0001.  Higher values will result in faster runs, but
     #    #' simulated concentrations may not be as accurate.\
-    #    
+    #
     #' @param obsNoise = `r lifecycle::badge("deprecated")`. Use `noise` instead.
     #' @param obsTimeNoise = `r lifecycle::badge("deprecated")`. Use `noise` instead.
     #' @param doseNoise = `r lifecycle::badge("deprecated")`. Use `noise` instead.
-    #' @param doseTimeNoise = `r lifecycle::badge("deprecated")`. Use `noise` instead. 
-    #' 
-    #' @param noise A named list to add noise to most template data fields, 
-    #' including covariates. 
+    #' @param doseTimeNoise = `r lifecycle::badge("deprecated")`. Use `noise` instead.
+    #'
+    #' @param noise A named list to add noise to most template data fields,
+    #' including covariates.
     #' The default is `NULL`, which means no noise will be added.
     #' The name of each element in the list should correspond to
     #' a column in the data to which you wish to add noise, typically
@@ -313,52 +313,52 @@ PM_sim <- R6::R6Class(
     #' simulated value. Thus, in the simulated output, the `amt` values for a given
     #' template id, simulation number, time, and output equation will no longer be
     #' exactly related to the corresponding `out` value by the volume term in the model.
-    #' 
-    #' These columns may not have noise added: `id`, `evid`, `addl`, `ii`, `input`, `outeq`, `c0`, 
+    #'
+    #' These columns may not have noise added: `id`, `evid`, `addl`, `ii`, `input`, `outeq`, `c0`,
     #' `c1`, `c2`, and `c3`. See [PM_data] for further details on these columns.
-    #' 
-    #' Each element in the `noise` list should be another list with the following arguments. 
+    #'
+    #' Each element in the `noise` list should be another list with the following arguments.
     #' The `coeff` argument is mandatory, and should be the first argument. It can be named or
     #' unnamed. The `filter` and `mode` arguments are optional and should always be named
     #' in the list.
-    #' 
-    #' * **coeff** Mandatory. A vector of up to 4 coefficients for the noise model. They 
-    #' correspond to *C0*, *C1*, *C2*, and *C3* for the assay noise model (as in [PM_model]). 
-    #' See the 'mode' argument for details on how these values are used to generate noise. 
-    #' Examples: 
+    #'
+    #' * **coeff** Mandatory. A vector of up to 4 coefficients for the noise model. They
+    #' correspond to *C0*, *C1*, *C2*, and *C3* for the assay noise model (as in [PM_model]).
+    #' See the 'mode' argument for details on how these values are used to generate noise.
+    #' Examples:
     #' `noise = list(out = list(coeff = c(0.1, 0.1))` or `noise = list(dose = list(coeff = c(5, 0.15, -0.01, 0.003)))`.
-    #' * **filter** Optional. A quoted expression to filter the data. For example, 
+    #' * **filter** Optional. A quoted expression to filter the data. For example,
     #' `noise = list(dose = list(c(0.1, 0.1), filter = "dose > 0.1"))` or
-    #' `noise = list(out = list(c(0.05, 0.15), filter = "outeq == 1 & time < 120"))`. 
+    #' `noise = list(out = list(c(0.05, 0.15), filter = "outeq == 1 & time < 120"))`.
     #' * **mode** Optional. The mode (method) of the noise. Default is `add`. Options are `add` or `exp`.
-    #'    - `add` An additive noise model. The new value is generated as 
+    #'    - `add` An additive noise model. The new value is generated as
     #'    `value + noise`, where noise is a random number from a normal distribution,
-    #'    with mean of 0 and `SD = C0 + C1*value + C2*value^2 + C3*value^3`, and *value* is the 
+    #'    with mean of 0 and `SD = C0 + C1*value + C2*value^2 + C3*value^3`, and *value* is the
     #'    original value in each row of the target column.
-    #'    - `exp` An exponential noise model. The new values is generated as 
+    #'    - `exp` An exponential noise model. The new values is generated as
     #'    `value * exp(noise)`, where noise is a random number from a normal distribution,
-    #'    with mean of 0 and `SD = C0 + C1*value + C2*value^2 + C3*value^3`, and *value* is the 
+    #'    with mean of 0 and `SD = C0 + C1*value + C2*value^2 + C3*value^3`, and *value* is the
     #'    original value in each row of the target column.
     #'  @examples
     #'  \dontrun{
     #'  exDat$makeNoise(list(dose = list(coeff = c(0.1, 0.1), filter = "dose > 100 & time < 200", mode = "add"),
     #'  out = list(c(0.1, 0.001), mode = "exp")))
     #'  }
-    #'    
+    #'
     #' @param makecsv A character vector for the name of the single .csv file to be
     #' made for all simulated "subjects".  If no file extension is included, ".csv"
-    #' will be added, e.g. "simout" will become "simout.csv". If an extension is included, 
+    #' will be added, e.g. "simout" will become "simout.csv". If an extension is included,
     #' Pmetrics will use it, e.g. "simout.ssv" will save under that name.
     #' If missing, no file will be
     #' made. If a `makecsv` filename is supplied, ID numbers will
-    #' be of the form *id_nsim*, e.g. 1_1 through 1_10 through for the first 
+    #' be of the form *id_nsim*, e.g. 1_1 through 1_10 through for the first
     #' data template id,
     #' 2_1 through 2_10 for the second template id, etc. if 10 simulations are made
     #' from each subject in the data template.
-    #' 
+    #'
     #' @param quiet Boolean operator controlling whether a model summary report is
     #' given.  Default is `FALSE`.
-    #' 
+    #'
     #' @param combine When there are multiple subjects in the template `data`,
     #' combine the simulated results into a single object. Default is `FALSE`.
     #'
@@ -402,47 +402,46 @@ PM_sim <- R6::R6Class(
     #'   obsNoise = c(0.02, 0.1, 0, 0)
     #' )
     #' }
-    initialize = function(poppar, model, data, 
-                          limits = NULL, 
+    initialize = function(poppar, model, data,
+                          limits = NULL,
                           split = NULL,
-                          include = NULL, exclude = NULL, 
-                          nsim = 1000, 
+                          include = NULL, exclude = NULL,
+                          nsim = 1000,
                           predInt = 0,
-                          covariate = NULL, 
+                          covariate = NULL,
                           usePost = FALSE,
-                          seed = -17, 
+                          seed = -17,
                           obsNoise = NULL,
                           obsTimeNoise = NULL,
                           doseNoise = NULL,
                           doseTimeNoise = NULL,
                           noise = NULL,
-                          makecsv = NULL, 
-                          quiet = FALSE, 
+                          makecsv = NULL,
+                          quiet = FALSE,
                           combine = FALSE,
                           ...) {
-      
       # handle deprecated arguments
-      
+
       old_noise <- map(list(obsNoise, obsTimeNoise, doseNoise, doseTimeNoise), function(x) !is.null(x)) %>% unlist()
-      
+
       if (any(old_noise)) {
         cli::cli_abort(c(
           "x" = "{.arg {c('obsNoise', 'obsTimeNoise', 'doseNoise', 'doseTimeNoise')[old_noise]}} {?is/are} deprecated.",
           "i" = "Instead, use {.arg noise}. See {.help PM_sim}."
         ))
       }
-      
+
       if (missing(poppar)) {
         cli::cli_abort(c(
           "x" = "The poppar argument is required.",
           "i" = "See ?PM_sim for help."
         ))
       }
-      
+
       # CASE 1 - poppar is PM_result
-      
+
       if (inherits(poppar, "PM_result")) {
-        final <- poppar$final$data #PM_final_data
+        final <- poppar$final$data # PM_final_data
         if (missing(model)) {
           model <- poppar$model
         } else {
@@ -453,38 +452,33 @@ PM_sim <- R6::R6Class(
         } else {
           data <- PM_data$new(data, quiet = quiet) # will make PM_data whether data is filename or PM_data already
         }
-        
+
         # CASE 2 - poppar is PM_final
-        
       } else if (inherits(poppar, "PM_final")) {
-        final <- poppar$data #PM_final_data
+        final <- poppar$data # PM_final_data
         if (missing(model)) {
           model <- PM_model$new("model.txt")
         }
         if (missing(data)) {
           data <- PM_data$new("data.csv", quiet = quiet)
         }
-        
+
         # CASE 3 - poppar is old PMsim
-        
       } else if (inherits(poppar, "PMsim")) { # from SIMparse as single
         private$populate(poppar, type = "sim")
         return(self) # end, we have loaded a prior sim
-        
-        # CASE 4 - poppar is old PM_simlist  
-        
+
+        # CASE 4 - poppar is old PM_simlist
       } else if (inherits(poppar, "PM_simlist")) { # from SIMparse as list
         private$populate(poppar, type = "simlist")
         return(self) # end, we have loaded a prior sim
-        
+
         # CASE 5 - poppar is PM_sim from R6
-        
       } else if (inherits(poppar, "PM_sim")) { # from R6
         private$populate(poppar, type = "R6sim")
         return(self) # end, we have loaded a prior sim
-        
+
         # CASE 6 - poppar is manual list
-        
       } else if (inherits(poppar, "list")) {
         final <- poppar # PM_final and PM_sim are lists, so needs to be after those for manual list
         if (missing(model)) {
@@ -498,10 +492,9 @@ PM_sim <- R6::R6Class(
           data <- PM_data$new(data, quiet = quiet)
         }
         # not returning because going on to simulate below
-        
+
         # CASE 7 - poppar is filename
-        
-      } else { 
+      } else {
         if (file.exists(poppar)) {
           if (grepl("rds$", poppar, perl = TRUE)) { # poppar is rds filename
             sim <- readRDS(poppar)
@@ -523,11 +516,11 @@ PM_sim <- R6::R6Class(
           cli::cli_abort(c("x" = "{poppar} does not exist in the current working directory."))
         }
       }
-      
+
       # If we reach this point, we are creating a new simulation
-      
+
       # set default  values
-      
+
       if (is.null(split)) {
         if (inherits(poppar, "NPAG")) {
           split <- TRUE
@@ -535,29 +528,35 @@ PM_sim <- R6::R6Class(
           split <- FALSE
         }
       }
-      
+
       if (!is.null(covariate)) {
         # check to make sure covariate argument is list (cov, mean, sd, limits, fix)
         if (!inherits(covariate, "list")) {
-          cli::cli_abort(c("x" = "The covariate argument must be a list.",
-                           "i" = "See ?PM_sim for help."))
+          cli::cli_abort(c(
+            "x" = "The covariate argument must be a list.",
+            "i" = "See ?PM_sim for help."
+          ))
           return(invisible(NULL))
         }
         # check to make sure names are correct
         covArgNames <- names(covariate)
         badNames <- which(!covArgNames %in% c("cov", "mean", "sd", "limits", "fix"))
         if (length(badNames) > 0) {
-          cli::cli_abort(c("x" = "The covariate argument must be a named list.",
-                           "i" = "See ?PM_sim for help."))
+          cli::cli_abort(c(
+            "x" = "The covariate argument must be a named list.",
+            "i" = "See ?PM_sim for help."
+          ))
           return(invisible(NULL))
         }
-        
+
         # ensure first element is correct
         if (inherits(poppar, "PM_result")) {
           covariate$cov <- poppar$cov
         } else if (is.null(covariate$cov)) {
-          cli::cli_abort(c("x" = "When poppar is not a {.fn PM_result}, you must specify a {.fn PM_cov} or {.fn PM_result} object as the first element of the covariate list.",
-                           "i"= "See ?PM_sim for help."))
+          cli::cli_abort(c(
+            "x" = "When poppar is not a {.fn PM_result}, you must specify a {.fn PM_cov} or {.fn PM_result} object as the first element of the covariate list.",
+            "i" = "See ?PM_sim for help."
+          ))
           return(invisible(NULL))
         } else if (inherits(covariate$cov, "PM_result")) {
           covariate$cov <- covariate$cov$cov
@@ -567,9 +566,9 @@ PM_sim <- R6::R6Class(
       } else { # missing covariate argument
         covariate <- NULL
       }
-      
+
       # finally, call the simulator, which updates self$data
-      
+
       private$SIMrun(
         poppar = final, limits = limits, model = model,
         data = data, split = split,
@@ -577,14 +576,13 @@ PM_sim <- R6::R6Class(
         predInt = predInt,
         covariate = covariate, usePost = usePost,
         seed = seed, ode = ode,
-        noise = noise, 
+        noise = noise,
         makecsv = makecsv, outname = outname, clean = clean,
         quiet = quiet,
         nocheck = nocheck, overwrite = overwrite, combine = combine
       )
-      
+
       return(self)
-      
     }, # end initialize
     #'
     #' @description
@@ -594,7 +592,7 @@ PM_sim <- R6::R6Class(
     save = function(file_name = "PMsim.rds") {
       saveRDS(self, file_name)
     },
-    
+
     #' @description
     #' `r lifecycle::badge("stable")`
     #' Plot `PM_sim` object.
@@ -602,11 +600,9 @@ PM_sim <- R6::R6Class(
     #' result.
     #' @param ... Arguments passed to [plot.PM_sim].
     plot = function(...) {
-      
       plot.PM_sim(self$data, ...)
-      
     },
-    
+
     #' @description
     #' `r lifecycle::badge("stable")`
     #' Estimates the Probability of Target Attaintment (PTA), based on the results
@@ -615,28 +611,28 @@ PM_sim <- R6::R6Class(
     pta = function(...) {
       PM_pta$new(self, ...)
     },
-    
+
     #' @description
     #' `r lifecycle::badge("stable")`
     #' Calculates the AUC of the specified simulation
     #' @param ... Arguments passed to [makeAUC].
     auc = function(...) {
       rlang::try_fetch(makeAUC(self$data, ...),
-                       error = function(e) {
-                         cli::cli_warn("Unable to generate AUC.", parent = e)
-                         return(NULL)
-                       }
+        error = function(e) {
+          cli::cli_warn("Unable to generate AUC.", parent = e)
+          return(NULL)
+        }
       )
     },
-    
+
     #' @description
     #' `r lifecycle::badge("stable")`
     #' Summarize simulation
     #' @param ... Parameters passed to [summary.PM_sim].
-    summary = function(...){ 
+    summary = function(...) {
       summary.PM_sim(self$data, ...)
     },
-    
+
     #' @description
     #' `r lifecycle::badge("deprecated")`
     #' Deprecated method to run a simulation. Replaced by `PM_sim$new()` to be
@@ -646,7 +642,7 @@ PM_sim <- R6::R6Class(
     run = function(...) {
       lifecycle::deprecate_warn("2.1.0", "PM_sim$run()", details = "PM_sim$run() is deprecated. Please use PM_sim$new() instead.")
     },
-    
+
     #' @description
     #' `r lifecycle::badge("deprecated")`
     #' Deprecated method to load a prior simulation. Replaced by `PM_sim$new()` to be
@@ -659,27 +655,27 @@ PM_sim <- R6::R6Class(
   ), # end public
   active = list(
     #' @field obs Same as `obs` element in the `data` field.
-    obs = function(){
+    obs = function() {
       self$data$obs
     },
     #' @field amt Same as `amt` element in the `data` field.
-    amt = function(){
+    amt = function() {
       self$data$amt
     },
     #' @field parValues Same as `parValues` element in the `data` field.
-    parValues = function(){
+    parValues = function() {
       self$data$parValues
     },
     #' @field totalSets Same as `totalSets` element in the `data` field.
-    totalSets = function(){
+    totalSets = function() {
       self$data$totalSets
     },
     #' @field totalMeans Same as `totalMeans` element in the `data` field.
-    totalMeans = function(){
+    totalMeans = function() {
       self$data$totalMeans
     },
     #' @field totalCov Same as `totalCov` element in the `data` field.
-    totalCov = function(){
+    totalCov = function() {
       self$data$totalCov
     }
   ), # end active
@@ -694,22 +690,21 @@ PM_sim <- R6::R6Class(
                       doseNoise, obsTimeNoise,
                       makecsv, outname, clean, quiet,
                       nocheck, overwrite, combine) {
-      
       # DATA PROCESSING AND VALIDATION ------------------------------------------
-      
-      
+
+
       ###### POPPAR
-      
+
       if (inherits(poppar, "PM_final_data")) {
         npar <- nrow(poppar$popCov)
       } else {
         npar <- nrow(poppar[[3]])
       }
-      
-      
-      
-      ###### MODEL    
-      
+
+
+
+      ###### MODEL
+
       # get information from model
       mod_list <- model$model_list
       mod_npar <- sum(map(mod_list$pri, \(x) x$mode == "ab") %>% unlist()) # number of random parameters
@@ -717,117 +712,120 @@ PM_sim <- R6::R6Class(
       mod_nranfix <- sum(map(mod_list$pri, \(x) x$mode == "fixed") %>% unlist()) # number of random but fixed parameters
       mod_numeqt <- length(mod_list$out)
       mod_asserr <- map(mod_list$out, \(x) x$err$assay$coefficients)
-      
-      
-      ###### DATA  
-      
+
+
+      ###### DATA
+
       # get information from data
       template <- data$standard_data
-      template_ncov <- getCov(template)$ncov  #in PMutilities
-      template_covnames <-  getCov(template)$covnames  
+      template_ncov <- getCov(template)$ncov # in PMutilities
+      template_covnames <- getCov(template)$covnames
       template_numeqt <- max(template$outeq, na.rm = T)
-      
+
       # handle include/exclude
       template <- includeExclude(template, include, exclude)
       toInclude <- unique(template$id)
       nsub <- length(toInclude)
-      
+
       ###### TEMPLATE / MODEL CROSSCHECKS
-      
-      if(nsub == 0){
+
+      if (nsub == 0) {
         cli::cli_abort(c("x" = "No subjects to simulate."))
       }
-      
-      if(template_numeqt != length(mod_list$out)){
+
+      if (template_numeqt != length(mod_list$out)) {
         cli::cli_abort(c("x" = "Number of output equations in model and data do not match."))
       }
-      
-      if (!identical(tolower(template_covnames), map_chr(mod_list$cov, \(x) tolower(x$covariate)))){
+
+      if (!identical(tolower(template_covnames), map_chr(mod_list$cov, \(x) tolower(x$covariate)))) {
         cli::cli_abort(c("x" = "Covariate names in model and data do not match."))
       }
-      
+
       # POSTERIORS ----------------------------------------------
-      
+
       # check if simulating with the posteriors and if so, get all subject IDs
       if (usePost) {
-        
-        if (length(poppar$postMean) == 0){
-          cli::cli_abort(c("x" = "Posterior parameters not found.",
-                           "i" = "Please remake your model."))
+        if (length(poppar$postMean) == 0) {
+          cli::cli_abort(c(
+            "x" = "Posterior parameters not found.",
+            "i" = "Please remake your model."
+          ))
         } else {
-          
-          postToUse <- unique(poppar$postMean$id) #get the id for each posterior mean
+          postToUse <- unique(poppar$postMean$id) # get the id for each posterior mean
           if (split) {
             split <- FALSE
             cli::cli_inform(c("i" = "{.arg split} set to {.val FALSE} for simulations from posteriors."))
           }
           # now, filter by included IDs
           postToUse <- postToUse[postToUse %in% toInclude] # subset the posteriors if applicable
-          if (length(postToUse) > 0 && length(postToUse) != nsub){
+          if (length(postToUse) > 0 && length(postToUse) != nsub) {
             cli::cli_abort(c("x" = "You have {length(postToUse)} posteriors and {nsub} selected subjects in the data file.  These must be equal."))
-          } 
+          }
         }
       } else {
-        
         postToUse <- NULL
-      }      
-      
-      
+      }
+
+
       # SEED --------------------------------------------------------------------
-      
-      
+
+
       seed <- floor(seed) # ensure that seed is a vector of integers
-      
-      
+
+
       # PARAMETER LIMITS --------------------------------------------------------
-      
+
       if (all(is.null(limits))) { # limits are omitted altogether
         parLimits <- NULL
-        
       } else if (!any(is.na(limits)) & is.vector(limits)) { # no limit is NA and specified as vector of length 1 or 2
         # so first check to make sure poppar is a PM_final_data object
-        if (!inherits(poppar, "PM_final_data")){
-          cli::cli_abort(c("x" = "Error in {.arg limits}.",
-                           "i" = "{.arg poppar} must be a {.fn PM_final} or {.fn PM_result} object when multiplicative limits are specified."))
-        } 
+        if (!inherits(poppar, "PM_final_data")) {
+          cli::cli_abort(c(
+            "x" = "Error in {.arg limits}.",
+            "i" = "{.arg poppar} must be a {.fn PM_final} or {.fn PM_result} object when multiplicative limits are specified."
+          ))
+        }
         orig_lim <- poppar$ab
         if (length(limits) == 1) { # e.g. limits = 3, multiply upper...
           limits <- c(1, limits) # ...and set lower multiplier to 1
         }
         parLimits <- t(apply(orig_lim, 1, function(x) x * limits))
-        
       } else if (length(limits) == 1 && is.na(limits)) { # limits specified as NA (use limits in model)
-        parLimits <- matrix(c(map(mod_list$pri[1:npar], \(x) x$min) %>% unlist(),
-                              map(mod_list$pri[1:npar], \(x) x$max) %>% unlist()), ncol = 2)
-        
-      } else if (any(is.na(limits))){ # some NAs, causes error
-        cli::cli_abort(c("x" = "The {.arg limits} argument is malformed.", 
-                         "i" = "It must only contain {.code NA} as a single value, e.g. {.code limits = NA} to indicate that limits in the model should be used."))
-        
+        parLimits <- matrix(c(
+          map(mod_list$pri[1:npar], \(x) x$min) %>% unlist(),
+          map(mod_list$pri[1:npar], \(x) x$max) %>% unlist()
+        ), ncol = 2)
+      } else if (any(is.na(limits))) { # some NAs, causes error
+        cli::cli_abort(c(
+          "x" = "The {.arg limits} argument is malformed.",
+          "i" = "It must only contain {.code NA} as a single value, e.g. {.code limits = NA} to indicate that limits in the model should be used."
+        ))
       } else { # limits specified as a full matrix
         parLimits <- limits
       }
-      
+
       # parLimits should always have a value
-      if (nrow(parLimits) != npar){
+      if (nrow(parLimits) != npar) {
         cli::cli_abort(c("x" = "The number of rows in {.arg limits} must match the number of parameters in the model."))
       }
-      
+
       # COVARIATES ----------------------------------------------------
-      
-      # if covariate is not null and simulating more than 1 new subject, 
+
+      # if covariate is not null and simulating more than 1 new subject,
       # augment prior with covariate and modify model file
-      
-      # 
+
+      #
       # THIS MIGHT NO LONGER BE A PROBLEM
       if (!is.null(covariate) && nsim > 1) {
-        if (length(postToUse) > 0){
-          cli::cli_abort(c("x" = "Conflicting simulation arguments.",
-                           "i" = "You cannot simulate from posteriors while simulating covariates."))
-        } 
-        
+        if (length(postToUse) > 0) {
+          cli::cli_abort(c(
+            "x" = "Conflicting simulation arguments.",
+            "i" = "You cannot simulate from posteriors while simulating covariates."
+          ))
+        }
+
         simWithCov <- TRUE
-        
+
         # get mean of each covariate and Bayesian posterior parameter
         CVsum <- covariate$cov$summary(icen = "mean")
         # take out fixed covariates not to be simulated
@@ -836,13 +834,15 @@ PM_sim <- R6::R6Class(
         }
         # remove covariates that are missing because they have all the same value
         # this also drops id and icen columns
-        CVsum <- CVsum %>% select(where(~n_distinct(.) > 1)) %>% select(-id)
-        
+        CVsum <- CVsum %>%
+          select(where(~ n_distinct(.) > 1)) %>%
+          select(-id)
+
         # get correlation matrix
         corCV <- suppressWarnings(cor(CVsum))
-        
+
         nsimcov <- ncol(corCV) - npar
-        
+
         # augment poppar correlation matrix
         corMat <- poppar$popCor
         if (nsimcov == 1) {
@@ -859,16 +859,18 @@ PM_sim <- R6::R6Class(
           corMat2 <- cbind(corCV[(1:nsimcov), (nsimcov + 1):(npar + nsimcov)], corCV[(1:nsimcov), (1:nsimcov)])
           corMat <- rbind(corMat, corMat2)
         }
-        
+
         # get SD of covariates
         covSD <- apply(CVsum, 2, sd, na.rm = T)[1:nsimcov]
-        
+
         # set SDs of named variables, and use population values for others
         if (length(covariate$sd) > 0) {
           badNames <- which(!names(covariate$sd) %in% names(covSD))
           if (length(badNames) > 0) {
-            cli::cli_abort(c("x" = "The {.arg sd} element of {.arg covariate} must be a list with parameter names.",
-                             "i" = "See {.fn PM_sim} for help."))
+            cli::cli_abort(c(
+              "x" = "The {.arg sd} element of {.arg covariate} must be a list with parameter names.",
+              "i" = "See {.fn PM_sim} for help."
+            ))
           }
           covSD[which(names(covSD) %in% names(covariate$sd))] <- covariate$sd
           covSD <- unlist(covSD)
@@ -883,38 +885,41 @@ PM_sim <- R6::R6Class(
         }
         # get means of covariates
         covMean <- apply(CVsum, 2, mean, na.rm = T)[1:nsimcov]
-        
+
         # set means of named variables, and use population values for others
         if (length(covariate$mean) > 0) {
           badNames <- which(!names(covariate$mean) %in% names(covMean))
           if (length(badNames) > 0) {
-            cli::cli_abort(c("x" = "The {.arg mean} element of {.arg covariate} must be a list with parameter names.",
-                             "i" = "See {.fn PM_sim} for help."))
+            cli::cli_abort(c(
+              "x" = "The {.arg mean} element of {.arg covariate} must be a list with parameter names.",
+              "i" = "See {.fn PM_sim} for help."
+            ))
           }
           covMean[which(names(covMean) %in% names(covariate$mean))] <- covariate$mean
           covMean <- unlist(covMean)
         }
-        
-        
+
+
         meanVector <- c(poppar$popMean, covMean)
         # get the covariate limits
         # get min of original population covariates
         covMin <- apply(CVsum, 2, min, na.rm = T)[1:nsimcov]
         # and get max of original population covariates
         covMax <- apply(CVsum, 2, max, na.rm = T)[1:nsimcov]
-        
+
         orig_covlim <- cbind(covMin, covMax)
-        
+
         if (length(covariate$limits) == 0) {
           # limits are omitted altogether
-          covLimits <- orig_covlim 
-          
+          covLimits <- orig_covlim
         } else {
           # covariate limits are supplied as named list
           badNames <- which(!names(covariate$limits) %in% names(covMean))
           if (length(badNames) > 0) {
-            cli::cli_abort(c("x" = "The {.arg limit} element of {.arg covariate} must be a list with parameter names.",
-                             "i" = "E.g. {.code limits = list(wt = c(40, 80), age = c(10, 50))}. See {.fn PM_sim} for help."))
+            cli::cli_abort(c(
+              "x" = "The {.arg limit} element of {.arg covariate} must be a list with parameter names.",
+              "i" = "E.g. {.code limits = list(wt = c(40, 80), age = c(10, 50))}. See {.fn PM_sim} for help."
+            ))
           }
           # first, make matrix with original covariate limits
           covLimits <- orig_covlim
@@ -926,39 +931,39 @@ PM_sim <- R6::R6Class(
             }))
           }
         }
-        
+
         limits <- rbind(parLimits, covLimits)
-        
+
         # names of covariates to simulate
         covs2sim <- dimnames(covLimits)[[1]]
-        
-        
+
+
         # add simulated covariates to primary block of model object
         new_pri <- map(1:nsimcov, \(x) ab(covLimits[x, 1], covLimits[x, 2]))
         names(new_pri) <- covs2sim
         mod_list$pri <- c(mod_list$pri, new_pri)
-        
+
         # remove them from the covariate block of model object
         model_covs <- tolower(purrr::map_chr(mod_list$cov, \(x) x$covariate))
         covs_to_remove <- which(model_covs %in% covs2sim)
         mod_list$cov <- mod_list$cov[-covs_to_remove]
-        
+
         # also remove them from data template
         template <- template[, -which(names(template) %in% covs2sim)]
-        
-        
+
+
         # remake both objects
         mod_list <- PM_model$new(mod_list)$model_list
         template <- PM_data$new(template, quiet = TRUE)$standard_data
-        
+
         # remake poppar
         poppar$popMean <- meanVector
         poppar$popCov <- covMat
-        
-        
+
+
         limits <- rbind(parLimits, covLimits)
-        
-        
+
+
         # if split is true, then remake (augment) popPoints by adding mean covariate prior to each point
         if (split) {
           popPoints <- poppar$popPoints
@@ -973,83 +978,84 @@ PM_sim <- R6::R6Class(
           popPoints$prob <- prob
           poppar$popPoints <- popPoints
         }
-        
       } else {
         simWithCov <- FALSE
         limits <- parLimits
       }
       # end if (covariate) block
-      
-      # regardless of covariates or not, 'limits' is the final variable for 
+
+      # regardless of covariates or not, 'limits' is the final variable for
       # limits on parameters
-      
-      
-      
+
+
+
       # NOISE -------------------------------------------------------------------
-      
-      if (!all(is.null(noise))){
-        
+
+      if (!all(is.null(noise))) {
         # will ignore obs noise for now but add after simulation
-        if("out" %in% names(noise)){
+        if ("out" %in% names(noise)) {
           noise1 <- noise %>% purrr::list_assign(out = rlang::zap())
           noise2 <- noise["out"]
         } else {
           noise1 <- noise
           noise2 <- NULL
         }
-        
-        if(length(noise1)>0){
+
+        if (length(noise1) > 0) {
           template <- private$makeNoise(template, noise1)
         }
       } else {
         noise1 <- noise2 <- NULL
       }
-      
-      
+
+
       # PRED INT ----------------------------------------------------------------
-      
-      template <- if(!all(is.null(predInt))) {private$makePredInt(template, predInt)}
-      
+
+      template <- if (!all(is.null(predInt))) {
+        private$makePredInt(template, predInt)
+      }
+
       # CALL SIMULATOR ----------------------------------------------------------------
-      
+
       template <- PM_data$new(template, quiet = TRUE)
       mod <- PM_model$new(mod_list, quiet = TRUE)
-      
+
       if (length(postToUse) > 0) {
         # simulating from posteriors, each posterior matched to a subject
         # need to set theta as the posterior mean or median for each subject
-        
+
         ans <- NULL
         data_list <- list()
         pb <- progress::progress_bar$new(
           format = "  Simulating subjects [:bar] :percent eta: :eta",
           total = nsub, clear = FALSE, width = 60
         )
-        
-        for(i in 1:nsub){
+
+        for (i in 1:nsub) {
           pb$tick()
           # get the prior for this subject
-          thisPrior <- private$getSimPrior(i = i, 
-                                           poppar = poppar, 
-                                           split = split, 
-                                           postToUse = postToUse[i], 
-                                           limits = limits, 
-                                           seed = seed[1],
-                                           nsim = nsim,
-                                           toInclude = toInclude, ans = ans)
+          thisPrior <- private$getSimPrior(
+            i = i,
+            poppar = poppar,
+            split = split,
+            postToUse = postToUse[i],
+            limits = limits,
+            seed = seed[1],
+            nsim = nsim,
+            toInclude = toInclude, ans = ans
+          )
           # get the template for this subject
           sub_template <- PM_data$new(template$standard_data %>% filter(id == toInclude[i]), quiet = TRUE)
-          
+
           # add the simulated values to the list
           data_list <- append(data_list, list(private$getSim(thisPrior, sub_template, mod, noise2)))
           ans <- thisPrior$ans
-          
         }
-        
+
         # combine the output
         obs <- purrr::list_rbind(map(data_list, \(x) x$obs))
         amt <- purrr::list_rbind(map(data_list, \(x) x$amt))
-        
+
         parValues <- purrr::list_rbind(map(data_list, \(x) x$parValues)) %>%
           mutate(id = rep(toInclude, each = !!nsim), nsim = rep(1:!!nsim, nsub)) %>%
           relocate(id, nsim)
@@ -1057,11 +1063,13 @@ PM_sim <- R6::R6Class(
           mutate(id = toInclude) %>%
           relocate(id)
         total_cov <- dplyr::bind_rows(map(data_list, \(x) data.frame(x$totalCov, row.names = NULL))) %>%
-          mutate(id = rep(toInclude, each = npar),
-                 par = rep(names(poppar$popMean), !!nsub)) %>%
+          mutate(
+            id = rep(toInclude, each = npar),
+            par = rep(names(poppar$popMean), !!nsub)
+          ) %>%
           relocate(id, par)
-        total_nsim <- tibble::tibble(id = toInclude, n = purrr::map_dbl(data_list, \(x) x$totalSets)) 
-        
+        total_nsim <- tibble::tibble(id = toInclude, n = purrr::map_dbl(data_list, \(x) x$totalSets))
+
         ret <- list(
           obs = obs,
           amt = amt,
@@ -1070,75 +1078,74 @@ PM_sim <- R6::R6Class(
           totalMeans = total_means,
           totalCov = total_cov,
           template = template,
-          model = mod)
-        
-        
+          model = mod
+        )
+
+
         class(ret) <- c("PM_sim_data", class(self$data))
         self$data <- ret
-        
       } else {
         # set theta as nsim rows drawn from prior
-        thisPrior <- private$getSimPrior(i = 1, 
-                                         poppar = poppar, 
-                                         split = split, 
-                                         postToUse = NULL, 
-                                         limits = limits, 
-                                         seed = seed[1],
-                                         nsim = nsim,
-                                         toInclude = toInclude)
-        
+        thisPrior <- private$getSimPrior(
+          i = 1,
+          poppar = poppar,
+          split = split,
+          postToUse = NULL,
+          limits = limits,
+          seed = seed[1],
+          nsim = nsim,
+          toInclude = toInclude
+        )
+
         self$data <- private$getSim(thisPrior, template, mod, noise2)
-  
       }
-      
-      
+
+
       # MAKE CSV ----------------------------------------------------------------
 
       if (!is.null(makecsv)) {
-        
         if (nsub * nsim > 100) {
-          
-          #cli_ask is in PMutilities
+          # cli_ask is in PMutilities
           ans <- cli_ask("Creating a csv file with {nsub} templates * {nsim} simulations/template = {nsub * nsim} subjects can take a very long time. Do you wish to proceed (y/n)?")
           if (tolower(ans) == "n") {
             cat("\nAborting simulation...\n")
             return()
           }
         }
-        
-        if (file.exists(makecsv)) {file.remove(makecsv)}
-        
+
+        if (file.exists(makecsv)) {
+          file.remove(makecsv)
+        }
+
         # cycle through template and nsims
-        
+
         csv <- list()
-        for(i in unique(template$standard_data$id)){
+        for (i in unique(template$standard_data$id)) {
           this_template <- template$standard_data %>% filter(id == i)
-          for(j in 1:nsim){
+          for (j in 1:nsim) {
             this_sim <- obs %>% filter(id == i, nsim == j)
             this_template$out[this_template$evid == 0] <- this_sim$out
             this_template$id <- paste(i, j, sep = "_")
             csv <- append(csv, list(this_template))
           }
         }
-        
+
         csv <- PM_data$new(list_rbind(csv), quiet = TRUE)
-        
-        if(!stringr::str_detect(makecsv, "\\..{3}$")){
+
+        if (!stringr::str_detect(makecsv, "\\..{3}$")) {
           makecsv <- paste0(makecsv, ".csv")
         }
         csv$write(makecsv)
-        
+
         cli::cli_inform("The file {.file {makecsv}} was saved in {getwd()}.")
-        
       }
-      
-      
+
+
       # FINAL RETURN ------------------------------------------------------------
-      
+
       return(self)
-      
     }, # end of SIMrun
-    
+
     # get prior density
     getSimPrior = function(i, poppar, split, postToUse, limits, seed, nsim, toInclude, ans = NULL) {
       # get prior density
@@ -1162,7 +1169,6 @@ PM_sim <- R6::R6Class(
             ndist <- 1
           }
         }
-        
       } else { # manually specified prior or from IT2B
         pop_weight <- poppar[[1]]
         ndist <- length(pop_weight)
@@ -1173,21 +1179,23 @@ PM_sim <- R6::R6Class(
         }
         pop_cov <- data.frame(poppar[[3]])
       }
-      
+
       # override covariance matrix to zero if nsim = 1
       if (nsim == 1) {
         pop_cov <- diag(0, nrow(pop_cov))
       }
-      
+
       # check to make sure pop_cov (within 15 sig digits, which is in file) is pos-def and fix if necessary
       posdef <- rlang::try_fetch(eigen(signif(pop_cov, 15)),
-                                 error = function(e) {
-                                   return(list(values = 0))
-                                 }
+        error = function(e) {
+          return(list(values = 0))
+        }
       )
 
       if (any(posdef$values < 0)) {
-        if(is.null(ans)) { ans <- cli_ask("Warning: your covariance matrix is not positive definite. This is typically due to small population size.\nChoose one of the following:\n1) end simulation\n2) fix covariances\n3) set covariances to 0\n ") }
+        if (is.null(ans)) {
+          ans <- cli_ask("Warning: your covariance matrix is not positive definite. This is typically due to small population size.\nChoose one of the following:\n1) end simulation\n2) fix covariances\n3) set covariances to 0\n ")
+        }
         if (ans == 1) {
           cli::cli_inform("Aborting.")
           return(invisible(NULL))
@@ -1200,18 +1208,17 @@ PM_sim <- R6::R6Class(
             eigen_vectors <- eigen(pop_cov)$vectors
             pop_cov <- eigen_vectors %*% diag(pmax(eigen_values, 0)) %*% t(eigen_vectors)
             posdef <- eigen(signif(pop_cov, 15))
-            
+
             if (all(posdef$values >= 0)) { # success, break out of loop
               break
             }
           }
           posdef <- eigen(signif(pop_cov, 15)) # last check
           if (any(posdef$values < 0)) {
-            if(is.null(postToUse)) {
+            if (is.null(postToUse)) {
               cli::cli_abort(c("x" = "Unable to fix covariance."))
             } else {
               cli::cli_abort(c("x" = "Unable to fix covariance for template  {.code id = {toInclude[i]}}."))
-              
             }
           }
           pop_cov <- data.frame(pop_cov)
@@ -1226,59 +1233,60 @@ PM_sim <- R6::R6Class(
           pop_cov <- pop_cov2
         }
       }
-      
+
       # if (nsim <= 1 && simWithCov) {
       #   # can't simulate from each point with covariate sim
       #   cli::cli_inform(c("i" = "You cannot simulate covariates with nsim <= 1. Each subject supplies only one set of relevant covariates."))
       #   simWithCov <- FALSE
       # }
-      # 
-      
+      #
+
       # generate random samples from multivariate, multimodal normal distribution
       generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix, i) {
-        
         means <- split(means, 1:nrow(means))
         if (length(weights) != length(means)) {
           cli::cli_abort("Weights and means must have the same length.")
         }
-        
+
         # handle malformed covariance
-        if(any(is.na(cov_matrix))){
+        if (any(is.na(cov_matrix))) {
           cov_matrix[is.na(cov_matrix)] <- 0
-          cli::cli_warn(c("!" = "Covariance for {.code id = {i}} is undefined.",
-                          "i" = "Values were set to 0, resulting in identical simulations."))
+          cli::cli_warn(c(
+            "!" = "Covariance for {.code id = {i}} is undefined.",
+            "i" = "Values were set to 0, resulting in identical simulations."
+          ))
         }
-        
+
         # Determine number of samples from each mode
         samples_per_mode <- stats::rmultinom(1, size = num_samples, prob = weights)
-        
+
         # Generate samples for each mode
         samples <- do.call(rbind, lapply(1:length(weights), function(i) {
           tryCatch(suppressWarnings(MASS::mvrnorm(n = samples_per_mode[i], mu = as.matrix(means[[i]], nrow = 1), Sigma = cov_matrix)),
-                   error = function(e) NULL )
-        })) %>% 
+            error = function(e) NULL
+          )
+        })) %>%
           tibble::as_tibble(.name_repair = "minimal") %>%
-          rlang::set_names(names(means[[1]])) %>% 
+          rlang::set_names(names(means[[1]])) %>%
           mutate(prob = 1 / dplyr::n())
-        
+
         return(samples)
       }
-      
+
       # generate samples for theta
-      
+
       set.seed(seed)
       thetas <- generate_multimodal_samples(nsim, pop_weight, pop_mean, pop_cov, toInclude[i])
       # cycle through samples, moving any row with any parameter outside limits
       # into a second tibble, and replacing that row with a new sample
-      
+
       # returns true if any parameter in row i is outside limits
       outside_check <- function(x, i) {
         any(x[i, ] - limits[, 1] < 0) | # any parameter < lower limit
           any(x[i, ] - limits[, 2] > 0) # any parameter > upper limit
       }
       discarded <- NULL
-      if(!all(is.null(limits))){
-        
+      if (!all(is.null(limits))) {
         for (i in 1:nrow(thetas)) {
           cycle_num <- 0
           outside <- outside_check(thetas %>% dplyr::select(-prob), i)
@@ -1296,41 +1304,46 @@ PM_sim <- R6::R6Class(
           }
           thetas$prob <- 1 / nrow(thetas)
         } # end loop to fix thetas out of range
-        
       }
-      
+
       total_means <- apply(rbind(thetas, discarded), 2, mean)[1:ncol(pop_cov)]
-      total_cov <- bind_rows(thetas,discarded) %>% select(-prob) %>% cov()
-      total_nsim <- sum(nrow(thetas), nrow(discarded)) #sum will ignore NULL values
-      
-      return(list(thetas = thetas, total_means = total_means, 
-                  total_cov = total_cov, 
-                  total_nsim = total_nsim, ans = ans))
-      
+      total_cov <- bind_rows(thetas, discarded) %>%
+        select(-prob) %>%
+        cov()
+      total_nsim <- sum(nrow(thetas), nrow(discarded)) # sum will ignore NULL values
+
+      return(list(
+        thetas = thetas, total_means = total_means,
+        total_cov = total_cov,
+        total_nsim = total_nsim, ans = ans
+      ))
     }, # end getSimPrior function'
-    
+
     # call simulator and process results
-    getSim = function(thisPrior, template, mod, noise2){
-      thetas <- thisPrior$thetas %>% select(-prob) %>% as.matrix()
+    getSim = function(thisPrior, template, mod, noise2) {
+      thetas <- thisPrior$thetas %>%
+        select(-prob) %>%
+        as.matrix()
       mod$compile() # check if compiled and if not, do so
       sim_res <- mod$simulate_all(template, thetas)
       sim_res$.id <- template$standard_data$id[match(sim_res$id, template$standard_data$id)]
-      sim_res <- sim_res %>% rename(comp = state_index, nsim = spp_index, amt = state) %>%
-        mutate(across(c(outeq, comp, nsim), \(x) x = x + 1)) %>%
+      sim_res <- sim_res %>%
+        rename(comp = state_index, nsim = spp_index, amt = state) %>%
+        mutate(across(c(outeq, comp, nsim), \(x) x <- x + 1)) %>%
         arrange(.id, comp, nsim, time, outeq) %>%
         select(-.id)
-      
-      obs <- sim_res  %>% filter(comp == 1) %>% #obs are duplicated in every compartment
+
+      obs <- sim_res %>% filter(comp == 1) %>% # obs are duplicated in every compartment
         select(id, nsim, time, out, outeq)
-      
-      amt <- sim_res  %>%
+
+      amt <- sim_res %>%
         select(id, nsim, time, out = amt, comp)
-      
-      #add output noise if specified
-      if(!all(is.null(noise2))){
+
+      # add output noise if specified
+      if (!all(is.null(noise2))) {
         obs <- private$makeNoise(obs, noise2)
       }
-      
+
       ret <- list(
         obs = obs,
         amt = amt,
@@ -1340,14 +1353,14 @@ PM_sim <- R6::R6Class(
         totalMeans = thisPrior$total_means,
         totalCov = thisPrior$total_cov,
         template = template,
-        model = mod)
-      
-      
+        model = mod
+      )
+
+
       class(ret) <- c("PM_sim_data", class(self$data)) # add PM_sim_data class to data
       return(ret)
-      
     }, # end .sim function
-    
+
     # Create new simulation objects with results of simulation
     populate = function(simout, type) {
       if (type == "sim") {
@@ -1359,7 +1372,7 @@ PM_sim <- R6::R6Class(
         self$data <- simout
         class(self$data) <- c("PM_sim_data", "list")
       } else if (type == "simlist") {
-        N <- length(simout) #number of templates
+        N <- length(simout) # number of templates
         nsim <- max(simout[[1]]$obs$id)
         obs <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 1)), names_to = "id2") %>% rename(nsim = id, id = id2)
         amt <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 2)), names_to = "id2") %>% rename(nsim = id, id = id2)
@@ -1375,9 +1388,6 @@ PM_sim <- R6::R6Class(
           totalMeans = totalMeans,
           totalCov = totalCov
         )
-        
-        
-        
       } else if (type == "R6sim") {
         # self$obs <- simout$data$obs
         # self$amt <- simout$data$amt
@@ -1395,43 +1405,48 @@ PM_sim <- R6::R6Class(
       }
       return(self)
     }, # end populate
-    
-    makeNoise = function(template, noise){
-      
-      if(!is.list(noise)){
-        cli::cli_warn(c("!" = "Noise arguments should be a list.",
-                        "i" = "See ?PM_data for details on how to add noise."))
+
+    makeNoise = function(template, noise) {
+      if (!is.list(noise)) {
+        cli::cli_warn(c(
+          "!" = "Noise arguments should be a list.",
+          "i" = "See ?PM_data for details on how to add noise."
+        ))
         return(invisible(template))
       }
-      
-      for(i in 1:length(noise)){
+
+      for (i in 1:length(noise)) {
         this <- noise[[i]]
         this$.col <- names(noise)[i]
-        if (this$.col %in% c("id", "evid", "addl", "ii", "input", "outeq", "c0", "c1", "c2", "c3")){
-          cli::cli_abort(c("x" = "{.arg {this$.col}} is a reserved column name.",
-                           "i" = "Please choose another column to add noise."))
+        if (this$.col %in% c("id", "evid", "addl", "ii", "input", "outeq", "c0", "c1", "c2", "c3")) {
+          cli::cli_abort(c(
+            "x" = "{.arg {this$.col}} is a reserved column name.",
+            "i" = "Please choose another column to add noise."
+          ))
         }
         this$coeff <- this[[1]]
-        if(is.null(this$mode)){
+        if (is.null(this$mode)) {
           this$mode <- "add"
         }
-        
+
         # add zeros to coefficients if needed to make up to length 4
-        if (length(this$coeff) < 4){
+        if (length(this$coeff) < 4) {
           this$coeff <- c(this$coeff, rep(0, 4 - length(this$coeff)))
         }
-        
+
         # Ensure target is a column in standard_data
         if (!this$.col %in% names(template)) {
-          cli::cli_abort(c("x" = "{.arg {this$.col}} is not a column in your data.",
-                           "i" = "Example: {.code noise = list(dose = list(coeff = c(0.1, 0.1)))}"))
+          cli::cli_abort(c(
+            "x" = "{.arg {this$.col}} is not a column in your data.",
+            "i" = "Example: {.code noise = list(dose = list(coeff = c(0.1, 0.1)))}"
+          ))
         }
-        
+
         # make temporary row index to preserve order later
         template$index_ <- 1:nrow(template)
-        
+
         # Dynamically apply the filter
-        if(!is.null(this$filter)){
+        if (!is.null(this$filter)) {
           filter_status <- "filtered"
           filter_exprs <- rlang::parse_expr(this$filter)
           filtered_data <- template %>%
@@ -1444,50 +1459,59 @@ PM_sim <- R6::R6Class(
           filtered_data <- template
           remaining_data <- NULL
         }
-        
+
         # Get the target
         target_col <- filtered_data %>% select(id, raw = all_of(this$.col))
-        
-        
+
+
         # Remove temp row index
         template <- template %>% select(-index_)
-        
+
         # Add noise
         new_target <- data.frame(1:nrow(target_col))
         names(new_target) <- this$.col
-        if(this$mode == "add"){
-          target_col <- target_col %>% rowwise() %>% mutate(noisy = raw + suppressWarnings(rnorm(1, mean = 0, 
-                                                                                                 sd = this$coeff[[1]] + 
-                                                                                                   this$coeff[[2]] * raw +
-                                                                                                   this$coeff[[3]] * raw^2 +
-                                                                                                   this$coeff[[4]] * raw^3))) %>% ungroup()                       
-        } else if(this$mode == "exp"){
-          target_col <- target_col %>% rowwise() %>% mutate(noisy = raw * exp(suppressWarnings(rnorm(1, mean = 0, 
-                                                                                                     sd = this$coeff[[1]] + 
-                                                                                                       this$coeff[[2]] * raw +
-                                                                                                       this$coeff[[3]] * raw^2 +
-                                                                                                       this$coeff[[4]] * raw^3)))) %>% ungroup()        
+        if (this$mode == "add") {
+          target_col <- target_col %>%
+            rowwise() %>%
+            mutate(noisy = raw + suppressWarnings(rnorm(1,
+              mean = 0,
+              sd = this$coeff[[1]] +
+                this$coeff[[2]] * raw +
+                this$coeff[[3]] * raw^2 +
+                this$coeff[[4]] * raw^3
+            ))) %>%
+            ungroup()
+        } else if (this$mode == "exp") {
+          target_col <- target_col %>%
+            rowwise() %>%
+            mutate(noisy = raw * exp(suppressWarnings(rnorm(1,
+              mean = 0,
+              sd = this$coeff[[1]] +
+                this$coeff[[2]] * raw +
+                this$coeff[[3]] * raw^2 +
+                this$coeff[[4]] * raw^3
+            )))) %>%
+            ungroup()
         } else {
           cli::cli_abort("x" = "Mode must be 'add' or 'exp'.")
         }
-        
-        #put back the new noisy column
+
+        # put back the new noisy column
         filtered_data[[this$.col]] <- target_col$noisy
-        
-        combined <- bind_rows(filtered_data, remaining_data) %>% arrange(index_) %>% select(-index_) 
-        #Fix initial times to be 0 in case they were mutated
+
+        combined <- bind_rows(filtered_data, remaining_data) %>%
+          arrange(index_) %>%
+          select(-index_)
+        # Fix initial times to be 0 in case they were mutated
         combined[!duplicated(combined$id), "time"] <- 0
-        
+
         template <- combined
-        
       } # end for loop for each noise element
-      
+
       return(template)
-      
     }, # end makeNoise function
-    
-    makePredInt = function(template, predInt){
-      
+
+    makePredInt = function(template, predInt) {
       predTimes <- NA
       numeqt <- max(template$outeq, na.rm = TRUE)
       if (is.list(predInt)) {
@@ -1519,20 +1543,20 @@ PM_sim <- R6::R6Class(
           }
         }
       }
-      
+
       # first, add temporary index to ensure id order remains the same
-      dat2 <- template %>% 
+      dat2 <- template %>%
         mutate(.id = dense_rank(id))
-      
+
       # second, add predInt if necessary
       if (!is.na(predTimes[1])) {
         predTimes <- predTimes[predTimes > 0] # remove predictions at time 0
-        dat3 <- dat2 %>% 
-          group_by(.id) %>% 
-          group_map( ~ {
+        dat3 <- dat2 %>%
+          group_by(.id) %>%
+          group_map(~ {
             theseTimes <- predTimes[!predTimes %in% .x$time[.x$evid == 0]] # remove prediction times at times that are specified in template
             numPred <- length(theseTimes)
-            newPred <- data.frame(matrix(NA, nrow = numPred, ncol = 1+ncol(.x)))
+            newPred <- data.frame(matrix(NA, nrow = numPred, ncol = 1 + ncol(.x)))
             names(newPred) <- c(".id", names(.x))
             newPred[, 1] <- .y # .id
             newPred[, 2] <- .x$id[1] # original id
@@ -1541,16 +1565,16 @@ PM_sim <- R6::R6Class(
             newPred[, 10] <- 1 # out
             newPred[, 11] <- rep(1:numeqt, numPred / numeqt) # outeq
             newPred
-          }) %>% bind_rows() 
-        new_dat <- bind_rows(dat2, dat3) %>% 
-          arrange(.id, time, outeq) %>% 
+          }) %>%
+          bind_rows()
+        new_dat <- bind_rows(dat2, dat3) %>%
+          arrange(.id, time, outeq) %>%
           select(-.id)
       } else { # predInt was not specified
-        new_dat <- template #the original data without .id
+        new_dat <- template # the original data without .id
       }
-      new_dat <- new_dat %>% mutate(out = ifelse(evid == 0, -1, NA)) #replace all obs with -1 since simulating
+      new_dat <- new_dat %>% mutate(out = ifelse(evid == 0, -1, NA)) # replace all obs with -1 since simulating
       return(new_dat)
-      
     } # end makePredInt function
   ) # end private
 ) # end PM_sim
@@ -1588,7 +1612,7 @@ PM_sim$load <- function(...) {
 #'
 #' @method plot PM_sim
 #' @param x The name of an *PM_sim* data object generated by [PM_sim]
-#' @param include `r template("include")`. 
+#' @param include `r template("include")`.
 #' @param mult `r template("mult")`
 #' @param ci Width of confidence interval bands around simulated quantiles,
 #' from 0 to 1.  If 0, or *nsim*<100, will not plot.
@@ -1679,8 +1703,11 @@ PM_sim$load <- function(...) {
 #' @importFrom dplyr summarize
 #' @export
 #' @examples
+#' \dontrun{
 #' simEx$plot()
 #' simEx$plot(log = FALSE, line = list(color = "orange"))
+#' }
+
 #' @family PMplots
 
 plot.PM_sim <- function(x,
@@ -1742,14 +1769,14 @@ plot.PM_sim <- function(x,
       } else if (is.logical(line$fill && !line$fill)) {
         line$fill <- FALSE
       } else if (is.list(line$fill)) {
-        
+
       } else {
-        
+
       }
     }
-    
-    
-    
+
+
+
     # lineList$color <- rep(line$color, nprobs)[1:nprobs]
     # } else {
     #   lineList$fill <- FALSE
@@ -1765,22 +1792,22 @@ plot.PM_sim <- function(x,
       lineList$dash <- rep("solid", nprobs)
     }
   }
-  
+
   probValues <- lineList$probs
   probFormats <- lineList[-1] %>%
     purrr::transpose() %>%
     purrr::simplify_all()
   join <- amendLine(probFormats[[1]])
-  
+
   # parse marker
   if (!missing(obs)) {
     if (!is.list(marker) && !marker) marker <- T
   }
   marker <- amendMarker(marker, default = list(color = "black", symbol = "circle-open", size = 8))
-  
+
   # process dots
   layout <- amendDots(list(...))
-  
+
   # axis labels
   xlab <- if (missing(xlab)) {
     "Time"
@@ -1792,18 +1819,18 @@ plot.PM_sim <- function(x,
   } else {
     ylab
   }
-  
+
   layout$xaxis$title <- amendTitle(xlab)
   if (is.character(ylab)) {
     layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
   } else {
     layout$yaxis$title <- amendTitle(ylab)
   }
-  
+
   # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-  
+
   # axis ranges
   if (!missing(xlim)) {
     layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
@@ -1811,24 +1838,24 @@ plot.PM_sim <- function(x,
   if (!missing(ylim)) {
     layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
   }
-  
+
   # log y axis
   if (log) {
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
-  
+
   # title
   if (missing(title)) {
     title <- ""
   }
   layout$title <- amendTitle(title, default = list(size = 20))
-  
-  
+
+
   # legend
   legendList <- amendLegend(legend, default = list(title = list(text = "<b> Quantiles </b>")))
   layout <- modifyList(layout, list(showlegend = legendList[[1]], legend = legendList[-1]))
-  
-  
+
+
   # numerical check function
   NPsimInterp <- function(time, out, sim_sum, probs) {
     if (min(sim_sum$time) <= time) {
@@ -1857,7 +1884,7 @@ plot.PM_sim <- function(x,
     }
     return(sim_quantile)
   }
-  
+
   # process x
   if (inherits(x, "PM_simlist")) {
     if (missing(simnum)) {
@@ -1869,23 +1896,23 @@ plot.PM_sim <- function(x,
   } else {
     simout <- x
   }
-  
-  
-  
-  
-  
+
+
+
+
+
   if (!inherits(simout, c("PM_sim", "PM_sim_data", "PMsim"))) {
     cli::cli_abort(c(
       "x" = "Use {.fn PM_sim$run} to make a {.cls PM_sim} object.",
       "i" = "See help for {.fn PM_sim}."
     ))
   }
-  
+
   # include/exclude template ids
   if (missing(include)) include <- unique(simout$obs$id)
   if (missing(exclude)) exclude <- NA
   simout$obs <- simout$obs %>% includeExclude(include, exclude)
-  
+
   if (!missing(obs)) {
     if (!inherits(obs, c("PM_result", "PM_op"))) {
       cli::cli_abort(c("x" = "Supply a {.cls PM_result} or {.cls PM_op} object for the {.code obs} argument."))
@@ -1905,7 +1932,7 @@ plot.PM_sim <- function(x,
   } else {
     obs <- data.frame(time = NA, obs = NA)
   }
-  
+
   # change <=0 to NA if log plot
   if (log) {
     if (all(is.na(obs$obs))) {
@@ -1925,14 +1952,14 @@ plot.PM_sim <- function(x,
       }
     }
   }
-  
+
   # multiply
   simout$obs$out <- simout$obs$out * mult
   obs$obs <- obs$obs * mult
-  
+
   # simplify
   sim_out <- simout$obs[!is.na(simout$obs$out), ]
-  
+
   # bin times if requested
   if (binSize > 0) {
     binned_sim_times <- seq(floor(min(sim_out$time, na.rm = TRUE)), ceiling(max(sim_out$time, na.rm = TRUE)), binSize)
@@ -1948,15 +1975,15 @@ plot.PM_sim <- function(x,
         summarize(obs = mean(obs), .groups = "drop")
     }
   }
-  
+
   nout <- max(sim_out$outeq)
   nsim <- nrow(simout$parValues)
-  
-  
+
+
   sim <- sim_out %>% filter(outeq == !!outeq)
   times <- sort(unique(sim$time))
   nobs <- length(times)
-  
+
   if (!all(is.na(probValues)) & nsim >= 10) {
     # make DF of time, quantile and value
     sim_quant_df <- sim %>%
@@ -1969,29 +1996,29 @@ plot.PM_sim <- function(x,
         quantile = readr::parse_number(quantile) / 100
       ) %>%
       dplyr::select(time, quantile, value)
-    
+
     lower_confint <- function(n) {
       l.ci <- ceiling(n * probValues - qnorm(1 - (1 - ci) / 2) * sqrt(n * probValues * (1 - probValues)))
       l.ci[l.ci == 0] <- NA
       return(l.ci)
     }
-    
+
     upper_confint <- function(n) {
       u.ci <- ceiling(n * probValues + qnorm(1 - (1 - ci) / 2) * sqrt(n * probValues * (1 - probValues)))
       return(u.ci)
     }
-    
+
     lconfint <- tapply(sim$out, sim$time, function(x) sort(x)[lower_confint(length(x))])
     uconfint <- tapply(sim$out, sim$time, function(x) sort(x)[upper_confint(length(x))])
-    
+
     sim_quant_df$lowerCI <- unlist(lconfint)
     sim_quant_df$upperCI <- unlist(uconfint)
-    
+
     # plot main data
     p <- sim_quant_df %>%
       group_by(quantile) %>%
       plotly::plot_ly(x = ~time, y = ~value)
-    
+
     # add confidence intervals
     if (nsim < 100) {
       if (!quiet) {
@@ -2007,7 +2034,7 @@ plot.PM_sim <- function(x,
           showlegend = FALSE
         )
     }
-    
+
     # add quantile lines, allowing for the independent formats
     for (i in 1:length(probValues)) {
       thisQ <- sim_quant_df %>% filter(quantile == probValues[i])
@@ -2019,15 +2046,15 @@ plot.PM_sim <- function(x,
       )
     }
     retValue <- list()
-    
+
     # add observations if supplied, and calculate NPC
     if (!all(is.na(obs))) {
       p <- p %>% add_markers(x = ~time, y = ~obs, data = obs, marker = marker)
       obs$sim_quant <- NA
-      
+
       for (i in 1:nrow(obs)) {
         obs$sim_quant[i] <- ifelse(is.na(obs$obs[i]), NA,
-                                   NPsimInterp(obs$time[i], obs$obs[i], sim_quant_df, probs = probValues)
+          NPsimInterp(obs$time[i], obs$obs[i], sim_quant_df, probs = probValues)
         )
       }
       not.miss <- sum(!is.na(obs$sim_quant))
@@ -2038,38 +2065,38 @@ plot.PM_sim <- function(x,
       )
       for (i in 1:nrow(npc)) {
         success <- sum(as.numeric(obs$sim_quant < probValues[i]), na.rm = TRUE)
-        
+
         pval <- tryCatch(
           binom.test(success, not.miss, probValues[i],
-                     alternative = "two"
+            alternative = "two"
           )$p.value,
           error = function(e) NA
         )
         npc$prop_less[i] <- round(success / not.miss, 3)
         npc$pval[i] <- pval
       }
-      
+
       # calculate proportion between 0.05 and 0.95
       between <- rep(NA, nrow(obs))
       for (i in 1:nrow(obs)) {
         between[i] <- ifelse(is.na(obs$obs[i]), NA,
-                             NPsimInterp(obs$time[i], obs$obs[i], sim_quant_df, probs = c(0.05, 0.95))
+          NPsimInterp(obs$time[i], obs$obs[i], sim_quant_df, probs = c(0.05, 0.95))
         )
       }
       success90 <- sum(as.numeric(between >= 0.05 & between < 0.95), na.rm = TRUE)
       attr(npc, "05-95") <- success90 / not.miss
       attr(npc, "P-90") <- binom.test(success90, not.miss, 0.9, "two")$p.value
-      
+
       if (not.miss < nrow(obs)) {
         cat(paste("\n", nrow(obs) - not.miss, " observed values were obtained beyond the \nsimulated time range of ", min(sim_quant_df$time), " to ", max(sim_quant_df$time), " and were excluded.", sep = ""))
       }
-      
-      
+
+
       retValue <- modifyList(retValue, list(npc = npc, simsum = sim_quant_df, obs = obs))
       class(retValue) <- c("PMnpc", "list")
     }
   } else { # probs was set to NA or nsim < 10
-    
+
     # plot all simulated profiles
     p <- sim %>%
       group_by(id) %>%
@@ -2081,8 +2108,8 @@ plot.PM_sim <- function(x,
     }
     retValue <- list()
   }
-  
-  
+
+
   # common to all plots
   p <- p %>% plotly::layout(
     xaxis = layout$xaxis,
@@ -2091,8 +2118,8 @@ plot.PM_sim <- function(x,
     legend = layout$legend,
     title = layout$title
   )
-  
-  
+
+
   if (!quiet) print(p)
   retValue <- modifyList(retValue, list(p = p))
   return(invisible(retValue))
@@ -2132,9 +2159,12 @@ plot.PM_sim <- function(x,
 #' each containing a data frame with the summaries for each group in `by`.
 #' @author Michael Neely
 #' @examples
+#' \dontrun{
 #' simEx$summary() # preferred
 #' summary(simEx) # alternative
 #' simEx$summary(at = 2, field = "amt", group = "comp") # group amounts by compartment
+#' }
+
 #' @seealso [PM_sim]
 #' @export
 summary.PM_sim <- function(object, include, exclude, field = "obs", group = NULL,
@@ -2155,30 +2185,33 @@ summary.PM_sim <- function(object, include, exclude, field = "obs", group = NULL
   } else {
     cli::cli_abort(c("x" = "Object does not appear to be a simulation."))
   }
-  
-  
+
+
   # loop through all the statistics
   summ <- purrr::map(
     statistics,
     \(x) {
       if (!is.na(suppressWarnings(as.numeric(x)))) {
         dplyr::summarize(dat,
-                         dplyr::across(-nsim, \(y) quantile(y, probs = as.numeric(x) / 100)),
-                         .by = all_of(!!group)
+          dplyr::across(-nsim, \(y) quantile(y, probs = as.numeric(x) / 100)),
+          .by = all_of(!!group)
         )
       } else {
         dplyr::summarize(dat,
-                         dplyr::across(-nsim, \(y) suppressWarnings(do.call(x, args = list(y, na.rm = TRUE)))),
-                         .by = all_of(!!group)
+          dplyr::across(-nsim, \(y) suppressWarnings(do.call(x, args = list(y, na.rm = TRUE)))),
+          .by = all_of(!!group)
         )
       }
     }
   )
-  
-  
+
+
   names(summ) <- as.character(statistics)
-  if(!"id" %in% group){
-    summ <- purrr::map(summ, \(x) {x$id <- NULL; x})
+  if (!"id" %in% group) {
+    summ <- purrr::map(summ, \(x) {
+      x$id <- NULL
+      x
+    })
   }
   summ <- summ %>%
     list_rbind(names_to = "stat") %>%
@@ -2187,7 +2220,7 @@ summary.PM_sim <- function(object, include, exclude, field = "obs", group = NULL
     attr(summ, "group") <- group
   }
   class(summ) <- c("summary.PM_sim", "data.frame")
-  
+
   return(summ)
 }
 
@@ -2214,7 +2247,10 @@ summary.PM_sim <- function(object, include, exclude, field = "obs", group = NULL
 #' @author Michael Neely
 #' @seealso [summary.PM_sim]
 #' @examples
+#' \dontrun{
 #' simEx$summary()
+#' }
+
 #' @export
 
 print.summary.PM_sim <- function(x, ...) {
@@ -2223,4 +2259,3 @@ print.summary.PM_sim <- function(x, ...) {
     cat("\n", "Grouped by:", paste(crayon::blue(attr(x, "group")), collapse = ", "), "\n")
   }
 }
-

@@ -19,7 +19,9 @@ If RColorBrewer package is installed, will return the list of palette names from
 RColorBrewer::brewer.pal.info. If not, will return the current list as of April 2024.
 }
 \examples{
+\dontrun{
 getPalettes()
+}
 }
 \author{
 Michael Neely

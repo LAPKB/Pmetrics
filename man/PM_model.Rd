@@ -20,6 +20,7 @@ directly in R, or by reading a model text file in the current working directory.
 ## Method `PM_model$update`
 ## ------------------------------------------------
 
+\dontrun{
 mod2 <- modEx$clone() #create an independent copy of modEx called mod2
 mod2$update(list(
   pri = list(
@@ -32,6 +33,7 @@ mod2$update(list(
 #note that they are different now
 mod2
 modEx
+}
 
 ## ------------------------------------------------
 ## Method `PM_model$write`
@@ -116,7 +118,8 @@ first if you want to create a copied, yet independent new model.}
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+\preformatted{\dontrun{
+mod2 <- modEx$clone() #create an independent copy of modEx called mod2
 mod2$update(list(
   pri = list(
    Ke = ab(0, 1), #change the range
@@ -128,6 +131,7 @@ mod2$update(list(
 #note that they are different now
 mod2
 modEx
+}
 }
 \if{html}{\out{</div>}}
 

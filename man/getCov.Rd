@@ -26,7 +26,9 @@ with the number of covariates, their names, and the starting and
 ending column numbers
 }
 \examples{
+\dontrun{
 getCov(dataEx)
+}
 }
 \author{
 Michael Neely

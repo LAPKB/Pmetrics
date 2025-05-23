@@ -21,71 +21,73 @@
 #'
 #' @export
 PM_model <- R6::R6Class("PM_Vmodel",
-                        public = list(
-                          #' @description
-                          #' Build a new PM_model from a variety of inputs.
-                          #' @param model This can be a quoted name of a model text file in the
-                          #' working directory which will be read and passed to Fortran engines.
-                          #' It can be a list of lists that defines the model directly in R. It
-                          #' can also be a [PM_model] object, which will simply rebuild it. See the user
-                          #' manual for more help on directly defining models in R.
-                          #' @param ... Not currently used.
-                          
-                          # the following functions are dummy to permit documentation
-                          new = function(model, ...) {
-                            return(invisible())
-                          },
-                          #' @description
-                          #' Print a model object to the console in readable format
-                          #' @param ... Not used currently.
-                          print = function(...) {
-                            return(invisible())
-                          },
-                          #' @description
-                          #' Update selected elements of a model object
-                          #' @param changes_list The named list containing elements and values to update.
-                          #' Because R6 objects are mini-environments, using typical
-                          #' R notation to copy an object like mod2 <- mod1 can lead to unexpected
-                          #' results since this syntax simply creates a copied object in the same
-                          #' environment. Therefore updating any one object (e.g., mod1 or mod2)
-                          #' will update the other. To avoid this behavior, use the $clone() function
-                          #' first if you want to create a copied, yet independent new model.
-                          #' @examples
-                          #' mod2 <- modEx$clone() #create an independent copy of modEx called mod2
-                          #' mod2$update(list(
-                          #'   pri = list(
-                          #'    Ke = ab(0, 1), #change the range
-                          #'    V = NULL, #this deletes the variable
-                          #'    V0 = ab(10, 100) #add a new variable
-                          #'   ),
-                          #'   sec = "V = V0 * WT" #add a new secondary equation
-                          #' ))
-                          #' #note that they are different now
-                          #' mod2
-                          #' modEx
-                          update = function(changes_list) {
-                            return(invisible())
-                          },
-                          #' @description Write a `PM_model` object to a text file
-                          #' @param model_path Full name of the file to be created, including the path
-                          #' relative to the current working directory
-                          #' @param engine Currently only "npag".
-                          #' @examples
-                          #' \dontrun{
-                          #' modEx$write("model.txt")
-                          #' }
-                          write = function(model_path = "genmodel.txt", engine = "npag") {
-                            return(invisible())
-                          },
-                          #' @description
-                          #' Plot method
-                          #' @details
-                          #' See [plot.PM_model].
-                          #' @param ... Arguments passed to [plot.PM_model]
-                          plot = function(...) {
-                            return(invisible())
-                          }
-                        )
+  public = list(
+    #' @description
+    #' Build a new PM_model from a variety of inputs.
+    #' @param model This can be a quoted name of a model text file in the
+    #' working directory which will be read and passed to Fortran engines.
+    #' It can be a list of lists that defines the model directly in R. It
+    #' can also be a [PM_model] object, which will simply rebuild it. See the user
+    #' manual for more help on directly defining models in R.
+    #' @param ... Not currently used.
+
+    # the following functions are dummy to permit documentation
+    new = function(model, ...) {
+      return(invisible())
+    },
+    #' @description
+    #' Print a model object to the console in readable format
+    #' @param ... Not used currently.
+    print = function(...) {
+      return(invisible())
+    },
+    #' @description
+    #' Update selected elements of a model object
+    #' @param changes_list The named list containing elements and values to update.
+    #' Because R6 objects are mini-environments, using typical
+    #' R notation to copy an object like mod2 <- mod1 can lead to unexpected
+    #' results since this syntax simply creates a copied object in the same
+    #' environment. Therefore updating any one object (e.g., mod1 or mod2)
+    #' will update the other. To avoid this behavior, use the $clone() function
+    #' first if you want to create a copied, yet independent new model.
+    #' @examples
+    #' \dontrun{
+    #' mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+    #' mod2$update(list(
+    #'   pri = list(
+    #'    Ke = ab(0, 1), #change the range
+    #'    V = NULL, #this deletes the variable
+    #'    V0 = ab(10, 100) #add a new variable
+    #'   ),
+    #'   sec = "V = V0 * WT" #add a new secondary equation
+    #' ))
+    #' #note that they are different now
+    #' mod2
+    #' modEx
+    #' }
+    update = function(changes_list) {
+      return(invisible())
+    },
+    #' @description Write a `PM_model` object to a text file
+    #' @param model_path Full name of the file to be created, including the path
+    #' relative to the current working directory
+    #' @param engine Currently only "npag".
+    #' @examples
+    #' \dontrun{
+    #' modEx$write("model.txt")
+    #' }
+    write = function(model_path = "genmodel.txt", engine = "npag") {
+      return(invisible())
+    },
+    #' @description
+    #' Plot method
+    #' @details
+    #' See [plot.PM_model].
+    #' @param ... Arguments passed to [plot.PM_model]
+    plot = function(...) {
+      return(invisible())
+    }
+  )
 )
 
 
@@ -258,122 +260,122 @@ covariate <- function(name, constant = FALSE) {
 # Virtual Class
 # Here is where the model_list is printed to the console
 PM_Vmodel <- R6::R6Class("PM_model",
-                         public = list(
-                           name = NULL, # used by PM_model_legacy
-                           # error = NULL,
-                           initialize = function() {
-                             cli::cli_abort(c("x" = "Unable to initialize abstract class"))
-                           },
-                           print = function(...) {
-                             cat("$model_list\n")
-                             mlist <- self$model_list
-                             blockNames <- names(mlist)
-                             
-                             # internal function to add space blocks
-                             sp <- function(n) {
-                               paste0(rep("   ", n), collapse = "")
-                             }
-                             
-                             sapply(blockNames, function(x) {
-                               if (x == "pri") {
-                                 # cat("\t$pri\n")
-                                 cat(sp(1), "$pri\n")
-                                 for (i in 1:length(mlist$pri)) {
-                                   thispri <- mlist$pri[[i]]
-                                   thisname <- names(mlist$pri)[i]
-                                   if (is.null(thispri$fixed)) {
-                                     cat(paste0(
-                                       sp(2), "$", thisname, "\n", sp(3), "$min: ", round(thispri$min, 3),
-                                       "\n", sp(3), "$max: ", round(thispri$max, 3),
-                                       "\n", sp(3), "$mean: ", round(thispri$mean, 3),
-                                       "\n", sp(3), "$sd: ", round(thispri$sd, 3),
-                                       "\n", sp(3), "$gtz: ", thispri$gtz, "\n"
-                                     ))
-                                   } else {
-                                     cat(paste0(
-                                       sp(2), "$", thisname, "\n", sp(3), "$fixed: ", round(thispri$fixed, 3),
-                                       "\n", sp(3), "$contant: ", thispri$constant,
-                                       "\n"
-                                     ))
-                                   }
-                                 }
-                               } else if (x == "cov") {
-                                 cat("\n", sp(1), "$cov\n")
-                                 for (i in seq_along(mlist$cov)) {
-                                   thisout <- mlist$cov[[i]]
-                                   cat(paste0(
-                                     sp(2), "$covariate: ", thisout$covariate, "\n",
-                                     sp(3), "$constant: ", thisout$constant, "\n",
-                                     "\n"
-                                   ))
-                                 }
-                               } else if (x == "ext") {
-                                 cat("\n", sp(1), "$ext\n", paste0(sp(2), "[", 1:length(mlist$ext), "] \"", mlist$ext, "\"", collapse = "\n "))
-                                 cat("\n")
-                               } else if (x == "sec") {
-                                 cat("\n", sp(1), "$sec\n", paste0(sp(2), "[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = "\n "))
-                                 cat("\n")
-                               } else if (x == "tem") {
-                                 cat("\n", sp(1), "$tem\n", paste0(sp(2), "[1] \"", mlist$tem, "\"", collapse = "\n "))
-                                 cat("\n")
-                               } else if (x == "dif" | x == "eqn") {
-                                 if (is.null(mlist$eqn)) {
-                                   cat("Please change the name of your #dif block to #eqn.")
-                                   mlist$eqn <- mlist$dif
-                                 }
-                                 cat("\n", sp(1), "$eqn\n", paste0(sp(2), "[", 1:length(mlist$eqn), "] \"", mlist$eqn, "\"", collapse = "\n "))
-                                 cat("\n")
-                               } else if (x == "lag") {
-                                 cat("\n", sp(1), "$lag\n", paste0(sp(2), "[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = "\n "))
-                                 cat("\n")
-                               } else if (x == "bol") {
-                                 cat("\n", sp(1), "$bol\n", paste0(sp(2), "[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = "\n "))
-                                 cat("\n")
-                               } else if (x == "fa") {
-                                 cat("\n", sp(1), "$fa\n", paste0(sp(2), "[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = "\n "))
-                                 cat("\n")
-                               } else if (x == "ini") {
-                                 cat("\n", sp(1), "$ini\n", paste0(sp(2), "[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = "\n "))
-                                 cat("\n")
-                               } else if (x == "out") {
-                                 cat("\n", sp(1), "$out\n")
-                                 for (i in 1:length(mlist$out)) {
-                                   thisout <- mlist$out[[i]]
-                                   cat(paste0(
-                                     sp(2), "$Y", i, "\n",
-                                     sp(3), "$val: \"", thisout[[1]], "\"\n",
-                                     sp(3), "$err\n",
-                                     sp(4), "$model\n",
-                                     sp(5), "$additive: ", thisout$err$model$additive, "\n",
-                                     sp(5), "$proportional: ", thisout$err$model$proportional, "\n",
-                                     sp(5), "$constant: ", thisout$err$model$constant, "\n",
-                                     sp(4), "$assay\n",
-                                     sp(5), "$coefficients: ",
-                                     paste0("[", 1:length(thisout$err$assay$coefficients), "] ", thisout$err$assay$coefficients, collapse = ", "), "\n",
-                                     sp(5), "$constant: ", thisout$err$assay$constant, "\n",
-                                     "\n"
-                                   ))
-                                 }
-                                 cat("\n")
-                               }
-                             }) # end sapply
-                             
-                             invisible(self)
-                           },
-                           plot = function(...) {
-                             tryCatch(plot.PM_model(self, ...), error = function(e) {
-                               cat(crayon::red("Error:"), e$message, "\n")
-                             })
-                           },
-                           get_primary = function() {
-                             return(tolower(names(self$model_list$pri)))
-                           }
-                         ),
-                         private = list(
-                           validate = function() {
-                             # add checks here
-                           }
-                         )
+  public = list(
+    name = NULL, # used by PM_model_legacy
+    # error = NULL,
+    initialize = function() {
+      cli::cli_abort(c("x" = "Unable to initialize abstract class"))
+    },
+    print = function(...) {
+      cat("$model_list\n")
+      mlist <- self$model_list
+      blockNames <- names(mlist)
+
+      # internal function to add space blocks
+      sp <- function(n) {
+        paste0(rep("   ", n), collapse = "")
+      }
+
+      sapply(blockNames, function(x) {
+        if (x == "pri") {
+          # cat("\t$pri\n")
+          cat(sp(1), "$pri\n")
+          for (i in 1:length(mlist$pri)) {
+            thispri <- mlist$pri[[i]]
+            thisname <- names(mlist$pri)[i]
+            if (is.null(thispri$fixed)) {
+              cat(paste0(
+                sp(2), "$", thisname, "\n", sp(3), "$min: ", round(thispri$min, 3),
+                "\n", sp(3), "$max: ", round(thispri$max, 3),
+                "\n", sp(3), "$mean: ", round(thispri$mean, 3),
+                "\n", sp(3), "$sd: ", round(thispri$sd, 3),
+                "\n", sp(3), "$gtz: ", thispri$gtz, "\n"
+              ))
+            } else {
+              cat(paste0(
+                sp(2), "$", thisname, "\n", sp(3), "$fixed: ", round(thispri$fixed, 3),
+                "\n", sp(3), "$contant: ", thispri$constant,
+                "\n"
+              ))
+            }
+          }
+        } else if (x == "cov") {
+          cat("\n", sp(1), "$cov\n")
+          for (i in seq_along(mlist$cov)) {
+            thisout <- mlist$cov[[i]]
+            cat(paste0(
+              sp(2), "$covariate: ", thisout$covariate, "\n",
+              sp(3), "$constant: ", thisout$constant, "\n",
+              "\n"
+            ))
+          }
+        } else if (x == "ext") {
+          cat("\n", sp(1), "$ext\n", paste0(sp(2), "[", 1:length(mlist$ext), "] \"", mlist$ext, "\"", collapse = "\n "))
+          cat("\n")
+        } else if (x == "sec") {
+          cat("\n", sp(1), "$sec\n", paste0(sp(2), "[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = "\n "))
+          cat("\n")
+        } else if (x == "tem") {
+          cat("\n", sp(1), "$tem\n", paste0(sp(2), "[1] \"", mlist$tem, "\"", collapse = "\n "))
+          cat("\n")
+        } else if (x == "dif" | x == "eqn") {
+          if (is.null(mlist$eqn)) {
+            cat("Please change the name of your #dif block to #eqn.")
+            mlist$eqn <- mlist$dif
+          }
+          cat("\n", sp(1), "$eqn\n", paste0(sp(2), "[", 1:length(mlist$eqn), "] \"", mlist$eqn, "\"", collapse = "\n "))
+          cat("\n")
+        } else if (x == "lag") {
+          cat("\n", sp(1), "$lag\n", paste0(sp(2), "[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = "\n "))
+          cat("\n")
+        } else if (x == "bol") {
+          cat("\n", sp(1), "$bol\n", paste0(sp(2), "[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = "\n "))
+          cat("\n")
+        } else if (x == "fa") {
+          cat("\n", sp(1), "$fa\n", paste0(sp(2), "[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = "\n "))
+          cat("\n")
+        } else if (x == "ini") {
+          cat("\n", sp(1), "$ini\n", paste0(sp(2), "[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = "\n "))
+          cat("\n")
+        } else if (x == "out") {
+          cat("\n", sp(1), "$out\n")
+          for (i in 1:length(mlist$out)) {
+            thisout <- mlist$out[[i]]
+            cat(paste0(
+              sp(2), "$Y", i, "\n",
+              sp(3), "$val: \"", thisout[[1]], "\"\n",
+              sp(3), "$err\n",
+              sp(4), "$model\n",
+              sp(5), "$additive: ", thisout$err$model$additive, "\n",
+              sp(5), "$proportional: ", thisout$err$model$proportional, "\n",
+              sp(5), "$constant: ", thisout$err$model$constant, "\n",
+              sp(4), "$assay\n",
+              sp(5), "$coefficients: ",
+              paste0("[", 1:length(thisout$err$assay$coefficients), "] ", thisout$err$assay$coefficients, collapse = ", "), "\n",
+              sp(5), "$constant: ", thisout$err$assay$constant, "\n",
+              "\n"
+            ))
+          }
+          cat("\n")
+        }
+      }) # end sapply
+
+      invisible(self)
+    },
+    plot = function(...) {
+      tryCatch(plot.PM_model(self, ...), error = function(e) {
+        cat(crayon::red("Error:"), e$message, "\n")
+      })
+    },
+    get_primary = function() {
+      return(tolower(names(self$model_list$pri)))
+    }
+  ),
+  private = list(
+    validate = function() {
+      # add checks here
+    }
+  )
 )
 
 # PM_input ----------------------------------------------------------------
@@ -523,816 +525,822 @@ PM_Vinput <- R6::R6Class(
 # This creates the model from a model_list object
 #
 PM_model_list <- R6::R6Class("PM_model_list",
-                             inherit = PM_Vmodel,
-                             public = list(
-                               #' @field model_list The model list object
-                               model_list = NULL,
-                               #' @field binary_path The path to the compiled model binary. Used by the rust backend.
-                               binary_path = NULL, 
-                               #' @title Create PM_model from list of lists
-                               #' @description
-                               #' `r lifecycle::badge("stable")`
-                               #' Generates a model from a list of lists.
-                               #' @param model_list The appropriate list.
-                               #' @export
-                               initialize = function(model_list) {
-                                 # guarantees primary keys are lowercase and max first 3 characters
-                                 orig_names <- names(model_list)
-                                 names(model_list) <- private$lower3(names(model_list))
-                                 model_blocks <- names(model_list)
-                                 if (!identical(model_blocks, orig_names)) cli::cli_inform(c("i" = "Model block names standardized to 3 lowercase characters.\n"))
-                                 
-                                 # checks for minimal model requirements
-                                 if (!"pri" %in% model_blocks) cli::cli_abort(c("x" = "Model must have a PRImary block."))
-                                 if (!"out" %in% model_blocks) cli::cli_abort(c("x" = "Model must have an OUTput block."))
-                                 n_out <- length(names(model_list$out))
-                                 for (i in 1:n_out) {
-                                   out_names <- private$lower3(names(model_list$out[[i]]))
-                                   names(model_list$out[[i]]) <- out_names
-                                   if (!"err" %in% out_names) {
-                                     cli::cli_abort(c("x" = "Ensure all outputs have an ERRor block."))
-                                   }
-                                   if (!"model" %in% names(model_list$out[[i]]$err) ||
-                                       !"assay" %in% names(model_list$out[[i]]$err)) {
-                                     cli::cli_abort(c("x" = "ERRor blocks need {.code model} and {.code assay} components."))
-                                   }
-                                   if (!"proportional" %in% names(model_list$out[[i]]$err$model) ||
-                                       !"additive" %in% names(model_list$out[[i]]$err$model)) {
-                                     cli::cli_abort(c("x" = "ERRor model block must be either {.code proportional} or {.code additive}."))
-                                   }
-                                 }
-                                 
-                                 ### check template/equation blocks
-                                 
-                                 # TEMPLATE
-                                 tem <- model_list$tem %>% tolower() 
-                                 
-                                 # EQUATIONS
-                                 eqs <- model_list$eqn %>% tolower()
-                                 
-                                 # no equations found
-                                 if (length(eqs) == 0) { 
-                                   if (length(tem) > 0 && tem != "ode"){ # found template, so get equations from model library
-                                     model_list$eqn <- model_lib(name = tem, show = FALSE) # these are only for plotting purposes
-                                   } else { # no equations or template, so try to parse like old Pmetrics and look for key variable names
-                                     key_vars <- c("ka", "ke", "v", "kcp", "kpc", "cl", "vc", "q", "vp")
-                                     pri <- names(model_list$pri)
-                                     found_pri_keys <- key_vars %in% tolower(pri)
-                                     
-                                     if (!is.null(model_list$sec)) {
-                                       found_sec_keys <- purrr::map_lgl(key_vars, \(x) {
-                                         any(stringr::str_detect(model_list$sec,
-                                                                 stringr::regex(x, ignore_case = TRUE)))
-                                       })
-                                     } else {
-                                       found_sec_keys <- rep(NA, 9)
-                                     }
-                                     
-                                     found_keys <- key_vars[found_pri_keys | found_sec_keys] %>% na.exclude()
-                                     
-                                     if(length(found_keys) > 0){ # we found key variable names
-                                       
-                                       model_list$tem <- tem <- dplyr::case_when(
-                                         all(found_keys %in% c("ke", "v")) ~ "one_comp_iv",
-                                         all(found_keys %in% c("cl", "v")) ~ "one_comp_iv_cl",
-                                         all(found_keys %in% c("ka", "ke", "v")) ~ "two_comp_bolus",
-                                         all(found_keys %in% c("ka", "cl", "v")) ~ "two_comp_bolus_cl",
-                                         all(found_keys %in% c("ke", "v", "kcp", "kpc")) ~ "two_comp_iv",
-                                         all(found_keys %in% c("cl", "vc", "q", "vp")) ~ "two_comp_iv_cl",
-                                         all(found_keys %in% c("ka", "ke", "v", "kcp", "kpc")) ~ "three_comp_bolus",
-                                         all(found_keys %in% c("ka", "cl", "vc", "q", "vp")) ~ "three_comp_bolus_cl",
-                                         .default = "error"
-                                       )
-                                       
-                                     }
-                                     
-                                     # if we didn't find any keys or match a template, then we need to abort
-                                     if(length(found_keys) == 0 || tem == "error"){
-                                       cli::cli_abort(c("x" = "Provide a valid {.code tem} or an {.code eqn} block to define the model equations.",
-                                                        "i" = "See help for {.fn PM_model}."))
-                                     }
-                                     
-                                     # we found a template, then we need to get the equations from the model library
-                                     model_list$eqn <- model_lib(name = tem, show = FALSE)
-                                   }
-                                   
-                                 } else { # length of equations > 0
-                                   if(length(tem) == 0){ # equations present, but no template
-                                     model_list$tem <- tem <- "ode"
-                                   } 
-                                   # otherwise don't need to do anything since model_list$tem is already set
-                                 }
-                                 
-                                 self$model_list <- private$order(model_list)
-                               },
-                               #' @description
-                               #' `r lifecycle::badge("stable")`
-                               #' Transforms model list in to a text file
-                               #' @param model_path Name of the file to be created.
-                               #' @param engine Currently only "npag".
-                               #' @export
-                               write = function(model_path = "genmodel.txt", engine = "npag") {
-                                 engine <- tolower(engine)
-                                 keys <- names(self$model_list)
-                                 lines <- c()
-                                 for (i in 1:length(keys)) {
-                                   lines <- private$write_block(lines, keys[i], self$model_list[[i]], engine)
-                                 }
-                                 fileConn <- file(model_path)
-                                 writeLines(lines, fileConn)
-                                 close(fileConn)
-                                 
-                                 return(model_path)
-                               },
-                               #' @description
-                               #' `r lifecycle::badge("stable")`
-                               #' Fills in the template file with the model information
-                               #' @param file_name Name of the file to be created.
-                               #' @export
-                               write_rust = function(file_name = "parsed_model.txt") {
-                                 model_file <- system.file("Rust/template.rs", package = "Pmetrics")
-                                 content <- readr::read_file(model_file)
-                                 
-                                 # PRIMARY
-                                 constant_parameter <- c()
-                                 random_parameter <- c()
-                                 for (i in 1:length(self$model_list$pri)) {
-                                   if (self$model_list$pri[[i]]$constant) {
-                                     constant_parameter <- c(constant_parameter, names(self$model_list$pri)[[i]])
-                                   } else {
-                                     random_parameter <- c(random_parameter, names(self$model_list$pri)[[i]])
-                                   }
-                                 }
-                                 
-                                 params <- c()
-                                 for (key in random_parameter) {
-                                   params <- append(params, sprintf("%s", tolower(key)))
-                                 }
-                                 content <- gsub("</params>", params %>% paste(collapse = ","), content)
-                                 
-                                 constant <- c()
-                                 for (key in constant_parameter) {
-                                   constant <- append(constant, sprintf("let %s = %s;", tolower(key), private$rust_up(self$model_list$pri[key][[1]]$fixed)))
-                                 }
-                                 content <- gsub("</constant>", constant %>% paste(collapse = "\n"), content)
-                                 
-                                 # COVARIATE
-                                 covs <- c()
-                                 for (key in tolower(purrr::map_chr(self$model_list$cov, \(x) x$covariate))) {
-                                   covs <- append(covs, sprintf("%s", key))
-                                 }
-                                 content <- gsub("</covs>", covs %>% paste(collapse = ","), content)
-                                 
-                                 # SECONDARY
-                                 sec <- self$model_list$sec %>% purrr::map(function(l) {
-                                   l <- private$rust_up(l) # convert fortran/R to rust
-                                   if (stringr::str_detect(l, regex("if|else|[{}]", ignore_case = TRUE))) {
-                                     return(l) # return the corrected line
-                                   } else {
-                                     # contruct the variable declaration
-                                     splitted <- stringr::str_split(l, "=")[[1]]
-                                     lhs <- splitted[1] %>% tolower()
-                                     rhs <- splitted[2] %>% tolower()
-                                     return(paste0(lhs, " = ", rhs, ";\n"))
-                                   }
-                                 }) # end line by line mapping of sec
-                                 content <- gsub("</sec>", sec %>% paste(collapse = ""), content)
-                                 
-                                 # TEMPLATE
-                                 tem <- self$model_list$tem %>% tolower() 
-                                 #content <- gsub("</tem>", tem, content)
-                                 
-                                 # EQUATIONS
-                                 eqs <- self$model_list$eqn %>% tolower()
-                                 
-                                 # count the number of equations by looking for xp() or dx[]
-                                 eqs <- tolower(self$model_list$eqn)
-                                 neqs <- sum(sapply(stringr::str_extract_all(eqs, "xp\\(\\d+\\)|dx\\[\\d+\\]"), function(x) length(x) > 0))
-                                 content <- gsub("</neqs>", neqs, content)
-                                 
-                                 
-                                 eqs <- eqs %>%
-                                   stringr::str_replace_all("[\\(\\[](\\d+)[\\)\\]]", function(a) {
-                                     paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
-                                   }) %>%
-                                   stringr::str_replace_all("xp", "dx") %>%
-                                   purrr::map(\(l) private$rust_up(l)) %>%
-                                   trimws() %>%
-                                   paste(collapse = ";\n") %>%
-                                   paste0(";")
-                                 content <- gsub("</eqn>", eqs, content)
-                                 
-                                 # LAG
-                                 lag <- ""
-                                 for (line in self$model_list$lag %>% tolower()) {
-                                   match <- stringr::str_match(line, "tlag[\\(\\[](\\d+)[\\)\\]]\\s*=\\s*(\\w+)")
-                                   lag <- append(lag, sprintf("%i=>%s,", strtoi(match[2])-1, private$rust_up(match[3])))
-                                 }
-                                 content <- gsub("</lag>", lag %>% paste0(collapse = ""), content)
-                                 
-                                 # FA
-                                 fa <- ""
-                                 for (line in self$model_list$fa %>% tolower()) {
-                                   match <- stringr::str_match(line, "fa[\\(\\[]\\d+)[\\)\\]]\\s*=\\s*(\\w+)")
-                                   fa <- append(fa, sprintf("%i=>%s,", strtoi(match[2]), match[3]))
-                                 }
-                                 fa <- fa %>% purrr::map(\(l) private$rust_up(l))
-                                 content <- gsub("</fa>", fa %>% paste0(collapse = ""), content)
-                                 
-                                 # INITIAL CONDITIONS
-                                 init <- self$model_list$ini %>%
-                                   stringr::str_split("\n") %>%
-                                   unlist() %>%
-                                   stringr::str_trim() %>%
-                                   purrr::discard(~ .x == "") %>%
-                                   purrr::map(function(x) {
-                                     aux <- x %>%
-                                       tolower() %>%
-                                       stringr::str_replace_all("[\\(\\[](\\d+)[\\)\\]]", function(a) {
-                                         paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
-                                       }) %>%
-                                       stringr::str_split("=")
-                                     lhs <- aux[[1]][1]
-                                     rhs <- aux[[1]][2]
-                                     paste0(lhs, "=", private$rust_up(rhs), ";")
-                                   }) %>%
-                                   unlist() %>%
-                                   paste0(collapse = "\n")
-                                 content <- gsub("</init>", init, content)
-                                 
-                                 # OUTPUTS
-                                 out_eqs <- ""
-                                 for (key in names(self$model_list$out)) {
-                                   rhs <- self$model_list$out[[key]]$val %>%
-                                     tolower() %>%
-                                     stringr::str_replace_all("[\\(\\[](\\d+)[\\)\\]]", function(a) {
-                                       paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
-                                     }) %>%
-                                     purrr::map(\(l) private$rust_up(l))
-                                   number <- as.numeric(stringr::str_extract(key, "\\d+"))
-                                   key <- paste0(tolower(stringr::str_sub(key, 1, 1)), "[", number - 1, "]")
-                                   out_eqs <- append(out_eqs, sprintf("%s = %s;\n", key, rhs))
-                                 }
-                                 content <- gsub("</out_eqs>", out_eqs %>% paste(collapse = ""), content)
-                                 
-                                 n_out <- length(self$model_list$out)
-                                 content <- gsub("</nouteqs>", n_out, content)
-                                 
-                                 
-                                 self$model_list <- private$order(self$model_list)
-                                 #browser()
-                                 readr::write_file(content, file_name)
-                               },
-                               #' @description
-                               #' Updates the PM_model object with new values.
-                               #' @param changes_list A list of changes to be made to the model.
-                               #' @examples
-                               #' \dontrun{
-                               #' model$update(list(pri = list(ka = c(0.1, 0.2)), out = list(Y1 = list(val = "C1"))))
-                               #' }
-                               #' @export
-                               update = function(changes_list) {
-                                 keys <- names(changes_list)
-                                 if (!private$lower3(keys) %in% c("pri", "sec", "tem", "dif", "eqn", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")) {
-                                   cli::cli_abort(c(
-                                     "x" = "Invalid block name: {keys}",
-                                     "i" = "See help for {.fn PM_model}."
-                                   ))
-                                 }
-                                 self$model_list <- modifyList(self$model_list, changes_list)
-                               },
-                               #' @description
-                               #' Compiles a PM_model object using the Rust backend.
-                               #' 
-                               #' @details
-                               #' This function compiles a PM_model object into a binary format using the Rust backend.
-                               #' It writes the model to a temporary file, compiles it, and stores the path to the compiled binary.
-                               #' 
-                               #' @note
-                               #' This function can only be used with the Rust backend. If the backend is not set to "rust",
-                               #' an error will be thrown.
-                               #' 
-                               #' @examples
-                               #' \dontrun{
-                               #' model$compile()
-                               #' }
-                               #' 
-                               #' @export
-                               compile = function(){
-                                 if (getPMoptions()$backend != "rust") {
-                                   cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
-                                 }
-                                 if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
-                                   return()
-                                 }
-                                 temp_model <- file.path(tempdir(), "temp_model.txt")
-                                 self$write_rust(temp_model)
-                                 model_path <- tempfile(pattern = "model_", fileext = ".pmx")
-                                 tryCatch(
-                                   {
-                                     compile_model(
-                                       temp_model,
-                                       model_path, self$get_primary()
-                                     )
-                                     self$binary_path <- model_path
-                                   },
-                                   error = function(e) {
-                                     cli::cli_abort(c("x" = "Model compilation failed: {e$message}"))
-                                   }
-                                 )
-                                 file.remove(temp_model)
-                               },
-                               #' @description
-                               #' Simulates a single scenario using the provided data and parameter values.
-                               #'
-                               #' @param data A `PM_data` object containing the data for the simulation.
-                               #' @param spp A numeric vector representing the parameter values for the simulation.
-                               #'
-                               #' @details
-                               #' This function simulates a single scenario using the provided data and parameter values.
-                               #' It requires the data to be a `PM_data` object and the parameter values to be a numeric vector.
-                               #' The length of the parameter vector must match the number of parameters in the model.
-                               #' The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
-                               #' If the model is not already compiled, it will be compiled before the simulation.
-                               #' 
-                               #' If the data contains more than one scenario, only the first scenario will be used for the simulation.
-                               #'
-                               #' @return A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
-                               #'
-                               #' @examples
-                               #' \dontrun{
-                               #' data <- PM_data$new(...)
-                               #' spp <- c(1.0, 2.0, 3.0)
-                               #' result <- model$simulate_one(data, spp)
-                               #' }
-                               #'
-                               #' @export
-                               simulate_one = function(data, spp){
-                                 if (!inherits(data, "PM_data")) {
-                                   cli::cli_abort(c("x" = "Data must be a PM_data object."))
-                                 }
-                                 if (!is.numeric(spp) || !is.vector(spp)) {
-                                   cli::cli_abort(c("x" = "spp must be a numeric vector."))
-                                 }
-                                 if (length(spp) != length(self$parameters())) {
-                                   cli::cli_abort(c("x" = "spp must have the same length as the number of parameters."))
-                                 }
-                                 
-                                 temp_csv <- tempfile(fileext = ".csv")
-                                 data$write(temp_csv, header = FALSE)
-                                 if (getPMoptions()$backend == "rust") {
-                                   if (is.null(self$binary_path)) {
-                                     self$compile()
-                                     if (is.null(self$binary_path)) {
-                                       cli::cli_abort(c("x" = "Model must be compiled before simulating."))
-                                     }
-                                   }
-                                   sim <- simulate_one(temp_csv, self$binary_path, spp)
-                                 } else {
-                                   cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
-                                 }
-                                 sim
-                               },
-                               #' @description
-                               #' Simulates multiple scenarios using the provided data and parameter values.
-                               #'
-                               #' @param data A `PM_data` object containing the data for the simulation.
-                               #' @param theta A matrix of numeric values representing the parameter values for the simulation.
-                               #'
-                               #' @details
-                               #' This function simulates multiple scenarios using the provided data and parameter values.
-                               #' It requires the data to be a `PM_data` object and the parameter values to be a numeric matrix.
-                               #' The number of columns in the parameter matrix must match the number of parameters in the model.
-                               #' The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
-                               #' If the model is not already compiled, it will be compiled before the simulation.
-                               #'
-                               #' @return A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
-                               #'
-                               #' @examples
-                               #' \dontrun{
-                               #' data <- PM_data$new(...)
-                               #' theta <- matrix(c(1.0, 20.0, 2.0, 70.0), nrow = 2, byrow = TRUE)
-                               #' result <- model$simulate_all(data, theta)
-                               #' }
-                               #'
-                               #' @export
-                               simulate_all = function(data, theta){
-                                 if (!inherits(data, "PM_data")) {
-                                   cli::cli_abort(c("x" = "Data must be a PM_data object."))
-                                 }
-                                 if (!is.matrix(theta)) {
-                                   cli::cli_abort(c("x" = "theta must be a matrix."))
-                                 }
-                                 if (!is.numeric(theta)) {
-                                   cli::cli_abort(c("x" = "theta must be a matrix of numeric values."))
-                                 }
-                                 if (ncol(theta) != length(self$parameters())) {
-                                   cli::cli_abort(c("x" = "theta must have the same number of columns as the number of parameters."))
-                                 }
-                                 
-                                 temp_csv <- tempfile(fileext = ".csv")
-                                 data$write(temp_csv, header = FALSE)
-                                 if (getPMoptions()$backend == "rust") {
-                                   if (is.null(self$binary_path)) {
-                                     self$compile()
-                                     if (is.null(self$binary_path)) {
-                                       cli::cli_abort(c("x" = "Model must be compiled before simulating."))
-                                     }
-                                   }
-                                   sim <- simulate_all(temp_csv, self$binary_path, theta)
-                                 } else {
-                                   cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
-                                 }
-                                 sim
-                               },
-                               #' @description
-                               #' Retrieves the list of model parameters from the compiled version of the model.
-                               #' 
-                               #' @details
-                               #' This function returns a list of the model parameters in the compiled version of the model.
-                               #' It only works with the Rust backend. If the backend is not set to "rust", an error will be thrown.
-                               #' 
-                               #' @return A list of model parameters.
-                               #' 
-                               #' @examples
-                               #' \dontrun{
-                               #' model$parameters()
-                               #' }
-                               #' 
-                               #' @export
-                               parameters = function(){
-                                 if (getPMoptions()$backend != "rust") {
-                                   cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
-                                 }
-                                 model_parameters(self$binary_path)
-                               } #end parameters method
-                               
-                             ), #end public list
-                             private = list(
-                               # converts R to rust
-                               rust_up = function(.l) {
-                                 
-                                 ### TEMPORARY TO REMOVE BOLUS[X] UNTIL RUST HANDLES THIS KEYWORD
-                                 if(stringr::str_detect(.l, stringr::regex("bolus[\\[\\(]\\d+[\\]\\)]", ignore_case = TRUE))) {
-                                   .l <- stringr::str_replace(.l, stringr::regex("bolus[\\[\\(]\\d+[\\]\\)]", ignore_case = TRUE), "")
-                                 }
-                                 
-                                 
-                                 
-                                 ### 
-                                 # sequentially modify for operators
-                                 pattern1 <- "(\\((?:[^)(]+|(?1))*+\\))"
-                                 # this pattern recursively finds nested parentheses
-                                 # and returns contents of outer
-                                 for (x in c("abs", "exp", "ln", "log10", "log", "sqrt")) {
-                                   .l <- gsub("dlog10", "log10", .l)
-                                   .l <- gsub(
-                                     pattern = paste0("(?<!\\.)", x, pattern1), # add negative look behind to exclude .fn()
-                                     replacement = paste0("\\1\\.", x, "\\(\\)"),
-                                     x = .l,
-                                     perl = TRUE
-                                   )
-                                 }
-                                 
-                                 .l <- gsub("log\\(", "ln\\(", .l) # log in R and Fortran is ln in Rust
-                                 
-                                 # deal with exponents: **, ^, and exp(). Very tricky. This code was made by chatGPT after about 10 tries.
-                                 exponents <- function(eq) {
-                                   # Remove whitespace
-                                   eq <- gsub("\\s+", "", eq)
-                                   
-                                   # Step 1: Replace exp(...) with placeholders (using a loop)
-                                   exp_counter <- 0
-                                   exp_map <- list()
-                                   
-                                   extract_exp <- function(text) {
-                                     pattern <- "exp\\(([^()]+(?:\\([^()]*\\)[^()]*)*)\\)"
-                                     m <- regexpr(pattern, text, perl = TRUE)
-                                     while (m[1] != -1) {
-                                       match_start <- m[1]
-                                       match_len <- attr(m, "match.length")
-                                       matched <- substr(text, match_start, match_start + match_len - 1)
-                                       inner <- sub("exp\\((.*)\\)", "\\1", matched)
-                                       exp_counter <<- exp_counter + 1
-                                       placeholder <- paste0("__EXP", exp_counter, "__")
-                                       exp_map[[placeholder]] <<- paste0("(", inner, ").exp()")
-                                       text <- paste0(
-                                         substr(text, 1, match_start - 1),
-                                         placeholder,
-                                         substr(text, match_start + match_len, nchar(text))
-                                       )
-                                       m <- regexpr(pattern, text, perl = TRUE)
-                                     }
-                                     return(text)
-                                   }
-                                   
-                                   eq <- extract_exp(eq)
-                                   
-                                   # Step 2: Replace ** and ^ with .powf()
-                                   eq <- gsub("(\\([^()]+\\)|[A-Za-z0-9_\\.]+)\\*\\*\\(?([^\\)\\+\\*/\\-]+)\\)?",
-                                              "\\1.powf(\\2)", eq, perl = TRUE)
-                                   eq <- gsub("(\\([^()]+\\)|[A-Za-z0-9_\\.]+)\\^(\\([^\\)]+\\)|[A-Za-z0-9_\\.]+)",
-                                              "\\1.powf(\\2)", eq, perl = TRUE)
-                                   
-                                   # Step 3: Restore exp placeholders
-                                   for (ph in names(exp_map)) {
-                                     eq <- gsub_fixed(ph, exp_map[[ph]], eq)
-                                   }
-                                   
-                                   return(eq)
-                                 }
-                                 
-                                 # Helper functions for literal substitution
-                                 sub_fixed <- function(pattern, replacement, x) {
-                                   pos <- regexpr(pattern, x, fixed = TRUE)[1]
-                                   if (pos == -1) return(x)
-                                   paste0(substr(x, 1, pos - 1), replacement, substr(x, pos + nchar(pattern), nchar(x)))
-                                 }
-                                 
-                                 gsub_fixed <- function(pattern, replacement, x) {
-                                   while (grepl(pattern, x, fixed = TRUE)) {
-                                     x <- sub_fixed(pattern, replacement, x)
-                                   }
-                                   x
-                                 }
-                                 
-                                 # pattern2 <- "\\*{2}\\(([^)]+)\\)|\\*{2}([\\d.]+)|\\^\\(([^)]+)\\)|\\^([\\d.]+)"
-                                 # replace2 <- "\\.powf\\(\\1\\2\\) " # will use first match if complex, second if simple
-                                 # .l <- gsub(pattern2, replace2, .l, perl = TRUE)
-                                 
-                                 .l <- exponents(.l)
-                                 
-                                 # deal with integers, exclude [x] and alphax
-                                 pattern3 <- "(?<![\\.\\w\\[])(\\d+)(?![\\.\\]\\d])"
-                                 replace3 <- "\\1\\.0"
-                                 .l <- gsub(pattern3, replace3, .l, perl = TRUE)
-                                 
-                                 # deal with if statements
-                                 if_fix <- function(code, .l) {
-                                   if(is.na(.l)) {return(.l)}
-                                   if (code == "if" | code == "else if") {
-                                     pattern <- paste0("^&*", code, "(\\((?:[^)(]+|(?1))*+\\))")
-                                     n_found <- regexpr(pattern = pattern, text = .l, perl = TRUE)
-                                     if (attr(n_found, "match.length") > -1) { # found something
-                                       found <- regmatches(x = .l, m = n_found)
-                                       repl <- paste(gsub("[()]", " ", regmatches(x = .l, m = n_found)), "{")
-                                       .l <- gsub(pattern = found, replacement = repl, x = .l, fixed = TRUE)
-                                       if (grepl("then", .l, ignore.case = TRUE)) { # remove 'then'
-                                         .l <- paste(gsub(pattern = "then", replacement = "", x = .l, ignore.case = TRUE), "\n")
-                                       } else { # single line if
-                                         .l <- paste(.l, "}\n")
-                                       }
-                                     }
-                                   }
-                                   if (code == "else") {
-                                     .l <- gsub(
-                                       pattern = "^&*else",
-                                       replacement = "\\} else \\{\n",
-                                       x = .l, ignore.case = TRUE
-                                     )
-                                   }
-                                   if (code == "end if") {
-                                     .l <- gsub(
-                                       pattern = "^&*end if",
-                                       replacement = "}\n",
-                                       x = .l, ignore.case = TRUE
-                                     )
-                                   }
-                                   return(.l)
-                                 } # end if_fix function
-                                 
-                                 # fix if and if-else blocks
-                                 for (i in c("if", "else if", "else", "end if")) {
-                                   .l <- if_fix(i, .l)
-                                 }
-                                 
-                                 # deal with secondary equations, which don't have xp or dx
-                                 .l2 <- stringr::str_replace_all(.l, "\\s*", "") # eliminate any spaces to make pattern matching easier
-                                 pattern4 <- "^[^=]*(?<!(xp|dx)(\\(|\\[)\\d{1,2}(\\)|\\]))=.*" # match everything left of "=" that doesn't have xp or dx followed by () or [] with one or two digits
-                                 if (!is.na(.l2) && stringr::str_detect(.l2, stringr::regex(pattern4, ignore_case = TRUE))) {
-                                   .l <- paste0("let ", .l)
-                                 }
-                                 
-                                 return(.l)
-                               }, # end rust_up function
-                               lower3 = function(chr) {
-                                 purrr::map_chr(chr, function(x) {
-                                   substr(tolower(x), 1, 3)
-                                 })
-                               },
-                               
-                               # writes blocks in format for .txt file
-                               write_block = function(lines, key, block, engine) {
-                                 
-                                 if (private$lower3(key) == "fa") {
-                                   key <- "f"
-                                 }
-                                 
-                                 
-                                 #print the block name
-                                 lines <- append(lines, sprintf("#%s", key))
-                                 
-                                 #add content depending on the block
-                                 if (private$lower3(key) == "pri") {
-                                   i <- 1
-                                   for (param in names(block)) {
-                                     lines <- append(
-                                       lines,
-                                       if (is.numeric(block[[i]])) {
-                                         sprintf("%s, %f", param, block[[i]])
-                                       } else {
-                                         sprintf("%s, %s", param, block[[i]]$print_to("ab", engine))
-                                       }
-                                     )
-                                     i <- i + 1
-                                   }
-                                 } else if (private$lower3(key) == "cov") {
-                                   for (i in 1:length(block)) {
-                                     lines <- append(
-                                       lines,
-                                       if (block[[i]]$constant) {
-                                         sprintf("%s!", block[[i]]$covariate)
-                                       } else {
-                                         sprintf("%s", block[[i]]$covariate)
-                                       }
-                                     )
-                                   }
-                                 } else if (private$lower3(key) %in% c("bol", "ext")) {
-                                   if (!is.null(names(block))) {
-                                     cli::cli_abort(c("x" = "The {key} block should be quoted equations"))
-                                   }
-                                   for (i in 1:length(block)) {
-                                     lines <- append(lines, sprintf("%s", block[[i]]))
-                                   }
-                                 } else if (private$lower3(key) == "sec") {
-                                   names <- names(block)
-                                   for (i in 1:length(block)) {
-                                     key <- toupper(names[i])
-                                     lines <- append(
-                                       lines,
-                                       if (is.null(names[i]) || nchar(names[i]) == 0) {
-                                         sprintf("%s", block[[i]])
-                                       } else {
-                                         sprintf("%s = %s", key, block[[i]][1])
-                                       }
-                                     )
-                                   }
-                                 } else if (private$lower3(key) == "lag") {
-                                   names <- names(block)
-                                   for (i in 1:length(block)) {
-                                     key <- toupper(names[i])
-                                     lines <- append(
-                                       lines,
-                                       if (is.null(names[i]) || nchar(names[i]) == 0) { # not named list
-                                         if (stringr::str_starts(block[[i]], "&")) { # add on statement
-                                           block[[i]]
-                                         } else {
-                                           # grab right side of equation if there
-                                           rhs <- stringr::str_split(block[[i]][1], "=")[[1]][2]
-                                           if (!is.na(rhs)) {
-                                             rhs <- stringr::str_replace_all(rhs, " ", "")
-                                           } else { # no "=" detected
-                                             cli::cli_abort(c("x" = "No equation detected for lag expression: {block[[i]][1]}"))
-                                           }
-                                           lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
-                                           eqn <- stringr::str_extract(lhs, "\\d+")
-                                           if (is.na(eqn)) { # no number in lhs
-                                             cli::cli_abort(c("x" = "No equation number detected for lag expression: {block[[i]][1]}"))
-                                           }
-                                           sprintf("TLAG[%s] = %s", eqn, rhs)
-                                         }
-                                       } else { # named list
-                                         eqn <- stringr::str_extract(names[i], "\\d+") # standardize
-                                         sprintf("TLAG[%s] = %s", eqn, block[[i]][1])
-                                       }
-                                     )
-                                   }
-                                 } else if (private$lower3(key) == "ini") {
-                                   names <- names(block)
-                                   for (i in 1:length(block)) {
-                                     key <- toupper(names[i])
-                                     lines <- append(
-                                       lines,
-                                       if (is.null(names[i]) || nchar(names[i]) == 0) { # not named list
-                                         if (stringr::str_starts(block[[i]], "&")) { # add on statement
-                                           block[[i]]
-                                         } else { # grab right side of equation if there
-                                           rhs <- stringr::str_split(block[[i]][1], "=")[[1]][2]
-                                           if (!is.na(rhs)) {
-                                             rhs <- stringr::str_replace_all(rhs, " ", "")
-                                           } else { # no "=" detected
-                                             cli::cli_abort(c("x" = "No equation detected for initial conditions: {block[[i]][1]}"))
-                                           }
-                                           lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
-                                           eqn <- stringr::str_extract(lhs, "\\d+")
-                                           if (is.na(eqn)) { # no number in lhs
-                                             cli::cli_abort(c("x" = "No equation number detected for initial conditions: {block[[i]][1]}"))
-                                           }
-                                           sprintf("X[%s] = %s", eqn, rhs)
-                                         }
-                                       } else { # named list
-                                         eqn <- stringr::str_extract(names[i], "\\d+") # standardize
-                                         sprintf("X[%s] = %s", eqn, block[[i]][1])
-                                       }
-                                     )
-                                   }
-                                 } else if (private$lower3(key) == "f") {
-                                   names <- names(block)
-                                   for (i in 1:length(block)) {
-                                     key <- toupper(names[i])
-                                     lines <- append(
-                                       lines,
-                                       if (is.null(names[i]) || nchar(names[i]) == 0) { # not named list
-                                         if (stringr::str_starts(block[[i]], "&")) { # add on statement
-                                           block[[i]]
-                                         } else { # grab right side of equation if there
-                                           rhs <- stringr::str_split(block[[i]][1], "=")[[1]][2]
-                                           if (!is.na(rhs)) {
-                                             rhs <- stringr::str_replace_all(rhs, " ", "")
-                                           } else { # no "=" detected
-                                             cli::cli_abort(c("x" = "No equation detected for bioavailability: {block[[i]][1]}"))
-                                           }
-                                           lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
-                                           eqn <- stringr::str_extract(lhs, "\\d+")
-                                           if (is.na(eqn)) { # no number in lhs
-                                             cli::cli_abort(c("x" = "No equation number detected for bioavailabilty: {block[[i]][1]}"))
-                                           }
-                                           sprintf("FA[%s] = %s", eqn, rhs)
-                                         }
-                                       } else { # named list
-                                         eqn <- stringr::str_extract(names[i], "\\d+") # standardize
-                                         sprintf("FA[%s] = %s", eqn, block[[i]][1])
-                                       }
-                                     )
-                                   }
-                                 } else if (private$lower3(key) == "tem") {
-                                   lines <- append(lines, block)
-                                 } else if (private$lower3(key) == "dif" | private$lower3(key) == "eqn") {
-                                   # names <- names(block)
-                                   for (i in 1:length(block)) {
-                                     # key <- toupper(names[i])
-                                     lines <- append(
-                                       lines,
-                                       block[[i]]
-                                       # if (is.null(names[i]) || nchar(names[i]) == 0) { # not named list
-                                       #   # grab right side of equation if there
-                                       #   rhs <- stringr::str_split(block[[i]][1], "=")[[1]][2]
-                                       #   if (!is.na(rhs)) {
-                                       #     rhs <- stringr::str_replace_all(rhs, " ", "")
-                                       #   } else { # no "=" detected
-                                       #     cli::cli_abort(c("x" = sprintf("Error: No differential equation(s) detected for: %s", block[[i]][1])))
-                                       #   }
-                                       #   lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
-                                       #   eqn <- stringr::str_extract(lhs, "\\d+")
-                                       #   if (is.na(eqn)) { # no number in lhs
-                                       #     cli::cli_abort(c("x" = sprintf("Error: No differential equation number detected for: %s", block[[i]][1])))
-                                       #   }
-                                       #   sprintf("XP(%s) = %s", eqn, rhs)
-                                       # } else { # named list
-                                       #   eqn <- stringr::str_extract(names[i], "\\d+") # standardize
-                                       #   sprintf("XP(%s) = %s", eqn, block[[i]][1])
-                                       # }
-                                     )
-                                   }
-                                 } else if (private$lower3(key) == "out") {
-                                   i <- 1 # keep track of the first outeq
-                                   err_lines <- "#err"
-                                   for (param in names(block)) {
-                                     if (nchar(param) != 2 && nchar(param) != 0) {
-                                       cli::cli_abort(c("x" = "Name output lists as {.code Y1}, {.code Y2}, etc."))
-                                     }
-                                     key <- toupper(names(block)[i])
-                                     lines <- append(
-                                       lines,
-                                       if (nchar(param) == 2) {
-                                         sprintf("%s[%s]=%s", substr(key, 1, 1), substr(key, 2, 2), block[[i]][1])
-                                       } else {
-                                         sprintf("%s", block[[i]][1])
-                                       }
-                                     )
-                                     err_block <- block[[i]]$err
-                                     if (i == 1) {
-                                       err_lines <- append(err_lines, err_block$model$print_to("ab", engine))
-                                     }
-                                     err_lines <- append(err_lines, err_block$assay$print_to("ab", engine))
-                                     
-                                     i <- i + 1
-                                   }
-                                   lines <- append(lines, "")
-                                   lines <- append(lines, err_lines)
-                                 } else {
-                                   cli::cli_abort(c("x" = "Unsupported block named: {key}"))
-                                 }
-                                 lines <- append(lines, "")
-                                 return(lines)
-                               },
-                               order = function(model_list){
-                                 model_list <- model_list[match(c("pri", "cov", "sec", "bol", "lag", "fa", "ini",  "tem", "dif", "eqn", "out", "ext"), names(model_list))]
-                                 model_list[which(is.na(names(model_list)))] <- NULL
-                                 return(model_list)
-                               }
-                             ) # end private
-                             
+  inherit = PM_Vmodel,
+  public = list(
+    #' @field model_list The model list object
+    model_list = NULL,
+    #' @field binary_path The path to the compiled model binary. Used by the rust backend.
+    binary_path = NULL,
+    #' @title Create PM_model from list of lists
+    #' @description
+    #' `r lifecycle::badge("stable")`
+    #' Generates a model from a list of lists.
+    #' @param model_list The appropriate list.
+    #' @export
+    initialize = function(model_list) {
+      # guarantees primary keys are lowercase and max first 3 characters
+      orig_names <- names(model_list)
+      names(model_list) <- private$lower3(names(model_list))
+      model_blocks <- names(model_list)
+      if (!identical(model_blocks, orig_names)) cli::cli_inform(c("i" = "Model block names standardized to 3 lowercase characters.\n"))
+
+      # checks for minimal model requirements
+      if (!"pri" %in% model_blocks) cli::cli_abort(c("x" = "Model must have a PRImary block."))
+      if (!"out" %in% model_blocks) cli::cli_abort(c("x" = "Model must have an OUTput block."))
+      n_out <- length(names(model_list$out))
+      for (i in 1:n_out) {
+        out_names <- private$lower3(names(model_list$out[[i]]))
+        names(model_list$out[[i]]) <- out_names
+        if (!"err" %in% out_names) {
+          cli::cli_abort(c("x" = "Ensure all outputs have an ERRor block."))
+        }
+        if (!"model" %in% names(model_list$out[[i]]$err) ||
+          !"assay" %in% names(model_list$out[[i]]$err)) {
+          cli::cli_abort(c("x" = "ERRor blocks need {.code model} and {.code assay} components."))
+        }
+        if (!"proportional" %in% names(model_list$out[[i]]$err$model) ||
+          !"additive" %in% names(model_list$out[[i]]$err$model)) {
+          cli::cli_abort(c("x" = "ERRor model block must be either {.code proportional} or {.code additive}."))
+        }
+      }
+
+      ### check template/equation blocks
+
+      # TEMPLATE
+      tem <- model_list$tem %>% tolower()
+
+      # EQUATIONS
+      eqs <- model_list$eqn %>% tolower()
+
+      # no equations found
+      if (length(eqs) == 0) {
+        if (length(tem) > 0 && tem != "ode") { # found template, so get equations from model library
+          model_list$eqn <- model_lib(name = tem, show = FALSE) # these are only for plotting purposes
+        } else { # no equations or template, so try to parse like old Pmetrics and look for key variable names
+          key_vars <- c("ka", "ke", "v", "kcp", "kpc", "cl", "vc", "q", "vp")
+          pri <- names(model_list$pri)
+          found_pri_keys <- key_vars %in% tolower(pri)
+
+          if (!is.null(model_list$sec)) {
+            found_sec_keys <- purrr::map_lgl(key_vars, \(x) {
+              any(stringr::str_detect(
+                model_list$sec,
+                stringr::regex(x, ignore_case = TRUE)
+              ))
+            })
+          } else {
+            found_sec_keys <- rep(NA, 9)
+          }
+
+          found_keys <- key_vars[found_pri_keys | found_sec_keys] %>% na.exclude()
+
+          if (length(found_keys) > 0) { # we found key variable names
+
+            model_list$tem <- tem <- dplyr::case_when(
+              all(found_keys %in% c("ke", "v")) ~ "one_comp_iv",
+              all(found_keys %in% c("cl", "v")) ~ "one_comp_iv_cl",
+              all(found_keys %in% c("ka", "ke", "v")) ~ "two_comp_bolus",
+              all(found_keys %in% c("ka", "cl", "v")) ~ "two_comp_bolus_cl",
+              all(found_keys %in% c("ke", "v", "kcp", "kpc")) ~ "two_comp_iv",
+              all(found_keys %in% c("cl", "vc", "q", "vp")) ~ "two_comp_iv_cl",
+              all(found_keys %in% c("ka", "ke", "v", "kcp", "kpc")) ~ "three_comp_bolus",
+              all(found_keys %in% c("ka", "cl", "vc", "q", "vp")) ~ "three_comp_bolus_cl",
+              .default = "error"
+            )
+          }
+
+          # if we didn't find any keys or match a template, then we need to abort
+          if (length(found_keys) == 0 || tem == "error") {
+            cli::cli_abort(c(
+              "x" = "Provide a valid {.code tem} or an {.code eqn} block to define the model equations.",
+              "i" = "See help for {.fn PM_model}."
+            ))
+          }
+
+          # we found a template, then we need to get the equations from the model library
+          model_list$eqn <- model_lib(name = tem, show = FALSE)
+        }
+      } else { # length of equations > 0
+        if (length(tem) == 0) { # equations present, but no template
+          model_list$tem <- tem <- "ode"
+        }
+        # otherwise don't need to do anything since model_list$tem is already set
+      }
+
+      self$model_list <- private$order(model_list)
+    },
+    #' @description
+    #' `r lifecycle::badge("stable")`
+    #' Transforms model list in to a text file
+    #' @param model_path Name of the file to be created.
+    #' @param engine Currently only "npag".
+    #' @export
+    write = function(model_path = "genmodel.txt", engine = "npag") {
+      engine <- tolower(engine)
+      keys <- names(self$model_list)
+      lines <- c()
+      for (i in 1:length(keys)) {
+        lines <- private$write_block(lines, keys[i], self$model_list[[i]], engine)
+      }
+      fileConn <- file(model_path)
+      writeLines(lines, fileConn)
+      close(fileConn)
+
+      return(model_path)
+    },
+    #' @description
+    #' `r lifecycle::badge("stable")`
+    #' Fills in the template file with the model information
+    #' @param file_name Name of the file to be created.
+    #' @export
+    write_rust = function(file_name = "parsed_model.txt") {
+      model_file <- system.file("Rust/template.rs", package = "Pmetrics")
+      content <- readr::read_file(model_file)
+
+      # PRIMARY
+      constant_parameter <- c()
+      random_parameter <- c()
+      for (i in 1:length(self$model_list$pri)) {
+        if (self$model_list$pri[[i]]$constant) {
+          constant_parameter <- c(constant_parameter, names(self$model_list$pri)[[i]])
+        } else {
+          random_parameter <- c(random_parameter, names(self$model_list$pri)[[i]])
+        }
+      }
+
+      params <- c()
+      for (key in random_parameter) {
+        params <- append(params, sprintf("%s", tolower(key)))
+      }
+      content <- gsub("</params>", params %>% paste(collapse = ","), content)
+
+      constant <- c()
+      for (key in constant_parameter) {
+        constant <- append(constant, sprintf("let %s = %s;", tolower(key), private$rust_up(self$model_list$pri[key][[1]]$fixed)))
+      }
+      content <- gsub("</constant>", constant %>% paste(collapse = "\n"), content)
+
+      # COVARIATE
+      covs <- c()
+      for (key in tolower(purrr::map_chr(self$model_list$cov, \(x) x$covariate))) {
+        covs <- append(covs, sprintf("%s", key))
+      }
+      content <- gsub("</covs>", covs %>% paste(collapse = ","), content)
+
+      # SECONDARY
+      sec <- self$model_list$sec %>% purrr::map(function(l) {
+        l <- private$rust_up(l) # convert fortran/R to rust
+        if (stringr::str_detect(l, regex("if|else|[{}]", ignore_case = TRUE))) {
+          return(l) # return the corrected line
+        } else {
+          # contruct the variable declaration
+          splitted <- stringr::str_split(l, "=")[[1]]
+          lhs <- splitted[1] %>% tolower()
+          rhs <- splitted[2] %>% tolower()
+          return(paste0(lhs, " = ", rhs, ";\n"))
+        }
+      }) # end line by line mapping of sec
+      content <- gsub("</sec>", sec %>% paste(collapse = ""), content)
+
+      # TEMPLATE
+      tem <- self$model_list$tem %>% tolower()
+      # content <- gsub("</tem>", tem, content)
+
+      # EQUATIONS
+      eqs <- self$model_list$eqn %>% tolower()
+
+      # count the number of equations by looking for xp() or dx[]
+      eqs <- tolower(self$model_list$eqn)
+      neqs <- sum(sapply(stringr::str_extract_all(eqs, "xp\\(\\d+\\)|dx\\[\\d+\\]"), function(x) length(x) > 0))
+      content <- gsub("</neqs>", neqs, content)
+
+
+      eqs <- eqs %>%
+        stringr::str_replace_all("[\\(\\[](\\d+)[\\)\\]]", function(a) {
+          paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
+        }) %>%
+        stringr::str_replace_all("xp", "dx") %>%
+        purrr::map(\(l) private$rust_up(l)) %>%
+        trimws() %>%
+        paste(collapse = ";\n") %>%
+        paste0(";")
+      content <- gsub("</eqn>", eqs, content)
+
+      # LAG
+      lag <- ""
+      for (line in self$model_list$lag %>% tolower()) {
+        match <- stringr::str_match(line, "tlag[\\(\\[](\\d+)[\\)\\]]\\s*=\\s*(\\w+)")
+        lag <- append(lag, sprintf("%i=>%s,", strtoi(match[2]) - 1, private$rust_up(match[3])))
+      }
+      content <- gsub("</lag>", lag %>% paste0(collapse = ""), content)
+
+      # FA
+      fa <- ""
+      for (line in self$model_list$fa %>% tolower()) {
+        match <- stringr::str_match(line, "fa[\\(\\[]\\d+)[\\)\\]]\\s*=\\s*(\\w+)")
+        fa <- append(fa, sprintf("%i=>%s,", strtoi(match[2]), match[3]))
+      }
+      fa <- fa %>% purrr::map(\(l) private$rust_up(l))
+      content <- gsub("</fa>", fa %>% paste0(collapse = ""), content)
+
+      # INITIAL CONDITIONS
+      init <- self$model_list$ini %>%
+        stringr::str_split("\n") %>%
+        unlist() %>%
+        stringr::str_trim() %>%
+        purrr::discard(~ .x == "") %>%
+        purrr::map(function(x) {
+          aux <- x %>%
+            tolower() %>%
+            stringr::str_replace_all("[\\(\\[](\\d+)[\\)\\]]", function(a) {
+              paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
+            }) %>%
+            stringr::str_split("=")
+          lhs <- aux[[1]][1]
+          rhs <- aux[[1]][2]
+          paste0(lhs, "=", private$rust_up(rhs), ";")
+        }) %>%
+        unlist() %>%
+        paste0(collapse = "\n")
+      content <- gsub("</init>", init, content)
+
+      # OUTPUTS
+      out_eqs <- ""
+      for (key in names(self$model_list$out)) {
+        rhs <- self$model_list$out[[key]]$val %>%
+          tolower() %>%
+          stringr::str_replace_all("[\\(\\[](\\d+)[\\)\\]]", function(a) {
+            paste0("[", as.integer(substring(a, 2, 2)) - 1, "]")
+          }) %>%
+          purrr::map(\(l) private$rust_up(l))
+        number <- as.numeric(stringr::str_extract(key, "\\d+"))
+        key <- paste0(tolower(stringr::str_sub(key, 1, 1)), "[", number - 1, "]")
+        out_eqs <- append(out_eqs, sprintf("%s = %s;\n", key, rhs))
+      }
+      content <- gsub("</out_eqs>", out_eqs %>% paste(collapse = ""), content)
+
+      n_out <- length(self$model_list$out)
+      content <- gsub("</nouteqs>", n_out, content)
+
+
+      self$model_list <- private$order(self$model_list)
+      # browser()
+      readr::write_file(content, file_name)
+    },
+    #' @description
+    #' Updates the PM_model object with new values.
+    #' @param changes_list A list of changes to be made to the model.
+    #' @examples
+    #' \dontrun{
+    #' model$update(list(pri = list(ka = c(0.1, 0.2)), out = list(Y1 = list(val = "C1"))))
+    #' }
+    #' @export
+    update = function(changes_list) {
+      keys <- names(changes_list)
+      if (!private$lower3(keys) %in% c("pri", "sec", "tem", "dif", "eqn", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")) {
+        cli::cli_abort(c(
+          "x" = "Invalid block name: {keys}",
+          "i" = "See help for {.fn PM_model}."
+        ))
+      }
+      self$model_list <- modifyList(self$model_list, changes_list)
+    },
+    #' @description
+    #' Compiles a PM_model object using the Rust backend.
+    #'
+    #' @details
+    #' This function compiles a PM_model object into a binary format using the Rust backend.
+    #' It writes the model to a temporary file, compiles it, and stores the path to the compiled binary.
+    #'
+    #' @note
+    #' This function can only be used with the Rust backend. If the backend is not set to "rust",
+    #' an error will be thrown.
+    #'
+    #' @examples
+    #' \dontrun{
+    #' model$compile()
+    #' }
+    #'
+    #' @export
+    compile = function() {
+      if (getPMoptions()$backend != "rust") {
+        cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
+      }
+      if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
+        return()
+      }
+      temp_model <- file.path(tempdir(), "temp_model.txt")
+      self$write_rust(temp_model)
+      model_path <- tempfile(pattern = "model_", fileext = ".pmx")
+      tryCatch(
+        {
+          compile_model(
+            temp_model,
+            model_path, self$get_primary()
+          )
+          self$binary_path <- model_path
+        },
+        error = function(e) {
+          cli::cli_abort(c("x" = "Model compilation failed: {e$message}"))
+        }
+      )
+      file.remove(temp_model)
+    },
+    #' @description
+    #' Simulates a single scenario using the provided data and parameter values.
+    #'
+    #' @param data A `PM_data` object containing the data for the simulation.
+    #' @param spp A numeric vector representing the parameter values for the simulation.
+    #'
+    #' @details
+    #' This function simulates a single scenario using the provided data and parameter values.
+    #' It requires the data to be a `PM_data` object and the parameter values to be a numeric vector.
+    #' The length of the parameter vector must match the number of parameters in the model.
+    #' The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
+    #' If the model is not already compiled, it will be compiled before the simulation.
+    #'
+    #' If the data contains more than one scenario, only the first scenario will be used for the simulation.
+    #'
+    #' @return A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
+    #'
+    #' @examples
+    #' \dontrun{
+    #' data <- PM_data$new(...)
+    #' spp <- c(1.0, 2.0, 3.0)
+    #' result <- model$simulate_one(data, spp)
+    #' }
+    #'
+    #' @export
+    simulate_one = function(data, spp) {
+      if (!inherits(data, "PM_data")) {
+        cli::cli_abort(c("x" = "Data must be a PM_data object."))
+      }
+      if (!is.numeric(spp) || !is.vector(spp)) {
+        cli::cli_abort(c("x" = "spp must be a numeric vector."))
+      }
+      if (length(spp) != length(self$parameters())) {
+        cli::cli_abort(c("x" = "spp must have the same length as the number of parameters."))
+      }
+
+      temp_csv <- tempfile(fileext = ".csv")
+      data$write(temp_csv, header = FALSE)
+      if (getPMoptions()$backend == "rust") {
+        if (is.null(self$binary_path)) {
+          self$compile()
+          if (is.null(self$binary_path)) {
+            cli::cli_abort(c("x" = "Model must be compiled before simulating."))
+          }
+        }
+        sim <- simulate_one(temp_csv, self$binary_path, spp)
+      } else {
+        cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
+      }
+      sim
+    },
+    #' @description
+    #' Simulates multiple scenarios using the provided data and parameter values.
+    #'
+    #' @param data A `PM_data` object containing the data for the simulation.
+    #' @param theta A matrix of numeric values representing the parameter values for the simulation.
+    #'
+    #' @details
+    #' This function simulates multiple scenarios using the provided data and parameter values.
+    #' It requires the data to be a `PM_data` object and the parameter values to be a numeric matrix.
+    #' The number of columns in the parameter matrix must match the number of parameters in the model.
+    #' The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
+    #' If the model is not already compiled, it will be compiled before the simulation.
+    #'
+    #' @return A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
+    #'
+    #' @examples
+    #' \dontrun{
+    #' data <- PM_data$new(...)
+    #' theta <- matrix(c(1.0, 20.0, 2.0, 70.0), nrow = 2, byrow = TRUE)
+    #' result <- model$simulate_all(data, theta)
+    #' }
+    #'
+    #' @export
+    simulate_all = function(data, theta) {
+      if (!inherits(data, "PM_data")) {
+        cli::cli_abort(c("x" = "Data must be a PM_data object."))
+      }
+      if (!is.matrix(theta)) {
+        cli::cli_abort(c("x" = "theta must be a matrix."))
+      }
+      if (!is.numeric(theta)) {
+        cli::cli_abort(c("x" = "theta must be a matrix of numeric values."))
+      }
+      if (ncol(theta) != length(self$parameters())) {
+        cli::cli_abort(c("x" = "theta must have the same number of columns as the number of parameters."))
+      }
+
+      temp_csv <- tempfile(fileext = ".csv")
+      data$write(temp_csv, header = FALSE)
+      if (getPMoptions()$backend == "rust") {
+        if (is.null(self$binary_path)) {
+          self$compile()
+          if (is.null(self$binary_path)) {
+            cli::cli_abort(c("x" = "Model must be compiled before simulating."))
+          }
+        }
+        sim <- simulate_all(temp_csv, self$binary_path, theta)
+      } else {
+        cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
+      }
+      sim
+    },
+    #' @description
+    #' Retrieves the list of model parameters from the compiled version of the model.
+    #'
+    #' @details
+    #' This function returns a list of the model parameters in the compiled version of the model.
+    #' It only works with the Rust backend. If the backend is not set to "rust", an error will be thrown.
+    #'
+    #' @return A list of model parameters.
+    #'
+    #' @examples
+    #' \dontrun{
+    #' model$parameters()
+    #' }
+    #'
+    #' @export
+    parameters = function() {
+      if (getPMoptions()$backend != "rust") {
+        cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
+      }
+      model_parameters(self$binary_path)
+    } # end parameters method
+  ), # end public list
+  private = list(
+    # converts R to rust
+    rust_up = function(.l) {
+      ### TEMPORARY TO REMOVE BOLUS[X] UNTIL RUST HANDLES THIS KEYWORD
+      if (stringr::str_detect(.l, stringr::regex("bolus[\\[\\(]\\d+[\\]\\)]", ignore_case = TRUE))) {
+        .l <- stringr::str_replace(.l, stringr::regex("bolus[\\[\\(]\\d+[\\]\\)]", ignore_case = TRUE), "")
+      }
+
+
+
+      ###
+      # sequentially modify for operators
+      pattern1 <- "(\\((?:[^)(]+|(?1))*+\\))"
+      # this pattern recursively finds nested parentheses
+      # and returns contents of outer
+      for (x in c("abs", "exp", "ln", "log10", "log", "sqrt")) {
+        .l <- gsub("dlog10", "log10", .l)
+        .l <- gsub(
+          pattern = paste0("(?<!\\.)", x, pattern1), # add negative look behind to exclude .fn()
+          replacement = paste0("\\1\\.", x, "\\(\\)"),
+          x = .l,
+          perl = TRUE
+        )
+      }
+
+      .l <- gsub("log\\(", "ln\\(", .l) # log in R and Fortran is ln in Rust
+
+      # deal with exponents: **, ^, and exp(). Very tricky. This code was made by chatGPT after about 10 tries.
+      exponents <- function(eq) {
+        # Remove whitespace
+        eq <- gsub("\\s+", "", eq)
+
+        # Step 1: Replace exp(...) with placeholders (using a loop)
+        exp_counter <- 0
+        exp_map <- list()
+
+        extract_exp <- function(text) {
+          pattern <- "exp\\(([^()]+(?:\\([^()]*\\)[^()]*)*)\\)"
+          m <- regexpr(pattern, text, perl = TRUE)
+          while (m[1] != -1) {
+            match_start <- m[1]
+            match_len <- attr(m, "match.length")
+            matched <- substr(text, match_start, match_start + match_len - 1)
+            inner <- sub("exp\\((.*)\\)", "\\1", matched)
+            exp_counter <<- exp_counter + 1
+            placeholder <- paste0("__EXP", exp_counter, "__")
+            exp_map[[placeholder]] <<- paste0("(", inner, ").exp()")
+            text <- paste0(
+              substr(text, 1, match_start - 1),
+              placeholder,
+              substr(text, match_start + match_len, nchar(text))
+            )
+            m <- regexpr(pattern, text, perl = TRUE)
+          }
+          return(text)
+        }
+
+        eq <- extract_exp(eq)
+
+        # Step 2: Replace ** and ^ with .powf()
+        eq <- gsub("(\\([^()]+\\)|[A-Za-z0-9_\\.]+)\\*\\*\\(?([^\\)\\+\\*/\\-]+)\\)?",
+          "\\1.powf(\\2)", eq,
+          perl = TRUE
+        )
+        eq <- gsub("(\\([^()]+\\)|[A-Za-z0-9_\\.]+)\\^(\\([^\\)]+\\)|[A-Za-z0-9_\\.]+)",
+          "\\1.powf(\\2)", eq,
+          perl = TRUE
+        )
+
+        # Step 3: Restore exp placeholders
+        for (ph in names(exp_map)) {
+          eq <- gsub_fixed(ph, exp_map[[ph]], eq)
+        }
+
+        return(eq)
+      }
+
+      # Helper functions for literal substitution
+      sub_fixed <- function(pattern, replacement, x) {
+        pos <- regexpr(pattern, x, fixed = TRUE)[1]
+        if (pos == -1) {
+          return(x)
+        }
+        paste0(substr(x, 1, pos - 1), replacement, substr(x, pos + nchar(pattern), nchar(x)))
+      }
+
+      gsub_fixed <- function(pattern, replacement, x) {
+        while (grepl(pattern, x, fixed = TRUE)) {
+          x <- sub_fixed(pattern, replacement, x)
+        }
+        x
+      }
+
+      # pattern2 <- "\\*{2}\\(([^)]+)\\)|\\*{2}([\\d.]+)|\\^\\(([^)]+)\\)|\\^([\\d.]+)"
+      # replace2 <- "\\.powf\\(\\1\\2\\) " # will use first match if complex, second if simple
+      # .l <- gsub(pattern2, replace2, .l, perl = TRUE)
+
+      .l <- exponents(.l)
+
+      # deal with integers, exclude [x] and alphax
+      pattern3 <- "(?<![\\.\\w\\[])(\\d+)(?![\\.\\]\\d])"
+      replace3 <- "\\1\\.0"
+      .l <- gsub(pattern3, replace3, .l, perl = TRUE)
+
+      # deal with if statements
+      if_fix <- function(code, .l) {
+        if (is.na(.l)) {
+          return(.l)
+        }
+        if (code == "if" | code == "else if") {
+          pattern <- paste0("^&*", code, "(\\((?:[^)(]+|(?1))*+\\))")
+          n_found <- regexpr(pattern = pattern, text = .l, perl = TRUE)
+          if (attr(n_found, "match.length") > -1) { # found something
+            found <- regmatches(x = .l, m = n_found)
+            repl <- paste(gsub("[()]", " ", regmatches(x = .l, m = n_found)), "{")
+            .l <- gsub(pattern = found, replacement = repl, x = .l, fixed = TRUE)
+            if (grepl("then", .l, ignore.case = TRUE)) { # remove 'then'
+              .l <- paste(gsub(pattern = "then", replacement = "", x = .l, ignore.case = TRUE), "\n")
+            } else { # single line if
+              .l <- paste(.l, "}\n")
+            }
+          }
+        }
+        if (code == "else") {
+          .l <- gsub(
+            pattern = "^&*else",
+            replacement = "\\} else \\{\n",
+            x = .l, ignore.case = TRUE
+          )
+        }
+        if (code == "end if") {
+          .l <- gsub(
+            pattern = "^&*end if",
+            replacement = "}\n",
+            x = .l, ignore.case = TRUE
+          )
+        }
+        return(.l)
+      } # end if_fix function
+
+      # fix if and if-else blocks
+      for (i in c("if", "else if", "else", "end if")) {
+        .l <- if_fix(i, .l)
+      }
+
+      # deal with secondary equations, which don't have xp or dx
+      .l2 <- stringr::str_replace_all(.l, "\\s*", "") # eliminate any spaces to make pattern matching easier
+      pattern4 <- "^[^=]*(?<!(xp|dx)(\\(|\\[)\\d{1,2}(\\)|\\]))=.*" # match everything left of "=" that doesn't have xp or dx followed by () or [] with one or two digits
+      if (!is.na(.l2) && stringr::str_detect(.l2, stringr::regex(pattern4, ignore_case = TRUE))) {
+        .l <- paste0("let ", .l)
+      }
+
+      return(.l)
+    }, # end rust_up function
+    lower3 = function(chr) {
+      purrr::map_chr(chr, function(x) {
+        substr(tolower(x), 1, 3)
+      })
+    },
+
+    # writes blocks in format for .txt file
+    write_block = function(lines, key, block, engine) {
+      if (private$lower3(key) == "fa") {
+        key <- "f"
+      }
+
+
+      # print the block name
+      lines <- append(lines, sprintf("#%s", key))
+
+      # add content depending on the block
+      if (private$lower3(key) == "pri") {
+        i <- 1
+        for (param in names(block)) {
+          lines <- append(
+            lines,
+            if (is.numeric(block[[i]])) {
+              sprintf("%s, %f", param, block[[i]])
+            } else {
+              sprintf("%s, %s", param, block[[i]]$print_to("ab", engine))
+            }
+          )
+          i <- i + 1
+        }
+      } else if (private$lower3(key) == "cov") {
+        for (i in 1:length(block)) {
+          lines <- append(
+            lines,
+            if (block[[i]]$constant) {
+              sprintf("%s!", block[[i]]$covariate)
+            } else {
+              sprintf("%s", block[[i]]$covariate)
+            }
+          )
+        }
+      } else if (private$lower3(key) %in% c("bol", "ext")) {
+        if (!is.null(names(block))) {
+          cli::cli_abort(c("x" = "The {key} block should be quoted equations"))
+        }
+        for (i in 1:length(block)) {
+          lines <- append(lines, sprintf("%s", block[[i]]))
+        }
+      } else if (private$lower3(key) == "sec") {
+        names <- names(block)
+        for (i in 1:length(block)) {
+          key <- toupper(names[i])
+          lines <- append(
+            lines,
+            if (is.null(names[i]) || nchar(names[i]) == 0) {
+              sprintf("%s", block[[i]])
+            } else {
+              sprintf("%s = %s", key, block[[i]][1])
+            }
+          )
+        }
+      } else if (private$lower3(key) == "lag") {
+        names <- names(block)
+        for (i in 1:length(block)) {
+          key <- toupper(names[i])
+          lines <- append(
+            lines,
+            if (is.null(names[i]) || nchar(names[i]) == 0) { # not named list
+              if (stringr::str_starts(block[[i]], "&")) { # add on statement
+                block[[i]]
+              } else {
+                # grab right side of equation if there
+                rhs <- stringr::str_split(block[[i]][1], "=")[[1]][2]
+                if (!is.na(rhs)) {
+                  rhs <- stringr::str_replace_all(rhs, " ", "")
+                } else { # no "=" detected
+                  cli::cli_abort(c("x" = "No equation detected for lag expression: {block[[i]][1]}"))
+                }
+                lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
+                eqn <- stringr::str_extract(lhs, "\\d+")
+                if (is.na(eqn)) { # no number in lhs
+                  cli::cli_abort(c("x" = "No equation number detected for lag expression: {block[[i]][1]}"))
+                }
+                sprintf("TLAG[%s] = %s", eqn, rhs)
+              }
+            } else { # named list
+              eqn <- stringr::str_extract(names[i], "\\d+") # standardize
+              sprintf("TLAG[%s] = %s", eqn, block[[i]][1])
+            }
+          )
+        }
+      } else if (private$lower3(key) == "ini") {
+        names <- names(block)
+        for (i in 1:length(block)) {
+          key <- toupper(names[i])
+          lines <- append(
+            lines,
+            if (is.null(names[i]) || nchar(names[i]) == 0) { # not named list
+              if (stringr::str_starts(block[[i]], "&")) { # add on statement
+                block[[i]]
+              } else { # grab right side of equation if there
+                rhs <- stringr::str_split(block[[i]][1], "=")[[1]][2]
+                if (!is.na(rhs)) {
+                  rhs <- stringr::str_replace_all(rhs, " ", "")
+                } else { # no "=" detected
+                  cli::cli_abort(c("x" = "No equation detected for initial conditions: {block[[i]][1]}"))
+                }
+                lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
+                eqn <- stringr::str_extract(lhs, "\\d+")
+                if (is.na(eqn)) { # no number in lhs
+                  cli::cli_abort(c("x" = "No equation number detected for initial conditions: {block[[i]][1]}"))
+                }
+                sprintf("X[%s] = %s", eqn, rhs)
+              }
+            } else { # named list
+              eqn <- stringr::str_extract(names[i], "\\d+") # standardize
+              sprintf("X[%s] = %s", eqn, block[[i]][1])
+            }
+          )
+        }
+      } else if (private$lower3(key) == "f") {
+        names <- names(block)
+        for (i in 1:length(block)) {
+          key <- toupper(names[i])
+          lines <- append(
+            lines,
+            if (is.null(names[i]) || nchar(names[i]) == 0) { # not named list
+              if (stringr::str_starts(block[[i]], "&")) { # add on statement
+                block[[i]]
+              } else { # grab right side of equation if there
+                rhs <- stringr::str_split(block[[i]][1], "=")[[1]][2]
+                if (!is.na(rhs)) {
+                  rhs <- stringr::str_replace_all(rhs, " ", "")
+                } else { # no "=" detected
+                  cli::cli_abort(c("x" = "No equation detected for bioavailability: {block[[i]][1]}"))
+                }
+                lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
+                eqn <- stringr::str_extract(lhs, "\\d+")
+                if (is.na(eqn)) { # no number in lhs
+                  cli::cli_abort(c("x" = "No equation number detected for bioavailabilty: {block[[i]][1]}"))
+                }
+                sprintf("FA[%s] = %s", eqn, rhs)
+              }
+            } else { # named list
+              eqn <- stringr::str_extract(names[i], "\\d+") # standardize
+              sprintf("FA[%s] = %s", eqn, block[[i]][1])
+            }
+          )
+        }
+      } else if (private$lower3(key) == "tem") {
+        lines <- append(lines, block)
+      } else if (private$lower3(key) == "dif" | private$lower3(key) == "eqn") {
+        # names <- names(block)
+        for (i in 1:length(block)) {
+          # key <- toupper(names[i])
+          lines <- append(
+            lines,
+            block[[i]]
+            # if (is.null(names[i]) || nchar(names[i]) == 0) { # not named list
+            #   # grab right side of equation if there
+            #   rhs <- stringr::str_split(block[[i]][1], "=")[[1]][2]
+            #   if (!is.na(rhs)) {
+            #     rhs <- stringr::str_replace_all(rhs, " ", "")
+            #   } else { # no "=" detected
+            #     cli::cli_abort(c("x" = sprintf("Error: No differential equation(s) detected for: %s", block[[i]][1])))
+            #   }
+            #   lhs <- stringr::str_split(block[[i]][1], "=")[[1]][1]
+            #   eqn <- stringr::str_extract(lhs, "\\d+")
+            #   if (is.na(eqn)) { # no number in lhs
+            #     cli::cli_abort(c("x" = sprintf("Error: No differential equation number detected for: %s", block[[i]][1])))
+            #   }
+            #   sprintf("XP(%s) = %s", eqn, rhs)
+            # } else { # named list
+            #   eqn <- stringr::str_extract(names[i], "\\d+") # standardize
+            #   sprintf("XP(%s) = %s", eqn, block[[i]][1])
+            # }
+          )
+        }
+      } else if (private$lower3(key) == "out") {
+        i <- 1 # keep track of the first outeq
+        err_lines <- "#err"
+        for (param in names(block)) {
+          if (nchar(param) != 2 && nchar(param) != 0) {
+            cli::cli_abort(c("x" = "Name output lists as {.code Y1}, {.code Y2}, etc."))
+          }
+          key <- toupper(names(block)[i])
+          lines <- append(
+            lines,
+            if (nchar(param) == 2) {
+              sprintf("%s[%s]=%s", substr(key, 1, 1), substr(key, 2, 2), block[[i]][1])
+            } else {
+              sprintf("%s", block[[i]][1])
+            }
+          )
+          err_block <- block[[i]]$err
+          if (i == 1) {
+            err_lines <- append(err_lines, err_block$model$print_to("ab", engine))
+          }
+          err_lines <- append(err_lines, err_block$assay$print_to("ab", engine))
+
+          i <- i + 1
+        }
+        lines <- append(lines, "")
+        lines <- append(lines, err_lines)
+      } else {
+        cli::cli_abort(c("x" = "Unsupported block named: {key}"))
+      }
+      lines <- append(lines, "")
+      return(lines)
+    },
+    order = function(model_list) {
+      model_list <- model_list[match(c("pri", "cov", "sec", "bol", "lag", "fa", "ini", "tem", "dif", "eqn", "out", "ext"), names(model_list))]
+      model_list[which(is.na(names(model_list)))] <- NULL
+      return(model_list)
+    }
+  ) # end private
 )
 
 
@@ -1340,202 +1348,202 @@ PM_model_list <- R6::R6Class("PM_model_list",
 # Read model.txt file -----------------------------------------------------
 
 PM_model_file <- R6::R6Class("PM_model_file",
-                             inherit = PM_model_list,
-                             public = list(
-                               content = NULL,
-                               initialize = function(model_filename) {
-                                 self$name <- basename(model_filename)[1]
-                                 self$model_list <- private$makeR6model(model_filename)
-                                 self$content <- readChar(model_filename, file.info(model_filename)$size)
-                               }
-                             ),
-                             private = list(
-                               makeR6model = function(file) {
-                                 msg <- ""
-                                 blocks <- parseBlocks(file) # this function is in PMutilities
-                                 # check for reserved variable names
-                                 reserved <- c(
-                                   "ndim", "t", "x", "xp", "rpar", "ipar", "p", "r", "b", "npl", "numeqt", "ndrug", "nadd", "rateiv", "cv",
-                                   "n", "nd", "ni", "nup", "nuic", "np", "nbcomp", "psym", "fa", "lag", "tin", "tout"
-                                 )
-                                 conflict <- c(match(tolower(blocks$primVar), reserved, nomatch = -99), match(tolower(blocks$secVar), reserved, nomatch = -99), match(tolower(blocks$covar), reserved, nomatch = -99))
-                                 nconflict <- sum(conflict != -99)
-                                 if (nconflict > 0) {
-                                   msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
-                                   return(list(status = -1, msg = msg))
-                                 }
-                                 
-                                 if (length(grep(";", blocks$primVar)) > 0) {
-                                   # using ';' as separator
-                                   sep <- ";"
-                                 } else {
-                                   if (length(grep(",", blocks$primVar)) > 0) {
-                                     # using ',' as separator
-                                     sep <- ","
-                                   } else {
-                                     return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n"))
-                                   }
-                                 }
-                                 
-                                 # build model_list to be given to PM_model_list
-                                 model_list <- list()
-                                 # this function makes pri for PM_model
-                                 model_list$pri <- sapply(strsplit(blocks$primVar, sep), function(x) {
-                                   # find out if constrained to be positive
-                                   const_pos <- any(grepl("\\+", x))
-                                   if (const_pos) {
-                                     x <- gsub("\\+", "", x)
-                                     gtz <- TRUE
-                                     msg <- c(msg, "Truncating variables to positive ranges is not recommended.\n
+  inherit = PM_model_list,
+  public = list(
+    content = NULL,
+    initialize = function(model_filename) {
+      self$name <- basename(model_filename)[1]
+      self$model_list <- private$makeR6model(model_filename)
+      self$content <- readChar(model_filename, file.info(model_filename)$size)
+    }
+  ),
+  private = list(
+    makeR6model = function(file) {
+      msg <- ""
+      blocks <- parseBlocks(file) # this function is in PMutilities
+      # check for reserved variable names
+      reserved <- c(
+        "ndim", "t", "x", "xp", "rpar", "ipar", "p", "r", "b", "npl", "numeqt", "ndrug", "nadd", "rateiv", "cv",
+        "n", "nd", "ni", "nup", "nuic", "np", "nbcomp", "psym", "fa", "lag", "tin", "tout"
+      )
+      conflict <- c(match(tolower(blocks$primVar), reserved, nomatch = -99), match(tolower(blocks$secVar), reserved, nomatch = -99), match(tolower(blocks$covar), reserved, nomatch = -99))
+      nconflict <- sum(conflict != -99)
+      if (nconflict > 0) {
+        msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
+        return(list(status = -1, msg = msg))
+      }
+
+      if (length(grep(";", blocks$primVar)) > 0) {
+        # using ';' as separator
+        sep <- ";"
+      } else {
+        if (length(grep(",", blocks$primVar)) > 0) {
+          # using ',' as separator
+          sep <- ","
+        } else {
+          return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n"))
+        }
+      }
+
+      # build model_list to be given to PM_model_list
+      model_list <- list()
+      # this function makes pri for PM_model
+      model_list$pri <- sapply(strsplit(blocks$primVar, sep), function(x) {
+        # find out if constrained to be positive
+        const_pos <- any(grepl("\\+", x))
+        if (const_pos) {
+          x <- gsub("\\+", "", x)
+          gtz <- TRUE
+          msg <- c(msg, "Truncating variables to positive ranges is not recommended.\n
                Consider log transformation instead.\n")
-                                   } else {
-                                     gtz <- FALSE
-                                   }
-                                   
-                                   # find out if constant
-                                   const_var <- any(grepl("!", x))
-                                   if (const_var) {
-                                     x <- gsub("!", "", x)
-                                   }
-                                   
-                                   values <- as.numeric(x[-1])
-                                   
-                                   if (length(x[-1]) == 1) { # fixed
-                                     thisItem <- list(fixed(values[1], constant = const_var, gtz = gtz))
-                                   } else { # range
-                                     thisItem <- list(ab(values[1], values[2], gtz = gtz))
-                                   }
-                                   names(thisItem) <- x[1]
-                                   thisItem
-                                 }) # end sapply
-                                 
-                                 # covariates
-                                 # process constant covariates
-                                 covar <- blocks$covar
-                                 const_covar <- grepl("!", covar) # returns boolean vector, length = nout
-                                 covar <- gsub("!", "", covar) # remove "!"
-                                 # cycle through covariates
-                                 if (covar[1] != "") {
-                                   covar_list <- list()
-                                   for (i in 1:length(covar)) {
-                                     covar_list[[i]] <- covariate(name = covar[i], constant = const_covar[i])
-                                   }
-                                 } else {
-                                   covar_list <- NULL
-                                 }
-                                 # add to model_list
-                                 model_list$cov <- covar_list
-                                 
-                                 # extra
-                                 if (blocks$extra[1] != "") {
-                                   model_list$ext <- blocks$extra
-                                 } else {
-                                   model_list$extra <- NULL
-                                 }
-                                 
-                                 # secondary variables
-                                 if (blocks$secVar[1] != "") {
-                                   model_list$sec <- as.list(blocks$secVar)
-                                 }
-                                 
-                                 # bioavailability
-                                 if (blocks$f[1] != "") {
-                                   model_list$fa <- as.list(blocks$f)
-                                 } else {
-                                   model_list$f <- NULL
-                                 }
-                                 
-                                 # bolus
-                                 if (blocks$bol[1] != "") {
-                                   model_list$bol <- as.list(blocks$bol)
-                                 } else {
-                                   model_list$bol <- NULL
-                                 }
-                                 
-                                 # initial conditions
-                                 if (blocks$ini[1] != "") {
-                                   model_list$ini <- as.list(blocks$ini)
-                                 } else {
-                                   model_list$ini <- NULL
-                                 }
-                                 
-                                 # lag time
-                                 if (blocks$lag[1] != "") {
-                                   model_list$lag <- as.list(blocks$lag)
-                                 } else {
-                                   model_list$lag <- NULL
-                                 }
-                                 
-                                 # analytic model name
-                                 if (blocks$tem[1] != "") {
-                                   model_list$tem <- blocks$tem
-                                 } else {
-                                   model_list$tem <- NULL
-                                 }
-                                 
-                                 # differential equations - legacy
-                                 if (!is.null(blocks$diffeq) && blocks$diffeq[1] != "") {
-                                   model_list$eqn <- as.list(blocks$diffeq)
-                                 } else {
-                                   model_list$diffeq <- NULL
-                                 }
-                                 
-                                 # model equations - will eventually replace diffeq above
-                                 if (blocks$eqn[1] != "") {
-                                   model_list$eqn <- as.list(blocks$eqn)
-                                 } else {
-                                   model_list$eqn <- NULL
-                                 }
-                                 
-                                 # out/err
-                                 n_outputLines <- length(blocks$output)
-                                 outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output)
-                                 if (length(outputLines) == 0) {
-                                   return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y[1] = ...'\n"))
-                                 }
-                                 otherLines <- (1:n_outputLines)[!(1:n_outputLines) %in% outputLines] # find other lines
-                                 if (length(otherLines) > 0) {
-                                   model_list$sec <- c(model_list$sec, blocks$output[otherLines]) # append to #sec block
-                                 }
-                                 output <- blocks$output[outputLines]
-                                 remParen <- stringr::str_replace(output, regex("Y(?:\\[|\\()(\\d+)(?:\\]|\\))", ignore_case = TRUE), "Y\\1")
-                                 diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
-                                 diffList <- sapply(diffeq, function(x) x[2])
-                                 num_out <- length(diffList)
-                                 
-                                 err <- tolower(gsub("[[:space:]]", "", blocks$error))
-                                 # process constant gamma/lambda
-                                 gamma <- grepl("^g", err[1])
-                                 const_gamlam <- grepl("!", err[1])
-                                 gamlam_value <- as.numeric(stringr::str_match(err[1], "\\d+\\.?\\d*"))
-                                 # process constant coefficients
-                                 const_coeff <- grepl("!", err[-1]) # returns boolean vector, length = nout
-                                 err <- gsub("!", "", err) # remove "!"
-                                 
-                                 
-                                 out <- list()
-                                 for (i in 1:num_out) {
-                                   out[[i]] <- list(
-                                     val = diffList[i],
-                                     err = list(
-                                       model = if ((1 + as.numeric(gamma)) == 1) {
-                                         additive(gamlam_value, constant = const_gamlam)
-                                       } else {
-                                         proportional(gamlam_value, constant = const_gamlam)
-                                       },
-                                       assay = errorPoly(stringr::str_split(err[i + 1], ",")[[1]] %>% as.numeric(), const_coeff[i])
-                                     )
-                                   )
-                                 }
-                                 names(out) <- sapply(diffeq, function(x) x[1])
-                                 model_list$out <- out
-                                 
-                                 cat(msg)
-                                 flush.console()
-                                 model_list <- PM_model_list$new(model_list)$model_list
-                                 return(model_list)
-                               }
-                             ) # end private list
+        } else {
+          gtz <- FALSE
+        }
+
+        # find out if constant
+        const_var <- any(grepl("!", x))
+        if (const_var) {
+          x <- gsub("!", "", x)
+        }
+
+        values <- as.numeric(x[-1])
+
+        if (length(x[-1]) == 1) { # fixed
+          thisItem <- list(fixed(values[1], constant = const_var, gtz = gtz))
+        } else { # range
+          thisItem <- list(ab(values[1], values[2], gtz = gtz))
+        }
+        names(thisItem) <- x[1]
+        thisItem
+      }) # end sapply
+
+      # covariates
+      # process constant covariates
+      covar <- blocks$covar
+      const_covar <- grepl("!", covar) # returns boolean vector, length = nout
+      covar <- gsub("!", "", covar) # remove "!"
+      # cycle through covariates
+      if (covar[1] != "") {
+        covar_list <- list()
+        for (i in 1:length(covar)) {
+          covar_list[[i]] <- covariate(name = covar[i], constant = const_covar[i])
+        }
+      } else {
+        covar_list <- NULL
+      }
+      # add to model_list
+      model_list$cov <- covar_list
+
+      # extra
+      if (blocks$extra[1] != "") {
+        model_list$ext <- blocks$extra
+      } else {
+        model_list$extra <- NULL
+      }
+
+      # secondary variables
+      if (blocks$secVar[1] != "") {
+        model_list$sec <- as.list(blocks$secVar)
+      }
+
+      # bioavailability
+      if (blocks$f[1] != "") {
+        model_list$fa <- as.list(blocks$f)
+      } else {
+        model_list$f <- NULL
+      }
+
+      # bolus
+      if (blocks$bol[1] != "") {
+        model_list$bol <- as.list(blocks$bol)
+      } else {
+        model_list$bol <- NULL
+      }
+
+      # initial conditions
+      if (blocks$ini[1] != "") {
+        model_list$ini <- as.list(blocks$ini)
+      } else {
+        model_list$ini <- NULL
+      }
+
+      # lag time
+      if (blocks$lag[1] != "") {
+        model_list$lag <- as.list(blocks$lag)
+      } else {
+        model_list$lag <- NULL
+      }
+
+      # analytic model name
+      if (blocks$tem[1] != "") {
+        model_list$tem <- blocks$tem
+      } else {
+        model_list$tem <- NULL
+      }
+
+      # differential equations - legacy
+      if (!is.null(blocks$diffeq) && blocks$diffeq[1] != "") {
+        model_list$eqn <- as.list(blocks$diffeq)
+      } else {
+        model_list$diffeq <- NULL
+      }
+
+      # model equations - will eventually replace diffeq above
+      if (blocks$eqn[1] != "") {
+        model_list$eqn <- as.list(blocks$eqn)
+      } else {
+        model_list$eqn <- NULL
+      }
+
+      # out/err
+      n_outputLines <- length(blocks$output)
+      outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output)
+      if (length(outputLines) == 0) {
+        return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y[1] = ...'\n"))
+      }
+      otherLines <- (1:n_outputLines)[!(1:n_outputLines) %in% outputLines] # find other lines
+      if (length(otherLines) > 0) {
+        model_list$sec <- c(model_list$sec, blocks$output[otherLines]) # append to #sec block
+      }
+      output <- blocks$output[outputLines]
+      remParen <- stringr::str_replace(output, regex("Y(?:\\[|\\()(\\d+)(?:\\]|\\))", ignore_case = TRUE), "Y\\1")
+      diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
+      diffList <- sapply(diffeq, function(x) x[2])
+      num_out <- length(diffList)
+
+      err <- tolower(gsub("[[:space:]]", "", blocks$error))
+      # process constant gamma/lambda
+      gamma <- grepl("^g", err[1])
+      const_gamlam <- grepl("!", err[1])
+      gamlam_value <- as.numeric(stringr::str_match(err[1], "\\d+\\.?\\d*"))
+      # process constant coefficients
+      const_coeff <- grepl("!", err[-1]) # returns boolean vector, length = nout
+      err <- gsub("!", "", err) # remove "!"
+
+
+      out <- list()
+      for (i in 1:num_out) {
+        out[[i]] <- list(
+          val = diffList[i],
+          err = list(
+            model = if ((1 + as.numeric(gamma)) == 1) {
+              additive(gamlam_value, constant = const_gamlam)
+            } else {
+              proportional(gamlam_value, constant = const_gamlam)
+            },
+            assay = errorPoly(stringr::str_split(err[i + 1], ",")[[1]] %>% as.numeric(), const_coeff[i])
+          )
+        )
+      }
+      names(out) <- sapply(diffeq, function(x) x[1])
+      model_list$out <- out
+
+      cat(msg)
+      flush.console()
+      model_list <- PM_model_list$new(model_list)$model_list
+      return(model_list)
+    }
+  ) # end private list
 )
 
 
@@ -1597,7 +1605,9 @@ PM_model_file <- R6::R6Class("PM_model_file",
 #' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
 #' @export
 #' @examples
+#' \dontrun{
 #' NPex$model$plot()
+#' }
 #' @family PMplots
 
 plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...) {
@@ -1615,13 +1625,13 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
   } else {
     FALSE
   }
-  
+
   # Add equations for algebraic models
   if (is.null(model$model_list$eqn)) {
     key_vars <- c("ke", "v", "ka", "kcp", "kpc")
     pri <- names(model$model_list$pri)
     found_pri_keys <- key_vars %in% tolower(pri)
-    
+
     if (!is.null(model$model_list$sec)) {
       found_sec_keys <- purrr::map_lgl(key_vars, \(x) stringr::str_detect(
         model$model_list$sec,
@@ -1655,18 +1665,18 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
       .size = 3
     ) %>% na.exclude()
   }
-  
+
   # filter any equations that are not diffeq and make everything capital
   this_model <- model$model_list$eqn %>%
     map(purrr::keep, stringr::str_detect, stringr::regex("dX\\[\\d+\\]|XP\\(\\d+\\)", ignore_case = TRUE)) %>%
     unlist()
-  
+
   tree <- parse(text = this_model)
   if (length(tree) == 0) {
     cli::cli_abort(c("x" = "No differential equations detected. Use {.code dX[i]} for changes and {.code X[i]} for amounts (case insensitive)."))
   }
   index <- 0
-  
+
   parse_arrows <- function(tree, arrows = list()) {
     if (length(tree) == 3) {
       op <- tree[[1]]
@@ -1679,31 +1689,31 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     } else {
       return(arrows)
     }
-    
+
     # check for distributions
     if (length(lhs) > 1 && lhs[[1]] == "(") {
       # expand distribution
       nterms <- length(lhs[[2]])
       lhs <- parse(text = paste(sapply(2:nterms, function(x) as.character(lhs[[2]][[x]])),
-                                as.character(op),
-                                deparse(rhs),
-                                collapse = paste0(" ", as.character(lhs[[2]][[1]]), " ")
+        as.character(op),
+        deparse(rhs),
+        collapse = paste0(" ", as.character(lhs[[2]][[1]]), " ")
       ))[[1]]
       rhs <- ""
     }
-    
+
     if (length(rhs) > 1 && rhs[[1]] == "(") {
       # expand distribution
       nterms <- length(rhs[[2]])
       rhs <- parse(text = paste(deparse(lhs),
-                                as.character(op),
-                                sapply(2:nterms, function(x) as.character(rhs[[2]][[x]])),
-                                collapse = paste0(" ", as.character(rhs[[2]][[1]]), " ")
+        as.character(op),
+        sapply(2:nterms, function(x) as.character(rhs[[2]][[x]])),
+        collapse = paste0(" ", as.character(rhs[[2]][[1]]), " ")
       ))[[1]]
       lhs <- ""
     }
-    
-    
+
+
     l <- if (length(lhs) == 1) {
       lhs
     } else if (lhs[[1]] == "[") {
@@ -1723,31 +1733,31 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
       rhs[[1]]
     }
     # cat("index", index,"\n\nlhs= ",deparse(lhs),"\nrhs = ",deparse(rhs),"\nl = ",deparse(l),"\nr = ",deparse(r),"\ntree = ",deparse(tree),"\n________________\n")
-    
-    
+
+
     if (l == "x" || r == "x" || l == "X" || r == "X") {
       # cat("arrows before: ",paste0(as.character(arrows),collapse = ", "),"\n")
       arrows <- append(arrows, tree)
       # cat(deparse(tree), "appended\n")
       # cat("arrows after: ",paste0(as.character(arrows),collapse = ", "),"\n")
-      
+
       return(arrows)
     }
-    
+
     index <<- index + 1
     if (is.call(lhs)) { # cat("Calling from lhs...\n")
       arrows <- parse_arrows(lhs, arrows)
     }
     # cat("\nReturned lhs arrows: ", paste(as.character(arrows),collapse = ", "), "\n\n")
-    
+
     if (is.call(rhs)) { # cat("Calling from rhs...\n")
       arrows <- parse_arrows(rhs, arrows)
     }
     # cat("\nReturned rhs arrows: ", paste(as.character(arrows),collapse = ", "), "\n\n")
-    
+
     return(arrows)
   }
-  
+
   parse_inputs <- function(input, itree) {
     itree <- paste(itree, collapse = "")
     if (grepl(input, itree, ignore.case = TRUE)) {
@@ -1755,7 +1765,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
       number <- stringr::str_extract(
         itree,
         regex(paste0(input, "(\\(|\\[)\\d+(\\)|\\])"),
-              ignore_case = TRUE
+          ignore_case = TRUE
         )
       ) %>%
         stringr::str_extract("\\d+")
@@ -1764,7 +1774,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
       return("")
     }
   }
-  
+
   # process each compartment/equation
   parse_tree <- function(tree) {
     nodes <- list()
@@ -1790,9 +1800,9 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     }
     return(nodes)
   }
-  
+
   res <- parse_tree(tree)
-  
+
   # clean up
   swap_if_needed <- function(obj) {
     if (grepl("X\\[", obj[1], ignore.case = TRUE)) {
@@ -1802,7 +1812,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     }
   }
   # clean up
-  
+
   # remove hanging arrows without "*"
   res <- purrr::map(res, function(x) {
     list(
@@ -1830,7 +1840,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
         rateiv = x$rateiv
       )
     })
-  
+
   layout <- res %>%
     lapply(., function(node) {
       data.frame(
@@ -1855,7 +1865,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
       to = from,
       from = to
     )
-  
+
   # pause to define inputs
   input_cmt <- layout %>%
     dplyr::select(to, bolus, rateiv) %>%
@@ -1865,7 +1875,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     dplyr::select(-type) %>%
     dplyr::filter(input != "") %>%
     dplyr::rename(cmt = to)
-  
+
   # resume layout
   layout <- layout %>%
     dplyr::select(-bolus, -rateiv) %>%
@@ -1881,7 +1891,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     dplyr::mutate(node = stringr::str_extract(node, "\\d+")) %>%
     dplyr::distinct(node, from, to) %>%
     dplyr::mutate(implicit = FALSE)
-  
+
   # outputs
   if (!is.null(purrr::pluck(model, "model_list", "out", 1, "val"))) {
     cmts <- map_chr(model$model_list$out, ~ stringr::str_extract(.x$val, "\\d+"))
@@ -1889,11 +1899,11 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
   } else {
     output_cmt <- dplyr::tibble(out = "", cmt = "1")
   }
-  
+
   # add explicit arrows from user
   if (!missing(explicit)) {
     max_to <- max(as.numeric(layout$to))
-    
+
     if (!all(names(explicit) %in% c("from", "to"))) {
       cli::cli_abort(c("x" = "{.code explicit} should be a data frame with names {.code from} and {.code to}"))
     }
@@ -1902,14 +1912,14 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
       dplyr::mutate(node = from, implicit = FALSE) %>%
       dplyr::relocate(node, from, to, implicit) %>%
       dplyr::mutate(across(c(node, from, to), as.character))
-    
+
     layout <- dplyr::bind_rows(layout, imp)
   }
-  
+
   # add implicit arrows from user
   if (!missing(implicit)) {
     max_to <- max(as.numeric(layout$to))
-    
+
     if (!all(names(implicit) %in% c("from", "to"))) {
       cli::cli_abort(c("x" = "{.code implicit} should be a data frame with names {.code from} and {.code to}"))
     }
@@ -1918,11 +1928,11 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
       dplyr::mutate(node = from, implicit = TRUE) %>%
       dplyr::relocate(node, from, to, implicit) %>%
       dplyr::mutate(across(c(node, from, to), as.character))
-    
+
     layout <- dplyr::bind_rows(layout, imp)
   }
-  
-  
+
+
   graph <- tidygraph::as_tbl_graph(layout) %>%
     dplyr::mutate(cmt = c(unique(layout$from), 0)) %>%
     dplyr::mutate(position = ifelse(cmt == 0, "outside", "inside")) %>%
@@ -1930,17 +1940,17 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     dplyr::mutate(input = ifelse(is.na(input), "", input)) %>%
     dplyr::left_join(output_cmt, by = "cmt") %>%
     dplyr::mutate(out = ifelse(is.na(out), "", out))
-  
-  
-  
-  
+
+
+
+
   g <- ggraph::ggraph(graph, layout = "tree")
   if (!is.logical(marker)) { # will only be logical if FALSE
     g <- g +
       ggraph::geom_node_tile(aes(fill = position, linetype = position),
-                             color = marker$line$color,
-                             lwd = marker$line$width,
-                             width = marker$size, height = marker$size, alpha = marker$opacity
+        color = marker$line$color,
+        lwd = marker$line$width,
+        width = marker$size, height = marker$size, alpha = marker$opacity
       ) +
       ggraph::geom_node_text(aes(label = input), nudge_x = .07, nudge_y = .05, color = "white") +
       ggraph::geom_node_text(aes(label = out), nudge_x = -.07, nudge_y = .05, color = "black") +
@@ -1985,24 +1995,19 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
 #' @seealso [PM_model]
 #' @export
 #' @examples
+#' \dontrun{
 #' model_lib()
 #' model_lib("one_comp_iv")
-
-model_lib <- function(name = NULL, show = TRUE){
-  
-  
+#' }
+model_lib <- function(name = NULL, show = TRUE) {
   mod_table <- matrix(
     c(
-      
       "one_comp_iv", "advan1\nadvan1-trans1", "One compartment IV input, Ke", "1 = Central", "Ke, V",
       "one_comp_iv_cl", "advan1\nadvan1-trans2", "One compartment IV input, CL", "1 = Central", "CL, V",
-      
       "two_comp_bolus", "advan2\nadvan2-trans1", "Two compartment bolus input, Ke", "1 = Bolus\n2 = Central", "Ka, Ke, V",
       "two_comp_bolus_cl", "advan2\nadvan2-trans2", "Two compartment bolus input, CL", "1 = Bolus\n2 = Central", "Ka, CL, V",
-      
       "two_comp_iv", "advan3\nadvan3-trans1", "Two compartment IV input, Ke", "1 = Central\n2 = Peripheral", "Ke, V, KCP, KPC",
       "two_comp_iv_cl", "advan3\nadvan3-trans4", "Two compartment IV input, CL", "1 = Central\n2 = Peripheral", "CL, V1, Q, V2",
-      
       "three_comp_bolus", "advan4\nadvan4-trans1", "Three compartment bolus input, Ke", "1 = Bolus\n2 = Central\n3 = Peripheral", "Ka, Ke, V, KCP, KPC",
       "three_comp_bolus_cl", "advan4\nadvan4-trans4", "Three compartment bolus input, CL", "1 = Bolus\n2 = Central\n3 = Peripheral", "Ka, CL, V2, Q, V3"
     ),
@@ -2011,8 +2016,8 @@ model_lib <- function(name = NULL, show = TRUE){
     as.data.frame() %>%
     stats::setNames(c("Primary Name", "Alt Names", "Description", "Compartments", "Parameters")) %>%
     tibble::as_tibble()
-  
-  
+
+
   mod_table$ODE <- list(
     list(
       "dX[1] = RATEIV[1] - Ke*X[1]"
@@ -2047,44 +2052,43 @@ model_lib <- function(name = NULL, show = TRUE){
       "dX[3] = Q/V2*X[2] - Q/V3*X[3]"
     )
   )
-  
-  
-  if(is.null(name)){
+
+
+  if (is.null(name)) {
     print(mod_table %>%
-            dplyr::rowwise() %>%
-            dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>% 
-            flextable::flextable() %>% 
-            flextable::set_header_labels(ODE = "Corresponding ODE") %>%
-            flextable::autofit())
-    
+      dplyr::rowwise() %>%
+      dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
+      flextable::flextable() %>%
+      flextable::set_header_labels(ODE = "Corresponding ODE") %>%
+      flextable::autofit())
+
     return(invisible(NULL))
   }
-  
+
   if (!tolower(name) %in%
-      c(
-        glue::glue("one_comp_iv{c('','_cl')}"),
-        glue::glue("two_comp_bolus{c('','_cl')}"),
-        glue::glue("two_comp_iv{c('','_cl')}"),
-        glue::glue("three_comp_bolus{c('','_cl')}"),
-        glue::glue("advan{1:4}"),
-        glue::glue("advan{1:4}-trans1"),
-        glue::glue("advan{1:2}-trans2"),
-        "advan3-trans4",
-        "advan4-trans4"
-      )
-      
+    c(
+      glue::glue("one_comp_iv{c('','_cl')}"),
+      glue::glue("two_comp_bolus{c('','_cl')}"),
+      glue::glue("two_comp_iv{c('','_cl')}"),
+      glue::glue("three_comp_bolus{c('','_cl')}"),
+      glue::glue("advan{1:4}"),
+      glue::glue("advan{1:4}-trans1"),
+      glue::glue("advan{1:2}-trans2"),
+      "advan3-trans4",
+      "advan4-trans4"
+    )
+
   ) {
     cli::cli_abort(c("x" = "Invalid model name"))
   }
-  
-  if(show){
-    print(mod_table %>% dplyr::filter(`Primary Name` == name) %>% 
-            dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>% 
-            flextable::flextable() %>% 
-            flextable::set_header_labels(ODE = "Corresponding ODE") %>%
-            flextable::autofit())
-  }
-  
-  return(invisible(mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1,1) %>% unlist()  ))
-}
 
+  if (show) {
+    print(mod_table %>% dplyr::filter(`Primary Name` == name) %>%
+      dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
+      flextable::flextable() %>%
+      flextable::set_header_labels(ODE = "Corresponding ODE") %>%
+      flextable::autofit())
+  }
+
+  return(invisible(mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1, 1) %>% unlist()))
+}
