@@ -1372,8 +1372,13 @@ PM_model_file <- R6::R6Class("PM_model_file",
                                  blocks <- parseBlocks(file) # this function is in PMutilities
                                  # check for reserved variable names
                                  reserved <- c(
-                                   "ndim", "t", "x", "xp", "rpar", "ipar", "p", "r", "b", "npl", "numeqt", "ndrug", "nadd", "rateiv", "cv",
-                                   "n", "nd", "ni", "nup", "nuic", "np", "nbcomp", "psym", "fa", "lag", "tin", "tout"
+                                   "t",
+                                   "x",
+                                   "dx",
+                                   "p",
+                                   "rateiv",
+                                   "cov",
+                                   "y"
                                  )
                                  conflict <- c(match(tolower(blocks$primVar), reserved, nomatch = -99), match(tolower(blocks$secVar), reserved, nomatch = -99), match(tolower(blocks$covar), reserved, nomatch = -99))
                                  nconflict <- sum(conflict != -99)
