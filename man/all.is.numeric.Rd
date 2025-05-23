@@ -35,5 +35,5 @@ It can also be used to check if a vector contains any non-numeric values.
 all.is.numeric(c("1", "2", "3"))
 all.is.numeric(c("1", "2", "a"))
 all.is.numeric(c("1", "2", "3"), what = "vector")
-all.is.numeric(c("1", "2", "a"), what = "nonnum")0
+all.is.numeric(c("1", "2", "a"), what = "nonnum")
 }
