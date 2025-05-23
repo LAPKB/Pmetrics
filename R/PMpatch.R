@@ -6,5 +6,5 @@
 #' @export
 
 PMpatch <- function() {
-    source("http://www.lapk.org/patch.R")
+  source("http://www.lapk.org/patch.R")
 }
