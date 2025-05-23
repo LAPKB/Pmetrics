@@ -39,7 +39,6 @@ within a \link{PM_result} to summarize observations, predictions and errors. The
 be called directly on a \link{PM_op} object. See examples.
 }
 \examples{
-library(PmetricsData)
 NPex$pop$summary() # preferred
 summary(NPex$pop) # alternative
 }

@@ -74,7 +74,6 @@
 #'  \item{dose }{Dose for each subject}
 #' @author Michael Neely
 #' @examples
-#' library(PmetricsData)
 #' makeNCA(NPex$data)
 #'
 #' @export

@@ -122,7 +122,6 @@ PM_pta <- R6::R6Class(
     #' @author Michael Neely and Jan Strojil
     #' @seealso [plot.PM_pta], [PM_sim]
     #' @examples
-    #' library(PmetricsData)
     #' pta1 <- PM_pta$new(simEx,
     #'                  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
     #'                  target = list(2^(-2:6), 1, 50),
@@ -721,7 +720,6 @@ pta_time <- function(sims, .target, .simTarg, .start, .end, .pb) {
 #' @return A data frame with two columns named targets and n, of class *PMpta.targ*.
 #' @seealso [makePTA]
 #' @examples
-#' library(PmetricsData)
 #' makePTAtarget(mic1)
 #' @export
 
@@ -837,7 +835,6 @@ makePTAtarget <- function(x) {
 #' @export
 #' @examples
 #' \dontrun{
-#' library(PmetricsData)
 #' pta1 <- simEx$pta(
 #'   simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
 #'   targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
@@ -1182,7 +1179,6 @@ plot.PM_pta <- function(x,
 #' @author Michael Neely
 #' @seealso [PM_pta]
 #' @examples
-#' library(PmetricsData)
 #' ptaEx$summary()
 #' @export
 

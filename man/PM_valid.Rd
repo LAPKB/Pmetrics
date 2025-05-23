@@ -23,7 +23,6 @@ to internally validate the result by simulation methods.
 ## ------------------------------------------------
 
 \dontrun{
-library(PmetricsData)
 valid <- NPex$validate(limits = c(0, 3))
 }
 
@@ -70,7 +69,7 @@ This function will create an object suitable for plotting visual predictive
 checks (VPCs) and prediction-corrected visual
 predictive checks (pcVPCs).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_valid$new(result, tad = F, binCov, doseC, timeC, tadC, limits, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_valid$new(result, tad = FALSE, binCov, doseC, timeC, tadC, limits, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -132,7 +131,6 @@ This will be \code{NA} if \code{tad = FALSE}.
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{\dontrun{
-library(PmetricsData)
 valid <- NPex$validate(limits = c(0, 3))
 }
 

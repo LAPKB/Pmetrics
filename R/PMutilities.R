@@ -241,7 +241,7 @@ parseBlocks <- function(model) {
     return(list(status = -1, msg = "You must have #Primary, #Output, and #Error blocks at minimum"))
   }
   
-  headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, eqn, output, error, extra)
+  headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, tem, eqn, output, error, extra)
   blockStart <- blockStart[rank(headerOrder)]
   blockStop <- blockStop[rank(headerOrder)]
   
@@ -975,7 +975,6 @@ makePMmatrixBlock <- function(mdata) {
 #'
 #' @export
 #' @examples
-#' library(PmetricsData)
 #' getCov(dataEx)
 #' @author Michael Neely
 
@@ -1093,6 +1092,11 @@ obsStatus <- function(data) {
   present <- which(data != -99)
   missing <- which(data == -99)
   return(list(present = present, missing = missing))
+}
+
+obsStatus <- function(data) {
+  status <- ifelse(data == -99, TRUE, FALSE)
+  return(status)
 }
 
 binaries.installed <- function() {

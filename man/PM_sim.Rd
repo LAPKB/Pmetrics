@@ -176,6 +176,7 @@ or via the \verb{$sim} method for \link{PM_result} objects.
   noise = NULL,
   makecsv = NULL,
   quiet = FALSE,
+  combine = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -187,7 +188,7 @@ or via the \verb{$sim} method for \link{PM_result} objects.
 \itemize{
 \item Population prior parameters as a \link{PM_final} object found in
 \code{PM_result$final}. Normally these would be supplied by calling the
-\verb{$sim} method for a \link{PM_result} object, e.g. \code{PmetricsData::NPex$sim(...)}.
+\verb{$sim} method for a \link{PM_result} object, e.g. \code{NPex$sim(...)}.
 \item The name of a previously saved simulation via the \verb{$save} method. The
 file will be loaded. This filename should have the ".rds" extension, e.g. "sim.rds".
 \item A manually specified prior as a list containing three items in this order,
@@ -427,10 +428,10 @@ from each subject in the data template.}
 \item{\code{quiet}}{Boolean operator controlling whether a model summary report is
 given.  Default is \code{FALSE}.}
 
-\item{\code{...}}{Catch deprecated arguments.}
+\item{\code{combine}}{When there are multiple subjects in the template \code{data},
+combine the simulated results into a single object. Default is \code{FALSE}.}
 
-\item{\code{nocheck}}{Suppress the automatic checking of the data file with
-\link{PMcheck}.  Default is \code{FALSE}.}
+\item{\code{...}}{Catch deprecated arguments.}
 }
 \if{html}{\out{</div>}}
 }
