@@ -204,7 +204,6 @@ PM_result <- R6::R6Class(
       }
       if (missing(file)) {
         file <- "PMout.Rdata"
-  
       }
       PMout <- list(
         pop = self$pop$data, post = self$post$data,
@@ -369,7 +368,7 @@ PM_load <- function(run, file) {
     result <- output2List(Out = get(load(found)))
     # update
     result2 <- update(result, found)
-    #In order to rebuild correctly the wd must be set to inside the outputs folder
+    # In order to rebuild correctly the wd must be set to inside the outputs folder
     cwd <- getwd()
     setwd(dirname(found))
     rebuild <- PM_result$new(result2, quiet = TRUE)
