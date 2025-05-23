@@ -53,7 +53,7 @@ PM_pop <- R6::R6Class(
     #' @details
     #' Creation of new `PM_pop` object is automatic and not generally necessary
     #' for the user to do.
-    #' @param PMdata include `r template("PMdata")`. 
+    #' @param PMdata include `r template("PMdata")`.
     #' @param ... Not currently used.
     initialize = function(PMdata = NULL, ...) {
       self$data <- private$make(PMdata)
@@ -82,10 +82,10 @@ PM_pop <- R6::R6Class(
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       rlang::try_fetch(makeAUC(self, ...),
-                       error = function(e) {
-                         cli::cli_warn("Unable to generate AUC.", parent = e)
-                         return(NULL)
-                       }
+        error = function(e) {
+          cli::cli_warn("Unable to generate AUC.", parent = e)
+          return(NULL)
+        }
       )
     }
   ), # end public
@@ -93,19 +93,21 @@ PM_pop <- R6::R6Class(
     make = function(data) {
       if (file.exists("op.csv")) {
         raw <- readr::read_csv(file = "op.csv", show_col_types = FALSE)
-      } else if (inherits(data, "PM_pop")){ #file not there, and already PM_pop
+      } else if (inherits(data, "PM_pop")) { # file not there, and already PM_pop
         class(data$data) <- c("PM_pop_data", "data.frame")
         return(data$data)
       } else {
-        cli::cli_warn(c("!" = "Unable to generate pop pred information.",
-                        "i" = "Result does not have valid {.code PM_pop} object, and {.file {getwd()}/op.csv} does not exist."))
+        cli::cli_warn(c(
+          "!" = "Unable to generate pop pred information.",
+          "i" = "Result does not have valid {.code PM_pop} object, and {.file {getwd()}/op.csv} does not exist."
+        ))
         return(NULL)
       }
-      
+
       if (is.null(raw)) {
         return(NA)
       }
-      
+
       pop <- raw %>%
         select(-post_median, -post_mean) %>%
         pivot_longer(cols = c(pop_median, pop_mean), values_to = "pred") %>%
@@ -117,7 +119,7 @@ PM_pop <- R6::R6Class(
         mutate(block = block + 1) %>%
         mutate(outeq = outeq + 1) %>%
         relocate(id, time, icen, outeq, pred, block)
-      
+
       class(pop) <- c("PM_pop_data", "data.frame")
       return(pop)
     }
@@ -196,6 +198,7 @@ PM_pop <- R6::R6Class(
 #' @seealso [PM_pop], [PM_result]
 #' @export
 #' @examples
+#' \dontrun{
 #' # basic spaghetti plot
 #' NPex$pop$plot()
 #' # format line and marker
@@ -203,7 +206,8 @@ PM_pop <- R6::R6Class(
 #'   marker = list(color = "blue", symbol = "square", size = 12, opacity = 0.4),
 #'   line = list(color = "orange")
 #' )
-#'
+#' }
+
 #' @family PMplots
 
 plot.PM_pop <- function(x,
@@ -227,32 +231,32 @@ plot.PM_pop <- function(x,
                         title = "",
                         xlim, ylim, ...) {
   # Plot parameters ---------------------------------------------------------
-  
+
   x <- if (inherits(x, "PM_pop")) {
     x$data
   }
-  
+
   # process marker
   marker <- amendMarker(marker)
-  
+
   # process line
   line <- amendLine(line)
-  
-  
+
+
   # get the rest of the dots
   layout <- amendDots(list(...))
-  
+
   # legend
   legendList <- amendLegend(legend)
   layout <- modifyList(layout, list(showlegend = legendList$showlegend))
   if (length(legendList) > 1) {
     layout <- modifyList(layout, list(legend = within(legendList, rm(showlegend))))
   }
-  
+
   # grid
   layout$xaxis <- setGrid(layout$xaxis, grid)
   layout$yaxis <- setGrid(layout$yaxis, grid)
-  
+
   # axis labels if needed
   layout$xaxis$title <- amendTitle(xlab)
   if (is.character(ylab)) {
@@ -260,8 +264,8 @@ plot.PM_pop <- function(x,
   } else {
     layout$yaxis$title <- amendTitle(ylab)
   }
-  
-  
+
+
   # axis ranges
   if (!missing(xlim)) {
     layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
@@ -269,15 +273,15 @@ plot.PM_pop <- function(x,
   if (!missing(ylim)) {
     layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
   }
-  
+
   # log y axis
   if (log) {
     layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
   }
-  
+
   # title
   layout$title <- amendTitle(title, default = list(size = 20))
-  
+
   # overlay
   if (is.logical(overlay)) { # T/F
     if (!overlay) { # F,default
@@ -289,16 +293,16 @@ plot.PM_pop <- function(x,
     ncols <- overlay[2]
     overlay <- FALSE
   }
-  
+
   # Data processing ---------------------------------------------------------
-  
-  
+
+
   # filter
   presub <- x %>%
     filter(outeq %in% !!outeq, block %in% !!block, icen %in% !!icen) %>%
     mutate(group = "") %>%
     includeExclude(include, exclude)
-  
+
   # group
   if (outeq[1] != 1 | length(outeq) > 1) {
     presub <- presub %>%
@@ -310,33 +314,33 @@ plot.PM_pop <- function(x,
       rowwise() %>%
       mutate(group = paste0(group, ", block: ", block))
   }
-  
+
   if (length(icen) > 1) {
     presub <- presub %>%
       rowwise() %>%
       mutate(group = paste0(group, ", ", icen))
   }
-  
+
   presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
   if (!is.null(names)) {
     presub$group <- factor(presub$group, labels = names)
   } else {
     presub$group <- factor(presub$group)
   }
-  
+
   # select relevant columns
   sub <- presub %>%
     select(id, time, pred, outeq, group) %>%
     ungroup()
   sub$group <- factor(sub$group)
-  
+
   # remove missing
   sub <- sub %>% filter(pred != -99)
-  
-  
-  
+
+
+
   # Plot function ----------------------------------------------------------
-  
+
   dataPlot <- function(allsub, overlay) {
     # set appropriate pop up text
     if (!overlay) {
@@ -346,7 +350,7 @@ plot.PM_pop <- function(x,
       hovertemplate <- "Time: %{x}<br>Pred: %{y}<br>ID: %{text}<extra></extra>"
       text <- ~id
     }
-    
+
     if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
       n_colors <- length(levels(allsub$group))
       if (checkRequiredPackages("RColorBrewer")) {
@@ -359,13 +363,13 @@ plot.PM_pop <- function(x,
         cli::cli_inform(c("i" = "Group colors are better with RColorBrewer package installed."))
         colors <- getDefaultColors(n_colors) # in plotly_Utils
       }
-      
+
       marker$color <- NULL
       line$color <- NULL
     } else { # no grouping
       allsub$group <- factor(1, labels = "Predicted")
     }
-    
+
     p <- allsub %>%
       plotly::plot_ly(
         x = ~time, y = ~ pred * mult,
@@ -391,17 +395,17 @@ plot.PM_pop <- function(x,
     )
     return(p)
   } # end dataPlot
-  
-  
+
+
   # Call plot ---------------------------------------------------------------
-  
+
   # call the plot function and display appropriately
   if (overlay) {
     sub <- sub %>% dplyr::group_by(id)
     p <- dataPlot(sub, overlay = TRUE)
     print(p)
   } else { # overlay = FALSE, ie. split them
-    
+
     if (!checkRequiredPackages("trelliscopejs")) {
       cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
     }
@@ -413,7 +417,7 @@ plot.PM_pop <- function(x,
       trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
     print(p)
   }
-  
+
   return(p)
 }
 
@@ -443,15 +447,17 @@ plot.PM_pop <- function(x,
 #'
 #' @author Michael Neely
 #' @examples
+#' \dontrun{
 #' NPex$pop$summary() # preferred
 #' summary(NPex$pop) # alternative
+#' }
+
 #' @seealso [PM_pop]
 #' @export
 
 summary.PM_pop <- function(object, digits = max(3, getOption("digits") - 3),
                            icen = "median",
                            outeq = 1, ...) {
-  
   sumWrk <- function(data) {
     sumstat <- matrix(NA, nrow = 7, ncol = 2, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Pred")))
     # min
@@ -471,15 +477,15 @@ summary.PM_pop <- function(object, digits = max(3, getOption("digits") - 3),
     sumstat <- data.frame(sumstat)
     # N
     N <- length(data$pred[!is.na(data$pred)])
-    
+
     return(sumstat)
   } # end sumWrk
-  
+
   # make summary
   if (inherits(object, "PM_pop")) {
     object <- object$data
   }
-  
+
   object <- object %>% filter(outeq == !!outeq, icen == !!icen)
   if (all(is.na(object$pred))) {
     result <- NA

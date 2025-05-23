@@ -288,14 +288,14 @@ notNeeded <- function(x, f) {
 #' Default is `line = list(color = "black", width = 1, dash = "dash")`.
 #' @export
 #' @seealso [add_shapes]
-#' @examples
+#' \dontrun{
 #' # add to an existing plot
 #' NPex$op$plot() %>%
 #'   add_shapes(shapes = ab_line(v = 12))
-#'
 #' # add to a new plot
 #' plotly::plot_ly(x = 1:10, y = 1:10, type = "scatter", mode = "lines+markers") %>%
 #'   plotly::layout(shapes = ab_line(h = 5, line = list(color = "red", dash = "solid")))
+#' }
 ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE) {
   if (!is.null(a)) {
     if (is.null(b)) {
@@ -368,11 +368,14 @@ ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE) {
 #' @export
 #' @seealso [ab_line]
 #' @examples
+#' #'
+#' \dontrun{
 #' NPex$op$plot() %>%
 #'   add_shapes(shapes = ab_line(v = 12))
 #'
 #' NPex$data$plot() %>%
 #'   add_shapes(shapes = list(type = "circle", x0 = 125, y0 = 10, x1 = 135, y1 = 15))
+#' }
 add_shapes <- function(p = plotly::last_plot(), shapes) {
   cur_data <- p$x$cur_data
   # try different locations
@@ -430,6 +433,7 @@ add_shapes <- function(p = plotly::last_plot(), shapes) {
 #' @export
 #' @seealso [add_shapes]
 #' @examples
+#' \dontrun{
 #' plotly::plot_ly(mtcars,
 #'   x = ~hp, y = ~mpg,
 #'   type = "scatter", mode = "markers", showlegend = FALSE
@@ -440,6 +444,7 @@ add_shapes <- function(p = plotly::last_plot(), shapes) {
 #'   type = "scatter", mode = "markers", showlegend = FALSE
 #' ) %>%
 #'   add_smooth(method = "loess", ci = 0.9, line = list(color = "red", dash = "dash"))
+#' }
 add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
                        data = NULL, method = "lm", line = T, ci = 0.95, stats) {
   line <- amendLine(line, default = list(color = "blue", width = 2))
@@ -465,9 +470,10 @@ add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
   }
   vals <- dplyr::bind_cols(x = x, y = y)
   mod <- tryCatch(suppressWarnings(do.call(method, args = list(formula = y ~ x, data = vals))),
-                  error = function(e) {
-                    NA
-                  })
+    error = function(e) {
+      NA
+    }
+  )
   if (any(is.na(mod))) {
     cli::cli_inform(c("i" = "Regression failed."))
     flush.console()
@@ -743,9 +749,12 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
 #' @export
 #' @seealso [plotly::subplot()]
 #' @examples
+#' \dontrun{
 #' plot1 <- NPex$op$plot(title = "Posterior")
 #' plot2 <- NPex$op$plot(pred.type = "pop", title = "Population")
 #' sub_plot(plot1, plot2, titles = c(0, 0.95), nrows = 2)
+#' }
+
 #' @author Michael Neely
 
 sub_plot <- function(...,
@@ -845,7 +854,9 @@ sub_plot <- function(...,
 #' @return A character vector of palette names.
 #' @export
 #' @examples
+#' \dontrun{
 #' getPalettes()
+#' }
 #' @author Michael Neely
 
 getPalettes <- function() {
@@ -879,7 +890,10 @@ getPalettes <- function() {
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' getDefaultColors(6)
+#' }
+
 #' @author Michael Neely
 getDefaultColors <- function(n) {
   choices <- c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")

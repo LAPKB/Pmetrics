@@ -22,7 +22,9 @@ Generates an object of class \emph{PMpta.targ} which can
 be used in the \link{makePTA} method for \link{PM_pta} or \link{PM_sim} for targets sampled from a distribution.
 }
 \examples{
+\dontrun{
 makePTAtarget(mic1)
+}
 }
 \seealso{
 \link{makePTA}

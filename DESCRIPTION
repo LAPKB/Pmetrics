@@ -15,7 +15,7 @@ Authors@R: c(
   person("David", "Bayard", email = "", role = "ctb"),
   person("Robert", "Leary", email = "", role = "ctb")
     )
-Version: 2.1.2
+Version: 3.0.0
 URL: https://lapkb.github.io/Pmetrics/
 BugReports: https://github.com/LAPKB/Pmetrics/issues
 SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc

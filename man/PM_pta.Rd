@@ -27,6 +27,7 @@ appropriate regimens.
 ## Method `PM_pta$new`
 ## ------------------------------------------------
 
+\dontrun{
 pta1 <- PM_pta$new(simEx,
                  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
                  target = list(2^(-2:6), 1, 50),
@@ -60,6 +61,7 @@ pta5 <- PM_pta$new(simdata = simEx,
                  target_type = c("auc","min"),
                  success = c(200,1),
                  start = 120, end = 144)
+}
 }
 \seealso{
 \link{plot.PM_pta}, \link{PM_sim}
@@ -221,7 +223,8 @@ a single concentration target of 5.
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{pta1 <- PM_pta$new(simEx,
+\preformatted{\dontrun{
+pta1 <- PM_pta$new(simEx,
                  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
                  target = list(2^(-2:6), 1, 50),
                  target_type = c("time", 144, "-max"),
@@ -254,6 +257,7 @@ pta5 <- PM_pta$new(simdata = simEx,
                  target_type = c("auc","min"),
                  success = c(200,1),
                  start = 120, end = 144)
+}
 }
 \if{html}{\out{</div>}}
 

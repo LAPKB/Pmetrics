@@ -23,7 +23,9 @@ requested number of colors.
 \code{c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")}
 }
 \examples{
+\dontrun{
 getDefaultColors(6)
+}
 }
 \author{
 Michael Neely

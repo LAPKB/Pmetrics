@@ -15,7 +15,9 @@ An integer with the number of fixed columns.
 Returns the number of fixed columns (non-covariate) in Pmetrics data objects.
 }
 \examples{
+\dontrun{
 getFixedColNum()
+}
 }
 \author{
 Michael Neely
