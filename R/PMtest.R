@@ -32,7 +32,7 @@ PMtest <- function() {
   fortSource <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
   # TODO: change this
   if (!file.exists(fortSource)) {
-    msg <- c(msg, "You must run PMbuild().\n")
+    msg <- c(msg, "You must run PM_build().\n")
   } else {
     msg <- c(msg, "You have the Fortran source files.\n")
   }

@@ -63,7 +63,7 @@ fitEx$run(run = 1, overwrite = TRUE)
 
 NPex <- PM_load(1)
 # NPex$validate(limits = NA)
-# usethis::use_data(NPex, overwrite = T)
+usethis::use_data(NPex, overwrite = T)
 
 # IT2B
 # fitEx$run(run = 2, engine = "IT2B", overwrite = TRUE, intern = TRUE)
@@ -75,7 +75,7 @@ NPex <- PM_load(1)
 
 # simulator example
 simEx <- NPex$sim(
-  limits = c(0, 3), data = PM_data$new("ptaex1.csv"),
+  limits = c(0, 3), data = PM_data$new("../ptaex1.csv"),
   predInt = c(120, 144, 0.5), seed = rep(-17, 4)
 )
 usethis::use_data(simEx, overwrite = TRUE)
