@@ -43,7 +43,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Upload source package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Pmetrics-source
           path: build/
