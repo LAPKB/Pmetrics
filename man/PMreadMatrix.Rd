@@ -8,7 +8,7 @@ PMreadMatrix(
   file,
   sep = getPMoptions("sep"),
   dec = getPMoptions("dec"),
-  quiet = F,
+  quiet = FALSE,
   ...
 )
 }

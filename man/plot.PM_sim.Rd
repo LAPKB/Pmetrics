@@ -150,7 +150,7 @@ Example: \code{ylim = c(0,100)}}
 \item{simnum}{Choose which object to plot in a PM_simlist,
 i.e., a list of \link{PM_sim} objects created when more than one
 subject is included in a simultation data template and
-\code{combine = F} (the default) when parsing the results of a simulation.}
+\code{combine = FALSE} (the default) when parsing the results of a simulation.}
 
 \item{...}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
 
@@ -188,7 +188,6 @@ clicking on a quantile item in the legend will hide it in the plot,
 and double clicking will hide all other quantiles.
 }
 \examples{
-library(PmetricsData)
 simEx$plot()
 simEx$plot(log = FALSE, line = list(color = "orange"))
 }

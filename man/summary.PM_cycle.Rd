@@ -40,7 +40,6 @@ within a \link{PM_result} to summarize final cycle statistics. The function can
 be called directly on a \link{PM_cycle} object. See examples.
 }
 \examples{
-library(PmetricsData)
 NPex$cycle$summary() # preferred
 summary(NPex$cycle) # alternative
 }

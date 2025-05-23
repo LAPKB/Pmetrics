@@ -66,7 +66,6 @@ and the standard errors of these terms, using
 \deqn{SE_var = var * \sqrt(2/(nsub-1))}.
 }
 \examples{
-library(PmetricsData)
 NPex$final$summary() # preferred
 ITex$final$summary()
 summary(NPex$final) # alternate

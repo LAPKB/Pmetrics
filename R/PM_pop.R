@@ -145,7 +145,7 @@ PM_pop <- R6::R6Class(
 #' The grid and legend are omitted by default.
 #'
 #' @method plot PM_pop
-#' @param x The name of a [PM_pop]  object, e.g. `PmetricsData::NPex$pop`.
+#' @param x The name of a [PM_pop]  object, e.g. `NPex$pop`.
 #' in a [PM_result] object
 #' @param include `r template("include")`
 #' @param exclude `r template("exclude")`
@@ -196,7 +196,6 @@ PM_pop <- R6::R6Class(
 #' @seealso [PM_pop], [PM_result]
 #' @export
 #' @examples
-#' library(PmetricsData)
 #' # basic spaghetti plot
 #' NPex$pop$plot()
 #' # format line and marker
@@ -444,7 +443,6 @@ plot.PM_pop <- function(x,
 #'
 #' @author Michael Neely
 #' @examples
-#' library(PmetricsData)
 #' NPex$pop$summary() # preferred
 #' summary(NPex$pop) # alternative
 #' @seealso [PM_pop]

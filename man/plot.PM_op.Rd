@@ -162,7 +162,6 @@ is to generate an observed vs. predicted plot of predictions based on the
 median of the Bayesian posterior distributions for each subject.
 }
 \examples{
-library(PmetricsData)
 NPex$op$plot()
 NPex$op$plot(pred.type = "pop")
 NPex$op$plot(line = list(lm = TRUE, ref = TRUE, loess = FALSE))
