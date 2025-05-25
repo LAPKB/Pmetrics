@@ -30,7 +30,7 @@ PM_fit <- R6::R6Class(
     model = NULL,
     #' @field backend Backend used for calculations; default is value in PMoptions.
     backend = NULL,
-
+    
     #' @description
     #' Create a new object
     #' @param data Either the name of a  [PM_data]
@@ -60,9 +60,9 @@ PM_fit <- R6::R6Class(
       if (!inherits(model, "PM_model")) {
         cli::cli_abort(c("x" = "{.code model} must be a {.cls PM_model} object"))
       }
-
+      
       #### checks
-
+      
       # covariates
       dataCov <- tolower(getCov(data)$covnames)
       modelCov <- tolower(sapply(model$model_list$cov, function(x) x$covariate))
@@ -78,15 +78,15 @@ PM_fit <- R6::R6Class(
           ))
         }
       }
-
+      
       # output equations
-
+      
       if (!is.null(data$standard_data$outeq)) {
         dataOut <- max(data$standard_data$outeq, na.rm = TRUE)
       } else {
         dataOut <- 1
       }
-
+      
       modelOut <- length(model$model_list$out)
       if (dataOut != modelOut) {
         cli::cli_abort(c(
@@ -94,11 +94,11 @@ PM_fit <- R6::R6Class(
           "i" = "Check the number of output equations in the data and model."
         ))
       }
-
+      
       self$data <- data
       self$model <- model
       self$backend <- backend
-
+      
       if (backend == "rust") {
         private$setup_rust_execution()
       }
@@ -191,7 +191,7 @@ PM_fit <- R6::R6Class(
     #'
     #' @author Michael Neely
     #' @export
-
+    
     run = function(run = NULL,
                    include = NULL, exclude = NULL,
                    # ode, tol, salt,
@@ -212,8 +212,8 @@ PM_fit <- R6::R6Class(
                    artifacts = TRUE) {
       cwd <- getwd()
       intern <- TRUE # always true until (if) rust can run separately from R
-
-
+      
+      
       # make new output directory
       if (is.null(run)) {
         olddir <- list.dirs(recursive = FALSE)
@@ -231,22 +231,23 @@ PM_fit <- R6::R6Class(
           newdir <- as.character(run)
         }
       }
-
+      
       if (file.exists(newdir)) {
         if (overwrite) {
           unlink(newdir, recursive = TRUE)
         } else {
-          cli::cli_abort(c(
-            "x" = "A directory named '{newdir}' exists already.",
-            "i" = "Set {.arg overwrite = TRUE} to overwrite it."
+            cli::cli_abort(c(
+            "x" = "The folder '{newdir}' exists. and ,",
+            " " = "Set {.arg overwrite} to {.val TRUE} to overwrite prior run in '{newdir}'."
           ))
         }
       }
+      
       dir.create(newdir)
       setwd(newdir)
-
+      
       algorithm <- tolower(algorithm)
-
+      
       if (getPMoptions()$backend != "rust") {
         setwd(cwd)
         cli::cli_abort(c(
@@ -254,42 +255,42 @@ PM_fit <- R6::R6Class(
           "i" = "See help for {.fn setPMoptions}"
         ))
       }
-
+      
       if (artifacts) {
         self$model$write("model.txt")
       }
-
+      
       #### Include or exclude subjects ####
       if (is.null(include)) include <- unique(self$data$standard_data$id)
       if (is.null(exclude)) exclude <- NA
       data_filtered <- self$data$standard_data %>% includeExclude(include, exclude)
-
+      
       if (nrow(data_filtered) == 0) {
         cli::cli_abort("x" = "No subjects remain after filtering.")
         setwd(cwd)
         return(invisible(NULL))
       }
-
-
+      
+      
       #### Save objects ####
       self$data <- PM_data$new(data_filtered, quiet = TRUE)
       self$data$write("gendata.csv", header = FALSE)
       save(self, file = "fit.Rdata")
-
+      
       # Get ranges and calculate points
-
+      
       ranges <- lapply(self$model$model_list$pri, function(x) {
         c(x$min, x$max)
       })
       names(ranges) <- tolower(names(ranges))
-
+      
       # Set initial grid points (only applies for sobol)
-
+      
       vol <- prod(sapply(ranges, function(x) x[2] - x[1]))
       points <- max(ceiling(density0 * vol),100) # at least 100 points
-
-
-
+      
+      
+      
       # set prior
       if (prior != "sobol") {
         if (is.numeric(prior)) { # prior specified as a run number
@@ -328,11 +329,11 @@ PM_fit <- R6::R6Class(
       } else {
         prior <- "sobol"
       }
-
+      
       if (intern) {
         ### CALL RUST
         out_path <- file.path(getwd(), "outputs")
-
+        
         rlang::try_fetch(
           fit(
             self$model$binary_path,
@@ -357,21 +358,23 @@ PM_fit <- R6::R6Class(
           ),
           error = function(e) {
             cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
+            setwd(cwd)
             return(NULL)
           }
         )
-
+        
         PM_parse("outputs")
         res <- PM_load(file = "PMout.Rdata")
         PM_report(res, outfile = "report.html", template = report)
-        return(invisible(res))
+        setwd(cwd)
+        return(invisible(newdir))
       } else {
         cli::cli_abort(c(
           "x" = "Error: Currently, the rust engine only supports internal runs.",
           "i" = "This is a temporary limitation."
         ))
       }
-      setwd(cwd)
+      
     },
     #' @description
     #' Save the current PM_fit object to a .rds file.
@@ -380,7 +383,7 @@ PM_fit <- R6::R6Class(
     save = function(file_name = "PMfit.rds") {
       saveRDS(self, file_name)
     },
-
+    
     #' @description
     #' `PM_fit` objects contain a `save` method which invokes [saveRDS] to write
     #' the object to the hard drive as an .rds file. This is the corresponding load
@@ -422,6 +425,6 @@ PM_fit$load <- function(file_name = "PMfit.rds") {
   if (!is.logical(bool)) {
     stop("This functions expects a logical value")
   }
-
+  
   rust_logical <- ifelse(bool, "true", "false")
 }
