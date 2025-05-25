@@ -271,9 +271,6 @@ PM_fit <- R6::R6Class(
       }
 
 
-
-
-
       #### Save objects ####
       self$data <- PM_data$new(data_filtered, quiet = TRUE)
       self$data$write("gendata.csv", header = FALSE)
@@ -289,7 +286,7 @@ PM_fit <- R6::R6Class(
       # Set initial grid points (only applies for sobol)
 
       vol <- prod(sapply(ranges, function(x) x[2] - x[1]))
-      points <- ceiling(density0 * vol)
+      points <- max(ceiling(density0 * vol),100) # at least 100 points
 
 
 
@@ -367,6 +364,7 @@ PM_fit <- R6::R6Class(
         PM_parse("outputs")
         res <- PM_load(file = "PMout.Rdata")
         PM_report(res, outfile = "report.html", template = report)
+        return(invisible(res))
       } else {
         cli::cli_abort(c(
           "x" = "Error: Currently, the rust engine only supports internal runs.",
