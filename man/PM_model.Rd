@@ -43,6 +43,9 @@ modEx
 modEx$write("model.txt")
 }
 }
+\author{
+Michael Neely
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
@@ -50,6 +53,7 @@ modEx$write("model.txt")
 \item \href{#method-PM_Vmodel-print}{\code{PM_model$print()}}
 \item \href{#method-PM_Vmodel-update}{\code{PM_model$update()}}
 \item \href{#method-PM_Vmodel-write}{\code{PM_model$write()}}
+\item \href{#method-PM_Vmodel-fit}{\code{PM_model$fit()}}
 \item \href{#method-PM_Vmodel-plot}{\code{PM_model$plot()}}
 \item \href{#method-PM_Vmodel-clone}{\code{PM_model$clone()}}
 }
@@ -167,6 +171,111 @@ modEx$write("model.txt")
 
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_Vmodel-fit"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-fit}{}}}
+\subsection{Method \code{fit()}}{
+Fit model to data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$fit(
+  data = NULL,
+  run = NULL,
+  include = NULL,
+  exclude = NULL,
+  cycles = 100,
+  prior = "sobol",
+  density0 = 0.01,
+  seed = 23,
+  overwrite = FALSE,
+  algorithm = "NPAG",
+  report = getPMoptions("report_template")
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{Either the name of a  \link{PM_data}
+object in memory or the quoted name of a Pmetrics
+data file in the current working directory, which will crate a \link{PM_data}
+object on the fly. However, if created on the fly, this object
+will not be available to other
+methods or other instances of \link{PM_fit}.}
+
+\item{\code{run}}{Specify the run number of the output folder.  Default if missing is the next available number.}
+
+\item{\code{include}}{Vector of subject id values in the data file to include in the analysis.
+The default (missing) is all.}
+
+\item{\code{exclude}}{A vector of subject IDs to exclude in the analysis, e.g. \code{c(4,6:14,16:20)}}
+
+\item{\code{cycles}}{Number of cycles to run. Default is 100.}
+
+\item{\code{prior}}{The distribution for the initial support points, which can be
+one of several options.
+\itemize{
+\item The default is "sobol", which is a semi-random distribution. This is the distribution
+typically used when fitting a new model to the data. An example of this is
+on our \href{https://www.lapk.org/images/sobol_3d_plot.html}{website}.
+}
+
+The following all specify non-random, informative prior distributions. They
+are useful for either continuing a previous
+run which did not converge or for fitting a model to new data, whether to simply
+calculate Bayesian posteriors with \code{cycles = 0} or to revise the model to a new
+covergence with the new data.
+\itemize{
+\item The name of a suitable \link{PM_result} object from a prior run loaded with \link{PM_load}.
+This starts from the non-uniform, informative distribution obtained at the end of a prior NPAG run.
+Example: \verb{run1 <- PM_load(1); fit1$run(prior = run1)}.
+\item A character string with the filename of a csv file containing a prior distribution with
+format as for 'theta.csv' in the output folder of a prior run: column headers are parameter
+names, and rows are the support point values. A final column with probabilities
+for each support point is not necessary, but if present will be ignored, as these
+probabilities are calculated by the engine. Note that the parameter names must match the
+names of the primary variables in the model. Example: \code{fit1$run(prior = "mytheta.csv")}.
+\item The number of a previous run with \code{theta.csv} in the output folder which will be read
+as for the filename option above. Example: \code{fit1$run(prior = 2)}.
+\item A data frame obtained from reading an approriate file, such that the data frame
+is in the required format described in the filename option above. Example:
+\verb{mytheta <- read_csv("mytheta.csv"); fit1$run(prior = mytheta)}.
+}}
+
+\item{\code{density0}}{The proportion of the volume of the model parameter
+hyperspace used to calculate the initial number of support points if one of
+the semi-random, uniform distributions are selected in the \code{prior} argument
+above. The initial points are
+spread through that hyperspace and begin the search for the optimal
+parameter value distribution (support points) in the population.
+The volume of the parameter space is the product of the ranges for all parameters.
+For example if using two parameters \code{Ke} and \code{V}, with ranges of [0, 5] and [10, 100],
+the volume is (5 - 0) x (100 - 10) = 450 The default value of \code{density0} is 0.01, so the initial
+number of support points will be 0.01 x 450 = 4.5, increased to the nearest integer,
+which is 5. The greater the initial number of points, the less chance of
+missing the globally maximally likely parameter value distribution,
+but the slower the run.}
+
+\item{\code{seed}}{Seed used if \code{prior = "sobol"}. Ignored otherwise.}
+
+\item{\code{overwrite}}{Boolean operator to overwrite existing run result folders.  Default is \code{FALSE}.}
+
+\item{\code{algorithm}}{The algorithm to use for the run.  Default is "NPAG". Alternatives: "NPOD".}
+
+\item{\code{report}}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
+is used. Otherwise can be "plotly", "ggplot", or "none".}
+
+\item{\code{intern}}{Run NPAG in the R console without a batch script.  Default is TRUE.}
+
+\item{\code{artifacts}}{Default is \code{TRUE}.  Set to \code{FALSE} to suppress creating the \code{etc} folder. This folder
+will contain all the compilation artifacts created during the compilation and run steps.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A successful run will result in creation of a new folder in the working
+directory with the results inside the folder.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_Vmodel-plot"></a>}}
