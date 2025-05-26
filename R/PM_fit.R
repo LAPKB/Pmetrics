@@ -108,7 +108,7 @@ PM_fit <- R6::R6Class(
         "i" = "Use the `$fit` method in [PM_model()] instead."
       ))
       return(invisible(NULL))
-    }
+    },
 
     #' @description
     #' Save the current PM_fit object to a .rds file.
