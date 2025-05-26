@@ -12,7 +12,8 @@ model_lib(name = NULL, show = TRUE)
 \item{show}{If \code{TRUE}, the model is displayed in the console. If \code{FALSE}, the model is only returned as a tibble.}
 }
 \value{
-A tibble with the model equations.
+If \code{name} is not \code{NULL}, a tibble with the model equations; otherwise the
+function returns \code{NULL} and only displays the entire library in tabular format.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
