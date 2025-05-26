@@ -4,7 +4,7 @@ PM_model <- R6::R6Class("PM_model",
     binary_path = NULL,
     file_content = NULL,
     type = NULL,
-    initialize = function(pri, cov, eqn, sec, tem, lag, f, ini, out, error) {
+    initialize = function(pri, cov = NULL, eqn = NULL, sec = NULL, tem = NULL, lag = NULL, f = NULL, ini = NULL, out = NULL, error = NULL) {
       # Primary parameters must be provided
       if (is.null(pri)) {
         cli::cli_abort(c(
