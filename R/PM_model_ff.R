@@ -122,10 +122,9 @@ PM_model <- R6::R6Class("PM_model",
         ))
       }
 
-      
 
-    if (type == "analytical") {
-      base <- "equation::Analytical::new(
+      if (type == "analytical") {
+        base <- "equation::Analytical::new(
         <tem>,
         <sec>,
         <lag>,
@@ -134,8 +133,8 @@ PM_model <- R6::R6Class("PM_model",
         <out>,
         (<neqs>, <nouteqs>),
     )"
-    } else if (type == "ode") {
-      base <- "equation::ODE::new(
+      } else if (type == "ode") {
+        base <- "equation::ODE::new(
         <eqn>,
         <lag>,
         <fa>,
@@ -143,11 +142,12 @@ PM_model <- R6::R6Class("PM_model",
         <out>,
         (<neqs>, <nouteqs>),
     )"
-    } else {
-      cli::cli_abort(c(
-        "x" = "Invalid model type.",
-        "i" = "Please provide a valid model type."
-      ))
+      } else {
+        cli::cli_abort(c(
+          "x" = "Invalid model type.",
+          "i" = "Please provide a valid model type."
+        ))
+      }
 
       base <- gsub(pattern = "<eqn>", replacement = self$model_list$eqn, x = base)
       base <- gsub(pattern = "<tem>", replacement = self$model_list$tem, x = base)
