@@ -105,7 +105,7 @@ PM_model <- R6::R6Class("PM_model",
         fa = fa,
         ini = ini,
         out = out,
-        neqs = n_eqn
+        neqs = n_eqn,
         nouteqs = n_out,
         parameters = parameters,
         covariates = covariates
