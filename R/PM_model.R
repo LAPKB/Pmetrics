@@ -15,9 +15,14 @@
 #' necessary to run a population analysis.
 #'
 #' @details
-#' PM_model objects are passed to \code{\link{PM_fit}} objects to initiate a
-#' population analysis. The object is created by defining a list of lists
-#' directly in R, or by reading a model text file in the current working directory.
+#' PM_model objects are one of two fundamental objects in Pmetrics, along with
+#' [PM_data()] objects. Defining a PM_model allows for fitting it to the data
+#' via the `$fit()` method to conduct a
+#' population analysis, i.e. estimating the probability distribution of model equation
+#' paramter values in the population. The PM_model object is created using the 
+#' [build_model()] function, by defining a list of lists
+#' directly in R, or by reading a model text file. See the vignette on models
+#' for details.
 #'
 #' @export
 PM_model <- R6::R6Class("PM_Vmodel",
@@ -36,51 +41,26 @@ PM_model <- R6::R6Class("PM_Vmodel",
                             return(invisible())
                           },
                           #' @description
-                          #' Print a model object to the console in readable format
-                          #' @param ... Not used currently.
-                          print = function(...) {
-                            return(invisible())
-                          },
-                          #' @description
-                          #' Update selected elements of a model object
-                          #' @param changes_list The named list containing elements and values to update.
-                          #' Because R6 objects are mini-environments, using typical
-                          #' R notation to copy an object like mod2 <- mod1 can lead to unexpected
-                          #' results since this syntax simply creates a copied object in the same
-                          #' environment. Therefore updating any one object (e.g., mod1 or mod2)
-                          #' will update the other. To avoid this behavior, use the $clone() function
-                          #' first if you want to create a copied, yet independent new model.
-                          #' @examples
-                          #' \dontrun{
-                          #' mod2 <- modEx$clone() #create an independent copy of modEx called mod2
-                          #' mod2$update(list(
-                          #'   pri = list(
-                          #'    Ke = ab(0, 1), #change the range
-                          #'    V = NULL, #this deletes the variable
-                          #'    V0 = ab(10, 100) #add a new variable
-                          #'   ),
-                          #'   sec = "V = V0 * WT" #add a new secondary equation
-                          #' ))
-                          #' #note that they are different now
-                          #' mod2
-                          #' modEx
-                          #' }
-                          update = function(changes_list) {
-                            return(invisible())
-                          },
-                          #' @description Write a `PM_model` object to a text file
-                          #' @param model_path Full name of the file to be created, including the path
-                          #' relative to the current working directory
-                          #' @param engine Currently only "npag".
-                          #' @examples
-                          #' \dontrun{
-                          #' modEx$write("model.txt")
-                          #' }
-                          write = function(model_path = "genmodel.txt", engine = "npag") {
-                            return(invisible())
-                          },
-                          #' @description
-                          #' Fit model to data
+                          #' This is the main method to run a population analysis.
+                          #' @details
+                          #' As of Pmetrics 3.0.0, models contain compiled code to fit
+                          #' the model equations to the data, optimizing the parameter
+                          #' value probability distributions in the population to 
+                          #' maximize their likelihood, or more precisely, minimize
+                          #' the objective function, which is -2*log-likelihood.
+                          #' 
+                          #' The `$fit` method is the means of running that compiled
+                          #' code to conduct to fitting procedure. At a minimum, it requires
+                          #' a [PM_data] object, which can be created with
+                          #' [PM_data$new()]. There are a number of additional arguments
+                          #' to control the fitting procedure, such as the number of cycles
+                          #' to run, the initial number of support points,
+                          #' and the algorithm to use, among others.
+                          #' 
+                          #' The `$fit` method is the descendant of the legacy 
+                          #' [NPrun()] function, which is maintained as a wrapper to `$fit`
+                          #' for backwards compatibility. 
+                          #' 
                           #' @param data Either the name of a  [PM_data]
                           #' object in memory or the quoted name of a Pmetrics
                           #' data file in the current working directory, which will crate a [PM_data]
@@ -164,6 +144,94 @@ PM_model <- R6::R6Class("PM_Vmodel",
                                          exclude = NULL,cycles = 100, prior = "sobol",
                                          density0 = 0.01,seed = 23, overwrite = FALSE,
                                          algorithm = "NPAG", report = getPMoptions("report_template")) {
+                            return(invisible())
+                          },
+                          #' @description
+                          #' Simulates multiple scenarios using the provided data and parameter values.
+                          #'
+                          #' @param data A `PM_data` object containing the data for the simulation.
+                          #' @param theta A matrix of numeric values representing the parameter values for the simulation.
+                          #'
+                          #' @details
+                          #' This function simulates multiple scenarios using the provided data and parameter values.
+                          #' It requires the data to be a `PM_data` object and the parameter values to be a numeric matrix.
+                          #' The number of columns in the parameter matrix must match the number of parameters in the model.
+                          #' The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
+                          #' If the model is not already compiled, it will be compiled before the simulation.
+                          #'
+                          #' @return A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
+                          #'
+                          #' @examples
+                          #' \dontrun{
+                          #' data <- PM_data$new(...)
+                          #' theta <- matrix(c(1.0, 20.0, 2.0, 70.0), nrow = 2, byrow = TRUE)
+                          #' result <- model$simulate_all(data, theta)
+                          #' }
+                          #'
+                          #' @export
+                          simulate_all = function(data, theta) {
+                            return(invisible())
+                          },
+                          #' @description
+                          #' Retrieves the list of model parameters from the compiled version of the model.
+                          #'
+                          #' @details
+                          #' This function returns a list of the model parameters in the compiled version of the model.
+                          #' It only works with the Rust backend. If the backend is not set to "rust", an error will be thrown.
+                          #'
+                          #' @return A list of model parameters.
+                          #'
+                          #' @examples
+                          #' \dontrun{
+                          #' model$parameters()
+                          #' }
+                          #'
+                          #' @export
+                          parameters = function() {
+                            return(invisible())
+                          },
+                          #' @description
+                          #' Print a model object to the console in readable format
+                          #' @param ... Not used currently.
+                          print = function(...) {
+                            return(invisible())
+                          },
+                          #' @description
+                          #' Update selected elements of a model object
+                          #' @param changes_list The named list containing elements and values to update.
+                          #' Because R6 objects are mini-environments, using typical
+                          #' R notation to copy an object like mod2 <- mod1 can lead to unexpected
+                          #' results since this syntax simply creates a copied object in the same
+                          #' environment. Therefore updating any one object (e.g., mod1 or mod2)
+                          #' will update the other. To avoid this behavior, use the $clone() function
+                          #' first if you want to create a copied, yet independent new model.
+                          #' @examples
+                          #' \dontrun{
+                          #' mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+                          #' mod2$update(list(
+                          #'   pri = list(
+                          #'    Ke = ab(0, 1), #change the range
+                          #'    V = NULL, #this deletes the variable
+                          #'    V0 = ab(10, 100) #add a new variable
+                          #'   ),
+                          #'   sec = "V = V0 * WT" #add a new secondary equation
+                          #' ))
+                          #' #note that they are different now
+                          #' mod2
+                          #' modEx
+                          #' }
+                          update = function(changes_list) {
+                            return(invisible())
+                          },
+                          #' @description Write a `PM_model` object to a text file
+                          #' @param model_path Full name of the file to be created, including the path
+                          #' relative to the current working directory
+                          #' @param engine Currently only "npag".
+                          #' @examples
+                          #' \dontrun{
+                          #' modEx$write("model.txt")
+                          #' },
+                          write = function(model_path = "genmodel.txt", engine = "npag") {
                             return(invisible())
                           },
                           #' @description
@@ -617,16 +685,9 @@ PM_Vinput <- R6::R6Class(
 PM_model_list <- R6::R6Class("PM_model_list",
                              inherit = PM_Vmodel,
                              public = list(
-                               #' @field model_list The model list object
                                model_list = NULL,
-                               #' @field binary_path The path to the compiled model binary. Used by the rust backend.
                                binary_path = NULL,
-                               #' @title Create PM_model from list of lists
-                               #' @description
-                               #' `r lifecycle::badge("stable")`
-                               #' Generates a model from a list of lists.
-                               #' @param model_list The appropriate list.
-                               #' @export
+                            
                                initialize = function(model_list) {
                                  # guarantees primary keys are lowercase and max first 3 characters
                                  orig_names <- names(model_list)
@@ -719,12 +780,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  
                                  self$model_list <- private$order(model_list)
                                },
-                               #' @description
-                               #' `r lifecycle::badge("stable")`
-                               #' Transforms model list in to a text file
-                               #' @param model_path Name of the file to be created.
-                               #' @param engine Currently only "npag".
-                               #' @export
+                       
                                write = function(model_path = "genmodel.txt", engine = "npag") {
                                  engine <- tolower(engine)
                                  keys <- names(self$model_list)
@@ -738,11 +794,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  
                                  return(model_path)
                                },
-                               #' @description
-                               #' `r lifecycle::badge("stable")`
-                               #' Fills in the template file with the model information
-                               #' @param file_name Name of the file to be created.
-                               #' @export
+                            
                                write_rust = function(file_name = "parsed_model.txt") {
                                  model_file <- system.file("Rust/template.rs", package = "Pmetrics")
                                  content <- readr::read_file(model_file)
@@ -877,14 +929,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  # browser()
                                  readr::write_file(content, file_name)
                                },
-                               #' @description
-                               #' Updates the PM_model object with new values.
-                               #' @param changes_list A list of changes to be made to the model.
-                               #' @examples
-                               #' \dontrun{
-                               #' model$update(list(pri = list(ka = c(0.1, 0.2)), out = list(Y1 = list(val = "C1"))))
-                               #' }
-                               #' @export
+                          
                                update = function(changes_list) {
                                  keys <- names(changes_list)
                                  if (!private$lower3(keys) %in% c("pri", "sec", "tem", "dif", "eqn", "ini", "cov", "lag", "bol", "out", "err", "fa", "ext")) {
@@ -895,23 +940,7 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  }
                                  self$model_list <- modifyList(self$model_list, changes_list)
                                },
-                               #' @description
-                               #' Compiles a PM_model object using the Rust backend.
-                               #'
-                               #' @details
-                               #' This function compiles a PM_model object into a binary format using the Rust backend.
-                               #' It writes the model to a temporary file, compiles it, and stores the path to the compiled binary.
-                               #'
-                               #' @note
-                               #' This function can only be used with the Rust backend. If the backend is not set to "rust",
-                               #' an error will be thrown.
-                               #'
-                               #' @examples
-                               #' \dontrun{
-                               #' model$compile()
-                               #' }
-                               #'
-                               #' @export
+                               
                                compile = function() {
                                  if (getPMoptions()$backend != "rust") {
                                    cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
@@ -944,87 +973,6 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                },
                                
                                
-                               #' @description
-                               #' Fit model to data
-                               #' @param data Either the name of a  [PM_data]
-                               #' object in memory or the quoted name of a Pmetrics
-                               #' data file in the current working directory, which will crate a [PM_data]
-                               #' object on the fly. However, if created on the fly, this object
-                               #' will not be available to other
-                               #' methods or other instances of [PM_fit].
-                               #' @param run Specify the run number of the output folder.  Default if missing is the next available number.
-                               #' @param include Vector of subject id values in the data file to include in the analysis.
-                               #' The default (missing) is all.
-                               #' @param exclude A vector of subject IDs to exclude in the analysis, e.g. `c(4,6:14,16:20)`
-                               #    #' @param ode Ordinary Differential Equation solver log tolerance or stiffness.
-                               #    Default is -4, i.e. 0.0001.  Higher values will result in faster
-                               #    #' runs, but parameter estimates may not be as accurate.
-                               #    #' @param tol Tolerance for convergence of NPAG.  Smaller numbers make it harder to converge.
-                               #    #' Default value is 0.01.
-                               #    #' @param salt Vector of salt fractions for each drug in the data file, default is 1 for each drug.  This is not the same as bioavailability.
-                               #' @param cycles Number of cycles to run. Default is 100.
-                               #' @param prior The distribution for the initial support points, which can be
-                               #' one of several options.
-                               #' * The default is "sobol", which is a semi-random distribution. This is the distribution
-                               #' typically used when fitting a new model to the data. An example of this is
-                               #' on our [website](https://www.lapk.org/images/sobol_3d_plot.html).
-                               #'
-                               #' The following all specify non-random, informative prior distributions. They
-                               #' are useful for either continuing a previous
-                               #' run which did not converge or for fitting a model to new data, whether to simply
-                               #' calculate Bayesian posteriors with `cycles = 0` or to revise the model to a new
-                               #' covergence with the new data.
-                               #' * The name of a suitable [PM_result] object from a prior run loaded with [PM_load].
-                               #' This starts from the non-uniform, informative distribution obtained at the end of a prior NPAG run.
-                               #' Example: `run1 <- PM_load(1); fit1$run(prior = run1)`.
-                               #'
-                               #' * A character string with the filename of a csv file containing a prior distribution with
-                               #' format as for 'theta.csv' in the output folder of a prior run: column headers are parameter
-                               #' names, and rows are the support point values. A final column with probabilities
-                               #' for each support point is not necessary, but if present will be ignored, as these
-                               #' probabilities are calculated by the engine. Note that the parameter names must match the
-                               #' names of the primary variables in the model. Example: `fit1$run(prior = "mytheta.csv")`.
-                               #' * The number of a previous run with `theta.csv` in the output folder which will be read
-                               #' as for the filename option above. Example: `fit1$run(prior = 2)`.
-                               #' * A data frame obtained from reading an approriate file, such that the data frame
-                               #' is in the required format described in the filename option above. Example:
-                               #' `mytheta <- read_csv("mytheta.csv"); fit1$run(prior = mytheta)`.
-                               #'
-                               #' @param density0 The proportion of the volume of the model parameter
-                               #' hyperspace used to calculate the initial number of support points if one of
-                               #' the semi-random, uniform distributions are selected in the `prior` argument
-                               #' above. The initial points are
-                               #' spread through that hyperspace and begin the search for the optimal
-                               #' parameter value distribution (support points) in the population.
-                               #' The volume of the parameter space is the product of the ranges for all parameters.
-                               #' For example if using two parameters `Ke` and `V`, with ranges of \[0, 5\] and \[10, 100\],
-                               #' the volume is (5 - 0) x (100 - 10) = 450 The default value of `density0` is 0.01, so the initial
-                               #' number of support points will be 0.01 x 450 = 4.5, increased to the nearest integer,
-                               #' which is 5. The greater the initial number of points, the less chance of
-                               #' missing the globally maximally likely parameter value distribution,
-                               #' but the slower the run.
-                               #'
-                               #' @param seed Seed used if `prior = "sobol"`. Ignored otherwise.
-                               #' @param intern Run NPAG in the R console without a batch script.  Default is TRUE.
-                               #    #' @param quiet Boolean operator controlling whether a model summary report is given.  Default is `TRUE`.
-                               #' @param overwrite Boolean operator to overwrite existing run result folders.  Default is `FALSE`.
-                               #    #' @param nocheck Suppress the automatic checking of the data file with [PM_data].  Default is `FALSE`.
-                               #    #' @param parallel Run NPAG in parallel.  Default is `NA`, which will be set to `TRUE` for models that use
-                               #    #' differential equations, and `FALSE` for algebraic/explicit models.  The majority of the benefit for parallelization comes
-                               #    #' in the first cycle, with a speed-up of approximately 80\% of the number of available cores on your machine, e.g. an 8-core machine
-                               #    #' will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\%, e.g. 4-fold increase on an 8-core
-                               #    #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
-                               #' @param algorithm The algorithm to use for the run.  Default is "NPAG". Alternatives: "NPOD".
-                               #' @param report If missing, the default Pmetrics report template as specified in [getPMoptions]
-                               #' is used. Otherwise can be "plotly", "ggplot", or "none".
-                               #' @param artifacts Default is `TRUE`.  Set to `FALSE` to suppress creating the `etc` folder. This folder
-                               #' will contain all the compilation artifacts created during the compilation and run steps.
-                               #'
-                               #' @return A successful run will result in creation of a new folder in the working
-                               #' directory with the results inside the folder.
-                               #'
-                               #' @author Michael Neely
-                               #' @export
                                fit = function(data = NULL, run = NULL, include = NULL, 
                                               exclude = NULL,cycles = 100, prior = "sobol",
                                               density0 = 0.01,seed = 23, overwrite = FALSE,
@@ -1043,7 +991,13 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  }
                               
                                  if (!inherits(data, "PM_data")) {
-                                   cli::cli_abort(c("x" = "{.code data} must be a {.cls PM_data} object"))
+                                   data <- tryCatch({
+                                     PM_data$new(data)
+                                   }, error = function(e) {
+                                     cli::cli_abort(c(
+                                       "x" = "{.code data} must be a {.cls PM_data} object or an appropriate data frame.",
+                                       "i" = "See help for {.fn Pmetrics::PM_data}."))
+                                   })
                                  }
                                  
                                  #### checks
@@ -1241,88 +1195,6 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  
                                }, # end fit
                                
-                               
-                               
-                               
-                               
-                              
-
-                                 
-                                 
-                                 #' @description
-                                 #' Simulates a single scenario using the provided data and parameter values.
-                                 #'
-                                 #' @param data A `PM_data` object containing the data for the simulation.
-                                 #' @param spp A numeric vector representing the parameter values for the simulation.
-                                 #'
-                                 #' @details
-                                 #' This function simulates a single scenario using the provided data and parameter values.
-                                 #' It requires the data to be a `PM_data` object and the parameter values to be a numeric vector.
-                                 #' The length of the parameter vector must match the number of parameters in the model.
-                                 #' The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
-                                 #' If the model is not already compiled, it will be compiled before the simulation.
-                                 #'
-                                 #' If the data contains more than one scenario, only the first scenario will be used for the simulation.
-                                 #'
-                                 #' @return A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
-                                 #'
-                                 #' @examples
-                                 #' \dontrun{
-                                 #' data <- PM_data$new(...)
-                                 #' spp <- c(1.0, 2.0, 3.0)
-                                 #' result <- model$simulate_one(data, spp)
-                                 #' }
-                                 #'
-                                 #' @export
-                                 simulate_one = function(data, spp) {
-                                   if (!inherits(data, "PM_data")) {
-                                     cli::cli_abort(c("x" = "Data must be a PM_data object."))
-                                   }
-                                   if (!is.numeric(spp) || !is.vector(spp)) {
-                                     cli::cli_abort(c("x" = "spp must be a numeric vector."))
-                                   }
-                                   if (length(spp) != length(self$parameters())) {
-                                     cli::cli_abort(c("x" = "spp must have the same length as the number of parameters."))
-                                   }
-                                   
-                                   temp_csv <- tempfile(fileext = ".csv")
-                                   data$write(temp_csv, header = FALSE)
-                                   if (getPMoptions()$backend == "rust") {
-                                     if (is.null(self$binary_path)) {
-                                       self$compile()
-                                       if (is.null(self$binary_path)) {
-                                         cli::cli_abort(c("x" = "Model must be compiled before simulating."))
-                                       }
-                                     }
-                                     sim <- simulate_one(temp_csv, self$binary_path, spp)
-                                   } else {
-                                     cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
-                                   }
-                                   sim
-                                 },
-                               #' @description
-                               #' Simulates multiple scenarios using the provided data and parameter values.
-                               #'
-                               #' @param data A `PM_data` object containing the data for the simulation.
-                               #' @param theta A matrix of numeric values representing the parameter values for the simulation.
-                               #'
-                               #' @details
-                               #' This function simulates multiple scenarios using the provided data and parameter values.
-                               #' It requires the data to be a `PM_data` object and the parameter values to be a numeric matrix.
-                               #' The number of columns in the parameter matrix must match the number of parameters in the model.
-                               #' The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
-                               #' If the model is not already compiled, it will be compiled before the simulation.
-                               #'
-                               #' @return A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
-                               #'
-                               #' @examples
-                               #' \dontrun{
-                               #' data <- PM_data$new(...)
-                               #' theta <- matrix(c(1.0, 20.0, 2.0, 70.0), nrow = 2, byrow = TRUE)
-                               #' result <- model$simulate_all(data, theta)
-                               #' }
-                               #'
-                               #' @export
                                simulate_all = function(data, theta) {
                                  if (!inherits(data, "PM_data")) {
                                    cli::cli_abort(c("x" = "Data must be a PM_data object."))
@@ -1352,21 +1224,6 @@ PM_model_list <- R6::R6Class("PM_model_list",
                                  }
                                  return(sim)
                                },
-                               #' @description
-                               #' Retrieves the list of model parameters from the compiled version of the model.
-                               #'
-                               #' @details
-                               #' This function returns a list of the model parameters in the compiled version of the model.
-                               #' It only works with the Rust backend. If the backend is not set to "rust", an error will be thrown.
-                               #'
-                               #' @return A list of model parameters.
-                               #'
-                               #' @examples
-                               #' \dontrun{
-                               #' model$parameters()
-                               #' }
-                               #'
-                               #' @export
                                parameters = function() {
                                  if (getPMoptions()$backend != "rust") {
                                    cli::cli_abort(c("x" = "This function can only be used with the rust backend."))

@@ -39,9 +39,6 @@ pub(crate) fn settings(
         .unwrap()
         .as_real()
         .unwrap_or(100.0) as usize;
-    dbg!(&settings.get("max_cycles").unwrap());
-    dbg!(&settings.get("max_cycles").unwrap().as_integer());
-    dbg!(&settings.get("max_cycles").unwrap().as_real());
     let ind_points = settings
         .get("ind_points")
         .unwrap()
@@ -72,7 +69,6 @@ pub(crate) fn settings(
     settings.set_write_logs(true);
     settings.write()?;
     settings.initialize_logs()?;
-    dbg!(&settings);
     Ok(settings)
 }
 

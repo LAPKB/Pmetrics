@@ -10,20 +10,15 @@
 #' Currently written for the Rust implementation of NPAG
 #' @param wd The directory containing the output from the Rust-implementation of NPAG
 #' @param write A logical value indicating if the results should be returned (`FALSE`, default) or written to disk (`TRUE`)
-#' @param fit Either a \code{PM_fit} object or the relative path to a "fit.Rdata"
-#' @return The output of \code{PM_parse} is a list containing the following elements
-#' \item{op }{Written to the standard of PM_op}
-#' \item{pop }{Written to the standard of PM_pop}
-#' \item{post }{Written to the standard of PM_post}
-#' \item{cycles }{Written to the standard of PM_cycle}
-#' \item{final }{Written to the standard of PM_final}
-#' \item{cov }{Written to the standard of PM_cov}
-#'
-#' @seealso \code{\link{NPparse}}
-#' @import dplyr
-#' @import tidyr
-#' @importFrom dplyr select rename mutate relocate left_join case_when first across
-#' @importFrom jsonlite fromJSON
+#' @param fit Either a [PM_fit()] object or the relative path to a "fit.Rdata"
+#' @return The output of `PM_parse` is a list containing the following elements
+#' * **op** Written to the standard of [PM_op()]
+#' * **pop** Written to the standard of [PM_pop()]
+#' * **post** Written to the standard of [PM_post()]
+#' * **cycles** Written to the standard of [PM_cycle()]
+#' * **final** Written to the standard of [PM_final()]
+#' * **cov** Written to the standard of [PM_cov()]
+#' @author Michael Neely and Markus Hovd
 #' @export
 
 PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
