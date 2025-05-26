@@ -113,7 +113,7 @@ PM_model <- R6::R6Class("PM_model",
       self$model_list <- model_list
       self$type <- "closure"
     },
-    write_model_file() <- function(file_path = "model.rs") {
+    write_model_file = function(file_path = "model.rs") {
       # Check if model_list is not NULL
       if (is.null(self$model_list)) {
         cli::cli_abort(c(
@@ -122,26 +122,28 @@ PM_model <- R6::R6Class("PM_model",
         ))
       }
 
+      type <- "ode"
+
 
       if (type == "analytical") {
         base <- "equation::Analytical::new(
-        <tem>,
-        <sec>,
-        <lag>,
-        <fa>,
-        <ini>,
-        <out>,
-        (<neqs>, <nouteqs>),
-    )"
+            <tem>,
+            <sec>,
+            <lag>,
+            <fa>,
+            <ini>,
+            <out>,
+            (<neqs>, <nouteqs>),
+          )"
       } else if (type == "ode") {
         base <- "equation::ODE::new(
-        <eqn>,
-        <lag>,
-        <fa>,
-        <ini>,
-        <out>,
-        (<neqs>, <nouteqs>),
-    )"
+            <eqn>,
+            <lag>,
+            <fa>,
+            <ini>,
+            <out>,
+            (<neqs>, <nouteqs>),
+        )"
       } else {
         cli::cli_abort(c(
           "x" = "Invalid model type.",
@@ -624,7 +626,7 @@ PM_input <- R6::R6Class(
 #' @param constant Estimate if `FALSE` (default).
 #' @export
 additive <- function(add, constant = FALSE) {
-  PM_Vinput$new(add, add, "additive", constant)
+  PM_input$new(add, add, "additive", constant)
 }
 
 
@@ -638,7 +640,7 @@ additive <- function(add, constant = FALSE) {
 #' @param constant Estimate if `FALSE` (default).
 #' @export
 proportional <- function(prop, constant = FALSE) {
-  PM_Vinput$new(prop, prop, "proportional", constant)
+  PM_input$new(prop, prop, "proportional", constant)
 }
 
 #' @title Combination error model
@@ -653,7 +655,7 @@ proportional <- function(prop, constant = FALSE) {
 #' @param constant Estimate if `FALSE` (default).
 #' @export
 combination <- function(add, prop, constant = FALSE) {
-  PM_Vinput$new(add, prop, "combination", constant)
+  PM_input$new(add, prop, "combination", constant)
 }
 
 #' @title Assay error coefficients
@@ -667,7 +669,7 @@ combination <- function(add, prop, constant = FALSE) {
 #' missing, use values in model. If `TRUE`, use values in model regardless.
 #' @export
 errorPoly <- function(coeffs, constant = FALSE) {
-  PM_Vinput$new(coeffs, NULL, "coefficients", constant)
+  PM_input$new(coeffs, NULL, "coefficients", constant)
 }
 
 #' @title Initial range for primary parameter values
@@ -686,7 +688,7 @@ errorPoly <- function(coeffs, constant = FALSE) {
 #' controlled by [ab].
 #' @export
 ab <- function(min, max, gtz = FALSE) {
-  PM_Vinput$new(min, max, "ab", constant = FALSE, gtz)
+  PM_input$new(min, max, "ab", constant = FALSE, gtz)
 }
 
 #' @title Initial mean/SD for primary parameter values
@@ -707,7 +709,7 @@ ab <- function(min, max, gtz = FALSE) {
 #' controlled by the range.
 #' @export
 msd <- function(mean, sd, gtz = FALSE) {
-  PM_Vinput$new(mean, sd, "msd", constant = FALSE, gtz)
+  PM_input$new(mean, sd, "msd", constant = FALSE, gtz)
 }
 
 #' @title Fixed primary parameter values
@@ -728,7 +730,7 @@ msd <- function(mean, sd, gtz = FALSE) {
 #' controlled by the range.
 #' @export
 fixed <- function(fixed, constant = FALSE, gtz = FALSE) {
-  PM_Vinput$new(fixed, fixed, "fixed", constant, gtz)
+  PM_input$new(fixed, fixed, "fixed", constant, gtz)
 }
 
 #' @title Model covariate declaration
@@ -746,7 +748,7 @@ fixed <- function(fixed, constant = FALSE, gtz = FALSE) {
 #' for details on this.
 #' @export
 covariate <- function(name, constant = FALSE) {
-  PM_Vinput$new(name, mode = "covariate", constant = constant)
+  PM_input$new(name, mode = "covariate", constant = constant)
 }
 
 
