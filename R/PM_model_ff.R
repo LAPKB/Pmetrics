@@ -51,7 +51,7 @@ PM_model <- R6::R6Class("PM_model",
       covariates <- tolower(cov)
       # eqn
       if (type == "ode") {
-        eqn <- transpile_ode(ode, parameters, covariates)
+        eqn <- transpile_ode(eqn, parameters, covariates)
       } else if (type == "analytical") {
         eqn <- NULL
       }
