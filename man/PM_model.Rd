@@ -10,11 +10,36 @@ PM_model objects contain the variables, covariates, equations and error models
 necessary to run a population analysis.
 }
 \details{
-PM_model objects are passed to \code{\link{PM_fit}} objects to initiate a
-population analysis. The object is created by defining a list of lists
-directly in R, or by reading a model text file in the current working directory.
+PM_model objects are one of two fundamental objects in Pmetrics, along with
+\code{\link[=PM_data]{PM_data()}} objects. Defining a PM_model allows for fitting it to the data
+via the \verb{$fit()} method to conduct a
+population analysis, i.e. estimating the probability distribution of model equation
+paramter values in the population. The PM_model object is created using the
+\code{\link[=build_model]{build_model()}} function, by defining a list of lists
+directly in R, or by reading a model text file. See the vignette on models
+for details.
 }
 \examples{
+
+## ------------------------------------------------
+## Method `PM_model$simulate_all`
+## ------------------------------------------------
+
+\dontrun{
+data <- PM_data$new(...)
+theta <- matrix(c(1.0, 20.0, 2.0, 70.0), nrow = 2, byrow = TRUE)
+result <- model$simulate_all(data, theta)
+}
+
+
+## ------------------------------------------------
+## Method `PM_model$parameters`
+## ------------------------------------------------
+
+\dontrun{
+model$parameters()
+}
+
 
 ## ------------------------------------------------
 ## Method `PM_model$update`
@@ -41,7 +66,7 @@ modEx
 
 \dontrun{
 modEx$write("model.txt")
-}
+},
 }
 \author{
 Michael Neely
@@ -50,10 +75,12 @@ Michael Neely
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-PM_Vmodel-new}{\code{PM_model$new()}}
+\item \href{#method-PM_Vmodel-fit}{\code{PM_model$fit()}}
+\item \href{#method-PM_Vmodel-simulate_all}{\code{PM_model$simulate_all()}}
+\item \href{#method-PM_Vmodel-parameters}{\code{PM_model$parameters()}}
 \item \href{#method-PM_Vmodel-print}{\code{PM_model$print()}}
 \item \href{#method-PM_Vmodel-update}{\code{PM_model$update()}}
 \item \href{#method-PM_Vmodel-write}{\code{PM_model$write()}}
-\item \href{#method-PM_Vmodel-fit}{\code{PM_model$fit()}}
 \item \href{#method-PM_Vmodel-plot}{\code{PM_model$plot()}}
 \item \href{#method-PM_Vmodel-clone}{\code{PM_model$clone()}}
 }
@@ -80,97 +107,6 @@ manual for more help on directly defining models in R.}
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-print"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-print}{}}}
-\subsection{Method \code{print()}}{
-Print a model object to the console in readable format
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$print(...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Not used currently.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-update"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-update}{}}}
-\subsection{Method \code{update()}}{
-Update selected elements of a model object
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$update(changes_list)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{changes_list}}{The named list containing elements and values to update.
-Because R6 objects are mini-environments, using typical
-R notation to copy an object like mod2 <- mod1 can lead to unexpected
-results since this syntax simply creates a copied object in the same
-environment. Therefore updating any one object (e.g., mod1 or mod2)
-will update the other. To avoid this behavior, use the $clone() function
-first if you want to create a copied, yet independent new model.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{
-mod2 <- modEx$clone() #create an independent copy of modEx called mod2
-mod2$update(list(
-  pri = list(
-   Ke = ab(0, 1), #change the range
-   V = NULL, #this deletes the variable
-   V0 = ab(10, 100) #add a new variable
-  ),
-  sec = "V = V0 * WT" #add a new secondary equation
-))
-#note that they are different now
-mod2
-modEx
-}
-}
-\if{html}{\out{</div>}}
-
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-write"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-write}{}}}
-\subsection{Method \code{write()}}{
-Write a \code{PM_model} object to a text file
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$write(model_path = "genmodel.txt", engine = "npag")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{model_path}}{Full name of the file to be created, including the path
-relative to the current working directory}
-
-\item{\code{engine}}{Currently only "npag".}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{
-modEx$write("model.txt")
-}
-}
-\if{html}{\out{</div>}}
-
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_Vmodel-fit"></a>}}
@@ -276,6 +212,169 @@ will contain all the compilation artifacts created during the compilation and ru
 A successful run will result in creation of a new folder in the working
 directory with the results inside the folder.
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_Vmodel-simulate_all"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-simulate_all}{}}}
+\subsection{Method \code{simulate_all()}}{
+Simulates multiple scenarios using the provided data and parameter values.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$simulate_all(data, theta)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{A \code{PM_data} object containing the data for the simulation.}
+
+\item{\code{theta}}{A matrix of numeric values representing the parameter values for the simulation.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+This function simulates multiple scenarios using the provided data and parameter values.
+It requires the data to be a \code{PM_data} object and the parameter values to be a numeric matrix.
+The number of columns in the parameter matrix must match the number of parameters in the model.
+The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
+If the model is not already compiled, it will be compiled before the simulation.
+}
+
+\subsection{Returns}{
+A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+data <- PM_data$new(...)
+theta <- matrix(c(1.0, 20.0, 2.0, 70.0), nrow = 2, byrow = TRUE)
+result <- model$simulate_all(data, theta)
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_Vmodel-parameters"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-parameters}{}}}
+\subsection{Method \code{parameters()}}{
+Retrieves the list of model parameters from the compiled version of the model.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$parameters()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+This function returns a list of the model parameters in the compiled version of the model.
+It only works with the Rust backend. If the backend is not set to "rust", an error will be thrown.
+}
+
+\subsection{Returns}{
+A list of model parameters.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+model$parameters()
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_Vmodel-print"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-print}{}}}
+\subsection{Method \code{print()}}{
+Print a model object to the console in readable format
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$print(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Not used currently.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_Vmodel-update"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-update}{}}}
+\subsection{Method \code{update()}}{
+Update selected elements of a model object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$update(changes_list)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{changes_list}}{The named list containing elements and values to update.
+Because R6 objects are mini-environments, using typical
+R notation to copy an object like mod2 <- mod1 can lead to unexpected
+results since this syntax simply creates a copied object in the same
+environment. Therefore updating any one object (e.g., mod1 or mod2)
+will update the other. To avoid this behavior, use the $clone() function
+first if you want to create a copied, yet independent new model.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+mod2 <- modEx$clone() #create an independent copy of modEx called mod2
+mod2$update(list(
+  pri = list(
+   Ke = ab(0, 1), #change the range
+   V = NULL, #this deletes the variable
+   V0 = ab(10, 100) #add a new variable
+  ),
+  sec = "V = V0 * WT" #add a new secondary equation
+))
+#note that they are different now
+mod2
+modEx
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_Vmodel-write"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_Vmodel-write}{}}}
+\subsection{Method \code{write()}}{
+Write a \code{PM_model} object to a text file
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$write(model_path = "genmodel.txt", engine = "npag")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{model_path}}{Full name of the file to be created, including the path
+relative to the current working directory}
+
+\item{\code{engine}}{Currently only "npag".}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+modEx$write("model.txt")
+},
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_Vmodel-plot"></a>}}

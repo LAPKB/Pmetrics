@@ -97,6 +97,18 @@ PM_fit <- R6::R6Class(
       self$model$compile()
       
     },
+    
+    #' @description
+    #' Run a fit of model to the data (deprecated)
+    #' @details The `$run` method for `PM_fit` objects has been deprecated in 
+    #' favor of the `$fit` method in [PM_model()].
+    run = function(){
+      cli::cli_warn(c(
+        "!" = "The `$run` method for `PM_fit` objects has been deprecated.",
+        "i" = "Use the `$fit` method in [PM_model()] instead."
+      ))
+      return(invisible(NULL))
+    }
 
     #' @description
     #' Save the current PM_fit object to a .rds file.
