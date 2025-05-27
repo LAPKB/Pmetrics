@@ -178,6 +178,70 @@ empty_out <- function() {
   "|_x, _p, _t, _cov, _y| { }"
 }
 
+# ------------------ Error Transpilation Support ------------------
+# Validate and transpile an R 'error' function into a real R list of evaluated calls
+
+collect_error_entries <- function(fun) {
+  body_expr <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
+    as.list(body(fun)[-1])
+  } else {
+    list(body(fun))
+  }
+
+  entries <- list()
+  expected_idx <- 1L
+
+  for (expr in body_expr) {
+    if (!is.call(expr) || !(as.character(expr[[1]]) %in% c("<-", "="))) {
+      stop("Invalid syntax in error(): only assignments allowed (found: ", deparse(expr), ")")
+    }
+    lhs <- expr[[2]]
+    rhs <- expr[[3]]
+
+    if (!is.call(lhs) || as.character(lhs[[1]]) != "[" || as.character(lhs[[2]]) != "E") {
+      stop("Invalid LHS in error(): expected E[index], got ", deparse(lhs))
+    }
+    idx_raw <- lhs[[3]]
+    if (!is.numeric(idx_raw) || length(idx_raw) != 1) {
+      stop("Invalid index in error(): must be a single numeric literal (got: ", deparse(idx_raw), ")")
+    }
+    idx <- as.integer(idx_raw)
+    if (idx != expected_idx) {
+      stop(sprintf("Error indices must start at 1 and increment by 1. Expected index %d but got %d.", expected_idx, idx))
+    }
+    expected_idx <- expected_idx + 1L
+
+    if (!is.call(rhs) || !(as.character(rhs[[1]]) %in% c("proportional", "additive"))) {
+      stop("Invalid RHS in error(): only proportional() or additive() calls allowed (found: ", deparse(rhs), ")")
+    }
+
+    n_args <- length(rhs) - 1
+    if (!(n_args %in% c(2, 3))) {
+      stop(sprintf("%s() must have 2 or 3 arguments (got %d)", as.character(rhs[[1]]), n_args))
+    }
+
+    if (n_args == 2) {
+      rhs <- as.call(c(as.list(rhs), list(fixed = FALSE)))
+    }
+
+    entries[[as.character(idx)]] <- rhs
+  }
+  entries
+}
+
+# Transpile an R error function
+transpile_error <- function(fun) {
+  entries <- collect_error_entries(fun)
+  result <- list()
+  for (i in names(entries)) {
+    # evaluate each proportional/additive call
+    result[[i]] <- eval(entries[[i]])
+  }
+  # ensure names are correct ("1","2",...)
+  names(result) <- names(entries)
+  result
+}
+
 get_assignments <- function(fn, assign) {
   count_dx_assignments <- function(expr) {
     if (is.call(expr)) {
