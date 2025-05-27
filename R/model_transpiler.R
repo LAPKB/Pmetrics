@@ -73,12 +73,22 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
     # Function calls
     "abs" = sprintf("%s.abs()", rust_args[[1]]),
     "log" = sprintf("%s.ln()", rust_args[[1]]),
+    "exp" = sprintf("%s.exp()", rust_args[[1]]),
 
     # Assignment
     "<-" = ,
     "=" = {
-      lhs_code <- expr_to_rust(args[[1]], params, covs)
-      sprintf("%s = %s;", lhs_code, rust_args[[2]])
+      lhs <- args[[1]]
+      rhs_code <- rust_args[[2]]
+
+      if (is.symbol(lhs)) {
+        # It's a plain variable like `ka = ...`
+        sprintf("let %s = %s;", as.character(lhs), rhs_code)
+      } else {
+        # It’s likely something like dx[1] = ...
+        lhs_code <- expr_to_rust(lhs, params, covs)
+        sprintf("%s = %s;", lhs_code, rhs_code)
+      }
     },
 
     # If
