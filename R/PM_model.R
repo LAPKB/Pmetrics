@@ -18,8 +18,20 @@ PM_model <- R6::R6Class("PM_model",
                           out = NULL,
                           error = NULL) {
       # Store the original function arguments
-      self$arg_list <- list(file, pri, cov, eqn, sec, tem, lag, fa, ini, out, error)
-
+      self$arg_list <- list(
+        fiel = file,
+        pri = pri,
+        cov = cov,
+        eqn = eqn,
+        sec = sec,
+        tem = tem,
+        lag = lag,
+        fa = fa,
+        ini = ini,
+        out = out,
+        error = error
+      )
+      
       # Primary parameters must be provided
       if (is.null(pri)) {
         cli::cli_abort(
@@ -195,8 +207,27 @@ PM_model <- R6::R6Class("PM_model",
     },
     print = function(...) {
       mlist <- self$model_list
+      
+
 
       cli::cli_h1("Model summary")
+      
+      pars = self$model_list$parameters
+      cli::cli_text("Model has {length(pars)} primary parameters: {pars} ")
+      
+     
+      if (!is.null(self$arg_list$cov)) {
+        cli::cli_h3(text = "Covariates")
+        cli::cli_text("{self$arg_list$cov}")
+      } 
+      
+      cli::cli_h3(text = "Equations")
+      eqs = self$arg_list[[4]]
+      for (i in 2:length(body(eqs))) {
+        cli::cli_text("{body(eqs)[[i]]}")
+      }
+      
+      
 
       invisible(self)
     },
