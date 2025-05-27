@@ -1,55 +1,66 @@
-PM_model <- R6::R6Class("PM_model",
+PM_model <- R6::R6Class(
+  "PM_model",
   public = list(
     model_list = NULL,
+    arg_list = NULL,
     binary_path = NULL,
     file_content = NULL,
     type = NULL,
-    initialize = function(file, pri = NULL, cov = NULL, eqn = NULL, sec = NULL, tem = NULL, lag = NULL, fa = NULL, ini = NULL, out = NULL, error = NULL) {
+    initialize = function(file = NULL,
+                          pri = NULL,
+                          cov = NULL,
+                          eqn = NULL,
+                          sec = NULL,
+                          tem = NULL,
+                          lag = NULL,
+                          fa = NULL,
+                          ini = NULL,
+                          out = NULL,
+                          error = NULL) {
+      # Store the original function arguments
+      self$arg_list = list(file, pri, cov , eqn, sec , tem, lag, fa , ini , out , error)
+      
       # Primary parameters must be provided
       if (is.null(pri)) {
-        cli::cli_abort(c(
-          "x" = "Primary parameters are missing.",
-          "i" = "Please provide a list of primary parameters."
-        ))
+        cli::cli_abort(
+          c("x" = "Primary parameters are missing.", "i" = "Please provide a list of primary parameters.")
+        )
       }
-
+      
       # Can not use both eqn and sec/tem together
       if (!is.null(eqn)) {
         if (!is.null(sec) || !is.null(tem)) {
-          cli::cli_abort(c(
-            "x" = "Eqn and sec/tem cannot be used together.",
-            "i" = "Please use either eqn or sec/tem, not both."
-          ))
+          cli::cli_abort(
+            c("x" = "Eqn and sec/tem cannot be used together.", "i" = "Please use either eqn or sec/tem, not both.")
+          )
         }
       }
-
+      
       # Either an ODE-based model or an analytical model must be provided
       if (is.null(eqn) && is.null(sec) && is.null(tem)) {
-        cli::cli_abort(c(
-          "x" = "No equations provided.",
-          "i" = "Please provide either eqn or sec/tem."
-        ))
+        cli::cli_abort(c("x" = "No equations provided.", "i" = "Please provide either eqn or sec/tem."))
       }
-
+      
       if (!is.null(tem)) {
         if (!is.null(eqn)) {
-          cli::cli_abort(c(
-            "x" = "Eqn and tem cannot be used together.",
-            "i" = "Please use either eqn or tem, not both."
-          ))
+          cli::cli_abort(
+            c("x" = "Eqn and tem cannot be used together.", "i" = "Please use either eqn or tem, not both.")
+          )
         }
       }
-
+      
       # Number of equations
       n_eqn <- get_assignments(eqn, "dx")
       n_out <- get_assignments(out, "y")
-
+      
       # Auxiliary variable to identify the type of execution
       type <- NULL
-
-      if (!is.null(eqn)) type <- "ode"
-      if (!is.null(sec) || !is.null(tem)) type <- "analytical"
-
+      
+      if (!is.null(eqn))
+        type <- "ode"
+      if (!is.null(sec) || !is.null(tem))
+        type <- "analytical"
+      
       ## Get the names of the parameters
       parameters <- tolower(names(pri))
       covariates <- tolower(cov)
@@ -59,7 +70,7 @@ PM_model <- R6::R6Class("PM_model",
       } else if (type == "analytical") {
         eqn <- NULL
       }
-
+      
       if (type == "analytical") {
         if (!is.null(sec)) {
           sec <- transpile_sec(sec, parameters, covariates)
@@ -70,34 +81,34 @@ PM_model <- R6::R6Class("PM_model",
         sec <- NULL
         tem <- NULL
       }
-
+      
       if (!is.null(fa)) {
         fa <- transpile_fa(fa, parameters, covariates)
       } else {
         fa <- empty_fa()
       }
-
+      
       if (!is.null(lag)) {
         lag <- transpile_lag(lag, parameters, covariates)
       } else {
         lag <- empty_lag()
       }
-
+      
       if (!is.null(ini)) {
         ini <- transpile_ini(ini, parameters, covariates)
       } else {
         ini <- empty_ini()
       }
-
+      
       if (!is.null(out)) {
         out <- transpile_out(out, parameters, covariates)
       } else {
         out <- empty_out()
       }
-
-
-
-
+      
+      
+      
+      
       model_list <- list(
         eqn = eqn,
         pri = pri,
@@ -118,15 +129,12 @@ PM_model <- R6::R6Class("PM_model",
     write_model_file = function(file_path = "main.rs") {
       # Check if model_list is not NULL
       if (is.null(self$model_list)) {
-        cli::cli_abort(c(
-          "x" = "Model list is empty.",
-          "i" = "Please provide a valid model list."
-        ))
+        cli::cli_abort(c("x" = "Model list is empty.", "i" = "Please provide a valid model list."))
       }
-
+      
       type <- "ode"
-
-
+      
+      
       if (type == "analytical") {
         base <- "equation::Analytical::new(
             <tem>,
@@ -147,22 +155,55 @@ PM_model <- R6::R6Class("PM_model",
             (<neqs>, <nouteqs>),
         )"
       } else {
-        cli::cli_abort(c(
-          "x" = "Invalid model type.",
-          "i" = "Please provide a valid model type."
-        ))
+        cli::cli_abort(c("x" = "Invalid model type.", "i" = "Please provide a valid model type."))
       }
-
-      base <- gsub(pattern = "<eqn>", replacement = self$model_list$eqn, x = base)
-      base <- gsub(pattern = "<tem>", replacement = self$model_list$tem, x = base)
-      base <- gsub(pattern = "<sec>", replacement = self$model_list$sec, x = base)
-      base <- gsub(pattern = "<lag>", replacement = self$model_list$lag, x = base)
-      base <- gsub(pattern = "<fa>", replacement = self$model_list$eqn, x = base)
-      base <- gsub(pattern = "<ini>", replacement = self$model_list$eqn, x = base)
-      base <- gsub(pattern = "<out>", replacement = self$model_list$out, x = base)
-      base <- gsub(pattern = "<neqs>", replacement = self$model_list$neqs, x = base)
-      base <- gsub(pattern = "<nouteqs>", replacement = self$model_list$nouteqs, x = base)
-
+      
+      base <- gsub(
+        pattern = "<eqn>",
+        replacement = self$model_list$eqn,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<tem>",
+        replacement = self$model_list$tem,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<sec>",
+        replacement = self$model_list$sec,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<lag>",
+        replacement = self$model_list$lag,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<fa>",
+        replacement = self$model_list$eqn,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<ini>",
+        replacement = self$model_list$eqn,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<out>",
+        replacement = self$model_list$out,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<neqs>",
+        replacement = self$model_list$neqs,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<nouteqs>",
+        replacement = self$model_list$nouteqs,
+        x = base
+      )
+      
       # Write the model to a file
       writeLines(base, file_path)
     },
@@ -172,203 +213,114 @@ PM_model <- R6::R6Class("PM_model",
       self$type <- "file"
     },
     print = function(...) {
-      cat("$model_list\n")
       mlist <- self$model_list
-      blockNames <- names(mlist)
-
-      # internal function to add space blocks
-      sp <- function(n) {
-        paste0(rep("   ", n), collapse = "")
-      }
-
-      sapply(blockNames, function(x) {
-        if (x == "pri") {
-          # cat("\t$pri\n")
-          cat(sp(1), "$pri\n")
-          for (i in 1:length(mlist$pri)) {
-            thispri <- mlist$pri[[i]]
-            thisname <- names(mlist$pri)[i]
-            if (is.null(thispri$fixed)) {
-              cat(paste0(
-                sp(2), "$", thisname, "\n", sp(3), "$min: ", round(thispri$min, 3),
-                "\n", sp(3), "$max: ", round(thispri$max, 3),
-                "\n", sp(3), "$mean: ", round(thispri$mean, 3),
-                "\n", sp(3), "$sd: ", round(thispri$sd, 3),
-                "\n", sp(3), "$gtz: ", thispri$gtz, "\n"
-              ))
-            } else {
-              cat(paste0(
-                sp(2), "$", thisname, "\n", sp(3), "$fixed: ", round(thispri$fixed, 3),
-                "\n", sp(3), "$contant: ", thispri$constant,
-                "\n"
-              ))
-            }
-          }
-        } else if (x == "cov") {
-          cat("\n", sp(1), "$cov\n")
-          for (i in seq_along(mlist$cov)) {
-            thisout <- mlist$cov[[i]]
-            cat(paste0(
-              sp(2), "$covariate: ", thisout$covariate, "\n",
-              sp(3), "$constant: ", thisout$constant, "\n",
-              "\n"
-            ))
-          }
-        } else if (x == "ext") {
-          cat("\n", sp(1), "$ext\n", paste0(sp(2), "[", 1:length(mlist$ext), "] \"", mlist$ext, "\"", collapse = "\n "))
-          cat("\n")
-        } else if (x == "sec") {
-          cat("\n", sp(1), "$sec\n", paste0(sp(2), "[", 1:length(mlist$sec), "] \"", mlist$sec, "\"", collapse = "\n "))
-          cat("\n")
-        } else if (x == "tem") {
-          cat("\n", sp(1), "$tem\n", paste0(sp(2), "[1] \"", mlist$tem, "\"", collapse = "\n "))
-          cat("\n")
-        } else if (x == "dif" | x == "eqn") {
-          if (is.null(mlist$eqn)) {
-            cat("Please change the name of your #dif block to #eqn.")
-            mlist$eqn <- mlist$dif
-          }
-          cat("\n", sp(1), "$eqn\n", paste0(sp(2), "[", 1:length(mlist$eqn), "] \"", mlist$eqn, "\"", collapse = "\n "))
-          cat("\n")
-        } else if (x == "lag") {
-          cat("\n", sp(1), "$lag\n", paste0(sp(2), "[", 1:length(mlist$lag), "] \"", mlist$lag, "\"", collapse = "\n "))
-          cat("\n")
-        } else if (x == "bol") {
-          cat("\n", sp(1), "$bol\n", paste0(sp(2), "[", 1:length(mlist$bol), "] \"", mlist$bol, "\"", collapse = "\n "))
-          cat("\n")
-        } else if (x == "fa") {
-          cat("\n", sp(1), "$fa\n", paste0(sp(2), "[", 1:length(mlist$fa), "] \"", mlist$fa, "\"", collapse = "\n "))
-          cat("\n")
-        } else if (x == "ini") {
-          cat("\n", sp(1), "$ini\n", paste0(sp(2), "[", 1:length(mlist$ini), "] \"", mlist$ini, "\"", collapse = "\n "))
-          cat("\n")
-        } else if (x == "out") {
-          cat("\n", sp(1), "$out\n")
-          for (i in 1:length(mlist$out)) {
-            thisout <- mlist$out[[i]]
-            cat(paste0(
-              sp(2), "$Y", i, "\n",
-              sp(3), "$val: \"", thisout[[1]], "\"\n",
-              sp(3), "$err\n",
-              sp(4), "$model\n",
-              sp(5), "$additive: ", thisout$err$model$additive, "\n",
-              sp(5), "$proportional: ", thisout$err$model$proportional, "\n",
-              sp(5), "$constant: ", thisout$err$model$constant, "\n",
-              sp(4), "$assay\n",
-              sp(5), "$coefficients: ",
-              paste0("[", 1:length(thisout$err$assay$coefficients), "] ", thisout$err$assay$coefficients, collapse = ", "), "\n",
-              sp(5), "$constant: ", thisout$err$assay$constant, "\n",
-              "\n"
-            ))
-          }
-          cat("\n")
-        }
-      }) # end sapply
-
+      
+      cli::cli_h1("Model summary")
+    
       invisible(self)
     },
+    
     plot = function(...) {
-      tryCatch(plot.PM_model(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
-      })
+      tryCatch(
+        plot.PM_model(self, ...),
+        error = function(e) {
+          cat(crayon::red("Error:"), e$message, "\n")
+        }
+      )
     },
     get_primary = function() {
       return(tolower(names(self$model_list$pri)))
     },
     compile = function() {
       if (!is.null(self$binary_path)) {
-        cli::cli_abort(c(
-          "x" = "Model already compiled.",
-          "i" = "Please provide a different model or delete the existing binary."
-        ))
+        cli::cli_abort(
+          c("x" = "Model already compiled.", "i" = "Please provide a different model or delete the existing binary.")
+        )
       }
-
+      
       temp_model <- file.path(tempdir(), "model.rs")
       self$write_model_file(temp_model)
       model_path <- tempfile(pattern = "model_", fileext = ".pmx")
-      tryCatch(
-        {
-          compile_model(temp_mode, model_path, self$get_primary())
-          self$binary_path <- model_path
-        },
-        error = function(e) {
-          cli::cli_abort(c(
-            "x" = "Model compilation failed: {e$message}",
-            "i" = "Please check the model file and try again."
-          ))
-        }
-      )
+      tryCatch({
+        compile_model(temp_mode, model_path, self$get_primary())
+        self$binary_path <- model_path
+      }, error = function(e) {
+        cli::cli_abort(
+          c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
+        )
+      })
       file.remove(temp_model) # remove temporary model file
     },
-    fit = function(data = NULL, run = NULL, include = NULL,
-                   algorithm = "NPAG", report = getPMoptions("report_template")) {
+    fit = function(data = NULL,
+                   run = NULL,
+                   include = NULL,
+                   algorithm = "NPAG",
+                   report = getPMoptions("report_template")) {
       if (is.null(data)) {
         cli::cli_abort(c("x" = " {.arg data} must be specified."))
       }
-
+      
       if (is.null(self$model_list)) {
         cli::cli_abort(c("x" = "Model is malformed."))
       }
-
+      
       if (is.character(data)) {
         data <- PM_data$new(data)
       }
-
+      
       if (!inherits(data, "PM_data")) {
-        data <- tryCatch(
-          {
-            PM_data$new(data)
-          },
-          error = function(e) {
-            cli::cli_abort(c(
-              "x" = "{.code data} must be a {.cls PM_data} object or an appropriate data frame.",
-              "i" = "See help for {.fn Pmetrics::PM_data}."
-            ))
-          }
-        )
+        data <- tryCatch({
+          PM_data$new(data)
+        }, error = function(e) {
+          cli::cli_abort(
+            c("x" = "{.code data} must be a {.cls PM_data} object or an appropriate data frame.", "i" = "See help for {.fn Pmetrics::PM_data}.")
+          )
+        })
       }
-
+      
       #### checks
-
+      
       # covariates
       dataCov <- tolower(getCov(data)$covnames)
-      modelCov <- tolower(sapply(self$model_list$cov, function(x) x$covariate))
+      modelCov <- tolower(sapply(self$model_list$cov, function(x)
+        x$covariate))
       if (length(modelCov) == 0) {
         modelCov <- NA
       }
-      if (!all(is.na(dataCov)) && !all(is.na(modelCov))) { # if there are covariates
-        if (!identical(dataCov, modelCov)) { # if not identical, abort
-          msg <- glue::glue("Model covariates: {paste(modelCov, collapse = ', ')}; Data covariates: {paste(dataCov, collapse = ', ')}")
-          cli::cli_abort(c(
-            "x" = "Error: Covariates in data and model do not match.",
-            "i" = msg
-          ))
+      if (!all(is.na(dataCov)) &&
+          !all(is.na(modelCov))) {
+        # if there are covariates
+        if (!identical(dataCov, modelCov)) {
+          # if not identical, abort
+          msg <- glue::glue(
+            "Model covariates: {paste(modelCov, collapse = ', ')}; Data covariates: {paste(dataCov, collapse = ', ')}"
+          )
+          cli::cli_abort(c("x" = "Error: Covariates in data and model do not match.", "i" = msg))
         }
       }
-
+      
       # output equations
-
+      
       if (!is.null(data$standard_data$outeq)) {
         dataOut <- max(data$standard_data$outeq, na.rm = TRUE)
       } else {
         dataOut <- 1
       }
-
+      
       modelOut <- length(self$model_list$out)
       if (dataOut != modelOut) {
-        cli::cli_abort(c(
-          "x" = "Error: Number of output equations in data and model do not match.",
-          "i" = "Check the number of output equations in the data and model."
-        ))
+        cli::cli_abort(
+          c("x" = "Error: Number of output equations in data and model do not match.", "i" = "Check the number of output equations in the data and model.")
+        )
       }
-
+      
       # check if model compiled and if not, do so
       self$compile()
-
+      
       cwd <- getwd()
       intern <- TRUE # always true until (if) rust can run separately from R
-
-
+      
+      
       # make new output directory
       if (is.null(run)) {
         olddir <- list.dirs(recursive = FALSE)
@@ -386,106 +338,102 @@ PM_model <- R6::R6Class("PM_model",
           newdir <- as.character(run)
         }
       }
-
+      
       if (file.exists(newdir)) {
         if (overwrite) {
           unlink(newdir, recursive = TRUE)
-          cli::cli_inform(c(
-            "i" = "Overwriting the prior run in folder '{newdir}'."
-          ))
+          cli::cli_inform(c("i" = "Overwriting the prior run in folder '{newdir}'."))
         } else {
-          cli::cli_inform(c(
-            "x" = "The prior run from '{newdir}' was read.",
-            " " = "Set {.arg overwrite} to {.val TRUE} to overwrite prior run in '{newdir}'."
-          ))
+          cli::cli_inform(
+            c("x" = "The prior run from '{newdir}' was read.", " " = "Set {.arg overwrite} to {.val TRUE} to overwrite prior run in '{newdir}'.")
+          )
           return(invisible(PM_load(newdir)))
         }
       }
-
+      
       dir.create(newdir)
       setwd(newdir)
-
+      
       algorithm <- tolower(algorithm)
-
+      
       if (getPMoptions()$backend != "rust") {
         setwd(cwd)
-        cli::cli_abort(c(
-          "x" = "Error: unsupported backend.",
-          "i" = "See help for {.fn setPMoptions}"
-        ))
+        cli::cli_abort(c("x" = "Error: unsupported backend.", "i" = "See help for {.fn setPMoptions}"))
       }
-
+      
       #### Include or exclude subjects ####
-      if (is.null(include)) include <- unique(data$standard_data$id)
-      if (is.null(exclude)) exclude <- NA
+      if (is.null(include))
+        include <- unique(data$standard_data$id)
+      if (is.null(exclude))
+        exclude <- NA
       data_filtered <- data$standard_data %>% includeExclude(include, exclude)
-
+      
       if (nrow(data_filtered) == 0) {
         cli::cli_abort("x" = "No subjects remain after filtering.")
         setwd(cwd)
         return(invisible(NULL))
       }
-
-
+      
+      
       #### Save objects ####
       PM_data$new(data_filtered, quiet = TRUE)$write("gendata.csv", header = FALSE)
       save(self, file = "fit.Rdata")
-
+      
       # Get ranges and calculate points
-
+      
       ranges <- lapply(self$model_list$pri, function(x) {
         c(x$min, x$max)
       })
       names(ranges) <- tolower(names(ranges))
-
+      
       # Set initial grid points (only applies for sobol)
-
-      vol <- prod(sapply(ranges, function(x) x[2] - x[1]))
+      
+      vol <- prod(sapply(ranges, function(x)
+        x[2] - x[1]))
       points <- max(ceiling(density0 * vol), 100) # at least 100 points
-
-
-
+      
+      
+      
       # set prior
       if (prior != "sobol") {
-        if (is.numeric(prior)) { # prior specified as a run number
+        if (is.numeric(prior)) {
+          # prior specified as a run number
           if (!file.exists(glue::glue(prior, "/outputs/theta.csv"))) {
-            cli::cli_abort(c(
-              "x" = "Error: {.arg prior} file does not exist.",
-              "i" = "Check the file path."
-            ))
+            cli::cli_abort(c("x" = "Error: {.arg prior} file does not exist.", "i" = "Check the file path."))
           }
           file.copy(glue::glue(prior, "/outputs/theta.csv"), "theta.csv")
           prior <- "theta.csv"
-        } else if (is.character(prior)) { # prior specified as a filename
+        } else if (is.character(prior)) {
+          # prior specified as a filename
           if (!file.exists(prior)) {
-            cli::cli_abort(c(
-              "x" = "Error: {.arg prior} file does not exist.",
-              "i" = "Check the file path."
-            ))
+            cli::cli_abort(c("x" = "Error: {.arg prior} file does not exist.", "i" = "Check the file path."))
           }
           file.copy(prior, overwrite = TRUE) # ensure in current working directory
         } else {
-          cli::cli_abort(c(
-            "x" = "Error: {.arg prior} must be a numeric run number or character filename.",
-            "i" = "Check the value."
-          ))
+          cli::cli_abort(
+            c("x" = "Error: {.arg prior} must be a numeric run number or character filename.", "i" = "Check the value.")
+          )
         }
       } else {
         prior <- "sobol"
       }
-
+      
       if (intern) {
         ### CALL RUST
         out_path <- file.path(getwd(), "outputs")
-
+        
         rlang::try_fetch(
-          fit_model( # defined in extendr-wrappers.R
+          fit_model(
+            # defined in extendr-wrappers.R
             self$binary_path,
             "gendata.csv",
             list(
               ranges = ranges,
               algorithm = algorithm,
-              gamlam = c(self$model_list$out$Y1$err$model$additive, self$model_list$out$Y1$err$model$proportional),
+              gamlam = c(
+                self$model_list$out$Y1$err$model$additive,
+                self$model_list$out$Y1$err$model$proportional
+              ),
               error_type = c("additive", "proportional")[1 + is.null(self$model_list$out$Y1$err$model$additive)],
               error_coefficients = t(sapply(self$model_list$out, function(x) {
                 y <- x$err$assay$coefficients
@@ -493,12 +441,14 @@ PM_model <- R6::R6Class("PM_model",
                   y <- c(y, 0, 0)
                 }
                 y
-              })), # matrix numeqt x 6
+              })),
+              # matrix numeqt x 6
               max_cycles = cycles,
               prior = prior,
               ind_points = points,
               seed = seed
-            ), out_path
+            ),
+            out_path
           ),
           error = function(e) {
             cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
@@ -506,17 +456,16 @@ PM_model <- R6::R6Class("PM_model",
             return(NULL)
           }
         )
-
+        
         PM_parse("outputs")
         res <- PM_load(file = "PMout.Rdata")
         PM_report(res, outfile = "report.html", template = report)
         setwd(cwd)
         return(invisible(res))
       } else {
-        cli::cli_abort(c(
-          "x" = "Error: Currently, the rust engine only supports internal runs.",
-          "i" = "This is a temporary limitation."
-        ))
+        cli::cli_abort(
+          c("x" = "Error: Currently, the rust engine only supports internal runs.", "i" = "This is a temporary limitation.")
+        )
       }
     }
   ),
@@ -540,7 +489,7 @@ PM_model <- R6::R6Class("PM_model",
     #     msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
     #     return(list(status = -1, msg = msg))
     #   }
-
+    
     #   if (length(grep(";", blocks$primVar)) > 0) {
     #     # using ';' as separator
     #     sep <- ";"
@@ -552,7 +501,7 @@ PM_model <- R6::R6Class("PM_model",
     #       return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n"))
     #     }
     #   }
-
+    
     #   # build model_list to be given to PM_model_list
     #   model_list <- list()
     #   # this function makes pri for PM_model
@@ -567,15 +516,15 @@ PM_model <- R6::R6Class("PM_model",
     #     } else {
     #       gtz <- FALSE
     #     }
-
+    
     #     # find out if constant
     #     const_var <- any(grepl("!", x))
     #     if (const_var) {
     #       x <- gsub("!", "", x)
     #     }
-
+    
     #     values <- as.numeric(x[-1])
-
+    
     #     if (length(x[-1]) == 1) { # fixed
     #       thisItem <- list(fixed(values[1], constant = const_var, gtz = gtz))
     #     } else { # range
@@ -584,7 +533,7 @@ PM_model <- R6::R6Class("PM_model",
     #     names(thisItem) <- x[1]
     #     thisItem
     #   }) # end sapply
-
+    
     #   # covariates
     #   # process constant covariates
     #   covar <- blocks$covar
@@ -601,68 +550,68 @@ PM_model <- R6::R6Class("PM_model",
     #   }
     #   # add to model_list
     #   model_list$cov <- covar_list
-
+    
     #   # extra
     #   if (blocks$extra[1] != "") {
     #     model_list$ext <- blocks$extra
     #   } else {
     #     model_list$extra <- NULL
     #   }
-
+    
     #   # secondary variables
     #   if (blocks$secVar[1] != "") {
     #     model_list$sec <- as.list(blocks$secVar)
     #   }
-
+    
     #   # bioavailability
     #   if (blocks$f[1] != "") {
     #     model_list$fa <- as.list(blocks$f)
     #   } else {
     #     model_list$f <- NULL
     #   }
-
+    
     #   # bolus
     #   if (blocks$bol[1] != "") {
     #     model_list$bol <- as.list(blocks$bol)
     #   } else {
     #     model_list$bol <- NULL
     #   }
-
+    
     #   # initial conditions
     #   if (blocks$ini[1] != "") {
     #     model_list$ini <- as.list(blocks$ini)
     #   } else {
     #     model_list$ini <- NULL
     #   }
-
+    
     #   # lag time
     #   if (blocks$lag[1] != "") {
     #     model_list$lag <- as.list(blocks$lag)
     #   } else {
     #     model_list$lag <- NULL
     #   }
-
+    
     #   # analytic model name
     #   if (blocks$tem[1] != "") {
     #     model_list$tem <- blocks$tem
     #   } else {
     #     model_list$tem <- NULL
     #   }
-
+    
     #   # differential equations - legacy
     #   if (!is.null(blocks$diffeq) && blocks$diffeq[1] != "") {
     #     model_list$eqn <- as.list(blocks$diffeq)
     #   } else {
     #     model_list$diffeq <- NULL
     #   }
-
+    
     #   # model equations - will eventually replace diffeq above
     #   if (blocks$eqn[1] != "") {
     #     model_list$eqn <- as.list(blocks$eqn)
     #   } else {
     #     model_list$eqn <- NULL
     #   }
-
+    
     #   # out/err
     #   n_outputLines <- length(blocks$output)
     #   outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output)
@@ -678,7 +627,7 @@ PM_model <- R6::R6Class("PM_model",
     #   diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
     #   diffList <- sapply(diffeq, function(x) x[2])
     #   num_out <- length(diffList)
-
+    
     #   err <- tolower(gsub("[[:space:]]", "", blocks$error))
     #   # process constant gamma/lambda
     #   gamma <- grepl("^g", err[1])
@@ -687,8 +636,8 @@ PM_model <- R6::R6Class("PM_model",
     #   # process constant coefficients
     #   const_coeff <- grepl("!", err[-1]) # returns boolean vector, length = nout
     #   err <- gsub("!", "", err) # remove "!"
-
-
+    
+    
     #   out <- list()
     #   for (i in 1:num_out) {
     #     out[[i]] <- list(
@@ -705,7 +654,7 @@ PM_model <- R6::R6Class("PM_model",
     #   }
     #   names(out) <- sapply(diffeq, function(x) x[1])
     #   model_list$out <- out
-
+    
     #   cat(msg)
     #   flush.console()
     #   model_list <- PM_model_list$new(model_list)$model_list
@@ -731,22 +680,29 @@ PM_input <- R6::R6Class(
     sd = NULL,
     fixed = NULL,
     constant = NULL,
-    param = NULL, # is this used?
+    param = NULL,
+    # is this used?
     additive = NULL,
     proportional = NULL,
     coefficients = NULL,
     covariate = NULL,
     gtz = NULL,
-    initialize = function(a, b, mode, constant = FALSE, gtz = FALSE) {
+    initialize = function(a,
+                          b,
+                          mode,
+                          constant = FALSE,
+                          gtz = FALSE) {
       if (!mode %in% c(
-        "ab", "msd", "fixed", "additive",
-        "proportional", "combination",
-        "coefficients", "covariate"
+        "ab",
+        "msd",
+        "fixed",
+        "additive",
+        "proportional",
+        "combination",
+        "coefficients",
+        "covariate"
       )) {
-        cli_abort(c(
-          "x" = "{mode} is not a valid term.",
-          "i" = "See help for {.fn PM_model}."
-        ))
+        cli_abort(c("x" = "{mode} is not a valid term.", "i" = "See help for {.fn PM_model}."))
       }
       self$gtz <- gtz
       self$constant <- constant
@@ -808,9 +764,13 @@ PM_input <- R6::R6Class(
           }
         } else if (self$mode == "coefficients") {
           if (self$constant) {
-            return(do.call(sprintf, c("%f, %f, %f, %f!", as.list(self$coefficients))))
+            return(do.call(sprintf, c(
+              "%f, %f, %f, %f!", as.list(self$coefficients)
+            )))
           } else {
-            return(do.call(sprintf, c("%f, %f, %f, %f", as.list(self$coefficients))))
+            return(do.call(sprintf, c(
+              "%f, %f, %f, %f", as.list(self$coefficients)
+            )))
           }
         } else if (self$mode == "covariate") {
           if (self$constant) {
@@ -957,7 +917,9 @@ msd <- function(mean, sd, gtz = FALSE) {
 #' analyses, since lower limit of parameter values for nonparametric are strictly
 #' controlled by the range.
 #' @export
-fixed <- function(fixed, constant = FALSE, gtz = FALSE) {
+fixed <- function(fixed,
+                  constant = FALSE,
+                  gtz = FALSE) {
   PM_input$new(fixed, fixed, "fixed", constant, gtz)
 }
 
@@ -1041,13 +1003,23 @@ covariate <- function(name, constant = FALSE) {
 #' }
 #' @family PMplots
 
-plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...) {
+plot.PM_model <- function(x,
+                          marker = TRUE,
+                          line = TRUE,
+                          explicit,
+                          implicit,
+                          ...) {
   if (!checkRequiredPackages("PmetricsApps", repos = "LAPKB/PmetricsApps", quietly = FALSE)) {
     return(invisible(NULL))
   }
   model <- x
   marker <- if (is.list(marker) || marker) {
-    amendMarker(marker, default = list(color = "dodgerblue", size = 0.25, line = list(width = 0.5)))
+    amendMarker(marker,
+                default = list(
+                  color = "dodgerblue",
+                  size = 0.25,
+                  line = list(width = 0.5)
+                ))
   } else {
     FALSE
   }
@@ -1056,28 +1028,26 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
   } else {
     FALSE
   }
-
+  
   # Add equations for algebraic models
   if (is.null(model$model_list$eqn)) {
     key_vars <- c("ke", "v", "ka", "kcp", "kpc")
     pri <- names(model$model_list$pri)
     found_pri_keys <- key_vars %in% tolower(pri)
-
+    
     if (!is.null(model$model_list$sec)) {
-      found_sec_keys <- purrr::map_lgl(key_vars, \(x) stringr::str_detect(
-        model$model_list$sec,
-        stringr::regex(x, ignore_case = TRUE)
-      ))
+      found_sec_keys <- purrr::map_lgl(key_vars,
+                                       \(x) stringr::str_detect(
+                                         model$model_list$sec,
+                                         stringr::regex(x, ignore_case = TRUE)
+                                       ))
     } else {
       found_sec_keys <- rep(NA, 5)
     }
-    found_keys <- key_vars[found_pri_keys | found_sec_keys] %>% na.exclude()
+    found_keys <- key_vars[found_pri_keys |
+                             found_sec_keys] %>% na.exclude()
     model$model_list$eqn <- dplyr::case_when(
-      all(found_keys %in% c("ke", "v")) ~ c(
-        "dX[1] = RATEIV[1] - Ke*X[1]",
-        NA,
-        NA
-      ),
+      all(found_keys %in% c("ke", "v")) ~ c("dX[1] = RATEIV[1] - Ke*X[1]", NA, NA),
       all(found_keys %in% c("ke", "v", "ka")) ~ c(
         "dX[1] = BOLUS[1] - Ka*X[1]",
         "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]",
@@ -1096,18 +1066,24 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
       .size = 3
     ) %>% na.exclude()
   }
-
+  
   # filter any equations that are not diffeq and make everything capital
   this_model <- model$model_list$eqn %>%
-    map(purrr::keep, stringr::str_detect, stringr::regex("dX\\[\\d+\\]|XP\\(\\d+\\)", ignore_case = TRUE)) %>%
+    map(
+      purrr::keep,
+      stringr::str_detect,
+      stringr::regex("dX\\[\\d+\\]|XP\\(\\d+\\)", ignore_case = TRUE)
+    ) %>%
     unlist()
-
+  
   tree <- parse(text = this_model)
   if (length(tree) == 0) {
-    cli::cli_abort(c("x" = "No differential equations detected. Use {.code dX[i]} for changes and {.code X[i]} for amounts (case insensitive)."))
+    cli::cli_abort(
+      c("x" = "No differential equations detected. Use {.code dX[i]} for changes and {.code X[i]} for amounts (case insensitive).")
+    )
   }
   index <- 0
-
+  
   parse_arrows <- function(tree, arrows = list()) {
     if (length(tree) == 3) {
       op <- tree[[1]]
@@ -1120,31 +1096,35 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     } else {
       return(arrows)
     }
-
+    
     # check for distributions
     if (length(lhs) > 1 && lhs[[1]] == "(") {
       # expand distribution
       nterms <- length(lhs[[2]])
-      lhs <- parse(text = paste(sapply(2:nterms, function(x) as.character(lhs[[2]][[x]])),
+      lhs <- parse(text = paste(
+        sapply(2:nterms, function(x)
+          as.character(lhs[[2]][[x]])),
         as.character(op),
         deparse(rhs),
         collapse = paste0(" ", as.character(lhs[[2]][[1]]), " ")
       ))[[1]]
       rhs <- ""
     }
-
+    
     if (length(rhs) > 1 && rhs[[1]] == "(") {
       # expand distribution
       nterms <- length(rhs[[2]])
-      rhs <- parse(text = paste(deparse(lhs),
+      rhs <- parse(text = paste(
+        deparse(lhs),
         as.character(op),
-        sapply(2:nterms, function(x) as.character(rhs[[2]][[x]])),
+        sapply(2:nterms, function(x)
+          as.character(rhs[[2]][[x]])),
         collapse = paste0(" ", as.character(rhs[[2]][[1]]), " ")
       ))[[1]]
       lhs <- ""
     }
-
-
+    
+    
     l <- if (length(lhs) == 1) {
       lhs
     } else if (lhs[[1]] == "[") {
@@ -1164,48 +1144,45 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
       rhs[[1]]
     }
     # cat("index", index,"\n\nlhs= ",deparse(lhs),"\nrhs = ",deparse(rhs),"\nl = ",deparse(l),"\nr = ",deparse(r),"\ntree = ",deparse(tree),"\n________________\n")
-
-
+    
+    
     if (l == "x" || r == "x" || l == "X" || r == "X") {
       # cat("arrows before: ",paste0(as.character(arrows),collapse = ", "),"\n")
       arrows <- append(arrows, tree)
       # cat(deparse(tree), "appended\n")
       # cat("arrows after: ",paste0(as.character(arrows),collapse = ", "),"\n")
-
+      
       return(arrows)
     }
-
+    
     index <<- index + 1
-    if (is.call(lhs)) { # cat("Calling from lhs...\n")
+    if (is.call(lhs)) {
+      # cat("Calling from lhs...\n")
       arrows <- parse_arrows(lhs, arrows)
     }
     # cat("\nReturned lhs arrows: ", paste(as.character(arrows),collapse = ", "), "\n\n")
-
-    if (is.call(rhs)) { # cat("Calling from rhs...\n")
+    
+    if (is.call(rhs)) {
+      # cat("Calling from rhs...\n")
       arrows <- parse_arrows(rhs, arrows)
     }
     # cat("\nReturned rhs arrows: ", paste(as.character(arrows),collapse = ", "), "\n\n")
-
+    
     return(arrows)
   }
-
+  
   parse_inputs <- function(input, itree) {
     itree <- paste(itree, collapse = "")
     if (grepl(input, itree, ignore.case = TRUE)) {
       type <- toupper(substr(input, 1, 1))
-      number <- stringr::str_extract(
-        itree,
-        regex(paste0(input, "(\\(|\\[)\\d+(\\)|\\])"),
-          ignore_case = TRUE
-        )
-      ) %>%
+      number <- stringr::str_extract(itree, regex(paste0(input, "(\\(|\\[)\\d+(\\)|\\])"), ignore_case = TRUE)) %>%
         stringr::str_extract("\\d+")
       return(paste0(type, number))
     } else {
       return("")
     }
   }
-
+  
   # process each compartment/equation
   parse_tree <- function(tree) {
     nodes <- list()
@@ -1218,22 +1195,25 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
           if (lhs[[1]] == "[") {
             lhs <- lhs[-1]
           }
-          nodes <- append(nodes, list(node = list(
-            node = as.character(lhs),
-            arrows = as.character(parse_arrows(rhs)),
-            bolus = parse_inputs("bolus", deparse(itree)),
-            rateiv = parse_inputs("rateiv", deparse(itree))
-          )))
-        } else { # only one equation
+          nodes <- append(nodes, list(
+            node = list(
+              node = as.character(lhs),
+              arrows = as.character(parse_arrows(rhs)),
+              bolus = parse_inputs("bolus", deparse(itree)),
+              rateiv = parse_inputs("rateiv", deparse(itree))
+            )
+          ))
+        } else {
+          # only one equation
           as.character(parse_arrows(tree))
         }
       }
     }
     return(nodes)
   }
-
+  
   res <- parse_tree(tree)
-
+  
   # clean up
   swap_if_needed <- function(obj) {
     if (grepl("X\\[", obj[1], ignore.case = TRUE)) {
@@ -1243,7 +1223,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     }
   }
   # clean up
-
+  
   # remove hanging arrows without "*"
   res <- purrr::map(res, function(x) {
     list(
@@ -1266,12 +1246,14 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     purrr::map(function(x) {
       list(
         node = x$node,
-        arrows = unlist(purrr::map(x$arrows, ~ swap_if_needed(stringr::str_split_1(.x, " \\* ")))),
+        arrows = unlist(purrr::map(
+          x$arrows, ~ swap_if_needed(stringr::str_split_1(.x, " \\* "))
+        )),
         bolus = x$bolus,
         rateiv = x$rateiv
       )
     })
-
+  
   layout <- res %>%
     lapply(., function(node) {
       data.frame(
@@ -1292,11 +1274,8 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = "^\\*|\\*\\w*$")) %>%
     dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = "^\\-|\\-\\w*$")) %>%
     dplyr::relocate(node, arrow, to, from) %>%
-    dplyr::rename(
-      to = from,
-      from = to
-    )
-
+    dplyr::rename(to = from, from = to)
+  
   # pause to define inputs
   input_cmt <- layout %>%
     dplyr::select(to, bolus, rateiv) %>%
@@ -1306,7 +1285,7 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     dplyr::select(-type) %>%
     dplyr::filter(input != "") %>%
     dplyr::rename(cmt = to)
-
+  
   # resume layout
   layout <- layout %>%
     dplyr::select(-bolus, -rateiv) %>%
@@ -1315,55 +1294,64 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     dplyr::ungroup() %>%
     dplyr::mutate(from = ifelse(from == "", to, from)) %>%
     dplyr::mutate(to = ifelse(from == to, "", to)) %>%
-    dplyr::mutate(to = ifelse(to == "", as.numeric(max(c(to, from), na.rm = T)) + 1, to)) %>%
-    dplyr::mutate(to = ifelse(is.na(to), as.numeric(max(c(to, from), na.rm = T)) + 1, to)) %>%
+    dplyr::mutate(to = ifelse(to == "", as.numeric(max(
+      c(to, from), na.rm = T
+    )) + 1, to)) %>%
+    dplyr::mutate(to = ifelse(is.na(to), as.numeric(max(
+      c(to, from), na.rm = T
+    )) + 1, to)) %>%
     dplyr::filter(arrow != "") %>%
     dplyr::mutate(across(everything(), as.character)) %>%
     dplyr::mutate(node = stringr::str_extract(node, "\\d+")) %>%
     dplyr::distinct(node, from, to) %>%
     dplyr::mutate(implicit = FALSE)
-
+  
   # outputs
   if (!is.null(purrr::pluck(model, "model_list", "out", 1, "val"))) {
-    cmts <- map_chr(model$model_list$out, ~ stringr::str_extract(.x$val, "\\d+"))
+    cmts <- map_chr(model$model_list$out,
+                    ~ stringr::str_extract(.x$val, "\\d+"))
     output_cmt <- dplyr::tibble(out = paste0("Y", seq_along(cmts)), cmt = cmts)
   } else {
     output_cmt <- dplyr::tibble(out = "", cmt = "1")
   }
-
+  
   # add explicit arrows from user
   if (!missing(explicit)) {
     max_to <- max(as.numeric(layout$to))
-
+    
     if (!all(names(explicit) %in% c("from", "to"))) {
-      cli::cli_abort(c("x" = "{.code explicit} should be a data frame with names {.code from} and {.code to}"))
+      cli::cli_abort(
+        c("x" = "{.code explicit} should be a data frame with names {.code from} and {.code to}")
+      )
     }
     imp <- explicit %>%
       dplyr::mutate(to = ifelse(to == 0, max_to, to)) %>%
       dplyr::mutate(node = from, implicit = FALSE) %>%
       dplyr::relocate(node, from, to, implicit) %>%
       dplyr::mutate(across(c(node, from, to), as.character))
-
+    
     layout <- dplyr::bind_rows(layout, imp)
   }
-
+  
   # add implicit arrows from user
   if (!missing(implicit)) {
     max_to <- max(as.numeric(layout$to))
-
+    
     if (!all(names(implicit) %in% c("from", "to"))) {
-      cli::cli_abort(c("x" = "{.code implicit} should be a data frame with names {.code from} and {.code to}"))
+      cli::cli_abort(
+        c("x" = "{.code implicit} should be a data frame with names {.code from} and {.code to}")
+      )
     }
     imp <- implicit %>%
       dplyr::mutate(to = ifelse(to == 0, max_to, to)) %>%
       dplyr::mutate(node = from, implicit = TRUE) %>%
       dplyr::relocate(node, from, to, implicit) %>%
       dplyr::mutate(across(c(node, from, to), as.character))
-
+    
     layout <- dplyr::bind_rows(layout, imp)
   }
-
-
+  
+  
   graph <- tidygraph::as_tbl_graph(layout) %>%
     dplyr::mutate(cmt = c(unique(layout$from), 0)) %>%
     dplyr::mutate(position = ifelse(cmt == 0, "outside", "inside")) %>%
@@ -1371,28 +1359,44 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
     dplyr::mutate(input = ifelse(is.na(input), "", input)) %>%
     dplyr::left_join(output_cmt, by = "cmt") %>%
     dplyr::mutate(out = ifelse(is.na(out), "", out))
-
-
-
-
+  
+  
+  
+  
   g <- ggraph::ggraph(graph, layout = "tree")
-  if (!is.logical(marker)) { # will only be logical if FALSE
+  if (!is.logical(marker)) {
+    # will only be logical if FALSE
     g <- g +
-      ggraph::geom_node_tile(aes(fill = position, linetype = position),
+      ggraph::geom_node_tile(
+        aes(fill = position, linetype = position),
         color = marker$line$color,
         lwd = marker$line$width,
-        width = marker$size, height = marker$size, alpha = marker$opacity
+        width = marker$size,
+        height = marker$size,
+        alpha = marker$opacity
       ) +
-      ggraph::geom_node_text(aes(label = input), nudge_x = .07, nudge_y = .05, color = "white") +
-      ggraph::geom_node_text(aes(label = out), nudge_x = -.07, nudge_y = .05, color = "black") +
+      ggraph::geom_node_text(
+        aes(label = input),
+        nudge_x = .07,
+        nudge_y = .05,
+        color = "white"
+      ) +
+      ggraph::geom_node_text(
+        aes(label = out),
+        nudge_x = -.07,
+        nudge_y = .05,
+        color = "black"
+      ) +
       ggplot2::scale_fill_manual(values = c(marker$color, "grey80"))
   }
-  if (!is.logical(line)) { # will only be logical if FALSE
+  if (!is.logical(line)) {
+    # will only be logical if FALSE
     g <- g +
       ggraph::geom_edge_fan(
         aes(linetype = as.numeric(implicit) + 1),
         arrow = grid::arrow(
-          angle = 15, type = "closed",
+          angle = 15,
+          type = "closed",
           length = grid::unit(6, "mm")
         ),
         end_cap = ggraph::circle(3, "mm"),
@@ -1434,29 +1438,64 @@ plot.PM_model <- function(x, marker = TRUE, line = TRUE, explicit, implicit, ...
 model_lib <- function(name = NULL, show = TRUE) {
   mod_table <- matrix(
     c(
-      "one_comp_iv", "advan1\nadvan1-trans1", "One compartment IV input, Ke", "1 = Central", "Ke, V",
-      "one_comp_iv_cl", "advan1\nadvan1-trans2", "One compartment IV input, CL", "1 = Central", "CL, V",
-      "two_comp_bolus", "advan2\nadvan2-trans1", "Two compartment bolus input, Ke", "1 = Bolus\n2 = Central", "Ka, Ke, V",
-      "two_comp_bolus_cl", "advan2\nadvan2-trans2", "Two compartment bolus input, CL", "1 = Bolus\n2 = Central", "Ka, CL, V",
-      "two_comp_iv", "advan3\nadvan3-trans1", "Two compartment IV input, Ke", "1 = Central\n2 = Peripheral", "Ke, V, KCP, KPC",
-      "two_comp_iv_cl", "advan3\nadvan3-trans4", "Two compartment IV input, CL", "1 = Central\n2 = Peripheral", "CL, V1, Q, V2",
-      "three_comp_bolus", "advan4\nadvan4-trans1", "Three compartment bolus input, Ke", "1 = Bolus\n2 = Central\n3 = Peripheral", "Ka, Ke, V, KCP, KPC",
-      "three_comp_bolus_cl", "advan4\nadvan4-trans4", "Three compartment bolus input, CL", "1 = Bolus\n2 = Central\n3 = Peripheral", "Ka, CL, V2, Q, V3"
+      "one_comp_iv",
+      "advan1\nadvan1-trans1",
+      "One compartment IV input, Ke",
+      "1 = Central",
+      "Ke, V",
+      "one_comp_iv_cl",
+      "advan1\nadvan1-trans2",
+      "One compartment IV input, CL",
+      "1 = Central",
+      "CL, V",
+      "two_comp_bolus",
+      "advan2\nadvan2-trans1",
+      "Two compartment bolus input, Ke",
+      "1 = Bolus\n2 = Central",
+      "Ka, Ke, V",
+      "two_comp_bolus_cl",
+      "advan2\nadvan2-trans2",
+      "Two compartment bolus input, CL",
+      "1 = Bolus\n2 = Central",
+      "Ka, CL, V",
+      "two_comp_iv",
+      "advan3\nadvan3-trans1",
+      "Two compartment IV input, Ke",
+      "1 = Central\n2 = Peripheral",
+      "Ke, V, KCP, KPC",
+      "two_comp_iv_cl",
+      "advan3\nadvan3-trans4",
+      "Two compartment IV input, CL",
+      "1 = Central\n2 = Peripheral",
+      "CL, V1, Q, V2",
+      "three_comp_bolus",
+      "advan4\nadvan4-trans1",
+      "Three compartment bolus input, Ke",
+      "1 = Bolus\n2 = Central\n3 = Peripheral",
+      "Ka, Ke, V, KCP, KPC",
+      "three_comp_bolus_cl",
+      "advan4\nadvan4-trans4",
+      "Three compartment bolus input, CL",
+      "1 = Bolus\n2 = Central\n3 = Peripheral",
+      "Ka, CL, V2, Q, V3"
     ),
-    ncol = 5, byrow = TRUE
+    ncol = 5,
+    byrow = TRUE
   ) %>%
     as.data.frame() %>%
-    stats::setNames(c("Primary Name", "Alt Names", "Description", "Compartments", "Parameters")) %>%
+    stats::setNames(c(
+      "Primary Name",
+      "Alt Names",
+      "Description",
+      "Compartments",
+      "Parameters"
+    )) %>%
     tibble::as_tibble()
-
-
+  
+  
   mod_table$ODE <- list(
-    list(
-      "dX[1] = RATEIV[1] - Ke*X[1]"
-    ),
-    list(
-      "dX[1] = RATEIV[1] - CL/V*X[1]"
-    ),
+    list("dX[1] = RATEIV[1] - Ke*X[1]"),
+    list("dX[1] = RATEIV[1] - CL/V*X[1]"),
     list(
       "dX[1] = BOLUS[1] - Ka*X[1]",
       "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]"
@@ -1484,43 +1523,49 @@ model_lib <- function(name = NULL, show = TRUE) {
       "dX[3] = Q/V2*X[2] - Q/V3*X[3]"
     )
   )
-
-
+  
+  
   if (is.null(name)) {
-    print(mod_table %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
-      flextable::flextable() %>%
-      flextable::set_header_labels(ODE = "Corresponding ODE") %>%
-      flextable::autofit())
-
+    print(
+      mod_table %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
+        flextable::flextable() %>%
+        flextable::set_header_labels(ODE = "Corresponding ODE") %>%
+        flextable::autofit()
+    )
+    
     return(invisible(NULL))
   }
-
+  
   if (!tolower(name) %in%
-    c(
-      glue::glue("one_comp_iv{c('','_cl')}"),
-      glue::glue("two_comp_bolus{c('','_cl')}"),
-      glue::glue("two_comp_iv{c('','_cl')}"),
-      glue::glue("three_comp_bolus{c('','_cl')}"),
-      glue::glue("advan{1:4}"),
-      glue::glue("advan{1:4}-trans1"),
-      glue::glue("advan{1:2}-trans2"),
-      "advan3-trans4",
-      "advan4-trans4"
-    )
-
-  ) {
+      c(
+        glue::glue("one_comp_iv{c('','_cl')}"),
+        glue::glue("two_comp_bolus{c('','_cl')}"),
+        glue::glue("two_comp_iv{c('','_cl')}"),
+        glue::glue("three_comp_bolus{c('','_cl')}"),
+        glue::glue("advan{1:4}"),
+        glue::glue("advan{1:4}-trans1"),
+        glue::glue("advan{1:2}-trans2"),
+        "advan3-trans4",
+        "advan4-trans4"
+      )) {
     cli::cli_abort(c("x" = "Invalid model name"))
   }
-
+  
   if (show) {
-    print(mod_table %>% dplyr::filter(`Primary Name` == name) %>%
-      dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
-      flextable::flextable() %>%
-      flextable::set_header_labels(ODE = "Corresponding ODE") %>%
-      flextable::autofit())
+    print(
+      mod_table %>% dplyr::filter(`Primary Name` == name) %>%
+        dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
+        flextable::flextable() %>%
+        flextable::set_header_labels(ODE = "Corresponding ODE") %>%
+        flextable::autofit()
+    )
   }
-
-  return(invisible(mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1, 1) %>% unlist()))
+  
+  return(
+    invisible(
+      mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1, 1) %>% unlist()
+    )
+  )
 }
