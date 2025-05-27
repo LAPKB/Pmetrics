@@ -42,7 +42,12 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
       inner <- if (length(rust_args) > 0) rust_args[[1]] else ""
       sprintf("{ %s }", inner)
     },
-
+    # Unary minus
+    "-" = if (length(rust_args) == 1) {
+      sprintf("-(%s)", rust_args[[1]])
+    } else {
+      sprintf("(%s) - (%s)", rust_args[[1]], rust_args[[2]])
+    },
     # Arithmetic
     "+" = sprintf("%s + %s", rust_args[[1]], rust_args[[2]]),
     "-" = sprintf("%s - %s", rust_args[[1]], rust_args[[2]]),

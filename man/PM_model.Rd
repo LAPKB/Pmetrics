@@ -19,387 +19,99 @@ paramter values in the population. The PM_model object is created using the
 directly in R, or by reading a model text file. See the vignette on models
 for details.
 }
-\examples{
-
-## ------------------------------------------------
-## Method `PM_model$simulate_all`
-## ------------------------------------------------
-
-\dontrun{
-data <- PM_data$new(...)
-theta <- matrix(c(1.0, 20.0, 2.0, 70.0), nrow = 2, byrow = TRUE)
-result <- model$simulate_all(data, theta)
-}
-
-
-## ------------------------------------------------
-## Method `PM_model$parameters`
-## ------------------------------------------------
-
-\dontrun{
-model$parameters()
-}
-
-
-## ------------------------------------------------
-## Method `PM_model$update`
-## ------------------------------------------------
-
-\dontrun{
-mod2 <- modEx$clone() #create an independent copy of modEx called mod2
-mod2$update(list(
-  pri = list(
-   Ke = ab(0, 1), #change the range
-   V = NULL, #this deletes the variable
-   V0 = ab(10, 100) #add a new variable
-  ),
-  sec = "V = V0 * WT" #add a new secondary equation
-))
-#note that they are different now
-mod2
-modEx
-}
-
-## ------------------------------------------------
-## Method `PM_model$write`
-## ------------------------------------------------
-
-\dontrun{
-modEx$write("model.txt")
-},
-}
 \author{
 Michael Neely
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-PM_Vmodel-new}{\code{PM_model$new()}}
-\item \href{#method-PM_Vmodel-fit}{\code{PM_model$fit()}}
-\item \href{#method-PM_Vmodel-simulate_all}{\code{PM_model$simulate_all()}}
-\item \href{#method-PM_Vmodel-parameters}{\code{PM_model$parameters()}}
-\item \href{#method-PM_Vmodel-print}{\code{PM_model$print()}}
-\item \href{#method-PM_Vmodel-update}{\code{PM_model$update()}}
-\item \href{#method-PM_Vmodel-write}{\code{PM_model$write()}}
-\item \href{#method-PM_Vmodel-plot}{\code{PM_model$plot()}}
-\item \href{#method-PM_Vmodel-clone}{\code{PM_model$clone()}}
+\item \href{#method-PM_model-new}{\code{PM_model$new()}}
+\item \href{#method-PM_model-write_model_file}{\code{PM_model$write_model_file()}}
+\item \href{#method-PM_model-from_file}{\code{PM_model$from_file()}}
+\item \href{#method-PM_model-print}{\code{PM_model$print()}}
+\item \href{#method-PM_model-plot}{\code{PM_model$plot()}}
+\item \href{#method-PM_model-get_primary}{\code{PM_model$get_primary()}}
+\item \href{#method-PM_model-write_rust}{\code{PM_model$write_rust()}}
+\item \href{#method-PM_model-clone}{\code{PM_model$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-new"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-new}{}}}
+\if{html}{\out{<a id="method-PM_model-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-new}{}}}
 \subsection{Method \code{new()}}{
-Build a new PM_model from a variety of inputs.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$new(model, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{model}}{This can be a quoted name of a model text file in the
-working directory which will be read and passed to Fortran engines.
-It can be a list of lists that defines the model directly in R. It
-can also be a \link{PM_model} object, which will simply rebuild it. See the user
-manual for more help on directly defining models in R.}
-
-\item{\code{...}}{Not currently used.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-fit"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-fit}{}}}
-\subsection{Method \code{fit()}}{
-Fit model to data
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$fit(
-  data = NULL,
-  run = NULL,
-  include = NULL,
-  exclude = NULL,
-  cycles = 100,
-  prior = "sobol",
-  density0 = 0.01,
-  seed = 23,
-  overwrite = FALSE,
-  algorithm = "NPAG",
-  report = getPMoptions("report_template")
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$new(
+  pri,
+  cov = NULL,
+  eqn = NULL,
+  sec = NULL,
+  tem = NULL,
+  lag = NULL,
+  f = NULL,
+  ini = NULL,
+  out = NULL,
+  error = NULL
 )}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{Either the name of a  \link{PM_data}
-object in memory or the quoted name of a Pmetrics
-data file in the current working directory, which will crate a \link{PM_data}
-object on the fly. However, if created on the fly, this object
-will not be available to other
-methods or other instances of \link{PM_fit}.}
-
-\item{\code{run}}{Specify the run number of the output folder.  Default if missing is the next available number.}
-
-\item{\code{include}}{Vector of subject id values in the data file to include in the analysis.
-The default (missing) is all.}
-
-\item{\code{exclude}}{A vector of subject IDs to exclude in the analysis, e.g. \code{c(4,6:14,16:20)}}
-
-\item{\code{cycles}}{Number of cycles to run. Default is 100.}
-
-\item{\code{prior}}{The distribution for the initial support points, which can be
-one of several options.
-\itemize{
-\item The default is "sobol", which is a semi-random distribution. This is the distribution
-typically used when fitting a new model to the data. An example of this is
-on our \href{https://www.lapk.org/images/sobol_3d_plot.html}{website}.
-}
-
-The following all specify non-random, informative prior distributions. They
-are useful for either continuing a previous
-run which did not converge or for fitting a model to new data, whether to simply
-calculate Bayesian posteriors with \code{cycles = 0} or to revise the model to a new
-covergence with the new data.
-\itemize{
-\item The name of a suitable \link{PM_result} object from a prior run loaded with \link{PM_load}.
-This starts from the non-uniform, informative distribution obtained at the end of a prior NPAG run.
-Example: \verb{run1 <- PM_load(1); fit1$run(prior = run1)}.
-\item A character string with the filename of a csv file containing a prior distribution with
-format as for 'theta.csv' in the output folder of a prior run: column headers are parameter
-names, and rows are the support point values. A final column with probabilities
-for each support point is not necessary, but if present will be ignored, as these
-probabilities are calculated by the engine. Note that the parameter names must match the
-names of the primary variables in the model. Example: \code{fit1$run(prior = "mytheta.csv")}.
-\item The number of a previous run with \code{theta.csv} in the output folder which will be read
-as for the filename option above. Example: \code{fit1$run(prior = 2)}.
-\item A data frame obtained from reading an approriate file, such that the data frame
-is in the required format described in the filename option above. Example:
-\verb{mytheta <- read_csv("mytheta.csv"); fit1$run(prior = mytheta)}.
-}}
-
-\item{\code{density0}}{The proportion of the volume of the model parameter
-hyperspace used to calculate the initial number of support points if one of
-the semi-random, uniform distributions are selected in the \code{prior} argument
-above. The initial points are
-spread through that hyperspace and begin the search for the optimal
-parameter value distribution (support points) in the population.
-The volume of the parameter space is the product of the ranges for all parameters.
-For example if using two parameters \code{Ke} and \code{V}, with ranges of [0, 5] and [10, 100],
-the volume is (5 - 0) x (100 - 10) = 450 The default value of \code{density0} is 0.01, so the initial
-number of support points will be 0.01 x 450 = 4.5, increased to the nearest integer,
-which is 5. The greater the initial number of points, the less chance of
-missing the globally maximally likely parameter value distribution,
-but the slower the run.}
-
-\item{\code{seed}}{Seed used if \code{prior = "sobol"}. Ignored otherwise.}
-
-\item{\code{overwrite}}{Boolean operator to overwrite existing run result folders.  Default is \code{FALSE}.}
-
-\item{\code{algorithm}}{The algorithm to use for the run.  Default is "NPAG". Alternatives: "NPOD".}
-
-\item{\code{report}}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
-is used. Otherwise can be "plotly", "ggplot", or "none".}
-
-\item{\code{intern}}{Run NPAG in the R console without a batch script.  Default is TRUE.}
-
-\item{\code{artifacts}}{Default is \code{TRUE}.  Set to \code{FALSE} to suppress creating the \code{etc} folder. This folder
-will contain all the compilation artifacts created during the compilation and run steps.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A successful run will result in creation of a new folder in the working
-directory with the results inside the folder.
-}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-simulate_all"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-simulate_all}{}}}
-\subsection{Method \code{simulate_all()}}{
-Simulates multiple scenarios using the provided data and parameter values.
+\if{html}{\out{<a id="method-PM_model-write_model_file"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-write_model_file}{}}}
+\subsection{Method \code{write_model_file()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$simulate_all(data, theta)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{A \code{PM_data} object containing the data for the simulation.}
-
-\item{\code{theta}}{A matrix of numeric values representing the parameter values for the simulation.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-This function simulates multiple scenarios using the provided data and parameter values.
-It requires the data to be a \code{PM_data} object and the parameter values to be a numeric matrix.
-The number of columns in the parameter matrix must match the number of parameters in the model.
-The function writes the data to a temporary CSV file and uses the Rust backend to perform the simulation.
-If the model is not already compiled, it will be compiled before the simulation.
-}
-
-\subsection{Returns}{
-A data frame with the following columns: id, time, out, outeq, state, state_index, spp_index.
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{
-data <- PM_data$new(...)
-theta <- matrix(c(1.0, 20.0, 2.0, 70.0), nrow = 2, byrow = TRUE)
-result <- model$simulate_all(data, theta)
-}
-
-}
-\if{html}{\out{</div>}}
-
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$write_model_file(file_path = "model.rs")}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-parameters"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-parameters}{}}}
-\subsection{Method \code{parameters()}}{
-Retrieves the list of model parameters from the compiled version of the model.
+\if{html}{\out{<a id="method-PM_model-from_file"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-from_file}{}}}
+\subsection{Method \code{from_file()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$parameters()}\if{html}{\out{</div>}}
-}
-
-\subsection{Details}{
-This function returns a list of the model parameters in the compiled version of the model.
-It only works with the Rust backend. If the backend is not set to "rust", an error will be thrown.
-}
-
-\subsection{Returns}{
-A list of model parameters.
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{
-model$parameters()
-}
-
-}
-\if{html}{\out{</div>}}
-
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$from_file(file_path)}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-print"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-print}{}}}
+\if{html}{\out{<a id="method-PM_model-print"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-print}{}}}
 \subsection{Method \code{print()}}{
-Print a model object to the console in readable format
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_model$print(...)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Not used currently.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-update"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-update}{}}}
-\subsection{Method \code{update()}}{
-Update selected elements of a model object
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$update(changes_list)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{changes_list}}{The named list containing elements and values to update.
-Because R6 objects are mini-environments, using typical
-R notation to copy an object like mod2 <- mod1 can lead to unexpected
-results since this syntax simply creates a copied object in the same
-environment. Therefore updating any one object (e.g., mod1 or mod2)
-will update the other. To avoid this behavior, use the $clone() function
-first if you want to create a copied, yet independent new model.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{
-mod2 <- modEx$clone() #create an independent copy of modEx called mod2
-mod2$update(list(
-  pri = list(
-   Ke = ab(0, 1), #change the range
-   V = NULL, #this deletes the variable
-   V0 = ab(10, 100) #add a new variable
-  ),
-  sec = "V = V0 * WT" #add a new secondary equation
-))
-#note that they are different now
-mod2
-modEx
-}
-}
-\if{html}{\out{</div>}}
-
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-write"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-write}{}}}
-\subsection{Method \code{write()}}{
-Write a \code{PM_model} object to a text file
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$write(model_path = "genmodel.txt", engine = "npag")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{model_path}}{Full name of the file to be created, including the path
-relative to the current working directory}
-
-\item{\code{engine}}{Currently only "npag".}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{
-modEx$write("model.txt")
-},
-}
-\if{html}{\out{</div>}}
-
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-plot"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-plot}{}}}
+\if{html}{\out{<a id="method-PM_model-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-plot}{}}}
 \subsection{Method \code{plot()}}{
-Plot method
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_model$plot(...)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{plot.PM_model}}
 }
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{plot.PM_model}.
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_model-get_primary"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-get_primary}{}}}
+\subsection{Method \code{get_primary()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$get_primary()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_Vmodel-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_Vmodel-clone}{}}}
+\if{html}{\out{<a id="method-PM_model-write_rust"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-write_rust}{}}}
+\subsection{Method \code{write_rust()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$write_rust()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_model-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
