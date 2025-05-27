@@ -40,6 +40,10 @@ PM_model <- R6::R6Class("PM_model",
         }
       }
 
+      # Number of equations
+      n_eqn <- get_assignments(eqn, "dx")
+      n_out <- get_assignments(out, "y")
+
       # Auxiliary variable to identify the type of execution
       type <- NULL
 
@@ -91,9 +95,7 @@ PM_model <- R6::R6Class("PM_model",
         out <- empty_out()
       }
 
-      # Number of equations
-      n_eqn <- get_assignments(eqn, "dx")
-      n_out <- get_assignments(out, "y")
+
 
 
       model_list <- list(
