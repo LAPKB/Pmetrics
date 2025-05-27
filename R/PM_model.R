@@ -999,9 +999,7 @@ plot.PM_model <- function(x,
                           explicit,
                           implicit,
                           ...) {
-  if (!checkRequiredPackages("PmetricsApps", repos = "LAPKB/PmetricsApps", quietly = FALSE)) {
-    return(invisible(NULL))
-  }
+
   model <- x
   marker <- if (is.list(marker) || marker) {
     amendMarker(marker,
