@@ -521,196 +521,196 @@ PM_model <- R6::R6Class("PM_model",
     }
   ),
   private = list(
-    makeR6model = function(file) {
-      msg <- ""
-      blocks <- parseBlocks(file) # this function is in PMutilities
-      # check for reserved variable names
-      reserved <- c(
-        "t",
-        "x",
-        "dx",
-        "p",
-        "rateiv",
-        "cov",
-        "y"
-      )
-      conflict <- c(match(tolower(blocks$primVar), reserved, nomatch = -99), match(tolower(blocks$secVar), reserved, nomatch = -99), match(tolower(blocks$covar), reserved, nomatch = -99))
-      nconflict <- sum(conflict != -99)
-      if (nconflict > 0) {
-        msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
-        return(list(status = -1, msg = msg))
-      }
+    # makeR6model = function(file) {
+    #   msg <- ""
+    #   blocks <- parseBlocks(file) # this function is in PMutilities
+    #   # check for reserved variable names
+    #   reserved <- c(
+    #     "t",
+    #     "x",
+    #     "dx",
+    #     "p",
+    #     "rateiv",
+    #     "cov",
+    #     "y"
+    #   )
+    #   conflict <- c(match(tolower(blocks$primVar), reserved, nomatch = -99), match(tolower(blocks$secVar), reserved, nomatch = -99), match(tolower(blocks$covar), reserved, nomatch = -99))
+    #   nconflict <- sum(conflict != -99)
+    #   if (nconflict > 0) {
+    #     msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
+    #     return(list(status = -1, msg = msg))
+    #   }
 
-      if (length(grep(";", blocks$primVar)) > 0) {
-        # using ';' as separator
-        sep <- ";"
-      } else {
-        if (length(grep(",", blocks$primVar)) > 0) {
-          # using ',' as separator
-          sep <- ","
-        } else {
-          return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n"))
-        }
-      }
+    #   if (length(grep(";", blocks$primVar)) > 0) {
+    #     # using ';' as separator
+    #     sep <- ";"
+    #   } else {
+    #     if (length(grep(",", blocks$primVar)) > 0) {
+    #       # using ',' as separator
+    #       sep <- ","
+    #     } else {
+    #       return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n"))
+    #     }
+    #   }
 
-      # build model_list to be given to PM_model_list
-      model_list <- list()
-      # this function makes pri for PM_model
-      model_list$pri <- sapply(strsplit(blocks$primVar, sep), function(x) {
-        # find out if constrained to be positive
-        const_pos <- any(grepl("\\+", x))
-        if (const_pos) {
-          x <- gsub("\\+", "", x)
-          gtz <- TRUE
-          msg <- c(msg, "Truncating variables to positive ranges is not recommended.\n
-               Consider log transformation instead.\n")
-        } else {
-          gtz <- FALSE
-        }
+    #   # build model_list to be given to PM_model_list
+    #   model_list <- list()
+    #   # this function makes pri for PM_model
+    #   model_list$pri <- sapply(strsplit(blocks$primVar, sep), function(x) {
+    #     # find out if constrained to be positive
+    #     const_pos <- any(grepl("\\+", x))
+    #     if (const_pos) {
+    #       x <- gsub("\\+", "", x)
+    #       gtz <- TRUE
+    #       msg <- c(msg, "Truncating variables to positive ranges is not recommended.\n
+    #            Consider log transformation instead.\n")
+    #     } else {
+    #       gtz <- FALSE
+    #     }
 
-        # find out if constant
-        const_var <- any(grepl("!", x))
-        if (const_var) {
-          x <- gsub("!", "", x)
-        }
+    #     # find out if constant
+    #     const_var <- any(grepl("!", x))
+    #     if (const_var) {
+    #       x <- gsub("!", "", x)
+    #     }
 
-        values <- as.numeric(x[-1])
+    #     values <- as.numeric(x[-1])
 
-        if (length(x[-1]) == 1) { # fixed
-          thisItem <- list(fixed(values[1], constant = const_var, gtz = gtz))
-        } else { # range
-          thisItem <- list(ab(values[1], values[2], gtz = gtz))
-        }
-        names(thisItem) <- x[1]
-        thisItem
-      }) # end sapply
+    #     if (length(x[-1]) == 1) { # fixed
+    #       thisItem <- list(fixed(values[1], constant = const_var, gtz = gtz))
+    #     } else { # range
+    #       thisItem <- list(ab(values[1], values[2], gtz = gtz))
+    #     }
+    #     names(thisItem) <- x[1]
+    #     thisItem
+    #   }) # end sapply
 
-      # covariates
-      # process constant covariates
-      covar <- blocks$covar
-      const_covar <- grepl("!", covar) # returns boolean vector, length = nout
-      covar <- gsub("!", "", covar) # remove "!"
-      # cycle through covariates
-      if (covar[1] != "") {
-        covar_list <- list()
-        for (i in 1:length(covar)) {
-          covar_list[[i]] <- covariate(name = covar[i], constant = const_covar[i])
-        }
-      } else {
-        covar_list <- NULL
-      }
-      # add to model_list
-      model_list$cov <- covar_list
+    #   # covariates
+    #   # process constant covariates
+    #   covar <- blocks$covar
+    #   const_covar <- grepl("!", covar) # returns boolean vector, length = nout
+    #   covar <- gsub("!", "", covar) # remove "!"
+    #   # cycle through covariates
+    #   if (covar[1] != "") {
+    #     covar_list <- list()
+    #     for (i in 1:length(covar)) {
+    #       covar_list[[i]] <- covariate(name = covar[i], constant = const_covar[i])
+    #     }
+    #   } else {
+    #     covar_list <- NULL
+    #   }
+    #   # add to model_list
+    #   model_list$cov <- covar_list
 
-      # extra
-      if (blocks$extra[1] != "") {
-        model_list$ext <- blocks$extra
-      } else {
-        model_list$extra <- NULL
-      }
+    #   # extra
+    #   if (blocks$extra[1] != "") {
+    #     model_list$ext <- blocks$extra
+    #   } else {
+    #     model_list$extra <- NULL
+    #   }
 
-      # secondary variables
-      if (blocks$secVar[1] != "") {
-        model_list$sec <- as.list(blocks$secVar)
-      }
+    #   # secondary variables
+    #   if (blocks$secVar[1] != "") {
+    #     model_list$sec <- as.list(blocks$secVar)
+    #   }
 
-      # bioavailability
-      if (blocks$f[1] != "") {
-        model_list$fa <- as.list(blocks$f)
-      } else {
-        model_list$f <- NULL
-      }
+    #   # bioavailability
+    #   if (blocks$f[1] != "") {
+    #     model_list$fa <- as.list(blocks$f)
+    #   } else {
+    #     model_list$f <- NULL
+    #   }
 
-      # bolus
-      if (blocks$bol[1] != "") {
-        model_list$bol <- as.list(blocks$bol)
-      } else {
-        model_list$bol <- NULL
-      }
+    #   # bolus
+    #   if (blocks$bol[1] != "") {
+    #     model_list$bol <- as.list(blocks$bol)
+    #   } else {
+    #     model_list$bol <- NULL
+    #   }
 
-      # initial conditions
-      if (blocks$ini[1] != "") {
-        model_list$ini <- as.list(blocks$ini)
-      } else {
-        model_list$ini <- NULL
-      }
+    #   # initial conditions
+    #   if (blocks$ini[1] != "") {
+    #     model_list$ini <- as.list(blocks$ini)
+    #   } else {
+    #     model_list$ini <- NULL
+    #   }
 
-      # lag time
-      if (blocks$lag[1] != "") {
-        model_list$lag <- as.list(blocks$lag)
-      } else {
-        model_list$lag <- NULL
-      }
+    #   # lag time
+    #   if (blocks$lag[1] != "") {
+    #     model_list$lag <- as.list(blocks$lag)
+    #   } else {
+    #     model_list$lag <- NULL
+    #   }
 
-      # analytic model name
-      if (blocks$tem[1] != "") {
-        model_list$tem <- blocks$tem
-      } else {
-        model_list$tem <- NULL
-      }
+    #   # analytic model name
+    #   if (blocks$tem[1] != "") {
+    #     model_list$tem <- blocks$tem
+    #   } else {
+    #     model_list$tem <- NULL
+    #   }
 
-      # differential equations - legacy
-      if (!is.null(blocks$diffeq) && blocks$diffeq[1] != "") {
-        model_list$eqn <- as.list(blocks$diffeq)
-      } else {
-        model_list$diffeq <- NULL
-      }
+    #   # differential equations - legacy
+    #   if (!is.null(blocks$diffeq) && blocks$diffeq[1] != "") {
+    #     model_list$eqn <- as.list(blocks$diffeq)
+    #   } else {
+    #     model_list$diffeq <- NULL
+    #   }
 
-      # model equations - will eventually replace diffeq above
-      if (blocks$eqn[1] != "") {
-        model_list$eqn <- as.list(blocks$eqn)
-      } else {
-        model_list$eqn <- NULL
-      }
+    #   # model equations - will eventually replace diffeq above
+    #   if (blocks$eqn[1] != "") {
+    #     model_list$eqn <- as.list(blocks$eqn)
+    #   } else {
+    #     model_list$eqn <- NULL
+    #   }
 
-      # out/err
-      n_outputLines <- length(blocks$output)
-      outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output)
-      if (length(outputLines) == 0) {
-        return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y[1] = ...'\n"))
-      }
-      otherLines <- (1:n_outputLines)[!(1:n_outputLines) %in% outputLines] # find other lines
-      if (length(otherLines) > 0) {
-        model_list$sec <- c(model_list$sec, blocks$output[otherLines]) # append to #sec block
-      }
-      output <- blocks$output[outputLines]
-      remParen <- stringr::str_replace(output, regex("Y(?:\\[|\\()(\\d+)(?:\\]|\\))", ignore_case = TRUE), "Y\\1")
-      diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
-      diffList <- sapply(diffeq, function(x) x[2])
-      num_out <- length(diffList)
+    #   # out/err
+    #   n_outputLines <- length(blocks$output)
+    #   outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output)
+    #   if (length(outputLines) == 0) {
+    #     return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y[1] = ...'\n"))
+    #   }
+    #   otherLines <- (1:n_outputLines)[!(1:n_outputLines) %in% outputLines] # find other lines
+    #   if (length(otherLines) > 0) {
+    #     model_list$sec <- c(model_list$sec, blocks$output[otherLines]) # append to #sec block
+    #   }
+    #   output <- blocks$output[outputLines]
+    #   remParen <- stringr::str_replace(output, regex("Y(?:\\[|\\()(\\d+)(?:\\]|\\))", ignore_case = TRUE), "Y\\1")
+    #   diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
+    #   diffList <- sapply(diffeq, function(x) x[2])
+    #   num_out <- length(diffList)
 
-      err <- tolower(gsub("[[:space:]]", "", blocks$error))
-      # process constant gamma/lambda
-      gamma <- grepl("^g", err[1])
-      const_gamlam <- grepl("!", err[1])
-      gamlam_value <- as.numeric(stringr::str_match(err[1], "\\d+\\.?\\d*"))
-      # process constant coefficients
-      const_coeff <- grepl("!", err[-1]) # returns boolean vector, length = nout
-      err <- gsub("!", "", err) # remove "!"
+    #   err <- tolower(gsub("[[:space:]]", "", blocks$error))
+    #   # process constant gamma/lambda
+    #   gamma <- grepl("^g", err[1])
+    #   const_gamlam <- grepl("!", err[1])
+    #   gamlam_value <- as.numeric(stringr::str_match(err[1], "\\d+\\.?\\d*"))
+    #   # process constant coefficients
+    #   const_coeff <- grepl("!", err[-1]) # returns boolean vector, length = nout
+    #   err <- gsub("!", "", err) # remove "!"
 
 
-      out <- list()
-      for (i in 1:num_out) {
-        out[[i]] <- list(
-          val = diffList[i],
-          err = list(
-            model = if ((1 + as.numeric(gamma)) == 1) {
-              additive(gamlam_value, constant = const_gamlam)
-            } else {
-              proportional(gamlam_value, constant = const_gamlam)
-            },
-            assay = errorPoly(stringr::str_split(err[i + 1], ",")[[1]] %>% as.numeric(), const_coeff[i])
-          )
-        )
-      }
-      names(out) <- sapply(diffeq, function(x) x[1])
-      model_list$out <- out
+    #   out <- list()
+    #   for (i in 1:num_out) {
+    #     out[[i]] <- list(
+    #       val = diffList[i],
+    #       err = list(
+    #         model = if ((1 + as.numeric(gamma)) == 1) {
+    #           additive(gamlam_value, constant = const_gamlam)
+    #         } else {
+    #           proportional(gamlam_value, constant = const_gamlam)
+    #         },
+    #         assay = errorPoly(stringr::str_split(err[i + 1], ",")[[1]] %>% as.numeric(), const_coeff[i])
+    #       )
+    #     )
+    #   }
+    #   names(out) <- sapply(diffeq, function(x) x[1])
+    #   model_list$out <- out
 
-      cat(msg)
-      flush.console()
-      model_list <- PM_model_list$new(model_list)$model_list
-      return(model_list)
-    }
+    #   cat(msg)
+    #   flush.console()
+    #   model_list <- PM_model_list$new(model_list)$model_list
+    #   return(model_list)
+    # }
   )
 )
 
@@ -766,12 +766,10 @@ PM_input <- R6::R6Class(
         # note that a fixed input with constant=T becomes a constant
       } else if (mode == "additive") {
         self$additive <- a
+        self$coefficients <- b # b is a vector in this case
       } else if (mode == "proportional") {
         self$proportional <- a
-      } else if (mode == "combination") {
-        cli::cli_abort(c("x" = "Combination error models are not supported yet"))
-        self$additive <- a
-        self$proportional <- b
+        self$coefficients <- b # b is a vector in this case
       } else if (mode == "coefficients") {
         self$coefficients <- a # a is a vector in this case
       } else if (mode == "covariate") {
@@ -866,10 +864,10 @@ PM_input <- R6::R6Class(
 #'
 #' Create an additive (lambda) error model
 #' @param add Initial value for lambda
-#' @param constant Estimate if `FALSE` (default).
+#' @param fixed Estimate if `FALSE` (default).
 #' @export
-additive <- function(add, constant = FALSE) {
-  PM_input$new(add, add, "additive", constant)
+additive <- function(add, coeff, fixed = FALSE) {
+  PM_input$new(add, coeff, "additive", fixed)
 }
 
 
@@ -880,26 +878,13 @@ additive <- function(add, constant = FALSE) {
 #'
 #' Create an proportional (gamma) error model
 #' @param prop Initial value for gamma
-#' @param constant Estimate if `FALSE` (default).
+#' @param fixed Estimate if `FALSE` (default).
 #' @export
-proportional <- function(prop, constant = FALSE) {
-  PM_input$new(prop, prop, "proportional", constant)
+proportional <- function(prop, coeff, fixed = FALSE) {
+  PM_input$new(prop, coeff, "proportional", fixed)
 }
 
-#' @title Combination error model
-#' @description
-#' `r lifecycle::badge("experimental")`
-#'
-#' Create a combination additive (lambda) and proportional error model
-#' @details
-#' This function is not yet implemented.
-#' @param add Initial value for lambda
-#' @param prop  Initial value for gamma
-#' @param constant Estimate if `FALSE` (default).
-#' @export
-combination <- function(add, prop, constant = FALSE) {
-  PM_input$new(add, prop, "combination", constant)
-}
+
 
 #' @title Assay error coefficients
 #' @description
