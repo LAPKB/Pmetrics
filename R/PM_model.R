@@ -1,3 +1,4 @@
+#' @export
 PM_model <- R6::R6Class("PM_model",
   public = list(
     model_list = NULL,
@@ -137,6 +138,8 @@ PM_model <- R6::R6Class("PM_model",
             <out>,
             (<neqs>, <nouteqs>),
           )"
+        base <- gsub(pattern = "<tem>", replacement = self$model_list$tem, x = base)
+        base <- gsub(pattern = "<sec>", replacement = self$model_list$sec, x = base)
       } else if (type == "ode") {
         base <- "equation::ODE::new(
             <eqn>,
@@ -146,6 +149,7 @@ PM_model <- R6::R6Class("PM_model",
             <out>,
             (<neqs>, <nouteqs>),
         )"
+        base <- gsub(pattern = "<eqn>", replacement = self$model_list$eqn, x = base)
       } else {
         cli::cli_abort(c(
           "x" = "Invalid model type.",
@@ -153,12 +157,10 @@ PM_model <- R6::R6Class("PM_model",
         ))
       }
 
-      base <- gsub(pattern = "<eqn>", replacement = self$model_list$eqn, x = base)
-      base <- gsub(pattern = "<tem>", replacement = self$model_list$tem, x = base)
-      base <- gsub(pattern = "<sec>", replacement = self$model_list$sec, x = base)
+
       base <- gsub(pattern = "<lag>", replacement = self$model_list$lag, x = base)
-      base <- gsub(pattern = "<fa>", replacement = self$model_list$eqn, x = base)
-      base <- gsub(pattern = "<ini>", replacement = self$model_list$eqn, x = base)
+      base <- gsub(pattern = "<fa>", replacement = self$model_list$fa, x = base)
+      base <- gsub(pattern = "<ini>", replacement = self$model_list$ini, x = base)
       base <- gsub(pattern = "<out>", replacement = self$model_list$out, x = base)
       base <- gsub(pattern = "<neqs>", replacement = self$model_list$neqs, x = base)
       base <- gsub(pattern = "<nouteqs>", replacement = self$model_list$nouteqs, x = base)
