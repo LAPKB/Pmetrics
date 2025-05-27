@@ -27,6 +27,7 @@ run the analysis.
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-PM_fit-new}{\code{PM_fit$new()}}
+\item \href{#method-PM_fit-run}{\code{PM_fit$run()}}
 \item \href{#method-PM_fit-save}{\code{PM_fit$save()}}
 \item \href{#method-PM_fit-load}{\code{PM_fit$load()}}
 \item \href{#method-PM_fit-check}{\code{PM_fit$check()}}
@@ -60,6 +61,21 @@ methods or other instances of \link{PM_fit}.}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_fit-run"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_fit-run}{}}}
+\subsection{Method \code{run()}}{
+Run a fit of model to the data (deprecated)
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_fit$run()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+The \verb{$run} method for \code{PM_fit} objects has been deprecated in
+favor of the \verb{$fit} method in \code{\link[=PM_model]{PM_model()}}.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_fit-save"></a>}}
