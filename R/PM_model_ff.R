@@ -4,7 +4,7 @@ PM_model <- R6::R6Class("PM_model",
     binary_path = NULL,
     file_content = NULL,
     type = NULL,
-    initialize = function(pri, cov = NULL, eqn = NULL, sec = NULL, tem = NULL, lag = NULL, fa = NULL, ini = NULL, out = NULL, error = NULL) {
+    initialize = function(file, pri = NULL, cov = NULL, eqn = NULL, sec = NULL, tem = NULL, lag = NULL, fa = NULL, ini = NULL, out = NULL, error = NULL) {
       # Primary parameters must be provided
       if (is.null(pri)) {
         cli::cli_abort(c(
@@ -115,7 +115,7 @@ PM_model <- R6::R6Class("PM_model",
       self$model_list <- model_list
       self$type <- "closure"
     },
-    write_model_file = function(file_path = "model.rs") {
+    write_model_file = function(file_path = "main.rs") {
       # Check if model_list is not NULL
       if (is.null(self$model_list)) {
         cli::cli_abort(c(
@@ -275,8 +275,249 @@ PM_model <- R6::R6Class("PM_model",
     get_primary = function() {
       return(tolower(names(self$model_list$pri)))
     },
-    write_rust = function() {
+    compile = function() {
+      if (!is.null(self$binary_path)) {
+        cli::cli_abort(c(
+          "x" = "Model already compiled.",
+          "i" = "Please provide a different model or delete the existing binary."
+        ))
+      }
 
+      temp_model <- file.path(tempdir(), "model.rs")
+      self$write_model_file(temp_model)
+      model_path <- tempfile(pattern = "model_", fileext = ".pmx")
+      tryCatch(
+        {
+          compile_model(temp_mode, model_path, self$get_primary())
+          self$binary_path <- model_path
+        },
+        error = function(e) {
+          cli::cli_abort(c(
+            "x" = "Model compilation failed: {e$message}",
+            "i" = "Please check the model file and try again."
+          ))
+        }
+      )
+      file.remove(temp_model) # remove temporary model file
+    },
+    fit = function(data = NULL, run = NULL, include = NULL,
+                   algorithm = "NPAG", report = getPMoptions("report_template")) {
+      if (is.null(data)) {
+        cli::cli_abort(c("x" = " {.arg data} must be specified."))
+      }
+
+      if (is.null(self$model_list)) {
+        cli::cli_abort(c("x" = "Model is malformed."))
+      }
+
+      if (is.character(data)) {
+        data <- PM_data$new(data)
+      }
+
+      if (!inherits(data, "PM_data")) {
+        data <- tryCatch(
+          {
+            PM_data$new(data)
+          },
+          error = function(e) {
+            cli::cli_abort(c(
+              "x" = "{.code data} must be a {.cls PM_data} object or an appropriate data frame.",
+              "i" = "See help for {.fn Pmetrics::PM_data}."
+            ))
+          }
+        )
+      }
+
+      #### checks
+
+      # covariates
+      dataCov <- tolower(getCov(data)$covnames)
+      modelCov <- tolower(sapply(self$model_list$cov, function(x) x$covariate))
+      if (length(modelCov) == 0) {
+        modelCov <- NA
+      }
+      if (!all(is.na(dataCov)) && !all(is.na(modelCov))) { # if there are covariates
+        if (!identical(dataCov, modelCov)) { # if not identical, abort
+          msg <- glue::glue("Model covariates: {paste(modelCov, collapse = ', ')}; Data covariates: {paste(dataCov, collapse = ', ')}")
+          cli::cli_abort(c(
+            "x" = "Error: Covariates in data and model do not match.",
+            "i" = msg
+          ))
+        }
+      }
+
+      # output equations
+
+      if (!is.null(data$standard_data$outeq)) {
+        dataOut <- max(data$standard_data$outeq, na.rm = TRUE)
+      } else {
+        dataOut <- 1
+      }
+
+      modelOut <- length(self$model_list$out)
+      if (dataOut != modelOut) {
+        cli::cli_abort(c(
+          "x" = "Error: Number of output equations in data and model do not match.",
+          "i" = "Check the number of output equations in the data and model."
+        ))
+      }
+
+      # check if model compiled and if not, do so
+      self$compile()
+
+      cwd <- getwd()
+      intern <- TRUE # always true until (if) rust can run separately from R
+
+
+      # make new output directory
+      if (is.null(run)) {
+        olddir <- list.dirs(recursive = FALSE)
+        olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
+        olddir <- sub("^\\./", "", olddir)
+        if (length(olddir) > 0) {
+          newdir <- as.character(max(as.numeric(olddir)) + 1)
+        } else {
+          newdir <- "1"
+        }
+      } else {
+        if (!is.numeric(run)) {
+          cli::cli_abort(c("x" = " {.arg run} must be numeric."))
+        } else {
+          newdir <- as.character(run)
+        }
+      }
+
+      if (file.exists(newdir)) {
+        if (overwrite) {
+          unlink(newdir, recursive = TRUE)
+          cli::cli_inform(c(
+            "i" = "Overwriting the prior run in folder '{newdir}'."
+          ))
+        } else {
+          cli::cli_inform(c(
+            "x" = "The prior run from '{newdir}' was read.",
+            " " = "Set {.arg overwrite} to {.val TRUE} to overwrite prior run in '{newdir}'."
+          ))
+          return(invisible(PM_load(newdir)))
+        }
+      }
+
+      dir.create(newdir)
+      setwd(newdir)
+
+      algorithm <- tolower(algorithm)
+
+      if (getPMoptions()$backend != "rust") {
+        setwd(cwd)
+        cli::cli_abort(c(
+          "x" = "Error: unsupported backend.",
+          "i" = "See help for {.fn setPMoptions}"
+        ))
+      }
+
+      #### Include or exclude subjects ####
+      if (is.null(include)) include <- unique(data$standard_data$id)
+      if (is.null(exclude)) exclude <- NA
+      data_filtered <- data$standard_data %>% includeExclude(include, exclude)
+
+      if (nrow(data_filtered) == 0) {
+        cli::cli_abort("x" = "No subjects remain after filtering.")
+        setwd(cwd)
+        return(invisible(NULL))
+      }
+
+
+      #### Save objects ####
+      PM_data$new(data_filtered, quiet = TRUE)$write("gendata.csv", header = FALSE)
+      save(self, file = "fit.Rdata")
+
+      # Get ranges and calculate points
+
+      ranges <- lapply(self$model_list$pri, function(x) {
+        c(x$min, x$max)
+      })
+      names(ranges) <- tolower(names(ranges))
+
+      # Set initial grid points (only applies for sobol)
+
+      vol <- prod(sapply(ranges, function(x) x[2] - x[1]))
+      points <- max(ceiling(density0 * vol), 100) # at least 100 points
+
+
+
+      # set prior
+      if (prior != "sobol") {
+        if (is.numeric(prior)) { # prior specified as a run number
+          if (!file.exists(glue::glue(prior, "/outputs/theta.csv"))) {
+            cli::cli_abort(c(
+              "x" = "Error: {.arg prior} file does not exist.",
+              "i" = "Check the file path."
+            ))
+          }
+          file.copy(glue::glue(prior, "/outputs/theta.csv"), "theta.csv")
+          prior <- "theta.csv"
+        } else if (is.character(prior)) { # prior specified as a filename
+          if (!file.exists(prior)) {
+            cli::cli_abort(c(
+              "x" = "Error: {.arg prior} file does not exist.",
+              "i" = "Check the file path."
+            ))
+          }
+          file.copy(prior, overwrite = TRUE) # ensure in current working directory
+        } else {
+          cli::cli_abort(c(
+            "x" = "Error: {.arg prior} must be a numeric run number or character filename.",
+            "i" = "Check the value."
+          ))
+        }
+      } else {
+        prior <- "sobol"
+      }
+
+      if (intern) {
+        ### CALL RUST
+        out_path <- file.path(getwd(), "outputs")
+
+        rlang::try_fetch(
+          fit_model( # defined in extendr-wrappers.R
+            self$binary_path,
+            "gendata.csv",
+            list(
+              ranges = ranges,
+              algorithm = algorithm,
+              gamlam = c(self$model_list$out$Y1$err$model$additive, self$model_list$out$Y1$err$model$proportional),
+              error_type = c("additive", "proportional")[1 + is.null(self$model_list$out$Y1$err$model$additive)],
+              error_coefficients = t(sapply(self$model_list$out, function(x) {
+                y <- x$err$assay$coefficients
+                if (length(y) < 6) {
+                  y <- c(y, 0, 0)
+                }
+                y
+              })), # matrix numeqt x 6
+              max_cycles = cycles,
+              prior = prior,
+              ind_points = points,
+              seed = seed
+            ), out_path
+          ),
+          error = function(e) {
+            cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
+            setwd(cwd)
+            return(NULL)
+          }
+        )
+
+        PM_parse("outputs")
+        res <- PM_load(file = "PMout.Rdata")
+        PM_report(res, outfile = "report.html", template = report)
+        setwd(cwd)
+        return(invisible(res))
+      } else {
+        cli::cli_abort(c(
+          "x" = "Error: Currently, the rust engine only supports internal runs.",
+          "i" = "This is a temporary limitation."
+        ))
+      }
     }
   ),
   private = list(
