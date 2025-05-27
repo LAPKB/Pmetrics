@@ -243,10 +243,9 @@ PM_model <- R6::R6Class("PM_model",
       return(tolower(names(self$model_list$pri)))
     },
     compile = function() {
-      if (!is.null(self$binary_path)) {
-        cli::cli_abort(
-          c("x" = "Model already compiled.", "i" = "Please provide a different model or delete the existing binary.")
-        )
+      if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
+        # model is compiled
+        return(invisible(NULL))
       }
 
       temp_model <- file.path(tempdir(), "model.rs")
@@ -265,11 +264,11 @@ PM_model <- R6::R6Class("PM_model",
       )
       file.remove(temp_model) # remove temporary model file
     },
-    fit = function(data = NULL,
-                   run = NULL,
-                   include = NULL,
-                   algorithm = "NPAG",
-                   report = getPMoptions("report_template")) {
+    fit = function(data = NULL, run = NULL, include = NULL, 
+                   exclude = NULL, cycles = 100, prior = "sobol",
+                   density0 = 0.01, seed = 23, overwrite = FALSE,
+                   algorithm = "NPAG", report = getPMoptions("report_template")) {
+      
       if (is.null(data)) {
         cli::cli_abort(c("x" = " {.arg data} must be specified."))
       }
@@ -299,9 +298,7 @@ PM_model <- R6::R6Class("PM_model",
 
       # covariates
       dataCov <- tolower(getCov(data)$covnames)
-      modelCov <- tolower(sapply(self$model_list$cov, function(x) {
-        x$covariate
-      }))
+      modelCov <- tolower(self$model_list$covariates)
       if (length(modelCov) == 0) {
         modelCov <- NA
       }
@@ -325,7 +322,7 @@ PM_model <- R6::R6Class("PM_model",
         dataOut <- 1
       }
 
-      modelOut <- length(self$model_list$out)
+      modelOut <- self$model_list$nouteqs
       if (dataOut != modelOut) {
         cli::cli_abort(
           c("x" = "Error: Number of output equations in data and model do not match.", "i" = "Check the number of output equations in the data and model.")
@@ -452,12 +449,12 @@ PM_model <- R6::R6Class("PM_model",
               ranges = ranges,
               algorithm = algorithm,
               gamlam = c(
-                self$model_list$out$Y1$err$model$additive,
-                self$model_list$out$Y1$err$model$proportional
+                self$model_list$error[[1]]$additive,
+                self$model_list$error[[1]]$proportional
               ),
-              error_type = c("additive", "proportional")[1 + is.null(self$model_list$out$Y1$err$model$additive)],
-              error_coefficients = t(sapply(self$model_list$out, function(x) {
-                y <- x$err$assay$coefficients
+              error_type = self$model_list$error[[1]]$mode,
+              error_coefficients = t(sapply(self$model_list$error, function(x) {
+                y <- x$coefficients
                 if (length(y) < 6) {
                   y <- c(y, 0, 0)
                 }
