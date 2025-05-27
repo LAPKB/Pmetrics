@@ -257,18 +257,22 @@ get_assignments <- function(fn, assign) {
     if (is.call(expr)) {
       if (identical(expr[[1]], as.name("<-")) || identical(expr[[1]], as.name("="))) {
         lhs <- expr[[2]]
-        if (is.call(lhs) && identical(lhs[[1]], as.name("[")) && identical(lhs[[2]], as.name(assign))) {
-          return(1 + count_dx_assignments(expr[[3]]))
-        } else {
-          return(count_dx_assignments(expr[[2]]) + count_dx_assignments(expr[[3]]))
+        # Check if lhs is an indexing call (i.e., assign[...] <- ...)
+        if (is.call(lhs) && identical(lhs[[1]], as.name("["))) {
+          target_name <- as.character(lhs[[2]])
+          if (tolower(target_name) == tolower(assign)) {
+            return(1 + count_dx_assignments(expr[[3]]))
+          }
         }
+        return(count_dx_assignments(expr[[2]]) + count_dx_assignments(expr[[3]]))
       } else {
         return(sum(sapply(expr, count_dx_assignments)))
       }
     }
     return(0)
   }
-
+  
   body_expr <- body(fn)
   count_dx_assignments(body_expr)
 }
+
