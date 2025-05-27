@@ -120,6 +120,14 @@ PM_model <- R6::R6Class("PM_model",
         out <- empty_out()
       }
 
+      if (!is.null(error)) {
+        if (length(error) != n_out) {
+          cli::cli_abort(c("x" = "Error model must have the same number of equations as output equations.", "i" = "Please check the error model."))
+        }
+        error <- transpile_error(error)
+      } else {
+        cli::cli_abort("x" = "Error model is missing.", "i" = "Please provide an error model.")
+      }
 
 
 
@@ -135,10 +143,13 @@ PM_model <- R6::R6Class("PM_model",
         neqs = n_eqn,
         nouteqs = n_out,
         parameters = parameters,
-        covariates = covariates
+        covariates = covariates,
+        error = error
       )
       self$model_list <- model_list
       self$type <- "closure"
+
+      self$compile()
     },
     write_model_file = function(file_path = "main.rs") {
       # Check if model_list is not NULL
@@ -243,7 +254,7 @@ PM_model <- R6::R6Class("PM_model",
       model_path <- tempfile(pattern = "model_", fileext = ".pmx")
       tryCatch(
         {
-          compile_model(temp_mode, model_path, self$get_primary())
+          compile_model(temp_model, model_path, self$get_primary())
           self$binary_path <- model_path
         },
         error = function(e) {
