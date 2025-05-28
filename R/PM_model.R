@@ -231,7 +231,7 @@ PM_model <- R6::R6Class("PM_model",
                             
                             cli::cli_h3(text = "Equations")
                             eqs <- deparse(self$arg_list[[4]]) %>%
-                            purrr::discard(\(x) str_detect(x, "function|\\{|\\}"))
+                            purrr::discard(\(x) stringr::str_detect(x, "function|\\{|\\}"))
                             for (i in eqs) {
                               cli::cli_text("{.val {i}}")
                             }
@@ -1097,7 +1097,7 @@ plot.PM_model <- function(x,
   #this_model <- model$model_list$eqn %>%
   
   this_model <- deparse(model$arg_list[[4]]) %>%
-    purrr::discard(\(x) str_detect(x, "function|\\{|\\}")) %>%
+    purrr::discard(\(x) stringr::str_detect(x, "function|\\{|\\}")) %>%
     map(
       purrr::keep,
       stringr::str_detect,
