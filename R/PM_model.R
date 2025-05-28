@@ -221,21 +221,20 @@ PM_model <- R6::R6Class("PM_model",
                             cli::cli_h1("Model summary")
                             
                             pars = self$model_list$parameters
-                            cli::cli_text("Model has {length(pars)} primary parameters: {pars} ")
+                            cli::cli_text("Model has {length(pars)} primary parameters: {.val {pars}} ")
                             
                             
                             if (!is.null(self$arg_list$cov)) {
                               cli::cli_h3(text = "Covariates")
-                              cli::cli_text("{self$arg_list$cov}")
-                            } 
-                            
-                            cli::cli_h3(text = "Equations")
-                            eqs = self$arg_list[[4]]
-                            for (i in 2:length(body(eqs))) {
-                              cli::cli_text("{body(eqs)[[i]]}")
+                              cli::cli_text("{.val {self$arg_list$cov}}")
                             }
                             
-                            
+                            cli::cli_h3(text = "Equations")
+                            eqs <- deparse(self$arg_list[[4]]) %>%
+                            purrr::discard(\(x) str_detect(x, "function|\\{|\\}"))
+                            for (i in eqs) {
+                              cli::cli_text("{.val {i}}")
+                            }
                             
                             invisible(self)
                           },
