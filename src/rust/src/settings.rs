@@ -53,6 +53,9 @@ pub(crate) fn settings(
         _ => return Err(anyhow::anyhow!("Prior {} not supported", prior)),
     };
 
+    let idelta = settings.get("idelta").unwrap().as_real().unwrap_or(0.01);
+    let tad = settings.get("tad").unwrap().as_real().unwrap_or(0.0) as f64;
+
     let mut settings = Settings::builder()
         .set_algorithm(algorithm)
         .set_parameters(parameters)
@@ -62,7 +65,8 @@ pub(crate) fn settings(
             (poly[0], poly[1], poly[2], poly[3]),
         )
         .build();
-
+    settings.set_idelta(idelta);
+    settings.set_tad(tad);
     settings.set_cycles(max_cycles);
     settings.set_prior(prior);
     settings.set_output_path(output_path.to_string());
