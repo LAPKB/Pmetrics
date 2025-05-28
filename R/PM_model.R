@@ -1094,7 +1094,10 @@ plot.PM_model <- function(x,
   }
   
   # filter any equations that are not diffeq and make everything capital
-  this_model <- model$model_list$eqn %>%
+  #this_model <- model$model_list$eqn %>%
+  
+  this_model <- deparse(model$arg_list[[4]]) %>%
+    purrr::discard(\(x) str_detect(x, "function|\\{|\\}")) %>%
     map(
       purrr::keep,
       stringr::str_detect,
