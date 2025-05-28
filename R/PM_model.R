@@ -214,10 +214,7 @@ PM_model <- R6::R6Class("PM_model",
                             self$type <- "file"
                           },
                           print = function(...) {
-                            mlist <- self$model_list
-                            
-                            
-                            
+
                             cli::cli_h1("Model summary")
                             
                             pars = self$model_list$parameters
@@ -230,9 +227,16 @@ PM_model <- R6::R6Class("PM_model",
                             }
                             
                             cli::cli_h3(text = "Equations")
-                            eqs <- deparse(self$arg_list[[4]]) %>%
+                            eqs <- deparse(self$arg_list$eqn) %>%
                             purrr::discard(\(x) str_detect(x, "function|\\{|\\}"))
                             for (i in eqs) {
+                              cli::cli_text("{.val {i}}")
+                            }
+                            
+                            cli::cli_h3(text = "Outputs")
+                            outs <- deparse(self$arg_list$out) %>%
+                              purrr::discard(\(x) str_detect(x, "function|\\{|\\}"))
+                            for (i in outs) {
                               cli::cli_text("{.val {i}}")
                             }
                             
