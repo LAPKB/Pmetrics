@@ -146,7 +146,7 @@ PM_model <- R6::R6Class("PM_model",
         covariates = covariates,
         error = error
       )
-      self$model_list <- model_list
+      self$model_list <- purrr::map(model_list, \(x) tolower(x))
       self$type <- "closure"
 
       self$compile()
