@@ -203,31 +203,44 @@ collect_error_entries <- function(fun) {
 
   for (expr in body_expr) {
     if (!is.call(expr) || !(as.character(expr[[1]]) %in% c("<-", "="))) {
-      stop("Invalid syntax in error(): only assignments allowed (found: ", deparse(expr), ")")
+      cli::cli_abort(c(
+        "x" = "Invalid syntax in {.fn err}",
+        "i" = "Only assingments allowed, but found {.code {deparse(expr)}}"))
     }
     lhs <- expr[[2]]
     rhs <- expr[[3]]
 
-    if (!is.call(lhs) || as.character(lhs[[1]]) != "[" || as.character(lhs[[2]]) != "E") {
-      stop("Invalid LHS in error(): expected E[index], got ", deparse(lhs))
+    if (!is.call(lhs) || as.character(lhs[[1]]) != "[" || as.character(lhs[[2]]) != "e") {
+      cli::cli_abort(c(
+        "x" = "Invalid LHS in {.fn err}",
+        "i" = "Expected {.code e[index]}, got {.code {deparse(lhs)}}"))
     }
     idx_raw <- lhs[[3]]
     if (!is.numeric(idx_raw) || length(idx_raw) != 1) {
-      stop("Invalid index in error(): must be a single numeric literal (got: ", deparse(idx_raw), ")")
+      cli::cli_abort(c(
+        "x" = "Invalid index in {.fn err}",
+        "i" = "Must be a single numeric literal, got  {.code {deparse(idx_raw)}}"))
     }
     idx <- as.integer(idx_raw)
     if (idx != expected_idx) {
-      stop(sprintf("Error indices must start at 1 and increment by 1. Expected index %d but got %d.", expected_idx, idx))
+      cli::cli_abort(c(
+        "x" = "Error indices must start at 1 and increment by 1.",
+        "i" = "Expected index {.val {expected_idx}}, got  {.val {idx}}"))
+      
     }
     expected_idx <- expected_idx + 1L
 
     if (!is.call(rhs) || !(as.character(rhs[[1]]) %in% c("proportional", "additive"))) {
-      stop("Invalid RHS in error(): only proportional() or additive() calls allowed (found: ", deparse(rhs), ")")
+      cli::cli_abort(c(
+        "x" = "Invalid RHS in {.fn err}",
+        "i" = "Only {.fn proportional} or {.fn additive} calls allowed, but found {.code {deparse(rhs)}}"))
     }
 
     n_args <- length(rhs) - 1
     if (!(n_args %in% c(2, 3))) {
-      stop(sprintf("%s() must have 2 or 3 arguments (got %d)", as.character(rhs[[1]]), n_args))
+      cli::cli_abort(c(
+        "x" = "Invalid syntax in {.fn err}",
+        "i" = "{.code {as.character(rhs[[1]])}} must have 2 or 3 arguments, but got {.code {n_args}}"))
     }
 
     if (n_args == 2) {
@@ -243,12 +256,12 @@ collect_error_entries <- function(fun) {
 transpile_error <- function(fun) {
   entries <- collect_error_entries(fun)
   result <- list()
-  for (i in names(entries)) {
+  for (i in 1:length(entries)) {
     # evaluate each proportional/additive call
     result[[i]] <- eval(entries[[i]])
   }
   # ensure names are correct ("1","2",...)
-  names(result) <- names(entries)
+  names(result) <- 1:length(result)
   result
 }
 

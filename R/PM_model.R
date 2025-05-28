@@ -17,10 +17,10 @@ PM_model <- R6::R6Class(
                           fa = NULL,
                           ini = NULL,
                           out = NULL,
-                          error = NULL) {
+                          err = NULL) {
       # Store the original function arguments
       self$arg_list <- list(
-        fiel = file,
+        file = file,
         pri = pri,
         cov = cov,
         eqn = eqn,
@@ -30,7 +30,7 @@ PM_model <- R6::R6Class(
         fa = fa,
         ini = ini,
         out = out,
-        error = error
+        err = err
       )
       
       # Primary parameters must be provided
@@ -122,13 +122,13 @@ PM_model <- R6::R6Class(
         out <- empty_out()
       }
       
-      if (!is.null(error)) {
-        if (length(error) != n_out) {
+      if (!is.null(err)) {
+        if (length(err) != n_out) {
           cli::cli_abort(
             c("x" = "Error model must have the same number of equations as output equations.", "i" = "Please check the error model.")
           )
         }
-        error <- transpile_error(error)
+        err <- transpile_error(err)
       } else {
         cli::cli_abort("x" = "Error model is missing.", "i" = "Please provide an error model.")
       }
@@ -148,7 +148,7 @@ PM_model <- R6::R6Class(
         n_out = n_out,
         parameters = parameters,
         covariates = covariates,
-        error = error
+        err = err
       )
       #make everything lower case if a character vector
       self$model_list <- purrr::map(model_list, \(x) {
@@ -263,7 +263,7 @@ PM_model <- R6::R6Class(
       }
       
       cli::cli_h3(text = "Equations")
-      eqs <- func_to_char(self$model_list$eqn) #function in PMutitlities
+      eqs <- func_to_char(self$arg_list$eqn) #function in PMutitlities
       for (i in eqs) {
         cli::cli_text("{.val {i}}")
       }
@@ -307,6 +307,118 @@ PM_model <- R6::R6Class(
       })
       file.remove(temp_model) # remove temporary model file
     },
+    #' @description
+    #' This is the main method to run a population analysis.
+    #' @details
+    #' As of Pmetrics 3.0.0, models contain compiled code to fit
+    #' the model equations to the data, optimizing the parameter
+    #' value probability distributions in the population to
+    #' maximize their likelihood, or more precisely, minimize
+    #' the objective function, which is -2*log-likelihood.
+    #'
+    #' The `$fit` method is the means of running that compiled
+    #' code to conduct to fitting procedure. At a minimum, it requires
+    #' a [PM_data] object, which can be created with
+    #' [PM_data$new()]. There are a number of additional arguments
+    #' to control the fitting procedure, such as the number of cycles
+    #' to run, the initial number of support points,
+    #' and the algorithm to use, among others.
+    #'
+    #' The `$fit` method is the descendant of the legacy
+    #' [NPrun()] function, which is maintained as a wrapper to `$fit`
+    #' for backwards compatibility.
+    #'
+    #' @param data Either the name of a  [PM_data]
+    #' object in memory or the quoted name of a Pmetrics
+    #' data file in the current working directory, which will crate a [PM_data]
+    #' object on the fly. However, if created on the fly, this object
+    #' will not be available to other
+    #' methods or other instances of [PM_fit].
+    #' @param run Specify the run number of the output folder.  Default if missing is the next available number.
+    #' @param include Vector of subject id values in the data file to include in the analysis.
+    #' The default (missing) is all.
+    #' @param exclude A vector of subject IDs to exclude in the analysis, e.g. `c(4,6:14,16:20)`
+    #    #' @param ode Ordinary Differential Equation solver log tolerance or stiffness.
+    #    Default is -4, i.e. 0.0001.  Higher values will result in faster
+    #    #' runs, but parameter estimates may not be as accurate.
+    #    #' @param tol Tolerance for convergence of NPAG.  Smaller numbers make it harder to converge.
+    #    #' Default value is 0.01.
+    #    #' @param salt Vector of salt fractions for each drug in the data file, default is 1 for each drug.  This is not the same as bioavailability.
+    #' @param cycles Number of cycles to run. Default is 100.
+    #' @param prior The distribution for the initial support points, which can be
+    #' one of several options.
+    #' * The default is "sobol", which is a semi-random distribution. This is the distribution
+    #' typically used when fitting a new model to the data. An example of this is
+    #' on our [website](https://www.lapk.org/images/sobol_3d_plot.html).
+    #'
+    #' The following all specify non-random, informative prior distributions. They
+    #' are useful for either continuing a previous
+    #' run which did not converge or for fitting a model to new data, whether to simply
+    #' calculate Bayesian posteriors with `cycles = 0` or to revise the model to a new
+    #' covergence with the new data.
+    #' * The name of a suitable [PM_result] object from a prior run loaded with [PM_load].
+    #' This starts from the non-uniform, informative distribution obtained at the end of a prior NPAG run.
+    #' Example: `run1 <- PM_load(1); fit1$run(prior = run1)`.
+    #'
+    #' * A character string with the filename of a csv file containing a prior distribution with
+    #' format as for 'theta.csv' in the output folder of a prior run: column headers are parameter
+    #' names, and rows are the support point values. A final column with probabilities
+    #' for each support point is not necessary, but if present will be ignored, as these
+    #' probabilities are calculated by the engine. Note that the parameter names must match the
+    #' names of the primary variables in the model. Example: `fit1$run(prior = "mytheta.csv")`.
+    #' * The number of a previous run with `theta.csv` in the output folder which will be read
+    #' as for the filename option above. Example: `fit1$run(prior = 2)`.
+    #' * A data frame obtained from reading an approriate file, such that the data frame
+    #' is in the required format described in the filename option above. Example:
+    #' `mytheta <- read_csv("mytheta.csv"); fit1$run(prior = mytheta)`.
+    #'
+    #' @param density0 The proportion of the volume of the model parameter
+    #' hyperspace used to calculate the initial number of support points if one of
+    #' the semi-random, uniform distributions are selected in the `prior` argument
+    #' above. The initial points are
+    #' spread through that hyperspace and begin the search for the optimal
+    #' parameter value distribution (support points) in the population.
+    #' The volume of the parameter space is the product of the ranges for all parameters.
+    #' For example if using two parameters `Ke` and `V`, with ranges of \[0, 5\] and \[10, 100\],
+    #' the volume is (5 - 0) x (100 - 10) = 450 The default value of `density0` is 0.01, so the initial
+    #' number of support points will be 0.01 x 450 = 4.5, increased to the nearest integer,
+    #' which is 5. The greater the initial number of points, the less chance of
+    #' missing the globally maximally likely parameter value distribution,
+    #' but the slower the run.
+    #' 
+    #' @param idelta How often to generate posterior predictions in units of time.
+    #' Default is 0.1, which means a prediction is generated every 0.1 hours (6 minutes) 
+    #' if the unit of time is hours. Predictions are made at this interval until the time
+    #' of the last event (dose or observation) or until `tad` if that value is greater 
+    #' than the time of the last dose or observation in the data.
+    #' 
+    #' @param tad Length of time after the last dose event to add additional predictions
+    #' at frequency `idelta`.  Default is 0, which means no additional predictions
+    #' beyond the last dose, assuming the dose is the last event. . If the
+    #' last observation in the data is after `tad`, then a prediction will be generated at
+    #' time = `tad` after the last dose
+    #'
+    #' @param seed Seed used if `prior = "sobol"`. Ignored otherwise.
+    #' @param intern Run NPAG in the R console without a batch script.  Default is TRUE.
+    #    #' @param quiet Boolean operator controlling whether a model summary report is given.  Default is `TRUE`.
+    #' @param overwrite Boolean operator to overwrite existing run result folders.  Default is `FALSE`.
+    #    #' @param nocheck Suppress the automatic checking of the data file with [PM_data].  Default is `FALSE`.
+    #    #' @param parallel Run NPAG in parallel.  Default is `NA`, which will be set to `TRUE` for models that use
+    #    #' differential equations, and `FALSE` for algebraic/explicit models.  The majority of the benefit for parallelization comes
+    #    #' in the first cycle, with a speed-up of approximately 80\% of the number of available cores on your machine, e.g. an 8-core machine
+    #    #' will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\%, e.g. 4-fold increase on an 8-core
+    #    #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
+    #' @param algorithm The algorithm to use for the run.  Default is "NPAG". Alternatives: "NPOD".
+    #' @param report If missing, the default Pmetrics report template as specified in [getPMoptions]
+    #' is used. Otherwise can be "plotly", "ggplot", or "none".
+    #' @param artifacts Default is `TRUE`.  Set to `FALSE` to suppress creating the `etc` folder. This folder
+    #' will contain all the compilation artifacts created during the compilation and run steps.
+    #'
+    #' @return A successful run will result in creation of a new folder in the working
+    #' directory with the results inside the folder.
+    #'
+    #' @author Michael Neely
+    #' @export
     fit = function(data = NULL,
                    run = NULL,
                    include = NULL,
@@ -314,6 +426,8 @@ PM_model <- R6::R6Class(
                    cycles = 100,
                    prior = "sobol",
                    density0 = 0.01,
+                   idelta = 0.1,
+                   tad = 0,
                    seed = 23,
                    overwrite = FALSE,
                    algorithm = "NPAG",
@@ -341,7 +455,7 @@ PM_model <- R6::R6Class(
       }
       
       #### checks
-      
+
       # covariates
       dataCov <- tolower(getCov(data)$covnames)
       modelCov <- tolower(self$model_list$covariates)
@@ -351,7 +465,7 @@ PM_model <- R6::R6Class(
       if (!all(is.na(dataCov)) &&
           !all(is.na(modelCov))) {
         # if there are covariates
-        if (!identical(dataCov, modelCov)) {
+        if (!identical(sort(dataCov), sort(modelCov))) {
           # if not identical, abort
           msg <- glue::glue(
             "Model covariates: {paste(modelCov, collapse = ', ')}; Data covariates: {paste(dataCov, collapse = ', ')}"
@@ -447,10 +561,8 @@ PM_model <- R6::R6Class(
       ranges <- lapply(self$model_list$pri, function(x) {
         c(x$min, x$max)
       })
-      names(ranges) <- tolower(names(ranges))
-      
+
       # Set initial grid points (only applies for sobol)
-      
       vol <- prod(sapply(ranges, function(x) {
         x[2] - x[1]
       }))
@@ -506,7 +618,8 @@ PM_model <- R6::R6Class(
                 }
                 y
               })),
-              # matrix numeqt x 6
+              idelta = idelta,
+              tad = tad,
               max_cycles = cycles,
               prior = prior,
               ind_points = points,
@@ -888,6 +1001,7 @@ PM_input <- R6::R6Class(
 #'
 #' Create an additive (lambda) error model
 #' @param add Initial value for lambda
+#' @param coeff Vector of coefficients defining assay error polynomial
 #' @param fixed Estimate if `FALSE` (default).
 #' @export
 additive <- function(add, coeff, fixed = FALSE) {
@@ -902,6 +1016,7 @@ additive <- function(add, coeff, fixed = FALSE) {
 #'
 #' Create an proportional (gamma) error model
 #' @param prop Initial value for gamma
+#' @param coeff Vector of coefficients defining assay error polynomial
 #' @param fixed Estimate if `FALSE` (default).
 #' @export
 proportional <- function(prop, coeff, fixed = FALSE) {
