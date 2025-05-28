@@ -1396,3 +1396,15 @@ cli_ask <- function(text, prompt = ">> ", ...) {
   ans <- readline(prompt = prompt)
   return(ans)
 }
+
+
+# Function to Character ---------------------------------------------------
+
+#' @title Convert a function to a character string
+#' 
+func_to_char <- function(fun){
+  deparse(fun) %>%
+    stringr::str_trim("left") %>%
+    purrr::discard(\(x) stringr::str_detect(x, "function|\\{|\\}"))
+}
+  
