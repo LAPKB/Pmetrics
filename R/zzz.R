@@ -1,23 +1,24 @@
 .onAttach <- function(...) {
-  # version and OS-specific startup messages
-  OS <- getOS()
-
   if (interactive()) {
     installedVersion <- packageVersion("Pmetrics")
-    file <- "http://www.lapk.org/PMmsg.txt"
-    msg <- c(
-      paste("\nWelcome to Pmetrics, version ", packageVersion("Pmetrics"), ".", sep = ""),
-      "\nUse PMmanual() or visit the LAPK website at http://www.lapk.org/pmetrics.php for help.",
-      "\n", crayon::green("Use PM_tutorial() for an introduction.")
+
+    cli::cli_h3("Welcome to Pmetrics {installedVersion}!")
+    cli::cli_text("For more information or to report issues, visit our GitHub page: https://github.com/LAPKB/Pmetrics")
+    cli::cli_text("For documentation, run PM_manual() in R")
+
+    # Check Rust installation
+    rustcVersion <- tryCatch(
+      system("rustc --version", intern = TRUE),
+      error = function(e) NA
     )
-    packageStartupMessage(msg)
+
+    if (is.na(rustcVersion) || length(rustcVersion) == 0) {
+      cli::cli_alert_danger("Rust compiler not found. Please install Rust from https://www.rust-lang.org/tools/install")
+    } else {
+      cli::cli_alert_info("Rust is installed: {rustcVersion}")
+    }
   }
 
-  # check for binary fortran files
-  if (!binaries.installed()) {
-    packageStartupMessage(paste0("\n", crayon::red("CRITICAL: "), "Execute PM_build() in R to complete Pmetrics installation.\n"))
-  }
-
-  # set user options for the session
+  # Set user options for the session
   setPMoptions()
 }
