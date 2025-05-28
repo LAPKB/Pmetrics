@@ -264,14 +264,14 @@ PM_model <- R6::R6Class(
       
       cli::cli_h3(text = "Equations")
       eqs <- deparse(self$arg_list$eqn) %>%
-        purrr::discard(\(x) str_detect(x, "function|\\{|\\}"))
+        purrr::discard(\(x)stringr::str_detect(x, "function|\\{|\\}"))
       for (i in eqs) {
         cli::cli_text("{.val {i}}")
       }
       
       cli::cli_h3(text = "Outputs")
       outs <- deparse(self$arg_list$out) %>%
-        purrr::discard(\(x) str_detect(x, "function|\\{|\\}"))
+        purrr::discard(\(x)stringr::str_detect(x, "function|\\{|\\}"))
       for (i in outs) {
         cli::cli_text("{.val {i}}")
       }
