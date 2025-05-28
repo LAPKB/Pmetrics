@@ -1398,7 +1398,7 @@ cli_ask <- function(text, prompt = ">> ", ...) {
 }
 
 
-# Function to Character ---------------------------------------------------
+# Function to Character and Inverse ---------------------------------------------------
 
 #' @title Convert a function to a character string
 #' 
@@ -1406,5 +1406,13 @@ func_to_char <- function(fun){
   deparse(fun) %>%
     stringr::str_trim("left") %>%
     purrr::discard(\(x) stringr::str_detect(x, "function|\\{|\\}"))
+}
+
+char_to_func <- function(char_vec) {
+  # Construct full function definition as a string
+  func_string <- c("function() {", char_vec, "}")
+  
+  # Parse and evaluate to get the function object
+  eval(parse(text = paste(func_string, collapse = "\n")))
 }
   
