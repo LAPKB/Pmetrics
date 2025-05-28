@@ -263,8 +263,7 @@ PM_model <- R6::R6Class(
       }
       
       cli::cli_h3(text = "Equations")
-      eqs <- deparse(self$arg_list$eqn) %>%
-        purrr::discard(\(x)stringr::str_detect(x, "function|\\{|\\}"))
+      eqs <- func_to_char(self$model_list$eqn) #function in PMutitlities
       for (i in eqs) {
         cli::cli_text("{.val {i}}")
       }
@@ -1132,8 +1131,7 @@ plot.PM_model <- function(x,
   # filter any equations that are not diffeq and make everything capital
   #this_model <- model$model_list$eqn %>%
   
-  this_model <- deparse(model$arg_list[[4]]) %>%
-    purrr::discard(\(x) stringr::str_detect(x, "function|\\{|\\}")) %>%
+  this_model <- func_to_char(model$model_list$eqn) %>%
     map(
       purrr::keep,
       stringr::str_detect,
