@@ -1102,33 +1102,6 @@ obsStatus <- function(data) {
   return(status)
 }
 
-binaries.installed <- function() {
-  # checkRequiredPackages("purrr")
-
-  # #library(purrr)
-  # exists <- function(name) {
-  #   paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/") %>%
-  #   paste(name, sep = "/") %>%
-  #   file.exists()
-  # }
-  # c("DOprep.exe", "mb2csv.exe", "pNPeng.o",
-  #   "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
-  #   "sNPeng.o", "sNPprep.o", "sSIMeng.o") %>%
-  # map(exists) %>% unlist() %>% all() %>% return()
-
-  exists <- function(name) {
-    file.exists(paste0(system.file("", package = "Pmetrics"), "compiledFortran/", name))
-  }
-  installed <- TRUE
-  for (binary in c(
-    "DOprep.exe", "mb2csv.exe", "pNPeng.o",
-    "sDOeng.o", "sITeng.o", "sITerr.o", "sITprep.o",
-    "sNPeng.o", "sNPprep.o", "sSIMeng.o"
-  )) {
-    installed <- installed && exists(binary)
-  }
-  return(installed)
-}
 
 # import recycled text into documentation
 template <- function(name) {
