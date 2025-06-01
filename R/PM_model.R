@@ -597,21 +597,21 @@ PM_model <- R6::R6Class(
       if (intern) {
         ### CALL RUST
         out_path <- file.path(getwd(), "outputs")
-        
+
         rlang::try_fetch(
           fit_model(
             # defined in extendr-wrappers.R
-            self$binary_path,
-            "gendata.csv",
-            list(
+            model_path = self$binary_path,
+            data = "gendata.csv",
+            params = list(
               ranges = ranges,
               algorithm = algorithm,
               gamlam = c(
-                self$model_list$error[[1]]$additive,
-                self$model_list$error[[1]]$proportional
+                self$model_list$err[[1]]$additive,
+                self$model_list$err[[1]]$proportional
               ),
-              error_type = self$model_list$error[[1]]$mode,
-              error_coefficients = t(sapply(self$model_list$error, function(x) {
+              error_type = self$model_list$err[[1]]$mode,
+              error_coefficients = t(sapply(self$model_list$err, function(x) {
                 y <- x$coefficients
                 if (length(y) < 6) {
                   y <- c(y, 0, 0)
@@ -625,7 +625,7 @@ PM_model <- R6::R6Class(
               ind_points = points,
               seed = seed
             ),
-            out_path
+            output_path = out_path
           ),
           error = function(e) {
             cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
