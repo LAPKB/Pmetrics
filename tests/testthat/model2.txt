@@ -1,0 +1,27 @@
+#Primary
+Ka, 0.1, 0.9
+Ke, 0.001, 0.1
+V0, 30, 120
+Tlag1, 0, 4
+
+#Cov
+WT
+AFRICA
+AGE
+GENDER
+HEIGHT
+
+#Sec
+V=V0*(WT/55)
+C 55 is the mean weight in the population
+
+#Lag 
+TLAG(1) = Tlag1
+
+
+#Out
+Y(1) = X(2)/V
+
+#Err
+G=5
+0.02, 0.05, -0.0002, 0
