@@ -95,7 +95,7 @@ PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
     backend = "rust",
     algorithm = "NPAG",
     numeqt = 1,
-    converge = cycle$converged,
+    converge = cycle$data$converged,
     config = rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines("settings.json", warn = FALSE))),
       error = function(e) {
         cli::cli_warn(c("!" = "Unable to read {.file settings.json}"))

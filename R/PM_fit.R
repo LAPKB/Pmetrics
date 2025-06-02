@@ -60,7 +60,7 @@ PM_fit <- R6::R6Class(
       
       # covariates
       dataCov <- tolower(getCov(data)$covnames)
-      modelCov <- tolower(sapply(model$model_list$cov, function(x) x$covariate))
+      modelCov <- tolower(model$model_list$covariates)
       if (length(modelCov) == 0) {
         modelCov <- NA
       }
