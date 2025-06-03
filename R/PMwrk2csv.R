@@ -174,6 +174,6 @@ PMwrk2csv <- function(prefix, ext = NULL, nsub) {
   }
   new_data <- PM_data$new(new)
   # write the new file
-  new_data$write(file_name = paste(prefix, ".csv", sep = ""), override = TRUE)
+  new_data$save(file_name = paste(prefix, ".csv", sep = ""), override = TRUE)
   return(new_data)
 }

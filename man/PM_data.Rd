@@ -64,7 +64,7 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-PM_data-new}{\code{PM_data$new()}}
-\item \href{#method-PM_data-write}{\code{PM_data$write()}}
+\item \href{#method-PM_data-write}{\code{PM_data$save()}}
 \item \href{#method-PM_data-auc}{\code{PM_data$auc()}}
 \item \href{#method-PM_data-nca}{\code{PM_data$nca()}}
 \item \href{#method-PM_data-plot}{\code{PM_data$plot()}}
@@ -126,7 +126,7 @@ automatically to a fully specified, valid data object.
 \subsection{Method \code{write()}}{
 Write data to file
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_data$write(file_name, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$save(file_name, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

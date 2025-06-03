@@ -706,12 +706,13 @@ PM_sim <- R6::R6Class(
       ###### MODEL
 
       # get information from model
+      arg_list <- model$arg_list
       mod_list <- model$model_list
-      mod_npar <- sum(map(mod_list$pri, \(x) x$mode == "ab") %>% unlist()) # number of random parameters
-      mod_nfix <- sum(map(mod_list$pri, \(x) x$mode == "constant") %>% unlist()) # number of constant parameters
-      mod_nranfix <- sum(map(mod_list$pri, \(x) x$mode == "fixed") %>% unlist()) # number of random but fixed parameters
-      mod_numeqt <- length(mod_list$out)
-      mod_asserr <- map(mod_list$out, \(x) x$err$assay$coefficients)
+      mod_npar <- length(mod_list$parameters) # number of random parameters
+      # mod_nfix <- sum(map(mod_list$pri, \(x) x$mode == "constant") %>% unlist()) # number of constant parameters
+      # mod_nranfix <- sum(map(mod_list$pri, \(x) x$mode == "fixed") %>% unlist()) # number of random but fixed parameters
+      mod_numeqt <- mod_list$n_out
+      mod_asserr <- map(mod_list$err, \(x) x$coeff)
 
 
       ###### DATA
@@ -733,11 +734,11 @@ PM_sim <- R6::R6Class(
         cli::cli_abort(c("x" = "No subjects to simulate."))
       }
 
-      if (template_numeqt != length(mod_list$out)) {
+      if (template_numeqt != mod_numeqt) {
         cli::cli_abort(c("x" = "Number of output equations in model and data do not match."))
       }
 
-      if (!identical(tolower(template_covnames), map_chr(mod_list$cov, \(x) tolower(x$covariate)))) {
+      if (!identical(sort(template_covnames), sort(mod_list$cov))) {
         cli::cli_abort(c("x" = "Covariate names in model and data do not match."))
       }
 
@@ -941,19 +942,21 @@ PM_sim <- R6::R6Class(
         # add simulated covariates to primary block of model object
         new_pri <- map(1:nsimcov, \(x) ab(covLimits[x, 1], covLimits[x, 2]))
         names(new_pri) <- covs2sim
-        mod_list$pri <- c(mod_list$pri, new_pri)
+        arg_list$pri <- c(arg_list$pri, new_pri)
 
         # remove them from the covariate block of model object
-        model_covs <- tolower(purrr::map_chr(mod_list$cov, \(x) x$covariate))
+
+        model_covs <- mod_list$covariates
         covs_to_remove <- which(model_covs %in% covs2sim)
-        mod_list$cov <- mod_list$cov[-covs_to_remove]
+        arg_list$cov <- arg_list$cov[-covs_to_remove]
 
         # also remove them from data template
         template <- template[, -which(names(template) %in% covs2sim)]
 
 
         # remake both objects
-        mod_list <- PM_model$new(mod_list)$model_list
+
+        arg_list <- PM_model$new(arg_list)$arg_list
         template <- PM_data$new(template, quiet = TRUE)$standard_data
 
         # remake poppar
@@ -1017,8 +1020,9 @@ PM_sim <- R6::R6Class(
 
       # CALL SIMULATOR ----------------------------------------------------------------
 
+
       template <- PM_data$new(template, quiet = TRUE)
-      mod <- PM_model$new(mod_list, quiet = TRUE)
+      mod <- PM_model$new(arg_list, quiet = TRUE)
 
       if (length(postToUse) > 0) {
         # simulating from posteriors, each posterior matched to a subject
@@ -1040,7 +1044,7 @@ PM_sim <- R6::R6Class(
           )
           # get the template for this subject
           sub_template <- PM_data$new(template$standard_data %>% filter(id == toInclude[i]), quiet = TRUE)
-
+          
           # add the simulated values to the list
           data_list <- append(data_list, list(private$getSim(thisPrior, sub_template, mod, noise2)))
           ans <- thisPrior$ans
@@ -1117,9 +1121,14 @@ PM_sim <- R6::R6Class(
         for (i in unique(template$standard_data$id)) {
           this_template <- template$standard_data %>% filter(id == i)
           for (j in 1:nsim) {
-            this_sim <- obs %>% filter(id == i, nsim == j)
+            this_sim <- self$obs %>% filter(id == i, nsim == j)
             this_template$out[this_template$evid == 0] <- this_sim$out
             this_template$id <- paste(i, j, sep = "_")
+            if(simWithCov){ #add back simulated covariate values
+              
+              this_template <- this_template %>%
+                mutate(!!!set_names(self$parValues %>% select(!!covs2sim) %>% slice(j), covs2sim))
+            }
             csv <- append(csv, list(this_template))
           }
         }
@@ -1129,7 +1138,7 @@ PM_sim <- R6::R6Class(
         if (!stringr::str_detect(makecsv, "\\..{3}$")) {
           makecsv <- paste0(makecsv, ".csv")
         }
-        csv$write(makecsv)
+        csv$save(makecsv)
 
         cli::cli_inform("The file {.file {makecsv}} was saved in {getwd()}.")
       }
@@ -1319,7 +1328,7 @@ PM_sim <- R6::R6Class(
         select(-prob) %>%
         as.matrix()
       mod$compile() # check if compiled and if not, do so
-      sim_res <- mod$simulate_all(template, thetas)
+      sim_res <- mod$sim(template, thetas)
       sim_res$.id <- template$standard_data$id[match(sim_res$id, template$standard_data$id)]
       sim_res <- sim_res %>%
         rename(comp = state_index, nsim = spp_index, amt = state) %>%

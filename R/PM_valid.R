@@ -408,8 +408,8 @@ PM_valid <- R6::R6Class(
       # datafileName <- "gendata.csv"
       # modelfile <- "genmodel.txt"
       #
-      # result$data$write(datafileName)
-      # result$model$write(modelfile)
+      # result$data$save(datafileName)
+      # result$model$save(modelfile)
 
       # simulate PRED_bin from pop icen parameter values and median of each bin for each subject
       # first, calculate median of each bin
@@ -536,7 +536,7 @@ PM_valid <- R6::R6Class(
       # Now, simulate using full pop model
       # write the adjusted mdata file first
       fullData <- PM_data$new(mdata, quiet = TRUE)
-      # fullData$write(datafileName)
+      # fullData$save(datafileName)
 
       set.seed(seed.start)
       argsSIM2 <- c(

@@ -84,7 +84,7 @@ test_that("Object representation", {
       )
     )
   ))
-  mod1$write("mod1.txt")
+  mod1$save("mod1.txt")
   expect_equal(readLines("mod1.txt"), readLines("generated_model.txt"))
 })
 
