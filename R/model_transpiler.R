@@ -114,7 +114,8 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
 # Helpers: convert list of statements to Rust and indent blocks
 stmts_to_rust <- function(exprs, params = NULL, covs = NULL) {
   lines <- vapply(exprs, expr_to_rust, character(1), params = params, covs = covs)
-  paste(lines, collapse = "\n")
+  tolower(paste(lines, collapse = "\n")) # rust is case sensitive, make everything lowercase
+
 }
 
 indent <- function(text, spaces = 4) {
@@ -123,49 +124,63 @@ indent <- function(text, spaces = 4) {
 }
 
 # Transpile an R ODE function to Rust closure
-transpile_ode <- function(fun, params, covs) {
+transpile_ode_eqn <- function(fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
-    "|x, p, t, dx, rateiv, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s);",
-    paste(covs, collapse = ", "), paste(params, collapse = ", ")
+    "|x, p, t, dx, rateiv, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s", 
+    paste(covs, collapse = ", "), 
+    paste(params, collapse = ", "),
+    paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs)
   sprintf("%s\n%s\n}", header, indent(body_rust, spaces = 4))
 }
 
-transpile_sec <- function(fun, params, covs) {
+transpile_analytic_eqn <- function(fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
-    "|p, t, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s);",
-    paste(covs, collapse = ", "), paste(params, collapse = ", ")
+    "|p, t, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
+    paste(covs, collapse = ", "), 
+    paste(params, collapse = ", "),
+    paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs)
   sprintf("%s\n%s\n}", header, indent(body_rust, spaces = 4))
 }
 
-transpile_fa <- function(fun, params, covs) {
+transpile_sec <- function(fun) {
+  exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
+  body_rust <- stmts_to_rust(exprs)
+  sprintf("%s\n", indent(body_rust, spaces = 4))
+}
+
+transpile_fa <- function(fun, params, covs, sec) {
   "|_p| fa! {}"
 }
 
-transpile_lag <- function(fun, params, covs) {
+transpile_lag <- function(fun, params, covs, sec) {
   "|_p| lag! {}"
 }
 
-transpile_ini <- function(fun, params, covs) {
+transpile_ini <- function(fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
-    "|p, t, cov, _x| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s);",
-    paste(covs, collapse = ", "), paste(params, collapse = ", ")
+    "|p, t, cov, _x| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
+    paste(covs, collapse = ", "), 
+    paste(params, collapse = ", "),
+    paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs)
   sprintf("%s\n%s\n}", header, indent(body_rust, spaces = 4))
 }
 
-transpile_out <- function(fun, params, covs) {
+transpile_out <- function(fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
-    "|x, p, t, cov, y| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s);",
-    paste(covs, collapse = ", "), paste(params, collapse = ", ")
+    "|x, p, t, cov, y| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
+    paste(covs, collapse = ", "), 
+    paste(params, collapse = ", "),
+    paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs)
   sprintf("%s\n%s\n}", header, indent(body_rust, spaces = 4))
@@ -191,79 +206,79 @@ empty_out <- function() {
 # ------------------ Error Transpilation Support ------------------
 # Validate and transpile an R 'error' function into a real R list of evaluated calls
 
-collect_error_entries <- function(fun) {
-  body_expr <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
-    as.list(body(fun)[-1])
-  } else {
-    list(body(fun))
-  }
-
-  entries <- list()
-  expected_idx <- 1L
-
-  for (expr in body_expr) {
-    if (!is.call(expr) || !(as.character(expr[[1]]) %in% c("<-", "="))) {
-      cli::cli_abort(c(
-        "x" = "Invalid syntax in {.fn err}",
-        "i" = "Only assingments allowed, but found {.code {deparse(expr)}}"))
-    }
-    lhs <- expr[[2]]
-    rhs <- expr[[3]]
-
-    if (!is.call(lhs) || as.character(lhs[[1]]) != "[" || as.character(lhs[[2]]) != "e") {
-      cli::cli_abort(c(
-        "x" = "Invalid LHS in {.fn err}",
-        "i" = "Expected {.code e[index]}, got {.code {deparse(lhs)}}"))
-    }
-    idx_raw <- lhs[[3]]
-    if (!is.numeric(idx_raw) || length(idx_raw) != 1) {
-      cli::cli_abort(c(
-        "x" = "Invalid index in {.fn err}",
-        "i" = "Must be a single numeric literal, got  {.code {deparse(idx_raw)}}"))
-    }
-    idx <- as.integer(idx_raw)
-    if (idx != expected_idx) {
-      cli::cli_abort(c(
-        "x" = "Error indices must start at 1 and increment by 1.",
-        "i" = "Expected index {.val {expected_idx}}, got  {.val {idx}}"))
-      
-    }
-    expected_idx <- expected_idx + 1L
-
-    if (!is.call(rhs) || !(as.character(rhs[[1]]) %in% c("proportional", "additive"))) {
-      cli::cli_abort(c(
-        "x" = "Invalid RHS in {.fn err}",
-        "i" = "Only {.fn proportional} or {.fn additive} calls allowed, but found {.code {deparse(rhs)}}"))
-    }
-
-    n_args <- length(rhs) - 1
-    if (!(n_args %in% c(2, 3))) {
-      cli::cli_abort(c(
-        "x" = "Invalid syntax in {.fn err}",
-        "i" = "{.code {as.character(rhs[[1]])}} must have 2 or 3 arguments, but got {.code {n_args}}"))
-    }
-
-    if (n_args == 2) {
-      rhs <- as.call(c(as.list(rhs), list(fixed = FALSE)))
-    }
-
-    entries[[as.character(idx)]] <- rhs
-  }
-  entries
-}
-
-# Transpile an R error function
-transpile_error <- function(fun) {
-  entries <- collect_error_entries(fun)
-  result <- list()
-  for (i in 1:length(entries)) {
-    # evaluate each proportional/additive call
-    result[[i]] <- eval(entries[[i]])
-  }
-  # ensure names are correct ("1","2",...)
-  names(result) <- 1:length(result)
-  result
-}
+# collect_error_entries <- function(fun) {
+#   body_expr <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
+#     as.list(body(fun)[-1])
+#   } else {
+#     list(body(fun))
+#   }
+# 
+#   entries <- list()
+#   expected_idx <- 1L
+# 
+#   for (expr in body_expr) {
+#     if (!is.call(expr) || !(as.character(expr[[1]]) %in% c("<-", "="))) {
+#       cli::cli_abort(c(
+#         "x" = "Invalid syntax in {.fn err}",
+#         "i" = "Only assingments allowed, but found {.code {deparse(expr)}}"))
+#     }
+#     lhs <- expr[[2]]
+#     rhs <- expr[[3]]
+# 
+#     if (!is.call(lhs) || as.character(lhs[[1]]) != "[" || as.character(lhs[[2]]) != "e") {
+#       cli::cli_abort(c(
+#         "x" = "Invalid LHS in {.fn err}",
+#         "i" = "Expected {.code e[index]}, got {.code {deparse(lhs)}}"))
+#     }
+#     idx_raw <- lhs[[3]]
+#     if (!is.numeric(idx_raw) || length(idx_raw) != 1) {
+#       cli::cli_abort(c(
+#         "x" = "Invalid index in {.fn err}",
+#         "i" = "Must be a single numeric literal, got  {.code {deparse(idx_raw)}}"))
+#     }
+#     idx <- as.integer(idx_raw)
+#     if (idx != expected_idx) {
+#       cli::cli_abort(c(
+#         "x" = "Error indices must start at 1 and increment by 1.",
+#         "i" = "Expected index {.val {expected_idx}}, got  {.val {idx}}"))
+#       
+#     }
+#     expected_idx <- expected_idx + 1L
+# 
+#     if (!is.call(rhs) || !(as.character(rhs[[1]]) %in% c("proportional", "additive"))) {
+#       cli::cli_abort(c(
+#         "x" = "Invalid RHS in {.fn err}",
+#         "i" = "Only {.fn proportional} or {.fn additive} calls allowed, but found {.code {deparse(rhs)}}"))
+#     }
+# 
+#     n_args <- length(rhs) - 1
+#     if (!(n_args %in% c(2, 3))) {
+#       cli::cli_abort(c(
+#         "x" = "Invalid syntax in {.fn err}",
+#         "i" = "{.code {as.character(rhs[[1]])}} must have 2 or 3 arguments, but got {.code {n_args}}"))
+#     }
+# 
+#     if (n_args == 2) {
+#       rhs <- as.call(c(as.list(rhs), list(fixed = FALSE)))
+#     }
+# 
+#     entries[[as.character(idx)]] <- rhs
+#   }
+#   entries
+# }
+# 
+# # Transpile an R error function
+# transpile_error <- function(fun) {
+#   entries <- collect_error_entries(fun)
+#   result <- list()
+#   for (i in 1:length(entries)) {
+#     # evaluate each proportional/additive call
+#     result[[i]] <- eval(entries[[i]])
+#   }
+#   # ensure names are correct ("1","2",...)
+#   names(result) <- 1:length(result)
+#   result
+# }
 
 get_assignments <- function(fn, assign) {
   count_dx_assignments <- function(expr) {
