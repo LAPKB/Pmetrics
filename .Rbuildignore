@@ -20,4 +20,5 @@ logo.png
 ^vignettes/articles$
 ^Archived/
 ^src/\.cargo$
-*_test.R
+^.*_test\.R$
+^.*_old.R$

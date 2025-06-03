@@ -133,7 +133,7 @@ PM_fit <- R6::R6Class(
       if (inherits(self$model, "PM_model_list")) {
         cat(sprintf("Checking...\n"))
         file_name <- random_name()
-        self$model$write(file_name)
+        self$model$save(file_name)
         Pmetrics::PMcheck(self$data$standard_data, file_name)
         system(sprintf("rm %s", file_name))
       }
