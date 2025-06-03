@@ -82,7 +82,7 @@ PM_fit <- R6::R6Class(
         dataOut <- 1
       }
       
-      modelOut <- length(model$model_list$out)
+      modelOut <- model$model_list$n_out
       if (dataOut != modelOut) {
         cli::cli_abort(c(
           "x" = "Error: Number of output equations in data and model do not match.",

@@ -60,22 +60,23 @@ PM_model <- R6::R6Class(
     initialize = function(x = NULL,
                           pri = NULL,
                           cov = NULL,
-                          eqn = NULL,
-                          #sec = NULL,
+                          sec = NULL,
                           tem = NULL,
+                          eqn = NULL,
                           lag = NULL,
                           fa = NULL,
                           ini = NULL,
                           out = NULL,
-                          err = NULL) {
+                          err = NULL,
+                          ...) {
       # Store the original function arguments
       self$arg_list <- list(
         x = x,
         pri = pri,
         cov = cov,
-        eqn = eqn,
-        #sec = sec,
+        sec = sec,
         tem = tem,
+        eqn = eqn,
         lag = lag,
         fa = fa,
         ini = ini,
@@ -84,7 +85,7 @@ PM_model <- R6::R6Class(
       )
       
       if(!is.null(x)){
-        model_sections <- c("pri", "cov", "tem", "eqn", "lag", "fa", "ini", "out", "err")
+        model_sections <- c("pri", "cov", "sec", "tem", "eqn", "lag", "fa", "ini", "out", "err")
         if (is.character(x) && length(x) == 1) {
           if (!file.exists(x)) {
             cli::cli_abort(c("x" = "File {.file {x}} does not exist.",
@@ -135,7 +136,8 @@ PM_model <- R6::R6Class(
       # Either an ODE-based model or an analytical model must be provided
       if (is.null(self$arg_list$eqn) && is.null(self$arg_list$tem) ){
         #is.null(self$arg_list$sec) && ) {
-        cli::cli_abort(c("x" = "No equations provided.", "i" = "Please provide either eqn or sec/tem."))
+        cli::cli_abort(c("x" = "No equations provided.", 
+                         "i" = "Please provide either differential equations using {.code eqn} or a analytic template using {.code tem}."))
       }
       
       # if (!is.null(self$arg_list$tem)) {
@@ -153,73 +155,76 @@ PM_model <- R6::R6Class(
       # Auxiliary variable to identify the type of execution
       type <- NULL
       
-      if (!is.null(self$arg_list$eqn) & 
-          (is.null(self$arg_list$tem) | self$arg_list$tem == "ode")
-      ) {
-        type <- "ode"
-      } else {
+      if (!is.null(self$arg_list$tem)) {
         type <- "analytical"
+      } else {
+        type <- "ode"
       }
       
       ## Get the names of the parameters
       parameters <- tolower(names(self$arg_list$pri))
-      covariates <- tolower(self$arg_list$cov)
-      # eqn
-      if (type == "ode") {
-        eqn <- transpile_ode(self$arg_list$eqn, parameters, covariates)
-      } else if (type == "analytical") {
-        eqn <- NULL
+      covariates <- tolower(names(self$arg_list$cov))
+      
+      # sec
+      if (!is.null(self$arg_list$sec)){
+        sec <- transpile_sec(self$arg_list$sec)
+      } else {
+        sec <- ""
       }
       
-      # if (type == "analytical") {
-      #   if (!is.null(self$arg_list$sec)) {
-      #     sec <- transpile_sec(self$arg_list$sec, parameters, covariates)
-      #   } else {
-      #     sec <- empty_sec()
-      #   }
-      # } else if (type == "ode") {
-      #   sec <- NULL
-      #   tem <- NULL
-      # }
-      
-      
+      # eqn
+      if (type == "ode") {
+        eqn <- transpile_ode_eqn(self$arg_list$eqn, parameters, covariates, sec)
+      } else if (type == "analytical") {
+        eqn <- NULL
+        #eqn <- transpile_analytic_eqn(self$arg_list$eqn, parameters, covariates, sec)
+      }
+
       
       if (!is.null(self$arg_list$fa)) {
-        fa <- transpile_fa(self$arg_list$fa, parameters, covariates)
+        fa <- transpile_fa(self$arg_list$fa, parameters, covariates, sec)
       } else {
         fa <- empty_fa()
       }
       
       if (!is.null(self$arg_list$lag)) {
-        lag <- transpile_lag(self$arg_list$lag, parameters, covariates)
+        lag <- transpile_lag(self$arg_list$lag, parameters, covariates, sec)
       } else {
         lag <- empty_lag()
       }
       
       if (!is.null(self$arg_list$ini)) {
-        ini <- transpile_ini(self$arg_list$ini, parameters, covariates)
+        ini <- transpile_ini(self$arg_list$ini, parameters, covariates, sec)
       } else {
         ini <- empty_ini()
       }
       
       if (!is.null(self$arg_list$out)) {
-        out <- transpile_out(self$arg_list$out, parameters, covariates)
+        out <- transpile_out(self$arg_list$out, parameters, covariates, sec)
       } else {
         out <- empty_out()
       }
       
-      if (!is.null(self$arg_list$err)) {
-        if (length(self$arg_list$err) != n_out) {
-          cli::cli_abort(
-            c("x" = "Error model must have the same number of equations as output equations.", "i" = "Please check the error model.")
-          )
-        }
-        err <- transpile_error(self$arg_list$err)
-      } else {
-        cli::cli_abort("x" = "Error model is missing.", "i" = "Please provide an error model.")
+      ### err
+      if(is.null(self$arg_list$err)) {
+        cli::cli_abort(
+          c("x" = "Error model is missing and required.", 
+            "i" = "Please see help for {.help PM_model()}.")
+        )
       }
       
+ 
       
+      #ensure length err matches length outeqs
+      if (length(self$arg_list$err) != n_out) {
+        cli::cli_abort(
+          c("x" = "There must be one error model for each output equation.", 
+            "i" = "Please check the error model.")
+        )
+      }
+      #err <- transpile_error(self$arg_list$err)
+      err <- self$arg_list$err
+
       
       model_list <- list(
         eqn = eqn,
@@ -246,7 +251,6 @@ PM_model <- R6::R6Class(
       })
       
       self$type <- "closure"
-      
       self$compile()
     },
     write_model_file = function(file_path = "main.rs") {
@@ -338,29 +342,79 @@ PM_model <- R6::R6Class(
       self$type <- "file"
     },
     print = function(...) {
+      
+      cli::cli_div(theme = list(
+        span.eqs = list(color = "blue")
+      ))
+      
       cli::cli_h1("Model summary")
       
       pars = self$model_list$parameters
-      cli::cli_text("Model has {length(pars)} primary parameters: {.val {pars}} ")
+      cli::cli_text("Model has {length(pars)} primary parameters: {.eqs {pars}} ")
       
       
-      if (!is.null(self$arg_list$cov)) {
+      if (!is.null(self$model_list$covariates)) {
         cli::cli_h3(text = "Covariates")
-        cli::cli_text("{.val {self$arg_list$cov}}")
+        
+        cov_list <- paste0(self$model_list$covariates, 
+                           ifelse(self$arg_list$cov==1, "", "(no interpolation)"))
+       
+        cli::cli_text("{.eqs {cov_list}}")
+      }
+      
+      if(!is.null(self$arg_list$sec)){
+        cli::cli_h3(text = "Secondary (Global) Equations")
+        eqs <- func_to_char(self$arg_list$sec) #function in PMutitlities
+        for (i in eqs) {
+          cli::cli_text("{.eqs {i}}")
+        }
       }
       
       cli::cli_h3(text = "Equations")
       eqs <- func_to_char(self$arg_list$eqn) #function in PMutitlities
       for (i in eqs) {
-        cli::cli_text("{.val {i}}")
+        cli::cli_text("{.eqs {i}}")
+      }
+      
+      if(!is.null(self$arg_list$lag)){
+        cli::cli_h3(text = "Lag Time")
+        eqs <- func_to_char(self$arg_list$lag) #function in PMutitlities
+        for (i in eqs) {
+          cli::cli_text("{.eqs {i}}")
+        }
+      }
+      
+      if(!is.null(self$arg_list$fa)){
+        cli::cli_h3(text = "Bioavailability (Fraction Absorbed)")
+        eqs <- func_to_char(self$arg_list$fa) #function in PMutitlities
+        for (i in eqs) {
+          cli::cli_text("{.eqs {i}}")
+        }
+      }
+      
+      if(!is.null(self$arg_list$ini)){
+        cli::cli_h3(text = "Initial Conditions")
+        eqs <- func_to_char(self$arg_list$ini) #function in PMutitlities
+        for (i in eqs) {
+          cli::cli_text("{.eqs {i}}")
+        }
       }
       
       cli::cli_h3(text = "Outputs")
-      outs <- deparse(self$arg_list$out) %>%
-        purrr::discard(\(x)stringr::str_detect(x, "function|\\{|\\}"))
+      outs <- func_to_char(self$arg_list$out) 
       for (i in outs) {
-        cli::cli_text("{.val {i}}")
+        cli::cli_text("{.eqs {i}}")
       }
+      
+      cli::cli_h3(text = "Error Model")
+      for (i in self$model_list$err) {
+        if (i$fixed) {
+          cli::cli_text("{.strong {tools::toTitleCase(i$type)}}, with fixed value of {.val {i$initial}} and coefficients {.val {i$coeff}}.")
+        } else {
+          cli::cli_text("{.strong {tools::toTitleCase(i$type)}}, with initial value of {.val {i$initial}} and coefficients {.val {i$coeff}}.")
+        }
+      }
+      cli::cli_end()
       
       invisible(self)
     },
@@ -568,11 +622,11 @@ PM_model <- R6::R6Class(
       } else {
         dataOut <- 1
       }
-      
+
       modelOut <- self$model_list$n_out
       if (dataOut != modelOut) {
         cli::cli_abort(
-          c("x" = "Error: Number of output equations in data and model do not match.", "i" = "Check the number of output equations in the data and model.")
+          c("x" = "Number of output equations in data and model do not match.", "i" = "Check the number of output equations in the data and model.")
         )
       }
       
@@ -646,10 +700,11 @@ PM_model <- R6::R6Class(
       save(this_fit, file = "fit.Rdata")
       
       # Get ranges and calculate points
-      
       ranges <- lapply(self$model_list$pri, function(x) {
         c(x$min, x$max)
       })
+      
+      names(ranges) <- tolower(names(ranges))
       
       # Set initial grid points (only applies for sobol)
       vol <- prod(sapply(ranges, function(x) {
@@ -685,8 +740,8 @@ PM_model <- R6::R6Class(
       
       if (intern) {
         ### CALL RUST
-        out_path <- file.path(getwd(), "outputs")
         
+        out_path <- file.path(getwd(), "outputs")
         rlang::try_fetch(
           fit_model(
             # defined in extendr-wrappers.R
@@ -695,13 +750,10 @@ PM_model <- R6::R6Class(
             params = list(
               ranges = ranges,
               algorithm = algorithm,
-              gamlam = c(
-                self$model_list$err[[1]]$additive,
-                self$model_list$err[[1]]$proportional
-              ),
-              error_type = self$model_list$err[[1]]$mode,
-              error_coefficients = t(sapply(self$model_list$err, function(x) {
-                y <- x$coefficients
+              gamlam = self$model_list$err[[1]]$initial,
+              error_type = self$model_list$err[[1]]$type,
+              error_coefficients = c(sapply(self$model_list$err, function(x) {
+                y <- x$coeff
                 if (length(y) < 6) {
                   y <- c(y, 0, 0)
                 }
@@ -1106,12 +1158,12 @@ PM_input <- R6::R6Class(
 #' `r lifecycle::badge("stable")`
 #'
 #' Create an additive (lambda) error model
-#' @param add Initial value for lambda
+#' @param initial Initial value for lambda
 #' @param coeff Vector of coefficients defining assay error polynomial
 #' @param fixed Estimate if `FALSE` (default).
 #' @export
-additive <- function(add, coeff, fixed = FALSE) {
-  PM_input$new(add, coeff, "additive", fixed)
+additive <- function(initial, coeff, fixed = FALSE) {
+  PM_err$new(type = "additive", initial = initial, coeff = coeff, fixed = fixed)
 }
 
 
@@ -1121,13 +1173,40 @@ additive <- function(add, coeff, fixed = FALSE) {
 #' `r lifecycle::badge("stable")`
 #'
 #' Create an proportional (gamma) error model
-#' @param prop Initial value for gamma
+#' @param initial Initial value for gamma
 #' @param coeff Vector of coefficients defining assay error polynomial
 #' @param fixed Estimate if `FALSE` (default).
 #' @export
-proportional <- function(prop, coeff, fixed = FALSE) {
-  PM_input$new(prop, coeff, "proportional", fixed)
+proportional <- function(initial, coeff, fixed = FALSE) {
+  PM_err$new(type = "proportional", initial = initial, coeff = coeff, fixed = fixed)
 }
+
+PM_err <- R6::R6Class(
+  "PM_err",
+  public = list(
+    #' @field type Type of error model, either "additive" or "proportional".
+    type = NULL,
+    #' @field initial Initial value for the error model.
+    initial = NULL,
+    #' @field coeff Coefficients for the assay error polynomial.
+    coeff = NULL,
+    #' @field fixed If `TRUE`, the error model is fixed and not estimated.
+    fixed = NULL,
+    initialize = function(type, initial, coeff, fixed) {
+      self$type <- type
+      self$initial <- initial
+      self$coeff <- coeff
+      self$fixed <- fixed
+    },
+    print = function(){
+      if (self$fixed) {
+        cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with fixed value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
+      } else {
+        cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
+      }
+    }
+  )
+)
 
 
 
@@ -1155,14 +1234,44 @@ errorPoly <- function(coeffs, constant = FALSE) {
 #' initial parameter value distribution.
 #' @param min Minimum value.
 #' @param max Maximum value.
-#' @param gtz Greater than zero. If `FALSE` (default), ensure parameter values
-#' remain positive by discarding negative values. Only relevant for parametric
-#' analyses, since lower limit of parameter values for nonparametric are strictly
-#' controlled by [ab].
 #' @export
-ab <- function(min, max, gtz = FALSE) {
-  PM_input$new(min, max, "ab", constant = FALSE, gtz)
+ab <- function(min, max) {
+  PM_range$new(min, max)
 }
+
+#' @title Range for primary parameter values
+#' @description
+#' `r lifecycle::badge("experimental")`
+#' Define a range for primary model parameter values.
+#' This is a private class used internally by the `PM_model` class.
+PM_range <- R6::R6Class(
+  "PM_range",
+  public = list(
+    #' @field min Minimum value of the range.
+    min = NULL,
+    #' @field max Maximum value of the range.
+    max = NULL,
+    #' @field mean Mean value of the range, calculated as (min + max) / 2.
+    mean = NULL,
+    #' @field sd Standard deviation of the range, calculated as (max - min) / 6.
+    sd = NULL,
+    #' @description
+    #' Initialize a new range object.
+    #' @param min Minimum value of the range.
+    #' @param max Maximum value of the range.
+    initialize = function(min, max) {
+      self$min = min
+      self$max = max
+      self$mean = (min + max) / 2
+      self$sd = (max - min) / 6
+    },
+    #' @description
+    #' Print the range.
+    print = function(){
+      cli::cli_text("[{.strong {self$min}}, {.strong {self$max}}], {.emph ~N({round(self$mean,2)}}, {.emph {round(self$sd,2)})}")
+    }
+  )
+)
 
 #' @title Initial mean/SD for primary parameter values
 #' @description
@@ -1212,18 +1321,23 @@ fixed <- function(fixed,
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
-#' Declare covariates in the model that are in the data. Order in the model
-#' should be the same as the order in the data.
-#' @param name Name of the covariate in quotation marks.
-#' @param constant If `FALSE` (default), allow the covariate value to be
-#' linearly interpolated between values. **NOTE** that covariate values
-#' are only applied at the times of doses. Values on observation rows are
-#' ignored because a covariate value is an input, not an output. See the
-#' [Data Objects](https://lapkb.github.io/Pmetrics/articles/data.html) article
-#' for details on this.
+#' Declare whether covariates in the data are to have
+#' interpolation between values or not.
+#' @param type If `type = "linear"` (the default), allow the covariate value to be
+#' linearly interpolated between values, e.g. in a model list `cov` item,
+#' `wt = interp()`. To fix covariate values to the value at the
+#' last time point, set `type = "none"`, e.g. `visit = interp("none")`.
 #' @export
-covariate <- function(name, constant = FALSE) {
-  PM_input$new(name, mode = "covariate", constant = constant)
+interp <- function(type = "linear") {
+  if (!type %in% c("linear", "none")) {
+    cli::cli_abort(c("x" = "{type} is not a valid covariate interpolation type.", 
+                     "i" = "See help for {.help PM_model()}."))
+  }
+  if (type == "linear") {
+    return(1)
+  } else {
+    return(0)
+  }
 }
 
 
