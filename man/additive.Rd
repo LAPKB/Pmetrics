@@ -4,10 +4,12 @@
 \alias{additive}
 \title{Additive error model}
 \usage{
-additive(add, coeff, fixed = FALSE)
+additive(initial, coeff, fixed = FALSE)
 }
 \arguments{
-\item{add}{Initial value for lambda}
+\item{initial}{Initial value for lambda}
+
+\item{coeff}{Vector of coefficients defining assay error polynomial}
 
 \item{fixed}{Estimate if \code{FALSE} (default).}
 }

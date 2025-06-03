@@ -238,7 +238,7 @@ new `PM_data()` object.
 
 #### Write
 
-`PM_data$write("filename")` will write the `PM_data()` object to a file called
+`PM_data$save("filename")` will write the `PM_data()` object to a file called
 "filename". This can be useful if you have loaded or created a data file and then
 changed it in R.
 

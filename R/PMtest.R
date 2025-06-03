@@ -13,12 +13,12 @@ PMtest <- function() {
   setwd(tempwd)
   NPex <- NULL # avoid R CMD check flag
   # data(NPex, package = "PmetricsData", envir = environment())
-  NPex$data$write("data.csv")
+  NPex$data$save("data.csv")
   msg <- "Congratulations; you have successfully installed all components of Pmetrics.\n"
 
 
   # writeLines(modeltxt, "model.txt")
-  NPex$model$write("model.txt")
+  NPex$model$save("model.txt")
 
   engine <- list(
     alg = "NP", nsubtot = 1, nsub = 1, activesub = 1, ncov = 5, covnames = c("wt", "africa", "age", "gender", "height"),

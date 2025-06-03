@@ -4,17 +4,12 @@
 \alias{ab}
 \title{Initial range for primary parameter values}
 \usage{
-ab(min, max, gtz = FALSE)
+ab(min, max)
 }
 \arguments{
 \item{min}{Minimum value.}
 
 \item{max}{Maximum value.}
-
-\item{gtz}{Greater than zero. If \code{FALSE} (default), ensure parameter values
-remain positive by discarding negative values. Only relevant for parametric
-analyses, since lower limit of parameter values for nonparametric are strictly
-controlled by \link{ab}.}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

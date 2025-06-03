@@ -4,10 +4,12 @@
 \alias{proportional}
 \title{Proportional error model}
 \usage{
-proportional(prop, coeff, fixed = FALSE)
+proportional(initial, coeff, fixed = FALSE)
 }
 \arguments{
-\item{prop}{Initial value for gamma}
+\item{initial}{Initial value for gamma}
+
+\item{coeff}{Vector of coefficients defining assay error polynomial}
 
 \item{fixed}{Estimate if \code{FALSE} (default).}
 }
