@@ -1380,7 +1380,7 @@ build_model <- function(...) {
                     alert_count(alert_count() + 1) # trigger message popup
                   } else {
                     # browser()
-                    model_save <- tryCatch(PM_model$new(new_model())$write("model.txt"), error = function(e) "Fail")
+                    model_save <- tryCatch(PM_model$new(new_model())$save("model.txt"), error = function(e) "Fail")
                     if (model_save != "Fail") {
                       message("Model saved as 'model.txt' in current working directory.")
                       success_count(success_count() + 1) # trigger message popup

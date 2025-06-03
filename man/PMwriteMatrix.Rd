@@ -24,7 +24,7 @@ Returns the error report (see \link{PMcheck} for details).
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#superseded}{\figure{lifecycle-superseded.svg}{options: alt='[Superseded]'}}}{\strong{[Superseded]}}
 
 This function is largely superseded as the function is accessed with
-the \verb{$write()} method for \link{PM_data} objects. There is rarely a need to call
+the \verb{$save()} method for \link{PM_data} objects. There is rarely a need to call
 it directly. It is the companion function to \link{PMreadMatrix}.
 It will write an appropriate R data object to a formatted .csv file.
 }
@@ -36,7 +36,7 @@ fails, the file will not be written and a message will be printed on the console
 \examples{
 \dontrun{
 # write to the current directory
-NPex$data$write("data.csv")
+NPex$data$save("data.csv")
 }
 }
 \seealso{
