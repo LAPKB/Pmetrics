@@ -72,3 +72,4 @@ inst/options/PMoptions.json
 inst/doc
 
 target/
+*_test.R
