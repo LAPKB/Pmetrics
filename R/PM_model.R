@@ -179,7 +179,7 @@ PM_model <- R6::R6Class(
         eqn <- NULL
         #eqn <- transpile_analytic_eqn(self$arg_list$eqn, parameters, covariates, sec)
       }
-
+      
       
       if (!is.null(self$arg_list$fa)) {
         fa <- transpile_fa(self$arg_list$fa, parameters, covariates, sec)
@@ -213,7 +213,7 @@ PM_model <- R6::R6Class(
         )
       }
       
- 
+      
       
       #ensure length err matches length outeqs
       if (length(self$arg_list$err) != n_out) {
@@ -224,7 +224,7 @@ PM_model <- R6::R6Class(
       }
       #err <- transpile_error(self$arg_list$err)
       err <- self$arg_list$err
-
+      
       
       model_list <- list(
         eqn = eqn,
@@ -358,7 +358,7 @@ PM_model <- R6::R6Class(
         
         cov_list <- paste0(self$model_list$covariates, 
                            ifelse(self$arg_list$cov==1, "", "(no interpolation)"))
-       
+        
         cli::cli_text("{.eqs {cov_list}}")
       }
       
@@ -427,7 +427,7 @@ PM_model <- R6::R6Class(
       )
     },
     get_primary = function() {
-      return(tolower(names(self$model_list$pri)))
+      return(tolower(self$model_list$parameters))
     },
     compile = function() {
       if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
@@ -622,7 +622,7 @@ PM_model <- R6::R6Class(
       } else {
         dataOut <- 1
       }
-
+      
       modelOut <- self$model_list$n_out
       if (dataOut != modelOut) {
         cli::cli_abort(
@@ -694,7 +694,7 @@ PM_model <- R6::R6Class(
       
       
       #### Save objects ####
-      PM_data$new(data_filtered, quiet = TRUE)$write("gendata.csv", header = FALSE)
+      PM_data$new(data_filtered, quiet = TRUE)$save("gendata.csv", header = FALSE)
       #save(self, file = "fit.Rdata")
       this_fit <- PM_fit$new(data = data, model = self)
       save(this_fit, file = "fit.Rdata")
@@ -785,8 +785,50 @@ PM_model <- R6::R6Class(
           c("x" = "Error: Currently, the rust engine only supports internal runs.", "i" = "This is a temporary limitation.")
         )
       }
+    },
+    #' @description
+    #' Simulate data from the model using a set of parameter values.
+    #' @details
+    #' This method simulates output from the model using a set of parameter values
+    #' provided in the `theta` matrix and the template for dosing/observations in
+    #' the `data` object.
+    #' @param data A [PM_data] object containing the dosing and observation information.
+    #' @param theta A matrix of parameter values to use for the simulation.
+    #' The `theta` matrix should have the same number of columns as the number of primary parameters in the model.
+    #' Each row of `theta` represents a different set of parameter values.
+    #' 
+    sim = function(data, theta) {
+      
+      if (!inherits(data, "PM_data")) {
+        cli::cli_abort(c("x" = "Data must be a PM_data object."))
+      }
+      if (!is.matrix(theta)) {
+        cli::cli_abort(c("x" = "theta must be a matrix."))
+      }
+      if (!is.numeric(theta)) {
+        cli::cli_abort(c("x" = "theta must be a matrix of numeric values."))
+      }
+      if (ncol(theta) != length(self$get_primary())) {
+        cli::cli_abort(c("x" = "theta must have the same number of columns as the number of parameters."))
+      }
+      
+      
+      temp_csv <- tempfile(fileext = ".csv")
+      data$save(temp_csv, header = FALSE)
+      if (getPMoptions()$backend == "rust") {
+        if (is.null(self$binary_path)) {
+          self$compile()
+          if (is.null(self$binary_path)) {
+            cli::cli_abort(c("x" = "Model must be compiled before simulating."))
+          }
+        }
+        sim <- simulate_all(temp_csv, self$binary_path, theta)
+      } else {
+        cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
+      }
+      return(sim)
     }
-  ),
+  ),  # end public list
   private = list(
     R6fromFile = function(file) {
       msg <- ""

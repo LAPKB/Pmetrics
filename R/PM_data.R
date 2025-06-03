@@ -94,15 +94,15 @@ PM_data <- R6::R6Class("PM_data",
       }
     },
     #' @description
-    #' Write data to file
+    #' Save data to file
     #' @details
-    #' Writes a delimited file (e.g. comma-separated)
+    #' Saves a delimited file (e.g. comma-separated)
     #' from the `standard_data` field
     #' @param file_name A quoted name of the file to create
     #' with full path if not
     #' in the working directory.
     #' @param ... Arguments passed to [PMwriteMatrix]
-    write = function(file_name, ...) {
+    save = function(file_name, ...) {
       if (!is.null(self$standard_data)) {
         PMwriteMatrix(self$standard_data, file_name, ...)
       } else {
@@ -2102,7 +2102,7 @@ print.summary.PM_data <- function(x, ...) {
 #' `r lifecycle::badge("superseded")`
 #'
 #' This function is largely superseded as the function is accessed with
-#' the `$write()` method for [PM_data] objects. There is rarely a need to call
+#' the `$save()` method for [PM_data] objects. There is rarely a need to call
 #' it directly. It is the companion function to [PMreadMatrix].
 #' It will write an appropriate R data object to a formatted .csv file.
 #' @details
@@ -2114,7 +2114,7 @@ print.summary.PM_data <- function(x, ...) {
 #' @param filename Name of file to create.
 #' @param override Boolean operator to write even if errors are detected.  Default is `FALSE`.
 #' @param version Which matrix data format version to write.  Default is the current version.
-#' @param header Is there a header row? Default is `TRUE`.
+#' @param header Is there a header row? Default is `FALSE` as this was the legacy format.
 #' @return Returns the error report (see [PMcheck] for details).
 #' @author Michael Neely
 #' @seealso [PM_data], [PMcheck], [PMreadMatrix]
@@ -2122,10 +2122,10 @@ print.summary.PM_data <- function(x, ...) {
 #' @examples
 #' \dontrun{
 #' # write to the current directory
-#' NPex$data$write("data.csv")
+#' NPex$data$save("data.csv")
 #' }
-PMwriteMatrix <- function(data, filename, override = F,
-                          version = "DEC_11", header = T) {
+PMwriteMatrix <- function(data, filename, override = FALSE,
+                          version = "DEC_11", header = FALSE) {
   if (!override) {
     err <- PMcheck(data, quiet = TRUE)
     if (length(grep("FAIL", err)) > 0) {
@@ -2166,7 +2166,7 @@ PMwriteMatrix <- function(data, filename, override = F,
   writeLines(toupper(names(data)[-ncol(data)]), sep = getPMoptions("sep"), f)
   writeLines(toupper(names(data)[ncol(data)]), f)
   write.table(data, f,
-    row.names = F, na = ".", quote = F, sep = getPMoptions("sep"),
+    row.names = FALSE, na = ".", quote = F, sep = getPMoptions("sep"),
     dec = getPMoptions("dec"), col.names = F, eol = eol
   )
   close(f)
