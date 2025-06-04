@@ -92,9 +92,9 @@ PM_fit <- R6::R6Class(
       
       self$data <- data
       self$model <- model
+      
+      return(self)
 
-      # check if compiled and if not, do so
-      self$model$compile()
       
     },
     

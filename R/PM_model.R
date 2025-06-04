@@ -770,6 +770,7 @@ PM_model <- R6::R6Class(
                    overwrite = FALSE,
                    algorithm = "NPAG",
                    report = getPMoptions("report_template")) {
+      
       if (is.null(data)) {
         cli::cli_abort(c("x" = " {.arg data} must be specified."))
       }
@@ -947,6 +948,7 @@ PM_model <- R6::R6Class(
             params = list(
               ranges = ranges,
               algorithm = algorithm,
+              #make these next two vectors
               gamlam = self$model_list$err[[1]]$initial,
               error_type = self$model_list$err[[1]]$type,
               error_coefficients = c(sapply(self$model_list$err, function(x) {
@@ -960,7 +962,7 @@ PM_model <- R6::R6Class(
               tad = tad,
               max_cycles = cycles,
               prior = prior,
-              ind_points = points,
+              points = points,
               seed = seed
             ),
             output_path = out_path
@@ -1720,48 +1722,16 @@ plot.PM_model <- function(x,
     FALSE
   }
   
-  # Add equations for algebraic models
-  if (is.null(model$model_list$eqn)) {
-    key_vars <- c("ke", "v", "ka", "kcp", "kpc")
-    pri <- names(model$model_list$pri)
-    found_pri_keys <- key_vars %in% tolower(pri)
-    
-    if (!is.null(model$model_list$sec)) {
-      found_sec_keys <- purrr::map_lgl(key_vars,
-                                       \(x) stringr::str_detect(
-                                         model$model_list$sec,
-                                         stringr::regex(x, ignore_case = TRUE)
-                                       ))
-    } else {
-      found_sec_keys <- rep(NA, 5)
-    }
-    found_keys <- key_vars[found_pri_keys |
-                             found_sec_keys] %>% na.exclude()
-    model$model_list$eqn <- dplyr::case_when(
-      all(found_keys %in% c("ke", "v")) ~ c("dX[1] = RATEIV[1] - Ke*X[1]", NA, NA),
-      all(found_keys %in% c("ke", "v", "ka")) ~ c(
-        "dX[1] = BOLUS[1] - Ka*X[1]",
-        "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]",
-        NA
-      ),
-      all(found_keys %in% c("ke", "v", "kcp", "kpc")) ~ c(
-        "dX[1] = RATEIV[1] - (Ke+KCP)*X[1] + KPC*X[2]",
-        "dX[2] = KCP*X[1] - KPC*X[2]",
-        NA
-      ),
-      all(found_keys %in% c("ke", "v", "ka", "kcp", "kpc")) ~ c(
-        "dX[1] = BOLUS[1] - Ka*X[1]",
-        "dX[2] = RATEIV[1] + Ka*X[1] - (Ke+KCP)*X[2] + KPC*X[3]",
-        "dX[3] = KCP*X[2] - KPC*X[3]"
-      ),
-      .size = 3
-    ) %>% na.exclude()
+  if(inherits(model, "PM_model")){
+    eqn <- func_to_char(model$arg_list$eqn)
+  } else {
+    eqns <- model
   }
   
   # filter any equations that are not diffeq and make everything capital
   #this_model <- model$model_list$eqn %>%
   
-  this_model <- func_to_char(model$arg_list$eqn) %>%
+  this_model <- eqns %>%
     map(
       purrr::keep,
       stringr::str_detect,
@@ -2002,7 +1972,7 @@ plot.PM_model <- function(x,
     dplyr::mutate(implicit = FALSE)
   
   # outputs
-  if (!is.null(purrr::pluck(model, "model_list", "out", 1, "val"))) {
+  if (!is.null(model$model_list) && !is.null(purrr::pluck(model, "model_list", "out", 1, "val"))) {
     cmts <- map_chr(model$model_list$out,
                     ~ stringr::str_extract(.x$val, "\\d+"))
     output_cmt <- dplyr::tibble(out = paste0("Y", seq_along(cmts)), cmt = cmts)
