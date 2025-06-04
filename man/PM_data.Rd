@@ -64,7 +64,7 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-PM_data-new}{\code{PM_data$new()}}
-\item \href{#method-PM_data-write}{\code{PM_data$save()}}
+\item \href{#method-PM_data-save}{\code{PM_data$save()}}
 \item \href{#method-PM_data-auc}{\code{PM_data$auc()}}
 \item \href{#method-PM_data-nca}{\code{PM_data$nca()}}
 \item \href{#method-PM_data-plot}{\code{PM_data$plot()}}
@@ -121,10 +121,10 @@ automatically to a fully specified, valid data object.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_data-write"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_data-write}{}}}
-\subsection{Method \code{write()}}{
-Write data to file
+\if{html}{\out{<a id="method-PM_data-save"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-save}{}}}
+\subsection{Method \code{save()}}{
+Save data to file
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_data$save(file_name, ...)}\if{html}{\out{</div>}}
 }
@@ -141,7 +141,7 @@ in the working directory.}
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-Writes a delimited file (e.g. comma-separated)
+Saves a delimited file (e.g. comma-separated)
 from the \code{standard_data} field
 }
 
