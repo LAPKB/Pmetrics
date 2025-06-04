@@ -40,7 +40,7 @@ pub(crate) fn settings(
         .as_real()
         .unwrap_or(100.0) as usize;
     let ind_points = settings
-        .get("ind_points")
+        .get("points")
         .unwrap()
         .as_real()
         .unwrap_or(2028.0) as usize;
