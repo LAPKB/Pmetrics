@@ -90,3 +90,29 @@ model_lib <- function(name = NULL, show = TRUE) {
 
   return(invisible(mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1, 1) %>% unlist()))
 }
+
+
+
+#Primary Name", "Alt Names", "Description", "Compartments", "Parameters"
+
+
+
+PM_alg <- R6::R6Class(
+  "PM_alg",
+  public = list(
+    name = NULL,
+    friendly_name = NULL,
+    alt_names = NULL,
+    description = NULL,
+    compartments = NULL,
+    parameters = NULL,
+    ode = NULL,
+    print = function(){
+      
+    },
+    plot = function(...){
+      plot.PM_model(self$ode,...)
+    }
+  )
+  
+)
