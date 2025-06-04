@@ -4,7 +4,13 @@
 \alias{PMwriteMatrix}
 \title{Write a Pmetrics .csv Matrix File}
 \usage{
-PMwriteMatrix(data, filename, override = F, version = "DEC_11", header = T)
+PMwriteMatrix(
+  data,
+  filename,
+  override = FALSE,
+  version = "DEC_11",
+  header = FALSE
+)
 }
 \arguments{
 \item{data}{Must be a data.frame with appropriate structure (see \link{PMcheck}).}
@@ -15,7 +21,7 @@ PMwriteMatrix(data, filename, override = F, version = "DEC_11", header = T)
 
 \item{version}{Which matrix data format version to write.  Default is the current version.}
 
-\item{header}{Is there a header row? Default is \code{TRUE}.}
+\item{header}{Is there a header row? Default is \code{FALSE} as this was the legacy format.}
 }
 \value{
 Returns the error report (see \link{PMcheck} for details).

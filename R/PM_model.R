@@ -24,6 +24,53 @@
 #' directly in R, or by reading a model text file. See the vignette on models
 #' for details.
 #'
+#' **Some notes on the example at the end of this help page:**
+#'
+#' * It's a complete example of a three compartment model with delayed absorption.
+#' * We show the method of defining the model first and embedding the `PM_model$new()` within
+#' a `donttest` block to avoid automatic compilation. 
+#' * Since this model can also be solved algebraically, we could have used
+#'  `tem = three_comp_bolus()` and omitted the `eqn` block. 
+#' @examples 
+#' 
+#' mod_list <- list(
+#'   pri = c(
+#'      CL = ab(10, 200),
+#'      V0 = ab(0, 100),
+#'      ka = ab(0, 3),
+#'      k23 = ab(0, 5),
+#'      k32 = ab(0, 5),
+#'      lag1 = ab(0, 2)
+#'    ),
+#'    cov = c(
+#'      wt = interp()
+#'    ),
+#'    sec = function() {
+#'      V = V0 * (wt/70)
+#'      ke = CL/V # define here to make eqn simpler
+#'    },
+#'    eqn = function() {
+#'      dx[1] = -ka * x[1]
+#'      dx[2] = rateiv[1] + ka * x[1] - (ke + k23) * x[2] + k32 * x[3]
+#'      dx[3] = k23 * x[2] - k32 * x[3]
+#'      dx[4] = x[1] / V
+#'    },
+#'    lag = function() {
+#'      tlag[1] = lag1
+#'    },
+#'    out = function() {
+#'      y[1] = x[1]/V
+#'      y[2] = x[4] # AUC, not fitted to any data, not required
+#'    },
+#'    err = c(
+#'      proportional(2, c(0.1, 0.15, 0, 0)) # only applies to y[1]
+#'    )
+#'  )
+#'
+#' \donttest{
+#'    mod <- PM_model$new(mod_list)
+#'  } 
+#'
 #' @export
 PM_model <- R6::R6Class(
   "PM_model",
@@ -33,29 +80,272 @@ PM_model <- R6::R6Class(
     model_list = NULL,
     #' @field arg_list A list containing the original arguments passed to the model
     arg_list = NULL,
-    #' @field content The full path and filename of the compiled model
+    #' @field binary_path The full path and filename of the compiled model
     binary_path = NULL,
-    file_content = NULL,
+    #' @field type A character string indicating the type of model, either "ode" for
+    #' ordinary differential equations or "analytical" for analytical models.
     type = NULL,
-    #' @description
-    #' Build a new `PM_model` from a variety of inputs.
-    #' @param x An optional argument, but if specified, all the subsequent
-    #' arguments will be ignored. `x` is used to allow creation of a `PM_model` from
-    #' another, appropriate input. This can be a quoted name of a model text file in the
-    #' working directory which will be read and passed to Rust engine.
-    #' It can be a list that defines the model directly in R. It
-    #' can also be a [PM_model] object, which will simply rebuild it. See the user
-    #' manual for more help on directly defining models in R.
-    #' @param pri The first of the arguments used if `x` is not specified. This is
-    #' a vector of primary parameters, which are the model parameters that
-    #' are estimated in the population analysis. They are specified as a named vector,
-    #' with one of two creation functions: [ab()] or [msd()]. For example,
-    #' `pri = c(Ke = ab(0, 5), V = msd(100, 10))`. The [ab()] creator specifies the
-    #' initial range [a, b] of the parameter, while the [msd()] creator specifies
-    #' the initial mean and standard deviation of the parameter.
-    #' @param cov A simple character vector naming the covariates in the data file.
-    #' For example `c("wt", "age", "height")`.
+    #' @description                       
+    #' This is the method to create a new `PM_model` object.
+    #' The first parameter allows creation of a model from a variety of pre-existing
+    #' sources, and if used, all the subsequent arguments will be ignored. If a model
+    #' is defined on the fly, the arguments form the building blocks. Blocks are of two types:
     #' 
+    #' * **Vectors** define *primary parameters*, *covariates*, *algebraic model template*,
+    #' and *error models*. These 
+    #' portions of the model have specific and defined creator functions and no additional
+    #' R code is permissible. They take this form:
+    #' ```
+    #' block_name = c( 
+    #'   var1 = creator(),   
+    #'   var2 = creator()
+    #' ) 
+    #' ``` 
+    #' Note the comma separating the creator functions, "`c(`" to open the vector and "`)`" to close the vector.
+    #' Names are case-insensitive are are converted to lowercase for Rust.                                                   
+    #' * **Functions** define the other parts of the model, including *secondary (global)
+    #' equations*, *primary equations* (e.g. ODEs), *lag time*, *bioavailability*, *initial conditions*,
+    #' and *outputs*. These parts of the model are defined as R functions without arguments,
+    #' but whose body contains any permissible R code.
+    #' ```
+    #' block_name = function() { 
+    #' 
+    #'  # any valid R code 
+    #'  # can use primary or secondary parameters and covariates
+    #'  # lines are not separated by commas
+    #'  
+    #' } 
+    #' ```
+    #' Note the absence of arguments between the "`()`", the opening curly brace "`{`" to start 
+    #' the function body and the closing curly brace "`}`" to end the body.
+    #' Again, all R code will be converted to lowercase prior to translation into Rust.
+    #'
+    #' **Important:** All models must have `pri`, `tem` or `eqn`, `out`, and `err` blocks.
+    #'
+    #' @param x An optional argument, but if specified, all the subsequent
+    #' arguments will be ignored. `x` creates a `PM_model` from
+    #' existing appropriate input, which can be one of the following:
+    #' 
+    #' * Quoted name of a model text file in the
+    #' working directory which will be read and passed to Rust engine.
+    #' * List that defines the model directly in R. This will be in the same format as if
+    #' all the subsequent arguments were used. For example:
+    #' ```
+    #' mod_list <- list(
+    #'  pri = c(...),
+    #'  eqn = function(){...},
+    #'  out = function(){...},
+    #'  err = c(...)
+    #' )
+    #' mod <- PM_model$new(mod_list)
+    #' ```
+    #' * `PM_model` object, which will simply rebuild it, e.g. carrying on the
+    #' prior example: `PM_model$new(mod)`
+    #' 
+    #' See the user manual [PM_manual()] for more help on directly defining models in R.
+    #' @param pri The first of the arguments used if `x` is not specified. This is
+    #' a named vector of primary parameters, which are the model parameters that
+    #' are estimated in the population analysis. They are specified
+    #' by one of two creator functions: [ab()] or [msd()]. For example,
+    #' ```
+    #' pri = c(
+    #'   Ke = ab(0, 5),
+    #'   V = msd(100, 10)
+    #')
+    #' ```
+    #' The [ab()] creator specifies the
+    #' initial range `[a, b]` of the parameter, while the [msd()] creator specifies
+    #' the initial mean and standard deviation of the parameter.
+    #' @param cov A vector whose names are the same as the covariates in the data file,
+    #' and whose values are the [interp()] creator function to declare
+    #' how each covariate is interpolated between entries in the data. The default argument
+    #' for [interp()] is "lm" which means that values will be linearly interpolated
+    #' between entries, like the R linear model function [stats::lm()]. The alternative is "none",
+    #' which holds the covariate value the same as the previous entry until it changes,
+    #' i.e., a carry-forward strategy.
+    #'
+    #' For example:
+    #' ```
+    #' cov = c(
+    #'   wt = interp(), # will be linear by default
+    #'   visit = interp("none")
+    #' )
+    #' ```
+    #' Note that `wt = interp()` is equivalent to `wt = interp("lm")`, since "lm" is the default.
+    #' @param sec A function defining the secondary (global) equations in the model. Values
+    #' are not estimated for these equations but they are available to every other block in the model.
+    #' For example:
+    #' ```
+    #' sec = function() { 
+    #'   V = V0 * (wt/70) 
+    #' } 
+    #' ```
+    #' Note that the function
+    #' must be defined with no arguments between the parentheses, 
+    #' and the body **must be in R syntax**. Any number of lines and R code, e.g.
+    #' `if` - `else` statements, etc. are permissible.
+    #' @param tem A vector of length one defining the analytical template for the model
+    #' with an appropriate creator function. Look at 
+    #' [model_lib()] to ensure `pri` parameters are named correctly. If `pri`
+    #' parameters must be transformed, include the transformation, 
+    #' e.g., `V = V0 * wt`, in the `sec` block for global availability or another
+    #' appropriate block for availability restricted to that block. 
+    #'
+    #' Outputs for algebraic models can be calculated from any model compartment.
+    #' @param eqn A function defining the model equations. The function must have no arguments,
+    #' and the equations must be defined
+    #' in R syntax. Use the following notation in equations:
+    #' 
+    #' * `dx[i]` for the change in amount with respect to time (i.e., \eqn{dx/dt}), 
+    #' where `i` is the compartment number,
+    #' * `x[i]` for the compartment amount, where `i` is the compartment number.
+    #' * `rateiv[j]` for the infusion rate of input `j`, where `j` is the input number
+    #' in the data corresponding to doses for that input.
+    #' * Bolus doses are indicated by `DUR = 0` for dose events in the
+    #' data. Currently only one bolus input is allowed, which goes into compartment 1
+    #' and is not modifiable. It does not appear in the differential equations.
+    #' Any R code is permissible within the body of the function.
+    #' 
+    #' For example, 
+    #' ```
+    #' eqn = function() {
+    #'   dx[1] = -ka * x[1]
+    #'   dx[2] = rateiv[1] + ka * x[1] - ke * x[2]
+    #' }
+    #' ```
+    #' Additional equations in R code can be defined in this block, which are similar to 
+    #' the `sec` block, but will only be available within the `eqn` block as opposed
+    #' to global availability when defined in `sec`. 
+    #' @param lag A function defining the lag time (delayed absorption) for the bolus input. 
+    #' The function must have no arguments,
+    #' and the equations must be defined
+    #' in R syntax The equations must be defined in the form of
+    #' `tlag[i] = par`, where `tlag[i]` is the lag for drug (input) `i` and
+    #' `par` is the lag parameter used in the `pri` block. 
+    #'
+    #' For example, if
+    #' `antacid` is a covariate in the data file, and `lag1` is a primary parameter,
+    #' this code could be used to model delayed absorption if an antacid is present.
+    #' ```
+    #' lag = function() {
+    #'   tlag[1] = if(antacid == 1) lag1 else 0
+    #' }
+    #' ```
+    #' As for `eqn`, additional equations in R code can be defined in this block, 
+    #' but will only be available within the `lag` block.
+    #' @param fa A function defining the bioavailability (fraction absorbed) equations,
+    #' similar to `lag`.
+    #'
+    #' Example:
+    #' ```
+    #' fa = function() {
+    #'   fa[1] = if(antacid == 1) fa1 else 1
+    #' }
+    #' ```
+    #' As for `eqn`, additional equations in R code can be defined in this block, 
+    #' but will only be available within the `fa` block.
+    #' @param ini A function defining the initial conditions for a compartment
+    #' in the model. Structure is similar to `lag` and `fa`.
+    #'
+    #' Example:
+    #' ```
+    #' ini = function() {
+    #'   x[2] = init2 * V
+    #' }
+    #' ```
+    #' This sets the initial amount of drug in compartment 2 to the value
+    #' of a covariate `init2` multiplied by the volume of the compartment,
+    #' `V`, assuming `V` is either a primary parameter or defined in the 
+    #' `sec` block.
+    #' 
+    #' As for `eqn`, additional equations in R code can be defined in this block, 
+    #' but will only be available within the `ini` block.
+    #' @param out A function defining the output equations, which are the predictions
+    #' from the model. The function must have no arguments,
+    #' and the equations for predictions must be defined
+    #' in R syntax.
+    #' 
+    #' Use the following notation in equations:
+    #' 
+    #' * `y[i]` for the predicted value, where `i` is the output equation number,
+    #' typically corresponding to an observation with `outeq = i` in the data, but not
+    #' always (see **Note** below).
+    #' * `x[j]` for the compartment amount, where `j` is the compartment number.
+    #' 
+    #' As with all function blocks, secondary equations are permitted, 
+    #' but will be specific to the `out` block.
+    #' 
+    #' For example,
+    #' ```
+    #' out = function() { 
+    #'   V = V0 * wt # only needed if not included in sec block
+    #'   y[1] = x[1]/V
+    #'   #Vp and Vm must be defined in pri or sec blocks
+    #'   y[2] = x[2]/Vp
+    #'   y[3] = x[3]/Vm
+    #' }
+    #' ```
+    #' This assumes `V`, `Vp`, and `Vm` are either primary parameters or defined in the 
+    #' `sec` block. 
+    #' 
+    #' **Note** that as of Pmetrics 3.0.0, you can have more output equations
+    #' than values for `outeq` in the data. This is not possible with prior
+    #' versions of Pmetrics. Outputs without corresponding observations
+    #' are not used in the fitting, but do generate predictions.
+    #' For example, this snippet is part of a model that calculates AUC:
+    #' ```
+    #' eqn = function(){
+    #'   dx[1] = -ka * x[1]
+    #'   dx[2] = rateiv[1] + ka * x[1] - ke * x[2]
+    #'   dx[3] = x[2] - x[3]
+    #'   dx[4] = x[1] / v
+    #' },
+    #' out = function(){
+    #'   y[1] = x[1]/v
+    #'   y[2] = x[4]
+    #' },
+    #' err = c(
+    #'  proportional(2, c(0.1, 0.15, 0, 0))
+    #' )
+    #' ``` 
+    #' If the data only contain observations for `y[1]`, i.e. the concentration
+    #' of drug in the plasma compartment with `outeq = 1`, the model will
+    #' use that information to optimize the parameter values, but will also
+    #' generate predictions for `y[2]`, which is the AUC of the drug in compartment 1,
+    #' even though there is no `outeq = 2` in the data. There is only one `err`
+    #' equation since there is only one source of observations: plasma concentration.
+    #' AUC (`y[2]`) is not fitted to any observations; it is a calculation based on
+    #' the model state, given the optimized parameter values. It's not required, but
+    #' shown here for illustrative purposes.
+    #' 
+    #' @param err An unammed vector of error models for each of the output equations
+    #' with observations, i.e. those that have an `outeq` number associated with them in 
+    #' the data. 
+    #' Each error model is defined by the [proportional()] creator or  
+    #' the [additive()] creator, relative to the observation error.
+    #' For example, if there are three output equations corresponding to three
+    #' sources of observations in the data, the error models
+    #' could be defined as:
+    #' ```
+    #' err = c(
+    #'   proportional(2, c(0.1, 0.15, 0, 0)),
+    #'   proportional(3, c(0.05, 0.1, 0, 0)),
+    #'   additive(1, c(0.2, 0.25, 0, 0))
+    #' )
+    #' ```
+    #' This defines the first two output equations to have proportional error
+    #' with initial values of 2 and 3, respectively, and the third output equation
+    #' to have additive error with initial value of 1. Each output is measured by 
+    #' a different assay with different error characteristics.
+    #' 
+    #' If all the output equations have the same error model, you can
+    #' simply use a single error model embedded in [replicate()] , e.g.,
+    #' for 3 outputs with the same error model:
+    #' ```
+    #' err = c(
+    #'   replicate(3, proportional(2, c(0.1, 0.15, 0, 0)))
+    #' )
+    #' ```
     #' @param ... Not currently used.
     initialize = function(x = NULL,
                           pri = NULL,
@@ -251,96 +541,14 @@ PM_model <- R6::R6Class(
       })
       
       self$type <- "closure"
-      self$compile()
+      private$compile()
     },
-    write_model_file = function(file_path = "main.rs") {
-      # Check if model_list is not NULL
-      if (is.null(self$model_list)) {
-        cli::cli_abort(c("x" = "Model list is empty.", "i" = "Please provide a valid model list."))
-      }
-      
-      type <- "ode"
-      
-      
-      if (type == "analytical") {
-        base <- "equation::Analytical::new(
-            <tem>,
-            <sec>,
-            <lag>,
-            <fa>,
-            <ini>,
-            <out>,
-            (<n_eqn>, <n_out>),
-          )"
-        base <- gsub(
-          pattern = "<tem>",
-          replacement = self$model_list$tem,
-          x = base
-        )
-        base <- gsub(
-          pattern = "<sec>",
-          replacement = NULL, #removing SEC block
-          #replacement = self$model_list$sec,
-          x = base
-        )
-      } else if (type == "ode") {
-        base <- "equation::ODE::new(
-            <eqn>,
-            <lag>,
-            <fa>,
-            <ini>,
-            <out>,
-            (<n_eqn>, <n_out>),
-        )"
-        base <- gsub(
-          pattern = "<eqn>",
-          replacement = self$model_list$eqn,
-          x = base
-        )
-      } else {
-        cli::cli_abort(c("x" = "Invalid model type.", "i" = "Please provide a valid model type."))
-      }
-      
-      
-      base <- gsub(
-        pattern = "<lag>",
-        replacement = self$model_list$lag,
-        x = base
-      )
-      base <- gsub(
-        pattern = "<fa>",
-        replacement = self$model_list$fa,
-        x = base
-      )
-      base <- gsub(
-        pattern = "<ini>",
-        replacement = self$model_list$ini,
-        x = base
-      )
-      base <- gsub(
-        pattern = "<out>",
-        replacement = self$model_list$out,
-        x = base
-      )
-      base <- gsub(
-        pattern = "<n_eqn>",
-        replacement = self$model_list$n_eqn,
-        x = base
-      )
-      base <- gsub(
-        pattern = "<n_out>",
-        replacement = self$model_list$n_out,
-        x = base
-      )
-      
-      # Write the model to a file
-      writeLines(base, file_path)
-    },
-    from_file = function(file_path) {
-      self$model_list <- private$makeR6model(model_filename)
-      self$content <- readChar(model_filename, file.info(model_filename)$size)
-      self$type <- "file"
-    },
+    
+    #' @description
+    #' Print the model summary.
+    #' @details
+    #' This method prints a summary of the model.
+    #' @param ... Not used.
     print = function(...) {
       
       cli::cli_div(theme = list(
@@ -349,8 +557,9 @@ PM_model <- R6::R6Class(
       
       cli::cli_h1("Model summary")
       
+      cli::cli_h3(text = "Primary Parameters")
       pars = self$model_list$parameters
-      cli::cli_text("Model has {length(pars)} primary parameters: {.eqs {pars}} ")
+      cli::cli_text("{.eqs {pars}}")
       
       
       if (!is.null(self$model_list$covariates)) {
@@ -370,10 +579,17 @@ PM_model <- R6::R6Class(
         }
       }
       
-      cli::cli_h3(text = "Equations")
-      eqs <- func_to_char(self$arg_list$eqn) #function in PMutitlities
-      for (i in eqs) {
-        cli::cli_text("{.eqs {i}}")
+      if(!is.null(self$arg_list$tem)){
+        cli::cli_h3(text = "Algebraic Model")
+        cli::cli_text("{.eqs {self$arg_list$tem$name}})")
+      }
+      
+      if(!is.null(self$arg_list$eqn)){
+        cli::cli_h3(text = "Primary Equations")
+        eqs <- func_to_char(self$arg_list$eqn) #function in PMutitlities
+        for (i in eqs) {
+          cli::cli_text("{.eqs {i}}")
+        }
       }
       
       if(!is.null(self$arg_list$lag)){
@@ -418,6 +634,12 @@ PM_model <- R6::R6Class(
       
       invisible(self)
     },
+    #' @description
+    #' Plot the model.
+    #' @details
+    #' This method plots the model using the
+    #' [plot.PM_model()] function.
+    #' @param ... Additional arguments passed to the plot function.
     plot = function(...) {
       tryCatch(
         plot.PM_model(self, ...),
@@ -425,28 +647,6 @@ PM_model <- R6::R6Class(
           cat(crayon::red("Error:"), e$message, "\n")
         }
       )
-    },
-    get_primary = function() {
-      return(tolower(self$model_list$parameters))
-    },
-    compile = function() {
-      if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
-        # model is compiled
-        return(invisible(NULL))
-      }
-      
-      temp_model <- file.path(tempdir(), "model.rs")
-      self$write_model_file(temp_model)
-      model_path <- tempfile(pattern = "model_", fileext = ".pmx")
-      tryCatch({
-        compile_model(temp_model, model_path, self$get_primary())
-        self$binary_path <- model_path
-      }, error = function(e) {
-        cli::cli_abort(
-          c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
-        )
-      })
-      file.remove(temp_model) # remove temporary model file
     },
     #' @description
     #' This is the main method to run a population analysis.
@@ -552,9 +752,6 @@ PM_model <- R6::R6Class(
     #' @param algorithm The algorithm to use for the run.  Default is "NPAG". Alternatives: "NPOD".
     #' @param report If missing, the default Pmetrics report template as specified in [getPMoptions]
     #' is used. Otherwise can be "plotly", "ggplot", or "none".
-    #' @param artifacts Default is `TRUE`.  Set to `FALSE` to suppress creating the `etc` folder. This folder
-    #' will contain all the compilation artifacts created during the compilation and run steps.
-    #'
     #' @return A successful run will result in creation of a new folder in the working
     #' directory with the results inside the folder.
     #'
@@ -631,7 +828,7 @@ PM_model <- R6::R6Class(
       }
       
       # check if model compiled and if not, do so
-      self$compile()
+      private$compile()
       
       cwd <- getwd()
       intern <- TRUE # always true until (if) rust can run separately from R
@@ -808,7 +1005,7 @@ PM_model <- R6::R6Class(
       if (!is.numeric(theta)) {
         cli::cli_abort(c("x" = "theta must be a matrix of numeric values."))
       }
-      if (ncol(theta) != length(self$get_primary())) {
+      if (ncol(theta) != length(private$get_primary())) {
         cli::cli_abort(c("x" = "theta must have the same number of columns as the number of parameters."))
       }
       
@@ -817,7 +1014,7 @@ PM_model <- R6::R6Class(
       data$save(temp_csv, header = FALSE)
       if (getPMoptions()$backend == "rust") {
         if (is.null(self$binary_path)) {
-          self$compile()
+          private$compile()
           if (is.null(self$binary_path)) {
             cli::cli_abort(c("x" = "Model must be compiled before simulating."))
           }
@@ -899,15 +1096,6 @@ PM_model <- R6::R6Class(
       covar <- blocks$covar
       const_covar <- grepl("!", covar) # returns boolean vector, length = nout
       covar <- gsub("!", "", covar) # remove "!"
-      # cycle through covariates
-      # if (covar[1] != "") {
-      #   covar_list <- list()
-      #   for (i in 1:length(covar)) {
-      #     covar_list[[i]] <- covariate(name = covar[i], constant = const_covar[i])
-      #   }
-      # } else {
-      #   covar_list <- NULL
-      # }
       covar_list <- tolower(covar)
       # add to arg_list
       arg_list$cov <- covar_list
@@ -1014,30 +1202,121 @@ PM_model <- R6::R6Class(
       
       arg_list$err <- eval(parse(text = glue::glue("function() {{\n{paste({coeff_fxns}, collapse = '\n')}\n}}")))
       
-      
-      
-      # out <- list()
-      # for (i in 1:num_out) {
-      #   out[[i]] <- list(
-      #     val = diffList[i],
-      #     err = list(
-      #       model = if ((1 + as.numeric(gamma)) == 1) {
-      #         additive(gamlam_value, constant = const_gamlam)
-      #       } else {
-      #         proportional(gamlam_value, constant = const_gamlam)
-      #       },
-      #       assay = errorPoly(stringr::str_split(err[i + 1], ",")[[1]] %>% as.numeric(), const_coeff[i])
-      #     )
-      #   )
-      # }
-      # names(out) <- sapply(diffeq, function(x) x[1])
-      # arg_list$out <- out
-      # 
       cat(msg)
       flush.console()
       return(arg_list)
+    },
+    write_model_to_rust = function(file_path = "main.rs") {
+      # Check if model_list is not NULL
+      if (is.null(self$model_list)) {
+        cli::cli_abort(c("x" = "Model list is empty.", "i" = "Please provide a valid model list."))
+      }
+      
+      type <- "ode"
+      
+      
+      if (type == "analytical") {
+        base <- "equation::Analytical::new(
+            <tem>,
+            <sec>,
+            <lag>,
+            <fa>,
+            <ini>,
+            <out>,
+            (<n_eqn>, <n_out>),
+          )"
+        base <- gsub(
+          pattern = "<tem>",
+          replacement = self$model_list$tem,
+          x = base
+        )
+        base <- gsub(
+          pattern = "<sec>",
+          replacement = NULL, #removing SEC block
+          #replacement = self$model_list$sec,
+          x = base
+        )
+      } else if (type == "ode") {
+        base <- "equation::ODE::new(
+            <eqn>,
+            <lag>,
+            <fa>,
+            <ini>,
+            <out>,
+            (<n_eqn>, <n_out>),
+        )"
+        base <- gsub(
+          pattern = "<eqn>",
+          replacement = self$model_list$eqn,
+          x = base
+        )
+      } else {
+        cli::cli_abort(c("x" = "Invalid model type.", "i" = "Please provide a valid model type."))
+      }
+      
+      
+      base <- gsub(
+        pattern = "<lag>",
+        replacement = self$model_list$lag,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<fa>",
+        replacement = self$model_list$fa,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<ini>",
+        replacement = self$model_list$ini,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<out>",
+        replacement = self$model_list$out,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<n_eqn>",
+        replacement = self$model_list$n_eqn,
+        x = base
+      )
+      base <- gsub(
+        pattern = "<n_out>",
+        replacement = self$model_list$n_out,
+        x = base
+      )
+      
+      # Write the model to a file
+      writeLines(base, file_path)
+    },
+    from_file = function(file_path) {
+      self$model_list <- private$makeR6model(model_filename)
+      self$content <- readChar(model_filename, file.info(model_filename)$size)
+      self$type <- "file"
+    },
+    get_primary = function() {
+      return(tolower(self$model_list$parameters))
+    },
+    compile = function() {
+      if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
+        # model is compiled
+        return(invisible(NULL))
+      }
+      
+      temp_model <- file.path(tempdir(), "model.rs")
+      private$write_model_to_rust(temp_model)
+      model_path <- tempfile(pattern = "model_", fileext = ".pmx")
+      tryCatch({
+        compile_model(temp_model, model_path, private$get_primary())
+        self$binary_path <- model_path
+      }, error = function(e) {
+        cli::cli_abort(
+          c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
+        )
+      })
+      file.remove(temp_model) # remove temporary model file
     }
-  )
+  ) # end private
 )
 
 
@@ -1252,20 +1531,6 @@ PM_err <- R6::R6Class(
 
 
 
-#' @title Assay error coefficients
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Specify the coefficients for the assay error polynomial.
-#' @param coeffs Vector of up to four values for C0, C1, C2, C3,
-#' e.g. `c(0.15, 0.1, 0, 0)`
-#' @param constant If `FALSE` (default), use values in data first, but if
-#' missing, use values in model. If `TRUE`, use values in model regardless.
-#' @export
-errorPoly <- function(coeffs, constant = FALSE) {
-  PM_input$new(coeffs, NULL, "coefficients", constant)
-}
-
 #' @title Initial range for primary parameter values
 #' @description
 #' `r lifecycle::badge("stable")`
@@ -1336,28 +1601,7 @@ msd <- function(mean, sd, gtz = FALSE) {
   PM_input$new(mean, sd, "msd", constant = FALSE, gtz)
 }
 
-#' @title Fixed primary parameter values
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Fix parameter values to be the same in the population.
-#' @param fixed The starting value for the fixed parameter.
-#' @param constant If `FALSE` (default), the value for `fixed` will serve
-#' as the initial estimate for a parameter with unknown mean and zero variance.
-#' The parameter value will be updated to a final value at convergence
-#' or when the maximum number of cycles is reached. If `TRUE`, the value for
-#' `fixed` will remain unchanged, creating a parameter with known mean and zero
-#' variance, i.e. a constant value in the population.
-#' @param gtz Greater than zero. If `FALSE` (default), ensure parameter values
-#' remain positive by discarding negative values. Only relevant for parametric
-#' analyses, since lower limit of parameter values for nonparametric are strictly
-#' controlled by the range.
-#' @export
-fixed <- function(fixed,
-                  constant = FALSE,
-                  gtz = FALSE) {
-  PM_input$new(fixed, fixed, "fixed", constant, gtz)
-}
+
 
 #' @title Model covariate declaration
 #' @description
@@ -1365,17 +1609,26 @@ fixed <- function(fixed,
 #'
 #' Declare whether covariates in the data are to have
 #' interpolation between values or not.
-#' @param type If `type = "linear"` (the default), allow the covariate value to be
-#' linearly interpolated between values, e.g. in a model list `cov` item,
-#' `wt = interp()`. To fix covariate values to the value at the
-#' last time point, set `type = "none"`, e.g. `visit = interp("none")`.
+#' @param type If `type = "lm"` (the default) or `type = "linear"`, 
+#' the covariate value will be
+#' linearly interpolated between values when fitting the model to the data.
+#' in a model list `cov` item. To fix covariate values to the value at the
+#' last time point, set `type = "none"`.
+#' @return A value of 1 for "lm" and 0 for "none", which will be passed to Rust.
+#' @examples
+#' \dontrun{
+#' cov = c(
+#'   wt = interp() # same as interp("lm") or interp("linear")
+#'   visit = interp("none")
+#' )
+#' }
 #' @export
-interp <- function(type = "linear") {
-  if (!type %in% c("linear", "none")) {
+interp <- function(type = "lm") {
+  if (!type %in% c("lm", "linear", "none")) {
     cli::cli_abort(c("x" = "{type} is not a valid covariate interpolation type.", 
                      "i" = "See help for {.help PM_model()}."))
   }
-  if (type == "linear") {
+  if (type %in% c("lm", "linear")) {
     return(1)
   } else {
     return(0)
