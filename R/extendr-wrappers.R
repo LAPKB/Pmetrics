@@ -11,28 +11,28 @@
 NULL
 
 #' Simulates the first subject in the data set using the model at the given path.
-#' @export
+#'@export
 simulate_one <- function(data_path, model_path, spp) .Call(wrap__simulate_one, data_path, model_path, spp)
 
 #' Simulates all subjects in the data set using the model at the given path.
-#' @export
+#'@export
 simulate_all <- function(data_path, model_path, theta) .Call(wrap__simulate_all, data_path, model_path, theta)
 
 #' Compiles the text representation of a model into a binary file.
-#' @export
-compile_model <- function(model_path, output_path, params) invisible(.Call(wrap__compile_model, model_path, output_path, params))
+#'@export
+compile_model <- function(model_path, output_path, params) .Call(wrap__compile_model, model_path, output_path, params)
 
 #' Dummy function to cache compilation artifacts.
-#' @export
+#'@export
 dummy_compile <- function() .Call(wrap__dummy_compile)
 
-#' @export
+#'@export
 is_cargo_installed <- function() .Call(wrap__is_cargo_installed)
 
-#' @export
-fit_model <- function(model_path, data, params, output_path) invisible(.Call(wrap__fit, model_path, data, params, output_path))
+#'@export
+fit <- function(model_path, data, params, output_path) .Call(wrap__fit, model_path, data, params, output_path)
 
-#' @export
+#'@export
 model_parameters <- function(model_path) .Call(wrap__model_parameters, model_path)
 
 template_path <- function() .Call(wrap__template_path)
