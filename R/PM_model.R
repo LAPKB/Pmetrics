@@ -822,11 +822,11 @@ PM_model <- R6::R6Class(
       }
       
       modelOut <- self$model_list$n_out
-      if (dataOut != modelOut) {
-        cli::cli_abort(
-          c("x" = "Number of output equations in data and model do not match.", "i" = "Check the number of output equations in the data and model.")
-        )
-      }
+      # if (dataOut != modelOut) {
+      #   cli::cli_abort(
+      #     c("x" = "Number of output equations in data and model do not match.", "i" = "Check the number of output equations in the data and model.")
+      #   )
+      # }
       
       # check if model compiled and if not, do so
       private$compile()
@@ -941,7 +941,7 @@ PM_model <- R6::R6Class(
         
         out_path <- file.path(getwd(), "outputs")
         rlang::try_fetch(
-          fit_model(
+          fit(
             # defined in extendr-wrappers.R
             model_path = self$binary_path,
             data = "gendata.csv",
@@ -949,15 +949,16 @@ PM_model <- R6::R6Class(
               ranges = ranges,
               algorithm = algorithm,
               #make these next two vectors
-              gamlam = self$model_list$err[[1]]$initial,
-              error_type = self$model_list$err[[1]]$type,
-              error_coefficients = c(sapply(self$model_list$err, function(x) {
-                y <- x$coeff
-                if (length(y) < 6) {
-                  y <- c(y, 0, 0)
-                }
-                y
-              })),
+              error_models = lapply(self$model_list$err, function(x) x$flatten()),
+              # gamlam = sapply(self$model_list$err, function(x) x$initial),
+              # error_type = sapply(self$model_list$err, function(x) x$type),
+              # error_coefficients = c(sapply(self$model_list$err, function(x) {
+              #   y <- x$coeff
+              #   if (length(y) < 6) {
+              #     y <- c(y, 0, 0)
+              #   }
+              #   y
+              # })),
               idelta = idelta,
               tad = tad,
               max_cycles = cycles,
@@ -1527,6 +1528,10 @@ PM_err <- R6::R6Class(
       } else {
         cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
       }
+    },
+
+    flatten = function(){
+      list(initial = self$initial, coeff = self$coeff, type = self$type, fixed = self$fixed)
     }
   )
 )

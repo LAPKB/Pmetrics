@@ -17,14 +17,14 @@ pub(crate) fn simulate(
     subject: &Subject,
     support_point: &Vec<f64>,
     spp_index: usize,
-) -> Vec<SimulationRow> {
+) -> Result<Vec<SimulationRow>> {
     let (_lib, (ode, meta)) = unsafe { load_ode(model_path) };
     assert!(meta.get_params().len() == support_point.len());
-    SimulationRow::from_subject_predictions(
-        ode.estimate_predictions(subject, support_point),
+    Ok(SimulationRow::from_subject_predictions(
+        ode.estimate_predictions(subject, support_point)?,
         subject.id(),
         spp_index,
-    )
+    ))
 }
 
 pub(crate) fn fit(

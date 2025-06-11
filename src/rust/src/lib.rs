@@ -3,7 +3,6 @@ mod executor;
 mod settings;
 mod simulation;
 
-
 use anyhow::Result;
 use extendr_api::prelude::*;
 use pmcore::prelude::{data::read_pmetrics, pharmsol::exa::build};
@@ -22,7 +21,11 @@ fn validate_paths(data_path: &str, model_path: &str) {
 /// Simulates the first subject in the data set using the model at the given path.
 ///@export
 #[extendr]
-fn simulate_one(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<SimulationRow> {
+fn simulate_one(
+    data_path: &str,
+    model_path: &str,
+    spp: &[f64],
+) -> Result<Dataframe<SimulationRow>> {
     validate_paths(data_path, model_path);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
     let subjects = data.get_subjects();
@@ -31,8 +34,8 @@ fn simulate_one(data_path: &str, model_path: &str, spp: &[f64]) -> Dataframe<Sim
         subjects.first().unwrap(),
         &spp.to_vec(),
         0,
-    );
-    rows.into_dataframe().unwrap()
+    )?;
+    Ok(rows.into_dataframe().unwrap())
 }
 
 /// Simulates all subjects in the data set using the model at the given path.
@@ -56,7 +59,7 @@ fn simulate_all(
         .flat_map(|(i, spp)| {
             subjects
                 .par_iter()
-                .flat_map(|subject| executor::simulate(model_path.into(), subject, spp, i))
+                .flat_map(|subject| executor::simulate(model_path.into(), subject, spp, i).unwrap())
                 .collect::<Vec<_>>()
         })
         .collect();
@@ -68,8 +71,15 @@ fn simulate_all(
 #[extendr]
 
 pub fn fit(model_path: &str, data: &str, params: List, output_path: &str) -> Result<()> {
+    println!("inside fit");
+    dbg!("Epa la arepa");
     validate_paths(data, model_path);
-    executor::fit(model_path.into(), data.into(), params, output_path.into())?;
+    match executor::fit(model_path.into(), data.into(), params, output_path.into()) {
+        Ok(_) => {}
+        Err(err) => {
+            println!("{}", err)
+        }
+    };
     Ok(())
 }
 
@@ -116,6 +126,8 @@ fn dummy_compile() -> Result<String> {
 ///@export
 #[extendr]
 fn is_cargo_installed() -> bool {
+    println!("inside is_cargo_installed");
+    dbg!("dbg is_cargo_installed");
     Command::new("cargo").arg("--version").output().is_ok()
 }
 

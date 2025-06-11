@@ -9,7 +9,7 @@ name = 'pm_rs'
 
 [dependencies]
 extendr-api = '*'
-pmcore = {version ="=0.10.3-rc4", features = ["exa"]}
+pmcore = {version ="=0.12.0", features = ["exa"]}
 rayon = "1.10.0"
 anyhow = "1.0.97"
 
