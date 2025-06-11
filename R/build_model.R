@@ -21,19 +21,12 @@ build_model <- function(...) {
 
 
   # Define UI for application that draws a histogram
-  shiny::shinyApp(
+  app <- shiny::shinyApp(
     ui <- bslib::page_fluid(
       theme = bslib::bs_theme(bootswatch = "slate"),
       title = "Pmetrics Model Builder App",
       widths = c(3, 9),
 
-
-      # ui <- fluidPage(
-      #   theme = shinythemes::shinytheme("slate"),
-      #
-      #   # Application title
-      #   titlePanel("Pmetrics Model Builder App"),
-      #   # Layout
 
       # Model components
       #  #Formatting
@@ -93,23 +86,16 @@ build_model <- function(...) {
             column(
               6,
               h3("Filters"),
-              selectInput(
-                "mod_route",
-                "Dosing route(s):",
-                list("", "Oral", "Intravenous"),
-                multiple = TRUE
+              checkboxInput(
+                "mod_bolus",
+                "Bolus dosing:",
+                value = TRUE
               ),
               numericInput(
                 "mod_ncomp",
                 "Number of compartments (including oral bolus):",
                 value = NA,
                 min = 1
-              ),
-              selectInput(
-                "mod_elim",
-                "Elimination from:",
-                "",
-                multiple = TRUE
               ),
               radioButtons(
                 "mod_kecl",
@@ -304,6 +290,11 @@ build_model <- function(...) {
         ) # end tabPanel: Outputs
       ) # end navlistPanel
     ), # end ui
+    
+
+# SERVER ------------------------------------------------------------------
+
+    
 
     server <- function(input, output, session) {
       # does object exist?
@@ -458,7 +449,11 @@ build_model <- function(...) {
       # MODEL LIBRARY COMPONENT -------------------------------------------------
 
 
-      mods <- modelLibrary
+      #mods <- modelLibrary
+      
+      #load names of models in memory
+      mods <- ls() %>% map(\(x) x[inherits(get(x), "PM_lib")]) %>% purrr::discard(\(x) length(x) == 0) 
+
 
       # create the global filter results
       mods_filter <- reactiveVal()
@@ -1676,4 +1671,6 @@ build_model <- function(...) {
       })
     } # end server
   ) # end shinyApp
+  shiny::runApp(app, display.mode = "normal")
+  return(NULL) # this will eventually return the model from the app
 } # end build_model
