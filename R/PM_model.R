@@ -404,7 +404,25 @@ PM_model <- R6::R6Class(
           cli::cli_abort(c("x" = "Non supported input for {.arg x}: {typeof(x)}",
                            "i" = "It must be a filename, list, or current {.code PM_model} object."))
         }
-      } # end if not null x
+      } else { # x is NULL, check if other arguments are NULL
+        named_args <- list( 
+          pri = pri,
+          cov = cov,
+          sec = sec,
+          tem = tem,
+          eqn = eqn,
+          lag = lag,
+          fa = fa,
+          ini = ini,
+          out = out,
+          err = err)
+        other_args <- list(...)
+        all_args <- c(named_args, other_args)
+        if (all(sapply(all_args, is.null))) {
+          self <- build_model() # launch the shiny app
+          return(invisible(self))
+        }
+      } # no, some arguments were not NULL, so keep going
       
       
       # Primary parameters must be provided
@@ -541,7 +559,7 @@ PM_model <- R6::R6Class(
       })
       
       self$type <- "closure"
-      private$compile()
+      self$compile()
     },
     
     #' @description
@@ -829,7 +847,7 @@ PM_model <- R6::R6Class(
       }
       
       # check if model compiled and if not, do so
-      private$compile()
+      self$compile()
       
       cwd <- getwd()
       intern <- TRUE # always true until (if) rust can run separately from R
@@ -1016,7 +1034,7 @@ PM_model <- R6::R6Class(
       data$save(temp_csv, header = FALSE)
       if (getPMoptions()$backend == "rust") {
         if (is.null(self$binary_path)) {
-          private$compile()
+          self$compile()
           if (is.null(self$binary_path)) {
             cli::cli_abort(c("x" = "Model must be compiled before simulating."))
           }
@@ -1026,6 +1044,33 @@ PM_model <- R6::R6Class(
         cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
       }
       return(sim)
+    },
+    #' @description
+    #' Compile the model to a binary file.
+    #' @details
+    #' This method write the model to a Rust file in a temporary path,
+    #' updates the `binary_path` field for the model, and compiles that 
+    #' file to a binary file that can be used for fitting or simulation.
+    #' If the model is already compiled, the method does nothing.
+    #' 
+    compile = function() {
+      if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
+        # model is compiled
+        return(invisible(NULL))
+      }
+      
+      temp_model <- file.path(tempdir(), "model.rs")
+      private$write_model_to_rust(temp_model)
+      model_path <- tempfile(pattern = "model_", fileext = ".pmx")
+      tryCatch({
+        compile_model(temp_model, model_path, private$get_primary())
+        self$binary_path <- model_path
+      }, error = function(e) {
+        cli::cli_abort(
+          c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
+        )
+      })
+      file.remove(temp_model) # remove temporary model file
     }
   ),  # end public list
   private = list(
@@ -1069,38 +1114,42 @@ PM_model <- R6::R6Class(
         const_pos <- any(grepl("\\+", x))
         if (const_pos) {
           x <- gsub("\\+", "", x)
-          gtz <- TRUE
-          cli::cli_inform(c("i" = "Truncating variables to positive ranges is not recommended.",
-                            " " = "Consider log transformation instead."))
-        } else {
-          gtz <- FALSE
-        }
+          cli::cli_inform(c("i" = "Truncating variables to positive ranges is not required for NPAG/NPOD",
+                            " " = "This may be updated as parametric algorithms come online, but will be ignored for now."))
+        } 
         
         # find out if constant
         const_var <- any(grepl("!", x))
         if (const_var) {
           x <- gsub("!", "", x)
+          cli::cli_abort(c("x" = "Constants should be defined in the appropriate block, not #PRI."))
         }
         
         values <- as.numeric(x[-1])
         
         if (length(x[-1]) == 1) { # fixed
-          thisItem <- list(fixed(values[1], constant = const_var, gtz = gtz))
+          cli::cli_abort(c("x" = "Fixed but unknown are no longer supported.",
+                           "i" = "If necessary, fit them as random and then use a fixed value in subsequent runs."))
         } else { # range
-          thisItem <- list(ab(values[1], values[2], gtz = gtz))
+          thisItem <- list(ab(values[1], values[2]))
         }
         names(thisItem) <- x[1]
         thisItem
       }) # end sapply
       
       # covariates
-      # process constant covariates
       covar <- blocks$covar
-      const_covar <- grepl("!", covar) # returns boolean vector, length = nout
+      const_covar <- grepl("!", covar) # returns boolean vector, length = ncov
       covar <- gsub("!", "", covar) # remove "!"
       covar_list <- tolower(covar)
+      
       # add to arg_list
-      arg_list$cov <- covar_list
+      arg_list$cov <- purrr::map_vec(const_covar, \(x){
+        type <- ifelse(x, "lm", "none")
+        interp(type)
+      }) %>%
+        purrr::set_names(covar_list)
+      
       
       # extra
       # if (blocks$extra[1] != "") {
@@ -1111,9 +1160,9 @@ PM_model <- R6::R6Class(
       
       # secondary variables
       if (blocks$secVar[1] != "") {
-        cli::cli_abort(c(
-          "i" = "The secondary block is no longer used as of Pmetrics 3.0.0.",
-          " " = "Move equations to the appropriate related block."))
+        arg_list$sec <- eval(parse(text = glue::glue("function() {{\n  {paste(blocks$secVar, collapse = '\n  ')}\n}}")))
+      } else {
+        arg_list$sec <- NULL
       }
       
       # bioavailability
@@ -1298,25 +1347,6 @@ PM_model <- R6::R6Class(
     },
     get_primary = function() {
       return(tolower(self$model_list$parameters))
-    },
-    compile = function() {
-      if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
-        # model is compiled
-        return(invisible(NULL))
-      }
-      
-      temp_model <- file.path(tempdir(), "model.rs")
-      private$write_model_to_rust(temp_model)
-      model_path <- tempfile(pattern = "model_", fileext = ".pmx")
-      tryCatch({
-        compile_model(temp_model, model_path, private$get_primary())
-        self$binary_path <- model_path
-      }, error = function(e) {
-        cli::cli_abort(
-          c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
-        )
-      })
-      file.remove(temp_model) # remove temporary model file
     }
   ) # end private
 )
@@ -1531,30 +1561,13 @@ PM_err <- R6::R6Class(
   )
 )
 
-
-
-#' @title Initial range for primary parameter values
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Define primary model parameter initial values as range. For nonparametric,
-#' this range will be absolutely respected. For parametric, the range serves
-#' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
-#' initial parameter value distribution.
-#' @param min Minimum value.
-#' @param max Maximum value.
-#' @export
-ab <- function(min, max) {
-  PM_range$new(min, max)
-}
-
-#' @title Range for primary parameter values
+#' @title Primary parameter values
 #' @description
 #' `r lifecycle::badge("experimental")`
-#' Define a range for primary model parameter values.
-#' This is a private class used internally by the `PM_model` class.
-PM_range <- R6::R6Class(
-  "PM_range",
+#' Define primary model parameter object.
+#' This is used internally by the `PM_model` class.
+PM_pri <- R6::R6Class(
+  "PM_pri",
   public = list(
     #' @field min Minimum value of the range.
     min = NULL,
@@ -1582,6 +1595,24 @@ PM_range <- R6::R6Class(
   )
 )
 
+
+#' @title Initial range for primary parameter values
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Define primary model parameter initial values as range. For nonparametric,
+#' this range will be absolutely respected. For parametric, the range serves
+#' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
+#' initial parameter value distribution.
+#' @param min Minimum value.
+#' @param max Maximum value.
+#' @export
+ab <- function(min, max) {
+  PM_pri$new(min, max)
+}
+
+
+
 #' @title Initial mean/SD for primary parameter values
 #' @description
 #' `r lifecycle::badge("stable")`
@@ -1594,13 +1625,15 @@ PM_range <- R6::R6Class(
 #' values can be estimated beyond the range.
 #' @param mean Initial mean.
 #' @param sd Initial standard deviation.
-#' @param gtz Greater than zero. If `FALSE` (default), ensure parameter values
-#' remain positive by discarding negative values. Only relevant for parametric
-#' analyses, since lower limit of parameter values for nonparametric are strictly
-#' controlled by the range.
 #' @export
-msd <- function(mean, sd, gtz = FALSE) {
-  PM_input$new(mean, sd, "msd", constant = FALSE, gtz)
+msd <- function(mean, sd) {
+  min <- mean - 3 * sd
+  max <- mean + 3 * sd
+  if(min< 0) {
+    cli::cli_warn(c("i" = "Negative minimum value for primary parameter range.",
+                    " " = "This may not be appropriate for your model."))
+  }
+  PM_pri$new(min, max)
 }
 
 
