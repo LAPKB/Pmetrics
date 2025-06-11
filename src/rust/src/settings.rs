@@ -1,3 +1,4 @@
+use anyhow::bail;
 use extendr_api::{Conversions, List};
 use pmcore::prelude::*;
 use std::collections::HashMap;
@@ -23,27 +24,52 @@ pub(crate) fn settings(
         "npod" => pmcore::prelude::Algorithm::NPOD,
         _ => return Err(anyhow::anyhow!("Algorithm {} not supported", algorithm)),
     };
-    let gamlam = settings
-        .get("gamlam")
-        .unwrap()
-        .as_real()
-        .ok_or_else(|| anyhow::anyhow!("No gamlam provided"))?;
 
-    let poly = settings
-        .get("error_coefficients")
-        .unwrap()
-        .as_real_vector()
-        .ok_or_else(|| anyhow::anyhow!("No error coefficients provided"))?;
+    let error_models_raw = settings.get("error_models").unwrap().as_list().unwrap();
+
+    let n_ems = error_models_raw.len();
+
+    dbg!(&error_models_raw);
+
+    let mut ems = ErrorModels::new();
+
+    for (i, (_, em)) in error_models_raw.iter().enumerate() {
+        let em = em.as_list().unwrap().into_hashmap();
+        let gamlam = em.get("initial").unwrap().as_real().unwrap();
+        let type_vec = em.get("type").unwrap().as_string_vector().unwrap();
+        let err_type = type_vec.first().unwrap();
+        let coeff = em.get("coeff").unwrap().as_real_vector().unwrap();
+        match err_type.as_str() {
+            "additive" => {
+                ems = ems.add(
+                    i,
+                    ErrorModel::additive(
+                        ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
+                        gamlam,
+                    ),
+                )?;
+            }
+            "proportional" => {
+                ems = ems.add(
+                    i,
+                    ErrorModel::proportional(
+                        ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
+                        gamlam,
+                    ),
+                )?;
+            }
+            err => {
+                bail!("Invalid Error type: {}", err);
+            }
+        }
+    }
+
     let max_cycles = settings
         .get("max_cycles")
         .unwrap()
         .as_real()
         .unwrap_or(100.0) as usize;
-    let ind_points = settings
-        .get("points")
-        .unwrap()
-        .as_real()
-        .unwrap_or(2028.0) as usize;
+    let ind_points = settings.get("points").unwrap().as_real().unwrap_or(2028.0) as usize;
     let seed = settings.get("seed").unwrap().as_real().unwrap_or(22.0) as usize;
 
     let prior = settings.get("prior").unwrap().as_str().unwrap().to_string();
@@ -59,11 +85,7 @@ pub(crate) fn settings(
     let mut settings = Settings::builder()
         .set_algorithm(algorithm)
         .set_parameters(parameters)
-        .set_error_model(
-            pmcore::prelude::ErrorModel::Additive,
-            gamlam,
-            (poly[0], poly[1], poly[2], poly[3]),
-        )
+        .set_error_models(ems)
         .build();
     settings.set_idelta(idelta);
     settings.set_tad(tad);
@@ -103,7 +125,7 @@ fn parse_parameters(
                 ));
             }
         };
-        parameters = parameters.add(param.to_string(), *min, *max, false);
+        parameters = parameters.add(param.to_string(), *min, *max);
     }
 
     Ok(parameters)

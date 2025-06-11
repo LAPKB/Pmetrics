@@ -28,7 +28,7 @@ PM_fit <- R6::R6Class(
     data = NULL,
     #' @field model [PM_model] object
     model = NULL,
-    
+
     #' @description
     #' Create a new object
     #' @param data Either the name of a  [PM_data]
@@ -55,9 +55,9 @@ PM_fit <- R6::R6Class(
       if (!inherits(model, "PM_model")) {
         cli::cli_abort(c("x" = "{.code model} must be a {.cls PM_model} object"))
       }
-      
+
       #### checks
-      
+
       # covariates
       dataCov <- tolower(getCov(data)$covnames)
       modelCov <- tolower(model$model_list$covariates)
@@ -73,36 +73,34 @@ PM_fit <- R6::R6Class(
           ))
         }
       }
-      
+
       # output equations
-      
+
       if (!is.null(data$standard_data$outeq)) {
         dataOut <- max(data$standard_data$outeq, na.rm = TRUE)
       } else {
         dataOut <- 1
       }
-      
+
       modelOut <- model$model_list$n_out
-      if (dataOut != modelOut) {
-        cli::cli_abort(c(
-          "x" = "Error: Number of output equations in data and model do not match.",
-          "i" = "Check the number of output equations in the data and model."
-        ))
-      }
-      
+      # if (dataOut != modelOut) {
+      #   cli::cli_abort(c(
+      #     "x" = "Error: Number of output equations in data and model do not match.",
+      #     "i" = "Check the number of output equations in the data and model."
+      #   ))
+      # }
+
       self$data <- data
       self$model <- model
-      
-      return(self)
 
-      
+      return(self)
     },
-    
+
     #' @description
     #' Run a fit of model to the data (deprecated)
-    #' @details The `$run` method for `PM_fit` objects has been deprecated in 
+    #' @details The `$run` method for `PM_fit` objects has been deprecated in
     #' favor of the `$fit` method in [PM_model()].
-    run = function(){
+    run = function() {
       cli::cli_warn(c(
         "!" = "The `$run` method for `PM_fit` objects has been deprecated.",
         "i" = "Use the `$fit` method in [PM_model()] instead."
@@ -117,7 +115,7 @@ PM_fit <- R6::R6Class(
     save = function(file_name = "PMfit.rds") {
       saveRDS(self, file_name)
     },
-    
+
     #' @description
     #' `PM_fit` objects contain a `save` method which invokes [saveRDS] to write
     #' the object to the hard drive as an .rds file. This is the corresponding load
@@ -152,6 +150,6 @@ PM_fit$load <- function(file_name = "PMfit.rds") {
   if (!is.logical(bool)) {
     stop("This functions expects a logical value")
   }
-  
+
   rust_logical <- ifelse(bool, "true", "false")
 }
