@@ -1755,12 +1755,12 @@ plot.PM_model <- function(x,
     FALSE
   }
   
-  if(inherits(model, "PM_model")){
-    eqn <- func_to_char(model$arg_list$eqn)
+  if(inherits(model, c("PM_model", "PM_lib"))){
+    eqns <- func_to_char(model$arg_list$eqn)
   } else {
     eqns <- model
   }
-  
+
   # filter any equations that are not diffeq and make everything capital
   #this_model <- model$model_list$eqn %>%
   
@@ -2005,9 +2005,8 @@ plot.PM_model <- function(x,
     dplyr::mutate(implicit = FALSE)
   
   # outputs
-  if (!is.null(model$model_list) && !is.null(purrr::pluck(model, "model_list", "out", 1, "val"))) {
-    cmts <- map_chr(model$model_list$out,
-                    ~ stringr::str_extract(.x$val, "\\d+"))
+  if (inherits(model, c("PM_model", "PM_lib"))) {
+    cmts <- map_chr(func_to_char(model$arg_list$out), \(x) stringr::str_extract(x, "X\\[(\\d+)\\]", group = 1))
     output_cmt <- dplyr::tibble(out = paste0("Y", seq_along(cmts)), cmt = cmts)
   } else {
     output_cmt <- dplyr::tibble(out = "", cmt = "1")

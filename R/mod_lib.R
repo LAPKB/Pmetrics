@@ -100,19 +100,26 @@ model_lib <- function(name = NULL, show = TRUE) {
 PM_lib <- R6::R6Class(
   "PM_lib",
   public = list(
+    #' @field name Name of the model template
     name = NULL,
+    #' @field alt_names Alterantive names for the model template
     alt_names = NULL,
+    #' @field description Brief description of the model template
     description = NULL,
+    #' @field compartments Names for compartment numbers used in the model template
     compartments = NULL,
-    parameters = NULL,
-    ode = NULL,
+    #' @field algebraic Boolean indicating if the model is fitted algebraically
+    algebraic = NULL,
+    #' @field arg_list List of model blocks with token values
+    arg_list = NULL,
+    
     initialize = function(x){
       self$name <- x[[1]]
       self$alt_names <- x[[2]]
       self$description <- x[[3]]
       self$compartments <- x[[4]]
-      self$parameters <- x[[5]]
-      self$ode <- x[[6]]
+      self$algebraic <- x[[5]]
+      self$arg_list <- x[[6]]
     },
     print = function(){
       cli::cli_div(theme = list(
@@ -132,28 +139,245 @@ PM_lib <- R6::R6Class(
       cli::cli_h3("Parameters")
       cli::cli_text("{.tip Ensure these exact names appear in any of the {.code PRI}, {.code SEC}, {.code EQN}, or {.code OUT} blocks}")
       purrr::walk(self$parameters, cli::cli_text)
-      cli::cli_h3("ODE")
-      cli::cli_text("{.tip These are shown to describe the model structure, but the model is fitted algebraically, not with a differential equation solver}")
-      purrr::walk(self$ode, cli::cli_text)
+      cli::cli_h3("Equations")
+      if(self$algebraic){
+        cli::cli_text("{.tip These are shown to describe the model structure, but the model can be fitted algebraically, without a differential equation solver}")
+      } else {
+        cli::cli_text("{.tip These describe the model structure, and the model is fitted with a differential equation solver}")
+      }
+      purrr::walk(func_to_char(self$arg_list$eqn), cli::cli_text)
       cli::cli_end()
     },
     plot = function(...){
-      plot.PM_model(self$ode,...)
+      plot.PM_model(self,...)
     }
-  )
+  ), # end public
+  active = list(
+    #' @field ncomp Number of compartments in the model
+    ncomp = function(){
+      length(self$compartments)
+    },
+    #' @field bolus Logical indicating if the model has a bolus input
+    bolus = function(){
+      grepl("bolus", self$name, ignore.case = TRUE)
+    },
+    #' @field parameters Names of the primary parameters in the model
+    parameters = function(){
+      names(self$arg_list$pri)
+    }
+  ) # end active
 ) # end PM_lib class definition
 
 mod_list <- list(
   
-  list("one_comp_iv", c("advan1", "advan1-trans1"), c("One compartment", "Infusion into central compartment #1", "Ke elimination from central compartment #1"), "1 = Central", c("Ke", "V"), "dX[1] = RATEIV[1] - Ke*X[1]"),
-  list("one_comp_iv_cl", c("advan1", "advan1-trans2"), c("One compartment", "Infusion into central compartment #1", "CLearance from central compartment #1"), "1 = Central", c("CL, V"), "dX[1] = RATEIV[1] - CL/V*X[1]"),
-  list("two_comp_bolus", c("advan2", "advan2-trans1"), c("Two compartments", "Bolus input to compartment #1, infusion to central compartment #2", "Ke elimination from central compartment #2"), c("1 = Bolus", "2 = Central"), c("Ka", "Ke", "V"), c("dX[1] = BOLUS[1] - Ka*X[1]", "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]")),
-  list("two_comp_bolus_cl", c("advan2", "advan2-trans2"), c("Two compartments", "Bolus input to compartment #1, infusion to central compartment #2", "CLearance from central compartment #2"), c("1 = Bolus", "2 = Central"), c("Ka", "CL", "V"), c("dX[1] = BOLUS[1] - Ka*X[1]", "dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]")),
-  list("two_comp_iv", c("advan3", "advan3-trans1"), c("Two compartments", "Infusion into central compartment #1", "Distribution to/from peripheral compartment #2", "Ke elimination from central compartment #1"), c("1 = Central", "2 = Peripheral"), c("Ke", "V", "Kcp", "Kpc"), c("dX[1] = RATEIV[1] - (Ke + Kcp)*X[1] + Kpc*X[2]", "dX[2] = Kcp*X[1] - Kpc*X[2]")),
-  list("two_comp_iv_cl", c("advan3", "advan3-trans4"), c("Two compartments", "Infusion into central compartment #1", "Distribution to/from peripheral compartment #2", "CLearance from central compartment #1"), c("1 = Central", "2 = Peripheral"), c("CL", "Vc", "Q", "Vp"), c("dX[1] = RATEIV[1] - (CL + Q)/Vc*X[1] + Q/Vp*X[2]", "dX[2] = Q/Vc*X[1] - Q/Vp*X[2]")),
-  list("three_comp_bolus", c("advan4", "advan4-trans1"), c("Three compartments", "Bolus input to compartment #1, infusion into central compartment #2", "Distribution to/from peripheral compartment #3", "Ke elimination from central compartment #2"), c("1 = Bolus", "2 = Central", "3 = Peripheral"), c("Ka", "Ke", "V", "Kcp", "Kpc"), c("dX[1] = BOLUS[1] - Ka*X[1]", "dX[2] = RATEIV[1] + Ka*X[1] - (Ke + Kcp)*X[2] + Kpc*X[3]", "dX[3] = Kcp*X[2] - Kpc*X[3]")),
-  list("three_comp_bolus_cl", c("advan4", "advan4-trans4"), c("Three compartments", "Bolus input to compartment #1, infusion into central compartment #2", "Distribution to/from peripheral compartment #3", "CLearance from central compartment #2"), c("1 = Bolus", "2 = Central", "3 = Peripheral"), c("Ka", "CL", "Vc", "Q", "Vp"), c("dX[1] = BOLUS[1] - Ka*X[1]", "dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/Vc*X[2] + Q/Vp*X[3]", "dX[3] = Q/Vc*X[2] - Q/Vp*X[3]"))
+  list(
+    name = "one_comp_iv", 
+    alt_names = c("advan1", "advan1-trans1"), 
+    description = c("One compartment", "Infusion into central compartment #1", "Ke elimination from central compartment #1"), 
+    compartments = "1 = Central",
+    algebraic = TRUE,
+    arg_list = list(
+      pri = c(
+        Ke = ab(0,5),
+        V = ab(0,100)
+      ),
+      eqn = function(){
+        dX[1] = RATEIV[1] - Ke*X[1]
+      },
+      out = function(){
+        Y[1] = X[1]/V
+      },
+      err = c(
+        proportional(5, c(0.1, 0.1, 0, 0))
+      )
+    )
+  ),
   
+  
+  list(
+    name = "one_comp_iv_cl", 
+    alt_names = c("advan1", "advan1-trans2"), 
+    description = c("One compartment", "Infusion into central compartment #1", "CLearance from central compartment #1"), 
+    compartments = "1 = Central", 
+    algebraic = TRUE,
+    arg_list = list(
+      pri = c(
+        CL = ab(0, 500),
+        V = ab(0, 100)
+      ),
+      eqn = function(){
+        dX[1] = RATEIV[1] - CL/V*X[1]
+      },
+      out = function(){
+        Y[1] = X[1]/V
+      },
+      err = c(
+        proportional(5, c(0.1, 0.1, 0, 0))
+      )
+    )
+  ),
+  
+  list(
+    name = "two_comp_bolus", 
+    alt_names = c("advan2", "advan2-trans1"), 
+    description = c("Two compartments", "Bolus input to compartment #1, infusion to central compartment #2", "Ke elimination from central compartment #2"), 
+    compartments = c("1 = Bolus", "2 = Central"), 
+    algebraic = TRUE,
+    arg_list = list(
+      pri = c(
+        Ka = ab(0, 5),
+        Ke = ab(0, 5),
+        V = ab(0, 100)
+      ),
+      eqn = function(){
+        dX[1] = BOLUS[1] - Ka*X[1]
+        dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]
+      },
+      out = function(){
+        Y[1] = X[2]/V
+      },
+      err = c(
+        proportional(5, c(0.1, 0.1, 0, 0))
+      )
+    )
+  ),
+  
+  
+  list(
+    name = "two_comp_bolus_cl", 
+    alt_names = c("advan2", "advan2-trans2"), 
+    description = c("Two compartments", "Bolus input to compartment #1, infusion to central compartment #2", "CLearance from central compartment #2"), 
+    compartments = c("1 = Bolus", "2 = Central"), 
+    algebraic = TRUE,
+    arg_list = list(
+      pri = c(
+        Ka = ab(0, 5),
+        CL = ab(0, 500),
+        V = ab(0, 100)
+      ),
+      eqn = function(){
+        dX[1] = BOLUS[1] - Ka*X[1]
+        dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]
+      },
+      out = function(){
+        Y[1] = X[2]/V
+      },
+      err = c(
+        proportional(5, c(0.1, 0.1, 0, 0))
+      )
+    )
+  ),
+  
+  
+  list(
+    name = "two_comp_iv",
+    alt_names = c("advan3", "advan3-trans1"),
+    description = c("Two compartments", "Infusion into central compartment #1", "Distribution to/from peripheral compartment #2", "Ke elimination from central compartment #1"),
+    compartments = c("1 = Central", "2 = Peripheral"),
+    algebraic = TRUE,
+    arg_list = list(
+      pri = c(
+        Ke = ab(0, 5),
+        V = ab(0, 100),
+        Kcp = ab(0, 5),
+        Kpc = ab(0, 5)
+      ),
+      eqn = function(){
+        dX[1] = RATEIV[1] - (Ke + Kcp)*X[1] + Kpc*X[2]
+        dX[2] = Kcp*X[1] - Kpc*X[2]
+      },
+      out = function(){
+        Y[1] = X[1]/V
+      },
+      err = c(
+        proportional(5, c(0.1, 0.1, 0, 0))
+      )
+    )
+  ),
+  
+  
+  list(
+    name = "two_comp_iv_cl",
+    alt_names = c("advan3", "advan3-trans4"),
+    description = c("Two compartments", "Infusion into central compartment #1", "Distribution to/from peripheral compartment #2", "CLearance from central compartment #1"),
+    compartments = c("1 = Central", "2 = Peripheral"),
+    algebraic = TRUE,
+    arg_list = list(
+      pri = c(
+        CL = ab(0, 500),
+        Vc = ab(0, 100),
+        Q = ab(0, 100),
+        Vp = ab(0, 100)
+      ),
+      eqn = function(){
+        dX[1] = RATEIV[1] - (CL + Q)/Vc*X[1] + Q/Vp*X[2]
+        dX[2] = Q/Vc*X[1] - Q/Vp*X[2]
+      },
+      out = function(){
+        Y[1] = X[1]/Vc
+      },
+      err = c(
+        proportional(5, c(0.1, 0.1, 0, 0))
+      )
+    )
+  ),
+  
+  list(
+    name = "three_comp_bolus",
+    alt_names = c("advan4", "advan4-trans1"),
+    description = c("Three compartments", "Bolus input to compartment #1, infusion into central compartment #2", "Distribution to/from peripheral compartment #3", "Ke elimination from central compartment #2"),
+    compartments = c("1 = Bolus", "2 = Central", "3 = Peripheral"),
+    algebraic = TRUE,
+    arg_list = list(
+      pri = c(
+        Ka = ab(0, 5),
+        Ke = ab(0, 5),
+        V = ab(0, 100),
+        Kcp = ab(0, 5),
+        Kpc = ab(0, 5)
+      ),
+      eqn = function(){
+        dX[1] = BOLUS[1] - Ka*X[1]
+        dX[2] = RATEIV[1] + Ka*X[1] - (Ke + Kcp)*X[2] + Kpc*X[3]
+        dX[3] = Kcp*X[2] - Kpc*X[3]
+      },
+      out = function(){
+        Y[1] = X[2]/V
+      },
+      err = c(
+        proportional(5, c(0.1, 0.1, 0, 0))
+      )
+    )
+  ),
+  
+  
+  list(
+    name = "three_comp_bolus_cl",
+    alt_names = c("advan4", "advan4-trans4"),
+    description = c("Three compartments", "Bolus input to compartment #1, infusion into central compartment #2", "Distribution to/from peripheral compartment #3", "CLearance from central compartment #2"),
+    compartments = c("1 = Bolus", "2 = Central", "3 = Peripheral"),
+    algebraic = TRUE,
+    arg_list = list(
+      pri = c(
+        Ka = ab(0, 5),
+        CL = ab(0, 500),
+        Vc = ab(0, 100),
+        Q = ab(0, 100),
+        Vp = ab(0, 100)
+      ),
+      eqn = function(){
+        dX[1] = BOLUS[1] - Ka*X[1]
+        dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/Vc*X[2] + Q/Vp*X[3]
+        dX[3] = Q/Vc*X[2] - Q/Vp*X[3]
+      },
+      out = function(){
+        Y[1] = X[2]/Vc
+      },
+      err = c(
+        proportional(5, c(0.1, 0.1, 0, 0))
+      )
+    )
+  )
 )
 
 purrr::walk(mod_list, \(x) {
