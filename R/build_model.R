@@ -329,11 +329,11 @@ build_model <- function(...) {
       # the model can be passed as an argument in build_model()
       # check if it is so and set
       if (!is.null(model_arg)) {
-        model_obj(model_arg$model_list) # update global reactive value
+        model_obj(model_arg$arg_list) # update global reactive value
       }
 
       # the data can be passed as an argument in build_model()
-      # covariates in data will supersede covariates in model
+      # covariates in data will supersede covariates in mode
       if (!is.null(data_arg)) {
         data_obj(data_arg) # update global
         cov_data <- getCov(data_arg$standard_data)
@@ -375,11 +375,11 @@ build_model <- function(...) {
       store <- reactiveValues(
         var_name_1 = "Ke",
         var_a_1 = 0,
-        var_b_1 = 5,
+        var_b_1 = 5
         # var_mean_1 = 2.5,
         # var_sd_1 = 0.833,
-        var_constant_1 = FALSE,
-        var_gtz_1 = FALSE
+        #var_constant_1 = FALSE,
+        #var_gtz_1 = FALSE
       )
 
 
@@ -452,7 +452,8 @@ build_model <- function(...) {
       #mods <- modelLibrary
       
       #load names of models in memory
-      mods <- ls() %>% map(\(x) x[inherits(get(x), "PM_lib")]) %>% purrr::discard(\(x) length(x) == 0) 
+      mod_names <- ls(envir = .GlobalEnv) %>% purrr::map(\(x) x[inherits(get(x), "PM_lib")]) %>% purrr::discard(\(x) length(x) == 0) 
+      mods <- purrr::map(mod_names, \(x) get(x))
 
 
       # create the global filter results
@@ -461,7 +462,7 @@ build_model <- function(...) {
       # make combined filter trigger
       filter_obj <- reactive({
         list(
-          input$mod_route, input$mod_ncomp, input$mod_elim, input$mod_kecl,
+          input$mod_bolus, input$mod_ncomp, input$mod_kecl,
           input$mod_alg, input$searchme
         )
       })
@@ -477,54 +478,48 @@ build_model <- function(...) {
         }
       })
 
-      # function to aid filtering
-      find_x_in_y <- function(x, y) {
-        any(stringr::str_detect(y, stringr::regex(x, ignore_case = T)))
-      }
-
+      # # function to aid filtering
+      # find_x_in_y <- function(x, y) {
+      #   any(stringr::str_detect(y, stringr::regex(x, ignore_case = T)))
+      # }
+      # 
 
 
       # if filter inputs change, execute this
       observeEvent(filter_obj(), {
         this_filter <- mods
-        if (!is.null(input$mod_route)) {
-          this_filter <- this_filter %>%
-            dplyr::filter(purrr::map_lgl(route, ~ find_x_in_y(input$mod_route, .x)))
+        if (!is.null(input$mod_bolus)) {
+          this_filter <- this_filter %>% 
+            purrr::keep(\(x) x$bolus == input$mod_bolus)
         }
         if (!is.na(input$mod_ncomp)) {
           this_filter <- this_filter %>%
-            dplyr::filter(purrr::map_lgl(ncomp, ~ input$mod_ncomp == .x))
-        }
-        if (!is.null(input$mod_elim) && input$mod_elim != "") {
-          this_filter <- this_filter %>%
-            dplyr::filter(purrr::map_lgl(elim, ~ find_x_in_y(input$mod_elim, .x)))
+            purrr::keep(\(x) x$ncomp == input$ncomp)
         }
         if (length(input$mod_kecl) > 0) {
           if (input$mod_kecl == "Rate constants") {
-            key <- "K"
+            key <- "ke"
           } else {
-            key <- "CL"
+            key <- "cl"
           }
           this_filter <- this_filter %>%
-            dplyr::filter(par == key)
+            purrr::keep(\(x) key %in% tolower(x$parameters))
         }
         if (input$mod_alg) {
           this_filter <- this_filter %>%
-            dplyr::filter(algebraic != "")
+            purrr::keep(\(x) x$algebraic == input$mod_alg)
         }
 
         # if search box changes, execute this
         if (input$searchme != "") {
-          # browser()
-          # terms <- stringr::str_split(input$searchme, ",|;|\\s+") %>% unlist() %>% stringi::stri_remove_empty()
-          terms <- stringr::str_split(input$searchme, ",|;|\\s+") %>% unlist()
+          terms <- stringr::str_split(input$searchme, ",|;") %>% unlist() %>% stringr::str_squish()
           terms <- terms[nzchar(terms)]
           this_filter <- this_filter %>%
-            dplyr::filter(purrr::map_lgl(name, ~ find_x_in_y(terms, .x)))
+            purrr::keep(\(x) all(stringr::str_detect(paste(x$description, collapse = " "), stringr::regex(terms, ignore.case = TRUE))))
         }
-
+      
         # update the global filter results
-        if (nrow(this_filter) == 0) {
+        if (length(this_filter) == 0) {
           this_filter <- dplyr::tibble(name = "None")
         }
         mods_filter(this_filter)
@@ -543,7 +538,7 @@ build_model <- function(...) {
               selectInput(
                 "mod_list",
                 "",
-                choices = mods_filter()$name,
+                choices = purrr::map_chr(mods_filter(), \(x) x$name),
                 selectize = FALSE,
                 multiple = FALSE,
                 size = 10
@@ -566,10 +561,8 @@ build_model <- function(...) {
         ignoreNULL = TRUE,
         {
           output$model_snapshot <- renderPlot({
-            mod_to_plot <- tryCatch(modelLibrary$mod[which(modelLibrary$name == input$mod_list)][[1]], error = function(e) NA)
-            class(mod_to_plot) <- "PM_model"
-            # browser()
-            tryCatch(plot(mod_to_plot),
+            mod_to_plot <- tryCatch(get(input$mod_list), error = function(e) NA)
+            tryCatch(mod_to_plot$plot(),
               error = function(e) {
                 ggplot2::ggplot(
                   data = data.frame(x = c(0, 1), y = c(0, 1)),
@@ -588,10 +581,10 @@ build_model <- function(...) {
         ignoreInit = TRUE,
         {
           # update reactive variables
-          model_obj(modelLibrary$mod[which(modelLibrary$name == input$mod_list)][[1]]$model_list) # this model will update
-          alg_mod(modelLibrary$algebraic[which(modelLibrary$name == input$mod_list)]) # indicates algebraic model
-          orig_model(model_obj()$eqn) # keep the original model
-          orig_alg_model(alg_mod()) # keep the original algebraic code
+          model_obj(tryCatch(get(input$mod_list), error = function(e) NA)) # this model will update
+          alg_mod(tryCatch(model_obj()$algebraic, error = function(e) NA)) # indicates algebraic model
+          orig_model(tryCatch(model_obj()$ode, error = function(e) NA)) # keep the original model
+          orig_alg_model(tryCatch(alg_mod(), error = function(e) NA)) # keep the original algebraic code
         }
       )
 
@@ -642,12 +635,12 @@ build_model <- function(...) {
           # grab model
           model <- model_obj()
 
-          npar <- length(model$pri)
+          npar <- length(model$parameters)
           updateNumericInput(inputId = "nvar", value = npar)
           purrr::walk(
             1:npar,
             ~ {
-              store[[paste0("var_name_", .x)]] <- names(model$pri)[.x]
+              store[[paste0("var_name_", .x)]] <- model$parameters[.x]
               store[[paste0("var_a_", .x)]] <- ifelse(abmsdcv() == "Range" | abmsdcv() == "Mean/CV%", model$pri[[.x]]$min, model$pri[[.x]]$mean)
               store[[paste0("var_b_", .x)]] <- ifelse(abmsdcv() == "Range" | abmsdcv() == "Mean/CV%", model$pri[[.x]]$max, model$pri[[.x]]$sd)
               store[[paste0("var_constant_", .x)]] <- model$pri[[.x]]$constant
