@@ -95,6 +95,7 @@ ordinary differential equations or "analytical" for analytical models.}
 \item \href{#method-PM_model-plot}{\code{PM_model$plot()}}
 \item \href{#method-PM_model-fit}{\code{PM_model$fit()}}
 \item \href{#method-PM_model-sim}{\code{PM_model$sim()}}
+\item \href{#method-PM_model-compile}{\code{PM_model$compile()}}
 \item \href{#method-PM_model-clone}{\code{PM_model$clone()}}
 }
 }
@@ -619,6 +620,23 @@ Each row of \code{theta} represents a different set of parameter values.}
 This method simulates output from the model using a set of parameter values
 provided in the \code{theta} matrix and the template for dosing/observations in
 the \code{data} object.
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_model-compile"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-compile}{}}}
+\subsection{Method \code{compile()}}{
+Compile the model to a binary file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$compile()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+This method write the model to a Rust file in a temporary path,
+updates the \code{binary_path} field for the model, and compiles that
+file to a binary file that can be used for fitting or simulation.
+If the model is already compiled, the method does nothing.
 }
 
 }

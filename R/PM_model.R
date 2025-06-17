@@ -29,8 +29,8 @@
 #' * It's a complete example of a three compartment model with delayed absorption.
 #' * We show the method of defining the model first and embedding the `PM_model$new()` within
 #' a `donttest` block to avoid automatic compilation. 
-#' * Since this model can also be solved algebraically, we could have used
-#'  `tem = three_comp_bolus()` and omitted the `eqn` block. 
+#' * Since this model can also be solved analytically with algebra, we could have used
+#'  `eqn = function(){three_comp_bolus}`. 
 #' @examples 
 #' 
 #' mod_list <- list(
@@ -91,7 +91,7 @@ PM_model <- R6::R6Class(
     #' sources, and if used, all the subsequent arguments will be ignored. If a model
     #' is defined on the fly, the arguments form the building blocks. Blocks are of two types:
     #' 
-    #' * **Vectors** define *primary parameters*, *covariates*, *algebraic model template*,
+    #' * **Vectors** define *primary parameters*, *covariates*,
     #' and *error models*. These 
     #' portions of the model have specific and defined creator functions and no additional
     #' R code is permissible. They take this form:
@@ -191,7 +191,7 @@ PM_model <- R6::R6Class(
     #' e.g., `V = V0 * wt`, in the `sec` block for global availability or another
     #' appropriate block for availability restricted to that block. 
     #'
-    #' Outputs for algebraic models can be calculated from any model compartment.
+    #' Outputs for analytical models can be calculated from any model compartment.
     #' @param eqn A function defining the model equations. The function must have no arguments,
     #' and the equations must be defined
     #' in R syntax. Use the following notation in equations:
@@ -351,7 +351,7 @@ PM_model <- R6::R6Class(
                           pri = NULL,
                           cov = NULL,
                           sec = NULL,
-                          tem = NULL,
+                          #tem = NULL,
                           eqn = NULL,
                           lag = NULL,
                           fa = NULL,
@@ -365,7 +365,7 @@ PM_model <- R6::R6Class(
         pri = pri,
         cov = cov,
         sec = sec,
-        tem = tem,
+        #tem = tem,
         eqn = eqn,
         lag = lag,
         fa = fa,
@@ -373,22 +373,22 @@ PM_model <- R6::R6Class(
         out = out,
         err = err
       )
-      
+
       if(!is.null(x)){
-        model_sections <- c("pri", "cov", "sec", "tem", "eqn", "lag", "fa", "ini", "out", "err")
-        if (is.character(x) && length(x) == 1) {
+        model_sections <- c("pri", "cov", "sec", "eqn", "lag", "fa", "ini", "out", "err")
+        if (is.character(x) && length(x) == 1) { # x is a filename
           if (!file.exists(x)) {
             cli::cli_abort(c("x" = "File {.file {x}} does not exist.",
                              "i" = "Current directory: {getwd()}"))
           }
-          self$arg_list <- private$R6fromFile(x)
-        } else if (is.list(x)) {
+          self$arg_list <- private$R6fromFile(x) # read file and populate fields
+        } else if (is.list(x)) { # x is a list in R
           purrr::walk(model_sections, \(s) {
             if (s %in% names(x)) {
               self$arg_list[[s]] <- x[[s]]
             }
           })
-        } else if (inherits(x, "PM_model")) {
+        } else if (inherits(x, "PM_model")) { # x is a PM_model object
           if(!"arg_list" %in% names(x)) {
             cli::cli_abort(c("x" = "You have supplied an older {.code PM_model} format.",
                              "i" = "Please see for {.help Pmetrics::PM_model()} to remake it."))
@@ -404,7 +404,24 @@ PM_model <- R6::R6Class(
           cli::cli_abort(c("x" = "Non supported input for {.arg x}: {typeof(x)}",
                            "i" = "It must be a filename, list, or current {.code PM_model} object."))
         }
-      } # end if not null x
+      } else { # x is NULL, check if other arguments are NULL
+        named_args <- list( 
+          pri = pri,
+          cov = cov,
+          sec = sec,
+          eqn = eqn,
+          lag = lag,
+          fa = fa,
+          ini = ini,
+          out = out,
+          err = err)
+        other_args <- list(...)
+        all_args <- c(named_args, other_args)
+        if (all(sapply(all_args, is.null))) { # everything is NULL
+          self <- build_model() # launch the shiny app
+          return(invisible(self))
+        }
+      } # no, some arguments were not NULL, so keep going
       
       
       # Primary parameters must be provided
@@ -414,48 +431,148 @@ PM_model <- R6::R6Class(
         )
       }
       
-      # Can not use both eqn and sec/tem together
-      # if (!is.null(self$arg_list$eqn)) {
-      #   if (!is.null(self$arg_list$sec) || !is.null(self$arg_list$tem)) {
-      #     cli::cli_abort(
-      #       c("x" = "Eqn and sec/tem cannot be used together.", "i" = "Please use either eqn or sec/tem, not both.")
-      #     )
-      #   }
-      # }
       
-      # Either an ODE-based model or an analytical model must be provided
-      if (is.null(self$arg_list$eqn) && is.null(self$arg_list$tem) ){
-        #is.null(self$arg_list$sec) && ) {
-        cli::cli_abort(c("x" = "No equations provided.", 
-                         "i" = "Please provide either differential equations using {.code eqn} or a analytic template using {.code tem}."))
+      # Either an ODE-based model or an analytical model must be provided in eqn
+      if (is.null(self$arg_list$eqn)){
+        cli::cli_abort(c("x" = "No equations or template provided.", 
+                         "i" = "Please provide either a template (see {.help model_lib()}) or differential equations using {.code eqn}."))
       }
-      
-      # if (!is.null(self$arg_list$tem)) {
-      #   if (!is.null(self$arg_list$eqn)) {
-      #     cli::cli_abort(
-      #       c("x" = "Eqn and tem cannot be used together.", "i" = "Please use either eqn or tem, not both.")
-      #     )
-      #   }
-      # }
       
       # Number of equations
       n_eqn <- get_assignments(self$arg_list$eqn, "dx")
       n_out <- get_assignments(self$arg_list$out, "y")
       
-      # Auxiliary variable to identify the type of execution
-      type <- NULL
       
-      if (!is.null(self$arg_list$tem)) {
-        type <- "analytical"
+      # Get model template name if present (NA if absent) and set type
+      model_template <- get_found_model(func_to_char(self$arg_list$eqn)) #function defined below, returns NA if not found
+      if (length(model_template)>1) {
+        type <- "Analytical"
       } else {
-        type <- "ode"
+        type <- "ODE"
       }
       
       ## Get the names of the parameters
       parameters <- tolower(names(self$arg_list$pri))
       covariates <- tolower(names(self$arg_list$cov))
       
+      ## check to make sure required parameters present if Analytical
+      if (type == "Analytical"){
+        # look in pri, sec, eqn, lag, fa, ini, out blocks for required parameters
+        required_parameters <- tolower(model_template$parameters)
+        pri_list <- map_lgl(required_parameters, \(x){
+          if (x %in% parameters){
+            return(TRUE)
+          } else { return(FALSE)}
+        })
+        
+        if(length(covariates)>0){
+          cov_list <- map_lgl(required_parameters, \(x){
+            if (x %in% covariates){
+              return(TRUE)
+            } else { return(FALSE)}
+          })
+        } else {
+          cov_list <- rep(FALSE, length(required_parameters))
+        }
+        
+        if(!is.null(self$arg_list$sec)){
+          sec_list <- map_lgl(required_parameters, \(x){
+            stringr::str_detect(func_to_char(self$arg_list$sec), x)
+          })
+        } else {
+          sec_list <- rep(FALSE, length(required_parameters))
+        }
+        
+        eqn_list <- map_lgl(required_parameters, \(x){
+          any(stringr::str_detect(
+            stringr::str_remove_all(func_to_char(self$arg_list$eqn), "\\s+"), # string
+            paste0(x,"(?=(<-|=))")) # pattern
+          )
+        })
+        
+        if(!is.null(self$arg_lag)){
+          lag_list <- map_lgl(required_parameters, \(x){
+            any(stringr::str_detect(
+              stringr::str_remove_all(func_to_char(self$arg_list$lag), "\\s+"), # string
+              paste0(x,"(?=(<-|=))")) # pattern
+            )
+          })
+        } else {
+          lag_list <- rep(FALSE, length(required_parameters))
+        }
+        
+        if(!is.null(self$arg_fa)){
+          lag_list <- map_lgl(required_parameters, \(x){
+            any(stringr::str_detect(
+              stringr::str_remove_all(func_to_char(self$arg_list$fa), "\\s+"), # string
+              paste0(x,"(?=(<-|=))")) # pattern
+            )
+          })
+        } else {
+          fa_list <- rep(FALSE, length(required_parameters))
+        }
+        
+        if(!is.null(self$arg_ini)){
+          ini_list <- map_lgl(required_parameters, \(x){
+            any(stringr::str_detect(
+              stringr::str_remove_all(func_to_char(self$arg_list$ini), "\\s+"), # string
+              paste0(x,"(?=(<-|=))")) # pattern
+            )
+          })
+        } else {
+          ini_list <- rep(FALSE, length(required_parameters))
+        }
+        
+        out_list <- map_lgl(required_parameters, \(x){
+          any(stringr::str_detect(
+            stringr::str_remove_all(func_to_char(self$arg_list$out), "\\s+"), # string
+            paste0(x,"(?=(<-|=))")) # pattern
+          )
+        })
+        
+        all_lists <- bind_rows(
+          tibble::tibble(
+            parameter = required_parameters,
+            pri = pri_list,
+            cov = cov_list,
+            sec = sec_list,
+            eqn = eqn_list,
+            lag = lag_list,
+            fa = fa_list,
+            ini = ini_list,
+            out = out_list
+          )
+        ) %>% mutate(ok = purrr::pmap_lgl(across(pri:out), any))
+        
+        
+        if (any(!all_lists$ok)) {
+          missing <- all_lists$parameter[!all_lists$ok]
+          cli::cli_abort(
+            c("x" = "The following parameters are required for the {.code {model_template}} model template but are missing: {missing}",
+              "i" = "They should be defined in one of the model blocks, likely {.code pri}, {.code sec}, {.code eqn}, or {.code out}.",
+              " " = "Parameters defined in {.code pri} and {.code sec} are available to all blocks.",
+              " " = "Parameters defined in other blocks are only available to that block."))
+        }
+      } # end parameter checks for Analytical model
+      
+      
+      # if Analytical, need to combine sec and eqn
+      if (type == "Analytical"){
+        # shell function
+        sec_eqn <- function() {} 
+        # define the body of the shell function
+        body(sec_eqn) <- suppressWarnings(as.call(c(
+          quote(`{`),
+          as.list(body(self$arg_list$eqn))[-1],  # remove outer `{` of f1
+          as.list(body(self$arg_list$sec))[-1]   # remove outer `{` of f2
+        )))
+        
+        # this will include template and equations in both sec and eqn
+      }
+      
       # sec
+      # still needed for analytic, because these equations will be used
+      # in other blocks
       if (!is.null(self$arg_list$sec)){
         sec <- transpile_sec(self$arg_list$sec)
       } else {
@@ -463,47 +580,47 @@ PM_model <- R6::R6Class(
       }
       
       # eqn
-      if (type == "ode") {
+      if (type == "ODE") {
         eqn <- transpile_ode_eqn(self$arg_list$eqn, parameters, covariates, sec)
-      } else if (type == "analytical") {
-        eqn <- NULL
-        #eqn <- transpile_analytic_eqn(self$arg_list$eqn, parameters, covariates, sec)
+      } else if (type == "Analytical") {
+        eqn <- transpile_analytic_eqn(sec_eqn, parameters, covariates)
       }
       
-      
+      # fa
       if (!is.null(self$arg_list$fa)) {
         fa <- transpile_fa(self$arg_list$fa, parameters, covariates, sec)
       } else {
         fa <- empty_fa()
       }
       
+      # lag
       if (!is.null(self$arg_list$lag)) {
         lag <- transpile_lag(self$arg_list$lag, parameters, covariates, sec)
       } else {
         lag <- empty_lag()
       }
       
+      # ini
       if (!is.null(self$arg_list$ini)) {
         ini <- transpile_ini(self$arg_list$ini, parameters, covariates, sec)
       } else {
         ini <- empty_ini()
       }
       
+      # out
       if (!is.null(self$arg_list$out)) {
         out <- transpile_out(self$arg_list$out, parameters, covariates, sec)
       } else {
         out <- empty_out()
       }
       
-      ### err
+      # err
       if(is.null(self$arg_list$err)) {
         cli::cli_abort(
           c("x" = "Error model is missing and required.", 
             "i" = "Please see help for {.help PM_model()}.")
         )
       }
-      
-      
       
       #ensure length err matches length outeqs
       if (length(self$arg_list$err) != n_out) {
@@ -512,15 +629,13 @@ PM_model <- R6::R6Class(
             "i" = "Please check the error model.")
         )
       }
-      #err <- transpile_error(self$arg_list$err)
       err <- self$arg_list$err
       
-      
+      # build the model list of rust components
       model_list <- list(
+        pri = self$arg_list$pri,
         eqn = eqn,
-        pri = pri,
-        #sec = sec,
-        tem = tem,
+        sec = sec,
         lag = lag,
         fa = fa,
         ini = ini,
@@ -540,8 +655,8 @@ PM_model <- R6::R6Class(
         }
       })
       
-      self$type <- "closure"
-      private$compile()
+      self$model_list$type <- type
+      self$compile()
     },
     
     #' @description
@@ -580,7 +695,7 @@ PM_model <- R6::R6Class(
       }
       
       if(!is.null(self$arg_list$tem)){
-        cli::cli_h3(text = "Algebraic Model")
+        cli::cli_h3(text = "Analytical Model")
         cli::cli_text("{.eqs {self$arg_list$tem$name}})")
       }
       
@@ -745,7 +860,7 @@ PM_model <- R6::R6Class(
     #' @param overwrite Boolean operator to overwrite existing run result folders.  Default is `FALSE`.
     #    #' @param nocheck Suppress the automatic checking of the data file with [PM_data].  Default is `FALSE`.
     #    #' @param parallel Run NPAG in parallel.  Default is `NA`, which will be set to `TRUE` for models that use
-    #    #' differential equations, and `FALSE` for algebraic/explicit models.  The majority of the benefit for parallelization comes
+    #    #' differential equations, and `FALSE` for analytical/explicit models.  The majority of the benefit for parallelization comes
     #    #' in the first cycle, with a speed-up of approximately 80\% of the number of available cores on your machine, e.g. an 8-core machine
     #    #' will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\%, e.g. 4-fold increase on an 8-core
     #    #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
@@ -829,7 +944,7 @@ PM_model <- R6::R6Class(
       # }
       
       # check if model compiled and if not, do so
-      private$compile()
+      self$compile()
       
       cwd <- getwd()
       intern <- TRUE # always true until (if) rust can run separately from R
@@ -1017,7 +1132,7 @@ PM_model <- R6::R6Class(
       data$save(temp_csv, header = FALSE)
       if (getPMoptions()$backend == "rust") {
         if (is.null(self$binary_path)) {
-          private$compile()
+          self$compile()
           if (is.null(self$binary_path)) {
             cli::cli_abort(c("x" = "Model must be compiled before simulating."))
           }
@@ -1027,6 +1142,34 @@ PM_model <- R6::R6Class(
         cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
       }
       return(sim)
+    },
+    #' @description
+    #' Compile the model to a binary file.
+    #' @details
+    #' This method write the model to a Rust file in a temporary path,
+    #' updates the `binary_path` field for the model, and compiles that 
+    #' file to a binary file that can be used for fitting or simulation.
+    #' If the model is already compiled, the method does nothing.
+    #' 
+    compile = function() {
+      if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
+        # model is compiled
+        return(invisible(NULL))
+      }
+      
+      temp_model <- file.path(tempdir(), "model.rs")
+      private$write_model_to_rust(temp_model)
+      model_path <- tempfile(pattern = "model_", fileext = ".pmx")
+      browser()
+      tryCatch({
+        compile_model(temp_model, model_path, private$get_primary())
+        self$binary_path <- model_path
+      }, error = function(e) {
+        cli::cli_abort(
+          c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
+        )
+      })
+      file.remove(temp_model) # remove temporary model file
     }
   ),  # end public list
   private = list(
@@ -1070,38 +1213,42 @@ PM_model <- R6::R6Class(
         const_pos <- any(grepl("\\+", x))
         if (const_pos) {
           x <- gsub("\\+", "", x)
-          gtz <- TRUE
-          cli::cli_inform(c("i" = "Truncating variables to positive ranges is not recommended.",
-                            " " = "Consider log transformation instead."))
-        } else {
-          gtz <- FALSE
-        }
+          cli::cli_inform(c("i" = "Truncating variables to positive ranges is not required for NPAG/NPOD",
+                            " " = "This may be updated as parametric algorithms come online, but will be ignored for now."))
+        } 
         
         # find out if constant
         const_var <- any(grepl("!", x))
         if (const_var) {
           x <- gsub("!", "", x)
+          cli::cli_abort(c("x" = "Constants should be defined in the appropriate block, not #PRI."))
         }
         
         values <- as.numeric(x[-1])
         
         if (length(x[-1]) == 1) { # fixed
-          thisItem <- list(fixed(values[1], constant = const_var, gtz = gtz))
+          cli::cli_abort(c("x" = "Fixed but unknown are no longer supported.",
+                           "i" = "If necessary, fit them as random and then use a fixed value in subsequent runs."))
         } else { # range
-          thisItem <- list(ab(values[1], values[2], gtz = gtz))
+          thisItem <- list(ab(values[1], values[2]))
         }
         names(thisItem) <- x[1]
         thisItem
       }) # end sapply
       
       # covariates
-      # process constant covariates
       covar <- blocks$covar
-      const_covar <- grepl("!", covar) # returns boolean vector, length = nout
+      const_covar <- grepl("!", covar) # returns boolean vector, length = ncov
       covar <- gsub("!", "", covar) # remove "!"
       covar_list <- tolower(covar)
+      
       # add to arg_list
-      arg_list$cov <- covar_list
+      arg_list$cov <- purrr::map_vec(const_covar, \(x){
+        type <- ifelse(x, "lm", "none")
+        interp(type)
+      }) %>%
+        purrr::set_names(covar_list)
+      
       
       # extra
       # if (blocks$extra[1] != "") {
@@ -1112,9 +1259,9 @@ PM_model <- R6::R6Class(
       
       # secondary variables
       if (blocks$secVar[1] != "") {
-        cli::cli_abort(c(
-          "i" = "The secondary block is no longer used as of Pmetrics 3.0.0.",
-          " " = "Move equations to the appropriate related block."))
+        arg_list$sec <- eval(parse(text = glue::glue("function() {{\n  {paste(blocks$secVar, collapse = '\n  ')}\n}}")))
+      } else {
+        arg_list$sec <- NULL
       }
       
       # bioavailability
@@ -1208,87 +1355,34 @@ PM_model <- R6::R6Class(
       cat(msg)
       flush.console()
       return(arg_list)
-    },
+    }, # end R6fromFile
+    
     write_model_to_rust = function(file_path = "main.rs") {
       # Check if model_list is not NULL
       if (is.null(self$model_list)) {
         cli::cli_abort(c("x" = "Model list is empty.", "i" = "Please provide a valid model list."))
       }
-      
-      type <- "ode"
-      
-      
-      if (type == "analytical") {
-        base <- "equation::Analytical::new(
-            <tem>,
-            <sec>,
-            <lag>,
-            <fa>,
-            <ini>,
-            <out>,
-            (<n_eqn>, <n_out>),
-          )"
-        base <- gsub(
-          pattern = "<tem>",
-          replacement = self$model_list$tem,
-          x = base
-        )
-        base <- gsub(
-          pattern = "<sec>",
-          replacement = NULL, #removing SEC block
-          #replacement = self$model_list$sec,
-          x = base
-        )
-      } else if (type == "ode") {
-        base <- "equation::ODE::new(
-            <eqn>,
-            <lag>,
-            <fa>,
-            <ini>,
-            <out>,
-            (<n_eqn>, <n_out>),
-        )"
-        base <- gsub(
-          pattern = "<eqn>",
-          replacement = self$model_list$eqn,
-          x = base
-        )
+
+      if (self$model_list$type %in% c("Analytical", "ODE")){
+        placeholders <- c("eqn", "lag", "fa", "ini", "out", "n_eqn", "n_out")
+        
+        base <- paste0("equation::", 
+                       self$model_list$type, 
+                       "::new(\n", 
+                       paste("<", placeholders[1:5], ">", sep = "", collapse = ",\n "),
+                       ",\n (",
+                       paste("<", placeholders[6:7], ">", sep = "", collapse = ", "),
+                       "),\n);")
+        
       } else {
         cli::cli_abort(c("x" = "Invalid model type.", "i" = "Please provide a valid model type."))
       }
       
       
-      base <- gsub(
-        pattern = "<lag>",
-        replacement = self$model_list$lag,
-        x = base
-      )
-      base <- gsub(
-        pattern = "<fa>",
-        replacement = self$model_list$fa,
-        x = base
-      )
-      base <- gsub(
-        pattern = "<ini>",
-        replacement = self$model_list$ini,
-        x = base
-      )
-      base <- gsub(
-        pattern = "<out>",
-        replacement = self$model_list$out,
-        x = base
-      )
-      base <- gsub(
-        pattern = "<n_eqn>",
-        replacement = self$model_list$n_eqn,
-        x = base
-      )
-      base <- gsub(
-        pattern = "<n_out>",
-        replacement = self$model_list$n_out,
-        x = base
-      )
-      
+      # Replace placeholders in the base string with actual values from model_list
+      base <- placeholders %>%
+        purrr::reduce(\(x, y) stringr::str_replace(x, str_c("<", y, ">"), as.character(self$model_list[[y]])), .init = base)
+
       # Write the model to a file
       writeLines(base, file_path)
     },
@@ -1299,25 +1393,6 @@ PM_model <- R6::R6Class(
     },
     get_primary = function() {
       return(tolower(self$model_list$parameters))
-    },
-    compile = function() {
-      if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
-        # model is compiled
-        return(invisible(NULL))
-      }
-      
-      temp_model <- file.path(tempdir(), "model.rs")
-      private$write_model_to_rust(temp_model)
-      model_path <- tempfile(pattern = "model_", fileext = ".pmx")
-      tryCatch({
-        compile_model(temp_model, model_path, private$get_primary())
-        self$binary_path <- model_path
-      }, error = function(e) {
-        cli::cli_abort(
-          c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
-        )
-      })
-      file.remove(temp_model) # remove temporary model file
     }
   ) # end private
 )
@@ -1536,30 +1611,13 @@ PM_err <- R6::R6Class(
   )
 )
 
-
-
-#' @title Initial range for primary parameter values
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Define primary model parameter initial values as range. For nonparametric,
-#' this range will be absolutely respected. For parametric, the range serves
-#' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
-#' initial parameter value distribution.
-#' @param min Minimum value.
-#' @param max Maximum value.
-#' @export
-ab <- function(min, max) {
-  PM_range$new(min, max)
-}
-
-#' @title Range for primary parameter values
+#' @title Primary parameter values
 #' @description
 #' `r lifecycle::badge("experimental")`
-#' Define a range for primary model parameter values.
-#' This is a private class used internally by the `PM_model` class.
-PM_range <- R6::R6Class(
-  "PM_range",
+#' Define primary model parameter object.
+#' This is used internally by the `PM_model` class.
+PM_pri <- R6::R6Class(
+  "PM_pri",
   public = list(
     #' @field min Minimum value of the range.
     min = NULL,
@@ -1587,6 +1645,24 @@ PM_range <- R6::R6Class(
   )
 )
 
+
+#' @title Initial range for primary parameter values
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Define primary model parameter initial values as range. For nonparametric,
+#' this range will be absolutely respected. For parametric, the range serves
+#' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
+#' initial parameter value distribution.
+#' @param min Minimum value.
+#' @param max Maximum value.
+#' @export
+ab <- function(min, max) {
+  PM_pri$new(min, max)
+}
+
+
+
 #' @title Initial mean/SD for primary parameter values
 #' @description
 #' `r lifecycle::badge("stable")`
@@ -1599,13 +1675,15 @@ PM_range <- R6::R6Class(
 #' values can be estimated beyond the range.
 #' @param mean Initial mean.
 #' @param sd Initial standard deviation.
-#' @param gtz Greater than zero. If `FALSE` (default), ensure parameter values
-#' remain positive by discarding negative values. Only relevant for parametric
-#' analyses, since lower limit of parameter values for nonparametric are strictly
-#' controlled by the range.
 #' @export
-msd <- function(mean, sd, gtz = FALSE) {
-  PM_input$new(mean, sd, "msd", constant = FALSE, gtz)
+msd <- function(mean, sd) {
+  min <- mean - 3 * sd
+  max <- mean + 3 * sd
+  if(min< 0) {
+    cli::cli_warn(c("i" = "Negative minimum value for primary parameter range.",
+                    " " = "This may not be appropriate for your model."))
+  }
+  PM_pri$new(min, max)
 }
 
 
@@ -1640,6 +1718,26 @@ interp <- function(type = "lm") {
   } else {
     return(0)
   }
+}
+
+#' @title List of Pmetrics model library model names
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Returns a list of names of all Pmetrics model library objects in the global environment.
+#' @export
+mod_lib_names <- function(){
+  ls(envir = .GlobalEnv) %>% purrr::map(\(x) x[inherits(get(x), "PM_lib")]) %>% purrr::discard(\(x) length(x) == 0) 
+}
+
+
+get_found_model <- function(eqns){
+  found_model_name <- eqns[purrr::map_lgl(eqns, \(x) x %in% mod_lib_names())]
+  if(length(found_model_name)>0) {
+    found_model <- get(found_model_name)
+  } else {
+    found_model <- NA
+  }
+  return(found_model)
 }
 
 
@@ -1727,8 +1825,11 @@ plot.PM_model <- function(x,
     FALSE
   }
   
-  if(inherits(model, "PM_model")){
-    eqn <- func_to_char(model$arg_list$eqn)
+  if(inherits(model, "PM_lib")){
+    eqns <- func_to_char(model$arg_list$eqn)
+  } else if(inherits(model, "PM_model")){
+    eqns <- func_to_char(model$arg_list$eqn)
+      
   } else {
     eqns <- model
   }
@@ -1977,9 +2078,8 @@ plot.PM_model <- function(x,
     dplyr::mutate(implicit = FALSE)
   
   # outputs
-  if (!is.null(model$model_list) && !is.null(purrr::pluck(model, "model_list", "out", 1, "val"))) {
-    cmts <- map_chr(model$model_list$out,
-                    ~ stringr::str_extract(.x$val, "\\d+"))
+  if (inherits(model, c("PM_model", "PM_lib"))) {
+    cmts <- map_chr(func_to_char(model$arg_list$out), \(x) stringr::str_extract(x, "X\\[(\\d+)\\]", group = 1))
     output_cmt <- dplyr::tibble(out = paste0("Y", seq_along(cmts)), cmt = cmts)
   } else {
     output_cmt <- dplyr::tibble(out = "", cmt = "1")
