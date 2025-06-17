@@ -21,19 +21,12 @@ build_model <- function(...) {
 
 
   # Define UI for application that draws a histogram
-  shiny::shinyApp(
+  app <- shiny::shinyApp(
     ui <- bslib::page_fluid(
       theme = bslib::bs_theme(bootswatch = "slate"),
       title = "Pmetrics Model Builder App",
       widths = c(3, 9),
 
-
-      # ui <- fluidPage(
-      #   theme = shinythemes::shinytheme("slate"),
-      #
-      #   # Application title
-      #   titlePanel("Pmetrics Model Builder App"),
-      #   # Layout
 
       # Model components
       #  #Formatting
@@ -93,23 +86,16 @@ build_model <- function(...) {
             column(
               6,
               h3("Filters"),
-              selectInput(
-                "mod_route",
-                "Dosing route(s):",
-                list("", "Oral", "Intravenous"),
-                multiple = TRUE
+              checkboxInput(
+                "mod_bolus",
+                "Bolus dosing:",
+                value = TRUE
               ),
               numericInput(
                 "mod_ncomp",
                 "Number of compartments (including oral bolus):",
                 value = NA,
                 min = 1
-              ),
-              selectInput(
-                "mod_elim",
-                "Elimination from:",
-                "",
-                multiple = TRUE
               ),
               radioButtons(
                 "mod_kecl",
@@ -304,6 +290,11 @@ build_model <- function(...) {
         ) # end tabPanel: Outputs
       ) # end navlistPanel
     ), # end ui
+    
+
+# SERVER ------------------------------------------------------------------
+
+    
 
     server <- function(input, output, session) {
       # does object exist?
@@ -338,11 +329,11 @@ build_model <- function(...) {
       # the model can be passed as an argument in build_model()
       # check if it is so and set
       if (!is.null(model_arg)) {
-        model_obj(model_arg$model_list) # update global reactive value
+        model_obj(model_arg$arg_list) # update global reactive value
       }
 
       # the data can be passed as an argument in build_model()
-      # covariates in data will supersede covariates in model
+      # covariates in data will supersede covariates in mode
       if (!is.null(data_arg)) {
         data_obj(data_arg) # update global
         cov_data <- getCov(data_arg$standard_data)
@@ -384,11 +375,11 @@ build_model <- function(...) {
       store <- reactiveValues(
         var_name_1 = "Ke",
         var_a_1 = 0,
-        var_b_1 = 5,
+        var_b_1 = 5
         # var_mean_1 = 2.5,
         # var_sd_1 = 0.833,
-        var_constant_1 = FALSE,
-        var_gtz_1 = FALSE
+        #var_constant_1 = FALSE,
+        #var_gtz_1 = FALSE
       )
 
 
@@ -458,7 +449,12 @@ build_model <- function(...) {
       # MODEL LIBRARY COMPONENT -------------------------------------------------
 
 
-      mods <- modelLibrary
+      #mods <- modelLibrary
+      
+      #load names of models in memory
+      mod_names <- mod_lib_names() # returns list of model names in Global Environment (function in PM_model.R) 
+      mods <- purrr::map(mod_names, \(x) get(x))
+
 
       # create the global filter results
       mods_filter <- reactiveVal()
@@ -466,7 +462,7 @@ build_model <- function(...) {
       # make combined filter trigger
       filter_obj <- reactive({
         list(
-          input$mod_route, input$mod_ncomp, input$mod_elim, input$mod_kecl,
+          input$mod_bolus, input$mod_ncomp, input$mod_kecl,
           input$mod_alg, input$searchme
         )
       })
@@ -482,54 +478,48 @@ build_model <- function(...) {
         }
       })
 
-      # function to aid filtering
-      find_x_in_y <- function(x, y) {
-        any(stringr::str_detect(y, stringr::regex(x, ignore_case = T)))
-      }
-
+      # # function to aid filtering
+      # find_x_in_y <- function(x, y) {
+      #   any(stringr::str_detect(y, stringr::regex(x, ignore_case = T)))
+      # }
+      # 
 
 
       # if filter inputs change, execute this
       observeEvent(filter_obj(), {
         this_filter <- mods
-        if (!is.null(input$mod_route)) {
-          this_filter <- this_filter %>%
-            dplyr::filter(purrr::map_lgl(route, ~ find_x_in_y(input$mod_route, .x)))
+        if (!is.null(input$mod_bolus)) {
+          this_filter <- this_filter %>% 
+            purrr::keep(\(x) x$bolus == input$mod_bolus)
         }
         if (!is.na(input$mod_ncomp)) {
           this_filter <- this_filter %>%
-            dplyr::filter(purrr::map_lgl(ncomp, ~ input$mod_ncomp == .x))
-        }
-        if (!is.null(input$mod_elim) && input$mod_elim != "") {
-          this_filter <- this_filter %>%
-            dplyr::filter(purrr::map_lgl(elim, ~ find_x_in_y(input$mod_elim, .x)))
+            purrr::keep(\(x) x$ncomp == input$ncomp)
         }
         if (length(input$mod_kecl) > 0) {
           if (input$mod_kecl == "Rate constants") {
-            key <- "K"
+            key <- "ke"
           } else {
-            key <- "CL"
+            key <- "cl"
           }
           this_filter <- this_filter %>%
-            dplyr::filter(par == key)
+            purrr::keep(\(x) key %in% tolower(x$parameters))
         }
         if (input$mod_alg) {
           this_filter <- this_filter %>%
-            dplyr::filter(algebraic != "")
+            purrr::keep(\(x) x$algebraic == input$mod_alg)
         }
 
         # if search box changes, execute this
         if (input$searchme != "") {
-          # browser()
-          # terms <- stringr::str_split(input$searchme, ",|;|\\s+") %>% unlist() %>% stringi::stri_remove_empty()
-          terms <- stringr::str_split(input$searchme, ",|;|\\s+") %>% unlist()
+          terms <- stringr::str_split(input$searchme, ",|;") %>% unlist() %>% stringr::str_squish()
           terms <- terms[nzchar(terms)]
           this_filter <- this_filter %>%
-            dplyr::filter(purrr::map_lgl(name, ~ find_x_in_y(terms, .x)))
+            purrr::keep(\(x) all(stringr::str_detect(paste(x$description, collapse = " "), stringr::regex(terms, ignore.case = TRUE))))
         }
-
+      
         # update the global filter results
-        if (nrow(this_filter) == 0) {
+        if (length(this_filter) == 0) {
           this_filter <- dplyr::tibble(name = "None")
         }
         mods_filter(this_filter)
@@ -548,7 +538,7 @@ build_model <- function(...) {
               selectInput(
                 "mod_list",
                 "",
-                choices = mods_filter()$name,
+                choices = purrr::map_chr(mods_filter(), \(x) x$name),
                 selectize = FALSE,
                 multiple = FALSE,
                 size = 10
@@ -571,10 +561,8 @@ build_model <- function(...) {
         ignoreNULL = TRUE,
         {
           output$model_snapshot <- renderPlot({
-            mod_to_plot <- tryCatch(modelLibrary$mod[which(modelLibrary$name == input$mod_list)][[1]], error = function(e) NA)
-            class(mod_to_plot) <- "PM_model"
-            # browser()
-            tryCatch(plot(mod_to_plot),
+            mod_to_plot <- tryCatch(get(input$mod_list), error = function(e) NA)
+            tryCatch(mod_to_plot$plot(),
               error = function(e) {
                 ggplot2::ggplot(
                   data = data.frame(x = c(0, 1), y = c(0, 1)),
@@ -593,10 +581,10 @@ build_model <- function(...) {
         ignoreInit = TRUE,
         {
           # update reactive variables
-          model_obj(modelLibrary$mod[which(modelLibrary$name == input$mod_list)][[1]]$model_list) # this model will update
-          alg_mod(modelLibrary$algebraic[which(modelLibrary$name == input$mod_list)]) # indicates algebraic model
-          orig_model(model_obj()$eqn) # keep the original model
-          orig_alg_model(alg_mod()) # keep the original algebraic code
+          model_obj(tryCatch(get(input$mod_list)$arg_list, error = function(e) NA)) # this model will update
+          alg_mod(tryCatch(model_obj()$algebraic, error = function(e) NA)) # indicates algebraic model
+          orig_model(tryCatch(func_to_char(model_obj()$eqn), error = function(e) NA)) # keep the original model
+          orig_alg_model(tryCatch(alg_mod(), error = function(e) NA)) # keep the original algebraic code
         }
       )
 
@@ -608,7 +596,7 @@ build_model <- function(...) {
             print("Error loading model.")
             return()
           })
-          model_obj(loaded_mod$model_list)
+          model_obj(loaded_mod$arg_list)
           model_arg <- NULL # zero out
         }
       )
@@ -645,18 +633,18 @@ build_model <- function(...) {
         model_obj(), # the model object has changed, update fields
         {
           # grab model
-          model <- model_obj()
+          model <- model_obj() # this is $arg_list
 
           npar <- length(model$pri)
           updateNumericInput(inputId = "nvar", value = npar)
           purrr::walk(
-            1:npar,
-            ~ {
-              store[[paste0("var_name_", .x)]] <- names(model$pri)[.x]
-              store[[paste0("var_a_", .x)]] <- ifelse(abmsdcv() == "Range" | abmsdcv() == "Mean/CV%", model$pri[[.x]]$min, model$pri[[.x]]$mean)
-              store[[paste0("var_b_", .x)]] <- ifelse(abmsdcv() == "Range" | abmsdcv() == "Mean/CV%", model$pri[[.x]]$max, model$pri[[.x]]$sd)
-              store[[paste0("var_constant_", .x)]] <- model$pri[[.x]]$constant
-              store[[paste0("var_gtz_", .x)]] <- model$pri[[.x]]$gtz
+            1:npar, \(x)
+            {
+              store[[paste0("var_name_", x)]] <- names(model$pri)[x]
+              store[[paste0("var_a_", x)]] <- ifelse(abmsdcv() == "Range" | abmsdcv() == "Mean/CV%", model$pri[[x]]$min, model$pri[[x]]$mean)
+              store[[paste0("var_b_", x)]] <- ifelse(abmsdcv() == "Range" | abmsdcv() == "Mean/CV%", model$pri[[x]]$max, model$pri[[x]]$sd)
+              # store[[paste0("var_constant_", x)]] <- model$pri[[.x]]$constant
+              # store[[paste0("var_gtz_", x)]] <- model$pri[[x]]$gtz
             }
           )
           # browser()
@@ -666,32 +654,32 @@ build_model <- function(...) {
             ncov(length(cov_names()))
             cov_source("Covariates obtained from model.")
           }
-          updateTextAreaInput(inputId = "secVar", value = paste(model$sec, collapse = "\n"))
-          updateTextAreaInput(inputId = "lagTime", value = paste(model$lag, collapse = "\n"))
-          updateTextAreaInput(inputId = "iniCond", value = paste(model$ini, collapse = "\n"))
-          updateTextAreaInput(inputId = "FA", value = paste(model$fa, collapse = "\n"))
-          updateTextAreaInput(inputId = "modEq", value = paste(model$eqn, collapse = "\n"))
-          numeqt <- length(model$out)
+          updateTextAreaInput(inputId = "secVar", value = paste(func_to_char(model$sec), collapse = "\n"))
+          updateTextAreaInput(inputId = "lagTime", value = paste(func_to_char(model$lag), collapse = "\n"))
+          updateTextAreaInput(inputId = "iniCond", value = paste(func_to_char(model$ini), collapse = "\n"))
+          updateTextAreaInput(inputId = "FA", value = paste(func_to_char(model$fa), collapse = "\n"))
+          updateTextAreaInput(inputId = "modEq", value = paste(func_to_char(model$eqn), collapse = "\n"))
+          numeqt <- length(func_to_char(model$out))
           updateNumericInput(inputId = "nout", value = numeqt)
           purrr::walk(
-            1:numeqt,
-            ~ {
-              store[[paste0("out_eqn_", .x)]] <- model$out[[.x]]$val
-              store[[paste0("out_assay_err_", .x)]] <- paste0(model$out[[.x]]$err$assay$coefficients, collapse = ", ")
-              store[[paste0("out_assay_err_always_", .x)]] <- model$out[[.x]]$err$assay$constant
-              store[[paste0("out_model_err_type_", .x)]] <-
-                dplyr::case_when(
-                  !is.null(model$out[[.x]]$err$model$additive) && !model$out[[.x]]$err$model$constant ~ "Additive (lambda)",
-                  !is.null(model$out[[.x]]$err$model$additive) && model$out[[.x]]$err$model$constant ~ "Additive Fixed",
-                  !is.null(model$out[[.x]]$err$model$proportional) && !model$out[[.x]]$err$model$constant ~ "Proportional (gamma)",
-                  !is.null(model$out[[.x]]$err$model$proportional) && model$out[[.x]]$err$model$constant ~ "Proportional Fixed"
-                )
-              store[[paste0("out_model_err_val_", .x)]] <-
-                ifelse(
-                  !is.null(model$out[[.x]]$err$model$additive),
-                  model$out[[.x]]$err$model$additive,
-                  model$out[[.x]]$err$model$proportional
-                )
+            1:numeqt, \(x)
+             {
+              store[[paste0("out_eqn_", x)]] <- func_to_char(model$out)[[x]]
+              store[[paste0("out_assay_err_", x)]] <- paste0(model$err[[x]]$coeff, collapse = ", ")
+              #store[[paste0("out_assay_err_always_", .x)]] <- model$out[[.x]]$err$assay$constant
+              store[[paste0("out_model_err_type_", x)]] <- model$err[[x]]$type
+                # dplyr::case_when(
+                #   !is.null(model$out[[.x]]$err$model$additive) && !model$out[[.x]]$err$model$constant ~ "Additive (lambda)",
+                #   !is.null(model$out[[.x]]$err$model$additive) && model$out[[.x]]$err$model$constant ~ "Additive Fixed",
+                #   !is.null(model$out[[.x]]$err$model$proportional) && !model$out[[.x]]$err$model$constant ~ "Proportional (gamma)",
+                #   !is.null(model$out[[.x]]$err$model$proportional) && model$out[[.x]]$err$model$constant ~ "Proportional Fixed"
+                # )
+              store[[paste0("out_model_err_val_", x)]] <- model$err[[x]]$initial
+                # ifelse(
+                #   !is.null(model$out[[.x]]$err$model$additive),
+                #   model$out[[.x]]$err$model$additive,
+                #   model$out[[.x]]$err$model$proportional
+                # )
             }
           )
         }
@@ -710,13 +698,13 @@ build_model <- function(...) {
       observeEvent(npar(),
         {
           purrr::map(
-            1:npar(),
-            ~ {
-              if (exist_obj(input[[paste0("var_name_", .x)]])) store[[paste0("var_name_", .x)]] <- input[[paste0("var_name_", .x)]]
-              if (exist_obj(input[[paste0("var_a_", .x)]])) store[[paste0("var_a_", .x)]] <- input[[paste0("var_a_", .x)]]
-              if (exist_obj(input[[paste0("var_b_", .x)]])) store[[paste0("var_b_", .x)]] <- input[[paste0("var_b_", .x)]]
-              if (exist_obj(input[[paste0("var_constant_", .x)]])) store[[paste0("var_constant_", .x)]] <- input[[paste0("var_constant_", .x)]]
-              if (exist_obj(input[[paste0("var_gtz_", .x)]])) store[[paste0("var_gtz_", .x)]] <- input[[paste0("var_gtz_", .x)]]
+            1:npar(),\(x)
+             {
+              if (exist_obj(input[[paste0("var_name_", x)]])) store[[paste0("var_name_", x)]] <- input[[paste0("var_name_", x)]]
+              if (exist_obj(input[[paste0("var_a_", x)]])) store[[paste0("var_a_", x)]] <- input[[paste0("var_a_", x)]]
+              if (exist_obj(input[[paste0("var_b_", x)]])) store[[paste0("var_b_", x)]] <- input[[paste0("var_b_", x)]]
+              # if (exist_obj(input[[paste0("var_constant_", x)]])) store[[paste0("var_constant_", x)]] <- input[[paste0("var_constant_", x)]]
+              # if (exist_obj(input[[paste0("var_gtz_", x)]])) store[[paste0("var_gtz_", x)]] <- input[[paste0("var_gtz_", x)]]
             }
           )
         },
@@ -727,63 +715,63 @@ build_model <- function(...) {
       # render variable primary parameters in UI
       output$pri_var <- renderUI({
         purrr::map(
-          1:npar(),
-          ~ {
+          1:npar(), \(x)
+           {
             fluidRow(
               column(
                 3,
                 textInput(
-                  paste0("var_name_", .x),
-                  label = paste0("Name ", .x, ":"),
-                  value = store[[paste0("var_name_", .x)]]
+                  paste0("var_name_", x),
+                  label = paste0("Name ", x, ":"),
+                  value = store[[paste0("var_name_", x)]]
                 )
               ),
               column(
                 2,
                 numericInput(
-                  paste0("var_a_", .x),
+                  paste0("var_a_", x),
                   dplyr::case_when(
                     abmsdcv() == "Range" ~ "Min:",
                     abmsdcv() == "Mean/SD" ~ "Mean:",
                     abmsdcv() == "Mean/CV%" ~ "Mean:"
                   ),
-                  value = store[[paste0("var_a_", .x)]]
+                  value = store[[paste0("var_a_", x)]]
                 )
               ),
               column(
                 2,
                 numericInput(
-                  paste0("var_b_", .x),
+                  paste0("var_b_", x),
                   dplyr::case_when(
                     abmsdcv() == "Range" ~ "Max:",
                     abmsdcv() == "Mean/SD" ~ "SD:",
                     abmsdcv() == "Mean/CV%" ~ "CV%:"
                   ),
-                  value = store[[paste0("var_b_", .x)]]
+                  value = store[[paste0("var_b_", x)]]
                 )
-              ),
-              column(
-                2,
-                div(
-                  style = "display: inline-block; margin-left: 10px; margin-right: 10px; vertical-align: -30px;",
-                  checkboxInput(
-                    paste0("var_constant_", .x),
-                    "Constant?",
-                    value = store[[paste0("var_constant_", .x)]]
-                  )
-                )
-              ),
-              column(
-                2,
-                div(
-                  style = "display: inline-block; margin-left: 10px; margin-right: 10px; vertical-align: -30px;",
-                  checkboxInput(
-                    paste0("var_gtz_", .x),
-                    "GTZ?",
-                    value = store[[paste0("var_gtz_", .x)]]
-                  )
-                )
-              ) # end columns
+              )
+              # column(
+              #   2,
+              #   div(
+              #     style = "display: inline-block; margin-left: 10px; margin-right: 10px; vertical-align: -30px;",
+              #     checkboxInput(
+              #       paste0("var_constant_", .x),
+              #       "Constant?",
+              #       value = store[[paste0("var_constant_", .x)]]
+              #     )
+              #   )
+              # ),
+              # column(
+              #   2,
+              #   div(
+              #     style = "display: inline-block; margin-left: 10px; margin-right: 10px; vertical-align: -30px;",
+              #     checkboxInput(
+              #       paste0("var_gtz_", .x),
+              #       "GTZ?",
+              #       value = store[[paste0("var_gtz_", .x)]]
+              #     )
+              #   )
+              # ) # end columns
             ) # end row
           } # end ~ function
         ) # end map
@@ -795,7 +783,7 @@ build_model <- function(...) {
       # set default covariate values based on data
       output$cov <- renderUI({
         if (ncov() > 0) {
-          purrr::map(cov_names(), function(x) {
+          purrr::map(cov_names(), \(x) {
             checkboxInput(
               inputId = paste0(x, "_constant"),
               label = paste0(x),
@@ -824,7 +812,7 @@ build_model <- function(...) {
         selectizeInput("special_ini",
           "Select the following parameters to be intial conditions:",
           choices = list(
-            `Primary` = map(1:npar(), ~ input[[paste0("var_name_", .x)]]),
+            `Primary` = map(1:npar(), \(x) input[[paste0("var_name_", x)]]),
             `Secondary` = extract_sec(),
             `Covariates` = as.list(c(cov_names(), gsub("!", "", cov_list())))
           ),
@@ -839,8 +827,8 @@ build_model <- function(...) {
           updateTextAreaInput(
             inputId = "iniCond",
             value = purrr::map(
-              1:nini,
-              ~ paste0("X[", .x, "] = ", input$special_ini[.x])
+              1:nini, \(x)
+              paste0("X[", x, "] = ", input$special_ini[x])
             ) %>%
               unlist() %>% paste(collapse = "\n")
           )
@@ -852,7 +840,7 @@ build_model <- function(...) {
         selectizeInput("special_fa",
           "Select the following parameters to be bioavailability:",
           choices = list(
-            `Primary` = map(1:npar(), ~ input[[paste0("var_name_", .x)]]),
+            `Primary` = map(1:npar(), \(x) input[[paste0("var_name_", x)]]),
             `Secondary` = extract_sec(),
             `Covariates` = as.list(c(cov_names(), gsub("!", "", cov_list())))
           ),
@@ -867,8 +855,8 @@ build_model <- function(...) {
           updateTextAreaInput(
             inputId = "FA",
             value = purrr::map(
-              1:nfa,
-              ~ paste0("FA[", .x, "] = ", input$special_fa[.x])
+              1:nfa, \(x)
+              paste0("FA[", x, "] = ", input$special_fa[x])
             ) %>%
               unlist() %>% paste(collapse = "\n")
           )
@@ -880,7 +868,7 @@ build_model <- function(...) {
         selectizeInput("special_lag",
           "Select the following parameters to be lag times:",
           choices = list(
-            `Primary` = map(1:npar(), ~ input[[paste0("var_name_", .x)]]),
+            `Primary` = map(1:npar(), \(x) input[[paste0("var_name_", x)]]),
             `Secondary` = extract_sec(),
             `Covariates` = as.list(c(cov_names(), gsub("!", "", cov_list())))
           ),
@@ -895,8 +883,8 @@ build_model <- function(...) {
           updateTextAreaInput(
             inputId = "lagTime",
             value = purrr::map(
-              1:nlag,
-              ~ paste0("LAG[", .x, "] = ", input$special_lag[.x])
+              1:nlag, \(x)
+              paste0("LAG[", x, "] = ", input$special_lag[x])
             ) %>%
               unlist() %>% paste(collapse = "\n")
           )
@@ -934,13 +922,13 @@ build_model <- function(...) {
       observeEvent(numeqt(),
         {
           purrr::map(
-            1:numeqt(),
-            ~ {
-              if (exist_obj(input[[paste0("out_eqn_", .x)]])) store[[paste0("out_eqn_", .x)]] <- input[[paste0("out_eqn_", .x)]]
-              if (exist_obj(input[[paste0("out_assay_err_", .x)]])) store[[paste0("out_assay_err_", .x)]] <- input[[paste0("out_assay_err_", .x)]]
-              if (exist_obj(input[[paste0("out_assay_err_always_", .x)]])) store[[paste0("out_assay_err_always_", .x)]] <- input[[paste0("out_assay_err_always_", .x)]]
-              if (exist_obj(input[[paste0("out_model_err_type_", .x)]])) store[[paste0("out_model_err_type_", .x)]] <- input[[paste0("out_model_err_type_", .x)]]
-              if (exist_obj(input[[paste0("out_model_err_val_", .x)]])) store[[paste0("out_model_err_val_", .x)]] <- input[[paste0("out_model_err_val_", .x)]]
+            1:numeqt(), \(x)
+             {
+              if (exist_obj(input[[paste0("out_eqn_", x)]])) store[[paste0("out_eqn_", x)]] <- input[[paste0("out_eqn_", x)]]
+              if (exist_obj(input[[paste0("out_assay_err_", x)]])) store[[paste0("out_assay_err_", x)]] <- input[[paste0("out_assay_err_", x)]]
+              if (exist_obj(input[[paste0("out_assay_err_always_", x)]])) store[[paste0("out_assay_err_always_", x)]] <- input[[paste0("out_assay_err_always_", x)]]
+              if (exist_obj(input[[paste0("out_model_err_type_", x)]])) store[[paste0("out_model_err_type_", x)]] <- input[[paste0("out_model_err_type_", x)]]
+              if (exist_obj(input[[paste0("out_model_err_val_", x)]])) store[[paste0("out_model_err_val_", x)]] <- input[[paste0("out_model_err_val_", x)]]
             }
           )
         },
@@ -1676,4 +1664,6 @@ build_model <- function(...) {
       })
     } # end server
   ) # end shinyApp
+  shiny::runApp(app, display.mode = "normal")
+  return(NULL) # this will eventually return the model from the app
 } # end build_model
