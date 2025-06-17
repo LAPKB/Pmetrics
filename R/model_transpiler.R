@@ -133,19 +133,43 @@ transpile_ode_eqn <- function(fun, params, covs, sec) {
     paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs)
-  sprintf("%s\n%s\n}", header, indent(body_rust, spaces = 4))
+  sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
 
-transpile_analytic_eqn <- function(fun, params, covs, sec) {
-  exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
-  header <- sprintf(
-    "|p, t, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
-    paste(covs, collapse = ", "), 
-    paste(params, collapse = ", "),
-    paste(sec, collapse = ", ")
+transpile_analytic_eqn <- function(fun, params, covs) {
+  if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
+    eqns <- as.list(body(fun)[-1])
+    tem <- deparse(eqns[[1]]) #model name
+    exprs <- eqns[-1]
+
+  } else {
+    list(body(fun))
+  }
+
+  # map model name from R to rust
+  rust_tem <- dplyr::case_when(
+    tem == "one_comp_iv" ~ "one_compartment",
+    tem == "one_comp_iv_cl" ~ "", # TBD in rust
+    tem == "two_comp_iv" ~ "two_compartments",
+    tem == "two_comp_iv_cl" ~ "", # TBD in rust
+    tem == "two_comp_bolus" ~ "one_compartment_with_absorption",
+    tem == "two_comp_bolus_cl" ~ "", # TBD in rust
+    tem == "three_comp_iv" ~ "three_compartments", # TBD in R
+    tem == "three_comp_iv_cl" ~ "", # TBD in rust
+    tem == "three_comp_bolus" ~ "two_compartments_with_absorption",
+    tem == "three_comp_bolus_cl" ~ "", # TBD in rust
+    tem == "four_comp_bolus" ~ "three_compartments_with_absorption", # TBD in R
+    tem == "four_comp_bolus_cl" ~ "" # TBD in rust
   )
-  body_rust <- stmts_to_rust(exprs, params, covs)
-  sprintf("%s\n%s\n}", header, indent(body_rust, spaces = 4))
+  
+  header <- sprintf(
+    " %s,\n |p, t, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s);", 
+    rust_tem,
+    paste(covs, collapse = ", "), 
+    paste(params, collapse = ", ")
+  )
+  body_rust <- stmts_to_rust(exprs)
+  sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
 
 transpile_sec <- function(fun) {
@@ -171,19 +195,19 @@ transpile_ini <- function(fun, params, covs, sec) {
     paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs)
-  sprintf("%s\n%s\n}", header, indent(body_rust, spaces = 4))
+  sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
 
 transpile_out <- function(fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
-    "|x, p, t, cov, y| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
+    "|x, p, t, cov, y| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s);\n%s",
     paste(covs, collapse = ", "), 
     paste(params, collapse = ", "),
     paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs)
-  sprintf("%s\n%s\n}", header, indent(body_rust, spaces = 4))
+  sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
 
 empty_sec <- function() {
@@ -281,7 +305,7 @@ empty_out <- function() {
 # }
 
 get_assignments <- function(fn, assign) {
-  count_dx_assignments <- function(expr) {
+  count_assignments <- function(expr) {
     if (is.call(expr)) {
       if (identical(expr[[1]], as.name("<-")) || identical(expr[[1]], as.name("="))) {
         lhs <- expr[[2]]
@@ -289,18 +313,18 @@ get_assignments <- function(fn, assign) {
         if (is.call(lhs) && identical(lhs[[1]], as.name("["))) {
           target_name <- as.character(lhs[[2]])
           if (tolower(target_name) == tolower(assign)) {
-            return(1 + count_dx_assignments(expr[[3]]))
+            return(1 + count_assignments(expr[[3]]))
           }
         }
-        return(count_dx_assignments(expr[[2]]) + count_dx_assignments(expr[[3]]))
+        return(count_assignments(expr[[2]]) + count_assignments(expr[[3]]))
       } else {
-        return(sum(sapply(expr, count_dx_assignments)))
+        return(sum(sapply(expr, count_assignments)))
       }
     }
     return(0)
   }
   
   body_expr <- body(fn)
-  count_dx_assignments(body_expr)
+  count_assignments(body_expr)
 }
 
