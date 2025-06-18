@@ -1081,7 +1081,8 @@ PM_model <- R6::R6Class(
               points = points,
               seed = seed
             ),
-            output_path = out_path
+            output_path = out_path,
+            kind = self$model_list$type,
           ),
           error = function(e) {
             cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
@@ -1157,19 +1158,19 @@ PM_model <- R6::R6Class(
         return(invisible(NULL))
       }
       
-      temp_model <- file.path(tempdir(), "model.rs")
-      private$write_model_to_rust(temp_model)
-      model_path <- tempfile(pattern = "model_", fileext = ".pmx")
-      browser()
+      model_path <- file.path(tempdir(), "model.rs")
+      private$write_model_to_rust(model_path)
+      output_path <- tempfile(pattern = "model_", fileext = ".pmx")
+      #browser()
       tryCatch({
-        compile_model(temp_model, model_path, private$get_primary())
+        compile_model(model_path , output_path, private$get_primary(), kind = self$model_list$type)
         self$binary_path <- model_path
       }, error = function(e) {
         cli::cli_abort(
           c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
         )
       })
-      file.remove(temp_model) # remove temporary model file
+      file.remove(model_path) # remove temporary model file
     }
   ),  # end public list
   private = list(
