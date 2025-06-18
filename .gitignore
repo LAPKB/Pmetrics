@@ -73,3 +73,8 @@ inst/doc
 
 target/
 *_test.R
+*.csv
+*.txt
+1
+2
+
