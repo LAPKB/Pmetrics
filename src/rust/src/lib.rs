@@ -5,7 +5,7 @@ mod simulation;
 
 use anyhow::Result;
 use extendr_api::prelude::*;
-use pmcore::prelude::{data::read_pmetrics, pharmsol::exa::build};
+use pmcore::prelude::{data::read_pmetrics, pharmsol::exa::build, Analytical, ODE};
 use simulation::SimulationRow;
 use std::process::Command;
 
@@ -70,15 +70,39 @@ fn simulate_all(
 ///@export
 #[extendr]
 
-pub fn fit(model_path: &str, data: &str, params: List, output_path: &str) -> Result<()> {
+pub fn fit(
+    model_path: &str,
+    data: &str,
+    params: List,
+    output_path: &str,
+    kind: &str,
+) -> Result<()> {
     println!("inside fit");
     dbg!("Epa la arepa");
     validate_paths(data, model_path);
-    match executor::fit(model_path.into(), data.into(), params, output_path.into()) {
-        Ok(_) => {}
-        Err(err) => {
-            println!("{}", err)
+    match kind {
+        "ode" => {
+            match executor::fit::<ODE>(model_path.into(), data.into(), params, output_path.into()) {
+                Ok(_) => {}
+                Err(err) => {
+                    println!("{}", err)
+                }
+            }
         }
+        "analytical" => {
+            match executor::fit::<Analytical>(
+                model_path.into(),
+                data.into(),
+                params,
+                output_path.into(),
+            ) {
+                Ok(_) => {}
+                Err(err) => {
+                    println!("{}", err)
+                }
+            }
+        }
+        err => return Err(anyhow::format_err!("{} is not a supported model type", err)),
     };
     Ok(())
 }
@@ -99,17 +123,29 @@ fn parse_theta(matrix: RMatrix<f64>) -> Vec<Vec<f64>> {
 /// Compiles the text representation of a model into a binary file.
 ///@export
 #[extendr]
-fn compile_model(model_path: &str, output_path: &str, params: Strings) -> Result<()> {
+fn compile_model(model_path: &str, output_path: &str, params: Strings, kind: &str) -> Result<()> {
     let params: Vec<String> = params.iter().map(|x| x.to_string()).collect();
     let model_txt = std::fs::read_to_string(model_path).expect("Failed to read model file");
-    build::compile(
-        model_txt,
-        Some(output_path.into()),
-        params.to_vec(),
-        |_key, val| {
-            print!("{}", val);
-        },
-    )?;
+    match kind {
+        "ode" => build::compile::<ODE>(
+            model_txt,
+            Some(output_path.into()),
+            params.to_vec(),
+            |_key, val| {
+                print!("{}", val);
+            },
+        )?,
+        "analytical" => build::compile::<Analytical>(
+            model_txt,
+            Some(output_path.into()),
+            params.to_vec(),
+            |_key, val| {
+                print!("{}", val);
+            },
+        )?,
+        err => return Err(anyhow::format_err!("{} is not a supported model type", err)),
+    };
+
     Ok(())
 }
 
@@ -133,8 +169,12 @@ fn is_cargo_installed() -> bool {
 
 ///@export
 #[extendr]
-fn model_parameters(model_path: &str) -> Vec<String> {
-    executor::model_parameters(model_path.into())
+fn model_parameters(model_path: &str, kind: &str) -> Result<Vec<String>> {
+    match kind {
+        "ode" => Ok(executor::model_parameters::<ODE>(model_path.into())),
+        "analytical" => Ok(executor::model_parameters::<ODE>(model_path.into())),
+        err => Err(anyhow::format_err!("{} is not a supported model type", err)),
+    }
 }
 
 //@export
