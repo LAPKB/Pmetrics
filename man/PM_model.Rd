@@ -24,8 +24,8 @@ for details.
 \item It's a complete example of a three compartment model with delayed absorption.
 \item We show the method of defining the model first and embedding the \code{PM_model$new()} within
 a \code{donttest} block to avoid automatic compilation.
-\item Since this model can also be solved algebraically, we could have used
-\code{tem = three_comp_bolus()} and omitted the \code{eqn} block.
+\item Since this model can also be solved analytically with algebra, we could have used
+\code{eqn = function(){three_comp_bolus}}.
 }
 }
 \examples{
@@ -108,7 +108,7 @@ The first parameter allows creation of a model from a variety of pre-existing
 sources, and if used, all the subsequent arguments will be ignored. If a model
 is defined on the fly, the arguments form the building blocks. Blocks are of two types:
 \itemize{
-\item \strong{Vectors} define \emph{primary parameters}, \emph{covariates}, \emph{algebraic model template},
+\item \strong{Vectors} define \emph{primary parameters}, \emph{covariates},
 and \emph{error models}. These
 portions of the model have specific and defined creator functions and no additional
 R code is permissible. They take this form:
@@ -149,7 +149,6 @@ Again, all R code will be converted to lowercase prior to translation into Rust.
   pri = NULL,
   cov = NULL,
   sec = NULL,
-  tem = NULL,
   eqn = NULL,
   lag = NULL,
   fa = NULL,
@@ -234,15 +233,6 @@ Note that the function
 must be defined with no arguments between the parentheses,
 and the body \strong{must be in R syntax}. Any number of lines and R code, e.g.
 \code{if} - \verb{else} statements, etc. are permissible.}
-
-\item{\code{tem}}{A vector of length one defining the analytical template for the model
-with an appropriate creator function. Look at
-\code{\link[=model_lib]{model_lib()}} to ensure \code{pri} parameters are named correctly. If \code{pri}
-parameters must be transformed, include the transformation,
-e.g., \code{V = V0 * wt}, in the \code{sec} block for global availability or another
-appropriate block for availability restricted to that block.
-
-Outputs for algebraic models can be calculated from any model compartment.}
 
 \item{\code{eqn}}{A function defining the model equations. The function must have no arguments,
 and the equations must be defined
@@ -413,6 +403,15 @@ for 3 outputs with the same error model:
 }\if{html}{\out{</div>}}}
 
 \item{\code{...}}{Not currently used.}
+
+\item{\code{tem}}{A vector of length one defining the analytical template for the model
+with an appropriate creator function. Look at
+\code{\link[=model_lib]{model_lib()}} to ensure \code{pri} parameters are named correctly. If \code{pri}
+parameters must be transformed, include the transformation,
+e.g., \code{V = V0 * wt}, in the \code{sec} block for global availability or another
+appropriate block for availability restricted to that block.
+
+Outputs for analytical models can be calculated from any model compartment.}
 }
 \if{html}{\out{</div>}}
 }
