@@ -82,7 +82,11 @@ pub fn fit(
     validate_paths(data, model_path);
     match kind {
         "ode" => {
-            match executor::fit::<ODE>(model_path.into(), data.into(), params, output_path.into()) {
+            match executor::fit::<ODE>(
+            model_path.into(), 
+            data.into(), 
+            params, 
+            output_path.into()) {
                 Ok(_) => {}
                 Err(err) => {
                     println!("{}", err)
