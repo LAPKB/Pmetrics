@@ -438,18 +438,21 @@ PM_model <- R6::R6Class(
                          "i" = "Please provide either a template (see {.help model_lib()}) or differential equations using {.code eqn}."))
       }
       
-      # Number of equations
-      n_eqn <- get_assignments(self$arg_list$eqn, "dx")
-      n_out <- get_assignments(self$arg_list$out, "y")
       
       
       # Get model template name if present (NA if absent) and set type
       model_template <- get_found_model(func_to_char(self$arg_list$eqn)) #function defined below, returns NA if not found
+      
+      #change logic; need to accomodate library models that are ODEs
       if (length(model_template)>1) {
         type <- "Analytical"
       } else {
         type <- "ODE"
       }
+      
+      # Number of equations
+      n_eqn <- if (type == "Analytical"){ model_template$ncomp } else {get_assignments(self$arg_list$eqn, "dx")}
+      n_out <- get_assignments(self$arg_list$out, "y")
       
       ## Get the names of the parameters
       parameters <- tolower(names(self$arg_list$pri))
@@ -1160,7 +1163,7 @@ PM_model <- R6::R6Class(
       model_path <- file.path(tempdir(), "model.rs")
       private$write_model_to_rust(model_path)
       output_path <- tempfile(pattern = "model_", fileext = ".pmx")
-      browser()
+
       tryCatch({
         compile_model(model_path , output_path, private$get_primary(), kind = tolower(self$model_list$type))
         self$binary_path <- model_path
@@ -1365,14 +1368,13 @@ PM_model <- R6::R6Class(
 
       if (self$model_list$type %in% c("Analytical", "ODE")){
         placeholders <- c("eqn", "lag", "fa", "ini", "out", "n_eqn", "n_out")
-        
         base <- paste0("equation::", 
                        self$model_list$type, 
                        "::new(\n", 
                        paste("<", placeholders[1:5], ">", sep = "", collapse = ",\n "),
                        ",\n (",
                        paste("<", placeholders[6:7], ">", sep = "", collapse = ", "),
-                       "),\n);")
+                       "),\n)")
         
       } else {
         cli::cli_abort(c("x" = "Invalid model type.", "i" = "Please provide a valid model type."))
