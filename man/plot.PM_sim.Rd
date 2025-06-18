@@ -62,10 +62,11 @@ not just the quantiles. Numerical predictive checking will be suppressed.
 \item List of quantiles and formats to plot with the following elements:
 \itemize{
 \item \code{probs} Vector of quantiles to include. If missing, will be set to
-defaults above, i.e., \verb{c(0.05, 0.25, 0.5, 0.75, and 0.95)}
+defaults above, i.e., \verb{c(0.05, 0.5, and 0.95)}
 Example: \code{line = list(probs = c(0.25, 0.5, 0.75))}.
 \item \code{color} Vector of color names whose order corresponds to \code{probs}.
-If shorter than \code{probs}, will be recycled. Default is "dodgerblue".
+If shorter than \code{probs}, will be recycled. Default is "dodgerblue", but if
+median is present (\code{prob = 0.5}), that line will be "red".
 Examples: \code{line = list(color = "red")} or \code{line = list(color = c("red", "blue"))}.
 \item \code{fill} Fill color between quantile lines. Can be specified in several ways:
 \itemize{
@@ -77,8 +78,7 @@ Examples: \code{line = list(color = "red")} or \code{line = list(color = c("red"
 \item \code{opacity} Fill opacity. Default is 0.2 e.g., \code{fill = list(opacity = 0.3)}.
 \item \code{probs} Vector of paired quantiles to fill between. Default is the minimum and maximum
 quantile specified in \code{probs}, or \code{fill = list(probs = c(0.05, 0.95))} if not specified.
-This can be pairs of values to fill between, e.g., \code{fill = list(probs = c(0.25, 0.5, 0.75, 0.95))},
-which will color between 0.25 and 0.5, and again between 0.75 and 0.95.
+Including \code{probs} in fill which are not in \code{probs} above will result in an error.
 }
 }
 \item \code{width} Vector of widths in pixels, as for \code{color}. Default is 1.

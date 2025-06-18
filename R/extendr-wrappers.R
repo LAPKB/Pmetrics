@@ -20,7 +20,7 @@ simulate_all <- function(data_path, model_path, theta) .Call(wrap__simulate_all,
 
 #' Compiles the text representation of a model into a binary file.
 #'@export
-compile_model <- function(model_path, output_path, params) .Call(wrap__compile_model, model_path, output_path, params)
+compile_model <- function(model_path, output_path, params, kind) .Call(wrap__compile_model, model_path, output_path, params, kind)
 
 #' Dummy function to cache compilation artifacts.
 #'@export
@@ -30,10 +30,10 @@ dummy_compile <- function() .Call(wrap__dummy_compile)
 is_cargo_installed <- function() .Call(wrap__is_cargo_installed)
 
 #'@export
-fit <- function(model_path, data, params, output_path) .Call(wrap__fit, model_path, data, params, output_path)
+fit <- function(model_path, data, params, output_path, kind) .Call(wrap__fit, model_path, data, params, output_path, kind)
 
 #'@export
-model_parameters <- function(model_path) .Call(wrap__model_parameters, model_path)
+model_parameters <- function(model_path, kind) .Call(wrap__model_parameters, model_path, kind)
 
 template_path <- function() .Call(wrap__template_path)
 
