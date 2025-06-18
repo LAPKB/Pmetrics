@@ -278,9 +278,9 @@ mod_list <- list(
     arg_list = list(
       pri = c(
         Ke = ab(0, 5),
-        V = ab(0, 100),
         Kcp = ab(0, 5),
-        Kpc = ab(0, 5)
+        Kpc = ab(0, 5),
+        V = ab(0, 100)
       ),
       eqn = function(){
         dX[1] = RATEIV[1] - (Ke + Kcp)*X[1] + Kpc*X[2]
@@ -305,8 +305,8 @@ mod_list <- list(
     arg_list = list(
       pri = c(
         CL = ab(0, 500),
-        Vc = ab(0, 100),
         Q = ab(0, 100),
+        Vc = ab(0, 100),
         Vp = ab(0, 100)
       ),
       eqn = function(){
@@ -332,9 +332,9 @@ mod_list <- list(
       pri = c(
         Ka = ab(0, 5),
         Ke = ab(0, 5),
-        V = ab(0, 100),
         Kcp = ab(0, 5),
-        Kpc = ab(0, 5)
+        Kpc = ab(0, 5),
+        V = ab(0, 100)
       ),
       eqn = function(){
         dX[1] = BOLUS[1] - Ka*X[1]
@@ -361,8 +361,8 @@ mod_list <- list(
       pri = c(
         Ka = ab(0, 5),
         CL = ab(0, 500),
-        Vc = ab(0, 100),
         Q = ab(0, 100),
+        Vc = ab(0, 100),
         Vp = ab(0, 100)
       ),
       eqn = function(){
