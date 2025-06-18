@@ -27,10 +27,6 @@ pub(crate) fn settings(
 
     let error_models_raw = settings.get("error_models").unwrap().as_list().unwrap();
 
-    let n_ems = error_models_raw.len();
-
-    dbg!(&error_models_raw);
-
     let mut ems = ErrorModels::new();
 
     for (i, (_, em)) in error_models_raw.iter().enumerate() {
