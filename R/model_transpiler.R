@@ -172,10 +172,10 @@ transpile_analytic_eqn <- function(fun, params, covs) {
   # remap parameters
   req_par <- get(tem)$parameters %>% tolower() %>%
   purrr::imap_chr(\(x, y){
-    sprintf("let %s = p[%i];\n", x, y-1)
-  })
+    sprintf("p[%i] = %s;", y-1, x)
+  }) %>% paste(collapse = "\n")
   
-  sprintf("%s\n%s\n%s\n }", header, indent(body_rust, spaces = 4), req_par)
+  sprintf("%s\n%s\n%s\n }", header, indent(body_rust, spaces = 4), indent(req_par, spaces = 4))
 }
 
 transpile_sec <- function(fun) {
