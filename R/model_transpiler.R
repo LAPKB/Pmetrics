@@ -169,7 +169,13 @@ transpile_analytic_eqn <- function(fun, params, covs) {
     paste(params, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs)
-  sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
+  # remap parameters
+  req_par <- get(tem)$parameters %>% tolower() %>%
+  purrr::imap_chr(\(x, y){
+    sprintf("let %s = p[%i];\n", x, y-1)
+  })
+  
+  sprintf("%s\n%s\n%s\n }", header, indent(body_rust, spaces = 4), req_par)
 }
 
 transpile_sec <- function(fun) {

@@ -454,7 +454,6 @@ PM_model <- R6::R6Class(
       ## Get the names of the parameters
       parameters <- tolower(names(self$arg_list$pri))
       covariates <- tolower(names(self$arg_list$cov))
-      
       ## check to make sure required parameters present if Analytical
       if (type == "Analytical"){
         # look in pri, sec, eqn, lag, fa, ini, out blocks for required parameters
@@ -1082,7 +1081,7 @@ PM_model <- R6::R6Class(
               seed = seed
             ),
             output_path = out_path,
-            kind = self$model_list$type,
+            kind = tolower(self$model_list$type),
           ),
           error = function(e) {
             cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
@@ -1161,9 +1160,9 @@ PM_model <- R6::R6Class(
       model_path <- file.path(tempdir(), "model.rs")
       private$write_model_to_rust(model_path)
       output_path <- tempfile(pattern = "model_", fileext = ".pmx")
-      #browser()
+      browser()
       tryCatch({
-        compile_model(model_path , output_path, private$get_primary(), kind = self$model_list$type)
+        compile_model(model_path , output_path, private$get_primary(), kind = tolower(self$model_list$type))
         self$binary_path <- model_path
       }, error = function(e) {
         cli::cli_abort(
