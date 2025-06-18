@@ -163,7 +163,7 @@ transpile_analytic_eqn <- function(fun, params, covs) {
   )
   
   header <- sprintf(
-    " %s,\n |p, t, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s);", 
+    " %s,\n |p, t, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(&p, %s);", 
     rust_tem,
     paste(covs, collapse = ", "), 
     paste(params, collapse = ", ")
