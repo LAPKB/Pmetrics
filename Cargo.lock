@@ -1126,16 +1126,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8355be11b20d696c8f18f6cc018c4e372165b1fa8126cef092399c9951984ffa"
 
 [[package]]
-name = "lock_api"
-version = "0.4.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96936507f153605bddfcda068dd804796c84324ed2510809e5b2a624c81da765"
-dependencies = [
- "autocfg",
- "scopeguard",
-]
-
-[[package]]
 name = "log"
 version = "0.4.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1420,19 +1410,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
-name = "parking_lot_core"
-version = "0.9.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc838d2a56b5b1a6c25f55575dfc605fabb63bb2365f6c2353ef9159aa69e4a5"
-dependencies = [
- "cfg-if",
- "libc",
- "redox_syscall",
- "smallvec",
- "windows-targets",
-]
-
-[[package]]
 name = "paste"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1495,9 +1472,9 @@ dependencies = [
 
 [[package]]
 name = "pharmsol"
-version = "0.10.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c15f80a82cea83b0eb9c5d282b061313a03ba66631d891d8e8143935f0ca75d"
+checksum = "f2817a0f7cc2769762aed9e8c5d69eaf8aff4855121922ea97176857e4399c30"
 dependencies = [
  "cached",
  "csv",
@@ -1533,8 +1510,7 @@ dependencies = [
 [[package]]
 name = "pmcore"
 version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6790998e652835a35bf83d29bd126e351f5d39011317b3b7eee3cd0469366307"
+source = "git+https://github.com/LAPKB/PMcore?rev=c8e6f4a592fd77353fb915ea3729cf32392d85e6#c8e6f4a592fd77353fb915ea3729cf32392d85e6"
 dependencies = [
  "anyhow",
  "argmin",
