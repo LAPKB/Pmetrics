@@ -1472,9 +1472,9 @@ dependencies = [
 
 [[package]]
 name = "pharmsol"
-version = "0.11.0"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2817a0f7cc2769762aed9e8c5d69eaf8aff4855121922ea97176857e4399c30"
+checksum = "6169f8c66b810655249a71b333413a3090c39b5e4bdb5f91821072b59bfb567f"
 dependencies = [
  "cached",
  "csv",
@@ -1509,8 +1509,9 @@ dependencies = [
 
 [[package]]
 name = "pmcore"
-version = "0.12.0"
-source = "git+https://github.com/LAPKB/PMcore?rev=c8e6f4a592fd77353fb915ea3729cf32392d85e6#c8e6f4a592fd77353fb915ea3729cf32392d85e6"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3e50e477ebd5151d1afd4f330c28aa67fc1586cba022fd5f02cdd271d0d3a34"
 dependencies = [
  "anyhow",
  "argmin",
