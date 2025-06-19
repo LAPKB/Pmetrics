@@ -125,6 +125,7 @@ indent <- function(text, spaces = 4) {
 
 # Transpile an R ODE function to Rust closure
 transpile_ode_eqn <- function(fun, params, covs, sec) {
+
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|x, p, t, dx, rateiv, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s", 
@@ -132,7 +133,9 @@ transpile_ode_eqn <- function(fun, params, covs, sec) {
     paste(params, collapse = ", "),
     paste(sec, collapse = ", ")
   )
-  body_rust <- stmts_to_rust(exprs, params, covs)
+  body_rust <- stmts_to_rust(exprs, params, covs) %>%
+    stringr::str_replace_all("\\((b|bolus)\\[\\d+\\]\\)","") %>%
+    stringr::str_replace_all("r\\[","rateiv\\[")
   sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
 
