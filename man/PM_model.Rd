@@ -81,9 +81,6 @@ the original arguments into Rust}
 \item{\code{arg_list}}{A list containing the original arguments passed to the model}
 
 \item{\code{binary_path}}{The full path and filename of the compiled model}
-
-\item{\code{type}}{A character string indicating the type of model, either "ode" for
-ordinary differential equations or "analytical" for analytical models.}
 }
 \if{html}{\out{</div>}}
 }
@@ -103,8 +100,11 @@ ordinary differential equations or "analytical" for analytical models.}
 \if{html}{\out{<a id="method-PM_model-new"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-new}{}}}
 \subsection{Method \code{new()}}{
-This is the method to create a new \code{PM_model} object.
-The first parameter allows creation of a model from a variety of pre-existing
+This is the method to create a new \code{PM_model} object. If all arguments are \code{NULL},
+e.g. \code{mod <- PM_model$new()} the model builder shiny app will launch by a call to \code{\link[=build_model]{build_model()}},
+which will return the model object upon exit.
+
+Otherwise, the first parameter allows creation of a model from a variety of pre-existing
 sources, and if used, all the subsequent arguments will be ignored. If a model
 is defined on the fly, the arguments form the building blocks. Blocks are of two types:
 \itemize{
@@ -118,13 +118,11 @@ R code is permissible. They take this form:
   var2 = creator()
 ) 
 }\if{html}{\out{</div>}}
-}
 
 Note the comma separating the creator functions, "\verb{c(}" to open the vector and "\verb{)}" to close the vector.
-Names are case-insensitive are are converted to lowercase for Rust.
-\itemize{
+Names are case-insensitive and are converted to lowercase for Rust.
 \item \strong{Functions} define the other parts of the model, including \emph{secondary (global)
-equations}, \emph{primary equations} (e.g. ODEs), \emph{lag time}, \emph{bioavailability}, \emph{initial conditions},
+equations}, \emph{model equations} (e.g. ODEs), \emph{lag time}, \emph{bioavailability}, \emph{initial conditions},
 and \emph{outputs}. These parts of the model are defined as R functions without arguments,
 but whose body contains any permissible R code.
 
@@ -136,11 +134,11 @@ but whose body contains any permissible R code.
 
 \} 
 }\if{html}{\out{</div>}}
-}
 
 Note the absence of arguments between the "\verb{()}", the opening curly brace "\verb{\{}" to start
 the function body and the closing curly brace "\verb{\}}" to end the body.
 Again, all R code will be converted to lowercase prior to translation into Rust.
+}
 
 \strong{Important:} All models must have \code{pri}, \code{eqn}, \code{out}, and \code{err} blocks.
 \subsection{Usage}{
