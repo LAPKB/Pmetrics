@@ -2136,7 +2136,7 @@ PMwriteMatrix <- function(data, filename, override = FALSE,
     err <- NULL
   }
   # remove the block column if added during run
-  if (!is.null(data$block)) {
+  if ("block" %in% names(data)) {
     data <- data %>% dplyr::select(-block)
   }
 
