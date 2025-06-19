@@ -367,7 +367,7 @@ PM_load <- function(run, file) {
   if (found != "") {
     result <- output2List(Out = get(load(found)))
     # update
-    result2 <- update(result, found)
+    result2 <- result # update(result, found)
     # In order to rebuild correctly the wd must be set to inside the outputs folder
     cwd <- getwd()
     setwd(dirname(found))
@@ -382,6 +382,7 @@ PM_load <- function(run, file) {
 
 # internal update function
 update <- function(res, found) {
+  return(invisible(NULL)) # remove when cycle.csv updated
   msg <- NULL
   # CYCLE
   if (!is.null(res$cycle)) {
@@ -392,18 +393,18 @@ update <- function(res, found) {
       # start conversion
       n_cyc <- nrow(dat$mean)
       n_out <- max(res$op$outeq)
-      dat$gamlam <- tibble::as_tibble(dat$gamlam, .name_repair = "minimal")
-      if (ncol(dat$gamlam) == 1 & n_out > 1) {
-        dat$gamlam <- cbind(dat$gamlam, replicate((n_out - 1), dat$gamlam[, 1]))
+      dat$gamlam <- dat$gamlam %>% select(starts_with("add")|starts_with("prop"))
+      if (ncol(gamlam) == 1 & n_out > 1) {
+        gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
       }
-      names(dat$gamlam) <- as.character(1:ncol(dat$gamlam))
-      dat$gamlam <- dat$gamlam %>%
-        pivot_longer(
-          cols = everything(),
-          values_to = "value", names_to = "outeq"
-        ) %>%
-        mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
-        select(cycle, value, outeq)
+      gamlam <- gamlam %>%
+      pivot_longer(
+        cols = everything(),
+        values_to = "value", names_to = c("type", "outeq"), 
+        names_sep = "\\."
+      ) %>%
+      mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
+      select(cycle, value, outeq, type) %>% arrange(cycle, outeq)
       if (is.matrix(dat$mean)) { # old fortran format, but not rust format
         dat$mean <- tibble::tibble(cycle = 1:n_cyc) %>%
           dplyr::bind_cols(tidyr::as_tibble(dat$mean))
