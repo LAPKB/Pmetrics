@@ -16,7 +16,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
   if (is.symbol(expr)) {
     return(as.character(expr))
   }
-
+  
   # Handle indexing: var[idx] with zero-based adjustment
   if (is.call(expr) && as.character(expr[[1]]) == "[") {
     var <- as.character(expr[[2]])
@@ -29,12 +29,12 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
       return(sprintf("%s[%s - 1]", var, idx_code))
     }
   }
-
+  
   if (!is.call(expr)) stop("Unknown expression type")
   op <- as.character(expr[[1]])
   args <- as.list(expr[-1])
   rust_args <- lapply(args, expr_to_rust, params = params, covs = covs)
-
+  
   switch(op,
     # Grouping
     "(" = sprintf("(%s)", rust_args[[1]]),
@@ -42,7 +42,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
       inner <- if (length(rust_args) > 0) rust_args[[1]] else ""
       sprintf("{ %s }", inner)
     },
-
+    
     # Arithmetic
     "+" = if (length(rust_args) == 1) {
       sprintf("+(%s)", rust_args[[1]])
@@ -57,7 +57,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
     "*" = sprintf("%s * %s", rust_args[[1]], rust_args[[2]]),
     "/" = sprintf("%s / %s", rust_args[[1]], rust_args[[2]]),
     "^" = sprintf("%s.powf(%s)", rust_args[[1]], rust_args[[2]]),
-
+    
     # Comparison
     "==" = sprintf("%s == %s", rust_args[[1]], rust_args[[2]]),
     "!=" = sprintf("%s != %s", rust_args[[1]], rust_args[[2]]),
@@ -65,22 +65,22 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
     "<=" = sprintf("%s <= %s", rust_args[[1]], rust_args[[2]]),
     ">" = sprintf("%s > %s", rust_args[[1]], rust_args[[2]]),
     "<" = sprintf("%s < %s", rust_args[[1]], rust_args[[2]]),
-
+    
     # Logical
     "&" = sprintf("%s && %s", rust_args[[1]], rust_args[[2]]),
     "|" = sprintf("%s || %s", rust_args[[1]], rust_args[[2]]),
-
+    
     # Function calls
     "abs" = sprintf("%s.abs()", rust_args[[1]]),
     "log" = sprintf("%s.ln()", rust_args[[1]]),
     "exp" = sprintf("%s.exp()", rust_args[[1]]),
-
+    
     # Assignment
     "<-" = ,
     "=" = {
       lhs <- args[[1]]
       rhs_code <- rust_args[[2]]
-
+      
       if (is.symbol(lhs)) {
         # It's a plain variable like `ka = ...`
         sprintf("let %s = %s;", as.character(lhs), rhs_code)
@@ -90,7 +90,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
         sprintf("%s = %s;", lhs_code, rhs_code)
       }
     },
-
+    
     # If
     "if" = {
       cond <- rust_args[[1]]
@@ -98,7 +98,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
       then_block <- stmts_to_rust(then_exprs, params, covs)
       sprintf("if %s {\n%s}\n", cond, indent(then_block))
     },
-
+    
     # For
     "for" = {
       var <- as.character(args[[1]])
@@ -115,7 +115,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
 stmts_to_rust <- function(exprs, params = NULL, covs = NULL) {
   lines <- vapply(exprs, expr_to_rust, character(1), params = params, covs = covs)
   tolower(paste(lines, collapse = "\n")) # rust is case sensitive, make everything lowercase
-
+  
 }
 
 indent <- function(text, spaces = 4) {
@@ -125,7 +125,7 @@ indent <- function(text, spaces = 4) {
 
 # Transpile an R ODE function to Rust closure
 transpile_ode_eqn <- function(fun, params, covs, sec) {
-
+  
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|x, p, t, dx, rateiv, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s", 
@@ -134,21 +134,41 @@ transpile_ode_eqn <- function(fun, params, covs, sec) {
     paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs) %>%
-    stringr::str_replace_all("\\((b|bolus)\\[\\d+\\]\\)","") %>%
-    stringr::str_replace_all("r\\[","rateiv\\[")
+  stringr::str_replace_all("\\((b|bolus)\\[\\d+\\]\\)","") %>%
+  stringr::str_replace_all("r\\[","rateiv\\[")
   sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
 
 transpile_analytic_eqn <- function(fun, params, covs) {
   if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
+    found <- get_found_model(fun)
+    if(length(found)==1){ # NA
+      cli::cli_abort(c(
+        "x" = "No ODE and no library model templates found.",
+        "i" = "EQN block must contain ODEs or a single library model template name."
+      ))
+    }
+    tem <- found$name
     eqns <- as.list(body(fun)[-1])
-    tem <- deparse(eqns[[1]]) #model name
-    exprs <- eqns[-1]
-
+    if(length(eqns) > 0){
+      eqns_char <- map_chr(eqns, deparse)
+      # check for ODE, which should not be present
+      if(any(stringr::str_detect(eqns_char, regex("dx\\[\\d+\\]", ignore_case = FALSE)))){
+              cli::cli_abort(c(
+        "x" = "You appear to have included both a model library template and ODE.",
+        "i" = "EQN block must contain ODEs or a single library model template name, not both."
+      ))
+      }
+      exprs <- eqns[-which(eqns_char == found$name)]
+    } else {
+      exprs <- NULL
+    }
+    
+    
   } else {
     list(body(fun))
   }
-
+  
   # map model name from R to rust
   rust_tem <- dplyr::case_when(
     tem == "one_comp_iv" ~ "one_compartment",

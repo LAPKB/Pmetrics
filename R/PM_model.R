@@ -463,12 +463,21 @@ PM_model <- R6::R6Class(
           
           
           # Get model template name if present (NA if absent) and set type
-          model_template <- get_found_model(func_to_char(self$arg_list$eqn)) #function defined below, returns NA if not found
-          
+          model_template <- get_found_model(self$arg_list$eqn) #function defined below, returns 0 if not found, -1 if error
+  
           #change logic; need to accomodate library models that are ODEs
           if (length(model_template) > 1 && model_template$analytical) {
             type <- "Analytical"
           } else {
+            if(model_template == -1){
+              # length was 1, value 0
+              cli::cli_abort(c(
+                "x" = "You have included  more than one model template.",
+                "i" = "A maximum of one model template can be included in a model."
+              ))
+            }
+
+            # length was 1, value 0
             type <- "ODE"
           }
           
@@ -1413,7 +1422,7 @@ PM_model <- R6::R6Class(
                     
                     # Write the model to a file
                     writeLines(base, file_path)
-                    },
+                  },
                   from_file = function(file_path) {
                     self$model_list <- private$makeR6model(model_filename)
                     #self$content <- readChar(model_filename, file.info(model_filename)$size)
@@ -1756,13 +1765,25 @@ PM_model <- R6::R6Class(
                   ls(envir = .GlobalEnv) %>% purrr::map(\(x) x[inherits(get(x), "PM_lib")]) %>% purrr::discard(\(x) length(x) == 0) 
                 }
                 
-                
-                get_found_model <- function(eqns){
-                  found_model_name <- eqns[purrr::map_lgl(eqns, \(x) x %in% mod_lib_names())]
+                # returns model from detected template, 0 if none, and -1 if more than one
+                get_found_model <- function(fun){
+                  
+                  eqns <- as.list(body(fun)[-1])
+                  found <- map(eqns, \(x) deparse(x) %in% mod_lib_names()) %>% unlist()
+                  
+                  if(sum(found) > 1){
+                    cli::cli_inform(c(
+                      "x" = "Multiple library model templates detected",
+                      "i" = "Maximum of one library model template allowed."
+                    ))
+                    return(-1)
+                  } 
+                  
+                  found_model_name <- eqns[[which(found)]] %>% deparse()
                   if(length(found_model_name)>0) {
                     found_model <- get(found_model_name)
                   } else {
-                    found_model <- NA
+                    found_model <- 0
                   }
                   return(found_model)
                 }
