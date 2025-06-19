@@ -112,13 +112,13 @@ is defined on the fly, the arguments form the building blocks. Blocks are of two
 and \emph{error models}. These
 portions of the model have specific and defined creator functions and no additional
 R code is permissible. They take this form:
-}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{block_name = c( 
   var1 = creator(),   
   var2 = creator()
 ) 
 }\if{html}{\out{</div>}}
+}
 
 Note the comma separating the creator functions, "\verb{c(}" to open the vector and "\verb{)}" to close the vector.
 Names are case-insensitive are are converted to lowercase for Rust.
@@ -127,22 +127,22 @@ Names are case-insensitive are are converted to lowercase for Rust.
 equations}, \emph{primary equations} (e.g. ODEs), \emph{lag time}, \emph{bioavailability}, \emph{initial conditions},
 and \emph{outputs}. These parts of the model are defined as R functions without arguments,
 but whose body contains any permissible R code.
-}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{block_name = function() \{ 
 
  # any valid R code 
  # can use primary or secondary parameters and covariates
  # lines are not separated by commas
- 
+
 \} 
 }\if{html}{\out{</div>}}
+}
 
 Note the absence of arguments between the "\verb{()}", the opening curly brace "\verb{\{}" to start
 the function body and the closing curly brace "\verb{\}}" to end the body.
 Again, all R code will be converted to lowercase prior to translation into Rust.
 
-\strong{Important:} All models must have \code{pri}, \code{tem} or \code{eqn}, \code{out}, and \code{err} blocks.
+\strong{Important:} All models must have \code{pri}, \code{eqn}, \code{out}, and \code{err} blocks.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_model$new(
   x = NULL,
@@ -170,7 +170,6 @@ existing appropriate input, which can be one of the following:
 working directory which will be read and passed to Rust engine.
 \item List that defines the model directly in R. This will be in the same format as if
 all the subsequent arguments were used. For example:
-}
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{mod_list <- list(
  pri = c(...),
@@ -180,7 +179,6 @@ all the subsequent arguments were used. For example:
 )
 mod <- PM_model$new(mod_list)
 }\if{html}{\out{</div>}}
-\itemize{
 \item \code{PM_model} object, which will simply rebuild it, e.g. carrying on the
 prior example: \code{PM_model$new(mod)}
 }
@@ -234,9 +232,41 @@ must be defined with no arguments between the parentheses,
 and the body \strong{must be in R syntax}. Any number of lines and R code, e.g.
 \code{if} - \verb{else} statements, etc. are permissible.}
 
-\item{\code{eqn}}{A function defining the model equations. The function must have no arguments,
-and the equations must be defined
-in R syntax. Use the following notation in equations:
+\item{\code{eqn}}{A function defining the model equations. The function must have no arguments.
+The body of the function may contain three kinds of equations, written in R syntax.
+\itemize{
+\item \strong{Implicit equations} referenced by calling the name of a Pmetrics model library object
+detailed in \code{\link[=model_lib]{model_lib()}}. The Pmetrics model library contains a number of template models
+solved analytically (algebraically) and may include user-defined models. For example, to use
+a two-compartment model with intavenous input:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{eqn = function()\{
+ two_comp_iv
+\}
+}\if{html}{\out{</div>}}
+
+Required parameters for library models are listed for each model and must be
+included in model blocks exactly as named. For example, in a one-compartment model
+\code{Ke} is a required parameter. Thus, if \code{Ke} is a function of a covariate called "crcl",
+here is a code snippet illustrating the inclusion of the required parameter.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{mod <- PM_model$new(
+  pri = c(
+    ke0 = ab(0, 5),
+    v = ab(0, 100)
+  ),
+  cov = c(
+    crcl = interp()
+  ),
+  eqn = function()\{
+    one_comp
+    ke = ke0 * crcl # the required parameter, ke, is defined
+  \},
+  ... # more model blocks, including out, err
+)
+}\if{html}{\out{</div>}}
+\item \strong{Explicit equations} are ordinary differential equations that directly define a model.
+Use the following notation in equations:
 \itemize{
 \item \code{dx[i]} for the change in amount with respect to time (i.e., \eqn{dx/dt}),
 where \code{i} is the compartment number,
@@ -246,20 +276,19 @@ in the data corresponding to doses for that input.
 \item Bolus doses are indicated by \code{DUR = 0} for dose events in the
 data. Currently only one bolus input is allowed, which goes into compartment 1
 and is not modifiable. It does not appear in the differential equations.
-Any R code is permissible within the body of the function.
-}
 
 For example,
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{eqn = function() \{
-  dx[1] = -ka * x[1]
-  dx[2] = rateiv[1] + ka * x[1] - ke * x[2]
+ dx[1] = -ka * x[1]
+ dx[2] = rateiv[1] + ka * x[1] - ke * x[2]
 \}
 }\if{html}{\out{</div>}}
-
-Additional equations in R code can be defined in this block, which are similar to
+}
+\item \strong{Additional equations} in R code can be defined in this block, which are similar to
 the \code{sec} block, but will only be available within the \code{eqn} block as opposed
-to global availability when defined in \code{sec}.}
+to global availability when defined in \code{sec}. They can be added to either
+}}
 
 \item{\code{lag}}{A function defining the lag time (delayed absorption) for the bolus input.
 The function must have no arguments,
@@ -403,15 +432,6 @@ for 3 outputs with the same error model:
 }\if{html}{\out{</div>}}}
 
 \item{\code{...}}{Not currently used.}
-
-\item{\code{tem}}{A vector of length one defining the analytical template for the model
-with an appropriate creator function. Look at
-\code{\link[=model_lib]{model_lib()}} to ensure \code{pri} parameters are named correctly. If \code{pri}
-parameters must be transformed, include the transformation,
-e.g., \code{V = V0 * wt}, in the \code{sec} block for global availability or another
-appropriate block for availability restricted to that block.
-
-Outputs for analytical models can be calculated from any model compartment.}
 }
 \if{html}{\out{</div>}}
 }
