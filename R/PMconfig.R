@@ -9,8 +9,13 @@ getPMpath <- function() {
 }
 
 getBits <- function() {
-  #figure out 32 or 64 bit
-  if (length(grep("64-bit", utils::sessionInfo())) > 0) { return(64) } else { return(32) }
+  if (.Machine$sizeof.pointer == 8) {
+    return(64)
+  } else if (.Machine$sizeof.pointer == 4) {
+    return(32)
+  } else {
+    stop("Unknown architecture")
+  }
 }
 
 getFixedColNames <- function() {
