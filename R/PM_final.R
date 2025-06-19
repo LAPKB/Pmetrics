@@ -350,7 +350,6 @@ PM_final <- R6::R6Class(
 
       # ranges
       ab <- config$parameters[[1]] %>%
-        filter(fixed == FALSE) %>%
         select(lower, upper) %>%
         as.matrix()
 
