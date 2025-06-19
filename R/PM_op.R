@@ -173,11 +173,13 @@ private = list(
     dplyr::rename(pred = value) %>%
     dplyr::mutate(outeq = outeq + 1) %>%
     dplyr::mutate(obs = na_if(obs, -99)) %>%
+    dplyr::rowwise() %>%
     mutate(d = pred - obs) %>%
     mutate(ds = d * d) %>%
-    mutate(obsSD = poly[outeq, 1] + poly[outeq, 2] * obs + poly[outeq, 3] * (obs^2) + poly[outeq, 4] * (obs^3)) %>%
+    mutate(obsSD = map(1:4, \(x) poly[outeq, x] * obs^(x-1)) %>% unlist() %>% sum()) %>%
     mutate(wd = d / obsSD) %>%
-    mutate(wds = wd * wd)
+    mutate(wds = wd * wd) %>%
+    dplyr::ungroup()
     class(op) <- c("PM_op_data", "data.frame")
     return(op)
   } # end make
@@ -302,7 +304,7 @@ plot.PM_op <- function(x,
     
     # include/exclude
     if (missing(include)) include <- unique(x$id)
-    if (missing(exclude)) exclude <- NA
+    if (missing(exclude)) exclude <- NULL
     if (missing(block)) {
       block <- unique(x$block)
     }
