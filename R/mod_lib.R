@@ -1,64 +1,19 @@
 model_lib <- function(name = NULL, show = TRUE) {
-  mod_table <- matrix(
-    c(
-      "one_comp_iv", "advan1\nadvan1-trans1", "One compartment IV input, Ke", "1 = Central", "Ke, V",
-      "one_comp_iv_cl", "advan1\nadvan1-trans2", "One compartment IV input, CL", "1 = Central", "CL, V",
-      "two_comp_bolus", "advan2\nadvan2-trans1", "Two compartment bolus input, Ke", "1 = Bolus\n2 = Central", "Ka, Ke, V",
-      "two_comp_bolus_cl", "advan2\nadvan2-trans2", "Two compartment bolus input, CL", "1 = Bolus\n2 = Central", "Ka, CL, V",
-      "two_comp_iv", "advan3\nadvan3-trans1", "Two compartment IV input, Ke", "1 = Central\n2 = Peripheral", "Ke, V, KCP, KPC",
-      "two_comp_iv_cl", "advan3\nadvan3-trans4", "Two compartment IV input, CL", "1 = Central\n2 = Peripheral", "CL, VC, Q, VP",
-      "three_comp_bolus", "advan4\nadvan4-trans1", "Three compartment bolus input, Ke", "1 = Bolus\n2 = Central\n3 = Peripheral", "Ka, Ke, V, KCP, KPC",
-      "three_comp_bolus_cl", "advan4\nadvan4-trans4", "Three compartment bolus input, CL", "1 = Bolus\n2 = Central\n3 = Peripheral", "Ka, CL, VC, Q, VP"
-    ),
-    ncol = 5, byrow = TRUE
-  ) %>%
-    as.data.frame() %>%
-    stats::setNames(c("Primary Name", "Alt Names", "Description", "Compartments", "Parameters")) %>%
-    tibble::as_tibble()
   
-  
-  mod_table$ODE <- list(
-    list(
-      "dX[1] = RATEIV[1] - Ke*X[1]"
-    ),
-    list(
-      "dX[1] = RATEIV[1] - CL/V*X[1]"
-    ),
-    list(
-      "dX[1] = BOLUS[1] - Ka*X[1]",
-      "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]"
-    ),
-    list(
-      "dX[1] = BOLUS[1] - Ka*X[1]",
-      "dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]"
-    ),
-    list(
-      "dX[1] = RATEIV[1] - (Ke + KCP)*X[1] + KPC*X[2]",
-      "dX[2] = KCP*X[1] - KPC*X[2]"
-    ),
-    list(
-      "dX[1] = RATEIV[1] - (CL + Q)/VC*X[1] + Q/VP*X[2]",
-      "dX[2] = Q/VC*X[1] - Q/VP*X[2]"
-    ),
-    list(
-      "dX[1] = BOLUS[1] - Ka*X[1]",
-      "dX[2] = RATEIV[1] + Ka*X[1] - (Ke + KCP)*X[2] + KPC*X[3]",
-      "dX[3] = KCP*X[2] - KPC*X[3]"
-    ),
-    list(
-      "dX[1] = BOLUS[1] - Ka*X[1]",
-      "dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/VC*X[2] + Q/VP*X[3]",
-      "dX[3] = Q/VC*X[2] - Q/VP*X[3]"
-    )
+  mod_table <- tibble(
+    Name = map_chr(mod_list, \(x) x$name),
+    alt_names = map_chr(mod_list, \(x) paste(x$alt_names, collapse = "\n")),
+    Description = map_chr(mod_list, \(x) paste(x$description, collapse = "\n")),
+    Compartments = map_chr(mod_list, \(x) paste(x$compartments, collapse = "\n")),
+    Parameters = map_chr(mod_list, \(x) paste(names(x$arg_list$pri), collapse = ", ")),
+    ode = map_chr(mod_list, \(x) paste(func_to_char(x$arg_list$eqn), collapse = "\n"))
   )
-  
   
   if (is.null(name)) {
     print(mod_table %>%
             dplyr::rowwise() %>%
-            dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
             flextable::flextable() %>%
-            flextable::set_header_labels(ODE = "Corresponding ODE") %>%
+            flextable::set_header_labels(alt_names = "Alt Names", ode = "Corresponding ODE") %>%
             flextable::autofit())
     return(invisible(NULL))
   }
@@ -81,14 +36,13 @@ model_lib <- function(name = NULL, show = TRUE) {
   }
   
   if (show) {
-    print(mod_table %>% dplyr::filter(`Primary Name` == name) %>%
-            dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
+    print(mod_table %>% dplyr::filter(Name == name) %>%
             flextable::flextable() %>%
-            flextable::set_header_labels(ODE = "Corresponding ODE") %>%
+            flextable::set_header_labels(alt_names = "Alt Names", ode = "Corresponding ODE") %>%
             flextable::autofit())
   }
   
-  return(invisible(mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1, 1) %>% unlist()))
+  return(invisible(mod_table %>% dplyr::filter(Name == name) %>% dplyr::select(ode) %>% stringr::str_split("\n") %>% unlist()))
 }
 
 
@@ -108,8 +62,8 @@ PM_lib <- R6::R6Class(
     description = NULL,
     #' @field compartments Names for compartment numbers used in the model template
     compartments = NULL,
-    #' @field algebraic Boolean indicating if the model is fitted algebraically
-    algebraic = NULL,
+    #' @field analytical Boolean indicating if the model is fitted analytically
+    analytical = NULL,
     #' @field arg_list List of model blocks with token values
     arg_list = NULL,
     
@@ -118,7 +72,7 @@ PM_lib <- R6::R6Class(
       self$alt_names <- x[[2]]
       self$description <- x[[3]]
       self$compartments <- x[[4]]
-      self$algebraic <- x[[5]]
+      self$analytical <- x[[5]]
       self$arg_list <- x[[6]]
     },
     print = function(){
@@ -140,8 +94,8 @@ PM_lib <- R6::R6Class(
       cli::cli_text("{.tip Ensure these exact names appear in any of the {.code PRI}, {.code SEC}, {.code EQN}, or {.code OUT} blocks}")
       purrr::walk(self$parameters, cli::cli_text)
       cli::cli_h3("Equations")
-      if(self$algebraic){
-        cli::cli_text("{.tip These are shown to describe the model structure, but the model can be fitted algebraically, without a differential equation solver}")
+      if(self$analytical){
+        cli::cli_text("{.tip These are shown to describe the model structure, but the model can be fitted analytically, without a differential equation solver}")
       } else {
         cli::cli_text("{.tip These describe the model structure, and the model is fitted with a differential equation solver}")
       }
@@ -175,14 +129,14 @@ mod_list <- list(
     alt_names = c("advan1", "advan1-trans1"), 
     description = c("One compartment", "Infusion into central compartment #1", "Ke elimination from central compartment #1"), 
     compartments = "1 = Central",
-    algebraic = TRUE,
+    analytical = TRUE,
     arg_list = list(
       pri = c(
         Ke = ab(0,5),
         V = ab(0,100)
       ),
       eqn = function(){
-        dX[1] = RATEIV[1] - Ke*X[1]
+        dX[1] = R[1] - Ke*X[1]
       },
       out = function(){
         Y[1] = X[1]/V
@@ -199,14 +153,14 @@ mod_list <- list(
     alt_names = c("advan1", "advan1-trans2"), 
     description = c("One compartment", "Infusion into central compartment #1", "CLearance from central compartment #1"), 
     compartments = "1 = Central", 
-    algebraic = TRUE,
+    analytical = TRUE,
     arg_list = list(
       pri = c(
         CL = ab(0, 500),
         V = ab(0, 100)
       ),
       eqn = function(){
-        dX[1] = RATEIV[1] - CL/V*X[1]
+        dX[1] = R[1] - CL/V*X[1]
       },
       out = function(){
         Y[1] = X[1]/V
@@ -222,7 +176,7 @@ mod_list <- list(
     alt_names = c("advan2", "advan2-trans1"), 
     description = c("Two compartments", "Bolus input to compartment #1, infusion to central compartment #2", "Ke elimination from central compartment #2"), 
     compartments = c("1 = Bolus", "2 = Central"), 
-    algebraic = TRUE,
+    analytical = TRUE,
     arg_list = list(
       pri = c(
         Ka = ab(0, 5),
@@ -230,8 +184,8 @@ mod_list <- list(
         V = ab(0, 100)
       ),
       eqn = function(){
-        dX[1] = BOLUS[1] - Ka*X[1]
-        dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]
+        dX[1] = B[1] - Ka*X[1]
+        dX[2] = R[1] + Ka*X[1] - Ke*X[2]
       },
       out = function(){
         Y[1] = X[2]/V
@@ -248,7 +202,7 @@ mod_list <- list(
     alt_names = c("advan2", "advan2-trans2"), 
     description = c("Two compartments", "Bolus input to compartment #1, infusion to central compartment #2", "CLearance from central compartment #2"), 
     compartments = c("1 = Bolus", "2 = Central"), 
-    algebraic = TRUE,
+    analytical = TRUE,
     arg_list = list(
       pri = c(
         Ka = ab(0, 5),
@@ -256,8 +210,8 @@ mod_list <- list(
         V = ab(0, 100)
       ),
       eqn = function(){
-        dX[1] = BOLUS[1] - Ka*X[1]
-        dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]
+        dX[1] = B[1] - Ka*X[1]
+        dX[2] = R[1] + Ka*X[1] - CL/V*X[2]
       },
       out = function(){
         Y[1] = X[2]/V
@@ -274,7 +228,7 @@ mod_list <- list(
     alt_names = c("advan3", "advan3-trans1"),
     description = c("Two compartments", "Infusion into central compartment #1", "Distribution to/from peripheral compartment #2", "Ke elimination from central compartment #1"),
     compartments = c("1 = Central", "2 = Peripheral"),
-    algebraic = TRUE,
+    analytical = TRUE,
     arg_list = list(
       pri = c(
         Ke = ab(0, 5),
@@ -283,7 +237,7 @@ mod_list <- list(
         V = ab(0, 100)
       ),
       eqn = function(){
-        dX[1] = RATEIV[1] - (Ke + Kcp)*X[1] + Kpc*X[2]
+        dX[1] = R[1] - (Ke + Kcp)*X[1] + Kpc*X[2]
         dX[2] = Kcp*X[1] - Kpc*X[2]
       },
       out = function(){
@@ -301,7 +255,7 @@ mod_list <- list(
     alt_names = c("advan3", "advan3-trans4"),
     description = c("Two compartments", "Infusion into central compartment #1", "Distribution to/from peripheral compartment #2", "CLearance from central compartment #1"),
     compartments = c("1 = Central", "2 = Peripheral"),
-    algebraic = TRUE,
+    analytical = TRUE,
     arg_list = list(
       pri = c(
         CL = ab(0, 500),
@@ -310,7 +264,7 @@ mod_list <- list(
         Vp = ab(0, 100)
       ),
       eqn = function(){
-        dX[1] = RATEIV[1] - (CL + Q)/Vc*X[1] + Q/Vp*X[2]
+        dX[1] = R[1] - (CL + Q)/Vc*X[1] + Q/Vp*X[2]
         dX[2] = Q/Vc*X[1] - Q/Vp*X[2]
       },
       out = function(){
@@ -327,7 +281,7 @@ mod_list <- list(
     alt_names = c("advan4", "advan4-trans1"),
     description = c("Three compartments", "Bolus input to compartment #1, infusion into central compartment #2", "Distribution to/from peripheral compartment #3", "Ke elimination from central compartment #2"),
     compartments = c("1 = Bolus", "2 = Central", "3 = Peripheral"),
-    algebraic = TRUE,
+    analytical = TRUE,
     arg_list = list(
       pri = c(
         Ka = ab(0, 5),
@@ -337,8 +291,8 @@ mod_list <- list(
         V = ab(0, 100)
       ),
       eqn = function(){
-        dX[1] = BOLUS[1] - Ka*X[1]
-        dX[2] = RATEIV[1] + Ka*X[1] - (Ke + Kcp)*X[2] + Kpc*X[3]
+        dX[1] = B[1] - Ka*X[1]
+        dX[2] = R[1] + Ka*X[1] - (Ke + Kcp)*X[2] + Kpc*X[3]
         dX[3] = Kcp*X[2] - Kpc*X[3]
       },
       out = function(){
@@ -356,7 +310,7 @@ mod_list <- list(
     alt_names = c("advan4", "advan4-trans4"),
     description = c("Three compartments", "Bolus input to compartment #1, infusion into central compartment #2", "Distribution to/from peripheral compartment #3", "CLearance from central compartment #2"),
     compartments = c("1 = Bolus", "2 = Central", "3 = Peripheral"),
-    algebraic = TRUE,
+    analytical = TRUE,
     arg_list = list(
       pri = c(
         Ka = ab(0, 5),
@@ -366,8 +320,8 @@ mod_list <- list(
         Vp = ab(0, 100)
       ),
       eqn = function(){
-        dX[1] = BOLUS[1] - Ka*X[1]
-        dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/Vc*X[2] + Q/Vp*X[3]
+        dX[1] = B[1] - Ka*X[1]
+        dX[2] = R[1] + Ka*X[1] - (CL + Q)/Vc*X[2] + Q/Vp*X[3]
         dX[3] = Q/Vc*X[2] - Q/Vp*X[3]
       },
       out = function(){
