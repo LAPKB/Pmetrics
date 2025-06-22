@@ -15,8 +15,6 @@ Edit user options for Pmetrics
 \details{
 This function will open the user options file for Pmetrics in the system
 default editor for JSON. Use \strong{caution} directly editing the file to avoid errors.
-This is the easiest way to remove specific Pmetrics function argument overrides.
-See further details in the \code{func_defaults} argument to \link{setPMoptions}.
 }
 \author{
 Michael Neely

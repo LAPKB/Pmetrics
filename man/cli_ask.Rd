@@ -11,7 +11,7 @@ cli_ask(text, prompt = ">> ", ...)
 
 \item{prompt}{The prompt preceding user input. Default is ">>".}
 
-\item{...}{Additional parameters which could be passed to \link[cli:cli_alert]{cli::cli_alert_warning}.}
+\item{...}{Additional parameters which could be passed to \link[cli:cli_text]{cli::cli_text}.}
 }
 \value{
 The value of the user response
@@ -20,5 +20,5 @@ The value of the user response
 Get user input in warning situation
 }
 \details{
-Combines the \link[cli:cli_alert]{cli::cli_alert_warning} function with \link{readline}.
+Combines the \link[cli:cli_text]{cli::cli_text} function with \link{readline}.
 }
