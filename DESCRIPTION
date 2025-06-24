@@ -62,12 +62,13 @@ Suggests:
     npde,
     pandoc,
     progress,
+    quarto,
     RColorBrewer,
     RcppTOML,
     testthat
 RoxygenNote: 7.3.2
 Encoding: UTF-8
 Config/testthat/edition: 3
-VignetteBuilder: knitr
+VignetteBuilder: quarto
 Config/rextendr/version: 0.4.0.9000
 LazyData: true
