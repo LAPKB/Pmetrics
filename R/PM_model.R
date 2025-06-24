@@ -464,7 +464,7 @@ PM_model <- R6::R6Class(
           
           # Get model template name if present (NA if absent) and set type
           model_template <- get_found_model(self$arg_list$eqn) #function defined below, returns 0 if not found, -1 if error
-  
+          
           #change logic; need to accomodate library models that are ODEs
           if (length(model_template) > 1 && model_template$analytical) {
             type <- "Analytical"
@@ -476,7 +476,7 @@ PM_model <- R6::R6Class(
                 "i" = "A maximum of one model template can be included in a model."
               ))
             }
-
+            
             # length was 1, value 0
             type <- "ODE"
           }
@@ -1384,11 +1384,11 @@ PM_model <- R6::R6Class(
                     
                     coeff_fxns <- err[-1] %>% 
                     purrr::imap(\(x, idx) {
-                      glue::glue("e[{idx}] = {err_type}({gamlam_value}, c({x}), {const_coeff[{idx}]})") 
+                      glue::glue("{err_type}({gamlam_value}, c({x}), {const_coeff[{idx}]})") 
                     }) %>%
                     unlist()
                     
-                    arg_list$err <- eval(parse(text = glue::glue("function() {{\n{paste({coeff_fxns}, collapse = '\n')}\n}}")))
+                    arg_list$err <- eval(parse(text = glue::glue("c(\n{paste({coeff_fxns}, collapse = ',\n')}\n)")))
                     
                     cat(msg)
                     flush.console()
@@ -1435,156 +1435,156 @@ PM_model <- R6::R6Class(
               
               
               
-              # PM_input ----------------------------------------------------------------
+              # # PM_input ----------------------------------------------------------------
               
               
-              # private classes
-              # This generates text which will be written to genmodel.txt
-              PM_input <- R6::R6Class(
-                "PM_input",
-                public <- list(
-                  mode = NULL,
-                  min = NULL,
-                  max = NULL,
-                  mean = NULL,
-                  sd = NULL,
-                  fixed = NULL,
-                  constant = NULL,
-                  param = NULL,
-                  # is this used?
-                  additive = NULL,
-                  proportional = NULL,
-                  coefficients = NULL,
-                  covariate = NULL,
-                  gtz = NULL,
-                  initialize = function(a,
-                    b,
-                    mode,
-                    constant = FALSE,
-                    gtz = FALSE) {
-                      if (!mode %in% c(
-                        "ab",
-                        "msd",
-                        "fixed",
-                        "additive",
-                        "proportional",
-                        "combination",
-                        "coefficients",
-                        "covariate"
-                      )) {
-                        cli_abort(c("x" = "{mode} is not a valid term.", "i" = "See help for {.fn PM_model}."))
-                      }
-                      self$gtz <- gtz
-                      self$constant <- constant
-                      self$mode <- mode
-                      if (mode == "ab") {
-                        self$min <- a
-                        self$max <- b
-                        self$mean <- a + round((b - a) / 2, 3)
-                        self$sd <- round((b - a) / 6, 3)
-                      } else if (mode == "msd") {
-                        self$mean <- a
-                        self$sd <- b
-                        self$min <- a - 3 * b
-                        self$max <- a + 3 * b
-                      } else if (mode == "fixed") {
-                        self$fixed <- a
-                        # note that a fixed input with constant=T becomes a constant
-                      } else if (mode == "additive") {
-                        self$additive <- a
-                        self$coefficients <- b # b is a vector in this case
-                      } else if (mode == "proportional") {
-                        self$proportional <- a
-                        self$coefficients <- b # b is a vector in this case
-                      } else if (mode == "coefficients") {
-                        self$coefficients <- a # a is a vector in this case
-                      } else if (mode == "covariate") {
-                        self$covariate <- a # a is a character vector in this case
-                      }
-                    },
-                    print_to = function(mode_not_used, engine) {
-                      # TODO:use mode and self$mode to translate to the right set of outputs
-                      if (engine == "npag" | engine == "it2b") {
-                        if (self$mode == "ab" | self$mode == "msd") {
-                          if (self$gtz) {
-                            return(sprintf("+%f, %f", self$mind, self$max))
-                          } else {
-                            return(sprintf("%f, %f", self$min, self$max))
-                          }
-                        } else if (self$mode == "fixed") {
-                          if (self$constant) {
-                            return(sprintf("%f!", self$fixed))
-                          } else {
-                            return(sprintf("%f", self$fixed))
-                          }
-                        } else if (self$mode == "additive") {
-                          if (engine == "it2b") {
-                            cli::cli_abort(c("x" = "Lambda is not defined in IT2B."))
-                          }
-                          if (self$constant) {
-                            return(sprintf("L=%f!", self$additive))
-                          } else {
-                            return(sprintf("L=%f", self$additive))
-                          }
-                        } else if (self$mode == "proportional") {
-                          if (self$constant) {
-                            return(sprintf("G=%f!", self$proportional))
-                          } else {
-                            return(sprintf("G=%f", self$proportional))
-                          }
-                        } else if (self$mode == "coefficients") {
-                          if (self$constant) {
-                            return(do.call(sprintf, c(
-                              "%f, %f, %f, %f!", as.list(self$coefficients)
-                            )))
-                          } else {
-                            return(do.call(sprintf, c(
-                              "%f, %f, %f, %f", as.list(self$coefficients)
-                            )))
-                          }
-                        } else if (self$mode == "covariate") {
-                          if (self$constant) {
-                            return(sprintf("%s!", self$covariate))
-                          } else {
-                            return(sprintf("%s", self$covariate))
-                          }
-                        } else if (engine == "rpem") {
-                          if (self$mode == "ab") {
-                            if (self$gtz) {
-                              return(sprintf("+%f, %f", self$min, self$max))
-                            } else {
-                              return(sprintf("%f, %f", self$min, self$max))
-                            }
-                          } else if (self$mode == "msd") {
-                            if (self$gtz) {
-                              return(sprintf("+%%%f, %f", self$mean, self$sd))
-                            } else {
-                              return(sprintf("%%%f, %f", self$mean, self$sd))
-                            }
-                          } else if (self$mode == "fixed") {
-                            if (self$constant) {
-                              return(sprintf("%f!", self$fixed))
-                            } else {
-                              return(sprintf("%f", self$fixed))
-                            }
-                          } else if (self$mode == "additive") {
-                            if (self$constant) {
-                              return(sprintf("L=%f!", self$additive))
-                            } else {
-                              return(sprintf("L=%f", self$additive))
-                            }
-                          } else if (self$mode == "proportional") {
-                            if (self$constant) {
-                              return(sprintf("G=%f!", self$proportional))
-                            } else {
-                              return(sprintf("G=%f", self$proportional))
-                            }
-                          }
-                        }
-                      }
-                    }
-                  )
-                )
+              # # private classes
+              # # This generates text which will be written to genmodel.txt
+              # PM_input <- R6::R6Class(
+              #   "PM_input",
+              #   public <- list(
+              #     mode = NULL,
+              #     min = NULL,
+              #     max = NULL,
+              #     mean = NULL,
+              #     sd = NULL,
+              #     fixed = NULL,
+              #     constant = NULL,
+              #     param = NULL,
+              #     # is this used?
+              #     additive = NULL,
+              #     proportional = NULL,
+              #     coefficients = NULL,
+              #     covariate = NULL,
+              #     gtz = NULL,
+              #     initialize = function(a,
+              #       b,
+              #       mode,
+              #       constant = FALSE,
+              #       gtz = FALSE) {
+              #         if (!mode %in% c(
+              #           "ab",
+              #           "msd",
+              #           "fixed",
+              #           "additive",
+              #           "proportional",
+              #           "combination",
+              #           "coefficients",
+              #           "covariate"
+              #         )) {
+              #           cli_abort(c("x" = "{mode} is not a valid term.", "i" = "See help for {.fn PM_model}."))
+              #         }
+              #         self$gtz <- gtz
+              #         self$constant <- constant
+              #         self$mode <- mode
+              #         if (mode == "ab") {
+              #           self$min <- a
+              #           self$max <- b
+              #           self$mean <- a + round((b - a) / 2, 3)
+              #           self$sd <- round((b - a) / 6, 3)
+              #         } else if (mode == "msd") {
+              #           self$mean <- a
+              #           self$sd <- b
+              #           self$min <- a - 3 * b
+              #           self$max <- a + 3 * b
+              #         } else if (mode == "fixed") {
+              #           self$fixed <- a
+              #           # note that a fixed input with constant=T becomes a constant
+              #         } else if (mode == "additive") {
+              #           self$additive <- a
+              #           self$coefficients <- b # b is a vector in this case
+              #         } else if (mode == "proportional") {
+              #           self$proportional <- a
+              #           self$coefficients <- b # b is a vector in this case
+              #         } else if (mode == "coefficients") {
+              #           self$coefficients <- a # a is a vector in this case
+              #         } else if (mode == "covariate") {
+              #           self$covariate <- a # a is a character vector in this case
+              #         }
+              #       },
+              #       print_to = function(mode_not_used, engine) {
+              #         # TODO:use mode and self$mode to translate to the right set of outputs
+              #         if (engine == "npag" | engine == "it2b") {
+              #           if (self$mode == "ab" | self$mode == "msd") {
+              #             if (self$gtz) {
+              #               return(sprintf("+%f, %f", self$mind, self$max))
+              #             } else {
+              #               return(sprintf("%f, %f", self$min, self$max))
+              #             }
+              #           } else if (self$mode == "fixed") {
+              #             if (self$constant) {
+              #               return(sprintf("%f!", self$fixed))
+              #             } else {
+              #               return(sprintf("%f", self$fixed))
+              #             }
+              #           } else if (self$mode == "additive") {
+              #             if (engine == "it2b") {
+              #               cli::cli_abort(c("x" = "Lambda is not defined in IT2B."))
+              #             }
+              #             if (self$constant) {
+              #               return(sprintf("L=%f!", self$additive))
+              #             } else {
+              #               return(sprintf("L=%f", self$additive))
+              #             }
+              #           } else if (self$mode == "proportional") {
+              #             if (self$constant) {
+              #               return(sprintf("G=%f!", self$proportional))
+              #             } else {
+              #               return(sprintf("G=%f", self$proportional))
+              #             }
+              #           } else if (self$mode == "coefficients") {
+              #             if (self$constant) {
+              #               return(do.call(sprintf, c(
+              #                 "%f, %f, %f, %f!", as.list(self$coefficients)
+              #               )))
+              #             } else {
+              #               return(do.call(sprintf, c(
+              #                 "%f, %f, %f, %f", as.list(self$coefficients)
+              #               )))
+              #             }
+              #           } else if (self$mode == "covariate") {
+              #             if (self$constant) {
+              #               return(sprintf("%s!", self$covariate))
+              #             } else {
+              #               return(sprintf("%s", self$covariate))
+              #             }
+              #           } else if (engine == "rpem") {
+              #             if (self$mode == "ab") {
+              #               if (self$gtz) {
+              #                 return(sprintf("+%f, %f", self$min, self$max))
+              #               } else {
+              #                 return(sprintf("%f, %f", self$min, self$max))
+              #               }
+              #             } else if (self$mode == "msd") {
+              #               if (self$gtz) {
+              #                 return(sprintf("+%%%f, %f", self$mean, self$sd))
+              #               } else {
+              #                 return(sprintf("%%%f, %f", self$mean, self$sd))
+              #               }
+              #             } else if (self$mode == "fixed") {
+              #               if (self$constant) {
+              #                 return(sprintf("%f!", self$fixed))
+              #               } else {
+              #                 return(sprintf("%f", self$fixed))
+              #               }
+              #             } else if (self$mode == "additive") {
+              #               if (self$constant) {
+              #                 return(sprintf("L=%f!", self$additive))
+              #               } else {
+              #                 return(sprintf("L=%f", self$additive))
+              #               }
+              #             } else if (self$mode == "proportional") {
+              #               if (self$constant) {
+              #                 return(sprintf("G=%f!", self$proportional))
+              #               } else {
+              #                 return(sprintf("G=%f", self$proportional))
+              #               }
+              #             }
+              #           }
+              #         }
+              #       }
+              #     )
+              #   )
                 
                 ##### These functions create various model components
                 
@@ -1767,7 +1767,6 @@ PM_model <- R6::R6Class(
                 
                 # returns model from detected template, 0 if none, and -1 if more than one
                 get_found_model <- function(fun){
-                  
                   eqns <- as.list(body(fun)[-1])
                   found <- map(eqns, \(x) deparse(x) %in% mod_lib_names()) %>% unlist()
                   
@@ -1778,6 +1777,10 @@ PM_model <- R6::R6Class(
                     ))
                     return(-1)
                   } 
+
+                  if(sum(found) == 0){
+                    return(0)
+                  }
                   
                   found_model_name <- eqns[[which(found)]] %>% deparse()
                   if(length(found_model_name)>0) {

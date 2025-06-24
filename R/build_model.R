@@ -1203,17 +1203,17 @@ paste0(
     purrr::map(
       1:numeqt(), \(x) { 
         sprintf("%s%s(initial = %s, coeff = c(%s)%s)<br>",
-          tab(4),
-          c("additive", "proportional")[1 + as.numeric(stringr::str_detect(input$out_model_err_type_1, "Proportional"))],
-          input$out_model_err_val_1,
-          input[[paste0("out_assay_err_", 1)]],
-          c("", ", fixed = TRUE")[1 + as.numeric(stringr::str_detect(input$out_model_err_type_1, "Fixed"))]
-        ) #end sprintf
+        tab(4),
+        c("additive", "proportional")[1 + as.numeric(stringr::str_detect(input$out_model_err_type_1, "Proportional"))],
+        input$out_model_err_val_1,
+        input[[paste0("out_assay_err_", 1)]],
+        c("", ", fixed = TRUE")[1 + as.numeric(stringr::str_detect(input$out_model_err_type_1, "Fixed"))]
+      ) #end sprintf
     }
   ), # end map
   tab(2), 
   ")"
-  ) # end paste0
+) # end paste0
 ) # end paste0
 
 
@@ -1264,7 +1264,7 @@ HTML(paste0(
   ")<br>",
   "</pre>"
 ))
-    }) # end output
+}) # end output
 } # end function
 ) # end map
 

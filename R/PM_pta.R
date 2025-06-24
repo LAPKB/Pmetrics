@@ -496,7 +496,7 @@ PM_pta <- R6::R6Class(
         }))) %>%
         mutate(prop_success = sum(.data$success) / length(.data$success)) %>%
         mutate(label = sim_labels[.data$sim_num]) %>%
-        relocate(
+        dplyr::relocate(
           sim_num, label, target, type,
           .data$success_ratio, .data$prop_success, success, .data$pdi,
           start, end
@@ -673,7 +673,7 @@ pta_time <- function(sims, .target, .simTarg, .start, .end, .pb) {
       crossing1 <- times[c(crossing_rows - 1, crossing_rows), ] %>%
         arrange(id, time) %>%
         ungroup() %>%
-        mutate(pair = rep(seq_along(1:(0.5 * n())), each = 2)) %>%
+        mutate(pair = rep(seq_along(1:(0.5 * dplyr::n())), each = 2)) %>%
         group_by(.data$pair)
 
       crossing2 <- crossing1 %>%
