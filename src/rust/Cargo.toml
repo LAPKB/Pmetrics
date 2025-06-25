@@ -16,4 +16,4 @@ rayon = "1.10.0"
 anyhow = "1.0.97"
 
 [profile.release]
-panic = "unwind" 
+panic = "unwind"
