@@ -77,7 +77,7 @@ predictive checks (pcVPCs).
 \describe{
 \item{\code{result}}{The result of a prior run, loaded with \link{PM_load}.}
 
-\item{\code{tad}}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
+\item{\code{tad}}{\verb{r template("tad")}}
 
 \item{\code{binCov}}{A character vector of the names of covariates which are included in the model, i.e. in the
 model equations and which need to be binned.  For example \code{binCov='wt'} if "wt" is included in a
