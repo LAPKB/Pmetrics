@@ -2,7 +2,7 @@
 Ka, 0.1, 0.9
 Ke, 0.001, 0.1
 V, 30, 120
-Tlag1, 0, 4
+lag1, 0, 4
 
 
 #Cov
@@ -14,11 +14,10 @@ HEIGHT
 
 
 #Lag 
-TLAG(1) = Tlag1
+LAG[1] = lag1
 
 #Out
-Y(1) = X(2)/V
-
+Y[1] = X[2]/V
 
 #Err
 G=5

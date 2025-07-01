@@ -373,7 +373,6 @@ PM_model <- R6::R6Class(
       pri = NULL,
       cov = NULL,
       sec = NULL,
-      #tem = NULL,
       eqn = NULL,
       lag = NULL,
       fa = NULL,
@@ -387,7 +386,6 @@ PM_model <- R6::R6Class(
           pri = pri,
           cov = cov,
           sec = sec,
-          #tem = tem,
           eqn = eqn,
           lag = lag,
           fa = fa,
@@ -404,12 +402,14 @@ PM_model <- R6::R6Class(
               "i" = "Current directory: {getwd()}"))
             }
             self$arg_list <- private$R6fromFile(x) # read file and populate fields
+
           } else if (is.list(x)) { # x is a list in R
             purrr::walk(model_sections, \(s) {
               if (s %in% names(x)) {
                 self$arg_list[[s]] <- x[[s]]
               }
             })
+
           } else if (inherits(x, "PM_model")) { # x is a PM_model object
             if(!"arg_list" %in% names(x)) {
               cli::cli_abort(c("x" = "You have supplied an older {.code PM_model} format.",
@@ -694,8 +694,18 @@ PM_model <- R6::R6Class(
             
             # this one needs to be capital
             self$model_list$type <- type
-            self$compile()
-          },
+      
+      
+            extra_args <- list(...)
+            if (!is.null(purrr::pluck(extra_args, "compile"))){
+              if (extra_args$compile) {
+                self$compile()
+              }
+            } else { # default is to compile
+              self$compile()
+            }
+          
+    },
           
           #' @description
           #' Print the model summary.
@@ -1282,7 +1292,7 @@ PM_model <- R6::R6Class(
                 
                 # add to arg_list
                 arg_list$cov <- purrr::map_vec(const_covar, \(x){
-                  type <- ifelse(x, "lm", "none")
+                  type <- ifelse(!x, "lm", "none")
                   interp(type)
                 }) %>%
                 purrr::set_names(covar_list)
