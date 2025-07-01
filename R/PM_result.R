@@ -72,7 +72,12 @@ PM_result <- R6::R6Class(
             if (!inherits(out[[x]], "R6")) { # older save
               cli::cli_abort(c("x" = "The object was saved in an older format. Please re-run the analysis."))
             } else {
-              self[[x]] <- get(paste0("PM_", x))$new(out[[x]], quiet = TRUE) # was saved in R6 format, but remake to update if needed
+              if(x == "model"){
+                args <- list(x  = out[[x]], compile = FALSE)
+              } else { 
+                args <- list(out[[x]], quiet = TRUE)
+              }
+              self[[x]] <- do.call(get(paste0("PM_", x))$new, args = args) # was saved in R6 format, but remake to update if needed
             }
           }
         }

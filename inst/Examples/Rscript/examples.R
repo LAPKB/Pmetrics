@@ -90,36 +90,35 @@ exData$plot() #plot the raw data; more on that later
 # The advantage of creating them in R is that one does not need to copy model
 # files into folders to provide necessary inputs. 
 
-mod1 <- PM_model$new(list(
+mod1 <- PM_model$new(
   pri = list(
     Ka = ab(0.1, 0.9),
     Ke = ab(0.001, 0.1),
     V = ab(30, 120),
-    lag = ab(0, 4)
+    lag1 = ab(0, 4)
   ),
-  cov = list(
-    covariate("WT"),
-    covariate("AFRICA"),
-    covariate("AGE"),
-    covariate("GENDER"),
-    covariate("HEIGHT")
+  cov = c(
+    wt = interp(),
+    africa = interp("none"),
+    age = interp(),
+    gender = interp("none"),
+    height = interp()
   ),
-  eqn = mod("one_comp_IV"),
-  eqn = list(
-    "dX[1] = -Ka*X[1]",
-    "dX[2] = Ka*X[1] - Ke*X[2]"
-  ),
-  lag = list("Tlag[1] = lag"),
-  out = list(
-    Y1 = list(
-      value = "X[2]/V",
-      err = list(
-        model = proportional(5),
-        assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
-      )
-    )
+  eqn = function(){
+    two_comp_bolus
+  },
+  lag = function(){
+    lag[1] = lag1
+  },
+  out = function(){
+  Y[1] = X[2]/V
+  },
+  err = c(
+    proportional(5, c(0.02, 0.05, -0.0002, 0))
   )
-))
+)
+ 
+        
 # look at it
 mod1
 
@@ -156,15 +155,6 @@ build_model() #start from scratch
 build_model(exData) #start with data to match covariates
 build_model(mod1) #start with a model and update it
 
-# FIT OBJECT
-# Now we define a new fit to be run as the combination of a dataset and a suitable model.
-exFit <- PM_fit$new(model = mod1, data = exData)
-
-# Let's analyze this object
-exFit
-
-# there are some methods we can execute over this object, like:
-exFit$check()
 
 
 # To keep everything tidy, let's move to another folder specific to store the runs
@@ -173,10 +163,9 @@ setwd(wd)
 dir.create("Runs")
 setwd("Runs")
 
-exFit$run(intern = TRUE) # execute the run internally in the R console
+run1 <- mod1$fit(data = exData) # execute the fit and return the results to run1
 
-# If intern = FALSE, a terminal window will open and the run will happen
-# there.
+
 # 
 # After the run is complete you need get the extracted information back into R.
 # They will be sequentially numbered as /1, /2, /3,... in your working directory.

@@ -47,9 +47,6 @@ usethis::use_data(modEx, overwrite = TRUE)
 dataEx <- PM_data$new("ex.csv")
 usethis::use_data(dataEx, overwrite = T)
 
-# fit object
-fitEx <- PM_fit$new(model = modEx, data = dataEx)
-usethis::use_data(dataEx, overwrite = T)
 
 # bad data
 badData <- PM_data$new("bad.csv")
@@ -59,7 +56,7 @@ usethis::use_data(badData, overwrite = T)
 
 setwd("Runs")
 # NPAG
-fitEx$run(run = 1, overwrite = TRUE)
+run1 <- modEx$fit(data = dataEx, run = 1, overwrite = TRUE)
 
 NPex <- PM_load(1)
 # NPex$validate(limits = NA)
