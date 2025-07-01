@@ -20,20 +20,14 @@
 \arguments{
 \item{x}{The name of a \link{PM_cycle}  object, e.g. \code{PmetricsData::NPex$cycle}.}
 
-\item{line}{Controls characteristics of lines. This argument maps to plotly line attributes. \code{TRUE} will plot default lines. \code{FALSE} will suppress lines. If a list, can control many line characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > line to see all the ways the line can be formatted. Most common will be:  \itemize{ \item{\code{color}} Line color. \item{\code{dash}} Plotting character. See \code{plotly::schema()}, traces > scatter >  attributes > line > dash > values. \item{\code{width}} Thickness in points. }
-
-Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
-Default = \code{list(color = "dodgerblue", width = 2, dash = "solid")}.
+\item{line}{\verb{r template("line")} Default = \code{list(color = "dodgerblue", width = 2, dash = "solid")}.
 \strong{Note} The width will apply to all plots, but \code{color} and \code{dash} will only apply
 to the first three plots (log-likelihood, AIC, gamma/lambda). Use \code{colors} and \code{linetypes}
 below to control the appearance
 of the line traces for the normalized plots, because each of those traces is mapped to
 a parameter.}
 
-\item{marker}{Controls the plotting symbol for observations.  This argument maps to the plotly marker object. It can be boolean or a list. \code{TRUE} will plot the marker with default characteristics. \code{FALSE} will suppress marker plotting. If a list, can control many marker characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > marker to see all the ways the marker can be formatted. Most common will be: \itemize{ \item{\code{color}} Marker color. \item{\code{symbol}} Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values. \item{\code{size}} Character size in points. \item{\code{opacity}} Ranging between 0 (fully transparent) to 1 (fully opaque). \item{\code{line}} A list of  additional attributes governing the outline for filled shapes, most commonly color and width. }
-
-Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}
-Here, the observation controlled is the value of a given
+\item{marker}{\verb{r template("marker")} Here, the observation controlled is the value of a given
 trace at a specific cycle number. Default = \code{list(symbol = "circle", color = "dodgerblue", size = 4)}.
 \strong{Note} the marker color for the normalized parameter value plots will be controlled by the \code{colors}
 parameter below, but size and symbol will apply to all plots.}
@@ -56,9 +50,7 @@ is not specified is "solid".}
 \item{omit}{Decimal between 0 and 1 specifying the proportion of "burn-in" cycles to omit from the plots.  If missing,
 the first 20\% will be omitted.}
 
-\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized.
-
-Examples: \itemize{ \item{\code{grid = F}} \item{\code{grid = list(gridcolor = "black", gridwidth = 2)}} }}
+\item{grid}{\verb{r template("grid")}}
 
 \item{xlab}{Controls the formatting of the x-axis label. The text is fixed by the function and cannot be altered.
 Use the plotly \code{plotly::schema()} command in the console and navigate
