@@ -39,8 +39,8 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
     # Grouping
     "(" = sprintf("(%s)", rust_args[[1]]),
     "{" = {
-      inner <- if (length(rust_args) > 0) rust_args[[1]] else ""
-      sprintf("{ %s }", inner)
+      # strip explicit block tokens—just emit the inner code
+      if (length(rust_args) > 0) rust_args[[1]] else ""
     },
 
     # Arithmetic
@@ -66,9 +66,12 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
     ">" = sprintf("%s > %s", rust_args[[1]], rust_args[[2]]),
     "<" = sprintf("%s < %s", rust_args[[1]], rust_args[[2]]),
 
+
+
     # Logical
     "&" = sprintf("%s && %s", rust_args[[1]], rust_args[[2]]),
     "|" = sprintf("%s || %s", rust_args[[1]], rust_args[[2]]),
+    "!" = sprintf("!(%s)", rust_args[[1]]),
 
     # Function calls
     "abs" = sprintf("(%s).abs()", rust_args[[1]]),
@@ -217,49 +220,43 @@ transpile_fa <- function(fun, params, covs, sec) {
 
 
 transpile_lag <- function(fun, params, covs, sec) {
-  # Extract R body expressions
-  exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
-
-  # Containers
-  lag_defs <- character()
-  lag_entries <- character()
-
-  # Ensure params list includes any used symbols
-  used_syms <- unique(unlist(lapply(exprs, all.vars)))
-  params_effective <- if (is.null(params) || length(params) == 0) setdiff(used_syms, grep("^lag[0-9]+$", used_syms, value = TRUE)) else params
-
-  # Process each expression
-  for (expr in exprs) {
-    if (!is.call(expr) || !(as.character(expr[[1]]) %in% c("=", "<-"))) next
-    lhs <- expr[[2]]
-    rhs <- expr[[3]]
-
-    # lag definitions: symbol on LHS
-    if (is.symbol(lhs)) {
-      sym <- as.character(lhs)
-      code_rhs <- expr_to_rust(rhs, params_effective, covs)
-      lag_defs <- c(lag_defs, sprintf("let %s = %s;", sym, code_rhs))
-    }
-    # tlag assignments
-    if (is.call(lhs) && as.character(lhs[[1]]) == "[" && as.character(lhs[[2]]) == "tlag") {
-      idx_node <- lhs[[3]]
-      idx_code <- if (is.numeric(idx_node)) as.integer(idx_node) - 1 else sprintf("%s - 1", expr_to_rust(idx_node, params_effective, covs))
-      val <- expr_to_rust(rhs, params_effective, covs)
-      lag_entries <- c(lag_entries, sprintf("%s => %s", idx_code, val))
-    }
+  exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
+    as.list(body(fun)[-1])
+  } else {
+    list(body(fun))
   }
 
-  # Build closure
-  header <- sprintf("|p| {
-  fetch_params(p, %s);", paste(params_effective, collapse = ", "))
-  body <- c(
-    if (length(lag_defs)) paste0("  ", lag_defs),
-    sprintf("  lag! { %s }", paste(lag_entries, collapse = ", "))
+  find_max_idx <- function(expr) {
+    if (is.call(expr) && as.character(expr[[1]]) == "[" &&
+      as.character(expr[[2]]) == "lag" &&
+      is.numeric(expr[[3]])) {
+      return(as.integer(expr[[3]]))
+    }
+    if (is.call(expr)) {
+      return(max(sapply(as.list(expr), find_max_idx), 0L))
+    }
+    0L
+  }
+  max_lag <- max(sapply(exprs, find_max_idx), 0L)
+  # If no lag[] found, we still need at least size 1
+  arr_size <- if (max_lag > 0) max_lag else 1L
+
+  header <- sprintf(
+    "|p| {\n  fetch_params!(p, %s);\n  let mut lag: [f64; %d] = [0.0; %d];\n%s",
+    paste(params, collapse = ", "),
+    arr_size, arr_size,
+    if (length(sec)) paste0("  ", paste(sec, collapse = "\n  "), "\n") else ""
   )
-  footer <- "}"
-  paste(c(header, body, footer), collapse = "
-")
+
+  body_lines <- stmts_to_rust(exprs, params = params, covs = covs)
+
+  slots <- seq_len(arr_size) - 1L
+  slot_args <- paste0(slots, "=> lag[", slots, "]", collapse = ", ")
+  footer <- sprintf("  lag!{%s}}", slot_args)
+
+  paste0(header, indent(body_lines, 2), "\n", footer)
 }
+
 
 
 
