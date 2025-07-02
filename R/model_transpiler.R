@@ -77,6 +77,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
     "abs" = sprintf("(%s).abs()", rust_args[[1]]),
     "log" = sprintf("(%s).ln()", rust_args[[1]]),
     "exp" = sprintf("(%s).exp()", rust_args[[1]]),
+    "sqrt" = sprintf("(%s).sqrt()", rust_args[[1]]),
 
     # Assignment
     "<-" = ,
