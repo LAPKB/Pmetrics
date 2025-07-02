@@ -163,7 +163,7 @@ setwd(wd)
 dir.create("Runs")
 setwd("Runs")
 
-run1 <- mod1$fit(data = exData) # execute the fit and return the results to run1
+run1 <- mod1$fit(data = exData, run = 1, overwrite = TRUE) # execute the fit and return the results to run1
 
 
 # 
