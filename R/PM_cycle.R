@@ -145,7 +145,7 @@ PM_cycle <- R6::R6Class(
       pivot_longer(cols = ends_with(c("mean", "median", "sd"))) %>%
       separate_wider_delim(name, delim = ".", names = c("parameter", "statistic"))
       
-      num_params <- length(names(config$random)) + length(names(config$fixed))
+      num_params <- nrow((config$parameters$parameters))
       
       aic <- 2 * num_params + raw$neg2ll
       names(aic) <- raw$cycle
@@ -182,21 +182,24 @@ PM_cycle <- R6::R6Class(
       n_out <- length(unique(obs_raw$outeq))
       n_cyc <- max(cycle_data$cycle)
       
-      #expects columns e.g. additive.1 or proportional.2
-      # gamlam <- raw %>% select(starts_with("add")|starts_with("prop"))
-      # if (ncol(gamlam) == 1 & n_out > 1) {
-      #   gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
-      # }
-      # gamlam <- gamlam %>%
-      #   pivot_longer(
-      #     cols = everything(),
-      #     values_to = "value", names_to = c("type", "outeq"), 
-      #     names_sep = "\\."
-      #   ) %>%
-      #   mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
-      #   select(cycle, value, outeq, type) %>% arrange(cycle, outeq)
+      #gamlam
+      model_types <- data.frame(outeq = 1:n_out, type = names(config$errormodels$models)) 
       
-      gamlam <- NA # remove when cycle.csv is fixed
+      gamlam <- raw %>% select(starts_with("gamlam"))
+      if (ncol(gamlam) == 1 & n_out > 1) {
+        gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
+      }
+      gamlam <- gamlam %>%
+      pivot_longer(
+        cols = everything(),
+        values_to = "value", names_to = c("type", "outeq"), 
+        names_sep = "\\."
+      ) %>%
+      mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
+      select(cycle, value, outeq) %>% arrange(cycle, outeq) %>%
+      mutate(outeq = as.numeric(outeq) + 1) %>%
+      right_join(model_types, by = "outeq")
+      
       
       converged <- any(cycle_data$converged)
       
@@ -400,7 +403,7 @@ plot.PM_cycle <- function(x,
       mode = "markers+lines",
       line = line,
       marker = marker,
-      showlegend = F,
+      showlegend = FALSE,
       hovertemplate = "Cycle: %{x:i}<br>-2*LL: %{y:.3f}<extra></extra>"
     ) %>%
     layout(
@@ -429,7 +432,7 @@ plot.PM_cycle <- function(x,
       text = ~ toupper(type),
       marker = list(size = marker$size, symbol = marker$symbol),
       hovertemplate = "Cycle: %{x:i}<br>%{text}: %{y:.3f}<extra></extra>",
-      showlegend = F
+      showlegend = FALSE
     ) %>%
     layout(
       xaxis = layout$xaxis,
@@ -459,26 +462,35 @@ plot.PM_cycle <- function(x,
     }
     
     
-    # p3 <- data$gamlam %>%
-    # filter(cycle %in% include) %>%
-    # plotly::plot_ly(
-    #   x = ~cycle, y = ~value, type = "scatter", mode = "lines+markers",
-    #   color = ~outeq,
-    #   colors = colors,
-    #   line = list(width = line$width),
-    #   linetype = ~outeq,
-    #   linetypes = linetypes,
-    #   marker = list(size = marker$size, symbol = marker$symbol),
-    #   text = ~outeq,
-    #   hovertemplate = "Cycle: %{x:i}<br>Gam/Lam: %{y:.3f}<br>Outeq: %{text}<extra></extra>",
-    #   showlegend = FALSE
-    # ) %>%
-    # layout(
-    #   xaxis = layout$xaxis,
-    #   yaxis = layout$yaxis
-    # )
+    p3 <- data$gamlam %>% 
+    mutate(
+      type = ifelse(type == "lambda", "Lambda", "Gamma"),
+      outeq = as.factor(outeq),
+      # Create list-column for customdata with multiple values per point
+      customdata = Map(c, as.character(outeq), as.character(type))
+    ) %>%
+    filter(cycle %in% include) %>%
+    plotly::plot_ly(
+      x = ~cycle, y = ~value, type = "scatter", mode = "lines+markers",
+      color = ~outeq,
+      colors = colors,
+      line = list(width = line$width),
+      linetype = ~outeq,
+      linetypes = linetypes,
+      marker = list(size = marker$size, symbol = marker$symbol),
+      customdata = ~customdata,
+      hovertemplate = paste(
+        "Cycle: %{x}<br>",
+        "%{customdata[1]}<extra></extra>: %{y:.3f}<br>",
+        "Outeq: %{customdata[0]}<br>"
+      ),
+      showlegend = FALSE
+    ) %>%
+    layout(
+      xaxis = layout$xaxis,
+      yaxis = layout$yaxis
+    )
     
-    p3 <- NULL
     
     
     # normalized plots
@@ -567,7 +579,7 @@ plot.PM_cycle <- function(x,
     
     print(p)
     return(p)
-}
+  }
   
   # SUMMARY -----------------------------------------------------------------
   

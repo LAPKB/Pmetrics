@@ -149,7 +149,6 @@ private = list(
     }
     
     poly <- map(config$errormodels$models, \(x) x %>% pluck(1, "poly") %>% unlist()) %>% bind_rows()
-    
     op <- op_raw %>%
     # left_join(pred_raw, by = c("id", "time", "outeq")) %>%
     pivot_longer(cols = c(pop_mean, pop_median, post_mean, post_median)) %>%
