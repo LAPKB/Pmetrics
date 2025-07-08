@@ -200,16 +200,19 @@ exRes$op$plot()
 exRes$op$plot(pred.type = "pop")
 exRes$op$plot(line = list(lm = list(ci = 0, color = "red"), loess = FALSE))
 
-# The OP plot can be disaggregated into a Tidy compatible format using the $data attribute (see https://www.tidyverse.org/)
+# the original op object data can be accessed via
+exRes$op$data
+
+# The OP plot can be disaggregated into a Tidy compatible format from $data (see https://www.tidyverse.org/)
+# This allow pre processing in ways more flexible than the default plot method.
 library(tidyverse)
 exRes$op$data %>% plot()
 exRes$op$data %>%
   filter(pred > 5) %>%
   filter(pred < 10) %>%
-  plot()
+  summary()
 
-# the original op object data can be accessed via
-exRes$op$data
+exRes$cycle$data$summary()  %>% summary()
 
 # see a header with the first 10 rows of the op object
 head(exRes$op$data, 10)
@@ -230,10 +233,12 @@ exRes$op$summary(icen = "mean")
 exRes$final$plot()
 
 # add a kernel density curve
-exRes$final$plot(density = TRUE)
+exRes$final$plot(line = list(density = TRUE))
+exRes$final$data %>% plot(density = TRUE)
+
 
 # A bivariate plot. Plotting formulae in R are of the form 'y~x'
-exRes$final$plot(Ke ~ V,
+exRes$final$plot(ke ~ v,
   marker = list(color = "red", symbol = "diamond"),
   line = list(color = "purple", dash = "dash", width = 2)
 )

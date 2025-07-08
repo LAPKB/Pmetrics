@@ -921,6 +921,25 @@ plot.PM_final <- function(x,
   return(p)
 }
 
+  #' @title Plot PM_final_data objects
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Plots the raw data (`class: PM_final_data`) from a [PM_final] object in the same way as plotting a [PM_final] object.
+  #' Both use [plot.PM_final].
+  #' @method plot PM_final_data
+  #' @param x A `PM_final_data`` object
+  #' @param ... Additional arguments passed to [plot.PM_final]
+  #' @examples
+  #' NPex$final$data %>%
+  #' filter(pred > 5) %>%
+  #' filter(pred < 10) %>%
+  #' plot()
+  #' @export
+  #' 
+  plot.PM_final_data <- function(x,...){
+    plot.PM_final(x, ...)
+  }
+
 # SUMMARY -----------------------------------------------------------------
 
 #' @title Summary Statistics for Final Cycle
@@ -1053,6 +1072,22 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, file = NULL, 
   }
 }
 
+
+  #' @title Summarize PM_final_data objects
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Summarizes the raw data (`class: PM_final_data`) from a [PM_final] object in the same way as summarizing a [PM_final] object.
+  #' Both use [summary.PM_final].
+  #' @method summary PM_final_data
+  #' @param object A `PM_final_data` object
+  #' @param ... Additional arguments passed to [summary.PM_final]
+  #' @examples
+  #' NPex$final$data %>% summary()
+  #' @export
+  #' 
+  summary.PM_final_data <- function(object,...){
+    summary.PM_final(object, ...)
+  }
 # PRINT SUMMARY ----------------------------------------------------------------
 
 

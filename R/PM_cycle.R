@@ -310,6 +310,8 @@ plot.PM_cycle <- function(x,
   ...) {
     if (inherits(x, "PM_cycle")) {
       data <- x$data
+    } else {
+      data = x
     }
     
     # housekeeping
@@ -337,9 +339,16 @@ plot.PM_cycle <- function(x,
     }
     
     if (missing(linetypes)) {
-      linetypes <- rep("solid", nvar)
+      linetypes <- "solid"
     } else {
       linetypes <- rep(linetypes, nvar) # ensure long enough
+      if(length(linetypes)>6) {
+        cli::cli_warn(c(
+          "!" = "Plotly supports a maximum of 6 linetypes.",
+          "i" = "Using first 6 linetypes."
+        ))
+        linetypes <- linetypes[1:6]
+      }
     }
     
     # process dots
@@ -461,13 +470,13 @@ plot.PM_cycle <- function(x,
       select(cycle, value, outeq, type) %>% arrange(cycle, outeq)
     }
     
-    
     p3 <- data$gamlam %>% 
     mutate(
       type = ifelse(type == "lambda", "Lambda", "Gamma"),
       outeq = as.factor(outeq),
       # Create list-column for customdata with multiple values per point
-      customdata = Map(c, as.character(outeq), as.character(type))
+      text = paste0("Outeq ", outeq, "<br>", type)
+
     ) %>%
     filter(cycle %in% include) %>%
     plotly::plot_ly(
@@ -478,11 +487,10 @@ plot.PM_cycle <- function(x,
       linetype = ~outeq,
       linetypes = linetypes,
       marker = list(size = marker$size, symbol = marker$symbol),
-      customdata = ~customdata,
+      text = ~text,
       hovertemplate = paste(
         "Cycle: %{x}<br>",
-        "%{customdata[1]}<extra></extra>: %{y:.3f}<br>",
-        "Outeq: %{customdata[0]}<br>"
+        "%{text}<extra></extra>: %{y:.3f}<br>"
       ),
       showlegend = FALSE
     ) %>%
@@ -580,6 +588,25 @@ plot.PM_cycle <- function(x,
     print(p)
     return(p)
   }
+
+
+#' @title Plot PM_cycle_data objects
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Plots the raw data (`class: PM_cycle_data`) from a [PM_cycle] object in the same way as plotting a [PM_cycle] object.
+#' Both use [plot.PM_cycle].
+#' @method plot PM_cycle_data
+#' @param x A `PM_cycle_data` object
+#' @param ... Additional arguments passed to [plot.PM_cycle]
+#' @examples
+#' # There is no example we can think of to filter or otherwise process a PM_cycle object,
+#' # but we provide this function for completeness.
+#' NPex$cycle$data %>% plot()
+#' @export
+#' 
+plot.PM_cycle_data <- function(x,...){
+  plot.PM_cycle(x, ...)
+}
   
   # SUMMARY -----------------------------------------------------------------
   
@@ -700,3 +727,26 @@ plot.PM_cycle <- function(x,
     #   flextable::autofit()
   }
   
+
+
+#' @title Summarize PM_cycle_data objects
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Summarizes the raw data (`class: PM_cycle_data`) from a [PM_cycle] object in the same way as summarizing a [PM_cycle] object.
+#' Both use [summary.PM_cycle].
+#' @method summary PM_cycle_data
+#' @param object A `PM_cycle_data` object
+#' @param ... Additional arguments passed to [summary.PM_cycle]
+#' @examples
+#' # There is no example we can think of to filter or otherwise process a PM_cycle object,
+#' # but we provide this function for completeness.
+#' NPex$cycle$data %>% summary()
+#' # all the below are the same
+#' # summary(NPex$cycle$data) 
+#' # summary(NPex$cycle)
+#' # NPex$cycle$summary()
+#' @export
+#' 
+summary.PM_cycle_data <- function(object,...){
+  summary.PM_cycle(object, ...)
+}

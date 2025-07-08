@@ -603,6 +603,26 @@ plot.PM_op <- function(x,
     } # end resid plot
   }
   
+  
+  #' @title Plot PM_op_data objects
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Plots the raw data (`class: PM_op_data`) from a [PM_op] object in the same way as plotting a [PM_op] object.
+  #' Both use [plot.PM_op].
+  #' @method plot PM_op_data
+  #' @param x A `PM_op_data`` object
+  #' @param ... Additional arguments passed to [plot.PM_op]
+  #' @examples
+  #' NPex$op$data %>%
+  #' filter(pred > 5) %>%
+  #' filter(pred < 10) %>%
+  #' plot()
+  #' @export
+  #' 
+  plot.PM_op_data <- function(x,...){
+    plot.PM_op(x, ...)
+  }
+  
   # SUMMARY -------------------------------------------------------------------
   
   
@@ -723,6 +743,25 @@ plot.PM_op <- function(x,
     class(sumresult) <- c("summary.PM_op", "list")
     attr(sumresult, "pred.type") <- pred.type
     return(sumresult)
+  }
+  
+  #' @title Summarize PM_op_data objects
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Summarizes the raw data (`class: PM_op_data`) from a [PM_op] object in the same way as summarizing a [PM_op] object.
+  #' Both use [summary.PM_op].
+  #' @method summary PM_op_data
+  #' @param object A `PM_op_data` object
+  #' @param ... Additional arguments passed to [summary.PM_op]
+  #' @examples
+  #' NPex$op$data %>%
+  #' filter(pred > 5) %>%
+  #' filter(pred < 10) %>%
+  #' summary()
+  #' @export
+  #' 
+  summary.PM_op_data <- function(object,...){
+    summary.PM_op(object, ...)
   }
   # PRINT SUMMARY -------------------------------------------------------------------
   

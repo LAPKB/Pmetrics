@@ -235,7 +235,40 @@ amendDots <- function(dots) {
   }
   
   if (!all(otherArgs)) { # some are false
-    cat(crayon::red("Warning: "), "Attributes other than xaxis/yaxis in dots are currently ignored.")
+    misplaced_args <- names(dots)[!otherArgs]
+    misplaced_values <- as.character(dots[!otherArgs])
+ args_to_check <- c("density", "lwd", "col", "lty")
+suggestion_templates <- c(
+  "Did you mean {.code line = list(density = {val})}?",
+  "Did you mean {.code line = list(width = {val})}?",
+  "Did you mean {.code line = list(color = {val})}?",
+  "Did you mean {.code line = list(dash = {val})}?"
+)
+
+# Base message
+msg <- c(
+  "!" = "{.blue {paste(misplaced_args, collapse = ', ')}} {?is/are} misplaced or invalid and will be ignored."
+)
+
+# Build suggestions with map_chr
+msg <- c(
+  msg,
+  map_chr(seq_along(args_to_check), function(i) {
+    arg <- args_to_check[i]
+    if (arg %in% misplaced_args) {
+      val <- misplaced_values[[arg]]
+      val_expr <- paste0("{.blue ", deparse(val), "}")
+      gsub("{val}", val_expr, suggestion_templates[i], fixed = TRUE)
+    } else {
+      ""  # No suggestion for unmatched arg
+    }
+  }) %>% purrr::discard(~ .x == "")  # Drop empty strings
+)
+    cli::cli_div(theme = list(
+      span.blue = list(color = "blue")
+    ))
+    cli::cli_warn(msg)
+    cli::cli_end()
   }
   
   layout <- list(xaxis = xaxis, yaxis = yaxis)
