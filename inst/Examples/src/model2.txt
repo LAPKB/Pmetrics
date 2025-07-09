@@ -11,19 +11,15 @@ AGE
 GENDER
 HEIGHT
 
-#Sec
-V=V0*(WT/55)
-C 55 is the mean weight in the population
 
 #lag
-TLAG(1) = Tlag1
+LAG[1] = Tlag1
 
 #eqn
-C {algebraic: Ka,Ke,V,2}
-dX[1] = - Ka*X[1]
-dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]
+two_comp_bolus
 
 #out
+V=V0*(WT/55)
 Y[1]=X[2]/V
 
 #err
