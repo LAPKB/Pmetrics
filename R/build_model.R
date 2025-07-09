@@ -10,11 +10,13 @@
 #' and covariates only if there is no *PM_data* object or it has no covariates.
 #' If the *PM_model* object contains covariates, they will be superseded by those in
 #' the *PM_data* object, if supplied.
+#' @param update Logical. If `TRUE`, the `Save` button in the app will update the model,
+#' rather than write the model to a file.
 #' @return Launches the shiny app.
 #' @export
 #' @author Michael Neely
 #'
-build_model <- function(...) {
+build_model <- function(..., update = FALSE) {row
   obj <- list(...)
   data_arg <- purrr::detect(obj, \(x) inherits(x, "PM_data"))
   model_arg <- purrr::detect(obj, \(x) inherits(x, "PM_model"))
@@ -346,7 +348,7 @@ server <- function(input, output, session) {
     }
   } else if (!is.null(model_arg)) { # model supplied, but not data
     if (length(model_arg$model_list$cov) > 0) { # model has covariates
-      cov_names(purrr::map_chr(model_arg$model_list$cov, \(x) x$covariate))
+      cov_names(model_arg$model_list$cov)
       ncov(length(model_arg$model_list$cov))
       cov_source("Covariates obtained from model, since none were in the data.")
     } else {
@@ -606,7 +608,7 @@ observeEvent(input$model_file,
   }
 )
 
-# update model if previous model loaded from file
+# update data if previous data loaded from file
 observeEvent(input$data_file,
   ignoreInit = TRUE,
   {
@@ -1300,11 +1302,6 @@ purrr::map(
         hr(style = "border-top: 1px solid #FFFFFF;"),
         fluidRow(
           tabsetPanel(
-            tabPanel(
-              type = "pills",
-              "Model Diagram",
-              plotOutput(paste0("model_diagram_", x))
-            ),
             type = "pills",
             tabPanel(
               "Model List",
@@ -1320,6 +1317,11 @@ purrr::map(
                 2,
                 actionButton(paste0("copy_model_list_", x), "Copy", icon = icon("copy"))
               )
+            ),
+            tabPanel(
+              type = "pills",
+              "Model Diagram",
+              plotOutput(paste0("model_diagram_", x))
             )
           ) # end tabsetPanel
         ) # end fluidRow
@@ -1347,7 +1349,7 @@ observe({
             return()
           } else {
             # browser()
-            incomplete_blocks <- sapply(new_model(), function(x) ifelse(is.list(x), FALSE, stringr::str_detect(x, "^Error")))
+            incomplete_blocks <- sapply(new_model(), function(x) ifelse(is.character(x), TRUE, FALSE))
             if (any(incomplete_blocks)) {
               incomplete_blocks <- paste0("#", names(new_model())[incomplete_blocks %>% unlist()], collapse = ", ")
               # browser()
@@ -1355,6 +1357,11 @@ observe({
               alert_count(alert_count() + 1) # trigger message popup
             } else {
               # browser()
+              if(update){
+                browser()
+                shiny::stopApp(model_obj()) # stop app and return model object
+              } 
+
               model_save <- tryCatch(PM_model$new(new_model())$save("model.txt"), error = function(e) "Fail")
               if (model_save != "Fail") {
                 message("Model saved as 'model.txt' in current working directory.")
@@ -1651,6 +1658,9 @@ observeEvent(input$help_out, {
 })
 } # end server
 ) # end shinyApp
-shiny::runApp(app, display.mode = "normal")
-return(NULL) # this will eventually return the model from the app
+
+new_arg_list <- shiny::runApp(app, display.mode = "normal", launch.browser = TRUE)
+  browser()
+return(invisible(new_arg_list)) # return the model from the app
 } # end build_model
+

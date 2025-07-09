@@ -199,9 +199,10 @@ transpile_analytic_eqn <- function(fun, params, covs) {
   )
   body_rust <- stmts_to_rust(exprs)
   # remap parameters
-  req_par <- get(tem)$parameters %>%
-    tolower() %>%
-    purrr::imap_chr(\(x, y){
+  # req_par <- get(tem)$parameters %>%
+  #   tolower() %>%
+    
+  req_par <- params %>% purrr::imap_chr(\(x, y){
       sprintf("p[%i] = %s;", y - 1, x)
     }) %>%
     paste(collapse = "\n")
