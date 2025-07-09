@@ -402,6 +402,7 @@ PM_model <- R6::R6Class(
               "i" = "Current directory: {getwd()}"))
             }
             self$arg_list <- private$R6fromFile(x) # read file and populate fields
+    
 
           } else if (is.list(x)) { # x is a list in R
             purrr::walk(model_sections, \(s) {
@@ -444,7 +445,7 @@ PM_model <- R6::R6Class(
               return(invisible(self))
             }
           } # no, some arguments were not NULL, so keep going
-          
+        
           
           # Primary parameters must be provided
           if (is.null(self$arg_list$pri)) {
@@ -510,7 +511,7 @@ PM_model <- R6::R6Class(
             
             if(!is.null(self$arg_list$sec)){
               sec_list <- map_lgl(required_parameters, \(x){
-                stringr::str_detect(func_to_char(self$arg_list$sec), x)
+                stringr::str_detect(tolower(func_to_char(self$arg_list$sec)), x)
               })
             } else {
               sec_list <- rep(FALSE, length(required_parameters))
@@ -518,7 +519,7 @@ PM_model <- R6::R6Class(
             
             eqn_list <- map_lgl(required_parameters, \(x){
               any(stringr::str_detect(
-                stringr::str_remove_all(func_to_char(self$arg_list$eqn), "\\s+"), # string
+                stringr::str_remove_all(tolower(func_to_char(self$arg_list$eqn)), "\\s+"), # string
                 paste0(x,"(?=(<-|=))")) # pattern
               )
             })
@@ -526,7 +527,7 @@ PM_model <- R6::R6Class(
             if(!is.null(self$arg_lag)){
               lag_list <- map_lgl(required_parameters, \(x){
                 any(stringr::str_detect(
-                  stringr::str_remove_all(func_to_char(self$arg_list$lag), "\\s+"), # string
+                  stringr::str_remove_all(tolower(func_to_char(self$arg_list$lag)), "\\s+"), # string
                   paste0(x,"(?=(<-|=))")) # pattern
                 )
               })
@@ -537,7 +538,7 @@ PM_model <- R6::R6Class(
             if(!is.null(self$arg_fa)){
               lag_list <- map_lgl(required_parameters, \(x){
                 any(stringr::str_detect(
-                  stringr::str_remove_all(func_to_char(self$arg_list$fa), "\\s+"), # string
+                  stringr::str_remove_all(tolower(func_to_char(self$arg_list$fa)), "\\s+"), # string
                   paste0(x,"(?=(<-|=))")) # pattern
                 )
               })
@@ -548,7 +549,7 @@ PM_model <- R6::R6Class(
             if(!is.null(self$arg_ini)){
               ini_list <- map_lgl(required_parameters, \(x){
                 any(stringr::str_detect(
-                  stringr::str_remove_all(func_to_char(self$arg_list$ini), "\\s+"), # string
+                  stringr::str_remove_all(tolower(func_to_char(self$arg_list$ini)), "\\s+"), # string
                   paste0(x,"(?=(<-|=))")) # pattern
                 )
               })
@@ -558,7 +559,7 @@ PM_model <- R6::R6Class(
             
             out_list <- map_lgl(required_parameters, \(x){
               any(stringr::str_detect(
-                stringr::str_remove_all(func_to_char(self$arg_list$out), "\\s+"), # string
+                stringr::str_remove_all(tolower(func_to_char(self$arg_list$out)), "\\s+"), # string
                 paste0(x,"(?=(<-|=))")) # pattern
               )
             })
@@ -616,6 +617,7 @@ PM_model <- R6::R6Class(
             if (type == "ODE") {
               eqn <- transpile_ode_eqn(self$arg_list$eqn, parameters, covariates, sec)
             } else if (type == "Analytical") {
+       
               eqn <- transpile_analytic_eqn(sec_eqn, parameters, covariates)
             }
             
@@ -1218,7 +1220,18 @@ PM_model <- R6::R6Class(
                   )
                 })
                 file.remove(model_path) # remove temporary model file
+              },
+              #' @description
+              #' Update the model by launching the model editor.
+              #' 
+
+              update = function() {
+                new_mod <- build_model(self, update = TRUE)
+                
+                self$arg_list <- new_mod
+                #self$compile()
               }
+
             ),  # end public list
             private = list(
               R6fromFile = function(file) {
@@ -1340,13 +1353,6 @@ PM_model <- R6::R6Class(
                     arg_list$lag <- NULL
                   }
                   
-                  # analytic model name
-                  if (blocks$tem[1] != "") {
-                    arg_list$tem <- blocks$tem
-                  } else {
-                    arg_list$tem <- NULL
-                  }
-                  
                   # differential equations - legacy
                   if (!is.null(blocks$diffeq) && blocks$diffeq[1] != "") {
                     cli::cli_inform(c(
@@ -1367,7 +1373,7 @@ PM_model <- R6::R6Class(
                     
                     # out/err
                     n_outputLines <- length(blocks$output)
-                    outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output)
+                    outputLines <- grep("y\\([[:digit:]]+\\)|y\\[[[:digit:]]+\\]", blocks$output)
                     if (length(outputLines) == 0) {
                       return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y[1] = ...'\n"))
                     }
@@ -1399,11 +1405,11 @@ PM_model <- R6::R6Class(
                     unlist()
                     
                     arg_list$err <- eval(parse(text = glue::glue("c(\n{paste({coeff_fxns}, collapse = ',\n')}\n)")))
-                    
+                   
                     cat(msg)
                     flush.console()
                     return(arg_list)
-                  }, # end R6fromFile
+              }, # end R6fromFile
                   
                   write_model_to_rust = function(file_path = "main.rs") {
                     # Check if model_list is not NULL

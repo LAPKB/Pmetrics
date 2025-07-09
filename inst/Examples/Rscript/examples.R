@@ -42,6 +42,8 @@ library(Pmetrics)
 
 wd <- "##WD##"
 
+wd <- glue::glue("{getwd()}/inst/Examples")
+
 # change to the working directory to the Examples folder
 setwd(wd)
 
@@ -212,7 +214,8 @@ exRes$op$data %>%
   filter(pred < 10) %>%
   summary()
 
-exRes$cycle$data$summary()  %>% summary()
+exRes$cycle$data %>% summary()
+exRes$cycle$summary()
 
 # see a header with the first 10 rows of the op object
 head(exRes$op$data, 10)
@@ -277,23 +280,23 @@ tail(exRes$cycle$data$gamlam)
 
 # Plot covariate information.  Type ?plot.PMcov in the R console for help.
 # Recall that plotting formulae in R are of the form 'y~x'
-exRes$cov$plot(V ~ wt)
+exRes$cov$plot(v ~ wt)
 exRes$cov$data %>% plot(V ~ wt)
 exRes$cov$data %>%
   filter(age > 25) %>%
-  plot(V ~ wt)
+  plot(v ~ wt)
 
 # Plot
-exRes$cov$plot(Ke ~ age, line = list(loess = FALSE, lm = TRUE),
+exRes$cov$plot(ke ~ age, line = list(loess = FALSE, lm = TRUE),
                marker = list(symbol = 3))
 
 # Another plot with mean Bayesian posterior parameter and covariate values...
 # Remember the 'icen' argument?
-exRes$cov$plot(V ~ wt, icen = "mean")
+exRes$cov$plot(v ~ wt, icen = "mean")
 
 # When time is the x variable, the y variable is aggregated by subject.
 # In R plot formulae, calculations on the fly can be included using the I() function
-exRes$cov$plot(I(V * wt) ~ time)
+exRes$cov$plot(I(v * wt) ~ time)
 
 # The previous cov object can be seen via:
 exRes$cov
@@ -307,7 +310,7 @@ exRes$cov$summary(icen = "mean")
 
 
 # Look at all possible covariate-parameter relationships by multiple linear regression with forward
-# and backward elimination - type ?PMstep in the R console for help.
+# and backward elimination - type ?PM_step in the R console for help.
 exRes$step()
 # or on the cov object directly
 exRes$cov$step()
