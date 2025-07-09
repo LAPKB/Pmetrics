@@ -216,8 +216,44 @@ transpile_sec <- function(fun) {
   sprintf("%s\n", indent(body_rust, spaces = 4))
 }
 
+
 transpile_fa <- function(fun, params, covs, sec) {
-  "|_p| fa! {}"
+  exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
+    as.list(body(fun)[-1])
+  } else {
+    list(body(fun))
+  }
+
+  find_max_idx <- function(expr) {
+    if (is.call(expr) && as.character(expr[[1]]) == "[" &&
+      as.character(expr[[2]]) == "fa" &&
+      is.numeric(expr[[3]])) {
+      return(as.integer(expr[[3]]))
+    }
+    if (is.call(expr)) {
+      return(max(sapply(as.list(expr), find_max_idx), 0L))
+    }
+    0L
+  }
+  max_fa <- max(sapply(exprs, find_max_idx), 0L)
+  # If no fa[] found, we still need at least size 1
+  arr_size <- if (max_fa > 0) max_fa else 1L
+
+  header <- sprintf(
+    "|p, t, cov| {\nfetch_params!(p, %s);\nfetch_cov!(cov, t, %s);\nlet mut fa: [f64; %d] = [0.0; %d];\n%s",
+    paste(params, collapse = ", "),
+    paste(covs, collapse = ", "),
+    arr_size, arr_size,
+    if (length(sec)) paste0("  ", paste(sec, collapse = "\n  "), "\n") else ""
+  )
+
+  body_lines <- stmts_to_rust(exprs, params = params, covs = covs)
+
+  slots <- seq_len(arr_size) - 1L
+  slot_args <- paste0(slots, "=> fa[", slots, "]", collapse = ", ")
+  footer <- sprintf("  fa!{%s}}", slot_args)
+
+  paste0(header, indent(body_lines, 2), "\n", footer)
 }
 
 
@@ -244,8 +280,9 @@ transpile_lag <- function(fun, params, covs, sec) {
   arr_size <- if (max_lag > 0) max_lag else 1L
 
   header <- sprintf(
-    "|p| {\n  fetch_params!(p, %s);\n  let mut lag: [f64; %d] = [0.0; %d];\n%s",
+    "|p, t, cov| {\nfetch_params!(p, %s);\nfetch_cov!(cov, t, %s);\nlet mut lag: [f64; %d] = [0.0; %d];\n%s",
     paste(params, collapse = ", "),
+    paste(covs, collapse = ", "),
     arr_size, arr_size,
     if (length(sec)) paste0("  ", paste(sec, collapse = "\n  "), "\n") else ""
   )
@@ -291,10 +328,10 @@ empty_sec <- function() {
   "|_p, _t, _cov| { }"
 }
 empty_fa <- function() {
-  "|_p| fa! {}"
+  "|_p,_t,_cov| fa! {}"
 }
 empty_lag <- function() {
-  "|_p| lag! {}"
+  "|_p,_t,_cov| lag! {}"
 }
 empty_ini <- function() {
   "|_p, _t, _cov, _x| { }"

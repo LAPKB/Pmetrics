@@ -9,7 +9,6 @@ pub(crate) fn settings(
     output_path: &str,
 ) -> Result<Settings> {
     let settings = settings.into_hashmap();
-    dbg!(&settings);
     let ranges = settings.get("ranges").unwrap().as_list().unwrap();
     let ranges = robj_to_hashmap(ranges);
     let parameters = parse_parameters(ranges, params)?;
