@@ -690,10 +690,20 @@ plot.PM_cycle <- function(x,
     }
     
     if(object$status == "Posterior"){
-      cli::cli_inform(c(
-        "i" = "Posterior run, no cycles."
-      ))
-      return(invisible(NULL))
+      ret <- list(
+        cycle = 0,
+        max_cycle = 0,
+        status = "Posterior",
+        ll = NA,
+        aic = NA,
+        bic = NA,
+        gamlam = NA,
+        mean = NA,
+        sd = NA,
+        median = NA
+      )
+      class(ret) <- c("summary.PM_cycle", "list")
+      return(ret)
     }
     
     if (is.null(cycle)) {
@@ -751,6 +761,10 @@ plot.PM_cycle <- function(x,
   
   print.summary.PM_cycle <- function(x, ...) {
 
+    if (x$status == "Posterior") {
+      cli::cli_inform(c("i" = "Posterior run, no cycles."))
+      return(invisible(NULL))
+    }
 
     cli::cli_div(theme = list(
               span.blue = list(color = "blue")
