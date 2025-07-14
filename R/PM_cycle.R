@@ -201,7 +201,7 @@ PM_cycle <- R6::R6Class(
       right_join(model_types, by = "outeq")
       
       
-      converged <- any(cycle_data$converged)
+      converged <- tail(cycle_data$converged, 1)
       
       res <- list(
         names = c(names(config$random), names(config$fixed), names(config$constant)),

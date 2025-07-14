@@ -28,7 +28,7 @@ nsub <- nobs <- numeqt <- icyctot <- NULL #declare for CRAN check
 nsub <- res$final$nsub
 icyctot <- max(res$cycle$objective$cycle)
 
-did_converge <- ifelse(res$cycle$converged | res$cycle$converged == 1, "converged.", "did not converge.")
+did_converge <- ifelse(res$cycle$data$converged, "converged.", "did not converge.")
 numeqt <- max(res$op$data$outeq, na.rm = TRUE)
 np <- TRUE
 

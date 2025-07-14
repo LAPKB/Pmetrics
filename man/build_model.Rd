@@ -4,7 +4,7 @@
 \alias{build_model}
 \title{Launch Model Builder app}
 \usage{
-build_model(...)
+build_model(..., update = FALSE)
 }
 \arguments{
 \item{...}{Optional \link{PM_data} and/or \link{PM_model} object(s). \emph{PM_data} objects
@@ -12,6 +12,9 @@ supply covariates. \emph{PM_model} objects supply any other defined model elemen
 and covariates only if there is no \emph{PM_data} object or it has no covariates.
 If the \emph{PM_model} object contains covariates, they will be superseded by those in
 the \emph{PM_data} object, if supplied.}
+
+\item{update}{Logical. If \code{TRUE}, the \code{Save} button in the app will update the model,
+rather than write the model to a file.}
 }
 \value{
 Launches the shiny app.
