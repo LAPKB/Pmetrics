@@ -10,12 +10,13 @@
 #' can be "plotly", "ggplot", or "none".
 #' @param outfile The location of the generated report, defaults to a temporary file.
 #' @param show Controls if the report should be automatically opened on generation, defaults to `TRUE`
+#' @param quiet If `TRUE`, suppresses the message about report generation, defaults to `FALSE`.
 #' @return Generates an HTML-report in the current working directory.
 #' @author Markus Hovd, Julian Otalvaro, and Michael Neely
 #' @seealso [PM_load]
 #' @export
 
-PM_report <- function(x, template, outfile, show = TRUE) {
+PM_report <- function(x, template, outfile, show = TRUE, quiet = FALSE) {
   if (!is(x, "PM_result")) {
     cli::cli_abort(c("x" = "This function expects a valid PM_result object from PM_load."))
   }
@@ -46,7 +47,7 @@ PM_report <- function(x, template, outfile, show = TRUE) {
     outfile <- paste(getwd(), outfile, sep = "/")
   }
 
-  cat("Generating report based on the", template, "template...\n")
+  if(!quiet) cat("Generating report based on the", template, "template...\n")
 
 
   # # Check if pandoc is exposed to Rstudio
@@ -86,5 +87,5 @@ PM_report <- function(x, template, outfile, show = TRUE) {
     pander::openFileInOS(outfile)
   }
 
-  cat(paste("Report generated at", outfile, "\n"))
+  if(!quiet) cat(paste("Report generated at", outfile, "\n"))
 }

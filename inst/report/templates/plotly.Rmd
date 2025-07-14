@@ -27,8 +27,6 @@ nsub <- nobs <- numeqt <- icyctot <- NULL #declare for CRAN check
 
 nsub <- res$final$nsub
 icyctot <- max(res$cycle$objective$cycle)
-
-did_converge <- ifelse(res$cycle$data$converged, "converged.", "did not converge.")
 numeqt <- max(res$op$data$outeq, na.rm = TRUE)
 np <- TRUE
 
@@ -37,7 +35,7 @@ np <- TRUE
 
 The data had `r nsub` subjects.
 
-After `r paste0(icyctot, " cycles, the model ", did_converge)`
+After `r paste0(icyctot, " cycles, the model status was ", res$cycle$data$status, ".")`
 
 ## Observed-predicted plot {.tabset .tabset-pills}
 
@@ -288,8 +286,12 @@ if(np){
 ```
 
 ## Cycle information
-```{r fig.dim = c(10, 6)}
-res$cycle$plot()
+```{r fig.dim = c(10, 6), results = "asis"}
+if(res$cycle$status == "Posterior"){
+  cat("Posterior run, so no cycles.")
+} else {
+  res$cycle$plot()
+}
 ```
 
 <!-- THE FOLLOWING SECTION CONTAINS JAVASCRPT SUPPORT FUNCTIONS -->

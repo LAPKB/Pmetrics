@@ -405,15 +405,15 @@ PM_model <- R6::R6Class(
               "i" = "Current directory: {getwd()}"))
             }
             self$arg_list <- private$R6fromFile(x) # read file and populate fields
-    
-
+            
+            
           } else if (is.list(x)) { # x is a list in R
             purrr::walk(model_sections, \(s) {
               if (s %in% names(x)) {
                 self$arg_list[[s]] <- x[[s]]
               }
             })
-
+            
           } else if (inherits(x, "PM_model")) { # x is a PM_model object
             if(!"arg_list" %in% names(x)) {
               cli::cli_abort(c("x" = "You have supplied an older {.code PM_model} format.",
@@ -448,7 +448,7 @@ PM_model <- R6::R6Class(
               return(invisible(self))
             }
           } # no, some arguments were not NULL, so keep going
-        
+          
           
           # Primary parameters must be provided
           if (is.null(self$arg_list$pri)) {
@@ -620,7 +620,7 @@ PM_model <- R6::R6Class(
             if (type == "ODE") {
               eqn <- transpile_ode_eqn(self$arg_list$eqn, parameters, covariates, sec)
             } else if (type == "Analytical") {
-       
+              
               eqn <- transpile_analytic_eqn(sec_eqn, parameters, covariates)
             }
             
@@ -699,8 +699,8 @@ PM_model <- R6::R6Class(
             
             # this one needs to be capital
             self$model_list$type <- type
-      
-      
+            
+            
             extra_args <- list(...)
             if (!is.null(purrr::pluck(extra_args, "compile"))){
               if (extra_args$compile) {
@@ -709,8 +709,8 @@ PM_model <- R6::R6Class(
             } else { # default is to compile
               self$compile()
             }
-          
-    },
+            
+          },
           
           #' @description
           #' Print the model summary.
@@ -938,6 +938,8 @@ PM_model <- R6::R6Class(
               overwrite = FALSE,
               algorithm = "NPAG", #POSTPROB for posteriors
               report = getPMoptions("report_template")) {
+              
+                msg <- "" # status message at end of run
                 
                 if (is.null(data)) {
                   cli::cli_abort(c("x" = " {.arg data} must be specified."))
@@ -1024,10 +1026,11 @@ PM_model <- R6::R6Class(
                 if (file.exists(newdir)) {
                   if (overwrite) {
                     unlink(newdir, recursive = TRUE)
-                    cli::cli_inform(c("i" = "Overwriting the prior run in folder '{newdir}'."))
+                    msg <- c(msg, "The previous run in folder '{newdir}' was overwritten.")
+                    #cli::cli_inform(c("i" = "Overwriting the previous run in folder '{newdir}'."))
                   } else {
                     cli::cli_inform(
-                      c("x" = "The prior run from '{newdir}' was read.", " " = "Set {.arg overwrite} to {.val TRUE} to overwrite prior run in '{newdir}'.")
+                      c("i" = "The previous run from '{newdir}' was read.", " " = "Set {.arg overwrite} to {.val TRUE} to overwrite prior run in '{newdir}'.")
                     )
                     return(invisible(PM_load(newdir)))
                   }
@@ -1095,6 +1098,14 @@ PM_model <- R6::R6Class(
                       cli::cli_abort(c("x" = "Error: {.arg prior} file does not exist.", "i" = "Check the file path."))
                     }
                     file.copy(prior, "prior.csv", overwrite = TRUE) # ensure in current working directory
+                  } else if (is.data.frame(piror)){
+                    # prior specified as a data frame
+                    if (!all(c("prob", self$model_list$parameters) %in% names(prior))) {
+                      cli::cli_abort(c("x" = "Error: {.arg prior} data frame must contain columns for parameters and probabilities.", "i" = "Check the data frame."))
+                    }
+                    prior <- prior %>% dplyr::select(all_of(self$model_list$parameters), prob)
+                    write.csv(prior, "prior.csv", row.names = FALSE)
+
                   } else {
                     cli::cli_abort(
                       c("x" = "Error: {.arg prior} must be a numeric run number or character filename.", "i" = "Check the value.")
@@ -1107,6 +1118,7 @@ PM_model <- R6::R6Class(
                 if (intern) {
                   ### CALL RUST
                   out_path <- file.path(getwd(), "outputs")
+                  msg <- c(msg, "Run results were saved in folder '{.path {out_path}}'")
                   rlang::try_fetch(
                     fit(
                       # defined in extendr-wrappers.R
@@ -1135,14 +1147,67 @@ PM_model <- R6::R6Class(
                   
                   PM_parse("outputs")
                   res <- PM_load(file = "PMout.Rdata")
-                  PM_report(res, outfile = "report.html", template = report)
+                  PM_report(res, outfile = "report.html", template = report, quiet = TRUE)
+                  msg <- c(msg, "Report generated with {report} template.")
+                  if(tolower(algorithm) == "postprob") {this_alg <- "map"} else {this_alg <- "fit"}
+                  msg <- c(msg, "If assigned to a variable, e.g. {.code run1 <-}, results of {.fn {this_alg}} are available in {.code run1}.")
                   setwd(cwd)
+                  if(length(msg)>1) {
+                    cli::cli_h1("Notes:")
+                    cli::cli_ul()
+                    purrr::walk(msg[-1], ~ cli::cli_li(.x))
+                    cli::cli_end()
+                  } 
                   return(invisible(res))
                 } else {
                   cli::cli_abort(
                     c("x" = "Error: Currently, the rust engine only supports internal runs.", "i" = "This is a temporary limitation.")
                   )
                 }
+            }, # end fit method
+              
+              #' @description
+              #' Calculate posteriors from a fitted model.
+              #' #' @details
+              #' This method calculates posteriors from a compiled model. It is not necessary to have
+              #' run the model first, but it is necessary to have an informative prior distribution.
+              #' This prior will typically be the result of a previous run, but may also be a file
+              #' containing support points, with each column named as a parameter in the model plus a final column
+              #' for probability.  Each row contains values for the parameters and the associated probability for
+              #' those parameter values.  The file can be saved as a csv file.
+              #' 
+              #' To calculate the posteriors, `map()` calls the `fit()` method with the `cycles` argument set to 0 
+              #' and the `algorithm` argument set to "POSTPROB". If `data` are not provided as an argument to 
+              #' `map()`, the model's `data` field is used instead. If `data` is provided, it must be a
+              #' [PM_data] object or the pathname of a file which can be loaded as a [PM_data] object.
+              #' @param ... Arguments passed to the `fit` method. Note that the `cycles` argument is set to 0,
+              #' and the `algorithm` argument is set to "POSTPROB" automatically. 
+              map = function(...) {
+                #browser()
+                args <- list(...)
+                
+                if (!is.null(purrr::pluck(args, "cycles")) && purrr::pluck(args, "cycles") != 0) {
+                  cli::cli_inform(c("i" = "{.arg cycles} set to 0 for posteriors"))
+                } 
+                args$cycles <- 0 # ensure cycles is set to 0
+                
+                
+                if (!is.null(purrr::pluck(args, "algorithm")) && purrr::pluck(args, "algorithm") != "POSTPROB") {
+                  cli::cli_inform(c("i" = "{.arg algorithm} set to POSTPROB for posteriors"))
+                } 
+                args$algorithm <- "POSTPROB" # ensure algorithm is set to POSTPROB
+                
+                
+                if (is.null(purrr::pluck(args, "data"))) {
+                  cli::cli_abort(c("x" = "Data must be specified for posteriors."))
+                } 
+                
+                if (is.null(purrr::pluck(args, "prior")) || purrr::pluck(args, "prior") == "sobol") {
+                  cli::cli_abort(c("x" = "Please specify a non-uniform prior for posteriors.",
+                  " " = "This can be a prior run number or the name of a file with support points."))
+                }
+                
+                do.call(self$fit, args)
               },
               #' @description
               #' Simulate data from the model using a set of parameter values.
@@ -1217,14 +1282,14 @@ PM_model <- R6::R6Class(
               #' @description
               #' Update the model by launching the model editor.
               #' 
-
+              
               update = function() {
                 new_mod <- build_model(self, update = TRUE)
                 
                 self$arg_list <- new_mod
                 #self$compile()
               }
-
+              
             ),  # end public list
             private = list(
               R6fromFile = function(file) {
@@ -1398,11 +1463,11 @@ PM_model <- R6::R6Class(
                     unlist()
                     
                     arg_list$err <- eval(parse(text = glue::glue("c(\n{paste({coeff_fxns}, collapse = ',\n')}\n)")))
-                   
+                    
                     cat(msg)
                     flush.console()
                     return(arg_list)
-              }, # end R6fromFile
+                  }, # end R6fromFile
                   
                   write_model_to_rust = function(file_path = "main.rs") {
                     # Check if model_list is not NULL
@@ -1594,806 +1659,806 @@ PM_model <- R6::R6Class(
               #       }
               #     )
               #   )
+              
+              ##### These functions create various model components
+              
+              #' @title Additive error model
+              #' @description
+              #' `r lifecycle::badge("stable")`
+              #'
+              #' Create an additive (lambda) error model
+              #' @param initial Initial value for lambda
+              #' @param coeff Vector of coefficients defining assay error polynomial
+              #' @param fixed Estimate if `FALSE` (default).
+              #' @export
+              additive <- function(initial, coeff, fixed = FALSE) {
+                PM_err$new(type = "additive", initial = initial, coeff = coeff, fixed = fixed)
+              }
+              
+              
+              
+              #' @title Proportional error model
+              #' @description
+              #' `r lifecycle::badge("stable")`
+              #'
+              #' Create an proportional (gamma) error model
+              #' @param initial Initial value for gamma
+              #' @param coeff Vector of coefficients defining assay error polynomial
+              #' @param fixed Estimate if `FALSE` (default).
+              #' @export
+              proportional <- function(initial, coeff, fixed = FALSE) {
+                PM_err$new(type = "proportional", initial = initial, coeff = coeff, fixed = fixed)
+              }
+              
+              PM_err <- R6::R6Class(
+                "PM_err",
+                public = list(
+                  #' @field type Type of error model, either "additive" or "proportional".
+                  type = NULL,
+                  #' @field initial Initial value for the error model.
+                  initial = NULL,
+                  #' @field coeff Coefficients for the assay error polynomial.
+                  coeff = NULL,
+                  #' @field fixed If `TRUE`, the error model is fixed and not estimated.
+                  fixed = NULL,
+                  initialize = function(type, initial, coeff, fixed) {
+                    self$type <- type
+                    self$initial <- initial
+                    self$coeff <- coeff
+                    self$fixed <- fixed
+                  },
+                  print = function(){
+                    if (self$fixed) {
+                      cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with fixed value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
+                    } else {
+                      cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
+                    }
+                  },
+                  
+                  flatten = function(){
+                    list(initial = self$initial, coeff = self$coeff, type = self$type, fixed = self$fixed)
+                  }
+                )
+              )
+              
+              #' @title Primary parameter values
+              #' @description
+              #' `r lifecycle::badge("experimental")`
+              #' Define primary model parameter object.
+              #' This is used internally by the `PM_model` class.
+              PM_pri <- R6::R6Class(
+                "PM_pri",
+                public = list(
+                  #' @field min Minimum value of the range.
+                  min = NULL,
+                  #' @field max Maximum value of the range.
+                  max = NULL,
+                  #' @field mean Mean value of the range, calculated as (min + max) / 2.
+                  mean = NULL,
+                  #' @field sd Standard deviation of the range, calculated as (max - min) / 6.
+                  sd = NULL,
+                  #' @description
+                  #' Initialize a new range object.
+                  #' @param min Minimum value of the range.
+                  #' @param max Maximum value of the range.
+                  initialize = function(min, max) {
+                    self$min = min
+                    self$max = max
+                    self$mean = (min + max) / 2
+                    self$sd = (max - min) / 6
+                  },
+                  #' @description
+                  #' Print the range.
+                  print = function(){
+                    cli::cli_text("[{.strong {self$min}}, {.strong {self$max}}], {.emph ~N({round(self$mean,2)}}, {.emph {round(self$sd,2)})}")
+                  }
+                )
+              )
+              
+              
+              #' @title Initial range for primary parameter values
+              #' @description
+              #' `r lifecycle::badge("stable")`
+              #'
+              #' Define primary model parameter initial values as range. For nonparametric,
+              #' this range will be absolutely respected. For parametric, the range serves
+              #' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
+              #' initial parameter value distribution.
+              #' @param min Minimum value.
+              #' @param max Maximum value.
+              #' @export
+              ab <- function(min, max) {
+                PM_pri$new(min, max)
+              }
+              
+              
+              
+              #' @title Initial mean/SD for primary parameter values
+              #' @description
+              #' `r lifecycle::badge("stable")`
+              #'
+              #' Define primary model parameter initial values as mean and standard
+              #' deviation, which translate to a range. The mean serves as the midpoint
+              #' of the range, with 3 standard deviations above and below the mean to define
+              #' the min and max of the range. For nonparametric,
+              #' this range will be absolutely respected. For parametric,
+              #' values can be estimated beyond the range.
+              #' @param mean Initial mean.
+              #' @param sd Initial standard deviation.
+              #' @export
+              msd <- function(mean, sd) {
+                min <- mean - 3 * sd
+                max <- mean + 3 * sd
+                if(min< 0) {
+                  cli::cli_warn(c("i" = "Negative minimum value for primary parameter range.",
+                  " " = "This may not be appropriate for your model."))
+                }
+                PM_pri$new(min, max)
+              }
+              
+              
+              
+              #' @title Model covariate declaration
+              #' @description
+              #' `r lifecycle::badge("stable")`
+              #'
+              #' Declare whether covariates in the data are to have
+              #' interpolation between values or not.
+              #' @param type If `type = "lm"` (the default) or `type = "linear"`, 
+              #' the covariate value will be
+              #' linearly interpolated between values when fitting the model to the data.
+              #' in a model list `cov` item. To fix covariate values to the value at the
+              #' last time point, set `type = "none"`.
+              #' @return A value of 1 for "lm" and 0 for "none", which will be passed to Rust.
+              #' @examples
+              #' \dontrun{
+              #' cov = c(
+              #'   wt = interp() # same as interp("lm") or interp("linear")
+              #'   visit = interp("none")
+              #' )
+              #' }
+              #' @export
+              interp <- function(type = "lm") {
+                if (!type %in% c("lm", "linear", "none")) {
+                  cli::cli_abort(c("x" = "{type} is not a valid covariate interpolation type.", 
+                  "i" = "See help for {.help PM_model()}."))
+                }
+                if (type %in% c("lm", "linear")) {
+                  return(1)
+                } else {
+                  return(0)
+                }
+              }
+              
+              #' @title List of Pmetrics model library model names
+              #' @description
+              #' `r lifecycle::badge("stable")`
+              #' Returns a list of names of all Pmetrics model library objects in the global environment.
+              #' @export
+              mod_lib_names <- function(){
+                ls(envir = .GlobalEnv) %>% purrr::map(\(x) x[inherits(get(x), "PM_lib")]) %>% purrr::discard(\(x) length(x) == 0) 
+              }
+              
+              # returns model from detected template, 0 if none, and -1 if more than one
+              get_found_model <- function(fun){
+                eqns <- as.list(body(fun)[-1])
+                found <- map(eqns, \(x) deparse(x) %in% mod_lib_names()) %>% unlist()
                 
-                ##### These functions create various model components
+                if(sum(found) > 1){
+                  cli::cli_inform(c(
+                    "x" = "Multiple library model templates detected",
+                    "i" = "Maximum of one library model template allowed."
+                  ))
+                  return(-1)
+                } 
                 
-                #' @title Additive error model
-                #' @description
-                #' `r lifecycle::badge("stable")`
-                #'
-                #' Create an additive (lambda) error model
-                #' @param initial Initial value for lambda
-                #' @param coeff Vector of coefficients defining assay error polynomial
-                #' @param fixed Estimate if `FALSE` (default).
-                #' @export
-                additive <- function(initial, coeff, fixed = FALSE) {
-                  PM_err$new(type = "additive", initial = initial, coeff = coeff, fixed = fixed)
+                if(sum(found) == 0){
+                  return(0)
                 }
                 
-                
-                
-                #' @title Proportional error model
-                #' @description
-                #' `r lifecycle::badge("stable")`
-                #'
-                #' Create an proportional (gamma) error model
-                #' @param initial Initial value for gamma
-                #' @param coeff Vector of coefficients defining assay error polynomial
-                #' @param fixed Estimate if `FALSE` (default).
-                #' @export
-                proportional <- function(initial, coeff, fixed = FALSE) {
-                  PM_err$new(type = "proportional", initial = initial, coeff = coeff, fixed = fixed)
+                found_model_name <- eqns[[which(found)]] %>% deparse()
+                if(length(found_model_name)>0) {
+                  found_model <- get(found_model_name)
+                } else {
+                  found_model <- 0
                 }
-                
-                PM_err <- R6::R6Class(
-                  "PM_err",
-                  public = list(
-                    #' @field type Type of error model, either "additive" or "proportional".
-                    type = NULL,
-                    #' @field initial Initial value for the error model.
-                    initial = NULL,
-                    #' @field coeff Coefficients for the assay error polynomial.
-                    coeff = NULL,
-                    #' @field fixed If `TRUE`, the error model is fixed and not estimated.
-                    fixed = NULL,
-                    initialize = function(type, initial, coeff, fixed) {
-                      self$type <- type
-                      self$initial <- initial
-                      self$coeff <- coeff
-                      self$fixed <- fixed
-                    },
-                    print = function(){
-                      if (self$fixed) {
-                        cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with fixed value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
-                      } else {
-                        cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
-                      }
-                    },
+                return(found_model)
+              }
+              
+              
+              # PLOT --------------------------------------------------------------------
+              
+              #' @title Plot PM_model objects
+              #' @description
+              #' `r lifecycle::badge("stable")`
+              #'
+              #' Plots a [PM_model] based on differential equations using network plots from tidygraph and ggraph packages.
+              #'
+              #' @details
+              #' This accepts a [PM_model] object and creates a network plot where nodes are compartments
+              #' and edges are arrows connecting compartments.
+              #' @method plot PM_model
+              #' @param x The name of an [PM_model] object.
+              #' @param marker Controls the characteristics of the compartments (nodes).
+              #' It can be boolean or a list.
+              #' `TRUE` will plot the compartments with default characteristics.
+              #' `FALSE` will suppress compartment plotting.
+              #' If a list, can control some marker characteristics, including overriding defaults.
+              #' These include:
+              #' \itemize{
+              #' \item{`color`} Marker color (default: dodgerblue).
+              #' \item{`opacity`} Ranging between 0 (fully transparent) to 1 (fully opaque). Default is 0.5.
+              #' \item{`size`} Relative size of boxes, ranging from 0 to 1.  Default is 0.25.
+              #' \item{`line`} A list of  additional attributes governing the outline for filled shapes, most commonly
+              #' color (default: black) and width (default: 0.5).
+              #' }
+              #' <br>
+              #' <br>
+              #' Example: `marker = list(color = "red", opacity = 0.8, line = list(color = "black", width = 1))`
+              #' @param line Controls characteristics of arrows (edges).
+              #' `TRUE` will plot default lines. `FALSE` will suppress lines.
+              #' If a list, can control some line characteristics, including overriding defaults.
+              #' These include:
+              #' \itemize{
+              #' \item{`color`} Line color (default: black)
+              #' \item{`width`} Thickness in points (default: 1).
+              #' }
+              #' <br>
+              #' <br>
+              #' Example: `line = list(color = "red", width = 2)`
+              #' @param explicit A data frame or tibble containing two columns named `from` and `to`
+              #' to add additional connecting arrows to the plot indicating transfer between
+              #' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
+              #' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
+              #' a destination to the external sink. e.g., `explicit = data.frame(from = 3, to = 0)`
+              #' @param implicit Similar to `explicit`, used to add dashed connecting arrows
+              #' to the plot indicating implicit transfer between
+              #' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
+              #' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
+              #' a destination to the external sink. e.g., `implicit = data.frame(from = 2, to = 4)`
+              #' @param ... Not used.
+              #' @return Plots the object.
+              #' @author Markus Hovd, Julian Otalvaro, Michael Neely
+              #' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
+              #' @export
+              #' @examples
+              #' \dontrun{
+              #' NPex$model$plot()
+              #' }
+              #' @family PMplots
+              
+              plot.PM_model <- function(x,
+                marker = TRUE,
+                line = TRUE,
+                explicit,
+                implicit,
+                ...) {
+                  model <- x
+                  marker <- if (is.list(marker) || marker) {
+                    amendMarker(marker,
+                      default = list(
+                        color = "dodgerblue",
+                        size = 0.25,
+                        line = list(width = 0.5)
+                      ))
+                    } else {
+                      FALSE
+                    }
+                    line <- if (is.list(line) || line) {
+                      amendLine(line, default = list(color = "black"))
+                    } else {
+                      FALSE
+                    }
                     
-                    flatten = function(){
-                      list(initial = self$initial, coeff = self$coeff, type = self$type, fixed = self$fixed)
+                    if(inherits(model, "PM_lib")){
+                      eqns <- func_to_char(model$arg_list$eqn)
+                    } else if(inherits(model, "PM_model")){
+                      eqns <- if(model$model_list$name == "user") { 
+                        func_to_char(model$arg_list$eqn) 
+                      } else {  
+                        func_to_char(get(model$model_list$name)$arg_list$eqn)
+                      }
+                      
+                    } else {
+                      cli::cli_abort(c(
+                        "x" = "Unknown model type to plot."
+                      ))
                     }
-                  )
-                )
-                
-                #' @title Primary parameter values
-                #' @description
-                #' `r lifecycle::badge("experimental")`
-                #' Define primary model parameter object.
-                #' This is used internally by the `PM_model` class.
-                PM_pri <- R6::R6Class(
-                  "PM_pri",
-                  public = list(
-                    #' @field min Minimum value of the range.
-                    min = NULL,
-                    #' @field max Maximum value of the range.
-                    max = NULL,
-                    #' @field mean Mean value of the range, calculated as (min + max) / 2.
-                    mean = NULL,
-                    #' @field sd Standard deviation of the range, calculated as (max - min) / 6.
-                    sd = NULL,
-                    #' @description
-                    #' Initialize a new range object.
-                    #' @param min Minimum value of the range.
-                    #' @param max Maximum value of the range.
-                    initialize = function(min, max) {
-                      self$min = min
-                      self$max = max
-                      self$mean = (min + max) / 2
-                      self$sd = (max - min) / 6
-                    },
-                    #' @description
-                    #' Print the range.
-                    print = function(){
-                      cli::cli_text("[{.strong {self$min}}, {.strong {self$max}}], {.emph ~N({round(self$mean,2)}}, {.emph {round(self$sd,2)})}")
+                    
+                    # filter any equations that are not diffeq and make everything capital
+                    #this_model <- model$model_list$eqn %>%
+                    
+                    this_model <- eqns %>%
+                    map(
+                      purrr::keep,
+                      stringr::str_detect,
+                      stringr::regex("dX\\[\\d+\\]|XP\\(\\d+\\)", ignore_case = TRUE)
+                    ) %>%
+                    unlist()
+                    
+                    tree <- parse(text = this_model)
+                    if (length(tree) == 0) {
+                      cli::cli_abort(
+                        c("x" = "No differential equations detected. Use {.code dX[i]} for changes and {.code X[i]} for amounts (case insensitive).")
+                      )
                     }
-                  )
-                )
-                
-                
-                #' @title Initial range for primary parameter values
-                #' @description
-                #' `r lifecycle::badge("stable")`
-                #'
-                #' Define primary model parameter initial values as range. For nonparametric,
-                #' this range will be absolutely respected. For parametric, the range serves
-                #' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
-                #' initial parameter value distribution.
-                #' @param min Minimum value.
-                #' @param max Maximum value.
-                #' @export
-                ab <- function(min, max) {
-                  PM_pri$new(min, max)
-                }
-                
-                
-                
-                #' @title Initial mean/SD for primary parameter values
-                #' @description
-                #' `r lifecycle::badge("stable")`
-                #'
-                #' Define primary model parameter initial values as mean and standard
-                #' deviation, which translate to a range. The mean serves as the midpoint
-                #' of the range, with 3 standard deviations above and below the mean to define
-                #' the min and max of the range. For nonparametric,
-                #' this range will be absolutely respected. For parametric,
-                #' values can be estimated beyond the range.
-                #' @param mean Initial mean.
-                #' @param sd Initial standard deviation.
-                #' @export
-                msd <- function(mean, sd) {
-                  min <- mean - 3 * sd
-                  max <- mean + 3 * sd
-                  if(min< 0) {
-                    cli::cli_warn(c("i" = "Negative minimum value for primary parameter range.",
-                    " " = "This may not be appropriate for your model."))
-                  }
-                  PM_pri$new(min, max)
-                }
-                
-                
-                
-                #' @title Model covariate declaration
-                #' @description
-                #' `r lifecycle::badge("stable")`
-                #'
-                #' Declare whether covariates in the data are to have
-                #' interpolation between values or not.
-                #' @param type If `type = "lm"` (the default) or `type = "linear"`, 
-                #' the covariate value will be
-                #' linearly interpolated between values when fitting the model to the data.
-                #' in a model list `cov` item. To fix covariate values to the value at the
-                #' last time point, set `type = "none"`.
-                #' @return A value of 1 for "lm" and 0 for "none", which will be passed to Rust.
-                #' @examples
-                #' \dontrun{
-                #' cov = c(
-                #'   wt = interp() # same as interp("lm") or interp("linear")
-                #'   visit = interp("none")
-                #' )
-                #' }
-                #' @export
-                interp <- function(type = "lm") {
-                  if (!type %in% c("lm", "linear", "none")) {
-                    cli::cli_abort(c("x" = "{type} is not a valid covariate interpolation type.", 
-                    "i" = "See help for {.help PM_model()}."))
-                  }
-                  if (type %in% c("lm", "linear")) {
-                    return(1)
-                  } else {
-                    return(0)
-                  }
-                }
-                
-                #' @title List of Pmetrics model library model names
-                #' @description
-                #' `r lifecycle::badge("stable")`
-                #' Returns a list of names of all Pmetrics model library objects in the global environment.
-                #' @export
-                mod_lib_names <- function(){
-                  ls(envir = .GlobalEnv) %>% purrr::map(\(x) x[inherits(get(x), "PM_lib")]) %>% purrr::discard(\(x) length(x) == 0) 
-                }
-                
-                # returns model from detected template, 0 if none, and -1 if more than one
-                get_found_model <- function(fun){
-                  eqns <- as.list(body(fun)[-1])
-                  found <- map(eqns, \(x) deparse(x) %in% mod_lib_names()) %>% unlist()
-                  
-                  if(sum(found) > 1){
-                    cli::cli_inform(c(
-                      "x" = "Multiple library model templates detected",
-                      "i" = "Maximum of one library model template allowed."
-                    ))
-                    return(-1)
-                  } 
-
-                  if(sum(found) == 0){
-                    return(0)
-                  }
-                  
-                  found_model_name <- eqns[[which(found)]] %>% deparse()
-                  if(length(found_model_name)>0) {
-                    found_model <- get(found_model_name)
-                  } else {
-                    found_model <- 0
-                  }
-                  return(found_model)
-                }
-                
-                
-                # PLOT --------------------------------------------------------------------
-                
-                #' @title Plot PM_model objects
-                #' @description
-                #' `r lifecycle::badge("stable")`
-                #'
-                #' Plots a [PM_model] based on differential equations using network plots from tidygraph and ggraph packages.
-                #'
-                #' @details
-                #' This accepts a [PM_model] object and creates a network plot where nodes are compartments
-                #' and edges are arrows connecting compartments.
-                #' @method plot PM_model
-                #' @param x The name of an [PM_model] object.
-                #' @param marker Controls the characteristics of the compartments (nodes).
-                #' It can be boolean or a list.
-                #' `TRUE` will plot the compartments with default characteristics.
-                #' `FALSE` will suppress compartment plotting.
-                #' If a list, can control some marker characteristics, including overriding defaults.
-                #' These include:
-                #' \itemize{
-                #' \item{`color`} Marker color (default: dodgerblue).
-                #' \item{`opacity`} Ranging between 0 (fully transparent) to 1 (fully opaque). Default is 0.5.
-                #' \item{`size`} Relative size of boxes, ranging from 0 to 1.  Default is 0.25.
-                #' \item{`line`} A list of  additional attributes governing the outline for filled shapes, most commonly
-                #' color (default: black) and width (default: 0.5).
-                #' }
-                #' <br>
-                #' <br>
-                #' Example: `marker = list(color = "red", opacity = 0.8, line = list(color = "black", width = 1))`
-                #' @param line Controls characteristics of arrows (edges).
-                #' `TRUE` will plot default lines. `FALSE` will suppress lines.
-                #' If a list, can control some line characteristics, including overriding defaults.
-                #' These include:
-                #' \itemize{
-                #' \item{`color`} Line color (default: black)
-                #' \item{`width`} Thickness in points (default: 1).
-                #' }
-                #' <br>
-                #' <br>
-                #' Example: `line = list(color = "red", width = 2)`
-                #' @param explicit A data frame or tibble containing two columns named `from` and `to`
-                #' to add additional connecting arrows to the plot indicating transfer between
-                #' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
-                #' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
-                #' a destination to the external sink. e.g., `explicit = data.frame(from = 3, to = 0)`
-                #' @param implicit Similar to `explicit`, used to add dashed connecting arrows
-                #' to the plot indicating implicit transfer between
-                #' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
-                #' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
-                #' a destination to the external sink. e.g., `implicit = data.frame(from = 2, to = 4)`
-                #' @param ... Not used.
-                #' @return Plots the object.
-                #' @author Markus Hovd, Julian Otalvaro, Michael Neely
-                #' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
-                #' @export
-                #' @examples
-                #' \dontrun{
-                #' NPex$model$plot()
-                #' }
-                #' @family PMplots
-                
-                plot.PM_model <- function(x,
-                  marker = TRUE,
-                  line = TRUE,
-                  explicit,
-                  implicit,
-                  ...) {
-                    model <- x
-                    marker <- if (is.list(marker) || marker) {
-                      amendMarker(marker,
-                        default = list(
-                          color = "dodgerblue",
-                          size = 0.25,
-                          line = list(width = 0.5)
-                        ))
+                    index <- 0
+                    
+                    parse_arrows <- function(tree, arrows = list()) {
+                      if (length(tree) == 3) {
+                        op <- tree[[1]]
+                        lhs <- tree[[2]]
+                        rhs <- tree[[3]]
+                      } else if (length(tree[[1]]) == 3) {
+                        op <- tree[[1]][[1]]
+                        lhs <- tree[[1]][[2]]
+                        rhs <- tree[[1]][[3]]
                       } else {
-                        FALSE
-                      }
-                      line <- if (is.list(line) || line) {
-                        amendLine(line, default = list(color = "black"))
-                      } else {
-                        FALSE
-                      }
-                      
-                      if(inherits(model, "PM_lib")){
-                        eqns <- func_to_char(model$arg_list$eqn)
-                      } else if(inherits(model, "PM_model")){
-                        eqns <- if(model$model_list$name == "user") { 
-                          func_to_char(model$arg_list$eqn) 
-                        } else {  
-                          func_to_char(get(model$model_list$name)$arg_list$eqn)
-                        }
-                        
-                      } else {
-                        cli::cli_abort(c(
-                          "x" = "Unknown model type to plot."
-                        ))
-                      }
-                      
-                      # filter any equations that are not diffeq and make everything capital
-                      #this_model <- model$model_list$eqn %>%
-                      
-                      this_model <- eqns %>%
-                      map(
-                        purrr::keep,
-                        stringr::str_detect,
-                        stringr::regex("dX\\[\\d+\\]|XP\\(\\d+\\)", ignore_case = TRUE)
-                      ) %>%
-                      unlist()
-                      
-                      tree <- parse(text = this_model)
-                      if (length(tree) == 0) {
-                        cli::cli_abort(
-                          c("x" = "No differential equations detected. Use {.code dX[i]} for changes and {.code X[i]} for amounts (case insensitive).")
-                        )
-                      }
-                      index <- 0
-                      
-                      parse_arrows <- function(tree, arrows = list()) {
-                        if (length(tree) == 3) {
-                          op <- tree[[1]]
-                          lhs <- tree[[2]]
-                          rhs <- tree[[3]]
-                        } else if (length(tree[[1]]) == 3) {
-                          op <- tree[[1]][[1]]
-                          lhs <- tree[[1]][[2]]
-                          rhs <- tree[[1]][[3]]
-                        } else {
-                          return(arrows)
-                        }
-                        
-                        # check for distributions
-                        if (length(lhs) > 1 && lhs[[1]] == "(") {
-                          # expand distribution
-                          nterms <- length(lhs[[2]])
-                          lhs <- parse(text = paste(
-                            sapply(2:nterms, function(x) {
-                              as.character(lhs[[2]][[x]])
-                            }),
-                            as.character(op),
-                            deparse(rhs),
-                            collapse = paste0(" ", as.character(lhs[[2]][[1]]), " ")
-                          ))[[1]]
-                          rhs <- ""
-                        }
-                        
-                        if (length(rhs) > 1 && rhs[[1]] == "(") {
-                          # expand distribution
-                          nterms <- length(rhs[[2]])
-                          rhs <- parse(text = paste(
-                            deparse(lhs),
-                            as.character(op),
-                            sapply(2:nterms, function(x) {
-                              as.character(rhs[[2]][[x]])
-                            }),
-                            collapse = paste0(" ", as.character(rhs[[2]][[1]]), " ")
-                          ))[[1]]
-                          lhs <- ""
-                        }
-                        
-                        
-                        l <- if (length(lhs) == 1) {
-                          lhs
-                        } else if (lhs[[1]] == "[") {
-                          lhs[[2]]
-                        } else if (is.call(lhs) & length(lhs) == 3) {
-                          lhs[[3]]
-                        } else {
-                          lhs[[1]]
-                        }
-                        r <- if (length(rhs) == 1) {
-                          rhs
-                        } else if (rhs[[1]] == "[") {
-                          rhs[[2]]
-                        } else if (is.call(rhs) & length(rhs) == 3) {
-                          rhs[[3]]
-                        } else {
-                          rhs[[1]]
-                        }
-                        
-                        
-                        if (l == "x" || r == "x" || l == "X" || r == "X") {
-                          arrows <- append(arrows, tree)
-                          return(arrows)
-                        }
-                        
-                        index <<- index + 1
-                        if (is.call(lhs)) {
-                          arrows <- parse_arrows(lhs, arrows)
-                        }
-                        
-                        if (is.call(rhs)) {
-                          arrows <- parse_arrows(rhs, arrows)
-                        }
-                        
                         return(arrows)
                       }
                       
-                      parse_inputs <- function(input, itree) {
-                        itree <- paste(itree, collapse = "")
-                        if (grepl(input, itree, ignore.case = TRUE)) {
-                          type <- toupper(substr(input, 1, 1))
-                          number <- stringr::str_extract(itree, regex(paste0(input, "(\\(|\\[)\\d+(\\)|\\])"), ignore_case = TRUE)) %>%
-                          stringr::str_extract("\\d+")
-                          return(paste0(type, number))
-                        } else {
-                          return("")
-                        }
+                      # check for distributions
+                      if (length(lhs) > 1 && lhs[[1]] == "(") {
+                        # expand distribution
+                        nterms <- length(lhs[[2]])
+                        lhs <- parse(text = paste(
+                          sapply(2:nterms, function(x) {
+                            as.character(lhs[[2]][[x]])
+                          }),
+                          as.character(op),
+                          deparse(rhs),
+                          collapse = paste0(" ", as.character(lhs[[2]][[1]]), " ")
+                        ))[[1]]
+                        rhs <- ""
                       }
                       
-                      # process each compartment/equation
-                      parse_tree <- function(tree) {
-                        nodes <- list()
-                        if (inherits(tree, "expression")) {
-                          for (itree in tree) {
-                            op <- itree[[1]]
-                            lhs <- itree[[2]]
-                            rhs <- itree[[3]]
-                            if (op == "=") {
-                              if (lhs[[1]] == "[") {
-                                lhs <- lhs[-1]
-                              }
-                              nodes <- append(nodes, list(
-                                node = list(
-                                  node = as.character(lhs),
-                                  arrows = as.character(parse_arrows(rhs)),
-                                  bolus = parse_inputs("b", deparse(itree)),
-                                  rateiv = parse_inputs("r", deparse(itree))
-                                )
-                              ))
-                            } else {
-                              # only one equation
-                              as.character(parse_arrows(tree))
+                      if (length(rhs) > 1 && rhs[[1]] == "(") {
+                        # expand distribution
+                        nterms <- length(rhs[[2]])
+                        rhs <- parse(text = paste(
+                          deparse(lhs),
+                          as.character(op),
+                          sapply(2:nterms, function(x) {
+                            as.character(rhs[[2]][[x]])
+                          }),
+                          collapse = paste0(" ", as.character(rhs[[2]][[1]]), " ")
+                        ))[[1]]
+                        lhs <- ""
+                      }
+                      
+                      
+                      l <- if (length(lhs) == 1) {
+                        lhs
+                      } else if (lhs[[1]] == "[") {
+                        lhs[[2]]
+                      } else if (is.call(lhs) & length(lhs) == 3) {
+                        lhs[[3]]
+                      } else {
+                        lhs[[1]]
+                      }
+                      r <- if (length(rhs) == 1) {
+                        rhs
+                      } else if (rhs[[1]] == "[") {
+                        rhs[[2]]
+                      } else if (is.call(rhs) & length(rhs) == 3) {
+                        rhs[[3]]
+                      } else {
+                        rhs[[1]]
+                      }
+                      
+                      
+                      if (l == "x" || r == "x" || l == "X" || r == "X") {
+                        arrows <- append(arrows, tree)
+                        return(arrows)
+                      }
+                      
+                      index <<- index + 1
+                      if (is.call(lhs)) {
+                        arrows <- parse_arrows(lhs, arrows)
+                      }
+                      
+                      if (is.call(rhs)) {
+                        arrows <- parse_arrows(rhs, arrows)
+                      }
+                      
+                      return(arrows)
+                    }
+                    
+                    parse_inputs <- function(input, itree) {
+                      itree <- paste(itree, collapse = "")
+                      if (grepl(input, itree, ignore.case = TRUE)) {
+                        type <- toupper(substr(input, 1, 1))
+                        number <- stringr::str_extract(itree, regex(paste0(input, "(\\(|\\[)\\d+(\\)|\\])"), ignore_case = TRUE)) %>%
+                        stringr::str_extract("\\d+")
+                        return(paste0(type, number))
+                      } else {
+                        return("")
+                      }
+                    }
+                    
+                    # process each compartment/equation
+                    parse_tree <- function(tree) {
+                      nodes <- list()
+                      if (inherits(tree, "expression")) {
+                        for (itree in tree) {
+                          op <- itree[[1]]
+                          lhs <- itree[[2]]
+                          rhs <- itree[[3]]
+                          if (op == "=") {
+                            if (lhs[[1]] == "[") {
+                              lhs <- lhs[-1]
                             }
+                            nodes <- append(nodes, list(
+                              node = list(
+                                node = as.character(lhs),
+                                arrows = as.character(parse_arrows(rhs)),
+                                bolus = parse_inputs("b", deparse(itree)),
+                                rateiv = parse_inputs("r", deparse(itree))
+                              )
+                            ))
+                          } else {
+                            # only one equation
+                            as.character(parse_arrows(tree))
                           }
                         }
-                        return(nodes)
                       }
-                      
-                      res <- parse_tree(tree)
-                      
-                      # clean up
-                      swap_if_needed <- function(obj) {
-                        if (grepl("X\\[", obj[1], ignore.case = TRUE)) {
-                          return(paste(obj[2], obj[1], sep = " * "))
-                        } else {
-                          return(paste(obj[1], obj[2], sep = " * "))
-                        }
-                      }
-                      # clean up
-                      
-                      # remove hanging arrows without "*"
-                      res <- purrr::map(res, function(x) {
-                        list(
-                          node = x$node,
-                          arrows = x$arrows[grepl("\\*", x$arrows)],
-                          bolus = x$bolus,
-                          rateiv = x$rateiv
-                        )
-                      }) %>%
-                      # ensure unique arrows in each node
-                      purrr::map(function(x) {
-                        list(
-                          node = x$node,
-                          arrows = unique(x$arrows),
-                          bolus = x$bolus,
-                          rateiv = x$rateiv
-                        )
-                      }) %>%
-                      # ensure X terms come second
-                      purrr::map(function(x) {
-                        list(
-                          node = x$node,
-                          arrows = unlist(purrr::map(
-                            x$arrows, ~ swap_if_needed(stringr::str_split_1(.x, " \\* "))
-                          )),
-                          bolus = x$bolus,
-                          rateiv = x$rateiv
-                        )
-                      })
-                      
-                      layout <- res %>%
-                      lapply(., function(node) {
-                        data.frame(
-                          node = paste(node$node, collapse = ""),
-                          arrow = node$arrow,
-                          bolus = node$bolus,
-                          rateiv = node$rateiv
-                        )
-                      }) %>%
-                      bind_rows() %>%
-                      dplyr::mutate(from = stringr::str_replace(node, stringr::regex("XP|dX", ignore_case = TRUE), "")) %>%
-                      dplyr::mutate(to = stringr::str_extract(string = arrow, pattern = "\\((\\d+)\\)|\\[(\\d+)\\]")) %>%
-                      dplyr::mutate(to = stringr::str_remove(to, pattern = "\\(|\\[")) %>%
-                      dplyr::mutate(to = stringr::str_remove(to, pattern = "\\)|\\]")) %>%
-                      dplyr::mutate(to = ifelse(from == to, "", to)) %>%
-                      dplyr::mutate(arrow = stringr::str_remove(string = arrow, pattern = "\\X\\((\\d+)\\)|\\X\\[(\\d+)\\]")) %>%
-                      dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = " ")) %>%
-                      dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = "^\\*|\\*\\w*$")) %>%
-                      dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = "^\\-|\\-\\w*$")) %>%
-                      dplyr::relocate(node, arrow, to, from) %>%
-                      dplyr::rename(to = from, from = to)
-                      
-                      # pause to define inputs
-                      input_cmt <- layout %>%
-                      dplyr::select(to, bolus, rateiv) %>%
-                      dplyr::filter(bolus != "" | rateiv != "") %>%
-                      dplyr::distinct() %>%
-                      tidyr::pivot_longer(c(bolus, rateiv), names_to = "type", values_to = "input") %>%
-                      dplyr::select(-type) %>%
-                      dplyr::filter(input != "") %>%
-                      dplyr::rename(cmt = to)
-                      
-                      # resume layout
-                      layout <- layout %>%
-                      dplyr::select(-bolus, -rateiv) %>%
-                      dplyr::group_by(arrow) %>%
-                      dplyr::filter(dplyr::n() == 1 | dplyr::n() > 1 & from != "") %>%
-                      dplyr::ungroup() %>%
-                      dplyr::mutate(from = ifelse(from == "", to, from)) %>%
-                      dplyr::mutate(to = ifelse(from == to, "", to)) %>%
-                      dplyr::mutate(to = ifelse(to == "", as.numeric(max(
-                        c(to, from), na.rm = T
-                      )) + 1, to)) %>%
-                      dplyr::mutate(to = ifelse(is.na(to), as.numeric(max(
-                        c(to, from), na.rm = T
-                      )) + 1, to)) %>%
-                      dplyr::filter(arrow != "") %>%
-                      dplyr::mutate(across(everything(), as.character)) %>%
-                      dplyr::mutate(node = stringr::str_extract(node, "\\d+")) %>%
-                      dplyr::distinct(node, from, to) %>%
-                      dplyr::mutate(implicit = FALSE)
-                      
-                      # outputs
-                      if (inherits(model, c("PM_model", "PM_lib"))) {
-                        cmts <- map_chr(func_to_char(model$arg_list$out), \(x) stringr::str_extract(x, "X\\[(\\d+)\\]", group = 1))
-                        output_cmt <- dplyr::tibble(out = paste0("Y", seq_along(cmts)), cmt = cmts)
+                      return(nodes)
+                    }
+                    
+                    res <- parse_tree(tree)
+                    
+                    # clean up
+                    swap_if_needed <- function(obj) {
+                      if (grepl("X\\[", obj[1], ignore.case = TRUE)) {
+                        return(paste(obj[2], obj[1], sep = " * "))
                       } else {
-                        output_cmt <- dplyr::tibble(out = "", cmt = "1")
+                        return(paste(obj[1], obj[2], sep = " * "))
                       }
+                    }
+                    # clean up
+                    
+                    # remove hanging arrows without "*"
+                    res <- purrr::map(res, function(x) {
+                      list(
+                        node = x$node,
+                        arrows = x$arrows[grepl("\\*", x$arrows)],
+                        bolus = x$bolus,
+                        rateiv = x$rateiv
+                      )
+                    }) %>%
+                    # ensure unique arrows in each node
+                    purrr::map(function(x) {
+                      list(
+                        node = x$node,
+                        arrows = unique(x$arrows),
+                        bolus = x$bolus,
+                        rateiv = x$rateiv
+                      )
+                    }) %>%
+                    # ensure X terms come second
+                    purrr::map(function(x) {
+                      list(
+                        node = x$node,
+                        arrows = unlist(purrr::map(
+                          x$arrows, ~ swap_if_needed(stringr::str_split_1(.x, " \\* "))
+                        )),
+                        bolus = x$bolus,
+                        rateiv = x$rateiv
+                      )
+                    })
+                    
+                    layout <- res %>%
+                    lapply(., function(node) {
+                      data.frame(
+                        node = paste(node$node, collapse = ""),
+                        arrow = node$arrow,
+                        bolus = node$bolus,
+                        rateiv = node$rateiv
+                      )
+                    }) %>%
+                    bind_rows() %>%
+                    dplyr::mutate(from = stringr::str_replace(node, stringr::regex("XP|dX", ignore_case = TRUE), "")) %>%
+                    dplyr::mutate(to = stringr::str_extract(string = arrow, pattern = "\\((\\d+)\\)|\\[(\\d+)\\]")) %>%
+                    dplyr::mutate(to = stringr::str_remove(to, pattern = "\\(|\\[")) %>%
+                    dplyr::mutate(to = stringr::str_remove(to, pattern = "\\)|\\]")) %>%
+                    dplyr::mutate(to = ifelse(from == to, "", to)) %>%
+                    dplyr::mutate(arrow = stringr::str_remove(string = arrow, pattern = "\\X\\((\\d+)\\)|\\X\\[(\\d+)\\]")) %>%
+                    dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = " ")) %>%
+                    dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = "^\\*|\\*\\w*$")) %>%
+                    dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = "^\\-|\\-\\w*$")) %>%
+                    dplyr::relocate(node, arrow, to, from) %>%
+                    dplyr::rename(to = from, from = to)
+                    
+                    # pause to define inputs
+                    input_cmt <- layout %>%
+                    dplyr::select(to, bolus, rateiv) %>%
+                    dplyr::filter(bolus != "" | rateiv != "") %>%
+                    dplyr::distinct() %>%
+                    tidyr::pivot_longer(c(bolus, rateiv), names_to = "type", values_to = "input") %>%
+                    dplyr::select(-type) %>%
+                    dplyr::filter(input != "") %>%
+                    dplyr::rename(cmt = to)
+                    
+                    # resume layout
+                    layout <- layout %>%
+                    dplyr::select(-bolus, -rateiv) %>%
+                    dplyr::group_by(arrow) %>%
+                    dplyr::filter(dplyr::n() == 1 | dplyr::n() > 1 & from != "") %>%
+                    dplyr::ungroup() %>%
+                    dplyr::mutate(from = ifelse(from == "", to, from)) %>%
+                    dplyr::mutate(to = ifelse(from == to, "", to)) %>%
+                    dplyr::mutate(to = ifelse(to == "", as.numeric(max(
+                      c(to, from), na.rm = T
+                    )) + 1, to)) %>%
+                    dplyr::mutate(to = ifelse(is.na(to), as.numeric(max(
+                      c(to, from), na.rm = T
+                    )) + 1, to)) %>%
+                    dplyr::filter(arrow != "") %>%
+                    dplyr::mutate(across(everything(), as.character)) %>%
+                    dplyr::mutate(node = stringr::str_extract(node, "\\d+")) %>%
+                    dplyr::distinct(node, from, to) %>%
+                    dplyr::mutate(implicit = FALSE)
+                    
+                    # outputs
+                    if (inherits(model, c("PM_model", "PM_lib"))) {
+                      cmts <- map_chr(func_to_char(model$arg_list$out), \(x) stringr::str_extract(x, "X\\[(\\d+)\\]", group = 1))
+                      output_cmt <- dplyr::tibble(out = paste0("Y", seq_along(cmts)), cmt = cmts)
+                    } else {
+                      output_cmt <- dplyr::tibble(out = "", cmt = "1")
+                    }
+                    
+                    # add explicit arrows from user
+                    if (!missing(explicit)) {
+                      max_to <- max(as.numeric(layout$to))
                       
-                      # add explicit arrows from user
-                      if (!missing(explicit)) {
-                        max_to <- max(as.numeric(layout$to))
-                        
-                        if (!all(names(explicit) %in% c("from", "to"))) {
-                          cli::cli_abort(
-                            c("x" = "{.code explicit} should be a data frame with names {.code from} and {.code to}")
-                          )
-                        }
-                        imp <- explicit %>%
-                        dplyr::mutate(to = ifelse(to == 0, max_to, to)) %>%
-                        dplyr::mutate(node = from, implicit = FALSE) %>%
-                        dplyr::relocate(node, from, to, implicit) %>%
-                        dplyr::mutate(across(c(node, from, to), as.character))
-                        
-                        layout <- dplyr::bind_rows(layout, imp)
-                      }
-                      
-                      # add implicit arrows from user
-                      if (!missing(implicit)) {
-                        max_to <- max(as.numeric(layout$to))
-                        
-                        if (!all(names(implicit) %in% c("from", "to"))) {
-                          cli::cli_abort(
-                            c("x" = "{.code implicit} should be a data frame with names {.code from} and {.code to}")
-                          )
-                        }
-                        imp <- implicit %>%
-                        dplyr::mutate(to = ifelse(to == 0, max_to, to)) %>%
-                        dplyr::mutate(node = from, implicit = TRUE) %>%
-                        dplyr::relocate(node, from, to, implicit) %>%
-                        dplyr::mutate(across(c(node, from, to), as.character))
-                        
-                        layout <- dplyr::bind_rows(layout, imp)
-                      }
-                      
-                      
-                      graph <- tidygraph::as_tbl_graph(layout) %>%
-                      dplyr::mutate(cmt = c(unique(layout$from), 0)) %>%
-                      dplyr::mutate(position = ifelse(cmt == 0, "outside", "inside")) %>%
-                      dplyr::left_join(input_cmt, by = "cmt") %>%
-                      dplyr::mutate(input = ifelse(is.na(input), "", input)) %>%
-                      dplyr::left_join(output_cmt, by = "cmt") %>%
-                      dplyr::mutate(out = ifelse(is.na(out), "", out))
-                      
-                      
-                      
-                      
-                      g <- ggraph::ggraph(graph, layout = "tree")
-                      if (!is.logical(marker)) {
-                        # will only be logical if FALSE
-                        g <- g +
-                        ggraph::geom_node_tile(
-                          aes(fill = position, linetype = position),
-                          color = marker$line$color,
-                          lwd = marker$line$width,
-                          width = marker$size,
-                          height = marker$size,
-                          alpha = marker$opacity
-                        ) +
-                        ggraph::geom_node_text(
-                          aes(label = input),
-                          nudge_x = .07,
-                          nudge_y = .05,
-                          color = "white"
-                        ) +
-                        ggraph::geom_node_text(
-                          aes(label = out),
-                          nudge_x = -.07,
-                          nudge_y = .05,
-                          color = "black"
-                        ) +
-                        ggplot2::scale_fill_manual(values = c(marker$color, "grey80"))
-                      }
-                      if (!is.logical(line)) {
-                        # will only be logical if FALSE
-                        g <- g +
-                        ggraph::geom_edge_fan(
-                          aes(linetype = as.numeric(implicit) + 1),
-                          arrow = grid::arrow(
-                            angle = 15,
-                            type = "closed",
-                            length = grid::unit(6, "mm")
-                          ),
-                          end_cap = ggraph::circle(3, "mm"),
-                          start_cap = ggraph::circle(4, "mm"),
-                          angle_calc = "across",
-                          edge_color = line$color,
-                          label_push = grid::unit(-4, "mm"),
-                          edge_width = line$width
+                      if (!all(names(explicit) %in% c("from", "to"))) {
+                        cli::cli_abort(
+                          c("x" = "{.code explicit} should be a data frame with names {.code from} and {.code to}")
                         )
                       }
+                      imp <- explicit %>%
+                      dplyr::mutate(to = ifelse(to == 0, max_to, to)) %>%
+                      dplyr::mutate(node = from, implicit = FALSE) %>%
+                      dplyr::relocate(node, from, to, implicit) %>%
+                      dplyr::mutate(across(c(node, from, to), as.character))
+                      
+                      layout <- dplyr::bind_rows(layout, imp)
+                    }
+                    
+                    # add implicit arrows from user
+                    if (!missing(implicit)) {
+                      max_to <- max(as.numeric(layout$to))
+                      
+                      if (!all(names(implicit) %in% c("from", "to"))) {
+                        cli::cli_abort(
+                          c("x" = "{.code implicit} should be a data frame with names {.code from} and {.code to}")
+                        )
+                      }
+                      imp <- implicit %>%
+                      dplyr::mutate(to = ifelse(to == 0, max_to, to)) %>%
+                      dplyr::mutate(node = from, implicit = TRUE) %>%
+                      dplyr::relocate(node, from, to, implicit) %>%
+                      dplyr::mutate(across(c(node, from, to), as.character))
+                      
+                      layout <- dplyr::bind_rows(layout, imp)
+                    }
+                    
+                    
+                    graph <- tidygraph::as_tbl_graph(layout) %>%
+                    dplyr::mutate(cmt = c(unique(layout$from), 0)) %>%
+                    dplyr::mutate(position = ifelse(cmt == 0, "outside", "inside")) %>%
+                    dplyr::left_join(input_cmt, by = "cmt") %>%
+                    dplyr::mutate(input = ifelse(is.na(input), "", input)) %>%
+                    dplyr::left_join(output_cmt, by = "cmt") %>%
+                    dplyr::mutate(out = ifelse(is.na(out), "", out))
+                    
+                    
+                    
+                    
+                    g <- ggraph::ggraph(graph, layout = "tree")
+                    if (!is.logical(marker)) {
+                      # will only be logical if FALSE
                       g <- g +
-                      ggraph::geom_node_label(aes(label = cmt), position = "identity") +
-                      ggraph::theme_graph() +
-                      ggplot2::theme(legend.position = "none")
-                      print(g)
-                      return(invisible(graph))
+                      ggraph::geom_node_tile(
+                        aes(fill = position, linetype = position),
+                        color = marker$line$color,
+                        lwd = marker$line$width,
+                        width = marker$size,
+                        height = marker$size,
+                        alpha = marker$opacity
+                      ) +
+                      ggraph::geom_node_text(
+                        aes(label = input),
+                        nudge_x = .07,
+                        nudge_y = .05,
+                        color = "white"
+                      ) +
+                      ggraph::geom_node_text(
+                        aes(label = out),
+                        nudge_x = -.07,
+                        nudge_y = .05,
+                        color = "black"
+                      ) +
+                      ggplot2::scale_fill_manual(values = c(marker$color, "grey80"))
                     }
-                    
-                    
-                    # MODEL LIBRARY -----------------------------------------------------------
-                    
-                    #' @title Pharmacokinetic model library
-                    #' @description
-                    #' `r lifecycle::badge("stable")`
-                    #'
-                    #' This function provides a list of available pharmacokinetic models.
-                    #' @param name The name of the model to display. If `NULL`, the entire list is displayed.
-                    #' @param show If `TRUE`, the model is displayed in the console. If `FALSE`, the model is only returned as a tibble.
-                    #' @return If `name` is not `NULL`, a tibble with the model equations; otherwise the
-                    #' function returns `NULL` and only displays the entire library in tabular format.
-                    #' @author Michael Neely
-                    #' @seealso [PM_model]
-                    #' @export
-                    #' @examples
-                    #' \dontrun{
-                    #' model_lib()
-                    #' model_lib("one_comp_iv")
-                    #' }
-                    model_lib <- function(name = NULL, show = TRUE) {
-                      mod_table <- matrix(
-                        c(
-                          "one_comp_iv",
-                          "advan1\nadvan1-trans1",
-                          "One compartment IV input, Ke",
-                          "1 = Central",
-                          "Ke, V",
-                          "one_comp_iv_cl",
-                          "advan1\nadvan1-trans2",
-                          "One compartment IV input, CL",
-                          "1 = Central",
-                          "CL, V",
-                          "two_comp_bolus",
-                          "advan2\nadvan2-trans1",
-                          "Two compartment bolus input, Ke",
-                          "1 = Bolus\n2 = Central",
-                          "Ka, Ke, V",
-                          "two_comp_bolus_cl",
-                          "advan2\nadvan2-trans2",
-                          "Two compartment bolus input, CL",
-                          "1 = Bolus\n2 = Central",
-                          "Ka, CL, V",
-                          "two_comp_iv",
-                          "advan3\nadvan3-trans1",
-                          "Two compartment IV input, Ke",
-                          "1 = Central\n2 = Peripheral",
-                          "Ke, V, KCP, KPC",
-                          "two_comp_iv_cl",
-                          "advan3\nadvan3-trans4",
-                          "Two compartment IV input, CL",
-                          "1 = Central\n2 = Peripheral",
-                          "CL, V1, Q, V2",
-                          "three_comp_bolus",
-                          "advan4\nadvan4-trans1",
-                          "Three compartment bolus input, Ke",
-                          "1 = Bolus\n2 = Central\n3 = Peripheral",
-                          "Ka, Ke, V, KCP, KPC",
-                          "three_comp_bolus_cl",
-                          "advan4\nadvan4-trans4",
-                          "Three compartment bolus input, CL",
-                          "1 = Bolus\n2 = Central\n3 = Peripheral",
-                          "Ka, CL, V2, Q, V3"
+                    if (!is.logical(line)) {
+                      # will only be logical if FALSE
+                      g <- g +
+                      ggraph::geom_edge_fan(
+                        aes(linetype = as.numeric(implicit) + 1),
+                        arrow = grid::arrow(
+                          angle = 15,
+                          type = "closed",
+                          length = grid::unit(6, "mm")
                         ),
-                        ncol = 5,
-                        byrow = TRUE
-                      ) %>%
-                      as.data.frame() %>%
-                      stats::setNames(c(
-                        "Primary Name",
-                        "Alt Names",
-                        "Description",
-                        "Compartments",
-                        "Parameters"
-                      )) %>%
-                      tibble::as_tibble()
-                      
-                      
-                      mod_table$ODE <- list(
-                        list("dX[1] = RATEIV[1] - Ke*X[1]"),
-                        list("dX[1] = RATEIV[1] - CL/V*X[1]"),
-                        list(
-                          "dX[1] = BOLUS[1] - Ka*X[1]",
-                          "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]"
-                        ),
-                        list(
-                          "dX[1] = BOLUS[1] - Ka*X[1]",
-                          "dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]"
-                        ),
-                        list(
-                          "dX[1] = RATEIV[1] - (Ke + KCP)*X[1] + KPC*X[2]",
-                          "dX[2] = KCP*X[1] - KPC*X[2]"
-                        ),
-                        list(
-                          "dX[1] = RATEIV[1] - (CL + Q)/V1*X[1] + Q/V2*X[2]",
-                          "dX[2] = Q/V1*X[1] - Q/V2*X[2]"
-                        ),
-                        list(
-                          "dX[1] = BOLUS[1] - Ka*X[1]",
-                          "dX[2] = RATEIV[1] + Ka*X[1] - (Ke + KCP)*X[2] + KPC*X[3]",
-                          "dX[3] = KCP*X[2] - KPC*X[3]"
-                        ),
-                        list(
-                          "dX[1] = BOLUS[1] - Ka*X[1]",
-                          "dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/V2*X[2] + Q/V3*X[3]",
-                          "dX[3] = Q/V2*X[2] - Q/V3*X[3]"
-                        )
+                        end_cap = ggraph::circle(3, "mm"),
+                        start_cap = ggraph::circle(4, "mm"),
+                        angle_calc = "across",
+                        edge_color = line$color,
+                        label_push = grid::unit(-4, "mm"),
+                        edge_width = line$width
                       )
-                      
-                      
-                      if (is.null(name)) {
-                        print(
-                          mod_table %>%
-                          dplyr::rowwise() %>%
-                          dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
-                          flextable::flextable() %>%
-                          flextable::set_header_labels(ODE = "Corresponding ODE") %>%
-                          flextable::autofit()
-                        )
-                        
-                        return(invisible(NULL))
-                      }
-                      
-                      if (!tolower(name) %in%
+                    }
+                    g <- g +
+                    ggraph::geom_node_label(aes(label = cmt), position = "identity") +
+                    ggraph::theme_graph() +
+                    ggplot2::theme(legend.position = "none")
+                    print(g)
+                    return(invisible(graph))
+                  }
+                  
+                  
+                  # MODEL LIBRARY -----------------------------------------------------------
+                  
+                  #' @title Pharmacokinetic model library
+                  #' @description
+                  #' `r lifecycle::badge("stable")`
+                  #'
+                  #' This function provides a list of available pharmacokinetic models.
+                  #' @param name The name of the model to display. If `NULL`, the entire list is displayed.
+                  #' @param show If `TRUE`, the model is displayed in the console. If `FALSE`, the model is only returned as a tibble.
+                  #' @return If `name` is not `NULL`, a tibble with the model equations; otherwise the
+                  #' function returns `NULL` and only displays the entire library in tabular format.
+                  #' @author Michael Neely
+                  #' @seealso [PM_model]
+                  #' @export
+                  #' @examples
+                  #' \dontrun{
+                  #' model_lib()
+                  #' model_lib("one_comp_iv")
+                  #' }
+                  model_lib <- function(name = NULL, show = TRUE) {
+                    mod_table <- matrix(
                       c(
-                        glue::glue("one_comp_iv{c('','_cl')}"),
-                        glue::glue("two_comp_bolus{c('','_cl')}"),
-                        glue::glue("two_comp_iv{c('','_cl')}"),
-                        glue::glue("three_comp_bolus{c('','_cl')}"),
-                        glue::glue("advan{1:4}"),
-                        glue::glue("advan{1:4}-trans1"),
-                        glue::glue("advan{1:2}-trans2"),
-                        "advan3-trans4",
-                        "advan4-trans4"
-                      )) {
-                        cli::cli_abort(c("x" = "Invalid model name"))
-                      }
+                        "one_comp_iv",
+                        "advan1\nadvan1-trans1",
+                        "One compartment IV input, Ke",
+                        "1 = Central",
+                        "Ke, V",
+                        "one_comp_iv_cl",
+                        "advan1\nadvan1-trans2",
+                        "One compartment IV input, CL",
+                        "1 = Central",
+                        "CL, V",
+                        "two_comp_bolus",
+                        "advan2\nadvan2-trans1",
+                        "Two compartment bolus input, Ke",
+                        "1 = Bolus\n2 = Central",
+                        "Ka, Ke, V",
+                        "two_comp_bolus_cl",
+                        "advan2\nadvan2-trans2",
+                        "Two compartment bolus input, CL",
+                        "1 = Bolus\n2 = Central",
+                        "Ka, CL, V",
+                        "two_comp_iv",
+                        "advan3\nadvan3-trans1",
+                        "Two compartment IV input, Ke",
+                        "1 = Central\n2 = Peripheral",
+                        "Ke, V, KCP, KPC",
+                        "two_comp_iv_cl",
+                        "advan3\nadvan3-trans4",
+                        "Two compartment IV input, CL",
+                        "1 = Central\n2 = Peripheral",
+                        "CL, V1, Q, V2",
+                        "three_comp_bolus",
+                        "advan4\nadvan4-trans1",
+                        "Three compartment bolus input, Ke",
+                        "1 = Bolus\n2 = Central\n3 = Peripheral",
+                        "Ka, Ke, V, KCP, KPC",
+                        "three_comp_bolus_cl",
+                        "advan4\nadvan4-trans4",
+                        "Three compartment bolus input, CL",
+                        "1 = Bolus\n2 = Central\n3 = Peripheral",
+                        "Ka, CL, V2, Q, V3"
+                      ),
+                      ncol = 5,
+                      byrow = TRUE
+                    ) %>%
+                    as.data.frame() %>%
+                    stats::setNames(c(
+                      "Primary Name",
+                      "Alt Names",
+                      "Description",
+                      "Compartments",
+                      "Parameters"
+                    )) %>%
+                    tibble::as_tibble()
+                    
+                    
+                    mod_table$ODE <- list(
+                      list("dX[1] = RATEIV[1] - Ke*X[1]"),
+                      list("dX[1] = RATEIV[1] - CL/V*X[1]"),
+                      list(
+                        "dX[1] = BOLUS[1] - Ka*X[1]",
+                        "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]"
+                      ),
+                      list(
+                        "dX[1] = BOLUS[1] - Ka*X[1]",
+                        "dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]"
+                      ),
+                      list(
+                        "dX[1] = RATEIV[1] - (Ke + KCP)*X[1] + KPC*X[2]",
+                        "dX[2] = KCP*X[1] - KPC*X[2]"
+                      ),
+                      list(
+                        "dX[1] = RATEIV[1] - (CL + Q)/V1*X[1] + Q/V2*X[2]",
+                        "dX[2] = Q/V1*X[1] - Q/V2*X[2]"
+                      ),
+                      list(
+                        "dX[1] = BOLUS[1] - Ka*X[1]",
+                        "dX[2] = RATEIV[1] + Ka*X[1] - (Ke + KCP)*X[2] + KPC*X[3]",
+                        "dX[3] = KCP*X[2] - KPC*X[3]"
+                      ),
+                      list(
+                        "dX[1] = BOLUS[1] - Ka*X[1]",
+                        "dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/V2*X[2] + Q/V3*X[3]",
+                        "dX[3] = Q/V2*X[2] - Q/V3*X[3]"
+                      )
+                    )
+                    
+                    
+                    if (is.null(name)) {
+                      print(
+                        mod_table %>%
+                        dplyr::rowwise() %>%
+                        dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
+                        flextable::flextable() %>%
+                        flextable::set_header_labels(ODE = "Corresponding ODE") %>%
+                        flextable::autofit()
+                      )
                       
-                      if (show) {
-                        print(
-                          mod_table %>% dplyr::filter(`Primary Name` == name) %>%
-                          dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
-                          flextable::flextable() %>%
-                          flextable::set_header_labels(ODE = "Corresponding ODE") %>%
-                          flextable::autofit()
-                        )
-                      }
-                      
-                      return(
-                        invisible(
-                          mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1, 1) %>% unlist()
-                        )
+                      return(invisible(NULL))
+                    }
+                    
+                    if (!tolower(name) %in%
+                    c(
+                      glue::glue("one_comp_iv{c('','_cl')}"),
+                      glue::glue("two_comp_bolus{c('','_cl')}"),
+                      glue::glue("two_comp_iv{c('','_cl')}"),
+                      glue::glue("three_comp_bolus{c('','_cl')}"),
+                      glue::glue("advan{1:4}"),
+                      glue::glue("advan{1:4}-trans1"),
+                      glue::glue("advan{1:2}-trans2"),
+                      "advan3-trans4",
+                      "advan4-trans4"
+                    )) {
+                      cli::cli_abort(c("x" = "Invalid model name"))
+                    }
+                    
+                    if (show) {
+                      print(
+                        mod_table %>% dplyr::filter(`Primary Name` == name) %>%
+                        dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
+                        flextable::flextable() %>%
+                        flextable::set_header_labels(ODE = "Corresponding ODE") %>%
+                        flextable::autofit()
                       )
                     }
                     
+                    return(
+                      invisible(
+                        mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1, 1) %>% unlist()
+                      )
+                    )
+                  }
+                  

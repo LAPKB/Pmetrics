@@ -21,6 +21,7 @@ pub(crate) fn settings(
     let algorithm = match algorithm.as_str().to_lowercase().as_str() {
         "npag" => pmcore::prelude::Algorithm::NPAG,
         "npod" => pmcore::prelude::Algorithm::NPOD,
+        "postprob" => pmcore::prelude::Algorithm::POSTPROB,
         _ => return Err(anyhow::anyhow!("Algorithm {} not supported", algorithm)),
     };
 

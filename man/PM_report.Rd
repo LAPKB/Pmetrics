@@ -4,7 +4,7 @@
 \alias{PM_report}
 \title{Generate a report}
 \usage{
-PM_report(x, template, outfile, show = TRUE)
+PM_report(x, template, outfile, show = TRUE, quiet = FALSE)
 }
 \arguments{
 \item{x}{A \link{PM_result} object obtained from \link{PM_load}.}
@@ -16,6 +16,8 @@ can be "plotly", "ggplot", or "none".}
 \item{outfile}{The location of the generated report, defaults to a temporary file.}
 
 \item{show}{Controls if the report should be automatically opened on generation, defaults to \code{TRUE}}
+
+\item{quiet}{If \code{TRUE}, suppresses the message about report generation, defaults to \code{FALSE}.}
 }
 \value{
 Generates an HTML-report in the current working directory.

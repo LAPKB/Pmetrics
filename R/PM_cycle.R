@@ -47,7 +47,7 @@ PM_cycle <- R6::R6Class(
     #' **mean** A tibble of cycle number and the mean of each random parameter at each cycle, normalized to initial mean
     #' **median** A tibble of cycle number and the median of each random parameter at each cycle, normalized to initial median
     #' **sd** A tibble of cycle number and the standard deviation of each random parameter at each cycle, normalized to initial standard deviation
-    #' **converged** Boolean value if convergence occurred
+    #' **status** Status of the last cycle: "Converged", "Maximum cycles reached", or "Posterior".
     data = NULL,
     #' @description
     #' Create new object populated with  cycle information
@@ -75,6 +75,13 @@ PM_cycle <- R6::R6Class(
     #' @param ... Arguments passed to [summary.PM_cycle]
     summary = function(...) {
       summary.PM_cycle(self, ...)
+    },
+    #' @description
+    #' Print method
+    #' @details
+    #' Prints the last cycle summary information.
+    print = function(){
+      print(summary.PM_cycle(self))
     }
   ), # end public
   active = list(
@@ -104,12 +111,20 @@ PM_cycle <- R6::R6Class(
     #' at each cycle,  normalized to initial standard deviation
     sd = function() {
       self$data$sd
+    },
+    #' @field status Status of the last cycle: "Converged", "Maximum cycles reached", or "Posterior"
+    status = function() {
+      self$data$status
     }
   ), # end active
   private = list(
     make = function(data) {
       if (file.exists("cycles.csv")) {
         raw <- readr::read_csv(file = "cycles.csv", show_col_types = FALSE)
+        if (nrow(raw)==0){ # posterior 
+          raw <- data.frame(cycle = 0, status = "Posterior")
+          write.csv(raw, "cycles.csv", row.names = FALSE)
+        }
       } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_cycle
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)
@@ -140,6 +155,23 @@ PM_cycle <- R6::R6Class(
         ))
         return(NULL)
       }
+      
+      # Run was a posterior
+      if (raw$status[1] == "Posterior"){
+        res <- list(
+          names = config$parameters$parameters$name,
+          objective = tibble(cycle = 0, neg2ll = NA, aic = NA, bic = NA),
+          gamlam = NA,
+          mean = NA,
+          sd = NA,
+          median = NA,
+          status = "Posterior"
+        )
+        class(res) <- c("PM_cycle_data", "list")
+        return(res)
+      }
+      
+      
       
       cycle_data <- raw %>%
       pivot_longer(cols = ends_with(c("mean", "median", "sd"))) %>%
@@ -201,16 +233,16 @@ PM_cycle <- R6::R6Class(
       right_join(model_types, by = "outeq")
       
       
-      converged <- tail(cycle_data$converged, 1)
+      status <- tail(cycle_data$status, 1)
       
       res <- list(
-        names = c(names(config$random), names(config$fixed), names(config$constant)),
+        names = config$parameters$parameters$name,
         objective = raw %>% select(cycle, neg2ll) %>% mutate(aic = aic, bic = bic),
         gamlam = gamlam,
         mean = mean,
         sd = sd,
         median = median,
-        converged = converged
+        status = status
       )
       class(res) <- c("PM_cycle_data", "list")
       return(res)
@@ -312,6 +344,12 @@ plot.PM_cycle <- function(x,
       data <- x$data
     } else {
       data = x
+    }
+    if(data$status == "Posterior"){
+      cli::cli_inform(c(
+        "i" = "Posterior run, no cycles."
+      ))
+      return(invisible(NULL))
     }
     
     # housekeeping
@@ -476,7 +514,7 @@ plot.PM_cycle <- function(x,
       outeq = as.factor(outeq),
       # Create list-column for customdata with multiple values per point
       text = paste0("Outeq ", outeq, "<br>", type)
-
+      
     ) %>%
     filter(cycle %in% include) %>%
     plotly::plot_ly(
@@ -588,25 +626,25 @@ plot.PM_cycle <- function(x,
     print(p)
     return(p)
   }
-
-
-#' @title Plot PM_cycle_data objects
-#' @description
-#' `r lifecycle::badge("stable")`
-#' Plots the raw data (`class: PM_cycle_data`) from a [PM_cycle] object in the same way as plotting a [PM_cycle] object.
-#' Both use [plot.PM_cycle].
-#' @method plot PM_cycle_data
-#' @param x A `PM_cycle_data` object
-#' @param ... Additional arguments passed to [plot.PM_cycle]
-#' @examples
-#' # There is no example we can think of to filter or otherwise process a PM_cycle object,
-#' # but we provide this function for completeness.
-#' NPex$cycle$data %>% plot()
-#' @export
-#' 
-plot.PM_cycle_data <- function(x,...){
-  plot.PM_cycle(x, ...)
-}
+  
+  
+  #' @title Plot PM_cycle_data objects
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Plots the raw data (`class: PM_cycle_data`) from a [PM_cycle] object in the same way as plotting a [PM_cycle] object.
+  #' Both use [plot.PM_cycle].
+  #' @method plot PM_cycle_data
+  #' @param x A `PM_cycle_data` object
+  #' @param ... Additional arguments passed to [plot.PM_cycle]
+  #' @examples
+  #' # There is no example we can think of to filter or otherwise process a PM_cycle object,
+  #' # but we provide this function for completeness.
+  #' NPex$cycle$data %>% plot()
+  #' @export
+  #' 
+  plot.PM_cycle_data <- function(x,...){
+    plot.PM_cycle(x, ...)
+  }
   
   # SUMMARY -----------------------------------------------------------------
   
@@ -651,10 +689,17 @@ plot.PM_cycle_data <- function(x,...){
       object <- object$data
     }
     
+    if(object$status == "Posterior"){
+      cli::cli_inform(c(
+        "i" = "Posterior run, no cycles."
+      ))
+      return(invisible(NULL))
+    }
+    
     if (is.null(cycle)) {
       cyc <- max(object$objective$cycle)
     } else {
-      cyc <- cycle
+      cyc <- cycle[1]
     }
     if (cyc > max(object$objective$cycle)) {
       cli::cli_abort(c("x" = "Cycle number exceeds maximum cycle number."))
@@ -663,6 +708,7 @@ plot.PM_cycle_data <- function(x,...){
     ret <- list(
       cycle = cyc,
       max_cycle = max(object$objective$cycle),
+      status = object$status,
       ll = round(object$objective$neg2ll[cyc], digits),
       aic = round(object$objective$aic[cyc], digits),
       bic = round(object$objective$bic[cyc], digits),
@@ -704,49 +750,52 @@ plot.PM_cycle_data <- function(x,...){
   #' @export
   
   print.summary.PM_cycle <- function(x, ...) {
-    cat("Cycle number:", crayon::blue(x$cycle), "of", crayon::blue(x$max_cycle), "\n")
-    cat("Log-likelihood:", crayon::blue(x$ll), "\n")
-    cat("AIC:", crayon::blue(x$aic), "\n")
-    cat("BIC:", crayon::blue(x$bic), "\n")
-    cat("Gamlam", paste0("outeq ", x$gamlam$outeq, ": ", crayon::blue(x$gamlam$value), collapse = "; "), "\n")
-    cat("Normalized parameter values:\n")
+
+
+    cli::cli_div(theme = list(
+              span.blue = list(color = "blue")
+            ))
+    cli::cli_h2("Cycle Summary")
+
+    cli::cli_text("Cycle number: {.blue {x$cycle}} of {.blue {x$max_cycle}}")
+    cli::cli_text("Status: {.blue {x$status}}")
+    cli::cli_text("Log-likelihood: {.blue {x$ll}}")
+    cli::cli_text("AIC:: {.blue {x$aic}}")
+    cli::cli_text("BIC: {.blue {x$bic}}")
+    
+    for(i in 1:nrow(x$gamlam)){
+      type <- c("Gamma", "Lambda")[1 + as.numeric(x$gamlam$type[i] == "Additive")]
+      cli::cli_text("Outeq {.blue {x$gamlam$outeq[i]}}: {type} = {.blue {x$gamlam$value[i]}}")
+
+    }
+
+    cli::cli_h3("Normalized parameter values:")
+    cli::cli_end()
     par_tbl <- bind_rows(x$mean, x$sd, x$median) %>% mutate(stat = c("mean", "sd", "median"))
-    cat(paste0(rep("------", ncol(par_tbl)), collapse = "-"), "\n")
     print(par_tbl)
     
-    # flextable::set_flextable_defaults(font.family = "Arial")
-    # ft <- flextable::flextable(par_tbl) %>%
-    #
-    #   add_header_lines(values = list(
-    #     glue::glue("Cycle number: {x$cycle} of {x$max_cycle}")
-    #   ))
-    #   flextable::set_table_properties(width = .5) %>%
-    #   flextable::theme_zebra() %>%
-    #   flextable::bold(bold = FALSE, part = "footer") %>%
-    #   flextable::align_text_col(align = "center", header = TRUE, footer = FALSE) %>%
-    #   flextable::autofit()
   }
   
-
-
-#' @title Summarize PM_cycle_data objects
-#' @description
-#' `r lifecycle::badge("stable")`
-#' Summarizes the raw data (`class: PM_cycle_data`) from a [PM_cycle] object in the same way as summarizing a [PM_cycle] object.
-#' Both use [summary.PM_cycle].
-#' @method summary PM_cycle_data
-#' @param object A `PM_cycle_data` object
-#' @param ... Additional arguments passed to [summary.PM_cycle]
-#' @examples
-#' # There is no example we can think of to filter or otherwise process a PM_cycle object,
-#' # but we provide this function for completeness.
-#' NPex$cycle$data %>% summary()
-#' # all the below are the same
-#' # summary(NPex$cycle$data) 
-#' # summary(NPex$cycle)
-#' # NPex$cycle$summary()
-#' @export
-#' 
-summary.PM_cycle_data <- function(object,...){
-  summary.PM_cycle(object, ...)
-}
+  
+  
+  #' @title Summarize PM_cycle_data objects
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Summarizes the raw data (`class: PM_cycle_data`) from a [PM_cycle] object in the same way as summarizing a [PM_cycle] object.
+  #' Both use [summary.PM_cycle].
+  #' @method summary PM_cycle_data
+  #' @param object A `PM_cycle_data` object
+  #' @param ... Additional arguments passed to [summary.PM_cycle]
+  #' @examples
+  #' # There is no example we can think of to filter or otherwise process a PM_cycle object,
+  #' # but we provide this function for completeness.
+  #' NPex$cycle$data %>% summary()
+  #' # all the below are the same
+  #' # summary(NPex$cycle$data) 
+  #' # summary(NPex$cycle)
+  #' # NPex$cycle$summary()
+  #' @export
+  #' 
+  summary.PM_cycle_data <- function(object,...){
+    summary.PM_cycle(object, ...)
+  }
