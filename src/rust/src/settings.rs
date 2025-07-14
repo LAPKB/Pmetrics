@@ -70,6 +70,7 @@ pub(crate) fn settings(
     let prior = settings.get("prior").unwrap().as_str().unwrap().to_string();
     let prior = match prior.as_str() {
         "sobol" => pmcore::prelude::Prior::sobol(ind_points, seed),
+        "prior.csv" => pmcore::prelude::Prior::File("prior.csv".to_string()),
 
         _ => return Err(anyhow::anyhow!("Prior {} not supported", prior)),
     };
