@@ -45,7 +45,7 @@ e.e. \code{run1$cycle$objective}, which is equivalent to \code{run1$cycle$data$o
 \strong{mean} A tibble of cycle number and the mean of each random parameter at each cycle, normalized to initial mean
 \strong{median} A tibble of cycle number and the median of each random parameter at each cycle, normalized to initial median
 \strong{sd} A tibble of cycle number and the standard deviation of each random parameter at each cycle, normalized to initial standard deviation
-\strong{converged} Boolean value if convergence occurred}
+\strong{status} Status of the last cycle: "Converged", "Maximum cycles reached", or "Posterior".}
 }
 \if{html}{\out{</div>}}
 }
@@ -66,6 +66,8 @@ parameter at each cycle,  normalized to initial median}
 
 \item{\code{sd}}{A tibble of cycle number and the standard deviation of each random parameter
 at each cycle,  normalized to initial standard deviation}
+
+\item{\code{status}}{Status of the last cycle: "Converged", "Maximum cycles reached", or "Posterior"}
 }
 \if{html}{\out{</div>}}
 }

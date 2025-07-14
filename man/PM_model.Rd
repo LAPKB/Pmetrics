@@ -91,6 +91,7 @@ the original arguments into Rust}
 \item \href{#method-PM_model-print}{\code{PM_model$print()}}
 \item \href{#method-PM_model-plot}{\code{PM_model$plot()}}
 \item \href{#method-PM_model-fit}{\code{PM_model$fit()}}
+\item \href{#method-PM_model-map}{\code{PM_model$map()}}
 \item \href{#method-PM_model-sim}{\code{PM_model$sim()}}
 \item \href{#method-PM_model-compile}{\code{PM_model$compile()}}
 \item \href{#method-PM_model-update}{\code{PM_model$update()}}
@@ -612,6 +613,36 @@ for backwards compatibility.
 \subsection{Returns}{
 A successful run will result in creation of a new folder in the working
 directory with the results inside the folder.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_model-map"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-map}{}}}
+\subsection{Method \code{map()}}{
+Calculate posteriors from a fitted model.
+#' @details
+This method calculates posteriors from a compiled model. It is not necessary to have
+run the model first, but it is necessary to have an informative prior distribution.
+This prior will typically be the result of a previous run, but may also be a file
+containing support points, with each column named as a parameter in the model plus a final column
+for probability.  Each row contains values for the parameters and the associated probability for
+those parameter values.  The file can be saved as a csv file.
+
+To calculate the posteriors, \code{map()} calls the \code{fit()} method with the \code{cycles} argument set to 0
+and the \code{algorithm} argument set to "POSTPROB". If \code{data} are not provided as an argument to
+\code{map()}, the model's \code{data} field is used instead. If \code{data} is provided, it must be a
+\link{PM_data} object or the pathname of a file which can be loaded as a \link{PM_data} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$map(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to the \code{fit} method. Note that the \code{cycles} argument is set to 0,
+and the \code{algorithm} argument is set to "POSTPROB" automatically.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
