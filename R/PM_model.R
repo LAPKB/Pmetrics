@@ -1,3 +1,6 @@
+# make new map() method that calls fit with algorithm = "POSTPROB" and other modifications as noted in fit()
+# add map() to PM_result also, which call the method on the PM_model object
+
 # Use menu item Code -> Jump To... for rapid navigation
 # Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
 
@@ -933,7 +936,7 @@ PM_model <- R6::R6Class(
               tad = 0,
               seed = 23,
               overwrite = FALSE,
-              algorithm = "NPAG",
+              algorithm = "NPAG", #POSTPROB for posteriors
               report = getPMoptions("report_template")) {
                 
                 if (is.null(data)) {
@@ -1081,17 +1084,17 @@ PM_model <- R6::R6Class(
                 if (prior != "sobol") {
                   if (is.numeric(prior)) {
                     # prior specified as a run number
-                    if (!file.exists(glue::glue(prior, "/outputs/theta.csv"))) {
+                    if (!file.exists(glue::glue("../{prior}/outputs/theta.csv"))) {
                       cli::cli_abort(c("x" = "Error: {.arg prior} file does not exist.", "i" = "Check the file path."))
                     }
-                    file.copy(glue::glue(prior, "/outputs/theta.csv"), "theta.csv")
-                    prior <- "theta.csv"
+                    file.copy(glue::glue("../{prior}/outputs/theta.csv"), "prior.csv", overwrite = TRUE)
+                    prior <- "prior.csv"
                   } else if (is.character(prior)) {
                     # prior specified as a filename
                     if (!file.exists(prior)) {
                       cli::cli_abort(c("x" = "Error: {.arg prior} file does not exist.", "i" = "Check the file path."))
                     }
-                    file.copy(prior, overwrite = TRUE) # ensure in current working directory
+                    file.copy(prior, "prior.csv", overwrite = TRUE) # ensure in current working directory
                   } else {
                     cli::cli_abort(
                       c("x" = "Error: {.arg prior} must be a numeric run number or character filename.", "i" = "Check the value.")
@@ -1110,24 +1113,14 @@ PM_model <- R6::R6Class(
                       model_path = self$binary_path,
                       data = "gendata.csv",
                       params = list(
-                        ranges = ranges,
+                        ranges = ranges, #not important but needed for POSTPROB
                         algorithm = algorithm,
-                        #make these next two vectors
                         error_models = lapply(self$model_list$err, function(x) x$flatten()),
-                        # gamlam = sapply(self$model_list$err, function(x) x$initial),
-                        # error_type = sapply(self$model_list$err, function(x) x$type),
-                        # error_coefficients = c(sapply(self$model_list$err, function(x) {
-                        #   y <- x$coeff
-                        #   if (length(y) < 6) {
-                        #     y <- c(y, 0, 0)
-                        #   }
-                        #   y
-                        # })),
                         idelta = idelta,
                         tad = tad,
-                        max_cycles = cycles,
+                        max_cycles = cycles, #will be hardcoded in Rust to 0 for POSTPROB
                         prior = prior,
-                        points = points,
+                        points = points, # only relevant for sobol prior
                         seed = seed
                       ),
                       output_path = out_path,

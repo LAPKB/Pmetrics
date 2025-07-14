@@ -93,6 +93,7 @@ the original arguments into Rust}
 \item \href{#method-PM_model-fit}{\code{PM_model$fit()}}
 \item \href{#method-PM_model-sim}{\code{PM_model$sim()}}
 \item \href{#method-PM_model-compile}{\code{PM_model$compile()}}
+\item \href{#method-PM_model-update}{\code{PM_model$update()}}
 \item \href{#method-PM_model-clone}{\code{PM_model$clone()}}
 }
 }
@@ -654,6 +655,16 @@ This method write the model to a Rust file in a temporary path,
 updates the \code{binary_path} field for the model, and compiles that
 file to a binary file that can be used for fitting or simulation.
 If the model is already compiled, the method does nothing.
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_model-update"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-update}{}}}
+\subsection{Method \code{update()}}{
+Update the model by launching the model editor.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$update()}\if{html}{\out{</div>}}
 }
 
 }

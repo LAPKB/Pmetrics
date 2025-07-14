@@ -233,3 +233,19 @@ makeValid <- function(...) {
 PMbuild <- function(...) {
   lifecycle::deprecate_warn("2.1.0", "PMbuild()", details = "Use PM_build() to compile Rust.")
 }
+
+
+
+
+#' @title Add CRCL
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' Use add_renal instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @export
+PMgetCRCL <- function(...) {
+  lifecycle::deprecate_warn("3.0.0", "PMgetCRCL()", details = "Use add_renal() to add CRCL or eGFR, depending on method chosen.")
+}
