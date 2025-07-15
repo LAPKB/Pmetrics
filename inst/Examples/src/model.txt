@@ -16,6 +16,10 @@ HEIGHT
 #Lag 
 LAG[1] = lag1
 
+
+#Eqn
+two_comp_bolus
+
 #Out
 Y[1] = X[2]/V
 
