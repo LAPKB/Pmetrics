@@ -52,17 +52,8 @@ setwd(wd)
 # Pmetrics always needs data and a model to run
 # create our first data object
 
-# The working directory we want to move to can be specified as an absolute
-# path or as a relative path 
-
-# absolute: setwd(paste(wd, "/src", sep = ""))
-setwd("src") #relative
-
-# list the files inside the current working directory
-list.files()
-
 # create a new data object by reading a file
-exData <- PM_data$new(data = "ex.csv")
+exData <- PM_data$new(data = "src/ex.csv")
 
 # you can look at this file directly by opening it in
 # a spreadsheet program like Excel, or a text editor
@@ -130,11 +121,11 @@ mod1$plot()
 
 # in the working directory we have another file "model.txt" that contains the old
 # representation of the same model we previously presented, let's take a look at it.
-system("cat model.txt")
+system("cat src/model.txt")
 
 # PM_model$new() also accepts the path to a model file
 # create the same model using this file
-mod1b <- PM_model$new("model.txt")
+mod1b <- PM_model$new("src/model.txt")
 mod1b
 
 # PM_model provides a method to update the different elements of a model, for example:
@@ -165,11 +156,13 @@ setwd(wd)
 dir.create("Runs")
 setwd("Runs")
 
-run1 <- mod1$fit(data = exData, run = 1, overwrite = TRUE) # execute the fit and return the results to run1
+run1 <- mod1$fit(data = exData, run = 1) # execute the fit and return the results to run1
 
 
 # 
-# After the run is complete you need get the extracted information back into R.
+# After the run is complete the results are returned to the assigned object, here 'run1'
+
+# you need get the extracted information back into R.
 # They will be sequentially numbered as /1, /2, /3,... in your working directory.
 
 # One benefit of having this fit object is that it is possible to run multiple
@@ -179,145 +172,145 @@ getwd()
 list.files()
 
 # Result Object
-exRes <- PM_load(1)
+run1 <- PM_load(1)
 
 # Create a PM_result object by reading a run folder.  The "1" in the parentheses tells Pmetrics to
 # look in the /1 folder.
 
 # Plot the raw data using R6 with various options.  Type ?plot.PMmatrix in the R console for help.
-exRes$data$plot()
-exRes$data$plot(overlay = FALSE, xlim = c(119, 145))
+run1$data$plot()
+run1$data$plot(overlay = FALSE, xlim = c(119, 145))
 
 # The following are the older S3 method with plot(...) for the first two examples
 # You can use R6 or S3 for any Pmetrics object
 # We will focus on R6 as the more modern way.
-plot(exRes$data)
-plot(exRes$data, xlim = c(119, 146), marker = list(color = "blue"))
+plot(run1$data)
+plot(run1$data, xlim = c(119, 146), marker = list(color = "blue"))
 
 # here's a summary of the original data file; ?summary.PMmatrix for help
-exRes$data$summary()
+run1$data$summary()
 
 # Plot some observed vs. predicted data.  Type ?plot.PMop in the R console for help.
-exRes$op$plot()
-exRes$op$plot(pred.type = "pop")
-exRes$op$plot(line = list(lm = list(ci = 0, color = "red"), loess = FALSE))
+run1$op$plot()
+run1$op$plot(pred.type = "pop")
+run1$op$plot(line = list(lm = list(ci = 0, color = "red"), loess = FALSE))
 
 # the original op object data can be accessed via
-exRes$op$data
+run1$op$data
 
 # The OP plot can be disaggregated into a Tidy compatible format from $data (see https://www.tidyverse.org/)
 # This allow pre processing in ways more flexible than the default plot method.
 library(tidyverse)
-exRes$op$data %>% plot()
-exRes$op$data %>%
+run1$op$data %>% plot()
+run1$op$data %>%
   filter(pred > 5) %>%
   filter(pred < 10) %>%
   summary()
 
-exRes$cycle$data %>% summary()
-exRes$cycle$summary()
+run1$cycle$data %>% summary()
+run1$cycle$summary()
 
 # see a header with the first 10 rows of the op object
-head(exRes$op$data, 10)
+head(run1$op$data, 10)
 
 # get a summary with bias and imprecision of the population predictions;
 # ?summary.PMop for help
-exRes$op$summary(pred.type = "pop")
+run1$op$summary(pred.type = "pop")
 
 # the S3 way
-summary(exRes$op, pred.type = "pop")
+summary(run1$op, pred.type = "pop")
 
 # look at the summary for the posterior predictions (default pred.type) based
 # on means of parameter values
-exRes$op$summary(icen = "mean")
+run1$op$summary(icen = "mean")
 
 
 # Plot final population joint density information.  Type ?plot.PMfinal in the R console for help.
-exRes$final$plot()
+run1$final$plot()
 
 # add a kernel density curve
-exRes$final$plot(line = list(density = TRUE))
-exRes$final$data %>% plot(density = TRUE)
+run1$final$plot(line = list(density = TRUE))
+run1$final$data %>% plot(density = TRUE)
 
 
 # A bivariate plot. Plotting formulae in R are of the form 'y~x'
-exRes$final$plot(ke ~ v,
+run1$final$plot(ke ~ v,
   marker = list(color = "red", symbol = "diamond"),
   line = list(color = "purple", dash = "dash", width = 2)
 )
 
 
 # or the S3 way
-plot(exRes$final)
+plot(run1$final)
 
 # The original final object can be accessed using
-exRes$final$data
-names(exRes$final$data)
+run1$final$data
+names(run1$final$data)
 
 # see the population points
-exRes$final$popPoints
+run1$final$popPoints
 
 # or
-exRes$final$data$popPoints
+run1$final$data$popPoints
 
 # see the population mean parameter values
-exRes$final$popMean
+run1$final$popMean
 
 # see a summary with confidence intervals around the medians
 # and the Median Absolute Weighted Difference (MAWD);
 # ?summary.PMfinal for help
-exRes$final$summary()
+run1$final$summary()
 
 # Plot cycle information
 # Type ?plot.PM_cycle in the R console for help.
-exRes$cycle$plot()
+run1$cycle$plot()
 
 # names of the cycle object; ?makeCycle for help
-names(exRes$cycle$data)
+names(run1$cycle$data)
 
 # gamma/lamda value on last 6 cycles
-tail(exRes$cycle$data$gamlam)
+tail(run1$cycle$data$gamlam)
 
 # Plot covariate information.  Type ?plot.PMcov in the R console for help.
 # Recall that plotting formulae in R are of the form 'y~x'
-exRes$cov$plot(v ~ wt)
-exRes$cov$data %>% plot(V ~ wt)
-exRes$cov$data %>%
+run1$cov$plot(v ~ wt)
+run1$cov$data %>% plot(V ~ wt)
+run1$cov$data %>%
   filter(age > 25) %>%
   plot(v ~ wt)
 
 # Plot
-exRes$cov$plot(ke ~ age, line = list(loess = FALSE, lm = TRUE),
+run1$cov$plot(ke ~ age, line = list(loess = FALSE, lm = TRUE),
                marker = list(symbol = 3))
 
 # Another plot with mean Bayesian posterior parameter and covariate values...
 # Remember the 'icen' argument?
-exRes$cov$plot(v ~ wt, icen = "mean")
+run1$cov$plot(v ~ wt, icen = "mean")
 
 # When time is the x variable, the y variable is aggregated by subject.
 # In R plot formulae, calculations on the fly can be included using the I() function
-exRes$cov$plot(I(v * wt) ~ time)
+run1$cov$plot(I(v * wt) ~ time)
 
 # The previous cov object can be seen via:
-exRes$cov
+run1$cov
 
 # but to access individual elements, use:
-exRes$cov$data[, 1:3] # for example
-names(exRes$cov)
+run1$cov$data[, 1:3] # for example
+names(run1$cov)
 
 # summarize with mean covariates; ?summary.PMcov for help
-exRes$cov$summary(icen = "mean")
+run1$cov$summary(icen = "mean")
 
 
 # Look at all possible covariate-parameter relationships by multiple linear regression with forward
 # and backward elimination - type ?PM_step in the R console for help.
-exRes$step()
+run1$step()
 # or on the cov object directly
-exRes$cov$step()
+run1$cov$step()
 # icen works here too....
-exRes$step(icen = "median")
+run1$step(icen = "median")
 # forward elimination only
-exRes$step(direction = "forward")
+run1$step(direction = "forward")
 
 
 # EXERCISE 2 - NPAG WITH COVARIATES ---------------------------------------
@@ -350,7 +343,7 @@ exFit2$check()
 exFit2$run(intern = TRUE)
 
 list.files()
-exRes2 <- PM_load(2)
+run12 <- PM_load(2)
 
 
 # EXERCISE 3 - COMPARING MODELS -------------------------------------------
@@ -358,7 +351,7 @@ exRes2 <- PM_load(2)
 
 # Let's compare model 1 and model 2.   You can compare any number of models.
 # Type ?PM_compare for help.
-PM_compare(exRes, exRes2)
+PM_compare(run1, run12)
 
 
 
@@ -369,7 +362,7 @@ PM_compare(exRes, exRes2)
 # for model validation - be sure to have executed the NPAG run above
 # Type ?makeValid in the R console for help.
 # Choose wt as the covariate to bin. Accept all default bin sizes.
-valid_2 <- exRes2$validate(limits = c(0, 3))
+valid_2 <- run12$validate(limits = c(0, 3))
 
 # To see what it contains, use:
 valid_2
@@ -382,10 +375,10 @@ plot(valid_2)
 
 # or take advantage of the valid object being added automatically to the
 # result object
-exRes2$valid$plot()
+run12$valid$plot()
 
 # or S3
-plot(exRes2$valid)
+plot(run12$valid)
 
 # Generate a prediction-corrected visual predictive check; type ?plot.PMvalid in the R console for help.
 valid_2$plot(type = "pcvpc")
@@ -394,7 +387,7 @@ valid_2$plot(type = "pcvpc")
 valid_2$plot(type = "npde")
 
 # Here is another way to generate a visual predicive check...
-npc_2 <- valid_2$simdata$plot(obs = exRes2$op, log = FALSE, binSize = 1)
+npc_2 <- valid_2$simdata$plot(obs = run12$op, log = FALSE, binSize = 1)
 
 # The jagged appearance of the plot when binSize=0 is because different subjects have
 # different doses, covariates, and observation times, which are all combined in one simulation.
@@ -417,7 +410,7 @@ setwd("Sim")
 # first subject in the data file as a template.
 # Limits are put on the simulated parameter ranges to be the same as in the model.
 # The population parameter values from the NPAG run in exercise 2 are used for the Monte Carlo Simulation.
-simdata <- exRes2$sim(include = 1, limits = NA, nsim = 100)
+simdata <- run12$sim(include = 1, limits = NA, nsim = 100)
 
 # Below is the alternate way to simulate, which is particularly useful if you define 
 # your own population parameters. See ?SIMrun for details on this as well as
@@ -433,7 +426,7 @@ simOther <- PM_sim$new(poppar = poppar, data = exData, model = mod1,
 
 
 # simulate from a model with new data
-sim_new <- exRes2$sim(
+sim_new <- run12$sim(
   data = "../src/ptaex1.csv",
   include = 2, limits = NA,
   predInt = c(120, 144, 0.5)
@@ -447,7 +440,7 @@ simOther$plot()
 sim_new$plot(log = FALSE)
 
 # Simulate using multiple subjects as templates
-simdata <- exRes2$sim(include = 1:4, limits = NA, nsim = 100)
+simdata <- run12$sim(include = 1:4, limits = NA, nsim = 100)
 
 # Plot the third simulation
 simdata$plot(at = 3)
@@ -457,7 +450,7 @@ plot(simdata$data[[3]])
 
 # Parse and combine multiple files and plot them.  Note that combining simulations from templates
 # with different simulated observation times can lead to unpredictable plots
-simdata2 <- exRes2$sim(include = 1:4, limits = NA, nsim = 100, combine = TRUE)
+simdata2 <- run12$sim(include = 1:4, limits = NA, nsim = 100, combine = TRUE)
 simdata2$plot()
 
 # simulate with covariates
@@ -469,7 +462,7 @@ simdata2$plot()
 # See ?SIMrun for more help on this and the Pmetrics manual.
 
 covariate <- list(
-  cov = exRes2$cov,
+  cov = run12$cov,
   mean = list(wt = 50),
   sd = list(wt = 20),
   limits = list(wt = c(10, 70)),
@@ -477,7 +470,7 @@ covariate <- list(
 )
 
 # now simulate with this covariate list object
-simdata3 <- exRes2$sim(include = 1:4, limits = NA, nsim = 100, covariate = covariate)
+simdata3 <- run12$sim(include = 1:4, limits = NA, nsim = 100, covariate = covariate)
 
 # compare difference in simulations without covariates simulated...
 # PM_sim's plot function defaults to the first simulation if there
@@ -510,16 +503,16 @@ setwd(paste0(wd,"/Runs"))
 # PM_sim
 # PM_pta
 
-# Example - save the PM_result (exRes2) to the "2" folder
-exRes2$save(file = "2/outputs/exres2.rds") # rds is the recommended file extension
+# Example - save the PM_result (run12) to the "2" folder
+run12$save(file = "2/outputs/run12.rds") # rds is the recommended file extension
 list.files("2/outputs")
-copy_exRes2 <- PM_load(file = "2/outputs/exres2.rds")
-copy_exRes2
+copy_run12 <- PM_load(file = "2/outputs/run12.rds")
+copy_run12
 
 # If you want to save multiple objects into one single file, R provides the
 # following functionality
 
-save(exFit, exData, mod1, exRes, simdata, file = "2/test_drug.Rdata")
+save(exFit, exData, mod1, run1, simdata, file = "2/test_drug.Rdata")
 list.files("2")
 load("2/test_drug.Rdata")
 
@@ -540,7 +533,7 @@ load("2/workspace.Rdata")
 # in the current run.  By specifying a prior, we are starting with the non-uniform density from the
 # end of the specified fun.
 exFit2$run(prior = 2, intern = TRUE)
-exRes3 <- PM_load(3)
+run13 <- PM_load(3)
 
 # We could also generate Bayesian posterior parameter estimates for a new population this
 # way, and with 0 cycles:
@@ -595,7 +588,7 @@ run4$final$plot(Ke ~ V)
 # Look at ?SIMrun for help on arguments to this function, including predInt,
 # seed, limits, nsim.
 
-simlist1 <- exRes2$sim(
+simlist1 <- run12$sim(
   limits = c(0, 3), data = "../src/ptaex1.csv",
   predInt = c(120, 144, 0.5), seed = rep(-17, 4)
 )
@@ -603,7 +596,7 @@ simlist1 <- exRes2$sim(
 # now simulate with covariates; make sure that you defined the covariate
 # object first in Exercise 5 above and have loaded the results of Exercise 2
 # with PM_load(2)
-simlist2 <- exRes2$sim(
+simlist2 <- run12$sim(
   limits = 5, data = "../src/ptaex1.csv",
   predInt = c(120, 144, 0.5), seed = rep(-17, 4),
   covariate = covariate
@@ -755,7 +748,7 @@ setwd("MMopt")
 # we are sampling at steady state.  Including "subject 2", means only the 1200 mg once daily dose
 # will serve as a simulation template.
 
-mmopt_2 <- exRes2$MM_opt(
+mmopt_2 <- run12$MM_opt(
   data = "../src/ptaex1.csv",
   nsamp = 2, predInt = c(120, 140, 1),
   include = 2
