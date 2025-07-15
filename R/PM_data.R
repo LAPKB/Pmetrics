@@ -2060,7 +2060,7 @@ plot.PM_data <- function(x,
     cli::cli_text("Number of inputs: {.blue {x$ndrug}}")
     cli::cli_text("Number of outputs: {.blue {x$numeqt}}")
     for (i in 1:x$numeqt) {
-      cli::cli_text("Total number of observations (outeq {i}}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing")
+      cli::cli_text("Total number of observations (outeq {i}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing")
     }
     if (x$ncov > 0) {
       cli::cli_text(" Covariates: {.blue {x$covnames}}")
@@ -2101,7 +2101,7 @@ plot.PM_data <- function(x,
       cli::cli_h2("Formula Results")
       print(x$formula)
     }
-    cli::cli_text("{.strong Note:} See {.help summary.PM_data} for accessing specific items by name.")
+    cli::cli_text("{.strong Note:} See {.help summary.PM_data} for more summary options using {.arg formula}.")
   } # end function
   # WRITE -------------------------------------------------------------------
   
