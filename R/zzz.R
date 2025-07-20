@@ -20,5 +20,5 @@
   }
 
   # Set user options for the session
-  setPMoptions()
+  setPMoptions(launch.app = FALSE)
 }

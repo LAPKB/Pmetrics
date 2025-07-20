@@ -39,6 +39,9 @@ PM_data <- R6::R6Class("PM_data",
 public <- list(
   #' @field data Data frame containing the data to be modeled
   data = NULL,
+  #' @field blq Values for each output equation to be considered as 
+  #' Below the Limit of Quantification (BLQ). See `$new()` below for details.
+  blq = NULL,
   #' @field standard_data Data frame containing standardized version of the data
   standard_data = NULL,
   #' @field pop The `$data` field from a [PM_pop] object. This makes it easy to add population predictions to a raw data plot. This field will be `NULL` until the [PM_data] object is added to the [PM_result] after a run. As examples:
@@ -56,6 +59,13 @@ public <- list(
   #' @param data A quoted name of a file with full path if not
   #' in the working directory, an unquoted name of a data frame
   #' in the current R environment, or a [PM_data] object, which will rebuild it.
+  #' @param blq Optional vector of values for each output equation to be considered
+  #' as Below the Limit of Quantification (BLQ). Any observation <= to the value
+  #' for that output equation will be considered BLQ. BLQ observations are used in
+  #' the calculation of the likelihood, e.g. probabilty that the observation is BLQ given
+  #' the model prediction, but will not be included in observed vs. predicted plots.
+  #' If `blq` is missing or a output equation does not have a BLQ value, `blq` will
+  #' be set to `NA` for that output equation.
   #' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
   #' them fail, use this parameter to specify the correct format as a
   #' character vector whose
@@ -73,6 +83,7 @@ public <- list(
   #' @param quiet Quietly validate. Default is `FALSE`.
   #' @param validate Check for errors. Default is `TRUE`. Strongly recommended.
   initialize = function(data = NULL,
+    blq = NULL,
     dt = NULL,
     quiet = FALSE,
     validate = TRUE) {
@@ -91,6 +102,17 @@ public <- list(
     
     if (!is.null(self$data) && validate) {
       self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)
+    }
+    
+    nout <- max(self$standard_data$outeq, na.rm = TRUE)
+    if (is.null(blq)) {
+      self$blq <- rep(NA, nout) 
+    } else {
+      if (length(blq) != nout) {
+        cli::cli_abort(c("x" = "You must have {nout} BLQ values to match the number of output equations in the data.",
+        " " = "Include a value of {.code NA} for any output equation that does not have a BLQ value."))
+      }
+      self$blq <- blq
     }
   },
   #' @description
@@ -1562,6 +1584,7 @@ return(wb)
 #' @param xlab `r template("xlab")` Default is "Time".
 #' @param ylab `r template("ylab")` Default is "Output".
 #' @param title `r template("title")` Default is to have no title.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param \dots `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
@@ -1611,7 +1634,8 @@ plot.PM_data <- function(x,
   xlab = "Time",
   ylab = "Output",
   title = "",
-  xlim, ylim, ...) {
+  xlim, ylim, 
+  print = TRUE, ...) {
     # Plot parameters ---------------------------------------------------------
     
     # process marker
@@ -1891,7 +1915,7 @@ plot.PM_data <- function(x,
         showlegend = layout$showlegend,
         legend = layout$legend
       )
-      return(p)
+      return(invisible(p))
     } # end dataPlot
     
     
@@ -1913,7 +1937,7 @@ plot.PM_data <- function(x,
     if (overlay) {
       allsub <- allsub %>% dplyr::group_by(id)
       p <- dataPlot(allsub, overlay = TRUE, includePred)
-      print(p)
+      if (print) print(p)
     } else { # overlay = FALSE, ie. split them
       
       if (!checkRequiredPackages("trelliscopejs")) {
@@ -1925,10 +1949,10 @@ plot.PM_data <- function(x,
       p <- sub_split %>%
       ungroup() %>%
       trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
-      print(p)
+      if (print) print(p)
     }
     
-    return(p)
+    return(invisible(p))
   }
   # SUMMARY -----------------------------------------------------------------
   
@@ -1955,6 +1979,7 @@ plot.PM_data <- function(x,
   #' * **numeqt** Number of outputs
   #' * **nobsXouteq** Number of observations by outeq
   #' * **missObsXouteq** Number of missing observations by outeq
+  #' * **blqObsXouteq** Number of observations below the limit of quantification by outeq
   #' * **ncov** Number of covariates
   #' * **covnames** Covariate names
   #' * **ndoseXid** Number of doses per input per subject
@@ -1968,7 +1993,14 @@ plot.PM_data <- function(x,
   
   summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
     if (inherits(object, "PM_data")) { # user called summary(PM_data)
+      if (!is.null(object$blq)){
+        blq <- object$blq
+      } else {
+        blq <- rep(NA, max(object$standard_data$outeq, na.rm = TRUE))
+      }
       object <- object$standard_data
+    } else {
+      blq <- rep(NA, max(object$outeq, na.rm = TRUE)) # assumes PM_data_data
     }
     # filter data if needed
     if (!missing(include)) {
@@ -1987,6 +2019,21 @@ plot.PM_data <- function(x,
     results$numeqt <- max(object$outeq, na.rm = T)
     results$nobsXouteq <- tapply(object$evid, object$outeq, function(x) length(x == 0))
     results$missObsXouteq <- by(object, object$outeq, function(x) length(x$out[x$evid == 0 & x$out == -99]))
+    #blq
+    
+    blq_tbl <- tibble(outeq = 1:length(blq), blq = blq)
+    df <- object %>% dplyr::inner_join(blq_tbl, by = "outeq") 
+    
+    results$blqObsXouteq <- purrr::map2(1:2, blq, \(x, y) {
+      if(!is.na(y)){
+        df %>%
+        filter(outeq == x, out >= 0, out <= y) %>%
+        summarise(outeq = x, n = n())
+      } else {
+        data.frame(outeq = x, n = 0)
+      }
+    }) %>% bind_rows()
+    
     covinfo <- getCov(object)
     ncov <- covinfo$ncov
     results$ncov <- ncov
@@ -2052,7 +2099,7 @@ plot.PM_data <- function(x,
     #   formula
     
     cli::cli_div(theme = list(
-      span.blue = list(color = "blue")
+      span.blue = list(color = navy())
     ))
     cli::cli_h1("Data Summary")
     
@@ -2060,7 +2107,7 @@ plot.PM_data <- function(x,
     cli::cli_text("Number of inputs: {.blue {x$ndrug}}")
     cli::cli_text("Number of outputs: {.blue {x$numeqt}}")
     for (i in 1:x$numeqt) {
-      cli::cli_text("Total number of observations (outeq {i}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing")
+      cli::cli_text("Total number of observations (outeq {i}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing and {.blue {x$blqObsXouteq$n[i]}} ({.blue {sprintf('%.3f', 100 * x$blqObsXouteq$n[i] / x$nobsXouteq[i])}%}) BLQ")
     }
     if (x$ncov > 0) {
       cli::cli_text(" Covariates: {.blue {x$covnames}}")
@@ -2086,7 +2133,7 @@ plot.PM_data <- function(x,
         obs <- unlist(x$obsXid[, i])
       }
       obs <- obs[obs != -99]
-
+      
       cli::cli_text("Number of observations per subject (outeq {i}): {.blue {sprintf('%.3f', mean(nobs, na.rm = T))}} ({.blue {sprintf('%.3f', sd(nobs, na.rm = T))}}), {.blue {sprintf('%.3f', min(nobs, na.rm = T))}} to {.blue {sprintf('%.3f', max(nobs, na.rm = T))}} ")
       cli::cli_text("Observation value per subject (outeq {i}): {.blue {sprintf('%.3f', mean(obs, na.rm = T))}} ({.blue {sprintf('%.3f', sd(obs, na.rm = T))}}), {.blue {sprintf('%.3f', min(obs, na.rm = T))}} to {.blue {sprintf('%.3f', max(obs, na.rm = T))}} ")
     }

@@ -24,6 +24,7 @@
   xlab = "Time",
   ylab = "Output",
   title = "",
+  print = TRUE,
   xlim,
   ylim,
   ...
@@ -107,6 +108,8 @@ Default is "Output".}
 
 Examples: \itemize{ \item{\code{title = "Observed vs. Predicted"}} \item{\code{title = list(text = "Raw Data", font = list(color = "red", family = "Arial", size = 10, bold = T))}} }
 Default is to have no title.}
+
+\item{print}{If \code{TRUE}, will print the plotly object and return it. If \code{FALSE}, will only return the plotly object.}
 
 \item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range.
 

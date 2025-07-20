@@ -14,6 +14,7 @@
   grid = TRUE,
   xlab,
   ylab,
+  print = TRUE,
   ...
 )
 }
@@ -79,7 +80,9 @@ This argument maps to the the yaxis title element of the layout object in plotly
 See \code{xlab} for details. If \code{xlab} is specified as a list with formatting,
 then the formatting for the
 \code{xlab} will be applied to the \code{ylab}. To format \code{ylab} independently,
-specify a formatting list as for \code{xlab}.\if{html}{\out{<br>}}}
+specify a formatting list as for \code{xlab}.}
+
+\item{print}{If \code{TRUE}, will print the plotly object and return it. If \code{FALSE}, will only return the plotly object.}
 
 \item{\dots}{Additional R plotting parameters.}
 }

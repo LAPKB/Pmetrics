@@ -125,10 +125,12 @@ PM_cov <- R6::R6Class(
         summarise(across(-c(point, prob), \(x) wtd.mean(x = x, weights = prob))) %>%
         mutate(icen = "mean")
 
-      post_med <- posts %>%
+      post_med <- suppressWarnings(
+        posts %>%
         group_by(id) %>%
-        suppressWarnings(reframe(across(-c(point, prob), \(x) wtd.quantile(x, prob, 0.5)))) %>%
+        summarise(across(-c(point, prob), \(x) wtd.quantile(x = x, prob, 0.5))) %>%
         mutate(icen = "median")
+      )
 
 
 
@@ -227,6 +229,7 @@ PM_cov <- R6::R6Class(
 #' `list(x= 0.8, y = 0.1, bold = F, font = list(color = "black", family = "Arial", size = 14))`.
 #' The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
 #' argument maps to `plotly::add_text()`.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param \dots `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
@@ -260,7 +263,8 @@ plot.PM_cov <- function(x,
                         xlab, ylab,
                         title,
                         stats = TRUE,
-                        xlim, ylim, ...) {
+                        xlim, ylim, 
+                        print = TRUE, ...) {
   if (inherits(x, "PM_cov")) {
     x <- x$data
   }
@@ -290,8 +294,7 @@ plot.PM_cov <- function(x,
   }
 
   # final data, calling columns x and y
-  dat <- x %>% select(id, x = vars[2], y = vars[1])
-
+  dat <- x %>% select(id, x = vars[2], y = vars[1]) %>% mutate(across(c(x, y), \(i) ifelse(floor(i) == i, i, round(i, 2))))
 
 
   # process reference lines
@@ -452,7 +455,7 @@ plot.PM_cov <- function(x,
       )
 
     print(p)
-    return(p)
+    return(invisible(p))
   } else { # timearg plot
     marker$color <- NULL
     loessLine$color <- NULL
@@ -500,8 +503,8 @@ plot.PM_cov <- function(x,
         title = layout$title
       )
 
-    print(p)
-    return(p)
+    if (print) print(p)
+    return(invisible(p))
   }
 }
 

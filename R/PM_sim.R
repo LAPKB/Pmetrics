@@ -1674,7 +1674,6 @@ PM_sim$load <- function(...) {
 #' value of the simulated quantile with upper and lower confidence intervals at that time.
 #' Additionally, the number of observations beyond the 5th and 95th percentiles will be reported
 #' and the binomial test P-value if this number is different than the expected 10% value.
-#' @param quiet Suppress plot if `TRUE`.
 #' @param legend `r template("legend")` Default is `FALSE`
 #' @param log `r template("log")` Default is `TRUE`.
 #' @param grid `r template("grid")` Default is `FALSE`
@@ -1687,6 +1686,7 @@ PM_sim$load <- function(...) {
 #' i.e., a list of [PM_sim] objects created when more than one
 #' subject is included in a simultation data template and
 #' `combine = FALSE` (the default) when parsing the results of a simulation.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param ... `r template("dotsPlotly")`
 #' @return Plots the simulation object.  If `obs` is included, a list will be returned with
 #' the folowing items:
@@ -1730,7 +1730,8 @@ plot.PM_sim <- function(x,
                         xlab, ylab,
                         title,
                         xlim, ylim,
-                        simnum, ...) {
+                        simnum,
+                        print = TRUE, ...) {
   if (all(is.na(line))) {
     line <- list(probs = NA)
   } # standardize
@@ -2167,7 +2168,7 @@ plot.PM_sim <- function(x,
   )
   
   
-  if (!quiet) print(p)
+  if (print) print(p)
   retValue <- modifyList(retValue, list(p = p))
   return(invisible(retValue))
 }

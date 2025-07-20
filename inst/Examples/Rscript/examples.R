@@ -42,7 +42,7 @@ library(Pmetrics)
 
 wd <- "##WD##"
 
-wd <- glue::glue("{getwd()}/inst/Examples")
+wd <- glue::glue("{getwd()}/inst/Examples/Runs")
 
 # change to the working directory to the Examples folder
 setwd(wd)
@@ -53,7 +53,7 @@ setwd(wd)
 # create our first data object
 
 # create a new data object by reading a file
-exData <- PM_data$new(data = "src/ex.csv")
+exData <- PM_data$new(data = "../src/ex.csv")
 
 # you can look at this file directly by opening it in
 # a spreadsheet program like Excel, or a text editor
@@ -156,7 +156,7 @@ setwd(wd)
 dir.create("Runs")
 setwd("Runs")
 
-run1 <- mod1$fit(data = exData, run = 1) # execute the fit and return the results to run1
+run1 <- mod1$fit(data = exData, run = 1, overwrite = TRUE) # execute the fit and return the results to run1
 
 
 # 
@@ -274,7 +274,7 @@ tail(run1$cycle$data$gamlam)
 # Plot covariate information.  Type ?plot.PMcov in the R console for help.
 # Recall that plotting formulae in R are of the form 'y~x'
 run1$cov$plot(v ~ wt)
-run1$cov$data %>% plot(V ~ wt)
+
 run1$cov$data %>%
   filter(age > 25) %>%
   plot(v ~ wt)
@@ -308,7 +308,7 @@ run1$step()
 # or on the cov object directly
 run1$cov$step()
 # icen works here too....
-run1$step(icen = "median")
+run1$step(icen = "mean")
 # forward elimination only
 run1$step(direction = "forward")
 
@@ -333,17 +333,9 @@ mod2$update(list(
 mod2b <- PM_model$new("../src/model2.txt")
 
 
-exFit2 <- PM_fit$new(data = exData, model = mod2)
-# You can build the PM_fit object with file sources directly, but this means
-# that you have to copy files to the working directory, or specify paths relative
-# to the working directory as below
-# exFit2 <- PM_fit$new(data = "../src/ex.csv", model = "../src/model2.txt")
+mod2b$fit(data = exData, run = 2, overwrite = TRUE)
 
-exFit2$check()
-exFit2$run(intern = TRUE)
 
-list.files()
-run12 <- PM_load(2)
 
 
 # EXERCISE 3 - COMPARING MODELS -------------------------------------------
@@ -351,7 +343,7 @@ run12 <- PM_load(2)
 
 # Let's compare model 1 and model 2.   You can compare any number of models.
 # Type ?PM_compare for help.
-PM_compare(run1, run12)
+PM_compare(run1, run2)
 
 
 

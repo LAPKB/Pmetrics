@@ -462,6 +462,7 @@ PM_final <- R6::R6Class(
 #' @param title `r template("title")` Default is to have no title on plots.
 #' @param xlim `r template("xlim")`
 #' @param ylim `r template("ylim")`
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param ... `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
@@ -492,6 +493,7 @@ plot.PM_final <- function(x,
                           title,
                           xlim, ylim,
                           static = FALSE,
+                          print = TRUE,
                           ...) {
   # housekeeping
 
@@ -917,8 +919,8 @@ plot.PM_final <- function(x,
   } else { # bivariate
     p <- biPlot(xCol, yCol, x, xlab, ylab, zlab, title, bar)
   }
-  print(p)
-  return(p)
+  if (print) print(p)
+  return(invisible(p))
 }
 
   #' @title Plot PM_final_data objects

@@ -23,6 +23,20 @@
 #' @param ... Additional [PM_result] objects to compare.  See details.
 #' Also, parameters to be passed to [plot.PM_op]
 #' if `plot` is true as well as to [mtsknn.eq].  Order does not matter.
+#' @param bias One of the following specifying the prediction bias calculation.
+#' * "me" for mean error (pred - obs)
+#' * "mwe" for mean weighted error (default when `percentage = TRUE`)
+#' @param imprecision There are many more options for imprecision (scatter). Choose
+#' one of the following.
+#' * "mse" for mean squared error
+#' * "mwse" for mean weighted squared error
+#' * "rmse" for root mean squared error
+#' * "bamse" for bias-adjusted mean squared error
+#' * "bamwse" for bias-adjusted mean weighted squared error
+#' * "rbamse" for root bias-adjusted mean squared error
+#' * "rbamwse" for root bias-adjusted mean weighted squared error (default when `percentage = TRUE`)
+#' @param percentage Boolean operator to calculate the bias
+#' and imprecision as percentages. Default is `TRUE`.
 #' @param icen Can be either "median" for the predictions based on medians of
 #' `pred.type` parameter value distributions, or "mean".  Default is "median".
 #' @param outeq Number of the output equation to compare; default is 1
@@ -50,7 +64,7 @@
 #' @seealso [PM_load], [plot.PM_op], [mtsknn.eq]
 #' @export
 
-PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
+PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = TRUE) {
   if (missing(x) | missing(y)) {
     cli::cli_abort(c("x" = "You must specify at least two {.cls PM_result} objects for {.fn PM_compare}."))
   }
@@ -60,8 +74,8 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
       "i" = "Load them beforehand with with {.fn PM_load}."
     ))
   }
-
-
+  
+  
   # parse dots
   arglist <- list(...)
   namesPlot <- names(formals(plot.PM_op))
@@ -83,126 +97,369 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
   } else {
     argsPM <- NULL
   }
-
+  
   if (length(argsPM) == 0) obj <- list(x, y)
   if (length(argsPM) >= 1) obj <- c(list(x, y), arglist[argsPM])
-
+  
   # declare global variables to avoid problems with R CMD Check
   # NPAGout <- NULL
   # get each obj
   nobj <- length(obj)
-  allObj <- purrr::map(obj, function(x) {
-    if (!is.null(x$NPdata)) {
-      x$NPdata
-    } else {
-      x$ITdata
-    }
-  })
-
-  objClass <- purrr::map(allObj, function(x) class(x)[1])
-  # check for non-Pmetrics data objects and remove them if found
-  yesPM <- which(objClass %in% c("NPAG", "IT2B"))
+  # allObj <- purrr::map(obj, function(x) {
+  #   if (!is.null(x$NPdata)) {
+  #     x$NPdata
+  #   } else {
+  #     x$ITdata
+  #   }
+  # })
+  
+  allObj <- obj
+  
+  objClass <- purrr::map_chr(allObj, \(x) class(x)[1])
+  # check for objects that are not PM_result and remove them if found
+  yesPM <- which(objClass %in% c("PM_result"))
   allObj <- allObj[yesPM]
   objClass <- objClass[yesPM]
-
+  
   # check for zero cycle objects
-  cycles <- unlist(sapply(allObj, function(x) x$icyctot))
+  cycles <- unlist(sapply(allObj, function(x) max(x$cycle$data$objective$cycle)))
   if (any(cycles == 0)) {
     cli::cli_abort(c("x" = "Do not include 0-cycle runs: {paste(which(cycles == 0), collapse = ', '), '\n', sep = '')}"))
   }
-
+  
   op <- purrr::map(obj, function(x) {
     x$op$data
   })
-
-  if (plot) {
-    if (!"resid" %in% names(argsPlot)) {
-      if (nobj <= 3) {
-        par(mfrow = c(nobj, 2))
-      } else {
-        par(mfrow = c(3, 2))
-        devAskNewPage(ask = T)
-      }
-      for (i in 1:length(op)) {
-        do.call(plot.PM_op, args = c(list(
-          x = op[[i]], pred.type = "pop", icen = icen, outeq = outeq,
-          title = paste("Model", i, "Population")
-        ), argsPlot))
-        do.call(plot.PM_op, args = c(list(
-          x = op[[i]], pred.type = "post", icen = icen, outeq = outeq,
-          title = paste("Model", i, "Posterior")
-        ), argsPlot))
-      }
-    } else {
-      devAskNewPage(ask = T)
-      for (i in 1:length(op)) {
-        do.call(plot.PM_op, args = c(list(
-          x = op[[i]], pred.type = "post", icen = icen, outeq = outeq,
-          title = paste("Model", i)
-        ), argsPlot))
-      }
-    }
-    par(mfrow = c(1, 1))
-    devAskNewPage(ask = F)
-  }
-
+  
+  # if (plot) {
+  #   if (!"resid" %in% names(argsPlot)) {
+  #     if (nobj <= 3) {
+  #       par(mfrow = c(nobj, 2))
+  #     } else {
+  #       par(mfrow = c(3, 2))
+  #       devAskNewPage(ask = T)
+  #     }
+  #     for (i in 1:length(op)) {
+  #       do.call(plot.PM_op, args = c(list(
+  #         x = op[[i]], pred.type = "pop", icen = icen, outeq = outeq,
+  #         title = paste("Model", i, "Population")
+  #       ), argsPlot))
+  #       do.call(plot.PM_op, args = c(list(
+  #         x = op[[i]], pred.type = "post", icen = icen, outeq = outeq,
+  #         title = paste("Model", i, "Posterior")
+  #       ), argsPlot))
+  #     }
+  #   } else {
+  #     devAskNewPage(ask = T)
+  #     for (i in 1:length(op)) {
+  #       do.call(plot.PM_op, args = c(list(
+  #         x = op[[i]], pred.type = "post", icen = icen, outeq = outeq,
+  #         title = paste("Model", i)
+  #       ), argsPlot))
+  #     }
+  #   }
+  #   par(mfrow = c(1, 1))
+  #   devAskNewPage(ask = F)
+  # }
+  
   # get summaries of op for outeq
-  sumobjPop <- mapply(summary.PM_op, op, MoreArgs = list(outeq = outeq, pred.type = "pop", icen = icen), SIMPLIFY = F)
-  sumobjPost <- mapply(summary.PM_op, op, MoreArgs = list(outeq = outeq, pred.type = "post", icen = icen), SIMPLIFY = F)
-
-
-  popBias <- sapply(sumobjPop, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$mwpe))
-  postBias <- sapply(sumobjPost, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$mwpe))
-  popImp <- sapply(sumobjPop, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$bamwspe))
-  postImp <- sapply(sumobjPost, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$bamwspe))
-  popPercent_RMSE <- sapply(sumobjPop, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$percent_rmse))
-  postPercent_RMSE <- sapply(sumobjPost, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$percent_rmse))
-
-  # get population points
-  final <- purrr::map(obj, function(x) {
-    x$final$data
-  })
-  # find intersecting parameters
-  popPointsRef <- final[[1]]$popPoints
-  namesRef <- names(popPointsRef)
-  popPointsOther <- lapply(2:nobj, function(x) final[[x]]$popPoints)
-  t <- sapply(2:nobj, function(x) {
-    thisPopPoints <- popPointsOther[[x - 1]]
-    namesThis <- names(thisPopPoints)
-    intersect <- namesRef[namesRef %in% namesThis]
-    if (length(intersect) > 0) {
-      popPoints1 <- popPointsRef[, intersect]
-      popPoints2 <- thisPopPoints[, intersect]
-      t <- do.call(mtsknn.eq, args = c(list(x = popPoints1, y = popPoints2), argsMTSKNN))$pval
-    } else {
-      t <- NA
-    }
-    signif(t, 3)
-  })
-
-  t <- c(NA, t)
-  results <- data.frame(
-    run = seq(1:nobj),
-    type = unlist(objClass),
-    nsub = unlist(purrr::map(obj, function(x) {
-      x$final$nsub
-    })),
-    nvar = mapply(function(x) x$nvar, allObj),
-    par = mapply(function(x) paste(x$par, collapse = " "), allObj),
-    converge = mapply(function(x) x$converge == 1, allObj),
-    ll = mapply(function(x) -2 * x$ilog[length(x$ilog)], allObj),
-    aic = mapply(function(x) tail(x$iic[, 1], 1), allObj),
-    bic = mapply(function(x) tail(x$iic[, 2], 1), allObj),
-    popBias = popBias,
-    popImp = popImp,
-    popPer_RMSE = popPercent_RMSE,
-    postBias = postBias,
-    postImp = postImp,
-    postPer_RMSE = postPercent_RMSE,
-    pval = t
+  
+  get_metric <- function(this_obj){
+    type <- c("bias", "imp")
+    res <- purrr::map(this_obj, \(x){
+      metrics <- get_metric_info(x$pe) #defined in PM_op.R
+      
+      if(all(is.na(metrics$metric_vals))) {
+        cli::cli_abort(c("x" = "Your PM_op object is old. Please re-run the model."))
+      } else {
+        metrics$metric_vals
+        
+      }
+    })
+    tibble(
+      bias = map_chr(res, 1),
+      imp = map_chr(res, 2)
+    )
+    
+    
+  }
+  
+  sumobjPop <- purrr::map(op, \(x) summary.PM_op(x, outeq = outeq, pred.type = "pop", icen = icen)) 
+  sumobjPost <- purrr::map(op, \(x) summary.PM_op(x, outeq = outeq, pred.type = "post", icen = icen)) 
+  
+  
+  
+  #### MAKE BIAS AND IMPRECISION PLOT ####
+  
+  sumobjBoth <- bind_rows(
+    sumobjPop %>% get_metric() %>% mutate(pred.type = "pop", run = 1:n()),
+    sumobjPost %>% get_metric() %>% mutate(pred.type = "post", run = 1:n())
+  ) %>%
+  pivot_longer(
+    c(bias, imp),
+    names_to = "metric",
+    values_to = "value"
+  ) %>%
+  mutate(metric = paste(pred.type, metric, sep = "_")) %>%
+  mutate(value = as.numeric(value))
+  
+  # determine if current method is percent based or not and label y axis accordingly
+  if(stringr::str_detect(getPMoptions("bias_method"), "percent_")){
+    sumobjBoth$value <- as.numeric(sumobjBoth$value) / 100
+    tickformat <- ".0%"
+  } else {
+    tickformat <- NULL
+  }
+  
+  
+  
+  x_labels <- c("Bias", "Imprecision")
+  col_map <- c("1" = "blue", "2" = "red")
+  col_vec <- col_map[ sumobjBoth$run ]
+  
+  
+  df <- sumobjBoth %>%
+  mutate(run = paste0("Run ", run)) 
+  
+  p1 <- plot_ly() %>%
+  add_trace(
+    data = df,
+    x = ~metric,
+    y = ~value,
+    type = "scatter",
+    mode = "markers",
+    color = I("black"),
+    marker = list(size = 10),
+    name = ~run,
+    hoverinfo = "none",
+    symbol = ~factor(run),
+    showlegend = TRUE
   )
-  names(results)[7] <- "-2*LL"
-  results[, 7:15] <- format(results[, 7:15], digits = 4)
-  row.names(results) <- 1:nobj
-  results
+  
+  p1 <- p1 %>%
+  add_trace(
+    data = df,
+    x = ~metric,
+    y = ~value,
+    type = "scatter",
+    mode = "markers",
+    colors = c("blue", "red"),
+    name = ~run,
+    symbol = ~factor(run),
+    marker = list(size = 12, color = I(col_vec)),
+    showlegend = FALSE,
+    hoverinfo = "text",
+    text = ~paste(run, "<br>", metric, sprintf(paste0("%.", getPMoptions("digits"), "f%%"), value * 100)
+  )
+)
+
+p1 <- p1 %>%
+layout(
+  xaxis = list(
+    title = "", # remove default axis title,
+    tickvals = unique(sumobjBoth$metric),
+    ticktext = c(
+      sprintf("<span style='color:blue'>%s</span>", x_labels),
+      sprintf("<span style='color:red'>%s</span>", x_labels)
+    )
+  ),  
+  yaxis = list(
+    title = "",
+    tickformat = tickformat  # use percentage format if applicable
+  ),
+  shapes = list(
+    list(
+      type = "line",
+      x0 = 1.5, x1 = 1.5,
+      y0 = 0, y1 = 1,
+      xref = "x", yref = "paper",  # "paper" makes y0/y1 go from bottom to top regardless of axis scale
+      line = list(color = gray(), dash = "dash")
+    )
+  ),
+  annotations = list(
+    list(
+      x = 0.5,  # middle of first 3 categories
+      y = -0.15,  # position below axis
+      text = "Population",
+      xref = "x",
+      yref = "paper",
+      showarrow = FALSE,
+      font = list(size = 14),
+      xanchor = "center"
+    ),
+    list(
+      x = 2.5,  # middle of last 3 categories
+      y = -0.15,
+      text = "Posterior",
+      xref = "x",
+      yref = "paper",
+      showarrow = FALSE,
+      font = list(size = 14),
+      xanchor = "center"
+    )
+  ),
+  margin = list(b = 80)  # extra space at bottom for labels
+)
+
+# likelihood plot
+
+like <- tibble(
+  ll = purrr::map_dbl(obj, \(x) {
+    tail(x$cycle$data$objective$neg2ll, 1) 
+  }),
+  AIC = purrr::map_dbl(obj, \(x) {
+    tail(x$cycle$data$objective$aic, 1) 
+  }),
+  BIC = purrr::map_dbl(obj, \(x) {
+    tail(x$cycle$data$objective$bic, 1) 
+  })
+)
+  names(like)[1] <- "-2*LL"
+
+if (getPMoptions("ic_method") == "aic"){
+  like$BIC <- NULL
+} else {
+  like$AIC <- NULL
 }
+  
+df <- like %>% mutate(run = paste0("Run ", seq(1:nrow(like)))) %>%
+  pivot_longer(
+    1:2,
+    names_to = "metric",
+    values_to = "value"
+  )
+
+
+p2 <- plot_ly() %>%
+add_trace(
+  data = df,
+  x = ~metric,
+  y = ~value,
+  type = "scatter",
+  mode = "markers",
+  color = I("black"),
+  marker = list(size = 10),
+  name = ~run,
+  hoverinfo = "none",
+  symbol = ~factor(run),
+  showlegend = TRUE
+)
+
+p2 <- p2 %>%
+add_trace(
+  data = df,
+  x = ~metric,
+  y = ~value,
+  type = "scatter",
+  mode = "markers",
+  colors = c("blue", "red"),
+  name = ~run,
+  symbol = ~factor(run),
+  marker = list(size = 12, color = I(col_vec)),
+  showlegend = FALSE,
+  hoverinfo = "text",
+  text = ~glue::glue("{run}: {round2(value)}")
+)
+
+
+p2 <- p2 %>%
+layout(
+  xaxis = list(
+    title = "", # remove default axis title,
+    tickfont = list(size = 14)
+  ),  
+  yaxis = list(
+    title = ""
+  ),
+  margin = list(b = 80, l = 150, r = 150)  # extra space at bottom for labels
+)
+
+
+# get population points
+final <- purrr::map(obj, function(x) {
+  x$final$data
+})
+# find intersecting parameters
+popPointsRef <- final[[1]]$popPoints
+namesRef <- names(popPointsRef)
+popPointsOther <- lapply(2:nobj, function(x) final[[x]]$popPoints)
+t <- sapply(2:nobj, function(x) {
+  thisPopPoints <- popPointsOther[[x - 1]]
+  namesThis <- names(thisPopPoints)
+  intersect <- namesRef[namesRef %in% namesThis]
+  if (length(intersect) > 0) {
+    popPoints1 <- popPointsRef[, intersect]
+    popPoints2 <- thisPopPoints[, intersect]
+    t <- do.call(mtsknn.eq, args = c(list(x = popPoints1, y = popPoints2), argsMTSKNN))$pval
+  } else {
+    t <- NA
+  }
+  signif(t, 3)
+})
+
+t <- c(NA, t)
+results <- data.frame(
+  run = seq(1:nobj),
+  type = objClass,
+  nsub = purrr::map_int(obj, \(x) {
+    x$final$nsub
+  }),
+  nvar = purrr::map_int(obj, \(x) length(x$model$model_list$parameters)),
+  par = purrr::map_chr(obj, \(x) paste(x$model$model_list$parameters, collapse = ", ")),
+  converged = purrr::map_lgl(obj, \(x) {
+    x$cycle$data$status == "Converged"
+  }),
+  ll = purrr::map_dbl(obj, \(x) {
+    tail(x$cycle$data$objective$neg2ll, 1) 
+  }),
+  aic = purrr::map_dbl(obj, \(x) {
+    tail(x$cycle$data$objective$aic, 1) 
+  }),
+  bic = purrr::map_dbl(obj, \(x) {
+    tail(x$cycle$data$objective$bic, 1) 
+  }),
+  popBias = sumobjBoth %>% filter(metric == "pop_bias") %>% pull(value),
+  popImp = sumobjBoth %>% filter(metric == "pop_imp") %>% pull(value),
+  postBias = sumobjBoth %>% filter(metric == "post_bias") %>% pull(value),
+  postImp = sumobjBoth %>% filter(metric == "post_imp") %>% pull(value),
+  pval = t
+)
+names(results)[7] <- "-2*LL"
+row.names(results) <- 1:nobj
+if (getPMoptions("ic_method") == "aic"){
+  results$bic <- NULL
+} else {
+  results$aic <- NULL
+}
+
+#render and open the report
+report_list <- list(
+  p1 = p1,
+  p2 = p2,
+  metric_types = sumobjPop[[1]]$pe %>% get_metric_info() %>% pluck("metric_types")
+)
+
+if(plot){
+  temp <- tempdir()
+  rmarkdown::render(
+    input = glue::glue(here::here(),"/inst/report/templates/compare.Rmd"),
+    output_file = "compare.html",
+    output_dir = temp,
+    params = list(results = report_list),
+    quiet = TRUE
+  )
+  browseURL(glue::glue("{temp}/compare.html"))
+  
+  
+}
+
+
+return(invisible(results))
+}
+
+
+# quarto::quarto_render(
+#   input = glue::glue(here::here(),"/inst/report/templates/compare.qmd"),
+#   execute_params = list(results = results)
+# )
+# browseURL(glue::glue(here::here(),"/inst/report/templates/compare.html"))
