@@ -25,6 +25,7 @@
   xlim,
   ylim,
   simnum,
+  print = TRUE,
   ...
 )
 }
@@ -108,8 +109,6 @@ value of the simulated quantile with upper and lower confidence intervals at tha
 Additionally, the number of observations beyond the 5th and 95th percentiles will be reported
 and the binomial test P-value if this number is different than the expected 10\% value.}
 
-\item{quiet}{Suppress plot if \code{TRUE}.}
-
 \item{legend}{Controls display of legend. This argument maps to the plotly layout showlegend and legend arguments. It is either a boolean operator (most common) or a list of parameters to be supplied to plotly. See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend for more details on the available options for formatting.  If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will be set to \code{TRUE} automatically.
 
 Examples: \itemize{ \item{\code{legend = T}} \item{\code{legend = list(orientation = "h", font = list(color = "blue"))}} }
@@ -151,6 +150,8 @@ Example: \code{ylim = c(0,100)}}
 i.e., a list of \link{PM_sim} objects created when more than one
 subject is included in a simultation data template and
 \code{combine = FALSE} (the default) when parsing the results of a simulation.}
+
+\item{print}{If \code{TRUE}, will print the plotly object and return it. If \code{FALSE}, will only return the plotly object.}
 
 \item{...}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
 

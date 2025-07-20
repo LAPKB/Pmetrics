@@ -832,6 +832,7 @@ makePTAtarget <- function(x) {
 #' @param title `r template("title")` Default is to have no title.
 #' @param xlim `r template("xlim")`
 #' @param ylim `r template("ylim")`
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param ... `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
@@ -864,7 +865,8 @@ plot.PM_pta <- function(x,
                         grid = TRUE,
                         xlab, ylab,
                         title,
-                        xlim, ylim, ...) {
+                        xlim, ylim,
+                        print = TRUE, ...) {
   # clone to avoid changes
   pta <- x$clone()$data
 
@@ -1142,8 +1144,8 @@ plot.PM_pta <- function(x,
     }
   }
   p <- suppressMessages(plotly::plotly_build(p))
-  print(p)
-  return(p)
+  if (print) print(p)
+  return(invisible(p))
 }
 
 # SUMMARY ------------------------------------------------------------------

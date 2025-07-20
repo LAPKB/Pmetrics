@@ -681,6 +681,7 @@ PM_opt <- R6::R6Class(
 #' @param line Passed to [plot.PM_sim] with default as `list(probs = NA)`.
 #' @param times Format the vertical lines for optimal times. Default is
 #' dashed red line. r template("line")`
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param ... Other parameters to pass to [plot.PM_sim].
 #' @return Plots the simulation profiles with MM optimal times indicated as vertical lines.
 #' @author Michael Neely
@@ -688,7 +689,7 @@ PM_opt <- R6::R6Class(
 #' @export
 #' @family PMplots
 
-plot.PM_opt <- function(x, line = list(probs = NA), times = T, ...) {
+plot.PM_opt <- function(x, line = list(probs = NA), times = T, print = TRUE, ...) {
   mm_format <- amendLine(times, default = list(color = "red", dash = "dash", width = 2))
   
   # parse dots
@@ -727,5 +728,6 @@ plot.PM_opt <- function(x, line = list(probs = NA), times = T, ...) {
   
   p <- p %>% layout(shapes = shapeList)
   
-  print(p)
+  if (print) print(p)
+  return(p)
 }

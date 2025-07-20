@@ -805,6 +805,7 @@ PM_valid <- R6::R6Class(
 #' @param xlab `r template("xlab")` Default is "Time" or "Time after dose" if `tad = TRUE`.
 #' @param ylab `r template("ylab")` Default is "Output".
 #' @param title `r template("title")` Default is to have no title.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param \dots If `type` is not "npde", the following apply. `r template("dotsPlotly")`.
 #' However, if `type` is "npde", to modify the appearance of the plot,
 #' supply a list of options, `npde = list(...)`. See the documentation
@@ -844,7 +845,8 @@ plot.PM_valid <- function(x,
                           grid = TRUE,
                           xlab, ylab,
                           title,
-                          xlim, ylim, ...) {
+                          xlim, ylim,
+                          print = TRUE, ...) {
   # to avoid modifying original object, x
   opDF <- x$opDF
   simdata <- x$simdata$obs
@@ -1087,7 +1089,7 @@ plot.PM_valid <- function(x,
       )
 
     # SEND TO CONSOLE
-    print(p)
+    if (print) print(p)
   }
 
   if (type == "npde") {
@@ -1098,7 +1100,7 @@ plot.PM_valid <- function(x,
       if (is.null(x$npde)) stop("No npde object found.  Re-run $validate or make_valid.\n")
       if (inherits(x$npde[[outeq]], "NpdeObject")) {
         npdeArgs <- c(x = x$npde[[outeq]], npdeOpts)
-        do.call(plot, npdeArgs)
+        if (print) do.call(plot, npdeArgs)
         # do.call(npde:::plot.NpdeObject, npdeArgs)
         par(mfrow = c(1, 1))
       } else {
@@ -1329,5 +1331,5 @@ plot.PMvalid <- function(x, type = "vpc", tad = FALSE, icen = "median", outeq = 
     par(mfrow = c(1, 1))
     p <- NULL
   }
-  return(p)
+  return(invisible(p))
 }

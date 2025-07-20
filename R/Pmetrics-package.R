@@ -52,7 +52,7 @@
 #' observeEvent updateSelectizeInput updateTextAreaInput updateNumericInput
 #' updateSelectInput renderUI markdown plotOutput div HTML htmlOutput
 #' showModal modalDialog icon shinyApp textOutput helpText conditionalPanel
-#' @importFrom bslib accordion accordion_panel card navset_card_tab
+#' @importFrom bslib accordion accordion_panel card navset_card_tab br
 #' nav_panel
 # #' @importFrom trelliscopejs trelliscope map_plot
 ## usethis namespace: start

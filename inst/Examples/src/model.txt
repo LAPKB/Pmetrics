@@ -7,9 +7,9 @@ lag1, 0, 4
 
 #Cov
 WT
-AFRICA
+AFRICA!
 AGE
-GENDER
+GENDER!
 HEIGHT
 
 

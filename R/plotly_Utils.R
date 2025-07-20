@@ -265,7 +265,7 @@ msg <- c(
   }) %>% purrr::discard(~ .x == "")  # Drop empty strings
 )
     cli::cli_div(theme = list(
-      span.blue = list(color = "blue")
+      span.blue = list(color = navy())
     ))
     cli::cli_warn(msg)
     cli::cli_end()
@@ -481,7 +481,6 @@ add_shapes <- function(p = plotly::last_plot(), shapes) {
 add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
 data = NULL, method = "lm", line = T, ci = 0.95, stats) {
   line <- amendLine(line, default = list(color = "blue", width = 2))
-  
   if (!is.null(data)) {
     if (is.null(x) | is.null(y)) stop("Missing x or y with data.\n")
     if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
@@ -548,14 +547,14 @@ if (method == "lm") {
   }
   
   p <- p %>% plotly::add_lines(
-    x = vals$x, y = fitted(mod),
+    x = vals$x, y = round(fitted(mod),2),
     hoverinfo = "text",
     text = regStat,
     line = line
   )
 } else { # loess
   p <- p %>% plotly::add_lines(
-    x = vals$x, y = fitted(mod),
+    x = vals$x, y = round(fitted(mod),2),
     hoverinfo = "none",
     line = line
   )
@@ -564,8 +563,8 @@ if (method == "lm") {
 if (ci > 0) {
   zVal <- qnorm(0.5 + ci / 2)
   seFit <- predict(mod, newdata = vals, se = TRUE)
-  upper <- seFit$fit + zVal * seFit$se.fit
-  lower <- seFit$fit - zVal * seFit$se.fit
+  upper <- round(seFit$fit + zVal * seFit$se.fit, 2)
+  lower <- round(seFit$fit - zVal * seFit$se.fit,2)
   
   p <- p %>%
   plotly::add_ribbons(

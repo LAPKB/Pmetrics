@@ -267,6 +267,7 @@ private = list(
 #' `list(x= 0.8, y = 0.1, font = list(color = "black", family = "Arial", size = 14, bold = FALSE))`.
 #' The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
 #' argument maps to `plotly::add_text()`.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param ... `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
@@ -296,6 +297,7 @@ plot.PM_op <- function(x,
   xlab, ylab,
   title,
   stats = TRUE,
+  print = TRUE,
   xlim, ylim, ...) {
     if (inherits(x, "PM_op")) {
       x <- x$data
@@ -327,7 +329,7 @@ plot.PM_op <- function(x,
       block %in% !!block
     ) %>%
     includeExclude(include, exclude) %>%
-    dplyr::filter(!is.na(obs)) %>%
+    dplyr::filter(!is.na(obs)) %>% 
     dplyr::mutate(pred = pred * mult, obs = obs * mult) %>%
     dplyr::arrange(id, time)
     
@@ -514,8 +516,8 @@ plot.PM_op <- function(x,
         title = layout$title
       )
       
-      print(p)
-      return(p)
+      if (print) print(p)
+      return(invisible(p))
     } else { # residual plot
       # Y axis and point labels
       if (pred.type == "post") {
@@ -598,8 +600,8 @@ plot.PM_op <- function(x,
         nrows = 1,
         shareY = TRUE, shareX = FALSE, titleX = TRUE
       )
-      print(p)
-      return(p)
+      if (print) print(p)
+      return(invisible(p))
     } # end resid plot
   }
   
@@ -648,10 +650,12 @@ plot.PM_op <- function(x,
   #' * sumstat A data frame with the minimum, first quartile, median, third quartile, maximum,
   #' mean and standard deviation for times, observations and predictions in `x`.
   #' * pe A named vector with mean prediction error (mpe),
-  #' the mean weighted prediction error (mwpe), the mean squared prediction error (mspe), root mean sqaured error (rmse),
+  #' the mean weighted prediction error (mwpe), the percent mean weighted prediction error (percent_mwpe),
+  #' the mean squared prediction error (mspe), root mean sqaured error (rmse),
   #' percent root mean squared error (percent_rmse), the mean weighted
-  #' squared prediction error (mwspe), the bias-adjusted mean squared prediction error (bamspe), and the bias-
-  #' adjusted mean weighted squared prediction error (bamwspe).  The mwpe is bias and the bamwspe is imprecision on
+  #' squared prediction error (mwspe), the bias-adjusted mean squared prediction error (bamspe), the bias-
+  #' adjusted mean weighted squared prediction error (bamwspe), the percent root mean bias-
+  #' adjusted weighted squared prediction error (percent_rmbawspe).  The percent_mwpe is bias and the percent_rmbawspe is imprecision on
   #' plots of PM_op objects.
   #' * wtd.t A list of 6 elements based on a t test that the weighted mean prediction bias is different than zero
   #'  - estimate: the weighted mean of the prediction bias for each observation
@@ -680,50 +684,89 @@ plot.PM_op <- function(x,
     }
     
     sumPMopWrk <- function(data) {
-      sumstat <- matrix(NA, nrow = 7, ncol = 3, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Obs", "Pred")))
-      # min
-      sumstat[1, ] <- round(apply(data[, 2:4], 2, min, na.rm = T), digits)
-      # 25th percentile
-      sumstat[2, ] <- round(apply(data[, 2:4], 2, quantile, 0.25, na.rm = T), digits)
-      # median
-      sumstat[3, ] <- round(apply(data[, 2:4], 2, median, na.rm = T), digits)
-      # 75th percentil
-      sumstat[4, ] <- round(apply(data[, 2:4], 2, quantile, 0.75, na.rm = T), digits)
-      # max
-      sumstat[5, ] <- round(apply(data[, 2:4], 2, max, na.rm = T), digits)
-      # mean
-      sumstat[6, ] <- round(apply(data[, 2:4], 2, mean, na.rm = T), digits)
-      # SD
-      sumstat[7, ] <- round(apply(data[, 2:4], 2, sd, na.rm = T), digits)
-      sumstat <- data.frame(sumstat)
+      
       # N
       N <- length(data$obs[!is.na(data$obs)])
-      # mean prediction error
-      mpe <- sum(data$d, na.rm = T) / N
-      # wt = 1/sd, so mwpe = sum(wd)/sum(wt)
-      # mean weighted prediction error or BIAS
-      mwpe <- sum(data$wd, na.rm = T) / N
-      # mean squared prediction error
-      mspe <- sum(data$ds, na.rm = T) / N
-      # root mean squared error (RMSE)
-      rmse <- sqrt(mspe)
-      # %rmse
-      percent_rmse <- rmse * 100 * N / sum(data$obs, na.rm = T)
-      # mean weighted squared prediction error
-      mwspe <- sum(data$wds, na.rm = T) / N
-      # bias-adjusted squared prediction error
-      bamspe <- mspe - mpe**2
-      # imprecision - bias-adjusted mean weighted squared error
-      bamwspe <- mwspe - mwpe**2
       
-      pe <- data.frame(mpe = mpe, mwpe = mwpe, mspe = mspe, rmse = rmse, percent_rmse = percent_rmse, mwspe = mwspe, bamspe = bamspe, bamwspe = bamwspe)
-      wtd.t <- weighted.t.test(data)
+      sumstat <- data %>% select(time, obs, pred) %>%
+      summarise(across(
+        .cols = everything(),  
+        .fns = list(
+          min = ~min(.x, na.rm = TRUE),
+          q1 = ~quantile(.x, 0.25, na.rm = TRUE),
+          median = ~median(.x, na.rm = TRUE),
+          q3 = ~quantile(.x, 0.75, na.rm = TRUE),
+          max = ~max(.x, na.rm = TRUE),
+          mean = ~mean(.x, na.rm = TRUE),
+          sd = ~sd(.x, na.rm = TRUE)
+        )
+      )) %>%
+      pivot_longer(everything(), names_sep = "_", names_to = c("type", "statistic")) %>%
+      pivot_wider(names_from = type, values_from = value) 
+      
+      
+      # BIAS
+      
+      # mean absolute error
+      mae <- sum(data$d, na.rm = T) / N
+      # % mae
+      percent_mae <- mean(data$d / data$obs, na.rm = TRUE)  * 100
+      
+      # mean weighted error or old BIAS
+      mwe <- sum(data$wd, na.rm = T) / N
+      # % mean weighted error or new BIAS
+      percent_mwe <- sum(data$wd, na.rm = TRUE) / sum(data$obs / data$obsSD, na.rm = TRUE) * 100
+      
+      # IMPRECISION
+      
+      mean_obs <- mean(data$obs, na.rm = TRUE)
+      wmean_obs <- sum(data$obs / data$obsSD, na.rm = TRUE) / N
+      
+      # mean squared  error
+      mse <- sum(data$ds, na.rm = T) / N
+      # % mean squared  error
+      percent_mse <- mean(data$ds, na.rm = TRUE) / (mean(data$obs, na.rm = TRUE)^2) * 100
+      
+      # mean weighted squared error
+      mwse <- sum(data$wds, na.rm = T) / N
+      # % mean weighted squared error
+      percent_mwse <- mwse / (wmean_obs^2) * 100
+      
+      # root mean squared error (RMSE)
+      rmse <- sqrt(mse)
+      # %rmse
+      percent_rmse <- rmse / mean_obs * 100
+      
+      # mean bias-adjusted squared error
+      mbase <- mse - mae**2
+      # % mean bias-adjusted squared error
+      percent_mbase <- (mse - mae^2) / (mean_obs^2) * 100
+      
+      
+      # OLD imprecision - mean bias-adjusted weighted squared error
+      mbawse <- mwse - mwe**2
+      # % mean bias-adjusted weighted squared error
+      percent_mbawse <- (mwse - mwe^2) / (wmean_obs^2) * 100
+      
+      # root mean bias-adjusted, weighted squared error
+      rmbawse <- sqrt(mbawse)
+      # NEW imprecision - % root mean bias-adjusted, weighted squared error
+      percent_rmbawse <- sqrt(mbawse) * 100 / (sum(data$obs / data$obsSD, na.rm = TRUE) / N)
+      
+      
+      pe <- data.frame(
+        type = c("mae", "mwe", "mse", "mwse", "rmse", "mbase", "mbawse", "rmbawse"),
+        absolute = c(mae, mwe, mse, mwse, rmse, mbase, mbawse, rmbawse),
+        percent = c(percent_mae, percent_mwe, percent_mse, percent_mwse, percent_rmse, percent_mbase, percent_mbawse, percent_rmbawse)
+      )    
+      
+      wtd.t <- Pmetrics:::weighted.t.test(data)
       
       result <- list(sumstat = sumstat, pe = pe, wtd.t = wtd.t)
       return(result)
     } # end sumPMopWrk
     
-    # make summary
+    #### make summary #####
     if (inherits(object, "PM_op")) {
       object <- object$data
     }
@@ -731,17 +774,21 @@ plot.PM_op <- function(x,
     object <- object %>% filter(outeq == !!outeq, pred.type == !!pred.type, icen == !!icen)
     if (all(is.na(object$obs))) {
       sumstat <- NA
-      pe <- data.frame(mpe = NA, mwpe = NA, mspe = NA, rmse = NA, percent_rmse = NA, mwspe = NA, bamspe = NA, bamwspe = NA)
+      pe <- data.frame(
+        type = rep(NA, 8),
+        absolute = rep(NA, 8),
+        percent = rep(NA, 8)
+      )
       wtd.t <- NA
-      result <- list(sumstat = sumstat, pe = pe, wtd.t = wtd.t)
-      class(result) <- c("summary.PM_op", "list")
-      return(result)
+      sumresult <- list(sumstat = sumstat, pe = pe, wtd.t = wtd.t)
     } else {
       sumresult <- sumPMopWrk(object)
     }
     
     class(sumresult) <- c("summary.PM_op", "list")
     attr(sumresult, "pred.type") <- pred.type
+    attr(sumresult, "outeq") <- outeq
+    attr(sumresult, "icen") <- icen
     return(sumresult)
   }
   
@@ -790,40 +837,106 @@ plot.PM_op <- function(x,
   #' }
   #' @export
   
-  print.summary.PM_op <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+  print.summary.PM_op <- function(x, digits = getPMoptions("digits"), ...) {
     printSumWrk <- function(data, dataname) {
-      cat(paste("\n", dataname, "\n", sep = ""))
-      print(data$sumstat)
-      cat(paste("\nPrediction type:", attr(x, "pred.type"), "\n"))
-      cat("\n\n")
-      cat(paste("Mean prediction error:", round(data$pe$mpe, digits), "\n"))
-      cat(paste("Mean weighted prediction error (bias): ", round(data$pe$mwpe, digits), " (P=", round(data$wtd.t$p.value, digits), " different than 0)\n", sep = ""))
-      cat(paste("Mean squared prediction error:", round(data$pe$mspe, digits), "\n"))
-      cat(paste("Root mean squared error (RMSE):", round(data$pe$rmse, digits), "\n"))
-      cat(paste("Percent root mean squared error (%RMSE):", round(data$pe$percent_rmse, digits), "\n"))
-      cat(paste("Mean weighed squared prediction error:", round(data$pe$mwspe, digits), "\n"))
-      cat(paste("Bias-adjusted mean squared prediction error:", round(data$pe$bamspe, digits), "\n"))
-      cat(paste("Bias-adjusted mean weighted squared prediction error (imprecision):", round(data$pe$bamwspe, digits), "\n\n"))
+      
+      # Summary statistics
+      ft1 <- data$sumstat %>% mutate(across(-statistic, ~round2(.x, digits = digits))) %>%
+      mutate(statistic = c("Minimum", "Q1", "Median", "Q3", "Maximum", "Mean", "SD")) %>%
+      flextable::flextable() %>%
+      flextable::set_header_labels(
+        time = "Time", obs = "Observed", pred = "Predicted"
+      ) %>%
+      flextable::set_table_properties(width = 0.8, layout = "autofit") %>%
+      # "Hide" the variable column from header and treat it as row label
+      flextable::compose(j = "statistic", value = flextable::as_paragraph(statistic)) %>%
+      # Remove header label for row names
+      flextable::set_header_labels(statistic = "") %>%
+      # Optional: align left
+      flextable::align(j = "statistic", align = "right", part = "body") %>%
+      flextable::theme_zebra() %>%
+      flextable::bg(part = "header", bg = blue()) %>%
+      flextable::autofit()
+      
+      # Bias and imprecision
+      
+      metric_info <- data$pe %>% get_metric_info()
+      
+      ft2 <- metric_info$metric_vals %>% 
+      mutate(across(everything(), ~if(with_percent) paste0(.x, "%") else .x)) %>%
+      flextable::flextable() %>% 
+      flextable::theme_zebra() %>%
+      flextable::align_text_col(header = TRUE) %>%
+      flextable::bg(part = "header", bg = blue()) %>%
+      flextable::autofit()
+      
+      pred.type <- if (attr(data, "pred.type") == "post") "posterior" else "population"
+      outeq <- attr(data, "outeq")
+      icen <- attr(data, "icen")
+      return(list(ft1 = ft1, ft2 = ft2, metric_types = metric_info$metric_types, pred.type = pred.type, outeq = outeq, icen = icen))
     }
-    # function to make summary
-    if (inherits(x[[1]], "data.frame")) { # we just have one
-      if (!is.na(x$pe[1])) {
-        printSumWrk(x, "")
-      } else {
-        cat("NA\n")
-      }
+    
+    # function to print the summary
+    if (!all(is.na(x$pe))) {
+      obj <- printSumWrk(x, "")
+      temp <- tempdir()
+      rmarkdown::render(
+        input = glue::glue(here::here(),"/inst/report/templates/summary_op.Rmd"),
+        output_file = "summary_op.html",
+        output_dir = temp,
+        params = list(object = obj),
+        quiet = TRUE
+      )
+      suppressWarnings(htmltools::html_print(includeHTML(glue::glue("{temp}/summary_op.html"))))
+      return(invisible(NULL))
+      
     } else {
-      if (all(unlist(sapply(x, is.na)))) {
-        cat("No observations.\n")
-      } else {
-        for (i in 1:length(x)) {
-          if (!is.na(x[[i]][1])) {
-            printSumWrk(x[[i]], paste("$", names(x)[i], sep = ""))
-          } else {
-            cat("NA\n")
-          }
-        }
-      }
+      cat("NA\n")
     }
+    
   }
   
+  
+  
+  # Internal functions
+  
+  # Extracts the relevant metrics from the summary.PM_op object based on curren user options
+  get_metric_info <- function(pe){
+    if(!all(names(pe) %in% c("type", "absolute", "percent"))) {
+      return(list(metric_types = tibble(bias = NA, imprecision = NA), metric_vals = tibble(Bias = NA, Imprecision = NA)))
+    }
+    current_bias <- getPMoptions("bias_method")
+    with_percent <- stringr::str_detect(current_bias, "percent_")
+    type_options <- pe$type
+    bias_row <- which(type_options == stringr::str_replace(current_bias, "percent_", "")) 
+    bias_imp_col <- ifelse(with_percent, 3, 2)
+    current_imp <- getPMoptions("imp_method")
+    imp_row <- which(type_options == stringr::str_replace(current_imp, "percent_", ""))
+    
+    metric_types <- tibble(
+      bias = stringr::str_replace(current_bias, "percent_", "") %>%
+      case_match(
+        "mae" ~ "Mean absolute error (MAE)",
+        "mwe" ~ "Mean weighted error (MWE)"
+      ),
+      imprecision = stringr::str_replace(current_imp, "percent_", "") %>%
+      case_match(
+        "mse" ~ "Mean squared error (MSE)",
+        "mwse" ~ "Mean weighted squared error (MWSE)",
+        "rmse" ~ "Root mean squared error (RMSE)",
+        "mbase" ~ "Mean, bias-adjusted, squared error (MBASE)",
+        "mbawse" ~ "Mean, bias-adjusted, weighted, squared error (MBAWSE)",
+        "rmbawse" ~ "Root mean, bias-adjusted, weighted, squared error (RMBAWSE)"
+      )
+    ) %>% mutate(across(everything(), ~if(with_percent) paste0("% ", .x) else .x))
+    
+    metric_vals <- tibble(Bias = pe[bias_row, bias_imp_col],
+      Imprecision = pe[imp_row, bias_imp_col]) %>% 
+      mutate(across(everything(), ~round2(.x, digits = getPMoptions("digits")))) 
+      
+      return(list(metric_types = metric_types,
+        metric_vals = metric_vals))  
+        
+      }
+      
+      

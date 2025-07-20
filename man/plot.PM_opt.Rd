@@ -4,7 +4,7 @@
 \alias{plot.PM_opt}
 \title{Plot Pmetrics Multiple-Model Optimal Sampling Objects}
 \usage{
-\method{plot}{PM_opt}(x, line = list(probs = NA), times = T, ...)
+\method{plot}{PM_opt}(x, line = list(probs = NA), times = T, print = TRUE, ...)
 }
 \arguments{
 \item{x}{A \link{PM_opt} object}
@@ -13,6 +13,8 @@
 
 \item{times}{Format the vertical lines for optimal times. Default is
 dashed red line. r template("line")`}
+
+\item{print}{If \code{TRUE}, will print the plotly object and return it. If \code{FALSE}, will only return the plotly object.}
 
 \item{...}{Other parameters to pass to \link{plot.PM_sim}.}
 

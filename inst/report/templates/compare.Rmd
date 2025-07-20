@@ -1,0 +1,37 @@
+---
+title: "Pmetrics Model Comparison"
+output: html_document
+params:
+  results: null
+---
+
+```{r}
+#| name: "results"
+#| include: false
+#| setup: true
+
+library(tidyverse)
+library(plotly)
+
+res <- params$results
+```
+
+## Prediction Errors
+```{r}
+#| name: "prediction_errors"
+#| echo: false
+
+res$p1
+
+```
+**Bias** is `r res$metric_types$bias` $pred - obs$. **Imprecision** is `r res$metric_types$imprecision`. Bias is the inverse of accuracy and imprecision is the mean variability in bias (scatter) across all predictions. Ideal for both bias and imprecision is 0.
+
+## Likelihood
+```{r}
+#| name: "likelihood"
+#| echo: false
+
+res$p2
+
+```
+Models with lower values are more likely. `r toupper(getPMoptions("ic_method"))` is a function of the likelihood, penalized for the number of parameters in the model.

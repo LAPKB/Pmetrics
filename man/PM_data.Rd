@@ -48,6 +48,9 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \describe{
 \item{\code{data}}{Data frame containing the data to be modeled}
 
+\item{\code{blq}}{Values for each output equation to be considered as
+Below the Limit of Quantification (BLQ). See \verb{$new()} below for details.}
+
 \item{\code{standard_data}}{Data frame containing standardized version of the data}
 
 \item{\code{pop}}{The \verb{$data} field from a \link{PM_pop} object. This makes it easy to add population predictions to a raw data plot. This field will be \code{NULL} until the \link{PM_data} object is added to the \link{PM_result} after a run. As examples:
@@ -80,7 +83,7 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \subsection{Method \code{new()}}{
 Create new data object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_data$new(data = NULL, dt = NULL, quiet = FALSE, validate = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$new(data = NULL, blq = NULL, dt = NULL, quiet = FALSE, validate = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -89,6 +92,14 @@ Create new data object
 \item{\code{data}}{A quoted name of a file with full path if not
 in the working directory, an unquoted name of a data frame
 in the current R environment, or a \link{PM_data} object, which will rebuild it.}
+
+\item{\code{blq}}{Optional vector of values for each output equation to be considered
+as Below the Limit of Quantification (BLQ). Any observation <= to the value
+for that output equation will be considered BLQ. BLQ observations are used in
+the calculation of the likelihood, e.g. probabilty that the observation is BLQ given
+the model prediction, but will not be included in observed vs. predicted plots.
+If \code{blq} is missing or a output equation does not have a BLQ value, \code{blq} will
+be set to \code{NA} for that output equation.}
 
 \item{\code{dt}}{Pmetrics will try a variety of date/time formats. If all 16 of
 them fail, use this parameter to specify the correct format as a
