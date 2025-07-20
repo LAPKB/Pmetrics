@@ -23,6 +23,7 @@
   ylab,
   title,
   stats = TRUE,
+  print = TRUE,
   xlim,
   ylim,
   ...
@@ -133,6 +134,8 @@ Default is to have no title.}
 \code{list(x= 0.8, y = 0.1, font = list(color = "black", family = "Arial", size = 14, bold = FALSE))}.
 The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
 argument maps to \code{plotly::add_text()}.}
+
+\item{print}{If \code{TRUE}, will print the plotly object and return it. If \code{FALSE}, will only return the plotly object.}
 
 \item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range.
 

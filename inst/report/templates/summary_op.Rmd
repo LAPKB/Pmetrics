@@ -1,0 +1,36 @@
+---
+title: "Observed vs. Predicted"
+output: html_document
+params:
+  object: null
+---
+
+
+```{r}
+#| name: "results"
+#| include: false
+#| setup: true
+
+library(tidyverse)
+library(flextable)
+library(glue)
+
+obj <- params$object
+types <- obj$metric_types
+```
+
+```{r}
+#| name: "summary_stats"
+#| echo: false
+#| ft.align: "left"
+
+obj$ft1
+cat("\n\n")
+obj$ft2
+markdown("**Notes:**")
+markdown(glue("* Bias is (pred - obs)  {types$bias}. Imprecision is {types$imprecision}. Change these with `setPMoptions()`."))
+markdown(glue("* Metrics calculated on predictions for output {params$object$outeq} made from {params$object$icen} {params$object$pred.type} model parameter values."))
+
+```
+
+

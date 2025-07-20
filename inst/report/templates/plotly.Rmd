@@ -48,24 +48,32 @@ template <- c(
   "#### Population {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
-  "res$op$plot(icen = 'median', pred.type = 'pop', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+
+  "p <- res$op$plot(icen = 'median', pred.type = 'pop', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) p\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
-  "res$op$plot(icen = 'mean', pred.type = 'pop', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+
+  "p <- res$op$plot(icen = 'mean', pred.type = 'pop', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) p\n",
   "```\n",
   "#### Posterior {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
-  "res$op$plot(icen = 'median', pred.type = 'post', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+
+  "p <- res$op$plot(icen = 'median', pred.type = 'post', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) p\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
-  "res$op$plot(icen = 'mean', pred.type = 'post', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+
+  "p <- res$op$plot(icen = 'mean', pred.type = 'post', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) p\n",
   "```\n",
   "\n"
 )
@@ -123,26 +131,30 @@ template <- c(
   "#### Population {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
+
   "metrics(icen = 'median', pred.type = 'pop', outeq = {{outeq}})\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
+
   "metrics(icen = 'mean', pred.type = 'pop', outeq = {{outeq}})\n",
   "```\n",
   "#### Posterior {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
+
   "metrics(icen = 'median', pred.type = 'post', outeq = {{outeq}})\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
+
   "metrics(icen = 'mean', pred.type = 'post', outeq = {{outeq}})\n",
   "```\n",
   "\n"
 )
 
 
-#numeqt <- max(res$op$data$outeq)
+
 p <- lapply(1:numeqt, function(i) {
   knitr::knit_expand(
     outeq = i,
@@ -165,25 +177,34 @@ template <- c(
   "#### Population {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
-  "res$op$plot(resid = T, icen = 'median', pred.type = 'pop', outeq = {{outeq}})\n",
+
+  "p <- res$op$plot(resid = T, icen = 'median', pred.type = 'pop', outeq = {{outeq}}, print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) p\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
-  "res$op$plot(resid = T, icen = 'mean', pred.type = 'pop', outeq = {{outeq}})\n",
+
+  "p <- res$op$plot(resid = T, icen = 'mean', pred.type = 'pop', outeq = {{outeq}}, print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) p\n",
   "```\n",
   "#### Posterior {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
-  "res$op$plot(resid = T, icen = 'median', pred.type = 'post', outeq = {{outeq}})\n",
+
+  "p <- res$op$plot(resid = T, icen = 'median', pred.type = 'post', outeq = {{outeq}}, print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) p\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
-  "res$op$plot(resid = T, icen = 'mean', pred.type = 'post', outeq = {{outeq}})\n",
+
+  "p <- res$op$plot(resid = T, icen = 'mean', pred.type = 'post', outeq = {{outeq}}, print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) p\n",
   "```\n",
   "\n"
 )
 
-#numeqt <- max(res$op$data$outeq)
+
+
 p <- lapply(1:numeqt, function(i) {
   knitr::knit_expand(
     outeq = i,
@@ -236,8 +257,9 @@ par_lims %>%
 ### Marginal plots
 Probability distributions, dashed lines are limits.
 
-``` {r}
-res$final$plot()
+``` {r results = "asis"}
+p <- res$final$plot(print = FALSE)
+p
 ```
 
 <!-- ### Posterior parameter distributions -->
@@ -287,10 +309,11 @@ if(np){
 
 ## Cycle information
 ```{r fig.dim = c(10, 6), results = "asis"}
-if(res$cycle$status == "Posterior"){
-  cat("Posterior run, so no cycles.")
+if (res$cycle$status == "Posterior") {
+  knitr::asis_output("Posterior run, so no cycles.")
 } else {
-  res$cycle$plot()
+  p <- res$cycle$plot(print = FALSE)
+  p
 }
 ```
 

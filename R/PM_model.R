@@ -720,7 +720,7 @@ PM_model <- R6::R6Class(
           print = function(...) {
             
             cli::cli_div(theme = list(
-              span.eqs = list(color = "blue")
+              span.eqs = list(color = navy())
             ))
             
             cli::cli_h1("Model summary")
@@ -938,7 +938,7 @@ PM_model <- R6::R6Class(
               overwrite = FALSE,
               algorithm = "NPAG", #POSTPROB for posteriors
               report = getPMoptions("report_template")) {
-              
+                
                 msg <- "" # status message at end of run
                 
                 if (is.null(data)) {
@@ -1105,7 +1105,7 @@ PM_model <- R6::R6Class(
                     }
                     prior <- prior %>% dplyr::select(all_of(self$model_list$parameters), prob)
                     write.csv(prior, "prior.csv", row.names = FALSE)
-
+                    
                   } else {
                     cli::cli_abort(
                       c("x" = "Error: {.arg prior} must be a numeric run number or character filename.", "i" = "Check the value.")
@@ -1113,6 +1113,13 @@ PM_model <- R6::R6Class(
                   }
                 } else {
                   prior <- "sobol"
+                }
+                
+                # get BLQ
+                if (!is.null(data$blq)) {
+                  blq <- rep(NA, dataOut)
+                } else {
+                  blq <- data$blq
                 }
                 
                 if (intern) {
@@ -1130,6 +1137,7 @@ PM_model <- R6::R6Class(
                         error_models = lapply(self$model_list$err, function(x) x$flatten()),
                         idelta = idelta,
                         tad = tad,
+                        blq = blq, # BLQ values 
                         max_cycles = cycles, #will be hardcoded in Rust to 0 for POSTPROB
                         prior = prior,
                         points = points, # only relevant for sobol prior
@@ -1164,7 +1172,7 @@ PM_model <- R6::R6Class(
                     c("x" = "Error: Currently, the rust engine only supports internal runs.", "i" = "This is a temporary limitation.")
                   )
                 }
-            }, # end fit method
+              }, # end fit method
               
               #' @description
               #' Calculate posteriors from a fitted model.
@@ -1506,7 +1514,7 @@ PM_model <- R6::R6Class(
                   }
                 ) # end private
               ) # end R6Class PM_model
-
+              
               ##### These functions create various model components
               
               #' @title Additive error model
@@ -1763,8 +1771,9 @@ PM_model <- R6::R6Class(
               #' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
               #' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
               #' a destination to the external sink. e.g., `implicit = data.frame(from = 2, to = 4)`
+              #' @param print If `TRUE`, will print the object and return it. If `FALSE`, will only return the object.
               #' @param ... Not used.
-              #' @return Plots the object.
+              #' @return A plot object of the model.
               #' @author Markus Hovd, Julian Otalvaro, Michael Neely
               #' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
               #' @export
@@ -1779,6 +1788,7 @@ PM_model <- R6::R6Class(
                 line = TRUE,
                 explicit,
                 implicit,
+                print = TRUE,
                 ...) {
                   model <- x
                   marker <- if (is.list(marker) || marker) {
@@ -2150,8 +2160,8 @@ PM_model <- R6::R6Class(
                     ggraph::geom_node_label(aes(label = cmt), position = "identity") +
                     ggraph::theme_graph() +
                     ggplot2::theme(legend.position = "none")
-                    print(g)
-                    return(invisible(graph))
+                    if (print) print(g)
+                    return(invisible(g))
                   }
                   
                   

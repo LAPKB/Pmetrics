@@ -305,7 +305,8 @@ PM_cycle <- R6::R6Class(
 #' See `xlab` for details. If `xlab` is specified as a list with formatting,
 #' then the formatting for the
 #' `xlab` will be applied to the `ylab`. To format `ylab` independently,
-#' specify a formatting list as for `xlab`.<br>
+#' specify a formatting list as for `xlab`.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param \dots Additional R plotting parameters.
 #' @return Plots a panel with the following windows: -2 times the log-likelihood at each cycle, gamma/lambda at
 #' each cycle; Akaike Information Criterion at each cyle and Bayesian (Schwartz) Information Criterion
@@ -339,6 +340,7 @@ plot.PM_cycle <- function(x,
   omit,
   grid = TRUE,
   xlab, ylab,
+  print = TRUE,
   ...) {
     if (inherits(x, "PM_cycle")) {
       data <- x$data
@@ -623,8 +625,8 @@ plot.PM_cycle <- function(x,
     ) %>%
     layout(legend = list(y = 0.4))
     
-    print(p)
-    return(p)
+    if (print) print(p)
+    return(invisible(p))
   }
   
   
@@ -767,7 +769,7 @@ plot.PM_cycle <- function(x,
     }
 
     cli::cli_div(theme = list(
-              span.blue = list(color = "blue")
+              span.blue = list(color = navy())
             ))
     cli::cli_h2("Cycle Summary")
 

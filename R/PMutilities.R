@@ -1409,3 +1409,19 @@ wtd.var <- function(x, weights = NULL,
   }
   
   
+# Round to x digits  ---------------------------------------------------
+
+#' @title Round to x digits
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Rounds a numeric value to a specified number of digits for display in flextables and plots.
+#' @details Uses [base::format] and [base::round] to round a numeric value to a specified number of digits.
+#' @param x A numeric value to be rounded.
+#' @param digits The number of digits to round to. Default is set by [getPMoptions("digits")].
+#' @return A character string representing the rounded value with the specified number of digits.
+#' @export
+
+round2 <- function(x, digits = getPMoptions("digits")) {
+  format(round(x, digits), nsmall = digits)
+}
+  
