@@ -258,19 +258,19 @@ p2 <- sub_plot(all_op_flat, nrows = nobj, titles = c(0,.8), shareX = FALSE, shar
 ### LIKELIHOOD PLOT ###
 
 like <- tibble(
-  ll = purrr::map_dbl(obj, \(x) {
+  ll = purrr::map_dbl(allObj, \(x) {
     tail(x$cycle$data$objective$neg2ll, 1) 
   }),
-  AIC = purrr::map_dbl(obj, \(x) {
+  AIC = purrr::map_dbl(allObj, \(x) {
     tail(x$cycle$data$objective$aic, 1) 
   }),
-  BIC = purrr::map_dbl(obj, \(x) {
+  BIC = purrr::map_dbl(allObj, \(x) {
     tail(x$cycle$data$objective$bic, 1) 
   })
 )
 names(like)[1] <- "-2*LL"
 
-gamlam <- purrr::imap(obj, \(x, y) {
+gamlam <- purrr::imap(allObj, \(x, y) {
   x$cycle$data$gamlam %>% filter(cycle == max(cycle)) %>%
   mutate(Run = y)
 }) %>% bind_rows() 
@@ -359,7 +359,7 @@ layout(
 
 
 # get population points
-final <- purrr::map(obj, function(x) {
+final <- purrr::map(allObj, function(x) {
   x$final$data
 })
 # find intersecting parameters
@@ -373,7 +373,7 @@ t <- sapply(2:nobj, function(x) {
   if (length(intersect) > 0) {
     popPoints1 <- popPointsRef[, intersect]
     popPoints2 <- thisPopPoints[, intersect]
-    t <- do.call(mtsknn.eq, args = c(list(x = popPoints1, y = popPoints2), argsMTSKNN))$pval
+    t <- do.call(mtsknn.eq, args = c(list(x = popPoints1, y = popPoints2), argsKnn))$pval
   } else {
     t <- NA
   }
@@ -384,7 +384,7 @@ t <- c(NA, t)
 
 
 ### make table of parameter names
-par <- purrr::map_chr(obj, \(x) paste(x$model$model_list$parameters, collapse = ", ")) %>% 
+par <- purrr::map_chr(allObj, \(x) paste(x$model$model_list$parameters, collapse = ", ")) %>% 
 strsplit(",\\s*") 
 
 all_par <- par %>% unlist() %>% unique() %>%
@@ -424,22 +424,21 @@ flextable::autofit()
 # make results table
 results <- data.frame(
   run = seq(1:nobj),
-  type = objClass,
-  nsub = purrr::map_int(obj, \(x) {
+  nsub = purrr::map_int(allObj, \(x) {
     x$final$nsub
   }),
-  nvar = purrr::map_int(obj, \(x) length(x$model$model_list$parameters)),
-  par = purrr::map_chr(obj, \(x) paste(x$model$model_list$parameters, collapse = ", ")),
-  converged = purrr::map_lgl(obj, \(x) {
+  nvar = purrr::map_int(allObj, \(x) length(x$model$model_list$parameters)),
+  par = purrr::map_chr(allObj, \(x) paste(x$model$model_list$parameters, collapse = ", ")),
+  converged = purrr::map_lgl(allObj, \(x) {
     x$cycle$data$status == "Converged"
   }),
-  ll = purrr::map_dbl(obj, \(x) {
+  ll = purrr::map_dbl(allObj, \(x) {
     tail(x$cycle$data$objective$neg2ll, 1) 
   }),
-  aic = purrr::map_dbl(obj, \(x) {
+  aic = purrr::map_dbl(allObj, \(x) {
     tail(x$cycle$data$objective$aic, 1) 
   }),
-  bic = purrr::map_dbl(obj, \(x) {
+  bic = purrr::map_dbl(allObj, \(x) {
     tail(x$cycle$data$objective$bic, 1) 
   }),
   popBias = sumobjBoth %>% filter(metric == "pop_bias") %>% pull(value),
@@ -448,13 +447,15 @@ results <- data.frame(
   postImp = sumobjBoth %>% filter(metric == "post_imp") %>% pull(value),
   pval = t
 )
-names(results)[7] <- "-2*LL"
+names(results)[6] <- "-2*LL"
 row.names(results) <- 1:nobj
 if (getPMoptions("ic_method") == "aic"){
   results$bic <- NULL
 } else {
   results$aic <- NULL
 }
+  
+class(results) <- c("PM_compare", "data.frame")
 
 #render and open the report
 report_list <- list(
@@ -481,12 +482,16 @@ if(plot){
 }
 
 
-return(invisible(list(results, p2)))
+return(invisible(results))
 }
 
-
-# quarto::quarto_render(
-#   input = glue::glue(here::here(),"/inst/report/templates/compare.qmd"),
-#   execute_params = list(results = results)
-# )
-# browseURL(glue::glue(here::here(),"/inst/report/templates/compare.html"))
+#' @title Print method for PM_compare objects
+#' @description
+#' ` r lifecycle::badge("stable")`
+#' Prints a summary of the PM_compare object.
+#' @param x A PM_compare object.
+#' @method print PM_compare
+#' @export
+print.PM_compare <- function(x){
+  cli_df(x) # in PM_utilities
+}

@@ -118,7 +118,7 @@ PM_post <- R6::R6Class(
           values_to = "pred"
         ) %>%
         dplyr::rename(icen = name) %>%
-        mutate(icen = case_when(
+        mutate(icen = dplyr::case_when(
           icen == "post_median" ~ "median",
           icen == "post_mean" ~ "mean"
         )) %>%

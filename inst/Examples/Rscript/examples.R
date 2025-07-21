@@ -156,7 +156,7 @@ setwd(wd)
 dir.create("Runs")
 setwd("Runs")
 
-run1 <- mod1$fit(data = exData, run = 1, overwrite = TRUE) # execute the fit and return the results to run1
+run1 <- mod1$fit(data = exData, run = 3, overwrite = TRUE) # execute the fit and return the results to run1
 
 
 # 
@@ -354,7 +354,7 @@ PM_compare(run1, run2)
 # for model validation - be sure to have executed the NPAG run above
 # Type ?makeValid in the R console for help.
 # Choose wt as the covariate to bin. Accept all default bin sizes.
-valid_2 <- run12$validate(limits = c(0, 3))
+valid_2 <- run2$validate(limits = c(0, 3))
 
 # To see what it contains, use:
 valid_2
@@ -370,7 +370,7 @@ plot(valid_2)
 run12$valid$plot()
 
 # or S3
-plot(run12$valid)
+plot(run2$valid)
 
 # Generate a prediction-corrected visual predictive check; type ?plot.PMvalid in the R console for help.
 valid_2$plot(type = "pcvpc")
@@ -395,14 +395,14 @@ npc_2
 # EXERCISE 5 - SIMULATOR RUN ----------------------------------------------
 
 setwd(wd)
-dir.create("Sim")
-setwd("Sim")
+dir.create("../Sim")
+setwd("../Sim")
 
 # The following will simulate 100 sets of parameters/concentrations using the
 # first subject in the data file as a template.
 # Limits are put on the simulated parameter ranges to be the same as in the model.
 # The population parameter values from the NPAG run in exercise 2 are used for the Monte Carlo Simulation.
-simdata <- run12$sim(include = 1, limits = NA, nsim = 100)
+simdata <- run2$sim(include = 1, limits = NA, nsim = 100)
 
 # Below is the alternate way to simulate, which is particularly useful if you define 
 # your own population parameters. See ?SIMrun for details on this as well as
@@ -418,7 +418,7 @@ simOther <- PM_sim$new(poppar = poppar, data = exData, model = mod1,
 
 
 # simulate from a model with new data
-sim_new <- run12$sim(
+sim_new <- run2$sim(
   data = "../src/ptaex1.csv",
   include = 2, limits = NA,
   predInt = c(120, 144, 0.5)

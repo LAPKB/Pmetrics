@@ -437,7 +437,7 @@ PM_sim <- R6::R6Class(
           "i" = "See ?PM_sim for help."
         ))
       }
-      
+
       # CASE 1 - poppar is PM_result
       
       if (inherits(poppar, "PM_result")) {
@@ -568,7 +568,7 @@ PM_sim <- R6::R6Class(
       }
       
       # finally, call the simulator, which updates self$data
-      
+  
       private$SIMrun(
         poppar = final, limits = limits, model = model,
         data = data, split = split,
@@ -719,6 +719,7 @@ PM_sim <- R6::R6Class(
       
       # get information from data
       template <- data$standard_data
+
       template_ncov <- getCov(template)$ncov # in PMutilities
       template_covnames <- getCov(template)$covnames
       template_numeqt <- max(template$outeq, na.rm = T)
@@ -1549,7 +1550,7 @@ PM_sim <- R6::R6Class(
       
       # first, add temporary index to ensure id order remains the same
       dat2 <- template %>%
-        mutate(.id = dense_rank(id))
+        mutate(.id = dplyr::dense_rank(id))
       
       # second, add predInt if necessary
       if (!is.na(predTimes[1])) {

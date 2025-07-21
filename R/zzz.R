@@ -4,7 +4,7 @@
 
     cli::cli_h3("Welcome to Pmetrics {installedVersion}!")
     cli::cli_text("For more information or to report issues, visit our GitHub page: https://github.com/LAPKB/Pmetrics")
-    cli::cli_text("For documentation, run PM_manual() in R")
+    cli::cli_text("For documentation, run {.help PM_manual} in R.")
 
     # Check Rust installation
     rustcVersion <- tryCatch(

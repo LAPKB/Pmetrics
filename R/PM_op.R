@@ -153,7 +153,7 @@ private = list(
     # left_join(pred_raw, by = c("id", "time", "outeq")) %>%
     pivot_longer(cols = c(pop_mean, pop_median, post_mean, post_median)) %>%
     mutate(
-      icen = case_when(
+      icen = dplyr::case_when(
         name == "pop_mean" ~ "mean",
         name == "pop_median" ~ "median",
         name == "post_mean" ~ "mean",
@@ -161,7 +161,7 @@ private = list(
       )
     ) %>%
     mutate(
-      pred.type = case_when(
+      pred.type = dplyr::case_when(
         name == "pop_mean" ~ "pop",
         name == "pop_median" ~ "pop",
         name == "post_mean" ~ "post",
@@ -171,7 +171,7 @@ private = list(
     select(-name) %>%
     dplyr::rename(pred = value) %>%
     dplyr::mutate(outeq = outeq + 1) %>%
-    dplyr::mutate(obs = na_if(obs, -99)) %>%
+    dplyr::mutate(obs = dplyr::na_if(obs, -99)) %>%
     dplyr::rowwise() %>%
     mutate(d = pred - obs) %>%
     mutate(ds = d * d) %>%
@@ -689,7 +689,7 @@ plot.PM_op <- function(x,
       N <- length(data$obs[!is.na(data$obs)])
       
       sumstat <- data %>% select(time, obs, pred) %>%
-      summarise(across(
+      dplyr::summarize(across(
         .cols = everything(),  
         .fns = list(
           min = ~min(.x, na.rm = TRUE),
@@ -861,6 +861,7 @@ plot.PM_op <- function(x,
       # Bias and imprecision
       
       metric_info <- data$pe %>% get_metric_info()
+      with_percent <- getPMoptions("bias_method") %>% stringr::str_detect("percent_")
       
       ft2 <- metric_info$metric_vals %>% 
       mutate(across(everything(), ~if(with_percent) paste0(.x, "%") else .x)) %>%
@@ -887,7 +888,7 @@ plot.PM_op <- function(x,
         params = list(object = obj),
         quiet = TRUE
       )
-      suppressWarnings(htmltools::html_print(includeHTML(glue::glue("{temp}/summary_op.html"))))
+      suppressWarnings(htmltools::html_print(htmltools::includeHTML(glue::glue("{temp}/summary_op.html"))))
       return(invisible(NULL))
       
     } else {
