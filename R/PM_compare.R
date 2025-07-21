@@ -12,8 +12,8 @@
 #' parameters that are included in the first model.  The P-value is the
 #' comparison between each model and the first model in
 #' the list.  Missing P-values are when a model has no parameter names
-#' in common with the first model, and for the first model compared to itself,
-#' or when models from IT2B runs are included.  Significant P-values indicate
+#' in common with the first model, and for the first model compared to itself.  
+#' Significant P-values indicate
 #' that the null hypothesis should be rejected, i.e. the joint distributions
 #' between the two compared models for that parameter are significantly different.
 #'
@@ -23,42 +23,26 @@
 #' @param ... Additional [PM_result] objects to compare.  See details.
 #' Also, parameters to be passed to [plot.PM_op]
 #' if `plot` is true as well as to [mtsknn.eq].  Order does not matter.
-#' @param bias One of the following specifying the prediction bias calculation.
-#' * "me" for mean error (pred - obs)
-#' * "mwe" for mean weighted error (default when `percentage = TRUE`)
-#' @param imprecision There are many more options for imprecision (scatter). Choose
-#' one of the following.
-#' * "mse" for mean squared error
-#' * "mwse" for mean weighted squared error
-#' * "rmse" for root mean squared error
-#' * "bamse" for bias-adjusted mean squared error
-#' * "bamwse" for bias-adjusted mean weighted squared error
-#' * "rbamse" for root bias-adjusted mean squared error
-#' * "rbamwse" for root bias-adjusted mean weighted squared error (default when `percentage = TRUE`)
-#' @param percentage Boolean operator to calculate the bias
-#' and imprecision as percentages. Default is `TRUE`.
 #' @param icen Can be either "median" for the predictions based on medians of
 #' `pred.type` parameter value distributions, or "mean".  Default is "median".
-#' @param outeq Number of the output equation to compare; default is 1
-#' @param plot Boolean operator selecting whether to generate observed vs.
-#' predicted plots for each data object as in [plot.PM_op].
-#' @return A data frame with the following objects for each model to analyze:
+#' @param outeq Number of the output equation to compare; default is 1.
+#' @param plot Boolean operator selecting whether to generate the report.
+#' @return If `plot = TRUE`, a report will be generated comparing the selected models.
+#' Additionally, a data frame with the following objects for each model is invisbily returned.
 #' * **run** The run number of the data
-#' * **type** NPAG or IT2B data
 #' * **nsub** Number of subjects in the model
 #' * **nvar** Number of random parameters in the model
 #' * **par** Names of random parameters
 #' * **cycles** Number of cycles run
 #' * **converge** Boolean value if convergence occurred.
 #' * **ll** Final cycle -2*Log-likelihood
-#' * **aic** Final cycle Akaike Information Criterion
-#' * **bic** Final cycle Bayesian (Schwartz) Information Criterion
-#' * **popBias** Bias, or mean weighted prediction error of predictions based on population parameters minus observations
-#' * **popImp** Imprecision, or bias-adjusted mean weighted squared error of predictions based on population parameters minus observations
-#' * **popPerRMSE** Percent root mean squared error of predictions based on population parameters minus observations
-#' * **postBias** Bias, or mean weighted prediction error of predictions - observations  based on posterior parameters
-#' * **postImp** Imprecision, or bias-adjusted mean weighted squared error of predictions - observations based on posterior parameters
-#' * **postPerRMSE** Percent root mean squared error of predictions based on posterior parameters minus observations
+#' * One of the following, depending on the option set in [setPMoptions]:
+#'   * **aic** Final cycle Akaike Information Criterion OR
+#'   * **bic** Final cycle Bayesian (Schwartz) Information Criterion
+#' * **popBias** Bias, calculated by the method set in [setPMoptions], of the predictions based on `icen` population parameters
+#' * **popImp** Imprecision, calculated by the method set in [setPMoptions], of the predictions based on `icen` population parameters
+#' * **postBias** Bias, calculated by the method set in [setPMoptions], of the predictions based on `icen` posterior parameters
+#' * **postImp** Imprecision, calculated by the method set in [setPMoptions], of the predictions based on `icen` posterior parameters
 #' * **pval** P-value for each model compared to the first. See details.
 #' @author Michael Neely
 #' @seealso [PM_load], [plot.PM_op], [mtsknn.eq]
@@ -78,90 +62,35 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = TRUE) {
   
   # parse dots
   arglist <- list(...)
-  namesPlot <- names(formals(plot.PM_op))
-  namesMTSKNN <- names(formals(mtsknn.eq))
-  # get the args to plot.PM_op and set defaults if missing
-  plotArgs <- which(names(arglist) %in% namesPlot)
-  argsPlot <- arglist[plotArgs]
-  MTSKNNargs <- which(names(arglist) %in% namesMTSKNN)
-  argsMTSKNN <- arglist[MTSKNNargs]
-  if (!"k" %in% names(argsMTSKNN)) argsMTSKNN$k <- 3
-  if (!"print" %in% names(argsMTSKNN)) argsMTSKNN$print <- FALSE
-  # get the others if there and assume that they are PMdata objects for now
-  if ((length(arglist) - length(c(plotArgs, MTSKNNargs))) > 0) {
-    if (length(c(plotArgs, MTSKNNargs)) == 0) {
-      argsPM <- 1:length(arglist)
-    } else {
-      argsPM <- (1:length(arglist))[-c(plotArgs, MTSKNNargs)]
-    }
-  } else {
-    argsPM <- NULL
-  }
   
-  if (length(argsPM) == 0) obj <- list(x, y)
-  if (length(argsPM) >= 1) obj <- c(list(x, y), arglist[argsPM])
+
+  argsPlot <- arglist %>% `[`(names(.) %in% names(formals(plot.PM_op))) # plot arguments
+  argsKnn <- arglist %>% `[`(names(.) %in% names(formals(mtsknn.eq))) # knn argument
   
-  # declare global variables to avoid problems with R CMD Check
-  # NPAGout <- NULL
-  # get each obj
-  nobj <- length(obj)
-  # allObj <- purrr::map(obj, function(x) {
-  #   if (!is.null(x$NPdata)) {
-  #     x$NPdata
-  #   } else {
-  #     x$ITdata
-  #   }
-  # })
+  # set defaults if missing
+  argsKnn <- modifyList(
+    list(k = 3, print = FALSE), # default values for mtsknn.eq
+    argsKnn
+  )
+
+  allObj <- c(x, y, arglist) %>% purrr::keep(\(x) inherits(x, "PM_result")) # PM_result objects
+  nobj <- length(allObj)
   
-  allObj <- obj
-  
-  objClass <- purrr::map_chr(allObj, \(x) class(x)[1])
-  # check for objects that are not PM_result and remove them if found
-  yesPM <- which(objClass %in% c("PM_result"))
-  allObj <- allObj[yesPM]
-  objClass <- objClass[yesPM]
   
   # check for zero cycle objects
   cycles <- unlist(sapply(allObj, function(x) max(x$cycle$data$objective$cycle)))
   if (any(cycles == 0)) {
-    cli::cli_abort(c("x" = "Do not include 0-cycle runs: {paste(which(cycles == 0), collapse = ', '), '\n', sep = '')}"))
+    cli::cli_warn(c("!" = "These objects were excluded because they had no cycles: {which(cycles == 0)}."))
+    allObj <- allObj %>% purrr::discard(\(x) max(x$cycle$data$objective$cycle) == 0)
   }
+
+  # grab op data
   
-  op <- purrr::map(obj, function(x) {
+  op <- purrr::map(allObj, function(x) {
     x$op$data
   })
   
-  # if (plot) {
-  #   if (!"resid" %in% names(argsPlot)) {
-  #     if (nobj <= 3) {
-  #       par(mfrow = c(nobj, 2))
-  #     } else {
-  #       par(mfrow = c(3, 2))
-  #       devAskNewPage(ask = T)
-  #     }
-  #     for (i in 1:length(op)) {
-  #       do.call(plot.PM_op, args = c(list(
-  #         x = op[[i]], pred.type = "pop", icen = icen, outeq = outeq,
-  #         title = paste("Model", i, "Population")
-  #       ), argsPlot))
-  #       do.call(plot.PM_op, args = c(list(
-  #         x = op[[i]], pred.type = "post", icen = icen, outeq = outeq,
-  #         title = paste("Model", i, "Posterior")
-  #       ), argsPlot))
-  #     }
-  #   } else {
-  #     devAskNewPage(ask = T)
-  #     for (i in 1:length(op)) {
-  #       do.call(plot.PM_op, args = c(list(
-  #         x = op[[i]], pred.type = "post", icen = icen, outeq = outeq,
-  #         title = paste("Model", i)
-  #       ), argsPlot))
-  #     }
-  #   }
-  #   par(mfrow = c(1, 1))
-  #   devAskNewPage(ask = F)
-  # }
-  
+ 
   # get summaries of op for outeq
   
   get_metric <- function(this_obj){
@@ -210,7 +139,6 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = TRUE) {
   } else {
     tickformat <- NULL
   }
-  
   
   
   x_labels <- c("Bias", "Imprecision")
@@ -300,8 +228,34 @@ layout(
   ),
   margin = list(b = 80)  # extra space at bottom for labels
 )
+  
+  
+### OP plots
+  
+all_op <- op %>% purrr::imap(\(x, y) {
+  pop <- x %>% plot.PM_op(
+    outeq = outeq,
+    icen = icen,
+    pred.type = "pop",
+    print = FALSE,
+    title = list(text = glue::glue("Run {y} Pop"), font = list(color = black(alpha = 0.3), size = 16)),
+    stats = list(font = list(size = 10))
+  )
+  post <- x %>% plot.PM_op(
+    outeq = outeq,
+    icen = icen,
+    pred.type = "post",
+    print = FALSE,
+    title = list(text = glue::glue("Run {y} Post"), font = list(color = black(alpha = 0.3), size = 16)),
+    stats = list(font = list(size = 10))
+  )
+  list(pop = pop, post = post)
+}) 
+  
+all_op_flat <- all_op %>% list_flatten 
+p2 <- sub_plot(all_op_flat, nrows = nobj, titles = c(0,.8), shareX = FALSE, shareY = FALSE, print = FALSE, margin = 0.02)
 
-# likelihood plot
+### LIKELIHOOD PLOT ###
 
 like <- tibble(
   ll = purrr::map_dbl(obj, \(x) {
@@ -314,23 +268,48 @@ like <- tibble(
     tail(x$cycle$data$objective$bic, 1) 
   })
 )
-  names(like)[1] <- "-2*LL"
+names(like)[1] <- "-2*LL"
+
+gamlam <- purrr::imap(obj, \(x, y) {
+  x$cycle$data$gamlam %>% filter(cycle == max(cycle)) %>%
+  mutate(Run = y)
+}) %>% bind_rows() 
+
+not_same <- gamlam %>% group_by(outeq) %>%
+summarize(same_val = n_distinct(round(value, getPMoptions("digits"))) == 1, same_type = n_distinct(type) == 1) %>%
+filter(if_any(everything(), ~ .x == FALSE))
+
+if(length(not_same$outeq)>0){
+  ft1 <- gamlam %>% select(Run, everything()) %>%
+  set_names(c("Run", "Cycle", "Value", "Outeq", "Type")) %>%
+  mutate(Value = round2(Value)) %>%
+  flextable::flextable() %>%
+  flextable::theme_zebra() %>%
+  flextable::align_text_col(header = TRUE) %>%
+  flextable::bg(part = "header", bg = blue()) %>%
+  flextable::autofit()
+} else {
+  ft1 <- NULL
+}
+
+
+
 
 if (getPMoptions("ic_method") == "aic"){
   like$BIC <- NULL
 } else {
   like$AIC <- NULL
 }
-  
+
 df <- like %>% mutate(run = paste0("Run ", seq(1:nrow(like)))) %>%
-  pivot_longer(
-    1:2,
-    names_to = "metric",
-    values_to = "value"
-  )
+pivot_longer(
+  1:2,
+  names_to = "metric",
+  values_to = "value"
+)
 
 
-p2 <- plot_ly() %>%
+p3 <- plot_ly() %>%
 add_trace(
   data = df,
   x = ~metric,
@@ -345,7 +324,7 @@ add_trace(
   showlegend = TRUE
 )
 
-p2 <- p2 %>%
+p3 <- p3 %>%
 add_trace(
   data = df,
   x = ~metric,
@@ -362,7 +341,7 @@ add_trace(
 )
 
 
-p2 <- p2 %>%
+p3 <- p3 %>%
 layout(
   xaxis = list(
     title = "", # remove default axis title,
@@ -373,6 +352,10 @@ layout(
   ),
   margin = list(b = 80, l = 150, r = 150)  # extra space at bottom for labels
 )
+
+  
+  
+
 
 
 # get population points
@@ -398,6 +381,47 @@ t <- sapply(2:nobj, function(x) {
 })
 
 t <- c(NA, t)
+
+
+### make table of parameter names
+par <- purrr::map_chr(obj, \(x) paste(x$model$model_list$parameters, collapse = ", ")) %>% 
+strsplit(",\\s*") 
+
+all_par <- par %>% unlist() %>% unique() %>%
+sort()
+
+
+tbl_par <- map(par, \(x){
+  all_par %in% x
+  
+})%>% map(~ set_names(., all_par)) %>%
+bind_rows() %>%
+mutate(Run = 1:n()) %>%
+select(Run, everything())
+
+
+ft2 <- tbl_par %>% 
+mutate(across(-Run, \(x){
+  if_else(row_number() == 1, 
+  #row 1
+  ifelse(x, "✅", "❌"),
+  #other rows
+  ifelse(x, "☑️", "❌")
+)
+})) %>% 
+mutate(across(-Run, \(x){
+  ifelse(x == "☑️" & x[1] == "✅", "✅", x )
+})) %>%
+mutate(P = round2(t)) %>%
+mutate(P = ifelse(stringr::str_trim(P) == "NA", "Ref", P)) %>%
+flextable::flextable() %>%
+flextable::set_header_labels(P = "P-value") %>%
+flextable::theme_zebra() %>%
+flextable::align_text_col(header = TRUE) %>%
+flextable::bg(part = "header", bg = blue()) %>%
+flextable::autofit()
+
+# make results table
 results <- data.frame(
   run = seq(1:nobj),
   type = objClass,
@@ -434,8 +458,11 @@ if (getPMoptions("ic_method") == "aic"){
 
 #render and open the report
 report_list <- list(
-  p1 = p1,
-  p2 = p2,
+  p1 = p1, # bias and imprecision comparison
+  p2 = p2, # op comparison
+  p3 = p3, # likelihood comparison
+  ft1 = ft1, # gamlam comparison: NULL if equal within PMoptions digits
+  ft2 = ft2, # model parameter comparison
   metric_types = sumobjPop[[1]]$pe %>% get_metric_info() %>% pluck("metric_types")
 )
 
@@ -454,7 +481,7 @@ if(plot){
 }
 
 
-return(invisible(results))
+return(invisible(list(results, p2)))
 }
 
 
