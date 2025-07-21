@@ -237,33 +237,33 @@ amendDots <- function(dots) {
   if (!all(otherArgs)) { # some are false
     misplaced_args <- names(dots)[!otherArgs]
     misplaced_values <- as.character(dots[!otherArgs])
- args_to_check <- c("density", "lwd", "col", "lty")
-suggestion_templates <- c(
-  "Did you mean {.code line = list(density = {val})}?",
-  "Did you mean {.code line = list(width = {val})}?",
-  "Did you mean {.code line = list(color = {val})}?",
-  "Did you mean {.code line = list(dash = {val})}?"
-)
-
-# Base message
-msg <- c(
-  "!" = "{.blue {paste(misplaced_args, collapse = ', ')}} {?is/are} misplaced or invalid and will be ignored."
-)
-
-# Build suggestions with map_chr
-msg <- c(
-  msg,
-  map_chr(seq_along(args_to_check), function(i) {
-    arg <- args_to_check[i]
-    if (arg %in% misplaced_args) {
-      val <- misplaced_values[[arg]]
-      val_expr <- paste0("{.blue ", deparse(val), "}")
-      gsub("{val}", val_expr, suggestion_templates[i], fixed = TRUE)
-    } else {
-      ""  # No suggestion for unmatched arg
-    }
-  }) %>% purrr::discard(~ .x == "")  # Drop empty strings
-)
+    args_to_check <- c("density", "lwd", "col", "lty")
+    suggestion_templates <- c(
+      "Did you mean {.code line = list(density = {val})}?",
+      "Did you mean {.code line = list(width = {val})}?",
+      "Did you mean {.code line = list(color = {val})}?",
+      "Did you mean {.code line = list(dash = {val})}?"
+    )
+    
+    # Base message
+    msg <- c(
+      "!" = "{.blue {paste(misplaced_args, collapse = ', ')}} {?is/are} misplaced or invalid and will be ignored."
+    )
+    
+    # Build suggestions with map_chr
+    msg <- c(
+      msg,
+      map_chr(seq_along(args_to_check), function(i) {
+        arg <- args_to_check[i]
+        if (arg %in% misplaced_args) {
+          val <- misplaced_values[[arg]]
+          val_expr <- paste0("{.blue ", deparse(val), "}")
+          gsub("{val}", val_expr, suggestion_templates[i], fixed = TRUE)
+        } else {
+          ""  # No suggestion for unmatched arg
+        }
+      }) %>% purrr::discard(~ .x == "")  # Drop empty strings
+    )
     cli::cli_div(theme = list(
       span.blue = list(color = navy())
     ))
@@ -541,8 +541,8 @@ if (method == "lm") {
     )
     regStat <- paste0(
       regStat, "<br>",
-      "Bias = ", format(sumStat$pe$mwpe, digits = 3), "<br>",
-      "Imprecision  = ", format(sumStat$pe$bamwspe, digits = 3)
+      "Bias = ", get_metric_info(sumStat$pe)$metric_vals$Bias, "<br>",
+      "Imprecision  = ", get_metric_info(sumStat$pe)$metric_vals$Imprecision
     )
   }
   
@@ -776,6 +776,7 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
 #' "merge" is used, layout options found later in the sequence of plots
 #' will override options found earlier in the sequence. This argument also
 #' accepts a numeric vector specifying which plots to consider when merging.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @return A plot and plotly object combining all the plots in `...`,
 #' which can be further modified.
 #' @export
@@ -799,9 +800,18 @@ sub_plot <- function(...,
   shareY = FALSE,
   titleX = shareX,
   titleY = shareY,
-  which_layout = "merge") {
+  which_layout = "merge",
+  print = TRUE) {
     # number of plots
     plots <- list(...)
+    if (length(plots) == 1){
+      if (inherits(plots, "list")){ # a list of plotly objects 
+        plots <- plots %>% purrr::list_flatten()
+        if (!all(purrr::map_lgl(plots, inherits, "plotly"))) {
+          cli::cli_abort(c("x" = "All elements in the list must be plotly objects."))
+        }
+      }
+    }
     n_plots <- length(plots)
     if (nrows > n_plots) nrows <- n_plots # sanity check
     
@@ -821,11 +831,13 @@ sub_plot <- function(...,
         showarrow = FALSE
       )
     })
-    
+
     # remove titles from plots
     plots <- purrr::map(plots, function(p) {
       purrr::modify_in(p, list("x", "layoutAttrs", length(p$x$layoutAttrs), "title", "text"), \(p) "")
     })
+  
+  
     
     # calculate relative x and y based on plot number and rows
     if (!is.null(titles) && length(titles) == 2) { # we have x and y
@@ -847,6 +859,9 @@ sub_plot <- function(...,
       } else {
         rev(seq(y_adj, 1, y_increment))
       }
+
+      x_list <- x_list + margin
+      y_list <- y_list + margin
       
       plot_coords <- expand.grid(col = x_list, row = y_list) # first arg changes fastest
       
@@ -870,9 +885,9 @@ sub_plot <- function(...,
       which_layout = which_layout
     ) %>%
     plotly::layout(annotations = plot_annotations)
-    print(p)
-    return(p)
-  }
+    if (print) print(p)
+    return(invisible(p))
+}
   
   
   #' @title Get color palette
