@@ -1,5 +1,5 @@
 ---
-title: "Pmetrics Model Comparison"
+title: "&#32;"
 output: html_document
 params:
   results: null
@@ -15,8 +15,31 @@ library(plotly)
 
 res <- params$results
 ```
+## Pmetrics Run Comparison {.tabset .tabset-fade}
 
-## Prediction Errors
+
+### Likelihood 
+```{r}
+#| name: "likelihood"
+#| echo: false
+
+
+res$p3
+
+if(!is.null(res$ft1)){
+  res$ft1
+}
+
+if(!is.null(res$ft1)){
+  markdown(c("**Note:** Final cycle gamma/lambda are not the same for all runs. Comparison by likelihood is not valid if these differ, as shown above.<br><br>",
+  glue::glue("For models with the same final gamma/lambda, likelihood can be compared across runs. Models with lower values are more likely. {toupper(getPMoptions('ic_method'))} is a function of the likelihood, penalized for the number of parameters in the model.")))
+} else {
+  markdown(c("**Note:**", glue::glue("Models with lower values are more likely. {toupper(getPMoptions('ic_method'))} is a function of the likelihood, penalized for the number of parameters in the model.")))
+}
+```
+
+
+### Prediction Errors 
 ```{r}
 #| name: "prediction_errors"
 #| echo: false
@@ -24,14 +47,30 @@ res <- params$results
 res$p1
 
 ```
-**Bias** is `r res$metric_types$bias` $pred - obs$. **Imprecision** is `r res$metric_types$imprecision`. Bias is the inverse of accuracy and imprecision is the mean variability in bias (scatter) across all predictions. Ideal for both bias and imprecision is 0.
+**Bias** is `r res$metric_types$bias` $pred - obs$. **Imprecision** is `r res$metric_types$imprecision`. Bias is the inverse of accuracy and imprecision is the mean variability in bias (scatter) across all predictions. **Ideal for both bias and imprecision is 0**, i.e., models closest to the horizontal 0 line are most acccurate and precise. Change the bias and imprecision metrics with `setPMoptions()`.
 
-## Likelihood
+### Obs vs Pred Plots
 ```{r}
-#| name: "likelihood"
+#| name: "obs_vs_pred"
 #| echo: false
+#| fig.width: 10
+#| fig.height: 10
 
 res$p2
 
 ```
-Models with lower values are more likely. `r toupper(getPMoptions("ic_method"))` is a function of the likelihood, penalized for the number of parameters in the model.
+
+
+### Model Parameters
+```{r}
+#| name: "model_parameters"
+#| echo: false
+#| ft.align: "left"
+#| ft.width: 100%
+
+res$ft2
+
+```
+* ❌ = parameters not present in a model. 
+* ☑️ = parameters present but not shared with the model in Run 1. 
+* ✅ = parameters present and shared with the model in Run 1. They are used to calculate the P-value for the distribution of support point values comared to the first run. P-values <0.05 suggest a sigificantly different distribution of the joint probability value distribution across parameters with green check boxes using a k-nearest neighbors test.
