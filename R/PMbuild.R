@@ -14,7 +14,7 @@ PM_build <- function() {
   if (is_rustup_installed()) {
     cat("Rust was detected in your system, Fetching dependencies and building base project.\n")
     template <- dummy_compile()
-    setPMoptions(rust_template = template)
+    
   } else {
     cat("\n Rust was not detected in your system, this can be caused by multiple reasons:\n")
     cat("* You have not installed rustup in your system, Follow the installation instructions at https://www.rust-lang.org/tools/install\n")

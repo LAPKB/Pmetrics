@@ -1237,7 +1237,7 @@ errfix <- function(data2, model, err, quiet) {
     # convert to "." then NA
     data2 <- data2 %>%
     mutate(across(everything(), ~ str_replace_all(.x, "(?<!\\d)\\s*\\.+\\s*", "."))) %>%
-    mutate(across(everything(), ~ na_if(.x, ".")))
+    mutate(across(everything(), ~ dplyr::na_if(.x, ".")))
     report <- c(report, paste("Malformed NAs corrected."))
   }
   
@@ -2028,7 +2028,7 @@ plot.PM_data <- function(x,
       if(!is.na(y)){
         df %>%
         filter(outeq == x, out >= 0, out <= y) %>%
-        summarise(outeq = x, n = n())
+        dplyr::summarize(outeq = x, n = n())
       } else {
         data.frame(outeq = x, n = 0)
       }

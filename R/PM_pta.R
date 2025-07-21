@@ -597,7 +597,7 @@ pta_min <- function(sims, .target, .simTarg, .start, .end, .pb) {
   }
   if (nrow(mins) > 0) {
     mins <- mins %>%
-      summarise(min = min(out, na.rm = TRUE), target = target[1]) %>%
+      dplyr::summarize(min = min(out, na.rm = TRUE), target = target[1]) %>%
       ungroup()
     pdi <- mins$min / mins$target
   } else {
@@ -620,7 +620,7 @@ pta_max <- function(sims, .target, .simTarg, .start, .end, .pb) {
   }
   if (nrow(maxes) > 0) {
     maxes <- maxes %>%
-      summarise(max = max(out, na.rm = TRUE), target = target[1]) %>%
+      dplyr::summarize(max = max(out, na.rm = TRUE), target = target[1]) %>%
       ungroup()
     pdi <- maxes$max / maxes$target
   } else {

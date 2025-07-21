@@ -161,7 +161,7 @@ PM_result <- R6::R6Class(
       }
 
       if (!"data" %in% names(dots)) {
-        dots$data <- self$data$standard_data
+        dots$data <- self$data
       }
 
       if (!"model" %in% names(dots)) {

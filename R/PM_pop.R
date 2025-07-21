@@ -112,7 +112,7 @@ PM_pop <- R6::R6Class(
         select(-post_median, -post_mean) %>%
         pivot_longer(cols = c(pop_median, pop_mean), values_to = "pred") %>%
         dplyr::rename(icen = name) %>%
-        mutate(icen = case_when(
+        mutate(icen = dplyr::case_when(
           icen == "pop_median" ~ "median",
           icen == "pop_mean" ~ "mean"
         )) %>%
