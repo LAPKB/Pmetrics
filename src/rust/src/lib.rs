@@ -25,16 +25,31 @@ fn simulate_one(
     data_path: &str,
     model_path: &str,
     spp: &[f64],
+    kind: &str,
 ) -> Result<Dataframe<SimulationRow>> {
     validate_paths(data_path, model_path);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
     let subjects = data.get_subjects();
-    let rows = executor::simulate(
-        model_path.into(),
-        subjects.first().unwrap(),
-        &spp.to_vec(),
-        0,
-    )?;
+    let rows = match kind {
+        "ode" => executor::simulate::<ODE>(
+            model_path.into(),
+            subjects.first().unwrap(),
+            &spp.to_vec(),
+            0,
+        )?,
+        "analytical" => executor::simulate::<Analytical>(
+            model_path.into(),
+            subjects.first().unwrap(),
+            &spp.to_vec(),
+            0,
+        )?,
+        _ => {
+            return Err(anyhow::format_err!(
+                "{} is not a supported model type",
+                kind
+            ));
+        }
+    };
     Ok(rows.into_dataframe().unwrap())
 }
 
@@ -45,25 +60,45 @@ fn simulate_all(
     data_path: &str,
     model_path: &str,
     theta: RMatrix<f64>,
+    kind: &str,
 ) -> Dataframe<SimulationRow> {
     use rayon::prelude::*;
-    println!("Simulating all subjects in the data set");
 
     validate_paths(data_path, model_path);
     let theta = parse_theta(theta);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
     let subjects = data.get_subjects();
 
-    let rows: Vec<_> = theta
-        .par_iter()
-        .enumerate()
-        .flat_map(|(i, spp)| {
-            subjects
-                .par_iter()
-                .flat_map(|subject| executor::simulate(model_path.into(), subject, spp, i).unwrap())
-                .collect::<Vec<_>>()
-        })
-        .collect();
+    let rows: Vec<_> = match kind {
+        "ode" => theta
+            .par_iter()
+            .enumerate()
+            .flat_map(|(i, spp)| {
+                subjects
+                    .par_iter()
+                    .flat_map(|subject| {
+                        executor::simulate::<ODE>(model_path.into(), subject, spp, i).unwrap()
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .collect(),
+        "analytical" => theta
+            .par_iter()
+            .enumerate()
+            .flat_map(|(i, spp)| {
+                subjects
+                    .par_iter()
+                    .flat_map(|subject| {
+                        executor::simulate::<Analytical>(model_path.into(), subject, spp, i)
+                            .unwrap()
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .collect(),
+        _ => {
+            panic!("{} is not a supported model type", kind);
+        }
+    };
 
     rows.into_dataframe().unwrap()
 }
