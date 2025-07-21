@@ -47,6 +47,7 @@ fn simulate_all(
     theta: RMatrix<f64>,
 ) -> Dataframe<SimulationRow> {
     use rayon::prelude::*;
+    println!("Simulating all subjects in the data set");
 
     validate_paths(data_path, model_path);
     let theta = parse_theta(theta);

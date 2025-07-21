@@ -439,7 +439,7 @@ PM_opt <- R6::R6Class(
       search_grid <- data.frame(t(combn(1:nout, nsamp))) %>% dplyr::rowwise()
       pb <- progress::progress_bar$new(total = nrow(search_grid))
       Perror <- search_grid %>%
-        dplyr::summarise(val = private$perrorc1(pH, Kall, nvec = dplyr::c_across(dplyr::everything()), Cbar, pb))
+        dplyr::summarize(val = private$perrorc1(pH, Kall, nvec = dplyr::c_across(dplyr::everything()), Cbar, pb))
       
       nopt <- search_grid[which(Perror$val == min(Perror$val)), ] %>%
         purrr::as_vector(nopt[1, ]) %>%

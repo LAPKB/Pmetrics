@@ -10,7 +10,7 @@ setPMoptions <- function(launch.app = TRUE) {
     return(0)  # unknown
   }
   
-  opt_dir <- case_when(
+  opt_dir <- dplyr::case_when(
     getOS() %in% c(1, 3) ~ fs::path_expand("~/.PMopts"),
     getOS() == 2 ~ file.path(Sys.getenv("APPDATA"), "PMopts"),
     TRUE ~ tempdir()  # fallback
@@ -110,7 +110,7 @@ setPMoptions <- function(launch.app = TRUE) {
       
       br(),
       br(),
-      verbatimTextOutput("settings_location"),
+      shiny::verbatimTextOutput("settings_location"),
       br(),
       
       actionButton("open_file", "Open Options File", 
@@ -200,7 +200,7 @@ setPMoptions <- function(launch.app = TRUE) {
     
     # Launch the app without trying to launch another browser
     if(launch.app){
-      runApp(app, launch.browser = TRUE)
+      shiny::runApp(app, launch.browser = TRUE)
     }
   
   return(invisible(NULL))

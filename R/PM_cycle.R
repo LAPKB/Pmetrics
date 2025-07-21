@@ -190,7 +190,7 @@ PM_cycle <- R6::R6Class(
       pivot_wider(names_from = parameter, values_from = value) %>%
       arrange(cycle) %>%
       mutate(across(.cols = -cycle, .fns = function(x) {
-        x / first(x)
+        x / dplyr::first(x)
       }))
       
       sd <- cycle_data %>%
@@ -199,7 +199,7 @@ PM_cycle <- R6::R6Class(
       pivot_wider(names_from = parameter, values_from = value) %>%
       arrange(cycle) %>%
       mutate(across(.cols = -cycle, .fns = function(x) {
-        x / first(x)
+        x / dplyr::first(x)
       }))
       
       median <- cycle_data %>%
@@ -208,7 +208,7 @@ PM_cycle <- R6::R6Class(
       pivot_wider(names_from = parameter, values_from = value) %>%
       arrange(cycle) %>%
       mutate(across(.cols = -cycle, .fns = function(x) {
-        x / first(x)
+        x / dplyr::first(x)
       }))
       
       n_out <- length(unique(obs_raw$outeq))
@@ -230,7 +230,7 @@ PM_cycle <- R6::R6Class(
       mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
       select(cycle, value, outeq) %>% arrange(cycle, outeq) %>%
       mutate(outeq = as.numeric(outeq) + 1) %>%
-      right_join(model_types, by = "outeq")
+      dplyr::right_join(model_types, by = "outeq")
       
       
       status <- tail(cycle_data$status, 1)

@@ -282,12 +282,12 @@ PM_final <- R6::R6Class(
 
       # Pop
       popMean <- theta %>%
-        summarise(across(.cols = -prob, .fns = function(x) {
+        dplyr::summarize(across(.cols = -prob, .fns = function(x) {
           wtd.mean(x = x, weights = prob)
         }))
 
       popVar <- theta %>%
-        summarise(across(.cols = -prob, .fns = function(x) {
+        dplyr::summarize(across(.cols = -prob, .fns = function(x) {
           wtd.var(x = x, weights = prob) # in PMutilities
         }))
 
@@ -302,25 +302,25 @@ PM_final <- R6::R6Class(
         select(-prob), theta$prob, cor = TRUE)$cor
 
       popMedian <- theta %>%
-        summarise(across(-prob, \(x) wtd.quantile(x, prob, 0.5))) # in PMutilities
+        dplyr::summarize(across(-prob, \(x) wtd.quantile(x, prob, 0.5))) # in PMutilities
 
       # Posterior
 
       postMean <- post %>%
         group_by(id) %>%
-        summarise(across(.cols = -c(point, prob), .fns = function(x) {
+        dplyr::summarize(across(.cols = -c(point, prob), .fns = function(x) {
           wtd.mean(x = x, weights = prob) # in PMutilities
         }))
 
       postVar <- post %>%
         group_by(id) %>%
-        summarise(across(.cols = -c(point, prob), .fns = function(x) {
+        dplyr::summarize(across(.cols = -c(point, prob), .fns = function(x) {
           wtd.var(x = x, weights = prob) # in PMutilities
         }))
 
       postSD <- postVar %>%
         rowwise() %>%
-        summarise(across(.cols = -c(id), .fns = function(x) {
+        dplyr::summarize(across(.cols = -c(id), .fns = function(x) {
           sqrt(x)
         }))
 

@@ -1424,4 +1424,36 @@ wtd.var <- function(x, weights = NULL,
 round2 <- function(x, digits = getPMoptions("digits")) {
   format(round(x, digits), nsmall = digits)
 }
+
+
+# Print data frame in CLI format ------------------------------------------
+#' @title Print data frame in CLI format
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Prints a data frame in a format suitable for the command line interface (CLI).
+#' @details
+#' Uses [dplyr::mutate] to convert all columns to character, rounds numeric values using [round2],
+#' and formats the output using [knitr::kable] for a simple table format.
+#' # The function replaces spaces with non-breaking spaces for better alignment in the CLI.
+#' #' @param df A data frame to be printed.
+#' #' @return A formatted text output of the data frame.
+#' #' @export
+#' 
+cli_df <- function(df) {
   
+  # Convert all columns to character for uniform formatting
+  df_chr <- df %>% mutate(across(where(is.double), ~round2(.x))) %>%
+    mutate(across(everything(), ~as.character(.x, stringsAsFactors = FALSE))) 
+
+  df_tab <- knitr::kable(df_chr, "simple")
+
+  header <- df_tab[1] %>% stringr::str_replace_all(" ", "\u00A0" )
+
+  cli::cli_text("{.strong {header}}")
+
+  for (i in 2:length(df_tab)) {
+
+    cli::cli_text(df_tab[i] %>% str_replace_all(" ", "\u00A0" ))
+  }
+
+}

@@ -122,13 +122,13 @@ PM_cov <- R6::R6Class(
 
       post_mean <- posts %>%
         group_by(id) %>%
-        summarise(across(-c(point, prob), \(x) wtd.mean(x = x, weights = prob))) %>%
+        dplyr::summarize(across(-c(point, prob), \(x) wtd.mean(x = x, weights = prob))) %>%
         mutate(icen = "mean")
 
       post_med <- suppressWarnings(
         posts %>%
         group_by(id) %>%
-        summarise(across(-c(point, prob), \(x) wtd.quantile(x = x, prob, 0.5))) %>%
+        dplyr::summarize(across(-c(point, prob), \(x) wtd.quantile(x = x, prob, 0.5))) %>%
         mutate(icen = "median")
       )
 
@@ -557,7 +557,7 @@ summary.PM_cov <- function(object, icen = "median", ...) {
 
   sumCov <- data %>%
     group_by(id) %>%
-    summarise(across(c(-time, -block), ~ purrr::exec(icen, x = .x, na.rm = TRUE))) %>%
+    dplyr::summarize(across(c(-time, -block), ~ purrr::exec(icen, x = .x, na.rm = TRUE))) %>%
     mutate(icen = !!icen)
 
   return(sumCov)
