@@ -1158,6 +1158,8 @@ dependencies = [
  "num-complex",
  "num-rational",
  "num-traits",
+ "rand 0.8.5",
+ "rand_distr 0.4.3",
  "simba",
  "typenum",
 ]
@@ -1434,9 +1436,9 @@ dependencies = [
 
 [[package]]
 name = "pharmsol"
-version = "0.13.1"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4b7f96dd01cc288a50716cf5e7ef8f8850417918fb8822f38391483c095f46b"
+checksum = "c67bf008dc8c458e2bbf53be711ca309380f95e63b9453436dcf0989c06cee7b"
 dependencies = [
  "cached",
  "csv",
@@ -1449,6 +1451,7 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
+ "statrs",
  "thiserror 2.0.12",
 ]
 
@@ -1470,9 +1473,9 @@ dependencies = [
 
 [[package]]
 name = "pmcore"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca271ee357ebcc66d0b6ee5ac7dd09cb94a7f78528436b34746447ea49401127"
+checksum = "f9516552d5852c362aae13897406b32e32397c5129085bde167a037a4e6b4224"
 dependencies = [
  "anyhow",
  "argmin",
@@ -1948,6 +1951,18 @@ name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
+
+[[package]]
+name = "statrs"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a3fe7c28c6512e766b0874335db33c94ad7b8f9054228ae1c2abd47ce7d335e"
+dependencies = [
+ "approx",
+ "nalgebra",
+ "num-traits",
+ "rand 0.8.5",
+]
 
 [[package]]
 name = "strsim"
