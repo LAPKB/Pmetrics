@@ -131,5 +131,5 @@ return(core)
 # make_Config -------------------------------------------------------------
 
 make_Config <- function(settings_file) {
-  fromJSON(settings_file)
+  jsonlite::fromJSON(settings_file)
 }

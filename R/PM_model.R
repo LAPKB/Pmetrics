@@ -1253,7 +1253,7 @@ PM_model <- R6::R6Class(
                       cli::cli_abort(c("x" = "Model must be compiled before simulating."))
                     }
                   }
-                  sim <- simulate_all(temp_csv, self$binary_path, theta)
+                  sim <- simulate_all(temp_csv, self$binary_path, theta, kind = tolower(self$model_list$type))
                 } else {
                   cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
                 }

@@ -831,13 +831,13 @@ sub_plot <- function(...,
         showarrow = FALSE
       )
     })
-
+    
     # remove titles from plots
     plots <- purrr::map(plots, function(p) {
       purrr::modify_in(p, list("x", "layoutAttrs", length(p$x$layoutAttrs), "title", "text"), \(p) "")
     })
-  
-  
+    
+    
     
     # calculate relative x and y based on plot number and rows
     if (!is.null(titles) && length(titles) == 2) { # we have x and y
@@ -859,7 +859,7 @@ sub_plot <- function(...,
       } else {
         rev(seq(y_adj, 1, y_increment))
       }
-
+      
       x_list <- x_list + margin
       y_list <- y_list + margin
       
@@ -887,7 +887,7 @@ sub_plot <- function(...,
     plotly::layout(annotations = plot_annotations)
     if (print) print(p)
     return(invisible(p))
-}
+  }
   
   
   #' @title Get color palette
@@ -930,21 +930,110 @@ sub_plot <- function(...,
   #' Generate list of default color names.
   #' @details
   #' Used for Pmetrics plots. The following list is recycled as necessary to generate the
-  #' requested number of colors.
-  #' `c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")`
+  #' requested number of colors: 
+  #' `c(red(), green(), blue(), brown(), black(), purple(), pink(), gold(), orange(), gray())`.
+  #' Each value is a function that returns a color name.
   #' @param n The number of colors to return from the list.
   #' @return A character vector of color names, which is recycled as needed.
+  #' @seealso [blue()], [green()], [red()], [brown()], [black()],
+  #' [purple()], [pink()], [gold()], [orange()], [gray()]
   #'
   #' @export
   #' @examples
   #' \dontrun{
   #' getDefaultColors(6)
   #' }
-  
   #' @author Michael Neely
   getDefaultColors <- function(n) {
-    choices <- c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")
+    choices <- c(red(), green(), blue(), brown(), black(),
+    purple(), pink(), gold(), orange(), gray())
+    #choices <- c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")
     selection <- rep(choices, n)[1:n]
     return(selection)
   }
   
+## CLICK
+#' @title Click on plotly plot to highlight traces
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Adds click functionality to a plotly plot to highlight traces when clicked.
+#' @details
+#' This function modifies a plotly plot to allow clicking on traces to highlight them.
+#' Clicking on a trace will highlight it in orange (default) and dim all other traces.
+#' Clicking on the same trace again will deselect it and restore the original colors.
+#' Clicking on the background will also restore all traces to their original colors.
+#' The function uses the `htmlwidgets::onRender` function from the `htmlwidgets` package to add
+#' JavaScript code that handles the click events on the plotly plot.
+#' @param p The plotly plot to which the click functionality should be added.
+#' Default is the `plotly::last_plot()`.
+#' @param higlight_color The color to use for traces that are highlighted. Colors for non-highlighted 
+#' traces will be preserved but dimmed to 20% opacity. Default highlight color is `orange()`.
+#' @export
+#' @author Michael Neely
+click_plot <- function(p, highlight_color = orange()) {
+  onRender(p, sprintf("
+function(el, x) {
+  const highlight = '%s';
+  let selectedIndex = null;
+  let lastClickWasPoint = false;
+
+  // Store original colors for each trace
+  const originalColors = x.data.map(trace => trace.marker.color || 'gray');
+
+  el.on('plotly_click', function(data) {
+    lastClickWasPoint = true;
+
+    const i = data.points[0].fullData.index;
+
+    if (selectedIndex === i) {
+      // Deselect
+      for (let j = 0; j < x.data.length; j++) {
+        Plotly.restyle(el.id, {
+          'marker.color': [originalColors[j]],
+          'marker.opacity': [1]
+        }, [j]);
+      }
+      selectedIndex = null;
+    } else {
+      // Dim all
+      for (let j = 0; j < x.data.length; j++) {
+        Plotly.restyle(el.id, {
+          'marker.color': [originalColors[j]],
+          'marker.opacity': [0.2]
+        }, [j]);
+      }
+
+      // Highlight selected trace
+      Plotly.restyle(el.id, {
+        'marker.color': [highlight],
+        'marker.opacity': [1]
+      }, [i]);
+
+      selectedIndex = i;
+    }
+  });
+
+  // Detect background clicks
+  el.addEventListener('click', function() {
+    setTimeout(() => {
+      if (!lastClickWasPoint) {
+        for (let j = 0; j < x.data.length; j++) {
+          Plotly.restyle(el.id, {
+            'marker.color': [originalColors[j]],
+            'marker.opacity': [1]
+          }, [j]);
+        }
+        selectedIndex = null;
+      }
+      lastClickWasPoint = false;
+    }, 0);
+  });
+
+  // Optional: disable right-click menu
+  el.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+}
+", highlight_color))
+}
+
