@@ -187,7 +187,7 @@ setPMoptions <- function(launch.app = TRUE) {
         
         # Exit the app
         observeEvent(input$exit, {
-          stopApp()
+          shiny::stopApp()
         })
         
         # Open the options file in the default application

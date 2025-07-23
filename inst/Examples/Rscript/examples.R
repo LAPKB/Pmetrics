@@ -354,32 +354,32 @@ PM_compare(run1, run2)
 # for model validation - be sure to have executed the NPAG run above
 # Type ?makeValid in the R console for help.
 # Choose wt as the covariate to bin. Accept all default bin sizes.
-valid_2 <- run2$validate(limits = c(0, 3))
+run2$validate(limits = c(0, 3))
 
 # To see what it contains, use:
-valid_2
+run2$valid
 
 # Default visual predictive check; ?plot.PM_valid for help
-valid_2$plot()
+run2$valid$plot()
 
 # or old S3
 plot(valid_2)
 
 # or take advantage of the valid object being added automatically to the
 # result object
-run12$valid$plot()
+run2$valid$plot()
 
 # or S3
 plot(run2$valid)
 
 # Generate a prediction-corrected visual predictive check; type ?plot.PMvalid in the R console for help.
-valid_2$plot(type = "pcvpc")
+run2$valid$plot(type = "pcvpc")
 
 # Create an npde plot
-valid_2$plot(type = "npde")
+run2$valid$plot(type = "npde")
 
 # Here is another way to generate a visual predicive check...
-npc_2 <- valid_2$simdata$plot(obs = run12$op, log = FALSE, binSize = 1)
+npc_2 <- run2$valid$simdata$plot(obs = run2$op, log = FALSE, binSize = 0.5)
 
 # The jagged appearance of the plot when binSize=0 is because different subjects have
 # different doses, covariates, and observation times, which are all combined in one simulation.
@@ -432,7 +432,7 @@ simOther$plot()
 sim_new$plot(log = FALSE)
 
 # Simulate using multiple subjects as templates
-simdata <- run12$sim(include = 1:4, limits = NA, nsim = 100)
+simdata <- run2$sim(include = 1:4, limits = NA, nsim = 100)
 
 # Plot the third simulation
 simdata$plot(at = 3)
@@ -442,7 +442,7 @@ plot(simdata$data[[3]])
 
 # Parse and combine multiple files and plot them.  Note that combining simulations from templates
 # with different simulated observation times can lead to unpredictable plots
-simdata2 <- run12$sim(include = 1:4, limits = NA, nsim = 100, combine = TRUE)
+simdata2 <- run2$sim(include = 1:4, limits = NA, nsim = 100, combine = TRUE)
 simdata2$plot()
 
 # simulate with covariates
@@ -454,7 +454,7 @@ simdata2$plot()
 # See ?SIMrun for more help on this and the Pmetrics manual.
 
 covariate <- list(
-  cov = run12$cov,
+  cov = run2$cov,
   mean = list(wt = 50),
   sd = list(wt = 20),
   limits = list(wt = c(10, 70)),
@@ -462,7 +462,7 @@ covariate <- list(
 )
 
 # now simulate with this covariate list object
-simdata3 <- run12$sim(include = 1:4, limits = NA, nsim = 100, covariate = covariate)
+simdata3 <- run2$sim(include = 1:4, limits = NA, nsim = 100, covariate = covariate)
 
 # compare difference in simulations without covariates simulated...
 # PM_sim's plot function defaults to the first simulation if there
@@ -475,7 +475,7 @@ simdata3$plot()
 # Here are the simulated parameters and covariates for the first subject's
 # template; note that both wt and age are simulated, using proper covariances
 # with simulated PK parameters
-simdata3$data[[1]]$parValues
+simdata3$data$parValues
 
 # We can summarize simulations too. See ?summary.PM_sim for help.
 simdata3$summary(at = 2, field = "obs")
@@ -487,7 +487,7 @@ simdata3$summary(at = 2, field = "obs")
 
 # EXERCISE 6 - SAVING PMETRICS OBJECTS ------------------------------------
 
-setwd(paste0(wd,"/Runs"))
+setwd(wd)
 
 # The following objects have methods to save them to or load them from files:
 # PM_fit
@@ -495,11 +495,11 @@ setwd(paste0(wd,"/Runs"))
 # PM_sim
 # PM_pta
 
-# Example - save the PM_result (run12) to the "2" folder
-run12$save(file = "2/outputs/run12.rds") # rds is the recommended file extension
+# Example - save the PM_result (run2) to the "2" folder
+run2$save(file = "2/outputs/run2.rds") # rds is the recommended file extension
 list.files("2/outputs")
-copy_run12 <- PM_load(file = "2/outputs/run12.rds")
-copy_run12
+copy_run2 <- PM_load(file = "2/outputs/run2.rds")
+copy_run2
 
 # If you want to save multiple objects into one single file, R provides the
 # following functionality
@@ -524,8 +524,8 @@ load("2/workspace.Rdata")
 # have to be the same.  This will copy the appropriate files from the specified run to be used
 # in the current run.  By specifying a prior, we are starting with the non-uniform density from the
 # end of the specified fun.
-exFit2$run(prior = 2, intern = TRUE)
-run13 <- PM_load(3)
+run3 <- mod2b$fit(data = exData, prior = 2)
+run3 <- PM_load(3)
 
 # We could also generate Bayesian posterior parameter estimates for a new population this
 # way, and with 0 cycles:
@@ -536,38 +536,7 @@ run13 <- PM_load(3)
 
 
 
-# EXERCISE 8 - EXAMPLE PARAMETRIC IT2B RUN --------------------------------
-
-# IT2B is our parametric population parameter estimator.  Population parameter value
-# distributions are estimated as means and covariances.
-
-# EXAMPLE IT2B run - tlag, ka, kel, vol
-
-# Run IT2B.  Type ?ITrun in the R console for help.
-# Remember how we created a PM_fit object way back in exercise 1?
-# Now we can use it again, but change the engine.
-exFit$run(engine = "IT2B", intern = TRUE)
-
-# Type ?PM_load in the R console for help on PM_load.
-# If you have done extra runs, you may be at more than 4 by now.
-# Check your working directory to see the highest folder number,
-# and replace the 4 below with that number if necessary.
-run4 <- PM_load(4)
-
-# Most of the commands above work the same for IT2B but some produce different plots.
-
-run4$final$plot()
-# in the following plot, we standardize the x-scales to enable
-# comparisons of the widths of the normal distributions of the
-# parameter values
-run4$final$plot(standardize = "all")
-run4$final$plot(standardize = c("Ke", "Ka", "Tlag"))
-
-# here's a bivariate plot of IT2B population parameter value distributions
-run4$final$plot(Ke ~ V)
-
-
-# EXERCISE 9 - PROBABILITY OF TARGET ATTAINMENT ---------------------------
+# EXERCISE 8 - PROBABILITY OF TARGET ATTAINMENT ---------------------------
 
 # Note: these can be computationally intense and take some time.
 
@@ -580,7 +549,7 @@ run4$final$plot(Ke ~ V)
 # Look at ?SIMrun for help on arguments to this function, including predInt,
 # seed, limits, nsim.
 
-simlist1 <- run12$sim(
+simlist1 <- run1$sim(
   limits = c(0, 3), data = "../src/ptaex1.csv",
   predInt = c(120, 144, 0.5), seed = rep(-17, 4)
 )
@@ -588,7 +557,7 @@ simlist1 <- run12$sim(
 # now simulate with covariates; make sure that you defined the covariate
 # object first in Exercise 5 above and have loaded the results of Exercise 2
 # with PM_load(2)
-simlist2 <- run12$sim(
+simlist2 <- run2$sim(
   limits = 5, data = "../src/ptaex1.csv",
   predInt = c(120, 144, 0.5), seed = rep(-17, 4),
   covariate = covariate
@@ -603,14 +572,14 @@ simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid")
 
 pta1_2 <- PM_pta$new(
   simdata = simlist1,
-  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+  target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target_type = "time",
   success = 0.6, start = 120, end = 144
 )
 
 pta1b_2 <- PM_pta$new(
   simdata = simlist2,
   simlabels = simlabels,
-  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = "time",
+  target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target_type = "time",
   success = 0.6, start = 120, end = 144
 )
 
@@ -643,9 +612,9 @@ pta1b_2$plot(
 # Now we'll define success as free auc:mic > 100 with a free drug fraction of 50%
 pta2_2 <- PM_pta$new(
   simdata = simlist2,
-  simlabels = simlabels, targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
-  free.fraction = 0.7,
-  target.type = "auc", success = 100, start = 120, end = 144
+  simlabels = simlabels, target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+  free_fraction = 0.7,
+  target_type = "auc", success = 100, start = 120, end = 144
 )
 summary(pta2_2)
 pta2_2$plot(
@@ -740,7 +709,7 @@ setwd("MMopt")
 # we are sampling at steady state.  Including "subject 2", means only the 1200 mg once daily dose
 # will serve as a simulation template.
 
-mmopt_2 <- run12$MM_opt(
+mmopt_2 <- run2$MM_opt(
   data = "../src/ptaex1.csv",
   nsamp = 2, predInt = c(120, 140, 1),
   include = 2

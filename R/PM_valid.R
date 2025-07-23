@@ -12,13 +12,18 @@
 #' Contains results of internal validation by simulation to permit generation of
 #' visual predictive checks (VPCs), prediction corrected visual predictive checks,
 #' (pcVPCs), normalized prediction distribution errors (NPDE), and
-#' numerical predictive checks.
+#' numerical predictive checks. This is typically a field in a [PM_result]
 #'
 #' @details
-#' This object is created by running the `make_valid` method in a
-#' [PM_result] object. It contains all the information necessary
-#' to internally validate the result by simulation methods.
-#' @seealso [PM_result], [make_valid]
+#' The [PM_valid] object is both a data field within a [PM_result], and itself an R6 object
+#' comprising data fields and associated methods suitable for analysis and plotting of
+#' observed vs. population or individual predicted outputs.
+#'
+#' Because [PM_valid] objects are automatically added to the [PM_result] by calling the 
+#' `$validate()` method of a [PM_result] after a
+#' successful run, it is generally not necessary for users to generate [PM_valid] objects
+#' themselves.
+#' @seealso [PM_result]
 #' @export
 PM_valid <- R6::R6Class(
   "PM_valid",
@@ -57,7 +62,8 @@ PM_valid <- R6::R6Class(
     #' superimposable and `tad` should
     #' *NOT* be used, i.e. should be set to `FALSE`.
     #'
-    #' @param result The result of a prior run, loaded with [PM_load].
+    #' @param result The result of a prior run, usually supplied by calling the 
+    #' `$validate()` method of a [PM_result] at the end of a run, or later loaded with [PM_load].
     #' @param tad `r template("tad")`
     #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
     #' model equations and which need to be binned.  For example `binCov='wt'` if "wt" is included in a
@@ -72,7 +78,7 @@ PM_valid <- R6::R6Class(
     #' will be ignored if `tad=FALSE`.
     #' @param limits Limits on simulated parameters. See [PM_sim].
     #' @param ... Other parameters to be passed to [PM_sim], especially `limits`.
-    #' @return The output of `make_valid` is a list of class `PMvalid`, which is a list with the following.
+    #' @return An R6 object  of class `PM_valid`, which is a list with the following.
     #' * simdata The combined, simulated files for all subjects using the population mean values and each subject
     #' as a template. This object will be automatically saved to the run, to be loaded with
     #' [PM_load] next time.
@@ -95,7 +101,7 @@ PM_valid <- R6::R6Class(
       if (!inherits(result, "PM_result")) {
         cli::cli_abort(c(
           "x" = "Please supply a PM_result object to validate.",
-          "i" = "PM_result objects are created by {.fn PM_load}."
+          "i" = "PM_result objects are created by the {.fn PM_result$fit() method} or by {.fn PM_load}."
         ))
       }
 
@@ -191,7 +197,7 @@ PM_valid <- R6::R6Class(
           binCov <- gsub("^[[:space:]]|[[:space:]]$", "", binCov)
         }
         if (!all(binCov %in% names(mdata))) {
-          stop("You have entered covariates which are not valid covariates in your data.")
+          cli::cli_abort(c("x" = "You have entered covariates which are not valid covariates in your data."))
         }
         # ensure binCov has covariates in same order as data file
         covSub <- covData$covnames[covData$covnames %in% binCov]
@@ -292,6 +298,7 @@ PM_valid <- R6::R6Class(
           xlab = "Number of clusters",
           ylab = "Total within-clusters sum of squares (WSS)"
         )
+
       }
 
 
@@ -729,7 +736,7 @@ PM_valid <- R6::R6Class(
       )
 
       setwd(currwd)
-      return(valRes)
+      return(invisible(valRes))
     } # end make function
   ) # end private
 )
