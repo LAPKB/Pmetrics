@@ -214,12 +214,12 @@ PM_pta <- R6::R6Class(
           if (inherits(simdata$data, "PM_simlist")) { # multiple sims
             simdata <- simdata$data
           } else { # just one sim
-            simdata <- list(simdata$data)
+            simdata <- split(simdata$data$obs, as.factor(simdata$data$obs$id))
           }
         }
 
         if (dataType == 1) { # PM_sim_data object
-          simdata <- list(simdata)
+          simdata <- split(simdata, as.factor(simdata$id)) # split by id
         }
 
         if (dataType == 2) { # PM_simlist
@@ -258,6 +258,8 @@ PM_pta <- R6::R6Class(
           temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$out, outeq = simdata$outeq))
           simdata <- list(temp)
         }
+
+
         pta <- private$make(
           simdata = simdata,
           simlabels = simlabels,
@@ -314,23 +316,26 @@ PM_pta <- R6::R6Class(
       }
 
       # define some global variables
-      n_sim <- length(simdata) # number of regimens
-      n_id <- sapply(simdata, function(x) length(unique(x$obs$id))) # number of id per regimen
+      n_reg <- length(simdata) # number of regimens
+      n_sim <- sapply(simdata, function(x) length(unique(x$nsim))) # number of sims per regimen
       n_type <- length(target_type)
       n_success <- length(success)
+      if(n_type == 1 && !is.list(target)) {
+        target <- list(target) # make a list if only one target_type
+      }
       n_target <- length(target) # length of the whole list, should correspond with n_type, success
       if (inherits(target[[1]], "PMpta.targ")) {
-        simTarg <- T
+        simTarg <- TRUE
       } else {
-        simTarg <- F
+        simTarg <- FALSE
       }
 
       # fill in start and end times for each regimen
-      if (length(start) < n_sim) {
-        start <- rep(start, n_sim)[1:n_sim]
+      if (length(start) < n_reg) {
+        start <- rep(start, n_reg)[1:n_reg]
       }
-      if (length(end) < n_sim) {
-        end <- rep(end, n_sim)[1:n_sim]
+      if (length(end) < n_reg) {
+        end <- rep(end, n_reg)[1:n_reg]
       }
 
       # check for valid arguments
@@ -403,31 +408,33 @@ PM_pta <- R6::R6Class(
         }
       }
 
+
+
       #### PREPARE DATA
 
       # check outeq
-      if (!outeq %in% simdata[[1]]$obs$outeq) {
+      if (!outeq %in% simdata[[1]]$outeq) {
         cli::cli_abort(c("x" = "There are no simulated outputs for output equation {outeq}. Aborting."))
       }
 
       # filter and multiply free fraction
-      simdata <- purrr::map(1:n_sim, \(x) {
-        simdata[[x]]$obs <- simdata[[x]]$obs %>%
+      simdata <- purrr::map(1:n_reg, \(x) {
+        simdata[[x]] <- simdata[[x]] %>%
           filter(outeq == !!outeq, !is.na(out)) %>%
           mutate(outeq = 1) # after filter, change to 1
-        simdata[[x]]$obs$out <- simdata[[x]]$obs$out * free_fraction
+        simdata[[x]]$out <- simdata[[x]]$out * free_fraction
         simdata[[x]]
       })
 
 
       # Check the simulation labels
-      sim_labels <- paste("Regimen", 1:n_sim)
+      sim_labels <- paste("Regimen", 1:n_reg)
 
       if (length(simlabels) > 0) { # replace generic labels with user labels
-        n_simlabels <- length(simlabels)
-        if (n_simlabels < n_sim) warning("There are more simulated regimens (n=", n_sim, ") than labels (n=", n_simlabels, ").", call. = FALSE, immediate. = TRUE)
-        if (n_simlabels > n_sim) warning("There are fewer simulated regimens (n=", n_sim, ") than labels (n=", n_simlabels, "); some labels will be ignored.", call. = FALSE, immediate. = TRUE)
-        sim_labels[1:min(n_simlabels, n_sim)] <- simlabels[1:min(n_simlabels, n_sim)]
+        n_reglabels <- length(simlabels)
+        if (n_reglabels < n_reg) warning("There are more simulated regimens (n=", n_reg, ") than labels (n=", n_reglabels, ").", call. = FALSE, immediate. = TRUE)
+        if (n_reglabels > n_reg) warning("There are fewer simulated regimens (n=", n_reg, ") than labels (n=", n_reglabels, "); some labels will be ignored.", call. = FALSE, immediate. = TRUE)
+        sim_labels[1:min(n_reglabels, n_reg)] <- simlabels[1:min(n_reglabels, n_reg)]
       }
 
       # calculate number of iterations for progress bar
@@ -439,22 +446,22 @@ PM_pta <- R6::R6Class(
       flush.console()
 
       # create the progress bar
-      maxpb <- sum(unlist(purrr::map(target, \(x) ifelse(inherits(x, "PMpta.targ"), 1, length(x))))) * n_sim # target * simulations
+      maxpb <- sum(unlist(purrr::map(target, \(x) ifelse(inherits(x, "PMpta.targ"), 1, length(x))))) * n_reg # target * simulations
       pb <- txtProgressBar(min = 0, max = maxpb, style = 3)
 
 
       ###### MAKE THE PTA OBJECT
-      master_pta <- purrr::map(1:n_sim, \(x){
+      master_pta <- purrr::map(1:n_reg, \(x){
         purrr::map(1:n_type, \(y) tidyr::expand_grid(
-          sim_num = x,
+          reg_num = x,
           target = if (simTarg) { # simulated targets
             if (y == 1) {
               list(
                 tidyr::tibble(
-                  id = unique(simdata[[x]]$obs$id),
+                  id = unique(simdata[[x]]$id),
                   target = sample(
                     x = target[[y]]$target,
-                    size = n_id[x], replace = TRUE,
+                    size = n_sim[x], replace = TRUE,
                     prob = target[[y]]$n
                   )
                 )
@@ -479,7 +486,7 @@ PM_pta <- R6::R6Class(
         mutate(pdi = list(do.call(
           paste0("pta_", stringr::str_replace_all(.data$type, "-", "")),
           list(
-            sims = simdata[[.data$sim_num]]$obs,
+            sims = simdata[[.data$reg_num]],
             .target = .data$target,
             .simTarg = simTarg,
             .start = .data$start,
@@ -497,7 +504,7 @@ PM_pta <- R6::R6Class(
         mutate(prop_success = sum(.data$success) / length(.data$success)) %>%
         mutate(label = sim_labels[.data$sim_num]) %>%
         dplyr::relocate(
-          sim_num, label, target, type,
+          reg_num, label, target, type,
           .data$success_ratio, .data$prop_success, success, .data$pdi,
           start, end
         ) %>%
@@ -513,9 +520,9 @@ PM_pta <- R6::R6Class(
           x
         })
         names(master_pta) <- NULL
-        master_pta$intersect <- master_pta[[1]] %>% select(sim_num, target, success_1 = success, label) # get primary success
+        master_pta$intersect <- master_pta[[1]] %>% select(reg_num, target, success_1 = success, label) # get primary success
         for (i in 2:n_type) { # add additional success
-          master_pta$intersect[[paste0("success_", i)]] <- master_pta[[i]]$success[match(master_pta[[1]]$sim_num, master_pta[[i]]$sim_num)]
+          master_pta$intersect[[paste0("success_", i)]] <- master_pta[[i]]$success[match(master_pta[[1]]$reg_num, master_pta[[i]]$reg_num)]
         }
         all_success <- master_pta$intersect %>%
           select(tidyr::starts_with("success"))
@@ -529,7 +536,7 @@ PM_pta <- R6::R6Class(
           mutate(success_ratio = paste0("(", success, ")", collapse = "")) %>%
           mutate(success = list(total_success)) %>%
           select(
-            sim_num, label, target, type,
+            reg_num, label, target, type,
             success_ratio, prop_success, success
           ) %>%
           ungroup()
@@ -923,7 +930,7 @@ plot.PM_pta <- function(x,
   # filter by include/exclude
   pta <- pta %>% filter(.data$sim_num %in% simnum)
 
-  n_sim <- length(simnum)
+  n_reg <- length(simnum)
 
 
 
@@ -931,14 +938,14 @@ plot.PM_pta <- function(x,
   line <- amendLine(line, default = list(
     color = "Set1",
     width = 2,
-    dash = 1:n_sim
+    dash = 1:n_reg
   ))
 
   # parse marker
   marker <- amendMarker(marker, default = list(
     color = line$color,
     size = 12,
-    symbol = 1:n_sim
+    symbol = 1:n_reg
   ))
 
 

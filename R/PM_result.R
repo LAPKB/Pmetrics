@@ -179,7 +179,7 @@ PM_result <- R6::R6Class(
     #' Save the current PM_result object to an .Rdata file.
     #' @details
     #' This is useful if you have updated the result in some way, for example you
-    #' have run the `$make_valid` method on the `PM_result` object, which returns
+    #' have run the `$validate()` method on the `PM_result` object, which returns
     #' an internal simulation based validation as a new `valid` field. To save this
     #' validation, use this `$save` method. Note that unless a `file` name is provided,
     #' the changes will overwrite the
@@ -194,9 +194,14 @@ PM_result <- R6::R6Class(
     #' will save in the current working directory. For example, if folder "1" is in
     #' your current working directory, specify `run = 1` to save the result to the "outputs"
     #' subfolder of the "1" folder.
-    #' @param file Custom file name. Default is "PMout.Rdata".
-    save = function(run, file) {
+    #' @param file Custom file name. Default is "PMout.Rdata". If `run` is not specified, `file`
+    #' should be the full path and filename. 
+    save = function(run, file = "PMout.Rdata") {
       if (missing(run)) {
+        cli::cli_inform(c(
+          "i" = "No {.code run} argument was provided.",
+          " " = "Saving the results as {.code file} in the current working directory."
+        ))
         outputfolder <- getwd()
       } else {
         if (is.na(suppressWarnings(as.numeric(run)))) {
@@ -206,9 +211,6 @@ PM_result <- R6::R6Class(
         if (!file.exists(outputfolder)) {
           cli::cli_abort(c("x" = "{outputfolder} does not exist in the current working directory."))
         }
-      }
-      if (missing(file)) {
-        file <- "PMout.Rdata"
       }
       PMout <- list(
         pop = self$pop$data, post = self$post$data,
@@ -223,10 +225,16 @@ PM_result <- R6::R6Class(
 
     #' @description
     #' Validate the result by internal simulation methods.
-    #' @param ... Arguments passed to [make_valid].
+    #' @param ... Arguments passed to [PM_valid].
     validate = function(...) {
       self$valid <- PM_valid$new(self, ...)
-      return(self)
+      cli::cli_inform(c(
+        "i" = "Validation results were stored in the {.code $valid} field.",
+        " " = "Use {.code $save()} method on your run results to save the validation results.",
+        " " = "For example, if your results are in {.code my_run}, use {.code my_run$save(1)} to save back to the outputs folder of run 1."
+      ))
+      return(invisible(self))
+
     },
 
     #' @description

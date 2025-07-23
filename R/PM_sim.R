@@ -439,7 +439,7 @@ PM_sim <- R6::R6Class(
       }
 
       # CASE 1 - poppar is PM_result
-      
+     
       if (inherits(poppar, "PM_result")) {
         final <- poppar$final$data # PM_final_data
         if (missing(model)) {
@@ -461,6 +461,8 @@ PM_sim <- R6::R6Class(
         }
         if (missing(data)) {
           data <- PM_data$new("data.csv", quiet = quiet)
+        } else {
+          data <- PM_data$new(data, quiet = quiet) # will make PM_data whether data is filename or PM_data already
         }
         
         # CASE 3 - poppar is old PMsim
@@ -1081,7 +1083,7 @@ PM_sim <- R6::R6Class(
         )
         
         
-        class(ret) <- c("PM_sim_data", class(self$data))
+        class(ret) <- c("PM_sim_data", "list")
         self$data <- ret
       } else { # postToUse is false
         # set theta as nsim rows drawn from prior
@@ -1361,7 +1363,7 @@ PM_sim <- R6::R6Class(
       )
       
       
-      class(ret) <- c("PM_sim_data", class(self$data)) # add PM_sim_data class to data
+      class(ret) <- c("PM_sim_data", "list") # add PM_sim_data class to data
       return(ret)
     }, # end .sim function
     

@@ -150,7 +150,7 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = TRUE) {
   mutate(run = paste0("Run ", run)) 
   
   p1 <- plot_ly() %>%
-  add_trace(
+  plotly::add_trace(
     data = df,
     x = ~metric,
     y = ~value,
@@ -165,7 +165,7 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = TRUE) {
   )
   
   p1 <- p1 %>%
-  add_trace(
+  plotly::add_trace(
     data = df,
     x = ~metric,
     y = ~value,
@@ -182,7 +182,7 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = TRUE) {
 )
 
 p1 <- p1 %>%
-layout(
+plotly::layout(
   xaxis = list(
     title = "", # remove default axis title,
     tickvals = unique(sumobjBoth$metric),
@@ -252,7 +252,7 @@ all_op <- op %>% purrr::imap(\(x, y) {
   list(pop = pop, post = post)
 }) 
   
-all_op_flat <- all_op %>% list_flatten 
+all_op_flat <- all_op %>% purrr::list_flatten 
 p2 <- sub_plot(all_op_flat, nrows = nobj, titles = c(0,.8), shareX = FALSE, shareY = FALSE, print = FALSE, margin = 0.02)
 
 ### LIKELIHOOD PLOT ###
@@ -276,12 +276,12 @@ gamlam <- purrr::imap(allObj, \(x, y) {
 }) %>% bind_rows() 
 
 not_same <- gamlam %>% group_by(outeq) %>%
-summarize(same_val = n_distinct(round(value, getPMoptions("digits"))) == 1, same_type = n_distinct(type) == 1) %>%
-filter(if_any(everything(), ~ .x == FALSE))
+summarize(same_val = dplyr::n_distinct(round(value, getPMoptions("digits"))) == 1, same_type = dplyr::n_distinct(type) == 1) %>%
+filter(dplyr::if_any(dplyr::everything(), ~ .x == FALSE))
 
 if(length(not_same$outeq)>0){
-  ft1 <- gamlam %>% select(Run, everything()) %>%
-  set_names(c("Run", "Cycle", "Value", "Outeq", "Type")) %>%
+  ft1 <- gamlam %>% select(Run, dplyr::everything()) %>%
+  purrr::set_names(c("Run", "Cycle", "Value", "Outeq", "Type")) %>%
   mutate(Value = round2(Value)) %>%
   flextable::flextable() %>%
   flextable::theme_zebra() %>%
@@ -310,7 +310,7 @@ pivot_longer(
 
 
 p3 <- plot_ly() %>%
-add_trace(
+plotly::add_trace(
   data = df,
   x = ~metric,
   y = ~value,
@@ -325,7 +325,7 @@ add_trace(
 )
 
 p3 <- p3 %>%
-add_trace(
+plotly::add_trace(
   data = df,
   x = ~metric,
   y = ~value,
@@ -342,7 +342,7 @@ add_trace(
 
 
 p3 <- p3 %>%
-layout(
+plotly::layout(
   xaxis = list(
     title = "", # remove default axis title,
     tickfont = list(size = 14)
@@ -397,12 +397,12 @@ tbl_par <- map(par, \(x){
 })%>% map(~ set_names(., all_par)) %>%
 bind_rows() %>%
 mutate(Run = 1:n()) %>%
-select(Run, everything())
+select(Run, dplyr::everything())
 
 
 ft2 <- tbl_par %>% 
 mutate(across(-Run, \(x){
-  if_else(row_number() == 1, 
+  dplyr::if_else(row_number() == 1, 
   #row 1
   ifelse(x, "✅", "❌"),
   #other rows

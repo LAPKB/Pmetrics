@@ -3,13 +3,19 @@
 make_color <- function(hex, alpha = 1) {
   if(alpha > 1) alpha <- 1
   if(alpha < 0) alpha <- 0
-  stopifnot(grepl("^#?[A-Fa-f0-9]{6}$", hex))
+  if(!grepl("^#?[A-Fa-f0-9]{6}$", hex)){
+    rgb_vals <- tryCatch(grDevices::col2rgb(hex), error = function(e) {-1})
+    if (any(rgb_vals == -1)) {
+      cli::cli_abort("Invalid color name or hex code provided.")
+    }
+    hex <- grDevices::rgb(rgb_vals[1], rgb_vals[2], rgb_vals[3], maxColorValue = 255)
+  }
   alpha_hex <- toupper(sprintf("%02X", round(alpha * 255)))
   paste0(gsub("^#", "#", hex), alpha_hex)
 }
 
 blue <- function(alpha = 1) {
-  make_color(hex = "#99CCFF", alpha = alpha)
+  make_color(hex = "dodgerblue", alpha = alpha)
 }
 
 navy <- function(alpha = 1) {
@@ -17,7 +23,7 @@ navy <- function(alpha = 1) {
 }
 
 green <- function(alpha = 1) {
-  make_color(hex = "#99FF99", alpha = alpha)
+  make_color(hex = "#009933", alpha = alpha)
 }
 
 red <- function(alpha = 1) {
@@ -25,11 +31,11 @@ red <- function(alpha = 1) {
 }
 
 yellow <- function(alpha = 1) {
-  make_color(hex = "#FFFF99", alpha = alpha)
+  make_color(hex = "#FFCC33", alpha = alpha)
 }
 
 orange <- function(alpha = 1) {
-  make_color(hex = "#FFCC99", alpha = alpha)
+  make_color(hex = "#FF9900", alpha = alpha)
 }
 
 purple <- function(alpha = 1) {
