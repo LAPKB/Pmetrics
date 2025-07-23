@@ -1116,11 +1116,17 @@ PM_model <- R6::R6Class(
                 }
                 
                 # get BLQ
-                if (!is.null(data$blq)) {
+                if (is.null(data$blq)) {
                   blq <- rep(NA, dataOut)
                 } else {
+                  if (length(data$blq) != dataOut) {
+                    cli::cli_abort(c("x" = "Error: Number of BLQ values does not match number of output equations.", "i" = "Check the BLQ values."))
+                  }
                   blq <- data$blq
                 }
+
+                cat("data$blq: ",data$blq, "\n")
+                cat("BLQ: ",blq, "\n")
                 
                 if (intern) {
                   ### CALL RUST

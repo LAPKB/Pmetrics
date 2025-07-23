@@ -24,6 +24,11 @@ pub(crate) fn settings(
         "postprob" => pmcore::prelude::Algorithm::POSTPROB,
         _ => return Err(anyhow::anyhow!("Algorithm {} not supported", algorithm)),
     };
+    let blq = settings.get("blq").unwrap().as_real_vector().unwrap();
+    let blq: Vec<Option<f64>> = blq
+        .iter()
+        .map(|&x| if x.is_nan() { None } else { Some(x) })
+        .collect();
 
     let error_models_raw = settings.get("error_models").unwrap().as_list().unwrap();
 
@@ -42,6 +47,7 @@ pub(crate) fn settings(
                     ErrorModel::additive(
                         ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
                         gamlam,
+                        blq[i],
                     ),
                 )?;
             }
@@ -51,6 +57,7 @@ pub(crate) fn settings(
                     ErrorModel::proportional(
                         ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
                         gamlam,
+                        blq[i],
                     ),
                 )?;
             }
