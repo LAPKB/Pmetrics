@@ -252,7 +252,7 @@ all_op <- op %>% purrr::imap(\(x, y) {
   list(pop = pop, post = post)
 }) 
   
-all_op_flat <- all_op %>% purrr::list_flatten 
+all_op_flat <- all_op %>% purrr::list_flatten() 
 p2 <- sub_plot(all_op_flat, nrows = nobj, titles = c(0,.8), shareX = FALSE, shareY = FALSE, print = FALSE, margin = 0.02)
 
 ### LIKELIHOOD PLOT ###

@@ -626,8 +626,8 @@ pta2_2$plot(
 pta3_2 <- PM_pta$new(
   simdata = simlist2,
   simlabels = simlabels,
-  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
-  target.type = "peak", success = 10, start = 120, end = 144
+  target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+  target_type = "peak", success = 10, start = 120, end = 144
 )
 pta3_2$summary()
 pta3_2$plot(ylab = "Proportion with peak/MIC of at least 10", grid = TRUE)
@@ -636,8 +636,8 @@ pta3_2$plot(ylab = "Proportion with peak/MIC of at least 10", grid = TRUE)
 pta4_2 <- PM_pta$new(
   simdata = simlist2,
   simlabels = simlabels,
-  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
-  target.type = "min", success = 1, start = 120, end = 144
+  target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32),
+  target_type = "min", success = 1, start = 120, end = 144
 )
 pta4_2$summary()
 pta4_2$plot(ylab = "Proportion with Cmin/MIC of at least 1", grid = TRUE, legend = list(x = "bottomleft"))
@@ -667,8 +667,10 @@ pta4_2$plot(
 pta4b_2 <- PM_pta$new(
   simdata = simlist2,
   simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
-  targets = makePTAtarget(mic1), target.type = "min", success = 1, start = 120, end = 144
+  target = makePTAtarget(mic1), target_type = "min", success = 1, start = 120, end = 144
 )
+
+pta4b_2$summary()
 # plot it
 pta4b_2$plot(
   grid = TRUE, ylab = "Proportion with Cmin/MIC of at least 1",
@@ -683,7 +685,7 @@ pta4b_2$plot(type = "pdi", grid = TRUE, ylab = "Proportion with Cmin/MIC of at l
 pta5_2 <- PM_pta$new(
   simdata = simlist2,
   simlabels = simlabels,
-  targets = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target.type = 123, success = 2, start = 120, end = 144
+  target = c(0.25, 0.5, 1, 2, 4, 8, 16, 32), target_type = 123, success = 2, start = 120, end = 144
 )
 pta5_2$summary()
 pta5_2$plot(ylab = "Proportion with C3/MIC of at least 1", grid = TRUE, legend = list(x = .3, y = 0.1))
@@ -693,7 +695,7 @@ pta5_2$plot(ylab = "Proportion with C3/MIC of at least 1", grid = TRUE, legend =
 pta6_2 <- PM_pta$new(
   simdata = simlist2,
   simlabels = simlabels,
-  targets = 10, target.type = 144, success = 1, start = 120, end = 144
+  target = 10, target_type = 144, success = 1, start = 120, end = 144
 )
 plot(pta6_2)
 pta6_2$summary()
@@ -701,17 +703,18 @@ pta6_2$summary()
 # EXERCISE 10 - OPTIMAL SAMPLE TIMES --------------------------------------
 
 setwd(wd)
-dir.create("MMopt")
-setwd("MMopt")
+dir.create("../MMopt")
+setwd("../MMopt")
 
 # calculate MM-optimal sample times for Run 2, and the 1200 mg once daily dose in the PTA
 # By specifying the predInt to start and stop at 120 and 144 hours, with an interval of 1 hour,
 # we are sampling at steady state.  Including "subject 2", means only the 1200 mg once daily dose
 # will serve as a simulation template.
 
-mmopt_2 <- run2$MM_opt(
+run2$opt(
   data = "../src/ptaex1.csv",
   nsamp = 2, predInt = c(120, 140, 1),
+  limits = NA,
   include = 2
 )
 # see the optimal sample times and the Bayes Risk of misclassification,
@@ -719,11 +722,17 @@ mmopt_2 <- run2$MM_opt(
 # absolute value is less helpful, but is the statistic minimized by the
 # selected optimal sample times for a given model
 
-mmopt_2
+mmopt_2 <- PM_opt$new(
+  poppar = run2$final,
+  model = run2$model,
+  data = "../src/ptaex1.csv",
+  nsamp = 2, predInt = c(120, 140, 1),
+  include = 2
+)
 
 # plot it, with the red lines indicating the optimal sample times.
 # see ?plot.MMopt for help
-
+mmopt_2$plot()
 plot(mmopt_2)
 plot(mmopt_2, line = list(color = "slategrey"), times = list(color = "orange"))
 
