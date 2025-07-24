@@ -1124,9 +1124,6 @@ PM_model <- R6::R6Class(
                   }
                   blq <- data$blq
                 }
-
-                cat("data$blq: ",data$blq, "\n")
-                cat("BLQ: ",blq, "\n")
                 
                 if (intern) {
                   ### CALL RUST
@@ -1292,6 +1289,7 @@ PM_model <- R6::R6Class(
                   )
                 })
                 file.remove(model_path) # remove temporary model file
+                return(invisible(self))
               },
               #' @description
               #' Update the model by launching the model editor.
