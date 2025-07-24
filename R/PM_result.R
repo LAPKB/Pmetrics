@@ -257,7 +257,7 @@ PM_result <- R6::R6Class(
       self$opt_samp <- tryCatch(PM_opt$new(self, ...), error = function(e) {
         cat(crayon::red("Error:"), e$message, "\n")
       })
-      return(self)
+      return(invisible(self))
     },
 
     #' @description

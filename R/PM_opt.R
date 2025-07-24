@@ -142,7 +142,7 @@ PM_opt <- R6::R6Class(
         mmInt <- NULL
       }
       
-      tryCatch(private$make(
+      res <- tryCatch(private$make(
         poppar = poppar,
         model = model,
         data = data,
@@ -152,10 +152,16 @@ PM_opt <- R6::R6Class(
         mmInt = mmInt,
         algorithm = algorithm,
         outeq = outeq,
-        ...,
+        ...
       ), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
+        cli::cli_abort(c("x" = e$message))
       })
+
+      self$sampleTime <- res$sampleTime
+      self$bayesRisk <- res$bayesRisk
+      self$simdata <- res$simdata
+      self$mmInt <- res$mmInt
+
     },
     #' @description
     #' Plot method
@@ -164,7 +170,7 @@ PM_opt <- R6::R6Class(
     #' @param ... Arguments passed to [plot.PM_opt]
     plot = function(...) {
       tryCatch(plot.PM_opt(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
+        cli::cli_abort(c("x" = e$message))
       })
     },
     #' @description
@@ -172,37 +178,33 @@ PM_opt <- R6::R6Class(
     #'
     #' @return Prints the optimal sampling times and Bayes Risk.
     print = function() {
-      cat("Multiple model optimal sample times\n")
-      cat("-----------------------------------\n")
+        cli::cli_div(theme = list(
+      span.blue = list(color = blue())
+    ))
+      cli::cli_h2("Multiple model optimal sample times")
       for (i in 1:length(self$sampleTime)) {
-        cat(paste("Sample ", i, ": ", self$sampleTime[i], "\n", sep = ""))
+        cli::cli_text("Sample {i}: {.blue {self$sampleTime[i]}}")
       }
-      cat(paste("\nBayes Risk: ", self$bayesRisk, "\n", sep = ""))
+      cli::cli_h2("Bayes Risk")
+      cli::cli_text("{.blue {round2(self$bayesRisk)}}")
+      cli::cli_end()
     }
   ), # end public
   private = list(
     make = function(poppar, model, data, nsamp = 1, weight = list(none = 1),
                     predInt = 0.5, mmInt, outeq = 1,
-                    algorithm = "mm", clean = TRUE, ...) {
+                    algorithm = "mm", ...) {
       # get defaults for PM_sim$new() arguments
       arglist <- list(...)
-      arglist$usePost <- ifelse(is.null(arglist$usePost), FALSE, arglist$usePost)
-      arglist$quiet <- ifelse(is.null(arglist$quiet), TRUE, arglist$quiet)
-      arglist$obsNoise <- ifelse(is.null(arglist$obsNoise), NA, arglist$obsNoise)
-      if (!is.null(arglist$clean)) {
-        clean_opt <- arglist$clean
-        arglist$clean <- FALSE
-      } else {
-        clean_opt <- TRUE
-        arglist$clean <- FALSE
-      }
+      arglist <- modifyList(arglist, list(usePost = FALSE, quiet = TRUE))
+
       
       if (inherits(poppar, "PM_result")) {
         if (!inherits(poppar$final, "NPAG")) {
           cat(crayon::red("Error:"), "Prior run must be NPAG.")
           return(NULL)
         }
-        popPoints <- if (usePost) {
+        popPoints <- if (arglist$usePost) {
           poppar$final$postPoints
         } else {
           poppar$final$popPoints
@@ -210,15 +212,15 @@ PM_opt <- R6::R6Class(
         model <- if (is.null(model)) {
           poppar$model
         } else {
-          "model.txt"
+          model
         }
         data <- if (is.null(data)) {
           poppar$data
         } else {
-          "data.csv"
+          data
         }
       } else if (all(c("NPAG", "PM_final") %in% class(poppar))) {
-        popPoints <- if (usePost) {
+        popPoints <- if (arglist$usePost) {
           poppar$postPoints
         } else {
           poppar$popPoints
@@ -251,22 +253,20 @@ PM_opt <- R6::R6Class(
       old <- Sys.glob("MMsim*.txt")
       invisible(file.remove(old))
       # simulate each point
-      simdata <- do.call(PM_sim$new, (c(
+      simdata <- do.call(PM_sim$new, (c(list(
         poppar = poppar,
         model = model,
-        data = data, nsim = 0,
-        predInt = predInt,
-        outname = "MMsim",
-        combine = TRUE,
+        data = data, nsim = 0 ,
+        predInt = predInt),
         arglist # the other args
       )))
       
       
-      simdata$obs <- simdata$obs %>% filter(outeq == !!outeq)
+      obs <- simdata$data$obs %>% filter(outeq == !!outeq)
       
       # transform into format for MMopt
       # nsubs is the number of subjects
-      nsubs <- length(unique(simdata$obs$id))
+      nsubs <- length(unique(obs$nsim))
       # parse mmInt
       if (!missing(mmInt) && !is.null(mmInt)) {
         simdata_full <- simdata
@@ -284,23 +284,21 @@ PM_opt <- R6::R6Class(
       }
       
       # time is the simulated times
-      time <- unique(simdata$obs$time)
+      time <- unique(obs$time)
       # nout is the number of simulated times (outputs)
       nout <- length(time)
       # Mu is a matrix of nout rows x nsubs columns containing the outputs at each time
-      Mu <- t(matrix(simdata$obs$out, nrow = nsubs, byrow = T))
+      Mu <- t(matrix(obs$out, nrow = nsubs, byrow = T))
       
       # pH is the vector of probabilities of each population point
-      pH <- popPoints[, ncol(popPoints)]
+      pH <- as.data.frame(popPoints)[, ncol(popPoints)] 
       # replicate pH and normalize based on number of simulation templates
       ntemp <- nsubs / nrow(popPoints)
       pH <- rep(pH, ntemp)
       pH <- pH / ntemp
-      numeqt <- max(simdata$obs$outeq)
-      # get the assay error from the simulated output
-      simout <- readLines("MMsim1.txt")
-      errLine <- grep(" EQUATIONS, IN ORDER, WERE:", simout)
-      cassay <- scan("MMsim1.txt", n = 4, skip = errLine + numeqt - 1, quiet = T)
+      numeqt <- max(obs$outeq)
+      # get the assay error from the model
+      cassay <- simdata$data$model$model_list$err[[outeq]]$coeff
       
       # make the weighting Matrix
       wtnames <- names(weight)
@@ -356,28 +354,14 @@ PM_opt <- R6::R6Class(
       
       # -------------------------
       
+
       
-      if (clean_opt) {
-        invisible(file.remove(
-          Sys.glob(c(
-            "fort.*", "*.Z3Q", "*.ZMQ",
-            "montbig.exe", "ZMQtemp.csv",
-            "simControl.txt", "seedto.mon",
-            "abcde*.csv",
-            "MMsim*.txt",
-            "*.for"
-          )),
-          "simmodel.txt",
-          "simdata.csv"
-        ))
-      }
-      
-      self <- list(
+      res <- list(
         sampleTime = optsamp[1:nsamp, nsamp],
         bayesRisk = brisk[nsamp],
         simdata = simdata_full, mmInt = mmInt
       )
-      return(self)
+      return(res)
     },
     # 
     # This routine computes the MMOPT 1,2,3 and 4-sample optimal sample designs taking into account an additional weighting matrix C
@@ -694,7 +678,7 @@ plot.PM_opt <- function(x, line = list(probs = NA), times = T, print = TRUE, ...
   
   # parse dots
   arglist <- list(...)
-  arglist$quiet <- T
+  arglist$quiet <- TRUE
   arglist$line <- line
   
   p <- do.call(plot.PM_sim, c(list(x$simdata), arglist))$p
