@@ -1065,8 +1065,9 @@ PM_model <- R6::R6Class(
                 #### Save objects ####
                 PM_data$new(data_filtered, quiet = TRUE)$save("gendata.csv", header = FALSE)
                 #save(self, file = "fit.Rdata")
-                this_fit <- PM_fit$new(data = data, model = self)
-                save(this_fit, file = "fit.Rdata")
+                #this_fit <- PM_fit$new(data = data, model = self)
+                saveRDS(list(data = data, model = self), file = "fit.rds")
+                file.copy(self$binary_path, getwd())
                 
                 # Get ranges and calculate points
                 ranges <- lapply(self$model_list$pri, function(x) {
@@ -1115,14 +1116,18 @@ PM_model <- R6::R6Class(
                   prior <- "sobol"
                 }
                 
-                # get BLQ
+                # get blq
                 if (is.null(data$blq)) {
                   blq <- rep(NA, dataOut)
                 } else {
                   if (length(data$blq) != dataOut) {
-                    cli::cli_abort(c("x" = "Error: Number of BLQ values does not match number of output equations.", "i" = "Check the BLQ values."))
+                    cli::cli_abort(c("x" = "Error: Number of blq values does not match number of output equations.", "i" = "Check the blq values."))
                   }
                   blq <- data$blq
+                }
+                
+                if (length(blq) == 1 && is.na(blq)){
+                  blq <- as.numeric(NA) # ensure blq is numeric
                 }
                 
                 if (intern) {
@@ -1140,7 +1145,7 @@ PM_model <- R6::R6Class(
                         error_models = lapply(self$model_list$err, function(x) x$flatten()),
                         idelta = idelta,
                         tad = tad,
-                        blq = blq, # BLQ values 
+                        loq = blq, # blq values 
                         max_cycles = cycles, #will be hardcoded in Rust to 0 for POSTPROB
                         prior = prior,
                         points = points, # only relevant for sobol prior

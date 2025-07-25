@@ -46,7 +46,7 @@
 #' @importFrom R6 R6Class
 #' @importFrom rlang .data
 #' @importFrom plotly filter mutate plot_ly add_markers add_lines layout
-#' ggplotly subplot add_annotations add_bars renderPlotly
+#' ggplotly subplot add_annotations add_bars renderPlotly add_trace
 #' @importFrom shiny fluidPage titlePanel tags navlistPanel tabPanel fluidRow
 #' column h2 h3 h4 h5 fileInput selectInput numericInput radioButtons checkboxInput
 #' textInput uiOutput actionButton hr textAreaInput reactiveVal reactive

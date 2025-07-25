@@ -10,7 +10,7 @@
 #' Currently written for the Rust implementation of NPAG
 #' @param wd The directory containing the output from the Rust-implementation of NPAG
 #' @param write A logical value indicating if the results should be returned (`FALSE`, default) or written to disk (`TRUE`)
-#' @param fit Either a [PM_fit()] object or the relative path to a "fit.Rdata"
+#' @param fit The relative path to a "fit.rds" file.
 #' @return The output of `PM_parse` is a list containing the following elements
 #' * **op** Written to the standard of [PM_op()]
 #' * **pop** Written to the standard of [PM_pop()]
@@ -21,13 +21,10 @@
 #' @author Michael Neely and Markus Hovd
 #' @export
 
-PM_parse <- function(wd = getwd(), fit = "fit.Rdata", write = TRUE) {
-  if (inherits(fit, "PM_fit")) {
-    # fit is a PM_fit object, use it directly
-    fit_object <- fit
-  } else if (is.character(fit) && file.exists(fit)) {
+PM_parse <- function(wd = getwd(), fit = "fit.rds", write = TRUE) {
+  if (is.character(fit) && file.exists(fit)) {
     # fit is a character string pointing to a file, load it
-    fit_object <- get(load(fit))
+    fit_object <- readRDS(fit)
   } else {
     # fit does not meet any of the above conditions, set to NULL
     fit_object <- NULL
@@ -103,6 +100,8 @@ core <- list(
   numeqt = 1,
   converge = cycle$data$converged,
   config = rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines("settings.json", warn = FALSE))),
+  sys = as.list(Sys.info()) %>% keep(names(.) %in% c("sysname", "machine")) %>% paste(collapse = " "),
+  
   error = function(e) {
     cli::cli_warn(c("!" = "Unable to read {.file settings.json}"))
     return(NULL)
