@@ -49,7 +49,7 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \item{\code{data}}{Data frame containing the data to be modeled}
 
 \item{\code{blq}}{Values for each output equation to be considered as
-Below the Limit of Quantification (BLQ). See \verb{$new()} below for details.}
+Below the Limit of Quantification (blq). See \verb{$new()} below for details.}
 
 \item{\code{standard_data}}{Data frame containing standardized version of the data}
 
@@ -94,11 +94,11 @@ in the working directory, an unquoted name of a data frame
 in the current R environment, or a \link{PM_data} object, which will rebuild it.}
 
 \item{\code{blq}}{Optional vector of values for each output equation to be considered
-as Below the Limit of Quantification (BLQ). Any observation <= to the value
-for that output equation will be considered BLQ. BLQ observations are used in
-the calculation of the likelihood, e.g. probabilty that the observation is BLQ given
-the model prediction, but will not be included in observed vs. predicted plots.
-If \code{blq} is missing or a output equation does not have a BLQ value, \code{blq} will
+as Below the Limit of Quantification (blq). Any observation the same as the \code{blq} value
+for that output equation will be considered blq. blq observations are used in
+the calculation of the likelihood, e.g. probabilty that the prediction is blq given
+the noise and prediciton, but will not be included in observed vs. predicted plots.
+If \code{blq} is missing or an output equation does not have a blq value, \code{blq} will
 be set to \code{NA} for that output equation.}
 
 \item{\code{dt}}{Pmetrics will try a variety of date/time formats. If all 16 of

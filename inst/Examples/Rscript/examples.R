@@ -121,11 +121,11 @@ mod1$plot()
 
 # in the working directory we have another file "model.txt" that contains the old
 # representation of the same model we previously presented, let's take a look at it.
-system("cat src/model.txt")
+system("cat ../src/model.txt")
 
 # PM_model$new() also accepts the path to a model file
 # create the same model using this file
-mod1b <- PM_model$new("src/model.txt")
+mod1b <- PM_model$new("../src/model.txt")
 mod1b
 
 # PM_model provides a method to update the different elements of a model, for example:
@@ -150,11 +150,8 @@ build_model(mod1) #start with a model and update it
 
 
 
-# To keep everything tidy, let's move to another folder specific to store the runs
-# notice that we didn't have to move any files...
-setwd(wd)
-dir.create("Runs")
-setwd("Runs")
+# To keep everything tidy, we are working in a folder specific to store the runs
+
 
 run1 <- mod1$fit(data = exData, run = 3, overwrite = TRUE) # execute the fit and return the results to run1
 

@@ -21,10 +21,12 @@ makeAUC(
 \arguments{
 \item{data}{A suitable data object, i.e. \link{PM_pop}, \link{PM_post}, \link{PM_op},
 \link{PM_sim}, or some other suitable dataframe
-with at least time/observation columns referred to by \code{formula}, with an
-"id" column (so named) if necessary.}
+with at least time/observation columns referred to by \code{formula}.}
 
-\item{formula}{A formula of the form \code{obs ~ time}.
+\item{formula}{A formula of the form \code{obs ~ time | group}. Default value for
+\code{group} is "id", so when if the data contain an "id" column, the formula can simply
+be \code{obs ~ time}.  If the data contain a grouping variable, it can be specified
+as \code{obs ~ time | group}, where \code{group} is the name of the grouping variable.
 This is only required with data that is not of class PM_pop, PM_post, PM_op or PM_sim.}
 
 \item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
@@ -53,7 +55,7 @@ linear up, log down.}
 \value{
 A dataframe of class \emph{PMauc}, which has 2 columns:
 \itemize{
-\item id - Subject identification
+\item \code{group} - Subject identification, usually "id"
 \item tau - AUC from \code{start} to \code{end}
 }
 }

@@ -43,7 +43,7 @@ purple <- function(alpha = 1) {
 }
 
 gray <- function(alpha = 1) {
-  make_color(hex = "#CCCCCC", alpha = alpha)
+  make_color(hex = "grey60", alpha = alpha)
 }
 
 black <- function(alpha = 1) {

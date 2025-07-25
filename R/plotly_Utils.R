@@ -4,10 +4,10 @@
 amendMarker <- function(.marker, default) {
   default_marker <- list(
     symbol = "circle",
-    color = "red",
+    color = red(),
     size = 10,
     opacity = 0.5,
-    line = list(color = "black", width = 1)
+    line = list(color = black(), width = 1)
   )
   if (!missing(default)) {
     default_marker <- modifyList(default_marker, default)
@@ -30,7 +30,7 @@ amendMarker <- function(.marker, default) {
 
 # amend lines
 amendLine <- function(.line, default) {
-  default_line <- list(color = "dodgerblue", width = 1, dash = "solid")
+  default_line <- list(color = blue(), width = 1, dash = "solid")
   
   if (!missing(default)) {
     default_line <- modifyList(default_line, default)
@@ -54,7 +54,7 @@ amendLine <- function(.line, default) {
 
 # amend title
 amendTitle <- function(.title, default) {
-  default_font <- list(family = "Arial", color = "black", bold = TRUE, size = 16)
+  default_font <- list(family = "Arial", color = black(), bold = TRUE, size = 16)
   if (!missing(default)) {
     default_font <- modifyList(default_font, default)
   }
@@ -114,7 +114,7 @@ amendTitle <- function(.title, default) {
 
 # amend CI
 amendCI <- function(.ci, default) {
-  default_ci <- list(color = "dodgerblue", dash = "dash", width = 1, opacity = 0.4)
+  default_ci <- list(color = blue(), dash = "dash", width = 1, opacity = 0.4)
   
   if (!missing(default)) {
     default_ci <- modifyList(default_ci, default)
@@ -135,7 +135,7 @@ amendCI <- function(.ci, default) {
 }
 
 # amend bar
-amendBar <- function(.bar, color = "dodgerblue", default) {
+amendBar <- function(.bar, color = blue(), default) {
   default_bar <- list(color = color, width = .02, opacity = 0.75)
   
   if (!missing(default)) {
@@ -160,7 +160,7 @@ amendBar <- function(.bar, color = "dodgerblue", default) {
 
 # make grid lines
 setGrid <- function(.axis, grid = FALSE, default) {
-  default_grid <- list(gridcolor = "grey50", gridwidth = 1)
+  default_grid <- list(gridcolor = gray(), gridwidth = 1)
   if (!missing(default)) {
     default_grid <- modifyList(default_grid, default)
   }
@@ -170,7 +170,7 @@ setGrid <- function(.axis, grid = FALSE, default) {
       grid <- default_grid
     } else {
       grid <- default_grid
-      grid$gridcolor <- "white"
+      grid$gridcolor <- white()
       grid$gridwidth <- 0
     }
   }
@@ -480,7 +480,7 @@ add_shapes <- function(p = plotly::last_plot(), shapes) {
 #' }
 add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
 data = NULL, method = "lm", line = T, ci = 0.95, stats) {
-  line <- amendLine(line, default = list(color = "blue", width = 2))
+  line <- amendLine(line, default = list(color = blue(), width = 2))
   if (!is.null(data)) {
     if (is.null(x) | is.null(y)) stop("Missing x or y with data.\n")
     if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
@@ -500,7 +500,7 @@ data = NULL, method = "lm", line = T, ci = 0.95, stats) {
   if (length(x) != length(y)) {
     stop("Regression failed due to unequal x (n = ", length(x), ") and y (n = ", length(y), ").\n")
   }
-  vals <- dplyr::bind_cols(x = x, y = y)
+  vals <- dplyr::bind_cols(x = x, y = y) %>% dplyr::rename("x" = 1, "y" = 2)
   mod <- tryCatch(suppressWarnings(do.call(method, args = list(formula = y ~ x, data = vals))),
   error = function(e) {
     NA
@@ -513,36 +513,41 @@ if (any(is.na(mod))) {
 }
 
 if (method == "lm") {
-  inter <- format(coef(mod)[1], digits = 3)
-  slope <- format(coef(mod)[2], digits = 3)
+  inter <- round2(coef(mod)[1])
+  slope <- round2(coef(mod)[2])
   if (is.na(summary(mod)$coefficients[1, 2])) {
     ci.inter <- rep("NA", 2)
   } else {
-    ci.inter <- c(format(confint(mod, level = ci)[1, 1], digits = 3), format(confint(mod, level = ci)[1, 2], digits = 3))
+    ci.inter <- c(round2(confint(mod, level = ci)[1, 1]), round2(confint(mod, level = ci)[1, 2]))
   }
   if (is.na(summary(mod)$coefficients[2, 2])) {
     ci.slope <- rep("NA", 2)
   } else {
-    ci.slope <- c(format(confint(mod, level = ci)[2, 1], digits = 3), format(confint(mod, level = ci)[2, 2], digits = 3))
+    ci.slope <- c(round2(confint(mod, level = ci)[2, 1]), round2(confint(mod, level = ci)[2, 2]))
   }
   
   regStat <- paste0(
-    "R-squared = ", format(summary(mod)$r.squared, digits = 3), "<br>",
+    "R-squared = ", round2(summary(mod)$r.squared), "<br>",
     "Inter = ", inter, " (", ci * 100, "%CI ", ci.inter[1], " to ", ci.inter[2], ")", "<br>",
     "Slope = ", slope, " (", ci * 100, "%CI ", ci.slope[1], " to ", ci.slope[2], ")", "<br>"
   )
   
-  p_data <- plotly::plotly_data(p)
+  p_data <- if(!is.null(data)) {data} else {plotly::plotly_data(p)}
   if (inherits(p_data, "PM_op_data")) { # this came from a PM_op object
     sumStat <- summary.PM_op(p_data,
       outeq = p_data$outeq[1],
       pred.type = p_data$pred.type[1],
-      icen = p_data$icen[1]
+      icen = p_data$icen[1],
+      print = FALSE
     )
+    uses_percent <- c("","%")[1 + as.numeric(stringr::str_detect(get_metric_info(sumStat$pe)$metric_types$bias, "%"))]
+    Bias <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Bias, uses_percent,"<br>")
+    Imprecision <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Imprecision, uses_percent,"<br>")
+
     regStat <- paste0(
       regStat, "<br>",
-      "Bias = ", get_metric_info(sumStat$pe)$metric_vals$Bias, "<br>",
-      "Imprecision  = ", get_metric_info(sumStat$pe)$metric_vals$Imprecision
+      "Bias = ", Bias,
+      "Imprecision  = ", Imprecision
     )
   }
   
@@ -590,7 +595,7 @@ if (is.logical(stats)) { # default formatting
   } else {
     statPlot <- FALSE
   }
-  stats <- amendTitle("", default = list(size = 14, bold = FALSE))
+  stats <- amendTitle("", default = list(size = 14, bold = FALSE, color = gray()))
   stats$x <- 0.8
   stats$y <- 0.1
 } else { # formatting supplied, set text to "" (will be replaced later)
@@ -971,7 +976,7 @@ sub_plot <- function(...,
 #' @export
 #' @author Michael Neely
 click_plot <- function(p, highlight_color = orange()) {
-  onRender(p, sprintf("
+   p <- onRender(p, sprintf("
 function(el, x) {
   const highlight = '%s';
   let selectedIndex = null;
@@ -1035,5 +1040,6 @@ function(el, x) {
   });
 }
 ", highlight_color))
+  return(p)
 }
 
