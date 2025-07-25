@@ -19,13 +19,18 @@ Generate list of default color names.
 }
 \details{
 Used for Pmetrics plots. The following list is recycled as necessary to generate the
-requested number of colors.
-\code{c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")}
+requested number of colors:
+\code{c(red(), green(), blue(), brown(), black(), purple(), pink(), gold(), orange(), gray())}.
+Each value is a function that returns a color name.
 }
 \examples{
 \dontrun{
 getDefaultColors(6)
 }
+}
+\seealso{
+\code{\link[=blue]{blue()}}, \code{\link[=green]{green()}}, \code{\link[=red]{red()}}, \code{\link[=brown]{brown()}}, \code{\link[=black]{black()}},
+\code{\link[=purple]{purple()}}, \code{\link[=pink]{pink()}}, \code{\link[=gold]{gold()}}, \code{\link[=orange]{orange()}}, \code{\link[=gray]{gray()}}
 }
 \author{
 Michael Neely

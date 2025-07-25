@@ -40,7 +40,7 @@ public <- list(
   #' @field data Data frame containing the data to be modeled
   data = NULL,
   #' @field blq Values for each output equation to be considered as 
-  #' Below the Limit of Quantification (BLQ). See `$new()` below for details.
+  #' Below the Limit of Quantification (blq). See `$new()` below for details.
   blq = NULL,
   #' @field standard_data Data frame containing standardized version of the data
   standard_data = NULL,
@@ -60,11 +60,11 @@ public <- list(
   #' in the working directory, an unquoted name of a data frame
   #' in the current R environment, or a [PM_data] object, which will rebuild it.
   #' @param blq Optional vector of values for each output equation to be considered
-  #' as Below the Limit of Quantification (BLQ). Any observation <= to the value
-  #' for that output equation will be considered BLQ. BLQ observations are used in
-  #' the calculation of the likelihood, e.g. probabilty that the observation is BLQ given
-  #' the model prediction, but will not be included in observed vs. predicted plots.
-  #' If `blq` is missing or a output equation does not have a BLQ value, `blq` will
+  #' as Below the Limit of Quantification (blq). Any observation the same as the `blq` value
+  #' for that output equation will be considered blq. blq observations are used in
+  #' the calculation of the likelihood, e.g. probabilty that the prediction is blq given
+  #' the noise and prediciton, but will not be included in observed vs. predicted plots.
+  #' If `blq` is missing or an output equation does not have a blq value, `blq` will
   #' be set to `NA` for that output equation.
   #' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
   #' them fail, use this parameter to specify the correct format as a
@@ -109,8 +109,8 @@ public <- list(
       self$blq <- rep(NA, nout) 
     } else {
       if (length(blq) != nout) {
-        cli::cli_abort(c("x" = "You must have {nout} BLQ values to match the number of output equations in the data.",
-        " " = "Include a value of {.code NA} for any output equation that does not have a BLQ value."))
+        cli::cli_abort(c("x" = "You must have {nout} blq values to match the number of output equations in the data.",
+        " " = "Include a value of {.code NA} for any output equation that does not have a blq value."))
       }
       self$blq <- blq
     }
@@ -2107,7 +2107,7 @@ plot.PM_data <- function(x,
     cli::cli_text("Number of inputs: {.blue {x$ndrug}}")
     cli::cli_text("Number of outputs: {.blue {x$numeqt}}")
     for (i in 1:x$numeqt) {
-      cli::cli_text("Total number of observations (outeq {i}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing and {.blue {x$blqObsXouteq$n[i]}} ({.blue {sprintf('%.3f', 100 * x$blqObsXouteq$n[i] / x$nobsXouteq[i])}%}) BLQ")
+      cli::cli_text("Total number of observations (outeq {i}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing and {.blue {x$blqObsXouteq$n[i]}} ({.blue {sprintf('%.3f', 100 * x$blqObsXouteq$n[i] / x$nobsXouteq[i])}%}) blq")
     }
     if (x$ncov > 0) {
       cli::cli_text(" Covariates: {.blue {x$covnames}}")

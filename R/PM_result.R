@@ -96,6 +96,26 @@ PM_result <- R6::R6Class(
 
       return(self)
     },
+    #' @description
+    #' Fit the model to the data
+    #' #' @details
+    #' This method is used to fit the model in the [PM_result] object to data. 
+    #' It calls the `$fit` method of the model stored in the `model` field.
+    #' @param data Optional data to fit. If not provided, the data stored in the
+    #' `data` field of the [PM_result] object will be used. This can be useful to
+    #' continue a prior run that did not converge before the maximum number of cycles,
+    #' e.g. `run2 <- run1$fit(cycles = 10000, prior = 1)`
+    #' @param ... Additional arguments passed to the model's `$fit` method.
+    #' @return Returns an invisible [PM_result].
+    #' @export
+    #' 
+    fit = function(data, ...){
+      if (missing(data)) {
+        data <- self$data
+      }
+      res <- self$model$fit(data = data, ...)
+      return(invisible(res))
+    },
 
     #' @description
     #' Plot generic function based on type

@@ -373,7 +373,14 @@ plot.PM_op <- function(x,
         line$ref <- T
       }
     }
-    marker <- amendMarker(marker, default = list(color = "orange"))
+    
+    # markers
+    
+    normal_color <- blue()
+    highlight_color <- orange()
+    marker <- amendMarker(marker, default = list(color = normal_color))
+    
+    
     lmLine <- amendLine(line$lm, default = list(color = "dodgerblue", dash = "solid"))
     loessLine <- amendLine(line$loess, default = list(color = "dodgerblue", dash = "dash"))
     refLine <- amendLine(line$ref, default = list(color = "grey", dash = "dot"))
@@ -459,15 +466,49 @@ plot.PM_op <- function(x,
         layout$yaxis <- modifyList(layout$yaxis, list(matches = "x"))
       }
       
+      # Split into traces
+      traces <- sub1 %>%
+      group_split(id)
       
-      p <- sub1 %>%
-      plotly::plot_ly(x = ~pred) %>%
-      plotly::add_markers(
-        y = ~obs,
-        marker = marker,
-        text = ~id,
-        hovertemplate = "Pred: %{x:.2f}<br>Obs: %{y:.2f}<br>ID: %{text}<extra></extra>"
-      )
+      
+      # Build plot
+      p <- plot_ly()
+      
+      for (i in seq_along(traces)) {
+        trace_data <- traces[[i]]
+        group_name <- trace_data$id[1]
+        
+        # Add group label directly to the data
+        trace_data$text_label <- glue::glue("ID: {group_name}\nPred: {round2(trace_data$pred)}\nObs: {round2(trace_data$obs)}")
+        
+        p <- add_trace(
+          p,
+          data = trace_data,
+          x = ~pred,
+          y = ~obs,
+          type = "scatter",
+          mode = "markers",
+          name = group_name,
+          marker = marker,
+          hoverinfo = "text",
+          text = ~text_label,
+          showlegend = FALSE
+        )
+        
+        
+      }
+      
+      
+      
+      # p <- traces %>%
+      # plotly::plot_ly(x = ~pred) %>%
+      # plotly::add_markers(
+      #   y = ~obs,
+      #   marker = marker,
+      #   text = ~id,
+      #   hovertemplate = "Pred: %{x:.2f}<br>Obs: %{y:.2f}<br>ID: %{text}<extra></extra>"
+      # )
+      
       
       if (lmLine$plot) { # linear regression
         lmLine$plot <- NULL # remove to allow only formatting arguments below
@@ -478,7 +519,7 @@ plot.PM_op <- function(x,
           lmLine$ci <- NULL # remove to allow only formatting arguments below
         }
         
-        p <- p %>% add_smooth(ci = ci, line = lmLine, stats = stats)
+        p <- p %>% add_smooth(data = sub1, x = ~pred, y = ~obs, ci = ci, line = lmLine, stats = stats)
       }
       
       if (loessLine$plot) { # loess regression
@@ -489,7 +530,7 @@ plot.PM_op <- function(x,
           ci <- loessLine$ci
           loessLine$ci <- NULL # remove to allow only formatting arguments below
         }
-        p <- p %>% add_smooth(ci = ci, line = loessLine, method = "loess")
+        p <- p %>% add_smooth(data = sub1, x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
       }
       
       if (refLine$plot) { # reference line
@@ -515,9 +556,10 @@ plot.PM_op <- function(x,
         shapes = layout$refLine,
         title = layout$title
       )
-      
-      if (print) print(p)
+
+      if (print) print(click_plot(p))
       return(invisible(p))
+
     } else { # residual plot
       # Y axis and point labels
       if (pred.type == "post") {
@@ -533,25 +575,73 @@ plot.PM_op <- function(x,
       
       
       # res vs. time
-      p1 <- sub1 %>%
-      plotly::plot_ly(x = ~time) %>%
-      plotly::add_markers(
-        y = ~wd,
-        marker = marker,
-        text = ~id,
-        hovertemplate = paste0("Time: %{x:.2f}<br>", pointLab, ": %{y:.2f}<br>ID: %{text}<extra></extra>")
-      )
       
+      # Split into traces
+      traces <- sub1 %>%
+      group_split(id)
+      
+      
+      ##### Build plots
+      # res vs. time
+      p1 <- plot_ly()
       
       # res vs. pred
-      p2 <- sub1 %>%
-      plotly::plot_ly(x = ~pred) %>%
-      plotly::add_markers(
-        y = ~wd,
-        marker = marker,
-        text = ~id,
-        hovertemplate = paste0("Pred: %{x:.2f}<br>", pointLab, ": %{y:.2f}<br>ID: %{text}<extra></extra>")
-      )
+      p2 <- plot_ly()
+      
+      for (i in seq_along(traces)) {
+        trace_data <- traces[[i]]
+        group_name <- trace_data$id[1]
+        
+        # Add group label directly to the data
+        trace_data$text_label_1 <- glue::glue("ID: {group_name}\nTime: {round2(trace_data$time)}\n{pointLab}: {round2(trace_data$wd)}")
+        trace_data$text_label_2 <- glue::glue("ID: {group_name}\nPred: {round2(trace_data$pred)}\n{pointLab}: {round2(trace_data$wd)}")
+        
+        p1 <- add_trace(
+          p1,
+          data = trace_data,
+          x = ~time,
+          y = ~wd,
+          type = "scatter",
+          mode = "markers",
+          name = group_name,
+          marker = marker,
+          hoverinfo = "text",
+          text = ~text_label_1,
+          showlegend = FALSE
+        )
+        
+        p2 <- add_trace(
+          p2,
+          data = trace_data,
+          x = ~pred,
+          y = ~wd,
+          type = "scatter",
+          mode = "markers",
+          name = group_name,
+          marker = marker,
+          hoverinfo = "text",
+          text = ~text_label_2,
+          showlegend = FALSE
+        )
+      }
+      
+      # p1 <- sub1 %>%
+      # plotly::plot_ly(x = ~time) %>%
+      # plotly::add_markers(
+      #   y = ~wd,
+      #   marker = marker,
+      #   text = ~id,
+      #   hovertemplate = paste0("Time: %{x:.2f}<br>", pointLab, ": %{y:.2f}<br>ID: %{text}<extra></extra>")
+      # )
+      
+      # p2 <- sub1 %>%
+      # plotly::plot_ly(x = ~pred) %>%
+      # plotly::add_markers(
+      #   y = ~wd,
+      #   marker = marker,
+      #   text = ~id,
+      #   hovertemplate = paste0("Pred: %{x:.2f}<br>", pointLab, ": %{y:.2f}<br>ID: %{text}<extra></extra>")
+      # )
       
       # add reference lines
       if (lmLine$plot) {
@@ -562,8 +652,8 @@ plot.PM_op <- function(x,
           ci <- lmLine$ci
           lmLine$ci <- NULL # remove to allow only formatting arguments below
         }
-        p1 <- p1 %>% add_smooth(ci = ci, line = lmLine, stats = stats)
-        p2 <- p2 %>% add_smooth(ci = ci, line = lmLine, stats = stats)
+        p1 <- p1 %>% add_smooth(data = sub1, x = ~time, y = ~wd, ci = ci, line = lmLine, stats = stats)
+        p2 <- p2 %>% add_smooth(data = sub1, x = ~pred, y = ~wd, ci = ci, line = lmLine, stats = stats)
       }
       
       if (loessLine$plot) {
@@ -574,8 +664,8 @@ plot.PM_op <- function(x,
           ci <- loessLine$ci
           loessLine$ci <- NULL # remove to allow only formatting arguments below
         }
-        p1 <- p1 %>% add_smooth(ci = ci, line = loessLine, method = "loess")
-        p2 <- p2 %>% add_smooth(ci = ci, line = loessLine, method = "loess")
+        p1 <- p1 %>% add_smooth(data = sub1, x = ~time, y = ~wd, ci = ci, line = loessLine, method = "loess")
+        p2 <- p2 %>% add_smooth(data = sub1, x = ~pred, y = ~wd, ci = ci, line = loessLine, method = "loess")
       }
       # set layout
       layout$xaxis$title <- amendTitle("Time")
@@ -600,7 +690,7 @@ plot.PM_op <- function(x,
         nrows = 1,
         shareY = TRUE, shareX = FALSE, titleX = TRUE
       )
-      if (print) print(p)
+      if (print) print(click_plot(p))
       return(invisible(p))
     } # end resid plot
   }
