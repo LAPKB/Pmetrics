@@ -29,6 +29,7 @@ Imports:
     dplyr,
     ggplot2,
     ggraph,
+    htmlwidgets,
     jsonlite,
     lifecycle,
     lubridate,

@@ -90,7 +90,7 @@ mod1 <- PM_model$new(
     V = ab(30, 120),
     lag1 = ab(0, 4)
   ),
-  cov = c(
+  cov = list(
     wt = interp(),
     africa = interp("none"),
     age = interp(),
@@ -106,7 +106,7 @@ mod1 <- PM_model$new(
   out = function(){
   Y[1] = X[2]/V
   },
-  err = c(
+  err = list(
     proportional(5, c(0.02, 0.05, -0.0002, 0))
   )
 )
