@@ -135,9 +135,10 @@ PM_cov <- R6::R6Class(
 
 
       res <- bind_rows(
-        dplyr::left_join(covs, post_mean, by = "id"),
-        dplyr::left_join(covs, post_med, by = "id")
-      )
+        dplyr::left_join(post_mean, covs, by = "id"),
+        dplyr::left_join(post_med, covs, by = "id")
+      ) %>%
+        select(id, time, block, icen, everything())
 
       class(res) <- c("PM_cov_data", "data.frame")
       attr(res, "ncov") <- ncol(covs) - 3 # subtract id, time, block

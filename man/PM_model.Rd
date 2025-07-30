@@ -200,8 +200,11 @@ The \code{\link[=ab]{ab()}} creator specifies the
 initial range \verb{[a, b]} of the parameter, while the \code{\link[=msd]{msd()}} creator specifies
 the initial mean and standard deviation of the parameter.}
 
-\item{\code{cov}}{A vector whose names are the same as the covariates in the data file,
-and whose values are the \code{\link[=interp]{interp()}} creator function to declare
+\item{\code{cov}}{A vector whose names are some or all of the covariates in the data file.
+Unlike prior versions of Pmetrics, as of 3.0.0, they do not have to be listed in the same order
+as in the data file, and they do not need to be all present.
+\strong{Only those covariates used in model equations need to be declared here.}
+Values for each element in the covariate vector are the \code{\link[=interp]{interp()}} creator function to declare
 how each covariate is interpolated between entries in the data. The default argument
 for \code{\link[=interp]{interp()}} is "lm" which means that values will be linearly interpolated
 between entries, like the R linear model function \code{\link[stats:lm]{stats::lm()}}. The alternative is "none",

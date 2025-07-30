@@ -160,7 +160,7 @@ amendBar <- function(.bar, color = blue(), default) {
 
 # make grid lines
 setGrid <- function(.axis, grid = FALSE, default) {
-  default_grid <- list(gridcolor = gray(), gridwidth = 1)
+  default_grid <- list(gridcolor = gray(alpha = 0.5), gridwidth = 1)
   if (!missing(default)) {
     default_grid <- modifyList(default_grid, default)
   }
@@ -543,7 +543,7 @@ if (method == "lm") {
     uses_percent <- c("","%")[1 + as.numeric(stringr::str_detect(get_metric_info(sumStat$pe)$metric_types$bias, "%"))]
     Bias <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Bias, uses_percent,"<br>")
     Imprecision <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Imprecision, uses_percent,"<br>")
-
+    
     regStat <- paste0(
       regStat, "<br>",
       "Bias = ", Bias,
@@ -957,89 +957,83 @@ sub_plot <- function(...,
     return(selection)
   }
   
-## CLICK
-#' @title Click on plotly plot to highlight traces
-#' @description
-#' `r lifecycle::badge("stable")`
-#' Adds click functionality to a plotly plot to highlight traces when clicked.
-#' @details
-#' This function modifies a plotly plot to allow clicking on traces to highlight them.
-#' Clicking on a trace will highlight it in orange (default) and dim all other traces.
-#' Clicking on the same trace again will deselect it and restore the original colors.
-#' Clicking on the background will also restore all traces to their original colors.
-#' The function uses the `htmlwidgets::onRender` function from the `htmlwidgets` package to add
-#' JavaScript code that handles the click events on the plotly plot.
-#' @param p The plotly plot to which the click functionality should be added.
-#' Default is the `plotly::last_plot()`.
-#' @param higlight_color The color to use for traces that are highlighted. Colors for non-highlighted 
-#' traces will be preserved but dimmed to 20% opacity. Default highlight color is `orange()`.
-#' @export
-#' @author Michael Neely
-click_plot <- function(p, highlight_color = orange()) {
-   p <- onRender(p, sprintf("
+  ## CLICK
+  #' @title Click on plotly plot to highlight traces
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Adds click functionality to a plotly plot to highlight traces when clicked.
+  #' @details
+  #' This function modifies a plotly plot to allow clicking on traces to highlight them.
+  #' Clicking on a trace will highlight it in orange (default) and dim all other traces.
+  #' Clicking on the same trace again will deselect it and restore the original colors.
+  #' Clicking on the background will also restore all traces to their original colors.
+  #' The function uses the `htmlwidgets::onRender` function from the `htmlwidgets` package to add
+  #' JavaScript code that handles the click events on the plotly plot.
+  #' @param p The plotly plot to which the click functionality should be added.
+  #' Default is the `plotly::last_plot()`.
+  #' @param higlight_color The color to use for traces that are highlighted. Colors for non-highlighted 
+  #' traces will be preserved but dimmed to 20% opacity. Default highlight color is `orange()`.
+  #' @export
+  #' @author Michael Neely
+  click_plot <- function(p, highlight_color = orange()) {
+    p <- htmlwidgets::onRender(p, sprintf("
 function(el, x) {
   const highlight = '%s';
   let selectedIndex = null;
   let lastClickWasPoint = false;
-
-  // Store original colors for each trace
-  const originalColors = x.data.map(trace => trace.marker.color || 'gray');
-
+    
+  // Deep copy of all original marker objects
+  const originalMarkers = x.data.map(trace => JSON.parse(JSON.stringify(trace.marker || {})));
+    
   el.on('plotly_click', function(data) {
     lastClickWasPoint = true;
-
     const i = data.points[0].fullData.index;
-
+    
     if (selectedIndex === i) {
-      // Deselect
+      // Deselect: restore all original marker settings
       for (let j = 0; j < x.data.length; j++) {
-        Plotly.restyle(el.id, {
-          'marker.color': [originalColors[j]],
-          'marker.opacity': [1]
-        }, [j]);
+        Plotly.restyle(el.id, { marker: [originalMarkers[j]] }, [j]);
       }
       selectedIndex = null;
     } else {
-      // Dim all
+      // Dim all traces
       for (let j = 0; j < x.data.length; j++) {
-        Plotly.restyle(el.id, {
-          'marker.color': [originalColors[j]],
-          'marker.opacity': [0.2]
-        }, [j]);
+        const dimmedMarker = Object.assign({}, originalMarkers[j], { opacity: 0.2 });
+        Plotly.restyle(el.id, { marker: [dimmedMarker] }, [j]);
       }
-
+    
       // Highlight selected trace
-      Plotly.restyle(el.id, {
-        'marker.color': [highlight],
-        'marker.opacity': [1]
-      }, [i]);
-
+      const highlightedMarker = Object.assign({}, originalMarkers[i], {
+        color: highlight,
+        opacity: 1
+      });
+      Plotly.restyle(el.id, { marker: [highlightedMarker] }, [i]);
+    
       selectedIndex = i;
     }
   });
-
-  // Detect background clicks
+    
+  // Background click restores everything
   el.addEventListener('click', function() {
     setTimeout(() => {
       if (!lastClickWasPoint) {
         for (let j = 0; j < x.data.length; j++) {
-          Plotly.restyle(el.id, {
-            'marker.color': [originalColors[j]],
-            'marker.opacity': [1]
-          }, [j]);
+          Plotly.restyle(el.id, { marker: [originalMarkers[j]] }, [j]);
         }
         selectedIndex = null;
       }
       lastClickWasPoint = false;
     }, 0);
   });
-
+    
   // Optional: disable right-click menu
   el.addEventListener('contextmenu', function(e) {
     e.preventDefault();
   });
 }
 ", highlight_color))
-  return(p)
-}
-
+    return(p)
+  }
+  
+  
+  

@@ -160,8 +160,11 @@ PM_model <- R6::R6Class(
     #' The [ab()] creator specifies the
     #' initial range `[a, b]` of the parameter, while the [msd()] creator specifies
     #' the initial mean and standard deviation of the parameter.
-    #' @param cov A vector whose names are the same as the covariates in the data file,
-    #' and whose values are the [interp()] creator function to declare
+    #' @param cov A vector whose names are some or all of the covariates in the data file.
+    #' Unlike prior versions of Pmetrics, as of 3.0.0, they do not have to be listed in the same order 
+    #' as in the data file, and they do not need to be all present. 
+    #' **Only those covariates used in model equations need to be declared here.**
+    #' Values for each element in the covariate vector are the [interp()] creator function to declare
     #' how each covariate is interpolated between entries in the data. The default argument
     #' for [interp()] is "lm" which means that values will be linearly interpolated
     #' between entries, like the R linear model function [stats::lm()]. The alternative is "none",
@@ -965,23 +968,25 @@ PM_model <- R6::R6Class(
                 
                 #### checks
                 
+                # covariates do not need to be identical in PMcore  - MN removed this check 7/27/25
+                
                 # covariates
-                dataCov <- tolower(getCov(data)$covnames)
-                modelCov <- tolower(self$model_list$covariates)
-                if (length(modelCov) == 0) {
-                  modelCov <- NA
-                }
-                if (!all(is.na(dataCov)) &&
-                !all(is.na(modelCov))) {
-                  # if there are covariates
-                  if (!identical(sort(dataCov), sort(modelCov))) {
-                    # if not identical, abort
-                    msg <- glue::glue(
-                      "Model covariates: {paste(modelCov, collapse = ', ')}; Data covariates: {paste(dataCov, collapse = ', ')}"
-                    )
-                    cli::cli_abort(c("x" = "Error: Covariates in data and model do not match.", "i" = msg))
-                  }
-                }
+                # dataCov <- tolower(getCov(data)$covnames)
+                # modelCov <- tolower(self$model_list$covariates)
+                # if (length(modelCov) == 0) {
+                #   modelCov <- NA
+                # }
+                # if (!all(is.na(dataCov)) &&
+                # !all(is.na(modelCov))) {
+                #   # if there are covariates
+                #   if (!identical(sort(dataCov), sort(modelCov))) {
+                #     # if not identical, abort
+                #     msg <- glue::glue(
+                #       "Model covariates: {paste(modelCov, collapse = ', ')}; Data covariates: {paste(dataCov, collapse = ', ')}"
+                #     )
+                #     cli::cli_abort(c("x" = "Error: Covariates in data and model do not match.", "i" = msg))
+                #   }
+                # }
                 
                 # output equations
                 
@@ -1297,14 +1302,27 @@ PM_model <- R6::R6Class(
                 return(invisible(self))
               },
               #' @description
-              #' Update the model by launching the model editor.
+              #' Update the model using recursive lists of changes and recompile the updated model.
+              #' @param ... Named elements corresponding to the blocks in the model,
+              #' such as "pri", "cov", "sec", "eqn", "ini", "lag", "fa", "out", and "err".
+              #' For each block, create a list of changes, which may be additions, edits, or deletions.
+              #' For deletions, set the value to `NULL`.
               #' 
-              
-              update = function() {
-                new_mod <- build_model(self, update = TRUE)
-                
-                self$arg_list <- new_mod
-                #self$compile()
+              update = function(...) {
+                changes <- list(...)
+                keys <- names(changes)
+                if (!all(tolower(keys) %in% c("pri", "cov", "sec", "eqn", "ini", "lag", "fa", "out", "err"))) {
+                  cli::cli_abort(c(
+                    "x" = "Invalid block name: {keys}",
+                    "i" = "See help for {.fn PM_model}."
+                  ))
+                }
+        
+
+                self$arg_list <- modifyList(self$arg_list, changes)
+
+                self$compile() # recompile the model after updating
+                return(invisible(self))
               }
               
             ),  # end public list
@@ -1494,7 +1512,7 @@ PM_model <- R6::R6Class(
                     
                     if (self$model_list$type %in% c("Analytical", "ODE")){
                       placeholders <- c("eqn", "lag", "fa", "ini", "out", "n_eqn", "n_out")
-                      base <- paste0("equation::", 
+                      base <- paste0("#[allow(unused_mut)]\nequation::", 
                       self$model_list$type, 
                       "::new(\n", 
                       paste("<", placeholders[1:5], ">", sep = "", collapse = ",\n "),

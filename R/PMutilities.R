@@ -240,7 +240,7 @@ checkSymmetry = TRUE) {
       missing_headers <- c("#PRI", "#EQN", "#OUT", "#ERR")[missing_mandatory]
       cli::cli_abort(c("x" = "Model file is missing mandatory header{?s}: {missing_headers} "))
     }
-  
+    
     headerOrder <- c(primVar, covar, secVar, bolus, ini, f, lag, eqn, output, error, extra)
     blockStart <- blockStart[rank(headerOrder)]
     blockStop <- blockStop[rank(headerOrder)]
@@ -1409,51 +1409,134 @@ wtd.var <- function(x, weights = NULL,
   }
   
   
-# Round to x digits  ---------------------------------------------------
-
-#' @title Round to x digits
-#' @description
-#' `r lifecycle::badge("stable")`
-#' Rounds a numeric value to a specified number of digits for display in flextables and plots.
-#' @details Uses [base::format] and [base::round] to round a numeric value to a specified number of digits.
-#' @param x A numeric value to be rounded.
-#' @param digits The number of digits to round to. Default is set by [getPMoptions("digits")].
-#' @return A character string representing the rounded value with the specified number of digits.
-#' @export
-
-round2 <- function(x, digits = getPMoptions("digits")) {
-  format(round(x, digits), nsmall = digits)
-}
-
-
-# Print data frame in CLI format ------------------------------------------
-#' @title Print data frame in CLI format
-#' @description
-#' `r lifecycle::badge("stable")`
-#' Prints a data frame in a format suitable for the command line interface (CLI).
-#' @details
-#' Uses [dplyr::mutate] to convert all columns to character, rounds numeric values using [round2],
-#' and formats the output using [knitr::kable] for a simple table format.
-#' # The function replaces spaces with non-breaking spaces for better alignment in the CLI.
-#' #' @param df A data frame to be printed.
-#' #' @return A formatted text output of the data frame.
-#' #' @export
-#' 
-cli_df <- function(df) {
+  # Round to x digits  ---------------------------------------------------
   
-  # Convert all columns to character for uniform formatting
-  df_chr <- df %>% mutate(across(where(is.double), ~round2(.x))) %>%
-    mutate(across(everything(), ~as.character(.x, stringsAsFactors = FALSE))) 
-
-  df_tab <- knitr::kable(df_chr, "simple")
-
-  header <- df_tab[1] %>% stringr::str_replace_all(" ", "\u00A0" )
-
-  cli::cli_text("{.strong {header}}")
-
-  for (i in 2:length(df_tab)) {
-
-    cli::cli_text(df_tab[i] %>% str_replace_all(" ", "\u00A0" ))
+  #' @title Round to x digits
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Rounds a numeric value to a specified number of digits for display in flextables and plots.
+  #' @details Uses [base::format] and [base::round] to round a numeric value to a specified number of digits.
+  #' @param x A numeric value to be rounded.
+  #' @param digits The number of digits to round to. Default is set by [getPMoptions("digits")].
+  #' @return A character string representing the rounded value with the specified number of digits.
+  #' @export
+  
+  round2 <- function(x, digits = getPMoptions("digits")) {
+    format(round(x, digits), nsmall = digits)
   }
+  
+  
+  # Print data frame in CLI format ------------------------------------------
+  #' @title Print data frame in CLI format
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Prints a data frame in a format suitable for the command line interface (CLI).
+  #' @details
+  #' Uses [dplyr::mutate] to convert all columns to character, rounds numeric values using [round2],
+  #' and formats the output using [knitr::kable] for a simple table format.
+  #' # The function replaces spaces with non-breaking spaces for better alignment in the CLI.
+  #' #' @param df A data frame to be printed.
+  #' #' @return A formatted text output of the data frame.
+  #' #' @export
+  #' 
+  cli_df <- function(df) {
+    
+    # Convert all columns to character for uniform formatting
+    df_chr <- df %>% mutate(across(where(is.double), ~round2(.x))) %>%
+    mutate(across(everything(), ~as.character(.x, stringsAsFactors = FALSE))) 
+    
+    df_tab <- knitr::kable(df_chr, "simple")
+    
+    header <- df_tab[1] %>% stringr::str_replace_all(" ", "\u00A0" )
+    
+    cli::cli_text("{.strong {header}}")
+    
+    for (i in 2:length(df_tab)) {
+      
+      cli::cli_text(df_tab[i] %>% str_replace_all(" ", "\u00A0" ))
+    }
+    
+  }
+  
+  #' @title Convert correlation matrix to covariance matrix
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Converts a correlation matrix to a covariance matrix using standard deviations.
+  #' @details
+  #' Uses matrix multiplication to convert a correlation matrix to a covariance matrix.
+  #' @param cor A correlation matrix.
+  #' @param sd A vector of standard deviations corresponding to the variables in the correlation matrix.
+  #' @return A covariance matrix.
+  #' @export
+  #' @author Michael Neely
+  #' 
+  cor2cov <- function(cor, sd){ 
+    cov_matrix <- diag(sd) %*% cor %*% diag(sd)
+    return(cov_matrix)
+  }
+  
+  
+  #' @title Check if a matrix is positive definite
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Checks if a matrix is positive definite and attempts to fix it if necessary.
+  #' @param mat A covariance matrix to check.
+  #' @return A positive definite covariance matrix, 1 if aborting, or -1 if unable to fix
+  #' @export
+  #' @author Michael Neely
+  pos_def <- function(mat, id, source){
+    # check to make sure mat (within 15 sig digits, which is in file) is pos-def and fix if necessary
+    posdef <- rlang::try_fetch(eigen(signif(mat, 15)),
+    error = function(e) {
+      return(list(values = 0))
+    }
+  )
+  ans <- NULL
+  if (any(posdef$values < 0)) {
+    
+    mat_names <- dimnames(mat)[[1]] #store for later
+    if (is.null(ans)) {
+      cli::cli_alert_warning("Warning: your covariance matrix is not positive definite. This is typically due to small population size.\nChoose one of the following:\n1) end simulation\n2) fix covariances\n3) set covariances to 0\n ")
+      ans <- readline("\n")
+    }
+    if (ans == 1) {
+      cli::cli_alert_info("Aborting.")
+      return(1)
+    }
+    if (ans == 2) {
+      # eigen decomposition to fix the matrix
+      for (j in 1:10) { # try up to 10 times
+        eps <- 1e-8  # threshold for small eigenvalues
+        eig <- eigen(mat)
+        eig$values[eig$values < eps] <- eps  # threshold small eigenvalues
+        mat <- eig$vectors %*% diag(eig$values) %*% t(eig$vectors)
+    
 
+        posdef <- eigen(signif(mat, 15))
+        
+        if (all(posdef$values >= 0)) { # success, break out of loop
+          break
+        }
+        if(j == 10) browser()
+      }
+      posdef <- eigen(signif(mat, 15)) # last check
+      if (any(posdef$values < 0)) {
+        
+        return(-1)
+        
+      }
+      mat <- data.frame(mat)
+      names(mat) <- mat_names
+      row.names(mat) <- mat_names
+    }
+    if (ans == 3) {
+      mat2 <- diag(0, nrow(mat))
+      diag(mat2) <- diag(as.matrix(mat))
+      mat2 <- data.frame(mat2)
+      names(mat2) <- mat_names
+      mat <- mat2
+    }
+  }
+  
+  return(mat)
 }

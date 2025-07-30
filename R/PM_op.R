@@ -171,6 +171,7 @@ private = list(
     select(-name) %>%
     dplyr::rename(pred = value) %>%
     dplyr::mutate(outeq = outeq + 1) %>%
+    dplyr::mutate(block = block + 1) %>%
     dplyr::mutate(obs = dplyr::na_if(obs, -99)) %>%
     dplyr::rowwise() %>%
     mutate(d = pred - obs) %>%
