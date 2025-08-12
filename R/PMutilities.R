@@ -1403,7 +1403,7 @@ wtd.var <- function(x, weights = NULL,
   #' @title Convert a function to a character string
   #' 
   func_to_char <- function(fun){
-    deparse(fun) %>%
+    deparse(fun, width.cutoff = 500L) %>%
     stringr::str_trim("left") %>%
     purrr::discard(\(x) stringr::str_detect(x, "function|\\{|\\}"))
   }
