@@ -1149,6 +1149,7 @@ PM_model <- R6::R6Class(
                         algorithm = algorithm,
                         error_models = lapply(self$model_list$err, function(x) x$flatten()),
                         idelta = idelta,
+                        #bolus = NULL, or bolus = 1, or bolus = c(1, 3)
                         tad = tad,
                         loq = blq, # blq values 
                         max_cycles = cycles, #will be hardcoded in Rust to 0 for POSTPROB
@@ -1317,10 +1318,10 @@ PM_model <- R6::R6Class(
                     "i" = "See help for {.fn PM_model}."
                   ))
                 }
-        
-
+                
+                
                 self$arg_list <- modifyList(self$arg_list, changes)
-
+                
                 self$compile() # recompile the model after updating
                 return(invisible(self))
               }
@@ -1835,12 +1836,15 @@ PM_model <- R6::R6Class(
                     }
                     
                     if(inherits(model, "PM_lib")){
-                      eqns <- func_to_char(model$arg_list$eqn)
+                      eqns <- model$arg_list$eqn
+                      outs <- model$arg_list$out
                     } else if(inherits(model, "PM_model")){
-                      eqns <- if(model$model_list$name == "user") { 
-                        func_to_char(model$arg_list$eqn) 
+                      if(model$model_list$name == "user") { 
+                        eqns <- model$arg_list$eqn
+                        outs <- model$arg_list$out
                       } else {  
-                        func_to_char(get(model$model_list$name)$arg_list$eqn)
+                        eqns <- get(model$model_list$name)$arg_list$eqn
+                        outs <- get(model$model_list$name)$arg_list$out
                       }
                       
                     } else {
@@ -1849,10 +1853,13 @@ PM_model <- R6::R6Class(
                       ))
                     }
                     
-                    # filter any equations that are not diffeq and make everything capital
-                    #this_model <- model$model_list$eqn %>%
+                    eqns <- func_to_char(eqns)
+                    outs <- func_to_char(outs)
                     
-                    this_model <- eqns %>%
+                    
+                    # filter any equations that are not diffeq or outputs 
+                    
+                    eqns <- eqns %>%
                     map(
                       purrr::keep,
                       stringr::str_detect,
@@ -1860,489 +1867,768 @@ PM_model <- R6::R6Class(
                     ) %>%
                     unlist()
                     
-                    tree <- parse(text = this_model)
-                    if (length(tree) == 0) {
-                      cli::cli_abort(
-                        c("x" = "No differential equations detected. Use {.code dX[i]} for changes and {.code X[i]} for amounts (case insensitive).")
-                      )
-                    }
-                    index <- 0
+                    outs <- outs %>%
+                    map(
+                      purrr::keep,
+                      stringr::str_detect,
+                      stringr::regex("Y\\[\\d+\\]", ignore_case = TRUE)
+                    ) %>%
+                    unlist()
                     
-                    parse_arrows <- function(tree, arrows = list()) {
-                      if (length(tree) == 3) {
-                        op <- tree[[1]]
-                        lhs <- tree[[2]]
-                        rhs <- tree[[3]]
-                      } else if (length(tree[[1]]) == 3) {
-                        op <- tree[[1]][[1]]
-                        lhs <- tree[[1]][[2]]
-                        rhs <- tree[[1]][[3]]
-                      } else {
-                        return(arrows)
+                    
+                    
+                    
+                    
+                    #### INTERNAL FUNCTIONS
+                    # Parse the function body
+                    parse_equations <- function(func) {
+                      body_expr <- body(func)
+                      equations <- list()
+                      
+                      # Handle single expression or block
+                      if (is.call(body_expr) && body_expr[[1]] == "{") {
+                        # Multiple statements in braces
+                        for (i in 2:length(body_expr)) {
+                          eq <- body_expr[[i]]
+                          if (is.call(eq) && length(eq) == 3 && as.character(eq[[1]]) %in% c("=", "<-")) {
+                            
+                            equations <- append(equations, list(eq))
+                          }
+                        }
+                      } else if (is.call(body_expr) && length(body_expr) == 3 && 
+                      as.character(body_expr[[1]]) %in% c("=", "<-")) {
+                        # Single assignment
+                        equations <- list(body_expr)
                       }
                       
-                      # check for distributions
-                      if (length(lhs) > 1 && lhs[[1]] == "(") {
-                        # expand distribution
-                        nterms <- length(lhs[[2]])
-                        lhs <- parse(text = paste(
-                          sapply(2:nterms, function(x) {
-                            as.character(lhs[[2]][[x]])
-                          }),
-                          as.character(op),
-                          deparse(rhs),
-                          collapse = paste0(" ", as.character(lhs[[2]][[1]]), " ")
-                        ))[[1]]
-                        rhs <- ""
-                      }
-                      
-                      if (length(rhs) > 1 && rhs[[1]] == "(") {
-                        # expand distribution
-                        nterms <- length(rhs[[2]])
-                        rhs <- parse(text = paste(
-                          deparse(lhs),
-                          as.character(op),
-                          sapply(2:nterms, function(x) {
-                            as.character(rhs[[2]][[x]])
-                          }),
-                          collapse = paste0(" ", as.character(rhs[[2]][[1]]), " ")
-                        ))[[1]]
-                        lhs <- ""
-                      }
-                      
-                      
-                      l <- if (length(lhs) == 1) {
-                        lhs
-                      } else if (lhs[[1]] == "[") {
-                        lhs[[2]]
-                      } else if (is.call(lhs) & length(lhs) == 3) {
-                        lhs[[3]]
-                      } else {
-                        lhs[[1]]
-                      }
-                      r <- if (length(rhs) == 1) {
-                        rhs
-                      } else if (rhs[[1]] == "[") {
-                        rhs[[2]]
-                      } else if (is.call(rhs) & length(rhs) == 3) {
-                        rhs[[3]]
-                      } else {
-                        rhs[[1]]
-                      }
-                      
-                      
-                      if (l == "x" || r == "x" || l == "X" || r == "X") {
-                        arrows <- append(arrows, tree)
-                        return(arrows)
-                      }
-                      
-                      index <<- index + 1
-                      if (is.call(lhs)) {
-                        arrows <- parse_arrows(lhs, arrows)
-                      }
-                      
-                      if (is.call(rhs)) {
-                        arrows <- parse_arrows(rhs, arrows)
-                      }
-                      
-                      return(arrows)
+                      return(equations)
                     }
                     
-                    parse_inputs <- function(input, itree) {
-                      itree <- paste(itree, collapse = "")
-                      if (grepl(input, itree, ignore.case = TRUE)) {
-                        type <- toupper(substr(input, 1, 1))
-                        number <- stringr::str_extract(itree, regex(paste0(input, "(\\(|\\[)\\d+(\\)|\\])"), ignore_case = TRUE)) %>%
-                        stringr::str_extract("\\d+")
-                        return(paste0(type, number))
-                      } else {
-                        return("")
-                      }
-                    }
                     
-                    # process each compartment/equation
-                    parse_tree <- function(tree) {
-                      nodes <- list()
-                      if (inherits(tree, "expression")) {
-                        for (itree in tree) {
-                          op <- itree[[1]]
-                          lhs <- itree[[2]]
-                          rhs <- itree[[3]]
-                          if (op == "=") {
-                            if (lhs[[1]] == "[") {
-                              lhs <- lhs[-1]
-                            }
-                            nodes <- append(nodes, list(
-                              node = list(
-                                node = as.character(lhs),
-                                arrows = as.character(parse_arrows(rhs)),
-                                bolus = parse_inputs("b", deparse(itree)),
-                                rateiv = parse_inputs("r", deparse(itree))
-                              )
-                            ))
+                    ##### Handle distributions
+                    # Recursively distribute products over sums in a single expression or equation.
+                    # - Works symbolically (no evaluation).
+                    # - Handles unary minus.
+                    # - If given an assignment (= or <-), only the RHS is expanded.
+                    # Fully distribute products over sums and flatten subtraction.
+                    # If given an assignment (= or <-), only the RHS is expanded.
+                    expand_distribute <- function(expr) {
+                      op_of <- function(e) if (is.call(e)) as.character(e[[1]]) else ""
+                      
+                      # Build a product call (no eval)
+                      make_prod <- function(a, b) as.call(list(as.name("*"), a, b))
+                      
+                      # Fold a list of factors into a product
+                      fold_prod <- function(factors) Reduce(make_prod, factors)
+                      
+                      # Rebuild a (flattened) sum from signed terms
+                      build_sum <- function(terms) {
+                        if (length(terms) == 0) return(0)
+                        mk <- function(sign, e) if (sign == -1) as.call(list(as.name("-"), e)) else e
+                        out <- mk(terms[[1]]$sign, terms[[1]]$expr)
+                        if (length(terms) == 1) return(out)
+                        for (k in 2:length(terms)) {
+                          tk <- terms[[k]]
+                          out <- if (tk$sign == 1)
+                          as.call(list(as.name("+"), out, tk$expr))
+                          else
+                          as.call(list(as.name("-"), out, tk$expr))
+                        }
+                        out
+                      }
+                      
+                      # Core: return a flat list of signed terms {sign=±1, expr=LANG}
+                      expand_terms <- function(e, sign = 1) {
+                        # atoms
+                        if (!is.call(e)) return(list(list(sign = sign, expr = e)))
+                        
+                        op <- op_of(e)
+                        
+                        # parentheses
+                        if (op == "(") return(expand_terms(e[[2]], sign))
+                        
+                        # assignment: expand RHS only, rebuild later
+                        if (op %in% c("=", "<-")) {
+                          rhs_terms <- expand_terms(e[[3]], +1)
+                          rhs_exp   <- build_sum(rhs_terms)
+                          return(list(list(sign = +1, expr = as.call(list(as.name(op), e[[2]], rhs_exp)))))
+                        }
+                        
+                        # addition
+                        if (op == "+") {
+                          return(c(expand_terms(e[[2]], sign),
+                          expand_terms(e[[3]], sign)))
+                        }
+                        
+                        # subtraction (binary or unary)
+                        if (op == "-") {
+                          if (length(e) == 3) {
+                            return(c(expand_terms(e[[2]], sign),
+                            expand_terms(e[[3]], -sign)))
                           } else {
-                            # only one equation
-                            as.character(parse_arrows(tree))
+                            return(expand_terms(e[[2]], -sign))  # unary minus
+                          }
+                        }
+                        
+                        # multiplication: distribute across additive factors
+                        if (op == "*") {
+                          # expand each factor into its additive term list
+                          args <- as.list(e)[-1]
+                          expanded_factors <- lapply(args, function(a) expand_terms(a, +1))
+                          
+                          # start with neutral element (sign=+1, expr=1)
+                          combos <- list(list(sign = +1, expr = 1))
+                          for (f_terms in expanded_factors) {
+                            newc <- list()
+                            for (c1 in combos) for (t2 in f_terms) {
+                              s <- c1$sign * t2$sign
+                              # build product (avoid multiplying by 1 syntactically where possible)
+                              e1 <- c1$expr; e2 <- t2$expr
+                              prod_expr <-
+                              if (is.numeric(e1) && length(e1) == 1 && e1 == 1) e2 else
+                              if (is.numeric(e2) && length(e2) == 1 && e2 == 1) e1 else
+                              if (is.numeric(e1) && length(e1) == 1 && e1 == -1) as.call(list(as.name("-"), e2)) else
+                              if (is.numeric(e2) && length(e2) == 1 && e2 == -1) as.call(list(as.name("-"), e1)) else
+                              make_prod(e1, e2)
+                              newc[[length(newc) + 1]] <- list(sign = s, expr = prod_expr)
+                            }
+                            combos <- newc
+                          }
+                          # apply the incoming sign to all combos
+                          for (i in seq_along(combos)) combos[[i]]$sign <- sign * combos[[i]]$sign
+                          return(combos)
+                        }
+                        
+                        # other calls: expand children but treat as atomic w.r.t. addition
+                        args <- as.list(e)
+                        args[-1] <- lapply(args[-1], function(a) build_sum(expand_terms(a, +1)))
+                        list(list(sign = sign, expr = as.call(args)))
+                      }
+                      
+                      # If it's an assignment, expand_terms already rebuilt it as a single term.
+                      # Otherwise, build the flattened sum.
+                      terms <- expand_terms(expr, +1)
+                      
+                      # Special case: a single rebuilt assignment
+                      if (length(terms) == 1 && is.call(terms[[1]]$expr) &&
+                      op_of(terms[[1]]$expr) %in% c("=", "<-"))
+                      return(terms[[1]]$expr)
+                      
+                      build_sum(terms)
+                    }
+                    
+                    # Parse output equations
+                    parse_output_equations <- function(equations) {
+                      #if (is.null(func)) return(list())
+                      
+                      #equations <- parse_equations(func)
+                      outputs <- list()
+                      
+                      for (eq in equations) {
+                        
+                        lhs <- eq[[2]]
+                        rhs <- eq[[3]]
+                        
+                        # Extract output number from y[i]
+                        if (is.call(lhs) && as.character(lhs[[1]]) == "[" && 
+                        length(lhs) >= 3 && as.character(lhs[[2]]) == "y") {
+                          output_num <- as.numeric(as.character(lhs[[3]]))
+                          
+                          # Convert RHS to string representation
+                          rhs_str <- deparse(rhs, width.cutoff = 500)
+                          
+                          # Find which compartment this output refers to
+                          comp_ref <- extract_x_pattern(rhs)
+                          if (is.null(comp_ref)) {
+                            # Look deeper in the expression for x[i] patterns
+                            comp_ref <- find_x_in_expression(rhs)
+                          }
+                          
+                          outputs <- append(outputs, list(list(
+                            output_num = output_num,
+                            equation = rhs_str,
+                            compartment = comp_ref
+                          )))
+                        }
+                      }
+                      
+                      return(outputs)
+                    }
+                    
+                    # Find x[i] pattern in any expression
+                    find_x_in_expression <- function(expr) {
+                      if (is.call(expr)) {
+                        # Check current expression
+                        x_idx <- extract_x_pattern(expr)
+                        if (!is.null(x_idx)) return(x_idx)
+                        
+                        # Recursively check sub-expressions
+                        for (i in 1:length(expr)) {
+                          if (i > 1) {  # Skip the function name
+                            x_idx <- find_x_in_expression(expr[[i]])
+                            if (!is.null(x_idx)) return(x_idx)
                           }
                         }
                       }
-                      return(nodes)
+                      return(NULL)
                     }
                     
-                    res <- parse_tree(tree)
-                    
-                    # clean up
-                    swap_if_needed <- function(obj) {
-                      if (grepl("X\\[", obj[1], ignore.case = TRUE)) {
-                        return(paste(obj[2], obj[1], sep = " * "))
-                      } else {
-                        return(paste(obj[1], obj[2], sep = " * "))
-                      }
-                    }
-                    # clean up
-                    
-                    # remove hanging arrows without "*"
-                    res <- purrr::map(res, function(x) {
-                      list(
-                        node = x$node,
-                        arrows = x$arrows[grepl("\\*", x$arrows)],
-                        bolus = x$bolus,
-                        rateiv = x$rateiv
-                      )
-                    }) %>%
-                    # ensure unique arrows in each node
-                    purrr::map(function(x) {
-                      list(
-                        node = x$node,
-                        arrows = unique(x$arrows),
-                        bolus = x$bolus,
-                        rateiv = x$rateiv
-                      )
-                    }) %>%
-                    # ensure X terms come second
-                    purrr::map(function(x) {
-                      list(
-                        node = x$node,
-                        arrows = unlist(purrr::map(
-                          x$arrows, ~ swap_if_needed(stringr::str_split_1(.x, " \\* "))
-                        )),
-                        bolus = x$bolus,
-                        rateiv = x$rateiv
-                      )
-                    })
-                    
-                    layout <- res %>%
-                    lapply(., function(node) {
-                      data.frame(
-                        node = paste(node$node, collapse = ""),
-                        arrow = node$arrow,
-                        bolus = node$bolus,
-                        rateiv = node$rateiv
-                      )
-                    }) %>%
-                    bind_rows() %>%
-                    dplyr::mutate(from = stringr::str_replace(node, stringr::regex("XP|dX", ignore_case = TRUE), "")) %>%
-                    dplyr::mutate(to = stringr::str_extract(string = arrow, pattern = "\\((\\d+)\\)|\\[(\\d+)\\]")) %>%
-                    dplyr::mutate(to = stringr::str_remove(to, pattern = "\\(|\\[")) %>%
-                    dplyr::mutate(to = stringr::str_remove(to, pattern = "\\)|\\]")) %>%
-                    dplyr::mutate(to = ifelse(from == to, "", to)) %>%
-                    dplyr::mutate(arrow = stringr::str_remove(string = arrow, pattern = "\\X\\((\\d+)\\)|\\X\\[(\\d+)\\]")) %>%
-                    dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = " ")) %>%
-                    dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = "^\\*|\\*\\w*$")) %>%
-                    dplyr::mutate(arrow = stringr::str_remove_all(string = arrow, pattern = "^\\-|\\-\\w*$")) %>%
-                    dplyr::relocate(node, arrow, to, from) %>%
-                    dplyr::rename(to = from, from = to)
-                    
-                    # pause to define inputs
-                    input_cmt <- layout %>%
-                    dplyr::select(to, bolus, rateiv) %>%
-                    dplyr::filter(bolus != "" | rateiv != "") %>%
-                    dplyr::distinct() %>%
-                    tidyr::pivot_longer(c(bolus, rateiv), names_to = "type", values_to = "input") %>%
-                    dplyr::select(-type) %>%
-                    dplyr::filter(input != "") %>%
-                    dplyr::rename(cmt = to)
-                    
-                    # resume layout
-                    layout <- layout %>%
-                    dplyr::select(-bolus, -rateiv) %>%
-                    dplyr::group_by(arrow) %>%
-                    dplyr::filter(dplyr::n() == 1 | dplyr::n() > 1 & from != "") %>%
-                    dplyr::ungroup() %>%
-                    dplyr::mutate(from = ifelse(from == "", to, from)) %>%
-                    dplyr::mutate(to = ifelse(from == to, "", to)) %>%
-                    dplyr::mutate(to = ifelse(to == "", as.numeric(max(
-                      c(to, from), na.rm = T
-                    )) + 1, to)) %>%
-                    dplyr::mutate(to = ifelse(is.na(to), as.numeric(max(
-                      c(to, from), na.rm = T
-                    )) + 1, to)) %>%
-                    dplyr::filter(arrow != "") %>%
-                    dplyr::mutate(across(everything(), as.character)) %>%
-                    dplyr::mutate(node = stringr::str_extract(node, "\\d+")) %>%
-                    dplyr::distinct(node, from, to) %>%
-                    dplyr::mutate(implicit = FALSE)
-                    
-                    # outputs
-                    if (inherits(model, c("PM_model", "PM_lib"))) {
-                      cmts <- map_chr(func_to_char(model$arg_list$out), \(x) stringr::str_extract(x, "X\\[(\\d+)\\]", group = 1))
-                      output_cmt <- dplyr::tibble(out = paste0("Y", seq_along(cmts)), cmt = cmts)
-                    } else {
-                      output_cmt <- dplyr::tibble(out = "", cmt = "1")
-                    }
-                    
-                    # add explicit arrows from user
-                    if (!missing(explicit)) {
-                      max_to <- max(as.numeric(layout$to))
+                    # Parse terms from right-hand side recursively
+                    parse_rhs_terms <- function(rhs_expr) {
                       
-                      if (!all(names(explicit) %in% c("from", "to"))) {
-                        cli::cli_abort(
-                          c("x" = "{.code explicit} should be a data frame with names {.code from} and {.code to}")
+                      terms <- list()
+                      
+                      # Recursively extract terms and track sign
+                      extract_terms <- function(expr, current_sign = "+") {
+                        
+                        if (is.call(expr)) {
+                          op <- as.character(expr[[1]])
+                          
+                          if (op == "+") {
+                            extract_terms(expr[[2]], current_sign)
+                            extract_terms(expr[[3]], current_sign)
+                          } else if (op == "-") {
+                            if (length(expr) == 3) {
+                              # Binary subtraction: a - b
+                              extract_terms(expr[[2]], current_sign)
+                              extract_terms(expr[[3]], ifelse(current_sign == "+", "-", "+"))
+                            } else {
+                              # Unary minus: -a
+                              extract_terms(expr[[2]], ifelse(current_sign == "+", "-", "+"))
+                            }
+                          } else if (op == "*") {
+                            # Look for x[i] and collect coefficient(s)
+                            vars <- lapply(expr[-1], extract_x_pattern)
+                            if (any(!sapply(vars, is.null))) {
+                              
+                              
+                              xi_index <- which(!sapply(vars, is.null))
+                              x_part <- expr[[xi_index + 1]]
+                              coeff_parts <- expr[-c(1, xi_index + 1)]
+                              coeff_str <- paste(sapply(coeff_parts, deparse), collapse = "*")
+                              terms <<- append(terms, list(list(expr = x_part, coeff = coeff_str, sign = current_sign)))
+                            } else {
+                              # No x[i], maybe just a numeric or unrelated variable
+                              terms <<- append(terms, list(list(expr = expr, coeff = NULL, sign = current_sign)))
+                            }
+                          } else {
+                            # Some other operation; treat as atomic for now
+                            terms <<- append(terms, list(list(expr = expr, coeff = NULL, sign = current_sign)))
+                          }
+                        } else {
+                          # Symbol or constant
+                          terms <<- append(terms, list(list(expr = expr, coeff = NULL, sign = current_sign)))
+                        }
+                      }
+                      
+                      extract_terms(rhs_expr)
+                      
+                      return(terms)
+                    }
+                    
+                    # Extract x[i] pattern from expression
+                    extract_x_pattern <- function(expr) {
+                      if (is.call(expr) && as.character(expr[[1]]) == "[" &&
+                      length(expr) == 3 && as.character(expr[[2]]) == "x") {
+                        return(as.numeric(as.character(expr[[3]])))
+                      }
+                      return(NULL)
+                    }
+                    
+                    # Extract compartment connections
+                    extract_connections <- function(equations) {
+                      compartments <- c()
+                      all_terms <- list()
+                      
+                      # First pass: collect signed terms per compartment
+                      for (eq in equations) {
+                        lhs <- eq[[2]]
+                        rhs <- eq[[3]]
+                        
+                        if (is.call(lhs) && as.character(lhs[[1]]) == "[" &&
+                        length(lhs) >= 3 && as.character(lhs[[2]]) == "dx") {
+                          
+                          comp_num <- as.numeric(as.character(lhs[[3]]))
+                          compartments <- unique(c(compartments, comp_num))
+                          
+                          # dist_terms <- distribute_product(rhs)
+                          # terms <- parse_rhs_terms(dist_terms)
+                          terms <- parse_rhs_terms(rhs)
+                          
+                          for (term in terms) {
+                            expr <- term$expr
+                            sign <- term$sign
+                            coeff <- term$coeff
+                            
+                            x_index <- extract_x_pattern(expr)
+                            if (!is.null(x_index)) {
+                              all_terms <- append(all_terms, list(list(
+                                comp = comp_num,
+                                sign = sign,
+                                coeff = coeff,
+                                x_index = x_index
+                              )))
+                            }
+                          }
+                        }
+                      }
+                      
+                      # Second pass: match positive and negative terms
+                      used <- logical(length(all_terms))
+                      connections <- list()
+                      
+                      for (i in seq_along(all_terms)) {
+                        ti <- all_terms[[i]]
+                        if (used[i] || ti$sign != "-") next
+                        
+                        match_found <- FALSE
+                        for (j in seq_along(all_terms)) {
+                          tj <- all_terms[[j]]
+                          if (used[j] || tj$sign != "+") next
+                          
+                          # Match by coeff and x_index
+                          if (identical(ti$coeff, tj$coeff) && ti$x_index == tj$x_index) {
+                            connections <- append(connections, list(list(
+                              from = ti$comp,
+                              to = tj$comp,
+                              coeff = ti$coeff
+                            )))
+                            used[i] <- TRUE
+                            used[j] <- TRUE
+                            match_found <- TRUE
+                            break
+                          }
+                        }
+                        
+                        # If no match, it's elimination
+                        if (!match_found) {
+                          connections <- append(connections, list(list(
+                            from = ti$comp,
+                            to = 0,
+                            coeff = ti$coeff
+                          )))
+                          used[i] <- TRUE
+                        }
+                      }
+                      
+                      return(list(connections = connections, compartments = sort(compartments)))
+                    }
+                    
+                    
+                    
+                    # Modify layout logic to use circular positioning
+                    create_plot <- function(connections, compartments, outputs) {
+                      library(ggplot2)
+                      library(dplyr)
+                      
+                      box_width <- 1.2
+                      box_height <- 0.8
+                      
+                      n_comp <- length(compartments)
+                      if (n_comp == 0) {
+                        plot.new()
+                        title(main = "No compartments detected")
+                        return()
+                      }
+                      
+                      # Circular layout
+                      radius <- 4
+                      angles <- seq(0, 2 * pi, length.out = n_comp + 1)[- (n_comp + 1)]
+                      angles <- angles - angles[which(compartments == 1)] + pi / 2
+                      x_pos <- radius * cos(angles)
+                      y_pos <- radius * sin(angles)
+                      layout_df <- data.frame(compartment = compartments, x = x_pos, y = y_pos)
+                      
+                      # Elimination
+                      elim_comps <- unique(sapply(connections, function(c) if (c$to == 0) c$from else NULL))
+                      elim_comps <- elim_comps[!sapply(elim_comps, is.null)]
+                      
+                      arrow_segments <- list()
+                      arrow_heads <- list()
+                      labels <- list()
+                      label_tracker <- list()
+                      
+                      # Bidirectional detection
+                      pair_keys <- data.frame(
+                        original = sapply(connections, function(c) paste(c(c$from, c$to), collapse = "-")),
+                        sorted = sapply(connections, function(c) paste(sort(c(c$from, c$to)), collapse = "-"))
+                      )
+                      dup_table <- table(pair_keys$sorted)
+                      duplicates <- pair_keys$original[which(pair_keys$sorted %in% names(dup_table[dup_table > 1]))]
+                      
+                      for (conn in connections) {
+                        from <- as.numeric(conn$from)
+                        to <- as.numeric(conn$to)
+                        if (to == 0) next
+                        
+                        from_pos <- layout_df %>% filter(compartment == from)
+                        to_pos <- layout_df %>% filter(compartment == to)
+                        
+                        key <- paste(sort(c(from, to)), collapse = "-")
+                        offset <- if (key %in% duplicates) 0.25 else 0
+                        
+                        dx <- to_pos$x - from_pos$x
+                        dy <- to_pos$y - from_pos$y
+                        len <- sqrt(dx^2 + dy^2)
+                        norm_dx <- dx / len
+                        norm_dy <- dy / len
+                        perp_x <- -norm_dy
+                        perp_y <- norm_dx
+                        
+                        # Adjust start/end for box edges
+                        edge_dx <- box_width / 2 * norm_dx
+                        edge_dy <- box_height / 2 * norm_dy
+                        
+                        x1 <- from_pos$x + offset * perp_x + edge_dx
+                        y1 <- from_pos$y + offset * perp_y + edge_dy
+                        x2 <- to_pos$x + offset * perp_x - edge_dx
+                        y2 <- to_pos$y + offset * perp_y - edge_dy
+                        
+                        arrow_segments[[length(arrow_segments) + 1]] <- data.frame(
+                          x = x1, y = y1, xend = x2, yend = y2, color = "black"
                         )
-                      }
-                      imp <- explicit %>%
-                      dplyr::mutate(to = ifelse(to == 0, max_to, to)) %>%
-                      dplyr::mutate(node = from, implicit = FALSE) %>%
-                      dplyr::relocate(node, from, to, implicit) %>%
-                      dplyr::mutate(across(c(node, from, to), as.character))
-                      
-                      layout <- dplyr::bind_rows(layout, imp)
-                    }
-                    
-                    # add implicit arrows from user
-                    if (!missing(implicit)) {
-                      max_to <- max(as.numeric(layout$to))
-                      
-                      if (!all(names(implicit) %in% c("from", "to"))) {
-                        cli::cli_abort(
-                          c("x" = "{.code implicit} should be a data frame with names {.code from} and {.code to}")
+                        
+                        # Arrowhead at 2/3
+                        frac <- 2 / 3
+                        xm <- x1 + frac * (x2 - x1)
+                        ym <- y1 + frac * (y2 - y1)
+                        perp_x_head <- -norm_dy * 0.10
+                        perp_y_head <- norm_dx * 0.10
+                        
+                        arrow_heads[[length(arrow_heads) + 1]] <- data.frame(
+                          x = c(xm - perp_x_head, xm + perp_x_head, xm + norm_dx * 0.3),
+                          y = c(ym - perp_y_head, ym + perp_y_head, ym + norm_dy * 0.3),
+                          group = paste0("arrow", length(arrow_heads) + 1),
+                          fill = "black"
                         )
+                        
+                        if (!is.null(conn$coeff)) {
+                          key_xy <- paste(round((x1 + x2) / 2, 2), round((y1 + y2) / 2, 2))
+                          if (is.null(label_tracker[[key_xy]])) label_tracker[[key_xy]] <- 0
+                          vertical_offset <- 0.25 * label_tracker[[key_xy]]
+                          label_tracker[[key_xy]] <- label_tracker[[key_xy]] + 1
+                          
+                          mx <- (x1 + x2) / 2
+                          my <- (y1 + y2) / 2 - vertical_offset
+                          
+                          labels[[length(labels) + 1]] <- data.frame(
+                            x = mx, y = my, label = conn$coeff,
+                            color = "white", text_color = "black"
+                          )
+                        }
                       }
-                      imp <- implicit %>%
-                      dplyr::mutate(to = ifelse(to == 0, max_to, to)) %>%
-                      dplyr::mutate(node = from, implicit = TRUE) %>%
-                      dplyr::relocate(node, from, to, implicit) %>%
-                      dplyr::mutate(across(c(node, from, to), as.character))
                       
-                      layout <- dplyr::bind_rows(layout, imp)
-                    }
-                    
-                    
-                    graph <- tidygraph::as_tbl_graph(layout) %>%
-                    dplyr::mutate(cmt = c(unique(layout$from), 0)) %>%
-                    dplyr::mutate(position = ifelse(cmt == 0, "outside", "inside")) %>%
-                    dplyr::left_join(input_cmt, by = "cmt") %>%
-                    dplyr::mutate(input = ifelse(is.na(input), "", input)) %>%
-                    dplyr::left_join(output_cmt, by = "cmt") %>%
-                    dplyr::mutate(out = ifelse(is.na(out), "", out))
-                    
-                    
-                    
-                    
-                    g <- ggraph::ggraph(graph, layout = "tree")
-                    if (!is.logical(marker)) {
-                      # will only be logical if FALSE
-                      g <- g +
-                      ggraph::geom_node_tile(
-                        aes(fill = position, linetype = position),
-                        color = marker$line$color,
-                        lwd = marker$line$width,
-                        width = marker$size,
-                        height = marker$size,
-                        alpha = marker$opacity
-                      ) +
-                      ggraph::geom_node_text(
-                        aes(label = input),
-                        nudge_x = .07,
-                        nudge_y = .05,
-                        color = "white"
-                      ) +
-                      ggraph::geom_node_text(
-                        aes(label = out),
-                        nudge_x = -.07,
-                        nudge_y = .05,
-                        color = "black"
-                      ) +
-                      ggplot2::scale_fill_manual(values = c(marker$color, "grey80"))
-                    }
-                    if (!is.logical(line)) {
-                      # will only be logical if FALSE
-                      g <- g +
-                      ggraph::geom_edge_fan(
-                        aes(linetype = as.numeric(implicit) + 1),
-                        arrow = grid::arrow(
-                          angle = 15,
-                          type = "closed",
-                          length = grid::unit(6, "mm")
-                        ),
-                        end_cap = ggraph::circle(3, "mm"),
-                        start_cap = ggraph::circle(4, "mm"),
-                        angle_calc = "across",
-                        edge_color = line$color,
-                        label_push = grid::unit(-4, "mm"),
-                        edge_width = line$width
-                      )
-                    }
-                    g <- g +
-                    ggraph::geom_node_label(aes(label = cmt), position = "identity") +
-                    ggraph::theme_graph() +
-                    ggplot2::theme(legend.position = "none")
-                    if (print) print(g)
-                    return(invisible(g))
-                  }
-                  
-                  
-                  # MODEL LIBRARY -----------------------------------------------------------
-                  
-                  #' @title Pharmacokinetic model library
-                  #' @description
-                  #' `r lifecycle::badge("stable")`
-                  #'
-                  #' This function provides a list of available pharmacokinetic models.
-                  #' @param name The name of the model to display. If `NULL`, the entire list is displayed.
-                  #' @param show If `TRUE`, the model is displayed in the console. If `FALSE`, the model is only returned as a tibble.
-                  #' @return If `name` is not `NULL`, a tibble with the model equations; otherwise the
-                  #' function returns `NULL` and only displays the entire library in tabular format.
-                  #' @author Michael Neely
-                  #' @seealso [PM_model]
-                  #' @export
-                  #' @examples
-                  #' \dontrun{
-                  #' model_lib()
-                  #' model_lib("one_comp_iv")
-                  #' }
-                  model_lib <- function(name = NULL, show = TRUE) {
-                    mod_table <- matrix(
-                      c(
-                        "one_comp_iv",
-                        "advan1\nadvan1-trans1",
-                        "One compartment IV input, Ke",
-                        "1 = Central",
-                        "Ke, V",
-                        "one_comp_iv_cl",
-                        "advan1\nadvan1-trans2",
-                        "One compartment IV input, CL",
-                        "1 = Central",
-                        "CL, V",
-                        "two_comp_bolus",
-                        "advan2\nadvan2-trans1",
-                        "Two compartment bolus input, Ke",
-                        "1 = Bolus\n2 = Central",
-                        "Ka, Ke, V",
-                        "two_comp_bolus_cl",
-                        "advan2\nadvan2-trans2",
-                        "Two compartment bolus input, CL",
-                        "1 = Bolus\n2 = Central",
-                        "Ka, CL, V",
-                        "two_comp_iv",
-                        "advan3\nadvan3-trans1",
-                        "Two compartment IV input, Ke",
-                        "1 = Central\n2 = Peripheral",
-                        "Ke, V, KCP, KPC",
-                        "two_comp_iv_cl",
-                        "advan3\nadvan3-trans4",
-                        "Two compartment IV input, CL",
-                        "1 = Central\n2 = Peripheral",
-                        "CL, V1, Q, V2",
-                        "three_comp_bolus",
-                        "advan4\nadvan4-trans1",
-                        "Three compartment bolus input, Ke",
-                        "1 = Bolus\n2 = Central\n3 = Peripheral",
-                        "Ka, Ke, V, KCP, KPC",
-                        "three_comp_bolus_cl",
-                        "advan4\nadvan4-trans4",
-                        "Three compartment bolus input, CL",
-                        "1 = Bolus\n2 = Central\n3 = Peripheral",
-                        "Ka, CL, V2, Q, V3"
-                      ),
-                      ncol = 5,
-                      byrow = TRUE
-                    ) %>%
-                    as.data.frame() %>%
-                    stats::setNames(c(
-                      "Primary Name",
-                      "Alt Names",
-                      "Description",
-                      "Compartments",
-                      "Parameters"
-                    )) %>%
-                    tibble::as_tibble()
-                    
-                    
-                    mod_table$ODE <- list(
-                      list("dX[1] = RATEIV[1] - Ke*X[1]"),
-                      list("dX[1] = RATEIV[1] - CL/V*X[1]"),
-                      list(
-                        "dX[1] = BOLUS[1] - Ka*X[1]",
-                        "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]"
-                      ),
-                      list(
-                        "dX[1] = BOLUS[1] - Ka*X[1]",
-                        "dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]"
-                      ),
-                      list(
-                        "dX[1] = RATEIV[1] - (Ke + KCP)*X[1] + KPC*X[2]",
-                        "dX[2] = KCP*X[1] - KPC*X[2]"
-                      ),
-                      list(
-                        "dX[1] = RATEIV[1] - (CL + Q)/V1*X[1] + Q/V2*X[2]",
-                        "dX[2] = Q/V1*X[1] - Q/V2*X[2]"
-                      ),
-                      list(
-                        "dX[1] = BOLUS[1] - Ka*X[1]",
-                        "dX[2] = RATEIV[1] + Ka*X[1] - (Ke + KCP)*X[2] + KPC*X[3]",
-                        "dX[3] = KCP*X[2] - KPC*X[3]"
-                      ),
-                      list(
-                        "dX[1] = BOLUS[1] - Ka*X[1]",
-                        "dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/V2*X[2] + Q/V3*X[3]",
-                        "dX[3] = Q/V2*X[2] - Q/V3*X[3]"
-                      )
-                    )
-                    
-                    
-                    if (is.null(name)) {
-                      print(
-                        mod_table %>%
-                        dplyr::rowwise() %>%
-                        dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
-                        flextable::flextable() %>%
-                        flextable::set_header_labels(ODE = "Corresponding ODE") %>%
-                        flextable::autofit()
-                      )
+                      seg_df <- bind_rows(arrow_segments)
+                      head_df <- bind_rows(arrow_heads)
+                      label_df <- bind_rows(labels)
                       
-                      return(invisible(NULL))
-                    }
-                    
-                    if (!tolower(name) %in%
-                    c(
-                      glue::glue("one_comp_iv{c('','_cl')}"),
-                      glue::glue("two_comp_bolus{c('','_cl')}"),
-                      glue::glue("two_comp_iv{c('','_cl')}"),
-                      glue::glue("three_comp_bolus{c('','_cl')}"),
-                      glue::glue("advan{1:4}"),
-                      glue::glue("advan{1:4}-trans1"),
-                      glue::glue("advan{1:2}-trans2"),
-                      "advan3-trans4",
-                      "advan4-trans4"
-                    )) {
-                      cli::cli_abort(c("x" = "Invalid model name"))
-                    }
-                    
-                    if (show) {
-                      print(
-                        mod_table %>% dplyr::filter(`Primary Name` == name) %>%
-                        dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
-                        flextable::flextable() %>%
-                        flextable::set_header_labels(ODE = "Corresponding ODE") %>%
-                        flextable::autofit()
-                      )
-                    }
-                    
-                    return(
-                      invisible(
-                        mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1, 1) %>% unlist()
-                      )
-                    )
-                  }
-                  
+                      elim_triangles <- layout_df %>%
+                      filter(compartment %in% elim_comps) %>%
+                      mutate(x = x - 0.4, y = y + 0.2)
+                      
+                      p <- ggplot()
+                      
+                      if (nrow(seg_df)>0){ # we have connections
+                        p <- p + geom_segment(data = seg_df,
+                          aes(x = x, y = y, xend = xend, yend = yend, color = color),
+                          linewidth = 0.7, show.legend = FALSE) +
+                          geom_polygon(data = head_df,
+                            aes(x = x, y = y, group = group, fill = fill),
+                            color = NA, show.legend = FALSE) 
+                          }
+                          
+                          p <- p + geom_rect(data = layout_df,
+                            aes(xmin = x - box_width / 2, xmax = x + box_width / 2,
+                              ymin = y - box_height / 2, ymax = y + box_height / 2),
+                              fill = "grey80", color = "black") +
+                              
+                              geom_label(data = layout_df,
+                                aes(x = x, y = y + 0.15, label = compartment), fill = NA, 
+                                color = "black", fontface = "bold", size = 7, label.size = NA) +
+                                
+                                geom_point(data = elim_triangles,
+                                  aes(x = x, y = y),
+                                  color = "black", shape = 2, size = 4)
+                                  
+                                  if (nrow(label_df) > 0) {
+                                    p <- p + geom_label(
+                                      data = label_df,
+                                      aes(x = x, y = y, label = label),
+                                      fill = label_df$color,
+                                      color = label_df$text_color,
+                                      fontface = "bold",
+                                      size = 4,
+                                      show.legend = FALSE,
+                                      label.size = NA
+                                    )
+                                  }
+                                  
+                                  if (length(outputs) > 0) {
+                                    out_df <- bind_rows(lapply(outputs, function(out) {
+                                      comp <- out$compartment
+                                      txt <- paste0("y[", out$output_num, "]")
+                                      pos <- layout_df %>% filter(compartment == comp)
+                                      data.frame(x = pos$x, y = pos$y-0.2, label = txt)
+                                    }))
+                                    
+                                    p <- p + geom_label(
+                                      data = out_df,
+                                      aes(x = x, y = y, label = label),
+                                      color = "black",
+                                      fill = NA,
+                                      fontface = "bold",
+                                      size = 3,
+                                      label.size = 0
+                                    )
+                                  }
+                                  
+                                  p <- p +
+                                  coord_fixed() +
+                                  xlim(range(layout_df$x) + c(-1.5, 1.5)) +
+                                  ylim(range(layout_df$y) + c(-1.5, 1.5)) +
+                                  theme_void() +
+                                  ggtitle("Structural model") +
+                                  scale_color_identity() +
+                                  scale_fill_identity()
+                                  
+                                  return(p)
+                                }
+                                
+                                ##### FUNCTION CALLS
+                                
+                                #equations <- parse_equations(this_model)
+                                # Expand and distribute equations
+                             
+                                expanded_equations <- purrr::map(parse(text = tolower(eqns)), expand_distribute)
+                                outputs <- parse_output_equations(as.list(parse(text = tolower(outs))))
+                                out_comp <- map_chr(outputs, function(o) as.character(o$compartment))
+                                result <- extract_connections(expanded_equations)
+                                elim_count <- sum(sapply(result$connections, function(c) c$to == 0))
+                                elim_coeff <- map_chr(result$connections, function(c) if (c$to == 0) c$coeff else NA) %>% keep(~ !is.na(.))
+                                
+                                cli::cli_h1("Model elements")
+                                cli::cli_text("{length(result$compartments)} compartments")
+                                cli::cli_text("{length(result$connections)} connections, of which {elim_count} {?is an elimination/are eliminations}: {elim_coeff}")
+                                cli::cli_text("{length(outputs)} output{?s} in compartment{?s} {out_comp}")
+                                
+                                
+                                p <- create_plot(result$connections, result$compartments, outputs)
+                                if (print) print(p)
+                                
+                                return(
+                                  invisible(list(
+                                    p = p,
+                                    connections = result$connections,
+                                    compartments = result$compartments,
+                                    outputs = outputs
+                                  ))
+                                )
+                                
+                                
+                                # g <- ggraph::ggraph(graph, layout = "tree")
+                                # if (!is.logical(marker)) {
+                                #   # will only be logical if FALSE
+                                #   g <- g +
+                                #   ggraph::geom_node_tile(
+                                #     aes(fill = position, linetype = position),
+                                #     color = marker$line$color,
+                                #     lwd = marker$line$width,
+                                #     width = marker$size,
+                                #     height = marker$size,
+                                #     alpha = marker$opacity
+                                #   ) +
+                                #   ggraph::geom_node_text(
+                                #     aes(label = input),
+                                #     nudge_x = .07,
+                                #     nudge_y = .05,
+                                #     color = "white"
+                                #   ) +
+                                #   ggraph::geom_node_text(
+                                #     aes(label = out),
+                                #     nudge_x = -.07,
+                                #     nudge_y = .05,
+                                #     color = "black"
+                                #   ) +
+                                #   ggplot2::scale_fill_manual(values = c(marker$color, "grey80"))
+                                # }
+                                # if (!is.logical(line)) {
+                                #   # will only be logical if FALSE
+                                #   g <- g +
+                                #   ggraph::geom_edge_fan(
+                                #     aes(linetype = as.numeric(implicit) + 1),
+                                #     arrow = grid::arrow(
+                                #       angle = 15,
+                                #       type = "closed",
+                                #       length = grid::unit(6, "mm")
+                                #     ),
+                                #     end_cap = ggraph::circle(3, "mm"),
+                                #     start_cap = ggraph::circle(4, "mm"),
+                                #     angle_calc = "across",
+                                #     edge_color = line$color,
+                                #     label_push = grid::unit(-4, "mm"),
+                                #     edge_width = line$width
+                                #   )
+                                # }
+                                # g <- g +
+                                # ggraph::geom_node_label(aes(label = cmt), position = "identity") +
+                                # ggraph::theme_graph() +
+                                # ggplot2::theme(legend.position = "none")
+                                # if (print) print(g)
+                                # return(invisible(g))
+              }
+                              
+                              
+                              # MODEL LIBRARY -----------------------------------------------------------
+                              
+                              #' @title Pharmacokinetic model library
+                              #' @description
+                              #' `r lifecycle::badge("stable")`
+                              #'
+                              #' This function provides a list of available pharmacokinetic models.
+                              #' @param name The name of the model to display. If `NULL`, the entire list is displayed.
+                              #' @param show If `TRUE`, the model is displayed in the console. If `FALSE`, the model is only returned as a tibble.
+                              #' @return If `name` is not `NULL`, a tibble with the model equations; otherwise the
+                              #' function returns `NULL` and only displays the entire library in tabular format.
+                              #' @author Michael Neely
+                              #' @seealso [PM_model]
+                              #' @export
+                              #' @examples
+                              #' \dontrun{
+                              #' model_lib()
+                              #' model_lib("one_comp_iv")
+                              #' }
+                              model_lib <- function(name = NULL, show = TRUE) {
+                                mod_table <- matrix(
+                                  c(
+                                    "one_comp_iv",
+                                    "advan1\nadvan1-trans1",
+                                    "One compartment IV input, Ke",
+                                    "1 = Central",
+                                    "Ke, V",
+                                    "one_comp_iv_cl",
+                                    "advan1\nadvan1-trans2",
+                                    "One compartment IV input, CL",
+                                    "1 = Central",
+                                    "CL, V",
+                                    "two_comp_bolus",
+                                    "advan2\nadvan2-trans1",
+                                    "Two compartment bolus input, Ke",
+                                    "1 = Bolus\n2 = Central",
+                                    "Ka, Ke, V",
+                                    "two_comp_bolus_cl",
+                                    "advan2\nadvan2-trans2",
+                                    "Two compartment bolus input, CL",
+                                    "1 = Bolus\n2 = Central",
+                                    "Ka, CL, V",
+                                    "two_comp_iv",
+                                    "advan3\nadvan3-trans1",
+                                    "Two compartment IV input, Ke",
+                                    "1 = Central\n2 = Peripheral",
+                                    "Ke, V, KCP, KPC",
+                                    "two_comp_iv_cl",
+                                    "advan3\nadvan3-trans4",
+                                    "Two compartment IV input, CL",
+                                    "1 = Central\n2 = Peripheral",
+                                    "CL, V1, Q, V2",
+                                    "three_comp_bolus",
+                                    "advan4\nadvan4-trans1",
+                                    "Three compartment bolus input, Ke",
+                                    "1 = Bolus\n2 = Central\n3 = Peripheral",
+                                    "Ka, Ke, V, KCP, KPC",
+                                    "three_comp_bolus_cl",
+                                    "advan4\nadvan4-trans4",
+                                    "Three compartment bolus input, CL",
+                                    "1 = Bolus\n2 = Central\n3 = Peripheral",
+                                    "Ka, CL, V2, Q, V3"
+                                  ),
+                                  ncol = 5,
+                                  byrow = TRUE
+                                ) %>%
+                                as.data.frame() %>%
+                                stats::setNames(c(
+                                  "Primary Name",
+                                  "Alt Names",
+                                  "Description",
+                                  "Compartments",
+                                  "Parameters"
+                                )) %>%
+                                tibble::as_tibble()
+                                
+                                
+                                mod_table$ODE <- list(
+                                  list("dX[1] = RATEIV[1] - Ke*X[1]"),
+                                  list("dX[1] = RATEIV[1] - CL/V*X[1]"),
+                                  list(
+                                    "dX[1] = BOLUS[1] - Ka*X[1]",
+                                    "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]"
+                                  ),
+                                  list(
+                                    "dX[1] = BOLUS[1] - Ka*X[1]",
+                                    "dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]"
+                                  ),
+                                  list(
+                                    "dX[1] = RATEIV[1] - (Ke + KCP)*X[1] + KPC*X[2]",
+                                    "dX[2] = KCP*X[1] - KPC*X[2]"
+                                  ),
+                                  list(
+                                    "dX[1] = RATEIV[1] - (CL + Q)/V1*X[1] + Q/V2*X[2]",
+                                    "dX[2] = Q/V1*X[1] - Q/V2*X[2]"
+                                  ),
+                                  list(
+                                    "dX[1] = BOLUS[1] - Ka*X[1]",
+                                    "dX[2] = RATEIV[1] + Ka*X[1] - (Ke + KCP)*X[2] + KPC*X[3]",
+                                    "dX[3] = KCP*X[2] - KPC*X[3]"
+                                  ),
+                                  list(
+                                    "dX[1] = BOLUS[1] - Ka*X[1]",
+                                    "dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/V2*X[2] + Q/V3*X[3]",
+                                    "dX[3] = Q/V2*X[2] - Q/V3*X[3]"
+                                  )
+                                )
+                                
+                                
+                                if (is.null(name)) {
+                                  print(
+                                    mod_table %>%
+                                    dplyr::rowwise() %>%
+                                    dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
+                                    flextable::flextable() %>%
+                                    flextable::set_header_labels(ODE = "Corresponding ODE") %>%
+                                    flextable::autofit()
+                                  )
+                                  
+                                  return(invisible(NULL))
+                                }
+                                
+                                if (!tolower(name) %in%
+                                c(
+                                  glue::glue("one_comp_iv{c('','_cl')}"),
+                                  glue::glue("two_comp_bolus{c('','_cl')}"),
+                                  glue::glue("two_comp_iv{c('','_cl')}"),
+                                  glue::glue("three_comp_bolus{c('','_cl')}"),
+                                  glue::glue("advan{1:4}"),
+                                  glue::glue("advan{1:4}-trans1"),
+                                  glue::glue("advan{1:2}-trans2"),
+                                  "advan3-trans4",
+                                  "advan4-trans4"
+                                )) {
+                                  cli::cli_abort(c("x" = "Invalid model name"))
+                                }
+                                
+                                if (show) {
+                                  print(
+                                    mod_table %>% dplyr::filter(`Primary Name` == name) %>%
+                                    dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
+                                    flextable::flextable() %>%
+                                    flextable::set_header_labels(ODE = "Corresponding ODE") %>%
+                                    flextable::autofit()
+                                  )
+                                }
+                                
+                                return(
+                                  invisible(
+                                    mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1, 1) %>% unlist()
+                                  )
+                                )
+                              }
+                              

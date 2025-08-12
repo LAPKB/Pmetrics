@@ -469,7 +469,7 @@ plot.PM_op <- function(x,
       
       # Split into traces
       traces <- sub1 %>%
-      group_split(id)
+      dplyr::group_split(id)
       
       
       # Build plot
