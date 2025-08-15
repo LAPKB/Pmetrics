@@ -1035,243 +1035,407 @@ function(el, x) {
   }
   
   
-
-#### RGBA to RGB
-#' @title Convert RGBA to RGB
-#' @description
-#' `r lifecycle::badge("stable")`
-#' Converts a CSS `rgba()` string to an RGB color string.
-#' @param rgba_str A string in the format `rgba(r, g, b, a)` where r, g, and b are
-#' integers between 0 and 255, and a is a float between 0 and 1.
-#' @export
-#' 
-rgba_to_rgb <- function(rgba_str) {
-  # Extract the numeric parts from the rgba() string
-  if(is.na(rgba_str) | stringr::str_detect(rgba_str, "#")) return(rgba_str)
-  nums <- as.numeric(unlist(regmatches(
-    rgba_str,
-    gregexpr("[0-9.]+", rgba_str)
-  )))
-  if (length(nums) == 0) return(rgba_str)
-
-  if (length(nums) != 4) stop("RGBA string must have 4 numbers.")
-
-  r <- nums[1] / 255
-  g <- nums[2] / 255
-  b <- nums[3] / 255
-  a <- nums[4]              # already 0–1 in CSS rgba()
-
-  grDevices::rgb(r, g, b, alpha = a)
+  
+  #### RGBA to RGB
+  #' @title Convert RGBA to RGB
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Converts a CSS `rgba()` string to an RGB color string.
+  #' @param rgba_str A string in the format `rgba(r, g, b, a)` where r, g, and b are
+  #' integers between 0 and 255, and a is a float between 0 and 1.
+  #' @param alpha Optional numeric value to replace the alpha channel in the rgba string.
+  #' @export
+  #' 
+  rgba_to_rgb <- function(rgba_str, alpha = NULL) {
+    # Extract the numeric parts from the rgba() string
+    if(is.na(rgba_str) | stringr::str_detect(rgba_str, "#")) return(rgba_str)
+    nums <- as.numeric(unlist(regmatches(
+      rgba_str,
+      gregexpr("[0-9.]+", rgba_str)
+    )))
+    if (length(nums) == 0) return(rgba_str)
+    if (!is.null(alpha)) {
+      nums[4] <- alpha #replace alpha if specified
+    } 
+    
+    if (length(nums) != 4) stop("RGBA string must have 4 numbers.")
+    
+    r <- nums[1] / 255
+    g <- nums[2] / 255
+    b <- nums[3] / 255
+    a <- nums[4]              # already 0–1 in CSS rgba()
+    
+    grDevices::rgb(r, g, b, alpha = a)
+  }
+  
+  
+  #' @title Convert a plotly object to ggplot
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Converts a plotly object to a ggplot object. It is the inverse of [plotly::ggplotly()].
+  #' @details
+  #' This function extracts the data and layout from a plotly object
+  #' and constructs a ggplot object with the same data.
+  #' It supports various trace types including scatter, bar, and line traces.
+  #' @param p A plotly object to convert.
+  #' @param print If `TRUE` (the default), will print the ggplot object and invisibly return it.
+  #' @return A ggplot object.
+  #' @export
+  #' 
+  plotlygg <- function(p, print = TRUE) {
+    if (inherits(p, "trelliscopejs_widget")) {
+      cli::cli_abort(c("x" = "Plotting data with {.arg overlay = TRUE} results in a {.cls treliscopejs_widget} object, which cannot be converted to ggplot.",
+      "i" = "Remake your plot with {.arg overlay = FALSE} and use {.arg include} or {.arg exclude} as needed."))
+    }
+    if (!inherits(p, "plotly")){
+      cli::cli_abort(c("x" = "The input must be a plotly object."))
+    }
+    
+    # Standardize to a built plotly object that *does* expose $x$data traces
+    pb <- plotly::plotly_build(p)
+    traces <- pb$x$data
+    lay <- pb$x$layout %||% list()
+    
+    if (length(traces) == 0) stop("No trace data found after plotly_build().")
+    
+    # Helper: safe NULL coalesce
+    `%||%` <- function(a, b) if (!is.null(a)) a else b
+    
+    # Prepare empty ggplot
+    g <- ggplot2::ggplot() + ggplot2::theme_minimal()
+    
+    # Bar position from layout
+    bar_position <- switch(lay$barmode %||% "",
+    "stack" = "stack",
+    "group" = "dodge",
+    "relative" = "stack",
+    "overlay")  # ggplot's default is "stack"; "overlay" ~ "identity"
+    
+    # Title
+    if (!is.null(lay$title) && !is.null(lay$title$text)) {
+      
+      title_text <- lay$title$text %>% stringr::str_replace_all("</*b>", "")
+      title_format <- do.call(element_text, list(face = ifelse(lay$title$font$bold, "bold", "plain"),
+      size = lay$title$font$size,
+      family = lay$title$font$family))
+      
+    } else if (is.character(lay$title)) {
+      title_text <- lay$title %>% stringr::str_replace_all("</*b>", "")
+      title_format <- do.call(element_text, list(face = "bold", size = 16, family = "Arial"))
+    }
+    
+    g <- g + ggplot2::ggtitle(title_text) + theme(title = title_format)
+    
+    # Ranges
+    if (!is.null(lay$xaxis) && !is.null(lay$xaxis$range)) {
+      min_x <- lay$xaxis$range[1]
+      max_x <- lay$xaxis$range[2]
+    } else {
+      min_x <- -Inf
+      max_x <- Inf
+    }
+    if (!is.null(lay$yaxis) && !is.null(lay$yaxis$range)) {
+      min_y <- lay$yaxis$range[1]
+      max_y <- lay$yaxis$range[2]
+    } else {
+      min_y <- -Inf
+      max_y <- Inf
+    }
+    
+    
+    # Iterate traces
+    for (i in seq_along(traces)) {
+      tr <- traces[[i]]
+      ttype <- tr$type %||% "scatter"
+      
+      # Common aesthetics
+      tname <- as.character(tr$name) %||% paste0("trace", i)
+      line_opacity <- tr$line$opacity %||% 1
+      line_color   <- tr$line$color   %||% tr$marker$color %||% tr$marker$line$color %||% "dodgerblue" %>% rgba_to_rgb()
+      line_width <- tr$line$width * 0.5 %||% 0.5
+      line_dash <- tr$line$dash %||% "solid"
+      marker_opacity <- tr$marker$opacity %||% 1
+      marker_fill_color   <- tr$marker$color %||% tr$fillcolor %||% "dodgerblue" %>% rgba_to_rgb() # fill color
+      marker_size <- tr$marker$size/3 %||% 3 
+      marker_shape <- dplyr::case_when(
+        grepl("circle", tr$marker$symbol) ~ 21,
+        grepl("square", tr$marker$symbol) ~ 22,
+        grepl("diamond",tr$marker$symbol) ~ 23,
+        grepl("triangle-up", tr$marker$symbol) ~ 24,
+        .default = 21
+      )
+      marker_line_color <- tr$marker$line$color %||% tr$marker$color %||% "#000000FF" %>% rgba_to_rgb() # stroke color
+      marker_line_width <- tr$marker$line$width * 0.5 %||% 0.5 # stroke width
+      
+      
+      
+      # Build a small data.frame per trace (avoid recycling issues)
+      df <- NULL
+      
+      if (ttype %in% c("scatter", "scattergl")) {
+        # plotly scatter may have x or y missing; handle gracefully
+        x <- tr$x %||% seq_along(tr$y %||% numeric())
+        y <- tr$y %||% seq_along(tr$x %||% numeric())
+        df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE) %>% filter(x >= min_x, x <= max_x, y >= min_y, y <= max_y)
+        
+        mode <- tr$mode %||% "markers"
+        has_lines   <- grepl("lines",   mode)
+        has_markers <- grepl("markers", mode)
+        
+        if (has_lines) {
+          if (stringr::str_detect(tr$name, "CI|ribbon")){
+            g <- g + ggplot2::geom_polygon(
+              data = df,
+              ggplot2::aes(x = x, y = y),
+              linewidth = NULL,
+              fill = line_color,
+              alpha = 0.2 # always set to 0.2 for ribbons
+            )
+            
+          } else {
+            g <- g + ggplot2::geom_line(
+              data = df,
+              ggplot2::aes(x = x, y = y),
+              linewidth = line_width,
+              color = line_color,
+              alpha = line_opacity,
+              linetype = line_dash
+            )
+            
+          }
+          
+        }
+        if (has_markers) {
+          g <- g + ggplot2::geom_point(
+            data = df,
+            ggplot2::aes(x = x, y = y), 
+            size = marker_size,
+            shape = marker_shape,
+            fill = marker_fill_color,
+            alpha = marker_opacity,
+            stroke = marker_line_width,
+            color = marker_line_color
+          )
+        }
+        if (!has_lines && !has_markers) {
+          # Fallback
+          g <- g + ggplot2::geom_point(
+            data = df,
+            ggplot2::aes(x = x, y = y),
+            color = marker_fill_color
+          )
+        }
+        
+      } else if (ttype == "bar") {
+        x <- tr$x
+        y <- tr$y
+        if (is.null(x) || is.null(y)) next
+        df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE)
+        
+        g <- g + ggplot2::geom_col(
+          data = df,
+          ggplot2::aes(x = x, y = y, fill = trace),
+          alpha = alpha_val,
+          position = bar_position
+        )
+        
+        # If a single fixed color is provided, set scale manually
+        if (!is.na(fill_col)) {
+          g <- g + ggplot2::scale_fill_manual(values = setNames(fill_col, tname))
+        }
+        
+      } else if (ttype == "box") {
+        # Plotly box can be vertical (y values, name is group) or horizontal (orientation='h', x values)
+        orient <- tr$orientation %||% "v"
+        if (orient == "h") {
+          vals <- tr$x
+          if (is.null(vals)) next
+          df <- data.frame(group = tname, val = vals, stringsAsFactors = FALSE)
+          g <- g + ggplot2::geom_boxplot(
+            data = df,
+            ggplot2::aes(x = group, y = val),
+            alpha = alpha_val,
+            outlier.shape = NA,
+            fill = if (is.na(fill_col)) NULL else fill_col,
+            color = if (is.na(line_col)) NULL else line_col
+          )
+        } else {
+          vals <- tr$y
+          if (is.null(vals)) next
+          df <- data.frame(group = tname, val = vals, stringsAsFactors = FALSE)
+          g <- g + ggplot2::geom_boxplot(
+            data = df,
+            ggplot2::aes(x = group, y = val),
+            alpha = alpha_val,
+            outlier.shape = NA,
+            fill = if (is.na(fill_col)) NULL else fill_col,
+            color = if (is.na(line_col)) NULL else line_col
+          )
+        }
+        
+      } else {
+        # Unsupported trace: try to plot points if x/y present
+        x <- tr$x; y <- tr$y
+        if (!is.null(x) && !is.null(y)) {
+          df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE)
+          g <- g + ggplot2::geom_point(
+            data = df,
+            ggplot2::aes(x = x, y = y),
+            alpha = alpha_val,
+            color = if (is.na(fill_col)) NULL else fill_col
+          )
+        } else {
+          warning("Trace ", i, " of type '", ttype, "' not supported; skipping.")
+        }
+      }
+    }
+    
+    # Axes titles (best effort)
+    if (!is.null(lay$xaxis) && !is.null(lay$xaxis$title)) {
+      if (is.list(lay$xaxis$title)){
+        x_text <- lay$xaxis$title$text %>% stringr::str_replace_all("</*b>", "")
+        x_format <- do.call(element_text, list(face = ifelse(lay$xaxis$title$font$bold, "bold", "plain"),
+        size = lay$xaxis$title$font$size,
+        family = lay$xaxis$title$font$family))
+        
+      } else {
+        x_text <- lay$xaxis$title %>% stringr::str_replace_all("</*b>", "")
+        x_format <- do.call(element_text, list(face = "bold", size = 16, family = "Arial"))
+      }
+      
+      g <- g + ggplot2::xlab(x_text) + theme(axis.title.x = x_format)
+    }
+    
+    if (!is.null(lay$yaxis) && !is.null(lay$yaxis$title)) {
+      if (is.list(lay$yaxis$title)){
+        y_text <- lay$yaxis$title$text %>% stringr::str_replace_all("</*b>", "")
+        y_format <- do.call(element_text, list(face = ifelse(lay$yaxis$title$font$bold, "bold", "plain"),
+        size = lay$yaxis$title$font$size ,
+        family = lay$yaxis$title$font$family))
+        
+      } else {
+        y_text <- lay$yaxis$title %>% stringr::str_replace_all("</*b>", "")
+        y_format <- do.call(element_text, list(face = "bold", size = 16, family = "Arial"))
+      }
+      
+      g <- g + ggplot2::ylab(y_text) + theme(axis.title.y = y_format)
+    }
+    
+    
+    ####### Legends and annotations
+    
+    # Map a 0..1 "paper" coordinate into data space using panel ranges
+    # t is the "paper" coordinate (0 to 1), and rng is the data range
+    map_paper_to_data <- function(t, rng) rng[1] + t * (rng[2] - rng[1])
+    
+    # Extract first panel ranges from a ggplot object
+    gg_panel_ranges <- function(g) {
+      gb <- ggplot2::ggplot_build(g)
+      pp <- gb$layout$panel_params[[1]]
+      # panel_params fields vary by ggplot2 versions; cover both forms
+      xr <- pp$x.range %||% pp$x$range$range
+      yr <- pp$y.range %||% pp$y$range$range
+      list(x = xr, y = yr)
+    }
+    
+    rng <- gg_panel_ranges(g)
+    
+    
+    
+    
+    
+    # Legend (only used for groups in plot.PM_data)
+    if (lay$showlegend){
+      group_df <- traces %>% map(~c(
+        line_color = .x$line$color   %||% .x$marker$color %||% .x$marker$line$color %||% "dodgerblue" %>% rgba_to_rgb(),
+        line_width = .x$line$width * 0.5 %||% 0.5,
+        line_dash = .x$line$dash %||% "solid",
+        line_opacity = .x$line$opacity %||% 1,
+        marker_fill_color = .x$marker$color %||% .x$fillcolor %||% "dodgerblue" %>% rgba_to_rgb(), # fill color
+        marker_size = .x$marker$size / 3 %||% 3, 
+        marker_shape = dplyr::case_when(
+          grepl("circle", .x$marker$symbol) ~ 21,
+          grepl("square", .x$marker$symbol) ~ 22,
+          grepl("diamond",.x$marker$symbol) ~ 23,
+          grepl("triangle-up", .x$marker$symbol) ~ 24,
+          .default = 21
+        ),
+        marker_opacity = .x$marker$opacity %||% 1,
+        marker_line_color = .x$marker$line$color %||% .x$marker$color %||% "#000000FF" %>% rgba_to_rgb(), # stroke color
+        marker_line_width = .x$marker$line$width * 0.5 %||% 0.5, # stroke width
+        group = as.character(.x$name))) %>% 
+        bind_rows() %>% 
+        mutate(marker_shape = as.integer(marker_shape)) %>% 
+        mutate(across(contains(c("width", "size", "opacity")), as.numeric)) %>%
+        distinct()
+        
+        
+        if (is.null(lay$legend)) {
+          lay$legend <- list(x = 1, y = 1) # default position
+        }
+        max_chr <- max(nchar(group_df$group)) + 1
+        for(i in seq_along(group_df$group)) {
+          g <- g +
+          
+          ggplot2::annotate("point",
+          x = map_paper_to_data(lay$legend$x - (0.018 * max_chr), rng$x),
+          y = map_paper_to_data(lay$legend$y - (i * 0.03), rng$y),
+          color = group_df$marker_line_color[i],
+          shape = group_df$marker_shape[i],
+          size = group_df$marker_size[i],
+          fill = group_df$marker_fill_color[i],
+          alpha = group_df$marker_opacity[i],
+          stroke = group_df$marker_line_width[i]
+        ) +
+        ggplot2::annotate("segment",
+        x = map_paper_to_data(lay$legend$x - (0.018 * max_chr) - 0.018, rng$x),
+        xend = map_paper_to_data(lay$legend$x - (0.018 * max_chr) + 0.018, rng$x),
+        y = map_paper_to_data(lay$legend$y - (i * 0.03), rng$y),
+        yend = map_paper_to_data(lay$legend$y - (i * 0.03), rng$y),
+        color = group_df$line_color[i],
+        linewidth = group_df$line_width[i],
+        alpha = group_df$line_opacity[i]
+      ) +
+      ggplot2::annotate("text",
+      label = group_df$group[i],
+      x = map_paper_to_data(lay$legend$x - (0.013 * max_chr), rng$x),
+      y = map_paper_to_data(lay$legend$y - (i * 0.03), rng$y),
+      hjust = "left",
+      size = 3.5,
+      color = "black"
+    )
+    
+  }
 }
 
 
-#' @title Convert a plotly object to ggplot
-#' @description
-#' `r lifecycle::badge("stable")`
-#' Converts a plotly object to a ggplot object.
-#' #' @details
-#' This function extracts the data and layout from a plotly object
-#' and constructs a ggplot object with the same data.
-#' #' It supports various trace types including scatter, bar, and line traces.
-#' #' @param p A plotly object to convert.
-#' #' @return A ggplot object.
-#' #' @export
-#' 
-plotly_to_ggplot <- function(p) {
-  if (!inherits(p, "plotly")) stop("p must be a plotly object")
-  
-  # Standardize to a built plotly object that *does* expose $x$data traces
-  pb <- plotly::plotly_build(p)
-  traces <- pb$x$data
-  lay    <- pb$x$layout %||% list()
-  
-  if (length(traces) == 0) stop("No trace data found after plotly_build().")
-  
-  # Helper: safe NULL coalesce
-  `%||%` <- function(a, b) if (!is.null(a)) a else b
-  
-  # Prepare empty ggplot
-  g <- ggplot2::ggplot() + ggplot2::theme_minimal()
-  
-  # Bar position from layout
-  bar_position <- switch(lay$barmode %||% "",
-  "stack" = "stack",
-  "group" = "dodge",
-  "relative" = "stack",
-  "overlay")  # ggplot's default is "stack"; "overlay" ~ "identity"
-  
-  # Title
-  if (!is.null(lay$title) && !is.null(lay$title$text)) {
-    g <- g + ggplot2::ggtitle(lay$title$text)
-  } else if (is.character(lay$title)) {
-    g <- g + ggplot2::ggtitle(lay$title)
-  }
-  
-  # Iterate traces
-  for (i in seq_along(traces)) {
-    tr <- traces[[i]]
-    ttype <- tr$type %||% "scatter"
-    
-    # Common aesthetics
-    tname <- tr$name %||% paste0("trace", i)
-    line_col   <- tr$line$color   %||% tr$marker$color %||% tr$marker$line$color %||% NA %>% rgba_to_rgb()
-    marker_line_col   <- tr$marker$line$color %||% tr$marker$color %||% NA %>% rgba_to_rgb()
-    fill_col   <- tr$marker$color %||% tr$fillcolor %||% NA %>% rgba_to_rgb()
-    alpha_val  <- tr$opacity %||% tr$marker$opacity %||% 1
-    
-    # Build a small data.frame per trace (avoid recycling issues)
-    df <- NULL
-    
-    if (ttype %in% c("scatter", "scattergl")) {
-      # plotly scatter may have x or y missing; handle gracefully
-      x <- tr$x %||% seq_along(tr$y %||% numeric())
-      y <- tr$y %||% seq_along(tr$x %||% numeric())
-      df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE)
-      
-      mode <- tr$mode %||% "markers"
-      has_lines   <- grepl("lines",   mode)
-      has_markers <- grepl("markers", mode)
-      
-      if (has_lines) {
-        if (stringr::str_detect(tr$name, "CI|ribbon")){
-          g <- g + ggplot2::geom_polygon(
-            data = df,
-            ggplot2::aes(x = x, y = y, group = trace),
-            linewidth = NULL,
-            alpha = alpha_val,
-            fill = if (is.na(line_col)) NULL else line_col
-          )
-          
-        } else {
-          g <- g + ggplot2::geom_line(
-            data = df,
-            ggplot2::aes(x = x, y = y, group = trace),
-            linewidth = (tr$line$width %||% 1) / 1.2,
-            alpha = alpha_val,
-            color = if (is.na(line_col)) NULL else line_col
-          )
-          
-        }
-        
-      }
-      if (has_markers) {
-        g <- g + ggplot2::geom_point(
-          data = df,
-          ggplot2::aes(x = x, y = y),
-          alpha = alpha_val,
-          size = tr$marker$size/3 %||% 3,
-          stroke = tr$marker$line$width * 0.5 %||% 0.5,
-          shape = 21,
-          color = if (is.na(marker_line_col)) NULL else marker_line_col,
-          fill = if (is.na(fill_col)) NULL else fill_col
-        )
-      }
-      if (!has_lines && !has_markers) {
-        # Fallback
-        g <- g + ggplot2::geom_point(
-          data = df,
-          ggplot2::aes(x = x, y = y),
-          alpha = alpha_val,
-          color = if (is.na(fill_col)) NULL else fill_col
-        )
-      }
-      
-    } else if (ttype == "bar") {
-      x <- tr$x
-      y <- tr$y
-      if (is.null(x) || is.null(y)) next
-      df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE)
-      
-      g <- g + ggplot2::geom_col(
-        data = df,
-        ggplot2::aes(x = x, y = y, fill = trace),
-        alpha = alpha_val,
-        position = bar_position
-      )
-      
-      # If a single fixed color is provided, set scale manually
-      if (!is.na(fill_col)) {
-        g <- g + ggplot2::scale_fill_manual(values = setNames(fill_col, tname))
-      }
-      
-    } else if (ttype == "box") {
-      # Plotly box can be vertical (y values, name is group) or horizontal (orientation='h', x values)
-      orient <- tr$orientation %||% "v"
-      if (orient == "h") {
-        vals <- tr$x
-        if (is.null(vals)) next
-        df <- data.frame(group = tname, val = vals, stringsAsFactors = FALSE)
-        g <- g + ggplot2::geom_boxplot(
-          data = df,
-          ggplot2::aes(x = group, y = val),
-          alpha = alpha_val,
-          outlier.shape = NA,
-          fill = if (is.na(fill_col)) NULL else fill_col,
-          color = if (is.na(line_col)) NULL else line_col
-        )
-      } else {
-        vals <- tr$y
-        if (is.null(vals)) next
-        df <- data.frame(group = tname, val = vals, stringsAsFactors = FALSE)
-        g <- g + ggplot2::geom_boxplot(
-          data = df,
-          ggplot2::aes(x = group, y = val),
-          alpha = alpha_val,
-          outlier.shape = NA,
-          fill = if (is.na(fill_col)) NULL else fill_col,
-          color = if (is.na(line_col)) NULL else line_col
-        )
-      }
-      
-    } else {
-      # Unsupported trace: try to plot points if x/y present
-      x <- tr$x; y <- tr$y
-      if (!is.null(x) && !is.null(y)) {
-        df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE)
-        g <- g + ggplot2::geom_point(
-          data = df,
-          ggplot2::aes(x = x, y = y),
-          alpha = alpha_val,
-          color = if (is.na(fill_col)) NULL else fill_col
-        )
-      } else {
-        warning("Trace ", i, " of type '", ttype, "' not supported; skipping.")
-      }
-    }
-  }
-  
-  # Axes titles (best effort)
-  if (!is.null(lay$xaxis) && !is.null(lay$xaxis$title)) {
-    if (is.list(lay$xaxis$title)){
-      x_text <- lay$xaxis$title$text %>% stringr::str_replace_all("</*b>", "")
-      x_format <- do.call(element_text, list(face = ifelse(lay$xaxis$title$font$bold, "bold", "plain"),
-      size = lay$xaxis$title$font$size,
-      family = lay$xaxis$title$font$family))
-      
-    } else {
-      x_text <- lay$xaxis$title %>% stringr::str_replace_all("</*b>", "")
-      x_format <- do.call(element_text, list(face = "bold", size = 16, family = "Arial"))
-    }
-    
-    g <- g + ggplot2::xlab(x_text) + theme(axis.title.x = x_format)
-  }
 
-  if (!is.null(lay$yaxis) && !is.null(lay$yaxis$title)) {
-    if (is.list(lay$yaxis$title)){
-      y_text <- lay$yaxis$title$text %>% stringr::str_replace_all("</*b>", "")
-      y_format <- do.call(element_text, list(face = ifelse(lay$yaxis$title$font$bold, "bold", "plain"),
-      size = lay$yaxis$title$font$size ,
-      family = lay$yaxis$title$font$family))
-      
-    } else {
-      y_text <- lay$yaxis$title %>% stringr::str_replace_all("</*b>", "")
-      y_format <- do.call(element_text, list(face = "bold", size = 16, family = "Arial"))
-    }
-    
-    g <- g + ggplot2::ylab(y_text) + theme(axis.title.y = y_format)
-  }
-  
-  g <- g + theme(axis.text = element_text(size = 10))
-  
-  print(g)
+
+# grid
+if (is.null(lay$xaxis$gridwidth) || lay$xaxis$gridwidth == 0){
+  g <- g + theme(panel.grid = element_blank())
+}
+
+# annotations
+if (!is.null(lay$annotations) && length(lay$annotations) > 0) {
+  annots <- lay$annotations
+  for (annot in annots) {
+
+    g <- g + ggplot2::annotate("text",
+    x = map_paper_to_data((annot$x - 0.3) %||% 0.5, rng$x),
+    y = map_paper_to_data(annot$y %||% 0.5, rng$y),
+    label = stringr::str_replace_all(annot$text, "<br>", "\n"),
+    hjust = "left",
+    vjust = "bottom",
+    family = annot$font$family %||% "Arial",
+    size = annot$font$size / 4,
+    color = annot$font$color %||% "black"
+  )
+}
+}
+
+g <- g + theme(axis.text = element_text(size = 10))
+
+if(print) print(g)
+return(invisible(g))
 }
