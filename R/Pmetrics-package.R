@@ -16,11 +16,11 @@
 #' @importFrom dplyr select arrange filter mutate transmute group_by row_number
 #' group_map ungroup bind_cols bind_rows nest_by rowwise relocate rename reframe inner_join
 #' slice_tail slice_head slice across tibble as_tibble quo pull n everything 
-#' case_match case_when starts_with all_of where
+#' case_match case_when starts_with all_of where distinct
 #' @importFrom readr read_file write_file
 #' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon geom_hline
 #' scale_x_log10 scale_x_continuous scale_y_log10 scale_y_continuous xlab ylab
-#' theme ggtitle element_blank geom_segment aes_string aes_string theme_bw theme_grey
+#' theme ggtitle element_blank element_text geom_segment aes_string aes_string theme_bw theme_grey
 #' @importFrom purrr map map2 reduce map_chr keep pluck map_lgl map_df list_rbind
 #' @importFrom magrittr %>%
 # #' @importFrom tibble as_tibble tibble
