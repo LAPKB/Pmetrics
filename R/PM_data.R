@@ -1677,6 +1677,7 @@ plot.PM_data <- function(x,
       layout <- modifyList(layout, list(legend = within(legendList, rm(showlegend))))
     }
     
+    
     # grid
     layout$xaxis <- setGrid(layout$xaxis, grid)
     layout$yaxis <- setGrid(layout$yaxis, grid)
@@ -1773,51 +1774,51 @@ plot.PM_data <- function(x,
     # remove missing
     sub <- sub %>% filter(out != -99)
     
+    
     # now process pred data if there
     if (!is.null(pred)) {
       if (inherits(pred, c("PM_post", "PM_pop"))) { # only PM_post/pop was supplied, make into a list of 1
+        pred <- list(pred$data)
+      } else if (inherits(pred, c("PM_post_data", "PM_pop_data"))) { # only PM_post_data/PM_pop_data was supplied, make into a list of 1
         pred <- list(pred)
-      }
-      if (!inherits(pred[[1]], c("PM_post", "PM_pop"))) { # pred is something else
-        if (pred[[1]] == "pop" | pred[[1]] == "post") {
-          thisPred <- pred[[1]]
-          if (is.null(x[[thisPred]])) { # plotting PM_data not PM_result$data
-            cli::cli_warn(c(
-              "!" = "{.code pred = {thisPred}} can only be used as a shortcut when plotting {.cls PM_data} from a {.cls PM_result}.",
-              "i" = "Supply a {.cls PM_result} object, e.g. {.code line = list(pred = run2$post)}, if you wish to add predictions otherwise."
-            ))
-            pred <- NULL
-          } else { # plotting PM_result$data
-            pred[[1]] <- x[[thisPred]]
-          }
-        } else { # pred[[1]] was not "pop", "post", PM_result$pop, or PM_result$post
+      } else if (pred[[1]] %in% c("pop", "post")) { # pred[[1]] was "pop" or "post"
+        thisPred <- pred[[1]]
+        if (is.null(x[[thisPred]])) { # post/pop missing because x was data not from a PM_result
           cli::cli_warn(c(
-            "!" = "The {.var pred} argument is mis-specified.",
-            "i" = "See the help for {.code plot.PM_data}."
+            "!" = "{.code pred = {thisPred}} can only be used as a shortcut when plotting {.cls PM_data} from a {.cls PM_result}.",
+            "i" = "Supply a {.cls PM_result} object, e.g. {.code line = list(pred = run2$post)}, if you wish to add predictions otherwise."
           ))
           pred <- NULL
+        } else { # post/pop present
+          pred <- list(x[[thisPred]])
         }
-      } else {
-        predData <- pred[[1]]$data
-        if (length(pred) == 1) { # default
-          predArgs <- TRUE
-          icen <- "median"
-        } else { # not default, but need to extract icen if present
-          icen <- purrr::pluck(pred, "icen") # check if icen is in list
-          if (is.null(icen)) { # not in list so set default
-            icen <- "median"
-          } else {
-            purrr::pluck(pred, "icen") <- NULL
-          } # was in list, so remove after extraction
-          predArgs <- pred[-1]
-        }
-        
-        predArgs <- amendLine(predArgs, default = list(color = NULL))
+      } else { # pred[[1]] was not "pop", "post", PM_result$pop, or PM_result$post
+        cli::cli_warn(c(
+          "!" = "The {.var pred} argument is mis-specified.",
+          "i" = "See the help for {.code plot.PM_data}."
+        ))
+        pred <- NULL
       }
       
+      # process pred list to determine formatting
+      if (length(pred) == 1) { # default
+        predArgs <- TRUE
+        icen <- "median"
+      } else { # not default, but need to extract icen if present
+        icen <- purrr::pluck(pred, "icen") # check if icen is in list
+        if (is.null(icen)) { # not in list so set default
+          icen <- "median"
+        } else {
+          purrr::pluck(pred, "icen") <- NULL
+        } # was in list, so remove after extraction
+        predArgs <- pred[-1]
+      }
+      
+      predArgs <- amendLine(predArgs, default = list(color = NULL)) # color will be set by obs later
+
       # filter and group by id
       if (!is.null(pred[[1]])) { # if pred not reset to null b/c of invalid pred[[1]]
-        predsub <- predData %>%
+        predsub <- pred[[1]] %>%
         filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen) %>%
         includeExclude(include, exclude) %>%
         group_by(id)
@@ -1850,14 +1851,6 @@ plot.PM_data <- function(x,
     # Plot function ----------------------------------------------------------
     
     dataPlot <- function(allsub, overlay, includePred) {
-      # set appropriate pop up text
-      if (!overlay) {
-        hovertemplate <- "Time: %{x}<br>Out: %{y}<extra></extra>"
-        text <- ""
-      } else {
-        hovertemplate <- "Time: %{x}<br>Out: %{y}<br>ID: %{text}<extra></extra>"
-        text <- ~id
-      }
       
       if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
         n_colors <- length(levels(allsub$group))
@@ -1871,43 +1864,76 @@ plot.PM_data <- function(x,
           cli::cli_inform(c("i" = "Group colors are better with RColorBrewer package installed."))
           colors <- getDefaultColors(n_colors) # in plotly_Utils
         }
-        
         marker$color <- NULL
         join$color <- NULL
       } else { # no grouping
-        allsub$group <- factor(1, labels = "Observed")
+        # allsub$group <- factor(1, labels = "Observed")
+
+        allsub$group <- factor(allsub$src, labels = c("Observed", "Predicted"))
       }
+
+ 
       
-      p <- allsub %>%
-      plotly::filter(src == "obs") %>%
-      plotly::plot_ly(
-        x = ~time, y = ~ out * mult,
-        color = ~group,
-        colors = colors,
-        name = ~group
-      ) %>%
-      plotly::add_markers(
-        marker = marker,
-        text = text,
-        hovertemplate = hovertemplate
-      ) %>%
-      plotly::add_lines(
-        line = join,
-        showlegend = FALSE
-      )
+      seen_groups <- NULL
+      traces <- allsub %>% dplyr::group_split()
       
+      # Build plot
+      p <- plot_ly()
       
-      if (includePred) {
-        # if(!is.null(color)){ predArgs$color <- NULL}
-        p <- p %>%
-        plotly::add_lines(
-          data = allsub[allsub$src == "pred", ], x = ~time, y = ~out,
+      for (i in seq_along(traces)) {
+        
+        trace_data <- traces[[i]]
+        if (any(!unique(trace_data$group) %in% seen_groups)) {
+          seen_groups <- c(seen_groups, as.character(unique(trace_data$group)))
+          legendShow <- TRUE
+        } else {
+          legendShow <- FALSE
+        }
+        
+        
+        if("id" %in% names(trace_data)) {
+          trace_data$text_label <- glue::glue("ID: {trace_data$id}\nTime: {round2(trace_data$time)}\nObs: {round2(trace_data$out)}")
+        } else {
+          trace_data$text_label <- glue::glue("Time: {round2(trace_data$time)}\nObs: {round2(trace_data$out)}")
+        }
+        
+        p <- add_trace(
+          p,
+          data = trace_data %>% plotly::filter(src == "obs"),
+          x = ~time, y = ~ out * mult,
+          type = "scatter",
+          mode = "markers+lines",
+          name = ~group,
+          marker = marker,
           color = ~group,
-          line = predArgs,
-          name = "Predicted",
-          showlegend = FALSE
-        )
+          colors = colors,
+          text = ~text_label,
+          hoverinfo = "text",
+          line = join,
+          legendgroup = ~group,
+          showlegend = legendShow
+        ) 
+        
+        if (includePred) {
+          p <- add_trace(
+            p,
+            data = trace_data %>% plotly::filter(src == "pred"),
+            x = ~time, y = ~out * mult,
+            type = "scatter",
+            mode = "lines",
+            name = ~group,
+            line = predArgs,
+            color = ~group,
+            colors = colors,
+            text = ~text_label,
+            hoverinfo = "text",
+            showlegend = legendShow
+          )
+        }
       }
+      
+      
+      
       p <- p %>% plotly::layout(
         xaxis = layout$xaxis,
         yaxis = layout$yaxis,
@@ -1937,15 +1963,19 @@ plot.PM_data <- function(x,
     if (overlay) {
       allsub <- allsub %>% dplyr::group_by(id)
       p <- dataPlot(allsub, overlay = TRUE, includePred)
-      if (print) print(p)
+      
+      if (print) print(click_plot(p))
+      return(invisible(p))
+      
     } else { # overlay = FALSE, ie. split them
       
       if (!checkRequiredPackages("trelliscopejs")) {
         cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
       }
+      
       sub_split <- allsub %>%
       nest(data = -id) %>%
-      mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = F, includePred = includePred)))
+      mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = FALSE, includePred = includePred)))
       p <- sub_split %>%
       ungroup() %>%
       trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)

@@ -34,6 +34,10 @@ yellow <- function(alpha = 1) {
   make_color(hex = "#FFCC33", alpha = alpha)
 }
 
+gold <- function(alpha = 1) {
+  make_color(hex = "#FFCC00", alpha = alpha)
+}
+
 orange <- function(alpha = 1) {
   make_color(hex = "#FF9900", alpha = alpha)
 }
