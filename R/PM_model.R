@@ -514,10 +514,10 @@ PM_model <- R6::R6Class(
             } else {
               cov_list <- rep(FALSE, length(required_parameters))
             }
-            
+
             if(!is.null(self$arg_list$sec)){
               sec_list <- map_lgl(required_parameters, \(x){
-                stringr::str_detect(tolower(func_to_char(self$arg_list$sec)), x)
+                any(stringr::str_detect(tolower(func_to_char(self$arg_list$sec)), x))
               })
             } else {
               sec_list <- rep(FALSE, length(required_parameters))

@@ -1869,7 +1869,11 @@ plot.PM_data <- function(x,
       } else { # no grouping
         # allsub$group <- factor(1, labels = "Observed")
 
-        allsub$group <- factor(allsub$src, labels = c("Observed", "Predicted"))
+        if (includePred) {
+          allsub$group <- factor(allsub$src, labels = c("Observed", "Predicted"))
+        } else {
+          allsub$group <- factor(allsub$src, labels = "Observed")
+        }
       }
 
  
@@ -1892,9 +1896,9 @@ plot.PM_data <- function(x,
         
         
         if("id" %in% names(trace_data)) {
-          trace_data$text_label <- glue::glue("ID: {trace_data$id}\nTime: {round2(trace_data$time)}\nObs: {round2(trace_data$out)}")
+          trace_data$text_label <- glue::glue("ID: {trace_data$id}\nTime: {round2(trace_data$time)}\n{ifelse(trace_data$src == 'obs', 'Obs:', 'Pred:')} {round2(trace_data$out)}")
         } else {
-          trace_data$text_label <- glue::glue("Time: {round2(trace_data$time)}\nObs: {round2(trace_data$out)}")
+          trace_data$text_label <- glue::glue("Time: {round2(trace_data$time)}\n{ifelse(trace_data$src == 'obs', 'Obs:', 'Pred:')}: {round2(trace_data$out)}")
         }
         
         p <- add_trace(
