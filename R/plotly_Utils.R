@@ -478,61 +478,304 @@ add_shapes <- function(p = plotly::last_plot(), shapes) {
 #' ) %>%
 #'   add_smooth(method = "loess", ci = 0.9, line = list(color = "red", dash = "dash"))
 #' }
-add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
-data = NULL, method = "lm", line = T, ci = 0.95, stats) {
-  line <- amendLine(line, default = list(color = blue(), width = 2))
-  if (!is.null(data)) {
-    if (is.null(x) | is.null(y)) stop("Missing x or y with data.\n")
-    if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
-    x <- model.frame(x, data)
-    y <- model.frame(y, data)
-  } else { # data is null
-    if (!is.null(x) | !is.null(y)) {
-      if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
-      x <- model.frame(x, p$x$visdat[[1]]())
-      y <- model.frame(y, p$x$visdat[[1]]())
+# add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
+# data = NULL, method = "lm", line = T, ci = 0.95, stats) {
+#   line <- amendLine(line, default = list(color = blue(), width = 2))
+#   if (!is.null(data)) {
+#     if (is.null(x) | is.null(y)) stop("Missing x or y with data.\n")
+#     if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
+#     x <- model.frame(x, data)
+#     y <- model.frame(y, data)
+#   } else { # data is null
+#     if (!is.null(x) | !is.null(y)) {
+#       if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
+#       x <- model.frame(x, p$x$visdat[[1]]())
+#       y <- model.frame(y, p$x$visdat[[1]]())
+#     } else {
+#       length_x <- ifelse(length(p$x$attrs) > 1, 2, 1)
+#       x <- model.frame(p$x$attrs[[length_x]]$x, p$x$visdat[[1]]())[, 1]
+#       y <- model.frame(p$x$attrs[[length_x]]$y, p$x$visdat[[1]]())[, 1]
+#     }
+#   }
+#   if (length(x) != length(y)) {
+#     stop("Regression failed due to unequal x (n = ", length(x), ") and y (n = ", length(y), ").\n")
+#   }
+#   vals <- dplyr::bind_cols(x = x, y = y) %>% dplyr::rename("x" = 1, "y" = 2)
+#   mod <- tryCatch(suppressWarnings(do.call(method, args = list(formula = y ~ x, data = vals))),
+#   error = function(e) {
+#     NA
+#   }
+# )
+# if (any(is.na(mod))) {
+#   cli::cli_inform(c("i" = "Regression failed."))
+#   flush.console()
+#   return(p)
+# }
+
+# if (method == "lm") {
+#   inter <- round2(coef(mod)[1])
+#   slope <- round2(coef(mod)[2])
+#   if (is.na(summary(mod)$coefficients[1, 2])) {
+#     ci.inter <- rep("NA", 2)
+#   } else {
+#     ci.inter <- c(round2(confint(mod, level = ci)[1, 1]), round2(confint(mod, level = ci)[1, 2]))
+#   }
+#   if (is.na(summary(mod)$coefficients[2, 2])) {
+#     ci.slope <- rep("NA", 2)
+#   } else {
+#     ci.slope <- c(round2(confint(mod, level = ci)[2, 1]), round2(confint(mod, level = ci)[2, 2]))
+#   }
+
+#   regStat <- paste0(
+#     "R-squared = ", round2(summary(mod)$r.squared), "<br>",
+#     "Inter = ", inter, " (", ci * 100, "%CI ", ci.inter[1], " to ", ci.inter[2], ")", "<br>",
+#     "Slope = ", slope, " (", ci * 100, "%CI ", ci.slope[1], " to ", ci.slope[2], ")", "<br>"
+#   )
+
+#   p_data <- if(!is.null(data)) {data} else {plotly::plotly_data(p)}
+#   if (inherits(p_data, "PM_op_data")) { # this came from a PM_op object
+#     sumStat <- summary.PM_op(p_data,
+#       outeq = p_data$outeq[1],
+#       pred.type = p_data$pred.type[1],
+#       icen = p_data$icen[1],
+#       print = FALSE
+#     )
+#     uses_percent <- c("","%")[1 + as.numeric(stringr::str_detect(get_metric_info(sumStat$pe)$metric_types$bias, "%"))]
+#     Bias <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Bias, uses_percent,"<br>")
+#     Imprecision <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Imprecision, uses_percent,"<br>")
+#     # get_metric_info is in PM_op.R
+
+#     regStat <- paste0(
+#       regStat, "<br>",
+#       "Bias = ", Bias,
+#       "Imprecision  = ", Imprecision
+#     )
+#   }
+#   # regression line
+#   p <- p %>% plotly::add_lines(
+#     x = vals$x, y = round(fitted(mod),2),
+#     hoverinfo = "text",
+#     name = "Linear Regression",
+#     text = regStat,
+#     line = line
+#   )
+# } else { # loess
+#   p <- p %>% plotly::add_lines(
+#     x = vals$x, y = round(fitted(mod),2),
+#     hoverinfo = "none",
+#     name = "Loess Regression",
+#     line = line
+#   )
+# }
+
+# if (ci > 0) {
+#   zVal <- qnorm(0.5 + ci / 2)
+#   seFit <- predict(mod, newdata = vals, se = TRUE)
+#   upper <- round(seFit$fit + zVal * seFit$se.fit, 2)
+#   lower <- round(seFit$fit - zVal * seFit$se.fit,2)
+
+#   p <- p %>%
+#   plotly::add_ribbons(
+#     x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper,
+#     fillcolor = line$color,
+#     line = list(color = line$color),
+#     opacity = 0.2,
+#     name = paste0(ci * 100, "% CI"),
+#     hovertemplate = paste0(
+#       "Predicted: %{x:.2f}<br>", 100 * ci,
+#       "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"
+#     )
+#   )
+# }
+# if (missing(stats)) stats <- TRUE
+
+# if (is.logical(stats)) { # default formatting
+#   if (stats) {
+#     statPlot <- TRUE
+#   } else {
+#     statPlot <- FALSE
+#   }
+#   stats <- amendTitle("", default = list(size = 14, bold = FALSE, color = gray()))
+#   stats$x <- 0.8
+#   stats$y <- 0.1
+# } else { # formatting supplied, set text to "" (will be replaced later)
+#   stats$text <- ""
+#   if (is.null(stats$x)) {
+#     stats$x <- 0.8
+#   }
+#   if (is.null(stats$y)) {
+#     stats$y <- 0.1
+#   }
+#   stats <- amendTitle(stats, default = list(size = 14, bold = FALSE))
+#   statPlot <- TRUE
+# }
+
+# if (statPlot & method == "lm") { # add statistics
+#   p <- p %>%
+#   plotly::layout(annotations = list(
+#     x = stats$x,
+#     y = stats$y,
+#     text = regStat,
+#     font = stats$font,
+#     xref = "paper",
+#     yref = "paper",
+#     align = "left",
+#     showarrow = FALSE
+#   ))
+# }
+
+# return(p)
+# } # end add_smooth
+
+
+add_smooth <- function(
+  p = plotly::last_plot(),
+  x = NULL, y = NULL, data = NULL,
+  method = c("lm", "loess"),
+  span = 0.75,           # only used for loess
+  line = TRUE,           # TRUE -> default line spec; list(...) -> merge; FALSE -> no mean line
+  ci = 0.95,             # 0 to disable
+  stats = TRUE           # TRUE -> default annotation; list(x=..., y=..., font=...); FALSE -> none
+) {
+  method <- match.arg(method)
+  
+  # ---- Resolve data / aesthetics -------------------------------------------------
+  get_xy <- function(p, data, x, y) {
+    # prefer user-supplied data and formulas
+    if (!is.null(data)) {
+      if (is.null(x) || is.null(y)) stop("With `data`, supply both `x` and `y` as formulas, e.g. x=~pred, y=~obs.")
+      if (!purrr::is_formula(x) || !purrr::is_formula(y)) stop("`x` and `y` must be formulas, e.g. ~pred.")
+      xd <- model.frame(x, data)[,1]
+      yd <- model.frame(y, data)[,1]
+      return(list(df = data.frame(x = xd, y = yd), src = "user"))
+    }
+    # otherwise use plotly_data and optional override formulas
+    pd <- plotly::plotly_data(p)
+    if (!is.null(x) || !is.null(y)) {
+      if (is.null(x) || is.null(y)) stop("If overriding on-plot data, supply both `x` and `y` as formulas.")
+      if (!purrr::is_formula(x) || !purrr::is_formula(y)) stop("`x` and `y` must be formulas, e.g. ~pred.")
+      xd <- model.frame(x, pd)[,1]
+      yd <- model.frame(y, pd)[,1]
+      return(list(df = data.frame(x = xd, y = yd), src = "override"))
+    }
+    # default: first trace mapping in plotly_data (robust across simple scatters)
+    # Try common names; if missing, error
+    cand_x <- c("x","X","x__","X__")
+    cand_y <- c("y","Y","y__","Y__")
+    cx <- cand_x[cand_x %in% names(pd)][1]
+    cy <- cand_y[cand_y %in% names(pd)][1]
+    if (is.na(cx) || is.na(cy)) stop("Could not infer x/y from `plotly_data(p)`. Supply `data`, `x`, and `y`.")
+    data.frame(x = pd[[cx]], y = pd[[cy]]) |> (\(df) list(df=df, src="plot"))()
+  }
+  
+  xy <- get_xy(p, data, x, y)
+  vals <- xy$df
+  
+  # ---- Clean data ----------------------------------------------------------------
+  # handle Date/POSIXct by temporarily numeric transform for modeling
+  x_is_date <- inherits(vals$x, "Date")
+  x_is_time <- inherits(vals$x, "POSIXct")
+  x_num <- if (x_is_date) as.numeric(vals$x) else if (x_is_time) as.numeric(vals$x) else vals$x
+  
+  keep <- is.finite(x_num) & is.finite(vals$y)
+  vals <- vals[keep, , drop = FALSE]
+  x_num <- x_num[keep]
+  
+  if (nrow(vals) < 2) {
+    warning("Not enough finite points to fit a smoother.")
+    return(p)
+  }
+  
+  # order by x for stable lines/ribbons
+  o <- order(x_num, method = "radix")
+  vals <- vals[o, , drop = FALSE]
+  x_num <- x_num[o]
+  
+  # build prediction grid (unique x to avoid duplicate-vertex artifacts)
+  x_pred_num <- unique(x_num)
+  newdata <- data.frame(x = x_pred_num)
+  
+  # ---- Fit model -----------------------------------------------------------------
+  fit_obj <- tryCatch({
+    if (method == "lm") {
+      stats::lm(y ~ x, data = data.frame(x = x_num, y = vals$y))
     } else {
-      length_x <- ifelse(length(p$x$attrs) > 1, 2, 1)
-      x <- model.frame(p$x$attrs[[length_x]]$x, p$x$visdat[[1]]())[, 1]
-      y <- model.frame(p$x$attrs[[length_x]]$y, p$x$visdat[[1]]())[, 1]
+      stats::loess(y ~ x, data = data.frame(x = x_num, y = vals$y), span = span, control = loess.control(surface = "direct"))
+    }
+  }, error = function(e) NULL)
+  
+  if (is.null(fit_obj)) {
+    cli::cli_inform(c("i" = "Regression failed."))
+    return(p)
+  }
+  
+  # ---- Predictions + CI ----------------------------------------------------------
+  have_ci <- is.numeric(ci) && ci > 0 && ci < 1
+  z <- stats::qnorm(0.5 + ci/2)
+  pred_fit <- pred_se <- NULL
+  
+  if (method == "lm") {
+    # use predict.lm with se.fit for CI
+    pr <- stats::predict(fit_obj, newdata = newdata, se.fit = have_ci)
+    pred_fit <- as.numeric(pr$fit)
+    if (have_ci) pred_se <- as.numeric(pr$se.fit)
+  } else {
+    # loess: se.fit is available with surface="direct" (we set above); if it fails, drop CI
+    pr <- tryCatch(stats::predict(fit_obj, newdata = newdata, se = have_ci), error = function(e) NULL)
+    if (is.null(pr)) {
+      pred_fit <- as.numeric(stats::predict(fit_obj, newdata = newdata))
+      pred_se <- NULL
+      have_ci <- FALSE
+    } else {
+      if (have_ci && is.list(pr)) {
+        pred_fit <- as.numeric(pr$fit)
+        pred_se  <- as.numeric(pr$se.fit)
+      } else {
+        pred_fit <- as.numeric(pr)
+        pred_se  <- NULL
+        have_ci  <- FALSE
+      }
     }
   }
-  if (length(x) != length(y)) {
-    stop("Regression failed due to unequal x (n = ", length(x), ") and y (n = ", length(y), ").\n")
+  
+  if (have_ci) {
+    upper <- pred_fit + z * pred_se
+    lower <- pred_fit - z * pred_se
+  } else {
+    upper <- lower <- NULL
   }
-  vals <- dplyr::bind_cols(x = x, y = y) %>% dplyr::rename("x" = 1, "y" = 2)
-  mod <- tryCatch(suppressWarnings(do.call(method, args = list(formula = y ~ x, data = vals))),
-  error = function(e) {
-    NA
-  }
-)
-if (any(is.na(mod))) {
-  cli::cli_inform(c("i" = "Regression failed."))
-  flush.console()
-  return(p)
-}
+  
+  # restore x scale for plotting
+  x_plot <- if (x_is_date) as.Date(x_pred_num, origin = "1970-01-01") else if (x_is_time) as.POSIXct(x_pred_num, origin = "1970-01-01", tz = attr(vals$x, "tzone")) else x_pred_num
+  
+  # ---- Line style ----------------------------------------------------------------
 
-if (method == "lm") {
-  inter <- round2(coef(mod)[1])
-  slope <- round2(coef(mod)[2])
-  if (is.na(summary(mod)$coefficients[1, 2])) {
-    ci.inter <- rep("NA", 2)
-  } else {
-    ci.inter <- c(round2(confint(mod, level = ci)[1, 1]), round2(confint(mod, level = ci)[1, 2]))
-  }
-  if (is.na(summary(mod)$coefficients[2, 2])) {
-    ci.slope <- rep("NA", 2)
-  } else {
-    ci.slope <- c(round2(confint(mod, level = ci)[2, 1]), round2(confint(mod, level = ci)[2, 2]))
-  }
+  line_spec <- amendLine(line, default = list(color = blue(), width = 2))
   
-  regStat <- paste0(
-    "R-squared = ", round2(summary(mod)$r.squared), "<br>",
-    "Inter = ", inter, " (", ci * 100, "%CI ", ci.inter[1], " to ", ci.inter[2], ")", "<br>",
-    "Slope = ", slope, " (", ci * 100, "%CI ", ci.slope[1], " to ", ci.slope[2], ")", "<br>"
-  )
-  
-  p_data <- if(!is.null(data)) {data} else {plotly::plotly_data(p)}
+  # ---- Stats text (lm only) ------------------------------------------------------
+  regStat <- NULL
+  if (identical(method, "lm")) {
+    s <- summary(fit_obj)
+    r2 <- s$r.squared
+    co  <- stats::coef(fit_obj)
+    inter <- unname(co[1])
+    slope <- unname(co[2])
+    ci_inter <- ci_slope <- c(NA_real_, NA_real_)
+    if (have_ci) {
+      ci_mat <- tryCatch(stats::confint(fit_obj, level = ci), error = function(e) NULL)
+      if (!is.null(ci_mat)) {
+        ci_inter <- ci_mat[1,]
+        ci_slope <- ci_mat[2,]
+      }
+    }
+    regStat <- paste0(
+      "R-squared = ", round2(r2), "<br>",
+      "Intercept = ", round2(inter), if (have_ci) paste0(" (", ci*100, "% CI ", round2(ci_inter[1]), " to ", round2(ci_inter[2]), ")") else "", "<br>",
+      "Slope = ", round2(slope), if (have_ci) paste0(" (", ci*100, "% CI ", round2(ci_slope[1]), " to ", round2(ci_slope[2]), ")") else ""
+    )
+
+    p_data <- if(!is.null(data)) {data} else {plotly::plotly_data(p)}
+
   if (inherits(p_data, "PM_op_data")) { # this came from a PM_op object
     sumStat <- summary.PM_op(p_data,
       outeq = p_data$outeq[1],
@@ -543,88 +786,72 @@ if (method == "lm") {
     uses_percent <- c("","%")[1 + as.numeric(stringr::str_detect(get_metric_info(sumStat$pe)$metric_types$bias, "%"))]
     Bias <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Bias, uses_percent,"<br>")
     Imprecision <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Imprecision, uses_percent,"<br>")
-    
+    # get_metric_info is in PM_op.R
+
     regStat <- paste0(
       regStat, "<br>",
       "Bias = ", Bias,
       "Imprecision  = ", Imprecision
     )
   }
-  # regression line
-  p <- p %>% plotly::add_lines(
-    x = vals$x, y = round(fitted(mod),2),
-    hoverinfo = "text",
-    name = "Linear Regression",
-    text = regStat,
-    line = line
-  )
-} else { # loess
-  p <- p %>% plotly::add_lines(
-    x = vals$x, y = round(fitted(mod),2),
-    hoverinfo = "none",
-    name = "Loess Regression",
-    line = line
-  )
 }
-
-if (ci > 0) {
-  zVal <- qnorm(0.5 + ci / 2)
-  seFit <- predict(mod, newdata = vals, se = TRUE)
-  upper <- round(seFit$fit + zVal * seFit$se.fit, 2)
-  lower <- round(seFit$fit - zVal * seFit$se.fit,2)
   
-  p <- p %>%
-  plotly::add_ribbons(
-    x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper,
-    fillcolor = line$color,
-    line = list(color = line$color),
-    opacity = 0.2,
-    name = paste0(ci * 100, "% CI"),
-    hovertemplate = paste0(
-      "Predicted: %{x:.2f}<br>", 100 * ci,
-      "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"
+  # ---- Add mean line -------------------------------------------------------------
+  if (!identical(line_spec, FALSE)) {
+    p <- plotly::add_lines(
+      p,
+      x = x_plot, y = pred_fit,
+      name = if (method == "lm") "Linear Regression" else "Loess Regression",
+      hoverinfo = if (!is.null(regStat)) "text" else "x+y",
+      text = regStat %||% NULL,
+      line = line_spec,
+      inherit = FALSE,
+      showlegend = TRUE
     )
-  )
-}
-if (missing(stats)) stats <- TRUE
-
-if (is.logical(stats)) { # default formatting
-  if (stats) {
-    statPlot <- TRUE
-  } else {
-    statPlot <- FALSE
   }
-  stats <- amendTitle("", default = list(size = 14, bold = FALSE, color = gray()))
-  stats$x <- 0.8
-  stats$y <- 0.1
-} else { # formatting supplied, set text to "" (will be replaced later)
-  stats$text <- ""
-  if (is.null(stats$x)) {
-    stats$x <- 0.8
+  
+  # ---- Add CI ribbon -------------------------------------------------------------
+  if (have_ci) {
+    p <- plotly::add_ribbons(
+      p,
+      x = x_plot,
+      y = pred_fit, ymin = lower, ymax = upper,
+      name = paste0(round(ci*100), "% CI"),
+      fillcolor = if (is.list(line_spec) && !is.null(line_spec$color)) line_spec$color else default_line$color,
+      line = list(color = if (is.list(line_spec) && !is.null(line_spec$color)) line_spec$color else default_line$color),
+      opacity = 0.2,
+      hovertemplate = paste0(
+        "%{x}<br>",
+        "Fit: %{y:.3f}<br>",
+        "CI Lower: %{ymin:.3f}<br>",
+        "CI Upper: %{ymax:.3f}<extra>%{fullData.name}</extra>"
+      ),
+      inherit = FALSE,
+      showlegend = TRUE
+    )
   }
-  if (is.null(stats$y)) {
-    stats$y <- 0.1
+  
+  # ---- Optional stats annotation (lm only) ---------------------------------------
+  if (isTRUE(stats) && !is.null(regStat) || (is.list(stats) && !is.null(regStat))) {
+    if (isTRUE(stats)) {
+      stats <- list(x = 0.8, y = 0.1, font = list(color = "black", family = "Arial", size = 14))
+    } else {
+      if (is.null(stats$x)) stats$x <- 0.8
+      if (is.null(stats$y)) stats$y <- 0.1
+      if (is.null(stats$font)) stats$font <- list(family = "Arial", size = 14)
+    }
+    p <- plotly::layout(
+      p,
+      annotations = list(
+        x = stats$x, y = stats$y, xref = "paper", yref = "paper",
+        text = regStat, align = "left", showarrow = FALSE, font = stats$font
+      )
+    )
   }
-  stats <- amendTitle(stats, default = list(size = 14, bold = FALSE))
-  statPlot <- TRUE
-}
+  
+  p
+  }
 
-if (statPlot & method == "lm") { # add statistics
-  p <- p %>%
-  plotly::layout(annotations = list(
-    x = stats$x,
-    y = stats$y,
-    text = regStat,
-    font = stats$font,
-    xref = "paper",
-    yref = "paper",
-    align = "left",
-    showarrow = FALSE
-  ))
-}
-
-return(p)
-}
 
 #' @title Export plotly plot
 #' @description
@@ -1098,8 +1325,52 @@ function(el, x) {
     
     if (length(traces) == 0) stop("No trace data found after plotly_build().")
     
-    # Helper: safe NULL coalesce
+    ####### HELPER FUNCTIONS ##########
+    # safe NULL coalesce
     `%||%` <- function(a, b) if (!is.null(a)) a else b
+    
+    # Map a 0..1 "paper" coordinate into data space using panel ranges
+    # t is the "paper" coordinate (0 to 1), and rng is the data range
+    map_paper_to_data <- function(t, rng) rng[1] + t * (rng[2] - rng[1])
+    
+    # Extract first panel ranges from a ggplot object
+    gg_panel_ranges <- function(g) {
+      gb <- ggplot2::ggplot_build(g)
+      pp <- gb$layout$panel_params[[1]]
+      # panel_params fields vary by ggplot2 versions; cover both forms
+      xr <- pp$x.range %||% pp$x$range$range
+      yr <- pp$y.range %||% pp$y$range$range
+      list(x = xr, y = yr)
+    }
+
+
+    # map plotly shapes to ggplot2
+    plotly_shapes_to_gg <- function(shape){
+      dplyr::case_when(
+        grepl("circle", shape) ~ 21,
+        grepl("square", shape) ~ 22,
+        grepl("diamond",shape) ~ 23,
+        grepl("triangle-up", shape) ~ 24,
+        .default = 21
+      )
+    }
+
+    # map plotly line dash to ggplot2
+    plotly_line_dash_to_gg <- function(dash) {
+      dplyr::case_when(
+        grepl("solid", dash) ~ "solid",
+        grepl("dash", dash) ~ "dashed",
+        grepl("dot",  dash) ~ "dotted",
+        grepl("dashdot", dash) ~ "dotdash",
+        grepl("longdash", dash) ~ "longdash",
+        .default = "solid"
+      )
+    }
+    
+    
+    
+    ####### END HELPER FUNCTIONS ##########
+    
     
     # Prepare empty ggplot
     g <- ggplot2::ggplot() + ggplot2::theme_minimal()
@@ -1153,17 +1424,11 @@ function(el, x) {
       line_opacity <- tr$line$opacity %||% 1
       line_color   <- tr$line$color   %||% tr$marker$color %||% tr$marker$line$color %||% "dodgerblue" %>% rgba_to_rgb()
       line_width <- tr$line$width * 0.5 %||% 0.5
-      line_dash <- tr$line$dash %||% "solid"
+      line_dash <- plotly_line_dash_to_gg(tr$line$dash)
       marker_opacity <- tr$marker$opacity %||% 1
       marker_fill_color   <- tr$marker$color %||% tr$fillcolor %||% "dodgerblue" %>% rgba_to_rgb() # fill color
       marker_size <- tr$marker$size/3 %||% 3 
-      marker_shape <- dplyr::case_when(
-        grepl("circle", tr$marker$symbol) ~ 21,
-        grepl("square", tr$marker$symbol) ~ 22,
-        grepl("diamond",tr$marker$symbol) ~ 23,
-        grepl("triangle-up", tr$marker$symbol) ~ 24,
-        .default = 21
-      )
+      marker_shape <- plotly_shapes_to_gg(tr$marker$symbol)
       marker_line_color <- tr$marker$line$color %||% tr$marker$color %||% "#000000FF" %>% rgba_to_rgb() # stroke color
       marker_line_width <- tr$marker$line$width * 0.5 %||% 0.5 # stroke width
       
@@ -1324,24 +1589,9 @@ function(el, x) {
     
     ####### Legends and annotations
     
-    # Map a 0..1 "paper" coordinate into data space using panel ranges
-    # t is the "paper" coordinate (0 to 1), and rng is the data range
-    map_paper_to_data <- function(t, rng) rng[1] + t * (rng[2] - rng[1])
     
-    # Extract first panel ranges from a ggplot object
-    gg_panel_ranges <- function(g) {
-      gb <- ggplot2::ggplot_build(g)
-      pp <- gb$layout$panel_params[[1]]
-      # panel_params fields vary by ggplot2 versions; cover both forms
-      xr <- pp$x.range %||% pp$x$range$range
-      yr <- pp$y.range %||% pp$y$range$range
-      list(x = xr, y = yr)
-    }
     
     rng <- gg_panel_ranges(g)
-    
-    
-    
     
     
     # Legend (only used for groups in plot.PM_data)
@@ -1349,17 +1599,11 @@ function(el, x) {
       group_df <- traces %>% map(~c(
         line_color = .x$line$color   %||% .x$marker$color %||% .x$marker$line$color %||% "dodgerblue" %>% rgba_to_rgb(),
         line_width = .x$line$width * 0.5 %||% 0.5,
-        line_dash = .x$line$dash %||% "solid",
+        line_dash = plotly_line_dash_to_gg(.x$line$dash),
         line_opacity = .x$line$opacity %||% 1,
         marker_fill_color = .x$marker$color %||% .x$fillcolor %||% "dodgerblue" %>% rgba_to_rgb(), # fill color
         marker_size = .x$marker$size / 3 %||% 3, 
-        marker_shape = dplyr::case_when(
-          grepl("circle", .x$marker$symbol) ~ 21,
-          grepl("square", .x$marker$symbol) ~ 22,
-          grepl("diamond",.x$marker$symbol) ~ 23,
-          grepl("triangle-up", .x$marker$symbol) ~ 24,
-          .default = 21
-        ),
+        marker_shape = plotly_shapes_to_gg(.x$marker$symbol),
         marker_opacity = .x$marker$opacity %||% 1,
         marker_line_color = .x$marker$line$color %||% .x$marker$color %||% "#000000FF" %>% rgba_to_rgb(), # stroke color
         marker_line_width = .x$marker$line$width * 0.5 %||% 0.5, # stroke width
@@ -1394,6 +1638,7 @@ function(el, x) {
         yend = map_paper_to_data(lay$legend$y - (i * 0.03), rng$y),
         color = group_df$line_color[i],
         linewidth = group_df$line_width[i],
+        linetype = group_df$line_dash[i],
         alpha = group_df$line_opacity[i]
       ) +
       ggplot2::annotate("text",
@@ -1416,11 +1661,38 @@ if (is.null(lay$xaxis$gridwidth) || lay$xaxis$gridwidth == 0){
   g <- g + theme(panel.grid = element_blank())
 }
 
+# shapes (reference lines)
+if (!is.null(lay$shapes) && length(lay$shapes) > 0) {
+  shapes <- lay$shapes
+  for (shape in shapes) {
+    if (shape$type == "line") {
+      g <- g + ggplot2::geom_line(
+        mapping = aes(x = c(map_paper_to_data(shape$x0, rng$x), map_paper_to_data(shape$x1, rng$x)),
+        y = c(map_paper_to_data(shape$y0, rng$y), map_paper_to_data(shape$y1, rng$y))),
+        color = shape$line$color %||% "grey",
+        linewidth = shape$line$width * 0.5 %||% 0.5,
+        linetype = plotly_line_dash_to_gg(shape$line$dash)
+      )
+    } else if (shape$type == "rect") {
+      g <- g + ggplot2::geom_rect(
+        xmin = map_paper_to_data(shape$x0, rng$x),
+        xmax = map_paper_to_data(shape$x1, rng$x),
+        ymin = map_paper_to_data(shape$y0, rng$y),
+        ymax = map_paper_to_data(shape$y1, rng$y),
+        fill = shape$fillcolor %||% "transparent",
+        alpha = shape$opacity %||% 0.2,
+        color = shape$line$color %||% "black",
+        linewidth = shape$line$width * 0.5  %||% 0.5
+      )
+    }
+  }
+}
+
 # annotations
 if (!is.null(lay$annotations) && length(lay$annotations) > 0) {
   annots <- lay$annotations
   for (annot in annots) {
-
+    
     g <- g + ggplot2::annotate("text",
     x = map_paper_to_data((annot$x - 0.3) %||% 0.5, rng$x),
     y = map_paper_to_data(annot$y %||% 0.5, rng$y),

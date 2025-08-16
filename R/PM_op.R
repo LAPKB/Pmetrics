@@ -498,18 +498,7 @@ plot.PM_op <- function(x,
         
         
       }
-      
-      
-      
-      # p <- traces %>%
-      # plotly::plot_ly(x = ~pred) %>%
-      # plotly::add_markers(
-      #   y = ~obs,
-      #   marker = marker,
-      #   text = ~id,
-      #   hovertemplate = "Pred: %{x:.2f}<br>Obs: %{y:.2f}<br>ID: %{text}<extra></extra>"
-      # )
-      
+
       
       if (lmLine$plot) { # linear regression
         lmLine$plot <- NULL # remove to allow only formatting arguments below
@@ -625,26 +614,9 @@ plot.PM_op <- function(x,
           showlegend = FALSE
         )
       }
+
       
-      # p1 <- sub1 %>%
-      # plotly::plot_ly(x = ~time) %>%
-      # plotly::add_markers(
-      #   y = ~wd,
-      #   marker = marker,
-      #   text = ~id,
-      #   hovertemplate = paste0("Time: %{x:.2f}<br>", pointLab, ": %{y:.2f}<br>ID: %{text}<extra></extra>")
-      # )
-      
-      # p2 <- sub1 %>%
-      # plotly::plot_ly(x = ~pred) %>%
-      # plotly::add_markers(
-      #   y = ~wd,
-      #   marker = marker,
-      #   text = ~id,
-      #   hovertemplate = paste0("Pred: %{x:.2f}<br>", pointLab, ": %{y:.2f}<br>ID: %{text}<extra></extra>")
-      # )
-      
-      # add reference lines
+      # add regression lines
       if (lmLine$plot) {
         lmLine$plot <- NULL # remove to allow only formatting arguments below
         if (is.null(purrr::pluck(lmLine$ci))) {
