@@ -941,9 +941,9 @@ PM_sim <- R6::R6Class(
           cli::cli_abort(c("x" = "Number of output equations in model and data do not match."))
         }
         
-        if (!identical(sort(template_covnames), sort(mod_list$cov))) {
-          cli::cli_abort(c("x" = "Covariate names in model and data do not match."))
-        }
+        # if (!identical(sort(template_covnames), sort(mod_list$cov))) {
+        #   cli::cli_abort(c("x" = "Covariate names in model and data do not match."))
+        # }
         
         # POSTERIORS ----------------------------------------------
         
