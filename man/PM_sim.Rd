@@ -51,14 +51,26 @@ mean <- log(c(0.7, 0.05, 100))
 cov <- matrix(rep(0, length(mean)**2), ncol = length(mean))
 diag(cov) <- (c(0.15, 0.15, 0.15) * mean)**2
 # make the prior for the simulation
-poppar <- list(weights, mean, cov)
+poppar <- list(weights = weights, mean = mean, mat = cov)
 
 # run simulation, assuming temp1.csv and model.txt are in working directory
 
 sim1 <- PM_sim$new(poppar, "temp1.csv",
   nsim = 15, model = "model.txt", include = 1:4, limits = NA,
-  obsNoise = c(0.02, 0.1, 0, 0)
+  noise = list(out = list(coeff = c(0.02, 0.1, 0, 0)))
 )
+
+# alternatively, load the model first
+
+mod <- PM_model$new("model.txt")
+
+# and then simulate
+
+sim2 <- mod$sim(poppar = poppar, data = "temp1.csv",
+   nsim = 15, include = 1:4, limits = NA,
+   noise = list(out = list(coeff = c(0.02, 0.1, 0, 0)))
+)
+
 }
 
 }
@@ -180,7 +192,7 @@ or via the \verb{$sim} method for \link{PM_result} objects.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{poppar}}{One of five things:
+\item{\code{poppar}}{One of four things:
 \enumerate{
 \item A \link{PM_result} object containing the final population parameter
 distribution from a model run, a model object, and a data object.
@@ -190,25 +202,29 @@ The data object may also be replaced (and often is) by a different \link{PM_data
 object compatible with the model.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{run1 <- PM_load(1) # load the PM_result object
-sim1 <- run1$sim(...) # replace model and data in run1 if desired; must be compatible with model and data in run1
+sim1 <- run1$sim(...) # replace model and data in run1 if desired; 
+#must be compatible with model and data in run1
 
 mod <- PM_model$new("model.txt") # or use a model object
-sim2 <- mod$sim(poppar = run1, data = "newdata.csv", ...) # poppar and data necessary, model obtained from mod
+sim2 <- mod$sim(poppar = run1, data = "newdata.csv", ...) 
+# poppar and data necessary, model obtained from mod
 }\if{html}{\out{</div>}}
 \item Population prior parameters as a \link{PM_final} object found in
 \code{PM_result$final}.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{run1 <- PM_load(1) # load the PM_result object
-sim1 <- PM_sim$new(poppar = run1$final, model = newmodel, data = newdata, ...) # model and data necessary
+sim1 <- PM_sim$new(poppar = run1$final, model = newmodel, data = newdata, ...) 
+# model and data necessary
 
 mod <- PM_model$new("model.txt") # or use a model object
-sim2 <- mod$sim(poppar = run1$final, data = "newdata.csv", ...) # poppar and data necessary, model obtained from mod
+sim2 <- mod$sim(poppar = run1$final, data = "newdata.csv", ...) 
+# poppar and data necessary, model obtained from mod
 }\if{html}{\out{</div>}}
 \item The name of a previously saved simulation via the \verb{$save} method. The
 file will be loaded. This filename should have the ".rds" extension, e.g. \code{sim1 <- PM_sim$new("sim.rds")}.
 \item A manually specified prior as a list containing the following named items:
 \itemize{
-\item \strong{weights} vector of weights controlling the probability of sampling from each distribution;
+\item \strong{prob} vector of probabilities of sampling from each distribution;
 \item \strong{mean} list of mean parameter values;
 \item \strong{sd} an optional list of overall standard deviations for each parameter, considering them as unimodally distributed;
 if present, \code{mat} will be treated as a correlation matrix and converted to a covariance matrix
@@ -217,15 +233,15 @@ This shoud be a square matrix of the overall covariance/correlations between par
 }
 
 If only one distribution is to be specified the
-\code{weights} vector should be of length 1 and contain a 1. If multiple
-distributions are to be sampled, the \code{weights} vector should be of
+\code{prob} vector should be of length 1 and contain a 1. If multiple
+distributions are to be sampled, the \code{prob} vector should be of
 length equal to the number of distributions and its values should sum to 1,
 e.g. \code{c(0.25, 0.05, 0.7)}.  The \code{mean} element should be a list
 of length equal to the number of parameters to be simulated,
-each element of length equal to \code{nrow(weights)}.
+each element of length equal to \code{nrow(prob)}.
 List element names should be the parameter names. If the matrix is correlations,
 Pmetrics will use the \code{sd} element to calculate the covariance matrix. The
-covariance matrix will be divided by \code{length(weights)} and applied to
+covariance matrix will be divided by \code{length(prob)} and applied to
 each distribution.
 
 Examples:
@@ -233,7 +249,7 @@ Examples:
 \item Single distribution:
 }
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(weight = 1, 
+\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(prob = 1, 
               mean = list(ke = 0.5, v = 100), 
               mat = matrix(c(0.04, 2.4, 2.8, 400), nrow = 2))  # treated as covariance matrix because sd is missing 
 }\if{html}{\out{</div>}}
@@ -241,10 +257,10 @@ Examples:
 \item Multiple distributions:
 }
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(weight = c(0.1, 0.15, 0.75), 
+\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(prob = c(0.1, 0.15, 0.75), 
               mean = list(ke = c(2, 0.5, 1), v = c(50, 100, 200)), 
-              sd = list(ke = 0.2, v = 20), # overall sd (ignoring multiple distributions)
-              mat = matrix(c(1, 0.6, 0.7, 1), nrow = 2)) # equivalent correlation matrix with sd present
+              sd = list(ke = 0.2, v = 20), # overall sd, ignoring multiple distributions
+              mat = matrix(c(1, 0.6, 0.7, 1), nrow = 2)) # correlation matrix because sd present
 }\if{html}{\out{</div>}}
 }}
 
@@ -386,7 +402,7 @@ covariance or correlation matrix between the covariates. In this case, it is onl
 calculate correlations between covariates from the matrix and not between parameters and correlations,
 since they are unknown. The \verb{$mean} and optionally the
 \verb{$sd} elements of the \code{covariate} list specified below are also required to complete the necessary
-information for simulation. Similar to \code{poppar}, if \verb{$sd} is missing, the the cov object is treated as a covariance matrix,
+information for simulation. Similar to \code{poppar}, if \verb{$sd} is missing, the the \code{cov} object is treated as a covariance matrix,
 otherwise it is treated as a correlation matrix.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{corMat <- matrix(c(1, .98, .98, 1), nrow = 2) # correlation matrix for age and wt, for example
@@ -417,7 +433,7 @@ Examples:
 \itemize{
 \item Using a \link{PM_result} as poppar: \code{PM_sim$new(poppar = run1, covariate = list())}.
 Here we don't need to specify \code{cov} because it is already in the \link{PM_result} \code{run1}. We are
-not re-centering or othewise modifying the covariates, so \code{covariate} can be an empty list.
+not re-centering or otherwise modifying the covariates, so \code{covariate} can be an empty list.
 \item Using a \link{PM_final} as poppar: \verb{PM_sim$new(poppar = run1$final, covariate = list(cov = run1$cov, mean = list(wt = 50))}.
 Here we need to specify \code{cov} because it is not in the \link{PM_final} object. Futhermore, we want to recenter the
 mean values, so we add the \verb{$mean} element.
@@ -627,14 +643,26 @@ mean <- log(c(0.7, 0.05, 100))
 cov <- matrix(rep(0, length(mean)**2), ncol = length(mean))
 diag(cov) <- (c(0.15, 0.15, 0.15) * mean)**2
 # make the prior for the simulation
-poppar <- list(weights, mean, cov)
+poppar <- list(weights = weights, mean = mean, mat = cov)
 
 # run simulation, assuming temp1.csv and model.txt are in working directory
 
 sim1 <- PM_sim$new(poppar, "temp1.csv",
   nsim = 15, model = "model.txt", include = 1:4, limits = NA,
-  obsNoise = c(0.02, 0.1, 0, 0)
+  noise = list(out = list(coeff = c(0.02, 0.1, 0, 0)))
 )
+
+# alternatively, load the model first
+
+mod <- PM_model$new("model.txt")
+
+# and then simulate
+
+sim2 <- mod$sim(poppar = poppar, data = "temp1.csv",
+   nsim = 15, include = 1:4, limits = NA,
+   noise = list(out = list(coeff = c(0.02, 0.1, 0, 0)))
+)
+
 }
 
 }

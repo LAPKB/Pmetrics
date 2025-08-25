@@ -31,7 +31,7 @@ A list of class \emph{summary.PM_data} with the following items:
 \item \strong{numeqt} Number of outputs
 \item \strong{nobsXouteq} Number of observations by outeq
 \item \strong{missObsXouteq} Number of missing observations by outeq
-\item \strong{blqObsXouteq} Number of observations below the limit of quantification by outeq
+\item \strong{loqObsXouteq} Number of observations coded as below the limit of quantification by outeq
 \item \strong{ncov} Number of covariates
 \item \strong{covnames} Covariate names
 \item \strong{ndoseXid} Number of doses per input per subject

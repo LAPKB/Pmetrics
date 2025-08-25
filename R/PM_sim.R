@@ -475,9 +475,6 @@ PM_sim <- R6::R6Class(
     #' @param quiet Boolean operator controlling whether a model summary report is
     #' given.  Default is `FALSE`.
     #'
-    #' @param combine When there are multiple subjects in the template `data`,
-    #' combine the simulated results into a single object. Default is `FALSE`.
-    #'
     #' @param ... Catch deprecated arguments.
     #' @return A [PM_sim] object.
     #' @author Michael Neely
@@ -542,7 +539,6 @@ PM_sim <- R6::R6Class(
       noise = NULL,
       makecsv = NULL,
       quiet = FALSE,
-      combine = FALSE,
       ...) {
         # handle deprecated arguments
         
@@ -567,57 +563,58 @@ PM_sim <- R6::R6Class(
         # CASE 1 - poppar is PM_result
         
         if (inherits(poppar, "PM_result")) {
+          case <- 1
           final <- poppar$final$data # PM_final_data
           msg <- c(msg, "Prior obtained from {deparse(substitute(poppar))}.")
           if (missing(model)) {
             model <- poppar$model
             msg <- c(msg, "Model obtained from {deparse(substitute(poppar))}.")
           } else {
-            model <- PM_model$new(model) # will make PM_model whether model is filename or PM_model already
-            msg <- c(msg, "Model obtained from {deparse(substitute(model))}.")
-          }
+            model <- PM_model$new(model)
+          } 
+          
           if (missing(data)) {
             data <- poppar$data
             msg <- c(msg, "Data obtained from {deparse(substitute(poppar))}.")
           } else {
-            data <- PM_data$new(data, quiet = quiet) # will make PM_data whether data is filename or PM_data already
-            msg <- c(msg, "Data obtained from {deparse(substitute(data))}.")
+            data <- PM_data$new(data, quiet = quiet)
           }
           
           # CASE 2 - poppar is PM_final
         } else if (inherits(poppar, "PM_final")) {
+          case <- 2
           final <- poppar$data # PM_final_data
-          if (missing(model)) {
-            model <- PM_model$new("model.txt")
-            msg <- c(msg, "Model obtained from 'model.txt'.")
-          }
-          if (missing(data)) {
-            data <- PM_data$new("data.csv", quiet = quiet)
-            
-          } 
+          
+          
+          # CASE 3 - poppar is PM_final_data
+        } else if (inherits(poppar, "PM_final_data")) {
+          case <- 3
+          final <- poppar # PM_final_data
+          
           
           ### The following cases are for handling old simulation objects
           
           
-          # CASE 3 - poppar is old PMsim
+          # CASE 4 - poppar is old PMsim
         } else if (inherits(poppar, "PMsim")) { # from SIMparse as single
           private$populate(poppar, type = "sim")
           return(self) # end, we have loaded a prior sim
           
-          # CASE 4 - poppar is old PM_simlist
+          # CASE 5 - poppar is old PM_simlist
         } else if (inherits(poppar, "PM_simlist")) { # from SIMparse as list
           private$populate(poppar, type = "simlist")
           return(self) # end, we have loaded a prior sim
           
-          # CASE 5 - poppar is PM_sim from R6
+          # CASE 6 - poppar is PM_sim from R6
         } else if (inherits(poppar, "PM_sim")) { # from R6
           private$populate(poppar, type = "R6sim")
           return(self) # end, we have loaded a prior sim
           
           ### This creates a new simulation from a manual list
           
-          # CASE 6 - poppar is manual list
+          # CASE 7 - poppar is manual list
         } else if (inherits(poppar, "list")) { # PM_final and PM_sim are lists, so needs to be after those for manual list
+          case <- 7
           # check to make sure poppar is a list with the right elements
           if (length(poppar) == 4){
             if (!all(c("prob", "mean", "sd", "mat") %in% names(poppar))) {
@@ -662,27 +659,20 @@ PM_sim <- R6::R6Class(
           }
           final$mat <- data.frame(final$mat) # convert to data frame
           
-          
-          
-          if (missing(model)) {
-            model <- PM_model$new("model.txt")
-            msg <- c(msg, "Model obtained from 'model.txt'.")
-          }
-          if (missing(data)) {
-            data <- PM_data$new("data.csv", quiet = quiet)
-            msg <- c(msg, "Data obtained from 'data.csv'.")
-          } 
           # not returning because going on to simulate below
           
           ### This is for loading a saved simulation from file
           
-          # CASE 7 - poppar is filename
+          # CASE 8 - last option, poppar is filename
         } else {
           if (file.exists(poppar)) {
             if (grepl("rds$", poppar, perl = TRUE)) { # poppar is rds filename
               sim <- readRDS(poppar)
             } else { # poppar is a simout.txt name
-              sim <- private$SIMparse(poppar, combine = combine)
+              cli::cli_abort(c(
+                "x" = "{poppar} is not a compatible file.",
+                "i" = "Please remake your simulation."
+              ))
             }
             # now populate
             if (inherits(sim, c("PMsim", "PM_sim_data"))) {
@@ -701,6 +691,16 @@ PM_sim <- R6::R6Class(
         } # end if poppar is filename
         
         # If we reach this point, we are creating a new simulation
+        
+        # check model and data
+        if(case %in% c(2, 3, 7)) { # need model and data if not from PM_result
+          if (missing(model)) { model <- "model.txt" } # try the default
+          model <- PM_model$new(model) # will abort if can't make PM_model
+          
+          if (missing(data)) { data <- "data.csv" } # try the default
+          data <- PM_data$new(data, quiet = quiet) # will abort if can't make PM_data
+        }
+        
         
         # set default  values
         
@@ -788,7 +788,7 @@ PM_sim <- R6::R6Class(
           noise = noise,
           makecsv = makecsv, outname = outname, clean = clean,
           quiet = quiet,
-          nocheck = nocheck, overwrite = overwrite, combine = combine, msg = msg
+          nocheck = nocheck, overwrite = overwrite, msg = msg
         )
         
         return(self)
@@ -896,7 +896,7 @@ PM_sim <- R6::R6Class(
       seed, ode,
       noise,
       makecsv, outname, clean, quiet,
-      nocheck, overwrite, combine, msg) {
+      nocheck, overwrite, msg) {
         # DATA PROCESSING AND VALIDATION ------------------------------------------
         
         
@@ -1792,6 +1792,7 @@ PM_sim$load <- function(...) {
 #' @method plot PM_sim
 #' @param x The name of an *PM_sim* data object generated by [PM_sim]
 #' @param include `r template("include")`.
+#' @param include `r template("exclude")`.
 #' @param mult `r template("mult")`
 #' @param ci Width of confidence interval bands around simulated quantiles,
 #' from 0 to 1.  If 0, or *nsim*<100, will not plot.
@@ -1834,7 +1835,7 @@ PM_sim$load <- function(...) {
 #'     - `dash` Vector of dash types, as for color. Default is "solid".
 #'     See `plotly::schema()`, traces > scatter > attributes > line > dash > values.
 #'     Example: `line = list(dash = "dashdot")`.
-#' @param marker `r template("include")` Formatting will only be applied to observations
+#' @param marker `r template("marker")` Formatting will only be applied to observations
 #' if included via the `obs` argument.
 #' @param obs The name of a [PM_result] data object or the PM_op field in the
 #' PM_result object, all generated by [PM_load].  For example, if
@@ -1858,10 +1859,6 @@ PM_sim$load <- function(...) {
 #' @param title `r template("title")` Default is to have no title.
 #' @param xlim `r template("xlim")`
 #' @param ylim `r template("ylim")`
-#' @param simnum Choose which object to plot in a PM_simlist,
-#' i.e., a list of [PM_sim] objects created when more than one
-#' subject is included in a simultation data template and
-#' `combine = FALSE` (the default) when parsing the results of a simulation.
 #' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param ... `r template("dotsPlotly")`
 #' @return Plots the simulation object.  If `obs` is included, a list will be returned with
@@ -1906,7 +1903,6 @@ plot.PM_sim <- function(x,
   xlab, ylab,
   title,
   xlim, ylim,
-  simnum,
   print = TRUE, ...) {
     if (all(is.na(line))) {
       line <- list(probs = NA)
@@ -2355,7 +2351,8 @@ plot.PM_sim <- function(x,
 #' `statistics` below.
 #' @method summary PM_sim
 #' @param object The simulation object to summarize
-#' @param at If `object` is a `PM_simlist`, which simulation to use. Default is 1.
+#' @param include `r template("include")`.
+#' @param exclude `r template("exclude")`.
 #' @param field Quoted character value, one of
 #' * **obs** for simulated observations (the default)
 #' * **amt** for simulated amounts in each compartment
@@ -2376,7 +2373,7 @@ plot.PM_sim <- function(x,
 #' \dontrun{
 #' simEx$summary() # preferred
 #' summary(simEx) # alternative
-#' simEx$summary(at = 2, field = "amt", group = "comp") # group amounts by compartment
+#' simEx$summary(include = 2, field = "amt", group = "comp") # group amounts by compartment
 #' }
 
 #' @seealso [PM_sim]
@@ -2386,11 +2383,7 @@ statistics = c("mean", "sd", "median", "min", "max"),
 digits = max(3, getOption("digits") - 3), ...) {
   # get the right data
   if (inherits(object, "PM_sim")) {
-    if (inherits(object$data, "PM_simlist")) {
-      dat <- object$data[[at]][[field]]
-    } else {
-      dat <- object$data[[field]]
-    }
+    dat <- object$data[[field]]
   } else if (inherits(object, "PM_sim_data")) {
     # include/exclude template ids
     if (missing(include)) include <- unique(object[[field]]$id)
@@ -2513,35 +2506,38 @@ generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix,
     samples <- tryCatch(suppressWarnings(MASS::mvrnorm(n = samples_per_mode[j,], mu = as.matrix(means[[j]], nrow = 1), Sigma = cov_matrix)), error = function(e) NULL)
     
     # replace any outside their limits
-    
-    if(!is.matrix(samples)){
-      samples <- as.data.frame(as.list(samples))
-      names(samples) <- names(means[[j]])
+    if(!is.null(samples)){
+      if(!is.matrix(samples)){
+        samples <- as.data.frame(as.list(samples))
+        names(samples) <- names(means[[j]])
+      }
+      
+      discarded <- NULL
+      if (!all(is.null(limits))) {
+        for (k in 1:nrow(samples)) {
+          cycle_num <- 0
+          outside <- outside_check(samples[k, ])
+          while (outside && cycle_num < 20) {
+            new_sample <- tryCatch(suppressWarnings(MASS::mvrnorm(n = 1, mu = as.matrix(means[[j]], nrow = 1), Sigma = cov_matrix)), error = function(e) NULL)
+            cycle_num <- cycle_num + 1
+            outside <- outside_check(new_sample)
+          }
+          if (outside) {
+            cli::cli_abort(c("x" = "Unable to generate simulated parameters within limits after 20 attempts per row."))
+          }
+          if (cycle_num > 0) {
+            discarded <- rbind(discarded, samples[k, ])
+            samples[k, ] <- new_sample
+          }
+          
+        } # end loop to fix thetas out of range
+      }
+      
+      
+      list(keep = samples, discard = discarded) # the final set of samples for this mode
+      
     }
     
-    discarded <- NULL
-    if (!all(is.null(limits))) {
-      for (k in 1:nrow(samples)) {
-        cycle_num <- 0
-        outside <- outside_check(samples[k, ])
-        while (outside && cycle_num < 20) {
-          new_sample <- tryCatch(suppressWarnings(MASS::mvrnorm(n = 1, mu = as.matrix(means[[j]], nrow = 1), Sigma = cov_matrix)), error = function(e) NULL)
-          cycle_num <- cycle_num + 1
-          outside <- outside_check(new_sample)
-        }
-        if (outside) {
-          cli::cli_abort(c("x" = "Unable to generate simulated parameters within limits after 20 attempts per row."))
-        }
-        if (cycle_num > 0) {
-          discarded <- rbind(discarded, samples[k, ])
-          samples[k, ] <- new_sample
-        }
-        #samples$prob <- 1 / nrow(samples)
-      } # end loop to fix thetas out of range
-    }
-    
-    
-    list(keep = samples, discard = discarded) # the final set of samples for this mode
     
   }
 )

@@ -10,11 +10,12 @@
   exclude = NULL,
   line = list(join = TRUE, pred = FALSE),
   marker = TRUE,
-  color = NULL,
-  colors = "Set1",
-  names = NULL,
+  group = NULL,
+  group_colors = "Set1",
+  group_names = NULL,
   mult = 1,
   outeq = 1,
+  out_names = NULL,
   block = 1,
   tad = FALSE,
   overlay = TRUE,
@@ -82,25 +83,31 @@ both lines joining observations and prediction lines, i.e., typical use would be
 
 Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}}
 
-\item{color}{Character vector naming a column in \code{x} to \strong{group} by, e.g. "id" or
+\item{group}{Character vector naming a column in \code{x} to \strong{group} by, e.g. "id" or
 a covariate like "gender"}
 
-\item{colors}{to use for \strong{groups}. This can be a palette or a vector of colors.
+\item{group_colors}{to use for \strong{groups}. This can be a palette or a vector of colors.
 For accepted palette names see \code{RColorBrewer::brewer.pal.info}. Examples include
 "BrBG", or "Set2". An example vector could be \code{c("red", "green", "blue")}. It is not
-necessary to specify the same number of colors as groups within \code{color}, as colors
-will be interpolated to generate the correct number. The default when \code{color}
-is specified is the "Set1" palette.}
+necessary to specify the same number of colors as groups within \code{group}, as colors
+will be interpolated to generate the correct number. The default when \code{group}
+is specified is the "Set1" palette. \emph{Note:} When there are groups,
+colors for the groups will be controlled by this argument, which overrides any color in the \code{marker} and \code{line} arguments.}
 
-\item{names}{A character vector of names to label the \strong{groups} if \code{legend = T}.
-This vector does need to be the same length as the number of groups within \code{color}.
+\item{group_names}{A character vector of names to label the \strong{groups} if \code{legend = TRUE}.
+This vector must be the same length as the number of groups within \code{group}. If missing,
+the vector will be generated from the unique values in \code{group}.
 Example: \code{c("Male", "Female")} if \code{color = "gender"} and "gender" is a covariate
 in the data.}
 
 \item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
 
 \item{outeq}{Which output equation to plot. Default is 1.
-Default is 1, but can be multiple if present in the data, e.g. \code{1:2} or \code{c(1, 3)}.}
+Default is 1, but can be multiple if present in the data, e.g. \code{1:2} or \code{c(1, 3)}.
+In the case of multiple outputs, \code{group_colors} will be used to color the lines and markers.}
+
+\item{out_names}{Character vector of names to label the outputs if \code{legend = TRUE}. These can be combined with \code{group_names}.
+The number must match the number of outputs in \code{outeq}. If missing, the default is "Output 1", "Output 2", etc.}
 
 \item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data.
 Default is 1, but can be multiple if present in the data, as for \code{outeq}.}

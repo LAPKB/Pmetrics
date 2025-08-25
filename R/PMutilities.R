@@ -1540,3 +1540,46 @@ wtd.var <- function(x, weights = NULL,
   
   return(mat)
 }
+
+
+#' @title Modify a list with another list, allowing NULL values
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Version of [utils::modifyList()] that works with lists which have unnamed elements. 
+#' @param x A list to be modified.
+#' @param val A list of values to modify `x`.
+#' @param keep.null A logical value indicating whether to keep NULL values in `val`.
+#' Default is FALSE.
+#' @return A modified list, as in [utils::modifyList()].
+#' @export
+#' 
+modifyList2 <- function (x, val, keep.null = FALSE) 
+{
+    stopifnot(is.list(x), is.list(val))
+    xnames <- names(x)
+    vnames <- names(val)
+    # handle unnamed lists
+    if(is.null(xnames)) xnames <- 1:length(x)
+    if(is.null(vnames)) vnames <- 1:length(val)
+    # handle unnamed elements
+    xnames <- ifelse(xnames == "", as.character(seq_along(xnames)), xnames)
+    vnames <- ifelse(vnames == "", as.character(seq_along(vnames)), vnames)
+
+    vnames <- vnames[nzchar(vnames)]
+    if (keep.null) {
+        for (v in vnames) {
+            x[v] <- if (v %in% xnames && is.list(x[[v]]) && is.list(val[[v]])) 
+                list(modifyList(x[[v]], val[[v]], keep.null = keep.null))
+            else val[v]
+        }
+    }
+    else {
+        for (v in vnames) {
+            x[[v]] <- if (v %in% xnames && is.list(x[[v]]) && 
+                is.list(val[[v]])) 
+                modifyList2(x[[v]], val[[v]], keep.null = keep.null)
+            else val[[v]]
+        }
+    }
+    x
+}
