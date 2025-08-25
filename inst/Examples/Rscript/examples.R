@@ -53,7 +53,8 @@ setwd(wd)
 # create our first data object
 
 # create a new data object by reading a file
-exData <- PM_data$new(data = "../src/ex.csv")
+# set the limit of quantification (loq) to 1: see ?PM_data for help
+exData <- PM_data$new(data = "../src/ex.csv", loq = 1)
 
 # you can look at this file directly by opening it in
 # a spreadsheet program like Excel, or a text editor
@@ -129,12 +130,15 @@ mod1b <- PM_model$new("../src/model.txt")
 mod1b
 
 # PM_model provides a method to update the different elements of a model, for example:
-mod1b$update(list(
+mod1b$update(
   pri = list(
-    Ka = ab(0.001, 5)
-  )
+    ka = ab(0.001, 5)
 ))
-mod1b
+
+# It is case sensitive, so ka is different from Ka. To remove a parameter, set it to NULL.
+
+
+mod1b$arg_list$pri
 
 # to copy a model use the $clone() method.
 mod1b <- mod1$clone()
@@ -153,7 +157,7 @@ build_model(mod1) #start with a model and update it
 # To keep everything tidy, we are working in a folder specific to store the runs
 
 
-run1 <- mod1$fit(data = exData, run = 3, overwrite = TRUE) # execute the fit and return the results to run1
+run1 <- mod1$fit(data = exData, run = 1, overwrite = TRUE) # execute the fit and return the results to run1
 
 
 # 
@@ -168,13 +172,14 @@ run1 <- mod1$fit(data = exData, run = 3, overwrite = TRUE) # execute the fit and
 getwd()
 list.files()
 
-# Result Object
+# Result Object - the result is already returned to run1 above, but if you need to load it later,
+# you can use PM_load()
 run1 <- PM_load(1)
 
 # Create a PM_result object by reading a run folder.  The "1" in the parentheses tells Pmetrics to
 # look in the /1 folder.
 
-# Plot the raw data using R6 with various options.  Type ?plot.PMmatrix in the R console for help.
+# Plot the raw data using R6 with various options.  Type ?plot.PM_data in the R console for help.
 run1$data$plot()
 run1$data$plot(overlay = FALSE, xlim = c(119, 145))
 
@@ -188,27 +193,13 @@ plot(run1$data, xlim = c(119, 146), marker = list(color = "blue"))
 run1$data$summary()
 
 # Plot some observed vs. predicted data.  Type ?plot.PMop in the R console for help.
+# Click on points to highlight all points from the same subject.
 run1$op$plot()
 run1$op$plot(pred.type = "pop")
 run1$op$plot(line = list(lm = list(ci = 0, color = "red"), loess = FALSE))
 
 # the original op object data can be accessed via
 run1$op$data
-
-# The OP plot can be disaggregated into a Tidy compatible format from $data (see https://www.tidyverse.org/)
-# This allow pre processing in ways more flexible than the default plot method.
-library(tidyverse)
-run1$op$data %>% plot()
-run1$op$data %>%
-  filter(pred > 5) %>%
-  filter(pred < 10) %>%
-  summary()
-
-run1$cycle$data %>% summary()
-run1$cycle$summary()
-
-# see a header with the first 10 rows of the op object
-head(run1$op$data, 10)
 
 # get a summary with bias and imprecision of the population predictions;
 # ?summary.PMop for help
@@ -221,20 +212,31 @@ summary(run1$op, pred.type = "pop")
 # on means of parameter values
 run1$op$summary(icen = "mean")
 
+# The OP plot can be disaggregated into a Tidy compatible format from $data (see https://www.tidyverse.org/)
+# This allow pre processing in ways more flexible than the default plot method.
+library(tidyverse)
+run1$op$data %>% plot()
+run1$op$data %>%
+  filter(pred > 5) %>%
+  filter(pred < 10) %>%
+  summary()
+
+# see a header with the first 10 rows of the op object
+head(run1$op$data, 10)
+
 
 # Plot final population joint density information.  Type ?plot.PMfinal in the R console for help.
 run1$final$plot()
 
 # add a kernel density curve
-run1$final$plot(line = list(density = TRUE))
-run1$final$data %>% plot(density = TRUE)
+run1$final$plot(line = list(density = list(color = "red")))
+run1$final$data %>% plot()
 
 
 # A bivariate plot. Plotting formulae in R are of the form 'y~x'
 run1$final$plot(ke ~ v,
-  marker = list(color = "red", symbol = "diamond"),
-  line = list(color = "purple", dash = "dash", width = 2)
-)
+  marker = list(color = "red", symbol = "diamond"))
+
 
 
 # or the S3 way
@@ -257,6 +259,11 @@ run1$final$popMean
 # and the Median Absolute Weighted Difference (MAWD);
 # ?summary.PMfinal for help
 run1$final$summary()
+
+# summarize the cycle information; ?summary.PM_cycle for help
+run1$cycle$summary()
+run1$cycle$data %>% summary()
+
 
 # Plot cycle information
 # Type ?plot.PM_cycle in the R console for help.
@@ -319,18 +326,26 @@ run1$step(direction = "forward")
 mod2 <- mod1$clone()
 
 # Then update it
-mod2$update(list(
+mod2 <- mod2$update(
   pri = list(
     V0 = ab(30, 120),
     V = NULL
   ),
-  sec = "V = V0*(WT/55)"
-))
+  sec = function(x) {
+    V = V0*(WT/55)
+  },
+  err = list(
+    proportional(2.39, c(0.02, 0.05, -0.0002, 0), fixed = TRUE)
+  )
+)
 # we can also make a model object by loading a file
 mod2b <- PM_model$new("../src/model2.txt")
 
 
-mod2b$fit(data = exData, run = 2, overwrite = TRUE)
+run2 <- mod2$fit(data = exData, run = 2, overwrite = TRUE)
+
+# for future loading
+run2 <- PM_load(2)
 
 
 
@@ -360,14 +375,8 @@ run2$valid
 run2$valid$plot()
 
 # or old S3
-plot(valid_2)
-
-# or take advantage of the valid object being added automatically to the
-# result object
-run2$valid$plot()
-
-# or S3
 plot(run2$valid)
+
 
 # Generate a prediction-corrected visual predictive check; type ?plot.PMvalid in the R console for help.
 run2$valid$plot(type = "pcvpc")
@@ -431,15 +440,16 @@ sim_new$plot(log = FALSE)
 # Simulate using multiple subjects as templates
 simdata <- run2$sim(include = 1:4, limits = NA, nsim = 100)
 
-# Plot the third simulation
-simdata$plot(at = 3)
+# Plot the third simulation; use include/exclude to specify the ID numbers,
+# which are the same as the ID numbers in the template data file
+simdata$plot(include = 2)
 
 # or in S3
-plot(simdata$data[[3]])
+plot(simdata$data, include = 3)
 
 # Parse and combine multiple files and plot them.  Note that combining simulations from templates
 # with different simulated observation times can lead to unpredictable plots
-simdata2 <- run2$sim(include = 1:4, limits = NA, nsim = 100, combine = TRUE)
+simdata2 <- run2$sim(include = 1:4, limits = NA, nsim = 100)
 simdata2$plot()
 
 # simulate with covariates
@@ -475,7 +485,7 @@ simdata3$plot()
 simdata3$data$parValues
 
 # We can summarize simulations too. See ?summary.PM_sim for help.
-simdata3$summary(at = 2, field = "obs")
+simdata3$summary(field = "obs", include = 3)
 
 # look in the working directory and find the "c_simdata.csv" and "c_simmodel.txt" files
 # which were made when you simulated with covariates.  Compare to original
@@ -501,7 +511,7 @@ copy_run2
 # If you want to save multiple objects into one single file, R provides the
 # following functionality
 
-save(exFit, exData, mod1, run1, simdata, file = "2/test_drug.Rdata")
+save(exData, mod1, run1, simdata, file = "2/test_drug.Rdata")
 list.files("2")
 load("2/test_drug.Rdata")
 
@@ -521,13 +531,11 @@ load("2/workspace.Rdata")
 # have to be the same.  This will copy the appropriate files from the specified run to be used
 # in the current run.  By specifying a prior, we are starting with the non-uniform density from the
 # end of the specified fun.
-run3 <- mod2b$fit(data = exData, prior = 2)
+run3 <- mod2$fit(data = exData, prior = 2)
 run3 <- PM_load(3)
 
-# We could also generate Bayesian posterior parameter estimates for a new population this
-# way, and with 0 cycles:
-# exFit3 <- PM_fit(data=PM_data("newPop.csv"), mod2)
-# exFit3$run(prior = 2, cycles = 0, intern = TRUE)
+# We could also generate Bayesian posterior parameter estimates for a new population this way:
+# run3 <- mod2$fit(data=PM_data("newPop.csv"), prior = 2, cycles = 0)
 # This won't run because we don't have a newPop.csv file,
 # but shows you how it could be done.
 
@@ -539,11 +547,11 @@ run3 <- PM_load(3)
 
 # Examples of probability of target attainment analysis
 # Be sure to have executed the NPAG run above and used PM_load(2) in EXERCISE 2
-# Type ?SIMrun, ?SIMparse, ?makePTA, or ?plot.PMpta into the R console for help.
+# Type ?PM_sim, ?PM_pta, or ?plot.PM_pta into the R console for help.
 
 
 # simulate with the template data file that contains different doses
-# Look at ?SIMrun for help on arguments to this function, including predInt,
+# Look at PM_sim for help on arguments to this function, including predInt,
 # seed, limits, nsim.
 
 simlist1 <- run1$sim(
@@ -565,6 +573,7 @@ simlist2 <- run2$sim(
 # interval from 120 to 144 hours.  Include labels for the simulations.
 # ?makePTA for help
 # define simulation labels first
+
 simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid")
 
 pta1_2 <- PM_pta$new(
@@ -582,10 +591,9 @@ pta1b_2 <- PM_pta$new(
 
 # summarize the results
 pta1_2$summary()
-pta1_2$summary(ci = 0.8)
 
-# in the summary()$pta, simnum is the simulation (dose) number;
-# target is the MIC; prop.success is the proportion of the simulated
+# in the summary()$pta, reg_num is the simulation template ID number;
+# target in this case is the MIC; prop_success is the proportion of the simulated
 # profiles for each dose/MIC that are above the success threshold (0.6); pdi.mean and pdi.sd
 # are the mean and standard deviation of the pharmacodynamic index (PDI), in this case proportion of the interval > MIC.
 # In the $pdi, target and simnum are the same, but now the median and confidence
@@ -597,6 +605,7 @@ pta1_2$summary(ci = 0.8)
 # the bottom left; ?legend for help on arguments to supply to the
 # legend list argument to plot.PMpta.
 pta1_2$plot(ylab = "Proportion with %T>MIC of at least 60%", grid = TRUE, legend = list(x = "bottomleft"))
+
 pta1b_2$summary()
 
 # Plot the second with covariates simulated. Note the regimen labels are included, but we move
@@ -641,15 +650,16 @@ pta4_2$plot(ylab = "Proportion with Cmin/MIC of at least 1", grid = TRUE, legend
 
 # now plot the PDI (pharmacodynamic index) of each regimen, rather than the proportion
 # of successful profiles.  A PDI plot is always available for PMpta objects.
-pta4_2$plot(type = "pdi", ylab = "Cmin:MIC", grid = TRUE)
+pta4_2$plot(at = 1, type = "pdi", ylab = "Cmin:MIC", grid = TRUE)
 
 # Each regimen has the 90% confidence interval PDI around the median curve,
 # in the corresponding, semi-transparent color.  Make the CI much narrower...
-pta4_2$plot(type = "pdi", ci = 0.1)
+pta4_2$plot(at = 1, type = "pdi", ci = 0.1)
 
 # ...or gone altogether, put back the grid, redefine the colors, and make lines narrower
 pta4_2$plot(
-  type = "pdi", ci = 0, grid = TRUE,
+  
+  at = 1, type = "pdi", ci = 0, grid = TRUE,
   line = list(
     color = c("blue", "purple", "black", "brown"),
     width = 1

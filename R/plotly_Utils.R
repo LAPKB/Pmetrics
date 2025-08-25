@@ -291,7 +291,8 @@ includeExclude <- function(.data, include = NULL, exclude = NULL) {
 
 
 notNeeded <- function(x, f) {
-  cat(paste0(crayon::blue(x), " is not required for ", f, " and will be ignored."))
+  cli::cli_inform(c("i" = "{.arg x} is not needed for {.fn f}.",
+  "i" = "It will be ignored."))
 }
 
 
@@ -713,12 +714,18 @@ add_smooth <- function(
   have_ci <- is.numeric(ci) && ci > 0 && ci < 1
   z <- stats::qnorm(0.5 + ci/2)
   pred_fit <- pred_se <- NULL
-  
+
   if (method == "lm") {
     # use predict.lm with se.fit for CI
     pr <- stats::predict(fit_obj, newdata = newdata, se.fit = have_ci)
-    pred_fit <- as.numeric(pr$fit)
-    if (have_ci) pred_se <- as.numeric(pr$se.fit)
+    if (have_ci && is.list(pr)) {
+      pred_fit <- as.numeric(pr$fit)
+      pred_se  <- as.numeric(pr$se.fit)
+    } else {
+      pred_fit <- as.numeric(pr)
+      pred_se  <- NULL
+      have_ci  <- FALSE
+    }
   } else {
     # loess: se.fit is available with surface="direct" (we set above); if it fails, drop CI
     pr <- tryCatch(stats::predict(fit_obj, newdata = newdata, se = have_ci), error = function(e) NULL)
@@ -749,7 +756,7 @@ add_smooth <- function(
   x_plot <- if (x_is_date) as.Date(x_pred_num, origin = "1970-01-01") else if (x_is_time) as.POSIXct(x_pred_num, origin = "1970-01-01", tz = attr(vals$x, "tzone")) else x_pred_num
   
   # ---- Line style ----------------------------------------------------------------
-
+  
   line_spec <- amendLine(line, default = list(color = blue(), width = 2))
   
   # ---- Stats text (lm only) ------------------------------------------------------
@@ -773,28 +780,28 @@ add_smooth <- function(
       "Intercept = ", round2(inter), if (have_ci) paste0(" (", ci*100, "% CI ", round2(ci_inter[1]), " to ", round2(ci_inter[2]), ")") else "", "<br>",
       "Slope = ", round2(slope), if (have_ci) paste0(" (", ci*100, "% CI ", round2(ci_slope[1]), " to ", round2(ci_slope[2]), ")") else ""
     )
-
+    
     p_data <- if(!is.null(data)) {data} else {plotly::plotly_data(p)}
-
-  if (inherits(p_data, "PM_op_data")) { # this came from a PM_op object
-    sumStat <- summary.PM_op(p_data,
-      outeq = p_data$outeq[1],
-      pred.type = p_data$pred.type[1],
-      icen = p_data$icen[1],
-      print = FALSE
-    )
-    uses_percent <- c("","%")[1 + as.numeric(stringr::str_detect(get_metric_info(sumStat$pe)$metric_types$bias, "%"))]
-    Bias <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Bias, uses_percent,"<br>")
-    Imprecision <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Imprecision, uses_percent,"<br>")
-    # get_metric_info is in PM_op.R
-
-    regStat <- paste0(
-      regStat, "<br>",
-      "Bias = ", Bias,
-      "Imprecision  = ", Imprecision
-    )
+    
+    if (inherits(p_data, "PM_op_data")) { # this came from a PM_op object
+      sumStat <- summary.PM_op(p_data,
+        outeq = p_data$outeq[1],
+        pred.type = p_data$pred.type[1],
+        icen = p_data$icen[1],
+        print = FALSE
+      )
+      uses_percent <- c("","%")[1 + as.numeric(stringr::str_detect(get_metric_info(sumStat$pe)$metric_types$bias, "%"))]
+      Bias <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Bias, uses_percent,"<br>")
+      Imprecision <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Imprecision, uses_percent,"<br>")
+      # get_metric_info is in PM_op.R
+      
+      regStat <- paste0(
+        regStat, "<br>",
+        "Bias = ", Bias,
+        "Imprecision  = ", Imprecision
+      )
+    }
   }
-}
   
   # ---- Add mean line -------------------------------------------------------------
   if (!identical(line_spec, FALSE)) {
@@ -850,7 +857,7 @@ add_smooth <- function(
   }
   
   p
-  }
+}
 
 
 #' @title Export plotly plot
@@ -1329,21 +1336,7 @@ function(el, x) {
     # safe NULL coalesce
     `%||%` <- function(a, b) if (!is.null(a)) a else b
     
-    # Map a 0..1 "paper" coordinate into data space using panel ranges
-    # t is the "paper" coordinate (0 to 1), and rng is the data range
-    map_paper_to_data <- function(t, rng) rng[1] + t * (rng[2] - rng[1])
     
-    # Extract first panel ranges from a ggplot object
-    gg_panel_ranges <- function(g) {
-      gb <- ggplot2::ggplot_build(g)
-      pp <- gb$layout$panel_params[[1]]
-      # panel_params fields vary by ggplot2 versions; cover both forms
-      xr <- pp$x.range %||% pp$x$range$range
-      yr <- pp$y.range %||% pp$y$range$range
-      list(x = xr, y = yr)
-    }
-
-
     # map plotly shapes to ggplot2
     plotly_shapes_to_gg <- function(shape){
       dplyr::case_when(
@@ -1354,7 +1347,7 @@ function(el, x) {
         .default = 21
       )
     }
-
+    
     # map plotly line dash to ggplot2
     plotly_line_dash_to_gg <- function(dash) {
       dplyr::case_when(
@@ -1399,19 +1392,28 @@ function(el, x) {
     
     # Ranges
     if (!is.null(lay$xaxis) && !is.null(lay$xaxis$range)) {
-      min_x <- lay$xaxis$range[1]
-      max_x <- lay$xaxis$range[2]
+      range_x <- c(lay$xaxis$range[1], lay$xaxis$range[2])
     } else {
-      min_x <- -Inf
-      max_x <- Inf
+      range_x <- NULL
     }
     if (!is.null(lay$yaxis) && !is.null(lay$yaxis$range)) {
-      min_y <- lay$yaxis$range[1]
-      max_y <- lay$yaxis$range[2]
+      range_y <- c(lay$yaxis$range[1], lay$yaxis$range[2])
     } else {
-      min_y <- -Inf
-      max_y <- Inf
+      range_y <- NULL
     }
+    g <- g + ggplot2::coord_cartesian(
+      xlim = range_x,
+      ylim = range_y
+    )
+    
+    # log scale the y
+    if (!is.null(lay$yaxis) && !is.null(lay$yaxis$type) && lay$yaxis$type == "log") {
+      log_y <- TRUE
+      g <- g + ggplot2::scale_y_log10()
+    } else {
+      log_y <- FALSE
+    }
+    
     
     
     # Iterate traces
@@ -1441,7 +1443,7 @@ function(el, x) {
         # plotly scatter may have x or y missing; handle gracefully
         x <- tr$x %||% seq_along(tr$y %||% numeric())
         y <- tr$y %||% seq_along(tr$x %||% numeric())
-        df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE) %>% filter(x >= min_x, x <= max_x, y >= min_y, y <= max_y)
+        df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE) #%>% filter(x >= min_x, x <= max_x, y >= min_y, y <= max_y)
         
         mode <- tr$mode %||% "markers"
         has_lines   <- grepl("lines",   mode)
@@ -1590,10 +1592,6 @@ function(el, x) {
     ####### Legends and annotations
     
     
-    
-    rng <- gg_panel_ranges(g)
-    
-    
     # Legend (only used for groups in plot.PM_data)
     if (lay$showlegend){
       group_df <- traces %>% map(~c(
@@ -1618,96 +1616,121 @@ function(el, x) {
           lay$legend <- list(x = 1, y = 1) # default position
         }
         max_chr <- max(nchar(group_df$group)) + 1
+        
         for(i in seq_along(group_df$group)) {
           g <- g +
-          
-          ggplot2::annotate("point",
-          x = map_paper_to_data(lay$legend$x - (0.018 * max_chr), rng$x),
-          y = map_paper_to_data(lay$legend$y - (i * 0.03), rng$y),
-          color = group_df$marker_line_color[i],
-          shape = group_df$marker_shape[i],
-          size = group_df$marker_size[i],
-          fill = group_df$marker_fill_color[i],
-          alpha = group_df$marker_opacity[i],
-          stroke = group_df$marker_line_width[i]
-        ) +
-        ggplot2::annotate("segment",
-        x = map_paper_to_data(lay$legend$x - (0.018 * max_chr) - 0.018, rng$x),
-        xend = map_paper_to_data(lay$legend$x - (0.018 * max_chr) + 0.018, rng$x),
-        y = map_paper_to_data(lay$legend$y - (i * 0.03), rng$y),
-        yend = map_paper_to_data(lay$legend$y - (i * 0.03), rng$y),
-        color = group_df$line_color[i],
-        linewidth = group_df$line_width[i],
-        linetype = group_df$line_dash[i],
-        alpha = group_df$line_opacity[i]
-      ) +
-      ggplot2::annotate("text",
-      label = group_df$group[i],
-      x = map_paper_to_data(lay$legend$x - (0.013 * max_chr), rng$x),
-      y = map_paper_to_data(lay$legend$y - (i * 0.03), rng$y),
-      hjust = "left",
-      size = 3.5,
-      color = "black"
-    )
-    
-  }
-}
-
-
-
-
-# grid
-if (is.null(lay$xaxis$gridwidth) || lay$xaxis$gridwidth == 0){
-  g <- g + theme(panel.grid = element_blank())
-}
-
-# shapes (reference lines)
-if (!is.null(lay$shapes) && length(lay$shapes) > 0) {
-  shapes <- lay$shapes
-  for (shape in shapes) {
-    if (shape$type == "line") {
-      g <- g + ggplot2::geom_line(
-        mapping = aes(x = c(map_paper_to_data(shape$x0, rng$x), map_paper_to_data(shape$x1, rng$x)),
-        y = c(map_paper_to_data(shape$y0, rng$y), map_paper_to_data(shape$y1, rng$y))),
-        color = shape$line$color %||% "grey",
-        linewidth = shape$line$width * 0.5 %||% 0.5,
-        linetype = plotly_line_dash_to_gg(shape$line$dash)
-      )
-    } else if (shape$type == "rect") {
-      g <- g + ggplot2::geom_rect(
-        xmin = map_paper_to_data(shape$x0, rng$x),
-        xmax = map_paper_to_data(shape$x1, rng$x),
-        ymin = map_paper_to_data(shape$y0, rng$y),
-        ymax = map_paper_to_data(shape$y1, rng$y),
-        fill = shape$fillcolor %||% "transparent",
-        alpha = shape$opacity %||% 0.2,
-        color = shape$line$color %||% "black",
-        linewidth = shape$line$width * 0.5  %||% 0.5
-      )
-    }
-  }
-}
-
-# annotations
-if (!is.null(lay$annotations) && length(lay$annotations) > 0) {
-  annots <- lay$annotations
-  for (annot in annots) {
-    
-    g <- g + ggplot2::annotate("text",
-    x = map_paper_to_data((annot$x - 0.3) %||% 0.5, rng$x),
-    y = map_paper_to_data(annot$y %||% 0.5, rng$y),
-    label = stringr::str_replace_all(annot$text, "<br>", "\n"),
-    hjust = "left",
-    vjust = "bottom",
-    family = annot$font$family %||% "Arial",
-    size = annot$font$size / 4,
-    color = annot$font$color %||% "black"
-  )
-}
-}
-
-g <- g + theme(axis.text = element_text(size = 10))
-
-if(print) print(g)
-return(invisible(g))
-}
+          ggplot2::annotation_custom(
+            grob = pointsGrob(
+              x = unit(lay$legend$x - (0.012 * max_chr), "npc"),
+              y = unit(lay$legend$y - (i * 0.03), "npc"),
+              pch = group_df$marker_shape[i],
+              size = unit(group_df$marker_size[i], "mm"),
+              gp = grid::gpar(
+                col = group_df$marker_line_color[i],
+                fill = group_df$marker_fill_color[i],
+                alpha = group_df$marker_opacity[i],
+                lwd = group_df$marker_line_width[i])
+              )
+            ) +
+            ggplot2::annotation_custom(
+              grob = linesGrob(
+                x = unit(
+                  c(lay$legend$x - (0.012 * max_chr) - 0.012,
+                  lay$legend$x - (0.012 * max_chr) + 0.012), 
+                  "npc"),
+                  y = unit(
+                    c(lay$legend$y - (i * 0.03),
+                    lay$legend$y - (i * 0.03)), 
+                    "npc"),
+                    gp = grid::gpar(
+                      col = group_df$line_color[i],
+                      lwd = group_df$line_width[i],
+                      lty = group_df$line_dash[i],
+                      alpha = group_df$line_opacity[i]
+                    )
+                  )
+                ) +
+                ggplot2::annotation_custom(
+                  grob = textGrob(
+                    label = group_df$group[i],
+                    x = unit(lay$legend$x - (0.01 * max_chr), "npc"),
+                    y = unit(lay$legend$y - (i * 0.03), "npc"),
+                    hjust = 0,
+                    gp = gpar(
+                      fontsize = 10,
+                      col = "black"
+                    )
+                  )
+                )
+                
+              }
+            }
+            
+            
+            
+            
+            # grid
+            if (is.null(lay$xaxis$gridwidth) || lay$xaxis$gridwidth == 0){
+              g <- g + theme(panel.grid = element_blank())
+            }
+            
+            # shapes (reference lines)
+            if (!is.null(lay$shapes) && length(lay$shapes) > 0) {
+              shapes <- lay$shapes
+              for (shape in shapes) {
+                if (shape$type == "line") {
+                  g <- g + ggplot2::annotation_custom(
+                    grid::linesGrob(
+                      x = unit(c(shape$x0, shape$x1), "npc"),
+                      y = unit(c(shape$y0, shape$y1), "npc"),
+                      gp = grid::gpar(
+                        col = shape$line$color %||% "grey",
+                        lwd = shape$line$width  %||% 1,
+                        lty = plotly_line_dash_to_gg(shape$line$dash)
+                      )
+                    )
+                  )
+                } else if (shape$type == "rect") {
+                  g <- g + ggplot2::annotation_custom(
+                    grid::rectGrob(
+                      x = unit(shape$x0, "npc"),
+                      y = unit(shape$y0), "npc"),
+                      width = unit(shape$x1 - shape$x0, "npc"),
+                      height = unit(shape$y1 - shape$y0, "npc"),
+                      gp = grid::gpar(
+                        fill = shape$fillcolor %||% "transparent",
+                        col = shape$line$color %||% "black",
+                        lwd = shape$line$width %||% 1,
+                        alpha = shape$opacity %||% 0.2
+                      )
+                    )
+                  }
+                }
+              }
+              
+              # annotations
+              if (!is.null(lay$annotations) && length(lay$annotations) > 0) {
+                annots <- lay$annotations
+                for (annot in annots) {
+                  g <- g + ggplot2::annotation_custom(
+                    grid::textGrob(
+                      label = stringr::str_replace_all(annot$text, "<br>", "\n"),
+                      x = unit((annot$x - 0.3) %||% 0.5, "npc"),
+                      y = unit(annot$y %||% 0.5, "npc"),
+                      hjust = 0,
+                      vjust = 0,
+                      gp = grid::gpar(
+                        fontsize = annot$font$size / 1.4 %||% 10,
+                        col = annot$font$color %||% "black",
+                        fontfamily = annot$font$family %||% "Arial"
+                      )
+                    )
+                  )
+                }
+              }
+              
+              g <- g + theme(axis.text = element_text(size = 10))
+              
+              if(print) print(g)
+              return(invisible(g))
+            }

@@ -39,9 +39,9 @@ PM_data <- R6::R6Class("PM_data",
 public <- list(
   #' @field data Data frame containing the data to be modeled
   data = NULL,
-  #' @field blq Values for each output equation to be considered as 
-  #' Below the Limit of Quantification (blq). See `$new()` below for details.
-  blq = NULL,
+  #' @field loq Values for each output equation to be considered as 
+  #' the limit of quantification (loq). See `$new()` below for details.
+  loq = NULL,
   #' @field standard_data Data frame containing standardized version of the data
   standard_data = NULL,
   #' @field pop The `$data` field from a [PM_pop] object. This makes it easy to add population predictions to a raw data plot. This field will be `NULL` until the [PM_data] object is added to the [PM_result] after a run. As examples:
@@ -59,12 +59,12 @@ public <- list(
   #' @param data A quoted name of a file with full path if not
   #' in the working directory, an unquoted name of a data frame
   #' in the current R environment, or a [PM_data] object, which will rebuild it.
-  #' @param blq Optional vector of values for each output equation to be considered
-  #' as Below the Limit of Quantification (blq). Any observation the same as the `blq` value
-  #' for that output equation will be considered blq. blq observations are used in
-  #' the calculation of the likelihood, e.g. probabilty that the prediction is blq given
-  #' the noise and prediciton, but will not be included in observed vs. predicted plots.
-  #' If `blq` is missing or an output equation does not have a blq value, `blq` will
+  #' @param loq Optional vector of values for each output equation to be considered
+  #' as the Limit of Quantification (loq). Any observation the same as the `loq` value
+  #' for that output equation will be considered `loq`. Such observations are used in
+  #' the calculation of the likelihood, e.g. probabilty that the prediction is at or below the `loq` given
+  #' the noise and prediction, but will not be included in observed vs. predicted plots.
+  #' If `loq` is missing or an output equation does not have an loq value, `loq` will
   #' be set to `NA` for that output equation.
   #' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
   #' them fail, use this parameter to specify the correct format as a
@@ -83,7 +83,7 @@ public <- list(
   #' @param quiet Quietly validate. Default is `FALSE`.
   #' @param validate Check for errors. Default is `TRUE`. Strongly recommended.
   initialize = function(data = NULL,
-    blq = NULL,
+    loq = NULL,
     dt = NULL,
     quiet = FALSE,
     validate = TRUE) {
@@ -105,14 +105,14 @@ public <- list(
     }
     
     nout <- max(self$standard_data$outeq, na.rm = TRUE)
-    if (is.null(blq)) {
-      self$blq <- rep(NA, nout) 
+    if (is.null(loq)) {
+      self$loq <- rep(NA, nout) 
     } else {
-      if (length(blq) != nout) {
-        cli::cli_abort(c("x" = "You must have {nout} blq values to match the number of output equations in the data.",
-        " " = "Include a value of {.code NA} for any output equation that does not have a blq value."))
+      if (length(loq) != nout) {
+        cli::cli_abort(c("x" = "You must have {nout} loq values to match the number of output equations in the data.",
+        " " = "Include a value of {.code NA} for any output equation that does not have an loq value."))
       }
-      self$blq <- blq
+      self$loq <- loq
     }
   },
   #' @description
@@ -1556,20 +1556,25 @@ return(wb)
 #' both lines joining observations and prediction lines, i.e., typical use would be
 #' `line = list(join = F, pred = "post")`.
 #' @param marker Formats the symbols plotting observations. `r template("marker")`
-#' @param color Character vector naming a column in `x` to **group** by, e.g. "id" or
+#' @param group Character vector naming a column in `x` to **group** by, e.g. "id" or
 #' a covariate like "gender"
-#' @param colors to use for **groups**. This can be a palette or a vector of colors.
+#' @param group_colors to use for **groups**. This can be a palette or a vector of colors.
 #' For accepted palette names see `RColorBrewer::brewer.pal.info`. Examples include
 #' "BrBG", or "Set2". An example vector could be `c("red", "green", "blue")`. It is not
-#' necessary to specify the same number of colors as groups within `color`, as colors
-#' will be interpolated to generate the correct number. The default when `color`
-#' is specified is the "Set1" palette.
-#' @param names A character vector of names to label the **groups** if `legend = T`.
-#' This vector does need to be the same length as the number of groups within `color`.
+#' necessary to specify the same number of colors as groups within `group`, as colors
+#' will be interpolated to generate the correct number. The default when `group`
+#' is specified is the "Set1" palette. *Note:* When there are groups, 
+#' colors for the groups will be controlled by this argument, which overrides any color in the `marker` and `line` arguments.
+#' @param group_names A character vector of names to label the **groups** if `legend = TRUE`.
+#' This vector must be the same length as the number of groups within `group`. If missing,
+#' the vector will be generated from the unique values in `group`.
 #' Example: `c("Male", "Female")` if `color = "gender"` and "gender" is a covariate
 #' in the data.
 #' @param mult `r template("mult")`
 #' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2` or `c(1, 3)`.
+#' In the case of multiple outputs, `group_colors` will be used to color the lines and markers.
+#' @param out_names Character vector of names to label the outputs if `legend = TRUE`. These can be combined with `group_names`. 
+#' The number must match the number of outputs in `outeq`. If missing, the default is "Output 1", "Output 2", etc.
 #' @param block `r template("block")` Default is 1, but can be multiple if present in the data, as for `outeq`.
 #' @param tad `r template("tad")`
 #' @param overlay Operator to overlay all time concentration profiles in a single plot.
@@ -1620,11 +1625,12 @@ plot.PM_data <- function(x,
   exclude = NULL,
   line = list(join = TRUE, pred = FALSE),
   marker = TRUE,
-  color = NULL,
-  colors = "Set1",
-  names = NULL,
+  group = NULL,
+  group_colors = "Set1",
+  group_names = NULL,
   mult = 1,
   outeq = 1,
+  out_names = NULL,
   block = 1,
   tad = FALSE,
   overlay = TRUE,
@@ -1664,7 +1670,7 @@ plot.PM_data <- function(x,
     
     # legend
     if (missing(legend)) {
-      if (is.null(color)) {
+      if (is.null(group)) {
         legend <- FALSE
       } else {
         legend <- TRUE
@@ -1734,29 +1740,39 @@ plot.PM_data <- function(x,
     includeExclude(include, exclude)
     
     
-    
-    # make group column for colors
-    if (!is.null(color)) {
-      if (!color %in% base::names(x$standard_data)) {
-        cli::cli_abort(c("x" = "{color} is not a column in the data."))
+ 
+    # make group column for groups
+    if (!is.null(group)) {
+      if (!group %in% base::names(x$standard_data)) {
+        cli::cli_abort(c("x" = "{group} is not a column in the data."))
       }
-      if (!is.null(names)) {
-        presub$group <- factor(presub[[color]], labels = names)
+      if (is.null(group_names)){
+        presub$group <- presub[[group]]
+      } else if (length(group_names) < length(unique(presub[[group]]))) {
+        cli::cli_abort(c("x" = "The number of names in {.var group_names} must be at least as long as the number of unique values in {.var group}."))
       } else {
-        presub$group <- presub[[color]]
+        presub$group <- factor(presub[[group]], labels = group_names)
       }
-    } else {
+    } else { # group was NULL
       presub <- presub %>% mutate(group = "")
     }
-    if (outeq[1] != 1 | length(outeq) > 1) {
-      presub <- presub %>%
-      rowwise() %>%
-      mutate(group = paste0(group, ", outeq ", outeq))
+    
+  
+    # make outeq labels
+    if (is.null(out_names)) {
+      out_names <- paste0("Output ", outeq)
+    } else if (length(out_names) < max(outeq)) {
+      cli::cli_abort(c("x" = "The number of names in {.var out_names} must be at least as long as the maximum number of outputs in {.var outeq}."))
     }
+    # make output names
+    presub <- presub %>%
+    rowwise() %>%
+    mutate(group = paste0(group, ", " , out_names[outeq]))
+    
     if (block[1] != 1 | length(block) > 1) {
       presub <- presub %>%
       rowwise() %>%
-      mutate(group = paste0(group, ", block ", block))
+      mutate(group = paste0(group, ", Block ", block))
     }
     
     presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
@@ -1815,7 +1831,7 @@ plot.PM_data <- function(x,
       }
       
       predArgs <- amendLine(predArgs, default = list(color = NULL)) # color will be set by obs later
-
+      
       # filter and group by id
       if (!is.null(pred[[1]])) { # if pred not reset to null b/c of invalid pred[[1]]
         predsub <- pred[[1]] %>%
@@ -1851,32 +1867,43 @@ plot.PM_data <- function(x,
     # Plot function ----------------------------------------------------------
     
     dataPlot <- function(allsub, overlay, includePred) {
-      
+      #browser()
       if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
+        
         n_colors <- length(levels(allsub$group))
-        if (checkRequiredPackages("RColorBrewer")) {
-          palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
-          if (length(colors) == 1 && colors %in% palettes$name) {
-            max_colors <- palettes$maxcolors[match(colors, palettes$name)]
-            colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
+        if (length(group_colors) < n_colors) { # fewer colors than groups, need to interpolate
+          if (checkRequiredPackages("RColorBrewer")) {
+            palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
+            if (length(group_colors) == 1 && group_colors %in% palettes$name) { # colors specified as a palette name
+              max_colors <- palettes$maxcolors[match(group_colors, palettes$name)]
+              group_colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, group_colors))(n_colors)
+            } else {
+              group_colors <- tryCatch(colorRampPalette(group_colors)(n_colors),
+                error = function(e) {
+                  cli::cli_warn(c("!" = "Unable to interpolate colors, using default colors."))
+                  getDefaultColors(n_colors) # in plotly_Utils
+                }
+              )
+            }
+          } else {
+            cli::cli_inform(c("i" = "Group colors are better with the {.pkg RColorBrewer} package installed."))
+            colors <- getDefaultColors(n_colors) # in plotly_Utils
           }
-        } else {
-          cli::cli_inform(c("i" = "Group colors are better with RColorBrewer package installed."))
-          colors <- getDefaultColors(n_colors) # in plotly_Utils
         }
+        
         marker$color <- NULL
         join$color <- NULL
       } else { # no grouping
         # allsub$group <- factor(1, labels = "Observed")
-
+        
         if (includePred) {
           allsub$group <- factor(allsub$src, labels = c("Observed", "Predicted"))
         } else {
           allsub$group <- factor(allsub$src, labels = "Observed")
         }
       }
-
- 
+      
+      
       
       seen_groups <- NULL
       traces <- allsub %>% dplyr::group_split()
@@ -1910,7 +1937,7 @@ plot.PM_data <- function(x,
           name = ~group,
           marker = marker,
           color = ~group,
-          colors = colors,
+          colors = group_colors,
           text = ~text_label,
           hoverinfo = "text",
           line = join,
@@ -1928,7 +1955,7 @@ plot.PM_data <- function(x,
             name = ~group,
             line = predArgs,
             color = ~group,
-            colors = colors,
+            colors = group_colors,
             text = ~text_label,
             hoverinfo = "text",
             showlegend = legendShow
@@ -1987,7 +2014,7 @@ plot.PM_data <- function(x,
     }
     
     return(invisible(p))
-  }
+}
   # SUMMARY -----------------------------------------------------------------
   
   #' @title Summarize PM_data objects
@@ -2013,7 +2040,7 @@ plot.PM_data <- function(x,
   #' * **numeqt** Number of outputs
   #' * **nobsXouteq** Number of observations by outeq
   #' * **missObsXouteq** Number of missing observations by outeq
-  #' * **blqObsXouteq** Number of observations below the limit of quantification by outeq
+  #' * **loqObsXouteq** Number of observations coded as below the limit of quantification by outeq
   #' * **ncov** Number of covariates
   #' * **covnames** Covariate names
   #' * **ndoseXid** Number of doses per input per subject
@@ -2027,14 +2054,14 @@ plot.PM_data <- function(x,
   
   summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
     if (inherits(object, "PM_data")) { # user called summary(PM_data)
-      if (!is.null(object$blq)){
-        blq <- object$blq
+      if (!is.null(object$loq)){
+        loq <- object$loq
       } else {
-        blq <- rep(NA, max(object$standard_data$outeq, na.rm = TRUE))
+        loq <- rep(NA, max(object$standard_data$outeq, na.rm = TRUE))
       }
       object <- object$standard_data
     } else {
-      blq <- rep(NA, max(object$outeq, na.rm = TRUE)) # assumes PM_data_data
+      loq <- rep(NA, max(object$outeq, na.rm = TRUE)) # assumes PM_data_data
     }
     # filter data if needed
     if (!missing(include)) {
@@ -2053,12 +2080,12 @@ plot.PM_data <- function(x,
     results$numeqt <- max(object$outeq, na.rm = T)
     results$nobsXouteq <- tapply(object$evid, object$outeq, function(x) length(x == 0))
     results$missObsXouteq <- by(object, object$outeq, function(x) length(x$out[x$evid == 0 & x$out == -99]))
-    #blq
+    #loq
     
-    blq_tbl <- tibble(outeq = 1:length(blq), blq = blq)
-    df <- object %>% dplyr::inner_join(blq_tbl, by = "outeq") 
+    loq_tbl <- tibble(outeq = 1:length(loq), loq = loq)
+    df <- object %>% dplyr::inner_join(loq_tbl, by = "outeq") 
     
-    results$blqObsXouteq <- purrr::map2(1:2, blq, \(x, y) {
+    results$loqObsXouteq <- purrr::map2(1:2, loq, \(x, y) {
       if(!is.na(y)){
         df %>%
         filter(outeq == x, out >= 0, out <= y) %>%
@@ -2141,7 +2168,7 @@ plot.PM_data <- function(x,
     cli::cli_text("Number of inputs: {.blue {x$ndrug}}")
     cli::cli_text("Number of outputs: {.blue {x$numeqt}}")
     for (i in 1:x$numeqt) {
-      cli::cli_text("Total number of observations (outeq {i}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing and {.blue {x$blqObsXouteq$n[i]}} ({.blue {sprintf('%.3f', 100 * x$blqObsXouteq$n[i] / x$nobsXouteq[i])}%}) blq")
+      cli::cli_text("Total number of observations (outeq {i}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing and {.blue {x$loqObsXouteq$n[i]}} ({.blue {sprintf('%.3f', 100 * x$loqObsXouteq$n[i] / x$nobsXouteq[i])}%}) coded as below the limit of quantification.")
     }
     if (x$ncov > 0) {
       cli::cli_text(" Covariates: {.blue {x$covnames}}")

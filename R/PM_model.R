@@ -1121,18 +1121,18 @@ PM_model <- R6::R6Class(
                   prior <- "sobol"
                 }
                 
-                # get blq
-                if (is.null(data$blq)) {
-                  blq <- rep(NA, dataOut)
+                # get loq
+                if (is.null(data$loq)) {
+                  loq <- rep(NA, dataOut)
                 } else {
-                  if (length(data$blq) != dataOut) {
-                    cli::cli_abort(c("x" = "Error: Number of blq values does not match number of output equations.", "i" = "Check the blq values."))
+                  if (length(data$loq) != dataOut) {
+                    cli::cli_abort(c("x" = "Error: Number of loq values does not match number of output equations.", "i" = "Check the loq values."))
                   }
-                  blq <- data$blq
+                  loq <- data$loq
                 }
                 
-                if (length(blq) == 1 && is.na(blq)){
-                  blq <- as.numeric(NA) # ensure blq is numeric
+                if (length(loq) == 1 && is.na(loq)){
+                  loq <- as.numeric(NA) # ensure loq is numeric
                 }
                 
                 if (intern) {
@@ -1151,7 +1151,7 @@ PM_model <- R6::R6Class(
                         idelta = idelta,
                         #bolus = NULL, or bolus = 1, or bolus = c(1, 3)
                         tad = tad,
-                        loq = blq, # blq values 
+                        loq = loq, # loq values 
                         max_cycles = cycles, #will be hardcoded in Rust to 0 for POSTPROB
                         prior = prior,
                         points = points, # only relevant for sobol prior
@@ -1169,8 +1169,11 @@ PM_model <- R6::R6Class(
                   
                   PM_parse("outputs")
                   res <- PM_load(file = "PMout.Rdata")
-                  PM_report(res, outfile = "report.html", template = report, quiet = TRUE)
-                  msg <- c(msg, "Report generated with {report} template.")
+                  if(report != "none"){
+                    PM_report(res, outfile = "report.html", template = report, quiet = TRUE)
+                    msg <- c(msg, "Report generated with {report} template.")
+                  }
+           
                   if(tolower(algorithm) == "postprob") {this_alg <- "map"} else {this_alg <- "fit"}
                   msg <- c(msg, "If assigned to a variable, e.g. {.code run{newdir} <-}, results of {.fn {this_alg}} are available in {.code run{newdir}}.")
                   setwd(cwd)
@@ -1318,11 +1321,8 @@ PM_model <- R6::R6Class(
                     "i" = "See help for {.fn PM_model}."
                   ))
                 }
-                
-                
-                self$arg_list <- modifyList(self$arg_list, changes)
-                
-                self$compile() # recompile the model after updating
+                self$arg_list <- modifyList2(self$arg_list, changes)
+                self <- PM_model$new(self$arg_list) # recreate and recompile the model
                 return(invisible(self))
               }
               
@@ -1713,40 +1713,7 @@ PM_model <- R6::R6Class(
                 }
               }
               
-              #' @title List of Pmetrics model library model names
-              #' @description
-              #' `r lifecycle::badge("stable")`
-              #' Returns a list of names of all Pmetrics model library objects in the global environment.
-              #' @export
-              mod_lib_names <- function(){
-                ls(envir = .GlobalEnv) %>% purrr::map(\(x) x[inherits(get(x), "PM_lib")]) %>% purrr::discard(\(x) length(x) == 0) 
-              }
               
-              # returns model from detected template, 0 if none, and -1 if more than one
-              get_found_model <- function(fun){
-                eqns <- as.list(body(fun)[-1])
-                found <- map(eqns, \(x) deparse(x) %in% mod_lib_names()) %>% unlist()
-                
-                if(sum(found) > 1){
-                  cli::cli_inform(c(
-                    "x" = "Multiple library model templates detected",
-                    "i" = "Maximum of one library model template allowed."
-                  ))
-                  return(-1)
-                } 
-                
-                if(sum(found) == 0){
-                  return(0)
-                }
-                
-                found_model_name <- eqns[[which(found)]] %>% deparse()
-                if(length(found_model_name)>0) {
-                  found_model <- get(found_model_name)
-                } else {
-                  found_model <- 0
-                }
-                return(found_model)
-              }
               
               
               # PLOT --------------------------------------------------------------------

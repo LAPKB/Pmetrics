@@ -541,9 +541,9 @@ PM_pta <- R6::R6Class(
           ) %>%
           ungroup()
       } else { # only one target_type
-        master_pta <- master_pta %>%
-          select(-this_type) %>%
-          list(.data, intersect = NA)
+        master_pta <- list(data = master_pta %>%
+          select(-this_type),
+        intersect = NA)
       }
 
       class(master_pta) <- c("PM_pta_data", "list")
