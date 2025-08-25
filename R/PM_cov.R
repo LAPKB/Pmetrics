@@ -63,7 +63,7 @@ PM_cov <- R6::R6Class(
     #' parameter values
     #' @details
     #' See [PMstep].
-    #' @param ... Arguments passed to [PMstep]
+    #' @param ... Arguments passed to [PM_step]
     step = function(...) {
       PM_step(self$data, ...)
     },

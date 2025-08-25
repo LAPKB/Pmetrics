@@ -696,11 +696,21 @@ If the model is already compiled, the method does nothing.
 \if{html}{\out{<a id="method-PM_model-update"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-update}{}}}
 \subsection{Method \code{update()}}{
-Update the model by launching the model editor.
+Update the model using recursive lists of changes and recompile the updated model.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$update()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$update(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Named elements corresponding to the blocks in the model,
+such as "pri", "cov", "sec", "eqn", "ini", "lag", "fa", "out", and "err".
+For each block, create a list of changes, which may be additions, edits, or deletions.
+For deletions, set the value to \code{NULL}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-clone"></a>}}

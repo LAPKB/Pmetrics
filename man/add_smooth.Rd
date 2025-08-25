@@ -9,10 +9,11 @@ add_smooth(
   x = NULL,
   y = NULL,
   data = NULL,
-  method = "lm",
-  line = T,
+  method = c("lm", "loess"),
+  span = 0.75,
+  line = TRUE,
   ci = 0.95,
-  stats
+  stats = TRUE
 )
 }
 \arguments{

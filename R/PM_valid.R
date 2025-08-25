@@ -214,37 +214,13 @@ PM_valid <- R6::R6Class(
         mutate(tad = if (tad) valTAD else NA) %>%
         dplyr::relocate(tad, .after = time)
 
-      # dataSub <- mdata[, c("id", "evid", "time", "out", "dose", "out", dplyr::all_of(binCov))]
-      # # add time after dose
-      # if (tad) {
-      #   dataSub$tad <- valTAD
-      # } else {
-      #   dataSub$tad <- NA
-      # }
-      # dataSub <- dataSub %>% select(c("id", "evid", "time", "tad", "out", "dose", dplyr::all_of(binCov)))
-
+     
 
       # restrict to doses for dose/covariate clustering (since covariates applied on doses)
       dataSubDC <- dataSub %>%
         filter(evid > 0) %>%
         select(c("id", "dose", dplyr::all_of(binCov)))
 
-      # # set zero doses (covariate changes) as missing
-      # dataSubDC$dose[dataSubDC$dose == 0] <- NA
-      # for (i in 1:nrow(dataSubDC)) {
-      #   missingVal <- which(is.na(dataSubDC[i, ]))
-      #   if (2 %in% missingVal) { # dose is missing
-      #     if (i == 1 | (dataSubDC$id[i - 1] != dataSubDC$id[i])) { # first record for patient has zero dose
-      #       j <- 0
-      #       while (is.na(dataSubDC$dose[i + j])) { # increment until non-zero dose is found
-      #         j <- j + 1
-      #       }
-      #       dataSubDC$dose[i] <- dataSubDC$dose[i + j] # set dose equal to first non-zero dose
-      #       missingVal <- missingVal[-which(missingVal == 3)] # take out missing flag for dose as it has been dealt with
-      #     }
-      #   }
-      #   dataSubDC[i, missingVal] <- dataSubDC[i - 1, missingVal]
-      # }
 
       dataSubDC <- dataSubDC %>%
         # 1. Replace 0 doses with NA
