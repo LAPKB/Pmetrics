@@ -832,6 +832,8 @@ plot.PM_op <- function(x,
     #### make summary #####
     if (inherits(object, "PM_op")) {
       object <- object$data
+    } else if (!inherits(object, "PM_op_data")) {
+      cli::cli_abort(c("x" = "{.code object} must be a {.cls PM_op} or {.cls PM_op_data} object.", "i" = "See {.fn Pmetrics::summary.PM_op}."))
     }
     
     object <- object %>% filter(outeq == !!outeq, pred.type == !!pred.type, icen == !!icen)
