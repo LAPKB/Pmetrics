@@ -1555,16 +1555,16 @@ return(wb)
 #' Default formats are the same as for the `join` argument, since normally one would not plot
 #' both lines joining observations and prediction lines, i.e., typical use would be
 #' `line = list(join = F, pred = "post")`.
-#' @param marker Formats the symbols plotting observations. `r template("marker")`
-#' @param group Character vector naming a column in `x` to **group** by, e.g. "id" or
-#' a covariate like "gender"
-#' @param group_colors to use for **groups**. This can be a palette or a vector of colors.
+#' @param marker Formats the symbols plotting observations. `r template("marker")`. 
+#' When a `group` and/or multiple `outeq` are specified, the `$color` element should be a palette or a vector of colors.
 #' For accepted palette names see `RColorBrewer::brewer.pal.info`. Examples include
 #' "BrBG", or "Set2". An example vector could be `c("red", "green", "blue")`. It is not
 #' necessary to specify the same number of colors as groups within `group`, as colors
 #' will be interpolated to generate the correct number. The default when `group`
-#' is specified is the "Set1" palette. *Note:* When there are groups, 
-#' colors for the groups will be controlled by this argument, which overrides any color in the `marker` and `line` arguments.
+#' is specified is the "Set1" palette. When there are groups, the `$color` element for join or pred lines
+#' will be set to the same as `marker$color`.
+#' @param group Character vector naming one column in `x` to **group** by, e.g. "id" or
+#' a covariate like "gender"
 #' @param group_names A character vector of names to label the **groups** if `legend = TRUE`.
 #' This vector must be the same length as the number of groups within `group`. If missing,
 #' the vector will be generated from the unique values in `group`.
@@ -1740,7 +1740,7 @@ plot.PM_data <- function(x,
     includeExclude(include, exclude)
     
     
- 
+    
     # make group column for groups
     if (!is.null(group)) {
       if (!group %in% base::names(x$standard_data)) {
@@ -1757,19 +1757,23 @@ plot.PM_data <- function(x,
       presub <- presub %>% mutate(group = "")
     }
     
-  
-    # make outeq labels
-    if (is.null(out_names)) {
-      out_names <- paste0("Output ", outeq)
-    } else if (length(out_names) < max(outeq)) {
-      cli::cli_abort(c("x" = "The number of names in {.var out_names} must be at least as long as the maximum number of outputs in {.var outeq}."))
-    }
-    # make output names
-    presub <- presub %>%
-    rowwise() %>%
-    mutate(group = paste0(group, ", " , out_names[outeq]))
     
-    if (block[1] != 1 | length(block) > 1) {
+    # make outeq labels if more than one output being plotted
+    if (length(outeq) > 1){
+      if (is.null(out_names)) {
+        out_names <- paste0("Output ", outeq)
+      } else if (length(out_names) < max(outeq)) {
+        cli::cli_abort(c("x" = "The number of names in {.var out_names} must be at least as long as the maximum number of outputs in {.var outeq}."))
+      }
+      # make output names
+      presub <- presub %>%
+      rowwise() %>%
+      mutate(group = paste0(group, ", " , out_names[outeq]))
+      
+    }
+    
+    # add blocks if more than one being plotted
+    if (length(block) > 1) {
       presub <- presub %>%
       rowwise() %>%
       mutate(group = paste0(group, ", Block ", block))
@@ -1867,18 +1871,21 @@ plot.PM_data <- function(x,
     # Plot function ----------------------------------------------------------
     
     dataPlot <- function(allsub, overlay, includePred) {
-      #browser()
+      
       if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
-        
-        n_colors <- length(levels(allsub$group))
-        if (length(group_colors) < n_colors) { # fewer colors than groups, need to interpolate
-          if (checkRequiredPackages("RColorBrewer")) {
-            palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
-            if (length(group_colors) == 1 && group_colors %in% palettes$name) { # colors specified as a palette name
-              max_colors <- palettes$maxcolors[match(group_colors, palettes$name)]
-              group_colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, group_colors))(n_colors)
-            } else {
-              group_colors <- tryCatch(colorRampPalette(group_colors)(n_colors),
+          
+          n_colors <- length(unique(allsub$group))
+          group_colors <- marker$color 
+          group_symbols <- marker$symbol
+
+          if (length(group_colors) < n_colors) { # fewer colors than groups, need to interpolate
+            if (checkRequiredPackages("RColorBrewer")) {
+              palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
+              if (length(group_colors) == 1 && group_colors %in% palettes$name) { # colors specified as a palette name
+                max_colors <- palettes$maxcolors[match(group_colors, palettes$name)]
+                group_colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, group_colors))(n_colors)
+              } else {
+                group_colors <- tryCatch(colorRampPalette(group_colors)(n_colors),
                 error = function(e) {
                   cli::cli_warn(c("!" = "Unable to interpolate colors, using default colors."))
                   getDefaultColors(n_colors) # in plotly_Utils
@@ -1890,12 +1897,24 @@ plot.PM_data <- function(x,
             colors <- getDefaultColors(n_colors) # in plotly_Utils
           }
         }
+
+        if (length(group_symbols) < n_colors) { # fewer symbols than groups, need to interpolate
+          if (length(group_symbols) == 1) { # only one symbol specified
+            group_symbols <- rep(group_symbols, n_colors)
+          } else { # multiple symbols specified, but fewer than groups
+            group_symbols <- rep(group_symbols, length.out = n_colors)
+          }
+        }
+
+
+        if (n_colors > 1) {
+          marker$color <- NULL # colors set by group_colors
+          marker$symbol <- NULL # symbols set by group_symbols
+          join$color <- NULL
+        }
         
-        marker$color <- NULL
-        join$color <- NULL
+
       } else { # no grouping
-        # allsub$group <- factor(1, labels = "Observed")
-        
         if (includePred) {
           allsub$group <- factor(allsub$src, labels = c("Observed", "Predicted"))
         } else {
@@ -1910,7 +1929,6 @@ plot.PM_data <- function(x,
       
       # Build plot
       p <- plot_ly()
-      
       for (i in seq_along(traces)) {
         
         trace_data <- traces[[i]]
@@ -1936,8 +1954,10 @@ plot.PM_data <- function(x,
           mode = "markers+lines",
           name = ~group,
           marker = marker,
-          color = ~group,
+          color = ~group, 
           colors = group_colors,
+          symbol = ~group,
+          symbols = group_symbols,
           text = ~text_label,
           hoverinfo = "text",
           line = join,
@@ -1956,6 +1976,8 @@ plot.PM_data <- function(x,
             line = predArgs,
             color = ~group,
             colors = group_colors,
+            symbol = ~group,
+            symbols = group_symbols,
             text = ~text_label,
             hoverinfo = "text",
             showlegend = legendShow
@@ -2014,7 +2036,7 @@ plot.PM_data <- function(x,
     }
     
     return(invisible(p))
-}
+  }
   # SUMMARY -----------------------------------------------------------------
   
   #' @title Summarize PM_data objects

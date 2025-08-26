@@ -1620,11 +1620,11 @@ function(el, x) {
         for(i in seq_along(group_df$group)) {
           g <- g +
           ggplot2::annotation_custom(
-            grob = pointsGrob(
-              x = unit(lay$legend$x - (0.012 * max_chr), "npc"),
-              y = unit(lay$legend$y - (i * 0.03), "npc"),
+            grob = grid::pointsGrob(
+              x = grid::unit(lay$legend$x - (0.012 * max_chr), "npc"),
+              y = grid::unit(lay$legend$y - (i * 0.03), "npc"),
               pch = group_df$marker_shape[i],
-              size = unit(group_df$marker_size[i], "mm"),
+              size = grid::unit(group_df$marker_size[i], "mm"),
               gp = grid::gpar(
                 col = group_df$marker_line_color[i],
                 fill = group_df$marker_fill_color[i],
@@ -1633,12 +1633,12 @@ function(el, x) {
               )
             ) +
             ggplot2::annotation_custom(
-              grob = linesGrob(
-                x = unit(
+              grob = grid::linesGrob(
+                x = grid::unit(
                   c(lay$legend$x - (0.012 * max_chr) - 0.012,
                   lay$legend$x - (0.012 * max_chr) + 0.012), 
                   "npc"),
-                  y = unit(
+                  y = grid::unit(
                     c(lay$legend$y - (i * 0.03),
                     lay$legend$y - (i * 0.03)), 
                     "npc"),
@@ -1651,12 +1651,12 @@ function(el, x) {
                   )
                 ) +
                 ggplot2::annotation_custom(
-                  grob = textGrob(
+                  grob = grid::textGrob(
                     label = group_df$group[i],
-                    x = unit(lay$legend$x - (0.01 * max_chr), "npc"),
-                    y = unit(lay$legend$y - (i * 0.03), "npc"),
+                    x = grid::unit(lay$legend$x - (0.01 * max_chr), "npc"),
+                    y = grid::unit(lay$legend$y - (i * 0.03), "npc"),
                     hjust = 0,
-                    gp = gpar(
+                    gp = grid::gpar(
                       fontsize = 10,
                       col = "black"
                     )
@@ -1681,8 +1681,8 @@ function(el, x) {
                 if (shape$type == "line") {
                   g <- g + ggplot2::annotation_custom(
                     grid::linesGrob(
-                      x = unit(c(shape$x0, shape$x1), "npc"),
-                      y = unit(c(shape$y0, shape$y1), "npc"),
+                      x = grid::unit(c(shape$x0, shape$x1), "npc"),
+                      y = grid::unit(c(shape$y0, shape$y1), "npc"),
                       gp = grid::gpar(
                         col = shape$line$color %||% "grey",
                         lwd = shape$line$width  %||% 1,
@@ -1693,10 +1693,10 @@ function(el, x) {
                 } else if (shape$type == "rect") {
                   g <- g + ggplot2::annotation_custom(
                     grid::rectGrob(
-                      x = unit(shape$x0, "npc"),
-                      y = unit(shape$y0), "npc"),
-                      width = unit(shape$x1 - shape$x0, "npc"),
-                      height = unit(shape$y1 - shape$y0, "npc"),
+                      x = grid::unit(shape$x0, "npc"),
+                      y = grid::unit(shape$y0), "npc"),
+                      width = grid::unit(shape$x1 - shape$x0, "npc"),
+                      height = grid::unit(shape$y1 - shape$y0, "npc"),
                       gp = grid::gpar(
                         fill = shape$fillcolor %||% "transparent",
                         col = shape$line$color %||% "black",
@@ -1715,8 +1715,8 @@ function(el, x) {
                   g <- g + ggplot2::annotation_custom(
                     grid::textGrob(
                       label = stringr::str_replace_all(annot$text, "<br>", "\n"),
-                      x = unit((annot$x - 0.3) %||% 0.5, "npc"),
-                      y = unit(annot$y %||% 0.5, "npc"),
+                      x = grid::unit((annot$x - 0.3) %||% 0.5, "npc"),
+                      y = grid::unit(annot$y %||% 0.5, "npc"),
                       hjust = 0,
                       vjust = 0,
                       gp = grid::gpar(

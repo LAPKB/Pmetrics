@@ -130,7 +130,7 @@ mod1b <- PM_model$new("../src/model.txt")
 mod1b
 
 # PM_model provides a method to update the different elements of a model, for example:
-mod1b$update(
+mod1b <- mod1b$update(
   pri = list(
     ka = ab(0.001, 5)
 ))
@@ -182,12 +182,16 @@ run1 <- PM_load(1)
 # Plot the raw data using R6 with various options.  Type ?plot.PM_data in the R console for help.
 run1$data$plot()
 run1$data$plot(overlay = FALSE, xlim = c(119, 145))
+run1$data$plot(xlim = c(119, 146), group = "gender", group_names = c("Male", "Female"), 
+  marker = list(color = c("red","blue"), symbol = c("circle","triangle-up"))) 
+
+run1$data$plot(xlim = c(119, 146), group = "gender", group_names = c("Male", "Female"), marker = list(color = "Set2"))
+
 
 # The following are the older S3 method with plot(...) for the first two examples
 # You can use R6 or S3 for any Pmetrics object
 # We will focus on R6 as the more modern way.
 plot(run1$data)
-plot(run1$data, xlim = c(119, 146), marker = list(color = "blue"))
 
 # here's a summary of the original data file; ?summary.PMmatrix for help
 run1$data$summary()

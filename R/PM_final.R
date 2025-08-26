@@ -499,6 +499,8 @@ PM_final <- R6::R6Class(
         
         if (inherits(x, "PM_final")) {
           data <- x$data
+        } else {
+          data <- x # PM_final_data
         }
         
         
