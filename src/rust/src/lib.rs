@@ -29,7 +29,7 @@ fn simulate_one(
 ) -> Result<Dataframe<SimulationRow>> {
     validate_paths(data_path, model_path);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
-    let subjects = data.get_subjects();
+    let subjects = data.subjects();
     let rows = match kind {
         "ode" => executor::simulate::<ODE>(
             model_path.into(),
@@ -67,7 +67,7 @@ fn simulate_all(
     validate_paths(data_path, model_path);
     let theta = parse_theta(theta);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
-    let subjects = data.get_subjects();
+    let subjects = data.subjects();
 
     let rows: Vec<_> = match kind {
         "ode" => theta

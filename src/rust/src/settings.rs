@@ -24,7 +24,7 @@ pub(crate) fn settings(
         "postprob" => pmcore::prelude::Algorithm::POSTPROB,
         _ => return Err(anyhow::anyhow!("Algorithm {} not supported", algorithm)),
     };
- 
+
     let error_models_raw = settings.get("error_models").unwrap().as_list().unwrap();
     let loq = settings.get("loq").unwrap();
     let loq = if loq.is_na() {
@@ -36,9 +36,9 @@ pub(crate) fn settings(
             .map(|&x| if x.is_nan() { None } else { Some(x) })
             .collect()
     };
- 
+
     let mut ems = ErrorModels::new();
- 
+
     for (i, (_, em)) in error_models_raw.iter().enumerate() {
         let em = em.as_list().unwrap().into_hashmap();
         let gamlam = em.get("initial").unwrap().as_real().unwrap();
