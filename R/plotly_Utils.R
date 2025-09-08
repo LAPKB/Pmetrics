@@ -1321,6 +1321,10 @@ function(el, x) {
       cli::cli_abort(c("x" = "Plotting data with {.arg overlay = TRUE} results in a {.cls treliscopejs_widget} object, which cannot be converted to ggplot.",
       "i" = "Remake your plot with {.arg overlay = FALSE} and use {.arg include} or {.arg exclude} as needed."))
     }
+    if (is.list(p) && !is.null(p$p) && inherits(p$p, "plotly")) {
+      p <- p$p
+    }
+
     if (!inherits(p, "plotly")){
       cli::cli_abort(c("x" = "The input must be a plotly object."))
     }
@@ -1334,7 +1338,7 @@ function(el, x) {
     
     ####### HELPER FUNCTIONS ##########
     # safe NULL coalesce
-    `%||%` <- function(a, b) if (!is.null(a)) a else b
+    `%||%` <- function(a, b) if (!is.null(a) & length(a)>0) a else b
     
     
     # map plotly shapes to ggplot2
@@ -1426,7 +1430,7 @@ function(el, x) {
       line_opacity <- tr$line$opacity %||% 1
       line_color   <- tr$line$color   %||% tr$marker$color %||% tr$marker$line$color %||% "dodgerblue" %>% rgba_to_rgb()
       line_width <- tr$line$width * 0.5 %||% 0.5
-      line_dash <- plotly_line_dash_to_gg(tr$line$dash)
+      line_dash <- plotly_line_dash_to_gg(tr$line$dash) %||% "solid"
       marker_opacity <- tr$marker$opacity %||% 1
       marker_fill_color   <- tr$marker$color %||% tr$fillcolor %||% "dodgerblue" %>% rgba_to_rgb() # fill color
       marker_size <- tr$marker$size/3 %||% 3 
@@ -1450,7 +1454,7 @@ function(el, x) {
         has_markers <- grepl("markers", mode)
         
         if (has_lines) {
-          if (stringr::str_detect(tr$name, "CI|ribbon")){
+          if (stringr::str_detect(tname, "CI|ribbon")){
             g <- g + ggplot2::geom_polygon(
               data = df,
               ggplot2::aes(x = x, y = y),

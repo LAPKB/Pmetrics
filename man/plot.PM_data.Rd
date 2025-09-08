@@ -11,7 +11,6 @@
   line = list(join = TRUE, pred = FALSE),
   marker = TRUE,
   group = NULL,
-  group_colors = "Set1",
   group_names = NULL,
   mult = 1,
   outeq = 1,
@@ -81,18 +80,18 @@ both lines joining observations and prediction lines, i.e., typical use would be
 
 \item{marker}{Formats the symbols plotting observations. Controls the plotting symbol for observations.  This argument maps to the plotly marker object. It can be boolean or a list. \code{TRUE} will plot the marker with default characteristics. \code{FALSE} will suppress marker plotting. If a list, can control many marker characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > marker to see all the ways the marker can be formatted. Most common will be: \itemize{ \item{\code{color}} Marker color. \item{\code{symbol}} Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values. \item{\code{size}} Character size in points. \item{\code{opacity}} Ranging between 0 (fully transparent) to 1 (fully opaque). \item{\code{line}} A list of  additional attributes governing the outline for filled shapes, most commonly color and width. }
 
-Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}}
-
-\item{group}{Character vector naming a column in \code{x} to \strong{group} by, e.g. "id" or
-a covariate like "gender"}
-
-\item{group_colors}{to use for \strong{groups}. This can be a palette or a vector of colors.
+Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}
+.
+When a \code{group} and/or multiple \code{outeq} are specified, the \verb{$color} element should be a palette or a vector of colors.
 For accepted palette names see \code{RColorBrewer::brewer.pal.info}. Examples include
 "BrBG", or "Set2". An example vector could be \code{c("red", "green", "blue")}. It is not
 necessary to specify the same number of colors as groups within \code{group}, as colors
 will be interpolated to generate the correct number. The default when \code{group}
-is specified is the "Set1" palette. \emph{Note:} When there are groups,
-colors for the groups will be controlled by this argument, which overrides any color in the \code{marker} and \code{line} arguments.}
+is specified is the "Set1" palette. When there are groups, the \verb{$color} element for join or pred lines
+will be set to the same as \code{marker$color}.}
+
+\item{group}{Character vector naming one column in \code{x} to \strong{group} by, e.g. "id" or
+a covariate like "gender"}
 
 \item{group_names}{A character vector of names to label the \strong{groups} if \code{legend = TRUE}.
 This vector must be the same length as the number of groups within \code{group}. If missing,

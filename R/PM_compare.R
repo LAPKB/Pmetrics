@@ -480,7 +480,51 @@ if(plot){
   
   
 }
+  
+  # Find best model
+  
+  # op fits
+  op_tbl <- op %>% map(\(x) {
+    fit <- lm(obs ~ pred, data = x)
+    tibble(
+      intercept = coef(fit)[1],
+      slope     = coef(fit)[2],
+      r2        = summary(fit)$r.squared
+    )
+  }) %>%
+  list_rbind(names_to = "dataset") 
+  
+  op_win <- c(
+    op_intercept = as.numeric(which.min(op_tbl$intercept)),
+    op_slope = as.numeric(which.min(abs(1 - op_tbl$slope))),
+    op_r2 = as.numeric(which.max(op_tbl$r2))
+  )
 
+  bias_imp <- sumobjBoth %>%
+  group_by(metric) %>%
+    select(-pred.type) %>%
+  pivot_wider(names_from = run, values_from = value) %>%
+    purrr::set_names("metric", paste0("Run_", 1:nrow(like)))
+  
+  bias_imp_win <- sumobjBoth %>%
+  group_by(metric) %>%
+  summarize(val = which.min(abs(value))) %>%
+  pivot_wider(names_from = metric, values_from = val)
+  
+  
+  # likelihood
+  like_tbl <- like  %>% t() %>% as.data.frame() %>%
+  purrr::set_names( paste0("Run_", 1:nrow(like))) %>%
+  rownames_to_column("metric")
+   
+
+  like_win <- c(
+    like_ll = as.numeric(which.min(like[[1]])),
+    like_ic = as.numeric(which.min(like[[2]]))
+  )
+
+
+  
 
 return(invisible(results))
 }

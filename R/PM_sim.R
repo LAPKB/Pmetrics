@@ -153,39 +153,46 @@ PM_sim <- R6::R6Class(
     #' file will be loaded. This filename should have the ".rds" extension, e.g. `sim1 <- PM_sim$new("sim.rds")`.
     #'
     #' 4. A manually specified prior as a list containing the following named items:
-    #'     * **prob** vector of probabilities of sampling from each distribution;
-    #'     * **mean** list of mean parameter values;
-    #'     * **sd** an optional list of overall standard deviations for each parameter, considering them as unimodally distributed; 
-    #' if present, `mat` will be treated as a correlation matrix and converted to a covariance matrix
-    #'     * **mat** If `sd` is missing, a covariance matrix. If `sd` is specified, a correlation matrix. 
-    #' This shoud be a square matrix of the overall covariance/correlations between parameters considered as unimodally distributed.
+    #'     * **wt** vector of weights (probabilities) of sampling from each distribution. If missing, assumed to be 1.
+    #'     * **mean** a list of mean parameter values. Each element of the list should be named with the parameter name and be a 
+    #' vector of length equal to the number of distributions. See details below.
+    #'     * **sd** an optional named list of overall standard deviations for each parameter, considering parameters as unimodally distributed,
+    #' i.e. there should only be one value for each parameter, regardless of the number of distributions. 
+    #' `sd` is only needed if a correlation matrix is specified, which will be converted to a covariance matrix. 
+    #'     * **ONE** of the following matrices:
+    #'        1. **cor** A square matrix of the overall correlations between parameters, again 
+    #' considered as unimodally distributed, i.e. there should only be one correlation matrix regardless of the number of distributions.
+    #' If a correlation matrix is specified, the `sd` element is required to calculate the covariance matrix.
+    #'        2. **cov** A square matrix of the overall covariances between parameters, again
+    #' considered as unimodally distributed, i.e. there should only be one covariance matrix regardless of the number of distributions.
+    #' If a covariance matrix is specified, the `sd` element is unnecessary, since the diagonals of the covariance matrix are the variances
+    #' or squared standard deviations.
     #' 
     #' 
     #'     If only one distribution is to be specified the
-    #'     `prob` vector should be of length 1 and contain a 1. If multiple
-    #'     distributions are to be sampled, the `prob` vector should be of
-    #'     length equal to the number of distributions and its values should sum to 1,
-    #'     e.g. `c(0.25, 0.05, 0.7)`.  The `mean` element should be a list
-    #'     of length equal to the number of parameters to be simulated,
-    #'     each element of length equal to `nrow(prob)`. 
-    #'     List element names should be the parameter names. If the matrix is correlations,
+    #'     `wt` vector can be ommitted or should be `wt = 1`. If multiple
+    #'     distributions are to be sampled, the `wt` vector should be of
+    #'     length equal to the number of distributions in `mean` and the values of `wt` should sum to 1,
+    #'     e.g. `wt = c(0.25, 0.05, 0.7)`.  The `mean` element should be a list
+    #'     of elements, named for the parameters, with vectors of values equal to the number of terms in `wt`. 
+    #'     If `cor` is used,
     #'     Pmetrics will use the `sd` element to calculate the covariance matrix. The
-    #'     covariance matrix will be divided by `length(prob)` and applied to
-    #'     each distribution.
+    #'     covariance matrix will be divided by the number of distributions, i.e. `length(wt)`,
+    #'     and applied to each distribution.
     #' 
     #'     Examples:
     #'     * Single distribution: 
     #'     ```
-    #'     poppar = list(prob = 1, 
+    #'     poppar = list(wt = 1, 
     #'                   mean = list(ke = 0.5, v = 100), 
-    #'                   mat = matrix(c(0.04, 2.4, 2.8, 400), nrow = 2))  # treated as covariance matrix because sd is missing 
+    #'                   cov = matrix(c(0.04, 2.4, 2.8, 400), nrow = 2))  # sd not required because cov specified 
     #'     ```
     #'     * Multiple distributions: 
     #'     ```
-    #'     poppar = list(prob = c(0.1, 0.15, 0.75), 
-    #'                   mean = list(ke = c(2, 0.5, 1), v = c(50, 100, 200)), 
+    #'     poppar = list(wt = c(0.1, 0.15, 0.75), # 3 distributions that sum to 1
+    #'                   mean = list(ke = c(2, 0.5, 1), v = c(50, 100, 200)), # 3 values for each parameter
     #'                   sd = list(ke = 0.2, v = 20), # overall sd, ignoring multiple distributions
-    #'                   mat = matrix(c(1, 0.6, 0.7, 1), nrow = 2)) # correlation matrix because sd present
+    #'                   cor = matrix(c(1, 0.6, 0.7, 1), nrow = 2)) # sd required because cor specified
     #'     ```
     #'
     #' @param model Name of a suitable [PM_model] object or a model file template
@@ -615,50 +622,43 @@ PM_sim <- R6::R6Class(
           # CASE 7 - poppar is manual list
         } else if (inherits(poppar, "list")) { # PM_final and PM_sim are lists, so needs to be after those for manual list
           case <- 7
-          # check to make sure poppar is a list with the right elements
-          if (length(poppar) == 4){
-            if (!all(c("prob", "mean", "sd", "mat") %in% names(poppar))) {
-              cli::cli_abort(c(
-                "x" = "For a correlation matrix, {.arg poppar} must be a list with elements {.val prob}, {.val mean}, {.val sd}, and {.val mat}.",
-                "i" = "See ?PM_sim for help."
-              ))
-            }
-            poppar$mat <- cor2cov(poppar$mat, poppar$sd) # convert correlation matrix to covariance matrix
-            final <- poppar
-            msg <- c(msg, "Manual prior specified with correlation matrix.")
-          } else if (length(poppar) == 3) {
-            if (!all(c("prob", "mean", "mat") %in% names(poppar))) {
-              cli::cli_abort(c(
-                "x" = "For a covariance matrix, {.arg poppar} must be a list with elements {.val prob}, {.val mean}, and {.val mat}.",
-                "i" = "See ?PM_sim for help."
-              ))
-            }
-            final$sd <- NULL # no sd in covariance matrix
-            final <- poppar
-            msg <- c(msg, "Manual prior specified with covariance matrix.")
+      
+          # parse poppar list
+          poppar_elements <- names(poppar) %>% purrr::discard(~ .x == "wt")
+
+          if (length(poppar_elements) == 2 && all(c("mean", "sd") %in% poppar_elements)) { # mean and SD only
+            poppar$cov <- diag(poppar$sd^2) # make covariance matrix
+          } else if (length(poppar_elements) == 2 && all(c("mean", "cov") %in% poppar_elements)) { # mean, covariance/correlation matrix, and weights
+            poppar <- poppar # all good
+          } else if (length(poppar_elements) == 3 && all(c("mean", "sd", "cor") %in% poppar_elements)) { # mean, SD, covariance/correlation matrix, and weights
+            poppar$cov <- cor2cov(poppar$cor, poppar$sd) # convert correlation matrix to covariance matrix
           } else {
             cli::cli_abort(c(
-              "x" = "{.arg poppar} must be a list with 3 (covariance matrix) or 4 (correlation matrix) elements.",
+              "x" = "{.arg poppar} is malformed with elements {.val {poppar_elements}}.",
+              "i" = "See ?PM_sim for help on constructing {.arg poppar}."
+            ))
+          }
+
+          # add missing wt if needed
+          if (!"wt" %in% names(poppar)) {
+            poppar$wt <- 1 # default weight
+          } 
+
+          # check to ensure wt and mean are aligned
+          if (!all(map_lgl(poppar$mean, \(x) length(x) == length(poppar$wt)))) {
+            cli::cli_abort(c(
+              "x" = "The length of each vector in {.arg poppar$mean} must be equal to the length of {.arg poppar$wt}.",
               "i" = "See ?PM_sim for help."
             ))
           }
           
-          
           # get final into right format
-          final$mean <- if(is.numeric(final$mean)) {
-            data.frame(t(final$mean)) # transpose if numeric vector
-          } else {
-            data.frame(final$mean) # otherwise, assume data frame
-          }
-          final$sd <- if (is.null(final$sd)) {
-            NULL # no sd in covariance matrix
-          } else if (is.numeric(final$sd)) {
-            data.frame(t(final$sd)) # transpose if numeric vector
-          } else {
-            data.frame(final$sd) # otherwise, assume data frame
-          }
-          final$mat <- data.frame(final$mat) # convert to data frame
-          
+          final <- list(
+            popWeight = poppar$wt,
+            popMean = tibble::as_tibble(do.call(cbind, poppar$mean)),
+            popCov = data.frame(poppar$cov)
+          ) 
+
           # not returning because going on to simulate below
           
           ### This is for loading a saved simulation from file
@@ -978,7 +978,7 @@ PM_sim <- R6::R6Class(
         
         
         # PARAMETER LIMITS --------------------------------------------------------
-        
+  
         if (all(is.null(limits))) { # limits are omitted altogether
           parLimits <- matrix(c(rep(-Inf, npar), rep(Inf, npar)), ncol = 2)
         } else if (!any(is.na(limits)) & is.vector(limits)) { # no limit is NA and specified as vector of length 1 or 2
@@ -1488,7 +1488,6 @@ PM_sim <- R6::R6Class(
       }
       
       # generate samples for theta
-      
       set.seed(seed)
       thetas <- generate_multimodal_samples(nsim, pop_weight, pop_mean, pop_cov, toInclude[i], limits)
       
@@ -2215,6 +2214,7 @@ plot.PM_sim <- function(x,
         p <- p %>%
         plotly::add_ribbons(
           ymin = ~lowerCI, ymax = ~upperCI,
+          name = "CI",
           color = I("grey"), opacity = 0.5,
           line = list(width = 0),
           hoverinfo = "none",
@@ -2247,6 +2247,7 @@ plot.PM_sim <- function(x,
         
         p <- p %>% 
         plotly::add_ribbons(data = fill_area, x = ~time, ymin = ~lower, ymax = ~upper, 
+          name = "CI",
           line = NULL,
           inherit = FALSE,
           fillcolor = lineList$fill$color,
