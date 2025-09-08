@@ -29,7 +29,7 @@ getDefaultColors(6)
 }
 }
 \seealso{
-\code{\link[=blue]{blue()}}, \code{\link[=green]{green()}}, \code{\link[=red]{red()}}, \code{\link[=brown]{brown()}}, \code{\link[=black]{black()}},
+\code{\link[crayon:crayon]{crayon::blue()}}, \code{\link[crayon:crayon]{crayon::green()}}, \code{\link[crayon:crayon]{crayon::red()}}, \code{\link[=brown]{brown()}}, \code{\link[crayon:crayon]{crayon::black()}},
 \code{\link[=purple]{purple()}}, \code{\link[=pink]{pink()}}, \code{\link[=gold]{gold()}}, \code{\link[=orange]{orange()}}, \code{\link[=gray]{gray()}}
 }
 \author{
