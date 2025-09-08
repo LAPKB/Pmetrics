@@ -101,7 +101,7 @@ parameter values
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{PMstep}}
+\item{\code{...}}{Arguments passed to \link{PM_step}}
 }
 \if{html}{\out{</div>}}
 }

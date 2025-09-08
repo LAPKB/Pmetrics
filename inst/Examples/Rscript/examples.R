@@ -130,7 +130,7 @@ mod1b <- PM_model$new("../src/model.txt")
 mod1b
 
 # PM_model provides a method to update the different elements of a model, for example:
-mod1b <- mod1b$update(
+mod1b$update(
   pri = list(
     ka = ab(0.001, 5)
 ))
@@ -183,7 +183,7 @@ run1 <- PM_load(1)
 run1$data$plot()
 run1$data$plot(overlay = FALSE, xlim = c(119, 145))
 run1$data$plot(xlim = c(119, 146), group = "gender", group_names = c("Male", "Female"), 
-  marker = list(color = c("red","blue"), symbol = c("circle","triangle-up"))) 
+  marker = list(color = c("blue","red"), symbol = c("circle","triangle-up"))) 
 
 run1$data$plot(xlim = c(119, 146), group = "gender", group_names = c("Male", "Female"), marker = list(color = "Set2"))
 
