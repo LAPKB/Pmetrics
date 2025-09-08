@@ -75,8 +75,7 @@ Create new object populated with covariate-parameter information
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
-.}
+\item{\code{PMdata}}{include \verb{r template("PMdata")}.}
 
 \item{\code{...}}{Not currently used.}
 }

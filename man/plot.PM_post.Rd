@@ -34,9 +34,9 @@
 \item{x}{The name of a \link{PM_post}  object, e.g. \code{NPex$post}.
 in a \link{PM_result} object}
 
-\item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
+\item{include}{\verb{r template("include")}}
 
-\item{exclude}{A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)}
+\item{exclude}{\verb{r template("exclude")}}
 
 \item{line}{Controls characteristics of lines as for all plotly plots.
 It can either be a boolean or a list. If set to \code{TRUE} or
@@ -51,9 +51,7 @@ overriden are:
 line > dash > values. Default is "solid".
 Example: \code{line = list(color = "red", dash = "longdash", width = 2)}}
 
-\item{marker}{Formats the symbols plotting observations. Controls the plotting symbol for observations.  This argument maps to the plotly marker object. It can be boolean or a list. \code{TRUE} will plot the marker with default characteristics. \code{FALSE} will suppress marker plotting. If a list, can control many marker characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > marker to see all the ways the marker can be formatted. Most common will be: \itemize{ \item{\code{color}} Marker color. \item{\code{symbol}} Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values. \item{\code{size}} Character size in points. \item{\code{opacity}} Ranging between 0 (fully transparent) to 1 (fully opaque). \item{\code{line}} A list of  additional attributes governing the outline for filled shapes, most commonly color and width. }
-
-Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}}
+\item{marker}{Formats the symbols plotting observations. \verb{r template("marker")}}
 
 \item{color}{Character vector naming a column to \strong{group} by, e.g. "outeq" or "icen".}
 
@@ -69,16 +67,14 @@ is specified is the "Set1" palette.}
 This vector does need to be the same length as the number of groups.
 Example: \code{c("Mean", "Median")} if \code{icen = c("mean", "median")}.}
 
-\item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
+\item{mult}{\verb{r template("mult")}}
 
 \item{icen}{Can be "median" for the predictions based on median of
 parameter value distributions, "mean", or both, e.g. \code{c("mean", "median")}.  Default is "median".}
 
-\item{outeq}{Which output equation to plot. Default is 1.
-Default is 1, but can be multiple if present in the data, e.g. \code{1:2} or \code{c(1, 3)}.}
+\item{outeq}{\verb{r template("outeq")} Default is 1, but can be multiple if present in the data, e.g. \code{1:2} or \code{c(1, 3)}.}
 
-\item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data.
-Default is 1, but can be multiple if present in the data, as for \code{outeq}.}
+\item{block}{\verb{r template("block")} Default is 1, but can be multiple if present in the data, as for \code{outeq}.}
 
 \item{overlay}{Operator to overlay all time prediction profiles in a single plot.
 The default is \code{TRUE}. If \code{FALSE}, will trellisplot subjects one at a time. Can also be
@@ -87,41 +83,23 @@ specified as a vector with number of rows and columns, e.g. \code{c(3, 2)} for 3
 
 \item{legend}{Not used for this plot.}
 
-\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type.
+\item{log}{\verb{r template("log")}}
 
-Example: \code{log = T}}
+\item{grid}{\verb{r template("grid")}}
 
-\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized.
+\item{xlab}{\verb{r template("xlab")} Default is "Time".}
 
-Examples: \itemize{ \item{\code{grid = F}} \item{\code{grid = list(gridcolor = "black", gridwidth = 2)}} }}
+\item{ylab}{\verb{r template("ylab")} Default is "Output".}
 
-\item{xlab}{Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element, either on its own or within the font list. The default for \code{bold} is \code{TRUE}.
-
-Examples: \itemize{ \item{\code{xlab = "Time (h)"}} \item{\code{xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))}} \item{\code{xlab = list(text = "Time", font = list(bold = T))}} }
-Default is "Time".}
-
-\item{ylab}{Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See \code{xlab} for details. If \code{xlab} is specified as a list with formatting, and \code{ylab} is simply a character label, then the formatting for the  \code{xlab} will be applied to the \code{ylab}. To format \code{ylab} independently, specify a formatting list as for \code{xlab}.
-
-Default is "Output".}
-
-\item{title}{Plot title. This argument maps to the the title layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the plot title, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > title to see other ways to customize the title using lists as additional arguments. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element. The default for \code{bold} is \code{TRUE}.
-
-Examples: \itemize{ \item{\code{title = "Observed vs. Predicted"}} \item{\code{title = list(text = "Raw Data", font = list(color = "red", family = "Arial", size = 10, bold = T))}} }
-Default is to have no title.}
+\item{title}{\verb{r template("title")} Default is to have no title.}
 
 \item{print}{If \code{TRUE}, will print the plotly object and return it. If \code{FALSE}, will only return the plotly object.}
 
-\item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range.
+\item{xlim}{\verb{r template("xlim")}}
 
-Example: \code{xlim = c(0,1)}}
+\item{ylim}{\verb{r template("ylim")}}
 
-\item{ylim}{Limits of the y axis as a vector.   This argument maps to the   the yaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > range.
-
-Example: \code{ylim = c(0,100)}}
-
-\item{...}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
-
-Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
+\item{...}{\verb{r template("dotsPlotly")}}
 }
 \value{
 Plots the object.
