@@ -56,212 +56,230 @@ getPMoptions <- function(opt, warn = TRUE, quiet = FALSE) {
 #'
 #' Set user options for Pmetrics
 #' @details
-#' When the Pmetrics package is first loaded with `library(Pmetrics)`,
-#' this function will be called. It will obtain
-#' the user's locale from system information and set the appropriate
-#' language. It will look for a *PMoptions.json* file in a hidden folder outside
-#' of the Pmetrics package. If that does not exist, it will offer to create this for you.
-#' With this choice, your options will persist when Pmetrics is updated. If you choose
-#' to store the options within the package architecture, your options will be erased
-#' every time you update Pmetrics. After you make your choice, you will not be presented
-#' with that choice again. However, if you wish to later move your options from the internal
-#' location to the external one, use [movePMoptions].
+#' When you call this function with the default `launch.app = TRUE`, it will start
+#' a Shiny app to set options for the Pmetrics package.
+#' Also, when the Pmetrics package is first loaded with `library(Pmetrics)`,
+#' this function will be called with `launch.app = TRUE` to read saved options from
+#' a *PMoptions.json* file stored in a folder outside
+#' of the Pmetrics package, so that your options will persist when Pmetrics is updated. 
 #'
-#' The function will obtain Pmetrics user options from the *PMoptions.json*
-#' file by calling [getPMoptions], set them for the session and update any
-#' missing options with default values.
-#'
-#' @param sep The field separator character; "," by default, but could be ";" or another separator.
-#' @param dec The decimal separator character; "." by default, but could be "," for example.
-#' @param rust_template Only used if `backend` is set to "rust".
-#' @param report_template Format of the plots included in the summary report presented at the end of a run.
-#' Default is to use "plotly", but can be set to "ggplot".
-#' @param quiet Suppress warning messages. Default `FALSE`.
+#' @param launch.app Launch the app to set options. Default `TRUE`.
 #' @return The user preferences file will be updated.  This will persist from session to session
 #' and if stored in the external location, through Pmetrics versions.
 #' @author Michael Neely
 #' @export
 
-# setPMoptions <- function(sep, dec, rust_template, report_template, quiet = FALSE) {
-#   # read old values first
-#   PMopts <- getPMoptions(warn = FALSE)
-  
-#   # set defaults
-#   loc <- substr(Sys.getlocale("LC_TIME"), 1, 2) # get system language
-  
-#   defaultOpts <- list(
-#     sep = ",",
-#     dec = ".",
-#     lang = loc,
-#     rust_template = NULL,
-#     report_template = "plotly"
-#   )
+setPMoptions <- function(launch.app = TRUE) {
   
   
-#   # missing so create
-#   if (PMopts[[1]] == -1) {
-#     PMopts <- defaultOpts
-#   }
+  # --- Helper: OS Detection Function ---
+  getOS <- function() {
+    sysname <- Sys.info()[["sysname"]]
+    if (sysname == "Darwin") return(1)      # Mac
+    if (sysname == "Windows") return(2)     # Windows
+    if (sysname == "Linux") return(3)       # Linux
+    return(0)  # unknown
+  }
   
-#   # add missing defaults
-#   PMopts <- utils::modifyList(defaultOpts, PMopts)
+  opt_dir <- dplyr::case_when(
+    getOS() %in% c(1, 3) ~ fs::path_expand("~/.PMopts"),
+    getOS() == 2 ~ file.path(Sys.getenv("APPDATA"), "PMopts"),
+    TRUE ~ tempdir()  # fallback
+  )
   
-#   # update user values
-#   if (!missing(sep)) PMopts$sep <- sep
-#   if (!missing(dec)) PMopts$dec <- dec
-#   PMopts$lang <- loc
-#   PMopts$backend <- "rust"
-#   if (!missing(rust_template)) PMopts$rust_template <- rust_template
-#   if (!missing(report_template)) PMopts$report_template <- report_template
+  fs::dir_create(opt_dir)  # ensure directory exists
+  PMoptionsUserFile <- file.path(opt_dir, "PMoptions.json")
   
-#   # set the options for everything except func_defaults...
-#   options(names(PMopts))
+  # If file doesn't exist in user space, copy default
+  if (!fs::file_exists(PMoptionsUserFile)) {
+    PMoptionsFile <- glue::glue(system.file("options", package = "Pmetrics"), "/PMoptions.json")
+    fs::file_copy(PMoptionsFile, PMoptionsUserFile, overwrite = TRUE)
+  }
   
-  
-#   # store the options
-#   opt_dir <- dplyr::case_when(
-#     getOS() == 1 | getOS() == 3 ~ "~/.PMopts", # Mac, Linux
-#     getOS() == 2 ~ file.path(Sys.getenv("APPDATA"), "PMopts")
-#   )
-  
-#   if (dir.exists(opt_dir)) { # user has elected to save options outside Pmetrics in the past
-#     jsonlite::write_json(PMopts, path = file.path(opt_dir, "PMoptions.json"), pretty = TRUE)
-#   } else { # external options folder does not exist, so...
-#     PMoptionsFile <- glue::glue(system.file("options", package = "Pmetrics"), "/PMoptions.json")
+  app <- shiny::shinyApp(
     
-#     if (file.exists(PMoptionsFile)) { # ...if package options file exists, write to it
-#       jsonlite::write_json(PMopts, path = PMoptionsFile, pretty = TRUE)
-#     } else { # package options file does not exist
-#       if (!quiet) {
-#         cli::cli_div(theme = list(
-#           span.red = list(color = "red", "font-weight" = "bold"),          
-#           span.blue = list(color = "blue", "font-style" = "italic")
-#         ))
-#         cli::cli_text(c(
-#           "{.strong Pmetrics} can store all your options in {.blue {paste(opt_dir, 'PMoptions.json', sep = '/')}}. ",
-#           "This allows them to persist across installations of differing package versions. ",
-#           "\n\nChoose one of the following options:\n\n"))
-#           cli::cli_text("{.red 1} to write to the external folder (persistent)")
-#           cli::cli_text("{.red 2} to write to the Pmetrics package (destroyed with new package version).")
-#           cli::cli_text( "You will not be asked this again, but see help for {.help setPMoptions()}.")
-#           cli::cli_end()
-          
-#           ans <- ""
-#           while (ans != "1" & ans != "2") {
-#             ans <- readline("Response: ")
-#           }
-          
-          
-#         } else { # default is to proceed with external if quiet = T
-#           ans <- 1
-#         }
-#         if (ans == "1") { # write to external
-#           dir.create(opt_dir)
-#           jsonlite::write_json(PMopts, path = file.path(opt_dir, "PMoptions.json"), pretty = TRUE)
-#         } else { # write to internal
-#           jsonlite::write_json(PMopts, path = PMoptionsFile, auto_unbox = TRUE)
-#         }
-#       }
-#     }
-#   }
-  
-#   #' Move user options file for Pmetrics
-#   #'
-#   #' This function will move user options file for Pmetrics from internal to external
-#   #' location so that options can persist when the Pmetrics package is updated.
-#   #'
-#   #' @title Move Pmetrics User Options
-#   #' @param quiet Suppress warning messages. Default `FALSE`.
-#   #' @return NULL, invisibly.
-#   #' @author Michael Neely
-#   #' @export
-#   movePMoptions <- function(quiet = F) {
-#     original_options <- paste(system.file("options", package = "Pmetrics"), "PMoptions.json", sep = "/")
-#     cli::cli_div(theme = list(
-#       span.red = list(color = "red", "font-weight" = "bold"),          
-#       span.blue = list(color = "blue", "font-style" = "italic")
-#     ))
-    
-#     if (!file.exists(original_options)) {
-#       cli::cli_abort("{.blue {original_options}} does not exist.")
-#     }
-    
-#     # store the options
-#     opt_dir <- dplyr::case_when(
-#       getOS() == 1 | getOS() == 3 ~ "~/.PMopts", # Mac, Linux
-#       getOS() == 2 ~ file.path(Sys.getenv("APPDATA"), "PMopts")
-#     )
-    
-#     if (!quiet) {
-#       cli::cli_warn(c("This will move internal saved options to {.blue {opt_dir}}.",
-#       "Pmetrics will now save and use options from that folder."))
-#     }
-    
-#     destination_options <- file.path(opt_dir, "PMoptions.json")
-#     if (file.exists(destination_options) & !quiet) {
-#       cli::cli_warn(c("!" = "You already have a {.blue PMoptions.json} file in that folder. It will be overwritten."))
-#     }
-    
-#     if (!quiet) {
-#       cli::cli_text(c("Choose one of the following options:"))
-#       cli::cli_text("{.red 1} to proceed")
-#       cli::cli_text("{.red 2} to abort")
-#       cli::cli_end()
+    # --- UI ---
+    ui = bslib::page_fluid(
+      theme = bslib::bs_theme(bootswatch = "flatly"),
+      title = "Pmetrics Options",
       
-#       ans <- ""
-#       while (ans != "1" & ans != "2") {
-#         ans <- readline("Response: ")
-#       }
-      
+      tags$details(
+        tags$summary("📁 Data File Reading"),
+        selectInput("sep", "Field separator",
+        choices = c(Comma = ",", Semicolon = ";", Tab = "\t"),
+        selected = ","),
+        
+        selectInput("dec", "Decimal mark",
+        choices = c(Period = ".", Comma = ","),
+        selected = ".")
+      ),
+      # Formatting options
+      tags$details(
+        tags$summary("📏 Formatting Options"),
+        numericInput("digits", "Number of digits to display",
+        value = 3, min = 0, max = 10, step = 1)
+      ),
 
-#     } else { # default when quiet = T
-#       ans <- 1
-#     }
-#     if (ans == "2") {
-#       cli::cli_text("Aborting PMoptions copy.")
-#       return(invisible(NULL))
-#     }
+      conditionalPanel(
+        condition = "input.show == false",
+        #Fit options
+      tags$details(
+        tags$summary("🔍 Fit Options"),
+        selectInput("backend", "Default backend",
+        choices = c("Rust" = "rust"),
+        selected = "rust"),
+        markdown("*Rust is the only backend currently supported by Pmetrics.*")
+      )
+    ),
+      
+      tags$details(
+        tags$summary("📊 Prediction Error Metrics"),
+        br(),
+        checkboxInput("show_metrics", "Display error metrics on obs-pred plots with linear regression", TRUE),
+        selectInput("bias_method", "Bias Method",
+        choices = c(
+          "Mean absolute error (MAE)" = "mae", 
+          "Mean weighted error (MWE)" = "mwe"
+        ),
+        selected = "mwe"),
+        
+        selectInput("imp_method", "Imprecision Method",
+        choices = c(
+          
+          "Mean squared error (MSE)" = "mse", 
+          "Mean weighted squared error (MWSE)" = "mwse", 
+          "Root mean squared error (RMSE)" = "rmse", 
+          "Mean, bias-adjusted, squared error (MBASE)" = "mbase", 
+          "Mean, bias-adjusted, weighted, squared error (MBAWSE)" = "mbawse", 
+          "Root mean, bias-adjusted, weighted, squared error (RMBAWSE)" = "rmbawse"
+        ),
+        selected = "rmbawse"),
+
+        checkboxInput("use_percent", "Use percent for error metrics", value = TRUE),
+
+        selectInput("ic_method", "Information Criterion Method",
+          choices = c(
+          "Akaike Information Criterion (AIC)" = "aic", 
+          "Bayesian Information Criterion (BIC)" = "bic"
+        ),
+        selected = "aic")
+        
+      ),
+      
+      tags$details(
+        tags$summary("📝 Report Generation"),
+        selectInput("report_template", "Default report template", 
+        choices = c("plotly", "ggplot2"),
+        selected = "plotly")
+      ),
+      br(),
+      div(
+        class = "d-flex gap-2",
+        actionButton("save", "Save"),
+        actionButton("exit", "Exit"),
+      ),
+      
+      br(),
+      br(),
+      shiny::verbatimTextOutput("settings_location"),
+      br(),
+      
+      actionButton("open_file", "Open Options File", 
+      icon = icon("folder-open"), class = "btn-primary")
+    ),
     
-#     if (!dir.exists(opt_dir)) {
-#       dir.create(opt_dir)
-#       if (!quiet) cli::cli_inform("{.blue {opt_dir}} has been created.")
-#     }
+    # --- Server ---
+    server = function(input, output, session) {
+      
+      # Load settings from external file
+      settings <- tryCatch({
+        jsonlite::fromJSON(PMoptionsUserFile)
+      }, error = function(e) NULL)
+      
+      # update this list every time a new option is added
+      input_types <- list(
+        sep = updateSelectInput,
+        dec = updateSelectInput,
+        show_metrics = updateCheckboxInput,
+        digits = updateNumericInput,
+        bias_method = updateSelectInput,
+        imp_method = updateSelectInput,
+        use_percent = updateCheckboxInput,
+        ic_method = updateSelectInput,
+        report_template = updateSelectInput,
+        backend = updateSelectInput
+      )
+
+      
+      # Apply updates
+      purrr::imap(settings, function(val, name) {
+        updater <- input_types[[name]]
+        arg_name <- input_types[[name]] %>% formals() %>% names() %>% keep(~ .x %in% c("value", "selected"))
+        
+        if (!is.null(updater) && !is.null(arg_name)) {
+          args <- list(session = session, inputId = name)
+          args[[arg_name]] <- val %>% stringr::str_remove("^percent_")  # remove 'percent_' prefix if present
+          do.call(updater, args)
+        } 
+      })
+      
+      
+      
+      
+      
+      # Display path to user settings file
+      output$settings_location <- renderText({
+        glue::glue("Options file path:\n{PMoptionsUserFile}")
+      })
+      
+      
+      ### Action button handlers
+      
+      # Save updated settings
+      observeEvent(input$save, {
+        settings <- list(sep = input$sep, dec = input$dec, digits = input$digits, show_metrics = input$show_metrics,
+          bias_method = glue::glue(c("","percent_")[1+as.numeric(input$use_percent)], input$bias_method), 
+          imp_method = glue::glue(c("","percent_")[1+as.numeric(input$use_percent)], input$imp_method),
+          ic_method = input$ic_method,
+          report_template = input$report_template, backend = input$backend)
+          
+          save_status <- tryCatch(jsonlite::write_json(settings, PMoptionsUserFile, pretty = TRUE, auto_unbox = TRUE),
+          error = function(e) {
+            shiny::showNotification(
+              paste("Error saving settings:", e$message),
+              type = "error", duration = 5
+            )
+            return(FALSE)
+          })
+          shiny::showNotification(
+            "Settings saved", type = "message", duration = 3
+          )
+        })
+        
+        # Exit the app
+        observeEvent(input$exit, {
+          shiny::stopApp()
+        })
+        
+        # Open the options file in the default application
+        observeEvent(input$open_file, {
+          system(glue::glue("open {PMoptionsUserFile}"))
+        })
+      } #end server
+    ) #end shinyApp
     
-#     file.copy(original_options, destination_options, overwrite = T)
-#     file.remove(original_options)
-#     if (!quiet) cli::cli_inform("{.blue {destination_options}} written.")
-#     return(invisible(NULL))
-#   }
+    
+    # Launch the app without trying to launch another browser
+    if(launch.app){
+      shiny::runApp(app, launch.browser = TRUE)
+    }
   
-#   #' Edit user options for Pmetrics
-#   #'
-#   #' This function will open the user options file for Pmetrics in the system
-#   #' default editor for JSON. Use **caution** directly editing the file to avoid errors.
-#   #'
-#   #' @title Edit Pmetrics User Options
-#   #' @return A list with the current options.
-#   #' @author Michael Neely
-#   #' @export
-#   editPMoptions <- function() {
-#     opt_dir <- dplyr::case_when(
-#       getOS() == 1 | getOS() == 3 ~ "~/.PMopts", # Mac, Linux
-#       getOS() == 2 ~ file.path(Sys.getenv("APPDATA"), "PMopts")
-#     )
+  return(invisible(NULL))
     
-#     if (dir.exists(opt_dir)) { # external options file exists
-#       PMoptionsFile <- file.path(opt_dir, "PMoptions.json")
-#     } else { # external options file does not exist
-#       PMoptionsFile <- paste(system.file("options", package = "Pmetrics"), "PMoptions.json", sep = "/")
-#     }
-    
-    
-#     # if it doesn't exist, warn and exit
-#     if (!file.exists(PMoptionsFile)) {
-#       cli::cli_text("Run {.fn setPMoptions} to create a Pmetrics options file.")
-#       return(invisible(-1))
-#     }
-#     system2("open", PMoptionsFile)
-#     return(invisible(NULL))
-#   }
+
+} # end of PM_options function
+  
+  
+  
   
   
