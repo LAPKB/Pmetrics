@@ -74,7 +74,8 @@ regular, frequent intervals
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{PMdata}}{include \verb{r template("PMdata")}.}
+\item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
+.}
 
 \item{\code{run}}{If backend is Fortran, run number to find PRTB0001 file with
 posterior predictions. If missing, will look for this file in working

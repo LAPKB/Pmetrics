@@ -223,43 +223,52 @@ sim2 <- mod$sim(poppar = run1$final, data = "newdata.csv", ...)
 file will be loaded. This filename should have the ".rds" extension, e.g. \code{sim1 <- PM_sim$new("sim.rds")}.
 \item A manually specified prior as a list containing the following named items:
 \itemize{
-\item \strong{prob} vector of probabilities of sampling from each distribution;
-\item \strong{mean} list of mean parameter values;
-\item \strong{sd} an optional list of overall standard deviations for each parameter, considering them as unimodally distributed;
-if present, \code{mat} will be treated as a correlation matrix and converted to a covariance matrix
-\item \strong{mat} If \code{sd} is missing, a covariance matrix. If \code{sd} is specified, a correlation matrix.
-This shoud be a square matrix of the overall covariance/correlations between parameters considered as unimodally distributed.
+\item \strong{wt} vector of weights (probabilities) of sampling from each distribution. If missing, assumed to be 1.
+\item \strong{mean} a list of mean parameter values. Each element of the list should be named with the parameter name and be a
+vector of length equal to the number of distributions. See details below.
+\item \strong{sd} an optional named list of overall standard deviations for each parameter, considering parameters as unimodally distributed,
+i.e. there should only be one value for each parameter, regardless of the number of distributions.
+\code{sd} is only needed if a correlation matrix is specified, which will be converted to a covariance matrix.
+\item \strong{ONE} of the following matrices:
+\enumerate{
+\item \strong{cor} A square matrix of the overall correlations between parameters, again
+considered as unimodally distributed, i.e. there should only be one correlation matrix regardless of the number of distributions.
+If a correlation matrix is specified, the \code{sd} element is required to calculate the covariance matrix.
+\item \strong{cov} A square matrix of the overall covariances between parameters, again
+considered as unimodally distributed, i.e. there should only be one covariance matrix regardless of the number of distributions.
+If a covariance matrix is specified, the \code{sd} element is unnecessary, since the diagonals of the covariance matrix are the variances
+or squared standard deviations.
+}
 }
 
 If only one distribution is to be specified the
-\code{prob} vector should be of length 1 and contain a 1. If multiple
-distributions are to be sampled, the \code{prob} vector should be of
-length equal to the number of distributions and its values should sum to 1,
-e.g. \code{c(0.25, 0.05, 0.7)}.  The \code{mean} element should be a list
-of length equal to the number of parameters to be simulated,
-each element of length equal to \code{nrow(prob)}.
-List element names should be the parameter names. If the matrix is correlations,
+\code{wt} vector can be ommitted or should be \code{wt = 1}. If multiple
+distributions are to be sampled, the \code{wt} vector should be of
+length equal to the number of distributions in \code{mean} and the values of \code{wt} should sum to 1,
+e.g. \code{wt = c(0.25, 0.05, 0.7)}.  The \code{mean} element should be a list
+of elements, named for the parameters, with vectors of values equal to the number of terms in \code{wt}.
+If \code{cor} is used,
 Pmetrics will use the \code{sd} element to calculate the covariance matrix. The
-covariance matrix will be divided by \code{length(prob)} and applied to
-each distribution.
+covariance matrix will be divided by the number of distributions, i.e. \code{length(wt)},
+and applied to each distribution.
 
 Examples:
 \itemize{
 \item Single distribution:
 }
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(prob = 1, 
+\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(wt = 1, 
               mean = list(ke = 0.5, v = 100), 
-              mat = matrix(c(0.04, 2.4, 2.8, 400), nrow = 2))  # treated as covariance matrix because sd is missing 
+              cov = matrix(c(0.04, 2.4, 2.8, 400), nrow = 2))  # sd not required because cov specified 
 }\if{html}{\out{</div>}}
 \itemize{
 \item Multiple distributions:
 }
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(prob = c(0.1, 0.15, 0.75), 
-              mean = list(ke = c(2, 0.5, 1), v = c(50, 100, 200)), 
+\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(wt = c(0.1, 0.15, 0.75), # 3 distributions that sum to 1
+              mean = list(ke = c(2, 0.5, 1), v = c(50, 100, 200)), # 3 values for each parameter
               sd = list(ke = 0.2, v = 20), # overall sd, ignoring multiple distributions
-              mat = matrix(c(1, 0.6, 0.7, 1), nrow = 2)) # correlation matrix because sd present
+              cor = matrix(c(1, 0.6, 0.7, 1), nrow = 2)) # sd required because cor specified
 }\if{html}{\out{</div>}}
 }}
 
