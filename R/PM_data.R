@@ -847,7 +847,7 @@ PMcheck <- function(data, model, fix = FALSE, quiet = FALSE) {
   if (fix) {
     if (attr(err, "error") == 0) {
       if (!quiet) {
-        cli::cli_inform(c("i" = "FIX DATA REPORT:\fThere were no errors to fix in you data file."))
+        cli::cli_inform(c("i" = "FIX DATA REPORT:\fThere were no errors to fix in your data file."))
       }
       return(invisible(data2))
     } else {
@@ -1626,7 +1626,6 @@ plot.PM_data <- function(x,
   line = list(join = TRUE, pred = FALSE),
   marker = TRUE,
   group = NULL,
-  group_colors = "Set1",
   group_names = NULL,
   mult = 1,
   outeq = 1,
@@ -1871,12 +1870,11 @@ plot.PM_data <- function(x,
     # Plot function ----------------------------------------------------------
     
     dataPlot <- function(allsub, overlay, includePred) {
-      
+      group_colors <- marker$color 
+      group_symbols <- marker$symbol
       if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
           
           n_colors <- length(unique(allsub$group))
-          group_colors <- marker$color 
-          group_symbols <- marker$symbol
 
           if (length(group_colors) < n_colors) { # fewer colors than groups, need to interpolate
             if (checkRequiredPackages("RColorBrewer")) {

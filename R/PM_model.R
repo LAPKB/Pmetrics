@@ -514,7 +514,7 @@ PM_model <- R6::R6Class(
             } else {
               cov_list <- rep(FALSE, length(required_parameters))
             }
-
+            
             if(!is.null(self$arg_list$sec)){
               sec_list <- map_lgl(required_parameters, \(x){
                 any(stringr::str_detect(tolower(func_to_char(self$arg_list$sec)), x))
@@ -729,15 +729,19 @@ PM_model <- R6::R6Class(
             cli::cli_h1("Model summary")
             
             cli::cli_h3(text = "Primary Parameters")
-            pars = self$model_list$parameters
-            cli::cli_text("{.eqs {pars}}")
+            # pars = self$model_list$parameters
+            # cli::cli_text("{.eqs {pars}}")
+            
+            self$arg_list$pri %>%
+            purrr::imap(\(x,y) cli::cli_text("{.strong {y}}: [{.strong {x$min}}, {.strong {x$max}}], {.emph ~N({round(x$mean,2)}}, {.emph {round(x$sd,2)})}")) %>% 
+            invisible() # to suppress NULL
             
             
             if (!is.null(self$model_list$covariates)) {
               cli::cli_h3(text = "Covariates")
               
               cov_list <- paste0(self$model_list$covariates, 
-                ifelse(self$arg_list$cov==1, "", "(no interpolation)"))
+                ifelse(self$arg_list$cov==1, "", " (no interpolation)"))
                 
                 cli::cli_text("{.eqs {cov_list}}")
               }
@@ -1131,10 +1135,8 @@ PM_model <- R6::R6Class(
                   loq <- data$loq
                 }
                 
-                if (length(loq) == 1 && is.na(loq)){
-                  loq <- as.numeric(NA) # ensure loq is numeric
-                }
-                
+                loq <- as.numeric(loq) # ensure loq is numeric (NA can be character or logical)
+
                 if (intern) {
                   ### CALL RUST
                   out_path <- file.path(getwd(), "outputs")
@@ -1173,7 +1175,7 @@ PM_model <- R6::R6Class(
                     PM_report(res, outfile = "report.html", template = report, quiet = TRUE)
                     msg <- c(msg, "Report generated with {report} template.")
                   }
-           
+                  
                   if(tolower(algorithm) == "postprob") {this_alg <- "map"} else {this_alg <- "fit"}
                   msg <- c(msg, "If assigned to a variable, e.g. {.code run{newdir} <-}, results of {.fn {this_alg}} are available in {.code run{newdir}}.")
                   setwd(cwd)
@@ -2365,7 +2367,7 @@ PM_model <- R6::R6Class(
                                 
                                 #equations <- parse_equations(this_model)
                                 # Expand and distribute equations
-                             
+                                
                                 expanded_equations <- purrr::map(parse(text = tolower(eqns)), expand_distribute)
                                 outputs <- parse_output_equations(as.list(parse(text = tolower(outs))))
                                 out_comp <- map_chr(outputs, function(o) as.character(o$compartment))
@@ -2442,7 +2444,7 @@ PM_model <- R6::R6Class(
                                 # ggplot2::theme(legend.position = "none")
                                 # if (print) print(g)
                                 # return(invisible(g))
-              }
+                              }
                               
                               
                               # MODEL LIBRARY -----------------------------------------------------------

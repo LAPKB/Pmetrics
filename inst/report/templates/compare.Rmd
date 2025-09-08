@@ -22,19 +22,26 @@ res <- params$results
 ```{r}
 #| name: "likelihood"
 #| echo: false
+#| results: 'asis'
 
 
 res$p3
+
+# annoying workaround for knitr not rendering properly when combined in a single if statement
+
+if(!is.null(res$ft1)){
+  cat("**Note:** Final cycle gamma/lambda are not the same for all runs. Comparison by likelihood is not valid if these differ, as shown below.\n")
+  cat(glue::glue("Fix `initial` in your models with `err = {tolower(res$ft1$body$dataset$Type[1])}(initial, coeff, fixed = TRUE)`, . See `?PM_model` for details.\n"))
+}
 
 if(!is.null(res$ft1)){
   res$ft1
 }
 
 if(!is.null(res$ft1)){
-  markdown(c("**Note:** Final cycle gamma/lambda are not the same for all runs. Comparison by likelihood is not valid if these differ, as shown above.<br><br>",
-  glue::glue("For models with the same final gamma/lambda, likelihood can be compared across runs. Models with lower values are more likely. {toupper(getPMoptions('ic_method'))} is a function of the likelihood, penalized for the number of parameters in the model.")))
+  cat(glue::glue("For models with the same final gamma/lambda, likelihood can be compared across runs. Models with lower values are more likely. {toupper(getPMoptions('ic_method'))} is a function of the likelihood, penalized for the number of parameters in the model."))
 } else {
-  markdown(c("**Note:**", glue::glue("Models with lower values are more likely. {toupper(getPMoptions('ic_method'))} is a function of the likelihood, penalized for the number of parameters in the model.")))
+  cat(c("**Note:**", glue::glue("Models with lower values are more likely. {toupper(getPMoptions('ic_method'))} is a function of the likelihood, penalized for the number of parameters in the model.")))
 }
 ```
 
@@ -73,4 +80,4 @@ res$ft2
 ```
 * ❌ = parameters not present in a model. 
 * ☑️ = parameters present but not shared with the model in Run 1. 
-* ✅ = parameters present and shared with the model in Run 1. They are used to calculate the P-value for the distribution of support point values comared to the first run. P-values <0.05 suggest a sigificantly different distribution of the joint probability value distribution across parameters with green check boxes using a k-nearest neighbors test.
+* ✅ = parameters present and shared with the model in Run 1. They are used to calculate the P-value for the distribution of support point values comared to the first run. P-values <0.05 suggest a sigificantly different distribution of the joint probability value distribution across shared parameters with green check boxes using a k-nearest neighbors test. For a given model *Mx* in row *x*, P <0.05 means that the change from *M1* (row 1 model) to *Mx* resulted in a signficant change in values of parameters shared between *Mx* and *M1*. If other metrics are similar between models and P >0.05, the models may be considered equivalent
