@@ -40,6 +40,7 @@ pub(crate) fn fit<E: Equation>(
     let (_lib, (eq, meta)) = unsafe { load::<E>(model_path) };
     let settings = settings(params, meta.get_params(), output_path.to_str().unwrap())?;
     let data = data::read_pmetrics(data.to_str().unwrap()).expect("Failed to read data");
+    //dbg!(&data);
     let mut algorithm = dispatch_algorithm(settings, eq, data)?;
     let result = algorithm.fit()?;
     result.write_outputs()?;

@@ -20,7 +20,7 @@ print.PMerr <- function(x, ...) {
   } else {
     x <- x[!okay]
     for (i in 1:length(x)) {
-      cat(paste("\n(", i, ") ", x[[i]]$msg, " See the 'errors.xlsx' file in current directory.\n", paste(x[[i]]$results, collapse = ", "), "\n\n", sep = ""))
+      cat(paste("\n(", i, ") ", x[[i]]$msg, "\n", paste(x[[i]]$results, collapse = ", "), "\n\n", sep = ""))
     }
   }
 }

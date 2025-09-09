@@ -495,7 +495,7 @@ This is the main method to run a population analysis.
   exclude = NULL,
   cycles = 100,
   prior = "sobol",
-  density0 = 0.01,
+  points = 100,
   idelta = 0.1,
   tad = 0,
   seed = 23,
@@ -554,17 +554,15 @@ is in the required format described in the filename option above. Example:
 \verb{mytheta <- read_csv("mytheta.csv"); fit1$run(prior = mytheta)}.
 }}
 
-\item{\code{density0}}{The proportion of the volume of the model parameter
-hyperspace used to calculate the initial number of support points if one of
+\item{\code{points}}{The number of initial support points if one of
 the semi-random, uniform distributions are selected in the \code{prior} argument
-above. The initial points are
-spread through that hyperspace and begin the search for the optimal
+above. Default is 100. The initial points are
+spread through the hyperspace defined by the random parameter ranges
+and begin the search for the optimal
 parameter value distribution (support points) in the population.
-The volume of the parameter space is the product of the ranges for all parameters.
-For example if using two parameters \code{Ke} and \code{V}, with ranges of [0, 5] and [10, 100],
-the volume is (5 - 0) x (100 - 10) = 450 The default value of \code{density0} is 0.01, so the initial
-number of support points will be 0.01 x 450 = 4.5, increased to the nearest integer,
-which is 5. The greater the initial number of points, the less chance of
+If there are fewer than 2 points per unit range for any parameter,
+Pmetrics will suggest the minimum number of points that should be tried.
+The greater the initial number of points, the less chance of
 missing the globally maximally likely parameter value distribution,
 but the slower the run.}
 
