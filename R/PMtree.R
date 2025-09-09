@@ -18,7 +18,7 @@
 #' \item{src }{The folder for source data files in their original format, to preserve
 #' integrity and for audit purposes.}
 #' @author Michael Neely
-#' @seealso [PMmanual]
+#' @seealso [PM_manual]
 #' @examples
 #' \dontrun{
 #' PMtree("DrugX")

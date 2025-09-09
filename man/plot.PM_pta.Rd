@@ -28,7 +28,7 @@
 )
 }
 \arguments{
-\item{x}{The name of an \emph{PM_pta} data object read by \link{makePTA}}
+\item{x}{The name of an \emph{PM_pta} data object}
 
 \item{at}{Which object in the \emph{PM_pta} result list to plot. By default "intersect" if
 an intersection is present due to creation of the object with multiple target types, or
@@ -112,7 +112,8 @@ The default value is 12.
 \item{legend}{Controls display of legend. This argument maps to the plotly layout showlegend and legend arguments. It is either a boolean operator (most common) or a list of parameters to be supplied to plotly. See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend for more details on the available options for formatting.  If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will be set to \code{TRUE} automatically.
 
 Examples: \itemize{ \item{\code{legend = T}} \item{\code{legend = list(orientation = "h", font = list(color = "blue"))}} }
-Default will be the labeled regimen names supplied during \link{makePTA},
+Default will be the labeled regimen names as an argument
+when creating a \link{PM_pta} object,
 or if missing, "Regimen 1, Regimen 2,...Regimen n", where \emph{n} is the number of
 regimens in the PM_pta object.}
 
@@ -165,7 +166,7 @@ simulations.
 }
 \details{
 \link{PM_pta} objects are made with the \verb{$pta} method for \link{PM_sim}  or
-with \code{PM_pta$new()}. Under the hood, either method uses the \link{makePTA} function.
+with \code{PM_pta$new()}.
 }
 \examples{
 \dontrun{
@@ -179,8 +180,6 @@ pta1$plot()
 }
 }
 \seealso{
-\link{makePTA}
-
 Other PMplots: 
 \code{\link{plot.PM_cov}()},
 \code{\link{plot.PM_cycle}()},

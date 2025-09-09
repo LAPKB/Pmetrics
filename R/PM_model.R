@@ -835,13 +835,13 @@ PM_model <- R6::R6Class(
             #' The `$fit` method is the means of running that compiled
             #' code to conduct to fitting procedure. At a minimum, it requires
             #' a [PM_data] object, which can be created with
-            #' [PM_data$new()]. There are a number of additional arguments
+            #' `PM_data$new()`. There are a number of additional arguments
             #' to control the fitting procedure, such as the number of cycles
             #' to run, the initial number of support points,
             #' and the algorithm to use, among others.
             #'
             #' The `$fit` method is the descendant of the legacy
-            #' [NPrun()] function, which is maintained as a wrapper to `$fit`
+            #' [NPrun] function, which is maintained as a wrapper to `$fit`
             #' for backwards compatibility.
             #'
             #' @param data Either the name of a  [PM_data]

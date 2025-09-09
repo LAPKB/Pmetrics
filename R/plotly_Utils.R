@@ -1173,8 +1173,6 @@ sub_plot <- function(...,
   #' Each value is a function that returns a color name.
   #' @param n The number of colors to return from the list.
   #' @return A character vector of color names, which is recycled as needed.
-  #' @seealso [blue()], [green()], [red()], [brown()], [black()],
-  #' [purple()], [pink()], [gold()], [orange()], [gray()]
   #'
   #' @export
   #' @examples

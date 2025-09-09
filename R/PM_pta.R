@@ -720,7 +720,7 @@ pta_time <- function(sims, .target, .simTarg, .start, .end, .pb) {
 #' `r lifecycle::badge("stable")`
 #'
 #' Generates an object of class *PMpta.targ* which can
-#' be used in the [makePTA] method for [PM_pta] or [PM_sim] for targets sampled from a distribution.
+#' be used in the `$new()` method for [PM_pta] or `$pta()` method for [PM_sim] for targets sampled from a distribution.
 #'
 #' @title Make PTA target object
 #' @param x A data.frame or name of .csv file in working directory whose first two
@@ -728,7 +728,7 @@ pta_time <- function(sims, .target, .simTarg, .start, .end, .pb) {
 #' seen for Staphylococcus aureus susceptibility to vancomycin at
 #' [EUCAST](http://mic.eucast.org/Eucast2/regShow.jsp?Id=1214).
 #' @return A data frame with two columns named targets and n, of class *PMpta.targ*.
-#' @seealso [makePTA]
+#' @seealso [PM_pta]
 #' @examples
 #' \dontrun{
 #' makePTAtarget(mic1)
@@ -757,10 +757,10 @@ makePTAtarget <- function(x) {
 #'
 #' @details
 #' [PM_pta] objects are made with the `$pta` method for [PM_sim]  or
-#' with `PM_pta$new()`. Under the hood, either method uses the [makePTA] function.
+#' with `PM_pta$new()`. 
 #'
 #' @method plot PM_pta
-#' @param x The name of an *PM_pta* data object read by [makePTA]
+#' @param x The name of an *PM_pta* data object 
 #' @param at Which object in the *PM_pta* result list to plot. By default "intersect" if
 #' an intersection is present due to creation of the object with multiple target types, or
 #' 1 if no intersection is present, which means only 1 target type was selected. If
@@ -828,7 +828,8 @@ makePTAtarget <- function(x) {
 #' applied to the markers for each regimen. All markers will have the same size.
 #' The default value is 12.
 #' @param grid `r template("grid")`
-#' @param legend `r template("legend")` Default will be the labeled regimen names supplied during [makePTA],
+#' @param legend `r template("legend")` Default will be the labeled regimen names as an argument 
+#' when creating a [PM_pta] object,
 #' or if missing, "Regimen 1, Regimen 2,...Regimen n", where *n* is the number of
 #' regimens in the PM_pta object.
 #' @param ci Confidence interval around curves on `type = "pdi"` plot, on scale of 0 to 1. Default is 0.9.
@@ -843,7 +844,6 @@ makePTAtarget <- function(x) {
 #' @param ... `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
-#' @seealso [makePTA]
 #' @importFrom plotly plotly_build
 #' @export
 #' @examples

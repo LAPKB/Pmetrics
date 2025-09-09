@@ -601,13 +601,13 @@ the objective function, which is -2*log-likelihood.
 The \verb{$fit} method is the means of running that compiled
 code to conduct to fitting procedure. At a minimum, it requires
 a \link{PM_data} object, which can be created with
-\code{\link[=PM_data$new]{PM_data$new()}}. There are a number of additional arguments
+\code{PM_data$new()}. There are a number of additional arguments
 to control the fitting procedure, such as the number of cycles
 to run, the initial number of support points,
 and the algorithm to use, among others.
 
 The \verb{$fit} method is the descendant of the legacy
-\code{\link[=NPrun]{NPrun()}} function, which is maintained as a wrapper to \verb{$fit}
+\link{NPrun} function, which is maintained as a wrapper to \verb{$fit}
 for backwards compatibility.
 }
 
