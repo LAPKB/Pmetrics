@@ -106,7 +106,7 @@ parameter values
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{PMstep}.
+See \link{PM_step}.
 }
 
 }

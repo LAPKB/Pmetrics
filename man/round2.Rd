@@ -9,7 +9,7 @@ round2(x, digits = getPMoptions("digits"))
 \arguments{
 \item{x}{A numeric value to be rounded.}
 
-\item{digits}{The number of digits to round to. Default is set by \link{getPMoptions("digits")}.}
+\item{digits}{The number of digits to round to. Default is set using \link{setPMoptions}.}
 }
 \value{
 A character string representing the rounded value with the specified number of digits.

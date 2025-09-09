@@ -13,7 +13,6 @@
 #' @export
 
 print.PMerr <- function(x, ...) {
-  cat("\n")
   okay <- sapply(x, function(x) is.na(x$results[1]))
   if (all(okay)) {
     cat("No data errors found.\n")

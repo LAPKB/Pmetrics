@@ -816,7 +816,7 @@ PM_sim <- R6::R6Class(
       #' `r lifecycle::badge("stable")`
       #' Estimates the Probability of Target Attaintment (PTA), based on the results
       #' of the current Simulation.
-      #' @param ... Additional parameters, refer to [makePTA]
+      #' @param ... Additional parameters, refer to [PM_pta].
       pta = function(...) {
         PM_pta$new(self, ...)
       },
