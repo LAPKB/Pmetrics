@@ -888,17 +888,15 @@ PM_model <- R6::R6Class(
             #' is in the required format described in the filename option above. Example:
             #' `mytheta <- read_csv("mytheta.csv"); fit1$run(prior = mytheta)`.
             #'
-            #' @param density0 The proportion of the volume of the model parameter
-            #' hyperspace used to calculate the initial number of support points if one of
+            #' @param points The number of initial support points if one of
             #' the semi-random, uniform distributions are selected in the `prior` argument
-            #' above. The initial points are
-            #' spread through that hyperspace and begin the search for the optimal
+            #' above. Default is 100. The initial points are
+            #' spread through the hyperspace defined by the random parameter ranges
+            #' and begin the search for the optimal
             #' parameter value distribution (support points) in the population.
-            #' The volume of the parameter space is the product of the ranges for all parameters.
-            #' For example if using two parameters `Ke` and `V`, with ranges of \[0, 5\] and \[10, 100\],
-            #' the volume is (5 - 0) x (100 - 10) = 450 The default value of `density0` is 0.01, so the initial
-            #' number of support points will be 0.01 x 450 = 4.5, increased to the nearest integer,
-            #' which is 5. The greater the initial number of points, the less chance of
+            #' If there are fewer than 2 points per unit range for any parameter,
+            #' Pmetrics will suggest the minimum number of points that should be tried.
+            #' The greater the initial number of points, the less chance of
             #' missing the globally maximally likely parameter value distribution,
             #' but the slower the run.
             #' 
@@ -938,7 +936,7 @@ PM_model <- R6::R6Class(
               exclude = NULL,
               cycles = 100,
               prior = "sobol",
-              density0 = 0.01,
+              points = 100,
               idelta = 0.1,
               tad = 0,
               seed = 23,
@@ -1084,12 +1082,14 @@ PM_model <- R6::R6Class(
                 })
                 
                 names(ranges) <- tolower(names(ranges))
-                
                 # Set initial grid points (only applies for sobol)
-                vol <- prod(sapply(ranges, function(x) {
-                  x[2] - x[1]
-                }))
-                points <- max(ceiling(density0 * vol), 100) # at least 100 points
+                marginal_densities <- sapply(ranges, function(x) {
+                  points / (x[2] - x[1])
+                })
+                if (any(marginal_densities < 2)) {
+                  increase_to <- round(points * (max(2/marginal_densities)), 0)
+                  msg <- c(msg, "Recommend increasing {.arg points} to at least {increase_to} to ensure adequate coverage of parameter space.")
+                }
                 
                 
                 
@@ -1295,7 +1295,7 @@ PM_model <- R6::R6Class(
                 model_path <- file.path(tempdir(), "model.rs")
                 private$write_model_to_rust(model_path)
                 output_path <- tempfile(pattern = "model_", fileext = ".pmx")
-                
+                cli::cli_inform(c("i" = "Compiling model..."))
                 tryCatch({
                   compile_model(model_path , output_path, private$get_primary(), kind = tolower(self$model_list$type))
                   self$binary_path <- output_path
@@ -1304,6 +1304,7 @@ PM_model <- R6::R6Class(
                     c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
                   )
                 })
+
                 file.remove(model_path) # remove temporary model file
                 return(invisible(self))
               },

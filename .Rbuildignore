@@ -22,3 +22,4 @@ logo.png
 ^src/\.cargo$
 ^.*_test\.R$
 ^.*_old.R$
+rust_debug.txt
