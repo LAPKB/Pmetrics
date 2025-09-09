@@ -13,8 +13,8 @@
     latestR  <- tryCatch(package_version(
       jsonlite::fromJSON("https://api.r-hub.io/rversions/r-release")$version
     ), error = function(e) NA)
-
-  
+    
+    
     cli::cli_div(theme = list(span.strong = list(color = "red")))
     cli::cli_h2("Welcome to Pmetrics {installedVersion}!")
     ul <- cli::cli_ul()
@@ -22,9 +22,13 @@
     cli::cli_li("For documentation, use {.code PM_manual}.")
     cli::cli_li("View user options with {.code setPMoptions()}.")
     cli::cli_li("Model library loaded. View with {.code model_lib()}.")
-    if (!is.na(latestR) && currentR < latestR) {
-      cli::cli_li("{.strong Warning:} Your R version ({currentR}) is older than the latest release ({latestR}). Consider updating: https://cran.r-project.org.")
-    } 
+    if (!is.na(latestR)){
+      if(currentR < latestR) {
+        cli::cli_li("{.strong Warning:} Your R version ({currentR}) is older than the latest release ({latestR}). Consider updating: https://cran.r-project.org.")
+      } else {
+        cli::cli_li("You are using the latest R version: {currentR}.")
+      }
+    }
     if (is.na(rustcVersion) || length(rustcVersion) == 0) {
       cli::cli_li("{.strong Warning:} Rust compiler not found. Please install Rust from https://www.rust-lang.org/tools/install")
     } else {

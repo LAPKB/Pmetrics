@@ -7,7 +7,7 @@
 save_flextable(x)
 }
 \arguments{
-\item{x}{A \link{flextable} object.}
+\item{x}{A \link[flextable:flextable]{flextable::flextable} object.}
 }
 \value{
 A message indicating the file was saved.

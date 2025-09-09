@@ -729,7 +729,7 @@ of the current Simulation.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Additional parameters, refer to \link{makePTA}}
+\item{\code{...}}{Additional parameters, refer to \link{PM_pta}.}
 }
 \if{html}{\out{</div>}}
 }

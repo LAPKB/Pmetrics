@@ -62,7 +62,7 @@ PM_cov <- R6::R6Class(
     #' Stepwise linear regression of covariates and Bayesian posterior
     #' parameter values
     #' @details
-    #' See [PMstep].
+    #' See [PM_step].
     #' @param ... Arguments passed to [PM_step]
     step = function(...) {
       PM_step(self$data, ...)

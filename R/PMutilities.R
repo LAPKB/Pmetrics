@@ -1344,7 +1344,7 @@ wtd.var <- function(x, weights = NULL,
   #' Saves flextable objects to a file based on the `file` attribute
   #' in the object, set when the flextable generator function is called.
   #' Allowable file types are 'docx', 'pptx', 'html', 'png', and 'svg'.
-  #' @param x A [flextable] object.
+  #' @param x A [flextable::flextable] object.
   #' @return A message indicating the file was saved.
   #' @export
   
@@ -1417,7 +1417,7 @@ wtd.var <- function(x, weights = NULL,
   #' Rounds a numeric value to a specified number of digits for display in flextables and plots.
   #' @details Uses [base::format] and [base::round] to round a numeric value to a specified number of digits.
   #' @param x A numeric value to be rounded.
-  #' @param digits The number of digits to round to. Default is set by [getPMoptions("digits")].
+  #' @param digits The number of digits to round to. Default is set using [setPMoptions].
   #' @return A character string representing the rounded value with the specified number of digits.
   #' @export
   

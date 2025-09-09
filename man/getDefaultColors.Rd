@@ -28,10 +28,6 @@ Each value is a function that returns a color name.
 getDefaultColors(6)
 }
 }
-\seealso{
-\code{\link[crayon:crayon]{crayon::blue()}}, \code{\link[crayon:crayon]{crayon::green()}}, \code{\link[crayon:crayon]{crayon::red()}}, \code{\link[=brown]{brown()}}, \code{\link[crayon:crayon]{crayon::black()}},
-\code{\link[=purple]{purple()}}, \code{\link[=pink]{pink()}}, \code{\link[=gold]{gold()}}, \code{\link[=orange]{orange()}}, \code{\link[=gray]{gray()}}
-}
 \author{
 Michael Neely
 }

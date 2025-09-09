@@ -100,11 +100,8 @@ public <- list(
       self$data <- data
     }
     
-    if (!is.null(self$data) && validate) {
-      self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)
-    }
+    nout <- if (!is.null(self$data$outeq)) {max(self$data$outeq, na.rm = TRUE)} else {1}
     
-    nout <- max(self$standard_data$outeq, na.rm = TRUE)
     if (is.null(loq)) {
       self$loq <- rep(NA, nout) 
     } else {
@@ -114,6 +111,11 @@ public <- list(
       }
       self$loq <- loq
     }
+    
+    if (!is.null(self$data) && validate) {
+      self$standard_data <- private$validate(self$data, quiet = quiet, loq = loq, dt = dt)
+    }
+
   },
   #' @description
   #' Save data to file
@@ -328,7 +330,7 @@ addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
   self$data <- new_data
   if (validate) {
     self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x))))
-    self$standard_data <- private$validate(self$data, dt = dt, quiet = quiet)
+    self$standard_data <- private$validate(self$data, dt = dt, loq = self$loq, quiet = quiet)
   } else {
     self$standard_data <- NULL
   }
@@ -336,7 +338,7 @@ addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
 } # end addEvent
 ), # end public
 private = list(
-  validate = function(dataObj, quiet, dt) {
+  validate = function(dataObj, quiet, loq, dt) {
     dataObj_orig <- dataObj # keep the original to pass to PMcheck
     dataNames <- names(dataObj)
     standardNames <- getFixedColNames()
@@ -352,7 +354,7 @@ private = list(
       cli::cli_abort(c("x" = "Your data are missing these mandatory columns: {mandatory[missingMandatory]}"))
     }
     
-    msg <- c("DATA STANDARDIZATION REPORT:\n\n", "Data are in full format already.\n")
+    msg <- "Data are in full format already.\n"
     
     if (!"evid" %in% dataNames) {
       dataObj$evid <- ifelse(is.na(dataObj$dose), 0, 1)
@@ -422,15 +424,16 @@ private = list(
     dataObj <- dataObj %>% select(standardNames, dplyr::all_of(covNames))
     # dataObj <- dataObj %>% dplyr::arrange(id, time)
     
-    if (length(msg) > 2) {
-      msg <- msg[-2]
+    if (length(msg) > 1) {
+      msg <- msg[-1]
     } # data were not in standard format, so remove that message
     
     if (!quiet) {
+      cli::cli_h1("DATA STANDARDIZATION")
       cat(msg)
     }
     
-    validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = TRUE, quiet = quiet)
+    validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = TRUE, loq = loq, quiet = quiet)
     return(validData)
   } # end validate function
 ) # end private
@@ -668,12 +671,10 @@ return(temp)
 #'
 #' This function is largely superseded as it is called automatically when
 #' data are initialized as a [PM_data] object. It can still be called
-#' independently of this route and will check for data and optionally model errors.
+#' independently of this route and will check for data errors.
 #' @details
-#' It  will check a .csv file or a data frame containing a
-#' previously loaded .csv file (the output of [PMreadMatrix] for errors
-#' which would cause the analysis to fail.  If a model file is provided, and the data
-#' file has no errors, it will also check the model file for errors. Note that as of
+#' It  will check the data for errors
+#' which would cause the analysis to fail.  Note that as of
 #' Pmetrics Version 2, this function is called automatically when a new [PM_data]
 #' object is created, and users generally no longer need to call the function directly.
 #' In `PM_data$new()`, the data object is first standardized to contain all required columns,
@@ -704,8 +705,8 @@ return(temp)
 #'
 #' To use this function, see the example below.
 #'
-#' After running PMcheck and looking at the errors in the errors.xlsx file, you can fix the
-#' errors manually directly in the errors.xlsx file and resave it as a .csv file.
+#' After running PMcheck and looking at the errors in the *errors.xlsx* file, you can fix the
+#' errors manually directly in the *errors.xlsx* file and resave it as a .csv file.
 #' Alternatively, you could then try to fix the problem(s) with `mdata2 <- PMcheck(mdata,fix=T)`.  Note that we are now returning
 #' a PMmatrix data object called mdata2 (hopefully cleaned of errors) rather than the PMerr object returned when `fix=FALSE`.
 #' Pmetrics handles each of the errors in the following ways.
@@ -733,10 +734,9 @@ return(temp)
 #' @param data The name of a Pmetrics .csv matrix file in the current working directory,
 #' the full path to one not in the current working directory, or a data.frame containing
 #' the output of a previous [PMreadMatrix] command.
-#' @param model The filename of a Pmetrics model file in the current working directory.  This parameter is optional.
-#' If specified, and the data object has no errors, the model file will be evaluated.
 #' @param fix Boolean operator; if `TRUE`, Pmetrics will attempt to fix errors in the data file.
 #' Default is `FALSE`.
+#' @param loq Numeric value of the limit of quantification (LOQ) for each output.
 #' @param quiet Boolean operator to suppress printed output.  Default is false.
 #' @return If `fix=TRUE`, then [PMcheck] returns
 #' * The original data if no errors are found, or
@@ -782,7 +782,7 @@ return(temp)
 #' }
 #' @export
 
-PMcheck <- function(data, model, fix = FALSE, quiet = FALSE) {
+PMcheck <- function(data, fix = FALSE, loq, quiet = FALSE) {
   # get the data
   if (is.character(data)) { # data is a filename
     data2 <- tryCatch(Pmetrics:::PMreadMatrix(data, quiet = TRUE), error = function(e) {
@@ -813,11 +813,14 @@ PMcheck <- function(data, model, fix = FALSE, quiet = FALSE) {
     legacy <- F
   }
   
+  if (is.null(loq)) {
+    loq <- rep(NA, max(data2$outeq, na.rm = TRUE))
+  }
   
-  if (missing(model)) model <- NA
+  
   
   # check for errors
-  err <- errcheck(data2, model = model, quiet = quiet, source = source)
+  err <- errcheck(data2, loq = loq, quiet = quiet, source = source)
   if (length(err) == 1) {
     cli::cli_abort(c("x" = "You must at least have id, evid, and time columns to proceed with the check."))
   }
@@ -857,8 +860,8 @@ PMcheck <- function(data, model, fix = FALSE, quiet = FALSE) {
       # }
       return(invisible(data2))
     } else {
-      newdata <- errfix(data2 = data2, model = model, err = err, quiet = quiet)
-      err2 <- errcheck(newdata, model = NA, quiet = TRUE)
+      newdata <- errfix(data2 = data2, err = err, quiet = quiet)
+      err2 <- errcheck(newdata, quiet = TRUE)
       # Add a  Worksheet if any errors remain
       if(attr(err2, "error") != 0){
         sheet <- openxlsx::addWorksheet(wb, sheetName = "After_Fix")        
@@ -877,12 +880,13 @@ PMcheck <- function(data, model, fix = FALSE, quiet = FALSE) {
 }
 
 
+
 ########### ERROR CHECKING, REPORTING AND FIXING FUNCTIONS
 
 # errcheck ----------------------------------------------------------------
 
 # Check for errors
-errcheck <- function(data2, model, quiet, source) {
+errcheck <- function(data2, loq, quiet, source) {
   # each list element has msg when OK, results for rows with errors, column, code for excel
   err <- list(
     colorder = list(msg = "OK - The first 14 columns are appropriately named and ordered.", results = NA, col = NA, code = NA),
@@ -932,21 +936,6 @@ errcheck <- function(data2, model, quiet, source) {
     }
   }
   
-  # check to make sure cols names are 11 char or less
-  # t <- which(nchar(names(data2)) > 11)
-  # if (length(t) > 0) {
-  #   err$maxCharCol$msg <- "FAIL - The following row numbers have columns that contain entries >11 characters:"
-  #   err$maxCharCol$results <- t
-  #   attr(err, "error") <- -1
-  # }
-  
-  # check to make sure ids are 11 char or less
-  # t <- which(nchar(as.character(data2$id)) > 11)
-  # if (length(t) > 0) {
-  #   err$maxCharID$msg <- "FAIL - The following row numbers have ID values that contain entries >11 characters:"
-  #   err$maxCharID$results <- t
-  #   attr(err, "error") <- -1
-  # }
   
   # check that all records have an EVID value
   t <- which(is.na(data2$evid))
@@ -1090,49 +1079,55 @@ errcheck <- function(data2, model, quiet, source) {
   }
   
   class(err) <- c("PMerr", "list")
-  if (!quiet) cat("\nDATA VALIDATION REPORT:\n")
   if (!quiet) {
+    cli::cli_h1("DATA VALIDATION")
     print(err)
     flush.console()
+    loq_flag <- purrr::imap_lgl(loq, ~ any(.x > data2$out[data2$out != -99 & data2$outeq == .y], na.rm = TRUE))
+    if(any(loq_flag)) {
+      n_flag <- length(which(loq_flag))
+      cli::cli_text("{.strong Note:}{cli::qty(n_flag)} Output equation{?s} {which(loq_flag)} {cli::qty(n_flag)} {?has/have} at least one observation below the {.arg loq} value{?s} you specified.")
+      
+    }
   }
   
   # if no errors in data, and model is specified, check it for errors too
-  if (all(unlist(sapply(err, function(x) is.na(x$results)))) & !is.na(model)) {
-    # get information from data
-    
-    if (numcov > 0) {
-      covnames <- getCov(data2)$covnames
-    } else {
-      covnames <- NA
-    }
-    numeqt <- max(data2$outeq, na.rm = T)
-    modeltxt <- model
-    # attempt to translate model file into separate fortran model file and instruction files
-    engine <- list(alg = "NP", ncov = numcov, covnames = covnames, numeqt = numeqt, indpts = -99, limits = NA)
-    
-    if (!quiet) cat("\nMODEL REPORT:\n")
-    trans <- makeModel(model = model, data = data, engine = engine, write = F, quiet = quiet)
-    
-    if (trans$status == -1) {
-      if ("mQRZZZ.txt" %in% Sys.glob("*", T)) {
-        file.remove(model)
-        file.rename("mQRZZZ.txt", model)
-      }
-      if (!quiet) cat("There are errors in your model file.\n")
-      cat(trans$msg)
-    }
-    if (trans$status == 0) {
-      # if (source == "file" & !quiet) cat(paste("Associated data file: ", data, sep = ""))
-      if (!quiet) cat("\nYou are using a Fortran model file rather than the new text format.\nThis is permitted, but see www.lapk.org/ModelTemp.php for details.\n")
-    }
-    if (trans$status == 1) {
-      # if (source == "file" & !quiet) cat(paste("Associated data file: ", data, sep = ""))
-      if (!quiet) cat("\nExcellent - there were no errors found in your model file.\n")
-      if (trans$model %in% Sys.glob("*", T)) {
-        file.remove(trans$model)
-      }
-    }
-  }
+  # if (all(unlist(sapply(err, function(x) is.na(x$results)))) & !is.na(model)) {
+  #   # get information from data
+  
+  #   if (numcov > 0) {
+  #     covnames <- getCov(data2)$covnames
+  #   } else {
+  #     covnames <- NA
+  #   }
+  #   numeqt <- max(data2$outeq, na.rm = T)
+  #   modeltxt <- model
+  #   # attempt to translate model file into separate fortran model file and instruction files
+  #   engine <- list(alg = "NP", ncov = numcov, covnames = covnames, numeqt = numeqt, indpts = -99, limits = NA)
+  
+  #   if (!quiet) cat("\nMODEL REPORT:\n")
+  #   trans <- makeModel(model = model, data = data, engine = engine, write = F, quiet = quiet)
+  
+  #   if (trans$status == -1) {
+  #     if ("mQRZZZ.txt" %in% Sys.glob("*", T)) {
+  #       file.remove(model)
+  #       file.rename("mQRZZZ.txt", model)
+  #     }
+  #     if (!quiet) cat("There are errors in your model file.\n")
+  #     cat(trans$msg)
+  #   }
+  #   if (trans$status == 0) {
+  #     # if (source == "file" & !quiet) cat(paste("Associated data file: ", data, sep = ""))
+  #     if (!quiet) cat("\nYou are using a Fortran model file rather than the new text format.\nThis is permitted, but see www.lapk.org/ModelTemp.php for details.\n")
+  #   }
+  #   if (trans$status == 1) {
+  #     # if (source == "file" & !quiet) cat(paste("Associated data file: ", data, sep = ""))
+  #     if (!quiet) cat("\nExcellent - there were no errors found in your model file.\n")
+  #     if (trans$model %in% Sys.glob("*", T)) {
+  #       file.remove(trans$model)
+  #     }
+  #   }
+  # }
   if (!quiet) flush.console()
   return(err)
 }
@@ -1142,7 +1137,7 @@ errcheck <- function(data2, model, quiet, source) {
 
 
 # try and fix errors in the data file
-errfix <- function(data2, model, err, quiet) {
+errfix <- function(data2, err, quiet) {
   report <- NA
   numcol <- ncol(data2)
   # Fix first fixed columns
@@ -1159,16 +1154,12 @@ errfix <- function(data2, model, err, quiet) {
       report <- c(report, paste("Columns are now ordered appropriately."))
     }
   }
-  # Make sure ids and cols are 11 char or less
-  # if (length(grep("FAIL", err$maxchar$msg)) > 0) {
-  #   names(data2) <- substr(names(data2), 1, 11)
-  #   report <- c(report, paste("Column names have been truncated to maximum 11 characters."))
-  # }
+  
   # Check for NA observations (should be -99)
   if (length(grep("FAIL", err$obsMiss$msg)) > 0) {
     data2 <- data2[err$obsMiss$results, "out"] < -99
     report <- c(report, paste("Missing observations for evid=0 have been replaced with -99."))
-    err <- errcheck(data2 = data2, model = model, quiet = T)
+    err <- errcheck(data2 = data2, quiet = T)
   }
   # Check for DUR dose records
   if (length(grep("FAIL", err$doseDur$msg)) > 0) {
@@ -1204,7 +1195,7 @@ errfix <- function(data2, model, err, quiet) {
     data2 <- rbind(data2, T0)
     data2 <- data2[order(data2$id, data2$time), ]
     report <- c(report, paste("Subjects with first time > 0 have had a dummy dose of 0 inserted at time 0."))
-    err <- errcheck(data2 = data2, model = model, quiet = T)
+    err <- errcheck(data2 = data2, quiet = T)
   }
   
   # Alert for missing covariate data
@@ -1266,7 +1257,7 @@ errfix <- function(data2, model, err, quiet) {
   }
   
   if (!quiet) {
-    cat("\nFIX DATA REPORT:\n\n")
+    cli::cli_h1("FIX DATA REPORT:")
     report <- report[-1]
     cat(paste0("(", 1:length(report), ") ", report, collapse = "\n"))
     flush.console()
