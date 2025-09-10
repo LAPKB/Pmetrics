@@ -126,8 +126,8 @@ PM_opt <- R6::R6Class(
     #' * `outname` is "MMsim"
     #' * `combine` is `TRUE`
     initialize = function(poppar, model, data, nsamp = 1, weight = list(none = 1),
-                          predInt = 0.5, mmInt, algorithm = "mm",
-                          outeq = 1, ...) {
+    predInt = 0.5, mmInt, algorithm = "mm",
+    outeq = 1, ...) {
       if (missing(poppar)) {
         cat(crayon::red("Error:"), "poppar is required.\n")
         return(NULL)
@@ -142,7 +142,7 @@ PM_opt <- R6::R6Class(
         mmInt <- NULL
       }
       
-      tryCatch(private$make(
+      res <- tryCatch(private$make(
         poppar = poppar,
         model = model,
         data = data,
@@ -152,10 +152,16 @@ PM_opt <- R6::R6Class(
         mmInt = mmInt,
         algorithm = algorithm,
         outeq = outeq,
-        ...,
+        ...
       ), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
+        cli::cli_abort(c("x" = e$message))
       })
+      
+      self$sampleTime <- res$sampleTime
+      self$bayesRisk <- res$bayesRisk
+      self$simdata <- res$simdata
+      self$mmInt <- res$mmInt
+      
     },
     #' @description
     #' Plot method
@@ -164,7 +170,7 @@ PM_opt <- R6::R6Class(
     #' @param ... Arguments passed to [plot.PM_opt]
     plot = function(...) {
       tryCatch(plot.PM_opt(self, ...), error = function(e) {
-        cat(crayon::red("Error:"), e$message, "\n")
+        cli::cli_abort(c("x" = e$message))
       })
     },
     #' @description
@@ -172,37 +178,33 @@ PM_opt <- R6::R6Class(
     #'
     #' @return Prints the optimal sampling times and Bayes Risk.
     print = function() {
-      cat("Multiple model optimal sample times\n")
-      cat("-----------------------------------\n")
+      cli::cli_div(theme = list(
+        span.blue = list(color = blue())
+      ))
+      cli::cli_h2("Multiple model optimal sample times")
       for (i in 1:length(self$sampleTime)) {
-        cat(paste("Sample ", i, ": ", self$sampleTime[i], "\n", sep = ""))
+        cli::cli_text("Sample {i}: {.blue {self$sampleTime[i]}}")
       }
-      cat(paste("\nBayes Risk: ", self$bayesRisk, "\n", sep = ""))
+      cli::cli_h2("Bayes Risk")
+      cli::cli_text("{.blue {round2(self$bayesRisk)}}")
+      cli::cli_end()
     }
   ), # end public
   private = list(
     make = function(poppar, model, data, nsamp = 1, weight = list(none = 1),
-                    predInt = 0.5, mmInt, outeq = 1,
-                    algorithm = "mm", clean = TRUE, ...) {
+    predInt = 0.5, mmInt, outeq = 1,
+    algorithm = "mm", ...) {
       # get defaults for PM_sim$new() arguments
       arglist <- list(...)
-      arglist$usePost <- ifelse(is.null(arglist$usePost), FALSE, arglist$usePost)
-      arglist$quiet <- ifelse(is.null(arglist$quiet), TRUE, arglist$quiet)
-      arglist$obsNoise <- ifelse(is.null(arglist$obsNoise), NA, arglist$obsNoise)
-      if (!is.null(arglist$clean)) {
-        clean_opt <- arglist$clean
-        arglist$clean <- FALSE
-      } else {
-        clean_opt <- TRUE
-        arglist$clean <- FALSE
-      }
+      arglist <- modifyList(arglist, list(usePost = FALSE, quiet = TRUE))
       
+   
       if (inherits(poppar, "PM_result")) {
         if (!inherits(poppar$final, "NPAG")) {
           cat(crayon::red("Error:"), "Prior run must be NPAG.")
           return(NULL)
         }
-        popPoints <- if (usePost) {
+        popPoints <- if (arglist$usePost) {
           poppar$final$postPoints
         } else {
           poppar$final$popPoints
@@ -210,15 +212,15 @@ PM_opt <- R6::R6Class(
         model <- if (is.null(model)) {
           poppar$model
         } else {
-          "model.txt"
+          model
         }
         data <- if (is.null(data)) {
           poppar$data
         } else {
-          "data.csv"
+          data
         }
       } else if (all(c("NPAG", "PM_final") %in% class(poppar))) {
-        popPoints <- if (usePost) {
+        popPoints <- if (arglist$usePost) {
           poppar$postPoints
         } else {
           poppar$popPoints
@@ -251,133 +253,162 @@ PM_opt <- R6::R6Class(
       old <- Sys.glob("MMsim*.txt")
       invisible(file.remove(old))
       # simulate each point
-      simdata <- do.call(PM_sim$new, (c(
+      simdata <- do.call(PM_sim$new, (c(list(
         poppar = poppar,
         model = model,
-        data = data, nsim = 0,
-        predInt = predInt,
-        outname = "MMsim",
-        combine = TRUE,
+        data = data, nsim = 0 ,
+        predInt = predInt),
         arglist # the other args
       )))
       
+      # get the assay error from the model
+      cassay <- simdata$data$model$model_list$err[[outeq]]$coeff
       
-      simdata$obs <- simdata$obs %>% filter(outeq == !!outeq)
+      # get the simulated outputs
+      obs <- simdata$data$obs %>% filter(outeq == !!outeq)
       
-      # transform into format for MMopt
-      # nsubs is the number of subjects
-      nsubs <- length(unique(simdata$obs$id))
-      # parse mmInt
+      # filter outputs by mmInt if needed
       if (!missing(mmInt) && !is.null(mmInt)) {
-        simdata_full <- simdata
+        
         if (!inherits(mmInt, "list")) {
           mmInt <- list(mmInt)
         } # mmInt was a single vector; make a list of 1
-        simdata$obs <- purrr::map(mmInt, function(t) {
-          dplyr::filter(simdata$obs, time >= t[1] & time <= t[2])
+
+        # filter obs by mmInt intervals
+        obs <- purrr::map(mmInt, \(t) {
+          dplyr::filter(obs, time >= t[1] & time <= t[2])
         }) %>%
-          dplyr::bind_rows() %>%
-          dplyr::arrange(id, time)
+        dplyr::bind_rows() %>%
+        dplyr::arrange(id, time)
+        
       } else {
         mmInt <- NULL
-        simdata_full <- simdata
       }
       
-      # time is the simulated times
-      time <- unique(simdata$obs$time)
-      # nout is the number of simulated times (outputs)
-      nout <- length(time)
-      # Mu is a matrix of nout rows x nsubs columns containing the outputs at each time
-      Mu <- t(matrix(simdata$obs$out, nrow = nsubs, byrow = T))
       
-      # pH is the vector of probabilities of each population point
-      pH <- popPoints[, ncol(popPoints)]
-      # replicate pH and normalize based on number of simulation templates
-      ntemp <- nsubs / nrow(popPoints)
-      pH <- rep(pH, ntemp)
-      pH <- pH / ntemp
-      numeqt <- max(simdata$obs$outeq)
-      # get the assay error from the simulated output
-      simout <- readLines("MMsim1.txt")
-      errLine <- grep(" EQUATIONS, IN ORDER, WERE:", simout)
-      cassay <- scan("MMsim1.txt", n = 4, skip = errLine + numeqt - 1, quiet = T)
       
-      # make the weighting Matrix
-      wtnames <- names(weight)
-      Cbar0 <- array(NA,
-                     dim = c(nsubs, nsubs, 4),
-                     dimnames = list(a = 1:nsubs, b = 1:nsubs, type = c("none", "auc", "cmax", "cmin"))
-      )
-      
-      # default is no penalties (diag=0, off-diag=1)
-      if ("none" %in% wtnames) {
-        Cbar0[, , 1] <- matrix(1, nrow = nsubs, ncol = nsubs)
-        diag(Cbar0[, , 1]) <- 0
-      } else {
-        if (sum(unlist(weight)) != 1) {
-          stop("Relative weights do not sum to 1.\n")
+      # function to prep each simulation
+      make_mm <- function(obs, popPoints, cassay){
+        # nsubs is the number of simulations per id
+        
+        nsubs <- length(unique(obs$nsim))
+        
+        # time is the simulated times
+        time <- unique(obs$time)
+        # nout is the number of simulated times (outputs)
+        nout <- length(time)
+        # Mu is a matrix of nout rows x nsubs columns containing the outputs at each time
+        Mu <- t(matrix(obs$out, nrow = nsubs, byrow = T))
+        
+        # pH is the vector of probabilities of each population point
+        pH <- as.data.frame(popPoints)[, ncol(popPoints)] 
+        # replicate pH and normalize based on number of simulation templates
+        ntemp <- nsubs / nrow(popPoints)
+        pH <- rep(pH, ntemp)
+        pH <- pH / ntemp
+        numeqt <- max(obs$outeq)
+        
+        
+        # make the weighting Matrix
+        wtnames <- names(weight)
+        Cbar0 <- array(NA,
+          dim = c(nsubs, nsubs, 4),
+          dimnames = list(a = 1:nsubs, b = 1:nsubs, type = c("none", "auc", "cmax", "cmin"))
+        )
+        
+        # default is no penalties (diag=0, off-diag=1)
+        if ("none" %in% wtnames) {
+          Cbar0[, , 1] <- matrix(1, nrow = nsubs, ncol = nsubs)
+          diag(Cbar0[, , 1]) <- 0
         } else {
-          if ("auc" %in% wtnames) {
-            auc <- makeAUC(simdata)
-            sqdiff <- matrix(sapply(1:nsubs, function(x) (auc$tau[x] - auc$tau)^2), nrow = nsubs)
-            cbar <- cbar_make1(sqdiff)
-            Cbar0[, , 2] <- weight$auc * cbar / mean(cbar)
-          }
-          
-          if ("max" %in% wtnames) {
-            maxi <- unlist(tapply(simdata$obs$out, simdata$obs$id, max))
-            sqdiff <- matrix(sapply(1:nsubs, function(x) (maxi[x] - maxi)^2), nrow = nsubs)
-            cbar <- cbar_make1(sqdiff)
-            Cbar0[, , 3] <- weight$max * cbar / mean(cbar)
-          }
-          
-          if ("min" %in% wtnames) {
-            mini <- unlist(tapply(simdata$obs$out, simdata$obs$id, min))
-            sqdiff <- matrix(sapply(1:nsubs, function(x) (mini[x] - mini)^2), nrow = nsubs)
-            cbar <- cbar_make1(sqdiff)
-            Cbar0[, , 4] <- weight$min * cbar / mean(cbar)
-          }
-          notWt <- which(!wtnames %in% c("auc", "min", "max", "none"))
-          if (length(notWt) > 0) {
-            cat(paste("The following parameters are not valid weighting factors and were ignored: ", paste(wtnames[notWt], collapse = ", "), ".\n", sep = ""))
+          if (sum(unlist(weight)) != 1) {
+            stop("Relative weights do not sum to 1.\n")
+          } else {
+            if ("auc" %in% wtnames) {
+              auc <- makeAUC(obs)
+              sqdiff <- matrix(sapply(1:nsubs, function(x) (auc$tau[x] - auc$tau)^2), nrow = nsubs)
+              cbar <- cbar_make1(sqdiff)
+              Cbar0[, , 2] <- weight$auc * cbar / mean(cbar)
+            }
+            
+            if ("max" %in% wtnames) {
+              maxi <- unlist(tapply(obs$out, obs$id, max))
+              sqdiff <- matrix(sapply(1:nsubs, function(x) (maxi[x] - maxi)^2), nrow = nsubs)
+              cbar <- cbar_make1(sqdiff)
+              Cbar0[, , 3] <- weight$max * cbar / mean(cbar)
+            }
+            
+            if ("min" %in% wtnames) {
+              mini <- unlist(tapply(obs$out, obs$id, min))
+              sqdiff <- matrix(sapply(1:nsubs, function(x) (mini[x] - mini)^2), nrow = nsubs)
+              cbar <- cbar_make1(sqdiff)
+              Cbar0[, , 4] <- weight$min * cbar / mean(cbar)
+            }
+            notWt <- which(!wtnames %in% c("auc", "min", "max", "none"))
+            if (length(notWt) > 0) {
+              cat(paste("The following parameters are not valid weighting factors and were ignored: ", paste(wtnames[notWt], collapse = ", "), ".\n", sep = ""))
+            }
           }
         }
+        # find max value over all selected weights (condense to nsubs x nsubs matrix)
+        Cbar <- apply(Cbar0, c(1, 2), max, na.rm = T)
+        
+        # Call MMMOPT1 routine to compute optimal sampling times
+        mmopt1 <- private$wmmopt1(Mu, time, pH, cassay, nsamp, nsubs, nout, Cbar)
+        optsamp <- mmopt1$optsamp
+        brisk <- mmopt1$brisk_cob
+        optindex <- mmopt1$optindex
+        res <- list(
+          sampleTime = optsamp[1:nsamp, nsamp],
+          bayesRisk = brisk[nsamp]
+        )
+        return(res)
       }
-      # find max value over all selected weights (condense to nsubs x nsubs matrix)
-      Cbar <- apply(Cbar0, c(1, 2), max, na.rm = T)
       
-      # Call MMMOPT1 routine to compute optimal sampling times
-      mmopt1 <- private$wmmopt1(Mu, time, pH, cassay, nsamp, nsubs, nout, Cbar)
-      optsamp <- mmopt1$optsamp
-      brisk <- mmopt1$brisk_cob
-      optindex <- mmopt1$optindex
       
+      # transform into format for MMopt
+
+      
+
+      split_sim <- split(obs, obs$id)
+      all_mm <- map(split_sim, \(x) {
+        make_mm(
+          obs = x %>% arrange(nsim, time),
+          popPoints = popPoints,
+          cassay = cassay
+        )
+      }
+    )
+      
+      sampleTime <- c(
+        mean(purrr::map_dbl(all_mm, \(x) x$sampleTime[1]), na.rm = TRUE),
+        mean(purrr::map_dbl(all_mm, \(x) x$sampleTime[2]), na.rm = TRUE)
+      )
+      bayesRisk <- c(
+        mean(purrr::map_dbl(all_mm, \(x) x$bayesRisk), na.rm = TRUE)
+      )
+      
+      
+      mm_res <- bind_rows(all_mm, .id = "id") %>% group_by(id) %>%
+        mutate(sample_idx = row_number()) %>%
+        pivot_wider(id_cols = c(id, bayesRisk), names_from = sample_idx, values_from = sampleTime, names_prefix = "time_")
+      
+      mm_res <- mm_res[match(data$data$id, mm_res$id), ] %>% distinct()
+      if (nrow(mm_res) == 1) mm_res <-  NULL # if only one subject, return NULL as it is the same as the sampleTime and bayesRisk
       
       
       # -------------------------
       
       
-      if (clean_opt) {
-        invisible(file.remove(
-          Sys.glob(c(
-            "fort.*", "*.Z3Q", "*.ZMQ",
-            "montbig.exe", "ZMQtemp.csv",
-            "simControl.txt", "seedto.mon",
-            "abcde*.csv",
-            "MMsim*.txt",
-            "*.for"
-          )),
-          "simmodel.txt",
-          "simdata.csv"
-        ))
-      }
       
-      self <- list(
-        sampleTime = optsamp[1:nsamp, nsamp],
-        bayesRisk = brisk[nsamp],
-        simdata = simdata_full, mmInt = mmInt
+      all_res <- list(
+        sampleTime = sampleTime,
+        bayesRisk = bayesRisk,
+        all_mm = mm_res,
+        simdata = simdata, 
+        mmInt = mmInt
       )
-      return(self)
+      return(all_res)
     },
     # 
     # This routine computes the MMOPT 1,2,3 and 4-sample optimal sample designs taking into account an additional weighting matrix C
@@ -439,11 +470,11 @@ PM_opt <- R6::R6Class(
       search_grid <- data.frame(t(combn(1:nout, nsamp))) %>% dplyr::rowwise()
       pb <- progress::progress_bar$new(total = nrow(search_grid))
       Perror <- search_grid %>%
-        dplyr::summarise(val = private$perrorc1(pH, Kall, nvec = dplyr::c_across(dplyr::everything()), Cbar, pb))
+      dplyr::summarize(val = private$perrorc1(pH, Kall, nvec = dplyr::c_across(dplyr::everything()), Cbar, pb))
       
       nopt <- search_grid[which(Perror$val == min(Perror$val)), ] %>%
-        purrr::as_vector(nopt[1, ]) %>%
-        sort()
+      purrr::as_vector(nopt[1, ]) %>%
+      sort()
       # vctrs::vec_sort()
       
       # Compute Output Values
@@ -681,6 +712,7 @@ PM_opt <- R6::R6Class(
 #' @param line Passed to [plot.PM_sim] with default as `list(probs = NA)`.
 #' @param times Format the vertical lines for optimal times. Default is
 #' dashed red line. r template("line")`
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param ... Other parameters to pass to [plot.PM_sim].
 #' @return Plots the simulation profiles with MM optimal times indicated as vertical lines.
 #' @author Michael Neely
@@ -688,12 +720,12 @@ PM_opt <- R6::R6Class(
 #' @export
 #' @family PMplots
 
-plot.PM_opt <- function(x, line = list(probs = NA), times = T, ...) {
+plot.PM_opt <- function(x, line = list(probs = NA), times = T, print = TRUE, ...) {
   mm_format <- amendLine(times, default = list(color = "red", dash = "dash", width = 2))
   
   # parse dots
   arglist <- list(...)
-  arglist$quiet <- T
+  arglist$quiet <- TRUE
   arglist$line <- line
   
   p <- do.call(plot.PM_sim, c(list(x$simdata), arglist))$p
@@ -727,5 +759,6 @@ plot.PM_opt <- function(x, line = list(probs = NA), times = T, ...) {
   
   p <- p %>% layout(shapes = shapeList)
   
-  print(p)
+  if (print) print(p)
+  return(p)
 }

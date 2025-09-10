@@ -29,6 +29,7 @@ Imports:
     dplyr,
     ggplot2,
     ggraph,
+    htmlwidgets,
     jsonlite,
     lifecycle,
     lubridate,
@@ -66,9 +67,9 @@ Suggests:
     RColorBrewer,
     RcppTOML,
     testthat
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Encoding: UTF-8
 Config/testthat/edition: 3
 VignetteBuilder: quarto
-Config/rextendr/version: 0.4.0.9000
+Config/rextendr/version: 0.4.2
 LazyData: true

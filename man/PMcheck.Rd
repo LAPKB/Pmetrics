@@ -4,18 +4,17 @@
 \alias{PMcheck}
 \title{Check Pmetrics Inputs for Errors}
 \usage{
-PMcheck(data, model, fix = FALSE, quiet = FALSE)
+PMcheck(data, fix = FALSE, loq = NULL, quiet = FALSE)
 }
 \arguments{
 \item{data}{The name of a Pmetrics .csv matrix file in the current working directory,
 the full path to one not in the current working directory, or a data.frame containing
 the output of a previous \link{PMreadMatrix} command.}
 
-\item{model}{The filename of a Pmetrics model file in the current working directory.  This parameter is optional.
-If specified, and the data object has no errors, the model file will be evaluated.}
-
 \item{fix}{Boolean operator; if \code{TRUE}, Pmetrics will attempt to fix errors in the data file.
 Default is \code{FALSE}.}
+
+\item{loq}{Numeric value of the limit of quantification (LOQ) for each output.}
 
 \item{quiet}{Boolean operator to suppress printed output.  Default is false.}
 }
@@ -60,13 +59,11 @@ The second object (\verb{$results}) is a vector of the row numbers that contain 
 
 This function is largely superseded as it is called automatically when
 data are initialized as a \link{PM_data} object. It can still be called
-independently of this route and will check for data and optionally model errors.
+independently of this route and will check for data errors.
 }
 \details{
-It  will check a .csv file or a data frame containing a
-previously loaded .csv file (the output of \link{PMreadMatrix} for errors
-which would cause the analysis to fail.  If a model file is provided, and the data
-file has no errors, it will also check the model file for errors. Note that as of
+It  will check the data for errors
+which would cause the analysis to fail.  Note that as of
 Pmetrics Version 2, this function is called automatically when a new \link{PM_data}
 object is created, and users generally no longer need to call the function directly.
 In \code{PM_data$new()}, the data object is first standardized to contain all required columns,
@@ -103,8 +100,8 @@ in cells that are not required (e.g. INPUT for an observation event).
 
 To use this function, see the example below.
 
-After running PMcheck and looking at the errors in the errors.xlsx file, you can fix the
-errors manually directly in the errors.xlsx file and resave it as a .csv file.
+After running PMcheck and looking at the errors in the \emph{errors.xlsx} file, you can fix the
+errors manually directly in the \emph{errors.xlsx} file and resave it as a .csv file.
 Alternatively, you could then try to fix the problem(s) with \code{mdata2 <- PMcheck(mdata,fix=T)}.  Note that we are now returning
 a PMmatrix data object called mdata2 (hopefully cleaned of errors) rather than the PMerr object returned when \code{fix=FALSE}.
 Pmetrics handles each of the errors in the following ways.

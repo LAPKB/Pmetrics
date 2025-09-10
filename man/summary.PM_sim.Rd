@@ -18,6 +18,10 @@
 \arguments{
 \item{object}{The simulation object to summarize}
 
+\item{include}{\verb{r template("include")}.}
+
+\item{exclude}{\verb{r template("exclude")}.}
+
 \item{field}{Quoted character value, one of
 \itemize{
 \item \strong{obs} for simulated observations (the default)
@@ -35,8 +39,6 @@ can be any subset of these and can also include specific quantiles, e.g. \code{c
 \item{digits}{Integer, used for number of digits to print.}
 
 \item{...}{Not used.}
-
-\item{at}{If \code{object} is a \code{PM_simlist}, which simulation to use. Default is 1.}
 }
 \value{
 If \code{by} is omitted, a data frame with rows for each data element except ID,
@@ -61,7 +63,7 @@ are mean, sd, median, min, max, but could include individual quantiles. See
 \dontrun{
 simEx$summary() # preferred
 summary(simEx) # alternative
-simEx$summary(at = 2, field = "amt", group = "comp") # group amounts by compartment
+simEx$summary(include = 2, field = "amt", group = "comp") # group amounts by compartment
 }
 }
 \seealso{
