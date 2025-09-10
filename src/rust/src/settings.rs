@@ -26,6 +26,16 @@ pub(crate) fn settings(
     };
 
     let error_models_raw = settings.get("error_models").unwrap().as_list().unwrap();
+    let loq = settings.get("loq").unwrap();
+    let loq = if loq.is_na() {
+        vec![None; error_models_raw.len()]
+    } else {
+        loq.as_real_vector()
+            .unwrap()
+            .iter()
+            .map(|&x| if x.is_nan() { None } else { Some(x) })
+            .collect()
+    };
 
     let mut ems = ErrorModels::new();
 
@@ -42,6 +52,7 @@ pub(crate) fn settings(
                     ErrorModel::additive(
                         ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
                         gamlam,
+                        loq[i],
                     ),
                 )?;
             }
@@ -51,6 +62,7 @@ pub(crate) fn settings(
                     ErrorModel::proportional(
                         ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
                         gamlam,
+                        loq[i],
                     ),
                 )?;
             }

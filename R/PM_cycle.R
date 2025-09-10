@@ -190,7 +190,7 @@ PM_cycle <- R6::R6Class(
       pivot_wider(names_from = parameter, values_from = value) %>%
       arrange(cycle) %>%
       mutate(across(.cols = -cycle, .fns = function(x) {
-        x / first(x)
+        x / dplyr::first(x)
       }))
       
       sd <- cycle_data %>%
@@ -199,7 +199,7 @@ PM_cycle <- R6::R6Class(
       pivot_wider(names_from = parameter, values_from = value) %>%
       arrange(cycle) %>%
       mutate(across(.cols = -cycle, .fns = function(x) {
-        x / first(x)
+        x / dplyr::first(x)
       }))
       
       median <- cycle_data %>%
@@ -208,7 +208,7 @@ PM_cycle <- R6::R6Class(
       pivot_wider(names_from = parameter, values_from = value) %>%
       arrange(cycle) %>%
       mutate(across(.cols = -cycle, .fns = function(x) {
-        x / first(x)
+        x / dplyr::first(x)
       }))
       
       n_out <- length(unique(obs_raw$outeq))
@@ -230,7 +230,7 @@ PM_cycle <- R6::R6Class(
       mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
       select(cycle, value, outeq) %>% arrange(cycle, outeq) %>%
       mutate(outeq = as.numeric(outeq) + 1) %>%
-      right_join(model_types, by = "outeq")
+      dplyr::right_join(model_types, by = "outeq")
       
       
       status <- tail(cycle_data$status, 1)
@@ -305,7 +305,8 @@ PM_cycle <- R6::R6Class(
 #' See `xlab` for details. If `xlab` is specified as a list with formatting,
 #' then the formatting for the
 #' `xlab` will be applied to the `ylab`. To format `ylab` independently,
-#' specify a formatting list as for `xlab`.<br>
+#' specify a formatting list as for `xlab`.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param \dots Additional R plotting parameters.
 #' @return Plots a panel with the following windows: -2 times the log-likelihood at each cycle, gamma/lambda at
 #' each cycle; Akaike Information Criterion at each cyle and Bayesian (Schwartz) Information Criterion
@@ -339,6 +340,7 @@ plot.PM_cycle <- function(x,
   omit,
   grid = TRUE,
   xlab, ylab,
+  print = TRUE,
   ...) {
     if (inherits(x, "PM_cycle")) {
       data <- x$data
@@ -494,13 +496,13 @@ plot.PM_cycle <- function(x,
     
     # amend older versions of gamma if needed
     if (is.matrix(data$gamlam)) {
-      gamlam <- raw %>% select(starts_with("add")|starts_with("prop"))
+      gamlam <- raw %>% select(dplyr::starts_with("add")|dplyr::starts_with("prop"))
       if (ncol(gamlam) == 1 & n_out > 1) {
         gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
       }
       gamlam <- gamlam %>%
       pivot_longer(
-        cols = everything(),
+        cols = dplyr::everything(),
         values_to = "value", names_to = c("type", "outeq"), 
         names_sep = "\\."
       ) %>%
@@ -623,8 +625,8 @@ plot.PM_cycle <- function(x,
     ) %>%
     layout(legend = list(y = 0.4))
     
-    print(p)
-    return(p)
+    if (print) print(p)
+    return(invisible(p))
   }
   
   
@@ -767,7 +769,7 @@ plot.PM_cycle <- function(x,
     }
 
     cli::cli_div(theme = list(
-              span.blue = list(color = "blue")
+              span.blue = list(color = navy())
             ))
     cli::cli_h2("Cycle Summary")
 

@@ -207,7 +207,7 @@ PMcompare <- function(...) {
 #' @description
 #' `r lifecycle::badge("deprecated")`
 #'
-#' This function is replaced by [make_valid], which is
+#' This function is replaced by [PM_valid], which is
 #' typically called with the `$validate` method for a [PM_result] object,
 #' but can be called directly on a [PM_result] object.
 #'
@@ -217,7 +217,24 @@ PMcompare <- function(...) {
 #' @seealso [make_valid]
 #' @export
 makeValid <- function(...) {
-  lifecycle::deprecate_warn("2.2.0", what = "makeValid()", with = "make_valid()")
+  lifecycle::deprecate_warn("2.2.0", what = "makeValid()", with = "PM_valid()")
+}
+
+#' @title Create a Pmetrics validation object
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' This function is replaced by [PM_valid], which is
+#' typically called with the `$validate` method for a [PM_result] object,
+#' but can be called directly on a [PM_result] object.
+#'
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @seealso [make_valid]
+#' @export
+make_valid <- function(...) {
+  lifecycle::deprecate_warn("2.2.0", what = "make_valid()", with = "PM_valid()")
 }
 
 

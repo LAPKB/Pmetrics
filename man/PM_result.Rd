@@ -60,6 +60,7 @@ new optimal sampling results.}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-PM_result-new}{\code{PM_result$new()}}
+\item \href{#method-PM_result-fit}{\code{PM_result$fit()}}
 \item \href{#method-PM_result-plot}{\code{PM_result$plot()}}
 \item \href{#method-PM_result-summary}{\code{PM_result$summary()}}
 \item \href{#method-PM_result-auc}{\code{PM_result$auc()}}
@@ -97,6 +98,34 @@ automatically generated. This is not a user-modifiable.}
 Creation of new \code{PM_result} objects is via \link{PM_load}.
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_result-fit"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-fit}{}}}
+\subsection{Method \code{fit()}}{
+Fit the model to the data
+#' @details
+This method is used to fit the model in the \link{PM_result} object to data.
+It calls the \verb{$fit} method of the model stored in the \code{model} field.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$fit(data, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{Optional data to fit. If not provided, the data stored in the
+\code{data} field of the \link{PM_result} object will be used. This can be useful to
+continue a prior run that did not converge before the maximum number of cycles,
+e.g. \code{run2 <- run1$fit(cycles = 10000, prior = 1)}}
+
+\item{\code{...}}{Additional arguments passed to the model's \verb{$fit} method.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Returns an invisible \link{PM_result}.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-plot"></a>}}
@@ -222,7 +251,7 @@ arguments, e.g. \verb{$sim(include = 1:2, predInt = 1, limits = NA)}.}
 \subsection{Method \code{save()}}{
 Save the current PM_result object to an .Rdata file.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$save(run, file)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$save(run, file = "PMout.Rdata")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -233,13 +262,14 @@ will save in the current working directory. For example, if folder "1" is in
 your current working directory, specify \code{run = 1} to save the result to the "outputs"
 subfolder of the "1" folder.}
 
-\item{\code{file}}{Custom file name. Default is "PMout.Rdata".}
+\item{\code{file}}{Custom file name. Default is "PMout.Rdata". If \code{run} is not specified, \code{file}
+should be the full path and filename.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
 This is useful if you have updated the result in some way, for example you
-have run the \verb{$make_valid} method on the \code{PM_result} object, which returns
+have run the \verb{$validate()} method on the \code{PM_result} object, which returns
 an internal simulation based validation as a new \code{valid} field. To save this
 validation, use this \verb{$save} method. Note that unless a \code{file} name is provided,
 the changes will overwrite the
@@ -265,7 +295,7 @@ Validate the result by internal simulation methods.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{make_valid}.}
+\item{\code{...}}{Arguments passed to \link{PM_valid}.}
 }
 \if{html}{\out{</div>}}
 }

@@ -9,12 +9,17 @@
 Contains results of internal validation by simulation to permit generation of
 visual predictive checks (VPCs), prediction corrected visual predictive checks,
 (pcVPCs), normalized prediction distribution errors (NPDE), and
-numerical predictive checks.
+numerical predictive checks. This is typically a field in a \link{PM_result}
 }
 \details{
-This object is created by running the \code{make_valid} method in a
-\link{PM_result} object. It contains all the information necessary
-to internally validate the result by simulation methods.
+The \link{PM_valid} object is both a data field within a \link{PM_result}, and itself an R6 object
+comprising data fields and associated methods suitable for analysis and plotting of
+observed vs. population or individual predicted outputs.
+
+Because \link{PM_valid} objects are automatically added to the \link{PM_result} by calling the
+\verb{$validate()} method of a \link{PM_result} after a
+successful run, it is generally not necessary for users to generate \link{PM_valid} objects
+themselves.
 }
 \examples{
 
@@ -28,7 +33,7 @@ valid <- NPex$validate(limits = c(0, 3))
 
 }
 \seealso{
-\link{PM_result}, \link{make_valid}
+\link{PM_result}
 }
 \author{
 Michael Neely
@@ -75,9 +80,10 @@ predictive checks (pcVPCs).
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{result}}{The result of a prior run, loaded with \link{PM_load}.}
+\item{\code{result}}{The result of a prior run, usually supplied by calling the
+\verb{$validate()} method of a \link{PM_result} at the end of a run, or later loaded with \link{PM_load}.}
 
-\item{\code{tad}}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
+\item{\code{tad}}{\verb{r template("tad")}}
 
 \item{\code{binCov}}{A character vector of the names of covariates which are included in the model, i.e. in the
 model equations and which need to be binned.  For example \code{binCov='wt'} if "wt" is included in a
@@ -115,7 +121,7 @@ superimposable and \code{tad} should
 }
 
 \subsection{Returns}{
-The output of \code{make_valid} is a list of class \code{PMvalid}, which is a list with the following.
+An R6 object  of class \code{PM_valid}, which is a list with the following.
 \itemize{
 \item simdata The combined, simulated files for all subjects using the population mean values and each subject
 as a template. This object will be automatically saved to the run, to be loaded with
