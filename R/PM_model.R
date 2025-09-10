@@ -917,7 +917,7 @@ PM_model <- R6::R6Class(
             #    #' in the first cycle, with a speed-up of approximately 80\% of the number of available cores on your machine, e.g. an 8-core machine
             #    #' will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\%, e.g. 4-fold increase on an 8-core
             #    #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
-            #' @param algorithm The algorithm to use for the run.  Default is "NPAG". Alternatives: "NPOD".
+            #' @param algorithm The algorithm to use for the run.  Default is "NPAG" for the **N**on-**P**arametric **A**daptive **G**rid. Alternatives: "NPOD".
             #' @param report If missing, the default Pmetrics report template as specified in [getPMoptions]
             #' is used. Otherwise can be "plotly", "ggplot", or "none".
             #' @return A successful run will result in creation of a new folder in the working
@@ -936,7 +936,7 @@ PM_model <- R6::R6Class(
               tad = 0,
               seed = 23,
               overwrite = FALSE,
-              algorithm = "NPAG", #POSTPROB for posteriors
+              algorithm = "NPAG", #POSTPROB for posteriors, select when cycles = 0, allow for "NPOD"
               report = getPMoptions("report_template")) {
               
                 msg <- "" # status message at end of run
@@ -1039,7 +1039,20 @@ PM_model <- R6::R6Class(
                 dir.create(newdir)
                 setwd(newdir)
                 
+                #### Algorithm ####
                 algorithm <- tolower(algorithm)
+                if (cycles == 0) {
+                  if (prior == "sobol") {
+                    cli::cli_abort(c("x" = "Error: Cannot use {.code prior = 'sobol'} with {.code cycles = 0}.", "i" = "Use a prior from a previous run."))
+                  }
+                  algorithm <- "postprob"
+                } else {
+                  if (!(algorithm %in% c("NPAG", "NPOD"))) {
+                    cli::cli_abort(c("x" = "Error: Unsupported algorithm.", "i" = "Supported algorithms are 'NPAG' and 'NPOD'."))
+                  }
+                }
+                
+                
                 
                 if (getPMoptions()$backend != "rust") {
                   setwd(cwd)
@@ -1129,9 +1142,10 @@ PM_model <- R6::R6Class(
                         algorithm = algorithm,
                         error_models = lapply(self$model_list$err, function(x) x$flatten()),
                         idelta = idelta,
+                        #bolus = NA, bolus = 1, or bolus = c(1, 3)
                         tad = tad,
                         max_cycles = cycles, #will be hardcoded in Rust to 0 for POSTPROB
-                        prior = prior,
+                        prior = prior, # needs warning if missing and algorithm = POSTPROB
                         points = points, # only relevant for sobol prior
                         seed = seed
                       ),
