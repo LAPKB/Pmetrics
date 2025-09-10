@@ -118,7 +118,7 @@ PM_post <- R6::R6Class(
           values_to = "pred"
         ) %>%
         dplyr::rename(icen = name) %>%
-        mutate(icen = case_when(
+        mutate(icen = dplyr::case_when(
           icen == "post_median" ~ "median",
           icen == "post_mean" ~ "mean"
         )) %>%
@@ -200,6 +200,7 @@ PM_post <- R6::R6Class(
 #' @param xlab `r template("xlab")` Default is "Time".
 #' @param ylab `r template("ylab")` Default is "Output".
 #' @param title `r template("title")` Default is to have no title.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param ... `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
@@ -237,6 +238,7 @@ plot.PM_post <- function(x,
                          xlab = "Time",
                          ylab = "Output",
                          title = "",
+                         print = TRUE,
                          xlim, ylim, ...) {
   # Plot parameters ---------------------------------------------------------
 
@@ -410,7 +412,7 @@ plot.PM_post <- function(x,
   if (overlay) {
     sub <- sub %>% dplyr::group_by(id)
     p <- dataPlot(sub, overlay = TRUE)
-    print(p)
+    if (print) print(p)
   } else { # overlay = FALSE, ie. split them
 
     if (!checkRequiredPackages("trelliscopejs")) {
@@ -422,10 +424,10 @@ plot.PM_post <- function(x,
     p <- sub_split %>%
       ungroup() %>%
       trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
-    print(p)
+    if (print) print(p)
   }
 
-  return(p)
+  return(invisible(p))
 }
 
 

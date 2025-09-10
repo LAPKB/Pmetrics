@@ -4,7 +4,7 @@
 \alias{PM_compare}
 \title{Compare NPAG or IT2B runs}
 \usage{
-PM_compare(x, y, ..., icen = "median", outeq = 1, plot = F)
+PM_compare(x, y, ..., icen = "median", outeq = 1, plot = TRUE)
 }
 \arguments{
 \item{x}{The first \link{PM_result} object you wish to compare, already loaded with \link{PM_load}.
@@ -19,30 +19,30 @@ if \code{plot} is true as well as to \link{mtsknn.eq}.  Order does not matter.}
 \item{icen}{Can be either "median" for the predictions based on medians of
 \code{pred.type} parameter value distributions, or "mean".  Default is "median".}
 
-\item{outeq}{Number of the output equation to compare; default is 1}
+\item{outeq}{Number of the output equation to compare; default is 1.}
 
-\item{plot}{Boolean operator selecting whether to generate observed vs.
-predicted plots for each data object as in \link{plot.PM_op}.}
+\item{plot}{Boolean operator selecting whether to generate the report.}
 }
 \value{
-A data frame with the following objects for each model to analyze:
+If \code{plot = TRUE}, a report will be generated comparing the selected models.
+Additionally, a data frame with the following objects for each model is invisbily returned.
 \itemize{
 \item \strong{run} The run number of the data
-\item \strong{type} NPAG or IT2B data
 \item \strong{nsub} Number of subjects in the model
 \item \strong{nvar} Number of random parameters in the model
 \item \strong{par} Names of random parameters
 \item \strong{cycles} Number of cycles run
 \item \strong{converge} Boolean value if convergence occurred.
 \item \strong{ll} Final cycle -2*Log-likelihood
-\item \strong{aic} Final cycle Akaike Information Criterion
+\item One of the following, depending on the option set in \link{setPMoptions}:
+\itemize{
+\item \strong{aic} Final cycle Akaike Information Criterion OR
 \item \strong{bic} Final cycle Bayesian (Schwartz) Information Criterion
-\item \strong{popBias} Bias, or mean weighted prediction error of predictions based on population parameters minus observations
-\item \strong{popImp} Imprecision, or bias-adjusted mean weighted squared error of predictions based on population parameters minus observations
-\item \strong{popPerRMSE} Percent root mean squared error of predictions based on population parameters minus observations
-\item \strong{postBias} Bias, or mean weighted prediction error of predictions - observations  based on posterior parameters
-\item \strong{postImp} Imprecision, or bias-adjusted mean weighted squared error of predictions - observations based on posterior parameters
-\item \strong{postPerRMSE} Percent root mean squared error of predictions based on posterior parameters minus observations
+}
+\item \strong{popBias} Bias, calculated by the method set in \link{setPMoptions}, of the predictions based on \code{icen} population parameters
+\item \strong{popImp} Imprecision, calculated by the method set in \link{setPMoptions}, of the predictions based on \code{icen} population parameters
+\item \strong{postBias} Bias, calculated by the method set in \link{setPMoptions}, of the predictions based on \code{icen} posterior parameters
+\item \strong{postImp} Imprecision, calculated by the method set in \link{setPMoptions}, of the predictions based on \code{icen} posterior parameters
 \item \strong{pval} P-value for each model compared to the first. See details.
 }
 }
@@ -60,8 +60,8 @@ approach if all models are non-parametrics.  Models may only be compared on
 parameters that are included in the first model.  The P-value is the
 comparison between each model and the first model in
 the list.  Missing P-values are when a model has no parameter names
-in common with the first model, and for the first model compared to itself,
-or when models from IT2B runs are included.  Significant P-values indicate
+in common with the first model, and for the first model compared to itself.
+Significant P-values indicate
 that the null hypothesis should be rejected, i.e. the joint distributions
 between the two compared models for that parameter are significantly different.
 }

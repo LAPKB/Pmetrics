@@ -202,7 +202,7 @@ or \code{NA} if only one \code{target_type} was specified.
 The individual elements are tibbles with all possible combinations
 of \code{target}s and simulated regimens for a given \code{target_type}. The tibbles have the following columns:
 \itemize{
-\item \strong{sim_num} The simulation number in \code{simdata}.
+\item \strong{reg_num} The simulation number in \code{simdata}.
 \item \strong{label} Annotation of the simulation, supplied by the \code{simlabels} argument.
 \item \strong{target} is the specified \code{target} for the results row. If a distribution created by \link{makePTAtarget},
 this will be a tibble with  the simulated targets

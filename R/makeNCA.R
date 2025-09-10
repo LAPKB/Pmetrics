@@ -2,8 +2,8 @@
 #'
 #' Performs a non-compartmental analysis from observed concentrations in the raw data
 #' file or from an individual Bayesian posterior predicted
-#' time-observation profiles (PMpost object) generated automatically after an NPAG run
-#' by the [makePost] command and loaded with [PM_load].
+#' time-observation profiles in [PM_post] generated automatically after an NPAG run
+#' and loaded with [PM_load].
 #'
 #' If concentrations from multiple dose intervals are included in the `start` to `end` time interval,
 #' the function will superpose the concentrations using the time after dose.  An error will be generated if

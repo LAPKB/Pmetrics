@@ -1,0 +1,38 @@
+project:
+  type: book
+
+book:
+  title: "Learn Pmetrics"
+  author: "Michael Neely"
+  date: "8/27/2025"
+  chapters:
+    - index.qmd
+    - NPAG.qmd
+    - NPAG_cov.qmd
+    - Compare.qmd
+    - Simulate.qmd
+    - PTA.qmd
+  # Optional but useful in books:
+  page-navigation: true
+  # You can keep a top navbar in a book, too:
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+ 
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    include-in-header: copy-all-code.html
+    link-external-newwindow: true
+pdf:
+    documentclass: scrreprt
+
+execute:
+  eval: false
+
+
+
+
