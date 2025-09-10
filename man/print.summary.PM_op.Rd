@@ -4,7 +4,7 @@
 \alias{print.summary.PM_op}
 \title{Print Summary of Observations and Predictions}
 \usage{
-\method{print}{summary.PM_op}(x, digits = max(3, getOption("digits") - 3), ...)
+\method{print}{summary.PM_op}(x, digits = getPMoptions("digits"), ...)
 }
 \arguments{
 \item{x}{An object made by \link{summary.PM_op}.}

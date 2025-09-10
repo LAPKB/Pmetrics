@@ -36,7 +36,7 @@ PMtree("DrugX")
 }
 }
 \seealso{
-\link{PMmanual}
+\link{PM_manual}
 }
 \author{
 Michael Neely

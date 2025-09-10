@@ -77,6 +77,7 @@ at each cycle,  normalized to initial standard deviation}
 \item \href{#method-PM_cycle-new}{\code{PM_cycle$new()}}
 \item \href{#method-PM_cycle-plot}{\code{PM_cycle$plot()}}
 \item \href{#method-PM_cycle-summary}{\code{PM_cycle$summary()}}
+\item \href{#method-PM_cycle-print}{\code{PM_cycle$print()}}
 \item \href{#method-PM_cycle-clone}{\code{PM_cycle$clone()}}
 }
 }
@@ -92,8 +93,7 @@ Create new object populated with  cycle information
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
-.}
+\item{\code{PMdata}}{include \verb{r template("PMdata")}.}
 
 \item{\code{...}}{Not currently used.}
 }
@@ -144,6 +144,20 @@ Summary method
 }
 \subsection{Details}{
 See \link{summary.PM_cycle}.
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_cycle-print"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cycle-print}{}}}
+\subsection{Method \code{print()}}{
+Print method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cycle$print()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+Prints the last cycle summary information.
 }
 
 }

@@ -12,11 +12,11 @@ NULL
 
 #' Simulates the first subject in the data set using the model at the given path.
 #'@export
-simulate_one <- function(data_path, model_path, spp) .Call(wrap__simulate_one, data_path, model_path, spp)
+simulate_one <- function(data_path, model_path, spp, kind) .Call(wrap__simulate_one, data_path, model_path, spp, kind)
 
 #' Simulates all subjects in the data set using the model at the given path.
 #'@export
-simulate_all <- function(data_path, model_path, theta) .Call(wrap__simulate_all, data_path, model_path, theta)
+simulate_all <- function(data_path, model_path, theta, kind) .Call(wrap__simulate_all, data_path, model_path, theta, kind)
 
 #' Compiles the text representation of a model into a binary file.
 #'@export

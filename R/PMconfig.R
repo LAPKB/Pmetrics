@@ -9,39 +9,15 @@ getPMpath <- function() {
 }
 
 getBits <- function() {
-  # figure out 32 or 64 bit
-  Rver <- numeric_version(paste(R.version$major, R.version$minor, sep = "."))
-  if (Rver < numeric_version("4.4.0")) {
-    if (length(grep("64-bit", utils::sessionInfo())) > 0) {
-      return(64)
-    } else {
-      return(32)
-    }
+  if (.Machine$sizeof.pointer == 8) {
+    return(64)
+  } else if (.Machine$sizeof.pointer == 4) {
+    return(32)
   } else {
-    if (length(grep("32-bit", utils::sessionInfo())) > 0) {
-      return(32)
-    } else {
-      return(64)
-    }
+    stop("Unknown architecture")
   }
 }
-# getFixedColNames ------------------------------------------------------------------
 
-#' @title Names of fixed columns
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Returns the names of fixed columns (non-covariate) in Pmetrics data objects.
-#' @return A vector of fixed column names:
-#' `c("id", "evid", "time", "dur", "dose", "addl", "ii", "input", "out", "outeq", "c0", "c1", "c2", "c3")`
-#'
-#' @export
-#' @examples
-#' \dontrun{
-#' getFixedColNames()
-#' }
-
-#' @author Michael Neely
 getFixedColNames <- function() {
   # set current names of fixed columns in data file
 

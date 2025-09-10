@@ -188,7 +188,7 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
         Scr2 = !!scr_sym,
         scrAve = (Scr1 + Scr2) / 2,
         
-        ESS = case_when(
+        ESS = dplyr::case_when(
           !!male_sym == 1 ~ !!wt_sym * (29.3 - 0.203 * !!age_sym),
           !!male_sym == 0 ~ !!wt_sym * (25.1 - 0.175 * !!age_sym),
           TRUE ~ NA_real_

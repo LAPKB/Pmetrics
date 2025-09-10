@@ -153,7 +153,7 @@ private = list(
     # left_join(pred_raw, by = c("id", "time", "outeq")) %>%
     pivot_longer(cols = c(pop_mean, pop_median, post_mean, post_median)) %>%
     mutate(
-      icen = case_when(
+      icen = dplyr::case_when(
         name == "pop_mean" ~ "mean",
         name == "pop_median" ~ "median",
         name == "post_mean" ~ "mean",
@@ -161,7 +161,7 @@ private = list(
       )
     ) %>%
     mutate(
-      pred.type = case_when(
+      pred.type = dplyr::case_when(
         name == "pop_mean" ~ "pop",
         name == "pop_median" ~ "pop",
         name == "post_mean" ~ "post",
@@ -171,7 +171,8 @@ private = list(
     select(-name) %>%
     dplyr::rename(pred = value) %>%
     dplyr::mutate(outeq = outeq + 1) %>%
-    dplyr::mutate(obs = na_if(obs, -99)) %>%
+    dplyr::mutate(block = block + 1) %>%
+    dplyr::mutate(obs = dplyr::na_if(obs, -99)) %>%
     dplyr::rowwise() %>%
     mutate(d = pred - obs) %>%
     mutate(ds = d * d) %>%
@@ -267,6 +268,7 @@ private = list(
 #' `list(x= 0.8, y = 0.1, font = list(color = "black", family = "Arial", size = 14, bold = FALSE))`.
 #' The coordinates are relative to the plot with lower left = (0,0), upper right = (1,1). This
 #' argument maps to `plotly::add_text()`.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param ... `r template("dotsPlotly")`
 #' @return Plots the object.
 #' @author Michael Neely
@@ -296,6 +298,7 @@ plot.PM_op <- function(x,
   xlab, ylab,
   title,
   stats = TRUE,
+  print = TRUE,
   xlim, ylim, ...) {
     if (inherits(x, "PM_op")) {
       x <- x$data
@@ -309,13 +312,13 @@ plot.PM_op <- function(x,
     }
     
     if (max(outeq) > max(x$outeq)) {
-      cli_abort(c(
+      cli::cli_abort(c(
         "x" = "{.cls PM_op} object does not have {outeq} output equation{?s}.",
         "i" = "Choose {max(x$outeq)} or fewer for {.code outeq}."
       ))
     }
     if (max(block) > max(x$block)) {
-      cli_abort(c(
+      cli::cli_abort(c(
         "x" = "{.cls PM_op} object does not have {block} blocks.",
         "i" = "Choose {max(x$block)} or fewer for {.code block}."
       ))
@@ -327,7 +330,7 @@ plot.PM_op <- function(x,
       block %in% !!block
     ) %>%
     includeExclude(include, exclude) %>%
-    dplyr::filter(!is.na(obs)) %>%
+    dplyr::filter(!is.na(obs)) %>% 
     dplyr::mutate(pred = pred * mult, obs = obs * mult) %>%
     dplyr::arrange(id, time)
     
@@ -371,7 +374,14 @@ plot.PM_op <- function(x,
         line$ref <- T
       }
     }
-    marker <- amendMarker(marker, default = list(color = "orange"))
+    
+    # markers
+    
+    normal_color <- blue()
+    highlight_color <- orange()
+    marker <- amendMarker(marker, default = list(color = normal_color))
+    
+    
     lmLine <- amendLine(line$lm, default = list(color = "dodgerblue", dash = "solid"))
     loessLine <- amendLine(line$loess, default = list(color = "dodgerblue", dash = "dash"))
     refLine <- amendLine(line$ref, default = list(color = "grey", dash = "dot"))
@@ -457,15 +467,38 @@ plot.PM_op <- function(x,
         layout$yaxis <- modifyList(layout$yaxis, list(matches = "x"))
       }
       
+      # Split into traces
+      traces <- sub1 %>%
+      dplyr::group_split(id)
       
-      p <- sub1 %>%
-      plotly::plot_ly(x = ~pred) %>%
-      plotly::add_markers(
-        y = ~obs,
-        marker = marker,
-        text = ~id,
-        hovertemplate = "Pred: %{x:.2f}<br>Obs: %{y:.2f}<br>ID: %{text}<extra></extra>"
-      )
+      
+      # Build plot
+      p <- plot_ly()
+      
+      for (i in seq_along(traces)) {
+        trace_data <- traces[[i]]
+        group_name <- trace_data$id[1]
+        
+        # Add group label directly to the data
+        trace_data$text_label <- glue::glue("ID: {group_name}\nPred: {round2(trace_data$pred)}\nObs: {round2(trace_data$obs)}")
+        
+        p <- add_trace(
+          p,
+          data = trace_data,
+          x = ~pred,
+          y = ~obs,
+          type = "scatter",
+          mode = "markers",
+          name = group_name,
+          marker = marker,
+          hoverinfo = "text",
+          text = ~text_label,
+          showlegend = FALSE
+        )
+        
+        
+      }
+
       
       if (lmLine$plot) { # linear regression
         lmLine$plot <- NULL # remove to allow only formatting arguments below
@@ -476,7 +509,7 @@ plot.PM_op <- function(x,
           lmLine$ci <- NULL # remove to allow only formatting arguments below
         }
         
-        p <- p %>% add_smooth(ci = ci, line = lmLine, stats = stats)
+        p <- p %>% add_smooth(data = sub1, x = ~pred, y = ~obs, ci = ci, line = lmLine, stats = stats)
       }
       
       if (loessLine$plot) { # loess regression
@@ -487,7 +520,7 @@ plot.PM_op <- function(x,
           ci <- loessLine$ci
           loessLine$ci <- NULL # remove to allow only formatting arguments below
         }
-        p <- p %>% add_smooth(ci = ci, line = loessLine, method = "loess")
+        p <- p %>% add_smooth(data = sub1, x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
       }
       
       if (refLine$plot) { # reference line
@@ -513,9 +546,10 @@ plot.PM_op <- function(x,
         shapes = layout$refLine,
         title = layout$title
       )
-      
-      print(p)
-      return(p)
+
+      if (print) print(click_plot(p))
+      return(invisible(p))
+
     } else { # residual plot
       # Y axis and point labels
       if (pred.type == "post") {
@@ -531,27 +565,58 @@ plot.PM_op <- function(x,
       
       
       # res vs. time
-      p1 <- sub1 %>%
-      plotly::plot_ly(x = ~time) %>%
-      plotly::add_markers(
-        y = ~wd,
-        marker = marker,
-        text = ~id,
-        hovertemplate = paste0("Time: %{x:.2f}<br>", pointLab, ": %{y:.2f}<br>ID: %{text}<extra></extra>")
-      )
       
+      # Split into traces
+      traces <- sub1 %>%
+      group_split(id)
+      
+      
+      ##### Build plots
+      # res vs. time
+      p1 <- plot_ly()
       
       # res vs. pred
-      p2 <- sub1 %>%
-      plotly::plot_ly(x = ~pred) %>%
-      plotly::add_markers(
-        y = ~wd,
-        marker = marker,
-        text = ~id,
-        hovertemplate = paste0("Pred: %{x:.2f}<br>", pointLab, ": %{y:.2f}<br>ID: %{text}<extra></extra>")
-      )
+      p2 <- plot_ly()
       
-      # add reference lines
+      for (i in seq_along(traces)) {
+        trace_data <- traces[[i]]
+        group_name <- trace_data$id[1]
+        
+        # Add group label directly to the data
+        trace_data$text_label_1 <- glue::glue("ID: {group_name}\nTime: {round2(trace_data$time)}\n{pointLab}: {round2(trace_data$wd)}")
+        trace_data$text_label_2 <- glue::glue("ID: {group_name}\nPred: {round2(trace_data$pred)}\n{pointLab}: {round2(trace_data$wd)}")
+        
+        p1 <- add_trace(
+          p1,
+          data = trace_data,
+          x = ~time,
+          y = ~wd,
+          type = "scatter",
+          mode = "markers",
+          name = group_name,
+          marker = marker,
+          hoverinfo = "text",
+          text = ~text_label_1,
+          showlegend = FALSE
+        )
+        
+        p2 <- add_trace(
+          p2,
+          data = trace_data,
+          x = ~pred,
+          y = ~wd,
+          type = "scatter",
+          mode = "markers",
+          name = group_name,
+          marker = marker,
+          hoverinfo = "text",
+          text = ~text_label_2,
+          showlegend = FALSE
+        )
+      }
+
+      
+      # add regression lines
       if (lmLine$plot) {
         lmLine$plot <- NULL # remove to allow only formatting arguments below
         if (is.null(purrr::pluck(lmLine$ci))) {
@@ -560,8 +625,8 @@ plot.PM_op <- function(x,
           ci <- lmLine$ci
           lmLine$ci <- NULL # remove to allow only formatting arguments below
         }
-        p1 <- p1 %>% add_smooth(ci = ci, line = lmLine, stats = stats)
-        p2 <- p2 %>% add_smooth(ci = ci, line = lmLine, stats = stats)
+        p1 <- p1 %>% add_smooth(data = sub1, x = ~time, y = ~wd, ci = ci, line = lmLine, stats = stats)
+        p2 <- p2 %>% add_smooth(data = sub1, x = ~pred, y = ~wd, ci = ci, line = lmLine, stats = stats)
       }
       
       if (loessLine$plot) {
@@ -572,8 +637,8 @@ plot.PM_op <- function(x,
           ci <- loessLine$ci
           loessLine$ci <- NULL # remove to allow only formatting arguments below
         }
-        p1 <- p1 %>% add_smooth(ci = ci, line = loessLine, method = "loess")
-        p2 <- p2 %>% add_smooth(ci = ci, line = loessLine, method = "loess")
+        p1 <- p1 %>% add_smooth(data = sub1, x = ~time, y = ~wd, ci = ci, line = loessLine, method = "loess")
+        p2 <- p2 %>% add_smooth(data = sub1, x = ~pred, y = ~wd, ci = ci, line = loessLine, method = "loess")
       }
       # set layout
       layout$xaxis$title <- amendTitle("Time")
@@ -598,8 +663,8 @@ plot.PM_op <- function(x,
         nrows = 1,
         shareY = TRUE, shareX = FALSE, titleX = TRUE
       )
-      print(p)
-      return(p)
+      if (print) print(click_plot(p))
+      return(invisible(p))
     } # end resid plot
   }
   
@@ -648,10 +713,12 @@ plot.PM_op <- function(x,
   #' * sumstat A data frame with the minimum, first quartile, median, third quartile, maximum,
   #' mean and standard deviation for times, observations and predictions in `x`.
   #' * pe A named vector with mean prediction error (mpe),
-  #' the mean weighted prediction error (mwpe), the mean squared prediction error (mspe), root mean sqaured error (rmse),
+  #' the mean weighted prediction error (mwpe), the percent mean weighted prediction error (percent_mwpe),
+  #' the mean squared prediction error (mspe), root mean sqaured error (rmse),
   #' percent root mean squared error (percent_rmse), the mean weighted
-  #' squared prediction error (mwspe), the bias-adjusted mean squared prediction error (bamspe), and the bias-
-  #' adjusted mean weighted squared prediction error (bamwspe).  The mwpe is bias and the bamwspe is imprecision on
+  #' squared prediction error (mwspe), the bias-adjusted mean squared prediction error (bamspe), the bias-
+  #' adjusted mean weighted squared prediction error (bamwspe), the percent root mean bias-
+  #' adjusted weighted squared prediction error (percent_rmbawspe).  The percent_mwpe is bias and the percent_rmbawspe is imprecision on
   #' plots of PM_op objects.
   #' * wtd.t A list of 6 elements based on a t test that the weighted mean prediction bias is different than zero
   #'  - estimate: the weighted mean of the prediction bias for each observation
@@ -680,68 +747,113 @@ plot.PM_op <- function(x,
     }
     
     sumPMopWrk <- function(data) {
-      sumstat <- matrix(NA, nrow = 7, ncol = 3, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Obs", "Pred")))
-      # min
-      sumstat[1, ] <- round(apply(data[, 2:4], 2, min, na.rm = T), digits)
-      # 25th percentile
-      sumstat[2, ] <- round(apply(data[, 2:4], 2, quantile, 0.25, na.rm = T), digits)
-      # median
-      sumstat[3, ] <- round(apply(data[, 2:4], 2, median, na.rm = T), digits)
-      # 75th percentil
-      sumstat[4, ] <- round(apply(data[, 2:4], 2, quantile, 0.75, na.rm = T), digits)
-      # max
-      sumstat[5, ] <- round(apply(data[, 2:4], 2, max, na.rm = T), digits)
-      # mean
-      sumstat[6, ] <- round(apply(data[, 2:4], 2, mean, na.rm = T), digits)
-      # SD
-      sumstat[7, ] <- round(apply(data[, 2:4], 2, sd, na.rm = T), digits)
-      sumstat <- data.frame(sumstat)
+      
       # N
       N <- length(data$obs[!is.na(data$obs)])
-      # mean prediction error
-      mpe <- sum(data$d, na.rm = T) / N
-      # wt = 1/sd, so mwpe = sum(wd)/sum(wt)
-      # mean weighted prediction error or BIAS
-      mwpe <- sum(data$wd, na.rm = T) / N
-      # mean squared prediction error
-      mspe <- sum(data$ds, na.rm = T) / N
-      # root mean squared error (RMSE)
-      rmse <- sqrt(mspe)
-      # %rmse
-      percent_rmse <- rmse * 100 * N / sum(data$obs, na.rm = T)
-      # mean weighted squared prediction error
-      mwspe <- sum(data$wds, na.rm = T) / N
-      # bias-adjusted squared prediction error
-      bamspe <- mspe - mpe**2
-      # imprecision - bias-adjusted mean weighted squared error
-      bamwspe <- mwspe - mwpe**2
       
-      pe <- data.frame(mpe = mpe, mwpe = mwpe, mspe = mspe, rmse = rmse, percent_rmse = percent_rmse, mwspe = mwspe, bamspe = bamspe, bamwspe = bamwspe)
-      wtd.t <- weighted.t.test(data)
+      sumstat <- data %>% select(time, obs, pred) %>%
+      dplyr::summarize(across(
+        .cols = everything(),  
+        .fns = list(
+          min = ~min(.x, na.rm = TRUE),
+          q1 = ~quantile(.x, 0.25, na.rm = TRUE),
+          median = ~median(.x, na.rm = TRUE),
+          q3 = ~quantile(.x, 0.75, na.rm = TRUE),
+          max = ~max(.x, na.rm = TRUE),
+          mean = ~mean(.x, na.rm = TRUE),
+          sd = ~sd(.x, na.rm = TRUE)
+        )
+      )) %>%
+      pivot_longer(everything(), names_sep = "_", names_to = c("type", "statistic")) %>%
+      pivot_wider(names_from = type, values_from = value) 
+      
+      
+      # BIAS
+      
+      # mean absolute error
+      mae <- sum(data$d, na.rm = T) / N
+      # % mae
+      percent_mae <- mean(data$d / data$obs, na.rm = TRUE)  * 100
+      
+      # mean weighted error or old BIAS
+      mwe <- sum(data$wd, na.rm = T) / N
+      # % mean weighted error or new BIAS
+      percent_mwe <- sum(data$wd, na.rm = TRUE) / sum(data$obs / data$obsSD, na.rm = TRUE) * 100
+      
+      # IMPRECISION
+      
+      mean_obs <- mean(data$obs, na.rm = TRUE)
+      wmean_obs <- sum(data$obs / data$obsSD, na.rm = TRUE) / N
+      
+      # mean squared  error
+      mse <- sum(data$ds, na.rm = T) / N
+      # % mean squared  error
+      percent_mse <- mean(data$ds, na.rm = TRUE) / (mean(data$obs, na.rm = TRUE)^2) * 100
+      
+      # mean weighted squared error
+      mwse <- sum(data$wds, na.rm = T) / N
+      # % mean weighted squared error
+      percent_mwse <- mwse / (wmean_obs^2) * 100
+      
+      # root mean squared error (RMSE)
+      rmse <- sqrt(mse)
+      # %rmse
+      percent_rmse <- rmse / mean_obs * 100
+      
+      # mean bias-adjusted squared error
+      mbase <- mse - mae**2
+      # % mean bias-adjusted squared error
+      percent_mbase <- (mse - mae^2) / (mean_obs^2) * 100
+      
+      
+      # OLD imprecision - mean bias-adjusted weighted squared error
+      mbawse <- mwse - mwe**2
+      # % mean bias-adjusted weighted squared error
+      percent_mbawse <- (mwse - mwe^2) / (wmean_obs^2) * 100
+      
+      # root mean bias-adjusted, weighted squared error
+      rmbawse <- sqrt(mbawse)
+      # NEW imprecision - % root mean bias-adjusted, weighted squared error
+      percent_rmbawse <- sqrt(mbawse) * 100 / (sum(data$obs / data$obsSD, na.rm = TRUE) / N)
+      
+      
+      pe <- data.frame(
+        type = c("mae", "mwe", "mse", "mwse", "rmse", "mbase", "mbawse", "rmbawse"),
+        absolute = c(mae, mwe, mse, mwse, rmse, mbase, mbawse, rmbawse),
+        percent = c(percent_mae, percent_mwe, percent_mse, percent_mwse, percent_rmse, percent_mbase, percent_mbawse, percent_rmbawse)
+      )    
+      
+      wtd.t <- Pmetrics:::weighted.t.test(data)
       
       result <- list(sumstat = sumstat, pe = pe, wtd.t = wtd.t)
       return(result)
     } # end sumPMopWrk
     
-    # make summary
+    #### make summary #####
     if (inherits(object, "PM_op")) {
       object <- object$data
+    } else if (!inherits(object, "PM_op_data")) {
+      cli::cli_abort(c("x" = "{.code object} must be a {.cls PM_op} or {.cls PM_op_data} object.", "i" = "See {.fn Pmetrics::summary.PM_op}."))
     }
     
     object <- object %>% filter(outeq == !!outeq, pred.type == !!pred.type, icen == !!icen)
     if (all(is.na(object$obs))) {
       sumstat <- NA
-      pe <- data.frame(mpe = NA, mwpe = NA, mspe = NA, rmse = NA, percent_rmse = NA, mwspe = NA, bamspe = NA, bamwspe = NA)
+      pe <- data.frame(
+        type = rep(NA, 8),
+        absolute = rep(NA, 8),
+        percent = rep(NA, 8)
+      )
       wtd.t <- NA
-      result <- list(sumstat = sumstat, pe = pe, wtd.t = wtd.t)
-      class(result) <- c("summary.PM_op", "list")
-      return(result)
+      sumresult <- list(sumstat = sumstat, pe = pe, wtd.t = wtd.t)
     } else {
       sumresult <- sumPMopWrk(object)
     }
     
     class(sumresult) <- c("summary.PM_op", "list")
     attr(sumresult, "pred.type") <- pred.type
+    attr(sumresult, "outeq") <- outeq
+    attr(sumresult, "icen") <- icen
     return(sumresult)
   }
   
@@ -790,40 +902,107 @@ plot.PM_op <- function(x,
   #' }
   #' @export
   
-  print.summary.PM_op <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+  print.summary.PM_op <- function(x, digits = getPMoptions("digits"), ...) {
     printSumWrk <- function(data, dataname) {
-      cat(paste("\n", dataname, "\n", sep = ""))
-      print(data$sumstat)
-      cat(paste("\nPrediction type:", attr(x, "pred.type"), "\n"))
-      cat("\n\n")
-      cat(paste("Mean prediction error:", round(data$pe$mpe, digits), "\n"))
-      cat(paste("Mean weighted prediction error (bias): ", round(data$pe$mwpe, digits), " (P=", round(data$wtd.t$p.value, digits), " different than 0)\n", sep = ""))
-      cat(paste("Mean squared prediction error:", round(data$pe$mspe, digits), "\n"))
-      cat(paste("Root mean squared error (RMSE):", round(data$pe$rmse, digits), "\n"))
-      cat(paste("Percent root mean squared error (%RMSE):", round(data$pe$percent_rmse, digits), "\n"))
-      cat(paste("Mean weighed squared prediction error:", round(data$pe$mwspe, digits), "\n"))
-      cat(paste("Bias-adjusted mean squared prediction error:", round(data$pe$bamspe, digits), "\n"))
-      cat(paste("Bias-adjusted mean weighted squared prediction error (imprecision):", round(data$pe$bamwspe, digits), "\n\n"))
+      
+      # Summary statistics
+      ft1 <- data$sumstat %>% mutate(across(-statistic, ~round2(.x, digits = digits))) %>%
+      mutate(statistic = c("Minimum", "Q1", "Median", "Q3", "Maximum", "Mean", "SD")) %>%
+      flextable::flextable() %>%
+      flextable::set_header_labels(
+        time = "Time", obs = "Observed", pred = "Predicted"
+      ) %>%
+      flextable::set_table_properties(width = 0.8, layout = "autofit") %>%
+      # "Hide" the variable column from header and treat it as row label
+      flextable::compose(j = "statistic", value = flextable::as_paragraph(statistic)) %>%
+      # Remove header label for row names
+      flextable::set_header_labels(statistic = "") %>%
+      # Optional: align left
+      flextable::align(j = "statistic", align = "right", part = "body") %>%
+      flextable::theme_zebra() %>%
+      flextable::bg(part = "header", bg = blue()) %>%
+      flextable::autofit()
+      
+      # Bias and imprecision
+      
+      metric_info <- data$pe %>% get_metric_info()
+      with_percent <- getPMoptions("bias_method") %>% stringr::str_detect("percent_")
+      
+      ft2 <- metric_info$metric_vals %>% 
+      mutate(across(everything(), ~if(with_percent) paste0(.x, "%") else .x)) %>%
+      flextable::flextable() %>% 
+      flextable::theme_zebra() %>%
+      flextable::align_text_col(header = TRUE) %>%
+      flextable::bg(part = "header", bg = blue()) %>%
+      flextable::autofit()
+      
+      pred.type <- if (attr(data, "pred.type") == "post") "posterior" else "population"
+      outeq <- attr(data, "outeq")
+      icen <- attr(data, "icen")
+      return(list(ft1 = ft1, ft2 = ft2, metric_types = metric_info$metric_types, pred.type = pred.type, outeq = outeq, icen = icen))
     }
-    # function to make summary
-    if (inherits(x[[1]], "data.frame")) { # we just have one
-      if (!is.na(x$pe[1])) {
-        printSumWrk(x, "")
-      } else {
-        cat("NA\n")
-      }
+    
+    # function to print the summary
+    if (!all(is.na(x$pe))) {
+      obj <- printSumWrk(x, "")
+      temp <- tempdir()
+      rmarkdown::render(
+        input = glue::glue(here::here(),"/inst/report/templates/summary_op.Rmd"),
+        output_file = "summary_op.html",
+        output_dir = temp,
+        params = list(object = obj),
+        quiet = TRUE
+      )
+      suppressWarnings(htmltools::html_print(htmltools::includeHTML(glue::glue("{temp}/summary_op.html"))))
+      return(invisible(NULL))
+      
     } else {
-      if (all(unlist(sapply(x, is.na)))) {
-        cat("No observations.\n")
-      } else {
-        for (i in 1:length(x)) {
-          if (!is.na(x[[i]][1])) {
-            printSumWrk(x[[i]], paste("$", names(x)[i], sep = ""))
-          } else {
-            cat("NA\n")
-          }
-        }
-      }
+      cat("NA\n")
     }
+    
   }
   
+  
+  
+  # Internal functions
+  
+  # Extracts the relevant metrics from the summary.PM_op object based on curren user options
+  get_metric_info <- function(pe){
+    if(!all(names(pe) %in% c("type", "absolute", "percent"))) {
+      return(list(metric_types = tibble(bias = NA, imprecision = NA), metric_vals = tibble(Bias = NA, Imprecision = NA)))
+    }
+    current_bias <- getPMoptions("bias_method")
+    with_percent <- stringr::str_detect(current_bias, "percent_")
+    type_options <- pe$type
+    bias_row <- which(type_options == stringr::str_replace(current_bias, "percent_", "")) 
+    bias_imp_col <- ifelse(with_percent, 3, 2)
+    current_imp <- getPMoptions("imp_method")
+    imp_row <- which(type_options == stringr::str_replace(current_imp, "percent_", ""))
+    
+    metric_types <- tibble(
+      bias = stringr::str_replace(current_bias, "percent_", "") %>%
+      case_match(
+        "mae" ~ "Mean absolute error (MAE)",
+        "mwe" ~ "Mean weighted error (MWE)"
+      ),
+      imprecision = stringr::str_replace(current_imp, "percent_", "") %>%
+      case_match(
+        "mse" ~ "Mean squared error (MSE)",
+        "mwse" ~ "Mean weighted squared error (MWSE)",
+        "rmse" ~ "Root mean squared error (RMSE)",
+        "mbase" ~ "Mean, bias-adjusted, squared error (MBASE)",
+        "mbawse" ~ "Mean, bias-adjusted, weighted, squared error (MBAWSE)",
+        "rmbawse" ~ "Root mean, bias-adjusted, weighted, squared error (RMBAWSE)"
+      )
+    ) %>% mutate(across(everything(), ~if(with_percent) paste0("% ", .x) else .x))
+    
+    metric_vals <- tibble(Bias = pe[bias_row, bias_imp_col],
+      Imprecision = pe[imp_row, bias_imp_col]) %>% 
+      mutate(across(everything(), ~round2(.x, digits = getPMoptions("digits")))) 
+      
+      return(list(metric_types = metric_types,
+        metric_vals = metric_vals))  
+        
+      }
+      
+      
