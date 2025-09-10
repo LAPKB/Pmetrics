@@ -48,24 +48,32 @@ template <- c(
   "#### Population {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
-  "res$op$plot(icen = 'median', pred.type = 'pop', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+
+  "p <- res$op$plot(icen = 'median', pred.type = 'pop', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
-  "res$op$plot(icen = 'mean', pred.type = 'pop', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+
+  "p <- res$op$plot(icen = 'mean', pred.type = 'pop', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
   "```\n",
   "#### Posterior {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
-  "res$op$plot(icen = 'median', pred.type = 'post', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+
+  "p <- res$op$plot(icen = 'median', pred.type = 'post', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
-  "res$op$plot(icen = 'mean', pred.type = 'post', outeq = {{outeq}},\n
-  stats = list(x = 1, y = 0.1, font = list(size = 9)))\n",
+
+  "p <- res$op$plot(icen = 'mean', pred.type = 'post', outeq = {{outeq}},\n
+  stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
   "```\n",
   "\n"
 )
@@ -81,26 +89,20 @@ p <- lapply(1:numeqt, function(i) {
 
 ## Prediction metrics {.tabset .tabset-pills}
 
-*Measures of bias. Others are measures of imprecision.
 
-^Same units as observations and predictions. Others are squared or dimensionless.
 ```{r}
 #summary function
 metrics <- function(icen, pred.type, outeq){
   pe <- res$op$summary(icen = icen,  pred.type = pred.type, outeq = outeq)$pe %>%
-    dplyr::rename(`Mean PE (prediction - observation)*^` = mpe,
-                  `Mean weighted PE*^` = mwpe,
-                  `Mean squared PE` = mspe,
-                  `Mean weighted squared PE` = mwspe,
-                  `Root mean squared PE^` = rmse,
-                  `Root mean squared PE (%)` = percent_rmse,
-                  `Bias-adjusted mean squared PE` = bamspe,
-                  `Bias-adjusted mean weighted squared PE` = bamwspe
-    ) %>% 
-    dplyr::mutate(across(everything(), \(x) round(x, 3))) %>% 
-    t() %>% 
+    get_metric_info()
+  if (stringr::str_detect(pe$metric_types[1], "%")){
+    pe$metric_vals <- pe$metric_vals %>% mutate(across(everything(), ~paste0(.x,"%"))) 
+  }
+  
+  pe$metric_vals %>% 
     DT::datatable(
-      colnames = c("Metric", "Value"),
+      #colnames = c("Metric", "Value"),
+      rownames = FALSE,
       options = list(
         searching = FALSE,
         pageLength = 10,
@@ -110,7 +112,7 @@ metrics <- function(icen, pred.type, outeq){
         autoHideNavigation = TRUE
       )
     )  
-  return(pe)
+  #return(pe)
 }
 
 
@@ -123,26 +125,30 @@ template <- c(
   "#### Population {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
+
   "metrics(icen = 'median', pred.type = 'pop', outeq = {{outeq}})\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
+
   "metrics(icen = 'mean', pred.type = 'pop', outeq = {{outeq}})\n",
   "```\n",
   "#### Posterior {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
+
   "metrics(icen = 'median', pred.type = 'post', outeq = {{outeq}})\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
+
   "metrics(icen = 'mean', pred.type = 'post', outeq = {{outeq}})\n",
   "```\n",
   "\n"
 )
 
 
-#numeqt <- max(res$op$data$outeq)
+
 p <- lapply(1:numeqt, function(i) {
   knitr::knit_expand(
     outeq = i,
@@ -153,7 +159,17 @@ p <- lapply(1:numeqt, function(i) {
 ```
 `r knitr::knit_child(text = unlist(p))`
 
+## 
+
+```{r echo = FALSE, results = "asis", error = TRUE, cache = FALSE}
+pe <- res$op$summary()$pe %>% get_metric_info()
+types <- pe$metric_types
+cat(glue::glue("Bias is (pred - obs)  {types$bias}. Imprecision is {types$imprecision}. Change these with `setPMoptions()`."))
+```
+
+
 ## Prediction residuals {.tabset .tabset-pills}
+
 
 Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
@@ -165,25 +181,34 @@ template <- c(
   "#### Population {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
-  "res$op$plot(resid = T, icen = 'median', pred.type = 'pop', outeq = {{outeq}})\n",
+
+  "p <- res$op$plot(resid = T, icen = 'median', pred.type = 'pop', outeq = {{outeq}}, print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
-  "res$op$plot(resid = T, icen = 'mean', pred.type = 'pop', outeq = {{outeq}})\n",
+
+  "p <- res$op$plot(resid = T, icen = 'mean', pred.type = 'pop', outeq = {{outeq}}, print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
   "```\n",
   "#### Posterior {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
-  "res$op$plot(resid = T, icen = 'median', pred.type = 'post', outeq = {{outeq}})\n",
+
+  "p <- res$op$plot(resid = T, icen = 'median', pred.type = 'post', outeq = {{outeq}}, print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
-  "res$op$plot(resid = T, icen = 'mean', pred.type = 'post', outeq = {{outeq}})\n",
+
+  "p <- res$op$plot(resid = T, icen = 'mean', pred.type = 'post', outeq = {{outeq}}, print = FALSE)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
   "```\n",
   "\n"
 )
 
-#numeqt <- max(res$op$data$outeq)
+
+
 p <- lapply(1:numeqt, function(i) {
   knitr::knit_expand(
     outeq = i,
@@ -236,8 +261,9 @@ par_lims %>%
 ### Marginal plots
 Probability distributions, dashed lines are limits.
 
-``` {r}
-res$final$plot()
+``` {r results = "asis"}
+p <- res$final$plot(print = FALSE)
+p
 ```
 
 <!-- ### Posterior parameter distributions -->
@@ -287,10 +313,11 @@ if(np){
 
 ## Cycle information
 ```{r fig.dim = c(10, 6), results = "asis"}
-if(res$cycle$status == "Posterior"){
-  cat("Posterior run, so no cycles.")
+if (res$cycle$status == "Posterior") {
+  knitr::asis_output("Posterior run, so no cycles.")
 } else {
-  res$cycle$plot()
+  p <- res$cycle$plot(print = FALSE)
+  p
 }
 ```
 

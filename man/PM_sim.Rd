@@ -51,14 +51,26 @@ mean <- log(c(0.7, 0.05, 100))
 cov <- matrix(rep(0, length(mean)**2), ncol = length(mean))
 diag(cov) <- (c(0.15, 0.15, 0.15) * mean)**2
 # make the prior for the simulation
-poppar <- list(weights, mean, cov)
+poppar <- list(weights = weights, mean = mean, mat = cov)
 
 # run simulation, assuming temp1.csv and model.txt are in working directory
 
 sim1 <- PM_sim$new(poppar, "temp1.csv",
   nsim = 15, model = "model.txt", include = 1:4, limits = NA,
-  obsNoise = c(0.02, 0.1, 0, 0)
+  noise = list(out = list(coeff = c(0.02, 0.1, 0, 0)))
 )
+
+# alternatively, load the model first
+
+mod <- PM_model$new("model.txt")
+
+# and then simulate
+
+sim2 <- mod$sim(poppar = poppar, data = "temp1.csv",
+   nsim = 15, include = 1:4, limits = NA,
+   noise = list(out = list(coeff = c(0.02, 0.1, 0, 0)))
+)
+
 }
 
 }
@@ -169,14 +181,9 @@ or via the \verb{$sim} method for \link{PM_result} objects.
   covariate = NULL,
   usePost = FALSE,
   seed = -17,
-  obsNoise = NULL,
-  obsTimeNoise = NULL,
-  doseNoise = NULL,
-  doseTimeNoise = NULL,
   noise = NULL,
   makecsv = NULL,
   quiet = FALSE,
-  combine = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -185,28 +192,84 @@ or via the \verb{$sim} method for \link{PM_result} objects.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{poppar}}{One of four things:
-\itemize{
+\enumerate{
+\item A \link{PM_result} object containing the final population parameter
+distribution from a model run, a model object, and a data object.
+The model object may be replaced by a different \link{PM_model}, as
+long as the primary parameters are the same as the original model.
+The data object may also be replaced (and often is) by a different \link{PM_data}
+object compatible with the model.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{run1 <- PM_load(1) # load the PM_result object
+sim1 <- run1$sim(...) # replace model and data in run1 if desired; 
+#must be compatible with model and data in run1
+
+mod <- PM_model$new("model.txt") # or use a model object
+sim2 <- mod$sim(poppar = run1, data = "newdata.csv", ...) 
+# poppar and data necessary, model obtained from mod
+}\if{html}{\out{</div>}}
 \item Population prior parameters as a \link{PM_final} object found in
-\code{PM_result$final}. Normally these would be supplied by calling the
-\verb{$sim} method for a \link{PM_result} object, e.g. \code{NPex$sim(...)}.
+\code{PM_result$final}.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{run1 <- PM_load(1) # load the PM_result object
+sim1 <- PM_sim$new(poppar = run1$final, model = newmodel, data = newdata, ...) 
+# model and data necessary
+
+mod <- PM_model$new("model.txt") # or use a model object
+sim2 <- mod$sim(poppar = run1$final, data = "newdata.csv", ...) 
+# poppar and data necessary, model obtained from mod
+}\if{html}{\out{</div>}}
 \item The name of a previously saved simulation via the \verb{$save} method. The
-file will be loaded. This filename should have the ".rds" extension, e.g. "sim.rds".
-\item A manually specified prior as a list containing three items in this order,
-but of any name: 1) vector of weights; 2) vector of mean parameter values;
-and 3) a covariance matrix. If only one distribution is to be specified the
-\code{weights} vector should be of length 1 and contain a 1. If multiple
-distributions are to be sampled, the \code{weights} vector should be of
-length equal to the number of distributions and its values should sum to 1,
-e.g. \code{c(0.25,0.05,0.7)}.  The means element may be a vector for a
-single distribution, or a matrix with \code{length(weights)} rows and
-number of columns equal to the number of parameters. The
-covariance matrix will be divided by \code{length(weights)} and applied to
-each distribution. For example:
-\verb{poppar = list(wt = c(0.25, 0.75), mean = matrix(c(0.5, 1, 100, 200), cov = diag(c(0.25, 2500)))}
-indicates two distributions with weights 0.25 and 0.75. There are two parameters,
-and the means of the first distribution are 0.5 and 100. The means of the
-second distribution are 1 and 200. The covariance matrix has diagonal values
-of 0.25 and 2500 and off-diagonal values of zero.
+file will be loaded. This filename should have the ".rds" extension, e.g. \code{sim1 <- PM_sim$new("sim.rds")}.
+\item A manually specified prior as a list containing the following named items:
+\itemize{
+\item \strong{wt} vector of weights (probabilities) of sampling from each distribution. If missing, assumed to be 1.
+\item \strong{mean} a list of mean parameter values. Each element of the list should be named with the parameter name and be a
+vector of length equal to the number of distributions. See details below.
+\item \strong{sd} an optional named list of overall standard deviations for each parameter, considering parameters as unimodally distributed,
+i.e. there should only be one value for each parameter, regardless of the number of distributions.
+\code{sd} is only needed if a correlation matrix is specified, which will be converted to a covariance matrix.
+\item \strong{ONE} of the following matrices:
+\enumerate{
+\item \strong{cor} A square matrix of the overall correlations between parameters, again
+considered as unimodally distributed, i.e. there should only be one correlation matrix regardless of the number of distributions.
+If a correlation matrix is specified, the \code{sd} element is required to calculate the covariance matrix.
+\item \strong{cov} A square matrix of the overall covariances between parameters, again
+considered as unimodally distributed, i.e. there should only be one covariance matrix regardless of the number of distributions.
+If a covariance matrix is specified, the \code{sd} element is unnecessary, since the diagonals of the covariance matrix are the variances
+or squared standard deviations.
+}
+}
+
+If only one distribution is to be specified the
+\code{wt} vector can be ommitted or should be \code{wt = 1}. If multiple
+distributions are to be sampled, the \code{wt} vector should be of
+length equal to the number of distributions in \code{mean} and the values of \code{wt} should sum to 1,
+e.g. \code{wt = c(0.25, 0.05, 0.7)}.  The \code{mean} element should be a list
+of elements, named for the parameters, with vectors of values equal to the number of terms in \code{wt}.
+If \code{cor} is used,
+Pmetrics will use the \code{sd} element to calculate the covariance matrix. The
+covariance matrix will be divided by the number of distributions, i.e. \code{length(wt)},
+and applied to each distribution.
+
+Examples:
+\itemize{
+\item Single distribution:
+}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(wt = 1, 
+              mean = list(ke = 0.5, v = 100), 
+              cov = matrix(c(0.04, 2.4, 2.8, 400), nrow = 2))  # sd not required because cov specified 
+}\if{html}{\out{</div>}}
+\itemize{
+\item Multiple distributions:
+}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(wt = c(0.1, 0.15, 0.75), # 3 distributions that sum to 1
+              mean = list(ke = c(2, 0.5, 1), v = c(50, 100, 200)), # 3 values for each parameter
+              sd = list(ke = 0.2, v = 20), # overall sd, ignoring multiple distributions
+              cor = matrix(c(1, 0.6, 0.7, 1), nrow = 2)) # sd required because cor specified
+}\if{html}{\out{</div>}}
 }}
 
 \item{\code{model}}{Name of a suitable \link{PM_model} object or a model file template
@@ -298,30 +361,103 @@ accommodate this for a given number of output equations and total time to
 simulate over.  If \code{predInt} is set so that this cap is exceeded,
 predictions will be truncated.}
 
-\item{\code{covariate}}{If you are using a \link{PM_result} or \link{PM_final} object
-as \code{poppar}, then you can also
-simulate with covariates. This argument is a list with the following names.
+\item{\code{covariate}}{Pmetrics can simulate values for some/all covariates
+declared in the \code{cov} block of the \link{PM_model}.
+This argument is a list with the following named elements.
 \itemize{
-\item \code{cov} If \code{poppar} is a \link{PM_result}, Pmetrics will use the \verb{$cov} field
-within that object to obtain covariate information and you can skip this
-element of the \code{covariate} list. If \code{poppar} is
-a \link{PM_final}, you will need to supply the name of a \link{PM_result}
-or \link{PM_cov} object as the value for this element.
-Pmetrics will use this covariate object to calculate the correlation
+\item \strong{cov} Optional if \code{poppar} is a \link{PM_result} object, but required if
+\code{poppar} is a \link{PM_final} object or a manually specified prior, e.g., with values
+obtained from the literature.
+\item \strong{mean} Required only if \code{poppar} is a manually specified prior, optional otherwise.
+\item \strong{sd} Required only if \code{poppar} is a manually specified prior, optional otherwise.
+\item \strong{limits} Optional in all cases.
+\item \strong{fix} Optional in all cases.
+}
+
+The simplest example is when simulating covariates from a \link{PM_result}:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{run1 <- PM_load(1)
+run1$sim(..., covariate = list())`
+}\if{html}{\out{</div>}}
+
+Details on each element are below.
+
+\code{cov}
+
+This element specifies the source of the correlation matrix for
+covariate values and if possible model primary parameters, i.e., those
+in the \code{pri} block of the model.
+In the first two cases below, Pmetrics will use this \code{covariate$cov}
+object to calculate the correlation
 matrix between all covariates and Bayesian posterior parameter values.
-\item \code{mean} A named list that allows you to specify a different mean
-for one or more of the covariates. Each named item in the list is the name
-of a covariate in your data that is to have a different mean. If this
+In the third case, there is no way to calculate the correlations
+between parameters and covariates, so Pmetrics only calculates the covariate correlations.
+\itemize{
+\item \strong{Case 1}.  If \code{poppar} is a \link{PM_result}, Pmetrics will use the \verb{$cov} field
+within that object to obtain covariate means, standard deviations (sd), and
+correlations among covariates and parameter values. In this case, you can omit this
+element of the \code{covariate} list. See the example above.
+\item \strong{Case 2}.  If \code{poppar} is a \link{PM_final}, you will need to supply the name of a \link{PM_result}
+or \link{PM_cov} object as the value for this element so that Pmetrics can calculate covariate
+means, sd, and correlations.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{run1 <- PM_load(1)
+sim1 <- PM_sim$new(poppar = run1$final, covariate = list(cov = run1$cov), model = run1$model, data = "newdata.csv")
+}\if{html}{\out{</div>}}
+\item \strong{Case 3}.  If \code{poppar} is a manually specified prior, or you wish to simulate covariates
+not in the original model, you must provide a
+covariance or correlation matrix between the covariates. In this case, it is only possible to
+calculate correlations between covariates from the matrix and not between parameters and correlations,
+since they are unknown. The \verb{$mean} and optionally the
+\verb{$sd} elements of the \code{covariate} list specified below are also required to complete the necessary
+information for simulation. Similar to \code{poppar}, if \verb{$sd} is missing, the the \code{cov} object is treated as a covariance matrix,
+otherwise it is treated as a correlation matrix.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{corMat <- matrix(c(1, .98, .98, 1), nrow = 2) # correlation matrix for age and wt, for example
+covariate <- list(cov = corMat, mean = list(age = 9, wt = 32), sd = list(age = 5.5, wt = 18.8)) # note the named lists for mean and sd, and cov is treated as a correlation matrix
+
+covMat <- matrix(c(30.25, 101.33, 101.33, 353.44), nrow = 2)
+covariate <- list(cov = covMat, mean = list(age = 9, wt = 32)) # equivalent covariance matrix, and sd is not required
+}\if{html}{\out{</div>}}
+}
+
+\code{mean}
+
+A named list that specifies the mean
+for one or more of the covariates in your model. If you are simulating in Case 1 or 2
+above, \code{mean} is optional and allows you to use a different mean value than was in your
+model-building population. For example, the population may have had a mean weight of
+30 kg, but \code{covariate = list(..., mean = list(wt = 70))} allows you to simulate
+weight with a mean of 70. If this
 argument is missing then the mean covariate values in the population will
 be used for simulation. The same applies to any covariates that are not
-named in this list.  Example:
-\verb{run1 <- PM_load(1); covariate = list(mean = list(wt = 50))}.
-\item \code{sd} This functions just as the mean list argument does - allowing you to
-specify different standard deviations for covariates in the simulation. If
-it, or any covariate in the sd list is missing, then the standard
-deviations of the covariates in the population are used. Example:
-\code{covariate = list(sd = list(wt = 10))}.
-\item \code{limits} This is a bit different than the limits for population
+named in this list.
+
+In Case 3, \code{mean} is required and must be a named list with the names
+of the covariates in the correlation matrix, and the values as the mean values for
+those covariates. See the example in \code{cov} above under Case 3.
+
+Examples:
+\itemize{
+\item Using a \link{PM_result} as poppar: \code{PM_sim$new(poppar = run1, covariate = list())}.
+Here we don't need to specify \code{cov} because it is already in the \link{PM_result} \code{run1}. We are
+not re-centering or otherwise modifying the covariates, so \code{covariate} can be an empty list.
+\item Using a \link{PM_final} as poppar: \verb{PM_sim$new(poppar = run1$final, covariate = list(cov = run1$cov, mean = list(wt = 50))}.
+Here we need to specify \code{cov} because it is not in the \link{PM_final} object. Futhermore, we want to recenter the
+mean values, so we add the \verb{$mean} element.
+\item Using a manually specified covariate correlation matrix:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{corMat <- matrix(c(1, .98, .98, 1, nrow = 2) # correlation matrix for age and wt
+covariate <- list(cov = corMat, mean = list(age = 9, wt = 32), sd = list(age = 5.5, wt = 18.8)) # mean and sd are required
+PM_sim$new(poppar = poppar , covariate = covariate) # covariates will be added to poppar for simulation regardless of the source of poppar
+}\if{html}{\out{</div>}}
+}
+
+\code{sd}
+
+This functions just as the `$mean`` argument does, but for standard deviations.
+
+\code{limits} This is a bit different than the limits for population
 parameters above. Here,
 \code{limits} is similar to \code{mean} and \code{sd} for covariates in
 that it is a named list with the minimum and maximum allowable simulated
@@ -330,20 +466,23 @@ will apply.  If it is specified, then named covariates will have the
 indicated limits, and covariates not in the list will have limits that are
 the same as in the original population.  If you want some to be limited and
 some to be unlimited, then specify the unlimited ones as items in this list
-with very large ranges.  Example:
-\code{covariate = list(limits = list( wt = c(10, 70)))}.
-\item \code{fix} A character vector (not a list) of covariates to fix and not simulate.  In
-this case values in the template data file will be used and not simulated.
-Example: \code{fix = c("wt", "age")}.  Whether you use the means and
-standard deviations in the population or specify your own, the covariance
-matrix in \code{poppar} will be augmented by the covariate covariances for any
-non-fixed covariates. The parameter plus covariate means and this augmented
-covariance matrix will be used for simulations. In effect, all non-fixed
-covariates are moved into the \strong{#Primary} block of the model file to become
-parameters that are simulated. In fact, a copy of your model file is made
-with a "c" prepended to the model name (e.g. "model.txt" ->
-"c_model.txt").
-}}
+with very large ranges. In the examples below, assume that the covariates
+age and wt are being simulated.
+\itemize{
+\item \code{covariate = list(..., limits = list( wt = c(10, 70)))} will limit wt to between 10 and 70 kg.
+Since age is also being simulated, it will have the same limits as in the population
+under Cases 1 and 2 above. Under Case 3, there is no population value for wt or age, so
+wt will be limited and age will be unlimited.
+\item \code{covariate = list(..., limits = list( wt = c(10, 70), age = c(0, 200)))} will limit wt to between 10 and 70 kg
+and age to between 0 and 200 years, which is effectively no limit. This would only be necessary under
+Cases 1 or 2 when age was a covariate in the data and model.
+}
+
+\code{fix}
+
+A character vector (not a list) of model covariates to fix and not simulate.
+Values in the template data will be used and not simulated.
+Example: \code{covariate = list(..., fix = c("wt", "age"))}.}
 
 \item{\code{usePost}}{Boolean, default \code{FALSE}. Only applicable when \code{poppar} contains an
 NPAG \link{PM_final} object. If \code{TRUE}, the mean
@@ -359,14 +498,6 @@ from whom the posteriors are obtained.}
 \item{\code{seed}}{The seed for the random number generator.  For \code{nsub} > 1,
 should be a vector of length equal to \code{nsub}. Shorter vectors will be
 recycled as necessary.  Default is -17.}
-
-\item{\code{obsNoise}}{= \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}. Use \code{noise} instead.}
-
-\item{\code{obsTimeNoise}}{= \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}. Use \code{noise} instead.}
-
-\item{\code{doseNoise}}{= \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}. Use \code{noise} instead.}
-
-\item{\code{doseTimeNoise}}{= \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}. Use \code{noise} instead.}
 
 \item{\code{noise}}{A named list to add noise to most template data fields,
 including covariates.
@@ -428,9 +559,6 @@ from each subject in the data template.}
 \item{\code{quiet}}{Boolean operator controlling whether a model summary report is
 given.  Default is \code{FALSE}.}
 
-\item{\code{combine}}{When there are multiple subjects in the template \code{data},
-combine the simulated results into a single object. Default is \code{FALSE}.}
-
 \item{\code{...}}{Catch deprecated arguments.}
 }
 \if{html}{\out{</div>}}
@@ -440,23 +568,27 @@ The Monte Carlo simulator in Pmetrics generates randomly sampled sets of
 parameters from the \emph{PRIMARY} block of
 a model according to a prior distribution and calculates outputs based upon
 a template data file. It is a powerful tool for parametric or
-semi-parametric sampling.  There are two ways to execute the simulator.
+semi-parametric sampling.  There are three ways to execute the simulator.
 \itemize{
 \item \strong{PM_result$sim()}
+\item \strong{PM_model$sim()}
 \item \strong{PM_sim$new()}
 }
 
 They return fully parsed simulator output as \link{PM_sim} objects in R.
-NPAG or IT2B final objects can easily be used as
+\link{PM_result} or \link{PM_final} objects can easily be used as
 the prior distributions for sampling. Prior distributions
-may be manually
-specified.  Prior distributions may be unimodal-multivariate (parametric
-sampling), or multimodal-multivariate (semi-parametric sampling). For priors
-from NPAG, this can be accomplished with the \code{split} argument.
+may also be manually
+specified, useful when simulating from literature values.
+Prior distributions may be unimodal-multivariate (parametric
+sampling), or multimodal-multivariate (semi-parametric sampling). For
+\link{PM_result} or \link{PM_final} priors, this can be accomplished with the \code{split} argument.
+For manual priors, the \code{weights} argument in the \code{poppar} list
+specifies the weights for each distribution.
 
 It is also possible to simulate with covariates if they are included as part
 of the model. By specifying a covariate list argument, Pmetrics will first
-calculate the correlation matrix between the covariates and the Bayesian
+calculate the correlation matrix between the covariates and if possible the Bayesian
 posterior parameter values for each subject in the population model.  Using
 either the mean and standard deviation of each covariate in the population,
 or a user-specified mean and/or standard deviation, Pmetrics will then
@@ -471,10 +603,6 @@ Limits on the simulated parameter sets can also be specified using the limits
 on primary parameters in the model file or by specifying them manually as an
 argument. Limits can also be applied to simulated covariates.
 
-It is permissible to fix a parameter for simulation that was a random
-parameter in the model prior by changing the range in the model file to a
-single value for that parameter.
-
 The same model and data structures are used for the simulator as for any
 other Pmetrics functions.  In this case, the data object will serve as the
 template for the information regarding dosing, covariate values, and
@@ -483,9 +611,7 @@ which case the simulator will use each subject specified by the
 \code{include} argument (default is all subjects) to generate \code{nsim}
 parameter sets and corresponding observations.
 
-Simulator output is directed to text files prefixed according to the
-\code{outfile} value (default "simout"), one for each template subject,
-which are read back into R to populate the \link{PM_sim} object.
+Simulator output is returned as a \link{PM_sim} object.
 Output may also be directed to a new Pmetrics .csv data file
 using the \code{makecsv} argument.
 }
@@ -522,14 +648,26 @@ mean <- log(c(0.7, 0.05, 100))
 cov <- matrix(rep(0, length(mean)**2), ncol = length(mean))
 diag(cov) <- (c(0.15, 0.15, 0.15) * mean)**2
 # make the prior for the simulation
-poppar <- list(weights, mean, cov)
+poppar <- list(weights = weights, mean = mean, mat = cov)
 
 # run simulation, assuming temp1.csv and model.txt are in working directory
 
 sim1 <- PM_sim$new(poppar, "temp1.csv",
   nsim = 15, model = "model.txt", include = 1:4, limits = NA,
-  obsNoise = c(0.02, 0.1, 0, 0)
+  noise = list(out = list(coeff = c(0.02, 0.1, 0, 0)))
 )
+
+# alternatively, load the model first
+
+mod <- PM_model$new("model.txt")
+
+# and then simulate
+
+sim2 <- mod$sim(poppar = poppar, data = "temp1.csv",
+   nsim = 15, include = 1:4, limits = NA,
+   noise = list(out = list(coeff = c(0.02, 0.1, 0, 0)))
+)
+
 }
 
 }
@@ -591,7 +729,7 @@ of the current Simulation.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Additional parameters, refer to \link{makePTA}}
+\item{\code{...}}{Additional parameters, refer to \link{PM_pta}.}
 }
 \if{html}{\out{</div>}}
 }

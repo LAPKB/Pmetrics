@@ -12,8 +12,8 @@
 #' parameters that are included in the first model.  The P-value is the
 #' comparison between each model and the first model in
 #' the list.  Missing P-values are when a model has no parameter names
-#' in common with the first model, and for the first model compared to itself,
-#' or when models from IT2B runs are included.  Significant P-values indicate
+#' in common with the first model, and for the first model compared to itself.  
+#' Significant P-values indicate
 #' that the null hypothesis should be rejected, i.e. the joint distributions
 #' between the two compared models for that parameter are significantly different.
 #'
@@ -25,32 +25,30 @@
 #' if `plot` is true as well as to [mtsknn.eq].  Order does not matter.
 #' @param icen Can be either "median" for the predictions based on medians of
 #' `pred.type` parameter value distributions, or "mean".  Default is "median".
-#' @param outeq Number of the output equation to compare; default is 1
-#' @param plot Boolean operator selecting whether to generate observed vs.
-#' predicted plots for each data object as in [plot.PM_op].
-#' @return A data frame with the following objects for each model to analyze:
+#' @param outeq Number of the output equation to compare; default is 1.
+#' @param plot Boolean operator selecting whether to generate the report.
+#' @return If `plot = TRUE`, a report will be generated comparing the selected models.
+#' Additionally, a data frame with the following objects for each model is invisbily returned.
 #' * **run** The run number of the data
-#' * **type** NPAG or IT2B data
 #' * **nsub** Number of subjects in the model
 #' * **nvar** Number of random parameters in the model
 #' * **par** Names of random parameters
 #' * **cycles** Number of cycles run
 #' * **converge** Boolean value if convergence occurred.
 #' * **ll** Final cycle -2*Log-likelihood
-#' * **aic** Final cycle Akaike Information Criterion
-#' * **bic** Final cycle Bayesian (Schwartz) Information Criterion
-#' * **popBias** Bias, or mean weighted prediction error of predictions based on population parameters minus observations
-#' * **popImp** Imprecision, or bias-adjusted mean weighted squared error of predictions based on population parameters minus observations
-#' * **popPerRMSE** Percent root mean squared error of predictions based on population parameters minus observations
-#' * **postBias** Bias, or mean weighted prediction error of predictions - observations  based on posterior parameters
-#' * **postImp** Imprecision, or bias-adjusted mean weighted squared error of predictions - observations based on posterior parameters
-#' * **postPerRMSE** Percent root mean squared error of predictions based on posterior parameters minus observations
+#' * One of the following, depending on the option set in [setPMoptions]:
+#'   * **aic** Final cycle Akaike Information Criterion OR
+#'   * **bic** Final cycle Bayesian (Schwartz) Information Criterion
+#' * **popBias** Bias, calculated by the method set in [setPMoptions], of the predictions based on `icen` population parameters
+#' * **popImp** Imprecision, calculated by the method set in [setPMoptions], of the predictions based on `icen` population parameters
+#' * **postBias** Bias, calculated by the method set in [setPMoptions], of the predictions based on `icen` posterior parameters
+#' * **postImp** Imprecision, calculated by the method set in [setPMoptions], of the predictions based on `icen` posterior parameters
 #' * **pval** P-value for each model compared to the first. See details.
 #' @author Michael Neely
 #' @seealso [PM_load], [plot.PM_op], [mtsknn.eq]
 #' @export
 
-PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
+PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = TRUE) {
   if (missing(x) | missing(y)) {
     cli::cli_abort(c("x" = "You must specify at least two {.cls PM_result} objects for {.fn PM_compare}."))
   }
@@ -60,149 +58,484 @@ PM_compare <- function(x, y, ..., icen = "median", outeq = 1, plot = F) {
       "i" = "Load them beforehand with with {.fn PM_load}."
     ))
   }
-
-
+  
+  
   # parse dots
   arglist <- list(...)
-  namesPlot <- names(formals(plot.PM_op))
-  namesMTSKNN <- names(formals(mtsknn.eq))
-  # get the args to plot.PM_op and set defaults if missing
-  plotArgs <- which(names(arglist) %in% namesPlot)
-  argsPlot <- arglist[plotArgs]
-  MTSKNNargs <- which(names(arglist) %in% namesMTSKNN)
-  argsMTSKNN <- arglist[MTSKNNargs]
-  if (!"k" %in% names(argsMTSKNN)) argsMTSKNN$k <- 3
-  if (!"print" %in% names(argsMTSKNN)) argsMTSKNN$print <- FALSE
-  # get the others if there and assume that they are PMdata objects for now
-  if ((length(arglist) - length(c(plotArgs, MTSKNNargs))) > 0) {
-    if (length(c(plotArgs, MTSKNNargs)) == 0) {
-      argsPM <- 1:length(arglist)
-    } else {
-      argsPM <- (1:length(arglist))[-c(plotArgs, MTSKNNargs)]
-    }
-  } else {
-    argsPM <- NULL
-  }
+  
 
-  if (length(argsPM) == 0) obj <- list(x, y)
-  if (length(argsPM) >= 1) obj <- c(list(x, y), arglist[argsPM])
+  argsPlot <- arglist %>% `[`(names(.) %in% names(formals(plot.PM_op))) # plot arguments
+  argsKnn <- arglist %>% `[`(names(.) %in% names(formals(mtsknn.eq))) # knn argument
+  
+  # set defaults if missing
+  argsKnn <- modifyList(
+    list(k = 3, print = FALSE), # default values for mtsknn.eq
+    argsKnn
+  )
 
-  # declare global variables to avoid problems with R CMD Check
-  # NPAGout <- NULL
-  # get each obj
-  nobj <- length(obj)
-  allObj <- purrr::map(obj, function(x) {
-    if (!is.null(x$NPdata)) {
-      x$NPdata
-    } else {
-      x$ITdata
-    }
-  })
-
-  objClass <- purrr::map(allObj, function(x) class(x)[1])
-  # check for non-Pmetrics data objects and remove them if found
-  yesPM <- which(objClass %in% c("NPAG", "IT2B"))
-  allObj <- allObj[yesPM]
-  objClass <- objClass[yesPM]
-
+  allObj <- c(x, y, arglist) %>% purrr::keep(\(x) inherits(x, "PM_result")) # PM_result objects
+  nobj <- length(allObj)
+  
+  
   # check for zero cycle objects
-  cycles <- unlist(sapply(allObj, function(x) x$icyctot))
+  cycles <- unlist(sapply(allObj, function(x) max(x$cycle$data$objective$cycle)))
   if (any(cycles == 0)) {
-    cli::cli_abort(c("x" = "Do not include 0-cycle runs: {paste(which(cycles == 0), collapse = ', '), '\n', sep = '')}"))
+    cli::cli_warn(c("!" = "These objects were excluded because they had no cycles: {which(cycles == 0)}."))
+    allObj <- allObj %>% purrr::discard(\(x) max(x$cycle$data$objective$cycle) == 0)
   }
 
-  op <- purrr::map(obj, function(x) {
+  # grab op data
+  
+  op <- purrr::map(allObj, function(x) {
     x$op$data
   })
-
-  if (plot) {
-    if (!"resid" %in% names(argsPlot)) {
-      if (nobj <= 3) {
-        par(mfrow = c(nobj, 2))
-      } else {
-        par(mfrow = c(3, 2))
-        devAskNewPage(ask = T)
-      }
-      for (i in 1:length(op)) {
-        do.call(plot.PM_op, args = c(list(
-          x = op[[i]], pred.type = "pop", icen = icen, outeq = outeq,
-          title = paste("Model", i, "Population")
-        ), argsPlot))
-        do.call(plot.PM_op, args = c(list(
-          x = op[[i]], pred.type = "post", icen = icen, outeq = outeq,
-          title = paste("Model", i, "Posterior")
-        ), argsPlot))
-      }
-    } else {
-      devAskNewPage(ask = T)
-      for (i in 1:length(op)) {
-        do.call(plot.PM_op, args = c(list(
-          x = op[[i]], pred.type = "post", icen = icen, outeq = outeq,
-          title = paste("Model", i)
-        ), argsPlot))
-      }
-    }
-    par(mfrow = c(1, 1))
-    devAskNewPage(ask = F)
-  }
-
+  
+ 
   # get summaries of op for outeq
-  sumobjPop <- mapply(summary.PM_op, op, MoreArgs = list(outeq = outeq, pred.type = "pop", icen = icen), SIMPLIFY = F)
-  sumobjPost <- mapply(summary.PM_op, op, MoreArgs = list(outeq = outeq, pred.type = "post", icen = icen), SIMPLIFY = F)
-
-
-  popBias <- sapply(sumobjPop, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$mwpe))
-  postBias <- sapply(sumobjPost, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$mwpe))
-  popImp <- sapply(sumobjPop, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$bamwspe))
-  postImp <- sapply(sumobjPost, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$bamwspe))
-  popPercent_RMSE <- sapply(sumobjPop, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$percent_rmse))
-  postPercent_RMSE <- sapply(sumobjPost, function(x) ifelse(is.na(x$pe[1]), NA, x$pe$percent_rmse))
-
-  # get population points
-  final <- purrr::map(obj, function(x) {
-    x$final$data
-  })
-  # find intersecting parameters
-  popPointsRef <- final[[1]]$popPoints
-  namesRef <- names(popPointsRef)
-  popPointsOther <- lapply(2:nobj, function(x) final[[x]]$popPoints)
-  t <- sapply(2:nobj, function(x) {
-    thisPopPoints <- popPointsOther[[x - 1]]
-    namesThis <- names(thisPopPoints)
-    intersect <- namesRef[namesRef %in% namesThis]
-    if (length(intersect) > 0) {
-      popPoints1 <- popPointsRef[, intersect]
-      popPoints2 <- thisPopPoints[, intersect]
-      t <- do.call(mtsknn.eq, args = c(list(x = popPoints1, y = popPoints2), argsMTSKNN))$pval
-    } else {
-      t <- NA
-    }
-    signif(t, 3)
-  })
-
-  t <- c(NA, t)
-  results <- data.frame(
-    run = seq(1:nobj),
-    type = unlist(objClass),
-    nsub = unlist(purrr::map(obj, function(x) {
-      x$final$nsub
-    })),
-    nvar = mapply(function(x) x$nvar, allObj),
-    par = mapply(function(x) paste(x$par, collapse = " "), allObj),
-    converge = mapply(function(x) x$converge == 1, allObj),
-    ll = mapply(function(x) -2 * x$ilog[length(x$ilog)], allObj),
-    aic = mapply(function(x) tail(x$iic[, 1], 1), allObj),
-    bic = mapply(function(x) tail(x$iic[, 2], 1), allObj),
-    popBias = popBias,
-    popImp = popImp,
-    popPer_RMSE = popPercent_RMSE,
-    postBias = postBias,
-    postImp = postImp,
-    postPer_RMSE = postPercent_RMSE,
-    pval = t
+  
+  get_metric <- function(this_obj){
+    type <- c("bias", "imp")
+    res <- purrr::map(this_obj, \(x){
+      metrics <- get_metric_info(x$pe) #defined in PM_op.R
+      
+      if(all(is.na(metrics$metric_vals))) {
+        cli::cli_abort(c("x" = "Your PM_op object is old. Please re-run the model."))
+      } else {
+        metrics$metric_vals
+        
+      }
+    })
+    tibble(
+      bias = map_chr(res, 1),
+      imp = map_chr(res, 2)
+    )
+    
+    
+  }
+  
+  sumobjPop <- purrr::map(op, \(x) summary.PM_op(x, outeq = outeq, pred.type = "pop", icen = icen)) 
+  sumobjPost <- purrr::map(op, \(x) summary.PM_op(x, outeq = outeq, pred.type = "post", icen = icen)) 
+  
+  
+  
+  #### MAKE BIAS AND IMPRECISION PLOT ####
+  
+  sumobjBoth <- bind_rows(
+    sumobjPop %>% get_metric() %>% mutate(pred.type = "pop", run = 1:n()),
+    sumobjPost %>% get_metric() %>% mutate(pred.type = "post", run = 1:n())
+  ) %>%
+  pivot_longer(
+    c(bias, imp),
+    names_to = "metric",
+    values_to = "value"
+  ) %>%
+  mutate(metric = paste(pred.type, metric, sep = "_")) %>%
+  mutate(value = as.numeric(value))
+  
+  # determine if current method is percent based or not and label y axis accordingly
+  if(stringr::str_detect(getPMoptions("bias_method"), "percent_")){
+    sumobjBoth$value <- as.numeric(sumobjBoth$value) / 100
+    tickformat <- ".0%"
+  } else {
+    tickformat <- NULL
+  }
+  
+  
+  x_labels <- c("Bias", "Imprecision")
+  col_map <- c("1" = "blue", "2" = "red")
+  col_vec <- col_map[ sumobjBoth$run ]
+  
+  
+  df <- sumobjBoth %>%
+  mutate(run = paste0("Run ", run)) 
+  
+  p1 <- plot_ly() %>%
+  plotly::add_trace(
+    data = df,
+    x = ~metric,
+    y = ~value,
+    type = "scatter",
+    mode = "markers",
+    color = I("black"),
+    marker = list(size = 10),
+    name = ~run,
+    hoverinfo = "none",
+    symbol = ~factor(run),
+    showlegend = TRUE
   )
-  names(results)[7] <- "-2*LL"
-  results[, 7:15] <- format(results[, 7:15], digits = 4)
-  row.names(results) <- 1:nobj
-  results
+  
+  p1 <- p1 %>%
+  plotly::add_trace(
+    data = df,
+    x = ~metric,
+    y = ~value,
+    type = "scatter",
+    mode = "markers",
+    colors = c("blue", "red"),
+    name = ~run,
+    symbol = ~factor(run),
+    marker = list(size = 12, color = I(col_vec)),
+    showlegend = FALSE,
+    hoverinfo = "text",
+    text = ~paste(run, "<br>", metric, sprintf(paste0("%.", getPMoptions("digits"), "f%%"), value * 100)
+  )
+)
+
+p1 <- p1 %>%
+plotly::layout(
+  xaxis = list(
+    title = "", # remove default axis title,
+    tickvals = unique(sumobjBoth$metric),
+    ticktext = c(
+      sprintf("<span style='color:blue'>%s</span>", x_labels),
+      sprintf("<span style='color:red'>%s</span>", x_labels)
+    )
+  ),  
+  yaxis = list(
+    title = "",
+    tickformat = tickformat  # use percentage format if applicable
+  ),
+  shapes = list(
+    list(
+      type = "line",
+      x0 = 1.5, x1 = 1.5,
+      y0 = 0, y1 = 1,
+      xref = "x", yref = "paper",  # "paper" makes y0/y1 go from bottom to top regardless of axis scale
+      line = list(color = gray(), dash = "dash")
+    )
+  ),
+  annotations = list(
+    list(
+      x = 0.5,  # middle of first 3 categories
+      y = -0.15,  # position below axis
+      text = "Population",
+      xref = "x",
+      yref = "paper",
+      showarrow = FALSE,
+      font = list(size = 14),
+      xanchor = "center"
+    ),
+    list(
+      x = 2.5,  # middle of last 3 categories
+      y = -0.15,
+      text = "Posterior",
+      xref = "x",
+      yref = "paper",
+      showarrow = FALSE,
+      font = list(size = 14),
+      xanchor = "center"
+    )
+  ),
+  margin = list(b = 80)  # extra space at bottom for labels
+)
+  
+  
+### OP plots
+  
+all_op <- op %>% purrr::imap(\(x, y) {
+  pop <- x %>% plot.PM_op(
+    outeq = outeq,
+    icen = icen,
+    pred.type = "pop",
+    print = FALSE,
+    title = list(text = glue::glue("Run {y} Pop"), font = list(color = black(alpha = 0.3), size = 16)),
+    stats = list(font = list(size = 10))
+  )
+  post <- x %>% plot.PM_op(
+    outeq = outeq,
+    icen = icen,
+    pred.type = "post",
+    print = FALSE,
+    title = list(text = glue::glue("Run {y} Post"), font = list(color = black(alpha = 0.3), size = 16)),
+    stats = list(font = list(size = 10))
+  )
+  list(pop = pop, post = post)
+}) 
+  
+all_op_flat <- all_op %>% purrr::list_flatten() 
+p2 <- sub_plot(all_op_flat, nrows = nobj, titles = c(0,.8), shareX = FALSE, shareY = FALSE, print = FALSE, margin = 0.02)
+
+### LIKELIHOOD PLOT ###
+
+like <- tibble(
+  ll = purrr::map_dbl(allObj, \(x) {
+    tail(x$cycle$data$objective$neg2ll, 1) 
+  }),
+  AIC = purrr::map_dbl(allObj, \(x) {
+    tail(x$cycle$data$objective$aic, 1) 
+  }),
+  BIC = purrr::map_dbl(allObj, \(x) {
+    tail(x$cycle$data$objective$bic, 1) 
+  })
+)
+names(like)[1] <- "-2*LL"
+
+gamlam <- purrr::imap(allObj, \(x, y) {
+  x$cycle$data$gamlam %>% filter(cycle == max(cycle)) %>%
+  mutate(Run = y)
+}) %>% bind_rows() 
+
+not_same <- gamlam %>% group_by(outeq) %>%
+summarize(same_val = dplyr::n_distinct(round(value, getPMoptions("digits"))) == 1, same_type = dplyr::n_distinct(type) == 1) %>%
+filter(dplyr::if_any(dplyr::everything(), ~ .x == FALSE))
+
+if(length(not_same$outeq)>0){
+  ft1 <- gamlam %>% select(Run, dplyr::everything()) %>%
+  purrr::set_names(c("Run", "Cycle", "Value", "Outeq", "Type")) %>%
+  mutate(Value = round2(Value)) %>%
+  flextable::flextable() %>%
+  flextable::theme_zebra() %>%
+  flextable::align_text_col(header = TRUE) %>%
+  flextable::bg(part = "header", bg = blue()) %>%
+  flextable::autofit()
+} else {
+  ft1 <- NULL
+}
+
+
+
+
+if (getPMoptions("ic_method") == "aic"){
+  like$BIC <- NULL
+} else {
+  like$AIC <- NULL
+}
+
+df <- like %>% mutate(run = paste0("Run ", seq(1:nrow(like)))) %>%
+pivot_longer(
+  1:2,
+  names_to = "metric",
+  values_to = "value"
+)
+
+
+p3 <- plot_ly() %>%
+plotly::add_trace(
+  data = df,
+  x = ~metric,
+  y = ~value,
+  type = "scatter",
+  mode = "markers",
+  color = I("black"),
+  marker = list(size = 10),
+  name = ~run,
+  hoverinfo = "none",
+  symbol = ~factor(run),
+  showlegend = TRUE
+)
+
+p3 <- p3 %>%
+plotly::add_trace(
+  data = df,
+  x = ~metric,
+  y = ~value,
+  type = "scatter",
+  mode = "markers",
+  colors = c("blue", "red"),
+  name = ~run,
+  symbol = ~factor(run),
+  marker = list(size = 12, color = I(col_vec)),
+  showlegend = FALSE,
+  hoverinfo = "text",
+  text = ~glue::glue("{run}: {round2(value)}")
+)
+
+
+p3 <- p3 %>%
+plotly::layout(
+  xaxis = list(
+    title = "", # remove default axis title,
+    tickfont = list(size = 14)
+  ),  
+  yaxis = list(
+    title = ""
+  ),
+  margin = list(b = 80, l = 150, r = 150)  # extra space at bottom for labels
+)
+
+  
+  
+
+
+
+# get population points
+final <- purrr::map(allObj, function(x) {
+  x$final$data
+})
+# find intersecting parameters
+popPointsRef <- final[[1]]$popPoints
+namesRef <- names(popPointsRef)
+popPointsOther <- lapply(2:nobj, function(x) final[[x]]$popPoints)
+t <- sapply(2:nobj, function(x) {
+  thisPopPoints <- popPointsOther[[x - 1]]
+  namesThis <- names(thisPopPoints)
+  intersect <- namesRef[namesRef %in% namesThis]
+  if (length(intersect) > 0) {
+    popPoints1 <- popPointsRef[, intersect]
+    popPoints2 <- thisPopPoints[, intersect]
+    t <- do.call(mtsknn.eq, args = c(list(x = popPoints1, y = popPoints2), argsKnn))$pval
+  } else {
+    t <- NA
+  }
+  signif(t, 3)
+})
+
+t <- c(NA, t)
+
+
+### make table of parameter names
+par <- purrr::map_chr(allObj, \(x) paste(x$model$model_list$parameters, collapse = ", ")) %>% 
+strsplit(",\\s*") 
+
+all_par <- par %>% unlist() %>% unique() %>%
+sort()
+
+
+tbl_par <- map(par, \(x){
+  all_par %in% x
+  
+})%>% map(~ set_names(., all_par)) %>%
+bind_rows() %>%
+mutate(Run = 1:n()) %>%
+select(Run, dplyr::everything())
+
+
+ft2 <- tbl_par %>% 
+mutate(across(-Run, \(x){
+  dplyr::if_else(row_number() == 1, 
+  #row 1
+  ifelse(x, "✅", "❌"),
+  #other rows
+  ifelse(x, "☑️", "❌")
+)
+})) %>% 
+mutate(across(-Run, \(x){
+  ifelse(x == "☑️" & x[1] == "✅", "✅", x )
+})) %>%
+mutate(P = round2(t)) %>%
+mutate(P = ifelse(stringr::str_trim(P) == "NA", "Ref", P)) %>%
+flextable::flextable() %>%
+flextable::set_header_labels(P = "P-value") %>%
+flextable::theme_zebra() %>%
+flextable::align_text_col(header = TRUE) %>%
+flextable::bg(part = "header", bg = blue()) %>%
+flextable::autofit()
+
+# make results table
+results <- data.frame(
+  run = seq(1:nobj),
+  nsub = purrr::map_int(allObj, \(x) {
+    x$final$nsub
+  }),
+  nvar = purrr::map_int(allObj, \(x) length(x$model$model_list$parameters)),
+  par = purrr::map_chr(allObj, \(x) paste(x$model$model_list$parameters, collapse = ", ")),
+  converged = purrr::map_lgl(allObj, \(x) {
+    x$cycle$data$status == "Converged"
+  }),
+  ll = purrr::map_dbl(allObj, \(x) {
+    tail(x$cycle$data$objective$neg2ll, 1) 
+  }),
+  aic = purrr::map_dbl(allObj, \(x) {
+    tail(x$cycle$data$objective$aic, 1) 
+  }),
+  bic = purrr::map_dbl(allObj, \(x) {
+    tail(x$cycle$data$objective$bic, 1) 
+  }),
+  popBias = sumobjBoth %>% filter(metric == "pop_bias") %>% pull(value),
+  popImp = sumobjBoth %>% filter(metric == "pop_imp") %>% pull(value),
+  postBias = sumobjBoth %>% filter(metric == "post_bias") %>% pull(value),
+  postImp = sumobjBoth %>% filter(metric == "post_imp") %>% pull(value),
+  pval = t
+)
+names(results)[6] <- "-2*LL"
+row.names(results) <- 1:nobj
+if (getPMoptions("ic_method") == "aic"){
+  results$bic <- NULL
+} else {
+  results$aic <- NULL
+}
+  
+class(results) <- c("PM_compare", "data.frame")
+
+#render and open the report
+report_list <- list(
+  p1 = p1, # bias and imprecision comparison
+  p2 = p2, # op comparison
+  p3 = p3, # likelihood comparison
+  ft1 = ft1, # gamlam comparison: NULL if equal within PMoptions digits
+  ft2 = ft2, # model parameter comparison
+  metric_types = sumobjPop[[1]]$pe %>% get_metric_info() %>% pluck("metric_types")
+)
+
+if(plot){
+  temp <- tempdir()
+  rmarkdown::render(
+    input = glue::glue(here::here(),"/inst/report/templates/compare.Rmd"),
+    output_file = "compare.html",
+    output_dir = temp,
+    params = list(results = report_list),
+    quiet = TRUE
+  )
+  browseURL(glue::glue("{temp}/compare.html"))
+  
+  
+}
+  
+  # Find best model
+  
+  # op fits
+  op_tbl <- op %>% map(\(x) {
+    fit <- lm(obs ~ pred, data = x)
+    tibble(
+      intercept = coef(fit)[1],
+      slope     = coef(fit)[2],
+      r2        = summary(fit)$r.squared
+    )
+  }) %>%
+  list_rbind(names_to = "dataset") 
+  
+  op_win <- c(
+    op_intercept = as.numeric(which.min(op_tbl$intercept)),
+    op_slope = as.numeric(which.min(abs(1 - op_tbl$slope))),
+    op_r2 = as.numeric(which.max(op_tbl$r2))
+  )
+
+  bias_imp <- sumobjBoth %>%
+  group_by(metric) %>%
+    select(-pred.type) %>%
+  pivot_wider(names_from = run, values_from = value) %>%
+    purrr::set_names("metric", paste0("Run_", 1:nrow(like)))
+  
+  bias_imp_win <- sumobjBoth %>%
+  group_by(metric) %>%
+  summarize(val = which.min(abs(value))) %>%
+  pivot_wider(names_from = metric, values_from = val)
+  
+  
+  # likelihood
+  like_tbl <- like  %>% t() %>% as.data.frame() %>%
+  purrr::set_names( paste0("Run_", 1:nrow(like))) %>%
+  rownames_to_column("metric")
+   
+
+  like_win <- c(
+    like_ll = as.numeric(which.min(like[[1]])),
+    like_ic = as.numeric(which.min(like[[2]]))
+  )
+
+
+  
+
+return(invisible(results))
+}
+
+#' @title Print method for PM_compare objects
+#' @description
+#' ` r lifecycle::badge("stable")`
+#' Prints a summary of the PM_compare object.
+#' @param x A PM_compare object.
+#' @method print PM_compare
+#' @export
+print.PM_compare <- function(x){
+  cli_df(x) # in PM_utilities
 }

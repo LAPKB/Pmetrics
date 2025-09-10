@@ -4,7 +4,7 @@
 \alias{simulate_one}
 \title{Simulates the first subject in the data set using the model at the given path.}
 \usage{
-simulate_one(data_path, model_path, spp)
+simulate_one(data_path, model_path, spp, kind)
 }
 \description{
 Simulates the first subject in the data set using the model at the given path.

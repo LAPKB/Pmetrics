@@ -12,13 +12,18 @@
 #' Contains results of internal validation by simulation to permit generation of
 #' visual predictive checks (VPCs), prediction corrected visual predictive checks,
 #' (pcVPCs), normalized prediction distribution errors (NPDE), and
-#' numerical predictive checks.
+#' numerical predictive checks. This is typically a field in a [PM_result]
 #'
 #' @details
-#' This object is created by running the `make_valid` method in a
-#' [PM_result] object. It contains all the information necessary
-#' to internally validate the result by simulation methods.
-#' @seealso [PM_result], [make_valid]
+#' The [PM_valid] object is both a data field within a [PM_result], and itself an R6 object
+#' comprising data fields and associated methods suitable for analysis and plotting of
+#' observed vs. population or individual predicted outputs.
+#'
+#' Because [PM_valid] objects are automatically added to the [PM_result] by calling the 
+#' `$validate()` method of a [PM_result] after a
+#' successful run, it is generally not necessary for users to generate [PM_valid] objects
+#' themselves.
+#' @seealso [PM_result]
 #' @export
 PM_valid <- R6::R6Class(
   "PM_valid",
@@ -57,7 +62,8 @@ PM_valid <- R6::R6Class(
     #' superimposable and `tad` should
     #' *NOT* be used, i.e. should be set to `FALSE`.
     #'
-    #' @param result The result of a prior run, loaded with [PM_load].
+    #' @param result The result of a prior run, usually supplied by calling the 
+    #' `$validate()` method of a [PM_result] at the end of a run, or later loaded with [PM_load].
     #' @param tad `r template("tad")`
     #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
     #' model equations and which need to be binned.  For example `binCov='wt'` if "wt" is included in a
@@ -72,7 +78,7 @@ PM_valid <- R6::R6Class(
     #' will be ignored if `tad=FALSE`.
     #' @param limits Limits on simulated parameters. See [PM_sim].
     #' @param ... Other parameters to be passed to [PM_sim], especially `limits`.
-    #' @return The output of `make_valid` is a list of class `PMvalid`, which is a list with the following.
+    #' @return An R6 object  of class `PM_valid`, which is a list with the following.
     #' * simdata The combined, simulated files for all subjects using the population mean values and each subject
     #' as a template. This object will be automatically saved to the run, to be loaded with
     #' [PM_load] next time.
@@ -95,7 +101,7 @@ PM_valid <- R6::R6Class(
       if (!inherits(result, "PM_result")) {
         cli::cli_abort(c(
           "x" = "Please supply a PM_result object to validate.",
-          "i" = "PM_result objects are created by {.fn PM_load}."
+          "i" = "PM_result objects are created by the {.fn PM_result$fit() method} or by {.fn PM_load}."
         ))
       }
 
@@ -191,7 +197,7 @@ PM_valid <- R6::R6Class(
           binCov <- gsub("^[[:space:]]|[[:space:]]$", "", binCov)
         }
         if (!all(binCov %in% names(mdata))) {
-          stop("You have entered covariates which are not valid covariates in your data.")
+          cli::cli_abort(c("x" = "You have entered covariates which are not valid covariates in your data."))
         }
         # ensure binCov has covariates in same order as data file
         covSub <- covData$covnames[covData$covnames %in% binCov]
@@ -208,37 +214,13 @@ PM_valid <- R6::R6Class(
         mutate(tad = if (tad) valTAD else NA) %>%
         dplyr::relocate(tad, .after = time)
 
-      # dataSub <- mdata[, c("id", "evid", "time", "out", "dose", "out", dplyr::all_of(binCov))]
-      # # add time after dose
-      # if (tad) {
-      #   dataSub$tad <- valTAD
-      # } else {
-      #   dataSub$tad <- NA
-      # }
-      # dataSub <- dataSub %>% select(c("id", "evid", "time", "tad", "out", "dose", dplyr::all_of(binCov)))
-
+     
 
       # restrict to doses for dose/covariate clustering (since covariates applied on doses)
       dataSubDC <- dataSub %>%
         filter(evid > 0) %>%
         select(c("id", "dose", dplyr::all_of(binCov)))
 
-      # # set zero doses (covariate changes) as missing
-      # dataSubDC$dose[dataSubDC$dose == 0] <- NA
-      # for (i in 1:nrow(dataSubDC)) {
-      #   missingVal <- which(is.na(dataSubDC[i, ]))
-      #   if (2 %in% missingVal) { # dose is missing
-      #     if (i == 1 | (dataSubDC$id[i - 1] != dataSubDC$id[i])) { # first record for patient has zero dose
-      #       j <- 0
-      #       while (is.na(dataSubDC$dose[i + j])) { # increment until non-zero dose is found
-      #         j <- j + 1
-      #       }
-      #       dataSubDC$dose[i] <- dataSubDC$dose[i + j] # set dose equal to first non-zero dose
-      #       missingVal <- missingVal[-which(missingVal == 3)] # take out missing flag for dose as it has been dealt with
-      #     }
-      #   }
-      #   dataSubDC[i, missingVal] <- dataSubDC[i - 1, missingVal]
-      # }
 
       dataSubDC <- dataSubDC %>%
         # 1. Replace 0 doses with NA
@@ -292,6 +274,7 @@ PM_valid <- R6::R6Class(
           xlab = "Number of clusters",
           ylab = "Total within-clusters sum of squares (WSS)"
         )
+
       }
 
 
@@ -729,7 +712,7 @@ PM_valid <- R6::R6Class(
       )
 
       setwd(currwd)
-      return(valRes)
+      return(invisible(valRes))
     } # end make function
   ) # end private
 )
@@ -738,8 +721,14 @@ PM_valid <- R6::R6Class(
 # PLOT --------------------------------------------------------------------
 #' @title Plot Pmetrics Validation Objects
 #' @description
-#' #' `r lifecycle::badge('stable')`
-#'
+#' `r lifecycle::badge('stable')`
+#' Usually called by the `$plot` method for [PM_valid] objects, which are in turn typically added
+#' to a [PM_result] object by the `$validate` method. For example:
+#' ```
+#'    NPex$validate(limits = c(0, 3)) # creates a PM_valid object and adds it to the $valid field of NPex
+#'    NPex$valid$plot(type = "vpc", tad = TRUE, log = TRUE) # now we can plot it
+#' ```
+#' 
 #' Plot [PM_valid] objects.
 #' @details
 #' Generates a plot of outputs (typically concentrations) on the y axis and time
@@ -765,8 +754,8 @@ PM_valid <- R6::R6Class(
 #' variability in the data. For an npde plot, one expects to see approximately
 #' normally distributed normalized prediction errors.
 #' @method plot PM_valid
-#' @param x The name of an *PM_valid* data object generated by the [make_valid]
-#' function, which is usually called by the `$validate` method for [PM_result]
+#' @param x The name of an *PM_valid* data object, which is usually called by 
+#' the `$validate` method for [PM_result]
 #' objects.
 #' @param type Default is "vpc" for a visual predictive check, but could be
 #' "pcvpc" for a prediction-corrected visual predictive check, or
@@ -805,6 +794,7 @@ PM_valid <- R6::R6Class(
 #' @param xlab `r template("xlab")` Default is "Time" or "Time after dose" if `tad = TRUE`.
 #' @param ylab `r template("ylab")` Default is "Output".
 #' @param title `r template("title")` Default is to have no title.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @param \dots If `type` is not "npde", the following apply. `r template("dotsPlotly")`.
 #' However, if `type` is "npde", to modify the appearance of the plot,
 #' supply a list of options, `npde = list(...)`. See the documentation
@@ -844,7 +834,8 @@ plot.PM_valid <- function(x,
                           grid = TRUE,
                           xlab, ylab,
                           title,
-                          xlim, ylim, ...) {
+                          xlim, ylim,
+                          print = TRUE, ...) {
   # to avoid modifying original object, x
   opDF <- x$opDF
   simdata <- x$simdata$obs
@@ -1087,7 +1078,7 @@ plot.PM_valid <- function(x,
       )
 
     # SEND TO CONSOLE
-    print(p)
+    if (print) print(p)
   }
 
   if (type == "npde") {
@@ -1098,7 +1089,7 @@ plot.PM_valid <- function(x,
       if (is.null(x$npde)) stop("No npde object found.  Re-run $validate or make_valid.\n")
       if (inherits(x$npde[[outeq]], "NpdeObject")) {
         npdeArgs <- c(x = x$npde[[outeq]], npdeOpts)
-        do.call(plot, npdeArgs)
+        if (print) do.call(plot, npdeArgs)
         # do.call(npde:::plot.NpdeObject, npdeArgs)
         par(mfrow = c(1, 1))
       } else {
@@ -1329,5 +1320,5 @@ plot.PMvalid <- function(x, type = "vpc", tad = FALSE, icen = "median", outeq = 
     par(mfrow = c(1, 1))
     p <- NULL
   }
-  return(p)
+  return(invisible(p))
 }

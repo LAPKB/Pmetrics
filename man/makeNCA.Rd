@@ -25,7 +25,7 @@ makeNCA(
 \itemize{
 \item It can be the run number, e.g. 3, that has been previously loaded with \link{PM_load}.
 Either the mdata file from the run (NPAG or IT2B) can be used (default) or
-the post object can be used (NPAG only) by specifying \code{postPred = T} below.  If \link{x} is a run number that corresponds
+the post object can be used (NPAG only) by specifying \code{postPred = T} below.  If \link[ggplot2:aes_position]{ggplot2::x} is a run number that corresponds
 to both an NPAG and IT2B run which have been previously loaded into memory with \link{PM_load}, the NPAG run will be used.
 \item It can be the run number of a run that has \emph{not} been previously loaded with \link{PM_load}.
 In this case, the current working directory should be the Runs folder as \link{makeNCA} will call \link{PM_load}.
@@ -99,8 +99,8 @@ This value will be suppressed if start!=0.}
 \description{
 Performs a non-compartmental analysis from observed concentrations in the raw data
 file or from an individual Bayesian posterior predicted
-time-observation profiles (PMpost object) generated automatically after an NPAG run
-by the \link{makePost} command and loaded with \link{PM_load}.
+time-observation profiles in \link{PM_post} generated automatically after an NPAG run
+and loaded with \link{PM_load}.
 }
 \details{
 If concentrations from multiple dose intervals are included in the \code{start} to \code{end} time interval,

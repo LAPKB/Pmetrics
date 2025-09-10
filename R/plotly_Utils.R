@@ -4,10 +4,10 @@
 amendMarker <- function(.marker, default) {
   default_marker <- list(
     symbol = "circle",
-    color = "red",
+    color = red(),
     size = 10,
     opacity = 0.5,
-    line = list(color = "black", width = 1)
+    line = list(color = black(), width = 1)
   )
   if (!missing(default)) {
     default_marker <- modifyList(default_marker, default)
@@ -30,7 +30,7 @@ amendMarker <- function(.marker, default) {
 
 # amend lines
 amendLine <- function(.line, default) {
-  default_line <- list(color = "dodgerblue", width = 1, dash = "solid")
+  default_line <- list(color = blue(), width = 1, dash = "solid")
   
   if (!missing(default)) {
     default_line <- modifyList(default_line, default)
@@ -54,7 +54,7 @@ amendLine <- function(.line, default) {
 
 # amend title
 amendTitle <- function(.title, default) {
-  default_font <- list(family = "Arial", color = "black", bold = TRUE, size = 16)
+  default_font <- list(family = "Arial", color = black(), bold = TRUE, size = 16)
   if (!missing(default)) {
     default_font <- modifyList(default_font, default)
   }
@@ -114,7 +114,7 @@ amendTitle <- function(.title, default) {
 
 # amend CI
 amendCI <- function(.ci, default) {
-  default_ci <- list(color = "dodgerblue", dash = "dash", width = 1, opacity = 0.4)
+  default_ci <- list(color = blue(), dash = "dash", width = 1, opacity = 0.4)
   
   if (!missing(default)) {
     default_ci <- modifyList(default_ci, default)
@@ -135,7 +135,7 @@ amendCI <- function(.ci, default) {
 }
 
 # amend bar
-amendBar <- function(.bar, color = "dodgerblue", default) {
+amendBar <- function(.bar, color = blue(), default) {
   default_bar <- list(color = color, width = .02, opacity = 0.75)
   
   if (!missing(default)) {
@@ -160,7 +160,7 @@ amendBar <- function(.bar, color = "dodgerblue", default) {
 
 # make grid lines
 setGrid <- function(.axis, grid = FALSE, default) {
-  default_grid <- list(gridcolor = "grey50", gridwidth = 1)
+  default_grid <- list(gridcolor = gray(alpha = 0.5), gridwidth = 1)
   if (!missing(default)) {
     default_grid <- modifyList(default_grid, default)
   }
@@ -170,7 +170,7 @@ setGrid <- function(.axis, grid = FALSE, default) {
       grid <- default_grid
     } else {
       grid <- default_grid
-      grid$gridcolor <- "white"
+      grid$gridcolor <- white()
       grid$gridwidth <- 0
     }
   }
@@ -237,35 +237,35 @@ amendDots <- function(dots) {
   if (!all(otherArgs)) { # some are false
     misplaced_args <- names(dots)[!otherArgs]
     misplaced_values <- as.character(dots[!otherArgs])
- args_to_check <- c("density", "lwd", "col", "lty")
-suggestion_templates <- c(
-  "Did you mean {.code line = list(density = {val})}?",
-  "Did you mean {.code line = list(width = {val})}?",
-  "Did you mean {.code line = list(color = {val})}?",
-  "Did you mean {.code line = list(dash = {val})}?"
-)
-
-# Base message
-msg <- c(
-  "!" = "{.blue {paste(misplaced_args, collapse = ', ')}} {?is/are} misplaced or invalid and will be ignored."
-)
-
-# Build suggestions with map_chr
-msg <- c(
-  msg,
-  map_chr(seq_along(args_to_check), function(i) {
-    arg <- args_to_check[i]
-    if (arg %in% misplaced_args) {
-      val <- misplaced_values[[arg]]
-      val_expr <- paste0("{.blue ", deparse(val), "}")
-      gsub("{val}", val_expr, suggestion_templates[i], fixed = TRUE)
-    } else {
-      ""  # No suggestion for unmatched arg
-    }
-  }) %>% purrr::discard(~ .x == "")  # Drop empty strings
-)
+    args_to_check <- c("density", "lwd", "col", "lty")
+    suggestion_templates <- c(
+      "Did you mean {.code line = list(density = {val})}?",
+      "Did you mean {.code line = list(width = {val})}?",
+      "Did you mean {.code line = list(color = {val})}?",
+      "Did you mean {.code line = list(dash = {val})}?"
+    )
+    
+    # Base message
+    msg <- c(
+      "!" = "{.blue {paste(misplaced_args, collapse = ', ')}} {?is/are} misplaced or invalid and will be ignored."
+    )
+    
+    # Build suggestions with map_chr
+    msg <- c(
+      msg,
+      map_chr(seq_along(args_to_check), function(i) {
+        arg <- args_to_check[i]
+        if (arg %in% misplaced_args) {
+          val <- misplaced_values[[arg]]
+          val_expr <- paste0("{.blue ", deparse(val), "}")
+          gsub("{val}", val_expr, suggestion_templates[i], fixed = TRUE)
+        } else {
+          ""  # No suggestion for unmatched arg
+        }
+      }) %>% purrr::discard(~ .x == "")  # Drop empty strings
+    )
     cli::cli_div(theme = list(
-      span.blue = list(color = "blue")
+      span.blue = list(color = navy())
     ))
     cli::cli_warn(msg)
     cli::cli_end()
@@ -291,7 +291,8 @@ includeExclude <- function(.data, include = NULL, exclude = NULL) {
 
 
 notNeeded <- function(x, f) {
-  cat(paste0(crayon::blue(x), " is not required for ", f, " and will be ignored."))
+  cli::cli_inform(c("i" = "{.arg x} is not needed for {.fn f}.",
+  "i" = "It will be ignored."))
 }
 
 
@@ -478,150 +479,386 @@ add_shapes <- function(p = plotly::last_plot(), shapes) {
 #' ) %>%
 #'   add_smooth(method = "loess", ci = 0.9, line = list(color = "red", dash = "dash"))
 #' }
-add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
-data = NULL, method = "lm", line = T, ci = 0.95, stats) {
-  line <- amendLine(line, default = list(color = "blue", width = 2))
+# add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
+# data = NULL, method = "lm", line = T, ci = 0.95, stats) {
+#   line <- amendLine(line, default = list(color = blue(), width = 2))
+#   if (!is.null(data)) {
+#     if (is.null(x) | is.null(y)) stop("Missing x or y with data.\n")
+#     if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
+#     x <- model.frame(x, data)
+#     y <- model.frame(y, data)
+#   } else { # data is null
+#     if (!is.null(x) | !is.null(y)) {
+#       if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
+#       x <- model.frame(x, p$x$visdat[[1]]())
+#       y <- model.frame(y, p$x$visdat[[1]]())
+#     } else {
+#       length_x <- ifelse(length(p$x$attrs) > 1, 2, 1)
+#       x <- model.frame(p$x$attrs[[length_x]]$x, p$x$visdat[[1]]())[, 1]
+#       y <- model.frame(p$x$attrs[[length_x]]$y, p$x$visdat[[1]]())[, 1]
+#     }
+#   }
+#   if (length(x) != length(y)) {
+#     stop("Regression failed due to unequal x (n = ", length(x), ") and y (n = ", length(y), ").\n")
+#   }
+#   vals <- dplyr::bind_cols(x = x, y = y) %>% dplyr::rename("x" = 1, "y" = 2)
+#   mod <- tryCatch(suppressWarnings(do.call(method, args = list(formula = y ~ x, data = vals))),
+#   error = function(e) {
+#     NA
+#   }
+# )
+# if (any(is.na(mod))) {
+#   cli::cli_inform(c("i" = "Regression failed."))
+#   flush.console()
+#   return(p)
+# }
+
+# if (method == "lm") {
+#   inter <- round2(coef(mod)[1])
+#   slope <- round2(coef(mod)[2])
+#   if (is.na(summary(mod)$coefficients[1, 2])) {
+#     ci.inter <- rep("NA", 2)
+#   } else {
+#     ci.inter <- c(round2(confint(mod, level = ci)[1, 1]), round2(confint(mod, level = ci)[1, 2]))
+#   }
+#   if (is.na(summary(mod)$coefficients[2, 2])) {
+#     ci.slope <- rep("NA", 2)
+#   } else {
+#     ci.slope <- c(round2(confint(mod, level = ci)[2, 1]), round2(confint(mod, level = ci)[2, 2]))
+#   }
+
+#   regStat <- paste0(
+#     "R-squared = ", round2(summary(mod)$r.squared), "<br>",
+#     "Inter = ", inter, " (", ci * 100, "%CI ", ci.inter[1], " to ", ci.inter[2], ")", "<br>",
+#     "Slope = ", slope, " (", ci * 100, "%CI ", ci.slope[1], " to ", ci.slope[2], ")", "<br>"
+#   )
+
+#   p_data <- if(!is.null(data)) {data} else {plotly::plotly_data(p)}
+#   if (inherits(p_data, "PM_op_data")) { # this came from a PM_op object
+#     sumStat <- summary.PM_op(p_data,
+#       outeq = p_data$outeq[1],
+#       pred.type = p_data$pred.type[1],
+#       icen = p_data$icen[1],
+#       print = FALSE
+#     )
+#     uses_percent <- c("","%")[1 + as.numeric(stringr::str_detect(get_metric_info(sumStat$pe)$metric_types$bias, "%"))]
+#     Bias <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Bias, uses_percent,"<br>")
+#     Imprecision <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Imprecision, uses_percent,"<br>")
+#     # get_metric_info is in PM_op.R
+
+#     regStat <- paste0(
+#       regStat, "<br>",
+#       "Bias = ", Bias,
+#       "Imprecision  = ", Imprecision
+#     )
+#   }
+#   # regression line
+#   p <- p %>% plotly::add_lines(
+#     x = vals$x, y = round(fitted(mod),2),
+#     hoverinfo = "text",
+#     name = "Linear Regression",
+#     text = regStat,
+#     line = line
+#   )
+# } else { # loess
+#   p <- p %>% plotly::add_lines(
+#     x = vals$x, y = round(fitted(mod),2),
+#     hoverinfo = "none",
+#     name = "Loess Regression",
+#     line = line
+#   )
+# }
+
+# if (ci > 0) {
+#   zVal <- qnorm(0.5 + ci / 2)
+#   seFit <- predict(mod, newdata = vals, se = TRUE)
+#   upper <- round(seFit$fit + zVal * seFit$se.fit, 2)
+#   lower <- round(seFit$fit - zVal * seFit$se.fit,2)
+
+#   p <- p %>%
+#   plotly::add_ribbons(
+#     x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper,
+#     fillcolor = line$color,
+#     line = list(color = line$color),
+#     opacity = 0.2,
+#     name = paste0(ci * 100, "% CI"),
+#     hovertemplate = paste0(
+#       "Predicted: %{x:.2f}<br>", 100 * ci,
+#       "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"
+#     )
+#   )
+# }
+# if (missing(stats)) stats <- TRUE
+
+# if (is.logical(stats)) { # default formatting
+#   if (stats) {
+#     statPlot <- TRUE
+#   } else {
+#     statPlot <- FALSE
+#   }
+#   stats <- amendTitle("", default = list(size = 14, bold = FALSE, color = gray()))
+#   stats$x <- 0.8
+#   stats$y <- 0.1
+# } else { # formatting supplied, set text to "" (will be replaced later)
+#   stats$text <- ""
+#   if (is.null(stats$x)) {
+#     stats$x <- 0.8
+#   }
+#   if (is.null(stats$y)) {
+#     stats$y <- 0.1
+#   }
+#   stats <- amendTitle(stats, default = list(size = 14, bold = FALSE))
+#   statPlot <- TRUE
+# }
+
+# if (statPlot & method == "lm") { # add statistics
+#   p <- p %>%
+#   plotly::layout(annotations = list(
+#     x = stats$x,
+#     y = stats$y,
+#     text = regStat,
+#     font = stats$font,
+#     xref = "paper",
+#     yref = "paper",
+#     align = "left",
+#     showarrow = FALSE
+#   ))
+# }
+
+# return(p)
+# } # end add_smooth
+
+
+add_smooth <- function(
+  p = plotly::last_plot(),
+  x = NULL, y = NULL, data = NULL,
+  method = c("lm", "loess"),
+  span = 0.75,           # only used for loess
+  line = TRUE,           # TRUE -> default line spec; list(...) -> merge; FALSE -> no mean line
+  ci = 0.95,             # 0 to disable
+  stats = TRUE           # TRUE -> default annotation; list(x=..., y=..., font=...); FALSE -> none
+) {
+  method <- match.arg(method)
   
-  if (!is.null(data)) {
-    if (is.null(x) | is.null(y)) stop("Missing x or y with data.\n")
-    if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
-    x <- model.frame(x, data)
-    y <- model.frame(y, data)
-  } else { # data is null
-    if (!is.null(x) | !is.null(y)) {
-      if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
-      x <- model.frame(x, p$x$visdat[[1]]())
-      y <- model.frame(y, p$x$visdat[[1]]())
+  # ---- Resolve data / aesthetics -------------------------------------------------
+  get_xy <- function(p, data, x, y) {
+    # prefer user-supplied data and formulas
+    if (!is.null(data)) {
+      if (is.null(x) || is.null(y)) stop("With `data`, supply both `x` and `y` as formulas, e.g. x=~pred, y=~obs.")
+      if (!purrr::is_formula(x) || !purrr::is_formula(y)) stop("`x` and `y` must be formulas, e.g. ~pred.")
+      xd <- model.frame(x, data)[,1]
+      yd <- model.frame(y, data)[,1]
+      return(list(df = data.frame(x = xd, y = yd), src = "user"))
+    }
+    # otherwise use plotly_data and optional override formulas
+    pd <- plotly::plotly_data(p)
+    if (!is.null(x) || !is.null(y)) {
+      if (is.null(x) || is.null(y)) stop("If overriding on-plot data, supply both `x` and `y` as formulas.")
+      if (!purrr::is_formula(x) || !purrr::is_formula(y)) stop("`x` and `y` must be formulas, e.g. ~pred.")
+      xd <- model.frame(x, pd)[,1]
+      yd <- model.frame(y, pd)[,1]
+      return(list(df = data.frame(x = xd, y = yd), src = "override"))
+    }
+    # default: first trace mapping in plotly_data (robust across simple scatters)
+    # Try common names; if missing, error
+    cand_x <- c("x","X","x__","X__")
+    cand_y <- c("y","Y","y__","Y__")
+    cx <- cand_x[cand_x %in% names(pd)][1]
+    cy <- cand_y[cand_y %in% names(pd)][1]
+    if (is.na(cx) || is.na(cy)) stop("Could not infer x/y from `plotly_data(p)`. Supply `data`, `x`, and `y`.")
+    data.frame(x = pd[[cx]], y = pd[[cy]]) |> (\(df) list(df=df, src="plot"))()
+  }
+  
+  xy <- get_xy(p, data, x, y)
+  vals <- xy$df
+  
+  # ---- Clean data ----------------------------------------------------------------
+  # handle Date/POSIXct by temporarily numeric transform for modeling
+  x_is_date <- inherits(vals$x, "Date")
+  x_is_time <- inherits(vals$x, "POSIXct")
+  x_num <- if (x_is_date) as.numeric(vals$x) else if (x_is_time) as.numeric(vals$x) else vals$x
+  
+  keep <- is.finite(x_num) & is.finite(vals$y)
+  vals <- vals[keep, , drop = FALSE]
+  x_num <- x_num[keep]
+  
+  if (nrow(vals) < 2) {
+    warning("Not enough finite points to fit a smoother.")
+    return(p)
+  }
+  
+  # order by x for stable lines/ribbons
+  o <- order(x_num, method = "radix")
+  vals <- vals[o, , drop = FALSE]
+  x_num <- x_num[o]
+  
+  # build prediction grid (unique x to avoid duplicate-vertex artifacts)
+  x_pred_num <- unique(x_num)
+  newdata <- data.frame(x = x_pred_num)
+  
+  # ---- Fit model -----------------------------------------------------------------
+  fit_obj <- tryCatch({
+    if (method == "lm") {
+      stats::lm(y ~ x, data = data.frame(x = x_num, y = vals$y))
     } else {
-      length_x <- ifelse(length(p$x$attrs) > 1, 2, 1)
-      x <- model.frame(p$x$attrs[[length_x]]$x, p$x$visdat[[1]]())[, 1]
-      y <- model.frame(p$x$attrs[[length_x]]$y, p$x$visdat[[1]]())[, 1]
+      stats::loess(y ~ x, data = data.frame(x = x_num, y = vals$y), span = span, control = loess.control(surface = "direct"))
+    }
+  }, error = function(e) NULL)
+  
+  if (is.null(fit_obj)) {
+    cli::cli_inform(c("i" = "Regression failed."))
+    return(p)
+  }
+  
+  # ---- Predictions + CI ----------------------------------------------------------
+  have_ci <- is.numeric(ci) && ci > 0 && ci < 1
+  z <- stats::qnorm(0.5 + ci/2)
+  pred_fit <- pred_se <- NULL
+
+  if (method == "lm") {
+    # use predict.lm with se.fit for CI
+    pr <- stats::predict(fit_obj, newdata = newdata, se.fit = have_ci)
+    if (have_ci && is.list(pr)) {
+      pred_fit <- as.numeric(pr$fit)
+      pred_se  <- as.numeric(pr$se.fit)
+    } else {
+      pred_fit <- as.numeric(pr)
+      pred_se  <- NULL
+      have_ci  <- FALSE
+    }
+  } else {
+    # loess: se.fit is available with surface="direct" (we set above); if it fails, drop CI
+    pr <- tryCatch(stats::predict(fit_obj, newdata = newdata, se = have_ci), error = function(e) NULL)
+    if (is.null(pr)) {
+      pred_fit <- as.numeric(stats::predict(fit_obj, newdata = newdata))
+      pred_se <- NULL
+      have_ci <- FALSE
+    } else {
+      if (have_ci && is.list(pr)) {
+        pred_fit <- as.numeric(pr$fit)
+        pred_se  <- as.numeric(pr$se.fit)
+      } else {
+        pred_fit <- as.numeric(pr)
+        pred_se  <- NULL
+        have_ci  <- FALSE
+      }
     }
   }
-  if (length(x) != length(y)) {
-    stop("Regression failed due to unequal x (n = ", length(x), ") and y (n = ", length(y), ").\n")
-  }
-  vals <- dplyr::bind_cols(x = x, y = y)
-  mod <- tryCatch(suppressWarnings(do.call(method, args = list(formula = y ~ x, data = vals))),
-  error = function(e) {
-    NA
-  }
-)
-if (any(is.na(mod))) {
-  cli::cli_inform(c("i" = "Regression failed."))
-  flush.console()
-  return(p)
-}
-
-if (method == "lm") {
-  inter <- format(coef(mod)[1], digits = 3)
-  slope <- format(coef(mod)[2], digits = 3)
-  if (is.na(summary(mod)$coefficients[1, 2])) {
-    ci.inter <- rep("NA", 2)
+  
+  if (have_ci) {
+    upper <- pred_fit + z * pred_se
+    lower <- pred_fit - z * pred_se
   } else {
-    ci.inter <- c(format(confint(mod, level = ci)[1, 1], digits = 3), format(confint(mod, level = ci)[1, 2], digits = 3))
-  }
-  if (is.na(summary(mod)$coefficients[2, 2])) {
-    ci.slope <- rep("NA", 2)
-  } else {
-    ci.slope <- c(format(confint(mod, level = ci)[2, 1], digits = 3), format(confint(mod, level = ci)[2, 2], digits = 3))
+    upper <- lower <- NULL
   }
   
-  regStat <- paste0(
-    "R-squared = ", format(summary(mod)$r.squared, digits = 3), "<br>",
-    "Inter = ", inter, " (", ci * 100, "%CI ", ci.inter[1], " to ", ci.inter[2], ")", "<br>",
-    "Slope = ", slope, " (", ci * 100, "%CI ", ci.slope[1], " to ", ci.slope[2], ")", "<br>"
-  )
+  # restore x scale for plotting
+  x_plot <- if (x_is_date) as.Date(x_pred_num, origin = "1970-01-01") else if (x_is_time) as.POSIXct(x_pred_num, origin = "1970-01-01", tz = attr(vals$x, "tzone")) else x_pred_num
   
-  p_data <- plotly::plotly_data(p)
-  if (inherits(p_data, "PM_op_data")) { # this came from a PM_op object
-    sumStat <- summary.PM_op(p_data,
-      outeq = p_data$outeq[1],
-      pred.type = p_data$pred.type[1],
-      icen = p_data$icen[1]
-    )
+  # ---- Line style ----------------------------------------------------------------
+  
+  line_spec <- amendLine(line, default = list(color = blue(), width = 2))
+  
+  # ---- Stats text (lm only) ------------------------------------------------------
+  regStat <- NULL
+  if (identical(method, "lm")) {
+    s <- summary(fit_obj)
+    r2 <- s$r.squared
+    co  <- stats::coef(fit_obj)
+    inter <- unname(co[1])
+    slope <- unname(co[2])
+    ci_inter <- ci_slope <- c(NA_real_, NA_real_)
+    if (have_ci) {
+      ci_mat <- tryCatch(stats::confint(fit_obj, level = ci), error = function(e) NULL)
+      if (!is.null(ci_mat)) {
+        ci_inter <- ci_mat[1,]
+        ci_slope <- ci_mat[2,]
+      }
+    }
     regStat <- paste0(
-      regStat, "<br>",
-      "Bias = ", format(sumStat$pe$mwpe, digits = 3), "<br>",
-      "Imprecision  = ", format(sumStat$pe$bamwspe, digits = 3)
+      "R-squared = ", round2(r2), "<br>",
+      "Intercept = ", round2(inter), if (have_ci) paste0(" (", ci*100, "% CI ", round2(ci_inter[1]), " to ", round2(ci_inter[2]), ")") else "", "<br>",
+      "Slope = ", round2(slope), if (have_ci) paste0(" (", ci*100, "% CI ", round2(ci_slope[1]), " to ", round2(ci_slope[2]), ")") else ""
+    )
+    
+    p_data <- if(!is.null(data)) {data} else {plotly::plotly_data(p)}
+    
+    if (inherits(p_data, "PM_op_data")) { # this came from a PM_op object
+      sumStat <- summary.PM_op(p_data,
+        outeq = p_data$outeq[1],
+        pred.type = p_data$pred.type[1],
+        icen = p_data$icen[1],
+        print = FALSE
+      )
+      uses_percent <- c("","%")[1 + as.numeric(stringr::str_detect(get_metric_info(sumStat$pe)$metric_types$bias, "%"))]
+      Bias <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Bias, uses_percent,"<br>")
+      Imprecision <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Imprecision, uses_percent,"<br>")
+      # get_metric_info is in PM_op.R
+      
+      regStat <- paste0(
+        regStat, "<br>",
+        "Bias = ", Bias,
+        "Imprecision  = ", Imprecision
+      )
+    }
+  }
+  
+  # ---- Add mean line -------------------------------------------------------------
+  if (!identical(line_spec, FALSE)) {
+    p <- plotly::add_lines(
+      p,
+      x = x_plot, y = pred_fit,
+      name = if (method == "lm") "Linear Regression" else "Loess Regression",
+      hoverinfo = if (!is.null(regStat)) "text" else "x+y",
+      text = regStat %||% NULL,
+      line = line_spec,
+      inherit = FALSE,
+      showlegend = TRUE
     )
   }
   
-  p <- p %>% plotly::add_lines(
-    x = vals$x, y = fitted(mod),
-    hoverinfo = "text",
-    text = regStat,
-    line = line
-  )
-} else { # loess
-  p <- p %>% plotly::add_lines(
-    x = vals$x, y = fitted(mod),
-    hoverinfo = "none",
-    line = line
-  )
-}
-
-if (ci > 0) {
-  zVal <- qnorm(0.5 + ci / 2)
-  seFit <- predict(mod, newdata = vals, se = TRUE)
-  upper <- seFit$fit + zVal * seFit$se.fit
-  lower <- seFit$fit - zVal * seFit$se.fit
-  
-  p <- p %>%
-  plotly::add_ribbons(
-    x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper,
-    fillcolor = line$color,
-    line = list(color = line$color),
-    opacity = 0.2,
-    name = dplyr::case_when(
-      method == "lm" ~ "Linear Regression",
-      method == "loess" ~ "Loess Regression"
-    ),
-    hovertemplate = paste0(
-      "Predicted: %{x:.2f}<br>", 100 * ci,
-      "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"
+  # ---- Add CI ribbon -------------------------------------------------------------
+  if (have_ci) {
+    p <- plotly::add_ribbons(
+      p,
+      x = x_plot,
+      y = pred_fit, ymin = lower, ymax = upper,
+      name = paste0(round(ci*100), "% CI"),
+      fillcolor = if (is.list(line_spec) && !is.null(line_spec$color)) line_spec$color else default_line$color,
+      line = list(color = if (is.list(line_spec) && !is.null(line_spec$color)) line_spec$color else default_line$color),
+      opacity = 0.2,
+      hovertemplate = paste0(
+        "%{x}<br>",
+        "Fit: %{y:.3f}<br>",
+        "CI Lower: %{ymin:.3f}<br>",
+        "CI Upper: %{ymax:.3f}<extra>%{fullData.name}</extra>"
+      ),
+      inherit = FALSE,
+      showlegend = TRUE
     )
-  )
-}
-if (missing(stats)) stats <- TRUE
-
-if (is.logical(stats)) { # default formatting
-  if (stats) {
-    statPlot <- TRUE
-  } else {
-    statPlot <- FALSE
   }
-  stats <- amendTitle("", default = list(size = 14, bold = FALSE))
-  stats$x <- 0.8
-  stats$y <- 0.1
-} else { # formatting supplied, set text to "" (will be replaced later)
-  stats$text <- ""
-  if (is.null(stats$x)) {
-    stats$x <- 0.8
+  
+  # ---- Optional stats annotation (lm only) ---------------------------------------
+  if (isTRUE(stats) && !is.null(regStat) || (is.list(stats) && !is.null(regStat))) {
+    if (isTRUE(stats)) {
+      stats <- list(x = 0.8, y = 0.1, font = list(color = "black", family = "Arial", size = 14))
+    } else {
+      if (is.null(stats$x)) stats$x <- 0.8
+      if (is.null(stats$y)) stats$y <- 0.1
+      if (is.null(stats$font)) stats$font <- list(family = "Arial", size = 14)
+    }
+    p <- plotly::layout(
+      p,
+      annotations = list(
+        x = stats$x, y = stats$y, xref = "paper", yref = "paper",
+        text = regStat, align = "left", showarrow = FALSE, font = stats$font
+      )
+    )
   }
-  if (is.null(stats$y)) {
-    stats$y <- 0.1
-  }
-  stats <- amendTitle(stats, default = list(size = 14, bold = FALSE))
-  statPlot <- TRUE
+  
+  p
 }
 
-if (statPlot & method == "lm") { # add statistics
-  p <- p %>%
-  plotly::layout(annotations = list(
-    x = stats$x,
-    y = stats$y,
-    text = regStat,
-    font = stats$font,
-    xref = "paper",
-    yref = "paper",
-    align = "left",
-    showarrow = FALSE
-  ))
-}
-
-return(p)
-}
 
 #' @title Export plotly plot
 #' @description
@@ -777,6 +1014,7 @@ export_plotly <- function(p, file, width = NULL, height = NULL,
 #' "merge" is used, layout options found later in the sequence of plots
 #' will override options found earlier in the sequence. This argument also
 #' accepts a numeric vector specifying which plots to consider when merging.
+#' @param print If `TRUE`, will print the plotly object and return it. If `FALSE`, will only return the plotly object.
 #' @return A plot and plotly object combining all the plots in `...`,
 #' which can be further modified.
 #' @export
@@ -800,9 +1038,18 @@ sub_plot <- function(...,
   shareY = FALSE,
   titleX = shareX,
   titleY = shareY,
-  which_layout = "merge") {
+  which_layout = "merge",
+  print = TRUE) {
     # number of plots
     plots <- list(...)
+    if (length(plots) == 1){
+      if (inherits(plots, "list")){ # a list of plotly objects 
+        plots <- plots %>% purrr::list_flatten()
+        if (!all(purrr::map_lgl(plots, inherits, "plotly"))) {
+          cli::cli_abort(c("x" = "All elements in the list must be plotly objects."))
+        }
+      }
+    }
     n_plots <- length(plots)
     if (nrows > n_plots) nrows <- n_plots # sanity check
     
@@ -828,6 +1075,8 @@ sub_plot <- function(...,
       purrr::modify_in(p, list("x", "layoutAttrs", length(p$x$layoutAttrs), "title", "text"), \(p) "")
     })
     
+    
+    
     # calculate relative x and y based on plot number and rows
     if (!is.null(titles) && length(titles) == 2) { # we have x and y
       x_pos <- titles[1]
@@ -848,6 +1097,9 @@ sub_plot <- function(...,
       } else {
         rev(seq(y_adj, 1, y_increment))
       }
+      
+      x_list <- x_list + margin
+      y_list <- y_list + margin
       
       plot_coords <- expand.grid(col = x_list, row = y_list) # first arg changes fastest
       
@@ -871,8 +1123,8 @@ sub_plot <- function(...,
       which_layout = which_layout
     ) %>%
     plotly::layout(annotations = plot_annotations)
-    print(p)
-    return(p)
+    if (print) print(p)
+    return(invisible(p))
   }
   
   
@@ -916,8 +1168,9 @@ sub_plot <- function(...,
   #' Generate list of default color names.
   #' @details
   #' Used for Pmetrics plots. The following list is recycled as necessary to generate the
-  #' requested number of colors.
-  #' `c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")`
+  #' requested number of colors: 
+  #' `c(red(), green(), blue(), brown(), black(), purple(), pink(), gold(), orange(), gray())`.
+  #' Each value is a function that returns a color name.
   #' @param n The number of colors to return from the list.
   #' @return A character vector of color names, which is recycled as needed.
   #'
@@ -926,11 +1179,560 @@ sub_plot <- function(...,
   #' \dontrun{
   #' getDefaultColors(6)
   #' }
-  
   #' @author Michael Neely
   getDefaultColors <- function(n) {
-    choices <- c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")
+    choices <- c(red(), green(), blue(), brown(), black(),
+    purple(), pink(), gold(), orange(), gray())
+    #choices <- c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")
     selection <- rep(choices, n)[1:n]
     return(selection)
   }
   
+  ## CLICK
+  #' @title Click on plotly plot to highlight traces
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Adds click functionality to a plotly plot to highlight traces when clicked.
+  #' @details
+  #' This function modifies a plotly plot to allow clicking on traces to highlight them.
+  #' Clicking on a trace will highlight it in orange (default) and dim all other traces.
+  #' Clicking on the same trace again will deselect it and restore the original colors.
+  #' Clicking on the background will also restore all traces to their original colors.
+  #' The function uses the `htmlwidgets::onRender` function from the `htmlwidgets` package to add
+  #' JavaScript code that handles the click events on the plotly plot.
+  #' @param p The plotly plot to which the click functionality should be added.
+  #' Default is the `plotly::last_plot()`.
+  #' @param higlight_color The color to use for traces that are highlighted. Colors for non-highlighted 
+  #' traces will be preserved but dimmed to 20% opacity. Default highlight color is `orange()`.
+  #' @export
+  #' @author Michael Neely
+  click_plot <- function(p, highlight_color = orange()) {
+    p <- htmlwidgets::onRender(p, sprintf("
+function(el, x) {
+  const highlight = '%s';
+  let selectedIndex = null;
+  let lastClickWasPoint = false;
+    
+  // Deep copy of all original marker objects
+  const originalMarkers = x.data.map(trace => JSON.parse(JSON.stringify(trace.marker || {})));
+    
+  el.on('plotly_click', function(data) {
+    lastClickWasPoint = true;
+    const i = data.points[0].fullData.index;
+    
+    if (selectedIndex === i) {
+      // Deselect: restore all original marker settings
+      for (let j = 0; j < x.data.length; j++) {
+        Plotly.restyle(el.id, { marker: [originalMarkers[j]] }, [j]);
+      }
+      selectedIndex = null;
+    } else {
+      // Dim all traces
+      for (let j = 0; j < x.data.length; j++) {
+        const dimmedMarker = Object.assign({}, originalMarkers[j], { opacity: 0.2 });
+        Plotly.restyle(el.id, { marker: [dimmedMarker] }, [j]);
+      }
+    
+      // Highlight selected trace
+      const highlightedMarker = Object.assign({}, originalMarkers[i], {
+        color: highlight,
+        opacity: 1
+      });
+      Plotly.restyle(el.id, { marker: [highlightedMarker] }, [i]);
+    
+      selectedIndex = i;
+    }
+  });
+    
+  // Background click restores everything
+  el.addEventListener('click', function() {
+    setTimeout(() => {
+      if (!lastClickWasPoint) {
+        for (let j = 0; j < x.data.length; j++) {
+          Plotly.restyle(el.id, { marker: [originalMarkers[j]] }, [j]);
+        }
+        selectedIndex = null;
+      }
+      lastClickWasPoint = false;
+    }, 0);
+  });
+    
+  // Optional: disable right-click menu
+  el.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+}
+", highlight_color))
+    return(p)
+  }
+  
+  
+  
+  #### RGBA to RGB
+  #' @title Convert RGBA to RGB
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Converts a CSS `rgba()` string to an RGB color string.
+  #' @param rgba_str A string in the format `rgba(r, g, b, a)` where r, g, and b are
+  #' integers between 0 and 255, and a is a float between 0 and 1.
+  #' @param alpha Optional numeric value to replace the alpha channel in the rgba string.
+  #' @export
+  #' 
+  rgba_to_rgb <- function(rgba_str, alpha = NULL) {
+    # Extract the numeric parts from the rgba() string
+    if(is.na(rgba_str) | stringr::str_detect(rgba_str, "#")) return(rgba_str)
+    nums <- as.numeric(unlist(regmatches(
+      rgba_str,
+      gregexpr("[0-9.]+", rgba_str)
+    )))
+    if (length(nums) == 0) return(rgba_str)
+    if (!is.null(alpha)) {
+      nums[4] <- alpha #replace alpha if specified
+    } 
+    
+    if (length(nums) != 4) stop("RGBA string must have 4 numbers.")
+    
+    r <- nums[1] / 255
+    g <- nums[2] / 255
+    b <- nums[3] / 255
+    a <- nums[4]              # already 0–1 in CSS rgba()
+    
+    grDevices::rgb(r, g, b, alpha = a)
+  }
+  
+  
+  #' @title Convert a plotly object to ggplot
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #' Converts a plotly object to a ggplot object. It is the inverse of [plotly::ggplotly()].
+  #' @details
+  #' This function extracts the data and layout from a plotly object
+  #' and constructs a ggplot object with the same data.
+  #' It supports various trace types including scatter, bar, and line traces.
+  #' @param p A plotly object to convert.
+  #' @param print If `TRUE` (the default), will print the ggplot object and invisibly return it.
+  #' @return A ggplot object.
+  #' @export
+  #' 
+  plotlygg <- function(p, print = TRUE) {
+    if (inherits(p, "trelliscopejs_widget")) {
+      cli::cli_abort(c("x" = "Plotting data with {.arg overlay = TRUE} results in a {.cls treliscopejs_widget} object, which cannot be converted to ggplot.",
+      "i" = "Remake your plot with {.arg overlay = FALSE} and use {.arg include} or {.arg exclude} as needed."))
+    }
+    if (is.list(p) && !is.null(p$p) && inherits(p$p, "plotly")) {
+      p <- p$p
+    }
+
+    if (!inherits(p, "plotly")){
+      cli::cli_abort(c("x" = "The input must be a plotly object."))
+    }
+    
+    # Standardize to a built plotly object that *does* expose $x$data traces
+    pb <- plotly::plotly_build(p)
+    traces <- pb$x$data
+    lay <- pb$x$layout %||% list()
+    
+    if (length(traces) == 0) stop("No trace data found after plotly_build().")
+    
+    ####### HELPER FUNCTIONS ##########
+    # safe NULL coalesce
+    `%||%` <- function(a, b) if (!is.null(a) & length(a)>0) a else b
+    
+    
+    # map plotly shapes to ggplot2
+    plotly_shapes_to_gg <- function(shape){
+      dplyr::case_when(
+        grepl("circle", shape) ~ 21,
+        grepl("square", shape) ~ 22,
+        grepl("diamond",shape) ~ 23,
+        grepl("triangle-up", shape) ~ 24,
+        .default = 21
+      )
+    }
+    
+    # map plotly line dash to ggplot2
+    plotly_line_dash_to_gg <- function(dash) {
+      dplyr::case_when(
+        grepl("solid", dash) ~ "solid",
+        grepl("dash", dash) ~ "dashed",
+        grepl("dot",  dash) ~ "dotted",
+        grepl("dashdot", dash) ~ "dotdash",
+        grepl("longdash", dash) ~ "longdash",
+        .default = "solid"
+      )
+    }
+    
+    
+    
+    ####### END HELPER FUNCTIONS ##########
+    
+    
+    # Prepare empty ggplot
+    g <- ggplot2::ggplot() + ggplot2::theme_minimal()
+    
+    # Bar position from layout
+    bar_position <- switch(lay$barmode %||% "",
+    "stack" = "stack",
+    "group" = "dodge",
+    "relative" = "stack",
+    "overlay")  # ggplot's default is "stack"; "overlay" ~ "identity"
+    
+    # Title
+    if (!is.null(lay$title) && !is.null(lay$title$text)) {
+      
+      title_text <- lay$title$text %>% stringr::str_replace_all("</*b>", "")
+      title_format <- do.call(element_text, list(face = ifelse(lay$title$font$bold, "bold", "plain"),
+      size = lay$title$font$size,
+      family = lay$title$font$family))
+      
+    } else if (is.character(lay$title)) {
+      title_text <- lay$title %>% stringr::str_replace_all("</*b>", "")
+      title_format <- do.call(element_text, list(face = "bold", size = 16, family = "Arial"))
+    }
+    
+    g <- g + ggplot2::ggtitle(title_text) + theme(title = title_format)
+    
+    # Ranges
+    if (!is.null(lay$xaxis) && !is.null(lay$xaxis$range)) {
+      range_x <- c(lay$xaxis$range[1], lay$xaxis$range[2])
+    } else {
+      range_x <- NULL
+    }
+    if (!is.null(lay$yaxis) && !is.null(lay$yaxis$range)) {
+      range_y <- c(lay$yaxis$range[1], lay$yaxis$range[2])
+    } else {
+      range_y <- NULL
+    }
+    g <- g + ggplot2::coord_cartesian(
+      xlim = range_x,
+      ylim = range_y
+    )
+    
+    # log scale the y
+    if (!is.null(lay$yaxis) && !is.null(lay$yaxis$type) && lay$yaxis$type == "log") {
+      log_y <- TRUE
+      g <- g + ggplot2::scale_y_log10()
+    } else {
+      log_y <- FALSE
+    }
+    
+    
+    
+    # Iterate traces
+    for (i in seq_along(traces)) {
+      tr <- traces[[i]]
+      ttype <- tr$type %||% "scatter"
+      
+      # Common aesthetics
+      tname <- as.character(tr$name) %||% paste0("trace", i)
+      line_opacity <- tr$line$opacity %||% 1
+      line_color   <- tr$line$color   %||% tr$marker$color %||% tr$marker$line$color %||% "dodgerblue" %>% rgba_to_rgb()
+      line_width <- tr$line$width * 0.5 %||% 0.5
+      line_dash <- plotly_line_dash_to_gg(tr$line$dash) %||% "solid"
+      marker_opacity <- tr$marker$opacity %||% 1
+      marker_fill_color   <- tr$marker$color %||% tr$fillcolor %||% "dodgerblue" %>% rgba_to_rgb() # fill color
+      marker_size <- tr$marker$size/3 %||% 3 
+      marker_shape <- plotly_shapes_to_gg(tr$marker$symbol)
+      marker_line_color <- tr$marker$line$color %||% tr$marker$color %||% "#000000FF" %>% rgba_to_rgb() # stroke color
+      marker_line_width <- tr$marker$line$width * 0.5 %||% 0.5 # stroke width
+      
+      
+      
+      # Build a small data.frame per trace (avoid recycling issues)
+      df <- NULL
+      
+      if (ttype %in% c("scatter", "scattergl")) {
+        # plotly scatter may have x or y missing; handle gracefully
+        x <- tr$x %||% seq_along(tr$y %||% numeric())
+        y <- tr$y %||% seq_along(tr$x %||% numeric())
+        df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE) #%>% filter(x >= min_x, x <= max_x, y >= min_y, y <= max_y)
+        
+        mode <- tr$mode %||% "markers"
+        has_lines   <- grepl("lines",   mode)
+        has_markers <- grepl("markers", mode)
+        
+        if (has_lines) {
+          if (stringr::str_detect(tname, "CI|ribbon")){
+            g <- g + ggplot2::geom_polygon(
+              data = df,
+              ggplot2::aes(x = x, y = y),
+              linewidth = NULL,
+              fill = line_color,
+              alpha = 0.2 # always set to 0.2 for ribbons
+            )
+            
+          } else {
+            g <- g + ggplot2::geom_line(
+              data = df,
+              ggplot2::aes(x = x, y = y),
+              linewidth = line_width,
+              color = line_color,
+              alpha = line_opacity,
+              linetype = line_dash
+            )
+            
+          }
+          
+        }
+        if (has_markers) {
+          g <- g + ggplot2::geom_point(
+            data = df,
+            ggplot2::aes(x = x, y = y), 
+            size = marker_size,
+            shape = marker_shape,
+            fill = marker_fill_color,
+            alpha = marker_opacity,
+            stroke = marker_line_width,
+            color = marker_line_color
+          )
+        }
+        if (!has_lines && !has_markers) {
+          # Fallback
+          g <- g + ggplot2::geom_point(
+            data = df,
+            ggplot2::aes(x = x, y = y),
+            color = marker_fill_color
+          )
+        }
+        
+      } else if (ttype == "bar") {
+        x <- tr$x
+        y <- tr$y
+        if (is.null(x) || is.null(y)) next
+        df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE)
+        
+        g <- g + ggplot2::geom_col(
+          data = df,
+          ggplot2::aes(x = x, y = y, fill = trace),
+          alpha = alpha_val,
+          position = bar_position
+        )
+        
+        # If a single fixed color is provided, set scale manually
+        if (!is.na(fill_col)) {
+          g <- g + ggplot2::scale_fill_manual(values = setNames(fill_col, tname))
+        }
+        
+      } else if (ttype == "box") {
+        # Plotly box can be vertical (y values, name is group) or horizontal (orientation='h', x values)
+        orient <- tr$orientation %||% "v"
+        if (orient == "h") {
+          vals <- tr$x
+          if (is.null(vals)) next
+          df <- data.frame(group = tname, val = vals, stringsAsFactors = FALSE)
+          g <- g + ggplot2::geom_boxplot(
+            data = df,
+            ggplot2::aes(x = group, y = val),
+            alpha = alpha_val,
+            outlier.shape = NA,
+            fill = if (is.na(fill_col)) NULL else fill_col,
+            color = if (is.na(line_col)) NULL else line_col
+          )
+        } else {
+          vals <- tr$y
+          if (is.null(vals)) next
+          df <- data.frame(group = tname, val = vals, stringsAsFactors = FALSE)
+          g <- g + ggplot2::geom_boxplot(
+            data = df,
+            ggplot2::aes(x = group, y = val),
+            alpha = alpha_val,
+            outlier.shape = NA,
+            fill = if (is.na(fill_col)) NULL else fill_col,
+            color = if (is.na(line_col)) NULL else line_col
+          )
+        }
+        
+      } else {
+        # Unsupported trace: try to plot points if x/y present
+        x <- tr$x; y <- tr$y
+        if (!is.null(x) && !is.null(y)) {
+          df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE)
+          g <- g + ggplot2::geom_point(
+            data = df,
+            ggplot2::aes(x = x, y = y),
+            alpha = alpha_val,
+            color = if (is.na(fill_col)) NULL else fill_col
+          )
+        } else {
+          warning("Trace ", i, " of type '", ttype, "' not supported; skipping.")
+        }
+      }
+    }
+    
+    # Axes titles (best effort)
+    if (!is.null(lay$xaxis) && !is.null(lay$xaxis$title)) {
+      if (is.list(lay$xaxis$title)){
+        x_text <- lay$xaxis$title$text %>% stringr::str_replace_all("</*b>", "")
+        x_format <- do.call(element_text, list(face = ifelse(lay$xaxis$title$font$bold, "bold", "plain"),
+        size = lay$xaxis$title$font$size,
+        family = lay$xaxis$title$font$family))
+        
+      } else {
+        x_text <- lay$xaxis$title %>% stringr::str_replace_all("</*b>", "")
+        x_format <- do.call(element_text, list(face = "bold", size = 16, family = "Arial"))
+      }
+      
+      g <- g + ggplot2::xlab(x_text) + theme(axis.title.x = x_format)
+    }
+    
+    if (!is.null(lay$yaxis) && !is.null(lay$yaxis$title)) {
+      if (is.list(lay$yaxis$title)){
+        y_text <- lay$yaxis$title$text %>% stringr::str_replace_all("</*b>", "")
+        y_format <- do.call(element_text, list(face = ifelse(lay$yaxis$title$font$bold, "bold", "plain"),
+        size = lay$yaxis$title$font$size ,
+        family = lay$yaxis$title$font$family))
+        
+      } else {
+        y_text <- lay$yaxis$title %>% stringr::str_replace_all("</*b>", "")
+        y_format <- do.call(element_text, list(face = "bold", size = 16, family = "Arial"))
+      }
+      
+      g <- g + ggplot2::ylab(y_text) + theme(axis.title.y = y_format)
+    }
+    
+    
+    ####### Legends and annotations
+    
+    
+    # Legend (only used for groups in plot.PM_data)
+    if (lay$showlegend){
+      group_df <- traces %>% map(~c(
+        line_color = .x$line$color   %||% .x$marker$color %||% .x$marker$line$color %||% "dodgerblue" %>% rgba_to_rgb(),
+        line_width = .x$line$width * 0.5 %||% 0.5,
+        line_dash = plotly_line_dash_to_gg(.x$line$dash),
+        line_opacity = .x$line$opacity %||% 1,
+        marker_fill_color = .x$marker$color %||% .x$fillcolor %||% "dodgerblue" %>% rgba_to_rgb(), # fill color
+        marker_size = .x$marker$size / 3 %||% 3, 
+        marker_shape = plotly_shapes_to_gg(.x$marker$symbol),
+        marker_opacity = .x$marker$opacity %||% 1,
+        marker_line_color = .x$marker$line$color %||% .x$marker$color %||% "#000000FF" %>% rgba_to_rgb(), # stroke color
+        marker_line_width = .x$marker$line$width * 0.5 %||% 0.5, # stroke width
+        group = as.character(.x$name))) %>% 
+        bind_rows() %>% 
+        mutate(marker_shape = as.integer(marker_shape)) %>% 
+        mutate(across(contains(c("width", "size", "opacity")), as.numeric)) %>%
+        distinct()
+        
+        
+        if (is.null(lay$legend)) {
+          lay$legend <- list(x = 1, y = 1) # default position
+        }
+        max_chr <- max(nchar(group_df$group)) + 1
+        
+        for(i in seq_along(group_df$group)) {
+          g <- g +
+          ggplot2::annotation_custom(
+            grob = grid::pointsGrob(
+              x = grid::unit(lay$legend$x - (0.012 * max_chr), "npc"),
+              y = grid::unit(lay$legend$y - (i * 0.03), "npc"),
+              pch = group_df$marker_shape[i],
+              size = grid::unit(group_df$marker_size[i], "mm"),
+              gp = grid::gpar(
+                col = group_df$marker_line_color[i],
+                fill = group_df$marker_fill_color[i],
+                alpha = group_df$marker_opacity[i],
+                lwd = group_df$marker_line_width[i])
+              )
+            ) +
+            ggplot2::annotation_custom(
+              grob = grid::linesGrob(
+                x = grid::unit(
+                  c(lay$legend$x - (0.012 * max_chr) - 0.012,
+                  lay$legend$x - (0.012 * max_chr) + 0.012), 
+                  "npc"),
+                  y = grid::unit(
+                    c(lay$legend$y - (i * 0.03),
+                    lay$legend$y - (i * 0.03)), 
+                    "npc"),
+                    gp = grid::gpar(
+                      col = group_df$line_color[i],
+                      lwd = group_df$line_width[i],
+                      lty = group_df$line_dash[i],
+                      alpha = group_df$line_opacity[i]
+                    )
+                  )
+                ) +
+                ggplot2::annotation_custom(
+                  grob = grid::textGrob(
+                    label = group_df$group[i],
+                    x = grid::unit(lay$legend$x - (0.01 * max_chr), "npc"),
+                    y = grid::unit(lay$legend$y - (i * 0.03), "npc"),
+                    hjust = 0,
+                    gp = grid::gpar(
+                      fontsize = 10,
+                      col = "black"
+                    )
+                  )
+                )
+                
+              }
+            }
+            
+            
+            
+            
+            # grid
+            if (is.null(lay$xaxis$gridwidth) || lay$xaxis$gridwidth == 0){
+              g <- g + theme(panel.grid = element_blank())
+            }
+            
+            # shapes (reference lines)
+            if (!is.null(lay$shapes) && length(lay$shapes) > 0) {
+              shapes <- lay$shapes
+              for (shape in shapes) {
+                if (shape$type == "line") {
+                  g <- g + ggplot2::annotation_custom(
+                    grid::linesGrob(
+                      x = grid::unit(c(shape$x0, shape$x1), "npc"),
+                      y = grid::unit(c(shape$y0, shape$y1), "npc"),
+                      gp = grid::gpar(
+                        col = shape$line$color %||% "grey",
+                        lwd = shape$line$width  %||% 1,
+                        lty = plotly_line_dash_to_gg(shape$line$dash)
+                      )
+                    )
+                  )
+                } else if (shape$type == "rect") {
+                  g <- g + ggplot2::annotation_custom(
+                    grid::rectGrob(
+                      x = grid::unit(shape$x0, "npc"),
+                      y = grid::unit(shape$y0), "npc"),
+                      width = grid::unit(shape$x1 - shape$x0, "npc"),
+                      height = grid::unit(shape$y1 - shape$y0, "npc"),
+                      gp = grid::gpar(
+                        fill = shape$fillcolor %||% "transparent",
+                        col = shape$line$color %||% "black",
+                        lwd = shape$line$width %||% 1,
+                        alpha = shape$opacity %||% 0.2
+                      )
+                    )
+                  }
+                }
+              }
+              
+              # annotations
+              if (!is.null(lay$annotations) && length(lay$annotations) > 0) {
+                annots <- lay$annotations
+                for (annot in annots) {
+                  g <- g + ggplot2::annotation_custom(
+                    grid::textGrob(
+                      label = stringr::str_replace_all(annot$text, "<br>", "\n"),
+                      x = grid::unit((annot$x - 0.3) %||% 0.5, "npc"),
+                      y = grid::unit(annot$y %||% 0.5, "npc"),
+                      hjust = 0,
+                      vjust = 0,
+                      gp = grid::gpar(
+                        fontsize = annot$font$size / 1.4 %||% 10,
+                        col = annot$font$color %||% "black",
+                        fontfamily = annot$font$family %||% "Arial"
+                      )
+                    )
+                  )
+                }
+              }
+              
+              g <- g + theme(axis.text = element_text(size = 10))
+              
+              if(print) print(g)
+              return(invisible(g))
+            }

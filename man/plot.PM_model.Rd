@@ -4,7 +4,7 @@
 \alias{plot.PM_model}
 \title{Plot PM_model objects}
 \usage{
-\method{plot}{PM_model}(x, marker = TRUE, line = TRUE, explicit, implicit, ...)
+\method{plot}{PM_model}(x, marker = TRUE, line = TRUE, explicit, implicit, print = TRUE, ...)
 }
 \arguments{
 \item{x}{The name of an \link{PM_model} object.}
@@ -50,10 +50,12 @@ compartments. For each row, the \code{from} column contains the compartment numb
 \code{to} column contains the compartment number of the arrow destination. Use 0 to indicate
 a destination to the external sink. e.g., \code{implicit = data.frame(from = 2, to = 4)}}
 
+\item{print}{If \code{TRUE}, will print the object and return it. If \code{FALSE}, will only return the object.}
+
 \item{...}{Not used.}
 }
 \value{
-Plots the object.
+A plot object of the model.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

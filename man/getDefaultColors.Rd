@@ -19,8 +19,9 @@ Generate list of default color names.
 }
 \details{
 Used for Pmetrics plots. The following list is recycled as necessary to generate the
-requested number of colors.
-\code{c("red", "green", "blue", "brown", "black", "purple", "pink", "gold", "orange", "grey60")}
+requested number of colors:
+\code{c(red(), green(), blue(), brown(), black(), purple(), pink(), gold(), orange(), gray())}.
+Each value is a function that returns a color name.
 }
 \examples{
 \dontrun{

@@ -19,7 +19,7 @@ A data frame with two columns named targets and n, of class \emph{PMpta.targ}.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
 Generates an object of class \emph{PMpta.targ} which can
-be used in the \link{makePTA} method for \link{PM_pta} or \link{PM_sim} for targets sampled from a distribution.
+be used in the \verb{$new()} method for \link{PM_pta} or \verb{$pta()} method for \link{PM_sim} for targets sampled from a distribution.
 }
 \examples{
 \dontrun{
@@ -27,5 +27,5 @@ makePTAtarget(mic1)
 }
 }
 \seealso{
-\link{makePTA}
+\link{PM_pta}
 }
