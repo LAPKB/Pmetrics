@@ -31,7 +31,10 @@ object, e.g \code{PM_result$final}.}
 \item{formula}{An optional formula of the form \code{y ~ x}, where \code{y} and \code{x}
 are two model parameters to plot in a 3-dimensional bivariate plot.  See details.}
 
-\item{line}{\verb{r template("line")} The \code{line} argument is used to format:
+\item{line}{Controls characteristics of lines. This argument maps to plotly line attributes. \code{TRUE} will plot default lines. \code{FALSE} will suppress lines. If a list, can control many line characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > line to see all the ways the line can be formatted. Most common will be:  \itemize{ \item{\code{color}} Line color. \item{\code{dash}} Plotting character. See \code{plotly::schema()}, traces > scatter >  attributes > line > dash > values. \item{\code{width}} Thickness in points. }
+
+Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
+The \code{line} argument is used to format:
 \itemize{
 \item the density line drawn over an NPAG \link{PM_final} object. Default is \code{FALSE},
 which means no density line will be drawn. Use \code{TRUE} to draw the default line,
@@ -78,29 +81,47 @@ scale x-axis.  Ignored for NPAG output.}
 
 \item{legend}{Ignored for this plot.}
 
-\item{log}{\verb{r template("log")}}
+\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type.
 
-\item{grid}{\verb{r template("grid")}}
+Example: \code{log = T}}
 
-\item{xlab}{\verb{r template("xlab")} Default is the name of the plotted x-variable.
+\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized.
+
+Examples: \itemize{ \item{\code{grid = F}} \item{\code{grid = list(gridcolor = "black", gridwidth = 2)}} }}
+
+\item{xlab}{Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element, either on its own or within the font list. The default for \code{bold} is \code{TRUE}.
+
+Examples: \itemize{ \item{\code{xlab = "Time (h)"}} \item{\code{xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))}} \item{\code{xlab = list(text = "Time", font = list(bold = T))}} }
+Default is the name of the plotted x-variable.
 Formatting can be controlled, but the text is recommended to not be changed.}
 
-\item{ylab}{\verb{r template("ylab")} Default is "Probability" for univariate plots,
+\item{ylab}{Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See \code{xlab} for details. If \code{xlab} is specified as a list with formatting, and \code{ylab} is simply a character label, then the formatting for the  \code{xlab} will be applied to the \code{ylab}. To format \code{ylab} independently, specify a formatting list as for \code{xlab}.
+
+Default is "Probability" for univariate plots,
 and the name of the plotted y-variable for bivariate plots.
 Formatting can be controlled, but the text is recommended to not be changed.}
 
 \item{zlab}{Only for bivariate plots. Default is "Probability". Can be a list
 to control formatting or default text, as for \code{xlab} and \code{zlab}.}
 
-\item{title}{\verb{r template("title")} Default is to have no title on plots.}
+\item{title}{Plot title. This argument maps to the the title layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the plot title, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > title to see other ways to customize the title using lists as additional arguments. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element. The default for \code{bold} is \code{TRUE}.
 
-\item{xlim}{\verb{r template("xlim")}}
+Examples: \itemize{ \item{\code{title = "Observed vs. Predicted"}} \item{\code{title = list(text = "Raw Data", font = list(color = "red", family = "Arial", size = 10, bold = T))}} }
+Default is to have no title on plots.}
 
-\item{ylim}{\verb{r template("ylim")}}
+\item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range.
+
+Example: \code{xlim = c(0,1)}}
+
+\item{ylim}{Limits of the y axis as a vector.   This argument maps to the   the yaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > range.
+
+Example: \code{ylim = c(0,100)}}
 
 \item{print}{If \code{TRUE}, will print the plotly object and return it. If \code{FALSE}, will only return the plotly object.}
 
-\item{...}{\verb{r template("dotsPlotly")}}
+\item{...}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
+
+Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
 }
 \value{
 Plots the object.
