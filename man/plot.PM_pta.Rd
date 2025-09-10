@@ -37,18 +37,18 @@ an intersection is present due to creation of the object with multiple target ty
 plot one of the individual PTAs, e.g. \code{at = 2} to plot the second PTA rather than the
 intersection of all the PTAs.}
 
-\item{include}{\verb{r template("include")}}
+\item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
 
-\item{exclude}{\verb{r template("exclude")}}
+\item{exclude}{A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)}
 
 \item{type}{Character vector controlling type of plot.
 Default is "pta", which plots proportion with success on the y-axis and target on the x-axis.
 The other choice is "pdi", which plots the median pdi (pharmacodynamic index), e.g. AUC/MIC, on the
 y-axis, and target on the x-axis.}
 
-\item{mult}{\verb{r template("mult")}}
+\item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}
 
-\item{outeq}{\verb{r template("outeq")}}
+\item{outeq}{Which output equation to plot. Default is 1.}
 
 \item{line}{Controls characteristics of lines.
 This argument maps to the plotly line object.
@@ -109,30 +109,51 @@ The default value is 12.
 
 \item{ci}{Confidence interval around curves on \code{type = "pdi"} plot, on scale of 0 to 1. Default is 0.9.}
 
-\item{legend}{\verb{r template("legend")} Default will be the labeled regimen names as an argument
+\item{legend}{Controls display of legend. This argument maps to the plotly layout showlegend and legend arguments. It is either a boolean operator (most common) or a list of parameters to be supplied to plotly. See \code{plotly::schema()} > layout > layoutAttributes > legend and showlegend for more details on the available options for formatting.  If legend is supplied as a list,  the plotly layout > layoutAttributes > showlegend value will be set to \code{TRUE} automatically.
+
+Examples: \itemize{ \item{\code{legend = T}} \item{\code{legend = list(orientation = "h", font = list(color = "blue"))}} }
+Default will be the labeled regimen names as an argument
 when creating a \link{PM_pta} object,
 or if missing, "Regimen 1, Regimen 2,...Regimen n", where \emph{n} is the number of
 regimens in the PM_pta object.}
 
-\item{log}{\verb{r template("log")}}
+\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type.
 
-\item{grid}{\verb{r template("grid")}}
+Example: \code{log = T}}
 
-\item{xlab}{\verb{r template("xlab")}  Default is "Target" when targets are discrete,
+\item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized.
+
+Examples: \itemize{ \item{\code{grid = F}} \item{\code{grid = list(gridcolor = "black", gridwidth = 2)}} }}
+
+\item{xlab}{Value for x axis label. This argument maps to the the xaxis title element of the layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the axis, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > title to see the ways to customize this axis label. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element, either on its own or within the font list. The default for \code{bold} is \code{TRUE}.
+
+Examples: \itemize{ \item{\code{xlab = "Time (h)"}} \item{\code{xlab = list(text = "Time", bold = F, font = list(color = "red", family = "Arial", size = 10))}} \item{\code{xlab = list(text = "Time", font = list(bold = T))}} }
+Default is "Target" when targets are discrete,
 and "Regimen" when targets are sampled.}
 
-\item{ylab}{\verb{r template("ylab")}  Default is "Proportion with success" for
+\item{ylab}{Value for y axis label. This argument maps to the the yaxis title element of the layout object in plotly.  See \code{xlab} for details. If \code{xlab} is specified as a list with formatting, and \code{ylab} is simply a character label, then the formatting for the  \code{xlab} will be applied to the \code{ylab}. To format \code{ylab} independently, specify a formatting list as for \code{xlab}.
+
+Default is "Proportion with success" for
 plot \code{type = "pta"} and "Pharmacodynamic Index" for plot \code{type = "pdi"}.}
 
-\item{title}{\verb{r template("title")} Default is to have no title.}
+\item{title}{Plot title. This argument maps to the the title layout object in plotly.  It can simply be a character vector of length 1 that specifies the name of  the plot title, or it can be a list for greater control. Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > title to see other ways to customize the title using lists as additional arguments. In addition to the plotly attributes, a custom Pmetrics attribute \code{bold}  may be included as a list element. The default for \code{bold} is \code{TRUE}.
 
-\item{xlim}{\verb{r template("xlim")}}
+Examples: \itemize{ \item{\code{title = "Observed vs. Predicted"}} \item{\code{title = list(text = "Raw Data", font = list(color = "red", family = "Arial", size = 10, bold = T))}} }
+Default is to have no title.}
 
-\item{ylim}{\verb{r template("ylim")}}
+\item{xlim}{Limits of the x axis as a vector.   This argument maps to the   the xaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > range.
+
+Example: \code{xlim = c(0,1)}}
+
+\item{ylim}{Limits of the y axis as a vector.   This argument maps to the   the yaxis range in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > range.
+
+Example: \code{ylim = c(0,100)}}
 
 \item{print}{If \code{TRUE}, will print the plotly object and return it. If \code{FALSE}, will only return the plotly object.}
 
-\item{...}{\verb{r template("dotsPlotly")}}
+\item{...}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
+
+Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
 }
 \value{
 Plots the object.

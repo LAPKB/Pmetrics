@@ -582,7 +582,7 @@ time = \code{tad} after the last dose}
 
 \item{\code{overwrite}}{Boolean operator to overwrite existing run result folders.  Default is \code{FALSE}.}
 
-\item{\code{algorithm}}{The algorithm to use for the run.  Default is "NPAG". Alternatives: "NPOD".}
+\item{\code{algorithm}}{The algorithm to use for the run.  Default is "NPAG" for the \strong{N}on-\strong{P}arametric \strong{A}daptive \strong{G}rid. Alternatives: "NPOD".}
 
 \item{\code{report}}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
 is used. Otherwise can be "plotly", "ggplot", or "none".}
