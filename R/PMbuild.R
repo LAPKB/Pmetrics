@@ -12,15 +12,17 @@
 PM_build <- function() {
   clear_build() # clean prior template/artifacts
   if (is_rustup_installed()) {
-    cat("Rust was detected in your system, Fetching dependencies and building base project.\n")
+    cli::cli_text("Rust was detected in your system, Fetching dependencies and building base project.")
     template <- dummy_compile()
     setPMoptions(rust_template = template)
   } else {
-    cat("\n Rust was not detected in your system, this can be caused by multiple reasons:\n")
-    cat("* You have not installed rustup in your system, Follow the installation instructions at https://www.rust-lang.org/tools/install\n")
-    cat("* You might have rustup installed in your system but your $PATH has not been updated (Windows), try closing and re-opening your R session, and/or Rstudio.\n")
-    cat("* If you are using linux/MacOS and this error persists after installing rust, try using this command in your terminal: sudo ln -s ~/.cargo/bin/* /usr/local/sbin \n")
-    cat("\n If this error persists, please refer to our discussions website: https://github.com/LAPKB/Pmetrics/discussions\n")
+    cli::cli_text("Rust was not detected in your system, this can be caused by multiple reasons:")
+    ul <- cli::cli_ul()
+    cli::cli_li("You have not installed rustup in your system, Follow the installation instructions at https://www.rust-lang.org/tools/install")
+    cli::cli_li("You might have rustup installed in your system but your $PATH has not been updated (Windows), try closing and re-opening your R session, and/or Rstudio/Positron.")
+    cli::cli_li("If you are using linux/MacOS and this error persists after installing rust, try using this command in your terminal: {.code sudo ln -s ~/.cargo/bin/* /usr/local/sbin}")
+    cli::cli_end(ul)
+    cli::cli_text("If this error persists, please refer to our discussions website: https://github.com/LAPKB/Pmetrics/discussions.")
   }
 }
 
