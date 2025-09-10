@@ -21,15 +21,17 @@ makeAUC(
 \arguments{
 \item{data}{A suitable data object, i.e. \link{PM_pop}, \link{PM_post}, \link{PM_op},
 \link{PM_sim}, or some other suitable dataframe
-with at least time/observation columns referred to by \code{formula}, with an
-"id" column (so named) if necessary.}
+with at least time/observation columns referred to by \code{formula}.}
 
-\item{formula}{A formula of the form \code{obs ~ time}.
+\item{formula}{A formula of the form \code{obs ~ time | group}. Default value for
+\code{group} is "id", so when if the data contain an "id" column, the formula can simply
+be \code{obs ~ time}.  If the data contain a grouping variable, it can be specified
+as \code{obs ~ time | group}, where \code{group} is the name of the grouping variable.
 This is only required with data that is not of class PM_pop, PM_post, PM_op or PM_sim.}
 
-\item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
+\item{include}{\verb{r template("include")}}
 
-\item{exclude}{A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)}
+\item{exclude}{\verb{r template("exclude")}}
 
 \item{start}{Specify the time to begin AUC calculations. Default is 0.}
 
@@ -38,12 +40,11 @@ from \code{start} to \code{end}.  Default for end is the maximum observation
 time for each subject.  Subjects with insufficient data for a specified interval will have
 AUC calculated for the available data, not to exceed the specified interval.}
 
-\item{icen}{Can be either "median" for the predictions based on medians of\code{pred.type}  parameter value distributions, or "mean".  Default is "median".
-Only relevant for PMpost or PMpop objects.}
+\item{icen}{\verb{r template("icen")} Only relevant for PMpost or PMpop objects.}
 
-\item{outeq}{Which output equation to plot. Default is 1.}
+\item{outeq}{\verb{r template("outeq")}}
 
-\item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data.}
+\item{block}{\verb{r template("block")}}
 
 \item{method}{Default is "linear" for AUC trapezoidal calculation.  Any other value will result in
 linear up, log down.}
@@ -53,7 +54,7 @@ linear up, log down.}
 \value{
 A dataframe of class \emph{PMauc}, which has 2 columns:
 \itemize{
-\item id - Subject identification
+\item \code{group} - Subject identification, usually "id"
 \item tau - AUC from \code{start} to \code{end}
 }
 }

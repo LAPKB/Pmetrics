@@ -16,7 +16,7 @@
 #' @export
 #' @author Michael Neely
 #'
-build_model <- function(..., update = FALSE) {row
+build_model <- function(..., update = FALSE) {
   obj <- list(...)
   data_arg <- purrr::detect(obj, \(x) inherits(x, "PM_data"))
   model_arg <- purrr::detect(obj, \(x) inherits(x, "PM_model"))

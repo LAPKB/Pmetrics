@@ -3,7 +3,12 @@
 # parameter/covariate fetching, and arithmetic operations.
 
 # Convert an R expression to Rust code (recursive)
-expr_to_rust <- function(expr, params = NULL, covs = NULL) {
+expr_to_rust <- function(expr, params = NULL, covs = NULL,
+                         declared = new.env(parent = emptyenv())) {
+
+  declared_has <- function(name) isTRUE(get0(name, envir = declared, inherits = FALSE))
+  declared_add <- function(name) assign(name, TRUE, envir = declared)
+
   # Base cases: numeric literals as floats, symbols
   if (is.numeric(expr) && length(expr) == 1) {
     val <- expr
@@ -25,7 +30,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
       idx_val <- as.integer(idx_raw) - 1
       return(sprintf("%s[%d]", var, idx_val))
     } else {
-      idx_code <- expr_to_rust(idx_raw, params, covs)
+      idx_code <- expr_to_rust(idx_raw, params, covs, declared)
       return(sprintf("%s[%s - 1]", var, idx_code))
     }
   }
@@ -33,14 +38,21 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
   if (!is.call(expr)) stop("Unknown expression type")
   op <- as.character(expr[[1]])
   args <- as.list(expr[-1])
-  rust_args <- lapply(args, expr_to_rust, params = params, covs = covs)
+  rust_args <- lapply(args, expr_to_rust, params = params, covs = covs,
+                      declared = declared)
 
   switch(op,
     # Grouping
     "(" = sprintf("(%s)", rust_args[[1]]),
     "{" = {
-      # strip explicit block tokens—just emit the inner code
-      if (length(rust_args) > 0) rust_args[[1]] else ""
+      inner <- if (length(args) == 0) character(0) else {
+        # turn each inner expr into a statement, joined by newlines
+        inner_exprs <- as.list(args)
+        paste(vapply(inner_exprs, function(e)
+          expr_to_rust(e, params, covs, declared), character(1)),
+          collapse = "\n")
+      }
+      inner
     },
 
     # Arithmetic
@@ -63,20 +75,18 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
     "!=" = sprintf("%s != %s", rust_args[[1]], rust_args[[2]]),
     ">=" = sprintf("%s >= %s", rust_args[[1]], rust_args[[2]]),
     "<=" = sprintf("%s <= %s", rust_args[[1]], rust_args[[2]]),
-    ">" = sprintf("%s > %s", rust_args[[1]], rust_args[[2]]),
-    "<" = sprintf("%s < %s", rust_args[[1]], rust_args[[2]]),
-
-
+    ">"  = sprintf("%s > %s",  rust_args[[1]], rust_args[[2]]),
+    "<"  = sprintf("%s < %s",  rust_args[[1]], rust_args[[2]]),
 
     # Logical
     "&" = sprintf("%s && %s", rust_args[[1]], rust_args[[2]]),
     "|" = sprintf("%s || %s", rust_args[[1]], rust_args[[2]]),
     "!" = sprintf("!(%s)", rust_args[[1]]),
 
-    # Function calls
-    "abs" = sprintf("(%s).abs()", rust_args[[1]]),
-    "log" = sprintf("(%s).ln()", rust_args[[1]]),
-    "exp" = sprintf("(%s).exp()", rust_args[[1]]),
+    # Math funcs
+    "abs"  = sprintf("(%s).abs()",  rust_args[[1]]),
+    "log"  = sprintf("(%s).ln()",   rust_args[[1]]),
+    "exp"  = sprintf("(%s).exp()",  rust_args[[1]]),
     "sqrt" = sprintf("(%s).sqrt()", rust_args[[1]]),
 
     # Assignment
@@ -86,11 +96,16 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
       rhs_code <- rust_args[[2]]
 
       if (is.symbol(lhs)) {
-        # It's a plain variable like `ka = ...`
-        sprintf("let %s = %s;", as.character(lhs), rhs_code)
+        name <- as.character(lhs)
+        if (declared_has(name)) {
+          sprintf("%s = %s;", name, rhs_code)
+        } else {
+          declared_add(name)
+          sprintf("let mut %s = %s;", name, rhs_code)
+        }
       } else {
-        # It’s likely something like dx[1] = ...
-        lhs_code <- expr_to_rust(lhs, params, covs)
+        # e.g., dx[1] = ...
+        lhs_code <- expr_to_rust(lhs, params, covs, declared)
         sprintf("%s = %s;", lhs_code, rhs_code)
       }
     },
@@ -98,28 +113,29 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL) {
     # If
     "if" = {
       cond <- rust_args[[1]]
-      then_code <- rust_args[[2]]
-      if (length(rust_args) == 3) {
-        else_code <- rust_args[[3]]
-        # single-line if/else expression
-        sprintf("if %s { %s } else { %s }", cond, then_code, else_code)
+      then_code <- expr_to_rust(args[[2]], params, covs, declared)
+      if (length(args) == 3) {
+        else_code <- expr_to_rust(args[[3]], params, covs, declared)
+        sprintf("if %s { %s } else { %s };", cond, then_code, else_code)
       } else {
-        # fall back to statement form if no else
-        sprintf("if %s { %s }", cond, then_code)
+        sprintf("if %s { %s };", cond, then_code)
       }
     },
 
-    # For
+    # For (left as-is; thread declared through)
     "for" = {
       var <- as.character(args[[1]])
       n_sym <- as.character(args[[2]][[3]])
-      loop_exprs <- if (is.call(args[[3]]) && as.character(args[[3]][[1]]) == "{") as.list(args[[3]][-1]) else list(args[[3]])
-      body <- stmts_to_rust(loop_exprs, params, covs)
+      loop_exprs <- if (is.call(args[[3]]) && as.character(args[[3]][[1]]) == "{")
+        as.list(args[[3]][-1]) else list(args[[3]])
+      body <- stmts_to_rust(loop_exprs, params, covs, declared)  # make sure stmts_to_rust gets declared too
       sprintf("for %s in 0..%s as usize {\n%s}\n", var, n_sym, indent(body))
     },
+
     stop(sprintf("Unsupported operation: %s", op))
   )
 }
+
 
 # Helpers: convert list of statements to Rust and indent blocks
 stmts_to_rust <- function(exprs, params = NULL, covs = NULL) {
@@ -341,82 +357,6 @@ empty_out <- function() {
   "|_x, _p, _t, _cov, _y| { }"
 }
 
-# ------------------ Error Transpilation Support ------------------
-# Validate and transpile an R 'error' function into a real R list of evaluated calls
-
-# collect_error_entries <- function(fun) {
-#   body_expr <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
-#     as.list(body(fun)[-1])
-#   } else {
-#     list(body(fun))
-#   }
-#
-#   entries <- list()
-#   expected_idx <- 1L
-#
-#   for (expr in body_expr) {
-#     if (!is.call(expr) || !(as.character(expr[[1]]) %in% c("<-", "="))) {
-#       cli::cli_abort(c(
-#         "x" = "Invalid syntax in {.fn err}",
-#         "i" = "Only assingments allowed, but found {.code {deparse(expr)}}"))
-#     }
-#     lhs <- expr[[2]]
-#     rhs <- expr[[3]]
-#
-#     if (!is.call(lhs) || as.character(lhs[[1]]) != "[" || as.character(lhs[[2]]) != "e") {
-#       cli::cli_abort(c(
-#         "x" = "Invalid LHS in {.fn err}",
-#         "i" = "Expected {.code e[index]}, got {.code {deparse(lhs)}}"))
-#     }
-#     idx_raw <- lhs[[3]]
-#     if (!is.numeric(idx_raw) || length(idx_raw) != 1) {
-#       cli::cli_abort(c(
-#         "x" = "Invalid index in {.fn err}",
-#         "i" = "Must be a single numeric literal, got  {.code {deparse(idx_raw)}}"))
-#     }
-#     idx <- as.integer(idx_raw)
-#     if (idx != expected_idx) {
-#       cli::cli_abort(c(
-#         "x" = "Error indices must start at 1 and increment by 1.",
-#         "i" = "Expected index {.val {expected_idx}}, got  {.val {idx}}"))
-#
-#     }
-#     expected_idx <- expected_idx + 1L
-#
-#     if (!is.call(rhs) || !(as.character(rhs[[1]]) %in% c("proportional", "additive"))) {
-#       cli::cli_abort(c(
-#         "x" = "Invalid RHS in {.fn err}",
-#         "i" = "Only {.fn proportional} or {.fn additive} calls allowed, but found {.code {deparse(rhs)}}"))
-#     }
-#
-#     n_args <- length(rhs) - 1
-#     if (!(n_args %in% c(2, 3))) {
-#       cli::cli_abort(c(
-#         "x" = "Invalid syntax in {.fn err}",
-#         "i" = "{.code {as.character(rhs[[1]])}} must have 2 or 3 arguments, but got {.code {n_args}}"))
-#     }
-#
-#     if (n_args == 2) {
-#       rhs <- as.call(c(as.list(rhs), list(fixed = FALSE)))
-#     }
-#
-#     entries[[as.character(idx)]] <- rhs
-#   }
-#   entries
-# }
-#
-# # Transpile an R error function
-# transpile_error <- function(fun) {
-#   entries <- collect_error_entries(fun)
-#   result <- list()
-#   for (i in 1:length(entries)) {
-#     # evaluate each proportional/additive call
-#     result[[i]] <- eval(entries[[i]])
-#   }
-#   # ensure names are correct ("1","2",...)
-#   names(result) <- 1:length(result)
-#   result
-# }
 
 get_assignments <- function(fn, assign) {
   count_assignments <- function(expr) {

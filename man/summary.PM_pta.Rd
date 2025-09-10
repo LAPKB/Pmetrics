@@ -23,7 +23,7 @@ intersection of all the PTAs.}
 \value{
 A tibble with the following columns (only the first three if \code{at = "intersect"}):
 \itemize{
-\item \strong{sim_num} is the number of the simulation
+\item \strong{reg_num} is the number of the simulation regimen
 \item \strong{target} is the target for the row, if targets are discrete, not used for simulated targets
 \item \strong{label} is the simulation label, for reference
 \item \strong{prop_success} is the proportion of simulated profiles that met the success definition

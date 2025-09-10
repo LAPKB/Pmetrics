@@ -15,7 +15,8 @@ sub_plot(
   shareY = FALSE,
   titleX = shareX,
   titleY = shareY,
-  which_layout = "merge"
+  which_layout = "merge",
+  print = TRUE
 )
 }
 \arguments{
@@ -57,6 +58,8 @@ generated the individual plot.}
 "merge" is used, layout options found later in the sequence of plots
 will override options found earlier in the sequence. This argument also
 accepts a numeric vector specifying which plots to consider when merging.}
+
+\item{print}{If \code{TRUE}, will print the plotly object and return it. If \code{FALSE}, will only return the plotly object.}
 }
 \value{
 A plot and plotly object combining all the plots in \code{...},

@@ -12,7 +12,7 @@ makeValid(...)
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 
-This function is replaced by \link{make_valid}, which is
+This function is replaced by \link{PM_valid}, which is
 typically called with the \verb{$validate} method for a \link{PM_result} object,
 but can be called directly on a \link{PM_result} object.
 }
