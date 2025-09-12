@@ -158,10 +158,12 @@ transpile_ode_eqn <- function(fun, params, covs, sec) {
     paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs) %>%
-    stringr::str_replace_all("\\((b|bolus)\\[\\d+\\]\\)", "") %>%
+    stringr::str_replace_all("\\((b|bolus)\\[\\d+\\]\\)", "0") %>%
     stringr::str_replace_all("r\\[", "rateiv\\[")
   sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
+
+
 
 transpile_analytic_eqn <- function(fun, params, covs) {
   if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
