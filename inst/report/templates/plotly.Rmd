@@ -51,14 +51,14 @@ template <- c(
 
   "p <- res$op$plot(icen = 'median', pred.type = 'pop', outeq = {{outeq}},\n
   stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
-  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(icen = 'mean', pred.type = 'pop', outeq = {{outeq}},\n
   stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
-  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "#### Posterior {.tabset .tabset-pills}\n",
   "##### Median\n",
@@ -66,14 +66,14 @@ template <- c(
 
   "p <- res$op$plot(icen = 'median', pred.type = 'post', outeq = {{outeq}},\n
   stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
-  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(icen = 'mean', pred.type = 'post', outeq = {{outeq}},\n
   stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
-  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "\n"
 )
@@ -183,26 +183,26 @@ template <- c(
   "```{r message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'median', pred.type = 'pop', outeq = {{outeq}}, print = FALSE)\n",
-  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'mean', pred.type = 'pop', outeq = {{outeq}}, print = FALSE)\n",
-  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "#### Posterior {.tabset .tabset-pills}\n",
   "##### Median\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'median', pred.type = 'post', outeq = {{outeq}}, print = FALSE)\n",
-  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "##### Mean\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'mean', pred.type = 'post', outeq = {{outeq}}, print = FALSE)\n",
-  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p)\n",
+  "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "\n"
 )
