@@ -67,12 +67,13 @@ build_model_lib <- function(){
 #' 
 #' @description
 #' Returns a table of all available model templates in the Pmetrics library.
+#' @param show Logical indicating if the table should be printed. Default is TRUE.
 #' @return Invisibly, a tibble containing the model templates or a specific model template.
 #' @examples
 #' model_lib() # Returns a table of all model templates
 #' @export
 #' 
-model_lib <- function() {
+model_lib <- function(show = TRUE) {
   
   mod_table <- tibble(
     Name = map_chr(mod_list, \(x) x$name),
@@ -83,24 +84,26 @@ model_lib <- function() {
     ode = map_chr(mod_list, \(x) paste(func_to_char(x$arg_list$eqn), collapse = "\n"))
   )
   
-  
-  print(mod_table %>%
-    dplyr::rowwise() %>%
-    flextable::flextable() %>%
-    flextable::set_header_labels(alt_names = "Alt Names", ode = "Corresponding ODE") %>%
-    flextable::autofit())
-
-  cli::cli_h1("Model Library Notes")
-  ul <- cli::cli_ul()
-  cli::cli_li("Use the {.code PM_model$new()} function to create a model from a template in the library.")
-  cli::cli_li("Include the unquoted model {.emph Name} or one of the {.emph Alt Names} in the {.code EQN} block of the model")
-  cli::cli_li("Ensure the model {.emph Parameters} are defined as named (case-insensitive) in the appropriate model blocks, e.g. {.code PRI}, {.code SEC}, {.code EQN}, or {.code OUT}.")
-  cli::cli_li("Additional parameters and blocks, e.g. lag, bioavailaiblity, initial conditions, and covariates may be added.")
-  cli::cli_li("The model {.emph Compartments} are numbered and can be referenced in the {.code OUT} block to define outputs.")
-  cli::cli_li("Model inputs are indicated in the {.emph Corresponding ODE}, i.e. bolus (B[1]) and infusion (R[1]). These cannot be changed.")
-  cli::cli_li("{.emph ODE} are used only for plotting purposes.")
-  cli::cli_end(ul)
-
+  if(show) {
+    print(mod_table %>%
+      dplyr::rowwise() %>%
+      flextable::flextable() %>%
+      flextable::set_header_labels(alt_names = "Alt Names", ode = "Corresponding ODE") %>%
+      flextable::autofit())
+      
+      cli::cli_h1("Model Library Notes")
+      ul <- cli::cli_ul()
+      cli::cli_li("Use the {.code PM_model$new()} function to create a model from a template in the library.")
+      cli::cli_li("Include the unquoted model {.emph Name} or one of the {.emph Alt Names} in the {.code EQN} block of the model")
+      cli::cli_li("Ensure the model {.emph Parameters} are defined as named (case-insensitive) in the appropriate model blocks, e.g. {.code PRI}, {.code SEC}, {.code EQN}, or {.code OUT}.")
+      cli::cli_li("Additional parameters and blocks, e.g. lag, bioavailaiblity, initial conditions, and covariates may be added.")
+      cli::cli_li("The model {.emph Compartments} are numbered and can be referenced in the {.code OUT} block to define outputs.")
+      cli::cli_li("Model inputs are indicated in the {.emph Corresponding ODE}, i.e. bolus (B[1]) and infusion (R[1]). These cannot be changed.")
+      cli::cli_li("{.emph ODE} are used only for plotting purposes.")
+      cli::cli_end(ul)
+    }
+    
+    
     return(invisible(mod_table))
   }
   

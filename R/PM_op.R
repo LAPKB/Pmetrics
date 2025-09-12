@@ -148,6 +148,7 @@ private = list(
       return(NULL)
     }
     
+    loq <- config$errormodels$models %>% map(~ .x[[1]]$lloq) %>% map(~ .x %||% NA_real_) %>% unlist()
     poly <- map(config$errormodels$models, \(x) x %>% pluck(1, "poly") %>% unlist()) %>% bind_rows()
     op <- op_raw %>%
     # left_join(pred_raw, by = c("id", "time", "outeq")) %>%
@@ -179,6 +180,7 @@ private = list(
     mutate(obsSD = map(1:4, \(x) poly[outeq, x] * obs^(x-1)) %>% unlist() %>% sum()) %>%
     mutate(wd = d / obsSD) %>%
     mutate(wds = wd * wd) %>%
+    mutate(blq = if_else(!is.na(obs) & obs == loq[outeq], 1, 0)) %>%
     dplyr::ungroup()
     class(op) <- c("PM_op_data", "data.frame")
     return(op)
@@ -200,6 +202,15 @@ private = list(
 #' The function can be called directly on a [PM_op] object. The default
 #' is to generate an observed vs. predicted plot of predictions based on the
 #' median of the Bayesian posterior distributions for each subject.
+#' Missing observations are excluded. Observations reported as BLQ (below the limit of quantification)
+#' are indicated as downward triangles, and colored differently from other observations. They are plotted
+#' at the reported LOQ on the observed axis and the predicted value on the predicted axis. They are not
+#' included in any regression lines or statistics.
+#' 
+#' Clicking on a point in the plot will highlight all points from that subject. The color of the highlight
+#' is 180 degrees different on the color wheel from the color of the other points ([opposite_color]), ensuring good contrast.
+#' Clicking on the plot background will remove the highlighting.
+#' 
 #' @method plot PM_op
 #' @param x The name of a [PM_op] data object
 #' and loaded with [PM_load] as a field in a [PM_result], e.g. `PM_result$op`.
@@ -211,10 +222,13 @@ private = list(
 #' @param block `r template("block")` Default is missing, which results in all blocks included.
 #' @param marker `r template("marker")` Default is
 #' `marker = list(color = orange, shape = "circle", size = 10, opacity = 0.5, line = list(color = black, width = 1))`.
+#' The color of any BLQ points is set to a color 90 degrees different on the color wheel from the
+#' color of the other points using [opposite_color] to ensure good contrast. The symbol for BLQ points is fixed to "triangle-down", and
+#' the opacity is fixed to 1. Size is the same as for other points.
 #' @param line Controls characteristics of lines. Unlike
 #' some other Pmetrics plots, for plot.PM_op, `line` is a list of
 #' three elements:
-#' * `lm`  If set to `TRUE` or a list of plotly line attributes,
+#' * `lm`  If set to `TRUE` (default) or a list of plotly line attributes,
 #' will generate a linear regression of the form obs ~ pred.
 #' Line attributes will control the appearance of the regression
 #' line and the confidence interval around the line. If set to
@@ -228,12 +242,12 @@ private = list(
 #'     - `dash` See `plotly::schema()`, traces > scatter > attributes >
 #' line > dash > values. Default is "solid".
 #' Example: `line = list(lm = list(color = "red", dash = "longdash", width = 2))`
-#' * `loess` If set to `TRUE` or a list of plotly line attributes,
+#' * `loess` If set to `TRUE` (default is `FALSE`) or a list of plotly line attributes,
 #' will generate a loess regression of the form obs ~ pred.
 #' The list elements and default values in the `loess` list are the
 #' same as for `lm` except the default style is "dash".
 #' Example: `line = list(lm = FALSE, loess = TRUE)`
-#' * `ref` If set to `TRUE` or a list of plotly line attributes,
+#' * `ref` If set to `TRUE` (default) or a list of plotly line attributes,
 #' will generate a reference line with slope = 1 and intercept = 0.
 #' The default values for the elements of the `ref` list are:
 #'     - `color` "grey".
@@ -378,9 +392,9 @@ plot.PM_op <- function(x,
     # markers
     
     normal_color <- blue()
-    highlight_color <- orange()
-    marker <- amendMarker(marker, default = list(color = normal_color))
     
+    marker <- amendMarker(marker, default = list(color = normal_color))
+    highlight_color <- opposite_color(marker$color) # in plotly_Utils.R
     
     lmLine <- amendLine(line$lm, default = list(color = "dodgerblue", dash = "solid"))
     loessLine <- amendLine(line$loess, default = list(color = "dodgerblue", dash = "dash"))
@@ -479,9 +493,18 @@ plot.PM_op <- function(x,
         trace_data <- traces[[i]]
         group_name <- trace_data$id[1]
         
-        # Add group label directly to the data
-        trace_data$text_label <- glue::glue("ID: {group_name}\nPred: {round2(trace_data$pred)}\nObs: {round2(trace_data$obs)}")
-        
+        # Add group label and LOQ coloring/symbol/opacity directly to the data
+        trace_data <- trace_data %>% 
+        rowwise() %>%
+        mutate(text_label = if_else(
+          blq == 1, 
+          glue::glue("ID: {group_name}\nPred: {round2(pred)}\nBLQ: {round2(obs)}"),
+          glue::glue("ID: {group_name}\nPred: {round2(pred)}\nObs: {round2(obs)}")
+          ),
+          color = if_else(blq == 1, opposite_color(marker$color, degrees = 90), marker$color),
+          symbol = if_else(blq == 1, "triangle-down", marker$symbol),
+          opacity = if_else(blq == 1, 1, marker$opacity)
+        ) %>% ungroup()
         p <- add_trace(
           p,
           data = trace_data,
@@ -490,7 +513,7 @@ plot.PM_op <- function(x,
           type = "scatter",
           mode = "markers",
           name = group_name,
-          marker = marker,
+          marker = list(color = ~color, symbol = ~symbol, size = marker$size, opacity = ~opacity, line = marker$line),
           hoverinfo = "text",
           text = ~text_label,
           showlegend = FALSE
@@ -498,7 +521,7 @@ plot.PM_op <- function(x,
         
         
       }
-
+      
       
       if (lmLine$plot) { # linear regression
         lmLine$plot <- NULL # remove to allow only formatting arguments below
@@ -509,7 +532,7 @@ plot.PM_op <- function(x,
           lmLine$ci <- NULL # remove to allow only formatting arguments below
         }
         
-        p <- p %>% add_smooth(data = sub1, x = ~pred, y = ~obs, ci = ci, line = lmLine, stats = stats)
+        p <- p %>% add_smooth(data = sub1 %>% filter(blq == 0), x = ~pred, y = ~obs, ci = ci, line = lmLine, stats = stats)
       }
       
       if (loessLine$plot) { # loess regression
@@ -520,7 +543,7 @@ plot.PM_op <- function(x,
           ci <- loessLine$ci
           loessLine$ci <- NULL # remove to allow only formatting arguments below
         }
-        p <- p %>% add_smooth(data = sub1, x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
+        p <- p %>% add_smooth(data = sub1 %>% filter(blq == 0), x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
       }
       
       if (refLine$plot) { # reference line
@@ -546,10 +569,10 @@ plot.PM_op <- function(x,
         shapes = layout$refLine,
         title = layout$title
       )
-
-      if (print) print(click_plot(p))
+      
+      if (print) print(click_plot(p, highlight_color))
       return(invisible(p))
-
+      
     } else { # residual plot
       # Y axis and point labels
       if (pred.type == "post") {
@@ -563,13 +586,10 @@ plot.PM_op <- function(x,
       layout$yaxis$title <- amendTitle(ylab)
       # amend xaxis title later
       
-      
-      # res vs. time
-      
       # Split into traces
-      traces <- sub1 %>%
+      traces <- sub1 %>% filter(blq == 0) %>%
       group_split(id)
-      
+
       
       ##### Build plots
       # res vs. time
@@ -614,7 +634,7 @@ plot.PM_op <- function(x,
           showlegend = FALSE
         )
       }
-
+      
       
       # add regression lines
       if (lmLine$plot) {
@@ -663,7 +683,7 @@ plot.PM_op <- function(x,
         nrows = 1,
         shareY = TRUE, shareX = FALSE, titleX = TRUE
       )
-      if (print) print(click_plot(p))
+      if (print) print(click_plot(p, highlight_color))
       return(invisible(p))
     } # end resid plot
   }

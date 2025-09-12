@@ -990,6 +990,12 @@ PM_model <- R6::R6Class(
                 #   }
                 # }
                 
+                # cycles
+                # if programmer is a crazy Norwegian....
+                if (cycles < 0){
+                  cli::cli_abort(c("x" = "Error: {.arg cycles} must be 0 or greater.", "i" = "See {.code $fit()} method for {.help PM_model}."))
+                }
+                
                 # output equations
                 
                 if (!is.null(data$standard_data$outeq)) {
@@ -1047,16 +1053,20 @@ PM_model <- R6::R6Class(
                 setwd(newdir)
                 
                 #### Algorithm ####
-                algorithm <- tolower(algorithm)
+                algorithm <- toupper(algorithm)
                 if (cycles == 0) {
                   if (prior == "sobol") {
-                    cli::cli_abort(c("x" = "Error: Cannot use {.code prior = 'sobol'} with {.code cycles = 0}.", "i" = "Use a prior from a previous run."))
+                    cli::cli_warn(c("!" = "Error: Cannot use {.code prior = 'sobol'} with {.code cycles = 0}.", "i" = "Use a prior from a previous run."))
                   }
-                  algorithm <- "postprob"
+                  algorithm <- "POSTPROB"
                 } else {
                   if (!(algorithm %in% c("NPAG", "NPOD"))) {
                     cli::cli_abort(c("x" = "Error: Unsupported algorithm.", "i" = "Supported algorithms are 'NPAG' and 'NPOD'."))
                   }
+                }
+                if (algorithm == "POSTPROB" && cycles > 0) {
+                  cli::cli_warn(c("!" = "Warning: {.code algorithm = 'POSTPROB'} is used with {.code cycles = 0}.", "i" = "Continuing with {.code cycles = 0}."))
+                  cycles <- 0
                 }
                 
                 
@@ -1147,9 +1157,23 @@ PM_model <- R6::R6Class(
                   }
                   loq <- data$loq
                 }
-                
                 loq <- as.numeric(loq) # ensure loq is numeric (NA can be character or logical)
+                
+                # get bolus info
+                if (self$model_list$name != "user"){ # library model
+                  bolus_models <- model_lib(show = FALSE) %>% filter(stringr::str_detect(Compartments, "Bolus")) %>% pull(Name)
+                  bolus <- ifelse(self$model_list$name %in% bolus_models, 1, NA) # may need to generalize if models with multiple bolus compartments are added
+                } else { # user model
+                  eqns <- func_to_char(self$arg_list$eqn)
+                  bolus_comps <- stringr::str_which(eqns, stringr::regex("(b|bolus)\\[\\d+\\]", ignore_case = TRUE))
+                  bolus_inputs <- as.integer(stringr::str_match(eqns[bolus_comps], stringr::regex("(b|bolus)\\[(\\d+)\\]", ignore_case = TRUE))[,3])
 
+                  
+                  
+                }
+                
+                
+                
                 if (intern) {
                   ### CALL RUST
                   out_path <- file.path(getwd(), "outputs")
@@ -1317,7 +1341,7 @@ PM_model <- R6::R6Class(
                     c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
                   )
                 })
-
+                
                 file.remove(model_path) # remove temporary model file
                 return(invisible(self))
               },
@@ -2408,210 +2432,8 @@ PM_model <- R6::R6Class(
                                 )
                                 
                                 
-                                # g <- ggraph::ggraph(graph, layout = "tree")
-                                # if (!is.logical(marker)) {
-                                #   # will only be logical if FALSE
-                                #   g <- g +
-                                #   ggraph::geom_node_tile(
-                                #     aes(fill = position, linetype = position),
-                                #     color = marker$line$color,
-                                #     lwd = marker$line$width,
-                                #     width = marker$size,
-                                #     height = marker$size,
-                                #     alpha = marker$opacity
-                                #   ) +
-                                #   ggraph::geom_node_text(
-                                #     aes(label = input),
-                                #     nudge_x = .07,
-                                #     nudge_y = .05,
-                                #     color = "white"
-                                #   ) +
-                                #   ggraph::geom_node_text(
-                                #     aes(label = out),
-                                #     nudge_x = -.07,
-                                #     nudge_y = .05,
-                                #     color = "black"
-                                #   ) +
-                                #   ggplot2::scale_fill_manual(values = c(marker$color, "grey80"))
-                                # }
-                                # if (!is.logical(line)) {
-                                #   # will only be logical if FALSE
-                                #   g <- g +
-                                #   ggraph::geom_edge_fan(
-                                #     aes(linetype = as.numeric(implicit) + 1),
-                                #     arrow = grid::arrow(
-                                #       angle = 15,
-                                #       type = "closed",
-                                #       length = grid::unit(6, "mm")
-                                #     ),
-                                #     end_cap = ggraph::circle(3, "mm"),
-                                #     start_cap = ggraph::circle(4, "mm"),
-                                #     angle_calc = "across",
-                                #     edge_color = line$color,
-                                #     label_push = grid::unit(-4, "mm"),
-                                #     edge_width = line$width
-                                #   )
-                                # }
-                                # g <- g +
-                                # ggraph::geom_node_label(aes(label = cmt), position = "identity") +
-                                # ggraph::theme_graph() +
-                                # ggplot2::theme(legend.position = "none")
-                                # if (print) print(g)
-                                # return(invisible(g))
+                                
                               }
                               
                               
-                              # MODEL LIBRARY -----------------------------------------------------------
-                              
-                              #' @title Pharmacokinetic model library
-                              #' @description
-                              #' `r lifecycle::badge("stable")`
-                              #'
-                              #' This function provides a list of available pharmacokinetic models.
-                              #' @param name The name of the model to display. If `NULL`, the entire list is displayed.
-                              #' @param show If `TRUE`, the model is displayed in the console. If `FALSE`, the model is only returned as a tibble.
-                              #' @return If `name` is not `NULL`, a tibble with the model equations; otherwise the
-                              #' function returns `NULL` and only displays the entire library in tabular format.
-                              #' @author Michael Neely
-                              #' @seealso [PM_model]
-                              #' @export
-                              #' @examples
-                              #' \dontrun{
-                              #' model_lib()
-                              #' model_lib("one_comp_iv")
-                              #' }
-                              model_lib <- function(name = NULL, show = TRUE) {
-                                mod_table <- matrix(
-                                  c(
-                                    "one_comp_iv",
-                                    "advan1\nadvan1-trans1",
-                                    "One compartment IV input, Ke",
-                                    "1 = Central",
-                                    "Ke, V",
-                                    "one_comp_iv_cl",
-                                    "advan1\nadvan1-trans2",
-                                    "One compartment IV input, CL",
-                                    "1 = Central",
-                                    "CL, V",
-                                    "two_comp_bolus",
-                                    "advan2\nadvan2-trans1",
-                                    "Two compartment bolus input, Ke",
-                                    "1 = Bolus\n2 = Central",
-                                    "Ka, Ke, V",
-                                    "two_comp_bolus_cl",
-                                    "advan2\nadvan2-trans2",
-                                    "Two compartment bolus input, CL",
-                                    "1 = Bolus\n2 = Central",
-                                    "Ka, CL, V",
-                                    "two_comp_iv",
-                                    "advan3\nadvan3-trans1",
-                                    "Two compartment IV input, Ke",
-                                    "1 = Central\n2 = Peripheral",
-                                    "Ke, V, KCP, KPC",
-                                    "two_comp_iv_cl",
-                                    "advan3\nadvan3-trans4",
-                                    "Two compartment IV input, CL",
-                                    "1 = Central\n2 = Peripheral",
-                                    "CL, V1, Q, V2",
-                                    "three_comp_bolus",
-                                    "advan4\nadvan4-trans1",
-                                    "Three compartment bolus input, Ke",
-                                    "1 = Bolus\n2 = Central\n3 = Peripheral",
-                                    "Ka, Ke, V, KCP, KPC",
-                                    "three_comp_bolus_cl",
-                                    "advan4\nadvan4-trans4",
-                                    "Three compartment bolus input, CL",
-                                    "1 = Bolus\n2 = Central\n3 = Peripheral",
-                                    "Ka, CL, V2, Q, V3"
-                                  ),
-                                  ncol = 5,
-                                  byrow = TRUE
-                                ) %>%
-                                as.data.frame() %>%
-                                stats::setNames(c(
-                                  "Primary Name",
-                                  "Alt Names",
-                                  "Description",
-                                  "Compartments",
-                                  "Parameters"
-                                )) %>%
-                                tibble::as_tibble()
-                                
-                                
-                                mod_table$ODE <- list(
-                                  list("dX[1] = RATEIV[1] - Ke*X[1]"),
-                                  list("dX[1] = RATEIV[1] - CL/V*X[1]"),
-                                  list(
-                                    "dX[1] = BOLUS[1] - Ka*X[1]",
-                                    "dX[2] = RATEIV[1] + Ka*X[1] - Ke*X[2]"
-                                  ),
-                                  list(
-                                    "dX[1] = BOLUS[1] - Ka*X[1]",
-                                    "dX[2] = RATEIV[1] + Ka*X[1] - CL/V*X[2]"
-                                  ),
-                                  list(
-                                    "dX[1] = RATEIV[1] - (Ke + KCP)*X[1] + KPC*X[2]",
-                                    "dX[2] = KCP*X[1] - KPC*X[2]"
-                                  ),
-                                  list(
-                                    "dX[1] = RATEIV[1] - (CL + Q)/V1*X[1] + Q/V2*X[2]",
-                                    "dX[2] = Q/V1*X[1] - Q/V2*X[2]"
-                                  ),
-                                  list(
-                                    "dX[1] = BOLUS[1] - Ka*X[1]",
-                                    "dX[2] = RATEIV[1] + Ka*X[1] - (Ke + KCP)*X[2] + KPC*X[3]",
-                                    "dX[3] = KCP*X[2] - KPC*X[3]"
-                                  ),
-                                  list(
-                                    "dX[1] = BOLUS[1] - Ka*X[1]",
-                                    "dX[2] = RATEIV[1] + Ka*X[1] - (CL + Q)/V2*X[2] + Q/V3*X[3]",
-                                    "dX[3] = Q/V2*X[2] - Q/V3*X[3]"
-                                  )
-                                )
-                                
-                                
-                                if (is.null(name)) {
-                                  print(
-                                    mod_table %>%
-                                    dplyr::rowwise() %>%
-                                    dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
-                                    flextable::flextable() %>%
-                                    flextable::set_header_labels(ODE = "Corresponding ODE") %>%
-                                    flextable::autofit()
-                                  )
-                                  
-                                  return(invisible(NULL))
-                                }
-                                
-                                if (!tolower(name) %in%
-                                c(
-                                  glue::glue("one_comp_iv{c('','_cl')}"),
-                                  glue::glue("two_comp_bolus{c('','_cl')}"),
-                                  glue::glue("two_comp_iv{c('','_cl')}"),
-                                  glue::glue("three_comp_bolus{c('','_cl')}"),
-                                  glue::glue("advan{1:4}"),
-                                  glue::glue("advan{1:4}-trans1"),
-                                  glue::glue("advan{1:2}-trans2"),
-                                  "advan3-trans4",
-                                  "advan4-trans4"
-                                )) {
-                                  cli::cli_abort(c("x" = "Invalid model name"))
-                                }
-                                
-                                if (show) {
-                                  print(
-                                    mod_table %>% dplyr::filter(`Primary Name` == name) %>%
-                                    dplyr::mutate(ODE = paste(unlist(ODE), collapse = "\n")) %>%
-                                    flextable::flextable() %>%
-                                    flextable::set_header_labels(ODE = "Corresponding ODE") %>%
-                                    flextable::autofit()
-                                  )
-                                }
-                                
-                                return(
-                                  invisible(
-                                    mod_table %>% dplyr::filter(`Primary Name` == name) %>% dplyr::select(ODE) %>% purrr::pluck(1, 1) %>% unlist()
-                                  )
-                                )
-                              }
                               

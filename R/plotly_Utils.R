@@ -1206,7 +1206,7 @@ sub_plot <- function(...,
   #' traces will be preserved but dimmed to 20% opacity. Default highlight color is `orange()`.
   #' @export
   #' @author Michael Neely
-  click_plot <- function(p, highlight_color = orange()) {
+  click_plot <- function(p, highlight_color = highlight_color) {
     p <- htmlwidgets::onRender(p, sprintf("
 function(el, x) {
   const highlight = '%s';
@@ -1346,6 +1346,7 @@ function(el, x) {
         grepl("square", shape) ~ 22,
         grepl("diamond",shape) ~ 23,
         grepl("triangle-up", shape) ~ 24,
+        grepl("triangle-down", shape) ~ 25,
         .default = 21
       )
     }
@@ -1736,3 +1737,111 @@ function(el, x) {
               if(print) print(g)
               return(invisible(g))
             }
+
+
+
+#' @title Find opposite color with max contrast
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Finds an opposite color with maximum contrast to the input color.
+#' @details
+#' This function takes a color input (name or hex) and returns an opposite color
+#' using one of three methods:
+#' - "complement": strict 180° hue complement
+#' - "complement_maxcontrast": 180° hue complement adjusted for maximum contrast
+#' - "bw_maxcontrast": black or white, whichever has higher contrast
+#' The function uses the WCAG relative luminance and contrast ratio formulas to determine contrast.
+#' @param col A color name or hex string (e.g. "red", "#FF0000", "#FF0000FF").
+#' @param method The method to use for finding the opposite color.
+#' One of "complement", "complement_maxcontrast", or "bw_maxcontrast".
+#' Default is "complement".
+#' @param degrees The degree offset for the hue complement. Default is 180.
+#' @return A hex color string in the format "#RRGGBBAA".
+#' @export
+opposite_color <- function(col,
+                           method = c("complement", "complement_maxcontrast", "bw_maxcontrast"),
+                          degrees = 180) {
+  method <- match.arg(method)
+  degree_offset <- degrees / 360
+
+  # --- helpers ---
+  clamp01 <- function(x) pmax(0, pmin(1, x))
+  rgb01_to_hex <- function(r, g, b, a = 1) {
+    grDevices::rgb(r, g, b, alpha = a, maxColorValue = 1)
+  }
+
+  # parse any color name or hex into rgb 0–1 + alpha
+  parse_col <- function(c) {
+    if (grepl("^#", c)) {
+      hex <- toupper(c)
+      hex <- sub("^#", "", hex)
+      if (nchar(hex) == 8) {         # RRGGBBAA
+        r <- strtoi(substr(hex, 1, 2), 16L)/255
+        g <- strtoi(substr(hex, 3, 4), 16L)/255
+        b <- strtoi(substr(hex, 5, 6), 16L)/255
+        a <- strtoi(substr(hex, 7, 8), 16L)/255
+      } else if (nchar(hex) == 6) {  # RRGGBB
+        r <- strtoi(substr(hex, 1, 2), 16L)/255
+        g <- strtoi(substr(hex, 3, 4), 16L)/255
+        b <- strtoi(substr(hex, 5, 6), 16L)/255
+        a <- 1
+      } else {
+        stop("Unsupported hex format: use #RRGGBB or #RRGGBBAA")
+      }
+      c(r, g, b, a)
+    } else {
+      rgb <- as.vector(grDevices::col2rgb(c))/255
+      c(rgb, 1)
+    }
+  }
+
+  # WCAG relative luminance & contrast ratio (ignores alpha for contrast)
+  rel_lum <- function(rgb01) {
+    f <- function(c) ifelse(c <= 0.03928, c/12.92, ((c+0.055)/1.055)^2.4)
+    x <- f(rgb01[1:3])
+    0.2126*x[1] + 0.7152*x[2] + 0.0722*x[3]
+  }
+  contrast_ratio <- function(c1, c2) {
+    L1 <- rel_lum(parse_col(c1))
+    L2 <- rel_lum(parse_col(c2))
+    Lh <- max(L1, L2); Ls <- min(L1, L2)
+    (Lh + 0.05) / (Ls + 0.05)
+  }
+
+  base <- parse_col(col)
+  rgb <- base[1:3]; alpha <- base[4]
+
+  hsv <- grDevices::rgb2hsv(matrix(rgb, nrow = 3), maxColorValue = 1)
+  h <- hsv[1, 1]; s <- hsv[2, 1]; v <- hsv[3, 1]
+
+  # strict 180° hue complement
+  comp <- grDevices::hsv((h + degree_offset) %% 1, s, v, alpha = alpha)
+
+  if (method == "complement") {
+    return(toupper(comp))
+  }
+
+  if (method == "bw_maxcontrast") {
+    c_black <- contrast_ratio(col, "#000000")
+    c_white <- contrast_ratio(col, "#FFFFFF")
+    return(if (c_white >= c_black) "#FFFFFFFF" else "#000000FF")
+  }
+
+  # method == "complement_maxcontrast"
+  best <- list(hex = comp, cr = contrast_ratio(col, comp))
+
+  h2 <- (h + degree_offset) %% 1
+  v_grid <- seq(0, 1, by = 0.01)
+  s_grid <- clamp01(s * c(0.6, 0.8, 1.0, 1.2))
+
+  for (sv in s_grid) {
+    for (vv in v_grid) {
+      cand <- grDevices::hsv(h2, sv, vv, alpha = alpha)
+      cr <- contrast_ratio(col, cand)
+      if (cr > best$cr) best <- list(hex = toupper(cand), cr = cr)
+    }
+  }
+  best$hex
+}
+
+
