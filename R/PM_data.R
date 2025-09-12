@@ -2085,7 +2085,7 @@ summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
     }
     object <- object$standard_data
   } else {
-    loq <- rep(NA, max(object$outeq, na.rm = TRUE)) # assumes PM_data_data
+    loq <- rep(NA, max(object$outeq, na.rm = TRUE))
   }
   # filter data if needed
   if (!missing(include)) {
@@ -2104,8 +2104,8 @@ summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
   results$numeqt <- max(object$outeq, na.rm = T)
   results$nobsXouteq <- tapply(object$evid, object$outeq, function(x) length(x == 0))
   results$missObsXouteq <- by(object, object$outeq, function(x) length(x$out[x$evid == 0 & x$out == -99]))
+  
   # loq
-
   loq_tbl <- tibble(outeq = 1:length(loq), loq = loq)
   df <- object %>% dplyr::inner_join(loq_tbl, by = "outeq")
 
@@ -2122,6 +2122,7 @@ summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
   covinfo <- getCov(object)
   ncov <- covinfo$ncov
   results$ncov <- ncov
+  results$loq <- loq
   results$covnames <- covinfo$covnames
   results$ndoseXid <- tapply(object$evid, list(object$id, object$input), function(x) length(x != 0))[idOrder, ]
   results$nobsXid <- tapply(object$evid, list(object$id, object$outeq), function(x) length(x == 0))[idOrder, ]
@@ -2192,7 +2193,12 @@ print.summary.PM_data <- function(x, ...) {
   cli::cli_text("Number of inputs: {.blue {x$ndrug}}")
   cli::cli_text("Number of outputs: {.blue {x$numeqt}}")
   for (i in 1:x$numeqt) {
-    cli::cli_text("Total number of observations (outeq {i}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing and {.blue {x$loqObsXouteq$n[i]}} ({.blue {sprintf('%.3f', 100 * x$loqObsXouteq$n[i] / x$nobsXouteq[i])}%}) coded as below the limit of quantification.")
+    if (!is.na(x$loq[i])) {
+      extra_text <- " and {.blue {x$loqObsXouteq$n[i]}} ({.blue {sprintf('%.3f', 100 * x$loqObsXouteq$n[i] / x$nobsXouteq[i])}%}) coded as below the LOQ ({x$loq[i]})."
+    } else {
+      extra_text <- ". No LOQ specified."
+    }
+    cli::cli_text("Total number of observations (outeq {i}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing", extra_text)
   }
   if (x$ncov > 0) {
     cli::cli_text(" Covariates: {.blue {x$covnames}}")
