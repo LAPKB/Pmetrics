@@ -28,7 +28,7 @@ Authors@R: c(
   person("Robert", "Leary", email = "", role = "ctb")
     )
 Version: 2.1.1
-URL: https://lapkb.github.io/Pmetrics/
+URL: https://lapkb.github.io/Pmetrics/, https://lapkb.github.io/Pmetrics_rust/
 BugReports: https://github.com/LAPKB/Pmetrics/issues
 Depends: 
     R (>= 4.0.0)
@@ -79,7 +79,7 @@ Suggests:
     reticulate,
     rmarkdown,
     testthat
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Encoding: UTF-8
 Config/testthat/edition: 3
 VignetteBuilder: knitr
