@@ -1,11 +1,6 @@
+:warning: This is a development branch of Pmetrics using a new backend written in Rust. The repository for the current stable release is [LAPKB/Pmetrics](https://github.com/LAPKB/Pmetrics).
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-<!-- update README.md with devtools::build_readme() -->
-
-# Overview <a href="https://lapkb.github.io/Pmetrics/"><img src="man/figures/logo.png" align="right" height="139" alt="Pmetrics website" /></a>
-
-<!-- badges: start -->
-<!-- badges: end -->
+# Pmetrics <a href="https://lapkb.github.io/Pmetrics/"><img src="logo.png" align="right" height="139" alt="Pmetrics website" /></a>
 
 Thank you for your interest in Pmetrics. Pmetrics is a library package
 for R to perform non-parametric and parametric
