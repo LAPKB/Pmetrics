@@ -86,6 +86,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
     # Math funcs
     "abs"  = sprintf("(%s).abs()",  rust_args[[1]]),
     "log"  = sprintf("(%s).ln()",   rust_args[[1]]),
+    "log10"= sprintf("(%s).log10()",rust_args[[1]]),
     "exp"  = sprintf("(%s).exp()",  rust_args[[1]]),
     "sqrt" = sprintf("(%s).sqrt()", rust_args[[1]]),
 
@@ -130,6 +131,15 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
         as.list(args[[3]][-1]) else list(args[[3]])
       body <- stmts_to_rust(loop_exprs, params, covs, declared)  # make sure stmts_to_rust gets declared too
       sprintf("for %s in 0..%s as usize {\n%s}\n", var, n_sym, indent(body))
+    },
+
+    # Pmetrics functions
+    "get_e2" = {
+
+      sprintf("get_e2(%s, %s, %s, %s, %s, %s);", 
+              rust_args[[1]], rust_args[[2]], rust_args[[3]], 
+              rust_args[[4]], rust_args[[5]], rust_args[[6]])
+
     },
 
     stop(sprintf("Unsupported operation: %s", op))
