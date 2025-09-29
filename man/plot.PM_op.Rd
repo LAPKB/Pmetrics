@@ -37,7 +37,7 @@ and loaded with \link{PM_load} as a field in a \link{PM_result}, e.g. \code{PM_r
 some other Pmetrics plots, for plot.PM_op, \code{line} is a list of
 three elements:
 \itemize{
-\item \code{lm}  If set to \code{TRUE} or a list of plotly line attributes,
+\item \code{lm}  If set to \code{TRUE} (default) or a list of plotly line attributes,
 will generate a linear regression of the form obs ~ pred.
 Line attributes will control the appearance of the regression
 line and the confidence interval around the line. If set to
@@ -53,12 +53,12 @@ the line, but at opacity = 0.2. Default is "dodgerblue".
 line > dash > values. Default is "solid".
 Example: \code{line = list(lm = list(color = "red", dash = "longdash", width = 2))}
 }
-\item \code{loess} If set to \code{TRUE} or a list of plotly line attributes,
+\item \code{loess} If set to \code{TRUE} (default is \code{FALSE}) or a list of plotly line attributes,
 will generate a loess regression of the form obs ~ pred.
 The list elements and default values in the \code{loess} list are the
 same as for \code{lm} except the default style is "dash".
 Example: \code{line = list(lm = FALSE, loess = TRUE)}
-\item \code{ref} If set to \code{TRUE} or a list of plotly line attributes,
+\item \code{ref} If set to \code{TRUE} (default) or a list of plotly line attributes,
 will generate a reference line with slope = 1 and intercept = 0.
 The default values for the elements of the \code{ref} list are:
 \itemize{
@@ -79,7 +79,10 @@ loess regression with reference line, but no linear regression.
 
 Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}
 Default is
-\code{marker = list(color = orange, shape = "circle", size = 10, opacity = 0.5, line = list(color = black, width = 1))}.}
+\code{marker = list(color = orange, shape = "circle", size = 10, opacity = 0.5, line = list(color = black, width = 1))}.
+The color of any BLQ points is set to a color 90 degrees different on the color wheel from the
+color of the other points using \link{opposite_color} to ensure good contrast. The symbol for BLQ points is fixed to "triangle-down", and
+the opacity is fixed to 1. Size is the same as for other points.}
 
 \item{resid}{Boolean operator to generate a plot of weighted prediction error vs. time,
 a plot of weighted prediction error vs. prediction. Prediction error is
@@ -163,6 +166,14 @@ within a \link{PM_result} to generate a plot of Observed vs. Predicted observati
 The function can be called directly on a \link{PM_op} object. The default
 is to generate an observed vs. predicted plot of predictions based on the
 median of the Bayesian posterior distributions for each subject.
+Missing observations are excluded. Observations reported as BLQ (below the limit of quantification)
+are indicated as downward triangles, and colored differently from other observations. They are plotted
+at the reported LOQ on the observed axis and the predicted value on the predicted axis. They are not
+included in any regression lines or statistics.
+
+Clicking on a point in the plot will highlight all points from that subject. The color of the highlight
+is 180 degrees different on the color wheel from the color of the other points (\link{opposite_color}), ensuring good contrast.
+Clicking on the plot background will remove the highlighting.
 }
 \examples{
 \dontrun{

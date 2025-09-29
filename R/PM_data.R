@@ -1654,6 +1654,8 @@ plot.PM_data <- function(
 
   # process marker
   marker <- amendMarker(marker)
+  highlight_color <- opposite_color(marker$color[1]) # in plotly_Utils.R
+
 
   # process line
   if (any(!base::names(line) %in% c("join", "pred"))) {
@@ -1878,6 +1880,7 @@ plot.PM_data <- function(
   # Plot function ----------------------------------------------------------
 
   dataPlot <- function(allsub, overlay, includePred) {
+
     group_colors <- marker$color
     group_symbols <- marker$symbol
     if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
@@ -1887,10 +1890,14 @@ plot.PM_data <- function(
       if (length(group_colors) < n_colors) { # fewer colors than groups, need to interpolate
         if (checkRequiredPackages("RColorBrewer")) {
           palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
-          if (length(group_colors) == 1 && group_colors %in% palettes$name) { # colors specified as a palette name
-            max_colors <- palettes$maxcolors[match(group_colors, palettes$name)]
-            group_colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, group_colors))(n_colors)
-          } else {
+          if (length(group_colors) == 1) { # only one color specified
+            if (group_colors %in% palettes$name){# colors specified as a palette name
+              max_colors <- palettes$maxcolors[match(group_colors, palettes$name)]
+              group_colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, group_colors))(n_colors)
+            } else {
+              group_colors <- c(group_colors, getDefaultColors(n_colors)[-1]) # in plotly_Utils, add default colors to specified color
+            }
+          } else { # length of group_colors > 1 but fewer than groups, so interpolate
             group_colors <- tryCatch(colorRampPalette(group_colors)(n_colors),
               error = function(e) {
                 cli::cli_warn(c("!" = "Unable to interpolate colors, using default colors."))
@@ -2020,7 +2027,7 @@ plot.PM_data <- function(
     allsub <- allsub %>% dplyr::group_by(id)
     p <- dataPlot(allsub, overlay = TRUE, includePred)
 
-    if (print) print(click_plot(p))
+    if (print) print(click_plot(p, highlight_color = highlight_color))
     return(invisible(p))
   } else { # overlay = FALSE, ie. split them
 
