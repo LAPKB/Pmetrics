@@ -399,6 +399,11 @@ PM_data <- R6::R6Class("PM_data",
         msg <- c(msg, "All observations assumed to be OUTEQ = 1.\n")
       }
 
+      if (!"cens" %in% dataNames) {
+        dataObj$cens <- NA
+        msg <- c(msg, "All observations assumed to be uncensored.\n")
+      }
+
       errorCoef <- c("c0", "c1", "c2", "c3")
       missingError <- sapply(errorCoef, function(x) !x %in% dataNames)
       if (any(missingError)) {
