@@ -23,7 +23,7 @@ getFixedColNames <- function() {
 
   c(
     "id", "evid", "time", "dur", "dose", "addl",
-    "ii", "input", "out", "outeq", "c0", "c1", "c2", "c3"
+    "ii", "input", "out", "outeq", "cens", "c0", "c1", "c2", "c3"
   )
 }
 
