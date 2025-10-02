@@ -39,9 +39,6 @@ PM_data <- R6::R6Class("PM_data",
   public <- list(
     #' @field data Data frame containing the data to be modeled
     data = NULL,
-    #' @field loq Values for each output equation to be considered as
-    #' the limit of quantification (loq). See `$new()` below for details.
-    loq = NULL,
     #' @field standard_data Data frame containing standardized version of the data
     standard_data = NULL,
     #' @field pop The `$data` field from a [PM_pop] object. This makes it easy to add population predictions to a raw data plot. This field will be `NULL` until the [PM_data] object is added to the [PM_result] after a run. As examples:
@@ -59,13 +56,6 @@ PM_data <- R6::R6Class("PM_data",
     #' @param data A quoted name of a file with full path if not
     #' in the working directory, an unquoted name of a data frame
     #' in the current R environment, or a [PM_data] object, which will rebuild it.
-    #' @param loq Optional vector of values for each output equation to be considered
-    #' as the Limit of Quantification (loq). Any observation the same as the `loq` value
-    #' for that output equation will be considered `loq`. Such observations are used in
-    #' the calculation of the likelihood, e.g. probabilty that the prediction is at or below the `loq` given
-    #' the noise and prediction, but will not be included in observed vs. predicted plots.
-    #' If `loq` is missing or an output equation does not have an loq value, `loq` will
-    #' be set to `NA` for that output equation.
     #' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
     #' them fail, use this parameter to specify the correct format as a
     #' character vector whose
@@ -84,7 +74,6 @@ PM_data <- R6::R6Class("PM_data",
     #' @param validate Check for errors. Default is `TRUE`. Strongly recommended.
     initialize = function(
         data = NULL,
-        loq = NULL,
         dt = NULL,
         quiet = FALSE,
         validate = TRUE) {
@@ -107,20 +96,8 @@ PM_data <- R6::R6Class("PM_data",
         1
       }
 
-      if (is.null(loq)) {
-        self$loq <- rep(NA, nout)
-      } else {
-        if (length(loq) != nout) {
-          cli::cli_abort(c(
-            "x" = "You must have {nout} loq values to match the number of output equations in the data.",
-            " " = "Include a value of {.code NA} for any output equation that does not have an loq value."
-          ))
-        }
-        self$loq <- loq
-      }
-
       if (!is.null(self$data) && validate) {
-        self$standard_data <- private$validate(self$data, quiet = quiet, loq = loq, dt = dt)
+        self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)
       }
     },
     #' @description
@@ -216,7 +193,7 @@ PM_data <- R6::R6Class("PM_data",
     #' @param ... Arguments passed to [summary.PM_data].
     summary = function(...) {
       if (!is.null(self$standard_data)) {
-        summary.PM_data(self, ...)
+        summary.PM_data(self$standard_data, ...)
       } else {
         cli::cli_warn("Create a validated PM_data object before summarizing.")
       }
@@ -336,7 +313,7 @@ PM_data <- R6::R6Class("PM_data",
       self$data <- new_data
       if (validate) {
         self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x))))
-        self$standard_data <- private$validate(self$data, dt = dt, loq = self$loq, quiet = quiet)
+        self$standard_data <- private$validate(self$data, dt = dt, quiet = quiet)
       } else {
         self$standard_data <- NULL
       }
@@ -344,7 +321,7 @@ PM_data <- R6::R6Class("PM_data",
     } # end addEvent
   ), # end public
   private = list(
-    validate = function(dataObj, quiet, loq, dt) {
+    validate = function(dataObj, quiet, dt) {
       dataObj_orig <- dataObj # keep the original to pass to PMcheck
       dataNames <- names(dataObj)
       standardNames <- getFixedColNames()
@@ -400,7 +377,7 @@ PM_data <- R6::R6Class("PM_data",
       }
 
       if (!"cens" %in% dataNames) {
-        dataObj$cens <- NA
+        dataObj$cens <- ifelse(is.na(dataObj$out), NA, 0)
         msg <- c(msg, "All observations assumed to be uncensored.\n")
       }
 
@@ -444,7 +421,7 @@ PM_data <- R6::R6Class("PM_data",
         cat(msg)
       }
 
-      validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = TRUE, loq = loq, quiet = quiet)
+      validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = TRUE, quiet = quiet)
       return(validData)
     } # end validate function
   ) # end private
@@ -697,7 +674,7 @@ PMmatrixRelTime <- function(
 #' Because there is no standardization with direct calls, in this case the format of the .csv matrix file is fairly rigid.
 #' It must have the following features.  Text is case-sensitive.
 #'  * A header in row 1 with the appropriate version, currently "POPDATA DEC_11"
-#' 	* Column headers in row 2.  These headers are: #ID, EVID, TIME, DUR, DOSE, ADDL, II, INPUT, OUT, OUTEQ,
+#' 	* Column headers in row 2.  These headers are: #ID, EVID, TIME, DUR, DOSE, ADDL, II, INPUT, OUT, CENS, OUTEQ,
 #' C0, C1, C2, C3.
 #'  * No cell should be empty.  It should either contain a value or "." as a placeholder.
 #' 	* Columns after C3 are interpreted as covariates.
@@ -741,7 +718,7 @@ PMmatrixRelTime <- function(
 #'  * Rows missing a TIME value are flagged for the user to fix manually.
 #'  * Cells with malformed NA values are attempted to be fixed.
 #'  * Columns that are non-numeric which must be numeric are flagged for the user to fix manually.
-#'  These are EVID, TIME, DUR, DOSE, ADDL, II, INPUT, OUT, OUTEQ, C0, C1, C2, and C3.
+#'  These are all columns except ID.
 #'  Covariate columns are fixed separately (see above).
 #'
 #' @param data The name of a Pmetrics .csv matrix file in the current working directory,
@@ -749,7 +726,6 @@ PMmatrixRelTime <- function(
 #' the output of a previous [PMreadMatrix] command.
 #' @param fix Boolean operator; if `TRUE`, Pmetrics will attempt to fix errors in the data file.
 #' Default is `FALSE`.
-#' @param loq Numeric value of the limit of quantification (LOQ) for each output.
 #' @param quiet Boolean operator to suppress printed output.  Default is false.
 #' @return If `fix=TRUE`, then [PMcheck] returns
 #' * The original data if no errors are found, or
@@ -795,7 +771,7 @@ PMmatrixRelTime <- function(
 #' }
 #' @export
 
-PMcheck <- function(data, fix = FALSE, loq = NULL, quiet = FALSE) {
+PMcheck <- function(data, fix = FALSE, quiet = FALSE) {
   # get the data
   if (is.character(data)) { # data is a filename
     data2 <- tryCatch(Pmetrics:::PMreadMatrix(data, quiet = TRUE), error = function(e) {
@@ -826,14 +802,9 @@ PMcheck <- function(data, fix = FALSE, loq = NULL, quiet = FALSE) {
     legacy <- F
   }
 
-  if (is.null(loq)) {
-    loq <- rep(NA, max(data2$outeq, na.rm = TRUE))
-  }
-
-
 
   # check for errors
-  err <- errcheck(data2, loq = loq, quiet = quiet, source = source)
+  err <- errcheck(data2, quiet = quiet, source = source)
   if (length(err) == 1) {
     cli::cli_abort(c("x" = "You must at least have id, evid, and time columns to proceed with the check."))
   }
@@ -901,7 +872,7 @@ PMcheck <- function(data, fix = FALSE, loq = NULL, quiet = FALSE) {
 # errcheck ----------------------------------------------------------------
 
 # Check for errors
-errcheck <- function(data2, loq, quiet, source) {
+errcheck <- function(data2, quiet, source) {
   # each list element has msg when OK, results for rows with errors, column, code for excel
   err <- list(
     colorder = list(msg = "OK - The first 14 columns are appropriately named and ordered.", results = NA, col = NA, code = NA),
@@ -915,12 +886,13 @@ errcheck <- function(data2, loq, quiet, source) {
     obsOut = list(msg = "OK - All observation records have an output.", results = NA, col = 9, code = 7),
     obsOuteq = list(msg = "OK - All observation records have an output equation.", results = NA, col = 10, code = 8),
     T0 = list(msg = "OK - All subjects have time=0 as first record.", results = NA, col = 3, code = 9),
-    covT0 = list(msg = "OK - There are no covariates in the dataset.", results = NA, col = 15, code = 10),
+    covT0 = list(msg = "OK - There are no covariates in the dataset.", results = NA, col = getFixedColNum() + 1, code = 10),
     timeOrder = list(msg = "OK - All times are increasing within a subject, given any EVID=4.", results = NA, col = 3, code = 11),
     contigID = list(msg = "OK - All subject IDs are contiguous.", results = NA, col = 1, code = 12),
     nonNum = list(msg = "OK - All columns that must be numeric are numeric.", results = NA, col = NA, code = 13),
     noObs = list(msg = "OK - All subjects have at least one observation.", results = NA, col = 1, code = 14),
-    mal_NA = list(msg = "OK - all unrequired cells have proper NA values.", results = NA, col = NA, code = 15)
+    mal_NA = list(msg = "OK - all unrequired cells have proper NA values.", results = NA, col = NA, code = 15),
+    censDose = list(msg = "OK - No dose event is censored.", results = NA, col = 11, code = 16)
   )
   # set initial attribute to 0 for no error
   attr(err, "error") <- 0
@@ -942,11 +914,11 @@ errcheck <- function(data2, loq, quiet, source) {
     return(-1)
   }
   if (length(t) < numfix | any(!fixedColNames %in% t)) {
-    err$colorder$msg <- paste("FAIL - The first ", numfix, " columns must be named id, evid, time, dur, dose, addl, ii, input, out, outeq, c0, c1, c2, and c3 in that order", sep = "")
+    err$colorder$msg <- paste("FAIL - The first ", numfix, " columns must be named id, evid, time, dur, dose, addl, ii, input, out, outeq, cens, c0, c1, c2, and c3 in that order", sep = "")
     attr(err, "error") <- -1
   } else {
     if (!identical(t[1:numfix], fixedColNames)) {
-      err$colorder$msg <- paste("FAIL - The first ", numfix, " columns must be named id, evid, time, dur, dose, addl, ii, input, out, outeq, c0, c1, c2, and c3 in that order.", sep = "")
+      err$colorder$msg <- paste("FAIL - The first ", numfix, " columns must be named id, evid, time, dur, dose, addl, ii, input, out, outeq, cens, c0, c1, c2, and c3 in that order.", sep = "")
       attr(err, "error") <- -1
     }
   }
@@ -1020,7 +992,7 @@ errcheck <- function(data2, loq, quiet, source) {
   # covariate checks
   if (numcov > 0) {
     covinfo <- getCov(data2)
-    # check for missing covariates at time 0
+    # check for missing covariates at time 0 
     time0 <- which(data2$time == 0 & data2$evid == 1)
     if (length(time0) > 1) {
       t <- apply(as.matrix(data2[time0, covinfo$covstart:covinfo$covend], ncol = numcov), 1, function(x) any(is.na(x)))
@@ -1081,6 +1053,7 @@ errcheck <- function(data2, loq, quiet, source) {
     subjMissObs <- unique(data2$id)[which(subjObs == 0)]
     err$noObs$msg <- "FAIL - The following rows are subjects with no observations."
     err$noObs$results <- which(data2$id %in% subjMissObs)
+    attr(err, "error") <- -1
   }
 
   # check for columns with malformed NA values
@@ -1091,6 +1064,15 @@ errcheck <- function(data2, loq, quiet, source) {
   if (length(mal_NA) > 0) {
     err$mal_NA$msg <- "FAIL - The following columns contain malformed NA values."
     err$mal_NA$results <- mal_NA
+    attr(err, "error") <- -1
+  }
+
+  # warning for censoring on doses
+  t <- which(data2$evid == 1 & data2$cens == 1)
+  if (length(t) > 0) {
+    err$censDose$msg <- "WARNING - The following row numbers are censored dose events. Censoring is only valid for observations."
+    err$censDose$results <- t
+    attr(err, "error") <- -1
   }
 
   class(err) <- c("PMerr", "list")
@@ -1098,11 +1080,6 @@ errcheck <- function(data2, loq, quiet, source) {
     cli::cli_h1("DATA VALIDATION")
     print(err)
     flush.console()
-    loq_flag <- purrr::imap_lgl(loq, ~ any(.x > data2$out[data2$out != -99 & data2$outeq == .y], na.rm = TRUE))
-    if (any(loq_flag)) {
-      n_flag <- length(which(loq_flag))
-      cli::cli_text("{.strong Note:}{cli::qty(n_flag)} Output equation{?s} {which(loq_flag)} {cli::qty(n_flag)} {?has/have} at least one observation below the {.arg loq} value{?s} you specified.")
-    }
   }
 
   # if no errors in data, and model is specified, check it for errors too
@@ -1255,6 +1232,12 @@ errfix <- function(data2, err, quiet) {
     report <- c(report, paste("Malformed NAs corrected."))
   }
 
+  # Fix censored doses
+  if (length(grep("WARNING", err$censDose$msg)) > 0) {
+    data2$cens[err$censDose$results] <- NA
+    report <- c(report, paste("Censoring on dose events changed to NA."))
+  }
+
   # Report missing TIME
   if (length(grep("FAIL", err$missTIME$msg)) > 0) {
     report <- c(report, paste("Your dataset has missing times.  See errors.xlsx and fix manually."))
@@ -1300,7 +1283,8 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
       "Non-contiguous subject ID",
       "Non-numeric entry",
       "Subject with no observations",
-      "Malformed NA value"
+      "Malformed NA value",
+      "Censored dose event"
     ),
     stringsAsFactors = F
   )
@@ -1487,7 +1471,7 @@ createInstructions <- function(wb) {
       "Cells with errors are color coded according to table below.",
       "Hover your mouse over each cell to read pop-up comment with details.",
       "Comments on column headers in orange contain the total number of errors in that column.",
-      "If fix=T, which is default for PM_data$new(), there will be an additional 'After_Fix' tab.",
+      "If fix = TRUE, which is default for PM_data$new(), there will be an additional 'After_Fix' tab.",
       "This tab contains your standardized data after Pmetrics attempted to repair your data.",
       "Residual errors will be indicated as for the 'Errors' tab.",
       "You can fix the remaining errors and save the 'After_Fix' tab as a new .csv data file."
@@ -2089,16 +2073,7 @@ plot.PM_data <- function(
 #' @export
 
 summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
-  if (inherits(object, "PM_data")) { # user called summary(PM_data)
-    if (!is.null(object$loq)) {
-      loq <- object$loq
-    } else {
-      loq <- rep(NA, max(object$standard_data$outeq, na.rm = TRUE))
-    }
-    object <- object$standard_data
-  } else {
-    loq <- rep(NA, max(object$outeq, na.rm = TRUE))
-  }
+
   # filter data if needed
   if (!missing(include)) {
     object <- subset(object, sub("[[:space:]]+", "", as.character(object$id)) %in% as.character(include))
@@ -2118,23 +2093,12 @@ summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
   results$missObsXouteq <- by(object, object$outeq, function(x) length(x$out[x$evid == 0 & x$out == -99]))
   
   # loq
-  loq_tbl <- tibble(outeq = 1:length(loq), loq = loq)
-  df <- object %>% dplyr::inner_join(loq_tbl, by = "outeq")
-
-  results$loqObsXouteq <- purrr::map2(1:2, loq, \(x, y) {
-    if (!is.na(y)) {
-      df %>%
-        filter(outeq == x, out >= 0, out <= y) %>%
-        dplyr::summarize(outeq = x, n = n())
-    } else {
-      data.frame(outeq = x, n = 0)
-    }
-  }) %>% bind_rows()
+  results$loqObsXouteq <- purrr::map_int(1:max(object$outeq, na.rm = TRUE), \(x) sum(object$cens[object$outeq == x], na.rm = TRUE)) 
+  
 
   covinfo <- getCov(object)
   ncov <- covinfo$ncov
   results$ncov <- ncov
-  results$loq <- loq
   results$covnames <- covinfo$covnames
   results$ndoseXid <- tapply(object$evid, list(object$id, object$input), function(x) length(x != 0))[idOrder, ]
   results$nobsXid <- tapply(object$evid, list(object$id, object$outeq), function(x) length(x == 0))[idOrder, ]
@@ -2205,10 +2169,10 @@ print.summary.PM_data <- function(x, ...) {
   cli::cli_text("Number of inputs: {.blue {x$ndrug}}")
   cli::cli_text("Number of outputs: {.blue {x$numeqt}}")
   for (i in 1:x$numeqt) {
-    if (!is.na(x$loq[i])) {
-      extra_text <- " and {.blue {x$loqObsXouteq$n[i]}} ({.blue {sprintf('%.3f', 100 * x$loqObsXouteq$n[i] / x$nobsXouteq[i])}%}) coded as below the LOQ ({x$loq[i]})."
+    if (x$loqObsXouteq[i] > 0) {
+      extra_text <- " and {.blue {x$loqObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$loqObsXouteq[i] / x$nobsXouteq[i])}%}) coded as below the LOQ."
     } else {
-      extra_text <- ". No LOQ specified."
+      extra_text <- ". No LOQ observations."
     }
     cli::cli_text("Total number of observations (outeq {i}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing", extra_text)
   }
