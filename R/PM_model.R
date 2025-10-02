@@ -970,25 +970,6 @@ PM_model <- R6::R6Class(
                 
                 #### checks
                 
-                # covariates do not need to be identical in PMcore  - MN removed this check 7/27/25
-                
-                # covariates
-                # dataCov <- tolower(getCov(data)$covnames)
-                # modelCov <- tolower(self$model_list$covariates)
-                # if (length(modelCov) == 0) {
-                #   modelCov <- NA
-                # }
-                # if (!all(is.na(dataCov)) &&
-                # !all(is.na(modelCov))) {
-                #   # if there are covariates
-                #   if (!identical(sort(dataCov), sort(modelCov))) {
-                #     # if not identical, abort
-                #     msg <- glue::glue(
-                #       "Model covariates: {paste(modelCov, collapse = ', ')}; Data covariates: {paste(dataCov, collapse = ', ')}"
-                #     )
-                #     cli::cli_abort(c("x" = "Error: Covariates in data and model do not match.", "i" = msg))
-                #   }
-                # }
                 
                 # cycles
                 # if programmer is a crazy Norwegian....
@@ -1005,11 +986,7 @@ PM_model <- R6::R6Class(
                 }
                 
                 modelOut <- self$model_list$n_out
-                # if (dataOut != modelOut) {
-                #   cli::cli_abort(
-                #     c("x" = "Number of output equations in data and model do not match.", "i" = "Check the number of output equations in the data and model.")
-                #   )
-                # }
+        
                 
                 # check if model compiled and if not, do so
                 self$compile()
