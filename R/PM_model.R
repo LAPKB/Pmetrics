@@ -832,7 +832,7 @@ PM_model <- R6::R6Class(
             #' maximize their likelihood, or more precisely, minimize
             #' the objective function, which is -2*log-likelihood.
             #'
-            #' The `$fit` method is the means of running that compiled
+            #' The `$fit()` method is the means of running that compiled
             #' code to conduct to fitting procedure. At a minimum, it requires
             #' a [PM_data] object, which can be created with
             #' `PM_data$new()`. There are a number of additional arguments
@@ -840,16 +840,22 @@ PM_model <- R6::R6Class(
             #' to run, the initial number of support points,
             #' and the algorithm to use, among others.
             #'
-            #' The `$fit` method is the descendant of the legacy
-            #' [NPrun] function, which is maintained as a wrapper to `$fit`
+            #' The `$fit()` method is the descendant of the legacy
+            #' [NPrun] function, which is maintained as a wrapper to `$fit()`
             #' for backwards compatibility.
             #'
             #' @param data Either the name of a  [PM_data]
-            #' object in memory or the quoted name of a Pmetrics
-            #' data file in the current working directory, which will crate a [PM_data]
+            #' object in memory or the quoted filename (with or without a path) of a Pmetrics
+            #' data file. If the path is not specified, the file is assumed to be in the current working directory,
+            #' unless the `path` argument below is also specified as a global option for the fit.
+            #' The file will be used to create a [PM_data]
             #' object on the fly. However, if created on the fly, this object
             #' will not be available to other
-            #' methods or other instances of [PM_fit].
+            #' methods or other instances of `$fit()`.
+            #' @param path Optional full path or relative path from current working directory
+            #' to the folder where `data` and `model` are located if specified as filenames without
+            #' their own paths,
+            #' and where the output will be saved. Default is the current working directory.
             #' @param run Specify the run number of the output folder.  Default if missing is the next available number.
             #' @param include Vector of subject id values in the data file to include in the analysis.
             #' The default (missing) is all.
@@ -931,6 +937,7 @@ PM_model <- R6::R6Class(
             #' @author Michael Neely
             #' @export
             fit = function(data = NULL,
+              path = ".",
               run = NULL,
               include = NULL,
               exclude = NULL,
@@ -946,6 +953,8 @@ PM_model <- R6::R6Class(
                 
                 msg <- "" # status message at end of run
                 
+                path <- stringr::str_replace(path, "/$", "") # remove trailing /
+                
                 if (is.null(data)) {
                   cli::cli_abort(c("x" = " {.arg data} must be specified."))
                 }
@@ -955,7 +964,8 @@ PM_model <- R6::R6Class(
                 }
                 
                 if (is.character(data)) {
-                  data <- PM_data$new(data)
+                  # create PM_data object from file
+                  data <- PM_data$new(file.path(path, data))
                 }
                 
                 if (!inherits(data, "PM_data")) {
@@ -996,38 +1006,38 @@ PM_model <- R6::R6Class(
                 
                 
                 # make new output directory
+           
                 if (is.null(run)) {
-                  olddir <- list.dirs(recursive = FALSE)
+                  olddir <- list.dirs(path, recursive = FALSE)
                   olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
                   olddir <- sub("^\\./", "", olddir)
                   if (length(olddir) > 0) {
-                    newdir <- as.character(max(as.numeric(olddir)) + 1)
+                    path_run <- file.path(path, as.character(max(as.numeric(olddir)) + 1))
                   } else {
-                    newdir <- "1"
+                    path_run <- file.path(path, "1")
                   }
                 } else {
                   if (!is.numeric(run)) {
                     cli::cli_abort(c("x" = " {.arg run} must be numeric."))
                   } else {
-                    newdir <- as.character(run)
+                    path_run <- file.path(path, run)
                   }
                 }
                 
-                if (file.exists(newdir)) {
+                if (file.exists(path_run)) {
                   if (overwrite) {
-                    unlink(newdir, recursive = TRUE)
-                    msg <- c(msg, "The previous run in folder '{newdir}' was overwritten.")
-                    #cli::cli_inform(c("i" = "Overwriting the previous run in folder '{newdir}'."))
+                    unlink(path_run, recursive = TRUE)
+                    msg <- c(msg, "The previous run in folder '{path_run}' was overwritten.")
                   } else {
                     cli::cli_inform(
-                      c("i" = "The previous run from '{newdir}' was read.", " " = "Set {.arg overwrite} to {.val TRUE} to overwrite prior run in '{newdir}'.")
+                      c("i" = "The previous run from '{path_run}' was read.", " " = "Set {.arg overwrite} to {.val TRUE} to overwrite prior run in '{path_run}'.")
                     )
-                    return(invisible(PM_load(newdir)))
+                    return(invisible(PM_load(file = file.path(path_run, "PMout.Rdata"))))
                   }
                 }
                 
-                dir.create(newdir)
-                setwd(newdir)
+                dir.create(path_run)
+                
                 
                 #### Algorithm ####
                 algorithm <- toupper(algorithm)
@@ -1049,7 +1059,6 @@ PM_model <- R6::R6Class(
                 
                 
                 if (getPMoptions()$backend != "rust") {
-                  setwd(cwd)
                   cli::cli_abort(c("x" = "Error: unsupported backend.", "i" = "See help for {.fn setPMoptions}"))
                 }
                 
@@ -1064,17 +1073,14 @@ PM_model <- R6::R6Class(
                 
                 if (nrow(data_filtered) == 0) {
                   cli::cli_abort("x" = "No subjects remain after filtering.")
-                  setwd(cwd)
                   return(invisible(NULL))
                 }
                 
                 
                 #### Save objects ####
-                PM_data$new(data_filtered, quiet = TRUE)$save("gendata.csv", header = FALSE)
-                #save(self, file = "fit.Rdata")
-                #this_fit <- PM_fit$new(data = data, model = self)
-                saveRDS(list(data = data, model = self), file = "fit.rds")
-                file.copy(self$binary_path, getwd())
+                PM_data$new(data_filtered, quiet = TRUE)$save(file.path(path_run, "gendata.csv"), header = FALSE)
+                saveRDS(list(data = data, model = self), file = file.path(path_run, "fit.rds"))
+                file.copy(self$binary_path, path_run)
                 
                 # Get ranges and calculate points
                 ranges <- lapply(self$model_list$pri, function(x) {
@@ -1097,10 +1103,10 @@ PM_model <- R6::R6Class(
                 if (prior != "sobol") {
                   if (is.numeric(prior)) {
                     # prior specified as a run number
-                    if (!file.exists(glue::glue("../{prior}/outputs/theta.csv"))) {
+                    if (!file.exists(glue::glue("{path}/{prior}/outputs/theta.csv"))) {
                       cli::cli_abort(c("x" = "Error: {.arg prior} file does not exist.", "i" = "Check the file path."))
                     }
-                    file.copy(glue::glue("../{prior}/outputs/theta.csv"), "prior.csv", overwrite = TRUE)
+                    file.copy(glue::glue("{path}/{prior}/outputs/theta.csv"), "prior.csv", overwrite = TRUE)
                     prior <- "prior.csv"
                   } else if (is.character(prior)) {
                     # prior specified as a filename
@@ -1108,7 +1114,7 @@ PM_model <- R6::R6Class(
                       cli::cli_abort(c("x" = "Error: {.arg prior} file does not exist.", "i" = "Check the file path."))
                     }
                     file.copy(prior, "prior.csv", overwrite = TRUE) # ensure in current working directory
-                  } else if (is.data.frame(piror)){
+                  } else if (is.data.frame(prior)){
                     # prior specified as a data frame
                     if (!all(c("prob", self$model_list$parameters) %in% names(prior))) {
                       cli::cli_abort(c("x" = "Error: {.arg prior} data frame must contain columns for parameters and probabilities.", "i" = "Check the data frame."))
@@ -1153,13 +1159,13 @@ PM_model <- R6::R6Class(
                 
                 if (intern) {
                   ### CALL RUST
-                  out_path <- file.path(getwd(), "outputs")
+                  out_path <- file.path(path_run, "outputs")
                   msg <- c(msg, "Run results were saved in folder '{.path {out_path}}'")
                   rlang::try_fetch(
                     fit(
                       # defined in extendr-wrappers.R
                       model_path = self$binary_path,
-                      data = "gendata.csv",
+                      data = file.path(path_run, "gendata.csv"),
                       params = list(
                         ranges = ranges, #not important but needed for POSTPROB
                         algorithm = algorithm,
@@ -1178,21 +1184,26 @@ PM_model <- R6::R6Class(
                     ),
                     error = function(e) {
                       cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
-                      setwd(cwd)
                       return(NULL)
                     }
                   )
                   
-                  PM_parse("outputs")
-                  res <- PM_load(file = "PMout.Rdata")
+                  PM_parse(path = out_path)
+                  res <- PM_load(path = out_path, file = "PMout.Rdata")
                   if(report != "none"){
-                    PM_report(res, outfile = "report.html", template = report, quiet = TRUE)
-                    msg <- c(msg, "Report generated with {report} template.")
+                    rlang::try_fetch(
+                      valid_report <- PM_report(res, out_path = out_path, template = report, quiet = TRUE),
+                      error = function(e) return(-1)
+                    )
+                    if (valid_report == 1) {
+                      msg <- c(msg, "Report generated with {report} template.")
+                    } else {
+                      msg <- c(msg, "Report could not be generated.")
+                    }
                   }
                   
                   if(tolower(algorithm) == "postprob") {this_alg <- "map"} else {this_alg <- "fit"}
-                  msg <- c(msg, "If assigned to a variable, e.g. {.code run{newdir} <-}, results of {.fn {this_alg}} are available in {.code run{newdir}}.")
-                  setwd(cwd)
+                  msg <- c(msg, "If assigned to a variable, e.g. {.code run{path_run} <-}, results of {.fn {this_alg}} are available in {.code run{path_run}}.")
                   if(length(msg)>1) {
                     cli::cli_h1("Notes:")
                     cli::cli_ul()
@@ -1205,7 +1216,7 @@ PM_model <- R6::R6Class(
                     c("x" = "Error: Currently, the rust engine only supports internal runs.", "i" = "This is a temporary limitation.")
                   )
                 }
-              }, # end fit method
+            }, # end fit method
               
               #' @description
               #' Calculate posteriors from a fitted model.

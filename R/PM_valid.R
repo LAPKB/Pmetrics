@@ -711,7 +711,6 @@ PM_valid <- R6::R6Class(
         npde_tad = npdeTAD
       )
 
-      setwd(currwd)
       return(invisible(valRes))
     } # end make function
   ) # end private

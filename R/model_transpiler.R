@@ -40,7 +40,6 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
   args <- as.list(expr[-1])
   rust_args <- lapply(args, expr_to_rust, params = params, covs = covs,
                       declared = declared)
-
   switch(op,
     # Grouping
     "(" = sprintf("(%s)", rust_args[[1]]),
@@ -68,7 +67,11 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
     },
     "*" = sprintf("%s * %s", rust_args[[1]], rust_args[[2]]),
     "/" = sprintf("%s / %s", rust_args[[1]], rust_args[[2]]),
-    "^" = sprintf("(%s).powf(%s)", rust_args[[1]], rust_args[[2]]),
+    "^" = if(!is.na(as.numeric(rust_args[[1]]))) {
+      sprintf("(%sf64).powf(%s)", rust_args[[1]], rust_args[[2]])
+    } else {
+      sprintf("(%s).powf(%s)", rust_args[[1]], rust_args[[2]])
+    },
 
     # Comparison
     "==" = sprintf("%s == %s", rust_args[[1]], rust_args[[2]]),

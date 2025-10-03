@@ -21,26 +21,23 @@
 #' @author Michael Neely and Markus Hovd
 #' @export
 
-PM_parse <- function(wd = getwd(), fit = "fit.rds", write = TRUE) {
-  if (is.character(fit) && file.exists(fit)) {
+PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
+ 
+  if (is.character(fit) && file.exists(file.path(path, fit))) {
     # fit is a character string pointing to a file, load it
-    fit_object <- readRDS(fit)
+    fit_object <- readRDS(file.path(path, fit))
   } else {
     # fit does not meet any of the above conditions, set to NULL
     fit_object <- NULL
   }
 
-  cwd <- getwd()
-  if (!dir.exists(wd)) {
-    setwd("..") # restore to parent folder
-    cli::cli_abort(c("!" = "The directory {.path {wd}} does not exist.",
-    " " = "The run did not initiate. Check data and model.")
-  )
+  
+  if (!dir.exists(path)) {
+    cli::cli_abort(c("x" = "The directory {.path {path}} does not exist."))
 }
-setwd(wd) # will be /outputs by default
 
-# assumes pred.csv, obs.csv, and settings.json are in wd
-op <- rlang::try_fetch(PM_op$new(),
+# assumes pred.csv, op.csv, and settings.json are in wd
+op <- rlang::try_fetch(PM_op$new(path = path),
 error = function(e) {
   cli::cli_warn("Unable to create {.cls PM_op} object", parent = e)
   return(NULL)
@@ -48,15 +45,15 @@ error = function(e) {
 )
 
 # assumes theta.csv and posterior.csv are in wd
-final <- rlang::try_fetch(PM_final$new(),
+final <- rlang::try_fetch(PM_final$new(path = path),
 error = function(e) {
   cli::cli_warn("Unable to create {.cls PM_final} object", parent = e)
   return(NULL)
 }
 )
 
-# assumes cycles.csv, obs.csv, and settings.json are in wd
-cycle <- rlang::try_fetch(PM_cycle$new(),
+# assumes cycles.csv, op.csv, and settings.json are in wd
+cycle <- rlang::try_fetch(PM_cycle$new(path = path),
 error = function(e) {
   cli::cli_warn("Unable to create {.cls PM_cycle} object", parent = e)
   return(NULL)
@@ -64,7 +61,7 @@ error = function(e) {
 )
 
 # assumes pred.csv is in wd
-pop <- rlang::try_fetch(PM_pop$new(),
+pop <- rlang::try_fetch(PM_pop$new(path = path),
 error = function(e) {
   cli::cli_warn("Unable to create {.cls PM_pop} object", parent = e)
   return(NULL)
@@ -72,14 +69,14 @@ error = function(e) {
 )
 
 # assumes pred.csv is in wd
-post <- rlang::try_fetch(PM_post$new(),
+post <- rlang::try_fetch(PM_post$new(path = path),
 error = function(e) {
   cli::cli_warn("Unable to create {.cls PM_post} object", parent = e)
   return(NULL)
 }
 )
 
-cov <- rlang::try_fetch(PM_cov$new(),
+cov <- rlang::try_fetch(PM_cov$new(path = path),
 error = function(e) {
   cli::cli_warn("Unable to create {.cls PM_cov} object", parent = e)
   return(NULL)
@@ -99,11 +96,11 @@ core <- list(
   algorithm = "NPAG",
   numeqt = 1,
   converge = cycle$data$converged,
-  config = rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines("settings.json", warn = FALSE))),
+  config = rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines(file.path(path, "settings.json"), warn = FALSE))),
   sys = as.list(Sys.info()) %>% keep(names(.) %in% c("sysname", "machine")) %>% paste(collapse = " "),
   
   error = function(e) {
-    cli::cli_warn(c("!" = "Unable to read {.file settings.json}"))
+    cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
     return(NULL)
   }
 )
@@ -113,22 +110,8 @@ class(core) <- "PM_result"
 
 
 if (write) {
-  save(core, file = "PMout.Rdata")
-  return(invisible(core))
+  save(core, file = file.path(path, "PMout.Rdata"))
 }
 
-setwd(cwd) # should be run folder
-return(core)
-}
-
-
-
-
-
-
-
-# make_Config -------------------------------------------------------------
-
-make_Config <- function(settings_file) {
-  jsonlite::fromJSON(settings_file)
+return(invisible(core))
 }
