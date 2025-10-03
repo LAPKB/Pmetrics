@@ -55,12 +55,10 @@ PM_post <- R6::R6Class(
     #' Creation of new `PM_post` object is automatic and not generally necessary
     #' for the user to do.
     #' @param PMdata include `r template("PMdata")`.
-    #' @param run If backend is Fortran, run number to find PRTB0001 file with
-    #' posterior predictions. If missing, will look for this file in working
-    #' directory. Not needed when the backend is Rust.
+    #' @param path include `r template("path")`.
     #' @param ... Not currently used.
-    initialize = function(PMdata = NULL, run, ...) {
-      self$data <- private$make(PMdata, run)
+    initialize = function(PMdata = NULL, path = ".", ...) {
+      self$data <- private$make(PMdata, path)
     },
     #' @description
     #' Plot method
@@ -94,16 +92,16 @@ PM_post <- R6::R6Class(
     }
   ), # end public
   private = list(
-    make = function(data, run) {
-      if (file.exists("pred.csv")) {
-        raw <- readr::read_csv(file = "pred.csv", show_col_types = FALSE)
+    make = function(data, path) {
+    if (file.exists(file.path(path, "pred.csv"))) {
+      raw <- readr::read_csv(file = file.path(path, "pred.csv"), show_col_types = FALSE)
       } else if (inherits(data, "PM_post")) { # file not there, and already PM_post
         class(data$data) <- c("PM_post_data", "data.frame")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate post pred information.",
-          "i" = "Result does not have valid {.code PM_post} object, and {.file {getwd()}/pred.csv} does not exist."
+        "i" = "Result does not have valid {.code PM_post object, and {.file {file.path(path, 'pred.csv')} does not exist."
         ))
         return(NULL)
       }

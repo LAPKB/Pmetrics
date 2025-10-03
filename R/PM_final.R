@@ -50,7 +50,7 @@ PM_final <- R6::R6Class(
     #' * **popVar** The final cycle variance for each random parameter distribution
     #' * **popCov** The final cycle random parameter covariance matrix
     #' * **popCor** The final cycle random parameter correlation matrix
-    #' * **popMedian** The final cycle median values for each random parameter,
+    #' * **popMed** The final cycle median values for each random parameter,
     #' i.e. those that have unknown mean and unknown variance, both of which are
     #' fitted during the run
     #' * **popRanFix** The final cycle median values for each parameter that is
@@ -83,9 +83,10 @@ PM_final <- R6::R6Class(
     #' Creation of new `PM_final` object is automatic and not generally necessary
     #' for the user to do.
     #' @param PMdata include `r template("PMdata")`.
+    #' @param path include `r template("path")`.
     #' @param ... Not currently used.
-    initialize = function(PMdata = NULL, ...) {
-      self$data <- private$make(PMdata)
+    initialize = function(PMdata = NULL, path = ".", ...) {
+      self$data <- private$make(PMdata, path)
       class(self) <- c(c("NPAG", "IT2B")[1 + as.numeric(is.null(self$popPoints))], class(self))
     },
     #' @description
@@ -136,11 +137,11 @@ PM_final <- R6::R6Class(
     popCor = function() {
       self$data$popCor
     },
-    #' @field popMedian The final cycle median values for each random parameter,
+    #' @field popMed The final cycle median values for each random parameter,
     #' i.e. those that have unknown mean and unknown variance, both of which are
     #' fitted during the run
-    popMedian = function() {
-      self$data$popMedian
+    popMed = function() {
+      self$data$popMed
     },
     #' @field popRanFix The final cycle median values for each parameter that is
     #' random but fixed to be the same for all subjects, i.e. unknown mean, zero
@@ -182,7 +183,7 @@ PM_final <- R6::R6Class(
     #' @field postMed A *nsub* x *npar* data frame containing
     #' the medians of the posterior distributions for each parameter.*
     postMed = function() {
-      
+      self$data$postMed
     },
     #' @field shrinkage A data frame with the shrinkage for each parameter.
     #' The total population variance for a parameter
@@ -238,42 +239,42 @@ PM_final <- R6::R6Class(
     }
   ), # end active
   private = list(
-    make = function(data) {
-      if (file.exists("theta.csv")) {
-        theta <- readr::read_csv(file = "theta.csv", show_col_types = FALSE)
+    make = function(data, path) {
+    if (file.exists(file.path(path, "theta.csv"))) {
+      theta <- readr::read_csv(file = file.path(path, "theta.csv"), show_col_types = FALSE)
       } else if (inherits(data, "PM_final")) { # file not there, and already PM_final
         class(data$data) <- c("PM_final_data", "list")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate final cycle information.",
-          "i" = "Result does not have valid {.code PM_final} object, and {.file {getwd()}/theta.csv} does not exist."
+        "i" = "Result does not have valid {.code PM_final} object, and {.file {file.path(path, 'theta.csv')} does not exist."
         ))
         return(NULL)
       }
       
-      if (file.exists("posterior.csv")) {
-        post <- readr::read_csv(file = "posterior.csv", show_col_types = FALSE)
+    if (file.exists(file.path(path, "posterior.csv"))) {
+      post <- readr::read_csv(file = file.path(path, "posterior.csv"), show_col_types = FALSE)
       } else if (inherits(data, "PM_final")) { # file not there, and already PM_final
         class(data$data) <- c("PM_final_data", "data.frame")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate final cycle information.",
-          "i" = "Result does not have valid {.code PM_final} object, and {.file {getwd()}/posterior.csv} does not exist."
+          "i" = "Result does not have valid {.code PM_final} object, and {.file {file.path(path, 'posterior.csv')} does not exist."
         ))
         return(NULL)
       }
       
-      if (file.exists("settings.json")) {
-        config <- jsonlite::fromJSON("settings.json")
+      if (file.exists(file.path(path, "settings.json"))) {
+        config <- jsonlite::fromJSON(file.path(path, "settings.json"))
       } else if (inherits(data, "PM_final")) { # file not there, and already PM_final
         class(data$data) <- c("PM_final_data", "data.frame")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate final cycle information.",
-          "i" = "Result does not have valid {.code PM_final} object, and {.file {getwd()}/settings.json} does not exist."
+          "i" = "Result does not have valid {.code PM_final} object, and {.file {file.path(path, 'settings.json')} does not exist."
         ))
         return(NULL)
       }
@@ -301,7 +302,7 @@ PM_final <- R6::R6Class(
         popCor <- stats::cov.wt(theta %>%
           select(-prob), theta$prob, cor = TRUE)$cor
           
-          popMedian <- theta %>%
+          popMed <- theta %>%
           dplyr::summarize(across(-prob, \(x) wtd.quantile(x, prob, 0.5))) # in PMutilities
           
           # Posterior
@@ -341,8 +342,13 @@ PM_final <- R6::R6Class(
           
           postMed <- post %>%
           group_by(id) %>%
-          suppressWarnings(reframe(across(-c(point, prob), \(x) wtd.quantile(x, prob, 0.5)))) # in PMutilities
-          
+          summarise(
+            across(
+              -c(point, prob),
+              ~ suppressWarnings(wtd.quantile(.x, weights = prob, probs = 0.5, na.rm = TRUE)) # in PMutilities, from Hmisc package
+            ),
+            .groups = "drop"
+          )
           
           # shrinkage
           varEBD <- postVar %>% summarize(across(-id, \(x) mean(x, na.rm = TRUE)))
@@ -364,7 +370,7 @@ PM_final <- R6::R6Class(
             popVar = popVar,
             popCov = popCov,
             popCor = popCor,
-            popMedian = popMedian,
+            popMed = popMed,
             postMean = postMean,
             postSD = postSD,
             postMed = postMed,
@@ -585,7 +591,7 @@ PM_final <- R6::R6Class(
           
           # NPAG
           if (type == "NPAG") {
-
+            
             if (is.null(xCol)) { # regular marginal
               ab_alpha <- ab %>% arrange(par)
               p <- data$popPoints %>%
@@ -617,7 +623,7 @@ PM_final <- R6::R6Class(
               trelliscopejs::trelliscope(name = "Posterior/Prior", self_contained = FALSE)
             }
           } else {
-
+            
             # IT2B
             if (!missing(standardize)) { # standardize plot
               if (tolower(standardize[1]) == "all") {
@@ -654,7 +660,7 @@ PM_final <- R6::R6Class(
         }
         if (print) print(p)
         return(invisible(p))
-    }
+      }
       
       ####### plotting functions for plot.PM_final
       
@@ -795,7 +801,7 @@ PM_final <- R6::R6Class(
       )
       
       return(p)
-      }
+    }
     
     biPlot <- function(xCol, yCol, ab, data, xlab, ylab, zlab, title, spike, layout, type) {
       whichX <- which(ab$par == xCol)

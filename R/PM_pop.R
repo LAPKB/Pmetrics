@@ -54,9 +54,10 @@ PM_pop <- R6::R6Class(
     #' Creation of new `PM_pop` object is automatic and not generally necessary
     #' for the user to do.
     #' @param PMdata include `r template("PMdata")`.
+    #' @param path include `r template("path")`.
     #' @param ... Not currently used.
-    initialize = function(PMdata = NULL, ...) {
-      self$data <- private$make(PMdata)
+    initialize = function(PMdata = NULL, path = ".", ...) {
+      self$data <- private$make(PMdata, path)
     },
     #' @description
     #' Plot method
@@ -82,48 +83,48 @@ PM_pop <- R6::R6Class(
     #' @param ... Arguments passed to [makeAUC]
     auc = function(...) {
       rlang::try_fetch(makeAUC(self, ...),
-        error = function(e) {
-          cli::cli_warn("Unable to generate AUC.", parent = e)
-          return(NULL)
-        }
-      )
-    }
-  ), # end public
-  private = list(
-    make = function(data) {
-      if (file.exists("op.csv")) {
-        raw <- readr::read_csv(file = "op.csv", show_col_types = FALSE)
-      } else if (inherits(data, "PM_pop")) { # file not there, and already PM_pop
-        class(data$data) <- c("PM_pop_data", "data.frame")
-        return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate pop pred information.",
-          "i" = "Result does not have valid {.code PM_pop} object, and {.file {getwd()}/op.csv} does not exist."
-        ))
+      error = function(e) {
+        cli::cli_warn("Unable to generate AUC.", parent = e)
         return(NULL)
       }
-
-      if (is.null(raw)) {
-        return(NA)
-      }
-
-      pop <- raw %>%
-        select(-post_median, -post_mean) %>%
-        pivot_longer(cols = c(pop_median, pop_mean), values_to = "pred") %>%
-        dplyr::rename(icen = name) %>%
-        mutate(icen = dplyr::case_when(
-          icen == "pop_median" ~ "median",
-          icen == "pop_mean" ~ "mean"
-        )) %>%
-        mutate(block = block + 1) %>%
-        mutate(outeq = outeq + 1) %>%
-        relocate(id, time, icen, outeq, pred, block)
-
-      class(pop) <- c("PM_pop_data", "data.frame")
-      return(pop)
+    )
+  }
+), # end public
+private = list(
+  make = function(data, path) {
+    if (file.exists(file.path(path, "op.csv"))) {
+      raw <- readr::read_csv(file = file.path(path, "op.csv"), show_col_types = FALSE)
+    } else if (inherits(data, "PM_pop")) { # file not there, and already PM_pop
+      class(data$data) <- c("PM_pop_data", "data.frame")
+      return(data$data)
+    } else {
+      cli::cli_warn(c(
+        "!" = "Unable to generate pop pred information.",
+        "i" = "Result does not have valid {.code PM_pop} object, and {.file {file.path(path, 'op.csv')} does not exist."
+      ))
+      return(NULL)
     }
-  ) # end private
+    
+    if (is.null(raw)) {
+      return(NA)
+    }
+    
+    pop <- raw %>%
+    select(-post_median, -post_mean) %>%
+    pivot_longer(cols = c(pop_median, pop_mean), values_to = "pred") %>%
+    dplyr::rename(icen = name) %>%
+    mutate(icen = dplyr::case_when(
+      icen == "pop_median" ~ "median",
+      icen == "pop_mean" ~ "mean"
+    )) %>%
+    mutate(block = block + 1) %>%
+    mutate(outeq = outeq + 1) %>%
+    relocate(id, time, icen, outeq, pred, block)
+    
+    class(pop) <- c("PM_pop_data", "data.frame")
+    return(pop)
+  }
+) # end private
 )
 
 
@@ -212,167 +213,167 @@ PM_pop <- R6::R6Class(
 #' @family PMplots
 
 plot.PM_pop <- function(x,
-                        include = NULL,
-                        exclude = NULL,
-                        line = TRUE,
-                        marker = TRUE,
-                        color = NULL,
-                        colors = "Set1",
-                        names = NULL,
-                        mult = 1,
-                        icen = "median",
-                        outeq = 1,
-                        block = 1,
-                        overlay = TRUE,
-                        legend = FALSE,
-                        log = FALSE,
-                        grid = FALSE,
-                        xlab = "Time",
-                        ylab = "Output",
-                        title = "",
-                        xlim, ylim, 
-                        print = TRUE, ...) {
-  # Plot parameters ---------------------------------------------------------
-
-  x <- if (inherits(x, "PM_pop")) {
-    x$data
-  }
-
-  # process marker
-  marker <- amendMarker(marker)
-
-  # process line
-  line <- amendLine(line)
-
-
-  # get the rest of the dots
-  layout <- amendDots(list(...))
-
-  # legend
-  legendList <- amendLegend(legend)
-  layout <- modifyList(layout, list(showlegend = legendList$showlegend))
-  if (length(legendList) > 1) {
-    layout <- modifyList(layout, list(legend = within(legendList, rm(showlegend))))
-  }
-
-  # grid
-  layout$xaxis <- setGrid(layout$xaxis, grid)
-  layout$yaxis <- setGrid(layout$yaxis, grid)
-
-  # axis labels if needed
-  layout$xaxis$title <- amendTitle(xlab)
-  if (is.character(ylab)) {
-    layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
-  } else {
-    layout$yaxis$title <- amendTitle(ylab)
-  }
-
-
-  # axis ranges
-  if (!missing(xlim)) {
-    layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
-  }
-  if (!missing(ylim)) {
-    layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
-  }
-
-  # log y axis
-  if (log) {
-    layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
-  }
-
-  # title
-  layout$title <- amendTitle(title, default = list(size = 20))
-
-  # overlay
-  if (is.logical(overlay)) { # T/F
-    if (!overlay) { # F,default
-      nrows <- 1
-      ncols <- 1
-    } # if T, no need to set nrows or ncols
-  } else { # specified as c(rows, cols)
-    nrows <- overlay[1]
-    ncols <- overlay[2]
-    overlay <- FALSE
-  }
-
-  # Data processing ---------------------------------------------------------
-
-
-  # filter
-  presub <- x %>%
+  include = NULL,
+  exclude = NULL,
+  line = TRUE,
+  marker = TRUE,
+  color = NULL,
+  colors = "Set1",
+  names = NULL,
+  mult = 1,
+  icen = "median",
+  outeq = 1,
+  block = 1,
+  overlay = TRUE,
+  legend = FALSE,
+  log = FALSE,
+  grid = FALSE,
+  xlab = "Time",
+  ylab = "Output",
+  title = "",
+  xlim, ylim, 
+  print = TRUE, ...) {
+    # Plot parameters ---------------------------------------------------------
+    
+    x <- if (inherits(x, "PM_pop")) {
+      x$data
+    }
+    
+    # process marker
+    marker <- amendMarker(marker)
+    
+    # process line
+    line <- amendLine(line)
+    
+    
+    # get the rest of the dots
+    layout <- amendDots(list(...))
+    
+    # legend
+    legendList <- amendLegend(legend)
+    layout <- modifyList(layout, list(showlegend = legendList$showlegend))
+    if (length(legendList) > 1) {
+      layout <- modifyList(layout, list(legend = within(legendList, rm(showlegend))))
+    }
+    
+    # grid
+    layout$xaxis <- setGrid(layout$xaxis, grid)
+    layout$yaxis <- setGrid(layout$yaxis, grid)
+    
+    # axis labels if needed
+    layout$xaxis$title <- amendTitle(xlab)
+    if (is.character(ylab)) {
+      layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
+    } else {
+      layout$yaxis$title <- amendTitle(ylab)
+    }
+    
+    
+    # axis ranges
+    if (!missing(xlim)) {
+      layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
+    }
+    if (!missing(ylim)) {
+      layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
+    }
+    
+    # log y axis
+    if (log) {
+      layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
+    }
+    
+    # title
+    layout$title <- amendTitle(title, default = list(size = 20))
+    
+    # overlay
+    if (is.logical(overlay)) { # T/F
+      if (!overlay) { # F,default
+        nrows <- 1
+        ncols <- 1
+      } # if T, no need to set nrows or ncols
+    } else { # specified as c(rows, cols)
+      nrows <- overlay[1]
+      ncols <- overlay[2]
+      overlay <- FALSE
+    }
+    
+    # Data processing ---------------------------------------------------------
+    
+    
+    # filter
+    presub <- x %>%
     filter(outeq %in% !!outeq, block %in% !!block, icen %in% !!icen) %>%
     mutate(group = "") %>%
     includeExclude(include, exclude)
-
-  # group
-  if (outeq[1] != 1 | length(outeq) > 1) {
-    presub <- presub %>%
+    
+    # group
+    if (outeq[1] != 1 | length(outeq) > 1) {
+      presub <- presub %>%
       rowwise() %>%
       mutate(group = paste0(group, ", outeq: ", outeq))
-  }
-  if (block[1] != 1 | length(block) > 1) {
-    presub <- presub %>%
+    }
+    if (block[1] != 1 | length(block) > 1) {
+      presub <- presub %>%
       rowwise() %>%
       mutate(group = paste0(group, ", block: ", block))
-  }
-
-  if (length(icen) > 1) {
-    presub <- presub %>%
+    }
+    
+    if (length(icen) > 1) {
+      presub <- presub %>%
       rowwise() %>%
       mutate(group = paste0(group, ", ", icen))
-  }
-
-  presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
-  if (!is.null(names)) {
-    presub$group <- factor(presub$group, labels = names)
-  } else {
-    presub$group <- factor(presub$group)
-  }
-
-  # select relevant columns
-  sub <- presub %>%
+    }
+    
+    presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
+    if (!is.null(names)) {
+      presub$group <- factor(presub$group, labels = names)
+    } else {
+      presub$group <- factor(presub$group)
+    }
+    
+    # select relevant columns
+    sub <- presub %>%
     select(id, time, pred, outeq, group) %>%
     ungroup()
-  sub$group <- factor(sub$group)
-
-  # remove missing
-  sub <- sub %>% filter(pred != -99)
-
-
-
-  # Plot function ----------------------------------------------------------
-
-  dataPlot <- function(allsub, overlay) {
-    # set appropriate pop up text
-    if (!overlay) {
-      hovertemplate <- "Time: %{x}<br>Pred: %{y}<extra></extra>"
-      text <- ""
-    } else {
-      hovertemplate <- "Time: %{x}<br>Pred: %{y}<br>ID: %{text}<extra></extra>"
-      text <- ~id
-    }
-
-    if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
-      n_colors <- length(levels(allsub$group))
-      if (checkRequiredPackages("RColorBrewer")) {
-        palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
-        if (length(colors) == 1 && colors %in% palettes$name) {
-          max_colors <- palettes$maxcolors[match(colors, palettes$name)]
-          colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
-        }
+    sub$group <- factor(sub$group)
+    
+    # remove missing
+    sub <- sub %>% filter(pred != -99)
+    
+    
+    
+    # Plot function ----------------------------------------------------------
+    
+    dataPlot <- function(allsub, overlay) {
+      # set appropriate pop up text
+      if (!overlay) {
+        hovertemplate <- "Time: %{x}<br>Pred: %{y}<extra></extra>"
+        text <- ""
       } else {
-        cli::cli_inform(c("i" = "Group colors are better with RColorBrewer package installed."))
-        colors <- getDefaultColors(n_colors) # in plotly_Utils
+        hovertemplate <- "Time: %{x}<br>Pred: %{y}<br>ID: %{text}<extra></extra>"
+        text <- ~id
       }
-
-      marker$color <- NULL
-      line$color <- NULL
-    } else { # no grouping
-      allsub$group <- factor(1, labels = "Predicted")
-    }
-
-    p <- allsub %>%
+      
+      if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
+        n_colors <- length(levels(allsub$group))
+        if (checkRequiredPackages("RColorBrewer")) {
+          palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
+          if (length(colors) == 1 && colors %in% palettes$name) {
+            max_colors <- palettes$maxcolors[match(colors, palettes$name)]
+            colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
+          }
+        } else {
+          cli::cli_inform(c("i" = "Group colors are better with RColorBrewer package installed."))
+          colors <- getDefaultColors(n_colors) # in plotly_Utils
+        }
+        
+        marker$color <- NULL
+        line$color <- NULL
+      } else { # no grouping
+        allsub$group <- factor(1, labels = "Predicted")
+      }
+      
+      p <- allsub %>%
       plotly::plot_ly(
         x = ~time, y = ~ pred * mult,
         color = ~group,
@@ -388,111 +389,112 @@ plot.PM_pop <- function(x,
         line = line,
         showlegend = FALSE
       )
-    p <- p %>% plotly::layout(
-      xaxis = layout$xaxis,
-      yaxis = layout$yaxis,
-      title = layout$title,
-      showlegend = layout$showlegend,
-      legend = layout$legend
-    )
-    return(p)
-  } # end dataPlot
-
-
-  # Call plot ---------------------------------------------------------------
-
-  # call the plot function and display appropriately
-  if (overlay) {
-    sub <- sub %>% dplyr::group_by(id)
-    p <- dataPlot(sub, overlay = TRUE)
-    if (print) print(p)
-  } else { # overlay = FALSE, ie. split them
-
-    if (!checkRequiredPackages("trelliscopejs")) {
-      cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
-    }
-    sub_split <- x %>%
+      p <- p %>% plotly::layout(
+        xaxis = layout$xaxis,
+        yaxis = layout$yaxis,
+        title = layout$title,
+        showlegend = layout$showlegend,
+        legend = layout$legend
+      )
+      return(p)
+    } # end dataPlot
+    
+    
+    # Call plot ---------------------------------------------------------------
+    
+    # call the plot function and display appropriately
+    if (overlay) {
+      sub <- sub %>% dplyr::group_by(id)
+      p <- dataPlot(sub, overlay = TRUE)
+      if (print) print(p)
+    } else { # overlay = FALSE, ie. split them
+      
+      if (!checkRequiredPackages("trelliscopejs")) {
+        cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
+      }
+      sub_split <- x %>%
       nest(data = -id) %>%
       mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = FALSE)))
-    p <- sub_split %>%
+      p <- sub_split %>%
       ungroup() %>%
       trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
-    if (print) print(p)
+      if (print) print(p)
+    }
+    
+    return(invisible(p))
   }
-
-  return(invisible(p))
-}
-
-
-# SUMMARY -------------------------------------------------------------------
-
-
-#' @title Summarize Observations and Predictions
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Summarize a Pmetrics Observed vs. Predicted object
-#'
-#' @details This is a function usually called by the `$summary()` method for [PM_op] objects
-#' within a [PM_result] to summarize observations, predictions and errors. The function can
-#' be called directly on a [PM_op] object. See examples.
-#'
-#' @method summary PM_pop
-#' @param object A [PM_pop] object
-#' @param digits Integer, used for number of digits to print.
-#' @param icen Can be either "median" for the predictions based on medians of the population parameter value
-#' distributions, or "mean".  Default is "median".
-#' @param outeq Output equation number.  Default is 1.
-#' @param ... Not used.
-#' @return A data frame with the minimum, first quartile, median, third quartile, maximum,
-#' mean and standard deviation for times and predictions in `x`.
-#'
-#' @author Michael Neely
-#' @examples
-#' \dontrun{
-#' NPex$pop$summary() # preferred
-#' summary(NPex$pop) # alternative
-#' }
-
-#' @seealso [PM_pop]
-#' @export
-
-summary.PM_pop <- function(object, digits = max(3, getOption("digits") - 3),
-                           icen = "median",
-                           outeq = 1, ...) {
-  sumWrk <- function(data) {
-    sumstat <- matrix(NA, nrow = 7, ncol = 2, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Pred")))
-    # min
-    sumstat[1, ] <- round(apply(data[, c(2, 5)], 2, min, na.rm = T), digits)
-    # 25th percentile
-    sumstat[2, ] <- round(apply(data[, c(2, 5)], 2, quantile, 0.25, na.rm = T), digits)
-    # median
-    sumstat[3, ] <- round(apply(data[, c(2, 5)], 2, median, na.rm = T), digits)
-    # 75th percentil
-    sumstat[4, ] <- round(apply(data[, c(2, 5)], 2, quantile, 0.75, na.rm = T), digits)
-    # max
-    sumstat[5, ] <- round(apply(data[, c(2, 5)], 2, max, na.rm = T), digits)
-    # mean
-    sumstat[6, ] <- round(apply(data[, c(2, 5)], 2, mean, na.rm = T), digits)
-    # SD
-    sumstat[7, ] <- round(apply(data[, c(2, 5)], 2, sd, na.rm = T), digits)
-    sumstat <- data.frame(sumstat)
-    # N
-    N <- length(data$pred[!is.na(data$pred)])
-
-    return(sumstat)
-  } # end sumWrk
-
-  # make summary
-  if (inherits(object, "PM_pop")) {
-    object <- object$data
+  
+  
+  # SUMMARY -------------------------------------------------------------------
+  
+  
+  #' @title Summarize Observations and Predictions
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #'
+  #' Summarize a Pmetrics Observed vs. Predicted object
+  #'
+  #' @details This is a function usually called by the `$summary()` method for [PM_op] objects
+  #' within a [PM_result] to summarize observations, predictions and errors. The function can
+  #' be called directly on a [PM_op] object. See examples.
+  #'
+  #' @method summary PM_pop
+  #' @param object A [PM_pop] object
+  #' @param digits Integer, used for number of digits to print.
+  #' @param icen Can be either "median" for the predictions based on medians of the population parameter value
+  #' distributions, or "mean".  Default is "median".
+  #' @param outeq Output equation number.  Default is 1.
+  #' @param ... Not used.
+  #' @return A data frame with the minimum, first quartile, median, third quartile, maximum,
+  #' mean and standard deviation for times and predictions in `x`.
+  #'
+  #' @author Michael Neely
+  #' @examples
+  #' \dontrun{
+  #' NPex$pop$summary() # preferred
+  #' summary(NPex$pop) # alternative
+  #' }
+  
+  #' @seealso [PM_pop]
+  #' @export
+  
+  summary.PM_pop <- function(object, digits = max(3, getOption("digits") - 3),
+  icen = "median",
+  outeq = 1, ...) {
+    sumWrk <- function(data) {
+      sumstat <- matrix(NA, nrow = 7, ncol = 2, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Pred")))
+      # min
+      sumstat[1, ] <- round(apply(data[, c(2, 5)], 2, min, na.rm = T), digits)
+      # 25th percentile
+      sumstat[2, ] <- round(apply(data[, c(2, 5)], 2, quantile, 0.25, na.rm = T), digits)
+      # median
+      sumstat[3, ] <- round(apply(data[, c(2, 5)], 2, median, na.rm = T), digits)
+      # 75th percentil
+      sumstat[4, ] <- round(apply(data[, c(2, 5)], 2, quantile, 0.75, na.rm = T), digits)
+      # max
+      sumstat[5, ] <- round(apply(data[, c(2, 5)], 2, max, na.rm = T), digits)
+      # mean
+      sumstat[6, ] <- round(apply(data[, c(2, 5)], 2, mean, na.rm = T), digits)
+      # SD
+      sumstat[7, ] <- round(apply(data[, c(2, 5)], 2, sd, na.rm = T), digits)
+      sumstat <- data.frame(sumstat)
+      # N
+      N <- length(data$pred[!is.na(data$pred)])
+      
+      return(sumstat)
+    } # end sumWrk
+    
+    # make summary
+    if (inherits(object, "PM_pop")) {
+      object <- object$data
+    }
+    
+    object <- object %>% filter(outeq == !!outeq, icen == !!icen)
+    if (all(is.na(object$pred))) {
+      result <- NA
+    } else {
+      result <- sumWrk(object)
+    }
+    return(result)
   }
-
-  object <- object %>% filter(outeq == !!outeq, icen == !!icen)
-  if (all(is.na(object$pred))) {
-    result <- NA
-  } else {
-    result <- sumWrk(object)
-  }
-  return(result)
-}
+  

@@ -36,395 +36,391 @@
 #'
 #' @export
 PM_data <- R6::R6Class("PM_data",
-  public <- list(
-    #' @field data Data frame containing the data to be modeled
+public <- list(
+  #' @field data Data frame containing the data to be modeled
+  data = NULL,
+  #' @field standard_data Data frame containing standardized version of the data
+  standard_data = NULL,
+  #' @field pop The `$data` field from a [PM_pop] object. This makes it easy to add population predictions to a raw data plot. This field will be `NULL` until the [PM_data] object is added to the [PM_result] after a run. As examples:
+  #' * `dat <- PM_data$new("data.csv")`. Here, `dat$pop` will be `NULL`.
+  #' * `run1 <- PM_load(1)`. Here, `run1$data$pop` will be the same as `run1$pop$data`.
+  pop = NULL,
+  #' @field post The `$data` field from a [PM_post] object. See details in the `pop` argument above.
+  post = NULL,
+  #' @description
+  #' Create new data object
+  #' @details
+  #' Creation of a new [PM_data] objects from a file or
+  #' a data frame. Data will be standardized and checked
+  #' automatically to a fully specified, valid data object.
+  #' @param data A quoted name of a file with full path if not
+  #' in the working directory, an unquoted name of a data frame
+  #' in the current R environment, or a [PM_data] object, which will rebuild it.
+  #' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
+  #' them fail, use this parameter to specify the correct format as a
+  #' character vector whose
+  #' first element is date format and second is time. Use the following abbreviations:
+  #' * Y = 4 digit year
+  #' * y = 2 digit year
+  #' * m = decimal month (1, 2, ..., 12)
+  #' * d = decimal day (1, 2, ..., 31)
+  #' * H = hours (0-23)
+  #' * M = minutes (0-59)
+  #' Example: `format = c("myd", "mh")`. Not one of the tried combinations!
+  #' Always check to make sure that dates/times were parsed correctly and the
+  #' relative times in the `PM_data$standard_data` field look correct.
+  #' Other date/time formats are possible. See [lubridate::parse_date_time()] for these.
+  #' @param quiet Quietly validate. Default is `FALSE`.
+  #' @param validate Check for errors. Default is `TRUE`. Strongly recommended.
+  #' @param ... Other arguments (not currently used).
+  initialize = function(
     data = NULL,
-    #' @field standard_data Data frame containing standardized version of the data
-    standard_data = NULL,
-    #' @field pop The `$data` field from a [PM_pop] object. This makes it easy to add population predictions to a raw data plot. This field will be `NULL` until the [PM_data] object is added to the [PM_result] after a run. As examples:
-    #' * `dat <- PM_data$new("data.csv")`. Here, `dat$pop` will be `NULL`.
-    #' * `run1 <- PM_load(1)`. Here, `run1$data$pop` will be the same as `run1$pop$data`.
-    pop = NULL,
-    #' @field post The `$data` field from a [PM_post] object. See details in the `pop` argument above.
-    post = NULL,
-    #' @description
-    #' Create new data object
-    #' @details
-    #' Creation of a new [PM_data] objects from a file or
-    #' a data frame. Data will be standardized and checked
-    #' automatically to a fully specified, valid data object.
-    #' @param data A quoted name of a file with full path if not
-    #' in the working directory, an unquoted name of a data frame
-    #' in the current R environment, or a [PM_data] object, which will rebuild it.
-    #' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
-    #' them fail, use this parameter to specify the correct format as a
-    #' character vector whose
-    #' first element is date format and second is time. Use the following abbreviations:
-    #' * Y = 4 digit year
-    #' * y = 2 digit year
-    #' * m = decimal month (1, 2, ..., 12)
-    #' * d = decimal day (1, 2, ..., 31)
-    #' * H = hours (0-23)
-    #' * M = minutes (0-59)
-    #' Example: `format = c("myd", "mh")`. Not one of the tried combinations!
-    #' Always check to make sure that dates/times were parsed correctly and the
-    #' relative times in the `PM_data$standard_data` field look correct.
-    #' Other date/time formats are possible. See [lubridate::parse_date_time()] for these.
-    #' @param quiet Quietly validate. Default is `FALSE`.
-    #' @param validate Check for errors. Default is `TRUE`. Strongly recommended.
-    initialize = function(
-        data = NULL,
-        dt = NULL,
-        quiet = FALSE,
-        validate = TRUE) {
+    dt = NULL,
+    quiet = FALSE,
+    validate = TRUE,
+    ...) {
       if (is.character(data)) { # filename
         self$data <- rlang::try_fetch(Pmetrics:::PMreadMatrix(data, quiet = TRUE),
-          error = function(e) {
-            cli::cli_abort("Unable to create {.cls PM_data} object", parent = e)
-            return(NULL)
-          }
-        )
-      } else if (inherits(data, "PM_data")) { # R6
-        self$data <- data$data
-      } else { # something else
-        self$data <- data
-      }
-
-      nout <- if (!is.null(self$data$outeq)) {
-        max(self$data$outeq, na.rm = TRUE)
-      } else {
-        1
-      }
-
-      if (!is.null(self$data) && validate) {
-        self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)
-      }
-    },
-    #' @description
-    #' Save data to file
-    #' @details
-    #' Saves a delimited file (e.g. comma-separated)
-    #' from the `standard_data` field
-    #' @param file_name A quoted name of the file to create
-    #' with full path if not
-    #' in the working directory.
-    #' @param ... Arguments passed to [PMwriteMatrix]
-    save = function(file_name, ...) {
-      if (!is.null(self$standard_data)) {
-        PMwriteMatrix(self$standard_data, file_name, ...)
-      } else {
-        cli::cli_warn("Create a validated {.cls PM_data} object before writing.")
-      }
-    },
-    #' @description
-    #' Calculate AUC
-    #' @details
-    #' See [makeAUC].
-    #' @param ... Arguments passed to [makeAUC].
-    auc = function(...) {
-      if (!is.null(self$data)) {
-        rlang::try_fetch(makeAUC(self, ...),
-          error = function(e) {
-            cli::cli_warn("Unable to generate AUC.", parent = e)
-            return(NULL)
-          }
-        )
-      } else {
-        cli::cli_warn("Data have not been defined.")
-      }
-    },
-    #' @description
-    #' Perform non-compartmental analysis
-    #' @details
-    #' See [makeNCA].
-    #' @param ... Arguments passed to [makeNCA].
-    nca = function(...) {
-      if (!is.null(self$data)) {
-        makeNCA(self, ...)
-      } else {
-        cli::cli_warn("Data have not been defined.")
-      }
-    },
-    #' @description
-    #' Plot method
-    #' @details
-    #' See [plot.PM_data].
-    #' @param ... Arguments passed to [plot.PM_data]
-    plot = function(...) {
-      if (!is.null(self$data)) {
-        plot.PM_data(self, ...)
-      } else {
-        cli::cli_warn("Data have not been defined.")
-      }
-    },
-    #' @description
-    #' Print method
-    #' @details
-    #' Displays the PM_data object in a variety of ways.
-    #' @param standard Display the standardized data if `TRUE`.
-    #' Default is `FALSE`.
-    #' @param viewer Display the Viewer if `TRUE`.
-    #' Default is \code{TRUE}.
-    #' @param ... Other arguments to [print.data.frame]. Only
-    #' passed if `viewer = FALSE`.
-    print = function(standard = F, viewer = T, ...) {
-      if (is.null(self$data)) {
-        cat("NULL data")
-        return(invisible(self))
-      }
-      if (standard) {
-        what <- self$standard_data
-        title <- "Standardized Data"
-      } else {
-        what <- self$data
-        title <- "Data"
-      }
-      if (viewer) {
-        View(what, title = title)
-      } else {
-        print(what, ...)
-      }
-      return(invisible(self))
-    },
-    #' @description
-    #' Summary method
-    #' @details
-    #' See [summary.PM_data].
-    #' @param ... Arguments passed to [summary.PM_data].
-    summary = function(...) {
-      if (!is.null(self$standard_data)) {
-        summary.PM_data(self$standard_data, ...)
-      } else {
-        cli::cli_warn("Create a validated PM_data object before summarizing.")
-      }
-    },
-    #' @description
-    #' Add events to PM_data object
-    #' @details
-    #' Add lines to a PM_data object by supplying named columns and values.
-    #' `ID` is always required. `Time` is handled differently depending on
-    #' the sequence of `addEvent` calls (see **Chaining** below).
-    #' * It is required for the first call to `addEvent` and should be 0.
-    #' For example: For example: `dat <- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)`
-    #' * For subsequent calls to `addEvent` with specific times it should be included.
-    #' For example: `dat <- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)$addEvent(id = 1, time = 144, out = -1)`
-    #' Here, because `out` wasn't in the original call *and* the next call contains a value for
-    #' `time`, an `out` value of -1 will be added at time 144 and `out` will be set to `NA` for all the
-    #' previous rows.
-    #' * In contrast, the behavior is different if you omit `time` when your
-    #' data object already has rows. In this case
-    #' the arguments in the call to `addEvent` (without a value for `time`)
-    #' will add those arguments as columns in the prior data with the specified value
-    #'  or *replace* values in those columns if they
-    #' already exist.  Be sure this is what you want.
-    #' For example, building on the prior example: `dat$addEvent(id = 1, dur = 0.5)`.
-    #' Note that we can chain to the previously created `dat` object. Here, a duration of 0.5 hours
-    #' will be added to every previous row in `dat` to create the new `dat` object, but no new
-    #' row is added since there is no `time` associated with it.
-    #'
-    #' Adding covariates is supported, but since valid subject records in Pmetrics
-    #' with covariates must contain non-missing values at time 0, covariates should
-    #' be included with the first call to `$addEvent()`.
-    #'
-    #' As we have seen in the examples above, `ADDL` and `II` are supported.
-    #'
-    #' **Chaining** Multiple `$addEvent()` calls can be chained with `PM_data$new()`
-    #' to create a blank data object and then add rows.
-    #' This can be particularly useful for creating simulation templates.
-    #' See the example.
-    #' @param ... Column names and values.
-    #' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
-    #' them fail, use this parameter to specify the correct format as a
-    #' character vector whose
-    #' first element is date format and second is time. Use the following abbreviations:
-    #' * Y = 4 digit year
-    #' * y = 2 digit year
-    #' * m = decimal month (1, 2, ..., 12)
-    #' * d = decimal day (1, 2, ..., 31)
-    #' * H = hours (0-23)
-    #' * M = minutes (0-59)
-    #' Example: `format = c("myd", "mh")`. Not one of the tried combinations!
-    #' Always check to make sure that dates/times were parsed correctly and the
-    #' relative times in the `PM_data$standard_data` field look correct.
-    #' Other date/time formats are possible. See [lubridate::parse_date_time()] for these.
-    #' @param quiet Quietly validate. Default is `FALSE`.
-    #' @param validate Validate the new row or not. Default is `FALSE` as a new row
-    #' added to a blank will result in a one-row data object, which is invalid. Also,
-    #' only one event type (dose or observation) should be added at a time, so if the
-    #' new object contains only doses while building, this would cause an error. You
-    #' should set `validate = TRUE` for the final addition.
-    #' @examples
-    #' \dontrun{
-    #' PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12,
-    #' out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
-    #' }
-
-    addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
-      args <- list(...)
-      arg_names <- tolower(names(args))
-
-      if (!"id" %in% arg_names) {
-        cli::cli_abort(c("x" = "ID is required to add an event."))
-      }
-      to_add <- data.frame(args)
-
-      if (!is.null(self$data)) { # existing data
-        old_names <- names(self$data)
-        missing_args <- arg_names[!arg_names %in% old_names]
-        if (length(missing_args) > 0) {
-          self$data[missing_args] <- NA
+        error = function(e) {
+          cli::cli_abort("Unable to create {.cls PM_data} object", parent = e)
+          return(NULL)
         }
-        if (!"time" %in% arg_names) {
-          to_add <- to_add %>% dplyr::slice(rep(1, each = nrow(self$data)))
-          self$data[arg_names] <- to_add
-          if (validate) {
-            self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x)))) # clean up
-            self$standard_data <- private$validate(self$data, dt = dt, quiet = quiet)
-          } else {
-            self$standard_data <- NULL
-          }
-          return(invisible(self))
-        }
-      } else {
-        if (!"time" %in% arg_names) {
-          cli::cli_abort(c("x" = "Time is required to add the first event."))
-        }
+      )
+    } else if (inherits(data, "PM_data")) { # R6
+      self$data <- data$data
+    } else { # something else
+      self$data <- data
+    }
+    
+    if (!is.null(self$data) && validate) {
+      self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)
+    }
+  },
+  #' @description
+  #' Save data to file
+  #' @details
+  #' Saves a delimited file (e.g. comma-separated)
+  #' from the `standard_data` field
+  #' @param file_name A quoted name of the file to create
+  #' with full path if not
+  #' in the working directory.
+  #' @param ... Arguments passed to [PMwriteMatrix]
+  save = function(file_name, ...) {
+    if (!is.null(self$standard_data)) {
+      PMwriteMatrix(self$standard_data, file_name, ...)
+    } else {
+      cli::cli_warn("Create a validated {.cls PM_data} object before writing.")
+    }
+  },
+  #' @description
+  #' Calculate AUC
+  #' @details
+  #' See [makeAUC].
+  #' @param ... Arguments passed to [makeAUC].
+  auc = function(...) {
+    if (!is.null(self$data)) {
+      rlang::try_fetch(makeAUC(self, ...),
+      error = function(e) {
+        cli::cli_warn("Unable to generate AUC.", parent = e)
+        return(NULL)
       }
-      # check for addl and if present, expand
-      if ("addl" %in% arg_names) {
-        addl_lines <- to_add %>% dplyr::filter(!is.na(addl) & addl > 0)
-        if (nrow(addl_lines) > 0) {
-          new_lines <- addl_lines %>%
-            tidyr::uncount(addl, .remove = F) %>%
-            dplyr::group_by(id) %>%
-            dplyr::mutate(time = ii * dplyr::row_number() + time)
+    )
+  } else {
+    cli::cli_warn("Data have not been defined.")
+  }
+},
+#' @description
+#' Perform non-compartmental analysis
+#' @details
+#' See [makeNCA].
+#' @param ... Arguments passed to [makeNCA].
+nca = function(...) {
+  if (!is.null(self$data)) {
+    makeNCA(self, ...)
+  } else {
+    cli::cli_warn("Data have not been defined.")
+  }
+},
+#' @description
+#' Plot method
+#' @details
+#' See [plot.PM_data].
+#' @param ... Arguments passed to [plot.PM_data]
+plot = function(...) {
+  if (!is.null(self$data)) {
+    plot.PM_data(self, ...)
+  } else {
+    cli::cli_warn("Data have not been defined.")
+  }
+},
+#' @description
+#' Print method
+#' @details
+#' Displays the PM_data object in a variety of ways.
+#' @param standard Display the standardized data if `TRUE`.
+#' Default is `FALSE`.
+#' @param viewer Display the Viewer if `TRUE`.
+#' Default is \code{TRUE}.
+#' @param ... Other arguments to [print.data.frame]. Only
+#' passed if `viewer = FALSE`.
+print = function(standard = F, viewer = T, ...) {
+  if (is.null(self$data)) {
+    cat("NULL data")
+    return(invisible(self))
+  }
+  if (standard) {
+    what <- self$standard_data
+    title <- "Standardized Data"
+  } else {
+    what <- self$data
+    title <- "Data"
+  }
+  if (viewer) {
+    View(what, title = title)
+  } else {
+    print(what, ...)
+  }
+  return(invisible(self))
+},
+#' @description
+#' Summary method
+#' @details
+#' See [summary.PM_data].
+#' @param ... Arguments passed to [summary.PM_data].
+summary = function(...) {
+  if (!is.null(self$standard_data)) {
+    summary.PM_data(self$standard_data, ...)
+  } else {
+    cli::cli_warn("Create a validated PM_data object before summarizing.")
+  }
+},
+#' @description
+#' Add events to PM_data object
+#' @details
+#' Add lines to a PM_data object by supplying named columns and values.
+#' `ID` is always required. `Time` is handled differently depending on
+#' the sequence of `addEvent` calls (see **Chaining** below).
+#' * It is required for the first call to `addEvent` and should be 0.
+#' For example: For example: `dat <- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)`
+#' * For subsequent calls to `addEvent` with specific times it should be included.
+#' For example: `dat <- PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 5, ii = 24)$addEvent(id = 1, time = 144, out = -1)`
+#' Here, because `out` wasn't in the original call *and* the next call contains a value for
+#' `time`, an `out` value of -1 will be added at time 144 and `out` will be set to `NA` for all the
+#' previous rows.
+#' * In contrast, the behavior is different if you omit `time` when your
+#' data object already has rows. In this case
+#' the arguments in the call to `addEvent` (without a value for `time`)
+#' will add those arguments as columns in the prior data with the specified value
+#'  or *replace* values in those columns if they
+#' already exist.  Be sure this is what you want.
+#' For example, building on the prior example: `dat$addEvent(id = 1, dur = 0.5)`.
+#' Note that we can chain to the previously created `dat` object. Here, a duration of 0.5 hours
+#' will be added to every previous row in `dat` to create the new `dat` object, but no new
+#' row is added since there is no `time` associated with it.
+#'
+#' Adding covariates is supported, but since valid subject records in Pmetrics
+#' with covariates must contain non-missing values at time 0, covariates should
+#' be included with the first call to `$addEvent()`.
+#'
+#' As we have seen in the examples above, `ADDL` and `II` are supported.
+#'
+#' **Chaining** Multiple `$addEvent()` calls can be chained with `PM_data$new()`
+#' to create a blank data object and then add rows.
+#' This can be particularly useful for creating simulation templates.
+#' See the example.
+#' @param ... Column names and values.
+#' @param dt Pmetrics will try a variety of date/time formats. If all 16 of
+#' them fail, use this parameter to specify the correct format as a
+#' character vector whose
+#' first element is date format and second is time. Use the following abbreviations:
+#' * Y = 4 digit year
+#' * y = 2 digit year
+#' * m = decimal month (1, 2, ..., 12)
+#' * d = decimal day (1, 2, ..., 31)
+#' * H = hours (0-23)
+#' * M = minutes (0-59)
+#' Example: `format = c("myd", "mh")`. Not one of the tried combinations!
+#' Always check to make sure that dates/times were parsed correctly and the
+#' relative times in the `PM_data$standard_data` field look correct.
+#' Other date/time formats are possible. See [lubridate::parse_date_time()] for these.
+#' @param quiet Quietly validate. Default is `FALSE`.
+#' @param validate Validate the new row or not. Default is `FALSE` as a new row
+#' added to a blank will result in a one-row data object, which is invalid. Also,
+#' only one event type (dose or observation) should be added at a time, so if the
+#' new object contains only doses while building, this would cause an error. You
+#' should set `validate = TRUE` for the final addition.
+#' @examples
+#' \dontrun{
+#' PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12,
+#' out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
+#' }
 
-          to_add <- dplyr::bind_rows(to_add, new_lines) %>%
-            dplyr::arrange(id, time) %>%
-            dplyr::mutate(
-              addl = ifelse(addl == -1, -1, NA),
-              ii = ifelse(addl == -1, ii, NA)
-            )
-        }
-      }
-      new_data <- dplyr::bind_rows(self$data, to_add) %>% dplyr::arrange(id, time)
-
-
-      self$data <- new_data
+addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
+  args <- list(...)
+  arg_names <- tolower(names(args))
+  
+  if (!"id" %in% arg_names) {
+    cli::cli_abort(c("x" = "ID is required to add an event."))
+  }
+  to_add <- data.frame(args)
+  
+  if (!is.null(self$data)) { # existing data
+    old_names <- names(self$data)
+    missing_args <- arg_names[!arg_names %in% old_names]
+    if (length(missing_args) > 0) {
+      self$data[missing_args] <- NA
+    }
+    if (!"time" %in% arg_names) {
+      to_add <- to_add %>% dplyr::slice(rep(1, each = nrow(self$data)))
+      self$data[arg_names] <- to_add
       if (validate) {
-        self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x))))
+        self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x)))) # clean up
         self$standard_data <- private$validate(self$data, dt = dt, quiet = quiet)
       } else {
         self$standard_data <- NULL
       }
       return(invisible(self))
-    } # end addEvent
-  ), # end public
-  private = list(
-    validate = function(dataObj, quiet, dt) {
-      dataObj_orig <- dataObj # keep the original to pass to PMcheck
-      dataNames <- names(dataObj)
-      standardNames <- getFixedColNames()
-
-      covNames <- dataNames[!dataNames %in% standardNames]
-      if ("date" %in% covNames) {
-        covNames <- covNames[-which(covNames == "date")]
-      }
-
-      mandatory <- c("id", "time", "dose", "out")
-      missingMandatory <- sapply(mandatory, function(x) !x %in% dataNames)
-      if (any(missingMandatory)) {
-        cli::cli_abort(c("x" = "Your data are missing these mandatory columns: {mandatory[missingMandatory]}"))
-      }
-
-      msg <- "Data are in full format already.\n"
-
-      if (!"evid" %in% dataNames) {
-        dataObj$evid <- ifelse(is.na(dataObj$dose), 0, 1)
-        msg <- c(msg, "EVID inferred as 0 for observations, 1 for doses.\n")
-      }
-
-      if ("date" %in% dataNames) {
-        relTime <- PMmatrixRelTime(dataObj, format = dt)
-        dataObj$time <- relTime$relTime
-        dataObj <- dataObj %>% select(-date)
-        msg <- c(msg, paste0("Dates and clock times converted to relative decimal times using ", attr(relTime, "dt_format"), ".\n"))
-      }
-
-      if (!"dur" %in% dataNames) {
-        dataObj$dur <- ifelse(is.na(dataObj$dose), NA, 0)
-        msg <- c(msg, "All doses assumed to be oral (DUR = 0).\n")
-      }
-
-      if (!"addl" %in% dataNames) {
-        dataObj$addl <- NA
-        msg <- c(msg, "ADDL set to missing for all records.\n")
-      }
-
-      if (!"ii" %in% dataNames) {
-        dataObj$ii <- NA
-        msg <- c(msg, "II set to missing for all records.\n")
-      }
-
-      if (!"input" %in% dataNames) {
-        dataObj$input <- ifelse(is.na(dataObj$dose), NA, 1)
-        msg <- c(msg, "All doses assumed to be INPUT = 1.\n")
-      }
-
-      if (!"outeq" %in% dataNames) {
-        dataObj$outeq <- ifelse(is.na(dataObj$out), NA, 1)
-        msg <- c(msg, "All observations assumed to be OUTEQ = 1.\n")
-      }
-
-      if (!"cens" %in% dataNames) {
-        dataObj$cens <- ifelse(is.na(dataObj$out), NA, 0)
-        msg <- c(msg, "All observations assumed to be uncensored.\n")
-      }
-
-      errorCoef <- c("c0", "c1", "c2", "c3")
-      missingError <- sapply(errorCoef, function(x) !x %in% dataNames)
-      if (any(missingError)) {
-        dataObj$c0 <- dataObj$c1 <- dataObj$c2 <- dataObj$c3 <- NA
-        msg <- c(msg, "One or more error coefficients not specified. Error in model object will be used.\n")
-      }
-
-      # expand any ADDL > 0
-      # preserve original order (necessary for EVID=4)
-      dataObj$row <- 1:nrow(dataObj)
-      addl_lines <- dataObj %>% filter(!is.na(addl) & addl > 0)
-      if (nrow(addl_lines) > 0) {
-        new_lines <- addl_lines %>%
-          tidyr::uncount(addl, .remove = FALSE) %>%
-          group_by(id, time) %>%
-          mutate(time = ii * row_number() + time) %>%
-          ungroup()
-
-        dataObj <- bind_rows(dataObj, new_lines) %>%
-          dplyr::arrange(id, time) %>%
-          dplyr::mutate(
-            addl = ifelse(addl == -1, -1, NA),
-            ii = ifelse(addl == -1, ii, NA)
-          ) %>%
-          select(!row)
-
-        msg <- c(msg, "ADDL > 0 rows expanded.\n")
-      }
-      dataObj <- dataObj %>% select(standardNames, dplyr::all_of(covNames))
-      # dataObj <- dataObj %>% dplyr::arrange(id, time)
-
-      if (length(msg) > 1) {
-        msg <- msg[-1]
-      } # data were not in standard format, so remove that message
-
-      if (!quiet) {
-        cli::cli_h1("DATA STANDARDIZATION")
-        cat(msg)
-      }
-
-      validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = TRUE, quiet = quiet)
-      return(validData)
-    } # end validate function
-  ) # end private
+    }
+  } else {
+    if (!"time" %in% arg_names) {
+      cli::cli_abort(c("x" = "Time is required to add the first event."))
+    }
+  }
+  # check for addl and if present, expand
+  if ("addl" %in% arg_names) {
+    addl_lines <- to_add %>% dplyr::filter(!is.na(addl) & addl > 0)
+    if (nrow(addl_lines) > 0) {
+      new_lines <- addl_lines %>%
+      tidyr::uncount(addl, .remove = F) %>%
+      dplyr::group_by(id) %>%
+      dplyr::mutate(time = ii * dplyr::row_number() + time)
+      
+      to_add <- dplyr::bind_rows(to_add, new_lines) %>%
+      dplyr::arrange(id, time) %>%
+      dplyr::mutate(
+        addl = ifelse(addl == -1, -1, NA),
+        ii = ifelse(addl == -1, ii, NA)
+      )
+    }
+  }
+  new_data <- dplyr::bind_rows(self$data, to_add) %>% dplyr::arrange(id, time)
+  
+  
+  self$data <- new_data
+  if (validate) {
+    self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x))))
+    self$standard_data <- private$validate(self$data, dt = dt, quiet = quiet)
+  } else {
+    self$standard_data <- NULL
+  }
+  return(invisible(self))
+} # end addEvent
+), # end public
+private = list(
+  validate = function(dataObj, quiet, dt) {
+    dataObj_orig <- dataObj # keep the original to pass to PMcheck
+    dataNames <- names(dataObj)
+    standardNames <- getFixedColNames()
+    
+    covNames <- dataNames[!dataNames %in% standardNames]
+    if ("date" %in% covNames) {
+      covNames <- covNames[-which(covNames == "date")]
+    }
+    
+    mandatory <- c("id", "time", "dose", "out")
+    missingMandatory <- sapply(mandatory, function(x) !x %in% dataNames)
+    if (any(missingMandatory)) {
+      cli::cli_abort(c("x" = "Your data are missing these mandatory columns: {mandatory[missingMandatory]}"))
+    }
+    
+    msg <- "Data are in full format already.\n"
+    
+    if (!"evid" %in% dataNames) {
+      dataObj$evid <- ifelse(is.na(dataObj$dose), 0, 1)
+      msg <- c(msg, "EVID inferred as 0 for observations, 1 for doses.\n")
+    }
+    
+    if ("date" %in% dataNames) {
+      relTime <- PMmatrixRelTime(dataObj, format = dt)
+      dataObj$time <- relTime$relTime
+      dataObj <- dataObj %>% select(-date)
+      msg <- c(msg, paste0("Dates and clock times converted to relative decimal times using ", attr(relTime, "dt_format"), ".\n"))
+    }
+    
+    if (!"dur" %in% dataNames) {
+      dataObj$dur <- ifelse(is.na(dataObj$dose), NA, 0)
+      msg <- c(msg, "All doses assumed to be oral (DUR = 0).\n")
+    }
+    
+    if (!"addl" %in% dataNames) {
+      dataObj$addl <- NA
+      msg <- c(msg, "ADDL set to missing for all records.\n")
+    }
+    
+    if (!"ii" %in% dataNames) {
+      dataObj$ii <- NA
+      msg <- c(msg, "II set to missing for all records.\n")
+    }
+    
+    if (!"input" %in% dataNames) {
+      dataObj$input <- ifelse(is.na(dataObj$dose), NA, 1)
+      msg <- c(msg, "All doses assumed to be INPUT = 1.\n")
+    }
+    
+    if (!"outeq" %in% dataNames) {
+      dataObj$outeq <- ifelse(is.na(dataObj$out), NA, 1)
+      msg <- c(msg, "All observations assumed to be OUTEQ = 1.\n")
+    }
+    
+    if (!"cens" %in% dataNames) {
+      dataObj$cens <- ifelse(is.na(dataObj$out), NA, 0)
+      msg <- c(msg, "All observations assumed to be uncensored.\n")
+    }
+    
+    errorCoef <- c("c0", "c1", "c2", "c3")
+    missingError <- sapply(errorCoef, function(x) !x %in% dataNames)
+    if (any(missingError)) {
+      dataObj$c0 <- dataObj$c1 <- dataObj$c2 <- dataObj$c3 <- NA
+      msg <- c(msg, "One or more error coefficients not specified. Error in model object will be used.\n")
+    }
+    
+    # expand any ADDL > 0
+    # preserve original order (necessary for EVID=4)
+    dataObj$row <- 1:nrow(dataObj)
+    addl_lines <- dataObj %>% filter(!is.na(addl) & addl > 0)
+    if (nrow(addl_lines) > 0) {
+      new_lines <- addl_lines %>%
+      tidyr::uncount(addl, .remove = FALSE) %>%
+      group_by(id, time) %>%
+      mutate(time = ii * row_number() + time) %>%
+      ungroup()
+      
+      dataObj <- bind_rows(dataObj, new_lines) %>%
+      dplyr::arrange(id, time) %>%
+      dplyr::mutate(
+        addl = ifelse(addl == -1, -1, NA),
+        ii = ifelse(addl == -1, ii, NA)
+      ) %>%
+      select(!row)
+      
+      msg <- c(msg, "ADDL > 0 rows expanded.\n")
+    }
+    dataObj <- dataObj %>% select(standardNames, dplyr::all_of(covNames))
+    # dataObj <- dataObj %>% dplyr::arrange(id, time)
+    
+    if (length(msg) > 1) {
+      msg <- msg[-1]
+    } # data were not in standard format, so remove that message
+    
+    if (!quiet) {
+      cli::cli_h1("DATA STANDARDIZATION")
+      cat(msg)
+    }
+    
+    validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = TRUE, quiet = quiet)
+    return(validData)
+  } # end validate function
+) # end private
 ) # end PM_data
 
 # MAKE (PMreadMatrix, PMmatrixRelTime, PMcheck) ---------------------------
@@ -468,61 +464,61 @@ PM_data <- R6::R6Class("PM_data",
 
 
 PMreadMatrix <- function(
-    file,
-    sep = getPMoptions("sep"),
-    dec = getPMoptions("dec"),
-    quiet = FALSE, ...) {
-  # get data
-  if (missing(file)) {
-    cli::cli_abort(c("x" = "Please provide filename of Pmetrics data file."))
-  }
-  if (!file.exists(file)) {
-    cli::cli_abort(c("x" = "The file {.code {basename(file)}} was not found in {.path {dirname(file)}}."))
-  }
-
-  # read the first line to understand the format
-  headers <- scan(file,
-    what = "character", quiet = TRUE, nlines = 1,
-    sep = sep, dec = dec, strip.white = T
-  )
-  if (grepl(",", headers)[1]) {
-    cli::cli_abort(c("x" = "Your .csv delimiter is not a comma. Use {.code setPMoptions(sep = \";\")}, for example."))
-  }
-  headers <- headers[headers != ""]
-  skip <- ifelse(grepl("POPDATA .*", headers[1]), 1, 0) # 0 if current, 1 if legacy
-
-  args1 <- list(
-    file = file, delim = sep, col_names = TRUE, na = ".",
-    locale = readr::locale(decimal_mark = dec),
-    skip = skip, show_col_types = FALSE, progress = FALSE, num_threads = 1
-  )
-  args2 <- list(...)
-
-  args <- modifyList(args1, args2)
-
-  if (quiet) {
-    data <- suppressWarnings(purrr::exec(readr::read_delim, !!!args))
-  } else {
-    data <- purrr::exec(readr::read_delim, !!!args)
-  }
-
-  # remove commented headers and lines
-  if (grepl("#", names(data)[1])) {
+  file,
+  sep = getPMoptions("sep"),
+  dec = getPMoptions("dec"),
+  quiet = FALSE, ...) {
+    # get data
+    if (missing(file)) {
+      cli::cli_abort(c("x" = "Please provide filename of Pmetrics data file."))
+    }
+    if (!file.exists(file)) {
+      cli::cli_abort(c("x" = "The file {.code {basename(file)}} was not found in {.path {dirname(file)}}."))
+    }
+    
+    # read the first line to understand the format
+    headers <- scan(file,
+      what = "character", quiet = TRUE, nlines = 1,
+      sep = sep, dec = dec, strip.white = T
+    )
+    if (grepl(",", headers)[1]) {
+      cli::cli_abort(c("x" = "Your .csv delimiter is not a comma. Use {.code setPMoptions(sep = \";\")}, for example."))
+    }
+    headers <- headers[headers != ""]
+    skip <- ifelse(grepl("POPDATA .*", headers[1]), 1, 0) # 0 if current, 1 if legacy
+    
+    args1 <- list(
+      file = file, delim = sep, col_names = TRUE, na = ".",
+      locale = readr::locale(decimal_mark = dec),
+      skip = skip, show_col_types = FALSE, progress = FALSE, num_threads = 1
+    )
+    args2 <- list(...)
+    
+    args <- modifyList(args1, args2)
+    
+    if (quiet) {
+      data <- suppressWarnings(purrr::exec(readr::read_delim, !!!args))
+    } else {
+      data <- purrr::exec(readr::read_delim, !!!args)
+    }
+    
+    # remove commented headers and lines
+    if (grepl("#", names(data)[1])) {
     names(data)[1] <- sub("#", "", names(data)[1])
   }
   comments <- grep("#", t(data[, 1]))
   if (length(comments) > 0) {
     data <- data[-comments, ]
   }
-
+  
   names(data) <- tolower(names(data))
-
+  
   if (!quiet) {
     cat(paste("The file", sQuote(file), "contains these columns:\n", sep = " "))
     cat(paste(names(data), collapse = ", "))
     cat("\n")
   }
-
+  
   attr(data, "legacy") <- ifelse(skip == 1, TRUE, FALSE) # if skip = 1, set attribute to TRUE
   class(data) <- c("PM_data_data", "data.frame")
   return(data)
@@ -570,90 +566,90 @@ PMreadMatrix <- function(
 #' @export
 
 PMmatrixRelTime <- function(
-    data, idCol = "id", dateCol = "date", timeCol = "time", evidCol = "evid",
-    format, split = F) {
-  dataCols <- names(data)
-  # convert numeric if necessary
-  if (is.numeric(idCol)) idCol <- dataCols[idCol]
-  if (is.numeric(dateCol)) dateCol <- dataCols[dateCol]
-  if (is.numeric(timeCol)) timeCol <- dataCols[timeCol]
-  if (is.numeric(evidCol)) evidCol <- dataCols[evidCol]
-
-  # all reasonable combinations
-  dt_df <- tidyr::crossing(date = c("dmy", "mdy", "ymd", "ydm"), time = c("HM", "HMS", "IMOp", "IMSOp"))
-  dt_formats <- paste(dt_df$date, dt_df$time)
-
-  if (!all(c(idCol, dateCol, timeCol, evidCol) %in% dataCols)) {
-    cli::cli_abort(c("x" = "Please provide column names for id, date, time and evid."))
-  }
-  temp <- data.frame(id = data[, idCol], date = data[, dateCol], time = data[, timeCol], evid = data[, evidCol])
-  temp$date <- as.character(temp$date)
-  temp$time <- as.character(temp$time)
-  temp$time <- unlist(lapply(temp$time, function(x) ifelse(length(gregexpr(":", x)[[1]]) == 1, paste(x, ":00", sep = ""), x)))
-
-  get_dt_format <- function(test) {
-    found_formats <- table(suppressWarnings(lubridate::guess_formats(paste(temp$date, temp$time), test)))
-    format_str <- names(found_formats)[which(found_formats == max(found_formats))]
-    O_str <- grep("O", format_str)
-    if (length(O_str) > 0) {
-      format_str <- format_str[-O_str]
+  data, idCol = "id", dateCol = "date", timeCol = "time", evidCol = "evid",
+  format, split = F) {
+    dataCols <- names(data)
+    # convert numeric if necessary
+    if (is.numeric(idCol)) idCol <- dataCols[idCol]
+    if (is.numeric(dateCol)) dateCol <- dataCols[dateCol]
+    if (is.numeric(timeCol)) timeCol <- dataCols[timeCol]
+    if (is.numeric(evidCol)) evidCol <- dataCols[evidCol]
+    
+    # all reasonable combinations
+    dt_df <- tidyr::crossing(date = c("dmy", "mdy", "ymd", "ydm"), time = c("HM", "HMS", "IMOp", "IMSOp"))
+    dt_formats <- paste(dt_df$date, dt_df$time)
+    
+    if (!all(c(idCol, dateCol, timeCol, evidCol) %in% dataCols)) {
+      cli::cli_abort(c("x" = "Please provide column names for id, date, time and evid."))
     }
-    the_format <- gsub("%", "", format_str)
-    return(the_format)
-  }
-
-
-  dt <- NA
-  if (!missing(format) && !is.null(format)) {
-    if (format[2] == "HM") format[2] <- "HMS"
-    format <- paste(format, collapse = " ")
-    dt <- tryCatch(suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, format)),
+    temp <- data.frame(id = data[, idCol], date = data[, dateCol], time = data[, timeCol], evid = data[, evidCol])
+    temp$date <- as.character(temp$date)
+    temp$time <- as.character(temp$time)
+    temp$time <- unlist(lapply(temp$time, function(x) ifelse(length(gregexpr(":", x)[[1]]) == 1, paste(x, ":00", sep = ""), x)))
+    
+    get_dt_format <- function(test) {
+      found_formats <- table(suppressWarnings(lubridate::guess_formats(paste(temp$date, temp$time), test)))
+      format_str <- names(found_formats)[which(found_formats == max(found_formats))]
+      O_str <- grep("O", format_str)
+      if (length(O_str) > 0) {
+        format_str <- format_str[-O_str]
+      }
+      the_format <- gsub("%", "", format_str)
+      return(the_format)
+    }
+    
+    
+    dt <- NA
+    if (!missing(format) && !is.null(format)) {
+      if (format[2] == "HM") format[2] <- "HMS"
+      format <- paste(format, collapse = " ")
+      dt <- tryCatch(suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, format)),
       error = function(e) e
     ) # try with specific format
     found_format <- get_dt_format(format)
   }
   if (all(is.na(dt))) { # didn't parse yet, try automatic parsing
     dt <- tryCatch(suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, dt_formats)),
-      error = function(e) e
-    )
-    found_format <- get_dt_format(dt_formats)
-  }
+    error = function(e) e
+  )
+  found_format <- get_dt_format(dt_formats)
+}
 
-  if (all(is.na(dt))) {
-    cli::cli_abort(c("x" = "All dates/times failed to parse. Please specify correct format. "))
-  }
+if (all(is.na(dt))) {
+  cli::cli_abort(c("x" = "All dates/times failed to parse. Please specify correct format. "))
+}
 
 
-  temp$dt <- dt # didn't have to stop, so at least some parsed
+temp$dt <- dt # didn't have to stop, so at least some parsed
 
-  if (split) {
-    # calculate PK event numbers for each patient
-    for (i in unique(temp$id)) {
-      pk.no <- 1
-      temp2 <- subset(temp, temp$id == i)
-      for (j in 1:nrow(temp2)) {
-        if (temp2$evid[j] == 4) {
-          pk.no <- pk.no + 1
-        }
-        temp2$pk.no[j] <- pk.no
+if (split) {
+  # calculate PK event numbers for each patient
+  for (i in unique(temp$id)) {
+    pk.no <- 1
+    temp2 <- subset(temp, temp$id == i)
+    for (j in 1:nrow(temp2)) {
+      if (temp2$evid[j] == 4) {
+        pk.no <- pk.no + 1
       }
-      temp$pk.no[temp$id == i] <- temp2$pk.no
+      temp2$pk.no[j] <- pk.no
     }
-    # make new ID of form xxxxx.x for each PK event per patient
-    temp$id <- temp$id + temp$pk.no / 10
-    temp$evid[temp$evid == 4] <- 1
+    temp$pk.no[temp$id == i] <- temp2$pk.no
   }
+  # make new ID of form xxxxx.x for each PK event per patient
+  temp$id <- temp$id + temp$pk.no / 10
+  temp$evid[temp$evid == 4] <- 1
+}
 
-  # calculate relative times
-  temp <- makePMmatrixBlock(temp) %>%
-    dplyr::group_by(id, block) %>%
-    dplyr::mutate(relTime = (dt - dt[1]) / lubridate::dhours(1))
+# calculate relative times
+temp <- makePMmatrixBlock(temp) %>%
+dplyr::group_by(id, block) %>%
+dplyr::mutate(relTime = (dt - dt[1]) / lubridate::dhours(1))
 
-  temp$relTime <- round(temp$relTime, 2)
-  temp <- temp[, c("id", "evid", "relTime")]
-  attr(temp, "dt_format") <- found_format
+temp$relTime <- round(temp$relTime, 2)
+temp <- temp[, c("id", "evid", "relTime")]
+attr(temp, "dt_format") <- found_format
 
-  return(temp)
+return(temp)
 }
 #' @title Check Pmetrics Inputs for Errors
 #' @description
@@ -801,14 +797,14 @@ PMcheck <- function(data, fix = FALSE, quiet = FALSE) {
   if (is.null(legacy)) {
     legacy <- F
   }
-
-
+  
+  
   # check for errors
   err <- errcheck(data2, quiet = quiet, source = source)
   if (length(err) == 1) {
     cli::cli_abort(c("x" = "You must at least have id, evid, and time columns to proceed with the check."))
   }
-
+  
   # report errors in errors.xlsx
   if (attr(err, "error") != 0) {
     # Initialize an  Excel Workbook
@@ -822,7 +818,7 @@ PMcheck <- function(data, fix = FALSE, quiet = FALSE) {
       openxlsx::saveWorkbook(wb, file = "errors.xlsx", overwrite = T)
     }
   }
-
+  
   # Provide warning on console about maximum time
   maxTime <- tryCatch(max(data2$time, na.rm = T), error = function(e) NA)
   if (!is.na(maxTime) && !is.character(maxTime) && maxTime > 24 * 48 & !quiet) {
@@ -834,8 +830,8 @@ PMcheck <- function(data, fix = FALSE, quiet = FALSE) {
       )
     )
   }
-
-
+  
+  
   # try to fix errors if asked
   if (fix) {
     if (attr(err, "error") == 0) {
@@ -856,7 +852,7 @@ PMcheck <- function(data, fix = FALSE, quiet = FALSE) {
         wb <- createInstructions(wb)
         openxlsx::saveWorkbook(wb, file = "errors.xlsx", overwrite = TRUE)
       }
-
+      
       return(invisible(newdata))
     }
   } else {
@@ -896,18 +892,18 @@ errcheck <- function(data2, quiet, source) {
   )
   # set initial attribute to 0 for no error
   attr(err, "error") <- 0
-
+  
   # define fixed column names
   fixedColNames <- getFixedColNames()
-
+  
   # define number of columns and number of covariates
   numcol <- ncol(data2)
   numfix <- getFixedColNum()
   numcov <- getCov(data2)$ncov
-
+  
   # ensure lowercase
   t <- tolower(names(data2))
-
+  
   # check to make sure first 14 columns are correct
   if (any(!c("id", "time", "evid") %in% t)) {
     # must at least have id, evid, and time columns to proceed with the check
@@ -922,8 +918,8 @@ errcheck <- function(data2, quiet, source) {
       attr(err, "error") <- -1
     }
   }
-
-
+  
+  
   # check that all records have an EVID value
   t <- which(is.na(data2$evid))
   if (length(t) > 0) {
@@ -931,7 +927,7 @@ errcheck <- function(data2, quiet, source) {
     err$missEVID$results <- t
     attr(err, "error") <- -1
   }
-
+  
   # check that all records have a TIME value
   t <- which(is.na(data2$time))
   if (length(t) > 0) {
@@ -939,7 +935,7 @@ errcheck <- function(data2, quiet, source) {
     err$missTIME$results <- t
     attr(err, "error") <- -1
   }
-
+  
   # check for dur on dose records
   t <- which(data2$evid != 0 & is.na(data2$dur))
   if (length(t) > 0) {
@@ -947,7 +943,7 @@ errcheck <- function(data2, quiet, source) {
     err$doseDur$results <- t
     attr(err, "error") <- -1
   }
-
+  
   # check for dose on dose records
   t <- which(data2$evid != 0 & is.na(data2$dose))
   if (length(t) > 0) {
@@ -955,7 +951,7 @@ errcheck <- function(data2, quiet, source) {
     err$doseDose$results <- t
     attr(err, "error") <- -1
   }
-
+  
   # check for input on dose records
   t <- which(data2$evid != 0 & is.na(data2$input))
   if (length(t) > 0) {
@@ -963,7 +959,7 @@ errcheck <- function(data2, quiet, source) {
     err$doseInput$results <- t
     attr(err, "error") <- -1
   }
-
+  
   # check for out on observation records
   t <- which(data2$evid == 0 & is.na(data2$out))
   if (length(t) > 0) {
@@ -971,7 +967,7 @@ errcheck <- function(data2, quiet, source) {
     err$obsOut$results <- t
     attr(err, "error") <- -1
   }
-
+  
   # check for outeq on observation records
   t <- which(data2$evid == 0 & is.na(data2$outeq))
   if (length(t) > 0) {
@@ -979,7 +975,7 @@ errcheck <- function(data2, quiet, source) {
     err$obsOuteq$results <- t
     attr(err, "error") <- -1
   }
-
+  
   # check for time=0 for each subject as first record
   t <- which(tapply(data2$time, data2$id, function(x) x[1]) != 0)
   t2 <- match(names(t), data2$id)
@@ -988,7 +984,7 @@ errcheck <- function(data2, quiet, source) {
     err$T0$results <- t2
     attr(err, "error") <- -1
   }
-
+  
   # covariate checks
   if (numcov > 0) {
     covinfo <- getCov(data2)
@@ -1007,7 +1003,7 @@ errcheck <- function(data2, quiet, source) {
       err$covT0$msg <- "OK - All subjects have covariate data at time 0."
     }
   }
-
+  
   # check that all times within a given ID block are monotonically increasing
   misorder <- NA
   for (i in 2:nrow(data2)) {
@@ -1020,7 +1016,7 @@ errcheck <- function(data2, quiet, source) {
     err$timeOrder$results <- misorder[-1]
     attr(err, "error") <- -1
   }
-
+  
   # check that all records for a given subject ID are grouped
   temp <- data.frame(row = 1:nrow(data2), id = data2$id)
   t <- tapply(temp$row, temp$id, function(x) any(diff(x) > 1))
@@ -1034,7 +1030,7 @@ errcheck <- function(data2, quiet, source) {
     err$contigID$results <- t2
     attr(err, "error") <- -1
   }
-
+  
   # check that all non-missing columns other than ID are numeric
   allMiss <- which(apply(data2[, 2:numcol], 2, function(x) all(is.na(x))))
   nonNumeric <- which(sapply(data2[, 2:numcol], function(x) !is.numeric(x)))
@@ -1046,7 +1042,7 @@ errcheck <- function(data2, quiet, source) {
     err$nonNum$results <- nonNumeric + 1
     attr(err, "error") <- -1
   }
-
+  
   # check that all subjects have at least one observation
   subjObs <- tapply(data2$evid, data2$id, function(x) sum(x == 0, na.rm = T))
   if (any(subjObs == 0)) {
@@ -1055,18 +1051,18 @@ errcheck <- function(data2, quiet, source) {
     err$noObs$results <- which(data2$id %in% subjMissObs)
     attr(err, "error") <- -1
   }
-
+  
   # check for columns with malformed NA values
   mal_NA <- purrr::map(as.list(data2), ~ stringr::str_count(.x, "(?<!\\d)\\s*\\.+\\s*")) %>%
-    map(~ which(.x == 1)) %>%
-    purrr::map_vec(~ length(.x) > 0) %>%
-    which()
+  map(~ which(.x == 1)) %>%
+  purrr::map_vec(~ length(.x) > 0) %>%
+  which()
   if (length(mal_NA) > 0) {
     err$mal_NA$msg <- "FAIL - The following columns contain malformed NA values."
     err$mal_NA$results <- mal_NA
     attr(err, "error") <- -1
   }
-
+  
   # warning for censoring on doses
   t <- which(data2$evid == 1 & data2$cens == 1)
   if (length(t) > 0) {
@@ -1074,18 +1070,18 @@ errcheck <- function(data2, quiet, source) {
     err$censDose$results <- t
     attr(err, "error") <- -1
   }
-
+  
   class(err) <- c("PMerr", "list")
   if (!quiet) {
     cli::cli_h1("DATA VALIDATION")
     print(err)
     flush.console()
   }
-
+  
   # if no errors in data, and model is specified, check it for errors too
   # if (all(unlist(sapply(err, function(x) is.na(x$results)))) & !is.na(model)) {
   #   # get information from data
-
+  
   #   if (numcov > 0) {
   #     covnames <- getCov(data2)$covnames
   #   } else {
@@ -1095,10 +1091,10 @@ errcheck <- function(data2, quiet, source) {
   #   modeltxt <- model
   #   # attempt to translate model file into separate fortran model file and instruction files
   #   engine <- list(alg = "NP", ncov = numcov, covnames = covnames, numeqt = numeqt, indpts = -99, limits = NA)
-
+  
   #   if (!quiet) cat("\nMODEL REPORT:\n")
   #   trans <- makeModel(model = model, data = data, engine = engine, write = F, quiet = quiet)
-
+  
   #   if (trans$status == -1) {
   #     if ("mQRZZZ.txt" %in% Sys.glob("*", T)) {
   #       file.remove(model)
@@ -1145,7 +1141,7 @@ errfix <- function(data2, err, quiet) {
       report <- c(report, paste("Columns are now ordered appropriately."))
     }
   }
-
+  
   # Check for NA observations (should be -99)
   if (length(grep("FAIL", err$obsMiss$msg)) > 0) {
     data2 <- data2[err$obsMiss$results, "out"] < -99
@@ -1172,7 +1168,7 @@ errfix <- function(data2, err, quiet) {
   if (length(grep("FAIL", err$obsOuteq$msg)) > 0) {
     report <- c(report, paste("Observation records (evid=0) must have OUTEQ. See errors.xlsx and fix manually."))
   }
-
+  
   # Insert dummy doses of 0 for those missing time=0 first events
   if (length(grep("FAIL", err$T0$msg)) > 0) {
     T0 <- data2[err$T0$results, ]
@@ -1188,20 +1184,20 @@ errfix <- function(data2, err, quiet) {
     report <- c(report, paste("Subjects with first time > 0 have had a dummy dose of 0 inserted at time 0."))
     err <- errcheck(data2 = data2, quiet = T)
   }
-
+  
   # Alert for missing covariate data
   if (length(grep("FAIL", err$covT0$msg)) > 0) {
     report <- c(report, paste("All covariates must have values for each subject's first event.  See errors.xlsx and fix manually."))
   }
-
+  
   # Reorder times - assume times are in correct block
   if (length(grep("FAIL", err$timeOrder$msg)) > 0) {
     data2 <- makePMmatrixBlock(data2) %>%
-      dplyr::group_by(id, block) %>%
-      dplyr::arrange(time, .by_group = T) %>%
-      ungroup() %>%
-      select(-block)
-
+    dplyr::group_by(id, block) %>%
+    dplyr::arrange(time, .by_group = T) %>%
+    ungroup() %>%
+    select(-block)
+    
     if (any(data2$evid == 4)) {
       report <- c(report, paste("Your dataset has EVID=4 events. Times ordered within each event block."))
     } else {
@@ -1222,37 +1218,37 @@ errfix <- function(data2, err, quiet) {
     data2$evid[err$missEVID$results] <- ifelse(is.na(data2$dose[err$missEVID$results]), 0, 1)
     report <- c(report, paste("EVID for events with doses changed to 1, otherwise 0."))
   }
-
+  
   # Fix malformed NA
   if (length(grep("FAIL", err$mal_NA$msg)) > 0) {
     # convert to "." then NA
     data2 <- data2 %>%
-      mutate(across(everything(), ~ str_replace_all(.x, "(?<!\\d)\\s*\\.+\\s*", "."))) %>%
-      mutate(across(everything(), ~ dplyr::na_if(.x, ".")))
+    mutate(across(everything(), ~ str_replace_all(.x, "(?<!\\d)\\s*\\.+\\s*", "."))) %>%
+    mutate(across(everything(), ~ dplyr::na_if(.x, ".")))
     report <- c(report, paste("Malformed NAs corrected."))
   }
-
+  
   # Fix censored doses
   if (length(grep("WARNING", err$censDose$msg)) > 0) {
     data2$cens[err$censDose$results] <- NA
     report <- c(report, paste("Censoring on dose events changed to NA."))
   }
-
+  
   # Report missing TIME
   if (length(grep("FAIL", err$missTIME$msg)) > 0) {
     report <- c(report, paste("Your dataset has missing times.  See errors.xlsx and fix manually."))
   }
-
+  
   # Report non-numeric columns
   if (length(grep("FAIL", err$nonNum$msg)) > 0) {
     report <- c(report, paste("Your dataset has non-numeric columns.  See errors.xlsx and fix manually."))
   }
-
+  
   # Report subjects with no observations
   if (length(grep("FAIL", err$noObs$msg)) > 0) {
     report <- c(report, paste("Your dataset has subjects with no observations.  See errors.xlsx and fix manually."))
   }
-
+  
   if (!quiet) {
     cli::cli_h1("FIX DATA REPORT:")
     report <- report[-1]
@@ -1290,7 +1286,7 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
   )
   numError <- nrow(errorsTable)
   errorsTable$code <- 1:numError
-
+  
   # assign errors with row, column, and code
   errList <- lapply(err[3:length(err)], function(x) (lapply(x$results, function(y) c(y, x$col, x$code))))
   errDF <- data.frame(t(data.frame(errList)))
@@ -1298,7 +1294,7 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
   names(errDF) <- c("row", "column", "code")
   errors <- errDF[!is.na(errDF$row), ]
   formattedCols <- names(dat)
-
+  
   if (legacy) {
     pmVersion <- "POPDATA DEC_11"
     formattedCols <- toupper(formattedCols)
@@ -1307,20 +1303,20 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
   } else {
     legacy_offset <- 0
   }
-
+  
   # set colors for errors
   errColor <- "#FFFF00" # yellow, column specific
   errColor2 <- "#00FF00" # green, across columns
   errColor3 <- "#00AAFF" # blue, NA
   errColor4 <- "#FFAA00" # orange, summary
-
+  
   # create styles for error formatting
   errStyle1 <- openxlsx::createStyle(fgFill = errColor)
   errStyle2 <- openxlsx::createStyle(fgFill = errColor2)
   errStyle3 <- openxlsx::createStyle(fgFill = errColor3)
   errStyle4 <- openxlsx::createStyle(fgFill = errColor4)
-
-
+  
+  
   # function to detect things that can't be coerced to numbers
   is.char.num <- function(x) {
     if (!is.na(x) && suppressWarnings(is.na(as.numeric(x)))) {
@@ -1329,10 +1325,10 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
       return(F)
     }
   }
-
+  
   # make second table to summarize errors
   error_summary <- errors %>% filter(!code %in% c(10, 13, 15)) # we will add these back
-
+  
   # Highlight the cells with errors
   for (i in 1:nrow(errors)) {
     thisErr <- errors[i, ]
@@ -1343,7 +1339,7 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
       # if covariate error
       covData <- getCov(dat)
       colIndex <- covData$covstart +
-        which(is.na(dat[rowIndex, covData$covstart:covData$covend])) - 1
+      which(is.na(dat[rowIndex, covData$covstart:covData$covend])) - 1
       rowIndex <- rowIndex + 1 + legacy_offset
       error_summary <- dplyr::bind_rows(
         error_summary,
@@ -1367,9 +1363,9 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
       # find the malformed NAs as a special case and remove them (separate error below)
       # because openxlsx can't overwrite comments
       mal_NA <- stringr::str_count(dplyr::pull(dat, colIndex), "(?<!\\d)\\s*\\.+\\s*") %>%
-        map(~ which(.x == 1)) %>%
-        purrr::map_vec(~ length(.x) > 0) %>%
-        which() + 1 + legacy_offset
+      map(~ which(.x == 1)) %>%
+      purrr::map_vec(~ length(.x) > 0) %>%
+      which() + 1 + legacy_offset
       # remove any mal_NA from non-numeric
       rowIndex2 <- rowIndex2[!rowIndex2 %in% mal_NA]
       # highlight them if any left
@@ -1393,9 +1389,9 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
       # malformed NA
       colIndex <- thisErr$row # because of the way the error is detected
       rowIndex3 <- stringr::str_count(dplyr::pull(dat, colIndex), "(?<!\\d)\\s*\\.+\\s*") %>%
-        map(~ which(.x == 1)) %>%
-        purrr::map_vec(~ length(.x) > 0) %>%
-        which() + 1 + legacy_offset
+      map(~ which(.x == 1)) %>%
+      purrr::map_vec(~ length(.x) > 0) %>%
+      which() + 1 + legacy_offset
       # highlight them
       openxlsx::addStyle(wb, sheet, errStyle3, rows = rowIndex3, cols = colIndex)
       purrr::walk2(colIndex, rowIndex3, ~ openxlsx::writeComment(wb, sheet,
@@ -1418,33 +1414,33 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
       openxlsx::writeComment(wb, sheet, xy = c(colIndex, rowIndex), comment = comment)
     }
   } # end errors for loop
-
+  
   # Add summaries to each column with errors
   sum_errors <- dplyr::as_tibble(table(error_summary$column, error_summary$code, dnn = c("column", "code"))) %>%
-    group_by(column) %>%
-    summarize(n_err = sum(n))
-
+  group_by(column) %>%
+  summarize(n_err = sum(n))
+  
   openxlsx::addStyle(wb, sheet, errStyle4, rows = 1 + legacy_offset, cols = as.numeric(sum_errors$column))
   comments <- purrr::map(1:nrow(sum_errors), ~ openxlsx::createComment(paste(
     sum_errors$n_err[.x],
     ifelse(sum_errors$n_err[.x] > 1, "errors", "error")
   ), author = "Pmetrics", visible = F))
   purrr::walk(1:nrow(sum_errors), ~ openxlsx::writeComment(wb, sheet, col = as.numeric(sum_errors$column[.x]), row = 1 + legacy_offset, comment = comments[[.x]]))
-
+  
   # Writing out the header of the Pmetrics data file : version line....
   if (legacy) {
     openxlsx::writeData(wb, sheet, pmVersion, xy = c(1, 1))
   } # POPDATA...
-
+  
   # ...and data frame column names
   openxlsx::writeData(wb, sheet, t(formattedCols), xy = c(1, 1 + legacy_offset), colNames = F)
-
+  
   # Add the data
   openxlsx::writeData(wb, sheet, dat,
     rowNames = F, colNames = F, xy = c(1, 2 + legacy_offset),
     keepNA = T, na.string = "."
   )
-
+  
   return(wb)
 }
 
@@ -1454,46 +1450,46 @@ createInstructions <- function(wb) {
   errColor2 <- "#00FF00" # green, cell
   errColor3 <- "#00AAFF" # blue, NA
   errColor4 <- "#FFAA00" # orange, summary
-
+  
   # create styles for error formatting
   errStyle1 <- openxlsx::createStyle(fgFill = errColor)
   errStyle2 <- openxlsx::createStyle(fgFill = errColor2)
   errStyle3 <- openxlsx::createStyle(fgFill = errColor3)
   errStyle4 <- openxlsx::createStyle(fgFill = errColor4)
   textStyle <- openxlsx::createStyle(fontSize = 16)
-
+  
   openxlsx::addWorksheet(wb, "Instructions", tabColour = "grey80")
   openxlsx::addStyle(wb, "Instructions", textStyle, rows = 1:8, cols = 1)
   openxlsx::addStyle(wb, "Instructions", textStyle, rows = 10:13, cols = 2)
   openxlsx::writeData(wb, "Instructions",
-    c(
-      "'Errors' tab contains your data which has been standardized if read using PM_data$new().",
-      "Cells with errors are color coded according to table below.",
-      "Hover your mouse over each cell to read pop-up comment with details.",
-      "Comments on column headers in orange contain the total number of errors in that column.",
-      "If fix = TRUE, which is default for PM_data$new(), there will be an additional 'After_Fix' tab.",
-      "This tab contains your standardized data after Pmetrics attempted to repair your data.",
-      "Residual errors will be indicated as for the 'Errors' tab.",
-      "You can fix the remaining errors and save the 'After_Fix' tab as a new .csv data file."
-    ),
-    startCol = 1, startRow = 1
-  )
+  c(
+    "'Errors' tab contains your data which has been standardized if read using PM_data$new().",
+    "Cells with errors are color coded according to table below.",
+    "Hover your mouse over each cell to read pop-up comment with details.",
+    "Comments on column headers in orange contain the total number of errors in that column.",
+    "If fix = TRUE, which is default for PM_data$new(), there will be an additional 'After_Fix' tab.",
+    "This tab contains your standardized data after Pmetrics attempted to repair your data.",
+    "Residual errors will be indicated as for the 'Errors' tab.",
+    "You can fix the remaining errors and save the 'After_Fix' tab as a new .csv data file."
+  ),
+  startCol = 1, startRow = 1
+)
 
-  openxlsx::addStyle(wb, "Instructions", errStyle1, rows = 10, cols = 1)
-  openxlsx::addStyle(wb, "Instructions", errStyle2, rows = 11, cols = 1)
-  openxlsx::addStyle(wb, "Instructions", errStyle3, rows = 12, cols = 1)
-  openxlsx::addStyle(wb, "Instructions", errStyle4, rows = 13, cols = 1)
+openxlsx::addStyle(wb, "Instructions", errStyle1, rows = 10, cols = 1)
+openxlsx::addStyle(wb, "Instructions", errStyle2, rows = 11, cols = 1)
+openxlsx::addStyle(wb, "Instructions", errStyle3, rows = 12, cols = 1)
+openxlsx::addStyle(wb, "Instructions", errStyle4, rows = 13, cols = 1)
 
-  openxlsx::writeData(wb, "Instructions",
-    c(
-      "Errors specific to a particular column",
-      "Errors not specific to a defined column, i.e. non-numeric entries or missing covariates at time 0.",
-      "Malformed NA values, which should only be '.'",
-      "Used for column headers to report the total number of errors in that column."
-    ),
-    startCol = 2, startRow = 10
-  )
-  return(wb)
+openxlsx::writeData(wb, "Instructions",
+c(
+  "Errors specific to a particular column",
+  "Errors not specific to a defined column, i.e. non-numeric entries or missing covariates at time 0.",
+  "Malformed NA values, which should only be '.'",
+  "Used for column headers to report the total number of errors in that column."
+),
+startCol = 2, startRow = 10
+)
+return(wb)
 }
 
 
@@ -1618,276 +1614,276 @@ createInstructions <- function(wb) {
 #' @family PMplots
 
 plot.PM_data <- function(
-    x,
-    include = NULL,
-    exclude = NULL,
-    line = list(join = TRUE, pred = FALSE),
-    marker = TRUE,
-    group = NULL,
-    group_names = NULL,
-    mult = 1,
-    outeq = 1,
-    out_names = NULL,
-    block = 1,
-    tad = FALSE,
-    overlay = TRUE,
-    legend,
-    log = FALSE,
-    grid = FALSE,
-    xlab = "Time",
-    ylab = "Output",
-    title = "",
-    xlim, ylim,
-    print = TRUE, ...) {
-  # Plot parameters ---------------------------------------------------------
-
-  # process marker
-  marker <- amendMarker(marker)
-  highlight_color <- opposite_color(marker$color[1]) # in plotly_Utils.R
-
-
-  # process line
-  if (any(!base::names(line) %in% c("join", "pred"))) {
-    cli::cli_warn(c("!" = "{.code line} should be a list with at most two named elements: {.code join}, {.code loess}, and/or {.code pred}.", "i" = "See {.fn Pmetrics::plot.PM_data}."))
-  }
-  if (is.null(line$join)) {
-    line$join <- FALSE
-  }
-  if (is.null(line$pred)) {
-    line$pred <- FALSE
-  }
-
-  join <- amendLine(line$join)
-  if (is.logical(line$pred) && !line$pred) { # if line$pred is FALSE
-    line$pred <- NULL
-  }
-  pred <- line$pred # process further later
-
-
-  # get the rest of the dots
-  layout <- amendDots(list(...))
-
-  # legend
-  if (missing(legend)) {
-    if (is.null(group)) {
-      legend <- FALSE
-    } else {
-      legend <- TRUE
+  x,
+  include = NULL,
+  exclude = NULL,
+  line = list(join = TRUE, pred = FALSE),
+  marker = TRUE,
+  group = NULL,
+  group_names = NULL,
+  mult = 1,
+  outeq = 1,
+  out_names = NULL,
+  block = 1,
+  tad = FALSE,
+  overlay = TRUE,
+  legend,
+  log = FALSE,
+  grid = FALSE,
+  xlab = "Time",
+  ylab = "Output",
+  title = "",
+  xlim, ylim,
+  print = TRUE, ...) {
+    # Plot parameters ---------------------------------------------------------
+    
+    # process marker
+    marker <- amendMarker(marker)
+    highlight_color <- opposite_color(marker$color[1]) # in plotly_Utils.R
+    
+    
+    # process line
+    if (any(!base::names(line) %in% c("join", "pred"))) {
+      cli::cli_warn(c("!" = "{.code line} should be a list with at most two named elements: {.code join}, {.code loess}, and/or {.code pred}.", "i" = "See {.fn Pmetrics::plot.PM_data}."))
     }
-  }
-
-  legendList <- amendLegend(legend)
-  layout <- modifyList(layout, list(showlegend = legendList$showlegend))
-  if (length(legendList) > 1) {
-    layout <- modifyList(layout, list(legend = within(legendList, rm(showlegend))))
-  }
-
-
-  # grid
-  layout$xaxis <- setGrid(layout$xaxis, grid)
-  layout$yaxis <- setGrid(layout$yaxis, grid)
-
-  # axis labels if needed
-  layout$xaxis$title <- amendTitle(xlab)
-  if (is.character(ylab)) {
-    layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
-  } else {
-    layout$yaxis$title <- amendTitle(ylab)
-  }
-
-
-  # axis ranges
-  if (!missing(xlim)) {
-    layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
-  }
-  if (!missing(ylim)) {
-    layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
-  }
-
-  # log y axis
-  if (log) {
-    layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
-  }
-
-  # title
-  layout$title <- amendTitle(title, default = list(size = 20))
-
-  # overlay
-  if (is.logical(overlay)) { # T/F
-    if (!overlay) { # F,default
-      nrows <- 1
-      ncols <- 1
-    } # if T, no need to set nrows or ncols
-  } else { # specified as c(rows, cols)
-    nrows <- overlay[1]
-    ncols <- overlay[2]
-    overlay <- FALSE
-  }
-
-  # Data processing ---------------------------------------------------------
-  # make blocks
-  x$standard_data <- makePMmatrixBlock(x$standard_data)
-
-  # time after dose
-  if (tad) {
-    x$standard_data$time <- calcTAD(x$standard_data)
-  }
-
-  # filter
-  presub <- x$standard_data %>%
+    if (is.null(line$join)) {
+      line$join <- FALSE
+    }
+    if (is.null(line$pred)) {
+      line$pred <- FALSE
+    }
+    
+    join <- amendLine(line$join)
+    if (is.logical(line$pred) && !line$pred) { # if line$pred is FALSE
+      line$pred <- NULL
+    }
+    pred <- line$pred # process further later
+    
+    
+    # get the rest of the dots
+    layout <- amendDots(list(...))
+    
+    # legend
+    if (missing(legend)) {
+      if (is.null(group)) {
+        legend <- FALSE
+      } else {
+        legend <- TRUE
+      }
+    }
+    
+    legendList <- amendLegend(legend)
+    layout <- modifyList(layout, list(showlegend = legendList$showlegend))
+    if (length(legendList) > 1) {
+      layout <- modifyList(layout, list(legend = within(legendList, rm(showlegend))))
+    }
+    
+    
+    # grid
+    layout$xaxis <- setGrid(layout$xaxis, grid)
+    layout$yaxis <- setGrid(layout$yaxis, grid)
+    
+    # axis labels if needed
+    layout$xaxis$title <- amendTitle(xlab)
+    if (is.character(ylab)) {
+      layout$yaxis$title <- amendTitle(ylab, layout$xaxis$title$font)
+    } else {
+      layout$yaxis$title <- amendTitle(ylab)
+    }
+    
+    
+    # axis ranges
+    if (!missing(xlim)) {
+      layout$xaxis <- modifyList(layout$xaxis, list(range = xlim))
+    }
+    if (!missing(ylim)) {
+      layout$yaxis <- modifyList(layout$yaxis, list(range = ylim))
+    }
+    
+    # log y axis
+    if (log) {
+      layout$yaxis <- modifyList(layout$yaxis, list(type = "log"))
+    }
+    
+    # title
+    layout$title <- amendTitle(title, default = list(size = 20))
+    
+    # overlay
+    if (is.logical(overlay)) { # T/F
+      if (!overlay) { # F,default
+        nrows <- 1
+        ncols <- 1
+      } # if T, no need to set nrows or ncols
+    } else { # specified as c(rows, cols)
+      nrows <- overlay[1]
+      ncols <- overlay[2]
+      overlay <- FALSE
+    }
+    
+    # Data processing ---------------------------------------------------------
+    # make blocks
+    x$standard_data <- makePMmatrixBlock(x$standard_data)
+    
+    # time after dose
+    if (tad) {
+      x$standard_data$time <- calcTAD(x$standard_data)
+    }
+    
+    # filter
+    presub <- x$standard_data %>%
     filter(outeq %in% !!outeq, block %in% !!block, evid == 0) %>%
     includeExclude(include, exclude)
-
-
-
-  # make group column for groups
-  if (!is.null(group)) {
-    if (!group %in% base::names(x$standard_data)) {
-      cli::cli_abort(c("x" = "{group} is not a column in the data."))
+    
+    
+    
+    # make group column for groups
+    if (!is.null(group)) {
+      if (!group %in% base::names(x$standard_data)) {
+        cli::cli_abort(c("x" = "{group} is not a column in the data."))
+      }
+      if (is.null(group_names)) {
+        presub$group <- presub[[group]]
+      } else if (length(group_names) < length(unique(presub[[group]]))) {
+        cli::cli_abort(c("x" = "The number of names in {.var group_names} must be at least as long as the number of unique values in {.var group}."))
+      } else {
+        presub$group <- factor(presub[[group]], labels = group_names)
+      }
+    } else { # group was NULL
+      presub <- presub %>% mutate(group = "")
     }
-    if (is.null(group_names)) {
-      presub$group <- presub[[group]]
-    } else if (length(group_names) < length(unique(presub[[group]]))) {
-      cli::cli_abort(c("x" = "The number of names in {.var group_names} must be at least as long as the number of unique values in {.var group}."))
-    } else {
-      presub$group <- factor(presub[[group]], labels = group_names)
-    }
-  } else { # group was NULL
-    presub <- presub %>% mutate(group = "")
-  }
-
-
-  # make outeq labels if more than one output being plotted
-  if (length(outeq) > 1) {
-    if (is.null(out_names)) {
-      out_names <- paste0("Output ", outeq)
-    } else if (length(out_names) < max(outeq)) {
-      cli::cli_abort(c("x" = "The number of names in {.var out_names} must be at least as long as the maximum number of outputs in {.var outeq}."))
-    }
-    # make output names
-    presub <- presub %>%
+    
+    
+    # make outeq labels if more than one output being plotted
+    if (length(outeq) > 1) {
+      if (is.null(out_names)) {
+        out_names <- paste0("Output ", outeq)
+      } else if (length(out_names) < max(outeq)) {
+        cli::cli_abort(c("x" = "The number of names in {.var out_names} must be at least as long as the maximum number of outputs in {.var outeq}."))
+      }
+      # make output names
+      presub <- presub %>%
       rowwise() %>%
       mutate(group = paste0(group, ", ", out_names[outeq]))
-  }
-
-  # add blocks if more than one being plotted
-  if (length(block) > 1) {
-    presub <- presub %>%
+    }
+    
+    # add blocks if more than one being plotted
+    if (length(block) > 1) {
+      presub <- presub %>%
       rowwise() %>%
       mutate(group = paste0(group, ", Block ", block))
-  }
-
-  presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
-
-
-  # select relevant columns
-  sub <- presub %>%
+    }
+    
+    presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
+    
+    
+    # select relevant columns
+    sub <- presub %>%
     select(id, time, out, outeq, group) %>%
     ungroup()
-  sub$group <- factor(sub$group)
-
-  # add identifier
-  sub$src <- "obs"
-
-  # remove missing
-  sub <- sub %>% filter(out != -99)
-
-
-  # now process pred data if there
-  if (!is.null(pred)) {
-    if (inherits(pred, c("PM_post", "PM_pop"))) { # only PM_post/pop was supplied, make into a list of 1
-      pred <- list(pred$data)
-    } else if (inherits(pred, c("PM_post_data", "PM_pop_data"))) { # only PM_post_data/PM_pop_data was supplied, make into a list of 1
-      pred <- list(pred)
-    } else if (pred[[1]] %in% c("pop", "post")) { # pred[[1]] was "pop" or "post"
-      thisPred <- pred[[1]]
-      if (is.null(x[[thisPred]])) { # post/pop missing because x was data not from a PM_result
+    sub$group <- factor(sub$group)
+    
+    # add identifier
+    sub$src <- "obs"
+    
+    # remove missing
+    sub <- sub %>% filter(out != -99)
+    
+    
+    # now process pred data if there
+    if (!is.null(pred)) {
+      if (inherits(pred, c("PM_post", "PM_pop"))) { # only PM_post/pop was supplied, make into a list of 1
+        pred <- list(pred$data)
+      } else if (inherits(pred, c("PM_post_data", "PM_pop_data"))) { # only PM_post_data/PM_pop_data was supplied, make into a list of 1
+        pred <- list(pred)
+      } else if (pred[[1]] %in% c("pop", "post")) { # pred[[1]] was "pop" or "post"
+        thisPred <- pred[[1]]
+        if (is.null(x[[thisPred]])) { # post/pop missing because x was data not from a PM_result
+          cli::cli_warn(c(
+            "!" = "{.code pred = {thisPred}} can only be used as a shortcut when plotting {.cls PM_data} from a {.cls PM_result}.",
+            "i" = "Supply a {.cls PM_result} object, e.g. {.code line = list(pred = run2$post)}, if you wish to add predictions otherwise."
+          ))
+          pred <- NULL
+        } else { # post/pop present
+          pred <- list(x[[thisPred]])
+        }
+      } else { # pred[[1]] was not "pop", "post", PM_result$pop, or PM_result$post
         cli::cli_warn(c(
-          "!" = "{.code pred = {thisPred}} can only be used as a shortcut when plotting {.cls PM_data} from a {.cls PM_result}.",
-          "i" = "Supply a {.cls PM_result} object, e.g. {.code line = list(pred = run2$post)}, if you wish to add predictions otherwise."
+          "!" = "The {.var pred} argument is mis-specified.",
+          "i" = "See the help for {.code plot.PM_data}."
         ))
         pred <- NULL
-      } else { # post/pop present
-        pred <- list(x[[thisPred]])
       }
-    } else { # pred[[1]] was not "pop", "post", PM_result$pop, or PM_result$post
-      cli::cli_warn(c(
-        "!" = "The {.var pred} argument is mis-specified.",
-        "i" = "See the help for {.code plot.PM_data}."
-      ))
-      pred <- NULL
-    }
-
-    # process pred list to determine formatting
-    if (length(pred) == 1) { # default
-      predArgs <- TRUE
-      icen <- "median"
-    } else { # not default, but need to extract icen if present
-      icen <- purrr::pluck(pred, "icen") # check if icen is in list
-      if (is.null(icen)) { # not in list so set default
+      
+      # process pred list to determine formatting
+      if (length(pred) == 1) { # default
+        predArgs <- TRUE
         icen <- "median"
-      } else {
-        purrr::pluck(pred, "icen") <- NULL
-      } # was in list, so remove after extraction
-      predArgs <- pred[-1]
-    }
-
-    predArgs <- amendLine(predArgs, default = list(color = NULL)) # color will be set by obs later
-
-    # filter and group by id
-    if (!is.null(pred[[1]])) { # if pred not reset to null b/c of invalid pred[[1]]
-      predsub <- pred[[1]] %>%
+      } else { # not default, but need to extract icen if present
+        icen <- purrr::pluck(pred, "icen") # check if icen is in list
+        if (is.null(icen)) { # not in list so set default
+          icen <- "median"
+        } else {
+          purrr::pluck(pred, "icen") <- NULL
+        } # was in list, so remove after extraction
+        predArgs <- pred[-1]
+      }
+      
+      predArgs <- amendLine(predArgs, default = list(color = NULL)) # color will be set by obs later
+      
+      # filter and group by id
+      if (!is.null(pred[[1]])) { # if pred not reset to null b/c of invalid pred[[1]]
+        predsub <- pred[[1]] %>%
         filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen) %>%
         includeExclude(include, exclude) %>%
         group_by(id)
-
-      # time after dose
-      if (tad) {
-        predsub$time <- calcTAD(predsub)
-      }
-
-      # select relevant columns and filter missing
-      predsub <- predsub %>%
+        
+        # time after dose
+        if (tad) {
+          predsub$time <- calcTAD(predsub)
+        }
+        
+        # select relevant columns and filter missing
+        predsub <- predsub %>%
         select(id, time, out = pred, outeq) %>%
         filter(out != -99)
-
-      # add group
-      lookup <- dplyr::distinct(sub, id, outeq, group)
-      predsub <- predsub %>% dplyr::left_join(lookup, by = c("id", "outeq"))
-
-      # add identifier
-      predsub$src <- "pred"
-    } else { # pred was reset to NULL b/c of invalid pred[[1]]
+        
+        # add group
+        lookup <- dplyr::distinct(sub, id, outeq, group)
+        predsub <- predsub %>% dplyr::left_join(lookup, by = c("id", "outeq"))
+        
+        # add identifier
+        predsub$src <- "pred"
+      } else { # pred was reset to NULL b/c of invalid pred[[1]]
+        predsub <- NULL
+      }
+    } else { # pred was NULL from beginning
       predsub <- NULL
-    }
-  } else { # pred was NULL from beginning
-    predsub <- NULL
-  } # end pred processing
-
-
-
-  # Plot function ----------------------------------------------------------
-
-  dataPlot <- function(allsub, overlay, includePred) {
-
-    group_colors <- marker$color
-    group_symbols <- marker$symbol
-    if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
-
-      n_colors <- length(unique(allsub$group))
-
-      if (length(group_colors) < n_colors) { # fewer colors than groups, need to interpolate
-        if (checkRequiredPackages("RColorBrewer")) {
-          palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
-          if (length(group_colors) == 1) { # only one color specified
-            if (group_colors %in% palettes$name){# colors specified as a palette name
-              max_colors <- palettes$maxcolors[match(group_colors, palettes$name)]
-              group_colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, group_colors))(n_colors)
-            } else {
-              group_colors <- c(group_colors, getDefaultColors(n_colors)[-1]) # in plotly_Utils, add default colors to specified color
-            }
-          } else { # length of group_colors > 1 but fewer than groups, so interpolate
-            group_colors <- tryCatch(colorRampPalette(group_colors)(n_colors),
+    } # end pred processing
+    
+    
+    
+    # Plot function ----------------------------------------------------------
+    
+    dataPlot <- function(allsub, overlay, includePred) {
+      
+      group_colors <- marker$color
+      group_symbols <- marker$symbol
+      if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
+        
+        n_colors <- length(unique(allsub$group))
+        
+        if (length(group_colors) < n_colors) { # fewer colors than groups, need to interpolate
+          if (checkRequiredPackages("RColorBrewer")) {
+            palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
+            if (length(group_colors) == 1) { # only one color specified
+              if (group_colors %in% palettes$name){# colors specified as a palette name
+                max_colors <- palettes$maxcolors[match(group_colors, palettes$name)]
+                group_colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, group_colors))(n_colors)
+              } else {
+                group_colors <- c(group_colors, getDefaultColors(n_colors)[-1]) # in plotly_Utils, add default colors to specified color
+              }
+            } else { # length of group_colors > 1 but fewer than groups, so interpolate
+              group_colors <- tryCatch(colorRampPalette(group_colors)(n_colors),
               error = function(e) {
                 cli::cli_warn(c("!" = "Unable to interpolate colors, using default colors."))
                 getDefaultColors(n_colors) # in plotly_Utils
@@ -1899,7 +1895,7 @@ plot.PM_data <- function(
           colors <- getDefaultColors(n_colors) # in plotly_Utils
         }
       }
-
+      
       if (length(group_symbols) < n_colors) { # fewer symbols than groups, need to interpolate
         if (length(group_symbols) == 1) { # only one symbol specified
           group_symbols <- rep(group_symbols, n_colors)
@@ -1907,8 +1903,8 @@ plot.PM_data <- function(
           group_symbols <- rep(group_symbols, length.out = n_colors)
         }
       }
-
-
+      
+      
       if (n_colors > 1) {
         marker$color <- NULL # colors set by group_colors
         marker$symbol <- NULL # symbols set by group_symbols
@@ -1921,12 +1917,12 @@ plot.PM_data <- function(
         allsub$group <- factor(allsub$src, labels = "Observed")
       }
     }
-
-
-
+    
+    
+    
     seen_groups <- NULL
     traces <- allsub %>% dplyr::group_split()
-
+    
     # Build plot
     p <- plot_ly()
     for (i in seq_along(traces)) {
@@ -1937,14 +1933,14 @@ plot.PM_data <- function(
       } else {
         legendShow <- FALSE
       }
-
-
+      
+      
       if ("id" %in% names(trace_data)) {
         trace_data$text_label <- glue::glue("ID: {trace_data$id}\nTime: {round2(trace_data$time)}\n{ifelse(trace_data$src == 'obs', 'Obs:', 'Pred:')} {round2(trace_data$out)}")
       } else {
         trace_data$text_label <- glue::glue("Time: {round2(trace_data$time)}\n{ifelse(trace_data$src == 'obs', 'Obs:', 'Pred:')}: {round2(trace_data$out)}")
       }
-
+      
       p <- add_trace(
         p,
         data = trace_data %>% plotly::filter(src == "obs"),
@@ -1963,7 +1959,7 @@ plot.PM_data <- function(
         legendgroup = ~group,
         showlegend = legendShow
       )
-
+      
       if (includePred) {
         p <- add_trace(
           p,
@@ -1983,9 +1979,9 @@ plot.PM_data <- function(
         )
       }
     }
-
-
-
+    
+    
+    
     p <- p %>% plotly::layout(
       xaxis = layout$xaxis,
       yaxis = layout$yaxis,
@@ -1995,13 +1991,13 @@ plot.PM_data <- function(
     )
     return(invisible(p))
   } # end dataPlot
-
-
+  
+  
   # Call plot ---------------------------------------------------------------
-
-
+  
+  
   # if pred present, need to combine data and pred for proper display
-
+  
   if (!is.null(predsub)) {
     allsub <- dplyr::bind_rows(sub, predsub) %>% dplyr::arrange(id, time)
     includePred <- TRUE
@@ -2009,30 +2005,30 @@ plot.PM_data <- function(
     allsub <- sub
     includePred <- FALSE
   }
-
-
+  
+  
   # call the plot function and display appropriately
   if (overlay) {
     allsub <- allsub %>% dplyr::group_by(id)
     p <- dataPlot(allsub, overlay = TRUE, includePred)
-
+    
     if (print) print(click_plot(p, highlight_color = highlight_color))
     return(invisible(p))
   } else { # overlay = FALSE, ie. split them
-
+    
     if (!checkRequiredPackages("trelliscopejs")) {
       cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
     }
-
+    
     sub_split <- allsub %>%
-      nest(data = -id) %>%
-      mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = FALSE, includePred = includePred)))
+    nest(data = -id) %>%
+    mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = FALSE, includePred = includePred)))
     p <- sub_split %>%
-      ungroup() %>%
-      trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
+    ungroup() %>%
+    trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
     if (print) print(p)
   }
-
+  
   return(invisible(p))
 }
 # SUMMARY -----------------------------------------------------------------
@@ -2073,7 +2069,7 @@ plot.PM_data <- function(
 #' @export
 
 summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
-
+  
   # filter data if needed
   if (!missing(include)) {
     object <- subset(object, sub("[[:space:]]+", "", as.character(object$id)) %in% as.character(include))
@@ -2081,11 +2077,11 @@ summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
   if (!missing(exclude)) {
     object <- subset(object, !sub("[[:space:]]+", "", as.character(object$id)) %in% as.character(exclude))
   }
-
+  
   # make results list
   results <- list()
   idOrder <- rank(unique(object$id))
-
+  
   results$nsub <- length(unique(object$id))
   results$ndrug <- max(object$input, na.rm = T)
   results$numeqt <- max(object$outeq, na.rm = T)
@@ -2095,7 +2091,7 @@ summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
   # loq
   results$loqObsXouteq <- purrr::map_int(1:max(object$outeq, na.rm = TRUE), \(x) sum(object$cens[object$outeq == x], na.rm = TRUE)) 
   
-
+  
   covinfo <- getCov(object)
   ncov <- covinfo$ncov
   results$ncov <- ncov
@@ -2117,7 +2113,7 @@ summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
   if (!missing(formula)) {
     results$formula <- aggregate(formula, object, FUN, ...)
   }
-
+  
   class(results) <- c("summary.PM_data", "list")
   return(results)
 } # end function
@@ -2159,12 +2155,12 @@ print.summary.PM_data <- function(x, ...) {
   #   obsXid
   #   cov
   #   formula
-
+  
   cli::cli_div(theme = list(
     span.blue = list(color = navy())
   ))
   cli::cli_h1("Data Summary")
-
+  
   cli::cli_text("Number of subjects: {.blue {x$nsub}}")
   cli::cli_text("Number of inputs: {.blue {x$ndrug}}")
   cli::cli_text("Number of outputs: {.blue {x$numeqt}}")
@@ -2199,7 +2195,7 @@ print.summary.PM_data <- function(x, ...) {
       obs <- unlist(x$obsXid[, i])
     }
     obs <- obs[obs != -99]
-
+    
     cli::cli_text("Number of observations per subject (outeq {i}): {.blue {sprintf('%.3f', mean(nobs, na.rm = T))}} ({.blue {sprintf('%.3f', sd(nobs, na.rm = T))}}), {.blue {sprintf('%.3f', min(nobs, na.rm = T))}} to {.blue {sprintf('%.3f', max(nobs, na.rm = T))}} ")
     cli::cli_text("Observation value per subject (outeq {i}): {.blue {sprintf('%.3f', mean(obs, na.rm = T))}} ({.blue {sprintf('%.3f', sd(obs, na.rm = T))}}), {.blue {sprintf('%.3f', min(obs, na.rm = T))}} to {.blue {sprintf('%.3f', max(obs, na.rm = T))}} ")
   }
@@ -2209,7 +2205,7 @@ print.summary.PM_data <- function(x, ...) {
   #     cat(paste(x$covnames[i], ": ", sprintf("%.3f", mean(unlist(x$cov[[i]]), na.rm = T)), " (", sprintf("%.3f", sd(unlist(x$cov[[i]]), na.rm = T)), "), ", sprintf("%.3f", min(unlist(x$cov[[i]]), na.rm = T)), " to ", sprintf("%.3f", max(unlist(x$cov[[i]]), na.rm = T)), "\n", sep = ""))
   #   }
   # }
-
+  
   if (!is.null(x$formula)) {
     cli::cli_h2("Formula Results")
     print(x$formula)
@@ -2246,23 +2242,23 @@ print.summary.PM_data <- function(x, ...) {
 #' NPex$data$save("data.csv")
 #' }
 PMwriteMatrix <- function(
-    data, filename, override = FALSE,
-    version = "DEC_11", header = FALSE) {
-  if (!override) {
-    err <- PMcheck(data, quiet = TRUE)
-    if (length(grep("FAIL", err)) > 0) {
-      cli::cli_warn(c("!" = "Write failed; returning errors."))
-      return(invisible(err))
+  data, filename, override = FALSE,
+  version = "DEC_11", header = FALSE) {
+    if (!override) {
+      err <- PMcheck(data, quiet = TRUE)
+      if (length(grep("FAIL", err)) > 0) {
+        cli::cli_warn(c("!" = "Write failed; returning errors."))
+        return(invisible(err))
+      }
+    } else {
+      err <- NULL
     }
-  } else {
-    err <- NULL
-  }
-  # remove the block column if added during run
-  if ("block" %in% names(data)) {
-    data <- data %>% dplyr::select(-block)
-  }
-
-  versionNum <- as.numeric(substr(version, 5, 7)) + switch(substr(version, 1, 3),
+    # remove the block column if added during run
+    if ("block" %in% names(data)) {
+      data <- data %>% dplyr::select(-block)
+    }
+    
+    versionNum <- as.numeric(substr(version, 5, 7)) + switch(substr(version, 1, 3),
     JAN = 1,
     FEB = 2,
     MAR = 3,
