@@ -54,15 +54,16 @@ PM_result <- R6::R6Class(
     #' Use the `$save` method on the augmented `PM_result` object to save it with the
     #' new optimal sampling results.
     opt_samp = NULL,
-
+    
     #' @description
     #' Create new object populated with data from previous run
     #' @details
     #' Creation of new `PM_result` objects is via [PM_load].
     #' @param out The parsed output from [PM_load], which is
     #' automatically generated. This is not a user-modifiable.
+    #' @param path include `r template("path")`.
     #' @param quiet Quietly validate. Default is `FALSE`.
-    initialize = function(out, quiet = TRUE) {
+    initialize = function(out, path = ".", quiet = TRUE) {
       # the following were saved as R6 objects
       purrr::walk(
         c("pop", "post", "final", "cycle", "op", "cov", "data", "model", "valid"),
@@ -75,25 +76,25 @@ PM_result <- R6::R6Class(
               if(x == "model"){
                 args <- list(x  = out[[x]], compile = FALSE)
               } else { 
-                args <- list(out[[x]], quiet = TRUE)
+                args <- list(out[[x]], path = path, quiet = TRUE)
               }
               self[[x]] <- do.call(get(paste0("PM_", x))$new, args = args) # was saved in R6 format, but remake to update if needed
             }
           }
         }
       )
-
+      
       # these are diagnostics, not R6
       self$errfile <- out$errfile
       self$success <- out$success
-
+      
       # add the pop/post data to data
       if (is.null(self$data$pop) | is.null(self$data$post)) {
         self$data <- PM_data$new(self$data$data, quiet = TRUE)
         self$data$pop <- self$pop$data
         self$data$post <- self$post$data
       }
-
+      
       return(self)
     },
     #' @description
@@ -116,7 +117,7 @@ PM_result <- R6::R6Class(
       res <- self$model$fit(data = data, ...)
       return(invisible(res))
     },
-
+    
     #' @description
     #' Plot generic function based on type
     #' @param type Type of plot based on class of object
@@ -128,7 +129,7 @@ PM_result <- R6::R6Class(
         self[[type]]$plot(...)
       }
     },
-
+    
     #' @description
     #' Summary generic function based on type
     #' @param type Type of summary based on class of object
@@ -140,7 +141,7 @@ PM_result <- R6::R6Class(
         self[[type]]$summary(...)
       }
     },
-
+    
     #' @description
     #' AUC generic function based on type
     #' @param type Type of AUC based on class of object
@@ -151,7 +152,7 @@ PM_result <- R6::R6Class(
       }
       self[[type]]$auc(...)
     },
-
+    
     #' @description
     #' Perform non-compartmental analysis
     #' @details
@@ -179,22 +180,22 @@ PM_result <- R6::R6Class(
       if (!"poppar" %in% names(dots)) {
         dots$poppar <- self$final
       }
-
+      
       if (!"data" %in% names(dots)) {
         dots$data <- self$data
       }
-
+      
       if (!"model" %in% names(dots)) {
         dots$model <- self$model
       }
-
+      
       # store copy of the final object
       bk_final <- self$final$clone()
       sim <- do.call(PM_sim$new, dots)
       self$final <- bk_final
       return(sim)
     },
-
+    
     #' @description
     #' Save the current PM_result object to an .Rdata file.
     #' @details
@@ -242,7 +243,7 @@ PM_result <- R6::R6Class(
       )
       save(PMout, file = paste0(outputfolder, "/", file))
     },
-
+    
     #' @description
     #' Validate the result by internal simulation methods.
     #' @param ... Arguments passed to [PM_valid].
@@ -254,9 +255,9 @@ PM_result <- R6::R6Class(
         " " = "For example, if your results are in {.code my_run}, use {.code my_run$save(1)} to save back to the outputs folder of run 1."
       ))
       return(invisible(self))
-
+      
     },
-
+    
     #' @description
     #' Conduct stepwise linear regression of Bayesian posterior parameter values
     #' and covariates.
@@ -264,7 +265,7 @@ PM_result <- R6::R6Class(
     step = function(...) {
       PM_step(self$cov$data, ...)
     },
-
+    
     #' @description
     #' Calculate optimal sampling times.
     #'
@@ -279,7 +280,7 @@ PM_result <- R6::R6Class(
       })
       return(invisible(self))
     },
-
+    
     #' @description
     #' `r lifecycle::badge("deprecated")`
     #'
@@ -312,28 +313,38 @@ PM_result$load <- function(...) {
 #' @title Load Pmetrics NPAG or IT2B output
 #' @description
 #' `r lifecycle::badge("stable")`
+#' Loads all the data from a prior Pmetrics run.
+#' @details
+#' A combination of `run`, `path`, and `file` are used to locate the results.
+#' * If `run` is provided, it is assumed that the results are in a subfolder
+#' `/outputs` of the folder named by `run` within the `path` folder.
+#' * If `run` is missing, the results are assumed to be in the `path` folder.
+#' * The `file` name is the name of the Rdata file containing the results.
+#' Default is "PMout.Rdata", which is created by Pmetrics after a run.
+#' * If both `run` and `path` are missing, the current working directory is used
+#' for `path`.
+#' * If both `run` and `file` are missing, the current working directory is used
+#' for `path` and "PMout.Rdata" is used for `file`.
+#' * If both `path` and `file` are missing, the current working directory is used
+#' for `path` and `run` is required.
+#' * If all three are missing, the current working directory is used for `path`
+#' and "PMout.Rdata" is used for `file`.
 #'
-#' Loads all the data from an \emph{NPAG} or \emph{IT2B} run.
-#'
-#'
-#' @param run The numerical value of the folder number containing the run results.
-#' Loading results of a prior standard run in folder "1" are as
-#' simple as `run1 <- PM_load(1)`. There is no default value for this, and if
-#' missing, Pmetrics will only search the current working directory for output files.
-#' @param file Optional name of an .Rdata file created by running the
-#' `$save` method for a [PM_result] object. For example,
-#' `run2 <- PM_load(2, "other.Rdata")` will look in the run 2 folder outputs
-#' for a file named "other.Rdata". `PM_load(file = "other.Rdata")` will look in the
-#' current working directory, since `run` is missing. If `file` is missing,
-#' Pmetrics will attempt to find a "PMout.Rdata" or the older "NPAGout.Rdata" or
-#' "IT2Bout.Rdata" files in either the current working directory (if `run` is not
-#' specified) or the `run/outputs` folder, if `run` is provided.
-# #' @param remote Default is `FALSE`.  Set to `TRUE` if loading results of an NPAG run on remote server.
-# #' See [NPrun]. Currently remote runs are not configured for IT2B or the Simulator.
-# #' @param server_address If missing, will use the default server address returned by getPMoptions().
-# #' Pmetrics will prompt the user to set this address the first time the `remote` argument is set to `TRUE`
-#' in [NPrun].
+#' @param run The numerical value of the folder in `path` containing run results
+#' @param path include `r template("path")`.
+#' @param file Default is "PMout.Rdata", which is created after a Pmetrics run,
+#' but it could also be the name of an .Rdata file created by running the
+#' `$save` method for a [PM_result] object.
 #' @return An R6 [PM_result].
+#' @examples
+#' \dontrun{
+#' run1 <- PM_load(1) # loads from ./1/outputs/PMout.Rdata, where "." is the current working directory
+#' run2 <- PM_load(2, path = "Pmetrics/MyRuns") # loads from Pmetrics/MyRuns/2/outputs/PMout.Rdata
+#' run3 <- PM_load(path = "Pmetrics/MyRuns/3", file = "MyResults.Rdata") # loads from Pmetrics/MyRuns/3/MyResults.Rdata
+#' run4 <- PM_load(file = "Pmetrics/MyRuns/4/outputs/PMout.Rdata") # loads from Pmetrics/MyRuns/4/outputs/PMout.Rdata
+#' run5 <- PM_load() # loads from ./PMout.Rdata
+#' }
+#' 
 #' @author Michael Neely and Julian Otalvaro
 #' @seealso [PM_final],
 #' [PM_cycle], [PM_op], [PM_cov],
@@ -341,7 +352,7 @@ PM_result$load <- function(...) {
 #' @export
 
 
-PM_load <- function(run, file) {
+PM_load <- function(run, path = ".", file = "PMout.Rdata") {
   # internal function
   output2List <- function(Out) {
     result <- list()
@@ -350,65 +361,26 @@ PM_load <- function(run, file) {
       names(aux_list) <- names(Out)[i]
       result <- append(result, aux_list)
     }
-
+    
     return(result)
   }
-
-  # if (remote) { # only look on server - this needs to be updated
-  #   if (missing(server_address)) server_address <- getPMoptions("server_address")
-  #   status <- .remoteLoad(thisrun, server_address)
-  #   if (status == "finished") {
-  #     result <- output2List(Out = NPAGout)
-  #     return(PM_result$new(result, quiet = T)) # no errors
-  #   } else {
-  #     sprintf("Warning: Remote run #%d has not finished yet.\nCurrent status: \"%s\"\n", thisrun, status) %>%
-  #       cat()
-  #     return(invisible(NULL))
-  #   }
-  # } else
-
-  if (!missing(file)) { # not remote, file supplied, so look for it
-    # try from current wd
-    if (file.exists(file)) {
-      found <- file
-    } else {
-      # nope, try in an outputs folder
-      if (!missing(run)) {
-        file <- paste0(run, "/outputs/", file)
-        if (file.exists(file)) {
-          found <- file
-        }
-      }
-    }
-  } else { # didn't have file, so check for other outputs
-    if (missing(run)) {
-      wd <- "./" # we can only look in current directory
-    } else {
-      wd <- paste0(run, "/outputs/")
-    }
-    file_list <- c("PMout.Rdata", "NPAGout.Rdata", "IT2Bout.Rdata")
-
-    for (i in file_list) {
-      file <- paste0(wd, i)
-      if (file.exists(file)) {
-        found <- file
-        break
-      }
-    }
-  }
-
+  
+  found <- "" # initialize
+  
+  if (!missing(run)) {
+    filepath <- file.path(path, run, "outputs", file)
+  } else {
+    filepath <- file.path(path, file)
+  } 
+  
+  if (file.exists(filepath)) { found <- filepath }
+  
   if (found != "") {
     result <- output2List(Out = get(load(found)))
-    # update
-    result2 <- result # update(result, found)
-    # In order to rebuild correctly the wd must be set to inside the outputs folder
-    cwd <- getwd()
-    setwd(dirname(found))
-    rebuild <- PM_result$new(result2, quiet = TRUE)
-    setwd(cwd)
+    rebuild <- PM_result$new(result, path = dirname(found), quiet = TRUE)
     return(rebuild)
   } else {
-    cli::cli_abort(c("x" = "No Pmetrics output file found in {getwd()}."))
+    cli::cli_abort(c("x" = "No Pmetrics output file found in {.path {path}}."))
   }
 }
 
@@ -440,17 +412,17 @@ update <- function(res, found) {
       select(cycle, value, outeq, type) %>% arrange(cycle, outeq)
       if (is.matrix(dat$mean)) { # old fortran format, but not rust format
         dat$mean <- tibble::tibble(cycle = 1:n_cyc) %>%
-          dplyr::bind_cols(tidyr::as_tibble(dat$mean))
+        dplyr::bind_cols(tidyr::as_tibble(dat$mean))
         dat$median <- tibble::tibble(cycle = 1:n_cyc) %>%
-          dplyr::bind_cols(tidyr::as_tibble(dat$median))
+        dplyr::bind_cols(tidyr::as_tibble(dat$median))
         dat$sd <- tibble::tibble(cycle = 1:n_cyc) %>%
-          dplyr::bind_cols(tidyr::as_tibble(dat$sd))
+        dplyr::bind_cols(tidyr::as_tibble(dat$sd))
       }
       msg <- c(msg, "cycle")
       res$cycle <- dat
     }
   }
-
+  
   ####### DONE PROCESSING, INFORM #########
   if (!is.null(msg)) {
     cat(
@@ -478,6 +450,6 @@ update <- function(res, found) {
       cat("Results saved\n")
     }
   }
-
+  
   return(res)
 }

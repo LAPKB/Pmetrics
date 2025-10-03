@@ -228,7 +228,7 @@ par_lims <- data.frame(
   lower = res$final$ab[,1],
   upper = res$final$ab[,2],
   ave = t(res$final$popMean),
-  med = t(res$final$popMedian),
+  med = t(res$final$popMed),
   sd = t(res$final$popSD),
   cv = 100*t(res$final$popCV),
   shrink = 100*t(res$final$shrinkage)

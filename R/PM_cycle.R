@@ -55,10 +55,11 @@ PM_cycle <- R6::R6Class(
     #' Creation of new `PM_cycle` object is automatic and not generally necessary
     #' for the user to do.
     #' @param PMdata include `r template("PMdata")`.
+    #' @param path include `r template("path")`.
     #' @param ... Not currently used.
     
-    initialize = function(PMdata = NULL, ...) {
-      self$data <- private$make(PMdata)
+    initialize = function(PMdata = NULL, path = ".", ...) {
+      self$data <- private$make(PMdata, path )
     },
     #' @description
     #' Plot method
@@ -118,12 +119,12 @@ PM_cycle <- R6::R6Class(
     }
   ), # end active
   private = list(
-    make = function(data) {
-      if (file.exists("cycles.csv")) {
-        raw <- readr::read_csv(file = "cycles.csv", show_col_types = FALSE)
+    make = function(data, path) {
+      if (file.exists(file.path(path, "cycles.csv"))) {
+        raw <- readr::read_csv(file = file.path(path, "cycles.csv"), show_col_types = FALSE)
         if (nrow(raw)==0){ # posterior 
           raw <- data.frame(cycle = 0, status = "Posterior")
-          write.csv(raw, "cycles.csv", row.names = FALSE)
+          write.csv(raw, file.path(path, "cycles.csv"), row.names = FALSE)
         }
       } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_cycle
         class(data$data) <- c("PM_cycle_data", "list")
@@ -131,27 +132,35 @@ PM_cycle <- R6::R6Class(
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {getwd()}/cycles.csv} does not exist."
+          "i" = "Result does not have valid {.code PM_cycle} object, because {.file {getwd()}/cycles.csv} does not exist."
         ))
         return(NULL)
       }
       
-      if (file.exists("obs.csv")) {
-        obs_raw <- readr::read_csv(file = "obs.csv", show_col_types = FALSE)
+      
+      if (file.exists(file.path(path, "op.csv"))) {
+        op_raw <- readr::read_csv(file = file.path(path, "op.csv"), show_col_types = FALSE)
+      } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
+        class(data$data) <- c("PM_cycle_data", "list")
+        return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {getwd()}/obs.csv} does not exist."
+          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {file.path(path, 'op.csv')} does not exist."
         ))
         return(NULL)
       }
       
-      if (file.exists("settings.json")) {
-        config <- jsonlite::fromJSON("settings.json")
+      
+      if (file.exists(file.path(path, "settings.json"))) {
+        config <- jsonlite::fromJSON(file.path(path, "settings.json"))
+      } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
+        class(data$data) <- c("PM_cycle_data", "list")
+        return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {getwd()}/settings.json} does not exist."
+          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {file.path(path, 'settings.json')} does not exist."
         ))
         return(NULL)
       }
@@ -181,7 +190,7 @@ PM_cycle <- R6::R6Class(
       
       aic <- 2 * num_params + raw$neg2ll
       names(aic) <- raw$cycle
-      bic <- num_params * log(length(unique(obs_raw$id))) + raw$neg2ll
+      bic <- num_params * log(length(unique(op_raw$id))) + raw$neg2ll
       names(bic) <- raw$cycle
       
       mean <- cycle_data %>%
@@ -211,7 +220,7 @@ PM_cycle <- R6::R6Class(
         x / dplyr::first(x)
       }))
       
-      n_out <- length(unique(obs_raw$outeq))
+      n_out <- length(unique(op_raw$outeq))
       n_cyc <- max(cycle_data$cycle)
       
       #gamlam
@@ -512,7 +521,7 @@ plot.PM_cycle <- function(x,
     
     p3 <- data$gamlam %>% 
     mutate(
-      type = ifelse(type == "lambda", "Lambda", "Gamma"),
+      type = ifelse(type == "Additive", "Lambda", "Gamma"),
       outeq = as.factor(outeq),
       # Create list-column for customdata with multiple values per point
       text = paste0("Outeq ", outeq, "<br>", type)
@@ -762,17 +771,17 @@ plot.PM_cycle <- function(x,
   #' @export
   
   print.summary.PM_cycle <- function(x, ...) {
-
+    
     if (x$status == "Posterior") {
       cli::cli_inform(c("i" = "Posterior run, no cycles."))
       return(invisible(NULL))
     }
-
+    
     cli::cli_div(theme = list(
-              span.blue = list(color = navy())
-            ))
+      span.blue = list(color = navy())
+    ))
     cli::cli_h2("Cycle Summary")
-
+    
     cli::cli_text("Cycle number: {.blue {x$cycle}} of {.blue {x$max_cycle}}")
     cli::cli_text("Status: {.blue {x$status}}")
     cli::cli_text("Log-likelihood: {.blue {x$ll}}")
@@ -782,9 +791,9 @@ plot.PM_cycle <- function(x,
     for(i in 1:nrow(x$gamlam)){
       type <- c("Gamma", "Lambda")[1 + as.numeric(x$gamlam$type[i] == "Additive")]
       cli::cli_text("Outeq {.blue {x$gamlam$outeq[i]}}: {type} = {.blue {x$gamlam$value[i]}}")
-
+      
     }
-
+    
     cli::cli_h3("Normalized parameter values:")
     cli::cli_end()
     par_tbl <- bind_rows(x$mean, x$sd, x$median) %>% mutate(stat = c("mean", "sd", "median"))
