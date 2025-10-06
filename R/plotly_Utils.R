@@ -1280,6 +1280,7 @@ function(el, x) {
   #' 
   rgba_to_rgb <- function(rgba_str, alpha = NULL) {
     # Extract the numeric parts from the rgba() string
+    if(length(rgba_str)>1) rgba_str <- rgba_str[1]
     if(is.na(rgba_str) | stringr::str_detect(rgba_str, "#")) return(rgba_str)
     nums <- as.numeric(unlist(regmatches(
       rgba_str,

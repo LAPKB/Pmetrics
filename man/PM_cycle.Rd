@@ -87,13 +87,16 @@ at each cycle,  normalized to initial standard deviation}
 \subsection{Method \code{new()}}{
 Create new object populated with  cycle information
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_cycle$new(PMdata = NULL, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_cycle$new(PMdata = NULL, path = ".", ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
+.}
+
+\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
 .}
 
 \item{\code{...}}{Not currently used.}

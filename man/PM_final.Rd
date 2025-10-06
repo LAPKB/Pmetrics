@@ -48,7 +48,7 @@ associated probability of that point
 \item \strong{popVar} The final cycle variance for each random parameter distribution
 \item \strong{popCov} The final cycle random parameter covariance matrix
 \item \strong{popCor} The final cycle random parameter correlation matrix
-\item \strong{popMedian} The final cycle median values for each random parameter,
+\item \strong{popMed} The final cycle median values for each random parameter,
 i.e. those that have unknown mean and unknown variance, both of which are
 fitted during the run
 \item \strong{popRanFix} The final cycle median values for each parameter that is
@@ -96,7 +96,7 @@ associated probability of that point}
 
 \item{\code{popCor}}{The final cycle random parameter correlation matrix}
 
-\item{\code{popMedian}}{The final cycle median values for each random parameter,
+\item{\code{popMed}}{The final cycle median values for each random parameter,
 i.e. those that have unknown mean and unknown variance, both of which are
 fitted during the run}
 
@@ -187,13 +187,16 @@ with shrinkage to assess the information content of the data.}
 \subsection{Method \code{new()}}{
 Create new object populated with final cycle information
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_final$new(PMdata = NULL, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_final$new(PMdata = NULL, path = ".", ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
+.}
+
+\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
 .}
 
 \item{\code{...}}{Not currently used.}

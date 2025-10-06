@@ -4,7 +4,7 @@
 \alias{PMcheck}
 \title{Check Pmetrics Inputs for Errors}
 \usage{
-PMcheck(data, fix = FALSE, loq = NULL, quiet = FALSE)
+PMcheck(data, fix = FALSE, quiet = FALSE)
 }
 \arguments{
 \item{data}{The name of a Pmetrics .csv matrix file in the current working directory,
@@ -13,8 +13,6 @@ the output of a previous \link{PMreadMatrix} command.}
 
 \item{fix}{Boolean operator; if \code{TRUE}, Pmetrics will attempt to fix errors in the data file.
 Default is \code{FALSE}.}
-
-\item{loq}{Numeric value of the limit of quantification (LOQ) for each output.}
 
 \item{quiet}{Boolean operator to suppress printed output.  Default is false.}
 }
@@ -75,7 +73,7 @@ It must have the following features.  Text is case-sensitive.
 \itemize{
 \item A header in row 1 with the appropriate version, currently "POPDATA DEC_11"
 \itemize{
-\item Column headers in row 2.  These headers are: #ID, EVID, TIME, DUR, DOSE, ADDL, II, INPUT, OUT, OUTEQ,
+\item Column headers in row 2.  These headers are: #ID, EVID, TIME, DUR, DOSE, ADDL, II, INPUT, OUT, CENS, OUTEQ,
 C0, C1, C2, C3.
 }
 \item No cell should be empty.  It should either contain a value or "." as a placeholder.
@@ -124,7 +122,7 @@ user must fix manually.
 \item Rows missing a TIME value are flagged for the user to fix manually.
 \item Cells with malformed NA values are attempted to be fixed.
 \item Columns that are non-numeric which must be numeric are flagged for the user to fix manually.
-These are EVID, TIME, DUR, DOSE, ADDL, II, INPUT, OUT, OUTEQ, C0, C1, C2, and C3.
+These are all columns except ID.
 Covariate columns are fixed separately (see above).
 }
 }
