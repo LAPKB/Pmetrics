@@ -8,7 +8,7 @@
 #' @param template If missing, the default Pmetrics report template as specified in [getPMoptions]
 #' is used. It can be changed with [setPMoptions]. Otherwise, the value for `template`
 #' can be "plotly", "ggplot", or "none".
-#' @param out_path The path for the generated report, defaults to a temporary file
+#' @param path The path for the generated report, defaults to a temporary file
 #' in the current working directory.
 #' @param show Controls if the report should be automatically opened on generation, defaults to `TRUE`
 #' @param quiet If `TRUE`, suppresses the message about report generation, defaults to `FALSE`.
@@ -17,7 +17,7 @@
 #' @seealso [PM_load]
 #' @export
 
-PM_report <- function(x, template, out_path, show = TRUE, quiet = FALSE) {
+PM_report <- function(x, template, path, show = TRUE, quiet = FALSE) {
   if (!is(x, "PM_result")) {
     cli::cli_abort(c("x" = "This function expects a valid PM_result object from PM_load."))
   }
@@ -43,10 +43,10 @@ PM_report <- function(x, template, out_path, show = TRUE, quiet = FALSE) {
   }
   
   
-  if (missing(out_path)) {
+  if (missing(path)) {
     out_path <- tempdir()
   } else {
-    out_path <- file.path(getwd(), out_path) # knitr needs full path
+    out_path <- normalizePath(path, winslash = "/") # knitr needs full path
   }
   
   #if(!quiet) cat("Generating report based on the", template, "template...\n")

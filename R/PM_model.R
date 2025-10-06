@@ -980,6 +980,16 @@ PM_model <- R6::R6Class(
                 
                 #### checks
                 
+                # covariates
+                modelCov <- self$model_list$cov
+                if (length(modelCov) > 0) {
+                  dataCov <- tolower(getCov(data)$covnames)
+                  missingCov <- modelCov[!modelCov %in% dataCov]
+                  if (length(missingCov) > 0) { # if not identical, abort
+                    msg <- glue::glue("{paste(modelCov, collapse = ', ')} {?is/are} missing from the data.")
+                    cli::cli_abort(c("x" = msg))
+                  }
+                }
                 
                 # cycles
                 # if programmer is a crazy Norwegian....
@@ -996,33 +1006,32 @@ PM_model <- R6::R6Class(
                 }
                 
                 modelOut <- self$model_list$n_out
-        
+                
                 
                 # check if model compiled and if not, do so
                 self$compile()
                 
-                cwd <- getwd()
                 intern <- TRUE # always true until (if) rust can run separately from R
                 
                 
                 # make new output directory
-           
+                
                 if (is.null(run)) {
                   olddir <- list.dirs(path, recursive = FALSE)
                   olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
                   olddir <- sub("^\\./", "", olddir)
                   if (length(olddir) > 0) {
-                    path_run <- file.path(path, as.character(max(as.numeric(olddir)) + 1))
+                    run <- as.character(max(as.numeric(olddir)) + 1)
                   } else {
-                    path_run <- file.path(path, "1")
+                    run <- "1"
                   }
                 } else {
                   if (!is.numeric(run)) {
                     cli::cli_abort(c("x" = " {.arg run} must be numeric."))
-                  } else {
-                    path_run <- file.path(path, run)
-                  }
+                  } 
                 }
+                
+                path_run <- file.path(path, run)
                 
                 if (file.exists(path_run)) {
                   if (overwrite) {
@@ -1150,7 +1159,7 @@ PM_model <- R6::R6Class(
                   eqns <- func_to_char(self$arg_list$eqn)
                   bolus_comps <- stringr::str_which(eqns, stringr::regex("(b|bolus)\\[\\d+\\]", ignore_case = TRUE))
                   bolus_inputs <- as.integer(stringr::str_match(eqns[bolus_comps], stringr::regex("(b|bolus)\\[(\\d+)\\]", ignore_case = TRUE))[,3])
-
+                  
                   
                   
                 }
@@ -1203,8 +1212,8 @@ PM_model <- R6::R6Class(
                   }
                   
                   if(tolower(algorithm) == "postprob") {this_alg <- "map"} else {this_alg <- "fit"}
-                  msg <- c(msg, "If assigned to a variable, e.g. {.code run{path_run} <-}, results of {.fn {this_alg}} are available in {.code run{path_run}}.")
-                  if(length(msg)>1) {
+                  msg <- c(msg, "If assigned to a variable, e.g. {.code run{run} <-}, results of {.fn {this_alg}} are available in {.code run{run}}.")
+                  if(length(msg) > 1) {
                     cli::cli_h1("Notes:")
                     cli::cli_ul()
                     purrr::walk(msg[-1], ~ cli::cli_li(.x))
@@ -1216,7 +1225,7 @@ PM_model <- R6::R6Class(
                     c("x" = "Error: Currently, the rust engine only supports internal runs.", "i" = "This is a temporary limitation.")
                   )
                 }
-            }, # end fit method
+              }, # end fit method
               
               #' @description
               #' Calculate posteriors from a fitted model.
@@ -1557,7 +1566,6 @@ PM_model <- R6::R6Class(
                     # Replace placeholders in the base string with actual values from model_list
                     base <- placeholders %>%
                     purrr::reduce(\(x, y) stringr::str_replace(x, stringr::str_c("<", y, ">"), as.character(self$model_list[[y]])), .init = base)
-                    
                     # Write the model to a file
                     writeLines(base, file_path)
                   },
