@@ -497,6 +497,7 @@ PM_model <- R6::R6Class(
           covariates <- tolower(names(self$arg_list$cov))
           ## check to make sure required parameters present if Analytical
           if (type == "Analytical"){
+       
             # look in pri, sec, eqn, lag, fa, ini, out blocks for required parameters
             required_parameters <- tolower(model_template$parameters)
             pri_list <- map_lgl(required_parameters, \(x){
@@ -588,7 +589,7 @@ PM_model <- R6::R6Class(
             if (any(!all_lists$ok)) {
               missing <- all_lists$parameter[!all_lists$ok]
               cli::cli_abort(
-                c("x" = "The following parameters are required for the {.code {model_template}} model template but are missing: {missing}",
+                c("x" = "The following parameters are required for the {.code {model_template$name}} model template but are missing: {missing}",
                 "i" = "They should be defined in one of the model blocks, likely {.code pri}, {.code sec}, {.code eqn}, or {.code out}.",
                 " " = "Parameters defined in {.code pri} and {.code sec} are available to all blocks.",
                 " " = "Parameters defined in other blocks are only available to that block."))
@@ -1201,7 +1202,7 @@ PM_model <- R6::R6Class(
                   res <- PM_load(path = out_path, file = "PMout.Rdata")
                   if(report != "none"){
                     rlang::try_fetch(
-                      valid_report <- PM_report(res, out_path = out_path, template = report, quiet = TRUE),
+                      valid_report <- PM_report(res, path = out_path, template = report, quiet = TRUE),
                       error = function(e) return(-1)
                     )
                     if (valid_report == 1) {
