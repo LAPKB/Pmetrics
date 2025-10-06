@@ -68,7 +68,7 @@ Michael Neely, Julian Otalvaro
 Create new object populated with Bayesian posterior predicted data at
 regular, frequent intervals
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_post$new(PMdata = NULL, run, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_post$new(PMdata = NULL, path = ".", ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -77,9 +77,8 @@ regular, frequent intervals
 \item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
 .}
 
-\item{\code{run}}{If backend is Fortran, run number to find PRTB0001 file with
-posterior predictions. If missing, will look for this file in working
-directory. Not needed when the backend is Rust.}
+\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
+.}
 
 \item{\code{...}}{Not currently used.}
 }

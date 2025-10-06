@@ -81,7 +81,7 @@ new optimal sampling results.}
 \subsection{Method \code{new()}}{
 Create new object populated with data from previous run
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$new(out, quiet = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$new(out, path = ".", quiet = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -89,6 +89,9 @@ Create new object populated with data from previous run
 \describe{
 \item{\code{out}}{The parsed output from \link{PM_load}, which is
 automatically generated. This is not a user-modifiable.}
+
+\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
+.}
 
 \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
 }

@@ -490,6 +490,7 @@ This is the main method to run a population analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PM_model$fit(
   data = NULL,
+  path = ".",
   run = NULL,
   include = NULL,
   exclude = NULL,
@@ -509,11 +510,18 @@ This is the main method to run a population analysis.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{data}}{Either the name of a  \link{PM_data}
-object in memory or the quoted name of a Pmetrics
-data file in the current working directory, which will crate a \link{PM_data}
+object in memory or the quoted filename (with or without a path) of a Pmetrics
+data file. If the path is not specified, the file is assumed to be in the current working directory,
+unless the \code{path} argument below is also specified as a global option for the fit.
+The file will be used to create a \link{PM_data}
 object on the fly. However, if created on the fly, this object
 will not be available to other
-methods or other instances of \link{PM_fit}.}
+methods or other instances of \verb{$fit()}.}
+
+\item{\code{path}}{Optional full path or relative path from current working directory
+to the folder where \code{data} and \code{model} are located if specified as filenames without
+their own paths,
+and where the output will be saved. Default is the current working directory.}
 
 \item{\code{run}}{Specify the run number of the output folder.  Default if missing is the next available number.}
 
@@ -598,7 +606,7 @@ value probability distributions in the population to
 maximize their likelihood, or more precisely, minimize
 the objective function, which is -2*log-likelihood.
 
-The \verb{$fit} method is the means of running that compiled
+The \verb{$fit()} method is the means of running that compiled
 code to conduct to fitting procedure. At a minimum, it requires
 a \link{PM_data} object, which can be created with
 \code{PM_data$new()}. There are a number of additional arguments
@@ -606,8 +614,8 @@ to control the fitting procedure, such as the number of cycles
 to run, the initial number of support points,
 and the algorithm to use, among others.
 
-The \verb{$fit} method is the descendant of the legacy
-\link{NPrun} function, which is maintained as a wrapper to \verb{$fit}
+The \verb{$fit()} method is the descendant of the legacy
+\link{NPrun} function, which is maintained as a wrapper to \verb{$fit()}
 for backwards compatibility.
 }
 

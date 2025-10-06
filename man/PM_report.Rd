@@ -4,7 +4,7 @@
 \alias{PM_report}
 \title{Generate a report}
 \usage{
-PM_report(x, template, outfile, show = TRUE, quiet = FALSE)
+PM_report(x, template, out_path, show = TRUE, quiet = FALSE)
 }
 \arguments{
 \item{x}{A \link{PM_result} object obtained from \link{PM_load}.}
@@ -13,7 +13,8 @@ PM_report(x, template, outfile, show = TRUE, quiet = FALSE)
 is used. It can be changed with \link{setPMoptions}. Otherwise, the value for \code{template}
 can be "plotly", "ggplot", or "none".}
 
-\item{outfile}{The location of the generated report, defaults to a temporary file.}
+\item{out_path}{The path for the generated report, defaults to a temporary file
+in the current working directory.}
 
 \item{show}{Controls if the report should be automatically opened on generation, defaults to \code{TRUE}}
 

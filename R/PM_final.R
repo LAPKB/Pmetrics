@@ -342,7 +342,7 @@ PM_final <- R6::R6Class(
           
           postMed <- post %>%
           group_by(id) %>%
-          summarise(
+          summarize(
             across(
               -c(point, prob),
               ~ suppressWarnings(wtd.quantile(.x, weights = prob, probs = 0.5, na.rm = TRUE)) # in PMutilities, from Hmisc package

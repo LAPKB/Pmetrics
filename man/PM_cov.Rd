@@ -69,13 +69,16 @@ parameter means and medians
 \subsection{Method \code{new()}}{
 Create new object populated with covariate-parameter information
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_cov$new(PMdata, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_cov$new(PMdata, path = ".", ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
+.}
+
+\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
 .}
 
 \item{\code{...}}{Not currently used.}
