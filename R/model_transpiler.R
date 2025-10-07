@@ -67,7 +67,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
     },
     "*" = sprintf("%s * %s", rust_args[[1]], rust_args[[2]]),
     "/" = sprintf("%s / %s", rust_args[[1]], rust_args[[2]]),
-    "^" = if(!is.na(as.numeric(rust_args[[1]]))) {
+    "^" = if(suppressWarnings(!is.na(as.numeric(rust_args[[1]])))) {
       sprintf("(%sf64).powf(%s)", rust_args[[1]], rust_args[[2]])
     } else {
       sprintf("(%s).powf(%s)", rust_args[[1]], rust_args[[2]])
@@ -166,12 +166,14 @@ transpile_ode_eqn <- function(fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|x, p, t, dx, rateiv, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
+   # "|x, p, t, dx, b, rateiv, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",  uncomment when new pharsol pushed
     paste(covs, collapse = ", "),
     paste(params, collapse = ", "),
     paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs) %>%
     stringr::str_replace_all("\\((b|bolus)\\[\\d+\\]\\)", "0") %>%
+  # stringr::str_replace_all("bolus\\[", "b\\[") %>% uncomment when new pharsol pushed
     stringr::str_replace_all("r\\[", "rateiv\\[")
   sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
@@ -232,8 +234,19 @@ transpile_analytic_eqn <- function(fun, params, covs) {
   # remap parameters
   # req_par <- get(tem)$parameters %>%
   #   tolower() %>%
-    
-  req_par <- params %>% purrr::imap_chr(\(x, y){
+  
+  
+  # this block needs to write the equations, e.g. p[0] = ke, based on the parameters in the model template,
+  # not the parameters in the model. The model parameters may have different names, but are checked earlier.
+  
+  req_par <- model_lib(show = FALSE) %>% 
+    filter(Name == tem) %>% 
+    select(Parameters) %>% 
+    stringr::str_split(", ") %>% 
+    unlist() %>% 
+    tolower() %>%
+    purrr::discard(~ .x == "v" & !tem %in% c("one_comp_iv_cl", "two_comp_bolus_cl")) %>% # don't include V for models that don't need it in equations
+    purrr::imap_chr(\(x, y){
       sprintf("p[%i] = %s;", y - 1, x)
     }) %>%
     paste(collapse = "\n")

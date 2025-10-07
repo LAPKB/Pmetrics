@@ -1181,7 +1181,6 @@ PM_model <- R6::R6Class(
                         algorithm = algorithm,
                         error_models = lapply(self$model_list$err, function(x) x$flatten()),
                         idelta = idelta,
-                        #bolus = NA, bolus = 1, or bolus = c(1, 3)
                         tad = tad,
                         loq = loq, # loq values 
                         max_cycles = cycles, #will be hardcoded in Rust to 0 for POSTPROB
