@@ -1206,49 +1206,131 @@ sub_plot <- function(...,
   #' traces will be preserved but dimmed to 20% opacity. Default highlight color is `orange()`.
   #' @export
   #' @author Michael Neely
-  click_plot <- function(p, highlight_color = highlight_color) {
-    p <- htmlwidgets::onRender(p, sprintf("
+
+click_plot <- function(p, highlight_color = "#1f77b4") {
+  js <- "
 function(el, x) {
-  const highlight = '%s';
+  const fallback = '__FALLBACK__';
   let selectedIndex = null;
   let lastClickWasPoint = false;
-    
-  // Deep copy of all original marker objects
-  const originalMarkers = x.data.map(trace => JSON.parse(JSON.stringify(trace.marker || {})));
-    
-  el.on('plotly_click', function(data) {
+
+  // legend proxy bookkeeping
+  let proxyIndex = null;
+  let legendTargetIndex = null;   // the single original legend trace we hid
+
+  const originalMarkers = x.data.map(tr => JSON.parse(JSON.stringify(tr.marker || {})));
+
+  // ---------- color helpers ----------
+  const __canvas = document.createElement('canvas');
+  __canvas.width = __canvas.height = 1;
+  const __ctx = __canvas.getContext('2d');
+
+  function resolveToRGBA(colorStr) {
+    if (!colorStr) return null;
+    try {
+      __ctx.clearRect(0,0,1,1);
+      __ctx.fillStyle = '#000';
+      __ctx.fillStyle = colorStr;
+      const norm = __ctx.fillStyle;
+      const m = /^rgba?\\(([^)]+)\\)$/i.exec(norm);
+      if (!m) return hexToRGBA(colorStr);
+      const parts = m[1].split(',').map(s => s.trim());
+      const r = parseFloat(parts[0]), g = parseFloat(parts[1]), b = parseFloat(parts[2]);
+      const a = parts[3] !== undefined ? parseFloat(parts[3]) : 1;
+      return { r, g, b, a };
+    } catch(e) { return hexToRGBA(colorStr); }
+  }
+  function hexToRGBA(hex) {
+    if (typeof hex !== 'string') return null;
+    let h = hex.replace('#','').trim();
+    if (h.length === 3 || h.length === 4) h = h.split('').map(c => c+c).join('');
+    if (h.length === 6) h += 'ff';
+    if (h.length !== 8) return null;
+    return { r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16),
+             b:parseInt(h.slice(4,6),16), a:parseInt(h.slice(6,8),16)/255 };
+  }
+  function rgbToHsl(r,g,b){
+    r/=255; g/=255; b/=255;
+    const max=Math.max(r,g,b), min=Math.min(r,g,b);
+    let h=0,s=0,l=(max+min)/2;
+    if(max!==min){
+      const d=max-min;
+      s=l>0.5? d/(2-max-min) : d/(max+min);
+      switch(max){
+        case r: h=(g-b)/d+(g<b?6:0); break;
+        case g: h=(b-r)/d+2; break;
+        case b: h=(r-g)/d+4; break;
+      }
+      h*=60;
+    }
+    return {h,s,l};
+  }
+  function hslToRgb(h,s,l){
+    const C=(1-Math.abs(2*l-1))*s;
+    const X=C*(1-Math.abs(((h/60)%2)-1));
+    const m=l-C/2;
+    let r1=0,g1=0,b1=0;
+    if      (0<=h && h<60)  {r1=C; g1=X; b1=0;}
+    else if (60<=h && h<120){r1=X; g1=C; b1=0;}
+    else if (120<=h && h<180){r1=0; g1=C; b1=X;}
+    else if (180<=h && h<240){r1=0; g1=X; b1=C;}
+    else if (240<=h && h<300){r1=X; g1=0; b1=C;}
+    else                     {r1=C; g1=0; b1=X;}
+    return { r:Math.round((r1+m)*255), g:Math.round((g1+m)*255), b:Math.round((b1+m)*255) };
+  }
+  function rotateHue90ToRgbaString(colorStr, fb){
+    let rgba = resolveToRGBA(colorStr) || resolveToRGBA(fb);
+    if(!rgba) return fb;
+    const {r,g,b,a} = rgba;
+    const {h,s,l} = rgbToHsl(r,g,b);
+    const h2=(h+90)%360;
+    const {r:rr,g:gg,b:bb} = hslToRgb(h2,s,l);
+    return (a===undefined || a>=1) ? `rgb(${rr},${gg},${bb})` : `rgba(${rr},${gg},${bb},${a})`;
+  }
+  function perPointHighlightColors(trace){
+    const mk = trace.marker || {};
+    const c = mk.color;
+    if (Array.isArray(c)) return c.map(ci => (ci==null)?ci:rotateHue90ToRgbaString(ci,fallback));
+    if (typeof c === 'string') return rotateHue90ToRgbaString(c,fallback);
+    return rotateHue90ToRgbaString(fallback,fallback);
+  }
+
+  // ---------- interactions ----------
+  el.on('plotly_click', function(ev){
     lastClickWasPoint = true;
-    const i = data.points[0].fullData.index;
-    
-    if (selectedIndex === i) {
-      // Deselect: restore all original marker settings
-      for (let j = 0; j < x.data.length; j++) {
+    const i = ev.points[0].fullData.index;
+
+    // Deselect
+    if (selectedIndex === i){
+      for (let j=0;j<x.data.length;j++){
         Plotly.restyle(el.id, { marker: [originalMarkers[j]] }, [j]);
       }
       selectedIndex = null;
-    } else {
-      // Dim all traces
-      for (let j = 0; j < x.data.length; j++) {
-        const dimmedMarker = Object.assign({}, originalMarkers[j], { opacity: 0.2 });
-        Plotly.restyle(el.id, { marker: [dimmedMarker] }, [j]);
-      }
-    
-      // Highlight selected trace
-      const highlightedMarker = Object.assign({}, originalMarkers[i], {
-        color: highlight,
-        opacity: 1
-      });
-      Plotly.restyle(el.id, { marker: [highlightedMarker] }, [i]);
-    
-      selectedIndex = i;
+      return;
     }
+
+    // Dim all traces
+    for (let j=0;j<x.data.length;j++){
+      const dimmed = Object.assign({}, originalMarkers[j], { opacity: 0.2 });
+      Plotly.restyle(el.id, { marker: [dimmed] }, [j]);
+    }
+
+    // Highlight selected trace (per-point hue rotation)
+    const colorHL = perPointHighlightColors(x.data[i]);
+    const highlightedMarker = Object.assign({}, originalMarkers[i], { color: colorHL, opacity: 1 });
+    Plotly.restyle(el.id, { marker: [highlightedMarker] }, [i]).then(() => {
+      return;
+
+    });
+
+    selectedIndex = i;
   });
-    
-  // Background click restores everything
-  el.addEventListener('click', function() {
+
+  // Background click → restore
+  el.addEventListener('click', function(){
     setTimeout(() => {
-      if (!lastClickWasPoint) {
-        for (let j = 0; j < x.data.length; j++) {
+      if (!lastClickWasPoint){
+        for (let j=0;j<x.data.length;j++){
           Plotly.restyle(el.id, { marker: [originalMarkers[j]] }, [j]);
         }
         selectedIndex = null;
@@ -1256,15 +1338,77 @@ function(el, x) {
       lastClickWasPoint = false;
     }, 0);
   });
-    
-  // Optional: disable right-click menu
-  el.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-  });
+
+  el.addEventListener('contextmenu', e => e.preventDefault());
 }
-", highlight_color))
-    return(p)
-  }
+"
+  js <- sub("__FALLBACK__", highlight_color, js, fixed = TRUE)
+  htmlwidgets::onRender(p, js)
+}
+
+
+
+
+
+#   click_plot <- function(p, highlight_color = highlight_color) {
+#     p <- htmlwidgets::onRender(p, sprintf("
+# function(el, x) {
+#   const highlight = '%s';
+#   let selectedIndex = null;
+#   let lastClickWasPoint = false;
+    
+#   // Deep copy of all original marker objects
+#   const originalMarkers = x.data.map(trace => JSON.parse(JSON.stringify(trace.marker || {})));
+    
+#   el.on('plotly_click', function(data) {
+#     lastClickWasPoint = true;
+#     const i = data.points[0].fullData.index;
+    
+#     if (selectedIndex === i) {
+#       // Deselect: restore all original marker settings
+#       for (let j = 0; j < x.data.length; j++) {
+#         Plotly.restyle(el.id, { marker: [originalMarkers[j]] }, [j]);
+#       }
+#       selectedIndex = null;
+#     } else {
+#       // Dim all traces
+#       for (let j = 0; j < x.data.length; j++) {
+#         const dimmedMarker = Object.assign({}, originalMarkers[j], { opacity: 0.2 });
+#         Plotly.restyle(el.id, { marker: [dimmedMarker] }, [j]);
+#       }
+    
+#       // Highlight selected trace
+#       const highlightedMarker = Object.assign({}, originalMarkers[i], {
+#         color: highlight,
+#         opacity: 1
+#       });
+#       Plotly.restyle(el.id, { marker: [highlightedMarker] }, [i]);
+    
+#       selectedIndex = i;
+#     }
+#   });
+    
+#   // Background click restores everything
+#   el.addEventListener('click', function() {
+#     setTimeout(() => {
+#       if (!lastClickWasPoint) {
+#         for (let j = 0; j < x.data.length; j++) {
+#           Plotly.restyle(el.id, { marker: [originalMarkers[j]] }, [j]);
+#         }
+#         selectedIndex = null;
+#       }
+#       lastClickWasPoint = false;
+#     }, 0);
+#   });
+    
+#   // Optional: disable right-click menu
+#   el.addEventListener('contextmenu', function(e) {
+#     e.preventDefault();
+#   });
+# }
+# ", highlight_color))
+#     return(p)
+#   }
   
   
   
@@ -1817,6 +1961,7 @@ opposite_color <- function(col,
 
   # strict 180° hue complement
   comp <- grDevices::hsv((h + degree_offset) %% 1, s, v, alpha = alpha)
+  if(nchar(col)==7) comp <- substr(comp, 1, 7)  # drop alpha if input had none
 
   if (method == "complement") {
     return(toupper(comp))

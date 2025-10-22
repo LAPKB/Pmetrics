@@ -50,16 +50,16 @@ PM_report <- function(x, template, path, show = TRUE, quiet = FALSE) {
   }
   
   #if(!quiet) cat("Generating report based on the", template, "template...\n")
-  rlang::try_fetch(
-    rmarkdown::render(
-      input = templateFile,
-      output_file = file.path(out_path, "report.html"),
-      params = list(res = x),
-      clean = TRUE,
-      quiet = TRUE,
-    ),
-    error = function(e) {return(invisible(-1))}
+  #rlang::try_fetch(
+  rmarkdown::render(
+    input = templateFile,
+    output_file = file.path(out_path, "report.html"),
+    params = list(res = x),
+    clean = TRUE,
+    quiet = TRUE,
   )
+  #   error = function(e) {return(invisible(-1))}
+  # )
   
   # quarto::quarto_render(
   #   input = templateFile,
@@ -69,9 +69,13 @@ PM_report <- function(x, template, path, show = TRUE, quiet = FALSE) {
   #   debug = TRUE
   # )
   
-  if (show & file.exists(file.path(out_path, "report.html"))) {
-    pander::openFileInOS(file.path(out_path, "report.html"))
+  if (file.exists(file.path(out_path, "report.html"))) {
+    if (show){
+      pander::openFileInOS(file.path(out_path, "report.html"))
+    }
+    return(invisible(1))
+  } else {
+    return(invisible(-1)) # something went wrong and report doesn't exist
   }
   
-  return(invisible(1))
 }

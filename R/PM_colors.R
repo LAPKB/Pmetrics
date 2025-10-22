@@ -10,7 +10,7 @@ make_color <- function(hex, alpha = 1) {
     }
     hex <- grDevices::rgb(rgb_vals[1], rgb_vals[2], rgb_vals[3], maxColorValue = 255)
   }
-  alpha_hex <- toupper(sprintf("%02X", round(alpha * 255)))
+  alpha_hex <- ifelse(nchar(hex) == 9, toupper(sprintf("%02X", round(alpha * 255))), "")
   paste0(gsub("^#", "#", hex), alpha_hex)
 }
 

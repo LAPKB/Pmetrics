@@ -36,7 +36,7 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     cli::cli_abort(c("x" = "The directory {.path {path}} does not exist."))
 }
 
-# assumes pred.csv, op.csv, and settings.json are in wd
+# assumes pred.csv and settings.json are in wd
 op <- rlang::try_fetch(PM_op$new(path = path),
 error = function(e) {
   cli::cli_warn("Unable to create {.cls PM_op} object", parent = e)
@@ -52,7 +52,7 @@ error = function(e) {
 }
 )
 
-# assumes cycles.csv, op.csv, and settings.json are in wd
+# assumes cycles.csv, and settings.json are in wd
 cycle <- rlang::try_fetch(PM_cycle$new(path = path),
 error = function(e) {
   cli::cli_warn("Unable to create {.cls PM_cycle} object", parent = e)
