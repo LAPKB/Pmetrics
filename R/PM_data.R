@@ -1639,6 +1639,7 @@ plot.PM_data <- function(
     
     # process marker
     marker <- amendMarker(marker)
+    if(nchar(marker$color == 9)) { marker$color <- substr(marker$color, 1, 7) } # remove alpha if present
     highlight_color <- opposite_color(marker$color[1]) # in plotly_Utils.R
     
     
@@ -1721,16 +1722,18 @@ plot.PM_data <- function(
     }
     
     # Data processing ---------------------------------------------------------
+    dat <- x$clone() #make copy of x to work with
+  
     # make blocks
-    x$standard_data <- makePMmatrixBlock(x$standard_data)
+    dat$standard_data <- makePMmatrixBlock(dat$standard_data)
     
     # time after dose
     if (tad) {
-      x$standard_data$time <- calcTAD(x$standard_data)
+      dat$standard_data$time <- calcTAD(dat$standard_data)
     }
     
     # filter
-    presub <- x$standard_data %>%
+    presub <- dat$standard_data %>%
     filter(outeq %in% !!outeq, block %in% !!block, evid == 0) %>%
     includeExclude(include, exclude)
     
@@ -1738,7 +1741,7 @@ plot.PM_data <- function(
     
     # make group column for groups
     if (!is.null(group)) {
-      if (!group %in% base::names(x$standard_data)) {
+      if (!group %in% base::names(dat$standard_data)) {
         cli::cli_abort(c("x" = "{group} is not a column in the data."))
       }
       if (is.null(group_names)) {
@@ -1756,11 +1759,11 @@ plot.PM_data <- function(
     # make outeq labels if more than one output being plotted
     if (length(outeq) > 1) {
       if (is.null(out_names)) {
-        out_names <- paste0("Output ", outeq)
+        out_names <- paste0("Output ", 1:max(outeq))
       } else if (length(out_names) < max(outeq)) {
         cli::cli_abort(c("x" = "The number of names in {.var out_names} must be at least as long as the maximum number of outputs in {.var outeq}."))
       }
-      # make output names
+      # add outeq to group
       presub <- presub %>%
       rowwise() %>%
       mutate(group = paste0(group, ", ", out_names[outeq]))
@@ -1773,12 +1776,13 @@ plot.PM_data <- function(
       mutate(group = paste0(group, ", Block ", block))
     }
     
+    
     presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
     
     
     # select relevant columns
     sub <- presub %>%
-    select(id, time, out, outeq, group) %>%
+    select(id, time, out, cens, outeq, group) %>%
     ungroup()
     sub$group <- factor(sub$group)
     
@@ -1844,7 +1848,7 @@ plot.PM_data <- function(
         
         # select relevant columns and filter missing
         predsub <- predsub %>%
-        select(id, time, out = pred, outeq) %>%
+        select(id, time, out = pred, cens = NA, outeq) %>%
         filter(out != -99)
         
         # add group
@@ -1904,12 +1908,6 @@ plot.PM_data <- function(
         }
       }
       
-      
-      if (n_colors > 1) {
-        marker$color <- NULL # colors set by group_colors
-        marker$symbol <- NULL # symbols set by group_symbols
-        join$color <- NULL
-      }
     } else { # no grouping
       if (includePred) {
         allsub$group <- factor(allsub$src, labels = c("Observed", "Predicted"))
@@ -1918,375 +1916,417 @@ plot.PM_data <- function(
       }
     }
     
-    
-    
-    seen_groups <- NULL
-    traces <- allsub %>% dplyr::group_split()
-    
-    # Build plot
-    p <- plot_ly()
-    for (i in seq_along(traces)) {
-      trace_data <- traces[[i]]
-      if (any(!unique(trace_data$group) %in% seen_groups)) {
-        seen_groups <- c(seen_groups, as.character(unique(trace_data$group)))
-        legendShow <- TRUE
-      } else {
-        legendShow <- FALSE
-      }
+    # assign colors and symbols to each group, editing for censoring
+    IDstring <- ifelse(overlay, "ID: {id}\n", "")
+    allsub <- allsub %>%
+    rowwise() %>%
+    mutate(
+      color = group_colors[as.integer(group)],
+      symbol = group_symbols[as.integer(group)]
+    ) %>%
+    mutate(
+      color = ifelse(cens != 0, opposite_color(color, degrees = 90), color),
+      symbol = dplyr::case_when(
+        cens == 1 ~ "triangle-down", 
+        cens == 0 ~ symbol,
+        cens == -1 ~ "triangle-up",
+        .default = symbol),
+      text_label = dplyr::case_when(
+          cens == 1  ~ glue::glue(IDstring,"Time: {round2(time)}\nBLLQ: {round2(out)}\n{group}"),
+          cens == 0  ~ glue::glue(IDstring,"Time: {round2(time)}\nOut: {round2(out)}\n{group}"),
+          cens == -1 ~ glue::glue(IDstring,"Time: {round2(time)}\nAULQ: {round2(out)}\n{group}"),
+          is.na(cens) ~ glue::glue(IDstring,"Time: {round2(time)}\nPred: {round2(out)}\n{group}")
+        )
+      ) %>%
+      ungroup()
       
       
-      if ("id" %in% names(trace_data)) {
-        trace_data$text_label <- glue::glue("ID: {trace_data$id}\nTime: {round2(trace_data$time)}\n{ifelse(trace_data$src == 'obs', 'Obs:', 'Pred:')} {round2(trace_data$out)}")
-      } else {
-        trace_data$text_label <- glue::glue("Time: {round2(trace_data$time)}\n{ifelse(trace_data$src == 'obs', 'Obs:', 'Pred:')}: {round2(trace_data$out)}")
-      }
       
-      p <- add_trace(
-        p,
-        data = trace_data %>% plotly::filter(src == "obs"),
-        x = ~time, y = ~ out * mult,
-        type = "scatter",
-        mode = "markers+lines",
-        name = ~group,
-        marker = marker,
-        color = ~group,
-        colors = group_colors,
-        symbol = ~group,
-        symbols = group_symbols,
-        text = ~text_label,
-        hoverinfo = "text",
-        line = join,
-        legendgroup = ~group,
-        showlegend = legendShow
-      )
-      
-      if (includePred) {
+      seen_groups <- NULL
+      traces <- if(overlay) {allsub %>% dplyr::group_split(id)} else {list(allsub)}
+  
+      # Build plot
+      p <- plot_ly()
+      for (i in seq_along(traces)) {
+        trace_data <- traces[[i]]
+        if (any(!unique(trace_data$group) %in% seen_groups)) {
+          seen_groups <- c(seen_groups, as.character(unique(trace_data$group)))
+          legendShow <- TRUE
+        } else {
+          legendShow <- FALSE
+        }
+        this_id <- ifelse(overlay, trace_data$id[1], 1)
+        
         p <- add_trace(
           p,
-          data = trace_data %>% plotly::filter(src == "pred"),
+          data = trace_data %>% plotly::filter(src == "obs") %>% arrange(group, time),
           x = ~time, y = ~ out * mult,
           type = "scatter",
-          mode = "lines",
+          mode = "markers",
+          split = ~group,
           name = ~group,
-          line = predArgs,
-          color = ~group,
-          colors = group_colors,
-          symbol = ~group,
-          symbols = group_symbols,
+          uid = as.character(this_id),
+          meta = list(id = this_id),
+          marker = list(color = ~I(color), symbol = ~I(symbol), size = marker$size, opacity = marker$opacity,
+          line = list(color = marker$line$color, width = marker$line$width)),
           text = ~text_label,
           hoverinfo = "text",
+          legendgroup = ~group,
           showlegend = legendShow
         )
+        
+        # add joining lines if needed
+        if (join$width > 0){   
+          trace_split <- trace_data %>% filter(src == "obs") %>% dplyr::group_split(color)
+          for(j in seq_along(trace_split)){
+            this_color <- trace_split[[j]]$color[1]
+            p <- add_trace(
+            p,
+            data = trace_split[[j]],
+            x = ~time, y = ~(out * mult),
+            type = "scatter", mode = "lines",
+            line = list(color = this_color, width = join$width, dash = join$dash),
+            legendgroup = ~group,
+            showlegend = FALSE
+          )
+
+          }
+          
+        }
+        
+        if (includePred) {
+          p <- add_trace(
+            p,
+            data = trace_data %>% plotly::filter(src == "pred") %>% arrange(color, time),
+            x = ~time, y = ~ out * mult,
+            type = "scatter", mode = "lines",
+            split = ~color,
+            line = list(color = ~I(color), width = predArgs$width, dash = predArgs$dash),
+            text = ~text_label,
+            hoverinfo = "text",
+            legendgroup = ~group,
+            showlegend = FALSE
+          )
+        }
       }
+      
+      p <- p %>% plotly::layout(
+        xaxis = layout$xaxis,
+        yaxis = layout$yaxis,
+        title = layout$title,
+        showlegend = layout$showlegend,
+        legend = layout$legend
+      )
+      return(invisible(p))
+    } # end dataPlot
+    
+    
+    # Call plot ---------------------------------------------------------------
+    
+    
+    # if pred present, need to combine data and pred for proper display
+    
+    if (!is.null(predsub)) {
+      allsub <- dplyr::bind_rows(sub, predsub) %>% dplyr::arrange(id, time)
+      includePred <- TRUE
+    } else {
+      allsub <- sub
+      includePred <- FALSE
     }
     
     
-    
-    p <- p %>% plotly::layout(
-      xaxis = layout$xaxis,
-      yaxis = layout$yaxis,
-      title = layout$title,
-      showlegend = layout$showlegend,
-      legend = layout$legend
-    )
-    return(invisible(p))
-  } # end dataPlot
-  
-  
-  # Call plot ---------------------------------------------------------------
-  
-  
-  # if pred present, need to combine data and pred for proper display
-  
-  if (!is.null(predsub)) {
-    allsub <- dplyr::bind_rows(sub, predsub) %>% dplyr::arrange(id, time)
-    includePred <- TRUE
-  } else {
-    allsub <- sub
-    includePred <- FALSE
-  }
-  
-  
-  # call the plot function and display appropriately
-  if (overlay) {
-    allsub <- allsub %>% dplyr::group_by(id)
-    p <- dataPlot(allsub, overlay = TRUE, includePred)
-    
-    if (print) print(click_plot(p, highlight_color = highlight_color))
-    return(invisible(p))
-  } else { # overlay = FALSE, ie. split them
-    
-    if (!checkRequiredPackages("trelliscopejs")) {
-      cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
+    # call the plot function and display appropriately
+    if (overlay) {
+      allsub <- allsub %>% dplyr::group_by(id)
+      p <- dataPlot(allsub, overlay = TRUE, includePred)
+      
+      if (print) print(click_plot(p, highlight_color = highlight_color))
+      return(invisible(p))
+    } else { # overlay = FALSE, ie. split them
+      
+      if (!checkRequiredPackages("trelliscopejs")) {
+        cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
+      }
+      sub_split <- allsub %>%
+      nest(data = -id) %>%
+      mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = FALSE, includePred = includePred)))
+      p <- sub_split %>%
+      ungroup() %>%
+      trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
+      if (print) print(p)
     }
     
-    sub_split <- allsub %>%
-    nest(data = -id) %>%
-    mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = FALSE, includePred = includePred)))
-    p <- sub_split %>%
-    ungroup() %>%
-    trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
-    if (print) print(p)
-  }
-  
-  return(invisible(p))
+    return(invisible(p))
 }
-# SUMMARY -----------------------------------------------------------------
-
-#' @title Summarize PM_data objects
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Summarize the raw data used for a Pmetrics run.
-#'
-#' @method summary PM_data
-#' @param object A [PM_data] object.
-#' @param formula Optional formula for specifying custom summaries.  See [aggregate]
-#' and [formula] for details on how to specify formulae in R. If, for example, the data contain
-#' a covariate for weight named 'wt', then to summarize the mean dose in mg/kg per subject specify
-#' `formula = dose/wt ~ id` and  `FUN = mean`.
-#' @param FUN The summary function to apply to [formula], if specified. This is not
-#' quoted, and usual choices will be [mean], [median], [max], or [min].
-#' @param include A vector of subject IDs to include in the summary, e.g. `c(1:3,5,15)`
-#' @param exclude A vector of subject IDs to exclude in the summary, e.g. `c(4,6:14,16:20)`
-#' @param ... Additional arguments to `FUN`, e.g. `na.rm = TRUE`
-#' @return A list of class *summary.PM_data* with the following items:
-#' * **nsub** Number of subjects
-#' * **ndrug** Number of drug inputs
-#' * **numeqt** Number of outputs
-#' * **nobsXouteq** Number of observations by outeq
-#' * **missObsXouteq** Number of missing observations by outeq
-#' * **loqObsXouteq** Number of observations coded as below the limit of quantification by outeq
-#' * **ncov** Number of covariates
-#' * **covnames** Covariate names
-#' * **ndoseXid** Number of doses per input per subject
-#' * **nobsXid** Number of observations per outeq per subject
-#' * **doseXid** Doses per input per subject
-#' * **obsXid** Observations per outeq per subject
-#' * **formula** Results of including [formula]
-#' @author Michael Neely
-#' @seealso [aggregate]
-#' @export
-
-summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
+  # SUMMARY -----------------------------------------------------------------
   
-  # filter data if needed
-  if (!missing(include)) {
-    object <- subset(object, sub("[[:space:]]+", "", as.character(object$id)) %in% as.character(include))
-  }
-  if (!missing(exclude)) {
-    object <- subset(object, !sub("[[:space:]]+", "", as.character(object$id)) %in% as.character(exclude))
-  }
+  #' @title Summarize PM_data objects
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #'
+  #' Summarize the raw data used for a Pmetrics run.
+  #'
+  #' @method summary PM_data
+  #' @param object A [PM_data] object.
+  #' @param formula Optional formula for specifying custom summaries.  See [aggregate]
+  #' and [formula] for details on how to specify formulae in R. If, for example, the data contain
+  #' a covariate for weight named 'wt', then to summarize the mean dose in mg/kg per subject specify
+  #' `formula = dose/wt ~ id` and  `FUN = mean`.
+  #' @param FUN The summary function to apply to [formula], if specified. This is not
+  #' quoted, and usual choices will be [mean], [median], [max], or [min].
+  #' @param include A vector of subject IDs to include in the summary, e.g. `c(1:3,5,15)`
+  #' @param exclude A vector of subject IDs to exclude in the summary, e.g. `c(4,6:14,16:20)`
+  #' @param ... Additional arguments to `FUN`, e.g. `na.rm = TRUE`
+  #' @return A list of class *summary.PM_data* with the following items:
+  #' * **nsub** Number of subjects
+  #' * **ndrug** Number of drug inputs
+  #' * **numeqt** Number of outputs
+  #' * **nobsXouteq** Number of observations by outeq
+  #' * **missObsXouteq** Number of missing observations by outeq
+  #' * **loqObsXouteq** Number of observations coded as below the limit of quantification by outeq
+  #' * **ncov** Number of covariates
+  #' * **covnames** Covariate names
+  #' * **ndoseXid** Number of doses per input per subject
+  #' * **nobsXid** Number of observations per outeq per subject
+  #' * **doseXid** Doses per input per subject
+  #' * **obsXid** Observations per outeq per subject
+  #' * **formula** Results of including [formula]
+  #' @author Michael Neely
+  #' @seealso [aggregate]
+  #' @export
   
-  # make results list
-  results <- list()
-  idOrder <- rank(unique(object$id))
-  
-  results$nsub <- length(unique(object$id))
-  results$ndrug <- max(object$input, na.rm = T)
-  results$numeqt <- max(object$outeq, na.rm = T)
-  results$nobsXouteq <- tapply(object$evid, object$outeq, function(x) length(x == 0))
-  results$missObsXouteq <- by(object, object$outeq, function(x) length(x$out[x$evid == 0 & x$out == -99]))
-  
-  # loq
-  results$loqObsXouteq <- purrr::map_int(1:max(object$outeq, na.rm = TRUE), \(x) sum(object$cens[object$outeq == x], na.rm = TRUE)) 
-  
-  
-  covinfo <- getCov(object)
-  ncov <- covinfo$ncov
-  results$ncov <- ncov
-  results$covnames <- covinfo$covnames
-  results$ndoseXid <- tapply(object$evid, list(object$id, object$input), function(x) length(x != 0))[idOrder, ]
-  results$nobsXid <- tapply(object$evid, list(object$id, object$outeq), function(x) length(x == 0))[idOrder, ]
-  results$doseXid <- tapply(object$dose, list(object$id, object$input), function(x) x[!is.na(x)])[idOrder, ]
-  results$obsXid <- tapply(object$out, list(object$id, object$outeq), function(x) x[!is.na(x)])[idOrder, ]
-  if (ncov > 0) {
-    # get each subject's covariate values
-    results$cov <- lapply(1:ncov, function(y) {
-      tapply(
-        object[[covinfo$covstart + y - 1]], object$id,
-        function(z) z[!is.na(z)]
-      )[idOrder]
-    })
-    names(results$cov) <- covinfo$covnames
-  }
-  if (!missing(formula)) {
-    results$formula <- aggregate(formula, object, FUN, ...)
-  }
-  
-  class(results) <- c("summary.PM_data", "list")
-  return(results)
-} # end function
-# PRINT SUMMARY -----------------------------------------------------------------
-
-#' @title Print Summary of Pmetrics Data
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' @details
-#' Print the summary of [PM_data] object.
-#'
-#' Summarize the raw data used for a Pmetrics run.
-#'
-#' @method print summary.PM_data
-#' @param x An object made by [summary.PM_data].
-#' @return A printed object
-#' @author Michael Neely
-#' @param ... Not used.
-#' @seealso [summary.PM_data]
-#' @examples
-#' \dontrun{
-#' dataEx$summary()
-#' }
-
-#' @export
-
-print.summary.PM_data <- function(x, ...) {
-  #   order of objects
-  #   nsub
-  #   ndrug
-  #   numeqt
-  #   nobsXouteq
-  #   missObsXouteq
-  #   ncov
-  #   ndoseXid
-  #   nobsXid
-  #   doseXid
-  #   obsXid
-  #   cov
-  #   formula
-  
-  cli::cli_div(theme = list(
-    span.blue = list(color = navy())
-  ))
-  cli::cli_h1("Data Summary")
-  
-  cli::cli_text("Number of subjects: {.blue {x$nsub}}")
-  cli::cli_text("Number of inputs: {.blue {x$ndrug}}")
-  cli::cli_text("Number of outputs: {.blue {x$numeqt}}")
-  for (i in 1:x$numeqt) {
-    if (x$loqObsXouteq[i] > 0) {
-      extra_text <- " and {.blue {x$loqObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$loqObsXouteq[i] / x$nobsXouteq[i])}%}) coded as below the LOQ."
-    } else {
-      extra_text <- ". No LOQ observations."
+  summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
+    
+    # filter data if needed
+    if (!missing(include)) {
+      object <- subset(object, sub("[[:space:]]+", "", as.character(object$id)) %in% as.character(include))
     }
-    cli::cli_text("Total number of observations (outeq {i}): {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing", extra_text)
-  }
-  if (x$ncov > 0) {
-    cli::cli_text(" Covariates: {.blue {x$covnames}}")
-  }
-  cli::cli_h2("Inputs: Mean (SD), Min to Max")
-  for (i in 1:x$ndrug) {
-    if (x$ndrug == 1) {
-      cli::cli_text("Number of doses per subject (input {i}): {.blue {sprintf('%.3f', mean(x$ndoseXid, na.rm = T))}} ({.blue {sprintf('%.3f', sd(x$ndoseXid, na.rm = T))}}), {.blue {sprintf('%.3f', min(x$ndoseXid, na.rm = T))}} to {.blue {sprintf('%.3f', max(x$ndoseXid, na.rm = T))}} ")
-      cli::cli_text("Dose amount per subject (input {i}): {.blue {sprintf('%.3f', mean(unlist(x$doseXid), na.rm = T))}} ({.blue {sprintf('%.3f', sd(unlist(x$doseXid), na.rm = T))}}), {.blue {sprintf('%.3f', min(unlist(x$doseXid), na.rm = T))}} to {.blue {sprintf('%.3f', max(unlist(x$doseXid), na.rm = T))}} ")
-    } else {
-      cli::cli_text("Number of doses per subject (input {i}): {.blue {sprintf('%.3f', mean(x$ndoseXid[, i], na.rm = T))}} ({.blue {sprintf('%.3f', sd(x$ndoseXid[, i], na.rm = T))}}), {.blue {sprintf('%.3f', min(x$ndoseXid[, i], na.rm = T))}} to {.blue {sprintf('%.3f', max(x$ndoseXid[, i], na.rm = T))}} ")
-      cli::cli_text("Dose amount per subject (input {i}): {.blue {sprintf('%.3f', mean(unlist(x$doseXid[, i]), na.rm = T))}} ({.blue {sprintf('%.3f', sd(unlist(x$doseXid[, i]), na.rm = T))}}), {.blue {sprintf('%.3f', min(unlist(x$doseXid[, i]), na.rm = T))}} to {.blue {sprintf('%.3f', max(unlist(x$doseXid[, i]), na.rm = T))}} ")
+    if (!missing(exclude)) {
+      object <- subset(object, !sub("[[:space:]]+", "", as.character(object$id)) %in% as.character(exclude))
     }
-  }
-  cli::cli_h2("Outputs: Mean (SD), Min to Max")
-  for (i in 1:x$numeqt) {
-    if (x$numeqt == 1) {
-      nobs <- unlist(x$nobsXid)
-      obs <- unlist(x$obsXid)
-    } else {
+    
+    # make results list
+    results <- list()
+    idOrder <- rank(unique(object$id))
+    
+    results$nsub <- length(unique(object$id))
+    results$ndrug <- max(object$input, na.rm = T)
+    results$numeqt <- max(object$outeq, na.rm = T)
+    results$nobsXouteq <- tapply(object$evid, object$outeq, function(x) length(x == 0))
+    results$missObsXouteq <- by(object, object$outeq, function(x) length(x$out[x$evid == 0 & x$out == -99]))
+    
+    # censored
+    
+    results$bloqObsXouteq <- purrr::map_int(1:max(object$outeq, na.rm = TRUE), \(x) sum(object$cens[object$outeq == x] == 1, na.rm = TRUE)) 
+    results$aloqObsXouteq <- purrr::map_int(1:max(object$outeq, na.rm = TRUE), \(x) sum(object$cens[object$outeq == x] == -1, na.rm = TRUE)) 
+    
+    covinfo <- getCov(object)
+    ncov <- covinfo$ncov
+    results$ncov <- ncov
+    results$covnames <- covinfo$covnames
+    results$ndoseXid <- as.matrix(tapply(object$evid, list(object$id, object$input), function(x) length(x != 0))[idOrder, ])
+    results$nobsXid <- as.matrix(tapply(object$evid, list(object$id, object$outeq), function(x) length(x == 0))[idOrder, ])
+    results$doseXid <- as.matrix(tapply(object$dose, list(object$id, object$input), function(x) x[!is.na(x)])[idOrder, ])
+    results$obsXid <- as.matrix(tapply(object$out, list(object$id, object$outeq), function(x) x[!is.na(x)])[idOrder, ])
+    if (ncov > 0) {
+      # get each subject's covariate values
+      results$cov <- lapply(1:ncov, function(y) {
+        tapply(
+          object[[covinfo$covstart + y - 1]], object$id,
+          function(z) z[!is.na(z)]
+        )[idOrder]
+      })
+      names(results$cov) <- covinfo$covnames
+    }
+    if (!missing(formula)) {
+      results$formula <- aggregate(formula, object, FUN, ...)
+    }
+    
+    class(results) <- c("summary.PM_data", "list")
+    return(results)
+  } # end function
+  # PRINT SUMMARY -----------------------------------------------------------------
+  
+  #' @title Print Summary of Pmetrics Data
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #'
+  #' @details
+  #' Print the summary of [PM_data] object.
+  #'
+  #' Summarize the raw data used for a Pmetrics run.
+  #'
+  #' @method print summary.PM_data
+  #' @param x An object made by [summary.PM_data].
+  #' @return A printed object
+  #' @author Michael Neely
+  #' @param ... Not used.
+  #' @seealso [summary.PM_data]
+  #' @examples
+  #' \dontrun{
+  #' dataEx$summary()
+  #' }
+  
+  #' @export
+  
+  print.summary.PM_data <- function(x, ...) {
+    #   order of objects
+    #   nsub
+    #   ndrug
+    #   numeqt
+    #   nobsXouteq
+    #   missObsXouteq
+    #   bloqObsXouteq
+    #   aloqObsXouteq
+    #   ncov
+    #   ndoseXid
+    #   nobsXid
+    #   doseXid
+    #   obsXid
+    #   cov
+    #   formula
+    
+    cli::cli_div(theme = list(
+      span.blue = list(color = navy())
+    ))
+    cli::cli_h1("Data Summary")
+    
+    cli::cli_text("Number of subjects: {.blue {x$nsub}}")
+    cli::cli_text("Number of inputs: {.blue {x$ndrug}}")
+    cli::cli_text("Number of outputs: {.blue {x$numeqt}}")
+    if (x$ncov > 0) {
+      cli::cli_text(" Covariates: {.blue {x$covnames}}")
+    }
+    cli::cli_h2("Inputs: Mean (SD), Min to Max")
+    for (i in 1:x$ndrug) {
+      if (x$ndrug > 1) {
+        cli::cli_h3("Input {i}")
+      }
+      cli::cli_text("Number of doses per subject: {.blue {sprintf('%.3f', mean(x$ndoseXid[, i], na.rm = T))}} ({.blue {sprintf('%.3f', sd(x$ndoseXid[, i], na.rm = T))}}), {.blue {sprintf('%.3f', min(x$ndoseXid[, i], na.rm = T))}} to {.blue {sprintf('%.3f', max(x$ndoseXid[, i], na.rm = T))}} ")
+      cli::cli_text("Dose amount per subject: {.blue {sprintf('%.3f', mean(unlist(x$doseXid[, i]), na.rm = T))}} ({.blue {sprintf('%.3f', sd(unlist(x$doseXid[, i]), na.rm = T))}}), {.blue {sprintf('%.3f', min(unlist(x$doseXid[, i]), na.rm = T))}} to {.blue {sprintf('%.3f', max(unlist(x$doseXid[, i]), na.rm = T))}} ")
+      
+    }
+    cli::cli_h2("Outputs: Mean (SD), Min to Max")
+    for (i in 1:x$numeqt) {
+      if (x$numeqt > 1) {
+        cli::cli_h3("Output {i}")
+      } 
       nobs <- unlist(x$nobsXid[, i])
+      mean_nobs <- mean(nobs, na.rm = T)
+      sd_nobs <- sd(nobs, na.rm = T)
+      min_nobs <- min(nobs, na.rm = T)  
+      max_nobs <- max(nobs, na.rm = T)
+      
       obs <- unlist(x$obsXid[, i])
-    }
-    obs <- obs[obs != -99]
-    
-    cli::cli_text("Number of observations per subject (outeq {i}): {.blue {sprintf('%.3f', mean(nobs, na.rm = T))}} ({.blue {sprintf('%.3f', sd(nobs, na.rm = T))}}), {.blue {sprintf('%.3f', min(nobs, na.rm = T))}} to {.blue {sprintf('%.3f', max(nobs, na.rm = T))}} ")
-    cli::cli_text("Observation value per subject (outeq {i}): {.blue {sprintf('%.3f', mean(obs, na.rm = T))}} ({.blue {sprintf('%.3f', sd(obs, na.rm = T))}}), {.blue {sprintf('%.3f', min(obs, na.rm = T))}} to {.blue {sprintf('%.3f', max(obs, na.rm = T))}} ")
-  }
-  # if (x$ncov > 0) {
-  #   cat("\nCOVARIATES\n")
-  #   for (i in 1:x$ncov) {
-  #     cat(paste(x$covnames[i], ": ", sprintf("%.3f", mean(unlist(x$cov[[i]]), na.rm = T)), " (", sprintf("%.3f", sd(unlist(x$cov[[i]]), na.rm = T)), "), ", sprintf("%.3f", min(unlist(x$cov[[i]]), na.rm = T)), " to ", sprintf("%.3f", max(unlist(x$cov[[i]]), na.rm = T)), "\n", sep = ""))
-  #   }
-  # }
-  
-  if (!is.null(x$formula)) {
-    cli::cli_h2("Formula Results")
-    print(x$formula)
-  }
-  cli::cli_text("{.strong Note:} See {.help summary.PM_data} for more summary options using {.arg formula}.")
-} # end function
-# WRITE -------------------------------------------------------------------
-
-#' @title Write a Pmetrics .csv Matrix File
-#' @description
-#' `r lifecycle::badge("superseded")`
-#'
-#' This function is largely superseded as the function is accessed with
-#' the `$save()` method for [PM_data] objects. There is rarely a need to call
-#' it directly. It is the companion function to [PMreadMatrix].
-#' It will write an appropriate R data object to a formatted .csv file.
-#' @details
-#' *PMwriteMatrix* will first run [PMcheck] to determine
-#' if there are any errors in the structure of `data`.  If the error check
-#' fails, the file will not be written and a message will be printed on the console.
-#'
-#' @param data Must be a data.frame with appropriate structure (see [PMcheck]).
-#' @param filename Name of file to create.
-#' @param override Boolean operator to write even if errors are detected.  Default is `FALSE`.
-#' @param version Which matrix data format version to write.  Default is the current version.
-#' @param header Is there a header row? Default is `FALSE` as this was the legacy format.
-#' @return Returns the error report (see [PMcheck] for details).
-#' @author Michael Neely
-#' @seealso [PM_data], [PMcheck], [PMreadMatrix]
-#' @export
-#' @examples
-#' \dontrun{
-#' # write to the current directory
-#' NPex$data$save("data.csv")
-#' }
-PMwriteMatrix <- function(
-  data, filename, override = FALSE,
-  version = "DEC_11", header = FALSE) {
-    if (!override) {
-      err <- PMcheck(data, quiet = TRUE)
-      if (length(grep("FAIL", err)) > 0) {
-        cli::cli_warn(c("!" = "Write failed; returning errors."))
-        return(invisible(err))
+      obs <- obs[obs != -99]
+      mean_obs <- mean(obs, na.rm = T)
+      sd_obs <- sd(obs, na.rm = T)
+      min_obs <- min(obs, na.rm = T)
+      max_obs <- max(obs, na.rm = T)
+      
+      if (x$bloqObsXouteq[i] > 0) {
+        extra_text <- ", and {.blue {x$bloqObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$bloqObsXouteq[i] / x$nobsXouteq[i])}%}) censored as below a lower LOQ"
+      } else {
+        extra_text <- ""
       }
-    } else {
-      err <- NULL
+      
+      if (x$aloqObsXouteq[i] > 0) {
+        extra_text <- paste0(extra_text, ", and {.blue {x$aloqObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$aloqObsXouteq[i] / x$nobsXouteq[i])}%}) censored as above an upper LOQ")
+      } 
+      cli::cli_text("Total across all subjects: {.blue {x$nobsXouteq[i]}}, with {.blue {x$missObsXouteq[i]}} ({.blue {sprintf('%.3f', 100 * x$missObsXouteq[i] / x$nobsXouteq[i])}%}) missing", extra_text, ".")
+      cli::cli_text("Number per subject: {.blue {sprintf('%.3f', mean_nobs)}} ({.blue {sprintf('%.3f', sd_nobs)}}), {.blue {sprintf('%i', min_nobs)}} to {.blue {sprintf('%i', max_nobs)}} ")
+      cli::cli_text("Value per subject: {.blue {sprintf('%.3f', mean_obs)}} ({.blue {sprintf('%.3f', sd_obs)}}), {.blue {sprintf('%.3f', min_obs)}} to {.blue {sprintf('%.3f', max_obs)}} ")
     }
-    # remove the block column if added during run
-    if ("block" %in% names(data)) {
-      data <- data %>% dplyr::select(-block)
+    if (x$ncov > 0) {
+      cli::cli_h2("Population level covariates: Mean (SD), Min to Max")
+      for (i in 1:x$ncov) {
+        cli::cli_text("{x$covnames[i]}: {.blue {sprintf('%.3f', mean(unlist(x$cov[[i]]), na.rm = T))}} ({.blue {sprintf('%.3f', sd(unlist(x$cov[[i]]), na.rm = T))}}),  {.blue {sprintf('%.3f', min(unlist(x$cov[[i]]), na.rm = T))}} to {.blue {sprintf('%.3f', max(unlist(x$cov[[i]]), na.rm = T))}}")
+      }
     }
     
-    versionNum <- as.numeric(substr(version, 5, 7)) + switch(substr(version, 1, 3),
-    JAN = 1,
-    FEB = 2,
-    MAR = 3,
-    APR = 4,
-    MAY = 5,
-    JUN = 6,
-    JUL = 7,
-    AUG = 8,
-    SEP = 9,
-    OCT = 10,
-    NOV = 11,
-    DEC = 12
-  ) / 100
-  if (versionNum < 11.12) {
-    if (tolower(names(data)[6]) == "addl") data <- data[, c(-6, -7)]
+    if (!is.null(x$formula)) {
+      cli::cli_h2("Formula Results")
+      print(x$formula)
+    }
+    cli::cli_text("")
+    cli::cli_text("{.strong Note:} See {.help summary.PM_data} for more summary options using {.arg formula}.")
+  } # end function
+  # WRITE -------------------------------------------------------------------
+  
+  #' @title Write a Pmetrics .csv Matrix File
+  #' @description
+  #' `r lifecycle::badge("superseded")`
+  #'
+  #' This function is largely superseded as the function is accessed with
+  #' the `$save()` method for [PM_data] objects. There is rarely a need to call
+  #' it directly. It is the companion function to [PMreadMatrix].
+  #' It will write an appropriate R data object to a formatted .csv file.
+  #' @details
+  #' *PMwriteMatrix* will first run [PMcheck] to determine
+  #' if there are any errors in the structure of `data`.  If the error check
+  #' fails, the file will not be written and a message will be printed on the console.
+  #'
+  #' @param data Must be a data.frame with appropriate structure (see [PMcheck]).
+  #' @param filename Name of file to create.
+  #' @param override Boolean operator to write even if errors are detected.  Default is `FALSE`.
+  #' @param version Which matrix data format version to write.  Default is the current version.
+  #' @param header Is there a header row? Default is `FALSE` as this was the legacy format.
+  #' @return Returns the error report (see [PMcheck] for details).
+  #' @author Michael Neely
+  #' @seealso [PM_data], [PMcheck], [PMreadMatrix]
+  #' @export
+  #' @examples
+  #' \dontrun{
+  #' # write to the current directory
+  #' NPex$data$save("data.csv")
+  #' }
+  PMwriteMatrix <- function(
+    data, filename, override = FALSE,
+    version = "DEC_11", header = FALSE) {
+      if (!override) {
+        err <- PMcheck(data, quiet = TRUE)
+        if (length(grep("FAIL", err)) > 0) {
+          cli::cli_warn(c("!" = "Write failed; returning errors."))
+          return(invisible(err))
+        }
+      } else {
+        err <- NULL
+      }
+      # remove the block column if added during run
+      if ("block" %in% names(data)) {
+        data <- data %>% dplyr::select(-block)
+      }
+      
+      versionNum <- as.numeric(substr(version, 5, 7)) + switch(substr(version, 1, 3),
+      JAN = 1,
+      FEB = 2,
+      MAR = 3,
+      APR = 4,
+      MAY = 5,
+      JUN = 6,
+      JUL = 7,
+      AUG = 8,
+      SEP = 9,
+      OCT = 10,
+      NOV = 11,
+      DEC = 12
+    ) / 100
+    if (versionNum < 11.12) {
+      if (tolower(names(data)[6]) == "addl") data <- data[, c(-6, -7)]
+    }
+    OS <- getOS()
+    eol <- c("\r\n", "\n", "\r\n")[OS]
+    f <- file(filename, "w")
+    if (header) {
+      writeLines(paste("POPDATA ", version, "\n#", sep = ""), f, sep = "")
+    }
+    writeLines(toupper(names(data)[-ncol(data)]), sep = getPMoptions("sep"), f)
+    writeLines(toupper(names(data)[ncol(data)]), f)
+    write.table(data, f,
+      row.names = FALSE, na = ".", quote = F, sep = getPMoptions("sep"),
+      dec = getPMoptions("dec"), col.names = F, eol = eol
+    )
+    close(f)
+    return(invisible(err))
   }
-  OS <- getOS()
-  eol <- c("\r\n", "\n", "\r\n")[OS]
-  f <- file(filename, "w")
-  if (header) {
-    writeLines(paste("POPDATA ", version, "\n#", sep = ""), f, sep = "")
-  }
-  writeLines(toupper(names(data)[-ncol(data)]), sep = getPMoptions("sep"), f)
-  writeLines(toupper(names(data)[ncol(data)]), f)
-  write.table(data, f,
-    row.names = FALSE, na = ".", quote = F, sep = getPMoptions("sep"),
-    dec = getPMoptions("dec"), col.names = F, eol = eol
-  )
-  close(f)
-  return(invisible(err))
-}
+  

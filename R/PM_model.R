@@ -497,7 +497,7 @@ PM_model <- R6::R6Class(
           covariates <- tolower(names(self$arg_list$cov))
           ## check to make sure required parameters present if Analytical
           if (type == "Analytical"){
-       
+            
             # look in pri, sec, eqn, lag, fa, ini, out blocks for required parameters
             required_parameters <- tolower(model_template$parameters)
             pri_list <- map_lgl(required_parameters, \(x){
@@ -1200,19 +1200,22 @@ PM_model <- R6::R6Class(
                   PM_parse(path = out_path)
                   res <- PM_load(path = out_path, file = "PMout.Rdata")
                   if(report != "none"){
-                    rlang::try_fetch(
-                      valid_report <- PM_report(res, path = out_path, template = report, quiet = TRUE),
-                      error = function(e) return(-1)
-                    )
+                    
+                    valid_report <- tryCatch(
+                      PM_report(res, path = out_path, template = report, quiet = TRUE),
+                      error = function(e) {
+                        -1
+                      })                    
                     if (valid_report == 1) {
                       msg <- c(msg, "Report generated with {report} template.")
+                      if(tolower(algorithm) == "postprob") {this_alg <- "map"} else {this_alg <- "fit"}
+                      msg <- c(msg, "If assigned to a variable, e.g. {.code run{run} <-}, results of {.fn {this_alg}} are available in {.code run{run}}.")
                     } else {
                       msg <- c(msg, "Report could not be generated.")
                     }
                   }
                   
-                  if(tolower(algorithm) == "postprob") {this_alg <- "map"} else {this_alg <- "fit"}
-                  msg <- c(msg, "If assigned to a variable, e.g. {.code run{run} <-}, results of {.fn {this_alg}} are available in {.code run{run}}.")
+                  
                   if(length(msg) > 1) {
                     cli::cli_h1("Notes:")
                     cli::cli_ul()

@@ -126,7 +126,7 @@ PM_cycle <- R6::R6Class(
           raw <- data.frame(cycle = 0, status = "Posterior")
           write.csv(raw, file.path(path, "cycles.csv"), row.names = FALSE)
         }
-      } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_cycle
+      } else if (inherits(data, "PM_cycle") & !is.null(data$data)) { # file not there, and already PM_cycle
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)
       } else {
@@ -138,15 +138,15 @@ PM_cycle <- R6::R6Class(
       }
       
       
-      if (file.exists(file.path(path, "op.csv"))) {
-        op_raw <- readr::read_csv(file = file.path(path, "op.csv"), show_col_types = FALSE)
+      if (file.exists(file.path(path, "pred.csv"))) {
+        op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), show_col_types = FALSE) %>% filter(!is.na(obs))
       } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {file.path(path, 'op.csv')} does not exist."
+          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {file.path(path, 'pred.csv')} does not exist."
         ))
         return(NULL)
       }
@@ -220,7 +220,7 @@ PM_cycle <- R6::R6Class(
         x / dplyr::first(x)
       }))
       
-      n_out <- length(unique(op_raw$outeq))
+      n_out <- max(op_raw$outeq, na.rm = TRUE) + 1 # rust is 0 based indexing
       n_cyc <- max(cycle_data$cycle)
       
       #gamlam
