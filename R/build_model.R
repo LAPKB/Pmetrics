@@ -276,7 +276,7 @@ uiOutput("bottom_eqn")
 # tabPanel: Outputs
 # tabPanel(
 bslib::nav_panel(
-  "OUTputs",
+  "OUTputs & ERRor Models",
   actionButton(
     "help_out",
     "",
@@ -1029,7 +1029,7 @@ purrr::map(
       # primary
       all_blocks[[1]] <-
       paste0(
-        tab(2), "pri = c(<br>",
+        tab(2), "pri = list(<br>",
         paste0(purrr::map(1:npar(), ~ paste0(
           tab(4),
           input[[paste0("var_name_", .x)]],
@@ -1064,7 +1064,7 @@ purrr::map(
       if (ncov() > 0) {
         all_blocks[[2]] <-
         paste0(
-          tab(2), "cov = c(<br>",
+          tab(2), "cov = list(<br>",
           paste0(purrr::map(cov_names(), \(x) {
             paste0(
               tab(4),
@@ -1088,7 +1088,7 @@ purrr::map(
         }
         all_blocks[[2]] <-
         paste0(
-          tab(2), "cov = c(<br>",
+          tab(2), "cov = list(<br>",
           paste0(purrr::map(1:length(covs), \(x) {paste0(
             tab(4),
             covs[x],
@@ -1107,9 +1107,9 @@ purrr::map(
       all_blocks[[2]] <- NULL
     }
     
-    
+
     # secondary
-    if (input$secVar != "NULL") {
+    if (input$secVar != "") {
       all_blocks[[3]] <-
       paste0(
         tab(2), "sec = function(){<br>",
@@ -1123,7 +1123,7 @@ purrr::map(
   }
   
   # initial conditions
-  if (input$iniCond != "NULL") {
+  if (input$iniCond != "") {
     all_blocks[[4]] <-
     paste0(
       tab(2), "ini = function(){<br>",
@@ -1137,7 +1137,7 @@ purrr::map(
 }
 
 # bioavailability
-if (input$FA != "NULL") {
+if (input$FA != "") {
   all_blocks[[5]] <-
   paste0(
     tab(2), "fa = function(){<br>",
@@ -1151,7 +1151,7 @@ if (input$FA != "NULL") {
 }
 
 # lag time
-if (input$lagTime != "NULL") {
+if (input$lagTime != "") {
   all_blocks[[6]] <-
   paste0(
     tab(2), "lag = function(){<br>",
@@ -1200,7 +1200,7 @@ paste0(
 # error
 all_blocks[[9]] <-
 paste0(
-  tab(2), "err = c(<br>",
+  tab(2), "err = list(<br>",
   paste0(
     purrr::map(
       1:numeqt(), \(x) { 
@@ -1219,7 +1219,6 @@ paste0(
 ) # end paste0
 
 
-
 # create object suitable for copying to clipboard
 copy_list(
   paste0(
@@ -1236,7 +1235,7 @@ copy_list(
     ")\n"
   )
 )
-
+browser()
 # model_list to create a PM_model before all_blocks compacted
 model_list <- all_blocks %>%
 # tidy up html characters

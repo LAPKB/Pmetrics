@@ -92,15 +92,15 @@ PM_pop <- R6::R6Class(
 ), # end public
 private = list(
   make = function(data, path) {
-    if (file.exists(file.path(path, "op.csv"))) {
-      raw <- readr::read_csv(file = file.path(path, "op.csv"), show_col_types = FALSE)
+    if (file.exists(file.path(path, "pred.csv"))) {
+      raw <- readr::read_csv(file = file.path(path, "pred.csv"), show_col_types = FALSE)
     } else if (inherits(data, "PM_pop")) { # file not there, and already PM_pop
       class(data$data) <- c("PM_pop_data", "data.frame")
       return(data$data)
     } else {
       cli::cli_warn(c(
         "!" = "Unable to generate pop pred information.",
-        "i" = "Result does not have valid {.code PM_pop} object, and {.file {file.path(path, 'op.csv')} does not exist."
+        "i" = "Result does not have valid {.code PM_pop} object, and {.file {file.path(path, 'pred.csv')} does not exist."
       ))
       return(NULL)
     }
