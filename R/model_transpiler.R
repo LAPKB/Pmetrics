@@ -165,15 +165,14 @@ indent <- function(text, spaces = 4) {
 transpile_ode_eqn <- function(fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
-    "|x, p, t, dx, rateiv, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
+    "|x, p, t, dx, b, rateiv, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
    # "|x, p, t, dx, b, rateiv, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",  uncomment when new pharsol pushed
     paste(covs, collapse = ", "),
     paste(params, collapse = ", "),
     paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs) %>%
-    stringr::str_replace_all("\\((b|bolus)\\[\\d+\\]\\)", "0") %>%
-  # stringr::str_replace_all("bolus\\[", "b\\[") %>% uncomment when new pharsol pushed
+    stringr::str_replace_all("bolus\\[", "b\\[") %>% 
     stringr::str_replace_all("r\\[", "rateiv\\[")
   sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }

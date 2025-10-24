@@ -6,6 +6,12 @@
 \usage{
 cli_df(df)
 }
+\arguments{
+\item{df}{A data frame to be printed.}
+}
+\value{
+A formatted text output of the data frame.
+}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Prints a data frame in a format suitable for the command line interface (CLI).
@@ -13,10 +19,6 @@ Prints a data frame in a format suitable for the command line interface (CLI).
 \details{
 Uses \link[dplyr:mutate]{dplyr::mutate} to convert all columns to character, rounds numeric values using \link{round2},
 and formats the output using \link[knitr:kable]{knitr::kable} for a simple table format.
+The function replaces spaces with non-breaking spaces for better alignment in the CLI.
 }
-\section{The function replaces spaces with non-breaking spaces for better alignment in the CLI.}{
-#' @param df A data frame to be printed.
-#' @return A formatted text output of the data frame.
-#' @export
-}
-
+\keyword{internal}

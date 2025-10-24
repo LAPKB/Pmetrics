@@ -1347,6 +1347,7 @@ wtd.var <- function(x, weights = NULL,
   #' @param x A [flextable::flextable] object.
   #' @return A message indicating the file was saved.
   #' @export
+  #' @keywords internal
   
   save_flextable <- function(x) {
     # check if x is a flextable
@@ -1390,6 +1391,7 @@ wtd.var <- function(x, weights = NULL,
   #' @param ... Additional parameters which could be passed to [cli::cli_text].
   #' @return The value of the user response
   #' @export
+  #' @keywords internal 
   #'
   cli_ask <- function(text, prompt = ">> ", ...) {
     cli::cli_text(text, ...)
@@ -1401,7 +1403,7 @@ wtd.var <- function(x, weights = NULL,
   # Function to Character ---------------------------------------------------
   
   #' @title Convert a function to a character string
-  #' 
+  #' @keywords internal
   func_to_char <- function(fun){
     deparse(fun, width.cutoff = 500L) %>%
     stringr::str_trim("left") %>%
@@ -1420,6 +1422,7 @@ wtd.var <- function(x, weights = NULL,
   #' @param digits The number of digits to round to. Default is set using [setPMoptions].
   #' @return A character string representing the rounded value with the specified number of digits.
   #' @export
+  #' @keywords internal
   
   round2 <- function(x, digits = getPMoptions("digits")) {
     format(round(x, digits), nsmall = digits)
@@ -1434,11 +1437,11 @@ wtd.var <- function(x, weights = NULL,
   #' @details
   #' Uses [dplyr::mutate] to convert all columns to character, rounds numeric values using [round2],
   #' and formats the output using [knitr::kable] for a simple table format.
-  #' # The function replaces spaces with non-breaking spaces for better alignment in the CLI.
-  #' #' @param df A data frame to be printed.
-  #' #' @return A formatted text output of the data frame.
-  #' #' @export
-  #' 
+  #' The function replaces spaces with non-breaking spaces for better alignment in the CLI.
+  #' @param df A data frame to be printed.
+  #' @return A formatted text output of the data frame.
+  #' @export
+  #' @keywords internal
   cli_df <- function(df) {
     
     # Convert all columns to character for uniform formatting
@@ -1484,6 +1487,7 @@ wtd.var <- function(x, weights = NULL,
   #' @return A positive definite covariance matrix, 1 if aborting, or -1 if unable to fix
   #' @export
   #' @author Michael Neely
+  #' @keywords internal
   pos_def <- function(mat, id, source){
     # check to make sure mat (within 15 sig digits, which is in file) is pos-def and fix if necessary
     posdef <- rlang::try_fetch(eigen(signif(mat, 15)),
@@ -1552,7 +1556,7 @@ wtd.var <- function(x, weights = NULL,
 #' Default is FALSE.
 #' @return A modified list, as in [utils::modifyList()].
 #' @export
-#' 
+#' @keywords internal
 modifyList2 <- function (x, val, keep.null = FALSE) 
 {
     stopifnot(is.list(x), is.list(val))

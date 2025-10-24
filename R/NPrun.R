@@ -19,7 +19,7 @@
 #' }
 #' @author Michael Neely
 #' @export
-#' 
+#' @keywords internal
 #' 
 NPrun <- function(data, model, ...){
   

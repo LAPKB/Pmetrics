@@ -24,3 +24,4 @@ directory. The folder will contain all files and folder necessary to
 conduct the tutorial. After the Examples folder is created, open the
 \emph{examples.R} script to begin the tutorial.
 }
+\keyword{internal}
