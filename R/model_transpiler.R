@@ -5,7 +5,6 @@
 # Convert an R expression to Rust code (recursive)
 expr_to_rust <- function(expr, params = NULL, covs = NULL,
                          declared = new.env(parent = emptyenv())) {
-
   declared_has <- function(name) isTRUE(get0(name, envir = declared, inherits = FALSE))
   declared_add <- function(name) assign(name, TRUE, envir = declared)
 
@@ -38,18 +37,25 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
   if (!is.call(expr)) stop("Unknown expression type")
   op <- as.character(expr[[1]])
   args <- as.list(expr[-1])
-  rust_args <- lapply(args, expr_to_rust, params = params, covs = covs,
-                      declared = declared)
+  rust_args <- lapply(args, expr_to_rust,
+    params = params, covs = covs,
+    declared = declared
+  )
   switch(op,
     # Grouping
     "(" = sprintf("(%s)", rust_args[[1]]),
     "{" = {
-      inner <- if (length(args) == 0) character(0) else {
+      inner <- if (length(args) == 0) {
+        character(0)
+      } else {
         # turn each inner expr into a statement, joined by newlines
         inner_exprs <- as.list(args)
-        paste(vapply(inner_exprs, function(e)
-          expr_to_rust(e, params, covs, declared), character(1)),
-          collapse = "\n")
+        paste(
+          vapply(inner_exprs, function(e) {
+            expr_to_rust(e, params, covs, declared)
+          }, character(1)),
+          collapse = "\n"
+        )
       }
       inner
     },
@@ -67,7 +73,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
     },
     "*" = sprintf("%s * %s", rust_args[[1]], rust_args[[2]]),
     "/" = sprintf("%s / %s", rust_args[[1]], rust_args[[2]]),
-    "^" = if(suppressWarnings(!is.na(as.numeric(rust_args[[1]])))) {
+    "^" = if (suppressWarnings(!is.na(as.numeric(rust_args[[1]])))) {
       sprintf("(%sf64).powf(%s)", rust_args[[1]], rust_args[[2]])
     } else {
       sprintf("(%s).powf(%s)", rust_args[[1]], rust_args[[2]])
@@ -78,8 +84,8 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
     "!=" = sprintf("%s != %s", rust_args[[1]], rust_args[[2]]),
     ">=" = sprintf("%s >= %s", rust_args[[1]], rust_args[[2]]),
     "<=" = sprintf("%s <= %s", rust_args[[1]], rust_args[[2]]),
-    ">"  = sprintf("%s > %s",  rust_args[[1]], rust_args[[2]]),
-    "<"  = sprintf("%s < %s",  rust_args[[1]], rust_args[[2]]),
+    ">" = sprintf("%s > %s", rust_args[[1]], rust_args[[2]]),
+    "<" = sprintf("%s < %s", rust_args[[1]], rust_args[[2]]),
 
     # Logical
     "&" = sprintf("%s && %s", rust_args[[1]], rust_args[[2]]),
@@ -87,10 +93,10 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
     "!" = sprintf("!(%s)", rust_args[[1]]),
 
     # Math funcs
-    "abs"  = sprintf("(%s).abs()",  rust_args[[1]]),
-    "log"  = sprintf("(%s).ln()",   rust_args[[1]]),
-    "log10"= sprintf("(%s).log10()",rust_args[[1]]),
-    "exp"  = sprintf("(%s).exp()",  rust_args[[1]]),
+    "abs" = sprintf("(%s).abs()", rust_args[[1]]),
+    "log" = sprintf("(%s).ln()", rust_args[[1]]),
+    "log10" = sprintf("(%s).log10()", rust_args[[1]]),
+    "exp" = sprintf("(%s).exp()", rust_args[[1]]),
     "sqrt" = sprintf("(%s).sqrt()", rust_args[[1]]),
 
     # Assignment
@@ -130,21 +136,23 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
     "for" = {
       var <- as.character(args[[1]])
       n_sym <- as.character(args[[2]][[3]])
-      loop_exprs <- if (is.call(args[[3]]) && as.character(args[[3]][[1]]) == "{")
-        as.list(args[[3]][-1]) else list(args[[3]])
-      body <- stmts_to_rust(loop_exprs, params, covs, declared)  # make sure stmts_to_rust gets declared too
+      loop_exprs <- if (is.call(args[[3]]) && as.character(args[[3]][[1]]) == "{") {
+        as.list(args[[3]][-1])
+      } else {
+        list(args[[3]])
+      }
+      body <- stmts_to_rust(loop_exprs, params, covs, declared) # make sure stmts_to_rust gets declared too
       sprintf("for %s in 0..%s as usize {\n%s}\n", var, n_sym, indent(body))
     },
 
     # Pmetrics functions
     "get_e2" = {
-
-      sprintf("get_e2(%s, %s, %s, %s, %s, %s);", 
-              rust_args[[1]], rust_args[[2]], rust_args[[3]], 
-              rust_args[[4]], rust_args[[5]], rust_args[[6]])
-
+      sprintf(
+        "get_e2(%s, %s, %s, %s, %s, %s);",
+        rust_args[[1]], rust_args[[2]], rust_args[[3]],
+        rust_args[[4]], rust_args[[5]], rust_args[[6]]
+      )
     },
-
     stop(sprintf("Unsupported operation: %s", op))
   )
 }
@@ -166,13 +174,12 @@ transpile_ode_eqn <- function(fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|x, p, t, dx, b, rateiv, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
-   # "|x, p, t, dx, b, rateiv, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",  uncomment when new pharsol pushed
     paste(covs, collapse = ", "),
     paste(params, collapse = ", "),
     paste(sec, collapse = ", ")
   )
   body_rust <- stmts_to_rust(exprs, params, covs) %>%
-    stringr::str_replace_all("bolus\\[", "b\\[") %>% 
+    stringr::str_replace_all("bolus\\[", "b\\[") %>%
     stringr::str_replace_all("r\\[", "rateiv\\[")
   sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
@@ -233,16 +240,16 @@ transpile_analytic_eqn <- function(fun, params, covs) {
   # remap parameters
   # req_par <- get(tem)$parameters %>%
   #   tolower() %>%
-  
-  
+
+
   # this block needs to write the equations, e.g. p[0] = ke, based on the parameters in the model template,
   # not the parameters in the model. The model parameters may have different names, but are checked earlier.
-  
-  req_par <- model_lib(show = FALSE) %>% 
-    filter(Name == tem) %>% 
-    select(Parameters) %>% 
-    stringr::str_split(", ") %>% 
-    unlist() %>% 
+
+  req_par <- model_lib(show = FALSE) %>%
+    filter(Name == tem) %>%
+    select(Parameters) %>%
+    stringr::str_split(", ") %>%
+    unlist() %>%
     tolower() %>%
     purrr::discard(~ .x == "v" & !tem %in% c("one_comp_iv_cl", "two_comp_bolus_cl")) %>% # don't include V for models that don't need it in equations
     purrr::imap_chr(\(x, y){
