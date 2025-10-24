@@ -14,6 +14,7 @@
 #' Default is current working directory.
 #' @return NULL
 #' @export
+#' @keywords internal 
 #'
 PM_tutorial <- function(wd = getwd(), auto_confirm = FALSE) {
   cat("This copies to your current working directory an \"Examples\" folder,

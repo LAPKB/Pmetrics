@@ -4,7 +4,7 @@
 \alias{click_plot}
 \title{Click on plotly plot to highlight traces}
 \usage{
-click_plot(p, highlight_color = highlight_color)
+click_plot(p, highlight_color = "#1f77b4")
 }
 \arguments{
 \item{p}{The plotly plot to which the click functionality should be added.

@@ -20,6 +20,7 @@
 #' * **cov** Written to the standard of [PM_cov()]
 #' @author Michael Neely and Markus Hovd
 #' @export
+#' @keywords internal 
 
 PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
  

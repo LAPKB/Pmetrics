@@ -1648,6 +1648,7 @@ PM_model <- R6::R6Class(
               #' `r lifecycle::badge("experimental")`
               #' Define primary model parameter object.
               #' This is used internally by the `PM_model` class.
+              #' @keywords internal
               PM_pri <- R6::R6Class(
                 "PM_pri",
                 public = list(

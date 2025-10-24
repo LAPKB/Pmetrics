@@ -1730,6 +1730,7 @@ plot.PM_data <- function(
     # time after dose
     if (tad) {
       dat$standard_data$time <- calcTAD(dat$standard_data)
+      dat$standard_data <- dat$standard_data %>% arrange(id, time)
     }
     
     # filter
@@ -2096,6 +2097,10 @@ plot.PM_data <- function(
   #' @export
   
   summary.PM_data <- function(object, formula, FUN, include, exclude, ...) {
+    
+    if(inherits(object, "PM_data")) {
+      object <- object$standard_data
+    } 
     
     # filter data if needed
     if (!missing(include)) {

@@ -54,27 +54,34 @@ home:
         href: https://github.com/LAPKB/Pmetrics/discussions
 reference:
 - title: R6 objects
-  desc: Create Pmetrics R6 objects
+  desc: Pmetrics R6 objects
 - contents:
-  - starts_with("PM_")
+  - PM_data
+  - PM_model
+  - PM_cycle
+  - PM_cov
+  - PM_final
+  - PM_op
+  - PM_pop
+  - PM_opt
+  - PM_post
+  - PM_sim
+  - PM_load
+  - PM_result
+  - PM_valid
+- title: Helpers
+  desc: Helper functions for R6 object creations
+- contents:
   - ab
   - additive
-  - combination
-  - covariate
-  - errorPoly
-  - fixed
+  - add_renal
+  - cor2cov
+  - model_lib
   - msd
   - proportional
-- title: Make functions
-  desc: Functions for making Pmetrics objects
-- contents:
+  - interp
   - PMtree
   - starts_with("make")
-- title: Optimal sampling
-  desc: Functions to calculate optimal sample times
-- contents:
-  - Dopt
-  - MM_opt
 - title: Plot
   desc: Functions for plotting Pmetrics output
 - contents:
@@ -83,30 +90,34 @@ reference:
   - add_shapes
   - add_smooth
   - export_plotly
+  - plotlygg
   - sub_plot
+  - click_plot
+  - getPalettes
+  - getDefaultColors
+  - rgba_to_rgb
+  - opposite_color
 - title: Summary
   desc: Functions for summarizing Pmetrics output
-- contents: starts_with("summary")
+- contents: 
+  - starts_with("summary")
+  - PM_report
 - title: Print
   desc: Functions for printing Pmetrics output
 - contents: starts_with("print")
-- title: Run
-  desc: Run functions for modeling or simulating data
-- contents: ends_with("run")
-- title: Parse/load
-  desc: Parse functions for modeled or simulated data
-- contents:
-  - ends_with("parse")
 - title: Auxilliary
   desc: Auxilliary functions
 - contents:
+  - all.is.numeric
+  - build_model
+  - build_plot
   - qgrowth
+  - mtsknn.eq
   - zBMI
   - ss.PK
-  - mtsknn.eq
   - PM_compare
   - PMgetCRCL
-  - PMstep
+  - PM_step
   - starts_with("get")
 - title: Datasets
   desc: Pmetrics datasets
@@ -116,31 +127,20 @@ reference:
 - contents:
   - NM2PM
   - PMwrk2csv
-  - PMmb2csv
   - PMmatrixRelTime
   - PMreadMatrix
   - PMwriteMatrix
 - title: Utility
   desc: Utility functions
 - contents:
-  - PMFortranConfig
-  - PMbuild
+  - PM_build
   - PMcheck
-  - PMcode
   - PMpatch
-  - ERRreport
-  - PMsave
   - PMtest
-  - getPMoptions
   - setPMoptions
-  - editPMoptions
-  - movePMoptions
-  - update_gfortran
 - title: Reference
   desc: Reference functions
 - contents:
-  - PMFortranConfig
-  - PMmanual
-  - PMnews
+  - PM_manual
   - Pmetrics-package
 
