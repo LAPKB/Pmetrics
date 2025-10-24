@@ -9,3 +9,4 @@ func_to_char(fun)
 \description{
 Convert a function to a character string
 }
+\keyword{internal}

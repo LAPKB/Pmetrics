@@ -18,3 +18,4 @@ Saves flextable objects to a file based on the \code{file} attribute
 in the object, set when the flextable generator function is called.
 Allowable file types are 'docx', 'pptx', 'html', 'png', and 'svg'.
 }
+\keyword{internal}

@@ -14,6 +14,7 @@ or created on the fly when making a new PM_fit object. PM_fit objects contain
 methods to cross-check data and model objects for compatibility, as well as to
 run the analysis.
 }
+\keyword{internal}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{

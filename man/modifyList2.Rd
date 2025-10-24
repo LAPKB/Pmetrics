@@ -21,3 +21,4 @@ A modified list, as in \code{\link[utils:modifyList]{utils::modifyList()}}.
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Version of \code{\link[utils:modifyList]{utils::modifyList()}} that works with lists which have unnamed elements.
 }
+\keyword{internal}

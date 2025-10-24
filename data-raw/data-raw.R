@@ -1,13 +1,12 @@
 library(readr)
 library(Pmetrics)
 
-wd <- getwd()
-setwd(OneDrive("/Documents/LAPK/Development/Pmetrics_rust/data-raw"))
+wd <- OneDrive("/Documents/LAPK/Development/Pmetrics_rust/data-raw")
 
 # BMI data -------------------------------------------------------------
 
-cdc_bmi <- read_csv("bmiagerev.csv")
-ger_bmi <- read_csv("bmiGerhart.csv")
+cdc_bmi <- read_csv(file.path(wd, "bmiagerev.csv"))
+ger_bmi <- read_csv(file.path(wd, "bmiGerhart.csv"))
 
 usethis::use_data(cdc_bmi, overwrite = TRUE)
 usethis::use_data(ger_bmi, overwrite = TRUE)
@@ -15,20 +14,20 @@ usethis::use_data(ger_bmi, overwrite = TRUE)
 
 # Growth ------------------------------------------------------------------
 
-growth <- read.csv("growth.csv")
+growth <- read.csv(file.path(wd, "growth.csv"))
 usethis::use_data(growth, overwrite = TRUE)
 
 
 # Locales -----------------------------------------------------------------
 
-locales <- read_csv("locales.csv")
+locales <- read_csv(file.path(wd, "locales.csv"))
 usethis::use_data(locales, overwrite = TRUE)
 
 
 # MIC ---------------------------------------------------------------------
 
 # copied table from http://mic.eucast.org/Eucast2/regShow.jsp?Id=1214 to csv file
-mic1 <- read_csv("mic1.csv")
+mic1 <- read_csv(file.path(wd, "mic1.csv"))
 names(mic1) <- c("mic", "n")
 usethis::use_data(mic1, overwrite = TRUE)
 
@@ -36,15 +35,15 @@ usethis::use_data(mic1, overwrite = TRUE)
 
 # Run Files -------------------------------------------------------------------
 
-model <- readLines("model.txt")
+model <- readLines(file.path(wd, "model.txt"))
 usethis::use_data(model, overwrite = TRUE)
 
 # model file
-modEx <- PM_model$new("model.txt")
+modEx <- PM_model$new(file.path(wd, "model.txt"))
 usethis::use_data(modEx, overwrite = TRUE)
 
 # data
-dataEx <- PM_data$new("ex.csv")
+dataEx <- PM_data$new(file.path(wd, "ex.csv"))
 usethis::use_data(dataEx, overwrite = T)
 
 

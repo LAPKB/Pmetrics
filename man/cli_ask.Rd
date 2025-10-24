@@ -22,3 +22,4 @@ Get user input in warning situation
 \details{
 Combines the \link[cli:cli_text]{cli::cli_text} function with \link{readline}.
 }
+\keyword{internal}

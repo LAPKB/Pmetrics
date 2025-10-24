@@ -8,6 +8,7 @@
 Define primary model parameter object.
 This is used internally by the \code{PM_model} class.
 }
+\keyword{internal}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{

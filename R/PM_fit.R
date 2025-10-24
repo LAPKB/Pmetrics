@@ -20,6 +20,7 @@
 #' run the analysis.
 #' @importFrom stringr str_glue
 #' @export
+#' @keywords internal 
 
 PM_fit <- R6::R6Class(
   "PM_fit",

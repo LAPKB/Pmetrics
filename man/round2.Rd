@@ -21,3 +21,4 @@ Rounds a numeric value to a specified number of digits for display in flextables
 \details{
 Uses \link[base:format]{base::format} and \link[base:Round]{base::round} to round a numeric value to a specified number of digits.
 }
+\keyword{internal}

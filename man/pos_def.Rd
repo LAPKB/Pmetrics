@@ -19,3 +19,4 @@ Checks if a matrix is positive definite and attempts to fix it if necessary.
 \author{
 Michael Neely
 }
+\keyword{internal}
