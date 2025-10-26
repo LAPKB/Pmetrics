@@ -1087,10 +1087,11 @@ PM_model <- R6::R6Class(
                 }
                 
                 
-                #### Save objects ####
-                PM_data$new(data_filtered, quiet = TRUE)$save(file.path(path_run, "gendata.csv"), header = FALSE)
-                saveRDS(list(data = data, model = self), file = file.path(path_run, "fit.rds"))
-                file.copy(self$binary_path, path_run)
+                #### Save input objects ####
+                dir.create(file.path(path_run, "inputs"))
+                PM_data$new(data_filtered, quiet = TRUE)$save(file.path(path_run, "inputs/gendata.csv"), header = FALSE)
+                saveRDS(list(data = data, model = self), file = file.path(path_run, "inputs/fit.rds"))
+                file.copy(self$binary_path, file.path(path_run, "inputs"))
                 
                 # Get ranges and calculate points
                 ranges <- lapply(self$model_list$pri, function(x) {
@@ -1175,7 +1176,7 @@ PM_model <- R6::R6Class(
                     fit(
                       # defined in extendr-wrappers.R
                       model_path = self$binary_path,
-                      data = file.path(path_run, "gendata.csv"),
+                      data = file.path(path_run, "inputs/gendata.csv"),
                       params = list(
                         ranges = ranges, #not important but needed for POSTPROB
                         algorithm = algorithm,
@@ -1228,7 +1229,7 @@ PM_model <- R6::R6Class(
                     c("x" = "Error: Currently, the rust engine only supports internal runs.", "i" = "This is a temporary limitation.")
                   )
                 }
-              }, # end fit method
+            }, # end fit method
               
               #' @description
               #' Calculate posteriors from a fitted model.

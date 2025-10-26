@@ -65,6 +65,7 @@ tests/testthat/Runs/
 .Rd2pdf65996/
 other/
 Examples
+Experimental
 .httr-oauth
 inst/rust/template/*
 inst/options/PMoptions.json

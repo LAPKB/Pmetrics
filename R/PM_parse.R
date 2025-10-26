@@ -24,9 +24,9 @@
 
 PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
  
-  if (is.character(fit) && file.exists(file.path(path, fit))) {
+  if (is.character(fit) && file.exists(file.path(path, "../inputs", fit))) {
     # fit is a character string pointing to a file, load it
-    fit_object <- readRDS(file.path(path, fit))
+    fit_object <- readRDS(file.path(path, "../inputs", fit))
   } else {
     # fit does not meet any of the above conditions, set to NULL
     fit_object <- NULL
