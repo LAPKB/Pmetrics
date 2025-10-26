@@ -40,31 +40,23 @@ custom_table <- function(tab){
 
 ## Objects created after a run
 
-After a successful NPAG run, an R datafile is saved in the
-output subdirectory of the newly created numerically ordered folder in
-the working directory. This file is called "PMout.Rdata". These data files can be loaded by ensuring that the
-Runs folder is set as the working directory, and then using the Pmetrics
-command `PM_load()`.
+After a successful NPAG run, an R datafile is saved in the /outputs subdirectory of the newly created numerically ordered folder in the working directory. This file is called "PMout.Rdata". These data files can be loaded by ensuring that the Runs folder is set as the working directory, and then using the Pmetrics command `` `r gh_help("PM_load")` ``.
 
-There are several Pmetrics data objects contained within the Rdata files
-which are loaded, making these objects available for
-plotting and other analysis. 
+There are several Pmetrics data objects contained within the Rdata files which are loaded, making these objects available for plotting and other analysis.
 
-
-`PM_load()` returns a `PM_result` object. The fields in the object are in the table below.
-
+`PM_load()` returns a `r gh_help("PM_result")`object. The fields in the object are in the table below.
 
 ```{r echo = F, results = 'asis'}
 custom_table("ObjectsR6.csv")
 ```
 
-To access the fields in a `PM_result` object, use the "$". 
+To access the fields in a `PM_result` object, use the "\$".
 
 ```{r echo=T, eval = F}
 res1 <- PM_load(1)
 res1$op
 res1$op$time
-res1$op$data # this accesses the whole observed vs. predicted data frame
+res1$op$data # this accesses the whole observed vs. predicted raw data frame
 ```
 
 Most of the fields are themselves R6 objects with methods.
@@ -75,5 +67,3 @@ res1$op
 res1$op$summary()
 res1$op$plot()
 ```
-
-

@@ -55,9 +55,9 @@ usethis::use_data(badData, overwrite = T)
 
 setwd("Runs")
 # NPAG
-run1 <- modEx$fit(data = dataEx, run = 1, overwrite = TRUE)
+run1 <- modEx$fit(data = dataEx, path = file.path(wd, "Runs"), run = 1, overwrite = TRUE)
 
-NPex <- PM_load(1)
+NPex <- PM_load(path = file.path(wd, "Runs"), run = 1)
 # NPex$validate(limits = NA)
 usethis::use_data(NPex, overwrite = T)
 
@@ -71,10 +71,8 @@ usethis::use_data(NPex, overwrite = T)
 
 # simulator example
 simEx <- NPex$sim(
-  limits = c(0, 3), data = PM_data$new("../ptaex1.csv"),
+  limits = c(0, 3), data = PM_data$new(file.path(wd, "ptaex1.csv")),
   predInt = c(120, 144, 0.5), seed = rep(-17, 4)
 )
 usethis::use_data(simEx, overwrite = TRUE)
 
-
-setwd(wd)
