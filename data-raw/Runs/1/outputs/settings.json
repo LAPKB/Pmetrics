@@ -33,7 +33,9 @@
     "models": [
       {
         "Proportional": {
-          "gamma": 5.0,
+          "gamma": {
+            "Variable": 5.0
+          },
           "poly": {
             "c0": 0.02,
             "c1": 0.05,
@@ -61,7 +63,7 @@
   },
   "output": {
     "write": true,
-    "path": "/Users/mneely/Library/CloudStorage/OneDrive-ChildrensHospitalLosAngeles/Documents/LAPK/Development/Pmetrics_rust/data-raw/Runs/1/outputs"
+    "path": "/Users/mneely/Library/CloudStorage/OneDrive-ChildrensHospitalLosAngeles//Documents/LAPK/Development/Pmetrics_rust/data-raw/Runs/1/outputs"
   },
   "convergence": {
     "likelihood": 0.0001,
