@@ -472,6 +472,9 @@ PMreadMatrix <- function(
     if (missing(file)) {
       cli::cli_abort(c("x" = "Please provide filename of Pmetrics data file."))
     }
+  
+    file <- normalizePath(file, mustWork = FALSE)
+  
     if (!file.exists(file)) {
       cli::cli_abort(c("x" = "The file {.code {basename(file)}} was not found in {.path {dirname(file)}}."))
     }
