@@ -8,10 +8,10 @@ use anyhow::Result;
 use extendr_api::prelude::*;
 use pmcore::prelude::{data::read_pmetrics, pharmsol::exa::build, Analytical, ODE};
 use simulation::SimulationRow;
-use std::{process::Command, time::Instant};
+use std::process::Command;
 use tracing_subscriber::layer::SubscriberExt;
 
-use crate::logs::{CompactTimestamp, RFormatLayer};
+use crate::logs::RFormatLayer;
 
 fn validate_paths(data_path: &str, model_path: &str) {
     if !std::path::Path::new(data_path).exists() {
@@ -117,6 +117,8 @@ pub fn fit(
     output_path: &str,
     kind: &str,
 ) -> Result<()> {
+    RFormatLayer::reset_global_timer();
+    setup_logs()?;
     println!("Initializing model fit...");
     validate_paths(data, model_path);
     match kind {
@@ -232,25 +234,17 @@ fn clear_build() {
 /// @export
 #[extendr]
 pub fn setup_logs() -> anyhow::Result<()> {
-    let start = Instant::now();
-    let timer = CompactTimestamp { start };
+    use tracing::Level;
+    use tracing_subscriber::filter::LevelFilter;
 
-    let subscriber = tracing_subscriber::fmt()
-        .with_timer(timer)
-        .with_max_level(tracing::Level::INFO)
-        .with_thread_ids(false)
-        .with_thread_names(false)
-        .with_target(false)
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
-        .finish();
+    // Create a subscriber with our custom layer using the global timer
+    // Filter to show only INFO and above (INFO, WARN, ERROR)
+    let subscriber = tracing_subscriber::registry()
+        .with(RFormatLayer::new())
+        .with(LevelFilter::from_level(Level::INFO));
 
-    tracing::subscriber::set_global_default(subscriber)
-        .map_err(|e| anyhow::format_err!("Failed to set global default subscriber: {}", e))?;
-
-    // Create a subscriber with our custom layer
-    let subscriber = tracing_subscriber::registry().with(RFormatLayer);
-
-    // Set as global default
+    // Set as global default - this will fail if already set, which is fine
+    // We just ignore the error
     let _ = tracing::subscriber::set_global_default(subscriber);
 
     Ok(())

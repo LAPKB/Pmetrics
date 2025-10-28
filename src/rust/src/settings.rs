@@ -27,7 +27,6 @@ pub(crate) fn settings(
 
     let error_models_raw = settings.get("error_models").unwrap().as_list().unwrap();
 
-
     let mut ems = ErrorModels::new();
 
     for (i, (_, em)) in error_models_raw.iter().enumerate() {
@@ -42,7 +41,7 @@ pub(crate) fn settings(
                     i,
                     ErrorModel::additive(
                         ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
-                        gamlam
+                        gamlam,
                     ),
                 )?;
             }
@@ -51,7 +50,7 @@ pub(crate) fn settings(
                     i,
                     ErrorModel::proportional(
                         ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
-                        gamlam
+                        gamlam,
                     ),
                 )?;
             }
@@ -92,7 +91,6 @@ pub(crate) fn settings(
     settings.set_output_path(output_path.to_string());
     settings.set_write_logs(true);
     settings.write()?;
-    settings.initialize_logs()?;
     Ok(settings)
 }
 
