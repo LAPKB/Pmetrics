@@ -489,7 +489,7 @@ plot.PM_op <- function(x,
       } else { # anchor is x axis
         layout$yaxis <- modifyList(layout$yaxis, list(matches = "x"))
       }
-      
+      browser()
       # Split into traces
       traces <- sub1 %>%
       dplyr::group_split(id)
@@ -511,7 +511,7 @@ plot.PM_op <- function(x,
             cens == "none" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nObs: {round2(obs)}"),
             cens == "aloq" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nALOQ: {round2(obs)}")
           ),
-          color = dplyr::if_else(cens != 0, opposite_color(marker$color, degrees = 90), marker$color),
+          color = dplyr::if_else(cens != "none", opposite_color(marker$color, degrees = 90), marker$color),
           symbol = dplyr::case_when(
             cens == "bloq" ~ "triangle-down", 
             cens == "none" ~ marker$symbol,
