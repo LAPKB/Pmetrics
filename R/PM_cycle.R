@@ -139,7 +139,7 @@ PM_cycle <- R6::R6Class(
       
       
       if (file.exists(file.path(path, "pred.csv"))) {
-        op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), show_col_types = FALSE) %>% filter(!is.na(obs))
+        op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), col_types = "cdiidcdddd") %>% filter(!is.na(obs))
       } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)

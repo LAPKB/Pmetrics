@@ -43,6 +43,8 @@ PM_op <- R6::R6Class(
     time = NULL,
     #' @field obs observation
     obs = NULL,
+    #' @field cens censoring information: "none" for observed, "bloq" for below limit of quantification, "aloq" for above limit of quantification
+    cens = NULL,
     #' @field pred prediction
     pred = NULL,
     #' @field pred.type Population predictions based on Bayesian prior parameter value distribution,
@@ -81,6 +83,7 @@ PM_op <- R6::R6Class(
         self$id <- op$id
         self$time <- op$time
         self$obs <- op$obs
+        self$cens <- op$cens
         self$pred <- op$pred
         self$pred.type <- op$pred.type
         self$icen <- op$icen
@@ -127,9 +130,10 @@ PM_op <- R6::R6Class(
 private = list(
   make = function(data, path) {
     if (file.exists(file.path(path, "pred.csv"))) {
-      op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), show_col_types = FALSE) %>% filter(!is.na(obs))
-      if(!"cens" %in% names(op_raw)){
-        op_raw <- op_raw %>% mutate(cens = 0) # if cens column missing, assume all observed
+      op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), col_types = "cdiidcdddd") %>% filter(!is.na(obs))
+
+      if(!"censoring" %in% names(op_raw)){
+        op_raw <- op_raw %>% mutate(censoring = "none") # if cens column missing, assume all observed
       } 
     } else if (inherits(data, "PM_op")) { # file not there, and already PM_op
       class(data$data) <- c("PM_op_data", "data.frame")
@@ -141,6 +145,8 @@ private = list(
       ))
       return(NULL)
     }
+
+    op_raw <- op_raw %>% dplyr::rename(cens = censoring) 
     
     if (file.exists(file.path(path, "settings.json"))) {
       config <- jsonlite::fromJSON(file.path(path, "settings.json"))
@@ -355,8 +361,6 @@ plot.PM_op <- function(x,
       cli::cli_abort(c("x" = "You have selected <0> rows in your {.cls PM_op} object.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, and {.code block}."))
     }
     
-    #### TEMP WORKAROUND
-    #sub1$cens <- 0 # should be 0 if cens missing from data
     
     # unnecessary arguments for consistency with other plot functions
     if (!missing(legend)) {
@@ -503,16 +507,16 @@ plot.PM_op <- function(x,
         rowwise() %>%
         mutate(
           text_label = dplyr::case_when(
-            cens == 1 ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nBLQ: {round2(obs)}"),
-            cens == 0 ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nObs: {round2(obs)}"),
-            cens == -1 ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nALQ: {round2(obs)}")
+            cens == "bloq" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nBLOQ: {round2(obs)}"),
+            cens == "none" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nObs: {round2(obs)}"),
+            cens == "aloq" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nALOQ: {round2(obs)}")
           ),
           color = dplyr::if_else(cens != 0, opposite_color(marker$color, degrees = 90), marker$color),
           symbol = dplyr::case_when(
-            cens == 1 ~ "triangle-down", 
-            cens == 0 ~ marker$symbol,
-            cens == -1 ~ "triangle-up"),
-          opacity = dplyr::if_else(cens != 0, 1, marker$opacity)
+            cens == "bloq" ~ "triangle-down", 
+            cens == "none" ~ marker$symbol,
+            cens == "aloq" ~ "triangle-up"),
+          opacity = dplyr::if_else(cens != "none", 1, marker$opacity)
         ) %>% ungroup()
         p <- add_trace(
           p,
@@ -541,7 +545,7 @@ plot.PM_op <- function(x,
           lmLine$ci <- NULL # remove to allow only formatting arguments below
         }
         
-        p <- p %>% add_smooth(data = sub1 %>% filter(cens == 0), x = ~pred, y = ~obs, ci = ci, line = lmLine, stats = stats)
+        p <- p %>% add_smooth(data = sub1 %>% filter(cens == "none"), x = ~pred, y = ~obs, ci = ci, line = lmLine, stats = stats)
       }
       
       if (loessLine$plot) { # loess regression
@@ -552,7 +556,7 @@ plot.PM_op <- function(x,
           ci <- loessLine$ci
           loessLine$ci <- NULL # remove to allow only formatting arguments below
         }
-        p <- p %>% add_smooth(data = sub1 %>% filter(cens == 0), x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
+        p <- p %>% add_smooth(data = sub1 %>% filter(cens == "none"), x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
       }
       
       if (refLine$plot) { # reference line
@@ -596,7 +600,7 @@ plot.PM_op <- function(x,
       # amend xaxis title later
       
       # Split into traces
-      traces <- sub1 %>% filter(cens == 0) %>%
+      traces <- sub1 %>% filter(cens == "none") %>%
       group_split(id)
       
       
