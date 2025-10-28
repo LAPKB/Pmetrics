@@ -2,6 +2,9 @@ url: https://lapkb.github.io/Pmetrics/
 template:
   bootstrap: 5
   bootswatch: flatly
+development:
+  mode: auto
+  version_label: default
 navbar:
   structure:
     left:
@@ -138,6 +141,13 @@ reference:
   - PMpatch
   - PMtest
   - setPMoptions
+- title: Internal
+  desc: Internal and low-level functions
+- contents:
+  - compile_model
+  - dummy_compile
+  - simulate_all
+  - simulate_one
 - title: Reference
   desc: Reference functions
 - contents:
