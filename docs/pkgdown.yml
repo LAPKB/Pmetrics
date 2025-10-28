@@ -1,4 +1,4 @@
-pandoc: 3.8.2
+pandoc: 3.8.2.1
 pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
@@ -13,7 +13,7 @@ articles:
   running: running.html
   simulation: simulation.html
   workflow: workflow.html
-last_built: 2025-10-23T23:47Z
+last_built: 2025-10-28T12:51Z
 urls:
   reference: https://lapkb.github.io/Pmetrics/reference
   article: https://lapkb.github.io/Pmetrics/articles
