@@ -94,6 +94,7 @@ in cells that are not required (e.g. INPUT for an observation event).
 \item All columns must be numeric except ID which may be alpha-numeric.
 \item All subjects must have at least one observation, which could be missing, i.e. -99.
 \item Cells which are not needed (e.g. dose on an observation event, EVID=0), should contain ".".
+\item Doses are not censored. This will generate a warning, not an error.
 }
 
 To use this function, see the example below.
@@ -124,6 +125,7 @@ user must fix manually.
 \item Columns that are non-numeric which must be numeric are flagged for the user to fix manually.
 These are all columns except ID.
 Covariate columns are fixed separately (see above).
+\item Dose events with censoring will be set to uncensored, with a warning to the user.
 }
 }
 \examples{
