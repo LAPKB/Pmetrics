@@ -93,7 +93,7 @@ PM_pop <- R6::R6Class(
 private = list(
   make = function(data, path) {
     if (file.exists(file.path(path, "pred.csv"))) {
-      raw <- readr::read_csv(file = file.path(path, "pred.csv"), show_col_types = FALSE)
+      op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), col_types = "cdiidcdddd") 
     } else if (inherits(data, "PM_pop")) { # file not there, and already PM_pop
       class(data$data) <- c("PM_pop_data", "data.frame")
       return(data$data)
@@ -105,11 +105,11 @@ private = list(
       return(NULL)
     }
     
-    if (is.null(raw)) {
+    if (is.null(op_raw)) {
       return(NA)
     }
     
-    pop <- raw %>%
+    pop <- op_raw %>%
     select(-post_median, -post_mean) %>%
     pivot_longer(cols = c(pop_median, pop_mean), values_to = "pred") %>%
     dplyr::rename(icen = name) %>%

@@ -94,7 +94,7 @@ PM_post <- R6::R6Class(
   private = list(
     make = function(data, path) {
     if (file.exists(file.path(path, "pred.csv"))) {
-      raw <- readr::read_csv(file = file.path(path, "pred.csv"), show_col_types = FALSE)
+      op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), col_types = "cdiidcdddd") 
       } else if (inherits(data, "PM_post")) { # file not there, and already PM_post
         class(data$data) <- c("PM_post_data", "data.frame")
         return(data$data)
@@ -106,11 +106,11 @@ PM_post <- R6::R6Class(
         return(NULL)
       }
 
-      if (is.null(raw)) {
+      if (is.null(op_raw)) {
         return(NA)
       }
 
-      post <- raw %>%
+      post <- op_raw %>%
         pivot_longer(
           cols = c(post_median, post_mean),
           values_to = "pred"
