@@ -966,7 +966,7 @@ PM_model <- R6::R6Class(
                 
                 if (is.character(data)) {
                   # create PM_data object from file
-                  data <- PM_data$new(file.path(path, data))
+                  data <- PM_data$new(normalizePath(file.path(path, data), mustWork = FALSE))
                 }
                 
                 if (!inherits(data, "PM_data")) {
@@ -1032,7 +1032,7 @@ PM_model <- R6::R6Class(
                   } 
                 }
                 
-                path_run <- file.path(path, run)
+                path_run <- normalizePath(file.path(path, run), mustWork = FALSE)
                 
                 if (file.exists(path_run)) {
                   if (overwrite) {
@@ -1042,11 +1042,11 @@ PM_model <- R6::R6Class(
                     cli::cli_inform(
                       c("i" = "The previous run from '{path_run}' was read.", " " = "Set {.arg overwrite} to {.val TRUE} to overwrite prior run in '{path_run}'.")
                     )
-                    return(invisible(PM_load(file = file.path(path_run, "PMout.Rdata"))))
+                    return(invisible(PM_load(file = normalizePath(file.path(path_run, "PMout.Rdata"), mustWork = FALSE))))
                   }
                 }
                 
-                dir.create(path_run)
+                fs::dir_create(path_run)
                 
                 
                 #### Algorithm ####
@@ -1086,12 +1086,11 @@ PM_model <- R6::R6Class(
                   return(invisible(NULL))
                 }
                 
-                
                 #### Save input objects ####
-                dir.create(file.path(path_run, "inputs"))
-                PM_data$new(data_filtered, quiet = TRUE)$save(file.path(path_run, "inputs/gendata.csv"), header = FALSE)
-                saveRDS(list(data = data, model = self), file = file.path(path_run, "inputs/fit.rds"))
-                file.copy(self$binary_path, file.path(path_run, "inputs"))
+                fs::dir_create(normalizePath(file.path(path_run, "inputs"), mustWork = FALSE))
+                PM_data$new(data_filtered, quiet = TRUE)$save(normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE), header = FALSE)
+                saveRDS(list(data = data, model = self), file = normalizePath(file.path(path_run, "inputs", "fit.rds"), mustWork = FALSE))
+                file.copy(self$binary_path, normalizePath(file.path(path_run, "inputs"), mustWork = FALSE))
                 
                 # Get ranges and calculate points
                 ranges <- lapply(self$model_list$pri, function(x) {
@@ -1142,16 +1141,7 @@ PM_model <- R6::R6Class(
                   prior <- "sobol"
                 }
                 
-                # get loq
-                if (is.null(data$loq)) {
-                  loq <- rep(NA, dataOut)
-                } else {
-                  if (length(data$loq) != dataOut) {
-                    cli::cli_abort(c("x" = "Error: Number of loq values does not match number of output equations.", "i" = "Check the loq values."))
-                  }
-                  loq <- data$loq
-                }
-                loq <- as.numeric(loq) # ensure loq is numeric (NA can be character or logical)
+    
                 
                 # get bolus info
                 if (self$model_list$name != "user"){ # library model
@@ -1162,28 +1152,24 @@ PM_model <- R6::R6Class(
                   bolus_comps <- stringr::str_which(eqns, stringr::regex("(b|bolus)\\[\\d+\\]", ignore_case = TRUE))
                   bolus_inputs <- as.integer(stringr::str_match(eqns[bolus_comps], stringr::regex("(b|bolus)\\[(\\d+)\\]", ignore_case = TRUE))[,3])
                   
-                  
-                  
                 }
-                
                 
                 
                 if (intern) {
                   ### CALL RUST
-                  out_path <- file.path(path_run, "outputs")
+                  out_path <- normalizePath(file.path(path_run, "outputs"), mustWork = FALSE)
                   msg <- c(msg, "Run results were saved in folder '{.path {out_path}}'")
                   rlang::try_fetch(
                     fit(
                       # defined in extendr-wrappers.R
-                      model_path = self$binary_path,
-                      data = file.path(path_run, "inputs/gendata.csv"),
+                      model_path = normalizePath(self$binary_path),
+                      data = normalizePath(file.path(path_run, "inputs", "gendata.csv")),
                       params = list(
                         ranges = ranges, #not important but needed for POSTPROB
                         algorithm = algorithm,
                         error_models = lapply(self$model_list$err, function(x) x$flatten()),
                         idelta = idelta,
                         tad = tad,
-                        loq = loq, # loq values 
                         max_cycles = cycles, #will be hardcoded in Rust to 0 for POSTPROB
                         prior = prior, # needs warning if missing and algorithm = POSTPROB
                         points = points, # only relevant for sobol prior
@@ -1199,11 +1185,11 @@ PM_model <- R6::R6Class(
                   )
                   
                   PM_parse(path = out_path)
-                  res <- PM_load(path = out_path, file = "PMout.Rdata")
+                  res <- PM_load(path = normalizePath(out_path), file = "PMout.Rdata")
                   if(report != "none"){
                     
                     valid_report <- tryCatch(
-                      PM_report(res, path = out_path, template = report, quiet = TRUE),
+                      PM_report(res, path = normalizePath(out_path), template = report, quiet = TRUE),
                       error = function(e) {
                         -1
                       })                    

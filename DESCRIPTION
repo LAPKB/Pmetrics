@@ -57,6 +57,8 @@ Suggests:
     data.table,
     devtools,
     ggpubr,
+    glue,
+    gt,
     htmltools,
     knitr,
     mclust,
