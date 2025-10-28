@@ -1,5 +1,6 @@
 // mod build;
 mod executor;
+mod logs;
 mod settings;
 mod simulation;
 
@@ -8,7 +9,9 @@ use extendr_api::prelude::*;
 use pmcore::prelude::{data::read_pmetrics, pharmsol::exa::build, Analytical, ODE};
 use simulation::SimulationRow;
 use std::process::Command;
+use tracing_subscriber::layer::SubscriberExt;
 
+use crate::logs::RFormatLayer;
 
 fn validate_paths(data_path: &str, model_path: &str) {
     if !std::path::Path::new(data_path).exists() {
@@ -225,10 +228,16 @@ fn clear_build() {
     build::clear_build();
 }
 
+/// Initialize the tracing subscriber with the custom R formatter
+/// @export
+#[extendr]
+fn rust_logs() {
+    // Create a subscriber with our custom layer
+    let subscriber = tracing_subscriber::registry().with(RFormatLayer);
 
-
-
-
+    // Set as global default
+    let _ = tracing::subscriber::set_global_default(subscriber);
+}
 
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
@@ -244,6 +253,7 @@ extendr_module! {
     fn model_parameters;
     fn template_path;
     fn clear_build;
+    fn rust_logs;
 }
 
 // To generate the exported function in R, run the following command:
