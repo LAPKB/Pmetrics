@@ -1,8 +1,11 @@
 use std::fmt;
+use std::time::Instant;
 
 use extendr_api::prelude::*;
 use extendr_api::rprintln;
 use tracing::Level;
+use tracing_subscriber::fmt::time::FormatTime;
+use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Layer;
 
 pub struct RFormatLayer;
@@ -59,4 +62,51 @@ impl tracing::field::Visit for FieldVisitor {
         self.fields
             .push_str(&format!("{}={:?}", field.name(), value));
     }
+}
+
+#[derive(Clone)]
+pub struct CompactTimestamp {
+    pub start: Instant,
+}
+
+impl FormatTime for CompactTimestamp {
+    fn format_time(
+        &self,
+        w: &mut tracing_subscriber::fmt::format::Writer<'_>,
+    ) -> std::result::Result<(), std::fmt::Error> {
+        let elapsed = self.start.elapsed();
+        let hours = elapsed.as_secs() / 3600;
+        let minutes = (elapsed.as_secs() % 3600) / 60;
+        let seconds = elapsed.as_secs() % 60;
+
+        write!(w, "{:02}h {:02}m {:02}s", hours, minutes, seconds)
+    }
+}
+
+/// Initialize the tracing subscriber with the custom R formatter
+/// @export
+#[extendr]
+pub fn setup_logs() -> anyhow::Result<()> {
+    let start = Instant::now();
+    let timer = CompactTimestamp { start };
+
+    let subscriber = tracing_subscriber::fmt()
+        .with_timer(timer)
+        .with_max_level(tracing::Level::INFO)
+        .with_thread_ids(false)
+        .with_thread_names(false)
+        .with_target(false)
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber)
+        .map_err(|e| anyhow::format_err!("Failed to set global default subscriber: {}", e))?;
+
+    // Create a subscriber with our custom layer
+    let subscriber = tracing_subscriber::registry().with(RFormatLayer);
+
+    // Set as global default
+    let _ = tracing::subscriber::set_global_default(subscriber);
+
+    Ok(())
 }
