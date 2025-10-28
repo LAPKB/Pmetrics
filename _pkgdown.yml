@@ -2,6 +2,9 @@ url: https://lapkb.github.io/Pmetrics/
 template:
   bootstrap: 5
   bootswatch: flatly
+development:
+  mode: auto
+  version_label: default
 navbar:
   structure:
     left:
