@@ -39,5 +39,9 @@ template_path <- function() .Call(wrap__template_path)
 
 clear_build <- function() invisible(.Call(wrap__clear_build))
 
+#' Initialize the tracing subscriber with the custom R formatter
+#' @export
+setup_logs <- function() .Call(wrap__setup_logs)
+
 
 # nolint end
