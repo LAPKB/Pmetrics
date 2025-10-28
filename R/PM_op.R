@@ -489,7 +489,7 @@ plot.PM_op <- function(x,
       } else { # anchor is x axis
         layout$yaxis <- modifyList(layout$yaxis, list(matches = "x"))
       }
-      browser()
+     
       # Split into traces
       traces <- sub1 %>%
       dplyr::group_split(id)
