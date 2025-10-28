@@ -8,10 +8,10 @@ use anyhow::Result;
 use extendr_api::prelude::*;
 use pmcore::prelude::{data::read_pmetrics, pharmsol::exa::build, Analytical, ODE};
 use simulation::SimulationRow;
-use std::process::Command;
+use std::{process::Command, time::Instant};
 use tracing_subscriber::layer::SubscriberExt;
 
-use crate::logs::RFormatLayer;
+use crate::logs::{CompactTimestamp, RFormatLayer};
 
 fn validate_paths(data_path: &str, model_path: &str) {
     if !std::path::Path::new(data_path).exists() {
@@ -231,12 +231,29 @@ fn clear_build() {
 /// Initialize the tracing subscriber with the custom R formatter
 /// @export
 #[extendr]
-fn rust_logs() {
+pub fn setup_logs() -> anyhow::Result<()> {
+    let start = Instant::now();
+    let timer = CompactTimestamp { start };
+
+    let subscriber = tracing_subscriber::fmt()
+        .with_timer(timer)
+        .with_max_level(tracing::Level::INFO)
+        .with_thread_ids(false)
+        .with_thread_names(false)
+        .with_target(false)
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber)
+        .map_err(|e| anyhow::format_err!("Failed to set global default subscriber: {}", e))?;
+
     // Create a subscriber with our custom layer
     let subscriber = tracing_subscriber::registry().with(RFormatLayer);
 
     // Set as global default
     let _ = tracing::subscriber::set_global_default(subscriber);
+
+    Ok(())
 }
 
 // Macro to generate exports.
@@ -253,7 +270,7 @@ extendr_module! {
     fn model_parameters;
     fn template_path;
     fn clear_build;
-    fn rust_logs;
+    fn setup_logs;
 }
 
 // To generate the exported function in R, run the following command:
