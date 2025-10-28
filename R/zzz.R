@@ -39,7 +39,7 @@
   }
   
   # Initialize rust logs
-  rust_logs()
+  setup_logs()
   
   # Set user options for the session
   setPMoptions(launch.app = FALSE)
