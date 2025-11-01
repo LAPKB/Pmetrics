@@ -9,9 +9,65 @@ use extendr_api::prelude::*;
 use pmcore::prelude::{data::read_pmetrics, pharmsol::exa::build, Analytical, ODE};
 use simulation::SimulationRow;
 use std::process::Command;
+use std::sync::Once;
 use tracing_subscriber::layer::SubscriberExt;
 
 use crate::logs::RFormatLayer;
+
+static PANIC_HOOK_INIT: Once = Once::new();
+
+/// Initialize the global panic hook to prevent RStudio crashes
+/// This captures panics from both main thread and rayon worker threads
+fn init_panic_hook() {
+    PANIC_HOOK_INIT.call_once(|| {
+        // Set up the main panic hook
+        let default_hook = std::panic::take_hook();
+        std::panic::set_hook(Box::new(move |panic_info| {
+            // Extract panic information
+            let location = panic_info
+                .location()
+                .map(|l| format!("{}:{}:{}", l.file(), l.line(), l.column()))
+                .unwrap_or_else(|| "unknown location".to_string());
+
+            let message = if let Some(s) = panic_info.payload().downcast_ref::<&str>() {
+                s.to_string()
+            } else if let Some(s) = panic_info.payload().downcast_ref::<String>() {
+                s.clone()
+            } else {
+                "unknown panic payload".to_string()
+            };
+
+            // Log to R console using extendr's rprintln! macro
+            rprintln!("\n╔═══════════════════════════════════════════════════════════════╗");
+            rprintln!("║ RUST PANIC CAUGHT                                             ║");
+            rprintln!("╠═══════════════════════════════════════════════════════════════╣");
+            rprintln!("║ Location: {:<54} ║", location);
+            rprintln!("║ Message:  {:<54} ║", message);
+            rprintln!("╚═══════════════════════════════════════════════════════════════╝\n");
+
+            // Also call the default hook for additional debugging if needed
+            // (this typically prints to stderr)
+            default_hook(panic_info);
+        }));
+
+        // Configure rayon to use our panic handler
+        rayon::ThreadPoolBuilder::new()
+            .panic_handler(|_| {
+                // Rayon panic handler doesn't get PanicInfo, just the panic value
+                // We need to handle it differently
+                rprintln!("\n╔═══════════════════════════════════════════════════════════════╗");
+                rprintln!("║ RUST PANIC IN RAYON THREAD                                    ║");
+                rprintln!("╠═══════════════════════════════════════════════════════════════╣");
+                rprintln!("║ A panic occurred in a parallel worker thread.                 ║");
+                rprintln!("║ This may indicate an issue with parallel processing.          ║");
+                rprintln!("╚═══════════════════════════════════════════════════════════════╝\n");
+            })
+            .build_global()
+            .unwrap_or_else(|e| {
+                rprintln!("Warning: Failed to initialize rayon thread pool: {}", e);
+            });
+    });
+}
 
 fn validate_paths(data_path: &str, model_path: &str) {
     if !std::path::Path::new(data_path).exists() {
@@ -31,6 +87,7 @@ fn simulate_one(
     spp: &[f64],
     kind: &str,
 ) -> Result<Dataframe<SimulationRow>> {
+    init_panic_hook();
     validate_paths(data_path, model_path);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
     let subjects = data.subjects();
@@ -68,6 +125,7 @@ fn simulate_all(
 ) -> Dataframe<SimulationRow> {
     use rayon::prelude::*;
 
+    init_panic_hook();
     validate_paths(data_path, model_path);
     let theta = parse_theta(theta);
     let data = read_pmetrics(data_path).expect("Failed to parse data");
@@ -117,6 +175,7 @@ pub fn fit(
     output_path: &str,
     kind: &str,
 ) -> Result<()> {
+    init_panic_hook();
     RFormatLayer::reset_global_timer();
     setup_logs()?;
     println!("Initializing model fit...");
@@ -165,6 +224,7 @@ fn parse_theta(matrix: RMatrix<f64>) -> Vec<Vec<f64>> {
 ///@export
 #[extendr]
 fn compile_model(model_path: &str, output_path: &str, params: Strings, kind: &str) -> Result<()> {
+    init_panic_hook();
     let params: Vec<String> = params.iter().map(|x| x.to_string()).collect();
     let model_txt = std::fs::read_to_string(model_path).expect("Failed to read model file");
     match kind {
@@ -250,6 +310,14 @@ pub fn setup_logs() -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Initialize the panic hook to prevent RStudio crashes
+/// This should be called early in package initialization
+/// @export
+#[extendr]
+pub fn init_panic_handler() {
+    init_panic_hook();
+}
+
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
 // See corresponding C code in `entrypoint.c`.
@@ -265,6 +333,7 @@ extendr_module! {
     fn template_path;
     fn clear_build;
     fn setup_logs;
+    fn init_panic_handler;
 }
 
 // To generate the exported function in R, run the following command:
