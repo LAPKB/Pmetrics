@@ -44,7 +44,3 @@
   # Build model library
   build_model_lib()
 }
-
-.onLoad <- function(libname, pkgname) {
-  init_panic_handler()
-}
