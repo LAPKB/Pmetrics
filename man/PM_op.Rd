@@ -42,6 +42,8 @@ Michael Neely, Julian Otalvaro
 
 \item{\code{obs}}{observation}
 
+\item{\code{cens}}{censoring information: "none" for observed, "bloq" for below limit of quantification, "aloq" for above limit of quantification}
+
 \item{\code{pred}}{prediction}
 
 \item{\code{pred.type}}{Population predictions based on Bayesian prior parameter value distribution,
