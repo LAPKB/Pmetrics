@@ -231,9 +231,9 @@ fn clear_build() {
 }
 
 /// Initialize the tracing subscriber with the custom R formatter
-/// @export
+//@export
 #[extendr]
-pub fn setup_logs() -> anyhow::Result<()> {
+fn setup_logs() -> anyhow::Result<()> {
     use tracing::Level;
     use tracing_subscriber::filter::LevelFilter;
 
