@@ -388,7 +388,7 @@ PM_model <- R6::R6Class(
       ...) {
         # Store the original function arguments
         self$arg_list <- list(
-          x = x,
+          #x = x,
           pri = pri,
           cov = cov,
           sec = sec,
