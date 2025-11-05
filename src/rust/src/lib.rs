@@ -1,5 +1,6 @@
 // mod build;
 mod executor;
+mod logs;
 mod settings;
 mod simulation;
 
@@ -8,7 +9,9 @@ use extendr_api::prelude::*;
 use pmcore::prelude::{data::read_pmetrics, pharmsol::exa::build, Analytical, ODE};
 use simulation::SimulationRow;
 use std::process::Command;
+use tracing_subscriber::layer::SubscriberExt;
 
+use crate::logs::RFormatLayer;
 
 fn validate_paths(data_path: &str, model_path: &str) {
     if !std::path::Path::new(data_path).exists() {
@@ -114,6 +117,8 @@ pub fn fit(
     output_path: &str,
     kind: &str,
 ) -> Result<()> {
+    RFormatLayer::reset_global_timer();
+    setup_logs()?;
     println!("Initializing model fit...");
     validate_paths(data, model_path);
     match kind {
@@ -225,10 +230,26 @@ fn clear_build() {
     build::clear_build();
 }
 
+/// Initialize the tracing subscriber with the custom R formatter
+/// @keywords internal
+///@export
+#[extendr]
+fn setup_logs() -> anyhow::Result<()> {
+    use tracing::Level;
+    use tracing_subscriber::filter::LevelFilter;
 
+    // Create a subscriber with our custom layer using the global timer
+    // Filter to show only INFO and above (INFO, WARN, ERROR)
+    let subscriber = tracing_subscriber::registry()
+        .with(RFormatLayer::new())
+        .with(LevelFilter::from_level(Level::INFO));
 
+    // Set as global default - this will fail if already set, which is fine
+    // We just ignore the error
+    let _ = tracing::subscriber::set_global_default(subscriber);
 
-
+    Ok(())
+}
 
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
@@ -244,6 +265,7 @@ extendr_module! {
     fn model_parameters;
     fn template_path;
     fn clear_build;
+    fn setup_logs;
 }
 
 // To generate the exported function in R, run the following command:
