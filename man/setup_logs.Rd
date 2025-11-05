@@ -9,3 +9,4 @@ setup_logs()
 \description{
 Initialize the tracing subscriber with the custom R formatter
 }
+\keyword{internal}
