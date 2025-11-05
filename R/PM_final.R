@@ -248,20 +248,20 @@ PM_final <- R6::R6Class(
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate final cycle information.",
-        "i" = "Result does not have valid {.code PM_final} object, and {.file {file.path(path, 'theta.csv')} does not exist."
+        "i" = "{.file {file.path(path, 'theta.csv')}} does not exist, and result does not have valid {.code PM_final} object."
         ))
         return(NULL)
       }
       
     if (file.exists(file.path(path, "posterior.csv"))) {
       post <- readr::read_csv(file = file.path(path, "posterior.csv"), show_col_types = FALSE)
-      } else if (inherits(data, "PM_final")) { # file not there, and already PM_final
+      } else if (inherits(data, "PM_final") & !is.null(data$data)) { # file not there, and already PM_final
         class(data$data) <- c("PM_final_data", "data.frame")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate final cycle information.",
-          "i" = "Result does not have valid {.code PM_final} object, and {.file {file.path(path, 'posterior.csv')} does not exist."
+          "i" = "{.file {file.path(path, 'posterior.csv')}} does not exist, and result does not have valid {.code PM_final} object."
         ))
         return(NULL)
       }
@@ -274,7 +274,7 @@ PM_final <- R6::R6Class(
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate final cycle information.",
-          "i" = "Result does not have valid {.code PM_final} object, and {.file {file.path(path, 'settings.json')} does not exist."
+          "i" = "{.file {file.path(path, 'settings.json')}} does not exist, and result does not have valid {.code PM_final} object."
         ))
         return(NULL)
       }
@@ -718,7 +718,6 @@ PM_final <- R6::R6Class(
           if (!is.null(densList)) {
             dens <- data.frame(x = densList$x, y = densList$y)
             normalize <- max(denData$prob)
-            
             p <- p %>% plotly::add_lines(
               data = dens, x = ~x, y = ~ y / max(y) * I(normalize),
               line = line,

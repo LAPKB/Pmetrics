@@ -1,41 +1,124 @@
+```{r}
+#| label: setup
+#| echo: false
+#| message: false
+#| eval: true
+library(glue)
+library(knitr)
 
-You must always load the Pmetrics library first.
+pmetrics <- function(){
+    knitr::asis_output("[Pmetrics]{style=\"color: #841010; font-family: 'Arial', Arial, sans-serif; font-weight: 900;\"}")
+}
+
+
+r_help <- function(pkg, name, fn = NULL) {
+    if(is.null(fn)) {fn <- name}
+    glue::glue("[`{name}`](https://rdrr.io/pkg/{pkg}/man/{fn}.html)")
+}
+
+gh_help <- function(name) {
+    glue::glue("[`{name}`](https://lapkb.github.io/Pmetrics/reference/{name}.html)")
+}
+```
+
+First, you must always load the `r pmetrics()` library in your R script or Quarto document.
+
+```{r}
+#| eval: false
+#| echo: true
+library(Pmetrics)
+```
 
 ```{r}
 #| eval: true
-#| output: false
-#library(Pmetrics)
+#| echo: false
 devtools::load_all()
 ```
 
-# First NPAG run
+# Running NPAG
 
 ### Working directory
 
-You must always tell R where your working directory is going to be. This is the directory where R expects to find files and where it will save output files. You can set your working directory with the `setwd()` function.
+Next, R and `r pmetrics()` need to know which directory to work in. This is the directory where R expects to find files and where it will save output files. There are two ways to do this.
 
-Windows users: Make sure that you separate directories with a forward slash "/" or double backslashes "\\". Unfortunately, Windows is the only OS that uses backslashes "", so R conforms to Unix/Linux style with the forward slash. If you copy the example below, make sure to change the path to one that exists on your computer.
-
+#### Global working directory change
+You can set your working directory with the `r r_help("base", "setwd", "getwd")` function. 
 ```{r}
-# change the path to one that exists on your computer
+#| eval: false
+#| echo: true
 setwd("/path/to/your/project/directory") # Mac and Linux users
 setwd("C:/path/to/your/project/directory") # Windows users
 ```
 
+**Windows users:** Make sure that you separate directories with a forward slash "/" or double backslashes "\\". Unfortunately, Windows is the only OS that uses backslashes "", so R conforms to Unix/Linux style with the forward slash. If you copy the example below, make sure to change the path to one that exists on your computer.
+
+#### Local path specification
+You can also specify the path in a variable and use it in `r pmetrics()` functions without changing the working directory.
+```{r}
+#| eval: false
+#| echo: true
+wd <- "/path/to/your/project/directory" # Mac and Linux users
+wd <- "C:/path/to/your/project/directory" # Windows users
+dat <- PM_data$new(data = file.path(wd, "data", "mydata.csv"))
+```
+
+💡 The `r r_help("base", "file.path")` function creates file paths that are compatible with your operating system.
+
+### Workflow
+
+The typical workflow for using `r pmetrics()` is as follows:
+
+1.  Create a `r gh_help("PM_data")` object.
+2.  Create a `r gh_help("PM_model")` object.
+3.  Fit the model to the data with the `$fit()` method of the model object. This returns a `r gh_help("PM_result")` object, which is also saved to the hard drive and can be loaded later with the `r gh_help("PM_load")` function.
+4.  Examine the results with `r gh_help("PM_result")` methods and functions and revise as needed to improve the model fit. This chiefly means using the `$update()` method to change the model or manually editing it.
+
+```{mermaid}
+%%| eval: true
+flowchart LR
+
+subgraph RSession[" "]
+  direction TB
+  DATA["PM_data"]
+  MODEL["PM_model"]
+  RESULT["PM_result"]
+end
+
+DISK[("Hard Drive")]
+
+DATA --> MODEL
+MODEL -- "$fit()" --> RESULT
+RESULT -- "$update()" --> MODEL
+DISK -- "PM_load()" --> RESULT
+RESULT --> DISK
+
+classDef blue fill:#2f6db6,stroke:#184a8b,color:#fff;
+classDef orange fill:#c7662b,stroke:#8a3f18,color:#fff;
+classDef disk fill:#d2d3d7,stroke:#7f8084,color:#000;
+
+class DATA,MODEL blue;
+class RESULT orange;
+class DISK disk;
+
+style RSession fill:#e9f0ff,stroke:#9ab0d6,stroke-width:1px,rx:2,ry:2
+
+```
+
+
 ### Data objects
 
-Pmetrics always needs data and a model to run, so let's create a new data object. We will set the limit of quantification (loq) to 1. See ?PM_data for help.
+Pmetrics always needs data and a model to run, so let's create a new data object.
 
 ```{r}
 #| eval: true
-exData <- PM_data$new(data = "../Examples/src/ex.csv", loq = 1)
+exData <- PM_data$new(data = "../Examples/src/ex.csv")
 ```
 
-Here we did execute the code so you can see the output. Pmetrics standardizes the data, checks for errors, and provides an error and attempted fix report fo any found.
+`r pmetrics()` standardizes the data, checks for errors, and provides an error and attempted fix report fo any found.
 
 You can look at a .csv data file directly by opening it in a spreadsheet program like Excel, or a text editor.
 
-`exData` is an R6 object, which means that contains both data and methods to process that data.
+`exData` is an `r r_help("R6", "R6", "R6Class")` object, which means that contains both data and methods to process that data.
 
 ```{r}
 exData # prints the object, usually to the terminal, but in this case to a rendered "lite" spreadsheet
@@ -44,24 +127,28 @@ exData$standard_data # contains the standardized and validated data
 exData$summary() # prints the summary of the data to the terminal
 ```
 
-Most Pmetrics objects are R6 objects, so you can use the `$` operator to access their data and methods. Many of them have a `summary()` method that prints a summary of the object to the console and a `plot()` method that creates a plot of the object. See `?PM_data` for more information on the `PM_data` class and its methods.
+Most `r pmetrics()` objects are R6 objects, so you can use the `$` operator to access their data and methods. Many of them have a `summary()` method that prints a summary of the object to the console and a `plot()` method that creates a plot of the object. See `r gh_help("PM_data")` for more information on the `PM_data` class and its methods.
 
-**Note:** We recognize that many users are familiar with the "S3 framework" in R, which uses functions like `summary(object)` and `plot(object)`. To comply with better programming standards, Pmetrics uses the R6 framework. However, we have provided S3 methods for most functions, so you can use `summary(object)` and `plot(object)` if you prefer.
+**Note:** We recognize that many users are familiar with the "S3 framework" in R, which uses functions like `summary(object)` and `plot(object)`. To comply with better programming standards, `r pmetrics()` uses the R6 framework. However, we have provided S3 methods for most functions, so you can use `summary(object)` and `plot(object)` if you prefer.
 
 ```{r}
 # S3 method to summarize data
 summary(exData)
 ```
 
-`PM_data` has a `plot()` method that creates a plot of the data. See `?plot.PM_data` for more information.
+`PM_data` has a `plot()` method that creates a plot of the data. See `r gh_help("plot.PM_data")`  for more information.
+
+```{r}
+#| eval: false
+exData$plot() 
+```
 
 ```{r}
 #| eval: true
-# piping to plotlygg() turns the interractive plotly plot to a static ggplot2 plot 
-exData$plot() %>% plotlygg()
+#| echo: false
+p <- exData$plot()
+plotly::plotly_build(p) #needed to display in output
 ```
-
-We have piped (`%>%`) the plot to `plotlygg()` to convert the interactive plotly plot to a static ggplot2 plot for rendering in this document. You can interact with the plot in your own script or Quarto document. If you're not familiar with the pipe operator, see [this article](https://magrittr.tidyverse.org/). We strongly recommend Tidvyerse for data manipulation and visualization in R, and Pmetrics works well with it. See [R for Data Science](https://r4ds.hadley.nz) for more information.
 
 ### Model objects
 
@@ -112,12 +199,13 @@ mod1 # prints the model object
 #| eval: true
 #| message: false
 
-mod1$plot() # static plot so do not need to pipe to plotlygg() 
+mod1$plot() 
 ```
 
 We have another file "model.txt" that contains the old representation of the same model we coded above, let's take a look at it.
 
 ```{r}
+#| eval: true
 system("cat ../Examples/src/model.txt")
 ```
 
@@ -141,17 +229,18 @@ mod1b$update(
 
 It is case sensitive, so ka is different from Ka. To remove a parameter, set it to NULL.
 
-To copy a model use the \$clone() method.
+To copy a model use the `$clone()` method.
 
 ```{r}
 mod1b <- mod1$clone()
 ```
 
-Simply using `mod1b <- mod1` will cause `mod1b` to be changed if `mod1` is changed, as R6 objects use reference semantics. For more details you can refer to \[Advanced R\] (https://adv-r.hadley.nz/r6.html), Section 14.4.
+Simply using `mod1b <- mod1` will cause `mod1b` to be changed if `mod1` is changed, as R6 objects use reference semantics. For more details you can refer to [Advanced R](https://adv-r.hadley.nz/r6.html), Section 14.4.
 
-Lastly, Pmetrics has a model building app!
+Lastly, `r pmetrics()` has a model building app!
 
 ```{r}
+#| eval: false
 build_model() #start from scratch
 build_model(exData) #start with data to match covariates
 build_model(mod1) #start with a model and update it
@@ -159,269 +248,24 @@ build_model(mod1) #start with a model and update it
 
 ### Fit the model to the data
 
-To keep everything tidy, we are working in a folder specifically to store the runs.
+To keep everything tidy, we are working in a folder specifically to store the runs. We are specifying the path in the call to `$fit()` rather than globally changing the working directory.
 
 ```{r}
-#| label: change_Runs
+#| eval: false
+run1 <- mod1$fit(data = exData, run = 1, overwrite = TRUE, path = "../Examples/Runs") 
+```
+
+The `r gh_help("PM_model")` class has a `$fit()` method that fits the model to the data.
+```{r}
 #| eval: true
 #| echo: false
-wd <- getwd() # save the current working directory
-knitr::opts_knit$set(root.dir = "../Examples/Runs") # change to the runs directory
+run1 <- NPex
 ```
-```{r}
-#| eval: true
-run1 <- mod1$fit(data = exData, run = 1, overwrite = TRUE, report = "none") 
-```
-
-**Note:** We suppressed the report in this tutorial, but if you copy the code into your own script, you can see the html summary report that is generated at the end of a run by removing the `report = "none"` argument.
 
 After the run is complete the results are returned to the assigned object, here 'run1'. However, if you want to load the results later, you can use the `PM_load()` function. Runs will be sequentially numbered as /1, /2, /3,... in your working directory.
 
 ```{r}
-run1 <- PM_load(1) # load the results from run 1 if returning to this script later
+#| eval: false
+run1 <- PM_load(1, path = "../Examples/Runs") # load the results from run 1 if returning to this script later
 ```
 
-```{r}
-#| eval: true
-#| echo: false
-knitr::opts_knit$set(root.dir = wd) # return to the original working directory
-```
-### Examine the results
-
-#### Data
-
-You can plot the original data using R6 with various options. Type ?plot.PM_data in the R console for help.
-
-```{r}
-#| eval: true
-run1$data$plot() %>% plotlygg() 
-```
-
-Remove the `%>% plotlygg()` portion in your own script or Quarto document to generate an interactive plot. Mouse over the points to get information. Try clicking one of the points to see what happens.
-
-Here's some nice grouping and coloring. If you use grouping, provide names in `group_names` and colors/symbols for each group as arguments to `marker`. Colors of lines will be set to the same as for `marker` to avoid a mess of colors.
-
-```{r}
-#| eval: true
-run1$data$plot(xlim = c(119, 146), group = "gender", group_names = c("Male", "Female"), 
-  marker = list(color = c("red","blue"), symbol = c("circle","triangle-up"))) %>% plotlygg()
-```
-
-The next one splits the data by subject but will not render easily in this document. You can interact with it in your own script or Quarto document.
-
-```{r}
-run1$data$plot(overlay = FALSE, xlim = c(119, 145))
-```
-
-The following are the older S3 method with `plot(...)` for the first two examples. You can use R6 or S3 for any Pmetrics object. We will focus on R6 as the more modern way.
-
-```{r}
-plot(run1$data)
-```
-
-Here's a summary of the original data file; `?summary.PM_data` for help.
-
-```{r}
-run1$data$summary()
-```
-
-#### Observed vs. Predicted (OP)
-
-You can plot observed vs. predicted data. Type `?plot.PMop` in the R console for help.
-
-```{r}
-#| eval: true
-run1$op$plot() %>% plotlygg()
-```
-
-As always, remove the `%>% plotlygg()` portion in your own script or Quarto document to generate an interactive plot. Below, you can see how to change the prediction type, regression line and color, and plotting symbol and color. Most plots in Pmetrics have `marker` and `line` list arguments to customize the appearance of the plotting symbols and lines.
-
-```{r}
-run1$op$plot(pred.type = "pop")
-run1$op$plot(line = list(lm = FALSE, loess = list(color = "red")), marker = list(symbol = 3, color = "green"))
-```
-
-Get a summary with bias and imprecision of the population predictions; `?summary.PMop` for help. The default `pred.type` is "post", which are the predictions based on the full Bayesian posterior distribution of parameter values for an individual. The predictions are the weighted mean or median (controlled by the `icen` argument in all Pmetrics functions) of the predictions from each support point in the individual's Bayesian posterior, joint probability parameter distribution, i.e. the support points in the posterior. Here we will look at the population predictions based on the means of the parameter values.
-
-```{r}
-run1$op$summary(pred.type = "pop", icen = "mean")
-```
-
-Since neither "pop" nor "mean" are the defaults, we have to specify them. We can also use the S3 method for the same summary below.
-
-```{r}
-summary(run1$op, pred.type = "pop", icen = "mean") # S3 method
-```
-
-As with any object in Pmetrics, the `PM_op` R6 object has fields and methods. Fields contain data and methods are functions that act on the data. All fields and methods are accessed with `$` added to the name of the object. For example, in a `PM_op` object and most other Pmetrics objects, the raw data can be accessed via the `$data` field.
-
-```{r}
-run1$op$data
-```
-
-Having the raw data provides a data frame compatible with any R function, particularly those from **Tidyverse** (see https://www.tidyverse.org/), including piping.
-
-This allows pre-processing in ways more flexible than the default plot method.
-
-```{r}
-library(tidyverse)
-run1$op$data %>% plot()
-run1$op$data %>%
-  filter(pred > 5) %>%
-  filter(pred < 10) %>%
-  summary()
-```
-
-See a header with the first 10 rows of the op object:
-
-```{r}
-head(run1$op$data, 10)
-```
-
-#### Final population joint density
-
-Plot the final population joint density. Type `?plot.PM_final` in the R console for help.
-
-```{r}
-run1$final$plot()
-```
-
-You can add a kernel density curve.
-
-```{r}
-run1$final$plot(line = list((color = "red")))
-#run1$final$data %>% plot() #this way will work too
-```
-
-It is possible to make a bivariate plot. Plotting formulae in R are of the form `y~x`
-
-```{r}
-run1$final$plot(ke ~ v,
-  marker = list(color = "red", symbol = "diamond"))
-```
-
-The original final object can be accessed with the `$data` field.
-
-```{r}
-run1$final$data
-names(run1$final$data)
-```
-
-See the population points:
-
-```{r}
-#| eval: true
-run1$final$popPoints
-```
-
-Or drill down one more level into the raw data. The `$final$popPoints` field above pulls its information from the `$final$data$popPoints` field below, but is provided as a simpler way to access the population points.
-
-```{r}
-run1$final$data$popPoints
-```
-
-See the population mean parameter values:
-
-```{r}
-#| eval: true
-run1$final$popMean
-```
-
-See a summary with confidence intervals around the medians and the Median Absolute Weighted Difference (MAWD); `?summary.PM_final` for help and further explanation.
-
-```{r}
-run1$final$summary()
-```
-
-#### Cycle information
-
-Plot cycle information; type `?plot.PM_cycle` in the R console for help.
-
-```{r}
-run1$cycle$plot()
-```
-
-Summarize the cycle information; `?summary.PM_cycle` for help.
-
-```{r}
-run1$cycle$summary()
-run1$cycle$data %>% summary()
-```
-
-Either one will work.
-
-#### Covariate information
-
-Plot covariate information; type `?plot.PM_cov` in the R console for help. Recall that plotting formulae in R are of the form `y~x`.
-
-```{r}
-run1$cov$plot(v ~ wt)
-```
-
-You can also use the raw data in the `$data` field to make plots with other R functions, including those from **Tidyverse**. Here we will filter the data for age \> 25 and then plot volume vs. weight.
-
-```{r}
-run1$cov$data %>%
-  filter(age > 25) %>%
-  plot(v ~ wt)
-```
-
-Change the formatting of the plot with the `line` and `marker` list arguments.
-
-```{r}
-run1$cov$plot(ke ~ age, line = list(loess = FALSE, lm = list(color = "red")),
-               marker = list(symbol = 3))
-```
-
-Another plot with mean Bayesian posterior parameter and covariate values...remember the `icen` argument?
-
-```{r}
-run1$cov$plot(v ~ wt, icen = "mean")
-```
-
-When `time` is the `x` variable, the `y` variable is aggregated by subject. In R plot formulae, calculations on the fly can be included using the `I()` function.
-
-```{r}
-run1$cov$plot(I(v * wt) ~ time)
-```
-
-The above plots the product of volume and weight vs. time for each subject.
-
-The previous cov object can be seen via `run1$cov`, which looks like a data frame, but is really an R6 `PM_cov` object whose `$print()` method returns a data frame. You can access the raw data with the `$data` field, which is truly a data frame.
-
-```{r}
-run1$cov$data[, 1:3] # for example
-run1$cov$data %>% filter(gender == 1) %>% summary() # using Tidyverse
-```
-
-Just as you have the option to plot by mean covariate and posterior parameter values, you can summarize with means; `?summary.PM_cov` for help.
-
-```{r}
-run1$cov$summary(icen = "mean")
-```
-
-This returns a data frame with the means of the individual's covariates over the observation period and the mean of the Bayesian posterior parameter values.
-
-When trying to find covariate-parameter relationships, it is convenient to examine at all possible covariate-parameter relationships by multiple linear regression with forward and backward elimination - type `?PM_step` in the R console for help.
-
-```{r}
-run1$step()
-```
-
-...or on the cov object directly.
-
-```{r}
-run1$cov$step()
-```
-
-`icen` works here too.
-
-```{r}
-run1$step(icen = "mean")
-```
-
-If you wish to see P values for forward elimination only:
-
-```{r}
-run1$step(direction = "forward")
-```

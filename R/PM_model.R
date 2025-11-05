@@ -428,6 +428,7 @@ PM_model <- R6::R6Class(
                 self$arg_list[[s]] <- x$arg_list[[s]]
               }
             })
+            self$arg_list$x <- NULL
             
           } else {
             cli::cli_abort(c("x" = "Non supported input for {.arg x}: {typeof(x)}",
@@ -452,19 +453,23 @@ PM_model <- R6::R6Class(
             }
           } # no, some arguments were not NULL, so keep going
           
+          msg <- NULL
+      
+          # check for reserved variable names
+          conflict_vars <- reserved_name_conflicts(self$arg_list)
+          if (length(conflict_vars) > 0) {
+            msg <- "The following {?is a/are} reserved name{?s} and cannot be used as {?a variable/variables} in the model: {.var {conflict_vars}}."
+          }
           
           # Primary parameters must be provided
           if (is.null(self$arg_list$pri)) {
-            cli::cli_abort(
-              c("x" = "Primary parameters are missing.", "i" = "Please provide a list of primary parameters.")
-            )
+            msg <- c(msg, "Primary parameters are missing.")
           }
           
           
           # Either an ODE-based model or an analytical model must be provided in eqn
           if (is.null(self$arg_list$eqn)){
-            cli::cli_abort(c("x" = "No equations or template provided.", 
-            "i" = "Please provide either a template (see {.help model_lib()}) or differential equations using {.code eqn}."))
+            msg <- c(msg, "No equations or template provided. Please provide either a template (see {.help model_lib}) or differential equations.")
           }
           
           
@@ -478,10 +483,7 @@ PM_model <- R6::R6Class(
           } else {
             if(model_template == -1){
               # length was 1, value 0
-              cli::cli_abort(c(
-                "x" = "You have included  more than one model template.",
-                "i" = "A maximum of one model template can be included in a model."
-              ))
+              msg <- c(msg, "A maximum of one model template can be included in a model.")
             }
             
             # length was 1, value 0
@@ -588,11 +590,11 @@ PM_model <- R6::R6Class(
             
             if (any(!all_lists$ok)) {
               missing <- all_lists$parameter[!all_lists$ok]
-              cli::cli_abort(
-                c("x" = "The following parameters are required for the {.code {model_template$name}} model template but are missing: {missing}",
-                "i" = "They should be defined in one of the model blocks, likely {.code pri}, {.code sec}, {.code eqn}, or {.code out}.",
-                " " = "Parameters defined in {.code pri} and {.code sec} are available to all blocks.",
-                " " = "Parameters defined in other blocks are only available to that block."))
+              msg <- c(msg,
+               "The following parameters are required for the {.code {model_template$name}} model template but are missing: {missing}",
+                "They should be defined in one of the model blocks, likely {.code pri}, {.code sec}, {.code eqn}, or {.code out}.",
+                "Parameters defined in {.code pri} and {.code sec} are available to all blocks.",
+                "Parameters defined in other blocks are only available to that block.")
               }
             } # end parameter checks for Analytical model
             
@@ -614,6 +616,7 @@ PM_model <- R6::R6Class(
             # sec
             # still needed for analytic, because these equations will be used
             # in other blocks
+            
             if (!is.null(self$arg_list$sec)){
               sec <- transpile_sec(self$arg_list$sec)
             } else {
@@ -658,18 +661,12 @@ PM_model <- R6::R6Class(
             
             # err
             if(is.null(self$arg_list$err)) {
-              cli::cli_abort(
-                c("x" = "Error model is missing and required.", 
-                "i" = "Please see help for {.help PM_model()}.")
-              )
+              msg <- c(msg, "Error model is missing and required.")
             }
             
             #ensure length err matches length outeqs
             if (length(self$arg_list$err) != n_out) {
-              cli::cli_abort(
-                c("x" = "There must be one error model for each output equation.", 
-                "i" = "Please check the error model.")
-              )
+              msg <- c(msg, "There must be one error model for each output equation.")
             }
             err <- self$arg_list$err
             
@@ -704,7 +701,11 @@ PM_model <- R6::R6Class(
             # this one needs to be capital
             self$model_list$type <- type
             
-            
+            # there were error messages
+            if (length(msg) > 0) {
+              cli::cli_abort(msg)
+            }
+      
             extra_args <- list(...)
             if (!is.null(purrr::pluck(extra_args, "compile"))){
               if (extra_args$compile) {
@@ -714,7 +715,7 @@ PM_model <- R6::R6Class(
               self$compile()
             }
             
-          },
+    },
           
           #' @description
           #' Print the model summary.
@@ -1141,7 +1142,7 @@ PM_model <- R6::R6Class(
                   prior <- "sobol"
                 }
                 
-    
+                
                 
                 # get bolus info
                 if (self$model_list$name != "user"){ # library model
@@ -1359,19 +1360,9 @@ PM_model <- R6::R6Class(
                   msg <- ""
                   blocks <- parseBlocks(file) # this function is in PMutilities
                   # check for reserved variable names
-                  reserved <- c(
-                    "t",
-                    "x",
-                    "dx",
-                    "p",
-                    "rateiv",
-                    "cov",
-                    "y"
-                  )
-                  conflict <- c(match(tolower(blocks$primVar), reserved, nomatch = -99), match(tolower(blocks$secVar), reserved, nomatch = -99), match(tolower(blocks$covar), reserved, nomatch = -99))
-                  nconflict <- sum(conflict != -99)
-                  if (nconflict > 0) {
-                    msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
+                  conflicts <- reserved_name_conflicts(blocks)
+                  if (length(conflicts) > 0) {
+                    msg <- glue::glue("The following are reserved names and cannot be used as variables in a model: {paste(conflicts, collapse = ', ')}")
                     return(list(status = -1, msg = msg))
                   }
                   
@@ -1498,15 +1489,7 @@ PM_model <- R6::R6Class(
                       if (length(outputLines) == 0) {
                         return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y[1] = ...'\n"))
                       }
-                      # otherLines <- (1:n_outputLines)[!(1:n_outputLines) %in% outputLines] # find other lines
-                      # if (length(otherLines) > 0) {
-                      #   arg_list$sec <- c(arg_list$sec, blocks$output[otherLines]) # append to #sec block
-                      # }
-                      # output <- blocks$output[outputLines]
-                      # remParen <- stringr::str_replace(blocks$output, regex("Y(?:\\[|\\()(\\d+)(?:\\]|\\))", ignore_case = TRUE), "Y\\1")
-                      # diffeq <- stringr::str_split(remParen, "\\s*=\\s*")
-                      # diffList <- sapply(diffeq, function(x) x[2])
-                      # num_out <- length(diffList)
+                      
                       
                       arg_list$out <- eval(parse(text = glue::glue("function() {{\n  {paste(blocks$out, collapse = '\n  ')}\n}}")))
                       

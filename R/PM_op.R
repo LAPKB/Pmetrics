@@ -130,23 +130,29 @@ PM_op <- R6::R6Class(
 private = list(
   make = function(data, path) {
     if (file.exists(file.path(path, "pred.csv"))) {
-      op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), col_types = "cdiidcdddd") %>% filter(!is.na(obs))
-
+      op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), show_col_types = FALSE) %>% filter(!is.na(obs))
+      
       if(!"censoring" %in% names(op_raw)){
         op_raw <- op_raw %>% mutate(censoring = "none") # if cens column missing, assume all observed
       } 
-    } else if (inherits(data, "PM_op")) { # file not there, and already PM_op
+      
+      op_raw <- op_raw %>% dplyr::rename(cens = censoring)
+
+    } else if (inherits(data, "PM_op") & !is.null(data$data)) { # file not there, and already PM_op
+      if(!"cens" %in% names(data$data)){
+        data$data <- data$data %>% mutate(cens = "none") # if cens column missing, assume all observed
+      } 
       class(data$data) <- c("PM_op_data", "data.frame")
       return(data$data)
     } else {
       cli::cli_warn(c(
         "!" = "Unable to generate obs-pred information.",
-        "i" = "Result does not have valid {.code PM_op} object, and {.file {file.path(path, 'pred.csv')} does not exist."
+        "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_op} object ."
       ))
       return(NULL)
     }
-
-    op_raw <- op_raw %>% dplyr::rename(cens = censoring) 
+    
+    
     
     if (file.exists(file.path(path, "settings.json"))) {
       config <- jsonlite::fromJSON(file.path(path, "settings.json"))
@@ -156,7 +162,7 @@ private = list(
     } else {
       cli::cli_warn(c(
         "!" = "Unable to generate obs-pred information.",
-        "i" = "Result does not have valid {.code PM_op} object, and {.file {file.path(path, 'settings.json')} does not exist."
+        "i" = "{.file {file.path(path, 'settings.json')}} does not exist, and result does not have valid {.code PM_op} object."
       ))
       return(NULL)
     }
@@ -489,11 +495,10 @@ plot.PM_op <- function(x,
       } else { # anchor is x axis
         layout$yaxis <- modifyList(layout$yaxis, list(matches = "x"))
       }
-     
+      
       # Split into traces
       traces <- sub1 %>%
       dplyr::group_split(id)
-      
       
       # Build plot
       p <- plot_ly()
@@ -507,16 +512,19 @@ plot.PM_op <- function(x,
         rowwise() %>%
         mutate(
           text_label = dplyr::case_when(
-            cens == "bloq" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nBLOQ: {round2(obs)}"),
-            cens == "none" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nObs: {round2(obs)}"),
-            cens == "aloq" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nALOQ: {round2(obs)}")
+            cens == "bloq" | cens == "1" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nBLOQ: {round2(obs)}"),
+            cens == "none" | cens == "0" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nObs: {round2(obs)}"),
+            cens == "aloq" | cens == "-1" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nALOQ: {round2(obs)}"),
+            .default = glue::glue("ID: {group_name}\nPred: {round2(pred)}\nObs: {round2(obs)}")
           ),
           color = dplyr::if_else(cens != "none", opposite_color(marker$color, degrees = 90), marker$color),
           symbol = dplyr::case_when(
-            cens == "bloq" ~ "triangle-down", 
-            cens == "none" ~ marker$symbol,
-            cens == "aloq" ~ "triangle-up"),
-          opacity = dplyr::if_else(cens != "none", 1, marker$opacity)
+            cens == "bloq" | cens == "1" ~ "triangle-down", 
+            cens == "none" | cens == "0" ~ as.character(marker$symbol),
+            cens == "aloq" | cens == "-1" ~ "triangle-up",
+            .default = as.character(marker$symbol)
+          ),
+          opacity = dplyr::if_else(cens != "none" & cens != "0", 1, marker$opacity)
         ) %>% ungroup()
         p <- add_trace(
           p,
@@ -556,7 +564,7 @@ plot.PM_op <- function(x,
           ci <- loessLine$ci
           loessLine$ci <- NULL # remove to allow only formatting arguments below
         }
-        p <- p %>% add_smooth(data = sub1 %>% filter(cens == "none"), x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
+        p <- p %>% add_smooth(data = sub1 %>% filter(cens == "none" | cens == "0"), x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
       }
       
       if (refLine$plot) { # reference line
@@ -600,7 +608,7 @@ plot.PM_op <- function(x,
       # amend xaxis title later
       
       # Split into traces
-      traces <- sub1 %>% filter(cens == "none") %>%
+      traces <- sub1 %>% filter(cens == "none" | cens == "0") %>%
       group_split(id)
       
       
@@ -925,6 +933,7 @@ plot.PM_op <- function(x,
   #' @method print summary.PM_op
   #' @param x An object made by [summary.PM_op].
   #' @param digits Integer, used for number of digits to print.
+  #' @param embed If `TRUE`, will embed the summary in the R Markdown document. Default is `FALSE`.
   #' @param ... Not used.
   #' @return A printed object.
   #' @author Michael Neely
@@ -935,7 +944,7 @@ plot.PM_op <- function(x,
   #' }
   #' @export
   
-  print.summary.PM_op <- function(x, digits = getPMoptions("digits"), ...) {
+  print.summary.PM_op <- function(x, digits = getPMoptions("digits"), embed = FALSE, ...) {
     printSumWrk <- function(data, dataname) {
       
       # Summary statistics
@@ -978,15 +987,19 @@ plot.PM_op <- function(x,
     # function to print the summary
     if (!all(is.na(x$pe))) {
       obj <- printSumWrk(x, "")
-      temp <- tempdir()
-      rmarkdown::render(
-        input = glue::glue(here::here(),"/inst/report/templates/summary_op.Rmd"),
+      temp <- if (embed) {"images"} else {tempdir()} # will embed in Quarto document
+     
+      out <- rmarkdown::render(
+        input = system.file("report/templates/summary_op.Rmd", package = "Pmetrics"),
         output_file = "summary_op.html",
         output_dir = temp,
         params = list(object = obj),
         quiet = TRUE
       )
-      suppressWarnings(htmltools::html_print(htmltools::includeHTML(glue::glue("{temp}/summary_op.html"))))
+      
+      if (!embed){
+        suppressWarnings(htmltools::html_print(htmltools::includeHTML(out)))
+      }
       return(invisible(NULL))
       
     } else {
