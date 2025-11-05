@@ -79,7 +79,5 @@ target/
 1
 2
 3
-
-docs
-
 Cargo.lock
+docs/

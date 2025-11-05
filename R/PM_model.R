@@ -1723,7 +1723,7 @@ PM_model <- R6::R6Class(
                 #' @examples
                 #' \dontrun{
                 #' cov = c(
-                #'   wt = interp() # same as interp("lm") or interp("linear")
+                #'   wt = interp(), # same as interp("lm") or interp("linear")
                 #'   visit = interp("none")
                 #' )
                 #' }
