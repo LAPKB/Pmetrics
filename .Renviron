@@ -1,3 +1,1 @@
 env=Development
-R_LIBS_USER="C:/Users/mnnee/Documents/R/win-library/4.5"
-PATH="${PATH};C:\\Users\\mnnee\\.cargo\\bin"
