@@ -454,11 +454,11 @@ PM_model <- R6::R6Class(
           } # no, some arguments were not NULL, so keep going
           
           msg <- NULL
-      
+          
           # check for reserved variable names
           conflict_vars <- reserved_name_conflicts(self$arg_list)
           if (length(conflict_vars) > 0) {
-            msg <- "The following {?is a/are} reserved name{?s} and cannot be used as {?a variable/variables} in the model: {.var {conflict_vars}}."
+            msg <- "The following {?is a/are} reserved name{?s} and cannot be used as {?a variable or covariate/variables or covariates} in the model: {.var {conflict_vars}}."
           }
           
           # Primary parameters must be provided
@@ -591,7 +591,7 @@ PM_model <- R6::R6Class(
             if (any(!all_lists$ok)) {
               missing <- all_lists$parameter[!all_lists$ok]
               msg <- c(msg,
-               "The following parameters are required for the {.code {model_template$name}} model template but are missing: {missing}",
+                "The following parameters are required for the {.code {model_template$name}} model template but are missing: {missing}",
                 "They should be defined in one of the model blocks, likely {.code pri}, {.code sec}, {.code eqn}, or {.code out}.",
                 "Parameters defined in {.code pri} and {.code sec} are available to all blocks.",
                 "Parameters defined in other blocks are only available to that block.")
@@ -700,12 +700,16 @@ PM_model <- R6::R6Class(
             
             # this one needs to be capital
             self$model_list$type <- type
+         
             
-            # there were error messages
-            if (length(msg) > 0) {
-              cli::cli_abort(msg)
+            # Abort if errors 
+            if (length(msg) > 0){
+              
+              cli::cli_alert_danger("{.strong PM_model$new() aborted due to {length(msg)} error{?s}:}")
+              purrr::walk(msg, \(m) cli::cli_bullets(c("*" = m)))
+              return(invisible(NULL))
             }
-      
+            
             extra_args <- list(...)
             if (!is.null(purrr::pluck(extra_args, "compile"))){
               if (extra_args$compile) {
@@ -715,7 +719,7 @@ PM_model <- R6::R6Class(
               self$compile()
             }
             
-    },
+          },
           
           #' @description
           #' Print the model summary.
@@ -953,16 +957,19 @@ PM_model <- R6::R6Class(
               algorithm = "NPAG", #POSTPROB for posteriors, select when cycles = 0, allow for "NPOD"
               report = getPMoptions("report_template")) {
                 
-                msg <- "" # status message at end of run
+                msg <- NULL # status message at end of run
+                run_error <- 0
                 
                 path <- stringr::str_replace(path, "/$", "") # remove trailing /
                 
                 if (is.null(data)) {
-                  cli::cli_abort(c("x" = " {.arg data} must be specified."))
+                  msg <- c(msg, " {.arg data} must be specified.")
+                  run_error <- run_error + 1
                 }
                 
                 if (is.null(self$model_list)) {
-                  cli::cli_abort(c("x" = "Model is malformed."))
+                  msg <- c(msg, "Model is malformed.")
+                  run_error <- run_error + 1
                 }
                 
                 if (is.character(data)) {
@@ -973,14 +980,33 @@ PM_model <- R6::R6Class(
                 if (!inherits(data, "PM_data")) {
                   data <- tryCatch({
                     PM_data$new(data)
-                  }, error = function(e) {
-                    cli::cli_abort(
-                      c("x" = "{.code data} must be a {.cls PM_data} object or an appropriate data frame.", "i" = "See help for {.fn Pmetrics::PM_data}.")
-                    )
-                  })
+                  }, error = function(e) {-1})
+                  
+                  if (!inherits(data, "PM_data")){
+                    msg <- c(msg, "{.arg data} must be a {.cls PM_data} object or an appropriate data frame.")
+                    run_error <- run_error + 1
+                  }
                 }
                 
                 #### checks
+                
+                # bolus and infusions
+                bolus <- unique(data$standard_data$input[data$standard_data$dur == 0]) %>% purrr::discard(~is.na(.x))
+                infusion <- unique(data$standard_data$input[data$standard_data$dur > 0]) %>% purrr::discard(~is.na(.x))
+                if (length(bolus) > 0){
+                  missing_bolus <- bolus[!stringr::str_detect(self$model_list$eqn, paste0("b\\[", bolus-1))]
+                  if (length(missing_bolus) > 0) {
+                    msg <- c(msg, "Bolus input(s) {paste(missing_bolus, collapse = ', ')} {?is/are} missing from the model equations. Use {.code b[{missing_bolus}]} or {.code bolus[{missing_bolus}]}, for example, to represent bolus inputs in the equations.")
+                    run_error <- run_error + 1
+                  }
+                }
+                if (length(infusion) > 0){
+                  missing_infusion <- infusion[!stringr::str_detect(self$model_list$eqn, paste0("rateiv\\[", infusion-1))]
+                  if (length(missing_infusion) > 0) {
+                    msg <- c(msg, "Infusion input(s) {paste(missing_infusion, collapse = ', ')} {?is/are} missing from the model equations. Use {.code r[{missing_infusion}]} or {.code rateiv[{missing_infusion}]} , for example, to represent infusion inputs in the equations.")
+                    run_error <- run_error + 1
+                  }
+                }
                 
                 # covariates
                 modelCov <- self$model_list$cov
@@ -988,15 +1014,16 @@ PM_model <- R6::R6Class(
                   dataCov <- tolower(getCov(data)$covnames)
                   missingCov <- modelCov[!modelCov %in% dataCov]
                   if (length(missingCov) > 0) { # if not identical, abort
-                    msg <- glue::glue("{paste(modelCov, collapse = ', ')} {?is/are} missing from the data.")
-                    cli::cli_abort(c("x" = msg))
+                    msg <- c(msg, "{.arg {modelCov}} {?is/are} missing from the data.")
+                    run_error <- run_error + 1
                   }
                 }
                 
                 # cycles
                 # if programmer is a crazy Norwegian....
                 if (cycles < 0){
-                  cli::cli_abort(c("x" = "Error: {.arg cycles} must be 0 or greater.", "i" = "See {.code $fit()} method for {.help PM_model}."))
+                  msg <- c(msg, "Error: {.arg cycles} must be 0 or greater.")
+                  run_error <- run_error + 1
                 }
                 
                 # output equations
@@ -1009,6 +1036,91 @@ PM_model <- R6::R6Class(
                 
                 modelOut <- self$model_list$n_out
                 
+                
+                
+                
+                
+                #### Algorithm ####
+                algorithm <- toupper(algorithm)
+                if (cycles == 0) {
+                  if (prior == "sobol") {
+                    msg <- c(msg, "Cannot use {.code prior = 'sobol'} with {.code cycles = 0}.")
+                    run_error <- run_error + 1
+                  }
+                  algorithm <- "POSTPROB"
+                } else {
+                  if (!(algorithm %in% c("NPAG", "NPOD"))) {
+                    msg <- c(msg, "Unsupported algorithm. Supported algorithms are 'NPAG' and 'NPOD'.")
+                    run_error <- run_error + 1
+                  }
+                }
+                if (algorithm == "POSTPROB" && cycles > 0) {
+                  msg <- c(msg, "Warning: {.code algorithm = 'POSTPROB'} is used with {.code cycles = 0}. {.code cycles} set to 0.")
+                  cycles <- 0
+                }
+                
+                
+                
+                if (getPMoptions()$backend != "rust") {
+                  cli::cli_abort(c("x" = "Error: unsupported backend.", "i" = "See help for {.fn setPMoptions}"))
+                }
+                
+                #### Include or exclude subjects ####
+                if (is.null(include)) {
+                  include <- unique(data$standard_data$id)
+                }
+                if (is.null(exclude)) {
+                  exclude <- NA
+                }
+                data_filtered <- data$standard_data %>% includeExclude(include, exclude)
+                
+                if (nrow(data_filtered) == 0) {
+                  msg <- c(msg, "No subjects remained after filtering.")
+                  run_error <- run_error + 1
+                }
+                
+                # set prior
+                if (prior != "sobol") {
+                  if (is.numeric(prior)) {
+                    # prior specified as a run number
+                    if (!file.exists(glue::glue("{path}/{prior}/outputs/theta.csv"))) {
+                      msg <- c(msg, "{.arg prior} file does not exist.", "i" = "Check the file path.")
+                      run_error <- run_error + 1
+                    }
+                    file.copy(glue::glue("{path}/{prior}/outputs/theta.csv"), "prior.csv", overwrite = TRUE)
+                    prior <- "prior.csv"
+                  } else if (is.character(prior)) {
+                    # prior specified as a filename
+                    if (!file.exists(prior)) {
+                      msg <- c(msg, "{.arg prior} file does not exist.")
+                      run_error <- run_error + 1
+                    }
+                    file.copy(prior, "prior.csv", overwrite = TRUE) # ensure in current working directory
+                  } else if (is.data.frame(prior)){
+                    # prior specified as a data frame
+                    if (!all(c("prob", self$model_list$parameters) %in% names(prior))) {
+                      msg <- c(msg, "{.arg prior} data frame must contain columns for parameters and probabilities.")
+                      run_error <- run_error + 1
+                    }
+                    prior <- prior %>% dplyr::select(all_of(self$model_list$parameters), prob)
+                    write.csv(prior, "prior.csv", row.names = FALSE)
+                    
+                  } else {
+                    msg <- c(msg, "{.arg prior} must be a numeric run number or character filename.")
+                    run_error <- run_error + 1
+                  }
+                } else {
+                  prior <- "sobol"
+                }
+                
+                #### Abort if errors before creating new folder ####
+                if (run_error > 0){
+                  
+                  cli::cli_alert_danger("{.strong PM_model$fit() aborted due to {run_error} error{?s}:}")
+                  purrr::walk(msg, \(m) cli::cli_bullets(c("*" = m)))
+                  return(invisible(NULL))
+                }
+                #### Continue with fit ####
                 
                 # check if model compiled and if not, do so
                 self$compile()
@@ -1029,7 +1141,7 @@ PM_model <- R6::R6Class(
                   }
                 } else {
                   if (!is.numeric(run)) {
-                    cli::cli_abort(c("x" = " {.arg run} must be numeric."))
+                    msg <- c(msg, "{.arg run} must be numeric, so was ignored.")
                   } 
                 }
                 
@@ -1048,44 +1160,6 @@ PM_model <- R6::R6Class(
                 }
                 
                 fs::dir_create(path_run)
-                
-                
-                #### Algorithm ####
-                algorithm <- toupper(algorithm)
-                if (cycles == 0) {
-                  if (prior == "sobol") {
-                    cli::cli_warn(c("!" = "Error: Cannot use {.code prior = 'sobol'} with {.code cycles = 0}.", "i" = "Use a prior from a previous run."))
-                  }
-                  algorithm <- "POSTPROB"
-                } else {
-                  if (!(algorithm %in% c("NPAG", "NPOD"))) {
-                    cli::cli_abort(c("x" = "Error: Unsupported algorithm.", "i" = "Supported algorithms are 'NPAG' and 'NPOD'."))
-                  }
-                }
-                if (algorithm == "POSTPROB" && cycles > 0) {
-                  cli::cli_warn(c("!" = "Warning: {.code algorithm = 'POSTPROB'} is used with {.code cycles = 0}.", "i" = "Continuing with {.code cycles = 0}."))
-                  cycles <- 0
-                }
-                
-                
-                
-                if (getPMoptions()$backend != "rust") {
-                  cli::cli_abort(c("x" = "Error: unsupported backend.", "i" = "See help for {.fn setPMoptions}"))
-                }
-                
-                #### Include or exclude subjects ####
-                if (is.null(include)) {
-                  include <- unique(data$standard_data$id)
-                }
-                if (is.null(exclude)) {
-                  exclude <- NA
-                }
-                data_filtered <- data$standard_data %>% includeExclude(include, exclude)
-                
-                if (nrow(data_filtered) == 0) {
-                  cli::cli_abort("x" = "No subjects remain after filtering.")
-                  return(invisible(NULL))
-                }
                 
                 #### Save input objects ####
                 fs::dir_create(normalizePath(file.path(path_run, "inputs"), mustWork = FALSE))
@@ -1110,50 +1184,20 @@ PM_model <- R6::R6Class(
                 
                 
                 
-                # set prior
-                if (prior != "sobol") {
-                  if (is.numeric(prior)) {
-                    # prior specified as a run number
-                    if (!file.exists(glue::glue("{path}/{prior}/outputs/theta.csv"))) {
-                      cli::cli_abort(c("x" = "Error: {.arg prior} file does not exist.", "i" = "Check the file path."))
-                    }
-                    file.copy(glue::glue("{path}/{prior}/outputs/theta.csv"), "prior.csv", overwrite = TRUE)
-                    prior <- "prior.csv"
-                  } else if (is.character(prior)) {
-                    # prior specified as a filename
-                    if (!file.exists(prior)) {
-                      cli::cli_abort(c("x" = "Error: {.arg prior} file does not exist.", "i" = "Check the file path."))
-                    }
-                    file.copy(prior, "prior.csv", overwrite = TRUE) # ensure in current working directory
-                  } else if (is.data.frame(prior)){
-                    # prior specified as a data frame
-                    if (!all(c("prob", self$model_list$parameters) %in% names(prior))) {
-                      cli::cli_abort(c("x" = "Error: {.arg prior} data frame must contain columns for parameters and probabilities.", "i" = "Check the data frame."))
-                    }
-                    prior <- prior %>% dplyr::select(all_of(self$model_list$parameters), prob)
-                    write.csv(prior, "prior.csv", row.names = FALSE)
-                    
-                  } else {
-                    cli::cli_abort(
-                      c("x" = "Error: {.arg prior} must be a numeric run number or character filename.", "i" = "Check the value.")
-                    )
-                  }
-                } else {
-                  prior <- "sobol"
-                }
                 
                 
                 
-                # get bolus info
-                if (self$model_list$name != "user"){ # library model
-                  bolus_models <- model_lib(show = FALSE) %>% filter(stringr::str_detect(Compartments, "Bolus")) %>% pull(Name)
-                  bolus <- ifelse(self$model_list$name %in% bolus_models, 1, NA) # may need to generalize if models with multiple bolus compartments are added
-                } else { # user model
-                  eqns <- func_to_char(self$arg_list$eqn)
-                  bolus_comps <- stringr::str_which(eqns, stringr::regex("(b|bolus)\\[\\d+\\]", ignore_case = TRUE))
-                  bolus_inputs <- as.integer(stringr::str_match(eqns[bolus_comps], stringr::regex("(b|bolus)\\[(\\d+)\\]", ignore_case = TRUE))[,3])
-                  
-                }
+                
+                # # get bolus info
+                # if (self$model_list$name != "user"){ # library model
+                #   bolus_models <- model_lib(show = FALSE) %>% filter(stringr::str_detect(Compartments, "Bolus")) %>% pull(Name)
+                #   bolus <- ifelse(self$model_list$name %in% bolus_models, 1, NA) # may need to generalize if models with multiple bolus compartments are added
+                # } else { # user model
+                #   eqns <- func_to_char(self$arg_list$eqn)
+                #   bolus_comps <- stringr::str_which(eqns, stringr::regex("(b|bolus)\\[\\d+\\]", ignore_case = TRUE))
+                #   bolus_inputs <- as.integer(stringr::str_match(eqns[bolus_comps], stringr::regex("(b|bolus)\\[(\\d+)\\]", ignore_case = TRUE))[,3])
+                
+                # }
                 
                 
                 if (intern) {

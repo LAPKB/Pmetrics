@@ -429,7 +429,12 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
     conflicts <- purrr::map(blocks, \(b) {
       purrr::map_chr(reserved, \(r) {
         if (is.function(b)) { b <- func_to_char(b) }
-        con_match <- stringr::str_detect(tolower(b), paste0("^",r, "\\s+[=<]"))
+        if (is.list(b)) { 
+          b <- names(b) 
+          con_match <- stringr::str_detect(tolower(b), paste0("^",r))
+        } else {
+          con_match <- stringr::str_detect(tolower(b), paste0("^",r, "\\s+[=<]"))
+        }
         if (any(con_match)) {
           return(r)
         } else {
