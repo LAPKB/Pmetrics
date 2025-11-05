@@ -4,6 +4,12 @@ format: html
 ---
 
 You must always load the Pmetrics library first.
+```{r}
+#| eval: false
+#| echo: true
+library(Pmetrics)
+```
+
 
 ```{r}
 #| eval: true
@@ -16,19 +22,27 @@ devtools::load_all()
 
 ### Working directory
 
-You must always tell R where your working directory is going to be. This is the directory where R expects to find files and where it will save output files. You can set your working directory with the `setwd()` function.
+You must always tell R where your working directory is going to be. This is the directory where R expects to find files and where it will save output files. You can set your working directory with the `setwd()` function. However, you can also set the path in a variable and use it in Pmetrics functions.
 
 Windows users: Make sure that you separate directories with a forward slash "/" or double backslashes "\\". Unfortunately, Windows is the only OS that uses backslashes "", so R conforms to Unix/Linux style with the forward slash. If you copy the example below, make sure to change the path to one that exists on your computer.
 
 ```{r}
+#| eval: false
+#| echo: true
+
 # change the path to one that exists on your computer
 setwd("/path/to/your/project/directory") # Mac and Linux users
 setwd("C:/path/to/your/project/directory") # Windows users
+
+# or set the path in a variable
+wd <- "/path/to/your/project/directory" # Mac and Linux users
+wd <- "C:/path/to/your/project/directory" # Windows users
+
 ```
 
 ### Data objects
 
-Pmetrics always needs data and a model to run, so let's create a new data object. We will set the limit of quantification (loq) to 1. See ?PM_data for help.
+Pmetrics always needs data and a model to run, so let's create a new data object. See ?PM_data for help.
 
 ```{r}
 #| eval: true

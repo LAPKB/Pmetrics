@@ -69,7 +69,7 @@ parameter means and medians
 \subsection{Method \code{new()}}{
 Create new object populated with covariate-parameter information
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_cov$new(PMdata, path = ".", ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_cov$new(PMdata = NULL, path = ".", ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

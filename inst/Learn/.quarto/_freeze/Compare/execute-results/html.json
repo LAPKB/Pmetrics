@@ -2,7 +2,7 @@
   "hash": "24b7ed59d21ca92c0ada2b08604d880d",
   "result": {
     "engine": "knitr",
-    "markdown": "::: {.cell}\n\n:::\n\n\n\n\n\n\n# Comparing models \n\nLet's compare model 1 and model 2.   You can compare any number of models. Type `?PM_compare` for help. All models must already be loaded either with `PM_load` or assigning the result of `$fit`, e.g., `run1 <- mod1$fit(...)`.\n\n\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\nPM_compare(run1, run2)\n```\n:::\n\n\n\n\n\nThis will open an html window in your browser with detailed comparisons between the models.\n",
+    "markdown": "::: {.cell}\n\n:::\n\n\n\n\n\n# Comparing models \n\nLet's compare model 1 and model 2.   You can compare any number of models. Type `?PM_compare` for help. All models must already be loaded either with `PM_load` or assigning the result of `$fit`, e.g., `run1 <- mod1$fit(...)`.\n\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\nPM_compare(run1, run2)\n```\n:::\n\n\n\n\nThis will open an html window in your browser with detailed comparisons between the models.\n",
     "supporting": [],
     "filters": [
       "rmarkdown/pagebreak.lua"

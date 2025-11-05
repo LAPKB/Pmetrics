@@ -56,7 +56,7 @@ PM_cov <- R6::R6Class(
     #' @param PMdata include `r template("PMdata")`.
     #' @param path include `r template("path")`.
     #' @param ... Not currently used.
-    initialize = function(PMdata, path = ".", ...) {
+    initialize = function(PMdata = NULL, path = ".", ...) {
       self$data <- private$make(PMdata, path)
     },
     #' @description
@@ -97,13 +97,13 @@ PM_cov <- R6::R6Class(
     make = function(data, path) {
       if (file.exists(file.path(path, "posterior.csv"))) {
         posts <- readr::read_csv(file = file.path( path, "posterior.csv"), show_col_types = FALSE)
-      } else if (inherits(data, "PM_cov")) { # file not there, and already PM_cov
+      } else if (inherits(data, "PM_cov") & !is.null(data$data)) { # file not there, and already PM_cov
         class(data$data) <- c("PM_cov_data", "data.frame")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate covariate-posterior information.",
-          "i" = "Result does not have valid {.code PM_cov} object, and {.file {file.path(path, 'posterior.csv')} does not exist."
+          "i" = "{.file {file.path(path, 'posterior.csv')}} does not exist, and result does not have valid {.code PM_cov} object."
         ))
         return(NULL)
       }
@@ -116,7 +116,7 @@ PM_cov <- R6::R6Class(
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate covariate-posterior information.",
-          "i" = "Result does not have valid {.code PM_cov} object, and {.file {file.path(path, 'covs.csv')} does not exist."
+          "i" = "{.file {file.path(path, 'covs.csv')}} does not exist, and result does not have valid {.code PM_cov} object."
         ))
         return(NULL)
       }

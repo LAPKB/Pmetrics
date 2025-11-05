@@ -94,13 +94,13 @@ private = list(
   make = function(data, path) {
     if (file.exists(file.path(path, "pred.csv"))) {
       op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), col_types = "cdiidcdddd") 
-    } else if (inherits(data, "PM_pop")) { # file not there, and already PM_pop
+    } else if (inherits(data, "PM_pop") & !is.null(data$data)) { # file not there, and already PM_pop
       class(data$data) <- c("PM_pop_data", "data.frame")
       return(data$data)
     } else {
       cli::cli_warn(c(
         "!" = "Unable to generate pop pred information.",
-        "i" = "Result does not have valid {.code PM_pop} object, and {.file {file.path(path, 'pred.csv')} does not exist."
+        "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_pop} object."
       ))
       return(NULL)
     }

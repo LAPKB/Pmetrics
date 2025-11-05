@@ -95,13 +95,13 @@ PM_post <- R6::R6Class(
     make = function(data, path) {
     if (file.exists(file.path(path, "pred.csv"))) {
       op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), col_types = "cdiidcdddd") 
-      } else if (inherits(data, "PM_post")) { # file not there, and already PM_post
+      } else if (inherits(data, "PM_post") & !is.null(data$data)) { # file not there, and already PM_post
         class(data$data) <- c("PM_post_data", "data.frame")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate post pred information.",
-        "i" = "Result does not have valid {.code PM_post object, and {.file {file.path(path, 'pred.csv')} does not exist."
+        "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_post} object."
         ))
         return(NULL)
       }

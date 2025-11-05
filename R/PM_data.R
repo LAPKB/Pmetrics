@@ -373,8 +373,19 @@ private = list(
     }
     
     if (!"cens" %in% dataNames) {
-      dataObj$cens <- ifelse(is.na(dataObj$out), NA, 0)
+      dataObj$cens <- ifelse(is.na(dataObj$out), NA, "none")
       msg <- c(msg, "All observations assumed to be uncensored.\n")
+    } 
+    
+    if (is.numeric(dataObj$cens)) {
+      dataObj$cens <- ifelse(is.na(dataObj$out), NA,
+        dplyr::case_when(
+          dataObj$cens == 0 ~ "none",
+          dataObj$cens == 1 ~ "bloq",
+          dataObj$cens == -1 ~ "aloq",
+          TRUE ~ "none"
+        )
+      )
     }
     
     errorCoef <- c("c0", "c1", "c2", "c3")
@@ -691,7 +702,6 @@ return(temp)
 #'  * All columns must be numeric except ID which may be alpha-numeric.
 #'  * All subjects must have at least one observation, which could be missing, i.e. -99.
 #'  * Cells which are not needed (e.g. dose on an observation event, EVID=0), should contain ".".
-#'  * Doses are not censored. This will generate a warning, not an error.
 #'
 #' To use this function, see the example below.
 #'
@@ -892,9 +902,7 @@ errcheck <- function(data2, quiet, source) {
     contigID = list(msg = "OK - All subject IDs are contiguous.", results = NA, col = 1, code = 12),
     nonNum = list(msg = "OK - All columns that must be numeric are numeric.", results = NA, col = NA, code = 13),
     noObs = list(msg = "OK - All subjects have at least one observation.", results = NA, col = 1, code = 14),
-    mal_NA = list(msg = "OK - all unrequired cells have proper NA values.", results = NA, col = NA, code = 15),
-    censDose = list(msg = "OK - No dose event is censored.", results = NA, col = 11, code = 16)
-  )
+    mal_NA = list(msg = "OK - all unrequired cells have proper NA values.", results = NA, col = NA, code = 15)  )
   # set initial attribute to 0 for no error
   attr(err, "error") <- 0
   
@@ -1012,7 +1020,7 @@ errcheck <- function(data2, quiet, source) {
   # check that all times within a given ID block are monotonically increasing
   misorder <- NA
   for (i in 2:nrow(data2)) {
-    suppressWarnings(tryCatch(time_diff <- data2$time[i] - data2$time[i - 1], error = function(e) NA))
+    time_diff <- suppressWarnings(tryCatch(data2$time[i] - data2$time[i - 1], error = function(e) NA))
     # if not missing (reported elsewhere) and diff<0 in same ID and not evid=4, misordered
     if (!is.na(time_diff) && (time_diff < 0 & data2$id[i] == data2$id[i - 1] & data2$evid[i] != 4)) misorder <- c(misorder, i)
   }
@@ -1036,15 +1044,16 @@ errcheck <- function(data2, quiet, source) {
     attr(err, "error") <- -1
   }
   
-  # check that all non-missing columns other than ID are numeric
-  allMiss <- which(apply(data2[, 2:numcol], 2, function(x) all(is.na(x))))
-  nonNumeric <- which(sapply(data2[, 2:numcol], function(x) !is.numeric(x)))
+  # check that all non-missing columns other than ID and cens are numeric
+
+  allMiss <- names(data2)[which(apply(data2, 2, function(x) all(is.na(x))))]
+  nonNumeric <- names(data2)[which(sapply(data2, function(x) !is.numeric(x)))]
   if (length(allMiss) > 0) {
-    nonNumeric <- nonNumeric[!nonNumeric %in% allMiss]
+    nonNumeric <- nonNumeric[!nonNumeric %in% allMiss] %>% purrr::discard(~.x %in% (c("id", "cens")))
   }
-  if (length(nonNumeric) > 0) {
+  if (length(nonNumeric) > 0 ) { # exclude id, cens columns
     err$nonNum$msg <- "FAIL - The following columns must be all numeric."
-    err$nonNum$results <- nonNumeric + 1
+    err$nonNum$results <- nonNumeric
     attr(err, "error") <- -1
   }
   
@@ -1068,13 +1077,6 @@ errcheck <- function(data2, quiet, source) {
     attr(err, "error") <- -1
   }
   
-  # warning for censoring on doses
-  t <- which(data2$evid == 1 & data2$cens == 1)
-  if (length(t) > 0) {
-    err$censDose$msg <- "WARNING - The following row numbers are censored dose events. Censoring is only valid for observations."
-    err$censDose$results <- t
-    attr(err, "error") <- -1
-  }
   
   class(err) <- c("PMerr", "list")
   if (!quiet) {
@@ -1083,43 +1085,7 @@ errcheck <- function(data2, quiet, source) {
     flush.console()
   }
   
-  # if no errors in data, and model is specified, check it for errors too
-  # if (all(unlist(sapply(err, function(x) is.na(x$results)))) & !is.na(model)) {
-  #   # get information from data
   
-  #   if (numcov > 0) {
-  #     covnames <- getCov(data2)$covnames
-  #   } else {
-  #     covnames <- NA
-  #   }
-  #   numeqt <- max(data2$outeq, na.rm = T)
-  #   modeltxt <- model
-  #   # attempt to translate model file into separate fortran model file and instruction files
-  #   engine <- list(alg = "NP", ncov = numcov, covnames = covnames, numeqt = numeqt, indpts = -99, limits = NA)
-  
-  #   if (!quiet) cat("\nMODEL REPORT:\n")
-  #   trans <- makeModel(model = model, data = data, engine = engine, write = F, quiet = quiet)
-  
-  #   if (trans$status == -1) {
-  #     if ("mQRZZZ.txt" %in% Sys.glob("*", T)) {
-  #       file.remove(model)
-  #       file.rename("mQRZZZ.txt", model)
-  #     }
-  #     if (!quiet) cat("There are errors in your model file.\n")
-  #     cat(trans$msg)
-  #   }
-  #   if (trans$status == 0) {
-  #     # if (source == "file" & !quiet) cat(paste("Associated data file: ", data, sep = ""))
-  #     if (!quiet) cat("\nYou are using a Fortran model file rather than the new text format.\nThis is permitted, but see www.lapk.org/ModelTemp.php for details.\n")
-  #   }
-  #   if (trans$status == 1) {
-  #     # if (source == "file" & !quiet) cat(paste("Associated data file: ", data, sep = ""))
-  #     if (!quiet) cat("\nExcellent - there were no errors found in your model file.\n")
-  #     if (trans$model %in% Sys.glob("*", T)) {
-  #       file.remove(trans$model)
-  #     }
-  #   }
-  # }
   if (!quiet) flush.console()
   return(err)
 }
@@ -1233,11 +1199,6 @@ errfix <- function(data2, err, quiet) {
     report <- c(report, paste("Malformed NAs corrected."))
   }
   
-  # Fix censored doses
-  if (length(grep("WARNING", err$censDose$msg)) > 0) {
-    data2$cens[err$censDose$results] <- NA
-    report <- c(report, paste("Censoring on dose events changed to NA."))
-  }
   
   # Report missing TIME
   if (length(grep("FAIL", err$missTIME$msg)) > 0) {
@@ -1284,9 +1245,7 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
       "Non-contiguous subject ID",
       "Non-numeric entry",
       "Subject with no observations",
-      "Malformed NA value",
-      "Censored dose event"
-    ),
+      "Malformed NA value"    ),
     stringsAsFactors = F
   )
   numError <- nrow(errorsTable)
@@ -1644,7 +1603,8 @@ plot.PM_data <- function(
     
     # process marker
     marker <- amendMarker(marker)
-    if(nchar(marker$color == 9)) { marker$color <- substr(marker$color, 1, 7) } # remove alpha if present
+    marker$color <- map_chr(marker$color, \(x) substr(x, 1, 7)) # remove alpha if present, controlled by opacity
+  
     highlight_color <- opposite_color(marker$color[1]) # in plotly_Utils.R
     
     
@@ -1854,8 +1814,8 @@ plot.PM_data <- function(
         
         # select relevant columns and filter missing
         predsub <- predsub %>%
-        select(id, time, out = pred, cens = NA, outeq) %>%
-        filter(out != -99)
+        select(id, time, out = pred, cens, outeq) %>%
+        filter(out != -99 & (cens == "none" | cens == 0))
         
         # add group
         lookup <- dplyr::distinct(sub, id, outeq, group)
@@ -1931,17 +1891,17 @@ plot.PM_data <- function(
       symbol = group_symbols[as.integer(group)]
     ) %>%
     mutate(
-      color = ifelse(cens != 0, opposite_color(color, degrees = 90), color),
+      color = ifelse(cens != "none" & cens != "0", opposite_color(color, degrees = 90), color),
       symbol = dplyr::case_when(
-        cens == 1 ~ "triangle-down", 
-        cens == 0 ~ symbol,
-        cens == -1 ~ "triangle-up",
+        cens == "bloq" | cens == "1" ~ "triangle-down", 
+        cens == "none" | cens == "0" ~ as.character(symbol),
+        cens == "aloq" | cens == "-1" ~ "triangle-up",
         .default = symbol),
       text_label = dplyr::case_when(
-          cens == 1  ~ glue::glue(IDstring,"Time: {round2(time)}\nBLLQ: {round2(out)}\n{group}"),
-          cens == 0  ~ glue::glue(IDstring,"Time: {round2(time)}\nOut: {round2(out)}\n{group}"),
-          cens == -1 ~ glue::glue(IDstring,"Time: {round2(time)}\nAULQ: {round2(out)}\n{group}"),
-          is.na(cens) ~ glue::glue(IDstring,"Time: {round2(time)}\nPred: {round2(out)}\n{group}")
+          cens == "bloq" | cens == "1"  ~ glue::glue(IDstring,"Time: {round2(time)}\nBLLQ: {round2(out)}\n{group}"),
+          cens == "none" | cens == "0"  ~ glue::glue(IDstring,"Time: {round2(time)}\nOut: {round2(out)}\n{group}"),
+          cens == "aloq" | cens == "-1" ~ glue::glue(IDstring,"Time: {round2(time)}\nAULQ: {round2(out)}\n{group}"),
+          .default = glue::glue(IDstring,"Time: {round2(time)}\nPred: {round2(out)}\n{group}")
         )
       ) %>%
       ungroup()
@@ -1950,7 +1910,7 @@ plot.PM_data <- function(
       
       seen_groups <- NULL
       traces <- if(overlay) {allsub %>% dplyr::group_split(id)} else {list(allsub)}
-  
+
       # Build plot
       p <- plot_ly()
       for (i in seq_along(traces)) {
@@ -2127,8 +2087,8 @@ plot.PM_data <- function(
     
     # censored
     
-    results$bloqObsXouteq <- purrr::map_int(1:max(object$outeq, na.rm = TRUE), \(x) sum(object$cens[object$outeq == x] == 1, na.rm = TRUE)) 
-    results$aloqObsXouteq <- purrr::map_int(1:max(object$outeq, na.rm = TRUE), \(x) sum(object$cens[object$outeq == x] == -1, na.rm = TRUE)) 
+    results$bloqObsXouteq <- purrr::map_int(1:max(object$outeq, na.rm = TRUE), \(x) sum(object$cens[object$outeq == x] == "1", object$cens[object$outeq == x] == "bloq", na.rm = TRUE)) 
+    results$aloqObsXouteq <- purrr::map_int(1:max(object$outeq, na.rm = TRUE), \(x) sum(object$cens[object$outeq == x] == "-1", object$cens[object$outeq == x] == "aloq", na.rm = TRUE)) 
     
     covinfo <- getCov(object)
     ncov <- covinfo$ncov

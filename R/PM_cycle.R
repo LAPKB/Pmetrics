@@ -132,7 +132,7 @@ PM_cycle <- R6::R6Class(
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "Result does not have valid {.code PM_cycle} object, because {.file {getwd()}/cycles.csv} does not exist."
+          "i" = "{.file {file.path(path, 'cycles.csv')}} does not exist, and result does not have valid {.code PM_cycle} object."
         ))
         return(NULL)
       }
@@ -146,7 +146,7 @@ PM_cycle <- R6::R6Class(
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {file.path(path, 'pred.csv')} does not exist."
+          "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_cycle} object."
         ))
         return(NULL)
       }
@@ -160,7 +160,7 @@ PM_cycle <- R6::R6Class(
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "Result does not have valid {.code PM_cycle} object, and {.file {file.path(path, 'settings.json')} does not exist."
+          "i" = "{.file {file.path(path, 'settings.json')}} does not exist, and result does not have valid {.code PM_cycle} object."
         ))
         return(NULL)
       }

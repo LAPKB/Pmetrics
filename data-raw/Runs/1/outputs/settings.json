@@ -63,7 +63,7 @@
   },
   "output": {
     "write": true,
-    "path": "/Users/mneely/Library/CloudStorage/OneDrive-ChildrensHospitalLosAngeles//Documents/LAPK/Development/Pmetrics_rust/data-raw/Runs/1/outputs"
+    "path": "/Users/mneely/Library/CloudStorage/OneDrive-CHILDRENSHOSPITALLOSANGELES/Documents/LAPK/Development/Pmetrics_rust/data-raw/Runs/1/outputs"
   },
   "convergence": {
     "likelihood": 0.0001,
