@@ -1,5 +1,10 @@
 project:
   type: book
+  resources: 
+    - styles.css
+    - copy-all-code.html
+    - images/**
+
 
 book:
   title: "Learn Pmetrics"
@@ -8,10 +13,11 @@ book:
   chapters:
     - index.qmd
     - NPAG.qmd
+    - examine.qmd
     - NPAG_cov.qmd
     - Compare.qmd
-    - Simulate.qmd
-    - PTA.qmd
+  #  - Simulate.qmd
+  #  - PTA.qmd
   # Optional but useful in books:
   page-navigation: true
   # You can keep a top navbar in a book, too:
@@ -19,14 +25,18 @@ book:
     left:
       - href: index.qmd
         text: Home
+  sidebar:
+    title: Sections
  
 format:
   html:
     theme: cosmo
     css: styles.css
     toc: true
+    toc-title: "On this page" 
     include-in-header: copy-all-code.html
     link-external-newwindow: true
+    embed-resources: true
 pdf:
     documentclass: scrreprt
 

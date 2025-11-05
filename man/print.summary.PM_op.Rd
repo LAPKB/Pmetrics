@@ -4,12 +4,14 @@
 \alias{print.summary.PM_op}
 \title{Print Summary of Observations and Predictions}
 \usage{
-\method{print}{summary.PM_op}(x, digits = getPMoptions("digits"), ...)
+\method{print}{summary.PM_op}(x, digits = getPMoptions("digits"), embed = FALSE, ...)
 }
 \arguments{
 \item{x}{An object made by \link{summary.PM_op}.}
 
 \item{digits}{Integer, used for number of digits to print.}
+
+\item{embed}{If \code{TRUE}, will embed the summary in the R Markdown document. Default is \code{FALSE}.}
 
 \item{...}{Not used.}
 }

@@ -124,6 +124,7 @@ user must fix manually.
 \item Columns that are non-numeric which must be numeric are flagged for the user to fix manually.
 These are all columns except ID.
 Covariate columns are fixed separately (see above).
+\item Dose events with censoring will be set to uncensored, with a warning to the user.
 }
 }
 \examples{
