@@ -231,7 +231,8 @@ fn clear_build() {
 }
 
 /// Initialize the tracing subscriber with the custom R formatter
-//@export
+/// @keywords internal
+///@export
 #[extendr]
 fn setup_logs() -> anyhow::Result<()> {
     use tracing::Level;
