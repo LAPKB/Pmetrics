@@ -1,4 +1,4 @@
-#' @title Compare NPAG or IT2B runs
+#' @title Compare runs
 #' @description
 #' ` r lifecycle::badge("stable")`
 #'
