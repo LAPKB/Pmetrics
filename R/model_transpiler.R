@@ -427,15 +427,17 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
       "cov",
       "y"
     )
+
     conflicts <- purrr::map(blocks, \(b) {
       purrr::map_chr(reserved, \(r) {
         if (is.function(b)) { b <- func_to_char(b) }
         if (is.list(b)) { 
           b <- names(b) 
-          con_match <- stringr::str_detect(tolower(b), paste0("^",r))
+          con_match <- stringr::str_detect(tolower(b), glue::glue("^\\b{r}\\b")) # stand alone
         } else {
-          con_match <- stringr::str_detect(tolower(b), paste0("^",r, "\\s+[=<]"))
+          con_match <- stringr::str_detect(tolower(b), glue::glue("^{r}\\s+[=<]")) # assignment in function
         }
+        
         if (any(con_match)) {
           return(r)
         } else {
