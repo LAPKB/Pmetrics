@@ -1444,19 +1444,69 @@ wtd.var <- function(x, weights = NULL,
   #' @keywords internal
   cli_df <- function(df) {
     
+    highlight <- attr(df, "highlight") # get columns to highlight minimums from attributes
+
     # Convert all columns to character for uniform formatting
     df_chr <- df %>% mutate(across(where(is.double), ~round2(.x))) %>%
     mutate(across(everything(), ~as.character(.x, stringsAsFactors = FALSE))) 
+ 
     
-    df_tab <- knitr::kable(df_chr, "simple")
-    
-    header <- df_tab[1] %>% stringr::str_replace_all(" ", "\u00A0" )
-    
-    cli::cli_text("{.strong {header}}")
-    
-    for (i in 2:length(df_tab)) {
+    if (highlight){ # highlight minimums in requested columns
+      # first replace minima with special formatting
+      # mins <- df %>% summarise(across(c(-run, -nvar, -converged, -pval, -best), ~round2(min(.x, na.rm = TRUE)))) # get minima for each column
+      mins <- df %>% summarise(across(c(-run, -nvar, -converged, -pval, -best), ~ which(.x == min(.x, na.rm = TRUE)))) %>% unlist() # get minima for each column
+
+      best <- df %>% summarise(across(best, ~ which(.x == max(.x, na.rm = TRUE)))) %>% unlist() # get best for best column
+
+      # create table to get the spacing
+      df_tab <- knitr::kable(df_chr, format = "simple") 
+
+      # rebuild the data frame
+      df2 <- map_vec(df_tab, \(x) str_split(x, "(?<=\\s)(?=\\S)")) 
+      df2 <- as.data.frame(do.call(rbind, df2))
+
+      # replace minima with highlighted versions
+      # first 2 rows are headers and spacers, so need to add 2 to the mins row index
+      for (p in 1:length(mins)){
+        df2[mins[p]+2, p+3] <- stringr::str_replace_all(df2[mins[p]+2, p+3], "(\\d+(?:\\.\\d+)?)(\\s+)", "{.strong \\1}\\2")
+      }
+
+      # for(p in 1:length(mins)){
+      #   df2[, p+3] <- stringr::str_replace_all(df2[, p+3], as.character(mins[p]), paste0("{.strong ", as.character(mins[p]), "}"))
+      # }
+      # df2$V18 <- stringr::str_replace(df2$V18, as.character(best), paste0("{.red ", as.character(best), "}"))
+      df2$V17[best+2] <- stringr::str_replace(df2$V17[best+2], "(\\d+(?:\\.\\d+)?)(\\s+)", "{.red \\1}\\2")
+
+      # print header
+      header <- df2[1,] %>% stringr::str_replace_all(" ", "\u00A0" ) %>% paste(collapse = "")
+      cli::cli_text("{.strong {header}}")
+      cli::cli_div(theme = list(span.red = list(color = "red", "font-weight" = "bold")))
       
-      cli::cli_text(df_tab[i] %>% str_replace_all(" ", "\u00A0" ))
+      # replace ≥2 spaces with non-breaking spaces
+      for (i in 2:nrow(df2)) {
+        # m <- gregexpr("\\s{2,}", df_tab[i], perl = TRUE)
+        # regmatches(df_tab[i], m) <- lapply(regmatches(df_tab[i], m), function(ss) {
+        #   vapply(ss, function(one) {
+        #     paste0(rep("\u00A0", nchar(one)), collapse = "")
+        #   }, character(1))
+        # })
+        # print each row
+        cli::cli_text(paste(df2[i,], collapse = "") %>% stringr::str_replace_all(" ", "\u00A0" ) %>% stringr::str_replace_all("strong\u00A0+", "strong ") %>% stringr::str_replace_all("red\u00A0+", "red ")) 
+      } 
+      cli::cli_end()
+    } else { # no highlighting
+
+      # create table
+      df_tab <- knitr::kable(df_chr, format = "simple")
+
+      # print header
+      header <- df_tab[1] %>% stringr::str_replace_all(" ", "\u00A0" )
+      cli::cli_text("{.strong {header}}")
+
+      # print each row
+      for (i in 2:length(df_tab)) {
+      cli::cli_text(df_tab[i] %>% stringr::str_replace_all(" ", "\u00A0" ))
+      }
     }
     
   }
@@ -1514,8 +1564,8 @@ wtd.var <- function(x, weights = NULL,
         eig <- eigen(mat)
         eig$values[eig$values < eps] <- eps  # threshold small eigenvalues
         mat <- eig$vectors %*% diag(eig$values) %*% t(eig$vectors)
-    
-
+        
+        
         posdef <- eigen(signif(mat, 15))
         
         if (all(posdef$values >= 0)) { # success, break out of loop
@@ -1559,31 +1609,31 @@ wtd.var <- function(x, weights = NULL,
 #' @keywords internal
 modifyList2 <- function (x, val, keep.null = FALSE) 
 {
-    stopifnot(is.list(x), is.list(val))
-    xnames <- names(x)
-    vnames <- names(val)
-    # handle unnamed lists
-    if(is.null(xnames)) xnames <- 1:length(x)
-    if(is.null(vnames)) vnames <- 1:length(val)
-    # handle unnamed elements
-    xnames <- ifelse(xnames == "", as.character(seq_along(xnames)), xnames)
-    vnames <- ifelse(vnames == "", as.character(seq_along(vnames)), vnames)
-
-    vnames <- vnames[nzchar(vnames)]
-    if (keep.null) {
-        for (v in vnames) {
-            x[v] <- if (v %in% xnames && is.list(x[[v]]) && is.list(val[[v]])) 
-                list(modifyList(x[[v]], val[[v]], keep.null = keep.null))
-            else val[v]
-        }
+  stopifnot(is.list(x), is.list(val))
+  xnames <- names(x)
+  vnames <- names(val)
+  # handle unnamed lists
+  if(is.null(xnames)) xnames <- 1:length(x)
+  if(is.null(vnames)) vnames <- 1:length(val)
+  # handle unnamed elements
+  xnames <- ifelse(xnames == "", as.character(seq_along(xnames)), xnames)
+  vnames <- ifelse(vnames == "", as.character(seq_along(vnames)), vnames)
+  
+  vnames <- vnames[nzchar(vnames)]
+  if (keep.null) {
+    for (v in vnames) {
+      x[v] <- if (v %in% xnames && is.list(x[[v]]) && is.list(val[[v]])) 
+      list(modifyList(x[[v]], val[[v]], keep.null = keep.null))
+      else val[v]
     }
-    else {
-        for (v in vnames) {
-            x[[v]] <- if (v %in% xnames && is.list(x[[v]]) && 
-                is.list(val[[v]])) 
-                modifyList2(x[[v]], val[[v]], keep.null = keep.null)
-            else val[[v]]
-        }
+  }
+  else {
+    for (v in vnames) {
+      x[[v]] <- if (v %in% xnames && is.list(x[[v]]) && 
+      is.list(val[[v]])) 
+      modifyList2(x[[v]], val[[v]], keep.null = keep.null)
+      else val[[v]]
     }
-    x
+  }
+  x
 }

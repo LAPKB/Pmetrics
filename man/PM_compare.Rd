@@ -4,36 +4,25 @@
 \alias{PM_compare}
 \title{Compare NPAG or IT2B runs}
 \usage{
-PM_compare(x, y, ..., icen = "median", outeq = 1, plot = TRUE)
+PM_compare(..., icen = "median", outeq = 1, plot = FALSE)
 }
 \arguments{
-\item{x}{The first \link{PM_result} object you wish to compare, already loaded with \link{PM_load}.
-This will serve as the reference output for P-value testing (see details).}
-
-\item{y}{The second \link{PM_result} object to compare.}
-
-\item{...}{Additional \link{PM_result} objects to compare.  See details.
-Also, parameters to be passed to \link{plot.PM_op}
-if \code{plot} is true as well as to \link{mtsknn.eq}.  Order does not matter.}
+\item{...}{\link{PM_result} objects to compare.  See details.}
 
 \item{icen}{Can be either "median" for the predictions based on medians of
 \code{pred.type} parameter value distributions, or "mean".  Default is "median".}
 
 \item{outeq}{Number of the output equation to compare; default is 1.}
 
-\item{plot}{Boolean operator selecting whether to generate the report.}
+\item{plot}{Boolean indicating whether to generate and open the comparison report; default is FALSE}
 }
 \value{
-If \code{plot = TRUE}, a report will be generated comparing the selected models.
-Additionally, a data frame with the following objects for each model is invisbily returned.
+A highlighted table comparing the selected models with the following columns.
 \itemize{
 \item \strong{run} The run number of the data
-\item \strong{nsub} Number of subjects in the model
 \item \strong{nvar} Number of random parameters in the model
-\item \strong{par} Names of random parameters
-\item \strong{cycles} Number of cycles run
-\item \strong{converge} Boolean value if convergence occurred.
-\item \strong{ll} Final cycle -2*Log-likelihood
+\item \strong{converged} Boolean value if convergence occurred.
+\item \strong{-2*ll} Final cycle -2*Log-likelihood
 \item One of the following, depending on the option set in \link{setPMoptions}:
 \itemize{
 \item \strong{aic} Final cycle Akaike Information Criterion OR
@@ -43,7 +32,14 @@ Additionally, a data frame with the following objects for each model is invisbil
 \item \strong{popImp} Imprecision, calculated by the method set in \link{setPMoptions}, of the predictions based on \code{icen} population parameters
 \item \strong{postBias} Bias, calculated by the method set in \link{setPMoptions}, of the predictions based on \code{icen} posterior parameters
 \item \strong{postImp} Imprecision, calculated by the method set in \link{setPMoptions}, of the predictions based on \code{icen} posterior parameters
+\item \strong{popInt} Intercept of observed vs. population predicted values regression
+\item \strong{postInt} Intercept of observed vs. posterior predicted values regression
+\item \strong{popSl} Slope of observed vs. population predicted values regression
+\item \strong{postSl} Slope of observed vs. posterior predicted values regression
+\item \strong{popR2} R-squared of observed vs. population predicted values regression
+\item \strong{postR2} R-squared of observed vs. posterior predicted values regression
 \item \strong{pval} P-value for each model compared to the first. See details.
+\item \strong{best} Number of times each model was the best (lowest) in the above bias/imprecision, likelihood, and regression metrics.
 }
 }
 \description{
@@ -66,7 +62,7 @@ that the null hypothesis should be rejected, i.e. the joint distributions
 between the two compared models for that parameter are significantly different.
 }
 \seealso{
-\link{PM_load}, \link{plot.PM_op}, \link{mtsknn.eq}
+\link{PM_load}
 }
 \author{
 Michael Neely
