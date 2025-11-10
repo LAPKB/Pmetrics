@@ -272,7 +272,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
       icen = icen,
       pred.type = "pop",
       print = FALSE,
-      title = list(text = glue::glue("Run {y} Pop"), font = list(color = black(alpha = 0.3), size = 16)),
+      title = list(text = glue::glue("Pop - {objNames[y]}"), font = list(color = black(alpha = 0.3), size = 16)),
       stats = list(font = list(size = 10))
     )
     post <- x %>% plot.PM_op(
@@ -280,7 +280,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
       icen = icen,
       pred.type = "post",
       print = FALSE,
-      title = list(text = glue::glue("Run {y} Post"), font = list(color = black(alpha = 0.3), size = 16)),
+      title = list(text = glue::glue("Post - {objNames[y]}"), font = list(color = black(alpha = 0.3), size = 16)),
       stats = list(font = list(size = 10))
     )
     list(pop = pop, post = post)
@@ -336,7 +336,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
     like$AIC <- NULL
   }
   
-  df <- like %>% mutate(run = paste0("Run ", seq(1:nrow(like)))) %>%
+  df <- like %>% mutate(run = objNames[1:n()]) %>%
   pivot_longer(
     1:2,
     names_to = "metric",
