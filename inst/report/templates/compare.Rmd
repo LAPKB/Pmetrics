@@ -50,6 +50,7 @@ if(!is.null(res$ft1)){
 ```{r}
 #| name: "prediction_errors"
 #| echo: false
+#| warning: false
 
 res$p1
 
