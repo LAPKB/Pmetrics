@@ -1453,10 +1453,10 @@ wtd.var <- function(x, weights = NULL,
     
     if (highlight){ # highlight minimums in requested columns
       # first replace minima with special formatting
-      # mins <- df %>% summarise(across(c(-run, -nvar, -converged, -pval, -best), ~round2(min(.x, na.rm = TRUE)))) # get minima for each column
-      mins <- df %>% summarise(across(c(-run, -nvar, -converged, -pval, -best), ~ which(.x == min(.x, na.rm = TRUE)))) %>% unlist() # get minima for each column
+      # mins <- df %>% summarize(across(c(-run, -nvar, -converged, -pval, -best), ~round2(min(.x, na.rm = TRUE)))) # get minima for each column
+      mins <- df %>% summarize(across(c(-run, -nvar, -converged, -pval, -best), ~ which(.x == min(.x, na.rm = TRUE)))) %>% unlist() # get minima for each column
 
-      best <- df %>% summarise(across(best, ~ which(.x == max(.x, na.rm = TRUE)))) %>% unlist() # get best for best column
+      best <- df %>% summarize(across(best, ~ which(.x == max(.x, na.rm = TRUE)))) %>% unlist() # get best for best column
 
       # create table to get the spacing
       df_tab <- knitr::kable(df_chr, format = "simple") 
