@@ -1468,7 +1468,7 @@ wtd.var <- function(x, weights = NULL,
       # replace minima with highlighted versions
       # first 2 rows are headers and spacers, so need to add 2 to the mins row index
       for (p in 1:length(mins)){
-        df2[mins[p]+2, p+3] <- stringr::str_replace_all(df2[mins[p]+2, p+3], "(\\d+(?:\\.\\d+)?)(\\s+)", "{.strong \\1}\\2")
+        df2[mins[p]+2, p+3] <- stringr::str_replace_all(df2[mins[p]+2, p+3], "(\\d+(?:\\.\\d+)?)(\\s+)", "{.red \\1}\\2")
       }
 
       # for(p in 1:length(mins)){
