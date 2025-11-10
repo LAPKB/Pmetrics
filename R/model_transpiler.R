@@ -120,6 +120,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
         }
       },
       
+    
       # If
       "if" = {
         cond <- rust_args[[1]]

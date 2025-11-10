@@ -35,40 +35,42 @@ np <- TRUE
 
 The data had `r nsub` subjects.
 
-After `r paste0(icyctot, " cycles, the model status was ", res$cycle$data$status, ".")`
+After `r paste0(icyctot, " cycles, the model status was \"", res$cycle$data$status, "\".")`
 
-## Observed-predicted plot {.tabset .tabset-pills}
+## Predictions
+
+### Observed-predicted plot {.tabset .tabset-pills}
 
 Points should appear close to, and randomly distributed around, the (dashed) identity-line.
 
 ``` {r include = FALSE}
 
 template <- c(
-  "### Outeq {{outeq}} {.tabset .tabset-pills}\n",
-  "#### Population {.tabset .tabset-pills}\n",
-  "##### Median\n",
+  "#### Outeq {{outeq}} {.tabset .tabset-pills}\n",
+  "##### Population {.tabset .tabset-pills}\n",
+  "###### Median\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(icen = 'median', pred.type = 'pop', outeq = {{outeq}},\n
   stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
-  "##### Mean\n",
+  "###### Mean\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(icen = 'mean', pred.type = 'pop', outeq = {{outeq}},\n
   stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
-  "#### Posterior {.tabset .tabset-pills}\n",
-  "##### Median\n",
+  "##### Posterior {.tabset .tabset-pills}\n",
+  "###### Median\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(icen = 'median', pred.type = 'post', outeq = {{outeq}},\n
   stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
-  "##### Mean\n",
+  "###### Mean\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(icen = 'mean', pred.type = 'post', outeq = {{outeq}},\n
@@ -87,7 +89,8 @@ p <- lapply(1:numeqt, function(i) {
 ```
 `r knitr::knit_child(text = unlist(p))`
 
-## Prediction metrics {.tabset .tabset-pills}
+::: {.tabset .tabset-pills}
+### Prediction metrics 
 
 
 ```{r}
@@ -115,31 +118,30 @@ metrics <- function(icen, pred.type, outeq){
   #return(pe)
 }
 
-
 ```
 
 ```{r include = FALSE}
 
 template <- c(
-  "### Outeq {{outeq}} {.tabset .tabset-pills}\n",
-  "#### Population {.tabset .tabset-pills}\n",
-  "##### Median\n",
+  "#### Outeq {{outeq}} {.tabset .tabset-pills}\n",
+  "##### Population {.tabset .tabset-pills}\n",
+  "###### Median\n",
   "```{r message = F}\n",
 
   "metrics(icen = 'median', pred.type = 'pop', outeq = {{outeq}})\n",
   "```\n",
-  "##### Mean\n",
+  "###### Mean\n",
   "```{r message = F}\n",
 
   "metrics(icen = 'mean', pred.type = 'pop', outeq = {{outeq}})\n",
   "```\n",
-  "#### Posterior {.tabset .tabset-pills}\n",
-  "##### Median\n",
+  "##### Posterior {.tabset .tabset-pills}\n",
+  "###### Median\n",
   "```{r message = F}\n",
 
   "metrics(icen = 'median', pred.type = 'post', outeq = {{outeq}})\n",
   "```\n",
-  "##### Mean\n",
+  "###### Mean\n",
   "```{r message = F}\n",
 
   "metrics(icen = 'mean', pred.type = 'post', outeq = {{outeq}})\n",
@@ -158,8 +160,7 @@ p <- lapply(1:numeqt, function(i) {
 
 ```
 `r knitr::knit_child(text = unlist(p))`
-
-## 
+:::
 
 ```{r echo = FALSE, results = "asis", error = TRUE, cache = FALSE}
 pe <- res$op$summary()$pe %>% get_metric_info()
@@ -168,8 +169,7 @@ cat(glue::glue("Bias is (pred - obs)  {types$bias}. Imprecision is {types$imprec
 ```
 
 
-## Prediction residuals {.tabset .tabset-pills}
-
+### Prediction residuals {.tabset .tabset-pills}
 
 Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
@@ -177,28 +177,28 @@ For how to interpret these plots, please review our [website](https://lapkb.gith
 ``` {r include = FALSE}
 
 template <- c(
-  "### Outeq {{outeq}} {.tabset .tabset-pills}\n",
-  "#### Population {.tabset .tabset-pills}\n",
-  "##### Median\n",
+  "#### Outeq {{outeq}} {.tabset .tabset-pills}\n",
+  "##### Population {.tabset .tabset-pills}\n",
+  "###### Median\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'median', pred.type = 'pop', outeq = {{outeq}}, print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
-  "##### Mean\n",
+  "###### Mean\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'mean', pred.type = 'pop', outeq = {{outeq}}, print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
-  "#### Posterior {.tabset .tabset-pills}\n",
-  "##### Median\n",
+  "##### Posterior {.tabset .tabset-pills}\n",
+  "###### Median\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'median', pred.type = 'post', outeq = {{outeq}}, print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
-  "##### Mean\n",
+  "###### Mean\n",
   "```{r message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'mean', pred.type = 'post', outeq = {{outeq}}, print = FALSE)\n",
@@ -303,13 +303,34 @@ The following table lists the final support points, in order of decreasing proba
 if(np){
   res$final$popPoints %>% 
     dplyr::arrange(desc(prob)) %>% 
-    dplyr::mutate(across(everything(), \(x) round(x, 3)
+    dplyr::mutate(across(everything(), \(x) round2(x)
     )) %>% 
-    dplyr::mutate(`Cumulative Probability` = cumsum(prob)) %>% 
+    dplyr::mutate(`Cumulative Probability` = round2(cumsum(prob))) %>% 
     dplyr::rename(Probability = prob) %>% 
     DT::datatable(options = list(pageLength = 10, searching = FALSE))
 }
 ```
+
+### Covariance/Correlation matrices {.tabset .tabset-pills}
+
+#### Correlation
+
+```{r message = F}
+res$final$popCor %>% tibble::as_tibble() %>%
+dplyr::mutate(across(everything(), \(x) round2(x))) %>% 
+DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) %>%
+DT::formatStyle(0, fontWeight = "bold")
+```
+
+#### Covariance
+
+```{r message = F}
+res$final$popCov %>% tibble::as_tibble() %>%
+dplyr::mutate(across(everything(), \(x) round2(x))) %>% 
+DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) %>%
+DT::formatStyle(0, fontWeight = "bold")
+```
+
 
 ## Cycle information
 ```{r fig.dim = c(10, 6), results = "asis"}
