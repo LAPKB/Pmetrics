@@ -17,7 +17,9 @@ PM_compare(..., icen = "median", outeq = 1, plot = FALSE)
 \item{plot}{Boolean indicating whether to generate and open the comparison report; default is FALSE}
 }
 \value{
-A highlighted table comparing the selected models with the following columns.
+A highlighted table comparing the selected models with the following columns. In each metric column,
+the best (lowest) value is highlighted in red. In the final best column, the red highlighting applies to the model
+with the most "best" metrics.
 \itemize{
 \item \strong{run} The run number of the data
 \item \strong{nvar} Number of random parameters in the model
@@ -45,12 +47,12 @@ A highlighted table comparing the selected models with the following columns.
 \description{
 \verb{ r lifecycle::badge("stable")}
 
-Compare parameters, convergence, -2*log likelihood, AIC and  bias
-and imprecision of population and posterior predictions.
+Compare convergence, -2*log likelihood, AIC/BIC, bias,
+imprecision, and regression statistics of population and posterior predictions.
+Additionally, compare distributions of support points between models (see details)
 }
 \details{
-Objects can be specified separated by commas, e.g. \code{PM_compare(run1, run2, run3)}
-followed by any arguments you wish to \link{plot.PM_op}, \link{mtsknn.eq}.
+Objects can be specified separated by commas, e.g. \code{PM_compare(run1, run2, run3)}.
 P-values are based on comparison using the nearest neighbors
 approach if all models are non-parametrics.  Models may only be compared on
 parameters that are included in the first model.  The P-value is the

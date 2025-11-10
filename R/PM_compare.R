@@ -22,7 +22,9 @@
 #' `pred.type` parameter value distributions, or "mean".  Default is "median".
 #' @param outeq Number of the output equation to compare; default is 1.
 #' @param plot Boolean indicating whether to generate and open the comparison report; default is FALSE
-#' @return A highlighted table comparing the selected models with the following columns.
+#' @return A highlighted table comparing the selected models with the following columns. In each metric column,
+#' the best (lowest) value is highlighted in red. In the final best column, the red highlighting applies to the model 
+#' with the most "best" metrics.
 #' * **run** The run number of the data
 # #' * **nsub** Number of subjects in the model
 #' * **nvar** Number of random parameters in the model
