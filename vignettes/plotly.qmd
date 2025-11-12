@@ -190,9 +190,10 @@ NPex$data$plot(legend = T)
 ...and a more complex one.
 ```{r, echo = T, eval = T}
 NPex$data$plot(
+  marker = list(color = "navy"),
   line = list(
-    join = F,
-    pred = list(NPex$post, color = "navy")
+    join = FALSE,
+    pred = list("post")
   ),
   legend = list(
     x = 0.75,
@@ -300,7 +301,7 @@ Annotations with connecting arrows...
 
 ```{r echo = T, eval = T}
 NPex$data$plot() %>%
-  add_annotations(text = ~id) # the tilde tells plotly to use the contents of the id column
+  add_annotations(text = ~id, x = ~time, y = ~out, data = NPex$data$data %>% filter(out>0)) # use the raw data to obtain the id labels and positions
 ```
 
 
@@ -309,8 +310,9 @@ Text without arrows...
 ```{r echo = T, eval = T}
 NPex$data$plot() %>%
   add_text(
-    text = ~id, textposition = "top right",
-    textfont = list(color = "green", size = 12)
+    text = ~id,  x = ~time, y = ~out, textposition = "top right",
+    textfont = list(color = "navy", size = 12),
+    data = NPex$data$data %>% filter(out>0)
   )
 ```
 
@@ -319,7 +321,7 @@ A single text item...
 
 ```{r echo = T, eval = T}
 NPex$data$plot() %>%
-  add_text(x = 125, y = 2, text = "<b>Limit of quantification</b>", textfont = list(size = 10)) %>%
+  add_text(x = 125, y = 2, text = "<b>Limit of quantification</b>", textfont = list(size = 12)) %>%
   add_shapes(shape = ab_line(h = 1.8))
 ```
 
@@ -327,8 +329,10 @@ Notice how the tidyverse pipe `%>%` lets you string together commands. [Tidyvers
 
 ```{r echo = T, eval = T}
 NPex$data$plot() %>%
-  add_annotations(x = 125, y = 2, text = "<i>Limit of quantification</i>", font = list(size = 10), showarrow = F, bgcolor = "antiquewhite", bordercolor = "black") %>%
-  add_shapes(shape = ab_line(h = 1.8))
+  add_annotations(x = 125, y = 2, text = "<i>Limit of quantification</i>", font = list(size = 10, color = "white"), showarrow = F, bgcolor = "navy", bordercolor = "black") %>%
+  add_shapes(
+    shape = ab_line(h = 1.8, line = list(color = "navy", dash = "dashdot"))
+  )
 ```
 
 ## Exporting 
