@@ -1367,7 +1367,7 @@ PM_model <- R6::R6Class(
                   cli::cli_inform(c("i" = "Compiling model..."))
                   tryCatch({
                     compile_model(model_path , output_path, private$get_primary(), 
-                    template_path = system.file(package = "Pmetrics"), 
+                    template_path = system.file("template", package = "Pmetrics"), 
                     kind = tolower(self$model_list$type))
                     self$binary_path <- output_path
                   }, error = function(e) {
