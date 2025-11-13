@@ -4,7 +4,7 @@
 \alias{compile_model}
 \title{Compiles the text representation of a model into a binary file.}
 \usage{
-compile_model(model_path, output_path, params, kind)
+compile_model(model_path, output_path, params, template_path, kind)
 }
 \description{
 Compiles the text representation of a model into a binary file.
