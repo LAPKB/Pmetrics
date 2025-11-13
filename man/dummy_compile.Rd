@@ -4,7 +4,7 @@
 \alias{dummy_compile}
 \title{Dummy function to cache compilation artifacts.}
 \usage{
-dummy_compile()
+dummy_compile(template_path)
 }
 \description{
 Dummy function to cache compilation artifacts.

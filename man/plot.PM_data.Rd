@@ -44,22 +44,25 @@ Here  \code{line} is a list of two elements:
 \item \code{join}  Can either be a boolean or a list. If set to \code{TRUE} or
 a list of plotly line attributes, it
 will generate line segments joining observations. If set to
-\code{FALSE}, no segments will be generated. The default
-values for the elements of the \code{join} list, all of which can be
+\code{FALSE}, no segments will be generated. The color of the joining line
+is the same as the marker color for that line. To avoid confusion, the line
+color cannot be changed. The default
+values for the other elements of the \code{join} list, both of which can be
 overriden are:
 \itemize{
-\item \code{color} Color of the segments. Default is "dodgerblue".
 \item \code{width }Width of the segments, default 1.
 \item \code{dash} See \code{plotly::schema()}, traces > scatter > attributes >
 line > dash > values. Default is "solid".
-Example: \code{line = list(join = list(color = "red", dash = "longdash", width = 2))}
+Example: \code{line = list(join = list(dash = "longdash", width = 2))}
 }
 \item \code{pred} Default is \code{FALSE}, which means that predictions will not be included
 in the plot. To include predictions, supply one of the following:
 \item If plotting data contained in a \link{PM_result}, use "pop" or "post" to include population or posterior predictions.
 ** Example 1: \verb{run1 <- PM_load(1); run1$data$plot(line = list(pred = "post"))}
 \item If plotting data not contained in a \link{PM_result}, you may add the
-name of a population \link{PM_pop} or posterior \link{PM_post} prediction object in a \link{PM_result} object. This might be useful if you want to see how the predictions from one population match the raw data from another.
+name of a population \link{PM_pop} or posterior \link{PM_post} prediction object in a \link{PM_result} object.
+This might be useful if you want to see how the predictions from one population match
+the raw data from another.
 ** Example 2: \verb{dat <- PM_data$new("new.csv"); dat$plot(line = list(pred = run1$post))}.
 }
 
@@ -70,9 +73,10 @@ prediction plot:
 \item icen Chooses the median or mean of each
 subject's Bayesian posterior parameter distribution.  Default is "median",
 but could be "mean".
-\item Other parameters to pass to plotly to control line characteristics that join
-the predictions, including \code{color}, \code{width}, and \code{dash}.
-Continuing Example 1 above: \code{pred = list("post", icen = "mean", color = "red", width = 2)}.
+\item As for \code{join}, the color of the \code{pred} line is fixed to the same color as the marker.
+Other parameters to pass to plotly to control line characteristics that join
+the predictions are \code{width}, and \code{dash}.
+Continuing Example 1 above: \code{pred = list("post", icen = "mean", width = 2)}.
 Default formats are the same as for the \code{join} argument, since normally one would not plot
 both lines joining observations and prediction lines, i.e., typical use would be
 \code{line = list(join = F, pred = "post")}.

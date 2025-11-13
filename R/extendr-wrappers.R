@@ -20,11 +20,11 @@ simulate_all <- function(data_path, model_path, theta, kind) .Call(wrap__simulat
 
 #' Compiles the text representation of a model into a binary file.
 #'@export
-compile_model <- function(model_path, output_path, params, kind) .Call(wrap__compile_model, model_path, output_path, params, kind)
+compile_model <- function(model_path, output_path, params, template_path, kind) .Call(wrap__compile_model, model_path, output_path, params, template_path, kind)
 
 #' Dummy function to cache compilation artifacts.
 #'@export
-dummy_compile <- function() .Call(wrap__dummy_compile)
+dummy_compile <- function(template_path) .Call(wrap__dummy_compile, template_path)
 
 #'@export
 is_cargo_installed <- function() .Call(wrap__is_cargo_installed)
@@ -35,9 +35,7 @@ fit <- function(model_path, data, params, output_path, kind) .Call(wrap__fit, mo
 #'@export
 model_parameters <- function(model_path, kind) .Call(wrap__model_parameters, model_path, kind)
 
-template_path <- function() .Call(wrap__template_path)
-
-clear_build <- function() invisible(.Call(wrap__clear_build))
+temporary_path <- function() .Call(wrap__temporary_path)
 
 #' Initialize the tracing subscriber with the custom R formatter
 #' @keywords internal
