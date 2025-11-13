@@ -1,7 +1,7 @@
 library(readr)
 library(Pmetrics)
 
-wd <- OneDrive("/Documents/LAPK/Development/Pmetrics_rust/data-raw")
+wd <- ("data-raw")
 
 # BMI data -------------------------------------------------------------
 
