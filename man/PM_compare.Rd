@@ -2,7 +2,7 @@
 % Please edit documentation in R/PM_compare.R
 \name{PM_compare}
 \alias{PM_compare}
-\title{Compare NPAG or IT2B runs}
+\title{Compare runs}
 \usage{
 PM_compare(..., icen = "median", outeq = 1, plot = FALSE)
 }
