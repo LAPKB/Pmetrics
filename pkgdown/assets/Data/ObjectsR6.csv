@@ -1,0 +1,106 @@
+﻿Objects,Fields,Comments
+"cov (class: PM_cov, R6)",\$clone,Method: Create copy of PM_cov object
+,\$data,"Data frame, class: PM_cov_data, with columns:"
+,,id: Subject identification
+,,time: Time for each covariate entry
+,,"covariates...Covariate values for each subject at each time, extracted from the raw data file"
+,,"parameters...Mean, median, or mode of Bayesian posterior distribution for each random parameter in the model.  Mode summaries are available for NPAG output only, and the default is median.  Values are recycled for each row within a given subject, with the number of rows driven by the number of covariate entries"
+,,icen: Median (default) or mean of the covariates and parameter value distributions.
+,\$initialize,"Method: Called by PM_cov\$new(), creates new PM_cov object, happens automatically at end of run, generally not a user function"
+,\$plot,Method: Plot the PM_cov object with plot.PMcov()
+,\$print,Method: display the PM_cov object as a data frame
+,\$summary,"Method: summarize the PM_cov object with summary.PMcov(), same function as for Legacy"
+"cycle (class: PM_cycle, R6)",\$clone,Method: Create copy of PM_cycle object
+,\$data,"List with all data fields, class: PM_cycle_data"
+,\$gamlam,A matrix of cycle number and gamma or lambda at each cycle (see item #16 under NPAG Runs below for a discussion of gamma and lambda)
+,\$initialize,"Method: Called by PM_cycle\$new(), creates new PM_cycle object, happens automatically at end of run, generally not a user function"
+,\$mean,"A matrix of cycle number and the mean of each random parameter at each cycle, normalized to initial mean"
+,\$median,"A matrix of cycle number and the median of each random parameter at each cycle, normalized to initial standard deviation"
+,\$names,Vector of names of the random parameters
+,\$objective,"A matrix of cycle number and -2*Log-likelihood (-2*LL), Akaike Information Criterion (AIC), and Bayesian (Schwartz) Information Criterion (BIC) at each cycle"
+,\$plot,Method: Plot the PM_cycle object with plot.PMcycle()
+,\$sd,"A matrix of cycle number and the standard deviation of each random parameter at each cycle, normalized to initial standard deviation"
+"data (class: PM_data, R6)",See Pmetrics Input Files.,Your original raw data file.
+"final (class: PM_final, R6)",\$ab,"Matrix of boundaries for random parameter values.  For NPAG, this is specified by the user prior to the run; for IT2B, it is calculated as a user specified multiple of the SD for the parameter value distribution"
+,\$clone,Method: Create copy of PM_final object
+,\$data,"Data frame with all data fields, class: PM_final_data"
+,\$gridpts,(NPAG only) The initial number of support points
+,\$initialize,"Method: Called by PM_fiinal\$new(), creates new PM_final object, happens automatically at end of run, generally not a user function"
+,\$nsub,Number of subjects
+,\$plot,Method: Plot the PM_final object with plot.PM_final()
+,\$popCor,The final cycle correlation matrix for each random parameter distribution
+,\$popCov,The final cycle covariance matrix for each random parameter distribution
+,\$popCV,The final cycle coefficient of variation for each random parameter distribution
+,\$popMean,The final cycle mean for each random parameter distribution
+,\$popMedian,The final cycle median for each random parameter distribution
+,\$popPoints,(NPAG only) Data frame of the final cycle joint population density of grid points with column names equal to the name of each random parameter plus \$prob for the associated probability of that point 
+,\$popRanFix,The final cycle values for all fixed but random parameters
+,\$popSD,The final cycle standard deviation for each random parameter distribution
+,\$popVar,The final cycle variance for each random parameter distribution
+,\$postCor,An array of correlation matrices for posterior parameter values for each subject
+,\$postCov,An array of covariance matrices for posterior parameter values for each subject
+,\$postMean,A matrix of means of posterior distributions for each subject and parameter
+,\$postPoints,"(NPAG only) Data frame of the Bayesian posterior parameter points for each of the first 100 subjects, with the following columns:"
+,,id: subject ID
+,,point: point number for that subject
+,,parameters: parameters in the model
+,,prob: probability of each point in the posterior for each patient
+,\$postSD,A matrix of SDs of posterior distributions for each subject and parameter
+,\$postVar,A matrix of variances of posterior distributions for each subject and parameter
+,\$shrinkage,Shrinkage values for each random population parameter
+,\$summary,"Method: summarize the PM_final object with summary.PMfinal(), same function as for Legacy"
+"op (class: PM_op, R6)",\$auc,Method: makeAUC() to calculate area under time concentration curve
+,\$block,"Dosing block, usually 1 unless data file contains EVID=4 dose reset events, in which case each such reset within a given ID will increment the dosing block by 1 for that ID"
+,\$clone,Method: Create copy of PM_op object
+,\$d,Difference between pred and obs
+,\$data,"Data frame with all data fields, class: PM_op_data"
+,\$ds,Squared difference between pred and obs
+,\$icen,Median (default) or mean of the parameter distributions used to calculate the predicted values.
+,\$id,Subject identification
+,\$initialize,"Method: Called by PM_op\$new(), creates new PM_op object, happens automatically at end of run, generally not a user function"
+,\$obs,Observation
+,\$obsSD,Calculated standard deviation (error) of the observation based on the assay error polynomial
+,\$outeq,
+,\$plot,Method: Plot the PM_op object with plot.PM_op()
+,\$pred,Predicted value
+,\$pred.type,"Type of prediction, i.e. based on the population parameter values or Bayesian posterior parameter values"
+,\$summary,"Method: summarize the PM_op object with summary.PMop(), same function as for Legacy"
+,\$time,Observation time in relative decimal hours
+,\$wd,"\$d, weighted by the \$obsSD"
+,\$wds,"\$ds, weighted by the \$obsSD"
+"pop (class: PM_pop, R6)",\$auc,Method: makeAUC() to calculate area under time concentration curve
+"post (class: PM_post, R6)",\$block,Same as for PMop objects above
+NPAG only,\$clone,Method: Create copy of PM_pop or PM_post object
+,\$data,"Data frame with all data fields, class: PM_pop_data or PM_post_data"
+,\$icen,Median (default) or mean of the parameter distributions used to calculate the predicted values.
+,\$id,Subject identification
+,\$initialize,"Method: Called by PM_pop\$new() or PM_post\$new(), creates new PM_pop or PM_post object, happens automatically at end of run, generally not a user function"
+,\$outeq,Output equation for each prediction
+,\$pred,Population prior (PMpop) or Bayesian posterior (PMpost) predictions for each output equation
+,\$time,"Time of each prediction at a frequency specified in the NPrun() command, with a default of 12 minutes."
+"valid (class: PM_valid, R6)","Use the command str(valid.x) in R, where x is the run number",This is a list containing the information to perform graphical and numerical analysis of prediction checks and normalized prediction distribution errors.  It is a method of internal model validation.
+This object will only be present if you have run \$validate(…) after a run is completed. ,,
+"valid\$simdata (class: PM_sim, R6)",\$amt,"A data frame with \$id, \$time, \$out, \$comp columns containing simulated amounts in each compartment."
+,\$auc,Method: calculate area under the curves of simulated profiles using makeAUC()
+,\$clone,Method: Create copy 
+,\$data,A  list with all the fields in \$simdata
+,\$obs,"A data frame with \$id, \$time, \$out, \$outeq columns containing simulated observations at each time and output equation number in the template data file.  If simulations from multiple template subjects have been combined (see Simulator Runs), then \$id will be of the form x.y, where x is the simulation number, and y is the template number."
+,\$parValues,"A data frame with \$id, ... columns containing the parameter value sets for each simulated subject with “...” signifying the columns named  according to the names of the random parameters in the model"
+,\$pta,Method: perform a probability of target attainment using PM_pta$new()
+,\$summary,Method: summarize simulation
+,\$totalSets,"The total number of simulated sets of parameters, which may be greater than the requested number if limits were specified in the simulation (see Simulator Runs)."
+,\$totalMeans,The means of the parameter values in the total simulated sets which can be used as a check of the adequacy of the simulation to reproduce the requested mean values when limits were applied.  The final truncated set will likely not have the requested mean values.
+,\$totalCov,The covariances of the parameter values in the total simulated sets which can be used as a check of the adequacy of the simulation to reproduce the requested covariance values when limits were applied.  The final truncated set will likely not have the requested covariance values.
+valid\$timeBinMedian (class: data frame),\$bin,Time bin number 
+,\$time,Median time for each bin
+valid\$tadBinMedian (class: data frame),\$bin,Time after dose bin number 
+,\$time,Median time after dose for each bin
+valid\$opDF (class: data frame),"\$id, \$time, \$obs, \$pred, \$icen, \$outeq, \$block, \$obsSD, \$ds, \$wd, \$wds",See op above.
+,\$tad,Time after dose
+,\$PRED_bin,Median prediction for each bin
+,\$pcObs,Prediction corrected observation (based on bin)
+,\$timeBinNum,Number of each time bin
+,\$timeBinMedian,Median time for each bin
+,\$tadBinNum,Number of each time after dose bin
+,\$tadBinMedian,Median time after dose for each bin
+valid\$npde (class: NpdeObject),,A list of object suitable for plotting an npde.

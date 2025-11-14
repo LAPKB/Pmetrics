@@ -9,8 +9,8 @@ name = 'pm_rs'
 
 [dependencies]
 extendr-api = '*'
-pmcore = {version ="=0.20.0",  features = ["exa"]}
-# pmcore = { path = "/Users/jotalvaro/code/LAPKB/PMcore", features = ["exa"] }
+pmcore = {version ="=0.21.1",  features = ["exa"]}
+# pmcore = { path = "../../../PMcore", features = ["exa"] }
 
 rayon = "1.10.0"
 anyhow = "1.0.97"
