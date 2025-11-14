@@ -39,6 +39,7 @@ is_rustup_installed <- function() {
   # for rustup and cargo
   # We cannot do it automatically because it requires elevated permissions
   return(flag)
+}
 is_rustup_installed <- function() {
   flag <- is_cargo_installed()
   # Sometimes R does not find rustup even if it is installed,
