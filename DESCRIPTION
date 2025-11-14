@@ -27,6 +27,7 @@ Imports:
     doParallel,
     DT,
     dplyr,
+    flextable,
     ggplot2,
     ggraph,
     htmlwidgets,
