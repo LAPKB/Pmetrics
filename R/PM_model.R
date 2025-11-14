@@ -1373,7 +1373,7 @@ PM_model <- R6::R6Class(
           output_path <- tempfile(pattern = "model_", fileext = ".pmx")
           cli::cli_inform(c("i" = "Compiling model..."))
           # path inside Pmetrics package
-          template_path <- system.file(package = "Pmetrics")
+          template_path <- getPMoptions("model_template_path")
           cat("Using template path:", template_path, "\n")
           tryCatch(
             {
