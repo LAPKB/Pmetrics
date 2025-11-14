@@ -45,6 +45,11 @@ PM_bug_report <- function(copy = FALSE) {
   sys_info$os_release <- Sys.info()["release"]
   sys_info$os_version <- Sys.info()["version"]
   
+  # System architecture
+  sys_info$machine <- Sys.info()["machine"]
+  sys_info$platform <- R.version$platform
+  sys_info$arch <- .Platform$r_arch
+  
   # RStudio version
   sys_info$rstudio_version <- tryCatch({
     if (Sys.getenv("RSTUDIO") == "1") {
@@ -86,6 +91,9 @@ PM_bug_report <- function(copy = FALSE) {
     "RStudio version:   ", as.character(sys_info$rstudio_version), "\n",
     "Operating System:  ", sys_info$os, " ", sys_info$os_release, "\n",
     "OS Version:        ", sys_info$os_version, "\n",
+    "Platform:          ", sys_info$platform, "\n",
+    "Architecture:      ", sys_info$machine, 
+    ifelse(sys_info$arch != "", paste0(" (", sys_info$arch, ")"), ""), "\n",
     "Rust version:      ", sys_info$rust_version, "\n",
     "Cargo version:     ", sys_info$cargo_version, "\n",
     "Locale:            ", sys_info$locale, "\n",
