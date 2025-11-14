@@ -18,6 +18,17 @@ knitr::opts_chunk$set(
 
 ```{r setup, echo=F, message=F}
 library(Pmetrics)
+
+r_help <- function(pkg, name) {
+    glue::glue("[`{name}`](https://rdrr.io/pkg/{pkg}/man/{name}.html)")
+}
+
+gh_help <- function(name) {
+
+    glue::glue("[`{name}`](https://lapkb.github.io/Pmetrics/reference/{name}.html)")
+
+}
+
 ```
 
 ## General Workflow

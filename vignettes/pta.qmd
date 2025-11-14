@@ -37,6 +37,14 @@ pta2 <- simEx$pta(
   success = 0.6, start = 120, end = 144
 )
 
+pta3 <- PM_pta$new(simEx,
+  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
+  target = list(5, 10),
+  target_type = c("min", "-min"),
+  success = c(1, 1),
+  start = 120, end = 144
+)
+
 
 knitr::opts_chunk$set(
   collapse = TRUE,
