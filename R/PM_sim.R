@@ -1100,7 +1100,7 @@ PM_sim <- R6::R6Class(
         bind_bottom_right <- function(A, B, n) {
           m <- nrow(A)
           if (nrow(B) != m + n || ncol(B) != m + n)
-          stop("B must be of size (m + n) × (m + n)")
+          stop("B must be of size (m + n) x (m + n)")
           
           # Extract blocks from B
           B_right  <- B[1:m,   (m+1):(m+n), drop = FALSE]  # top-right block

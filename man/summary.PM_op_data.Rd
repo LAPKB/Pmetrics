@@ -18,7 +18,7 @@ Both use \link{summary.PM_op}.
 }
 \examples{
 NPex$op$data \%>\%
-filter(pred > 5) \%>\%
-filter(pred < 10) \%>\%
+dplyr::filter(pred > 5) \%>\%
+dplyr::filter(pred < 10) \%>\%
 summary()
 }

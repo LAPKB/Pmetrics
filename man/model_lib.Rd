@@ -15,6 +15,3 @@ Invisibly, a tibble containing the model templates or a specific model template.
 \description{
 Returns a table of all available model templates in the Pmetrics library.
 }
-\examples{
-model_lib() # Returns a table of all model templates
-}

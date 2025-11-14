@@ -233,7 +233,7 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
   
   # Schwartz method
   if(method_key == "sch"){
-    # optional parameters, based on Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 20: 629–637, 2009
+    # optional parameters, based on Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 20: 629-637, 2009
     optional_names <- purrr::map_chr(c("male", "bun", "cysC"), \(x){
       get(x)
     })
@@ -254,32 +254,32 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
     if (all(purrr::map_lgl(list(male_sym, bun_sym, cysC_sym), \(x) !is.null(x)))) { # male, bun, cysC all present, so equation III
       mdata <- mdata %>%
       mutate(gfr_schwartz = 39.1 * (!!ht_sym / !!scr_sym)^0.516 * (1.8 / !!cysC_sym)^0.294 * (30 / !!bun_sym)^0.169 * 1.099^!!male_sym * (!!ht_sym / 1.4)^1.88) # Schwartz with cysC and bun
-      cli::cli_inform("Using Equation III with {.arg {c(matched_names, optional_names)}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629–637.")
+      cli::cli_inform("Using Equation III with {.arg {c(matched_names, optional_names)}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629-637.")
     }
 
     else if (!is.null(cysC_sym) & !is.null(bun_sym) & is.null(male_sym)) { # bun, cysC present but male absent, so equation II
       mdata <- mdata %>%
       mutate(gfr_schwartz = 41.1 * (!!ht_sym / !!scr_sym)^0.510 * (1.8 / !!cysC_sym)^0.272 * (30 / !!bun_sym)^0.171) # bun, cysC present but male absent, so equation II
-      cli::cli_inform("Using Equation II with {.arg {c(matched_names, optional_names)}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629–637.")
+      cli::cli_inform("Using Equation II with {.arg {c(matched_names, optional_names)}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629-637.")
     }
     
     else if (is.null(cysC_sym) & !is.null(bun_sym))   { # only bun present, so equation Ib
       mdata <- mdata %>%
       mutate(gfr_schwartz = 40.7 * (!!ht_sym / !!scr_sym)^0.640 * (30 / !!bun_sym)^0.202)
-      cli::cli_inform("Using Equation Ib with {.arg {c(matched_names, optional_names[2])}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629–637.")
+      cli::cli_inform("Using Equation Ib with {.arg {c(matched_names, optional_names[2])}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629-637.")
 
     }
     
     else if (is.null(bun_sym) & !is.null(cysC_sym)) { # only cysC present, so equation Ia
       mdata <- mdata %>%
       mutate(gfr_schwartz = 41.6 * (!!ht_sym / !!scr_sym)^0.599 * (1.8 / !!cysC_sym)^0.317)
-      cli::cli_inform("Using Equation Ia with {.arg {c(matched_names, optional_names[3])}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629–637.")
+      cli::cli_inform("Using Equation Ia with {.arg {c(matched_names, optional_names[3])}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629-637.")
 
     }
     else {
       mdata <- mdata %>%
       mutate(gfr_schwartz = 41.3 * !!ht_sym / !!scr_sym) # updated Schwartz equation
-      cli::cli_inform("Using updated Schwartz equation with {.arg {matched_names}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629–637.")
+      cli::cli_inform("Using updated Schwartz equation with {.arg {matched_names}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629-637.")
 
     }
 

@@ -64,7 +64,7 @@ mod_list <- list(
   )
 )
 
-\donttest{
+\dontrun{
 mod <- PM_model$new(mod_list)
 }
 

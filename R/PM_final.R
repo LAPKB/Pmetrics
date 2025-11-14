@@ -960,10 +960,7 @@ PM_final <- R6::R6Class(
     #' @param x A `PM_final_data`` object
     #' @param ... Additional arguments passed to [plot.PM_final]
     #' @examples
-    #' NPex$final$data %>%
-    #' filter(pred > 5) %>%
-    #' filter(pred < 10) %>%
-    #' plot()
+    #' NPex$final$data %>% plot()
     #' @export
     #' 
     plot.PM_final_data <- function(x,...){
