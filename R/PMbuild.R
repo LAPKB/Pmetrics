@@ -5,6 +5,12 @@
 #' Compile Rust source code used by Pmetrics.
 #'
 #' @author Michael Neely and Julian Otalvaro
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Compile Rust source code used by Pmetrics.
+#'
+#' @author Michael Neely and Julian Otalvaro
 #' @export
 
 
@@ -13,8 +19,7 @@ PM_build <- function() {
   clear_build() # clean prior template/artifacts
   if (is_rustup_installed()) {
     cli::cli_text("Rust was detected in your system, Fetching dependencies and building base project.")
-    template <- dummy_compile()
-    
+    dummy_compile(template_path = getPMoptions("model_template_path"))
   } else {
     cli::cli_text("Rust was not detected in your system, this can be caused by multiple reasons:")
     ul <- cli::cli_ul()
@@ -26,6 +31,15 @@ PM_build <- function() {
   }
 }
 
+is_rustup_installed <- function() {
+  flag <- is_cargo_installed()
+  # Sometimes R does not find rustup even if it is installed,
+  # Fix: create a symlink to any of the folders watched by system("echo $PATH")
+  # sudo ln -s ~/.cargo/bin/* /usr/local/sbin
+  # for rustup and cargo
+  # We cannot do it automatically because it requires elevated permissions
+  return(flag)
+}
 is_rustup_installed <- function() {
   flag <- is_cargo_installed()
   # Sometimes R does not find rustup even if it is installed,

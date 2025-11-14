@@ -1,0 +1,6 @@
+﻿Function,R6,Legacy
+Compare models,"PM_compare(PM_result1, PMresult2,…)","PMcompare(1, 2, …)"
+Plot residuals,"PM_result\$op\$plot(resid = T,…)","plot(op, resid = T)"
+"Construct VPC, pcVPC, NPDE",PM_result\$valid() or PM_valid\$new(),makeValid()
+"Plot VPC, pcVPC, NPDE",PM_valid\$plot(),plot(PMvalid)
+Stepwise covariate regression,PM_result\$step(),PMstep()

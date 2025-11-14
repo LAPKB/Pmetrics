@@ -1637,3 +1637,15 @@ modifyList2 <- function (x, val, keep.null = FALSE)
   }
   x
 }
+
+
+#' @title Clear build files
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Deletes rust template files from the Pmetrics template directory.
+#' @return NULL
+#' @export
+#' @keywords internal
+clear_build <- function(){
+  fs::dir_delete(system.file("template", package = "Pmetrics"))
+}

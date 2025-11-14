@@ -2,3 +2,6 @@
 members = [
     "src/rust",
 ]
+exclude = [
+    "inst/template",
+]

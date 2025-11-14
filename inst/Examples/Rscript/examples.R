@@ -75,14 +75,14 @@ names(exData)
 exData # view the original data in the viewer
 exData$print(standard = TRUE) # view the standardized data in the viewer
 exData$print(viewer = FALSE) # view original data in console
-exData$plot() #plot the raw data; more on that later
+exData$plot() # plot the raw data; more on that later
 
 # MODEL OBJECT
 # You can specify a model by reading a file or directly as an object. We'll do both.
 # The following code creates the same model as in /src/model.txt file.
 # See PMmanual() for details on creating models in R compared to text files.
 # The advantage of creating them in R is that one does not need to copy model
-# files into folders to provide necessary inputs. 
+# files into folders to provide necessary inputs.
 
 mod1 <- PM_model$new(
   pri = list(
@@ -98,25 +98,25 @@ mod1 <- PM_model$new(
     gender = interp("none"),
     height = interp()
   ),
-  eqn = function(){
+  eqn = function() {
     two_comp_bolus
   },
-  lag = function(){
-    lag[1] = lag1
+  lag = function() {
+    lag[1] <- lag1
   },
-  out = function(){
-  Y[1] = X[2]/V
+  out = function() {
+    Y[1] <- X[2] / V
   },
   err = list(
     proportional(5, c(0.02, 0.05, -0.0002, 0))
   )
 )
- 
-        
+
+
 # look at it
 mod1
 
-#plot it
+# plot it
 mod1$plot()
 
 
@@ -133,7 +133,8 @@ mod1b
 mod1b$update(
   pri = list(
     ka = ab(0.001, 5)
-))
+  )
+)
 
 # It is case sensitive, so ka is different from Ka. To remove a parameter, set it to NULL.
 
@@ -147,10 +148,10 @@ mod1b <- mod1$clone()
 # as R6 objects use reference semantics. For more details you can refer to
 # https://adv-r.hadley.nz/r6.html, Section 14.4.
 
-#lastly, use the app! PMmanual() and the article on models for details on this.
-build_model() #start from scratch
-build_model(exData) #start with data to match covariates
-build_model(mod1) #start with a model and update it
+# lastly, use the app! PMmanual() and the article on models for details on this.
+build_model() # start from scratch
+build_model(exData) # start with data to match covariates
+build_model(mod1) # start with a model and update it
 
 
 
@@ -160,7 +161,7 @@ build_model(mod1) #start with a model and update it
 run1 <- mod1$fit(data = exData, run = 1, overwrite = TRUE) # execute the fit and return the results to run1
 
 
-# 
+#
 # After the run is complete the results are returned to the assigned object, here 'run1'
 
 # you need get the extracted information back into R.
@@ -182,8 +183,10 @@ run1 <- PM_load(1)
 # Plot the raw data using R6 with various options.  Type ?plot.PM_data in the R console for help.
 run1$data$plot()
 run1$data$plot(overlay = FALSE, xlim = c(119, 145))
-run1$data$plot(xlim = c(119, 146), group = "gender", group_names = c("Male", "Female"), 
-  marker = list(color = c("blue","red"), symbol = c("circle","triangle-up"))) 
+run1$data$plot(
+  xlim = c(119, 146), group = "gender", group_names = c("Male", "Female"),
+  marker = list(color = c("blue", "red"), symbol = c("circle", "triangle-up"))
+)
 
 run1$data$plot(xlim = c(119, 146), group = "gender", group_names = c("Male", "Female"), marker = list(color = "Set2"))
 
@@ -239,7 +242,8 @@ run1$final$data %>% plot()
 
 # A bivariate plot. Plotting formulae in R are of the form 'y~x'
 run1$final$plot(ke ~ v,
-  marker = list(color = "red", symbol = "diamond"))
+  marker = list(color = "red", symbol = "diamond")
+)
 
 
 
@@ -288,8 +292,10 @@ run1$cov$data %>%
   plot(v ~ wt)
 
 # Plot
-run1$cov$plot(ke ~ age, line = list(loess = FALSE, lm = TRUE),
-               marker = list(symbol = 3))
+run1$cov$plot(ke ~ age,
+  line = list(loess = FALSE, lm = TRUE),
+  marker = list(symbol = 3)
+)
 
 # Another plot with mean Bayesian posterior parameter and covariate values...
 # Remember the 'icen' argument?
@@ -336,7 +342,7 @@ mod2 <- mod2$update(
     V = NULL
   ),
   sec = function(x) {
-    V = V0*(WT/55)
+    V <- V0 * (WT / 55)
   },
   err = list(
     proportional(2.39, c(0.02, 0.05, -0.0002, 0), fixed = TRUE)
@@ -414,7 +420,7 @@ setwd("../Sim")
 # The population parameter values from the NPAG run in exercise 2 are used for the Monte Carlo Simulation.
 simdata <- run2$sim(include = 1, limits = NA, nsim = 100)
 
-# Below is the alternate way to simulate, which is particularly useful if you define 
+# Below is the alternate way to simulate, which is particularly useful if you define
 # your own population parameters. See ?SIMrun for details on this as well as
 # the article on simulation linked by PMmanual().
 poppar <- list(
@@ -423,8 +429,10 @@ poppar <- list(
   cov = diag(c(0.07, 0.0004, 830, 0.45))
 )
 
-simOther <- PM_sim$new(poppar = poppar, data = exData, model = mod1,
-                       include = 1, limits = NA, nsim = 100)
+simOther <- PM_sim$new(
+  poppar = poppar, data = exData, model = mod1,
+  include = 1, limits = NA, nsim = 100
+)
 
 
 # simulate from a model with new data
@@ -662,7 +670,6 @@ pta4_2$plot(at = 1, type = "pdi", ci = 0.1)
 
 # ...or gone altogether, put back the grid, redefine the colors, and make lines narrower
 pta4_2$plot(
-  
   at = 1, type = "pdi", ci = 0, grid = TRUE,
   line = list(
     color = c("blue", "purple", "black", "brown"),

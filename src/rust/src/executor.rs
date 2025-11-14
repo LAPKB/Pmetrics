@@ -12,7 +12,7 @@ pub(crate) fn model_parameters<E: Equation>(model_path: PathBuf) -> Vec<String> 
     meta.get_params().clone()
 }
 
-pub(crate) fn simulate<E: Equation>(
+pub(crate) fn simulate<E: Equation + Send>(
     model_path: PathBuf,
     subject: &Subject,
     support_point: &Vec<f64>,
@@ -31,7 +31,7 @@ pub(crate) fn simulate<E: Equation>(
     ))
 }
 
-pub(crate) fn fit<E: Equation>(
+pub(crate) fn fit<E: Equation + Send>(
     model_path: PathBuf,
     data: PathBuf,
     params: List,
