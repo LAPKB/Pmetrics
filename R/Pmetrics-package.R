@@ -13,7 +13,7 @@
 #' @keywords internal
 #' "_PACKAGE"
 #'
-#' @importFrom dplyr select arrange filter mutate transmute group_by row_number
+#' @importFrom dplyr select arrange filter mutate group_by row_number
 #' group_map ungroup bind_cols bind_rows nest_by rowwise relocate rename reframe inner_join
 #' slice_tail slice_head slice across tibble as_tibble quo pull n everything 
 #' case_match case_when starts_with all_of where distinct summarize if_else

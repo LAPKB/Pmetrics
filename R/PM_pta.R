@@ -1104,7 +1104,7 @@ PM_pta <- R6::R6Class(
       } else { # pta plot
         
         if (simTarg == 1) { # set targets
-   
+          
           p <- pta %>%
           mutate(simnum = factor(reg_num, labels = simLabels)) %>%
           group_by(simnum) %>%
@@ -1176,11 +1176,12 @@ PM_pta <- R6::R6Class(
     #' intersection of all the PTAs.
     #' @param ci Width of the interval for pharmacodynamic index reporting.  Default is 0.95, i.e. 2.5th to 97.5th percentile.
     #' @param ... Not used.
-    #' @return A tibble with the following columns (only the first three if `at = "intersect"`):
+    #' @return A tibble with the following columns (only the first four if `at = "intersect"`):
     #'
     #' * **reg_num** is the number of the simulation regimen
-    #' * **target** is the target for the row, if targets are discrete, not used for simulated targets
     #' * **label** is the simulation label, for reference
+    #' * **target** is the target for the row, if targets are discrete, not used for simulated targets
+    #' * **type** is the target type for the row, e.g. "auc", "time", "-min", etc.
     #' * **prop_success** is the proportion of simulated profiles that met the success definition
     #' * **median** is the median parmacodynamic index (PDI), i.e. the proportion or ratio depending on the target type
     #' * **lower** is the lower bound of the interval defined by `ci`
@@ -1212,43 +1213,41 @@ PM_pta <- R6::R6Class(
         at <- suppressWarnings(tryCatch(as.numeric(at), error = function(e) NA))
         if (!is.na(at)) {
           if (at > length(pta)) {
-            cat(crayon::red("Error:"), "at =", at, "is greater than the number of PTAs.")
-            return(invisible(NULL))
+            cli::cli_abort(c("x" = "at = {at} is greater than the number of PTAs."))
           } else if (length(pta[[at]]) == 0 || all(is.na(pta[[at]]))) {
-            cat(crayon::red("Error:"), "at =", at, "does not return a valid PTA.")
-            return(invisible(NULL))
+            cli::cli_abort(c("x" =  "at = {at} does not return a valid PTA."))
           } else {
             pta <- pta[[at]]
           }
         } else {
-          cat(crayon::red("Error:"), "'at' should be either \"intersect\" or the number of one of the objects to plot.")
-          return(invisible(NULL))
+          cli::cli_abort(c("x" = "{.code at} should be either \"intersect\" or the number of one of the objects to plot."))
         }
       }
       
       simTarg <- 1 + as.numeric(inherits(pta$target[[1]], "tbl_df")) # 1 if missing or set, 2 if random
       if (length(simTarg) == 0) simTarg <- 1
       
-      if (simTarg == 1) { # set targets
+      if (simTarg == 1) { # discrete targets
         
         pdi <- pta %>% group_by(reg_num, target)
       } else { # random targets
         pdi <- pta %>% group_by(reg_num)
       }
-      
+
       if (at != "intersect") {
-        pdi <- pdi %>% transmute(
-          label = label, prop_success = prop_success,
+        pdi <- pdi %>% mutate(
+          label = label, type = type, prop_success = prop_success,
           median = median(unlist(pdi), na.rm = TRUE),
           lower = quantile(unlist(pdi), probs = 0.5 - ci / 2, na.rm = TRUE),
           upper = quantile(unlist(pdi), probs = 0.5 + ci / 2, na.rm = TRUE),
           mean = mean(unlist(pdi), na.rm = TRUE),
           sd = sd(unlist(pdi), na.rm = TRUE),
           min = min(unlist(pdi), na.rm = TRUE),
-          max = max(unlist(pdi), na.rm = TRUE)
+          max = max(unlist(pdi), na.rm = TRUE),
+          .keep = "none"
         )
       } else {
-        pdi <- pdi %>% transmute(type = type, label = label, prop_success = prop_success)
+        pdi <- pdi %>% mutate(type = type, label = label, prop_success = prop_success, .keep = "none")
       }
       
       pdi <- pdi %>% ungroup()
