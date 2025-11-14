@@ -249,7 +249,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
     req_par <- model_lib(show = FALSE) %>%
     filter(Name == tem) %>%
     select(Parameters) %>%
-    stringr::str_split(", ") %>%
+    stringr::str_split(", ", simplify = TRUE) %>%
     unlist() %>%
     tolower() %>%
     purrr::discard(~ .x == "v" & !tem %in% c("one_comp_iv_cl", "two_comp_bolus_cl")) %>% # don't include V for models that don't need it in equations
