@@ -191,8 +191,9 @@ It also has several methods:
 The most basic plot is achieved with a simple call to the method.
 
 ```{r echo = TRUE, eval = TRUE}
-pta1$plot()
-pta2$plot(at = 1)
+pta1$plot() # no intersection so plot the first and only pta
+pta3$plot() # plot the intersection by default
+pta3$plot(at = 1) # plot just the first target pta
 ```
 
 The `at` argument controls which object in the list is plotted, by default the intersection, or the first object (`at = 1`) if
@@ -241,7 +242,8 @@ Like most created Pmetrics objects, `PM_pta()` objects can be summarized.
 
 ```{r echo = TRUE, eval = TRUE}
 pta1$summary()
-pta2$summary(at = 1)
+pta3$summary(at = 2) # summarize the second target pta
+pta3$summary() # summarize the intersection pta
 ```
 
 Here the default for at is 1, because this function prouduces a summary of the pharmacodynamic index values,
