@@ -1,0 +1,8 @@
+Function,R6,Legacy
+Read data file,PM_data\$new(),PMreadMatrix()
+Check data file,Embedded in PM_data\$new(),PMcheck()
+Write data file,PM_data\$save(),PMwriteMatrix()
+Convert calendar dates and clock times,Embedded in PM_data\$new(),PMmatrixReltime()
+Convert from old USC\*PACK .wrk format,PMwrk2csv(),PMwrk2csv()
+Convert from NONMEM ,NM2PM(),NM2PM()
+Convert from old USC\*PACK .mb format,PMmb2csv(),PMmb2csv()

@@ -2,9 +2,9 @@ name: R Package Check
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   R-CMD-check:
@@ -25,8 +25,14 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: any::rcmdcheck, any::roxygen2
           needs: check
+
+      - name: Verify roxygen outputs are current
+        run: |
+          Rscript -e 'roxygen2::roxygenise()'
+          git status --short man NAMESPACE inst/NEWS.Rd || true
+          git diff --quiet man NAMESPACE inst/NEWS.Rd || (echo "::error::Run devtools::document() and commit regenerated Rd/NAMESPACE files." && exit 1)
 
       - name: Check package
         uses: r-lib/actions/check-r-package@v2
