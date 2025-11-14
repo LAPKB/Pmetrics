@@ -338,7 +338,7 @@ plot.PM_pop <- function(x,
     sub$group <- factor(sub$group)
     
     # remove missing
-    sub <- sub %>% filter(pred != -99)
+    # sub <- sub %>% filter(pred != -99) # obsolete now
     
     
     
