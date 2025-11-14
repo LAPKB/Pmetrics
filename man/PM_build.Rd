@@ -10,6 +10,10 @@ PM_build()
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
 Compile Rust source code used by Pmetrics.
+
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
+Compile Rust source code used by Pmetrics.
 }
 \author{
 Michael Neely and Julian Otalvaro

@@ -32,41 +32,41 @@ a \code{donttest} block to avoid automatic compilation.
 
 mod_list <- list(
   pri = c(
-     CL = ab(10, 200),
-     V0 = ab(0, 100),
-     ka = ab(0, 3),
-     k23 = ab(0, 5),
-     k32 = ab(0, 5),
-     lag1 = ab(0, 2)
-   ),
-   cov = c(
-     wt = interp()
-   ),
-   sec = function() {
-     V = V0 * (wt/70)
-     ke = CL/V # define here to make eqn simpler
-   },
-   eqn = function() {
-     dx[1] = -ka * x[1]
-     dx[2] = rateiv[1] + ka * x[1] - (ke + k23) * x[2] + k32 * x[3]
-     dx[3] = k23 * x[2] - k32 * x[3]
-     dx[4] = x[1] / V
-   },
-   lag = function() {
-     tlag[1] = lag1
-   },
-   out = function() {
-     y[1] = x[1]/V
-     y[2] = x[4] # AUC, not fitted to any data, not required
-   },
-   err = c(
-     proportional(2, c(0.1, 0.15, 0, 0)) # only applies to y[1]
-   )
- )
+    CL = ab(10, 200),
+    V0 = ab(0, 100),
+    ka = ab(0, 3),
+    k23 = ab(0, 5),
+    k32 = ab(0, 5),
+    lag1 = ab(0, 2)
+  ),
+  cov = c(
+    wt = interp()
+  ),
+  sec = function() {
+    V <- V0 * (wt / 70)
+    ke <- CL / V # define here to make eqn simpler
+  },
+  eqn = function() {
+    dx[1] <- -ka * x[1]
+    dx[2] <- rateiv[1] + ka * x[1] - (ke + k23) * x[2] + k32 * x[3]
+    dx[3] <- k23 * x[2] - k32 * x[3]
+    dx[4] <- x[1] / V
+  },
+  lag = function() {
+    tlag[1] <- lag1
+  },
+  out = function() {
+    y[1] <- x[1] / V
+    y[2] <- x[4] # AUC, not fitted to any data, not required
+  },
+  err = c(
+    proportional(2, c(0.1, 0.15, 0, 0)) # only applies to y[1]
+  )
+)
 
 \donttest{
-   mod <- PM_model$new(mod_list)
- } 
+mod <- PM_model$new(mod_list)
+}
 
 }
 \author{
@@ -115,10 +115,10 @@ and \emph{error models}. These
 portions of the model have specific and defined creator functions and no additional
 R code is permissible. They take this form:
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{block_name = c( 
-  var1 = creator(),   
+\if{html}{\out{<div class="sourceCode">}}\preformatted{block_name = c(
+  var1 = creator(),
   var2 = creator()
-) 
+)
 }\if{html}{\out{</div>}}
 
 Note the comma separating the creator functions, "\verb{c(}" to open the vector and "\verb{)}" to close the vector.
@@ -128,13 +128,13 @@ equations}, \emph{model equations} (e.g. ODEs), \emph{lag time}, \emph{bioavaila
 and \emph{outputs}. These parts of the model are defined as R functions without arguments,
 but whose body contains any permissible R code.
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{block_name = function() \{ 
+\if{html}{\out{<div class="sourceCode">}}\preformatted{block_name = function() \{
 
- # any valid R code 
+ # any valid R code
  # can use primary or secondary parameters and covariates
  # lines are not separated by commas
 
-\} 
+\}
 }\if{html}{\out{</div>}}
 
 Note the absence of arguments between the "\verb{()}", the opening curly brace "\verb{\{}" to start
@@ -225,9 +225,9 @@ Note that \code{wt = interp()} is equivalent to \code{wt = interp("lm")}, since 
 are not estimated for these equations but they are available to every other block in the model.
 For example:
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{sec = function() \{ 
-  V = V0 * (wt/70) 
-\} 
+\if{html}{\out{<div class="sourceCode">}}\preformatted{sec = function() \{
+  V = V0 * (wt/70)
+\}
 }\if{html}{\out{</div>}}
 
 Note that the function
@@ -361,7 +361,7 @@ but will be specific to the \code{out} block.
 
 For example,
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{out = function() \{ 
+\if{html}{\out{<div class="sourceCode">}}\preformatted{out = function() \{
   V = V0 * wt # only needed if not included in sec block
   y[1] = x[1]/V
   #Vp and Vm must be defined in pri or sec blocks

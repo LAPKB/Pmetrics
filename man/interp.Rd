@@ -24,7 +24,7 @@ interpolation between values or not.
 }
 \examples{
 \dontrun{
-cov = c(
+cov <- c(
   wt = interp(), # same as interp("lm") or interp("linear")
   visit = interp("none")
 )
