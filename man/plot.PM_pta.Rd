@@ -117,8 +117,10 @@ when creating a \link{PM_pta} object,
 or if missing, "Regimen 1, Regimen 2,...Regimen n", where \emph{n} is the number of
 regimens in the PM_pta object.}
 
-\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type.
-
+\item{log}{Boolean operator to plot the x axis in log base 10. This argument maps to
+the xaxis type value in the layout object in plotly. Many other Pmetrics plots map this
+argument to the y axis, but for PTA plots, the x axis is the more common axis to log transform.
+Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis > type.
 Example: \code{log = T}}
 
 \item{grid}{Controls grid display. This argument maps to the xaxis and yaxis layout objects in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > xaxis or yaxis > gridcolor or gridwidth. It is a Boolean operator. If \code{FALSE}, no grid is plotted.  If \code{TRUE}, the default color \emph{grey} and width 1 will be plotted at  major tick marks. If a list, color and width can be customized.
