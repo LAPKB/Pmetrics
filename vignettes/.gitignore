@@ -4,3 +4,5 @@
 /.quarto/
 
 **/*.quarto_ipynb
+
+*_files/
