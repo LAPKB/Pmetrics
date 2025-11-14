@@ -1,4 +1,4 @@
-url: https://lapkb.github.io/Pmetrics/
+url: https://lapkb.github.io/Pmetrics_rust/
 template:
   bootstrap: 5
   bootswatch: flatly
