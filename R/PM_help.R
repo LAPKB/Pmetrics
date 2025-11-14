@@ -16,14 +16,14 @@
 #' @examples
 #' \dontrun{
 #' # Display help information
-#' PM_bug_report()
+#' PM_help()
 #'
 #' # Copy information to clipboard
-#' PM_bug_report(copy = TRUE)
+#' PM_help(copy = TRUE)
 #' }
 #' @export
 
-PM_bug_report <- function(copy = FALSE) {
+PM_help <- function(copy = FALSE) {
   
   # GitHub repository URL
   github_url <- "https://github.com/LAPKB/Pmetrics_rust"
