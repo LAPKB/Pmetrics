@@ -48,18 +48,24 @@ setPMoptions <- function(launch.app = TRUE) {
         numericInput("digits", "Number of digits to display",
         value = 3, min = 0, max = 10, step = 1)
       ),
-
-      conditionalPanel(
-        condition = "input.show == false",
-        #Fit options
+      
+      
+      #C ompile  options
       tags$details(
-        tags$summary("🔍 Fit Options"),
-        selectInput("backend", "Default backend",
-        choices = c("Rust" = "rust"),
-        selected = "rust"),
-        markdown("*Rust is the only backend currently supported by Pmetrics.*")
-      )
-    ),
+        tags$summary("⚙️ Compile Options"),
+        markdown("Default Rust model template path is in Pmetrics package installation folder. Change if you have write permission errors."),
+        tags$div(
+          style = "display: flex; align-items: flex-start; gap: 8px;",
+          textAreaInput("model_template_path", NULL, value = system.file(package = "Pmetrics"), autoresize = TRUE),
+          actionButton("reset_model_template", "Reset to default", class = "btn-secondary")
+        ),
+        conditionalPanel(
+          condition = "input.show == false",selectInput("backend", "Default backend",
+          choices = c("Rust" = "rust"),
+          selected = "rust"),
+          markdown("*Rust is the only backend currently supported by Pmetrics.*")
+        )
+      ),
       
       tags$details(
         tags$summary("📊 Prediction Error Metrics"),
@@ -83,11 +89,11 @@ setPMoptions <- function(launch.app = TRUE) {
           "Root mean, bias-adjusted, weighted, squared error (RMBAWSE)" = "rmbawse"
         ),
         selected = "rmbawse"),
-
+        
         checkboxInput("use_percent", "Use percent for error metrics", value = TRUE),
-
+        
         selectInput("ic_method", "Information Criterion Method",
-          choices = c(
+        choices = c(
           "Akaike Information Criterion (AIC)" = "aic", 
           "Bayesian Information Criterion (BIC)" = "bic"
         ),
@@ -136,9 +142,10 @@ setPMoptions <- function(launch.app = TRUE) {
         use_percent = updateCheckboxInput,
         ic_method = updateSelectInput,
         report_template = updateSelectInput,
-        backend = updateSelectInput
+        backend = updateSelectInput,
+        model_template_path = updateTextAreaInput
       )
-
+      
       
       # Apply updates
       purrr::imap(settings, function(val, name) {
@@ -151,10 +158,6 @@ setPMoptions <- function(launch.app = TRUE) {
           do.call(updater, args)
         } 
       })
-      
-      
-      
-      
       
       # Display path to user settings file
       output$settings_location <- renderText({
@@ -170,7 +173,8 @@ setPMoptions <- function(launch.app = TRUE) {
           bias_method = glue::glue(c("","percent_")[1+as.numeric(input$use_percent)], input$bias_method), 
           imp_method = glue::glue(c("","percent_")[1+as.numeric(input$use_percent)], input$imp_method),
           ic_method = input$ic_method,
-          report_template = input$report_template, backend = input$backend)
+          report_template = input$report_template, backend = input$backend, 
+          model_template_path = input$model_template_path)
           
           save_status <- tryCatch(jsonlite::write_json(settings, PMoptionsUserFile, pretty = TRUE, auto_unbox = TRUE),
           error = function(e) {
@@ -184,6 +188,16 @@ setPMoptions <- function(launch.app = TRUE) {
             "Settings saved", type = "message", duration = 3
           )
         })
+        
+        # Reset model template path to default
+        observeEvent(input$reset_model_template, {
+          updateTextAreaInput(
+            session,
+            inputId = "model_template_path",
+            value   = system.file(package = "Pmetrics")
+          )
+        })
+        
         
         # Exit the app
         observeEvent(input$exit, {
@@ -202,11 +216,11 @@ setPMoptions <- function(launch.app = TRUE) {
     if(launch.app){
       shiny::runApp(app, launch.browser = TRUE)
     }
-  
-  return(invisible(NULL))
     
-
-} # end of PM_options function
+    return(invisible(NULL))
+    
+    
+  } # end of PM_options function
   
   
   
