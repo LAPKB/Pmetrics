@@ -201,7 +201,16 @@ setPMoptions <- function(launch.app = TRUE) {
         
         # Exit the app
         observeEvent(input$exit, {
-          shiny::stopApp()
+          if (file.access(input$model_template_path, 0) == 0 & file.access(input$model_template_path, 2) == 0){
+            shiny::stopApp()
+          } else {
+            shiny::showModal(shiny::modalDialog(
+              title = "Permission Error",
+              "The specified model template path is not writable. Please choose a different path with write permissions before exiting.",
+              easyClose = TRUE,
+              footer = NULL
+            ))
+          }
         })
         
         # Open the options file in the default application
