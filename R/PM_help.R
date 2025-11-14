@@ -53,7 +53,18 @@ PM_help <- function(copy = FALSE) {
   # RStudio version
   sys_info$rstudio_version <- tryCatch({
     if (Sys.getenv("RSTUDIO") == "1") {
-      rstudioapi::versionInfo()$version
+      # Check if rstudioapi is available
+      if (requireNamespace("rstudioapi", quietly = TRUE)) {
+        rstudioapi::versionInfo()$version
+      } else {
+        # Fallback: try to get version from environment variable
+        rstudio_version <- Sys.getenv("RSTUDIO_VERSION")
+        if (nzchar(rstudio_version)) {
+          rstudio_version
+        } else {
+          "RStudio (version unknown)"
+        }
+      }
     } else {
       "Not running in RStudio"
     }
@@ -61,13 +72,13 @@ PM_help <- function(copy = FALSE) {
   
   # Rust version
   sys_info$rust_version <- tryCatch({
-    rust_output <- system("rustc --version", intern = TRUE, ignore.stderr = TRUE)
+    rust_output <- system2("rustc", "--version", stdout = TRUE, stderr = FALSE)
     if (length(rust_output) > 0) rust_output[1] else "Not found"
   }, error = function(e) "Not found")
   
   # Cargo version
   sys_info$cargo_version <- tryCatch({
-    cargo_output <- system("cargo --version", intern = TRUE, ignore.stderr = TRUE)
+    cargo_output <- system2("cargo", "--version", stdout = TRUE, stderr = FALSE)
     if (length(cargo_output) > 0) cargo_output[1] else "Not found"
   }, error = function(e) "Not found")
   
@@ -115,12 +126,16 @@ PM_help <- function(copy = FALSE) {
   
   # Copy to clipboard if requested
   if (copy) {
-    tryCatch({
-      clipr::write_clip(output)
-      message("\nSystem information copied to clipboard!")
-    }, error = function(e) {
-      warning("Could not copy to clipboard. Install 'clipr' package for this feature.")
-    })
+    if (requireNamespace("clipr", quietly = TRUE)) {
+      tryCatch({
+        clipr::write_clip(output)
+        message("\nSystem information copied to clipboard!")
+      }, error = function(e) {
+        warning("Could not copy to clipboard: ", e$message)
+      })
+    } else {
+      warning("Could not copy to clipboard. Install 'clipr' package for this feature:\n  install.packages('clipr')")
+    }
   }
   
   # Return invisibly

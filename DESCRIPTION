@@ -54,6 +54,7 @@ Imports:
     mvtnorm,
     utils
 Suggests:
+    clipr,
     data.table,
     devtools,
     ggpubr,
@@ -68,6 +69,7 @@ Suggests:
     quarto,
     RColorBrewer,
     RcppTOML,
+    rstudioapi,
     testthat
 RoxygenNote: 7.3.3
 Encoding: UTF-8
