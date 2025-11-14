@@ -164,7 +164,13 @@ fn parse_theta(matrix: RMatrix<f64>) -> Vec<Vec<f64>> {
 /// Compiles the text representation of a model into a binary file.
 ///@export
 #[extendr]
-fn compile_model(model_path: &str, output_path: &str, params: Strings, template_path: &str, kind: &str) -> Result<()> {
+fn compile_model(
+    model_path: &str,
+    output_path: &str,
+    params: Strings,
+    template_path: &str,
+    kind: &str,
+) -> Result<()> {
     let params: Vec<String> = params.iter().map(|x| x.to_string()).collect();
     let model_txt = std::fs::read_to_string(model_path).expect("Failed to read model file");
     let template_path = std::path::PathBuf::from(template_path);
@@ -197,6 +203,7 @@ fn compile_model(model_path: &str, output_path: &str, params: Strings, template_
 ///@export
 #[extendr]
 fn dummy_compile(template_path: &str) -> Result<String> {
+    dbg!("inside dummy_compile");
     let template_path = std::path::PathBuf::from(template_path);
     let build_path = build::dummy_compile(template_path, |_key, val| {
         print!("{}", val);
@@ -227,8 +234,6 @@ fn model_parameters(model_path: &str, kind: &str) -> Result<Vec<String>> {
 fn temporary_path() -> String {
     build::temp_path().to_string_lossy().to_string()
 }
-
-
 
 /// Initialize the tracing subscriber with the custom R formatter
 /// @keywords internal

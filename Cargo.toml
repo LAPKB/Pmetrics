@@ -1,4 +1,7 @@
 [workspace]
-members = [ "inst/template",
+members = [
     "src/rust",
+]
+exclude = [
+    "inst/template",
 ]
