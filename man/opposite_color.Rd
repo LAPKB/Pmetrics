@@ -30,8 +30,8 @@ Finds an opposite color with maximum contrast to the input color.
 This function takes a color input (name or hex) and returns an opposite color
 using one of three methods:
 \itemize{
-\item "complement": strict 180° hue complement
-\item "complement_maxcontrast": 180° hue complement adjusted for maximum contrast
+\item "complement": strict 180 degrees hue complement
+\item "complement_maxcontrast": 180 degrees hue complement adjusted for maximum contrast
 \item "bw_maxcontrast": black or white, whichever has higher contrast
 The function uses the WCAG relative luminance and contrast ratio formulas to determine contrast.
 }

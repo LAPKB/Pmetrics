@@ -1326,7 +1326,7 @@ function(el, x) {
     selectedIndex = i;
   });
 
-  // Background click → restore
+  // Background click -> restore
   el.addEventListener('click', function(){
     setTimeout(() => {
       if (!lastClickWasPoint){
@@ -1440,7 +1440,7 @@ function(el, x) {
     r <- nums[1] / 255
     g <- nums[2] / 255
     b <- nums[3] / 255
-    a <- nums[4]              # already 0–1 in CSS rgba()
+    a <- nums[4]              # already 0-1 in CSS rgba()
     
     grDevices::rgb(r, g, b, alpha = a)
   }
@@ -1892,8 +1892,8 @@ function(el, x) {
 #' @details
 #' This function takes a color input (name or hex) and returns an opposite color
 #' using one of three methods:
-#' - "complement": strict 180° hue complement
-#' - "complement_maxcontrast": 180° hue complement adjusted for maximum contrast
+#' - "complement": strict 180 degrees hue complement
+#' - "complement_maxcontrast": 180 degrees hue complement adjusted for maximum contrast
 #' - "bw_maxcontrast": black or white, whichever has higher contrast
 #' The function uses the WCAG relative luminance and contrast ratio formulas to determine contrast.
 #' @param col A color name or hex string (e.g. "red", "#FF0000", "#FF0000FF").
@@ -1915,7 +1915,7 @@ opposite_color <- function(col,
     grDevices::rgb(r, g, b, alpha = a, maxColorValue = 1)
   }
 
-  # parse any color name or hex into rgb 0–1 + alpha
+  # parse any color name or hex into rgb 0-1 + alpha
   parse_col <- function(c) {
     if (grepl("^#", c)) {
       hex <- toupper(c)
@@ -1959,7 +1959,7 @@ opposite_color <- function(col,
   hsv <- grDevices::rgb2hsv(matrix(rgb, nrow = 3), maxColorValue = 1)
   h <- hsv[1, 1]; s <- hsv[2, 1]; v <- hsv[3, 1]
 
-  # strict 180° hue complement
+  # strict 180 degrees hue complement
   comp <- grDevices::hsv((h + degree_offset) %% 1, s, v, alpha = alpha)
   if(nchar(col)==7) comp <- substr(comp, 1, 7)  # drop alpha if input had none
 

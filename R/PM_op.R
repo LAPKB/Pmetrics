@@ -720,8 +720,8 @@ plot.PM_op <- function(x,
   #' @param ... Additional arguments passed to [plot.PM_op]
   #' @examples
   #' NPex$op$data %>%
-  #' filter(pred > 5) %>%
-  #' filter(pred < 10) %>%
+  #' dplyr::filter(pred > 5) %>%
+  #' dplyr::filter(pred < 10) %>%
   #' plot()
   #' @export
   #' 
@@ -864,7 +864,7 @@ plot.PM_op <- function(x,
         percent = c(percent_mae, percent_mwe, percent_mse, percent_mwse, percent_rmse, percent_mbase, percent_mbawse, percent_rmbawse)
       )    
       
-      wtd.t <- Pmetrics:::weighted.t.test(data)
+      wtd.t <- weighted.t.test(data)
       
       result <- list(sumstat = sumstat, pe = pe, wtd.t = wtd.t)
       return(result)
@@ -908,8 +908,8 @@ plot.PM_op <- function(x,
   #' @param ... Additional arguments passed to [summary.PM_op]
   #' @examples
   #' NPex$op$data %>%
-  #' filter(pred > 5) %>%
-  #' filter(pred < 10) %>%
+  #' dplyr::filter(pred > 5) %>%
+  #' dplyr::filter(pred < 10) %>%
   #' summary()
   #' @export
   #' 

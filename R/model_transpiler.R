@@ -142,7 +142,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
         } else {
           list(args[[3]])
         }
-        body <- stmts_to_rust(loop_exprs, params, covs, declared) # make sure stmts_to_rust gets declared too
+        body <- stmts_to_rust(loop_exprs, params, covs) # make sure stmts_to_rust gets declared too
         sprintf("for %s in 0..%s as usize {\n%s}\n", var, n_sym, indent(body))
       },
       
