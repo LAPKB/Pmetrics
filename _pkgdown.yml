@@ -39,6 +39,8 @@ navbar:
         href: articles/objects.html
       - text: Simulation
         href: articles/simulation.html
+      - text: Probability of Target Attainment
+        href: articles/pta.html
       - text: Plotly plots
         href: articles/plotly.html
 home:
