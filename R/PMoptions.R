@@ -104,7 +104,7 @@ setPMoptions <- function(launch.app = TRUE) {
       title = "Pmetrics Options",
       
       tags$details(
-        tags$summary("📁 Data File Reading"),
+        tags$summary("\u1F4C1 Data File Reading"),
         selectInput("sep", "Field separator",
         choices = c(Comma = ",", Semicolon = ";", Tab = "\t"),
         selected = ","),
@@ -115,7 +115,7 @@ setPMoptions <- function(launch.app = TRUE) {
       ),
       # Formatting options
       tags$details(
-        tags$summary("📏 Formatting Options"),
+        tags$summary("\u1F4CF Formatting Options"),
         numericInput("digits", "Number of digits to display",
         value = 3, min = 0, max = 10, step = 1)
       ),
@@ -123,7 +123,7 @@ setPMoptions <- function(launch.app = TRUE) {
       
       #C ompile  options
       tags$details(
-        tags$summary("⚙️ Compile Options"),
+        tags$summary("\u2699\uFE0F Compile Options"),
         markdown("Default Rust model template path is in Pmetrics package installation folder. Change if you have write permission errors."),
         tags$div(
           style = "display: flex; align-items: flex-start; gap: 8px;",
@@ -139,7 +139,7 @@ setPMoptions <- function(launch.app = TRUE) {
       ),
       
       tags$details(
-        tags$summary("📊 Prediction Error Metrics"),
+        tags$summary("\u1F4CA Prediction Error Metrics"),
         br(),
         checkboxInput("show_metrics", "Display error metrics on obs-pred plots with linear regression", TRUE),
         selectInput("bias_method", "Bias Method",
@@ -173,7 +173,7 @@ setPMoptions <- function(launch.app = TRUE) {
       ),
       
       tags$details(
-        tags$summary("📝 Report Generation"),
+        tags$summary("\u1F4DD Report Generation"),
         selectInput("report_template", "Default report template", 
         choices = c("plotly", "ggplot2"),
         selected = "plotly")

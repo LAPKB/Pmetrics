@@ -28,5 +28,6 @@ rust_debug.txt
 ^get-dependencies
 ^target/
 ^inst/Learn/.quarto
+^inst/Learn/_*
 Experimental
 

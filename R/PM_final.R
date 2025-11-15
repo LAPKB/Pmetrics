@@ -240,21 +240,21 @@ PM_final <- R6::R6Class(
   ), # end active
   private = list(
     make = function(data, path) {
-    if (file.exists(file.path(path, "theta.csv"))) {
-      theta <- readr::read_csv(file = file.path(path, "theta.csv"), show_col_types = FALSE)
+      if (file.exists(file.path(path, "theta.csv"))) {
+        theta <- readr::read_csv(file = file.path(path, "theta.csv"), show_col_types = FALSE)
       } else if (inherits(data, "PM_final")) { # file not there, and already PM_final
         class(data$data) <- c("PM_final_data", "list")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate final cycle information.",
-        "i" = "{.file {file.path(path, 'theta.csv')}} does not exist, and result does not have valid {.code PM_final} object."
+          "i" = "{.file {file.path(path, 'theta.csv')}} does not exist, and result does not have valid {.code PM_final} object."
         ))
         return(NULL)
       }
       
-    if (file.exists(file.path(path, "posterior.csv"))) {
-      post <- readr::read_csv(file = file.path(path, "posterior.csv"), show_col_types = FALSE)
+      if (file.exists(file.path(path, "posterior.csv"))) {
+        post <- readr::read_csv(file = file.path(path, "posterior.csv"), show_col_types = FALSE)
       } else if (inherits(data, "PM_final") & !is.null(data$data)) { # file not there, and already PM_final
         class(data$data) <- c("PM_final_data", "data.frame")
         return(data$data)
@@ -498,10 +498,12 @@ PM_final <- R6::R6Class(
       xlab, ylab, zlab,
       title,
       xlim, ylim,
-      static = FALSE,
       print = TRUE,
       ...) {
         # housekeeping
+        
+        # fixed for now
+        static = FALSE
         
         if (inherits(x, "PM_final")) {
           data <- x$data
@@ -1007,6 +1009,7 @@ PM_final <- R6::R6Class(
     #' @param object The PM_final object made after an NPAG or IT2B run
     #' @param lower Desired lower confidence interval boundary.  Default is 0.025. Ignored for IT2B objects.
     #' @param upper Desired upper confidence interval boundary.  Default is 0.975. Ignored for IT2B objects.
+    #' @param file Filename to save the summary. Include path if necessary.
     #' @param ... Not used.
     #' @return The output is a data frame.
     #' For NPAG this has 4 columns:

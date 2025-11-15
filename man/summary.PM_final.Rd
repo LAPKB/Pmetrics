@@ -13,6 +13,8 @@
 
 \item{upper}{Desired upper confidence interval boundary.  Default is 0.975. Ignored for IT2B objects.}
 
+\item{file}{Filename to save the summary. Include path if necessary.}
+
 \item{...}{Not used.}
 }
 \value{
