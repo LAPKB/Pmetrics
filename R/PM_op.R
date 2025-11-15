@@ -137,7 +137,7 @@ private = list(
       } 
       
       op_raw <- op_raw %>% dplyr::rename(cens = censoring)
-
+      
     } else if (inherits(data, "PM_op") & !is.null(data$data)) { # file not there, and already PM_op
       if(!"cens" %in% names(data$data)){
         data$data <- data$data %>% mutate(cens = "none") # if cens column missing, assume all observed
@@ -719,10 +719,12 @@ plot.PM_op <- function(x,
   #' @param x A `PM_op_data`` object
   #' @param ... Additional arguments passed to [plot.PM_op]
   #' @examples
+  #' \dontrun{
   #' NPex$op$data %>%
   #' dplyr::filter(pred > 5) %>%
   #' dplyr::filter(pred < 10) %>%
   #' plot()
+  #' }
   #' @export
   #' 
   plot.PM_op_data <- function(x,...){
@@ -907,10 +909,12 @@ plot.PM_op <- function(x,
   #' @param object A `PM_op_data` object
   #' @param ... Additional arguments passed to [summary.PM_op]
   #' @examples
+  #' \dontrun{
   #' NPex$op$data %>%
   #' dplyr::filter(pred > 5) %>%
   #' dplyr::filter(pred < 10) %>%
   #' summary()
+  #' }
   #' @export
   #' 
   summary.PM_op_data <- function(object,...){
@@ -988,7 +992,7 @@ plot.PM_op <- function(x,
     if (!all(is.na(x$pe))) {
       obj <- printSumWrk(x, "")
       temp <- if (embed) {"images"} else {tempdir()} # will embed in Quarto document
-     
+      
       out <- rmarkdown::render(
         input = system.file("report/templates/summary_op.Rmd", package = "Pmetrics"),
         output_file = "summary_op.html",

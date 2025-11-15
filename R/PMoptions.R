@@ -294,7 +294,7 @@ setPMoptions <- function(launch.app = TRUE) {
     
     # Launch the app without trying to launch another browser
     if(launch.app){
-      shiny::runApp(app, launch.browser = TRUE)
+      shiny::runApp(app, launch.browser = FALSE)
     }
     
     return(invisible(NULL))
