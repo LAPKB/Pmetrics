@@ -1425,6 +1425,7 @@ wtd.var <- function(x, weights = NULL,
   #' @keywords internal
   
   round2 <- function(x, digits = getPMoptions("digits")) {
+    if (is.null(digits) || !is.numeric(digits)) digits <- 2
     format(round(x, digits), nsmall = digits)
   }
   
