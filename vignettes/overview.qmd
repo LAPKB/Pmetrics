@@ -104,7 +104,7 @@ An equivalent method is to create a new `PM_sim` is directly with `PM_sim$new()`
 sim1 <- PM_sim$new(poppar = list(...), model = "model.txt", data = "new.csv")
 ```
 
-See `vignette("simulation")` for details on specifying `poppar` this way.
+See [simulation](simulation.html) for details on specifying `poppar` this way.
 
 For the simulator the results are returned automatically to the object assigned to contain the output of the simulation, e.g. `sim1` below.
 
@@ -145,7 +145,7 @@ Within Pmetrics there are also functions to manipulate data .csv files and proce
 
 Comparison between the current and the Legacy methods are shown for education.
 
-```{r echo=F, eval=FALSE, label=custom-table}
+```{r echo=F, eval=TRUE, label=custom-table}
 custom_table("RLcomp_data.csv")
 ```
 
@@ -153,7 +153,7 @@ custom_table("RLcomp_data.csv")
 
 Comparison between the current and the Legacy methods are shown for education.
 
-```{r echo=F, eval=FALSE, label=custom-table-model}
+```{r echo=F, eval=TRUE, label=custom-table-model}
 custom_table("RLcomp_valid.csv")
 ```
 
@@ -161,7 +161,7 @@ custom_table("RLcomp_valid.csv")
 
 Comparison between the current and the Legacy methods are shown for education.
 
-```{r echo=F, eval=FALSE, label=custom-table-other}
+```{r echo=F, eval=TRUE, label=custom-table-other}
 custom_table("RLcomp_other.csv")
 ```
 

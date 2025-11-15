@@ -144,13 +144,13 @@ PM_result <- R6::R6Class(
     
     #' @description
     #' AUC generic function based on type
-    #' @param type Type of AUC based on class of object
+    #' @param src Source of AUC, one of "op", "pop", "post", or "sim"
     #' @param ... Summary-specific arguments
-    auc = function(type, ...) {
-      if (!type %in% c("op", "pop", "post", "sim")) {
+    auc = function(src, ...) {
+      if (!src %in% c("op", "pop", "post", "sim")) {
         cli::cli_abort(c("x" = "{.fn makeAUC} is defined only for {.cls PM_op}, {.cls PM_pop}, {.cls PM_post}, and {.cls PM_sim} objects."))
       }
-      self[[type]]$auc(...)
+      self[[src]]$auc(...)
     },
     
     #' @description
