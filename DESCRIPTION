@@ -72,7 +72,10 @@ Suggests:
     testthat
 RoxygenNote: 7.3.3
 Encoding: UTF-8
-Config/testthat/edition: 3
 VignetteBuilder: quarto
-Config/rextendr/version: 0.4.2
 LazyData: true
+Config/rextendr/version: 0.4.2
+Config/testthat/edition: 3
+Config/Needs/website: 
+  r-lib/pkgdown,
+  quarto
