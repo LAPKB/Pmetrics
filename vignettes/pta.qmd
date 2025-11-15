@@ -77,7 +77,7 @@ The only difference between these two is that with the first, you do not have to
 
 Below is example code to create a PTA. Refer to [makePTA](https://lapkb.github.io/Pmetrics/reference/makePTA.html) for details on the arguments to the method.
 
-```{r echo = TRUE, eval = FALSE}
+```{r echo = TRUE, eval = FALSE, label = pta_creation}
 # first define labels for simulated regimens
 simlabels <- c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid")
 
@@ -198,7 +198,7 @@ It also has several methods:
 
 The most basic plot is achieved with a simple call to the method.
 
-```{r echo = TRUE, eval = TRUE}
+```{r echo = TRUE, eval = TRUE, label = pta_plot}
 pta1$plot() # no intersection so plot the first and only pta
 pta3$plot() # plot the intersection by default
 pta3$plot(at = 1) # plot just the first target pta
@@ -209,7 +209,7 @@ there is no intersection. Notice the difference between the plots, according to 
 
 There are many ways to modify the plot, consistent with other Pmetrics plots which use the *plotly* package and all detailed in the help for `plot.PM_data()`. For example, 
 
-```{r echo = TRUE, eval = TRUE}
+```{r echo = TRUE, eval = TRUE, label = pta_plot2}
 p <- pta1$plot(
   line = list(color = "Set1", width = 3),
   xlab = list(text = "MIC mg/L", font = list(size = 20)),
@@ -223,7 +223,7 @@ p <- pta1$plot(
 
 Here's more advanced plotly. Here we take the previous plot `p` and add bars to it to represent the frequency distribution of piperacillin MICs for E. Coli from EUCAST. We use our `pip_ecoli` data frame, the MICs for the x-axis, and the normalized counts for frequencies. We re-define the y-axis labels using some CSS/HTML to color individual portions. This is quite advanced plotly!
 
-```{r echo = TRUE, eval = TRUE}
+```{r echo = TRUE, eval = TRUE, label = pta_plot3}
 p %>%
   plotly::add_bars(
     x = ~mic,
@@ -248,7 +248,7 @@ p %>%
 
 Like most created Pmetrics objects, `PM_pta()` objects can be summarized. 
 
-```{r echo = TRUE, eval = TRUE}
+```{r echo = TRUE, eval = TRUE, label = pta_summary}
 pta1$summary()
 pta3$summary(at = 2) # summarize the second target pta
 pta3$summary() # summarize the intersection pta
@@ -269,7 +269,7 @@ with the following columns (only the first three if `at = "intersect"`):
 * **min** is the minimum PDI
 * **max** is the maximum PDI
 
-```{r echo = TRUE, eval = TRUE}
+```{r echo = TRUE, eval = TRUE, label = pta_summary2}
 pta1$summary(ci = 0.9)
 ```
 

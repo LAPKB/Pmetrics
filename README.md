@@ -1,6 +1,8 @@
-:warning: This is a development branch of Pmetrics using a new backend written in Rust. The repository for the current stable release is [LAPKB/Pmetrics](https://github.com/LAPKB/Pmetrics).
+
 
 # Pmetrics <a href="https://lapkb.github.io/Pmetrics/"><img src="logo.png" align="right" height="139" alt="Pmetrics website" /></a>
+
+:warning: This is a development branch of Pmetrics using a new backend written in Rust. The repository for the current stable release is [LAPKB/Pmetrics](https://github.com/LAPKB/Pmetrics).
 
 Thank you for your interest in Pmetrics. Pmetrics is a library package
 for R to perform non-parametric and parametric
@@ -18,9 +20,9 @@ Bioinformatics](http://www.lapk.org/Pmetrics.php).
 
 ## Installation
 
-In R, you can install Pmetrics from [GitHub](https://github.com/) with:
+In R, you can install this development version of Pmetrics from [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("LAPKB/Pmetrics")
+install.packages("devtools")
+devtools::install_github("LAPKB/Pmetrics_rust")
 ```
