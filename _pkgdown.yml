@@ -150,6 +150,10 @@ reference:
   - dummy_compile
   - simulate_all
   - simulate_one
+  - fit
+  - is_cargo_installed
+  - model_parameters
+  - temporary_path
 - title: Reference
   desc: Reference functions
 - contents:
