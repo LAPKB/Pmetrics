@@ -17,8 +17,10 @@ Summarizes the raw data (\code{class: PM_op_data}) from a \link{PM_op} object in
 Both use \link{summary.PM_op}.
 }
 \examples{
+\dontrun{
 NPex$op$data \%>\%
 dplyr::filter(pred > 5) \%>\%
 dplyr::filter(pred < 10) \%>\%
 summary()
+}
 }
