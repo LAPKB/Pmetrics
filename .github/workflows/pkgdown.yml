@@ -46,11 +46,6 @@ jobs:
         env:
           RSCONNECT_PACKRAT: "false"
 
-      - name: Build Learn Quarto site
-        run: |
-          rm -rf docs/learn
-          quarto render inst/Learn --output-dir docs/learn
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

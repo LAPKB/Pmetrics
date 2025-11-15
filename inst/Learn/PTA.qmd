@@ -1,7 +1,0 @@
-
-# Probability of Target Attainment (PTA) Analysis
-
-::: {.callout-tip} 
-## Learn more
-Refer to the reference article: [Simulation](https://lapkb.github.io/Pmetrics/articles/simulation.html) 
-:::
