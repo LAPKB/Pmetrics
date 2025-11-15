@@ -1166,7 +1166,7 @@ wtd.table <- function(x, weights = NULL,
       if (type == "table") {
         return(weights)
       }
-      x <- all.is.numeric(names(weights), "vector")
+      x <- all_is_numeric(names(weights), "vector")
       if (isdate) {
         attributes(x) <- c(attributes(x), ax)
       }
@@ -1304,12 +1304,12 @@ wtd.var <- function(x, weights = NULL,
   #' @export
   #' @examples
   #' \dontrun{
-  #' all.is.numeric(c("1", "2", "3"))
-  #' all.is.numeric(c("1", "2", "a"))
-  #' all.is.numeric(c("1", "2", "3"), what = "vector")
-  #' all.is.numeric(c("1", "2", "a"), what = "nonnum")
+  #' all_is_numeric(c("1", "2", "3"))
+  #' all_is_numeric(c("1", "2", "a"))
+  #' all_is_numeric(c("1", "2", "3"), what = "vector")
+  #' all_is_numeric(c("1", "2", "a"), what = "nonnum")
   #' }
-  all.is.numeric <- function(x, what = c("test", "vector", "nonnum"), extras = c(
+  all_is_numeric <- function(x, what = c("test", "vector", "nonnum"), extras = c(
     ".",
     "NA"
   )) {

@@ -113,7 +113,7 @@ reference:
 - title: Auxilliary
   desc: Auxilliary functions
 - contents:
-  - all.is.numeric
+  - all_is_numeric
   - build_model
   - build_plot
   - qgrowth
