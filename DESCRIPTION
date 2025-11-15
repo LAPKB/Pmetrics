@@ -16,8 +16,8 @@ Authors@R: c(
   person("Robert", "Leary", email = "", role = "ctb")
     )
 Version: 3.0.0
-URL: https://lapkb.github.io/Pmetrics/
-BugReports: https://github.com/LAPKB/Pmetrics/issues
+URL: https://lapkb.github.io/Pmetrics_rust/
+BugReports: https://github.com/LAPKB/Pmetrics_rust/issues
 SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc
 Depends: 
     R (>= 4.1.0)

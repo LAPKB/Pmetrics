@@ -19,7 +19,6 @@
   title,
   xlim,
   ylim,
-  static = FALSE,
   print = TRUE,
   ...
 )
