@@ -462,11 +462,12 @@ PM_sim <- R6::R6Class(
     #'    `value * exp(noise)`, where noise is a random number from a normal distribution,
     #'    with mean of 0 and `SD = C0 + C1*value + C2*value^2 + C3*value^3`, and *value* is the
     #'    original value in each row of the target column.
-    #'  @examples
-    #'  \dontrun{
-    #'  exDat$makeNoise(list(dose = list(coeff = c(0.1, 0.1), filter = "dose > 100 & time < 200", mode = "add"),
-    #'  out = list(c(0.1, 0.001), mode = "exp")))
-    #'  }
+    #'    Example:
+    #'     ```
+    #'     exDat$makeNoise(list(dose = list(coeff = c(0.1, 0.1), filter = "dose > 100 & time < 200", mode = "add"),
+    #'     out = list(c(0.1, 0.001), mode = "exp")))
+    #'    ```
+    #'  
     #'
     #' @param makecsv A character vector for the name of the single .csv file to be
     #' made for all simulated "subjects".  If no file extension is included, ".csv"

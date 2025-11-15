@@ -77,5 +77,5 @@ LazyData: true
 Config/rextendr/version: 0.4.2
 Config/testthat/edition: 3
 Config/Needs/website: 
-  r-lib/pkgdown,
-  quarto
+    r-lib/pkgdown,
+    quarto
