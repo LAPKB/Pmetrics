@@ -44,7 +44,7 @@
 #' tail txtProgressBar write.csv write.table getTxtProgressBar
 # #' @importFrom base64enc base64decode
 #' @importFrom R6 R6Class
-#' @importFrom rlang .data set_names
+#' @importFrom rlang .data set_names :=
 #' @importFrom plotly filter mutate plot_ly add_markers add_lines layout
 #' ggplotly subplot add_annotations add_bars renderPlotly add_trace
 #' @importFrom shiny fluidPage titlePanel tags navlistPanel tabPanel fluidRow

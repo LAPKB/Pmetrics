@@ -23,11 +23,12 @@ Depends:
     R (>= 4.1.0)
 Imports:
     bslib,
+    cli,
     crayon,
-    doParallel,
     DT,
     dplyr,
     flextable,
+    fs,
     ggplot2,
     ggraph,
     htmlwidgets,
@@ -35,6 +36,7 @@ Imports:
     lifecycle,
     lubridate,
     magrittr,
+    MASS,
     openxlsx,
     pander,
     plotly,
@@ -48,17 +50,14 @@ Imports:
     stats,
     stringr,
     tibble,
-    tidygraph,
     tidyr,
     trelliscopejs,
-    patchwork,
-    mvtnorm,
-    utils
+    utils,
+    glue
 Suggests:
     data.table,
     devtools,
     ggpubr,
-    glue,
     gt,
     htmltools,
     knitr,
@@ -69,6 +68,7 @@ Suggests:
     quarto,
     RColorBrewer,
     RcppTOML,
+    reticulate,
     testthat
 RoxygenNote: 7.3.3
 Encoding: UTF-8

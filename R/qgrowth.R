@@ -107,9 +107,9 @@ zBMI <- function(agemos, sex, bmi, wt, ht, data = "CDC") {
 
   all_bmi <- NULL # avoid CRAN check
   if (tolower(data) == "cdc") {
-    all_bmi <- PmetricsData::cdc_bmi
+    all_bmi <- cdc_bmi
   } else {
-    all_bmi <- PmetricsData::ger_bmi
+    all_bmi <- ger_bmi
   }
 
   if (missing(sex)) {

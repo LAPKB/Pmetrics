@@ -269,7 +269,7 @@ PM_cycle <- R6::R6Class(
 #' when [PM_load] is run.
 #'
 #' @method plot PM_cycle
-#' @param x The name of a [PM_cycle]  object, e.g. `PmetricsData::NPex$cycle`.
+#' @param x The name of a [PM_cycle]  object, e.g. `NPex$cycle`.
 #' @param line `r template("line")` Default = `list(color = "dodgerblue", width = 2, dash = "solid")`.
 #' **Note** The width will apply to all plots, but `color` and `dash` will only apply
 #' to the first three plots (log-likelihood, AIC, gamma/lambda). Use `colors` and `linetypes`

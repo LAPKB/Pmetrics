@@ -8,9 +8,9 @@
 #' A flexible parser for Pmetrics output
 #' @details
 #' Currently written for the Rust implementation of NPAG
-#' @param wd The directory containing the output from the Rust-implementation of NPAG
-#' @param write A logical value indicating if the results should be returned (`FALSE`, default) or written to disk (`TRUE`)
-#' @param fit The relative path to a "fit.rds" file.
+#' @param path The directory containing the output from the Rust-implementation of NPAG
+#' @param fit The relative path to a "fit.rds" file, which is normal output after a fit containing the data and model used.
+#' @param write If `TRUE` (default), saves the output as "PMout.Rdata" in the specified path.
 #' @return The output of `PM_parse` is a list containing the following elements
 #' * **op** Written to the standard of [PM_op()]
 #' * **pop** Written to the standard of [PM_pop()]

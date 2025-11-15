@@ -517,8 +517,9 @@ return(results)
 #' ` r lifecycle::badge("stable")`
 #' Prints a summary of the PM_compare object.
 #' @param x A PM_compare object.
+#' @param ... Additional arguments (not used).
 #' @method print PM_compare
 #' @export
-print.PM_compare <- function(x){
+print.PM_compare <- function(x, ...){
   cli_df(x) # in PM_utilities
 }

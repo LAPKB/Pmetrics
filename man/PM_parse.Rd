@@ -7,11 +7,11 @@
 PM_parse(path = ".", fit = "fit.rds", write = TRUE)
 }
 \arguments{
-\item{fit}{The relative path to a "fit.rds" file.}
+\item{path}{The directory containing the output from the Rust-implementation of NPAG}
 
-\item{write}{A logical value indicating if the results should be returned (\code{FALSE}, default) or written to disk (\code{TRUE})}
+\item{fit}{The relative path to a "fit.rds" file, which is normal output after a fit containing the data and model used.}
 
-\item{wd}{The directory containing the output from the Rust-implementation of NPAG}
+\item{write}{If \code{TRUE} (default), saves the output as "PMout.Rdata" in the specified path.}
 }
 \value{
 The output of \code{PM_parse} is a list containing the following elements
