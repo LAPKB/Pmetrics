@@ -6,7 +6,7 @@ utils::globalVariables(
     div dose elim evid fileInput final fitted fluidPage fluidRow found from
     gamma_lambda ger_bmi getFromNamespace group h2 h3 h4 h5 hr ht
     htmlOutput icen icon input is isS3method IT2bout key label locales lowerCI
-    m_two_ll map2 map_lgl markdown measure modalDialog modelLibrary
+    m_two_ll map2 map_lgl markdown measure modalDialog
     na.exclude name navlistPanel ncomp NPAGout node numericInput obs obsSD
     observe observeEvent out outeq parameter percentile pcObs pk plotOutput
     point popMean popMedian position postMean postMedian pred pred.type

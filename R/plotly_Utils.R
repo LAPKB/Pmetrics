@@ -322,6 +322,7 @@ notNeeded <- function(x, f) {
 #' Default is `line = list(color = "black", width = 1, dash = "dash")`.
 #' @export
 #' @seealso [add_shapes]
+#' @examples 
 #' \dontrun{
 #' # add to an existing plot
 #' NPex$op$plot() %>%
