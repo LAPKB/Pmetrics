@@ -48,7 +48,7 @@ on the resulting object, the analysis is executed. At the end of the run, the ha
 
 To change model parameters, the model object is updated via `PM_model$update()`, `PM_fit$new()` is called and then the run is executed with `$run()`. If  continuing a previous run that did not end, simply use the `$run()` and specify the run number you wish to continue as the `prior` argument to `$run()`. These scenarios are illustrated below.
 
-```{r echo=T, eval=FALSE}
+```{r echo=T, eval=FALSE, label = workflow_code}
 # Run 1 - ensure the data, model files are in the working directory
 data1 <- PM_data$new("data.csv")
 mod1 <- PM_model$new("model.txt")
@@ -87,7 +87,7 @@ The user supplies the names of the data and model files as arguments to
 the run functions. R is used to specify the working directory containing these files. The analysis is executed in a terminal window by calling `NPrun()`, `ITrun()` or `ERRrun()` functions. The results can be loaded into R after the run completes using
 `PMload()`. The analgous Legacy code to the R6 code above is shown here.
 
-```{r echo=T, eval=FALSE}
+```{r echo=T, eval=FALSE, label = workflow_legacy_code}
 # Run 1 - ensure the data, model files are in the working directory
 NPrun("data.csv", "model.txt")
 PMload(1)

@@ -47,8 +47,8 @@ gh_help <- function(name) {
 library(gt)
 
 custom_table <- function(tab){
-  system.file("extData", tab, package = "Pmetrics") %>%
-    read.csv(na.strings = ".") %>% gt() %>%
+  #system.file("extData", tab, package = "Pmetrics") %>%
+    read.csv(file.path("Data",tab), na.strings = ".") %>% gt() %>%
     tab_style(
       style = list(
         cell_fill(color = "black"),
@@ -79,6 +79,7 @@ To launch the app, type the following into your console:
 
 ```{r}
 #| eval: false
+#| label: mod_builder
 
 build_model()
 ```
@@ -95,6 +96,7 @@ The list elements are the building blocks for the model. Building blocks are of 
 
 ```{r}
 #| eval: false
+#| label: mod-block-list
 block_name = list( 
     var1 = creator(),   
     var2 = creator()
@@ -107,6 +109,7 @@ Note the comma separating the creator functions, `list(` to open the list and `)
 
 ```{r}
 #| eval: false
+#| label: mod-block-func
 block_name = function() { 
 
           # any valid R code 
@@ -126,6 +129,7 @@ The format of the .txt model file has been mostly unchanged since Pmetrics 0.4. 
 
 ```{r}
 #| eval: false
+#| label: load-model-file
 
 mod1 <- PM_model$new("model.txt") 
 # assumes model.txt is in working directory
@@ -195,7 +199,7 @@ The two creator functions for primary parameters are `ab` and `msd`. Choose one 
 
 ```{r}
 #| eval: false
-#| 
+#| label: mod-block-pri
 mod <- PM_model$new(
   pri = list(
     Ke = ab(0, 5), # mean will be 2.5, SD = 5/6 = 0.83
@@ -263,7 +267,7 @@ The covariate element is a vector whose names are the same as the covariates in 
 
 The default argument for `interp` is "lm" which means that values will be linearly interpolated between entries, like the R linear model function `r r_help("stats", "lm")`. The alternative is "none", which holds the covariate value the same as the previous entry until it changes, i.e., a carry-forward strategy.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-cov}
 mod <- PM_model$new(
   pri = list(...),
   cov = list(
@@ -320,7 +324,7 @@ if(sex == 1) {
 
 Specify each variable equation as a list of unnamed character elements in the same way as for the app. In the example below, V0 is the primary parameter which will be estimated, but internally, the model uses V as V0\*wt, unless age is \>18, in which case weight is capped at 75 kg. It's the same for CL0. Note that the conditional statement is not named.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-sec}
 mod <- PM_model$new(
     pri = list(
       CL0 = ab(0, 5),
@@ -362,7 +366,7 @@ We'll discuss more about the interface in the section on [lag times](#mb-lag).
 
 Initial conditions can be changed as a list called "ini", comprised of unnamed character elements. Each line of the vector specifies the compartment amount as "X\[.\] = expression", where "." is the compartment number. Primary and secondary variables and covariates may be used in the expression, as can conditional statements in Fortran code. An "&" continuation prefix is not necessary in this block for any statement, although if present, will be ignored.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-ini}
 mod <- PM_model$new(
     pri = list(
       Ke = ab(0, 5),
@@ -409,7 +413,7 @@ We'll discuss more about the interface in the section on [lag times](#mb-lag).
 
 Bioavailability for any bolus input can be changed from the default value of 1. Use a list called "fa", comprised of unnamed character elements, where each line is of the form "FA\[.\] = expression", and "." is the input number. Primary and secondary variables and covariates may be used in the expression, as can conditional statements.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-fa}
 mod <- PM_model$new(
     pri = list(
       Ke = ab(0, 5),
@@ -445,7 +449,7 @@ You can change the default delay in absorption of any bolus input from 0 to some
 
 Use a list called "lag", comprised of unnamed character elements, each of the form "LAG\[.\] = expression", where "." is the input number. Primary and secondary variables and covariates may be used in the expression, as can conditional statements.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-lag}
 mod <- PM_model$new(
     pri = list(
       Ke = ab(0, 5),
@@ -467,43 +471,6 @@ The same example as for the list above is shown below in the format for the file
 LAG\[1\] = Tlag1
 :::
 
-### TEMplate {#mb-tem}
-
-The TEMplate block is new for Pmetrics ≥ 3.0. In Legacy Pmetrics, if there were no model ODE equations in the #EQN (or the even older #DIFFEQ) block, the model equations were inferred by looking for any logical combination of Ka, Ke, V, KCP, and KPC in the #PRI or #SEC blocks. This was somewhat obscure and tricky for new users, and limited the number of algebraic models that could be implemented.
-
-In Pmetrics ≥ 3.0, the #TEM block can contain one of several possible values: \* "ode" for models defined by ODE in the #EQN block \* a key word indicating the algebraic model to use. This is more transparent than the previous method of determining the correct model described above. The algebraic models defined in Pmetrics can be viewed with `model_lib()`. This function displays the primary name for each model, alternatives which correspond to names in other modeling packages, a brief description of the model, the compartment numbers and definitions, the the variable names to include in the #PRI block, and the corresponding ODEs, used only for plotting and understanding the model. The ODEs are not used in the optimization process. \* "direct" or "explicit" for models defined by equations in the #OUT block. These are rare, but directly define the output as a function of the primary and possibly secondary variables and/or covariates.
-
-#### App
-
-Coming soon.
-
-#### List
-
-```{r echo=T, eval=F}
-mod <- PM_model$new(
-  list(
-    # note the names used are given in the model library, model_lib()
-    pri = list(
-      Ke = ab(0, 5),
-      V = msd(100, 30),
-      KCP = ab(0, 5),
-      KPC = ab(0, 5)
-    ),
-    tem = "two_comp_iv" # this name is found in the model library, model_lib()
-    )
-  )
-
-```
-
-#### File
-
-The same example as for the list above is shown below in the format for the file.
-
-::: script
-#Pri\
-Ke, 0, 5 V, 10, 190 KCP, 0, 5 KPC, 0, 5 #Tem\
-two_comp_iv
-:::
 
 ### EQuatioNs {#mb-eqn}
 
@@ -523,7 +490,7 @@ Use `dX[i]` for change in compartment amounts, where i is the compartment number
 
 Specify a model as a list called "eqn", comprised of unnamed character elements, with each element an ordinary differential equation in the same R format as for the app. Additional equations can be included.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-eqn}
 mod <- PM_model$new(
     pri = list(
       Ka = ab(0, 5),
@@ -543,7 +510,7 @@ mod <- PM_model$new(
 
 To specify models from the library, first ensure the correct library model name by using the `r gh_help("model_lib")` function. Also, ensure that the variable names in the library are defined somewhere in the model (mostly in the `PRI` block), and similarly that `OUT` equations are correct.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-eqn-lib}
 mod <- PM_model$new(
     pri = list( # parameter names match those listed in model_lib(), except V0
       Ka = ab(0, 5),
@@ -618,7 +585,7 @@ In the additive model, $\lambda$ is additive to assay SD. In general, well-desig
 
 The `out` list is a series of nested lists. The outermost list groups all the outputs, which are themselves lists named as `Y1`, `Y2`, etc. Each of these output lists contains the value of the equation and the error model. Within the error model for that output, is the last list comprising model and assay error specifications. In the examples below, we build this nested list structure gradually to make it more clear.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-out}
 out = list(
   Y1 = list(...)
 )
@@ -626,7 +593,7 @@ out = list(
 
 The output equation is a character vector named "val" followed by an error list.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-out2}
 out = list(
   Y1 = list(
     val = "X[1]/V",
@@ -639,7 +606,7 @@ The error model for an output equation has two elements. The first is the `model
 
 The second element is the `assay` error model. It is a function `errorPoly(coeffs, constant = FALSE)`. The first argument `coeff` is the vector of 4 numbers that defines a polynomial equation to permit calculation of the standard deviation of an observation, based on the noise of the assay. The second argument `constant` is `FALSE` by default, which means that coefficients in the data file will be used if present, and the ones here in the model definition will be used only if none are available for an observation in the data. If `constant = TRUE`, the model coefficients will be used regardless of what is in the data file.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-out3}
 out = list(
   Y1 = list(
     val = "X(1)/V",
@@ -651,7 +618,7 @@ out = list(
 )
 ```
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-out4}
 out = list(
   Y1 = list(
     val = "X(1)/V",
@@ -665,7 +632,7 @@ out = list(
 
 More complete examples.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label = mod-block-ex1}
 mod <- PM_model$new(
   list(
     pri = list(
@@ -842,14 +809,14 @@ Because models are loaded as memory items in R6 Pmetrics, they can be modified i
 
 All R6 objects are mini-environments, so direct copies of an R6 environment are in the same environment and changes to one will change them all. This means the following code will likely not work as intended.
 
-```{r echo=T, eval = F}
+```{r echo=T, eval = F, label = mod-update-issue}
 mod2 <- mod1
 mod2$update(...)
 ```
 
 When *mod2* is updated, *mod1* will update as they are in the same environment. The way to create an independent copy of an R6 object, which does not share the same environment, is to use the `$clone()` method available for all R6 objects.
 
-```{r echo=T, eval = F}
+```{r echo=T, eval = F, label = mod-update-solution}
 mod2 <- mod1$clone()
 mod2$update(...)
 ```
@@ -858,7 +825,7 @@ Now changes to mod2 do not propagate to mod1.
 
 To update a model, simply supply the list items you wish to change with the new values.
 
-```{r echo=T, eval = F}
+```{r echo=T, eval = F, label = mod-update-example}
 
 mod2$update(
   list(
@@ -882,6 +849,6 @@ The only way to update a model file is to edit the text file and load it with `P
 
 The following cannot be used as primary, covariate, or secondary variable names. They can be used in equations, however.
 
-```{r echo=F}
+```{r echo=F, eval=T, label = mod-reserved}
 custom_table("reserved.csv")
 ```

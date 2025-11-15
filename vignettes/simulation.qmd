@@ -60,7 +60,7 @@ Whether you use `PM_result$sim()` or `PM_sim$new()`, unlike the prior versions o
 
 The data template for a simulation is a `r gh_help("PM_data")` object, with exactly the same structure as used for fitting models. This template contains the dosing and observation history as well as any covariates for each subject to be simulated. Each subject in the data template will serve as a template for `nsim` simulated profiles. You can supply the `PM_data` object in a number of ways.
 
--   Use a previously created `PM_data` object, usually from an appropriate file with `PM_data$new("filename")` but could be created with the `$addEvent()` method (see `r vignette("data")` for details) or by creating an appropriate data frame in R and passing it to `PM_data$new()`.
+-   Use a previously created `PM_data` object, usually from an appropriate file with `PM_data$new("filename")` but could be created with the `$addEvent()` method (see [data](data.html) for details) or by creating an appropriate data frame in R and passing it to `PM_data$new()`.
 -   Provide the name of an appropriate data file with path if needed. Use `r r_help("base", "getwd")` and `r r_help("base", "list.files")` to ensure the path and filename are correct.
 -   If using `PM_result$sim()`, omit the `data` argument to use the data in the `PM_result` as the template.
 
@@ -73,7 +73,7 @@ You can have any number of subject records within a data template, each with its
 
 Analogous to the data template, the model for a simulation is a `r gh_help("PM_model")` object, with exactly the same structure as used for fitting. You can supply the `PM_model` object in a number of ways.
 
--   Use a previously created `PM_model` object, either from an appropriate file with `PM_model$new("filename")` but also by defining a model list directly in R  (see `r vignette("models")` for details) passing it to `PM_model$new()`.
+-   Use a previously created `PM_model` object, either from an appropriate file with `PM_model$new("filename")` but also by defining a model list directly in R  (see [models](models.html) for details) passing it to `PM_model$new()`.
 -   Provide the name of an appropriate model file with path if needed. Use `r r_help("base", "getwd")` and `r r_help("base", "list.files")` to ensure the path and filename are correct.
 -   If using `PM_result$sim()`, omit the `model` argument to use the model in the `PM_result` as the template.
 
@@ -104,7 +104,8 @@ This is a flexible but somewhat complex means of creating a prior without a prev
 * Single distribution: 
 
   ```{r}
-  #| eval = FALSE
+  #| label: sim1
+  #| eval: FALSE
     poppar = list(wt = 1, 
               mean = list(ke = 0.5, v = 100), 
               cov = matrix(c(0.04, 2.4, 2.8, 400), nrow = 2))  
@@ -114,7 +115,8 @@ This is a flexible but somewhat complex means of creating a prior without a prev
 
 * Multiple distributions: 
   ```{r}
-  #| eval = FALSE
+  #| label: sim2
+  #| eval: FALSE
     poppar = list(wt = c(0.1, 0.15, 0.75), # 3 distributions that sum to 1
               mean = list(ke = c(2, 0.5, 1), v = c(50, 100, 200)), # 3 values for each parameter
               sd = list(ke = 0.2, v = 20), # overall sd, ignoring multiple distributions
@@ -129,20 +131,20 @@ You run the simulator in two ways.
 
 -   Use the `$sim()` method for `PM_result()` objects. This takes `poppar` from the `PM_result$final` field and the model from the `PM_result$model` field, so only a data object needs to be specified at minimum. If no data object is specified, it will use the `PM_result$data` as a template, i.e. the same data used to fit the model. An example is below. You don't have to supply the model or `poppar`, because they are included in `run1`, with `poppar` taken from the `run$final` field. Supplying a different `PM_data` object as `dat` allows you to use the model and population prior from `run1` with a different dosing and observation data template. If you omit `dat` in this example, the original data in `run1` would serve as the template.
 
-```{r echo = TRUE, eval = FALSE}
+```{r echo = TRUE, eval = FALSE, label = sim3}
 run1 <- PM_load(1)
 sim1 <- run1$sim(data = dat, nsim = 100, limits = NA)
 ```
 
 -   Use `PM_sim$new()`. This simulates without necessarily having completed a fitting run previously, i.e., there may be no `PM_result()` object. Here, you manually specify values for `poppar`, `model`, and `data`. These can be other Pmetrics objects, or de novo, which can be useful for simulating from models reported in the literature. An example is below.
 
-```{r echo = TRUE, eval = FALSE}
+```{r echo = TRUE, eval = FALSE, label = sim4}
 sim2 <- PM_sim$new(poppar = run2$final, data = dat, model = mod1, ...)
 ```
 
 Now you must include all three of the mandatory arguments: `model`, `data`, and `poppar`. In this case we used the `PM_final()` object from a different run (`run2`) as the `poppar`, but we could also specify `poppar` as a list, for example. See `SIMrun()` for details on constructing a manual `poppar`.
 
-```{r echo = TRUE, eval = FALSE}
+```{r echo = TRUE, eval = FALSE, label = sim5}
 poppar <- list(wt = 1, mean = c(0.7, 100), covar = diag(c(0.25, 900)))
 ```
 
@@ -176,7 +178,7 @@ If you simulated from a template with multiple subjects, you will have a simulat
 
 So if our data template has 3 subjects...
 
-```{r echo = TRUE, eval = FALSE}
+```{r echo = TRUE, eval = FALSE, label = sim6}
 sim1 <- run1$sim(data = dat) # sim1 is a PM_sim with 3 simulation results
 sim2 <- run1$sim(data = dat, combine = TRUE) # sim2 is a PM_sim with combined results
 ```
@@ -209,7 +211,7 @@ Methods are accessed with `$` and include parentheses to indicate a function, po
 
 All of these are detailed further in `PM_sim()`.To apply them to one of the simulations when there are multiple, use `at` followed by additional arguments to the method to choose the simulation.
 
-```{r echo = TRUE, eval = FALSE}
+```{r echo = TRUE, eval = FALSE, label = sim7}
 sim1$plot(at = 2, ...)
 ```
 

@@ -38,7 +38,7 @@ command `PMtree()`. This command will set up a new directory
 in the current working directory named whatever you have included as the
 "project name". 
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label=pm_tree}
 PMtree("DrugX")
 ```
 
@@ -59,7 +59,7 @@ own entirely.
 <span class="r6">R6</span>
 
 There is a full tutorial encoded inside Pmetrics to teach new users the basic functionality of the whole package. To start that tutorial in R type:
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label=pm_tutorial}
 library(Pmetrics)
 PM_tutorial()
 ```
@@ -70,7 +70,7 @@ To setup a R6 Pmetrics run, you must provide `PM_data()` and  `PM_model()` objec
 To bring these together, use the `PM_fit$new()` object creator. It only needs two arguments: the name of the data file in the working directory or
 in memory loaded via the Legacy `PMreadMatrix()`and a model object. `PM_fit()` will accept a model object created by `PM_model` or the name of a model file in Legacy format and in the working directory.
 
-``` {r echo=T, eval=F}
+``` {r echo=T, eval=F, label=pm_fit}
 # Example 1 - data and model objects
 dat <- PM_data$new("data.csv")
 mod1 <- PM_model$new(list(...))
@@ -86,7 +86,7 @@ fit3 <- PM_fit$new(data = PMdata, model = "model.txt")
 
 The fit object also contains a couple of methods attached to it.
 
-```{r echo=T, eval=F}
+```{r echo=T, eval=F, label=pm_fit_methods}
 fit1$check() # This will check the consistency between the model and the data
 
 fit2$save("fit2.rds") # This will save the fit to a file in your working directory
@@ -116,7 +116,7 @@ the correct format for use by IT2B, NPAG, or the Simulator.
 
 Once the `PM_fit()` object is created the `$run()` method will execute the fit. Arguments for this method can be found in the help for `NPrun()` and `ITrun()`.
 
-``` {r echo=T, eval=F}
+``` {r echo=T, eval=F, label=pm_fit_run}
 # default run parameters
 fit3$run()
 
@@ -134,7 +134,7 @@ the Rscript subdirectory, if this is a first-time run, the R commands to
 run IT2B or NPAG are as follows. Recall that the "\#" character is a
 comment character.
 
-``` {r echo=T, eval=F}
+``` {r echo=T, eval=F, label=run_np_it}
 library(Pmetrics)
 # Run 1 - add your run description here
 setwd("working directory")
@@ -163,7 +163,7 @@ When you wish to execute a Pmetrics run, you must ensure that
 both of the appropriate Pmetrics data.csv and model.txt files are in the working
 directory, i.e. the Runs subdirectory of the project directory. The names are supplied as arguments to `NPrun`, `ITrun`, and `ERRrun`. A shorthand notation is to supply the  number of a previous run for either the data, model or both files so that you do not have to manually copy them into the working directory.
 
-``` {r echo=T, eval=F}
+``` {r echo=T, eval=F, label=run_examples}
 # Using default names data.csv and model.txt
 NPrun()
 
@@ -188,7 +188,7 @@ website. Edit prior versions of model files to make new model files.
 
 After the execution is done, you can load the output into R using `PM_load()`. Note the underscore "_" to distinguish this function from the Legacy `PMload()`. The argument to the function is the run number which you wish to load, corresponding to a folder with the same number in your **Runs** folder (if you made one).
 
-``` {r echo=T, eval=F}
+``` {r echo=T, eval=F, label=pm_load}
 my_run <- PM_load(1)
 ```
 
@@ -196,7 +196,7 @@ This creates a `PM_result()` object called `my_run`. Detailed information about 
 
 After that, that object can be used to access the different elements of the results, for example:
 
-``` {r echo=T, eval=F}
+``` {r echo=T, eval=F, label=pm_load_plots}
 exRes <- PM_load(1)
 exRes$final$plot() # see ?plot.PM_final
 exRes$op$plot(type = "pop") # see ?plot.PM_op,
@@ -223,7 +223,7 @@ loaded R objects, allowing for comparison between runs, e.g. `PMload(1)`.
 Finally, at this point other Pmetrics commands can be added to the
 script to process the data, such as the following.
 
-``` {r echo=T, eval=F}
+``` {r echo=T, eval=F, label=legacy_plots}
 plot(final.1)
 plot(cycle.1)
 plot(op.1, type = "pop") # or plot(op.1$pop1)
@@ -240,7 +240,7 @@ other meaningful name in the working directory. Folders are not be moved
 by the batch file. Within the script, number runs sequentially and use
 comments liberally to distinguish runs, as shown below.
 
-``` {r echo=T, eval=F}
+``` {r echo=T, eval=F, label=legacy_run_example}
 library(Pmetrics)
 # Run 1 - Ka, Kel, V, all subjects
 setwd("working directory")

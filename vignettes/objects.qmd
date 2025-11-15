@@ -37,8 +37,9 @@ gh_help <- function(name) {
 
 
 custom_table <- function(tab){
-  system.file("extData", tab, package = "Pmetrics") %>%
-    read.csv(na.strings = ".") %>% gt() %>%
+  #system.file("extData", tab, package = "Pmetrics") %>%
+    read.csv(file.path("Data",tab), na.strings = ".") %>% gt() %>%
+
     tab_style(
       style = list(
         cell_fill(color = "black"),
@@ -57,13 +58,13 @@ There are several Pmetrics data objects contained within the Rdata files which a
 
 `PM_load()` returns a `r gh_help("PM_result")`object. The fields in the object are in the table below.
 
-```{r echo = F, results = 'asis'}
+```{r echo = F, results = 'asis', label="obj_table"}
 custom_table("ObjectsR6.csv")
 ```
 
 To access the fields in a `PM_result` object, use the "\$".
 
-```{r echo=T, eval = F}
+```{r echo=T, eval = F, label = obj_access}
 res1 <- PM_load(1)
 res1$op
 res1$op$time
@@ -72,7 +73,7 @@ res1$op$data # this accesses the whole observed vs. predicted raw data frame
 
 Most of the fields are themselves R6 objects with methods.
 
-```{r echo = T, eval = F}
+```{r echo = T, eval = F, label = obj_methods}
 res1 <- PM_load(1)
 res1$op
 res1$op$summary()
