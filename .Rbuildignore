@@ -21,6 +21,7 @@ logo.png
 ^vignettes/.quarto
 ^Archived/
 ^src/\.cargo$
+^src/rust/target/
 ^.*_test\.R$
 ^.*_old.R$
 rust_debug.txt
@@ -30,4 +31,5 @@ rust_debug.txt
 ^inst/Learn/.quarto
 ^inst/Learn/_*
 Experimental
+
 

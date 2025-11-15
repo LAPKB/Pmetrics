@@ -11,6 +11,11 @@
 NULL
 
 #' Simulates the first subject in the data set using the model at the given path.
+#' @param data_path Path to the data file.
+#' @param model_path Path to the compiled model file.
+#' @param spp One support point as a numeric vector with probabiltity.
+#' @param kind Kind of model, which can either be "ODE" or "Analytical".
+#' @return Simulation results.
 #'@export
 simulate_one <- function(data_path, model_path, spp, kind) .Call(wrap__simulate_one, data_path, model_path, spp, kind)
 

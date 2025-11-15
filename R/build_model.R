@@ -452,7 +452,7 @@ server <- function(input, output, session) {
   # MODEL LIBRARY COMPONENT -------------------------------------------------
   
   
-  #mods <- modelLibrary
+  
   
   #load names of models in memory
   mod_names <- mod_lib_names() # returns list of model names in Global Environment (function in PM_model.R) 

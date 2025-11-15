@@ -1923,7 +1923,7 @@ plot.PM_sim <- function(x,
       }
     } else { # line was not T/F
       if (!is.list(line) & length(line) > 1) {
-        cli::cli_stop(c(
+        cli::cli_abort(c(
           "x" = "{.arg Line} is misspecified.",
           "i" = "If you want to specify quantiles, use {.code line = list(probs = c(...), ...)}."
         ))
@@ -1962,7 +1962,7 @@ plot.PM_sim <- function(x,
           lineList$fill <- line$fill
           
         } else {
-          cli::cli_stop(c(
+          cli::cli_abort(c(
             "x" = "{.arg fill} is misspecified.",
             "i" = "If you want to specify fill between quantiles, use {.code line = list(fill = list(...), ...)}."
           ))
