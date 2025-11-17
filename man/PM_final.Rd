@@ -72,7 +72,7 @@ the medians of the posterior distributions for each parameter.
 \item \strong{shrinkage} A data frame with the shrinkage for each parameter.
 \item \strong{gridpts} (NPAG only) Initial number of support points
 \item \strong{nsub} Number of subjects
-\item \strong{ab} Matrix of boundaries for random parameter values
+\item \strong{ab} Tibble/data frame of boundaries for random parameter values with columns: name, lower, upper.
 }}
 }
 \if{html}{\out{</div>}}
