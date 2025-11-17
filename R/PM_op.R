@@ -132,11 +132,10 @@ private = list(
     if (file.exists(file.path(path, "pred.csv"))) {
       op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), show_col_types = FALSE) %>% filter(!is.na(obs))
       
-      if(!"censoring" %in% names(op_raw)){
-        op_raw <- op_raw %>% mutate(censoring = "none") # if cens column missing, assume all observed
+      if(!"cens" %in% names(op_raw)){
+        op_raw <- op_raw %>% mutate(cens = "none") # if cens column missing, assume all observed
       } 
       
-      op_raw <- op_raw %>% dplyr::rename(cens = censoring)
       
     } else if (inherits(data, "PM_op") & !is.null(data$data)) { # file not there, and already PM_op
       if(!"cens" %in% names(data$data)){

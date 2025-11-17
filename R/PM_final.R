@@ -74,7 +74,7 @@ PM_final <- R6::R6Class(
     #' * **shrinkage** A data frame with the shrinkage for each parameter.
     #' * **gridpts** (NPAG only) Initial number of support points
     #' * **nsub** Number of subjects
-    #' * **ab** Matrix of boundaries for random parameter values
+    #' * **ab** Tibble/data frame of boundaries for random parameter values with columns: name, lower, upper.
     #'
     data = NULL,
     #' @description
@@ -355,9 +355,8 @@ PM_final <- R6::R6Class(
           sh <- varEBD / popSD**2
           
           # ranges
-          ab <- config$parameters[[1]] %>%
-          select(lower, upper) %>%
-          as.matrix()
+          ab <- config$parameters[[1]] %>% tibble::as_tibble()
+        
           
           gridpts <- config$prior$Sobol[1]
           
