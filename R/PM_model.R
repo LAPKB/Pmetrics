@@ -1412,7 +1412,8 @@ PM_model <- R6::R6Class(
             ))
           }
           self$arg_list <- modifyList2(self$arg_list, changes)
-          self <- PM_model$new(self$arg_list) # recreate and recompile the model
+   
+          self <- do.call(PM_model$new, self$arg_list) # recreate and recompile the model
           return(invisible(self))
         }
       ), # end public list

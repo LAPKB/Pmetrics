@@ -1611,6 +1611,8 @@ wtd.var <- function(x, weights = NULL,
 modifyList2 <- function (x, val, keep.null = FALSE) 
 {
   stopifnot(is.list(x), is.list(val))
+  names(x) <- tolower(names(x))
+  names(val) <- tolower(names(val))
   xnames <- names(x)
   vnames <- names(val)
   # handle unnamed lists
