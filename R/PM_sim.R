@@ -231,11 +231,11 @@ PM_sim <- R6::R6Class(
     #' * The fourth option for limits is a fully
     #' customized data frame or list of limits for simulated values for each parameter which
     #' will overwrite any limits in the model file.  If specified, it should be a
-    #' data frame or list with columns or elements, respectively, "name", "lower", "upper".
+    #' data frame or list with columns or elements, respectively, "par", "min", "max".
     #' For example, use a PM_final$ab object, or a code it like
-    #' `limits = list(name = c("Ka", "Ke", "V"), lower = c(0.1, 0.1, 10), upper = c(5, 5, 200))` or
-    #' `limits = data.frame(name = c("Ka", "Ke", "V"), lower = c(0.1, 0.1, 10), upper = c(5, 5, 200))` or
-    #' `limits = tibble::tibble(name = c("Ka", "Ke", "V"), lower = c(0.1, 0.1, 10), upper = c(5, 5, 200))`.
+    #' `limits = list(par = c("Ka", "Ke", "V"), min = c(0.1, 0.1, 10), max = c(5, 5, 200))` or
+    #' `limits = data.frame(par = c("Ka", "Ke", "V"), min = c(0.1, 0.1, 10), max = c(5, 5, 200))` or
+    #' `limits = tibble::tibble(par = c("Ka", "Ke", "V"), min = c(0.1, 0.1, 10), max = c(5, 5, 200))`.
     #' Each of these specifies custom limits for 3 parameters named Ka, Ke, and V,
     #' with limits of (0.1, 5), (0.1, 5) and (10, 200), respectively.  The last example uses tibbles, the
     #' tidyverse equivalent of data frames.
@@ -984,7 +984,7 @@ PM_sim <- R6::R6Class(
         # PARAMETER LIMITS --------------------------------------------------------
      
         if (all(is.null(limits))) { # limits are omitted altogether
-          parLimits <- tibble::tibble(lower = rep(-Inf, npar), upper = rep(Inf, npar))
+          parLimits <- tibble::tibble(par = 1:npar , min = rep(-Inf, npar), max = rep(Inf, npar))
         } else if (!any(is.na(limits)) & is.vector(limits)) { # no limit is NA and specified as vector of length 1 or 2
           # so first check to make sure poppar is a PM_final_data object
           if (!inherits(poppar, "PM_final_data")) {
@@ -998,8 +998,8 @@ PM_sim <- R6::R6Class(
             limits <- c(1, limits) # ...and set lower multiplier to 1
           }
           parLimits <- orig_lim %>% mutate(
-            lower = lower * limits[1],
-            upper = upper * limits[2]
+            min = min * limits[1],
+            max = max * limits[2]
           )
         } else if (length(limits) == 1 && is.na(limits)) { # limits specified as NA (use limits in model)
           parLimits <- poppar$ab
@@ -1010,8 +1010,8 @@ PM_sim <- R6::R6Class(
           ))
         } else { # limits specified as a list or data frame
           parLimits <- tibble::as_tibble(limits)
-          if (!all(c("name", "lower", "upper") %in% names(parLimits))) {
-            cli::cli_abort(c("x" = "A manual {.arg limits} argument must be a data frame or list with elements {.val name}, {.val lower}, and {.val upper}."))
+          if (!all(c("par", "min", "max") %in% names(parLimits))) {
+            cli::cli_abort(c("x" = "A manual {.arg limits} argument must be a data frame or list with elements {.val par}, {.val min}, and {.val max}."))
           }
         }
        
@@ -1172,7 +1172,7 @@ PM_sim <- R6::R6Class(
         # and get max of original population covariates
         covMax <- CVsum %>% summarize(across(covs2sim, max, na.rm = TRUE))
         
-        orig_covlim <- tibble::tibble(name = cov2sim, lower = covMin, upper = covMax)
+        orig_covlim <- tibble::tibble(par = cov2sim, min = covMin, max = covMax)
         
         if (length(covariate$limits) == 0) {
           # limits are omitted altogether
@@ -1190,11 +1190,11 @@ PM_sim <- R6::R6Class(
           covLimits <- orig_covlim
           # now figure out which covariates have different limits and change them
           
-          updates <- tibble::enframe(covariate$limits, name = "name", value = "rng") %>%
+          covUpdates <- tibble::enframe(covariate$limits, name = "par", value = "rng") %>%
           tidyr::unnest_wider(rng, names_sep = "") %>%
-          dplyr::rename(lower = rng1, upper = rng2)
+          dplyr::rename(min = rng1, max = rng2)
           
-          covLimits <- dplyr::rows_update(covLimits, updates, by = "name")
+          covLimits <- dplyr::rows_update(covLimits, covUpdates, by = "par")
           
           # goodNames <- which(names(covMean) %in% names(covariate$limits))
           # if (length(goodNames) > 0) {
@@ -1210,7 +1210,7 @@ PM_sim <- R6::R6Class(
         limits <- rbind(parLimits, covLimits)
         
         # add simulated covariates to primary block of model object
-        new_pri <- map(1:nsimcov, \(x) ab(covLimits$lower[x], covLimits$upper[x]))
+        new_pri <- map(1:nsimcov, \(x) ab(covLimits$min[x], covLimits$max[x]))
         names(new_pri) <- covs2sim
         arg_list$pri <- c(arg_list$pri, new_pri)
         
@@ -2508,8 +2508,8 @@ generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix,
   
   # function used later to check if any parameters are outside their limits
   outside_check <- function(x) {
-    any(x - limits$lower < 0) | # any parameter < lower limit
-    any(x - limits$upper > 0) # any parameter > upper limit
+    any(x - limits$min < 0) | # any parameter < lower limit
+    any(x - limits$max > 0) # any parameter > upper limit
   }
   
   #Generate samples bounded by limits for each mode
