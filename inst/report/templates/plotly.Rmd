@@ -249,10 +249,9 @@ par_lims %>%
     options = list(
       searching = FALSE,
       pageLength = 10,
-      lengthChange = FALSE,
       info = FALSE,
-      dom = "t",
-      autoHideNavigation = TRUE
+      dom = "t"
+      #autoHideNavigation = TRUE
     ),
     rownames = FALSE
   )
