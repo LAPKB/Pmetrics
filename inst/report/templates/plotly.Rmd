@@ -224,9 +224,9 @@ p <- lapply(1:numeqt, function(i) {
 The model included the following primary parameters
 ```{r}
 par_lims <- data.frame(
-  name = names(res$final$popMean),
-  lower = res$final$ab[,1],
-  upper = res$final$ab[,2],
+  par = res$final$ab$par,
+  min = res$final$ab$min,
+  max = res$final$ab$max,
   ave = t(res$final$popMean),
   med = t(res$final$popMed),
   sd = t(res$final$popSD),
@@ -237,9 +237,9 @@ par_lims <- data.frame(
   dplyr::mutate(across(4:8,\(x) round(x, 3)))
 
 par_lims %>% 
-  dplyr::rename(`Parameter` = name,
-                `Lower limit` = lower,
-                `Upper limit` = upper,
+  dplyr::rename(`Parameter` = par,
+                `Lower limit` = min,
+                `Upper limit` = max,
                 `Mean` = ave,
                 `Median` = med,
                 `SD` = sd,
