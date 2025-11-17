@@ -355,7 +355,7 @@ PM_final <- R6::R6Class(
           sh <- varEBD / popSD**2
           
           # ranges
-          ab <- config$parameters[[1]] %>% tibble::as_tibble()
+          ab <- config$parameters[[1]] %>% tibble::as_tibble() %>% dplyr::rename(par = name, min = lower, max = upper)
         
           
           gridpts <- config$prior$Sobol[1]
@@ -570,8 +570,8 @@ PM_final <- R6::R6Class(
         
         # ranges
         ab <- data.frame(data$ab)
-        names(ab) <- c("min", "max")
-        ab$par <- names(data$popMean)
+        # names(ab) <- c("min", "max")
+        # ab$par <- names(data$popMean)
         
         # axis labels and title
         if (missing(xlab)) {
