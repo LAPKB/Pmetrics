@@ -1,4 +1,4 @@
-id,time,outeq,block,obs,censoring,pop_mean,pop_median,post_mean,post_median
+id,time,outeq,block,obs,cens,pop_mean,pop_median,post_mean,post_median
 1,0.0,0,0,,none,0.0,0.0,0.0,0.0
 1,0.1,0,0,,none,0.019233641627087964,0.0,3.4907624623199764e-47,0.0
 1,0.2,0,0,,none,0.037885860139339166,0.0,6.825639548097843e-47,0.0
