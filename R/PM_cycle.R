@@ -154,7 +154,7 @@ PM_cycle <- R6::R6Class(
       
       if (file.exists(file.path(path, "settings.json"))) {
         config <- jsonlite::fromJSON(file.path(path, "settings.json"))
-      } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
+      } else if (inherits(data, "PM_cycle") & !is.null(data$data)) { # file not there, and already PM_op
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)
       } else {

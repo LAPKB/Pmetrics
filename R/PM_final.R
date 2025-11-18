@@ -242,7 +242,7 @@ PM_final <- R6::R6Class(
     make = function(data, path) {
       if (file.exists(file.path(path, "theta.csv"))) {
         theta <- readr::read_csv(file = file.path(path, "theta.csv"), show_col_types = FALSE)
-      } else if (inherits(data, "PM_final")) { # file not there, and already PM_final
+      } else if (inherits(data, "PM_final") & !is.null(data$data)) { # file not there, and already PM_final
         class(data$data) <- c("PM_final_data", "list")
         return(data$data)
       } else {
