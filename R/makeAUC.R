@@ -68,7 +68,7 @@ makeAUC <- function(data,
         "PM_pop_data", "PM_pop",
         "PM_post_data", "PM_post",
         "PM_data_data", "PM_data"
-      ), which = T) > 0
+      ), which = TRUE) > 0
     ) # will be all zeros except matching class, undefined if none
     
     if (length(data_class) > 0) { # there was a match
@@ -88,13 +88,12 @@ makeAUC <- function(data,
         makePMmatrixBlock() %>%
         filter(!is.na(out)) # PM_data
       )
+      group <- "id"
     } else { # class not matched, so needs formula
       if (missing(formula)) {
         cli::cli_abort(c("x" = "Please supply a formula of form {.code out~time} for objects other than class {.cls PM_sim}, {.cls PM_op}, {.cls PM_pop}, {.cls PM_post}, or {.cls PM_data}."))
       }
-      
-      
-      
+    
       x.name <- all.vars(formula[[3]])[1] 
       y.name <- all.vars(formula[[2]])  
       group <- all.vars(formula[[3]])[2]  
