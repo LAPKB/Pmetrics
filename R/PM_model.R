@@ -2286,10 +2286,7 @@ PM_model <- R6::R6Class(
         
         
         # Modify layout logic to use circular positioning
-        create_plot <- function(connections, compartments, outputs) {
-          library(ggplot2)
-          library(dplyr)
-          
+        create_plot <- function(connections, compartments, outputs) {       
           box_width <- 1.2
           box_height <- 0.8
           

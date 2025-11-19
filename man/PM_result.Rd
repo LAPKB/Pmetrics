@@ -220,7 +220,7 @@ Re-generate the report
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Parameters passed to \link{PM_report}.}
+\item{\code{...}}{Parameters passed to \link{PM_report}. In particular, pay attention to \code{path}.}
 }
 \if{html}{\out{</div>}}
 }
