@@ -162,9 +162,9 @@ PM_result <- R6::R6Class(
       make_NCA(self, ...)
     },
     #' @description Re-generate the report
-    #' @param ... Parameters passed to [PM_report].
+    #' @param ... Parameters passed to [PM_report]. In particular, pay attention to `path`.
     report = function(...) {
-      PM_report(...)
+      PM_report(self, ...)
     },
     #' @description
     #' Calls [PM_sim]. Default is to use the `$final`, `$model`, and `$data` objects

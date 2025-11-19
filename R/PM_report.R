@@ -8,16 +8,15 @@
 #' @param template If missing, the default Pmetrics report template as specified in [getPMoptions]
 #' is used. It can be changed with [setPMoptions]. Otherwise, the value for `template`
 #' can be "plotly", "ggplot", or "none".
-#' @param path The path for the generated report, defaults to a temporary file
-#' in the current working directory.
+#' @param path The path for the generated report, defaults to a temporary folder.
 #' @param show Controls if the report should be automatically opened on generation, defaults to `TRUE`
-#' @param quiet If `TRUE`, suppresses the message about report generation, defaults to `FALSE`.
-#' @return Generates an HTML-report in the current working directory.
+#' @param quiet If `TRUE` (default), suppresses knitr output about report generation. Progress messages will still be displayed.
+#' @return Generates an HTML-report in the folder specified by `path`.
 #' @author Markus Hovd, Julian Otalvaro, and Michael Neely
 #' @seealso [PM_load]
 #' @export
 
-PM_report <- function(x, template, path, show = TRUE, quiet = FALSE) {
+PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
   if (!is(x, "PM_result")) {
     cli::cli_abort(c("x" = "This function expects a valid PM_result object from PM_load."))
   }
@@ -49,25 +48,18 @@ PM_report <- function(x, template, path, show = TRUE, quiet = FALSE) {
     out_path <- normalizePath(path, winslash = "/") # knitr needs full path
   }
   
-  #if(!quiet) cat("Generating report based on the", template, "template...\n")
-  #rlang::try_fetch(
+  if (is.null(x$final$data) & is.null(x$op$data) & is.null(x$cycle$data)){
+    return(invisible(-1)) # no data found
+  } else {
   rmarkdown::render(
     input = templateFile,
     output_file = file.path(out_path, "report.html"),
     params = list(res = x),
     clean = TRUE,
-    quiet = TRUE,
+    quiet = quiet,
   )
-  #   error = function(e) {return(invisible(-1))}
-  # )
-  
-  # quarto::quarto_render(
-  #   input = templateFile,
-  #   output_file = outfile,
-  #   execute_params = list(res = x),
-  #   quiet = TRUE,
-  #   debug = TRUE
-  # )
+}
+
   
   if (file.exists(file.path(out_path, "report.html"))) {
     if (show){
@@ -78,4 +70,4 @@ PM_report <- function(x, template, path, show = TRUE, quiet = FALSE) {
     return(invisible(-1)) # something went wrong and report doesn't exist
   }
   
-}
+  }
