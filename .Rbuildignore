@@ -4,7 +4,6 @@
 ^other$g
 ^.*\.Rproj$
 ^\.Rproj\.user$
-compile.*
 .vscode
 ^_pkgdown\.yml$
 ^docs$
@@ -32,4 +31,13 @@ rust_debug.txt
 ^inst/Learn/_*
 Experimental
 
+
+^\.vscode$
+^src/rust/vendor$
+^src/rust/target$
+^src/Makevars$
+^src/Makevars\.win$
+
+^Cargo\.toml$
+^Cargo\.lock$
 

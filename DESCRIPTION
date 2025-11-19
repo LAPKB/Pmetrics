@@ -20,7 +20,7 @@ URL: https://lapkb.github.io/Pmetrics_rust/
 BugReports: https://github.com/LAPKB/Pmetrics_rust/issues
 SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc
 Depends: 
-    R (>= 4.1.0)
+    R (>= 4.2)
 Imports:
     bslib,
     cli,
@@ -74,6 +74,7 @@ RoxygenNote: 7.3.3
 Encoding: UTF-8
 VignetteBuilder: quarto
 LazyData: true
+LazyDataCompression: xz
 Config/rextendr/version: 0.4.2
 Config/testthat/edition: 3
 Config/Needs/website: 

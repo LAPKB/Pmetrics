@@ -72,3 +72,6 @@ other/
 *_test.R
 docs/
 docs
+src/rust/vendor
+src/Makevars
+src/Makevars.win
