@@ -15,6 +15,7 @@
 .gitkeep
 ^man-roxygen
 ^README\.Rmd$
+^README_files/
 logo.png
 ^vignettes/articles$
 ^vignettes/.quarto
@@ -41,3 +42,4 @@ Experimental
 ^Cargo\.toml$
 ^Cargo\.lock$
 
+^Images/

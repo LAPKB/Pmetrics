@@ -75,3 +75,6 @@ docs
 src/rust/vendor
 src/Makevars
 src/Makevars.win
+
+/.quarto/
+**/*.quarto_ipynb
