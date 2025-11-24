@@ -4,13 +4,10 @@
 \alias{PM_tutorial}
 \title{Pmetrics tutorial}
 \usage{
-PM_tutorial(wd = getwd(), auto_confirm = FALSE)
+PM_tutorial(wd = getwd())
 }
 \arguments{
-\item{wd}{The working directory in which to create the Examples folder.}
-
-\item{auto_confirm}{If true, the execution is not stopped to ask the
-user for confirmation
+\item{wd}{The working directory in which to create the Examples folder.
 Default is current working directory.}
 }
 \description{
@@ -24,4 +21,3 @@ directory. The folder will contain all files and folder necessary to
 conduct the tutorial. After the Examples folder is created, open the
 \emph{examples.R} script to begin the tutorial.
 }
-\keyword{internal}

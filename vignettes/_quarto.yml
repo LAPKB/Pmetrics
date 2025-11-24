@@ -1,5 +1,0 @@
-project:
-  type: default
-
-execute:
-  working-directory: project

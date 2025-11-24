@@ -4,23 +4,29 @@
 \alias{PM_report}
 \title{Generate a report}
 \usage{
-PM_report(x, template, path, show = TRUE, quiet = TRUE)
+PM_report(
+  PM_result,
+  template = getPMoptions("report_template"),
+  outfile,
+  show = TRUE
+)
 }
 \arguments{
-\item{x}{A \link{PM_result} object obtained from \link{PM_load}.}
+\item{PM_result}{A \code{PM_result} object obtained from \code{PM_load(x)}, where \code{x} is the run number.}
 
-\item{template}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
-is used. It can be changed with \link{setPMoptions}. Otherwise, the value for \code{template}
-can be "plotly", "ggplot", or "none".}
+\item{template}{The filename of a report template in the current working directory,
+or the full path/filename of a template in another directory.
+If not specified, the default Pmetrics report template as specified in \link{getPMoptions}
+is used.}
 
-\item{path}{The path for the generated report, defaults to a temporary folder.}
+\item{outfile}{The location of the generated report, defaults to a temporary file.}
 
-\item{show}{Controls if the report should be automatically opened on generation, defaults to \code{TRUE}}
-
-\item{quiet}{If \code{TRUE} (default), suppresses knitr output about report generation. Progress messages will still be displayed.}
+\item{show}{Controls if the report should be automatically opened on generation, defaults to \code{TRUE}
+Pmetrics will prompt the user to set this address the first time the \code{remote} argument is set to \code{TRUE}
+in \code{\link{NPrun}}.}
 }
 \value{
-Generates an HTML-report in the folder specified by \code{path}.
+Generates an HTML-report in the current working directory.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -28,8 +34,13 @@ Generates an HTML-report in the folder specified by \code{path}.
 Generates a report from a specified Rmd template
 }
 \seealso{
-\link{PM_load}
+\code{\link{PM_load}}'
+\subsection{PACKAGE IMPORTS FOR REPORT TEMPLATES}{
+}
+
+\subsection{ggplot}{
+}
 }
 \author{
-Markus Hovd, Julian Otalvaro, and Michael Neely
+Markus Hovd and Julian Otalvaro
 }

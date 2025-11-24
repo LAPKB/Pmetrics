@@ -2,58 +2,24 @@
 % Please edit documentation in R/PM_pta.R
 \name{summary.PM_pta}
 \alias{summary.PM_pta}
-\title{Summarize Percent Target Attainment}
+\title{Summarize PM_pta}
 \usage{
-\method{summary}{PM_pta}(object, at = "intersect", ci = 0.95, ...)
+\method{summary}{PM_pta}(object, ...)
 }
 \arguments{
-\item{object}{A \link{PM_pta} object}
+\item{object}{The \emph{PM_pta} object to summarize}
 
-\item{at}{Which object in the \link{PM_pta} result list to summarize. By default "intersect" if
-an intersection is present due to creation of the object with multiple target types, or
-1 if no intersection is present, which means only 1 target type was selected. If
-"intersect" is present in the object, the default can be overridden with a number to
-summarize one of the individual PTAs, e.g. \code{at = 2} to summarize the second PTA rather than the
-intersection of all the PTAs.}
-
-\item{ci}{Width of the interval for pharmacodynamic index reporting.  Default is 0.95, i.e. 2.5th to 97.5th percentile.}
-
-\item{...}{Not used.}
+\item{...}{Arguments passed to \link{summary.PMpta}}
 }
 \value{
-A tibble with the following columns (only the first four if \code{at = "intersect"}):
-\itemize{
-\item \strong{reg_num} is the number of the simulation regimen
-\item \strong{label} is the simulation label, for reference
-\item \strong{target} is the target for the row, if targets are discrete, not used for simulated targets
-\item \strong{type} is the target type for the row, e.g. "auc", "time", "-min", etc.
-\item \strong{prop_success} is the proportion of simulated profiles that met the success definition
-\item \strong{median} is the median parmacodynamic index (PDI), i.e. the proportion or ratio depending on the target type
-\item \strong{lower} is the lower bound of the interval defined by \code{ci}
-\item \strong{upper} is the upper bound of the interval defined by \code{ci}
-\item \strong{mean} is the mean of the PDI
-\item \strong{sd} is the standard deviation of the PDI
-\item \strong{min} is the minimum PDI
-\item \strong{max} is the maximum PDI
-}
+A \link{summary.PMpta} object
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+`r lifecycle::badge("stable")
 
-Summarize a Pmetrics Percent Target Attainment Object
+Wrapper function for summmary.PMpta
 }
 \details{
-Summarize Pharmacodynamic Index (PDI) statistics and success proportions in a \link{PM_pta} object. The PDI is the metric calculated by the target type and target, e.g. AUC/Target,
-or \%time>target. Since a PDI cannot be calculated for intersections, summarizing the intersection object only provides the success proportion per simulation/target.
-}
-\examples{
-\dontrun{
-ptaEx$summary()
-}
-}
-\seealso{
-\link{PM_pta}
-}
-\author{
-Michael Neely
+This redirects to \link{summary.PMpta} for PM_pta R6 objects
+The R6 method to summarize is \code{PM_pta$summary()}.
 }

@@ -4,35 +4,29 @@
 \alias{PM_parse}
 \title{Parse Pmetrics output}
 \usage{
-PM_parse(path = ".", fit = "fit.rds", write = TRUE)
+PM_parse(wd = getwd(), write = TRUE)
 }
 \arguments{
-\item{path}{The directory containing the output from the Rust-implementation of NPAG}
+\item{wd}{The directory containing the output from the Rust-implementation of NPAG}
 
-\item{fit}{The relative path to a "fit.rds" file, which is normal output after a fit containing the data and model used.}
-
-\item{write}{If \code{TRUE} (default), saves the output as "PMout.Rdata" in the specified path.}
+\item{write}{A logical value indicating if the results should be returned (\code{FALSE}, default) or written to disk (\code{TRUE})}
 }
 \value{
 The output of \code{PM_parse} is a list containing the following elements
-\itemize{
-\item \strong{op} Written to the standard of \code{\link[=PM_op]{PM_op()}}
-\item \strong{pop} Written to the standard of \code{\link[=PM_pop]{PM_pop()}}
-\item \strong{post} Written to the standard of \code{\link[=PM_post]{PM_post()}}
-\item \strong{cycles} Written to the standard of \code{\link[=PM_cycle]{PM_cycle()}}
-\item \strong{final} Written to the standard of \code{\link[=PM_final]{PM_final()}}
-\item \strong{cov} Written to the standard of \code{\link[=PM_cov]{PM_cov()}}
-}
+\item{op }{Written to the standard of PM_op}
+\item{pop }{Written to the standard of PM_pop}
+\item{post }{Written to the standard of PM_post}
+\item{cycles }{Written to the standard of PM_cycle}
+\item{final }{Written to the standard of PM_final}
 }
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
 A flexible parser for Pmetrics output
 }
 \details{
 Currently written for the Rust implementation of NPAG
 }
-\author{
-Michael Neely and Markus Hovd
+\seealso{
+\code{\link{NPparse}}
 }
-\keyword{internal}
