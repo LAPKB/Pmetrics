@@ -2,26 +2,23 @@
 Ka, 0.1, 0.9
 Ke, 0.001, 0.1
 V, 30, 120
-lag1, 0, 4
+Tlag1, 0, 4
 
 
 #Cov
 WT
-AFRICA!
+AFRICA
 AGE
-GENDER!
+GENDER
 HEIGHT
 
 
 #Lag 
-LAG[1] = lag1
-
-
-#Eqn
-two_comp_bolus
+TLAG(1) = Tlag1
 
 #Out
-Y[1] = X[2]/V
+Y(1) = X(2)/V
+
 
 #Err
 G=5

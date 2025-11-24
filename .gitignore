@@ -1,80 +1,32 @@
-# R session & IDE noise
+.Rproj.user
 .Rhistory
-.Rapp.history
 .RData
-.RDataTmp
 .Ruserdata
-.Renviron
-.Rproj.user/
-.vscode/
 .DS_Store
-PmetricsGit.Rproj
-
-# Build/check artifacts
-/*.tar.gz
-/*.Rcheck/
-..Rcheck/
 Pmetrics.Rcheck/
-*_cache/
-/cache/
-*.utf8.md
-*.knit.md
-.Rd2pdf*/
-rsconnect/
-po/*~
-
-# Vignettes/docs rendered locally
-vignettes/*.html
-vignettes/*.pdf
-vignettes/*_files/
-inst/doc/
+#build
+Archived
 PACKAGES.gz
 PACKAGES.rds
 PMchangelog.html
-
-# Credentials/tokens
-.httr-oauth
-
-# Compiled objects
-src/*.o
-src/*.so
-src/*.dll
 src/Pmetrics.so
 src/knn.o
 src/registerDynamicSymbol.o
-src/symbols.rds
+src/Pmetrics.dll
+PmetricsGit.Rproj
 inst/compiledFortran/
-
-# Rust artifacts
-target/
-Cargo.lock
-
-# Generated config/templates
-inst/rust/template/*
-
-# Training book outputs
-inst/Learn/.quarto/
-inst/Learn/_book/
-inst/Learn/_site/
-inst/Learn/_freeze/
-
-# Simulation / report artifacts
-data-raw/Runs/
+.DS_Store
+src/symbols.rds
 tests/testthat/Runs/
-Examples
-Experimental
+..Rcheck/
+.vscode/
+.Rd2pdf65996/
 other/
-1
-2
-3
-
-# Misc project outputs
-*_test.R
-docs/
-docs
-src/rust/vendor
-src/Makevars
-src/Makevars.win
-
-/.quarto/
-**/*.quarto_ipynb
+.Rprofile
+Examples
+.Rdata
+.httr-oauth
+inst/rust/template/*
+inst/options/PMoptions.json
+inst/options/PMoptions.json
+inst/doc

@@ -43,9 +43,8 @@ For a z-score > 3, which indicates an extreme BMI, consider using the modified
 z-score and percentile.
 }
 \examples{
-\dontrun{
 zBMI(agemos = 36, bmi = 15)
-}
+
 }
 \author{
 Michael Neely

@@ -4,12 +4,17 @@
 \alias{msd}
 \title{Initial mean/SD for primary parameter values}
 \usage{
-msd(mean, sd)
+msd(mean, sd, gtz = FALSE)
 }
 \arguments{
 \item{mean}{Initial mean.}
 
 \item{sd}{Initial standard deviation.}
+
+\item{gtz}{Greater than zero. If \code{FALSE} (default), ensure parameter values
+remain positive by discarding negative values. Only relevant for parametric
+analyses, since lower limit of parameter values for nonparametric are strictly
+controlled by the range.}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

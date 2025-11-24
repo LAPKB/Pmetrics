@@ -1,12 +1,13 @@
 {
-  "sep": ",",
-  "dec": ".",
-  "digits": 2,
-  "show_metrics": true,
-  "bias_method": "percent_mwe",
-  "imp_method": "percent_rmbawse",
-  "ic_method": "aic",
-  "report_template": "plotly",
-  "backend": "rust",
-  "model_template_path": ""
+  "sep": [","],
+  "dec": ["."],
+  "lang": ["C"],
+  "compilation_statements": ["gfortran -march=native -w -O3 -o <exec> <files>", "gfortran -march=native -w -fopenmp -fmax-stack-var-size=32768 -O3 -o <exec> <files>"],
+  "server_address": ["http://localhost:5000"],
+  "backend": ["fortran"],
+  "rust_template": {},
+  "report_template": ["plotly"],
+  "gfortran_path": ["gfortran"],
+  "func_defaults": {},
+  "op_stats": [true]
 }

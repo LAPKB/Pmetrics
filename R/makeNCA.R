@@ -2,8 +2,8 @@
 #'
 #' Performs a non-compartmental analysis from observed concentrations in the raw data
 #' file or from an individual Bayesian posterior predicted
-#' time-observation profiles in [PM_post] generated automatically after an NPAG run
-#' and loaded with [PM_load].
+#' time-observation profiles (PMpost object) generated automatically after an NPAG run
+#' by the [makePost] command and loaded with [PM_load].
 #'
 #' If concentrations from multiple dose intervals are included in the `start` to `end` time interval,
 #' the function will superpose the concentrations using the time after dose.  An error will be generated if
@@ -14,41 +14,40 @@
 #'
 #' @param x Data to analyze.  This can be specified in a number of ways.
 #' \itemize{
-#' \item It can be the run number, e.g. 3, that has been previously loaded with [PM_load].
+#' \item It can be the run number, e.g. 3, that has been previously loaded with \code{\link{PMload}}.
 #' Either the mdata file from the run (NPAG or IT2B) can be used (default) or
-#' the post object can be used (NPAG only) by specifying \code{postPred = T} below.  If [x] is a run number that corresponds
-#' to both an NPAG and IT2B run which have been previously loaded into memory with [PM_load], the NPAG run will be used.
-#' \item It can be the run number of a run that has \emph{not} been previously loaded with [PM_load].
-#' In this case, the current working directory should be the Runs folder as [makeNCA] will call [PM_load].
-#' \item It can be the specific name of an mdata.x file already loaded into memory with [PM_load], e.g. mdata.3.  Note
+#' the post object can be used (NPAG only) by specifying \code{postPred = T} below.  If \code{x} is a run number that corresponds
+#' to both an NPAG and IT2B run which have been previously loaded into memory with \code{PMload}, the NPAG run will be used.
+#' \item It can be the run number of a run that has \emph{not} been previously loaded with \code{\link{PMload}}.
+#' In this case, the current working directory should be the Runs folder as \code{makeNCA} will call \code{PMload}.
+#' \item It can be the specific name of an mdata.x file already loaded into memory with \code{\link{PMload}}, e.g. mdata.3.  Note
 #' that quotation marks are not necessary since mdata.3 is an object, not a label/character vector.
 #' \item Finally, it can be the name of a Pmetrics data file in the current working directory, which will be loaded with
-#' [PMreadMatrix] and analyzed, e.g. "data.csv".  In this case, quotation marks are reqired, because `x`
+#' \code{\link{PMreadMatrix}} and analyzed, e.g. \dQuote{data.csv}.  In this case, quotation marks are reqired, because \code{x}
 #' is now a character vector specifying the filename of the file to load.
 #' }
 #' @param postPred Boolean switch to use the posterior predictions rather than the observed.
-#' concentrations.  Default is `FALSE`. Ignored if an IT2B run is
+#' concentrations.  Default is \code{FALSE}. Ignored if an IT2B run is
 #' used to supply the raw data file.
 #' @param include A vector of subject IDs to include in the NCA, e.g. c(1:3,5,15)
-#' @param exclude A vector of subject IDs to exclude in the NCA, e.g. c(4,6:14,16:20).
-#' When `postPred` is `TRUE`, any subject(s) excluded from the IT2B/NPAG run will be excluded as well.
+#' @param exclude A vector of subject IDs to exclude in the NCA, e.g. c(4,6:14,16:20). When \code{postPred} is \code{TRUE}, any subject(s) excluded from the IT2B/NPAG run will be excluded as well.
 #' @param input The number of the input (e.g. drug) to analyze; default 1.
-#' @param icen If `postPred` is `TRUE`, use predictions based on median or mean of each
+#' @param icen If \code{postPred} is \code{TRUE}, use predictions based on median or mean of each
 #' subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".
 #' @param outeq The number of the output equation to analyze; default 1
 #' @param block The number of the observation block within subjects, with each block delimited by EVID=4 in the data file; default 1
 #' @param start The beginning of the time interval to look for doses and observations, e.g. 120.  It can be
-#' a vector to allow for individual start times per subject, e.g. c(120,120,144,168).  If the length of `start`
-#' is less than the number of subjects, the last value will be recycled as needed.  If the `start` time is not 0 (default),
+#' a vector to allow for individual start times per subject, e.g. c(120,120,144,168).  If the length of \code{start}
+#' is less than the number of subjects, the last value will be recycled as needed.  If the \code{start} time is not 0 (default),
 #' then it is assumed that steady state (multiple dose) conditions apply.
-#' @param end Analogous to `start`, set this equal to the end of the dosing interval. It too can be a vector, with the last value
-#' recycled as necessary.  Default is `Inf`, i.e. all data used.
-#' @param first Alternative way to specify time interval for NCA by choosing dose number, e.g. 1 or 3.  May be a numeric vector, like `start` and `end`,
+#' @param end Analogous to \code{start}, set this equal to the end of the dosing interval. It too can be a vector, with the last value
+#' recycled as necessary.  Default is \code{Inf}, i.e. all data used.
+#' @param first Alternative way to specify time interval for NCA by choosing dose number, e.g. 1 or 3.  May be a numeric vector, like \code{start} and \code{end},
 #' e.g. c(1,1,1,3,1,...) to allow for individualization by subject.  The last value will be recycled to ensure length equal to the
-#' number of subjects.  Default is `NA`, which means `start` will be used.
-#' @param last The complement to `first`, specifying the last dose to end the time interval.  If `NA`,
+#' number of subjects.  Default is \code{NA}, which means \code{start} will be used.
+#' @param last The complement to \code{first}, specifying the last dose to end the time interval.  If \code{NA},
 #' which is the default, then the maximum time per subject will be the upper bound of the time interval.
-#' Like `first`, `last` can be a vector, with the last value recycled as necessary.  Use `NA` in the vector
+#' Like \code{first}, \code{last} can be a vector, with the last value recycled as necessary.  Use \code{NA} in the vector
 #' to signify maximum time for that subject.
 #' @param terminal Number of observations to use for terminal curve fitting (i.e. to estimate \emph{k}).  Default is 3.
 #' @return A dataframe of class \emph{PMnca} with columns
@@ -58,7 +57,7 @@
 #'  \item{aumc }{Area under the first moment curve}
 #'  \item{k }{Slope by least-squares linear regression of the final 3 log-transformed observations vs. time.
 #'  If the final 3 concentrations are not decreasing such that linear regression results in a positive slope,
-#'  this value and all others that depend on `k` will be suppressed.}
+#'  this value and all others that depend on \code{k} will be suppressed.}
 #'  \item{auclast }{Area under the curve from the time of the last observation to infinity, calculated as \(Final obs\)/k.
 #'  This value will be suppressed if start != 0.}
 #'  \item{aumclast }{Area under the first moment curve from the time of the last observation to infinity.
@@ -75,11 +74,13 @@
 #' @author Michael Neely
 #' @examples
 #' makeNCA(NPex$data)
-#'
+#' 
 #' @export
 
 makeNCA <- function(x, postPred = F, include, exclude, input = 1, icen = "median", outeq = 1, block = 1,
                     start = 0, end = Inf, first = NA, last = NA, terminal = 3) {
+
+
   # checkRequiredPackages("plyr")
   # declare global variables
   whichtime <- NULL
@@ -104,7 +105,7 @@ makeNCA <- function(x, postPred = F, include, exclude, input = 1, icen = "median
           post <- NA
         }
       } else { # objects not loaded, try to load
-        loadOK <- PM_load(x)
+        loadOK <- PMload(x)
         if (loadOK) { # load was ok
           data <- tryCatch(get(NPdataName), error = function(e) -1)
           if (data[1] == -1) {
@@ -396,28 +397,15 @@ makeNCA <- function(x, postPred = F, include, exclude, input = 1, icen = "median
 
     NCA[i, 10] <- max(temp$out) # cmax
     NCA[i, 11] <- temp$tad[which(temp$out == NCA[i, 10])][1] # tmax
-
+    
     # AUC
-    auc <- rlang::try_fetch(makeAUC(temp, out ~ tad, icen = icen, outeq = outeq, block = block)$tau,
-      error = function(e) {
-        cli::cli_warn("Unable to generate AUC.", parent = e)
-        return(NULL)
-      }
-    )
-
+    auc = makeAUC(temp, out ~ tad, icen = icen, outeq = outeq, block = block)$tau
     NCA[i, 2] <- ifelse(length(auc) == 0, NA, auc)
 
-    # AUMC
+    #AUMC
     temp2 <- data.frame(id = temp$id, tad = temp$tad, out = temp$tad * temp$out)
-    aumc <- rlang::try_fetch(makeAUC(temp2, out ~ tad, icen = icen, outeq = outeq, block = block)$tau,
-      error = function(e) {
-        cli::cli_warn("Unable to generate AUC.", parent = e)
-        return(NULL)
-      }
-    )
-
-
-    NCA[i, 3] <- ifelse(length(aumc) == 0, NA, aumc)
+    aumc = makeAUC(temp2, out ~ tad, icen = icen, outeq = outeq, block = block)$tau
+    NCA[i, 3] <-  ifelse(length(aumc) == 0, NA, aumc)
 
     if (nrow(temp) >= 5) {
       temp <- tail(temp, terminal)

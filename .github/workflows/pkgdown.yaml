@@ -4,13 +4,12 @@ on:
   push:
     branches: [main, master]
   pull_request:
+    branches: [main, master]
   release:
     types: [published]
   workflow_dispatch:
 
-name: pkgdown.yaml
-
-permissions: read-all
+name: pkgdown
 
 jobs:
   pkgdown:
@@ -23,7 +22,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -33,16 +32,16 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::pkgdown, local::.
+          extra-packages: any::pkgdown, any::rsconnect, local::.
           needs: website
 
       - name: Build site
-        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE, quiet = FALSE)
+        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'
-        uses: JamesIves/github-pages-deploy-action@v4.5.0
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           clean: false
           branch: gh-pages

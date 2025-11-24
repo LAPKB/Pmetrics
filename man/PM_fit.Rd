@@ -14,13 +14,14 @@ or created on the fly when making a new PM_fit object. PM_fit objects contain
 methods to cross-check data and model objects for compatibility, as well as to
 run the analysis.
 }
-\keyword{internal}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
 \item{\code{data}}{\link{PM_data} object}
 
 \item{\code{model}}{\link{PM_model} object}
+
+\item{\code{arglist}}{Arguments passed to rust engine}
 }
 \if{html}{\out{</div>}}
 }
@@ -41,7 +42,7 @@ run the analysis.
 \subsection{Method \code{new()}}{
 Create a new object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_fit$new(data = data, model = model)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_fit$new(data = data, model = model, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -49,16 +50,19 @@ Create a new object
 \describe{
 \item{\code{data}}{Either the name of a  \link{PM_data}
 object in memory or the quoted name of a Pmetrics
-data file in the current working directory, which will crate a \link{PM_data}
+data file in the current working directory, which will crate a \code{PM_data}
 object on the fly. However, if created on the fly, this object
 will not be available to other
-methods or other instances of \link{PM_fit}.}
+methods or other instances of \code{PM_fit}.}
 
 \item{\code{model}}{Similarly, this is either the name of a \link{PM_model}
 object in memory or the quoted name of a Pmetrics text model file
 in the current working directory. Again, if created on the fly,
 the object will not be available to other
-methods or other instances of \link{PM_fit}.}
+methods or other instances of \code{PM_fit}.}
+
+\item{\code{...}}{Other parameters passed to \code{PM_data} or \code{PM_model} if created
+from a filename}
 }
 \if{html}{\out{</div>}}
 }
@@ -67,16 +71,22 @@ methods or other instances of \link{PM_fit}.}
 \if{html}{\out{<a id="method-PM_fit-run"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_fit-run}{}}}
 \subsection{Method \code{run()}}{
-Run a fit of model to the data (deprecated)
+Fit the model to the data
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_fit$run()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_fit$run(..., engine = "NPAG", rundir = getwd())}\if{html}{\out{</div>}}
 }
 
-\subsection{Details}{
-The \verb{$run} method for \code{PM_fit} objects has been deprecated in
-favor of the \verb{$fit} method in \code{\link[=PM_model]{PM_model()}}.
-}
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Other arguments passed to \link{NPrun}}
 
+\item{\code{engine}}{"NPAG" (default) or "IT2B"}
+
+\item{\code{rundir}}{This argument specifies an \emph{existing} folder that will store the run inside.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_fit-save"></a>}}

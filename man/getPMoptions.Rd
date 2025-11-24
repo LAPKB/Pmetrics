@@ -4,7 +4,7 @@
 \alias{getPMoptions}
 \title{Get Pmetrics User Options}
 \usage{
-getPMoptions(opt, warn = TRUE, quiet = FALSE)
+getPMoptions(opt, warn = T, quiet = F)
 }
 \arguments{
 \item{opt}{The option to retrieve.  If omitted, all option values will be returned.}
@@ -22,10 +22,7 @@ A list with the current options.
 Get user options for Pmetrics
 }
 \details{
-This function will get user options for Pmetrics. It will look for a \emph{PMoptions.json} file
-in a hidden folder outside of the Pmetrics package. If that does not exist,
-it will look for a default options file in the package options folder. See \link{setPMoptions} for
-details on where the options file is stored and how to set options.
+This function will get user options for Pmetrics.
 }
 \author{
 Michael Neely

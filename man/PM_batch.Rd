@@ -19,4 +19,3 @@ Runs a set of PM_fit objects in order
 \details{
 This function receives a batch (list) of PM_fit objects and executes them in order
 }
-\keyword{internal}

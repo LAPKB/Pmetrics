@@ -1,7 +1,8 @@
+
 #' @title Configure Fortran
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' Use setPMoptions() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -14,7 +15,7 @@ PMFortranConfig <- function(...) {
 #' @title Check data matrix
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' Use PM_data$new() and PM_model$new() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -27,7 +28,7 @@ PMcheckMatrix <- function(...) {
 #' @title Fix data matrix
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' Use PM_data$new() and PM_model$new() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -40,7 +41,7 @@ PMfixMatrix <- function(...) {
 #' @title Load NPAG run
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' Use PM_load() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -53,7 +54,7 @@ NPload <- function(...) {
 #' @title Load IT2B run
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' Use PM_load() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -63,23 +64,10 @@ ITload <- function(...) {
   lifecycle::deprecate_warn("1.3.0", "ITload()", details = "See ?PM_load.")
 }
 
-#' @title Pmetrics run report
-#' @description
-#' `r lifecycle::badge("deprecated")`
-#'
-#' Use PM_report() instead.
-#' @param ... Not used
-#' @author Michael Neely
-#' @keywords internal
-#' @export
-PMreport <- function(...) {
-  lifecycle::deprecate_warn("2.0.0", "PMreport()", details = "See ?PM_report.")
-}
-
 #' @title NPAG run report
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' Use PMreport() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -92,7 +80,7 @@ NPreport <- function(...) {
 #' @title IT2B run report
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' Use PMreport() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -105,7 +93,7 @@ ITreport <- function(...) {
 #' @title Diagnostics
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' Use $validate() on a PM_result object or make_valid() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -118,7 +106,7 @@ PMdiag <- function(...) {
 #' @title Read Defaults
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' Use getPMoptions() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -131,7 +119,7 @@ PMreadDefaults <- function(...) {
 #' @title Write Defaults
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' Use setPMoptions() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -144,7 +132,7 @@ PMwriteDefaults <- function(...) {
 #' @title makeNPDE
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' Use $validate() on a PM_result object or make_valid() instead.
 #' @param ... Not used
 #' @author Michael Neely
@@ -157,112 +145,14 @@ makeNPDE <- function(...) {
 #' @title Save Pmetrics objects
 #' @description
 #' `r lifecycle::badge("deprecated")`
-#'
+#' 
 #' No longer applies as Pmetrics R6 objects have their own save methods.
 #' @param ... Not used
 #' @author Michael Neely
 #' @keywords internal
 #' @seealso [PM_result], [PM_sim], [PM_pta]
 #' @export
-PMsave <- function(...) {
+PMsave <- function(...){
   lifecycle::deprecate_warn("2.1.0", "PMsave()", details = "See ?PM_result, ?PM_sim, or ?PM_pta for current save methods.")
 }
 
-
-
-#' @title Load Pmetrics NPAG or IT2B output
-#' @description
-#' `r lifecycle::badge("deprecated")`
-#'
-#' Loaded Pmetrics objects from prior run into user's global environment, which was
-#' unsafe programming practice and causes warnings in CRAN.
-#' @param ... Not used
-#' @author Michael Neely
-#' @keywords internal
-#' @seealso [PM_result]
-#' @export
-PMload <- function(...) {
-  lifecycle::deprecate_warn("2.2.0", what = "PMload()", with = "PM_load()")
-}
-
-
-#' @title Compare NPAG or IT2B runs
-#' @description
-#' `r lifecycle::badge("deprecated")`
-#'
-#' Compare NPAG or IT2B runs, based on objects loaded by [PMload], which
-#' is now deprecated, because it loaded Pmetrics objects from a prior run into
-#' user's global environment, which was
-#' unsafe programming practice and caused warnings in CRAN.
-#' @param ... Not used
-#' @author Michael Neely
-#' @keywords internal
-#' @seealso [PM_load]
-#' @export
-PMcompare <- function(...) {
-  lifecycle::deprecate_warn("2.2.0", what = "PMcompare()", with = "PM_compare()")
-}
-
-#' @title Create a Pmetrics validation object
-#' @description
-#' `r lifecycle::badge("deprecated")`
-#'
-#' This function is replaced by [PM_valid], which is
-#' typically called with the `$validate` method for a [PM_result] object,
-#' but can be called directly on a [PM_result] object.
-#'
-#' @param ... Not used
-#' @author Michael Neely
-#' @keywords internal
-#' @seealso [make_valid]
-#' @export
-makeValid <- function(...) {
-  lifecycle::deprecate_warn("2.2.0", what = "makeValid()", with = "PM_valid()")
-}
-
-#' @title Create a Pmetrics validation object
-#' @description
-#' `r lifecycle::badge("deprecated")`
-#'
-#' This function is replaced by [PM_valid], which is
-#' typically called with the `$validate` method for a [PM_result] object,
-#' but can be called directly on a [PM_result] object.
-#'
-#' @param ... Not used
-#' @author Michael Neely
-#' @keywords internal
-#' @seealso [make_valid]
-#' @export
-make_valid <- function(...) {
-  lifecycle::deprecate_warn("2.2.0", what = "make_valid()", with = "PM_valid()")
-}
-
-
-#' @title Build Fortran
-#' @description
-#' `r lifecycle::badge("deprecated")`
-#'
-#' Use PM_build instead.
-#' @param ... Not used
-#' @author Michael Neely
-#' @keywords internal
-#' @export
-PMbuild <- function(...) {
-  lifecycle::deprecate_warn("2.1.0", "PMbuild()", details = "Use PM_build() to compile Rust.")
-}
-
-
-
-
-#' @title Add CRCL
-#' @description
-#' `r lifecycle::badge("deprecated")`
-#'
-#' Use add_renal instead.
-#' @param ... Not used
-#' @author Michael Neely
-#' @keywords internal
-#' @export
-PMgetCRCL <- function(...) {
-  lifecycle::deprecate_warn("3.0.0", "PMgetCRCL()", details = "Use add_renal() to add CRCL or eGFR, depending on method chosen.")
-}

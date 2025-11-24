@@ -38,10 +38,8 @@ is particularly useful for making simulation templates on the fly.
 ## Method `PM_data$addEvent`
 ## ------------------------------------------------
 
-\dontrun{
-PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12,
+PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, 
 out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
-}
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -49,14 +47,6 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \item{\code{data}}{Data frame containing the data to be modeled}
 
 \item{\code{standard_data}}{Data frame containing standardized version of the data}
-
-\item{\code{pop}}{The \verb{$data} field from a \link{PM_pop} object. This makes it easy to add population predictions to a raw data plot. This field will be \code{NULL} until the \link{PM_data} object is added to the \link{PM_result} after a run. As examples:
-\itemize{
-\item \code{dat <- PM_data$new("data.csv")}. Here, \code{dat$pop} will be \code{NULL}.
-\item \code{run1 <- PM_load(1)}. Here, \code{run1$data$pop} will be the same as \code{run1$pop$data}.
-}}
-
-\item{\code{post}}{The \verb{$data} field from a \link{PM_post} object. See details in the \code{pop} argument above.}
 }
 \if{html}{\out{</div>}}
 }
@@ -64,7 +54,7 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-PM_data-new}{\code{PM_data$new()}}
-\item \href{#method-PM_data-save}{\code{PM_data$save()}}
+\item \href{#method-PM_data-write}{\code{PM_data$write()}}
 \item \href{#method-PM_data-auc}{\code{PM_data$auc()}}
 \item \href{#method-PM_data-nca}{\code{PM_data$nca()}}
 \item \href{#method-PM_data-plot}{\code{PM_data$plot()}}
@@ -80,15 +70,15 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 \subsection{Method \code{new()}}{
 Create new data object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_data$new(data = NULL, dt = NULL, quiet = FALSE, validate = TRUE, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$new(data = NULL, dt = NULL, quiet = FALSE, validate = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{data}}{A quoted name of a file with full path if not
-in the working directory, an unquoted name of a data frame
-in the current R environment, or a \link{PM_data} object, which will rebuild it.}
+in the working directory, or an unquoted name of a data frame
+in the current R environment.}
 
 \item{\code{dt}}{Pmetrics will try a variety of date/time formats. If all 16 of
 them fail, use this parameter to specify the correct format as a
@@ -111,24 +101,24 @@ Other date/time formats are possible. See \code{\link[lubridate:parse_date_time]
 
 \item{\code{validate}}{Check for errors. Default is \code{TRUE}. Strongly recommended.}
 
-\item{\code{...}}{Other arguments (not currently used).}
+\item{\code{...}}{Arguments to be passed further}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-Creation of a new \link{PM_data} objects from a file or
+Creation of a new \code{PM_data} objects from a file or
 a data frame. Data will be standardized and checked
 automatically to a fully specified, valid data object.
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_data-save"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_data-save}{}}}
-\subsection{Method \code{save()}}{
-Save data to file
+\if{html}{\out{<a id="method-PM_data-write"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-write}{}}}
+\subsection{Method \code{write()}}{
+Write data to file
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_data$save(file_name, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$write(file_name, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -143,7 +133,7 @@ in the working directory.}
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-Saves a delimited file (e.g. comma-separated)
+Writes a delimited file (e.g. comma-separated)
 from the \code{standard_data} field
 }
 
@@ -207,7 +197,7 @@ Plot method
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{plot.PM_data}.
+See \link{plot.PMmatrix}.
 }
 
 }
@@ -251,12 +241,12 @@ Summary method
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{summary.PM_data}.}
+\item{\code{...}}{Arguments passed to \link{summary.PMmatrix}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{summary.PM_data}.
+See \link{summary.PMmatrix}.
 }
 
 }
@@ -339,10 +329,8 @@ See the example.
 
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{
-PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12,
+\preformatted{PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12, 
 out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
-}
 }
 \if{html}{\out{</div>}}
 

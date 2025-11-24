@@ -14,7 +14,7 @@ ITex
 Example output from an IT2B run.
 }
 \details{
-This is an R6 Pmetrics \code{\link[=PM_result]{PM_result()}} object created with \code{\link[=PM_load]{PM_load()}} after an IT2B run.
+This is an R6 Pmetrics \link{PM_result} object created with \link{PM_load} after an NPAG run.
 The run consisted of a model with an absorptive compartment and a central compartment.
 There were 4 parameters in the model: lag time of absorption (Tlag1),
 rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
