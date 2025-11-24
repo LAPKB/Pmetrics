@@ -14,7 +14,7 @@
 .nojekyll
 .gitkeep
 ^man-roxygen
-^README\.Rmd$
+^README\.qmd$
 ^README_files/
 logo.png
 ^vignettes/articles$

@@ -87,7 +87,7 @@ template <- c(
   "\n"
 )
 
-if (!is.null(res$op$data)){
+if (!is.null(res$op$data) & nrow(res$op$data) > 0){
   p <- lapply(1:numeqt, function(i) {
     knitr::knit_expand(
       outeq = i,
