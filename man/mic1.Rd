@@ -19,12 +19,12 @@ Example MIC data
 }
 \details{
 This data frame contains MIC data for vancomycin against S. aureus.  It was obtained
-from the EUCAST website at \url{http://mic.eucast.org}.  Select the organism
+from the EUCAST website at \href{https://mic.eucast.org}{}.  Select the organism
 or drug, and then select the desired row of the resulting table to see
 a histogram (top) and table (bottom) of MIC distributions.
 
-Copy the table into excel, save as a .csv file, and read into R using
-\code{\link{read.csv}}.  Then use \code{\link{makePTAtarget}}.
+Copy the table into excel, save as a .csv file, and read into R using a function like
+\code{\link[=read.csv]{read.csv()}} or \code{\link[readr:read_delim]{readr::read_csv()}}.  Then use \code{\link[=makePTAtarget]{makePTAtarget()}}.
 }
 \author{
 Michael Neely

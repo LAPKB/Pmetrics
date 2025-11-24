@@ -15,7 +15,8 @@ sub_plot(
   shareY = FALSE,
   titleX = shareX,
   titleY = shareY,
-  which_layout = "merge"
+  which_layout = "merge",
+  print = TRUE
 )
 }
 \arguments{
@@ -57,6 +58,8 @@ generated the individual plot.}
 "merge" is used, layout options found later in the sequence of plots
 will override options found earlier in the sequence. This argument also
 accepts a numeric vector specifying which plots to consider when merging.}
+
+\item{print}{If \code{TRUE}, will print the plotly object and return it. If \code{FALSE}, will only return the plotly object.}
 }
 \value{
 A plot and plotly object combining all the plots in \code{...},
@@ -78,9 +81,11 @@ argument. In addition to \code{subplot}, the behavior of this function is two-fo
 }
 }
 \examples{
+\dontrun{
 plot1 <- NPex$op$plot(title = "Posterior")
 plot2 <- NPex$op$plot(pred.type = "pop", title = "Population")
 sub_plot(plot1, plot2, titles = c(0, 0.95), nrows = 2)
+}
 }
 \seealso{
 \code{\link[plotly:subplot]{plotly::subplot()}}

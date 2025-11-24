@@ -5,6 +5,6 @@
 #' @author Michael Neely
 #' @export
 
-PMpatch <- function(){
-    source("http://www.lapk.org/patch.R")
+PMpatch <- function() {
+  source("http://www.lapk.org/patch.R")
 }

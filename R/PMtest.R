@@ -1,7 +1,7 @@
 #' @title Test Pmetrics
 #' @description
 #' `r lifecycle::badge("stable")`
-#' 
+#'
 #' Check Pmetrics fortran installation by trying to compile sample files
 #'
 #' @author Michael Neely
@@ -11,14 +11,14 @@ PMtest <- function() {
   currwd <- getwd()
   tempwd <- tempdir()
   setwd(tempwd)
-  NPex <- NULL #avoid R CMD check flag
-  data(NPex, package = "Pmetrics", envir = environment())
-  NPex$data$write("data.csv")
+  NPex <- NULL # avoid R CMD check flag
+  # data(NPex, package = "PmetricsData", envir = environment())
+  NPex$data$save("data.csv")
   msg <- "Congratulations; you have successfully installed all components of Pmetrics.\n"
 
 
-  #writeLines(modeltxt, "model.txt")
-  NPex$model$write("model.txt")
+  # writeLines(modeltxt, "model.txt")
+  NPex$model$save("model.txt")
 
   engine <- list(
     alg = "NP", nsubtot = 1, nsub = 1, activesub = 1, ncov = 5, covnames = c("wt", "africa", "age", "gender", "height"),
@@ -32,7 +32,7 @@ PMtest <- function() {
   fortSource <- paste(system.file("", package = "Pmetrics"), "compiledFortran", sep = "/")
   # TODO: change this
   if (!file.exists(fortSource)) {
-    msg <- c(msg, "You must run PMbuild().\n")
+    msg <- c(msg, "You must run PM_build().\n")
   } else {
     msg <- c(msg, "You have the Fortran source files.\n")
   }

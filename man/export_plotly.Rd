@@ -67,8 +67,8 @@ to that function.
 }
 \examples{
 \dontrun{
-NPex$op$plot(stats = list(x = 0.9)) \%>\% 
-export_plotly(file = "op.png", width = 12, height = 6, units = "in")
+NPex$op$plot(stats = list(x = 0.9)) \%>\%
+  export_plotly(file = "op.png", width = 12, height = 6, units = "in")
 }
 }
 \seealso{

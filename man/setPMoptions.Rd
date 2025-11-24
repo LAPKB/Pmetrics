@@ -4,59 +4,10 @@
 \alias{setPMoptions}
 \title{Set Pmetrics User Options}
 \usage{
-setPMoptions(
-  sep,
-  dec,
-  server_address,
-  compilation_statements,
-  backend,
-  rust_template,
-  report_template,
-  gfortran_path,
-  func_defaults,
-  quiet = F
-)
+setPMoptions(launch.app = TRUE)
 }
 \arguments{
-\item{sep}{The field separator character; "," by default, but could be ";" or another separator.}
-
-\item{dec}{The decimal separator character; "." by default, but could be "," for example.}
-
-\item{server_address}{Specify address of server for remote runs.  Server must be set up separately.
-This functionality is coming soon.}
-
-\item{compilation_statements}{a vector with tho string elements that defines the compilation arguments for
-single thread and parallel executions. Custom compile commands should be entered using \verb{<exec>} as a placeholder
-for the executable filename, and \verb{<files>} as a placeholder for the files to be linked and compiled.
-Example: \verb{gfortran -O3 -o <exec> <files>}.
-If a single compilation statement is provided, it will be used for both kind of compilations.}
-
-\item{backend}{Name of compiler to use. Default is "fortran" (for now) but can be "rust" to use rust compiler.
-Currently, only NPAG is available in rust.}
-
-\item{rust_template}{Only used if \code{backend} is set to "rust".}
-
-\item{report_template}{Format of the plots included in the summary report presented at the end of a run.
-Default is to use "plotly", but can be set to "ggplot".}
-
-\item{gfortran_path}{Path to gfortran compiler.}
-
-\item{func_defaults}{Change the default argument value for any Pmetrics function or method.
-\code{func_defaults} should be a list, with each item itself a list of function name = list(arg1 = value, arg2 = value,...).
-For example: \code{func_defaults = list(plot.PM_op = list(stats = T, marker = list(color = "red")), qgrowth = list(percentile = 50))}.
-This is an incredibly powerful tool to customize your Pmetrics experience. If you store your
-options in the external location (recommended), these custom argument values will persist
-when Pmetrics is updated, as long as the argument is unchanged in the function. You can
-only change Pmetrics function arguments, as this is a very powerful tool that can mess up your
-R installation if used carelessly. You can add new argument defaults to the same function at a
-later time, as old entries will not be erased. To restore original defaults, either change
-it back to the original value or use \link{editPMoptions} to directly edit the JSON file and delete
-the entries no longer desired. Use caution with this, as a malformed file will cause errors.
-To remove all defaults the JSON file should contain \code{"func_defaults": {}}. After saving the file,
-you will need to \code{\link[base:detach]{base::detach()}} the Pmetrics package and reload it with \code{\link[base:library]{base::library()}}
-for the changes to take effect.}
-
-\item{quiet}{Suppress warning messages. Default \code{FALSE}.}
+\item{launch.app}{Launch the app to set options. Default \code{TRUE}.}
 }
 \value{
 The user preferences file will be updated.  This will persist from session to session
@@ -68,20 +19,12 @@ and if stored in the external location, through Pmetrics versions.
 Set user options for Pmetrics
 }
 \details{
-When the Pmetrics package is first loaded with \code{library(Pmetrics)},
-this function will be called. It will obtain
-the user's locale from system information and set the appropriate
-language. It will look for a \emph{PMoptions.json} file in a hidden folder outside
-of the Pmetrics package. If that does not exist, it will offer to create this for you.
-With this choice, your options will persist when Pmetrics is updated. If you choose
-to store the options within the package architecture, your options will be erased
-every time you update Pmetrics. After you make your choice, you will not be presented
-with that choice again. However, if you wish to later move your options from the internal
-location to the external one, use \link{movePMoptions}.
-
-The function will obtain Pmetrics user options from the \emph{PMoptions.json}
-file by calling \link{getPMoptions}, set them for the session and update any
-missing options with default values.
+When you call this function with the default \code{launch.app = TRUE}, it will start
+a Shiny app to set options for the Pmetrics package.
+Also, when the Pmetrics package is first loaded with \code{library(Pmetrics)},
+this function will be called with \code{launch.app = TRUE} to read saved options from
+a \emph{PMoptions.json} file stored in a folder outside
+of the Pmetrics package, so that your options will persist when Pmetrics is updated.
 }
 \author{
 Michael Neely

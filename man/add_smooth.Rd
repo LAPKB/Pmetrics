@@ -9,10 +9,11 @@ add_smooth(
   x = NULL,
   y = NULL,
   data = NULL,
-  method = "lm",
-  line = T,
+  method = c("lm", "loess"),
+  span = 0.75,
+  line = TRUE,
   ci = 0.95,
-  stats
+  stats = TRUE
 )
 }
 \arguments{
@@ -30,6 +31,9 @@ original plot data.}
 
 \item{method}{The tegression method, currently either "lm" (the default) for
 linear regression, or "loess" for loess regression.}
+
+\item{span}{Only used for \code{method = "loess"}. The span parameter to control
+the degree of smoothing. Default is 0.75.}
 
 \item{line}{Controls characteristics of lines. This argument maps to plotly line attributes. \code{TRUE} will plot default lines. \code{FALSE} will suppress lines. If a list, can control many line characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > line to see all the ways the line can be formatted. Most common will be:  \itemize{ \item{\code{color}} Line color. \item{\code{dash}} Plotting character. See \code{plotly::schema()}, traces > scatter >  attributes > line > dash > values. \item{\code{width}} Thickness in points. }
 
@@ -65,12 +69,18 @@ selected for regression by omitting the \code{data} argument and specifying new 
 \code{ggplot::geom_smooth()}.
 }
 \examples{
-plotly::plot_ly(mtcars, x = ~hp, y = ~mpg, 
-type = "scatter", mode = "markers", showlegend = FALSE) \%>\%
- add_smooth()
-plotly::plot_ly(iris, x = ~Sepal.Length, y = ~Petal.Length, 
-type = "scatter", mode = "markers", showlegend = FALSE) \%>\%
- add_smooth(method = "loess", ci = 0.9, line = list(color = "red", dash = "dash"))
+\dontrun{
+plotly::plot_ly(mtcars,
+  x = ~hp, y = ~mpg,
+  type = "scatter", mode = "markers", showlegend = FALSE
+) \%>\%
+  add_smooth()
+plotly::plot_ly(iris,
+  x = ~Sepal.Length, y = ~Petal.Length,
+  type = "scatter", mode = "markers", showlegend = FALSE
+) \%>\%
+  add_smooth(method = "loess", ci = 0.9, line = list(color = "red", dash = "dash"))
+}
 }
 \seealso{
 \link{add_shapes}

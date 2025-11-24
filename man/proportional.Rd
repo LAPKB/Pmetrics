@@ -4,12 +4,14 @@
 \alias{proportional}
 \title{Proportional error model}
 \usage{
-proportional(prop, constant = FALSE)
+proportional(initial, coeff, fixed = FALSE)
 }
 \arguments{
-\item{prop}{Initial value for gamma}
+\item{initial}{Initial value for gamma}
 
-\item{constant}{Estimate if \code{FALSE} (default).}
+\item{coeff}{Vector of coefficients defining assay error polynomial}
+
+\item{fixed}{Estimate if \code{FALSE} (default).}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

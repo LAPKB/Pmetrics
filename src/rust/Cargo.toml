@@ -1,0 +1,21 @@
+[package]
+name = 'pm_rs'
+version = '0.1.0'
+edition = '2021'
+
+[lib]
+crate-type = [ 'staticlib' ]
+name = 'pm_rs'
+
+[dependencies]
+extendr-api = '*'
+pmcore = {version ="=0.21.1",  features = ["exa"]}
+# pmcore = { path = "../../../PMcore", features = ["exa"] }
+
+rayon = "1.10.0"
+anyhow = "1.0.97"
+tracing = "0.1.41"
+tracing-subscriber = "0.3.20"
+
+[profile.release]
+panic = "unwind"

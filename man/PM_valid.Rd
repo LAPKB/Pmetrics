@@ -9,15 +9,34 @@
 Contains results of internal validation by simulation to permit generation of
 visual predictive checks (VPCs), prediction corrected visual predictive checks,
 (pcVPCs), normalized prediction distribution errors (NPDE), and
-numerical predictive checks.
+numerical predictive checks. This is typically a field in a \link{PM_result}
 }
 \details{
-This object is created by running the \code{make_valid} method in a
-\link{PM_result} object. It contains all the information necessary
-to internally validate the result by simulation methods.
+The \link{PM_valid} object is both a data field within a \link{PM_result}, and itself an R6 object
+comprising data fields and associated methods suitable for analysis and plotting of
+observed vs. population or individual predicted outputs.
+
+Because \link{PM_valid} objects are automatically added to the \link{PM_result} by calling the
+\verb{$validate()} method of a \link{PM_result} after a
+successful run, it is generally not necessary for users to generate \link{PM_valid} objects
+themselves.
+}
+\examples{
+
+## ------------------------------------------------
+## Method `PM_valid$new`
+## ------------------------------------------------
+
+\dontrun{
+valid <- NPex$validate(limits = c(0, 3))
+}
+
 }
 \seealso{
-\link{PM_result}, \link{makeValid}
+\link{PM_result}
+}
+\author{
+Michael Neely
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -49,20 +68,83 @@ using Time After Dose if available}
 \if{html}{\out{<a id="method-PM_valid-new"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_valid-new}{}}}
 \subsection{Method \code{new()}}{
-Create a new PM_valid object from a PM_result
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+
+This function will create an object suitable for plotting visual predictive
+checks (VPCs) and prediction-corrected visual
+predictive checks (pcVPCs).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_valid$new(result, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_valid$new(result, tad = FALSE, binCov, doseC, timeC, tadC, limits, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{result}}{The PM_result object}
+\item{\code{result}}{The result of a prior run, usually supplied by calling the
+\verb{$validate()} method of a \link{PM_result} at the end of a run, or later loaded with \link{PM_load}.}
 
-\item{\code{...}}{Additional arguments to ultimately pass to makeValid}
+\item{\code{tad}}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
+
+\item{\code{binCov}}{A character vector of the names of covariates which are included in the model, i.e. in the
+model equations and which need to be binned.  For example \code{binCov='wt'} if "wt" is included in a
+model equation like V=V0*wt, or \code{binCov=c( 'wt', 'crcl')} if both "wt" and "crcl"
+are included in model equations.}
+
+\item{\code{doseC}}{An integer with the number of dose/covariate bins to cluster, if known from a previous run of
+this function.  Including this value will skip the clustering portion for doses/covariates.}
+
+\item{\code{timeC}}{An integer with the number of observation time bins to cluster, if known from a previous run of
+this function.  Including this value will skip the clustering portion for observation times.}
+
+\item{\code{tadC}}{An integer with the number of time after dose bins to cluster, if known from a previous run of
+this function.  Including this value will skip the clustering portion for time after dose. This argument
+will be ignored if \code{tad=FALSE}.}
+
+\item{\code{limits}}{Limits on simulated parameters. See \link{PM_sim}.}
+
+\item{\code{...}}{Other parameters to be passed to \link{PM_sim}, especially \code{limits}.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Details}{
+The function will guide the user
+through appropriate clustering of doses, covariates and sample times for
+prediction correction using the methods of Bergstrand et al (2011).
+\emph{NOTE:} Including \code{tad} is only
+valid if steady state conditions exist for each patient.
+This means that dosing is stable and regular
+for each patient, without changes in amount or timing, and that
+sampling occurs after the average concentrations
+are the same from dose to dose.  Otherwise observations are \emph{NOT}
+superimposable and \code{tad} should
+\emph{NOT} be used, i.e. should be set to \code{FALSE}.
+}
+
+\subsection{Returns}{
+An R6 object  of class \code{PM_valid}, which is a list with the following.
+\itemize{
+\item simdata The combined, simulated files for all subjects using the population mean values and each subject
+as a template. This object will be automatically saved to the run, to be loaded with
+\link{PM_load} next time.
+\item timeBinMedian A data frame with the median times for each cluster bin.
+\item tadBinMedian A data frame with the median time after dose (tad) for each cluster bin.
+This will be \code{NA} if \code{tad = FALSE}.
+\item opDF A data frame with observations, predicitons, and bin-corrected predictions for each subject.
+\item ndpe An object with results of normalized distrubition of prediction errors analysis.
+\item npde_tad NPDE with time after dose rather than absolute time, if \code{tad = TRUE}
+}
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+valid <- NPex$validate(limits = c(0, 3))
+}
+
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_valid-plot"></a>}}

@@ -19,8 +19,11 @@ The changelog for the requested version.
 See changelog for Pmetrics
 }
 \examples{
+\dontrun{
 PMnews()
+}
 }
 \author{
 Michael Neely
 }
+\keyword{internal}

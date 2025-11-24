@@ -32,7 +32,8 @@ A dataframe with columns
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
-Will extract height, weight, and BMI for boys, girls or both for a given range of ages in months and percentiles. This can be useful for
+Will extract height, weight, and BMI for boys, girls or both for a given
+range of ages in months and percentiles. This can be useful for
 simulations in Pmetrics.
 }
 \author{
