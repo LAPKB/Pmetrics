@@ -109,26 +109,6 @@
 
 "NPex"
 
-#' Example output from an IT2B run.
-#'
-#' This is an R6 Pmetrics [Pmetrics::PM_result()] object created with [Pmetrics::PM_load()] after an IT2B run.
-#' The run consisted of a model with an absorptive compartment and a central compartment.
-#' There were 4 parameters in the model: lag time of absorption (Tlag1),
-#' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
-#' There were 20 subjects in the dataset.  The run was
-#' 100 cycles long and did not converge.
-#'
-#' @name ITex
-#' @docType data
-#' @title Example IT2B Output
-#' @usage ITex
-#' @format R6 [Pmetrics::PM_result]
-#' @author Michael Neely
-#' @keywords datasets
-
-#'
-
-"ITex"
 
 #' Example data set for an NPAG/IT2B run.
 #'
