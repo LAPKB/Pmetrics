@@ -61,10 +61,10 @@ options(repos = c(LAPKB = 'https://lapkb.r-universe.dev', getOption('repos')))
 - After you have run the above command once, forever after you can
   install Pmetrics by running this command in R:
   `install.packages("Pmetrics")` and you can update it with
-  `update.packages("Pmetrics")`. These commands are the same as for any
-  other R package hosted on CRAN. By having the LAPKB repository in your
-  list of repositories, R will automatically find and install/update the
-  correct version of Pmetrics for your system.
+  `update.packages()`. These commands are the same as for any other R
+  package hosted on CRAN. By having the LAPKB repository in your list of
+  repositories, R will automatically find and install/update the correct
+  version of Pmetrics for your system.
 
 ## Documentation
 
