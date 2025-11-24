@@ -139,7 +139,18 @@ PM_cycle <- R6::R6Class(
       
       
       if (file.exists(file.path(path, "pred.csv"))) {
-        op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), col_types = "cdiidcdddd") %>% filter(!is.na(obs))
+        op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), 
+        col_types = list(
+          time = readr::col_double(),
+          outeq = readr::col_integer(),
+          block = readr::col_integer(),
+          obs = readr::col_double(),
+          cens = readr::col_character(),
+          pop_mean = readr::col_double(),
+          pop_median = readr::col_double(),
+          post_mean = readr::col_double(),
+          post_median = readr::col_double()
+        ), show_col_types = FALSE) %>% filter(!is.na(obs))
       } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)

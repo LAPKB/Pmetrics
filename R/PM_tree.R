@@ -7,7 +7,7 @@
 #' This function will create a new project folder tree with appropriate subfolders and a skeleton R script.
 #'
 #' @param project A character string of a new project name, e.g. "DrugX"
-#' @param folder The full path to the root folder for the new project.  Default is the
+#' @param path The full path to the root folder for the new project.  Default is the
 #' current working directory.
 #' @return A new folder named \code{project} with the following subfolders:
 #' \item{Rscript }{The folder for the Rscript containing all run instructions.
@@ -17,56 +17,59 @@
 #' \item{Sim }{The folder for all simulations related to the project.}
 #' \item{src }{The folder for source data files in their original format, to preserve
 #' integrity and for audit purposes.}
+#' @aliases PMtree
 #' @author Michael Neely
 #' @seealso [PM_manual]
 #' @examples
 #' \dontrun{
-#' PMtree("DrugX")
+#' PM_tree("DrugX")
 #' }
 #' @export
 
-PMtree <- function(project = "NewProject", folder = getwd()) {
-  newFolder <- paste(folder, project, sep = "/")
-  current <- getwd()
+PM_tree <- function(project = "NewProject", path = getwd()) {
+  newFolder <- file.path(path, project)
   if (file.exists(newFolder)) {
     stop(paste(project, " exists already.\nDelete it if you are certain, and rerun PMtree.\n"))
   }
   dir.create(newFolder)
-  setwd(newFolder)
-  dir.create("Runs")
-  dir.create("Rscript")
-  dir.create("Sim")
-  dir.create("src")
+  dir.create(file.path(newFolder, "Runs"))
+  dir.create(file.path(newFolder, "Rscript"))
+  dir.create(file.path(newFolder, "Sim"))
+  dir.create(file.path(newFolder, "src"))
   writeLines(
     c(
-      "#Use PMmanual() for help",
+      "# Use PM_manual() for help",
+      "",
       "library(Pmetrics)",
       "",
-      "#Run 1 - add your run description here",
+      "# Run 1 - add your run description here",
       "",
-      paste("setwd(\"", newFolder, "/Runs\")", sep = ""),
-      "#Ensure your model and data files are in the /Runs folder",
-      "#Make the data object",
-      "dat <- PM_data$new(\"[replace with your data file name]\")",
-      "#Make the model object",
-      "mod1 <- PM_model$new(\"[replace with your model file name]\")",
-      "#Make the fit object",
-      "fit1 <- PM_fit$new(dat, mod1)",
-      "#Run fit1",
-      "fit1$run()",
-      "#Load the results after it completes",
+      glue::glue("wd <- \"{newFolder}\""),
+      "# Ensure your model and data files are in the /src folder",
+      "# Make the data object",
+      "dat <- PM_data$new(file.path(wd, \"src/your_Data.csv\")) # replace with your data file name",
+      "# Make the model object",
+      "mod1 <- PM_model$new(file.path(wd, \"your_Model.txt\")) # replace with your model file name",
+      "# Fit model to data",
+      "run1 <- mod1$fit(data = dat)",
+      "# run1 is in memory after the above completes, but to load the results if returning later...",
       "run1 <- PM_load(1)",
       "",
-      "#Plots",
-      "run1$op$plot()",
-      "run1$op$plot(pred.type=\"pop\")",
+      "# Plots",
+      "run1$op$plot() # posterior predictions based on median",
       "run1$final$plot()",
       "",
-      "#Summaries",
+      "# Summaries",
       "run1$op$summary()",
       "run1$final$summary()"
     ),
-    con = paste(newFolder, "/Rscript/", project, ".R", sep = "")
   )
-  setwd(current)
+}
+
+
+#' @rdname PM_tree
+#' @param ... Arguments passed to [PM_tree].
+#' @export
+PMtree <- function(...) {
+  PM_tree(...)
 }
