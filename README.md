@@ -67,6 +67,6 @@ options(repos = c(LAPKB = 'https://lapkb.r-universe.dev', getOption('repos')))
 
 ## Documentation
 
-We encourgage you to visit the [Pmetrics
+We encourage you to visit the [Pmetrics
 website](https://lapkb.github.io/Pmetrics/) for documentation,
 tutorials, and examples.
