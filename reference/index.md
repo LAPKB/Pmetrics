@@ -1,0 +1,315 @@
+# Package index
+
+## R6 objects
+
+Pmetrics R6 objects
+
+- [`PM_data`](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  **\[stable\]** : Defines the PM_data object
+- [`PM_model`](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+  **\[stable\]** : Defines the PM_model class
+- [`PM_cycle`](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+  **\[stable\]** : Pmetrics Run Cycle Information
+- [`PM_cov`](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md)
+  **\[stable\]** : Contains covariate data
+- [`PM_final`](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+  **\[stable\]** : Final Cycle Population Values
+- [`PM_op`](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
+  **\[stable\]** : Observed vs. predicted data
+- [`PM_pop`](https://lapkb.github.io/Pmetrics_rust/reference/PM_pop.md)
+  **\[stable\]** : Population predictions at short intervals
+- [`PM_opt`](https://lapkb.github.io/Pmetrics_rust/reference/PM_opt.md)
+  **\[stable\]** : Optimal Sample Times
+- [`PM_post`](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md)
+  **\[stable\]** : Individual Bayesian posterior predictions at short
+  intervals
+- [`PM_sim`](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md)
+  **\[stable\]** : Object to contain results of simulation
+- [`PM_load()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md)
+  **\[stable\]** : Load Pmetrics NPAG or IT2B output
+- [`PM_result`](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  **\[stable\]** : Results of a Pmetrics run
+- [`PM_valid`](https://lapkb.github.io/Pmetrics_rust/reference/PM_valid.md)
+  **\[stable\]** : Pmetrics validation object
+
+## Helpers
+
+Helper functions for R6 object creations
+
+- [`ab()`](https://lapkb.github.io/Pmetrics_rust/reference/ab.md)
+  **\[stable\]** : Initial range for primary parameter values
+- [`additive()`](https://lapkb.github.io/Pmetrics_rust/reference/additive.md)
+  **\[stable\]** : Additive error model
+- [`add_renal()`](https://lapkb.github.io/Pmetrics_rust/reference/add_renal.md)
+  **\[stable\]** : Estimate renal function using various equations
+- [`cor2cov()`](https://lapkb.github.io/Pmetrics_rust/reference/cor2cov.md)
+  **\[stable\]** : Convert correlation matrix to covariance matrix
+- [`model_lib()`](https://lapkb.github.io/Pmetrics_rust/reference/model_lib.md)
+  : Model Library
+- [`msd()`](https://lapkb.github.io/Pmetrics_rust/reference/msd.md)
+  **\[stable\]** : Initial mean/SD for primary parameter values
+- [`proportional()`](https://lapkb.github.io/Pmetrics_rust/reference/proportional.md)
+  **\[stable\]** : Proportional error model
+- [`interp()`](https://lapkb.github.io/Pmetrics_rust/reference/interp.md)
+  **\[stable\]** : Model covariate declaration
+- [`PM_tree()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_tree.md)
+  [`PMtree()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_tree.md)
+  **\[stable\]** : Create a new Pmetrics folder tree
+- [`makeAUC()`](https://lapkb.github.io/Pmetrics_rust/reference/makeAUC.md)
+  **\[stable\]** : Calculation of AUCs
+- [`makeErrorPoly()`](https://lapkb.github.io/Pmetrics_rust/reference/makeErrorPoly.md)
+  **\[stable\]** : Assay error polynomial coefficients
+- [`makeNCA()`](https://lapkb.github.io/Pmetrics_rust/reference/makeNCA.md)
+  : Non-compartmental analysis
+- [`makePTAtarget()`](https://lapkb.github.io/Pmetrics_rust/reference/makePTAtarget.md)
+  **\[stable\]** : Make a Percent Target Attainment (PTA) Target
+- [`make_NCA()`](https://lapkb.github.io/Pmetrics_rust/reference/make_NCA.md)
+  : Non-compartmental analysis
+
+## Plot
+
+Functions for plotting Pmetrics output
+
+- [`plot(`*`<PM_cov>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cov.md)
+  **\[stable\]** : Plot Pmetrics Covariate objects
+- [`plot(`*`<PM_cycle>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle.md)
+  **\[stable\]** : Plot Cycle Information
+- [`plot(`*`<PM_cycle_data>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle_data.md)
+  **\[stable\]** : Plot PM_cycle_data objects
+- [`plot(`*`<PM_data>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md)
+  **\[stable\]** : Plot PM_data Time-Output Data
+- [`plot(`*`<PM_final>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md)
+  **\[stable\]** : Plot Pmetrics Final Cycle Parameter Value
+  Distributions
+- [`plot(`*`<PM_final_data>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final_data.md)
+  **\[stable\]** : Plot PM_final_data objects
+- [`plot(`*`<PM_model>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_model.md)
+  **\[stable\]** : Plot PM_model objects
+- [`plot(`*`<PM_op>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md)
+  **\[stable\]** : Plot Pmetrics Observed vs. Predicted Objects
+- [`plot(`*`<PM_op_data>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op_data.md)
+  **\[stable\]** : Plot PM_op_data objects
+- [`plot(`*`<PM_opt>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_opt.md)
+  **\[stable\]** : Plot Pmetrics Multiple-Model Optimal Sampling Objects
+- [`plot(`*`<PM_pop>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pop.md)
+  **\[stable\]** : Plot PM_pop Prediction Data
+- [`plot(`*`<PM_post>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_post.md)
+  **\[stable\]** : Plot PM_post Prediction Data
+- [`plot(`*`<PM_pta>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pta.md)
+  **\[stable\]** : Plot PM_pta Percent Target Attainment objects
+- [`plot(`*`<PM_sim>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md)
+  **\[stable\]** : Plot Pmetrics Simulation Objects
+- [`plot(`*`<PM_valid>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_valid.md)
+  **\[stable\]** : Plot Pmetrics Validation Objects
+- [`plot(`*`<PMvalid>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PMvalid.md)
+  **\[superseded\]** : Plot Pmetrics Validation Objects
+- [`plotlygg()`](https://lapkb.github.io/Pmetrics_rust/reference/plotlygg.md)
+  **\[stable\]** : Convert a plotly object to ggplot
+- [`ab_line()`](https://lapkb.github.io/Pmetrics_rust/reference/ab_line.md)
+  **\[stable\]** : Add lines to plotly plot
+- [`add_shapes()`](https://lapkb.github.io/Pmetrics_rust/reference/add_shapes.md)
+  **\[stable\]** : Add shapes to plotly plot
+- [`add_smooth()`](https://lapkb.github.io/Pmetrics_rust/reference/add_smooth.md)
+  **\[stable\]** : Add regression to plotly plot
+- [`export_plotly()`](https://lapkb.github.io/Pmetrics_rust/reference/export_plotly.md)
+  **\[stable\]** : Export plotly plot
+- [`sub_plot()`](https://lapkb.github.io/Pmetrics_rust/reference/sub_plot.md)
+  **\[stable\]** : Display multiple plotly plots
+- [`click_plot()`](https://lapkb.github.io/Pmetrics_rust/reference/click_plot.md)
+  **\[stable\]** : Click on plotly plot to highlight traces
+- [`getPalettes()`](https://lapkb.github.io/Pmetrics_rust/reference/getPalettes.md)
+  **\[stable\]** : Get color palette
+- [`getDefaultColors()`](https://lapkb.github.io/Pmetrics_rust/reference/getDefaultColors.md)
+  **\[stable\]** : Get a list of default colors
+- [`rgba_to_rgb()`](https://lapkb.github.io/Pmetrics_rust/reference/rgba_to_rgb.md)
+  **\[stable\]** : Convert RGBA to RGB
+- [`opposite_color()`](https://lapkb.github.io/Pmetrics_rust/reference/opposite_color.md)
+  **\[stable\]** : Find opposite color with max contrast
+
+## Summary
+
+Functions for summarizing Pmetrics output
+
+- [`summary(`*`<PM_cov>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_cov.md)
+  **\[stable\]** : Summarize Covariates and Bayesian Posterior Parameter
+  Values
+- [`summary(`*`<PM_cycle>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_cycle.md)
+  **\[stable\]** : Summarize Final Cycle Statistics
+- [`summary(`*`<PM_cycle_data>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_cycle_data.md)
+  **\[stable\]** : Summarize PM_cycle_data objects
+- [`summary(`*`<PM_data>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_data.md)
+  **\[stable\]** : Summarize PM_data objects
+- [`summary(`*`<PM_final>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_final.md)
+  **\[stable\]** : Summary Statistics for Final Cycle
+- [`summary(`*`<PM_final_data>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_final_data.md)
+  **\[stable\]** : Summarize PM_final_data objects
+- [`summary(`*`<PM_op>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_op.md)
+  **\[stable\]** : Summarize Observations and Predictions
+- [`summary(`*`<PM_op_data>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_op_data.md)
+  **\[stable\]** : Summarize PM_op_data objects
+- [`summary(`*`<PM_pop>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_pop.md)
+  **\[stable\]** : Summarize Observations and Predictions
+- [`summary(`*`<PM_post>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_post.md)
+  **\[stable\]** : Summarize Observations and Predictions
+- [`summary(`*`<PM_pta>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_pta.md)
+  **\[stable\]** : Summarize Percent Target Attainment
+- [`summary(`*`<PM_sim>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_sim.md)
+  **\[stable\]** : Summarize Pmetrics Simulation Objects
+- [`PM_report()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_report.md)
+  **\[stable\]** : Generate a report
+
+## Print
+
+Functions for printing Pmetrics output
+
+- [`print(`*`<PM_compare>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/print.PM_compare.md)
+  : Print method for PM_compare objects
+- [`print(`*`<PMerr>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/print.PMerr.md)
+  **\[stable\]** : Print Data Errors
+- [`print(`*`<PMnpc>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/print.PMnpc.md)
+  **\[stable\]** : Print NPC
+- [`print(`*`<summary.PM_cycle>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/print.summary.PM_cycle.md)
+  **\[stable\]** : Print Summary of Cycle Statistics
+- [`print(`*`<summary.PM_data>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/print.summary.PM_data.md)
+  **\[stable\]** : Print Summary of Pmetrics Data
+- [`print(`*`<summary.PM_final>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/print.summary.PM_final.md)
+  **\[stable\]** : Print Summary of Parameter Values and Credibility
+  Intervals
+- [`print(`*`<summary.PM_op>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/print.summary.PM_op.md)
+  **\[stable\]** : Print Summary of Observations and Predictions
+- [`print(`*`<summary.PM_sim>`*`)`](https://lapkb.github.io/Pmetrics_rust/reference/print.summary.PM_sim.md)
+  **\[stable\]** : Print Summary of Simulations
+
+## Auxilliary
+
+Auxilliary functions
+
+- [`all_is_numeric()`](https://lapkb.github.io/Pmetrics_rust/reference/all_is_numeric.md)
+  **\[stable\]** : Check if all values are numeric
+- [`build_model()`](https://lapkb.github.io/Pmetrics_rust/reference/build_model.md)
+  : Launch Model Builder app
+- [`build_plot()`](https://lapkb.github.io/Pmetrics_rust/reference/build_plot.md)
+  : Launch Plot Builder app
+- [`qgrowth()`](https://lapkb.github.io/Pmetrics_rust/reference/qgrowth.md)
+  **\[stable\]** : Extract CDC pediatric growth charts
+- [`mtsknn.eq()`](https://lapkb.github.io/Pmetrics_rust/reference/mtsknn.eq.md)
+  **\[stable\]** : Compare discrete distributions
+- [`zBMI()`](https://lapkb.github.io/Pmetrics_rust/reference/zBMI.md)
+  **\[stable\]** : Extract CDC pediatric BMI z-scores
+- [`ss.PK()`](https://lapkb.github.io/Pmetrics_rust/reference/ss.PK.md)
+  **\[stable\]** : Sample size calculations for Phase 1 PK study design
+- [`PM_compare()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_compare.md)
+  : Compare runs
+- [`PMgetCRCL()`](https://lapkb.github.io/Pmetrics_rust/reference/PMgetCRCL.md)
+  **\[deprecated\]** : Add CRCL
+- [`PM_step()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_step.md)
+  **\[superseded\]** : Stepwise covariate-parameter regressions
+- [`getCov()`](https://lapkb.github.io/Pmetrics_rust/reference/getCov.md)
+  **\[stable\]** : Extract covariate information
+- [`getDefaultColors()`](https://lapkb.github.io/Pmetrics_rust/reference/getDefaultColors.md)
+  **\[stable\]** : Get a list of default colors
+- [`getFixedColNum()`](https://lapkb.github.io/Pmetrics_rust/reference/getFixedColNum.md)
+  **\[stable\]** : Number of fixed columns
+- [`getPMoptions()`](https://lapkb.github.io/Pmetrics_rust/reference/getPMoptions.md)
+  **\[stable\]** : Get Pmetrics User Options
+- [`getPalettes()`](https://lapkb.github.io/Pmetrics_rust/reference/getPalettes.md)
+  **\[stable\]** : Get color palette
+
+## Datasets
+
+Pmetrics datasets
+
+- [`ITex`](https://lapkb.github.io/Pmetrics_rust/reference/ITex.md) :
+  Example IT2B Output
+- [`NPex`](https://lapkb.github.io/Pmetrics_rust/reference/NPex.md) :
+  Example NPAG Output with validation
+- [`badData`](https://lapkb.github.io/Pmetrics_rust/reference/badData.md)
+  : Pmetrics data file with errors
+- [`cdc_bmi`](https://lapkb.github.io/Pmetrics_rust/reference/cdc_bmi.md)
+  : CDC Pediatric and Adolescent BMI Table
+- [`dataEx`](https://lapkb.github.io/Pmetrics_rust/reference/dataEx.md)
+  : Pmetrics data file
+- [`ger_bmi`](https://lapkb.github.io/Pmetrics_rust/reference/ger_bmi.md)
+  : CDC Pediatric and Adolescent BMI Table
+- [`growth`](https://lapkb.github.io/Pmetrics_rust/reference/growth.md)
+  : CDC Pediatric and Adolescent Growth Data Table
+- [`locales`](https://lapkb.github.io/Pmetrics_rust/reference/locales.md)
+  : Pmetrics locales
+- [`mic1`](https://lapkb.github.io/Pmetrics_rust/reference/mic1.md) :
+  Example MIC data
+- [`modEx`](https://lapkb.github.io/Pmetrics_rust/reference/modEx.md) :
+  Pmetrics model object
+- [`model`](https://lapkb.github.io/Pmetrics_rust/reference/model.md) :
+  Pmetrics model
+- [`simEx`](https://lapkb.github.io/Pmetrics_rust/reference/simEx.md) :
+  Example simulator output
+
+## Data processing
+
+Data processing and interconversion
+
+- [`NM2PM()`](https://lapkb.github.io/Pmetrics_rust/reference/NM2PM.md)
+  **\[stable\]** : Convert NONMEM to Pmetrics Data Files
+- [`PMwrk2csv()`](https://lapkb.github.io/Pmetrics_rust/reference/PMwrk2csv.md)
+  **\[stable\]** : Convert Old .wrk Files to .csv Matrix File
+- [`PMmatrixRelTime()`](https://lapkb.github.io/Pmetrics_rust/reference/PMmatrixRelTime.md)
+  **\[superseded\]** : Convert Absolute Dates and Times to Relative
+  Hours
+- [`PMreadMatrix()`](https://lapkb.github.io/Pmetrics_rust/reference/PMreadMatrix.md)
+  **\[superseded\]** : Read a Pmetrics data file
+- [`PMwriteMatrix()`](https://lapkb.github.io/Pmetrics_rust/reference/PMwriteMatrix.md)
+  **\[superseded\]** : Write a Pmetrics .csv Matrix File
+
+## Utility
+
+Utility functions
+
+- [`PM_build()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_build.md)
+  **\[stable\]** : Build Pmetrics
+- [`PMcheck()`](https://lapkb.github.io/Pmetrics_rust/reference/PMcheck.md)
+  **\[superseded\]** : Check Pmetrics Inputs for Errors
+- [`PMpatch()`](https://lapkb.github.io/Pmetrics_rust/reference/PMpatch.md)
+  : Download and install Pmetrics patches
+- [`PMtest()`](https://lapkb.github.io/Pmetrics_rust/reference/PMtest.md)
+  **\[stable\]** : Test Pmetrics
+- [`setPMoptions()`](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md)
+  **\[stable\]** : Set Pmetrics User Options
+
+## Internal
+
+Internal and low-level functions
+
+- [`compile_model()`](https://lapkb.github.io/Pmetrics_rust/reference/compile_model.md)
+  : Compiles the text representation of a model into a binary file.
+- [`dummy_compile()`](https://lapkb.github.io/Pmetrics_rust/reference/dummy_compile.md)
+  : Dummy function to cache compilation artifacts.
+- [`simulate_all()`](https://lapkb.github.io/Pmetrics_rust/reference/simulate_all.md)
+  : Simulates all subjects in the data set using the model at the given
+  path.
+- [`simulate_one()`](https://lapkb.github.io/Pmetrics_rust/reference/simulate_one.md)
+  : Simulates the first subject in the data set using the model at the
+  given path.
+- [`fit()`](https://lapkb.github.io/Pmetrics_rust/reference/fit.md) :
+  Fits the model at the given path to the data at the given path using
+  the provided parameters.
+- [`is_cargo_installed()`](https://lapkb.github.io/Pmetrics_rust/reference/is_cargo_installed.md)
+  : Checks if Cargo is installed on the system.
+- [`model_parameters()`](https://lapkb.github.io/Pmetrics_rust/reference/model_parameters.md)
+  : Retrieves the model parameters from the compiled model at the given
+  path.
+- [`temporary_path()`](https://lapkb.github.io/Pmetrics_rust/reference/temporary_path.md)
+  : Retrieves the temporary path used for building models.
+
+## Reference
+
+Reference functions
+
+- [`PM_manual()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_manual.md)
+  :
+
+  Open user and function manuals. **\[stable\]**
+
+- [`Pmetrics-package`](https://lapkb.github.io/Pmetrics_rust/reference/Pmetrics-package.md)
+  [`Pmetrics`](https://lapkb.github.io/Pmetrics_rust/reference/Pmetrics-package.md)
+  : Parametric and non-parametric modeling and simulation of
+  pharmacokinetic-pharmacodynamic systems.

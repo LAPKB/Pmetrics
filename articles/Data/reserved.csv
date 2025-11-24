@@ -1,0 +1,9 @@
+Reserved Variable,Function in Pmetrics
+t,time
+x,array of compartment amounts
+dx,array of first derivative of compartment amounts
+p,array of primary parameters
+rateiv / r,infusion vector
+bolus / b,bolus vector
+cov,covariate hashmap
+y,output vector

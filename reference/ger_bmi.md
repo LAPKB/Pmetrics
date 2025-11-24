@@ -1,0 +1,33 @@
+# CDC Pediatric and Adolescent BMI Table
+
+Revised Pediatric and Adolescent BMI Table
+
+## Usage
+
+``` r
+ger_bmi
+```
+
+## Format
+
+A data frame with the following 9 columns: Sex (1 = male), Agemos; L, M,
+S (coefficients for calculating z-scores), P3, P5, P10, P25, P50, P75,
+P85, P90, P95, P97: age and sex specific BMI percentiles
+
+## Details
+
+Coefficients to calculate sex-specific BMI z-scores and percentiles
+based on the supplemental data published by Gerhart et al: Gerhart,
+Jacqueline G., Fernando O. Carreño, Andrea N. Edginton, Jaydeep Sinha,
+Eliana M. Perrin, Karan R. Kumar, Aruna Rikhi, et al. “Development and
+Evaluation of a Virtual Population of Children with Obesity for
+Physiologically Based Pharmacokinetic Modeling.” Clinical
+Pharmacokinetics 61, no. 2 (February 2022): 307–20.
+[doi:10.1007/s40262-021-01072-4](https://doi.org/10.1007/s40262-021-01072-4)
+. These data are in the same format as
+[cdc_bmi](https://lapkb.github.io/Pmetrics_rust/reference/cdc_bmi.md)
+but are derived from more recent NHANES data.
+
+## Author
+
+Michael Neely
