@@ -6,6 +6,18 @@
 \usage{
 simulate_all(data_path, model_path, theta, kind)
 }
+\arguments{
+\item{data_path}{Path to the data file.}
+
+\item{model_path}{Path to the compiled model file.}
+
+\item{theta}{Data frame of support points.}
+
+\item{kind}{Kind of model, which can either be "ODE" or "Analytical".}
+}
+\value{
+Simulation results.
+}
 \description{
 Simulates all subjects in the data set using the model at the given path.
 }

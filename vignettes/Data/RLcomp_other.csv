@@ -1,0 +1,4 @@
+Function,R6,Legacy
+Calculate AUC,"$auc() method for PM_result$op/$post/$pop, or PM_sim",makeAUC()
+Simulate,PM_result$sim() or PM_sim$new(),SIMrun()
+Probability of target attainment,PM_sim$pta() or PM_pta$new(),makePTA()

@@ -31,9 +31,9 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "anyhow"
-version = "1.0.97"
+version = "1.0.100"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcfed56ad506cb2c684a14971b8861fdc3baaaae314b9e5f9bb532cbe3ba7a4f"
+checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
 name = "approx"
@@ -1286,9 +1286,9 @@ dependencies = [
 
 [[package]]
 name = "pharmsol"
-version = "0.19.0"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cda98c255dc04fd94684cc5eb78a47f7cc759ae6836036fd59d7f33273b46c00"
+checksum = "98b8e2ab3a0e91cd4b20c28544cb3676e8df31aa490cf5680ec0531259b5fa4e"
 dependencies = [
  "argmin",
  "argmin-math",
@@ -1328,9 +1328,9 @@ dependencies = [
 
 [[package]]
 name = "pmcore"
-version = "0.20.0"
+version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6896a2df0fa57858e5dc2343bf6ba4d2be14b9c097601cc1aa2c75b41b72c9a2"
+checksum = "703e83f4a6a919cc60b85936d560840947b1b07a2d8ccfa7c87144d1722b6d63"
 dependencies = [
  "anyhow",
  "argmin",

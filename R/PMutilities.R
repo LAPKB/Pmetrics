@@ -1166,7 +1166,7 @@ wtd.table <- function(x, weights = NULL,
       if (type == "table") {
         return(weights)
       }
-      x <- all.is.numeric(names(weights), "vector")
+      x <- all_is_numeric(names(weights), "vector")
       if (isdate) {
         attributes(x) <- c(attributes(x), ax)
       }
@@ -1304,12 +1304,12 @@ wtd.var <- function(x, weights = NULL,
   #' @export
   #' @examples
   #' \dontrun{
-  #' all.is.numeric(c("1", "2", "3"))
-  #' all.is.numeric(c("1", "2", "a"))
-  #' all.is.numeric(c("1", "2", "3"), what = "vector")
-  #' all.is.numeric(c("1", "2", "a"), what = "nonnum")
+  #' all_is_numeric(c("1", "2", "3"))
+  #' all_is_numeric(c("1", "2", "a"))
+  #' all_is_numeric(c("1", "2", "3"), what = "vector")
+  #' all_is_numeric(c("1", "2", "a"), what = "nonnum")
   #' }
-  all.is.numeric <- function(x, what = c("test", "vector", "nonnum"), extras = c(
+  all_is_numeric <- function(x, what = c("test", "vector", "nonnum"), extras = c(
     ".",
     "NA"
   )) {
@@ -1425,6 +1425,7 @@ wtd.var <- function(x, weights = NULL,
   #' @keywords internal
   
   round2 <- function(x, digits = getPMoptions("digits")) {
+    if (is.null(digits) || !is.numeric(digits)) digits <- 2
     format(round(x, digits), nsmall = digits)
   }
   
@@ -1610,6 +1611,8 @@ wtd.var <- function(x, weights = NULL,
 modifyList2 <- function (x, val, keep.null = FALSE) 
 {
   stopifnot(is.list(x), is.list(val))
+  names(x) <- tolower(names(x))
+  names(val) <- tolower(names(val))
   xnames <- names(x)
   vnames <- names(val)
   # handle unnamed lists
@@ -1636,4 +1639,16 @@ modifyList2 <- function (x, val, keep.null = FALSE)
     }
   }
   x
+}
+
+
+#' @title Clear build files
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Deletes rust template files from the Pmetrics template directory.
+#' @return NULL
+#' @export
+#' @keywords internal
+clear_build <- function(){
+  fs::dir_delete(system.file("template", package = "Pmetrics"))
 }

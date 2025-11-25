@@ -17,8 +17,5 @@ Plots the raw data (\code{class: PM_final_data}) from a \link{PM_final} object i
 Both use \link{plot.PM_final}.
 }
 \examples{
-NPex$final$data \%>\%
-filter(pred > 5) \%>\%
-filter(pred < 10) \%>\%
-plot()
+NPex$final$data \%>\% plot()
 }

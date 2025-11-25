@@ -104,7 +104,7 @@ setPMoptions <- function(launch.app = TRUE) {
       title = "Pmetrics Options",
       
       tags$details(
-        tags$summary("📁 Data File Reading"),
+        tags$summary("\u1F4C1 Data File Reading"),
         selectInput("sep", "Field separator",
         choices = c(Comma = ",", Semicolon = ";", Tab = "\t"),
         selected = ","),
@@ -115,25 +115,31 @@ setPMoptions <- function(launch.app = TRUE) {
       ),
       # Formatting options
       tags$details(
-        tags$summary("📏 Formatting Options"),
+        tags$summary("\u1F4CF Formatting Options"),
         numericInput("digits", "Number of digits to display",
         value = 3, min = 0, max = 10, step = 1)
       ),
-
-      conditionalPanel(
-        condition = "input.show == false",
-        #Fit options
+      
+      
+      #C ompile  options
       tags$details(
-        tags$summary("🔍 Fit Options"),
-        selectInput("backend", "Default backend",
-        choices = c("Rust" = "rust"),
-        selected = "rust"),
-        markdown("*Rust is the only backend currently supported by Pmetrics.*")
-      )
-    ),
+        tags$summary("\u2699\uFE0F Compile Options"),
+        markdown("Default Rust model template path is in Pmetrics package installation folder. Change if you have write permission errors."),
+        tags$div(
+          style = "display: flex; align-items: flex-start; gap: 8px;",
+          textAreaInput("model_template_path", NULL, value = system.file(package = "Pmetrics"), autoresize = TRUE),
+          actionButton("reset_model_template", "Reset to default", class = "btn-secondary")
+        ),
+        conditionalPanel(
+          condition = "input.show == false",selectInput("backend", "Default backend",
+          choices = c("Rust" = "rust"),
+          selected = "rust"),
+          markdown("*Rust is the only backend currently supported by Pmetrics.*")
+        )
+      ),
       
       tags$details(
-        tags$summary("📊 Prediction Error Metrics"),
+        tags$summary("\u1F4CA Prediction Error Metrics"),
         br(),
         checkboxInput("show_metrics", "Display error metrics on obs-pred plots with linear regression", TRUE),
         selectInput("bias_method", "Bias Method",
@@ -154,11 +160,11 @@ setPMoptions <- function(launch.app = TRUE) {
           "Root mean, bias-adjusted, weighted, squared error (RMBAWSE)" = "rmbawse"
         ),
         selected = "rmbawse"),
-
+        
         checkboxInput("use_percent", "Use percent for error metrics", value = TRUE),
-
+        
         selectInput("ic_method", "Information Criterion Method",
-          choices = c(
+        choices = c(
           "Akaike Information Criterion (AIC)" = "aic", 
           "Bayesian Information Criterion (BIC)" = "bic"
         ),
@@ -167,7 +173,7 @@ setPMoptions <- function(launch.app = TRUE) {
       ),
       
       tags$details(
-        tags$summary("📝 Report Generation"),
+        tags$summary("\u1F4DD Report Generation"),
         selectInput("report_template", "Default report template", 
         choices = c("plotly", "ggplot2"),
         selected = "plotly")
@@ -207,9 +213,10 @@ setPMoptions <- function(launch.app = TRUE) {
         use_percent = updateCheckboxInput,
         ic_method = updateSelectInput,
         report_template = updateSelectInput,
-        backend = updateSelectInput
+        backend = updateSelectInput,
+        model_template_path = updateTextAreaInput
       )
-
+      
       
       # Apply updates
       purrr::imap(settings, function(val, name) {
@@ -222,10 +229,6 @@ setPMoptions <- function(launch.app = TRUE) {
           do.call(updater, args)
         } 
       })
-      
-      
-      
-      
       
       # Display path to user settings file
       output$settings_location <- renderText({
@@ -241,7 +244,8 @@ setPMoptions <- function(launch.app = TRUE) {
           bias_method = glue::glue(c("","percent_")[1+as.numeric(input$use_percent)], input$bias_method), 
           imp_method = glue::glue(c("","percent_")[1+as.numeric(input$use_percent)], input$imp_method),
           ic_method = input$ic_method,
-          report_template = input$report_template, backend = input$backend)
+          report_template = input$report_template, backend = input$backend, 
+          model_template_path = input$model_template_path)
           
           save_status <- tryCatch(jsonlite::write_json(settings, PMoptionsUserFile, pretty = TRUE, auto_unbox = TRUE),
           error = function(e) {
@@ -256,9 +260,28 @@ setPMoptions <- function(launch.app = TRUE) {
           )
         })
         
+        # Reset model template path to default
+        observeEvent(input$reset_model_template, {
+          updateTextAreaInput(
+            session,
+            inputId = "model_template_path",
+            value   = system.file(package = "Pmetrics")
+          )
+        })
+        
+        
         # Exit the app
         observeEvent(input$exit, {
-          shiny::stopApp()
+          if (file.access(input$model_template_path, 0) == 0 & file.access(input$model_template_path, 2) == 0){
+            shiny::stopApp()
+          } else {
+            shiny::showModal(shiny::modalDialog(
+              title = "Permission Error",
+              "The specified model template path is not writable. Please choose a different path with write permissions before exiting.",
+              easyClose = TRUE,
+              footer = NULL
+            ))
+          }
         })
         
         # Open the options file in the default application
@@ -271,13 +294,13 @@ setPMoptions <- function(launch.app = TRUE) {
     
     # Launch the app without trying to launch another browser
     if(launch.app){
-      shiny::runApp(app, launch.browser = TRUE)
+      shiny::runApp(app, launch.browser = FALSE)
     }
-  
-  return(invisible(NULL))
     
-
-} # end of PM_options function
+    return(invisible(NULL))
+    
+    
+  } # end of PM_options function
   
   
   

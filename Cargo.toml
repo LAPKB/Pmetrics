@@ -2,3 +2,10 @@
 members = [
     "src/rust",
 ]
+
+exclude = [
+    "inst/template",
+
+    # R CMD check copy of the Pmetrics Rust crate
+    "check/Pmetrics.Rcheck/00_pkg_src/Pmetrics/src/rust",
+]

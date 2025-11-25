@@ -17,8 +17,10 @@ Plots the raw data (\code{class: PM_op_data}) from a \link{PM_op} object in the 
 Both use \link{plot.PM_op}.
 }
 \examples{
+\dontrun{
 NPex$op$data \%>\%
-filter(pred > 5) \%>\%
-filter(pred < 10) \%>\%
+dplyr::filter(pred > 5) \%>\%
+dplyr::filter(pred < 10) \%>\%
 plot()
+}
 }

@@ -4,7 +4,7 @@
 \alias{PM_report}
 \title{Generate a report}
 \usage{
-PM_report(x, template, path, show = TRUE, quiet = FALSE)
+PM_report(x, template, path, show = TRUE, quiet = TRUE)
 }
 \arguments{
 \item{x}{A \link{PM_result} object obtained from \link{PM_load}.}
@@ -13,15 +13,14 @@ PM_report(x, template, path, show = TRUE, quiet = FALSE)
 is used. It can be changed with \link{setPMoptions}. Otherwise, the value for \code{template}
 can be "plotly", "ggplot", or "none".}
 
-\item{path}{The path for the generated report, defaults to a temporary file
-in the current working directory.}
+\item{path}{The path for the generated report, defaults to a temporary folder.}
 
 \item{show}{Controls if the report should be automatically opened on generation, defaults to \code{TRUE}}
 
-\item{quiet}{If \code{TRUE}, suppresses the message about report generation, defaults to \code{FALSE}.}
+\item{quiet}{If \code{TRUE} (default), suppresses knitr output about report generation. Progress messages will still be displayed.}
 }
 \value{
-Generates an HTML-report in the current working directory.
+Generates an HTML-report in the folder specified by \code{path}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

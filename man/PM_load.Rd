@@ -43,11 +43,20 @@ and "PMout.Rdata" is used for \code{file}.
 }
 \examples{
 \dontrun{
-run1 <- PM_load(1) # loads from ./1/outputs/PMout.Rdata, where "." is the current working directory
-run2 <- PM_load(2, path = "Pmetrics/MyRuns") # loads from Pmetrics/MyRuns/2/outputs/PMout.Rdata
-run3 <- PM_load(path = "Pmetrics/MyRuns/3", file = "MyResults.Rdata") # loads from Pmetrics/MyRuns/3/MyResults.Rdata
-run4 <- PM_load(file = "Pmetrics/MyRuns/4/outputs/PMout.Rdata") # loads from Pmetrics/MyRuns/4/outputs/PMout.Rdata
-run5 <- PM_load() # loads from ./PMout.Rdata
+run1 <- PM_load(1) 
+# loads from ./1/outputs/PMout.Rdata, where "." is the current working directory
+
+run2 <- PM_load(2, path = "Pmetrics/MyRuns") 
+# loads from Pmetrics/MyRuns/2/outputs/PMout.Rdata
+
+run3 <- PM_load(path = "Pmetrics/MyRuns/3", file = "MyResults.Rdata") 
+# loads from Pmetrics/MyRuns/3/MyResults.Rdata
+
+run4 <- PM_load(file = "Pmetrics/MyRuns/4/outputs/PMout.Rdata") 
+# loads from Pmetrics/MyRuns/4/outputs/PMout.Rdata
+
+run5 <- PM_load() 
+# loads from ./PMout.Rdata
 }
 
 }

@@ -1,7 +1,12 @@
 {
-  "sep": [","],
-  "dec": ["."],
-  "lang": ["en"],
-  "backend": ["rust"],
-  "op_stats": [true]
+  "sep": ",",
+  "dec": ".",
+  "digits": 2,
+  "show_metrics": true,
+  "bias_method": "percent_mwe",
+  "imp_method": "percent_rmbawse",
+  "ic_method": "aic",
+  "report_template": "plotly",
+  "backend": "rust",
+  "model_template_path": ""
 }

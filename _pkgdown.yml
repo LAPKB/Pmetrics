@@ -1,4 +1,4 @@
-url: https://lapkb.github.io/Pmetrics/
+url: https://lapkb.github.io/Pmetrics_rust/
 template:
   bootstrap: 5
   bootswatch: flatly
@@ -39,6 +39,8 @@ navbar:
         href: articles/objects.html
       - text: Simulation
         href: articles/simulation.html
+      - text: Probability of Target Attainment
+        href: articles/pta.html
       - text: Plotly plots
         href: articles/plotly.html
 home:
@@ -111,7 +113,7 @@ reference:
 - title: Auxilliary
   desc: Auxilliary functions
 - contents:
-  - all.is.numeric
+  - all_is_numeric
   - build_model
   - build_plot
   - qgrowth
@@ -148,6 +150,10 @@ reference:
   - dummy_compile
   - simulate_all
   - simulate_one
+  - fit
+  - is_cargo_installed
+  - model_parameters
+  - temporary_path
 - title: Reference
   desc: Reference functions
 - contents:

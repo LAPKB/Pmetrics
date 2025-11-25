@@ -222,22 +222,25 @@ PM_sim <- R6::R6Class(
     #' * The second option is to set `limits` to `NA`. This will use the
     #' parameter limits on the primary parameters that are specified in the [PM_model] object.
     #' * The third option is a numeric vector of length 1 or 2, e.g. `limits = 3` or
-    #' `limits = c(0.5, 4)`, which specifies what to multiply the columns of the limits in the
+    #' `limits = c(0.5, 4)`, which specifies what to multiply the columns of the parameter limits in the
     #' model file.  If length 1, then the lower limits will be the same as in the
     #' model file, and the upper limits will be multiplied by value specified.  If
     #' length 2, then the lower and upper limits will be multiplied by the
     #' specified values.  If this option is used, `poppar` must be a
     #' `PM_final` object.
     #' * The fourth option for limits is a fully
-    #' customized matrix of limits for simulated values for each parameter which
+    #' customized data frame or list of limits for simulated values for each parameter which
     #' will overwrite any limits in the model file.  If specified, it should be a
-    #' data frame or matrix with number of rows equal to the number of random
-    #' paramters and 2 columns, corresponding to the minimum and maximum values.
-    #' For example, a final$ab object, or a directly coded matrix, e.g.
-    #' `matrix(c(0, 5, 0, 5, 0.01, 100), nrow = 3,ncol = 2, byrow = T)` for 3 parameters with
-    #' limits of (0, 5), (0, 5) and (0.01, 100), respectively.  It is possible to
-    #' convert a parameter to fixed by omitting the second limit. Means and
-    #' covariances of the total number of simulated sets will be returned to
+    #' data frame or list with columns or elements, respectively, "par", "min", "max".
+    #' For example, use a PM_final$ab object, or a code it like
+    #' `limits = list(par = c("Ka", "Ke", "V"), min = c(0.1, 0.1, 10), max = c(5, 5, 200))` or
+    #' `limits = data.frame(par = c("Ka", "Ke", "V"), min = c(0.1, 0.1, 10), max = c(5, 5, 200))` or
+    #' `limits = tibble::tibble(par = c("Ka", "Ke", "V"), min = c(0.1, 0.1, 10), max = c(5, 5, 200))`.
+    #' Each of these specifies custom limits for 3 parameters named Ka, Ke, and V,
+    #' with limits of (0.1, 5), (0.1, 5) and (10, 200), respectively.  The last example uses tibbles, the
+    #' tidyverse equivalent of data frames.
+    #' 
+    #' Means and covariances of the total number of simulated sets will be returned to
     #' verify the simulation, but only those sets within the specified limits will
     #' be used to generate output(s) and the means and covariances of the retained
     #' sets may (and likely will be) different than those specified by
@@ -462,11 +465,12 @@ PM_sim <- R6::R6Class(
     #'    `value * exp(noise)`, where noise is a random number from a normal distribution,
     #'    with mean of 0 and `SD = C0 + C1*value + C2*value^2 + C3*value^3`, and *value* is the
     #'    original value in each row of the target column.
-    #'  @examples
-    #'  \dontrun{
-    #'  exDat$makeNoise(list(dose = list(coeff = c(0.1, 0.1), filter = "dose > 100 & time < 200", mode = "add"),
-    #'  out = list(c(0.1, 0.001), mode = "exp")))
-    #'  }
+    #'    Example:
+    #'     ```
+    #'     exDat$makeNoise(list(dose = list(coeff = c(0.1, 0.1), filter = "dose > 100 & time < 200", mode = "add"),
+    #'     out = list(c(0.1, 0.001), mode = "exp")))
+    #'    ```
+    #'  
     #'
     #' @param makecsv A character vector for the name of the single .csv file to be
     #' made for all simulated "subjects".  If no file extension is included, ".csv"
@@ -622,10 +626,10 @@ PM_sim <- R6::R6Class(
           # CASE 7 - poppar is manual list
         } else if (inherits(poppar, "list")) { # PM_final and PM_sim are lists, so needs to be after those for manual list
           case <- 7
-      
+          
           # parse poppar list
           poppar_elements <- names(poppar) %>% purrr::discard(~ .x == "wt")
-
+          
           if (length(poppar_elements) == 2 && all(c("mean", "sd") %in% poppar_elements)) { # mean and SD only
             poppar$cov <- diag(poppar$sd^2) # make covariance matrix
           } else if (length(poppar_elements) == 2 && all(c("mean", "cov") %in% poppar_elements)) { # mean, covariance/correlation matrix, and weights
@@ -638,12 +642,12 @@ PM_sim <- R6::R6Class(
               "i" = "See ?PM_sim for help on constructing {.arg poppar}."
             ))
           }
-
+          
           # add missing wt if needed
           if (!"wt" %in% names(poppar)) {
             poppar$wt <- 1 # default weight
           } 
-
+          
           # check to ensure wt and mean are aligned
           if (!all(map_lgl(poppar$mean, \(x) length(x) == length(poppar$wt)))) {
             cli::cli_abort(c(
@@ -658,7 +662,7 @@ PM_sim <- R6::R6Class(
             popMean = tibble::as_tibble(do.call(cbind, poppar$mean)),
             popCov = data.frame(poppar$cov)
           ) 
-
+          
           # not returning because going on to simulate below
           
           ### This is for loading a saved simulation from file
@@ -978,9 +982,9 @@ PM_sim <- R6::R6Class(
         
         
         # PARAMETER LIMITS --------------------------------------------------------
-  
+     
         if (all(is.null(limits))) { # limits are omitted altogether
-          parLimits <- matrix(c(rep(-Inf, npar), rep(Inf, npar)), ncol = 2)
+          parLimits <- tibble::tibble(par = 1:npar , min = rep(-Inf, npar), max = rep(Inf, npar))
         } else if (!any(is.na(limits)) & is.vector(limits)) { # no limit is NA and specified as vector of length 1 or 2
           # so first check to make sure poppar is a PM_final_data object
           if (!inherits(poppar, "PM_final_data")) {
@@ -993,30 +997,30 @@ PM_sim <- R6::R6Class(
           if (length(limits) == 1) { # e.g. limits = 3, multiply upper...
             limits <- c(1, limits) # ...and set lower multiplier to 1
           }
-          parLimits <- t(apply(orig_lim, 1, function(x) x * limits))
+          parLimits <- orig_lim %>% mutate(
+            min = min * limits[1],
+            max = max * limits[2]
+          )
         } else if (length(limits) == 1 && is.na(limits)) { # limits specified as NA (use limits in model)
-          parLimits <- matrix(c(
-            map(mod_list$pri[1:npar], \(x) x$min) %>% unlist(),
-            map(mod_list$pri[1:npar], \(x) x$max) %>% unlist()
-          ), ncol = 2)
+          parLimits <- poppar$ab
         } else if (any(is.na(limits))) { # some NAs, causes error
           cli::cli_abort(c(
             "x" = "The {.arg limits} argument is malformed.",
             "i" = "It must only contain {.code NA} as a single value, e.g. {.code limits = NA} to indicate that limits in the model should be used."
           ))
-        } else { # limits specified as a full matrix
-          parLimits <- limits
+        } else { # limits specified as a list or data frame
+          parLimits <- tibble::as_tibble(limits)
+          if (!all(c("par", "min", "max") %in% names(parLimits))) {
+            cli::cli_abort(c("x" = "A manual {.arg limits} argument must be a data frame or list with elements {.val par}, {.val min}, and {.val max}."))
+          }
         }
-        
-        
-        dimnames(parLimits) <- list(mod_list$parameters, c("lower", "upper"))
-        parLimits <- data.frame(parLimits)
-        
-        
-        # 
+       
         if (!is.null(parLimits) && nrow(parLimits) != npar) {
           cli::cli_abort(c("x" = "The number of rows in {.arg limits} must match the number of parameters in the model."))
         }
+      
+      
+      
         
         # COVARIATES ----------------------------------------------------
         
@@ -1100,7 +1104,7 @@ PM_sim <- R6::R6Class(
         bind_bottom_right <- function(A, B, n) {
           m <- nrow(A)
           if (nrow(B) != m + n || ncol(B) != m + n)
-          stop("B must be of size (m + n) × (m + n)")
+          stop("B must be of size (m + n) x (m + n)")
           
           # Extract blocks from B
           B_right  <- B[1:m,   (m+1):(m+n), drop = FALSE]  # top-right block
@@ -1168,7 +1172,7 @@ PM_sim <- R6::R6Class(
         # and get max of original population covariates
         covMax <- CVsum %>% summarize(across(covs2sim, max, na.rm = TRUE))
         
-        orig_covlim <- matrix(unlist(c(covMin, covMax)), ncol = 2)
+        orig_covlim <- tibble::tibble(par = cov2sim, min = covMin, max = covMax)
         
         if (length(covariate$limits) == 0) {
           # limits are omitted altogether
@@ -1182,24 +1186,31 @@ PM_sim <- R6::R6Class(
               "i" = "E.g. {.code limits = list(wt = c(40, 80), age = c(10, 50))}. See {.fn PM_sim} for help."
             ))
           }
-          # first, make matrix with original covariate limits
+          # first, make tibble with original covariate limits
           covLimits <- orig_covlim
           # now figure out which covariates have different limits and change them
-          goodNames <- which(names(covMean) %in% names(covariate$limits))
-          if (length(goodNames) > 0) {
-            covLimits[goodNames, ] <- t(sapply(1:length(goodNames), function(x) {
-              covariate$limits[[x]]
-            }))
-          }
+          
+          covUpdates <- tibble::enframe(covariate$limits, name = "par", value = "rng") %>%
+          tidyr::unnest_wider(rng, names_sep = "") %>%
+          dplyr::rename(min = rng1, max = rng2)
+          
+          covLimits <- dplyr::rows_update(covLimits, covUpdates, by = "par")
+          
+          # goodNames <- which(names(covMean) %in% names(covariate$limits))
+          # if (length(goodNames) > 0) {
+          #   covLimits[goodNames, ] <- t(sapply(1:length(goodNames), function(x) {
+          #     covariate$limits[[x]]
+          #   }))
+          # }
         }
-        dimnames(covLimits) <- list(covs2sim, c("lower", "upper"))
-        covLimits <- data.frame(covLimits)
+        # dimnames(covLimits) <- list(covs2sim, c("lower", "upper"))
+        # covLimits <- data.frame(covLimits)
         
         
         limits <- rbind(parLimits, covLimits)
         
         # add simulated covariates to primary block of model object
-        new_pri <- map(1:nsimcov, \(x) ab(covLimits[x, 1], covLimits[x, 2]))
+        new_pri <- map(1:nsimcov, \(x) ab(covLimits$min[x], covLimits$max[x]))
         names(new_pri) <- covs2sim
         arg_list$pri <- c(arg_list$pri, new_pri)
         
@@ -1286,7 +1297,6 @@ PM_sim <- R6::R6Class(
       if (length(postToUse) > 0) {
         # simulating from posteriors, each posterior matched to a subject
         # need to set theta as the posterior mean or median for each subject
-        
         ans <- NULL
         data_list <- list()
         for(i in 1:nsub){
@@ -1356,7 +1366,6 @@ PM_sim <- R6::R6Class(
           toInclude = toInclude,
           msg = msg
         )
-        
         
         self$data <- private$getSim(thisPrior, template, mod, noise2, msg = msg)
       }
@@ -1791,7 +1800,7 @@ PM_sim$load <- function(...) {
 #' @method plot PM_sim
 #' @param x The name of an *PM_sim* data object generated by [PM_sim]
 #' @param include `r template("include")`.
-#' @param include `r template("exclude")`.
+#' @param exclude `r template("exclude")`.
 #' @param mult `r template("mult")`
 #' @param ci Width of confidence interval bands around simulated quantiles,
 #' from 0 to 1.  If 0, or *nsim*<100, will not plot.
@@ -1850,6 +1859,7 @@ PM_sim$load <- function(...) {
 #' value of the simulated quantile with upper and lower confidence intervals at that time.
 #' Additionally, the number of observations beyond the 5th and 95th percentiles will be reported
 #' and the binomial test P-value if this number is different than the expected 10% value.
+#' @param quiet If `TRUE`, suppresses the message about simulation report generation, defaults to `FALSE`.
 #' @param legend `r template("legend")` Default is `FALSE`
 #' @param log `r template("log")` Default is `TRUE`.
 #' @param grid `r template("grid")` Default is `FALSE`
@@ -1921,7 +1931,7 @@ plot.PM_sim <- function(x,
       }
     } else { # line was not T/F
       if (!is.list(line) & length(line) > 1) {
-        cli::cli_stop(c(
+        cli::cli_abort(c(
           "x" = "{.arg Line} is misspecified.",
           "i" = "If you want to specify quantiles, use {.code line = list(probs = c(...), ...)}."
         ))
@@ -1960,7 +1970,7 @@ plot.PM_sim <- function(x,
           lineList$fill <- line$fill
           
         } else {
-          cli::cli_stop(c(
+          cli::cli_abort(c(
             "x" = "{.arg fill} is misspecified.",
             "i" = "If you want to specify fill between quantiles, use {.code line = list(fill = list(...), ...)}."
           ))
@@ -2498,8 +2508,8 @@ generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix,
   
   # function used later to check if any parameters are outside their limits
   outside_check <- function(x) {
-    any(x - limits[, 1] < 0) | # any parameter < lower limit
-    any(x - limits[, 2] > 0) # any parameter > upper limit
+    any(x - limits$min < 0) | # any parameter < lower limit
+    any(x - limits$max > 0) # any parameter > upper limit
   }
   
   #Generate samples bounded by limits for each mode

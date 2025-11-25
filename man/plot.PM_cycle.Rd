@@ -19,7 +19,7 @@
 )
 }
 \arguments{
-\item{x}{The name of a \link{PM_cycle}  object, e.g. \code{PmetricsData::NPex$cycle}.}
+\item{x}{The name of a \link{PM_cycle}  object, e.g. \code{NPex$cycle}.}
 
 \item{line}{Controls characteristics of lines. This argument maps to plotly line attributes. \code{TRUE} will plot default lines. \code{FALSE} will suppress lines. If a list, can control many line characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > line to see all the ways the line can be formatted. Most common will be:  \itemize{ \item{\code{color}} Line color. \item{\code{dash}} Plotting character. See \code{plotly::schema()}, traces > scatter >  attributes > line > dash > values. \item{\code{width}} Thickness in points. }
 

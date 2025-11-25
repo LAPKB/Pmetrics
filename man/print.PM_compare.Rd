@@ -4,10 +4,12 @@
 \alias{print.PM_compare}
 \title{Print method for PM_compare objects}
 \usage{
-\method{print}{PM_compare}(x)
+\method{print}{PM_compare}(x, ...)
 }
 \arguments{
 \item{x}{A PM_compare object.}
+
+\item{...}{Additional arguments (not used).}
 }
 \description{
 \verb{ r lifecycle::badge("stable")}

@@ -11,37 +11,69 @@
 NULL
 
 #' Simulates the first subject in the data set using the model at the given path.
+#' @param data_path Path to the data file.
+#' @param model_path Path to the compiled model file.
+#' @param spp One support point as a numeric vector with probabiltity.
+#' @param kind Kind of model, which can either be "ODE" or "Analytical".
+#' @return Simulation results.
 #'@export
 simulate_one <- function(data_path, model_path, spp, kind) .Call(wrap__simulate_one, data_path, model_path, spp, kind)
 
 #' Simulates all subjects in the data set using the model at the given path.
-#'@export
+#' @param data_path Path to the data file.
+#' @param model_path Path to the compiled model file.
+#' @param theta Data frame of support points.
+#' @param kind Kind of model, which can either be "ODE" or "Analytical".
+#' @return Simulation results.
+#' @export
 simulate_all <- function(data_path, model_path, theta, kind) .Call(wrap__simulate_all, data_path, model_path, theta, kind)
 
 #' Compiles the text representation of a model into a binary file.
-#'@export
-compile_model <- function(model_path, output_path, params, kind) .Call(wrap__compile_model, model_path, output_path, params, kind)
+#' @param model_path Path to the model file.
+#' @param output_path Path to save the compiled model.
+#' @param params List of model parameters.
+#' @param template_path Path to the template directory.
+#' @param kind Kind of model, which can either be "ODE" or "Analytical".
+#' @return Result of the compilation process.
+#' @export
+compile_model <- function(model_path, output_path, params, template_path, kind) .Call(wrap__compile_model, model_path, output_path, params, template_path, kind)
 
 #' Dummy function to cache compilation artifacts.
-#'@export
-dummy_compile <- function() .Call(wrap__dummy_compile)
+#' @param template_path Path to the template directory.
+#' @return Path to the build directory.
+#' @export
+dummy_compile <- function(template_path) .Call(wrap__dummy_compile, template_path)
 
-#'@export
+#' Checks if Cargo is installed on the system.
+#' @return TRUE if Cargo is installed, FALSE otherwise.
+#' @export
 is_cargo_installed <- function() .Call(wrap__is_cargo_installed)
 
-#'@export
+#' Fits the model at the given path to the data at the given path using the provided parameters.
+#' @param model_path Path to the compiled model file.
+#' @param data Path to the data file.
+#' @param params List of fitting parameters.
+#' @param output_path Path to save the fitting results.
+#' @param kind Kind of model, which can either be "ODE" or "Analytical".
+#' @return Result of the fitting process.
+#' @export
 fit <- function(model_path, data, params, output_path, kind) .Call(wrap__fit, model_path, data, params, output_path, kind)
 
-#'@export
+#' Retrieves the model parameters from the compiled model at the given path.
+#' @param model_path Path to the compiled model file.
+#' @param kind Kind of model, which can either be "ODE" or "Analytical".
+#' @return List of model parameters.
+#' @export
 model_parameters <- function(model_path, kind) .Call(wrap__model_parameters, model_path, kind)
 
-template_path <- function() .Call(wrap__template_path)
-
-clear_build <- function() invisible(.Call(wrap__clear_build))
+#' Retrieves the temporary path used for building models.
+#' @return Temporary build path.
+#' @export
+temporary_path <- function() .Call(wrap__temporary_path)
 
 #' Initialize the tracing subscriber with the custom R formatter
 #' @keywords internal
-#'@export
+#' @export
 setup_logs <- function() .Call(wrap__setup_logs)
 
 

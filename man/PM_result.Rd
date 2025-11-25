@@ -174,13 +174,13 @@ Summary generic function based on type
 \subsection{Method \code{auc()}}{
 AUC generic function based on type
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$auc(type, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$auc(src, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{type}}{Type of AUC based on class of object}
+\item{\code{src}}{Source of AUC, one of "op", "pop", "post", or "sim"}
 
 \item{\code{...}}{Summary-specific arguments}
 }
@@ -220,7 +220,7 @@ Re-generate the report
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Parameters passed to \link{PM_report}.}
+\item{\code{...}}{Parameters passed to \link{PM_report}. In particular, pay attention to \code{path}.}
 }
 \if{html}{\out{</div>}}
 }

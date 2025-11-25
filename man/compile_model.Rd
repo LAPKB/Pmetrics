@@ -4,7 +4,21 @@
 \alias{compile_model}
 \title{Compiles the text representation of a model into a binary file.}
 \usage{
-compile_model(model_path, output_path, params, kind)
+compile_model(model_path, output_path, params, template_path, kind)
+}
+\arguments{
+\item{model_path}{Path to the model file.}
+
+\item{output_path}{Path to save the compiled model.}
+
+\item{params}{List of model parameters.}
+
+\item{template_path}{Path to the template directory.}
+
+\item{kind}{Kind of model, which can either be "ODE" or "Analytical".}
+}
+\value{
+Result of the compilation process.
 }
 \description{
 Compiles the text representation of a model into a binary file.

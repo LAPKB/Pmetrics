@@ -69,8 +69,6 @@ build_model_lib <- function(){
 #' Returns a table of all available model templates in the Pmetrics library.
 #' @param show Logical indicating if the table should be printed. Default is TRUE.
 #' @return Invisibly, a tibble containing the model templates or a specific model template.
-#' @examples
-#' model_lib() # Returns a table of all model templates
 #' @export
 #' 
 model_lib <- function(show = TRUE) {
@@ -184,6 +182,8 @@ model_lib <- function(show = TRUE) {
       ) # end active
     ) # end PM_lib class definition
     
+    
+##### default models in the library
     mod_list <- list(
       
       list(
@@ -208,7 +208,6 @@ model_lib <- function(show = TRUE) {
           )
         )
       ),
-      
       
       list(
         name = "one_comp_iv_cl", 

@@ -299,27 +299,30 @@ be generated.  Four options exist for limits.
 \item The second option is to set \code{limits} to \code{NA}. This will use the
 parameter limits on the primary parameters that are specified in the \link{PM_model} object.
 \item The third option is a numeric vector of length 1 or 2, e.g. \code{limits = 3} or
-\code{limits = c(0.5, 4)}, which specifies what to multiply the columns of the limits in the
+\code{limits = c(0.5, 4)}, which specifies what to multiply the columns of the parameter limits in the
 model file.  If length 1, then the lower limits will be the same as in the
 model file, and the upper limits will be multiplied by value specified.  If
 length 2, then the lower and upper limits will be multiplied by the
 specified values.  If this option is used, \code{poppar} must be a
 \code{PM_final} object.
 \item The fourth option for limits is a fully
-customized matrix of limits for simulated values for each parameter which
+customized data frame or list of limits for simulated values for each parameter which
 will overwrite any limits in the model file.  If specified, it should be a
-data frame or matrix with number of rows equal to the number of random
-paramters and 2 columns, corresponding to the minimum and maximum values.
-For example, a final$ab object, or a directly coded matrix, e.g.
-\code{matrix(c(0, 5, 0, 5, 0.01, 100), nrow = 3,ncol = 2, byrow = T)} for 3 parameters with
-limits of (0, 5), (0, 5) and (0.01, 100), respectively.  It is possible to
-convert a parameter to fixed by omitting the second limit. Means and
-covariances of the total number of simulated sets will be returned to
+data frame or list with columns or elements, respectively, "par", "min", "max".
+For example, use a PM_final$ab object, or a code it like
+\code{limits = list(par = c("Ka", "Ke", "V"), min = c(0.1, 0.1, 10), max = c(5, 5, 200))} or
+\code{limits = data.frame(par = c("Ka", "Ke", "V"), min = c(0.1, 0.1, 10), max = c(5, 5, 200))} or
+\code{limits = tibble::tibble(par = c("Ka", "Ke", "V"), min = c(0.1, 0.1, 10), max = c(5, 5, 200))}.
+Each of these specifies custom limits for 3 parameters named Ka, Ke, and V,
+with limits of (0.1, 5), (0.1, 5) and (10, 200), respectively.  The last example uses tibbles, the
+tidyverse equivalent of data frames.
+}
+
+Means and covariances of the total number of simulated sets will be returned to
 verify the simulation, but only those sets within the specified limits will
 be used to generate output(s) and the means and covariances of the retained
 sets may (and likely will be) different than those specified by
-\code{poppar}.
-}}
+\code{poppar}.}
 
 \item{\code{split}}{Boolean operator controlling whether to split an NPAG
 \link{PM_final} object into one distribution per support point, with means
@@ -537,12 +540,12 @@ original value in each row of the target column.
 \code{value * exp(noise)}, where noise is a random number from a normal distribution,
 with mean of 0 and \code{SD = C0 + C1*value + C2*value^2 + C3*value^3}, and \emph{value} is the
 original value in each row of the target column.
-@examples
-\dontrun{
- exDat$makeNoise(list(dose = list(coeff = c(0.1, 0.1), filter = "dose > 100 & time < 200", mode = "add"),
- out = list(c(0.1, 0.001), mode = "exp")))
- }
+Example:
 }
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{exDat$makeNoise(list(dose = list(coeff = c(0.1, 0.1), filter = "dose > 100 & time < 200", mode = "add"),
+out = list(c(0.1, 0.001), mode = "exp")))
+}\if{html}{\out{</div>}}
 }}
 
 \item{\code{makecsv}}{A character vector for the name of the single .csv file to be

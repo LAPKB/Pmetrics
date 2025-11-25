@@ -39,8 +39,8 @@ gh_help <- function(name) {
 
 
 custom_table <- function(tab){
-  system.file("extData", tab, package = "Pmetrics") %>%
-    read.csv(na.strings = ".") %>% gt() %>%
+  #system.file("extData", tab, package = "Pmetrics") %>%
+    read.csv(file.path("Data",tab), na.strings = ".") %>% gt() %>%
     tab_style(
       style = list(
         cell_fill(color = "black"),
@@ -84,14 +84,14 @@ Invoking the simulator in R6 becomes a method attached to `PM_result` objects or
 
 Once a `PM_model` object is compiled, combine it with a data file, and fit the model to the data using the `$fit()` method.
 
-```{r echo=T, eval=FALSE}
+```{r echo=T, eval=FALSE, label=fit-method}
 run1 <- mod1$fit(data, ...) #... are options listed in ?PM_model for the $fit method
 
 ```
 
 For the Simulator, the `$sim` method for a `PM_result` object will execute the program directly within R and return a `PM_sim` object.
 
-```{r echo=T, eval=FALSE}
+```{r echo=T, eval=FALSE, label=sim-method}
 run1 <- PM_load(1)
 sim1 <- run1$sim(data = "new.csv") # uses the model and parameter joint density from run1, but replaces the data with new.csv
 ```
@@ -100,15 +100,15 @@ The first line loads previous results of run 1 into a `PM_result` object called 
 
 An equivalent method is to create a new `PM_sim` is directly with `PM_sim$new()`. It also returns a `PM_sim()` object, i.e. there is no longer any need to run `SIMparse`. Creating simulations this way allows total freedom with respect to the model, the prior, and the data template.
 
-```{r echo=T, eval=FALSE}
+```{r echo=T, eval=FALSE, label=sim-new}
 sim1 <- PM_sim$new(poppar = list(...), model = "model.txt", data = "new.csv")
 ```
 
-See `vignette("simulation")` for details on specifying `poppar` this way.
+See [simulation](simulation.html) for details on specifying `poppar` this way.
 
 For the simulator the results are returned automatically to the object assigned to contain the output of the simulation, e.g. `sim1` below.
 
-```{r echo=T, eval=FALSE}
+```{r echo=T, eval=FALSE, label=sim-result}
 sim1 <- PM_result$sim(...)
 ```
 
@@ -122,14 +122,14 @@ The Pmetrics R6 objects `PM_data`, `PM_result()`, `PM_sim()`, `PM_valid()`, and 
 
 After a successful NPAG or NPOD run, `PM_load()` creates a `PM_result()` object rather than loading run results into the current environment and suffixed with the run number as for legacy mode.
 
-```{r echo=T, eval=FALSE}
+```{r echo=T, eval=FALSE, label=load-pmresult}
 res1 <- PM_load(1)
 res1$op$plot()
 ```
 
 For  `PM_sim()`, `PM_valid()`, and `PM_pta()` use the `$new()` method and provide the full or relative path (if not in the working directory) and name of an .rds file created by the corresponding `$save()` method.
 
-```{r echo=T, eval=FALSE}
+```{r echo=T, eval=FALSE, label=load-pmsim}
 sim1 <- PM_sim$new("sim.rds")
 ```
 
@@ -145,7 +145,7 @@ Within Pmetrics there are also functions to manipulate data .csv files and proce
 
 Comparison between the current and the Legacy methods are shown for education.
 
-```{r echo=F, eval=FALSE}
+```{r echo=F, eval=TRUE, label=custom-table}
 custom_table("RLcomp_data.csv")
 ```
 
@@ -153,7 +153,7 @@ custom_table("RLcomp_data.csv")
 
 Comparison between the current and the Legacy methods are shown for education.
 
-```{r echo=F, eval=FALSE}
+```{r echo=F, eval=TRUE, label=custom-table-model}
 custom_table("RLcomp_valid.csv")
 ```
 
@@ -161,7 +161,7 @@ custom_table("RLcomp_valid.csv")
 
 Comparison between the current and the Legacy methods are shown for education.
 
-```{r echo=F, eval=FALSE}
+```{r echo=F, eval=TRUE, label=custom-table-other}
 custom_table("RLcomp_other.csv")
 ```
 

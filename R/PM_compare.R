@@ -410,13 +410,13 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
   mutate(across(-Run, \(x){
     dplyr::if_else(row_number() == 1, 
     #row 1
-    ifelse(x, "✅", "❌"),
+    ifelse(x, "\u2705", "\u274C"),
     #other rows
-    ifelse(x, "☑️", "❌")
+    ifelse(x, "\u2611\uFE0F", "\u274C")
   )
 })) %>% 
 mutate(across(-Run, \(x){
-  ifelse(x == "☑️" & x[1] == "✅", "✅", x )
+  ifelse(x == "\u2611\uFE0F" & x[1] == "\u2705", "\u2705", x )
 })) %>%
 mutate(P = round2(t)) %>%
 mutate(P = ifelse(stringr::str_trim(P) == "NA", "Ref", P)) %>%
@@ -517,8 +517,9 @@ return(results)
 #' ` r lifecycle::badge("stable")`
 #' Prints a summary of the PM_compare object.
 #' @param x A PM_compare object.
+#' @param ... Additional arguments (not used).
 #' @method print PM_compare
 #' @export
-print.PM_compare <- function(x){
+print.PM_compare <- function(x, ...){
   cli_df(x) # in PM_utilities
 }

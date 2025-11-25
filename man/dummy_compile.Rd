@@ -4,7 +4,13 @@
 \alias{dummy_compile}
 \title{Dummy function to cache compilation artifacts.}
 \usage{
-dummy_compile()
+dummy_compile(template_path)
+}
+\arguments{
+\item{template_path}{Path to the template directory.}
+}
+\value{
+Path to the build directory.
 }
 \description{
 Dummy function to cache compilation artifacts.

@@ -13,7 +13,7 @@
 #' @keywords internal
 #' "_PACKAGE"
 #'
-#' @importFrom dplyr select arrange filter mutate transmute group_by row_number
+#' @importFrom dplyr select arrange filter mutate group_by row_number
 #' group_map ungroup bind_cols bind_rows nest_by rowwise relocate rename reframe inner_join
 #' slice_tail slice_head slice across tibble as_tibble quo pull n everything 
 #' case_match case_when starts_with all_of where distinct summarize if_else
@@ -44,7 +44,7 @@
 #' tail txtProgressBar write.csv write.table getTxtProgressBar
 # #' @importFrom base64enc base64decode
 #' @importFrom R6 R6Class
-#' @importFrom rlang .data set_names
+#' @importFrom rlang .data set_names :=
 #' @importFrom plotly filter mutate plot_ly add_markers add_lines layout
 #' ggplotly subplot add_annotations add_bars renderPlotly add_trace
 #' @importFrom shiny fluidPage titlePanel tags navlistPanel tabPanel fluidRow

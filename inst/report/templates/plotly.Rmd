@@ -10,28 +10,37 @@ params:
   res: FALSE
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 library(dplyr)
+library(Pmetrics)
+
 ```
 
 
-```{r setup-extra}
+
+```{r setup-extra, include = FALSE}
 res = params$res
 ```
 
-## Summary
-
-```{r}
-nsub <- nobs <- numeqt <- icyctot <- NULL #declare for CRAN check
-
-nsub <- res$final$nsub
-icyctot <- max(res$cycle$objective$cycle)
-numeqt <- max(res$op$data$outeq, na.rm = TRUE)
-np <- TRUE
-
+```{r preflight, include = FALSE}
+if (is.null(params$res$final$data) & is.null(params$res$op$data) & is.null(params$res$cycle$data)) {
+  knitr::asis_output("**Report not generated. Run did not complete.**")
+  knitr::knit_exit()
+} else {
+  nsub <- nobs <- numeqt <- icyctot <- NULL #declare for CRAN check
+  nsub <- res$final$nsub
+  icyctot <- max(res$cycle$objective$cycle)
+  numeqt <- max(res$op$data$outeq, na.rm = TRUE)
+  np <- TRUE
+}
 ```
 
+`r cli::cli_h2("Report Rendering") `
+
+## Summary
+
+`r cli::cli_bullets(c(">" = "Run summary"))`
 
 The data had `r nsub` subjects.
 
@@ -41,38 +50,36 @@ After `r paste0(icyctot, " cycles, the model status was \"", res$cycle$data$stat
 
 ### Observed-predicted plot {.tabset .tabset-pills}
 
-Points should appear close to, and randomly distributed around, the (dashed) identity-line.
+`r cli::cli_bullets(c(">" = "Observed vs. predicted plots"))`
 
-``` {r include = FALSE}
+Points should appear close to, and randomly distributed around, the (dashed) identity line.
+
+``` {r op-plot, message = TRUE}
 
 template <- c(
   "#### Outeq {{outeq}} {.tabset .tabset-pills}\n",
   "##### Population {.tabset .tabset-pills}\n",
   "###### Median\n",
-  "```{r message = F}\n",
-
+  "```{r op-pop-median-{{outeq}}, message = TRUE}\n",
   "p <- res$op$plot(icen = 'median', pred.type = 'pop', outeq = {{outeq}},\n
   stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "###### Mean\n",
-  "```{r message = F}\n",
-
+  "```{r op-pop-mean-{{outeq}}, message = TRUE}\n",
   "p <- res$op$plot(icen = 'mean', pred.type = 'pop', outeq = {{outeq}},\n
   stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "##### Posterior {.tabset .tabset-pills}\n",
   "###### Median\n",
-  "```{r message = F}\n",
-
+  "```{r op-post-median-{{outeq}}, message = TRUE}\n",
   "p <- res$op$plot(icen = 'median', pred.type = 'post', outeq = {{outeq}},\n
   stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "###### Mean\n",
-  "```{r message = F}\n",
-
+  "```{r op-post-mean-{{outeq}}, message = TRUE}\n",
   "p <- res$op$plot(icen = 'mean', pred.type = 'post', outeq = {{outeq}},\n
   stats = list(x = 1, y = 0.1, font = list(size = 9)), print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
@@ -80,11 +87,15 @@ template <- c(
   "\n"
 )
 
-p <- lapply(1:numeqt, function(i) {
-  knitr::knit_expand(
-    outeq = i,
-    text = template)
-})
+if (!is.null(res$op$data) & nrow(res$op$data) > 0){
+  p <- lapply(1:numeqt, function(i) {
+    knitr::knit_expand(
+      outeq = i,
+      text = template)
+  })
+} else {
+  p <- list("PM_op object not created.")
+}
 
 ```
 `r knitr::knit_child(text = unlist(p))`
@@ -92,12 +103,13 @@ p <- lapply(1:numeqt, function(i) {
 ::: {.tabset .tabset-pills}
 ### Prediction metrics 
 
+`r if (!is.null(res$op$data)) cli::cli_bullets(c(">" = "Prediction metrics"))`
 
-```{r}
+```{r prediction-metrics-summary, include = FALSE}
 #summary function
 metrics <- function(icen, pred.type, outeq){
   pe <- res$op$summary(icen = icen,  pred.type = pred.type, outeq = outeq)$pe %>%
-    get_metric_info()
+    Pmetrics:::get_metric_info()
   if (stringr::str_detect(pe$metric_types[1], "%")){
     pe$metric_vals <- pe$metric_vals %>% mutate(across(everything(), ~paste0(.x,"%"))) 
   }
@@ -120,29 +132,29 @@ metrics <- function(icen, pred.type, outeq){
 
 ```
 
-```{r include = FALSE}
+```{r prediction-metrics, include = FALSE}
 
 template <- c(
   "#### Outeq {{outeq}} {.tabset .tabset-pills}\n",
   "##### Population {.tabset .tabset-pills}\n",
   "###### Median\n",
-  "```{r message = F}\n",
+  "```{r op-pop-median-pred-metrics-{{outeq}}, message = F}\n",
 
   "metrics(icen = 'median', pred.type = 'pop', outeq = {{outeq}})\n",
   "```\n",
   "###### Mean\n",
-  "```{r message = F}\n",
+  "```{r op-pop-mean-pred-metrics-{{outeq}}, message = F}\n",
 
   "metrics(icen = 'mean', pred.type = 'pop', outeq = {{outeq}})\n",
   "```\n",
   "##### Posterior {.tabset .tabset-pills}\n",
   "###### Median\n",
-  "```{r message = F}\n",
+  "```{r op-post-median-pred-metrics-{{outeq}}, message = F}\n",
 
   "metrics(icen = 'median', pred.type = 'post', outeq = {{outeq}})\n",
   "```\n",
   "###### Mean\n",
-  "```{r message = F}\n",
+  "```{r op-post-mean-pred-metrics-{{outeq}}, message = F}\n",
 
   "metrics(icen = 'mean', pred.type = 'post', outeq = {{outeq}})\n",
   "```\n",
@@ -150,56 +162,64 @@ template <- c(
 )
 
 
-
-p <- lapply(1:numeqt, function(i) {
-  knitr::knit_expand(
-    outeq = i,
-    text = template)
-})
+if(!is.null(res$op$data)){
+  p <- lapply(1:numeqt, function(i) {
+    knitr::knit_expand(
+      outeq = i,
+      text = template)
+  })
+} else {
+  p <- list("PM_op object not created.")
+}
 
 
 ```
 `r knitr::knit_child(text = unlist(p))`
 :::
 
-```{r echo = FALSE, results = "asis", error = TRUE, cache = FALSE}
-pe <- res$op$summary()$pe %>% get_metric_info()
-types <- pe$metric_types
-cat(glue::glue("Bias is (pred - obs)  {types$bias}. Imprecision is {types$imprecision}. Change these with `setPMoptions()`."))
+```{r bias-imp-type, echo = FALSE, results = "asis", error = TRUE, cache = FALSE}
+if (!is.null(res$op$data)){
+  pe <- res$op$summary()$pe %>% Pmetrics:::get_metric_info()
+  types <- pe$metric_types
+  cat(glue::glue("Bias is (pred - obs)  {types$bias}. Imprecision is {types$imprecision}. Change these with `setPMoptions()`."))
+}
 ```
 
 
 ### Prediction residuals {.tabset .tabset-pills}
 
+`r if (!is.null(res$op$data)) cli::cli_bullets(c(">" = "Residual plots"))`
+
+
 Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
 
-``` {r include = FALSE}
+``` {r prediction-residuals, include = FALSE}
 
 template <- c(
   "#### Outeq {{outeq}} {.tabset .tabset-pills}\n",
   "##### Population {.tabset .tabset-pills}\n",
   "###### Median\n",
-  "```{r message = F}\n",
+  "```{r op-pop-median-pred-resid-{{outeq}}, message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'median', pred.type = 'pop', outeq = {{outeq}}, print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "###### Mean\n",
-  "```{r message = F}\n",
+  "```{r op-pop-mean-pred-resid-{{outeq}}, message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'mean', pred.type = 'pop', outeq = {{outeq}}, print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "##### Posterior {.tabset .tabset-pills}\n",
   "###### Median\n",
-  "```{r message = F}\n",
+  "```{r op-post-median-pred-resid-{{outeq}}, message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'median', pred.type = 'post', outeq = {{outeq}}, print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
   "```\n",
   "###### Mean\n",
-  "```{r message = F}\n",
+  "```{r op-post-mean-pred-resid-{{outeq}}, message = F}\n",
 
   "p <- res$op$plot(resid = T, icen = 'mean', pred.type = 'post', outeq = {{outeq}}, print = FALSE)\n",
   "if (isTRUE(getOption('knitr.in.progress'))) click_plot(p, '#FF8D1EFF')\n",
@@ -208,62 +228,78 @@ template <- c(
 )
 
 
-
+if (!is.null(res$op$data)){
 p <- lapply(1:numeqt, function(i) {
-  knitr::knit_expand(
-    outeq = i,
-    text = template)
-})
+    knitr::knit_expand(
+      outeq = i,
+      text = template)
+  })
+} else {
+  p <- list("PM_op object not created.")
+}
 
 ```
 `r knitr::knit_child(text = unlist(p), options = list(fig.width = 10))`
 
 ## Parameter values and distributions
 
+`r if (!is.null(res$final$popPoints)) cli::cli_bullets(c(">" = "Parameter summaries"))`
+
+
 ### Parameter summaries
 The model included the following primary parameters
-```{r}
-par_lims <- data.frame(
-  name = names(res$final$popMean),
-  lower = res$final$ab[,1],
-  upper = res$final$ab[,2],
-  ave = t(res$final$popMean),
-  med = t(res$final$popMed),
-  sd = t(res$final$popSD),
-  cv = 100*t(res$final$popCV),
-  shrink = 100*t(res$final$shrinkage)
-  
-) %>%
-  dplyr::mutate(across(4:8,\(x) round(x, 3)))
+```{r par_summaries}
+if(!is.null(res$final$data)){
+  par_lims <- data.frame(
+    par = res$final$ab$par,
+    min = res$final$ab$min,
+    max = res$final$ab$max,
+    ave = t(res$final$popMean),
+    med = t(res$final$popMed),
+    sd = t(res$final$popSD),
+    cv = 100*t(res$final$popCV),
+    shrink = 100*t(res$final$shrinkage)
+    
+  ) %>%
+    dplyr::mutate(across(4:8,\(x) round(x, 3)))
 
-par_lims %>% 
-  dplyr::rename(`Parameter` = name,
-                `Lower limit` = lower,
-                `Upper limit` = upper,
-                `Mean` = ave,
-                `Median` = med,
-                `SD` = sd,
-                `CV%` = cv,
-                `%shrink` = shrink) %>% 
-  DT::datatable(
-    options = list(
-      searching = FALSE,
-      pageLength = 10,
-      lengthChange = FALSE,
-      info = FALSE,
-      dom = "t",
-      autoHideNavigation = TRUE
-    ),
-    rownames = FALSE
-  )
+  par_lims %>% 
+    dplyr::rename(`Parameter` = par,
+                  `Lower limit` = min,
+                  `Upper limit` = max,
+                  `Mean` = ave,
+                  `Median` = med,
+                  `SD` = sd,
+                  `CV%` = cv,
+                  `%shrink` = shrink) %>% 
+    DT::datatable(
+      options = list(
+        searching = FALSE,
+        pageLength = 10,
+        info = FALSE,
+        dom = "t"
+        #autoHideNavigation = TRUE
+      ),
+      rownames = FALSE
+    )
+} else {
+  knitr::asis_output("PM_final object not created.")
+}
 ```
 
 ### Marginal plots
+
+`r if (!is.null(res$final$data)) cli::cli_bullets(c(">" = "Marginal plots"))`
+
 Probability distributions, dashed lines are limits.
 
-``` {r results = "asis"}
-p <- res$final$plot(print = FALSE)
-p
+``` {r marginal-plots, results = "asis"}
+if (!is.null(res$final$data)){
+  p <- res$final$plot(print = FALSE)
+  p
+} else {
+  knitr::asis_output("PM_final object not created.")
+}
 ```
 
 <!-- ### Posterior parameter distributions -->
@@ -294,13 +330,17 @@ p
 <!--   theme(legend.position = "bottom") -->
 <!-- ``` -->
 
-```{r, conditional-text, eval = np, echo = FALSE}
+```{r support-points, conditional-text, eval = np, echo = FALSE}
+if (!is.null(res$final$popPoints)){
 knitr::asis_output("### Table of support points\n\n
 The following table lists the final support points, in order of decreasing probability.\n")
+}
 ```
 
-```{r}
-if(np){
+`r if (!is.null(res$final$popPoints)) {cli::cli_bullets(c(">" = "Support points"))}`
+
+```{r support-points-table}
+if (!is.null(res$final$popPoints) & np){
   res$final$popPoints %>% 
     dplyr::arrange(desc(prob)) %>% 
     dplyr::mutate(across(everything(), \(x) round2(x)
@@ -313,34 +353,55 @@ if(np){
 
 ### Covariance/Correlation matrices {.tabset .tabset-pills}
 
+`r if (!is.null(res$final$data)) cli::cli_bullets(c(">" = "Covariance/correlation matrices"))`
+
+
 #### Correlation
 
-```{r message = F}
-res$final$popCor %>% tibble::as_tibble() %>%
-dplyr::mutate(across(everything(), \(x) round2(x))) %>% 
-DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) %>%
-DT::formatStyle(0, fontWeight = "bold")
+```{r correlation, message = F}
+if (!is.null(res$final$data)){
+  res$final$popCor %>% tibble::as_tibble() %>%
+  dplyr::mutate(across(everything(), \(x) round2(x))) %>% 
+  DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) %>%
+  DT::formatStyle(0, fontWeight = "bold")
+} else {
+  knitr::asis_output("PM_final object not created.")
+}
 ```
 
 #### Covariance
 
-```{r message = F}
-res$final$popCov %>% tibble::as_tibble() %>%
-dplyr::mutate(across(everything(), \(x) round2(x))) %>% 
-DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) %>%
-DT::formatStyle(0, fontWeight = "bold")
+```{r covariance, message = F}
+if (!is.null(res$final$data)){
+  res$final$popCov %>% tibble::as_tibble() %>%
+  dplyr::mutate(across(everything(), \(x) round2(x))) %>% 
+  DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) %>%
+  DT::formatStyle(0, fontWeight = "bold")
+} else {
+  knitr::asis_output("PM_final object not created.")
+}
 ```
 
 
 ## Cycle information
-```{r fig.dim = c(10, 6), results = "asis"}
-if (res$cycle$status == "Posterior") {
-  knitr::asis_output("Posterior run, so no cycles.")
+
+`r if (!is.null(res$cycle$data)) cli::cli_bullets(c(">" = "Cycle plots"))`
+
+```{r cycle_info, fig.dim = c(10, 6), results = "asis"}
+if (!is.null(res$cycle$data)){
+  if (res$cycle$status == "Posterior") {
+    knitr::asis_output("Posterior run, so no cycles.")
+  } else {
+    p <- res$cycle$plot(print = FALSE)
+    p
+  }
 } else {
-  p <- res$cycle$plot(print = FALSE)
-  p
+  knitr::asis_output("PM_cycle object not created.")
 }
 ```
+
+`r cli::cli_text("Done! Opening in browser...")`
+
 
 <!-- THE FOLLOWING SECTION CONTAINS JAVASCRPT SUPPORT FUNCTIONS -->
 ```{js}

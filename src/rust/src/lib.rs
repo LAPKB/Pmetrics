@@ -23,6 +23,11 @@ fn validate_paths(data_path: &str, model_path: &str) {
 }
 
 /// Simulates the first subject in the data set using the model at the given path.
+/// @param data_path Path to the data file.
+/// @param model_path Path to the compiled model file.
+/// @param spp One support point as a numeric vector with probabiltity.
+/// @param kind Kind of model, which can either be "ODE" or "Analytical".
+/// @return Simulation results.
 ///@export
 #[extendr]
 fn simulate_one(
@@ -58,7 +63,12 @@ fn simulate_one(
 }
 
 /// Simulates all subjects in the data set using the model at the given path.
-///@export
+/// @param data_path Path to the data file.
+/// @param model_path Path to the compiled model file.
+/// @param theta Data frame of support points.
+/// @param kind Kind of model, which can either be "ODE" or "Analytical".
+/// @return Simulation results.
+/// @export
 #[extendr]
 fn simulate_all(
     data_path: &str,
@@ -107,9 +117,16 @@ fn simulate_all(
     rows.into_dataframe().unwrap()
 }
 
-///@export
-#[extendr]
 
+/// Fits the model at the given path to the data at the given path using the provided parameters.
+/// @param model_path Path to the compiled model file.
+/// @param data Path to the data file.
+/// @param params List of fitting parameters.
+/// @param output_path Path to save the fitting results.
+/// @param kind Kind of model, which can either be "ODE" or "Analytical".
+/// @return Result of the fitting process.
+/// @export
+#[extendr]
 pub fn fit(
     model_path: &str,
     data: &str,
@@ -162,16 +179,30 @@ fn parse_theta(matrix: RMatrix<f64>) -> Vec<Vec<f64>> {
 }
 
 /// Compiles the text representation of a model into a binary file.
-///@export
+/// @param model_path Path to the model file.
+/// @param output_path Path to save the compiled model.
+/// @param params List of model parameters.
+/// @param template_path Path to the template directory.
+/// @param kind Kind of model, which can either be "ODE" or "Analytical".
+/// @return Result of the compilation process.
+/// @export
 #[extendr]
-fn compile_model(model_path: &str, output_path: &str, params: Strings, kind: &str) -> Result<()> {
+fn compile_model(
+    model_path: &str,
+    output_path: &str,
+    params: Strings,
+    template_path: &str,
+    kind: &str,
+) -> Result<()> {
     let params: Vec<String> = params.iter().map(|x| x.to_string()).collect();
     let model_txt = std::fs::read_to_string(model_path).expect("Failed to read model file");
+    let template_path = std::path::PathBuf::from(template_path);
     match kind {
         "ode" => build::compile::<ODE>(
             model_txt,
             Some(output_path.into()),
             params.to_vec(),
+            template_path,
             |_key, val| {
                 print!("{}", val);
             },
@@ -180,6 +211,7 @@ fn compile_model(model_path: &str, output_path: &str, params: Strings, kind: &st
             model_txt,
             Some(output_path.into()),
             params.to_vec(),
+            template_path,
             |_key, val| {
                 print!("{}", val);
             },
@@ -191,16 +223,21 @@ fn compile_model(model_path: &str, output_path: &str, params: Strings, kind: &st
 }
 
 /// Dummy function to cache compilation artifacts.
-///@export
+/// @param template_path Path to the template directory.
+/// @return Path to the build directory.
+/// @export
 #[extendr]
-fn dummy_compile() -> Result<String> {
-    let build_path = build::dummy_compile(|_key, val| {
+fn dummy_compile(template_path: &str) -> Result<String> {
+    dbg!("inside dummy_compile");
+    let template_path = std::path::PathBuf::from(template_path);
+    let build_path = build::dummy_compile(template_path, |_key, val| {
         print!("{}", val);
     })?;
     Ok(build_path)
 }
-
-///@export
+/// Checks if Cargo is installed on the system.
+/// @return TRUE if Cargo is installed, FALSE otherwise.
+/// @export
 #[extendr]
 fn is_cargo_installed() -> bool {
     println!("inside is_cargo_installed");
@@ -208,7 +245,11 @@ fn is_cargo_installed() -> bool {
     Command::new("cargo").arg("--version").output().is_ok()
 }
 
-///@export
+/// Retrieves the model parameters from the compiled model at the given path.
+/// @param model_path Path to the compiled model file.
+/// @param kind Kind of model, which can either be "ODE" or "Analytical".
+/// @return List of model parameters.
+/// @export
 #[extendr]
 fn model_parameters(model_path: &str, kind: &str) -> Result<Vec<String>> {
     match kind {
@@ -218,21 +259,17 @@ fn model_parameters(model_path: &str, kind: &str) -> Result<Vec<String>> {
     }
 }
 
-//@export
+/// Retrieves the temporary path used for building models.
+/// @return Temporary build path.
+/// @export
 #[extendr]
-fn template_path() -> String {
-    build::template_path()
-}
-
-//@export
-#[extendr]
-fn clear_build() {
-    build::clear_build();
+fn temporary_path() -> String {
+    build::temp_path().to_string_lossy().to_string()
 }
 
 /// Initialize the tracing subscriber with the custom R formatter
 /// @keywords internal
-///@export
+/// @export
 #[extendr]
 fn setup_logs() -> anyhow::Result<()> {
     use tracing::Level;
@@ -263,8 +300,7 @@ extendr_module! {
     fn is_cargo_installed;
     fn fit;
     fn model_parameters;
-    fn template_path;
-    fn clear_build;
+    fn temporary_path;
     fn setup_logs;
 }
 

@@ -1,0 +1,12 @@
+﻿Methods,Comments
+$new,"This method is not called directly, but new PM_result objects are created using PM_load()"
+$plot,"Alternative method to plot objects, e.g. PM_result$plot(""op"") = PM_result$op$plot() = plot(PM_result$op)"
+$summary,"Alternative method to summarize objects, e.g. PM_result$summary(""final"") = PM_result$final$summary() = summary(PM_result$final)"
+$fit,Fit data using the model in the PM_result object
+$auc,"Calculate auc by supplying a src, e.g. PM_result$auc(""op"")"
+$report,Regenerate the report
+$sim,Simulate using the model in the PM_result object
+$save,Save the PM_result object
+$validate,Validate by simuation to create VPC or NPDE as a PM_valid object
+$step,Stepwise forward/backward linear regression between covariates and model parameter values
+$opt,Optimal sampling to create a PM_opt object

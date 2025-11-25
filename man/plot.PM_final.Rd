@@ -19,7 +19,6 @@
   title,
   xlim,
   ylim,
-  static = FALSE,
   print = TRUE,
   ...
 )
@@ -81,7 +80,7 @@ scale x-axis.  Ignored for NPAG output.}
 
 \item{legend}{Ignored for this plot.}
 
-\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   the yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type.
+\item{log}{Boolean operator to plot the y axis in log base 10. This argument maps to the   yaxis type value in the layout object in plotly.  Use the plotly \code{plotly::schema()} command in the console and navigate to layout > layoutAttributes > yaxis > type.
 
 Example: \code{log = T}}
 

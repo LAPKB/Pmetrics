@@ -21,11 +21,12 @@ intersection of all the PTAs.}
 \item{...}{Not used.}
 }
 \value{
-A tibble with the following columns (only the first three if \code{at = "intersect"}):
+A tibble with the following columns (only the first four if \code{at = "intersect"}):
 \itemize{
 \item \strong{reg_num} is the number of the simulation regimen
-\item \strong{target} is the target for the row, if targets are discrete, not used for simulated targets
 \item \strong{label} is the simulation label, for reference
+\item \strong{target} is the target for the row, if targets are discrete, not used for simulated targets
+\item \strong{type} is the target type for the row, e.g. "auc", "time", "-min", etc.
 \item \strong{prop_success} is the proportion of simulated profiles that met the success definition
 \item \strong{median} is the median parmacodynamic index (PDI), i.e. the proportion or ratio depending on the target type
 \item \strong{lower} is the lower bound of the interval defined by \code{ci}

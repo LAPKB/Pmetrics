@@ -7,7 +7,7 @@ Description: Pmetrics is short for pharmacometrics, the discipline of modeling d
 Authors@R: c(
   person("Michael", "Neely", email = "mneely@usc.edu", role = c("aut", "cre")),
   person("Julián", "Otálvaro", email = "juliandavid347@gmail.com", role = "aut"),
-  person("Markus", "Hovd", email = "", role = "ctb"),
+  person("Markus", "Hößvd", email = "", role = "aut"),
   person("Walter", "Yamada", email = "", role= "ctb"),
   person("Alan", "Schumitzky", email = "", role = "ctb"),
   person("Rong", "Chen", email = "", role = "ctb"),
@@ -15,18 +15,20 @@ Authors@R: c(
   person("David", "Bayard", email = "", role = "ctb"),
   person("Robert", "Leary", email = "", role = "ctb")
     )
-Version: 3.0.0
-URL: https://lapkb.github.io/Pmetrics/
-BugReports: https://github.com/LAPKB/Pmetrics/issues
+Version: 3.0.2
+URL: https://lapkb.github.io/Pmetrics_rust/
+BugReports: https://github.com/LAPKB/Pmetrics_rust/issues
 SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc
 Depends: 
-    R (>= 4.0.0)
+    R (>= 4.2)
 Imports:
     bslib,
+    cli,
     crayon,
-    doParallel,
     DT,
     dplyr,
+    flextable,
+    fs,
     ggplot2,
     ggraph,
     htmlwidgets,
@@ -34,6 +36,7 @@ Imports:
     lifecycle,
     lubridate,
     magrittr,
+    MASS,
     openxlsx,
     pander,
     plotly,
@@ -47,18 +50,15 @@ Imports:
     stats,
     stringr,
     tibble,
-    tidygraph,
     tidyr,
     trelliscopejs,
-    patchwork,
-    mvtnorm,
-    utils
+    utils,
+    glue
 Suggests:
     clipr,
     data.table,
     devtools,
     ggpubr,
-    glue,
     gt,
     htmltools,
     knitr,
@@ -70,10 +70,15 @@ Suggests:
     RColorBrewer,
     RcppTOML,
     rstudioapi,
+    reticulate,
     testthat
 RoxygenNote: 7.3.3
 Encoding: UTF-8
-Config/testthat/edition: 3
 VignetteBuilder: quarto
-Config/rextendr/version: 0.4.2
 LazyData: true
+LazyDataCompression: xz
+Config/rextendr/version: 0.4.2
+Config/testthat/edition: 3
+Config/Needs/website: 
+    r-lib/pkgdown,
+    quarto

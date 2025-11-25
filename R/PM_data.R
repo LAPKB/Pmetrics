@@ -80,7 +80,7 @@ public <- list(
     validate = TRUE,
     ...) {
       if (is.character(data)) { # filename
-        self$data <- rlang::try_fetch(Pmetrics:::PMreadMatrix(data, quiet = TRUE),
+        self$data <- rlang::try_fetch(PMreadMatrix(data, quiet = TRUE),
         error = function(e) {
           cli::cli_abort("Unable to create {.cls PM_data} object", parent = e)
           return(NULL)
@@ -785,7 +785,7 @@ return(temp)
 PMcheck <- function(data, fix = FALSE, quiet = FALSE) {
   # get the data
   if (is.character(data)) { # data is a filename
-    data2 <- tryCatch(Pmetrics:::PMreadMatrix(data, quiet = TRUE), error = function(e) {
+    data2 <- tryCatch(PMreadMatrix(data, quiet = TRUE), error = function(e) {
       # return(invisible(e))
       cli::cli_abort(c("x" = "Unable to find {data} in current working directory, {getwd()}."))
     })

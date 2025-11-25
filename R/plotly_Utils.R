@@ -322,6 +322,7 @@ notNeeded <- function(x, f) {
 #' Default is `line = list(color = "black", width = 1, dash = "dash")`.
 #' @export
 #' @seealso [add_shapes]
+#' @examples 
 #' \dontrun{
 #' # add to an existing plot
 #' NPex$op$plot() %>%
@@ -451,6 +452,8 @@ add_shapes <- function(p = plotly::last_plot(), shapes) {
 #' original plot data.
 #' @param method The tegression method, currently either "lm" (the default) for
 #' linear regression, or "loess" for loess regression.
+#' @param span Only used for `method = "loess"`. The span parameter to control
+#' the degree of smoothing. Default is 0.75.
 #' @param line `r template("line")` Default is `list(color = "blue", width = 2)`.
 #' The confidence interval will have the same color but at opacity 0.2.
 #' @param ci Confidence interval for regressions. Default is 0.95. It can be suppressed
@@ -479,155 +482,6 @@ add_shapes <- function(p = plotly::last_plot(), shapes) {
 #' ) %>%
 #'   add_smooth(method = "loess", ci = 0.9, line = list(color = "red", dash = "dash"))
 #' }
-# add_smooth <- function(p = plotly::last_plot(), x = NULL, y = NULL,
-# data = NULL, method = "lm", line = T, ci = 0.95, stats) {
-#   line <- amendLine(line, default = list(color = blue(), width = 2))
-#   if (!is.null(data)) {
-#     if (is.null(x) | is.null(y)) stop("Missing x or y with data.\n")
-#     if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
-#     x <- model.frame(x, data)
-#     y <- model.frame(y, data)
-#   } else { # data is null
-#     if (!is.null(x) | !is.null(y)) {
-#       if (!purrr::is_formula(x) | !purrr::is_formula(y)) stop("Specify x and y as formulae, e.g. x = ~pred.\n")
-#       x <- model.frame(x, p$x$visdat[[1]]())
-#       y <- model.frame(y, p$x$visdat[[1]]())
-#     } else {
-#       length_x <- ifelse(length(p$x$attrs) > 1, 2, 1)
-#       x <- model.frame(p$x$attrs[[length_x]]$x, p$x$visdat[[1]]())[, 1]
-#       y <- model.frame(p$x$attrs[[length_x]]$y, p$x$visdat[[1]]())[, 1]
-#     }
-#   }
-#   if (length(x) != length(y)) {
-#     stop("Regression failed due to unequal x (n = ", length(x), ") and y (n = ", length(y), ").\n")
-#   }
-#   vals <- dplyr::bind_cols(x = x, y = y) %>% dplyr::rename("x" = 1, "y" = 2)
-#   mod <- tryCatch(suppressWarnings(do.call(method, args = list(formula = y ~ x, data = vals))),
-#   error = function(e) {
-#     NA
-#   }
-# )
-# if (any(is.na(mod))) {
-#   cli::cli_inform(c("i" = "Regression failed."))
-#   flush.console()
-#   return(p)
-# }
-
-# if (method == "lm") {
-#   inter <- round2(coef(mod)[1])
-#   slope <- round2(coef(mod)[2])
-#   if (is.na(summary(mod)$coefficients[1, 2])) {
-#     ci.inter <- rep("NA", 2)
-#   } else {
-#     ci.inter <- c(round2(confint(mod, level = ci)[1, 1]), round2(confint(mod, level = ci)[1, 2]))
-#   }
-#   if (is.na(summary(mod)$coefficients[2, 2])) {
-#     ci.slope <- rep("NA", 2)
-#   } else {
-#     ci.slope <- c(round2(confint(mod, level = ci)[2, 1]), round2(confint(mod, level = ci)[2, 2]))
-#   }
-
-#   regStat <- paste0(
-#     "R-squared = ", round2(summary(mod)$r.squared), "<br>",
-#     "Inter = ", inter, " (", ci * 100, "%CI ", ci.inter[1], " to ", ci.inter[2], ")", "<br>",
-#     "Slope = ", slope, " (", ci * 100, "%CI ", ci.slope[1], " to ", ci.slope[2], ")", "<br>"
-#   )
-
-#   p_data <- if(!is.null(data)) {data} else {plotly::plotly_data(p)}
-#   if (inherits(p_data, "PM_op_data")) { # this came from a PM_op object
-#     sumStat <- summary.PM_op(p_data,
-#       outeq = p_data$outeq[1],
-#       pred.type = p_data$pred.type[1],
-#       icen = p_data$icen[1],
-#       print = FALSE
-#     )
-#     uses_percent <- c("","%")[1 + as.numeric(stringr::str_detect(get_metric_info(sumStat$pe)$metric_types$bias, "%"))]
-#     Bias <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Bias, uses_percent,"<br>")
-#     Imprecision <- glue::glue(get_metric_info(sumStat$pe)$metric_vals$Imprecision, uses_percent,"<br>")
-#     # get_metric_info is in PM_op.R
-
-#     regStat <- paste0(
-#       regStat, "<br>",
-#       "Bias = ", Bias,
-#       "Imprecision  = ", Imprecision
-#     )
-#   }
-#   # regression line
-#   p <- p %>% plotly::add_lines(
-#     x = vals$x, y = round(fitted(mod),2),
-#     hoverinfo = "text",
-#     name = "Linear Regression",
-#     text = regStat,
-#     line = line
-#   )
-# } else { # loess
-#   p <- p %>% plotly::add_lines(
-#     x = vals$x, y = round(fitted(mod),2),
-#     hoverinfo = "none",
-#     name = "Loess Regression",
-#     line = line
-#   )
-# }
-
-# if (ci > 0) {
-#   zVal <- qnorm(0.5 + ci / 2)
-#   seFit <- predict(mod, newdata = vals, se = TRUE)
-#   upper <- round(seFit$fit + zVal * seFit$se.fit, 2)
-#   lower <- round(seFit$fit - zVal * seFit$se.fit,2)
-
-#   p <- p %>%
-#   plotly::add_ribbons(
-#     x = vals$x, y = vals$y, ymin = ~lower, ymax = ~upper,
-#     fillcolor = line$color,
-#     line = list(color = line$color),
-#     opacity = 0.2,
-#     name = paste0(ci * 100, "% CI"),
-#     hovertemplate = paste0(
-#       "Predicted: %{x:.2f}<br>", 100 * ci,
-#       "% CI: %{y:.2f}<extra>%{fullData.name}</extra>"
-#     )
-#   )
-# }
-# if (missing(stats)) stats <- TRUE
-
-# if (is.logical(stats)) { # default formatting
-#   if (stats) {
-#     statPlot <- TRUE
-#   } else {
-#     statPlot <- FALSE
-#   }
-#   stats <- amendTitle("", default = list(size = 14, bold = FALSE, color = gray()))
-#   stats$x <- 0.8
-#   stats$y <- 0.1
-# } else { # formatting supplied, set text to "" (will be replaced later)
-#   stats$text <- ""
-#   if (is.null(stats$x)) {
-#     stats$x <- 0.8
-#   }
-#   if (is.null(stats$y)) {
-#     stats$y <- 0.1
-#   }
-#   stats <- amendTitle(stats, default = list(size = 14, bold = FALSE))
-#   statPlot <- TRUE
-# }
-
-# if (statPlot & method == "lm") { # add statistics
-#   p <- p %>%
-#   plotly::layout(annotations = list(
-#     x = stats$x,
-#     y = stats$y,
-#     text = regStat,
-#     font = stats$font,
-#     xref = "paper",
-#     yref = "paper",
-#     align = "left",
-#     showarrow = FALSE
-#   ))
-# }
-
-# return(p)
-# } # end add_smooth
-
 
 add_smooth <- function(
   p = plotly::last_plot(),
@@ -1202,7 +1056,7 @@ sub_plot <- function(...,
   #' JavaScript code that handles the click events on the plotly plot.
   #' @param p The plotly plot to which the click functionality should be added.
   #' Default is the `plotly::last_plot()`.
-  #' @param higlight_color The color to use for traces that are highlighted. Colors for non-highlighted 
+  #' @param highlight_color The color to use for traces that are highlighted. Colors for non-highlighted 
   #' traces will be preserved but dimmed to 20% opacity. Default highlight color is `orange()`.
   #' @export
   #' @author Michael Neely
@@ -1326,7 +1180,7 @@ function(el, x) {
     selectedIndex = i;
   });
 
-  // Background click → restore
+  // Background click -> restore
   el.addEventListener('click', function(){
     setTimeout(() => {
       if (!lastClickWasPoint){
@@ -1440,7 +1294,7 @@ function(el, x) {
     r <- nums[1] / 255
     g <- nums[2] / 255
     b <- nums[3] / 255
-    a <- nums[4]              # already 0–1 in CSS rgba()
+    a <- nums[4]              # already 0-1 in CSS rgba()
     
     grDevices::rgb(r, g, b, alpha = a)
   }
@@ -1892,8 +1746,8 @@ function(el, x) {
 #' @details
 #' This function takes a color input (name or hex) and returns an opposite color
 #' using one of three methods:
-#' - "complement": strict 180° hue complement
-#' - "complement_maxcontrast": 180° hue complement adjusted for maximum contrast
+#' - "complement": strict 180 degrees hue complement
+#' - "complement_maxcontrast": 180 degrees hue complement adjusted for maximum contrast
 #' - "bw_maxcontrast": black or white, whichever has higher contrast
 #' The function uses the WCAG relative luminance and contrast ratio formulas to determine contrast.
 #' @param col A color name or hex string (e.g. "red", "#FF0000", "#FF0000FF").
@@ -1915,7 +1769,7 @@ opposite_color <- function(col,
     grDevices::rgb(r, g, b, alpha = a, maxColorValue = 1)
   }
 
-  # parse any color name or hex into rgb 0–1 + alpha
+  # parse any color name or hex into rgb 0-1 + alpha
   parse_col <- function(c) {
     if (grepl("^#", c)) {
       hex <- toupper(c)
@@ -1959,7 +1813,7 @@ opposite_color <- function(col,
   hsv <- grDevices::rgb2hsv(matrix(rgb, nrow = 3), maxColorValue = 1)
   h <- hsv[1, 1]; s <- hsv[2, 1]; v <- hsv[3, 1]
 
-  # strict 180° hue complement
+  # strict 180 degrees hue complement
   comp <- grDevices::hsv((h + degree_offset) %% 1, s, v, alpha = alpha)
   if(nchar(col)==7) comp <- substr(comp, 1, 7)  # drop alpha if input had none
 

@@ -144,13 +144,13 @@ PM_result <- R6::R6Class(
     
     #' @description
     #' AUC generic function based on type
-    #' @param type Type of AUC based on class of object
+    #' @param src Source of AUC, one of "op", "pop", "post", or "sim"
     #' @param ... Summary-specific arguments
-    auc = function(type, ...) {
-      if (!type %in% c("op", "pop", "post", "sim")) {
+    auc = function(src, ...) {
+      if (!src %in% c("op", "pop", "post", "sim")) {
         cli::cli_abort(c("x" = "{.fn makeAUC} is defined only for {.cls PM_op}, {.cls PM_pop}, {.cls PM_post}, and {.cls PM_sim} objects."))
       }
-      self[[type]]$auc(...)
+      self[[src]]$auc(...)
     },
     
     #' @description
@@ -162,9 +162,9 @@ PM_result <- R6::R6Class(
       make_NCA(self, ...)
     },
     #' @description Re-generate the report
-    #' @param ... Parameters passed to [PM_report].
+    #' @param ... Parameters passed to [PM_report]. In particular, pay attention to `path`.
     report = function(...) {
-      PM_report(...)
+      PM_report(self, ...)
     },
     #' @description
     #' Calls [PM_sim]. Default is to use the `$final`, `$model`, and `$data` objects
@@ -338,11 +338,20 @@ PM_result$load <- function(...) {
 #' @return An R6 [PM_result].
 #' @examples
 #' \dontrun{
-#' run1 <- PM_load(1) # loads from ./1/outputs/PMout.Rdata, where "." is the current working directory
-#' run2 <- PM_load(2, path = "Pmetrics/MyRuns") # loads from Pmetrics/MyRuns/2/outputs/PMout.Rdata
-#' run3 <- PM_load(path = "Pmetrics/MyRuns/3", file = "MyResults.Rdata") # loads from Pmetrics/MyRuns/3/MyResults.Rdata
-#' run4 <- PM_load(file = "Pmetrics/MyRuns/4/outputs/PMout.Rdata") # loads from Pmetrics/MyRuns/4/outputs/PMout.Rdata
-#' run5 <- PM_load() # loads from ./PMout.Rdata
+#' run1 <- PM_load(1) 
+#' # loads from ./1/outputs/PMout.Rdata, where "." is the current working directory
+#' 
+#' run2 <- PM_load(2, path = "Pmetrics/MyRuns") 
+#' # loads from Pmetrics/MyRuns/2/outputs/PMout.Rdata
+#' 
+#' run3 <- PM_load(path = "Pmetrics/MyRuns/3", file = "MyResults.Rdata") 
+#' # loads from Pmetrics/MyRuns/3/MyResults.Rdata
+#' 
+#' run4 <- PM_load(file = "Pmetrics/MyRuns/4/outputs/PMout.Rdata") 
+#' # loads from Pmetrics/MyRuns/4/outputs/PMout.Rdata
+#' 
+#' run5 <- PM_load() 
+#' # loads from ./PMout.Rdata
 #' }
 #' 
 #' @author Michael Neely and Julian Otalvaro

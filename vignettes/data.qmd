@@ -149,10 +149,10 @@ A full example data file is below, with details following.
 #| echo: false
 #| results: 'asis'
 
-# tab_path <- system.file("vignettes/Data/mdata.csv", package = "Pmetrics")
-# tab <- read.csv(tab_path)
-# tab$OUT <- as.character(tab$OUT)
-# knitr::kable(tab)
+#tab_path <- system.file("vignettes/Data/mdata.csv", package = "Pmetrics")
+tab <- read.csv(file.path("Data","mdata.csv"), na.strings = ".")
+tab$OUT <- as.character(tab$OUT)
+knitr::kable(tab)
 ```
 
 -   ***ID*** See [above](#data-id).

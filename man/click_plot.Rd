@@ -10,7 +10,7 @@ click_plot(p, highlight_color = "#1f77b4")
 \item{p}{The plotly plot to which the click functionality should be added.
 Default is the \code{plotly::last_plot()}.}
 
-\item{higlight_color}{The color to use for traces that are highlighted. Colors for non-highlighted
+\item{highlight_color}{The color to use for traces that are highlighted. Colors for non-highlighted
 traces will be preserved but dimmed to 20\% opacity. Default highlight color is \code{orange()}.}
 }
 \description{

@@ -130,14 +130,24 @@ PM_op <- R6::R6Class(
 private = list(
   make = function(data, path) {
     if (file.exists(file.path(path, "pred.csv"))) {
-      op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), show_col_types = FALSE) %>% filter(!is.na(obs))
+      op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), 
+      col_types = list(
+        time = readr::col_double(),
+        outeq = readr::col_integer(),
+        block = readr::col_integer(),
+        obs = readr::col_double(),
+        cens = readr::col_character(),
+        pop_mean = readr::col_double(),
+        pop_median = readr::col_double(),
+        post_mean = readr::col_double(),
+        post_median = readr::col_double()
+      ), show_col_types = FALSE) %>% filter(!is.na(obs))
       
-      if(!"censoring" %in% names(op_raw)){
-        op_raw <- op_raw %>% mutate(censoring = "none") # if cens column missing, assume all observed
+      if(!"cens" %in% names(op_raw)){
+        op_raw <- op_raw %>% mutate(cens = "none") # if cens column missing, assume all observed
       } 
       
-      op_raw <- op_raw %>% dplyr::rename(cens = censoring)
-
+      
     } else if (inherits(data, "PM_op") & !is.null(data$data)) { # file not there, and already PM_op
       if(!"cens" %in% names(data$data)){
         data$data <- data$data %>% mutate(cens = "none") # if cens column missing, assume all observed
@@ -190,7 +200,7 @@ private = list(
     dplyr::rename(pred = value) %>%
     dplyr::mutate(outeq = outeq + 1) %>%
     dplyr::mutate(block = block + 1) %>%
-    dplyr::mutate(obs = dplyr::na_if(obs, -99)) %>%
+    # dplyr::mutate(obs = dplyr::na_if(obs, -99)) %>% # obsolete
     dplyr::rowwise() %>%
     mutate(d = pred - obs) %>%
     mutate(ds = d * d) %>%
@@ -719,10 +729,12 @@ plot.PM_op <- function(x,
   #' @param x A `PM_op_data`` object
   #' @param ... Additional arguments passed to [plot.PM_op]
   #' @examples
+  #' \dontrun{
   #' NPex$op$data %>%
-  #' filter(pred > 5) %>%
-  #' filter(pred < 10) %>%
+  #' dplyr::filter(pred > 5) %>%
+  #' dplyr::filter(pred < 10) %>%
   #' plot()
+  #' }
   #' @export
   #' 
   plot.PM_op_data <- function(x,...){
@@ -864,7 +876,7 @@ plot.PM_op <- function(x,
         percent = c(percent_mae, percent_mwe, percent_mse, percent_mwse, percent_rmse, percent_mbase, percent_mbawse, percent_rmbawse)
       )    
       
-      wtd.t <- Pmetrics:::weighted.t.test(data)
+      wtd.t <- weighted.t.test(data)
       
       result <- list(sumstat = sumstat, pe = pe, wtd.t = wtd.t)
       return(result)
@@ -907,10 +919,12 @@ plot.PM_op <- function(x,
   #' @param object A `PM_op_data` object
   #' @param ... Additional arguments passed to [summary.PM_op]
   #' @examples
+  #' \dontrun{
   #' NPex$op$data %>%
-  #' filter(pred > 5) %>%
-  #' filter(pred < 10) %>%
+  #' dplyr::filter(pred > 5) %>%
+  #' dplyr::filter(pred < 10) %>%
   #' summary()
+  #' }
   #' @export
   #' 
   summary.PM_op_data <- function(object,...){
@@ -988,7 +1002,7 @@ plot.PM_op <- function(x,
     if (!all(is.na(x$pe))) {
       obj <- printSumWrk(x, "")
       temp <- if (embed) {"images"} else {tempdir()} # will embed in Quarto document
-     
+      
       out <- rmarkdown::render(
         input = system.file("report/templates/summary_op.Rmd", package = "Pmetrics"),
         output_file = "summary_op.html",
