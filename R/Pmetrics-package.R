@@ -18,9 +18,11 @@
 #' slice_tail slice_head slice across tibble as_tibble quo pull n everything 
 #' case_match case_when starts_with all_of where distinct summarize if_else
 #' @importFrom readr read_file write_file
-#' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon geom_hline
-#' scale_x_log10 scale_x_continuous scale_y_log10 scale_y_continuous xlab ylab
+#' @importFrom ggplot2 ggplot aes geom_line geom_point geom_polygon geom_hline geom_rect
+#' geom_label scale_x_log10 scale_x_continuous scale_y_log10 scale_y_continuous xlab ylab
 #' theme ggtitle element_blank element_text geom_segment aes_string aes_string theme_bw theme_grey
+#' coord_fixed facet_wrap labs geom_smooth xlim ylim theme_void
+#' scale_color_identity scale_fill_identity
 #' @importFrom purrr map map2 reduce map_chr keep pluck map_lgl map_df list_rbind
 #' @importFrom magrittr %>%
 # #' @importFrom tibble as_tibble tibble
