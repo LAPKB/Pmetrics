@@ -7,7 +7,7 @@ Description: Pmetrics is short for pharmacometrics, the discipline of modeling d
 Authors@R: c(
   person("Michael", "Neely", email = "mneely@usc.edu", role = c("aut", "cre")),
   person("Julián", "Otálvaro", email = "juliandavid347@gmail.com", role = "aut"),
-  person("Markus", "Hößvd", email = "", role = "aut"),
+  person("Markus", "Hovd", email = "", role = "aut"),
   person("Walter", "Yamada", email = "", role= "ctb"),
   person("Alan", "Schumitzky", email = "", role = "ctb"),
   person("Rong", "Chen", email = "", role = "ctb"),
