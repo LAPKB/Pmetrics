@@ -55,6 +55,7 @@ Imports:
     utils,
     glue
 Suggests:
+    clipr,
     data.table,
     devtools,
     ggpubr,
@@ -68,6 +69,7 @@ Suggests:
     quarto,
     RColorBrewer,
     RcppTOML,
+    rstudioapi,
     reticulate,
     testthat
 RoxygenNote: 7.3.3
