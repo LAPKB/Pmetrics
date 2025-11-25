@@ -142,6 +142,7 @@ reference:
   - PMcheck
   - PMpatch
   - PMtest
+  - PM_help
   - setPMoptions
 - title: Internal
   desc: Internal and low-level functions
