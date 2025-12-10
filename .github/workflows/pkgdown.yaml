@@ -19,6 +19,8 @@ jobs:
     concurrency:
       group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
+      PAK_FORCE_SOURCE_INSTALL: true
+      PAK_IGNORE_PLATFORM: true
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     permissions:
       contents: write

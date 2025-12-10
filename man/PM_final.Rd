@@ -51,9 +51,6 @@ associated probability of that point
 \item \strong{popMed} The final cycle median values for each random parameter,
 i.e. those that have unknown mean and unknown variance, both of which are
 fitted during the run
-\item \strong{popRanFix} The final cycle median values for each parameter that is
-random but fixed to be the same for all subjects, i.e. unknown mean, zero
-variance, with only mean fitted in the run
 \item \strong{postPoints} (NPAG only) Data frame of posterior population points for each of the first 100 subject,
 with columns id, point, parameters and probability.  The first column is the subject, the second column has the population
 point number, followed by the values for the parameters in that point and the probability.
@@ -99,10 +96,6 @@ associated probability of that point}
 \item{\code{popMed}}{The final cycle median values for each random parameter,
 i.e. those that have unknown mean and unknown variance, both of which are
 fitted during the run}
-
-\item{\code{popRanFix}}{The final cycle median values for each parameter that is
-random but fixed to be the same for all subjects, i.e. unknown mean, zero
-variance, with only mean fitted in the run}
 
 \item{\code{postPoints}}{(NPAG only) Data frame of posterior population points for each of the first 100 subject,
 with columns id, point, parameters and probability.  The first column is the subject, the second column has the population

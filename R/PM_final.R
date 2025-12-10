@@ -53,9 +53,6 @@ PM_final <- R6::R6Class(
     #' * **popMed** The final cycle median values for each random parameter,
     #' i.e. those that have unknown mean and unknown variance, both of which are
     #' fitted during the run
-    #' * **popRanFix** The final cycle median values for each parameter that is
-    #' random but fixed to be the same for all subjects, i.e. unknown mean, zero
-    #' variance, with only mean fitted in the run
     #' * **postPoints** (NPAG only) Data frame of posterior population points for each of the first 100 subject,
     #' with columns id, point, parameters and probability.  The first column is the subject, the second column has the population
     #' point number, followed by the values for the parameters in that point and the probability.
@@ -142,12 +139,6 @@ PM_final <- R6::R6Class(
     #' fitted during the run
     popMed = function() {
       self$data$popMed
-    },
-    #' @field popRanFix The final cycle median values for each parameter that is
-    #' random but fixed to be the same for all subjects, i.e. unknown mean, zero
-    #' variance, with only mean fitted in the run
-    popRanFix = function() {
-      self$data$popRanFix
     },
     #' @field postPoints (NPAG only) Data frame of posterior population points for each of the first 100 subject,
     #' with columns id, point, parameters and probability.  The first column is the subject, the second column has the population
@@ -356,7 +347,7 @@ PM_final <- R6::R6Class(
           
           # ranges
           ab <- config$parameters[[1]] %>% tibble::as_tibble() %>% dplyr::rename(par = name, min = lower, max = upper)
-        
+          
           
           gridpts <- config$prior$Sobol[1]
           
@@ -372,6 +363,7 @@ PM_final <- R6::R6Class(
             popMed = popMed,
             postMean = postMean,
             postSD = postSD,
+            postVar = postVar,
             postMed = postMed,
             postCov = postCov,
             postCor = postCor,

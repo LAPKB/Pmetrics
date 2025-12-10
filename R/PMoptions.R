@@ -104,7 +104,7 @@ setPMoptions <- function(launch.app = TRUE) {
       title = "Pmetrics Options",
       
       tags$details(
-        tags$summary("\u1F4C1 Data File Reading"),
+        tags$summary("Data File Reading"),
         selectInput("sep", "Field separator",
         choices = c(Comma = ",", Semicolon = ";", Tab = "\t"),
         selected = ","),
@@ -115,31 +115,31 @@ setPMoptions <- function(launch.app = TRUE) {
       ),
       # Formatting options
       tags$details(
-        tags$summary("\u1F4CF Formatting Options"),
+        tags$summary("Formatting Options"),
         numericInput("digits", "Number of digits to display",
         value = 3, min = 0, max = 10, step = 1)
       ),
       
       
-      #C ompile  options
-      tags$details(
-        tags$summary("\u2699\uFE0F Compile Options"),
-        markdown("Default Rust model template path is in Pmetrics package installation folder. Change if you have write permission errors."),
-        tags$div(
-          style = "display: flex; align-items: flex-start; gap: 8px;",
-          textAreaInput("model_template_path", NULL, value = system.file(package = "Pmetrics"), autoresize = TRUE),
-          actionButton("reset_model_template", "Reset to default", class = "btn-secondary")
-        ),
-        conditionalPanel(
-          condition = "input.show == false",selectInput("backend", "Default backend",
-          choices = c("Rust" = "rust"),
-          selected = "rust"),
-          markdown("*Rust is the only backend currently supported by Pmetrics.*")
-        )
-      ),
+      #Compile  options
+      # tags$details(
+      #   tags$summary("Compile Options"),
+      #   markdown("Default Rust model template path is in Pmetrics package installation folder. Change if you have write permission errors."),
+      #   tags$div(
+      #     style = "display: flex; align-items: flex-start; gap: 8px;",
+      #     textAreaInput("model_template_path", NULL, value = system.file(package = "Pmetrics"), autoresize = TRUE),
+      #     actionButton("reset_model_template", "Reset to default", class = "btn-secondary")
+      #   ),
+      #   conditionalPanel(
+      #     condition = "input.show == false",selectInput("backend", "Default backend",
+      #     choices = c("Rust" = "rust"),
+      #     selected = "rust"),
+      #     markdown("*Rust is the only backend currently supported by Pmetrics.*")
+      #   )
+      # ),
       
       tags$details(
-        tags$summary("\u1F4CA Prediction Error Metrics"),
+        tags$summary("Prediction Error Metrics"),
         br(),
         checkboxInput("show_metrics", "Display error metrics on obs-pred plots with linear regression", TRUE),
         selectInput("bias_method", "Bias Method",
@@ -173,7 +173,7 @@ setPMoptions <- function(launch.app = TRUE) {
       ),
       
       tags$details(
-        tags$summary("\u1F4DD Report Generation"),
+        tags$summary("Report Generation"),
         selectInput("report_template", "Default report template", 
         choices = c("plotly", "ggplot2"),
         selected = "plotly")
@@ -272,16 +272,17 @@ setPMoptions <- function(launch.app = TRUE) {
         
         # Exit the app
         observeEvent(input$exit, {
-          if (file.access(input$model_template_path, 0) == 0 & file.access(input$model_template_path, 2) == 0){
-            shiny::stopApp()
-          } else {
-            shiny::showModal(shiny::modalDialog(
-              title = "Permission Error",
-              "The specified model template path is not writable. Please choose a different path with write permissions before exiting.",
-              easyClose = TRUE,
-              footer = NULL
-            ))
-          }
+          shiny::stopApp()
+          # if (file.access(input$model_template_path, 0) == 0 & file.access(input$model_template_path, 2) == 0){
+          #   shiny::stopApp()
+          # } else {
+          #   shiny::showModal(shiny::modalDialog(
+          #     title = "Permission Error",
+          #     "The specified model template path is not writable. Please choose a different path with write permissions before exiting.",
+          #     easyClose = TRUE,
+          #     footer = NULL
+          #   ))
+          # }
         })
         
         # Open the options file in the default application

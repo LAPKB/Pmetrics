@@ -11,7 +11,7 @@
 #' Rust and Cargo versions (if available).
 #'
 #' @param copy Logical. If `TRUE`, copies the system information to clipboard.
-#' Default is `FALSE`.
+#' Default is `TRUE`.
 #' @return Invisibly returns a list containing the system information.
 #' @examples
 #' \dontrun{
@@ -23,7 +23,7 @@
 #' }
 #' @export
 
-PM_help <- function(copy = FALSE) {
+PM_help <- function(copy = TRUE) {
   
   # GitHub repository URL
   github_url <- "https://github.com/LAPKB/Pmetrics_rust"
@@ -50,8 +50,14 @@ PM_help <- function(copy = FALSE) {
   sys_info$platform <- R.version$platform
   sys_info$arch <- .Platform$r_arch
   
-  # RStudio version
-  sys_info$rstudio_version <- tryCatch({
+  # IDE
+  sys_info$ide <- dplyr::case_when(
+    Sys.getenv("RSTUDIO") == "1" ~ "RStudio",
+    Sys.getenv("POSITRON") == "1" ~ "Positron",
+    TRUE ~ "Other"
+  )
+  # IDE version
+  sys_info$ide_version <- tryCatch({
     if (Sys.getenv("RSTUDIO") == "1") {
       # Check if rstudioapi is available
       if (requireNamespace("rstudioapi", quietly = TRUE)) {
@@ -62,13 +68,20 @@ PM_help <- function(copy = FALSE) {
         if (nzchar(rstudio_version)) {
           rstudio_version
         } else {
-          "RStudio (version unknown)"
+          "RStudio version unknown"
         }
       }
+    } else if (Sys.getenv("POSITRON") == "1") {
+        positron_version <- Sys.getenv("POSITRON_VERSION")
+        if (nzchar(positron_version)) {
+          positron_version
+        } else {
+          "Positron version unknown"
+        }
     } else {
-      "Not running in RStudio"
+      "Version unknown"
     }
-  }, error = function(e) "Not running in RStudio")
+  }, error = function(e) "Version unknown")
   
   # Rust version
   sys_info$rust_version <- tryCatch({
@@ -86,33 +99,38 @@ PM_help <- function(copy = FALSE) {
   sys_info$locale <- Sys.getlocale("LC_ALL")
   
   # Create formatted output
-  output <- paste0(
+  header <- glue::glue(
     "\n",
     "====================================================================\n",
     "                   PMETRICS HELP & BUG REPORT                      \n",
     "====================================================================\n\n",
     "If you need help or want to report a bug, please visit:\n",
     github_url, "/issues\n\n",
-    "Please include the following system information in your report:\n\n",
-    "--------------------------------------------------------------------\n",
+    "The following system information has been copied to your clipboard for inclusion in your report:\n\n",
+    "--------------------------------------------------------------------\n")
+  
+  body <- glue::glue(
+  
     "SYSTEM INFORMATION\n",
     "--------------------------------------------------------------------\n",
-    "Pmetrics version:  ", sys_info$package_version, "\n",
-    "R version:         ", sys_info$r_version, "\n",
-    "RStudio version:   ", as.character(sys_info$rstudio_version), "\n",
-    "Operating System:  ", sys_info$os, " ", sys_info$os_release, "\n",
-    "OS Version:        ", sys_info$os_version, "\n",
-    "Platform:          ", sys_info$platform, "\n",
-    "Architecture:      ", sys_info$machine, 
-    ifelse(sys_info$arch != "", paste0(" (", sys_info$arch, ")"), ""), "\n",
-    "Rust version:      ", sys_info$rust_version, "\n",
-    "Cargo version:     ", sys_info$cargo_version, "\n",
-    "Locale:            ", sys_info$locale, "\n",
-    "--------------------------------------------------------------------\n\n",
+    "Pmetrics version:  {sys_info$package_version}\n",
+    "R version:         {sys_info$r_version}\n",
+    "IDE:               {sys_info$ide}\n",
+    "IDE version:       {as.character(sys_info$ide_version)}\n",
+    "Operating System:  {sys_info$os} {sys_info$os_release}\n",
+    "OS Version:        {sys_info$os_version}\n",
+    "Platform:          {sys_info$platform}\n",
+    "Architecture:      {sys_info$machine} {ifelse({sys_info$arch} != '', glue::glue(' ({sys_info$arch})'), '')}\n",
+    "Rust version:      {sys_info$rust_version}\n",
+    "Cargo version:     {sys_info$cargo_version}\n",
+    "Locale:            {sys_info$locale}\n",
+    "--------------------------------------------------------------------\n\n")
+  
+  footer <- glue::glue(
     "ADDITIONAL RESOURCES:\n",
-    "  - Documentation: ", github_url, "\n",
-    "  - Issues:        ", github_url, "/issues\n",
-    "  - Discussions:   ", github_url, "/discussions\n\n",
+    "  - Documentation: {github_url}\n",
+    "  - Issues:        {github_url}/issues\n",
+    "  - Discussions:   {github_url}/discussions\n\n",
     "When reporting an issue, please:\n",
     "  1. Describe what you expected to happen\n",
     "  2. Describe what actually happened\n",
@@ -122,13 +140,13 @@ PM_help <- function(copy = FALSE) {
   )
   
   # Print output
-  cat(output)
+  cat(paste0(header, body, footer))
   
   # Copy to clipboard if requested
   if (copy) {
     if (requireNamespace("clipr", quietly = TRUE)) {
       tryCatch({
-        clipr::write_clip(output)
+        clipr::write_clip(paste0(body))
         message("\nSystem information copied to clipboard!")
       }, error = function(e) {
         warning("Could not copy to clipboard: ", e$message)

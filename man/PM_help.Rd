@@ -4,11 +4,11 @@
 \alias{PM_help}
 \title{Get Help and Report Issues}
 \usage{
-PM_help(copy = FALSE)
+PM_help(copy = TRUE)
 }
 \arguments{
 \item{copy}{Logical. If \code{TRUE}, copies the system information to clipboard.
-Default is \code{FALSE}.}
+Default is \code{TRUE}.}
 }
 \value{
 Invisibly returns a list containing the system information.

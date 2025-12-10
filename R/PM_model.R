@@ -24,8 +24,9 @@
 #' population analysis, i.e. estimating the probability distribution of model equation
 #' paramter values in the population. The PM_model object is created using the
 #' a model building app (coming soon), by defining a list
-#' directly in R, or by reading a model text file. See the vignette on models
-#' for details.
+#' directly in R, or by reading a model text file. When reading a model text file, 
+#' the list code is generated and copied to the clipboard for pasting in to scripts.
+#' Model files will be deprecated in future versions of Pmetrics.  
 #'
 #' **Some notes on the example at the end of this help page:**
 #'
@@ -86,21 +87,18 @@ PM_model <- R6::R6Class(
     #' @field binary_path The full path and filename of the compiled model
     binary_path = NULL,
     #' @description
-    #' This is the method to create a new `PM_model` object. If all arguments are `NULL`,
-    #' e.g. `mod <- PM_model$new()` the model builder shiny app will launch by a call to [build_model()],
-    #' which will return the model object upon exit.
+    #' This is the method to create a new `PM_model` object. 
     #'
-    #'
-    #' Otherwise, the first parameter allows creation of a model from a variety of pre-existing
+    #' The first argument allows creation of a model from a variety of pre-existing
     #' sources, and if used, all the subsequent arguments will be ignored. If a model
     #' is defined on the fly, the arguments form the building blocks. Blocks are of two types:
     #'
-    #' * **Vectors** define *primary parameters*, *covariates*,
+    #' * **Lists** define *primary parameters*, *covariates*,
     #' and *error models*. These
     #' portions of the model have specific and defined creator functions and no additional
     #' R code is permissible. They take this form:
     #'     ```
-    #'     block_name = c(
+    #'     block_name = list(
     #'       var1 = creator(),
     #'       var2 = creator()
     #'     )
@@ -131,12 +129,14 @@ PM_model <- R6::R6Class(
     #' existing appropriate input, which can be one of the following:
     #'
     #' * Quoted name of a model text file in the
-    #' working directory which will be read and passed to Rust engine.
+    #' working directory which will be read and passed to Rust engine. **Note:** Model
+    #' text files are being deprecated in future versions of Pmetrics.
+    #' 
     #' * List that defines the model directly in R. This will be in the same format as if
     #' all the subsequent arguments were used. For example:
     #'     ```
     #'     mod_list <- list(
-    #'      pri = c(...),
+    #'      pri = list(...),
     #'      eqn = function(){...},
     #'      out = function(){...},
     #'      err = c(...)
@@ -148,11 +148,11 @@ PM_model <- R6::R6Class(
     #'
     #' See the user manual [PM_manual()] for more help on directly defining models in R.
     #' @param pri The first of the arguments used if `x` is not specified. This is
-    #' a named vector of primary parameters, which are the model parameters that
+    #' a named list of primary parameters, which are the model parameters that
     #' are estimated in the population analysis. They are specified
     #' by one of two creator functions: [ab()] or [msd()]. For example,
     #' ```
-    #' pri = c(
+    #' pri = list(
     #'   Ke = ab(0, 5),
     #'   V = msd(100, 10)
     #' )
@@ -160,10 +160,10 @@ PM_model <- R6::R6Class(
     #' The [ab()] creator specifies the
     #' initial range `[a, b]` of the parameter, while the [msd()] creator specifies
     #' the initial mean and standard deviation of the parameter.
-    #' @param cov A vector whose names are some or all of the covariates in the data file.
+    #' @param cov A list whose names are some or all of the covariates in the data file.
     #' Unlike prior versions of Pmetrics, as of 3.0.0, they do not have to be listed in the same order
     #' as in the data file, and they do not need to be all present.
-    #' **Only those covariates used in model equations need to be declared here.**
+    #' **Only those covariates you wish to use in model equations or analyze for relationships to model parameters need to be declared here.**
     #' Values for each element in the covariate vector are the [interp()] creator function to declare
     #' how each covariate is interpolated between entries in the data. The default argument
     #' for [interp()] is "lm" which means that values will be linearly interpolated
@@ -173,7 +173,7 @@ PM_model <- R6::R6Class(
     #'
     #' For example:
     #' ```
-    #' cov = c(
+    #' cov = list(
     #'   wt = interp(), # will be linear by default
     #'   visit = interp("none")
     #' )
@@ -209,11 +209,11 @@ PM_model <- R6::R6Class(
     #'     here is a code snippet illustrating the inclusion of the required parameter.
     #'     ```
     #'     mod <- PM_model$new(
-    #'       pri = c(
+    #'       pri = list(
     #'         ke0 = ab(0, 5),
     #'         v = ab(0, 100)
     #'       ),
-    #'       cov = c(
+    #'       cov = list(
     #'         crcl = interp()
     #'       ),
     #'       eqn = function(){
@@ -248,7 +248,7 @@ PM_model <- R6::R6Class(
     #' The function must have no arguments,
     #' and the equations must be defined
     #' in R syntax The equations must be defined in the form of
-    #' `tlag[i] = par`, where `tlag[i]` is the lag for drug (input) `i` and
+    #' `lag[i] = par`, where `lag[i]` is the lag for drug (input) `i` and
     #' `par` is the lag parameter used in the `pri` block.
     #'
     #' For example, if
@@ -256,7 +256,7 @@ PM_model <- R6::R6Class(
     #' this code could be used to model delayed absorption if an antacid is present.
     #' ```
     #' lag = function() {
-    #'   tlag[1] = if(antacid == 1) lag1 else 0
+    #'   lag[1] = if(antacid == 1) lag1 else 0
     #' }
     #' ```
     #' As for `eqn`, additional equations in R code can be defined in this block,
@@ -332,7 +332,7 @@ PM_model <- R6::R6Class(
     #'   y[1] = x[1]/v
     #'   y[2] = x[4]
     #' },
-    #' err = c(
+    #' err = list(
     #'  proportional(2, c(0.1, 0.15, 0, 0))
     #' )
     #' ```
@@ -355,7 +355,7 @@ PM_model <- R6::R6Class(
     #' sources of observations in the data, the error models
     #' could be defined as:
     #' ```
-    #' err = c(
+    #' err = list(
     #'   proportional(2, c(0.1, 0.15, 0, 0)),
     #'   proportional(3, c(0.05, 0.1, 0, 0)),
     #'   additive(1, c(0.2, 0.25, 0, 0))
@@ -370,7 +370,7 @@ PM_model <- R6::R6Class(
     #' simply use a single error model embedded in [replicate()] , e.g.,
     #' for 3 outputs with the same error model:
     #' ```
-    #' err = c(
+    #' err = list(
     #'   replicate(3, proportional(2, c(0.1, 0.15, 0, 0)))
     #' )
     #' ```
@@ -410,6 +410,9 @@ PM_model <- R6::R6Class(
               ))
             }
             self$arg_list <- private$R6fromFile(x) # read file and populate fields
+            cli::cli_inform(c("i" = "{.strong Note:} Model files will be deprecated in future versions of Pmetrics."))
+            self$copy() # copy to clipboard
+            
           } else if (is.list(x)) { # x is a list in R
             purrr::walk(model_sections, \(s) {
               if (s %in% names(x)) {
@@ -733,6 +736,7 @@ PM_model <- R6::R6Class(
           purrr::walk(msg, \(m) cli::cli_bullets(c("*" = m)))
           return(invisible(NULL))
         }
+        
         
         extra_args <- list(...)
         if (!is.null(purrr::pluck(extra_args, "compile"))) {
@@ -1373,16 +1377,16 @@ PM_model <- R6::R6Class(
           output_path <- tempfile(pattern = "model_", fileext = ".pmx")
           cli::cli_inform(c("i" = "Compiling model..."))
           # path inside Pmetrics package
-          template_path <- getPMoptions("model_template_path")
+          template_path <- if (Sys.getenv("env") == "Development") { temporary_path() } else { system.file(package = "Pmetrics")}
           if (file.access(template_path, 0) == -1 | file.access(template_path, 2) == -1){
             cli::cli_abort(c("x" = "Template path {.path {template_path}} does not exist or is not writable.",
             "i" = "Please set the template path with {.fn setPMoptions} (choose {.emph Compile Options}), to an existing, writable folder."
           ))
         } 
-        cat("Using template path:", template_path, "\n")
+        if (Sys.getenv("env") == "Development") {cat("Using template path:", template_path, "\n")}
         tryCatch(
           {
-            compile_model(model_path, output_path, private$get_primary(), template_path = template_path, kind = tolower(self$model_list$type))
+            compile_model(model_path, output_path, private$get_primary(), template_path, kind = tolower(self$model_list$type))
             self$binary_path <- output_path
           },
           error = function(e) {
@@ -1392,32 +1396,132 @@ PM_model <- R6::R6Class(
           }
         )
         
-        file.remove(model_path) # remove temporary model file
         return(invisible(self))
-      },
+      }, # end compile method
       #' @description
-      #' Update the model using recursive lists of changes and recompile the updated model.
-      #' @param ... Named elements corresponding to the blocks in the model,
-      #' such as "pri", "cov", "sec", "eqn", "ini", "lag", "fa", "out", and "err".
-      #' For each block, create a list of changes, which may be additions, edits, or deletions.
-      #' For deletions, set the value to `NULL`.
-      #'
-      update = function(...) {
-        changes <- list(...)
-        keys <- names(changes)
-        if (!all(tolower(keys) %in% c("pri", "cov", "sec", "eqn", "ini", "lag", "fa", "out", "err"))) {
-          cli::cli_abort(c(
-            "x" = "Invalid block name: {keys}",
-            "i" = "See help for {.fn PM_model}."
-          ))
+      #' Copy model code to clipboard.
+      #' @details
+      #' This method copies the R code to create the model to the clipboard.
+      #' This is useful for saving the model code in a script, as model files
+      #' will be deprecated in future versions of Pmetrics.
+      copy = function() {
+        arg_list <- self$arg_list
+
+        # pri
+        pri <- c(
+          "  pri = list(\n",
+          
+          purrr::map_chr(names(arg_list$pri), \(i) {
+            sprintf("    %s = ab(%.3f, %.3f)", i, arg_list$pri[[i]]$min, arg_list$pri[[i]]$max)
+          }) %>% paste(collapse = ",\n"),
+          "\n  ),"
+        )
+        # cov
+        if ("cov" %in% names(arg_list)) {
+          cov <- c(
+            "\n  cov = list(\n",
+            purrr::map_chr(names(arg_list$cov), \(i) {
+              sprintf("    %s = interp(%s)", i, ifelse(arg_list$cov[[i]] == 0, "\"none\"", ""))
+            }) %>% paste(collapse = ",\n"),
+            "\n  ),"
+          )
+        } else {
+          cov <- NULL
         }
-        self$arg_list <- modifyList2(self$arg_list, changes)
-        
-        self <- do.call(PM_model$new, self$arg_list) # recreate and recompile the model
-        return(invisible(self))
+        # sec
+        if (!is.null(arg_list$sec)) {
+          sec <- c(
+            "\n  sec = ",
+            paste0(deparse(arg_list$sec), collapse = "\n  "),
+            ","
+          )
+        } else {
+          sec <- NULL
+        }
+        # fa
+        if (!is.null(arg_list$fa)) {
+          fa <- c(
+            "\n  fa = ",
+            paste0(deparse(arg_list$fa), collapse = "\n  "),
+            ","
+          )
+        } else {
+          fa <- NULL
+        }
+        # ini
+        if (!is.null(arg_list$ini)) {
+          ini <- c(
+            "\n  ini = ",
+            paste0(deparse(arg_list$ini), collapse = "\n  "),
+            ","
+          )
+        } else {
+          ini <- NULL
+        }
+        # lag
+        if (!is.null(arg_list$lag)) {
+          lag <- c(
+            "\n  lag = ",
+            paste0(deparse(arg_list$lag), collapse = "\n  "),
+            ","
+          )
+        } else {
+          lag <- NULL
+        }
+        # eqn
+        if (!is.null(arg_list$eqn)) {
+          eqn <- c(
+            "\n  eqn = ",
+            paste0(deparse(arg_list$eqn), collapse = "\n  "),
+            ","
+          )
+        } else {
+          eqn <- NULL
+        }
+        # out
+        out <- c(
+          "\n  out = ",
+          paste0(deparse(arg_list$out), collapse = "\n  "),
+          ","
+        )
+        # err
+        err <- c(
+          "\n  err = list(\n",
+          purrr::map_chr((arg_list$err), \(i) {
+            sprintf("    %s(%i, c(%.1f, %.1f, %.1f, %.1f)%s)", 
+            i$type,
+            i$initial,
+            ifelse(length(i$coeff) >= 1, i$coeff[1], 0),
+            ifelse(length(i$coeff) >= 2, i$coeff[2], 0),
+            ifelse(length(i$coeff) >= 3, i$coeff[3], 0),
+            ifelse(length(i$coeff) >= 4, i$coeff[4], 0),
+            ifelse(i$fixed, ", fixed = TRUE", "")
+          )
+        }) %>% paste(collapse = ",\n"),
+        "\n  )"
+      )
+      
+      model_copy <- c(
+        "mod <- PM_model$new(\n",
+        paste0(c(pri, cov, sec, fa, ini, lag, eqn, out, err), collapse = ""),
+        "\n)"
+      )
+      cli::cli_inform(c(
+        ">" = "Model code copied to clipboard.",
+        ">" = "Paste the code into your script for future use, renaming the assigned variable if needed."))
+      if (requireNamespace("clipr", quietly = TRUE)) {
+        clipr::write_clip(model_copy)
+      } else {
+        cli::cli_inform(c("i" = "Please install the {.pkg clipr} package to enable clipboard functionality."))
+        cat(model_copy, sep = "\n")
       }
+      return(invisible(self))
+      
+      } # end copy
+      
     ), # end public list
     private = list(
+      # read file
       R6fromFile = function(file) {
         msg <- ""
         blocks <- parseBlocks(file) # this function is in PMutilities
@@ -1582,7 +1686,7 @@ PM_model <- R6::R6Class(
         flush.console()
         return(arg_list)
       }, # end R6fromFile
-      
+  
       write_model_to_rust = function(file_path = "main.rs") {
         # Check if model_list is not NULL
         if (is.null(self$model_list)) {
@@ -1613,898 +1717,897 @@ PM_model <- R6::R6Class(
       },
       from_file = function(file_path) {
         self$model_list <- private$makeR6model(model_filename)
-        # self$content <- readChar(model_filename, file.info(model_filename)$size)
       },
       get_primary = function() {
         return(tolower(self$model_list$parameters))
+      }  
+  ) # end private
+) # end R6Class PM_model
+
+##### These functions create various model components
+
+#' @title Additive error model
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Create an additive (lambda) error model
+#' @param initial Initial value for lambda
+#' @param coeff Vector of coefficients defining assay error polynomial
+#' @param fixed Estimate if `FALSE` (default).
+#' @export
+additive <- function(initial, coeff, fixed = FALSE) {
+  PM_err$new(type = "additive", initial = initial, coeff = coeff, fixed = fixed)
+}
+
+
+
+#' @title Proportional error model
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Create an proportional (gamma) error model
+#' @param initial Initial value for gamma
+#' @param coeff Vector of coefficients defining assay error polynomial
+#' @param fixed Estimate if `FALSE` (default).
+#' @export
+proportional <- function(initial, coeff, fixed = FALSE) {
+  PM_err$new(type = "proportional", initial = initial, coeff = coeff, fixed = fixed)
+}
+
+PM_err <- R6::R6Class(
+  "PM_err",
+  public = list(
+    #' @field type Type of error model, either "additive" or "proportional".
+    type = NULL,
+    #' @field initial Initial value for the error model.
+    initial = NULL,
+    #' @field coeff Coefficients for the assay error polynomial.
+    coeff = NULL,
+    #' @field fixed If `TRUE`, the error model is fixed and not estimated.
+    fixed = NULL,
+    initialize = function(type, initial, coeff, fixed) {
+      self$type <- type
+      self$initial <- initial
+      self$coeff <- coeff
+      self$fixed <- fixed
+    },
+    print = function() {
+      if (self$fixed) {
+        cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with fixed value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
+      } else {
+        cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
       }
-    ) # end private
-  ) # end R6Class PM_model
-  
-  ##### These functions create various model components
-  
-  #' @title Additive error model
-  #' @description
-  #' `r lifecycle::badge("stable")`
-  #'
-  #' Create an additive (lambda) error model
-  #' @param initial Initial value for lambda
-  #' @param coeff Vector of coefficients defining assay error polynomial
-  #' @param fixed Estimate if `FALSE` (default).
-  #' @export
-  additive <- function(initial, coeff, fixed = FALSE) {
-    PM_err$new(type = "additive", initial = initial, coeff = coeff, fixed = fixed)
-  }
-  
-  
-  
-  #' @title Proportional error model
-  #' @description
-  #' `r lifecycle::badge("stable")`
-  #'
-  #' Create an proportional (gamma) error model
-  #' @param initial Initial value for gamma
-  #' @param coeff Vector of coefficients defining assay error polynomial
-  #' @param fixed Estimate if `FALSE` (default).
-  #' @export
-  proportional <- function(initial, coeff, fixed = FALSE) {
-    PM_err$new(type = "proportional", initial = initial, coeff = coeff, fixed = fixed)
-  }
-  
-  PM_err <- R6::R6Class(
-    "PM_err",
-    public = list(
-      #' @field type Type of error model, either "additive" or "proportional".
-      type = NULL,
-      #' @field initial Initial value for the error model.
-      initial = NULL,
-      #' @field coeff Coefficients for the assay error polynomial.
-      coeff = NULL,
-      #' @field fixed If `TRUE`, the error model is fixed and not estimated.
-      fixed = NULL,
-      initialize = function(type, initial, coeff, fixed) {
-        self$type <- type
-        self$initial <- initial
-        self$coeff <- coeff
-        self$fixed <- fixed
-      },
-      print = function() {
-        if (self$fixed) {
-          cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with fixed value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
-        } else {
-          cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
-        }
-      },
-      flatten = function() {
-        list(initial = self$initial, coeff = self$coeff, type = self$type, fixed = self$fixed)
-      }
-    )
+    },
+    flatten = function() {
+      list(initial = self$initial, coeff = self$coeff, type = self$type, fixed = self$fixed)
+    }
   )
-  
-  #' @title Primary parameter values
-  #' @description
-  #' `r lifecycle::badge("experimental")`
-  #' Define primary model parameter object.
-  #' This is used internally by the `PM_model` class.
-  #' @keywords internal
-  PM_pri <- R6::R6Class(
-    "PM_pri",
-    public = list(
-      #' @field min Minimum value of the range.
-      min = NULL,
-      #' @field max Maximum value of the range.
-      max = NULL,
-      #' @field mean Mean value of the range, calculated as (min + max) / 2.
-      mean = NULL,
-      #' @field sd Standard deviation of the range, calculated as (max - min) / 6.
-      sd = NULL,
-      #' @description
-      #' Initialize a new range object.
-      #' @param min Minimum value of the range.
-      #' @param max Maximum value of the range.
-      initialize = function(min, max) {
-        self$min <- min
-        self$max <- max
-        self$mean <- (min + max) / 2
-        self$sd <- (max - min) / 6
-      },
-      #' @description
-      #' Print the range.
-      print = function() {
-        cli::cli_text("[{.strong {self$min}}, {.strong {self$max}}], {.emph ~N({round(self$mean,2)}}, {.emph {round(self$sd,2)})}")
-      }
-    )
+)
+
+#' @title Primary parameter values
+#' @description
+#' `r lifecycle::badge("experimental")`
+#' Define primary model parameter object.
+#' This is used internally by the `PM_model` class.
+#' @keywords internal
+PM_pri <- R6::R6Class(
+  "PM_pri",
+  public = list(
+    #' @field min Minimum value of the range.
+    min = NULL,
+    #' @field max Maximum value of the range.
+    max = NULL,
+    #' @field mean Mean value of the range, calculated as (min + max) / 2.
+    mean = NULL,
+    #' @field sd Standard deviation of the range, calculated as (max - min) / 6.
+    sd = NULL,
+    #' @description
+    #' Initialize a new range object.
+    #' @param min Minimum value of the range.
+    #' @param max Maximum value of the range.
+    initialize = function(min, max) {
+      self$min <- min
+      self$max <- max
+      self$mean <- (min + max) / 2
+      self$sd <- (max - min) / 6
+    },
+    #' @description
+    #' Print the range.
+    print = function() {
+      cli::cli_text("[{.strong {self$min}}, {.strong {self$max}}], {.emph ~N({round(self$mean,2)}}, {.emph {round(self$sd,2)})}")
+    }
   )
-  
-  
-  #' @title Initial range for primary parameter values
-  #' @description
-  #' `r lifecycle::badge("stable")`
-  #'
-  #' Define primary model parameter initial values as range. For nonparametric,
-  #' this range will be absolutely respected. For parametric, the range serves
-  #' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
-  #' initial parameter value distribution.
-  #' @param min Minimum value.
-  #' @param max Maximum value.
-  #' @export
-  ab <- function(min, max) {
-    PM_pri$new(min, max)
+)
+
+
+#' @title Initial range for primary parameter values
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Define primary model parameter initial values as range. For nonparametric,
+#' this range will be absolutely respected. For parametric, the range serves
+#' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
+#' initial parameter value distribution.
+#' @param min Minimum value.
+#' @param max Maximum value.
+#' @export
+ab <- function(min, max) {
+  PM_pri$new(min, max)
+}
+
+
+
+#' @title Initial mean/SD for primary parameter values
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Define primary model parameter initial values as mean and standard
+#' deviation, which translate to a range. The mean serves as the midpoint
+#' of the range, with 3 standard deviations above and below the mean to define
+#' the min and max of the range. For nonparametric,
+#' this range will be absolutely respected. For parametric,
+#' values can be estimated beyond the range.
+#' @param mean Initial mean.
+#' @param sd Initial standard deviation.
+#' @export
+msd <- function(mean, sd) {
+  min <- mean - 3 * sd
+  max <- mean + 3 * sd
+  if (min < 0) {
+    cli::cli_warn(c(
+      "i" = "Negative minimum value for primary parameter range.",
+      " " = "This may not be appropriate for your model."
+    ))
   }
-  
-  
-  
-  #' @title Initial mean/SD for primary parameter values
-  #' @description
-  #' `r lifecycle::badge("stable")`
-  #'
-  #' Define primary model parameter initial values as mean and standard
-  #' deviation, which translate to a range. The mean serves as the midpoint
-  #' of the range, with 3 standard deviations above and below the mean to define
-  #' the min and max of the range. For nonparametric,
-  #' this range will be absolutely respected. For parametric,
-  #' values can be estimated beyond the range.
-  #' @param mean Initial mean.
-  #' @param sd Initial standard deviation.
-  #' @export
-  msd <- function(mean, sd) {
-    min <- mean - 3 * sd
-    max <- mean + 3 * sd
-    if (min < 0) {
-      cli::cli_warn(c(
-        "i" = "Negative minimum value for primary parameter range.",
-        " " = "This may not be appropriate for your model."
-      ))
-    }
-    PM_pri$new(min, max)
+  PM_pri$new(min, max)
+}
+
+
+
+#' @title Model covariate declaration
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Declare whether covariates in the data are to have
+#' interpolation between values or not.
+#' @param type If `type = "lm"` (the default) or `type = "linear"`,
+#' the covariate value will be
+#' linearly interpolated between values when fitting the model to the data.
+#' in a model list `cov` item. To fix covariate values to the value at the
+#' last time point, set `type = "none"`.
+#' @return A value of 1 for "lm" and 0 for "none", which will be passed to Rust.
+#' @examples
+#' \dontrun{
+#' cov <- c(
+#'   wt = interp(), # same as interp("lm") or interp("linear")
+#'   visit = interp("none")
+#' )
+#' }
+#' @export
+interp <- function(type = "lm") {
+  if (!type %in% c("lm", "linear", "none")) {
+    cli::cli_abort(c(
+      "x" = "{type} is not a valid covariate interpolation type.",
+      "i" = "See help for {.help PM_model()}."
+    ))
   }
-  
-  
-  
-  #' @title Model covariate declaration
-  #' @description
-  #' `r lifecycle::badge("stable")`
-  #'
-  #' Declare whether covariates in the data are to have
-  #' interpolation between values or not.
-  #' @param type If `type = "lm"` (the default) or `type = "linear"`,
-  #' the covariate value will be
-  #' linearly interpolated between values when fitting the model to the data.
-  #' in a model list `cov` item. To fix covariate values to the value at the
-  #' last time point, set `type = "none"`.
-  #' @return A value of 1 for "lm" and 0 for "none", which will be passed to Rust.
-  #' @examples
-  #' \dontrun{
-  #' cov <- c(
-  #'   wt = interp(), # same as interp("lm") or interp("linear")
-  #'   visit = interp("none")
-  #' )
-  #' }
-  #' @export
-  interp <- function(type = "lm") {
-    if (!type %in% c("lm", "linear", "none")) {
-      cli::cli_abort(c(
-        "x" = "{type} is not a valid covariate interpolation type.",
-        "i" = "See help for {.help PM_model()}."
-      ))
-    }
-    if (type %in% c("lm", "linear")) {
-      return(1)
-    } else {
-      return(0)
-    }
+  if (type %in% c("lm", "linear")) {
+    return(1)
+  } else {
+    return(0)
   }
-  
-  
-  
-  
-  # PLOT --------------------------------------------------------------------
-  
-  #' @title Plot PM_model objects
-  #' @description
-  #' `r lifecycle::badge("stable")`
-  #'
-  #' Plots a [PM_model] based on differential equations using network plots from tidygraph and ggraph packages.
-  #'
-  #' @details
-  #' This accepts a [PM_model] object and creates a network plot where nodes are compartments
-  #' and edges are arrows connecting compartments.
-  #' @method plot PM_model
-  #' @param x The name of an [PM_model] object.
-  #' @param marker Controls the characteristics of the compartments (nodes).
-  #' It can be boolean or a list.
-  #' `TRUE` will plot the compartments with default characteristics.
-  #' `FALSE` will suppress compartment plotting.
-  #' If a list, can control some marker characteristics, including overriding defaults.
-  #' These include:
-  #' \itemize{
-  #' \item{`color`} Marker color (default: dodgerblue).
-  #' \item{`opacity`} Ranging between 0 (fully transparent) to 1 (fully opaque). Default is 0.5.
-  #' \item{`size`} Relative size of boxes, ranging from 0 to 1.  Default is 0.25.
-  #' \item{`line`} A list of  additional attributes governing the outline for filled shapes, most commonly
-  #' color (default: black) and width (default: 0.5).
-  #' }
-  #' <br>
-  #' <br>
-  #' Example: `marker = list(color = "red", opacity = 0.8, line = list(color = "black", width = 1))`
-  #' @param line Controls characteristics of arrows (edges).
-  #' `TRUE` will plot default lines. `FALSE` will suppress lines.
-  #' If a list, can control some line characteristics, including overriding defaults.
-  #' These include:
-  #' \itemize{
-  #' \item{`color`} Line color (default: black)
-  #' \item{`width`} Thickness in points (default: 1).
-  #' }
-  #' <br>
-  #' <br>
-  #' Example: `line = list(color = "red", width = 2)`
-  #' @param explicit A data frame or tibble containing two columns named `from` and `to`
-  #' to add additional connecting arrows to the plot indicating transfer between
-  #' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
-  #' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
-  #' a destination to the external sink. e.g., `explicit = data.frame(from = 3, to = 0)`
-  #' @param implicit Similar to `explicit`, used to add dashed connecting arrows
-  #' to the plot indicating implicit transfer between
-  #' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
-  #' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
-  #' a destination to the external sink. e.g., `implicit = data.frame(from = 2, to = 4)`
-  #' @param print If `TRUE`, will print the object and return it. If `FALSE`, will only return the object.
-  #' @param ... Not used.
-  #' @return A plot object of the model.
-  #' @author Markus Hovd, Julian Otalvaro, Michael Neely
-  #' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
-  #' @export
-  #' @examples
-  #' \dontrun{
-  #' NPex$model$plot()
-  #' }
-  #' @family PMplots
-  
-  plot.PM_model <- function(x,
-    marker = TRUE,
-    line = TRUE,
-    explicit,
-    implicit,
-    print = TRUE,
-    ...) {
-      model <- x
-      marker <- if (is.list(marker) || marker) {
-        amendMarker(marker,
-          default = list(
-            color = "dodgerblue",
-            size = 0.25,
-            line = list(width = 0.5)
-          )
+}
+
+
+
+
+# PLOT --------------------------------------------------------------------
+
+#' @title Plot PM_model objects
+#' @description
+#' `r lifecycle::badge("stable")`
+#'
+#' Plots a [PM_model] based on differential equations using network plots from tidygraph and ggraph packages.
+#'
+#' @details
+#' This accepts a [PM_model] object and creates a network plot where nodes are compartments
+#' and edges are arrows connecting compartments.
+#' @method plot PM_model
+#' @param x The name of an [PM_model] object.
+#' @param marker Controls the characteristics of the compartments (nodes).
+#' It can be boolean or a list.
+#' `TRUE` will plot the compartments with default characteristics.
+#' `FALSE` will suppress compartment plotting.
+#' If a list, can control some marker characteristics, including overriding defaults.
+#' These include:
+#' \itemize{
+#' \item{`color`} Marker color (default: dodgerblue).
+#' \item{`opacity`} Ranging between 0 (fully transparent) to 1 (fully opaque). Default is 0.5.
+#' \item{`size`} Relative size of boxes, ranging from 0 to 1.  Default is 0.25.
+#' \item{`line`} A list of  additional attributes governing the outline for filled shapes, most commonly
+#' color (default: black) and width (default: 0.5).
+#' }
+#' <br>
+#' <br>
+#' Example: `marker = list(color = "red", opacity = 0.8, line = list(color = "black", width = 1))`
+#' @param line Controls characteristics of arrows (edges).
+#' `TRUE` will plot default lines. `FALSE` will suppress lines.
+#' If a list, can control some line characteristics, including overriding defaults.
+#' These include:
+#' \itemize{
+#' \item{`color`} Line color (default: black)
+#' \item{`width`} Thickness in points (default: 1).
+#' }
+#' <br>
+#' <br>
+#' Example: `line = list(color = "red", width = 2)`
+#' @param explicit A data frame or tibble containing two columns named `from` and `to`
+#' to add additional connecting arrows to the plot indicating transfer between
+#' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
+#' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
+#' a destination to the external sink. e.g., `explicit = data.frame(from = 3, to = 0)`
+#' @param implicit Similar to `explicit`, used to add dashed connecting arrows
+#' to the plot indicating implicit transfer between
+#' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
+#' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
+#' a destination to the external sink. e.g., `implicit = data.frame(from = 2, to = 4)`
+#' @param print If `TRUE`, will print the object and return it. If `FALSE`, will only return the object.
+#' @param ... Not used.
+#' @return A plot object of the model.
+#' @author Markus Hovd, Julian Otalvaro, Michael Neely
+#' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
+#' @export
+#' @examples
+#' \dontrun{
+#' NPex$model$plot()
+#' }
+#' @family PMplots
+
+plot.PM_model <- function(x,
+  marker = TRUE,
+  line = TRUE,
+  explicit,
+  implicit,
+  print = TRUE,
+  ...) {
+    model <- x
+    marker <- if (is.list(marker) || marker) {
+      amendMarker(marker,
+        default = list(
+          color = "dodgerblue",
+          size = 0.25,
+          line = list(width = 0.5)
         )
-      } else {
-        FALSE
-      }
-      line <- if (is.list(line) || line) {
-        amendLine(line, default = list(color = "black"))
-      } else {
-        FALSE
-      }
-      
-      if (inherits(model, "PM_lib")) {
+      )
+    } else {
+      FALSE
+    }
+    line <- if (is.list(line) || line) {
+      amendLine(line, default = list(color = "black"))
+    } else {
+      FALSE
+    }
+    
+    if (inherits(model, "PM_lib")) {
+      eqns <- model$arg_list$eqn
+      outs <- model$arg_list$out
+    } else if (inherits(model, "PM_model")) {
+      if (model$model_list$name == "user") {
         eqns <- model$arg_list$eqn
         outs <- model$arg_list$out
-      } else if (inherits(model, "PM_model")) {
-        if (model$model_list$name == "user") {
-          eqns <- model$arg_list$eqn
-          outs <- model$arg_list$out
-        } else {
-          eqns <- get(model$model_list$name)$arg_list$eqn
-          outs <- get(model$model_list$name)$arg_list$out
-        }
       } else {
-        cli::cli_abort(c(
-          "x" = "Unknown model type to plot."
-        ))
+        eqns <- get(model$model_list$name)$arg_list$eqn
+        outs <- get(model$model_list$name)$arg_list$out
+      }
+    } else {
+      cli::cli_abort(c(
+        "x" = "Unknown model type to plot."
+      ))
+    }
+    
+    eqns <- func_to_char(eqns)
+    outs <- func_to_char(outs)
+    
+    
+    # filter any equations that are not diffeq or outputs
+    
+    eqns <- eqns %>%
+    map(
+      purrr::keep,
+      stringr::str_detect,
+      stringr::regex("dX\\[\\d+\\]|XP\\(\\d+\\)", ignore_case = TRUE)
+    ) %>%
+    unlist()
+    
+    outs <- outs %>%
+    map(
+      purrr::keep,
+      stringr::str_detect,
+      stringr::regex("Y\\[\\d+\\]", ignore_case = TRUE)
+    ) %>%
+    unlist()
+    
+    
+    
+    
+    
+    #### INTERNAL FUNCTIONS
+    # Parse the function body
+    parse_equations <- function(func) {
+      body_expr <- body(func)
+      equations <- list()
+      
+      # Handle single expression or block
+      if (is.call(body_expr) && body_expr[[1]] == "{") {
+        # Multiple statements in braces
+        for (i in 2:length(body_expr)) {
+          eq <- body_expr[[i]]
+          if (is.call(eq) && length(eq) == 3 && as.character(eq[[1]]) %in% c("=", "<-")) {
+            equations <- append(equations, list(eq))
+          }
+        }
+      } else if (is.call(body_expr) && length(body_expr) == 3 &&
+      as.character(body_expr[[1]]) %in% c("=", "<-")) {
+        # Single assignment
+        equations <- list(body_expr)
       }
       
-      eqns <- func_to_char(eqns)
-      outs <- func_to_char(outs)
+      return(equations)
+    }
+    
+    
+    ##### Handle distributions
+    # Recursively distribute products over sums in a single expression or equation.
+    # - Works symbolically (no evaluation).
+    # - Handles unary minus.
+    # - If given an assignment (= or <-), only the RHS is expanded.
+    # Fully distribute products over sums and flatten subtraction.
+    # If given an assignment (= or <-), only the RHS is expanded.
+    expand_distribute <- function(expr) {
+      op_of <- function(e) if (is.call(e)) as.character(e[[1]]) else ""
       
+      # Build a product call (no eval)
+      make_prod <- function(a, b) as.call(list(as.name("*"), a, b))
       
-      # filter any equations that are not diffeq or outputs
+      # Fold a list of factors into a product
+      fold_prod <- function(factors) Reduce(make_prod, factors)
       
-      eqns <- eqns %>%
-      map(
-        purrr::keep,
-        stringr::str_detect,
-        stringr::regex("dX\\[\\d+\\]|XP\\(\\d+\\)", ignore_case = TRUE)
-      ) %>%
-      unlist()
-      
-      outs <- outs %>%
-      map(
-        purrr::keep,
-        stringr::str_detect,
-        stringr::regex("Y\\[\\d+\\]", ignore_case = TRUE)
-      ) %>%
-      unlist()
-      
-      
-      
-      
-      
-      #### INTERNAL FUNCTIONS
-      # Parse the function body
-      parse_equations <- function(func) {
-        body_expr <- body(func)
-        equations <- list()
-        
-        # Handle single expression or block
-        if (is.call(body_expr) && body_expr[[1]] == "{") {
-          # Multiple statements in braces
-          for (i in 2:length(body_expr)) {
-            eq <- body_expr[[i]]
-            if (is.call(eq) && length(eq) == 3 && as.character(eq[[1]]) %in% c("=", "<-")) {
-              equations <- append(equations, list(eq))
-            }
-          }
-        } else if (is.call(body_expr) && length(body_expr) == 3 &&
-        as.character(body_expr[[1]]) %in% c("=", "<-")) {
-          # Single assignment
-          equations <- list(body_expr)
+      # Rebuild a (flattened) sum from signed terms
+      build_sum <- function(terms) {
+        if (length(terms) == 0) {
+          return(0)
         }
-        
-        return(equations)
+        mk <- function(sign, e) if (sign == -1) as.call(list(as.name("-"), e)) else e
+        out <- mk(terms[[1]]$sign, terms[[1]]$expr)
+        if (length(terms) == 1) {
+          return(out)
+        }
+        for (k in 2:length(terms)) {
+          tk <- terms[[k]]
+          out <- if (tk$sign == 1) {
+            as.call(list(as.name("+"), out, tk$expr))
+          } else {
+            as.call(list(as.name("-"), out, tk$expr))
+          }
+        }
+        out
       }
       
-      
-      ##### Handle distributions
-      # Recursively distribute products over sums in a single expression or equation.
-      # - Works symbolically (no evaluation).
-      # - Handles unary minus.
-      # - If given an assignment (= or <-), only the RHS is expanded.
-      # Fully distribute products over sums and flatten subtraction.
-      # If given an assignment (= or <-), only the RHS is expanded.
-      expand_distribute <- function(expr) {
-        op_of <- function(e) if (is.call(e)) as.character(e[[1]]) else ""
-        
-        # Build a product call (no eval)
-        make_prod <- function(a, b) as.call(list(as.name("*"), a, b))
-        
-        # Fold a list of factors into a product
-        fold_prod <- function(factors) Reduce(make_prod, factors)
-        
-        # Rebuild a (flattened) sum from signed terms
-        build_sum <- function(terms) {
-          if (length(terms) == 0) {
-            return(0)
-          }
-          mk <- function(sign, e) if (sign == -1) as.call(list(as.name("-"), e)) else e
-          out <- mk(terms[[1]]$sign, terms[[1]]$expr)
-          if (length(terms) == 1) {
-            return(out)
-          }
-          for (k in 2:length(terms)) {
-            tk <- terms[[k]]
-            out <- if (tk$sign == 1) {
-              as.call(list(as.name("+"), out, tk$expr))
-            } else {
-              as.call(list(as.name("-"), out, tk$expr))
-            }
-          }
-          out
+      # Core: return a flat list of signed terms {sign=±1, expr=LANG}
+      expand_terms <- function(e, sign = 1) {
+        # atoms
+        if (!is.call(e)) {
+          return(list(list(sign = sign, expr = e)))
         }
         
-        # Core: return a flat list of signed terms {sign=±1, expr=LANG}
-        expand_terms <- function(e, sign = 1) {
-          # atoms
-          if (!is.call(e)) {
-            return(list(list(sign = sign, expr = e)))
-          }
-          
-          op <- op_of(e)
-          
-          # parentheses
-          if (op == "(") {
-            return(expand_terms(e[[2]], sign))
-          }
-          
-          # assignment: expand RHS only, rebuild later
-          if (op %in% c("=", "<-")) {
-            rhs_terms <- expand_terms(e[[3]], +1)
-            rhs_exp <- build_sum(rhs_terms)
-            return(list(list(sign = +1, expr = as.call(list(as.name(op), e[[2]], rhs_exp)))))
-          }
-          
-          # addition
-          if (op == "+") {
+        op <- op_of(e)
+        
+        # parentheses
+        if (op == "(") {
+          return(expand_terms(e[[2]], sign))
+        }
+        
+        # assignment: expand RHS only, rebuild later
+        if (op %in% c("=", "<-")) {
+          rhs_terms <- expand_terms(e[[3]], +1)
+          rhs_exp <- build_sum(rhs_terms)
+          return(list(list(sign = +1, expr = as.call(list(as.name(op), e[[2]], rhs_exp)))))
+        }
+        
+        # addition
+        if (op == "+") {
+          return(c(
+            expand_terms(e[[2]], sign),
+            expand_terms(e[[3]], sign)
+          ))
+        }
+        
+        # subtraction (binary or unary)
+        if (op == "-") {
+          if (length(e) == 3) {
             return(c(
               expand_terms(e[[2]], sign),
-              expand_terms(e[[3]], sign)
+              expand_terms(e[[3]], -sign)
             ))
+          } else {
+            return(expand_terms(e[[2]], -sign)) # unary minus
           }
+        }
+        
+        # multiplication: distribute across additive factors
+        if (op == "*") {
+          # expand each factor into its additive term list
+          args <- as.list(e)[-1]
+          expanded_factors <- lapply(args, function(a) expand_terms(a, +1))
           
-          # subtraction (binary or unary)
-          if (op == "-") {
-            if (length(e) == 3) {
-              return(c(
-                expand_terms(e[[2]], sign),
-                expand_terms(e[[3]], -sign)
-              ))
-            } else {
-              return(expand_terms(e[[2]], -sign)) # unary minus
-            }
-          }
-          
-          # multiplication: distribute across additive factors
-          if (op == "*") {
-            # expand each factor into its additive term list
-            args <- as.list(e)[-1]
-            expanded_factors <- lapply(args, function(a) expand_terms(a, +1))
-            
-            # start with neutral element (sign=+1, expr=1)
-            combos <- list(list(sign = +1, expr = 1))
-            for (f_terms in expanded_factors) {
-              newc <- list()
-              for (c1 in combos) {
-                for (t2 in f_terms) {
-                  s <- c1$sign * t2$sign
-                  # build product (avoid multiplying by 1 syntactically where possible)
-                  e1 <- c1$expr
-                  e2 <- t2$expr
-                  prod_expr <-
-                  if (is.numeric(e1) && length(e1) == 1 && e1 == 1) {
-                    e2
-                  } else if (is.numeric(e2) && length(e2) == 1 && e2 == 1) {
-                    e1
-                  } else if (is.numeric(e1) && length(e1) == 1 && e1 == -1) {
-                    as.call(list(as.name("-"), e2))
-                  } else if (is.numeric(e2) && length(e2) == 1 && e2 == -1) {
-                    as.call(list(as.name("-"), e1))
-                  } else {
-                    make_prod(e1, e2)
-                  }
-                  newc[[length(newc) + 1]] <- list(sign = s, expr = prod_expr)
+          # start with neutral element (sign=+1, expr=1)
+          combos <- list(list(sign = +1, expr = 1))
+          for (f_terms in expanded_factors) {
+            newc <- list()
+            for (c1 in combos) {
+              for (t2 in f_terms) {
+                s <- c1$sign * t2$sign
+                # build product (avoid multiplying by 1 syntactically where possible)
+                e1 <- c1$expr
+                e2 <- t2$expr
+                prod_expr <-
+                if (is.numeric(e1) && length(e1) == 1 && e1 == 1) {
+                  e2
+                } else if (is.numeric(e2) && length(e2) == 1 && e2 == 1) {
+                  e1
+                } else if (is.numeric(e1) && length(e1) == 1 && e1 == -1) {
+                  as.call(list(as.name("-"), e2))
+                } else if (is.numeric(e2) && length(e2) == 1 && e2 == -1) {
+                  as.call(list(as.name("-"), e1))
+                } else {
+                  make_prod(e1, e2)
                 }
+                newc[[length(newc) + 1]] <- list(sign = s, expr = prod_expr)
               }
-              combos <- newc
             }
-            # apply the incoming sign to all combos
-            for (i in seq_along(combos)) combos[[i]]$sign <- sign * combos[[i]]$sign
-            return(combos)
+            combos <- newc
           }
-          
-          # other calls: expand children but treat as atomic w.r.t. addition
-          args <- as.list(e)
-          args[-1] <- lapply(args[-1], function(a) build_sum(expand_terms(a, +1)))
-          list(list(sign = sign, expr = as.call(args)))
+          # apply the incoming sign to all combos
+          for (i in seq_along(combos)) combos[[i]]$sign <- sign * combos[[i]]$sign
+          return(combos)
         }
         
-        # If it's an assignment, expand_terms already rebuilt it as a single term.
-        # Otherwise, build the flattened sum.
-        terms <- expand_terms(expr, +1)
-        
-        # Special case: a single rebuilt assignment
-        if (length(terms) == 1 && is.call(terms[[1]]$expr) &&
-        op_of(terms[[1]]$expr) %in% c("=", "<-")) {
-          return(terms[[1]]$expr)
-        }
-        
-        build_sum(terms)
+        # other calls: expand children but treat as atomic w.r.t. addition
+        args <- as.list(e)
+        args[-1] <- lapply(args[-1], function(a) build_sum(expand_terms(a, +1)))
+        list(list(sign = sign, expr = as.call(args)))
       }
       
-      # Parse output equations
-      parse_output_equations <- function(equations) {
-        # if (is.null(func)) return(list())
-        
-        # equations <- parse_equations(func)
-        outputs <- list()
-        
-        for (eq in equations) {
-          lhs <- eq[[2]]
-          rhs <- eq[[3]]
-          
-          # Extract output number from y[i]
-          if (is.call(lhs) && as.character(lhs[[1]]) == "[" &&
-          length(lhs) >= 3 && as.character(lhs[[2]]) == "y") {
-            output_num <- as.numeric(as.character(lhs[[3]]))
-            
-            # Convert RHS to string representation
-            rhs_str <- deparse(rhs, width.cutoff = 500)
-            
-            # Find which compartment this output refers to
-            comp_ref <- extract_x_pattern(rhs)
-            if (is.null(comp_ref)) {
-              # Look deeper in the expression for x[i] patterns
-              comp_ref <- find_x_in_expression(rhs)
-            }
-            
-            outputs <- append(outputs, list(list(
-              output_num = output_num,
-              equation = rhs_str,
-              compartment = comp_ref
-            )))
-          }
-        }
-        
-        return(outputs)
+      # If it's an assignment, expand_terms already rebuilt it as a single term.
+      # Otherwise, build the flattened sum.
+      terms <- expand_terms(expr, +1)
+      
+      # Special case: a single rebuilt assignment
+      if (length(terms) == 1 && is.call(terms[[1]]$expr) &&
+      op_of(terms[[1]]$expr) %in% c("=", "<-")) {
+        return(terms[[1]]$expr)
       }
       
-      # Find x[i] pattern in any expression
-      find_x_in_expression <- function(expr) {
+      build_sum(terms)
+    }
+    
+    # Parse output equations
+    parse_output_equations <- function(equations) {
+      # if (is.null(func)) return(list())
+      
+      # equations <- parse_equations(func)
+      outputs <- list()
+      
+      for (eq in equations) {
+        lhs <- eq[[2]]
+        rhs <- eq[[3]]
+        
+        # Extract output number from y[i]
+        if (is.call(lhs) && as.character(lhs[[1]]) == "[" &&
+        length(lhs) >= 3 && as.character(lhs[[2]]) == "y") {
+          output_num <- as.numeric(as.character(lhs[[3]]))
+          
+          # Convert RHS to string representation
+          rhs_str <- deparse(rhs, width.cutoff = 500)
+          
+          # Find which compartment this output refers to
+          comp_ref <- extract_x_pattern(rhs)
+          if (is.null(comp_ref)) {
+            # Look deeper in the expression for x[i] patterns
+            comp_ref <- find_x_in_expression(rhs)
+          }
+          
+          outputs <- append(outputs, list(list(
+            output_num = output_num,
+            equation = rhs_str,
+            compartment = comp_ref
+          )))
+        }
+      }
+      
+      return(outputs)
+    }
+    
+    # Find x[i] pattern in any expression
+    find_x_in_expression <- function(expr) {
+      if (is.call(expr)) {
+        # Check current expression
+        x_idx <- extract_x_pattern(expr)
+        if (!is.null(x_idx)) {
+          return(x_idx)
+        }
+        
+        # Recursively check sub-expressions
+        for (i in 1:length(expr)) {
+          if (i > 1) { # Skip the function name
+            x_idx <- find_x_in_expression(expr[[i]])
+            if (!is.null(x_idx)) {
+              return(x_idx)
+            }
+          }
+        }
+      }
+      return(NULL)
+    }
+    
+    # Parse terms from right-hand side recursively
+    parse_rhs_terms <- function(rhs_expr) {
+      terms <- list()
+      
+      # Recursively extract terms and track sign
+      extract_terms <- function(expr, current_sign = "+") {
         if (is.call(expr)) {
-          # Check current expression
-          x_idx <- extract_x_pattern(expr)
-          if (!is.null(x_idx)) {
-            return(x_idx)
-          }
+          op <- as.character(expr[[1]])
           
-          # Recursively check sub-expressions
-          for (i in 1:length(expr)) {
-            if (i > 1) { # Skip the function name
-              x_idx <- find_x_in_expression(expr[[i]])
-              if (!is.null(x_idx)) {
-                return(x_idx)
-              }
-            }
-          }
-        }
-        return(NULL)
-      }
-      
-      # Parse terms from right-hand side recursively
-      parse_rhs_terms <- function(rhs_expr) {
-        terms <- list()
-        
-        # Recursively extract terms and track sign
-        extract_terms <- function(expr, current_sign = "+") {
-          if (is.call(expr)) {
-            op <- as.character(expr[[1]])
-            
-            if (op == "+") {
+          if (op == "+") {
+            extract_terms(expr[[2]], current_sign)
+            extract_terms(expr[[3]], current_sign)
+          } else if (op == "-") {
+            if (length(expr) == 3) {
+              # Binary subtraction: a - b
               extract_terms(expr[[2]], current_sign)
-              extract_terms(expr[[3]], current_sign)
-            } else if (op == "-") {
-              if (length(expr) == 3) {
-                # Binary subtraction: a - b
-                extract_terms(expr[[2]], current_sign)
-                extract_terms(expr[[3]], ifelse(current_sign == "+", "-", "+"))
-              } else {
-                # Unary minus: -a
-                extract_terms(expr[[2]], ifelse(current_sign == "+", "-", "+"))
-              }
-            } else if (op == "*") {
-              # Look for x[i] and collect coefficient(s)
-              vars <- lapply(expr[-1], extract_x_pattern)
-              if (any(!sapply(vars, is.null))) {
-                xi_index <- which(!sapply(vars, is.null))
-                x_part <- expr[[xi_index + 1]]
-                coeff_parts <- expr[-c(1, xi_index + 1)]
-                coeff_str <- paste(sapply(coeff_parts, deparse), collapse = "*")
-                terms <<- append(terms, list(list(expr = x_part, coeff = coeff_str, sign = current_sign)))
-              } else {
-                # No x[i], maybe just a numeric or unrelated variable
-                terms <<- append(terms, list(list(expr = expr, coeff = NULL, sign = current_sign)))
-              }
+              extract_terms(expr[[3]], ifelse(current_sign == "+", "-", "+"))
             } else {
-              # Some other operation; treat as atomic for now
+              # Unary minus: -a
+              extract_terms(expr[[2]], ifelse(current_sign == "+", "-", "+"))
+            }
+          } else if (op == "*") {
+            # Look for x[i] and collect coefficient(s)
+            vars <- lapply(expr[-1], extract_x_pattern)
+            if (any(!sapply(vars, is.null))) {
+              xi_index <- which(!sapply(vars, is.null))
+              x_part <- expr[[xi_index + 1]]
+              coeff_parts <- expr[-c(1, xi_index + 1)]
+              coeff_str <- paste(sapply(coeff_parts, deparse), collapse = "*")
+              terms <<- append(terms, list(list(expr = x_part, coeff = coeff_str, sign = current_sign)))
+            } else {
+              # No x[i], maybe just a numeric or unrelated variable
               terms <<- append(terms, list(list(expr = expr, coeff = NULL, sign = current_sign)))
             }
           } else {
-            # Symbol or constant
+            # Some other operation; treat as atomic for now
             terms <<- append(terms, list(list(expr = expr, coeff = NULL, sign = current_sign)))
           }
+        } else {
+          # Symbol or constant
+          terms <<- append(terms, list(list(expr = expr, coeff = NULL, sign = current_sign)))
         }
-        
-        extract_terms(rhs_expr)
-        
-        return(terms)
       }
       
-      # Extract x[i] pattern from expression
-      extract_x_pattern <- function(expr) {
-        if (is.call(expr) && as.character(expr[[1]]) == "[" &&
-        length(expr) == 3 && as.character(expr[[2]]) == "x") {
-          return(as.numeric(as.character(expr[[3]])))
-        }
-        return(NULL)
-      }
+      extract_terms(rhs_expr)
       
-      # Extract compartment connections
-      extract_connections <- function(equations) {
-        compartments <- c()
-        all_terms <- list()
+      return(terms)
+    }
+    
+    # Extract x[i] pattern from expression
+    extract_x_pattern <- function(expr) {
+      if (is.call(expr) && as.character(expr[[1]]) == "[" &&
+      length(expr) == 3 && as.character(expr[[2]]) == "x") {
+        return(as.numeric(as.character(expr[[3]])))
+      }
+      return(NULL)
+    }
+    
+    # Extract compartment connections
+    extract_connections <- function(equations) {
+      compartments <- c()
+      all_terms <- list()
+      
+      # First pass: collect signed terms per compartment
+      for (eq in equations) {
+        lhs <- eq[[2]]
+        rhs <- eq[[3]]
         
-        # First pass: collect signed terms per compartment
-        for (eq in equations) {
-          lhs <- eq[[2]]
-          rhs <- eq[[3]]
+        if (is.call(lhs) && as.character(lhs[[1]]) == "[" &&
+        length(lhs) >= 3 && as.character(lhs[[2]]) == "dx") {
+          comp_num <- as.numeric(as.character(lhs[[3]]))
+          compartments <- unique(c(compartments, comp_num))
           
-          if (is.call(lhs) && as.character(lhs[[1]]) == "[" &&
-          length(lhs) >= 3 && as.character(lhs[[2]]) == "dx") {
-            comp_num <- as.numeric(as.character(lhs[[3]]))
-            compartments <- unique(c(compartments, comp_num))
-            
-            # dist_terms <- distribute_product(rhs)
-            # terms <- parse_rhs_terms(dist_terms)
-            terms <- parse_rhs_terms(rhs)
-            
-            for (term in terms) {
-              expr <- term$expr
-              sign <- term$sign
-              coeff <- term$coeff
-              
-              x_index <- extract_x_pattern(expr)
-              if (!is.null(x_index)) {
-                all_terms <- append(all_terms, list(list(
-                  comp = comp_num,
-                  sign = sign,
-                  coeff = coeff,
-                  x_index = x_index
-                )))
-              }
-            }
-          }
-        }
-        
-        # Second pass: match positive and negative terms
-        used <- logical(length(all_terms))
-        connections <- list()
-        
-        for (i in seq_along(all_terms)) {
-          ti <- all_terms[[i]]
-          if (used[i] || ti$sign != "-") next
+          # dist_terms <- distribute_product(rhs)
+          # terms <- parse_rhs_terms(dist_terms)
+          terms <- parse_rhs_terms(rhs)
           
-          match_found <- FALSE
-          for (j in seq_along(all_terms)) {
-            tj <- all_terms[[j]]
-            if (used[j] || tj$sign != "+") next
+          for (term in terms) {
+            expr <- term$expr
+            sign <- term$sign
+            coeff <- term$coeff
             
-            # Match by coeff and x_index
-            if (identical(ti$coeff, tj$coeff) && ti$x_index == tj$x_index) {
-              connections <- append(connections, list(list(
-                from = ti$comp,
-                to = tj$comp,
-                coeff = ti$coeff
+            x_index <- extract_x_pattern(expr)
+            if (!is.null(x_index)) {
+              all_terms <- append(all_terms, list(list(
+                comp = comp_num,
+                sign = sign,
+                coeff = coeff,
+                x_index = x_index
               )))
-              used[i] <- TRUE
-              used[j] <- TRUE
-              match_found <- TRUE
-              break
             }
           }
+        }
+      }
+      
+      # Second pass: match positive and negative terms
+      used <- logical(length(all_terms))
+      connections <- list()
+      
+      for (i in seq_along(all_terms)) {
+        ti <- all_terms[[i]]
+        if (used[i] || ti$sign != "-") next
+        
+        match_found <- FALSE
+        for (j in seq_along(all_terms)) {
+          tj <- all_terms[[j]]
+          if (used[j] || tj$sign != "+") next
           
-          # If no match, it's elimination
-          if (!match_found) {
+          # Match by coeff and x_index
+          if (identical(ti$coeff, tj$coeff) && ti$x_index == tj$x_index) {
             connections <- append(connections, list(list(
               from = ti$comp,
-              to = 0,
+              to = tj$comp,
               coeff = ti$coeff
             )))
             used[i] <- TRUE
+            used[j] <- TRUE
+            match_found <- TRUE
+            break
           }
         }
         
-        return(list(connections = connections, compartments = sort(compartments)))
+        # If no match, it's elimination
+        if (!match_found) {
+          connections <- append(connections, list(list(
+            from = ti$comp,
+            to = 0,
+            coeff = ti$coeff
+          )))
+          used[i] <- TRUE
+        }
       }
       
-      
-      
-      # Modify layout logic to use circular positioning
-      create_plot <- function(connections, compartments, outputs) {       
-        box_width <- 1.2
-        box_height <- 0.8
-        
-        n_comp <- length(compartments)
-        if (n_comp == 0) {
-          plot.new()
-          title(main = "No compartments detected")
-          return()
-        }
-        
-        # Circular layout
-        radius <- 4
-        angles <- seq(0, 2 * pi, length.out = n_comp + 1)[-(n_comp + 1)]
-        angles <- angles - angles[which(compartments == 1)] + pi / 2
-        x_pos <- radius * cos(angles)
-        y_pos <- radius * sin(angles)
-        layout_df <- data.frame(compartment = compartments, x = x_pos, y = y_pos)
-        
-        # Elimination
-        elim_comps <- unique(sapply(connections, function(c) if (c$to == 0) c$from else NULL))
-        elim_comps <- elim_comps[!sapply(elim_comps, is.null)]
-        
-        arrow_segments <- list()
-        arrow_heads <- list()
-        labels <- list()
-        label_tracker <- list()
-        
-        # Bidirectional detection
-        pair_keys <- data.frame(
-          original = sapply(connections, function(c) paste(c(c$from, c$to), collapse = "-")),
-          sorted = sapply(connections, function(c) paste(sort(c(c$from, c$to)), collapse = "-"))
-        )
-        dup_table <- table(pair_keys$sorted)
-        duplicates <- pair_keys$original[which(pair_keys$sorted %in% names(dup_table[dup_table > 1]))]
-        
-        for (conn in connections) {
-          from <- as.numeric(conn$from)
-          to <- as.numeric(conn$to)
-          if (to == 0) next
-          
-          from_pos <- layout_df %>% filter(compartment == from)
-          to_pos <- layout_df %>% filter(compartment == to)
-          
-          key <- paste(sort(c(from, to)), collapse = "-")
-          offset <- if (key %in% duplicates) 0.25 else 0
-          
-          dx <- to_pos$x - from_pos$x
-          dy <- to_pos$y - from_pos$y
-          len <- sqrt(dx^2 + dy^2)
-          norm_dx <- dx / len
-          norm_dy <- dy / len
-          perp_x <- -norm_dy
-          perp_y <- norm_dx
-          
-          # Adjust start/end for box edges
-          edge_dx <- box_width / 2 * norm_dx
-          edge_dy <- box_height / 2 * norm_dy
-          
-          x1 <- from_pos$x + offset * perp_x + edge_dx
-          y1 <- from_pos$y + offset * perp_y + edge_dy
-          x2 <- to_pos$x + offset * perp_x - edge_dx
-          y2 <- to_pos$y + offset * perp_y - edge_dy
-          
-          arrow_segments[[length(arrow_segments) + 1]] <- data.frame(
-            x = x1, y = y1, xend = x2, yend = y2, color = "black"
-          )
-          
-          # Arrowhead at 2/3
-          frac <- 2 / 3
-          xm <- x1 + frac * (x2 - x1)
-          ym <- y1 + frac * (y2 - y1)
-          perp_x_head <- -norm_dy * 0.10
-          perp_y_head <- norm_dx * 0.10
-          
-          arrow_heads[[length(arrow_heads) + 1]] <- data.frame(
-            x = c(xm - perp_x_head, xm + perp_x_head, xm + norm_dx * 0.3),
-            y = c(ym - perp_y_head, ym + perp_y_head, ym + norm_dy * 0.3),
-            group = paste0("arrow", length(arrow_heads) + 1),
-            fill = "black"
-          )
-          
-          if (!is.null(conn$coeff)) {
-            key_xy <- paste(round((x1 + x2) / 2, 2), round((y1 + y2) / 2, 2))
-            if (is.null(label_tracker[[key_xy]])) label_tracker[[key_xy]] <- 0
-            vertical_offset <- 0.25 * label_tracker[[key_xy]]
-            label_tracker[[key_xy]] <- label_tracker[[key_xy]] + 1
-            
-            mx <- (x1 + x2) / 2
-            my <- (y1 + y2) / 2 - vertical_offset
-            
-            labels[[length(labels) + 1]] <- data.frame(
-              x = mx, y = my, label = conn$coeff,
-              color = "white", text_color = "black"
-            )
-          }
-        }
-        
-        seg_df <- bind_rows(arrow_segments)
-        head_df <- bind_rows(arrow_heads)
-        label_df <- bind_rows(labels)
-        
-        elim_triangles <- layout_df %>%
-        filter(compartment %in% elim_comps) %>%
-        mutate(x = x - 0.4, y = y + 0.2)
-        
-        p <- ggplot()
-        
-        if (nrow(seg_df) > 0) { # we have connections
-          p <- p + geom_segment(
-            data = seg_df,
-            aes(x = x, y = y, xend = xend, yend = yend, color = color),
-            linewidth = 0.7, show.legend = FALSE
-          ) +
-          geom_polygon(
-            data = head_df,
-            aes(x = x, y = y, group = group, fill = fill),
-            color = NA, show.legend = FALSE
-          )
-        }
-        
-        p <- p + geom_rect(
-          data = layout_df,
-          aes(
-            xmin = x - box_width / 2, xmax = x + box_width / 2,
-            ymin = y - box_height / 2, ymax = y + box_height / 2
-          ),
-          fill = "grey80", color = "black"
-        ) +
-        
-        geom_label(
-          data = layout_df,
-          aes(x = x, y = y + 0.15, label = compartment), fill = NA,
-          color = "black", fontface = "bold", size = 7, label.size = NA
-        ) +
-        
-        geom_point(
-          data = elim_triangles,
-          aes(x = x, y = y),
-          color = "black", shape = 2, size = 4
-        )
-        
-        if (nrow(label_df) > 0) {
-          p <- p + geom_label(
-            data = label_df,
-            aes(x = x, y = y, label = label),
-            fill = label_df$color,
-            color = label_df$text_color,
-            fontface = "bold",
-            size = 4,
-            show.legend = FALSE,
-            label.size = NA
-          )
-        }
-        if (length(outputs) > 0) {
-          out_df <- bind_rows(lapply(outputs, function(out) {
-            comp <- out$compartment
-            if (is.null(comp)) return(data.frame(x = NA, y = NA, label = NA))
-            txt <- paste0("y[", out$output_num, "]")
-            pos <- layout_df %>% filter(compartment == comp)
-            data.frame(x = pos$x, y = pos$y - 0.2, label = txt)
-          }))
-          if (any(is.na(out_df$x))){
-            missing_out <- as.character(which(is.na(out_df$x)))
-            cli::cli_warn(c("!" = "{?This/These} output equation{?s} did not contain a parsable compartment number on the right side of the equation and {?was/were} not plotted: {missing_out}."))
-            out_df <- out_df %>% filter(!is.na(x))
-          } else {
-            p <- p + geom_label(
-              data = out_df,
-              aes(x = x, y = y, label = label),
-              color = "black",
-              fill = NA,
-              fontface = "bold",
-              size = 3,
-              label.size = 0
-            )
-          }
-        }
-        
-        p <- p +
-        coord_fixed() +
-        xlim(range(layout_df$x) + c(-1.5, 1.5)) +
-        ylim(range(layout_df$y) + c(-1.5, 1.5)) +
-        theme_void() +
-        ggtitle("Structural model") +
-        scale_color_identity() +
-        scale_fill_identity()
-        
-        return(p)
-      }
-      
-      ##### FUNCTION CALLS
-      
-      # equations <- parse_equations(this_model)
-      # Expand and distribute equations
-      
-      expanded_equations <- purrr::map(parse(text = tolower(eqns)), expand_distribute)
-      outputs <- parse_output_equations(as.list(parse(text = tolower(outs))))
-      out_comp <- map_chr(outputs, function(o) if (!is.null(o$compartment)) {as.character(o$compartment)} else {"unknown"})
-      result <- extract_connections(expanded_equations)
-      elim_count <- sum(sapply(result$connections, function(c) c$to == 0))
-      elim_coeff <- map_chr(result$connections, function(c) if (c$to == 0) c$coeff else NA) %>% keep(~ !is.na(.))
-      
-      cli::cli_h1("Model elements")
-      cli::cli_text("{length(result$compartments)} compartments")
-      cli::cli_text("{length(result$connections)} connections, of which {elim_count} {?is an elimination/are eliminations}: {elim_coeff}")
-      cli::cli_text("{length(outputs)} output{?s} in compartment{?s} {unique(out_comp)}")
-      
-      
-      p <- create_plot(result$connections, result$compartments, outputs)
-      if (print) print(p)
-      
-      return(
-        invisible(list(
-          p = p,
-          connections = result$connections,
-          compartments = result$compartments,
-          outputs = outputs
-        ))
-      )
+      return(list(connections = connections, compartments = sort(compartments)))
     }
     
+    
+    
+    # Modify layout logic to use circular positioning
+    create_plot <- function(connections, compartments, outputs) {       
+      box_width <- 1.2
+      box_height <- 0.8
+      
+      n_comp <- length(compartments)
+      if (n_comp == 0) {
+        plot.new()
+        title(main = "No compartments detected")
+        return()
+      }
+      
+      # Circular layout
+      radius <- 4
+      angles <- seq(0, 2 * pi, length.out = n_comp + 1)[-(n_comp + 1)]
+      angles <- angles - angles[which(compartments == 1)] + pi / 2
+      x_pos <- radius * cos(angles)
+      y_pos <- radius * sin(angles)
+      layout_df <- data.frame(compartment = compartments, x = x_pos, y = y_pos)
+      
+      # Elimination
+      elim_comps <- unique(sapply(connections, function(c) if (c$to == 0) c$from else NULL))
+      elim_comps <- elim_comps[!sapply(elim_comps, is.null)]
+      
+      arrow_segments <- list()
+      arrow_heads <- list()
+      labels <- list()
+      label_tracker <- list()
+      
+      # Bidirectional detection
+      pair_keys <- data.frame(
+        original = sapply(connections, function(c) paste(c(c$from, c$to), collapse = "-")),
+        sorted = sapply(connections, function(c) paste(sort(c(c$from, c$to)), collapse = "-"))
+      )
+      dup_table <- table(pair_keys$sorted)
+      duplicates <- pair_keys$original[which(pair_keys$sorted %in% names(dup_table[dup_table > 1]))]
+      
+      for (conn in connections) {
+        from <- as.numeric(conn$from)
+        to <- as.numeric(conn$to)
+        if (to == 0) next
+        
+        from_pos <- layout_df %>% filter(compartment == from)
+        to_pos <- layout_df %>% filter(compartment == to)
+        
+        key <- paste(sort(c(from, to)), collapse = "-")
+        offset <- if (key %in% duplicates) 0.25 else 0
+        
+        dx <- to_pos$x - from_pos$x
+        dy <- to_pos$y - from_pos$y
+        len <- sqrt(dx^2 + dy^2)
+        norm_dx <- dx / len
+        norm_dy <- dy / len
+        perp_x <- -norm_dy
+        perp_y <- norm_dx
+        
+        # Adjust start/end for box edges
+        edge_dx <- box_width / 2 * norm_dx
+        edge_dy <- box_height / 2 * norm_dy
+        
+        x1 <- from_pos$x + offset * perp_x + edge_dx
+        y1 <- from_pos$y + offset * perp_y + edge_dy
+        x2 <- to_pos$x + offset * perp_x - edge_dx
+        y2 <- to_pos$y + offset * perp_y - edge_dy
+        
+        arrow_segments[[length(arrow_segments) + 1]] <- data.frame(
+          x = x1, y = y1, xend = x2, yend = y2, color = "black"
+        )
+        
+        # Arrowhead at 2/3
+        frac <- 2 / 3
+        xm <- x1 + frac * (x2 - x1)
+        ym <- y1 + frac * (y2 - y1)
+        perp_x_head <- -norm_dy * 0.10
+        perp_y_head <- norm_dx * 0.10
+        
+        arrow_heads[[length(arrow_heads) + 1]] <- data.frame(
+          x = c(xm - perp_x_head, xm + perp_x_head, xm + norm_dx * 0.3),
+          y = c(ym - perp_y_head, ym + perp_y_head, ym + norm_dy * 0.3),
+          group = paste0("arrow", length(arrow_heads) + 1),
+          fill = "black"
+        )
+        
+        if (!is.null(conn$coeff)) {
+          key_xy <- paste(round((x1 + x2) / 2, 2), round((y1 + y2) / 2, 2))
+          if (is.null(label_tracker[[key_xy]])) label_tracker[[key_xy]] <- 0
+          vertical_offset <- 0.25 * label_tracker[[key_xy]]
+          label_tracker[[key_xy]] <- label_tracker[[key_xy]] + 1
+          
+          mx <- (x1 + x2) / 2
+          my <- (y1 + y2) / 2 - vertical_offset
+          
+          labels[[length(labels) + 1]] <- data.frame(
+            x = mx, y = my, label = conn$coeff,
+            color = "white", text_color = "black"
+          )
+        }
+      }
+      
+      seg_df <- bind_rows(arrow_segments)
+      head_df <- bind_rows(arrow_heads)
+      label_df <- bind_rows(labels)
+      
+      elim_triangles <- layout_df %>%
+      filter(compartment %in% elim_comps) %>%
+      mutate(x = x - 0.4, y = y + 0.2)
+      
+      p <- ggplot()
+      
+      if (nrow(seg_df) > 0) { # we have connections
+        p <- p + geom_segment(
+          data = seg_df,
+          aes(x = x, y = y, xend = xend, yend = yend, color = color),
+          linewidth = 0.7, show.legend = FALSE
+        ) +
+        geom_polygon(
+          data = head_df,
+          aes(x = x, y = y, group = group, fill = fill),
+          color = NA, show.legend = FALSE
+        )
+      }
+      
+      p <- p + geom_rect(
+        data = layout_df,
+        aes(
+          xmin = x - box_width / 2, xmax = x + box_width / 2,
+          ymin = y - box_height / 2, ymax = y + box_height / 2
+        ),
+        fill = "grey80", color = "black"
+      ) +
+      
+      geom_label(
+        data = layout_df,
+        aes(x = x, y = y + 0.15, label = compartment), fill = NA,
+        color = "black", fontface = "bold", size = 7, label.size = NA
+      ) +
+      
+      geom_point(
+        data = elim_triangles,
+        aes(x = x, y = y),
+        color = "black", shape = 2, size = 4
+      )
+      
+      if (nrow(label_df) > 0) {
+        p <- p + geom_label(
+          data = label_df,
+          aes(x = x, y = y, label = label),
+          fill = label_df$color,
+          color = label_df$text_color,
+          fontface = "bold",
+          size = 4,
+          show.legend = FALSE,
+          label.size = NA
+        )
+      }
+      if (length(outputs) > 0) {
+        out_df <- bind_rows(lapply(outputs, function(out) {
+          comp <- out$compartment
+          if (is.null(comp)) return(data.frame(x = NA, y = NA, label = NA))
+          txt <- paste0("y[", out$output_num, "]")
+          pos <- layout_df %>% filter(compartment == comp)
+          data.frame(x = pos$x, y = pos$y - 0.2, label = txt)
+        }))
+        if (any(is.na(out_df$x))){
+          missing_out <- as.character(which(is.na(out_df$x)))
+          cli::cli_warn(c("!" = "{?This/These} output equation{?s} did not contain a parsable compartment number on the right side of the equation and {?was/were} not plotted: {missing_out}."))
+          out_df <- out_df %>% filter(!is.na(x))
+        } else {
+          p <- p + geom_label(
+            data = out_df,
+            aes(x = x, y = y, label = label),
+            color = "black",
+            fill = NA,
+            fontface = "bold",
+            size = 3,
+            label.size = 0
+          )
+        }
+      }
+      
+      p <- p +
+      coord_fixed() +
+      xlim(range(layout_df$x) + c(-1.5, 1.5)) +
+      ylim(range(layout_df$y) + c(-1.5, 1.5)) +
+      theme_void() +
+      ggtitle("Structural model") +
+      scale_color_identity() +
+      scale_fill_identity()
+      
+      return(p)
+    }
+    
+    ##### FUNCTION CALLS
+    
+    # equations <- parse_equations(this_model)
+    # Expand and distribute equations
+    
+    expanded_equations <- purrr::map(parse(text = tolower(eqns)), expand_distribute)
+    outputs <- parse_output_equations(as.list(parse(text = tolower(outs))))
+    out_comp <- map_chr(outputs, function(o) if (!is.null(o$compartment)) {as.character(o$compartment)} else {"unknown"})
+    result <- extract_connections(expanded_equations)
+    elim_count <- sum(sapply(result$connections, function(c) c$to == 0))
+    elim_coeff <- map_chr(result$connections, function(c) if (c$to == 0) c$coeff else NA) %>% keep(~ !is.na(.))
+    
+    cli::cli_h1("Model elements")
+    cli::cli_text("{length(result$compartments)} compartments")
+    cli::cli_text("{length(result$connections)} connections, of which {elim_count} {?is an elimination/are eliminations}: {elim_coeff}")
+    cli::cli_text("{length(outputs)} output{?s} in compartment{?s} {unique(out_comp)}")
+    
+    
+    p <- create_plot(result$connections, result$compartments, outputs)
+    if (print) print(p)
+    
+    return(
+      invisible(list(
+        p = p,
+        connections = result$connections,
+        compartments = result$compartments,
+        outputs = outputs
+      ))
+    )
+  }
+  

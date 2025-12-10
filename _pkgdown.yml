@@ -10,39 +10,14 @@ navbar:
     left:
     - intro
     - reference
-    - articles
-    - tutorials
-    - news
     right:
     - search
     - github
   components:
     intro:
-      text: Start Here
+      text: Book
       href: articles/pmetrics.html
-    articles:
-      text: Articles
-      menu:
-      - text: Introduction
-        href: articles/intro.html
-      - text: Overview
-        href: articles/overview.html
-      - text: Workflow
-        href: articles/workflow.html
-      - text: Data Objects
-        href: articles/data.html
-      - text: Model Objects
-        href: articles/models.html
-      - text: Running the fit
-        href: articles/running.html
-      - text: Created Objects
-        href: articles/objects.html
-      - text: Simulation
-        href: articles/simulation.html
-      - text: Probability of Target Attainment
-        href: articles/pta.html
-      - text: Plotly plots
-        href: articles/plotly.html
+    
 home:
   sidebar:
     structure:
@@ -139,10 +114,11 @@ reference:
   desc: Utility functions
 - contents:
   - PM_build
+  - PM_help
   - PMcheck
   - PMpatch
   - PMtest
-  - PM_help
+  - PM_tutorial
   - setPMoptions
 - title: Internal
   desc: Internal and low-level functions

@@ -177,17 +177,17 @@ PM_result <- R6::R6Class(
     #' arguments, e.g. `$sim(include = 1:2, predInt = 1, limits = NA)`.
     sim = function(...) {
       dots <- list(...)
-      if (!"poppar" %in% names(dots)) {
-        dots$poppar <- self$final
-      }
       
-      if (!"data" %in% names(dots)) {
-        dots$data <- self$data
-      }
+      dots$poppar <- self # send the PM_result object as poppar
       
-      if (!"model" %in% names(dots)) {
-        dots$model <- self$model
-      }
+      
+      # if (!"data" %in% names(dots)) {
+      #   dots$data <- self$data
+      # }
+      
+      # if (!"model" %in% names(dots)) {
+      #   dots$model <- self$model
+      # }
       
       # store copy of the final object
       bk_final <- self$final$clone()

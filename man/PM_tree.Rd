@@ -18,14 +18,14 @@ current working directory.}
 \item{...}{Arguments passed to \link{PM_tree}.}
 }
 \value{
-A new folder named \code{project} with the following subfolders:
-\item{Rscript }{The folder for the Rscript containing all run instructions.
-Within this folder will be a skeleton R script for the project.}
-\item{Runs }{The folder for all Pmetrics runs.  Put run files, i.e. a data file and a
-model file in this directory prior to each run.}
-\item{Sim }{The folder for all simulations related to the project.}
-\item{src }{The folder for source data files in their original format, to preserve
-integrity and for audit purposes.}
+A new folder with the name in \code{project} and the following subfolders:
+\itemize{
+\item \strong{Rscript} The folder containing a skeleton \emph{Analysis.R} script for the project.
+\item \strong{Runs} The folder for all Pmetrics runs, which will be sequentially numbered.
+\item \strong{Sim} The folder for all simulations related to the project.
+\item \strong{src} The folder for source data files in their original format, to preserve
+integrity and for audit purposes.
+}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -34,6 +34,7 @@ Sets up a directory tree for a new Pmetrics project
 }
 \details{
 This function will create a new project folder tree with appropriate subfolders and a skeleton R script.
+You can edit the folder names and add new ones as you wish.
 }
 \examples{
 \dontrun{

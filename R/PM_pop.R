@@ -104,7 +104,7 @@ private = list(
         pop_median = readr::col_double(),
         post_mean = readr::col_double(),
         post_median = readr::col_double()
-      ), show_col_types = FALSE) %>% filter(!is.na(obs))
+      ), show_col_types = FALSE) 
     } else if (inherits(data, "PM_pop") & !is.null(data$data)) { # file not there, and already PM_pop
       class(data$data) <- c("PM_pop_data", "data.frame")
       return(data$data)

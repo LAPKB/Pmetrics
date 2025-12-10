@@ -9,11 +9,14 @@ on:
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.os }}
+    env:
+      PAK_FORCE_SOURCE_INSTALL: true
+      PAK_IGNORE_PLATFORM: true
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-
     steps:
       - uses: actions/checkout@v3
 
@@ -30,6 +33,15 @@ jobs:
         with:
           extra-packages: any::rcmdcheck, any::roxygen2
           needs: check
+        continue-on-error: true
+        id: install-deps
+        
+      - name: Retry Install dependencies
+        if: steps.install-deps.outcome == 'failure'
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck, any::roxygen2
+          needs: check
 
       - name: Verify roxygen outputs are current
         run: |
@@ -41,3 +53,4 @@ jobs:
         uses: r-lib/actions/check-r-package@v2
         with:
           error-on: '"error"'
+

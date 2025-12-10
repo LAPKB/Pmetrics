@@ -576,17 +576,17 @@ PM_sim <- R6::R6Class(
         if (inherits(poppar, "PM_result")) {
           case <- 1
           final <- poppar$final$data # PM_final_data
-          msg <- c(msg, "Prior obtained from {deparse(substitute(poppar))}.")
+          msg <- c(msg, "Prior obtained from {.arg PM_result}.")
           if (missing(model)) {
             model <- poppar$model
-            msg <- c(msg, "Model obtained from {deparse(substitute(poppar))}.")
+            msg <- c(msg, "Model obtained from {.arg PM_result}.")
           } else {
-            model <- PM_model$new(model)
+            model <- PM_model$new(model, compile = FALSE) # compile later
           } 
           
           if (missing(data)) {
             data <- poppar$data
-            msg <- c(msg, "Data obtained from {deparse(substitute(poppar))}.")
+            msg <- c(msg, "Data obtained from {.arg PM_result}.")
           } else {
             data <- PM_data$new(data, quiet = quiet)
           }
@@ -695,14 +695,14 @@ PM_sim <- R6::R6Class(
         } # end if poppar is filename
         
         # If we reach this point, we are creating a new simulation
-        
+   
         # check model and data
         if(case %in% c(2, 3, 7)) { # need model and data if not from PM_result
           if (missing(model)) { model <- "model.txt" } # try the default
-          model <- PM_model$new(model) # will abort if can't make PM_model
+          if (!inherits(model, "PM_model")) {model <- PM_model$new(model, compile = FALSE)} # compile later
           
           if (missing(data)) { data <- "data.csv" } # try the default
-          data <- PM_data$new(data, quiet = quiet) # will abort if can't make PM_data
+          if (!inherits(data, "PM_data")) {data <- PM_data$new(data, quiet = quiet)} # will abort if can't make PM_data
         }
         
         
@@ -982,7 +982,7 @@ PM_sim <- R6::R6Class(
         
         
         # PARAMETER LIMITS --------------------------------------------------------
-     
+        
         if (all(is.null(limits))) { # limits are omitted altogether
           parLimits <- tibble::tibble(par = 1:npar , min = rep(-Inf, npar), max = rep(Inf, npar))
         } else if (!any(is.na(limits)) & is.vector(limits)) { # no limit is NA and specified as vector of length 1 or 2
@@ -1014,13 +1014,13 @@ PM_sim <- R6::R6Class(
             cli::cli_abort(c("x" = "A manual {.arg limits} argument must be a data frame or list with elements {.val par}, {.val min}, and {.val max}."))
           }
         }
-       
+        
         if (!is.null(parLimits) && nrow(parLimits) != npar) {
           cli::cli_abort(c("x" = "The number of rows in {.arg limits} must match the number of parameters in the model."))
         }
-      
-      
-      
+        
+        
+        
         
         # COVARIATES ----------------------------------------------------
         
@@ -1117,8 +1117,6 @@ PM_sim <- R6::R6Class(
           rbind(top, bottom)
         }
         
-        
-        
         corMat <- bind_bottom_right(
           as.matrix(poppar$popCor), 
           as.matrix(corCV), 
@@ -1172,12 +1170,10 @@ PM_sim <- R6::R6Class(
         # and get max of original population covariates
         covMax <- CVsum %>% summarize(across(covs2sim, max, na.rm = TRUE))
         
-        orig_covlim <- tibble::tibble(par = cov2sim, min = covMin, max = covMax)
-        
-        if (length(covariate$limits) == 0) {
-          # limits are omitted altogether
-          covLimits <- orig_covlim
-        } else {
+        orig_covlim <- tibble::tibble(par = covs2sim, min = unlist(covMin), max = unlist(covMax))
+        covLimits <- orig_covlim
+        if (length(covariate$limits) > 0) {
+          
           # covariate limits are supplied as named list
           badNames <- which(!names(covariate$limits) %in% names(covMean))
           if (length(badNames) > 0) {
@@ -1186,14 +1182,13 @@ PM_sim <- R6::R6Class(
               "i" = "E.g. {.code limits = list(wt = c(40, 80), age = c(10, 50))}. See {.fn PM_sim} for help."
             ))
           }
-          # first, make tibble with original covariate limits
-          covLimits <- orig_covlim
-          # now figure out which covariates have different limits and change them
+      
+          #  figure out which covariates have different limits and change them
           
           covUpdates <- tibble::enframe(covariate$limits, name = "par", value = "rng") %>%
           tidyr::unnest_wider(rng, names_sep = "") %>%
           dplyr::rename(min = rng1, max = rng2)
-          
+      
           covLimits <- dplyr::rows_update(covLimits, covUpdates, by = "par")
           
           # goodNames <- which(names(covMean) %in% names(covariate$limits))
@@ -1229,7 +1224,7 @@ PM_sim <- R6::R6Class(
         
         # remake both objects
         
-        arg_list <- PM_model$new(arg_list)$arg_list
+        arg_list <- PM_model$new(arg_list, compile = FALSE)$arg_list # compile later
         template <- PM_data$new(template, quiet = TRUE)$standard_data
         
         
@@ -1292,7 +1287,7 @@ PM_sim <- R6::R6Class(
       
       
       template <- PM_data$new(template, quiet = TRUE)
-      mod <- PM_model$new(arg_list, quiet = TRUE)
+      mod <- PM_model$new(arg_list) # now we compile
       
       if (length(postToUse) > 0) {
         # simulating from posteriors, each posterior matched to a subject
@@ -1417,7 +1412,11 @@ PM_sim <- R6::R6Class(
       
       
       # FINAL RETURN ------------------------------------------------------------
-      
+      if (length(msg) > 0) {
+        cli::cli_alert_info("Simulation messages:")
+        purrr::walk(msg, \(m) cli::cli_bullets(c("*" = m)))
+        return(invisible(NULL))
+      }
       return(self)
       
     }, # end of SIMrun

@@ -4,14 +4,7 @@
 \alias{PM_tutorial}
 \title{Pmetrics tutorial}
 \usage{
-PM_tutorial(wd = getwd(), auto_confirm = FALSE)
-}
-\arguments{
-\item{wd}{The working directory in which to create the Examples folder.}
-
-\item{auto_confirm}{If true, the execution is not stopped to ask the
-user for confirmation
-Default is current working directory.}
+PM_tutorial()
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
@@ -19,9 +12,9 @@ Default is current working directory.}
 Introductory tutorial to Pmetrics
 }
 \details{
-This function will create an Examples folder in the current working
-directory. The folder will contain all files and folder necessary to
-conduct the tutorial. After the Examples folder is created, open the
-\emph{examples.R} script to begin the tutorial.
+This function will create a \emph{Learn} folder in the current working
+directory or one you specify. The folder will contain all files and subfolders necessary to
+conduct the tutorial found at https://lapkb.github.io/PM_tutorial/.
+After the Learn folder is created, open the
+\emph{Rscript/Learn.R} script to begin the tutorial.
 }
-\keyword{internal}

@@ -8,5 +8,5 @@
 #' @export
 #
 PM_manual <- function() {
-  browseURL("https://lapkb.github.io/Pmetrics/")
+  browseURL("https://lapkb.github.io/PM_tutorial/")
 }
