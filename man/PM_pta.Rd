@@ -10,7 +10,7 @@ This object class contains results of simulations and a probability of
 target attainment analysis.
 }
 \details{
-#' There are two ways of creating a \emph{PM_pta} object.
+There are two ways of creating a \emph{PM_pta} object.
 \itemize{
 \item \strong{PM_sim$pta()} This way uses the simulation method directly from
 a \link{PM_sim} object.

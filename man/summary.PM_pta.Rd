@@ -21,7 +21,7 @@ intersection of all the PTAs.}
 \item{...}{Not used.}
 }
 \value{
-A tibble with the following columns (only the first four if \code{at = "intersect"}):
+A tibble with the following columns (only the first five if \code{at = "intersect"}):
 \itemize{
 \item \strong{reg_num} is the number of the simulation regimen
 \item \strong{label} is the simulation label, for reference
