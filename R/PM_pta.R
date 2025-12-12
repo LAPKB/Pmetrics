@@ -13,7 +13,7 @@
 #' target attainment analysis.
 #'
 #' @details
-#' #' There are two ways of creating a *PM_pta* object.
+#' There are two ways of creating a *PM_pta* object.
 #'
 #' * **PM_sim$pta()** This way uses the simulation method directly from
 #' a [PM_sim] object.
@@ -1176,7 +1176,7 @@ PM_pta <- R6::R6Class(
     #' intersection of all the PTAs.
     #' @param ci Width of the interval for pharmacodynamic index reporting.  Default is 0.95, i.e. 2.5th to 97.5th percentile.
     #' @param ... Not used.
-    #' @return A tibble with the following columns (only the first four if `at = "intersect"`):
+    #' @return A tibble with the following columns (only the first five if `at = "intersect"`):
     #'
     #' * **reg_num** is the number of the simulation regimen
     #' * **label** is the simulation label, for reference
