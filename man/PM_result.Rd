@@ -72,6 +72,7 @@ new optimal sampling results.}
 \item \href{#method-PM_result-step}{\code{PM_result$step()}}
 \item \href{#method-PM_result-opt}{\code{PM_result$opt()}}
 \item \href{#method-PM_result-load}{\code{PM_result$load()}}
+\item \href{#method-PM_result-continue}{\code{PM_result$continue()}}
 \item \href{#method-PM_result-clone}{\code{PM_result$clone()}}
 }
 }
@@ -363,6 +364,23 @@ Replaced by \link{PM_load}.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_result-continue"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-continue}{}}}
+\subsection{Method \code{continue()}}{
+Continue fitting the model to the data using the final population points
+from the prior run as the prior for the new run.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_result$continue(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+This method is useful if a prior run did not converge before the maximum
+number of cycles. It uses the final population points from the prior run
+as the prior for a new run. The data and model are the same as in the prior run.
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-clone"></a>}}

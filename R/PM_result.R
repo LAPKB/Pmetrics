@@ -290,6 +290,16 @@ PM_result <- R6::R6Class(
     #' @keywords internal
     load = function(...) {
       lifecycle::deprecate_warn("2.1.0", "PM_result$load()", details = "PM_result$load() is deprecated. Please use PM_load() instead.")
+    },
+    #' @description
+    #' Continue fitting the model to the data using the final population points
+    #' from the prior run as the prior for the new run.
+    #' @details
+    #' This method is useful if a prior run did not converge before the maximum
+    #' number of cycles. It uses the final population points from the prior run
+    #' as the prior for a new run. The data and model are the same as in the prior run.
+    continue = function(...) {
+      self$model$fit(data = self$data, prior = self$final$popPoints, ...)
     }
   ) # end public
 ) # end PM_result

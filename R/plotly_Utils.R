@@ -1806,42 +1806,46 @@ opposite_color <- function(col,
     Lh <- max(L1, L2); Ls <- min(L1, L2)
     (Lh + 0.05) / (Ls + 0.05)
   }
+  ## cycle through colors
+  op_cols <- purrr::map(col, \(x){
+      base <- parse_col(x)
+      rgb <- base[1:3]; alpha <- base[4]
 
-  base <- parse_col(col)
-  rgb <- base[1:3]; alpha <- base[4]
+      hsv <- grDevices::rgb2hsv(matrix(rgb, nrow = 3), maxColorValue = 1)
+      h <- hsv[1, 1]; s <- hsv[2, 1]; v <- hsv[3, 1]
 
-  hsv <- grDevices::rgb2hsv(matrix(rgb, nrow = 3), maxColorValue = 1)
-  h <- hsv[1, 1]; s <- hsv[2, 1]; v <- hsv[3, 1]
+      # strict 180 degrees hue complement
+      comp <- grDevices::hsv((h + degree_offset) %% 1, s, v, alpha = alpha)
+      if(nchar(x)==7) comp <- substr(comp, 1, 7)  # drop alpha if input had none
 
-  # strict 180 degrees hue complement
-  comp <- grDevices::hsv((h + degree_offset) %% 1, s, v, alpha = alpha)
-  if(nchar(col)==7) comp <- substr(comp, 1, 7)  # drop alpha if input had none
+      if (method == "complement") {
+        return(toupper(comp))
+      }
 
-  if (method == "complement") {
-    return(toupper(comp))
-  }
+      if (method == "bw_maxcontrast") {
+        c_black <- contrast_ratio(col, "#000000")
+        c_white <- contrast_ratio(col, "#FFFFFF")
+        return(if (c_white >= c_black) "#FFFFFFFF" else "#000000FF")
+      }
 
-  if (method == "bw_maxcontrast") {
-    c_black <- contrast_ratio(col, "#000000")
-    c_white <- contrast_ratio(col, "#FFFFFF")
-    return(if (c_white >= c_black) "#FFFFFFFF" else "#000000FF")
-  }
+      # method == "complement_maxcontrast"
+      best <- list(hex = comp, cr = contrast_ratio(x, comp))
 
-  # method == "complement_maxcontrast"
-  best <- list(hex = comp, cr = contrast_ratio(col, comp))
+      h2 <- (h + degree_offset) %% 1
+      v_grid <- seq(0, 1, by = 0.01)
+      s_grid <- clamp01(s * c(0.6, 0.8, 1.0, 1.2))
 
-  h2 <- (h + degree_offset) %% 1
-  v_grid <- seq(0, 1, by = 0.01)
-  s_grid <- clamp01(s * c(0.6, 0.8, 1.0, 1.2))
-
-  for (sv in s_grid) {
-    for (vv in v_grid) {
-      cand <- grDevices::hsv(h2, sv, vv, alpha = alpha)
-      cr <- contrast_ratio(col, cand)
-      if (cr > best$cr) best <- list(hex = toupper(cand), cr = cr)
-    }
-  }
-  best$hex
+      for (sv in s_grid) {
+        for (vv in v_grid) {
+          cand <- grDevices::hsv(h2, sv, vv, alpha = alpha)
+          cr <- contrast_ratio(x, cand)
+          if (cr > best$cr) best <- list(hex = toupper(cand), cr = cr)
+        }
+      }
+      best$hex
+  })
+  return(unlist(op_cols))
+  
 }
 
 

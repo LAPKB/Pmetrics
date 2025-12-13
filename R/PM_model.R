@@ -1072,7 +1072,7 @@ PM_model <- R6::R6Class(
           #### Algorithm ####
           algorithm <- toupper(algorithm)
           if (cycles == 0) {
-            if (prior == "sobol") {
+            if (length(prior) ==1 && prior == "sobol") {
               msg <- c(msg, "Cannot use {.code prior = 'sobol'} with {.code cycles = 0}.")
               run_error <- run_error + 1
             }
@@ -1090,9 +1090,9 @@ PM_model <- R6::R6Class(
           
           
           
-          if (getPMoptions()$backend != "rust") {
-            cli::cli_abort(c("x" = "Error: unsupported backend.", "i" = "See help for {.fn setPMoptions}"))
-          }
+          # if (getPMoptions()$backend != "rust") {
+          #   cli::cli_abort(c("x" = "Error: unsupported backend.", "i" = "See help for {.fn setPMoptions}"))
+          # }
           
           #### Include or exclude subjects ####
           if (is.null(include)) {
@@ -1109,7 +1109,7 @@ PM_model <- R6::R6Class(
           }
           
           # set prior
-          if (prior != "sobol") {
+          if (length(prior)==1 && prior != "sobol") {
             if (is.numeric(prior)) {
               # prior specified as a run number
               if (!file.exists(glue::glue("{path}/{prior}/outputs/theta.csv"))) {
@@ -1118,7 +1118,7 @@ PM_model <- R6::R6Class(
               }
               file.copy(glue::glue("{path}/{prior}/outputs/theta.csv"), "prior.csv", overwrite = TRUE)
               prior <- "prior.csv"
-            } else if (is.character(prior)) {
+            } else if (length(prior)==1 && is.character(prior)) {
               # prior specified as a filename
               if (!file.exists(prior)) {
                 msg <- c(msg, "{.arg prior} file does not exist.")

@@ -86,14 +86,17 @@ public <- list(
           return(NULL)
         }
       )
+      path <- dirname(data)
     } else if (inherits(data, "PM_data")) { # R6
       self$data <- data$data
+      path <- getwd()
     } else { # something else
       self$data <- data
+      path <- getwd()
     }
     
     if (!is.null(self$data) && validate) {
-      self$standard_data <- private$validate(self$data, quiet = quiet, dt = dt)
+      self$standard_data <- private$validate(self$data, path = path, quiet = quiet, dt = dt)
     }
   },
   #' @description
@@ -275,7 +278,7 @@ addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
       self$data[arg_names] <- to_add
       if (validate) {
         self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x)))) # clean up
-        self$standard_data <- private$validate(self$data, dt = dt, quiet = quiet)
+        self$standard_data <- private$validate(self$data, path = getwd(), dt = dt, quiet = quiet)
       } else {
         self$standard_data <- NULL
       }
@@ -309,7 +312,7 @@ addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
   self$data <- new_data
   if (validate) {
     self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x))))
-    self$standard_data <- private$validate(self$data, dt = dt, quiet = quiet)
+    self$standard_data <- private$validate(self$data, path = getwd(), dt = dt, quiet = quiet)
   } else {
     self$standard_data <- NULL
   }
@@ -317,7 +320,7 @@ addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
 } # end addEvent
 ), # end public
 private = list(
-  validate = function(dataObj, quiet, dt) {
+  validate = function(dataObj, path, quiet, dt) {
     dataObj_orig <- dataObj # keep the original to pass to PMcheck
     dataNames <- names(dataObj)
     standardNames <- getFixedColNames()
@@ -428,7 +431,7 @@ private = list(
     cat(msg)
   }
   
-  validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), fix = TRUE, quiet = quiet)
+  validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), path = path, fix = TRUE, quiet = quiet)
   return(validData)
 } # end validate function
 ) # end private
@@ -502,7 +505,7 @@ PMreadMatrix <- function(
     skip <- ifelse(grepl("POPDATA .*", headers[1]), 1, 0) # 0 if current, 1 if legacy
     
     args1 <- list(
-      file = file, delim = sep, col_names = TRUE, na = ".",
+      file = file, delim = sep, col_names = TRUE, na = c(".", "NA", ""),
       locale = readr::locale(decimal_mark = dec),
       skip = skip, show_col_types = FALSE, progress = FALSE, num_threads = 1
     )
@@ -735,6 +738,7 @@ return(temp)
 #' @param data The name of a Pmetrics .csv matrix file in the current working directory,
 #' the full path to one not in the current working directory, or a data.frame containing
 #' the output of a previous [PMreadMatrix] command.
+#' @param path The path of the data if originally a file
 #' @param fix Boolean operator; if `TRUE`, Pmetrics will attempt to fix errors in the data file.
 #' Default is `FALSE`.
 #' @param quiet Boolean operator to suppress printed output.  Default is false.
@@ -782,7 +786,7 @@ return(temp)
 #' }
 #' @export
 
-PMcheck <- function(data, fix = FALSE, quiet = FALSE) {
+PMcheck <- function(data, path, fix = FALSE, quiet = FALSE) {
   # get the data
   if (is.character(data)) { # data is a filename
     data2 <- tryCatch(PMreadMatrix(data, quiet = TRUE), error = function(e) {
@@ -830,7 +834,7 @@ PMcheck <- function(data, fix = FALSE, quiet = FALSE) {
     if (!fix) {
       # Save the workbook if not going to fix
       wb <- createInstructions(wb)
-      openxlsx::saveWorkbook(wb, file = "errors.xlsx", overwrite = T)
+      openxlsx::saveWorkbook(wb, file = file.path(path, "errors.xlsx"), overwrite = TRUE)
     }
   }
   
@@ -865,7 +869,7 @@ PMcheck <- function(data, fix = FALSE, quiet = FALSE) {
         wb <- writeErrorFile(newdata, err2, legacy = legacy, wb, sheet)
         # Save the workbook ...
         wb <- createInstructions(wb)
-        openxlsx::saveWorkbook(wb, file = "errors.xlsx", overwrite = TRUE)
+        openxlsx::saveWorkbook(wb, file = file.path(path, "errors.xlsx"), overwrite = TRUE)
       }
       
       return(invisible(newdata))
@@ -902,558 +906,575 @@ errcheck <- function(data2, quiet, source) {
     contigID = list(msg = "OK - All subject IDs are contiguous.", results = NA, col = 1, code = 12),
     nonNum = list(msg = "OK - All columns that must be numeric are numeric.", results = NA, col = NA, code = 13),
     noObs = list(msg = "OK - All subjects have at least one observation.", results = NA, col = 1, code = 14),
-    mal_NA = list(msg = "OK - all unrequired cells have proper NA values.", results = NA, col = NA, code = 15)  )
-    # set initial attribute to 0 for no error
-    attr(err, "error") <- 0
-    
-    # define fixed column names
+    mal_NA = list(msg = "OK - all unrequired cells have proper NA values.", results = NA, col = NA, code = 15),
+    doseOut = list(msg = "OK - All doses and observations separated.", results = NA, col = 5, code = 16)
+  )
+  # set initial attribute to 0 for no error
+  attr(err, "error") <- 0
+  
+  # define fixed column names
+  fixedColNames <- getFixedColNames()
+  
+  # define number of columns and number of covariates
+  numcol <- ncol(data2)
+  numfix <- getFixedColNum()
+  numcov <- getCov(data2)$ncov
+  
+  # ensure lowercase
+  t <- tolower(names(data2))
+  
+  # check to make sure first 14 columns are correct
+  if (any(!c("id", "time", "evid") %in% t)) {
+    # must at least have id, evid, and time columns to proceed with the check
+    return(-1)
+  }
+  if (length(t) < numfix | any(!fixedColNames %in% t)) {
+    err$colorder$msg <- paste("FAIL - The first ", numfix, " columns must be named id, evid, time, dur, dose, addl, ii, input, out, outeq, cens, c0, c1, c2, and c3 in that order", sep = "")
+    attr(err, "error") <- -1
+  } else {
+    if (!identical(t[1:numfix], fixedColNames)) {
+      err$colorder$msg <- paste("FAIL - The first ", numfix, " columns must be named id, evid, time, dur, dose, addl, ii, input, out, outeq, cens, c0, c1, c2, and c3 in that order.", sep = "")
+      attr(err, "error") <- -1
+    }
+  }
+  
+  
+  # check that all records have an EVID value
+  t <- which(is.na(data2$evid))
+  if (length(t) > 0) {
+    err$missEVID$msg <- "FAIL - The following row numbers have missing EVID values:"
+    err$missEVID$results <- t
+    attr(err, "error") <- -1
+  }
+  
+  # check that all records have a TIME value
+  t <- which(is.na(data2$time))
+  if (length(t) > 0) {
+    err$missTIME$msg <- "FAIL - The following row numbers have missing TIME values. Check date/time entries."
+    err$missTIME$results <- t
+    attr(err, "error") <- -1
+  }
+  
+  # check for dur on dose records
+  t <- which(data2$evid != 0 & is.na(data2$dur))
+  if (length(t) > 0) {
+    err$doseDur$msg <- "FAIL - The following row numbers are dose events without DUR (unused addl or ii should have '.' placeholders):"
+    err$doseDur$results <- t
+    attr(err, "error") <- -1
+  }
+  
+  # check for dose on dose records
+  t <- which(data2$evid != 0 & is.na(data2$dose))
+  if (length(t) > 0) {
+    err$doseDose$msg <- "FAIL - The following row numbers are dose events without DOSE (unused addl or ii should have '.' placeholders):"
+    err$doseDose$results <- t
+    attr(err, "error") <- -1
+  }
+  
+  # check for input on dose records
+  t <- which(data2$evid != 0 & is.na(data2$input))
+  if (length(t) > 0) {
+    err$doseInput$msg <- "FAIL - The following row numbers are dose events without INPUT (unused addl or ii should have '.' placeholders):"
+    err$doseInput$results <- t
+    attr(err, "error") <- -1
+  }
+  
+  # check for out on observation records
+  t <- which(data2$evid == 0 & is.na(data2$out))
+  if (length(t) > 0) {
+    err$obsOut$msg <- "FAIL - The following row numbers are observation events without OUT:"
+    err$obsOut$results <- t
+    attr(err, "error") <- -1
+  }
+  
+  # check for outeq on observation records
+  t <- which(data2$evid == 0 & is.na(data2$outeq))
+  if (length(t) > 0) {
+    err$obsOuteq$msg <- "FAIL - The following row numbers are observation events without OUTEQ:"
+    err$obsOuteq$results <- t
+    attr(err, "error") <- -1
+  }
+  
+  # check for time=0 for each subject as first record
+  t <- which(tapply(data2$time, data2$id, function(x) x[1]) != 0)
+  t2 <- match(names(t), data2$id)
+  if (length(t) > 0) {
+    err$T0$msg <- "FAIL - The following row numbers do not have time=0 as first record:"
+    err$T0$results <- t2
+    attr(err, "error") <- -1
+  }
+  
+  # covariate checks
+  if (numcov > 0) {
+    covinfo <- getCov(data2)
+    # check for missing covariates at time 0 
+    time0 <- which(data2$time == 0 & data2$evid == 1)
+    if (length(time0) > 1) {
+      t <- apply(as.matrix(data2[time0, covinfo$covstart:covinfo$covend], ncol = numcov), 1, function(x) any(is.na(x)))
+    } else {
+      t <- is.na(time0)
+    }
+    if (length(time0[t]) > 0) {
+      err$covT0$msg <- "FAIL - The following row numbers are subjects with missing covariate data at time 0."
+      err$covT0$results <- time0[t]
+      attr(err, "error") <- -1
+    } else {
+      err$covT0$msg <- "OK - All subjects have covariate data at time 0."
+    }
+  }
+  
+  # check that all times within a given ID block are monotonically increasing
+  misorder <- NA
+  for (i in 2:nrow(data2)) {
+    time_diff <- suppressWarnings(tryCatch(data2$time[i] - data2$time[i - 1], error = function(e) NA))
+    # if not missing (reported elsewhere) and diff<0 in same ID and not evid=4, misordered
+    if (!is.na(time_diff) && (time_diff < 0 & data2$id[i] == data2$id[i - 1] & data2$evid[i] != 4)) misorder <- c(misorder, i)
+  }
+  if (length(misorder) > 1) {
+    err$timeOrder$msg <- "FAIL - The following rows are from subject IDs with unsorted times. Check date/time entries."
+    err$timeOrder$results <- misorder[-1]
+    attr(err, "error") <- -1
+  }
+  
+  # check that all records for a given subject ID are grouped
+  temp <- data.frame(row = 1:nrow(data2), id = data2$id)
+  t <- tapply(temp$row, temp$id, function(x) any(diff(x) > 1))
+  if (any(t)) {
+    t2 <- which(data2$id %in% sort(unique(data2$id))[t])
+  } else {
+    t2 <- NULL
+  }
+  if (length(t2) > 0) {
+    err$contigID$msg <- "FAIL - The following rows are from subject IDs that are not contiguous."
+    err$contigID$results <- t2
+    attr(err, "error") <- -1
+  }
+  
+  # check that all non-missing columns other than ID and cens are numeric
+  
+  allMiss <- names(data2)[which(apply(data2, 2, function(x) all(is.na(x))))]
+  nonNumeric <- names(data2)[which(sapply(data2, function(x) !is.numeric(x)))]
+  if (length(nonNumeric) > 0) {
+    nonNumeric <- nonNumeric[!nonNumeric %in% allMiss] %>% purrr::discard(~.x %in% (c("id", "cens")))
+  }
+  if (length(nonNumeric) > 0 ) { # exclude id, cens columns
+    err$nonNum$msg <- "FAIL - The following columns must be all numeric."
+    err$nonNum$results <- nonNumeric
+    attr(err, "error") <- -1
+  }
+  
+  # check that all subjects have at least one observation
+  subjObs <- tapply(data2$evid, data2$id, function(x) sum(x == 0, na.rm = T))
+  if (any(subjObs == 0)) {
+    subjMissObs <- unique(data2$id)[which(subjObs == 0)]
+    err$noObs$msg <- "FAIL - The following rows are subjects with no observations."
+    err$noObs$results <- which(data2$id %in% subjMissObs)
+    attr(err, "error") <- -1
+  }
+  
+  # check for columns with malformed NA values
+  mal_NA <- purrr::map(as.list(data2), ~ stringr::str_count(.x, "(?<!\\d)\\s*\\.+\\s*")) %>%
+  map(~ which(.x == 1)) %>%
+  purrr::map_vec(~ length(.x) > 0) %>%
+  which()
+  if (length(mal_NA) > 0) {
+    err$mal_NA$msg <- "FAIL - The following columns contain malformed NA values."
+    err$mal_NA$results <- mal_NA
+    attr(err, "error") <- -1
+  }
+  
+  # check that doses and observations are separated
+  doseOut <- which(!is.na(data2$dose) & !is.na(data2$out))
+  if (length(doseOut) > 0) {
+    err$doseOut$msg <- "FAIL - The following rows have both dose and observation values."
+    err$doseOut$results <- doseOut
+    attr(err, "error") <- -1
+  }
+  
+  
+  
+  class(err) <- c("PMerr", "list")
+  if (!quiet) {
+    cli::cli_h1("DATA VALIDATION")
+    print(err)
+    flush.console()
+  }
+  
+  
+  if (!quiet) flush.console()
+  return(err)
+}
+
+
+# errfix ------------------------------------------------------------------
+
+
+# try and fix errors in the data file
+errfix <- function(data2, err, quiet) {
+  report <- NA
+  numcol <- ncol(data2)
+  # Fix first fixed columns
+  if (length(grep("FAIL", err$colorder$msg)) > 0) {
     fixedColNames <- getFixedColNames()
-    
-    # define number of columns and number of covariates
-    numcol <- ncol(data2)
-    numfix <- getFixedColNum()
-    numcov <- getCov(data2)$ncov
-    
-    # ensure lowercase
     t <- tolower(names(data2))
-    
-    # check to make sure first 14 columns are correct
-    if (any(!c("id", "time", "evid") %in% t)) {
-      # must at least have id, evid, and time columns to proceed with the check
-      return(-1)
-    }
-    if (length(t) < numfix | any(!fixedColNames %in% t)) {
-      err$colorder$msg <- paste("FAIL - The first ", numfix, " columns must be named id, evid, time, dur, dose, addl, ii, input, out, outeq, cens, c0, c1, c2, and c3 in that order", sep = "")
-      attr(err, "error") <- -1
+    PMcols <- match(fixedColNames, t)
+    if (any(is.na(PMcols))) {
+      misscols <- fixedColNames[is.na(PMcols)]
+      report <- c(report, paste("Cannot fix columns; the following are missing: ", paste(misscols, collapse = "'', '"), ".", sep = ""))
     } else {
-      if (!identical(t[1:numfix], fixedColNames)) {
-        err$colorder$msg <- paste("FAIL - The first ", numfix, " columns must be named id, evid, time, dur, dose, addl, ii, input, out, outeq, cens, c0, c1, c2, and c3 in that order.", sep = "")
-        attr(err, "error") <- -1
-      }
+      covcols <- (1:numcol)[!(1:numcol) %in% PMcols]
+      data2 <- data2[, c(PMcols, covcols)]
+      report <- c(report, paste("Columns are now ordered appropriately."))
     }
-    
-    
-    # check that all records have an EVID value
-    t <- which(is.na(data2$evid))
-    if (length(t) > 0) {
-      err$missEVID$msg <- "FAIL - The following row numbers have missing EVID values:"
-      err$missEVID$results <- t
-      attr(err, "error") <- -1
-    }
-    
-    # check that all records have a TIME value
-    t <- which(is.na(data2$time))
-    if (length(t) > 0) {
-      err$missTIME$msg <- "FAIL - The following row numbers have missing TIME values. Check date/time entries."
-      err$missTIME$results <- t
-      attr(err, "error") <- -1
-    }
-    
-    # check for dur on dose records
-    t <- which(data2$evid != 0 & is.na(data2$dur))
-    if (length(t) > 0) {
-      err$doseDur$msg <- "FAIL - The following row numbers are dose events without DUR (unused addl or ii should have '.' placeholders):"
-      err$doseDur$results <- t
-      attr(err, "error") <- -1
-    }
-    
-    # check for dose on dose records
-    t <- which(data2$evid != 0 & is.na(data2$dose))
-    if (length(t) > 0) {
-      err$doseDose$msg <- "FAIL - The following row numbers are dose events without DOSE (unused addl or ii should have '.' placeholders):"
-      err$doseDose$results <- t
-      attr(err, "error") <- -1
-    }
-    
-    # check for input on dose records
-    t <- which(data2$evid != 0 & is.na(data2$input))
-    if (length(t) > 0) {
-      err$doseInput$msg <- "FAIL - The following row numbers are dose events without INPUT (unused addl or ii should have '.' placeholders):"
-      err$doseInput$results <- t
-      attr(err, "error") <- -1
-    }
-    
-    # check for out on observation records
-    t <- which(data2$evid == 0 & is.na(data2$out))
-    if (length(t) > 0) {
-      err$obsOut$msg <- "FAIL - The following row numbers are observation events without OUT:"
-      err$obsOut$results <- t
-      attr(err, "error") <- -1
-    }
-    
-    # check for outeq on observation records
-    t <- which(data2$evid == 0 & is.na(data2$outeq))
-    if (length(t) > 0) {
-      err$obsOuteq$msg <- "FAIL - The following row numbers are observation events without OUTEQ:"
-      err$obsOuteq$results <- t
-      attr(err, "error") <- -1
-    }
-    
-    # check for time=0 for each subject as first record
-    t <- which(tapply(data2$time, data2$id, function(x) x[1]) != 0)
-    t2 <- match(names(t), data2$id)
-    if (length(t) > 0) {
-      err$T0$msg <- "FAIL - The following row numbers do not have time=0 as first record:"
-      err$T0$results <- t2
-      attr(err, "error") <- -1
-    }
-    
-    # covariate checks
-    if (numcov > 0) {
-      covinfo <- getCov(data2)
-      # check for missing covariates at time 0 
-      time0 <- which(data2$time == 0 & data2$evid == 1)
-      if (length(time0) > 1) {
-        t <- apply(as.matrix(data2[time0, covinfo$covstart:covinfo$covend], ncol = numcov), 1, function(x) any(is.na(x)))
-      } else {
-        t <- is.na(time0)
-      }
-      if (length(time0[t]) > 0) {
-        err$covT0$msg <- "FAIL - The following row numbers are subjects with missing covariate data at time 0."
-        err$covT0$results <- time0[t]
-        attr(err, "error") <- -1
-      } else {
-        err$covT0$msg <- "OK - All subjects have covariate data at time 0."
-      }
-    }
-    
-    # check that all times within a given ID block are monotonically increasing
-    misorder <- NA
-    for (i in 2:nrow(data2)) {
-      time_diff <- suppressWarnings(tryCatch(data2$time[i] - data2$time[i - 1], error = function(e) NA))
-      # if not missing (reported elsewhere) and diff<0 in same ID and not evid=4, misordered
-      if (!is.na(time_diff) && (time_diff < 0 & data2$id[i] == data2$id[i - 1] & data2$evid[i] != 4)) misorder <- c(misorder, i)
-    }
-    if (length(misorder) > 1) {
-      err$timeOrder$msg <- "FAIL - The following rows are from subject IDs with unsorted times. Check date/time entries."
-      err$timeOrder$results <- misorder[-1]
-      attr(err, "error") <- -1
-    }
-    
-    # check that all records for a given subject ID are grouped
-    temp <- data.frame(row = 1:nrow(data2), id = data2$id)
-    t <- tapply(temp$row, temp$id, function(x) any(diff(x) > 1))
-    if (any(t)) {
-      t2 <- which(data2$id %in% sort(unique(data2$id))[t])
-    } else {
-      t2 <- NULL
-    }
-    if (length(t2) > 0) {
-      err$contigID$msg <- "FAIL - The following rows are from subject IDs that are not contiguous."
-      err$contigID$results <- t2
-      attr(err, "error") <- -1
-    }
-    
-    # check that all non-missing columns other than ID and cens are numeric
-    
-    allMiss <- names(data2)[which(apply(data2, 2, function(x) all(is.na(x))))]
-    nonNumeric <- names(data2)[which(sapply(data2, function(x) !is.numeric(x)))]
-    if (length(allMiss) > 0) {
-      nonNumeric <- nonNumeric[!nonNumeric %in% allMiss] %>% purrr::discard(~.x %in% (c("id", "cens")))
-    }
-    if (length(nonNumeric) > 0 ) { # exclude id, cens columns
-      err$nonNum$msg <- "FAIL - The following columns must be all numeric."
-      err$nonNum$results <- nonNumeric
-      attr(err, "error") <- -1
-    }
-    
-    # check that all subjects have at least one observation
-    subjObs <- tapply(data2$evid, data2$id, function(x) sum(x == 0, na.rm = T))
-    if (any(subjObs == 0)) {
-      subjMissObs <- unique(data2$id)[which(subjObs == 0)]
-      err$noObs$msg <- "FAIL - The following rows are subjects with no observations."
-      err$noObs$results <- which(data2$id %in% subjMissObs)
-      attr(err, "error") <- -1
-    }
-    
-    # check for columns with malformed NA values
-    mal_NA <- purrr::map(as.list(data2), ~ stringr::str_count(.x, "(?<!\\d)\\s*\\.+\\s*")) %>%
-    map(~ which(.x == 1)) %>%
-    purrr::map_vec(~ length(.x) > 0) %>%
-    which()
-    if (length(mal_NA) > 0) {
-      err$mal_NA$msg <- "FAIL - The following columns contain malformed NA values."
-      err$mal_NA$results <- mal_NA
-      attr(err, "error") <- -1
-    }
-    
-    
-    class(err) <- c("PMerr", "list")
-    if (!quiet) {
-      cli::cli_h1("DATA VALIDATION")
-      print(err)
-      flush.console()
-    }
-    
-    
-    if (!quiet) flush.console()
-    return(err)
   }
   
+  # Check for NA observations (should be -99)
+  if (length(grep("FAIL", err$obsMiss$msg)) > 0) {
+    data2 <- data2[err$obsMiss$results, "out"] < -99
+    report <- c(report, paste("Missing observations for evid=0 have been replaced with -99."))
+    err <- errcheck(data2 = data2, quiet = T)
+  }
+  # Check for DUR dose records
+  if (length(grep("FAIL", err$doseDur$msg)) > 0) {
+    report <- c(report, paste("Dose records (evid=1 or evid=4) must have DUR.  See errors.xlsx and fix manually."))
+  }
+  # Check for DOSE dose records
+  if (length(grep("FAIL", err$doseDose$msg)) > 0) {
+    report <- c(report, paste("Dose records (evid=1 or evid=4) must have DOSE.  See errors.xlsx and fix manually."))
+  }
+  # Check for INPUT dose records
+  if (length(grep("FAIL", err$doseInput$msg)) > 0) {
+    report <- c(report, paste("Dose records (evid=1 or evid=4) must have INPUT.  See errors.xlsx and fix manually."))
+  }
+  # Check for OUT observation records
+  if (length(grep("FAIL", err$obsOut$msg)) > 0) {
+    report <- c(report, paste("Observation records (evid=0) must have OUT. See errors.xlsx and fix manually."))
+  }
+  # Check for OUTEQ observation records
+  if (length(grep("FAIL", err$obsOuteq$msg)) > 0) {
+    report <- c(report, paste("Observation records (evid=0) must have OUTEQ. See errors.xlsx and fix manually."))
+  }
   
-  # errfix ------------------------------------------------------------------
+  # Insert dummy doses of 0 for those missing time=0 first events
+  if (length(grep("FAIL", err$T0$msg)) > 0) {
+    T0 <- data2[err$T0$results, ]
+    T0$time <- 0
+    T0$evid <- 1
+    T0$dose <- 0
+    T0$dur <- 0
+    T0$input <- 1
+    T0$addl <- NA
+    T0$ii <- NA
+    data2 <- rbind(data2, T0)
+    data2 <- data2[order(data2$id, data2$time), ]
+    report <- c(report, paste("Subjects with first time > 0 have had a dummy dose of 0 inserted at time 0."))
+    err <- errcheck(data2 = data2, quiet = T)
+  }
   
+  # Alert for missing covariate data
+  if (length(grep("FAIL", err$covT0$msg)) > 0) {
+    report <- c(report, paste("All covariates must have values for each subject's first event.  See errors.xlsx and fix manually."))
+  }
   
-  # try and fix errors in the data file
-  errfix <- function(data2, err, quiet) {
-    report <- NA
-    numcol <- ncol(data2)
-    # Fix first fixed columns
-    if (length(grep("FAIL", err$colorder$msg)) > 0) {
-      fixedColNames <- getFixedColNames()
-      t <- tolower(names(data2))
-      PMcols <- match(fixedColNames, t)
-      if (any(is.na(PMcols))) {
-        misscols <- fixedColNames[is.na(PMcols)]
-        report <- c(report, paste("Cannot fix columns; the following are missing: ", paste(misscols, collapse = "'', '"), ".", sep = ""))
-      } else {
-        covcols <- (1:numcol)[!(1:numcol) %in% PMcols]
-        data2 <- data2[, c(PMcols, covcols)]
-        report <- c(report, paste("Columns are now ordered appropriately."))
-      }
-    }
+  # Reorder times - assume times are in correct block
+  if (length(grep("FAIL", err$timeOrder$msg)) > 0) {
+    data2 <- makePMmatrixBlock(data2) %>%
+    dplyr::group_by(id, block) %>%
+    dplyr::arrange(time, .by_group = T) %>%
+    ungroup() %>%
+    select(-block)
     
-    # Check for NA observations (should be -99)
-    if (length(grep("FAIL", err$obsMiss$msg)) > 0) {
-      data2 <- data2[err$obsMiss$results, "out"] < -99
-      report <- c(report, paste("Missing observations for evid=0 have been replaced with -99."))
-      err <- errcheck(data2 = data2, quiet = T)
+    if (any(data2$evid == 4)) {
+      report <- c(report, paste("Your dataset has EVID=4 events. Times ordered within each event block."))
+    } else {
+      report <- c(report, paste("Times for each subject have been ordered."))
     }
-    # Check for DUR dose records
-    if (length(grep("FAIL", err$doseDur$msg)) > 0) {
-      report <- c(report, paste("Dose records (evid=1 or evid=4) must have DUR.  See errors.xlsx and fix manually."))
-    }
-    # Check for DOSE dose records
-    if (length(grep("FAIL", err$doseDose$msg)) > 0) {
-      report <- c(report, paste("Dose records (evid=1 or evid=4) must have DOSE.  See errors.xlsx and fix manually."))
-    }
-    # Check for INPUT dose records
-    if (length(grep("FAIL", err$doseInput$msg)) > 0) {
-      report <- c(report, paste("Dose records (evid=1 or evid=4) must have INPUT.  See errors.xlsx and fix manually."))
-    }
-    # Check for OUT observation records
-    if (length(grep("FAIL", err$obsOut$msg)) > 0) {
-      report <- c(report, paste("Observation records (evid=0) must have OUT. See errors.xlsx and fix manually."))
-    }
-    # Check for OUTEQ observation records
-    if (length(grep("FAIL", err$obsOuteq$msg)) > 0) {
-      report <- c(report, paste("Observation records (evid=0) must have OUTEQ. See errors.xlsx and fix manually."))
-    }
-    
-    # Insert dummy doses of 0 for those missing time=0 first events
-    if (length(grep("FAIL", err$T0$msg)) > 0) {
-      T0 <- data2[err$T0$results, ]
-      T0$time <- 0
-      T0$evid <- 1
-      T0$dose <- 0
-      T0$dur <- 0
-      T0$input <- 1
-      T0$addl <- NA
-      T0$ii <- NA
-      data2 <- rbind(data2, T0)
+  }
+  # Reorder IDs
+  if (length(grep("FAIL", err$contigID$msg)) > 0) {
+    if (any(data2$evid == 4)) {
+      report <- c(report, paste("Your dataset has EVID=4 events. Unable to sort subjects and times automatically."))
+    } else {
       data2 <- data2[order(data2$id, data2$time), ]
-      report <- c(report, paste("Subjects with first time > 0 have had a dummy dose of 0 inserted at time 0."))
-      err <- errcheck(data2 = data2, quiet = T)
+      report <- c(report, paste("Subjects have been grouped and ordered."))
     }
-    
-    # Alert for missing covariate data
-    if (length(grep("FAIL", err$covT0$msg)) > 0) {
-      report <- c(report, paste("All covariates must have values for each subject's first event.  See errors.xlsx and fix manually."))
-    }
-    
-    # Reorder times - assume times are in correct block
-    if (length(grep("FAIL", err$timeOrder$msg)) > 0) {
-      data2 <- makePMmatrixBlock(data2) %>%
-      dplyr::group_by(id, block) %>%
-      dplyr::arrange(time, .by_group = T) %>%
-      ungroup() %>%
-      select(-block)
-      
-      if (any(data2$evid == 4)) {
-        report <- c(report, paste("Your dataset has EVID=4 events. Times ordered within each event block."))
-      } else {
-        report <- c(report, paste("Times for each subject have been ordered."))
-      }
-    }
-    # Reorder IDs
-    if (length(grep("FAIL", err$contigID$msg)) > 0) {
-      if (any(data2$evid == 4)) {
-        report <- c(report, paste("Your dataset has EVID=4 events. Unable to sort subjects and times automatically."))
-      } else {
-        data2 <- data2[order(data2$id, data2$time), ]
-        report <- c(report, paste("Subjects have been grouped and ordered."))
-      }
-    }
-    # Fix missing EVID
-    if (length(grep("FAIL", err$missEVID$msg)) > 0) {
-      data2$evid[err$missEVID$results] <- ifelse(is.na(data2$dose[err$missEVID$results]), 0, 1)
-      report <- c(report, paste("EVID for events with doses changed to 1, otherwise 0."))
-    }
-    
-    # Fix malformed NA
-    if (length(grep("FAIL", err$mal_NA$msg)) > 0) {
-      # convert to "." then NA
-      data2 <- data2 %>%
-      mutate(across(everything(), ~ str_replace_all(.x, "(?<!\\d)\\s*\\.+\\s*", "."))) %>%
-      mutate(across(everything(), ~ dplyr::na_if(.x, ".")))
-      report <- c(report, paste("Malformed NAs corrected."))
-    }
-    
-    
-    # Report missing TIME
-    if (length(grep("FAIL", err$missTIME$msg)) > 0) {
-      report <- c(report, paste("Your dataset has missing times.  See errors.xlsx and fix manually."))
-    }
-    
-    # Report non-numeric columns
-    if (length(grep("FAIL", err$nonNum$msg)) > 0) {
-      report <- c(report, paste("Your dataset has non-numeric columns.  See errors.xlsx and fix manually."))
-    }
-    
-    # Report subjects with no observations
-    if (length(grep("FAIL", err$noObs$msg)) > 0) {
-      report <- c(report, paste("Your dataset has subjects with no observations.  See errors.xlsx and fix manually."))
-    }
-    
-    if (!quiet) {
-      cli::cli_h1("FIX DATA REPORT:")
-      report <- report[-1]
-      cat(paste0("(", 1:length(report), ") ", report, collapse = "\n"))
-      flush.console()
-    }
-    return(data2)
+  }
+  # Fix missing EVID
+  if (length(grep("FAIL", err$missEVID$msg)) > 0) {
+    data2$evid[err$missEVID$results] <- ifelse(is.na(data2$dose[err$missEVID$results]), 0, 1)
+    report <- c(report, paste("EVID for events with doses changed to 1, otherwise 0."))
+  }
+  
+  # Fix doses and observations separated
+  if (length(grep("FAIL", err$doseOut$msg)) > 0) {
+    report <- c(report, paste("Rows with both dose and observation values must be fixed manually. See errors.xlsx."))
+  }
+  
+  # Fix malformed NA
+  if (length(grep("FAIL", err$mal_NA$msg)) > 0) {
+    # convert to "." then NA
+    data2 <- data2 %>%
+    mutate(across(everything(), ~ str_replace_all(.x, "(?<!\\d)\\s*\\.+\\s*", "."))) %>%
+    mutate(across(everything(), ~ dplyr::na_if(.x, ".")))
+    report <- c(report, paste("Malformed NAs corrected."))
   }
   
   
-  # writeErrorFile ----------------------------------------------------------
+  # Report missing TIME
+  if (length(grep("FAIL", err$missTIME$msg)) > 0) {
+    report <- c(report, paste("Your dataset has missing times.  See errors.xlsx and fix manually."))
+  }
   
-  writeErrorFile <- function(dat, err, legacy, wb, sheet) {
-    # Definition of a table of n types of errors, each one with 'code' and 'color' properties
-    errorsTable <- data.frame(
-      comment = c(
-        # "ID > 11 characters",
-        "Missing EVID",
-        "Missing TIME",
-        "Missing DUR for dose event",
-        "Missing DOSE for dose event",
-        "Missing INPUT for dose event",
-        "Missing OUT for output (use -99)",
-        "Missing OUTEQ for observation",
-        "TIME not 0 at first event for subject",
-        "Missing one or more covariate values at TIME=0",
-        "TIME entry out of order",
-        "Non-contiguous subject ID",
-        "Non-numeric entry",
-        "Subject with no observations",
-        "Malformed NA value"    ),
-        stringsAsFactors = F
-      )
-      numError <- nrow(errorsTable)
-      errorsTable$code <- 1:numError
-      
-      # assign errors with row, column, and code
-      errList <- lapply(err[3:length(err)], function(x) (lapply(x$results, function(y) c(y, x$col, x$code))))
-      errDF <- data.frame(t(data.frame(errList)))
-      row.names(errDF) <- 1:nrow(errDF)
-      names(errDF) <- c("row", "column", "code")
-      errors <- errDF[!is.na(errDF$row), ]
-      formattedCols <- names(dat)
-      
-      if (legacy) {
-        pmVersion <- "POPDATA DEC_11"
-        formattedCols <- toupper(formattedCols)
-        formattedCols[1] <- "#ID"
-        legacy_offset <- 1
-      } else {
-        legacy_offset <- 0
-      }
-      
-      # set colors for errors
-      errColor <- "#FFFF00" # yellow, column specific
-      errColor2 <- "#00FF00" # green, across columns
-      errColor3 <- "#00AAFF" # blue, NA
-      errColor4 <- "#FFAA00" # orange, summary
-      
-      # create styles for error formatting
-      errStyle1 <- openxlsx::createStyle(fgFill = errColor)
-      errStyle2 <- openxlsx::createStyle(fgFill = errColor2)
-      errStyle3 <- openxlsx::createStyle(fgFill = errColor3)
-      errStyle4 <- openxlsx::createStyle(fgFill = errColor4)
-      
-      
-      # function to detect things that can't be coerced to numbers
-      is.char.num <- function(x) {
-        if (!is.na(x) && suppressWarnings(is.na(as.numeric(x)))) {
-          return(T)
-        } else {
-          return(F)
-        }
-      }
-      
-      # make second table to summarize errors
-      error_summary <- errors %>% filter(!code %in% c(10, 13, 15)) # we will add these back
-      
-      # Highlight the cells with errors
-      for (i in 1:nrow(errors)) {
-        thisErr <- errors[i, ]
-        colIndex <- thisErr$column
-        rowIndex <- thisErr$row
-        # special highlighting - overwrite some values
-        if (thisErr$code == 10) {
-          # if covariate error
-          covData <- getCov(dat)
-          colIndex <- covData$covstart +
-          which(is.na(dat[rowIndex, covData$covstart:covData$covend])) - 1
-          rowIndex <- rowIndex + 1 + legacy_offset
-          error_summary <- dplyr::bind_rows(
-            error_summary,
-            data.frame(
-              row = rep(rowIndex, length(colIndex)),
-              column = colIndex,
-              code = 10
-            )
-          )
-          openxlsx::addStyle(wb, sheet, errStyle2, rows = rowIndex, cols = colIndex)
-          purrr::walk2(colIndex, rowIndex, ~ openxlsx::removeComment(wb, sheet, col = .x, row = .y)) # Excel throws a fit if two comments written
-          purrr::walk2(colIndex, rowIndex, ~ openxlsx::writeComment(wb, sheet,
-            col = .x, row = .y,
-            comment = openxlsx::createComment(errorsTable$comment[10], author = "Pmetrics", visible = F)
-          ))
-        } else if (thisErr$code == 12) {
-          # special for non-numeric columns
-          colIndex <- thisErr$row # because of the way the error is detected
-          # find the non-numeric cells in a column
-          rowIndex2 <- which(sapply(dplyr::pull(dat, colIndex), is.char.num)) + 1 + legacy_offset
-          # find the malformed NAs as a special case and remove them (separate error below)
-          # because openxlsx can't overwrite comments
-          mal_NA <- stringr::str_count(dplyr::pull(dat, colIndex), "(?<!\\d)\\s*\\.+\\s*") %>%
-          map(~ which(.x == 1)) %>%
-          purrr::map_vec(~ length(.x) > 0) %>%
-          which() + 1 + legacy_offset
-          # remove any mal_NA from non-numeric
-          rowIndex2 <- rowIndex2[!rowIndex2 %in% mal_NA]
-          # highlight them if any left
-          if (length(rowIndex2) > 0) {
-            openxlsx::addStyle(wb, sheet, errStyle2, rows = rowIndex2, cols = colIndex)
-            purrr::walk2(colIndex, rowIndex2, ~ openxlsx::removeComment(wb, sheet, col = .x, row = .y)) # Excel throws a fit if two comments written
-            purrr::walk2(colIndex, rowIndex2, ~ openxlsx::writeComment(wb, sheet,
-              col = .x, row = .y,
-              comment = openxlsx::createComment(errorsTable$comment[13], author = "Pmetrics", visible = F)
-            ))
-            error_summary <- dplyr::bind_rows(
-              error_summary,
-              data.frame(
-                row = rowIndex2,
-                column = rep(colIndex, length(rowIndex2)),
-                code = 13
-              )
-            )
-          }
-        } else if (thisErr$code == 14) {
-          # malformed NA
-          colIndex <- thisErr$row # because of the way the error is detected
-          rowIndex3 <- stringr::str_count(dplyr::pull(dat, colIndex), "(?<!\\d)\\s*\\.+\\s*") %>%
-          map(~ which(.x == 1)) %>%
-          purrr::map_vec(~ length(.x) > 0) %>%
-          which() + 1 + legacy_offset
-          # highlight them
-          openxlsx::addStyle(wb, sheet, errStyle3, rows = rowIndex3, cols = colIndex)
-          purrr::walk2(colIndex, rowIndex3, ~ openxlsx::writeComment(wb, sheet,
-            col = .x, row = .y,
-            comment = openxlsx::createComment(errorsTable$comment[15], author = "Pmetrics", visible = F)
-          ))
-          error_summary <- dplyr::bind_rows(
-            error_summary,
-            data.frame(
-              row = rowIndex3,
-              column = rep(colIndex, length(rowIndex3)),
-              code = 15
-            )
-          )
-        } else {
-          # add the highlighting and comments for other errors
-          rowIndex <- rowIndex + 1 + legacy_offset
-          comment <- openxlsx::createComment(errorsTable$comment[thisErr$code], author = "Pmetrics", visible = F)
-          openxlsx::addStyle(wb, sheet, errStyle1, rowIndex, colIndex)
-          openxlsx::writeComment(wb, sheet, xy = c(colIndex, rowIndex), comment = comment)
-        }
-      } # end errors for loop
-      
-      # Add summaries to each column with errors
-      sum_errors <- dplyr::as_tibble(table(error_summary$column, error_summary$code, dnn = c("column", "code"))) %>%
-      group_by(column) %>%
-      summarize(n_err = sum(n))
-      
-      openxlsx::addStyle(wb, sheet, errStyle4, rows = 1 + legacy_offset, cols = as.numeric(sum_errors$column))
-      comments <- purrr::map(1:nrow(sum_errors), ~ openxlsx::createComment(paste(
-        sum_errors$n_err[.x],
-        ifelse(sum_errors$n_err[.x] > 1, "errors", "error")
-      ), author = "Pmetrics", visible = F))
-      purrr::walk(1:nrow(sum_errors), ~ openxlsx::writeComment(wb, sheet, col = as.numeric(sum_errors$column[.x]), row = 1 + legacy_offset, comment = comments[[.x]]))
-      
-      # Writing out the header of the Pmetrics data file : version line....
-      if (legacy) {
-        openxlsx::writeData(wb, sheet, pmVersion, xy = c(1, 1))
-      } # POPDATA...
-      
-      # ...and data frame column names
-      openxlsx::writeData(wb, sheet, t(formattedCols), xy = c(1, 1 + legacy_offset), colNames = F)
-      
-      # Add the data
-      openxlsx::writeData(wb, sheet, dat,
-        rowNames = F, colNames = F, xy = c(1, 2 + legacy_offset),
-        keepNA = T, na.string = "."
-      )
-      
-      return(wb)
+  # Report non-numeric columns
+  if (length(grep("FAIL", err$nonNum$msg)) > 0) {
+    report <- c(report, paste("Your dataset has non-numeric columns.  See errors.xlsx and fix manually."))
+  }
+  
+  # Report subjects with no observations
+  if (length(grep("FAIL", err$noObs$msg)) > 0) {
+    report <- c(report, paste("Your dataset has subjects with no observations.  See errors.xlsx and fix manually."))
+  }
+  
+  if (!quiet) {
+    cli::cli_h1("FIX DATA REPORT:")
+    report <- report[-1]
+    cat(paste0("(", 1:length(report), ") ", report, collapse = "\n"))
+    flush.console()
+  }
+  return(data2)
+}
+
+
+# writeErrorFile ----------------------------------------------------------
+
+writeErrorFile <- function(dat, err, legacy, wb, sheet) {
+  # Definition of a table of n types of errors, each one with 'code' and 'color' properties
+  errorsTable <- data.frame(
+    comment = c(
+      "", # old error now not used
+      "Missing EVID",
+      "Missing TIME",
+      "Missing DUR for dose event",
+      "Missing DOSE for dose event",
+      "Missing INPUT for dose event",
+      "Missing OUT for output (use -99)",
+      "Missing OUTEQ for observation",
+      "TIME not 0 at first event for subject",
+      "Missing one or more covariate values at TIME=0",
+      "TIME entry out of order",
+      "Non-contiguous subject ID",
+      "Non-numeric entry",
+      "Subject with no observations",
+      "Malformed NA value",
+      "Rows with both dose and observation values"),
+      stringsAsFactors = F
+    )
+    numError <- nrow(errorsTable)
+    errorsTable$code <- 1:numError
+    
+    # assign errors with row, column, and code
+    errList <- lapply(err[3:length(err)], function(x) (lapply(x$results, function(y) c(y, x$col, x$code))))
+    errDF <- data.frame(t(data.frame(errList)))
+    row.names(errDF) <- 1:nrow(errDF)
+    names(errDF) <- c("row", "column", "code")
+    errors <- errDF[!is.na(errDF$row), ]
+    formattedCols <- names(dat)
+    
+    if (legacy) {
+      pmVersion <- "POPDATA DEC_11"
+      formattedCols <- toupper(formattedCols)
+      formattedCols[1] <- "#ID"
+      legacy_offset <- 1
+    } else {
+      legacy_offset <- 0
     }
     
-    createInstructions <- function(wb) {
-      # set colors for errors
-      errColor <- "#FFFF00" # yellow, column header
-      errColor2 <- "#00FF00" # green, cell
-      errColor3 <- "#00AAFF" # blue, NA
-      errColor4 <- "#FFAA00" # orange, summary
-      
-      # create styles for error formatting
-      errStyle1 <- openxlsx::createStyle(fgFill = errColor)
-      errStyle2 <- openxlsx::createStyle(fgFill = errColor2)
-      errStyle3 <- openxlsx::createStyle(fgFill = errColor3)
-      errStyle4 <- openxlsx::createStyle(fgFill = errColor4)
-      textStyle <- openxlsx::createStyle(fontSize = 16)
-      
-      openxlsx::addWorksheet(wb, "Instructions", tabColour = "grey80")
-      openxlsx::addStyle(wb, "Instructions", textStyle, rows = 1:8, cols = 1)
-      openxlsx::addStyle(wb, "Instructions", textStyle, rows = 10:13, cols = 2)
-      openxlsx::writeData(wb, "Instructions",
-      c(
-        "'Errors' tab contains your data which has been standardized if read using PM_data$new().",
-        "Cells with errors are color coded according to table below.",
-        "Hover your mouse over each cell to read pop-up comment with details.",
-        "Comments on column headers in orange contain the total number of errors in that column.",
-        "If fix = TRUE, which is default for PM_data$new(), there will be an additional 'After_Fix' tab.",
-        "This tab contains your standardized data after Pmetrics attempted to repair your data.",
-        "Residual errors will be indicated as for the 'Errors' tab.",
-        "You can fix the remaining errors and save the 'After_Fix' tab as a new .csv data file."
-      ),
-      startCol = 1, startRow = 1
+    # set colors for errors
+    errColor <- "#FFFF00" # yellow, column specific
+    errColor2 <- "#00FF00" # green, across columns
+    errColor3 <- "#00AAFF" # blue, NA
+    errColor4 <- "#FFAA00" # orange, summary
+    
+    # create styles for error formatting
+    errStyle1 <- openxlsx::createStyle(fgFill = errColor)
+    errStyle2 <- openxlsx::createStyle(fgFill = errColor2)
+    errStyle3 <- openxlsx::createStyle(fgFill = errColor3)
+    errStyle4 <- openxlsx::createStyle(fgFill = errColor4)
+    
+    
+    # function to detect things that can't be coerced to numbers
+    is.char.num <- function(x) {
+      if (!is.na(x) && suppressWarnings(is.na(as.numeric(x)))) {
+        return(T)
+      } else {
+        return(F)
+      }
+    }
+    
+    # make second table to summarize errors
+    error_summary <- errors %>% filter(!code %in% c(10, 13, 15)) # we will add these back
+    
+    # Highlight the cells with errors
+    for (i in 1:nrow(errors)) {
+      thisErr <- errors[i, ]
+      colIndex <- thisErr$column
+      rowIndex <- thisErr$row
+      # special highlighting - overwrite some values
+      if (thisErr$code == 10) {
+        # if covariate error
+        covData <- getCov(dat)
+        colIndex <- covData$covstart +
+        which(is.na(dat[rowIndex, covData$covstart:covData$covend])) - 1
+        rowIndex <- rowIndex + 1 + legacy_offset
+        error_summary <- dplyr::bind_rows(
+          error_summary,
+          data.frame(
+            row = rep(rowIndex, length(colIndex)),
+            column = colIndex,
+            code = 10
+          )
+        )
+        openxlsx::addStyle(wb, sheet, errStyle2, rows = rowIndex, cols = colIndex)
+        purrr::walk2(colIndex, rowIndex, ~ openxlsx::removeComment(wb, sheet, col = .x, row = .y)) # Excel throws a fit if two comments written
+        purrr::walk2(colIndex, rowIndex, ~ openxlsx::writeComment(wb, sheet,
+          col = .x, row = .y,
+          comment = openxlsx::createComment(errorsTable$comment[10], author = "Pmetrics", visible = F)
+        ))
+      } else if (thisErr$code == 12) {
+        # special for non-numeric columns
+        colIndex <- thisErr$row # because of the way the error is detected
+        # find the non-numeric cells in a column
+        rowIndex2 <- which(sapply(dplyr::pull(dat, colIndex), is.char.num)) + 1 + legacy_offset
+        # find the malformed NAs as a special case and remove them (separate error below)
+        # because openxlsx can't overwrite comments
+        mal_NA <- stringr::str_count(dplyr::pull(dat, colIndex), "(?<!\\d)\\s*\\.+\\s*") %>%
+        map(~ which(.x == 1)) %>%
+        purrr::map_vec(~ length(.x) > 0) %>%
+        which() + 1 + legacy_offset
+        # remove any mal_NA from non-numeric
+        rowIndex2 <- rowIndex2[!rowIndex2 %in% mal_NA]
+        # highlight them if any left
+        if (length(rowIndex2) > 0) {
+          openxlsx::addStyle(wb, sheet, errStyle2, rows = rowIndex2, cols = colIndex)
+          purrr::walk2(colIndex, rowIndex2, ~ openxlsx::removeComment(wb, sheet, col = .x, row = .y)) # Excel throws a fit if two comments written
+          purrr::walk2(colIndex, rowIndex2, ~ openxlsx::writeComment(wb, sheet,
+            col = .x, row = .y,
+            comment = openxlsx::createComment(errorsTable$comment[13], author = "Pmetrics", visible = F)
+          ))
+          error_summary <- dplyr::bind_rows(
+            error_summary,
+            data.frame(
+              row = rowIndex2,
+              column = rep(colIndex, length(rowIndex2)),
+              code = 13
+            )
+          )
+        }
+      } else if (thisErr$code == 14) {
+        # malformed NA
+        colIndex <- thisErr$row # because of the way the error is detected
+        rowIndex3 <- stringr::str_count(dplyr::pull(dat, colIndex), "(?<!\\d)\\s*\\.+\\s*") %>%
+        map(~ which(.x == 1)) %>%
+        purrr::map_vec(~ length(.x) > 0) %>%
+        which() + 1 + legacy_offset
+        # highlight them
+        openxlsx::addStyle(wb, sheet, errStyle3, rows = rowIndex3, cols = colIndex)
+        purrr::walk2(colIndex, rowIndex3, ~ openxlsx::writeComment(wb, sheet,
+          col = .x, row = .y,
+          comment = openxlsx::createComment(errorsTable$comment[15], author = "Pmetrics", visible = F)
+        ))
+        error_summary <- dplyr::bind_rows(
+          error_summary,
+          data.frame(
+            row = rowIndex3,
+            column = rep(colIndex, length(rowIndex3)),
+            code = 15
+          )
+        )
+      } else {
+        # add the highlighting and comments for other errors
+        rowIndex <- rowIndex + 1 + legacy_offset
+        comment <- openxlsx::createComment(errorsTable$comment[thisErr$code], author = "Pmetrics", visible = F)
+        openxlsx::addStyle(wb, sheet, errStyle1, rowIndex, colIndex)
+        openxlsx::writeComment(wb, sheet, xy = c(colIndex, rowIndex), comment = comment)
+      }
+    } # end errors for loop
+    
+    # Add summaries to each column with errors
+    sum_errors <- dplyr::as_tibble(table(error_summary$column, error_summary$code, dnn = c("column", "code"))) %>%
+    group_by(column) %>%
+    summarize(n_err = sum(n))
+    
+    openxlsx::addStyle(wb, sheet, errStyle4, rows = 1 + legacy_offset, cols = as.numeric(sum_errors$column))
+    comments <- purrr::map(1:nrow(sum_errors), ~ openxlsx::createComment(paste(
+      sum_errors$n_err[.x],
+      ifelse(sum_errors$n_err[.x] > 1, "errors", "error")
+    ), author = "Pmetrics", visible = F))
+    purrr::walk(1:nrow(sum_errors), ~ openxlsx::writeComment(wb, sheet, col = as.numeric(sum_errors$column[.x]), row = 1 + legacy_offset, comment = comments[[.x]]))
+    
+    # Writing out the header of the Pmetrics data file : version line....
+    if (legacy) {
+      openxlsx::writeData(wb, sheet, pmVersion, xy = c(1, 1))
+    } # POPDATA...
+    
+    # ...and data frame column names
+    openxlsx::writeData(wb, sheet, t(formattedCols), xy = c(1, 1 + legacy_offset), colNames = F)
+    
+    # Add the data
+    openxlsx::writeData(wb, sheet, dat,
+      rowNames = F, colNames = F, xy = c(1, 2 + legacy_offset),
+      keepNA = T, na.string = "."
     )
     
-    openxlsx::addStyle(wb, "Instructions", errStyle1, rows = 10, cols = 1)
-    openxlsx::addStyle(wb, "Instructions", errStyle2, rows = 11, cols = 1)
-    openxlsx::addStyle(wb, "Instructions", errStyle3, rows = 12, cols = 1)
-    openxlsx::addStyle(wb, "Instructions", errStyle4, rows = 13, cols = 1)
+    return(wb)
+  }
+  
+  createInstructions <- function(wb) {
+    # set colors for errors
+    errColor <- "#FFFF00" # yellow, column header
+    errColor2 <- "#00FF00" # green, cell
+    errColor3 <- "#00AAFF" # blue, NA
+    errColor4 <- "#FFAA00" # orange, summary
     
+    # create styles for error formatting
+    errStyle1 <- openxlsx::createStyle(fgFill = errColor)
+    errStyle2 <- openxlsx::createStyle(fgFill = errColor2)
+    errStyle3 <- openxlsx::createStyle(fgFill = errColor3)
+    errStyle4 <- openxlsx::createStyle(fgFill = errColor4)
+    textStyle <- openxlsx::createStyle(fontSize = 16)
+    
+    openxlsx::addWorksheet(wb, "Instructions", tabColour = "grey80")
+    openxlsx::addStyle(wb, "Instructions", textStyle, rows = 1:8, cols = 1)
+    openxlsx::addStyle(wb, "Instructions", textStyle, rows = 10:13, cols = 2)
     openxlsx::writeData(wb, "Instructions",
     c(
-      "Errors specific to a particular column",
-      "Errors not specific to a defined column, i.e. non-numeric entries or missing covariates at time 0.",
-      "Malformed NA values, which should only be '.'",
-      "Used for column headers to report the total number of errors in that column."
+      "'Errors' tab contains your data which has been standardized if read using PM_data$new().",
+      "Cells with errors are color coded according to table below.",
+      "Hover your mouse over each cell to read pop-up comment with details.",
+      "Comments on column headers in orange contain the total number of errors in that column.",
+      "If fix = TRUE, which is default for PM_data$new(), there will be an additional 'After_Fix' tab.",
+      "This tab contains your standardized data after Pmetrics attempted to repair your data.",
+      "Residual errors will be indicated as for the 'Errors' tab.",
+      "You can fix the remaining errors and save the 'After_Fix' tab as a new .csv data file."
     ),
-    startCol = 2, startRow = 10
+    startCol = 1, startRow = 1
   )
-  return(wb)
+  
+  openxlsx::addStyle(wb, "Instructions", errStyle1, rows = 10, cols = 1)
+  openxlsx::addStyle(wb, "Instructions", errStyle2, rows = 11, cols = 1)
+  openxlsx::addStyle(wb, "Instructions", errStyle3, rows = 12, cols = 1)
+  openxlsx::addStyle(wb, "Instructions", errStyle4, rows = 13, cols = 1)
+  
+  openxlsx::writeData(wb, "Instructions",
+  c(
+    "Errors specific to a particular column",
+    "Errors not specific to a defined column, i.e. non-numeric entries or missing covariates at time 0.",
+    "Malformed NA values, which should only be '.'",
+    "Used for column headers to report the total number of errors in that column."
+  ),
+  startCol = 2, startRow = 10
+)
+return(wb)
 }
 
 
@@ -1906,7 +1927,11 @@ plot.PM_data <- function(
       symbol = group_symbols[as.integer(group)]
     ) %>%
     mutate(
-      color = ifelse(cens != "none" & cens != "0", opposite_color(color, degrees = 90), color),
+      color = dplyr::case_when(
+        cens == "bloq" | cens == "1" | color == "aloq" | color == "-1" ~ opposite_color(color, degrees = 90),
+        .default = color
+      ),
+      #color = ifelse(cens != "none" & cens != "0", opposite_color(color, degrees = 90), color),
       symbol = dplyr::case_when(
         cens == "bloq" | cens == "1" ~ "triangle-down", 
         cens == "none" | cens == "0" ~ as.character(symbol),
@@ -1922,7 +1947,7 @@ plot.PM_data <- function(
       ungroup()
       
       # if ID is numeric, arrange by numeric ID
-      if(!any(is.na(suppressWarnings(as.numeric(allsub$id))))) {
+      if(overlay && !any(is.na(suppressWarnings(as.numeric(allsub$id))))) {
         allsub <- allsub %>%
         mutate(id = as.numeric(id)) %>% arrange(id, time)
       }
@@ -2042,6 +2067,7 @@ plot.PM_data <- function(
       if (!checkRequiredPackages("trelliscopejs")) {
         cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
       }
+      
       sub_split <- allsub %>%
       nest(data = -id) %>%
       mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = FALSE, includePred = includePred)))

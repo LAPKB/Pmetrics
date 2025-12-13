@@ -4,12 +4,14 @@
 \alias{PMcheck}
 \title{Check Pmetrics Inputs for Errors}
 \usage{
-PMcheck(data, fix = FALSE, quiet = FALSE)
+PMcheck(data, path, fix = FALSE, quiet = FALSE)
 }
 \arguments{
 \item{data}{The name of a Pmetrics .csv matrix file in the current working directory,
 the full path to one not in the current working directory, or a data.frame containing
 the output of a previous \link{PMreadMatrix} command.}
+
+\item{path}{The path of the data if originally a file}
 
 \item{fix}{Boolean operator; if \code{TRUE}, Pmetrics will attempt to fix errors in the data file.
 Default is \code{FALSE}.}
