@@ -1,0 +1,12 @@
+Binding: create_pmetrics_project
+Title: Pmetrics Project
+Subtitle: Create a new Pmetrics project with the standard directory structure
+Caption: New Pmetrics Project
+Icon: pmetrics-logo.png
+OpenFiles: Rscript/Analysis.R
+
+Parameter: project_name
+Widget: TextInput
+Label: Project Name
+Default: MyProject
+Position: left
