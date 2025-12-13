@@ -1,4 +1,4 @@
-
+[![Pmetrics status badge](https://lapkb.r-universe.dev/Pmetrics/badges/version)](https://lapkb.r-universe.dev/Pmetrics)
 
 # Pmetrics <a href="https://lapkb.github.io/Pmetrics/"><img src="man/figures/Pmetrics_logo.png" align="right" height="100" width = "100" alt="Pmetrics" /></a>
 
