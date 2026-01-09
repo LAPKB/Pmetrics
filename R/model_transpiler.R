@@ -94,10 +94,35 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
       
       # Math funcs
       "abs" = sprintf("(%s).abs()", rust_args[[1]]),
+      "ln" = sprintf("(%s).ln()", rust_args[[1]]),
       "log" = sprintf("(%s).ln()", rust_args[[1]]),
       "log10" = sprintf("(%s).log10()", rust_args[[1]]),
+      "log2" = sprintf("(%s).log2()", rust_args[[1]]),
       "exp" = sprintf("(%s).exp()", rust_args[[1]]),
       "sqrt" = sprintf("(%s).sqrt()", rust_args[[1]]),
+      
+      # Trigonometric
+      "sin" = sprintf("(%s).sin()", rust_args[[1]]),
+      "cos" = sprintf("(%s).cos()", rust_args[[1]]),
+      "tan" = sprintf("(%s).tan()", rust_args[[1]]),
+      "asin" = sprintf("(%s).asin()", rust_args[[1]]),
+      "acos" = sprintf("(%s).acos()", rust_args[[1]]),
+      "atan" = sprintf("(%s).atan()", rust_args[[1]]),
+      "atan2" = sprintf("(%s).atan2(%s)", rust_args[[1]], rust_args[[2]]),
+      
+      # Hyperbolic
+      "sinh" = sprintf("(%s).sinh()", rust_args[[1]]),
+      "cosh" = sprintf("(%s).cosh()", rust_args[[1]]),
+      "tanh" = sprintf("(%s).tanh()", rust_args[[1]]),
+      "asinh" = sprintf("(%s).asinh()", rust_args[[1]]),
+      "acosh" = sprintf("(%s).acosh()", rust_args[[1]]),
+      "atanh" = sprintf("(%s).atanh()", rust_args[[1]]),
+      
+      # Rounding
+      "floor" = sprintf("(%s).floor()", rust_args[[1]]),
+      "ceiling" = sprintf("(%s).ceil()", rust_args[[1]]),
+      "round" = sprintf("(%s).round()", rust_args[[1]]),
+      "trunc" = sprintf("(%s).trunc()", rust_args[[1]]),
       
       # Assignment
       "<-" = ,
