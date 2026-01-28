@@ -571,6 +571,8 @@ PM_sim <- R6::R6Class(
           ))
         }
         
+        useTheta <- FALSE # default, unless poppar is theta.csv format
+        
         # CASE 1 - poppar is PM_result
         
         if (inherits(poppar, "PM_result")) {
@@ -666,8 +668,13 @@ PM_sim <- R6::R6Class(
           # not returning because going on to simulate below
           
           ### This is for loading a saved simulation from file
+        } else if (inherits(poppar, "data.frame")){ # poppar is in the form of theta.csv
+          poppar$prob <- 1/nrow(poppar)
+          final <- list(popPoints = poppar)
+          useTheta <- TRUE
+          case <- 8
           
-          # CASE 8 - last option, poppar is filename
+          # CASE 9 - last option, poppar is filename
         } else {
           if (file.exists(poppar)) {
             if (grepl("rds$", poppar, perl = TRUE)) { # poppar is rds filename
@@ -695,9 +702,9 @@ PM_sim <- R6::R6Class(
         } # end if poppar is filename
         
         # If we reach this point, we are creating a new simulation
-   
+        
         # check model and data
-        if(case %in% c(2, 3, 7)) { # need model and data if not from PM_result
+        if(case %in% c(2, 3, 7, 8)) { # need model and data if not from PM_result
           if (missing(model)) { model <- "model.txt" } # try the default
           if (!inherits(model, "PM_model")) {model <- PM_model$new(model, compile = FALSE)} # compile later
           
@@ -791,7 +798,7 @@ PM_sim <- R6::R6Class(
           seed = seed, ode = ode,
           noise = noise,
           makecsv = makecsv, outname = outname, clean = clean,
-          quiet = quiet,
+          quiet = quiet, useTheta = useTheta,
           nocheck = nocheck, overwrite = overwrite, msg = msg
         )
         
@@ -899,14 +906,14 @@ PM_sim <- R6::R6Class(
       covariate, usePost,
       seed, ode,
       noise,
-      makecsv, outname, clean, quiet,
+      makecsv, outname, clean, quiet, useTheta,
       nocheck, overwrite, msg) {
         # DATA PROCESSING AND VALIDATION ------------------------------------------
         
         
         ###### POPPAR
         
-        npar <- nrow(poppar$popCov)
+        npar <- ncol(poppar$popPoints) - 1
         
         
         ###### MODEL
@@ -1182,13 +1189,13 @@ PM_sim <- R6::R6Class(
               "i" = "E.g. {.code limits = list(wt = c(40, 80), age = c(10, 50))}. See {.fn PM_sim} for help."
             ))
           }
-      
+          
           #  figure out which covariates have different limits and change them
           
           covUpdates <- tibble::enframe(covariate$limits, name = "par", value = "rng") %>%
           tidyr::unnest_wider(rng, names_sep = "") %>%
           dplyr::rename(min = rng1, max = rng2)
-      
+          
           covLimits <- dplyr::rows_update(covLimits, covUpdates, by = "par")
           
           # goodNames <- which(names(covMean) %in% names(covariate$limits))
@@ -1350,17 +1357,21 @@ PM_sim <- R6::R6Class(
       } else { # postToUse is false
         
         # set theta as nsim rows drawn from prior
-        thisPrior <- private$getSimPrior(
-          i = 1,
-          poppar = poppar,
-          split = split,
-          postToUse = NULL,
-          limits = limits,
-          seed = seed[1],
-          nsim = nsim,
-          toInclude = toInclude,
-          msg = msg
-        )
+        if(!useTheta){
+          thisPrior <- private$getSimPrior(
+            i = 1,
+            poppar = poppar,
+            split = split,
+            postToUse = NULL,
+            limits = limits,
+            seed = seed[1],
+            nsim = nsim,
+            toInclude = toInclude,
+            msg = msg
+          )
+        } else {
+          thisPrior <- list(thetas = poppar$popPoints)
+        }
         
         self$data <- private$getSim(thisPrior, template, mod, noise2, msg = msg)
       }
@@ -1506,7 +1517,6 @@ PM_sim <- R6::R6Class(
     
     # call simulator and process results
     getSim = function(thisPrior, template, mod, noise2, msg = NULL) {
-      
       thetas <- thisPrior$thetas %>%
       select(-prob) %>%
       as.matrix()

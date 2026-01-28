@@ -35,11 +35,44 @@ usethis::use_data(mic1, overwrite = TRUE)
 
 # Run Files -------------------------------------------------------------------
 
-model <- readLines(file.path(wd, "model.txt"))
-usethis::use_data(model, overwrite = TRUE)
+# model <- readLines(file.path(wd, "model.txt"))
+# usethis::use_data(model, overwrite = TRUE)
 
-# model file
-modEx <- PM_model$new(file.path(wd, "model.txt"))
+# # model file
+#modEx <- PM_model$new(file.path(wd, "model.txt"))
+modEx <- PM_model$new(
+
+  pri = list(
+    ka = ab(0.100, 0.900),
+    ke = ab(0.001, 0.100),
+    v = ab(30.000, 120.000),
+    tlag1 = ab(0.000, 4.000)
+  ),
+  cov = list(
+    wt = interp(),
+    africa = interp(),
+    age = interp(),
+    gender = interp(),
+    height = interp()
+  ),
+  lag = function () 
+  {
+      lag[1] = tlag1
+  },
+  eqn = function () 
+  {
+      dx[1] = b[1] - ka * x[1]
+      dx[2] = rateiv[1] + ka * x[1] - ke * x[2]
+  },
+  out = function () 
+  {
+      y[1] = x[2]/v
+  },
+  err = list(
+    proportional(5, c(0.0, 0.1, -0.0, 0.0))
+  )
+
+)
 usethis::use_data(modEx, overwrite = TRUE)
 
 # data

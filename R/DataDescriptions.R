@@ -195,15 +195,3 @@
 
 
 "locales"
-
-
-#' @name model
-#' @docType data
-#' @title Pmetrics model
-#' @usage model
-#' @format Sample model text
-#' @author Michael Neely
-#' @keywords datasets
-
-
-"model"

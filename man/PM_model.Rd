@@ -6,8 +6,8 @@
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
-PM_model objects contain the variables, covariates, equations and error models
-necessary to run a population analysis.
+PM_model objects contain the variables, covariates, equations and
+error models necessary to run a population analysis.
 }
 \details{
 PM_model objects are one of two fundamental objects in Pmetrics, along with
@@ -95,6 +95,7 @@ the original arguments into Rust}
 \item \href{#method-PM_model-map}{\code{PM_model$map()}}
 \item \href{#method-PM_model-sim}{\code{PM_model$sim()}}
 \item \href{#method-PM_model-compile}{\code{PM_model$compile()}}
+\item \href{#method-PM_model-save}{\code{PM_model$save()}}
 \item \href{#method-PM_model-copy}{\code{PM_model$copy()}}
 \item \href{#method-PM_model-clone}{\code{PM_model$clone()}}
 }
@@ -699,6 +700,22 @@ If the model is already compiled, the method does nothing.
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_model-save"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-save}{}}}
+\subsection{Method \code{save()}}{
+Save model to file (deprecated).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$save()}\if{html}{\out{</div>}}
+}
+
+\subsection{Details}{
+This method is deprecated. Existing or manually created model files may be read with \code{PM_model$new(filename)},
+but including model code in scripts is preferred, as this makes models used in runs transparent and more easily edited.
+Use the \code{PM_model$copy()} method instead to copy the model code to the clipboard and paste into scripts.
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-copy"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-copy}{}}}
 \subsection{Method \code{copy()}}{
@@ -709,8 +726,7 @@ Copy model code to clipboard.
 
 \subsection{Details}{
 This method copies the R code to create the model to the clipboard.
-This is useful for saving the model code in a script, as model files
-will be deprecated in future versions of Pmetrics.
+This is useful for saving the model code in a script.
 }
 
 }

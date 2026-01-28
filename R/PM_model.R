@@ -4,7 +4,6 @@
 # Use menu item Code -> Jump To... for rapid navigation
 # Keyboard Option+Command+O (Mac) or Alt+O (Windows) to fold all
 
-
 # R6 ----------------------------------------------------------------------
 
 
@@ -14,8 +13,8 @@
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
-#' PM_model objects contain the variables, covariates, equations and error models
-#' necessary to run a population analysis.
+#' PM_model objects contain the variables, covariates, equations and
+#' error models necessary to run a population analysis.
 #'
 #' @details
 #' PM_model objects are one of two fundamental objects in Pmetrics, along with
@@ -24,9 +23,9 @@
 #' population analysis, i.e. estimating the probability distribution of model equation
 #' paramter values in the population. The PM_model object is created using the
 #' a model building app (coming soon), by defining a list
-#' directly in R, or by reading a model text file. When reading a model text file, 
+#' directly in R, or by reading a model text file. When reading a model text file,
 #' the list code is generated and copied to the clipboard for pasting in to scripts.
-#' Model files will be deprecated in future versions of Pmetrics.  
+#' Model files will be deprecated in future versions of Pmetrics.
 #'
 #' **Some notes on the example at the end of this help page:**
 #'
@@ -87,7 +86,7 @@ PM_model <- R6::R6Class(
     #' @field binary_path The full path and filename of the compiled model
     binary_path = NULL,
     #' @description
-    #' This is the method to create a new `PM_model` object. 
+    #' This is the method to create a new `PM_model` object.
     #'
     #' The first argument allows creation of a model from a variety of pre-existing
     #' sources, and if used, all the subsequent arguments will be ignored. If a model
@@ -131,7 +130,7 @@ PM_model <- R6::R6Class(
     #' * Quoted name of a model text file in the
     #' working directory which will be read and passed to Rust engine. **Note:** Model
     #' text files are being deprecated in future versions of Pmetrics.
-    #' 
+    #'
     #' * List that defines the model directly in R. This will be in the same format as if
     #' all the subsequent arguments were used. For example:
     #'     ```
@@ -410,9 +409,8 @@ PM_model <- R6::R6Class(
               ))
             }
             self$arg_list <- private$R6fromFile(x) # read file and populate fields
-            cli::cli_inform(c("i" = "{.strong Note:} Model files will be deprecated in future versions of Pmetrics."))
+            # cli::cli_inform(c("i" = "{.strong Note:} Model files will be deprecated in future versions of Pmetrics."))
             self$copy() # copy to clipboard
-            
           } else if (is.list(x)) { # x is a list in R
             purrr::walk(model_sections, \(s) {
               if (s %in% names(x)) {
@@ -477,7 +475,6 @@ PM_model <- R6::R6Class(
         if (is.null(self$arg_list$eqn)) {
           msg <- c(msg, "No equations or template provided. Please provide either a template (see {.help model_lib}) or differential equations.")
         }
-        
         
         
         # Get model template name if present (NA if absent) and set type
@@ -1089,11 +1086,6 @@ PM_model <- R6::R6Class(
           }
           
           
-          
-          # if (getPMoptions()$backend != "rust") {
-          #   cli::cli_abort(c("x" = "Error: unsupported backend.", "i" = "See help for {.fn setPMoptions}"))
-          # }
-          
           #### Include or exclude subjects ####
           if (is.null(include)) {
             include <- unique(data$standard_data$id)
@@ -1345,17 +1337,15 @@ PM_model <- R6::R6Class(
           
           temp_csv <- tempfile(fileext = ".csv")
           data$save(temp_csv, header = FALSE)
-          if (getPMoptions()$backend == "rust") {
+          
+          if (is.null(self$binary_path)) {
+            self$compile()
             if (is.null(self$binary_path)) {
-              self$compile()
-              if (is.null(self$binary_path)) {
-                cli::cli_abort(c("x" = "Model must be compiled before simulating."))
-              }
+              cli::cli_abort(c("x" = "Model must be compiled before simulating."))
             }
-            sim <- simulate_all(temp_csv, self$binary_path, theta, kind = tolower(self$model_list$type))
-          } else {
-            cli::cli_abort(c("x" = "This function can only be used with the rust backend."))
           }
+          sim <- simulate_all(temp_csv, self$binary_path, theta, kind = tolower(self$model_list$type))
+          
           return(sim)
         },
         #' @description
@@ -1377,7 +1367,7 @@ PM_model <- R6::R6Class(
           output_path <- tempfile(pattern = "model_", fileext = ".pmx")
           cli::cli_inform(c("i" = "Compiling model..."))
           # path inside Pmetrics package
-          template_path <- if (Sys.getenv("env") == "Development") { temporary_path() } else { system.file(package = "Pmetrics")}
+          template_path <- if (Sys.getenv("env") == "Development") { file.path(temporary_path(), "template") } else { system.file(package = "Pmetrics")}
           if (file.access(template_path, 0) == -1 | file.access(template_path, 2) == -1){
             cli::cli_abort(c("x" = "Template path {.path {template_path}} does not exist or is not writable.",
             "i" = "Please set the template path with {.fn setPMoptions} (choose {.emph Compile Options}), to an existing, writable folder."
@@ -1399,18 +1389,32 @@ PM_model <- R6::R6Class(
         return(invisible(self))
       }, # end compile method
       #' @description
+      #' Save model to file (deprecated).
+      #' @details
+      #' This method is deprecated. Existing or manually created model files may be read with `PM_model$new(filename)`,
+      #' but including model code in scripts is preferred, as this makes models used in runs transparent and more easily edited.
+      #' Use the `PM_model$copy()` method instead to copy the model code to the clipboard and paste into scripts.
+      save = function(){
+        cli::cli_warn(c("x" = "Saving model files is deprecated.", 
+        "i" = "Model list copied to clipboard."))
+        self$copy()
+        return(invisible(self))
+      },
+      
+      
+      
+      
+      #' @description
       #' Copy model code to clipboard.
       #' @details
       #' This method copies the R code to create the model to the clipboard.
-      #' This is useful for saving the model code in a script, as model files
-      #' will be deprecated in future versions of Pmetrics.
+      #' This is useful for saving the model code in a script.
       copy = function() {
         arg_list <- self$arg_list
-
+        
         # pri
         pri <- c(
           "  pri = list(\n",
-          
           purrr::map_chr(names(arg_list$pri), \(i) {
             sprintf("    %s = ab(%.3f, %.3f)", i, arg_list$pri[[i]]$min, arg_list$pri[[i]]$max)
           }) %>% paste(collapse = ",\n"),
@@ -1488,37 +1492,37 @@ PM_model <- R6::R6Class(
         err <- c(
           "\n  err = list(\n",
           purrr::map_chr((arg_list$err), \(i) {
-            sprintf("    %s(%i, c(%.1f, %.1f, %.1f, %.1f)%s)", 
-            i$type,
-            i$initial,
-            ifelse(length(i$coeff) >= 1, i$coeff[1], 0),
-            ifelse(length(i$coeff) >= 2, i$coeff[2], 0),
-            ifelse(length(i$coeff) >= 3, i$coeff[3], 0),
-            ifelse(length(i$coeff) >= 4, i$coeff[4], 0),
-            ifelse(i$fixed, ", fixed = TRUE", "")
-          )
-        }) %>% paste(collapse = ",\n"),
-        "\n  )"
-      )
-      
-      model_copy <- c(
-        "mod <- PM_model$new(\n",
-        paste0(c(pri, cov, sec, fa, ini, lag, eqn, out, err), collapse = ""),
-        "\n)"
-      )
-      cli::cli_inform(c(
-        ">" = "Model code copied to clipboard.",
-        ">" = "Paste the code into your script for future use, renaming the assigned variable if needed."))
-      if (requireNamespace("clipr", quietly = TRUE)) {
-        clipr::write_clip(model_copy)
-      } else {
-        cli::cli_inform(c("i" = "Please install the {.pkg clipr} package to enable clipboard functionality."))
-        cat(model_copy, sep = "\n")
-      }
-      return(invisible(self))
-      
+            sprintf(
+              "    %s(%i, c(%.1f, %.1f, %.1f, %.1f)%s)",
+              i$type,
+              i$initial,
+              ifelse(length(i$coeff) >= 1, i$coeff[1], 0),
+              ifelse(length(i$coeff) >= 2, i$coeff[2], 0),
+              ifelse(length(i$coeff) >= 3, i$coeff[3], 0),
+              ifelse(length(i$coeff) >= 4, i$coeff[4], 0),
+              ifelse(i$fixed, ", fixed = TRUE", "")
+            )
+          }) %>% paste(collapse = ",\n"),
+          "\n  )"
+        )
+        
+        model_copy <- c(
+          "mod <- PM_model$new(\n",
+          paste0(c(pri, cov, sec, fa, ini, lag, eqn, out, err), collapse = ""),
+          "\n)"
+        )
+        cli::cli_inform(c(
+          ">" = "Model code copied to clipboard.",
+          ">" = "Paste the code into your script for future use, renaming the assigned variable if needed."
+        ))
+        if (requireNamespace("clipr", quietly = TRUE)) {
+          clipr::write_clip(model_copy)
+        } else {
+          cli::cli_inform(c("i" = "Please install the {.pkg clipr} package to enable clipboard functionality."))
+          cat(model_copy, sep = "\n")
+        }
+        return(invisible(self))
       } # end copy
-      
     ), # end public list
     private = list(
       # read file
@@ -1686,7 +1690,7 @@ PM_model <- R6::R6Class(
         flush.console()
         return(arg_list)
       }, # end R6fromFile
-  
+      
       write_model_to_rust = function(file_path = "main.rs") {
         # Check if model_list is not NULL
         if (is.null(self$model_list)) {
@@ -1720,256 +1724,253 @@ PM_model <- R6::R6Class(
       },
       get_primary = function() {
         return(tolower(self$model_list$parameters))
-      }  
-  ) # end private
-) # end R6Class PM_model
-
-##### These functions create various model components
-
-#' @title Additive error model
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Create an additive (lambda) error model
-#' @param initial Initial value for lambda
-#' @param coeff Vector of coefficients defining assay error polynomial
-#' @param fixed Estimate if `FALSE` (default).
-#' @export
-additive <- function(initial, coeff, fixed = FALSE) {
-  PM_err$new(type = "additive", initial = initial, coeff = coeff, fixed = fixed)
-}
-
-
-
-#' @title Proportional error model
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Create an proportional (gamma) error model
-#' @param initial Initial value for gamma
-#' @param coeff Vector of coefficients defining assay error polynomial
-#' @param fixed Estimate if `FALSE` (default).
-#' @export
-proportional <- function(initial, coeff, fixed = FALSE) {
-  PM_err$new(type = "proportional", initial = initial, coeff = coeff, fixed = fixed)
-}
-
-PM_err <- R6::R6Class(
-  "PM_err",
-  public = list(
-    #' @field type Type of error model, either "additive" or "proportional".
-    type = NULL,
-    #' @field initial Initial value for the error model.
-    initial = NULL,
-    #' @field coeff Coefficients for the assay error polynomial.
-    coeff = NULL,
-    #' @field fixed If `TRUE`, the error model is fixed and not estimated.
-    fixed = NULL,
-    initialize = function(type, initial, coeff, fixed) {
-      self$type <- type
-      self$initial <- initial
-      self$coeff <- coeff
-      self$fixed <- fixed
-    },
-    print = function() {
-      if (self$fixed) {
-        cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with fixed value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
-      } else {
-        cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
       }
-    },
-    flatten = function() {
-      list(initial = self$initial, coeff = self$coeff, type = self$type, fixed = self$fixed)
-    }
+    ) # end private
+  ) # end R6Class PM_model
+  
+  ##### These functions create various model components
+  
+  #' @title Additive error model
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #'
+  #' Create an additive (lambda) error model
+  #' @param initial Initial value for lambda
+  #' @param coeff Vector of coefficients defining assay error polynomial
+  #' @param fixed Estimate if `FALSE` (default).
+  #' @export
+  additive <- function(initial, coeff, fixed = FALSE) {
+    PM_err$new(type = "additive", initial = initial, coeff = coeff, fixed = fixed)
+  }
+  
+  
+  #' @title Proportional error model
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #'
+  #' Create an proportional (gamma) error model
+  #' @param initial Initial value for gamma
+  #' @param coeff Vector of coefficients defining assay error polynomial
+  #' @param fixed Estimate if `FALSE` (default).
+  #' @export
+  proportional <- function(initial, coeff, fixed = FALSE) {
+    PM_err$new(type = "proportional", initial = initial, coeff = coeff, fixed = fixed)
+  }
+  
+  PM_err <- R6::R6Class(
+    "PM_err",
+    public = list(
+      #' @field type Type of error model, either "additive" or "proportional".
+      type = NULL,
+      #' @field initial Initial value for the error model.
+      initial = NULL,
+      #' @field coeff Coefficients for the assay error polynomial.
+      coeff = NULL,
+      #' @field fixed If `TRUE`, the error model is fixed and not estimated.
+      fixed = NULL,
+      initialize = function(type, initial, coeff, fixed) {
+        self$type <- type
+        self$initial <- initial
+        self$coeff <- coeff
+        self$fixed <- fixed
+      },
+      print = function() {
+        if (self$fixed) {
+          cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with fixed value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
+        } else {
+          cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
+        }
+      },
+      flatten = function() {
+        list(initial = self$initial, coeff = self$coeff, type = self$type, fixed = self$fixed)
+      }
+    )
   )
-)
-
-#' @title Primary parameter values
-#' @description
-#' `r lifecycle::badge("experimental")`
-#' Define primary model parameter object.
-#' This is used internally by the `PM_model` class.
-#' @keywords internal
-PM_pri <- R6::R6Class(
-  "PM_pri",
-  public = list(
-    #' @field min Minimum value of the range.
-    min = NULL,
-    #' @field max Maximum value of the range.
-    max = NULL,
-    #' @field mean Mean value of the range, calculated as (min + max) / 2.
-    mean = NULL,
-    #' @field sd Standard deviation of the range, calculated as (max - min) / 6.
-    sd = NULL,
-    #' @description
-    #' Initialize a new range object.
-    #' @param min Minimum value of the range.
-    #' @param max Maximum value of the range.
-    initialize = function(min, max) {
-      self$min <- min
-      self$max <- max
-      self$mean <- (min + max) / 2
-      self$sd <- (max - min) / 6
-    },
-    #' @description
-    #' Print the range.
-    print = function() {
-      cli::cli_text("[{.strong {self$min}}, {.strong {self$max}}], {.emph ~N({round(self$mean,2)}}, {.emph {round(self$sd,2)})}")
-    }
+  
+  #' @title Primary parameter values
+  #' @description
+  #' `r lifecycle::badge("experimental")`
+  #' Define primary model parameter object.
+  #' This is used internally by the `PM_model` class.
+  #' @keywords internal
+  PM_pri <- R6::R6Class(
+    "PM_pri",
+    public = list(
+      #' @field min Minimum value of the range.
+      min = NULL,
+      #' @field max Maximum value of the range.
+      max = NULL,
+      #' @field mean Mean value of the range, calculated as (min + max) / 2.
+      mean = NULL,
+      #' @field sd Standard deviation of the range, calculated as (max - min) / 6.
+      sd = NULL,
+      #' @description
+      #' Initialize a new range object.
+      #' @param min Minimum value of the range.
+      #' @param max Maximum value of the range.
+      initialize = function(min, max) {
+        self$min <- min
+        self$max <- max
+        self$mean <- (min + max) / 2
+        self$sd <- (max - min) / 6
+      },
+      #' @description
+      #' Print the range.
+      print = function() {
+        cli::cli_text("[{.strong {self$min}}, {.strong {self$max}}], {.emph ~N({round(self$mean,2)}}, {.emph {round(self$sd,2)})}")
+      }
+    )
   )
-)
-
-
-#' @title Initial range for primary parameter values
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Define primary model parameter initial values as range. For nonparametric,
-#' this range will be absolutely respected. For parametric, the range serves
-#' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
-#' initial parameter value distribution.
-#' @param min Minimum value.
-#' @param max Maximum value.
-#' @export
-ab <- function(min, max) {
-  PM_pri$new(min, max)
-}
-
-
-
-#' @title Initial mean/SD for primary parameter values
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Define primary model parameter initial values as mean and standard
-#' deviation, which translate to a range. The mean serves as the midpoint
-#' of the range, with 3 standard deviations above and below the mean to define
-#' the min and max of the range. For nonparametric,
-#' this range will be absolutely respected. For parametric,
-#' values can be estimated beyond the range.
-#' @param mean Initial mean.
-#' @param sd Initial standard deviation.
-#' @export
-msd <- function(mean, sd) {
-  min <- mean - 3 * sd
-  max <- mean + 3 * sd
-  if (min < 0) {
-    cli::cli_warn(c(
-      "i" = "Negative minimum value for primary parameter range.",
-      " " = "This may not be appropriate for your model."
-    ))
+  
+  
+  #' @title Initial range for primary parameter values
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #'
+  #' Define primary model parameter initial values as range. For nonparametric,
+  #' this range will be absolutely respected. For parametric, the range serves
+  #' to define the mean (midpoint) and standard deviation (1/6 of the range) of the
+  #' initial parameter value distribution.
+  #' @param min Minimum value.
+  #' @param max Maximum value.
+  #' @export
+  ab <- function(min, max) {
+    PM_pri$new(min, max)
   }
-  PM_pri$new(min, max)
-}
-
-
-
-#' @title Model covariate declaration
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Declare whether covariates in the data are to have
-#' interpolation between values or not.
-#' @param type If `type = "lm"` (the default) or `type = "linear"`,
-#' the covariate value will be
-#' linearly interpolated between values when fitting the model to the data.
-#' in a model list `cov` item. To fix covariate values to the value at the
-#' last time point, set `type = "none"`.
-#' @return A value of 1 for "lm" and 0 for "none", which will be passed to Rust.
-#' @examples
-#' \dontrun{
-#' cov <- c(
-#'   wt = interp(), # same as interp("lm") or interp("linear")
-#'   visit = interp("none")
-#' )
-#' }
-#' @export
-interp <- function(type = "lm") {
-  if (!type %in% c("lm", "linear", "none")) {
-    cli::cli_abort(c(
-      "x" = "{type} is not a valid covariate interpolation type.",
-      "i" = "See help for {.help PM_model()}."
-    ))
+  
+  
+  #' @title Initial mean/SD for primary parameter values
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #'
+  #' Define primary model parameter initial values as mean and standard
+  #' deviation, which translate to a range. The mean serves as the midpoint
+  #' of the range, with 3 standard deviations above and below the mean to define
+  #' the min and max of the range. For nonparametric,
+  #' this range will be absolutely respected. For parametric,
+  #' values can be estimated beyond the range.
+  #' @param mean Initial mean.
+  #' @param sd Initial standard deviation.
+  #' @export
+  msd <- function(mean, sd) {
+    min <- mean - 3 * sd
+    max <- mean + 3 * sd
+    if (min < 0) {
+      cli::cli_warn(c(
+        "i" = "Negative minimum value for primary parameter range.",
+        " " = "This may not be appropriate for your model."
+      ))
+    }
+    PM_pri$new(min, max)
   }
-  if (type %in% c("lm", "linear")) {
-    return(1)
-  } else {
-    return(0)
+  
+  
+  #' @title Model covariate declaration
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #'
+  #' Declare whether covariates in the data are to have
+  #' interpolation between values or not.
+  #' @param type If `type = "lm"` (the default) or `type = "linear"`,
+  #' the covariate value will be
+  #' linearly interpolated between values when fitting the model to the data.
+  #' in a model list `cov` item. To fix covariate values to the value at the
+  #' last time point, set `type = "none"`.
+  #' @return A value of 1 for "lm" and 0 for "none", which will be passed to Rust.
+  #' @examples
+  #' \dontrun{
+  #' cov <- c(
+  #'   wt = interp(), # same as interp("lm") or interp("linear")
+  #'   visit = interp("none")
+  #' )
+  #' }
+  #' @export
+  interp <- function(type = "lm") {
+    if (!type %in% c("lm", "linear", "none")) {
+      cli::cli_abort(c(
+        "x" = "{type} is not a valid covariate interpolation type.",
+        "i" = "See help for {.help PM_model()}."
+      ))
+    }
+    if (type %in% c("lm", "linear")) {
+      return(1)
+    } else {
+      return(0)
+    }
   }
-}
-
-
-
-
-# PLOT --------------------------------------------------------------------
-
-#' @title Plot PM_model objects
-#' @description
-#' `r lifecycle::badge("stable")`
-#'
-#' Plots a [PM_model] based on differential equations using network plots from tidygraph and ggraph packages.
-#'
-#' @details
-#' This accepts a [PM_model] object and creates a network plot where nodes are compartments
-#' and edges are arrows connecting compartments.
-#' @method plot PM_model
-#' @param x The name of an [PM_model] object.
-#' @param marker Controls the characteristics of the compartments (nodes).
-#' It can be boolean or a list.
-#' `TRUE` will plot the compartments with default characteristics.
-#' `FALSE` will suppress compartment plotting.
-#' If a list, can control some marker characteristics, including overriding defaults.
-#' These include:
-#' \itemize{
-#' \item{`color`} Marker color (default: dodgerblue).
-#' \item{`opacity`} Ranging between 0 (fully transparent) to 1 (fully opaque). Default is 0.5.
-#' \item{`size`} Relative size of boxes, ranging from 0 to 1.  Default is 0.25.
-#' \item{`line`} A list of  additional attributes governing the outline for filled shapes, most commonly
-#' color (default: black) and width (default: 0.5).
-#' }
-#' <br>
-#' <br>
-#' Example: `marker = list(color = "red", opacity = 0.8, line = list(color = "black", width = 1))`
-#' @param line Controls characteristics of arrows (edges).
-#' `TRUE` will plot default lines. `FALSE` will suppress lines.
-#' If a list, can control some line characteristics, including overriding defaults.
-#' These include:
-#' \itemize{
-#' \item{`color`} Line color (default: black)
-#' \item{`width`} Thickness in points (default: 1).
-#' }
-#' <br>
-#' <br>
-#' Example: `line = list(color = "red", width = 2)`
-#' @param explicit A data frame or tibble containing two columns named `from` and `to`
-#' to add additional connecting arrows to the plot indicating transfer between
-#' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
-#' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
-#' a destination to the external sink. e.g., `explicit = data.frame(from = 3, to = 0)`
-#' @param implicit Similar to `explicit`, used to add dashed connecting arrows
-#' to the plot indicating implicit transfer between
-#' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
-#' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
-#' a destination to the external sink. e.g., `implicit = data.frame(from = 2, to = 4)`
-#' @param print If `TRUE`, will print the object and return it. If `FALSE`, will only return the object.
-#' @param ... Not used.
-#' @return A plot object of the model.
-#' @author Markus Hovd, Julian Otalvaro, Michael Neely
-#' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
-#' @export
-#' @examples
-#' \dontrun{
-#' NPex$model$plot()
-#' }
-#' @family PMplots
-
-plot.PM_model <- function(x,
-  marker = TRUE,
-  line = TRUE,
-  explicit,
-  implicit,
-  print = TRUE,
-  ...) {
+  
+  
+  # PLOT --------------------------------------------------------------------
+  
+  #' @title Plot PM_model objects
+  #' @description
+  #' `r lifecycle::badge("stable")`
+  #'
+  #' Plots a [PM_model] based on differential equations using network plots from tidygraph and ggraph packages.
+  #'
+  #' @details
+  #' This accepts a [PM_model] object and creates a network plot where nodes are compartments
+  #' and edges are arrows connecting compartments.
+  #' @method plot PM_model
+  #' @param x The name of an [PM_model] object.
+  #' @param marker Controls the characteristics of the compartments (nodes).
+  #' It can be boolean or a list.
+  #' `TRUE` will plot the compartments with default characteristics.
+  #' `FALSE` will suppress compartment plotting.
+  #' If a list, can control some marker characteristics, including overriding defaults.
+  #' These include:
+  #' \itemize{
+  #' \item{`color`} Marker color (default: dodgerblue).
+  #' \item{`opacity`} Ranging between 0 (fully transparent) to 1 (fully opaque). Default is 0.5.
+  #' \item{`size`} Relative size of boxes, ranging from 0 to 1.  Default is 0.25.
+  #' \item{`line`} A list of  additional attributes governing the outline for filled shapes, most commonly
+  #' color (default: black) and width (default: 0.5).
+  #' }
+  #' <br>
+  #' <br>
+  #' Example: `marker = list(color = "red", opacity = 0.8, line = list(color = "black", width = 1))`
+  #' @param line Controls characteristics of arrows (edges).
+  #' `TRUE` will plot default lines. `FALSE` will suppress lines.
+  #' If a list, can control some line characteristics, including overriding defaults.
+  #' These include:
+  #' \itemize{
+  #' \item{`color`} Line color (default: black)
+  #' \item{`width`} Thickness in points (default: 1).
+  #' }
+  #' <br>
+  #' <br>
+  #' Example: `line = list(color = "red", width = 2)`
+  #' @param explicit A data frame or tibble containing two columns named `from` and `to`
+  #' to add additional connecting arrows to the plot indicating transfer between
+  #' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
+  #' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
+  #' a destination to the external sink. e.g., `explicit = data.frame(from = 3, to = 0)`
+  #' @param implicit Similar to `explicit`, used to add dashed connecting arrows
+  #' to the plot indicating implicit transfer between
+  #' compartments. For each row, the `from` column contains the compartment number of the arrow origin, and the
+  #' `to` column contains the compartment number of the arrow destination. Use 0 to indicate
+  #' a destination to the external sink. e.g., `implicit = data.frame(from = 2, to = 4)`
+  #' @param print If `TRUE`, will print the object and return it. If `FALSE`, will only return the object.
+  #' @param ... Not used.
+  #' @return A plot object of the model.
+  #' @author Markus Hovd, Julian Otalvaro, Michael Neely
+  #' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
+  #' @export
+  #' @examples
+  #' \dontrun{
+  #' NPex$model$plot()
+  #' }
+  #' @family PMplots
+  
+  plot.PM_model <- function(
+    x,
+    marker = TRUE,
+    line = TRUE,
+    explicit,
+    implicit,
+    print = TRUE,
+    ...
+  ) {
     model <- x
     marker <- if (is.list(marker) || marker) {
       amendMarker(marker,
@@ -2026,9 +2027,6 @@ plot.PM_model <- function(x,
       stringr::regex("Y\\[\\d+\\]", ignore_case = TRUE)
     ) %>%
     unlist()
-    
-    
-    
     
     
     #### INTERNAL FUNCTIONS
@@ -2387,9 +2385,8 @@ plot.PM_model <- function(x,
     }
     
     
-    
     # Modify layout logic to use circular positioning
-    create_plot <- function(connections, compartments, outputs) {       
+    create_plot <- function(connections, compartments, outputs) {
       box_width <- 1.2
       box_height <- 0.8
       
@@ -2546,12 +2543,14 @@ plot.PM_model <- function(x,
       if (length(outputs) > 0) {
         out_df <- bind_rows(lapply(outputs, function(out) {
           comp <- out$compartment
-          if (is.null(comp)) return(data.frame(x = NA, y = NA, label = NA))
+          if (is.null(comp)) {
+            return(data.frame(x = NA, y = NA, label = NA))
+          }
           txt <- paste0("y[", out$output_num, "]")
           pos <- layout_df %>% filter(compartment == comp)
           data.frame(x = pos$x, y = pos$y - 0.2, label = txt)
         }))
-        if (any(is.na(out_df$x))){
+        if (any(is.na(out_df$x))) {
           missing_out <- as.character(which(is.na(out_df$x)))
           cli::cli_warn(c("!" = "{?This/These} output equation{?s} did not contain a parsable compartment number on the right side of the equation and {?was/were} not plotted: {missing_out}."))
           out_df <- out_df %>% filter(!is.na(x))
@@ -2587,7 +2586,13 @@ plot.PM_model <- function(x,
     
     expanded_equations <- purrr::map(parse(text = tolower(eqns)), expand_distribute)
     outputs <- parse_output_equations(as.list(parse(text = tolower(outs))))
-    out_comp <- map_chr(outputs, function(o) if (!is.null(o$compartment)) {as.character(o$compartment)} else {"unknown"})
+    out_comp <- map_chr(outputs, function(o) {
+      if (!is.null(o$compartment)) {
+        as.character(o$compartment)
+      } else {
+        "unknown"
+      }
+    })
     result <- extract_connections(expanded_equations)
     elim_count <- sum(sapply(result$connections, function(c) c$to == 0))
     elim_coeff <- map_chr(result$connections, function(c) if (c$to == 0) c$coeff else NA) %>% keep(~ !is.na(.))

@@ -16,10 +16,11 @@
 
 
 PM_build <- function() {
-  clear_build() # clean prior template/artifacts
+  
   if (is_rustup_installed()) {
     cli::cli_text("Rust was detected in your system, Fetching dependencies and building base project.")
-    dummy_compile(template_path = getPMoptions("model_template_path"))
+    template_path <- if (Sys.getenv("env") == "Development") { file.path(temporary_path(), "template") } else { system.file(package = "Pmetrics")}
+    dummy_compile(template_path = template_path)
   } else {
     cli::cli_text("Rust was not detected in your system, this can be caused by multiple reasons:")
     ul <- cli::cli_ul()
