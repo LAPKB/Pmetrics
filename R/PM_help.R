@@ -26,7 +26,7 @@
 PM_help <- function(copy = TRUE) {
   
   # GitHub repository URL
-  github_url <- "https://github.com/LAPKB/Pmetrics_rust"
+  github_url <- "https://github.com/LAPKB/Pmetrics"
   
   # Collect system information
   sys_info <- list()
